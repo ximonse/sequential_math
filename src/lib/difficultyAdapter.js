@@ -156,7 +156,7 @@ function getProblemsCompletedToday(profile) {
 }
 
 /**
- * Multiplikation introduceras stegvis:
+ * Subtraktion/multiplikation introduceras stegvis:
  * - endast efter viss stabilitet
  * - lägre sannolikhet för kämpande elev
  */
@@ -168,17 +168,38 @@ function chooseProblemType(profile, recentSuccess, errors) {
   if (errors >= 2 || recentSuccess < 0.65) return 'addition'
   if (attempts < 10 || difficulty < 3.5) return 'addition'
 
-  // Stegvis ökning av andel multiplikation
-  let multiplicationChance = 0.2
-  if (difficulty >= 6) multiplicationChance = 0.3
-  if (difficulty >= 9) multiplicationChance = 0.4
-  if (recentSuccess >= 0.85) multiplicationChance += 0.1
+  // Stegvis typmix:
+  // - subtraktion kommer före multiplikation
+  const options = [{ type: 'addition', weight: 0.6 }]
 
-  return Math.random() < multiplicationChance ? 'multiplication' : 'addition'
+  if (difficulty >= 4 && attempts >= 12) {
+    let subWeight = 0.25
+    if (difficulty >= 7) subWeight = 0.3
+    if (recentSuccess >= 0.85) subWeight += 0.05
+    options.push({ type: 'subtraction', weight: subWeight })
+    options[0].weight -= 0.15
+  }
+
+  if (difficulty >= 5 && attempts >= 16) {
+    let mulWeight = 0.15
+    if (difficulty >= 8) mulWeight = 0.2
+    if (recentSuccess >= 0.85) mulWeight += 0.05
+    options.push({ type: 'multiplication', weight: mulWeight })
+    options[0].weight -= 0.1
+  }
+
+  const normalized = normalizeWeights(options)
+  const rand = Math.random()
+  let acc = 0
+  for (const item of normalized) {
+    acc += item.weight
+    if (rand <= acc) return item.type
+  }
+  return normalized[0].type
 }
 
 function normalizeAllowedTypes(allowedTypes) {
-  if (!Array.isArray(allowedTypes) || allowedTypes.length === 0) return null
+  if (!Array.isArray(allowedTypes) || allowedTypes.length === 0) return []
   return allowedTypes.filter(Boolean)
 }
 
@@ -187,6 +208,12 @@ function clampLevelToRange(level, levelRange) {
   const minLevel = Math.max(1, Math.min(12, Number(levelRange[0]) || 1))
   const maxLevel = Math.max(minLevel, Math.min(12, Number(levelRange[1]) || 12))
   return Math.max(minLevel, Math.min(maxLevel, level))
+}
+
+function normalizeWeights(items) {
+  const cleaned = items.map(i => ({ ...i, weight: Math.max(0.05, i.weight) }))
+  const total = cleaned.reduce((sum, i) => sum + i.weight, 0)
+  return cleaned.map(i => ({ ...i, weight: i.weight / total }))
 }
 
 /**

@@ -4,8 +4,9 @@
 
 import { additionTemplates } from '../data/templates/additionTemplates'
 import { multiplicationTemplates } from '../data/templates/multiplicationTemplates'
+import { subtractionTemplates } from '../data/templates/subtractionTemplates'
 
-const allTemplates = [...additionTemplates, ...multiplicationTemplates]
+const allTemplates = [...additionTemplates, ...subtractionTemplates, ...multiplicationTemplates]
 
 /**
  * Generera ett slumptal inom intervall
@@ -49,7 +50,7 @@ function countCarries(a, b) {
   let carry = 0
 
   for (let i = aStr.length - 1; i >= 0; i--) {
-    const sum = parseInt(aStr[i]) + parseInt(bStr[i]) + carry
+    const sum = parseInt(aStr[i], 10) + parseInt(bStr[i], 10) + carry
     if (sum >= 10) {
       carryCount++
       carry = 1
@@ -57,7 +58,36 @@ function countCarries(a, b) {
       carry = 0
     }
   }
+
   return carryCount
+}
+
+/**
+ * Räkna antal växlingar (borrow) i subtraktion a - b
+ */
+function countBorrows(a, b) {
+  const maxLen = Math.max(
+    String(Math.floor(Math.abs(a))).length,
+    String(Math.floor(Math.abs(b))).length
+  )
+  const aStr = String(Math.floor(Math.abs(a))).padStart(maxLen, '0')
+  const bStr = String(Math.floor(Math.abs(b))).padStart(maxLen, '0')
+
+  let borrowCount = 0
+  let borrow = 0
+
+  for (let i = aStr.length - 1; i >= 0; i--) {
+    const top = parseInt(aStr[i], 10) - borrow
+    const bottom = parseInt(bStr[i], 10)
+    if (top < bottom) {
+      borrowCount++
+      borrow = 1
+    } else {
+      borrow = 0
+    }
+  }
+
+  return borrowCount
 }
 
 /**
@@ -135,6 +165,14 @@ export function generateProblem(template, maxAttempts = 100) {
       if (!difficulty.procedural.requires_carry && problemHasCarry) continue
     }
 
+    // 2b. Växlings-krav för subtraktion
+    if (type === 'subtraction') {
+      if (a <= b) continue
+      const problemHasBorrow = countBorrows(a, b) > 0
+      if (difficulty.procedural.requires_borrow && !problemHasBorrow) continue
+      if (!difficulty.procedural.requires_borrow && problemHasBorrow) continue
+    }
+
     // 3. Inte trivialt
     if (isTrivial(a, b)) continue
 
@@ -164,8 +202,9 @@ export function generateProblem(template, maxAttempts = 100) {
       }
     }
 
-    // Räkna tiövergångar
+    // Räkna tiövergångar/växlingar
     const carryCount = countCarries(finalA, finalB)
+    const borrowCount = type === 'subtraction' ? countBorrows(finalA, finalB) : 0
 
     // Allt OK - returnera problem
     return {
@@ -178,7 +217,8 @@ export function generateProblem(template, maxAttempts = 100) {
       metadata: {
         ...template.metadata,
         termOrder,
-        carryCount
+        carryCount,
+        borrowCount
       },
       generated_at: Date.now()
     }
@@ -189,17 +229,22 @@ export function generateProblem(template, maxAttempts = 100) {
 
   const a = constraints.a.min
   const b = constraints.b.min
+  let fallbackResult = a + b
+  if (template.type === 'subtraction') fallbackResult = a - b
+  if (template.type === 'multiplication') fallbackResult = roundTo(a * b)
+  if (template.type === 'division') fallbackResult = roundTo(a / b)
   return {
     id: `${template.id}_fallback_${Date.now()}`,
     template: template.id,
     type: template.type,
     values: { a, b },
-    result: a + b,
+    result: fallbackResult,
     difficulty: template.difficulty,
     metadata: {
       ...template.metadata,
       termOrder: 'equal',
-      carryCount: countCarries(a, b)
+      carryCount: template.type === 'addition' ? countCarries(a, b) : 0,
+      borrowCount: template.type === 'subtraction' ? countBorrows(a, b) : 0
     },
     generated_at: Date.now()
   }

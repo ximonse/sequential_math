@@ -197,6 +197,12 @@ function Dashboard() {
               Nytt: Bara multiplikation
             </button>
             <button
+              onClick={() => handleCreatePreset('subtraction')}
+              className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm"
+            >
+              Nytt: Bara subtraktion
+            </button>
+            <button
               onClick={() => handleCreatePreset('mixed')}
               className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm"
             >
@@ -378,9 +384,19 @@ function getPresetConfig(presetKey) {
     }
   }
 
+  if (presetKey === 'subtraction') {
+    return {
+      title: 'Subtraktion nivå 1-8',
+      problemTypes: ['subtraction'],
+      minLevel: 1,
+      maxLevel: 8,
+      targetCount: 20
+    }
+  }
+
   return {
     title: 'Kombination nivå 2-10',
-    problemTypes: ['addition', 'multiplication'],
+    problemTypes: ['addition', 'subtraction', 'multiplication'],
     minLevel: 2,
     maxLevel: 10,
     targetCount: 25

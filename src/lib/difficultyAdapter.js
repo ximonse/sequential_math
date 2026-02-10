@@ -2,13 +2,16 @@
  * Difficulty Adapter - Justerar svårighetsgrad baserat på prestation
  */
 
-import { generateByDifficulty } from './problemGenerator'
+import { generateByDifficultyWithOptions } from './problemGenerator'
 import { getRecentSuccessRate, getConsecutiveErrors, getCurrentStreak } from './studentProfile'
+
+const DAY_MS = 24 * 60 * 60 * 1000
 
 /**
  * Justera svårighetsgrad efter ett svar
  */
 export function adjustDifficulty(profile, wasCorrect) {
+  ensureDifficultyMeta(profile)
   const recentSuccess = getRecentSuccessRate(profile, 5)
 
   if (wasCorrect) {
@@ -31,6 +34,12 @@ export function adjustDifficulty(profile, wasCorrect) {
     else if (profile.currentDifficulty <= 2) {
       profile.currentDifficulty += 0.05
     }
+
+    // Har eleven tidigare varit högre upp? Hjälp snabbare tillbaka.
+    const belowPeak = profile.currentDifficulty < profile.highestDifficulty - 0.3
+    if (belowPeak && streak >= 2 && recentSuccess >= 0.7) {
+      profile.currentDifficulty += 0.15
+    }
   } else {
     // Fel svar: mindre hårda sänkningar för att minska bottenlåsning
     const errors = getConsecutiveErrors(profile)
@@ -51,6 +60,7 @@ export function adjustDifficulty(profile, wasCorrect) {
 
   // Clamp mellan 1 och 12 (våra nivåer)
   profile.currentDifficulty = Math.max(1, Math.min(12, profile.currentDifficulty))
+  profile.highestDifficulty = Math.max(profile.highestDifficulty, profile.currentDifficulty)
 
   return profile.currentDifficulty
 }
@@ -59,37 +69,98 @@ export function adjustDifficulty(profile, wasCorrect) {
  * Välj nästa problem baserat på profil
  */
 export function selectNextProblem(profile) {
+  ensureDifficultyMeta(profile)
   const recentSuccess = getRecentSuccessRate(profile, 5)
   const errors = getConsecutiveErrors(profile)
   const roundedDifficulty = Math.round(profile.currentDifficulty)
+  const preferredType = chooseProblemType(profile, recentSuccess, errors)
+  const warmupLevel = getWarmupLevel(profile, roundedDifficulty)
+
+  // Efter frånvaro: börja lite enklare för att nå 80/20-zonen snabbare.
+  if (warmupLevel !== null) {
+    return generateByDifficultyWithOptions(warmupLevel, { preferredType: 'addition' })
+  }
 
   // Om 3+ fel i rad → ge lättare problem ("easy win")
   if (errors >= 3) {
     const easyLevel = Math.max(1, roundedDifficulty - 1)
-    return generateByDifficulty(easyLevel)
+    return generateByDifficultyWithOptions(easyLevel, { preferredType: 'addition' })
   }
 
   // Om för lätt (>92% success) → öka
   if (recentSuccess > 0.92 && profile.recentProblems.length >= 6) {
     const harderLevel = Math.min(12, roundedDifficulty + 1)
-    return generateByDifficulty(harderLevel)
+    return generateByDifficultyWithOptions(harderLevel, { preferredType })
   }
 
   // Om för svårt (<55% success) → minska
   if (recentSuccess < 0.55 && profile.recentProblems.length >= 6) {
     const easierLevel = Math.max(1, roundedDifficulty - 1)
-    return generateByDifficulty(easierLevel)
+    return generateByDifficultyWithOptions(easierLevel, { preferredType: 'addition' })
   }
 
   // Hjälp elever att komma loss från nivå 1 med försiktig utmaning
   if (roundedDifficulty === 1 && recentSuccess >= 0.6 && profile.recentProblems.length >= 8) {
     if (Math.random() < 0.3) {
-      return generateByDifficulty(2)
+      return generateByDifficultyWithOptions(2, { preferredType: 'addition' })
     }
   }
 
   // Normal: generera på nuvarande nivå
-  return generateByDifficulty(roundedDifficulty)
+  return generateByDifficultyWithOptions(roundedDifficulty, { preferredType })
+}
+
+function ensureDifficultyMeta(profile) {
+  if (typeof profile.highestDifficulty !== 'number' || Number.isNaN(profile.highestDifficulty)) {
+    profile.highestDifficulty = profile.currentDifficulty || 1
+  }
+}
+
+function getWarmupLevel(profile, roundedDifficulty) {
+  const lastTs = profile.recentProblems[profile.recentProblems.length - 1]?.timestamp
+  if (!lastTs) return null
+
+  const daysAway = (Date.now() - lastTs) / DAY_MS
+  if (daysAway < 1) return null
+
+  const warmupProblemsCompletedToday = getProblemsCompletedToday(profile)
+  const warmupLength = Math.min(4, Math.max(2, Math.ceil(daysAway)))
+  if (warmupProblemsCompletedToday >= warmupLength) return null
+
+  const levelDrop = daysAway >= 7 ? 2 : daysAway >= 3 ? 2 : 1
+  const baseWarmup = Math.max(1, roundedDifficulty - levelDrop)
+
+  // 70/30: mest lättare för självförtroende, lite normal utmaning.
+  if (Math.random() < 0.7) return baseWarmup
+  return Math.max(1, baseWarmup + 1)
+}
+
+function getProblemsCompletedToday(profile) {
+  const now = new Date()
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  return profile.recentProblems.filter(p => p.timestamp >= startOfToday).length
+}
+
+/**
+ * Multiplikation introduceras stegvis:
+ * - endast efter viss stabilitet
+ * - lägre sannolikhet för kämpande elev
+ */
+function chooseProblemType(profile, recentSuccess, errors) {
+  const attempts = profile.recentProblems.length
+  const difficulty = profile.currentDifficulty
+
+  // Skydda kämpande elever: håll dig till addition tills grunden sitter
+  if (errors >= 2 || recentSuccess < 0.65) return 'addition'
+  if (attempts < 10 || difficulty < 3.5) return 'addition'
+
+  // Stegvis ökning av andel multiplikation
+  let multiplicationChance = 0.2
+  if (difficulty >= 6) multiplicationChance = 0.3
+  if (difficulty >= 9) multiplicationChance = 0.4
+  if (recentSuccess >= 0.85) multiplicationChance += 0.1
+
+  return Math.random() < multiplicationChance ? 'multiplication' : 'addition'
 }
 
 /**

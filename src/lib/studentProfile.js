@@ -24,6 +24,7 @@ export function createStudentProfile(studentId, name, grade = 4) {
     grade,
     created_at: Date.now(),
     currentDifficulty: 1,
+    highestDifficulty: 1,
     recentProblems: [],
     stats: {
       totalProblems: 0,

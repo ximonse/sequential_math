@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import ProblemDisplay from './ProblemDisplay'
 import PongGame from './PongGame'
+import MathScratchpad from './MathScratchpad'
 import { getOrCreateProfile, saveProfile } from '../../lib/storage'
 import { addProblemResult, getCurrentStreak } from '../../lib/studentProfile'
 import { selectNextProblem, adjustDifficulty, shouldSuggestBreak } from '../../lib/difficultyAdapter'
@@ -20,6 +21,7 @@ function StudentSession() {
   const [sessionCount, setSessionCount] = useState(0)
   const [showBreakSuggestion, setShowBreakSuggestion] = useState(false)
   const [showPong, setShowPong] = useState(false)
+  const [showScratchpad, setShowScratchpad] = useState(false)
   const inputRef = useRef(null)
 
   // Ladda profil vid start
@@ -43,6 +45,12 @@ function StudentSession() {
       inputRef.current.focus()
     }
   }, [currentProblem, feedback])
+
+  useEffect(() => {
+    if (currentProblem?.type !== 'multiplication') {
+      setShowScratchpad(false)
+    }
+  }, [currentProblem])
 
   // Gå till nästa problem
   const goToNextProblem = useCallback(() => {
@@ -235,6 +243,24 @@ function StudentSession() {
             onSubmit={handleSubmit}
             inputRef={inputRef}
           />
+
+          {currentProblem?.type === 'multiplication' && !feedback && (
+            <div className="mt-5 flex justify-center">
+              <button
+                type="button"
+                onClick={() => setShowScratchpad(prev => !prev)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                  showScratchpad
+                    ? 'bg-indigo-100 text-indigo-700'
+                    : 'bg-white text-gray-700 border border-gray-300'
+                }`}
+              >
+                {showScratchpad ? 'Dölj rityta' : 'Visa rityta'}
+              </button>
+            </div>
+          )}
+
+          <MathScratchpad visible={showScratchpad && currentProblem?.type === 'multiplication' && !feedback} />
 
           {/* Knapp + feedback - fast höjd */}
           <div className="mt-8 flex flex-col items-center h-28">

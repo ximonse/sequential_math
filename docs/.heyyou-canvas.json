@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "cards": {
+    "ADAPTIVE_LOGIC.md": {
+      "position": {
+        "x": 490,
+        "y": 0
+      },
+      "size": "A6",
+      "collapsed": false,
+      "pinned": false
+    },
+    "ARCHITECTURE.md": {
+      "position": {
+        "x": 2450,
+        "y": 0
+      },
+      "size": "A6",
+      "collapsed": false,
+      "pinned": false
+    },
+    "IMPLEMENTATION_PHASES.md": {
+      "position": {
+        "x": 980,
+        "y": 0
+      },
+      "size": "A6",
+      "collapsed": false,
+      "pinned": false
+    },
+    "ERROR_ANALYSIS.md": {
+      "position": {
+        "x": 2940,
+        "y": 0
+      },
+      "size": "A6",
+      "collapsed": false,
+      "pinned": false
+    },
+    "STUDENT_PROFILE.md": {
+      "position": {
+        "x": 1470,
+        "y": 0
+      },
+      "size": "A6",
+      "collapsed": false,
+      "pinned": false
+    },
+    "PROBLEM_STRUCTURE.md": {
+      "position": {
+        "x": 1960,
+        "y": 0
+      },
+      "size": "A6",
+      "collapsed": false,
+      "pinned": false
+    }
+  }
+}

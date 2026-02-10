@@ -3,12 +3,20 @@ import { useNavigate } from 'react-router-dom'
 import { getAllProfiles } from '../../lib/storage'
 import { logoutTeacher } from '../../lib/teacherAuth'
 import { evaluateAnswerQuality } from '../../lib/answerQuality'
-import { buildAssignmentLink, createAssignment, getAssignments } from '../../lib/assignments'
+import {
+  buildAssignmentLink,
+  clearActiveAssignment,
+  createAssignment,
+  getActiveAssignment,
+  getAssignments,
+  setActiveAssignment
+} from '../../lib/assignments'
 
 function Dashboard() {
   const [students, setStudents] = useState([])
   const [assignments, setAssignments] = useState([])
   const [copiedId, setCopiedId] = useState('')
+  const [activeAssignmentId, setActiveAssignmentId] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -21,11 +29,13 @@ function Dashboard() {
     })
     setStudents(profiles)
     setAssignments(getAssignments())
+    setActiveAssignmentId(getActiveAssignment()?.id || '')
   }, [])
 
   const handleRefresh = () => {
     setStudents(getAllProfiles())
     setAssignments(getAssignments())
+    setActiveAssignmentId(getActiveAssignment()?.id || '')
   }
 
   const handleLogout = () => {
@@ -61,6 +71,16 @@ function Dashboard() {
     await navigator.clipboard.writeText(link)
     setCopiedId(assignmentId)
     window.setTimeout(() => setCopiedId(''), 1200)
+  }
+
+  const handleActivateForAll = (assignmentId) => {
+    setActiveAssignment(assignmentId)
+    setActiveAssignmentId(assignmentId)
+  }
+
+  const handleClearActiveForAll = () => {
+    clearActiveAssignment()
+    setActiveAssignmentId('')
   }
 
   return (
@@ -144,20 +164,45 @@ function Dashboard() {
             <p className="text-sm text-gray-500">Inga uppdrag skapade ännu.</p>
           ) : (
             <div className="space-y-2">
+              <div className="flex items-center justify-between py-1">
+                <p className="text-xs text-gray-500">
+                  Aktivt för alla: {activeAssignmentId ? activeAssignmentId : 'Ingen (fri träning)'}
+                </p>
+                <button
+                  onClick={handleClearActiveForAll}
+                  className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded text-xs"
+                >
+                  Rensa aktivt
+                </button>
+              </div>
               {assignments.slice(0, 10).map(assignment => (
-                <div key={assignment.id} className="flex flex-wrap items-center justify-between gap-2 border rounded p-2">
+                <div
+                  key={assignment.id}
+                  className={`flex flex-wrap items-center justify-between gap-2 border rounded p-2 ${
+                    activeAssignmentId === assignment.id ? 'border-green-400 bg-green-50' : ''
+                  }`}
+                >
                   <div className="text-sm">
                     <p className="font-medium text-gray-800">{assignment.title}</p>
                     <p className="text-gray-500">
                       {assignment.problemTypes.join(', ')} | Nivå {assignment.minLevel}-{assignment.maxLevel}
                     </p>
+                    <p className="text-xs text-gray-400 font-mono">{assignment.id}</p>
                   </div>
-                  <button
-                    onClick={() => handleCopyAssignmentLink(assignment.id)}
-                    className="px-3 py-1.5 bg-gray-800 hover:bg-black text-white rounded text-xs"
-                  >
-                    {copiedId === assignment.id ? 'Kopierad' : 'Kopiera länk'}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleActivateForAll(assignment.id)}
+                      className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs"
+                    >
+                      Aktivera för alla
+                    </button>
+                    <button
+                      onClick={() => handleCopyAssignmentLink(assignment.id)}
+                      className="px-3 py-1.5 bg-gray-800 hover:bg-black text-white rounded text-xs"
+                    >
+                      {copiedId === assignment.id ? 'Kopierad' : 'Kopiera länk'}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

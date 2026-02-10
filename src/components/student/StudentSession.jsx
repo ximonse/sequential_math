@@ -6,7 +6,7 @@ import MathScratchpad from './MathScratchpad'
 import { getOrCreateProfile, saveProfile } from '../../lib/storage'
 import { addProblemResult, getCurrentStreak } from '../../lib/studentProfile'
 import { selectNextProblem, adjustDifficulty, shouldSuggestBreak } from '../../lib/difficultyAdapter'
-import { getAssignmentById } from '../../lib/assignments'
+import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 
 const AUTO_CONTINUE_DELAY = 3000 // 3 sekunder
 
@@ -37,7 +37,7 @@ function StudentSession() {
 
   useEffect(() => {
     if (!assignmentId) {
-      setSessionAssignment(null)
+      setSessionAssignment(getActiveAssignment())
       return
     }
     const assignment = getAssignmentById(assignmentId)

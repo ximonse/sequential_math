@@ -1,7 +1,13 @@
 const TEACHER_AUTH_KEY = 'mathapp_teacher_auth'
+const TEACHER_PASSWORD_OVERRIDE_KEY = 'mathapp_teacher_password_override'
 const DEFAULT_TEACHER_PASSWORD = 'teacher123'
 
 export function getTeacherPassword() {
+  const custom = localStorage.getItem(TEACHER_PASSWORD_OVERRIDE_KEY)
+  if (typeof custom === 'string' && custom.trim() !== '') {
+    return custom
+  }
+
   const configured = import.meta.env.VITE_TEACHER_PASSWORD
   if (typeof configured === 'string' && configured.trim() !== '') {
     return configured
@@ -27,4 +33,26 @@ export function logoutTeacher() {
 
 export function isTeacherAuthenticated() {
   return sessionStorage.getItem(TEACHER_AUTH_KEY) === '1'
+}
+
+export function setCustomTeacherPassword(newPassword) {
+  if (typeof newPassword !== 'string' || newPassword.trim().length < 4) {
+    return false
+  }
+  localStorage.setItem(TEACHER_PASSWORD_OVERRIDE_KEY, newPassword.trim())
+  return true
+}
+
+export function clearCustomTeacherPassword() {
+  localStorage.removeItem(TEACHER_PASSWORD_OVERRIDE_KEY)
+}
+
+export function getTeacherPasswordSource() {
+  const custom = localStorage.getItem(TEACHER_PASSWORD_OVERRIDE_KEY)
+  if (typeof custom === 'string' && custom.trim() !== '') return 'custom'
+
+  const configured = import.meta.env.VITE_TEACHER_PASSWORD
+  if (typeof configured === 'string' && configured.trim() !== '') return 'env'
+
+  return 'default'
 }

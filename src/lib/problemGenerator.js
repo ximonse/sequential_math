@@ -2,13 +2,39 @@
  * Problem Generator - Genererar matematikproblem från templates
  */
 
-import { additionTemplates, getTemplateByLevel } from '../data/templates/additionTemplates'
+import { additionTemplates } from '../data/templates/additionTemplates'
+import { multiplicationTemplates } from '../data/templates/multiplicationTemplates'
+
+const allTemplates = [...additionTemplates, ...multiplicationTemplates]
 
 /**
  * Generera ett slumptal inom intervall
  */
 function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+/**
+ * Runda tal för att undvika flyttalsartefakter (t.ex. 0.1 + 0.2)
+ */
+function roundTo(value, decimals = 6) {
+  const factor = 10 ** decimals
+  return Math.round((value + Number.EPSILON) * factor) / factor
+}
+
+/**
+ * Generera tal utifrån constraint (heltal eller decimal med step)
+ */
+function randomFromConstraint(constraint) {
+  const { min, max, step } = constraint
+
+  if (typeof step === 'number' && step > 0 && step < 1) {
+    const steps = Math.floor((max - min) / step)
+    const n = Math.floor(Math.random() * (steps + 1))
+    return roundTo(min + n * step, 6)
+  }
+
+  return randomInt(min, max)
 }
 
 /**
@@ -72,26 +98,26 @@ export function generateProblem(template, maxAttempts = 100) {
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     // Generera slumpmässiga värden
-    const a = randomInt(constraints.a.min, constraints.a.max)
-    const b = randomInt(constraints.b.min, constraints.b.max)
+    const a = randomFromConstraint(constraints.a)
+    const b = randomFromConstraint(constraints.b)
 
     // Beräkna resultat
     let result
     switch (type) {
       case 'addition':
-        result = a + b
+        result = roundTo(a + b)
         break
       case 'subtraction':
-        result = a - b
+        result = roundTo(a - b)
         break
       case 'multiplication':
-        result = a * b
+        result = roundTo(a * b)
         break
       case 'division':
-        result = Math.floor(a / b)
+        result = roundTo(a / b)
         break
       default:
-        result = a + b
+        result = roundTo(a + b)
     }
 
     // Validera
@@ -183,17 +209,46 @@ export function generateProblem(template, maxAttempts = 100) {
  * Generera problem baserat på svårighetsgrad
  */
 export function generateByDifficulty(level) {
-  const template = getTemplateByLevel(level)
-  if (!template) {
-    // Fallback till närmaste nivå
-    const closest = additionTemplates.reduce((prev, curr) => {
-      const prevDiff = Math.abs(prev.difficulty.conceptual_level - level)
-      const currDiff = Math.abs(curr.difficulty.conceptual_level - level)
-      return currDiff < prevDiff ? curr : prev
-    })
-    return generateProblem(closest)
+  return generateByDifficultyWithOptions(level, {})
+}
+
+/**
+ * Generera problem baserat på svårighetsgrad med valfri styrning av räknesätt
+ */
+export function generateByDifficultyWithOptions(level, options = {}) {
+  const { preferredType = null } = options
+
+  const levelCandidates = allTemplates.filter(
+    t => t.difficulty.conceptual_level === level
+  )
+
+  // Försök först med önskat räknesätt på exakt nivå
+  if (preferredType) {
+    const preferredAtLevel = levelCandidates.filter(t => t.type === preferredType)
+    if (preferredAtLevel.length > 0) {
+      const picked = preferredAtLevel[Math.floor(Math.random() * preferredAtLevel.length)]
+      return generateProblem(picked)
+    }
   }
-  return generateProblem(template)
+
+  // Annars valfri template på exakt nivå
+  if (levelCandidates.length > 0) {
+    const picked = levelCandidates[Math.floor(Math.random() * levelCandidates.length)]
+    return generateProblem(picked)
+  }
+
+  // Fallback: närmaste nivå, helst samma räknesätt om önskat
+  const pool = preferredType
+    ? allTemplates.filter(t => t.type === preferredType)
+    : allTemplates
+
+  const closest = pool.reduce((prev, curr) => {
+    const prevDiff = Math.abs(prev.difficulty.conceptual_level - level)
+    const currDiff = Math.abs(curr.difficulty.conceptual_level - level)
+    return currDiff < prevDiff ? curr : prev
+  })
+
+  return generateProblem(closest)
 }
 
 /**

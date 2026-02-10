@@ -95,7 +95,9 @@ function StudentSession() {
     if (!currentProblem || answer.trim() === '') return
 
     const timeSpent = (Date.now() - startTime) / 1000
-    const studentAnswer = parseInt(answer, 10)
+    const normalizedAnswer = answer.trim().replace(/,/g, '.')
+    const studentAnswer = parseFloat(normalizedAnswer)
+    if (!Number.isFinite(studentAnswer)) return
 
     // Lägg till resultat
     const { correct } = addProblemResult(profile, currentProblem, studentAnswer, timeSpent)

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getAllProfiles } from '../../lib/storage'
 import { logoutTeacher } from '../../lib/teacherAuth'
-import StudentCard from './StudentCard'
+import { evaluateAnswerQuality } from '../../lib/answerQuality'
 
 function Dashboard() {
   const [students, setStudents] = useState([])
@@ -42,6 +42,8 @@ function Dashboard() {
       : 0,
     totalProblems: students.reduce((sum, s) => sum + (s.stats.totalProblems || 0), 0)
   }
+
+  const tableRows = students.map(student => buildStudentRow(student))
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
@@ -97,7 +99,7 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Students grid */}
+        {/* Students table */}
         {students.length === 0 ? (
           <div className="bg-white rounded-lg p-8 shadow text-center">
             <p className="text-gray-500 text-lg">Inga elever ännu</p>
@@ -106,15 +108,129 @@ function Dashboard() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {students.map(student => (
-              <StudentCard key={student.studentId} student={student} />
-            ))}
+          <div className="bg-white rounded-lg shadow overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b">
+                <tr className="text-left text-gray-600">
+                  <th className="px-4 py-3 font-semibold">Elev</th>
+                  <th className="px-4 py-3 font-semibold">Försök</th>
+                  <th className="px-4 py-3 font-semibold">Rätt</th>
+                  <th className="px-4 py-3 font-semibold">Rimlighet</th>
+                  <th className="px-4 py-3 font-semibold">Medelavvikelse</th>
+                  <th className="px-4 py-3 font-semibold">Trend</th>
+                  <th className="px-4 py-3 font-semibold">Senast aktiv</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tableRows.map(row => (
+                  <tr key={row.studentId} className="border-b last:border-b-0 hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      <div className="font-semibold text-gray-800">{row.name}</div>
+                      <div className="text-xs text-gray-400 font-mono">{row.studentId}</div>
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">{row.attempts}</td>
+                    <td className="px-4 py-3">
+                      <span className={getSuccessColorClass(row.successRate)}>
+                        {row.correctCount}/{row.attempts} ({toPercent(row.successRate)})
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={getReasonableColorClass(row.reasonableRate)}>
+                        {row.reasonableCount}/{row.attempts} ({toPercent(row.reasonableRate)})
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">
+                      {row.avgRelativeError === null ? '-' : `${Math.round(row.avgRelativeError * 100)}%`}
+                    </td>
+                    <td className="px-4 py-3">
+                      {row.trend === null ? (
+                        <span className="text-gray-400">-</span>
+                      ) : (
+                        <span className={row.trend >= 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                          {row.trend >= 0 ? '↑' : '↓'} {Math.abs(Math.round(row.trend * 100))}%
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
     </div>
   )
+}
+
+function buildStudentRow(student) {
+  const attempts = student.recentProblems.length
+  const correctCount = student.recentProblems.filter(p => p.correct).length
+  const successRate = attempts > 0 ? correctCount / attempts : 0
+
+  const quality = student.recentProblems.map(p => evaluateAnswerQuality(p))
+  const reasonableCount = quality.filter(q => q.isReasonable).length
+  const reasonableRate = attempts > 0 ? reasonableCount / attempts : 0
+
+  const wrongQuality = quality.filter((q, idx) => !student.recentProblems[idx].correct)
+  const avgRelativeError = wrongQuality.length > 0
+    ? wrongQuality.reduce((sum, q) => sum + q.relativeError, 0) / wrongQuality.length
+    : null
+
+  const trend = calculateTrend(student.recentProblems)
+  const lastActive = student.recentProblems[student.recentProblems.length - 1]?.timestamp || null
+
+  return {
+    studentId: student.studentId,
+    name: student.name,
+    attempts,
+    correctCount,
+    successRate,
+    reasonableCount,
+    reasonableRate,
+    avgRelativeError,
+    trend,
+    lastActive
+  }
+}
+
+function calculateTrend(problems) {
+  if (problems.length < 15) return null
+
+  const last10 = problems.slice(-10)
+  const previous10 = problems.slice(-20, -10)
+  if (previous10.length < 5) return null
+
+  const lastRate = last10.filter(p => p.correct).length / last10.length
+  const prevRate = previous10.filter(p => p.correct).length / previous10.length
+  return lastRate - prevRate
+}
+
+function toPercent(rate) {
+  return `${Math.round(rate * 100)}%`
+}
+
+function getSuccessColorClass(rate) {
+  if (rate >= 0.8) return 'text-green-600 font-semibold'
+  if (rate >= 0.6) return 'text-yellow-700 font-semibold'
+  return 'text-red-600 font-semibold'
+}
+
+function getReasonableColorClass(rate) {
+  if (rate >= 0.9) return 'text-green-600 font-semibold'
+  if (rate >= 0.75) return 'text-yellow-700 font-semibold'
+  return 'text-red-600 font-semibold'
+}
+
+function formatTimeAgo(timestamp) {
+  if (!timestamp) return 'Aldrig'
+
+  const seconds = Math.floor((Date.now() - timestamp) / 1000)
+  if (seconds < 60) return 'Just nu'
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} min sedan`
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)} tim sedan`
+  if (seconds < 604800) return `${Math.floor(seconds / 86400)} dagar sedan`
+  return new Date(timestamp).toLocaleDateString('sv-SE')
 }
 
 export default Dashboard

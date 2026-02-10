@@ -3,6 +3,10 @@ function ProblemDisplay({ problem, feedback, inputValue, onInputChange, onSubmit
 
   const { values, type, result } = problem
   const { a, b } = values
+  const formatNumber = (value) => {
+    if (!Number.isFinite(value)) return value
+    return Number(value.toFixed(6)).toString().replace('.', ',')
+  }
 
   const operators = {
     addition: '+',
@@ -15,9 +19,9 @@ function ProblemDisplay({ problem, feedback, inputValue, onInputChange, onSubmit
     <div className="flex flex-col items-center">
       {/* Fråga med input/svar inline */}
       <div className="text-5xl font-bold text-gray-800 flex items-center">
-        <span>{a}</span>
+        <span>{formatNumber(a)}</span>
         <span className="mx-3 text-blue-600">{operators[type]}</span>
-        <span>{b}</span>
+        <span>{formatNumber(b)}</span>
         <span className="mx-3">=</span>
 
         {/* Input eller svar - fast höjd */}
@@ -28,7 +32,7 @@ function ProblemDisplay({ problem, feedback, inputValue, onInputChange, onSubmit
               type="text"
               inputMode="numeric"
               value={inputValue}
-              onChange={(e) => onInputChange(e.target.value.replace(/[^0-9-]/g, ''))}
+              onChange={(e) => onInputChange(e.target.value.replace(/[^0-9,.-]/g, ''))}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && inputValue.trim() !== '') {
                   onSubmit()
@@ -39,7 +43,7 @@ function ProblemDisplay({ problem, feedback, inputValue, onInputChange, onSubmit
               autoComplete="off"
             />
           ) : (
-            <span className="text-green-500">{result}</span>
+            <span className="text-green-500">{formatNumber(result)}</span>
           )}
         </div>
       </div>
@@ -48,7 +52,7 @@ function ProblemDisplay({ problem, feedback, inputValue, onInputChange, onSubmit
       <div className="h-8 mt-2">
         {feedback && !feedback.correct && (
           <span className="text-lg text-gray-400 line-through">
-            Du svarade: {feedback.studentAnswer}
+            Du svarade: {formatNumber(feedback.studentAnswer)}
           </span>
         )}
       </div>

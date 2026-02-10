@@ -36,6 +36,8 @@ Varje elev har ett unikt 6-teckens ID (t.ex. ABC123). Nya elever skapas automati
 ## Phase 1 (nuvarande)
 
 - Addition (1-3 siffror, med/utan tiövergang)
+- Multiplikation (stegvis introduktion, upp till 2-siffrigt * 3-siffrigt)
+- Decimalmultiplikation (1-2 decimaler)
 - Adaptiv svårighet
 - Enkel elevprofil
 - Lärardashboard med översikt

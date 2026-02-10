@@ -41,7 +41,7 @@ export function createStudentProfile(studentId, name, grade = 4) {
  * Lägg till problemresultat i profil
  */
 export function addProblemResult(profile, problem, studentAnswer, timeSpent) {
-  const correct = studentAnswer === problem.result
+  const correct = isAnswerCorrect(studentAnswer, problem.result)
 
   const result = {
     problemId: problem.id,
@@ -68,6 +68,16 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent) {
   updateStats(profile)
 
   return { correct, result }
+}
+
+/**
+ * Tolerant jämförelse för decimaltal
+ */
+function isAnswerCorrect(studentAnswer, expectedAnswer) {
+  if (!Number.isFinite(studentAnswer) || !Number.isFinite(expectedAnswer)) {
+    return false
+  }
+  return Math.abs(studentAnswer - expectedAnswer) < 0.0001
 }
 
 /**

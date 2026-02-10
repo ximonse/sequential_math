@@ -119,12 +119,32 @@ function calculateTrend(problems) {
  */
 function formatTypeName(type) {
   const names = {
-    'add_1digit_no_carry': '1-siffrig +',
-    'add_1digit_with_carry': '1-siffrig + (tiövergang)',
-    'add_2digit_no_carry': '2-siffrig +',
-    'add_2digit_with_carry': '2-siffrig + (tiövergang)',
-    'add_3digit_no_carry': '3-siffrig +',
-    'add_3digit_with_carry': '3-siffrig + (tiövergang)'
+    add_1d_1d_no_carry: '1d+1d utan övergång',
+    add_1d_1d_carry: '1d+1d med övergång',
+    add_1d_2d_no_carry: '1d+2d utan övergång',
+    add_1d_2d_carry: '1d+2d med övergång',
+    add_2d_2d_no_carry: '2d+2d utan övergång',
+    add_2d_2d_carry: '2d+2d med övergång',
+    add_1d_3d_no_carry: '1d+3d utan övergång',
+    add_1d_3d_carry: '1d+3d med övergång',
+    add_2d_3d_no_carry: '2d+3d utan övergång',
+    add_2d_3d_carry: '2d+3d med övergång',
+    add_3d_3d_no_carry: '3d+3d utan övergång',
+    add_3d_3d_carry: '3d+3d med övergång',
+    mul_1d_1d_easy: '1d×1d enkel',
+    mul_1d_1d_full: '1d×1d full',
+    mul_1d_2d_no_carry: '1d×2d utan carry',
+    mul_1d_2d_with_carry: '1d×2d med carry',
+    mul_2d_2d_tens_friendly: '2d×2d tiotalsvänlig',
+    mul_2d_2d_small: '2d×2d små tal',
+    mul_2d_2d_full: '2d×2d full',
+    mul_1d_3d: '1d×3d',
+    mul_2d_3d_guided: '2d×3d guidad',
+    mul_2d_3d_full: '2d×3d full',
+    mul_dec_1dp_1d: 'decimal(1dp)×1d',
+    mul_dec_1dp_1dp: 'decimal(1dp)×decimal(1dp)',
+    mul_dec_2dp_1d: 'decimal(2dp)×1d',
+    mul_dec_2dp_1dp: 'decimal(2dp)×decimal(1dp)'
   }
   return names[type] || type
 }

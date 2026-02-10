@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { studentExists, createAndSaveProfile } from '../lib/storage'
 
 function Login() {
   const [studentId, setStudentId] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   const handleLogin = (e) => {
     e.preventDefault()
@@ -28,7 +29,11 @@ function Login() {
       createAndSaveProfile(id, `Elev ${id}`, 4)
     }
 
-    navigate(`/student/${id}`)
+    const assignmentId = searchParams.get('assignment')
+    const target = assignmentId
+      ? `/student/${id}?assignment=${encodeURIComponent(assignmentId)}`
+      : `/student/${id}`
+    navigate(target)
   }
 
   const handleTeacherLogin = () => {

@@ -3,9 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import { getAllProfiles } from '../../lib/storage'
 import { logoutTeacher } from '../../lib/teacherAuth'
 import { evaluateAnswerQuality } from '../../lib/answerQuality'
+import { buildAssignmentLink, createAssignment, getAssignments } from '../../lib/assignments'
 
 function Dashboard() {
   const [students, setStudents] = useState([])
+  const [assignments, setAssignments] = useState([])
+  const [copiedId, setCopiedId] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -17,10 +20,12 @@ function Dashboard() {
       return bLast - aLast
     })
     setStudents(profiles)
+    setAssignments(getAssignments())
   }, [])
 
   const handleRefresh = () => {
     setStudents(getAllProfiles())
+    setAssignments(getAssignments())
   }
 
   const handleLogout = () => {
@@ -44,6 +49,19 @@ function Dashboard() {
   }
 
   const tableRows = students.map(student => buildStudentRow(student))
+
+  const handleCreatePreset = (presetKey) => {
+    const preset = getPresetConfig(presetKey)
+    createAssignment(preset)
+    setAssignments(getAssignments())
+  }
+
+  const handleCopyAssignmentLink = async (assignmentId) => {
+    const link = buildAssignmentLink(assignmentId)
+    await navigator.clipboard.writeText(link)
+    setCopiedId(assignmentId)
+    window.setTimeout(() => setCopiedId(''), 1200)
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
@@ -97,6 +115,53 @@ function Dashboard() {
             <p className="text-sm text-gray-500">Totalt problem</p>
             <p className="text-3xl font-bold text-purple-600">{classStats.totalProblems}</p>
           </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4 mb-8">
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">Uppdrag via länk</h2>
+          <div className="flex flex-wrap gap-2 mb-4">
+            <button
+              onClick={() => handleCreatePreset('addition')}
+              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
+            >
+              Nytt: Bara addition
+            </button>
+            <button
+              onClick={() => handleCreatePreset('multiplication')}
+              className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm"
+            >
+              Nytt: Bara multiplikation
+            </button>
+            <button
+              onClick={() => handleCreatePreset('mixed')}
+              className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm"
+            >
+              Nytt: Kombination
+            </button>
+          </div>
+
+          {assignments.length === 0 ? (
+            <p className="text-sm text-gray-500">Inga uppdrag skapade ännu.</p>
+          ) : (
+            <div className="space-y-2">
+              {assignments.slice(0, 10).map(assignment => (
+                <div key={assignment.id} className="flex flex-wrap items-center justify-between gap-2 border rounded p-2">
+                  <div className="text-sm">
+                    <p className="font-medium text-gray-800">{assignment.title}</p>
+                    <p className="text-gray-500">
+                      {assignment.problemTypes.join(', ')} | Nivå {assignment.minLevel}-{assignment.maxLevel}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleCopyAssignmentLink(assignment.id)}
+                    className="px-3 py-1.5 bg-gray-800 hover:bg-black text-white rounded text-xs"
+                  >
+                    {copiedId === assignment.id ? 'Kopierad' : 'Kopiera länk'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Students table */}
@@ -161,6 +226,36 @@ function Dashboard() {
       </div>
     </div>
   )
+}
+
+function getPresetConfig(presetKey) {
+  if (presetKey === 'addition') {
+    return {
+      title: 'Addition nivå 1-8',
+      problemTypes: ['addition'],
+      minLevel: 1,
+      maxLevel: 8,
+      targetCount: 20
+    }
+  }
+
+  if (presetKey === 'multiplication') {
+    return {
+      title: 'Multiplikation nivå 3-10',
+      problemTypes: ['multiplication'],
+      minLevel: 3,
+      maxLevel: 10,
+      targetCount: 20
+    }
+  }
+
+  return {
+    title: 'Kombination nivå 2-10',
+    problemTypes: ['addition', 'multiplication'],
+    minLevel: 2,
+    maxLevel: 10,
+    targetCount: 25
+  }
 }
 
 function buildStudentRow(student) {

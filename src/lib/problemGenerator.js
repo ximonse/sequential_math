@@ -216,9 +216,13 @@ export function generateByDifficulty(level) {
  * Generera problem baserat på svårighetsgrad med valfri styrning av räknesätt
  */
 export function generateByDifficultyWithOptions(level, options = {}) {
-  const { preferredType = null } = options
+  const { preferredType = null, allowedTypes = null } = options
 
-  const levelCandidates = allTemplates.filter(
+  const byTypeCandidates = Array.isArray(allowedTypes) && allowedTypes.length > 0
+    ? allTemplates.filter(t => allowedTypes.includes(t.type))
+    : allTemplates
+
+  const levelCandidates = byTypeCandidates.filter(
     t => t.difficulty.conceptual_level === level
   )
 
@@ -239,8 +243,8 @@ export function generateByDifficultyWithOptions(level, options = {}) {
 
   // Fallback: närmaste nivå, helst samma räknesätt om önskat
   const pool = preferredType
-    ? allTemplates.filter(t => t.type === preferredType)
-    : allTemplates
+    ? byTypeCandidates.filter(t => t.type === preferredType)
+    : byTypeCandidates
 
   const closest = pool.reduce((prev, curr) => {
     const prevDiff = Math.abs(prev.difficulty.conceptual_level - level)

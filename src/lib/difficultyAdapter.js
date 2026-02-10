@@ -68,46 +68,60 @@ export function adjustDifficulty(profile, wasCorrect) {
 /**
  * Välj nästa problem baserat på profil
  */
-export function selectNextProblem(profile) {
+export function selectNextProblem(profile, options = {}) {
   ensureDifficultyMeta(profile)
   const recentSuccess = getRecentSuccessRate(profile, 5)
   const errors = getConsecutiveErrors(profile)
-  const roundedDifficulty = Math.round(profile.currentDifficulty)
+  const roundedDifficulty = clampLevelToRange(Math.round(profile.currentDifficulty), options.levelRange)
   const preferredType = chooseProblemType(profile, recentSuccess, errors)
   const warmupLevel = getWarmupLevel(profile, roundedDifficulty)
+  const allowedTypes = normalizeAllowedTypes(options.allowedTypes)
+  const assignmentType = allowedTypes.length === 1 ? allowedTypes[0] : null
 
   // Efter frånvaro: börja lite enklare för att nå 80/20-zonen snabbare.
   if (warmupLevel !== null) {
-    return generateByDifficultyWithOptions(warmupLevel, { preferredType: 'addition' })
+    return generateByDifficultyWithOptions(warmupLevel, {
+      preferredType: assignmentType || 'addition',
+      allowedTypes
+    })
   }
 
   // Om 3+ fel i rad → ge lättare problem ("easy win")
   if (errors >= 3) {
-    const easyLevel = Math.max(1, roundedDifficulty - 1)
-    return generateByDifficultyWithOptions(easyLevel, { preferredType: 'addition' })
+    const easyLevel = clampLevelToRange(Math.max(1, roundedDifficulty - 1), options.levelRange)
+    return generateByDifficultyWithOptions(easyLevel, {
+      preferredType: assignmentType || 'addition',
+      allowedTypes
+    })
   }
 
   // Om för lätt (>92% success) → öka
   if (recentSuccess > 0.92 && profile.recentProblems.length >= 6) {
-    const harderLevel = Math.min(12, roundedDifficulty + 1)
-    return generateByDifficultyWithOptions(harderLevel, { preferredType })
+    const harderLevel = clampLevelToRange(Math.min(12, roundedDifficulty + 1), options.levelRange)
+    return generateByDifficultyWithOptions(harderLevel, { preferredType, allowedTypes })
   }
 
   // Om för svårt (<55% success) → minska
   if (recentSuccess < 0.55 && profile.recentProblems.length >= 6) {
-    const easierLevel = Math.max(1, roundedDifficulty - 1)
-    return generateByDifficultyWithOptions(easierLevel, { preferredType: 'addition' })
+    const easierLevel = clampLevelToRange(Math.max(1, roundedDifficulty - 1), options.levelRange)
+    return generateByDifficultyWithOptions(easierLevel, {
+      preferredType: assignmentType || 'addition',
+      allowedTypes
+    })
   }
 
   // Hjälp elever att komma loss från nivå 1 med försiktig utmaning
   if (roundedDifficulty === 1 && recentSuccess >= 0.6 && profile.recentProblems.length >= 8) {
     if (Math.random() < 0.3) {
-      return generateByDifficultyWithOptions(2, { preferredType: 'addition' })
+      return generateByDifficultyWithOptions(clampLevelToRange(2, options.levelRange), {
+        preferredType: assignmentType || 'addition',
+        allowedTypes
+      })
     }
   }
 
   // Normal: generera på nuvarande nivå
-  return generateByDifficultyWithOptions(roundedDifficulty, { preferredType })
+  return generateByDifficultyWithOptions(roundedDifficulty, { preferredType, allowedTypes })
 }
 
 function ensureDifficultyMeta(profile) {
@@ -161,6 +175,18 @@ function chooseProblemType(profile, recentSuccess, errors) {
   if (recentSuccess >= 0.85) multiplicationChance += 0.1
 
   return Math.random() < multiplicationChance ? 'multiplication' : 'addition'
+}
+
+function normalizeAllowedTypes(allowedTypes) {
+  if (!Array.isArray(allowedTypes) || allowedTypes.length === 0) return null
+  return allowedTypes.filter(Boolean)
+}
+
+function clampLevelToRange(level, levelRange) {
+  if (!Array.isArray(levelRange) || levelRange.length !== 2) return level
+  const minLevel = Math.max(1, Math.min(12, Number(levelRange[0]) || 1))
+  const maxLevel = Math.max(minLevel, Math.min(12, Number(levelRange[1]) || 12))
+  return Math.max(minLevel, Math.min(maxLevel, level))
 }
 
 /**

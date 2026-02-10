@@ -1,17 +1,19 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import ProblemDisplay from './ProblemDisplay'
 import PongGame from './PongGame'
 import MathScratchpad from './MathScratchpad'
 import { getOrCreateProfile, saveProfile } from '../../lib/storage'
 import { addProblemResult, getCurrentStreak } from '../../lib/studentProfile'
 import { selectNextProblem, adjustDifficulty, shouldSuggestBreak } from '../../lib/difficultyAdapter'
+import { getAssignmentById } from '../../lib/assignments'
 
 const AUTO_CONTINUE_DELAY = 3000 // 3 sekunder
 
 function StudentSession() {
   const { studentId } = useParams()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   const [profile, setProfile] = useState(null)
   const [currentProblem, setCurrentProblem] = useState(null)
@@ -22,7 +24,10 @@ function StudentSession() {
   const [showBreakSuggestion, setShowBreakSuggestion] = useState(false)
   const [showPong, setShowPong] = useState(false)
   const [showScratchpad, setShowScratchpad] = useState(false)
+  const [sessionAssignment, setSessionAssignment] = useState(null)
   const inputRef = useRef(null)
+
+  const assignmentId = searchParams.get('assignment')
 
   // Ladda profil vid start
   useEffect(() => {
@@ -30,14 +35,23 @@ function StudentSession() {
     setProfile(loadedProfile)
   }, [studentId])
 
+  useEffect(() => {
+    if (!assignmentId) {
+      setSessionAssignment(null)
+      return
+    }
+    const assignment = getAssignmentById(assignmentId)
+    setSessionAssignment(assignment)
+  }, [assignmentId])
+
   // Generera första problemet när profil är laddad
   useEffect(() => {
     if (profile && !currentProblem && !feedback) {
-      const problem = selectNextProblem(profile)
+      const problem = selectNextProblem(profile, getSessionRules(sessionAssignment))
       setCurrentProblem(problem)
       setStartTime(Date.now())
     }
-  }, [profile, currentProblem, feedback])
+  }, [profile, currentProblem, feedback, sessionAssignment])
 
   // Fokusera input när nytt problem visas
   useEffect(() => {
@@ -55,12 +69,12 @@ function StudentSession() {
   // Gå till nästa problem
   const goToNextProblem = useCallback(() => {
     if (!profile) return
-    const nextProblem = selectNextProblem(profile)
+    const nextProblem = selectNextProblem(profile, getSessionRules(sessionAssignment))
     setCurrentProblem(nextProblem)
     setAnswer('')
     setFeedback(null)
     setStartTime(Date.now())
-  }, [profile])
+  }, [profile, sessionAssignment])
 
   // Auto-fortsätt efter 3 sekunder när feedback visas
   useEffect(() => {
@@ -235,6 +249,8 @@ function StudentSession() {
 
         {/* Main content */}
         <div className="py-8">
+          <SessionModeBanner assignment={sessionAssignment} />
+
           <ProblemDisplay
             problem={currentProblem}
             feedback={feedback}
@@ -311,6 +327,30 @@ function StudentSession() {
       </div>
     </div>
   )
+}
+
+function SessionModeBanner({ assignment }) {
+  if (!assignment) {
+    return (
+      <div className="mb-5 bg-white border border-blue-100 text-blue-700 rounded-lg px-4 py-2 text-sm">
+        Läge: Fri träning
+      </div>
+    )
+  }
+
+  return (
+    <div className="mb-5 bg-white border border-indigo-200 text-indigo-700 rounded-lg px-4 py-2 text-sm">
+      Läge: Uppdrag | {assignment.title} | Nivå {assignment.minLevel}-{assignment.maxLevel}
+    </div>
+  )
+}
+
+function getSessionRules(assignment) {
+  if (!assignment) return {}
+  return {
+    allowedTypes: assignment.problemTypes,
+    levelRange: [assignment.minLevel, assignment.maxLevel]
+  }
 }
 
 export default StudentSession

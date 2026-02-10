@@ -197,7 +197,8 @@ export function generateProblem(template, maxAttempts = 100) {
     let finalB = b
     let termOrder = 'equal'
 
-    if (template.difficulty.procedural.mixed_digits) {
+    const isCommutative = type === 'addition' || type === 'multiplication'
+    if (template.difficulty.procedural.mixed_digits && isCommutative) {
       // Slumpa om vi ska ha stort eller litet tal först
       const bigFirst = Math.random() < 0.5
       if (a > b) {

@@ -5,8 +5,14 @@
 import { additionTemplates } from '../data/templates/additionTemplates'
 import { multiplicationTemplates } from '../data/templates/multiplicationTemplates'
 import { subtractionTemplates } from '../data/templates/subtractionTemplates'
+import { divisionTemplates } from '../data/templates/divisionTemplates'
 
-const allTemplates = [...additionTemplates, ...subtractionTemplates, ...multiplicationTemplates]
+const allTemplates = [
+  ...additionTemplates,
+  ...subtractionTemplates,
+  ...multiplicationTemplates,
+  ...divisionTemplates
+]
 
 /**
  * Generera ett slumptal inom intervall
@@ -171,6 +177,13 @@ export function generateProblem(template, maxAttempts = 100) {
       const problemHasBorrow = countBorrows(a, b) > 0
       if (difficulty.procedural.requires_borrow && !problemHasBorrow) continue
       if (!difficulty.procedural.requires_borrow && problemHasBorrow) continue
+    }
+
+    // 2c. Exakt division (utan rest)
+    if (type === 'division') {
+      if (b === 0) continue
+      const exactDivisionRequired = difficulty.procedural?.exact_division
+      if (exactDivisionRequired && !Number.isInteger(a / b)) continue
     }
 
     // 3. Inte trivialt

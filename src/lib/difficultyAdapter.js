@@ -156,7 +156,7 @@ function getProblemsCompletedToday(profile) {
 }
 
 /**
- * Subtraktion/multiplikation introduceras stegvis:
+ * Subtraktion/multiplikation/division introduceras stegvis:
  * - endast efter viss stabilitet
  * - lägre sannolikhet för kämpande elev
  */
@@ -186,6 +186,14 @@ function chooseProblemType(profile, recentSuccess, errors) {
     if (recentSuccess >= 0.85) mulWeight += 0.05
     options.push({ type: 'multiplication', weight: mulWeight })
     options[0].weight -= 0.1
+  }
+
+  if (difficulty >= 7 && attempts >= 22) {
+    let divWeight = 0.1
+    if (difficulty >= 10) divWeight = 0.14
+    if (recentSuccess >= 0.88) divWeight += 0.04
+    options.push({ type: 'division', weight: divWeight })
+    options[0].weight -= 0.08
   }
 
   const normalized = normalizeWeights(options)

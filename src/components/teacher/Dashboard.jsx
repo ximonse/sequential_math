@@ -203,6 +203,12 @@ function Dashboard() {
               Nytt: Bara subtraktion
             </button>
             <button
+              onClick={() => handleCreatePreset('division')}
+              className="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded text-sm"
+            >
+              Nytt: Bara division
+            </button>
+            <button
               onClick={() => handleCreatePreset('mixed')}
               className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm"
             >
@@ -394,9 +400,19 @@ function getPresetConfig(presetKey) {
     }
   }
 
+  if (presetKey === 'division') {
+    return {
+      title: 'Division nivå 3-10',
+      problemTypes: ['division'],
+      minLevel: 3,
+      maxLevel: 10,
+      targetCount: 18
+    }
+  }
+
   return {
     title: 'Kombination nivå 2-10',
-    problemTypes: ['addition', 'subtraction', 'multiplication'],
+    problemTypes: ['addition', 'subtraction', 'multiplication', 'division'],
     minLevel: 2,
     maxLevel: 10,
     targetCount: 25

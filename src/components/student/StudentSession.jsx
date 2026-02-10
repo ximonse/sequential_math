@@ -4,7 +4,7 @@ import ProblemDisplay from './ProblemDisplay'
 import PongGame from './PongGame'
 import MathScratchpad from './MathScratchpad'
 import { getOrCreateProfile, saveProfile } from '../../lib/storage'
-import { addProblemResult, getCurrentStreak } from '../../lib/studentProfile'
+import { addProblemResult, getCurrentStreak, getMasteryOverview } from '../../lib/studentProfile'
 import { selectNextProblem, adjustDifficulty, shouldSuggestBreak } from '../../lib/difficultyAdapter'
 import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 
@@ -218,6 +218,7 @@ function StudentSession() {
   }
 
   const streak = getCurrentStreak(profile)
+  const mastery = getMasteryOverview(profile)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8">
@@ -324,7 +325,32 @@ function StudentSession() {
             />
           </div>
         </div>
+
+        <div className="mt-6 bg-white rounded-lg border border-gray-200 p-4">
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">Du har klarat</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <MasteryRow label="Addition" levels={mastery.addition} />
+            <MasteryRow label="Multiplikation" levels={mastery.multiplication} />
+            <MasteryRow label="Subtraktion" levels={mastery.subtraction} />
+            <MasteryRow label="Division" levels={mastery.division} />
+          </div>
+        </div>
       </div>
+    </div>
+  )
+}
+
+function MasteryRow({ label, levels }) {
+  const hasLevels = Array.isArray(levels) && levels.length > 0
+
+  return (
+    <div className="flex justify-between items-center rounded bg-gray-50 px-3 py-2">
+      <span className="text-gray-600">{label}</span>
+      {hasLevels ? (
+        <span className="font-semibold text-gray-800">Nivå {levels.join(', ')}</span>
+      ) : (
+        <span className="text-gray-400">Inte ännu</span>
+      )}
     </div>
   )
 }

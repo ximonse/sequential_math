@@ -177,3 +177,58 @@ export function getCurrentStreak(profile) {
   }
   return count
 }
+
+/**
+ * Summera elevens stabila nivåer per räknesätt
+ * Regel: minst 5 försök på nivån och minst 80% rätt.
+ */
+export function getMasteryOverview(profile) {
+  const buckets = {}
+
+  for (const result of profile.recentProblems) {
+    const operation = inferOperation(result.problemType)
+    const level = result.difficulty?.conceptual_level
+    if (!level) continue
+
+    const key = `${operation}:${level}`
+    if (!buckets[key]) {
+      buckets[key] = {
+        operation,
+        level,
+        attempts: 0,
+        correct: 0
+      }
+    }
+    buckets[key].attempts++
+    if (result.correct) buckets[key].correct++
+  }
+
+  const mastery = {
+    addition: [],
+    multiplication: [],
+    subtraction: [],
+    division: []
+  }
+
+  for (const entry of Object.values(buckets)) {
+    if (entry.attempts < 5) continue
+    const success = entry.correct / entry.attempts
+    if (success >= 0.8) {
+      mastery[entry.operation]?.push(entry.level)
+    }
+  }
+
+  for (const op of Object.keys(mastery)) {
+    mastery[op] = [...new Set(mastery[op])].sort((a, b) => a - b)
+  }
+
+  return mastery
+}
+
+function inferOperation(problemType = '') {
+  if (problemType.startsWith('add_')) return 'addition'
+  if (problemType.startsWith('mul_')) return 'multiplication'
+  if (problemType.startsWith('sub_')) return 'subtraction'
+  if (problemType.startsWith('div_')) return 'division'
+  return 'addition'
+}

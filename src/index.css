@@ -1,1 +1,252 @@
 @import "tailwindcss";
+
+:root {
+  --bg-from: #eef4ff;
+  --bg-mid: #f5f8ff;
+  --bg-to: #f6fffa;
+  --surface: #ffffff;
+  --surface-soft: #f3f6fb;
+  --surface-strong: #e8eef9;
+  --border: #d5deef;
+  --text-main: #1f2937;
+  --text-muted: #4b5563;
+  --text-faint: #6b7280;
+  --accent: #2563eb;
+  --accent-2: #16a34a;
+  --danger: #dc2626;
+  --shadow-color: rgba(37, 99, 235, 0.12);
+}
+
+body {
+  color: var(--text-main);
+  background:
+    radial-gradient(circle at 20% -10%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 40%),
+    linear-gradient(140deg, var(--bg-from), var(--bg-mid) 40%, var(--bg-to));
+  min-height: 100vh;
+}
+
+.theme-light {
+  --bg-from: #eef4ff;
+  --bg-mid: #f5f8ff;
+  --bg-to: #f6fffa;
+  --surface: #ffffff;
+  --surface-soft: #f3f6fb;
+  --surface-strong: #e8eef9;
+  --border: #d5deef;
+  --text-main: #1f2937;
+  --text-muted: #4b5563;
+  --text-faint: #6b7280;
+  --accent: #2563eb;
+  --accent-2: #16a34a;
+  --danger: #dc2626;
+  --shadow-color: rgba(37, 99, 235, 0.12);
+}
+
+.theme-dark {
+  --bg-from: #0b1220;
+  --bg-mid: #121b2f;
+  --bg-to: #1a1028;
+  --surface: #131c30;
+  --surface-soft: #1a2540;
+  --surface-strong: #243151;
+  --border: #33446d;
+  --text-main: #e5ebff;
+  --text-muted: #b8c5ea;
+  --text-faint: #91a0cd;
+  --accent: #60a5fa;
+  --accent-2: #34d399;
+  --danger: #f87171;
+  --shadow-color: rgba(15, 23, 42, 0.45);
+}
+
+.theme-dark-lime {
+  --bg-from: #0b130c;
+  --bg-mid: #121b14;
+  --bg-to: #1e1520;
+  --surface: #111d15;
+  --surface-soft: #1a2a1f;
+  --surface-strong: #273a2f;
+  --border: #3d5a45;
+  --text-main: #ecffe9;
+  --text-muted: #d1f2c8;
+  --text-faint: #a4c89d;
+  --accent: #a3e635;
+  --accent-2: #bef264;
+  --danger: #fb7185;
+  --shadow-color: rgba(11, 19, 12, 0.52);
+}
+
+.theme-psychedelic {
+  --bg-from: #0f0220;
+  --bg-mid: #1d0a3d;
+  --bg-to: #122251;
+  --surface: rgba(14, 8, 28, 0.68);
+  --surface-soft: rgba(24, 12, 45, 0.72);
+  --surface-strong: rgba(46, 19, 66, 0.76);
+  --border: rgba(157, 78, 221, 0.5);
+  --text-main: #fff7ff;
+  --text-muted: #f2d6ff;
+  --text-faint: #ddbcff;
+  --accent: #ff3ea5;
+  --accent-2: #00e5ff;
+  --danger: #ff6f7f;
+  --shadow-color: rgba(255, 62, 165, 0.35);
+}
+
+@keyframes psychedelic-pulse {
+  0% { filter: hue-rotate(0deg) saturate(1); }
+  50% { filter: hue-rotate(32deg) saturate(1.2); }
+  100% { filter: hue-rotate(0deg) saturate(1); }
+}
+
+@keyframes psychedelic-move {
+  0% { transform: translate3d(-5%, -5%, 0) scale(1.05); }
+  50% { transform: translate3d(6%, 4%, 0) scale(1.1); }
+  100% { transform: translate3d(-5%, -5%, 0) scale(1.05); }
+}
+
+body.theme-psychedelic::before {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(0, 229, 255, 0.3), transparent 25%),
+    radial-gradient(circle at 80% 10%, rgba(255, 62, 165, 0.32), transparent 26%),
+    radial-gradient(circle at 68% 78%, rgba(163, 230, 53, 0.22), transparent 30%),
+    radial-gradient(circle at 18% 75%, rgba(157, 78, 221, 0.32), transparent 28%);
+  animation: psychedelic-pulse 9s ease-in-out infinite, psychedelic-move 14s ease-in-out infinite;
+}
+
+.theme-app-shell {
+  color: var(--text-main);
+}
+
+.theme-switcher {
+  background: var(--surface);
+  color: var(--text-main);
+  border-color: var(--border);
+  box-shadow: 0 8px 28px var(--shadow-color);
+}
+
+.theme-switcher:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  outline-offset: 2px;
+}
+
+body[class*="theme-"] .bg-white {
+  background-color: var(--surface) !important;
+}
+
+body[class*="theme-"] .bg-gray-50,
+body[class*="theme-"] .bg-gray-100,
+body[class*="theme-"] .bg-blue-50,
+body[class*="theme-"] .bg-green-50 {
+  background-color: var(--surface-soft) !important;
+}
+
+body[class*="theme-"] .bg-gray-200,
+body[class*="theme-"] .bg-gray-300 {
+  background-color: var(--surface-strong) !important;
+}
+
+body[class*="theme-"] .border,
+body[class*="theme-"] .border-gray-100,
+body[class*="theme-"] .border-gray-200,
+body[class*="theme-"] .border-gray-300,
+body[class*="theme-"] .border-blue-100,
+body[class*="theme-"] .border-indigo-200,
+body[class*="theme-"] .border-emerald-200,
+body[class*="theme-"] .border-red-200 {
+  border-color: var(--border) !important;
+}
+
+body[class*="theme-"] .text-gray-800,
+body[class*="theme-"] .text-gray-700,
+body[class*="theme-"] .text-gray-600 {
+  color: var(--text-main) !important;
+}
+
+body[class*="theme-"] .text-gray-500,
+body[class*="theme-"] .text-gray-400,
+body[class*="theme-"] .text-gray-300 {
+  color: var(--text-muted) !important;
+}
+
+body[class*="theme-"] .text-blue-600,
+body[class*="theme-"] .text-blue-700 {
+  color: var(--accent) !important;
+}
+
+body[class*="theme-"] .text-green-600,
+body[class*="theme-"] .text-green-700 {
+  color: var(--accent-2) !important;
+}
+
+body[class*="theme-"] .text-red-600,
+body[class*="theme-"] .text-red-700,
+body[class*="theme-"] .text-red-500 {
+  color: var(--danger) !important;
+}
+
+body[class*="theme-"] .shadow,
+body[class*="theme-"] .shadow-2xl,
+body[class*="theme-"] .shadow-md {
+  box-shadow: 0 10px 30px var(--shadow-color) !important;
+}
+
+body[class*="theme-"] .bg-blue-600,
+body[class*="theme-"] .bg-indigo-600,
+body[class*="theme-"] .bg-cyan-600,
+body[class*="theme-"] .bg-purple-600,
+body[class*="theme-"] .bg-blue-500 {
+  background-color: var(--accent) !important;
+}
+
+body[class*="theme-"] .bg-green-600,
+body[class*="theme-"] .bg-emerald-600,
+body[class*="theme-"] .bg-green-500 {
+  background-color: var(--accent-2) !important;
+}
+
+body[class*="theme-"] .bg-gray-800,
+body[class*="theme-"] .bg-gray-900 {
+  background-color: color-mix(in srgb, var(--surface-strong) 70%, black) !important;
+}
+
+body[class*="theme-"] .hover\:bg-gray-50:hover,
+body[class*="theme-"] .hover\:bg-gray-100:hover,
+body[class*="theme-"] .hover\:bg-gray-200:hover,
+body[class*="theme-"] .hover\:bg-gray-300:hover {
+  background-color: color-mix(in srgb, var(--surface-soft) 70%, var(--accent) 8%) !important;
+}
+
+body[class*="theme-"] .hover\:bg-blue-700:hover,
+body[class*="theme-"] .hover\:bg-indigo-700:hover,
+body[class*="theme-"] .hover\:bg-purple-700:hover,
+body[class*="theme-"] .hover\:bg-cyan-700:hover,
+body[class*="theme-"] .hover\:bg-green-700:hover,
+body[class*="theme-"] .hover\:bg-emerald-700:hover,
+body[class*="theme-"] .hover\:bg-blue-600:hover,
+body[class*="theme-"] .hover\:bg-green-600:hover {
+  filter: brightness(1.07);
+}
+
+body.theme-psychedelic .bg-white,
+body.theme-psychedelic .bg-gray-50,
+body.theme-psychedelic .bg-gray-100 {
+  backdrop-filter: blur(7px);
+}
+
+body[class*="theme-"] .from-blue-50,
+body[class*="theme-"] .from-blue-500 {
+  --tw-gradient-from: color-mix(in srgb, var(--bg-from) 84%, var(--accent) 16%) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: color-mix(in srgb, var(--bg-from) 8%, transparent) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from), var(--tw-gradient-to)) !important;
+}
+
+body[class*="theme-"] .to-green-50,
+body[class*="theme-"] .to-purple-600 {
+  --tw-gradient-to: color-mix(in srgb, var(--bg-to) 80%, var(--accent-2) 20%) var(--tw-gradient-to-position) !important;
+}

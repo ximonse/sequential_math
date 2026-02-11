@@ -4,6 +4,7 @@ import StudentHome from './components/student/StudentHome'
 import Dashboard from './components/teacher/Dashboard'
 import TeacherLogin from './components/teacher/TeacherLogin'
 import Login from './components/Login'
+import ThemeSwitcher from './components/shared/ThemeSwitcher'
 import { isTeacherAuthenticated } from './lib/teacherAuth'
 
 function RequireTeacherAuth({ children }) {
@@ -16,7 +17,8 @@ function RequireTeacherAuth({ children }) {
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen theme-app-shell">
+      <ThemeSwitcher />
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/student/:studentId" element={<StudentHome />} />

@@ -32,6 +32,7 @@ function StudentSession() {
   const [showScratchpad, setShowScratchpad] = useState(false)
   const [sessionAssignment, setSessionAssignment] = useState(null)
   const [sessionWarmup, setSessionWarmup] = useState(null)
+  const [sessionError, setSessionError] = useState('')
   const inputRef = useRef(null)
 
   const assignmentId = searchParams.get('assignment')
@@ -88,10 +89,9 @@ function StudentSession() {
   // Generera första problemet när profil är laddad
   useEffect(() => {
     if (profile && !currentProblem && !feedback) {
-      const problem = selectNextProblem(
-        profile,
-        getSessionRules(sessionAssignment, mode, sessionWarmup, completedThisSession)
-      )
+      const rules = getSessionRules(sessionAssignment, mode, sessionWarmup, completedThisSession)
+      const problem = safeSelectProblem(profile, rules)
+      if (!problem) return
       setCurrentProblem(problem)
       setStartTime(Date.now())
     }
@@ -113,15 +113,25 @@ function StudentSession() {
   // Gå till nästa problem
   const goToNextProblem = useCallback(() => {
     if (!profile) return
-    const nextProblem = selectNextProblem(
-      profile,
-      getSessionRules(sessionAssignment, mode, sessionWarmup, completedThisSession)
-    )
+    const rules = getSessionRules(sessionAssignment, mode, sessionWarmup, completedThisSession)
+    const nextProblem = safeSelectProblem(profile, rules)
+    if (!nextProblem) return
     setCurrentProblem(nextProblem)
     setAnswer('')
     setFeedback(null)
     setStartTime(Date.now())
   }, [profile, sessionAssignment, mode, sessionWarmup, completedThisSession])
+
+  const safeSelectProblem = (currentProfile, rules) => {
+    try {
+      setSessionError('')
+      return selectNextProblem(currentProfile, rules)
+    } catch (err) {
+      console.error('Problem selection failed', err)
+      setSessionError('Kunde inte ladda nästa uppgift. Försök igen.')
+      return null
+    }
+  }
 
   // Auto-fortsätt efter 3 sekunder när feedback visas
   useEffect(() => {
@@ -301,6 +311,11 @@ function StudentSession() {
         {/* Main content */}
         <div className="py-8">
           <SessionModeBanner assignment={sessionAssignment} mode={mode} />
+          {sessionError && (
+            <div className="mb-4 rounded-lg bg-red-50 text-red-700 border border-red-200 px-3 py-2 text-sm">
+              {sessionError}
+            </div>
+          )}
 
           <ProblemDisplay
             problem={currentProblem}

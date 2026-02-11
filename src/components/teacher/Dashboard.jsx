@@ -567,35 +567,37 @@ function Dashboard() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr className="text-left text-gray-600">
-                  <th className="px-4 py-3 font-semibold">Elev</th>
+                  <th className="px-4 py-0 font-semibold">Namn</th>
+                  <th className="px-4 py-0 font-semibold">ID</th>
+                  <th className="px-4 py-0 font-semibold">Klass</th>
                   {viewMode === 'daily' ? (
                     <>
-                      <th className="px-4 py-3 font-semibold">Gjort idag</th>
-                      <th className="px-4 py-3 font-semibold">Rätt/fel idag</th>
-                      <th className="px-4 py-3 font-semibold">Kämpar med idag</th>
-                      <th className="px-4 py-3 font-semibold">Svarslängd idag</th>
-                      <th className="px-4 py-3 font-semibold">Senast aktiv</th>
-                      <th className="px-4 py-3 font-semibold text-right">Åtgärd</th>
+                      <th className="px-4 py-0 font-semibold">Gjort idag</th>
+                      <th className="px-4 py-0 font-semibold">Rätt/fel idag</th>
+                      <th className="px-4 py-0 font-semibold">Kämpar med idag</th>
+                      <th className="px-4 py-0 font-semibold">Svarslängd idag</th>
+                      <th className="px-4 py-0 font-semibold">Senast aktiv</th>
+                      <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
                     </>
                   ) : viewMode === 'weekly' ? (
                     <>
-                      <th className="px-4 py-3 font-semibold">Gjort denna vecka</th>
-                      <th className="px-4 py-3 font-semibold">Aktiv tid</th>
-                      <th className="px-4 py-3 font-semibold">Rätt/fel vecka</th>
-                      <th className="px-4 py-3 font-semibold">Kämpar med vecka</th>
-                      <th className="px-4 py-3 font-semibold">Svarslängd vecka</th>
-                      <th className="px-4 py-3 font-semibold">Senast aktiv</th>
-                      <th className="px-4 py-3 font-semibold text-right">Åtgärd</th>
+                      <th className="px-4 py-0 font-semibold">Gjort denna vecka</th>
+                      <th className="px-4 py-0 font-semibold">Aktiv tid</th>
+                      <th className="px-4 py-0 font-semibold">Rätt/fel vecka</th>
+                      <th className="px-4 py-0 font-semibold">Kämpar med vecka</th>
+                      <th className="px-4 py-0 font-semibold">Svarslängd vecka</th>
+                      <th className="px-4 py-0 font-semibold">Senast aktiv</th>
+                      <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
                     </>
                   ) : (
                     <>
-                      <th className="px-4 py-3 font-semibold">Försök</th>
-                      <th className="px-4 py-3 font-semibold">Rätt</th>
-                      <th className="px-4 py-3 font-semibold">Rimlighet</th>
-                      <th className="px-4 py-3 font-semibold">Medelavvikelse</th>
-                      <th className="px-4 py-3 font-semibold">Trend</th>
-                      <th className="px-4 py-3 font-semibold">Senast aktiv</th>
-                      <th className="px-4 py-3 font-semibold text-right">Åtgärd</th>
+                      <th className="px-4 py-0 font-semibold">Försök</th>
+                      <th className="px-4 py-0 font-semibold">Rätt</th>
+                      <th className="px-4 py-0 font-semibold">Rimlighet</th>
+                      <th className="px-4 py-0 font-semibold">Medelavvikelse</th>
+                      <th className="px-4 py-0 font-semibold">Trend</th>
+                      <th className="px-4 py-0 font-semibold">Senast aktiv</th>
+                      <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
                     </>
                   )}
                 </tr>
@@ -603,20 +605,22 @@ function Dashboard() {
               <tbody>
                 {visibleRows.map(row => (
                   <tr key={row.studentId} className="border-b last:border-b-0 hover:bg-gray-50">
-                    <td className="px-4 py-3">
-                      <div className={`font-semibold ${row.hasLoggedIn ? 'text-green-700' : 'text-gray-800'}`}>{row.name}</div>
-                      <div className="text-xs text-gray-400 font-mono">{row.studentId}</div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        Klass: {row.className || '-'}
-                      </div>
+                    <td className={`px-4 py-0 font-semibold ${row.hasLoggedIn ? 'text-green-700' : 'text-gray-800'}`}>
+                      {row.name}
+                    </td>
+                    <td className="px-4 py-0 text-xs text-gray-400 font-mono">
+                      {row.studentId}
+                    </td>
+                    <td className="px-4 py-0 text-gray-700">
+                      {row.className || '-'}
                     </td>
                     {viewMode === 'daily' ? (
                       <>
-                        <td className="px-4 py-3 text-gray-700">
+                        <td className="px-4 py-0 text-gray-700">
                           {row.todayAttempts}
                           <div className="text-xs text-gray-500 mt-1">{row.todayOperationSummary}</div>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-0">
                           <span className={getSuccessColorClass(row.todaySuccessRate)}>
                             {row.todayCorrectCount}/{row.todayAttempts || 0}
                           </span>
@@ -624,11 +628,11 @@ function Dashboard() {
                             Fel: {row.todayWrongCount} | Rimliga fel: {row.todayReasonableWrongCount}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-gray-700">
+                        <td className="px-4 py-0 text-gray-700">
                           {row.todayStruggle
                             ? (
                               <>
-                                <div className="font-medium">{getOperationLabel(row.todayStruggle.operation)}</div>
+                                <div className="font-medium">{row.todayStruggle.skillLabel}</div>
                                 <div className="text-xs text-gray-500">
                                   {row.todayStruggle.attempts} försök, {row.todayStruggle.wrong} fel
                                 </div>
@@ -636,26 +640,26 @@ function Dashboard() {
                             )
                             : <span className="text-gray-400">-</span>}
                         </td>
-                        <td className="px-4 py-3 text-gray-700">
+                        <td className="px-4 py-0 text-gray-700">
                           {row.todayAvgAnswerLength === null
                             ? '-'
                             : `${row.todayAvgAnswerLength.toFixed(1)} tecken`}
                         </td>
-                        <td className="px-4 py-3 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
+                        <td className="px-4 py-0 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
                       </>
                     ) : viewMode === 'weekly' ? (
                       <>
-                        <td className="px-4 py-3 text-gray-700">
+                        <td className="px-4 py-0 text-gray-700">
                           {row.weekAttempts}
                           <div className="text-xs text-gray-500 mt-1">{row.weekOperationSummary}</div>
                         </td>
-                        <td className="px-4 py-3 text-gray-700">
+                        <td className="px-4 py-0 text-gray-700">
                           {formatDuration(row.weekActiveTimeSec)}
                           <div className="text-xs text-gray-500 mt-1">
                             snitt {row.weekAvgTimePerProblemSec > 0 ? `${Math.round(row.weekAvgTimePerProblemSec)}s/problem` : '-'}
                           </div>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-0">
                           <span className={getSuccessColorClass(row.weekSuccessRate)}>
                             {row.weekCorrectCount}/{row.weekAttempts || 0}
                           </span>
@@ -663,11 +667,11 @@ function Dashboard() {
                             Fel: {row.weekWrongCount} | Rimliga fel: {row.weekReasonableWrongCount}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-gray-700">
+                        <td className="px-4 py-0 text-gray-700">
                           {row.weekStruggle
                             ? (
                               <>
-                                <div className="font-medium">{getOperationLabel(row.weekStruggle.operation)}</div>
+                                <div className="font-medium">{row.weekStruggle.skillLabel}</div>
                                 <div className="text-xs text-gray-500">
                                   {row.weekStruggle.attempts} försök, {row.weekStruggle.wrong} fel
                                 </div>
@@ -675,30 +679,30 @@ function Dashboard() {
                             )
                             : <span className="text-gray-400">-</span>}
                         </td>
-                        <td className="px-4 py-3 text-gray-700">
+                        <td className="px-4 py-0 text-gray-700">
                           {row.weekAvgAnswerLength === null
                             ? '-'
                             : `${row.weekAvgAnswerLength.toFixed(1)} tecken`}
                         </td>
-                        <td className="px-4 py-3 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
+                        <td className="px-4 py-0 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
                       </>
                     ) : (
                       <>
-                        <td className="px-4 py-3 text-gray-700">{row.attempts}</td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-0 text-gray-700">{row.attempts}</td>
+                        <td className="px-4 py-0">
                           <span className={getSuccessColorClass(row.successRate)}>
                             {row.correctCount}/{row.attempts} ({toPercent(row.successRate)})
                           </span>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-0">
                           <span className={getReasonableColorClass(row.reasonableRate)}>
                             {row.reasonableCount}/{row.attempts} ({toPercent(row.reasonableRate)})
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-gray-700">
+                        <td className="px-4 py-0 text-gray-700">
                           {row.avgRelativeError === null ? '-' : `${Math.round(row.avgRelativeError * 100)}%`}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-0">
                           {row.trend === null ? (
                             <span className="text-gray-400">-</span>
                           ) : (
@@ -707,10 +711,10 @@ function Dashboard() {
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
+                        <td className="px-4 py-0 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
                       </>
                     )}
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-0 text-right">
                       <button
                         onClick={() => handleResetStudentPassword(row.studentId)}
                         className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs"
@@ -815,10 +819,11 @@ function buildStudentRow(student) {
     .length
   const todayAvgAnswerLength = getAverageAnswerLength(todayProblems)
   const todayByOperation = summarizeByOperation(todayProblems)
+  const todayBySkill = summarizeBySkill(todayProblems)
   const todayOperationSummary = todayByOperation.length > 0
     ? todayByOperation.map(item => `${getOperationLabel(item.operation)}: ${item.attempts}`).join(' | ')
     : '-'
-  const todayStruggle = getStruggleOperation(todayByOperation)
+  const todayStruggle = getStruggleSkill(todayBySkill)
   const todayStruggleIndex = todayStruggle
     ? ((todayStruggle.wrong / Math.max(1, todayStruggle.attempts)) * 100) + todayStruggle.wrong
     : 0
@@ -838,10 +843,11 @@ function buildStudentRow(student) {
   const weekAvgTimePerProblemSec = weekAttempts > 0 ? weekActiveTimeSec / weekAttempts : 0
   const weekAvgAnswerLength = getAverageAnswerLength(weekProblems)
   const weekByOperation = summarizeByOperation(weekProblems)
+  const weekBySkill = summarizeBySkill(weekProblems)
   const weekOperationSummary = weekByOperation.length > 0
     ? weekByOperation.map(item => `${getOperationLabel(item.operation)}: ${item.attempts}`).join(' | ')
     : '-'
-  const weekStruggle = getStruggleOperation(weekByOperation)
+  const weekStruggle = getStruggleSkill(weekBySkill)
   const weekStruggleIndex = weekStruggle
     ? ((weekStruggle.wrong / Math.max(1, weekStruggle.attempts)) * 100) + weekStruggle.wrong
     : 0
@@ -913,10 +919,10 @@ function summarizeByOperation(problems) {
     .sort((a, b) => b.attempts - a.attempts)
 }
 
-function getStruggleOperation(todayByOperation) {
-  if (todayByOperation.length === 0) return null
+function getStruggleSkill(skillStats) {
+  if (skillStats.length === 0) return null
 
-  const best = [...todayByOperation].sort((a, b) => {
+  const best = [...skillStats].sort((a, b) => {
     if (a.wrong !== b.wrong) return b.wrong - a.wrong
     if (a.successRate !== b.successRate) return a.successRate - b.successRate
     return b.attempts - a.attempts
@@ -924,6 +930,50 @@ function getStruggleOperation(todayByOperation) {
 
   if (!best || best.wrong === 0) return null
   return best
+}
+
+function summarizeBySkill(problems) {
+  const stats = new Map()
+
+  for (const problem of problems) {
+    const operation = inferOperationFromProblemType(problem.problemType)
+    const rawTag = problem.skillTag || problem.problemType || operation
+    const skillKey = String(rawTag)
+    const prev = stats.get(skillKey) || {
+      operation,
+      skillKey,
+      skillLabel: formatSkillLabel(operation, skillKey),
+      attempts: 0,
+      wrong: 0
+    }
+
+    prev.attempts += 1
+    if (!problem.correct) prev.wrong += 1
+    stats.set(skillKey, prev)
+  }
+
+  return Array.from(stats.values())
+    .map(item => ({
+      ...item,
+      successRate: item.attempts > 0 ? (item.attempts - item.wrong) / item.attempts : 0
+    }))
+}
+
+function formatSkillLabel(operation, skillKey) {
+  const operationLabel = getOperationLabel(operation)
+  const normalized = String(skillKey || '')
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  if (!normalized) return operationLabel
+
+  const lower = normalized.toLowerCase()
+  if (lower.startsWith('add ') || lower.startsWith('sub ') || lower.startsWith('mul ') || lower.startsWith('div ')) {
+    return `${operationLabel} (${normalized})`
+  }
+
+  return `${operationLabel} (${normalized})`
 }
 
 function getAnswerLength(problem) {

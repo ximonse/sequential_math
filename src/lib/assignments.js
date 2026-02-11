@@ -59,9 +59,24 @@ export function getActiveAssignment() {
   return getAssignmentById(id)
 }
 
+export function deleteAssignment(assignmentId) {
+  if (!assignmentId) return
+  const next = readAssignments().filter(a => a.id !== assignmentId)
+  writeAssignments(next)
+
+  const activeId = localStorage.getItem(ACTIVE_ASSIGNMENT_KEY)
+  if (activeId === assignmentId) {
+    localStorage.removeItem(ACTIVE_ASSIGNMENT_KEY)
+  }
+}
+
+export function clearAllAssignments() {
+  writeAssignments([])
+  localStorage.removeItem(ACTIVE_ASSIGNMENT_KEY)
+}
+
 export function buildAssignmentLink(assignmentId) {
   if (!assignmentId) return ''
   const base = window.location.origin
   return `${base}/?assignment=${encodeURIComponent(assignmentId)}`
 }
-

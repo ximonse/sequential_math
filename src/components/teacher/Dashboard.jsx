@@ -11,8 +11,10 @@ import {
 import { evaluateAnswerQuality } from '../../lib/answerQuality'
 import {
   buildAssignmentLink,
+  clearAllAssignments,
   clearActiveAssignment,
   createAssignment,
+  deleteAssignment,
   getActiveAssignment,
   getAssignments,
   setActiveAssignment
@@ -95,6 +97,18 @@ function Dashboard() {
 
   const handleClearActiveForAll = () => {
     clearActiveAssignment()
+    setActiveAssignmentId('')
+  }
+
+  const handleDeleteAssignment = (assignmentId) => {
+    deleteAssignment(assignmentId)
+    setAssignments(getAssignments())
+    setActiveAssignmentId(getActiveAssignment()?.id || '')
+  }
+
+  const handleClearAllAssignments = () => {
+    clearAllAssignments()
+    setAssignments([])
     setActiveAssignmentId('')
   }
 
@@ -227,12 +241,20 @@ function Dashboard() {
                 <p className="text-xs text-gray-500">
                   Aktivt för alla: {activeAssignmentId ? activeAssignmentId : 'Ingen (fri träning)'}
                 </p>
-                <button
-                  onClick={handleClearActiveForAll}
-                  className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded text-xs"
-                >
-                  Rensa aktivt
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleClearActiveForAll}
+                    className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded text-xs"
+                  >
+                    Rensa aktivt
+                  </button>
+                  <button
+                    onClick={handleClearAllAssignments}
+                    className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
+                  >
+                    Rensa alla
+                  </button>
+                </div>
               </div>
               {assignments.slice(0, 10).map(assignment => (
                 <div
@@ -254,6 +276,12 @@ function Dashboard() {
                       className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs"
                     >
                       Aktivera för alla
+                    </button>
+                    <button
+                      onClick={() => handleDeleteAssignment(assignment.id)}
+                      className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
+                    >
+                      Ta bort
                     </button>
                     <button
                       onClick={() => handleCopyAssignmentLink(assignment.id)}

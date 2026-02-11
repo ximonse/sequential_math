@@ -390,6 +390,64 @@ export function createClassFromRoster(classNameInput, rosterText, grade = 4) {
   }
 }
 
+export function addStudentsToClass(classId, rosterText, grade = 4) {
+  const classes = getClasses()
+  const target = classes.find(item => item.id === classId)
+  if (!target) {
+    return { ok: false, error: 'Välj en klass att lägga till elever i.' }
+  }
+
+  const names = parseRosterLines(rosterText)
+  if (names.length === 0) {
+    return { ok: false, error: 'Klistra in minst ett namn.' }
+  }
+
+  const allProfiles = getAllProfiles()
+  const existingIds = new Set(allProfiles.map(p => p.studentId))
+  const studentIds = new Set(target.studentIds || [])
+  let addedCount = 0
+
+  for (const name of names) {
+    const base = normalizeStudentId(name)
+    if (!base) continue
+
+    let profile = loadProfile(base)
+    if (profile) {
+      profile.name = name
+      ensureProfileAuth(profile)
+      profile.classId = target.id
+      profile.className = target.name
+      saveProfile(profile)
+      if (!studentIds.has(profile.studentId)) {
+        studentIds.add(profile.studentId)
+        addedCount += 1
+      }
+      continue
+    }
+
+    const uniqueId = createUniqueStudentId(base, existingIds)
+    const created = createAndSaveProfile(uniqueId, name, grade, {
+      initialPassword: name,
+      classId: target.id,
+      className: target.name
+    })
+
+    if (!studentIds.has(created.studentId)) {
+      studentIds.add(created.studentId)
+      addedCount += 1
+    }
+  }
+
+  target.studentIds = Array.from(studentIds)
+  saveClasses(classes)
+
+  return {
+    ok: true,
+    classRecord: target,
+    addedCount
+  }
+}
+
 export function removeClass(classId) {
   const classes = getClasses().filter(c => c.id !== classId)
   saveClasses(classes)

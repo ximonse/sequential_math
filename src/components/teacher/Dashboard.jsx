@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
+  addStudentsToClass,
   createClassFromRoster,
   getAllProfilesWithSync,
   getClasses,
@@ -37,6 +38,7 @@ function Dashboard() {
   const [classes, setClasses] = useState([])
   const [selectedClassIds, setSelectedClassIds] = useState([])
   const [classNameInput, setClassNameInput] = useState('')
+  const [addToClassId, setAddToClassId] = useState('')
   const [rosterInput, setRosterInput] = useState('')
   const [classStatus, setClassStatus] = useState('')
   const [copiedId, setCopiedId] = useState('')
@@ -49,7 +51,11 @@ function Dashboard() {
 
   useEffect(() => {
     void loadStudents()
-    setClasses(getClasses())
+    const initialClasses = getClasses()
+    setClasses(initialClasses)
+    if (initialClasses.length > 0) {
+      setAddToClassId(initialClasses[0].id)
+    }
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
     setPasswordSource(getTeacherPasswordSource())
@@ -57,7 +63,11 @@ function Dashboard() {
 
   const handleRefresh = () => {
     void loadStudents()
-    setClasses(getClasses())
+    const refreshedClasses = getClasses()
+    setClasses(refreshedClasses)
+    if (!addToClassId && refreshedClasses.length > 0) {
+      setAddToClassId(refreshedClasses[0].id)
+    }
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
     setPasswordSource(getTeacherPasswordSource())
@@ -148,6 +158,21 @@ function Dashboard() {
     setClassNameInput('')
     setRosterInput('')
     setClassStatus(`Klass skapad: ${result.classRecord.name} (${result.classRecord.studentIds.length} elever)`)
+    const updatedClasses = getClasses()
+    setClasses(updatedClasses)
+    setAddToClassId(result.classRecord.id)
+    void loadStudents()
+  }
+
+  const handleAddStudentsToClass = () => {
+    const result = addStudentsToClass(addToClassId, rosterInput, 4)
+    if (!result.ok) {
+      setClassStatus(result.error)
+      return
+    }
+
+    setRosterInput('')
+    setClassStatus(`Tillagt ${result.addedCount} elev(er) i ${result.classRecord.name}.`)
     setClasses(getClasses())
     void loadStudents()
   }
@@ -155,7 +180,11 @@ function Dashboard() {
   const handleDeleteClass = (classId) => {
     removeClass(classId)
     setSelectedClassIds(prev => prev.filter(id => id !== classId))
-    setClasses(getClasses())
+    const updatedClasses = getClasses()
+    setClasses(updatedClasses)
+    if (addToClassId === classId) {
+      setAddToClassId(updatedClasses[0]?.id || '')
+    }
     setClassStatus('Klass borttagen.')
   }
 
@@ -413,6 +442,26 @@ function Dashboard() {
               className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
             >
               Skapa klass från listan
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+            <select
+              value={addToClassId}
+              onChange={(e) => setAddToClassId(e.target.value)}
+              className="px-3 py-2 border rounded text-sm"
+            >
+              <option value="">Välj klass att lägga till i</option>
+              {classes.map(item => (
+                <option key={`add-${item.id}`} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={handleAddStudentsToClass}
+              className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm"
+            >
+              Lägg till elever i vald klass
             </button>
           </div>
           <textarea

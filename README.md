@@ -22,6 +22,23 @@ VITE_TEACHER_PASSWORD=ditt_losenord
 
 - Om inget är satt används standardlösenordet `teacher123`.
 
+## Delad elevdata mellan enheter
+
+För att lärarvyn ska se resultat från elevernas enheter krävs cloud-sync.
+
+1. Lägg till en Redis/KV-integration i Vercel-projektet (Upstash Redis via Marketplace).
+2. Sätt env-var i Vercel:
+
+```bash
+VITE_ENABLE_CLOUD_SYNC=1
+```
+
+3. Redeploya projektet.
+
+När detta är aktivt:
+- elevprofiler sparas lokalt + syncas till `/api/student/:id`
+- lärardashboard hämtar samlad lista från `/api/students`
+
 ## Struktur
 
 - `/src/components/student/` - Elevvy (träning)

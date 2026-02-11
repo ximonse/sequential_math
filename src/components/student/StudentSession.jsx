@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import ProblemDisplay from './ProblemDisplay'
 import PongGame from './PongGame'
 import MathScratchpad from './MathScratchpad'
-import { getOrCreateProfile, saveProfile } from '../../lib/storage'
+import { getOrCreateProfileWithSync, saveProfile } from '../../lib/storage'
 import {
   addProblemResult,
   getCurrentStreak,
@@ -40,8 +40,12 @@ function StudentSession() {
 
   // Ladda profil vid start
   useEffect(() => {
-    const loadedProfile = getOrCreateProfile(studentId)
-    setProfile(loadedProfile)
+    let active = true
+    ;(async () => {
+      const loadedProfile = await getOrCreateProfileWithSync(studentId)
+      if (active) setProfile(loadedProfile)
+    })()
+    return () => { active = false }
   }, [studentId])
 
   useEffect(() => {

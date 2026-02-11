@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getAllProfiles } from '../../lib/storage'
+import { getAllProfilesWithSync } from '../../lib/storage'
 import {
   clearCustomTeacherPassword,
   getTeacherPasswordSource,
@@ -30,21 +30,14 @@ function Dashboard() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    const profiles = getAllProfiles()
-    // Sortera efter senast aktiv
-    profiles.sort((a, b) => {
-      const aLast = a.recentProblems[a.recentProblems.length - 1]?.timestamp || 0
-      const bLast = b.recentProblems[b.recentProblems.length - 1]?.timestamp || 0
-      return bLast - aLast
-    })
-    setStudents(profiles)
+    void loadStudents()
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
     setPasswordSource(getTeacherPasswordSource())
   }, [])
 
   const handleRefresh = () => {
-    setStudents(getAllProfiles())
+    void loadStudents()
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
     setPasswordSource(getTeacherPasswordSource())
@@ -71,6 +64,16 @@ function Dashboard() {
   }
 
   const tableRows = students.map(student => buildStudentRow(student))
+
+  const loadStudents = async () => {
+    const profiles = await getAllProfilesWithSync()
+    profiles.sort((a, b) => {
+      const aLast = a.recentProblems[a.recentProblems.length - 1]?.timestamp || 0
+      const bLast = b.recentProblems[b.recentProblems.length - 1]?.timestamp || 0
+      return bLast - aLast
+    })
+    setStudents(profiles)
+  }
 
   const handleCreatePreset = (presetKey) => {
     const preset = getPresetConfig(presetKey)

@@ -2,13 +2,14 @@
  * Storage - Hanterar lagring av elevprofiler
  *
  * Phase 1: localStorage
- * Phase 2+: Vercel KV
+ * Phase 2+: Cloud sync via Vercel API + KV
  */
 
 import { createStudentProfile } from './studentProfile'
 
 const STORAGE_PREFIX = 'mathapp_student_'
 const STUDENTS_LIST_KEY = 'mathapp_students_list'
+const CLOUD_ENABLED = import.meta.env.VITE_ENABLE_CLOUD_SYNC === '1'
 
 /**
  * Ladda elevprofil
@@ -32,13 +33,9 @@ export function loadProfile(studentId) {
  * Spara elevprofil
  */
 export function saveProfile(profile) {
-  localStorage.setItem(
-    STORAGE_PREFIX + profile.studentId,
-    JSON.stringify(profile)
-  )
-
-  // Uppdatera listan över elever
-  updateStudentsList(profile.studentId, profile.name)
+  saveProfileLocalOnly(profile)
+  // Best-effort sync, blockera aldrig elevflödet.
+  void syncProfileToCloud(profile)
 }
 
 /**
@@ -62,6 +59,28 @@ export function getOrCreateProfile(studentId, name = null, grade = 4) {
   }
 
   return profile
+}
+
+/**
+ * Hämta/skapa profil med cloud-fallback för delad data mellan enheter.
+ */
+export async function getOrCreateProfileWithSync(studentId, name = null, grade = 4) {
+  const local = loadProfile(studentId)
+  if (local) {
+    void syncProfileToCloud(local)
+    return local
+  }
+
+  if (CLOUD_ENABLED) {
+    const cloud = await loadProfileFromCloud(studentId)
+    if (cloud) {
+      saveProfileLocalOnly(cloud)
+      return cloud
+    }
+  }
+
+  const displayName = name || `Elev ${studentId}`
+  return createAndSaveProfile(studentId, displayName, grade)
 }
 
 /**
@@ -108,6 +127,39 @@ export function getAllProfiles() {
 }
 
 /**
+ * Hämta alla profiler med cloud merge (lärarvy).
+ */
+export async function getAllProfilesWithSync() {
+  const local = getAllProfiles()
+  if (!CLOUD_ENABLED) return local
+
+  try {
+    const response = await fetch('/api/students')
+    if (!response.ok) return local
+    const data = await response.json()
+    const cloud = Array.isArray(data?.profiles) ? data.profiles : []
+
+    const merged = new Map()
+    for (const p of local) merged.set(p.studentId, p)
+    for (const p of cloud) {
+      const prev = merged.get(p.studentId)
+      if (!prev) {
+        merged.set(p.studentId, p)
+      } else {
+        const prevTs = prev.recentProblems?.[prev.recentProblems.length - 1]?.timestamp || 0
+        const cloudTs = p.recentProblems?.[p.recentProblems.length - 1]?.timestamp || 0
+        merged.set(p.studentId, cloudTs >= prevTs ? p : prev)
+      }
+      saveProfileLocalOnly(p)
+    }
+
+    return Array.from(merged.values())
+  } catch {
+    return local
+  }
+}
+
+/**
  * Ta bort elevprofil
  */
 export function deleteProfile(studentId) {
@@ -122,6 +174,39 @@ export function deleteProfile(studentId) {
  */
 export function studentExists(studentId) {
   return loadProfile(studentId) !== null
+}
+
+function saveProfileLocalOnly(profile) {
+  localStorage.setItem(
+    STORAGE_PREFIX + profile.studentId,
+    JSON.stringify(profile)
+  )
+  updateStudentsList(profile.studentId, profile.name)
+}
+
+async function loadProfileFromCloud(studentId) {
+  if (!CLOUD_ENABLED) return null
+  try {
+    const response = await fetch(`/api/student/${encodeURIComponent(studentId)}`)
+    if (!response.ok) return null
+    const data = await response.json()
+    return data?.profile || null
+  } catch {
+    return null
+  }
+}
+
+async function syncProfileToCloud(profile) {
+  if (!CLOUD_ENABLED) return
+  try {
+    await fetch(`/api/student/${encodeURIComponent(profile.studentId)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ profile })
+    })
+  } catch {
+    // no-op
+  }
 }
 
 /**

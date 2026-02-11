@@ -248,9 +248,6 @@ function StudentSession() {
       adjustDifficulty(profile, correct)
     }
 
-    // Spara profil
-    saveProfile(profile)
-
     // Uppdatera session count
     const newCount = sessionCount + 1
     setSessionCount(newCount)
@@ -272,21 +269,24 @@ function StudentSession() {
       if (correct && currentItem) {
         const sameTableLeft = nextQueue.some(item => item.table === currentItem.table)
         if (!sameTableLeft) {
+          const completionCountToday = recordTableCompletion(profile, currentItem.table)
           const remainingTables = Array.from(new Set(nextQueue.map(item => item.table)))
-          if (remainingTables.length === 0) {
-            setShowTableComplete(true)
-          } else {
-            setTableMilestone({
-              table: currentItem.table,
-              remainingTablesCount: remainingTables.length
-            })
-          }
+          setTableMilestone({
+            table: currentItem.table,
+            remainingTablesCount: remainingTables.length,
+            completionCountToday,
+            boss: completionCountToday >= 3,
+            finalizeAfter: remainingTables.length === 0
+          })
         }
       }
     } else if (shouldSuggestBreak(profile, newCount)) {
       // Kolla om paus behövs i vanliga lägen
       setShowBreakSuggestion(true)
     }
+
+    // Spara profil efter alla eventuella uppdateringar
+    saveProfile(profile)
   }
 
   const handleTakeBreak = () => {
@@ -381,16 +381,25 @@ function StudentSession() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-500 via-pink-500 to-yellow-400">
         <div className="bg-white rounded-3xl shadow-2xl p-10 max-w-lg text-center border-4 border-orange-300">
-          <div className="text-6xl mb-2">🎉</div>
-          <h2 className="text-5xl font-extrabold text-orange-700 mb-3">{tableMilestone.table}:an klar!</h2>
+          <div className="text-6xl mb-2">{tableMilestone.boss ? '😎' : '🎉'}</div>
+          <h2 className="text-5xl font-extrabold text-orange-700 mb-3">
+            {tableMilestone.boss ? 'Like a boss' : `${tableMilestone.table}:an klar!`}
+          </h2>
           <p className="text-lg text-gray-700 mb-6">
-            Grymt jobbat! {tableMilestone.remainingTablesCount > 0
+            {tableMilestone.boss
+              ? `${tableMilestone.table}:an klar ${tableMilestone.completionCountToday} gånger idag.`
+              : 'Grymt jobbat!'} {tableMilestone.remainingTablesCount > 0
               ? `${tableMilestone.remainingTablesCount} tabell(er) kvar.`
-              : 'Fortsätt!'}
+              : 'Klar för slutfirning!'}
           </p>
           <button
             onClick={() => {
+              const finalizeAfter = tableMilestone.finalizeAfter
               setTableMilestone(null)
+              if (finalizeAfter) {
+                setShowTableComplete(true)
+                return
+              }
               if (tableQueue.length > 0) {
                 const nextProblem = createTableProblem(tableQueue[0])
                 setCurrentProblem(nextProblem)
@@ -688,6 +697,30 @@ function shuffle(items) {
     array[j] = temp
   }
   return array
+}
+
+function recordTableCompletion(profile, table) {
+  if (!profile.tableDrill || typeof profile.tableDrill !== 'object') {
+    profile.tableDrill = { completions: [] }
+  }
+  if (!Array.isArray(profile.tableDrill.completions)) {
+    profile.tableDrill.completions = []
+  }
+
+  const now = Date.now()
+  profile.tableDrill.completions.push({ table: Number(table), timestamp: now })
+
+  if (profile.tableDrill.completions.length > 1000) {
+    profile.tableDrill.completions = profile.tableDrill.completions.slice(-1000)
+  }
+
+  const startToday = new Date()
+  startToday.setHours(0, 0, 0, 0)
+  const startTs = startToday.getTime()
+
+  return profile.tableDrill.completions.filter(
+    item => Number(item.table) === Number(table) && item.timestamp >= startTs
+  ).length
 }
 
 function estimateOperationLevel(profile, operation) {

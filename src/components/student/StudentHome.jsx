@@ -307,6 +307,7 @@ function buildTableStatus(profile) {
 
   const startToday = getStartOfDayTimestamp()
   const startWeek = getStartOfWeekTimestamp()
+  const completionCountsToday = getTableCompletionCountsToday(profile, startToday)
 
   const today = TABLES.reduce((acc, table) => {
     acc[table] = { attempts: 0, correct: 0 }
@@ -337,7 +338,7 @@ function buildTableStatus(profile) {
   for (const table of TABLES) {
     const weekDone = isTableCompleted(week[table])
     const todayDone = isTableCompleted(today[table])
-    const star = todayDone && today[table].attempts >= 30
+    const star = (completionCountsToday[table] || 0) >= 3
 
     if (star) {
       result[table] = 'star'
@@ -351,6 +352,26 @@ function buildTableStatus(profile) {
   }
 
   return result
+}
+
+function getTableCompletionCountsToday(profile, startTodayTimestamp) {
+  const counts = TABLES.reduce((acc, table) => {
+    acc[table] = 0
+    return acc
+  }, {})
+
+  const completions = profile?.tableDrill?.completions
+  if (!Array.isArray(completions)) return counts
+
+  for (const completion of completions) {
+    const table = Number(completion?.table)
+    const ts = Number(completion?.timestamp || 0)
+    if (!TABLES.includes(table)) continue
+    if (ts < startTodayTimestamp) continue
+    counts[table] += 1
+  }
+
+  return counts
 }
 
 function inferMultiplicationTable(problem) {

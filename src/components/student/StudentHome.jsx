@@ -20,6 +20,7 @@ function StudentHome() {
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [passwordMessage, setPasswordMessage] = useState('')
+  const [selectedTables, setSelectedTables] = useState([])
 
   const assignmentId = searchParams.get('assignment')
   const mode = searchParams.get('mode')
@@ -70,6 +71,8 @@ function StudentHome() {
     })).filter(item => item.historical.length > 0 || item.weekly.length > 0)
   }, [profile])
 
+  const tableStatus = useMemo(() => buildTableStatus(profile), [profile])
+
   const handleStudentLogout = () => {
     clearActiveStudentSession()
     navigate('/')
@@ -87,6 +90,22 @@ function StudentHome() {
     setCurrentPassword('')
     setNewPassword('')
     setPasswordMessage('Lösenord uppdaterat.')
+  }
+
+  const toggleTable = (table) => {
+    setSelectedTables(prev => (
+      prev.includes(table)
+        ? prev.filter(item => item !== table)
+        : [...prev, table].sort((a, b) => a - b)
+    ))
+  }
+
+  const startTableDrill = () => {
+    if (selectedTables.length === 0) return
+    const params = new URLSearchParams()
+    params.set('mode', 'multiplication')
+    params.set('tables', selectedTables.join(','))
+    navigate(`/student/${studentId}/practice?${params.toString()}`)
   }
 
   if (!profile) {
@@ -129,6 +148,42 @@ function StudentHome() {
               className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg"
             >
               {assignment ? 'Fortsätt uppdrag' : 'Starta fri träning'}
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
+          <h2 className="text-base font-semibold text-gray-800 mb-3">Tabellövning - mängdträning</h2>
+          <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-3">
+            {TABLES.map(table => (
+              <button
+                key={table}
+                type="button"
+                onClick={() => toggleTable(table)}
+                className={`h-11 rounded-lg border-2 text-sm font-semibold relative ${
+                  selectedTables.includes(table)
+                    ? 'border-orange-500'
+                    : 'border-gray-200'
+                } ${getTableStatusClass(tableStatus[table])}`}
+              >
+                {table}
+                {tableStatus[table] === 'star' && (
+                  <span className="absolute -top-1 -right-1 text-yellow-500 text-sm" aria-hidden="true">★</span>
+                )}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs text-gray-500">
+              Välj en eller flera tabeller och tryck Kör.
+            </p>
+            <button
+              type="button"
+              onClick={startTableDrill}
+              disabled={selectedTables.length === 0}
+              className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white text-sm font-semibold"
+            >
+              Kör
             </button>
           </div>
         </div>
@@ -243,3 +298,96 @@ function MasteryRow({ label, operation, levels }) {
 }
 
 export default StudentHome
+
+const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+function buildTableStatus(profile) {
+  const fallback = Object.fromEntries(TABLES.map(table => [table, 'default']))
+  if (!profile || !Array.isArray(profile.recentProblems)) return fallback
+
+  const startToday = getStartOfDayTimestamp()
+  const startWeek = getStartOfWeekTimestamp()
+
+  const today = TABLES.reduce((acc, table) => {
+    acc[table] = { attempts: 0, correct: 0 }
+    return acc
+  }, {})
+
+  const week = TABLES.reduce((acc, table) => {
+    acc[table] = { attempts: 0, correct: 0 }
+    return acc
+  }, {})
+
+  for (const problem of profile.recentProblems) {
+    const table = inferMultiplicationTable(problem)
+    if (!table) continue
+
+    if (problem.timestamp >= startWeek) {
+      week[table].attempts += 1
+      if (problem.correct) week[table].correct += 1
+    }
+
+    if (problem.timestamp >= startToday) {
+      today[table].attempts += 1
+      if (problem.correct) today[table].correct += 1
+    }
+  }
+
+  const result = {}
+  for (const table of TABLES) {
+    const weekDone = isTableCompleted(week[table])
+    const todayDone = isTableCompleted(today[table])
+    const star = todayDone && today[table].attempts >= 30
+
+    if (star) {
+      result[table] = 'star'
+    } else if (todayDone) {
+      result[table] = 'today'
+    } else if (weekDone) {
+      result[table] = 'week'
+    } else {
+      result[table] = 'default'
+    }
+  }
+
+  return result
+}
+
+function inferMultiplicationTable(problem) {
+  const tag = String(problem?.skillTag || '')
+  const match = tag.match(/^mul_table_(\d{1,2})$/)
+  if (match) {
+    const n = Number(match[1])
+    if (n >= 2 && n <= 12) return n
+  }
+
+  if (!String(problem?.problemType || '').startsWith('mul_')) return null
+  const a = Number(problem?.values?.a)
+  const b = Number(problem?.values?.b)
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return null
+  if (!Number.isInteger(a) || !Number.isInteger(b)) return null
+
+  if (a >= 2 && a <= 12 && b >= 1 && b <= 12) return a
+  if (b >= 2 && b <= 12 && a >= 1 && a <= 12) return b
+  return null
+}
+
+function isTableCompleted(stats) {
+  if (!stats) return false
+  if (stats.attempts < 10) return false
+  const success = stats.correct / Math.max(1, stats.attempts)
+  return success >= 0.8
+}
+
+function getStartOfDayTimestamp() {
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
+  return now.getTime()
+}
+
+function getTableStatusClass(status) {
+  if (status === 'star') return 'bg-green-200 text-green-900'
+  if (status === 'today') return 'bg-green-500 text-white'
+  if (status === 'week') return 'bg-green-100 text-green-800'
+  return 'bg-gray-100 text-gray-700'
+}

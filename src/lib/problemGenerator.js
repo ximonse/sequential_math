@@ -271,6 +271,64 @@ export function generateByDifficulty(level) {
   return generateByDifficultyWithOptions(level, {})
 }
 
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value))
+}
+
+export function generateMultiplicationTableDrillProblem(tableSet, options = {}) {
+  const normalizedTables = Array.isArray(tableSet)
+    ? tableSet
+      .map(v => Number(v))
+      .filter(v => Number.isInteger(v) && v >= 2 && v <= 12)
+    : []
+
+  const tables = normalizedTables.length > 0 ? normalizedTables : [2, 3, 4, 5]
+  const table = tables[Math.floor(Math.random() * tables.length)]
+  const level = clamp(Math.round(Number(options.level) || 4), 1, 12)
+
+  let maxFactor = 6
+  if (level >= 4) maxFactor = 10
+  if (level >= 6) maxFactor = 12
+
+  const other = randomInt(1, maxFactor)
+  const tableFirst = Math.random() < 0.5
+  const a = tableFirst ? table : other
+  const b = tableFirst ? other : table
+  const result = a * b
+
+  return {
+    id: `mul_table_${table}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    template: 'mul_table_drill',
+    type: 'multiplication',
+    values: { a, b },
+    result,
+    difficulty: {
+      conceptual_level: clamp(level, 3, 6),
+      cognitive_load: {
+        working_memory: 1,
+        steps_required: 1,
+        intermediate_values: 0
+      },
+      procedural: {
+        num_terms: 2,
+        requires_carry: false,
+        mixed_digits: false
+      },
+      magnitude: {
+        a_digits: 1,
+        b_digits: 1
+      }
+    },
+    metadata: {
+      table,
+      skillTag: `mul_table_${table}`,
+      selectionReason: 'table_drill',
+      description: `Tabellovning ${table}:an`
+    },
+    generated_at: Date.now()
+  }
+}
+
 /**
  * Generera problem baserat på svårighetsgrad med valfri styrning av räknesätt
  */

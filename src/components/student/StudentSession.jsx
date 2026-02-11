@@ -43,6 +43,7 @@ function StudentSession() {
 
   const assignmentId = searchParams.get('assignment')
   const mode = searchParams.get('mode')
+  const tableSet = useMemo(() => parseTableSet(searchParams.get('tables')), [searchParams])
 
   // Ladda profil vid start
   useEffect(() => {
@@ -105,13 +106,13 @@ function StudentSession() {
   // Generera första problemet när profil är laddad
   useEffect(() => {
     if (profile && !currentProblem && !feedback) {
-      const rules = getSessionRules(sessionAssignment, mode, sessionWarmup, completedThisSession)
+      const rules = getSessionRules(sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet)
       const problem = safeSelectProblem(profile, rules)
       if (!problem) return
       setCurrentProblem(problem)
       setStartTime(Date.now())
     }
-  }, [profile, currentProblem, feedback, sessionAssignment, mode, sessionWarmup, completedThisSession])
+  }, [profile, currentProblem, feedback, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet])
 
   // Fokusera input när nytt problem visas
   useEffect(() => {
@@ -129,14 +130,14 @@ function StudentSession() {
   // Gå till nästa problem
   const goToNextProblem = useCallback(() => {
     if (!profile) return
-    const rules = getSessionRules(sessionAssignment, mode, sessionWarmup, completedThisSession)
+    const rules = getSessionRules(sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet)
     const nextProblem = safeSelectProblem(profile, rules)
     if (!nextProblem) return
     setCurrentProblem(nextProblem)
     setAnswer('')
     setFeedback(null)
     setStartTime(Date.now())
-  }, [profile, sessionAssignment, mode, sessionWarmup, completedThisSession])
+  }, [profile, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet])
 
   const safeSelectProblem = (currentProfile, rules) => {
     try {
@@ -336,7 +337,7 @@ function StudentSession() {
 
         {/* Main content */}
         <div className="py-8">
-          <SessionModeBanner assignment={sessionAssignment} mode={mode} />
+          <SessionModeBanner assignment={sessionAssignment} mode={mode} tableSet={tableSet} />
           {sessionError && (
             <div className="mb-4 rounded-lg bg-red-50 text-red-700 border border-red-200 px-3 py-2 text-sm">
               {sessionError}
@@ -450,8 +451,16 @@ function CurrentOperationMastery({ operationLabel, historical, weekly }) {
   )
 }
 
-function SessionModeBanner({ assignment, mode }) {
+function SessionModeBanner({ assignment, mode, tableSet }) {
   if (!assignment) {
+    if (tableSet.length > 0) {
+      return (
+        <div className="mb-5 bg-white border border-orange-200 text-orange-700 rounded-lg px-4 py-2 text-sm">
+          Läge: Tabellövning | {tableSet.join(',')}:an
+        </div>
+      )
+    }
+
     if (mode && isKnownMode(mode)) {
       return (
         <div className="mb-5 bg-white border border-emerald-200 text-emerald-700 rounded-lg px-4 py-2 text-sm">
@@ -473,7 +482,7 @@ function SessionModeBanner({ assignment, mode }) {
   )
 }
 
-function getSessionRules(assignment, mode, warmup, solvedCount) {
+function getSessionRules(assignment, mode, warmup, solvedCount, tableSet = []) {
   const rules = {}
 
   if (assignment) {
@@ -484,6 +493,11 @@ function getSessionRules(assignment, mode, warmup, solvedCount) {
 
   if (mode && isKnownMode(mode)) {
     rules.allowedTypes = [mode]
+  }
+
+  if (Array.isArray(tableSet) && tableSet.length > 0) {
+    rules.allowedTypes = ['multiplication']
+    rules.tableSet = tableSet
   }
 
   if (warmup && solvedCount < warmup.warmupCount) {
@@ -498,6 +512,16 @@ function getSessionRules(assignment, mode, warmup, solvedCount) {
   }
 
   return rules
+}
+
+function parseTableSet(value) {
+  if (!value) return []
+  const entries = String(value)
+    .split(',')
+    .map(v => Number(v.trim()))
+    .filter(v => Number.isInteger(v) && v >= 2 && v <= 12)
+
+  return Array.from(new Set(entries)).sort((a, b) => a - b)
 }
 
 function estimateOperationLevel(profile, operation) {

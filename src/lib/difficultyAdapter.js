@@ -2,7 +2,7 @@
  * Difficulty Adapter - Justerar svårighetsgrad baserat på prestation
  */
 
-import { generateByDifficultyWithOptions } from './problemGenerator'
+import { generateByDifficultyWithOptions, generateMultiplicationTableDrillProblem } from './problemGenerator'
 import { getRecentSuccessRate, getConsecutiveErrors, getCurrentStreak } from './studentProfile'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -81,19 +81,25 @@ export function selectNextProblem(profile, options = {}) {
   const recentSuccess = getRecentSuccessRate(profile, 5)
   const errors = getConsecutiveErrors(profile)
   const roundedDifficulty = clampLevelToRange(Math.round(profile.currentDifficulty), options.levelRange)
-  const preferredType = chooseProblemType(profile, recentSuccess, errors)
+  const tableSet = normalizeTableSet(options.tableSet)
+  const isTableDrill = tableSet.length > 0
+  const preferredType = isTableDrill ? 'multiplication' : chooseProblemType(profile, recentSuccess, errors)
   const warmupLevel = getWarmupLevel(profile, roundedDifficulty)
-  const allowedTypes = normalizeAllowedTypes(options.allowedTypes)
+  const allowedTypes = isTableDrill
+    ? ['multiplication']
+    : normalizeAllowedTypes(options.allowedTypes)
   const assignmentType = allowedTypes.length === 1 ? allowedTypes[0] : null
 
   // Sessionstyrd warmup (t.ex. vid fokuserat räknesättsläge)
   if (Number.isFinite(options.forcedLevel)) {
     const forcedLevel = clampLevelToRange(Math.round(options.forcedLevel), options.levelRange)
     const forcedType = options.forcedType || assignmentType || preferredType
-    const problem = generateByDifficultyWithOptions(forcedLevel, {
-      preferredType: forcedType,
-      allowedTypes
-    })
+    const problem = isTableDrill
+      ? generateMultiplicationTableDrillProblem(tableSet, { level: forcedLevel })
+      : generateByDifficultyWithOptions(forcedLevel, {
+        preferredType: forcedType,
+        allowedTypes
+      })
     return annotateSelectedProblem(profile, problem, {
       reason: options.forceReason || 'session_warmup',
       bucket: options.forceBucket || 'easy',
@@ -103,10 +109,12 @@ export function selectNextProblem(profile, options = {}) {
 
   // Efter frånvaro: börja lite enklare för att nå 80/20-zonen snabbare.
   if (warmupLevel !== null) {
-    const problem = generateByDifficultyWithOptions(warmupLevel, {
-      preferredType: assignmentType || 'addition',
-      allowedTypes
-    })
+    const problem = isTableDrill
+      ? generateMultiplicationTableDrillProblem(tableSet, { level: warmupLevel })
+      : generateByDifficultyWithOptions(warmupLevel, {
+        preferredType: assignmentType || 'addition',
+        allowedTypes
+      })
     return annotateSelectedProblem(profile, problem, {
       reason: 'warmup_after_break',
       bucket: 'easy',
@@ -117,10 +125,12 @@ export function selectNextProblem(profile, options = {}) {
   // Om 3+ fel i rad → ge lättare problem ("easy win")
   if (errors >= 3) {
     const easyLevel = clampLevelToRange(Math.max(1, roundedDifficulty - 1), options.levelRange)
-    const problem = generateByDifficultyWithOptions(easyLevel, {
-      preferredType: assignmentType || 'addition',
-      allowedTypes
-    })
+    const problem = isTableDrill
+      ? generateMultiplicationTableDrillProblem(tableSet, { level: easyLevel })
+      : generateByDifficultyWithOptions(easyLevel, {
+        preferredType: assignmentType || 'addition',
+        allowedTypes
+      })
     return annotateSelectedProblem(profile, problem, {
       reason: 'recovery_easy',
       bucket: 'easy',
@@ -131,7 +141,9 @@ export function selectNextProblem(profile, options = {}) {
   // Om för lätt (>92% success) → öka
   if (recentSuccess > 0.92 && profile.recentProblems.length >= 6) {
     const harderLevel = clampLevelToRange(Math.min(12, roundedDifficulty + 1), options.levelRange)
-    const problem = generateByDifficultyWithOptions(harderLevel, { preferredType, allowedTypes })
+    const problem = isTableDrill
+      ? generateMultiplicationTableDrillProblem(tableSet, { level: harderLevel })
+      : generateByDifficultyWithOptions(harderLevel, { preferredType, allowedTypes })
     return annotateSelectedProblem(profile, problem, {
       reason: 'high_success_push',
       bucket: 'hard',
@@ -142,10 +154,12 @@ export function selectNextProblem(profile, options = {}) {
   // Om för svårt (<55% success) → minska
   if (recentSuccess < 0.55 && profile.recentProblems.length >= 6) {
     const easierLevel = clampLevelToRange(Math.max(1, roundedDifficulty - 1), options.levelRange)
-    const problem = generateByDifficultyWithOptions(easierLevel, {
-      preferredType: assignmentType || 'addition',
-      allowedTypes
-    })
+    const problem = isTableDrill
+      ? generateMultiplicationTableDrillProblem(tableSet, { level: easierLevel })
+      : generateByDifficultyWithOptions(easierLevel, {
+        preferredType: assignmentType || 'addition',
+        allowedTypes
+      })
     return annotateSelectedProblem(profile, problem, {
       reason: 'low_success_relief',
       bucket: 'easy',
@@ -157,10 +171,12 @@ export function selectNextProblem(profile, options = {}) {
   if (roundedDifficulty === 1 && recentSuccess >= 0.6 && profile.recentProblems.length >= 8) {
     if (Math.random() < 0.3) {
       const target = clampLevelToRange(2, options.levelRange)
-      const problem = generateByDifficultyWithOptions(target, {
-        preferredType: assignmentType || 'addition',
-        allowedTypes
-      })
+      const problem = isTableDrill
+        ? generateMultiplicationTableDrillProblem(tableSet, { level: target })
+        : generateByDifficultyWithOptions(target, {
+          preferredType: assignmentType || 'addition',
+          allowedTypes
+        })
       return annotateSelectedProblem(profile, problem, {
         reason: 'bootstrap_from_level1',
         bucket: 'hard',
@@ -175,7 +191,9 @@ export function selectNextProblem(profile, options = {}) {
     roundedDifficulty + getBucketOffset(bucket),
     options.levelRange
   )
-  const problem = generateByDifficultyWithOptions(targetLevel, { preferredType, allowedTypes })
+  const problem = isTableDrill
+    ? generateMultiplicationTableDrillProblem(tableSet, { level: targetLevel })
+    : generateByDifficultyWithOptions(targetLevel, { preferredType, allowedTypes })
   return annotateSelectedProblem(profile, problem, {
     reason: 'weighted_mix',
     bucket,
@@ -282,6 +300,18 @@ function normalizeAllowedTypes(allowedTypes) {
   return allowedTypes.filter(Boolean)
 }
 
+function normalizeTableSet(tableSet) {
+  if (!Array.isArray(tableSet) || tableSet.length === 0) return []
+  const unique = new Set()
+  for (const value of tableSet) {
+    const n = Number(value)
+    if (Number.isInteger(n) && n >= 2 && n <= 12) {
+      unique.add(n)
+    }
+  }
+  return Array.from(unique).sort((a, b) => a - b)
+}
+
 function clampLevelToRange(level, levelRange) {
   if (!Array.isArray(levelRange) || levelRange.length !== 2) return level
   const minLevel = Math.max(1, Math.min(12, Number(levelRange[0]) || 1))
@@ -331,7 +361,7 @@ function getBucketOffset(bucket) {
 }
 
 function annotateSelectedProblem(profile, problem, details) {
-  const skillTag = problem.template
+  const skillTag = problem.metadata?.skillTag || problem.template
   const skillState = getOrInitSkillState(profile, skillTag)
 
   problem.metadata = {

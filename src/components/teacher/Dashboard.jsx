@@ -10,6 +10,7 @@ import {
 } from '../../lib/teacherAuth'
 import { evaluateAnswerQuality } from '../../lib/answerQuality'
 import { getOperationLabel } from '../../lib/operations'
+import { getStartOfWeekTimestamp } from '../../lib/studentProfile'
 import {
   buildAssignmentLink,
   clearAllAssignments,
@@ -75,7 +76,9 @@ function Dashboard() {
   )
   const visibleRows = viewMode === 'daily'
     ? tableRows.filter(row => row.activeToday)
-    : tableRows
+    : viewMode === 'weekly'
+      ? tableRows.filter(row => row.activeThisWeek)
+      : tableRows
 
   const loadStudents = async () => {
     const profiles = await getAllProfilesWithSync()
@@ -375,6 +378,16 @@ function Dashboard() {
                 >
                   Alla elever
                 </button>
+                <button
+                  onClick={() => setViewMode('weekly')}
+                  className={`px-3 py-1.5 rounded text-sm ${
+                    viewMode === 'weekly'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Veckovy
+                </button>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
@@ -389,6 +402,13 @@ function Dashboard() {
                   <option value="today_wrong">Dagens felsvar</option>
                   <option value="today_struggle">Dagens kämp-index</option>
                   <option value="today_answer_length">Dagens svarslängd</option>
+                  <option value="active_week">Aktiv denna vecka</option>
+                  <option value="week_attempts">Veckans mängd</option>
+                  <option value="week_correct">Veckans rätt</option>
+                  <option value="week_wrong">Veckans felsvar</option>
+                  <option value="week_active_time">Veckans aktiv tid</option>
+                  <option value="week_success_rate">Veckans träffsäkerhet</option>
+                  <option value="week_answer_length">Veckans svarslängd</option>
                   <option value="last_active">Senast aktiv</option>
                   <option value="attempts">Totala försök</option>
                   <option value="success_rate">Total träffsäkerhet</option>
@@ -407,6 +427,11 @@ function Dashboard() {
                 Inga aktiva elever idag ännu.
               </div>
             )}
+            {viewMode === 'weekly' && visibleRows.length === 0 && (
+              <div className="mb-4 rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
+                Inga aktiva elever denna vecka ännu.
+              </div>
+            )}
 
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b">
@@ -418,6 +443,15 @@ function Dashboard() {
                       <th className="px-4 py-3 font-semibold">Rätt/fel idag</th>
                       <th className="px-4 py-3 font-semibold">Kämpar med idag</th>
                       <th className="px-4 py-3 font-semibold">Svarslängd idag</th>
+                      <th className="px-4 py-3 font-semibold">Senast aktiv</th>
+                    </>
+                  ) : viewMode === 'weekly' ? (
+                    <>
+                      <th className="px-4 py-3 font-semibold">Gjort denna vecka</th>
+                      <th className="px-4 py-3 font-semibold">Aktiv tid</th>
+                      <th className="px-4 py-3 font-semibold">Rätt/fel vecka</th>
+                      <th className="px-4 py-3 font-semibold">Kämpar med vecka</th>
+                      <th className="px-4 py-3 font-semibold">Svarslängd vecka</th>
                       <th className="px-4 py-3 font-semibold">Senast aktiv</th>
                     </>
                   ) : (
@@ -469,6 +503,45 @@ function Dashboard() {
                           {row.todayAvgAnswerLength === null
                             ? '-'
                             : `${row.todayAvgAnswerLength.toFixed(1)} tecken`}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
+                      </>
+                    ) : viewMode === 'weekly' ? (
+                      <>
+                        <td className="px-4 py-3 text-gray-700">
+                          {row.weekAttempts}
+                          <div className="text-xs text-gray-500 mt-1">{row.weekOperationSummary}</div>
+                        </td>
+                        <td className="px-4 py-3 text-gray-700">
+                          {formatDuration(row.weekActiveTimeSec)}
+                          <div className="text-xs text-gray-500 mt-1">
+                            snitt {row.weekAvgTimePerProblemSec > 0 ? `${Math.round(row.weekAvgTimePerProblemSec)}s/problem` : '-'}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={getSuccessColorClass(row.weekSuccessRate)}>
+                            {row.weekCorrectCount}/{row.weekAttempts || 0}
+                          </span>
+                          <div className="text-xs text-gray-500 mt-1">
+                            Fel: {row.weekWrongCount} | Rimliga fel: {row.weekReasonableWrongCount}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-gray-700">
+                          {row.weekStruggle
+                            ? (
+                              <>
+                                <div className="font-medium">{getOperationLabel(row.weekStruggle.operation)}</div>
+                                <div className="text-xs text-gray-500">
+                                  {row.weekStruggle.attempts} försök, {row.weekStruggle.wrong} fel
+                                </div>
+                              </>
+                            )
+                            : <span className="text-gray-400">-</span>}
+                        </td>
+                        <td className="px-4 py-3 text-gray-700">
+                          {row.weekAvgAnswerLength === null
+                            ? '-'
+                            : `${row.weekAvgAnswerLength.toFixed(1)} tecken`}
                         </td>
                         <td className="px-4 py-3 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
                       </>
@@ -605,6 +678,29 @@ function buildStudentRow(student) {
     ? ((todayStruggle.wrong / Math.max(1, todayStruggle.attempts)) * 100) + todayStruggle.wrong
     : 0
 
+  const weekStart = getStartOfWeekTimestamp()
+  const weekProblems = student.recentProblems.filter(problem => problem.timestamp >= weekStart)
+  const weekAttempts = weekProblems.length
+  const weekCorrectCount = weekProblems.filter(problem => problem.correct).length
+  const weekWrongCount = weekAttempts - weekCorrectCount
+  const weekSuccessRate = weekAttempts > 0 ? weekCorrectCount / weekAttempts : 0
+  const weekWrongReasonable = weekProblems
+    .filter(problem => !problem.correct)
+    .map(problem => evaluateAnswerQuality(problem))
+    .filter(item => item.isReasonable)
+    .length
+  const weekActiveTimeSec = weekProblems.reduce((sum, problem) => sum + (Number(problem.timeSpent) || 0), 0)
+  const weekAvgTimePerProblemSec = weekAttempts > 0 ? weekActiveTimeSec / weekAttempts : 0
+  const weekAvgAnswerLength = getAverageAnswerLength(weekProblems)
+  const weekByOperation = summarizeByOperation(weekProblems)
+  const weekOperationSummary = weekByOperation.length > 0
+    ? weekByOperation.map(item => `${getOperationLabel(item.operation)}: ${item.attempts}`).join(' | ')
+    : '-'
+  const weekStruggle = getStruggleOperation(weekByOperation)
+  const weekStruggleIndex = weekStruggle
+    ? ((weekStruggle.wrong / Math.max(1, weekStruggle.attempts)) * 100) + weekStruggle.wrong
+    : 0
+
   return {
     studentId: student.studentId,
     name: student.name,
@@ -625,7 +721,19 @@ function buildStudentRow(student) {
     todayAvgAnswerLength,
     todayOperationSummary,
     todayStruggle,
-    todayStruggleIndex
+    todayStruggleIndex,
+    activeThisWeek: weekAttempts > 0,
+    weekAttempts,
+    weekCorrectCount,
+    weekWrongCount,
+    weekSuccessRate,
+    weekReasonableWrongCount: weekWrongReasonable,
+    weekActiveTimeSec,
+    weekAvgTimePerProblemSec,
+    weekAvgAnswerLength,
+    weekOperationSummary,
+    weekStruggle,
+    weekStruggleIndex
   }
 }
 
@@ -719,6 +827,16 @@ function compareRows(a, b, sortBy) {
   if (sortBy === 'today_wrong') return a.todayWrongCount - b.todayWrongCount
   if (sortBy === 'today_struggle') return a.todayStruggleIndex - b.todayStruggleIndex
   if (sortBy === 'today_answer_length') return (a.todayAvgAnswerLength || 0) - (b.todayAvgAnswerLength || 0)
+  if (sortBy === 'active_week') {
+    if (a.activeThisWeek !== b.activeThisWeek) return Number(a.activeThisWeek) - Number(b.activeThisWeek)
+    return (a.lastActive || 0) - (b.lastActive || 0)
+  }
+  if (sortBy === 'week_attempts') return a.weekAttempts - b.weekAttempts
+  if (sortBy === 'week_correct') return a.weekCorrectCount - b.weekCorrectCount
+  if (sortBy === 'week_wrong') return a.weekWrongCount - b.weekWrongCount
+  if (sortBy === 'week_active_time') return a.weekActiveTimeSec - b.weekActiveTimeSec
+  if (sortBy === 'week_success_rate') return a.weekSuccessRate - b.weekSuccessRate
+  if (sortBy === 'week_answer_length') return (a.weekAvgAnswerLength || 0) - (b.weekAvgAnswerLength || 0)
   if (sortBy === 'last_active') return (a.lastActive || 0) - (b.lastActive || 0)
   if (sortBy === 'attempts') return a.attempts - b.attempts
   if (sortBy === 'success_rate') return a.successRate - b.successRate
@@ -751,6 +869,15 @@ function formatTimeAgo(timestamp) {
   if (seconds < 86400) return `${Math.floor(seconds / 3600)} tim sedan`
   if (seconds < 604800) return `${Math.floor(seconds / 86400)} dagar sedan`
   return new Date(timestamp).toLocaleDateString('sv-SE')
+}
+
+function formatDuration(totalSeconds) {
+  const seconds = Math.max(0, Math.round(totalSeconds || 0))
+  if (seconds < 60) return `${seconds}s`
+  if (seconds < 3600) return `${Math.floor(seconds / 60)} min`
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  return `${hours}h ${minutes}m`
 }
 
 export default Dashboard

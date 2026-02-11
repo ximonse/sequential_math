@@ -39,11 +39,14 @@ function StudentSession() {
   const [sessionAssignment, setSessionAssignment] = useState(null)
   const [sessionWarmup, setSessionWarmup] = useState(null)
   const [sessionError, setSessionError] = useState('')
+  const [tableQueue, setTableQueue] = useState([])
+  const [showTableComplete, setShowTableComplete] = useState(false)
   const inputRef = useRef(null)
 
   const assignmentId = searchParams.get('assignment')
   const mode = searchParams.get('mode')
   const tableSet = useMemo(() => parseTableSet(searchParams.get('tables')), [searchParams])
+  const isTableDrill = tableSet.length > 0
 
   // Ladda profil vid start
   useEffect(() => {
@@ -72,6 +75,10 @@ function StudentSession() {
 
   useEffect(() => {
     if (!profile) return
+    if (isTableDrill) {
+      setSessionWarmup(null)
+      return
+    }
     if (!mode || !isKnownMode(mode)) {
       setSessionWarmup(null)
       return
@@ -99,20 +106,41 @@ function StudentSession() {
       startLevel,
       warmupCount: 3
     })
-  }, [profile, mode])
+  }, [profile, mode, isTableDrill])
+
+  useEffect(() => {
+    if (!profile) return
+    if (!isTableDrill) return
+
+    const initialQueue = createTableQueue(tableSet)
+    setTableQueue(initialQueue)
+    setShowTableComplete(false)
+    setCurrentProblem(initialQueue.length > 0 ? createTableProblem(initialQueue[0]) : null)
+    setAnswer('')
+    setFeedback(null)
+    setSessionCount(0)
+    setStartTime(Date.now())
+  }, [profile, isTableDrill, tableSet])
 
   const completedThisSession = useMemo(() => sessionCount, [sessionCount])
 
   // Generera första problemet när profil är laddad
   useEffect(() => {
     if (profile && !currentProblem && !feedback) {
+      if (isTableDrill) {
+        if (tableQueue.length === 0) return
+        const problem = createTableProblem(tableQueue[0])
+        setCurrentProblem(problem)
+        setStartTime(Date.now())
+        return
+      }
       const rules = getSessionRules(sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet)
       const problem = safeSelectProblem(profile, rules)
       if (!problem) return
       setCurrentProblem(problem)
       setStartTime(Date.now())
     }
-  }, [profile, currentProblem, feedback, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet])
+  }, [profile, currentProblem, feedback, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, isTableDrill, tableQueue])
 
   // Fokusera input när nytt problem visas
   useEffect(() => {
@@ -130,6 +158,15 @@ function StudentSession() {
   // Gå till nästa problem
   const goToNextProblem = useCallback(() => {
     if (!profile) return
+    if (isTableDrill) {
+      if (tableQueue.length === 0) return
+      const nextProblem = createTableProblem(tableQueue[0])
+      setCurrentProblem(nextProblem)
+      setAnswer('')
+      setFeedback(null)
+      setStartTime(Date.now())
+      return
+    }
     const rules = getSessionRules(sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet)
     const nextProblem = safeSelectProblem(profile, rules)
     if (!nextProblem) return
@@ -137,7 +174,7 @@ function StudentSession() {
     setAnswer('')
     setFeedback(null)
     setStartTime(Date.now())
-  }, [profile, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet])
+  }, [profile, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, isTableDrill, tableQueue])
 
   const safeSelectProblem = (currentProfile, rules) => {
     try {
@@ -152,18 +189,18 @@ function StudentSession() {
 
   // Auto-fortsätt efter 3 sekunder när feedback visas
   useEffect(() => {
-    if (!feedback || showBreakSuggestion) return
+    if (!feedback || showBreakSuggestion || showTableComplete) return
 
     const timer = setTimeout(() => {
       goToNextProblem()
     }, AUTO_CONTINUE_DELAY)
 
     return () => clearTimeout(timer)
-  }, [feedback, showBreakSuggestion]) // Medvetet utelämnar goToNextProblem för att undvika re-triggers
+  }, [feedback, showBreakSuggestion, showTableComplete]) // Medvetet utelämnar goToNextProblem för att undvika re-triggers
 
   // Lyssna på Enter för att fortsätta (med fördröjning för att undvika dubbel-trigger)
   useEffect(() => {
-    if (!feedback || showBreakSuggestion) return
+    if (!feedback || showBreakSuggestion || showTableComplete) return
 
     // Vänta 100ms så att Enter från submit hinner släppas
     const activateTimer = setTimeout(() => {
@@ -185,7 +222,7 @@ function StudentSession() {
         window._mathEnterHandler = null
       }
     }
-  }, [feedback, showBreakSuggestion, goToNextProblem])
+  }, [feedback, showBreakSuggestion, showTableComplete, goToNextProblem])
 
   const handleSubmit = () => {
     if (!currentProblem || answer.trim() === '') return
@@ -204,8 +241,10 @@ function StudentSession() {
       { rawAnswer: normalizedAnswer }
     )
 
-    // Justera svårighet
-    adjustDifficulty(profile, correct)
+    if (!isTableDrill) {
+      // Justera svårighet i vanliga lägen
+      adjustDifficulty(profile, correct)
+    }
 
     // Spara profil
     saveProfile(profile)
@@ -221,8 +260,18 @@ function StudentSession() {
       studentAnswer
     })
 
-    // Kolla om paus behövs
-    if (shouldSuggestBreak(profile, newCount)) {
+    if (isTableDrill) {
+      const currentItem = tableQueue[0]
+      const nextQueue = tableQueue.slice(1)
+      if (!correct && currentItem) {
+        nextQueue.push(currentItem)
+      }
+      setTableQueue(nextQueue)
+      if (correct && nextQueue.length === 0) {
+        setShowTableComplete(true)
+      }
+    } else if (shouldSuggestBreak(profile, newCount)) {
+      // Kolla om paus behövs i vanliga lägen
       setShowBreakSuggestion(true)
     }
   }
@@ -298,6 +347,23 @@ function StudentSession() {
     )
   }
 
+  if (showTableComplete) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-500 to-green-600">
+        <div className="bg-white rounded-2xl shadow-2xl p-10 max-w-md text-center">
+          <h2 className="text-5xl font-extrabold text-emerald-700 mb-4">Lysande!</h2>
+          <p className="text-gray-700 mb-6">Du klarade alla valda tabeller.</p>
+          <button
+            onClick={() => navigate(`/student/${studentId}`)}
+            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg"
+          >
+            Tillbaka
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   const streak = getCurrentStreak(profile)
   const currentOperation = currentProblem?.type || 'addition'
   const weekStart = getStartOfWeekTimestamp()
@@ -326,6 +392,10 @@ function StudentSession() {
 
           <button
             onClick={() => {
+              if (isTableDrill && tableQueue.length > 0) {
+                setSessionError('Avsluta efter att du svarat rätt på alla tabeller i kön.')
+                return
+              }
               clearActiveStudentSession()
               navigate('/')
             }}
@@ -522,6 +592,58 @@ function parseTableSet(value) {
     .filter(v => Number.isInteger(v) && v >= 2 && v <= 12)
 
   return Array.from(new Set(entries)).sort((a, b) => a - b)
+}
+
+function createTableQueue(tableSet) {
+  const queue = []
+  for (const table of tableSet) {
+    for (let factor = 1; factor <= 12; factor++) {
+      queue.push({ table, factor })
+    }
+  }
+  return shuffle(queue)
+}
+
+function createTableProblem(item) {
+  const table = Number(item.table)
+  const factor = Number(item.factor)
+  const tableFirst = Math.random() < 0.5
+  const a = tableFirst ? table : factor
+  const b = tableFirst ? factor : table
+  const result = a * b
+
+  return {
+    id: `mul_table_${table}_${factor}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    template: 'mul_table_drill',
+    type: 'multiplication',
+    values: { a, b },
+    result,
+    difficulty: {
+      conceptual_level: 4,
+      cognitive_load: { working_memory: 1, steps_required: 1, intermediate_values: 0 },
+      procedural: { num_terms: 2, requires_carry: false, mixed_digits: false },
+      magnitude: { a_digits: 1, b_digits: 1 }
+    },
+    metadata: {
+      table,
+      factor,
+      skillTag: `mul_table_${table}`,
+      selectionReason: 'table_drill_queue',
+      description: `Tabellovning ${table}:an`
+    },
+    generated_at: Date.now()
+  }
+}
+
+function shuffle(items) {
+  const array = [...items]
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    const temp = array[i]
+    array[i] = array[j]
+    array[j] = temp
+  }
+  return array
 }
 
 function estimateOperationLevel(profile, operation) {

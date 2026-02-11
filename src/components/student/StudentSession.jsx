@@ -20,6 +20,7 @@ import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 import { getOperationLabel } from '../../lib/operations'
 
 const AUTO_CONTINUE_DELAY = 3000 // 3 sekunder
+const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
 
 function StudentSession() {
   const { studentId } = useParams()
@@ -273,6 +274,7 @@ function StudentSession() {
             table: currentItem.table,
             remainingTablesCount: remainingTables.length,
             completionCountToday,
+            masteredTwoToNineToday: hasMasteredTablesToday(profile, [2, 3, 4, 5, 6, 7, 8, 9]),
             boss: completionCountToday >= 3,
             finalizeAfter: remainingTables.length === 0,
             finalCelebration: remainingTables.length === 0
@@ -367,6 +369,10 @@ function StudentSession() {
         navigate(`/student/${studentId}`)
         return
       }
+      if (tableMilestone.masteredTwoToNineToday) {
+        window.location.href = TABLE_BOSS_URL
+        return
+      }
       if (tableQueue.length > 0) {
         const nextProblem = createTableProblem(tableQueue[0])
         setCurrentProblem(nextProblem)
@@ -396,14 +402,18 @@ function StudentSession() {
           <h2 className={`text-6xl font-extrabold mb-3 drop-shadow-[0_4px_8px_rgba(0,0,0,0.45)] ${
             tableMilestone.finalCelebration ? 'text-emerald-200' : 'text-yellow-200'
           }`}>
-            {tableMilestone.finalCelebration
+            {tableMilestone.masteredTwoToNineToday
+              ? 'TABELL-BOSS!'
+              : tableMilestone.finalCelebration
               ? 'Lysande!'
               : tableMilestone.boss
                 ? 'Like a boss'
                 : `${tableMilestone.table}:an klar!`}
           </h2>
           <p className="text-xl text-white mb-6 drop-shadow-[0_3px_8px_rgba(0,0,0,0.55)]">
-            {tableMilestone.finalCelebration
+            {tableMilestone.masteredTwoToNineToday
+              ? 'Du har klarat 2:an till 9:an idag. Dags för boss-låt!'
+              : tableMilestone.finalCelebration
               ? 'Du klarade alla valda tabeller.'
               : tableMilestone.boss
               ? `${tableMilestone.table}:an klar ${tableMilestone.completionCountToday} gånger idag.`
@@ -723,6 +733,27 @@ function recordTableCompletion(profile, table) {
   return profile.tableDrill.completions.filter(
     item => Number(item.table) === Number(table) && item.timestamp >= startTs
   ).length
+}
+
+function hasMasteredTablesToday(profile, tables) {
+  if (!profile?.tableDrill || !Array.isArray(profile.tableDrill.completions)) return false
+  const required = new Set((tables || []).map(Number))
+  if (required.size === 0) return false
+
+  const startToday = new Date()
+  startToday.setHours(0, 0, 0, 0)
+  const startTs = startToday.getTime()
+
+  const completedToday = new Set(
+    profile.tableDrill.completions
+      .filter(item => item.timestamp >= startTs)
+      .map(item => Number(item.table))
+  )
+
+  for (const table of required) {
+    if (!completedToday.has(table)) return false
+  }
+  return true
 }
 
 function estimateOperationLevel(profile, operation) {

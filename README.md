@@ -20,7 +20,8 @@ npm run dev
 VITE_TEACHER_PASSWORD=ditt_losenord
 ```
 
-- Om inget är satt används standardlösenordet `teacher123`.
+- I development används fallback `teacher123` om värdet saknas.
+- I production krävs `VITE_TEACHER_PASSWORD` (ingen fallback).
 - För att skydda cloud-API:er för elevdata i produktion, sätt även server-env:
 
 ```bash
@@ -28,7 +29,7 @@ TEACHER_API_PASSWORD=samma_som_lararlosenord
 ```
 
 Tips: sätt `VITE_TEACHER_PASSWORD` och `TEACHER_API_PASSWORD` till samma värde.
-Om `TEACHER_API_PASSWORD` saknas körs `/api/students` och `/api/student/:id` i bakåtkompatibelt öppet läge.
+Om `TEACHER_API_PASSWORD` saknas blockeras `/api/students` och läraråtkomst till `/api/student/:id` i production/preview.
 
 ## Delad elevdata mellan enheter
 

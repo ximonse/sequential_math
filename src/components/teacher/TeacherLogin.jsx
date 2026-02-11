@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { isTeacherAuthenticated, loginTeacher } from '../../lib/teacherAuth'
+import {
+  getTeacherPasswordSource,
+  isTeacherAuthenticated,
+  isTeacherPasswordConfigured,
+  loginTeacher
+} from '../../lib/teacherAuth'
 
 function TeacherLogin() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const passwordConfigured = isTeacherPasswordConfigured()
+  const passwordSource = getTeacherPasswordSource()
 
   useEffect(() => {
     if (isTeacherAuthenticated()) {
@@ -16,6 +23,11 @@ function TeacherLogin() {
   const handleSubmit = (e) => {
     e.preventDefault()
     setError('')
+
+    if (!passwordConfigured) {
+      setError('Lärarlösenord saknas i produktion. Sätt VITE_TEACHER_PASSWORD och redeploya.')
+      return
+    }
 
     if (password.trim() === '') {
       setError('Ange lösenord')
@@ -40,6 +52,12 @@ function TeacherLogin() {
         <p className="text-center text-gray-600 mb-8">
           Ange lösenord för att öppna dashboarden
         </p>
+        {!passwordConfigured && (
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            Inget lärarlösenord är konfigurerat. Lägg till `VITE_TEACHER_PASSWORD`
+            {passwordSource === 'missing' ? ' och redeploya.' : '.'}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -55,6 +73,7 @@ function TeacherLogin() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+              disabled={!passwordConfigured}
               autoFocus
             />
           </div>
@@ -65,6 +84,7 @@ function TeacherLogin() {
 
           <button
             type="submit"
+            disabled={!passwordConfigured}
             className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
           >
             Logga in

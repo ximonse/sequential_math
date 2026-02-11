@@ -15,9 +15,14 @@ function getConfiguredTeacherApiPassword() {
   return ''
 }
 
+function isProdLikeServer() {
+  const env = String(process.env.VERCEL_ENV || process.env.NODE_ENV || '').toLowerCase()
+  return env === 'production' || env === 'preview'
+}
+
 function isTeacherApiAuthorized(req) {
   const configured = getConfiguredTeacherApiPassword()
-  if (!configured) return true
+  if (!configured) return !isProdLikeServer()
   const provided = String(req.headers['x-teacher-password'] || '')
   return provided === configured
 }

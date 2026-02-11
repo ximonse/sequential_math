@@ -13,10 +13,22 @@ function StudentHome() {
   const [assignment, setAssignment] = useState(null)
 
   const assignmentId = searchParams.get('assignment')
+  const mode = searchParams.get('mode')
 
   useEffect(() => {
     setProfile(getOrCreateProfile(studentId))
   }, [studentId])
+
+  useEffect(() => {
+    if (!studentId) return
+    if (!assignmentId && !mode) return
+
+    const params = new URLSearchParams()
+    if (assignmentId) params.set('assignment', assignmentId)
+    if (mode) params.set('mode', mode)
+
+    navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
+  }, [studentId, assignmentId, mode, navigate])
 
   useEffect(() => {
     if (assignmentId) {

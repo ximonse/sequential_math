@@ -30,8 +30,16 @@ function Login() {
     }
 
     const assignmentId = searchParams.get('assignment')
-    const target = assignmentId
-      ? `/student/${id}?assignment=${encodeURIComponent(assignmentId)}`
+    const mode = searchParams.get('mode')
+
+    const params = new URLSearchParams()
+    if (assignmentId) params.set('assignment', assignmentId)
+    if (mode) params.set('mode', mode)
+
+    const hasSharedTarget = assignmentId || mode
+    const query = params.toString()
+    const target = hasSharedTarget
+      ? `/student/${id}/practice${query ? `?${query}` : ''}`
       : `/student/${id}`
     navigate(target)
   }

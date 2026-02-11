@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { getOrCreateProfile } from '../../lib/storage'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import {
+  changeStudentPassword,
+  clearActiveStudentSession,
+  getOrCreateProfile,
+  isStudentSessionActive
+} from '../../lib/storage'
 import { getMasteryOverview, getStartOfWeekTimestamp } from '../../lib/studentProfile'
 import { getOperationLabel, OPERATION_LABELS } from '../../lib/operations'
 import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
@@ -8,16 +13,26 @@ import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 function StudentHome() {
   const { studentId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const [profile, setProfile] = useState(null)
   const [assignment, setAssignment] = useState(null)
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [passwordMessage, setPasswordMessage] = useState('')
 
   const assignmentId = searchParams.get('assignment')
   const mode = searchParams.get('mode')
 
   useEffect(() => {
+    if (!isStudentSessionActive(studentId)) {
+      const redirect = encodeURIComponent(`${location.pathname}${location.search}`)
+      navigate(`/?redirect=${redirect}`, { replace: true })
+      return
+    }
+
     setProfile(getOrCreateProfile(studentId))
-  }, [studentId])
+  }, [studentId, navigate, location.pathname, location.search])
 
   useEffect(() => {
     if (!studentId) return
@@ -55,6 +70,25 @@ function StudentHome() {
     })).filter(item => item.historical.length > 0 || item.weekly.length > 0)
   }, [profile])
 
+  const handleStudentLogout = () => {
+    clearActiveStudentSession()
+    navigate('/')
+  }
+
+  const handleChangePassword = (e) => {
+    e.preventDefault()
+    const result = changeStudentPassword(studentId, currentPassword, newPassword)
+
+    if (!result.ok) {
+      setPasswordMessage(result.error)
+      return
+    }
+
+    setCurrentPassword('')
+    setNewPassword('')
+    setPasswordMessage('Lösenord uppdaterat.')
+  }
+
   if (!profile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -76,10 +110,10 @@ function StudentHome() {
             <p className="text-sm text-gray-500">Din matteöversikt</p>
           </div>
           <button
-            onClick={() => navigate('/')}
+            onClick={handleStudentLogout}
             className="text-sm text-gray-500 hover:text-gray-700"
           >
-            Byt elev
+            Logga ut
           </button>
         </div>
 
@@ -118,6 +152,33 @@ function StudentHome() {
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
+          <h2 className="text-base font-semibold text-gray-800 mb-3">Byt elevlösenord</h2>
+          <form onSubmit={handleChangePassword} className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="Nuvarande"
+              className="px-3 py-2 border rounded text-sm"
+            />
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Nytt lösenord"
+              className="px-3 py-2 border rounded text-sm"
+            />
+            <button
+              type="submit"
+              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
+            >
+              Spara
+            </button>
+          </form>
+          <p className="text-xs text-gray-500 mt-2">{passwordMessage || ' '}</p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-xl p-4">

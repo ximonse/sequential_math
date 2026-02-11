@@ -1,9 +1,14 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import ProblemDisplay from './ProblemDisplay'
 import PongGame from './PongGame'
 import MathScratchpad from './MathScratchpad'
-import { getOrCreateProfileWithSync, saveProfile } from '../../lib/storage'
+import {
+  clearActiveStudentSession,
+  getOrCreateProfileWithSync,
+  isStudentSessionActive,
+  saveProfile
+} from '../../lib/storage'
 import {
   addProblemResult,
   getCurrentStreak,
@@ -19,6 +24,7 @@ const AUTO_CONTINUE_DELAY = 3000 // 3 sekunder
 function StudentSession() {
   const { studentId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
 
   const [profile, setProfile] = useState(null)
@@ -40,13 +46,19 @@ function StudentSession() {
 
   // Ladda profil vid start
   useEffect(() => {
+    if (!isStudentSessionActive(studentId)) {
+      const redirect = encodeURIComponent(`${location.pathname}${location.search}`)
+      navigate(`/?redirect=${redirect}`, { replace: true })
+      return undefined
+    }
+
     let active = true
     ;(async () => {
       const loadedProfile = await getOrCreateProfileWithSync(studentId)
       if (active) setProfile(loadedProfile)
     })()
     return () => { active = false }
-  }, [studentId])
+  }, [studentId, navigate, location.pathname, location.search])
 
   useEffect(() => {
     if (!assignmentId) {
@@ -216,6 +228,7 @@ function StudentSession() {
 
   const handleTakeBreak = () => {
     setShowBreakSuggestion(false)
+    clearActiveStudentSession()
     navigate('/')
   }
 
@@ -311,7 +324,10 @@ function StudentSession() {
           )}
 
           <button
-            onClick={() => navigate('/')}
+            onClick={() => {
+              clearActiveStudentSession()
+              navigate('/')
+            }}
             className="text-gray-400 hover:text-gray-600"
           >
             Avsluta

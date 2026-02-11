@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { studentExists, createAndSaveProfile } from '../lib/storage'
+import { authenticateStudent, normalizeStudentId } from '../lib/storage'
 
 function Login() {
-  const [studentId, setStudentId] = useState('')
+  const [studentIdInput, setStudentIdInput] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -12,25 +13,22 @@ function Login() {
     e.preventDefault()
     setError('')
 
-    const id = studentId.trim().toUpperCase()
+    const normalizedId = normalizeStudentId(studentIdInput)
+    const result = authenticateStudent(normalizedId, password)
 
-    if (!id) {
-      setError('Ange ditt elev-ID')
+    if (!result.ok) {
+      setError(result.error || 'Kunde inte logga in.')
       return
-    }
-
-    if (id.length !== 6) {
-      setError('Elev-ID ska vara 6 tecken')
-      return
-    }
-
-    // Kontrollera om eleven finns, annars skapa ny
-    if (!studentExists(id)) {
-      createAndSaveProfile(id, `Elev ${id}`, 4)
     }
 
     const assignmentId = searchParams.get('assignment')
     const mode = searchParams.get('mode')
+    const redirect = searchParams.get('redirect')
+
+    if (redirect && redirect.startsWith('/student/')) {
+      navigate(redirect)
+      return
+    }
 
     const params = new URLSearchParams()
     if (assignmentId) params.set('assignment', assignmentId)
@@ -39,8 +37,9 @@ function Login() {
     const hasSharedTarget = assignmentId || mode
     const query = params.toString()
     const target = hasSharedTarget
-      ? `/student/${id}/practice${query ? `?${query}` : ''}`
-      : `/student/${id}`
+      ? `/student/${result.profile.studentId}/practice${query ? `?${query}` : ''}`
+      : `/student/${result.profile.studentId}`
+
     navigate(target)
   }
 
@@ -55,26 +54,42 @@ function Login() {
           Matteträning
         </h1>
         <p className="text-center text-gray-600 mb-8">
-          Adaptiv matematik för dig
+          Logga in med namn/inloggningsnamn och lösenord
         </p>
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label
               htmlFor="studentId"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
-              Ditt elev-ID
+              Inloggningsnamn
             </label>
             <input
               type="text"
               id="studentId"
-              value={studentId}
-              onChange={(e) => setStudentId(e.target.value.toUpperCase())}
-              placeholder="T.ex. ABC123"
-              maxLength={6}
-              className="w-full px-4 py-3 text-2xl text-center tracking-widest border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none uppercase"
+              value={studentIdInput}
+              onChange={(e) => setStudentIdInput(e.target.value)}
+              placeholder="T.ex. Simon eller klass-id"
+              className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
               autoFocus
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Lösenord
+            </label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Ditt lösenord"
+              className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
             />
           </div>
 
@@ -82,11 +97,15 @@ function Login() {
             <p className="text-red-500 text-sm text-center">{error}</p>
           )}
 
+          <p className="text-xs text-gray-500">
+            För klasslistor är startlösenord normalt elevens namn.
+          </p>
+
           <button
             type="submit"
             className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
           >
-            Starta
+            Logga in
           </button>
         </form>
 

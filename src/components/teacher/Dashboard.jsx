@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getAllProfilesWithSync } from '../../lib/storage'
+import {
+  createClassFromRoster,
+  getAllProfilesWithSync,
+  getClasses,
+  removeClass,
+  resetStudentPasswordToLoginName
+} from '../../lib/storage'
 import {
   clearCustomTeacherPassword,
   getTeacherPasswordSource,
@@ -28,6 +34,11 @@ function Dashboard() {
   const [viewMode, setViewMode] = useState('daily')
   const [sortBy, setSortBy] = useState('active_today')
   const [sortDir, setSortDir] = useState('desc')
+  const [classes, setClasses] = useState([])
+  const [selectedClassId, setSelectedClassId] = useState('')
+  const [classNameInput, setClassNameInput] = useState('')
+  const [rosterInput, setRosterInput] = useState('')
+  const [classStatus, setClassStatus] = useState('')
   const [copiedId, setCopiedId] = useState('')
   const [activeAssignmentId, setActiveAssignmentId] = useState('')
   const [currentPassword, setCurrentPassword] = useState('')
@@ -38,6 +49,7 @@ function Dashboard() {
 
   useEffect(() => {
     void loadStudents()
+    setClasses(getClasses())
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
     setPasswordSource(getTeacherPasswordSource())
@@ -45,6 +57,7 @@ function Dashboard() {
 
   const handleRefresh = () => {
     void loadStudents()
+    setClasses(getClasses())
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
     setPasswordSource(getTeacherPasswordSource())
@@ -69,8 +82,12 @@ function Dashboard() {
     totalProblems: students.reduce((sum, s) => sum + (s.stats.totalProblems || 0), 0)
   }
 
+  const filteredStudents = selectedClassId
+    ? students.filter(student => student.classId === selectedClassId)
+    : students
+
   const tableRows = getSortedRows(
-    students.map(student => buildStudentRow(student)),
+    filteredStudents.map(student => buildStudentRow(student)),
     sortBy,
     sortDir
   )
@@ -123,6 +140,34 @@ function Dashboard() {
     clearAllAssignments()
     setAssignments([])
     setActiveAssignmentId('')
+  }
+
+  const handleCreateClass = () => {
+    const result = createClassFromRoster(classNameInput, rosterInput, 4)
+    if (!result.ok) {
+      setClassStatus(result.error)
+      return
+    }
+
+    setClassNameInput('')
+    setRosterInput('')
+    setClassStatus(`Klass skapad: ${result.classRecord.name} (${result.classRecord.studentIds.length} elever)`)
+    setClasses(getClasses())
+    void loadStudents()
+  }
+
+  const handleDeleteClass = (classId) => {
+    removeClass(classId)
+    if (selectedClassId === classId) {
+      setSelectedClassId('')
+    }
+    setClasses(getClasses())
+    setClassStatus('Klass borttagen.')
+  }
+
+  const handleResetStudentPassword = (studentId) => {
+    const result = resetStudentPasswordToLoginName(studentId)
+    setClassStatus(result.ok ? `Lösenord återställt för ${studentId}` : result.error)
   }
 
   const handlePasswordChange = (e) => {
@@ -347,6 +392,72 @@ function Dashboard() {
           </div>
         </div>
 
+        <div className="bg-white rounded-lg shadow p-4 mb-8">
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">Klasser</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
+            <input
+              type="text"
+              value={classNameInput}
+              onChange={(e) => setClassNameInput(e.target.value)}
+              placeholder="Klassnamn, t.ex. 4A"
+              className="px-3 py-2 border rounded text-sm"
+            />
+            <button
+              onClick={handleCreateClass}
+              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
+            >
+              Skapa klass från listan
+            </button>
+            <select
+              value={selectedClassId}
+              onChange={(e) => setSelectedClassId(e.target.value)}
+              className="px-3 py-2 border rounded text-sm"
+            >
+              <option value="">Alla klasser</option>
+              {classes.map(item => (
+                <option key={item.id} value={item.id}>
+                  {item.name} ({item.studentIds.length})
+                </option>
+              ))}
+            </select>
+          </div>
+          <textarea
+            value={rosterInput}
+            onChange={(e) => setRosterInput(e.target.value)}
+            placeholder={'Klistra in elevlista, en per rad\\nAnna Andersson\\nBo Berg'}
+            className="w-full min-h-28 px-3 py-2 border rounded text-sm mb-3"
+          />
+          <p className="text-xs text-gray-500 mb-2">
+            Inloggningsnamn skapas från elevens namn. Startlösenord sätts till elevens namn.
+          </p>
+          <p className="text-xs text-gray-600 mb-3">{classStatus || ' '}</p>
+
+          {classes.length > 0 && (
+            <div className="space-y-2">
+              {classes.map(item => {
+                const classStudents = students.filter(student => student.classId === item.id)
+                const loggedInCount = classStudents.filter(student => student.auth?.lastLoginAt).length
+                return (
+                  <div key={item.id} className="flex items-center justify-between gap-2 border rounded p-2">
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">{item.name}</p>
+                      <p className="text-xs text-gray-500">
+                        {item.studentIds.length} elever | {loggedInCount} har loggat in
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteClass(item.id)}
+                      className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
+                    >
+                      Ta bort klass
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
         {students.length === 0 ? (
           <div className="bg-white rounded-lg p-8 shadow text-center">
             <p className="text-gray-500 text-lg">Inga elever ännu</p>
@@ -409,6 +520,7 @@ function Dashboard() {
                   <option value="week_active_time">Veckans aktiv tid</option>
                   <option value="week_success_rate">Veckans träffsäkerhet</option>
                   <option value="week_answer_length">Veckans svarslängd</option>
+                  <option value="logged_in">Har loggat in</option>
                   <option value="last_active">Senast aktiv</option>
                   <option value="attempts">Totala försök</option>
                   <option value="success_rate">Total träffsäkerhet</option>
@@ -472,6 +584,15 @@ function Dashboard() {
                     <td className="px-4 py-3">
                       <div className="font-semibold text-gray-800">{row.name}</div>
                       <div className="text-xs text-gray-400 font-mono">{row.studentId}</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Klass: {row.className || '-'} | {row.hasLoggedIn ? 'Inloggad' : 'Ej inloggad'}
+                      </div>
+                      <button
+                        onClick={() => handleResetStudentPassword(row.studentId)}
+                        className="mt-2 px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs"
+                      >
+                        Nytt lösen
+                      </button>
                     </td>
                     {viewMode === 'daily' ? (
                       <>
@@ -704,6 +825,9 @@ function buildStudentRow(student) {
   return {
     studentId: student.studentId,
     name: student.name,
+    classId: student.classId || '',
+    className: student.className || '',
+    hasLoggedIn: Boolean(student.auth?.lastLoginAt),
     attempts,
     correctCount,
     successRate,
@@ -837,6 +961,7 @@ function compareRows(a, b, sortBy) {
   if (sortBy === 'week_active_time') return a.weekActiveTimeSec - b.weekActiveTimeSec
   if (sortBy === 'week_success_rate') return a.weekSuccessRate - b.weekSuccessRate
   if (sortBy === 'week_answer_length') return (a.weekAvgAnswerLength || 0) - (b.weekAvgAnswerLength || 0)
+  if (sortBy === 'logged_in') return Number(a.hasLoggedIn) - Number(b.hasLoggedIn)
   if (sortBy === 'last_active') return (a.lastActive || 0) - (b.lastActive || 0)
   if (sortBy === 'attempts') return a.attempts - b.attempts
   if (sortBy === 'success_rate') return a.successRate - b.successRate

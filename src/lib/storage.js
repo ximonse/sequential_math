@@ -1,5 +1,5 @@
 /**
- * Storage - Hanterar lagring av elevprofiler
+ * Storage - Hanterar lagring av elevprofiler, elevinloggning och klasslistor.
  *
  * Phase 1: localStorage
  * Phase 2+: Cloud sync via Vercel API + KV
@@ -9,83 +9,209 @@ import { createStudentProfile } from './studentProfile'
 
 const STORAGE_PREFIX = 'mathapp_student_'
 const STUDENTS_LIST_KEY = 'mathapp_students_list'
+const STUDENT_SESSION_KEY = 'mathapp_student_session'
+const CLASSES_KEY = 'mathapp_classes_v1'
 const CLOUD_ENABLED = import.meta.env.VITE_ENABLE_CLOUD_SYNC === '1'
 
-/**
- * Ladda elevprofil
- */
-export function loadProfile(studentId) {
-  const data = localStorage.getItem(STORAGE_PREFIX + studentId)
+export function normalizeStudentId(value) {
+  const raw = String(value || '').trim()
+  if (!raw) return ''
 
-  if (!data) {
-    return null
+  const ascii = raw
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9_-]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+
+  return ascii.toUpperCase()
+}
+
+function ensureProfileAuth(profile) {
+  if (!profile.auth || typeof profile.auth !== 'object') {
+    profile.auth = {
+      password: profile.name || profile.studentId,
+      passwordUpdatedAt: profile.created_at || Date.now(),
+      lastLoginAt: null,
+      loginCount: 0
+    }
   }
 
+  if (!profile.auth.password || String(profile.auth.password).trim() === '') {
+    profile.auth.password = profile.name || profile.studentId
+  }
+
+  if (typeof profile.auth.loginCount !== 'number') {
+    profile.auth.loginCount = 0
+  }
+
+  if (!('lastLoginAt' in profile.auth)) {
+    profile.auth.lastLoginAt = null
+  }
+
+  return profile
+}
+
+export function loadProfile(studentId) {
+  const normalizedId = normalizeStudentId(studentId)
+  if (!normalizedId) return null
+
+  const data = localStorage.getItem(STORAGE_PREFIX + normalizedId)
+  if (!data) return null
+
   try {
-    return JSON.parse(data)
+    const parsed = JSON.parse(data)
+    parsed.studentId = normalizeStudentId(parsed.studentId || normalizedId)
+    ensureProfileAuth(parsed)
+    return parsed
   } catch (e) {
     console.error('Failed to parse profile:', e)
     return null
   }
 }
 
-/**
- * Spara elevprofil
- */
 export function saveProfile(profile) {
   saveProfileLocalOnly(profile)
-  // Best-effort sync, blockera aldrig elevflödet.
   void syncProfileToCloud(profile)
 }
 
-/**
- * Skapa ny elevprofil
- */
-export function createAndSaveProfile(studentId, name, grade = 4) {
-  const profile = createStudentProfile(studentId, name, grade)
+export function createAndSaveProfile(studentId, name, grade = 4, options = {}) {
+  const normalizedId = normalizeStudentId(studentId)
+  if (!normalizedId) {
+    throw new Error('Invalid student id')
+  }
+
+  const displayName = String(name || normalizedId).trim() || normalizedId
+  const profile = createStudentProfile(normalizedId, displayName, grade)
+
+  profile.auth = {
+    password: String(options.initialPassword || displayName),
+    passwordUpdatedAt: Date.now(),
+    lastLoginAt: null,
+    loginCount: 0
+  }
+
+  profile.classId = options.classId || null
+  profile.className = options.className || null
+
   saveProfile(profile)
   return profile
 }
 
-/**
- * Hämta eller skapa profil
- */
 export function getOrCreateProfile(studentId, name = null, grade = 4) {
-  let profile = loadProfile(studentId)
+  const normalizedId = normalizeStudentId(studentId)
+  let profile = loadProfile(normalizedId)
 
   if (!profile) {
-    const displayName = name || `Elev ${studentId}`
-    profile = createAndSaveProfile(studentId, displayName, grade)
+    const displayName = name || `Elev ${normalizedId}`
+    profile = createAndSaveProfile(normalizedId, displayName, grade)
   }
 
+  ensureProfileAuth(profile)
   return profile
 }
 
-/**
- * Hämta/skapa profil med cloud-fallback för delad data mellan enheter.
- */
 export async function getOrCreateProfileWithSync(studentId, name = null, grade = 4) {
-  const local = loadProfile(studentId)
+  const normalizedId = normalizeStudentId(studentId)
+  const local = loadProfile(normalizedId)
   if (local) {
     void syncProfileToCloud(local)
     return local
   }
 
   if (CLOUD_ENABLED) {
-    const cloud = await loadProfileFromCloud(studentId)
+    const cloud = await loadProfileFromCloud(normalizedId)
     if (cloud) {
       saveProfileLocalOnly(cloud)
       return cloud
     }
   }
 
-  const displayName = name || `Elev ${studentId}`
-  return createAndSaveProfile(studentId, displayName, grade)
+  const displayName = name || `Elev ${normalizedId}`
+  return createAndSaveProfile(normalizedId, displayName, grade)
 }
 
-/**
- * Uppdatera listan över elever
- */
+export function authenticateStudent(studentIdInput, passwordInput) {
+  const studentId = normalizeStudentId(studentIdInput)
+  const password = String(passwordInput || '')
+
+  if (!studentId) {
+    return { ok: false, error: 'Ange inloggningsnamn.' }
+  }
+
+  if (password.trim() === '') {
+    return { ok: false, error: 'Ange lösenord.' }
+  }
+
+  let profile = loadProfile(studentId)
+  if (!profile) {
+    profile = createAndSaveProfile(studentId, studentId, 4, {
+      initialPassword: studentId
+    })
+  }
+
+  ensureProfileAuth(profile)
+
+  if (password !== String(profile.auth.password || '')) {
+    return { ok: false, error: 'Fel lösenord.' }
+  }
+
+  profile.auth.lastLoginAt = Date.now()
+  profile.auth.loginCount = (profile.auth.loginCount || 0) + 1
+  saveProfile(profile)
+  setActiveStudentSession(studentId)
+
+  return { ok: true, profile }
+}
+
+export function changeStudentPassword(studentId, currentPassword, newPassword) {
+  const profile = loadProfile(studentId)
+  if (!profile) return { ok: false, error: 'Elev saknas.' }
+
+  ensureProfileAuth(profile)
+
+  if (String(currentPassword || '') !== String(profile.auth.password || '')) {
+    return { ok: false, error: 'Nuvarande lösenord stämmer inte.' }
+  }
+
+  if (String(newPassword || '').trim().length < 3) {
+    return { ok: false, error: 'Nytt lösenord måste vara minst 3 tecken.' }
+  }
+
+  profile.auth.password = String(newPassword)
+  profile.auth.passwordUpdatedAt = Date.now()
+  saveProfile(profile)
+  return { ok: true }
+}
+
+export function resetStudentPasswordToLoginName(studentId) {
+  const profile = loadProfile(studentId)
+  if (!profile) return { ok: false, error: 'Elev saknas.' }
+
+  ensureProfileAuth(profile)
+  profile.auth.password = profile.studentId
+  profile.auth.passwordUpdatedAt = Date.now()
+  saveProfile(profile)
+  return { ok: true, password: profile.studentId }
+}
+
+export function setActiveStudentSession(studentId) {
+  const normalizedId = normalizeStudentId(studentId)
+  if (!normalizedId) return
+  localStorage.setItem(STUDENT_SESSION_KEY, normalizedId)
+}
+
+export function clearActiveStudentSession() {
+  localStorage.removeItem(STUDENT_SESSION_KEY)
+}
+
+export function getActiveStudentSession() {
+  return normalizeStudentId(localStorage.getItem(STUDENT_SESSION_KEY) || '')
+}
+
+export function isStudentSessionActive(studentId) {
+  return getActiveStudentSession() === normalizeStudentId(studentId)
+}
+
 function updateStudentsList(studentId, name) {
   const list = getStudentsList()
 
@@ -104,31 +230,22 @@ function updateStudentsList(studentId, name) {
   localStorage.setItem(STUDENTS_LIST_KEY, JSON.stringify(list))
 }
 
-/**
- * Hämta lista över alla elever
- */
 export function getStudentsList() {
   const data = localStorage.getItem(STUDENTS_LIST_KEY)
   if (!data) return []
 
   try {
     return JSON.parse(data)
-  } catch (e) {
+  } catch {
     return []
   }
 }
 
-/**
- * Hämta alla elevprofiler (för dashboard)
- */
 export function getAllProfiles() {
   const list = getStudentsList()
   return list.map(s => loadProfile(s.studentId)).filter(Boolean)
 }
 
-/**
- * Hämta alla profiler med cloud merge (lärarvy).
- */
 export async function getAllProfilesWithSync() {
   const local = getAllProfiles()
   if (!CLOUD_ENABLED) return local
@@ -141,7 +258,9 @@ export async function getAllProfilesWithSync() {
 
     const merged = new Map()
     for (const p of local) merged.set(p.studentId, p)
-    for (const p of cloud) {
+
+    for (const raw of cloud) {
+      const p = ensureProfileAuth({ ...raw, studentId: normalizeStudentId(raw.studentId) })
       const prev = merged.get(p.studentId)
       if (!prev) {
         merged.set(p.studentId, p)
@@ -159,38 +278,151 @@ export async function getAllProfilesWithSync() {
   }
 }
 
-/**
- * Ta bort elevprofil
- */
 export function deleteProfile(studentId) {
-  localStorage.removeItem(STORAGE_PREFIX + studentId)
+  const normalizedId = normalizeStudentId(studentId)
+  localStorage.removeItem(STORAGE_PREFIX + normalizedId)
 
-  const list = getStudentsList().filter(s => s.studentId !== studentId)
+  const list = getStudentsList().filter(s => s.studentId !== normalizedId)
   localStorage.setItem(STUDENTS_LIST_KEY, JSON.stringify(list))
 }
 
-/**
- * Kontrollera om elev-ID finns
- */
 export function studentExists(studentId) {
   return loadProfile(studentId) !== null
 }
 
+export function getClasses() {
+  const data = localStorage.getItem(CLASSES_KEY)
+  if (!data) return []
+
+  try {
+    const parsed = JSON.parse(data)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+function saveClasses(classes) {
+  localStorage.setItem(CLASSES_KEY, JSON.stringify(classes))
+}
+
+function parseRosterLines(rawList) {
+  return String(rawList || '')
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean)
+}
+
+function createUniqueStudentId(baseId, existingIds) {
+  if (!existingIds.has(baseId)) {
+    existingIds.add(baseId)
+    return baseId
+  }
+
+  let counter = 2
+  while (counter < 10000) {
+    const candidate = `${baseId}_${counter}`
+    if (!existingIds.has(candidate)) {
+      existingIds.add(candidate)
+      return candidate
+    }
+    counter += 1
+  }
+
+  throw new Error('Could not generate unique student id')
+}
+
+export function createClassFromRoster(classNameInput, rosterText, grade = 4) {
+  const className = String(classNameInput || '').trim()
+  if (!className) {
+    return { ok: false, error: 'Ange klassnamn.' }
+  }
+
+  const names = parseRosterLines(rosterText)
+  if (names.length === 0) {
+    return { ok: false, error: 'Klistra in minst ett namn.' }
+  }
+
+  const classes = getClasses()
+  const allProfiles = getAllProfiles()
+  const existingIds = new Set(allProfiles.map(p => p.studentId))
+
+  const classId = `class_${Date.now()}`
+  const studentIds = []
+
+  for (const name of names) {
+    const base = normalizeStudentId(name)
+    if (!base) continue
+
+    let profile = loadProfile(base)
+    if (profile) {
+      profile.name = name
+      ensureProfileAuth(profile)
+      profile.classId = classId
+      profile.className = className
+      saveProfile(profile)
+      studentIds.push(profile.studentId)
+      continue
+    }
+
+    const uniqueId = createUniqueStudentId(base, existingIds)
+    const created = createAndSaveProfile(uniqueId, name, grade, {
+      initialPassword: name,
+      classId,
+      className
+    })
+    studentIds.push(created.studentId)
+  }
+
+  const classRecord = {
+    id: classId,
+    name: className,
+    studentIds,
+    createdAt: Date.now()
+  }
+
+  classes.unshift(classRecord)
+  saveClasses(classes)
+
+  return {
+    ok: true,
+    classRecord
+  }
+}
+
+export function removeClass(classId) {
+  const classes = getClasses().filter(c => c.id !== classId)
+  saveClasses(classes)
+}
+
 function saveProfileLocalOnly(profile) {
+  const normalizedId = normalizeStudentId(profile.studentId)
+  const normalized = ensureProfileAuth({
+    ...profile,
+    studentId: normalizedId
+  })
+
   localStorage.setItem(
-    STORAGE_PREFIX + profile.studentId,
-    JSON.stringify(profile)
+    STORAGE_PREFIX + normalized.studentId,
+    JSON.stringify(normalized)
   )
-  updateStudentsList(profile.studentId, profile.name)
+
+  updateStudentsList(normalized.studentId, normalized.name)
 }
 
 async function loadProfileFromCloud(studentId) {
   if (!CLOUD_ENABLED) return null
+
   try {
     const response = await fetch(`/api/student/${encodeURIComponent(studentId)}`)
     if (!response.ok) return null
     const data = await response.json()
-    return data?.profile || null
+    const profile = data?.profile || null
+    if (!profile) return null
+    return ensureProfileAuth({
+      ...profile,
+      studentId: normalizeStudentId(profile.studentId || studentId)
+    })
   } catch {
     return null
   }
@@ -198,20 +430,24 @@ async function loadProfileFromCloud(studentId) {
 
 async function syncProfileToCloud(profile) {
   if (!CLOUD_ENABLED) return
+
   try {
-    await fetch(`/api/student/${encodeURIComponent(profile.studentId)}`, {
+    const normalizedId = normalizeStudentId(profile.studentId)
+    await fetch(`/api/student/${encodeURIComponent(normalizedId)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ profile })
+      body: JSON.stringify({
+        profile: {
+          ...profile,
+          studentId: normalizedId
+        }
+      })
     })
   } catch {
     // no-op
   }
 }
 
-/**
- * Exportera profil (för GDPR)
- */
 export function exportProfile(studentId) {
   const profile = loadProfile(studentId)
   if (!profile) return null

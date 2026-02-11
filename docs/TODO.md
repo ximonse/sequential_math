@@ -1,17 +1,17 @@
 ## TODO
 
-### Teacher Dashboard - Next Pedagogical Layer
-- Add a `Behöver stöd nu` panel with ranked students and clear reason codes.
-- Add risk flags per student (high error + low reasonability + low activity).
-- Add assignment adherence metric (did student work on assigned mode/level).
-- Add per-operation bottleneck view by `skillTag`/level where student stalls.
-- Add quick actions from row:
-  - assign focused repetition by operation/level range
-  - assign short confidence warmup
-  - assign mixed challenge set
-- Simplify overlapping percentages in table and keep table as drilldown.
+### Completed (2026-02-11)
+- [x] `Behöver stöd nu` panel with ranked students + reason codes.
+- [x] Risk flags per student (activity, success, reasonability, pace, adherence).
+- [x] Assignment adherence metrics (today/week/total) + sorting.
+- [x] Bottleneck view by operation/`skillTag`/level.
+- [x] Quick actions per elevrad: focus, warmup, mix.
+- [x] Simplified table percentages while keeping drilldown details.
+- [x] Inactivity buckets (today, 2+ days, 7+ days, never started).
+- [x] Class-level summaries (started/not started, weekly activity, weekly goal).
+- [x] CSV export of current teacher snapshot.
 
-### Teacher Workflow
-- Add inactivity buckets (not active today, 2+ days, 7+ days).
-- Add class-level summaries: started/not started, weekly completion.
-- Add export for class snapshot (CSV).
+### Next
+- [ ] Add automated tests for teacher dashboard helper logic (risk/adherence/bottlenecks/csv).
+- [ ] Add optional pagination/virtualization in student table for larger classes.
+- [ ] Add a compact trend sparkline per student (weekly attempts + success).

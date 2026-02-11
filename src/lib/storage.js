@@ -180,7 +180,23 @@ export async function getOrCreateProfileWithSync(studentId, name = null, grade =
   const createIfMissing = options.createIfMissing !== false
   const local = loadProfile(normalizedId)
   if (local) {
-    void syncProfileToCloud(local)
+    if (CLOUD_ENABLED) {
+      const cloud = await loadProfileFromCloud(normalizedId, {
+        studentPassword: getActiveStudentSessionSecret(),
+        teacherPassword: getTeacherApiToken()
+      })
+
+      if (cloud) {
+        const freshest = chooseFreshestProfile(local, cloud)
+        saveProfileLocalOnly(freshest)
+        if (freshest === local) {
+          void syncProfileToCloud(local)
+        }
+        return freshest
+      }
+
+      void syncProfileToCloud(local)
+    }
     return local
   }
 
@@ -665,6 +681,23 @@ async function syncProfileToCloud(profile) {
 
 function getLastProblemTimestamp(profile) {
   return profile?.recentProblems?.[profile.recentProblems.length - 1]?.timestamp || 0
+}
+
+function chooseFreshestProfile(localProfile, cloudProfile) {
+  const localProblemTs = getLastProblemTimestamp(localProfile)
+  const cloudProblemTs = getLastProblemTimestamp(cloudProfile)
+
+  if (cloudProblemTs > localProblemTs) return cloudProfile
+  if (cloudProblemTs < localProblemTs) return localProfile
+
+  const localPwdTs = Number(localProfile?.auth?.passwordUpdatedAt || 0)
+  const cloudPwdTs = Number(cloudProfile?.auth?.passwordUpdatedAt || 0)
+  if (cloudPwdTs > localPwdTs) return cloudProfile
+  if (cloudPwdTs < localPwdTs) return localProfile
+
+  if (!localProfile?.classId && cloudProfile?.classId) return cloudProfile
+  if (!localProfile?.className && cloudProfile?.className) return cloudProfile
+  return localProfile
 }
 
 function normalizeCloudListProfile(raw) {

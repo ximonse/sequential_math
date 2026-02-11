@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { getOrCreateProfile } from '../../lib/storage'
 import { getMasteryOverview, getStartOfWeekTimestamp } from '../../lib/studentProfile'
-import { getOperationLabel } from '../../lib/operations'
+import { getOperationLabel, OPERATION_LABELS } from '../../lib/operations'
 import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 
 function StudentHome() {
@@ -51,7 +51,7 @@ function StudentHome() {
     )
   }
 
-  const practicePath = assignment
+  const assignmentPracticePath = assignment
     ? `/student/${studentId}/practice?assignment=${encodeURIComponent(assignment.id)}`
     : `/student/${studentId}/practice`
 
@@ -79,11 +79,32 @@ function StudentHome() {
               </p>
             </div>
             <button
-              onClick={() => navigate(practicePath)}
+              onClick={() => navigate(assignmentPracticePath)}
               className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg"
             >
-              Starta träning
+              {assignment ? 'Fortsätt uppdrag' : 'Starta fri träning'}
             </button>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
+          <h2 className="text-base font-semibold text-gray-800 mb-3">Välj träning</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button
+              onClick={() => navigate(`/student/${studentId}/practice`)}
+              className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold"
+            >
+              Fri träning
+            </button>
+            {Object.keys(OPERATION_LABELS).map(operation => (
+              <button
+                key={operation}
+                onClick={() => navigate(`/student/${studentId}/practice?mode=${encodeURIComponent(operation)}`)}
+                className="px-4 py-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium"
+              >
+                {getOperationLabel(operation)}
+              </button>
+            ))}
           </div>
         </div>
 

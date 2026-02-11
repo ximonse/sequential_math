@@ -86,6 +86,21 @@ export function selectNextProblem(profile, options = {}) {
   const allowedTypes = normalizeAllowedTypes(options.allowedTypes)
   const assignmentType = allowedTypes.length === 1 ? allowedTypes[0] : null
 
+  // Sessionstyrd warmup (t.ex. vid fokuserat räknesättsläge)
+  if (Number.isFinite(options.forcedLevel)) {
+    const forcedLevel = clampLevelToRange(Math.round(options.forcedLevel), options.levelRange)
+    const forcedType = options.forcedType || assignmentType || preferredType
+    const problem = generateByDifficultyWithOptions(forcedLevel, {
+      preferredType: forcedType,
+      allowedTypes
+    })
+    return annotateSelectedProblem(profile, problem, {
+      reason: options.forceReason || 'session_warmup',
+      bucket: options.forceBucket || 'easy',
+      targetLevel: forcedLevel
+    })
+  }
+
   // Efter frånvaro: börja lite enklare för att nå 80/20-zonen snabbare.
   if (warmupLevel !== null) {
     const problem = generateByDifficultyWithOptions(warmupLevel, {

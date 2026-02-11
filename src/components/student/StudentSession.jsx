@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import ProblemDisplay from './ProblemDisplay'
 import PongGame from './PongGame'
@@ -31,9 +31,11 @@ function StudentSession() {
   const [showPong, setShowPong] = useState(false)
   const [showScratchpad, setShowScratchpad] = useState(false)
   const [sessionAssignment, setSessionAssignment] = useState(null)
+  const [sessionWarmup, setSessionWarmup] = useState(null)
   const inputRef = useRef(null)
 
   const assignmentId = searchParams.get('assignment')
+  const mode = searchParams.get('mode')
 
   // Ladda profil vid start
   useEffect(() => {
@@ -50,14 +52,50 @@ function StudentSession() {
     setSessionAssignment(assignment)
   }, [assignmentId])
 
+  useEffect(() => {
+    if (!profile) return
+    if (!mode || !isKnownMode(mode)) {
+      setSessionWarmup(null)
+      return
+    }
+
+    const operationHistory = profile.recentProblems.filter(p => inferOperationFromType(p.problemType) === mode)
+    const hasHistory = operationHistory.length > 0
+    const estimatedLevel = estimateOperationLevel(profile, mode)
+
+    if (!hasHistory) {
+      setSessionWarmup({
+        operation: mode,
+        targetLevel: 1,
+        startLevel: 1,
+        warmupCount: 3
+      })
+      return
+    }
+
+    const startLevel = Math.max(1, Math.round(estimatedLevel) - 1)
+    const targetLevel = Math.max(startLevel, Math.round(estimatedLevel))
+    setSessionWarmup({
+      operation: mode,
+      targetLevel,
+      startLevel,
+      warmupCount: 3
+    })
+  }, [profile, mode])
+
+  const completedThisSession = useMemo(() => sessionCount, [sessionCount])
+
   // Generera första problemet när profil är laddad
   useEffect(() => {
     if (profile && !currentProblem && !feedback) {
-      const problem = selectNextProblem(profile, getSessionRules(sessionAssignment))
+      const problem = selectNextProblem(
+        profile,
+        getSessionRules(sessionAssignment, mode, sessionWarmup, completedThisSession)
+      )
       setCurrentProblem(problem)
       setStartTime(Date.now())
     }
-  }, [profile, currentProblem, feedback, sessionAssignment])
+  }, [profile, currentProblem, feedback, sessionAssignment, mode, sessionWarmup, completedThisSession])
 
   // Fokusera input när nytt problem visas
   useEffect(() => {
@@ -75,12 +113,15 @@ function StudentSession() {
   // Gå till nästa problem
   const goToNextProblem = useCallback(() => {
     if (!profile) return
-    const nextProblem = selectNextProblem(profile, getSessionRules(sessionAssignment))
+    const nextProblem = selectNextProblem(
+      profile,
+      getSessionRules(sessionAssignment, mode, sessionWarmup, completedThisSession)
+    )
     setCurrentProblem(nextProblem)
     setAnswer('')
     setFeedback(null)
     setStartTime(Date.now())
-  }, [profile, sessionAssignment])
+  }, [profile, sessionAssignment, mode, sessionWarmup, completedThisSession])
 
   // Auto-fortsätt efter 3 sekunder när feedback visas
   useEffect(() => {
@@ -259,7 +300,7 @@ function StudentSession() {
 
         {/* Main content */}
         <div className="py-8">
-          <SessionModeBanner assignment={sessionAssignment} />
+          <SessionModeBanner assignment={sessionAssignment} mode={mode} />
 
           <ProblemDisplay
             problem={currentProblem}
@@ -368,8 +409,15 @@ function CurrentOperationMastery({ operationLabel, historical, weekly }) {
   )
 }
 
-function SessionModeBanner({ assignment }) {
+function SessionModeBanner({ assignment, mode }) {
   if (!assignment) {
+    if (mode && isKnownMode(mode)) {
+      return (
+        <div className="mb-5 bg-white border border-emerald-200 text-emerald-700 rounded-lg px-4 py-2 text-sm">
+          Läge: {getOperationLabel(mode)}
+        </div>
+      )
+    }
     return (
       <div className="mb-5 bg-white border border-blue-100 text-blue-700 rounded-lg px-4 py-2 text-sm">
         Läge: Fri träning
@@ -384,12 +432,61 @@ function SessionModeBanner({ assignment }) {
   )
 }
 
-function getSessionRules(assignment) {
-  if (!assignment) return {}
-  return {
-    allowedTypes: assignment.problemTypes,
-    levelRange: [assignment.minLevel, assignment.maxLevel]
+function getSessionRules(assignment, mode, warmup, solvedCount) {
+  const rules = {}
+
+  if (assignment) {
+    rules.allowedTypes = assignment.problemTypes
+    rules.levelRange = [assignment.minLevel, assignment.maxLevel]
+    return rules
   }
+
+  if (mode && isKnownMode(mode)) {
+    rules.allowedTypes = [mode]
+  }
+
+  if (warmup && solvedCount < warmup.warmupCount) {
+    const forcedLevel = Math.min(
+      warmup.targetLevel,
+      warmup.startLevel + solvedCount
+    )
+    rules.forcedLevel = forcedLevel
+    rules.forcedType = warmup.operation
+    rules.forceReason = 'operation_mode_warmup'
+    rules.forceBucket = solvedCount === 0 ? 'very_easy' : 'easy'
+  }
+
+  return rules
+}
+
+function estimateOperationLevel(profile, operation) {
+  const relevant = profile.recentProblems
+    .filter(p => inferOperationFromType(p.problemType) === operation)
+    .slice(-20)
+
+  if (relevant.length === 0) return 1
+
+  const sum = relevant.reduce((acc, p) => {
+    const lvl = p.difficulty?.conceptual_level || Math.round(profile.currentDifficulty) || 1
+    return acc + lvl
+  }, 0)
+
+  return sum / relevant.length
+}
+
+function inferOperationFromType(problemType = '') {
+  if (problemType.startsWith('add_')) return 'addition'
+  if (problemType.startsWith('sub_')) return 'subtraction'
+  if (problemType.startsWith('mul_')) return 'multiplication'
+  if (problemType.startsWith('div_')) return 'division'
+  return 'addition'
+}
+
+function isKnownMode(mode) {
+  return mode === 'addition'
+    || mode === 'subtraction'
+    || mode === 'multiplication'
+    || mode === 'division'
 }
 
 export default StudentSession

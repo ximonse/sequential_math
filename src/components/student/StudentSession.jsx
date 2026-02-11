@@ -59,8 +59,14 @@ function StudentSession() {
 
     let active = true
     ;(async () => {
-      const loadedProfile = await getOrCreateProfileWithSync(studentId)
-      if (active) setProfile(loadedProfile)
+      const loadedProfile = await getOrCreateProfileWithSync(studentId, null, 4, { createIfMissing: false })
+      if (!active) return
+      if (!loadedProfile) {
+        clearActiveStudentSession()
+        navigate('/', { replace: true })
+        return
+      }
+      setProfile(loadedProfile)
     })()
     return () => { active = false }
   }, [studentId, navigate, location.pathname, location.search])
@@ -203,24 +209,22 @@ function StudentSession() {
   useEffect(() => {
     if (!feedback || showBreakSuggestion || tableMilestone) return
 
+    let handleKeyDown = null
+
     // Vänta 100ms så att Enter från submit hinner släppas
     const activateTimer = setTimeout(() => {
-      const handleKeyDown = (e) => {
+      handleKeyDown = (e) => {
         if (e.key === 'Enter') {
           goToNextProblem()
         }
       }
       window.addEventListener('keydown', handleKeyDown)
-
-      // Spara referens för cleanup
-      window._mathEnterHandler = handleKeyDown
     }, 100)
 
     return () => {
       clearTimeout(activateTimer)
-      if (window._mathEnterHandler) {
-        window.removeEventListener('keydown', window._mathEnterHandler)
-        window._mathEnterHandler = null
+      if (handleKeyDown) {
+        window.removeEventListener('keydown', handleKeyDown)
       }
     }
   }, [feedback, showBreakSuggestion, tableMilestone, goToNextProblem])
@@ -230,7 +234,8 @@ function StudentSession() {
 
     const timeSpent = (Date.now() - startTime) / 1000
     const normalizedAnswer = answer.trim().replace(/,/g, '.')
-    const studentAnswer = parseFloat(normalizedAnswer)
+    if (!/^-?(?:\d+|\d*\.\d+)$/.test(normalizedAnswer)) return
+    const studentAnswer = Number(normalizedAnswer)
     if (!Number.isFinite(studentAnswer)) return
 
     // Lägg till resultat
@@ -274,7 +279,7 @@ function StudentSession() {
             table: currentItem.table,
             remainingTablesCount: remainingTables.length,
             completionCountToday,
-            masteredTwoToNineToday: hasMasteredTablesToday(profile, [2, 3, 4, 5, 6, 7, 8, 9]),
+            masteredTwoToNineToday: shouldTriggerDailyBoss(profile, [2, 3, 4, 5, 6, 7, 8, 9]),
             boss: completionCountToday >= 3,
             finalizeAfter: remainingTables.length === 0,
             finalCelebration: remainingTables.length === 0
@@ -363,14 +368,17 @@ function StudentSession() {
 
   if (tableMilestone) {
     const continueAfterMilestone = () => {
+      if (tableMilestone.masteredTwoToNineToday) {
+        markDailyBossShown(profile)
+        saveProfile(profile)
+        setTableMilestone(null)
+        window.location.href = TABLE_BOSS_URL
+        return
+      }
       const finalizeAfter = tableMilestone.finalizeAfter
       setTableMilestone(null)
       if (finalizeAfter) {
         navigate(`/student/${studentId}`)
-        return
-      }
-      if (tableMilestone.masteredTwoToNineToday) {
-        window.location.href = TABLE_BOSS_URL
         return
       }
       if (tableQueue.length > 0) {
@@ -754,6 +762,31 @@ function hasMasteredTablesToday(profile, tables) {
     if (!completedToday.has(table)) return false
   }
   return true
+}
+
+function shouldTriggerDailyBoss(profile, tables) {
+  if (!hasMasteredTablesToday(profile, tables)) return false
+  return !isDailyBossAlreadyShown(profile)
+}
+
+function isDailyBossAlreadyShown(profile) {
+  const shownDate = profile?.tableDrill?.dailyBossShownDate
+  return shownDate === getTodayKey()
+}
+
+function markDailyBossShown(profile) {
+  if (!profile.tableDrill || typeof profile.tableDrill !== 'object') {
+    profile.tableDrill = { completions: [] }
+  }
+  profile.tableDrill.dailyBossShownDate = getTodayKey()
+}
+
+function getTodayKey() {
+  const now = new Date()
+  const y = now.getFullYear()
+  const m = String(now.getMonth() + 1).padStart(2, '0')
+  const d = String(now.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
 }
 
 function estimateOperationLevel(profile, operation) {

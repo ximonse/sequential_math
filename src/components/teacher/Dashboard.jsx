@@ -148,8 +148,14 @@ function Dashboard() {
     setActiveAssignmentId('')
   }
 
-  const handleCreateClass = () => {
-    const result = createClassFromRoster(classNameInput, rosterInput, 4)
+  const handleCreateClass = async () => {
+    let result
+    try {
+      result = await createClassFromRoster(classNameInput, rosterInput, 4)
+    } catch {
+      setClassStatus('Kunde inte skapa klass just nu.')
+      return
+    }
     if (!result.ok) {
       setClassStatus(result.error)
       return
@@ -164,8 +170,14 @@ function Dashboard() {
     void loadStudents()
   }
 
-  const handleAddStudentsToClass = () => {
-    const result = addStudentsToClass(addToClassId, rosterInput, 4)
+  const handleAddStudentsToClass = async () => {
+    let result
+    try {
+      result = await addStudentsToClass(addToClassId, rosterInput, 4)
+    } catch {
+      setClassStatus('Kunde inte lägga till elever just nu.')
+      return
+    }
     if (!result.ok) {
       setClassStatus(result.error)
       return
@@ -200,8 +212,14 @@ function Dashboard() {
     setSelectedClassIds([])
   }
 
-  const handleResetStudentPassword = (studentId) => {
-    const result = resetStudentPasswordToLoginName(studentId)
+  const handleResetStudentPassword = async (studentId) => {
+    let result
+    try {
+      result = await resetStudentPasswordToLoginName(studentId)
+    } catch {
+      setClassStatus(`Kunde inte återställa lösenord för ${studentId}`)
+      return
+    }
     setClassStatus(result.ok ? `Lösenord återställt för ${studentId}` : result.error)
   }
 

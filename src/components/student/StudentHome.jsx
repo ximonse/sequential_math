@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams, useSearchParams } from 'react-rout
 import {
   changeStudentPassword,
   clearActiveStudentSession,
-  getOrCreateProfile,
+  getOrCreateProfileWithSync,
   isStudentSessionActive
 } from '../../lib/storage'
 import { getMasteryOverview, getStartOfWeekTimestamp } from '../../lib/studentProfile'
@@ -32,7 +32,19 @@ function StudentHome() {
       return
     }
 
-    setProfile(getOrCreateProfile(studentId))
+    let active = true
+    ;(async () => {
+      const loaded = await getOrCreateProfileWithSync(studentId, null, 4, { createIfMissing: false })
+      if (!active) return
+      if (!loaded) {
+        clearActiveStudentSession()
+        navigate('/', { replace: true })
+        return
+      }
+      setProfile(loaded)
+    })()
+
+    return () => { active = false }
   }, [studentId, navigate, location.pathname, location.search])
 
   useEffect(() => {
@@ -78,9 +90,15 @@ function StudentHome() {
     navigate('/')
   }
 
-  const handleChangePassword = (e) => {
+  const handleChangePassword = async (e) => {
     e.preventDefault()
-    const result = changeStudentPassword(studentId, currentPassword, newPassword)
+    let result
+    try {
+      result = await changeStudentPassword(studentId, currentPassword, newPassword)
+    } catch {
+      setPasswordMessage('Kunde inte byta lösenord just nu.')
+      return
+    }
 
     if (!result.ok) {
       setPasswordMessage(result.error)

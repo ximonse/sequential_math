@@ -6,41 +6,50 @@ function Login() {
   const [studentIdInput, setStudentIdInput] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
+    if (isLoggingIn) return
     setError('')
+    setIsLoggingIn(true)
 
-    const normalizedId = normalizeStudentId(studentIdInput)
-    const result = authenticateStudent(normalizedId, password)
+    try {
+      const normalizedId = normalizeStudentId(studentIdInput)
+      const result = await authenticateStudent(normalizedId, password)
 
-    if (!result.ok) {
-      setError(result.error || 'Kunde inte logga in.')
-      return
+      if (!result.ok) {
+        setError(result.error || 'Kunde inte logga in.')
+        return
+      }
+
+      const assignmentId = searchParams.get('assignment')
+      const mode = searchParams.get('mode')
+      const redirect = searchParams.get('redirect')
+
+      if (redirect && redirect.startsWith('/student/')) {
+        navigate(redirect)
+        return
+      }
+
+      const params = new URLSearchParams()
+      if (assignmentId) params.set('assignment', assignmentId)
+      if (mode) params.set('mode', mode)
+
+      const hasSharedTarget = assignmentId || mode
+      const query = params.toString()
+      const target = hasSharedTarget
+        ? `/student/${result.profile.studentId}/practice${query ? `?${query}` : ''}`
+        : `/student/${result.profile.studentId}`
+
+      navigate(target)
+    } catch {
+      setError('Kunde inte logga in just nu.')
+    } finally {
+      setIsLoggingIn(false)
     }
-
-    const assignmentId = searchParams.get('assignment')
-    const mode = searchParams.get('mode')
-    const redirect = searchParams.get('redirect')
-
-    if (redirect && redirect.startsWith('/student/')) {
-      navigate(redirect)
-      return
-    }
-
-    const params = new URLSearchParams()
-    if (assignmentId) params.set('assignment', assignmentId)
-    if (mode) params.set('mode', mode)
-
-    const hasSharedTarget = assignmentId || mode
-    const query = params.toString()
-    const target = hasSharedTarget
-      ? `/student/${result.profile.studentId}/practice${query ? `?${query}` : ''}`
-      : `/student/${result.profile.studentId}`
-
-    navigate(target)
   }
 
   const handleTeacherLogin = () => {
@@ -72,6 +81,7 @@ function Login() {
               onChange={(e) => setStudentIdInput(e.target.value)}
               placeholder="T.ex. Simon eller klass-id"
               className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+              disabled={isLoggingIn}
               autoFocus
             />
           </div>
@@ -90,6 +100,7 @@ function Login() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Ditt lösenord"
               className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+              disabled={isLoggingIn}
             />
           </div>
 
@@ -103,9 +114,10 @@ function Login() {
 
           <button
             type="submit"
+            disabled={isLoggingIn}
             className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
           >
-            Logga in
+            {isLoggingIn ? 'Loggar in...' : 'Logga in'}
           </button>
         </form>
 

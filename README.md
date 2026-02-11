@@ -21,6 +21,14 @@ VITE_TEACHER_PASSWORD=ditt_losenord
 ```
 
 - Om inget är satt används standardlösenordet `teacher123`.
+- För att skydda cloud-API:er för elevdata i produktion, sätt även server-env:
+
+```bash
+TEACHER_API_PASSWORD=samma_som_lararlosenord
+```
+
+Tips: sätt `VITE_TEACHER_PASSWORD` och `TEACHER_API_PASSWORD` till samma värde.
+Om `TEACHER_API_PASSWORD` saknas körs `/api/students` och `/api/student/:id` i bakåtkompatibelt öppet läge.
 
 ## Delad elevdata mellan enheter
 
@@ -46,9 +54,12 @@ När detta är aktivt:
 - `/src/lib/` - Core-logik (problemgenerator, adaptiv logik)
 - `/docs/` - Specifikationer och arkitekturdokument
 
-## Elev-ID
+## Elev-ID och konto
 
-Varje elev har ett unikt 6-teckens ID (t.ex. ABC123). Nya elever skapas automatiskt vid första inloggning.
+- Inloggningsnamn normaliseras till versaler och säkra tecken.
+- ID-längd är flexibel (inte låst till 6 tecken).
+- Rekommenderat flöde är att lärare skapar elever via klasslistor.
+- Elevlösenord lagras hashat med salt (`sha256-v1`) och äldre klartextprofiler migreras vid inloggning/sync.
 
 ## Phase 1 (nuvarande)
 

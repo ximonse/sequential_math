@@ -6,12 +6,15 @@
  */
 
 import { createStudentProfile } from './studentProfile'
+import { getTeacherApiToken } from './teacherAuth'
 
 const STORAGE_PREFIX = 'mathapp_student_'
 const STUDENTS_LIST_KEY = 'mathapp_students_list'
 const STUDENT_SESSION_KEY = 'mathapp_student_session'
+const STUDENT_SESSION_SECRET_KEY = 'mathapp_student_session_secret'
 const CLASSES_KEY = 'mathapp_classes_v1'
 const CLOUD_ENABLED = import.meta.env.VITE_ENABLE_CLOUD_SYNC === '1'
+const PASSWORD_SCHEME = 'sha256-v1'
 
 export function normalizeStudentId(value) {
   const raw = String(value || '').trim()
@@ -36,7 +39,7 @@ function ensureProfileAuth(profile) {
     }
   }
 
-  if (!profile.auth.password || String(profile.auth.password).trim() === '') {
+  if (!hasHashedPassword(profile.auth) && (!profile.auth.password || String(profile.auth.password).trim() === '')) {
     profile.auth.password = profile.name || profile.studentId
   }
 
@@ -48,7 +51,69 @@ function ensureProfileAuth(profile) {
     profile.auth.lastLoginAt = null
   }
 
+  if (hasHashedPassword(profile.auth) && profile.auth.passwordScheme !== PASSWORD_SCHEME) {
+    profile.auth.passwordScheme = PASSWORD_SCHEME
+  }
+
   return profile
+}
+
+function hasHashedPassword(auth) {
+  return Boolean(
+    auth
+    && auth.passwordScheme === PASSWORD_SCHEME
+    && typeof auth.passwordHash === 'string'
+    && auth.passwordHash.trim() !== ''
+    && typeof auth.passwordSalt === 'string'
+    && auth.passwordSalt.trim() !== ''
+  )
+}
+
+function createPasswordSalt() {
+  const bytes = new Uint8Array(16)
+  crypto.getRandomValues(bytes)
+  return Array.from(bytes)
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+async function hashPasswordWithSalt(password, salt) {
+  const encoded = new TextEncoder().encode(`${salt}:${String(password || '')}`)
+  const digest = await crypto.subtle.digest('SHA-256', encoded)
+  return Array.from(new Uint8Array(digest))
+    .map(byte => byte.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+async function setProfilePassword(profile, plainPassword, options = {}) {
+  ensureProfileAuth(profile)
+  const salt = createPasswordSalt()
+  const hash = await hashPasswordWithSalt(plainPassword, salt)
+  const keepUpdatedAt = options.keepUpdatedAt === true
+  const previousUpdatedAt = profile.auth.passwordUpdatedAt
+
+  profile.auth.passwordScheme = PASSWORD_SCHEME
+  profile.auth.passwordSalt = salt
+  profile.auth.passwordHash = hash
+  profile.auth.passwordUpdatedAt = keepUpdatedAt && previousUpdatedAt ? previousUpdatedAt : Date.now()
+  delete profile.auth.password
+}
+
+async function verifyPasswordForProfile(profile, plainPassword) {
+  ensureProfileAuth(profile)
+
+  if (hasHashedPassword(profile.auth)) {
+    const actualHash = await hashPasswordWithSalt(plainPassword, profile.auth.passwordSalt)
+    return actualHash === profile.auth.passwordHash
+  }
+
+  const legacyPassword = String(profile.auth.password || '')
+  if (!legacyPassword) return false
+  if (plainPassword !== legacyPassword) return false
+
+  // Migrera äldre klartextprofiler vid första lyckade inloggning.
+  await setProfilePassword(profile, plainPassword, { keepUpdatedAt: true })
+  return true
 }
 
 export function loadProfile(studentId) {
@@ -74,7 +139,7 @@ export function saveProfile(profile) {
   void syncProfileToCloud(profile)
 }
 
-export function createAndSaveProfile(studentId, name, grade = 4, options = {}) {
+export async function createAndSaveProfile(studentId, name, grade = 4, options = {}) {
   const normalizedId = normalizeStudentId(studentId)
   if (!normalizedId) {
     throw new Error('Invalid student id')
@@ -84,11 +149,11 @@ export function createAndSaveProfile(studentId, name, grade = 4, options = {}) {
   const profile = createStudentProfile(normalizedId, displayName, grade)
 
   profile.auth = {
-    password: String(options.initialPassword || displayName),
     passwordUpdatedAt: Date.now(),
     lastLoginAt: null,
     loginCount: 0
   }
+  await setProfilePassword(profile, String(options.initialPassword || displayName))
 
   profile.classId = options.classId || null
   profile.className = options.className || null
@@ -97,21 +162,22 @@ export function createAndSaveProfile(studentId, name, grade = 4, options = {}) {
   return profile
 }
 
-export function getOrCreateProfile(studentId, name = null, grade = 4) {
+export async function getOrCreateProfile(studentId, name = null, grade = 4) {
   const normalizedId = normalizeStudentId(studentId)
   let profile = loadProfile(normalizedId)
 
   if (!profile) {
     const displayName = name || `Elev ${normalizedId}`
-    profile = createAndSaveProfile(normalizedId, displayName, grade)
+    profile = await createAndSaveProfile(normalizedId, displayName, grade)
   }
 
   ensureProfileAuth(profile)
   return profile
 }
 
-export async function getOrCreateProfileWithSync(studentId, name = null, grade = 4) {
+export async function getOrCreateProfileWithSync(studentId, name = null, grade = 4, options = {}) {
   const normalizedId = normalizeStudentId(studentId)
+  const createIfMissing = options.createIfMissing !== false
   const local = loadProfile(normalizedId)
   if (local) {
     void syncProfileToCloud(local)
@@ -119,18 +185,23 @@ export async function getOrCreateProfileWithSync(studentId, name = null, grade =
   }
 
   if (CLOUD_ENABLED) {
-    const cloud = await loadProfileFromCloud(normalizedId)
+    const cloud = await loadProfileFromCloud(normalizedId, {
+      studentPassword: getActiveStudentSessionSecret(),
+      teacherPassword: getTeacherApiToken()
+    })
     if (cloud) {
       saveProfileLocalOnly(cloud)
       return cloud
     }
   }
 
+  if (!createIfMissing) return null
+
   const displayName = name || `Elev ${normalizedId}`
   return createAndSaveProfile(normalizedId, displayName, grade)
 }
 
-export function authenticateStudent(studentIdInput, passwordInput) {
+export async function authenticateStudent(studentIdInput, passwordInput) {
   const studentId = normalizeStudentId(studentIdInput)
   const password = String(passwordInput || '')
 
@@ -143,33 +214,53 @@ export function authenticateStudent(studentIdInput, passwordInput) {
   }
 
   let profile = loadProfile(studentId)
+  if (!profile && CLOUD_ENABLED) {
+    try {
+      profile = await loadProfileFromCloud(studentId, {
+        studentPassword: password,
+        failOnUnauthorized: true
+      })
+      if (profile) {
+        saveProfileLocalOnly(profile)
+      }
+    } catch (error) {
+      if (error?.code === 'UNAUTHORIZED') {
+        return { ok: false, error: 'Fel lösenord.' }
+      }
+      throw error
+    }
+  }
+
   if (!profile) {
-    profile = createAndSaveProfile(studentId, studentId, 4, {
-      initialPassword: studentId
-    })
+    return {
+      ok: false,
+      error: 'Eleven finns inte i systemet ännu. Be läraren lägga till dig i klasslistan.'
+    }
   }
 
   ensureProfileAuth(profile)
 
-  if (password !== String(profile.auth.password || '')) {
+  const validPassword = await verifyPasswordForProfile(profile, password)
+  if (!validPassword) {
     return { ok: false, error: 'Fel lösenord.' }
   }
 
   profile.auth.lastLoginAt = Date.now()
   profile.auth.loginCount = (profile.auth.loginCount || 0) + 1
   saveProfile(profile)
-  setActiveStudentSession(studentId)
+  setActiveStudentSession(studentId, password)
 
   return { ok: true, profile }
 }
 
-export function changeStudentPassword(studentId, currentPassword, newPassword) {
+export async function changeStudentPassword(studentId, currentPassword, newPassword) {
   const profile = loadProfile(studentId)
   if (!profile) return { ok: false, error: 'Elev saknas.' }
 
   ensureProfileAuth(profile)
 
-  if (String(currentPassword || '') !== String(profile.auth.password || '')) {
+  const validCurrentPassword = await verifyPasswordForProfile(profile, String(currentPassword || ''))
+  if (!validCurrentPassword) {
     return { ok: false, error: 'Nuvarande lösenord stämmer inte.' }
   }
 
@@ -177,35 +268,45 @@ export function changeStudentPassword(studentId, currentPassword, newPassword) {
     return { ok: false, error: 'Nytt lösenord måste vara minst 3 tecken.' }
   }
 
-  profile.auth.password = String(newPassword)
-  profile.auth.passwordUpdatedAt = Date.now()
+  await setProfilePassword(profile, String(newPassword))
   saveProfile(profile)
+  if (isStudentSessionActive(studentId)) {
+    setActiveStudentSession(studentId, String(newPassword))
+  }
   return { ok: true }
 }
 
-export function resetStudentPasswordToLoginName(studentId) {
+export async function resetStudentPasswordToLoginName(studentId) {
   const profile = loadProfile(studentId)
   if (!profile) return { ok: false, error: 'Elev saknas.' }
 
   ensureProfileAuth(profile)
-  profile.auth.password = profile.studentId
-  profile.auth.passwordUpdatedAt = Date.now()
+  await setProfilePassword(profile, profile.studentId)
   saveProfile(profile)
+  if (isStudentSessionActive(studentId)) {
+    setActiveStudentSession(studentId, profile.studentId)
+  }
   return { ok: true }
 }
 
-export function setActiveStudentSession(studentId) {
+export function setActiveStudentSession(studentId, sessionSecret = '') {
   const normalizedId = normalizeStudentId(studentId)
   if (!normalizedId) return
   localStorage.setItem(STUDENT_SESSION_KEY, normalizedId)
+  sessionStorage.setItem(STUDENT_SESSION_SECRET_KEY, String(sessionSecret || ''))
 }
 
 export function clearActiveStudentSession() {
   localStorage.removeItem(STUDENT_SESSION_KEY)
+  sessionStorage.removeItem(STUDENT_SESSION_SECRET_KEY)
 }
 
 export function getActiveStudentSession() {
   return normalizeStudentId(localStorage.getItem(STUDENT_SESSION_KEY) || '')
+}
+
+export function getActiveStudentSessionSecret() {
+  return String(sessionStorage.getItem(STUDENT_SESSION_SECRET_KEY) || '')
 }
 
 export function isStudentSessionActive(studentId) {
@@ -251,7 +352,10 @@ export async function getAllProfilesWithSync() {
   if (!CLOUD_ENABLED) return local
 
   try {
-    const response = await fetch('/api/students')
+    const teacherApiToken = getTeacherApiToken()
+    const response = await fetch('/api/students', teacherApiToken
+      ? { headers: { 'x-teacher-password': teacherApiToken } }
+      : undefined)
     if (!response.ok) return local
     const data = await response.json()
     const cloud = Array.isArray(data?.profiles) ? data.profiles : []
@@ -260,16 +364,18 @@ export async function getAllProfilesWithSync() {
     for (const p of local) merged.set(p.studentId, p)
 
     for (const raw of cloud) {
-      const p = ensureProfileAuth({ ...raw, studentId: normalizeStudentId(raw.studentId) })
+      const p = normalizeCloudListProfile(raw)
+      if (!p) continue
       const prev = merged.get(p.studentId)
       if (!prev) {
         merged.set(p.studentId, p)
       } else {
-        const prevTs = prev.recentProblems?.[prev.recentProblems.length - 1]?.timestamp || 0
-        const cloudTs = p.recentProblems?.[p.recentProblems.length - 1]?.timestamp || 0
+        const prevTs = getLastProblemTimestamp(prev)
+        const cloudTs = getLastProblemTimestamp(p)
         merged.set(p.studentId, cloudTs >= prevTs ? p : prev)
       }
-      saveProfileLocalOnly(p)
+
+      // List-API är sanerat. Vi cachear inte auth-data lokalt här.
     }
 
     return Array.from(merged.values())
@@ -332,7 +438,7 @@ function createUniqueStudentId(baseId, existingIds) {
   throw new Error('Could not generate unique student id')
 }
 
-export function createClassFromRoster(classNameInput, rosterText, grade = 4) {
+export async function createClassFromRoster(classNameInput, rosterText, grade = 4) {
   const className = String(classNameInput || '').trim()
   if (!className) {
     return { ok: false, error: 'Ange klassnamn.' }
@@ -366,7 +472,7 @@ export function createClassFromRoster(classNameInput, rosterText, grade = 4) {
     }
 
     const uniqueId = createUniqueStudentId(base, existingIds)
-    const created = createAndSaveProfile(uniqueId, name, grade, {
+    const created = await createAndSaveProfile(uniqueId, name, grade, {
       initialPassword: name,
       classId,
       className
@@ -390,7 +496,7 @@ export function createClassFromRoster(classNameInput, rosterText, grade = 4) {
   }
 }
 
-export function addStudentsToClass(classId, rosterText, grade = 4) {
+export async function addStudentsToClass(classId, rosterText, grade = 4) {
   const classes = getClasses()
   const target = classes.find(item => item.id === classId)
   if (!target) {
@@ -426,7 +532,7 @@ export function addStudentsToClass(classId, rosterText, grade = 4) {
     }
 
     const uniqueId = createUniqueStudentId(base, existingIds)
-    const created = createAndSaveProfile(uniqueId, name, grade, {
+    const created = await createAndSaveProfile(uniqueId, name, grade, {
       initialPassword: name,
       classId: target.id,
       className: target.name
@@ -451,6 +557,13 @@ export function addStudentsToClass(classId, rosterText, grade = 4) {
 export function removeClass(classId) {
   const classes = getClasses().filter(c => c.id !== classId)
   saveClasses(classes)
+
+  const affectedProfiles = getAllProfiles().filter(profile => profile.classId === classId)
+  for (const profile of affectedProfiles) {
+    profile.classId = null
+    profile.className = null
+    saveProfile(profile)
+  }
 }
 
 function saveProfileLocalOnly(profile) {
@@ -468,11 +581,24 @@ function saveProfileLocalOnly(profile) {
   updateStudentsList(normalized.studentId, normalized.name)
 }
 
-async function loadProfileFromCloud(studentId) {
+async function loadProfileFromCloud(studentId, options = {}) {
   if (!CLOUD_ENABLED) return null
 
   try {
-    const response = await fetch(`/api/student/${encodeURIComponent(studentId)}`)
+    const headers = {}
+    const studentPassword = String(options.studentPassword || '')
+    const teacherPassword = String(options.teacherPassword || '')
+    if (studentPassword) headers['x-student-password'] = studentPassword
+    if (teacherPassword) headers['x-teacher-password'] = teacherPassword
+
+    const response = await fetch(`/api/student/${encodeURIComponent(studentId)}`, Object.keys(headers).length > 0
+      ? { headers }
+      : undefined)
+    if (response.status === 401 && options.failOnUnauthorized) {
+      const error = new Error('Unauthorized')
+      error.code = 'UNAUTHORIZED'
+      throw error
+    }
     if (!response.ok) return null
     const data = await response.json()
     const profile = data?.profile || null
@@ -481,7 +607,8 @@ async function loadProfileFromCloud(studentId) {
       ...profile,
       studentId: normalizeStudentId(profile.studentId || studentId)
     })
-  } catch {
+  } catch (error) {
+    if (error?.code === 'UNAUTHORIZED') throw error
     return null
   }
 }
@@ -491,9 +618,17 @@ async function syncProfileToCloud(profile) {
 
   try {
     const normalizedId = normalizeStudentId(profile.studentId)
+    const headers = {
+      'Content-Type': 'application/json'
+    }
+    const studentSecret = getActiveStudentSessionSecret()
+    const teacherToken = getTeacherApiToken()
+    if (studentSecret) headers['x-student-password'] = studentSecret
+    if (teacherToken) headers['x-teacher-password'] = teacherToken
+
     await fetch(`/api/student/${encodeURIComponent(normalizedId)}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         profile: {
           ...profile,
@@ -503,6 +638,30 @@ async function syncProfileToCloud(profile) {
     })
   } catch {
     // no-op
+  }
+}
+
+function getLastProblemTimestamp(profile) {
+  return profile?.recentProblems?.[profile.recentProblems.length - 1]?.timestamp || 0
+}
+
+function normalizeCloudListProfile(raw) {
+  if (!raw || typeof raw !== 'object') return null
+
+  const studentId = normalizeStudentId(raw.studentId)
+  if (!studentId) return null
+
+  return {
+    ...raw,
+    studentId,
+    recentProblems: Array.isArray(raw.recentProblems) ? raw.recentProblems : [],
+    auth: {
+      lastLoginAt: raw.auth?.lastLoginAt || null,
+      loginCount: Number.isFinite(Number(raw.auth?.loginCount))
+        ? Number(raw.auth?.loginCount)
+        : 0,
+      passwordUpdatedAt: raw.auth?.passwordUpdatedAt || null
+    }
   }
 }
 

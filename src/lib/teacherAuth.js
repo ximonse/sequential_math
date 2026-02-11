@@ -1,5 +1,6 @@
 const TEACHER_AUTH_KEY = 'mathapp_teacher_auth'
 const TEACHER_PASSWORD_OVERRIDE_KEY = 'mathapp_teacher_password_override'
+const TEACHER_API_TOKEN_KEY = 'mathapp_teacher_api_token'
 const DEFAULT_TEACHER_PASSWORD = 'teacher123'
 
 export function getTeacherPassword() {
@@ -24,11 +25,13 @@ export function loginTeacher(password) {
     return false
   }
   sessionStorage.setItem(TEACHER_AUTH_KEY, '1')
+  sessionStorage.setItem(TEACHER_API_TOKEN_KEY, password)
   return true
 }
 
 export function logoutTeacher() {
   sessionStorage.removeItem(TEACHER_AUTH_KEY)
+  sessionStorage.removeItem(TEACHER_API_TOKEN_KEY)
 }
 
 export function isTeacherAuthenticated() {
@@ -55,4 +58,8 @@ export function getTeacherPasswordSource() {
   if (typeof configured === 'string' && configured.trim() !== '') return 'env'
 
   return 'default'
+}
+
+export function getTeacherApiToken() {
+  return sessionStorage.getItem(TEACHER_API_TOKEN_KEY) || ''
 }

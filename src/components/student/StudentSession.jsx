@@ -40,7 +40,6 @@ function StudentSession() {
   const [sessionWarmup, setSessionWarmup] = useState(null)
   const [sessionError, setSessionError] = useState('')
   const [tableQueue, setTableQueue] = useState([])
-  const [showTableComplete, setShowTableComplete] = useState(false)
   const [tableMilestone, setTableMilestone] = useState(null)
   const inputRef = useRef(null)
 
@@ -115,7 +114,6 @@ function StudentSession() {
 
     const initialQueue = createTableQueue(tableSet)
     setTableQueue(initialQueue)
-    setShowTableComplete(false)
     setTableMilestone(null)
     setCurrentProblem(initialQueue.length > 0 ? createTableProblem(initialQueue[0]) : null)
     setAnswer('')
@@ -191,18 +189,18 @@ function StudentSession() {
 
   // Auto-fortsätt efter 3 sekunder när feedback visas
   useEffect(() => {
-    if (!feedback || showBreakSuggestion || showTableComplete || tableMilestone) return
+    if (!feedback || showBreakSuggestion || tableMilestone) return
 
     const timer = setTimeout(() => {
       goToNextProblem()
     }, AUTO_CONTINUE_DELAY)
 
     return () => clearTimeout(timer)
-  }, [feedback, showBreakSuggestion, showTableComplete, tableMilestone]) // Medvetet utelämnar goToNextProblem för att undvika re-triggers
+  }, [feedback, showBreakSuggestion, tableMilestone]) // Medvetet utelämnar goToNextProblem för att undvika re-triggers
 
   // Lyssna på Enter för att fortsätta (med fördröjning för att undvika dubbel-trigger)
   useEffect(() => {
-    if (!feedback || showBreakSuggestion || showTableComplete || tableMilestone) return
+    if (!feedback || showBreakSuggestion || tableMilestone) return
 
     // Vänta 100ms så att Enter från submit hinner släppas
     const activateTimer = setTimeout(() => {
@@ -224,7 +222,7 @@ function StudentSession() {
         window._mathEnterHandler = null
       }
     }
-  }, [feedback, showBreakSuggestion, showTableComplete, tableMilestone, goToNextProblem])
+  }, [feedback, showBreakSuggestion, tableMilestone, goToNextProblem])
 
   const handleSubmit = () => {
     if (!currentProblem || answer.trim() === '') return
@@ -276,7 +274,8 @@ function StudentSession() {
             remainingTablesCount: remainingTables.length,
             completionCountToday,
             boss: completionCountToday >= 3,
-            finalizeAfter: remainingTables.length === 0
+            finalizeAfter: remainingTables.length === 0,
+            finalCelebration: remainingTables.length === 0
           })
         }
       }
@@ -360,44 +359,41 @@ function StudentSession() {
     )
   }
 
-  if (showTableComplete) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-500 to-green-600">
-        <div className="bg-white rounded-2xl shadow-2xl p-10 max-w-md text-center">
-          <h2 className="text-5xl font-extrabold text-emerald-700 mb-4">Lysande!</h2>
-          <p className="text-gray-700 mb-6">Du klarade alla valda tabeller.</p>
-          <button
-            onClick={() => navigate(`/student/${studentId}`)}
-            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg"
-          >
-            Tillbaka
-          </button>
-        </div>
-      </div>
-    )
-  }
-
   if (tableMilestone) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-500 via-pink-500 to-yellow-400">
-        <div className="bg-white rounded-3xl shadow-2xl p-10 max-w-lg text-center border-4 border-orange-300">
-          <div className="text-6xl mb-2">{tableMilestone.boss ? '😎' : '🎉'}</div>
+      <div className={`min-h-screen flex items-center justify-center ${
+        tableMilestone.finalCelebration
+          ? 'bg-gradient-to-br from-emerald-500 to-green-600'
+          : 'bg-gradient-to-br from-orange-500 via-pink-500 to-yellow-400'
+      }`}>
+        <div className={`bg-white rounded-3xl shadow-2xl p-10 max-w-lg text-center border-4 ${
+          tableMilestone.finalCelebration ? 'border-emerald-300' : 'border-orange-300'
+        }`}>
+          <div className="text-6xl mb-2">
+            {tableMilestone.finalCelebration ? '🏆' : tableMilestone.boss ? '😎' : '🎉'}
+          </div>
           <h2 className="text-5xl font-extrabold text-orange-700 mb-3">
-            {tableMilestone.boss ? 'Like a boss' : `${tableMilestone.table}:an klar!`}
+            {tableMilestone.finalCelebration
+              ? 'Lysande!'
+              : tableMilestone.boss
+                ? 'Like a boss'
+                : `${tableMilestone.table}:an klar!`}
           </h2>
           <p className="text-lg text-gray-700 mb-6">
-            {tableMilestone.boss
+            {tableMilestone.finalCelebration
+              ? 'Du klarade alla valda tabeller.'
+              : tableMilestone.boss
               ? `${tableMilestone.table}:an klar ${tableMilestone.completionCountToday} gånger idag.`
               : 'Grymt jobbat!'} {tableMilestone.remainingTablesCount > 0
               ? `${tableMilestone.remainingTablesCount} tabell(er) kvar.`
-              : 'Klar för slutfirning!'}
+              : tableMilestone.finalCelebration ? '' : 'Klar för slutfirning!'}
           </p>
           <button
             onClick={() => {
               const finalizeAfter = tableMilestone.finalizeAfter
               setTableMilestone(null)
               if (finalizeAfter) {
-                setShowTableComplete(true)
+                navigate(`/student/${studentId}`)
                 return
               }
               if (tableQueue.length > 0) {
@@ -408,9 +404,13 @@ function StudentSession() {
                 setStartTime(Date.now())
               }
             }}
-            className="px-8 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl text-lg"
+            className={`px-8 py-3 text-white font-semibold rounded-xl text-lg ${
+              tableMilestone.finalCelebration
+                ? 'bg-emerald-600 hover:bg-emerald-700'
+                : 'bg-orange-600 hover:bg-orange-700'
+            }`}
           >
-            Vidare
+            {tableMilestone.finalCelebration ? 'Tillbaka' : 'Vidare'}
           </button>
         </div>
       </div>

@@ -6,6 +6,13 @@ import { generateByDifficultyWithOptions } from './problemGenerator'
 import { getRecentSuccessRate, getConsecutiveErrors, getCurrentStreak } from './studentProfile'
 
 const DAY_MS = 24 * 60 * 60 * 1000
+const BUCKET_CONFIG = [
+  { name: 'very_easy', offset: -2, weight: 0.05 },
+  { name: 'easy', offset: -1, weight: 0.25 },
+  { name: 'core', offset: 0, weight: 0.5 },
+  { name: 'hard', offset: 1, weight: 0.15 },
+  { name: 'challenge', offset: 2, weight: 0.05 }
+]
 
 /**
  * Justera svårighetsgrad efter ett svar
@@ -61,6 +68,7 @@ export function adjustDifficulty(profile, wasCorrect) {
   // Clamp mellan 1 och 12 (våra nivåer)
   profile.currentDifficulty = Math.max(1, Math.min(12, profile.currentDifficulty))
   profile.highestDifficulty = Math.max(profile.highestDifficulty, profile.currentDifficulty)
+  updateSkillStateAfterAnswer(profile)
 
   return profile.currentDifficulty
 }
@@ -80,53 +88,101 @@ export function selectNextProblem(profile, options = {}) {
 
   // Efter frånvaro: börja lite enklare för att nå 80/20-zonen snabbare.
   if (warmupLevel !== null) {
-    return generateByDifficultyWithOptions(warmupLevel, {
+    const problem = generateByDifficultyWithOptions(warmupLevel, {
       preferredType: assignmentType || 'addition',
       allowedTypes
+    })
+    return annotateSelectedProblem(profile, problem, {
+      reason: 'warmup_after_break',
+      bucket: 'easy',
+      targetLevel: warmupLevel
     })
   }
 
   // Om 3+ fel i rad → ge lättare problem ("easy win")
   if (errors >= 3) {
     const easyLevel = clampLevelToRange(Math.max(1, roundedDifficulty - 1), options.levelRange)
-    return generateByDifficultyWithOptions(easyLevel, {
+    const problem = generateByDifficultyWithOptions(easyLevel, {
       preferredType: assignmentType || 'addition',
       allowedTypes
+    })
+    return annotateSelectedProblem(profile, problem, {
+      reason: 'recovery_easy',
+      bucket: 'easy',
+      targetLevel: easyLevel
     })
   }
 
   // Om för lätt (>92% success) → öka
   if (recentSuccess > 0.92 && profile.recentProblems.length >= 6) {
     const harderLevel = clampLevelToRange(Math.min(12, roundedDifficulty + 1), options.levelRange)
-    return generateByDifficultyWithOptions(harderLevel, { preferredType, allowedTypes })
+    const problem = generateByDifficultyWithOptions(harderLevel, { preferredType, allowedTypes })
+    return annotateSelectedProblem(profile, problem, {
+      reason: 'high_success_push',
+      bucket: 'hard',
+      targetLevel: harderLevel
+    })
   }
 
   // Om för svårt (<55% success) → minska
   if (recentSuccess < 0.55 && profile.recentProblems.length >= 6) {
     const easierLevel = clampLevelToRange(Math.max(1, roundedDifficulty - 1), options.levelRange)
-    return generateByDifficultyWithOptions(easierLevel, {
+    const problem = generateByDifficultyWithOptions(easierLevel, {
       preferredType: assignmentType || 'addition',
       allowedTypes
+    })
+    return annotateSelectedProblem(profile, problem, {
+      reason: 'low_success_relief',
+      bucket: 'easy',
+      targetLevel: easierLevel
     })
   }
 
   // Hjälp elever att komma loss från nivå 1 med försiktig utmaning
   if (roundedDifficulty === 1 && recentSuccess >= 0.6 && profile.recentProblems.length >= 8) {
     if (Math.random() < 0.3) {
-      return generateByDifficultyWithOptions(clampLevelToRange(2, options.levelRange), {
+      const target = clampLevelToRange(2, options.levelRange)
+      const problem = generateByDifficultyWithOptions(target, {
         preferredType: assignmentType || 'addition',
         allowedTypes
+      })
+      return annotateSelectedProblem(profile, problem, {
+        reason: 'bootstrap_from_level1',
+        bucket: 'hard',
+        targetLevel: target
       })
     }
   }
 
-  // Normal: generera på nuvarande nivå
-  return generateByDifficultyWithOptions(roundedDifficulty, { preferredType, allowedTypes })
+  // Normal: viktad svårighetsmix runt centrum (normalfördelnings-liknande)
+  const bucket = selectDifficultyBucket(profile, recentSuccess, errors)
+  const targetLevel = clampLevelToRange(
+    roundedDifficulty + getBucketOffset(bucket),
+    options.levelRange
+  )
+  const problem = generateByDifficultyWithOptions(targetLevel, { preferredType, allowedTypes })
+  return annotateSelectedProblem(profile, problem, {
+    reason: 'weighted_mix',
+    bucket,
+    targetLevel
+  })
 }
 
 function ensureDifficultyMeta(profile) {
   if (typeof profile.highestDifficulty !== 'number' || Number.isNaN(profile.highestDifficulty)) {
     profile.highestDifficulty = profile.currentDifficulty || 1
+  }
+  if (!profile.adaptive || typeof profile.adaptive !== 'object') {
+    profile.adaptive = {
+      skillStates: {},
+      recentSelections: []
+    }
+  }
+  if (!profile.adaptive.skillStates || typeof profile.adaptive.skillStates !== 'object') {
+    profile.adaptive.skillStates = {}
+  }
+  if (!Array.isArray(profile.adaptive.recentSelections)) {
+    profile.adaptive.recentSelections = []
   }
 }
 
@@ -222,6 +278,114 @@ function normalizeWeights(items) {
   const cleaned = items.map(i => ({ ...i, weight: Math.max(0.05, i.weight) }))
   const total = cleaned.reduce((sum, i) => sum + i.weight, 0)
   return cleaned.map(i => ({ ...i, weight: i.weight / total }))
+}
+
+function selectDifficultyBucket(profile, recentSuccess, errors) {
+  let adjusted = BUCKET_CONFIG.map(item => ({ ...item }))
+
+  if (errors >= 2 || recentSuccess < 0.7) {
+    adjusted = adjusted.map(item => {
+      if (item.name === 'very_easy') return { ...item, weight: item.weight * 1.7 }
+      if (item.name === 'easy') return { ...item, weight: item.weight * 1.5 }
+      if (item.name === 'hard') return { ...item, weight: item.weight * 0.65 }
+      if (item.name === 'challenge') return { ...item, weight: item.weight * 0.4 }
+      return item
+    })
+  } else if (recentSuccess > 0.86) {
+    adjusted = adjusted.map(item => {
+      if (item.name === 'hard') return { ...item, weight: item.weight * 1.35 }
+      if (item.name === 'challenge') return { ...item, weight: item.weight * 1.45 }
+      if (item.name === 'very_easy') return { ...item, weight: item.weight * 0.8 }
+      return item
+    })
+  }
+
+  const normalized = normalizeWeights(adjusted)
+  const rand = Math.random()
+  let acc = 0
+  for (const item of normalized) {
+    acc += item.weight
+    if (rand <= acc) return item.name
+  }
+  return 'core'
+}
+
+function getBucketOffset(bucket) {
+  const found = BUCKET_CONFIG.find(item => item.name === bucket)
+  return found ? found.offset : 0
+}
+
+function annotateSelectedProblem(profile, problem, details) {
+  const skillTag = problem.template
+  const skillState = getOrInitSkillState(profile, skillTag)
+
+  problem.metadata = {
+    ...(problem.metadata || {}),
+    skillTag,
+    selectionReason: details.reason,
+    difficultyBucket: details.bucket,
+    targetLevel: details.targetLevel,
+    abilityBefore: skillState.ability
+  }
+
+  profile.adaptive.recentSelections.push({
+    timestamp: Date.now(),
+    skillTag,
+    operation: problem.type,
+    selectionReason: details.reason,
+    difficultyBucket: details.bucket,
+    targetLevel: details.targetLevel,
+    abilityBefore: skillState.ability
+  })
+  if (profile.adaptive.recentSelections.length > 200) {
+    profile.adaptive.recentSelections.shift()
+  }
+
+  return problem
+}
+
+function getOrInitSkillState(profile, skillTag) {
+  const existing = profile.adaptive.skillStates[skillTag]
+  if (existing) return existing
+
+  const state = {
+    ability: profile.currentDifficulty || 1,
+    attempts: 0,
+    correct: 0,
+    reasonable: 0,
+    avgTime: 0,
+    lastSeen: null
+  }
+  profile.adaptive.skillStates[skillTag] = state
+  return state
+}
+
+function updateSkillStateAfterAnswer(profile) {
+  const latest = profile.recentProblems[profile.recentProblems.length - 1]
+  if (!latest) return
+
+  const skillTag = latest.skillTag || latest.problemType
+  const state = getOrInitSkillState(profile, skillTag)
+  const wasFast = latest.timeSpent <= 0 ? false : latest.timeSpent < 18
+
+  let delta = 0
+  if (latest.correct && latest.isReasonable) delta += 0.25
+  if (latest.correct && !latest.isReasonable) delta += 0.12
+  if (!latest.correct && latest.isReasonable) delta -= 0.1
+  if (!latest.correct && !latest.isReasonable) delta -= 0.25
+  if (latest.correct && wasFast) delta += 0.05
+  if (!latest.correct && latest.timeSpent > 45) delta -= 0.05
+
+  state.ability = Math.max(1, Math.min(12, state.ability + delta))
+  state.attempts += 1
+  if (latest.correct) state.correct += 1
+  if (latest.isReasonable) state.reasonable += 1
+  state.avgTime = state.attempts === 1
+    ? latest.timeSpent
+    : ((state.avgTime * (state.attempts - 1)) + latest.timeSpent) / state.attempts
+  state.lastSeen = latest.timestamp
+
+  latest.abilityAfter = state.ability
 }
 
 /**

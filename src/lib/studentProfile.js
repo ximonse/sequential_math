@@ -2,6 +2,8 @@
  * StudentProfile - Hanterar elevdata och statistik
  */
 
+import { evaluateAnswerQuality } from './answerQuality'
+
 /**
  * Generera unikt elev-ID (6 tecken)
  */
@@ -25,6 +27,10 @@ export function createStudentProfile(studentId, name, grade = 4) {
     created_at: Date.now(),
     currentDifficulty: 1,
     highestDifficulty: 1,
+    adaptive: {
+      skillStates: {},
+      recentSelections: []
+    },
     recentProblems: [],
     stats: {
       totalProblems: 0,
@@ -43,6 +49,13 @@ export function createStudentProfile(studentId, name, grade = 4) {
  */
 export function addProblemResult(profile, problem, studentAnswer, timeSpent) {
   const correct = isAnswerCorrect(studentAnswer, problem.result)
+  const quality = evaluateAnswerQuality({
+    problemType: problem.template,
+    values: problem.values,
+    correctAnswer: problem.result,
+    studentAnswer,
+    difficulty: problem.difficulty
+  })
 
   const result = {
     problemId: problem.id,
@@ -54,9 +67,19 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent) {
     timeSpent,
     timestamp: Date.now(),
     difficulty: problem.difficulty,
+    skillTag: problem.metadata?.skillTag || problem.template,
+    selectionReason: problem.metadata?.selectionReason || 'normal',
+    difficultyBucket: problem.metadata?.difficultyBucket || 'core',
+    targetLevel: problem.metadata?.targetLevel || Math.round(problem.difficulty?.conceptual_level || 1),
+    abilityBefore: problem.metadata?.abilityBefore ?? profile.currentDifficulty,
+    isReasonable: quality.isReasonable,
+    absError: quality.absError,
+    relativeError: quality.relativeError,
+    tolerance: quality.tolerance,
     // Metadata för analys
     termOrder: problem.metadata?.termOrder || 'equal',
-    carryCount: problem.metadata?.carryCount || 0
+    carryCount: problem.metadata?.carryCount || 0,
+    borrowCount: problem.metadata?.borrowCount || 0
   }
 
   // Lägg till i historik (max 50)

@@ -9,6 +9,7 @@ import {
   verifyTeacherPassword
 } from '../../lib/teacherAuth'
 import { evaluateAnswerQuality } from '../../lib/answerQuality'
+import { getOperationLabel } from '../../lib/operations'
 import {
   buildAssignmentLink,
   clearAllAssignments,
@@ -23,6 +24,9 @@ import {
 function Dashboard() {
   const [students, setStudents] = useState([])
   const [assignments, setAssignments] = useState([])
+  const [viewMode, setViewMode] = useState('daily')
+  const [sortBy, setSortBy] = useState('active_today')
+  const [sortDir, setSortDir] = useState('desc')
   const [copiedId, setCopiedId] = useState('')
   const [activeAssignmentId, setActiveAssignmentId] = useState('')
   const [currentPassword, setCurrentPassword] = useState('')
@@ -50,7 +54,6 @@ function Dashboard() {
     navigate('/teacher-login')
   }
 
-  // Beräkna klassstatistik
   const classStats = {
     totalStudents: students.length,
     activeToday: students.filter(s => {
@@ -65,7 +68,14 @@ function Dashboard() {
     totalProblems: students.reduce((sum, s) => sum + (s.stats.totalProblems || 0), 0)
   }
 
-  const tableRows = students.map(student => buildStudentRow(student))
+  const tableRows = getSortedRows(
+    students.map(student => buildStudentRow(student)),
+    sortBy,
+    sortDir
+  )
+  const visibleRows = viewMode === 'daily'
+    ? tableRows.filter(row => row.activeToday)
+    : tableRows
 
   const loadStudents = async () => {
     const profiles = await getAllProfilesWithSync()
@@ -147,7 +157,6 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-6xl mx-auto px-4">
-        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">Elevöversikt</h1>
@@ -176,7 +185,6 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Class stats */}
         <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg p-4 shadow">
             <p className="text-sm text-gray-500">Antal elever</p>
@@ -336,7 +344,6 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Students table */}
         {students.length === 0 ? (
           <div className="bg-white rounded-lg p-8 shadow text-center">
             <p className="text-gray-500 text-lg">Inga elever ännu</p>
@@ -345,50 +352,154 @@ function Dashboard() {
             </p>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow overflow-x-auto">
+          <div className="bg-white rounded-lg shadow overflow-x-auto p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setViewMode('daily')}
+                  className={`px-3 py-1.5 rounded text-sm ${
+                    viewMode === 'daily'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Dagsvy
+                </button>
+                <button
+                  onClick={() => setViewMode('all')}
+                  className={`px-3 py-1.5 rounded text-sm ${
+                    viewMode === 'all'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Alla elever
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="text-xs text-gray-500">Sortera</label>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="px-2 py-1 border rounded text-sm"
+                >
+                  <option value="active_today">Aktiv idag</option>
+                  <option value="today_attempts">Dagens mängd</option>
+                  <option value="today_wrong">Dagens felsvar</option>
+                  <option value="today_struggle">Dagens kämp-index</option>
+                  <option value="today_answer_length">Dagens svarslängd</option>
+                  <option value="last_active">Senast aktiv</option>
+                  <option value="attempts">Totala försök</option>
+                  <option value="success_rate">Total träffsäkerhet</option>
+                </select>
+                <button
+                  onClick={() => setSortDir(prev => prev === 'desc' ? 'asc' : 'desc')}
+                  className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm"
+                >
+                  {sortDir === 'desc' ? 'Fallande' : 'Stigande'}
+                </button>
+              </div>
+            </div>
+
+            {viewMode === 'daily' && visibleRows.length === 0 && (
+              <div className="mb-4 rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
+                Inga aktiva elever idag ännu.
+              </div>
+            )}
+
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr className="text-left text-gray-600">
                   <th className="px-4 py-3 font-semibold">Elev</th>
-                  <th className="px-4 py-3 font-semibold">Försök</th>
-                  <th className="px-4 py-3 font-semibold">Rätt</th>
-                  <th className="px-4 py-3 font-semibold">Rimlighet</th>
-                  <th className="px-4 py-3 font-semibold">Medelavvikelse</th>
-                  <th className="px-4 py-3 font-semibold">Trend</th>
-                  <th className="px-4 py-3 font-semibold">Senast aktiv</th>
+                  {viewMode === 'daily' ? (
+                    <>
+                      <th className="px-4 py-3 font-semibold">Gjort idag</th>
+                      <th className="px-4 py-3 font-semibold">Rätt/fel idag</th>
+                      <th className="px-4 py-3 font-semibold">Kämpar med idag</th>
+                      <th className="px-4 py-3 font-semibold">Svarslängd idag</th>
+                      <th className="px-4 py-3 font-semibold">Senast aktiv</th>
+                    </>
+                  ) : (
+                    <>
+                      <th className="px-4 py-3 font-semibold">Försök</th>
+                      <th className="px-4 py-3 font-semibold">Rätt</th>
+                      <th className="px-4 py-3 font-semibold">Rimlighet</th>
+                      <th className="px-4 py-3 font-semibold">Medelavvikelse</th>
+                      <th className="px-4 py-3 font-semibold">Trend</th>
+                      <th className="px-4 py-3 font-semibold">Senast aktiv</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody>
-                {tableRows.map(row => (
+                {visibleRows.map(row => (
                   <tr key={row.studentId} className="border-b last:border-b-0 hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div className="font-semibold text-gray-800">{row.name}</div>
                       <div className="text-xs text-gray-400 font-mono">{row.studentId}</div>
                     </td>
-                    <td className="px-4 py-3 text-gray-700">{row.attempts}</td>
-                    <td className="px-4 py-3">
-                      <span className={getSuccessColorClass(row.successRate)}>
-                        {row.correctCount}/{row.attempts} ({toPercent(row.successRate)})
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={getReasonableColorClass(row.reasonableRate)}>
-                        {row.reasonableCount}/{row.attempts} ({toPercent(row.reasonableRate)})
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-gray-700">
-                      {row.avgRelativeError === null ? '-' : `${Math.round(row.avgRelativeError * 100)}%`}
-                    </td>
-                    <td className="px-4 py-3">
-                      {row.trend === null ? (
-                        <span className="text-gray-400">-</span>
-                      ) : (
-                        <span className={row.trend >= 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-                          {row.trend >= 0 ? '↑' : '↓'} {Math.abs(Math.round(row.trend * 100))}%
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
+                    {viewMode === 'daily' ? (
+                      <>
+                        <td className="px-4 py-3 text-gray-700">
+                          {row.todayAttempts}
+                          <div className="text-xs text-gray-500 mt-1">{row.todayOperationSummary}</div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={getSuccessColorClass(row.todaySuccessRate)}>
+                            {row.todayCorrectCount}/{row.todayAttempts || 0}
+                          </span>
+                          <div className="text-xs text-gray-500 mt-1">
+                            Fel: {row.todayWrongCount} | Rimliga fel: {row.todayReasonableWrongCount}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-gray-700">
+                          {row.todayStruggle
+                            ? (
+                              <>
+                                <div className="font-medium">{getOperationLabel(row.todayStruggle.operation)}</div>
+                                <div className="text-xs text-gray-500">
+                                  {row.todayStruggle.attempts} försök, {row.todayStruggle.wrong} fel
+                                </div>
+                              </>
+                            )
+                            : <span className="text-gray-400">-</span>}
+                        </td>
+                        <td className="px-4 py-3 text-gray-700">
+                          {row.todayAvgAnswerLength === null
+                            ? '-'
+                            : `${row.todayAvgAnswerLength.toFixed(1)} tecken`}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="px-4 py-3 text-gray-700">{row.attempts}</td>
+                        <td className="px-4 py-3">
+                          <span className={getSuccessColorClass(row.successRate)}>
+                            {row.correctCount}/{row.attempts} ({toPercent(row.successRate)})
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={getReasonableColorClass(row.reasonableRate)}>
+                            {row.reasonableCount}/{row.attempts} ({toPercent(row.reasonableRate)})
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-700">
+                          {row.avgRelativeError === null ? '-' : `${Math.round(row.avgRelativeError * 100)}%`}
+                        </td>
+                        <td className="px-4 py-3">
+                          {row.trend === null ? (
+                            <span className="text-gray-400">-</span>
+                          ) : (
+                            <span className={row.trend >= 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                              {row.trend >= 0 ? '↑' : '↓'} {Math.abs(Math.round(row.trend * 100))}%
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
+                      </>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -450,6 +561,12 @@ function getPresetConfig(presetKey) {
   }
 }
 
+function getStartOfDayTimestamp() {
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
+  return now.getTime()
+}
+
 function buildStudentRow(student) {
   const attempts = student.recentProblems.length
   const correctCount = student.recentProblems.filter(p => p.correct).length
@@ -467,6 +584,27 @@ function buildStudentRow(student) {
   const trend = calculateTrend(student.recentProblems)
   const lastActive = student.recentProblems[student.recentProblems.length - 1]?.timestamp || null
 
+  const todayStart = getStartOfDayTimestamp()
+  const todayProblems = student.recentProblems.filter(problem => problem.timestamp >= todayStart)
+  const todayAttempts = todayProblems.length
+  const todayCorrectCount = todayProblems.filter(problem => problem.correct).length
+  const todayWrongCount = todayAttempts - todayCorrectCount
+  const todaySuccessRate = todayAttempts > 0 ? todayCorrectCount / todayAttempts : 0
+  const todayWrongReasonable = todayProblems
+    .filter(problem => !problem.correct)
+    .map(problem => evaluateAnswerQuality(problem))
+    .filter(item => item.isReasonable)
+    .length
+  const todayAvgAnswerLength = getAverageAnswerLength(todayProblems)
+  const todayByOperation = summarizeByOperation(todayProblems)
+  const todayOperationSummary = todayByOperation.length > 0
+    ? todayByOperation.map(item => `${getOperationLabel(item.operation)}: ${item.attempts}`).join(' | ')
+    : '-'
+  const todayStruggle = getStruggleOperation(todayByOperation)
+  const todayStruggleIndex = todayStruggle
+    ? ((todayStruggle.wrong / Math.max(1, todayStruggle.attempts)) * 100) + todayStruggle.wrong
+    : 0
+
   return {
     studentId: student.studentId,
     name: student.name,
@@ -477,8 +615,81 @@ function buildStudentRow(student) {
     reasonableRate,
     avgRelativeError,
     trend,
-    lastActive
+    lastActive,
+    activeToday: todayAttempts > 0,
+    todayAttempts,
+    todayCorrectCount,
+    todayWrongCount,
+    todaySuccessRate,
+    todayReasonableWrongCount: todayWrongReasonable,
+    todayAvgAnswerLength,
+    todayOperationSummary,
+    todayStruggle,
+    todayStruggleIndex
   }
+}
+
+function summarizeByOperation(problems) {
+  const stats = new Map()
+
+  for (const problem of problems) {
+    const operation = inferOperationFromProblemType(problem.problemType)
+    const prev = stats.get(operation) || {
+      operation,
+      attempts: 0,
+      wrong: 0,
+      answerLengthSum: 0
+    }
+
+    const answerLength = getAnswerLength(problem)
+    prev.attempts += 1
+    if (!problem.correct) prev.wrong += 1
+    prev.answerLengthSum += answerLength
+    stats.set(operation, prev)
+  }
+
+  return Array.from(stats.values())
+    .map(item => ({
+      ...item,
+      successRate: item.attempts > 0 ? (item.attempts - item.wrong) / item.attempts : 0,
+      avgAnswerLength: item.attempts > 0 ? item.answerLengthSum / item.attempts : 0
+    }))
+    .sort((a, b) => b.attempts - a.attempts)
+}
+
+function getStruggleOperation(todayByOperation) {
+  if (todayByOperation.length === 0) return null
+
+  const best = [...todayByOperation].sort((a, b) => {
+    if (a.wrong !== b.wrong) return b.wrong - a.wrong
+    if (a.successRate !== b.successRate) return a.successRate - b.successRate
+    return b.attempts - a.attempts
+  })[0]
+
+  if (!best || best.wrong === 0) return null
+  return best
+}
+
+function getAnswerLength(problem) {
+  if (Number.isFinite(problem.answerLength)) return problem.answerLength
+  if (problem.studentAnswer === null || problem.studentAnswer === undefined) return 0
+
+  const normalized = String(problem.studentAnswer).replace('-', '').replace('.', '').trim()
+  return normalized.length
+}
+
+function getAverageAnswerLength(problems) {
+  if (problems.length === 0) return null
+  const total = problems.reduce((sum, problem) => sum + getAnswerLength(problem), 0)
+  return total / problems.length
+}
+
+function inferOperationFromProblemType(problemType = '') {
+  if (problemType.startsWith('add_')) return 'addition'
+  if (problemType.startsWith('sub_')) return 'subtraction'
+  if (problemType.startsWith('mul_')) return 'multiplication'
+  if (problemType.startsWith('div_')) return 'division'
+  return 'addition'
 }
 
 function calculateTrend(problems) {
@@ -491,6 +702,28 @@ function calculateTrend(problems) {
   const lastRate = last10.filter(p => p.correct).length / last10.length
   const prevRate = previous10.filter(p => p.correct).length / previous10.length
   return lastRate - prevRate
+}
+
+function getSortedRows(rows, sortBy, sortDir) {
+  const sorted = [...rows].sort((a, b) => compareRows(a, b, sortBy))
+  return sortDir === 'asc' ? sorted : sorted.reverse()
+}
+
+function compareRows(a, b, sortBy) {
+  if (sortBy === 'active_today') {
+    if (a.activeToday !== b.activeToday) return Number(a.activeToday) - Number(b.activeToday)
+    return (a.lastActive || 0) - (b.lastActive || 0)
+  }
+
+  if (sortBy === 'today_attempts') return a.todayAttempts - b.todayAttempts
+  if (sortBy === 'today_wrong') return a.todayWrongCount - b.todayWrongCount
+  if (sortBy === 'today_struggle') return a.todayStruggleIndex - b.todayStruggleIndex
+  if (sortBy === 'today_answer_length') return (a.todayAvgAnswerLength || 0) - (b.todayAvgAnswerLength || 0)
+  if (sortBy === 'last_active') return (a.lastActive || 0) - (b.lastActive || 0)
+  if (sortBy === 'attempts') return a.attempts - b.attempts
+  if (sortBy === 'success_rate') return a.successRate - b.successRate
+
+  return (a.lastActive || 0) - (b.lastActive || 0)
 }
 
 function toPercent(rate) {

@@ -47,7 +47,7 @@ export function createStudentProfile(studentId, name, grade = 4) {
 /**
  * Lägg till problemresultat i profil
  */
-export function addProblemResult(profile, problem, studentAnswer, timeSpent) {
+export function addProblemResult(profile, problem, studentAnswer, timeSpent, options = {}) {
   const correct = isAnswerCorrect(studentAnswer, problem.result)
   const quality = evaluateAnswerQuality({
     problemType: problem.template,
@@ -63,6 +63,7 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent) {
     values: problem.values,
     correctAnswer: problem.result,
     studentAnswer,
+    answerLength: getNormalizedAnswerLength(options.rawAnswer, studentAnswer),
     correct,
     timeSpent,
     timestamp: Date.now(),
@@ -92,6 +93,16 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent) {
   updateStats(profile)
 
   return { correct, result }
+}
+
+function getNormalizedAnswerLength(rawAnswer, fallbackNumber) {
+  if (typeof rawAnswer === 'string') {
+    const normalized = rawAnswer.trim().replace(/,/g, '.').replace('-', '').replace('.', '')
+    return normalized.length
+  }
+
+  if (!Number.isFinite(fallbackNumber)) return 0
+  return String(fallbackNumber).replace('-', '').replace('.', '').length
 }
 
 /**

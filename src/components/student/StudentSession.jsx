@@ -183,7 +183,13 @@ function StudentSession() {
     if (!Number.isFinite(studentAnswer)) return
 
     // Lägg till resultat
-    const { correct } = addProblemResult(profile, currentProblem, studentAnswer, timeSpent)
+    const { correct } = addProblemResult(
+      profile,
+      currentProblem,
+      studentAnswer,
+      timeSpent,
+      { rawAnswer: normalizedAnswer }
+    )
 
     // Justera svårighet
     adjustDifficulty(profile, correct)

@@ -191,7 +191,7 @@ export function resetStudentPasswordToLoginName(studentId) {
   profile.auth.password = profile.studentId
   profile.auth.passwordUpdatedAt = Date.now()
   saveProfile(profile)
-  return { ok: true, password: profile.studentId }
+  return { ok: true }
 }
 
 export function setActiveStudentSession(studentId) {

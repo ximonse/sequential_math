@@ -35,7 +35,7 @@ function Dashboard() {
   const [sortBy, setSortBy] = useState('active_today')
   const [sortDir, setSortDir] = useState('desc')
   const [classes, setClasses] = useState([])
-  const [selectedClassId, setSelectedClassId] = useState('')
+  const [selectedClassIds, setSelectedClassIds] = useState([])
   const [classNameInput, setClassNameInput] = useState('')
   const [rosterInput, setRosterInput] = useState('')
   const [classStatus, setClassStatus] = useState('')
@@ -82,8 +82,8 @@ function Dashboard() {
     totalProblems: students.reduce((sum, s) => sum + (s.stats.totalProblems || 0), 0)
   }
 
-  const filteredStudents = selectedClassId
-    ? students.filter(student => student.classId === selectedClassId)
+  const filteredStudents = selectedClassIds.length > 0
+    ? students.filter(student => selectedClassIds.includes(student.classId))
     : students
 
   const tableRows = getSortedRows(
@@ -91,11 +91,7 @@ function Dashboard() {
     sortBy,
     sortDir
   )
-  const visibleRows = viewMode === 'daily'
-    ? tableRows.filter(row => row.activeToday)
-    : viewMode === 'weekly'
-      ? tableRows.filter(row => row.activeThisWeek)
-      : tableRows
+  const visibleRows = tableRows
 
   const loadStudents = async () => {
     const profiles = await getAllProfilesWithSync()
@@ -158,11 +154,21 @@ function Dashboard() {
 
   const handleDeleteClass = (classId) => {
     removeClass(classId)
-    if (selectedClassId === classId) {
-      setSelectedClassId('')
-    }
+    setSelectedClassIds(prev => prev.filter(id => id !== classId))
     setClasses(getClasses())
     setClassStatus('Klass borttagen.')
+  }
+
+  const handleToggleClassFilter = (classId) => {
+    setSelectedClassIds(prev => (
+      prev.includes(classId)
+        ? prev.filter(id => id !== classId)
+        : [...prev, classId]
+    ))
+  }
+
+  const clearClassFilter = () => {
+    setSelectedClassIds([])
   }
 
   const handleResetStudentPassword = (studentId) => {
@@ -394,7 +400,7 @@ function Dashboard() {
 
         <div className="bg-white rounded-lg shadow p-4 mb-8">
           <h2 className="text-lg font-semibold text-gray-800 mb-3">Klasser</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
             <input
               type="text"
               value={classNameInput}
@@ -408,18 +414,6 @@ function Dashboard() {
             >
               Skapa klass från listan
             </button>
-            <select
-              value={selectedClassId}
-              onChange={(e) => setSelectedClassId(e.target.value)}
-              className="px-3 py-2 border rounded text-sm"
-            >
-              <option value="">Alla klasser</option>
-              {classes.map(item => (
-                <option key={item.id} value={item.id}>
-                  {item.name} ({item.studentIds.length})
-                </option>
-              ))}
-            </select>
           </div>
           <textarea
             value={rosterInput}
@@ -430,15 +424,40 @@ function Dashboard() {
           <p className="text-xs text-gray-500 mb-2">
             Inloggningsnamn skapas från elevens namn. Startlösenord sätts till elevens namn.
           </p>
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <button
+              onClick={clearClassFilter}
+              className={`px-2 py-1 rounded text-xs ${
+                selectedClassIds.length === 0
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Alla klasser
+            </button>
+            {classes.map(item => (
+              <button
+                key={`filter-${item.id}`}
+                onClick={() => handleToggleClassFilter(item.id)}
+                className={`px-2 py-1 rounded text-xs ${
+                  selectedClassIds.includes(item.id)
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {item.name}
+              </button>
+            ))}
+          </div>
           <p className="text-xs text-gray-600 mb-3">{classStatus || ' '}</p>
 
           {classes.length > 0 && (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {classes.map(item => {
                 const classStudents = students.filter(student => student.classId === item.id)
                 const loggedInCount = classStudents.filter(student => student.auth?.lastLoginAt).length
                 return (
-                  <div key={item.id} className="flex items-center justify-between gap-2 border rounded p-2">
+                  <div key={item.id} className="flex items-center justify-between gap-2 border rounded px-2 py-1.5">
                     <div>
                       <p className="text-sm font-medium text-gray-800">{item.name}</p>
                       <p className="text-xs text-gray-500">
@@ -536,12 +555,12 @@ function Dashboard() {
 
             {viewMode === 'daily' && visibleRows.length === 0 && (
               <div className="mb-4 rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
-                Inga aktiva elever idag ännu.
+                Inga elever i valt urval.
               </div>
             )}
             {viewMode === 'weekly' && visibleRows.length === 0 && (
               <div className="mb-4 rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
-                Inga aktiva elever denna vecka ännu.
+                Inga elever i valt urval.
               </div>
             )}
 
@@ -556,6 +575,7 @@ function Dashboard() {
                       <th className="px-4 py-3 font-semibold">Kämpar med idag</th>
                       <th className="px-4 py-3 font-semibold">Svarslängd idag</th>
                       <th className="px-4 py-3 font-semibold">Senast aktiv</th>
+                      <th className="px-4 py-3 font-semibold text-right">Åtgärd</th>
                     </>
                   ) : viewMode === 'weekly' ? (
                     <>
@@ -565,6 +585,7 @@ function Dashboard() {
                       <th className="px-4 py-3 font-semibold">Kämpar med vecka</th>
                       <th className="px-4 py-3 font-semibold">Svarslängd vecka</th>
                       <th className="px-4 py-3 font-semibold">Senast aktiv</th>
+                      <th className="px-4 py-3 font-semibold text-right">Åtgärd</th>
                     </>
                   ) : (
                     <>
@@ -574,6 +595,7 @@ function Dashboard() {
                       <th className="px-4 py-3 font-semibold">Medelavvikelse</th>
                       <th className="px-4 py-3 font-semibold">Trend</th>
                       <th className="px-4 py-3 font-semibold">Senast aktiv</th>
+                      <th className="px-4 py-3 font-semibold text-right">Åtgärd</th>
                     </>
                   )}
                 </tr>
@@ -582,17 +604,11 @@ function Dashboard() {
                 {visibleRows.map(row => (
                   <tr key={row.studentId} className="border-b last:border-b-0 hover:bg-gray-50">
                     <td className="px-4 py-3">
-                      <div className="font-semibold text-gray-800">{row.name}</div>
+                      <div className={`font-semibold ${row.hasLoggedIn ? 'text-green-700' : 'text-gray-800'}`}>{row.name}</div>
                       <div className="text-xs text-gray-400 font-mono">{row.studentId}</div>
                       <div className="text-xs text-gray-500 mt-1">
-                        Klass: {row.className || '-'} | {row.hasLoggedIn ? 'Inloggad' : 'Ej inloggad'}
+                        Klass: {row.className || '-'}
                       </div>
-                      <button
-                        onClick={() => handleResetStudentPassword(row.studentId)}
-                        className="mt-2 px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs"
-                      >
-                        Nytt lösen
-                      </button>
                     </td>
                     {viewMode === 'daily' ? (
                       <>
@@ -694,6 +710,14 @@ function Dashboard() {
                         <td className="px-4 py-3 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
                       </>
                     )}
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => handleResetStudentPassword(row.studentId)}
+                        className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs"
+                      >
+                        Byt lösen
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

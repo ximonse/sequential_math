@@ -41,6 +41,7 @@ function StudentSession() {
   const [sessionError, setSessionError] = useState('')
   const [tableQueue, setTableQueue] = useState([])
   const [showTableComplete, setShowTableComplete] = useState(false)
+  const [tableMilestone, setTableMilestone] = useState(null)
   const inputRef = useRef(null)
 
   const assignmentId = searchParams.get('assignment')
@@ -115,6 +116,7 @@ function StudentSession() {
     const initialQueue = createTableQueue(tableSet)
     setTableQueue(initialQueue)
     setShowTableComplete(false)
+    setTableMilestone(null)
     setCurrentProblem(initialQueue.length > 0 ? createTableProblem(initialQueue[0]) : null)
     setAnswer('')
     setFeedback(null)
@@ -189,18 +191,18 @@ function StudentSession() {
 
   // Auto-fortsätt efter 3 sekunder när feedback visas
   useEffect(() => {
-    if (!feedback || showBreakSuggestion || showTableComplete) return
+    if (!feedback || showBreakSuggestion || showTableComplete || tableMilestone) return
 
     const timer = setTimeout(() => {
       goToNextProblem()
     }, AUTO_CONTINUE_DELAY)
 
     return () => clearTimeout(timer)
-  }, [feedback, showBreakSuggestion, showTableComplete]) // Medvetet utelämnar goToNextProblem för att undvika re-triggers
+  }, [feedback, showBreakSuggestion, showTableComplete, tableMilestone]) // Medvetet utelämnar goToNextProblem för att undvika re-triggers
 
   // Lyssna på Enter för att fortsätta (med fördröjning för att undvika dubbel-trigger)
   useEffect(() => {
-    if (!feedback || showBreakSuggestion || showTableComplete) return
+    if (!feedback || showBreakSuggestion || showTableComplete || tableMilestone) return
 
     // Vänta 100ms så att Enter från submit hinner släppas
     const activateTimer = setTimeout(() => {
@@ -222,7 +224,7 @@ function StudentSession() {
         window._mathEnterHandler = null
       }
     }
-  }, [feedback, showBreakSuggestion, showTableComplete, goToNextProblem])
+  }, [feedback, showBreakSuggestion, showTableComplete, tableMilestone, goToNextProblem])
 
   const handleSubmit = () => {
     if (!currentProblem || answer.trim() === '') return
@@ -267,8 +269,19 @@ function StudentSession() {
         nextQueue.push(currentItem)
       }
       setTableQueue(nextQueue)
-      if (correct && nextQueue.length === 0) {
-        setShowTableComplete(true)
+      if (correct && currentItem) {
+        const sameTableLeft = nextQueue.some(item => item.table === currentItem.table)
+        if (!sameTableLeft) {
+          const remainingTables = Array.from(new Set(nextQueue.map(item => item.table)))
+          if (remainingTables.length === 0) {
+            setShowTableComplete(true)
+          } else {
+            setTableMilestone({
+              table: currentItem.table,
+              remainingTablesCount: remainingTables.length
+            })
+          }
+        }
       }
     } else if (shouldSuggestBreak(profile, newCount)) {
       // Kolla om paus behövs i vanliga lägen
@@ -358,6 +371,37 @@ function StudentSession() {
             className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg"
           >
             Tillbaka
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (tableMilestone) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-500 via-pink-500 to-yellow-400">
+        <div className="bg-white rounded-3xl shadow-2xl p-10 max-w-lg text-center border-4 border-orange-300">
+          <div className="text-6xl mb-2">🎉</div>
+          <h2 className="text-5xl font-extrabold text-orange-700 mb-3">{tableMilestone.table}:an klar!</h2>
+          <p className="text-lg text-gray-700 mb-6">
+            Grymt jobbat! {tableMilestone.remainingTablesCount > 0
+              ? `${tableMilestone.remainingTablesCount} tabell(er) kvar.`
+              : 'Fortsätt!'}
+          </p>
+          <button
+            onClick={() => {
+              setTableMilestone(null)
+              if (tableQueue.length > 0) {
+                const nextProblem = createTableProblem(tableQueue[0])
+                setCurrentProblem(nextProblem)
+                setAnswer('')
+                setFeedback(null)
+                setStartTime(Date.now())
+              }
+            }}
+            className="px-8 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl text-lg"
+          >
+            Vidare
           </button>
         </div>
       </div>

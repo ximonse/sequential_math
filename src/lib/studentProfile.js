@@ -179,13 +179,19 @@ export function getCurrentStreak(profile) {
 }
 
 /**
- * Summera elevens stabila nivåer per räknesätt
- * Regel: minst 5 försök på nivån och minst 80% rätt.
+ * Summera elevens stabila nivåer per räknesätt.
+ * Regel: minst 5 försök på nivån och minst 80% rätt (kan styras via options).
  */
-export function getMasteryOverview(profile) {
+export function getMasteryOverview(profile, options = {}) {
+  const minAttempts = options.minAttempts ?? 5
+  const minSuccessRate = options.minSuccessRate ?? 0.8
+  const since = options.since ?? null
+
   const buckets = {}
 
   for (const result of profile.recentProblems) {
+    if (since && result.timestamp < since) continue
+
     const operation = inferOperation(result.problemType)
     const level = result.difficulty?.conceptual_level
     if (!level) continue
@@ -203,18 +209,14 @@ export function getMasteryOverview(profile) {
     if (result.correct) buckets[key].correct++
   }
 
-  const mastery = {
-    addition: [],
-    multiplication: [],
-    subtraction: [],
-    division: []
-  }
+  const mastery = {}
 
   for (const entry of Object.values(buckets)) {
-    if (entry.attempts < 5) continue
+    if (entry.attempts < minAttempts) continue
     const success = entry.correct / entry.attempts
-    if (success >= 0.8) {
-      mastery[entry.operation]?.push(entry.level)
+    if (success >= minSuccessRate) {
+      if (!mastery[entry.operation]) mastery[entry.operation] = []
+      mastery[entry.operation].push(entry.level)
     }
   }
 
@@ -225,10 +227,27 @@ export function getMasteryOverview(profile) {
   return mastery
 }
 
+export function getMasteryForOperation(profile, operation, options = {}) {
+  const all = getMasteryOverview(profile, options)
+  return all[operation] || []
+}
+
+export function getStartOfWeekTimestamp() {
+  const now = new Date()
+  const day = now.getDay() // 0 = söndag, 1 = måndag
+  const diffToMonday = day === 0 ? 6 : day - 1
+  now.setDate(now.getDate() - diffToMonday)
+  now.setHours(0, 0, 0, 0)
+  return now.getTime()
+}
+
 function inferOperation(problemType = '') {
   if (problemType.startsWith('add_')) return 'addition'
   if (problemType.startsWith('mul_')) return 'multiplication'
   if (problemType.startsWith('sub_')) return 'subtraction'
   if (problemType.startsWith('div_')) return 'division'
-  return 'addition'
+
+  // För framtida räknesätt: använd prefix före första underscore.
+  const [prefix] = String(problemType).split('_')
+  return prefix || 'unknown'
 }

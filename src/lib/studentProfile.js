@@ -4,6 +4,8 @@
 
 import { evaluateAnswerQuality } from './answerQuality'
 
+const MAX_RECENT_PROBLEMS = 250
+
 /**
  * Generera unikt elev-ID (6 tecken)
  */
@@ -14,6 +16,21 @@ export function generateStudentId() {
     id += chars.charAt(Math.floor(Math.random() * chars.length))
   }
   return id
+}
+
+function createDefaultStats() {
+  return {
+    totalProblems: 0,
+    correctAnswers: 0,
+    overallSuccessRate: 0,
+    avgTimePerProblem: 0,
+    typeStats: {},
+    weakestTypes: [],
+    strongestTypes: [],
+    lifetimeProblems: 0,
+    lifetimeCorrectAnswers: 0,
+    lifetimeTimeSpent: 0
+  }
 }
 
 /**
@@ -32,15 +49,7 @@ export function createStudentProfile(studentId, name, grade = 4) {
       recentSelections: []
     },
     recentProblems: [],
-    stats: {
-      totalProblems: 0,
-      correctAnswers: 0,
-      overallSuccessRate: 0,
-      avgTimePerProblem: 0,
-      typeStats: {},
-      weakestTypes: [],
-      strongestTypes: []
-    }
+    stats: createDefaultStats()
   }
 }
 
@@ -83,9 +92,14 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     borrowCount: problem.metadata?.borrowCount || 0
   }
 
-  // Lägg till i historik (max 50)
+  const stats = ensureLifetimeStats(profile)
+  stats.lifetimeProblems += 1
+  if (correct) stats.lifetimeCorrectAnswers += 1
+  stats.lifetimeTimeSpent += Math.max(0, Number(timeSpent) || 0)
+
+  // Lägg till i historik (rullande fönster för dags/veckovy + adaptiv analys)
   profile.recentProblems.push(result)
-  if (profile.recentProblems.length > 50) {
+  if (profile.recentProblems.length > MAX_RECENT_PROBLEMS) {
     profile.recentProblems.shift()
   }
 
@@ -120,32 +134,34 @@ function isAnswerCorrect(studentAnswer, expectedAnswer) {
  */
 function updateStats(profile) {
   const recent = profile.recentProblems
+  const stats = ensureLifetimeStats(profile)
 
   if (recent.length === 0) {
-    profile.stats = {
-      totalProblems: 0,
-      correctAnswers: 0,
-      overallSuccessRate: 0,
-      avgTimePerProblem: 0,
-      typeStats: {},
-      weakestTypes: [],
-      strongestTypes: []
-    }
+    profile.stats.totalProblems = stats.lifetimeProblems
+    profile.stats.correctAnswers = stats.lifetimeCorrectAnswers
+    profile.stats.overallSuccessRate = stats.lifetimeProblems > 0
+      ? stats.lifetimeCorrectAnswers / stats.lifetimeProblems
+      : 0
+    profile.stats.avgTimePerProblem = stats.lifetimeProblems > 0
+      ? stats.lifetimeTimeSpent / stats.lifetimeProblems
+      : 0
+    profile.stats.typeStats = {}
+    profile.stats.weakestTypes = []
+    profile.stats.strongestTypes = []
     return
   }
 
-  // Basic stats
-  profile.stats.totalProblems = recent.length
-  profile.stats.correctAnswers = recent.filter(p => p.correct).length
-  profile.stats.overallSuccessRate = profile.stats.correctAnswers / profile.stats.totalProblems
-
-  // Genomsnittlig tid
-  const times = recent.map(p => p.timeSpent).filter(t => t > 0)
-  profile.stats.avgTimePerProblem = times.length > 0
-    ? times.reduce((a, b) => a + b, 0) / times.length
+  // Livstidsstatistik
+  profile.stats.totalProblems = stats.lifetimeProblems
+  profile.stats.correctAnswers = stats.lifetimeCorrectAnswers
+  profile.stats.overallSuccessRate = stats.lifetimeProblems > 0
+    ? stats.lifetimeCorrectAnswers / stats.lifetimeProblems
+    : 0
+  profile.stats.avgTimePerProblem = stats.lifetimeProblems > 0
+    ? stats.lifetimeTimeSpent / stats.lifetimeProblems
     : 0
 
-  // Stats per typ
+  // Rullande fönster-statistik per typ (för adaptiv analys)
   const typeMap = {}
   for (const problem of recent) {
     const type = problem.problemType
@@ -170,6 +186,51 @@ function updateStats(profile) {
 
   profile.stats.weakestTypes = types.slice(0, 3).map(([type]) => type)
   profile.stats.strongestTypes = types.slice(-3).reverse().map(([type]) => type)
+}
+
+function ensureLifetimeStats(profile) {
+  if (!profile.stats || typeof profile.stats !== 'object') {
+    profile.stats = createDefaultStats()
+  }
+
+  const stats = profile.stats
+  const recentCount = Array.isArray(profile.recentProblems) ? profile.recentProblems.length : 0
+  const fallbackTotal = Number.isFinite(Number(stats.totalProblems))
+    ? Number(stats.totalProblems)
+    : 0
+  const fallbackCorrect = Number.isFinite(Number(stats.correctAnswers))
+    ? Number(stats.correctAnswers)
+    : 0
+  const fallbackAvgTime = Number.isFinite(Number(stats.avgTimePerProblem))
+    ? Number(stats.avgTimePerProblem)
+    : 0
+
+  if (!Number.isFinite(Number(stats.lifetimeProblems))) {
+    stats.lifetimeProblems = Math.max(0, Math.max(fallbackTotal, recentCount))
+  }
+
+  if (!Number.isFinite(Number(stats.lifetimeCorrectAnswers))) {
+    stats.lifetimeCorrectAnswers = Math.max(
+      0,
+      Math.min(stats.lifetimeProblems, Math.max(fallbackCorrect, 0))
+    )
+  }
+
+  if (!Number.isFinite(Number(stats.lifetimeTimeSpent))) {
+    stats.lifetimeTimeSpent = Math.max(0, fallbackAvgTime * stats.lifetimeProblems)
+  }
+
+  if (!stats.typeStats || typeof stats.typeStats !== 'object') {
+    stats.typeStats = {}
+  }
+  if (!Array.isArray(stats.weakestTypes)) {
+    stats.weakestTypes = []
+  }
+  if (!Array.isArray(stats.strongestTypes)) {
+    stats.strongestTypes = []
+  }
+
+  return stats
 }
 
 /**

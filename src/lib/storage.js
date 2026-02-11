@@ -240,7 +240,29 @@ export async function authenticateStudent(studentIdInput, passwordInput) {
 
   ensureProfileAuth(profile)
 
-  const validPassword = await verifyPasswordForProfile(profile, password)
+  let validPassword = await verifyPasswordForProfile(profile, password)
+
+  // Lokal profil kan vara stale (t.ex. lösenord ändrat på annan enhet).
+  // Försök verifiera mot cloud och uppdatera lokal profil vid träff.
+  if (!validPassword && CLOUD_ENABLED) {
+    try {
+      const cloudProfile = await loadProfileFromCloud(studentId, {
+        studentPassword: password,
+        failOnUnauthorized: true
+      })
+      if (cloudProfile) {
+        profile = cloudProfile
+        saveProfileLocalOnly(profile)
+        validPassword = true
+      }
+    } catch (error) {
+      if (error?.code === 'UNAUTHORIZED') {
+        return { ok: false, error: 'Fel lösenord.' }
+      }
+      throw error
+    }
+  }
+
   if (!validPassword) {
     return { ok: false, error: 'Fel lösenord.' }
   }

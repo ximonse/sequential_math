@@ -548,7 +548,7 @@ function Dashboard() {
           <div className="bg-white rounded-lg p-8 shadow text-center">
             <p className="text-gray-500 text-lg">Inga elever ännu</p>
             <p className="text-gray-400 mt-2">
-              Elever skapas automatiskt när de loggar in med sitt ID
+              Lägg till elever via klasslistan ovan så kan de logga in.
             </p>
           </div>
         ) : (

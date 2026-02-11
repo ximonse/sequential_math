@@ -160,8 +160,10 @@ export function generateProblem(template, maxAttempts = 100) {
 
     // 1. Resultat inom gränser
     if (constraints.result) {
-      if (constraints.result.min && result < constraints.result.min) continue
-      if (constraints.result.max && result > constraints.result.max) continue
+      const minResult = Number(constraints.result.min)
+      const maxResult = Number(constraints.result.max)
+      if (Number.isFinite(minResult) && result < minResult) continue
+      if (Number.isFinite(maxResult) && result > maxResult) continue
     }
 
     // 2. Tiövergang-krav
@@ -334,13 +336,15 @@ export function generateMultiplicationTableDrillProblem(tableSet, options = {}) 
  */
 export function generateByDifficultyWithOptions(level, options = {}) {
   const { preferredType = null, allowedTypes = null } = options
+  const targetLevel = clamp(Math.round(Number(level) || 1), 1, 12)
 
   const byTypeCandidates = Array.isArray(allowedTypes) && allowedTypes.length > 0
     ? allTemplates.filter(t => allowedTypes.includes(t.type))
     : allTemplates
+  const candidates = byTypeCandidates.length > 0 ? byTypeCandidates : allTemplates
 
-  const levelCandidates = byTypeCandidates.filter(
-    t => t.difficulty.conceptual_level === level
+  const levelCandidates = candidates.filter(
+    t => t.difficulty.conceptual_level === targetLevel
   )
 
   // Försök först med önskat räknesätt på exakt nivå
@@ -360,12 +364,13 @@ export function generateByDifficultyWithOptions(level, options = {}) {
 
   // Fallback: närmaste nivå, helst samma räknesätt om önskat
   const pool = preferredType
-    ? byTypeCandidates.filter(t => t.type === preferredType)
-    : byTypeCandidates
+    ? candidates.filter(t => t.type === preferredType)
+    : candidates
+  const safePool = pool.length > 0 ? pool : allTemplates
 
-  const closest = pool.reduce((prev, curr) => {
-    const prevDiff = Math.abs(prev.difficulty.conceptual_level - level)
-    const currDiff = Math.abs(curr.difficulty.conceptual_level - level)
+  const closest = safePool.reduce((prev, curr) => {
+    const prevDiff = Math.abs(prev.difficulty.conceptual_level - targetLevel)
+    const currDiff = Math.abs(curr.difficulty.conceptual_level - targetLevel)
     return currDiff < prevDiff ? curr : prev
   })
 

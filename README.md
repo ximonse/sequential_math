@@ -61,6 +61,12 @@ När detta är aktivt:
 - ID-längd är flexibel (inte låst till 6 tecken).
 - Rekommenderat flöde är att lärare skapar elever via klasslistor.
 - Elevlösenord lagras hashat med salt (`sha256-v1`) och äldre klartextprofiler migreras vid inloggning/sync.
+- Vid stale lokal profil försöker inloggning verifiera mot cloud och uppdaterar lokal profil vid träff.
+
+## Statistik och historik
+
+- `stats.totalProblems` och `stats.correctAnswers` är livstidsräknare (fortsätter över tid).
+- `recentProblems` är ett rullande fönster (senaste 250 svar) som används för dags/veckovy och adaptiv analys.
 
 ## Phase 1 (nuvarande)
 

@@ -6,6 +6,7 @@ import { generateByDifficultyWithOptions, generateMultiplicationTableDrillProble
 import { getRecentSuccessRate, getConsecutiveErrors, getCurrentStreak } from './studentProfile'
 
 const DAY_MS = 24 * 60 * 60 * 1000
+const KNOWN_OPERATION_TYPES = new Set(['addition', 'subtraction', 'multiplication', 'division'])
 const BUCKET_CONFIG = [
   { name: 'very_easy', offset: -2, weight: 0.05 },
   { name: 'easy', offset: -1, weight: 0.25 },
@@ -297,7 +298,13 @@ function chooseProblemType(profile, recentSuccess, errors) {
 
 function normalizeAllowedTypes(allowedTypes) {
   if (!Array.isArray(allowedTypes) || allowedTypes.length === 0) return []
-  return allowedTypes.filter(Boolean)
+  const unique = []
+  for (const type of allowedTypes) {
+    const normalized = String(type || '').trim()
+    if (!KNOWN_OPERATION_TYPES.has(normalized)) continue
+    if (!unique.includes(normalized)) unique.push(normalized)
+  }
+  return unique
 }
 
 function normalizeTableSet(tableSet) {

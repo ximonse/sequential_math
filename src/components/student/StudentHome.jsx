@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { getOrCreateProfile } from '../../lib/storage'
-import { getMasteryOverview } from '../../lib/studentProfile'
+import { getMasteryOverview, getStartOfWeekTimestamp } from '../../lib/studentProfile'
 import { getOperationLabel } from '../../lib/operations'
 import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 
@@ -28,10 +28,19 @@ function StudentHome() {
 
   const masteredOperations = useMemo(() => {
     if (!profile) return []
-    const mastery = getMasteryOverview(profile)
-    return Object.entries(mastery)
-      .filter(([, levels]) => Array.isArray(levels) && levels.length > 0)
-      .sort((a, b) => a[0].localeCompare(b[0]))
+    const historical = getMasteryOverview(profile)
+    const weekly = getMasteryOverview(profile, { since: getStartOfWeekTimestamp() })
+
+    const operations = Array.from(new Set([
+      ...Object.keys(historical),
+      ...Object.keys(weekly)
+    ])).sort((a, b) => a.localeCompare(b))
+
+    return operations.map(operation => ({
+      operation,
+      historical: historical[operation] || [],
+      weekly: weekly[operation] || []
+    })).filter(item => item.historical.length > 0 || item.weekly.length > 0)
   }, [profile])
 
   if (!profile) {
@@ -84,25 +93,57 @@ function StudentHome() {
             <p className="text-sm text-gray-500">Inga nivåer klara ännu. Börja träna.</p>
           ) : (
             <div className="space-y-3">
-              {masteredOperations.map(([operation, levels]) => (
-                <div key={operation}>
-                  <p className="text-sm font-medium text-gray-700 mb-1">{getOperationLabel(operation)}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {levels.map(level => (
-                      <span
-                        key={`${operation}-${level}`}
-                        className="inline-flex items-center px-2.5 py-1 rounded-md bg-green-100 text-green-800 text-xs font-semibold"
-                      >
-                        Nivå {level}
-                      </span>
-                    ))}
-                  </div>
+              {masteredOperations.map((item) => (
+                <div key={item.operation}>
+                  <p className="text-sm font-medium text-gray-700 mb-1">{getOperationLabel(item.operation)}</p>
+                  <OperationMasteryRows
+                    operation={item.operation}
+                    historical={item.historical}
+                    weekly={item.weekly}
+                  />
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
+    </div>
+  )
+}
+
+function OperationMasteryRows({ operation, historical, weekly }) {
+  return (
+    <div className="space-y-1">
+      {historical.length > 0 && (
+        <MasteryRow
+          label="Historiskt"
+          operation={operation}
+          levels={historical}
+        />
+      )}
+      {weekly.length > 0 && (
+        <MasteryRow
+          label="Denna vecka"
+          operation={operation}
+          levels={weekly}
+        />
+      )}
+    </div>
+  )
+}
+
+function MasteryRow({ label, operation, levels }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-xs text-gray-500 min-w-[88px]">{label}</span>
+      {levels.map(level => (
+        <span
+          key={`${operation}-${label}-${level}`}
+          className="inline-flex items-center px-2.5 py-1 rounded-md bg-green-100 text-green-800 text-xs font-semibold"
+        >
+          Nivå {level}
+        </span>
+      ))}
     </div>
   )
 }

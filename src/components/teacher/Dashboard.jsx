@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   addStudentsToClass,
@@ -29,6 +29,11 @@ import {
   setActiveAssignment
 } from '../../lib/assignments'
 
+const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
+const SUPPORT_THRESHOLD = 45
+const DAY_MS = 24 * 60 * 60 * 1000
+const DEFAULT_WEEKLY_GOAL = 20
+
 function Dashboard() {
   const [students, setStudents] = useState([])
   const [assignments, setAssignments] = useState([])
@@ -41,6 +46,7 @@ function Dashboard() {
   const [addToClassId, setAddToClassId] = useState('')
   const [rosterInput, setRosterInput] = useState('')
   const [classStatus, setClassStatus] = useState('')
+  const [dashboardStatus, setDashboardStatus] = useState('')
   const [copiedId, setCopiedId] = useState('')
   const [activeAssignmentId, setActiveAssignmentId] = useState('')
   const [currentPassword, setCurrentPassword] = useState('')
@@ -71,6 +77,7 @@ function Dashboard() {
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
     setPasswordSource(getTeacherPasswordSource())
+    setDashboardStatus('Uppdaterat.')
   }
 
   const handleLogout = () => {
@@ -78,30 +85,44 @@ function Dashboard() {
     navigate('/teacher-login')
   }
 
-  const classStats = {
-    totalStudents: students.length,
-    activeToday: students.filter(s => {
-      const last = s.recentProblems[s.recentProblems.length - 1]?.timestamp
-      if (!last) return false
-      const today = new Date().setHours(0, 0, 0, 0)
-      return last > today
-    }).length,
-    avgSuccessRate: students.length > 0
-      ? students.reduce((sum, s) => sum + (s.stats.overallSuccessRate || 0), 0) / students.length
-      : 0,
-    totalProblems: students.reduce((sum, s) => sum + (s.stats.totalProblems || 0), 0)
-  }
+  const activeAssignment = useMemo(
+    () => assignments.find(item => item.id === activeAssignmentId) || null,
+    [assignments, activeAssignmentId]
+  )
 
   const filteredStudents = selectedClassIds.length > 0
     ? students.filter(student => selectedClassIds.includes(student.classId))
     : students
 
+  const classStats = {
+    totalStudents: filteredStudents.length,
+    activeToday: filteredStudents.filter(s => {
+      const last = s.recentProblems[s.recentProblems.length - 1]?.timestamp
+      if (!last) return false
+      const today = new Date().setHours(0, 0, 0, 0)
+      return last > today
+    }).length,
+    avgSuccessRate: filteredStudents.length > 0
+      ? filteredStudents.reduce((sum, s) => sum + (s.stats.overallSuccessRate || 0), 0) / filteredStudents.length
+      : 0,
+    totalProblems: filteredStudents.reduce((sum, s) => sum + (s.stats.totalProblems || 0), 0)
+  }
+
+  const weekGoal = activeAssignment?.targetCount || DEFAULT_WEEKLY_GOAL
+
   const tableRows = getSortedRows(
-    filteredStudents.map(student => buildStudentRow(student)),
+    filteredStudents.map(student => buildStudentRow(student, activeAssignment)),
     sortBy,
     sortDir
   )
   const visibleRows = tableRows
+  const supportRows = [...tableRows]
+    .filter(row => row.supportScore >= SUPPORT_THRESHOLD || row.riskLevel === 'high')
+    .sort((a, b) => b.supportScore - a.supportScore)
+    .slice(0, 10)
+  const bottlenecks = buildBottlenecks(tableRows)
+  const inactivityBuckets = buildInactivityBuckets(tableRows)
+  const classSummaries = buildClassSummaries(classes, students, selectedClassIds, weekGoal)
 
   const loadStudents = async () => {
     const profiles = await getAllProfilesWithSync()
@@ -117,35 +138,45 @@ function Dashboard() {
     const preset = getPresetConfig(presetKey)
     createAssignment(preset)
     setAssignments(getAssignments())
+    setDashboardStatus(`Nytt uppdrag skapat: ${preset.title}`)
   }
 
   const handleCopyAssignmentLink = async (assignmentId) => {
     const link = buildAssignmentLink(assignmentId)
-    await navigator.clipboard.writeText(link)
-    setCopiedId(assignmentId)
-    window.setTimeout(() => setCopiedId(''), 1200)
+    try {
+      await navigator.clipboard.writeText(link)
+      setCopiedId(assignmentId)
+      window.setTimeout(() => setCopiedId(''), 1200)
+      setDashboardStatus('Länk kopierad.')
+    } catch {
+      setDashboardStatus('Kunde inte kopiera länk just nu.')
+    }
   }
 
   const handleActivateForAll = (assignmentId) => {
     setActiveAssignment(assignmentId)
     setActiveAssignmentId(assignmentId)
+    setDashboardStatus(`Aktivt uppdrag ändrat till ${assignmentId}.`)
   }
 
   const handleClearActiveForAll = () => {
     clearActiveAssignment()
     setActiveAssignmentId('')
+    setDashboardStatus('Aktivt uppdrag rensat.')
   }
 
   const handleDeleteAssignment = (assignmentId) => {
     deleteAssignment(assignmentId)
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
+    setDashboardStatus(`Uppdrag ${assignmentId} borttaget.`)
   }
 
   const handleClearAllAssignments = () => {
     clearAllAssignments()
     setAssignments([])
     setActiveAssignmentId('')
+    setDashboardStatus('Alla uppdrag rensade.')
   }
 
   const handleCreateClass = async () => {
@@ -217,10 +248,41 @@ function Dashboard() {
     try {
       result = await resetStudentPasswordToLoginName(studentId)
     } catch {
-      setClassStatus(`Kunde inte återställa lösenord för ${studentId}`)
+      setDashboardStatus(`Kunde inte återställa lösenord för ${studentId}.`)
       return
     }
-    setClassStatus(result.ok ? `Lösenord återställt för ${studentId}` : result.error)
+    setDashboardStatus(result.ok ? `Lösenord återställt för ${studentId}.` : result.error)
+  }
+
+  const handleCreateQuickAssignment = async (row, variant) => {
+    const preset = buildQuickAssignmentPreset(row, variant)
+    const assignment = createAssignment(preset)
+    setAssignments(getAssignments())
+    setActiveAssignment(assignment.id)
+    setActiveAssignmentId(assignment.id)
+
+    const link = buildAssignmentLink(assignment.id)
+    try {
+      await navigator.clipboard.writeText(link)
+      setCopiedId(assignment.id)
+      window.setTimeout(() => setCopiedId(''), 1200)
+      setDashboardStatus(`Nytt uppdrag skapat och aktiverat: ${assignment.title}. Länk kopierad.`)
+    } catch {
+      setDashboardStatus(`Nytt uppdrag skapat och aktiverat: ${assignment.title}.`)
+    }
+  }
+
+  const handleExportSnapshotCsv = () => {
+    const csvRows = buildSnapshotCsvRows(visibleRows, viewMode, weekGoal)
+    if (csvRows.length === 0) {
+      setDashboardStatus('Inget att exportera i aktuell vy.')
+      return
+    }
+
+    const csv = rowsToCsv(csvRows)
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+    downloadTextFile(csv, `elevoversikt_${viewMode}_${stamp}.csv`, 'text/csv;charset=utf-8;')
+    setDashboardStatus(`CSV export klar (${csvRows.length} rader).`)
   }
 
   const handlePasswordChange = (e) => {
@@ -286,6 +348,8 @@ function Dashboard() {
           </div>
         </div>
 
+        <div className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
+
         <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg p-4 shadow">
             <p className="text-sm text-gray-500">Antal elever</p>
@@ -304,6 +368,169 @@ function Dashboard() {
           <div className="bg-white rounded-lg p-4 shadow">
             <p className="text-sm text-gray-500">Totalt problem</p>
             <p className="text-3xl font-bold text-purple-600">{classStats.totalProblems}</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-800">Inaktivitet</h2>
+              <span className="text-xs text-gray-500">Snabb uppföljning</span>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between rounded bg-gray-50 px-3 py-2">
+                <span className="text-gray-600">Inte aktiv idag</span>
+                <span className="font-semibold text-gray-800">{inactivityBuckets.notActiveToday}</span>
+              </div>
+              <div className="flex items-center justify-between rounded bg-amber-50 px-3 py-2">
+                <span className="text-amber-800">2+ dagar utan aktivitet</span>
+                <span className="font-semibold text-amber-700">{inactivityBuckets.twoDaysOrMore}</span>
+              </div>
+              <div className="flex items-center justify-between rounded bg-red-50 px-3 py-2">
+                <span className="text-red-700">7+ dagar utan aktivitet</span>
+                <span className="font-semibold text-red-700">{inactivityBuckets.sevenDaysOrMore}</span>
+              </div>
+              <div className="flex items-center justify-between rounded bg-blue-50 px-3 py-2">
+                <span className="text-blue-700">Ej startat alls</span>
+                <span className="font-semibold text-blue-700">{inactivityBuckets.neverStarted}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4 xl:col-span-2">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-800">Klassnivå</h2>
+              <span className="text-xs text-gray-500">Veckomål {weekGoal} uppgifter/elev</span>
+            </div>
+            {classSummaries.length === 0 ? (
+              <p className="text-sm text-gray-500">Inga klasser i aktuellt urval.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-gray-500 border-b">
+                      <th className="py-1 pr-2">Klass</th>
+                      <th className="py-1 pr-2">Elever</th>
+                      <th className="py-1 pr-2">Startat</th>
+                      <th className="py-1 pr-2">Ej startat</th>
+                      <th className="py-1 pr-2">Aktiva v</th>
+                      <th className="py-1">Nått veckomål</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {classSummaries.map(item => (
+                      <tr key={`class-summary-${item.classId}`} className="border-b last:border-b-0">
+                        <td className="py-1 pr-2 text-gray-700 font-medium">{item.className}</td>
+                        <td className="py-1 pr-2 text-gray-700">{item.studentCount}</td>
+                        <td className="py-1 pr-2 text-green-700 font-semibold">{item.startedCount}</td>
+                        <td className="py-1 pr-2 text-amber-700 font-semibold">{item.notStartedCount}</td>
+                        <td className="py-1 pr-2 text-blue-700">{item.weeklyActiveCount}</td>
+                        <td className="py-1 text-gray-700">
+                          {item.weeklyGoalReachedCount}/{item.studentCount}{' '}
+                          <span className="text-xs text-gray-500">({toPercent(item.weeklyGoalReachedRate)})</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-800">Behöver stöd nu</h2>
+              <span className="text-xs text-gray-500">Rankat med riskflaggor</span>
+            </div>
+            {supportRows.length === 0 ? (
+              <p className="text-sm text-gray-500">Inga akuta signaler i aktuellt urval.</p>
+            ) : (
+              <div className="space-y-2">
+                {supportRows.map(row => (
+                  <div key={`support-${row.studentId}`} className="border rounded p-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-gray-800">{row.name}</p>
+                        <p className="text-xs text-gray-500">{row.className || 'Utan klass'} | {row.studentId}</p>
+                      </div>
+                      <RiskBadge level={row.riskLevel} score={row.riskScore} />
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {row.riskCodes.length > 0 ? row.riskCodes.map(code => (
+                        <span
+                          key={`${row.studentId}-${code}`}
+                          className="px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-700 text-xs"
+                        >
+                          {code}
+                        </span>
+                      )) : (
+                        <span className="text-xs text-gray-400">Inga flaggor</span>
+                      )}
+                    </div>
+                    {activeAssignment && (
+                      <p className="mt-2 text-xs text-gray-600">
+                        Uppdragsföljsamhet vecka: {row.weekAssignmentAdherenceRate === null ? '-' : toPercent(row.weekAssignmentAdherenceRate)}
+                        {' '}({row.weekAssignmentMatched}/{row.weekAssignmentAttempts})
+                      </p>
+                    )}
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      <button
+                        onClick={() => handleCreateQuickAssignment(row, 'focus')}
+                        className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs"
+                      >
+                        Fokusuppdrag
+                      </button>
+                      <button
+                        onClick={() => handleCreateQuickAssignment(row, 'warmup')}
+                        className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs"
+                      >
+                        Värm upp
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-800">Bottlenecks per skill</h2>
+              <span className="text-xs text-gray-500">Veckobaserat</span>
+            </div>
+            {bottlenecks.length === 0 ? (
+              <p className="text-sm text-gray-500">Inga tydliga flaskhalsar ännu.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-gray-500 border-b">
+                      <th className="py-1 pr-2">Skill</th>
+                      <th className="py-1 pr-2">Elever</th>
+                      <th className="py-1 pr-2">Fel</th>
+                      <th className="py-1">Träff</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bottlenecks.map(item => (
+                      <tr key={`btl-${item.key}`} className="border-b last:border-b-0">
+                        <td className="py-1 pr-2 text-gray-700">
+                          <div className="font-medium">{item.skillLabel}</div>
+                          <div className="text-xs text-gray-500">
+                            {getOperationLabel(item.operation)}{item.avgLevel ? ` | nivå ~${item.avgLevel.toFixed(1)}` : ''}
+                          </div>
+                        </td>
+                        <td className="py-1 pr-2 text-gray-700">{item.affectedStudents}</td>
+                        <td className="py-1 pr-2 text-gray-700">{item.wrong}/{item.attempts}</td>
+                        <td className="py-1 text-gray-700">{toPercent(item.successRate)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
 
@@ -606,6 +833,9 @@ function Dashboard() {
                   <option value="week_active_time">Veckans aktiv tid</option>
                   <option value="week_success_rate">Veckans träffsäkerhet</option>
                   <option value="week_answer_length">Veckans svarslängd</option>
+                  <option value="assignment_week">Uppdragsföljsamhet v</option>
+                  <option value="support_score">Stödscore</option>
+                  <option value="risk_score">Riskscore</option>
                   <option value="logged_in">Har loggat in</option>
                   <option value="last_active">Senast aktiv</option>
                   <option value="attempts">Totala försök</option>
@@ -616,6 +846,12 @@ function Dashboard() {
                   className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm"
                 >
                   {sortDir === 'desc' ? 'Fallande' : 'Stigande'}
+                </button>
+                <button
+                  onClick={handleExportSnapshotCsv}
+                  className="px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded text-sm"
+                >
+                  Export CSV
                 </button>
               </div>
             </div>
@@ -673,7 +909,10 @@ function Dashboard() {
                 {visibleRows.map(row => (
                   <tr key={row.studentId} className="border-b last:border-b-0 hover:bg-gray-50">
                     <td className={`px-4 py-0 font-semibold ${row.hasLoggedIn ? 'text-green-700' : 'text-gray-800'}`}>
-                      {row.name}
+                      <div>{row.name}</div>
+                      <div className="mt-1">
+                        <RiskBadge level={row.riskLevel} score={row.riskScore} />
+                      </div>
                     </td>
                     <td className="px-4 py-0 text-xs text-gray-400 font-mono">
                       {row.studentId}
@@ -689,10 +928,13 @@ function Dashboard() {
                         </td>
                         <td className="px-4 py-0">
                           <span className={getSuccessColorClass(row.todaySuccessRate)}>
-                            {row.todayCorrectCount}/{row.todayAttempts || 0}
+                            {toPercent(row.todaySuccessRate)} ({row.todayCorrectCount}/{row.todayAttempts || 0})
                           </span>
                           <div className="text-xs text-gray-500 mt-1">
-                            Fel: {row.todayWrongCount} | Rimliga fel: {row.todayReasonableWrongCount}
+                            Rimliga fel: {row.todayWrongCount > 0 ? `${row.todayReasonableWrongCount}/${row.todayWrongCount}` : '-'}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            Uppdrag: {row.todayAssignmentAdherenceRate === null ? '-' : toPercent(row.todayAssignmentAdherenceRate)}
                           </div>
                         </td>
                         <td className="px-4 py-0 text-gray-700">
@@ -728,10 +970,13 @@ function Dashboard() {
                         </td>
                         <td className="px-4 py-0">
                           <span className={getSuccessColorClass(row.weekSuccessRate)}>
-                            {row.weekCorrectCount}/{row.weekAttempts || 0}
+                            {toPercent(row.weekSuccessRate)} ({row.weekCorrectCount}/{row.weekAttempts || 0})
                           </span>
                           <div className="text-xs text-gray-500 mt-1">
-                            Fel: {row.weekWrongCount} | Rimliga fel: {row.weekReasonableWrongCount}
+                            Rimliga fel: {row.weekWrongCount > 0 ? `${row.weekReasonableWrongCount}/${row.weekWrongCount}` : '-'}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            Uppdrag: {row.weekAssignmentAdherenceRate === null ? '-' : toPercent(row.weekAssignmentAdherenceRate)}
                           </div>
                         </td>
                         <td className="px-4 py-0 text-gray-700">
@@ -758,13 +1003,19 @@ function Dashboard() {
                         <td className="px-4 py-0 text-gray-700">{row.attempts}</td>
                         <td className="px-4 py-0">
                           <span className={getSuccessColorClass(row.successRate)}>
-                            {row.correctCount}/{row.attempts} ({toPercent(row.successRate)})
+                            {toPercent(row.successRate)}
                           </span>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {row.correctCount}/{row.attempts} rätt
+                          </div>
                         </td>
                         <td className="px-4 py-0">
                           <span className={getReasonableColorClass(row.reasonableRate)}>
-                            {row.reasonableCount}/{row.attempts} ({toPercent(row.reasonableRate)})
+                            {toPercent(row.reasonableRate)}
                           </span>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {row.reasonableCount}/{row.attempts} rimliga
+                          </div>
                         </td>
                         <td className="px-4 py-0 text-gray-700">
                           {row.avgRelativeError === null ? '-' : `${Math.round(row.avgRelativeError * 100)}%`}
@@ -782,12 +1033,32 @@ function Dashboard() {
                       </>
                     )}
                     <td className="px-4 py-0 text-right">
-                      <button
-                        onClick={() => handleResetStudentPassword(row.studentId)}
-                        className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs"
-                      >
-                        Byt lösen
-                      </button>
+                      <div className="inline-flex flex-wrap justify-end gap-1">
+                        <button
+                          onClick={() => handleCreateQuickAssignment(row, 'focus')}
+                          className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs"
+                        >
+                          Fokus
+                        </button>
+                        <button
+                          onClick={() => handleCreateQuickAssignment(row, 'warmup')}
+                          className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs"
+                        >
+                          Värm upp
+                        </button>
+                        <button
+                          onClick={() => handleCreateQuickAssignment(row, 'challenge')}
+                          className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs"
+                        >
+                          Mix
+                        </button>
+                        <button
+                          onClick={() => handleResetStudentPassword(row.studentId)}
+                          className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs"
+                        >
+                          Byt lösen
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -856,25 +1127,433 @@ function getStartOfDayTimestamp() {
   return now.getTime()
 }
 
-function buildStudentRow(student) {
-  const attempts = student.recentProblems.length
-  const correctCount = student.recentProblems.filter(p => p.correct).length
+function getInactiveDays(lastActive) {
+  if (!lastActive) return Infinity
+  return (Date.now() - lastActive) / DAY_MS
+}
+
+function getProblemLevel(problem) {
+  const fromTarget = Number(problem?.targetLevel)
+  if (Number.isFinite(fromTarget)) return fromTarget
+
+  const fromDifficulty = Number(problem?.difficulty?.conceptual_level)
+  if (Number.isFinite(fromDifficulty)) return fromDifficulty
+
+  return null
+}
+
+function summarizeAssignmentAdherence(problems, assignment) {
+  const attempts = Array.isArray(problems) ? problems.length : 0
+  if (!assignment) {
+    return {
+      attempts,
+      matchedAttempts: 0,
+      rate: null,
+      missedByOperation: 0,
+      missedByLevel: 0
+    }
+  }
+
+  let matchedAttempts = 0
+  let missedByOperation = 0
+  let missedByLevel = 0
+
+  for (const problem of problems) {
+    const operation = inferOperationFromProblemType(problem.problemType)
+    const level = getProblemLevel(problem)
+    const operationMatch = assignment.problemTypes.includes(operation)
+    const levelMatch = level === null
+      ? true
+      : level >= assignment.minLevel && level <= assignment.maxLevel
+
+    if (operationMatch && levelMatch) matchedAttempts += 1
+    else if (!operationMatch) missedByOperation += 1
+    else if (!levelMatch) missedByLevel += 1
+  }
+
+  return {
+    attempts,
+    matchedAttempts,
+    rate: attempts > 0 ? matchedAttempts / attempts : null,
+    missedByOperation,
+    missedByLevel
+  }
+}
+
+function buildRiskSignals(input, activeAssignment) {
+  const {
+    lastActive,
+    inactiveDays,
+    weekAttempts,
+    weekWrongCount,
+    weekSuccessRate,
+    weekReasonableWrongCount,
+    weekAvgTimePerProblemSec,
+    weekAssignment,
+    todayAttempts,
+    todaySuccessRate,
+    todayStruggle
+  } = input
+
+  const riskCodes = []
+  let riskScore = 0
+
+  if (!lastActive) {
+    riskScore += 45
+    riskCodes.push('Aldrig aktiv')
+  } else if (inactiveDays >= 7) {
+    riskScore += 35
+    riskCodes.push('Inaktiv 7+ dagar')
+  } else if (inactiveDays >= 2) {
+    riskScore += 18
+    riskCodes.push('Inaktiv 2+ dagar')
+  }
+
+  if (weekAttempts >= 6 && weekSuccessRate < 0.55) {
+    riskScore += 24
+    riskCodes.push('Låg träff vecka')
+  } else if (weekAttempts >= 6 && weekSuccessRate < 0.7) {
+    riskScore += 10
+    riskCodes.push('Svajig träff vecka')
+  }
+
+  const reasonableWrongRate = weekWrongCount > 0
+    ? weekReasonableWrongCount / weekWrongCount
+    : 1
+  if (weekWrongCount >= 4 && reasonableWrongRate < 0.45) {
+    riskScore += 18
+    riskCodes.push('Många orimliga fel')
+  }
+
+  if (weekAttempts >= 6 && weekAvgTimePerProblemSec >= 60) {
+    riskScore += 8
+    riskCodes.push('Lång svarstid')
+  }
+
+  if (todayAttempts >= 4 && todaySuccessRate < 0.5) {
+    riskScore += 10
+    riskCodes.push('Tuff dag idag')
+  }
+
+  if (todayStruggle && todayStruggle.wrong >= 3) {
+    riskScore += 8
+    riskCodes.push(`Kämpar: ${todayStruggle.skillLabel}`)
+  }
+
+  if (activeAssignment && weekAssignment.attempts >= 4 && (weekAssignment.rate ?? 1) < 0.45) {
+    riskScore += 14
+    riskCodes.push('Låg uppdragsföljsamhet')
+  }
+
+  const successPenalty = Math.max(0, (0.75 - weekSuccessRate) * 30)
+  const reasonablePenalty = Math.max(0, (0.65 - reasonableWrongRate) * 20)
+  const supportScore = Math.min(100, Math.round(riskScore + successPenalty + reasonablePenalty))
+  const riskLevel = supportScore >= 70 ? 'high' : supportScore >= 40 ? 'medium' : 'low'
+
+  return {
+    riskLevel,
+    riskScore: Math.min(100, Math.round(riskScore)),
+    supportScore,
+    riskCodes
+  }
+}
+
+function pickFocusOperation(row) {
+  if (row.weekStruggle?.operation) return row.weekStruggle.operation
+  if (row.todayStruggle?.operation) return row.todayStruggle.operation
+  if (row.primaryOperation && ALL_OPERATIONS.includes(row.primaryOperation)) return row.primaryOperation
+  return 'addition'
+}
+
+function pickFocusLevel(row, operation) {
+  const direct = Number(row.weekStruggle?.avgLevel)
+  if (Number.isFinite(direct)) return clampLevel(Math.round(direct))
+
+  const match = Array.isArray(row.weekBySkill)
+    ? row.weekBySkill.find(item => item.operation === operation && Number.isFinite(item.avgLevel))
+    : null
+  if (match && Number.isFinite(match.avgLevel)) return clampLevel(Math.round(match.avgLevel))
+
+  return clampLevel(Math.round(Number(row.currentDifficulty) || 1))
+}
+
+function clampLevel(value) {
+  return Math.max(1, Math.min(12, Number(value) || 1))
+}
+
+function buildQuickAssignmentPreset(row, variant) {
+  const operation = pickFocusOperation(row)
+  const operationLabel = getOperationLabel(operation)
+  const level = pickFocusLevel(row, operation)
+
+  if (variant === 'warmup') {
+    const minLevel = clampLevel(level - 2)
+    const maxLevel = clampLevel(Math.max(minLevel, level - 1))
+    return {
+      title: `Värm upp ${row.name} | ${operationLabel} nivå ${minLevel}-${maxLevel}`,
+      problemTypes: [operation],
+      minLevel,
+      maxLevel,
+      targetCount: 10
+    }
+  }
+
+  if (variant === 'challenge') {
+    const minLevel = clampLevel(level)
+    const maxLevel = clampLevel(level + 2)
+    return {
+      title: `Utmaning ${row.name} | Mix nivå ${minLevel}-${maxLevel}`,
+      problemTypes: [...ALL_OPERATIONS],
+      minLevel,
+      maxLevel,
+      targetCount: 16
+    }
+  }
+
+  const minLevel = clampLevel(level - 1)
+  const maxLevel = clampLevel(level + 1)
+  return {
+    title: `Fokus ${row.name} | ${operationLabel} nivå ${minLevel}-${maxLevel}`,
+    problemTypes: [operation],
+    minLevel,
+    maxLevel,
+    targetCount: 14
+  }
+}
+
+function buildBottlenecks(rows) {
+  const buckets = new Map()
+
+  for (const row of rows) {
+    if (!Array.isArray(row.weekBySkill) || row.weekBySkill.length === 0) continue
+
+    for (const skill of row.weekBySkill) {
+      if (!skill || skill.attempts < 2) continue
+      const key = `${skill.operation}:${skill.skillKey}`
+      const prev = buckets.get(key) || {
+        key,
+        operation: skill.operation,
+        skillKey: skill.skillKey,
+        skillLabel: skill.skillLabel,
+        attempts: 0,
+        wrong: 0,
+        levelSum: 0,
+        levelCount: 0,
+        students: new Set()
+      }
+
+      prev.attempts += skill.attempts
+      prev.wrong += skill.wrong
+      if (Number.isFinite(skill.avgLevel)) {
+        prev.levelSum += skill.avgLevel * skill.attempts
+        prev.levelCount += skill.attempts
+      }
+      if (skill.wrong > 0 || skill.successRate < 0.7) {
+        prev.students.add(row.studentId)
+      }
+      buckets.set(key, prev)
+    }
+  }
+
+  return Array.from(buckets.values())
+    .map(item => ({
+      key: item.key,
+      operation: item.operation,
+      skillKey: item.skillKey,
+      skillLabel: item.skillLabel,
+      attempts: item.attempts,
+      wrong: item.wrong,
+      affectedStudents: item.students.size,
+      successRate: item.attempts > 0 ? (item.attempts - item.wrong) / item.attempts : 0,
+      avgLevel: item.levelCount > 0 ? item.levelSum / item.levelCount : null
+    }))
+    .filter(item => item.wrong >= 2 && item.attempts >= 4 && item.affectedStudents >= 1)
+    .sort((a, b) => {
+      if (a.affectedStudents !== b.affectedStudents) return b.affectedStudents - a.affectedStudents
+      if (a.successRate !== b.successRate) return a.successRate - b.successRate
+      return b.attempts - a.attempts
+    })
+    .slice(0, 12)
+}
+
+function buildInactivityBuckets(rows) {
+  const todayStart = getStartOfDayTimestamp()
+  const now = Date.now()
+  const counts = {
+    notActiveToday: 0,
+    twoDaysOrMore: 0,
+    sevenDaysOrMore: 0,
+    neverStarted: 0
+  }
+
+  for (const row of rows) {
+    if (!row.lastActive || row.lastActive < todayStart) counts.notActiveToday += 1
+    if (!row.lastActive || now - row.lastActive >= 2 * DAY_MS) counts.twoDaysOrMore += 1
+    if (!row.lastActive || now - row.lastActive >= 7 * DAY_MS) counts.sevenDaysOrMore += 1
+    if ((row.attempts || 0) === 0) counts.neverStarted += 1
+  }
+
+  return counts
+}
+
+function buildClassSummaries(classes, students, selectedClassIds, weekGoal) {
+  const selected = new Set(selectedClassIds || [])
+  const visibleClasses = selected.size > 0
+    ? classes.filter(item => selected.has(item.id))
+    : classes
+  const weekStart = getStartOfWeekTimestamp()
+
+  return visibleClasses.map(item => {
+    const classStudents = students.filter(student => student.classId === item.id)
+    const studentCount = classStudents.length
+    let startedCount = 0
+    let weeklyActiveCount = 0
+    let weeklyGoalReachedCount = 0
+
+    for (const student of classStudents) {
+      const problems = Array.isArray(student.recentProblems) ? student.recentProblems : []
+      if (problems.length > 0) startedCount += 1
+      const weekAttempts = problems.filter(problem => problem.timestamp >= weekStart).length
+      if (weekAttempts > 0) weeklyActiveCount += 1
+      if (weekAttempts >= weekGoal) weeklyGoalReachedCount += 1
+    }
+
+    return {
+      classId: item.id,
+      className: item.name,
+      studentCount,
+      startedCount,
+      notStartedCount: Math.max(0, studentCount - startedCount),
+      weeklyActiveCount,
+      weeklyGoalReachedCount,
+      weeklyGoalReachedRate: studentCount > 0 ? weeklyGoalReachedCount / studentCount : 0
+    }
+  }).sort((a, b) => a.className.localeCompare(b.className, 'sv'))
+}
+
+function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
+  return rows.map(row => {
+    const base = {
+      Namn: row.name,
+      ID: row.studentId,
+      Klass: row.className || '',
+      SenastAktiv: formatTimestampForCsv(row.lastActive),
+      RiskNiva: row.riskLevel,
+      RiskScore: row.riskScore,
+      StodScore: row.supportScore
+    }
+
+    if (viewMode === 'daily') {
+      return {
+        ...base,
+        DagensMängd: row.todayAttempts,
+        DagensRatt: row.todayCorrectCount,
+        DagensFel: row.todayWrongCount,
+        DagensTraff: toPercent(row.todaySuccessRate),
+        DagensUppdragsföljsamhet: row.todayAssignmentAdherenceRate === null ? '-' : toPercent(row.todayAssignmentAdherenceRate),
+        DagensKamparMed: row.todayStruggle?.skillLabel || ''
+      }
+    }
+
+    if (viewMode === 'weekly') {
+      return {
+        ...base,
+        VeckansMängd: row.weekAttempts,
+        VeckansRatt: row.weekCorrectCount,
+        VeckansFel: row.weekWrongCount,
+        VeckansTraff: toPercent(row.weekSuccessRate),
+        VeckansAktivTidSek: Math.round(row.weekActiveTimeSec || 0),
+        VeckansMål: weekGoal,
+        VeckansMålNått: row.weekAttempts >= weekGoal ? 'ja' : 'nej',
+        VeckansUppdragsföljsamhet: row.weekAssignmentAdherenceRate === null ? '-' : toPercent(row.weekAssignmentAdherenceRate),
+        VeckansKamparMed: row.weekStruggle?.skillLabel || ''
+      }
+    }
+
+    return {
+      ...base,
+      FörsökTotalt: row.attempts,
+      RattTotalt: row.correctCount,
+      TraffTotalt: toPercent(row.successRate),
+      RimlighetTotalt: toPercent(row.reasonableRate),
+      UPPDRAGSFOLJSAMHET: row.assignmentAdherenceRate === null ? '-' : toPercent(row.assignmentAdherenceRate),
+      Trend: row.trend === null ? '' : `${row.trend >= 0 ? '+' : ''}${Math.round(row.trend * 100)}%`
+    }
+  })
+}
+
+function rowsToCsv(rows) {
+  if (rows.length === 0) return ''
+  const headers = Object.keys(rows[0])
+  const lines = [headers.join(';')]
+  for (const row of rows) {
+    const cells = headers.map(header => toCsvField(row[header]))
+    lines.push(cells.join(';'))
+  }
+  return `${lines.join('\n')}\n`
+}
+
+function toCsvField(value) {
+  const text = String(value ?? '')
+  if (/[;"\n\r]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`
+  }
+  return text
+}
+
+function downloadTextFile(content, fileName, mimeType) {
+  const blob = new Blob([content], { type: mimeType || 'text/plain;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
+
+function formatTimestampForCsv(timestamp) {
+  if (!timestamp) return ''
+  return new Date(timestamp).toISOString()
+}
+
+function RiskBadge({ level, score }) {
+  const badgeClass = level === 'high'
+    ? 'bg-red-100 text-red-700 border-red-200'
+    : level === 'medium'
+      ? 'bg-amber-100 text-amber-700 border-amber-200'
+      : 'bg-emerald-100 text-emerald-700 border-emerald-200'
+
+  const label = level === 'high' ? 'Hög risk' : level === 'medium' ? 'Medel risk' : 'Låg risk'
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs font-medium ${badgeClass}`}>
+      {label} {Number.isFinite(score) ? `(${score})` : ''}
+    </span>
+  )
+}
+
+function buildStudentRow(student, activeAssignment = null) {
+  const recentProblems = Array.isArray(student.recentProblems) ? student.recentProblems : []
+  const attempts = recentProblems.length
+  const correctCount = recentProblems.filter(p => p.correct).length
   const successRate = attempts > 0 ? correctCount / attempts : 0
 
-  const quality = student.recentProblems.map(p => evaluateAnswerQuality(p))
+  const quality = recentProblems.map(p => evaluateAnswerQuality(p))
   const reasonableCount = quality.filter(q => q.isReasonable).length
   const reasonableRate = attempts > 0 ? reasonableCount / attempts : 0
 
-  const wrongQuality = quality.filter((q, idx) => !student.recentProblems[idx].correct)
+  const wrongQuality = quality.filter((q, idx) => !recentProblems[idx].correct)
   const avgRelativeError = wrongQuality.length > 0
     ? wrongQuality.reduce((sum, q) => sum + q.relativeError, 0) / wrongQuality.length
     : null
 
-  const trend = calculateTrend(student.recentProblems)
-  const lastActive = student.recentProblems[student.recentProblems.length - 1]?.timestamp || null
+  const trend = calculateTrend(recentProblems)
+  const lastActive = recentProblems[recentProblems.length - 1]?.timestamp || null
+  const inactiveDays = getInactiveDays(lastActive)
 
   const todayStart = getStartOfDayTimestamp()
-  const todayProblems = student.recentProblems.filter(problem => problem.timestamp >= todayStart)
+  const todayProblems = recentProblems.filter(problem => problem.timestamp >= todayStart)
   const todayAttempts = todayProblems.length
   const todayCorrectCount = todayProblems.filter(problem => problem.correct).length
   const todayWrongCount = todayAttempts - todayCorrectCount
@@ -919,12 +1598,41 @@ function buildStudentRow(student) {
     ? ((weekStruggle.wrong / Math.max(1, weekStruggle.attempts)) * 100) + weekStruggle.wrong
     : 0
 
+  const todayAssignment = summarizeAssignmentAdherence(todayProblems, activeAssignment)
+  const weekAssignment = summarizeAssignmentAdherence(weekProblems, activeAssignment)
+  const overallAssignment = summarizeAssignmentAdherence(recentProblems, activeAssignment)
+  const primaryOperation = (
+    weekByOperation[0]?.operation
+    || todayByOperation[0]?.operation
+    || inferOperationFromProblemType(recentProblems[recentProblems.length - 1]?.problemType || '')
+  )
+
+  const riskSignals = buildRiskSignals({
+    attempts,
+    lastActive,
+    inactiveDays,
+    weekAttempts,
+    weekWrongCount,
+    weekSuccessRate,
+    weekReasonableWrongCount: weekWrongReasonable,
+    weekAvgTimePerProblemSec,
+    weekAssignment,
+    todayAttempts,
+    todayWrongCount,
+    todaySuccessRate,
+    todayReasonableWrongCount: todayWrongReasonable,
+    todayStruggle
+  }, activeAssignment)
+
   return {
     studentId: student.studentId,
     name: student.name,
     classId: student.classId || '',
     className: student.className || '',
+    currentDifficulty: Number(student.currentDifficulty) || 1,
+    highestDifficulty: Number(student.highestDifficulty) || Number(student.currentDifficulty) || 1,
     hasLoggedIn: Boolean(student.auth?.lastLoginAt),
+    loginCount: Number(student.auth?.loginCount) || 0,
     attempts,
     correctCount,
     successRate,
@@ -933,6 +1641,8 @@ function buildStudentRow(student) {
     avgRelativeError,
     trend,
     lastActive,
+    inactiveDays,
+    primaryOperation,
     activeToday: todayAttempts > 0,
     todayAttempts,
     todayCorrectCount,
@@ -940,9 +1650,16 @@ function buildStudentRow(student) {
     todaySuccessRate,
     todayReasonableWrongCount: todayWrongReasonable,
     todayAvgAnswerLength,
+    todayByOperation,
+    todayBySkill,
     todayOperationSummary,
     todayStruggle,
     todayStruggleIndex,
+    todayAssignmentAttempts: todayAssignment.attempts,
+    todayAssignmentMatched: todayAssignment.matchedAttempts,
+    todayAssignmentAdherenceRate: todayAssignment.rate,
+    todayAssignmentMissedByOperation: todayAssignment.missedByOperation,
+    todayAssignmentMissedByLevel: todayAssignment.missedByLevel,
     activeThisWeek: weekAttempts > 0,
     weekAttempts,
     weekCorrectCount,
@@ -952,9 +1669,23 @@ function buildStudentRow(student) {
     weekActiveTimeSec,
     weekAvgTimePerProblemSec,
     weekAvgAnswerLength,
+    weekByOperation,
+    weekBySkill,
     weekOperationSummary,
     weekStruggle,
-    weekStruggleIndex
+    weekStruggleIndex,
+    weekAssignmentAttempts: weekAssignment.attempts,
+    weekAssignmentMatched: weekAssignment.matchedAttempts,
+    weekAssignmentAdherenceRate: weekAssignment.rate,
+    weekAssignmentMissedByOperation: weekAssignment.missedByOperation,
+    weekAssignmentMissedByLevel: weekAssignment.missedByLevel,
+    assignmentAttempts: overallAssignment.attempts,
+    assignmentMatched: overallAssignment.matchedAttempts,
+    assignmentAdherenceRate: overallAssignment.rate,
+    riskLevel: riskSignals.riskLevel,
+    riskScore: riskSignals.riskScore,
+    riskCodes: riskSignals.riskCodes,
+    supportScore: riskSignals.supportScore
   }
 }
 
@@ -1006,23 +1737,31 @@ function summarizeBySkill(problems) {
     const operation = inferOperationFromProblemType(problem.problemType)
     const rawTag = problem.skillTag || problem.problemType || operation
     const skillKey = String(rawTag)
+    const level = getProblemLevel(problem)
     const prev = stats.get(skillKey) || {
       operation,
       skillKey,
       skillLabel: formatSkillLabel(operation, skillKey),
       attempts: 0,
-      wrong: 0
+      wrong: 0,
+      levelSum: 0,
+      levelCount: 0
     }
 
     prev.attempts += 1
     if (!problem.correct) prev.wrong += 1
+    if (Number.isFinite(level)) {
+      prev.levelSum += level
+      prev.levelCount += 1
+    }
     stats.set(skillKey, prev)
   }
 
   return Array.from(stats.values())
     .map(item => ({
       ...item,
-      successRate: item.attempts > 0 ? (item.attempts - item.wrong) / item.attempts : 0
+      successRate: item.attempts > 0 ? (item.attempts - item.wrong) / item.attempts : 0,
+      avgLevel: item.levelCount > 0 ? item.levelSum / item.levelCount : null
     }))
 }
 
@@ -1102,6 +1841,9 @@ function compareRows(a, b, sortBy) {
   if (sortBy === 'week_active_time') return a.weekActiveTimeSec - b.weekActiveTimeSec
   if (sortBy === 'week_success_rate') return a.weekSuccessRate - b.weekSuccessRate
   if (sortBy === 'week_answer_length') return (a.weekAvgAnswerLength || 0) - (b.weekAvgAnswerLength || 0)
+  if (sortBy === 'assignment_week') return (a.weekAssignmentAdherenceRate ?? -1) - (b.weekAssignmentAdherenceRate ?? -1)
+  if (sortBy === 'support_score') return (a.supportScore || 0) - (b.supportScore || 0)
+  if (sortBy === 'risk_score') return (a.riskScore || 0) - (b.riskScore || 0)
   if (sortBy === 'logged_in') return Number(a.hasLoggedIn) - Number(b.hasLoggedIn)
   if (sortBy === 'last_active') return (a.lastActive || 0) - (b.lastActive || 0)
   if (sortBy === 'attempts') return a.attempts - b.attempts
@@ -1111,7 +1853,9 @@ function compareRows(a, b, sortBy) {
 }
 
 function toPercent(rate) {
-  return `${Math.round(rate * 100)}%`
+  const numeric = Number(rate)
+  if (!Number.isFinite(numeric)) return '-'
+  return `${Math.round(numeric * 100)}%`
 }
 
 function getSuccessColorClass(rate) {

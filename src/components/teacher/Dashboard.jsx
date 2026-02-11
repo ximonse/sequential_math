@@ -1245,8 +1245,12 @@ function buildRiskSignals(input, activeAssignment) {
     riskCodes.push('Låg uppdragsföljsamhet')
   }
 
-  const successPenalty = Math.max(0, (0.75 - weekSuccessRate) * 30)
-  const reasonablePenalty = Math.max(0, (0.65 - reasonableWrongRate) * 20)
+  const successPenalty = weekAttempts >= 4
+    ? Math.max(0, (0.75 - weekSuccessRate) * 30)
+    : 0
+  const reasonablePenalty = weekWrongCount >= 3
+    ? Math.max(0, (0.65 - reasonableWrongRate) * 20)
+    : 0
   const supportScore = Math.min(100, Math.round(riskScore + successPenalty + reasonablePenalty))
   const riskLevel = supportScore >= 70 ? 'high' : supportScore >= 40 ? 'medium' : 'low'
 
@@ -1476,7 +1480,7 @@ function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
       RattTotalt: row.correctCount,
       TraffTotalt: toPercent(row.successRate),
       RimlighetTotalt: toPercent(row.reasonableRate),
-      UPPDRAGSFOLJSAMHET: row.assignmentAdherenceRate === null ? '-' : toPercent(row.assignmentAdherenceRate),
+      Uppdragsfoljsamhet: row.assignmentAdherenceRate === null ? '-' : toPercent(row.assignmentAdherenceRate),
       Trend: row.trend === null ? '' : `${row.trend >= 0 ? '+' : ''}${Math.round(row.trend * 100)}%`
     }
   })
@@ -1801,7 +1805,10 @@ function inferOperationFromProblemType(problemType = '') {
   if (problemType.startsWith('sub_')) return 'subtraction'
   if (problemType.startsWith('mul_')) return 'multiplication'
   if (problemType.startsWith('div_')) return 'division'
-  return 'addition'
+
+  const [prefix] = String(problemType || '').split('_')
+  if (ALL_OPERATIONS.includes(prefix)) return prefix
+  return prefix || 'unknown'
 }
 
 function calculateTrend(problems) {

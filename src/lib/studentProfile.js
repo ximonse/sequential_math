@@ -5,6 +5,11 @@
 import { evaluateAnswerQuality } from './answerQuality'
 
 const MAX_RECENT_PROBLEMS = 250
+const ABSOLUTE_TIME_CAP_SECONDS = 180
+const INTERRUPTION_HIDDEN_SECONDS = 20
+const INTERRUPTION_BLUR_MIN_TIME_SECONDS = 90
+const PERSONAL_OUTLIER_FACTOR = 2.8
+const MIN_PERSONAL_BASELINE_SAMPLES = 6
 
 /**
  * Generera unikt elev-ID (6 tecken)
@@ -29,7 +34,10 @@ function createDefaultStats() {
     strongestTypes: [],
     lifetimeProblems: 0,
     lifetimeCorrectAnswers: 0,
-    lifetimeTimeSpent: 0
+    lifetimeTimeSpent: 0,
+    lifetimeSpeedSamples: 0,
+    lifetimeSpeedTimeSpent: 0,
+    avgSpeedTimePerProblem: 0
   }
 }
 
@@ -58,6 +66,7 @@ export function createStudentProfile(studentId, name, grade = 4) {
  */
 export function addProblemResult(profile, problem, studentAnswer, timeSpent, options = {}) {
   const correct = isAnswerCorrect(studentAnswer, problem.result)
+  const timing = deriveTimingMetrics(profile, problem, timeSpent, options)
   const quality = evaluateAnswerQuality({
     problemType: problem.template,
     values: problem.values,
@@ -74,7 +83,15 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     studentAnswer,
     answerLength: getNormalizedAnswerLength(options.rawAnswer, studentAnswer),
     correct,
-    timeSpent,
+    timeSpent: timing.rawTimeSec,
+    speedTimeSec: timing.speedTimeSec,
+    excludedFromSpeed: timing.excludedFromSpeed,
+    speedExclusionReason: timing.exclusionReason,
+    interruptionSuspected: timing.interruptionSuspected,
+    hiddenDurationSec: timing.hiddenDurationSec,
+    blurCount: timing.blurCount,
+    personalMedianTimeSec: timing.personalMedianSec,
+    personalBaselineCount: timing.personalBaselineCount,
     timestamp: Date.now(),
     difficulty: problem.difficulty,
     skillTag: problem.metadata?.skillTag || problem.template,
@@ -96,7 +113,11 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
   const stats = ensureLifetimeStats(profile)
   stats.lifetimeProblems += 1
   if (correct) stats.lifetimeCorrectAnswers += 1
-  stats.lifetimeTimeSpent += Math.max(0, Number(timeSpent) || 0)
+  stats.lifetimeTimeSpent += timing.rawTimeSec
+  if (!timing.excludedFromSpeed && Number.isFinite(timing.speedTimeSec)) {
+    stats.lifetimeSpeedSamples += 1
+    stats.lifetimeSpeedTimeSpent += timing.speedTimeSec
+  }
 
   // Lägg till i historik (rullande fönster för dags/veckovy + adaptiv analys)
   profile.recentProblems.push(result)
@@ -146,6 +167,9 @@ function updateStats(profile) {
     profile.stats.avgTimePerProblem = stats.lifetimeProblems > 0
       ? stats.lifetimeTimeSpent / stats.lifetimeProblems
       : 0
+    profile.stats.avgSpeedTimePerProblem = stats.lifetimeSpeedSamples > 0
+      ? stats.lifetimeSpeedTimeSpent / stats.lifetimeSpeedSamples
+      : 0
     profile.stats.typeStats = {}
     profile.stats.weakestTypes = []
     profile.stats.strongestTypes = []
@@ -161,23 +185,40 @@ function updateStats(profile) {
   profile.stats.avgTimePerProblem = stats.lifetimeProblems > 0
     ? stats.lifetimeTimeSpent / stats.lifetimeProblems
     : 0
+  profile.stats.avgSpeedTimePerProblem = stats.lifetimeSpeedSamples > 0
+    ? stats.lifetimeSpeedTimeSpent / stats.lifetimeSpeedSamples
+    : 0
 
   // Rullande fönster-statistik per typ (för adaptiv analys)
   const typeMap = {}
   for (const problem of recent) {
     const type = problem.problemType
     if (!typeMap[type]) {
-      typeMap[type] = { attempts: 0, correct: 0, totalTime: 0 }
+      typeMap[type] = {
+        attempts: 0,
+        correct: 0,
+        totalTime: 0,
+        speedSamples: 0,
+        speedTime: 0
+      }
     }
     typeMap[type].attempts++
     if (problem.correct) typeMap[type].correct++
     typeMap[type].totalTime += problem.timeSpent
+    const speedTime = getSpeedTime(problem)
+    if (Number.isFinite(speedTime)) {
+      typeMap[type].speedSamples++
+      typeMap[type].speedTime += speedTime
+    }
   }
 
   // Beräkna success rate per typ
   for (const [type, stats] of Object.entries(typeMap)) {
     typeMap[type].successRate = stats.correct / stats.attempts
     typeMap[type].avgTime = stats.totalTime / stats.attempts
+    typeMap[type].avgSpeedTime = stats.speedSamples > 0
+      ? stats.speedTime / stats.speedSamples
+      : null
   }
   profile.stats.typeStats = typeMap
 
@@ -219,6 +260,15 @@ function ensureLifetimeStats(profile) {
 
   if (!Number.isFinite(Number(stats.lifetimeTimeSpent))) {
     stats.lifetimeTimeSpent = Math.max(0, fallbackAvgTime * stats.lifetimeProblems)
+  }
+  const fallbackAvgSpeed = Number.isFinite(Number(stats.avgSpeedTimePerProblem))
+    ? Number(stats.avgSpeedTimePerProblem)
+    : fallbackAvgTime
+  if (!Number.isFinite(Number(stats.lifetimeSpeedSamples))) {
+    stats.lifetimeSpeedSamples = Math.max(0, stats.lifetimeProblems)
+  }
+  if (!Number.isFinite(Number(stats.lifetimeSpeedTimeSpent))) {
+    stats.lifetimeSpeedTimeSpent = Math.max(0, fallbackAvgSpeed * stats.lifetimeSpeedSamples)
   }
 
   if (!stats.typeStats || typeof stats.typeStats !== 'object') {
@@ -346,4 +396,101 @@ function inferOperation(problemType = '') {
   // För framtida räknesätt: använd prefix före första underscore.
   const [prefix] = String(problemType).split('_')
   return prefix || 'unknown'
+}
+
+function deriveTimingMetrics(profile, problem, timeSpent, options = {}) {
+  const rawTimeSec = Math.max(0, Number(timeSpent) || 0)
+  const hiddenDurationSec = Math.max(0, Number(options?.interruption?.hiddenDurationSec) || 0)
+  const blurCount = Math.max(0, Number(options?.interruption?.blurCount) || 0)
+  const interruptionSuspected = hiddenDurationSec >= INTERRUPTION_HIDDEN_SECONDS
+    || (blurCount > 0 && rawTimeSec >= INTERRUPTION_BLUR_MIN_TIME_SECONDS)
+  const baselineTimes = getPersonalBaselineTimes(profile, problem)
+  const personalMedianSec = median(baselineTimes)
+  const personalBaselineCount = baselineTimes.length
+
+  let excludedFromSpeed = false
+  let exclusionReason = null
+
+  if (rawTimeSec <= 0) {
+    excludedFromSpeed = true
+    exclusionReason = 'invalid_time'
+  } else if (rawTimeSec > ABSOLUTE_TIME_CAP_SECONDS) {
+    excludedFromSpeed = true
+    exclusionReason = 'hard_cap'
+  } else if (interruptionSuspected) {
+    excludedFromSpeed = true
+    exclusionReason = 'interruption'
+  } else if (
+    personalBaselineCount >= MIN_PERSONAL_BASELINE_SAMPLES
+    && Number.isFinite(personalMedianSec)
+    && rawTimeSec > Math.max(45, personalMedianSec * PERSONAL_OUTLIER_FACTOR)
+  ) {
+    excludedFromSpeed = true
+    exclusionReason = 'personal_outlier'
+  }
+
+  return {
+    rawTimeSec,
+    speedTimeSec: excludedFromSpeed ? null : rawTimeSec,
+    excludedFromSpeed,
+    exclusionReason,
+    interruptionSuspected,
+    hiddenDurationSec,
+    blurCount,
+    personalMedianSec,
+    personalBaselineCount
+  }
+}
+
+function getPersonalBaselineTimes(profile, problem) {
+  const recent = Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
+  if (recent.length === 0) return []
+
+  const skillTag = String(problem?.metadata?.skillTag || problem?.template || '')
+  const templateId = String(problem?.template || '')
+  const level = Math.round(Number(problem?.difficulty?.conceptual_level || 1))
+  const operation = inferOperation(templateId)
+
+  const valid = recent.filter(item => Number.isFinite(getSpeedTime(item)))
+
+  const bySkill = valid.filter(item => {
+    const itemLevel = Math.round(Number(item?.difficulty?.conceptual_level || item?.targetLevel || 1))
+    return String(item.skillTag || '') === skillTag && itemLevel === level
+  })
+  if (bySkill.length >= 4) {
+    return bySkill.slice(-20).map(item => getSpeedTime(item)).filter(Number.isFinite)
+  }
+
+  const byOperationLevel = valid.filter(item => {
+    const itemLevel = Math.round(Number(item?.difficulty?.conceptual_level || item?.targetLevel || 1))
+    return inferOperation(item.problemType) === operation && itemLevel === level
+  })
+  if (byOperationLevel.length > 0) {
+    return byOperationLevel.slice(-25).map(item => getSpeedTime(item)).filter(Number.isFinite)
+  }
+
+  return valid.slice(-25).map(item => getSpeedTime(item)).filter(Number.isFinite)
+}
+
+function getSpeedTime(problem) {
+  const speed = Number(problem?.speedTimeSec)
+  if (Number.isFinite(speed) && speed > 0) return speed
+  if (problem?.excludedFromSpeed) return null
+  const raw = Number(problem?.timeSpent)
+  if (Number.isFinite(raw) && raw > 0) return raw
+  return null
+}
+
+function median(values) {
+  const clean = (Array.isArray(values) ? values : [])
+    .map(Number)
+    .filter(value => Number.isFinite(value) && value > 0)
+    .sort((a, b) => a - b)
+
+  if (clean.length === 0) return null
+  const middle = Math.floor(clean.length / 2)
+  if (clean.length % 2 === 0) {
+    return (clean[middle - 1] + clean[middle]) / 2
+  }
+  return clean[middle]
 }

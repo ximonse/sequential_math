@@ -1757,8 +1757,13 @@ function buildStudentRow(student, activeAssignment = null) {
     .map(problem => evaluateAnswerQuality(problem))
     .filter(item => item.isReasonable)
     .length
-  const weekActiveTimeSec = weekProblems.reduce((sum, problem) => sum + (Number(problem.timeSpent) || 0), 0)
-  const weekAvgTimePerProblemSec = weekAttempts > 0 ? weekActiveTimeSec / weekAttempts : 0
+  const weekSpeedTimes = weekProblems
+    .map(problem => getSpeedTime(problem))
+    .filter(value => Number.isFinite(value))
+  const weekActiveTimeSec = weekSpeedTimes.reduce((sum, value) => sum + value, 0)
+  const weekAvgTimePerProblemSec = weekSpeedTimes.length > 0
+    ? weekActiveTimeSec / weekSpeedTimes.length
+    : 0
   const weekAvgAnswerLength = getAverageAnswerLength(weekProblems)
   const weekByOperation = summarizeByOperation(weekProblems)
   const weekBySkill = summarizeBySkill(weekProblems)
@@ -2091,7 +2096,7 @@ function getAccuracy(problems) {
 function getMedianTime(problems) {
   const values = (Array.isArray(problems) ? problems : [])
     .filter(problem => problem.correct)
-    .map(problem => Number(problem.timeSpent))
+    .map(problem => getSpeedTime(problem))
     .filter(value => Number.isFinite(value) && value > 0)
     .sort((a, b) => a - b)
 
@@ -2099,6 +2104,15 @@ function getMedianTime(problems) {
   const middle = Math.floor(values.length / 2)
   if (values.length % 2 === 0) return (values[middle - 1] + values[middle]) / 2
   return values[middle]
+}
+
+function getSpeedTime(problem) {
+  const speed = Number(problem?.speedTimeSec)
+  if (Number.isFinite(speed) && speed > 0) return speed
+  if (problem?.excludedFromSpeed) return null
+  const raw = Number(problem?.timeSpent)
+  if (Number.isFinite(raw) && raw > 0) return raw
+  return null
 }
 
 export default Dashboard

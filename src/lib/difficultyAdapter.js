@@ -550,7 +550,10 @@ function updateSkillStateAfterAnswer(profile) {
 
   const skillTag = latest.skillTag || latest.problemType
   const state = getOrInitSkillState(profile, skillTag)
-  const wasFast = latest.timeSpent <= 0 ? false : latest.timeSpent < 18
+  const effectiveTime = Number.isFinite(Number(latest.speedTimeSec))
+    ? Number(latest.speedTimeSec)
+    : Number(latest.timeSpent)
+  const wasFast = effectiveTime > 0 && effectiveTime < 18
 
   let delta = 0
   if (latest.correct && latest.isReasonable) delta += 0.25
@@ -563,9 +566,11 @@ function updateSkillStateAfterAnswer(profile) {
   state.attempts += 1
   if (latest.correct) state.correct += 1
   if (latest.isReasonable) state.reasonable += 1
-  state.avgTime = state.attempts === 1
-    ? latest.timeSpent
-    : ((state.avgTime * (state.attempts - 1)) + latest.timeSpent) / state.attempts
+  if (effectiveTime > 0) {
+    state.avgTime = state.attempts === 1
+      ? effectiveTime
+      : ((state.avgTime * (state.attempts - 1)) + effectiveTime) / state.attempts
+  }
   state.lastSeen = latest.timestamp
 
   latest.abilityAfter = state.ability

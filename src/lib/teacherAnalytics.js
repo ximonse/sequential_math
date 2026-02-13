@@ -37,7 +37,12 @@ export function buildDetailedProblemExportRows(snapshot) {
       Nivå: item.level,
       Rätt: item.correct ? 1 : 0,
       RimligtSvar: item.isReasonable ? 1 : 0,
-      SvarstidSek: toFixedOrEmpty(item.timeSpentSec, 2),
+      SvarstidSek: toFixedOrEmpty(item.rawTimeSpentSec, 2),
+      SpeedTidSek: toFixedOrEmpty(item.speedTimeSec, 2),
+      ExkluderadSpeed: item.excludedFromSpeed ? 1 : 0,
+      ExkluderingsOrsak: item.speedExclusionReason || '',
+      AvbrottMisstänkt: item.interruptionSuspected ? 1 : 0,
+      DoldTidSek: toFixedOrEmpty(item.hiddenDurationSec, 2),
       Progressionsläge: item.progressionMode,
       SelectionReason: item.selectionReason,
       DifficultyBucket: item.difficultyBucket,
@@ -48,10 +53,10 @@ export function buildDetailedProblemExportRows(snapshot) {
       TermOrder: item.termOrder,
       PeerMedianTidTemplateNivå: toFixedOrEmpty(peerMedian, 2),
       PeerAccuracyTemplateNivå: toFixedOrEmpty(peerAccuracy, 3),
-      SpeedIndexTemplateNivå: toFixedOrEmpty(computeSpeedIndex(peerMedian, item.timeSpentSec), 3),
+      SpeedIndexTemplateNivå: toFixedOrEmpty(computeSpeedIndex(peerMedian, item.speedTimeSec), 3),
       Tabell: item.table || '',
       PeerMedianTidTabell: toFixedOrEmpty(tablePeerMedian, 2),
-      SpeedIndexTabell: toFixedOrEmpty(computeSpeedIndex(tablePeerMedian, item.timeSpentSec), 3)
+      SpeedIndexTabell: toFixedOrEmpty(computeSpeedIndex(tablePeerMedian, item.speedTimeSec), 3)
     }
   })
 }
@@ -95,14 +100,14 @@ export function buildSkillComparisonExportRows(snapshot) {
     const recentSorted = [...entry.recent].sort((a, b) => a.timestamp - b.timestamp)
     const templateLevelKey = getTemplateLevelKey(recentSorted[0].problemType, entry.level)
     const templateBenchmark = templateBenchmarks[templateLevelKey]
-    const studentMedian = median(recentSorted.filter(r => r.correct).map(r => r.timeSpentSec))
+    const studentMedian = median(recentSorted.filter(r => r.correct).map(r => r.speedTimeSec))
     const peerMedian = templateBenchmark?.medianTimeCorrectSec || null
     const accuracy = entry.attempts > 0 ? entry.correct / entry.attempts : null
     const accuracy7 = rate(entry.window7)
     const accuracyPrev7 = rate(entry.previous7)
     const accuracy30 = rate(entry.window30)
-    const median7 = median(entry.window7.filter(r => r.correct).map(r => r.timeSpentSec))
-    const medianPrev7 = median(entry.previous7.filter(r => r.correct).map(r => r.timeSpentSec))
+    const median7 = median(entry.window7.filter(r => r.correct).map(r => r.speedTimeSec))
+    const medianPrev7 = median(entry.previous7.filter(r => r.correct).map(r => r.speedTimeSec))
 
     output.push({
       ElevNamn: entry.name,
@@ -165,11 +170,11 @@ export function buildTableDevelopmentExportRows(snapshot) {
     const benchmark = tableBenchmarks[entry.table] || null
     const totalAttempts = entry.total.length
     const totalAccuracy = rate(entry.total)
-    const totalMedian = median(entry.total.filter(r => r.correct).map(r => r.timeSpentSec))
+    const totalMedian = median(entry.total.filter(r => r.correct).map(r => r.speedTimeSec))
     const acc7 = rate(entry.window7)
     const accPrev7 = rate(entry.previous7)
-    const med7 = median(entry.window7.filter(r => r.correct).map(r => r.timeSpentSec))
-    const medPrev7 = median(entry.previous7.filter(r => r.correct).map(r => r.timeSpentSec))
+    const med7 = median(entry.window7.filter(r => r.correct).map(r => r.speedTimeSec))
+    const medPrev7 = median(entry.previous7.filter(r => r.correct).map(r => r.speedTimeSec))
 
     output.push({
       ElevNamn: entry.name,
@@ -214,7 +219,12 @@ function flattenProblems(profiles) {
         level: Number.isFinite(level) ? level : 1,
         correct: Boolean(problem.correct),
         isReasonable: Boolean(problem.isReasonable),
-        timeSpentSec: Number(problem.timeSpent || 0),
+        rawTimeSpentSec: Number(problem.timeSpent || 0),
+        speedTimeSec: getSpeedTime(problem),
+        excludedFromSpeed: Boolean(problem.excludedFromSpeed),
+        speedExclusionReason: String(problem.speedExclusionReason || ''),
+        interruptionSuspected: Boolean(problem.interruptionSuspected),
+        hiddenDurationSec: Number(problem.hiddenDurationSec || 0),
         progressionMode: String(problem.progressionMode || 'challenge'),
         selectionReason: String(problem.selectionReason || 'normal'),
         difficultyBucket: String(problem.difficultyBucket || 'core'),
@@ -243,7 +253,7 @@ function buildTemplateLevelBenchmarks(rows) {
     existing.attempts += 1
     if (item.correct) {
       existing.correct += 1
-      if (item.timeSpentSec > 0) existing.correctTimes.push(item.timeSpentSec)
+      if (item.speedTimeSec > 0) existing.correctTimes.push(item.speedTimeSec)
     }
     grouped.set(key, existing)
   }
@@ -272,7 +282,7 @@ function buildTableBenchmarks(rows) {
     existing.attempts += 1
     if (item.correct) {
       existing.correct += 1
-      if (item.timeSpentSec > 0) existing.correctTimes.push(item.timeSpentSec)
+      if (item.speedTimeSec > 0) existing.correctTimes.push(item.speedTimeSec)
     }
     grouped.set(item.table, existing)
   }
@@ -369,4 +379,13 @@ function toFixedOrEmpty(value, digits = 2) {
   const numeric = Number(value)
   if (!Number.isFinite(numeric)) return ''
   return numeric.toFixed(digits)
+}
+
+function getSpeedTime(problem) {
+  const speed = Number(problem?.speedTimeSec)
+  if (Number.isFinite(speed) && speed > 0) return speed
+  if (problem?.excludedFromSpeed) return null
+  const raw = Number(problem?.timeSpent)
+  if (Number.isFinite(raw) && raw > 0) return raw
+  return null
 }

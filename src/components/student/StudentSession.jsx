@@ -51,12 +51,17 @@ function StudentSession() {
   const [tableMilestone, setTableMilestone] = useState(null)
   const [advancePrompt, setAdvancePrompt] = useState(null)
   const inputRef = useRef(null)
+  const attentionRef = useRef(createAttentionTracker())
 
   const assignmentId = searchParams.get('assignment')
   const mode = searchParams.get('mode')
   const progressionMode = normalizeProgressionMode(searchParams.get('pace'))
   const tableSet = useMemo(() => parseTableSet(searchParams.get('tables')), [searchParams])
   const isTableDrill = tableSet.length > 0
+
+  const resetAttentionTracker = useCallback(() => {
+    attentionRef.current = createAttentionTracker()
+  }, [])
 
   // Ladda profil vid start
   useEffect(() => {
@@ -136,8 +141,9 @@ function StudentSession() {
     setAnswer('')
     setFeedback(null)
     setSessionCount(0)
+    resetAttentionTracker()
     setStartTime(Date.now())
-  }, [profile, isTableDrill, tableSet])
+  }, [profile, isTableDrill, tableSet, resetAttentionTracker])
 
   const completedThisSession = useMemo(() => sessionCount, [sessionCount])
 
@@ -148,6 +154,7 @@ function StudentSession() {
         if (tableQueue.length === 0) return
         const problem = createTableProblem(tableQueue[0])
         setCurrentProblem(problem)
+        resetAttentionTracker()
         setStartTime(Date.now())
         return
       }
@@ -162,9 +169,10 @@ function StudentSession() {
       const problem = safeSelectProblem(profile, rules)
       if (!problem) return
       setCurrentProblem(problem)
+      resetAttentionTracker()
       setStartTime(Date.now())
     }
-  }, [profile, currentProblem, feedback, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, progressionMode, isTableDrill, tableQueue])
+  }, [profile, currentProblem, feedback, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, progressionMode, isTableDrill, tableQueue, resetAttentionTracker])
 
   // Fokusera input när nytt problem visas
   useEffect(() => {
@@ -188,6 +196,7 @@ function StudentSession() {
       setCurrentProblem(nextProblem)
       setAnswer('')
       setFeedback(null)
+      resetAttentionTracker()
       setStartTime(Date.now())
       return
     }
@@ -204,8 +213,33 @@ function StudentSession() {
     setCurrentProblem(nextProblem)
     setAnswer('')
     setFeedback(null)
+    resetAttentionTracker()
     setStartTime(Date.now())
-  }, [profile, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, progressionMode, isTableDrill, tableQueue])
+  }, [profile, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, progressionMode, isTableDrill, tableQueue, resetAttentionTracker])
+
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (!currentProblem || feedback) return
+      if (document.hidden) {
+        beginHiddenTracking(attentionRef.current)
+      } else {
+        endHiddenTracking(attentionRef.current)
+      }
+    }
+
+    const onBlur = () => {
+      if (!currentProblem || feedback) return
+      attentionRef.current.blurCount += 1
+    }
+
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    window.addEventListener('blur', onBlur)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      window.removeEventListener('blur', onBlur)
+      endHiddenTracking(attentionRef.current)
+    }
+  }, [currentProblem, feedback])
 
   const safeSelectProblem = (currentProfile, rules) => {
     try {
@@ -263,19 +297,23 @@ function StudentSession() {
     if (!Number.isFinite(studentAnswer)) return
 
     // Lägg till resultat
-    const { correct } = addProblemResult(
+    const interruption = finalizeAttentionSnapshot(attentionRef.current)
+    const { correct, result } = addProblemResult(
       profile,
       currentProblem,
       studentAnswer,
       timeSpent,
-      { rawAnswer: normalizedAnswer }
+      {
+        rawAnswer: normalizedAnswer,
+        interruption
+      }
     )
 
     if (!isTableDrill) {
       // Justera svårighet i vanliga lägen
       adjustDifficulty(profile, correct, {
         progressionMode,
-        timeSpent,
+        timeSpent: result.speedTimeSec,
         problem: currentProblem
       })
     }
@@ -439,6 +477,7 @@ function StudentSession() {
         setCurrentProblem(nextProblem)
         setAnswer('')
         setFeedback(null)
+        resetAttentionTracker()
         setStartTime(Date.now())
       }
     }
@@ -912,3 +951,31 @@ function isKnownMode(mode) {
 }
 
 export default StudentSession
+
+function createAttentionTracker() {
+  return {
+    hiddenSinceTs: null,
+    hiddenDurationMs: 0,
+    blurCount: 0
+  }
+}
+
+function beginHiddenTracking(tracker) {
+  if (!tracker || tracker.hiddenSinceTs) return
+  tracker.hiddenSinceTs = Date.now()
+}
+
+function endHiddenTracking(tracker) {
+  if (!tracker || !tracker.hiddenSinceTs) return
+  tracker.hiddenDurationMs += Math.max(0, Date.now() - tracker.hiddenSinceTs)
+  tracker.hiddenSinceTs = null
+}
+
+function finalizeAttentionSnapshot(tracker) {
+  if (!tracker) return { hiddenDurationSec: 0, blurCount: 0 }
+  endHiddenTracking(tracker)
+  return {
+    hiddenDurationSec: tracker.hiddenDurationMs / 1000,
+    blurCount: tracker.blurCount
+  }
+}

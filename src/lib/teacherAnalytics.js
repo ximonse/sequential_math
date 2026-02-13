@@ -36,6 +36,9 @@ export function buildDetailedProblemExportRows(snapshot) {
       SkillTag: item.skillTag,
       Nivå: item.level,
       Rätt: item.correct ? 1 : 0,
+      Felkategori: item.errorCategory,
+      Kunskapsfel: item.isKnowledgeError ? 1 : 0,
+      Ouppmärksamhetsfel: item.isInattentionError ? 1 : 0,
       RimligtSvar: item.isReasonable ? 1 : 0,
       SvarstidSek: toFixedOrEmpty(item.rawTimeSpentSec, 2),
       SpeedTidSek: toFixedOrEmpty(item.speedTimeSec, 2),
@@ -77,6 +80,8 @@ export function buildSkillComparisonExportRows(snapshot) {
       level: item.level,
       attempts: 0,
       correct: 0,
+      knowledgeAttempts: 0,
+      knowledgeCorrect: 0,
       recent: [],
       window7: [],
       previous7: [],
@@ -84,6 +89,10 @@ export function buildSkillComparisonExportRows(snapshot) {
     }
     existing.attempts += 1
     if (item.correct) existing.correct += 1
+    if (isKnowledgeAttempt(item)) {
+      existing.knowledgeAttempts += 1
+      if (item.correct) existing.knowledgeCorrect += 1
+    }
     existing.recent.push(item)
     const ageDays = (Date.now() - item.timestamp) / DAY_MS
     if (ageDays <= 7) {
@@ -102,10 +111,12 @@ export function buildSkillComparisonExportRows(snapshot) {
     const templateBenchmark = templateBenchmarks[templateLevelKey]
     const studentMedian = median(recentSorted.filter(r => r.correct).map(r => r.speedTimeSec))
     const peerMedian = templateBenchmark?.medianTimeCorrectSec || null
-    const accuracy = entry.attempts > 0 ? entry.correct / entry.attempts : null
-    const accuracy7 = rate(entry.window7)
-    const accuracyPrev7 = rate(entry.previous7)
-    const accuracy30 = rate(entry.window30)
+    const accuracy = entry.knowledgeAttempts > 0
+      ? entry.knowledgeCorrect / entry.knowledgeAttempts
+      : (entry.attempts > 0 ? entry.correct / entry.attempts : null)
+    const accuracy7 = rate(entry.window7, { knowledgeOnly: true })
+    const accuracyPrev7 = rate(entry.previous7, { knowledgeOnly: true })
+    const accuracy30 = rate(entry.window30, { knowledgeOnly: true })
     const median7 = median(entry.window7.filter(r => r.correct).map(r => r.speedTimeSec))
     const medianPrev7 = median(entry.previous7.filter(r => r.correct).map(r => r.speedTimeSec))
 
@@ -218,6 +229,9 @@ function flattenProblems(profiles) {
         skillTag: String(problem.skillTag || problem.problemType || operation),
         level: Number.isFinite(level) ? level : 1,
         correct: Boolean(problem.correct),
+        errorCategory: String(problem.errorCategory || (problem.correct ? 'none' : 'knowledge')),
+        isInattentionError: Boolean(problem.isInattentionError || problem.errorCategory === 'inattention'),
+        isKnowledgeError: Boolean(problem.isKnowledgeError || (!problem.correct && problem.errorCategory !== 'inattention')),
         isReasonable: Boolean(problem.isReasonable),
         rawTimeSpentSec: Number(problem.timeSpent || 0),
         speedTimeSec: getSpeedTime(problem),
@@ -333,11 +347,13 @@ function formatTimestamp(timestamp) {
   return new Date(timestamp).toISOString()
 }
 
-function rate(items) {
+function rate(items, options = {}) {
   const list = Array.isArray(items) ? items : []
-  if (list.length === 0) return null
-  const correct = list.filter(item => item.correct).length
-  return correct / list.length
+  const knowledgeOnly = Boolean(options.knowledgeOnly)
+  const scoped = knowledgeOnly ? list.filter(isKnowledgeAttempt) : list
+  if (scoped.length === 0) return null
+  const correct = scoped.filter(item => item.correct).length
+  return correct / scoped.length
 }
 
 function median(values) {
@@ -388,4 +404,8 @@ function getSpeedTime(problem) {
   const raw = Number(problem?.timeSpent)
   if (Number.isFinite(raw) && raw > 0) return raw
   return null
+}
+
+function isKnowledgeAttempt(item) {
+  return String(item?.errorCategory || '') !== 'inattention'
 }

@@ -66,6 +66,7 @@ export function createStudentProfile(studentId, name, grade = 4) {
  */
 export function addProblemResult(profile, problem, studentAnswer, timeSpent, options = {}) {
   const correct = isAnswerCorrect(studentAnswer, problem.result)
+  const errorCategory = classifyErrorCategory(problem, studentAnswer, correct, options)
   const timing = deriveTimingMetrics(profile, problem, timeSpent, options)
   const quality = evaluateAnswerQuality({
     problemType: problem.template,
@@ -83,6 +84,9 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     studentAnswer,
     answerLength: getNormalizedAnswerLength(options.rawAnswer, studentAnswer),
     correct,
+    errorCategory,
+    isInattentionError: errorCategory === 'inattention',
+    isKnowledgeError: !correct && errorCategory !== 'inattention',
     timeSpent: timing.rawTimeSec,
     speedTimeSec: timing.speedTimeSec,
     excludedFromSpeed: timing.excludedFromSpeed,
@@ -479,6 +483,24 @@ function getSpeedTime(problem) {
   const raw = Number(problem?.timeSpent)
   if (Number.isFinite(raw) && raw > 0) return raw
   return null
+}
+
+function classifyErrorCategory(problem, studentAnswer, correct, options = {}) {
+  if (correct) return 'none'
+  if (!options?.isMixedMode) return 'knowledge'
+
+  const a = Number(problem?.values?.a)
+  const b = Number(problem?.values?.b)
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return 'knowledge'
+
+  if (problem?.type === 'subtraction') {
+    const inattentiveCandidate = a + b
+    if (Math.abs(studentAnswer - inattentiveCandidate) < 0.0001) {
+      return 'inattention'
+    }
+  }
+
+  return 'knowledge'
 }
 
 function median(values) {

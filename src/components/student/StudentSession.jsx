@@ -28,6 +28,7 @@ import { getProgressionModeLabel, normalizeProgressionMode } from '../../lib/pro
 
 const AUTO_CONTINUE_DELAY = 3000 // 3 sekunder
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
+const BREAK_PROMPT_COOLDOWN_MS = 8 * 60 * 1000
 
 function StudentSession() {
   const { studentId } = useParams()
@@ -42,6 +43,8 @@ function StudentSession() {
   const [startTime, setStartTime] = useState(null)
   const [sessionCount, setSessionCount] = useState(0)
   const [showBreakSuggestion, setShowBreakSuggestion] = useState(false)
+  const [pendingBreakSuggestion, setPendingBreakSuggestion] = useState(false)
+  const [lastBreakPromptAt, setLastBreakPromptAt] = useState(0)
   const [showPong, setShowPong] = useState(false)
   const [showScratchpad, setShowScratchpad] = useState(false)
   const [sessionAssignment, setSessionAssignment] = useState(null)
@@ -137,6 +140,7 @@ function StudentSession() {
     setTableQueue(initialQueue)
     setTableMilestone(null)
     setAdvancePrompt(null)
+    setPendingBreakSuggestion(false)
     setCurrentProblem(initialQueue.length > 0 ? createTableProblem(initialQueue[0]) : null)
     setAnswer('')
     setFeedback(null)
@@ -190,6 +194,13 @@ function StudentSession() {
   // Gå till nästa problem
   const goToNextProblem = useCallback(() => {
     if (!profile) return
+
+    if (pendingBreakSuggestion) {
+      setPendingBreakSuggestion(false)
+      setShowBreakSuggestion(true)
+      return
+    }
+
     if (isTableDrill) {
       if (tableQueue.length === 0) return
       const nextProblem = createTableProblem(tableQueue[0])
@@ -215,7 +226,7 @@ function StudentSession() {
     setFeedback(null)
     resetAttentionTracker()
     setStartTime(Date.now())
-  }, [profile, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, progressionMode, isTableDrill, tableQueue, resetAttentionTracker])
+  }, [profile, pendingBreakSuggestion, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, progressionMode, isTableDrill, tableQueue, resetAttentionTracker])
 
   useEffect(() => {
     const onVisibilityChange = () => {
@@ -298,6 +309,7 @@ function StudentSession() {
 
     // Lägg till resultat
     const interruption = finalizeAttentionSnapshot(attentionRef.current)
+    const mixedMode = isMixedTrainingSession(mode, sessionAssignment, isTableDrill)
     const { correct, result } = addProblemResult(
       profile,
       currentProblem,
@@ -305,7 +317,8 @@ function StudentSession() {
       timeSpent,
       {
         rawAnswer: normalizedAnswer,
-        interruption
+        interruption,
+        isMixedMode: mixedMode
       }
     )
 
@@ -314,7 +327,8 @@ function StudentSession() {
       adjustDifficulty(profile, correct, {
         progressionMode,
         timeSpent: result.speedTimeSec,
-        problem: currentProblem
+        problem: currentProblem,
+        errorCategory: result.errorCategory
       })
     }
 
@@ -354,9 +368,14 @@ function StudentSession() {
           })
         }
       }
-    } else if (!sessionAssignment && shouldSuggestBreak(profile, newCount)) {
+    } else if (
+      !sessionAssignment
+      && shouldSuggestBreak(profile, newCount)
+      && (lastBreakPromptAt === 0 || Date.now() - lastBreakPromptAt >= BREAK_PROMPT_COOLDOWN_MS)
+    ) {
       // Kolla om paus behövs i vanliga lägen
-      setShowBreakSuggestion(true)
+      setPendingBreakSuggestion(true)
+      setLastBreakPromptAt(Date.now())
       breakSuggested = true
     }
 
@@ -388,6 +407,7 @@ function StudentSession() {
 
   const handleTakeBreak = () => {
     setShowBreakSuggestion(false)
+    setPendingBreakSuggestion(false)
     clearActiveStudentSession()
     navigate('/')
   }
@@ -948,6 +968,14 @@ function isKnownMode(mode) {
     || mode === 'subtraction'
     || mode === 'multiplication'
     || mode === 'division'
+}
+
+function isMixedTrainingSession(mode, assignment, isTableDrill) {
+  if (isTableDrill) return false
+  if (mode && isKnownMode(mode)) return false
+  if (!assignment) return true
+  const types = Array.isArray(assignment.problemTypes) ? assignment.problemTypes : []
+  return types.length !== 1
 }
 
 export default StudentSession

@@ -96,6 +96,10 @@ export function adjustDifficulty(profile, wasCorrect, options = {}) {
       profile.currentDifficulty += config.speedBonus
     }
   } else {
+    if (options.errorCategory === 'inattention') {
+      const tinyPenalty = progressionMode === PROGRESSION_MODE_STEADY ? 0.02 : 0.03
+      profile.currentDifficulty -= tinyPenalty
+    } else {
     // Fel svar: mindre hårda sänkningar för att minska bottenlåsning
     const errors = getConsecutiveErrors(profile)
 
@@ -110,6 +114,7 @@ export function adjustDifficulty(profile, wasCorrect, options = {}) {
     // Låg trend utan streak-fel → liten nedjustering
     else if (recentSuccess < 0.55) {
       profile.currentDifficulty -= config.downSoft
+    }
     }
   }
 
@@ -286,10 +291,11 @@ export function shouldOfferSteadyAdvance(profile, options = {}) {
     const level = Number(problem?.difficulty?.conceptual_level || 0)
     return Math.round(level) === roundedDifficulty
   })
-  if (currentLevelItems.length < 6) return null
+  const masteryItems = currentLevelItems.filter(problem => problem.errorCategory !== 'inattention')
+  if (masteryItems.length < 6) return null
 
-  const successRate = currentLevelItems.filter(problem => problem.correct).length / currentLevelItems.length
-  const reasonableRate = currentLevelItems.filter(problem => problem.isReasonable).length / currentLevelItems.length
+  const successRate = masteryItems.filter(problem => problem.correct).length / masteryItems.length
+  const reasonableRate = masteryItems.filter(problem => problem.isReasonable).length / masteryItems.length
   if (successRate < 0.85 || reasonableRate < 0.7) return null
 
   const lastOffer = profile.adaptive.lastAdvanceOffer
@@ -307,7 +313,7 @@ export function shouldOfferSteadyAdvance(profile, options = {}) {
     fromLevel: roundedDifficulty,
     nextLevel: Math.min(12, roundedDifficulty + 1),
     successRate,
-    sampleSize: currentLevelItems.length
+    sampleSize: masteryItems.length
   }
 }
 
@@ -554,13 +560,18 @@ function updateSkillStateAfterAnswer(profile) {
     ? Number(latest.speedTimeSec)
     : Number(latest.timeSpent)
   const wasFast = effectiveTime > 0 && effectiveTime < 18
+  const isInattentionError = latest.errorCategory === 'inattention'
 
   let delta = 0
-  if (latest.correct && latest.isReasonable) delta += 0.25
-  if (latest.correct && !latest.isReasonable) delta += 0.12
-  if (!latest.correct && latest.isReasonable) delta -= 0.1
-  if (!latest.correct && !latest.isReasonable) delta -= 0.25
-  if (latest.correct && wasFast) delta += 0.05
+  if (isInattentionError && !latest.correct) {
+    delta -= 0.03
+  } else {
+    if (latest.correct && latest.isReasonable) delta += 0.25
+    if (latest.correct && !latest.isReasonable) delta += 0.12
+    if (!latest.correct && latest.isReasonable) delta -= 0.1
+    if (!latest.correct && !latest.isReasonable) delta -= 0.25
+    if (latest.correct && wasFast) delta += 0.05
+  }
 
   state.ability = Math.max(1, Math.min(12, state.ability + delta))
   state.attempts += 1

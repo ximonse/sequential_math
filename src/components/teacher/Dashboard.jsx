@@ -1621,6 +1621,8 @@ function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
         DagensMängd: row.todayAttempts,
         DagensRatt: row.todayCorrectCount,
         DagensFel: row.todayWrongCount,
+        DagensKunskapsfel: row.todayKnowledgeWrongCount,
+        DagensOuppmärksamhetsfel: row.todayInattentionCount,
         DagensTraff: toPercent(row.todaySuccessRate),
         DagensUppdragsföljsamhet: row.todayAssignmentAdherenceRate === null ? '-' : toPercent(row.todayAssignmentAdherenceRate),
         DagensKamparMed: row.todayStruggle?.skillLabel || ''
@@ -1633,6 +1635,8 @@ function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
         VeckansMängd: row.weekAttempts,
         VeckansRatt: row.weekCorrectCount,
         VeckansFel: row.weekWrongCount,
+        VeckansKunskapsfel: row.weekKnowledgeWrongCount,
+        VeckansOuppmärksamhetsfel: row.weekInattentionCount,
         VeckansTraff: toPercent(row.weekSuccessRate),
         VeckansAktivTidSek: Math.round(row.weekActiveTimeSec || 0),
         VeckansMål: weekGoal,
@@ -1646,6 +1650,7 @@ function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
       ...base,
       FörsökTotalt: row.attempts,
       RattTotalt: row.correctCount,
+      OuppmärksamhetsfelTotalt: row.inattentionErrorCount,
       TraffTotalt: toPercent(row.successRate),
       RimlighetTotalt: toPercent(row.reasonableRate),
       Uppdragsfoljsamhet: row.assignmentAdherenceRate === null ? '-' : toPercent(row.assignmentAdherenceRate),
@@ -1709,13 +1714,19 @@ function buildStudentRow(student, activeAssignment = null) {
   const recentProblems = Array.isArray(student.recentProblems) ? student.recentProblems : []
   const attempts = recentProblems.length
   const correctCount = recentProblems.filter(p => p.correct).length
+  const inattentionErrorCount = recentProblems.filter(
+    p => !p.correct && String(p.errorCategory || '') === 'inattention'
+  ).length
   const successRate = attempts > 0 ? correctCount / attempts : 0
 
   const quality = recentProblems.map(p => evaluateAnswerQuality(p))
   const reasonableCount = quality.filter(q => q.isReasonable).length
   const reasonableRate = attempts > 0 ? reasonableCount / attempts : 0
 
-  const wrongQuality = quality.filter((q, idx) => !recentProblems[idx].correct)
+  const wrongQuality = quality.filter((q, idx) => {
+    const problem = recentProblems[idx]
+    return !problem.correct && isKnowledgeError(problem)
+  })
   const avgRelativeError = wrongQuality.length > 0
     ? wrongQuality.reduce((sum, q) => sum + q.relativeError, 0) / wrongQuality.length
     : null
@@ -1729,9 +1740,11 @@ function buildStudentRow(student, activeAssignment = null) {
   const todayAttempts = todayProblems.length
   const todayCorrectCount = todayProblems.filter(problem => problem.correct).length
   const todayWrongCount = todayAttempts - todayCorrectCount
+  const todayKnowledgeWrongCount = todayProblems.filter(problem => !problem.correct && isKnowledgeError(problem)).length
+  const todayInattentionCount = todayProblems.filter(problem => problem.errorCategory === 'inattention').length
   const todaySuccessRate = todayAttempts > 0 ? todayCorrectCount / todayAttempts : 0
   const todayWrongReasonable = todayProblems
-    .filter(problem => !problem.correct)
+    .filter(problem => !problem.correct && isKnowledgeError(problem))
     .map(problem => evaluateAnswerQuality(problem))
     .filter(item => item.isReasonable)
     .length
@@ -1751,9 +1764,11 @@ function buildStudentRow(student, activeAssignment = null) {
   const weekAttempts = weekProblems.length
   const weekCorrectCount = weekProblems.filter(problem => problem.correct).length
   const weekWrongCount = weekAttempts - weekCorrectCount
+  const weekKnowledgeWrongCount = weekProblems.filter(problem => !problem.correct && isKnowledgeError(problem)).length
+  const weekInattentionCount = weekProblems.filter(problem => problem.errorCategory === 'inattention').length
   const weekSuccessRate = weekAttempts > 0 ? weekCorrectCount / weekAttempts : 0
   const weekWrongReasonable = weekProblems
-    .filter(problem => !problem.correct)
+    .filter(problem => !problem.correct && isKnowledgeError(problem))
     .map(problem => evaluateAnswerQuality(problem))
     .filter(item => item.isReasonable)
     .length
@@ -1789,13 +1804,13 @@ function buildStudentRow(student, activeAssignment = null) {
     lastActive,
     inactiveDays,
     weekAttempts,
-    weekWrongCount,
+    weekWrongCount: weekKnowledgeWrongCount,
     weekSuccessRate,
     weekReasonableWrongCount: weekWrongReasonable,
     weekAvgTimePerProblemSec,
     weekAssignment,
     todayAttempts,
-    todayWrongCount,
+    todayWrongCount: todayKnowledgeWrongCount,
     todaySuccessRate,
     todayReasonableWrongCount: todayWrongReasonable,
     todayStruggle
@@ -1812,6 +1827,7 @@ function buildStudentRow(student, activeAssignment = null) {
     loginCount: Number(student.auth?.loginCount) || 0,
     attempts,
     correctCount,
+    inattentionErrorCount,
     successRate,
     reasonableCount,
     reasonableRate,
@@ -1824,6 +1840,8 @@ function buildStudentRow(student, activeAssignment = null) {
     todayAttempts,
     todayCorrectCount,
     todayWrongCount,
+    todayKnowledgeWrongCount,
+    todayInattentionCount,
     todaySuccessRate,
     todayReasonableWrongCount: todayWrongReasonable,
     todayAvgAnswerLength,
@@ -1841,6 +1859,8 @@ function buildStudentRow(student, activeAssignment = null) {
     weekAttempts,
     weekCorrectCount,
     weekWrongCount,
+    weekKnowledgeWrongCount,
+    weekInattentionCount,
     weekSuccessRate,
     weekReasonableWrongCount: weekWrongReasonable,
     weekActiveTimeSec,
@@ -1880,7 +1900,7 @@ function summarizeByOperation(problems) {
 
     const answerLength = getAnswerLength(problem)
     prev.attempts += 1
-    if (!problem.correct) prev.wrong += 1
+    if (!problem.correct && isKnowledgeError(problem)) prev.wrong += 1
     prev.answerLengthSum += answerLength
     stats.set(operation, prev)
   }
@@ -1926,7 +1946,7 @@ function summarizeBySkill(problems) {
     }
 
     prev.attempts += 1
-    if (!problem.correct) prev.wrong += 1
+    if (!problem.correct && isKnowledgeError(problem)) prev.wrong += 1
     if (Number.isFinite(level)) {
       prev.levelSum += level
       prev.levelCount += 1
@@ -2113,6 +2133,11 @@ function getSpeedTime(problem) {
   const raw = Number(problem?.timeSpent)
   if (Number.isFinite(raw) && raw > 0) return raw
   return null
+}
+
+function isKnowledgeError(problem) {
+  if (!problem || problem.correct) return false
+  return String(problem.errorCategory || '') !== 'inattention'
 }
 
 export default Dashboard

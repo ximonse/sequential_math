@@ -244,6 +244,119 @@ export const subtractionTemplates = [
       }
     },
     metadata: { estimated_time: 48, description: '3-3 siffrig med växling' }
+  },
+  {
+    id: 'sub_dec_1dp_1dp_no_borrow',
+    type: 'subtraction',
+    grade: 4,
+    difficulty: {
+      conceptual_level: 4,
+      cognitive_load: { working_memory: 2, steps_required: 2, intermediate_values: 0 },
+      procedural: { num_terms: 2, requires_borrow: false, mixed_digits: false },
+      magnitude: { a_digits: 1, b_digits: 1 }
+    },
+    generator: {
+      constraints: {
+        a: { min: 3.2, max: 9.8, step: 0.1 },
+        b: { min: 1.1, max: 4.7, step: 0.1 },
+        result: { min: 0.2, max: 8.7 }
+      }
+    },
+    metadata: { estimated_time: 22, description: 'Decimal 1dp - 1dp utan växling' }
+  },
+  {
+    id: 'sub_dec_1dp_1dp_borrow',
+    type: 'subtraction',
+    grade: 4,
+    difficulty: {
+      conceptual_level: 5,
+      cognitive_load: { working_memory: 2, steps_required: 2, intermediate_values: 1 },
+      procedural: { num_terms: 2, requires_borrow: true, mixed_digits: false },
+      magnitude: { a_digits: 1, b_digits: 1 }
+    },
+    generator: {
+      constraints: {
+        a: { min: 2.1, max: 9.9, step: 0.1 },
+        b: { min: 1.2, max: 8.8, step: 0.1 },
+        result: { min: 0.1, max: 8.7 }
+      }
+    },
+    metadata: { estimated_time: 26, description: 'Decimal 1dp - 1dp med växling' }
+  },
+  {
+    id: 'sub_dec_2d_1dp_no_borrow',
+    type: 'subtraction',
+    grade: 5,
+    difficulty: {
+      conceptual_level: 7,
+      cognitive_load: { working_memory: 3, steps_required: 3, intermediate_values: 0 },
+      procedural: { num_terms: 2, requires_borrow: false, mixed_digits: true },
+      magnitude: { a_digits: 2, b_digits: 1 }
+    },
+    generator: {
+      constraints: {
+        a: { min: 20.1, max: 99.9, step: 0.1 },
+        b: { min: 1.1, max: 9.8, step: 0.1 },
+        result: { min: 10.2, max: 98.8 }
+      }
+    },
+    metadata: { estimated_time: 30, description: '2-siffrig decimal - 1dp utan växling' }
+  },
+  {
+    id: 'sub_dec_2d_1dp_borrow',
+    type: 'subtraction',
+    grade: 5,
+    difficulty: {
+      conceptual_level: 8,
+      cognitive_load: { working_memory: 3, steps_required: 3, intermediate_values: 1 },
+      procedural: { num_terms: 2, requires_borrow: true, mixed_digits: true },
+      magnitude: { a_digits: 2, b_digits: 1 }
+    },
+    generator: {
+      constraints: {
+        a: { min: 20.1, max: 99.9, step: 0.1 },
+        b: { min: 1.2, max: 9.9, step: 0.1 },
+        result: { min: 10.1, max: 98.7 }
+      }
+    },
+    metadata: { estimated_time: 34, description: '2-siffrig decimal - 1dp med växling' }
+  },
+  {
+    id: 'sub_dec_2dp_2dp_no_borrow',
+    type: 'subtraction',
+    grade: 5,
+    difficulty: {
+      conceptual_level: 10,
+      cognitive_load: { working_memory: 3, steps_required: 3, intermediate_values: 1 },
+      procedural: { num_terms: 2, requires_borrow: false, mixed_digits: false },
+      magnitude: { a_digits: 2, b_digits: 2 }
+    },
+    generator: {
+      constraints: {
+        a: { min: 10.11, max: 99.99, step: 0.01 },
+        b: { min: 1.01, max: 49.88, step: 0.01 },
+        result: { min: 0.2, max: 98.98 }
+      }
+    },
+    metadata: { estimated_time: 42, description: 'Decimal 2dp - 2dp utan växling' }
+  },
+  {
+    id: 'sub_dec_2dp_2dp_borrow',
+    type: 'subtraction',
+    grade: 5,
+    difficulty: {
+      conceptual_level: 12,
+      cognitive_load: { working_memory: 4, steps_required: 3, intermediate_values: 2 },
+      procedural: { num_terms: 2, requires_borrow: true, mixed_digits: false },
+      magnitude: { a_digits: 2, b_digits: 2 }
+    },
+    generator: {
+      constraints: {
+        a: { min: 10.12, max: 99.99, step: 0.01 },
+        b: { min: 1.11, max: 89.95, step: 0.01 },
+        result: { min: 0.03, max: 98.88 }
+      }
+    },
+    metadata: { estimated_time: 52, description: 'Decimal 2dp - 2dp med växling' }
   }
 ]
-

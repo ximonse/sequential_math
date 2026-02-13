@@ -4,11 +4,18 @@ import {
   changeStudentPassword,
   clearActiveStudentSession,
   getOrCreateProfileWithSync,
-  isStudentSessionActive
+  isStudentSessionActive,
+  saveProfile
 } from '../../lib/storage'
 import { getMasteryOverview, getStartOfWeekTimestamp } from '../../lib/studentProfile'
 import { getOperationLabel, OPERATION_LABELS } from '../../lib/operations'
 import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
+import {
+  getProgressionModeLabel,
+  PROGRESSION_MODE_CHALLENGE,
+  PROGRESSION_MODE_STEADY,
+  normalizeProgressionMode
+} from '../../lib/progressionModes'
 
 function StudentHome() {
   const { studentId } = useParams()
@@ -21,9 +28,11 @@ function StudentHome() {
   const [newPassword, setNewPassword] = useState('')
   const [passwordMessage, setPasswordMessage] = useState('')
   const [selectedTables, setSelectedTables] = useState([])
+  const [selectedProgressionMode, setSelectedProgressionMode] = useState(PROGRESSION_MODE_CHALLENGE)
 
   const assignmentId = searchParams.get('assignment')
   const mode = searchParams.get('mode')
+  const requestedPace = normalizeProgressionMode(searchParams.get('pace'), '')
 
   useEffect(() => {
     if (!isStudentSessionActive(studentId)) {
@@ -41,6 +50,11 @@ function StudentHome() {
         navigate('/', { replace: true })
         return
       }
+      const preferredMode = normalizeProgressionMode(
+        loaded?.preferences?.defaultProgressionMode,
+        PROGRESSION_MODE_CHALLENGE
+      )
+      setSelectedProgressionMode(preferredMode)
       setProfile(loaded)
     })()
 
@@ -49,14 +63,15 @@ function StudentHome() {
 
   useEffect(() => {
     if (!studentId) return
-    if (!assignmentId && !mode) return
+    if (!assignmentId && !mode && !requestedPace) return
 
     const params = new URLSearchParams()
     if (assignmentId) params.set('assignment', assignmentId)
     if (mode) params.set('mode', mode)
+    if (requestedPace) params.set('pace', requestedPace)
 
     navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
-  }, [studentId, assignmentId, mode, navigate])
+  }, [studentId, assignmentId, mode, requestedPace, navigate])
 
   useEffect(() => {
     if (assignmentId) {
@@ -123,7 +138,20 @@ function StudentHome() {
     const params = new URLSearchParams()
     params.set('mode', 'multiplication')
     params.set('tables', selectedTables.join(','))
+    params.set('pace', selectedProgressionMode)
     navigate(`/student/${studentId}/practice?${params.toString()}`)
+  }
+
+  const handleProgressionModeSelect = (modeValue) => {
+    const normalized = normalizeProgressionMode(modeValue, PROGRESSION_MODE_CHALLENGE)
+    setSelectedProgressionMode(normalized)
+    if (!profile) return
+
+    if (!profile.preferences || typeof profile.preferences !== 'object') {
+      profile.preferences = {}
+    }
+    profile.preferences.defaultProgressionMode = normalized
+    saveProfile(profile)
   }
 
   if (!profile) {
@@ -160,9 +188,22 @@ function StudentHome() {
               <p className="text-sm text-gray-500">
                 Läge: {assignment ? `Uppdrag (${assignment.title})` : 'Fri träning'}
               </p>
+              {!assignment && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Tempo: {getProgressionModeLabel(selectedProgressionMode)}
+                </p>
+              )}
             </div>
             <button
-              onClick={() => navigate(assignmentPracticePath)}
+              onClick={() => {
+                if (assignment) {
+                  navigate(assignmentPracticePath)
+                  return
+                }
+                navigate(buildPracticePath(studentId, {
+                  progressionMode: selectedProgressionMode
+                }))
+              }}
               className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg"
             >
               {assignment ? 'Fortsätt uppdrag' : 'Starta fri träning'}
@@ -208,20 +249,42 @@ function StudentHome() {
 
         <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
           <h2 className="text-base font-semibold text-gray-800 mb-3">Välj träning</h2>
+          <div className="mb-3 flex items-center gap-2">
+            <span className="text-xs text-gray-500">Tempo</span>
+            {[PROGRESSION_MODE_CHALLENGE, PROGRESSION_MODE_STEADY].map(modeOption => (
+              <button
+                key={modeOption}
+                type="button"
+                onClick={() => handleProgressionModeSelect(modeOption)}
+                className={`px-3 py-1.5 rounded text-xs font-semibold ${
+                  selectedProgressionMode === modeOption
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {getProgressionModeLabel(modeOption)}
+              </button>
+            ))}
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <button
-              onClick={() => navigate(`/student/${studentId}/practice`)}
+              onClick={() => navigate(buildPracticePath(studentId, {
+                progressionMode: selectedProgressionMode
+              }))}
               className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold"
             >
-              Fri träning
+              Fri träning ({getProgressionModeLabel(selectedProgressionMode)})
             </button>
             {Object.keys(OPERATION_LABELS).map(operation => (
               <button
                 key={operation}
-                onClick={() => navigate(`/student/${studentId}/practice?mode=${encodeURIComponent(operation)}`)}
+                onClick={() => navigate(buildPracticePath(studentId, {
+                  mode: operation,
+                  progressionMode: selectedProgressionMode
+                }))}
                 className="px-4 py-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium"
               >
-                {getOperationLabel(operation)}
+                {getOperationLabel(operation)} ({getProgressionModeLabel(selectedProgressionMode)})
               </button>
             ))}
           </div>
@@ -429,4 +492,15 @@ function getTableStatusClass(status) {
   if (status === 'today') return 'bg-green-500 text-white'
   if (status === 'week') return 'bg-green-100 text-green-800'
   return 'bg-gray-100 text-gray-700'
+}
+
+function buildPracticePath(studentId, options = {}) {
+  const params = new URLSearchParams()
+  if (options.mode) params.set('mode', options.mode)
+  const progressionMode = normalizeProgressionMode(options.progressionMode, PROGRESSION_MODE_CHALLENGE)
+  params.set('pace', progressionMode)
+  const query = params.toString()
+  return query
+    ? `/student/${studentId}/practice?${query}`
+    : `/student/${studentId}/practice`
 }

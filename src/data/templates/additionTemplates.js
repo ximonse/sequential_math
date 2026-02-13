@@ -439,6 +439,216 @@ export const additionTemplates = [
       estimated_time: 45,
       description: '3+3 siffrig med tiövergang'
     }
+  },
+
+  // DECIMAL LEVEL 4: 1dp + 1dp utan övergång
+  {
+    id: 'add_dec_1dp_1dp_no_carry',
+    type: 'addition',
+    grade: 4,
+    difficulty: {
+      conceptual_level: 4,
+      cognitive_load: {
+        working_memory: 2,
+        steps_required: 2,
+        intermediate_values: 0
+      },
+      procedural: {
+        num_terms: 2,
+        requires_carry: false,
+        mixed_digits: false
+      },
+      magnitude: {
+        a_digits: 1,
+        b_digits: 1
+      }
+    },
+    generator: {
+      constraints: {
+        a: { min: 1.1, max: 4.8, step: 0.1 },
+        b: { min: 1.1, max: 4.8, step: 0.1 },
+        result: { min: 2.2, max: 9.6 }
+      }
+    },
+    metadata: {
+      estimated_time: 20,
+      description: 'Decimal 1dp + 1dp utan övergång'
+    }
+  },
+
+  // DECIMAL LEVEL 5: 1dp + 1dp med övergång
+  {
+    id: 'add_dec_1dp_1dp_carry',
+    type: 'addition',
+    grade: 4,
+    difficulty: {
+      conceptual_level: 5,
+      cognitive_load: {
+        working_memory: 2,
+        steps_required: 2,
+        intermediate_values: 1
+      },
+      procedural: {
+        num_terms: 2,
+        requires_carry: true,
+        mixed_digits: false
+      },
+      magnitude: {
+        a_digits: 1,
+        b_digits: 1
+      }
+    },
+    generator: {
+      constraints: {
+        a: { min: 1.5, max: 8.9, step: 0.1 },
+        b: { min: 1.5, max: 8.9, step: 0.1 },
+        result: { min: 3.0, max: 17.8 }
+      }
+    },
+    metadata: {
+      estimated_time: 24,
+      description: 'Decimal 1dp + 1dp med övergång'
+    }
+  },
+
+  // DECIMAL LEVEL 7: 1dp + 2-siffrig decimal utan övergång
+  {
+    id: 'add_dec_1dp_2d_no_carry',
+    type: 'addition',
+    grade: 5,
+    difficulty: {
+      conceptual_level: 7,
+      cognitive_load: {
+        working_memory: 3,
+        steps_required: 3,
+        intermediate_values: 0
+      },
+      procedural: {
+        num_terms: 2,
+        requires_carry: false,
+        mixed_digits: true
+      },
+      magnitude: {
+        a_digits: 1,
+        b_digits: 2
+      }
+    },
+    generator: {
+      constraints: {
+        a: { min: 1.2, max: 8.7, step: 0.1 },
+        b: { min: 10.1, max: 89.8, step: 0.1 },
+        result: { min: 11.3, max: 98.5 }
+      }
+    },
+    metadata: {
+      estimated_time: 28,
+      description: 'Decimal 1dp + 2-siffrig decimal utan övergång'
+    }
+  },
+
+  // DECIMAL LEVEL 8: 1dp + 2-siffrig decimal med övergång
+  {
+    id: 'add_dec_1dp_2d_carry',
+    type: 'addition',
+    grade: 5,
+    difficulty: {
+      conceptual_level: 8,
+      cognitive_load: {
+        working_memory: 3,
+        steps_required: 3,
+        intermediate_values: 1
+      },
+      procedural: {
+        num_terms: 2,
+        requires_carry: true,
+        mixed_digits: true
+      },
+      magnitude: {
+        a_digits: 1,
+        b_digits: 2
+      }
+    },
+    generator: {
+      constraints: {
+        a: { min: 1.3, max: 9.9, step: 0.1 },
+        b: { min: 10.2, max: 95.9, step: 0.1 },
+        result: { min: 11.5, max: 105.8 }
+      }
+    },
+    metadata: {
+      estimated_time: 32,
+      description: 'Decimal 1dp + 2-siffrig decimal med övergång'
+    }
+  },
+
+  // DECIMAL LEVEL 10: 2dp + 2dp utan övergång
+  {
+    id: 'add_dec_2dp_2dp_no_carry',
+    type: 'addition',
+    grade: 5,
+    difficulty: {
+      conceptual_level: 10,
+      cognitive_load: {
+        working_memory: 3,
+        steps_required: 3,
+        intermediate_values: 1
+      },
+      procedural: {
+        num_terms: 2,
+        requires_carry: false,
+        mixed_digits: false
+      },
+      magnitude: {
+        a_digits: 2,
+        b_digits: 2
+      }
+    },
+    generator: {
+      constraints: {
+        a: { min: 1.11, max: 49.88, step: 0.01 },
+        b: { min: 1.11, max: 49.88, step: 0.01 },
+        result: { min: 2.22, max: 99.76 }
+      }
+    },
+    metadata: {
+      estimated_time: 40,
+      description: 'Decimal 2dp + 2dp utan övergång'
+    }
+  },
+
+  // DECIMAL LEVEL 12: 2dp + 2dp med övergång
+  {
+    id: 'add_dec_2dp_2dp_carry',
+    type: 'addition',
+    grade: 5,
+    difficulty: {
+      conceptual_level: 12,
+      cognitive_load: {
+        working_memory: 4,
+        steps_required: 3,
+        intermediate_values: 2
+      },
+      procedural: {
+        num_terms: 2,
+        requires_carry: true,
+        mixed_digits: false
+      },
+      magnitude: {
+        a_digits: 2,
+        b_digits: 2
+      }
+    },
+    generator: {
+      constraints: {
+        a: { min: 1.25, max: 89.95, step: 0.01 },
+        b: { min: 1.25, max: 89.95, step: 0.01 },
+        result: { min: 2.5, max: 179.9 }
+      }
+    },
+    metadata: {
+      estimated_time: 52,
+      description: 'Decimal 2dp + 2dp med övergång'
+    }
   }
 ]
 

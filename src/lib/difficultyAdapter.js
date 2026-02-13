@@ -4,23 +4,65 @@
 
 import { generateByDifficultyWithOptions, generateMultiplicationTableDrillProblem } from './problemGenerator'
 import { getRecentSuccessRate, getConsecutiveErrors, getCurrentStreak } from './studentProfile'
+import {
+  PROGRESSION_MODE_CHALLENGE,
+  PROGRESSION_MODE_STEADY,
+  normalizeProgressionMode
+} from './progressionModes'
 
 const DAY_MS = 24 * 60 * 60 * 1000
+const ADVANCE_OFFER_COOLDOWN_MS = 20 * 60 * 1000
 const KNOWN_OPERATION_TYPES = new Set(['addition', 'subtraction', 'multiplication', 'division'])
-const BUCKET_CONFIG = [
-  { name: 'very_easy', offset: -2, weight: 0.05 },
-  { name: 'easy', offset: -1, weight: 0.25 },
-  { name: 'core', offset: 0, weight: 0.5 },
-  { name: 'hard', offset: 1, weight: 0.15 },
-  { name: 'challenge', offset: 2, weight: 0.05 }
-]
+const BUCKET_CONFIG = {
+  [PROGRESSION_MODE_CHALLENGE]: [
+    { name: 'very_easy', offset: -2, weight: 0.05 },
+    { name: 'easy', offset: -1, weight: 0.25 },
+    { name: 'core', offset: 0, weight: 0.5 },
+    { name: 'hard', offset: 1, weight: 0.15 },
+    { name: 'challenge', offset: 2, weight: 0.05 }
+  ],
+  [PROGRESSION_MODE_STEADY]: [
+    { name: 'very_easy', offset: -2, weight: 0.1 },
+    { name: 'easy', offset: -1, weight: 0.35 },
+    { name: 'core', offset: 0, weight: 0.45 },
+    { name: 'hard', offset: 1, weight: 0.08 },
+    { name: 'challenge', offset: 2, weight: 0.02 }
+  ]
+}
+
+const ADJUST_CONFIG = {
+  [PROGRESSION_MODE_CHALLENGE]: {
+    upStrong: 0.35,
+    upStreak: 0.2,
+    upNormal: 0.1,
+    upLowLevel: 0.05,
+    comebackBonus: 0.15,
+    downHard: 0.5,
+    downMid: 0.25,
+    downSoft: 0.15,
+    speedBonus: 0.06
+  },
+  [PROGRESSION_MODE_STEADY]: {
+    upStrong: 0.22,
+    upStreak: 0.12,
+    upNormal: 0.06,
+    upLowLevel: 0.03,
+    comebackBonus: 0.08,
+    downHard: 0.35,
+    downMid: 0.18,
+    downSoft: 0.1,
+    speedBonus: 0.03
+  }
+}
 
 /**
  * Justera svårighetsgrad efter ett svar
  */
-export function adjustDifficulty(profile, wasCorrect) {
+export function adjustDifficulty(profile, wasCorrect, options = {}) {
   ensureDifficultyMeta(profile)
   const recentSuccess = getRecentSuccessRate(profile, 5)
+  const progressionMode = normalizeProgressionMode(options.progressionMode)
+  const config = ADJUST_CONFIG[progressionMode] || ADJUST_CONFIG[PROGRESSION_MODE_CHALLENGE]
 
   if (wasCorrect) {
     // Rätt svar: mjukare ökning, även små steg för att undvika "fastna"
@@ -28,25 +70,30 @@ export function adjustDifficulty(profile, wasCorrect) {
 
     // Stabilt starkt → öka tydligt men inte för snabbt
     if (streak >= 3 && recentSuccess >= 0.9) {
-      profile.currentDifficulty += 0.35
+      profile.currentDifficulty += config.upStrong
     }
     // 2 rätt i rad → öka lite
     else if (streak >= 2) {
-      profile.currentDifficulty += 0.2
+      profile.currentDifficulty += config.upStreak
     }
     // Enstaka rätt ska också kunna ge utveckling över tid
     else if (recentSuccess >= 0.55) {
-      profile.currentDifficulty += 0.1
+      profile.currentDifficulty += config.upNormal
     }
     // Extra försiktig progression på låg nivå
     else if (profile.currentDifficulty <= 2) {
-      profile.currentDifficulty += 0.05
+      profile.currentDifficulty += config.upLowLevel
     }
 
     // Har eleven tidigare varit högre upp? Hjälp snabbare tillbaka.
     const belowPeak = profile.currentDifficulty < profile.highestDifficulty - 0.3
     if (belowPeak && streak >= 2 && recentSuccess >= 0.7) {
-      profile.currentDifficulty += 0.15
+      profile.currentDifficulty += config.comebackBonus
+    }
+
+    // Snabba korrekta svar kan ge liten bonus, men långsamhet straffas inte.
+    if (isFastCorrectAnswer(options)) {
+      profile.currentDifficulty += config.speedBonus
     }
   } else {
     // Fel svar: mindre hårda sänkningar för att minska bottenlåsning
@@ -54,15 +101,15 @@ export function adjustDifficulty(profile, wasCorrect) {
 
     // Tydlig kamp → sänk, men inte drastiskt
     if (errors >= 3 && recentSuccess < 0.5) {
-      profile.currentDifficulty -= 0.5
+      profile.currentDifficulty -= config.downHard
     }
     // 2 fel i rad → minska
     else if (errors >= 2) {
-      profile.currentDifficulty -= 0.25
+      profile.currentDifficulty -= config.downMid
     }
     // Låg trend utan streak-fel → liten nedjustering
     else if (recentSuccess < 0.55) {
-      profile.currentDifficulty -= 0.15
+      profile.currentDifficulty -= config.downSoft
     }
   }
 
@@ -81,10 +128,13 @@ export function selectNextProblem(profile, options = {}) {
   ensureDifficultyMeta(profile)
   const recentSuccess = getRecentSuccessRate(profile, 5)
   const errors = getConsecutiveErrors(profile)
+  const progressionMode = normalizeProgressionMode(options.progressionMode)
   const roundedDifficulty = clampLevelToRange(Math.round(profile.currentDifficulty), options.levelRange)
   const tableSet = normalizeTableSet(options.tableSet)
   const isTableDrill = tableSet.length > 0
-  const preferredType = isTableDrill ? 'multiplication' : chooseProblemType(profile, recentSuccess, errors)
+  const preferredType = isTableDrill
+    ? 'multiplication'
+    : chooseProblemType(profile, recentSuccess, errors, progressionMode)
   const warmupLevel = getWarmupLevel(profile, roundedDifficulty)
   const allowedTypes = isTableDrill
     ? ['multiplication']
@@ -104,7 +154,8 @@ export function selectNextProblem(profile, options = {}) {
     return annotateSelectedProblem(profile, problem, {
       reason: options.forceReason || 'session_warmup',
       bucket: options.forceBucket || 'easy',
-      targetLevel: forcedLevel
+      targetLevel: forcedLevel,
+      progressionMode
     })
   }
 
@@ -119,7 +170,8 @@ export function selectNextProblem(profile, options = {}) {
     return annotateSelectedProblem(profile, problem, {
       reason: 'warmup_after_break',
       bucket: 'easy',
-      targetLevel: warmupLevel
+      targetLevel: warmupLevel,
+      progressionMode
     })
   }
 
@@ -135,12 +187,16 @@ export function selectNextProblem(profile, options = {}) {
     return annotateSelectedProblem(profile, problem, {
       reason: 'recovery_easy',
       bucket: 'easy',
-      targetLevel: easyLevel
+      targetLevel: easyLevel,
+      progressionMode
     })
   }
 
-  // Om för lätt (>92% success) → öka
-  if (recentSuccess > 0.92 && profile.recentProblems.length >= 6) {
+  const successPushThreshold = progressionMode === PROGRESSION_MODE_STEADY ? 0.96 : 0.92
+  const successPushMinCount = progressionMode === PROGRESSION_MODE_STEADY ? 10 : 6
+
+  // Om för lätt → öka
+  if (recentSuccess > successPushThreshold && profile.recentProblems.length >= successPushMinCount) {
     const harderLevel = clampLevelToRange(Math.min(12, roundedDifficulty + 1), options.levelRange)
     const problem = isTableDrill
       ? generateMultiplicationTableDrillProblem(tableSet, { level: harderLevel })
@@ -148,12 +204,16 @@ export function selectNextProblem(profile, options = {}) {
     return annotateSelectedProblem(profile, problem, {
       reason: 'high_success_push',
       bucket: 'hard',
-      targetLevel: harderLevel
+      targetLevel: harderLevel,
+      progressionMode
     })
   }
 
-  // Om för svårt (<55% success) → minska
-  if (recentSuccess < 0.55 && profile.recentProblems.length >= 6) {
+  const reliefThreshold = progressionMode === PROGRESSION_MODE_STEADY ? 0.52 : 0.55
+  const reliefMinCount = progressionMode === PROGRESSION_MODE_STEADY ? 8 : 6
+
+  // Om för svårt → minska
+  if (recentSuccess < reliefThreshold && profile.recentProblems.length >= reliefMinCount) {
     const easierLevel = clampLevelToRange(Math.max(1, roundedDifficulty - 1), options.levelRange)
     const problem = isTableDrill
       ? generateMultiplicationTableDrillProblem(tableSet, { level: easierLevel })
@@ -164,13 +224,15 @@ export function selectNextProblem(profile, options = {}) {
     return annotateSelectedProblem(profile, problem, {
       reason: 'low_success_relief',
       bucket: 'easy',
-      targetLevel: easierLevel
+      targetLevel: easierLevel,
+      progressionMode
     })
   }
 
   // Hjälp elever att komma loss från nivå 1 med försiktig utmaning
   if (roundedDifficulty === 1 && recentSuccess >= 0.6 && profile.recentProblems.length >= 8) {
-    if (Math.random() < 0.3) {
+    const bootstrapChance = progressionMode === PROGRESSION_MODE_STEADY ? 0.15 : 0.3
+    if (Math.random() < bootstrapChance) {
       const target = clampLevelToRange(2, options.levelRange)
       const problem = isTableDrill
         ? generateMultiplicationTableDrillProblem(tableSet, { level: target })
@@ -181,13 +243,14 @@ export function selectNextProblem(profile, options = {}) {
       return annotateSelectedProblem(profile, problem, {
         reason: 'bootstrap_from_level1',
         bucket: 'hard',
-        targetLevel: target
+        targetLevel: target,
+        progressionMode
       })
     }
   }
 
   // Normal: viktad svårighetsmix runt centrum (normalfördelnings-liknande)
-  const bucket = selectDifficultyBucket(profile, recentSuccess, errors)
+  const bucket = selectDifficultyBucket(profile, recentSuccess, errors, progressionMode)
   const targetLevel = clampLevelToRange(
     roundedDifficulty + getBucketOffset(bucket),
     options.levelRange
@@ -198,8 +261,67 @@ export function selectNextProblem(profile, options = {}) {
   return annotateSelectedProblem(profile, problem, {
     reason: 'weighted_mix',
     bucket,
-    targetLevel
+    targetLevel,
+    progressionMode
   })
+}
+
+export function shouldOfferSteadyAdvance(profile, options = {}) {
+  ensureDifficultyMeta(profile)
+  const progressionMode = normalizeProgressionMode(options.progressionMode)
+  if (progressionMode !== PROGRESSION_MODE_STEADY) return null
+
+  const roundedDifficulty = Math.max(1, Math.min(12, Math.round(profile.currentDifficulty || 1)))
+  if (roundedDifficulty >= 12) return null
+
+  const operation = resolveOfferOperation(options)
+  if (!operation) return null
+
+  const recent = profile.recentProblems
+    .filter(problem => inferOperation(problem.problemType) === operation)
+    .slice(-20)
+  if (recent.length < 8) return null
+
+  const currentLevelItems = recent.filter(problem => {
+    const level = Number(problem?.difficulty?.conceptual_level || 0)
+    return Math.round(level) === roundedDifficulty
+  })
+  if (currentLevelItems.length < 6) return null
+
+  const successRate = currentLevelItems.filter(problem => problem.correct).length / currentLevelItems.length
+  const reasonableRate = currentLevelItems.filter(problem => problem.isReasonable).length / currentLevelItems.length
+  if (successRate < 0.85 || reasonableRate < 0.7) return null
+
+  const lastOffer = profile.adaptive.lastAdvanceOffer
+  if (
+    lastOffer
+    && lastOffer.operation === operation
+    && Number(lastOffer.fromLevel) === roundedDifficulty
+    && Date.now() - Number(lastOffer.timestamp || 0) < ADVANCE_OFFER_COOLDOWN_MS
+  ) {
+    return null
+  }
+
+  return {
+    operation,
+    fromLevel: roundedDifficulty,
+    nextLevel: Math.min(12, roundedDifficulty + 1),
+    successRate,
+    sampleSize: currentLevelItems.length
+  }
+}
+
+export function recordSteadyAdvanceDecision(profile, offer, accepted) {
+  ensureDifficultyMeta(profile)
+  if (!offer || typeof offer !== 'object') return
+
+  profile.adaptive.lastAdvanceOffer = {
+    operation: offer.operation,
+    fromLevel: offer.fromLevel,
+    nextLevel: offer.nextLevel,
+    accepted: Boolean(accepted),
+    timestamp: Date.now()
+  }
 }
 
 function ensureDifficultyMeta(profile) {
@@ -250,7 +372,7 @@ function getProblemsCompletedToday(profile) {
  * - endast efter viss stabilitet
  * - lägre sannolikhet för kämpande elev
  */
-function chooseProblemType(profile, recentSuccess, errors) {
+function chooseProblemType(profile, recentSuccess, errors, progressionMode) {
   const attempts = profile.recentProblems.length
   const difficulty = profile.currentDifficulty
 
@@ -260,7 +382,10 @@ function chooseProblemType(profile, recentSuccess, errors) {
 
   // Stegvis typmix:
   // - subtraktion kommer före multiplikation
-  const options = [{ type: 'addition', weight: 0.6 }]
+  const options = [{
+    type: 'addition',
+    weight: progressionMode === PROGRESSION_MODE_STEADY ? 0.72 : 0.6
+  }]
 
   if (difficulty >= 4 && attempts >= 12) {
     let subWeight = 0.25
@@ -332,8 +457,9 @@ function normalizeWeights(items) {
   return cleaned.map(i => ({ ...i, weight: i.weight / total }))
 }
 
-function selectDifficultyBucket(profile, recentSuccess, errors) {
-  let adjusted = BUCKET_CONFIG.map(item => ({ ...item }))
+function selectDifficultyBucket(profile, recentSuccess, errors, progressionMode) {
+  const baseConfig = BUCKET_CONFIG[progressionMode] || BUCKET_CONFIG[PROGRESSION_MODE_CHALLENGE]
+  let adjusted = baseConfig.map(item => ({ ...item }))
 
   if (errors >= 2 || recentSuccess < 0.7) {
     adjusted = adjusted.map(item => {
@@ -363,7 +489,11 @@ function selectDifficultyBucket(profile, recentSuccess, errors) {
 }
 
 function getBucketOffset(bucket) {
-  const found = BUCKET_CONFIG.find(item => item.name === bucket)
+  const flat = [
+    ...BUCKET_CONFIG[PROGRESSION_MODE_CHALLENGE],
+    ...BUCKET_CONFIG[PROGRESSION_MODE_STEADY]
+  ]
+  const found = flat.find(item => item.name === bucket)
   return found ? found.offset : 0
 }
 
@@ -377,7 +507,8 @@ function annotateSelectedProblem(profile, problem, details) {
     selectionReason: details.reason,
     difficultyBucket: details.bucket,
     targetLevel: details.targetLevel,
-    abilityBefore: skillState.ability
+    abilityBefore: skillState.ability,
+    progressionMode: details.progressionMode || PROGRESSION_MODE_CHALLENGE
   }
 
   profile.adaptive.recentSelections.push({
@@ -387,7 +518,8 @@ function annotateSelectedProblem(profile, problem, details) {
     selectionReason: details.reason,
     difficultyBucket: details.bucket,
     targetLevel: details.targetLevel,
-    abilityBefore: skillState.ability
+    abilityBefore: skillState.ability,
+    progressionMode: details.progressionMode || PROGRESSION_MODE_CHALLENGE
   })
   if (profile.adaptive.recentSelections.length > 200) {
     profile.adaptive.recentSelections.shift()
@@ -426,7 +558,6 @@ function updateSkillStateAfterAnswer(profile) {
   if (!latest.correct && latest.isReasonable) delta -= 0.1
   if (!latest.correct && !latest.isReasonable) delta -= 0.25
   if (latest.correct && wasFast) delta += 0.05
-  if (!latest.correct && latest.timeSpent > 45) delta -= 0.05
 
   state.ability = Math.max(1, Math.min(12, state.ability + delta))
   state.attempts += 1
@@ -455,4 +586,31 @@ export function shouldSuggestBreak(profile, sessionProblemCount) {
   }
 
   return false
+}
+
+function isFastCorrectAnswer(options) {
+  const timeSpent = Number(options.timeSpent)
+  if (!Number.isFinite(timeSpent) || timeSpent <= 0) return false
+  const estimated = Number(options.problem?.metadata?.estimated_time)
+  if (!Number.isFinite(estimated) || estimated <= 0) return timeSpent <= 12
+  return timeSpent <= estimated * 0.75
+}
+
+function inferOperation(problemType = '') {
+  if (problemType.startsWith('add_')) return 'addition'
+  if (problemType.startsWith('sub_')) return 'subtraction'
+  if (problemType.startsWith('mul_')) return 'multiplication'
+  if (problemType.startsWith('div_')) return 'division'
+  return 'addition'
+}
+
+function resolveOfferOperation(options) {
+  if (typeof options.operation === 'string' && KNOWN_OPERATION_TYPES.has(options.operation)) {
+    return options.operation
+  }
+  if (Array.isArray(options.allowedTypes) && options.allowedTypes.length === 1) {
+    const only = String(options.allowedTypes[0] || '')
+    if (KNOWN_OPERATION_TYPES.has(only)) return only
+  }
+  return null
 }

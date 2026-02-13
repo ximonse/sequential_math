@@ -82,6 +82,7 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     difficultyBucket: problem.metadata?.difficultyBucket || 'core',
     targetLevel: problem.metadata?.targetLevel || Math.round(problem.difficulty?.conceptual_level || 1),
     abilityBefore: problem.metadata?.abilityBefore ?? profile.currentDifficulty,
+    progressionMode: problem.metadata?.progressionMode || 'challenge',
     isReasonable: quality.isReasonable,
     absError: quality.absError,
     relativeError: quality.relativeError,

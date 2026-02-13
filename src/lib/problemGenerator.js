@@ -29,6 +29,25 @@ function roundTo(value, decimals = 6) {
   return Math.round((value + Number.EPSILON) * factor) / factor
 }
 
+function getDecimalPlaces(value) {
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) return 0
+  const text = String(numeric)
+  if (text.includes('e') || text.includes('E')) {
+    const fixed = numeric.toFixed(6).replace(/0+$/, '').replace(/\.$/, '')
+    const dot = fixed.indexOf('.')
+    return dot === -1 ? 0 : fixed.length - dot - 1
+  }
+  const dotIndex = text.indexOf('.')
+  return dotIndex === -1 ? 0 : text.length - dotIndex - 1
+}
+
+function toScaledInt(value, scale) {
+  if (!Number.isFinite(value)) return 0
+  const factor = 10 ** scale
+  return Math.round(roundTo(Math.abs(value), scale) * factor)
+}
+
 /**
  * Generera tal utifrån constraint (heltal eller decimal med step)
  */
@@ -48,9 +67,12 @@ function randomFromConstraint(constraint) {
  * Räkna antal tiövergångar i addition
  */
 function countCarries(a, b) {
-  const maxLen = Math.max(String(a).length, String(b).length)
-  const aStr = String(a).padStart(maxLen, '0')
-  const bStr = String(b).padStart(maxLen, '0')
+  const scale = Math.max(getDecimalPlaces(a), getDecimalPlaces(b))
+  const aScaled = toScaledInt(a, scale)
+  const bScaled = toScaledInt(b, scale)
+  const maxLen = Math.max(String(aScaled).length, String(bScaled).length)
+  const aStr = String(aScaled).padStart(maxLen, '0')
+  const bStr = String(bScaled).padStart(maxLen, '0')
 
   let carryCount = 0
   let carry = 0
@@ -72,12 +94,12 @@ function countCarries(a, b) {
  * Räkna antal växlingar (borrow) i subtraktion a - b
  */
 function countBorrows(a, b) {
-  const maxLen = Math.max(
-    String(Math.floor(Math.abs(a))).length,
-    String(Math.floor(Math.abs(b))).length
-  )
-  const aStr = String(Math.floor(Math.abs(a))).padStart(maxLen, '0')
-  const bStr = String(Math.floor(Math.abs(b))).padStart(maxLen, '0')
+  const scale = Math.max(getDecimalPlaces(a), getDecimalPlaces(b))
+  const topScaled = toScaledInt(a, scale)
+  const bottomScaled = toScaledInt(b, scale)
+  const maxLen = Math.max(String(topScaled).length, String(bottomScaled).length)
+  const aStr = String(topScaled).padStart(maxLen, '0')
+  const bStr = String(bottomScaled).padStart(maxLen, '0')
 
   let borrowCount = 0
   let borrow = 0
@@ -94,6 +116,32 @@ function countBorrows(a, b) {
   }
 
   return borrowCount
+}
+
+function countMultiplicationCarries(a, b) {
+  const aScale = getDecimalPlaces(a)
+  const bScale = getDecimalPlaces(b)
+  const aDigits = String(toScaledInt(a, aScale))
+    .split('')
+    .map(d => Number(d))
+    .reverse()
+  const bDigits = String(toScaledInt(b, bScale))
+    .split('')
+    .map(d => Number(d))
+    .reverse()
+
+  let carryCount = 0
+  for (const bDigit of bDigits) {
+    let carry = 0
+    for (const aDigit of aDigits) {
+      const product = aDigit * bDigit + carry
+      if (product >= 10) carryCount++
+      carry = Math.floor(product / 10)
+    }
+    if (carry > 0) carryCount++
+  }
+
+  return carryCount
 }
 
 /**
@@ -114,6 +162,8 @@ function isTrivial(a, b) {
  * Kontrollera om talen är för lika (förvirrande)
  */
 function isConfusing(a, b) {
+  if (!Number.isInteger(a) || !Number.isInteger(b)) return false
+
   // Exakt samma tal
   if (a === b) return true
 
@@ -188,6 +238,13 @@ export function generateProblem(template, maxAttempts = 100) {
       if (exactDivisionRequired && !Number.isInteger(a / b)) continue
     }
 
+    // 2d. Carry-krav för multiplikation (enklare/avancerad progression)
+    if (type === 'multiplication' && typeof difficulty.procedural?.requires_carry === 'boolean') {
+      const hasMulCarry = countMultiplicationCarries(a, b) > 0
+      if (difficulty.procedural.requires_carry && !hasMulCarry) continue
+      if (!difficulty.procedural.requires_carry && hasMulCarry) continue
+    }
+
     // 3. Inte trivialt
     if (isTrivial(a, b)) continue
 
@@ -219,7 +276,11 @@ export function generateProblem(template, maxAttempts = 100) {
     }
 
     // Räkna tiövergångar/växlingar
-    const carryCount = countCarries(finalA, finalB)
+    const carryCount = type === 'addition'
+      ? countCarries(finalA, finalB)
+      : type === 'multiplication'
+        ? countMultiplicationCarries(finalA, finalB)
+        : 0
     const borrowCount = type === 'subtraction' ? countBorrows(finalA, finalB) : 0
 
     // Allt OK - returnera problem
@@ -259,7 +320,11 @@ export function generateProblem(template, maxAttempts = 100) {
     metadata: {
       ...template.metadata,
       termOrder: 'equal',
-      carryCount: template.type === 'addition' ? countCarries(a, b) : 0,
+      carryCount: template.type === 'addition'
+        ? countCarries(a, b)
+        : template.type === 'multiplication'
+          ? countMultiplicationCarries(a, b)
+          : 0,
       borrowCount: template.type === 'subtraction' ? countBorrows(a, b) : 0
     },
     generated_at: Date.now()

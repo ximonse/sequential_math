@@ -28,6 +28,12 @@ import {
   getAssignments,
   setActiveAssignment
 } from '../../lib/assignments'
+import {
+  buildAnalyticsSnapshot,
+  buildDetailedProblemExportRows,
+  buildSkillComparisonExportRows,
+  buildTableDevelopmentExportRows
+} from '../../lib/teacherAnalytics'
 
 const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
 const SUPPORT_THRESHOLD = 45
@@ -283,6 +289,48 @@ function Dashboard() {
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
     downloadTextFile(csv, `elevoversikt_${viewMode}_${stamp}.csv`, 'text/csv;charset=utf-8;')
     setDashboardStatus(`CSV export klar (${csvRows.length} rader).`)
+  }
+
+  const handleExportDetailedProblemCsv = () => {
+    const snapshot = buildAnalyticsSnapshot(filteredStudents)
+    const csvRows = buildDetailedProblemExportRows(snapshot)
+    if (csvRows.length === 0) {
+      setDashboardStatus('Ingen rå problemdata att exportera.')
+      return
+    }
+
+    const csv = rowsToCsv(csvRows)
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+    downloadTextFile(csv, `problemdata_detalj_${stamp}.csv`, 'text/csv;charset=utf-8;')
+    setDashboardStatus(`Detalj-CSV klar (${csvRows.length} rader).`)
+  }
+
+  const handleExportSkillComparisonCsv = () => {
+    const snapshot = buildAnalyticsSnapshot(filteredStudents)
+    const csvRows = buildSkillComparisonExportRows(snapshot)
+    if (csvRows.length === 0) {
+      setDashboardStatus('Ingen skill-jämförelsedata att exportera.')
+      return
+    }
+
+    const csv = rowsToCsv(csvRows)
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+    downloadTextFile(csv, `skill_jamforelse_${stamp}.csv`, 'text/csv;charset=utf-8;')
+    setDashboardStatus(`Skill-CSV klar (${csvRows.length} rader).`)
+  }
+
+  const handleExportTableDevelopmentCsv = () => {
+    const snapshot = buildAnalyticsSnapshot(filteredStudents)
+    const csvRows = buildTableDevelopmentExportRows(snapshot)
+    if (csvRows.length === 0) {
+      setDashboardStatus('Ingen tabellutvecklingsdata att exportera.')
+      return
+    }
+
+    const csv = rowsToCsv(csvRows)
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+    downloadTextFile(csv, `tabellutveckling_${stamp}.csv`, 'text/csv;charset=utf-8;')
+    setDashboardStatus(`Tabell-CSV klar (${csvRows.length} rader).`)
   }
 
   const handlePasswordChange = (e) => {
@@ -851,7 +899,25 @@ function Dashboard() {
                   onClick={handleExportSnapshotCsv}
                   className="px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded text-sm"
                 >
-                  Export CSV
+                  Export översikt
+                </button>
+                <button
+                  onClick={handleExportDetailedProblemCsv}
+                  className="px-2 py-1 bg-cyan-100 hover:bg-cyan-200 text-cyan-700 rounded text-sm"
+                >
+                  Export rådata
+                </button>
+                <button
+                  onClick={handleExportSkillComparisonCsv}
+                  className="px-2 py-1 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded text-sm"
+                >
+                  Export skill
+                </button>
+                <button
+                  onClick={handleExportTableDevelopmentCsv}
+                  className="px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded text-sm"
+                >
+                  Export tabeller
                 </button>
               </div>
             </div>

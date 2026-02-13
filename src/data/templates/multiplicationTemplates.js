@@ -359,6 +359,41 @@ export const multiplicationTemplates = [
     }
   },
 
+  // LEVEL 5: decimal (1 decimal) * 1d utan carry
+  {
+    id: 'mul_dec_1dp_1d_no_carry',
+    type: 'multiplication',
+    grade: 4,
+    difficulty: {
+      conceptual_level: 5,
+      cognitive_load: {
+        working_memory: 2,
+        steps_required: 2,
+        intermediate_values: 0
+      },
+      procedural: {
+        num_terms: 2,
+        requires_carry: false,
+        mixed_digits: true
+      },
+      magnitude: {
+        a_digits: 2,
+        b_digits: 1
+      }
+    },
+    generator: {
+      constraints: {
+        a: { min: 1.2, max: 4.8, step: 0.1 },
+        b: { min: 2, max: 4 },
+        result: { min: 2.4, max: 19.2 }
+      }
+    },
+    metadata: {
+      estimated_time: 20,
+      description: 'Decimal (1 decimal) * 1-siffrigt utan carry'
+    }
+  },
+
   // LEVEL 6: decimal (1 decimal) * 1d
   {
     id: 'mul_dec_1dp_1d',
@@ -394,6 +429,41 @@ export const multiplicationTemplates = [
     }
   },
 
+  // LEVEL 7: decimal (1 decimal) * decimal (1 decimal) utan carry
+  {
+    id: 'mul_dec_1dp_1dp_no_carry',
+    type: 'multiplication',
+    grade: 5,
+    difficulty: {
+      conceptual_level: 7,
+      cognitive_load: {
+        working_memory: 2,
+        steps_required: 2,
+        intermediate_values: 0
+      },
+      procedural: {
+        num_terms: 2,
+        requires_carry: false,
+        mixed_digits: true
+      },
+      magnitude: {
+        a_digits: 2,
+        b_digits: 2
+      }
+    },
+    generator: {
+      constraints: {
+        a: { min: 1.1, max: 4.9, step: 0.1 },
+        b: { min: 1.1, max: 4.9, step: 0.1 },
+        result: { min: 1.21, max: 24.01 }
+      }
+    },
+    metadata: {
+      estimated_time: 28,
+      description: 'Decimal (1 decimal) * decimal (1 decimal) utan carry'
+    }
+  },
+
   // LEVEL 8: decimal (1 decimal) * decimal (1 decimal)
   {
     id: 'mul_dec_1dp_1dp',
@@ -426,6 +496,41 @@ export const multiplicationTemplates = [
     metadata: {
       estimated_time: 35,
       description: 'Decimal (1 decimal) * decimal (1 decimal)'
+    }
+  },
+
+  // LEVEL 9: decimal (2 decimaler) * 1d utan carry
+  {
+    id: 'mul_dec_2dp_1d_no_carry',
+    type: 'multiplication',
+    grade: 5,
+    difficulty: {
+      conceptual_level: 9,
+      cognitive_load: {
+        working_memory: 3,
+        steps_required: 3,
+        intermediate_values: 1
+      },
+      procedural: {
+        num_terms: 2,
+        requires_carry: false,
+        mixed_digits: true
+      },
+      magnitude: {
+        a_digits: 3,
+        b_digits: 1
+      }
+    },
+    generator: {
+      constraints: {
+        a: { min: 1.11, max: 4.44, step: 0.01 },
+        b: { min: 2, max: 4 },
+        result: { min: 2.22, max: 17.76 }
+      }
+    },
+    metadata: {
+      estimated_time: 36,
+      description: 'Decimal (2 decimaler) * 1-siffrigt utan carry'
     }
   },
 

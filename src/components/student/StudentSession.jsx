@@ -15,9 +15,16 @@ import {
   getMasteryForOperation,
   getStartOfWeekTimestamp
 } from '../../lib/studentProfile'
-import { selectNextProblem, adjustDifficulty, shouldSuggestBreak } from '../../lib/difficultyAdapter'
+import {
+  selectNextProblem,
+  adjustDifficulty,
+  recordSteadyAdvanceDecision,
+  shouldOfferSteadyAdvance,
+  shouldSuggestBreak
+} from '../../lib/difficultyAdapter'
 import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 import { getOperationLabel } from '../../lib/operations'
+import { getProgressionModeLabel, normalizeProgressionMode } from '../../lib/progressionModes'
 
 const AUTO_CONTINUE_DELAY = 3000 // 3 sekunder
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
@@ -42,10 +49,12 @@ function StudentSession() {
   const [sessionError, setSessionError] = useState('')
   const [tableQueue, setTableQueue] = useState([])
   const [tableMilestone, setTableMilestone] = useState(null)
+  const [advancePrompt, setAdvancePrompt] = useState(null)
   const inputRef = useRef(null)
 
   const assignmentId = searchParams.get('assignment')
   const mode = searchParams.get('mode')
+  const progressionMode = normalizeProgressionMode(searchParams.get('pace'))
   const tableSet = useMemo(() => parseTableSet(searchParams.get('tables')), [searchParams])
   const isTableDrill = tableSet.length > 0
 
@@ -122,6 +131,7 @@ function StudentSession() {
     const initialQueue = createTableQueue(tableSet)
     setTableQueue(initialQueue)
     setTableMilestone(null)
+    setAdvancePrompt(null)
     setCurrentProblem(initialQueue.length > 0 ? createTableProblem(initialQueue[0]) : null)
     setAnswer('')
     setFeedback(null)
@@ -141,13 +151,20 @@ function StudentSession() {
         setStartTime(Date.now())
         return
       }
-      const rules = getSessionRules(sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet)
+      const rules = getSessionRules(
+        sessionAssignment,
+        mode,
+        sessionWarmup,
+        completedThisSession,
+        tableSet,
+        progressionMode
+      )
       const problem = safeSelectProblem(profile, rules)
       if (!problem) return
       setCurrentProblem(problem)
       setStartTime(Date.now())
     }
-  }, [profile, currentProblem, feedback, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, isTableDrill, tableQueue])
+  }, [profile, currentProblem, feedback, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, progressionMode, isTableDrill, tableQueue])
 
   // Fokusera input när nytt problem visas
   useEffect(() => {
@@ -174,14 +191,21 @@ function StudentSession() {
       setStartTime(Date.now())
       return
     }
-    const rules = getSessionRules(sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet)
+    const rules = getSessionRules(
+      sessionAssignment,
+      mode,
+      sessionWarmup,
+      completedThisSession,
+      tableSet,
+      progressionMode
+    )
     const nextProblem = safeSelectProblem(profile, rules)
     if (!nextProblem) return
     setCurrentProblem(nextProblem)
     setAnswer('')
     setFeedback(null)
     setStartTime(Date.now())
-  }, [profile, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, isTableDrill, tableQueue])
+  }, [profile, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, progressionMode, isTableDrill, tableQueue])
 
   const safeSelectProblem = (currentProfile, rules) => {
     try {
@@ -196,18 +220,18 @@ function StudentSession() {
 
   // Auto-fortsätt efter 3 sekunder när feedback visas
   useEffect(() => {
-    if (!feedback || showBreakSuggestion || tableMilestone) return
+    if (!feedback || showBreakSuggestion || tableMilestone || advancePrompt) return
 
     const timer = setTimeout(() => {
       goToNextProblem()
     }, AUTO_CONTINUE_DELAY)
 
     return () => clearTimeout(timer)
-  }, [feedback, showBreakSuggestion, tableMilestone]) // Medvetet utelämnar goToNextProblem för att undvika re-triggers
+  }, [feedback, showBreakSuggestion, tableMilestone, advancePrompt]) // Medvetet utelämnar goToNextProblem för att undvika re-triggers
 
   // Lyssna på Enter för att fortsätta (med fördröjning för att undvika dubbel-trigger)
   useEffect(() => {
-    if (!feedback || showBreakSuggestion || tableMilestone) return
+    if (!feedback || showBreakSuggestion || tableMilestone || advancePrompt) return
 
     let handleKeyDown = null
 
@@ -227,7 +251,7 @@ function StudentSession() {
         window.removeEventListener('keydown', handleKeyDown)
       }
     }
-  }, [feedback, showBreakSuggestion, tableMilestone, goToNextProblem])
+  }, [feedback, showBreakSuggestion, tableMilestone, advancePrompt, goToNextProblem])
 
   const handleSubmit = () => {
     if (!currentProblem || answer.trim() === '') return
@@ -249,7 +273,11 @@ function StudentSession() {
 
     if (!isTableDrill) {
       // Justera svårighet i vanliga lägen
-      adjustDifficulty(profile, correct)
+      adjustDifficulty(profile, correct, {
+        progressionMode,
+        timeSpent,
+        problem: currentProblem
+      })
     }
 
     // Uppdatera session count
@@ -262,6 +290,8 @@ function StudentSession() {
       correctAnswer: currentProblem.result,
       studentAnswer
     })
+
+    let breakSuggested = false
 
     if (isTableDrill) {
       const currentItem = tableQueue[0]
@@ -286,13 +316,36 @@ function StudentSession() {
           })
         }
       }
-    } else if (shouldSuggestBreak(profile, newCount)) {
+    } else if (!sessionAssignment && shouldSuggestBreak(profile, newCount)) {
       // Kolla om paus behövs i vanliga lägen
       setShowBreakSuggestion(true)
+      breakSuggested = true
+    }
+
+    if (!isTableDrill && !sessionAssignment && !breakSuggested) {
+      const offer = shouldOfferSteadyAdvance(profile, {
+        progressionMode,
+        operation: (mode && isKnownMode(mode)) ? mode : currentProblem.type
+      })
+      if (offer) {
+        setAdvancePrompt(offer)
+      }
     }
 
     // Spara profil efter alla eventuella uppdateringar
     saveProfile(profile)
+  }
+
+  const handleAdvanceDecision = (accepted) => {
+    if (!profile || !advancePrompt) return
+    recordSteadyAdvanceDecision(profile, advancePrompt, accepted)
+    if (accepted) {
+      profile.currentDifficulty = Math.max(profile.currentDifficulty, advancePrompt.nextLevel)
+      profile.highestDifficulty = Math.max(profile.highestDifficulty || 1, profile.currentDifficulty)
+    }
+    saveProfile(profile)
+    setAdvancePrompt(null)
+    goToNextProblem()
   }
 
   const handleTakeBreak = () => {
@@ -437,6 +490,39 @@ function StudentSession() {
     )
   }
 
+  if (advancePrompt && feedback) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-400 to-cyan-600">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg text-center">
+          <div className="text-5xl mb-3">📈</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">
+            Stabil nivå!
+          </h2>
+          <p className="text-gray-600 mb-2">
+            Du är stabil på nivå {advancePrompt.fromLevel} i {getOperationLabel(advancePrompt.operation)}.
+          </p>
+          <p className="text-gray-600 mb-6">
+            Vill du prova nivå {advancePrompt.nextLevel}?
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              onClick={() => handleAdvanceDecision(true)}
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg"
+            >
+              Ja, testa nästa nivå
+            </button>
+            <button
+              onClick={() => handleAdvanceDecision(false)}
+              className="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg"
+            >
+              Stanna kvar lite till
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const streak = getCurrentStreak(profile)
   const currentOperation = currentProblem?.type || 'addition'
   const weekStart = getStartOfWeekTimestamp()
@@ -480,7 +566,12 @@ function StudentSession() {
 
         {/* Main content */}
         <div className="py-8">
-          <SessionModeBanner assignment={sessionAssignment} mode={mode} tableSet={tableSet} />
+          <SessionModeBanner
+            assignment={sessionAssignment}
+            mode={mode}
+            tableSet={tableSet}
+            progressionMode={progressionMode}
+          />
           {sessionError && (
             <div className="mb-4 rounded-lg bg-red-50 text-red-700 border border-red-200 px-3 py-2 text-sm">
               {sessionError}
@@ -594,12 +685,13 @@ function CurrentOperationMastery({ operationLabel, historical, weekly }) {
   )
 }
 
-function SessionModeBanner({ assignment, mode, tableSet }) {
+function SessionModeBanner({ assignment, mode, tableSet, progressionMode }) {
+  const paceLabel = getProgressionModeLabel(progressionMode)
   if (!assignment) {
     if (tableSet.length > 0) {
       return (
         <div className="mb-5 bg-white border border-orange-200 text-orange-700 rounded-lg px-4 py-2 text-sm">
-          Läge: Tabellövning | {tableSet.join(',')}:an
+          Läge: Tabellövning | {tableSet.join(',')}:an | Tempo: {paceLabel}
         </div>
       )
     }
@@ -607,26 +699,26 @@ function SessionModeBanner({ assignment, mode, tableSet }) {
     if (mode && isKnownMode(mode)) {
       return (
         <div className="mb-5 bg-white border border-emerald-200 text-emerald-700 rounded-lg px-4 py-2 text-sm">
-          Läge: {getOperationLabel(mode)}
+          Läge: {getOperationLabel(mode)} | Tempo: {paceLabel}
         </div>
       )
     }
     return (
       <div className="mb-5 bg-white border border-blue-100 text-blue-700 rounded-lg px-4 py-2 text-sm">
-        Läge: Fri träning
+        Läge: Fri träning | Tempo: {paceLabel}
       </div>
     )
   }
 
   return (
     <div className="mb-5 bg-white border border-indigo-200 text-indigo-700 rounded-lg px-4 py-2 text-sm">
-      Läge: Uppdrag | {assignment.title} | Nivå {assignment.minLevel}-{assignment.maxLevel}
+      Läge: Uppdrag | {assignment.title} | Nivå {assignment.minLevel}-{assignment.maxLevel} | Tempo: {paceLabel}
     </div>
   )
 }
 
-function getSessionRules(assignment, mode, warmup, solvedCount, tableSet = []) {
-  const rules = {}
+function getSessionRules(assignment, mode, warmup, solvedCount, tableSet = [], progressionMode = 'challenge') {
+  const rules = { progressionMode: normalizeProgressionMode(progressionMode) }
 
   if (assignment) {
     rules.allowedTypes = assignment.problemTypes

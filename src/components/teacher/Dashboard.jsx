@@ -129,6 +129,10 @@ function Dashboard() {
   const bottlenecks = buildBottlenecks(tableRows)
   const inactivityBuckets = buildInactivityBuckets(tableRows)
   const classSummaries = buildClassSummaries(classes, students, selectedClassIds, weekGoal)
+  const tableDevelopmentOverview = useMemo(
+    () => buildTableDevelopmentOverview(filteredStudents),
+    [filteredStudents]
+  )
 
   const loadStudents = async () => {
     const profiles = await getAllProfilesWithSync()
@@ -487,6 +491,53 @@ function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow p-4 xl:col-span-2">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-800">Gångertabell - utveckling (7 dagar)</h2>
+              <span className="text-xs text-gray-500">Jämfört med föregående 7 dagar</span>
+            </div>
+            {tableDevelopmentOverview.length === 0 ? (
+              <p className="text-sm text-gray-500">Ingen tabellaktivitet i aktuellt urval.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-gray-500 border-b">
+                      <th className="py-1 pr-2">Tabell</th>
+                      <th className="py-1 pr-2">Försök 7d</th>
+                      <th className="py-1 pr-2">Träff 7d</th>
+                      <th className="py-1 pr-2">Trend träff</th>
+                      <th className="py-1 pr-2">Median tid 7d</th>
+                      <th className="py-1">Trend tid</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tableDevelopmentOverview.map(item => (
+                      <tr key={`table-dev-${item.table}`} className="border-b last:border-b-0">
+                        <td className="py-1 pr-2 font-medium text-gray-700">{item.table}:an</td>
+                        <td className="py-1 pr-2 text-gray-700">{item.attempts7d}</td>
+                        <td className="py-1 pr-2 text-gray-700">{toPercent(item.accuracy7d)}</td>
+                        <td className="py-1 pr-2 text-gray-700">
+                          {item.accuracyTrend === null
+                            ? '-'
+                            : `${item.accuracyTrend >= 0 ? '+' : ''}${Math.round(item.accuracyTrend * 100)} pp`}
+                        </td>
+                        <td className="py-1 pr-2 text-gray-700">
+                          {Number.isFinite(item.medianTime7d) ? `${item.medianTime7d.toFixed(1)}s` : '-'}
+                        </td>
+                        <td className="py-1 text-gray-700">
+                          {item.speedTrend === null
+                            ? '-'
+                            : `${item.speedTrend >= 0 ? '+' : ''}${Math.round(item.speedTrend * 100)}%`}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-semibold text-gray-800">Behöver stöd nu</h2>
@@ -1501,6 +1552,57 @@ function buildClassSummaries(classes, students, selectedClassIds, weekGoal) {
   }).sort((a, b) => a.className.localeCompare(b.className, 'sv'))
 }
 
+function buildTableDevelopmentOverview(students) {
+  const start7d = Date.now() - (7 * DAY_MS)
+  const start14d = Date.now() - (14 * DAY_MS)
+  const tables = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+  const stats = new Map()
+
+  for (const table of tables) {
+    stats.set(table, {
+      table,
+      recent: [],
+      previous: []
+    })
+  }
+
+  for (const student of students) {
+    const problems = Array.isArray(student?.recentProblems) ? student.recentProblems : []
+    for (const problem of problems) {
+      const table = inferTableFromProblem(problem)
+      if (!table || !stats.has(table)) continue
+      const ts = Number(problem.timestamp || 0)
+      if (!Number.isFinite(ts) || ts <= 0) continue
+      if (ts >= start7d) {
+        stats.get(table).recent.push(problem)
+      } else if (ts >= start14d) {
+        stats.get(table).previous.push(problem)
+      }
+    }
+  }
+
+  const output = []
+  for (const entry of stats.values()) {
+    if (entry.recent.length === 0 && entry.previous.length === 0) continue
+    const accuracy7d = getAccuracy(entry.recent)
+    const accuracyPrev = getAccuracy(entry.previous)
+    const medianTime7d = getMedianTime(entry.recent)
+    const medianTimePrev = getMedianTime(entry.previous)
+    output.push({
+      table: entry.table,
+      attempts7d: entry.recent.length,
+      accuracy7d,
+      accuracyTrend: (accuracy7d === null || accuracyPrev === null) ? null : accuracy7d - accuracyPrev,
+      medianTime7d,
+      speedTrend: (medianTime7d === null || medianTimePrev === null || medianTimePrev <= 0)
+        ? null
+        : (medianTimePrev - medianTime7d) / medianTimePrev
+    })
+  }
+
+  return output.sort((a, b) => a.table - b.table)
+}
+
 function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
   return rows.map(row => {
     const base = {
@@ -1961,6 +2063,42 @@ function formatDuration(totalSeconds) {
   const hours = Math.floor(seconds / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
   return `${hours}h ${minutes}m`
+}
+
+function inferTableFromProblem(problem) {
+  const tag = String(problem?.skillTag || '')
+  const match = tag.match(/^mul_table_(\d{1,2})$/)
+  if (match) {
+    const n = Number(match[1])
+    if (n >= 2 && n <= 12) return n
+  }
+
+  if (!String(problem?.problemType || '').startsWith('mul_')) return null
+  const a = Number(problem?.values?.a)
+  const b = Number(problem?.values?.b)
+  if (!Number.isInteger(a) || !Number.isInteger(b)) return null
+  if (a >= 2 && a <= 12 && b >= 1 && b <= 12) return a
+  if (b >= 2 && b <= 12 && a >= 1 && a <= 12) return b
+  return null
+}
+
+function getAccuracy(problems) {
+  if (!Array.isArray(problems) || problems.length === 0) return null
+  const correct = problems.filter(problem => problem.correct).length
+  return correct / problems.length
+}
+
+function getMedianTime(problems) {
+  const values = (Array.isArray(problems) ? problems : [])
+    .filter(problem => problem.correct)
+    .map(problem => Number(problem.timeSpent))
+    .filter(value => Number.isFinite(value) && value > 0)
+    .sort((a, b) => a - b)
+
+  if (values.length === 0) return null
+  const middle = Math.floor(values.length / 2)
+  if (values.length % 2 === 0) return (values[middle - 1] + values[middle]) / 2
+  return values[middle]
 }
 
 export default Dashboard

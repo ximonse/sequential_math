@@ -25,6 +25,11 @@ import {
 import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 import { getOperationLabel } from '../../lib/operations'
 import { getProgressionModeLabel, normalizeProgressionMode } from '../../lib/progressionModes'
+import {
+  markStudentPresence,
+  PRESENCE_HEARTBEAT_MS,
+  PRESENCE_SAVE_THROTTLE_MS
+} from '../../lib/studentPresence'
 
 const AUTO_CONTINUE_DELAY = 3000 // 3 sekunder
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
@@ -60,6 +65,9 @@ function StudentSession() {
   const inputRef = useRef(null)
   const attentionRef = useRef(createAttentionTracker())
   const sessionRecentCorrectnessRef = useRef([])
+  const presenceSyncRef = useRef({
+    lastSavedAt: 0
+  })
 
   const assignmentId = searchParams.get('assignment')
   const mode = searchParams.get('mode')
@@ -197,6 +205,57 @@ function StudentSession() {
     media.addListener(update)
     return () => media.removeListener(update)
   }, [])
+
+  const updatePresence = useCallback((options = {}) => {
+    if (!profile) return
+    const now = Date.now()
+    markStudentPresence(profile, {
+      now,
+      page: 'practice',
+      interaction: options.interaction === true,
+      inFocus: typeof options.inFocus === 'boolean' ? options.inFocus : undefined
+    })
+
+    const force = options.force === true
+    if (!force && (now - presenceSyncRef.current.lastSavedAt) < PRESENCE_SAVE_THROTTLE_MS) {
+      return
+    }
+    saveProfile(profile)
+    presenceSyncRef.current.lastSavedAt = now
+  }, [profile])
+
+  useEffect(() => {
+    if (!profile) return undefined
+
+    updatePresence({ force: true, interaction: true })
+
+    const onVisibilityChange = () => updatePresence({ force: true })
+    const onFocus = () => updatePresence({ force: true })
+    const onBlur = () => updatePresence({ force: true, inFocus: false })
+    const onInteraction = () => updatePresence({ interaction: true })
+
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    window.addEventListener('focus', onFocus)
+    window.addEventListener('blur', onBlur)
+    window.addEventListener('pointerdown', onInteraction)
+    window.addEventListener('keydown', onInteraction)
+    window.addEventListener('touchstart', onInteraction)
+
+    const heartbeat = setInterval(() => {
+      updatePresence()
+    }, PRESENCE_HEARTBEAT_MS)
+
+    return () => {
+      clearInterval(heartbeat)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      window.removeEventListener('focus', onFocus)
+      window.removeEventListener('blur', onBlur)
+      window.removeEventListener('pointerdown', onInteraction)
+      window.removeEventListener('keydown', onInteraction)
+      window.removeEventListener('touchstart', onInteraction)
+      updatePresence({ force: true, inFocus: false })
+    }
+  }, [profile, updatePresence])
 
   // Fokusera input när nytt problem visas
   useEffect(() => {

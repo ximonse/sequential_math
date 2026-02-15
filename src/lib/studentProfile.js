@@ -56,6 +56,14 @@ export function createStudentProfile(studentId, name, grade = 4) {
       skillStates: {},
       recentSelections: []
     },
+    activity: {
+      page: 'unknown',
+      inFocus: false,
+      lastPresenceAt: 0,
+      lastInteractionAt: 0,
+      visibilityState: 'hidden',
+      createdAt: Date.now()
+    },
     recentProblems: [],
     stats: createDefaultStats()
   }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   changeStudentPassword,
@@ -16,6 +16,11 @@ import {
   PROGRESSION_MODE_STEADY,
   normalizeProgressionMode
 } from '../../lib/progressionModes'
+import {
+  markStudentPresence,
+  PRESENCE_HEARTBEAT_MS,
+  PRESENCE_SAVE_THROTTLE_MS
+} from '../../lib/studentPresence'
 
 function StudentHome() {
   const { studentId } = useParams()
@@ -29,6 +34,9 @@ function StudentHome() {
   const [passwordMessage, setPasswordMessage] = useState('')
   const [selectedTables, setSelectedTables] = useState([])
   const [selectedProgressionMode, setSelectedProgressionMode] = useState(PROGRESSION_MODE_CHALLENGE)
+  const presenceSyncRef = useRef({
+    lastSavedAt: 0
+  })
 
   const assignmentId = searchParams.get('assignment')
   const mode = searchParams.get('mode')
@@ -80,6 +88,57 @@ function StudentHome() {
     }
     setAssignment(getActiveAssignment())
   }, [assignmentId])
+
+  const updateHomePresence = useCallback((options = {}) => {
+    if (!profile) return
+    const now = Date.now()
+    markStudentPresence(profile, {
+      now,
+      page: 'home',
+      interaction: options.interaction === true,
+      inFocus: typeof options.inFocus === 'boolean' ? options.inFocus : undefined
+    })
+
+    const force = options.force === true
+    if (!force && (now - presenceSyncRef.current.lastSavedAt) < PRESENCE_SAVE_THROTTLE_MS) {
+      return
+    }
+    saveProfile(profile)
+    presenceSyncRef.current.lastSavedAt = now
+  }, [profile])
+
+  useEffect(() => {
+    if (!profile) return undefined
+
+    updateHomePresence({ force: true, interaction: true })
+
+    const onVisibilityChange = () => updateHomePresence({ force: true })
+    const onFocus = () => updateHomePresence({ force: true })
+    const onBlur = () => updateHomePresence({ force: true, inFocus: false })
+    const onInteraction = () => updateHomePresence({ interaction: true })
+
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    window.addEventListener('focus', onFocus)
+    window.addEventListener('blur', onBlur)
+    window.addEventListener('pointerdown', onInteraction)
+    window.addEventListener('keydown', onInteraction)
+    window.addEventListener('touchstart', onInteraction)
+
+    const heartbeat = setInterval(() => {
+      updateHomePresence()
+    }, PRESENCE_HEARTBEAT_MS)
+
+    return () => {
+      clearInterval(heartbeat)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      window.removeEventListener('focus', onFocus)
+      window.removeEventListener('blur', onBlur)
+      window.removeEventListener('pointerdown', onInteraction)
+      window.removeEventListener('keydown', onInteraction)
+      window.removeEventListener('touchstart', onInteraction)
+      updateHomePresence({ force: true, inFocus: false })
+    }
+  }, [profile, updateHomePresence])
 
   const masteredOperations = useMemo(() => {
     if (!profile) return []

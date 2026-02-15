@@ -30,12 +30,12 @@ import {
   buildSkillComparisonExportRows,
   buildTableDevelopmentExportRows
 } from '../../lib/teacherAnalytics'
+import { getStudentPresenceStatus } from '../../lib/studentPresence'
 
 const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
 const SUPPORT_THRESHOLD = 45
 const DAY_MS = 24 * 60 * 60 * 1000
 const DEFAULT_WEEKLY_GOAL = 20
-const ACTIVE_NOW_WINDOW_MS = 5 * 60 * 1000
 
 function Dashboard() {
   const [students, setStudents] = useState([])
@@ -539,6 +539,9 @@ function Dashboard() {
           <p className="text-xs text-gray-500 mb-3">
             {classOverviewMeta.className}: {classOverviewMeta.activeNowCount}/{classOverviewMeta.studentCount} aktiv(a) just nu
           </p>
+          <p className="text-[11px] text-gray-400 mb-3">
+            Status: Grön = fokus + aktivitet senaste 2 min, Orange = fokus men ingen aktivitet 2-4 min, Svart = inne idag men ej aktiv nu, Röd = ej inne idag.
+          </p>
           {overviewClassId === '' ? (
             <p className="text-sm text-gray-500">Välj en klass för att se elevernas live-status.</p>
           ) : classOverviewRows.length === 0 ? (
@@ -549,7 +552,7 @@ function Dashboard() {
                 <thead>
                   <tr className="text-left text-gray-500 border-b">
                     <th className="py-1 pr-2">Elev</th>
-                    <th className="py-1 pr-2">Aktiv nu</th>
+                    <th className="py-1 pr-2">Status</th>
                     <th className="py-1 pr-2">Jobbar med</th>
                     <th className="py-1 pr-2">Idag</th>
                     <th className="py-1 pr-2">Rätt/Fel idag</th>
@@ -564,19 +567,7 @@ function Dashboard() {
                         {row.name}
                         <span className="ml-1 text-xs text-gray-400">{row.studentId}</span>
                       </td>
-                      <td className="py-1 pr-2">
-                        {row.activeNow ? (
-                          <span className="inline-flex items-center gap-1 text-green-700 text-xs font-semibold">
-                            <span className="w-2 h-2 rounded-full bg-green-500" />
-                            Ja
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-gray-500 text-xs">
-                            <span className="w-2 h-2 rounded-full bg-gray-300" />
-                            Nej
-                          </span>
-                        )}
-                      </td>
+                      <td className="py-1 pr-2"><ActivityBadge code={row.activityStatus} compact /></td>
                       <td className="py-1 pr-2 text-gray-700">{getOperationLabel(row.focusOperation)}</td>
                       <td className="py-1 pr-2 text-gray-700">{row.todayAttempts}</td>
                       <td className="py-1 pr-2 text-gray-700">
@@ -721,7 +712,7 @@ function Dashboard() {
                     <tr className="text-left text-gray-500 border-b">
                       <th className="py-1 pr-2">Elev</th>
                       <th className="py-1 pr-2">Klass</th>
-                      <th className="py-1 pr-2">Aktiv nu</th>
+                      <th className="py-1 pr-2">Status</th>
                       <th className="py-1 pr-2">Risk</th>
                       <th className="py-1 pr-2">Stöd</th>
                       <th className="py-1 pr-2">Idag</th>
@@ -740,19 +731,7 @@ function Dashboard() {
                           <div className="text-[11px] text-gray-400">{row.studentId}</div>
                         </td>
                         <td className="py-1 pr-2 text-gray-700">{row.className || '-'}</td>
-                        <td className="py-1 pr-2">
-                          {row.activeNow ? (
-                            <span className="inline-flex items-center gap-1 text-green-700">
-                              <span className="w-2 h-2 rounded-full bg-green-500" />
-                              Ja
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 text-gray-500">
-                              <span className="w-2 h-2 rounded-full bg-gray-300" />
-                              Nej
-                            </span>
-                          )}
-                        </td>
+                        <td className="py-1 pr-2"><ActivityBadge code={row.activityStatus} /></td>
                         <td className="py-1 pr-2"><RiskBadge level={row.riskLevel} score={row.riskScore} /></td>
                         <td className="py-1 pr-2 text-gray-700">{row.supportScore}</td>
                         <td className="py-1 pr-2 text-gray-700">{row.todayAttempts}</td>
@@ -1680,6 +1659,17 @@ function RiskBadge({ level, score }) {
   )
 }
 
+function ActivityBadge({ code, compact = false }) {
+  const tone = resolveActivityTone(code)
+  const label = resolveActivityLabel(code)
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs font-medium ${tone.badgeClass}`}>
+      <span className={`w-2 h-2 rounded-full ${tone.dotClass}`} />
+      {compact ? label : `${label}`}
+    </span>
+  )
+}
+
 function buildStudentRow(student, activeAssignment = null) {
   const recentProblems = Array.isArray(student.recentProblems) ? student.recentProblems : []
   const attempts = recentProblems.length
@@ -1769,7 +1759,11 @@ function buildStudentRow(student, activeAssignment = null) {
     || inferOperationFromProblemType(recentProblems[recentProblems.length - 1]?.problemType || '')
   )
   const focusOperation = todayByOperation[0]?.operation || primaryOperation || 'addition'
-  const activeNow = Boolean(lastActive && (Date.now() - lastActive) <= ACTIVE_NOW_WINDOW_MS)
+  const presenceStatus = getStudentPresenceStatus(student, {
+    now: Date.now(),
+    startToday: todayStart
+  })
+  const activeNow = presenceStatus.code === 'green'
 
   const riskSignals = buildRiskSignals({
     attempts,
@@ -1810,6 +1804,12 @@ function buildStudentRow(student, activeAssignment = null) {
     primaryOperation,
     focusOperation,
     activeNow,
+    activityStatus: presenceStatus.code,
+    activityLabel: presenceStatus.label,
+    presenceLastSeenAt: presenceStatus.lastPresenceAt || null,
+    presenceLastInteractionAt: presenceStatus.lastInteractionAt || null,
+    presenceInFocus: Boolean(presenceStatus.inFocus),
+    presencePage: presenceStatus.page || '',
     activeToday: todayAttempts > 0,
     todayAttempts,
     todayCorrectCount,
@@ -1857,6 +1857,38 @@ function buildStudentRow(student, activeAssignment = null) {
     riskScore: riskSignals.riskScore,
     riskCodes: riskSignals.riskCodes,
     supportScore: riskSignals.supportScore
+  }
+}
+
+function resolveActivityLabel(code) {
+  if (code === 'green') return 'Grön'
+  if (code === 'orange') return 'Orange'
+  if (code === 'black') return 'Svart'
+  return 'Röd'
+}
+
+function resolveActivityTone(code) {
+  if (code === 'green') {
+    return {
+      dotClass: 'bg-green-500',
+      badgeClass: 'bg-green-50 text-green-700 border-green-200'
+    }
+  }
+  if (code === 'orange') {
+    return {
+      dotClass: 'bg-orange-500',
+      badgeClass: 'bg-orange-50 text-orange-700 border-orange-200'
+    }
+  }
+  if (code === 'black') {
+    return {
+      dotClass: 'bg-gray-900',
+      badgeClass: 'bg-gray-100 text-gray-800 border-gray-300'
+    }
+  }
+  return {
+    dotClass: 'bg-red-500',
+    badgeClass: 'bg-red-50 text-red-700 border-red-200'
   }
 }
 

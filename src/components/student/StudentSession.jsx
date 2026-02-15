@@ -205,12 +205,6 @@ function StudentSession() {
     }
   }, [currentProblem, feedback, coarsePointer])
 
-  useEffect(() => {
-    if (currentProblem?.type !== 'multiplication') {
-      setShowScratchpad(false)
-    }
-  }, [currentProblem])
-
   // Gå till nästa problem
   const goToNextProblem = useCallback(() => {
     if (!profile) return
@@ -629,7 +623,7 @@ function StudentSession() {
   const weekStart = getStartOfWeekTimestamp()
   const masteredHistorical = getMasteryForOperation(profile, currentOperation)
   const masteredThisWeek = getMasteryForOperation(profile, currentOperation, { since: weekStart })
-  const showInlineScratchpad = currentProblem?.type === 'multiplication' && !feedback
+  const showInlineScratchpad = Boolean(currentProblem) && !feedback
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8">

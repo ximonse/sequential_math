@@ -775,6 +775,7 @@ export function exportProfile(studentId) {
     },
     learning_data: {
       problems_solved: profile.recentProblems,
+      problem_log: Array.isArray(profile.problemLog) ? profile.problemLog : [],
       statistics: profile.stats
     },
     exported_at: Date.now()

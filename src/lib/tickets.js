@@ -254,6 +254,9 @@ export function recordTicketResponse(profile, input = {}) {
   }
 
   const studentAnswer = String(input.studentAnswer || '')
+  const responseTimeSec = Number.isFinite(Number(input.responseTimeSec))
+    ? Math.max(0, Number(input.responseTimeSec))
+    : null
   const evaluation = evaluateTicketAnswer(input.answer, studentAnswer)
   const existingIdx = profile.ticketResponses.findIndex(item => item.dispatchId === input.dispatchId)
   const revealByTeacherAt = Number(profile.ticketRevealAll[input.dispatchId] || 0)
@@ -270,6 +273,7 @@ export function recordTicketResponse(profile, input = {}) {
     normalizedStudentAnswer: evaluation.normalizedActual,
     normalizedExpectedAnswer: evaluation.normalizedExpected,
     answeredAt: now,
+    responseTimeSec,
     showCorrectnessOnSubmit: input.showCorrectnessOnSubmit !== false,
     teacherRevealAt: revealByTeacherAt > 0 ? revealByTeacherAt : null
   }

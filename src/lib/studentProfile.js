@@ -5,6 +5,7 @@
 import { evaluateAnswerQuality } from './answerQuality'
 
 const MAX_RECENT_PROBLEMS = 250
+const MAX_PROBLEM_LOG = 5000
 const ABSOLUTE_TIME_CAP_SECONDS = 180
 const INTERRUPTION_HIDDEN_SECONDS = 20
 const INTERRUPTION_BLUR_MIN_TIME_SECONDS = 90
@@ -64,6 +65,7 @@ export function createStudentProfile(studentId, name, grade = 4) {
       visibilityState: 'hidden',
       createdAt: Date.now()
     },
+    problemLog: [],
     recentProblems: [],
     stats: createDefaultStats()
   }
@@ -136,11 +138,28 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
   if (profile.recentProblems.length > MAX_RECENT_PROBLEMS) {
     profile.recentProblems.shift()
   }
+  appendProblemLog(profile, result)
 
   // Uppdatera statistik
   updateStats(profile)
 
   return { correct, result }
+}
+
+function appendProblemLog(profile, result) {
+  if (!Array.isArray(profile.problemLog)) {
+    profile.problemLog = Array.isArray(profile.recentProblems)
+      ? [...profile.recentProblems]
+      : []
+    if (profile.problemLog.length > MAX_PROBLEM_LOG) {
+      profile.problemLog = profile.problemLog.slice(-MAX_PROBLEM_LOG)
+    }
+    return
+  }
+  profile.problemLog.push(result)
+  if (profile.problemLog.length > MAX_PROBLEM_LOG) {
+    profile.problemLog = profile.problemLog.slice(-MAX_PROBLEM_LOG)
+  }
 }
 
 function getNormalizedAnswerLength(rawAnswer, fallbackNumber) {

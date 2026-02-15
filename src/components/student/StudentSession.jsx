@@ -30,6 +30,11 @@ import {
   PRESENCE_HEARTBEAT_MS,
   PRESENCE_SAVE_THROTTLE_MS
 } from '../../lib/studentPresence'
+import {
+  addTelemetryDurationMs,
+  incrementTelemetryDailyMetric,
+  recordTelemetryEvent
+} from '../../lib/telemetry'
 
 const AUTO_CONTINUE_DELAY = 3000 // 3 sekunder
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
@@ -65,6 +70,7 @@ function StudentSession() {
   const inputRef = useRef(null)
   const attentionRef = useRef(createAttentionTracker())
   const sessionRecentCorrectnessRef = useRef([])
+  const sessionTelemetryRef = useRef(null)
   const presenceSyncRef = useRef({
     lastSavedAt: 0
   })
@@ -110,6 +116,49 @@ function StudentSession() {
     const assignment = getAssignmentById(assignmentId)
     setSessionAssignment(assignment)
   }, [assignmentId])
+
+  useEffect(() => {
+    if (!profile) return undefined
+    if (sessionTelemetryRef.current) return undefined
+
+    const startedAt = Date.now()
+    const sessionId = makeSessionTelemetryId(studentId)
+    sessionTelemetryRef.current = {
+      sessionId,
+      startedAt,
+      answered: 0,
+      correct: 0,
+      wrong: 0
+    }
+
+    recordTelemetryEvent(profile, 'practice_session_start', {
+      sessionId,
+      mode: mode || '',
+      assignmentId: assignmentId || '',
+      progressionMode,
+      tableSet
+    }, startedAt)
+    incrementTelemetryDailyMetric(profile, 'practice_sessions_started', 1, startedAt)
+    saveProfile(profile)
+
+    return () => {
+      const meta = sessionTelemetryRef.current
+      if (!meta) return
+      const endedAt = Date.now()
+      const durationMs = Math.max(0, endedAt - meta.startedAt)
+      recordTelemetryEvent(profile, 'practice_session_end', {
+        sessionId: meta.sessionId,
+        answered: meta.answered,
+        correct: meta.correct,
+        wrong: meta.wrong,
+        durationSec: Math.round(durationMs / 1000)
+      }, endedAt)
+      incrementTelemetryDailyMetric(profile, 'practice_sessions_ended', 1, endedAt)
+      addTelemetryDurationMs(profile, 'practice_session_ms', durationMs, endedAt)
+      saveProfile(profile)
+      sessionTelemetryRef.current = null
+    }
+  }, [profile, studentId])
 
   useEffect(() => {
     if (!profile) return
@@ -269,6 +318,13 @@ function StudentSession() {
     if (!profile) return
 
     if (pendingBreakSuggestion) {
+      const now = Date.now()
+      recordTelemetryEvent(profile, 'break_prompt_shown', {
+        sessionId: sessionTelemetryRef.current?.sessionId || '',
+        afterAnswers: sessionTelemetryRef.current?.answered || sessionCount
+      }, now)
+      incrementTelemetryDailyMetric(profile, 'break_prompts_shown', 1, now)
+      saveProfile(profile)
       setPendingBreakSuggestion(false)
       setShowBreakSuggestion(true)
       return
@@ -299,7 +355,7 @@ function StudentSession() {
     setFeedback(null)
     resetAttentionTracker()
     setStartTime(Date.now())
-  }, [profile, pendingBreakSuggestion, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, progressionMode, isTableDrill, tableQueue, resetAttentionTracker])
+  }, [profile, pendingBreakSuggestion, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, progressionMode, isTableDrill, tableQueue, resetAttentionTracker, sessionCount])
 
   useEffect(() => {
     const onVisibilityChange = () => {
@@ -418,6 +474,32 @@ function StudentSession() {
       studentAnswer
     })
 
+    const answerTs = Number(result?.timestamp || Date.now())
+    const sessionMeta = sessionTelemetryRef.current
+    if (sessionMeta) {
+      sessionMeta.answered += 1
+      if (correct) {
+        sessionMeta.correct += 1
+      } else {
+        sessionMeta.wrong += 1
+      }
+    }
+    incrementTelemetryDailyMetric(profile, 'practice_answers', 1, answerTs)
+    incrementTelemetryDailyMetric(profile, correct ? 'practice_correct' : 'practice_wrong', 1, answerTs)
+    recordTelemetryEvent(profile, 'practice_answer', {
+      sessionId: sessionMeta?.sessionId || '',
+      correct,
+      problemType: currentProblem.template || currentProblem.problemType || '',
+      operation: currentProblem.type || '',
+      skillTag: result?.skillTag || '',
+      errorCategory: result?.errorCategory || '',
+      speedTimeSec: Number.isFinite(Number(result?.speedTimeSec))
+        ? Number(Number(result.speedTimeSec).toFixed(2))
+        : null,
+      excludedFromSpeed: Boolean(result?.excludedFromSpeed),
+      progressionMode
+    }, answerTs)
+
     let breakSuggested = false
 
     if (isTableDrill) {
@@ -461,6 +543,12 @@ function StudentSession() {
         && (lastBreakPromptAt === 0 || Date.now() - lastBreakPromptAt >= BREAK_PROMPT_COOLDOWN_MS)
       ) {
       // Kolla om paus behövs i vanliga lägen
+        recordTelemetryEvent(profile, 'break_prompt_queued', {
+          sessionId: sessionMeta?.sessionId || '',
+          answered: newCount,
+          recentCorrect: updatedSessionCorrectness.filter(Boolean).length,
+          recentTotal: updatedSessionCorrectness.length
+        }, answerTs)
         setPendingBreakSuggestion(true)
         setBreakDurationMinutes(breakPolicy.recommendedBreakMinutes)
         setLastBreakPromptAt(Date.now())
@@ -484,17 +572,35 @@ function StudentSession() {
 
   const handleAdvanceDecision = (accepted) => {
     if (!profile || !advancePrompt) return
+    const now = Date.now()
     recordSteadyAdvanceDecision(profile, advancePrompt, accepted)
     if (accepted) {
       profile.currentDifficulty = Math.max(profile.currentDifficulty, advancePrompt.nextLevel)
       profile.highestDifficulty = Math.max(profile.highestDifficulty || 1, profile.currentDifficulty)
     }
+    recordTelemetryEvent(profile, 'steady_advance_decision', {
+      sessionId: sessionTelemetryRef.current?.sessionId || '',
+      accepted,
+      operation: advancePrompt.operation,
+      fromLevel: advancePrompt.fromLevel,
+      nextLevel: advancePrompt.nextLevel
+    }, now)
+    incrementTelemetryDailyMetric(profile, accepted ? 'steady_advances_accepted' : 'steady_advances_declined', 1, now)
     saveProfile(profile)
     setAdvancePrompt(null)
     goToNextProblem()
   }
 
   const handleTakeBreak = () => {
+    if (profile) {
+      const now = Date.now()
+      recordTelemetryEvent(profile, 'break_taken_to_home', {
+        sessionId: sessionTelemetryRef.current?.sessionId || '',
+        answered: sessionTelemetryRef.current?.answered || sessionCount
+      }, now)
+      incrementTelemetryDailyMetric(profile, 'breaks_taken', 1, now)
+      saveProfile(profile)
+    }
     setShowBreakSuggestion(false)
     setPendingBreakSuggestion(false)
     setBreakDurationMinutes(DEFAULT_BREAK_MINUTES)
@@ -503,6 +609,15 @@ function StudentSession() {
   }
 
   const goToNextProblemAfterBreakSuggestion = () => {
+    if (profile) {
+      const now = Date.now()
+      recordTelemetryEvent(profile, 'break_skipped_continue', {
+        sessionId: sessionTelemetryRef.current?.sessionId || '',
+        answered: sessionTelemetryRef.current?.answered || sessionCount
+      }, now)
+      incrementTelemetryDailyMetric(profile, 'breaks_skipped', 1, now)
+      saveProfile(profile)
+    }
     setShowBreakSuggestion(false)
     setSessionCount(0)  // Reset session count
     setBreakDurationMinutes(DEFAULT_BREAK_MINUTES)
@@ -523,6 +638,14 @@ function StudentSession() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 to-purple-900 relative">
         <PongGame onClose={() => {
+          if (profile) {
+            const now = Date.now()
+            recordTelemetryEvent(profile, 'break_pong_closed', {
+              sessionId: sessionTelemetryRef.current?.sessionId || ''
+            }, now)
+            incrementTelemetryDailyMetric(profile, 'break_pong_closed', 1, now)
+            saveProfile(profile)
+          }
           setShowPong(false)
           setShowBreakSuggestion(false)
           setSessionCount(0)
@@ -548,7 +671,17 @@ function StudentSession() {
           </p>
           <div className="space-y-3">
             <button
-              onClick={() => setShowPong(true)}
+              onClick={() => {
+                if (profile) {
+                  const now = Date.now()
+                  recordTelemetryEvent(profile, 'break_pong_opened', {
+                    sessionId: sessionTelemetryRef.current?.sessionId || ''
+                  }, now)
+                  incrementTelemetryDailyMetric(profile, 'break_pong_opened', 1, now)
+                  saveProfile(profile)
+                }
+                setShowPong(true)
+              }}
               className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg flex items-center justify-center gap-2"
             >
               🏓 Spela Pong (max 3 min)
@@ -1027,6 +1160,11 @@ function getTodayKey() {
   const m = String(now.getMonth() + 1).padStart(2, '0')
   const d = String(now.getDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
+}
+
+function makeSessionTelemetryId(studentId) {
+  const normalized = String(studentId || 'student').toUpperCase()
+  return `sess_${normalized}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 }
 
 function estimateOperationLevel(profile, operation) {

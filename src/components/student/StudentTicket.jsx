@@ -18,6 +18,10 @@ import {
   PRESENCE_HEARTBEAT_MS,
   PRESENCE_SAVE_THROTTLE_MS
 } from '../../lib/studentPresence'
+import {
+  incrementTelemetryDailyMetric,
+  recordTelemetryEvent
+} from '../../lib/telemetry'
 
 function StudentTicket() {
   const { studentId } = useParams()
@@ -29,6 +33,8 @@ function StudentTicket() {
   const [savedResponse, setSavedResponse] = useState(null)
   const [statusMessage, setStatusMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const openedDispatchRef = useRef('')
+  const openedAtRef = useRef(0)
   const presenceSyncRef = useRef({
     lastSavedAt: 0
   })
@@ -94,6 +100,20 @@ function StudentTicket() {
     const existing = getTicketResponseForDispatch(profile, resolvedTicket.dispatchId)
     setSavedResponse(existing)
     setAnswer(existing?.studentAnswer || '')
+    openedAtRef.current = Date.now()
+  }, [profile, resolvedTicket])
+
+  useEffect(() => {
+    if (!profile || !resolvedTicket?.dispatchId) return
+    if (openedDispatchRef.current === resolvedTicket.dispatchId) return
+    const now = Date.now()
+    openedDispatchRef.current = resolvedTicket.dispatchId
+    recordTelemetryEvent(profile, 'ticket_opened', {
+      dispatchId: resolvedTicket.dispatchId,
+      kind: resolvedTicket.kind || 'start'
+    }, now)
+    incrementTelemetryDailyMetric(profile, 'ticket_opened', 1, now)
+    saveProfile(profile)
   }, [profile, resolvedTicket])
 
   const updateTicketPresence = useCallback((options = {}) => {
@@ -181,8 +201,23 @@ function StudentTicket() {
       question: resolvedTicket.question,
       answer: resolvedTicket.answer,
       studentAnswer: answer,
+      responseTimeSec: openedAtRef.current > 0
+        ? (Date.now() - openedAtRef.current) / 1000
+        : null,
       showCorrectnessOnSubmit: resolvedTicket.showCorrectnessOnSubmit !== false
     })
+
+    const now = Date.now()
+    recordTelemetryEvent(profile, 'ticket_submitted', {
+      dispatchId: resolvedTicket.dispatchId,
+      kind: resolvedTicket.kind || 'start',
+      correct: response?.isCorrect === true,
+      responseTimeSec: Number.isFinite(Number(response?.responseTimeSec))
+        ? Number(Number(response.responseTimeSec).toFixed(2))
+        : null
+    }, now)
+    incrementTelemetryDailyMetric(profile, 'ticket_submitted', 1, now)
+    incrementTelemetryDailyMetric(profile, response?.isCorrect ? 'ticket_correct' : 'ticket_wrong', 1, now)
 
     saveProfile(profile)
     setProfile({ ...profile })

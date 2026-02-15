@@ -1,8 +1,14 @@
+import {
+  addTelemetryDurationMs,
+  incrementTelemetryDailyMetric
+} from './telemetry'
+
 export const PRESENCE_ENGAGED_WINDOW_MS = 2 * 60 * 1000
 export const PRESENCE_IDLE_FOCUS_WINDOW_MS = 4 * 60 * 1000
 export const PRESENCE_FOCUS_STALE_MS = 90 * 1000
 export const PRESENCE_HEARTBEAT_MS = 30 * 1000
 export const PRESENCE_SAVE_THROTTLE_MS = 12 * 1000
+const PRESENCE_ACCUMULATION_CAP_MS = 45 * 1000
 
 export function ensureStudentActivity(profile, now = Date.now()) {
   if (!profile || typeof profile !== 'object') return null
@@ -25,6 +31,9 @@ export function markStudentPresence(profile, options = {}) {
   const now = Number.isFinite(Number(options.now)) ? Number(options.now) : Date.now()
   const activity = ensureStudentActivity(profile, now)
   if (!activity) return null
+  const previousPresenceAt = Number(activity.lastPresenceAt || 0)
+  const previousInteractionAt = Number(activity.lastInteractionAt || 0)
+  const previousInFocus = Boolean(activity.inFocus)
 
   const inFocus = typeof options.inFocus === 'boolean'
     ? options.inFocus
@@ -41,6 +50,22 @@ export function markStudentPresence(profile, options = {}) {
     activity.lastInteractionAt = 0
   }
   activity.visibilityState = detectVisibilityState(inFocus)
+
+  const deltaMs = previousPresenceAt > 0
+    ? Math.max(0, Math.min(now - previousPresenceAt, PRESENCE_ACCUMULATION_CAP_MS))
+    : 0
+  if (deltaMs > 0 && previousInFocus) {
+    addTelemetryDurationMs(profile, 'focus_ms', deltaMs, now)
+    const sinceInteractionMs = previousInteractionAt > 0
+      ? Math.max(0, now - previousInteractionAt)
+      : Infinity
+    if (sinceInteractionMs <= PRESENCE_ENGAGED_WINDOW_MS) {
+      addTelemetryDurationMs(profile, 'engaged_ms', deltaMs, now)
+    }
+  }
+  if (options.interaction === true) {
+    incrementTelemetryDailyMetric(profile, 'interactions', 1, now)
+  }
 
   return activity
 }

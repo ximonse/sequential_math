@@ -32,6 +32,7 @@ import {
   buildTableDevelopmentExportRows
 } from '../../lib/teacherAnalytics'
 import { getStudentPresenceStatus } from '../../lib/studentPresence'
+import { summarizeTelemetryWindow } from '../../lib/telemetry'
 import {
   buildTicketLink,
   createTicketDispatch,
@@ -878,6 +879,19 @@ function Dashboard() {
     setDashboardStatus(`Tabell-CSV klar (${csvRows.length} rader).`)
   }
 
+  const handleExportActivityCsv = () => {
+    const csvRows = buildActivityExportRows(filteredRows)
+    if (csvRows.length === 0) {
+      setDashboardStatus('Ingen aktivitetsdata att exportera.')
+      return
+    }
+
+    const csv = rowsToCsv(csvRows)
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+    downloadTextFile(csv, `aktivitet_telemetri_${stamp}.csv`, 'text/csv;charset=utf-8;')
+    setDashboardStatus(`Aktivitets-CSV klar (${csvRows.length} rader).`)
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-6xl mx-auto px-4">
@@ -1563,6 +1577,7 @@ function Dashboard() {
                     <th className="py-1 pr-2">Idag</th>
                     <th className="py-1 pr-2">Rätt/Fel idag</th>
                     <th className="py-1 pr-2">Träff idag</th>
+                    <th className="py-1 pr-2">Tid på uppgift idag</th>
                     <th className="py-1">Senast aktiv</th>
                   </tr>
                 </thead>
@@ -1580,6 +1595,7 @@ function Dashboard() {
                         {row.todayCorrectCount}/{row.todayWrongCount}
                       </td>
                       <td className="py-1 pr-2 text-gray-700">{toPercent(row.todaySuccessRate)}</td>
+                      <td className="py-1 pr-2 text-gray-700">{formatDuration(row.todayEngagedMinutes * 60)}</td>
                       <td className="py-1 text-gray-700">{formatTimeAgo(row.lastActive)}</td>
                     </tr>
                   ))}
@@ -1934,12 +1950,14 @@ function Dashboard() {
                   <option value="today_attempts">Dagens mängd</option>
                   <option value="today_wrong">Dagens felsvar</option>
                   <option value="today_struggle">Dagens kämp-index</option>
+                  <option value="today_engaged">Tid på uppgift idag</option>
                   <option value="today_answer_length">Dagens svarslängd</option>
                   <option value="active_week">Aktiv denna vecka</option>
                   <option value="week_attempts">Veckans mängd</option>
                   <option value="week_correct">Veckans rätt</option>
                   <option value="week_wrong">Veckans felsvar</option>
                   <option value="week_active_time">Veckans aktiv tid</option>
+                  <option value="week_engaged">Tid på uppgift 7d</option>
                   <option value="week_success_rate">Veckans träffsäkerhet</option>
                   <option value="week_answer_length">Veckans svarslängd</option>
                   <option value="assignment_week">Uppdragsföljsamhet v</option>
@@ -1980,6 +1998,12 @@ function Dashboard() {
                 >
                   Export tabeller
                 </button>
+                <button
+                  onClick={handleExportActivityCsv}
+                  className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-sm"
+                >
+                  Export aktivitet
+                </button>
               </div>
             </div>
 
@@ -2004,6 +2028,7 @@ function Dashboard() {
                     <>
                       <th className="px-4 py-0 font-semibold">Gjort idag</th>
                       <th className="px-4 py-0 font-semibold">Rätt/fel idag</th>
+                      <th className="px-4 py-0 font-semibold">Tid på uppgift idag</th>
                       <th className="px-4 py-0 font-semibold">Kämpar med idag</th>
                       <th className="px-4 py-0 font-semibold">Svarslängd idag</th>
                       <th className="px-4 py-0 font-semibold">Senast aktiv</th>
@@ -2012,7 +2037,8 @@ function Dashboard() {
                   ) : viewMode === 'weekly' ? (
                     <>
                       <th className="px-4 py-0 font-semibold">Gjort denna vecka</th>
-                      <th className="px-4 py-0 font-semibold">Aktiv tid</th>
+                      <th className="px-4 py-0 font-semibold">Aktiv tid (svar)</th>
+                      <th className="px-4 py-0 font-semibold">Tid på uppgift</th>
                       <th className="px-4 py-0 font-semibold">Rätt/fel vecka</th>
                       <th className="px-4 py-0 font-semibold">Kämpar med vecka</th>
                       <th className="px-4 py-0 font-semibold">Svarslängd vecka</th>
@@ -2065,6 +2091,12 @@ function Dashboard() {
                           </div>
                         </td>
                         <td className="px-4 py-0 text-gray-700">
+                          {formatDuration(row.todayEngagedMinutes * 60)}
+                          <div className="text-xs text-gray-500 mt-1">
+                            {row.todayPresenceInteractions} interaktioner
+                          </div>
+                        </td>
+                        <td className="px-4 py-0 text-gray-700">
                           {row.todayStruggle
                             ? (
                               <>
@@ -2093,6 +2125,12 @@ function Dashboard() {
                           {formatDuration(row.weekActiveTimeSec)}
                           <div className="text-xs text-gray-500 mt-1">
                             snitt {row.weekAvgTimePerProblemSec > 0 ? `${Math.round(row.weekAvgTimePerProblemSec)}s/problem` : '-'}
+                          </div>
+                        </td>
+                        <td className="px-4 py-0 text-gray-700">
+                          {formatDuration(row.weekEngagedMinutes * 60)}
+                          <div className="text-xs text-gray-500 mt-1">
+                            {row.weekPresenceInteractions} interaktioner
                           </div>
                         </td>
                         <td className="px-4 py-0">
@@ -2565,6 +2603,10 @@ function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
       ID: row.studentId,
       Klass: row.className || '',
       SenastAktiv: formatTimestampForCsv(row.lastActive),
+      TidPaUppgiftIdagMin: toFixedOrEmpty(row.todayEngagedMinutes, 2),
+      TidPaUppgift7dMin: toFixedOrEmpty(row.weekEngagedMinutes, 2),
+      InteraktionerIdag: row.todayPresenceInteractions,
+      Interaktioner7d: row.weekPresenceInteractions,
       RiskNiva: row.riskLevel,
       RiskScore: row.riskScore,
       StodScore: row.supportScore
@@ -2612,6 +2654,38 @@ function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
       Trend: row.trend === null ? '' : `${row.trend >= 0 ? '+' : ''}${Math.round(row.trend * 100)}%`
     }
   })
+}
+
+function buildActivityExportRows(rows) {
+  return rows.map(row => ({
+    ElevNamn: row.name,
+    ElevID: row.studentId,
+    Klass: row.className || '',
+    AktivNuStatus: row.activityStatus,
+    HarLoggatIn: row.hasLoggedIn ? 1 : 0,
+    LoginCount: row.loginCount,
+    SenastAktiv: formatTimestampForCsv(row.lastActive),
+    FokusSida: row.presencePage || '',
+    TidPaUppgiftIdagMin: toFixedOrEmpty(row.todayEngagedMinutes, 2),
+    FokusTidIdagMin: toFixedOrEmpty(row.todayFocusMinutes, 2),
+    InteraktionerIdag: row.todayPresenceInteractions,
+    TidPaUppgift7dMin: toFixedOrEmpty(row.weekEngagedMinutes, 2),
+    FokusTid7dMin: toFixedOrEmpty(row.weekFocusMinutes, 2),
+    Interaktioner7d: row.weekPresenceInteractions,
+    TraningStarterIdag: row.todayPracticeLaunches,
+    TraningSvarIdag: row.todayPracticeAnswersTelemetry,
+    TraningRattIdag: row.todayPracticeCorrectTelemetry,
+    TraningFelIdag: row.todayPracticeWrongTelemetry,
+    TicketSvarIdag: row.todayTicketSubmitted,
+    TicketRattIdag: row.todayTicketCorrect,
+    TicketFelIdag: row.todayTicketWrong,
+    PausFragorIdag: row.todayBreakPromptsShown,
+    PauserTagnaIdag: row.todayBreaksTaken,
+    PauserSkippadeIdag: row.todayBreaksSkipped,
+    SessionerStartadeIdag: row.todayPracticeSessionsStarted,
+    SessionerAvslutadeIdag: row.todayPracticeSessionsEnded,
+    TelemetryEventsTotal: row.telemetryEventCount
+  }))
 }
 
 function rowsToCsv(rows) {
@@ -2770,6 +2844,9 @@ function buildStudentRow(student, activeAssignment = null) {
     startToday: todayStart
   })
   const activeNow = presenceStatus.code === 'green'
+  const telemetry = summarizeTelemetryWindow(student)
+  const telemetryToday = telemetry.today || {}
+  const telemetryWeek = telemetry.week || {}
 
   const riskSignals = buildRiskSignals({
     attempts,
@@ -2816,6 +2893,25 @@ function buildStudentRow(student, activeAssignment = null) {
     presenceLastInteractionAt: presenceStatus.lastInteractionAt || null,
     presenceInFocus: Boolean(presenceStatus.inFocus),
     presencePage: presenceStatus.page || '',
+    telemetryEventCount: Array.isArray(student?.telemetry?.events) ? student.telemetry.events.length : 0,
+    todayFocusMinutes: toMinutes(telemetryToday.focus_ms),
+    todayEngagedMinutes: toMinutes(telemetryToday.engaged_ms),
+    todayPresenceInteractions: Number(telemetryToday.interactions || 0),
+    weekFocusMinutes: toMinutes(telemetryWeek.focus_ms),
+    weekEngagedMinutes: toMinutes(telemetryWeek.engaged_ms),
+    weekPresenceInteractions: Number(telemetryWeek.interactions || 0),
+    todayPracticeLaunches: Number(telemetryToday.practice_launches || 0),
+    todayPracticeAnswersTelemetry: Number(telemetryToday.practice_answers || 0),
+    todayPracticeCorrectTelemetry: Number(telemetryToday.practice_correct || 0),
+    todayPracticeWrongTelemetry: Number(telemetryToday.practice_wrong || 0),
+    todayTicketSubmitted: Number(telemetryToday.ticket_submitted || 0),
+    todayTicketCorrect: Number(telemetryToday.ticket_correct || 0),
+    todayTicketWrong: Number(telemetryToday.ticket_wrong || 0),
+    todayBreakPromptsShown: Number(telemetryToday.break_prompts_shown || 0),
+    todayBreaksTaken: Number(telemetryToday.breaks_taken || 0),
+    todayBreaksSkipped: Number(telemetryToday.breaks_skipped || 0),
+    todayPracticeSessionsStarted: Number(telemetryToday.practice_sessions_started || 0),
+    todayPracticeSessionsEnded: Number(telemetryToday.practice_sessions_ended || 0),
     activeToday: todayAttempts > 0,
     todayAttempts,
     todayCorrectCount,
@@ -3042,6 +3138,7 @@ function compareRows(a, b, sortBy) {
   if (sortBy === 'today_attempts') return a.todayAttempts - b.todayAttempts
   if (sortBy === 'today_wrong') return a.todayWrongCount - b.todayWrongCount
   if (sortBy === 'today_struggle') return a.todayStruggleIndex - b.todayStruggleIndex
+  if (sortBy === 'today_engaged') return (a.todayEngagedMinutes || 0) - (b.todayEngagedMinutes || 0)
   if (sortBy === 'today_answer_length') return (a.todayAvgAnswerLength || 0) - (b.todayAvgAnswerLength || 0)
   if (sortBy === 'active_week') {
     if (a.activeThisWeek !== b.activeThisWeek) return Number(a.activeThisWeek) - Number(b.activeThisWeek)
@@ -3051,6 +3148,7 @@ function compareRows(a, b, sortBy) {
   if (sortBy === 'week_correct') return a.weekCorrectCount - b.weekCorrectCount
   if (sortBy === 'week_wrong') return a.weekWrongCount - b.weekWrongCount
   if (sortBy === 'week_active_time') return a.weekActiveTimeSec - b.weekActiveTimeSec
+  if (sortBy === 'week_engaged') return (a.weekEngagedMinutes || 0) - (b.weekEngagedMinutes || 0)
   if (sortBy === 'week_success_rate') return a.weekSuccessRate - b.weekSuccessRate
   if (sortBy === 'week_answer_length') return (a.weekAvgAnswerLength || 0) - (b.weekAvgAnswerLength || 0)
   if (sortBy === 'assignment_week') return (a.weekAssignmentAdherenceRate ?? -1) - (b.weekAssignmentAdherenceRate ?? -1)
@@ -3068,6 +3166,12 @@ function toPercent(rate) {
   const numeric = Number(rate)
   if (!Number.isFinite(numeric)) return '-'
   return `${Math.round(numeric * 100)}%`
+}
+
+function toFixedOrEmpty(value, digits = 2) {
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) return ''
+  return numeric.toFixed(digits)
 }
 
 function getSuccessColorClass(rate) {
@@ -3100,6 +3204,12 @@ function formatDuration(totalSeconds) {
   const hours = Math.floor(seconds / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
   return `${hours}h ${minutes}m`
+}
+
+function toMinutes(milliseconds) {
+  const value = Number(milliseconds)
+  if (!Number.isFinite(value) || value <= 0) return 0
+  return value / 60000
 }
 
 function inferTableFromProblem(problem) {

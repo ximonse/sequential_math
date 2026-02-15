@@ -21,6 +21,10 @@ import {
   PRESENCE_HEARTBEAT_MS,
   PRESENCE_SAVE_THROTTLE_MS
 } from '../../lib/studentPresence'
+import {
+  incrementTelemetryDailyMetric,
+  recordTelemetryEvent
+} from '../../lib/telemetry'
 
 function StudentHome() {
   const { studentId } = useParams()
@@ -203,6 +207,13 @@ function StudentHome() {
 
   const startTableDrill = () => {
     if (selectedTables.length === 0) return
+    const now = Date.now()
+    recordTelemetryEvent(profile, 'practice_launch_table_drill', {
+      tables: selectedTables,
+      progressionMode: selectedProgressionMode
+    }, now)
+    incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
+    saveProfile(profile)
     const params = new URLSearchParams()
     params.set('mode', 'multiplication')
     params.set('tables', selectedTables.join(','))
@@ -271,6 +282,13 @@ function StudentHome() {
             </div>
             <button
               onClick={() => {
+                const now = Date.now()
+                recordTelemetryEvent(profile, 'practice_launch_assignment_or_free', {
+                  assignmentId: assignment?.id || '',
+                  progressionMode: selectedProgressionMode
+                }, now)
+                incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
+                saveProfile(profile)
                 if (assignment) {
                   navigate(assignmentPracticePath)
                   return
@@ -308,6 +326,13 @@ function StudentHome() {
                   const params = new URLSearchParams()
                   params.set('ticket', activeTicketPayload.dispatchId || '')
                   if (activeTicketEncoded) params.set('ticket_payload', activeTicketEncoded)
+                  const now = Date.now()
+                  recordTelemetryEvent(profile, 'ticket_open_from_home', {
+                    dispatchId: activeTicketPayload.dispatchId || '',
+                    kind: activeTicketPayload.kind || 'start'
+                  }, now)
+                  incrementTelemetryDailyMetric(profile, 'ticket_launches', 1, now)
+                  saveProfile(profile)
                   navigate(`/student/${studentId}/ticket?${params.toString()}`)
                 }}
                 className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg"
@@ -375,9 +400,17 @@ function StudentHome() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <button
-              onClick={() => navigate(buildPracticePath(studentId, {
-                progressionMode: selectedProgressionMode
-              }))}
+              onClick={() => {
+                const now = Date.now()
+                recordTelemetryEvent(profile, 'practice_launch_free', {
+                  progressionMode: selectedProgressionMode
+                }, now)
+                incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
+                saveProfile(profile)
+                navigate(buildPracticePath(studentId, {
+                  progressionMode: selectedProgressionMode
+                }))
+              }}
               className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold"
             >
               Fri träning ({getProgressionModeLabel(selectedProgressionMode)})
@@ -385,10 +418,19 @@ function StudentHome() {
             {Object.keys(OPERATION_LABELS).map(operation => (
               <button
                 key={operation}
-                onClick={() => navigate(buildPracticePath(studentId, {
-                  mode: operation,
-                  progressionMode: selectedProgressionMode
-                }))}
+                onClick={() => {
+                  const now = Date.now()
+                  recordTelemetryEvent(profile, 'practice_launch_operation', {
+                    operation,
+                    progressionMode: selectedProgressionMode
+                  }, now)
+                  incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
+                  saveProfile(profile)
+                  navigate(buildPracticePath(studentId, {
+                    mode: operation,
+                    progressionMode: selectedProgressionMode
+                  }))
+                }}
                 className="px-4 py-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium"
               >
                 {getOperationLabel(operation)} ({getProgressionModeLabel(selectedProgressionMode)})

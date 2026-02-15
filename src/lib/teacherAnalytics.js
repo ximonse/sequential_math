@@ -215,7 +215,7 @@ export function buildTableDevelopmentExportRows(snapshot) {
 function flattenProblems(profiles) {
   const rows = []
   for (const profile of profiles) {
-    const problems = Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
+    const problems = getProblemsForAnalytics(profile)
     for (const problem of problems) {
       const operation = inferOperation(problem.problemType)
       const level = Number(problem?.difficulty?.conceptual_level || 1)
@@ -252,6 +252,12 @@ function flattenProblems(profiles) {
     }
   }
   return rows
+}
+
+function getProblemsForAnalytics(profile) {
+  const log = Array.isArray(profile?.problemLog) ? profile.problemLog : []
+  if (log.length > 0) return log
+  return Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
 }
 
 function buildTemplateLevelBenchmarks(rows) {

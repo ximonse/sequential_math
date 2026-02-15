@@ -45,6 +45,8 @@ const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
 const BREAK_PROMPT_COOLDOWN_MS = 8 * 60 * 1000
 const DEFAULT_BREAK_MINUTES = 1
 const SINGLE_DIGIT_BREAK_MINUTES = 2
+const LEVEL_MASTERY_MIN_ATTEMPTS = 5
+const LEVEL_MASTERY_MIN_SUCCESS_RATE = 0.8
 
 function StudentSession() {
   const { studentId } = useParams()
@@ -70,6 +72,7 @@ function StudentSession() {
   const [sessionError, setSessionError] = useState('')
   const [tableQueue, setTableQueue] = useState([])
   const [tableMilestone, setTableMilestone] = useState(null)
+  const [levelFocusMilestone, setLevelFocusMilestone] = useState(null)
   const [advancePrompt, setAdvancePrompt] = useState(null)
   const inputRef = useRef(null)
   const attentionRef = useRef(createAttentionTracker())
@@ -282,6 +285,14 @@ function StudentSession() {
     return () => media.removeListener(update)
   }, [])
 
+  useEffect(() => {
+    if (!levelFocusMilestone) return undefined
+    const timer = setTimeout(() => {
+      setLevelFocusMilestone(null)
+    }, 2200)
+    return () => clearTimeout(timer)
+  }, [levelFocusMilestone])
+
   const updatePresence = useCallback((options = {}) => {
     if (!profile) return
     const now = Date.now()
@@ -464,6 +475,10 @@ function StudentSession() {
     const studentAnswer = Number(normalizedAnswer)
     if (!Number.isFinite(studentAnswer)) return
 
+    const masteryBeforeLevelFocus = isLevelFocusMode
+      ? getOperationLevelMasteryStatus(profile, mode, fixedPracticeLevel)
+      : null
+
     // Lägg till resultat
     const interruption = finalizeAttentionSnapshot(attentionRef.current)
     const mixedMode = isMixedTrainingSession(mode, sessionAssignment, isTableDrill)
@@ -487,6 +502,20 @@ function StudentSession() {
         problem: currentProblem,
         errorCategory: result.errorCategory
       })
+    }
+
+    let levelMasteredNow = null
+    if (isLevelFocusMode) {
+      const masteryAfterLevelFocus = getOperationLevelMasteryStatus(profile, mode, fixedPracticeLevel)
+      if (!masteryBeforeLevelFocus?.isMastered && masteryAfterLevelFocus.isMastered) {
+        levelMasteredNow = masteryAfterLevelFocus
+        setLevelFocusMilestone({
+          operation: mode,
+          level: fixedPracticeLevel,
+          attempts: masteryAfterLevelFocus.attempts,
+          correct: masteryAfterLevelFocus.correct
+        })
+      }
     }
 
     // Uppdatera session count
@@ -527,6 +556,17 @@ function StudentSession() {
       excludedFromSpeed: Boolean(result?.excludedFromSpeed),
       progressionMode
     }, answerTs)
+    if (levelMasteredNow) {
+      recordTelemetryEvent(profile, 'level_focus_mastered', {
+        sessionId: sessionMeta?.sessionId || '',
+        operation: mode || currentProblem.type || '',
+        level: fixedPracticeLevel,
+        attempts: levelMasteredNow.attempts,
+        correct: levelMasteredNow.correct,
+        successRate: Number(levelMasteredNow.successRate.toFixed(3))
+      }, answerTs)
+      incrementTelemetryDailyMetric(profile, 'level_focus_mastered', 1, answerTs)
+    }
 
     let breakSuggested = false
 
@@ -918,6 +958,15 @@ function StudentSession() {
             ) : null}
           />
 
+          {levelFocusMilestone && (
+            <div className="mt-4 flex justify-center">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-300 bg-emerald-100 text-emerald-800 text-sm font-semibold shadow-sm">
+                <span aria-hidden="true">🎉</span>
+                Nivå {levelFocusMilestone.level} klar!
+              </div>
+            </div>
+          )}
+
           {/* Feedback + nästa-knapp */}
           <div className="mt-8 flex flex-col items-center min-h-28">
             {/* Feedback text - reserverad plats */}
@@ -1295,6 +1344,35 @@ function isSingleDigitAddOrSubProblem(problem) {
   }
 
   return false
+}
+
+function getOperationLevelMasteryStatus(profile, operation, level) {
+  if (!profile || !operation || !Number.isInteger(level)) {
+    return {
+      attempts: 0,
+      correct: 0,
+      successRate: 0,
+      isMastered: false
+    }
+  }
+
+  const relevant = profile.recentProblems.filter((item) => {
+    const itemOperation = inferOperationFromType(item.problemType)
+    const itemLevel = Math.round(Number(item?.difficulty?.conceptual_level || 0))
+    return itemOperation === operation && itemLevel === level
+  })
+
+  const attempts = relevant.length
+  const correct = relevant.filter(item => item.correct).length
+  const successRate = attempts > 0 ? correct / attempts : 0
+  const isMastered = attempts >= LEVEL_MASTERY_MIN_ATTEMPTS && successRate >= LEVEL_MASTERY_MIN_SUCCESS_RATE
+
+  return {
+    attempts,
+    correct,
+    successRate,
+    isMastered
+  }
 }
 
 export default StudentSession

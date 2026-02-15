@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 const CANVAS_RATIO = 1.4 // stående: höjd = bredd * 1.4
 const MIN_CANVAS_WIDTH = 320
 const MAX_CANVAS_WIDTH = 860
-const GRID_STEP_X = 42
-const GRID_STEP_Y = 59
+const GRID_STEP_X = 84
+const GRID_STEP_Y = 118
 const BASE_WIDTH = 740
 const BASE_HEIGHT = Math.round(BASE_WIDTH * CANVAS_RATIO)
 

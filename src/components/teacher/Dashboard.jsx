@@ -44,6 +44,7 @@ import {
   getTicketTemplates,
   importTicketTemplatesFromCsv,
   normalizeTags,
+  recordTicketDispatchTargets,
   setTicketDispatchReveal,
   setTicketRevealAllForProfile
 } from '../../lib/tickets'
@@ -275,8 +276,15 @@ function Dashboard() {
   )
   const ticketResponseRows = useMemo(() => {
     if (!ticketSelectedDispatch) return []
-    const rows = filteredStudents.map(student => {
+    const targetIds = new Set(
+      Array.isArray(ticketSelectedDispatch.targetStudentIds)
+        ? ticketSelectedDispatch.targetStudentIds
+        : []
+    )
+    const rows = filteredStudents.flatMap(student => {
       const response = getTicketResponseForDispatch(student, ticketSelectedDispatch.id)
+      const included = targetIds.has(student.studentId) || Boolean(response)
+      if (!included) return []
       return {
         studentId: student.studentId,
         name: student.name,
@@ -534,6 +542,7 @@ function Dashboard() {
       setDashboardStatus('Välj minst en klass eller elev att skicka ticket till.')
       return
     }
+    recordTicketDispatchTargets(dispatch.id, Array.from(targetIds))
 
     const nextStudents = students.map(student => {
       if (!targetIds.has(student.studentId)) return student
@@ -549,6 +558,7 @@ function Dashboard() {
       return next
     })
     setStudents(nextStudents)
+    setTicketDispatches(getTicketDispatches())
     setDashboardStatus(`Ticket publicerad till startsidan för ${targetIds.size} elev(er).`)
   }
 
@@ -1187,6 +1197,8 @@ function Dashboard() {
             </div>
             {!ticketSelectedDispatch ? (
               <p className="text-sm text-gray-500">Välj ett utskick ovan för att se elevsvar.</p>
+            ) : ticketResponseRows.length === 0 ? (
+              <p className="text-sm text-gray-500">Inga mottagare eller svar ännu för detta utskick.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

@@ -168,6 +168,34 @@ export function setTicketDispatchReveal(dispatchId, revealCorrectness = true) {
   return next
 }
 
+export function recordTicketDispatchTargets(dispatchId, targetStudentIds = []) {
+  if (!dispatchId) return null
+  const dispatches = getTicketDispatches()
+  const idx = dispatches.findIndex(item => item.id === dispatchId)
+  if (idx < 0) return null
+
+  const now = Date.now()
+  const normalizedTargets = Array.from(new Set(
+    (Array.isArray(targetStudentIds) ? targetStudentIds : [])
+      .map(item => String(item || '').trim())
+      .filter(Boolean)
+  ))
+  const existingTargets = Array.isArray(dispatches[idx].targetStudentIds)
+    ? dispatches[idx].targetStudentIds
+    : []
+  const mergedTargets = Array.from(new Set([...existingTargets, ...normalizedTargets]))
+
+  const next = {
+    ...dispatches[idx],
+    targetStudentIds: mergedTargets,
+    lastPublishedAt: now,
+    updatedAt: now
+  }
+  dispatches[idx] = next
+  writeJsonList(TICKET_DISPATCHES_KEY, dispatches)
+  return next
+}
+
 export function buildTicketLink(dispatch) {
   if (!dispatch?.id) return ''
   const encoded = encodeTicketPayload({

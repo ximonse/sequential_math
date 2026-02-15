@@ -16,6 +16,7 @@ npm run dev
 - Lararmanual: `docs/MANUAL_LARARE.md`
 - Elevmanual: `docs/MANUAL_ELEV.md`
 - Felsokning: `docs/FELSOKNING.md`
+- Dokumentationsrutin (obligatorisk): `docs/DOKUMENTATIONSRUTIN.md`
 
 ## Lärardashboard lösenord
 

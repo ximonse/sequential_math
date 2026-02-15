@@ -784,7 +784,7 @@ function getStartOfDayTimestamp() {
 }
 
 function getTableStatusClass(status) {
-  if (status === 'star') return 'bg-green-700 text-white'
+  if (status === 'star') return 'bg-green-500 text-white'
   if (status === 'today') return 'bg-green-500 text-white'
   if (status === 'week') return 'bg-green-100 text-green-800'
   return 'bg-gray-100 text-gray-700'

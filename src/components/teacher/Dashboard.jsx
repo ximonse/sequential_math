@@ -3650,7 +3650,7 @@ function isTableCompletedForStickyStatus(stats) {
 }
 
 function getTeacherTableStatusClass(status) {
-  if (status === 'star') return 'bg-green-700 border-green-800 text-white'
+  if (status === 'star') return 'bg-green-500 border-green-600 text-white'
   if (status === 'today') return 'bg-green-500 border-green-600 text-white'
   if (status === 'week') return 'bg-green-100 border-green-200 text-green-800'
   return 'bg-gray-100 border-gray-200 text-gray-400'

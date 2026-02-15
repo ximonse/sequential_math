@@ -27,6 +27,8 @@ function Login() {
 
       const assignmentId = searchParams.get('assignment')
       const mode = searchParams.get('mode')
+      const ticketId = searchParams.get('ticket')
+      const ticketPayload = searchParams.get('ticket_payload')
       const redirect = searchParams.get('redirect')
 
       if (redirect && redirect.startsWith('/student/')) {
@@ -37,12 +39,17 @@ function Login() {
       const params = new URLSearchParams()
       if (assignmentId) params.set('assignment', assignmentId)
       if (mode) params.set('mode', mode)
+      if (ticketId) params.set('ticket', ticketId)
+      if (ticketPayload) params.set('ticket_payload', ticketPayload)
 
-      const hasSharedTarget = assignmentId || mode
+      const hasSharedTarget = assignmentId || mode || ticketId
       const query = params.toString()
-      const target = hasSharedTarget
-        ? `/student/${result.profile.studentId}/practice${query ? `?${query}` : ''}`
-        : `/student/${result.profile.studentId}`
+      let target = `/student/${result.profile.studentId}`
+      if (ticketId) {
+        target = `/student/${result.profile.studentId}/ticket${query ? `?${query}` : ''}`
+      } else if (hasSharedTarget) {
+        target = `/student/${result.profile.studentId}/practice${query ? `?${query}` : ''}`
+      }
 
       navigate(target)
     } catch {

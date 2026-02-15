@@ -41,6 +41,8 @@ function StudentHome() {
   const assignmentId = searchParams.get('assignment')
   const mode = searchParams.get('mode')
   const requestedPace = normalizeProgressionMode(searchParams.get('pace'), '')
+  const ticketId = searchParams.get('ticket')
+  const ticketPayload = searchParams.get('ticket_payload')
 
   useEffect(() => {
     if (!isStudentSessionActive(studentId)) {
@@ -71,6 +73,13 @@ function StudentHome() {
 
   useEffect(() => {
     if (!studentId) return
+    if (ticketId) {
+      const params = new URLSearchParams()
+      params.set('ticket', ticketId)
+      if (ticketPayload) params.set('ticket_payload', ticketPayload)
+      navigate(`/student/${studentId}/ticket?${params.toString()}`, { replace: true })
+      return
+    }
     if (!assignmentId && !mode && !requestedPace) return
 
     const params = new URLSearchParams()
@@ -79,7 +88,7 @@ function StudentHome() {
     if (requestedPace) params.set('pace', requestedPace)
 
     navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
-  }, [studentId, assignmentId, mode, requestedPace, navigate])
+  }, [studentId, assignmentId, mode, requestedPace, ticketId, ticketPayload, navigate])
 
   useEffect(() => {
     if (assignmentId) {
@@ -224,6 +233,13 @@ function StudentHome() {
   const assignmentPracticePath = assignment
     ? `/student/${studentId}/practice?assignment=${encodeURIComponent(assignment.id)}`
     : `/student/${studentId}/practice`
+  const activeTicketPayload = profile?.ticketInbox?.activePayload || null
+  const activeTicketEncoded = String(profile?.ticketInbox?.activeEncoded || '')
+  const activeTicketResponse = activeTicketPayload
+    ? (Array.isArray(profile.ticketResponses)
+      ? profile.ticketResponses.find(item => item.dispatchId === activeTicketPayload.dispatchId) || null
+      : null)
+    : null
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-8">
@@ -269,6 +285,38 @@ function StudentHome() {
             </button>
           </div>
         </div>
+
+        {activeTicketPayload && (
+          <div className="bg-gradient-to-r from-amber-100 to-orange-100 border border-amber-300 rounded-xl p-4 mb-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-amber-700 font-semibold">Aktiv ticket</p>
+                <h2 className="text-lg font-bold text-gray-800">
+                  {activeTicketPayload.title || (activeTicketPayload.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket')}
+                </h2>
+                <p className="text-sm text-gray-700 mt-1 line-clamp-2">
+                  {activeTicketPayload.question}
+                </p>
+                {activeTicketResponse && (
+                  <p className="text-xs text-emerald-700 mt-1 font-medium">
+                    Svar registrerat {activeTicketResponse.answeredAt ? `(${new Date(activeTicketResponse.answeredAt).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })})` : ''}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => {
+                  const params = new URLSearchParams()
+                  params.set('ticket', activeTicketPayload.dispatchId || '')
+                  if (activeTicketEncoded) params.set('ticket_payload', activeTicketEncoded)
+                  navigate(`/student/${studentId}/ticket?${params.toString()}`)
+                }}
+                className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg"
+              >
+                Öppna ticket
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
           <h2 className="text-base font-semibold text-gray-800 mb-3">Tabellövning - mängdträning</h2>

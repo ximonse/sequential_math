@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   addStudentsToClass,
@@ -6,7 +6,8 @@ import {
   getAllProfilesWithSync,
   getClasses,
   removeClass,
-  resetStudentPasswordToLoginName
+  resetStudentPasswordToLoginName,
+  saveProfile
 } from '../../lib/storage'
 import {
   logoutTeacher
@@ -31,6 +32,21 @@ import {
   buildTableDevelopmentExportRows
 } from '../../lib/teacherAnalytics'
 import { getStudentPresenceStatus } from '../../lib/studentPresence'
+import {
+  buildTicketLink,
+  createTicketDispatch,
+  createTicketTemplate,
+  deleteTicketDispatch,
+  deleteTicketTemplate,
+  encodeTicketPayload,
+  getTicketDispatches,
+  getTicketResponseForDispatch,
+  getTicketTemplates,
+  importTicketTemplatesFromCsv,
+  normalizeTags,
+  setTicketDispatchReveal,
+  setTicketRevealAllForProfile
+} from '../../lib/tickets'
 
 const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
 const SUPPORT_THRESHOLD = 45
@@ -53,7 +69,30 @@ function Dashboard() {
   const [dashboardStatus, setDashboardStatus] = useState('')
   const [copiedId, setCopiedId] = useState('')
   const [activeAssignmentId, setActiveAssignmentId] = useState('')
+  const [ticketTemplates, setTicketTemplates] = useState([])
+  const [ticketDispatches, setTicketDispatches] = useState([])
+  const [ticketQuestionInput, setTicketQuestionInput] = useState('')
+  const [ticketAnswerInput, setTicketAnswerInput] = useState('')
+  const [ticketTagsInput, setTicketTagsInput] = useState('')
+  const [ticketKindInput, setTicketKindInput] = useState('start')
+  const [ticketCsvInput, setTicketCsvInput] = useState('')
+  const [ticketTemplateFilter, setTicketTemplateFilter] = useState('')
+  const [ticketTagFilter, setTicketTagFilter] = useState('')
+  const [ticketSortBy, setTicketSortBy] = useState('newest')
+  const [ticketDispatchImmediateFeedback, setTicketDispatchImmediateFeedback] = useState(true)
+  const [selectedTicketDispatchId, setSelectedTicketDispatchId] = useState('')
+  const [copiedTicketDispatchId, setCopiedTicketDispatchId] = useState('')
   const navigate = useNavigate()
+
+  const loadStudents = useCallback(async () => {
+    const profiles = await getAllProfilesWithSync()
+    profiles.sort((a, b) => {
+      const aLast = a.recentProblems[a.recentProblems.length - 1]?.timestamp || 0
+      const bLast = b.recentProblems[b.recentProblems.length - 1]?.timestamp || 0
+      return bLast - aLast
+    })
+    setStudents(profiles)
+  }, [])
 
   useEffect(() => {
     void loadStudents()
@@ -65,7 +104,14 @@ function Dashboard() {
     }
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
-  }, [])
+    const initialTemplates = getTicketTemplates()
+    const initialDispatches = getTicketDispatches()
+    setTicketTemplates(initialTemplates)
+    setTicketDispatches(initialDispatches)
+    if (initialDispatches.length > 0) {
+      setSelectedTicketDispatchId(initialDispatches[0].id)
+    }
+  }, [loadStudents])
 
   useEffect(() => {
     if (classes.length === 0) {
@@ -76,6 +122,23 @@ function Dashboard() {
       setOverviewClassId(classes[0].id)
     }
   }, [classes, overviewClassId])
+
+  useEffect(() => {
+    if (ticketDispatches.length === 0) {
+      setSelectedTicketDispatchId('')
+      return
+    }
+    if (!selectedTicketDispatchId || !ticketDispatches.some(item => item.id === selectedTicketDispatchId)) {
+      setSelectedTicketDispatchId(ticketDispatches[0].id)
+    }
+  }, [ticketDispatches, selectedTicketDispatchId])
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      void loadStudents()
+    }, 15000)
+    return () => window.clearInterval(timer)
+  }, [loadStudents])
 
   const handleRefresh = () => {
     void loadStudents()
@@ -89,6 +152,8 @@ function Dashboard() {
     }
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
+    setTicketTemplates(getTicketTemplates())
+    setTicketDispatches(getTicketDispatches())
     setDashboardStatus('Uppdaterat.')
   }
 
@@ -156,16 +221,68 @@ function Dashboard() {
     () => buildTableDevelopmentOverview(filteredStudents),
     [filteredStudents]
   )
-
-  const loadStudents = async () => {
-    const profiles = await getAllProfilesWithSync()
-    profiles.sort((a, b) => {
-      const aLast = a.recentProblems[a.recentProblems.length - 1]?.timestamp || 0
-      const bLast = b.recentProblems[b.recentProblems.length - 1]?.timestamp || 0
-      return bLast - aLast
+  const ticketTagOptions = useMemo(() => {
+    const tags = new Set()
+    for (const item of ticketTemplates) {
+      for (const tag of Array.isArray(item.tags) ? item.tags : []) {
+        if (tag) tags.add(tag)
+      }
+    }
+    return Array.from(tags).sort((a, b) => a.localeCompare(b, 'sv'))
+  }, [ticketTemplates])
+  const ticketTemplateRows = useMemo(() => {
+    const search = ticketTemplateFilter.trim().toLowerCase()
+    const rows = ticketTemplates.filter(item => {
+      if (ticketTagFilter && !(Array.isArray(item.tags) && item.tags.includes(ticketTagFilter))) return false
+      if (!search) return true
+      const hay = `${item.question} ${item.answer} ${(item.tags || []).join(' ')}`.toLowerCase()
+      return hay.includes(search)
     })
-    setStudents(profiles)
-  }
+    if (ticketSortBy === 'oldest') {
+      rows.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0))
+    } else if (ticketSortBy === 'alpha') {
+      rows.sort((a, b) => String(a.question || '').localeCompare(String(b.question || ''), 'sv'))
+    } else {
+      rows.sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0))
+    }
+    return rows
+  }, [ticketTemplates, ticketTemplateFilter, ticketTagFilter, ticketSortBy])
+  const ticketSelectedDispatch = useMemo(
+    () => ticketDispatches.find(item => item.id === selectedTicketDispatchId) || null,
+    [ticketDispatches, selectedTicketDispatchId]
+  )
+  const ticketResponseRows = useMemo(() => {
+    if (!ticketSelectedDispatch) return []
+    const rows = filteredStudents.map(student => {
+      const response = getTicketResponseForDispatch(student, ticketSelectedDispatch.id)
+      return {
+        studentId: student.studentId,
+        name: student.name,
+        className: student.className || '',
+        answered: Boolean(response),
+        isCorrect: response?.isCorrect === true,
+        studentAnswer: response?.studentAnswer || '',
+        answeredAt: response?.answeredAt || null
+      }
+    })
+    rows.sort((a, b) => {
+      if (a.answered !== b.answered) return a.answered ? -1 : 1
+      if (a.isCorrect !== b.isCorrect) return a.isCorrect ? -1 : 1
+      return a.name.localeCompare(b.name, 'sv')
+    })
+    return rows
+  }, [ticketSelectedDispatch, filteredStudents])
+  const ticketResponseMeta = useMemo(() => {
+    const answered = ticketResponseRows.filter(item => item.answered).length
+    const correct = ticketResponseRows.filter(item => item.answered && item.isCorrect).length
+    const wrong = ticketResponseRows.filter(item => item.answered && !item.isCorrect).length
+    return {
+      answered,
+      correct,
+      wrong,
+      total: ticketResponseRows.length
+    }
+  }, [ticketResponseRows])
 
   const handleCreatePreset = (presetKey) => {
     const preset = getPresetConfig(presetKey)
@@ -210,6 +327,149 @@ function Dashboard() {
     setAssignments([])
     setActiveAssignmentId('')
     setDashboardStatus('Alla uppdrag rensade.')
+  }
+
+  const handleCreateTicketTemplate = () => {
+    const created = createTicketTemplate({
+      question: ticketQuestionInput,
+      answer: ticketAnswerInput,
+      tags: normalizeTags(ticketTagsInput),
+      kind: ticketKindInput
+    })
+    if (!created) {
+      setDashboardStatus('Ticket kräver både fråga och facit.')
+      return
+    }
+    setTicketTemplates(getTicketTemplates())
+    setTicketQuestionInput('')
+    setTicketAnswerInput('')
+    setTicketTagsInput('')
+    setDashboardStatus('Ticket-fråga sparad.')
+  }
+
+  const handleImportTicketCsv = () => {
+    const result = importTicketTemplatesFromCsv(ticketCsvInput, { kind: ticketKindInput })
+    setTicketTemplates(getTicketTemplates())
+    setDashboardStatus(`Ticket-import klar: ${result.imported} importerade, ${result.skipped} hoppade över.`)
+    if (result.imported > 0) {
+      setTicketCsvInput('')
+    }
+  }
+
+  const handleDeleteTicketTemplate = (templateId) => {
+    deleteTicketTemplate(templateId)
+    setTicketTemplates(getTicketTemplates())
+    setDashboardStatus('Ticket-fråga borttagen.')
+  }
+
+  const handleCreateTicketDispatch = (template) => {
+    const dispatch = createTicketDispatch({
+      ticketId: template.id,
+      title: `${template.kind === 'exit' ? 'Exit' : 'Start'}-ticket: ${template.question.slice(0, 40)}`,
+      question: template.question,
+      answer: template.answer,
+      tags: template.tags,
+      kind: template.kind,
+      showCorrectnessOnSubmit: ticketDispatchImmediateFeedback
+    })
+    if (!dispatch) {
+      setDashboardStatus('Kunde inte skapa ticket-utskick.')
+      return
+    }
+    const nextDispatches = getTicketDispatches()
+    setTicketDispatches(nextDispatches)
+    setSelectedTicketDispatchId(dispatch.id)
+    setDashboardStatus('Ticket-länk skapad.')
+  }
+
+  const handleCopyTicketLink = async (dispatchId) => {
+    const dispatch = ticketDispatches.find(item => item.id === dispatchId)
+    if (!dispatch) return
+    const link = buildTicketLink(dispatch)
+    try {
+      await navigator.clipboard.writeText(link)
+      setCopiedTicketDispatchId(dispatchId)
+      window.setTimeout(() => setCopiedTicketDispatchId(''), 1200)
+      setDashboardStatus('Ticket-länk kopierad.')
+    } catch {
+      setDashboardStatus('Kunde inte kopiera ticket-länk just nu.')
+    }
+  }
+
+  const handleDeleteTicketDispatch = (dispatchId) => {
+    deleteTicketDispatch(dispatchId)
+    const next = getTicketDispatches()
+    setTicketDispatches(next)
+    if (selectedTicketDispatchId === dispatchId) {
+      setSelectedTicketDispatchId(next[0]?.id || '')
+    }
+    setDashboardStatus('Ticket-utskick borttaget.')
+  }
+
+  const handleToggleTicketReveal = (dispatchId, reveal) => {
+    const updated = setTicketDispatchReveal(dispatchId, reveal)
+    if (!updated) return
+
+    const nextStudents = students.map(student => {
+      const next = { ...student }
+      setTicketRevealAllForProfile(next, dispatchId, reveal)
+      saveProfile(next)
+      return next
+    })
+    setStudents(nextStudents)
+    setTicketDispatches(getTicketDispatches())
+    setDashboardStatus(reveal ? 'Facit visas nu för alla elever.' : 'Facit är dolt igen.')
+  }
+
+  const handlePublishTicketToHome = (dispatchId) => {
+    const dispatch = ticketDispatches.find(item => item.id === dispatchId)
+    if (!dispatch) return
+    const payload = {
+      dispatchId: dispatch.id,
+      ticketId: dispatch.ticketId || '',
+      title: dispatch.title || '',
+      kind: dispatch.kind || 'start',
+      question: dispatch.question || '',
+      answer: dispatch.answer || '',
+      showCorrectnessOnSubmit: dispatch.showCorrectnessOnSubmit !== false
+    }
+    const encoded = encodeTicketPayload(payload)
+    const targetIds = new Set(filteredStudents.map(item => item.studentId))
+
+    const nextStudents = students.map(student => {
+      if (!targetIds.has(student.studentId)) return student
+      const next = { ...student }
+      if (!next.ticketInbox || typeof next.ticketInbox !== 'object') {
+        next.ticketInbox = {}
+      }
+      next.ticketInbox.activeDispatchId = dispatch.id
+      next.ticketInbox.activePayload = payload
+      next.ticketInbox.activeEncoded = encoded
+      next.ticketInbox.publishedAt = Date.now()
+      saveProfile(next)
+      return next
+    })
+    setStudents(nextStudents)
+    setDashboardStatus(`Ticket publicerad till startsidan för ${targetIds.size} elev(er).`)
+  }
+
+  const handleClearTicketFromHome = (dispatchId) => {
+    const targetIds = new Set(filteredStudents.map(item => item.studentId))
+    const nextStudents = students.map(student => {
+      if (!targetIds.has(student.studentId)) return student
+      if (!student.ticketInbox || student.ticketInbox.activeDispatchId !== dispatchId) return student
+      const next = { ...student }
+      next.ticketInbox = {
+        ...next.ticketInbox,
+        activeDispatchId: '',
+        activePayload: null,
+        activeEncoded: ''
+      }
+      saveProfile(next)
+      return next
+    })
+    setStudents(nextStudents)
+    setDashboardStatus('Ticket borttagen från startsidan för valt urval.')
   }
 
   const handleCreateClass = async () => {
@@ -514,6 +774,270 @@ function Dashboard() {
               ))}
             </div>
           )}
+        </div>
+
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-lg shadow p-4 mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-amber-900">Ticket</h2>
+            <span className="text-xs text-amber-700">Start-ticket / Exit-ticket</span>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
+            <div className="bg-white rounded border border-amber-200 p-3">
+              <h3 className="text-sm font-semibold text-gray-800 mb-2">Ny ticket-fråga</h3>
+              <textarea
+                value={ticketQuestionInput}
+                onChange={(e) => setTicketQuestionInput(e.target.value)}
+                placeholder="Fråga"
+                className="w-full min-h-20 px-3 py-2 border rounded text-sm mb-2"
+              />
+              <input
+                value={ticketAnswerInput}
+                onChange={(e) => setTicketAnswerInput(e.target.value)}
+                placeholder="Facit / rätt svar"
+                className="w-full px-3 py-2 border rounded text-sm mb-2"
+              />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <input
+                  value={ticketTagsInput}
+                  onChange={(e) => setTicketTagsInput(e.target.value)}
+                  placeholder="Taggar, kommaseparerat"
+                  className="px-3 py-2 border rounded text-sm"
+                />
+                <select
+                  value={ticketKindInput}
+                  onChange={(e) => setTicketKindInput(e.target.value)}
+                  className="px-3 py-2 border rounded text-sm"
+                >
+                  <option value="start">Start-ticket</option>
+                  <option value="exit">Exit-ticket</option>
+                </select>
+                <button
+                  onClick={handleCreateTicketTemplate}
+                  className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded text-sm"
+                >
+                  Spara ticket
+                </button>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                CSV-import: `Fråga;Svar` per rad (valfritt tredje fält: `Taggar`).
+              </p>
+              <textarea
+                value={ticketCsvInput}
+                onChange={(e) => setTicketCsvInput(e.target.value)}
+                placeholder={'Fråga 1;Svar 1\nFråga 2;Svar 2'}
+                className="w-full min-h-24 px-3 py-2 border rounded text-sm mt-2"
+              />
+              <button
+                onClick={handleImportTicketCsv}
+                className="mt-2 px-3 py-2 bg-gray-800 hover:bg-black text-white rounded text-sm"
+              >
+                Importera CSV
+              </button>
+            </div>
+
+            <div className="bg-white rounded border border-amber-200 p-3">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <input
+                  value={ticketTemplateFilter}
+                  onChange={(e) => setTicketTemplateFilter(e.target.value)}
+                  placeholder="Sök fråga/tagg"
+                  className="px-3 py-2 border rounded text-sm flex-1 min-w-40"
+                />
+                <select
+                  value={ticketTagFilter}
+                  onChange={(e) => setTicketTagFilter(e.target.value)}
+                  className="px-3 py-2 border rounded text-sm"
+                >
+                  <option value="">Alla taggar</option>
+                  {ticketTagOptions.map(tag => (
+                    <option key={`ticket-tag-${tag}`} value={tag}>{tag}</option>
+                  ))}
+                </select>
+                <select
+                  value={ticketSortBy}
+                  onChange={(e) => setTicketSortBy(e.target.value)}
+                  className="px-3 py-2 border rounded text-sm"
+                >
+                  <option value="newest">Senaste</option>
+                  <option value="oldest">Äldsta</option>
+                  <option value="alpha">A-Ö</option>
+                </select>
+              </div>
+
+              {ticketTemplateRows.length === 0 ? (
+                <p className="text-sm text-gray-500">Inga ticket-frågor matchar urvalet.</p>
+              ) : (
+                <div className="max-h-72 overflow-y-auto space-y-2">
+                  {ticketTemplateRows.map(template => (
+                    <div key={template.id} className="border rounded p-2">
+                      <p className="text-sm font-medium text-gray-800">{template.question}</p>
+                      <p className="text-xs text-gray-500 mt-1">Facit: {template.answer}</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {template.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket'}
+                        {Array.isArray(template.tags) && template.tags.length > 0 ? ` | ${template.tags.join(', ')}` : ''}
+                      </p>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        <button
+                          onClick={() => handleCreateTicketDispatch(template)}
+                          className="px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs"
+                        >
+                          Skapa länk
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTicketTemplate(template.id)}
+                          className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
+                        >
+                          Ta bort
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white rounded border border-amber-200 p-3 mb-4">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <label className="text-xs text-gray-500">Utskick</label>
+              <select
+                value={selectedTicketDispatchId}
+                onChange={(e) => setSelectedTicketDispatchId(e.target.value)}
+                className="px-3 py-2 border rounded text-sm min-w-56"
+              >
+                <option value="">Välj ticket-utskick</option>
+                {ticketDispatches.map(dispatch => (
+                  <option key={dispatch.id} value={dispatch.id}>
+                    {dispatch.title} ({dispatch.kind === 'exit' ? 'Exit' : 'Start'})
+                  </option>
+                ))}
+              </select>
+              <label className="inline-flex items-center gap-2 text-xs text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={ticketDispatchImmediateFeedback}
+                  onChange={(e) => setTicketDispatchImmediateFeedback(e.target.checked)}
+                />
+                Nya länkar visar rätt/fel direkt
+              </label>
+            </div>
+
+            {ticketDispatches.length === 0 ? (
+              <p className="text-sm text-gray-500">Inga ticket-utskick ännu.</p>
+            ) : (
+              <div className="space-y-2">
+                {ticketDispatches.slice(0, 12).map(dispatch => (
+                  <div key={dispatch.id} className="border rounded p-2 flex flex-wrap items-center justify-between gap-2">
+                    <div className="text-sm">
+                      <p className="font-medium text-gray-800">{dispatch.title}</p>
+                      <p className="text-xs text-gray-500">
+                        {dispatch.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket'}
+                        {' | '}
+                        direktfeedback: {dispatch.showCorrectnessOnSubmit ? 'Ja' : 'Nej'}
+                      </p>
+                      <p className="text-[11px] text-gray-400 font-mono">{dispatch.id}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleCopyTicketLink(dispatch.id)}
+                        className="px-2 py-1 bg-gray-800 hover:bg-black text-white rounded text-xs"
+                      >
+                        {copiedTicketDispatchId === dispatch.id ? 'Kopierad' : 'Kopiera länk'}
+                      </button>
+                      <button
+                        onClick={() => handlePublishTicketToHome(dispatch.id)}
+                        className="px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs"
+                      >
+                        Visa på startsida
+                      </button>
+                      <button
+                        onClick={() => handleToggleTicketReveal(dispatch.id, !dispatch.revealCorrectness)}
+                        className={`px-2 py-1 rounded text-xs ${
+                          dispatch.revealCorrectness
+                            ? 'bg-green-100 hover:bg-green-200 text-green-700'
+                            : 'bg-orange-100 hover:bg-orange-200 text-orange-700'
+                        }`}
+                      >
+                        {dispatch.revealCorrectness ? 'Facit visas' : 'Visa facit för alla'}
+                      </button>
+                      <button
+                        onClick={() => handleClearTicketFromHome(dispatch.id)}
+                        className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs"
+                      >
+                        Ta bort från startsida
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTicketDispatch(dispatch.id)}
+                        className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
+                      >
+                        Ta bort
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded border border-amber-200 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-gray-800">Svar för valt utskick</h3>
+              {ticketSelectedDispatch && (
+                <p className="text-xs text-gray-600">
+                  Svarat {ticketResponseMeta.answered}/{ticketResponseMeta.total}
+                  {' | '}
+                  Rätt {ticketResponseMeta.correct}
+                  {' | '}
+                  Fel {ticketResponseMeta.wrong}
+                </p>
+              )}
+            </div>
+            {!ticketSelectedDispatch ? (
+              <p className="text-sm text-gray-500">Välj ett utskick ovan för att se elevsvar.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-gray-500 border-b">
+                      <th className="py-1 pr-2">Elev</th>
+                      <th className="py-1 pr-2">Klass</th>
+                      <th className="py-1 pr-2">Status</th>
+                      <th className="py-1 pr-2">Svar</th>
+                      <th className="py-1">Tid</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ticketResponseRows.map(row => (
+                      <tr key={`ticket-response-${row.studentId}`} className="border-b last:border-b-0">
+                        <td className="py-1 pr-2 text-gray-700 font-medium">{row.name}</td>
+                        <td className="py-1 pr-2 text-gray-600">{row.className || '-'}</td>
+                        <td className="py-1 pr-2">
+                          {!row.answered ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs bg-gray-50 text-gray-500 border-gray-200">
+                              Ej svarat
+                            </span>
+                          ) : row.isCorrect ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs bg-green-50 text-green-700 border-green-200">
+                              Rätt
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs bg-red-50 text-red-700 border-red-200">
+                              Fel
+                            </span>
+                          )}
+                        </td>
+                        <td className={`py-1 pr-2 ${row.answered && !row.isCorrect ? 'text-red-700' : 'text-gray-700'}`}>
+                          {row.answered ? (row.studentAnswer || '-') : '-'}
+                        </td>
+                        <td className="py-1 text-gray-600">{formatTimeAgo(row.answeredAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow p-4 mb-8">

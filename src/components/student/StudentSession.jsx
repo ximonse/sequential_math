@@ -24,7 +24,11 @@ import {
 } from '../../lib/difficultyAdapter'
 import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 import { getOperationLabel } from '../../lib/operations'
-import { getProgressionModeLabel, normalizeProgressionMode } from '../../lib/progressionModes'
+import {
+  PROGRESSION_MODE_STEADY,
+  getProgressionModeLabel,
+  normalizeProgressionMode
+} from '../../lib/progressionModes'
 import {
   markStudentPresence,
   PRESENCE_HEARTBEAT_MS,
@@ -62,7 +66,7 @@ function StudentSession() {
   const [showScratchpad, setShowScratchpad] = useState(false)
   const [coarsePointer, setCoarsePointer] = useState(false)
   const [sessionAssignment, setSessionAssignment] = useState(null)
-  const [sessionWarmup, setSessionWarmup] = useState(null)
+  const [sessionWarmup, setSessionWarmup] = useState(undefined)
   const [sessionError, setSessionError] = useState('')
   const [tableQueue, setTableQueue] = useState([])
   const [tableMilestone, setTableMilestone] = useState(null)
@@ -174,26 +178,31 @@ function StudentSession() {
     const operationHistory = profile.recentProblems.filter(p => inferOperationFromType(p.problemType) === mode)
     const hasHistory = operationHistory.length > 0
     const estimatedLevel = estimateOperationLevel(profile, mode)
+    const isSteadyMode = progressionMode === PROGRESSION_MODE_STEADY
+    const warmupCount = isSteadyMode ? 4 : 3
 
     if (!hasHistory) {
       setSessionWarmup({
         operation: mode,
         targetLevel: 1,
         startLevel: 1,
-        warmupCount: 3
+        warmupCount
       })
       return
     }
 
-    const startLevel = Math.max(1, Math.round(estimatedLevel) - 1)
-    const targetLevel = Math.max(startLevel, Math.round(estimatedLevel))
+    const roundedEstimatedLevel = Math.max(1, Math.min(12, Math.round(estimatedLevel)))
+    const startDrop = isSteadyMode ? 3 : 1
+    const targetDrop = isSteadyMode ? 1 : 0
+    const startLevel = Math.max(1, roundedEstimatedLevel - startDrop)
+    const targetLevel = Math.max(startLevel, roundedEstimatedLevel - targetDrop)
     setSessionWarmup({
       operation: mode,
       targetLevel,
       startLevel,
-      warmupCount: 3
+      warmupCount
     })
-  }, [profile, mode, isTableDrill])
+  }, [profile, mode, isTableDrill, progressionMode])
 
   useEffect(() => {
     if (!profile) return
@@ -218,6 +227,10 @@ function StudentSession() {
   // Generera första problemet när profil är laddad
   useEffect(() => {
     if (profile && !currentProblem && !feedback) {
+      const needsWarmupResolution = !isTableDrill && mode && isKnownMode(mode)
+      if (needsWarmupResolution && typeof sessionWarmup === 'undefined') {
+        return
+      }
       if (isTableDrill) {
         if (tableQueue.length === 0) return
         const problem = createTableProblem(tableQueue[0])

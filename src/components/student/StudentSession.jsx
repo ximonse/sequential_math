@@ -55,6 +55,7 @@ function StudentSession() {
   const [advancePrompt, setAdvancePrompt] = useState(null)
   const inputRef = useRef(null)
   const attentionRef = useRef(createAttentionTracker())
+  const sessionRecentCorrectnessRef = useRef([])
 
   const assignmentId = searchParams.get('assignment')
   const mode = searchParams.get('mode')
@@ -83,6 +84,7 @@ function StudentSession() {
         navigate('/', { replace: true })
         return
       }
+      sessionRecentCorrectnessRef.current = []
       setProfile(loadedProfile)
     })()
     return () => { active = false }
@@ -141,6 +143,7 @@ function StudentSession() {
     setTableMilestone(null)
     setAdvancePrompt(null)
     setPendingBreakSuggestion(false)
+    sessionRecentCorrectnessRef.current = []
     setCurrentProblem(initialQueue.length > 0 ? createTableProblem(initialQueue[0]) : null)
     setAnswer('')
     setFeedback(null)
@@ -334,6 +337,8 @@ function StudentSession() {
 
     // Uppdatera session count
     const newCount = sessionCount + 1
+    const updatedSessionCorrectness = [...sessionRecentCorrectnessRef.current, correct].slice(-10)
+    sessionRecentCorrectnessRef.current = updatedSessionCorrectness
     setSessionCount(newCount)
 
     // Visa feedback
@@ -370,7 +375,7 @@ function StudentSession() {
       }
     } else if (
       !sessionAssignment
-      && shouldSuggestBreak(profile, newCount)
+      && shouldSuggestBreak(profile, newCount, updatedSessionCorrectness)
       && (lastBreakPromptAt === 0 || Date.now() - lastBreakPromptAt >= BREAK_PROMPT_COOLDOWN_MS)
     ) {
       // Kolla om paus behövs i vanliga lägen
@@ -408,6 +413,7 @@ function StudentSession() {
   const handleTakeBreak = () => {
     setShowBreakSuggestion(false)
     setPendingBreakSuggestion(false)
+    sessionRecentCorrectnessRef.current = []
     clearActiveStudentSession()
     navigate('/')
   }
@@ -415,6 +421,7 @@ function StudentSession() {
   const goToNextProblemAfterBreakSuggestion = () => {
     setShowBreakSuggestion(false)
     setSessionCount(0)  // Reset session count
+    sessionRecentCorrectnessRef.current = []
     goToNextProblem()
   }
 
@@ -434,6 +441,7 @@ function StudentSession() {
           setShowPong(false)
           setShowBreakSuggestion(false)
           setSessionCount(0)
+          sessionRecentCorrectnessRef.current = []
           goToNextProblem()
         }} />
       </div>

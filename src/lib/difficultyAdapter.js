@@ -590,14 +590,13 @@ function updateSkillStateAfterAnswer(profile) {
 /**
  * Avgör om eleven behöver paus
  */
-export function shouldSuggestBreak(profile, sessionProblemCount) {
+export function shouldSuggestBreak(_profile, sessionProblemCount, sessionRecentCorrectness = []) {
   // Efter 15 problem
   if (sessionProblemCount >= 15) return true
 
-  // Om 5+ fel på senaste 10
-  if (profile.recentProblems.length >= 10) {
-    const last10 = profile.recentProblems.slice(-10)
-    const errors = last10.filter(p => !p.correct).length
+  // Om 5+ fel på senaste 10 i aktuell session
+  if (sessionRecentCorrectness.length >= 10) {
+    const errors = sessionRecentCorrectness.filter(isCorrect => !isCorrect).length
     if (errors >= 5) return true
   }
 

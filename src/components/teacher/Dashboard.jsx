@@ -1855,7 +1855,7 @@ function Dashboard() {
                           <td key={`teacher-table-sticky-cell-${row.studentId}-${table}`} className="py-1 pr-1 text-center">
                             <span className={`inline-flex w-5 h-5 rounded border align-middle ${getTeacherTableStatusClass(row.statusByTable[table])}`} title={getTeacherTableStatusLabel(row.statusByTable[table])}>
                               {row.statusByTable[table] === 'star' ? (
-                                <span className="m-auto text-[10px]">★</span>
+                                <span className="m-auto text-[10px] text-yellow-300">★</span>
                               ) : null}
                             </span>
                           </td>
@@ -3650,7 +3650,7 @@ function isTableCompletedForStickyStatus(stats) {
 }
 
 function getTeacherTableStatusClass(status) {
-  if (status === 'star') return 'bg-green-200 border-green-300 text-green-900'
+  if (status === 'star') return 'bg-green-700 border-green-800 text-white'
   if (status === 'today') return 'bg-green-500 border-green-600 text-white'
   if (status === 'week') return 'bg-green-100 border-green-200 text-green-800'
   return 'bg-gray-100 border-gray-200 text-gray-400'

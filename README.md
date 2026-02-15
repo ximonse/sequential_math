@@ -11,25 +11,25 @@ npm run dev
 
 Öppna http://localhost:5173
 
+## Manualer
+
+- Lararmanual: `docs/MANUAL_LARARE.md`
+- Elevmanual: `docs/MANUAL_ELEV.md`
+- Felsokning: `docs/FELSOKNING.md`
+
 ## Lärardashboard lösenord
 
 - Lärardashboarden kräver lösenord via `/teacher-login`.
-- Sätt lösenord i `.env.local`:
+- Sätt server-variabel i Vercel:
 
 ```bash
-VITE_TEACHER_PASSWORD=ditt_losenord
+TEACHER_API_PASSWORD=ditt_losenord
 ```
 
-- I development används fallback `teacher123` om värdet saknas.
-- I production krävs `VITE_TEACHER_PASSWORD` (ingen fallback).
-- För att skydda cloud-API:er för elevdata i produktion, sätt även server-env:
-
-```bash
-TEACHER_API_PASSWORD=samma_som_lararlosenord
-```
-
-Tips: sätt `VITE_TEACHER_PASSWORD` och `TEACHER_API_PASSWORD` till samma värde.
-Om `TEACHER_API_PASSWORD` saknas blockeras `/api/students` och läraråtkomst till `/api/student/:id` i production/preview.
+- `TEACHER_API_PASSWORD` är den enda lösenordskällan för lararinloggning.
+- I `production/preview` krävs den alltid.
+- I lokal development finns dev-fallback om variabeln saknas.
+- Om `TEACHER_API_PASSWORD` saknas blockeras lararåtkomst till skyddade API:er.
 
 ## Delad elevdata mellan enheter
 

@@ -9,11 +9,7 @@ import {
   resetStudentPasswordToLoginName
 } from '../../lib/storage'
 import {
-  clearCustomTeacherPassword,
-  getTeacherPasswordSource,
-  logoutTeacher,
-  setCustomTeacherPassword,
-  verifyTeacherPassword
+  logoutTeacher
 } from '../../lib/teacherAuth'
 import { evaluateAnswerQuality } from '../../lib/answerQuality'
 import { getOperationLabel } from '../../lib/operations'
@@ -55,10 +51,6 @@ function Dashboard() {
   const [dashboardStatus, setDashboardStatus] = useState('')
   const [copiedId, setCopiedId] = useState('')
   const [activeAssignmentId, setActiveAssignmentId] = useState('')
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [passwordStatus, setPasswordStatus] = useState('')
-  const [passwordSource, setPasswordSource] = useState('default')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -70,7 +62,6 @@ function Dashboard() {
     }
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
-    setPasswordSource(getTeacherPasswordSource())
   }, [])
 
   const handleRefresh = () => {
@@ -82,7 +73,6 @@ function Dashboard() {
     }
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
-    setPasswordSource(getTeacherPasswordSource())
     setDashboardStatus('Uppdaterat.')
   }
 
@@ -335,38 +325,6 @@ function Dashboard() {
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
     downloadTextFile(csv, `tabellutveckling_${stamp}.csv`, 'text/csv;charset=utf-8;')
     setDashboardStatus(`Tabell-CSV klar (${csvRows.length} rader).`)
-  }
-
-  const handlePasswordChange = (e) => {
-    e.preventDefault()
-    setPasswordStatus('')
-
-    if (!verifyTeacherPassword(currentPassword)) {
-      setPasswordStatus('Nuvarande lösenord stämmer inte.')
-      return
-    }
-
-    if (newPassword.trim().length < 4) {
-      setPasswordStatus('Nytt lösenord måste vara minst 4 tecken.')
-      return
-    }
-
-    const ok = setCustomTeacherPassword(newPassword)
-    if (!ok) {
-      setPasswordStatus('Kunde inte spara nytt lösenord.')
-      return
-    }
-
-    setCurrentPassword('')
-    setNewPassword('')
-    setPasswordSource(getTeacherPasswordSource())
-    setPasswordStatus('Lösenord uppdaterat.')
-  }
-
-  const handleResetPasswordSource = () => {
-    clearCustomTeacherPassword()
-    setPasswordSource(getTeacherPasswordSource())
-    setPasswordStatus('Lokal override borttagen.')
   }
 
   return (
@@ -734,41 +692,12 @@ function Dashboard() {
         <div className="bg-white rounded-lg shadow p-4 mb-8">
           <h2 className="text-lg font-semibold text-gray-800 mb-3">Lärarlösenord</h2>
           <p className="text-sm text-gray-500 mb-3">
-            Aktiv källa: {getTeacherPasswordSourceLabel(passwordSource)}
+            Hanteras server-side via `TEACHER_API_PASSWORD` i Vercel.
+            Ändra lösenord i projektets Environment Variables och redeploya.
           </p>
-          <form onSubmit={handlePasswordChange} className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
-            <input
-              type="password"
-              placeholder="Nuvarande lösenord"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              className="px-3 py-2 border rounded text-sm"
-            />
-            <input
-              type="password"
-              placeholder="Nytt lösenord"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="px-3 py-2 border rounded text-sm"
-            />
-            <button
-              type="submit"
-              className="px-3 py-2 bg-gray-800 hover:bg-black text-white rounded text-sm"
-            >
-              Ändra lösenord
-            </button>
-          </form>
-          <div className="flex items-center justify-between">
-            <p className={`text-sm ${passwordStatus.includes('uppdaterat') ? 'text-green-600' : 'text-gray-600'}`}>
-              {passwordStatus || ' '}
-            </p>
-            <button
-              onClick={handleResetPasswordSource}
-              className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs"
-            >
-              Återställ till env/default
-            </button>
-          </div>
+          <p className="text-xs text-gray-400">
+            Säkerhetsnotis: inget lärarlösenord lagras längre i frontend (`VITE_*`).
+          </p>
         </div>
 
         <div className="bg-white rounded-lg shadow p-4 mb-8">
@@ -2141,11 +2070,3 @@ function isKnowledgeError(problem) {
 }
 
 export default Dashboard
-
-function getTeacherPasswordSourceLabel(source) {
-  if (source === 'custom') return 'Lokal override'
-  if (source === 'env') return 'Miljövariabel'
-  if (source === 'dev_default') return 'Utvecklings-standard'
-  if (source === 'missing') return 'Saknas'
-  return 'Okänd'
-}

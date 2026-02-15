@@ -1,43 +1,52 @@
 const TEACHER_AUTH_KEY = 'mathapp_teacher_auth'
-const TEACHER_PASSWORD_OVERRIDE_KEY = 'mathapp_teacher_password_override'
 const TEACHER_API_TOKEN_KEY = 'mathapp_teacher_api_token'
-const DEV_DEFAULT_TEACHER_PASSWORD = 'teacher123'
-const IS_PROD_BUILD = import.meta.env.PROD === true
 
-function getAcceptedTeacherPasswords() {
-  const passwords = []
-  const custom = localStorage.getItem(TEACHER_PASSWORD_OVERRIDE_KEY)
-  const configured = import.meta.env.VITE_TEACHER_PASSWORD
-
-  if (typeof custom === 'string' && custom.trim() !== '') {
-    passwords.push(custom.trim())
+export async function getTeacherAuthStatus() {
+  try {
+    const response = await fetch('/api/teacher-auth')
+    if (!response.ok) {
+      return { configured: false, source: 'server_error' }
+    }
+    const data = await response.json()
+    return {
+      configured: Boolean(data?.configured),
+      source: 'server'
+    }
+  } catch {
+    return { configured: false, source: 'network_error' }
   }
-  if (typeof configured === 'string' && configured.trim() !== '') {
-    passwords.push(configured.trim())
-  }
-  if (!IS_PROD_BUILD) {
-    passwords.push(DEV_DEFAULT_TEACHER_PASSWORD)
-  }
-
-  return [...new Set(passwords)]
 }
 
-export function getTeacherPassword() {
-  return getAcceptedTeacherPasswords()[0] || ''
-}
-
-export function verifyTeacherPassword(inputPassword) {
-  if (!isTeacherPasswordConfigured()) return false
-  return getAcceptedTeacherPasswords().includes(String(inputPassword || ''))
-}
-
-export function loginTeacher(password) {
-  if (!verifyTeacherPassword(password)) {
-    return false
+export async function loginTeacher(password) {
+  const normalized = String(password || '')
+  if (normalized.trim() === '') {
+    return { ok: false, code: 'MISSING_PASSWORD' }
   }
-  sessionStorage.setItem(TEACHER_AUTH_KEY, '1')
-  sessionStorage.setItem(TEACHER_API_TOKEN_KEY, password)
-  return true
+
+  try {
+    const response = await fetch('/api/teacher-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: normalized })
+    })
+
+    if (!response.ok) {
+      let code = 'AUTH_FAILED'
+      try {
+        const data = await response.json()
+        code = data?.code || code
+      } catch {
+        // no-op
+      }
+      return { ok: false, code }
+    }
+
+    sessionStorage.setItem(TEACHER_AUTH_KEY, '1')
+    sessionStorage.setItem(TEACHER_API_TOKEN_KEY, normalized)
+    return { ok: true }
+  } catch {
+    return { ok: false, code: 'NETWORK_ERROR' }
+  }
 }
 
 export function logoutTeacher() {
@@ -49,32 +58,28 @@ export function isTeacherAuthenticated() {
   return sessionStorage.getItem(TEACHER_AUTH_KEY) === '1'
 }
 
-export function setCustomTeacherPassword(newPassword) {
-  if (typeof newPassword !== 'string' || newPassword.trim().length < 4) {
-    return false
-  }
-  localStorage.setItem(TEACHER_PASSWORD_OVERRIDE_KEY, newPassword.trim())
-  return true
-}
-
-export function clearCustomTeacherPassword() {
-  localStorage.removeItem(TEACHER_PASSWORD_OVERRIDE_KEY)
-}
-
-export function getTeacherPasswordSource() {
-  const custom = localStorage.getItem(TEACHER_PASSWORD_OVERRIDE_KEY)
-  if (typeof custom === 'string' && custom.trim() !== '') return 'custom'
-
-  const configured = import.meta.env.VITE_TEACHER_PASSWORD
-  if (typeof configured === 'string' && configured.trim() !== '') return 'env'
-
-  return IS_PROD_BUILD ? 'missing' : 'dev_default'
-}
-
 export function getTeacherApiToken() {
   return sessionStorage.getItem(TEACHER_API_TOKEN_KEY) || ''
 }
 
-export function isTeacherPasswordConfigured() {
-  return String(getTeacherPassword() || '').trim() !== ''
+// Backward-compatible helpers for existing UI wiring.
+export function getTeacherPasswordSource() {
+  return 'server'
 }
+
+export function clearCustomTeacherPassword() {
+  // legacy no-op
+}
+
+export function setCustomTeacherPassword() {
+  return false
+}
+
+export function verifyTeacherPassword() {
+  return false
+}
+
+export function isTeacherPasswordConfigured() {
+  return true
+}
+

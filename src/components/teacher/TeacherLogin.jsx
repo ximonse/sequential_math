@@ -1,19 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  clearCustomTeacherPassword,
-  getTeacherPasswordSource,
+  getTeacherAuthStatus,
   isTeacherAuthenticated,
-  isTeacherPasswordConfigured,
   loginTeacher
 } from '../../lib/teacherAuth'
 
 function TeacherLogin() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [passwordSource, setPasswordSource] = useState(getTeacherPasswordSource())
+  const [passwordConfigured, setPasswordConfigured] = useState(true)
+  const [checkingConfig, setCheckingConfig] = useState(true)
   const navigate = useNavigate()
-  const passwordConfigured = isTeacherPasswordConfigured()
 
   useEffect(() => {
     if (isTeacherAuthenticated()) {
@@ -21,12 +19,28 @@ function TeacherLogin() {
     }
   }, [navigate])
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    let active = true
+    ;(async () => {
+      const status = await getTeacherAuthStatus()
+      if (!active) return
+      setPasswordConfigured(status.configured)
+      setCheckingConfig(false)
+    })()
+    return () => { active = false }
+  }, [])
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
+    if (checkingConfig) {
+      setError('Kontrollerar lärarinloggning...')
+      return
+    }
+
     if (!passwordConfigured) {
-      setError('Lärarlösenord saknas i produktion. Sätt VITE_TEACHER_PASSWORD och redeploya.')
+      setError('Lärarlösenord saknas på servern. Sätt TEACHER_API_PASSWORD i Vercel och redeploya.')
       return
     }
 
@@ -35,20 +49,21 @@ function TeacherLogin() {
       return
     }
 
-    const success = loginTeacher(password)
-    if (!success) {
-      setError('Fel lösenord')
+    const result = await loginTeacher(password)
+    if (!result.ok) {
+      if (result.code === 'INVALID_PASSWORD') {
+        setError('Fel lösenord')
+      } else if (result.code === 'MISSING_CONFIG') {
+        setError('Lärarlösenord saknas på servern. Sätt TEACHER_API_PASSWORD i Vercel.')
+      } else if (result.code === 'NETWORK_ERROR') {
+        setError('Kunde inte nå servern för inloggning.')
+      } else {
+        setError('Kunde inte logga in just nu.')
+      }
       return
     }
 
     navigate('/teacher', { replace: true })
-  }
-
-  const handleResetLocalOverride = () => {
-    clearCustomTeacherPassword()
-    setPasswordSource(getTeacherPasswordSource())
-    setError('Lokal lösenords-override rensad. Testa igen.')
-    setPassword('')
   }
 
   return (
@@ -62,8 +77,8 @@ function TeacherLogin() {
         </p>
         {!passwordConfigured && (
           <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            Inget lärarlösenord är konfigurerat. Lägg till `VITE_TEACHER_PASSWORD`
-            {passwordSource === 'missing' ? ' och redeploya.' : '.'}
+            Inget lärarlösenord är konfigurerat. Lägg till `TEACHER_API_PASSWORD`
+            {' '}i Vercel och redeploya.
           </div>
         )}
 
@@ -81,7 +96,7 @@ function TeacherLogin() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-              disabled={!passwordConfigured}
+              disabled={!passwordConfigured || checkingConfig}
               autoFocus
             />
           </div>
@@ -92,20 +107,11 @@ function TeacherLogin() {
 
           <button
             type="submit"
-            disabled={!passwordConfigured}
+            disabled={!passwordConfigured || checkingConfig}
             className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
           >
-            Logga in
+            {checkingConfig ? 'Kontrollerar...' : 'Logga in'}
           </button>
-          {passwordSource === 'custom' && (
-            <button
-              type="button"
-              onClick={handleResetLocalOverride}
-              className="w-full py-2 px-4 bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium rounded-lg transition-colors text-sm"
-            >
-              Rensa lokal lärarlösenords-override
-            </button>
-          )}
         </form>
 
         <div className="mt-8 pt-6 border-t border-gray-200">

@@ -254,76 +254,81 @@ function StudentTicket() {
   const title = resolvedTicket.title || (resolvedTicket.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket')
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-100 via-amber-50 to-cyan-100 py-10 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white/95 border border-amber-200 rounded-2xl shadow-xl p-6">
-          <div className="flex items-start justify-between gap-3 mb-5">
+    <div className="min-h-screen bg-gradient-to-br from-amber-100 via-orange-50 to-cyan-100 py-6 md:py-10 px-4">
+      <div className="max-w-3xl mx-auto">
+        <div className="relative overflow-hidden bg-white/95 border border-amber-200/80 rounded-3xl shadow-[0_20px_50px_-28px_rgba(146,64,14,0.55)] p-5 md:p-7">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-cyan-500" />
+          <div className="flex items-start justify-between gap-3 mb-6 pt-2">
             <div>
-              <p className="text-xs uppercase tracking-wide text-amber-700 font-semibold">Ticket</p>
-              <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
-              <p className="text-sm text-gray-500">{profile.name}</p>
+              <p className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-100/80 px-3 py-1 text-[11px] uppercase tracking-wide text-amber-800 font-semibold">
+                {resolvedTicket.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket'}
+              </p>
+              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800 mt-2">{title}</h1>
+              <p className="text-sm text-gray-600 mt-1">{profile.name}</p>
             </div>
             <button
               onClick={() => navigate(`/student/${studentId}`)}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="text-sm text-gray-500 hover:text-gray-800 rounded-lg border border-transparent hover:border-gray-200 hover:bg-white/80 px-2.5 py-1.5 transition-colors"
             >
               Till startsidan
             </button>
           </div>
 
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 mb-4">
-            <p className="text-lg md:text-xl font-semibold text-gray-800 whitespace-pre-wrap">
+          <div className="rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 px-5 py-5 mb-5 shadow-inner">
+            <p className="text-lg md:text-2xl font-bold text-gray-800 whitespace-pre-wrap leading-snug">
               {resolvedTicket.question}
             </p>
           </div>
 
-          <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="ticketAnswer">
-            Ditt svar
-          </label>
-          <textarea
-            id="ticketAnswer"
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            rows={3}
-            className="w-full border border-gray-300 rounded-xl px-4 py-3 text-lg focus:border-amber-500 focus:outline-none"
-            placeholder="Skriv ditt svar här..."
-          />
+          <div className="rounded-2xl border border-amber-200/70 bg-white/90 p-4 md:p-5">
+            <label className="block text-sm font-semibold text-gray-700 mb-2" htmlFor="ticketAnswer">
+              Ditt svar
+            </label>
+            <textarea
+              id="ticketAnswer"
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              rows={3}
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 text-lg bg-white focus:border-amber-500 focus:ring-2 focus:ring-amber-200 focus:outline-none transition"
+              placeholder="Skriv ditt svar här..."
+            />
 
-          <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
-            <button
-              onClick={handleSubmit}
-              disabled={answer.trim() === '' || isSubmitting}
-              className="px-6 py-3 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:bg-gray-300 text-white font-semibold"
-            >
-              {isSubmitting ? 'Sparar...' : 'Skicka svar'}
-            </button>
-            <p className="text-xs text-gray-500">{statusMessage || ' '}</p>
+            <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
+              <button
+                onClick={handleSubmit}
+                disabled={answer.trim() === '' || isSubmitting}
+                className="px-7 py-3.5 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed text-white font-bold tracking-wide shadow-sm"
+              >
+                {isSubmitting ? 'Sparar...' : 'Skicka svar'}
+              </button>
+              <p className="text-xs text-gray-500">{statusMessage || ' '}</p>
+            </div>
           </div>
 
           {savedResponse && (
             <div className="mt-5">
               {shouldShowCorrectness ? (
-                <div className={`rounded-xl border px-4 py-3 ${
+                <div className={`rounded-2xl border-2 px-4 py-3 ${
                   savedResponse.isCorrect
-                    ? 'bg-green-50 border-green-200 text-green-700'
-                    : 'bg-red-50 border-red-200 text-red-700'
+                    ? 'bg-green-50 border-green-300 text-green-800'
+                    : 'bg-red-50 border-red-300 text-red-800'
                 }`}>
-                  <p className="font-semibold">
+                  <p className="font-bold text-base">
                     {savedResponse.isCorrect ? 'Rätt svar' : 'Inte rätt svar'}
                   </p>
                   {!savedResponse.isCorrect && (
-                    <p className="text-sm mt-1">
-                      Du svarade: <span className="font-medium">{savedResponse.studentAnswer || '-'}</span>
+                    <p className="text-sm mt-1.5">
+                      Du svarade: <span className="font-semibold">{savedResponse.studentAnswer || '-'}</span>
                     </p>
                   )}
-                  <p className="text-sm mt-1">
-                    Facit: <span className="font-medium">{resolvedTicket.answer}</span>
+                  <p className="text-sm mt-1.5">
+                    Facit: <span className="font-semibold">{resolvedTicket.answer}</span>
                   </p>
                 </div>
               ) : (
-                <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-700">
-                  <p className="font-medium">Svar sparat.</p>
-                  <p className="text-sm text-gray-500">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700">
+                  <p className="font-semibold">Svar sparat.</p>
+                  <p className="text-sm text-slate-600">
                     Läraren kan visa facit senare.
                   </p>
                 </div>

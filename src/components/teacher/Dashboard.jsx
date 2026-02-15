@@ -1131,57 +1131,58 @@ function Dashboard() {
           )}
         </div>
 
-        <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-lg shadow p-4 mb-8">
+        <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border border-amber-200/90 rounded-2xl shadow-[0_16px_42px_-26px_rgba(146,64,14,0.55)] p-4 md:p-5 mb-8">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500" />
           <button
             onClick={() => setTicketSectionOpen(prev => !prev)}
-            className="w-full flex items-center justify-between text-left mb-3"
+            className="w-full flex items-center justify-between text-left mb-4 pt-1"
           >
             <div>
-              <h2 className="text-lg font-semibold text-amber-900">Ticket</h2>
-              <span className="text-xs text-amber-700">Start-ticket / Exit-ticket</span>
+              <h2 className="text-xl font-extrabold text-amber-900">Ticket</h2>
+              <span className="text-xs text-amber-800 font-medium">Start-ticket / Exit-ticket</span>
             </div>
-            <span className="px-2 py-1 rounded border border-amber-300 bg-white text-xs text-amber-800">
+            <span className="px-3 py-1.5 rounded-full border border-amber-300 bg-white text-xs font-semibold text-amber-900 shadow-sm">
               {ticketSectionOpen ? 'Dölj' : 'Visa'}
             </span>
           </button>
 
           {!ticketSectionOpen ? (
-            <p className="text-xs text-amber-700">Ticket-sektionen är minimerad.</p>
+            <p className="text-xs text-amber-800 bg-amber-100/70 border border-amber-200 rounded-lg px-3 py-2 inline-block">Ticket-sektionen är minimerad.</p>
           ) : (
             <>
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
-            <div className="bg-white rounded border border-amber-200 p-3">
-              <h3 className="text-sm font-semibold text-gray-800 mb-2">Ny ticket-fråga</h3>
+            <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 shadow-sm">
+              <h3 className="text-base font-bold text-gray-800 mb-2">Ny ticket-fråga</h3>
               <textarea
                 value={ticketQuestionInput}
                 onChange={(e) => setTicketQuestionInput(e.target.value)}
                 placeholder="Fråga"
-                className="w-full min-h-20 px-3 py-2 border rounded text-sm mb-2"
+                className="w-full min-h-20 px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm mb-2 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
               />
               <input
                 value={ticketAnswerInput}
                 onChange={(e) => setTicketAnswerInput(e.target.value)}
                 placeholder="Facit / rätt svar"
-                className="w-full px-3 py-2 border rounded text-sm mb-2"
+                className="w-full px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm mb-2 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
               />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                 <input
                   value={ticketTagsInput}
                   onChange={(e) => setTicketTagsInput(e.target.value)}
                   placeholder="Taggar, kommaseparerat"
-                  className="px-3 py-2 border rounded text-sm"
+                  className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
                 />
                 <select
                   value={ticketKindInput}
                   onChange={(e) => setTicketKindInput(e.target.value)}
-                  className="px-3 py-2 border rounded text-sm"
+                  className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
                 >
                   <option value="start">Start-ticket</option>
                   <option value="exit">Exit-ticket</option>
                 </select>
                 <button
                   onClick={handleCreateTicketTemplate}
-                  className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded text-sm"
+                  className="px-3 py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl text-sm font-semibold shadow-sm"
                 >
                   Spara ticket
                 </button>
@@ -1193,28 +1194,28 @@ function Dashboard() {
                 value={ticketCsvInput}
                 onChange={(e) => setTicketCsvInput(e.target.value)}
                 placeholder={'Fråga 1;Svar 1\nFråga 2;Svar 2'}
-                className="w-full min-h-24 px-3 py-2 border rounded text-sm mt-2"
+                className="w-full min-h-24 px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm mt-2 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
               />
               <button
                 onClick={handleImportTicketCsv}
-                className="mt-2 px-3 py-2 bg-gray-800 hover:bg-black text-white rounded text-sm"
+                className="mt-2 px-3 py-2.5 bg-gray-800 hover:bg-black text-white rounded-xl text-sm font-medium"
               >
                 Importera CSV
               </button>
             </div>
 
-            <div className="bg-white rounded border border-amber-200 p-3">
+            <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 shadow-sm">
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 <input
                   value={ticketTemplateFilter}
                   onChange={(e) => setTicketTemplateFilter(e.target.value)}
                   placeholder="Sök fråga/tagg"
-                  className="px-3 py-2 border rounded text-sm flex-1 min-w-40"
+                  className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm flex-1 min-w-40 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
                 />
                 <select
                   value={ticketTagFilter}
                   onChange={(e) => setTicketTagFilter(e.target.value)}
-                  className="px-3 py-2 border rounded text-sm"
+                  className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
                 >
                   <option value="">Alla taggar</option>
                   {ticketTagOptions.map(tag => (
@@ -1224,7 +1225,7 @@ function Dashboard() {
                 <select
                   value={ticketSortBy}
                   onChange={(e) => setTicketSortBy(e.target.value)}
-                  className="px-3 py-2 border rounded text-sm"
+                  className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
                 >
                   <option value="newest">Senaste</option>
                   <option value="oldest">Äldsta</option>
@@ -1235,11 +1236,11 @@ function Dashboard() {
               {ticketTemplateRows.length === 0 ? (
                 <p className="text-sm text-gray-500">Inga ticket-frågor matchar urvalet.</p>
               ) : (
-                <div className="max-h-72 overflow-y-auto space-y-2">
+                <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
                   {ticketTemplateRows.map(template => (
-                    <div key={template.id} className="border rounded p-2">
-                      <p className="text-sm font-medium text-gray-800">{template.question}</p>
-                      <p className="text-xs text-gray-500 mt-1">Facit: {template.answer}</p>
+                    <div key={template.id} className="border border-amber-100 rounded-xl p-3 bg-amber-50/35">
+                      <p className="text-sm font-semibold text-gray-800 leading-snug">{template.question}</p>
+                      <p className="text-xs text-gray-600 mt-1">Facit: {template.answer}</p>
                       <p className="text-xs text-gray-500 mt-1">
                         {template.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket'}
                         {Array.isArray(template.tags) && template.tags.length > 0 ? ` | ${template.tags.join(', ')}` : ''}
@@ -1247,13 +1248,13 @@ function Dashboard() {
                       <div className="flex flex-wrap gap-2 mt-2">
                         <button
                           onClick={() => handleCreateTicketDispatch(template)}
-                          className="px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs"
+                          className="px-2.5 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
                         >
                           Skapa länk
                         </button>
                         <button
                           onClick={() => handleDeleteTicketTemplate(template.id)}
-                          className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
+                          className="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-semibold"
                         >
                           Ta bort
                         </button>
@@ -1265,13 +1266,13 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded border border-amber-200 p-3 mb-4">
+          <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 mb-4 shadow-sm">
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <label className="text-xs text-gray-500">Utskick</label>
+              <label className="text-xs text-gray-600 font-medium">Utskick</label>
               <select
                 value={selectedTicketDispatchId}
                 onChange={(e) => setSelectedTicketDispatchId(e.target.value)}
-                className="px-3 py-2 border rounded text-sm min-w-56"
+                className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm min-w-56 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
               >
                 <option value="">Välj ticket-utskick</option>
                 {ticketDispatches.map(dispatch => (
@@ -1289,19 +1290,19 @@ function Dashboard() {
                 Nya länkar visar rätt/fel direkt
               </label>
             </div>
-            <div className="border border-amber-200 rounded p-2 bg-amber-50/40 mb-3">
+            <div className="border border-amber-200 rounded-xl p-3 bg-amber-50/50 mb-3">
               <div className="flex flex-wrap items-center gap-2 mb-2">
-                <p className="text-xs font-semibold text-amber-900">Mottagare (för startsidan)</p>
+                <p className="text-xs font-bold text-amber-900">Mottagare (för startsidan)</p>
                 <button
                   onClick={handleTicketTargetsFromClassFilter}
                   disabled={selectedClassIds.length === 0}
-                  className="px-2 py-1 bg-white border rounded text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Använd klassfiltret
                 </button>
                 <button
                   onClick={handleClearTicketTargets}
-                  className="px-2 py-1 bg-white border rounded text-xs text-gray-700 hover:bg-gray-50"
+                  className="px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 hover:bg-gray-50"
                 >
                   Nollställ mottagare
                 </button>
@@ -1316,9 +1317,9 @@ function Dashboard() {
                     <button
                       key={`ticket-target-class-${classItem.id}`}
                       onClick={() => handleToggleTicketTargetClass(classItem.id)}
-                      className={`px-2 py-1 rounded border text-xs ${
+                      className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium ${
                         selected
-                          ? 'bg-amber-600 border-amber-600 text-white'
+                          ? 'bg-amber-600 border-amber-600 text-white shadow-sm'
                           : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
                       }`}
                     >
@@ -1331,9 +1332,9 @@ function Dashboard() {
                 value={ticketStudentSearch}
                 onChange={(e) => setTicketStudentSearch(e.target.value)}
                 placeholder="Sök elev (namn, id, klass)"
-                className="w-full px-2 py-1 border rounded text-xs"
+                className="w-full px-2.5 py-1.5 border-2 border-amber-100 rounded-lg text-xs focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
               />
-              <div className="mt-2 max-h-40 overflow-y-auto border rounded bg-white divide-y divide-gray-100">
+              <div className="mt-2 max-h-40 overflow-y-auto border border-amber-100 rounded-lg bg-white divide-y divide-gray-100">
                 {ticketFilteredStudentOptions.length === 0 ? (
                   <p className="text-xs text-gray-500 p-2">Inga elever matchar sökningen.</p>
                 ) : (
@@ -1343,8 +1344,8 @@ function Dashboard() {
                       <button
                         key={`ticket-target-student-${item.studentId}`}
                         onClick={() => handleToggleTicketTargetStudent(item.studentId)}
-                        className={`w-full text-left px-2 py-1 text-xs ${
-                          selected ? 'bg-amber-100 text-amber-900' : 'text-gray-700 hover:bg-gray-50'
+                        className={`w-full text-left px-2.5 py-1.5 text-xs ${
+                          selected ? 'bg-amber-100 text-amber-900 font-semibold' : 'text-gray-700 hover:bg-gray-50'
                         }`}
                       >
                         <span className="font-medium">{item.name}</span>
@@ -1359,7 +1360,7 @@ function Dashboard() {
                   Visar de första 140 matcherna. Förfina sökningen för att se fler.
                 </p>
               )}
-              <p className="text-[11px] text-gray-700 mt-2">
+              <p className="text-[11px] text-gray-700 mt-2 font-medium">
                 Målsättning: {ticketResolvedTargetStudentIds.size} elev(er)
                 {ticketHasExplicitTargets
                   ? ` via ${ticketTargetClassIds.length} klass(er) + ${ticketTargetStudentIds.length} individval`
@@ -1372,9 +1373,9 @@ function Dashboard() {
             ) : (
               <div className="space-y-2">
                 {ticketDispatches.slice(0, 12).map(dispatch => (
-                  <div key={dispatch.id} className="border rounded p-2 flex flex-wrap items-center justify-between gap-2">
+                  <div key={dispatch.id} className="border border-amber-100 rounded-xl p-3 bg-white flex flex-wrap items-center justify-between gap-2">
                     <div className="text-sm">
-                      <p className="font-medium text-gray-800">{dispatch.title}</p>
+                      <p className="font-semibold text-gray-800">{dispatch.title}</p>
                       <p className="text-xs text-gray-500">
                         {dispatch.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket'}
                         {' | '}
@@ -1385,19 +1386,19 @@ function Dashboard() {
                     <div className="flex flex-wrap gap-2">
                       <button
                         onClick={() => handleCopyTicketLink(dispatch.id)}
-                        className="px-2 py-1 bg-gray-800 hover:bg-black text-white rounded text-xs"
+                        className="px-2.5 py-1.5 bg-gray-800 hover:bg-black text-white rounded-lg text-xs font-semibold"
                       >
                         {copiedTicketDispatchId === dispatch.id ? 'Kopierad' : 'Kopiera länk'}
                       </button>
                       <button
                         onClick={() => handlePublishTicketToHome(dispatch.id)}
-                        className="px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded text-xs"
+                        className="px-2.5 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
                       >
                         Visa på startsida
                       </button>
                       <button
                         onClick={() => handleToggleTicketReveal(dispatch.id, !dispatch.revealCorrectness)}
-                        className={`px-2 py-1 rounded text-xs ${
+                        className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold ${
                           dispatch.revealCorrectness
                             ? 'bg-green-100 hover:bg-green-200 text-green-700'
                             : 'bg-orange-100 hover:bg-orange-200 text-orange-700'
@@ -1407,13 +1408,13 @@ function Dashboard() {
                       </button>
                       <button
                         onClick={() => handleClearTicketFromHome(dispatch.id)}
-                        className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs"
+                        className="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold"
                       >
                         Ta bort från startsida
                       </button>
                       <button
                         onClick={() => handleDeleteTicketDispatch(dispatch.id)}
-                        className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
+                        className="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-semibold"
                       >
                         Ta bort
                       </button>
@@ -1424,11 +1425,11 @@ function Dashboard() {
             )}
           </div>
 
-          <div className="bg-white rounded border border-amber-200 p-3">
+          <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 shadow-sm">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-semibold text-gray-800">Svar för valt utskick</h3>
+              <h3 className="text-base font-bold text-gray-800">Svar för valt utskick</h3>
               {ticketSelectedDispatch && (
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-gray-700 font-medium">
                   Svarat {ticketResponseMeta.answered}/{ticketResponseMeta.total}
                   {' | '}
                   Rätt {ticketResponseMeta.correct}
@@ -1442,41 +1443,41 @@ function Dashboard() {
             ) : ticketResponseRows.length === 0 ? (
               <p className="text-sm text-gray-500">Inga mottagare eller svar ännu för detta utskick.</p>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+              <div className="overflow-x-auto border border-amber-100 rounded-xl">
+                <table className="w-full text-sm bg-white">
                   <thead>
-                    <tr className="text-left text-gray-500 border-b">
-                      <th className="py-1 pr-2">Elev</th>
-                      <th className="py-1 pr-2">Klass</th>
-                      <th className="py-1 pr-2">Status</th>
-                      <th className="py-1 pr-2">Svar</th>
-                      <th className="py-1">Tid</th>
+                    <tr className="text-left text-gray-600 border-b bg-amber-50">
+                      <th className="py-2 px-2 pr-2">Elev</th>
+                      <th className="py-2 pr-2">Klass</th>
+                      <th className="py-2 pr-2">Status</th>
+                      <th className="py-2 pr-2">Svar</th>
+                      <th className="py-2 px-2">Tid</th>
                     </tr>
                   </thead>
                   <tbody>
                     {ticketResponseRows.map(row => (
-                      <tr key={`ticket-response-${row.studentId}`} className="border-b last:border-b-0">
-                        <td className="py-1 pr-2 text-gray-700 font-medium">{row.name}</td>
-                        <td className="py-1 pr-2 text-gray-600">{row.className || '-'}</td>
-                        <td className="py-1 pr-2">
+                      <tr key={`ticket-response-${row.studentId}`} className="border-b last:border-b-0 hover:bg-amber-50/35">
+                        <td className="py-2 px-2 pr-2 text-gray-700 font-semibold">{row.name}</td>
+                        <td className="py-2 pr-2 text-gray-600">{row.className || '-'}</td>
+                        <td className="py-2 pr-2">
                           {!row.answered ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs bg-gray-50 text-gray-500 border-gray-200">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs bg-gray-50 text-gray-500 border-gray-200 font-medium">
                               Ej svarat
                             </span>
                           ) : row.isCorrect ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs bg-green-50 text-green-700 border-green-200">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs bg-green-50 text-green-700 border-green-200 font-semibold">
                               Rätt
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs bg-red-50 text-red-700 border-red-200">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs bg-red-50 text-red-700 border-red-200 font-semibold">
                               Fel
                             </span>
                           )}
                         </td>
-                        <td className={`py-1 pr-2 ${row.answered && !row.isCorrect ? 'text-red-700' : 'text-gray-700'}`}>
+                        <td className={`py-2 pr-2 ${row.answered && !row.isCorrect ? 'text-red-700' : 'text-gray-700'}`}>
                           {row.answered ? (row.studentAnswer || '-') : '-'}
                         </td>
-                        <td className="py-1 text-gray-600">{formatTimeAgo(row.answeredAt)}</td>
+                        <td className="py-2 px-2 text-gray-600">{formatTimeAgo(row.answeredAt)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1485,11 +1486,11 @@ function Dashboard() {
             )}
           </div>
 
-          <div className="bg-white rounded border border-amber-200 p-3 mt-4">
+          <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 mt-4 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-              <h3 className="text-sm font-semibold text-gray-800">Elevhistorik i tickets</h3>
+              <h3 className="text-base font-bold text-gray-800">Elevhistorik i tickets</h3>
               {ticketHistoryStudent && (
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-gray-700 font-medium">
                   Senaste svar: {formatTimeAgo(ticketHistorySummary.latestAnsweredAt)}
                 </p>
               )}
@@ -1499,7 +1500,7 @@ function Dashboard() {
               <select
                 value={ticketHistoryStudentId}
                 onChange={(e) => setTicketHistoryStudentId(e.target.value)}
-                className="px-3 py-2 border rounded text-sm"
+                className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
               >
                 {ticketHistoryStudentOptions.length === 0 ? (
                   <option value="">Inga elever i urvalet</option>
@@ -1514,7 +1515,7 @@ function Dashboard() {
               <select
                 value={ticketHistoryKindFilter}
                 onChange={(e) => setTicketHistoryKindFilter(e.target.value)}
-                className="px-3 py-2 border rounded text-sm"
+                className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
               >
                 <option value="all">Alla typer</option>
                 <option value="start">Start-ticket</option>
@@ -1523,7 +1524,7 @@ function Dashboard() {
               <select
                 value={ticketHistoryResultFilter}
                 onChange={(e) => setTicketHistoryResultFilter(e.target.value)}
-                className="px-3 py-2 border rounded text-sm"
+                className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
               >
                 <option value="all">Alla resultat</option>
                 <option value="correct">Bara rätt</option>
@@ -1533,7 +1534,7 @@ function Dashboard() {
                 value={ticketHistorySearch}
                 onChange={(e) => setTicketHistorySearch(e.target.value)}
                 placeholder="Sök i fråga/svar"
-                className="px-3 py-2 border rounded text-sm"
+                className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
               />
             </div>
 
@@ -1544,27 +1545,27 @@ function Dashboard() {
             ) : (
               <>
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 mb-3 text-xs">
-                  <div className="rounded border border-gray-200 bg-gray-50 px-2 py-1">
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-1.5">
                     <p className="text-gray-500">Totalt svar</p>
                     <p className="font-semibold text-gray-800">{ticketHistorySummary.total}</p>
                   </div>
-                  <div className="rounded border border-green-200 bg-green-50 px-2 py-1">
+                  <div className="rounded-xl border border-green-200 bg-green-50 px-2.5 py-1.5">
                     <p className="text-green-700">Rätt</p>
                     <p className="font-semibold text-green-700">{ticketHistorySummary.correct}</p>
                   </div>
-                  <div className="rounded border border-red-200 bg-red-50 px-2 py-1">
+                  <div className="rounded-xl border border-red-200 bg-red-50 px-2.5 py-1.5">
                     <p className="text-red-700">Fel</p>
                     <p className="font-semibold text-red-700">{ticketHistorySummary.wrong}</p>
                   </div>
-                  <div className="rounded border border-blue-200 bg-blue-50 px-2 py-1">
+                  <div className="rounded-xl border border-blue-200 bg-blue-50 px-2.5 py-1.5">
                     <p className="text-blue-700">Träffsäkerhet</p>
                     <p className="font-semibold text-blue-700">{Math.round(ticketHistorySummary.accuracy * 100)}%</p>
                   </div>
-                  <div className="rounded border border-amber-200 bg-amber-50 px-2 py-1">
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-1.5">
                     <p className="text-amber-700">Senaste 7 dagar</p>
                     <p className="font-semibold text-amber-700">{ticketHistorySummary.last7Days}</p>
                   </div>
-                  <div className="rounded border border-indigo-200 bg-indigo-50 px-2 py-1">
+                  <div className="rounded-xl border border-indigo-200 bg-indigo-50 px-2.5 py-1.5">
                     <p className="text-indigo-700">Unika utskick</p>
                     <p className="font-semibold text-indigo-700">{ticketHistorySummary.uniqueDispatches}</p>
                   </div>
@@ -1573,43 +1574,43 @@ function Dashboard() {
                 {ticketHistoryRows.length === 0 ? (
                   <p className="text-sm text-gray-500">Inga historikrader matchar filtret.</p>
                 ) : (
-                  <div className="overflow-x-auto border rounded">
-                    <table className="w-full text-sm">
+                  <div className="overflow-x-auto border border-amber-100 rounded-xl">
+                    <table className="w-full text-sm bg-white">
                       <thead>
-                        <tr className="text-left text-gray-500 border-b">
-                          <th className="py-1 pr-2">Tid</th>
-                          <th className="py-1 pr-2">Ticket</th>
-                          <th className="py-1 pr-2">Status</th>
-                          <th className="py-1 pr-2">Svar</th>
-                          <th className="py-1">Facit</th>
+                        <tr className="text-left text-gray-600 border-b bg-amber-50">
+                          <th className="py-2 px-2 pr-2">Tid</th>
+                          <th className="py-2 pr-2">Ticket</th>
+                          <th className="py-2 pr-2">Status</th>
+                          <th className="py-2 pr-2">Svar</th>
+                          <th className="py-2 px-2">Facit</th>
                         </tr>
                       </thead>
                       <tbody>
                         {ticketHistoryRows.map((row, index) => (
-                          <tr key={`ticket-history-row-${row.dispatchId}-${row.answeredAt || index}`} className="border-b last:border-b-0">
-                            <td className="py-1 pr-2 text-gray-600 whitespace-nowrap">{formatTimeAgo(row.answeredAt)}</td>
-                            <td className="py-1 pr-2 text-gray-700">
-                              <p className="font-medium">{row.title}</p>
+                          <tr key={`ticket-history-row-${row.dispatchId}-${row.answeredAt || index}`} className="border-b last:border-b-0 hover:bg-amber-50/35">
+                            <td className="py-2 px-2 pr-2 text-gray-600 whitespace-nowrap">{formatTimeAgo(row.answeredAt)}</td>
+                            <td className="py-2 pr-2 text-gray-700">
+                              <p className="font-semibold">{row.title}</p>
                               <p className="text-[11px] text-gray-500">
                                 {row.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket'}
                               </p>
                               <p className="text-[11px] text-gray-500 mt-0.5">{row.question}</p>
                             </td>
-                            <td className="py-1 pr-2">
+                            <td className="py-2 pr-2">
                               {row.isCorrect ? (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs bg-green-50 text-green-700 border-green-200">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs bg-green-50 text-green-700 border-green-200 font-semibold">
                                   Rätt
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs bg-red-50 text-red-700 border-red-200">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs bg-red-50 text-red-700 border-red-200 font-semibold">
                                   Fel
                                 </span>
                               )}
                             </td>
-                            <td className={`py-1 pr-2 ${row.isCorrect ? 'text-gray-700' : 'text-red-700'}`}>
+                            <td className={`py-2 pr-2 ${row.isCorrect ? 'text-gray-700' : 'text-red-700'}`}>
                               {row.studentAnswer || '-'}
                             </td>
-                            <td className="py-1 text-gray-700">{row.expectedAnswer || '-'}</td>
+                            <td className="py-2 px-2 text-gray-700">{row.expectedAnswer || '-'}</td>
                           </tr>
                         ))}
                       </tbody>

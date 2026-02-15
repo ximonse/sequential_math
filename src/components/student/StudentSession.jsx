@@ -629,6 +629,7 @@ function StudentSession() {
   const weekStart = getStartOfWeekTimestamp()
   const masteredHistorical = getMasteryForOperation(profile, currentOperation)
   const masteredThisWeek = getMasteryForOperation(profile, currentOperation, { since: weekStart })
+  const showInlineScratchpad = currentProblem?.type === 'multiplication' && !feedback
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8">
@@ -687,25 +688,25 @@ function StudentSession() {
             onSubmit={handleSubmit}
             inputRef={inputRef}
             suppressSoftKeyboard={coarsePointer}
+            leftPanel={showInlineScratchpad ? (
+              <div className="w-full flex flex-col items-center">
+                <div className="mt-2 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowScratchpad(prev => !prev)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                      showScratchpad
+                        ? 'bg-indigo-100 text-indigo-700'
+                        : 'bg-white text-gray-700 border border-gray-300'
+                    }`}
+                  >
+                    {showScratchpad ? 'Dölj rityta' : 'Visa rityta'}
+                  </button>
+                </div>
+                <MathScratchpad visible={showScratchpad} />
+              </div>
+            ) : null}
           />
-
-          {currentProblem?.type === 'multiplication' && !feedback && (
-            <div className="mt-5 flex justify-center">
-              <button
-                type="button"
-                onClick={() => setShowScratchpad(prev => !prev)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                  showScratchpad
-                    ? 'bg-indigo-100 text-indigo-700'
-                    : 'bg-white text-gray-700 border border-gray-300'
-                }`}
-              >
-                {showScratchpad ? 'Dölj rityta' : 'Visa rityta'}
-              </button>
-            </div>
-          )}
-
-          <MathScratchpad visible={showScratchpad && currentProblem?.type === 'multiplication' && !feedback} />
 
           {/* Feedback + nästa-knapp */}
           <div className="mt-8 flex flex-col items-center min-h-28">

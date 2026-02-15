@@ -12,7 +12,8 @@ function ProblemDisplay({
   onInputChange,
   onSubmit,
   inputRef,
-  suppressSoftKeyboard = false
+  suppressSoftKeyboard = false,
+  leftPanel = null
 }) {
   if (!problem) return null
 
@@ -85,6 +86,12 @@ function ProblemDisplay({
               </span>
             )}
           </div>
+
+          {leftPanel && (
+            <div className="w-full mt-2">
+              {leftPanel}
+            </div>
+          )}
         </div>
 
         <AnswerKeypad
@@ -115,6 +122,14 @@ function AnswerKeypad({ visible, onKey, onSubmit, canSubmit }) {
           </button>
         ))}
       </div>
+      <button
+        type="button"
+        onClick={onSubmit}
+        disabled={!canSubmit}
+        className="mt-3 w-full h-32 rounded-xl bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-3xl font-bold"
+      >
+        Svara
+      </button>
       <div className="grid grid-cols-2 gap-3 mt-3">
         <button
           type="button"
@@ -131,14 +146,6 @@ function AnswerKeypad({ visible, onKey, onSubmit, canSubmit }) {
           Rensa
         </button>
       </div>
-      <button
-        type="button"
-        onClick={onSubmit}
-        disabled={!canSubmit}
-        className="mt-3 w-full h-16 rounded-xl bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-2xl font-bold"
-      >
-        Svara
-      </button>
     </div>
   )
 }

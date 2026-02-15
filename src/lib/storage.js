@@ -29,6 +29,106 @@ export function normalizeStudentId(value) {
   return ascii.toUpperCase()
 }
 
+function ensureProfileClassMembership(profile) {
+  if (!profile || typeof profile !== 'object') return profile
+
+  const seen = new Set()
+  const classIds = []
+  const pushClassId = (value) => {
+    const id = String(value || '').trim()
+    if (!id || seen.has(id)) return
+    seen.add(id)
+    classIds.push(id)
+  }
+
+  pushClassId(profile.classId)
+  if (Array.isArray(profile.classIds)) {
+    for (const value of profile.classIds) {
+      pushClassId(value)
+    }
+  }
+
+  profile.classIds = classIds
+  profile.classId = classIds[0] || null
+  if (!profile.classId) {
+    profile.className = null
+  } else if (typeof profile.className === 'string') {
+    const trimmed = profile.className.trim()
+    profile.className = trimmed === '' ? null : trimmed
+  }
+
+  return profile
+}
+
+function getProfileClassIds(profile) {
+  if (!profile || typeof profile !== 'object') return []
+  const normalized = ensureProfileClassMembership(profile)
+  return Array.isArray(normalized.classIds) ? normalized.classIds : []
+}
+
+function profileHasClass(profile, classId) {
+  const target = String(classId || '').trim()
+  if (!target) return false
+  return getProfileClassIds(profile).includes(target)
+}
+
+function addProfileToClassMembership(profile, classRecord) {
+  if (!profile || typeof profile !== 'object') return false
+  const classId = String(classRecord?.id || '').trim()
+  if (!classId) return false
+
+  ensureProfileClassMembership(profile)
+  if (!Array.isArray(profile.classIds)) profile.classIds = []
+
+  if (!profile.classIds.includes(classId)) {
+    profile.classIds.push(classId)
+  }
+
+  const className = String(classRecord?.name || '').trim()
+  if (!profile.classId) {
+    profile.classId = classId
+    profile.className = className || null
+  } else if (profile.classId === classId && className) {
+    profile.className = className
+  }
+
+  ensureProfileClassMembership(profile)
+  return true
+}
+
+function removeProfileFromClassMembership(profile, classId, classNameById = new Map()) {
+  if (!profile || typeof profile !== 'object') return false
+  const target = String(classId || '').trim()
+  if (!target) return false
+
+  ensureProfileClassMembership(profile)
+  if (!Array.isArray(profile.classIds) || profile.classIds.length === 0) {
+    profile.classId = null
+    profile.className = null
+    return false
+  }
+
+  const before = profile.classIds.length
+  profile.classIds = profile.classIds.filter(id => id !== target)
+  const changed = profile.classIds.length !== before
+  if (!changed) return false
+
+  if (profile.classIds.length === 0) {
+    profile.classId = null
+    profile.className = null
+    return true
+  }
+
+  if (profile.classId === target || !profile.classIds.includes(profile.classId)) {
+    const nextPrimary = profile.classIds[0]
+    profile.classId = nextPrimary
+    profile.className = classNameById.get(nextPrimary) || null
+  }
+
+  ensureProfileClassMembership(profile)
+  return true
+}
+
 function ensureProfileAuth(profile) {
   if (!profile.auth || typeof profile.auth !== 'object') {
     profile.auth = {
@@ -127,6 +227,7 @@ export function loadProfile(studentId) {
     const parsed = JSON.parse(data)
     parsed.studentId = normalizeStudentId(parsed.studentId || normalizedId)
     ensureProfileAuth(parsed)
+    ensureProfileClassMembership(parsed)
     return parsed
   } catch (e) {
     console.error('Failed to parse profile:', e)
@@ -135,6 +236,7 @@ export function loadProfile(studentId) {
 }
 
 export function saveProfile(profile) {
+  ensureProfileClassMembership(profile)
   saveProfileLocalOnly(profile)
   void syncProfileToCloud(profile)
 }
@@ -157,6 +259,8 @@ export async function createAndSaveProfile(studentId, name, grade = 4, options =
 
   profile.classId = options.classId || null
   profile.className = options.className || null
+  profile.classIds = options.classId ? [String(options.classId)] : []
+  ensureProfileClassMembership(profile)
 
   saveProfile(profile)
   return profile
@@ -510,7 +614,11 @@ export async function createClassFromRoster(classNameInput, rosterText, grade = 
   const existingIds = new Set(allProfiles.map(p => p.studentId))
 
   const classId = `class_${Date.now()}`
-  const studentIds = []
+  const studentIds = new Set()
+  const classRecord = {
+    id: classId,
+    name: className
+  }
 
   for (const name of names) {
     const base = normalizeStudentId(name)
@@ -520,10 +628,9 @@ export async function createClassFromRoster(classNameInput, rosterText, grade = 
     if (profile) {
       profile.name = name
       ensureProfileAuth(profile)
-      profile.classId = classId
-      profile.className = className
+      addProfileToClassMembership(profile, classRecord)
       saveProfile(profile)
-      studentIds.push(profile.studentId)
+      studentIds.add(profile.studentId)
       continue
     }
 
@@ -533,22 +640,22 @@ export async function createClassFromRoster(classNameInput, rosterText, grade = 
       classId,
       className
     })
-    studentIds.push(created.studentId)
+    studentIds.add(created.studentId)
   }
 
-  const classRecord = {
+  const finalClassRecord = {
     id: classId,
     name: className,
-    studentIds,
+    studentIds: Array.from(studentIds),
     createdAt: Date.now()
   }
 
-  classes.unshift(classRecord)
+  classes.unshift(finalClassRecord)
   saveClasses(classes)
 
   return {
     ok: true,
-    classRecord
+    classRecord: finalClassRecord
   }
 }
 
@@ -577,11 +684,13 @@ export async function addStudentsToClass(classId, rosterText, grade = 4) {
     if (profile) {
       profile.name = name
       ensureProfileAuth(profile)
-      profile.classId = target.id
-      profile.className = target.name
+      const wasInClass = profileHasClass(profile, target.id)
+      addProfileToClassMembership(profile, target)
       saveProfile(profile)
       if (!studentIds.has(profile.studentId)) {
         studentIds.add(profile.studentId)
+      }
+      if (!wasInClass) {
         addedCount += 1
       }
       continue
@@ -614,20 +723,21 @@ export function removeClass(classId) {
   const classes = getClasses().filter(c => c.id !== classId)
   saveClasses(classes)
 
-  const affectedProfiles = getAllProfiles().filter(profile => profile.classId === classId)
+  const classNameById = new Map(classes.map(item => [item.id, item.name]))
+  const affectedProfiles = getAllProfiles().filter(profile => profileHasClass(profile, classId))
   for (const profile of affectedProfiles) {
-    profile.classId = null
-    profile.className = null
-    saveProfile(profile)
+    if (removeProfileFromClassMembership(profile, classId, classNameById)) {
+      saveProfile(profile)
+    }
   }
 }
 
 function saveProfileLocalOnly(profile) {
   const normalizedId = normalizeStudentId(profile.studentId)
-  const normalized = ensureProfileAuth({
+  const normalized = ensureProfileClassMembership(ensureProfileAuth({
     ...profile,
     studentId: normalizedId
-  })
+  }))
 
   localStorage.setItem(
     STORAGE_PREFIX + normalized.studentId,
@@ -659,10 +769,10 @@ async function loadProfileFromCloud(studentId, options = {}) {
     const data = await response.json()
     const profile = data?.profile || null
     if (!profile) return null
-    return ensureProfileAuth({
+    return ensureProfileClassMembership(ensureProfileAuth({
       ...profile,
       studentId: normalizeStudentId(profile.studentId || studentId)
-    })
+    }))
   } catch (error) {
     if (error?.code === 'UNAUTHORIZED') throw error
     return null
@@ -738,6 +848,11 @@ function chooseFreshestProfile(localProfile, cloudProfile) {
   if (cloudPwdTs > localPwdTs) return cloudProfile
   if (cloudPwdTs < localPwdTs) return localProfile
 
+  const localClassCount = getProfileClassIds(localProfile).length
+  const cloudClassCount = getProfileClassIds(cloudProfile).length
+  if (cloudClassCount > localClassCount) return cloudProfile
+  if (cloudClassCount < localClassCount) return localProfile
+
   if (!localProfile?.classId && cloudProfile?.classId) return cloudProfile
   if (!localProfile?.className && cloudProfile?.className) return cloudProfile
   return localProfile
@@ -749,7 +864,7 @@ function normalizeCloudListProfile(raw) {
   const studentId = normalizeStudentId(raw.studentId)
   if (!studentId) return null
 
-  return {
+  return ensureProfileClassMembership({
     ...raw,
     studentId,
     recentProblems: Array.isArray(raw.recentProblems) ? raw.recentProblems : [],
@@ -760,7 +875,7 @@ function normalizeCloudListProfile(raw) {
         : 0,
       passwordUpdatedAt: raw.auth?.passwordUpdatedAt || null
     }
-  }
+  })
 }
 
 export function exportProfile(studentId) {

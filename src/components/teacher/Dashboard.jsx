@@ -93,6 +93,8 @@ function Dashboard() {
   const [ticketHistoryKindFilter, setTicketHistoryKindFilter] = useState('all')
   const [ticketHistoryResultFilter, setTicketHistoryResultFilter] = useState('all')
   const [ticketHistorySearch, setTicketHistorySearch] = useState('')
+  const [tableSelectedStudentIds, setTableSelectedStudentIds] = useState([])
+  const [tableStudentSearch, setTableStudentSearch] = useState('')
   const navigate = useNavigate()
 
   const loadStudents = useCallback(async () => {
@@ -125,14 +127,18 @@ function Dashboard() {
   }, [loadStudents])
 
   useEffect(() => {
-    if (classes.length === 0) {
+    const availableClasses = selectedClassIds.length > 0
+      ? classes.filter(item => selectedClassIds.includes(item.id))
+      : classes
+
+    if (availableClasses.length === 0) {
       setOverviewClassId('')
       return
     }
-    if (!overviewClassId || !classes.some(item => item.id === overviewClassId)) {
-      setOverviewClassId(classes[0].id)
+    if (!overviewClassId || !availableClasses.some(item => item.id === overviewClassId)) {
+      setOverviewClassId(availableClasses[0].id)
     }
-  }, [classes, overviewClassId])
+  }, [classes, overviewClassId, selectedClassIds])
 
   useEffect(() => {
     if (ticketDispatches.length === 0) {
@@ -154,6 +160,15 @@ function Dashboard() {
   }, [classes])
 
   useEffect(() => {
+    if (classes.length === 0) {
+      if (selectedClassIds.length > 0) setSelectedClassIds([])
+      return
+    }
+    const valid = new Set(classes.map(item => item.id))
+    setSelectedClassIds(prev => prev.filter(id => valid.has(id)))
+  }, [classes, selectedClassIds.length])
+
+  useEffect(() => {
     if (students.length === 0) {
       setTicketTargetStudentIds([])
       return
@@ -161,6 +176,15 @@ function Dashboard() {
     const valid = new Set(students.map(item => item.studentId))
     setTicketTargetStudentIds(prev => prev.filter(id => valid.has(id)))
   }, [students])
+
+  useEffect(() => {
+    if (students.length === 0) {
+      if (tableSelectedStudentIds.length > 0) setTableSelectedStudentIds([])
+      return
+    }
+    const valid = new Set(students.map(item => item.studentId))
+    setTableSelectedStudentIds(prev => prev.filter(id => valid.has(id)))
+  }, [students, tableSelectedStudentIds.length])
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -195,9 +219,13 @@ function Dashboard() {
     () => assignments.find(item => item.id === activeAssignmentId) || null,
     [assignments, activeAssignmentId]
   )
+  const classNameById = useMemo(
+    () => new Map(classes.map(item => [item.id, item.name])),
+    [classes]
+  )
 
   const filteredStudents = selectedClassIds.length > 0
-    ? students.filter(student => selectedClassIds.includes(student.classId))
+    ? students.filter(student => recordMatchesClassFilter(student, selectedClassIds))
     : students
 
   const classStats = {
@@ -217,11 +245,11 @@ function Dashboard() {
   const weekGoal = activeAssignment?.targetCount || DEFAULT_WEEKLY_GOAL
 
   const allRows = useMemo(
-    () => students.map(student => buildStudentRow(student, activeAssignment)),
-    [students, activeAssignment]
+    () => students.map(student => buildStudentRow(student, activeAssignment, classNameById)),
+    [students, activeAssignment, classNameById]
   )
   const filteredRows = selectedClassIds.length > 0
-    ? allRows.filter(row => selectedClassIds.includes(row.classId))
+    ? allRows.filter(row => recordMatchesClassFilter(row, selectedClassIds))
     : allRows
   const tableRows = getSortedRows(filteredRows, sortBy, sortDir)
   const visibleRows = tableRows
@@ -231,9 +259,12 @@ function Dashboard() {
     .slice(0, 10)
   const inactivityBuckets = buildInactivityBuckets(tableRows)
   const classSummaries = buildClassSummaries(classes, students, selectedClassIds, weekGoal)
+  const overviewClassOptions = selectedClassIds.length > 0
+    ? classes.filter(item => selectedClassIds.includes(item.id))
+    : classes
   const classOverviewRows = useMemo(
     () => allRows
-      .filter(row => row.classId === overviewClassId)
+      .filter(row => (overviewClassId ? recordMatchesClassFilter(row, [overviewClassId]) : false))
       .sort((a, b) => a.name.localeCompare(b.name, 'sv')),
     [allRows, overviewClassId]
   )
@@ -246,16 +277,52 @@ function Dashboard() {
       activeNowCount
     }
   }, [classes, overviewClassId, classOverviewRows])
-  const tableDevelopmentOverview = useMemo(
-    () => buildTableDevelopmentOverview(filteredStudents),
-    [filteredStudents]
+  const tableStudentSet = useMemo(
+    () => new Set(tableSelectedStudentIds),
+    [tableSelectedStudentIds]
   )
-  const tableStickyStatusRows = useMemo(
+  const tableScopedStudents = useMemo(() => {
+    if (tableStudentSet.size === 0) return filteredStudents
+    return filteredStudents.filter(student => tableStudentSet.has(student.studentId))
+  }, [filteredStudents, tableStudentSet])
+  const tableStudentOptions = useMemo(
     () => filteredStudents
       .map(student => ({
         studentId: student.studentId,
         name: student.name,
-        className: student.className || '',
+        className: getRecordClassLabel(student, classNameById)
+      }))
+      .sort((a, b) => {
+        const classCompare = String(a.className).localeCompare(String(b.className), 'sv')
+        if (classCompare !== 0) return classCompare
+        return String(a.name).localeCompare(String(b.name), 'sv')
+      }),
+    [filteredStudents, classNameById]
+  )
+  const filteredTableStudentOptions = useMemo(() => {
+    const search = tableStudentSearch.trim().toLowerCase()
+    if (!search) return tableStudentOptions
+    return tableStudentOptions.filter(item => (
+      `${item.name} ${item.studentId} ${item.className}`.toLowerCase().includes(search)
+    ))
+  }, [tableStudentOptions, tableStudentSearch])
+  useEffect(() => {
+    const valid = new Set(tableStudentOptions.map(item => item.studentId))
+    setTableSelectedStudentIds(prev => {
+      const next = prev.filter(id => valid.has(id))
+      return next.length === prev.length ? prev : next
+    })
+  }, [tableStudentOptions])
+  const tableDevelopmentOverview = useMemo(
+    () => buildTableDevelopmentOverview(tableScopedStudents),
+    [tableScopedStudents]
+  )
+  const tableStickyStatusRows = useMemo(
+    () => tableScopedStudents
+      .map(student => ({
+        studentId: student.studentId,
+        name: student.name,
+        className: getRecordClassLabel(student, classNameById),
         ...buildStickyTableStatusForStudent(student)
       }))
       .sort((a, b) => {
@@ -263,7 +330,7 @@ function Dashboard() {
         if (classCompare !== 0) return classCompare
         return String(a.name).localeCompare(String(b.name), 'sv')
       }),
-    [filteredStudents]
+    [tableScopedStudents, classNameById]
   )
   const dataQualitySummary = useMemo(
     () => buildDataQualitySummary(filteredRows),
@@ -317,7 +384,7 @@ function Dashboard() {
       return {
         studentId: student.studentId,
         name: student.name,
-        className: student.className || '',
+        className: getRecordClassLabel(student, classNameById),
         answered: Boolean(response),
         isCorrect: response?.isCorrect === true,
         studentAnswer: response?.studentAnswer || '',
@@ -330,7 +397,7 @@ function Dashboard() {
       return a.name.localeCompare(b.name, 'sv')
     })
     return rows
-  }, [ticketSelectedDispatch, filteredStudents])
+  }, [ticketSelectedDispatch, filteredStudents, classNameById])
   const ticketResponseMeta = useMemo(() => {
     const answered = ticketResponseRows.filter(item => item.answered).length
     const correct = ticketResponseRows.filter(item => item.answered && item.isCorrect).length
@@ -349,15 +416,15 @@ function Dashboard() {
       .map(student => ({
         studentId: student.studentId,
         name: student.name,
-        classId: student.classId || '',
-        className: student.className || ''
+        classIds: getRecordClassIds(student),
+        className: getRecordClassLabel(student, classNameById)
       }))
       .sort((a, b) => {
         const classCompare = String(a.className).localeCompare(String(b.className), 'sv')
         if (classCompare !== 0) return classCompare
         return String(a.name).localeCompare(String(b.name), 'sv')
       }),
-    [students]
+    [students, classNameById]
   )
   const ticketFilteredStudentOptions = useMemo(() => {
     const search = ticketStudentSearch.trim().toLowerCase()
@@ -376,7 +443,7 @@ function Dashboard() {
 
     if (ticketTargetClassIds.length > 0) {
       for (const student of students) {
-        if (ticketTargetClassSet.has(student.classId || '')) {
+        if (recordMatchesClassFilter(student, ticketTargetClassIds)) {
           ids.add(student.studentId)
         }
       }
@@ -387,7 +454,7 @@ function Dashboard() {
     }
 
     return ids
-  }, [ticketTargetClassIds, ticketTargetStudentIds, filteredStudents, students, ticketTargetClassSet])
+  }, [ticketTargetClassIds, ticketTargetStudentIds, filteredStudents, students])
   const ticketHasExplicitTargets = ticketTargetClassIds.length > 0 || ticketTargetStudentIds.length > 0
   const ticketDispatchMap = useMemo(() => {
     const map = new Map()
@@ -401,14 +468,14 @@ function Dashboard() {
       .map(student => ({
         studentId: student.studentId,
         name: student.name,
-        className: student.className || ''
+        className: getRecordClassLabel(student, classNameById)
       }))
       .sort((a, b) => {
         const classCompare = String(a.className).localeCompare(String(b.className), 'sv')
         if (classCompare !== 0) return classCompare
         return String(a.name).localeCompare(String(b.name), 'sv')
       }),
-    [filteredStudents]
+    [filteredStudents, classNameById]
   )
   const ticketHistoryStudent = useMemo(
     () => students.find(item => item.studentId === ticketHistoryStudentId) || null,
@@ -796,6 +863,7 @@ function Dashboard() {
   const handleDeleteClass = (classId) => {
     removeClass(classId)
     setSelectedClassIds(prev => prev.filter(id => id !== classId))
+    setTicketTargetClassIds(prev => prev.filter(id => id !== classId))
     const updatedClasses = getClasses()
     setClasses(updatedClasses)
     if (addToClassId === classId) {
@@ -948,6 +1016,42 @@ function Dashboard() {
         </div>
 
         <div className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
+
+        <div className="bg-white rounded-lg shadow p-4 mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <h2 className="text-base font-semibold text-gray-800">Urval: klasser</h2>
+            <p className="text-xs text-gray-500">
+              {selectedClassIds.length === 0
+                ? `Alla klasser (${students.length} elever)`
+                : `${selectedClassIds.length} klass(er) valda (${filteredStudents.length} elever)`}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={clearClassFilter}
+              className={`px-2 py-1 rounded text-xs ${
+                selectedClassIds.length === 0
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              Alla klasser
+            </button>
+            {classes.map(item => (
+              <button
+                key={`top-filter-${item.id}`}
+                onClick={() => handleToggleClassFilter(item.id)}
+                className={`px-2 py-1 rounded text-xs ${
+                  selectedClassIds.includes(item.id)
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {item.name}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-lg p-4 shadow">
@@ -1652,7 +1756,7 @@ function Dashboard() {
                 className="px-2 py-1 border rounded text-sm"
               >
                 <option value="">Välj klass</option>
-                {classes.map(item => (
+                {overviewClassOptions.map(item => (
                   <option key={`overview-${item.id}`} value={item.id}>
                     {item.name}
                   </option>
@@ -1777,6 +1881,61 @@ function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <h2 className="text-lg font-semibold text-gray-800">Gångertabell - urval</h2>
+              <p className="text-xs text-gray-500">
+                {tableSelectedStudentIds.length === 0
+                  ? `Alla elever i klassurvalet (${filteredStudents.length})`
+                  : `${tableSelectedStudentIds.length} vald(a) elev(er)`}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <button
+                onClick={() => setTableSelectedStudentIds([])}
+                className={`px-2.5 py-1.5 rounded text-xs ${
+                  tableSelectedStudentIds.length === 0
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Alla i klassurvalet
+              </button>
+              <input
+                value={tableStudentSearch}
+                onChange={(e) => setTableStudentSearch(e.target.value)}
+                placeholder="Filtrera elev"
+                className="px-2.5 py-1.5 border rounded text-xs min-w-48"
+              />
+            </div>
+            <div className="max-h-28 overflow-y-auto border rounded divide-y">
+              {filteredTableStudentOptions.length === 0 ? (
+                <p className="px-2.5 py-2 text-xs text-gray-500">Inga elever matchar filtret.</p>
+              ) : (
+                filteredTableStudentOptions.slice(0, 120).map(item => {
+                  const selected = tableStudentSet.has(item.studentId)
+                  return (
+                    <button
+                      key={`table-student-filter-${item.studentId}`}
+                      onClick={() => setTableSelectedStudentIds(prev => (
+                        prev.includes(item.studentId)
+                          ? prev.filter(id => id !== item.studentId)
+                          : [...prev, item.studentId]
+                      ))}
+                      className={`w-full text-left px-2.5 py-1.5 text-xs ${
+                        selected
+                          ? 'bg-indigo-100 text-indigo-800 font-semibold'
+                          : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {item.name} <span className="text-gray-500">({item.className || 'Ingen klass'})</span>
+                    </button>
+                  )
+                })
+              )}
+            </div>
+          </div>
+
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-semibold text-gray-800">Gångertabell - utveckling (7 dagar)</h2>
@@ -1903,7 +2062,7 @@ function Dashboard() {
                           <div className="font-medium">{row.name}</div>
                           <div className="text-[11px] text-gray-400">{row.studentId}</div>
                         </td>
-                        <td className="py-1 pr-2 text-gray-700">{row.className || '-'}</td>
+                        <td className="py-1 pr-2 text-gray-700">{row.classNameLabel || row.className || '-'}</td>
                         <td className="py-1 pr-2"><ActivityBadge code={row.activityStatus} /></td>
                         <td className="py-1 pr-2"><RiskBadge level={row.riskLevel} score={row.riskScore} /></td>
                         <td className="py-1 pr-2 text-gray-700">{row.supportScore}</td>
@@ -1994,6 +2153,9 @@ function Dashboard() {
           <p className="text-xs text-gray-500 mb-2">
             Inloggningsnamn skapas från elevens namn. Startlösenord sätts till elevens namn.
           </p>
+          <p className="text-xs text-gray-500 mb-2">
+            En elev kan vara med i flera klasser/grupper samtidigt.
+          </p>
           <div className="flex flex-wrap items-center gap-2 mb-2">
             <button
               onClick={clearClassFilter}
@@ -2024,14 +2186,14 @@ function Dashboard() {
           {classes.length > 0 && (
             <div className="space-y-1.5">
               {classes.map(item => {
-                const classStudents = students.filter(student => student.classId === item.id)
+                const classStudents = students.filter(student => recordMatchesClassFilter(student, [item.id]))
                 const loggedInCount = classStudents.filter(student => student.auth?.lastLoginAt).length
                 return (
                   <div key={item.id} className="flex items-center justify-between gap-2 border rounded px-2 py-1.5">
                     <div>
                       <p className="text-sm font-medium text-gray-800">{item.name}</p>
                       <p className="text-xs text-gray-500">
-                        {item.studentIds.length} elever | {loggedInCount} har loggat in
+                        {classStudents.length} elever | {loggedInCount} har loggat in
                       </p>
                     </div>
                     <button
@@ -2058,6 +2220,7 @@ function Dashboard() {
           <div className="bg-white rounded-lg shadow overflow-x-auto p-4">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-2">
+                <span className="text-xs uppercase tracking-wide text-gray-500">Resultatvy</span>
                 <button
                   onClick={() => setViewMode('daily')}
                   className={`px-3 py-1.5 rounded text-sm ${
@@ -2222,7 +2385,7 @@ function Dashboard() {
                       {row.studentId}
                     </td>
                     <td className="px-4 py-0 text-gray-700">
-                      {row.className || '-'}
+                      {row.classNameLabel || row.className || '-'}
                     </td>
                     {viewMode === 'daily' ? (
                       <>
@@ -2385,6 +2548,63 @@ function Dashboard() {
       </div>
     </div>
   )
+}
+
+function getRecordClassIds(record) {
+  if (!record || typeof record !== 'object') return []
+  const seen = new Set()
+  const ids = []
+  const add = (value) => {
+    const id = String(value || '').trim()
+    if (!id || seen.has(id)) return
+    seen.add(id)
+    ids.push(id)
+  }
+
+  add(record.classId)
+  if (Array.isArray(record.classIds)) {
+    for (const value of record.classIds) {
+      add(value)
+    }
+  }
+
+  return ids
+}
+
+function resolveClassNames(classIds, classNameById = new Map(), fallbackClassName = '') {
+  const names = []
+  const seen = new Set()
+
+  for (const classId of classIds || []) {
+    const fromMap = String(classNameById.get(classId) || '').trim()
+    if (fromMap && !seen.has(fromMap)) {
+      seen.add(fromMap)
+      names.push(fromMap)
+    }
+  }
+
+  const fallback = String(fallbackClassName || '').trim()
+  if (fallback && !seen.has(fallback)) {
+    names.push(fallback)
+  }
+
+  return names
+}
+
+function getRecordClassLabel(record, classNameById = new Map()) {
+  const classIds = getRecordClassIds(record)
+  const names = resolveClassNames(classIds, classNameById, record?.className || '')
+  if (names.length === 0) return ''
+  return names.join(', ')
+}
+
+function recordMatchesClassFilter(record, selectedClassIds) {
+  const selected = Array.isArray(selectedClassIds) ? selectedClassIds.filter(Boolean) : []
+  if (selected.length === 0) return true
+  const ids = getRecordClassIds(record)
+  if (ids.length === 0) return false
+  const selectedSet = new Set(selected)
+  return ids.some(id => selectedSet.has(id))
 }
 
 function getPresetConfig(presetKey) {
@@ -2669,7 +2889,7 @@ function buildClassSummaries(classes, students, selectedClassIds, weekGoal) {
   const weekStart = getStartOfWeekTimestamp()
 
   return visibleClasses.map(item => {
-    const classStudents = students.filter(student => student.classId === item.id)
+    const classStudents = students.filter(student => recordMatchesClassFilter(student, [item.id]))
     const studentCount = classStudents.length
     let startedCount = 0
     let weeklyActiveCount = 0
@@ -2871,7 +3091,7 @@ function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
     const base = {
       Namn: row.name,
       ID: row.studentId,
-      Klass: row.className || '',
+      Klass: row.classNameLabel || row.className || '',
       SenastAktiv: formatTimestampForCsv(row.lastActive),
       TidPaUppgiftIdagMin: toFixedOrEmpty(row.todayEngagedMinutes, 2),
       TidPaUppgift7dMin: toFixedOrEmpty(row.weekEngagedMinutes, 2),
@@ -2930,7 +3150,7 @@ function buildActivityExportRows(rows) {
   return rows.map(row => ({
     ElevNamn: row.name,
     ElevID: row.studentId,
-    Klass: row.className || '',
+    Klass: row.classNameLabel || row.className || '',
     AktivNuStatus: row.activityStatus,
     HarLoggatIn: row.hasLoggedIn ? 1 : 0,
     LoginCount: row.loginCount,
@@ -3020,8 +3240,12 @@ function ActivityBadge({ code, compact = false }) {
   )
 }
 
-function buildStudentRow(student, activeAssignment = null) {
+function buildStudentRow(student, activeAssignment = null, classNameById = new Map()) {
   const recentProblems = Array.isArray(student.recentProblems) ? student.recentProblems : []
+  const classIds = getRecordClassIds(student)
+  const classNames = resolveClassNames(classIds, classNameById, student.className || '')
+  const classNameLabel = classNames.length > 0 ? classNames.join(', ') : ''
+  const primaryClassName = classNames[0] || String(student.className || '')
   const attempts = recentProblems.length
   const correctCount = recentProblems.filter(p => p.correct).length
   const inattentionErrorCount = recentProblems.filter(
@@ -3138,8 +3362,11 @@ function buildStudentRow(student, activeAssignment = null) {
   return {
     studentId: student.studentId,
     name: student.name,
-    classId: student.classId || '',
-    className: student.className || '',
+    classId: classIds[0] || '',
+    classIds,
+    className: primaryClassName,
+    classNames,
+    classNameLabel,
     currentDifficulty: Number(student.currentDifficulty) || 1,
     highestDifficulty: Number(student.highestDifficulty) || Number(student.currentDifficulty) || 1,
     hasLoggedIn: Boolean(student.auth?.lastLoginAt),

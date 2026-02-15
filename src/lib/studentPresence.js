@@ -8,6 +8,7 @@ export const PRESENCE_IDLE_FOCUS_WINDOW_MS = 4 * 60 * 1000
 export const PRESENCE_FOCUS_STALE_MS = 90 * 1000
 export const PRESENCE_HEARTBEAT_MS = 30 * 1000
 export const PRESENCE_SAVE_THROTTLE_MS = 12 * 1000
+const PRESENCE_CLOCK_SKEW_TOLERANCE_MS = 30 * 1000
 const PRESENCE_ACCUMULATION_CAP_MS = 45 * 1000
 
 export function ensureStudentActivity(profile, now = Date.now()) {
@@ -89,13 +90,13 @@ export function getStudentPresenceStatus(student, options = {}) {
     ? student.activity
     : {}
 
-  const lastLoginAt = Number(student?.auth?.lastLoginAt || 0)
-  const lastPresenceAt = Number(activity.lastPresenceAt || 0)
-  const lastInteractionAt = Number(activity.lastInteractionAt || 0)
+  const lastLoginAt = sanitizeActivityTimestamp(student?.auth?.lastLoginAt, now, PRESENCE_CLOCK_SKEW_TOLERANCE_MS)
+  const lastPresenceAt = sanitizeActivityTimestamp(activity.lastPresenceAt, now, PRESENCE_CLOCK_SKEW_TOLERANCE_MS)
+  const lastInteractionAt = sanitizeActivityTimestamp(activity.lastInteractionAt, now, PRESENCE_CLOCK_SKEW_TOLERANCE_MS)
   const inFocus = Boolean(activity.inFocus)
   const page = String(activity.page || '')
 
-  const seenToday = lastLoginAt >= startToday || lastPresenceAt >= startToday
+  const seenToday = lastLoginAt >= startToday || lastInteractionAt >= startToday
   if (!seenToday) {
     return createPresenceStatus('red', {
       page,
@@ -167,4 +168,11 @@ function getStartOfDayTimestamp() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   return today.getTime()
+}
+
+function sanitizeActivityTimestamp(value, now, toleranceMs) {
+  const ts = Number(value)
+  if (!Number.isFinite(ts) || ts <= 0) return 0
+  if (ts > (now + Math.max(0, Number(toleranceMs) || 0))) return 0
+  return Math.min(ts, now)
 }

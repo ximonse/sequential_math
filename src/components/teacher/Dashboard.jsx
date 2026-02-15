@@ -85,6 +85,7 @@ function Dashboard() {
   const [ticketTargetClassIds, setTicketTargetClassIds] = useState([])
   const [ticketTargetStudentIds, setTicketTargetStudentIds] = useState([])
   const [ticketStudentSearch, setTicketStudentSearch] = useState('')
+  const [ticketSectionOpen, setTicketSectionOpen] = useState(false)
   const navigate = useNavigate()
 
   const loadStudents = useCallback(async () => {
@@ -879,11 +880,23 @@ function Dashboard() {
         </div>
 
         <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-lg shadow p-4 mb-8">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-amber-900">Ticket</h2>
-            <span className="text-xs text-amber-700">Start-ticket / Exit-ticket</span>
-          </div>
+          <button
+            onClick={() => setTicketSectionOpen(prev => !prev)}
+            className="w-full flex items-center justify-between text-left mb-3"
+          >
+            <div>
+              <h2 className="text-lg font-semibold text-amber-900">Ticket</h2>
+              <span className="text-xs text-amber-700">Start-ticket / Exit-ticket</span>
+            </div>
+            <span className="px-2 py-1 rounded border border-amber-300 bg-white text-xs text-amber-800">
+              {ticketSectionOpen ? 'Dölj' : 'Visa'}
+            </span>
+          </button>
 
+          {!ticketSectionOpen ? (
+            <p className="text-xs text-amber-700">Ticket-sektionen är minimerad.</p>
+          ) : (
+            <>
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
             <div className="bg-white rounded border border-amber-200 p-3">
               <h3 className="text-sm font-semibold text-gray-800 mb-2">Ny ticket-fråga</h3>
@@ -1217,6 +1230,8 @@ function Dashboard() {
               </div>
             )}
           </div>
+            </>
+          )}
         </div>
 
         <div className="bg-white rounded-lg shadow p-4 mb-8">

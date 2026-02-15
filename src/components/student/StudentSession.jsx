@@ -50,6 +50,7 @@ function StudentSession() {
   const [breakDurationMinutes, setBreakDurationMinutes] = useState(DEFAULT_BREAK_MINUTES)
   const [showPong, setShowPong] = useState(false)
   const [showScratchpad, setShowScratchpad] = useState(false)
+  const [coarsePointer, setCoarsePointer] = useState(false)
   const [sessionAssignment, setSessionAssignment] = useState(null)
   const [sessionWarmup, setSessionWarmup] = useState(null)
   const [sessionError, setSessionError] = useState('')
@@ -184,12 +185,25 @@ function StudentSession() {
     }
   }, [profile, currentProblem, feedback, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, progressionMode, isTableDrill, tableQueue, resetAttentionTracker])
 
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined
+    const media = window.matchMedia('(pointer: coarse)')
+    const update = () => setCoarsePointer(media.matches)
+    update()
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', update)
+      return () => media.removeEventListener('change', update)
+    }
+    media.addListener(update)
+    return () => media.removeListener(update)
+  }, [])
+
   // Fokusera input när nytt problem visas
   useEffect(() => {
-    if (currentProblem && !feedback && inputRef.current) {
+    if (currentProblem && !feedback && inputRef.current && !coarsePointer) {
       inputRef.current.focus()
     }
-  }, [currentProblem, feedback])
+  }, [currentProblem, feedback, coarsePointer])
 
   useEffect(() => {
     if (currentProblem?.type !== 'multiplication') {
@@ -672,6 +686,7 @@ function StudentSession() {
             onInputChange={setAnswer}
             onSubmit={handleSubmit}
             inputRef={inputRef}
+            suppressSoftKeyboard={coarsePointer}
           />
 
           {currentProblem?.type === 'multiplication' && !feedback && (

@@ -5,7 +5,15 @@ const KEYPAD_LAYOUT = [
   ['0', ',', '±']
 ]
 
-function ProblemDisplay({ problem, feedback, inputValue, onInputChange, onSubmit, inputRef }) {
+function ProblemDisplay({
+  problem,
+  feedback,
+  inputValue,
+  onInputChange,
+  onSubmit,
+  inputRef,
+  suppressSoftKeyboard = false
+}) {
   if (!problem) return null
 
   const { values, type, result } = problem
@@ -32,7 +40,6 @@ function ProblemDisplay({ problem, feedback, inputValue, onInputChange, onSubmit
     if (!isAnswering) return
     const next = applyKeypadInput(inputValue, key)
     onInputChange(next)
-    inputRef?.current?.focus()
   }
 
   return (
@@ -52,7 +59,7 @@ function ProblemDisplay({ problem, feedback, inputValue, onInputChange, onSubmit
                 <input
                   ref={inputRef}
                   type="text"
-                  inputMode="numeric"
+                  inputMode={suppressSoftKeyboard ? 'none' : 'numeric'}
                   value={inputValue}
                   onChange={(e) => handleInputChange(e.target.value)}
                   onKeyDown={(e) => {

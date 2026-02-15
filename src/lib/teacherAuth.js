@@ -4,27 +4,31 @@ const TEACHER_API_TOKEN_KEY = 'mathapp_teacher_api_token'
 const DEV_DEFAULT_TEACHER_PASSWORD = 'teacher123'
 const IS_PROD_BUILD = import.meta.env.PROD === true
 
-export function getTeacherPassword() {
+function getAcceptedTeacherPasswords() {
+  const passwords = []
   const custom = localStorage.getItem(TEACHER_PASSWORD_OVERRIDE_KEY)
-  if (typeof custom === 'string' && custom.trim() !== '') {
-    return custom
-  }
-
   const configured = import.meta.env.VITE_TEACHER_PASSWORD
+
+  if (typeof custom === 'string' && custom.trim() !== '') {
+    passwords.push(custom.trim())
+  }
   if (typeof configured === 'string' && configured.trim() !== '') {
-    return configured
+    passwords.push(configured.trim())
   }
-
   if (!IS_PROD_BUILD) {
-    return DEV_DEFAULT_TEACHER_PASSWORD
+    passwords.push(DEV_DEFAULT_TEACHER_PASSWORD)
   }
 
-  return ''
+  return [...new Set(passwords)]
+}
+
+export function getTeacherPassword() {
+  return getAcceptedTeacherPasswords()[0] || ''
 }
 
 export function verifyTeacherPassword(inputPassword) {
   if (!isTeacherPasswordConfigured()) return false
-  return inputPassword === getTeacherPassword()
+  return getAcceptedTeacherPasswords().includes(String(inputPassword || ''))
 }
 
 export function loginTeacher(password) {

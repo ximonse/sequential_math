@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
+  clearCustomTeacherPassword,
   getTeacherPasswordSource,
   isTeacherAuthenticated,
   isTeacherPasswordConfigured,
@@ -10,9 +11,9 @@ import {
 function TeacherLogin() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [passwordSource, setPasswordSource] = useState(getTeacherPasswordSource())
   const navigate = useNavigate()
   const passwordConfigured = isTeacherPasswordConfigured()
-  const passwordSource = getTeacherPasswordSource()
 
   useEffect(() => {
     if (isTeacherAuthenticated()) {
@@ -41,6 +42,13 @@ function TeacherLogin() {
     }
 
     navigate('/teacher', { replace: true })
+  }
+
+  const handleResetLocalOverride = () => {
+    clearCustomTeacherPassword()
+    setPasswordSource(getTeacherPasswordSource())
+    setError('Lokal lösenords-override rensad. Testa igen.')
+    setPassword('')
   }
 
   return (
@@ -89,6 +97,15 @@ function TeacherLogin() {
           >
             Logga in
           </button>
+          {passwordSource === 'custom' && (
+            <button
+              type="button"
+              onClick={handleResetLocalOverride}
+              className="w-full py-2 px-4 bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium rounded-lg transition-colors text-sm"
+            >
+              Rensa lokal lärarlösenords-override
+            </button>
+          )}
         </form>
 
         <div className="mt-8 pt-6 border-t border-gray-200">

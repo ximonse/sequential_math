@@ -87,6 +87,10 @@ function Dashboard() {
   const [ticketTargetStudentIds, setTicketTargetStudentIds] = useState([])
   const [ticketStudentSearch, setTicketStudentSearch] = useState('')
   const [ticketSectionOpen, setTicketSectionOpen] = useState(false)
+  const [ticketHistoryStudentId, setTicketHistoryStudentId] = useState('')
+  const [ticketHistoryKindFilter, setTicketHistoryKindFilter] = useState('all')
+  const [ticketHistoryResultFilter, setTicketHistoryResultFilter] = useState('all')
+  const [ticketHistorySearch, setTicketHistorySearch] = useState('')
   const navigate = useNavigate()
 
   const loadStudents = useCallback(async () => {
@@ -360,6 +364,137 @@ function Dashboard() {
     return ids
   }, [ticketTargetClassIds, ticketTargetStudentIds, filteredStudents, students, ticketTargetClassSet])
   const ticketHasExplicitTargets = ticketTargetClassIds.length > 0 || ticketTargetStudentIds.length > 0
+  const ticketDispatchMap = useMemo(() => {
+    const map = new Map()
+    for (const dispatch of ticketDispatches) {
+      map.set(dispatch.id, dispatch)
+    }
+    return map
+  }, [ticketDispatches])
+  const ticketHistoryStudentOptions = useMemo(
+    () => filteredStudents
+      .map(student => ({
+        studentId: student.studentId,
+        name: student.name,
+        className: student.className || ''
+      }))
+      .sort((a, b) => {
+        const classCompare = String(a.className).localeCompare(String(b.className), 'sv')
+        if (classCompare !== 0) return classCompare
+        return String(a.name).localeCompare(String(b.name), 'sv')
+      }),
+    [filteredStudents]
+  )
+  const ticketHistoryStudent = useMemo(
+    () => students.find(item => item.studentId === ticketHistoryStudentId) || null,
+    [students, ticketHistoryStudentId]
+  )
+  useEffect(() => {
+    if (ticketHistoryStudentOptions.length === 0) {
+      if (ticketHistoryStudentId !== '') setTicketHistoryStudentId('')
+      return
+    }
+    if (!ticketHistoryStudentId || !ticketHistoryStudentOptions.some(item => item.studentId === ticketHistoryStudentId)) {
+      setTicketHistoryStudentId(ticketHistoryStudentOptions[0].studentId)
+    }
+  }, [ticketHistoryStudentOptions, ticketHistoryStudentId])
+  const ticketHistorySummary = useMemo(() => {
+    const empty = {
+      total: 0,
+      correct: 0,
+      wrong: 0,
+      last7Days: 0,
+      last30Days: 0,
+      uniqueDispatches: 0,
+      accuracy: 0,
+      latestAnsweredAt: null
+    }
+    if (!ticketHistoryStudent) return empty
+
+    const responses = Array.isArray(ticketHistoryStudent.ticketResponses) ? ticketHistoryStudent.ticketResponses : []
+    if (responses.length === 0) return empty
+
+    const now = Date.now()
+    let correct = 0
+    let last7Days = 0
+    let last30Days = 0
+    let latestAnsweredAt = 0
+    const uniqueDispatches = new Set()
+
+    for (const response of responses) {
+      if (response?.isCorrect === true) correct += 1
+      const answeredAt = Number(response?.answeredAt || 0)
+      if (answeredAt > 0) {
+        if (answeredAt >= now - (7 * DAY_MS)) last7Days += 1
+        if (answeredAt >= now - (30 * DAY_MS)) last30Days += 1
+        if (answeredAt > latestAnsweredAt) latestAnsweredAt = answeredAt
+      }
+      if (response?.dispatchId) uniqueDispatches.add(response.dispatchId)
+    }
+
+    const total = responses.length
+    const wrong = total - correct
+    return {
+      total,
+      correct,
+      wrong,
+      last7Days,
+      last30Days,
+      uniqueDispatches: uniqueDispatches.size,
+      accuracy: total > 0 ? (correct / total) : 0,
+      latestAnsweredAt: latestAnsweredAt > 0 ? latestAnsweredAt : null
+    }
+  }, [ticketHistoryStudent])
+  const ticketHistoryRows = useMemo(() => {
+    if (!ticketHistoryStudent) return []
+
+    const search = ticketHistorySearch.trim().toLowerCase()
+    const responses = Array.isArray(ticketHistoryStudent.ticketResponses) ? ticketHistoryStudent.ticketResponses : []
+    const rows = responses.map(response => {
+      const dispatch = ticketDispatchMap.get(response?.dispatchId || '')
+      const kind = response?.kind === 'exit'
+        ? 'exit'
+        : (response?.kind === 'start' ? 'start' : (dispatch?.kind === 'exit' ? 'exit' : 'start'))
+      const title = String(
+        response?.title
+        || dispatch?.title
+        || (kind === 'exit' ? 'Exit-ticket' : 'Start-ticket')
+      )
+      const question = String(response?.question || dispatch?.question || '')
+      const expectedAnswer = String(response?.expectedAnswer || dispatch?.answer || '')
+      const studentAnswer = String(response?.studentAnswer || '')
+      const tags = Array.isArray(dispatch?.tags) ? dispatch.tags : []
+      return {
+        dispatchId: String(response?.dispatchId || ''),
+        kind,
+        title,
+        question,
+        expectedAnswer,
+        studentAnswer,
+        isCorrect: response?.isCorrect === true,
+        answeredAt: Number(response?.answeredAt || 0) || null,
+        tags
+      }
+    })
+
+    const filtered = rows.filter(row => {
+      if (ticketHistoryKindFilter !== 'all' && row.kind !== ticketHistoryKindFilter) return false
+      if (ticketHistoryResultFilter === 'correct' && !row.isCorrect) return false
+      if (ticketHistoryResultFilter === 'wrong' && row.isCorrect) return false
+      if (!search) return true
+      const hay = `${row.title} ${row.question} ${row.studentAnswer} ${row.expectedAnswer} ${row.tags.join(' ')}`.toLowerCase()
+      return hay.includes(search)
+    })
+
+    filtered.sort((a, b) => (Number(b.answeredAt || 0) - Number(a.answeredAt || 0)))
+    return filtered
+  }, [
+    ticketHistoryStudent,
+    ticketHistorySearch,
+    ticketHistoryKindFilter,
+    ticketHistoryResultFilter,
+    ticketDispatchMap
+  ])
 
   const handleCreatePreset = (presetKey) => {
     const preset = getPresetConfig(presetKey)
@@ -1246,6 +1381,141 @@ function Dashboard() {
                   </tbody>
                 </table>
               </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded border border-amber-200 p-3 mt-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <h3 className="text-sm font-semibold text-gray-800">Elevhistorik i tickets</h3>
+              {ticketHistoryStudent && (
+                <p className="text-xs text-gray-600">
+                  Senaste svar: {formatTimeAgo(ticketHistorySummary.latestAnsweredAt)}
+                </p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-2 mb-3">
+              <select
+                value={ticketHistoryStudentId}
+                onChange={(e) => setTicketHistoryStudentId(e.target.value)}
+                className="px-3 py-2 border rounded text-sm"
+              >
+                {ticketHistoryStudentOptions.length === 0 ? (
+                  <option value="">Inga elever i urvalet</option>
+                ) : (
+                  ticketHistoryStudentOptions.map(item => (
+                    <option key={`ticket-history-student-${item.studentId}`} value={item.studentId}>
+                      {item.name} {item.className ? `(${item.className})` : ''}
+                    </option>
+                  ))
+                )}
+              </select>
+              <select
+                value={ticketHistoryKindFilter}
+                onChange={(e) => setTicketHistoryKindFilter(e.target.value)}
+                className="px-3 py-2 border rounded text-sm"
+              >
+                <option value="all">Alla typer</option>
+                <option value="start">Start-ticket</option>
+                <option value="exit">Exit-ticket</option>
+              </select>
+              <select
+                value={ticketHistoryResultFilter}
+                onChange={(e) => setTicketHistoryResultFilter(e.target.value)}
+                className="px-3 py-2 border rounded text-sm"
+              >
+                <option value="all">Alla resultat</option>
+                <option value="correct">Bara rätt</option>
+                <option value="wrong">Bara fel</option>
+              </select>
+              <input
+                value={ticketHistorySearch}
+                onChange={(e) => setTicketHistorySearch(e.target.value)}
+                placeholder="Sök i fråga/svar"
+                className="px-3 py-2 border rounded text-sm"
+              />
+            </div>
+
+            {!ticketHistoryStudent ? (
+              <p className="text-sm text-gray-500">Välj klassfilter ovan eller lägg till elever för att se historik.</p>
+            ) : ticketHistorySummary.total === 0 ? (
+              <p className="text-sm text-gray-500">Den här eleven har inte svarat på någon ticket ännu.</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 mb-3 text-xs">
+                  <div className="rounded border border-gray-200 bg-gray-50 px-2 py-1">
+                    <p className="text-gray-500">Totalt svar</p>
+                    <p className="font-semibold text-gray-800">{ticketHistorySummary.total}</p>
+                  </div>
+                  <div className="rounded border border-green-200 bg-green-50 px-2 py-1">
+                    <p className="text-green-700">Rätt</p>
+                    <p className="font-semibold text-green-700">{ticketHistorySummary.correct}</p>
+                  </div>
+                  <div className="rounded border border-red-200 bg-red-50 px-2 py-1">
+                    <p className="text-red-700">Fel</p>
+                    <p className="font-semibold text-red-700">{ticketHistorySummary.wrong}</p>
+                  </div>
+                  <div className="rounded border border-blue-200 bg-blue-50 px-2 py-1">
+                    <p className="text-blue-700">Träffsäkerhet</p>
+                    <p className="font-semibold text-blue-700">{Math.round(ticketHistorySummary.accuracy * 100)}%</p>
+                  </div>
+                  <div className="rounded border border-amber-200 bg-amber-50 px-2 py-1">
+                    <p className="text-amber-700">Senaste 7 dagar</p>
+                    <p className="font-semibold text-amber-700">{ticketHistorySummary.last7Days}</p>
+                  </div>
+                  <div className="rounded border border-indigo-200 bg-indigo-50 px-2 py-1">
+                    <p className="text-indigo-700">Unika utskick</p>
+                    <p className="font-semibold text-indigo-700">{ticketHistorySummary.uniqueDispatches}</p>
+                  </div>
+                </div>
+
+                {ticketHistoryRows.length === 0 ? (
+                  <p className="text-sm text-gray-500">Inga historikrader matchar filtret.</p>
+                ) : (
+                  <div className="overflow-x-auto border rounded">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left text-gray-500 border-b">
+                          <th className="py-1 pr-2">Tid</th>
+                          <th className="py-1 pr-2">Ticket</th>
+                          <th className="py-1 pr-2">Status</th>
+                          <th className="py-1 pr-2">Svar</th>
+                          <th className="py-1">Facit</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {ticketHistoryRows.map((row, index) => (
+                          <tr key={`ticket-history-row-${row.dispatchId}-${row.answeredAt || index}`} className="border-b last:border-b-0">
+                            <td className="py-1 pr-2 text-gray-600 whitespace-nowrap">{formatTimeAgo(row.answeredAt)}</td>
+                            <td className="py-1 pr-2 text-gray-700">
+                              <p className="font-medium">{row.title}</p>
+                              <p className="text-[11px] text-gray-500">
+                                {row.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket'}
+                              </p>
+                              <p className="text-[11px] text-gray-500 mt-0.5">{row.question}</p>
+                            </td>
+                            <td className="py-1 pr-2">
+                              {row.isCorrect ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs bg-green-50 text-green-700 border-green-200">
+                                  Rätt
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs bg-red-50 text-red-700 border-red-200">
+                                  Fel
+                                </span>
+                              )}
+                            </td>
+                            <td className={`py-1 pr-2 ${row.isCorrect ? 'text-gray-700' : 'text-red-700'}`}>
+                              {row.studentAnswer || '-'}
+                            </td>
+                            <td className="py-1 text-gray-700">{row.expectedAnswer || '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </>
             )}
           </div>
             </>

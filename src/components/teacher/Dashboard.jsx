@@ -82,6 +82,9 @@ function Dashboard() {
   const [ticketDispatchImmediateFeedback, setTicketDispatchImmediateFeedback] = useState(true)
   const [selectedTicketDispatchId, setSelectedTicketDispatchId] = useState('')
   const [copiedTicketDispatchId, setCopiedTicketDispatchId] = useState('')
+  const [ticketTargetClassIds, setTicketTargetClassIds] = useState([])
+  const [ticketTargetStudentIds, setTicketTargetStudentIds] = useState([])
+  const [ticketStudentSearch, setTicketStudentSearch] = useState('')
   const navigate = useNavigate()
 
   const loadStudents = useCallback(async () => {
@@ -132,6 +135,24 @@ function Dashboard() {
       setSelectedTicketDispatchId(ticketDispatches[0].id)
     }
   }, [ticketDispatches, selectedTicketDispatchId])
+
+  useEffect(() => {
+    if (classes.length === 0) {
+      setTicketTargetClassIds([])
+      return
+    }
+    const valid = new Set(classes.map(item => item.id))
+    setTicketTargetClassIds(prev => prev.filter(id => valid.has(id)))
+  }, [classes])
+
+  useEffect(() => {
+    if (students.length === 0) {
+      setTicketTargetStudentIds([])
+      return
+    }
+    const valid = new Set(students.map(item => item.studentId))
+    setTicketTargetStudentIds(prev => prev.filter(id => valid.has(id)))
+  }, [students])
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -283,6 +304,53 @@ function Dashboard() {
       total: ticketResponseRows.length
     }
   }, [ticketResponseRows])
+  const ticketTargetClassSet = useMemo(() => new Set(ticketTargetClassIds), [ticketTargetClassIds])
+  const ticketTargetStudentSet = useMemo(() => new Set(ticketTargetStudentIds), [ticketTargetStudentIds])
+  const ticketStudentOptions = useMemo(
+    () => students
+      .map(student => ({
+        studentId: student.studentId,
+        name: student.name,
+        classId: student.classId || '',
+        className: student.className || ''
+      }))
+      .sort((a, b) => {
+        const classCompare = String(a.className).localeCompare(String(b.className), 'sv')
+        if (classCompare !== 0) return classCompare
+        return String(a.name).localeCompare(String(b.name), 'sv')
+      }),
+    [students]
+  )
+  const ticketFilteredStudentOptions = useMemo(() => {
+    const search = ticketStudentSearch.trim().toLowerCase()
+    if (!search) return ticketStudentOptions
+    return ticketStudentOptions.filter(item => (
+      `${item.name} ${item.studentId} ${item.className}`.toLowerCase().includes(search)
+    ))
+  }, [ticketStudentOptions, ticketStudentSearch])
+  const ticketResolvedTargetStudentIds = useMemo(() => {
+    const ids = new Set()
+
+    if (ticketTargetClassIds.length === 0 && ticketTargetStudentIds.length === 0) {
+      for (const item of filteredStudents) ids.add(item.studentId)
+      return ids
+    }
+
+    if (ticketTargetClassIds.length > 0) {
+      for (const student of students) {
+        if (ticketTargetClassSet.has(student.classId || '')) {
+          ids.add(student.studentId)
+        }
+      }
+    }
+
+    for (const studentId of ticketTargetStudentIds) {
+      ids.add(studentId)
+    }
+
+    return ids
+  }, [ticketTargetClassIds, ticketTargetStudentIds, filteredStudents, students, ticketTargetClassSet])
+  const ticketHasExplicitTargets = ticketTargetClassIds.length > 0 || ticketTargetStudentIds.length > 0
 
   const handleCreatePreset = (presetKey) => {
     const preset = getPresetConfig(presetKey)
@@ -421,6 +489,32 @@ function Dashboard() {
     setDashboardStatus(reveal ? 'Facit visas nu för alla elever.' : 'Facit är dolt igen.')
   }
 
+  const handleToggleTicketTargetClass = (classId) => {
+    setTicketTargetClassIds(prev => (
+      prev.includes(classId)
+        ? prev.filter(id => id !== classId)
+        : [...prev, classId]
+    ))
+  }
+
+  const handleToggleTicketTargetStudent = (studentId) => {
+    setTicketTargetStudentIds(prev => (
+      prev.includes(studentId)
+        ? prev.filter(id => id !== studentId)
+        : [...prev, studentId]
+    ))
+  }
+
+  const handleTicketTargetsFromClassFilter = () => {
+    setTicketTargetClassIds(selectedClassIds)
+    setTicketTargetStudentIds([])
+  }
+
+  const handleClearTicketTargets = () => {
+    setTicketTargetClassIds([])
+    setTicketTargetStudentIds([])
+  }
+
   const handlePublishTicketToHome = (dispatchId) => {
     const dispatch = ticketDispatches.find(item => item.id === dispatchId)
     if (!dispatch) return
@@ -434,7 +528,11 @@ function Dashboard() {
       showCorrectnessOnSubmit: dispatch.showCorrectnessOnSubmit !== false
     }
     const encoded = encodeTicketPayload(payload)
-    const targetIds = new Set(filteredStudents.map(item => item.studentId))
+    const targetIds = new Set(ticketResolvedTargetStudentIds)
+    if (targetIds.size === 0) {
+      setDashboardStatus('Välj minst en klass eller elev att skicka ticket till.')
+      return
+    }
 
     const nextStudents = students.map(student => {
       if (!targetIds.has(student.studentId)) return student
@@ -454,7 +552,11 @@ function Dashboard() {
   }
 
   const handleClearTicketFromHome = (dispatchId) => {
-    const targetIds = new Set(filteredStudents.map(item => item.studentId))
+    const targetIds = new Set(ticketResolvedTargetStudentIds)
+    if (targetIds.size === 0) {
+      setDashboardStatus('Välj minst en klass eller elev att rensa ticket från.')
+      return
+    }
     const nextStudents = students.map(student => {
       if (!targetIds.has(student.studentId)) return student
       if (!student.ticketInbox || student.ticketInbox.activeDispatchId !== dispatchId) return student
@@ -921,6 +1023,83 @@ function Dashboard() {
                 />
                 Nya länkar visar rätt/fel direkt
               </label>
+            </div>
+            <div className="border border-amber-200 rounded p-2 bg-amber-50/40 mb-3">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <p className="text-xs font-semibold text-amber-900">Mottagare (för startsidan)</p>
+                <button
+                  onClick={handleTicketTargetsFromClassFilter}
+                  disabled={selectedClassIds.length === 0}
+                  className="px-2 py-1 bg-white border rounded text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Använd klassfiltret
+                </button>
+                <button
+                  onClick={handleClearTicketTargets}
+                  className="px-2 py-1 bg-white border rounded text-xs text-gray-700 hover:bg-gray-50"
+                >
+                  Nollställ mottagare
+                </button>
+              </div>
+              <p className="text-[11px] text-gray-600 mb-2">
+                Inga aktiva val = använder nuvarande urval i dashboarden ({filteredStudents.length} elev(er)).
+              </p>
+              <div className="flex flex-wrap gap-1 mb-2">
+                {classes.map(classItem => {
+                  const selected = ticketTargetClassSet.has(classItem.id)
+                  return (
+                    <button
+                      key={`ticket-target-class-${classItem.id}`}
+                      onClick={() => handleToggleTicketTargetClass(classItem.id)}
+                      className={`px-2 py-1 rounded border text-xs ${
+                        selected
+                          ? 'bg-amber-600 border-amber-600 text-white'
+                          : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {selected ? 'Vald: ' : ''}{classItem.name}
+                    </button>
+                  )
+                })}
+              </div>
+              <input
+                value={ticketStudentSearch}
+                onChange={(e) => setTicketStudentSearch(e.target.value)}
+                placeholder="Sök elev (namn, id, klass)"
+                className="w-full px-2 py-1 border rounded text-xs"
+              />
+              <div className="mt-2 max-h-40 overflow-y-auto border rounded bg-white divide-y divide-gray-100">
+                {ticketFilteredStudentOptions.length === 0 ? (
+                  <p className="text-xs text-gray-500 p-2">Inga elever matchar sökningen.</p>
+                ) : (
+                  ticketFilteredStudentOptions.slice(0, 140).map(item => {
+                    const selected = ticketTargetStudentSet.has(item.studentId)
+                    return (
+                      <button
+                        key={`ticket-target-student-${item.studentId}`}
+                        onClick={() => handleToggleTicketTargetStudent(item.studentId)}
+                        className={`w-full text-left px-2 py-1 text-xs ${
+                          selected ? 'bg-amber-100 text-amber-900' : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        <span className="font-medium">{item.name}</span>
+                        <span className="text-gray-500"> ({item.className || 'Ingen klass'})</span>
+                      </button>
+                    )
+                  })
+                )}
+              </div>
+              {ticketFilteredStudentOptions.length > 140 && (
+                <p className="text-[11px] text-gray-500 mt-1">
+                  Visar de första 140 matcherna. Förfina sökningen för att se fler.
+                </p>
+              )}
+              <p className="text-[11px] text-gray-700 mt-2">
+                Målsättning: {ticketResolvedTargetStudentIds.size} elev(er)
+                {ticketHasExplicitTargets
+                  ? ` via ${ticketTargetClassIds.length} klass(er) + ${ticketTargetStudentIds.length} individval`
+                  : ' via dashboardens aktuella filter'}
+              </p>
             </div>
 
             {ticketDispatches.length === 0 ? (

@@ -440,8 +440,7 @@ function StudentSession() {
     setPendingBreakSuggestion(false)
     setBreakDurationMinutes(DEFAULT_BREAK_MINUTES)
     sessionRecentCorrectnessRef.current = []
-    clearActiveStudentSession()
-    navigate('/')
+    navigate(`/student/${studentId}`)
   }
 
   const goToNextProblemAfterBreakSuggestion = () => {
@@ -499,7 +498,7 @@ function StudentSession() {
               onClick={handleTakeBreak}
               className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg"
             >
-              Avsluta för idag
+              Till startsidan
             </button>
             <button
               onClick={goToNextProblemAfterBreakSuggestion}
@@ -647,12 +646,7 @@ function StudentSession() {
 
           <button
             onClick={() => {
-              if (isTableDrill && tableQueue.length > 0) {
-                setSessionError('Avsluta efter att du svarat rätt på alla tabeller i kön.')
-                return
-              }
-              clearActiveStudentSession()
-              navigate('/')
+              navigate(`/student/${studentId}`)
             }}
             className="text-gray-400 hover:text-gray-600"
           >

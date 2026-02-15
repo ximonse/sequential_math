@@ -63,6 +63,82 @@ function randomFromConstraint(constraint) {
   return randomInt(min, max)
 }
 
+function asFiniteNumber(value) {
+  const numeric = Number(value)
+  return Number.isFinite(numeric) ? numeric : null
+}
+
+function inRange(value, min, max) {
+  const lowerOk = min === null || value >= min
+  const upperOk = max === null || value <= max
+  return lowerOk && upperOk
+}
+
+function pickExactDivisionOperands(constraints) {
+  const b = randomFromConstraint(constraints.b)
+  if (!Number.isFinite(b) || !Number.isInteger(b) || b === 0) return null
+
+  const aMin = asFiniteNumber(constraints?.a?.min)
+  const aMax = asFiniteNumber(constraints?.a?.max)
+  const resultMinRaw = asFiniteNumber(constraints?.result?.min)
+  const resultMaxRaw = asFiniteNumber(constraints?.result?.max)
+
+  let qMin = resultMinRaw === null ? 1 : Math.ceil(resultMinRaw)
+  let qMax = resultMaxRaw === null ? Math.max(qMin, 5000) : Math.floor(resultMaxRaw)
+
+  if (aMin !== null) {
+    qMin = Math.max(qMin, Math.ceil(aMin / b))
+  }
+  if (aMax !== null) {
+    qMax = Math.min(qMax, Math.floor(aMax / b))
+  }
+
+  if (qMin > qMax) return null
+
+  const quotient = randomInt(qMin, qMax)
+  const a = b * quotient
+  if (!inRange(a, aMin, aMax)) return null
+
+  return { a, b }
+}
+
+function pickExactDivisionFallbackOperands(constraints) {
+  const bMinRaw = asFiniteNumber(constraints?.b?.min)
+  const bMaxRaw = asFiniteNumber(constraints?.b?.max)
+  if (bMinRaw === null || bMaxRaw === null) return null
+
+  const bMin = Math.ceil(Math.min(bMinRaw, bMaxRaw))
+  const bMax = Math.floor(Math.max(bMinRaw, bMaxRaw))
+  if (bMin > bMax) return null
+
+  const aMin = asFiniteNumber(constraints?.a?.min)
+  const aMax = asFiniteNumber(constraints?.a?.max)
+  const resultMinRaw = asFiniteNumber(constraints?.result?.min)
+  const resultMaxRaw = asFiniteNumber(constraints?.result?.max)
+
+  for (let b = bMin; b <= bMax; b++) {
+    if (b === 0) continue
+
+    let qMin = resultMinRaw === null ? 1 : Math.ceil(resultMinRaw)
+    let qMax = resultMaxRaw === null ? Math.max(qMin, 5000) : Math.floor(resultMaxRaw)
+
+    if (aMin !== null) {
+      qMin = Math.max(qMin, Math.ceil(aMin / b))
+    }
+    if (aMax !== null) {
+      qMax = Math.min(qMax, Math.floor(aMax / b))
+    }
+
+    if (qMin > qMax) continue
+    const quotient = qMin
+    const a = b * quotient
+    if (!inRange(a, aMin, aMax)) continue
+    return { a, b }
+  }
+
+  return null
+}
+
 /**
  * Räkna antal tiövergångar i addition
  */
@@ -184,8 +260,17 @@ export function generateProblem(template, maxAttempts = 100) {
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     // Generera slumpmässiga värden
-    const a = randomFromConstraint(constraints.a)
-    const b = randomFromConstraint(constraints.b)
+    let a
+    let b
+    if (type === 'division' && difficulty.procedural?.exact_division) {
+      const exactOperands = pickExactDivisionOperands(constraints)
+      if (!exactOperands) continue
+      a = exactOperands.a
+      b = exactOperands.b
+    } else {
+      a = randomFromConstraint(constraints.a)
+      b = randomFromConstraint(constraints.b)
+    }
 
     // Beräkna resultat
     let result
@@ -308,8 +393,15 @@ export function generateProblem(template, maxAttempts = 100) {
   // Fallback om vi inte lyckas generera
   console.warn(`Could not generate valid problem for ${template.id} after ${maxAttempts} attempts`)
 
-  const a = constraints.a.min
-  const b = constraints.b.min
+  let a = constraints.a.min
+  let b = constraints.b.min
+  if (template.type === 'division' && template.difficulty?.procedural?.exact_division) {
+    const exactFallback = pickExactDivisionFallbackOperands(constraints)
+    if (exactFallback) {
+      a = exactFallback.a
+      b = exactFallback.b
+    }
+  }
   let fallbackResult = a + b
   if (template.type === 'subtraction') fallbackResult = a - b
   if (template.type === 'multiplication') fallbackResult = roundTo(a * b)

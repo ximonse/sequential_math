@@ -54,6 +54,7 @@ const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
 const SUPPORT_THRESHOLD = 45
 const DAY_MS = 24 * 60 * 60 * 1000
 const DEFAULT_WEEKLY_GOAL = 20
+const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
 function Dashboard() {
   const [students, setStudents] = useState([])
@@ -247,6 +248,21 @@ function Dashboard() {
   }, [classes, overviewClassId, classOverviewRows])
   const tableDevelopmentOverview = useMemo(
     () => buildTableDevelopmentOverview(filteredStudents),
+    [filteredStudents]
+  )
+  const tableStickyStatusRows = useMemo(
+    () => filteredStudents
+      .map(student => ({
+        studentId: student.studentId,
+        name: student.name,
+        className: student.className || '',
+        ...buildStickyTableStatusForStudent(student)
+      }))
+      .sort((a, b) => {
+        const classCompare = String(a.className).localeCompare(String(b.className), 'sv')
+        if (classCompare !== 0) return classCompare
+        return String(a.name).localeCompare(String(b.name), 'sv')
+      }),
     [filteredStudents]
   )
   const dataQualitySummary = useMemo(
@@ -1800,6 +1816,53 @@ function Dashboard() {
                             ? '-'
                             : `${item.speedTrend >= 0 ? '+' : ''}${Math.round(item.speedTrend * 100)}%`}
                         </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-800">Gångertabell - sticky status per elev</h2>
+              <span className="text-xs text-gray-500">Dag (mörkgrön) låser till 23:59, vecka (ljusgrön) till söndag</span>
+            </div>
+            {tableStickyStatusRows.length === 0 ? (
+              <p className="text-sm text-gray-500">Inga elever i aktuellt urval.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-gray-500 border-b">
+                      <th className="py-1 pr-2">Elev</th>
+                      <th className="py-1 pr-2">Klass</th>
+                      {TABLES.map(table => (
+                        <th key={`teacher-table-sticky-head-${table}`} className="py-1 pr-1 text-center">{table}</th>
+                      ))}
+                      <th className="py-1 pr-2">Dagsklara</th>
+                      <th className="py-1 pr-2">Veckoklara</th>
+                      <th className="py-1">Star idag</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tableStickyStatusRows.map(row => (
+                      <tr key={`teacher-table-sticky-row-${row.studentId}`} className="border-b last:border-b-0">
+                        <td className="py-1 pr-2 text-gray-700 font-medium">{row.name}</td>
+                        <td className="py-1 pr-2 text-gray-600">{row.className || '-'}</td>
+                        {TABLES.map(table => (
+                          <td key={`teacher-table-sticky-cell-${row.studentId}-${table}`} className="py-1 pr-1 text-center">
+                            <span className={`inline-flex w-5 h-5 rounded border align-middle ${getTeacherTableStatusClass(row.statusByTable[table])}`} title={getTeacherTableStatusLabel(row.statusByTable[table])}>
+                              {row.statusByTable[table] === 'star' ? (
+                                <span className="m-auto text-[10px]">★</span>
+                              ) : null}
+                            </span>
+                          </td>
+                        ))}
+                        <td className="py-1 pr-2 text-gray-700">{row.todayDoneCount}</td>
+                        <td className="py-1 pr-2 text-gray-700">{row.weekDoneCount}</td>
+                        <td className="py-1 text-gray-700">{row.starCount}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -3466,6 +3529,138 @@ function inferTableFromProblem(problem) {
   if (a >= 2 && a <= 12 && b >= 1 && b <= 12) return a
   if (b >= 2 && b <= 12 && a >= 1 && a <= 12) return b
   return null
+}
+
+function buildStickyTableStatusForStudent(student) {
+  const startToday = getStartOfDayTimestamp()
+  const startWeek = getStartOfWeekTimestamp()
+  const source = getTableProblemSourceForStudent(student)
+  const todayDoneMap = computeStickyTableCompletionMapForTeacher(source, startToday)
+  const weekDoneMap = computeStickyTableCompletionMapForTeacher(source, startWeek)
+  const completionCountsToday = getTableCompletionCountsTodayForStudent(student, startToday)
+
+  const statusByTable = {}
+  let todayDoneCount = 0
+  let weekDoneCount = 0
+  let starCount = 0
+
+  for (const table of TABLES) {
+    const todayDone = Boolean(todayDoneMap[table])
+    const weekDone = Boolean(weekDoneMap[table])
+    const star = Number(completionCountsToday[table] || 0) >= 3
+
+    if (star) {
+      statusByTable[table] = 'star'
+      starCount += 1
+    } else if (todayDone) {
+      statusByTable[table] = 'today'
+    } else if (weekDone) {
+      statusByTable[table] = 'week'
+    } else {
+      statusByTable[table] = 'default'
+    }
+
+    if (todayDone) todayDoneCount += 1
+    if (weekDone) weekDoneCount += 1
+  }
+
+  return {
+    statusByTable,
+    todayDoneCount,
+    weekDoneCount,
+    starCount
+  }
+}
+
+function getTableProblemSourceForStudent(student) {
+  if (Array.isArray(student?.problemLog) && student.problemLog.length > 0) {
+    return student.problemLog
+  }
+  if (Array.isArray(student?.recentProblems)) {
+    return student.recentProblems
+  }
+  return []
+}
+
+function computeStickyTableCompletionMapForTeacher(problemSource, startTimestamp) {
+  const progress = TABLES.reduce((acc, table) => {
+    acc[table] = {
+      attempts: 0,
+      correct: 0,
+      reached: false
+    }
+    return acc
+  }, {})
+
+  if (!Array.isArray(problemSource) || problemSource.length === 0) {
+    return TABLES.reduce((acc, table) => {
+      acc[table] = false
+      return acc
+    }, {})
+  }
+
+  const scoped = problemSource
+    .filter(item => Number(item?.timestamp || 0) >= startTimestamp)
+    .slice()
+    .sort((a, b) => Number(a?.timestamp || 0) - Number(b?.timestamp || 0))
+
+  for (const problem of scoped) {
+    const table = inferTableFromProblem(problem)
+    if (!table) continue
+
+    const entry = progress[table]
+    entry.attempts += 1
+    if (problem.correct) entry.correct += 1
+    if (!entry.reached && isTableCompletedForStickyStatus(entry)) {
+      entry.reached = true
+    }
+  }
+
+  return TABLES.reduce((acc, table) => {
+    acc[table] = Boolean(progress[table]?.reached)
+    return acc
+  }, {})
+}
+
+function getTableCompletionCountsTodayForStudent(student, startTodayTimestamp) {
+  const counts = TABLES.reduce((acc, table) => {
+    acc[table] = 0
+    return acc
+  }, {})
+
+  const completions = student?.tableDrill?.completions
+  if (!Array.isArray(completions)) return counts
+
+  for (const completion of completions) {
+    const table = Number(completion?.table)
+    const ts = Number(completion?.timestamp || 0)
+    if (!TABLES.includes(table)) continue
+    if (ts < startTodayTimestamp) continue
+    counts[table] += 1
+  }
+
+  return counts
+}
+
+function isTableCompletedForStickyStatus(stats) {
+  if (!stats) return false
+  if (Number(stats.attempts || 0) < 10) return false
+  const success = Number(stats.correct || 0) / Math.max(1, Number(stats.attempts || 0))
+  return success >= 0.8
+}
+
+function getTeacherTableStatusClass(status) {
+  if (status === 'star') return 'bg-green-200 border-green-300 text-green-900'
+  if (status === 'today') return 'bg-green-500 border-green-600 text-white'
+  if (status === 'week') return 'bg-green-100 border-green-200 text-green-800'
+  return 'bg-gray-100 border-gray-200 text-gray-400'
+}
+
+function getTeacherTableStatusLabel(status) {
+  if (status === 'star') return 'Star idag'
+  if (status === 'today') return 'Klar idag'
+  if (status === 'week') return 'Klar denna vecka'
+  return 'Ej klar'
 }
 
 function getAccuracy(problems) {

@@ -29,6 +29,8 @@ import { getProgressionModeLabel, normalizeProgressionMode } from '../../lib/pro
 const AUTO_CONTINUE_DELAY = 3000 // 3 sekunder
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
 const BREAK_PROMPT_COOLDOWN_MS = 8 * 60 * 1000
+const DEFAULT_BREAK_MINUTES = 1
+const SINGLE_DIGIT_BREAK_MINUTES = 2
 
 function StudentSession() {
   const { studentId } = useParams()
@@ -45,6 +47,7 @@ function StudentSession() {
   const [showBreakSuggestion, setShowBreakSuggestion] = useState(false)
   const [pendingBreakSuggestion, setPendingBreakSuggestion] = useState(false)
   const [lastBreakPromptAt, setLastBreakPromptAt] = useState(0)
+  const [breakDurationMinutes, setBreakDurationMinutes] = useState(DEFAULT_BREAK_MINUTES)
   const [showPong, setShowPong] = useState(false)
   const [showScratchpad, setShowScratchpad] = useState(false)
   const [sessionAssignment, setSessionAssignment] = useState(null)
@@ -373,15 +376,29 @@ function StudentSession() {
           })
         }
       }
-    } else if (
-      !sessionAssignment
-      && shouldSuggestBreak(profile, newCount, updatedSessionCorrectness)
-      && (lastBreakPromptAt === 0 || Date.now() - lastBreakPromptAt >= BREAK_PROMPT_COOLDOWN_MS)
-    ) {
+    } else if (!sessionAssignment) {
+      const breakPolicy = getBreakPolicy(currentProblem, isTableDrill)
+      const shouldPromptBreak = breakPolicy.enabled && shouldSuggestBreak(
+        profile,
+        newCount,
+        updatedSessionCorrectness,
+        {
+          questionThreshold: breakPolicy.questionThreshold,
+          recentWindow: breakPolicy.recentWindow,
+          errorThreshold: breakPolicy.errorThreshold
+        }
+      )
+
+      if (
+        shouldPromptBreak
+        && (lastBreakPromptAt === 0 || Date.now() - lastBreakPromptAt >= BREAK_PROMPT_COOLDOWN_MS)
+      ) {
       // Kolla om paus behövs i vanliga lägen
-      setPendingBreakSuggestion(true)
-      setLastBreakPromptAt(Date.now())
-      breakSuggested = true
+        setPendingBreakSuggestion(true)
+        setBreakDurationMinutes(breakPolicy.recommendedBreakMinutes)
+        setLastBreakPromptAt(Date.now())
+        breakSuggested = true
+      }
     }
 
     if (!isTableDrill && !sessionAssignment && !breakSuggested) {
@@ -413,6 +430,7 @@ function StudentSession() {
   const handleTakeBreak = () => {
     setShowBreakSuggestion(false)
     setPendingBreakSuggestion(false)
+    setBreakDurationMinutes(DEFAULT_BREAK_MINUTES)
     sessionRecentCorrectnessRef.current = []
     clearActiveStudentSession()
     navigate('/')
@@ -421,6 +439,7 @@ function StudentSession() {
   const goToNextProblemAfterBreakSuggestion = () => {
     setShowBreakSuggestion(false)
     setSessionCount(0)  // Reset session count
+    setBreakDurationMinutes(DEFAULT_BREAK_MINUTES)
     sessionRecentCorrectnessRef.current = []
     goToNextProblem()
   }
@@ -441,6 +460,7 @@ function StudentSession() {
           setShowPong(false)
           setShowBreakSuggestion(false)
           setSessionCount(0)
+          setBreakDurationMinutes(DEFAULT_BREAK_MINUTES)
           sessionRecentCorrectnessRef.current = []
           goToNextProblem()
         }} />
@@ -458,7 +478,7 @@ function StudentSession() {
             Dags för en paus?
           </h2>
           <p className="text-gray-600 mb-6">
-            Du har gjort {sessionCount} uppgifter! En kort paus hjälper hjärnan att vila.
+            Du har gjort {sessionCount} uppgifter! Ta gärna cirka {breakDurationMinutes} min paus innan du fortsätter.
           </p>
           <div className="space-y-3">
             <button
@@ -984,6 +1004,55 @@ function isMixedTrainingSession(mode, assignment, isTableDrill) {
   if (!assignment) return true
   const types = Array.isArray(assignment.problemTypes) ? assignment.problemTypes : []
   return types.length !== 1
+}
+
+function getBreakPolicy(problem, isTableDrill) {
+  if (isTableDrill) {
+    return {
+      enabled: false,
+      questionThreshold: Infinity,
+      recentWindow: 10,
+      errorThreshold: 5,
+      recommendedBreakMinutes: DEFAULT_BREAK_MINUTES
+    }
+  }
+
+  if (isSingleDigitAddOrSubProblem(problem)) {
+    return {
+      enabled: true,
+      questionThreshold: 20,
+      recentWindow: 10,
+      errorThreshold: 5,
+      recommendedBreakMinutes: SINGLE_DIGIT_BREAK_MINUTES
+    }
+  }
+
+  return {
+    enabled: true,
+    questionThreshold: 15,
+    recentWindow: 10,
+    errorThreshold: 5,
+    recommendedBreakMinutes: DEFAULT_BREAK_MINUTES
+  }
+}
+
+function isSingleDigitAddOrSubProblem(problem) {
+  if (!problem || (problem.type !== 'addition' && problem.type !== 'subtraction')) return false
+
+  const magnitude = problem.difficulty?.magnitude || {}
+  const magA = Number(magnitude.a_digits)
+  const magB = Number(magnitude.b_digits)
+  if (Number.isFinite(magA) && Number.isFinite(magB)) {
+    return magA <= 1 && magB <= 1
+  }
+
+  const a = Number(problem.values?.a)
+  const b = Number(problem.values?.b)
+  if (Number.isFinite(a) && Number.isFinite(b)) {
+    return Math.abs(a) < 10 && Math.abs(b) < 10
+  }
+
+  return false
 }
 
 export default StudentSession

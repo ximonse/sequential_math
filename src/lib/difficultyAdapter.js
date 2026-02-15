@@ -590,14 +590,25 @@ function updateSkillStateAfterAnswer(profile) {
 /**
  * Avgör om eleven behöver paus
  */
-export function shouldSuggestBreak(_profile, sessionProblemCount, sessionRecentCorrectness = []) {
-  // Efter 15 problem
-  if (sessionProblemCount >= 15) return true
+export function shouldSuggestBreak(_profile, sessionProblemCount, sessionRecentCorrectness = [], options = {}) {
+  const questionThreshold = Number.isFinite(Number(options.questionThreshold))
+    ? Number(options.questionThreshold)
+    : 15
+  const recentWindow = Number.isFinite(Number(options.recentWindow))
+    ? Math.max(1, Number(options.recentWindow))
+    : 10
+  const errorThreshold = Number.isFinite(Number(options.errorThreshold))
+    ? Math.max(1, Number(options.errorThreshold))
+    : 5
 
-  // Om 5+ fel på senaste 10 i aktuell session
-  if (sessionRecentCorrectness.length >= 10) {
-    const errors = sessionRecentCorrectness.filter(isCorrect => !isCorrect).length
-    if (errors >= 5) return true
+  // Efter N problem i aktuell policy
+  if (sessionProblemCount >= questionThreshold) return true
+
+  // Om många fel i senaste fönster i aktuell session
+  if (sessionRecentCorrectness.length >= recentWindow) {
+    const lastWindow = sessionRecentCorrectness.slice(-recentWindow)
+    const errors = lastWindow.filter(isCorrect => !isCorrect).length
+    if (errors >= errorThreshold) return true
   }
 
   return false

@@ -9,6 +9,76 @@
  */
 
 export const multiplicationTemplates = [
+  // LEVEL 1: 1d * 1d (intro, mycket små tal)
+  {
+    id: 'mul_1d_1d_intro',
+    type: 'multiplication',
+    grade: 3,
+    difficulty: {
+      conceptual_level: 1,
+      cognitive_load: {
+        working_memory: 1,
+        steps_required: 1,
+        intermediate_values: 0
+      },
+      procedural: {
+        num_terms: 2,
+        requires_carry: false,
+        mixed_digits: false
+      },
+      magnitude: {
+        a_digits: 1,
+        b_digits: 1
+      }
+    },
+    generator: {
+      constraints: {
+        a: { min: 2, max: 4 },
+        b: { min: 2, max: 4 },
+        result: { min: 4, max: 16 }
+      }
+    },
+    metadata: {
+      estimated_time: 10,
+      description: '1d*1d intro'
+    }
+  },
+
+  // LEVEL 2: 1d * 1d (utokad tabellbredd)
+  {
+    id: 'mul_1d_1d_foundation',
+    type: 'multiplication',
+    grade: 4,
+    difficulty: {
+      conceptual_level: 2,
+      cognitive_load: {
+        working_memory: 1,
+        steps_required: 1,
+        intermediate_values: 0
+      },
+      procedural: {
+        num_terms: 2,
+        requires_carry: false,
+        mixed_digits: false
+      },
+      magnitude: {
+        a_digits: 1,
+        b_digits: 1
+      }
+    },
+    generator: {
+      constraints: {
+        a: { min: 2, max: 6 },
+        b: { min: 2, max: 6 },
+        result: { min: 4, max: 36 }
+      }
+    },
+    metadata: {
+      estimated_time: 11,
+      description: '1d*1d grund'
+    }
+  },
+
   // LEVEL 3: 1d * 1d (enkla tabeller)
   {
     id: 'mul_1d_1d_easy',
@@ -33,9 +103,9 @@ export const multiplicationTemplates = [
     },
     generator: {
       constraints: {
-        a: { min: 2, max: 5 },
-        b: { min: 2, max: 5 },
-        result: { min: 4, max: 25 }
+        a: { min: 2, max: 8 },
+        b: { min: 2, max: 8 },
+        result: { min: 4, max: 64 }
       }
     },
     metadata: {

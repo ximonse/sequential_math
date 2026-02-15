@@ -510,7 +510,7 @@ function StudentHome() {
         </div>
 
         <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">Klarade nivåer</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">Framsteg</h2>
           <p className="text-xs text-gray-500 mb-3">
             Alla nivåer 1-12 visas. Grön = klarad (minst {MASTERY_MIN_ATTEMPTS} försök och minst {Math.round(MASTERY_MIN_SUCCESS_RATE * 100)}% rätt), blå = pågående, transparent = ej tränad ännu.
           </p>

@@ -1970,7 +1970,7 @@ function Dashboard() {
                 </div>
 
                 <div className="rounded border border-gray-200 p-3">
-                  <h3 className="text-sm font-semibold text-gray-800 mb-2">Klarade nivåer (som elevvyn)</h3>
+                  <h3 className="text-sm font-semibold text-gray-800 mb-2">Framsteg (som elevvyn)</h3>
                   <p className="text-[11px] text-gray-500 mb-2">
                     Grön = klarad, blå = pågående, grå = ej startad.
                   </p>

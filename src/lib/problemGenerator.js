@@ -240,16 +240,20 @@ export function generateProblem(template, maxAttempts = 100) {
 
     // 2d. Carry-krav för multiplikation (enklare/avancerad progression)
     if (type === 'multiplication' && typeof difficulty.procedural?.requires_carry === 'boolean') {
-      const hasMulCarry = countMultiplicationCarries(a, b) > 0
-      if (difficulty.procedural.requires_carry && !hasMulCarry) continue
-      if (!difficulty.procedural.requires_carry && hasMulCarry) continue
+      const isSingleDigitBySingleDigit = Number(difficulty.magnitude?.a_digits) === 1
+        && Number(difficulty.magnitude?.b_digits) === 1
+      if (!isSingleDigitBySingleDigit) {
+        const hasMulCarry = countMultiplicationCarries(a, b) > 0
+        if (difficulty.procedural.requires_carry && !hasMulCarry) continue
+        if (!difficulty.procedural.requires_carry && hasMulCarry) continue
+      }
     }
 
     // 3. Inte trivialt
     if (isTrivial(a, b)) continue
 
-    // 4. Inte förvirrande
-    if (isConfusing(a, b)) continue
+    // 4. Inte förvirrande (multiplikation tillåter t.ex. 3*3)
+    if (type !== 'multiplication' && isConfusing(a, b)) continue
 
     // Slumpa ordning för mixed_digits templates
     let finalA = a

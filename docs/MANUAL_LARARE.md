@@ -26,6 +26,7 @@ Notera:
 ## 3. Daglig rutin (rekommenderat)
 
 1. Kontrollera `Klass/gruppvy - snabbstatus` för vem som är aktiv nu.
+   Du kan klicka kolumnrubrikerna för sortering (stigande/fallande).
 2. Titta på `Behöver stöd nu` för prioriterad lista.
 3. Klicka `Elevvy` på en elev för individnivå.
 4. Exportera vid behov (`Export översikt`, `Export rådata`, `Export aktivitet`, osv.).

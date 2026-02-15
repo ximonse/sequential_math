@@ -98,6 +98,8 @@ function Dashboard() {
   const [tableSelectedStudentIds, setTableSelectedStudentIds] = useState([])
   const [tableStudentSearch, setTableStudentSearch] = useState('')
   const [detailStudentId, setDetailStudentId] = useState('')
+  const [classOverviewSortBy, setClassOverviewSortBy] = useState('name')
+  const [classOverviewSortDir, setClassOverviewSortDir] = useState('asc')
   const navigate = useNavigate()
 
   const loadStudents = useCallback(async () => {
@@ -281,15 +283,8 @@ function Dashboard() {
   const inactivityBuckets = buildInactivityBuckets(tableRows)
   const classSummaries = buildClassSummaries(classes, students, selectedClassIds, weekGoal)
   const classOverviewRows = useMemo(
-    () => [...filteredRows].sort((a, b) => {
-      const classCompare = String(a.classNameLabel || a.className || '').localeCompare(
-        String(b.classNameLabel || b.className || ''),
-        'sv'
-      )
-      if (classCompare !== 0) return classCompare
-      return String(a.name || '').localeCompare(String(b.name || ''), 'sv')
-    }),
-    [filteredRows]
+    () => getSortedClassOverviewRows(filteredRows, classOverviewSortBy, classOverviewSortDir),
+    [filteredRows, classOverviewSortBy, classOverviewSortDir]
   )
   const classOverviewMeta = useMemo(() => {
     const selectedClassNames = selectedClassIds
@@ -302,6 +297,20 @@ function Dashboard() {
       activeNowCount
     }
   }, [selectedClassIds, classNameById, classOverviewRows])
+
+  const handleClassOverviewSort = (nextSortBy) => {
+    if (classOverviewSortBy === nextSortBy) {
+      setClassOverviewSortDir(prev => (prev === 'asc' ? 'desc' : 'asc'))
+      return
+    }
+    setClassOverviewSortBy(nextSortBy)
+    setClassOverviewSortDir(getDefaultClassOverviewSortDir(nextSortBy))
+  }
+
+  const getClassOverviewSortIndicator = (sortKey) => {
+    if (classOverviewSortBy !== sortKey) return '↕'
+    return classOverviewSortDir === 'asc' ? '▲' : '▼'
+  }
   const tableStudentSet = useMemo(
     () => new Set(tableSelectedStudentIds),
     [tableSelectedStudentIds]
@@ -1813,14 +1822,86 @@ function Dashboard() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-gray-500 border-b">
-                    <th className="py-1 pr-2">Elev</th>
-                    <th className="py-1 pr-2">Status</th>
-                    <th className="py-1 pr-2">Jobbar med</th>
-                    <th className="py-1 pr-2">Idag</th>
-                    <th className="py-1 pr-2">Rätt/Fel idag</th>
-                    <th className="py-1 pr-2">Träff idag</th>
-                    <th className="py-1 pr-2">Tid på uppgift idag</th>
-                    <th className="py-1">Senast aktiv</th>
+                    <th className="py-1 pr-2">
+                      <button
+                        type="button"
+                        onClick={() => handleClassOverviewSort('name')}
+                        className="inline-flex items-center gap-1 hover:text-gray-700"
+                      >
+                        Elev
+                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('name')}</span>
+                      </button>
+                    </th>
+                    <th className="py-1 pr-2">
+                      <button
+                        type="button"
+                        onClick={() => handleClassOverviewSort('activity')}
+                        className="inline-flex items-center gap-1 hover:text-gray-700"
+                      >
+                        Status
+                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('activity')}</span>
+                      </button>
+                    </th>
+                    <th className="py-1 pr-2">
+                      <button
+                        type="button"
+                        onClick={() => handleClassOverviewSort('operation')}
+                        className="inline-flex items-center gap-1 hover:text-gray-700"
+                      >
+                        Jobbar med
+                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('operation')}</span>
+                      </button>
+                    </th>
+                    <th className="py-1 pr-2">
+                      <button
+                        type="button"
+                        onClick={() => handleClassOverviewSort('today_attempts')}
+                        className="inline-flex items-center gap-1 hover:text-gray-700"
+                      >
+                        Idag
+                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('today_attempts')}</span>
+                      </button>
+                    </th>
+                    <th className="py-1 pr-2">
+                      <button
+                        type="button"
+                        onClick={() => handleClassOverviewSort('today_wrong')}
+                        className="inline-flex items-center gap-1 hover:text-gray-700"
+                      >
+                        Rätt/Fel idag
+                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('today_wrong')}</span>
+                      </button>
+                    </th>
+                    <th className="py-1 pr-2">
+                      <button
+                        type="button"
+                        onClick={() => handleClassOverviewSort('today_success')}
+                        className="inline-flex items-center gap-1 hover:text-gray-700"
+                      >
+                        Träff idag
+                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('today_success')}</span>
+                      </button>
+                    </th>
+                    <th className="py-1 pr-2">
+                      <button
+                        type="button"
+                        onClick={() => handleClassOverviewSort('today_engaged')}
+                        className="inline-flex items-center gap-1 hover:text-gray-700"
+                      >
+                        Tid på uppgift idag
+                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('today_engaged')}</span>
+                      </button>
+                    </th>
+                    <th className="py-1">
+                      <button
+                        type="button"
+                        onClick={() => handleClassOverviewSort('last_active')}
+                        className="inline-flex items-center gap-1 hover:text-gray-700"
+                      >
+                        Senast aktiv
+                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('last_active')}</span>
+                      </button>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -4143,6 +4224,48 @@ function calculateTrend(problems) {
 function getSortedRows(rows, sortBy, sortDir) {
   const sorted = [...rows].sort((a, b) => compareRows(a, b, sortBy))
   return sortDir === 'asc' ? sorted : sorted.reverse()
+}
+
+function getSortedClassOverviewRows(rows, sortBy, sortDir) {
+  const sorted = [...rows].sort((a, b) => compareClassOverviewRows(a, b, sortBy))
+  return sortDir === 'asc' ? sorted : sorted.reverse()
+}
+
+function compareClassOverviewRows(a, b, sortBy) {
+  if (sortBy === 'name') return compareClassNameAndName(a, b)
+  if (sortBy === 'activity') return getClassOverviewActivityRank(a.activityStatus) - getClassOverviewActivityRank(b.activityStatus)
+  if (sortBy === 'operation') {
+    return String(getOperationLabel(a.focusOperation || ''))
+      .localeCompare(String(getOperationLabel(b.focusOperation || '')), 'sv')
+  }
+  if (sortBy === 'today_attempts') return Number(a.todayAttempts || 0) - Number(b.todayAttempts || 0)
+  if (sortBy === 'today_wrong') return Number(a.todayWrongCount || 0) - Number(b.todayWrongCount || 0)
+  if (sortBy === 'today_success') return Number(a.todaySuccessRate || 0) - Number(b.todaySuccessRate || 0)
+  if (sortBy === 'today_engaged') return Number(a.todayEngagedMinutes || 0) - Number(b.todayEngagedMinutes || 0)
+  if (sortBy === 'last_active') return Number(a.lastActive || 0) - Number(b.lastActive || 0)
+  return compareClassNameAndName(a, b)
+}
+
+function compareClassNameAndName(a, b) {
+  const classCompare = String(a.classNameLabel || a.className || '').localeCompare(
+    String(b.classNameLabel || b.className || ''),
+    'sv'
+  )
+  if (classCompare !== 0) return classCompare
+  return String(a.name || '').localeCompare(String(b.name || ''), 'sv')
+}
+
+function getClassOverviewActivityRank(code) {
+  if (code === 'green') return 4
+  if (code === 'orange') return 3
+  if (code === 'black') return 2
+  if (code === 'red') return 1
+  return 0
+}
+
+function getDefaultClassOverviewSortDir(sortBy) {
+  if (sortBy === 'name' || sortBy === 'operation') return 'asc'
+  return 'desc'
 }
 
 function compareRows(a, b, sortBy) {

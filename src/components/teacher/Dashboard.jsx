@@ -97,6 +97,10 @@ function Dashboard() {
   const [ticketHistorySearch, setTicketHistorySearch] = useState('')
   const [tableSelectedStudentIds, setTableSelectedStudentIds] = useState([])
   const [tableStudentSearch, setTableStudentSearch] = useState('')
+  const [stickySortBy, setStickySortBy] = useState('name')
+  const [stickySortDir, setStickySortDir] = useState('asc')
+  const [supportSortBy, setSupportSortBy] = useState('support_score')
+  const [supportSortDir, setSupportSortDir] = useState('desc')
   const [detailStudentId, setDetailStudentId] = useState('')
   const [classOverviewSortBy, setClassOverviewSortBy] = useState('name')
   const [classOverviewSortDir, setClassOverviewSortDir] = useState('asc')
@@ -276,10 +280,14 @@ function Dashboard() {
     [detailStudentProfile]
   )
   const visibleRows = tableRows
-  const supportRows = [...tableRows]
-    .filter(row => row.supportScore >= SUPPORT_THRESHOLD || row.riskLevel === 'high')
-    .sort((a, b) => b.supportScore - a.supportScore)
-    .slice(0, 10)
+  const supportCandidateRows = useMemo(
+    () => tableRows.filter(row => row.supportScore >= SUPPORT_THRESHOLD || row.riskLevel === 'high'),
+    [tableRows]
+  )
+  const supportRows = useMemo(
+    () => getSortedSupportRows(supportCandidateRows, supportSortBy, supportSortDir).slice(0, 10),
+    [supportCandidateRows, supportSortBy, supportSortDir]
+  )
   const inactivityBuckets = buildInactivityBuckets(tableRows)
   const classSummaries = buildClassSummaries(classes, students, selectedClassIds, weekGoal)
   const classOverviewRows = useMemo(
@@ -311,6 +319,35 @@ function Dashboard() {
     if (classOverviewSortBy !== sortKey) return '↕'
     return classOverviewSortDir === 'asc' ? '▲' : '▼'
   }
+
+  const handleStickySort = (nextSortBy) => {
+    if (stickySortBy === nextSortBy) {
+      setStickySortDir(prev => (prev === 'asc' ? 'desc' : 'asc'))
+      return
+    }
+    setStickySortBy(nextSortBy)
+    setStickySortDir(getDefaultStickySortDir(nextSortBy))
+  }
+
+  const getStickySortIndicator = (sortKey) => {
+    if (stickySortBy !== sortKey) return '↕'
+    return stickySortDir === 'asc' ? '▲' : '▼'
+  }
+
+  const handleSupportSort = (nextSortBy) => {
+    if (supportSortBy === nextSortBy) {
+      setSupportSortDir(prev => (prev === 'asc' ? 'desc' : 'asc'))
+      return
+    }
+    setSupportSortBy(nextSortBy)
+    setSupportSortDir(getDefaultSupportSortDir(nextSortBy))
+  }
+
+  const getSupportSortIndicator = (sortKey) => {
+    if (supportSortBy !== sortKey) return '↕'
+    return supportSortDir === 'asc' ? '▲' : '▼'
+  }
+
   const tableStudentSet = useMemo(
     () => new Set(tableSelectedStudentIds),
     [tableSelectedStudentIds]
@@ -352,19 +389,18 @@ function Dashboard() {
     [tableScopedStudents]
   )
   const tableStickyStatusRows = useMemo(
-    () => tableScopedStudents
+    () => getSortedTableStickyRows(
+      tableScopedStudents
       .map(student => ({
         studentId: student.studentId,
         name: student.name,
         className: getRecordClassLabel(student, classNameById),
         ...buildStickyTableStatusForStudent(student)
-      }))
-      .sort((a, b) => {
-        const classCompare = String(a.className).localeCompare(String(b.className), 'sv')
-        if (classCompare !== 0) return classCompare
-        return String(a.name).localeCompare(String(b.name), 'sv')
-      }),
-    [tableScopedStudents, classNameById]
+      })),
+      stickySortBy,
+      stickySortDir
+    ),
+    [tableScopedStudents, classNameById, stickySortBy, stickySortDir]
   )
   const dataQualitySummary = useMemo(
     () => buildDataQualitySummary(filteredRows),
@@ -2257,14 +2293,68 @@ function Dashboard() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-gray-500 border-b">
-                      <th className="py-1 pr-2">Elev</th>
-                      <th className="py-1 pr-2">Klass</th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleStickySort('name')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Elev
+                          <span className="text-[10px] text-gray-400">{getStickySortIndicator('name')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleStickySort('class')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Klass
+                          <span className="text-[10px] text-gray-400">{getStickySortIndicator('class')}</span>
+                        </button>
+                      </th>
                       {TABLES.map(table => (
-                        <th key={`teacher-table-sticky-head-${table}`} className="py-1 pr-1 text-center">{table}</th>
+                        <th key={`teacher-table-sticky-head-${table}`} className="py-1 pr-1 text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleStickySort(`table_${table}`)}
+                            className="inline-flex items-center justify-center gap-1 hover:text-gray-700"
+                          >
+                            <span>{table}</span>
+                            <span className="text-[10px] text-gray-400">{getStickySortIndicator(`table_${table}`)}</span>
+                          </button>
+                        </th>
                       ))}
-                      <th className="py-1 pr-2">Dagsklara</th>
-                      <th className="py-1 pr-2">Veckoklara</th>
-                      <th className="py-1">Star idag</th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleStickySort('today_done')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Dagsklara
+                          <span className="text-[10px] text-gray-400">{getStickySortIndicator('today_done')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleStickySort('week_done')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Veckoklara
+                          <span className="text-[10px] text-gray-400">{getStickySortIndicator('week_done')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1">
+                        <button
+                          type="button"
+                          onClick={() => handleStickySort('star_count')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Star idag
+                          <span className="text-[10px] text-gray-400">{getStickySortIndicator('star_count')}</span>
+                        </button>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2304,15 +2394,96 @@ function Dashboard() {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="text-left text-gray-500 border-b">
-                      <th className="py-1 pr-2">Elev</th>
-                      <th className="py-1 pr-2">Klass</th>
-                      <th className="py-1 pr-2">Status</th>
-                      <th className="py-1 pr-2">Risk</th>
-                      <th className="py-1 pr-2">Stöd</th>
-                      <th className="py-1 pr-2">Idag</th>
-                      <th className="py-1 pr-2">R/F idag</th>
-                      <th className="py-1 pr-2">Träff v</th>
-                      <th className="py-1 pr-2">Kämpar med</th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSupportSort('name')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Elev
+                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('name')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSupportSort('class')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Klass
+                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('class')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSupportSort('activity')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Status
+                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('activity')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSupportSort('risk')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Risk
+                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('risk')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSupportSort('support_score')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Stöd
+                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('support_score')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSupportSort('today_attempts')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Idag
+                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('today_attempts')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSupportSort('today_wrong')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          R/F idag
+                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('today_wrong')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSupportSort('week_success')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Träff v
+                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('week_success')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleSupportSort('struggle')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Kämpar med
+                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('struggle')}</span>
+                        </button>
+                      </th>
                       <th className="py-1 pr-2">Flaggor</th>
                       <th className="py-1">Åtgärd</th>
                     </tr>
@@ -4226,6 +4397,36 @@ function getSortedRows(rows, sortBy, sortDir) {
   return sortDir === 'asc' ? sorted : sorted.reverse()
 }
 
+function getSortedSupportRows(rows, sortBy, sortDir) {
+  const sorted = [...rows].sort((a, b) => compareSupportRows(a, b, sortBy))
+  return sortDir === 'asc' ? sorted : sorted.reverse()
+}
+
+function compareSupportRows(a, b, sortBy) {
+  if (sortBy === 'name') return compareClassNameAndName(a, b)
+  if (sortBy === 'class') {
+    return String(a.classNameLabel || a.className || '').localeCompare(
+      String(b.classNameLabel || b.className || ''),
+      'sv'
+    )
+  }
+  if (sortBy === 'activity') return getClassOverviewActivityRank(a.activityStatus) - getClassOverviewActivityRank(b.activityStatus)
+  if (sortBy === 'risk') return Number(a.riskScore || 0) - Number(b.riskScore || 0)
+  if (sortBy === 'support_score') return Number(a.supportScore || 0) - Number(b.supportScore || 0)
+  if (sortBy === 'today_attempts') return Number(a.todayAttempts || 0) - Number(b.todayAttempts || 0)
+  if (sortBy === 'today_wrong') return Number(a.todayWrongCount || 0) - Number(b.todayWrongCount || 0)
+  if (sortBy === 'week_success') return Number(a.weekSuccessRate || 0) - Number(b.weekSuccessRate || 0)
+  if (sortBy === 'struggle') {
+    return String(a.todayStruggle?.skillLabel || '').localeCompare(String(b.todayStruggle?.skillLabel || ''), 'sv')
+  }
+  return Number(a.supportScore || 0) - Number(b.supportScore || 0)
+}
+
+function getDefaultSupportSortDir(sortBy) {
+  if (sortBy === 'name' || sortBy === 'class' || sortBy === 'struggle') return 'asc'
+  return 'desc'
+}
+
 function getSortedClassOverviewRows(rows, sortBy, sortDir) {
   const sorted = [...rows].sort((a, b) => compareClassOverviewRows(a, b, sortBy))
   return sortDir === 'asc' ? sorted : sorted.reverse()
@@ -4265,6 +4466,38 @@ function getClassOverviewActivityRank(code) {
 
 function getDefaultClassOverviewSortDir(sortBy) {
   if (sortBy === 'name' || sortBy === 'operation') return 'asc'
+  return 'desc'
+}
+
+function getSortedTableStickyRows(rows, sortBy, sortDir) {
+  const sorted = [...rows].sort((a, b) => compareTableStickyRows(a, b, sortBy))
+  return sortDir === 'asc' ? sorted : sorted.reverse()
+}
+
+function compareTableStickyRows(a, b, sortBy) {
+  if (sortBy === 'name') return compareClassNameAndName(a, b)
+  if (sortBy === 'class') return String(a.className || '').localeCompare(String(b.className || ''), 'sv')
+  if (sortBy === 'today_done') return Number(a.todayDoneCount || 0) - Number(b.todayDoneCount || 0)
+  if (sortBy === 'week_done') return Number(a.weekDoneCount || 0) - Number(b.weekDoneCount || 0)
+  if (sortBy === 'star_count') return Number(a.starCount || 0) - Number(b.starCount || 0)
+  if (String(sortBy).startsWith('table_')) {
+    const table = Number(String(sortBy).slice(6))
+    if (Number.isInteger(table) && TABLES.includes(table)) {
+      return getStickyStatusRank(a.statusByTable?.[table]) - getStickyStatusRank(b.statusByTable?.[table])
+    }
+  }
+  return compareClassNameAndName(a, b)
+}
+
+function getStickyStatusRank(status) {
+  if (status === 'star') return 3
+  if (status === 'today') return 2
+  if (status === 'week') return 1
+  return 0
+}
+
+function getDefaultStickySortDir(sortBy) {
+  if (sortBy === 'name' || sortBy === 'class') return 'asc'
   return 'desc'
 }
 

@@ -175,16 +175,6 @@ function Dashboard() {
   }, [students, tableSelectedStudentIds.length])
 
   useEffect(() => {
-    if (filteredStudents.length === 0) {
-      if (detailStudentId !== '') setDetailStudentId('')
-      return
-    }
-    if (!detailStudentId || !filteredStudents.some(item => item.studentId === detailStudentId)) {
-      setDetailStudentId(filteredStudents[0].studentId)
-    }
-  }, [filteredStudents, detailStudentId])
-
-  useEffect(() => {
     const timer = window.setInterval(() => {
       void loadStudents()
     }, 15000)
@@ -222,6 +212,16 @@ function Dashboard() {
   const filteredStudents = selectedClassIds.length > 0
     ? students.filter(student => recordMatchesClassFilter(student, selectedClassIds))
     : students
+  useEffect(() => {
+    if (filteredStudents.length === 0) {
+      if (detailStudentId !== '') setDetailStudentId('')
+      return
+    }
+    if (!detailStudentId || !filteredStudents.some(item => item.studentId === detailStudentId)) {
+      setDetailStudentId(filteredStudents[0].studentId)
+    }
+  }, [filteredStudents, detailStudentId])
+
   const detailStudentOptions = useMemo(
     () => filteredStudents
       .map(student => ({

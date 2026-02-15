@@ -652,41 +652,19 @@ const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
 function buildTableStatus(profile) {
   const fallback = Object.fromEntries(TABLES.map(table => [table, 'default']))
-  if (!profile || !Array.isArray(profile.recentProblems)) return fallback
+  if (!profile) return fallback
 
   const startToday = getStartOfDayTimestamp()
   const startWeek = getStartOfWeekTimestamp()
   const completionCountsToday = getTableCompletionCountsToday(profile, startToday)
-
-  const today = TABLES.reduce((acc, table) => {
-    acc[table] = { attempts: 0, correct: 0 }
-    return acc
-  }, {})
-
-  const week = TABLES.reduce((acc, table) => {
-    acc[table] = { attempts: 0, correct: 0 }
-    return acc
-  }, {})
-
-  for (const problem of profile.recentProblems) {
-    const table = inferMultiplicationTable(problem)
-    if (!table) continue
-
-    if (problem.timestamp >= startWeek) {
-      week[table].attempts += 1
-      if (problem.correct) week[table].correct += 1
-    }
-
-    if (problem.timestamp >= startToday) {
-      today[table].attempts += 1
-      if (problem.correct) today[table].correct += 1
-    }
-  }
+  const problemSource = getTableProblemSource(profile)
+  const todayDoneMap = computeStickyTableCompletionMap(problemSource, startToday)
+  const weekDoneMap = computeStickyTableCompletionMap(problemSource, startWeek)
 
   const result = {}
   for (const table of TABLES) {
-    const weekDone = isTableCompleted(week[table])
-    const todayDone = isTableCompleted(today[table])
+    const weekDone = Boolean(weekDoneMap[table])
+    const todayDone = Boolean(todayDoneMap[table])
     const star = (completionCountsToday[table] || 0) >= 3
 
     if (star) {
@@ -701,6 +679,56 @@ function buildTableStatus(profile) {
   }
 
   return result
+}
+
+function getTableProblemSource(profile) {
+  if (Array.isArray(profile?.problemLog) && profile.problemLog.length > 0) {
+    return profile.problemLog
+  }
+  if (Array.isArray(profile?.recentProblems)) {
+    return profile.recentProblems
+  }
+  return []
+}
+
+function computeStickyTableCompletionMap(problemSource, startTimestamp) {
+  const progress = TABLES.reduce((acc, table) => {
+    acc[table] = {
+      attempts: 0,
+      correct: 0,
+      reached: false
+    }
+    return acc
+  }, {})
+
+  if (!Array.isArray(problemSource) || problemSource.length === 0) {
+    return TABLES.reduce((acc, table) => {
+      acc[table] = false
+      return acc
+    }, {})
+  }
+
+  const scoped = problemSource
+    .filter(item => Number(item?.timestamp || 0) >= startTimestamp)
+    .slice()
+    .sort((a, b) => Number(a?.timestamp || 0) - Number(b?.timestamp || 0))
+
+  for (const problem of scoped) {
+    const table = inferMultiplicationTable(problem)
+    if (!table) continue
+
+    const entry = progress[table]
+    entry.attempts += 1
+    if (problem.correct) entry.correct += 1
+    if (!entry.reached && isTableCompleted(entry)) {
+      entry.reached = true
+    }
+  }
+
+  return TABLES.reduce((acc, table) => {
+    acc[table] = Boolean(progress[table]?.reached)
+    return acc
+  }, {})
 }
 
 function getTableCompletionCountsToday(profile, startTodayTimestamp) {

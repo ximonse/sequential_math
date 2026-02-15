@@ -4095,20 +4095,12 @@ function summarizeBySkill(problems) {
 }
 
 function formatSkillLabel(operation, skillKey) {
-  const operationLabel = getOperationLabel(operation)
-  const normalized = String(skillKey || '')
-    .replace(/_/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
+  const normalized = String(skillKey || '').trim()
+  if (!normalized) return getOperationLabel(operation)
 
-  if (!normalized) return operationLabel
-
-  const lower = normalized.toLowerCase()
-  if (lower.startsWith('add ') || lower.startsWith('sub ') || lower.startsWith('mul ') || lower.startsWith('div ')) {
-    return `${operationLabel} (${normalized})`
-  }
-
-  return `${operationLabel} (${normalized})`
+  const compact = formatSkillTypeLabel(normalized)
+  if (compact && compact !== normalized) return compact
+  return compact || getOperationLabel(operation)
 }
 
 function getAnswerLength(problem) {

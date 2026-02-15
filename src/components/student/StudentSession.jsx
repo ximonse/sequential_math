@@ -271,7 +271,7 @@ function StudentSession() {
 
   // Auto-fortsätt efter 3 sekunder när feedback visas
   useEffect(() => {
-    if (!feedback || showBreakSuggestion || tableMilestone || advancePrompt) return
+    if (!feedback || !feedback.correct || showBreakSuggestion || tableMilestone || advancePrompt) return
 
     const timer = setTimeout(() => {
       goToNextProblem()
@@ -719,7 +719,9 @@ function StudentSession() {
             {/* Hint text - reserverad plats */}
             <div className="h-6 mt-2">
               {feedback && (
-                <p className="text-sm text-gray-400">Enter eller vänta...</p>
+                <p className="text-sm text-gray-400">
+                  {feedback.correct ? 'Enter eller vänta...' : 'Tryck Enter eller Nästa när du är redo'}
+                </p>
               )}
             </div>
           </div>

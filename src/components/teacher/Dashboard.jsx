@@ -35,6 +35,7 @@ const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
 const SUPPORT_THRESHOLD = 45
 const DAY_MS = 24 * 60 * 60 * 1000
 const DEFAULT_WEEKLY_GOAL = 20
+const ACTIVE_NOW_WINDOW_MS = 5 * 60 * 1000
 
 function Dashboard() {
   const [students, setStudents] = useState([])
@@ -46,6 +47,7 @@ function Dashboard() {
   const [selectedClassIds, setSelectedClassIds] = useState([])
   const [classNameInput, setClassNameInput] = useState('')
   const [addToClassId, setAddToClassId] = useState('')
+  const [overviewClassId, setOverviewClassId] = useState('')
   const [rosterInput, setRosterInput] = useState('')
   const [classStatus, setClassStatus] = useState('')
   const [dashboardStatus, setDashboardStatus] = useState('')
@@ -59,10 +61,21 @@ function Dashboard() {
     setClasses(initialClasses)
     if (initialClasses.length > 0) {
       setAddToClassId(initialClasses[0].id)
+      setOverviewClassId(initialClasses[0].id)
     }
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
   }, [])
+
+  useEffect(() => {
+    if (classes.length === 0) {
+      setOverviewClassId('')
+      return
+    }
+    if (!overviewClassId || !classes.some(item => item.id === overviewClassId)) {
+      setOverviewClassId(classes[0].id)
+    }
+  }, [classes, overviewClassId])
 
   const handleRefresh = () => {
     void loadStudents()
@@ -70,6 +83,9 @@ function Dashboard() {
     setClasses(refreshedClasses)
     if (!addToClassId && refreshedClasses.length > 0) {
       setAddToClassId(refreshedClasses[0].id)
+    }
+    if ((!overviewClassId || !refreshedClasses.some(item => item.id === overviewClassId)) && refreshedClasses.length > 0) {
+      setOverviewClassId(refreshedClasses[0].id)
     }
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
@@ -106,19 +122,36 @@ function Dashboard() {
 
   const weekGoal = activeAssignment?.targetCount || DEFAULT_WEEKLY_GOAL
 
-  const tableRows = getSortedRows(
-    filteredStudents.map(student => buildStudentRow(student, activeAssignment)),
-    sortBy,
-    sortDir
+  const allRows = useMemo(
+    () => students.map(student => buildStudentRow(student, activeAssignment)),
+    [students, activeAssignment]
   )
+  const filteredRows = selectedClassIds.length > 0
+    ? allRows.filter(row => selectedClassIds.includes(row.classId))
+    : allRows
+  const tableRows = getSortedRows(filteredRows, sortBy, sortDir)
   const visibleRows = tableRows
   const supportRows = [...tableRows]
     .filter(row => row.supportScore >= SUPPORT_THRESHOLD || row.riskLevel === 'high')
     .sort((a, b) => b.supportScore - a.supportScore)
     .slice(0, 10)
-  const bottlenecks = buildBottlenecks(tableRows)
   const inactivityBuckets = buildInactivityBuckets(tableRows)
   const classSummaries = buildClassSummaries(classes, students, selectedClassIds, weekGoal)
+  const classOverviewRows = useMemo(
+    () => allRows
+      .filter(row => row.classId === overviewClassId)
+      .sort((a, b) => a.name.localeCompare(b.name, 'sv')),
+    [allRows, overviewClassId]
+  )
+  const classOverviewMeta = useMemo(() => {
+    const classItem = classes.find(item => item.id === overviewClassId) || null
+    const activeNowCount = classOverviewRows.filter(row => row.activeNow).length
+    return {
+      className: classItem?.name || 'Välj klass',
+      studentCount: classOverviewRows.length,
+      activeNowCount
+    }
+  }, [classes, overviewClassId, classOverviewRows])
   const tableDevelopmentOverview = useMemo(
     () => buildTableDevelopmentOverview(filteredStudents),
     [filteredStudents]
@@ -198,6 +231,7 @@ function Dashboard() {
     const updatedClasses = getClasses()
     setClasses(updatedClasses)
     setAddToClassId(result.classRecord.id)
+    setOverviewClassId(result.classRecord.id)
     void loadStudents()
   }
 
@@ -227,6 +261,9 @@ function Dashboard() {
     setClasses(updatedClasses)
     if (addToClassId === classId) {
       setAddToClassId(updatedClasses[0]?.id || '')
+    }
+    if (overviewClassId === classId) {
+      setOverviewClassId(updatedClasses[0]?.id || '')
     }
     setClassStatus('Klass borttagen.')
   }
@@ -381,216 +418,6 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-800">Inaktivitet</h2>
-              <span className="text-xs text-gray-500">Snabb uppföljning</span>
-            </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between rounded bg-gray-50 px-3 py-2">
-                <span className="text-gray-600">Inte aktiv idag</span>
-                <span className="font-semibold text-gray-800">{inactivityBuckets.notActiveToday}</span>
-              </div>
-              <div className="flex items-center justify-between rounded bg-amber-50 px-3 py-2">
-                <span className="text-amber-800">2+ dagar utan aktivitet</span>
-                <span className="font-semibold text-amber-700">{inactivityBuckets.twoDaysOrMore}</span>
-              </div>
-              <div className="flex items-center justify-between rounded bg-red-50 px-3 py-2">
-                <span className="text-red-700">7+ dagar utan aktivitet</span>
-                <span className="font-semibold text-red-700">{inactivityBuckets.sevenDaysOrMore}</span>
-              </div>
-              <div className="flex items-center justify-between rounded bg-blue-50 px-3 py-2">
-                <span className="text-blue-700">Ej startat alls</span>
-                <span className="font-semibold text-blue-700">{inactivityBuckets.neverStarted}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-4 xl:col-span-2">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-800">Klassnivå</h2>
-              <span className="text-xs text-gray-500">Veckomål {weekGoal} uppgifter/elev</span>
-            </div>
-            {classSummaries.length === 0 ? (
-              <p className="text-sm text-gray-500">Inga klasser i aktuellt urval.</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-500 border-b">
-                      <th className="py-1 pr-2">Klass</th>
-                      <th className="py-1 pr-2">Elever</th>
-                      <th className="py-1 pr-2">Startat</th>
-                      <th className="py-1 pr-2">Ej startat</th>
-                      <th className="py-1 pr-2">Aktiva v</th>
-                      <th className="py-1">Nått veckomål</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {classSummaries.map(item => (
-                      <tr key={`class-summary-${item.classId}`} className="border-b last:border-b-0">
-                        <td className="py-1 pr-2 text-gray-700 font-medium">{item.className}</td>
-                        <td className="py-1 pr-2 text-gray-700">{item.studentCount}</td>
-                        <td className="py-1 pr-2 text-green-700 font-semibold">{item.startedCount}</td>
-                        <td className="py-1 pr-2 text-amber-700 font-semibold">{item.notStartedCount}</td>
-                        <td className="py-1 pr-2 text-blue-700">{item.weeklyActiveCount}</td>
-                        <td className="py-1 text-gray-700">
-                          {item.weeklyGoalReachedCount}/{item.studentCount}{' '}
-                          <span className="text-xs text-gray-500">({toPercent(item.weeklyGoalReachedRate)})</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow p-4 xl:col-span-2">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-800">Gångertabell - utveckling (7 dagar)</h2>
-              <span className="text-xs text-gray-500">Jämfört med föregående 7 dagar</span>
-            </div>
-            {tableDevelopmentOverview.length === 0 ? (
-              <p className="text-sm text-gray-500">Ingen tabellaktivitet i aktuellt urval.</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-500 border-b">
-                      <th className="py-1 pr-2">Tabell</th>
-                      <th className="py-1 pr-2">Försök 7d</th>
-                      <th className="py-1 pr-2">Träff 7d</th>
-                      <th className="py-1 pr-2">Trend träff</th>
-                      <th className="py-1 pr-2">Median tid 7d</th>
-                      <th className="py-1">Trend tid</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tableDevelopmentOverview.map(item => (
-                      <tr key={`table-dev-${item.table}`} className="border-b last:border-b-0">
-                        <td className="py-1 pr-2 font-medium text-gray-700">{item.table}:an</td>
-                        <td className="py-1 pr-2 text-gray-700">{item.attempts7d}</td>
-                        <td className="py-1 pr-2 text-gray-700">{toPercent(item.accuracy7d)}</td>
-                        <td className="py-1 pr-2 text-gray-700">
-                          {item.accuracyTrend === null
-                            ? '-'
-                            : `${item.accuracyTrend >= 0 ? '+' : ''}${Math.round(item.accuracyTrend * 100)} pp`}
-                        </td>
-                        <td className="py-1 pr-2 text-gray-700">
-                          {Number.isFinite(item.medianTime7d) ? `${item.medianTime7d.toFixed(1)}s` : '-'}
-                        </td>
-                        <td className="py-1 text-gray-700">
-                          {item.speedTrend === null
-                            ? '-'
-                            : `${item.speedTrend >= 0 ? '+' : ''}${Math.round(item.speedTrend * 100)}%`}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-800">Behöver stöd nu</h2>
-              <span className="text-xs text-gray-500">Rankat med riskflaggor</span>
-            </div>
-            {supportRows.length === 0 ? (
-              <p className="text-sm text-gray-500">Inga akuta signaler i aktuellt urval.</p>
-            ) : (
-              <div className="space-y-2">
-                {supportRows.map(row => (
-                  <div key={`support-${row.studentId}`} className="border rounded p-2">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-semibold text-gray-800">{row.name}</p>
-                        <p className="text-xs text-gray-500">{row.className || 'Utan klass'} | {row.studentId}</p>
-                      </div>
-                      <RiskBadge level={row.riskLevel} score={row.riskScore} />
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      {row.riskCodes.length > 0 ? row.riskCodes.map(code => (
-                        <span
-                          key={`${row.studentId}-${code}`}
-                          className="px-2 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-700 text-xs"
-                        >
-                          {code}
-                        </span>
-                      )) : (
-                        <span className="text-xs text-gray-400">Inga flaggor</span>
-                      )}
-                    </div>
-                    {activeAssignment && (
-                      <p className="mt-2 text-xs text-gray-600">
-                        Uppdragsföljsamhet vecka: {row.weekAssignmentAdherenceRate === null ? '-' : toPercent(row.weekAssignmentAdherenceRate)}
-                        {' '}({row.weekAssignmentMatched}/{row.weekAssignmentAttempts})
-                      </p>
-                    )}
-                    <div className="mt-2 flex flex-wrap gap-1">
-                      <button
-                        onClick={() => handleCreateQuickAssignment(row, 'focus')}
-                        className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs"
-                      >
-                        Fokusuppdrag
-                      </button>
-                      <button
-                        onClick={() => handleCreateQuickAssignment(row, 'warmup')}
-                        className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs"
-                      >
-                        Värm upp
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-800">Bottlenecks per skill</h2>
-              <span className="text-xs text-gray-500">Veckobaserat</span>
-            </div>
-            {bottlenecks.length === 0 ? (
-              <p className="text-sm text-gray-500">Inga tydliga flaskhalsar ännu.</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-500 border-b">
-                      <th className="py-1 pr-2">Skill</th>
-                      <th className="py-1 pr-2">Elever</th>
-                      <th className="py-1 pr-2">Fel</th>
-                      <th className="py-1">Träff</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {bottlenecks.map(item => (
-                      <tr key={`btl-${item.key}`} className="border-b last:border-b-0">
-                        <td className="py-1 pr-2 text-gray-700">
-                          <div className="font-medium">{item.skillLabel}</div>
-                          <div className="text-xs text-gray-500">
-                            {getOperationLabel(item.operation)}{item.avgLevel ? ` | nivå ~${item.avgLevel.toFixed(1)}` : ''}
-                          </div>
-                        </td>
-                        <td className="py-1 pr-2 text-gray-700">{item.affectedStudents}</td>
-                        <td className="py-1 pr-2 text-gray-700">{item.wrong}/{item.attempts}</td>
-                        <td className="py-1 text-gray-700">{toPercent(item.successRate)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-
         <div className="bg-white rounded-lg shadow p-4 mb-8">
           <h2 className="text-lg font-semibold text-gray-800 mb-3">Uppdrag via länk</h2>
           <div className="flex flex-wrap gap-2 mb-4">
@@ -687,6 +514,275 @@ function Dashboard() {
               ))}
             </div>
           )}
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4 mb-8">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 className="text-lg font-semibold text-gray-800">Klassvy - snabbstatus</h2>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-gray-500" htmlFor="overviewClassSelect">Klass</label>
+              <select
+                id="overviewClassSelect"
+                value={overviewClassId}
+                onChange={(e) => setOverviewClassId(e.target.value)}
+                className="px-2 py-1 border rounded text-sm"
+              >
+                <option value="">Välj klass</option>
+                {classes.map(item => (
+                  <option key={`overview-${item.id}`} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <p className="text-xs text-gray-500 mb-3">
+            {classOverviewMeta.className}: {classOverviewMeta.activeNowCount}/{classOverviewMeta.studentCount} aktiv(a) just nu
+          </p>
+          {overviewClassId === '' ? (
+            <p className="text-sm text-gray-500">Välj en klass för att se elevernas live-status.</p>
+          ) : classOverviewRows.length === 0 ? (
+            <p className="text-sm text-gray-500">Inga elever hittades i vald klass.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-gray-500 border-b">
+                    <th className="py-1 pr-2">Elev</th>
+                    <th className="py-1 pr-2">Aktiv nu</th>
+                    <th className="py-1 pr-2">Jobbar med</th>
+                    <th className="py-1 pr-2">Idag</th>
+                    <th className="py-1 pr-2">Rätt/Fel idag</th>
+                    <th className="py-1 pr-2">Träff idag</th>
+                    <th className="py-1">Senast aktiv</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {classOverviewRows.map(row => (
+                    <tr key={`overview-row-${row.studentId}`} className="border-b last:border-b-0">
+                      <td className="py-1 pr-2 text-gray-700 font-medium">
+                        {row.name}
+                        <span className="ml-1 text-xs text-gray-400">{row.studentId}</span>
+                      </td>
+                      <td className="py-1 pr-2">
+                        {row.activeNow ? (
+                          <span className="inline-flex items-center gap-1 text-green-700 text-xs font-semibold">
+                            <span className="w-2 h-2 rounded-full bg-green-500" />
+                            Ja
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-gray-500 text-xs">
+                            <span className="w-2 h-2 rounded-full bg-gray-300" />
+                            Nej
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-1 pr-2 text-gray-700">{getOperationLabel(row.focusOperation)}</td>
+                      <td className="py-1 pr-2 text-gray-700">{row.todayAttempts}</td>
+                      <td className="py-1 pr-2 text-gray-700">
+                        {row.todayCorrectCount}/{row.todayWrongCount}
+                      </td>
+                      <td className="py-1 pr-2 text-gray-700">{toPercent(row.todaySuccessRate)}</td>
+                      <td className="py-1 text-gray-700">{formatTimeAgo(row.lastActive)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-800">Inaktivitet</h2>
+              <span className="text-xs text-gray-500">Snabb uppföljning</span>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between rounded bg-gray-50 px-3 py-2">
+                <span className="text-gray-600">Inte aktiv idag</span>
+                <span className="font-semibold text-gray-800">{inactivityBuckets.notActiveToday}</span>
+              </div>
+              <div className="flex items-center justify-between rounded bg-amber-50 px-3 py-2">
+                <span className="text-amber-800">2+ dagar utan aktivitet</span>
+                <span className="font-semibold text-amber-700">{inactivityBuckets.twoDaysOrMore}</span>
+              </div>
+              <div className="flex items-center justify-between rounded bg-red-50 px-3 py-2">
+                <span className="text-red-700">7+ dagar utan aktivitet</span>
+                <span className="font-semibold text-red-700">{inactivityBuckets.sevenDaysOrMore}</span>
+              </div>
+              <div className="flex items-center justify-between rounded bg-blue-50 px-3 py-2">
+                <span className="text-blue-700">Ej startat alls</span>
+                <span className="font-semibold text-blue-700">{inactivityBuckets.neverStarted}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4 xl:col-span-2">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-800">Klassnivå</h2>
+              <span className="text-xs text-gray-500">Veckomål {weekGoal} uppgifter/elev</span>
+            </div>
+            {classSummaries.length === 0 ? (
+              <p className="text-sm text-gray-500">Inga klasser i aktuellt urval.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-gray-500 border-b">
+                      <th className="py-1 pr-2">Klass</th>
+                      <th className="py-1 pr-2">Elever</th>
+                      <th className="py-1 pr-2">Startat</th>
+                      <th className="py-1 pr-2">Ej startat</th>
+                      <th className="py-1 pr-2">Aktiva v</th>
+                      <th className="py-1">Nått veckomål</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {classSummaries.map(item => (
+                      <tr key={`class-summary-${item.classId}`} className="border-b last:border-b-0">
+                        <td className="py-1 pr-2 text-gray-700 font-medium">{item.className}</td>
+                        <td className="py-1 pr-2 text-gray-700">{item.studentCount}</td>
+                        <td className="py-1 pr-2 text-green-700 font-semibold">{item.startedCount}</td>
+                        <td className="py-1 pr-2 text-amber-700 font-semibold">{item.notStartedCount}</td>
+                        <td className="py-1 pr-2 text-blue-700">{item.weeklyActiveCount}</td>
+                        <td className="py-1 text-gray-700">
+                          {item.weeklyGoalReachedCount}/{item.studentCount}{' '}
+                          <span className="text-xs text-gray-500">({toPercent(item.weeklyGoalReachedRate)})</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-800">Gångertabell - utveckling (7 dagar)</h2>
+              <span className="text-xs text-gray-500">Jämfört med föregående 7 dagar</span>
+            </div>
+            {tableDevelopmentOverview.length === 0 ? (
+              <p className="text-sm text-gray-500">Ingen tabellaktivitet i aktuellt urval.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-gray-500 border-b">
+                      <th className="py-1 pr-2">Tabell</th>
+                      <th className="py-1 pr-2">Försök 7d</th>
+                      <th className="py-1 pr-2">Träff 7d</th>
+                      <th className="py-1 pr-2">Trend träff</th>
+                      <th className="py-1 pr-2">Median tid 7d</th>
+                      <th className="py-1">Trend tid</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {tableDevelopmentOverview.map(item => (
+                      <tr key={`table-dev-${item.table}`} className="border-b last:border-b-0">
+                        <td className="py-1 pr-2 font-medium text-gray-700">{item.table}:an</td>
+                        <td className="py-1 pr-2 text-gray-700">{item.attempts7d}</td>
+                        <td className="py-1 pr-2 text-gray-700">{toPercent(item.accuracy7d)}</td>
+                        <td className="py-1 pr-2 text-gray-700">
+                          {item.accuracyTrend === null
+                            ? '-'
+                            : `${item.accuracyTrend >= 0 ? '+' : ''}${Math.round(item.accuracyTrend * 100)} pp`}
+                        </td>
+                        <td className="py-1 pr-2 text-gray-700">
+                          {Number.isFinite(item.medianTime7d) ? `${item.medianTime7d.toFixed(1)}s` : '-'}
+                        </td>
+                        <td className="py-1 text-gray-700">
+                          {item.speedTrend === null
+                            ? '-'
+                            : `${item.speedTrend >= 0 ? '+' : ''}${Math.round(item.speedTrend * 100)}%`}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-gray-800">Behöver stöd nu</h2>
+              <span className="text-xs text-gray-500">Kompakt prioritering</span>
+            </div>
+            {supportRows.length === 0 ? (
+              <p className="text-sm text-gray-500">Inga akuta signaler i aktuellt urval.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="text-left text-gray-500 border-b">
+                      <th className="py-1 pr-2">Elev</th>
+                      <th className="py-1 pr-2">Klass</th>
+                      <th className="py-1 pr-2">Aktiv nu</th>
+                      <th className="py-1 pr-2">Risk</th>
+                      <th className="py-1 pr-2">Stöd</th>
+                      <th className="py-1 pr-2">Idag</th>
+                      <th className="py-1 pr-2">R/F idag</th>
+                      <th className="py-1 pr-2">Träff v</th>
+                      <th className="py-1 pr-2">Kämpar med</th>
+                      <th className="py-1 pr-2">Flaggor</th>
+                      <th className="py-1">Åtgärd</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {supportRows.map(row => (
+                      <tr key={`support-${row.studentId}`} className="border-b last:border-b-0">
+                        <td className="py-1 pr-2 text-gray-700">
+                          <div className="font-medium">{row.name}</div>
+                          <div className="text-[11px] text-gray-400">{row.studentId}</div>
+                        </td>
+                        <td className="py-1 pr-2 text-gray-700">{row.className || '-'}</td>
+                        <td className="py-1 pr-2">
+                          {row.activeNow ? (
+                            <span className="inline-flex items-center gap-1 text-green-700">
+                              <span className="w-2 h-2 rounded-full bg-green-500" />
+                              Ja
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-gray-500">
+                              <span className="w-2 h-2 rounded-full bg-gray-300" />
+                              Nej
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-1 pr-2"><RiskBadge level={row.riskLevel} score={row.riskScore} /></td>
+                        <td className="py-1 pr-2 text-gray-700">{row.supportScore}</td>
+                        <td className="py-1 pr-2 text-gray-700">{row.todayAttempts}</td>
+                        <td className="py-1 pr-2 text-gray-700">{row.todayCorrectCount}/{row.todayWrongCount}</td>
+                        <td className="py-1 pr-2 text-gray-700">{toPercent(row.weekSuccessRate)}</td>
+                        <td className="py-1 pr-2 text-gray-700">{row.todayStruggle?.skillLabel || '-'}</td>
+                        <td className="py-1 pr-2 text-gray-600">{row.riskCodes.slice(0, 2).join(' | ') || '-'}</td>
+                        <td className="py-1">
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => handleCreateQuickAssignment(row, 'focus')}
+                              className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-[11px]"
+                            >
+                              Fokus
+                            </button>
+                            <button
+                              onClick={() => handleCreateQuickAssignment(row, 'warmup')}
+                              className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px]"
+                            >
+                              Värm
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow p-4 mb-8">
@@ -1727,6 +1823,8 @@ function buildStudentRow(student, activeAssignment = null) {
     || todayByOperation[0]?.operation
     || inferOperationFromProblemType(recentProblems[recentProblems.length - 1]?.problemType || '')
   )
+  const focusOperation = todayByOperation[0]?.operation || primaryOperation || 'addition'
+  const activeNow = Boolean(lastActive && (Date.now() - lastActive) <= ACTIVE_NOW_WINDOW_MS)
 
   const riskSignals = buildRiskSignals({
     attempts,
@@ -1765,6 +1863,8 @@ function buildStudentRow(student, activeAssignment = null) {
     lastActive,
     inactiveDays,
     primaryOperation,
+    focusOperation,
+    activeNow,
     activeToday: todayAttempts > 0,
     todayAttempts,
     todayCorrectCount,

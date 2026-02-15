@@ -866,6 +866,7 @@ function StudentSession() {
             inputValue={answer}
             onInputChange={setAnswer}
             onSubmit={handleSubmit}
+            onNext={goToNextProblem}
             inputRef={inputRef}
             suppressSoftKeyboard={coarsePointer}
             leftPanel={showInlineScratchpad ? (
@@ -899,20 +900,11 @@ function StudentSession() {
               )}
             </div>
 
-            {feedback && (
-              <button
-                onClick={goToNextProblem}
-                className="px-10 py-3 text-white text-xl font-semibold rounded-xl transition-colors min-w-[140px] bg-blue-500 hover:bg-blue-600"
-              >
-                Nästa
-              </button>
-            )}
-
             {/* Hint text - reserverad plats */}
             <div className="h-6 mt-2">
               {feedback && (
                 <p className="text-sm text-gray-400">
-                  {feedback.correct ? 'Enter eller vänta...' : 'Tryck Enter eller Nästa när du är redo'}
+                  {feedback.correct ? 'Enter, knappsatsknappen eller vänta...' : 'Tryck Enter eller knappsatsknappen när du är redo'}
                 </p>
               )}
             </div>

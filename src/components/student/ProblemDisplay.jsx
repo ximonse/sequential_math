@@ -11,6 +11,7 @@ function ProblemDisplay({
   inputValue,
   onInputChange,
   onSubmit,
+  onNext,
   inputRef,
   suppressSoftKeyboard = false,
   leftPanel = null
@@ -95,17 +96,26 @@ function ProblemDisplay({
         </div>
 
         <AnswerKeypad
-          visible={isAnswering}
+          visible
           onKey={handleKeypadKey}
-          onSubmit={onSubmit}
-          canSubmit={inputValue.trim() !== ''}
+          onPrimaryAction={isAnswering ? onSubmit : onNext}
+          canSubmit={isAnswering ? inputValue.trim() !== '' : true}
+          actionLabel={isAnswering ? 'Svara' : 'Nasta'}
+          actionIsNext={!isAnswering}
         />
       </div>
     </div>
   )
 }
 
-function AnswerKeypad({ visible, onKey, onSubmit, canSubmit }) {
+function AnswerKeypad({
+  visible,
+  onKey,
+  onPrimaryAction,
+  canSubmit,
+  actionLabel = 'Svara',
+  actionIsNext = false
+}) {
   if (!visible) return null
 
   return (
@@ -124,11 +134,15 @@ function AnswerKeypad({ visible, onKey, onSubmit, canSubmit }) {
       </div>
       <button
         type="button"
-        onClick={onSubmit}
+        onClick={onPrimaryAction}
         disabled={!canSubmit}
-        className="mt-3 w-full h-32 rounded-xl bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-3xl font-bold"
+        className={`mt-3 w-full h-32 rounded-xl disabled:bg-gray-300 text-white text-3xl font-bold ${
+          actionIsNext
+            ? 'bg-blue-500 hover:bg-blue-600'
+            : 'bg-green-500 hover:bg-green-600'
+        }`}
       >
-        Svara
+        {actionLabel}
       </button>
       <div className="grid grid-cols-2 gap-3 mt-3">
         <button

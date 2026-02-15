@@ -100,7 +100,7 @@ function ProblemDisplay({
           onKey={handleKeypadKey}
           onPrimaryAction={isAnswering ? onSubmit : onNext}
           canSubmit={isAnswering ? inputValue.trim() !== '' : true}
-          actionLabel={isAnswering ? 'Svara' : 'Nasta'}
+          actionLabel={isAnswering ? 'Svara' : 'Nästa'}
           actionIsNext={!isAnswering}
         />
       </div>

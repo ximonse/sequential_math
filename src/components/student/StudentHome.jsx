@@ -7,7 +7,7 @@ import {
   isStudentSessionActive,
   saveProfile
 } from '../../lib/storage'
-import { getMasteryOverview, getStartOfWeekTimestamp } from '../../lib/studentProfile'
+import { getStartOfWeekTimestamp } from '../../lib/studentProfile'
 import { getOperationLabel, OPERATION_LABELS } from '../../lib/operations'
 import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 import {
@@ -25,6 +25,10 @@ import {
   incrementTelemetryDailyMetric,
   recordTelemetryEvent
 } from '../../lib/telemetry'
+
+const MASTERY_MIN_ATTEMPTS = 5
+const MASTERY_MIN_SUCCESS_RATE = 0.8
+const LEVELS = Array.from({ length: 12 }, (_, index) => index + 1)
 
 function StudentHome() {
   const { studentId } = useParams()
@@ -153,21 +157,37 @@ function StudentHome() {
     }
   }, [profile, updateHomePresence])
 
-  const masteredOperations = useMemo(() => {
+  const operationMasteryBoards = useMemo(() => {
     if (!profile) return []
-    const historical = getMasteryOverview(profile)
-    const weekly = getMasteryOverview(profile, { since: getStartOfWeekTimestamp() })
+    const weekStart = getStartOfWeekTimestamp()
+    const operationIds = Object.keys(OPERATION_LABELS)
+    const buckets = Object.fromEntries(
+      operationIds.map(operation => [operation, createOperationLevelBuckets()])
+    )
 
-    const operations = Array.from(new Set([
-      ...Object.keys(historical),
-      ...Object.keys(weekly)
-    ])).sort((a, b) => a.localeCompare(b))
+    for (const result of (Array.isArray(profile.recentProblems) ? profile.recentProblems : [])) {
+      const operation = inferOperationFromProblemType(result.problemType)
+      if (!buckets[operation]) continue
 
-    return operations.map(operation => ({
+      const level = Math.round(Number(result?.difficulty?.conceptual_level || 0))
+      if (!Number.isInteger(level) || level < 1 || level > 12) continue
+
+      const historicalBucket = buckets[operation].historical[level]
+      historicalBucket.attempts += 1
+      if (result.correct) historicalBucket.correct += 1
+
+      if (Number(result.timestamp || 0) >= weekStart) {
+        const weeklyBucket = buckets[operation].weekly[level]
+        weeklyBucket.attempts += 1
+        if (result.correct) weeklyBucket.correct += 1
+      }
+    }
+
+    return operationIds.map(operation => ({
       operation,
-      historical: historical[operation] || [],
-      weekly: weekly[operation] || []
-    })).filter(item => item.historical.length > 0 || item.weekly.length > 0)
+      historical: LEVELS.map(level => buildLevelMasteryView(level, buckets[operation].historical[level])),
+      weekly: LEVELS.map(level => buildLevelMasteryView(level, buckets[operation].weekly[level]))
+    }))
   }, [profile])
 
   const tableStatus = useMemo(() => buildTableStatus(profile), [profile])
@@ -471,21 +491,34 @@ function StudentHome() {
 
         <div className="bg-white border border-gray-200 rounded-xl p-4">
           <h2 className="text-lg font-semibold text-gray-800 mb-3">Klarade nivåer</h2>
-          {masteredOperations.length === 0 ? (
-            <p className="text-sm text-gray-500">Inga nivåer klara ännu. Börja träna.</p>
-          ) : (
-            <div className="space-y-3">
-              {masteredOperations.map((item) => (
-                <div key={item.operation}>
-                  <p className="text-sm font-medium text-gray-700 mb-1">{getOperationLabel(item.operation)}</p>
-                  <OperationMasteryRows
-                    operation={item.operation}
-                    historical={item.historical}
-                    weekly={item.weekly}
-                  />
-                </div>
-              ))}
-            </div>
+          <p className="text-xs text-gray-500 mb-3">
+            Alla nivåer 1-12 visas. Grön = klarad (minst {MASTERY_MIN_ATTEMPTS} försök och minst {Math.round(MASTERY_MIN_SUCCESS_RATE * 100)}% rätt), blå = pågående, transparent = ej tränad ännu.
+          </p>
+          <div className="flex flex-wrap gap-2 text-[11px] mb-4">
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-green-200 bg-green-50 text-green-700">
+              Klarad
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-blue-200 bg-blue-50 text-blue-700">
+              Pågående
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-gray-200 bg-gray-50 text-gray-400 opacity-60">
+              Ej startad
+            </span>
+          </div>
+          <div className="space-y-4">
+            {operationMasteryBoards.map((item) => (
+              <div key={item.operation}>
+                <p className="text-sm font-medium text-gray-700 mb-1">{getOperationLabel(item.operation)}</p>
+                <OperationMasteryRows
+                  operation={item.operation}
+                  historical={item.historical}
+                  weekly={item.weekly}
+                />
+              </div>
+            ))}
+          </div>
+          {profile.recentProblems.length === 0 && (
+            <p className="text-sm text-gray-500 mt-4">Ingen träningshistorik ännu.</p>
           )}
         </div>
       </div>
@@ -495,39 +528,94 @@ function StudentHome() {
 
 function OperationMasteryRows({ operation, historical, weekly }) {
   return (
-    <div className="space-y-1">
-      {historical.length > 0 && (
-        <MasteryRow
-          label="Historiskt"
-          operation={operation}
-          levels={historical}
-        />
-      )}
-      {weekly.length > 0 && (
-        <MasteryRow
-          label="Denna vecka"
-          operation={operation}
-          levels={weekly}
-        />
-      )}
+    <div className="space-y-2">
+      <MasteryLevelGrid
+        label="Historiskt"
+        operation={operation}
+        levels={historical}
+      />
+      <MasteryLevelGrid
+        label="Denna vecka"
+        operation={operation}
+        levels={weekly}
+      />
     </div>
   )
 }
 
-function MasteryRow({ label, operation, levels }) {
+function MasteryLevelGrid({ label, operation, levels }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="text-xs text-gray-500 min-w-[88px]">{label}</span>
-      {levels.map(level => (
-        <span
-          key={`${operation}-${label}-${level}`}
-          className="inline-flex items-center px-2.5 py-1 rounded-md bg-green-100 text-green-800 text-xs font-semibold"
-        >
-          Nivå {level}
-        </span>
-      ))}
+    <div className="flex flex-col gap-1">
+      <span className="text-xs text-gray-500">{label}</span>
+      <div className="flex flex-wrap gap-1.5">
+        {levels.map((levelData) => (
+          <span
+            key={`${operation}-${label}-${levelData.level}`}
+            title={levelData.title}
+            className={`inline-flex h-11 w-11 flex-col items-center justify-center rounded-md border text-[10px] leading-none ${getMasteryLevelClassName(levelData.status)}`}
+          >
+            <span className="font-bold text-[11px]">{levelData.level}</span>
+            <span className="mt-0.5">{levelData.metricsLabel}</span>
+          </span>
+        ))}
+      </div>
     </div>
   )
+}
+
+function createOperationLevelBuckets() {
+  const makeLevelMap = () => Object.fromEntries(
+    LEVELS.map(level => [level, { attempts: 0, correct: 0 }])
+  )
+
+  return {
+    historical: makeLevelMap(),
+    weekly: makeLevelMap()
+  }
+}
+
+function buildLevelMasteryView(level, bucket = {}) {
+  const attempts = Number(bucket.attempts || 0)
+  const correct = Number(bucket.correct || 0)
+  const successRate = attempts > 0 ? correct / attempts : 0
+  const isMastered = attempts >= MASTERY_MIN_ATTEMPTS && successRate >= MASTERY_MIN_SUCCESS_RATE
+  const isStarted = attempts > 0
+
+  const status = isMastered ? 'mastered' : (isStarted ? 'started' : 'empty')
+  const successPercent = Math.round(successRate * 100)
+  const metricsLabel = isStarted ? `${correct}/${attempts}` : '-'
+  const title = isStarted
+    ? `Nivå ${level}: ${correct}/${attempts} rätt (${successPercent}%)`
+    : `Nivå ${level}: ingen träning ännu`
+
+  return {
+    level,
+    attempts,
+    correct,
+    successRate,
+    successPercent,
+    status,
+    metricsLabel,
+    title
+  }
+}
+
+function getMasteryLevelClassName(status) {
+  if (status === 'mastered') {
+    return 'bg-green-100 text-green-800 border-green-300'
+  }
+  if (status === 'started') {
+    return 'bg-blue-50 text-blue-700 border-blue-200'
+  }
+  return 'bg-gray-50 text-gray-400 border-gray-200 opacity-45'
+}
+
+function inferOperationFromProblemType(problemType = '') {
+  if (problemType.startsWith('add_')) return 'addition'
+  if (problemType.startsWith('sub_')) return 'subtraction'
+  if (problemType.startsWith('mul_')) return 'multiplication'
+  if (problemType.startsWith('div_')) return 'division'
+  return 'addition'
 }
 
 export default StudentHome

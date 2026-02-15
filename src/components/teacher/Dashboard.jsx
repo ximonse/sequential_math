@@ -66,7 +66,6 @@ function Dashboard() {
   const [selectedClassIds, setSelectedClassIds] = useState([])
   const [classNameInput, setClassNameInput] = useState('')
   const [addToClassId, setAddToClassId] = useState('')
-  const [overviewClassId, setOverviewClassId] = useState('')
   const [rosterInput, setRosterInput] = useState('')
   const [classStatus, setClassStatus] = useState('')
   const [dashboardStatus, setDashboardStatus] = useState('')
@@ -113,7 +112,6 @@ function Dashboard() {
     setClasses(initialClasses)
     if (initialClasses.length > 0) {
       setAddToClassId(initialClasses[0].id)
-      setOverviewClassId(initialClasses[0].id)
     }
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
@@ -125,20 +123,6 @@ function Dashboard() {
       setSelectedTicketDispatchId(initialDispatches[0].id)
     }
   }, [loadStudents])
-
-  useEffect(() => {
-    const availableClasses = selectedClassIds.length > 0
-      ? classes.filter(item => selectedClassIds.includes(item.id))
-      : classes
-
-    if (availableClasses.length === 0) {
-      setOverviewClassId('')
-      return
-    }
-    if (!overviewClassId || !availableClasses.some(item => item.id === overviewClassId)) {
-      setOverviewClassId(availableClasses[0].id)
-    }
-  }, [classes, overviewClassId, selectedClassIds])
 
   useEffect(() => {
     if (ticketDispatches.length === 0) {
@@ -200,9 +184,6 @@ function Dashboard() {
     if (!addToClassId && refreshedClasses.length > 0) {
       setAddToClassId(refreshedClasses[0].id)
     }
-    if ((!overviewClassId || !refreshedClasses.some(item => item.id === overviewClassId)) && refreshedClasses.length > 0) {
-      setOverviewClassId(refreshedClasses[0].id)
-    }
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
     setTicketTemplates(getTicketTemplates())
@@ -259,24 +240,28 @@ function Dashboard() {
     .slice(0, 10)
   const inactivityBuckets = buildInactivityBuckets(tableRows)
   const classSummaries = buildClassSummaries(classes, students, selectedClassIds, weekGoal)
-  const overviewClassOptions = selectedClassIds.length > 0
-    ? classes.filter(item => selectedClassIds.includes(item.id))
-    : classes
   const classOverviewRows = useMemo(
-    () => allRows
-      .filter(row => (overviewClassId ? recordMatchesClassFilter(row, [overviewClassId]) : false))
-      .sort((a, b) => a.name.localeCompare(b.name, 'sv')),
-    [allRows, overviewClassId]
+    () => [...filteredRows].sort((a, b) => {
+      const classCompare = String(a.classNameLabel || a.className || '').localeCompare(
+        String(b.classNameLabel || b.className || ''),
+        'sv'
+      )
+      if (classCompare !== 0) return classCompare
+      return String(a.name || '').localeCompare(String(b.name || ''), 'sv')
+    }),
+    [filteredRows]
   )
   const classOverviewMeta = useMemo(() => {
-    const classItem = classes.find(item => item.id === overviewClassId) || null
+    const selectedClassNames = selectedClassIds
+      .map(classId => String(classNameById.get(classId) || '').trim())
+      .filter(Boolean)
     const activeNowCount = classOverviewRows.filter(row => row.activeNow).length
     return {
-      className: classItem?.name || 'Välj klass',
+      className: selectedClassNames.length > 0 ? selectedClassNames.join(', ') : 'Alla klasser',
       studentCount: classOverviewRows.length,
       activeNowCount
     }
-  }, [classes, overviewClassId, classOverviewRows])
+  }, [selectedClassIds, classNameById, classOverviewRows])
   const tableStudentSet = useMemo(
     () => new Set(tableSelectedStudentIds),
     [tableSelectedStudentIds]
@@ -837,7 +822,6 @@ function Dashboard() {
     const updatedClasses = getClasses()
     setClasses(updatedClasses)
     setAddToClassId(result.classRecord.id)
-    setOverviewClassId(result.classRecord.id)
     void loadStudents()
   }
 
@@ -868,9 +852,6 @@ function Dashboard() {
     setClasses(updatedClasses)
     if (addToClassId === classId) {
       setAddToClassId(updatedClasses[0]?.id || '')
-    }
-    if (overviewClassId === classId) {
-      setOverviewClassId(updatedClasses[0]?.id || '')
     }
     setClassStatus('Klass borttagen.')
   }
@@ -1746,23 +1727,8 @@ function Dashboard() {
 
         <div className="bg-white rounded-lg shadow p-4 mb-8">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <h2 className="text-lg font-semibold text-gray-800">Klassvy - snabbstatus</h2>
-            <div className="flex items-center gap-2">
-              <label className="text-xs text-gray-500" htmlFor="overviewClassSelect">Klass</label>
-              <select
-                id="overviewClassSelect"
-                value={overviewClassId}
-                onChange={(e) => setOverviewClassId(e.target.value)}
-                className="px-2 py-1 border rounded text-sm"
-              >
-                <option value="">Välj klass</option>
-                {overviewClassOptions.map(item => (
-                  <option key={`overview-${item.id}`} value={item.id}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <h2 className="text-lg font-semibold text-gray-800">Klass/gruppvy - snabbstatus</h2>
+            <span className="text-xs text-gray-500">Styrs av urvalet högst upp</span>
           </div>
           <p className="text-xs text-gray-500 mb-3">
             {classOverviewMeta.className}: {classOverviewMeta.activeNowCount}/{classOverviewMeta.studentCount} aktiv(a) just nu
@@ -1770,10 +1736,8 @@ function Dashboard() {
           <p className="text-[11px] text-gray-400 mb-3">
             Status: Grön = fokus + aktivitet senaste 2 min, Orange = fokus men ingen aktivitet 2-4 min, Svart = inne idag men ej aktiv nu, Röd = ej inne idag.
           </p>
-          {overviewClassId === '' ? (
-            <p className="text-sm text-gray-500">Välj en klass för att se elevernas live-status.</p>
-          ) : classOverviewRows.length === 0 ? (
-            <p className="text-sm text-gray-500">Inga elever hittades i vald klass.</p>
+          {classOverviewRows.length === 0 ? (
+            <p className="text-sm text-gray-500">Inga elever hittades i valt urval.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -2156,31 +2120,9 @@ function Dashboard() {
           <p className="text-xs text-gray-500 mb-2">
             En elev kan vara med i flera klasser/grupper samtidigt.
           </p>
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <button
-              onClick={clearClassFilter}
-              className={`px-2 py-1 rounded text-xs ${
-                selectedClassIds.length === 0
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Alla klasser
-            </button>
-            {classes.map(item => (
-              <button
-                key={`filter-${item.id}`}
-                onClick={() => handleToggleClassFilter(item.id)}
-                className={`px-2 py-1 rounded text-xs ${
-                  selectedClassIds.includes(item.id)
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {item.name}
-              </button>
-            ))}
-          </div>
+          <p className="text-xs text-gray-500 mb-2">
+            Tips: klass-/gruppurval för alla vyer styrs längst upp på sidan.
+          </p>
           <p className="text-xs text-gray-600 mb-3">{classStatus || ' '}</p>
 
           {classes.length > 0 && (

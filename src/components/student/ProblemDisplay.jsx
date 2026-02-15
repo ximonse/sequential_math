@@ -82,7 +82,7 @@ function ProblemDisplay({
           {/* Fel-info under */}
           <div className="h-8 mt-2">
             {feedback && !feedback.correct && (
-              <span className="text-lg text-gray-400 line-through">
+              <span className="text-2xl font-semibold text-red-600 line-through">
                 Du svarade: {formatNumber(feedback.studentAnswer)}
               </span>
             )}

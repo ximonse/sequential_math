@@ -777,8 +777,22 @@ function StudentSession() {
       if (tableMilestone.masteredTwoToNineToday) {
         markDailyBossShown(profile)
         saveProfile(profile)
+        const finalizeAfter = tableMilestone.finalizeAfter
         setTableMilestone(null)
-        window.location.href = TABLE_BOSS_URL
+        if (finalizeAfter) {
+          navigate(`/student/${studentId}`)
+        } else if (tableQueue.length > 0) {
+          const nextProblem = createTableProblem(tableQueue[0])
+          setCurrentProblem(nextProblem)
+          setAnswer('')
+          setFeedback(null)
+          resetAttentionTracker()
+          setStartTime(Date.now())
+        }
+        const opened = window.open(TABLE_BOSS_URL, '_blank', 'noopener,noreferrer')
+        if (!opened) {
+          window.location.href = TABLE_BOSS_URL
+        }
         return
       }
       const finalizeAfter = tableMilestone.finalizeAfter

@@ -253,6 +253,26 @@ function StudentHome() {
     saveProfile(profile)
   }
 
+  const startLevelPractice = useCallback((operation, level) => {
+    if (!profile) return
+    if (!Object.prototype.hasOwnProperty.call(OPERATION_LABELS, operation)) return
+    if (!Number.isInteger(level) || level < 1 || level > 12) return
+
+    const now = Date.now()
+    recordTelemetryEvent(profile, 'practice_launch_level_focus', {
+      operation,
+      level,
+      progressionMode: selectedProgressionMode
+    }, now)
+    incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
+    saveProfile(profile)
+    navigate(buildPracticePath(studentId, {
+      mode: operation,
+      progressionMode: selectedProgressionMode,
+      level
+    }))
+  }, [profile, navigate, selectedProgressionMode, studentId])
+
   if (!profile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -494,6 +514,9 @@ function StudentHome() {
           <p className="text-xs text-gray-500 mb-3">
             Alla nivåer 1-12 visas. Grön = klarad (minst {MASTERY_MIN_ATTEMPTS} försök och minst {Math.round(MASTERY_MIN_SUCCESS_RATE * 100)}% rätt), blå = pågående, transparent = ej tränad ännu.
           </p>
+          <p className="text-xs text-gray-500 mb-3">
+            Tryck på en nivå-ruta för att öva just den nivån.
+          </p>
           <div className="flex flex-wrap gap-2 text-[11px] mb-4">
             <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-green-200 bg-green-50 text-green-700">
               Klarad
@@ -513,6 +536,7 @@ function StudentHome() {
                   operation={item.operation}
                   historical={item.historical}
                   weekly={item.weekly}
+                  onSelectLevel={startLevelPractice}
                 />
               </div>
             ))}
@@ -526,37 +550,41 @@ function StudentHome() {
   )
 }
 
-function OperationMasteryRows({ operation, historical, weekly }) {
+function OperationMasteryRows({ operation, historical, weekly, onSelectLevel }) {
   return (
     <div className="space-y-2">
       <MasteryLevelGrid
         label="Historiskt"
         operation={operation}
         levels={historical}
+        onSelectLevel={onSelectLevel}
       />
       <MasteryLevelGrid
         label="Denna vecka"
         operation={operation}
         levels={weekly}
+        onSelectLevel={onSelectLevel}
       />
     </div>
   )
 }
 
-function MasteryLevelGrid({ label, operation, levels }) {
+function MasteryLevelGrid({ label, operation, levels, onSelectLevel }) {
   return (
     <div className="flex flex-col gap-1">
       <span className="text-xs text-gray-500">{label}</span>
       <div className="flex flex-wrap gap-1.5">
         {levels.map((levelData) => (
-          <span
+          <button
+            type="button"
             key={`${operation}-${label}-${levelData.level}`}
             title={levelData.title}
+            onClick={() => onSelectLevel(operation, levelData.level)}
             className={`inline-flex h-11 w-11 flex-col items-center justify-center rounded-md border text-[10px] leading-none ${getMasteryLevelClassName(levelData.status)}`}
           >
             <span className="font-bold text-[11px]">{levelData.level}</span>
             <span className="mt-0.5">{levelData.metricsLabel}</span>
-          </span>
+          </button>
         ))}
       </div>
     </div>
@@ -739,6 +767,10 @@ function buildPracticePath(studentId, options = {}) {
   if (options.mode) params.set('mode', options.mode)
   const progressionMode = normalizeProgressionMode(options.progressionMode, PROGRESSION_MODE_CHALLENGE)
   params.set('pace', progressionMode)
+  const level = Number(options.level)
+  if (Number.isInteger(level) && level >= 1 && level <= 12) {
+    params.set('level', String(level))
+  }
   const query = params.toString()
   return query
     ? `/student/${studentId}/practice?${query}`

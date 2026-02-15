@@ -82,8 +82,13 @@ function StudentSession() {
   const assignmentId = searchParams.get('assignment')
   const mode = searchParams.get('mode')
   const progressionMode = normalizeProgressionMode(searchParams.get('pace'))
+  const fixedPracticeLevel = parsePracticeLevel(searchParams.get('level'))
   const tableSet = useMemo(() => parseTableSet(searchParams.get('tables')), [searchParams])
   const isTableDrill = tableSet.length > 0
+  const isLevelFocusMode = !isTableDrill
+    && mode
+    && isKnownMode(mode)
+    && Number.isInteger(fixedPracticeLevel)
 
   const resetAttentionTracker = useCallback(() => {
     attentionRef.current = createAttentionTracker()
@@ -113,13 +118,21 @@ function StudentSession() {
   }, [studentId, navigate, location.pathname, location.search])
 
   useEffect(() => {
+    if (mode && isKnownMode(mode)) {
+      setSessionAssignment(null)
+      return
+    }
+    if (tableSet.length > 0) {
+      setSessionAssignment(null)
+      return
+    }
     if (!assignmentId) {
       setSessionAssignment(getActiveAssignment())
       return
     }
     const assignment = getAssignmentById(assignmentId)
     setSessionAssignment(assignment)
-  }, [assignmentId])
+  }, [assignmentId, mode, tableSet])
 
   useEffect(() => {
     if (!profile) return undefined
@@ -245,7 +258,8 @@ function StudentSession() {
         sessionWarmup,
         completedThisSession,
         tableSet,
-        progressionMode
+        progressionMode,
+        fixedPracticeLevel
       )
       const problem = safeSelectProblem(profile, rules)
       if (!problem) return
@@ -253,7 +267,7 @@ function StudentSession() {
       resetAttentionTracker()
       setStartTime(Date.now())
     }
-  }, [profile, currentProblem, feedback, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, progressionMode, isTableDrill, tableQueue, resetAttentionTracker])
+  }, [profile, currentProblem, feedback, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, progressionMode, fixedPracticeLevel, isTableDrill, tableQueue, resetAttentionTracker])
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return undefined
@@ -359,7 +373,8 @@ function StudentSession() {
       sessionWarmup,
       completedThisSession,
       tableSet,
-      progressionMode
+      progressionMode,
+      fixedPracticeLevel
     )
     const nextProblem = safeSelectProblem(profile, rules)
     if (!nextProblem) return
@@ -368,7 +383,7 @@ function StudentSession() {
     setFeedback(null)
     resetAttentionTracker()
     setStartTime(Date.now())
-  }, [profile, pendingBreakSuggestion, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, progressionMode, isTableDrill, tableQueue, resetAttentionTracker, sessionCount])
+  }, [profile, pendingBreakSuggestion, sessionAssignment, mode, sessionWarmup, completedThisSession, tableSet, progressionMode, fixedPracticeLevel, isTableDrill, tableQueue, resetAttentionTracker, sessionCount])
 
   useEffect(() => {
     const onVisibilityChange = () => {
@@ -464,7 +479,7 @@ function StudentSession() {
       }
     )
 
-    if (!isTableDrill) {
+    if (!isTableDrill && !isLevelFocusMode) {
       // Justera svårighet i vanliga lägen
       adjustDifficulty(profile, correct, {
         progressionMode,
@@ -866,6 +881,7 @@ function StudentSession() {
             mode={mode}
             tableSet={tableSet}
             progressionMode={progressionMode}
+            fixedLevel={fixedPracticeLevel}
           />
           {sessionError && (
             <div className="mb-4 rounded-lg bg-red-50 text-red-700 border border-red-200 px-3 py-2 text-sm">
@@ -971,7 +987,7 @@ function CurrentOperationMastery({ operationLabel, historical, weekly }) {
   )
 }
 
-function SessionModeBanner({ assignment, mode, tableSet, progressionMode }) {
+function SessionModeBanner({ assignment, mode, tableSet, progressionMode, fixedLevel = null }) {
   const paceLabel = getProgressionModeLabel(progressionMode)
   if (!assignment) {
     if (tableSet.length > 0) {
@@ -985,7 +1001,10 @@ function SessionModeBanner({ assignment, mode, tableSet, progressionMode }) {
     if (mode && isKnownMode(mode)) {
       return (
         <div className="mb-5 bg-white border border-emerald-200 text-emerald-700 rounded-lg px-4 py-2 text-sm">
-          Läge: {getOperationLabel(mode)} | Tempo: {paceLabel}
+          Läge: {getOperationLabel(mode)}
+          {Number.isInteger(fixedLevel) ? ` | Nivåfokus ${fixedLevel}` : ''}
+          {' | '}
+          Tempo: {paceLabel}
         </div>
       )
     }
@@ -1003,7 +1022,7 @@ function SessionModeBanner({ assignment, mode, tableSet, progressionMode }) {
   )
 }
 
-function getSessionRules(assignment, mode, warmup, solvedCount, tableSet = [], progressionMode = 'challenge') {
+function getSessionRules(assignment, mode, warmup, solvedCount, tableSet = [], progressionMode = 'challenge', fixedLevel = null) {
   const rules = { progressionMode: normalizeProgressionMode(progressionMode) }
 
   if (assignment) {
@@ -1019,6 +1038,17 @@ function getSessionRules(assignment, mode, warmup, solvedCount, tableSet = [], p
   if (Array.isArray(tableSet) && tableSet.length > 0) {
     rules.allowedTypes = ['multiplication']
     rules.tableSet = tableSet
+  }
+
+  if (Number.isInteger(fixedLevel) && mode && isKnownMode(mode) && (!Array.isArray(tableSet) || tableSet.length === 0)) {
+    const clampedLevel = Math.max(1, Math.min(12, fixedLevel))
+    rules.allowedTypes = [mode]
+    rules.levelRange = [clampedLevel, clampedLevel]
+    rules.forcedLevel = clampedLevel
+    rules.forcedType = mode
+    rules.forceReason = 'manual_level_focus'
+    rules.forceBucket = 'core'
+    return rules
   }
 
   if (warmup && solvedCount < warmup.warmupCount) {
@@ -1043,6 +1073,14 @@ function parseTableSet(value) {
     .filter(v => Number.isInteger(v) && v >= 2 && v <= 12)
 
   return Array.from(new Set(entries)).sort((a, b) => a - b)
+}
+
+function parsePracticeLevel(value) {
+  if (value === null || value === undefined || value === '') return null
+  const level = Number(value)
+  if (!Number.isInteger(level)) return null
+  if (level < 1 || level > 12) return null
+  return level
 }
 
 function createTableQueue(tableSet) {

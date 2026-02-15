@@ -692,8 +692,8 @@ function StudentSession() {
 
           <MathScratchpad visible={showScratchpad && currentProblem?.type === 'multiplication' && !feedback} />
 
-          {/* Knapp + feedback - fast höjd */}
-          <div className="mt-8 flex flex-col items-center h-28">
+          {/* Feedback + nästa-knapp */}
+          <div className="mt-8 flex flex-col items-center min-h-28">
             {/* Feedback text - reserverad plats */}
             <div className="h-10 flex items-center">
               {feedback && (
@@ -703,18 +703,14 @@ function StudentSession() {
               )}
             </div>
 
-            {/* Knapp - alltid samma plats och storlek */}
-            <button
-              onClick={feedback ? goToNextProblem : handleSubmit}
-              disabled={!feedback && answer.trim() === ''}
-              className={`px-10 py-3 text-white text-xl font-semibold rounded-xl transition-colors min-w-[140px] ${
-                feedback
-                  ? 'bg-blue-500 hover:bg-blue-600'
-                  : 'bg-green-500 hover:bg-green-600 disabled:bg-gray-300'
-              }`}
-            >
-              {feedback ? 'Nästa' : 'Svara'}
-            </button>
+            {feedback && (
+              <button
+                onClick={goToNextProblem}
+                className="px-10 py-3 text-white text-xl font-semibold rounded-xl transition-colors min-w-[140px] bg-blue-500 hover:bg-blue-600"
+              >
+                Nästa
+              </button>
+            )}
 
             {/* Hint text - reserverad plats */}
             <div className="h-6 mt-2">

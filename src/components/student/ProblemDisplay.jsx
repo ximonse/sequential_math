@@ -37,7 +37,7 @@ function ProblemDisplay({ problem, feedback, inputValue, onInputChange, onSubmit
 
   return (
     <div className="w-full">
-      <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px] md:items-start">
+      <div className="grid gap-5 md:gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
         <div className="flex flex-col items-center">
           {/* Fråga med input/svar inline */}
           <div className="text-4xl md:text-5xl font-bold text-gray-800 flex items-center justify-center flex-wrap gap-y-2">
@@ -83,45 +83,55 @@ function ProblemDisplay({ problem, feedback, inputValue, onInputChange, onSubmit
         <AnswerKeypad
           visible={isAnswering}
           onKey={handleKeypadKey}
+          onSubmit={onSubmit}
+          canSubmit={inputValue.trim() !== ''}
         />
       </div>
     </div>
   )
 }
 
-function AnswerKeypad({ visible, onKey }) {
+function AnswerKeypad({ visible, onKey, onSubmit, canSubmit }) {
   if (!visible) return null
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-3 select-none">
-      <div className="grid grid-cols-3 gap-2">
+    <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-5 select-none">
+      <div className="grid grid-cols-3 gap-3">
         {KEYPAD_LAYOUT.flat().map(key => (
           <button
             key={key}
             type="button"
             onClick={() => onKey(key)}
-            className="h-12 rounded-lg bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-xl font-semibold text-gray-800"
+            className="h-16 md:h-[72px] rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-2xl font-semibold text-gray-800"
           >
             {key}
           </button>
         ))}
       </div>
-      <div className="grid grid-cols-2 gap-2 mt-2">
+      <div className="grid grid-cols-2 gap-3 mt-3">
         <button
           type="button"
           onClick={() => onKey('backspace')}
-          className="h-11 rounded-lg bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-sm font-semibold text-amber-900"
+          className="h-12 rounded-xl bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-base font-semibold text-amber-900"
         >
           Radera
         </button>
         <button
           type="button"
           onClick={() => onKey('clear')}
-          className="h-11 rounded-lg bg-red-100 hover:bg-red-200 active:bg-red-300 text-sm font-semibold text-red-900"
+          className="h-12 rounded-xl bg-red-100 hover:bg-red-200 active:bg-red-300 text-base font-semibold text-red-900"
         >
           Rensa
         </button>
       </div>
+      <button
+        type="button"
+        onClick={onSubmit}
+        disabled={!canSubmit}
+        className="mt-3 w-full h-16 rounded-xl bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white text-2xl font-bold"
+      >
+        Svara
+      </button>
     </div>
   )
 }

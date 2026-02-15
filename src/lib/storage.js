@@ -254,6 +254,24 @@ export async function authenticateStudent(studentIdInput, passwordInput) {
     }
   }
 
+  if (CLOUD_ENABLED) {
+    try {
+      const cloudProfile = await loadProfileFromCloud(studentId, {
+        studentPassword: password,
+        failOnUnauthorized: true
+      })
+      if (cloudProfile) {
+        profile = chooseFreshestProfile(profile, cloudProfile)
+        saveProfileLocalOnly(profile)
+      }
+    } catch (error) {
+      if (error?.code === 'UNAUTHORIZED') {
+        return { ok: false, error: 'Fel lösenord.' }
+      }
+      // Behåll lokal inloggning om cloud tillfälligt inte svarar.
+    }
+  }
+
   ensureProfileAuth(profile)
 
   let validPassword = await verifyPasswordForProfile(profile, password)
@@ -683,7 +701,32 @@ function getLastProblemTimestamp(profile) {
   return profile?.recentProblems?.[profile.recentProblems.length - 1]?.timestamp || 0
 }
 
+function getLastTicketSignalTimestamp(profile) {
+  const inbox = profile?.ticketInbox && typeof profile.ticketInbox === 'object'
+    ? profile.ticketInbox
+    : null
+  const inboxTs = Math.max(
+    Number(inbox?.updatedAt || 0),
+    Number(inbox?.publishedAt || 0),
+    Number(inbox?.clearedAt || 0)
+  )
+
+  const responses = Array.isArray(profile?.ticketResponses) ? profile.ticketResponses : []
+  let responseTs = 0
+  for (const item of responses) {
+    const ts = Number(item?.answeredAt || 0)
+    if (ts > responseTs) responseTs = ts
+  }
+
+  return Math.max(inboxTs, responseTs)
+}
+
 function chooseFreshestProfile(localProfile, cloudProfile) {
+  const localTicketTs = getLastTicketSignalTimestamp(localProfile)
+  const cloudTicketTs = getLastTicketSignalTimestamp(cloudProfile)
+  if (cloudTicketTs > localTicketTs) return cloudProfile
+  if (cloudTicketTs < localTicketTs) return localProfile
+
   const localProblemTs = getLastProblemTimestamp(localProfile)
   const cloudProblemTs = getLastProblemTimestamp(cloudProfile)
 

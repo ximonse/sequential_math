@@ -527,6 +527,7 @@ function Dashboard() {
   const handlePublishTicketToHome = (dispatchId) => {
     const dispatch = ticketDispatches.find(item => item.id === dispatchId)
     if (!dispatch) return
+    const now = Date.now()
     const payload = {
       dispatchId: dispatch.id,
       ticketId: dispatch.ticketId || '',
@@ -553,7 +554,9 @@ function Dashboard() {
       next.ticketInbox.activeDispatchId = dispatch.id
       next.ticketInbox.activePayload = payload
       next.ticketInbox.activeEncoded = encoded
-      next.ticketInbox.publishedAt = Date.now()
+      next.ticketInbox.publishedAt = now
+      next.ticketInbox.updatedAt = now
+      next.ticketInbox.clearedAt = 0
       saveProfile(next)
       return next
     })
@@ -563,6 +566,7 @@ function Dashboard() {
   }
 
   const handleClearTicketFromHome = (dispatchId) => {
+    const now = Date.now()
     const targetIds = new Set(ticketResolvedTargetStudentIds)
     if (targetIds.size === 0) {
       setDashboardStatus('Välj minst en klass eller elev att rensa ticket från.')
@@ -576,7 +580,9 @@ function Dashboard() {
         ...next.ticketInbox,
         activeDispatchId: '',
         activePayload: null,
-        activeEncoded: ''
+        activeEncoded: '',
+        updatedAt: now,
+        clearedAt: now
       }
       saveProfile(next)
       return next

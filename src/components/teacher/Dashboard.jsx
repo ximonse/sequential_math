@@ -55,6 +55,9 @@ const SUPPORT_THRESHOLD = 45
 const DAY_MS = 24 * 60 * 60 * 1000
 const DEFAULT_WEEKLY_GOAL = 20
 const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+const LEVELS = Array.from({ length: 12 }, (_, index) => index + 1)
+const MASTERY_MIN_ATTEMPTS = 5
+const MASTERY_MIN_SUCCESS_RATE = 0.8
 
 function Dashboard() {
   const [students, setStudents] = useState([])
@@ -94,6 +97,7 @@ function Dashboard() {
   const [ticketHistorySearch, setTicketHistorySearch] = useState('')
   const [tableSelectedStudentIds, setTableSelectedStudentIds] = useState([])
   const [tableStudentSearch, setTableStudentSearch] = useState('')
+  const [detailStudentId, setDetailStudentId] = useState('')
   const navigate = useNavigate()
 
   const loadStudents = useCallback(async () => {
@@ -171,6 +175,16 @@ function Dashboard() {
   }, [students, tableSelectedStudentIds.length])
 
   useEffect(() => {
+    if (filteredStudents.length === 0) {
+      if (detailStudentId !== '') setDetailStudentId('')
+      return
+    }
+    if (!detailStudentId || !filteredStudents.some(item => item.studentId === detailStudentId)) {
+      setDetailStudentId(filteredStudents[0].studentId)
+    }
+  }, [filteredStudents, detailStudentId])
+
+  useEffect(() => {
     const timer = window.setInterval(() => {
       void loadStudents()
     }, 15000)
@@ -208,6 +222,24 @@ function Dashboard() {
   const filteredStudents = selectedClassIds.length > 0
     ? students.filter(student => recordMatchesClassFilter(student, selectedClassIds))
     : students
+  const detailStudentOptions = useMemo(
+    () => filteredStudents
+      .map(student => ({
+        studentId: student.studentId,
+        name: student.name,
+        className: getRecordClassLabel(student, classNameById)
+      }))
+      .sort((a, b) => {
+        const classCompare = String(a.className || '').localeCompare(String(b.className || ''), 'sv')
+        if (classCompare !== 0) return classCompare
+        return String(a.name || '').localeCompare(String(b.name || ''), 'sv')
+      }),
+    [filteredStudents, classNameById]
+  )
+  const detailStudentProfile = useMemo(
+    () => filteredStudents.find(item => item.studentId === detailStudentId) || null,
+    [filteredStudents, detailStudentId]
+  )
 
   const classStats = {
     totalStudents: filteredStudents.length,
@@ -233,6 +265,14 @@ function Dashboard() {
     ? allRows.filter(row => recordMatchesClassFilter(row, selectedClassIds))
     : allRows
   const tableRows = getSortedRows(filteredRows, sortBy, sortDir)
+  const detailStudentRow = useMemo(
+    () => filteredRows.find(row => row.studentId === detailStudentId) || null,
+    [filteredRows, detailStudentId]
+  )
+  const detailStudentViewData = useMemo(
+    () => buildTeacherStudentViewData(detailStudentProfile),
+    [detailStudentProfile]
+  )
   const visibleRows = tableRows
   const supportRows = [...tableRows]
     .filter(row => row.supportScore >= SUPPORT_THRESHOLD || row.riskLevel === 'high')
@@ -879,6 +919,17 @@ function Dashboard() {
     setDashboardStatus(result.ok ? `Lösenord återställt för ${studentId}.` : result.error)
   }
 
+  const handleOpenStudentDetail = (studentId) => {
+    setDetailStudentId(studentId)
+    if (typeof document === 'undefined') return
+    window.setTimeout(() => {
+      const section = document.getElementById('teacher-student-detail-section')
+      if (section && typeof section.scrollIntoView === 'function') {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 40)
+  }
+
   const handleCreateQuickAssignment = async (row, variant) => {
     const preset = buildQuickAssignmentPreset(row, variant)
     const assignment = createAssignment(preset)
@@ -963,6 +1014,25 @@ function Dashboard() {
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
     downloadTextFile(csv, `aktivitet_telemetri_${stamp}.csv`, 'text/csv;charset=utf-8;')
     setDashboardStatus(`Aktivitets-CSV klar (${csvRows.length} rader).`)
+  }
+
+  const handleExportStudentDetailCsv = () => {
+    if (!detailStudentProfile || !detailStudentRow || !detailStudentViewData) {
+      setDashboardStatus('Välj en elev i elevvyn först.')
+      return
+    }
+
+    const csvRows = buildStudentDetailExportRows(detailStudentProfile, detailStudentRow, detailStudentViewData)
+    if (csvRows.length === 0) {
+      setDashboardStatus('Ingen elevdata att exportera.')
+      return
+    }
+
+    const csv = rowsToCsv(csvRows)
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+    const safeId = String(detailStudentProfile.studentId || 'elev').replace(/[^a-zA-Z0-9_-]+/g, '_')
+    downloadTextFile(csv, `elevvy_${safeId}_${stamp}.csv`, 'text/csv;charset=utf-8;')
+    setDashboardStatus(`Elevvy-CSV klar (${csvRows.length} rader).`)
   }
 
   return (
@@ -1777,6 +1847,153 @@ function Dashboard() {
           )}
         </div>
 
+        <div id="teacher-student-detail-section" className="bg-white rounded-lg shadow p-4 mb-8">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 className="text-lg font-semibold text-gray-800">Elevvy (lärare)</h2>
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                value={detailStudentId}
+                onChange={(e) => setDetailStudentId(e.target.value)}
+                className="px-2 py-1 border rounded text-sm min-w-56"
+              >
+                {detailStudentOptions.length === 0 ? (
+                  <option value="">Inga elever i urvalet</option>
+                ) : (
+                  detailStudentOptions.map(item => (
+                    <option key={`detail-student-${item.studentId}`} value={item.studentId}>
+                      {item.name} {item.className ? `(${item.className})` : ''}
+                    </option>
+                  ))
+                )}
+              </select>
+              <button
+                onClick={handleExportStudentDetailCsv}
+                disabled={!detailStudentProfile || !detailStudentRow || !detailStudentViewData}
+                className="px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 disabled:bg-gray-100 disabled:text-gray-400 text-emerald-700 rounded text-xs font-medium"
+              >
+                Exportera elevvy CSV
+              </button>
+            </div>
+          </div>
+
+          {!detailStudentProfile || !detailStudentRow || !detailStudentViewData ? (
+            <p className="text-sm text-gray-500">Välj en elev för att se tabeller, nivåstatus och nyckeldata.</p>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2 mb-4 text-xs">
+                <div className="rounded border border-gray-200 bg-gray-50 px-2.5 py-2">
+                  <p className="text-gray-500">Totalt lösta</p>
+                  <p className="font-semibold text-gray-800">{detailStudentProfile?.stats?.totalProblems || detailStudentRow.attempts}</p>
+                </div>
+                <div className="rounded border border-blue-200 bg-blue-50 px-2.5 py-2">
+                  <p className="text-blue-700">Träff totalt</p>
+                  <p className="font-semibold text-blue-700">{toPercent(detailStudentRow.successRate)}</p>
+                </div>
+                <div className="rounded border border-indigo-200 bg-indigo-50 px-2.5 py-2">
+                  <p className="text-indigo-700">Idag</p>
+                  <p className="font-semibold text-indigo-700">{detailStudentRow.todayAttempts}</p>
+                </div>
+                <div className="rounded border border-cyan-200 bg-cyan-50 px-2.5 py-2">
+                  <p className="text-cyan-700">Vecka</p>
+                  <p className="font-semibold text-cyan-700">{detailStudentRow.weekAttempts}</p>
+                </div>
+                <div className="rounded border border-amber-200 bg-amber-50 px-2.5 py-2">
+                  <p className="text-amber-700">Tid på uppgift idag</p>
+                  <p className="font-semibold text-amber-700">{formatDuration(detailStudentRow.todayEngagedMinutes * 60)}</p>
+                </div>
+                <div className="rounded border border-emerald-200 bg-emerald-50 px-2.5 py-2">
+                  <p className="text-emerald-700">Tid på uppgift 7d</p>
+                  <p className="font-semibold text-emerald-700">{formatDuration(detailStudentRow.weekEngagedMinutes * 60)}</p>
+                </div>
+                <div className="rounded border border-purple-200 bg-purple-50 px-2.5 py-2">
+                  <p className="text-purple-700">Nivå nu/högst</p>
+                  <p className="font-semibold text-purple-700">{detailStudentRow.currentDifficulty}/{detailStudentRow.highestDifficulty}</p>
+                </div>
+                <div className="rounded border border-gray-200 bg-white px-2.5 py-2">
+                  <p className="text-gray-500">Aktivitet</p>
+                  <div className="mt-1">
+                    <ActivityBadge code={detailStudentRow.activityStatus} compact />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <div className="rounded border border-gray-200 p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-semibold text-gray-800">Gångertabell - status</h3>
+                    <p className="text-[11px] text-gray-500">
+                      Dag: {detailStudentViewData.tableSticky.todayDoneCount} | Vecka: {detailStudentViewData.tableSticky.weekDoneCount} | Star: {detailStudentViewData.tableSticky.starCount}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-6 gap-1.5 mb-3">
+                    {TABLES.map(table => {
+                      const status = detailStudentViewData.tableSticky.statusByTable[table] || 'default'
+                      return (
+                        <div key={`detail-table-status-${table}`} className="h-11 rounded border flex items-center justify-center text-xs font-semibold relative bg-white">
+                          <span className={`absolute inset-0 rounded border ${getTeacherTableStatusClass(status)}`} />
+                          <span className="relative z-10">{table}</span>
+                          {status === 'star' ? (
+                            <span className="absolute top-0 right-0 text-[10px] text-yellow-300 z-10">★</span>
+                          ) : null}
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="text-left text-gray-500 border-b">
+                          <th className="py-1 pr-2">Tabell</th>
+                          <th className="py-1 pr-2">Status</th>
+                          <th className="py-1 pr-2">Försök 7d</th>
+                          <th className="py-1 pr-2">Träff 7d</th>
+                          <th className="py-1">Försök totalt</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {TABLES.map(table => {
+                          const perf = detailStudentViewData.tablePerformanceByTable[table]
+                          const status = detailStudentViewData.tableSticky.statusByTable[table] || 'default'
+                          return (
+                            <tr key={`detail-table-row-${table}`} className="border-b last:border-b-0">
+                              <td className="py-1 pr-2 text-gray-700 font-medium">{table}:an</td>
+                              <td className="py-1 pr-2 text-gray-700">{getTeacherTableStatusLabel(status)}</td>
+                              <td className="py-1 pr-2 text-gray-700">{perf.attempts7d}</td>
+                              <td className="py-1 pr-2 text-gray-700">{toPercent(perf.accuracy7d)}</td>
+                              <td className="py-1 text-gray-700">{perf.attemptsTotal}</td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="rounded border border-gray-200 p-3">
+                  <h3 className="text-sm font-semibold text-gray-800 mb-2">Klarade nivåer (som elevvyn)</h3>
+                  <p className="text-[11px] text-gray-500 mb-2">
+                    Grön = klarad, blå = pågående, grå = ej startad.
+                  </p>
+                  <div className="space-y-3">
+                    {detailStudentViewData.operationMasteryBoards.map(item => (
+                      <div key={`detail-mastery-${item.operation}`}>
+                        <p className="text-xs font-medium text-gray-700 mb-1">{getOperationLabel(item.operation)}</p>
+                        <TeacherMasteryLevelGrid label="Historiskt" operation={item.operation} levels={item.historical} />
+                        <TeacherMasteryLevelGrid label="Denna vecka" operation={item.operation} levels={item.weekly} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-3 text-xs text-gray-600">
+                <p>Svagast typer: {formatSkillList(detailStudentProfile?.stats?.weakestTypes)}</p>
+                <p>Starkast typer: {formatSkillList(detailStudentProfile?.stats?.strongestTypes)}</p>
+              </div>
+            </>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-8">
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between mb-3">
@@ -2037,6 +2254,12 @@ function Dashboard() {
                         <td className="py-1 pr-2 text-gray-600">{row.riskCodes.slice(0, 2).join(' | ') || '-'}</td>
                         <td className="py-1">
                           <div className="flex gap-1">
+                            <button
+                              onClick={() => handleOpenStudentDetail(row.studentId)}
+                              className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-[11px]"
+                            >
+                              Elevvy
+                            </button>
                             <button
                               onClick={() => handleCreateQuickAssignment(row, 'focus')}
                               className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-[11px]"
@@ -2455,6 +2678,12 @@ function Dashboard() {
                     )}
                     <td className="px-4 py-0 text-right">
                       <div className="inline-flex flex-wrap justify-end gap-1">
+                        <button
+                          onClick={() => handleOpenStudentDetail(row.studentId)}
+                          className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs"
+                        >
+                          Elevvy
+                        </button>
                         <button
                           onClick={() => handleCreateQuickAssignment(row, 'focus')}
                           className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs"
@@ -3180,6 +3409,269 @@ function ActivityBadge({ code, compact = false }) {
       {compact ? label : `${label}`}
     </span>
   )
+}
+
+function TeacherMasteryLevelGrid({ label, operation, levels }) {
+  return (
+    <div className="flex flex-col gap-1 mb-1">
+      <span className="text-[11px] text-gray-500">{label}</span>
+      <div className="flex flex-wrap gap-1">
+        {levels.map(levelData => (
+          <span
+            key={`teacher-mastery-${operation}-${label}-${levelData.level}`}
+            title={levelData.title}
+            className={`inline-flex h-9 w-9 flex-col items-center justify-center rounded border text-[9px] leading-none ${getTeacherMasteryLevelClassName(levelData.status)}`}
+          >
+            <span className="font-bold text-[10px]">{levelData.level}</span>
+            <span className="mt-0.5">{levelData.metricsLabel}</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function buildTeacherStudentViewData(student) {
+  if (!student) return null
+  const tableSticky = buildStickyTableStatusForStudent(student)
+  const tablePerformanceByTable = buildTablePerformanceByTable(student)
+  const operationMasteryBoards = buildOperationMasteryBoardsForTeacher(student)
+
+  return {
+    tableSticky,
+    tablePerformanceByTable,
+    operationMasteryBoards
+  }
+}
+
+function buildOperationMasteryBoardsForTeacher(student) {
+  const problems = Array.isArray(student?.recentProblems) ? student.recentProblems : []
+  const weekStart = getStartOfWeekTimestamp()
+  const buckets = Object.fromEntries(
+    ALL_OPERATIONS.map(operation => [operation, createOperationLevelBucketsForTeacher()])
+  )
+
+  for (const result of problems) {
+    const operation = inferOperationFromProblemType(result.problemType)
+    if (!Object.prototype.hasOwnProperty.call(buckets, operation)) continue
+
+    const level = Math.round(Number(result?.difficulty?.conceptual_level || 0))
+    if (!Number.isInteger(level) || level < 1 || level > 12) continue
+
+    buckets[operation].historical[level].attempts += 1
+    if (result.correct) buckets[operation].historical[level].correct += 1
+
+    if (Number(result.timestamp || 0) >= weekStart) {
+      buckets[operation].weekly[level].attempts += 1
+      if (result.correct) buckets[operation].weekly[level].correct += 1
+    }
+  }
+
+  return ALL_OPERATIONS.map(operation => ({
+    operation,
+    historical: LEVELS.map(level => buildTeacherLevelView(level, buckets[operation].historical[level])),
+    weekly: LEVELS.map(level => buildTeacherLevelView(level, buckets[operation].weekly[level]))
+  }))
+}
+
+function createOperationLevelBucketsForTeacher() {
+  const makeLevelMap = () => Object.fromEntries(
+    LEVELS.map(level => [level, { attempts: 0, correct: 0 }])
+  )
+
+  return {
+    historical: makeLevelMap(),
+    weekly: makeLevelMap()
+  }
+}
+
+function buildTeacherLevelView(level, bucket = {}) {
+  const attempts = Number(bucket.attempts || 0)
+  const correct = Number(bucket.correct || 0)
+  const successRate = attempts > 0 ? correct / attempts : 0
+  const isMastered = attempts >= MASTERY_MIN_ATTEMPTS && successRate >= MASTERY_MIN_SUCCESS_RATE
+  const isStarted = attempts > 0
+  const status = isMastered ? 'mastered' : (isStarted ? 'started' : 'empty')
+  const successPercent = Math.round(successRate * 100)
+
+  return {
+    level,
+    attempts,
+    correct,
+    successRate,
+    status,
+    metricsLabel: isStarted ? `${correct}/${attempts}` : '-',
+    title: isStarted
+      ? `Nivå ${level}: ${correct}/${attempts} rätt (${successPercent}%)`
+      : `Nivå ${level}: ingen träning ännu`
+  }
+}
+
+function getTeacherMasteryLevelClassName(status) {
+  if (status === 'mastered') {
+    return 'bg-green-100 text-green-800 border-green-300'
+  }
+  if (status === 'started') {
+    return 'bg-blue-50 text-blue-700 border-blue-200'
+  }
+  return 'bg-gray-50 text-gray-400 border-gray-200 opacity-45'
+}
+
+function buildTablePerformanceByTable(student) {
+  const source = getTableProblemSourceForStudent(student)
+  const start7d = Date.now() - (7 * DAY_MS)
+  const output = Object.fromEntries(
+    TABLES.map(table => [table, {
+      attemptsTotal: 0,
+      correctTotal: 0,
+      accuracyTotal: null,
+      attempts7d: 0,
+      correct7d: 0,
+      accuracy7d: null
+    }])
+  )
+
+  for (const problem of source) {
+    const table = inferTableFromProblem(problem)
+    if (!table || !Object.prototype.hasOwnProperty.call(output, table)) continue
+    const target = output[table]
+    target.attemptsTotal += 1
+    if (problem.correct) target.correctTotal += 1
+
+    const ts = Number(problem?.timestamp || 0)
+    if (ts >= start7d) {
+      target.attempts7d += 1
+      if (problem.correct) target.correct7d += 1
+    }
+  }
+
+  for (const table of TABLES) {
+    const item = output[table]
+    item.accuracyTotal = item.attemptsTotal > 0 ? item.correctTotal / item.attemptsTotal : null
+    item.accuracy7d = item.attempts7d > 0 ? item.correct7d / item.attempts7d : null
+  }
+
+  return output
+}
+
+function buildStudentDetailExportRows(student, row, detailData) {
+  if (!student || !row || !detailData) return []
+  const rows = []
+  const add = (partial = {}) => {
+    rows.push({
+      Sektion: '',
+      Nyckel: '',
+      Del: '',
+      Niva: '',
+      Tabell: '',
+      Status: '',
+      Forsok: '',
+      Ratt: '',
+      TraffProcent: '',
+      TidSek: '',
+      Varde: '',
+      Tidsstampel: '',
+      ...partial
+    })
+  }
+
+  const now = Date.now()
+  add({ Sektion: 'Sammanfattning', Nyckel: 'Elev', Varde: String(student.name || '') })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'ElevID', Varde: String(student.studentId || '') })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'Klass', Varde: String(row.classNameLabel || row.className || '') })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'TotaltLosta', Forsok: Number(student?.stats?.totalProblems || row.attempts || 0) })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'TraffTotalt', TraffProcent: toPercent(row.successRate) })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'IdagForsok', Forsok: Number(row.todayAttempts || 0) })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'VeckaForsok', Forsok: Number(row.weekAttempts || 0) })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'TidPaUppgiftIdagSek', TidSek: Math.round((Number(row.todayEngagedMinutes || 0) * 60)) })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'TidPaUppgift7dSek', TidSek: Math.round((Number(row.weekEngagedMinutes || 0) * 60)) })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'NivaNu', Varde: String(Number(row.currentDifficulty || 1)) })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'NivaHogst', Varde: String(Number(row.highestDifficulty || 1)) })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'Aktivitet', Status: String(row.activityStatus || '') })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'SvagastTyper', Varde: formatSkillList(student?.stats?.weakestTypes) })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'StarkastTyper', Varde: formatSkillList(student?.stats?.strongestTypes) })
+
+  for (const table of TABLES) {
+    const perf = detailData.tablePerformanceByTable[table]
+    const status = detailData.tableSticky.statusByTable[table] || 'default'
+    add({
+      Sektion: 'Tabellstatus',
+      Nyckel: 'Tabell',
+      Tabell: `${table}`,
+      Status: getTeacherTableStatusLabel(status),
+      Forsok: Number(perf.attemptsTotal || 0),
+      Ratt: Number(perf.correctTotal || 0),
+      TraffProcent: toPercent(perf.accuracyTotal),
+      Del: 'Totalt'
+    })
+    add({
+      Sektion: 'Tabellstatus',
+      Nyckel: 'Tabell7d',
+      Tabell: `${table}`,
+      Status: getTeacherTableStatusLabel(status),
+      Forsok: Number(perf.attempts7d || 0),
+      Ratt: Number(perf.correct7d || 0),
+      TraffProcent: toPercent(perf.accuracy7d),
+      Del: '7d'
+    })
+  }
+
+  for (const operationItem of detailData.operationMasteryBoards) {
+    for (const period of ['historical', 'weekly']) {
+      const label = period === 'historical' ? 'Historiskt' : 'DennaVecka'
+      for (const level of operationItem[period]) {
+        add({
+          Sektion: 'Nivastatus',
+          Nyckel: 'Niva',
+          Del: `${operationItem.operation}:${label}`,
+          Niva: String(level.level),
+          Status: String(level.status || ''),
+          Forsok: Number(level.attempts || 0),
+          Ratt: Number(level.correct || 0),
+          TraffProcent: toPercent(level.successRate)
+        })
+      }
+    }
+  }
+
+  const problemSource = getTableProblemSourceForStudent(student)
+  const recentProblems = problemSource
+    .slice()
+    .sort((a, b) => Number(b?.timestamp || 0) - Number(a?.timestamp || 0))
+    .slice(0, 80)
+
+  for (const problem of recentProblems) {
+    const ts = Number(problem?.timestamp || 0)
+    add({
+      Sektion: 'SenasteProblem',
+      Nyckel: String(problem?.problemType || ''),
+      Del: inferOperationFromProblemType(problem?.problemType || ''),
+      Niva: String(Math.round(Number(problem?.difficulty?.conceptual_level || 0)) || ''),
+      Tabell: String(inferTableFromProblem(problem) || ''),
+      Status: problem?.correct ? 'Ratt' : 'Fel',
+      TidSek: Number.isFinite(getSpeedTime(problem)) ? Number(getSpeedTime(problem).toFixed(2)) : '',
+      Varde: String(problem?.errorCategory || ''),
+      Tidsstampel: ts > 0 ? new Date(ts).toISOString() : ''
+    })
+  }
+
+  add({
+    Sektion: 'Metadata',
+    Nyckel: 'Exporterad',
+    Varde: 'Ja',
+    Tidsstampel: new Date(now).toISOString()
+  })
+
+  return rows
+}
+
+function formatSkillList(list) {
+  if (!Array.isArray(list) || list.length === 0) return '-'
+  return list
+    .slice(0, 6)
+    .map(item => String(item || '').trim())
+    .filter(Boolean)
+    .join(', ') || '-'
 }
 
 function buildStudentRow(student, activeAssignment = null, classNameById = new Map()) {

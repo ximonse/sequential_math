@@ -1467,61 +1467,6 @@ function buildQuickAssignmentPreset(row, variant) {
   }
 }
 
-function buildBottlenecks(rows) {
-  const buckets = new Map()
-
-  for (const row of rows) {
-    if (!Array.isArray(row.weekBySkill) || row.weekBySkill.length === 0) continue
-
-    for (const skill of row.weekBySkill) {
-      if (!skill || skill.attempts < 2) continue
-      const key = `${skill.operation}:${skill.skillKey}`
-      const prev = buckets.get(key) || {
-        key,
-        operation: skill.operation,
-        skillKey: skill.skillKey,
-        skillLabel: skill.skillLabel,
-        attempts: 0,
-        wrong: 0,
-        levelSum: 0,
-        levelCount: 0,
-        students: new Set()
-      }
-
-      prev.attempts += skill.attempts
-      prev.wrong += skill.wrong
-      if (Number.isFinite(skill.avgLevel)) {
-        prev.levelSum += skill.avgLevel * skill.attempts
-        prev.levelCount += skill.attempts
-      }
-      if (skill.wrong > 0 || skill.successRate < 0.7) {
-        prev.students.add(row.studentId)
-      }
-      buckets.set(key, prev)
-    }
-  }
-
-  return Array.from(buckets.values())
-    .map(item => ({
-      key: item.key,
-      operation: item.operation,
-      skillKey: item.skillKey,
-      skillLabel: item.skillLabel,
-      attempts: item.attempts,
-      wrong: item.wrong,
-      affectedStudents: item.students.size,
-      successRate: item.attempts > 0 ? (item.attempts - item.wrong) / item.attempts : 0,
-      avgLevel: item.levelCount > 0 ? item.levelSum / item.levelCount : null
-    }))
-    .filter(item => item.wrong >= 2 && item.attempts >= 4 && item.affectedStudents >= 1)
-    .sort((a, b) => {
-      if (a.affectedStudents !== b.affectedStudents) return b.affectedStudents - a.affectedStudents
-      if (a.successRate !== b.successRate) return a.successRate - b.successRate
-      return b.attempts - a.attempts
-    })
-    .slice(0, 12)
-}
-
 function buildInactivityBuckets(rows) {
   const todayStart = getStartOfDayTimestamp()
   const now = Date.now()

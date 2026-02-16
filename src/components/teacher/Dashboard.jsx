@@ -966,7 +966,12 @@ function Dashboard() {
       setDashboardStatus(`Kunde inte återställa lösenord för ${studentId}.`)
       return
     }
-    setDashboardStatus(result.ok ? `Lösenord återställt för ${studentId}.` : result.error)
+    if (!result.ok) {
+      setDashboardStatus(result.error)
+      return
+    }
+    setDashboardStatus(`Lösenord återställt för ${studentId}. Nytt lösenord: ${result.password || studentId}`)
+    void loadStudents()
   }
 
   const handleOpenStudentDetail = (studentId) => {

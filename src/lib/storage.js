@@ -438,16 +438,35 @@ export async function changeStudentPassword(studentId, currentPassword, newPassw
 }
 
 export async function resetStudentPasswordToLoginName(studentId) {
-  const profile = loadProfile(studentId)
-  if (!profile) return { ok: false, error: 'Elev saknas.' }
+  const normalizedId = normalizeStudentId(studentId)
+  if (!normalizedId) return { ok: false, error: 'Elev saknas.' }
+
+  let profile = loadProfile(normalizedId)
+  if (!profile && CLOUD_ENABLED) {
+    try {
+      profile = await loadProfileFromCloud(normalizedId, {
+        teacherPassword: getTeacherApiToken(),
+        failOnUnauthorized: true
+      })
+      if (profile) {
+        saveProfileLocalOnly(profile)
+      }
+    } catch (error) {
+      if (error?.code === 'UNAUTHORIZED') {
+        return { ok: false, error: 'Lärarbehörighet saknas. Logga ut/in som lärare och försök igen.' }
+      }
+      return { ok: false, error: 'Kunde inte hämta elev från servern.' }
+    }
+  }
+  if (!profile) return { ok: false, error: 'Elev saknas lokalt och kunde inte hämtas från servern.' }
 
   ensureProfileAuth(profile)
   await setProfilePassword(profile, profile.studentId)
   saveProfile(profile)
-  if (isStudentSessionActive(studentId)) {
-    setActiveStudentSession(studentId, profile.studentId)
+  if (isStudentSessionActive(normalizedId)) {
+    setActiveStudentSession(normalizedId, profile.studentId)
   }
-  return { ok: true }
+  return { ok: true, password: profile.studentId }
 }
 
 export function setActiveStudentSession(studentId, sessionSecret = '') {

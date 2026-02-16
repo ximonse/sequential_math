@@ -60,6 +60,7 @@ const LEVELS = Array.from({ length: 12 }, (_, index) => index + 1)
 const MASTERY_MIN_ATTEMPTS = 5
 const MASTERY_MIN_SUCCESS_RATE = 0.8
 const TEACHER_CLASS_FILTER_STORAGE_KEY = 'mathapp_teacher_selected_classes_v1'
+const PASSWORD_RESET_SECTION_ID = 'teacher-password-reset-section'
 
 function Dashboard() {
   const [students, setStudents] = useState([])
@@ -213,6 +214,14 @@ function Dashboard() {
   const handleLogout = () => {
     logoutTeacher()
     navigate('/teacher-login')
+  }
+
+  const handleJumpToPasswordReset = () => {
+    if (typeof document === 'undefined') return
+    const section = document.getElementById(PASSWORD_RESET_SECTION_ID)
+    if (section && typeof section.scrollIntoView === 'function') {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
   }
 
   const activeAssignment = useMemo(
@@ -1142,6 +1151,12 @@ function Dashboard() {
           </div>
 
           <div className="flex gap-4">
+            <button
+              onClick={handleJumpToPasswordReset}
+              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg"
+            >
+              Lösenord (längst ner)
+            </button>
             <button
               onClick={handleRefresh}
               className="px-4 py-2 bg-white hover:bg-gray-50 border rounded-lg text-gray-600"
@@ -3027,9 +3042,9 @@ function Dashboard() {
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow p-4 mt-8">
+        <div id={PASSWORD_RESET_SECTION_ID} className="bg-white rounded-lg shadow p-4 mt-8 border-2 border-rose-200">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <h2 className="text-lg font-semibold text-gray-800">Nollställ elevlösenord</h2>
+            <h2 className="text-lg font-semibold text-rose-800">Nollställ elevlösenord</h2>
             <p className="text-xs text-gray-500">
               {passwordResetRows.length} elev(er) i aktuellt urval
             </p>

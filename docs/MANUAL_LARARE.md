@@ -106,3 +106,16 @@ Om elever kör på iPad/mobil och du vill se allt i lärarvyn:
 2. Se till att Redis/KV-integration finns.
 
 Annars syns bara data som finns lokalt i samma browsermiljö.
+
+## 11. Nollställ elevlösenord
+
+Längst ner i lärardashboarden finns sektionen `Nollställ elevlösenord`.
+
+Så använder du den:
+1. Välj klass/grupp högst upp (urvalet styr vilka elever som visas).
+2. Sök på namn, ID eller klass vid behov.
+3. Klicka `Nollställ lösenord` på rätt elev.
+
+Resultat:
+- Nytt lösenord sätts till elevens inloggnings-ID.
+- Status visas direkt i sektionen och i dashboardens statusrad.

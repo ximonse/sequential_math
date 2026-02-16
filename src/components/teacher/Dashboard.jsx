@@ -59,6 +59,7 @@ const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 const LEVELS = Array.from({ length: 12 }, (_, index) => index + 1)
 const MASTERY_MIN_ATTEMPTS = 5
 const MASTERY_MIN_SUCCESS_RATE = 0.8
+const DETAIL_LEVEL_ERROR_MIN_ATTEMPTS = 8
 const TEACHER_CLASS_FILTER_STORAGE_KEY = 'mathapp_teacher_selected_classes_v1'
 const PASSWORD_RESET_SECTION_ID = 'teacher-password-reset-section'
 
@@ -105,6 +106,8 @@ function Dashboard() {
   const [supportSortBy, setSupportSortBy] = useState('support_score')
   const [supportSortDir, setSupportSortDir] = useState('desc')
   const [detailStudentId, setDetailStudentId] = useState('')
+  const [detailLevelErrorSortBy, setDetailLevelErrorSortBy] = useState('error_share')
+  const [detailLevelErrorSortDir, setDetailLevelErrorSortDir] = useState('desc')
   const [classOverviewSortBy, setClassOverviewSortBy] = useState('name')
   const [classOverviewSortDir, setClassOverviewSortDir] = useState('asc')
   const [passwordResetSearch, setPasswordResetSearch] = useState('')
@@ -301,6 +304,19 @@ function Dashboard() {
     () => buildTeacherStudentViewData(detailStudentProfile),
     [detailStudentProfile]
   )
+  const detailLevelErrorRows = useMemo(() => {
+    const source = Array.isArray(detailStudentViewData?.levelErrorRows)
+      ? detailStudentViewData.levelErrorRows
+      : []
+    const qualifiedRows = source.filter(item => Number(item?.attempts || 0) >= DETAIL_LEVEL_ERROR_MIN_ATTEMPTS)
+    return getSortedDetailLevelErrorRows(qualifiedRows, detailLevelErrorSortBy, detailLevelErrorSortDir)
+  }, [detailStudentViewData, detailLevelErrorSortBy, detailLevelErrorSortDir])
+  const detailLevelErrorUnderSampleCount = useMemo(() => {
+    const source = Array.isArray(detailStudentViewData?.levelErrorRows)
+      ? detailStudentViewData.levelErrorRows
+      : []
+    return source.filter(item => Number(item?.attempts || 0) > 0 && Number(item?.attempts || 0) < DETAIL_LEVEL_ERROR_MIN_ATTEMPTS).length
+  }, [detailStudentViewData])
   const passwordResetRows = useMemo(() => {
     const search = passwordResetSearch.trim().toLowerCase()
     const rows = filteredStudents
@@ -400,6 +416,33 @@ function Dashboard() {
     if (supportSortBy !== sortKey) return '↕'
     return supportSortDir === 'asc' ? '▲' : '▼'
   }
+
+  const handleDetailLevelErrorSort = (nextSortBy) => {
+    if (detailLevelErrorSortBy === nextSortBy) {
+      setDetailLevelErrorSortDir(prev => (prev === 'asc' ? 'desc' : 'asc'))
+      return
+    }
+    setDetailLevelErrorSortBy(nextSortBy)
+    setDetailLevelErrorSortDir(getDefaultDetailLevelErrorSortDir(nextSortBy))
+  }
+
+  const getDetailLevelErrorSortIndicator = (sortKey) => {
+    if (detailLevelErrorSortBy !== sortKey) return '↕'
+    return detailLevelErrorSortDir === 'asc' ? '▲' : '▼'
+  }
+
+  const renderDetailLevelErrorSortHeader = (label, sortKey, className = 'py-1 pr-2') => (
+    <th className={className}>
+      <button
+        type="button"
+        onClick={() => handleDetailLevelErrorSort(sortKey)}
+        className="inline-flex items-center gap-1 hover:text-gray-700"
+      >
+        {label}
+        <span className="text-[10px] text-gray-400">{getDetailLevelErrorSortIndicator(sortKey)}</span>
+      </button>
+    </th>
+  )
 
   const renderResultSortHeader = (label, sortKey, className = 'px-4 py-0 font-semibold') => (
     <th className={className}>
@@ -2217,6 +2260,57 @@ function Dashboard() {
                       </div>
                     ))}
                   </div>
+                  <div className="mt-3 border-t border-gray-200 pt-3">
+                    <div className="flex items-center justify-between mb-2 gap-2">
+                      <h4 className="text-xs font-semibold text-gray-800">Felandel per nivå (historiskt)</h4>
+                      <p className="text-[11px] text-gray-500">
+                        Minst {DETAIL_LEVEL_ERROR_MIN_ATTEMPTS} försök per nivå
+                      </p>
+                    </div>
+                    {detailLevelErrorRows.length === 0 ? (
+                      <p className="text-xs text-gray-500">
+                        Ingen nivå har ännu tillräckligt underlag för felandel.
+                      </p>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="text-left text-gray-500 border-b">
+                              {renderDetailLevelErrorSortHeader('Räknesätt', 'operation')}
+                              {renderDetailLevelErrorSortHeader('Nivå', 'level')}
+                              {renderDetailLevelErrorSortHeader('Försök', 'attempts')}
+                              {renderDetailLevelErrorSortHeader('Rätt', 'correct')}
+                              {renderDetailLevelErrorSortHeader('Fel', 'wrong')}
+                              {renderDetailLevelErrorSortHeader('Felandel', 'error_share')}
+                              {renderDetailLevelErrorSortHeader('Kunskapsfel', 'knowledge_wrong')}
+                              {renderDetailLevelErrorSortHeader('Ouppmärksamhet', 'inattention_wrong', 'py-1')}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {detailLevelErrorRows.map(levelRow => (
+                              <tr key={`detail-level-error-${levelRow.operation}-${levelRow.level}`} className="border-b last:border-b-0">
+                                <td className="py-1 pr-2 text-gray-700">{levelRow.operationLabel}</td>
+                                <td className="py-1 pr-2 text-gray-700 font-medium">{levelRow.level}</td>
+                                <td className="py-1 pr-2 text-gray-700">{levelRow.attempts}</td>
+                                <td className="py-1 pr-2 text-gray-700">{levelRow.correct}</td>
+                                <td className="py-1 pr-2 text-gray-700">{levelRow.wrong}</td>
+                                <td className={`py-1 pr-2 font-semibold ${getErrorShareColorClass(levelRow.errorShare)}`}>
+                                  {toPercent(levelRow.errorShare)}
+                                </td>
+                                <td className="py-1 pr-2 text-gray-700">{levelRow.knowledgeWrong}</td>
+                                <td className="py-1 text-gray-700">{levelRow.inattentionWrong}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                    {detailLevelErrorUnderSampleCount > 0 ? (
+                      <p className="mt-2 text-[11px] text-gray-500">
+                        {detailLevelErrorUnderSampleCount} nivåer har för få försök och visas inte ännu.
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
               </div>
 
@@ -3955,11 +4049,13 @@ function buildTeacherStudentViewData(student) {
   const tableSticky = buildStickyTableStatusForStudent(student)
   const tablePerformanceByTable = buildTablePerformanceByTable(student)
   const operationMasteryBoards = buildOperationMasteryBoardsForTeacher(student)
+  const levelErrorRows = buildLevelErrorRowsForTeacher(student)
 
   return {
     tableSticky,
     tablePerformanceByTable,
-    operationMasteryBoards
+    operationMasteryBoards,
+    levelErrorRows
   }
 }
 
@@ -3991,6 +4087,59 @@ function buildOperationMasteryBoardsForTeacher(student) {
     historical: LEVELS.map(level => buildTeacherLevelView(level, buckets[operation].historical[level])),
     weekly: LEVELS.map(level => buildTeacherLevelView(level, buckets[operation].weekly[level]))
   }))
+}
+
+function buildLevelErrorRowsForTeacher(student) {
+  const source = getTableProblemSourceForStudent(student)
+  const grouped = new Map()
+
+  for (const problem of source) {
+    const operation = inferOperationFromProblemType(problem?.problemType || '')
+    if (!ALL_OPERATIONS.includes(operation)) continue
+
+    const level = Math.round(Number(problem?.difficulty?.conceptual_level || 0))
+    if (!Number.isInteger(level) || level < 1 || level > 12) continue
+
+    const key = `${operation}|${level}`
+    const existing = grouped.get(key) || {
+      operation,
+      operationLabel: getOperationLabel(operation),
+      level,
+      attempts: 0,
+      correct: 0,
+      wrong: 0,
+      knowledgeWrong: 0,
+      inattentionWrong: 0
+    }
+
+    existing.attempts += 1
+    if (problem?.correct) {
+      existing.correct += 1
+    } else {
+      existing.wrong += 1
+      if (isKnowledgeError(problem)) {
+        existing.knowledgeWrong += 1
+      } else {
+        existing.inattentionWrong += 1
+      }
+    }
+
+    grouped.set(key, existing)
+  }
+
+  return Array.from(grouped.values()).map(item => {
+    const attempts = Number(item.attempts || 0)
+    const correct = Number(item.correct || 0)
+    const wrong = Number(item.wrong || 0)
+    return {
+      ...item,
+      attempts,
+      correct,
+      wrong,
+      successRate: attempts > 0 ? correct / attempts : 0,
+      errorShare: attempts > 0 ? wrong / attempts : 0
+    }
+  })
 }
 
 function createOperationLevelBucketsForTeacher() {
@@ -4729,6 +4878,34 @@ function getDefaultSupportSortDir(sortBy) {
   return 'desc'
 }
 
+function getSortedDetailLevelErrorRows(rows, sortBy, sortDir) {
+  const sorted = [...rows].sort((a, b) => compareDetailLevelErrorRows(a, b, sortBy))
+  return sortDir === 'asc' ? sorted : sorted.reverse()
+}
+
+function compareDetailLevelErrorRows(a, b, sortBy) {
+  let diff = 0
+  if (sortBy === 'operation') diff = String(a.operationLabel || '').localeCompare(String(b.operationLabel || ''), 'sv')
+  else if (sortBy === 'level') diff = Number(a.level || 0) - Number(b.level || 0)
+  else if (sortBy === 'attempts') diff = Number(a.attempts || 0) - Number(b.attempts || 0)
+  else if (sortBy === 'correct') diff = Number(a.correct || 0) - Number(b.correct || 0)
+  else if (sortBy === 'wrong') diff = Number(a.wrong || 0) - Number(b.wrong || 0)
+  else if (sortBy === 'knowledge_wrong') diff = Number(a.knowledgeWrong || 0) - Number(b.knowledgeWrong || 0)
+  else if (sortBy === 'inattention_wrong') diff = Number(a.inattentionWrong || 0) - Number(b.inattentionWrong || 0)
+  else if (sortBy === 'success_rate') diff = Number(a.successRate || 0) - Number(b.successRate || 0)
+  else diff = Number(a.errorShare || 0) - Number(b.errorShare || 0)
+
+  if (diff !== 0) return diff
+  const operationDiff = String(a.operationLabel || '').localeCompare(String(b.operationLabel || ''), 'sv')
+  if (operationDiff !== 0) return operationDiff
+  return Number(a.level || 0) - Number(b.level || 0)
+}
+
+function getDefaultDetailLevelErrorSortDir(sortBy) {
+  if (sortBy === 'operation' || sortBy === 'level') return 'asc'
+  return 'desc'
+}
+
 function getSortedClassOverviewRows(rows, sortBy, sortDir) {
   const sorted = [...rows].sort((a, b) => compareClassOverviewRows(a, b, sortBy))
   return sortDir === 'asc' ? sorted : sorted.reverse()
@@ -4903,6 +5080,12 @@ function getReasonableColorClass(rate) {
   if (rate >= 0.9) return 'text-green-600 font-semibold'
   if (rate >= 0.75) return 'text-yellow-700 font-semibold'
   return 'text-red-600 font-semibold'
+}
+
+function getErrorShareColorClass(rate) {
+  if (rate >= 0.4) return 'text-red-700'
+  if (rate >= 0.25) return 'text-amber-700'
+  return 'text-green-700'
 }
 
 function formatTimeAgo(timestamp) {

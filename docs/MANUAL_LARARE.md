@@ -1,6 +1,12 @@
 # Lärarmanual
 
 Den här manualen beskriver hur du arbetar i lärardashboarden.
+Detaljerad datatolkning (kolumn för kolumn) finns i separata dokument:
+
+- `docs/LARARDASHBOARD_LOGIK.md`
+- `docs/EXPORTER_OVERSIKT.md`
+- `docs/EXPORTER_RADATA.md`
+- `docs/reflektion.md`
 
 ## 1. Logga in
 
@@ -33,14 +39,26 @@ Notera:
 3. Klicka `Elevvy` på en elev för individnivå.
 4. Exportera vid behov (`Export översikt`, `Export rådata`, `Export aktivitet`, osv.).
 
-## 4. Aktivitetsfärger
+## 4. Logik och Kolumnförklaringar
+
+För full logik per sektion i dashboarden:
+- `docs/LARARDASHBOARD_LOGIK.md`
+
+För full kolumnordlista i exporter:
+- `docs/EXPORTER_OVERSIKT.md`
+- `docs/EXPORTER_RADATA.md`
+
+För pedagogisk motivering samt reliabilitet/validitet:
+- `docs/reflektion.md`
+
+## 5. Aktivitetsfärger
 
 - Grön: sidan i fokus + interaktion senaste 2 minuter.
 - Orange: sidan i fokus men ingen interaktion senaste 2-4 minuter.
 - Svart: varit inne idag men inte aktiv just nu.
 - Röd: ingen aktivitet idag.
 
-## 5. Elevvy (lärare)
+## 6. Elevvy (lärare)
 
 Sektionen `Elevvy (lärare)` visar per elev:
 - total/vecko/dagsdata,
@@ -52,7 +70,7 @@ Sektionen `Elevvy (lärare)` visar per elev:
 
 Du kan exportera elevens vy via `Exportera elevvy CSV`.
 
-## 6. Uppdrag via länk
+## 7. Uppdrag via länk
 
 I sektionen `Uppdrag via länk` kan du:
 1. Skapa ett uppdrag.
@@ -61,7 +79,7 @@ I sektionen `Uppdrag via länk` kan du:
 
 Elever som loggar in via länken hamnar i rätt läge direkt.
 
-## 7. Ticket (start/exit)
+## 8. Ticket (start/exit)
 
 I `Ticket`-sektionen kan du:
 1. Skapa ticket-frågor manuellt.
@@ -77,7 +95,7 @@ Ticket-uppföljning finns i:
 - `Svar för valt utskick`
 - `Elevhistorik i tickets`
 
-## 8. Exporter (lärardashboard)
+## 9. Exporter (lärardashboard)
 
 Tillgängliga exporter i huvudtabellen:
 - `Export översikt`
@@ -93,14 +111,14 @@ Tips:
 - Exportera översikt dagligen.
 - Exportera rådata/aktivitet veckovis för djupare analys.
 
-## 9. Bra arbetssätt i klass
+## 10. Bra arbetssätt i klass
 
 1. Sätt ett tydligt passmål (t.ex. 10 minuter).
 2. Följ `Klass/gruppvy - snabbstatus` under passet.
 3. Efter pass: kontrollera tid på uppgift + antal försök.
 4. Använd `Elevvy` för elever som sticker ut positivt/negativt.
 
-## 10. Viktigt om data mellan enheter
+## 11. Viktigt om data mellan enheter
 
 Om elever kör på iPad/mobil och du vill se allt i lärarvyn:
 1. Aktivera cloud-sync i Vercel (`VITE_ENABLE_CLOUD_SYNC=1`).
@@ -108,7 +126,7 @@ Om elever kör på iPad/mobil och du vill se allt i lärarvyn:
 
 Annars syns bara data som finns lokalt i samma browsermiljö.
 
-## 11. Nollställ elevlösenord
+## 12. Nollställ elevlösenord
 
 Längst ner i lärardashboarden finns sektionen `Nollställ elevlösenord`.
 

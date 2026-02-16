@@ -11,6 +11,12 @@ Uppdatera dokumentation vid alla andringar som paverkar:
 4. datatolkning i UI (nya statusfarger, nya nyckeltal, nya etiketter),
 5. felsokning (nya vanliga fel eller andrad felorsak/atgard).
 
+Vid andringar i larardashboardens siffror/kolumner ska dessa ocksa granskas:
+- `docs/LARARDASHBOARD_LOGIK.md`
+- `docs/EXPORTER_OVERSIKT.md`
+- `docs/EXPORTER_RADATA.md`
+- `docs/reflektion.md` (om pedagogisk tolkning eller datakvalitet paverkas)
+
 ## Definition of Done for funktionsandringar
 
 En andring ar inte klar forran denna check ar gjord:
@@ -18,6 +24,9 @@ En andring ar inte klar forran denna check ar gjord:
 2. `docs/MANUAL_ELEV.md` granskad/uppdaterad vid elevpaverkan.
 3. `docs/FELSOKNING.md` uppdaterad vid nya felbilder eller andrad setup.
 4. `README.md` uppdaterad vid andrade env-vars, auth, eller driftkrav.
+5. `docs/LARARDASHBOARD_LOGIK.md` uppdaterad vid andrad panel-/kolumnlogik i lararvyn.
+6. `docs/EXPORTER_OVERSIKT.md` och/eller `docs/EXPORTER_RADATA.md` uppdaterade vid andrade exportkolumner/berakningar.
+7. `docs/reflektion.md` uppdaterad vid andrade principer for tolkning, reliabilitet eller validitet.
 
 ## Praktisk commit-regel
 

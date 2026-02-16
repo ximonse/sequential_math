@@ -15,6 +15,10 @@ npm run dev
 
 - Lararmanual: `docs/MANUAL_LARARE.md`
 - Elevmanual: `docs/MANUAL_ELEV.md`
+- Larardashboard logik (sektioner/kolumner): `docs/LARARDASHBOARD_LOGIK.md`
+- Exportkolumner (oversikt/aktivitet/elevvy): `docs/EXPORTER_OVERSIKT.md`
+- Exportkolumner (radata detalj): `docs/EXPORTER_RADATA.md`
+- Pedagogisk reflektion (reliabilitet/validitet): `docs/reflektion.md`
 - Felsokning: `docs/FELSOKNING.md`
 - Dokumentationsrutin (obligatorisk): `docs/DOKUMENTATIONSRUTIN.md`
 

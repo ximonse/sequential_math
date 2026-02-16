@@ -359,6 +359,20 @@ function Dashboard() {
     return classOverviewSortDir === 'asc' ? '▲' : '▼'
   }
 
+  const handleResultSort = (nextSortBy) => {
+    if (sortBy === nextSortBy) {
+      setSortDir(prev => (prev === 'asc' ? 'desc' : 'asc'))
+      return
+    }
+    setSortBy(nextSortBy)
+    setSortDir(getDefaultResultSortDir(nextSortBy))
+  }
+
+  const getResultSortIndicator = (sortKey) => {
+    if (sortBy !== sortKey) return '↕'
+    return sortDir === 'asc' ? '▲' : '▼'
+  }
+
   const handleStickySort = (nextSortBy) => {
     if (stickySortBy === nextSortBy) {
       setStickySortDir(prev => (prev === 'asc' ? 'desc' : 'asc'))
@@ -386,6 +400,19 @@ function Dashboard() {
     if (supportSortBy !== sortKey) return '↕'
     return supportSortDir === 'asc' ? '▲' : '▼'
   }
+
+  const renderResultSortHeader = (label, sortKey, className = 'px-4 py-0 font-semibold') => (
+    <th className={className}>
+      <button
+        type="button"
+        onClick={() => handleResultSort(sortKey)}
+        className="inline-flex items-center gap-1 hover:text-gray-700"
+      >
+        {label}
+        <span className="text-[10px] text-gray-400">{getResultSortIndicator(sortKey)}</span>
+      </button>
+    </th>
+  )
 
   const tableStudentSet = useMemo(
     () => new Set(tableSelectedStudentIds),
@@ -2667,9 +2694,13 @@ function Dashboard() {
                   onChange={(e) => setSortBy(e.target.value)}
                   className="px-2 py-1 border rounded text-sm"
                 >
+                  <option value="name">Namn</option>
+                  <option value="student_id">ID</option>
+                  <option value="class">Klass</option>
                   <option value="active_today">Aktiv idag</option>
                   <option value="today_attempts">Dagens mängd</option>
                   <option value="today_wrong">Dagens felsvar</option>
+                  <option value="today_success_rate">Dagens träffsäkerhet</option>
                   <option value="today_struggle">Dagens kämp-index</option>
                   <option value="today_engaged">Tid på uppgift idag</option>
                   <option value="today_answer_length">Dagens svarslängd</option>
@@ -2677,6 +2708,7 @@ function Dashboard() {
                   <option value="week_attempts">Veckans mängd</option>
                   <option value="week_correct">Veckans rätt</option>
                   <option value="week_wrong">Veckans felsvar</option>
+                  <option value="week_struggle">Veckans kämp-index</option>
                   <option value="week_active_time">Veckans aktiv tid</option>
                   <option value="week_engaged">Tid på uppgift 7d</option>
                   <option value="week_success_rate">Veckans träffsäkerhet</option>
@@ -2688,6 +2720,9 @@ function Dashboard() {
                   <option value="last_active">Senast aktiv</option>
                   <option value="attempts">Totala försök</option>
                   <option value="success_rate">Total träffsäkerhet</option>
+                  <option value="reasonable_rate">Total rimlighet</option>
+                  <option value="avg_relative_error">Total medelavvikelse</option>
+                  <option value="trend">Trend</option>
                 </select>
                 <button
                   onClick={() => setSortDir(prev => prev === 'desc' ? 'asc' : 'desc')}
@@ -2742,38 +2777,38 @@ function Dashboard() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr className="text-left text-gray-600">
-                  <th className="px-4 py-0 font-semibold">Namn</th>
-                  <th className="px-4 py-0 font-semibold">ID</th>
-                  <th className="px-4 py-0 font-semibold">Klass</th>
+                  {renderResultSortHeader('Namn', 'name')}
+                  {renderResultSortHeader('ID', 'student_id')}
+                  {renderResultSortHeader('Klass', 'class')}
                   {viewMode === 'daily' ? (
                     <>
-                      <th className="px-4 py-0 font-semibold">Gjort idag</th>
-                      <th className="px-4 py-0 font-semibold">Rätt/fel idag</th>
-                      <th className="px-4 py-0 font-semibold">Tid på uppgift idag</th>
-                      <th className="px-4 py-0 font-semibold">Kämpar med idag</th>
-                      <th className="px-4 py-0 font-semibold">Svarslängd idag</th>
-                      <th className="px-4 py-0 font-semibold">Senast aktiv</th>
+                      {renderResultSortHeader('Gjort idag', 'today_attempts')}
+                      {renderResultSortHeader('Rätt/fel idag', 'today_wrong')}
+                      {renderResultSortHeader('Tid på uppgift idag', 'today_engaged')}
+                      {renderResultSortHeader('Kämpar med idag', 'today_struggle')}
+                      {renderResultSortHeader('Svarslängd idag', 'today_answer_length')}
+                      {renderResultSortHeader('Senast aktiv', 'last_active')}
                       <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
                     </>
                   ) : viewMode === 'weekly' ? (
                     <>
-                      <th className="px-4 py-0 font-semibold">Gjort denna vecka</th>
-                      <th className="px-4 py-0 font-semibold">Aktiv tid (svar)</th>
-                      <th className="px-4 py-0 font-semibold">Tid på uppgift</th>
-                      <th className="px-4 py-0 font-semibold">Rätt/fel vecka</th>
-                      <th className="px-4 py-0 font-semibold">Kämpar med vecka</th>
-                      <th className="px-4 py-0 font-semibold">Svarslängd vecka</th>
-                      <th className="px-4 py-0 font-semibold">Senast aktiv</th>
+                      {renderResultSortHeader('Gjort denna vecka', 'week_attempts')}
+                      {renderResultSortHeader('Aktiv tid (svar)', 'week_active_time')}
+                      {renderResultSortHeader('Tid på uppgift', 'week_engaged')}
+                      {renderResultSortHeader('Rätt/fel vecka', 'week_wrong')}
+                      {renderResultSortHeader('Kämpar med vecka', 'week_struggle')}
+                      {renderResultSortHeader('Svarslängd vecka', 'week_answer_length')}
+                      {renderResultSortHeader('Senast aktiv', 'last_active')}
                       <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
                     </>
                   ) : (
                     <>
-                      <th className="px-4 py-0 font-semibold">Försök</th>
-                      <th className="px-4 py-0 font-semibold">Rätt</th>
-                      <th className="px-4 py-0 font-semibold">Rimlighet</th>
-                      <th className="px-4 py-0 font-semibold">Medelavvikelse</th>
-                      <th className="px-4 py-0 font-semibold">Trend</th>
-                      <th className="px-4 py-0 font-semibold">Senast aktiv</th>
+                      {renderResultSortHeader('Försök', 'attempts')}
+                      {renderResultSortHeader('Rätt', 'success_rate')}
+                      {renderResultSortHeader('Rimlighet', 'reasonable_rate')}
+                      {renderResultSortHeader('Medelavvikelse', 'avg_relative_error')}
+                      {renderResultSortHeader('Trend', 'trend')}
+                      {renderResultSortHeader('Senast aktiv', 'last_active')}
                       <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
                     </>
                   )}
@@ -4757,7 +4792,15 @@ function getDefaultStickySortDir(sortBy) {
   return 'desc'
 }
 
+function getDefaultResultSortDir(sortBy) {
+  if (sortBy === 'name' || sortBy === 'student_id' || sortBy === 'class') return 'asc'
+  return 'desc'
+}
+
 function compareRows(a, b, sortBy) {
+  if (sortBy === 'name') return String(a.name || '').localeCompare(String(b.name || ''), 'sv')
+  if (sortBy === 'student_id') return String(a.studentId || '').localeCompare(String(b.studentId || ''), 'sv')
+  if (sortBy === 'class') return compareClassNameAndName(a, b)
   if (sortBy === 'active_today') {
     if (a.activeToday !== b.activeToday) return Number(a.activeToday) - Number(b.activeToday)
     return (a.lastActive || 0) - (b.lastActive || 0)
@@ -4765,6 +4808,7 @@ function compareRows(a, b, sortBy) {
 
   if (sortBy === 'today_attempts') return a.todayAttempts - b.todayAttempts
   if (sortBy === 'today_wrong') return a.todayWrongCount - b.todayWrongCount
+  if (sortBy === 'today_success_rate') return (a.todaySuccessRate || 0) - (b.todaySuccessRate || 0)
   if (sortBy === 'today_struggle') return a.todayStruggleIndex - b.todayStruggleIndex
   if (sortBy === 'today_engaged') return (a.todayEngagedMinutes || 0) - (b.todayEngagedMinutes || 0)
   if (sortBy === 'today_answer_length') return (a.todayAvgAnswerLength || 0) - (b.todayAvgAnswerLength || 0)
@@ -4775,6 +4819,7 @@ function compareRows(a, b, sortBy) {
   if (sortBy === 'week_attempts') return a.weekAttempts - b.weekAttempts
   if (sortBy === 'week_correct') return a.weekCorrectCount - b.weekCorrectCount
   if (sortBy === 'week_wrong') return a.weekWrongCount - b.weekWrongCount
+  if (sortBy === 'week_struggle') return (a.weekStruggleIndex || 0) - (b.weekStruggleIndex || 0)
   if (sortBy === 'week_active_time') return a.weekActiveTimeSec - b.weekActiveTimeSec
   if (sortBy === 'week_engaged') return (a.weekEngagedMinutes || 0) - (b.weekEngagedMinutes || 0)
   if (sortBy === 'week_success_rate') return a.weekSuccessRate - b.weekSuccessRate
@@ -4786,6 +4831,9 @@ function compareRows(a, b, sortBy) {
   if (sortBy === 'last_active') return (a.lastActive || 0) - (b.lastActive || 0)
   if (sortBy === 'attempts') return a.attempts - b.attempts
   if (sortBy === 'success_rate') return a.successRate - b.successRate
+  if (sortBy === 'reasonable_rate') return (a.reasonableRate || 0) - (b.reasonableRate || 0)
+  if (sortBy === 'avg_relative_error') return (a.avgRelativeError ?? -1) - (b.avgRelativeError ?? -1)
+  if (sortBy === 'trend') return (a.trend ?? -Infinity) - (b.trend ?? -Infinity)
 
   return (a.lastActive || 0) - (b.lastActive || 0)
 }

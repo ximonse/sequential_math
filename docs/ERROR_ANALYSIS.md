@@ -1,5 +1,12 @@
 # Error Analysis - Feltypsdetektering
 
+> OBS - KOD AR KALLAN:
+> Detta dokument beskriver en utbyggd modell (designniva) och innehaller mycket pseudokod.
+> Nuvarande runtime-logik for felklassning finns framfor allt i:
+> - `src/lib/studentProfile.js` (`classifyErrorCategory`)
+> - `src/lib/answerQuality.js` (`evaluateAnswerQuality`)
+> Om dokument och kod skiljer sig galler alltid koden.
+
 ## Tre Typer av Fel
 
 ### 1. SLARV-FEL (Careless Errors)

@@ -18,9 +18,10 @@ Primar kodkalla: `src/components/teacher/Dashboard.jsx`.
 
 ## 2. Urval: klass/grupp
 
-- Dashboarden filtrerar alla paneler med vald(a) klass/grupp(er).
+- Urvalet filtrerar alla datavyer som bygger pa `filteredStudents`/`filteredRows`.
 - Om inget ar valt visas alla elever.
 - Valet sparas lokalt i lararens webblasare.
+- Undantag: vissa registerlistor ar globala (t.ex. uppdrag och ticket-fragmallar).
 
 Pedagogiskt varde:
 - Du kan snabbt skifta mellan grupper utan att tappa kontext.
@@ -315,3 +316,108 @@ Pedagogiskt varde:
 
 Pedagogiskt varde:
 - Separera metodbrist fran uppmarksamhetsmissar innan pedagogiskt beslut tas.
+
+## 17. Uppdrag via lank
+
+Huvuddelar i sektionen:
+- skapade uppdrag med titel, raknesatt, niva-intervall och ID,
+- aktivt uppdrag for alla,
+- lankkopiering.
+
+Hur det raknas/lagras:
+- uppdrag skapas med fasta presets (addition, subtraktion, multiplikation, division, mix),
+- aktivt uppdrag lagras centralt och anvands i elevflodet,
+- uppdragsfoljsamhet i resultatvyer beraknas som andel elevproblem som matchar:
+  - raknesatt i uppdraget,
+  - niva mellan `minLevel` och `maxLevel`.
+
+Pedagogiskt varde:
+- snabbt satt att styra hela gruppens fokusomrade,
+- gor det mojligt att skilja pa \"jobbar eleven i ratt material\" och \"lyckas eleven i materialet\".
+
+## 18. Ticket
+
+### 18.1 Fragmallar
+
+Filter/sortering:
+- sokning i `fraga + svar + taggar`,
+- taggfilter med exakt match i tagglista,
+- sortering: senaste, aldsta eller alfabetisk fraga.
+
+Pedagogiskt varde:
+- ateranvandbara start/exit-fragor med snabb atkomst.
+
+### 18.2 Mottagare och publicering
+
+Mottagarlogik:
+- om inga explicita val ar satta skickas till aktuellt dashboard-urval (`filteredStudents`),
+- annars anvands union av:
+  - elever i valda klasser/grupper,
+  - manuellt valda elever.
+
+Vid `Visa pa startsida`:
+- dispatchens targetlista uppdateras,
+- elevens `ticketInbox` far aktiv dispatch/payload.
+
+Vid `Ta bort fran startsida`:
+- endast elever i aktuellt mottagarurval paverkas,
+- endast om deras aktiva dispatch matchar vald dispatch.
+
+Pedagogiskt varde:
+- exakt kontroll pa vem som far vilken ticket utan att tappa tempo i lektionen.
+
+### 18.3 Svar for valt utskick
+
+Vilka rader visas:
+- elever som finns i dispatchens targetlista,
+- eller elever som har svar pa dispatchen.
+
+Kolumner:
+- `Elev`, `Klass`, `Status`, `Svar`, `Tid`.
+
+Status:
+- `Ej svarat`, `Ratt`, `Fel`.
+
+Summering over tabellen:
+- `Svarat`: antal med svar,
+- `Ratt`: antal korrekta svar,
+- `Fel`: antal felaktiga svar,
+- `Total`: antal visade rader.
+
+Pedagogiskt varde:
+- direkt diagnostik av gruppforstaelse i start/exit-lagen.
+
+### 18.4 Elevhistorik i tickets
+
+Summeringskort:
+- `Totalt svar`: antal ticket-svar for eleven,
+- `Ratt`: antal korrekta,
+- `Fel`: antal felaktiga,
+- `Traffsakerhet = Ratt / Totalt`,
+- `Senaste 7 dagar`: antal svar med `answeredAt` inom 7 dagar,
+- `Unika utskick`: antal unika dispatch-ID med svar.
+
+Historikrad:
+- tid, tickettitel/typ/fraga, status, elevsvar, facit.
+
+Filter:
+- typ (`all/start/exit`),
+- resultat (`all/correct/wrong`),
+- fritext i titel/fraga/svar/facit/taggar.
+
+Sortering:
+- nyast svar overst (`answeredAt` fallande).
+
+Pedagogiskt varde:
+- gor det mojligt att folja individens begreppsutveckling over flera tickets.
+
+## 19. Nollstall elevlosenord
+
+Kolumner:
+- `Namn`, `ID`, `Klass`, `Senaste inloggning`, `Atgard`.
+
+Atgard:
+- `Nollstall losenord` satter elevens losen till inloggnings-ID.
+
+Pedagogiskt varde:
+- minskar friktion i klassrummet nar inloggning stoppar arbetsflodet.

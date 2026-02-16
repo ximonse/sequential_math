@@ -1,5 +1,13 @@
 # Progression & Mätlogik
 
+> OBS - KOD AR KALLAN:
+> Detta dokument ar en forklaringsguide. Source of truth for faktisk drift:
+> - `src/lib/difficultyAdapter.js`
+> - `src/lib/studentProfile.js`
+> - `src/lib/problemGenerator.js`
+> - `src/lib/answerQuality.js`
+> Vid avvikelse mellan text och implementation ar det koden som galler.
+
 Detta dokument beskriver hur appen väljer uppgifter, hur svårighet anpassas, vad som loggas, och hur elevens progression bedöms i nuvarande implementation.
 
 ## 1. Översikt

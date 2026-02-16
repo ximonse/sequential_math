@@ -1,5 +1,13 @@
 # Adaptive Logic - Beslutsalgoritmer
 
+> OBS - KOD AR KALLAN:
+> Detta dokument innehaller till stor del konceptuell pseudokod/exempel.
+> Faktisk runtime-logik finns i:
+> - `src/lib/difficultyAdapter.js`
+> - `src/lib/studentProfile.js`
+> - `src/lib/problemGenerator.js`
+> Anvand alltid koden som facit om nagot skiljer sig.
+
 ## Huvudalgoritm: selectNextProblem()
 
 ```javascript

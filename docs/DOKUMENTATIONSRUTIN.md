@@ -2,6 +2,10 @@
 
 Syfte: manualer och felsokning ska alltid spegla hur appen faktiskt fungerar.
 
+Grundprincip: **Kod ar alltid facit**.
+- Om dokumentation och implementation skiljer sig ska dokumentationen uppdateras.
+- Konceptdokument/pseudokod maste markeras tydligt som designniva, inte runtime.
+
 ## Nar maste dokumentationen uppdateras?
 
 Uppdatera dokumentation vid alla andringar som paverkar:

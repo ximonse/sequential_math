@@ -580,14 +580,20 @@ export function getClasses() {
 
   try {
     const parsed = JSON.parse(data)
-    return Array.isArray(parsed) ? parsed : []
+    if (!Array.isArray(parsed)) return []
+    const normalized = normalizeClassRecords(parsed)
+    if (!areClassRecordListsEqual(parsed, normalized)) {
+      saveClasses(normalized)
+    }
+    return normalized
   } catch {
     return []
   }
 }
 
 function saveClasses(classes) {
-  localStorage.setItem(CLASSES_KEY, JSON.stringify(classes))
+  const normalized = normalizeClassRecords(classes)
+  localStorage.setItem(CLASSES_KEY, JSON.stringify(normalized))
 }
 
 function parseRosterLines(rawList) {
@@ -678,8 +684,13 @@ export async function createClassFromRoster(classNameInput, rosterText, grade = 
 }
 
 export async function addStudentsToClass(classId, rosterText, grade = 4) {
+  const targetClassId = String(classId || '').trim()
+  if (!targetClassId) {
+    return { ok: false, error: 'Välj en klass att lägga till elever i.' }
+  }
+
   const classes = getClasses()
-  const target = classes.find(item => item.id === classId)
+  const target = classes.find(item => String(item.id || '').trim() === targetClassId)
   if (!target) {
     return { ok: false, error: 'Välj en klass att lägga till elever i.' }
   }
@@ -738,16 +749,74 @@ export async function addStudentsToClass(classId, rosterText, grade = 4) {
 }
 
 export function removeClass(classId) {
-  const classes = getClasses().filter(c => c.id !== classId)
+  const targetClassId = String(classId || '').trim()
+  if (!targetClassId) return
+
+  const classes = getClasses().filter(c => String(c.id || '').trim() !== targetClassId)
   saveClasses(classes)
 
   const classNameById = new Map(classes.map(item => [item.id, item.name]))
-  const affectedProfiles = getAllProfiles().filter(profile => profileHasClass(profile, classId))
+  const affectedProfiles = getAllProfiles().filter(profile => profileHasClass(profile, targetClassId))
   for (const profile of affectedProfiles) {
-    if (removeProfileFromClassMembership(profile, classId, classNameById)) {
+    if (removeProfileFromClassMembership(profile, targetClassId, classNameById)) {
       saveProfile(profile)
     }
   }
+}
+
+function normalizeClassRecords(classes) {
+  if (!Array.isArray(classes)) return []
+  const normalized = []
+  const seen = new Set()
+
+  for (const record of classes) {
+    if (!record || typeof record !== 'object') continue
+    const classId = String(record.id || '').trim()
+    if (!classId || seen.has(classId)) continue
+    seen.add(classId)
+
+    const className = String(record.name || '').trim() || classId
+    const studentIds = Array.isArray(record.studentIds)
+      ? Array.from(new Set(
+          record.studentIds
+            .map(studentId => normalizeStudentId(studentId))
+            .filter(Boolean)
+        ))
+      : []
+
+    normalized.push({
+      ...record,
+      id: classId,
+      name: className,
+      studentIds
+    })
+  }
+
+  return normalized
+}
+
+function areClassRecordListsEqual(a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b)) return false
+  if (a.length !== b.length) return false
+
+  for (let index = 0; index < a.length; index += 1) {
+    const left = a[index]
+    const right = b[index]
+    if (!left || !right) return false
+    if (String(left.id || '').trim() !== String(right.id || '').trim()) return false
+    if (String(left.name || '').trim() !== String(right.name || '').trim()) return false
+
+    const leftStudentIds = Array.isArray(left.studentIds) ? left.studentIds : []
+    const rightStudentIds = Array.isArray(right.studentIds) ? right.studentIds : []
+    if (leftStudentIds.length !== rightStudentIds.length) return false
+    for (let i = 0; i < leftStudentIds.length; i += 1) {
+      if (String(leftStudentIds[i] || '').trim() !== String(rightStudentIds[i] || '').trim()) {
+        return false
+      }
+    }
+  }
+
+  return true
 }
 
 function saveProfileLocalOnly(profile) {

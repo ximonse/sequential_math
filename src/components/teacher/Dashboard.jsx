@@ -947,10 +947,12 @@ function Dashboard() {
   }
 
   const handleToggleClassFilter = (classId) => {
+    const normalizedClassId = String(classId || '').trim()
+    if (!normalizedClassId) return
     setSelectedClassIds(prev => (
-      prev.includes(classId)
-        ? prev.filter(id => id !== classId)
-        : [...prev, classId]
+      prev.includes(normalizedClassId)
+        ? prev.filter(id => id !== normalizedClassId)
+        : [...prev, normalizedClassId]
     ))
   }
 
@@ -1137,6 +1139,7 @@ function Dashboard() {
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <button
+              type="button"
               onClick={clearClassFilter}
               className={`px-2 py-1 rounded text-xs ${
                 selectedClassIds.length === 0
@@ -1148,6 +1151,7 @@ function Dashboard() {
             </button>
             {classes.map(item => (
               <button
+                type="button"
                 key={`top-filter-${item.id}`}
                 onClick={() => handleToggleClassFilter(item.id)}
                 className={`px-2 py-1 rounded text-xs ${

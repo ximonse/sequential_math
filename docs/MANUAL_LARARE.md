@@ -35,6 +35,7 @@ Notera:
    Du kan klicka kolumnrubrikerna för sortering (stigande/fallande).
    Samma typ av sortering finns även i `Gångertabell - sticky status per elev` och `Behöver stöd nu`.
    I `Resultatvy` går det också att klicka kolumnrubriker för sortering.
+   Klicka på `i`-ikoner vid kritiska kolumnrubriker för kort tolkning direkt i vyn.
 2. Titta på `Behöver stöd nu` för prioriterad lista.
 3. Klicka `Elevvy` på en elev för individnivå.
 4. Exportera vid behov (`Export översikt`, `Export rådata`, `Export aktivitet`, osv.).

@@ -62,6 +62,44 @@ const MASTERY_MIN_SUCCESS_RATE = 0.8
 const DETAIL_LEVEL_ERROR_MIN_ATTEMPTS = 8
 const TEACHER_CLASS_FILTER_STORAGE_KEY = 'mathapp_teacher_selected_classes_v1'
 const PASSWORD_RESET_SECTION_ID = 'teacher-password-reset-section'
+const RESULT_HEADER_HELP = {
+  today_attempts: 'Antal uppgifter eleven har svarat pa idag.',
+  today_wrong: 'Visar ratt/fel idag. Ouppmarksamhetsfel raknas som fel har.',
+  today_engaged: 'Tid pa uppgift = fokus + interaktion, inte bara oppen flik.',
+  today_struggle: 'Skill med tydligast kunskapsfel i dagens underlag.',
+  today_answer_length: 'Medel antal tecken i elevsvar idag. Tolkas tillsammans med andra matt.',
+  week_attempts: 'Antal uppgifter sedan veckostart (mandag 00:00).',
+  week_active_time: 'Aktiv tid (svar) summerar speed-tider pa loggade svar.',
+  week_engaged: 'Tid pa uppgift = fokus + interaktion senaste 7 dagar.',
+  week_wrong: 'Visar ratt/fel under veckan. Se ocksa kunskapsfel/ouppmarksamhet i andra vyer.',
+  week_struggle: 'Skill med tydligast kunskapsfel i veckans underlag.',
+  week_answer_length: 'Medel antal tecken i elevsvar denna vecka.',
+  success_rate: 'Andel ratt av total antal forsok.',
+  reasonable_rate: 'Andel svar inom rimlighetstolerans for respektive uppgift.',
+  avg_relative_error: 'Genomsnittlig relativ avvikelse pa kunskapsfel.',
+  trend: 'Skillnad i traff mellan senaste 10 och foregaende 10 svar.'
+}
+
+const DETAIL_LEVEL_ERROR_HELP = {
+  operation: 'Raknesatt som nivan tillhor.',
+  level: 'Konceptuell niva (1-12) inom raknesattet.',
+  attempts: `Antal forsok pa nivan. Minst ${DETAIL_LEVEL_ERROR_MIN_ATTEMPTS} kravs for visning.`,
+  correct: 'Antal korrekta svar pa nivan.',
+  wrong: 'Antal felaktiga svar pa nivan.',
+  error_share: 'Felandel = Fel/Forsok pa nivan. Jamfor inom samma raknesatt + niva.',
+  knowledge_wrong: 'Fel som klassats som kunskapsfel.',
+  inattention_wrong: 'Fel som klassats som ouppmarksamhet.'
+}
+
+const SUPPORT_HEADER_HELP = {
+  status: 'Aktivitetsstatus: gron/orange/svart/rod utifran fokus och senaste interaktion.',
+  risk: 'Riskniva byggs av regelbaserade signaler som inaktivitet, lag traff och liknande.',
+  support_score: 'Stodscore (0-100) sammanvager risksignaler for prioritering av insats.',
+  today_wrong: 'Ratt/fel idag. Tolka tillsammans med mangd och feltyp.',
+  week_success: 'Andel ratt under veckan.',
+  struggle: 'Skill dar eleven visar tydligast kunskapskamp i aktuellt underlag.',
+  flags: 'Korta riskkoder som forklarar varfor eleven prioriteras.'
+}
 
 function Dashboard() {
   const [students, setStudents] = useState([])
@@ -431,31 +469,49 @@ function Dashboard() {
     return detailLevelErrorSortDir === 'asc' ? '▲' : '▼'
   }
 
-  const renderDetailLevelErrorSortHeader = (label, sortKey, className = 'py-1 pr-2') => (
-    <th className={className}>
-      <button
-        type="button"
-        onClick={() => handleDetailLevelErrorSort(sortKey)}
-        className="inline-flex items-center gap-1 hover:text-gray-700"
-      >
-        {label}
-        <span className="text-[10px] text-gray-400">{getDetailLevelErrorSortIndicator(sortKey)}</span>
-      </button>
-    </th>
-  )
+  const renderDetailLevelErrorSortHeader = (label, sortKey, options = {}) => {
+    const {
+      className = 'py-1 pr-2',
+      helpText = ''
+    } = options
+    return (
+      <th className={className}>
+        <div className="inline-flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => handleDetailLevelErrorSort(sortKey)}
+            className="inline-flex items-center gap-1 hover:text-gray-700"
+          >
+            {label}
+            <span className="text-[10px] text-gray-400">{getDetailLevelErrorSortIndicator(sortKey)}</span>
+          </button>
+          {helpText ? <InlineHelp text={helpText} /> : null}
+        </div>
+      </th>
+    )
+  }
 
-  const renderResultSortHeader = (label, sortKey, className = 'px-4 py-0 font-semibold') => (
-    <th className={className}>
-      <button
-        type="button"
-        onClick={() => handleResultSort(sortKey)}
-        className="inline-flex items-center gap-1 hover:text-gray-700"
-      >
-        {label}
-        <span className="text-[10px] text-gray-400">{getResultSortIndicator(sortKey)}</span>
-      </button>
-    </th>
-  )
+  const renderResultSortHeader = (label, sortKey, options = {}) => {
+    const {
+      className = 'px-4 py-0 font-semibold',
+      helpText = ''
+    } = options
+    return (
+      <th className={className}>
+        <div className="inline-flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => handleResultSort(sortKey)}
+            className="inline-flex items-center gap-1 hover:text-gray-700"
+          >
+            {label}
+            <span className="text-[10px] text-gray-400">{getResultSortIndicator(sortKey)}</span>
+          </button>
+          {helpText ? <InlineHelp text={helpText} /> : null}
+        </div>
+      </th>
+    )
+  }
 
   const tableStudentSet = useMemo(
     () => new Set(tableSelectedStudentIds),
@@ -2276,14 +2332,17 @@ function Dashboard() {
                         <table className="w-full text-xs">
                           <thead>
                             <tr className="text-left text-gray-500 border-b">
-                              {renderDetailLevelErrorSortHeader('Räknesätt', 'operation')}
-                              {renderDetailLevelErrorSortHeader('Nivå', 'level')}
-                              {renderDetailLevelErrorSortHeader('Försök', 'attempts')}
-                              {renderDetailLevelErrorSortHeader('Rätt', 'correct')}
-                              {renderDetailLevelErrorSortHeader('Fel', 'wrong')}
-                              {renderDetailLevelErrorSortHeader('Felandel', 'error_share')}
-                              {renderDetailLevelErrorSortHeader('Kunskapsfel', 'knowledge_wrong')}
-                              {renderDetailLevelErrorSortHeader('Ouppmärksamhet', 'inattention_wrong', 'py-1')}
+                              {renderDetailLevelErrorSortHeader('Räknesätt', 'operation', { helpText: DETAIL_LEVEL_ERROR_HELP.operation })}
+                              {renderDetailLevelErrorSortHeader('Nivå', 'level', { helpText: DETAIL_LEVEL_ERROR_HELP.level })}
+                              {renderDetailLevelErrorSortHeader('Försök', 'attempts', { helpText: DETAIL_LEVEL_ERROR_HELP.attempts })}
+                              {renderDetailLevelErrorSortHeader('Rätt', 'correct', { helpText: DETAIL_LEVEL_ERROR_HELP.correct })}
+                              {renderDetailLevelErrorSortHeader('Fel', 'wrong', { helpText: DETAIL_LEVEL_ERROR_HELP.wrong })}
+                              {renderDetailLevelErrorSortHeader('Felandel', 'error_share', { helpText: DETAIL_LEVEL_ERROR_HELP.error_share })}
+                              {renderDetailLevelErrorSortHeader('Kunskapsfel', 'knowledge_wrong', { helpText: DETAIL_LEVEL_ERROR_HELP.knowledge_wrong })}
+                              {renderDetailLevelErrorSortHeader('Ouppmärksamhet', 'inattention_wrong', {
+                                className: 'py-1',
+                                helpText: DETAIL_LEVEL_ERROR_HELP.inattention_wrong
+                              })}
                             </tr>
                           </thead>
                           <tbody>
@@ -2525,34 +2584,43 @@ function Dashboard() {
                         </button>
                       </th>
                       <th className="py-1 pr-2">
-                        <button
-                          type="button"
-                          onClick={() => handleSupportSort('activity')}
-                          className="inline-flex items-center gap-1 hover:text-gray-700"
-                        >
-                          Status
-                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('activity')}</span>
-                        </button>
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleSupportSort('activity')}
+                            className="inline-flex items-center gap-1 hover:text-gray-700"
+                          >
+                            Status
+                            <span className="text-[10px] text-gray-400">{getSupportSortIndicator('activity')}</span>
+                          </button>
+                          <InlineHelp text={SUPPORT_HEADER_HELP.status} />
+                        </div>
                       </th>
                       <th className="py-1 pr-2">
-                        <button
-                          type="button"
-                          onClick={() => handleSupportSort('risk')}
-                          className="inline-flex items-center gap-1 hover:text-gray-700"
-                        >
-                          Risk
-                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('risk')}</span>
-                        </button>
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleSupportSort('risk')}
+                            className="inline-flex items-center gap-1 hover:text-gray-700"
+                          >
+                            Risk
+                            <span className="text-[10px] text-gray-400">{getSupportSortIndicator('risk')}</span>
+                          </button>
+                          <InlineHelp text={SUPPORT_HEADER_HELP.risk} />
+                        </div>
                       </th>
                       <th className="py-1 pr-2">
-                        <button
-                          type="button"
-                          onClick={() => handleSupportSort('support_score')}
-                          className="inline-flex items-center gap-1 hover:text-gray-700"
-                        >
-                          Stöd
-                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('support_score')}</span>
-                        </button>
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleSupportSort('support_score')}
+                            className="inline-flex items-center gap-1 hover:text-gray-700"
+                          >
+                            Stöd
+                            <span className="text-[10px] text-gray-400">{getSupportSortIndicator('support_score')}</span>
+                          </button>
+                          <InlineHelp text={SUPPORT_HEADER_HELP.support_score} />
+                        </div>
                       </th>
                       <th className="py-1 pr-2">
                         <button
@@ -2565,36 +2633,50 @@ function Dashboard() {
                         </button>
                       </th>
                       <th className="py-1 pr-2">
-                        <button
-                          type="button"
-                          onClick={() => handleSupportSort('today_wrong')}
-                          className="inline-flex items-center gap-1 hover:text-gray-700"
-                        >
-                          R/F idag
-                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('today_wrong')}</span>
-                        </button>
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleSupportSort('today_wrong')}
+                            className="inline-flex items-center gap-1 hover:text-gray-700"
+                          >
+                            R/F idag
+                            <span className="text-[10px] text-gray-400">{getSupportSortIndicator('today_wrong')}</span>
+                          </button>
+                          <InlineHelp text={SUPPORT_HEADER_HELP.today_wrong} />
+                        </div>
                       </th>
                       <th className="py-1 pr-2">
-                        <button
-                          type="button"
-                          onClick={() => handleSupportSort('week_success')}
-                          className="inline-flex items-center gap-1 hover:text-gray-700"
-                        >
-                          Träff v
-                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('week_success')}</span>
-                        </button>
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleSupportSort('week_success')}
+                            className="inline-flex items-center gap-1 hover:text-gray-700"
+                          >
+                            Träff v
+                            <span className="text-[10px] text-gray-400">{getSupportSortIndicator('week_success')}</span>
+                          </button>
+                          <InlineHelp text={SUPPORT_HEADER_HELP.week_success} />
+                        </div>
                       </th>
                       <th className="py-1 pr-2">
-                        <button
-                          type="button"
-                          onClick={() => handleSupportSort('struggle')}
-                          className="inline-flex items-center gap-1 hover:text-gray-700"
-                        >
-                          Kämpar med
-                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('struggle')}</span>
-                        </button>
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleSupportSort('struggle')}
+                            className="inline-flex items-center gap-1 hover:text-gray-700"
+                          >
+                            Kämpar med
+                            <span className="text-[10px] text-gray-400">{getSupportSortIndicator('struggle')}</span>
+                          </button>
+                          <InlineHelp text={SUPPORT_HEADER_HELP.struggle} />
+                        </div>
                       </th>
-                      <th className="py-1 pr-2">Flaggor</th>
+                      <th className="py-1 pr-2">
+                        <div className="inline-flex items-center gap-1">
+                          <span>Flaggor</span>
+                          <InlineHelp text={SUPPORT_HEADER_HELP.flags} />
+                        </div>
+                      </th>
                       <th className="py-1">Åtgärd</th>
                     </tr>
                   </thead>
@@ -2876,32 +2958,32 @@ function Dashboard() {
                   {renderResultSortHeader('Klass', 'class')}
                   {viewMode === 'daily' ? (
                     <>
-                      {renderResultSortHeader('Gjort idag', 'today_attempts')}
-                      {renderResultSortHeader('Rätt/fel idag', 'today_wrong')}
-                      {renderResultSortHeader('Tid på uppgift idag', 'today_engaged')}
-                      {renderResultSortHeader('Kämpar med idag', 'today_struggle')}
-                      {renderResultSortHeader('Svarslängd idag', 'today_answer_length')}
+                      {renderResultSortHeader('Gjort idag', 'today_attempts', { helpText: RESULT_HEADER_HELP.today_attempts })}
+                      {renderResultSortHeader('Rätt/fel idag', 'today_wrong', { helpText: RESULT_HEADER_HELP.today_wrong })}
+                      {renderResultSortHeader('Tid på uppgift idag', 'today_engaged', { helpText: RESULT_HEADER_HELP.today_engaged })}
+                      {renderResultSortHeader('Kämpar med idag', 'today_struggle', { helpText: RESULT_HEADER_HELP.today_struggle })}
+                      {renderResultSortHeader('Svarslängd idag', 'today_answer_length', { helpText: RESULT_HEADER_HELP.today_answer_length })}
                       {renderResultSortHeader('Senast aktiv', 'last_active')}
                       <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
                     </>
                   ) : viewMode === 'weekly' ? (
                     <>
-                      {renderResultSortHeader('Gjort denna vecka', 'week_attempts')}
-                      {renderResultSortHeader('Aktiv tid (svar)', 'week_active_time')}
-                      {renderResultSortHeader('Tid på uppgift', 'week_engaged')}
-                      {renderResultSortHeader('Rätt/fel vecka', 'week_wrong')}
-                      {renderResultSortHeader('Kämpar med vecka', 'week_struggle')}
-                      {renderResultSortHeader('Svarslängd vecka', 'week_answer_length')}
+                      {renderResultSortHeader('Gjort denna vecka', 'week_attempts', { helpText: RESULT_HEADER_HELP.week_attempts })}
+                      {renderResultSortHeader('Aktiv tid (svar)', 'week_active_time', { helpText: RESULT_HEADER_HELP.week_active_time })}
+                      {renderResultSortHeader('Tid på uppgift', 'week_engaged', { helpText: RESULT_HEADER_HELP.week_engaged })}
+                      {renderResultSortHeader('Rätt/fel vecka', 'week_wrong', { helpText: RESULT_HEADER_HELP.week_wrong })}
+                      {renderResultSortHeader('Kämpar med vecka', 'week_struggle', { helpText: RESULT_HEADER_HELP.week_struggle })}
+                      {renderResultSortHeader('Svarslängd vecka', 'week_answer_length', { helpText: RESULT_HEADER_HELP.week_answer_length })}
                       {renderResultSortHeader('Senast aktiv', 'last_active')}
                       <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
                     </>
                   ) : (
                     <>
                       {renderResultSortHeader('Försök', 'attempts')}
-                      {renderResultSortHeader('Rätt', 'success_rate')}
-                      {renderResultSortHeader('Rimlighet', 'reasonable_rate')}
-                      {renderResultSortHeader('Medelavvikelse', 'avg_relative_error')}
-                      {renderResultSortHeader('Trend', 'trend')}
+                      {renderResultSortHeader('Rätt', 'success_rate', { helpText: RESULT_HEADER_HELP.success_rate })}
+                      {renderResultSortHeader('Rimlighet', 'reasonable_rate', { helpText: RESULT_HEADER_HELP.reasonable_rate })}
+                      {renderResultSortHeader('Medelavvikelse', 'avg_relative_error', { helpText: RESULT_HEADER_HELP.avg_relative_error })}
+                      {renderResultSortHeader('Trend', 'trend', { helpText: RESULT_HEADER_HELP.trend })}
                       {renderResultSortHeader('Senast aktiv', 'last_active')}
                       <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
                     </>
@@ -3996,6 +4078,54 @@ function ensureUtf8Bom(content) {
 function formatTimestampForCsv(timestamp) {
   if (!timestamp) return ''
   return new Date(timestamp).toISOString()
+}
+
+function InlineHelp({ text = '' }) {
+  const [open, setOpen] = useState(false)
+
+  useEffect(() => {
+    if (!open) return undefined
+
+    const handleClose = () => setOpen(false)
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+
+    window.addEventListener('click', handleClose)
+    window.addEventListener('keydown', handleEscape)
+    return () => {
+      window.removeEventListener('click', handleClose)
+      window.removeEventListener('keydown', handleEscape)
+    }
+  }, [open])
+
+  const normalizedText = String(text || '').trim()
+  if (!normalizedText) return null
+
+  return (
+    <span className="relative inline-flex">
+      <button
+        type="button"
+        aria-label="Visa tolkning"
+        aria-expanded={open}
+        onClick={(event) => {
+          event.stopPropagation()
+          setOpen(prev => !prev)
+        }}
+        className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-gray-300 bg-white text-[10px] font-bold text-gray-500 hover:text-gray-700 hover:border-gray-400"
+      >
+        i
+      </button>
+      {open ? (
+        <span
+          onClick={(event) => event.stopPropagation()}
+          className="absolute left-0 top-5 z-40 w-64 rounded border border-gray-200 bg-white px-2 py-1.5 text-[11px] font-normal leading-relaxed text-gray-700 shadow-lg"
+        >
+          {normalizedText}
+        </span>
+      ) : null}
+    </span>
+  )
 }
 
 function RiskBadge({ level, score }) {

@@ -15,6 +15,7 @@ const STUDENT_SESSION_SECRET_KEY = 'mathapp_student_session_secret'
 const CLASSES_KEY = 'mathapp_classes_v1'
 const CLOUD_ENABLED = import.meta.env.VITE_ENABLE_CLOUD_SYNC === '1'
 const PASSWORD_SCHEME = 'sha256-v1'
+const CLOUD_FRESHNESS_FUTURE_TOLERANCE_MS = 5 * 60 * 1000
 
 export function normalizeStudentId(value) {
   const raw = String(value || '').trim()
@@ -530,9 +531,7 @@ export async function getAllProfilesWithSync() {
       if (!prev) {
         merged.set(p.studentId, p)
       } else {
-        const prevTs = getLastProblemTimestamp(prev)
-        const cloudTs = getLastProblemTimestamp(p)
-        merged.set(p.studentId, cloudTs >= prevTs ? p : prev)
+        merged.set(p.studentId, chooseFreshestProfile(prev, p))
       }
 
       // List-API är sanerat. Vi cachear inte auth-data lokalt här.
@@ -807,24 +806,92 @@ async function syncProfileToCloud(profile) {
   }
 }
 
-function getLastProblemTimestamp(profile) {
-  return profile?.recentProblems?.[profile.recentProblems.length - 1]?.timestamp || 0
+function normalizeFreshnessTimestamp(value, now = Date.now()) {
+  const ts = Number(value)
+  if (!Number.isFinite(ts) || ts <= 0) return 0
+  if (ts > (now + CLOUD_FRESHNESS_FUTURE_TOLERANCE_MS)) return 0
+  return Math.min(ts, now)
 }
 
-function getLastTicketSignalTimestamp(profile) {
+function getMaxTimestampFromEntries(entries, now = Date.now()) {
+  if (!Array.isArray(entries) || entries.length === 0) return 0
+  let maxTs = 0
+  for (const entry of entries) {
+    const ts = normalizeFreshnessTimestamp(entry?.timestamp, now)
+    if (ts > maxTs) maxTs = ts
+  }
+  return maxTs
+}
+
+function getLastProblemTimestamp(profile, now = Date.now()) {
+  const fromRecent = getMaxTimestampFromEntries(profile?.recentProblems, now)
+  const fromProblemLog = getMaxTimestampFromEntries(profile?.problemLog, now)
+  return Math.max(fromRecent, fromProblemLog)
+}
+
+function getLastTableCompletionTimestamp(profile, now = Date.now()) {
+  const completions = profile?.tableDrill?.completions
+  if (!Array.isArray(completions) || completions.length === 0) return 0
+  let maxTs = 0
+  for (const item of completions) {
+    const ts = normalizeFreshnessTimestamp(item?.timestamp, now)
+    if (ts > maxTs) maxTs = ts
+  }
+  return maxTs
+}
+
+function getLastPresenceSignalTimestamp(profile, now = Date.now()) {
+  const activity = profile?.activity && typeof profile.activity === 'object'
+    ? profile.activity
+    : {}
+  return Math.max(
+    normalizeFreshnessTimestamp(activity.lastPresenceAt, now),
+    normalizeFreshnessTimestamp(activity.lastInteractionAt, now)
+  )
+}
+
+function getLastLoginSignalTimestamp(profile, now = Date.now()) {
+  return normalizeFreshnessTimestamp(profile?.auth?.lastLoginAt, now)
+}
+
+function getProblemCountSignal(profile) {
+  const recentCount = Array.isArray(profile?.recentProblems) ? profile.recentProblems.length : 0
+  const logCount = Array.isArray(profile?.problemLog) ? profile.problemLog.length : 0
+  const lifetimeCount = Number(profile?.stats?.lifetimeProblems ?? profile?.stats?.totalProblems ?? 0)
+  const normalizedLifetime = Number.isFinite(lifetimeCount) ? Math.max(0, lifetimeCount) : 0
+  return Math.max(recentCount, logCount, normalizedLifetime)
+}
+
+function getTableCompletionCountSignal(profile) {
+  const completions = profile?.tableDrill?.completions
+  if (!Array.isArray(completions)) return 0
+  return completions.length
+}
+
+function getProfileFreshnessTimestamp(profile, now = Date.now()) {
+  return Math.max(
+    getLastTicketSignalTimestamp(profile, now),
+    getLastProblemTimestamp(profile, now),
+    getLastTableCompletionTimestamp(profile, now),
+    getLastPresenceSignalTimestamp(profile, now),
+    getLastLoginSignalTimestamp(profile, now)
+  )
+}
+
+function getLastTicketSignalTimestamp(profile, now = Date.now()) {
   const inbox = profile?.ticketInbox && typeof profile.ticketInbox === 'object'
     ? profile.ticketInbox
     : null
   const inboxTs = Math.max(
-    Number(inbox?.updatedAt || 0),
-    Number(inbox?.publishedAt || 0),
-    Number(inbox?.clearedAt || 0)
+    normalizeFreshnessTimestamp(inbox?.updatedAt, now),
+    normalizeFreshnessTimestamp(inbox?.publishedAt, now),
+    normalizeFreshnessTimestamp(inbox?.clearedAt, now)
   )
 
   const responses = Array.isArray(profile?.ticketResponses) ? profile.ticketResponses : []
   let responseTs = 0
   for (const item of responses) {
-    const ts = Number(item?.answeredAt || 0)
+    const ts = normalizeFreshnessTimestamp(item?.answeredAt, now)
     if (ts > responseTs) responseTs = ts
   }
 
@@ -832,16 +899,21 @@ function getLastTicketSignalTimestamp(profile) {
 }
 
 function chooseFreshestProfile(localProfile, cloudProfile) {
-  const localTicketTs = getLastTicketSignalTimestamp(localProfile)
-  const cloudTicketTs = getLastTicketSignalTimestamp(cloudProfile)
-  if (cloudTicketTs > localTicketTs) return cloudProfile
-  if (cloudTicketTs < localTicketTs) return localProfile
+  const now = Date.now()
+  const localFreshness = getProfileFreshnessTimestamp(localProfile, now)
+  const cloudFreshness = getProfileFreshnessTimestamp(cloudProfile, now)
+  if (cloudFreshness > localFreshness) return cloudProfile
+  if (cloudFreshness < localFreshness) return localProfile
 
-  const localProblemTs = getLastProblemTimestamp(localProfile)
-  const cloudProblemTs = getLastProblemTimestamp(cloudProfile)
+  const localProblemCount = getProblemCountSignal(localProfile)
+  const cloudProblemCount = getProblemCountSignal(cloudProfile)
+  if (cloudProblemCount > localProblemCount) return cloudProfile
+  if (cloudProblemCount < localProblemCount) return localProfile
 
-  if (cloudProblemTs > localProblemTs) return cloudProfile
-  if (cloudProblemTs < localProblemTs) return localProfile
+  const localTableCompletions = getTableCompletionCountSignal(localProfile)
+  const cloudTableCompletions = getTableCompletionCountSignal(cloudProfile)
+  if (cloudTableCompletions > localTableCompletions) return cloudProfile
+  if (cloudTableCompletions < localTableCompletions) return localProfile
 
   const localPwdTs = Number(localProfile?.auth?.passwordUpdatedAt || 0)
   const cloudPwdTs = Number(cloudProfile?.auth?.passwordUpdatedAt || 0)

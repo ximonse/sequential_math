@@ -256,8 +256,15 @@ function flattenProblems(profiles) {
 
 function getProblemsForAnalytics(profile) {
   const log = Array.isArray(profile?.problemLog) ? profile.problemLog : []
-  if (log.length > 0) return log
-  return Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
+  const recent = Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
+  if (log.length === 0) return recent
+  if (recent.length === 0) return log
+
+  const logLatest = getLatestTimestamp(log)
+  const recentLatest = getLatestTimestamp(recent)
+  if (recentLatest > logLatest) return recent
+  if (logLatest > recentLatest) return log
+  return log.length >= recent.length ? log : recent
 }
 
 function buildTemplateLevelBenchmarks(rows) {
@@ -320,6 +327,16 @@ function buildTableBenchmarks(rows) {
 
 function getTemplateLevelKey(problemType, level) {
   return `${String(problemType || '')}|${Number(level || 1)}`
+}
+
+function getLatestTimestamp(list) {
+  if (!Array.isArray(list) || list.length === 0) return 0
+  let maxTs = 0
+  for (const item of list) {
+    const ts = Number(item?.timestamp || 0)
+    if (Number.isFinite(ts) && ts > maxTs) maxTs = ts
+  }
+  return maxTs
 }
 
 function inferOperation(problemType = '') {

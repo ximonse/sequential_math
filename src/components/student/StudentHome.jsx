@@ -682,13 +682,27 @@ function buildTableStatus(profile) {
 }
 
 function getTableProblemSource(profile) {
-  if (Array.isArray(profile?.problemLog) && profile.problemLog.length > 0) {
-    return profile.problemLog
+  const problemLog = Array.isArray(profile?.problemLog) ? profile.problemLog : []
+  const recentProblems = Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
+
+  if (problemLog.length === 0) return recentProblems
+  if (recentProblems.length === 0) return problemLog
+
+  const logLatest = getLatestProblemTimestamp(problemLog)
+  const recentLatest = getLatestProblemTimestamp(recentProblems)
+  if (recentLatest > logLatest) return recentProblems
+  if (logLatest > recentLatest) return problemLog
+  return problemLog.length >= recentProblems.length ? problemLog : recentProblems
+}
+
+function getLatestProblemTimestamp(list) {
+  if (!Array.isArray(list) || list.length === 0) return 0
+  let maxTs = 0
+  for (const item of list) {
+    const ts = Number(item?.timestamp || 0)
+    if (Number.isFinite(ts) && ts > maxTs) maxTs = ts
   }
-  if (Array.isArray(profile?.recentProblems)) {
-    return profile.recentProblems
-  }
-  return []
+  return maxTs
 }
 
 function computeStickyTableCompletionMap(problemSource, startTimestamp) {

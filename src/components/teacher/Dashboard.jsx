@@ -58,6 +58,7 @@ const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 const LEVELS = Array.from({ length: 12 }, (_, index) => index + 1)
 const MASTERY_MIN_ATTEMPTS = 5
 const MASTERY_MIN_SUCCESS_RATE = 0.8
+const TEACHER_CLASS_FILTER_STORAGE_KEY = 'mathapp_teacher_selected_classes_v1'
 
 function Dashboard() {
   const [students, setStudents] = useState([])
@@ -66,7 +67,7 @@ function Dashboard() {
   const [sortBy, setSortBy] = useState('active_today')
   const [sortDir, setSortDir] = useState('desc')
   const [classes, setClasses] = useState([])
-  const [selectedClassIds, setSelectedClassIds] = useState([])
+  const [selectedClassIds, setSelectedClassIds] = useState(() => loadSavedTeacherClassFilter())
   const [classNameInput, setClassNameInput] = useState('')
   const [addToClassId, setAddToClassId] = useState('')
   const [rosterInput, setRosterInput] = useState('')
@@ -161,6 +162,10 @@ function Dashboard() {
     const valid = new Set(classes.map(item => item.id))
     setSelectedClassIds(prev => prev.filter(id => valid.has(id)))
   }, [classes, selectedClassIds.length])
+
+  useEffect(() => {
+    saveTeacherClassFilterSelection(selectedClassIds)
+  }, [selectedClassIds])
 
   useEffect(() => {
     if (students.length === 0) {
@@ -1122,6 +1127,9 @@ function Dashboard() {
                 : `${selectedClassIds.length} klass(er) valda (${filteredStudents.length} elever)`}
             </p>
           </div>
+          <p className="text-[11px] text-gray-500 mb-2">
+            Valda klasser sparas som förval till nästa gång.
+          </p>
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={clearClassFilter}
@@ -4380,6 +4388,41 @@ function inferOperationFromProblemType(problemType = '') {
   return prefix || 'unknown'
 }
 
+function loadSavedTeacherClassFilter() {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = window.localStorage.getItem(TEACHER_CLASS_FILTER_STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) return []
+    return Array.from(new Set(
+      parsed
+        .map(item => String(item || '').trim())
+        .filter(Boolean)
+    ))
+  } catch {
+    return []
+  }
+}
+
+function saveTeacherClassFilterSelection(classIds) {
+  if (typeof window === 'undefined') return
+  try {
+    const normalized = Array.from(new Set(
+      (Array.isArray(classIds) ? classIds : [])
+        .map(item => String(item || '').trim())
+        .filter(Boolean)
+    ))
+    if (normalized.length === 0) {
+      window.localStorage.removeItem(TEACHER_CLASS_FILTER_STORAGE_KEY)
+      return
+    }
+    window.localStorage.setItem(TEACHER_CLASS_FILTER_STORAGE_KEY, JSON.stringify(normalized))
+  } catch {
+    // no-op
+  }
+}
+
 function calculateTrend(problems) {
   if (problems.length < 15) return null
 
@@ -4675,13 +4718,27 @@ function buildStickyTableStatusForStudent(student) {
 }
 
 function getTableProblemSourceForStudent(student) {
-  if (Array.isArray(student?.problemLog) && student.problemLog.length > 0) {
-    return student.problemLog
+  const problemLog = Array.isArray(student?.problemLog) ? student.problemLog : []
+  const recentProblems = Array.isArray(student?.recentProblems) ? student.recentProblems : []
+
+  if (problemLog.length === 0) return recentProblems
+  if (recentProblems.length === 0) return problemLog
+
+  const logLatest = getLatestProblemTimestamp(problemLog)
+  const recentLatest = getLatestProblemTimestamp(recentProblems)
+  if (recentLatest > logLatest) return recentProblems
+  if (logLatest > recentLatest) return problemLog
+  return problemLog.length >= recentProblems.length ? problemLog : recentProblems
+}
+
+function getLatestProblemTimestamp(list) {
+  if (!Array.isArray(list) || list.length === 0) return 0
+  let maxTs = 0
+  for (const item of list) {
+    const ts = Number(item?.timestamp || 0)
+    if (Number.isFinite(ts) && ts > maxTs) maxTs = ts
   }
-  if (Array.isArray(student?.recentProblems)) {
-    return student.recentProblems
-  }
-  return []
+  return maxTs
 }
 
 function computeStickyTableCompletionMapForTeacher(problemSource, startTimestamp) {

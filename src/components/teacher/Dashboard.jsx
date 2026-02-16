@@ -1184,7 +1184,8 @@ function Dashboard() {
 
         <div className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
 
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="flex flex-col">
+        <div className="bg-white rounded-lg shadow p-4 mb-6" style={{ order: -70 }}>
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
             <h2 className="text-base font-semibold text-gray-800">Urval: klass/grupp</h2>
             <p className="text-xs text-gray-500">
@@ -1330,7 +1331,7 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4 mb-8">
+        <div className="bg-white rounded-lg shadow p-4 mb-8" style={{ order: -60 }}>
           <h2 className="text-lg font-semibold text-gray-800 mb-3">Uppdrag via länk</h2>
           <div className="flex flex-wrap gap-2 mb-4">
             <button
@@ -1428,7 +1429,7 @@ function Dashboard() {
           )}
         </div>
 
-        <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border border-amber-200/90 rounded-2xl shadow-[0_16px_42px_-26px_rgba(146,64,14,0.55)] p-4 md:p-5 mb-8">
+        <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border border-amber-200/90 rounded-2xl shadow-[0_16px_42px_-26px_rgba(146,64,14,0.55)] p-4 md:p-5 mb-8" style={{ order: -50 }}>
           <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500" />
           <button
             onClick={() => setTicketSectionOpen(prev => !prev)}
@@ -1921,7 +1922,7 @@ function Dashboard() {
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4 mb-8">
+        <div className="bg-white rounded-lg shadow p-4 mb-8" style={{ order: -40 }}>
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h2 className="text-lg font-semibold text-gray-800">Klass/gruppvy - snabbstatus</h2>
             <span className="text-xs text-gray-500">Styrs av urvalet högst upp</span>
@@ -2045,7 +2046,15 @@ function Dashboard() {
           )}
         </div>
 
-        <div id="teacher-student-detail-section" className="bg-white rounded-lg shadow p-4 mb-8">
+        <TableStickyStatusPanel
+          rows={tableStickyStatusRows}
+          onSort={handleStickySort}
+          getSortIndicator={getStickySortIndicator}
+          className="bg-white rounded-lg shadow p-4 mb-8"
+          style={{ order: -30 }}
+        />
+
+        <div id="teacher-student-detail-section" className="bg-white rounded-lg shadow p-4 mb-8" style={{ order: -20 }}>
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <h2 className="text-lg font-semibold text-gray-800">Elevvy (lärare)</h2>
             <div className="flex flex-wrap items-center gap-2">
@@ -2364,107 +2373,6 @@ function Dashboard() {
 
           <div className="bg-white rounded-lg shadow p-4">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-800">Gångertabell - sticky status per elev</h2>
-              <span className="text-xs text-gray-500">Dag (mörkgrön) låser till 23:59, vecka (ljusgrön) till söndag</span>
-            </div>
-            {tableStickyStatusRows.length === 0 ? (
-              <p className="text-sm text-gray-500">Inga elever i aktuellt urval.</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-500 border-b">
-                      <th className="py-1 pr-2">
-                        <button
-                          type="button"
-                          onClick={() => handleStickySort('name')}
-                          className="inline-flex items-center gap-1 hover:text-gray-700"
-                        >
-                          Elev
-                          <span className="text-[10px] text-gray-400">{getStickySortIndicator('name')}</span>
-                        </button>
-                      </th>
-                      <th className="py-1 pr-2">
-                        <button
-                          type="button"
-                          onClick={() => handleStickySort('class')}
-                          className="inline-flex items-center gap-1 hover:text-gray-700"
-                        >
-                          Klass
-                          <span className="text-[10px] text-gray-400">{getStickySortIndicator('class')}</span>
-                        </button>
-                      </th>
-                      {TABLES.map(table => (
-                        <th key={`teacher-table-sticky-head-${table}`} className="py-1 pr-1 text-center">
-                          <button
-                            type="button"
-                            onClick={() => handleStickySort(`table_${table}`)}
-                            className="inline-flex items-center justify-center gap-1 hover:text-gray-700"
-                          >
-                            <span>{table}</span>
-                            <span className="text-[10px] text-gray-400">{getStickySortIndicator(`table_${table}`)}</span>
-                          </button>
-                        </th>
-                      ))}
-                      <th className="py-1 pr-2">
-                        <button
-                          type="button"
-                          onClick={() => handleStickySort('today_done')}
-                          className="inline-flex items-center gap-1 hover:text-gray-700"
-                        >
-                          Dagsklara
-                          <span className="text-[10px] text-gray-400">{getStickySortIndicator('today_done')}</span>
-                        </button>
-                      </th>
-                      <th className="py-1 pr-2">
-                        <button
-                          type="button"
-                          onClick={() => handleStickySort('week_done')}
-                          className="inline-flex items-center gap-1 hover:text-gray-700"
-                        >
-                          Veckoklara
-                          <span className="text-[10px] text-gray-400">{getStickySortIndicator('week_done')}</span>
-                        </button>
-                      </th>
-                      <th className="py-1">
-                        <button
-                          type="button"
-                          onClick={() => handleStickySort('star_count')}
-                          className="inline-flex items-center gap-1 hover:text-gray-700"
-                        >
-                          Star idag
-                          <span className="text-[10px] text-gray-400">{getStickySortIndicator('star_count')}</span>
-                        </button>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tableStickyStatusRows.map(row => (
-                      <tr key={`teacher-table-sticky-row-${row.studentId}`} className="border-b last:border-b-0">
-                        <td className="py-1 pr-2 text-gray-700 font-medium">{row.name}</td>
-                        <td className="py-1 pr-2 text-gray-600">{row.className || '-'}</td>
-                        {TABLES.map(table => (
-                          <td key={`teacher-table-sticky-cell-${row.studentId}-${table}`} className="py-1 pr-1 text-center">
-                            <span className={`inline-flex w-5 h-5 rounded border align-middle ${getTeacherTableStatusClass(row.statusByTable[table])}`} title={getTeacherTableStatusLabel(row.statusByTable[table])}>
-                              {row.statusByTable[table] === 'star' ? (
-                                <span className="m-auto text-[10px] text-yellow-300">★</span>
-                              ) : null}
-                            </span>
-                          </td>
-                        ))}
-                        <td className="py-1 pr-2 text-gray-700">{row.todayDoneCount}</td>
-                        <td className="py-1 pr-2 text-gray-700">{row.weekDoneCount}</td>
-                        <td className="py-1 text-gray-700">{row.starCount}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-semibold text-gray-800">Behöver stöd nu</h2>
               <span className="text-xs text-gray-500">Kompakt prioritering</span>
             </div>
@@ -2707,15 +2615,16 @@ function Dashboard() {
           )}
         </div>
 
-        {students.length === 0 ? (
-          <div className="bg-white rounded-lg p-8 shadow text-center">
-            <p className="text-gray-500 text-lg">Inga elever ännu</p>
-            <p className="text-gray-400 mt-2">
-              Lägg till elever via klasslistan ovan så kan de logga in.
-            </p>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow overflow-x-auto p-4">
+        <div style={{ order: -10 }}>
+          {students.length === 0 ? (
+            <div className="bg-white rounded-lg p-8 shadow text-center">
+              <p className="text-gray-500 text-lg">Inga elever ännu</p>
+              <p className="text-gray-400 mt-2">
+                Lägg till elever via klasslistan ovan så kan de logga in.
+              </p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-lg shadow overflow-x-auto p-4">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div className="flex items-center gap-2">
                 <span className="text-xs uppercase tracking-wide text-gray-500">Resultatvy</span>
@@ -3048,8 +2957,9 @@ function Dashboard() {
                 ))}
               </tbody>
             </table>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
 
         <div id={PASSWORD_RESET_SECTION_ID} className="bg-white rounded-lg shadow p-4 mt-8 border-2 border-rose-200">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
@@ -3122,6 +3032,118 @@ function Dashboard() {
           )}
         </div>
       </div>
+    </div>
+  </div>
+  )
+}
+
+function TableStickyStatusPanel({
+  rows,
+  onSort,
+  getSortIndicator,
+  className = 'bg-white rounded-lg shadow p-4',
+  style
+}) {
+  return (
+    <div className={className} style={style}>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-lg font-semibold text-gray-800">Gångertabell - sticky status per elev</h2>
+        <span className="text-xs text-gray-500">Dag (mörkgrön) låser till 23:59, vecka (ljusgrön) till söndag</span>
+      </div>
+      {rows.length === 0 ? (
+        <p className="text-sm text-gray-500">Inga elever i aktuellt urval.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-gray-500 border-b">
+                <th className="py-1 pr-2">
+                  <button
+                    type="button"
+                    onClick={() => onSort('name')}
+                    className="inline-flex items-center gap-1 hover:text-gray-700"
+                  >
+                    Elev
+                    <span className="text-[10px] text-gray-400">{getSortIndicator('name')}</span>
+                  </button>
+                </th>
+                <th className="py-1 pr-2">
+                  <button
+                    type="button"
+                    onClick={() => onSort('class')}
+                    className="inline-flex items-center gap-1 hover:text-gray-700"
+                  >
+                    Klass
+                    <span className="text-[10px] text-gray-400">{getSortIndicator('class')}</span>
+                  </button>
+                </th>
+                {TABLES.map(table => (
+                  <th key={`teacher-table-sticky-head-${table}`} className="py-1 pr-1 text-center">
+                    <button
+                      type="button"
+                      onClick={() => onSort(`table_${table}`)}
+                      className="inline-flex items-center justify-center gap-1 hover:text-gray-700"
+                    >
+                      <span>{table}</span>
+                      <span className="text-[10px] text-gray-400">{getSortIndicator(`table_${table}`)}</span>
+                    </button>
+                  </th>
+                ))}
+                <th className="py-1 pr-2">
+                  <button
+                    type="button"
+                    onClick={() => onSort('today_done')}
+                    className="inline-flex items-center gap-1 hover:text-gray-700"
+                  >
+                    Dagsklara
+                    <span className="text-[10px] text-gray-400">{getSortIndicator('today_done')}</span>
+                  </button>
+                </th>
+                <th className="py-1 pr-2">
+                  <button
+                    type="button"
+                    onClick={() => onSort('week_done')}
+                    className="inline-flex items-center gap-1 hover:text-gray-700"
+                  >
+                    Veckoklara
+                    <span className="text-[10px] text-gray-400">{getSortIndicator('week_done')}</span>
+                  </button>
+                </th>
+                <th className="py-1">
+                  <button
+                    type="button"
+                    onClick={() => onSort('star_count')}
+                    className="inline-flex items-center gap-1 hover:text-gray-700"
+                  >
+                    Star idag
+                    <span className="text-[10px] text-gray-400">{getSortIndicator('star_count')}</span>
+                  </button>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map(row => (
+                <tr key={`teacher-table-sticky-row-${row.studentId}`} className="border-b last:border-b-0">
+                  <td className="py-1 pr-2 text-gray-700 font-medium">{row.name}</td>
+                  <td className="py-1 pr-2 text-gray-600">{row.className || '-'}</td>
+                  {TABLES.map(table => (
+                    <td key={`teacher-table-sticky-cell-${row.studentId}-${table}`} className="py-1 pr-1 text-center">
+                      <span className={`inline-flex w-5 h-5 rounded border align-middle ${getTeacherTableStatusClass(row.statusByTable[table])}`} title={getTeacherTableStatusLabel(row.statusByTable[table])}>
+                        {row.statusByTable[table] === 'star' ? (
+                          <span className="m-auto text-[10px] text-yellow-300">★</span>
+                        ) : null}
+                      </span>
+                    </td>
+                  ))}
+                  <td className="py-1 pr-2 text-gray-700">{row.todayDoneCount}</td>
+                  <td className="py-1 pr-2 text-gray-700">{row.weekDoneCount}</td>
+                  <td className="py-1 text-gray-700">{row.starCount}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }

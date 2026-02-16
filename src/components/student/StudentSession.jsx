@@ -48,6 +48,16 @@ const SINGLE_DIGIT_BREAK_MINUTES = 2
 const LEVEL_MASTERY_MIN_ATTEMPTS = 5
 const LEVEL_MASTERY_MIN_SUCCESS_RATE = 0.8
 
+function openTableBossVideo() {
+  if (typeof window === 'undefined') return false
+  try {
+    const opened = window.open(TABLE_BOSS_URL, '_blank', 'noopener,noreferrer')
+    return Boolean(opened)
+  } catch {
+    return false
+  }
+}
+
 function StudentSession() {
   const { studentId } = useParams()
   const navigate = useNavigate()
@@ -775,6 +785,8 @@ function StudentSession() {
   if (tableMilestone) {
     const continueAfterMilestone = () => {
       if (tableMilestone.masteredTwoToNineToday) {
+        // Försök öppna video direkt i användarens klickhändelse.
+        openTableBossVideo()
         markDailyBossShown(profile)
         saveProfile(profile)
         const finalizeAfter = tableMilestone.finalizeAfter
@@ -788,10 +800,6 @@ function StudentSession() {
           setFeedback(null)
           resetAttentionTracker()
           setStartTime(Date.now())
-        }
-        const opened = window.open(TABLE_BOSS_URL, '_blank', 'noopener,noreferrer')
-        if (!opened) {
-          window.location.href = TABLE_BOSS_URL
         }
         return
       }
@@ -845,11 +853,22 @@ function StudentSession() {
               : tableMilestone.finalCelebration
               ? 'Du klarade alla valda tabeller.'
               : tableMilestone.boss
-              ? `${tableMilestone.table}:an klar ${tableMilestone.completionCountToday} gånger idag.`
+                ? `${tableMilestone.table}:an klar ${tableMilestone.completionCountToday} gånger idag.`
               : 'Grymt jobbat!'} {tableMilestone.remainingTablesCount > 0
               ? `${tableMilestone.remainingTablesCount} tabell(er) kvar.`
               : tableMilestone.finalCelebration ? '' : 'Klar för slutfirning!'}
           </p>
+          {tableMilestone.masteredTwoToNineToday && (
+            <a
+              href={TABLE_BOSS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(event) => event.stopPropagation()}
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-white text-blue-700 font-semibold shadow hover:bg-blue-50"
+            >
+              Öppna boss-video
+            </a>
+          )}
           <p className="text-sm text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.45)]">
             Tryck var som helst för att fortsätta
           </p>

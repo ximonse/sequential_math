@@ -111,6 +111,10 @@ function Dashboard() {
   const [passwordResetStatus, setPasswordResetStatus] = useState('')
   const [passwordResetBusyId, setPasswordResetBusyId] = useState('')
   const navigate = useNavigate()
+  const classFilterOptions = useMemo(
+    () => buildClassFilterOptions(classes, students),
+    [classes, students]
+  )
 
   const loadStudents = useCallback(async () => {
     const profiles = await getAllProfilesWithSync()
@@ -151,22 +155,22 @@ function Dashboard() {
   }, [ticketDispatches, selectedTicketDispatchId])
 
   useEffect(() => {
-    if (classes.length === 0) {
+    if (classFilterOptions.length === 0) {
       setTicketTargetClassIds([])
       return
     }
-    const valid = new Set(classes.map(item => item.id))
+    const valid = new Set(classFilterOptions.map(item => item.id))
     setTicketTargetClassIds(prev => prev.filter(id => valid.has(id)))
-  }, [classes])
+  }, [classFilterOptions])
 
   useEffect(() => {
-    if (classes.length === 0) {
+    if (classFilterOptions.length === 0) {
       if (selectedClassIds.length > 0) setSelectedClassIds([])
       return
     }
-    const valid = new Set(classes.map(item => item.id))
+    const valid = new Set(classFilterOptions.map(item => item.id))
     setSelectedClassIds(prev => prev.filter(id => valid.has(id)))
-  }, [classes, selectedClassIds.length])
+  }, [classFilterOptions, selectedClassIds.length])
 
   useEffect(() => {
     saveTeacherClassFilterSelection(selectedClassIds)
@@ -229,8 +233,8 @@ function Dashboard() {
     [assignments, activeAssignmentId]
   )
   const classNameById = useMemo(
-    () => new Map(classes.map(item => [item.id, item.name])),
-    [classes]
+    () => new Map(classFilterOptions.map(item => [item.id, item.name])),
+    [classFilterOptions]
   )
 
   const filteredStudents = selectedClassIds.length > 0
@@ -1182,15 +1186,15 @@ function Dashboard() {
 
         <div className="bg-white rounded-lg shadow p-4 mb-6">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <h2 className="text-base font-semibold text-gray-800">Urval: klasser</h2>
+            <h2 className="text-base font-semibold text-gray-800">Urval: klass/grupp</h2>
             <p className="text-xs text-gray-500">
               {selectedClassIds.length === 0
-                ? `Alla klasser (${students.length} elever)`
-                : `${selectedClassIds.length} klass(er) valda (${filteredStudents.length} elever)`}
+                ? `Alla klasser/grupper (${students.length} elever)`
+                : `${selectedClassIds.length} klass/grupp(er) valda (${filteredStudents.length} elever)`}
             </p>
           </div>
           <p className="text-[11px] text-gray-500 mb-2">
-            Valda klasser sparas som förval till nästa gång.
+            Valda klasser/grupper sparas som förval till nästa gång.
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -1204,7 +1208,12 @@ function Dashboard() {
             >
               Alla klasser
             </button>
-            {classes.map(item => (
+            {classFilterOptions.length === 0 && (
+              <span className="text-xs text-gray-400">
+                Inga klass-/grupptaggar hittades ännu.
+              </span>
+            )}
+            {classFilterOptions.map(item => (
               <button
                 type="button"
                 key={`top-filter-${item.id}`}
@@ -1599,7 +1608,7 @@ function Dashboard() {
                 Inga aktiva val = använder nuvarande urval i dashboarden ({filteredStudents.length} elev(er)).
               </p>
               <div className="flex flex-wrap gap-1 mb-2">
-                {classes.map(classItem => {
+                {classFilterOptions.map(classItem => {
                   const selected = ticketTargetClassSet.has(classItem.id)
                   return (
                     <button
@@ -3115,6 +3124,52 @@ function Dashboard() {
       </div>
     </div>
   )
+}
+
+function buildClassFilterOptions(classes, students) {
+  const byId = new Map()
+
+  const upsert = (rawId, rawName, priority) => {
+    const id = String(rawId || '').trim()
+    if (!id) return
+
+    const nameCandidate = String(rawName || '').trim()
+    const nextName = nameCandidate || id
+    const existing = byId.get(id)
+    if (!existing) {
+      byId.set(id, { id, name: nextName, priority })
+      return
+    }
+
+    if ((!existing.name || existing.name === existing.id) && nameCandidate) {
+      existing.name = nameCandidate
+    }
+    if (priority < existing.priority) {
+      existing.priority = priority
+    }
+  }
+
+  for (const classRecord of Array.isArray(classes) ? classes : []) {
+    upsert(classRecord?.id, classRecord?.name, 0)
+  }
+
+  for (const student of Array.isArray(students) ? students : []) {
+    const classIds = getRecordClassIds(student)
+    for (const classId of classIds) {
+      const isPrimary = String(student?.classId || '').trim() === classId
+      const inferredName = isPrimary ? String(student?.className || '').trim() : ''
+      upsert(classId, inferredName, 1)
+    }
+  }
+
+  return Array.from(byId.values())
+    .sort((a, b) => {
+      if (a.priority !== b.priority) return a.priority - b.priority
+      const nameCompare = String(a.name || '').localeCompare(String(b.name || ''), 'sv')
+      if (nameCompare !== 0) return nameCompare
+      return String(a.id || '').localeCompare(String(b.id || ''), 'sv')
+    })
+    .map(item => ({ id: item.id, name: item.name }))
 }
 
 function getRecordClassIds(record) {

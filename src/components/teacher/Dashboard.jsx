@@ -3865,7 +3865,7 @@ function rowsToCsv(rows) {
     const cells = headers.map(header => toCsvField(row[header]))
     lines.push(cells.join(';'))
   }
-  return `${lines.join('\n')}\n`
+  return `${lines.join('\r\n')}\r\n`
 }
 
 function toCsvField(value) {
@@ -3877,7 +3877,12 @@ function toCsvField(value) {
 }
 
 function downloadTextFile(content, fileName, mimeType) {
-  const blob = new Blob([content], { type: mimeType || 'text/plain;charset=utf-8;' })
+  const normalizedMimeType = mimeType || 'text/plain;charset=utf-8;'
+  const isCsv = String(normalizedMimeType).toLowerCase().includes('text/csv')
+  const payload = isCsv
+    ? ensureUtf8Bom(content)
+    : String(content ?? '')
+  const blob = new Blob([payload], { type: normalizedMimeType })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
@@ -3886,6 +3891,12 @@ function downloadTextFile(content, fileName, mimeType) {
   link.click()
   link.remove()
   URL.revokeObjectURL(url)
+}
+
+function ensureUtf8Bom(content) {
+  const text = String(content ?? '')
+  if (text.startsWith('\uFEFF')) return text
+  return `\uFEFF${text}`
 }
 
 function formatTimestampForCsv(timestamp) {

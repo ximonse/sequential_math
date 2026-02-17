@@ -104,11 +104,18 @@ body {
   --text-main: #ffffff;
   --text-muted: #ffff00;
   --text-faint: #fff68f;
-  --accent: #00ff00;
-  --accent-2: #00ff00;
+  --accent: #ff00ff;
+  --accent-2: #00e5ff;
   --danger: #ff4b6e;
   --shadow-color: rgba(255, 0, 255, 0.34);
-  animation: real-psychedelic-pulse 8s ease-in-out infinite;
+}
+
+body.theme-real-psycadelic {
+  background:
+    radial-gradient(circle at 16% 14%, rgba(255, 255, 0, 0.22) 0%, transparent 35%),
+    linear-gradient(140deg, var(--bg-from), var(--bg-mid) 42%, var(--bg-to));
+  background-size: 220% 220%;
+  animation: real-psychedelic-bg-shift 16s ease-in-out infinite;
   transition: background 0.3s ease;
 }
 
@@ -124,12 +131,9 @@ body {
   100% { transform: translate3d(-5%, -5%, 0) scale(1.05); }
 }
 
-@keyframes real-psychedelic-pulse {
-  0% { filter: hue-rotate(0deg) saturate(1.5); }
-  25% { filter: hue-rotate(90deg) saturate(2); }
-  50% { filter: hue-rotate(180deg) saturate(1.5); }
-  75% { filter: hue-rotate(270deg) saturate(2); }
-  100% { filter: hue-rotate(360deg) saturate(1.5); }
+@keyframes real-psychedelic-bg-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 @keyframes real-psychedelic-move {
@@ -291,6 +295,38 @@ body.theme-real-psycadelic .bg-white,
 body.theme-real-psycadelic .bg-gray-50,
 body.theme-real-psycadelic .bg-gray-100 {
   backdrop-filter: blur(6px);
+}
+
+body.theme-real-psycadelic .bg-blue-600,
+body.theme-real-psycadelic .bg-indigo-600,
+body.theme-real-psycadelic .bg-cyan-600,
+body.theme-real-psycadelic .bg-purple-600,
+body.theme-real-psycadelic .bg-blue-500 {
+  background: linear-gradient(135deg, #ff00ff, #00d9ff) !important;
+  color: #ffffff !important;
+}
+
+body.theme-real-psycadelic .bg-green-600,
+body.theme-real-psycadelic .bg-emerald-600,
+body.theme-real-psycadelic .bg-green-500 {
+  background: linear-gradient(135deg, #00ff66, #00d9ff) !important;
+  color: #03230f !important;
+}
+
+body.theme-real-psycadelic .hover\:bg-blue-700:hover,
+body.theme-real-psycadelic .hover\:bg-indigo-700:hover,
+body.theme-real-psycadelic .hover\:bg-purple-700:hover,
+body.theme-real-psycadelic .hover\:bg-cyan-700:hover,
+body.theme-real-psycadelic .hover\:bg-blue-600:hover {
+  background: linear-gradient(135deg, #e300e3, #00b8e6) !important;
+  filter: none;
+}
+
+body.theme-real-psycadelic .hover\:bg-green-700:hover,
+body.theme-real-psycadelic .hover\:bg-emerald-700:hover,
+body.theme-real-psycadelic .hover\:bg-green-600:hover {
+  background: linear-gradient(135deg, #00e15a, #00b8e6) !important;
+  filter: none;
 }
 
 body[class*="theme-"] .from-blue-50,

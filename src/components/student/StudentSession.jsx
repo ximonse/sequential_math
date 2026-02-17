@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import ProblemDisplay from './ProblemDisplay'
 import PongGame from './PongGame'
+import SnakeGame from './SnakeGame'
 import MathScratchpad from './MathScratchpad'
 import {
   clearActiveStudentSession,
@@ -74,7 +75,7 @@ function StudentSession() {
   const [pendingBreakSuggestion, setPendingBreakSuggestion] = useState(false)
   const [lastBreakPromptAt, setLastBreakPromptAt] = useState(0)
   const [breakDurationMinutes, setBreakDurationMinutes] = useState(DEFAULT_BREAK_MINUTES)
-  const [showPong, setShowPong] = useState(false)
+  const [activeBreakGame, setActiveBreakGame] = useState(null)
   const [showScratchpad, setShowScratchpad] = useState(false)
   const [coarsePointer, setCoarsePointer] = useState(false)
   const [sessionAssignment, setSessionAssignment] = useState(null)
@@ -679,6 +680,7 @@ function StudentSession() {
       incrementTelemetryDailyMetric(profile, 'breaks_taken', 1, now)
       saveProfile(profile)
     }
+    setActiveBreakGame(null)
     setShowBreakSuggestion(false)
     setPendingBreakSuggestion(false)
     setBreakDurationMinutes(DEFAULT_BREAK_MINUTES)
@@ -696,6 +698,7 @@ function StudentSession() {
       incrementTelemetryDailyMetric(profile, 'breaks_skipped', 1, now)
       saveProfile(profile)
     }
+    setActiveBreakGame(null)
     setShowBreakSuggestion(false)
     setSessionCount(0)  // Reset session count
     setBreakDurationMinutes(DEFAULT_BREAK_MINUTES)
@@ -711,26 +714,50 @@ function StudentSession() {
     )
   }
 
-  // Pong-spel under paus
-  if (showPong) {
+  const closeBreakGameAndContinue = (gameType) => {
+    if (profile) {
+      const now = Date.now()
+      recordTelemetryEvent(profile, `break_${gameType}_closed`, {
+        sessionId: sessionTelemetryRef.current?.sessionId || ''
+      }, now)
+      incrementTelemetryDailyMetric(profile, `break_${gameType}_closed`, 1, now)
+      saveProfile(profile)
+    }
+    setActiveBreakGame(null)
+    setShowBreakSuggestion(false)
+    setSessionCount(0)
+    setBreakDurationMinutes(DEFAULT_BREAK_MINUTES)
+    sessionRecentCorrectnessRef.current = []
+    goToNextProblem()
+  }
+
+  const openBreakGame = (gameType) => {
+    if (profile) {
+      const now = Date.now()
+      recordTelemetryEvent(profile, `break_${gameType}_opened`, {
+        sessionId: sessionTelemetryRef.current?.sessionId || ''
+      }, now)
+      incrementTelemetryDailyMetric(profile, `break_${gameType}_opened`, 1, now)
+      saveProfile(profile)
+    }
+    setActiveBreakGame(gameType)
+  }
+
+  // Spel under paus
+  if (activeBreakGame) {
+    const isPong = activeBreakGame === 'pong'
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 to-purple-900 relative">
-        <PongGame onClose={() => {
-          if (profile) {
-            const now = Date.now()
-            recordTelemetryEvent(profile, 'break_pong_closed', {
-              sessionId: sessionTelemetryRef.current?.sessionId || ''
-            }, now)
-            incrementTelemetryDailyMetric(profile, 'break_pong_closed', 1, now)
-            saveProfile(profile)
-          }
-          setShowPong(false)
-          setShowBreakSuggestion(false)
-          setSessionCount(0)
-          setBreakDurationMinutes(DEFAULT_BREAK_MINUTES)
-          sessionRecentCorrectnessRef.current = []
-          goToNextProblem()
-        }} />
+      <div className={`min-h-screen flex items-center justify-center relative ${
+        isPong
+          ? 'bg-gradient-to-br from-indigo-900 to-purple-900'
+          : 'bg-gradient-to-br from-emerald-900 to-cyan-900'
+      }`}
+      >
+        {isPong ? (
+          <PongGame onClose={() => closeBreakGameAndContinue('pong')} />
+        ) : (
+          <SnakeGame onClose={() => closeBreakGameAndContinue('snake')} />
+        )}
       </div>
     )
   }
@@ -749,20 +776,16 @@ function StudentSession() {
           </p>
           <div className="space-y-3">
             <button
-              onClick={() => {
-                if (profile) {
-                  const now = Date.now()
-                  recordTelemetryEvent(profile, 'break_pong_opened', {
-                    sessionId: sessionTelemetryRef.current?.sessionId || ''
-                  }, now)
-                  incrementTelemetryDailyMetric(profile, 'break_pong_opened', 1, now)
-                  saveProfile(profile)
-                }
-                setShowPong(true)
-              }}
+              onClick={() => openBreakGame('pong')}
               className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg flex items-center justify-center gap-2"
             >
-              🏓 Spela Pong (max 3 min)
+              🏓 Spela Pong (max 2 min)
+            </button>
+            <button
+              onClick={() => openBreakGame('snake')}
+              className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-lg flex items-center justify-center gap-2"
+            >
+              🐍 Spela Snake (max 2 min)
             </button>
             <button
               onClick={handleTakeBreak}

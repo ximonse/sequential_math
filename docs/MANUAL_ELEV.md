@@ -53,6 +53,9 @@ Knappar:
 
 Appen kan föreslå kort paus efter en mängd uppgifter.
 Eleven kan fortsätta direkt (ingen hård låsning).
+Om eleven vill spela en snabb pausaktivitet finns:
+- `Pong` (max 2 minuter),
+- `Snake` (max 2 minuter).
 
 ## 7. Ticket
 

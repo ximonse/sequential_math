@@ -1,11 +1,11 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 
-const PADDLE_HEIGHT = 80
+const PADDLE_HEIGHT = 88
 const PADDLE_WIDTH = 12
 const BALL_SIZE = 14
 const PADDLE_SPEED = 8
-const INITIAL_BALL_SPEED = 4
-const MAX_TIME = 180 // 3 minuter
+const INITIAL_BALL_SPEED = 3.4
+const MAX_TIME = 120 // 2 minuter
 
 function PongGame({ onClose }) {
   const canvasRef = useRef(null)
@@ -99,13 +99,13 @@ function PongGame({ onClose }) {
         if (game.keys.down) game.player.y = Math.min(canvas.height - PADDLE_HEIGHT, game.player.y + PADDLE_SPEED)
       }
 
-      // Enkel AI för datorn
+      // Enkel AI för datorn (avsiktligt lite trög för elevvänligare spel)
       const computerCenter = game.computer.y + PADDLE_HEIGHT / 2
       const ballCenter = game.ball.y
-      if (computerCenter < ballCenter - 25) {
-        game.computer.y = Math.min(canvas.height - PADDLE_HEIGHT, game.computer.y + PADDLE_SPEED * 0.5)
-      } else if (computerCenter > ballCenter + 25) {
-        game.computer.y = Math.max(0, game.computer.y - PADDLE_SPEED * 0.5)
+      if (computerCenter < ballCenter - 38) {
+        game.computer.y = Math.min(canvas.height - PADDLE_HEIGHT, game.computer.y + PADDLE_SPEED * 0.38)
+      } else if (computerCenter > ballCenter + 38) {
+        game.computer.y = Math.max(0, game.computer.y - PADDLE_SPEED * 0.38)
       }
 
       // Flytta bollen
@@ -120,14 +120,14 @@ function PongGame({ onClose }) {
 
       // Kollision med spelarens paddle (vänster)
       if (
-        game.ball.x <= PADDLE_WIDTH + 15 &&
-        game.ball.x >= 15 &&
-        game.ball.y + BALL_SIZE >= game.player.y &&
-        game.ball.y <= game.player.y + PADDLE_HEIGHT &&
+        game.ball.x <= PADDLE_WIDTH + 22 &&
+        game.ball.x >= 8 &&
+        game.ball.y + BALL_SIZE >= game.player.y - 8 &&
+        game.ball.y <= game.player.y + PADDLE_HEIGHT + 8 &&
         game.ball.dx < 0
       ) {
-        game.ball.dx = Math.abs(game.ball.dx) * 1.03
-        game.ball.dy += (Math.random() - 0.5) * 2
+        game.ball.dx = Math.abs(game.ball.dx) * 1.015
+        game.ball.dy += (Math.random() - 0.5) * 1.4
       }
 
       // Kollision med datorns paddle (höger)
@@ -138,8 +138,8 @@ function PongGame({ onClose }) {
         game.ball.y <= game.computer.y + PADDLE_HEIGHT &&
         game.ball.dx > 0
       ) {
-        game.ball.dx = -Math.abs(game.ball.dx) * 1.03
-        game.ball.dy += (Math.random() - 0.5) * 2
+        game.ball.dx = -Math.abs(game.ball.dx) * 1.015
+        game.ball.dy += (Math.random() - 0.5) * 1.4
       }
 
       // Poäng
@@ -153,8 +153,8 @@ function PongGame({ onClose }) {
       }
 
       // Begränsa boll-hastighet
-      game.ball.dx = Math.max(-10, Math.min(10, game.ball.dx))
-      game.ball.dy = Math.max(-8, Math.min(8, game.ball.dy))
+      game.ball.dx = Math.max(-8.5, Math.min(8.5, game.ball.dx))
+      game.ball.dy = Math.max(-6.5, Math.min(6.5, game.ball.dy))
 
       // Rita
       ctx.fillStyle = '#1a1a2e'

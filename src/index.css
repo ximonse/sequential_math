@@ -93,6 +93,25 @@ body {
   --shadow-color: rgba(255, 62, 165, 0.35);
 }
 
+.theme-real-psycadelic {
+  --bg-from: #ff00ff;
+  --bg-mid: #ff66ff;
+  --bg-to: #00ffff;
+  --surface: rgba(255, 255, 0, 0.15);
+  --surface-soft: rgba(255, 255, 0, 0.2);
+  --surface-strong: rgba(255, 255, 0, 0.28);
+  --border: #ff00ff;
+  --text-main: #ffffff;
+  --text-muted: #ffff00;
+  --text-faint: #fff68f;
+  --accent: #00ff00;
+  --accent-2: #00ff00;
+  --danger: #ff4b6e;
+  --shadow-color: rgba(255, 0, 255, 0.34);
+  animation: real-psychedelic-pulse 8s ease-in-out infinite;
+  transition: background 0.3s ease;
+}
+
 @keyframes psychedelic-pulse {
   0% { filter: hue-rotate(0deg) saturate(1); }
   50% { filter: hue-rotate(32deg) saturate(1.2); }
@@ -103,6 +122,19 @@ body {
   0% { transform: translate3d(-5%, -5%, 0) scale(1.05); }
   50% { transform: translate3d(6%, 4%, 0) scale(1.1); }
   100% { transform: translate3d(-5%, -5%, 0) scale(1.05); }
+}
+
+@keyframes real-psychedelic-pulse {
+  0% { filter: hue-rotate(0deg) saturate(1.5); }
+  25% { filter: hue-rotate(90deg) saturate(2); }
+  50% { filter: hue-rotate(180deg) saturate(1.5); }
+  75% { filter: hue-rotate(270deg) saturate(2); }
+  100% { filter: hue-rotate(360deg) saturate(1.5); }
+}
+
+@keyframes real-psychedelic-move {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(2%, 5%) scale(1.1); }
 }
 
 body.theme-psychedelic::before {
@@ -117,6 +149,22 @@ body.theme-psychedelic::before {
     radial-gradient(circle at 68% 78%, rgba(163, 230, 53, 0.22), transparent 30%),
     radial-gradient(circle at 18% 75%, rgba(157, 78, 221, 0.32), transparent 28%);
   animation: psychedelic-pulse 9s ease-in-out infinite, psychedelic-move 14s ease-in-out infinite;
+}
+
+body.theme-real-psycadelic::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(255, 0, 255, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(0, 255, 255, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 0, 0.2) 0%, transparent 50%);
+  animation: real-psychedelic-move 15s ease-in-out infinite;
 }
 
 .theme-app-shell {
@@ -237,6 +285,12 @@ body.theme-psychedelic .bg-white,
 body.theme-psychedelic .bg-gray-50,
 body.theme-psychedelic .bg-gray-100 {
   backdrop-filter: blur(7px);
+}
+
+body.theme-real-psycadelic .bg-white,
+body.theme-real-psycadelic .bg-gray-50,
+body.theme-real-psycadelic .bg-gray-100 {
+  backdrop-filter: blur(6px);
 }
 
 body[class*="theme-"] .from-blue-50,

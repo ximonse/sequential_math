@@ -18,7 +18,13 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     const root = document.body
-    root.classList.remove('theme-light', 'theme-dark', 'theme-dark-lime', 'theme-psychedelic')
+    root.classList.remove(
+      'theme-light',
+      'theme-dark',
+      'theme-dark-lime',
+      'theme-psychedelic',
+      'theme-real-psycadelic'
+    )
     root.classList.add(`theme-${theme}`)
     localStorage.setItem(STORAGE_KEY, theme)
   }, [theme])
@@ -32,4 +38,3 @@ export function useTheme() {
   if (!value) throw new Error('useTheme must be used within ThemeProvider')
   return value
 }
-

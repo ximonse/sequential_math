@@ -408,8 +408,8 @@ export async function authenticateStudent(studentIdInput, passwordInput) {
 
   profile.auth.lastLoginAt = Date.now()
   profile.auth.loginCount = (profile.auth.loginCount || 0) + 1
-  saveProfile(profile)
   setActiveStudentSession(studentId, password)
+  saveProfile(profile)
 
   return { ok: true, profile }
 }
@@ -533,9 +533,13 @@ export async function getAllProfilesWithSync() {
 
   try {
     const teacherApiToken = getTeacherApiToken()
-    const response = await fetch('/api/students', teacherApiToken
-      ? { headers: { 'x-teacher-password': teacherApiToken } }
-      : undefined)
+    const requestOptions = {
+      cache: 'no-store'
+    }
+    if (teacherApiToken) {
+      requestOptions.headers = { 'x-teacher-password': teacherApiToken }
+    }
+    const response = await fetch('/api/students', requestOptions)
     if (!response.ok) return local
     const data = await response.json()
     const cloud = Array.isArray(data?.profiles) ? data.profiles : []
@@ -844,9 +848,14 @@ async function loadProfileFromCloud(studentId, options = {}) {
     if (studentPassword) headers['x-student-password'] = studentPassword
     if (teacherPassword) headers['x-teacher-password'] = teacherPassword
 
-    const response = await fetch(`/api/student/${encodeURIComponent(studentId)}`, Object.keys(headers).length > 0
-      ? { headers }
-      : undefined)
+    const requestOptions = {
+      cache: 'no-store'
+    }
+    if (Object.keys(headers).length > 0) {
+      requestOptions.headers = headers
+    }
+
+    const response = await fetch(`/api/student/${encodeURIComponent(studentId)}`, requestOptions)
     if (response.status === 401 && options.failOnUnauthorized) {
       const error = new Error('Unauthorized')
       error.code = 'UNAUTHORIZED'
@@ -879,9 +888,10 @@ async function syncProfileToCloud(profile) {
     if (studentSecret) headers['x-student-password'] = studentSecret
     if (teacherToken) headers['x-teacher-password'] = teacherToken
 
-    await fetch(`/api/student/${encodeURIComponent(normalizedId)}`, {
+    const response = await fetch(`/api/student/${encodeURIComponent(normalizedId)}`, {
       method: 'POST',
       headers,
+      cache: 'no-store',
       body: JSON.stringify({
         profile: {
           ...profile,
@@ -889,6 +899,7 @@ async function syncProfileToCloud(profile) {
         }
       })
     })
+    if (!response.ok) return
   } catch {
     // no-op
   }

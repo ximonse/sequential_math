@@ -1,27 +1,17 @@
-function withCors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-}
-
-function getConfiguredTeacherPassword() {
-  const configured = process.env.TEACHER_API_PASSWORD
-  if (typeof configured === 'string' && configured.trim() !== '') {
-    return configured.trim()
-  }
-  return ''
-}
-
-function isProdLikeServer() {
-  const env = String(process.env.VERCEL_ENV || process.env.NODE_ENV || '').toLowerCase()
-  return env === 'production' || env === 'preview'
-}
+import {
+  getConfiguredTeacherApiPassword,
+  isProdLikeServer,
+  withCors
+} from './_helpers'
 
 export default async function handler(req, res) {
-  withCors(res)
+  withCors(res, {
+    methods: 'GET,POST,OPTIONS',
+    headers: 'Content-Type'
+  })
   if (req.method === 'OPTIONS') return res.status(200).end()
 
-  const configuredPassword = getConfiguredTeacherPassword()
+  const configuredPassword = getConfiguredTeacherApiPassword()
   const configured = configuredPassword !== ''
 
   if (req.method === 'GET') {
@@ -46,4 +36,3 @@ export default async function handler(req, res) {
 
   return res.status(200).json({ ok: true })
 }
-

@@ -1,28 +1,8 @@
 import { kv } from '@vercel/kv'
-
-function withCors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-teacher-password')
-}
-
-function getConfiguredTeacherApiPassword() {
-  const explicit = process.env.TEACHER_API_PASSWORD
-  if (typeof explicit === 'string' && explicit.trim() !== '') return explicit.trim()
-  return ''
-}
-
-function isProdLikeServer() {
-  const env = String(process.env.VERCEL_ENV || process.env.NODE_ENV || '').toLowerCase()
-  return env === 'production' || env === 'preview'
-}
-
-function isTeacherApiAuthorized(req) {
-  const configured = getConfiguredTeacherApiPassword()
-  if (!configured) return !isProdLikeServer()
-  const provided = String(req.headers['x-teacher-password'] || '')
-  return provided === configured
-}
+import {
+  isTeacherApiAuthorized,
+  withCors
+} from './_helpers'
 
 function sanitizeProfileForList(profile) {
   if (!profile || typeof profile !== 'object') return null
@@ -48,7 +28,10 @@ function sanitizeProfileForList(profile) {
 }
 
 export default async function handler(req, res) {
-  withCors(res)
+  withCors(res, {
+    methods: 'GET,OPTIONS',
+    headers: 'Content-Type, x-teacher-password'
+  })
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
   if (!isTeacherApiAuthorized(req)) {

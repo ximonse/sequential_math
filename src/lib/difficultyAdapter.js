@@ -4,6 +4,7 @@
 
 import { generateByDifficultyWithOptions, generateMultiplicationTableDrillProblem } from './problemGenerator'
 import { getRecentSuccessRate, getConsecutiveErrors, getCurrentStreak } from './studentProfile'
+import { inferOperationFromProblemType } from './mathUtils'
 import {
   PROGRESSION_MODE_CHALLENGE,
   PROGRESSION_MODE_STEADY,
@@ -283,7 +284,10 @@ export function shouldOfferSteadyAdvance(profile, options = {}) {
   if (!operation) return null
 
   const recent = profile.recentProblems
-    .filter(problem => inferOperation(problem.problemType) === operation)
+    .filter(problem => inferOperationFromProblemType(problem.problemType, {
+      fallback: 'addition',
+      allowUnknownPrefix: false
+    }) === operation)
     .slice(-20)
   if (recent.length < 8) return null
 
@@ -620,14 +624,6 @@ function isFastCorrectAnswer(options) {
   const estimated = Number(options.problem?.metadata?.estimated_time)
   if (!Number.isFinite(estimated) || estimated <= 0) return timeSpent <= 12
   return timeSpent <= estimated * 0.75
-}
-
-function inferOperation(problemType = '') {
-  if (problemType.startsWith('add_')) return 'addition'
-  if (problemType.startsWith('sub_')) return 'subtraction'
-  if (problemType.startsWith('mul_')) return 'multiplication'
-  if (problemType.startsWith('div_')) return 'division'
-  return 'addition'
 }
 
 function resolveOfferOperation(options) {

@@ -1,5 +1,9 @@
 import { kv } from '@vercel/kv'
 import { createHash, randomBytes } from 'node:crypto'
+import {
+  isTeacherApiAuthorized,
+  withCors
+} from '../_helpers'
 
 const PASSWORD_SCHEME = 'sha256-v1'
 const MAX_RECENT_PROBLEMS = 250
@@ -8,30 +12,6 @@ const MAX_TABLE_COMPLETIONS = 1000
 const MAX_TELEMETRY_EVENTS = 1200
 const MAX_TELEMETRY_DAYS = 120
 const MAX_TICKET_RESPONSES = 500
-
-function withCors(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-student-password, x-teacher-password')
-}
-
-function getConfiguredTeacherApiPassword() {
-  const explicit = process.env.TEACHER_API_PASSWORD
-  if (typeof explicit === 'string' && explicit.trim() !== '') return explicit.trim()
-  return ''
-}
-
-function isProdLikeServer() {
-  const env = String(process.env.VERCEL_ENV || process.env.NODE_ENV || '').toLowerCase()
-  return env === 'production' || env === 'preview'
-}
-
-function isTeacherApiAuthorized(req) {
-  const configured = getConfiguredTeacherApiPassword()
-  if (!configured) return !isProdLikeServer()
-  const provided = String(req.headers['x-teacher-password'] || '')
-  return provided === configured
-}
 
 function hasHashedPassword(auth) {
   return Boolean(
@@ -696,7 +676,10 @@ function mergeProfiles(existingProfile, incomingProfile) {
 }
 
 export default async function handler(req, res) {
-  withCors(res)
+  withCors(res, {
+    methods: 'GET,POST,OPTIONS',
+    headers: 'Content-Type, x-student-password, x-teacher-password'
+  })
   if (req.method === 'OPTIONS') return res.status(200).end()
 
   const studentId = String(req.query.studentId || '').trim().toUpperCase()

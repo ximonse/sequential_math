@@ -1,3 +1,10 @@
+import {
+  getSpeedTime,
+  inferOperationFromProblemType as inferOperation,
+  inferTableFromProblem as inferTable,
+  median
+} from './mathUtils'
+
 const DAY_MS = 24 * 60 * 60 * 1000
 
 export function buildAnalyticsSnapshot(profiles) {
@@ -217,7 +224,10 @@ function flattenProblems(profiles) {
   for (const profile of profiles) {
     const problems = getProblemsForAnalytics(profile)
     for (const problem of problems) {
-      const operation = inferOperation(problem.problemType)
+      const operation = inferOperation(problem.problemType, {
+        fallback: 'unknown',
+        allowUnknownPrefix: false
+      })
       const level = Number(problem?.difficulty?.conceptual_level || 1)
       rows.push({
         timestamp: Number(problem.timestamp || 0),
@@ -339,32 +349,6 @@ function getLatestTimestamp(list) {
   return maxTs
 }
 
-function inferOperation(problemType = '') {
-  if (problemType.startsWith('add_')) return 'addition'
-  if (problemType.startsWith('sub_')) return 'subtraction'
-  if (problemType.startsWith('mul_')) return 'multiplication'
-  if (problemType.startsWith('div_')) return 'division'
-  return 'unknown'
-}
-
-function inferTable(problem) {
-  const skillTag = String(problem?.skillTag || '')
-  const match = skillTag.match(/^mul_table_(\d{1,2})$/)
-  if (match) {
-    const n = Number(match[1])
-    if (n >= 2 && n <= 12) return n
-  }
-
-  const values = problem?.values
-  if (!String(problem?.problemType || '').startsWith('mul_')) return null
-  const a = Number(values?.a)
-  const b = Number(values?.b)
-  if (!Number.isInteger(a) || !Number.isInteger(b)) return null
-  if (a >= 2 && a <= 12 && b >= 1 && b <= 12) return a
-  if (b >= 2 && b <= 12 && a >= 1 && a <= 12) return b
-  return null
-}
-
 function formatTimestamp(timestamp) {
   if (!timestamp) return ''
   return new Date(timestamp).toISOString()
@@ -377,20 +361,6 @@ function rate(items, options = {}) {
   if (scoped.length === 0) return null
   const correct = scoped.filter(item => item.correct).length
   return correct / scoped.length
-}
-
-function median(values) {
-  const clean = (Array.isArray(values) ? values : [])
-    .map(Number)
-    .filter(v => Number.isFinite(v) && v > 0)
-    .sort((a, b) => a - b)
-
-  if (clean.length === 0) return null
-  const middle = Math.floor(clean.length / 2)
-  if (clean.length % 2 === 0) {
-    return (clean[middle - 1] + clean[middle]) / 2
-  }
-  return clean[middle]
 }
 
 function computeSpeedIndex(peerMedian, observed) {
@@ -418,15 +388,6 @@ function toFixedOrEmpty(value, digits = 2) {
   const numeric = Number(value)
   if (!Number.isFinite(numeric)) return ''
   return numeric.toFixed(digits)
-}
-
-function getSpeedTime(problem) {
-  const speed = Number(problem?.speedTimeSec)
-  if (Number.isFinite(speed) && speed > 0) return speed
-  if (problem?.excludedFromSpeed) return null
-  const raw = Number(problem?.timeSpent)
-  if (Number.isFinite(raw) && raw > 0) return raw
-  return null
 }
 
 function isKnowledgeAttempt(item) {

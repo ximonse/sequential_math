@@ -2,6 +2,8 @@
  * Central lista för räknesätt i elevvyer.
  * Om nya räknesätt tillkommer: lägg till id + label här.
  */
+import { inferOperationFromProblemType } from './mathUtils'
+
 export const OPERATION_LABELS = {
   addition: 'Addition',
   subtraction: 'Subtraktion',
@@ -15,3 +17,10 @@ export function getOperationLabel(operation) {
   return operation.charAt(0).toUpperCase() + operation.slice(1)
 }
 
+// Backward-compatible named helper used across older modules.
+export function inferOperation(problemType, fallback = 'unknown') {
+  return inferOperationFromProblemType(problemType, {
+    fallback,
+    allowUnknownPrefix: false
+  })
+}

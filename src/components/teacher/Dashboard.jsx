@@ -15,6 +15,12 @@ import {
   logoutTeacher
 } from '../../lib/teacherAuth'
 import { evaluateAnswerQuality } from '../../lib/answerQuality'
+import {
+  getSpeedTime,
+  inferOperationFromProblemType,
+  inferTableFromProblem,
+  median
+} from '../../lib/mathUtils'
 import { getOperationLabel } from '../../lib/operations'
 import { getStartOfWeekTimestamp } from '../../lib/studentProfile'
 import {
@@ -4031,7 +4037,7 @@ function buildUsageInsights(rows, students) {
 
   return {
     avgEngagedSecondsPerActiveStudent,
-    medianSessionDurationSeconds: medianNumber(sessionDurations) || 0,
+    medianSessionDurationSeconds: median(sessionDurations, { positiveOnly: false }) || 0,
     breakTakeRate,
     ticketAccuracyToday,
     topLaunchModes: toTopEntries(launchCounts, 3),
@@ -5013,17 +5019,6 @@ function getAverageAnswerLength(problems) {
   return total / problems.length
 }
 
-function inferOperationFromProblemType(problemType = '') {
-  if (problemType.startsWith('add_')) return 'addition'
-  if (problemType.startsWith('sub_')) return 'subtraction'
-  if (problemType.startsWith('mul_')) return 'multiplication'
-  if (problemType.startsWith('div_')) return 'division'
-
-  const [prefix] = String(problemType || '').split('_')
-  if (ALL_OPERATIONS.includes(prefix)) return prefix
-  return prefix || 'unknown'
-}
-
 function loadSavedTeacherClassFilter() {
   if (typeof window === 'undefined') return []
   try {
@@ -5279,19 +5274,6 @@ function toTopEntries(map, limit = 3) {
     .slice(0, limit)
 }
 
-function medianNumber(values) {
-  const list = (Array.isArray(values) ? values : [])
-    .map(Number)
-    .filter(value => Number.isFinite(value))
-    .sort((a, b) => a - b)
-  if (list.length === 0) return null
-  const middle = Math.floor(list.length / 2)
-  if (list.length % 2 === 0) {
-    return (list[middle - 1] + list[middle]) / 2
-  }
-  return list[middle]
-}
-
 function toFixedOrEmpty(value, digits = 2) {
   const numeric = Number(value)
   if (!Number.isFinite(numeric)) return ''
@@ -5340,23 +5322,6 @@ function toMinutes(milliseconds) {
   const value = Number(milliseconds)
   if (!Number.isFinite(value) || value <= 0) return 0
   return value / 60000
-}
-
-function inferTableFromProblem(problem) {
-  const tag = String(problem?.skillTag || '')
-  const match = tag.match(/^mul_table_(\d{1,2})$/)
-  if (match) {
-    const n = Number(match[1])
-    if (n >= 2 && n <= 12) return n
-  }
-
-  if (!String(problem?.problemType || '').startsWith('mul_')) return null
-  const a = Number(problem?.values?.a)
-  const b = Number(problem?.values?.b)
-  if (!Number.isInteger(a) || !Number.isInteger(b)) return null
-  if (a >= 2 && a <= 12 && b >= 1 && b <= 12) return a
-  if (b >= 2 && b <= 12 && a >= 1 && a <= 12) return b
-  return null
 }
 
 function buildStickyTableStatusForStudent(student) {
@@ -5522,15 +5487,6 @@ function getMedianTime(problems) {
   const middle = Math.floor(values.length / 2)
   if (values.length % 2 === 0) return (values[middle - 1] + values[middle]) / 2
   return values[middle]
-}
-
-function getSpeedTime(problem) {
-  const speed = Number(problem?.speedTimeSec)
-  if (Number.isFinite(speed) && speed > 0) return speed
-  if (problem?.excludedFromSpeed) return null
-  const raw = Number(problem?.timeSpent)
-  if (Number.isFinite(raw) && raw > 0) return raw
-  return null
 }
 
 function isKnowledgeError(problem) {

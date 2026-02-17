@@ -8,6 +8,7 @@ import {
   saveProfile
 } from '../../lib/storage'
 import { getStartOfWeekTimestamp } from '../../lib/studentProfile'
+import { inferOperationFromProblemType } from '../../lib/mathUtils'
 import { getOperationLabel, OPERATION_LABELS } from '../../lib/operations'
 import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 import {
@@ -166,7 +167,10 @@ function StudentHome() {
     )
 
     for (const result of (Array.isArray(profile.recentProblems) ? profile.recentProblems : [])) {
-      const operation = inferOperationFromProblemType(result.problemType)
+      const operation = inferOperationFromProblemType(result.problemType, {
+        fallback: 'addition',
+        allowUnknownPrefix: false
+      })
       if (!buckets[operation]) continue
 
       const level = Math.round(Number(result?.difficulty?.conceptual_level || 0))
@@ -636,14 +640,6 @@ function getMasteryLevelClassName(status) {
     return 'bg-blue-50 text-blue-700 border-blue-200'
   }
   return 'bg-gray-50 text-gray-400 border-gray-200 opacity-45'
-}
-
-function inferOperationFromProblemType(problemType = '') {
-  if (problemType.startsWith('add_')) return 'addition'
-  if (problemType.startsWith('sub_')) return 'subtraction'
-  if (problemType.startsWith('mul_')) return 'multiplication'
-  if (problemType.startsWith('div_')) return 'division'
-  return 'addition'
 }
 
 export default StudentHome

@@ -24,6 +24,7 @@ import {
   shouldSuggestBreak
 } from '../../lib/difficultyAdapter'
 import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
+import { inferOperationFromProblemType as inferOperationFromType } from '../../lib/mathUtils'
 import { getOperationLabel } from '../../lib/operations'
 import {
   PROGRESSION_MODE_STEADY,
@@ -202,7 +203,9 @@ function StudentSession() {
       return
     }
 
-    const operationHistory = profile.recentProblems.filter(p => inferOperationFromType(p.problemType) === mode)
+    const operationHistory = profile.recentProblems.filter(
+      p => inferOperationFromType(p.problemType, { fallback: 'addition', allowUnknownPrefix: false }) === mode
+    )
     const hasHistory = operationHistory.length > 0
     const estimatedLevel = estimateOperationLevel(profile, mode)
     const isSteadyMode = progressionMode === PROGRESSION_MODE_STEADY
@@ -1317,7 +1320,9 @@ function makeSessionTelemetryId(studentId) {
 
 function estimateOperationLevel(profile, operation) {
   const relevant = profile.recentProblems
-    .filter(p => inferOperationFromType(p.problemType) === operation)
+    .filter(
+      p => inferOperationFromType(p.problemType, { fallback: 'addition', allowUnknownPrefix: false }) === operation
+    )
     .slice(-20)
 
   if (relevant.length === 0) return 1
@@ -1328,14 +1333,6 @@ function estimateOperationLevel(profile, operation) {
   }, 0)
 
   return sum / relevant.length
-}
-
-function inferOperationFromType(problemType = '') {
-  if (problemType.startsWith('add_')) return 'addition'
-  if (problemType.startsWith('sub_')) return 'subtraction'
-  if (problemType.startsWith('mul_')) return 'multiplication'
-  if (problemType.startsWith('div_')) return 'division'
-  return 'addition'
 }
 
 function isKnownMode(mode) {
@@ -1413,7 +1410,10 @@ function getOperationLevelMasteryStatus(profile, operation, level) {
   }
 
   const relevant = profile.recentProblems.filter((item) => {
-    const itemOperation = inferOperationFromType(item.problemType)
+    const itemOperation = inferOperationFromType(item.problemType, {
+      fallback: 'addition',
+      allowUnknownPrefix: false
+    })
     const itemLevel = Math.round(Number(item?.difficulty?.conceptual_level || 0))
     return itemOperation === operation && itemLevel === level
   })

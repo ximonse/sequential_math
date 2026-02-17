@@ -3,6 +3,11 @@
  */
 
 import { evaluateAnswerQuality } from './answerQuality'
+import {
+  getSpeedTime,
+  inferOperationFromProblemType as inferOperation,
+  median
+} from './mathUtils'
 
 const MAX_RECENT_PROBLEMS = 250
 const MAX_PROBLEM_LOG = 5000
@@ -418,17 +423,6 @@ export function getStartOfWeekTimestamp() {
   return now.getTime()
 }
 
-function inferOperation(problemType = '') {
-  if (problemType.startsWith('add_')) return 'addition'
-  if (problemType.startsWith('mul_')) return 'multiplication'
-  if (problemType.startsWith('sub_')) return 'subtraction'
-  if (problemType.startsWith('div_')) return 'division'
-
-  // För framtida räknesätt: använd prefix före första underscore.
-  const [prefix] = String(problemType).split('_')
-  return prefix || 'unknown'
-}
-
 function deriveTimingMetrics(profile, problem, timeSpent, options = {}) {
   const rawTimeSec = Math.max(0, Number(timeSpent) || 0)
   const hiddenDurationSec = Math.max(0, Number(options?.interruption?.hiddenDurationSec) || 0)
@@ -503,15 +497,6 @@ function getPersonalBaselineTimes(profile, problem) {
   return valid.slice(-25).map(item => getSpeedTime(item)).filter(Number.isFinite)
 }
 
-function getSpeedTime(problem) {
-  const speed = Number(problem?.speedTimeSec)
-  if (Number.isFinite(speed) && speed > 0) return speed
-  if (problem?.excludedFromSpeed) return null
-  const raw = Number(problem?.timeSpent)
-  if (Number.isFinite(raw) && raw > 0) return raw
-  return null
-}
-
 function classifyErrorCategory(problem, studentAnswer, correct, options = {}) {
   if (correct) return 'none'
   if (!options?.isMixedMode) return 'knowledge'
@@ -528,18 +513,4 @@ function classifyErrorCategory(problem, studentAnswer, correct, options = {}) {
   }
 
   return 'knowledge'
-}
-
-function median(values) {
-  const clean = (Array.isArray(values) ? values : [])
-    .map(Number)
-    .filter(value => Number.isFinite(value) && value > 0)
-    .sort((a, b) => a - b)
-
-  if (clean.length === 0) return null
-  const middle = Math.floor(clean.length / 2)
-  if (clean.length % 2 === 0) {
-    return (clean[middle - 1] + clean[middle]) / 2
-  }
-  return clean[middle]
 }

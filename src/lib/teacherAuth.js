@@ -61,25 +61,3 @@ export function isTeacherAuthenticated() {
 export function getTeacherApiToken() {
   return sessionStorage.getItem(TEACHER_API_TOKEN_KEY) || ''
 }
-
-// Backward-compatible helpers for existing UI wiring.
-export function getTeacherPasswordSource() {
-  return 'server'
-}
-
-export function clearCustomTeacherPassword() {
-  // legacy no-op
-}
-
-export function setCustomTeacherPassword() {
-  return false
-}
-
-export function verifyTeacherPassword() {
-  return false
-}
-
-export function isTeacherPasswordConfigured() {
-  return true
-}
-

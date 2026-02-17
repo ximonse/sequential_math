@@ -1,18 +1,7 @@
 /**
  * Beräkningar för "rimlighet" i elevsvar för läraröversikten.
  */
-
-function inferOperation(problemResult) {
-  const typeId = problemResult.problemType || ''
-
-  if (typeId.startsWith('add_')) return 'addition'
-  if (typeId.startsWith('sub_')) return 'subtraction'
-  if (typeId.startsWith('mul_')) return 'multiplication'
-  if (typeId.startsWith('div_')) return 'division'
-
-  // Fallback för äldre data
-  return 'addition'
-}
+import { inferOperationFromProblemType } from './mathUtils'
 
 function hasDecimal(value) {
   return Number.isFinite(value) && !Number.isInteger(value)
@@ -50,7 +39,10 @@ export function evaluateAnswerQuality(problemResult) {
     }
   }
 
-  const operation = inferOperation(problemResult)
+  const operation = inferOperationFromProblemType(problemResult.problemType, {
+    fallback: 'addition',
+    allowUnknownPrefix: false
+  })
   const level = problemResult.difficulty?.conceptual_level || 1
   const usesDecimals = hasDecimal(expected)
     || hasDecimal(problemResult.values?.a)
@@ -69,4 +61,3 @@ export function evaluateAnswerQuality(problemResult) {
     tolerance
   }
 }
-

@@ -1,6 +1,8 @@
 import {
+  createTeacherSessionToken,
   getConfiguredTeacherApiPassword,
   isProdLikeServer,
+  secureCompare,
   withCors
 } from './_helpers'
 
@@ -30,9 +32,14 @@ export default async function handler(req, res) {
   }
 
   const providedPassword = String(req.body?.password || '')
-  if (providedPassword !== configuredPassword) {
+  if (!secureCompare(providedPassword, configuredPassword)) {
     return res.status(401).json({ error: 'Unauthorized', code: 'INVALID_PASSWORD' })
   }
 
-  return res.status(200).json({ ok: true })
+  const session = createTeacherSessionToken()
+  return res.status(200).json({
+    ok: true,
+    token: session?.token || '',
+    expiresAt: session?.expiresAt || null
+  })
 }

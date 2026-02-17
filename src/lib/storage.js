@@ -41,13 +41,50 @@ export function normalizeStudentId(value) {
   const raw = String(value || '').trim()
   if (!raw) return ''
 
+  const normalized = raw
+    .normalize('NFC')
+    .replace(/[^a-zA-Z0-9ÅÄÖåäö_-]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .replace(/_+/g, '_')
+
+  return normalized.toUpperCase()
+}
+
+function normalizeStudentIdLegacy(value) {
+  const raw = String(value || '').trim()
+  if (!raw) return ''
+
   const ascii = raw
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-zA-Z0-9_-]+/g, '_')
     .replace(/^_+|_+$/g, '')
+    .replace(/_+/g, '_')
 
   return ascii.toUpperCase()
+}
+
+function getStudentIdCandidates(value) {
+  const primary = normalizeStudentId(value)
+  const legacy = normalizeStudentIdLegacy(value)
+  const candidates = []
+  if (primary) candidates.push(primary)
+  if (legacy && legacy !== primary) candidates.push(legacy)
+  return candidates
+}
+
+function isTeacherSessionToken(value) {
+  return /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(String(value || '').trim())
+}
+
+function applyTeacherAuthHeader(headers, teacherCredential) {
+  const credential = String(teacherCredential || '').trim()
+  if (!credential) return
+  if (isTeacherSessionToken(credential)) {
+    headers['x-teacher-token'] = credential
+    return
+  }
+  headers['x-teacher-password'] = credential
 }
 
 function ensureProfileClassMembership(profile) {
@@ -238,22 +275,25 @@ async function verifyPasswordForProfile(profile, plainPassword) {
 }
 
 export function loadProfile(studentId) {
-  const normalizedId = normalizeStudentId(studentId)
-  if (!normalizedId) return null
+  const candidates = getStudentIdCandidates(studentId)
+  if (candidates.length === 0) return null
 
-  const data = localStorage.getItem(STORAGE_PREFIX + normalizedId)
-  if (!data) return null
+  for (const candidateId of candidates) {
+    const data = localStorage.getItem(STORAGE_PREFIX + candidateId)
+    if (!data) continue
 
-  try {
-    const parsed = JSON.parse(data)
-    parsed.studentId = normalizeStudentId(parsed.studentId || normalizedId)
-    ensureProfileAuth(parsed)
-    ensureProfileClassMembership(parsed)
-    return parsed
-  } catch (e) {
-    console.error('Failed to parse profile:', e)
-    return null
+    try {
+      const parsed = JSON.parse(data)
+      parsed.studentId = normalizeStudentId(parsed.studentId || candidateId)
+      ensureProfileAuth(parsed)
+      ensureProfileClassMembership(parsed)
+      return parsed
+    } catch (e) {
+      console.error('Failed to parse profile:', e)
+    }
   }
+
+  return null
 }
 
 export function saveProfile(profile) {
@@ -428,7 +468,7 @@ export async function authenticateStudent(studentIdInput, passwordInput) {
 
   profile.auth.lastLoginAt = Date.now()
   profile.auth.loginCount = (profile.auth.loginCount || 0) + 1
-  setActiveStudentSession(studentId, password)
+  setActiveStudentSession(profile.studentId, password)
   saveProfile(profile)
 
   return { ok: true, profile }
@@ -484,7 +524,7 @@ export async function resetStudentPasswordToLoginName(studentId) {
   await setProfilePassword(profile, profile.studentId)
   saveProfile(profile)
   if (isStudentSessionActive(normalizedId)) {
-    setActiveStudentSession(normalizedId, profile.studentId)
+    setActiveStudentSession(profile.studentId, profile.studentId)
   }
   return { ok: true, password: profile.studentId }
 }
@@ -510,7 +550,11 @@ export function getActiveStudentSessionSecret() {
 }
 
 export function isStudentSessionActive(studentId) {
-  return getActiveStudentSession() === normalizeStudentId(studentId)
+  const activeId = getActiveStudentSession()
+  if (!activeId) return false
+  const activeCandidates = new Set(getStudentIdCandidates(activeId))
+  const targetCandidates = getStudentIdCandidates(studentId)
+  return targetCandidates.some(id => activeCandidates.has(id))
 }
 
 function updateStudentsList(studentId, name) {
@@ -568,7 +612,11 @@ export async function getAllProfilesWithSync() {
       cache: 'no-store'
     }
     if (teacherApiToken) {
-      requestOptions.headers = { 'x-teacher-password': teacherApiToken }
+      const headers = {}
+      applyTeacherAuthHeader(headers, teacherApiToken)
+      if (Object.keys(headers).length > 0) {
+        requestOptions.headers = headers
+      }
     }
     const response = await fetch('/api/students', requestOptions)
     if (!response.ok) {
@@ -626,10 +674,16 @@ export async function getAllProfilesWithSync() {
 }
 
 export function deleteProfile(studentId) {
-  const normalizedId = normalizeStudentId(studentId)
-  localStorage.removeItem(STORAGE_PREFIX + normalizedId)
+  const candidates = getStudentIdCandidates(studentId)
+  for (const candidateId of candidates) {
+    localStorage.removeItem(STORAGE_PREFIX + candidateId)
+  }
 
-  const list = getStudentsList().filter(s => s.studentId !== normalizedId)
+  const candidateSet = new Set(candidates)
+  const list = getStudentsList().filter((student) => {
+    const studentCandidates = getStudentIdCandidates(student.studentId)
+    return !studentCandidates.some(id => candidateSet.has(id))
+  })
   localStorage.setItem(STUDENTS_LIST_KEY, JSON.stringify(list))
 }
 
@@ -905,7 +959,7 @@ async function loadProfileFromCloud(studentId, options = {}) {
     const studentPassword = String(options.studentPassword || '')
     const teacherPassword = String(options.teacherPassword || '')
     if (studentPassword) headers['x-student-password'] = studentPassword
-    if (teacherPassword) headers['x-teacher-password'] = teacherPassword
+    if (teacherPassword) applyTeacherAuthHeader(headers, teacherPassword)
 
     const requestOptions = {
       cache: 'no-store'
@@ -914,20 +968,25 @@ async function loadProfileFromCloud(studentId, options = {}) {
       requestOptions.headers = headers
     }
 
-    const response = await fetch(`/api/student/${encodeURIComponent(studentId)}`, requestOptions)
-    if (response.status === 401 && options.failOnUnauthorized) {
-      const error = new Error('Unauthorized')
-      error.code = 'UNAUTHORIZED'
-      throw error
+    const idCandidates = getStudentIdCandidates(studentId)
+    for (const candidateId of idCandidates) {
+      const response = await fetch(`/api/student/${encodeURIComponent(candidateId)}`, requestOptions)
+      if (response.status === 401 && options.failOnUnauthorized) {
+        const error = new Error('Unauthorized')
+        error.code = 'UNAUTHORIZED'
+        throw error
+      }
+      if (!response.ok) continue
+
+      const data = await response.json()
+      const profile = data?.profile || null
+      if (!profile) continue
+      return ensureProfileClassMembership(ensureProfileAuth({
+        ...profile,
+        studentId: normalizeStudentId(profile.studentId || candidateId)
+      }))
     }
-    if (!response.ok) return null
-    const data = await response.json()
-    const profile = data?.profile || null
-    if (!profile) return null
-    return ensureProfileClassMembership(ensureProfileAuth({
-      ...profile,
-      studentId: normalizeStudentId(profile.studentId || studentId)
-    }))
+    return null
   } catch (error) {
     if (error?.code === 'UNAUTHORIZED') throw error
     return null
@@ -945,7 +1004,7 @@ async function syncProfileToCloud(profile) {
     const studentSecret = getActiveStudentSessionSecret()
     const teacherToken = getTeacherApiToken()
     if (studentSecret) headers['x-student-password'] = studentSecret
-    if (teacherToken) headers['x-teacher-password'] = teacherToken
+    if (teacherToken) applyTeacherAuthHeader(headers, teacherToken)
 
     const response = await fetch(`/api/student/${encodeURIComponent(normalizedId)}`, {
       method: 'POST',

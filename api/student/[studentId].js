@@ -678,7 +678,7 @@ function mergeProfiles(existingProfile, incomingProfile) {
 export default async function handler(req, res) {
   withCors(res, {
     methods: 'GET,POST,OPTIONS',
-    headers: 'Content-Type, x-student-password, x-teacher-password'
+    headers: 'Content-Type, x-student-password, x-teacher-token, x-teacher-password'
   })
   if (req.method === 'OPTIONS') return res.status(200).end()
 

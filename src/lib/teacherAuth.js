@@ -1,6 +1,12 @@
 const TEACHER_AUTH_KEY = 'mathapp_teacher_auth'
 const TEACHER_API_TOKEN_KEY = 'mathapp_teacher_api_token'
 
+function normalizeTeacherAuthToken(rawToken, fallbackPassword = '') {
+  const token = String(rawToken || '').trim()
+  if (token) return token
+  return String(fallbackPassword || '').trim()
+}
+
 export async function getTeacherAuthStatus() {
   try {
     const response = await fetch('/api/teacher-auth')
@@ -41,8 +47,16 @@ export async function loginTeacher(password) {
       return { ok: false, code }
     }
 
+    let teacherAuthToken = ''
+    try {
+      const data = await response.json()
+      teacherAuthToken = normalizeTeacherAuthToken(data?.token, normalized)
+    } catch {
+      teacherAuthToken = normalizeTeacherAuthToken('', normalized)
+    }
+
     sessionStorage.setItem(TEACHER_AUTH_KEY, '1')
-    sessionStorage.setItem(TEACHER_API_TOKEN_KEY, normalized)
+    sessionStorage.setItem(TEACHER_API_TOKEN_KEY, teacherAuthToken)
     return { ok: true }
   } catch {
     return { ok: false, code: 'NETWORK_ERROR' }

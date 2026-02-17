@@ -4,6 +4,7 @@ import {
   addStudentsToClass,
   createClassFromRoster,
   getAllProfilesWithSync,
+  getCloudProfilesSyncStatus,
   getClasses,
   normalizeStudentId,
   removeClass,
@@ -151,6 +152,8 @@ function Dashboard() {
   const [passwordResetSearch, setPasswordResetSearch] = useState('')
   const [passwordResetStatus, setPasswordResetStatus] = useState('')
   const [passwordResetBusyId, setPasswordResetBusyId] = useState('')
+  const [cloudSyncStatus, setCloudSyncStatus] = useState(() => getCloudProfilesSyncStatus())
+  const [isCloudRefreshBusy, setIsCloudRefreshBusy] = useState(false)
   const navigate = useNavigate()
   const classFilterOptions = useMemo(
     () => buildClassFilterOptions(classes, students),
@@ -165,6 +168,7 @@ function Dashboard() {
       return bLast - aLast
     })
     setStudents(profiles)
+    setCloudSyncStatus(getCloudProfilesSyncStatus())
   }, [])
 
   useEffect(() => {
@@ -254,6 +258,18 @@ function Dashboard() {
     setTicketTemplates(getTicketTemplates())
     setTicketDispatches(getTicketDispatches())
     setDashboardStatus('Uppdaterat.')
+  }
+
+  const handleCloudRefreshNow = async () => {
+    setIsCloudRefreshBusy(true)
+    try {
+      await loadStudents()
+      const latestSyncStatus = getCloudProfilesSyncStatus()
+      setCloudSyncStatus(latestSyncStatus)
+      setDashboardStatus(buildCloudSyncStatusMessage(latestSyncStatus))
+    } finally {
+      setIsCloudRefreshBusy(false)
+    }
   }
 
   const handleLogout = () => {
@@ -1311,6 +1327,53 @@ function Dashboard() {
         <div className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
 
         <div className="flex flex-col">
+        <div className="bg-white rounded-lg shadow p-4 mb-6 border border-sky-100" style={{ order: -72 }}>
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <h2 className="text-base font-semibold text-gray-800">Cloud-sync status</h2>
+            <button
+              type="button"
+              onClick={() => { void handleCloudRefreshNow() }}
+              disabled={isCloudRefreshBusy}
+              className={`px-3 py-1.5 rounded text-xs ${
+                isCloudRefreshBusy
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-sky-600 text-white hover:bg-sky-700'
+              }`}
+            >
+              {isCloudRefreshBusy ? 'Hämtar...' : 'Hämta från server nu'}
+            </button>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+            <div className="rounded border border-gray-100 bg-gray-50 p-2">
+              <div className="text-[11px] uppercase tracking-wide text-gray-500">Senaste försök</div>
+              <div className="font-medium text-gray-800">{formatSyncTimestamp(cloudSyncStatus.lastAttemptAt)}</div>
+            </div>
+            <div className="rounded border border-gray-100 bg-gray-50 p-2">
+              <div className="text-[11px] uppercase tracking-wide text-gray-500">Senast lyckad</div>
+              <div className="font-medium text-gray-800">{formatSyncTimestamp(cloudSyncStatus.lastSuccessAt)}</div>
+            </div>
+            <div className="rounded border border-gray-100 bg-gray-50 p-2">
+              <div className="text-[11px] uppercase tracking-wide text-gray-500">Källa</div>
+              <div className="font-medium text-gray-800">{getCloudSyncSourceLabel(cloudSyncStatus.lastSource)}</div>
+            </div>
+            <div className="rounded border border-gray-100 bg-gray-50 p-2">
+              <div className="text-[11px] uppercase tracking-wide text-gray-500">Poster (lokal/cloud/synlig)</div>
+              <div className="font-medium text-gray-800">
+                {Number(cloudSyncStatus.localCount) || 0} / {Number(cloudSyncStatus.cloudCount) || 0} / {Number(cloudSyncStatus.mergedCount) || 0}
+              </div>
+            </div>
+          </div>
+          {cloudSyncStatus.lastError ? (
+            <p className="mt-2 text-xs text-rose-700">
+              Senaste fel: {cloudSyncStatus.lastError}
+            </p>
+          ) : (
+            <p className="mt-2 text-xs text-emerald-700">
+              Senaste hämtning ser ut att vara OK.
+            </p>
+          )}
+        </div>
+
         <div className="bg-white rounded-lg shadow p-4 mb-6" style={{ order: -70 }}>
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
             <h2 className="text-base font-semibold text-gray-800">Urval: klass/grupp</h2>
@@ -3357,6 +3420,41 @@ function TableStickyStatusPanel({
       )}
     </div>
   )
+}
+
+function formatSyncTimestamp(value) {
+  const ts = Number(value)
+  if (!Number.isFinite(ts) || ts <= 0) return '-'
+  return new Date(ts).toLocaleString('sv-SE')
+}
+
+function getCloudSyncSourceLabel(source) {
+  switch (String(source || '').trim()) {
+    case 'cloud_disabled':
+      return 'Cloud-sync avstängd'
+    case 'cloud_merged':
+      return 'Cloud + lokal sammanslagning'
+    case 'cloud_unauthorized':
+      return 'Lokal fallback (obehörig mot server)'
+    case 'cloud_http_error':
+      return 'Lokal fallback (serverfel)'
+    case 'cloud_fetch_error':
+      return 'Lokal fallback (nätverksfel)'
+    case 'never':
+      return 'Ingen cloud-hämtning gjord än'
+    default:
+      return 'Lokal data'
+  }
+}
+
+function buildCloudSyncStatusMessage(status) {
+  if (!status || typeof status !== 'object') return 'Serverhämtning klar.'
+  const sourceLabel = getCloudSyncSourceLabel(status.lastSource)
+  const mergedCount = Number(status.mergedCount) || 0
+  if (status.lastError) {
+    return `Serverhämtning: ${sourceLabel}. Visar ${mergedCount} elever. Fel: ${status.lastError}`
+  }
+  return `Serverhämtning: ${sourceLabel}. Visar ${mergedCount} elever.`
 }
 
 function buildClassFilterOptions(classes, students) {

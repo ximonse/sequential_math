@@ -16,6 +16,26 @@ const CLASSES_KEY = 'mathapp_classes_v1'
 const CLOUD_ENABLED = import.meta.env.VITE_ENABLE_CLOUD_SYNC === '1'
 const PASSWORD_SCHEME = 'sha256-v1'
 const CLOUD_FRESHNESS_FUTURE_TOLERANCE_MS = 5 * 60 * 1000
+const CLOUD_PROFILE_SYNC_STATUS = {
+  lastAttemptAt: 0,
+  lastSuccessAt: 0,
+  lastErrorAt: 0,
+  lastError: '',
+  lastSource: CLOUD_ENABLED ? 'never' : 'cloud_disabled',
+  localCount: 0,
+  cloudCount: 0,
+  mergedCount: 0
+}
+
+function setCloudProfilesSyncStatus(patch) {
+  Object.assign(CLOUD_PROFILE_SYNC_STATUS, patch || {})
+}
+
+export function getCloudProfilesSyncStatus() {
+  return {
+    ...CLOUD_PROFILE_SYNC_STATUS
+  }
+}
 
 export function normalizeStudentId(value) {
   const raw = String(value || '').trim()
@@ -529,7 +549,18 @@ export function getAllProfiles() {
 
 export async function getAllProfilesWithSync() {
   const local = getAllProfiles()
-  if (!CLOUD_ENABLED) return local
+  setCloudProfilesSyncStatus({
+    lastAttemptAt: Date.now(),
+    localCount: local.length,
+    cloudCount: 0,
+    mergedCount: local.length
+  })
+  if (!CLOUD_ENABLED) {
+    setCloudProfilesSyncStatus({
+      lastSource: 'cloud_disabled'
+    })
+    return local
+  }
 
   try {
     const teacherApiToken = getTeacherApiToken()
@@ -540,7 +571,19 @@ export async function getAllProfilesWithSync() {
       requestOptions.headers = { 'x-teacher-password': teacherApiToken }
     }
     const response = await fetch('/api/students', requestOptions)
-    if (!response.ok) return local
+    if (!response.ok) {
+      const message = response.status === 401
+        ? 'Obehörig mot servern (401).'
+        : `Serverfel vid elevhämtning (${response.status}).`
+      setCloudProfilesSyncStatus({
+        lastErrorAt: Date.now(),
+        lastError: message,
+        lastSource: response.status === 401 ? 'cloud_unauthorized' : 'cloud_http_error',
+        cloudCount: 0,
+        mergedCount: local.length
+      })
+      return local
+    }
     const data = await response.json()
     const cloud = Array.isArray(data?.profiles) ? data.profiles : []
 
@@ -560,8 +603,24 @@ export async function getAllProfilesWithSync() {
       // List-API är sanerat. Vi cachear inte auth-data lokalt här.
     }
 
-    return Array.from(merged.values())
+    const mergedProfiles = Array.from(merged.values())
+    setCloudProfilesSyncStatus({
+      lastSuccessAt: Date.now(),
+      lastErrorAt: 0,
+      lastError: '',
+      lastSource: 'cloud_merged',
+      cloudCount: cloud.length,
+      mergedCount: mergedProfiles.length
+    })
+    return mergedProfiles
   } catch {
+    setCloudProfilesSyncStatus({
+      lastErrorAt: Date.now(),
+      lastError: 'Nätverksfel vid elevhämtning från server.',
+      lastSource: 'cloud_fetch_error',
+      cloudCount: 0,
+      mergedCount: local.length
+    })
     return local
   }
 }

@@ -2,7 +2,7 @@ import { kv } from '@vercel/kv'
 import {
   isTeacherApiAuthorized,
   withCors
-} from './_helpers'
+} from './_helpers.js'
 
 function sanitizeProfileForList(profile) {
   if (!profile || typeof profile !== 'object') return null

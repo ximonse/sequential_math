@@ -4,7 +4,7 @@ import {
   isProdLikeServer,
   secureCompare,
   withCors
-} from './_helpers'
+} from './_helpers.js'
 
 export default async function handler(req, res) {
   withCors(res, {

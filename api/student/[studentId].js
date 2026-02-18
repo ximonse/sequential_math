@@ -3,7 +3,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import {
   isTeacherApiAuthorized,
   withCors
-} from '../_helpers'
+} from '../_helpers.js'
 
 const PASSWORD_SCHEME = 'sha256-v1'
 const MAX_RECENT_PROBLEMS = 250

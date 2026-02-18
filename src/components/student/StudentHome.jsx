@@ -197,6 +197,9 @@ function StudentHome() {
   const tableStatus = useMemo(() => buildTableStatus(profile), [profile])
 
   const handleStudentLogout = () => {
+    if (profile) {
+      saveProfile(profile, { forceSync: true })
+    }
     clearActiveStudentSession()
     navigate('/')
   }

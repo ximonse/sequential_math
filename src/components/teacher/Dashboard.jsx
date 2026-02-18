@@ -67,6 +67,9 @@ const LEVELS = Array.from({ length: 12 }, (_, index) => index + 1)
 const MASTERY_MIN_ATTEMPTS = 5
 const MASTERY_MIN_SUCCESS_RATE = 0.8
 const DETAIL_LEVEL_ERROR_MIN_ATTEMPTS = 8
+const TEACHER_AUTO_REFRESH_INTERVAL_MS = 5 * 60 * 1000
+const TEACHER_AUTO_REFRESH_START_HOUR = 8
+const TEACHER_AUTO_REFRESH_END_HOUR = 15
 const TEACHER_CLASS_FILTER_STORAGE_KEY = 'mathapp_teacher_selected_classes_v1'
 const PASSWORD_RESET_SECTION_ID = 'teacher-password-reset-section'
 const RESULT_HEADER_HELP = {
@@ -246,10 +249,21 @@ function Dashboard() {
   }, [students, tableSelectedStudentIds.length])
 
   useEffect(() => {
-    const timer = window.setInterval(() => {
+    const runAutoRefreshIfAllowed = () => {
+      if (!shouldTeacherAutoRefreshNow()) return
       void loadStudents()
-    }, 15000)
-    return () => window.clearInterval(timer)
+    }
+
+    const timer = window.setInterval(runAutoRefreshIfAllowed, TEACHER_AUTO_REFRESH_INTERVAL_MS)
+    const onVisibilityOrFocus = () => runAutoRefreshIfAllowed()
+
+    window.addEventListener('focus', onVisibilityOrFocus)
+    document.addEventListener('visibilitychange', onVisibilityOrFocus)
+    return () => {
+      window.clearInterval(timer)
+      window.removeEventListener('focus', onVisibilityOrFocus)
+      document.removeEventListener('visibilitychange', onVisibilityOrFocus)
+    }
   }, [loadStudents])
 
   const handleRefresh = () => {
@@ -974,7 +988,7 @@ function Dashboard() {
     const nextStudents = students.map(student => {
       const next = { ...student }
       setTicketRevealAllForProfile(next, dispatchId, reveal)
-      saveProfile(next)
+      saveProfile(next, { forceSync: true })
       return next
     })
     setStudents(nextStudents)
@@ -1041,7 +1055,7 @@ function Dashboard() {
       next.ticketInbox.publishedAt = now
       next.ticketInbox.updatedAt = now
       next.ticketInbox.clearedAt = 0
-      saveProfile(next)
+      saveProfile(next, { forceSync: true })
       return next
     })
     setStudents(nextStudents)
@@ -1068,7 +1082,7 @@ function Dashboard() {
         updatedAt: now,
         clearedAt: now
       }
-      saveProfile(next)
+      saveProfile(next, { forceSync: true })
       return next
     })
     setStudents(nextStudents)
@@ -3461,6 +3475,14 @@ function buildCloudSyncStatusMessage(status) {
     return `Serverhämtning: ${sourceLabel}. Visar ${mergedCount} elever. Fel: ${status.lastError}`
   }
   return `Serverhämtning: ${sourceLabel}. Visar ${mergedCount} elever.`
+}
+
+function shouldTeacherAutoRefreshNow(now = Date.now()) {
+  if (typeof document === 'undefined') return false
+  if (document.visibilityState !== 'visible') return false
+  if (typeof document.hasFocus === 'function' && !document.hasFocus()) return false
+  const hour = new Date(now).getHours()
+  return hour >= TEACHER_AUTO_REFRESH_START_HOUR && hour < TEACHER_AUTO_REFRESH_END_HOUR
 }
 
 function buildClassFilterOptions(classes, students) {

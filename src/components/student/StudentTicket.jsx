@@ -219,7 +219,7 @@ function StudentTicket() {
     incrementTelemetryDailyMetric(profile, 'ticket_submitted', 1, now)
     incrementTelemetryDailyMetric(profile, response?.isCorrect ? 'ticket_correct' : 'ticket_wrong', 1, now)
 
-    saveProfile(profile)
+    saveProfile(profile, { forceSync: true })
     setProfile({ ...profile })
     setSavedResponse(response)
     setStatusMessage('Svar registrerat.')

@@ -187,7 +187,7 @@ function StudentSession() {
       }, endedAt)
       incrementTelemetryDailyMetric(profile, 'practice_sessions_ended', 1, endedAt)
       addTelemetryDurationMs(profile, 'practice_session_ms', durationMs, endedAt)
-      saveProfile(profile)
+      saveProfile(profile, { forceSync: true })
       sessionTelemetryRef.current = null
     }
   }, [profile, studentId])

@@ -16,6 +16,8 @@ const CLASSES_KEY = 'mathapp_classes_v1'
 const CLOUD_ENABLED = import.meta.env.VITE_ENABLE_CLOUD_SYNC === '1'
 const PASSWORD_SCHEME = 'sha256-v1'
 const CLOUD_FRESHNESS_FUTURE_TOLERANCE_MS = 5 * 60 * 1000
+const CLOUD_PROFILE_SYNC_THROTTLE_MS = 5 * 60 * 1000
+const CLOUD_PROFILE_SYNC_STATE = new Map()
 const CLOUD_PROFILE_SYNC_STATUS = {
   lastAttemptAt: 0,
   lastSuccessAt: 0,
@@ -34,6 +36,63 @@ function setCloudProfilesSyncStatus(patch) {
 export function getCloudProfilesSyncStatus() {
   return {
     ...CLOUD_PROFILE_SYNC_STATUS
+  }
+}
+
+function getCloudProfileSyncState(studentId) {
+  const normalizedId = normalizeStudentId(studentId)
+  if (!normalizedId) return null
+  const existing = CLOUD_PROFILE_SYNC_STATE.get(normalizedId)
+  if (existing) return existing
+  const created = {
+    lastAttemptAt: 0,
+    timer: null
+  }
+  CLOUD_PROFILE_SYNC_STATE.set(normalizedId, created)
+  return created
+}
+
+function clearCloudProfileSyncTimer(state) {
+  if (!state || !state.timer) return
+  clearTimeout(state.timer)
+  state.timer = null
+}
+
+function requestCloudSync(profile, options = {}) {
+  if (!CLOUD_ENABLED || !profile) return
+  const normalizedId = normalizeStudentId(profile.studentId)
+  if (!normalizedId) return
+
+  const state = getCloudProfileSyncState(normalizedId)
+  if (!state) return
+
+  const syncNow = (sourceProfile = null) => {
+    const latest = sourceProfile || loadProfile(normalizedId)
+    if (!latest) return
+    state.lastAttemptAt = Date.now()
+    void syncProfileToCloud(latest)
+  }
+
+  if (options.forceSync === true) {
+    clearCloudProfileSyncTimer(state)
+    syncNow(profile)
+    return
+  }
+
+  const now = Date.now()
+  const elapsed = now - Number(state.lastAttemptAt || 0)
+  if (state.lastAttemptAt <= 0 || elapsed >= CLOUD_PROFILE_SYNC_THROTTLE_MS) {
+    clearCloudProfileSyncTimer(state)
+    syncNow(profile)
+    return
+  }
+
+  if (!state.timer) {
+    const waitMs = Math.max(0, CLOUD_PROFILE_SYNC_THROTTLE_MS - elapsed)
+    state.timer = setTimeout(() => {
+      state.timer = null
+      syncNow()
+    }, waitMs)
   }
 }
 
@@ -296,10 +355,10 @@ export function loadProfile(studentId) {
   return null
 }
 
-export function saveProfile(profile) {
+export function saveProfile(profile, options = {}) {
   ensureProfileClassMembership(profile)
   saveProfileLocalOnly(profile)
-  void syncProfileToCloud(profile)
+  requestCloudSync(profile, options)
 }
 
 export async function createAndSaveProfile(studentId, name, grade = 4, options = {}) {
@@ -323,7 +382,7 @@ export async function createAndSaveProfile(studentId, name, grade = 4, options =
   profile.classIds = options.classId ? [String(options.classId)] : []
   ensureProfileClassMembership(profile)
 
-  saveProfile(profile)
+  saveProfile(profile, { forceSync: true })
   return profile
 }
 
@@ -490,7 +549,7 @@ export async function changeStudentPassword(studentId, currentPassword, newPassw
   }
 
   await setProfilePassword(profile, String(newPassword))
-  saveProfile(profile)
+  saveProfile(profile, { forceSync: true })
   if (isStudentSessionActive(studentId)) {
     setActiveStudentSession(studentId, String(newPassword))
   }
@@ -522,7 +581,7 @@ export async function resetStudentPasswordToLoginName(studentId) {
 
   ensureProfileAuth(profile)
   await setProfilePassword(profile, profile.studentId)
-  saveProfile(profile)
+  saveProfile(profile, { forceSync: true })
   if (isStudentSessionActive(normalizedId)) {
     setActiveStudentSession(profile.studentId, profile.studentId)
   }

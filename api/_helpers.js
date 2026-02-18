@@ -17,6 +17,35 @@ export function getConfiguredTeacherApiPassword() {
   return ''
 }
 
+function getConfiguredTeacherTokenSecret() {
+  const explicit = process.env.TEACHER_API_PASSWORD_ROTATION_SECRET
+  if (typeof explicit === 'string' && explicit.trim() !== '') return explicit.trim()
+  return ''
+}
+
+function getTeacherTokenSigningSecret() {
+  const rotationSecret = getConfiguredTeacherTokenSecret()
+  if (rotationSecret) return rotationSecret
+  return getConfiguredTeacherApiPassword()
+}
+
+function getTeacherTokenVerificationSecrets() {
+  const list = []
+  const seen = new Set()
+  const push = (value) => {
+    const normalized = String(value || '').trim()
+    if (!normalized || seen.has(normalized)) return
+    seen.add(normalized)
+    list.push(normalized)
+  }
+
+  // Current signing secret (preferred for new tokens).
+  push(getTeacherTokenSigningSecret())
+  // Legacy fallback for tokens signed before rotation secret was introduced.
+  push(getConfiguredTeacherApiPassword())
+  return list
+}
+
 export function isProdLikeServer() {
   const env = String(process.env.VERCEL_ENV || process.env.NODE_ENV || '').toLowerCase()
   return env === 'production' || env === 'preview'
@@ -50,6 +79,8 @@ function isTeacherTokenFormat(value) {
 export function createTeacherSessionToken(options = {}) {
   const configured = getConfiguredTeacherApiPassword()
   if (!configured) return null
+  const signingSecret = getTeacherTokenSigningSecret()
+  if (!signingSecret) return null
 
   const ttlMsRaw = Number(options?.ttlMs)
   const ttlMs = Number.isFinite(ttlMsRaw)
@@ -62,7 +93,7 @@ export function createTeacherSessionToken(options = {}) {
     exp: now + ttlMs
   }
   const payloadEncoded = encodeBase64Url(JSON.stringify(payload))
-  const signature = signTeacherSessionPayload(payloadEncoded, configured)
+  const signature = signTeacherSessionPayload(payloadEncoded, signingSecret)
 
   return {
     token: `${payloadEncoded}.${signature}`,
@@ -80,8 +111,12 @@ export function verifyTeacherSessionToken(token) {
   const [payloadEncoded, signature] = rawToken.split('.')
   if (!payloadEncoded || !signature) return false
 
-  const expectedSignature = signTeacherSessionPayload(payloadEncoded, configured)
-  if (!secureCompare(signature, expectedSignature)) return false
+  const verificationSecrets = getTeacherTokenVerificationSecrets()
+  const signatureValid = verificationSecrets.some(secret => {
+    const expectedSignature = signTeacherSessionPayload(payloadEncoded, secret)
+    return secureCompare(signature, expectedSignature)
+  })
+  if (!signatureValid) return false
 
   try {
     const payload = JSON.parse(decodeBase64Url(payloadEncoded))

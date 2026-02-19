@@ -1,0 +1,16 @@
+﻿ncm_code;item_no;question_text;expected_answer;source_diagnos_pdf;source_facit_pdf;answer_source;extraction_confidence;ncm_domain_tag;operation_tag;ability_tags
+AS5;1;69___ 3;23;AS5%20diagnos.pdf;AS5%20facit.pdf;facit;high;arithmetic;division;ncm_arithmetic|ncm_written_method|op_division
+AS5;2;84___ 7;12;AS5%20diagnos.pdf;AS5%20facit.pdf;facit;high;arithmetic;division;ncm_arithmetic|ncm_written_method|op_division
+AS5;3;176____ 4;44;AS5%20diagnos.pdf;AS5%20facit.pdf;facit;high;arithmetic;division;ncm_arithmetic|ncm_written_method|op_division
+AS5;4;864____ 8;108;AS5%20diagnos.pdf;AS5%20facit.pdf;facit;high;arithmetic;division;ncm_arithmetic|ncm_written_method|op_division
+AS5;5;1026_____ 9;114;AS5%20diagnos.pdf;AS5%20facit.pdf;facit;high;arithmetic;division;ncm_arithmetic|ncm_written_method|op_division
+AS8;1;460____ 20;23;AS8%20diagnos.pdf;AS8%20facit.pdf;facit;high;arithmetic;division;ncm_arithmetic|ncm_written_method|op_division
+AS8;2;363____ 11;33;AS8%20diagnos.pdf;AS8%20facit.pdf;facit;high;arithmetic;division;ncm_arithmetic|ncm_written_method|op_division
+AS8;3;782____ 23;34;AS8%20diagnos.pdf;AS8%20facit.pdf;facit;high;arithmetic;division;ncm_arithmetic|ncm_written_method|op_division
+AS8;4;135____ 25;5,4;AS8%20diagnos.pdf;AS8%20facit.pdf;facit_numeric_text;high;arithmetic;division;ncm_arithmetic|ncm_written_method|op_division
+AS8;5;1134_____ 42;10527;AS8%20diagnos.pdf;AS8%20facit.pdf;facit_numeric_text;high;arithmetic;division;ncm_arithmetic|ncm_written_method|op_division
+AS11;1;342____ 0,9;380;AS11%20diagnos.pdf;AS11%20facit.pdf;facit;high;arithmetic;division;ncm_arithmetic|concept_decimal|op_division
+AS11;2;13,6____ 0,8;17;AS11%20diagnos.pdf;AS11%20facit.pdf;facit;high;arithmetic;division;ncm_arithmetic|concept_decimal|op_division
+AS11;3;79,2____ 0,11;720;AS11%20diagnos.pdf;AS11%20facit.pdf;facit;high;arithmetic;division;ncm_arithmetic|concept_decimal|op_division
+AS11;4;0,522_____ 0,12;4,35;AS11%20diagnos.pdf;AS11%20facit.pdf;facit;high;arithmetic;division;ncm_arithmetic|concept_decimal|op_division
+AS11;5;6 ____ 0,48;12,5;AS11%20diagnos.pdf;AS11%20facit.pdf;facit;high;arithmetic;division;ncm_arithmetic|concept_decimal|op_division

@@ -10,14 +10,14 @@ AG8;;False;arithmetic;mixed;ncm_arithmetic|ncm_basic_number_operations;heuristic
 AG9;;False;arithmetic;mixed;ncm_arithmetic|ncm_basic_number_operations;heuristic;prefix:AG
 AS1;safe_as_expressions;True;arithmetic;addition;ncm_arithmetic|ncm_written_method|op_addition|multi_digit;high;manual
 AS10;safe_as_expressions;True;arithmetic;multiplication;ncm_arithmetic|concept_decimal|op_multiplication;high;manual
-AS11;;False;arithmetic;division;ncm_arithmetic|concept_decimal|op_division;medium;manual
+AS11;safe_as_expression_extra;True;arithmetic;division;ncm_arithmetic|concept_decimal|op_division;medium;manual
 AS2;safe_as_expressions;True;arithmetic;subtraction;ncm_arithmetic|ncm_written_method|op_subtraction|multi_digit;high;manual
 AS3;safe_as_word_problems;True;arithmetic;mixed;ncm_arithmetic|ncm_word_problem|op_addition|op_subtraction;high;manual
 AS4;safe_as_expressions;True;arithmetic;multiplication;ncm_arithmetic|ncm_written_method|op_multiplication;high;manual
-AS5;;False;arithmetic;division;ncm_arithmetic|ncm_written_method|op_division;medium;manual
+AS5;safe_as_expression_extra;True;arithmetic;division;ncm_arithmetic|ncm_written_method|op_division;medium;manual
 AS6;safe_as_word_problems;True;arithmetic;mixed;ncm_arithmetic|ncm_word_problem|op_multiplication|op_division;high;manual
 AS7;safe_as_expressions;True;arithmetic;multiplication;ncm_arithmetic|ncm_written_method|op_multiplication|multi_digit;high;manual
-AS8;;False;arithmetic;division;ncm_arithmetic|ncm_written_method|op_division;medium;manual
+AS8;safe_as_expression_extra;True;arithmetic;division;ncm_arithmetic|ncm_written_method|op_division;medium;manual
 AS9;safe_as_expressions;True;arithmetic;mixed;ncm_arithmetic|concept_decimal|op_addition|op_subtraction;high;manual
 AUN1;;False;arithmetic;mixed;ncm_arithmetic|ncm_number_sense;heuristic;prefix:AUN
 AUN2;;False;arithmetic;mixed;ncm_arithmetic|ncm_number_sense;heuristic;prefix:AUN

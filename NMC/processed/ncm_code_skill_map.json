@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-02-19T00:22:44.304263+00:00",
+  "generated_at_utc": "2026-02-19T00:29:47.330768+00:00",
   "total_codes": 126,
   "rows": [
     {
@@ -150,8 +150,8 @@
     },
     {
       "ncm_code": "AS11",
-      "safe_batch": "",
-      "in_safe_batch": false,
+      "safe_batch": "safe_as_expression_extra",
+      "in_safe_batch": true,
       "domain_tag": "arithmetic",
       "operation_tag": "division",
       "ability_tags": [
@@ -208,8 +208,8 @@
     },
     {
       "ncm_code": "AS5",
-      "safe_batch": "",
-      "in_safe_batch": false,
+      "safe_batch": "safe_as_expression_extra",
+      "in_safe_batch": true,
       "domain_tag": "arithmetic",
       "operation_tag": "division",
       "ability_tags": [
@@ -252,8 +252,8 @@
     },
     {
       "ncm_code": "AS8",
-      "safe_batch": "",
-      "in_safe_batch": false,
+      "safe_batch": "safe_as_expression_extra",
+      "in_safe_batch": true,
       "domain_tag": "arithmetic",
       "operation_tag": "division",
       "ability_tags": [

@@ -4,6 +4,7 @@ Extract safe NMC batches into structured files and keep a running import log.
 
 Current safe batches:
 - safe_as_expressions: AS1, AS2, AS4, AS7, AS9, AS10
+- safe_as_expression_extra: AS5, AS8, AS11
 - safe_as_word_problems: AS3, AS6
 
 Outputs (per batch):
@@ -40,6 +41,11 @@ SAFE_BATCHES = [
     {
         "name": "safe_as_expressions",
         "codes": ["AS1", "AS2", "AS4", "AS7", "AS9", "AS10"],
+        "parser": "expression",
+    },
+    {
+        "name": "safe_as_expression_extra",
+        "codes": ["AS5", "AS8", "AS11"],
         "parser": "expression",
     },
     {

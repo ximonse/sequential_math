@@ -1,0 +1,50 @@
+{
+  "generated_at_utc": "2026-02-19T00:29:30.754417+00:00",
+  "batch_name": "safe_as_expression_extra",
+  "parser_mode": "expression",
+  "codes": [
+    "AS5",
+    "AS8",
+    "AS11"
+  ],
+  "total_rows": 15,
+  "high_confidence_rows": 15,
+  "per_code": [
+    {
+      "code": "AS5",
+      "parser_mode": "expression",
+      "diagnos_pdf": "AS5%20diagnos.pdf",
+      "facit_pdf": "AS5%20facit.pdf",
+      "diagnos_item_count": 5,
+      "facit_item_count": 5,
+      "merged_item_count": 5,
+      "high_confidence_items": 5,
+      "computed_answer_items": 0,
+      "facit_numeric_text_items": 0
+    },
+    {
+      "code": "AS8",
+      "parser_mode": "expression",
+      "diagnos_pdf": "AS8%20diagnos.pdf",
+      "facit_pdf": "AS8%20facit.pdf",
+      "diagnos_item_count": 5,
+      "facit_item_count": 5,
+      "merged_item_count": 5,
+      "high_confidence_items": 5,
+      "computed_answer_items": 0,
+      "facit_numeric_text_items": 2
+    },
+    {
+      "code": "AS11",
+      "parser_mode": "expression",
+      "diagnos_pdf": "AS11%20diagnos.pdf",
+      "facit_pdf": "AS11%20facit.pdf",
+      "diagnos_item_count": 5,
+      "facit_item_count": 5,
+      "merged_item_count": 5,
+      "high_confidence_items": 5,
+      "computed_answer_items": 0,
+      "facit_numeric_text_items": 0
+    }
+  ]
+}

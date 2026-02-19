@@ -4,6 +4,7 @@ import {
   inferTableFromProblem as inferTable,
   median
 } from './mathUtils'
+import { getNcmSkillMappingFromProblem } from './ncmSkillMap'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -41,6 +42,10 @@ export function buildDetailedProblemExportRows(snapshot) {
       Räknesätt: item.operation,
       Problemtyp: item.problemType,
       SkillTag: item.skillTag,
+      NCMKod: item.ncmCode || '',
+      NCMDomän: item.ncmDomainTag || '',
+      NCMOperation: item.ncmOperationTag || '',
+      NCMFörmågor: item.ncmAbilityTags || '',
       Nivå: item.level,
       Rätt: item.correct ? 1 : 0,
       Felkategori: item.errorCategory,
@@ -84,6 +89,10 @@ export function buildSkillComparisonExportRows(snapshot) {
       className: item.className,
       operation: item.operation,
       skillTag: item.skillTag,
+      ncmCode: item.ncmCode,
+      ncmDomainTag: item.ncmDomainTag,
+      ncmOperationTag: item.ncmOperationTag,
+      ncmAbilityTags: item.ncmAbilityTags,
       level: item.level,
       attempts: 0,
       correct: 0,
@@ -133,6 +142,10 @@ export function buildSkillComparisonExportRows(snapshot) {
       Klass: entry.className || '',
       Räknesätt: entry.operation,
       SkillTag: entry.skillTag,
+      NCMKod: entry.ncmCode || '',
+      NCMDomän: entry.ncmDomainTag || '',
+      NCMOperation: entry.ncmOperationTag || '',
+      NCMFörmågor: entry.ncmAbilityTags || '',
       Nivå: entry.level,
       Försök: entry.attempts,
       Rätt: entry.correct,
@@ -229,6 +242,8 @@ function flattenProblems(profiles) {
         allowUnknownPrefix: false
       })
       const level = Number(problem?.difficulty?.conceptual_level || 1)
+      const ncmMapping = getNcmSkillMappingFromProblem(problem.problemType, problem.skillTag)
+      const ncmCode = String(ncmMapping?.code || '')
       rows.push({
         timestamp: Number(problem.timestamp || 0),
         studentId: String(profile.studentId || ''),
@@ -257,7 +272,13 @@ function flattenProblems(profiles) {
         carryCount: Number(problem.carryCount || 0),
         borrowCount: Number(problem.borrowCount || 0),
         termOrder: String(problem.termOrder || 'equal'),
-        table: inferTable(problem)
+        table: inferTable(problem),
+        ncmCode,
+        ncmDomainTag: ncmCode ? String(ncmMapping?.domainTag || '') : '',
+        ncmOperationTag: ncmCode ? String(ncmMapping?.operationTag || '') : '',
+        ncmAbilityTags: ncmCode && Array.isArray(ncmMapping?.abilityTags)
+          ? ncmMapping.abilityTags.join('|')
+          : ''
       })
     }
   }

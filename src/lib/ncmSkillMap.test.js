@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { getNcmSkillMapping, normalizeNcmCode } from './ncmSkillMap'
+import {
+  extractNcmCodeFromValue,
+  getNcmSkillMapping,
+  getNcmSkillMappingFromProblem,
+  normalizeNcmCode
+} from './ncmSkillMap'
 
 describe('ncmSkillMap', () => {
   it('normalizes code input', () => {
@@ -20,6 +25,18 @@ describe('ncmSkillMap', () => {
     expect(mapping.domainTag).toBe('arithmetic')
     expect(mapping.mappingSource).toBe('prefix:AG')
     expect(mapping.mappingConfidence).toBe('heuristic')
+  })
+
+  it('extracts ncm code from decorated values', () => {
+    expect(extractNcmCodeFromValue('ncm_as3_item_4')).toBe('AS3')
+    expect(extractNcmCodeFromValue('RP5')).toBe('RP5')
+    expect(extractNcmCodeFromValue('mul_table_7')).toBe('')
+  })
+
+  it('resolves mapping from skillTag/problemType pair', () => {
+    const mapping = getNcmSkillMappingFromProblem('add_1d_1d_no_carry', 'ncm_as6_item_2')
+    expect(mapping.code).toBe('AS6')
+    expect(mapping.mappingSource).toBe('manual')
   })
 
   it('falls back for unknown code', () => {

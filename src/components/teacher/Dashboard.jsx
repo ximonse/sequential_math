@@ -22,6 +22,12 @@ import {
   median
 } from '../../lib/mathUtils'
 import { getOperationLabel } from '../../lib/operations'
+import {
+  extractNcmCodeFromValue,
+  getNcmDomainLabelSv,
+  getNcmOperationLabelSv,
+  getNcmSkillMapping
+} from '../../lib/ncmSkillMap'
 import { getStartOfWeekTimestamp } from '../../lib/studentProfile'
 import {
   buildAssignmentLink,
@@ -4629,6 +4635,12 @@ function formatSkillTypeLabel(value) {
   const raw = String(value || '').trim()
   if (!raw) return ''
 
+  const ncmCode = extractNcmCodeFromValue(raw)
+  if (ncmCode) {
+    const ncmMapping = getNcmSkillMapping(ncmCode)
+    return formatNcmSkillLabel(ncmCode, ncmMapping)
+  }
+
   if (Object.prototype.hasOwnProperty.call(SKILL_TYPE_LABEL_OVERRIDES, raw)) {
     return SKILL_TYPE_LABEL_OVERRIDES[raw]
   }
@@ -4689,6 +4701,14 @@ function formatSkillQualifier(parts) {
     return SKILL_QUALIFIER_LABELS[key]
   }
   return key.replace(/_/g, ' ')
+}
+
+function formatNcmSkillLabel(code, mapping) {
+  const ncmCode = String(code || '').trim()
+  if (!ncmCode) return ''
+  const operationLabel = getNcmOperationLabelSv(mapping?.operationTag)
+  const domainLabel = getNcmDomainLabelSv(mapping?.domainTag)
+  return `NCM ${ncmCode} (${operationLabel}, ${domainLabel})`
 }
 
 function buildStudentRow(student, activeAssignment = null, classNameById = new Map()) {

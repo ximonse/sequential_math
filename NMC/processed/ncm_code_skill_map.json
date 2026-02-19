@@ -1,0 +1,1584 @@
+{
+  "generated_at_utc": "2026-02-19T00:22:44.304263+00:00",
+  "total_codes": 126,
+  "rows": [
+    {
+      "ncm_code": "AG1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_basic_number_operations"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AG"
+    },
+    {
+      "ncm_code": "AG2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_basic_number_operations"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AG"
+    },
+    {
+      "ncm_code": "AG3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_basic_number_operations"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AG"
+    },
+    {
+      "ncm_code": "AG4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_basic_number_operations"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AG"
+    },
+    {
+      "ncm_code": "AG5",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_basic_number_operations"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AG"
+    },
+    {
+      "ncm_code": "AG6",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_basic_number_operations"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AG"
+    },
+    {
+      "ncm_code": "AG7",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_basic_number_operations"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AG"
+    },
+    {
+      "ncm_code": "AG8",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_basic_number_operations"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AG"
+    },
+    {
+      "ncm_code": "AG9",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_basic_number_operations"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AG"
+    },
+    {
+      "ncm_code": "AS1",
+      "safe_batch": "safe_as_expressions",
+      "in_safe_batch": true,
+      "domain_tag": "arithmetic",
+      "operation_tag": "addition",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_written_method",
+        "op_addition",
+        "multi_digit"
+      ],
+      "mapping_confidence": "high",
+      "mapping_source": "manual"
+    },
+    {
+      "ncm_code": "AS10",
+      "safe_batch": "safe_as_expressions",
+      "in_safe_batch": true,
+      "domain_tag": "arithmetic",
+      "operation_tag": "multiplication",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "concept_decimal",
+        "op_multiplication"
+      ],
+      "mapping_confidence": "high",
+      "mapping_source": "manual"
+    },
+    {
+      "ncm_code": "AS11",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "division",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "concept_decimal",
+        "op_division"
+      ],
+      "mapping_confidence": "medium",
+      "mapping_source": "manual"
+    },
+    {
+      "ncm_code": "AS2",
+      "safe_batch": "safe_as_expressions",
+      "in_safe_batch": true,
+      "domain_tag": "arithmetic",
+      "operation_tag": "subtraction",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_written_method",
+        "op_subtraction",
+        "multi_digit"
+      ],
+      "mapping_confidence": "high",
+      "mapping_source": "manual"
+    },
+    {
+      "ncm_code": "AS3",
+      "safe_batch": "safe_as_word_problems",
+      "in_safe_batch": true,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_word_problem",
+        "op_addition",
+        "op_subtraction"
+      ],
+      "mapping_confidence": "high",
+      "mapping_source": "manual"
+    },
+    {
+      "ncm_code": "AS4",
+      "safe_batch": "safe_as_expressions",
+      "in_safe_batch": true,
+      "domain_tag": "arithmetic",
+      "operation_tag": "multiplication",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_written_method",
+        "op_multiplication"
+      ],
+      "mapping_confidence": "high",
+      "mapping_source": "manual"
+    },
+    {
+      "ncm_code": "AS5",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "division",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_written_method",
+        "op_division"
+      ],
+      "mapping_confidence": "medium",
+      "mapping_source": "manual"
+    },
+    {
+      "ncm_code": "AS6",
+      "safe_batch": "safe_as_word_problems",
+      "in_safe_batch": true,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_word_problem",
+        "op_multiplication",
+        "op_division"
+      ],
+      "mapping_confidence": "high",
+      "mapping_source": "manual"
+    },
+    {
+      "ncm_code": "AS7",
+      "safe_batch": "safe_as_expressions",
+      "in_safe_batch": true,
+      "domain_tag": "arithmetic",
+      "operation_tag": "multiplication",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_written_method",
+        "op_multiplication",
+        "multi_digit"
+      ],
+      "mapping_confidence": "high",
+      "mapping_source": "manual"
+    },
+    {
+      "ncm_code": "AS8",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "division",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_written_method",
+        "op_division"
+      ],
+      "mapping_confidence": "medium",
+      "mapping_source": "manual"
+    },
+    {
+      "ncm_code": "AS9",
+      "safe_batch": "safe_as_expressions",
+      "in_safe_batch": true,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "concept_decimal",
+        "op_addition",
+        "op_subtraction"
+      ],
+      "mapping_confidence": "high",
+      "mapping_source": "manual"
+    },
+    {
+      "ncm_code": "AUN1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AUN"
+    },
+    {
+      "ncm_code": "AUN2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AUN"
+    },
+    {
+      "ncm_code": "AUN3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AUN"
+    },
+    {
+      "ncm_code": "AUN4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AUN"
+    },
+    {
+      "ncm_code": "AUP1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_place_value"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AUP"
+    },
+    {
+      "ncm_code": "AUP2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_place_value"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AUP"
+    },
+    {
+      "ncm_code": "AUP3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_place_value"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AUP"
+    },
+    {
+      "ncm_code": "AUP4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_place_value"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AUP"
+    },
+    {
+      "ncm_code": "AUP5",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "arithmetic",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_arithmetic",
+        "ncm_place_value"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:AUP"
+    },
+    {
+      "ncm_code": "GFO1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "geometry",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_geometry"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:GFO"
+    },
+    {
+      "ncm_code": "GFO2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "geometry",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_geometry"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:GFO"
+    },
+    {
+      "ncm_code": "GFO3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "geometry",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_geometry"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:GFO"
+    },
+    {
+      "ncm_code": "GFO4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "geometry",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_geometry"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:GFO"
+    },
+    {
+      "ncm_code": "GFO5",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "geometry",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_geometry"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:GFO"
+    },
+    {
+      "ncm_code": "GFO6",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "geometry",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_geometry"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:GFO"
+    },
+    {
+      "ncm_code": "GFO7",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "geometry",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_geometry"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:GFO"
+    },
+    {
+      "ncm_code": "GFO8",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "geometry",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_geometry"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:GFO"
+    },
+    {
+      "ncm_code": "GSK1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "geometry",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_geometry"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:GSK"
+    },
+    {
+      "ncm_code": "GSK2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "geometry",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_geometry"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:GSK"
+    },
+    {
+      "ncm_code": "GSK3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "geometry",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_geometry"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:GSK"
+    },
+    {
+      "ncm_code": "GSK4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "geometry",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_geometry"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:GSK"
+    },
+    {
+      "ncm_code": "GVI1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "geometry",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_geometry"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:GVI"
+    },
+    {
+      "ncm_code": "GVI2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "geometry",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_geometry"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:GVI"
+    },
+    {
+      "ncm_code": "GVI3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "geometry",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_geometry"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:GVI"
+    },
+    {
+      "ncm_code": "MAR1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MAR2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MAR3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MAR4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MAR5",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MAR6",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MAR7",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MGF",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MLA41",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MLA42",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MLA43",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MLA44",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MMA1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MMA2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MTI1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MTI2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MTI3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MTI4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MTI5",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MVO1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MVO2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MVO3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MVO4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MVO5",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MVO6",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "MVO7",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "measurement",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_measurement"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:M"
+    },
+    {
+      "ncm_code": "RB1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_fraction"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RB"
+    },
+    {
+      "ncm_code": "RB2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_fraction"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RB"
+    },
+    {
+      "ncm_code": "RB3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_fraction"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RB"
+    },
+    {
+      "ncm_code": "RB4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_fraction"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RB"
+    },
+    {
+      "ncm_code": "RB5",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_fraction"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RB"
+    },
+    {
+      "ncm_code": "RB6",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_fraction"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RB"
+    },
+    {
+      "ncm_code": "RB7",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_fraction"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RB"
+    },
+    {
+      "ncm_code": "RD1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_decimal"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RD"
+    },
+    {
+      "ncm_code": "RD2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_decimal"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RD"
+    },
+    {
+      "ncm_code": "RD3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_decimal"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RD"
+    },
+    {
+      "ncm_code": "RD4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_decimal"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RD"
+    },
+    {
+      "ncm_code": "RD5",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_decimal"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RD"
+    },
+    {
+      "ncm_code": "RD6",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_decimal"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RD"
+    },
+    {
+      "ncm_code": "RP1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_percent"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RP"
+    },
+    {
+      "ncm_code": "RP2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_percent"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RP"
+    },
+    {
+      "ncm_code": "RP3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_percent"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RP"
+    },
+    {
+      "ncm_code": "RP4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_percent"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RP"
+    },
+    {
+      "ncm_code": "RP5",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_percent"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RP"
+    },
+    {
+      "ncm_code": "RP6",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_percent"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RP"
+    },
+    {
+      "ncm_code": "RP7",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "rational_numbers",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_rational_numbers",
+        "concept_percent"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:RP"
+    },
+    {
+      "ncm_code": "SA1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "statistics_probability",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_statistics_probability"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:SA"
+    },
+    {
+      "ncm_code": "SA2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "statistics_probability",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_statistics_probability"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:SA"
+    },
+    {
+      "ncm_code": "SA3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "statistics_probability",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_statistics_probability"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:SA"
+    },
+    {
+      "ncm_code": "SA4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "statistics_probability",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_statistics_probability"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:SA"
+    },
+    {
+      "ncm_code": "SA5",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "statistics_probability",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_statistics_probability"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:SA"
+    },
+    {
+      "ncm_code": "SAF",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "statistics_probability",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_statistics_probability"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:SA"
+    },
+    {
+      "ncm_code": "STD1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "statistics_probability",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_statistics_probability"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:ST"
+    },
+    {
+      "ncm_code": "STD2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "statistics_probability",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_statistics_probability"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:ST"
+    },
+    {
+      "ncm_code": "STD3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "statistics_probability",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_statistics_probability"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:ST"
+    },
+    {
+      "ncm_code": "STD4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "statistics_probability",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_statistics_probability"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:ST"
+    },
+    {
+      "ncm_code": "STD5",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "statistics_probability",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_statistics_probability"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:ST"
+    },
+    {
+      "ncm_code": "STD6",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "statistics_probability",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_statistics_probability"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:ST"
+    },
+    {
+      "ncm_code": "STF",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "statistics_probability",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_statistics_probability"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:ST"
+    },
+    {
+      "ncm_code": "STI1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "statistics_probability",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_statistics_probability"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:ST"
+    },
+    {
+      "ncm_code": "STI2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "statistics_probability",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_statistics_probability"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:ST"
+    },
+    {
+      "ncm_code": "TAE1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAE2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAE3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAE4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAE5",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAE6",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAE7",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAG1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAG2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAG3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAG4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAT1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAT2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAT3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAT4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAT5",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAU1",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAU2",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAU3",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAU4",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    },
+    {
+      "ncm_code": "TAU5",
+      "safe_batch": "",
+      "in_safe_batch": false,
+      "domain_tag": "number_sense",
+      "operation_tag": "mixed",
+      "ability_tags": [
+        "ncm_number_sense"
+      ],
+      "mapping_confidence": "heuristic",
+      "mapping_source": "prefix:TA"
+    }
+  ]
+}

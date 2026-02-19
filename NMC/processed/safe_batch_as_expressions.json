@@ -7,7 +7,10 @@
     "source_diagnos_pdf": "AS1%20diagnos.pdf",
     "source_facit_pdf": "AS1%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "addition",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_addition|multi_digit"
   },
   {
     "ncm_code": "AS1",
@@ -17,7 +20,10 @@
     "source_diagnos_pdf": "AS1%20diagnos.pdf",
     "source_facit_pdf": "AS1%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "addition",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_addition|multi_digit"
   },
   {
     "ncm_code": "AS1",
@@ -27,7 +33,10 @@
     "source_diagnos_pdf": "AS1%20diagnos.pdf",
     "source_facit_pdf": "AS1%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "addition",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_addition|multi_digit"
   },
   {
     "ncm_code": "AS1",
@@ -37,7 +46,10 @@
     "source_diagnos_pdf": "AS1%20diagnos.pdf",
     "source_facit_pdf": "AS1%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "addition",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_addition|multi_digit"
   },
   {
     "ncm_code": "AS1",
@@ -47,7 +59,10 @@
     "source_diagnos_pdf": "AS1%20diagnos.pdf",
     "source_facit_pdf": "AS1%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "addition",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_addition|multi_digit"
   },
   {
     "ncm_code": "AS2",
@@ -57,7 +72,10 @@
     "source_diagnos_pdf": "AS2%20diagnos.pdf",
     "source_facit_pdf": "AS2%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "subtraction",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_subtraction|multi_digit"
   },
   {
     "ncm_code": "AS2",
@@ -67,7 +85,10 @@
     "source_diagnos_pdf": "AS2%20diagnos.pdf",
     "source_facit_pdf": "AS2%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "subtraction",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_subtraction|multi_digit"
   },
   {
     "ncm_code": "AS2",
@@ -77,7 +98,10 @@
     "source_diagnos_pdf": "AS2%20diagnos.pdf",
     "source_facit_pdf": "AS2%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "subtraction",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_subtraction|multi_digit"
   },
   {
     "ncm_code": "AS2",
@@ -87,7 +111,10 @@
     "source_diagnos_pdf": "AS2%20diagnos.pdf",
     "source_facit_pdf": "AS2%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "subtraction",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_subtraction|multi_digit"
   },
   {
     "ncm_code": "AS2",
@@ -97,7 +124,10 @@
     "source_diagnos_pdf": "AS2%20diagnos.pdf",
     "source_facit_pdf": "AS2%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "subtraction",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_subtraction|multi_digit"
   },
   {
     "ncm_code": "AS4",
@@ -107,7 +137,10 @@
     "source_diagnos_pdf": "AS4%20diagnos.pdf",
     "source_facit_pdf": "AS4%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_multiplication"
   },
   {
     "ncm_code": "AS4",
@@ -117,7 +150,10 @@
     "source_diagnos_pdf": "AS4%20diagnos.pdf",
     "source_facit_pdf": "AS4%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_multiplication"
   },
   {
     "ncm_code": "AS4",
@@ -127,7 +163,10 @@
     "source_diagnos_pdf": "AS4%20diagnos.pdf",
     "source_facit_pdf": "AS4%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_multiplication"
   },
   {
     "ncm_code": "AS4",
@@ -137,7 +176,10 @@
     "source_diagnos_pdf": "AS4%20diagnos.pdf",
     "source_facit_pdf": "AS4%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_multiplication"
   },
   {
     "ncm_code": "AS4",
@@ -147,7 +189,10 @@
     "source_diagnos_pdf": "AS4%20diagnos.pdf",
     "source_facit_pdf": "AS4%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_multiplication"
   },
   {
     "ncm_code": "AS7",
@@ -157,7 +202,10 @@
     "source_diagnos_pdf": "AS7%20diagnos.pdf",
     "source_facit_pdf": "AS7%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_multiplication|multi_digit"
   },
   {
     "ncm_code": "AS7",
@@ -167,7 +215,10 @@
     "source_diagnos_pdf": "AS7%20diagnos.pdf",
     "source_facit_pdf": "AS7%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_multiplication|multi_digit"
   },
   {
     "ncm_code": "AS7",
@@ -177,7 +228,10 @@
     "source_diagnos_pdf": "AS7%20diagnos.pdf",
     "source_facit_pdf": "AS7%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_multiplication|multi_digit"
   },
   {
     "ncm_code": "AS7",
@@ -187,7 +241,10 @@
     "source_diagnos_pdf": "AS7%20diagnos.pdf",
     "source_facit_pdf": "AS7%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_multiplication|multi_digit"
   },
   {
     "ncm_code": "AS7",
@@ -197,7 +254,10 @@
     "source_diagnos_pdf": "AS7%20diagnos.pdf",
     "source_facit_pdf": "AS7%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_multiplication|multi_digit"
   },
   {
     "ncm_code": "AS7",
@@ -207,7 +267,10 @@
     "source_diagnos_pdf": "AS7%20diagnos.pdf",
     "source_facit_pdf": "AS7%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|ncm_written_method|op_multiplication|multi_digit"
   },
   {
     "ncm_code": "AS9",
@@ -217,7 +280,10 @@
     "source_diagnos_pdf": "AS9%20diagnos.pdf",
     "source_facit_pdf": "AS9%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "mixed",
+    "ability_tags": "ncm_arithmetic|concept_decimal|op_addition|op_subtraction"
   },
   {
     "ncm_code": "AS9",
@@ -227,7 +293,10 @@
     "source_diagnos_pdf": "AS9%20diagnos.pdf",
     "source_facit_pdf": "AS9%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "mixed",
+    "ability_tags": "ncm_arithmetic|concept_decimal|op_addition|op_subtraction"
   },
   {
     "ncm_code": "AS9",
@@ -237,7 +306,10 @@
     "source_diagnos_pdf": "AS9%20diagnos.pdf",
     "source_facit_pdf": "AS9%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "mixed",
+    "ability_tags": "ncm_arithmetic|concept_decimal|op_addition|op_subtraction"
   },
   {
     "ncm_code": "AS9",
@@ -247,7 +319,10 @@
     "source_diagnos_pdf": "AS9%20diagnos.pdf",
     "source_facit_pdf": "AS9%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "mixed",
+    "ability_tags": "ncm_arithmetic|concept_decimal|op_addition|op_subtraction"
   },
   {
     "ncm_code": "AS9",
@@ -257,7 +332,10 @@
     "source_diagnos_pdf": "AS9%20diagnos.pdf",
     "source_facit_pdf": "AS9%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "mixed",
+    "ability_tags": "ncm_arithmetic|concept_decimal|op_addition|op_subtraction"
   },
   {
     "ncm_code": "AS10",
@@ -267,7 +345,10 @@
     "source_diagnos_pdf": "AS10%20diagnos.pdf",
     "source_facit_pdf": "AS10%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|concept_decimal|op_multiplication"
   },
   {
     "ncm_code": "AS10",
@@ -277,7 +358,10 @@
     "source_diagnos_pdf": "AS10%20diagnos.pdf",
     "source_facit_pdf": "AS10%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|concept_decimal|op_multiplication"
   },
   {
     "ncm_code": "AS10",
@@ -287,7 +371,10 @@
     "source_diagnos_pdf": "AS10%20diagnos.pdf",
     "source_facit_pdf": "AS10%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|concept_decimal|op_multiplication"
   },
   {
     "ncm_code": "AS10",
@@ -297,7 +384,10 @@
     "source_diagnos_pdf": "AS10%20diagnos.pdf",
     "source_facit_pdf": "AS10%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|concept_decimal|op_multiplication"
   },
   {
     "ncm_code": "AS10",
@@ -307,6 +397,9 @@
     "source_diagnos_pdf": "AS10%20diagnos.pdf",
     "source_facit_pdf": "AS10%20facit.pdf",
     "answer_source": "facit",
-    "extraction_confidence": "high"
+    "extraction_confidence": "high",
+    "ncm_domain_tag": "arithmetic",
+    "operation_tag": "multiplication",
+    "ability_tags": "ncm_arithmetic|concept_decimal|op_multiplication"
   }
 ]

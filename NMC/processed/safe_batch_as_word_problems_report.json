@@ -1,0 +1,37 @@
+{
+  "generated_at_utc": "2026-02-19T00:22:34.451318+00:00",
+  "batch_name": "safe_as_word_problems",
+  "parser_mode": "word",
+  "codes": [
+    "AS3",
+    "AS6"
+  ],
+  "total_rows": 14,
+  "high_confidence_rows": 14,
+  "per_code": [
+    {
+      "code": "AS3",
+      "parser_mode": "word",
+      "diagnos_pdf": "AS3%20diagnos.pdf",
+      "facit_pdf": "AS3%20facit.pdf",
+      "diagnos_item_count": 7,
+      "facit_item_count": 7,
+      "merged_item_count": 7,
+      "high_confidence_items": 7,
+      "computed_answer_items": 0,
+      "facit_numeric_text_items": 7
+    },
+    {
+      "code": "AS6",
+      "parser_mode": "word",
+      "diagnos_pdf": "AS6%20diagnos.pdf",
+      "facit_pdf": "AS6%20facit.pdf",
+      "diagnos_item_count": 7,
+      "facit_item_count": 7,
+      "merged_item_count": 7,
+      "high_confidence_items": 7,
+      "computed_answer_items": 0,
+      "facit_numeric_text_items": 7
+    }
+  ]
+}

@@ -91,15 +91,13 @@ function StudentSession() {
   const attentionRef = useRef(createAttentionTracker())
   const sessionRecentCorrectnessRef = useRef([])
   const sessionTelemetryRef = useRef(null)
-  const ncmCycleRef = useRef({
-    signature: '',
-    pool: [],
-    queue: [],
-    last: ''
-  })
+  const ncmQueueRef = useRef([])
+  const ncmTotalRef = useRef(0)
   const presenceSyncRef = useRef({
     lastSavedAt: 0
   })
+  const [ncmRemainingCount, setNcmRemainingCount] = useState(0)
+  const [ncmCompletedSession, setNcmCompletedSession] = useState(false)
 
   const assignmentId = searchParams.get('assignment')
   const assignmentPayload = searchParams.get('assignment_payload')
@@ -271,29 +269,29 @@ function StudentSession() {
   }, [profile, isTableDrill, tableSet, resetAttentionTracker])
 
   useEffect(() => {
-    if (!sessionAssignment || sessionAssignment.kind !== 'ncm') {
-      ncmCycleRef.current = {
-        signature: '',
-        pool: [],
-        queue: [],
-        last: ''
-      }
+    if (!profile || !sessionAssignment || sessionAssignment.kind !== 'ncm') {
+      ncmQueueRef.current = []
+      ncmTotalRef.current = 0
+      setNcmRemainingCount(0)
+      setNcmCompletedSession(false)
       return
     }
 
-    const signature = buildNcmAssignmentSignature(sessionAssignment)
-    if (ncmCycleRef.current.signature === signature && ncmCycleRef.current.pool.length > 0) {
-      return
-    }
-
+    const assignmentKey = getNcmAssignmentKey(sessionAssignment)
     const pool = buildNcmAssignmentSkillPool(sessionAssignment)
-    ncmCycleRef.current = {
-      signature,
-      pool,
-      queue: shuffleStrings(pool),
-      last: ''
-    }
-  }, [sessionAssignment])
+    const progress = readNcmAssignmentProgress(profile, assignmentKey)
+    const completedSet = new Set(
+      (Array.isArray(progress.completedSkillTags) ? progress.completedSkillTags : [])
+        .map(item => String(item || '').trim())
+        .filter(Boolean)
+    )
+    const remaining = pool.filter(skillTag => !completedSet.has(skillTag))
+
+    ncmQueueRef.current = [...remaining]
+    ncmTotalRef.current = pool.length
+    setNcmRemainingCount(remaining.length)
+    setNcmCompletedSession(pool.length > 0 && remaining.length === 0)
+  }, [profile, sessionAssignment])
 
   const completedThisSession = useMemo(() => sessionCount, [sessionCount])
 
@@ -425,6 +423,18 @@ function StudentSession() {
       return
     }
 
+    if (
+      sessionAssignment?.kind === 'ncm'
+      && ncmTotalRef.current > 0
+      && ncmQueueRef.current.length === 0
+    ) {
+      setNcmCompletedSession(true)
+      setCurrentProblem(null)
+      setFeedback(null)
+      setAnswer('')
+      return
+    }
+
     if (isTableDrill) {
       if (tableQueue.length === 0) return
       const nextProblem = createTableProblem(tableQueue[0])
@@ -482,7 +492,7 @@ function StudentSession() {
       setSessionError('')
       const nextRules = { ...(rules || {}) }
       if (sessionAssignment?.kind === 'ncm') {
-        const preferredSkillTag = consumeNextNcmSkillTag(ncmCycleRef.current)
+        const preferredSkillTag = peekNextNcmSkillTag(ncmQueueRef.current)
         if (preferredSkillTag) {
           nextRules.ncmPreferredSkillTag = preferredSkillTag
         }
@@ -596,6 +606,16 @@ function StudentSession() {
     })
 
     const answerTs = Number(result?.timestamp || Date.now())
+    if (sessionAssignment?.kind === 'ncm') {
+      const solvedSkillTag = String(result?.skillTag || currentProblem?.metadata?.skillTag || '').trim()
+      if (solvedSkillTag) {
+        markNcmSkillCompleted(profile, sessionAssignment, solvedSkillTag, ncmTotalRef.current)
+        if (Array.isArray(ncmQueueRef.current) && ncmQueueRef.current.length > 0) {
+          ncmQueueRef.current = ncmQueueRef.current.filter(tag => tag !== solvedSkillTag)
+          setNcmRemainingCount(ncmQueueRef.current.length)
+        }
+      }
+    }
     const sessionMeta = sessionTelemetryRef.current
     if (sessionMeta) {
       sessionMeta.answered += 1
@@ -948,6 +968,29 @@ function StudentSession() {
           <p className="text-sm text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.45)]">
             Tryck var som helst för att fortsätta
           </p>
+        </div>
+      </div>
+    )
+  }
+
+  if (ncmCompletedSession && sessionAssignment?.kind === 'ncm') {
+    const solved = Math.max(0, ncmTotalRef.current - ncmRemainingCount)
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-200 to-cyan-200 px-4">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg text-center">
+          <div className="text-6xl mb-4">✅</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">
+            NCM-uppdrag klart
+          </h2>
+          <p className="text-gray-600 mb-6">
+            Du har gjort {solved} av {ncmTotalRef.current} frågor i uppdraget.
+          </p>
+          <button
+            onClick={() => navigate(`/student/${studentId}`)}
+            className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg"
+          >
+            Till startsidan
+          </button>
         </div>
       </div>
     )
@@ -1542,6 +1585,13 @@ function buildNcmAssignmentSkillPool(assignment) {
   )).sort((a, b) => a.localeCompare(b, 'sv'))
 }
 
+function getNcmAssignmentKey(assignment) {
+  const id = String(assignment?.id || '').trim()
+  if (id) return `assignment:${id}`
+
+  return buildNcmAssignmentSignature(assignment)
+}
+
 function buildNcmAssignmentSignature(assignment) {
   const codes = Array.isArray(assignment?.ncmCodes)
     ? assignment.ncmCodes.map(item => String(item || '').trim()).filter(Boolean).sort((a, b) => a.localeCompare(b, 'sv'))
@@ -1552,33 +1602,55 @@ function buildNcmAssignmentSignature(assignment) {
   return `codes:${codes.join(',')}|abilities:${abilities.join(',')}`
 }
 
-function consumeNextNcmSkillTag(cycleState) {
-  if (!cycleState || !Array.isArray(cycleState.pool) || cycleState.pool.length === 0) return ''
+function readNcmAssignmentProgress(profile, assignmentKey) {
+  if (!profile || !assignmentKey) return { completedSkillTags: [] }
+  const store = getAssignmentProgressStore(profile)
+  const raw = store[assignmentKey]
+  if (!raw || typeof raw !== 'object') return { completedSkillTags: [] }
 
-  if (!Array.isArray(cycleState.queue) || cycleState.queue.length === 0) {
-    cycleState.queue = shuffleStrings(cycleState.pool)
-    if (cycleState.queue.length > 1 && cycleState.last && cycleState.queue[0] === cycleState.last) {
-      const swapIndex = cycleState.queue.findIndex(item => item !== cycleState.last)
-      if (swapIndex > 0) {
-        const first = cycleState.queue[0]
-        cycleState.queue[0] = cycleState.queue[swapIndex]
-        cycleState.queue[swapIndex] = first
-      }
-    }
+  const completedSkillTags = Array.isArray(raw.completedSkillTags)
+    ? raw.completedSkillTags.map(item => String(item || '').trim()).filter(Boolean)
+    : []
+  return {
+    ...raw,
+    completedSkillTags
   }
-
-  const next = String(cycleState.queue.shift() || '').trim()
-  if (next) cycleState.last = next
-  return next
 }
 
-function shuffleStrings(values) {
-  const arr = Array.isArray(values) ? [...values] : []
-  for (let i = arr.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1))
-    const tmp = arr[i]
-    arr[i] = arr[j]
-    arr[j] = tmp
+function markNcmSkillCompleted(profile, assignment, skillTag, totalSkillTags) {
+  if (!profile || !assignment || !skillTag) return
+  const assignmentKey = getNcmAssignmentKey(assignment)
+  if (!assignmentKey) return
+
+  const store = getAssignmentProgressStore(profile)
+  const previous = readNcmAssignmentProgress(profile, assignmentKey)
+  const completedSet = new Set(previous.completedSkillTags)
+  completedSet.add(String(skillTag))
+  const completedSkillTags = Array.from(completedSet)
+  const now = Date.now()
+  const total = Math.max(0, Number(totalSkillTags || 0))
+
+  store[assignmentKey] = {
+    kind: 'ncm',
+    assignmentId: String(assignment?.id || ''),
+    assignmentTitle: String(assignment?.title || ''),
+    totalSkillTags: total,
+    completedSkillTags,
+    completedAt: total > 0 && completedSkillTags.length >= total
+      ? now
+      : Number(previous.completedAt || 0) || 0,
+    updatedAt: now
   }
-  return arr
+}
+
+function getAssignmentProgressStore(profile) {
+  if (!profile.assignmentProgress || typeof profile.assignmentProgress !== 'object') {
+    profile.assignmentProgress = {}
+  }
+  return profile.assignmentProgress
+}
+
+function peekNextNcmSkillTag(queue) {
+  if (!Array.isArray(queue) || queue.length === 0) return ''
+  return String(queue[0] || '').trim()
 }

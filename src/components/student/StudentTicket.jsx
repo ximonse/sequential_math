@@ -222,8 +222,39 @@ function StudentTicket() {
     saveProfile(profile, { forceSync: true })
     setProfile({ ...profile })
     setSavedResponse(response)
-    setStatusMessage('Svar registrerat.')
+    setStatusMessage(
+      resolvedTicket.kind === 'exit'
+        ? 'Svar registrerat. Tryck Färdigt för att gå tillbaka.'
+        : 'Svar registrerat.'
+    )
     setIsSubmitting(false)
+  }
+
+  const handleFinishTicket = () => {
+    if (!profile || !resolvedTicket?.dispatchId) {
+      navigate(`/student/${studentId}`)
+      return
+    }
+
+    const now = Date.now()
+    if (!profile.ticketInbox || typeof profile.ticketInbox !== 'object') {
+      profile.ticketInbox = {}
+    }
+    if (profile.ticketInbox.activeDispatchId === resolvedTicket.dispatchId) {
+      profile.ticketInbox.activeDispatchId = ''
+      profile.ticketInbox.activePayload = null
+      profile.ticketInbox.activeEncoded = ''
+      profile.ticketInbox.updatedAt = now
+      profile.ticketInbox.clearedAt = now
+    }
+
+    recordTelemetryEvent(profile, 'ticket_finished', {
+      dispatchId: resolvedTicket.dispatchId,
+      kind: resolvedTicket.kind || 'start'
+    }, now)
+    incrementTelemetryDailyMetric(profile, 'ticket_finished', 1, now)
+    saveProfile(profile, { forceSync: true })
+    navigate(`/student/${studentId}`)
   }
 
   if (!profile) {
@@ -332,6 +363,14 @@ function StudentTicket() {
                     Läraren kan visa facit senare.
                   </p>
                 </div>
+              )}
+              {resolvedTicket.kind === 'exit' && (
+                <button
+                  onClick={handleFinishTicket}
+                  className="mt-4 w-full px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold shadow-sm"
+                >
+                  Färdigt - till startsidan
+                </button>
               )}
             </div>
           )}

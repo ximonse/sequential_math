@@ -5,7 +5,7 @@
 import { generateByDifficultyWithOptions, generateMultiplicationTableDrillProblem } from './problemGenerator'
 import { getRecentSuccessRate, getConsecutiveErrors, getCurrentStreak } from './studentProfile'
 import { inferOperationFromProblemType } from './mathUtils'
-import { generateNcmProblemFromFilter } from './ncmProblemBank'
+import { filterNcmProblems, generateNcmProblemFromFilter } from './ncmProblemBank'
 import {
   PROGRESSION_MODE_CHALLENGE,
   PROGRESSION_MODE_STEADY,
@@ -14,6 +14,7 @@ import {
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const ADVANCE_OFFER_COOLDOWN_MS = 20 * 60 * 1000
+const NCM_ROTATION_MAX_SIGNATURES = 24
 const KNOWN_OPERATION_TYPES = new Set(['addition', 'subtraction', 'multiplication', 'division'])
 const BUCKET_CONFIG = {
   [PROGRESSION_MODE_CHALLENGE]: [
@@ -140,7 +141,18 @@ export function selectNextProblem(profile, options = {}) {
   const ncmFilter = normalizeNcmFilter(options.ncmFilter)
 
   if (ncmFilter) {
-    const problem = generateNcmProblemFromFilter(ncmFilter, { levelHint: roundedDifficulty })
+    const ncmCandidates = filterNcmProblems(ncmFilter)
+    if (ncmCandidates.length === 0) {
+      throw new Error('NCM filter did not match any available problems')
+    }
+
+    const preferredSkillTag = pickNextNcmSkillTag(profile, ncmFilter, ncmCandidates)
+    const recentNcmSkills = getRecentNcmSkillTags(profile, 6)
+    const problem = generateNcmProblemFromFilter(ncmFilter, {
+      levelHint: roundedDifficulty,
+      preferredSkillTag,
+      excludeSkillTags: recentNcmSkills
+    })
     if (!problem) {
       throw new Error('NCM filter did not match any available problems')
     }
@@ -357,7 +369,8 @@ function ensureDifficultyMeta(profile) {
   if (!profile.adaptive || typeof profile.adaptive !== 'object') {
     profile.adaptive = {
       skillStates: {},
-      recentSelections: []
+      recentSelections: [],
+      ncmRotation: {}
     }
   }
   if (!profile.adaptive.skillStates || typeof profile.adaptive.skillStates !== 'object') {
@@ -365,6 +378,9 @@ function ensureDifficultyMeta(profile) {
   }
   if (!Array.isArray(profile.adaptive.recentSelections)) {
     profile.adaptive.recentSelections = []
+  }
+  if (!profile.adaptive.ncmRotation || typeof profile.adaptive.ncmRotation !== 'object') {
+    profile.adaptive.ncmRotation = {}
   }
 }
 
@@ -490,6 +506,99 @@ function normalizeNcmFilter(raw) {
     codes: Array.from(new Set(codes)),
     abilityTags: Array.from(new Set(abilityTags))
   }
+}
+
+function buildNcmFilterSignature(filter) {
+  const codes = Array.isArray(filter?.codes) ? [...filter.codes].sort() : []
+  const abilityTags = Array.isArray(filter?.abilityTags) ? [...filter.abilityTags].sort() : []
+  return `codes:${codes.join(',')}|abilities:${abilityTags.join(',')}`
+}
+
+function pickNextNcmSkillTag(profile, filter, candidates) {
+  const signature = buildNcmFilterSignature(filter)
+  const allSkillTags = Array.from(new Set(
+    (Array.isArray(candidates) ? candidates : [])
+      .map(item => String(item?.skillTag || '').trim())
+      .filter(Boolean)
+  )).sort((a, b) => a.localeCompare(b, 'sv'))
+  if (allSkillTags.length === 0) return ''
+
+  const store = profile.adaptive.ncmRotation
+  const current = store[signature]
+  let bucket = isValidNcmRotationBucket(current, allSkillTags)
+    ? current
+    : {
+      skillTags: allSkillTags,
+      queue: [],
+      lastSkillTag: '',
+      updatedAt: 0
+    }
+
+  if (!Array.isArray(bucket.queue) || bucket.queue.length === 0) {
+    bucket.queue = shuffleStrings(allSkillTags)
+    if (bucket.queue.length > 1 && bucket.lastSkillTag && bucket.queue[0] === bucket.lastSkillTag) {
+      const replacementIndex = bucket.queue.findIndex(item => item !== bucket.lastSkillTag)
+      if (replacementIndex > 0) {
+        const first = bucket.queue[0]
+        bucket.queue[0] = bucket.queue[replacementIndex]
+        bucket.queue[replacementIndex] = first
+      }
+    }
+  }
+
+  const nextSkillTag = String(bucket.queue.shift() || '').trim()
+  if (nextSkillTag) {
+    bucket.lastSkillTag = nextSkillTag
+  }
+  bucket.updatedAt = Date.now()
+  bucket.skillTags = allSkillTags
+  store[signature] = bucket
+  pruneNcmRotationStore(store)
+  return nextSkillTag
+}
+
+function isValidNcmRotationBucket(bucket, allSkillTags) {
+  if (!bucket || typeof bucket !== 'object') return false
+  if (!Array.isArray(bucket.skillTags)) return false
+  if (bucket.skillTags.length !== allSkillTags.length) return false
+  const existing = [...bucket.skillTags].sort((a, b) => a.localeCompare(b, 'sv'))
+  for (let i = 0; i < allSkillTags.length; i += 1) {
+    if (existing[i] !== allSkillTags[i]) return false
+  }
+  if (!Array.isArray(bucket.queue)) return false
+  return true
+}
+
+function shuffleStrings(values) {
+  const arr = [...values]
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    const tmp = arr[i]
+    arr[i] = arr[j]
+    arr[j] = tmp
+  }
+  return arr
+}
+
+function pruneNcmRotationStore(store) {
+  const entries = Object.entries(store || {})
+  if (entries.length <= NCM_ROTATION_MAX_SIGNATURES) return
+
+  entries.sort((a, b) => Number(a[1]?.updatedAt || 0) - Number(b[1]?.updatedAt || 0))
+  const removeCount = entries.length - NCM_ROTATION_MAX_SIGNATURES
+  for (let i = 0; i < removeCount; i += 1) {
+    delete store[entries[i][0]]
+  }
+}
+
+function getRecentNcmSkillTags(profile, count = 6) {
+  const recent = Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
+  const skillTags = recent
+    .slice(-Math.max(1, count * 2))
+    .map(item => String(item?.skillTag || '').trim())
+    .filter(tag => tag.startsWith('ncm_'))
+
+  return Array.from(new Set(skillTags.slice(-count)))
 }
 
 function clampLevelToRange(level, levelRange) {

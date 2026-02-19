@@ -38,4 +38,31 @@ describe('ncmProblemBank', () => {
     expect(String(problem.metadata?.promptText || '').length).toBeGreaterThan(0)
     expect(String(problem.metadata?.skillTag || '').includes('ncm_as1_item_')).toBe(true)
   })
+
+  it('supports preferred skill selection', () => {
+    const rows = filterNcmProblems({ codes: ['AS1'] })
+    const preferred = rows[0]?.skillTag
+    expect(preferred).toBeTruthy()
+
+    const problem = generateNcmProblemFromFilter(
+      { codes: ['AS1'] },
+      { preferredSkillTag: preferred }
+    )
+    expect(problem).toBeTruthy()
+    expect(problem.metadata?.skillTag).toBe(preferred)
+  })
+
+  it('supports excluding recently used skills when alternatives exist', () => {
+    const rows = filterNcmProblems({ codes: ['AS1'] })
+    const excluded = rows.slice(0, 4).map(item => item.skillTag)
+    const allowed = rows[4]?.skillTag
+    expect(allowed).toBeTruthy()
+
+    const problem = generateNcmProblemFromFilter(
+      { codes: ['AS1'] },
+      { excludeSkillTags: excluded }
+    )
+    expect(problem).toBeTruthy()
+    expect(problem.metadata?.skillTag).toBe(allowed)
+  })
 })

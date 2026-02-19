@@ -134,7 +134,37 @@ export function generateNcmProblemFromFilter(filter = {}, options = {}) {
   const candidates = filterNcmProblems(filter)
   if (candidates.length === 0) return null
 
-  const picked = candidates[Math.floor(Math.random() * candidates.length)]
+  const preferredSkillTag = String(options.preferredSkillTag || '').trim()
+  const excludeSkillTags = Array.isArray(options.excludeSkillTags)
+    ? options.excludeSkillTags
+      .map(item => String(item || '').trim())
+      .filter(Boolean)
+    : []
+
+  let picked = null
+  if (preferredSkillTag) {
+    picked = candidates.find(item => item.skillTag === preferredSkillTag) || null
+  }
+
+  if (!picked) {
+    let pool = candidates
+    if (excludeSkillTags.length > 0) {
+      const excluded = new Set(excludeSkillTags)
+      const reduced = candidates.filter(item => !excluded.has(item.skillTag))
+      if (reduced.length > 0) {
+        pool = reduced
+      }
+    }
+    picked = pool[Math.floor(Math.random() * pool.length)]
+  }
+
+  return generateNcmProblemFromEntry(picked, options)
+}
+
+export function generateNcmProblemFromEntry(entry, options = {}) {
+  if (!entry || typeof entry !== 'object') return null
+
+  const picked = entry
   const levelHint = Number(options.levelHint || picked.level || 6)
   const conceptualLevel = clamp(Math.round(levelHint), 1, 12)
   const estimatedTime = Number.isFinite(Number(picked.estimatedTimeSec))

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   addStudentsToClass,
   createClassFromRoster,
@@ -183,9 +183,10 @@ function Dashboard() {
   const [cloudSyncStatus, setCloudSyncStatus] = useState(() => getCloudProfilesSyncStatus())
   const [isCloudRefreshBusy, setIsCloudRefreshBusy] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
   const { studentId: routeStudentIdParam } = useParams()
   const routeStudentId = String(routeStudentIdParam || '').trim()
-  const isDirectStudentView = routeStudentId.length > 0
+  const isDirectStudentView = String(location?.pathname || '').startsWith('/teacher/student')
   const ncmCodeOptions = useMemo(() => getNcmCodeOptions(), [])
   const ncmAbilityOptions = useMemo(() => getNcmAbilityOptions(), [])
   const classFilterOptions = useMemo(
@@ -304,10 +305,18 @@ function Dashboard() {
 
   useEffect(() => {
     if (!isDirectStudentView) return
+    if (!routeStudentId) return
     if (students.length === 0) return
     if (directStudentProfile) return
     setDashboardStatus(`Kunde inte hitta elev med ID: ${routeStudentId}`)
   }, [isDirectStudentView, routeStudentId, students.length, directStudentProfile])
+
+  useEffect(() => {
+    if (!isDirectStudentView) return
+    if (routeStudentId) return
+    if (!detailStudentId) return
+    navigate(`/teacher/student/${encodeURIComponent(detailStudentId)}`, { replace: true })
+  }, [isDirectStudentView, routeStudentId, detailStudentId, navigate])
 
   const handleRefresh = () => {
     void loadStudents()
@@ -365,11 +374,13 @@ function Dashboard() {
 
   const filteredStudents = useMemo(() => (
     isDirectStudentView
-      ? (directStudentProfile ? [directStudentProfile] : [])
+      ? (detailStudentId
+        ? students.filter(student => String(student?.studentId || '') === String(detailStudentId))
+        : [])
       : selectedClassIds.length > 0
         ? students.filter(student => recordMatchesClassFilter(student, selectedClassIds))
         : students
-  ), [isDirectStudentView, directStudentProfile, selectedClassIds, students])
+  ), [isDirectStudentView, detailStudentId, selectedClassIds, students])
 
   useEffect(() => {
     if (!isDirectStudentView) return
@@ -379,18 +390,23 @@ function Dashboard() {
     }
   }, [isDirectStudentView, directStudentProfile, detailStudentId])
 
+  const detailStudentSource = useMemo(
+    () => (isDirectStudentView ? students : filteredStudents),
+    [isDirectStudentView, students, filteredStudents]
+  )
+
   useEffect(() => {
-    if (filteredStudents.length === 0) {
+    if (detailStudentSource.length === 0) {
       if (detailStudentId !== '') setDetailStudentId('')
       return
     }
-    if (!detailStudentId || !filteredStudents.some(item => item.studentId === detailStudentId)) {
-      setDetailStudentId(filteredStudents[0].studentId)
+    if (!detailStudentId || !detailStudentSource.some(item => item.studentId === detailStudentId)) {
+      setDetailStudentId(detailStudentSource[0].studentId)
     }
-  }, [filteredStudents, detailStudentId])
+  }, [detailStudentSource, detailStudentId])
 
   const detailStudentOptions = useMemo(
-    () => filteredStudents
+    () => detailStudentSource
       .map(student => ({
         studentId: student.studentId,
         name: student.name,
@@ -401,11 +417,11 @@ function Dashboard() {
         if (classCompare !== 0) return classCompare
         return String(a.name || '').localeCompare(String(b.name || ''), 'sv')
       }),
-    [filteredStudents, classNameById]
+    [detailStudentSource, classNameById]
   )
   const detailStudentProfile = useMemo(
-    () => filteredStudents.find(item => item.studentId === detailStudentId) || null,
-    [filteredStudents, detailStudentId]
+    () => detailStudentSource.find(item => item.studentId === detailStudentId) || null,
+    [detailStudentSource, detailStudentId]
   )
 
   const classStats = {
@@ -430,13 +446,13 @@ function Dashboard() {
   )
   const filteredRows = useMemo(() => (
     isDirectStudentView
-      ? (directStudentProfile
-        ? allRows.filter(row => row.studentId === directStudentProfile.studentId)
+      ? (detailStudentId
+        ? allRows.filter(row => row.studentId === detailStudentId)
         : [])
       : selectedClassIds.length > 0
         ? allRows.filter(row => recordMatchesClassFilter(row, selectedClassIds))
         : allRows
-  ), [isDirectStudentView, directStudentProfile, allRows, selectedClassIds])
+  ), [isDirectStudentView, detailStudentId, allRows, selectedClassIds])
   const tableRows = getSortedRows(filteredRows, sortBy, sortDir)
   const detailStudentRow = useMemo(
     () => filteredRows.find(row => row.studentId === detailStudentId) || null,
@@ -1480,6 +1496,14 @@ function Dashboard() {
             >
               Uppdatera
             </button>
+            {!isDirectStudentView && (
+              <button
+                onClick={() => navigate('/teacher/student')}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
+              >
+                Elevsida
+              </button>
+            )}
             {isDirectStudentView && (
               <button
                 onClick={() => navigate('/teacher')}
@@ -2498,7 +2522,13 @@ function Dashboard() {
             <div className="flex flex-wrap items-center gap-2">
               <select
                 value={detailStudentId}
-                onChange={(e) => setDetailStudentId(e.target.value)}
+                onChange={(e) => {
+                  const nextStudentId = String(e.target.value || '').trim()
+                  setDetailStudentId(nextStudentId)
+                  if (isDirectStudentView && nextStudentId) {
+                    navigate(`/teacher/student/${encodeURIComponent(nextStudentId)}`)
+                  }
+                }}
                 className="px-2 py-1 border rounded text-sm min-w-56"
               >
                 {detailStudentOptions.length === 0 ? (

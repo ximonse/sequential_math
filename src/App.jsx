@@ -35,6 +35,14 @@ function App() {
           )}
         />
         <Route
+          path="/teacher/student"
+          element={(
+            <RequireTeacherAuth>
+              <Dashboard />
+            </RequireTeacherAuth>
+          )}
+        />
+        <Route
           path="/teacher/student/:studentId"
           element={(
             <RequireTeacherAuth>

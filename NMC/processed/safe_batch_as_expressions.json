@@ -1,0 +1,312 @@
+[
+  {
+    "ncm_code": "AS1",
+    "item_no": 1,
+    "question_text": "67 + 86",
+    "expected_answer": "153",
+    "source_diagnos_pdf": "AS1%20diagnos.pdf",
+    "source_facit_pdf": "AS1%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS1",
+    "item_no": 2,
+    "question_text": "264 + 83",
+    "expected_answer": "347",
+    "source_diagnos_pdf": "AS1%20diagnos.pdf",
+    "source_facit_pdf": "AS1%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS1",
+    "item_no": 3,
+    "question_text": "429 + 156",
+    "expected_answer": "585",
+    "source_diagnos_pdf": "AS1%20diagnos.pdf",
+    "source_facit_pdf": "AS1%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS1",
+    "item_no": 4,
+    "question_text": "347 + 288",
+    "expected_answer": "635",
+    "source_diagnos_pdf": "AS1%20diagnos.pdf",
+    "source_facit_pdf": "AS1%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS1",
+    "item_no": 5,
+    "question_text": "739 + 468",
+    "expected_answer": "1207",
+    "source_diagnos_pdf": "AS1%20diagnos.pdf",
+    "source_facit_pdf": "AS1%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS2",
+    "item_no": 1,
+    "question_text": "82 – 47",
+    "expected_answer": "35",
+    "source_diagnos_pdf": "AS2%20diagnos.pdf",
+    "source_facit_pdf": "AS2%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS2",
+    "item_no": 2,
+    "question_text": "146 – 69",
+    "expected_answer": "77",
+    "source_diagnos_pdf": "AS2%20diagnos.pdf",
+    "source_facit_pdf": "AS2%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS2",
+    "item_no": 3,
+    "question_text": "632 – 427",
+    "expected_answer": "205",
+    "source_diagnos_pdf": "AS2%20diagnos.pdf",
+    "source_facit_pdf": "AS2%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS2",
+    "item_no": 4,
+    "question_text": "541 – 275",
+    "expected_answer": "266",
+    "source_diagnos_pdf": "AS2%20diagnos.pdf",
+    "source_facit_pdf": "AS2%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS2",
+    "item_no": 5,
+    "question_text": "703 – 256",
+    "expected_answer": "447",
+    "source_diagnos_pdf": "AS2%20diagnos.pdf",
+    "source_facit_pdf": "AS2%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS4",
+    "item_no": 1,
+    "question_text": "4 · 27",
+    "expected_answer": "108",
+    "source_diagnos_pdf": "AS4%20diagnos.pdf",
+    "source_facit_pdf": "AS4%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS4",
+    "item_no": 2,
+    "question_text": "6 · 47",
+    "expected_answer": "282",
+    "source_diagnos_pdf": "AS4%20diagnos.pdf",
+    "source_facit_pdf": "AS4%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS4",
+    "item_no": 3,
+    "question_text": "7 · 63",
+    "expected_answer": "441",
+    "source_diagnos_pdf": "AS4%20diagnos.pdf",
+    "source_facit_pdf": "AS4%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS4",
+    "item_no": 4,
+    "question_text": "8 · 67",
+    "expected_answer": "536",
+    "source_diagnos_pdf": "AS4%20diagnos.pdf",
+    "source_facit_pdf": "AS4%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS4",
+    "item_no": 5,
+    "question_text": "4 · 279",
+    "expected_answer": "1116",
+    "source_diagnos_pdf": "AS4%20diagnos.pdf",
+    "source_facit_pdf": "AS4%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS7",
+    "item_no": 1,
+    "question_text": "36 · 20",
+    "expected_answer": "720",
+    "source_diagnos_pdf": "AS7%20diagnos.pdf",
+    "source_facit_pdf": "AS7%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS7",
+    "item_no": 2,
+    "question_text": "40 · 27",
+    "expected_answer": "1080",
+    "source_diagnos_pdf": "AS7%20diagnos.pdf",
+    "source_facit_pdf": "AS7%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS7",
+    "item_no": 3,
+    "question_text": "42 · 61",
+    "expected_answer": "2562",
+    "source_diagnos_pdf": "AS7%20diagnos.pdf",
+    "source_facit_pdf": "AS7%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS7",
+    "item_no": 4,
+    "question_text": "47 · 36",
+    "expected_answer": "1692",
+    "source_diagnos_pdf": "AS7%20diagnos.pdf",
+    "source_facit_pdf": "AS7%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS7",
+    "item_no": 5,
+    "question_text": "87 · 69",
+    "expected_answer": "6003",
+    "source_diagnos_pdf": "AS7%20diagnos.pdf",
+    "source_facit_pdf": "AS7%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS7",
+    "item_no": 6,
+    "question_text": "23 · 154",
+    "expected_answer": "3542",
+    "source_diagnos_pdf": "AS7%20diagnos.pdf",
+    "source_facit_pdf": "AS7%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS9",
+    "item_no": 1,
+    "question_text": "3,26 + 8,37",
+    "expected_answer": "11,63",
+    "source_diagnos_pdf": "AS9%20diagnos.pdf",
+    "source_facit_pdf": "AS9%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS9",
+    "item_no": 2,
+    "question_text": "6,052 + 5,659",
+    "expected_answer": "11,711",
+    "source_diagnos_pdf": "AS9%20diagnos.pdf",
+    "source_facit_pdf": "AS9%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS9",
+    "item_no": 3,
+    "question_text": "13,62 – 5,41",
+    "expected_answer": "8,21",
+    "source_diagnos_pdf": "AS9%20diagnos.pdf",
+    "source_facit_pdf": "AS9%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS9",
+    "item_no": 4,
+    "question_text": "6,27 – 5,84",
+    "expected_answer": "0,43",
+    "source_diagnos_pdf": "AS9%20diagnos.pdf",
+    "source_facit_pdf": "AS9%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS9",
+    "item_no": 5,
+    "question_text": "13,345 – 8,267",
+    "expected_answer": "5,078",
+    "source_diagnos_pdf": "AS9%20diagnos.pdf",
+    "source_facit_pdf": "AS9%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS10",
+    "item_no": 1,
+    "question_text": "27 · 0,8",
+    "expected_answer": "21,6",
+    "source_diagnos_pdf": "AS10%20diagnos.pdf",
+    "source_facit_pdf": "AS10%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS10",
+    "item_no": 2,
+    "question_text": "8,9 · 0,6",
+    "expected_answer": "5,34",
+    "source_diagnos_pdf": "AS10%20diagnos.pdf",
+    "source_facit_pdf": "AS10%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS10",
+    "item_no": 3,
+    "question_text": "1,42 · 2,5",
+    "expected_answer": "3,55",
+    "source_diagnos_pdf": "AS10%20diagnos.pdf",
+    "source_facit_pdf": "AS10%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS10",
+    "item_no": 4,
+    "question_text": "26,4 · 0,15",
+    "expected_answer": "3,96",
+    "source_diagnos_pdf": "AS10%20diagnos.pdf",
+    "source_facit_pdf": "AS10%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  },
+  {
+    "ncm_code": "AS10",
+    "item_no": 5,
+    "question_text": "0,045 · 26,4",
+    "expected_answer": "1,188",
+    "source_diagnos_pdf": "AS10%20diagnos.pdf",
+    "source_facit_pdf": "AS10%20facit.pdf",
+    "answer_source": "facit",
+    "extraction_confidence": "high"
+  }
+]

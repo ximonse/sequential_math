@@ -1,0 +1,76 @@
+{
+  "generated_at_utc": "2026-02-19T00:04:33.954135+00:00",
+  "batch_name": "safe_as_expressions",
+  "codes": [
+    "AS1",
+    "AS2",
+    "AS4",
+    "AS7",
+    "AS9",
+    "AS10"
+  ],
+  "total_rows": 31,
+  "high_confidence_rows": 31,
+  "per_code": [
+    {
+      "code": "AS1",
+      "diagnos_pdf": "AS1%20diagnos.pdf",
+      "facit_pdf": "AS1%20facit.pdf",
+      "diagnos_item_count": 5,
+      "facit_item_count": 5,
+      "merged_item_count": 5,
+      "high_confidence_items": 5,
+      "computed_answer_items": 0
+    },
+    {
+      "code": "AS2",
+      "diagnos_pdf": "AS2%20diagnos.pdf",
+      "facit_pdf": "AS2%20facit.pdf",
+      "diagnos_item_count": 5,
+      "facit_item_count": 5,
+      "merged_item_count": 5,
+      "high_confidence_items": 5,
+      "computed_answer_items": 0
+    },
+    {
+      "code": "AS4",
+      "diagnos_pdf": "AS4%20diagnos.pdf",
+      "facit_pdf": "AS4%20facit.pdf",
+      "diagnos_item_count": 5,
+      "facit_item_count": 5,
+      "merged_item_count": 5,
+      "high_confidence_items": 5,
+      "computed_answer_items": 0
+    },
+    {
+      "code": "AS7",
+      "diagnos_pdf": "AS7%20diagnos.pdf",
+      "facit_pdf": "AS7%20facit.pdf",
+      "diagnos_item_count": 6,
+      "facit_item_count": 6,
+      "merged_item_count": 6,
+      "high_confidence_items": 6,
+      "computed_answer_items": 0
+    },
+    {
+      "code": "AS9",
+      "diagnos_pdf": "AS9%20diagnos.pdf",
+      "facit_pdf": "AS9%20facit.pdf",
+      "diagnos_item_count": 5,
+      "facit_item_count": 5,
+      "merged_item_count": 5,
+      "high_confidence_items": 5,
+      "computed_answer_items": 0
+    },
+    {
+      "code": "AS10",
+      "diagnos_pdf": "AS10%20diagnos.pdf",
+      "facit_pdf": "AS10%20facit.pdf",
+      "diagnos_item_count": 5,
+      "facit_item_count": 5,
+      "merged_item_count": 5,
+      "high_confidence_items": 5,
+      "computed_answer_items": 0
+    }
+  ]
+}

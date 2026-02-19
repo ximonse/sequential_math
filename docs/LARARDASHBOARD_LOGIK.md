@@ -321,15 +321,21 @@ Pedagogiskt varde:
 
 Huvuddelar i sektionen:
 - skapade uppdrag med titel, raknesatt, niva-intervall och ID,
+- NCM-uppdrag med kod- och/eller formagefilter,
 - aktivt uppdrag for alla,
 - lankkopiering.
 
 Hur det raknas/lagras:
 - uppdrag skapas med fasta presets (addition, subtraktion, multiplikation, division, mix),
-- aktivt uppdrag lagras centralt och anvands i elevflodet,
+- uppdrag lagras i localStorage i lararens dashboard-miljo,
+- lankar innehaller ett assignment-payload sa att elevflodet fungerar pa andra enheter/browser utan lokal uppdragslista,
 - uppdragsfoljsamhet i resultatvyer beraknas som andel elevproblem som matchar:
   - raknesatt i uppdraget,
   - niva mellan `minLevel` och `maxLevel`.
+
+For NCM-uppdrag beraknas matchning mot:
+- NCM-kod (om kodfilter ar valt),
+- NCM-formaga (om formagefilter ar valt).
 
 Pedagogiskt varde:
 - snabbt satt att styra hela gruppens fokusomrade,

@@ -37,9 +37,18 @@ import {
   createAssignment,
   deleteAssignment,
   getActiveAssignment,
+  getAssignmentById,
   getAssignments,
   setActiveAssignment
 } from '../../lib/assignments'
+import {
+  buildNcmAssignmentTitle,
+  formatNcmAssignmentScope,
+  getNcmAbilityLabelSv,
+  getNcmAbilityOptions,
+  getNcmCodeLabelSv,
+  getNcmCodeOptions
+} from '../../lib/ncmProblemBank'
 import {
   buildAnalyticsSnapshot,
   buildDetailedProblemExportRows,
@@ -134,6 +143,8 @@ function Dashboard() {
   const [dashboardStatus, setDashboardStatus] = useState('')
   const [copiedId, setCopiedId] = useState('')
   const [activeAssignmentId, setActiveAssignmentId] = useState('')
+  const [ncmSelectedCodes, setNcmSelectedCodes] = useState([])
+  const [ncmSelectedAbilityTags, setNcmSelectedAbilityTags] = useState([])
   const [ticketTemplates, setTicketTemplates] = useState([])
   const [ticketDispatches, setTicketDispatches] = useState([])
   const [ticketQuestionInput, setTicketQuestionInput] = useState('')
@@ -172,6 +183,8 @@ function Dashboard() {
   const [cloudSyncStatus, setCloudSyncStatus] = useState(() => getCloudProfilesSyncStatus())
   const [isCloudRefreshBusy, setIsCloudRefreshBusy] = useState(false)
   const navigate = useNavigate()
+  const ncmCodeOptions = useMemo(() => getNcmCodeOptions(), [])
+  const ncmAbilityOptions = useMemo(() => getNcmAbilityOptions(), [])
   const classFilterOptions = useMemo(
     () => buildClassFilterOptions(classes, students),
     [classes, students]
@@ -873,13 +886,22 @@ function Dashboard() {
 
   const handleCreatePreset = (presetKey) => {
     const preset = getPresetConfig(presetKey)
-    createAssignment(preset)
+    const created = createAssignment(preset)
+    if (!created) {
+      setDashboardStatus('Kunde inte skapa uppdrag just nu.')
+      return
+    }
     setAssignments(getAssignments())
     setDashboardStatus(`Nytt uppdrag skapat: ${preset.title}`)
   }
 
   const handleCopyAssignmentLink = async (assignmentId) => {
-    const link = buildAssignmentLink(assignmentId)
+    const assignment = assignments.find(item => item.id === assignmentId) || getAssignmentById(assignmentId)
+    const link = buildAssignmentLink(assignmentId, assignment)
+    if (!link) {
+      setDashboardStatus('Kunde inte skapa länk för uppdraget.')
+      return
+    }
     try {
       await navigator.clipboard.writeText(link)
       setCopiedId(assignmentId)
@@ -914,6 +936,69 @@ function Dashboard() {
     setAssignments([])
     setActiveAssignmentId('')
     setDashboardStatus('Alla uppdrag rensade.')
+  }
+
+  const toggleNcmCode = (code) => {
+    const normalized = String(code || '').trim().toUpperCase()
+    if (!normalized) return
+    setNcmSelectedCodes(prev => (
+      prev.includes(normalized)
+        ? prev.filter(item => item !== normalized)
+        : [...prev, normalized]
+    ))
+  }
+
+  const toggleNcmAbilityTag = (tag) => {
+    const normalized = String(tag || '').trim()
+    if (!normalized) return
+    setNcmSelectedAbilityTags(prev => (
+      prev.includes(normalized)
+        ? prev.filter(item => item !== normalized)
+        : [...prev, normalized]
+    ))
+  }
+
+  const clearNcmFilters = () => {
+    setNcmSelectedCodes([])
+    setNcmSelectedAbilityTags([])
+  }
+
+  const handleCreateNcmAssignment = async () => {
+    if (ncmSelectedCodes.length === 0 && ncmSelectedAbilityTags.length === 0) {
+      setDashboardStatus('Välj minst en NCM-kod eller NCM-förmåga.')
+      return
+    }
+
+    const assignment = createAssignment({
+      kind: 'ncm',
+      title: buildNcmAssignmentTitle({
+        ncmCodes: ncmSelectedCodes,
+        ncmAbilityTags: ncmSelectedAbilityTags
+      }),
+      ncmCodes: ncmSelectedCodes,
+      ncmAbilityTags: ncmSelectedAbilityTags,
+      targetCount: 12
+    })
+
+    if (!assignment) {
+      setDashboardStatus('Kunde inte skapa NCM-uppdrag just nu.')
+      return
+    }
+
+    setAssignments(getAssignments())
+    setActiveAssignment(assignment.id)
+    setActiveAssignmentId(assignment.id)
+    clearNcmFilters()
+
+    const link = buildAssignmentLink(assignment.id, assignment)
+    try {
+      await navigator.clipboard.writeText(link)
+      setCopiedId(assignment.id)
+      window.setTimeout(() => setCopiedId(''), 1200)
+      setDashboardStatus(`Nytt NCM-uppdrag skapat: ${assignment.title}. Länk kopierad.`)
+    } catch {
+      setDashboardStatus(`Nytt NCM-uppdrag skapat: ${assignment.title}.`)
+    }
   }
 
   const handleCreateTicketTemplate = () => {
@@ -1217,11 +1302,15 @@ function Dashboard() {
   const handleCreateQuickAssignment = async (row, variant) => {
     const preset = buildQuickAssignmentPreset(row, variant)
     const assignment = createAssignment(preset)
+    if (!assignment) {
+      setDashboardStatus('Kunde inte skapa snabbuppdrag just nu.')
+      return
+    }
     setAssignments(getAssignments())
     setActiveAssignment(assignment.id)
     setActiveAssignmentId(assignment.id)
 
-    const link = buildAssignmentLink(assignment.id)
+    const link = buildAssignmentLink(assignment.id, assignment)
     try {
       await navigator.clipboard.writeText(link)
       setCopiedId(assignment.id)
@@ -1587,6 +1676,76 @@ function Dashboard() {
             </button>
           </div>
 
+          <div className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50/70 p-3">
+            <p className="text-sm font-semibold text-indigo-900 mb-2">NCM-uppdrag via länk</p>
+            <p className="text-xs text-indigo-800 mb-3">
+              Välj en eller flera NCM-koder/förmågor. Elever får uppdraget endast via länk (eller om du aktiverar uppdraget för alla).
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+              <div className="rounded-lg border border-indigo-200 bg-white p-2.5">
+                <p className="text-xs font-semibold text-indigo-900 mb-2">Koder</p>
+                <div className="max-h-40 overflow-auto space-y-1 pr-1">
+                  {ncmCodeOptions.map(option => {
+                    const checked = ncmSelectedCodes.includes(option.code)
+                    return (
+                      <label key={option.code} className="flex items-start gap-2 text-xs text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleNcmCode(option.code)}
+                          className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600"
+                        />
+                        <span>
+                          <span className="font-medium">{getNcmCodeLabelSv(option.code)}</span>
+                          <span className="text-gray-500"> ({option.count})</span>
+                        </span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
+              <div className="rounded-lg border border-indigo-200 bg-white p-2.5">
+                <p className="text-xs font-semibold text-indigo-900 mb-2">Förmågor</p>
+                <div className="max-h-40 overflow-auto space-y-1 pr-1">
+                  {ncmAbilityOptions.map(option => {
+                    const checked = ncmSelectedAbilityTags.includes(option.tag)
+                    return (
+                      <label key={option.tag} className="flex items-start gap-2 text-xs text-gray-700">
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleNcmAbilityTag(option.tag)}
+                          className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600"
+                        />
+                        <span>
+                          <span className="font-medium">{getNcmAbilityLabelSv(option.tag)}</span>
+                          <span className="text-gray-500"> ({option.count})</span>
+                        </span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={handleCreateNcmAssignment}
+                className="px-3 py-2 bg-indigo-700 hover:bg-indigo-800 text-white rounded text-sm"
+              >
+                Skapa NCM-uppdrag
+              </button>
+              <button
+                onClick={clearNcmFilters}
+                className="px-3 py-2 bg-white border border-indigo-200 hover:bg-indigo-100 text-indigo-800 rounded text-sm"
+              >
+                Rensa val
+              </button>
+              <p className="text-xs text-indigo-800">
+                Valda koder: {ncmSelectedCodes.length} | valda förmågor: {ncmSelectedAbilityTags.length}
+              </p>
+            </div>
+          </div>
+
           {assignments.length === 0 ? (
             <p className="text-sm text-gray-500">Inga uppdrag skapade ännu.</p>
           ) : (
@@ -1620,7 +1779,7 @@ function Dashboard() {
                   <div className="text-sm">
                     <p className="font-medium text-gray-800">{assignment.title}</p>
                     <p className="text-gray-500">
-                      {assignment.problemTypes.join(', ')} | Nivå {assignment.minLevel}-{assignment.maxLevel}
+                      {formatAssignmentSummaryLine(assignment)}
                     </p>
                     <p className="text-xs text-gray-400 font-mono">{assignment.id}</p>
                   </div>
@@ -3755,6 +3914,39 @@ function summarizeAssignmentAdherence(problems, assignment) {
   let missedByOperation = 0
   let missedByLevel = 0
 
+  if (assignment.kind === 'ncm') {
+    const codeSet = new Set(
+      (Array.isArray(assignment.ncmCodes) ? assignment.ncmCodes : [])
+        .map(item => String(item || '').trim().toUpperCase())
+        .filter(Boolean)
+    )
+    const abilitySet = new Set(
+      (Array.isArray(assignment.ncmAbilityTags) ? assignment.ncmAbilityTags : [])
+        .map(item => String(item || '').trim())
+        .filter(Boolean)
+    )
+
+    for (const problem of problems) {
+      const mapping = getNcmSkillMappingFromProblem(problem.problemType, problem.skillTag)
+      const code = String(mapping?.code || '').trim().toUpperCase()
+      const abilities = Array.isArray(mapping?.abilityTags) ? mapping.abilityTags : []
+      const codeMatch = codeSet.size === 0 || codeSet.has(code)
+      const abilityMatch = abilitySet.size === 0 || abilities.some(tag => abilitySet.has(tag))
+
+      if (codeMatch && abilityMatch) matchedAttempts += 1
+      else if (!codeMatch) missedByOperation += 1
+      else if (!abilityMatch) missedByLevel += 1
+    }
+
+    return {
+      attempts,
+      matchedAttempts,
+      rate: attempts > 0 ? matchedAttempts / attempts : null,
+      missedByOperation,
+      missedByLevel
+    }
+  }
+
   for (const problem of problems) {
     const operation = inferOperationFromProblemType(problem.problemType)
     const level = getProblemLevel(problem)
@@ -4084,6 +4276,20 @@ function buildNcmOverview(students, classNameById = new Map()) {
     weakestDomainLabel: weakestDomain ? getNcmDomainLabelSv(weakestDomain.domainTag) : '-',
     strongestDomainLabel: strongestDomain ? getNcmDomainLabelSv(strongestDomain.domainTag) : '-'
   }
+}
+
+function formatAssignmentSummaryLine(assignment) {
+  if (!assignment || typeof assignment !== 'object') return 'Uppdrag'
+  if (assignment.kind === 'ncm') {
+    const scope = formatNcmAssignmentScope(assignment)
+    return scope || 'NCM-uppdrag'
+  }
+
+  const types = Array.isArray(assignment.problemTypes)
+    ? assignment.problemTypes.map(type => getOperationLabel(type))
+    : []
+  const typeText = types.length > 0 ? types.join(', ') : 'Blandat'
+  return `${typeText} | Nivå ${assignment.minLevel}-${assignment.maxLevel}`
 }
 
 function pickWeakestNcmDomain(domains) {

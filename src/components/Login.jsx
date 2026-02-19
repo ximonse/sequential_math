@@ -26,6 +26,7 @@ function Login() {
       }
 
       const assignmentId = searchParams.get('assignment')
+      const assignmentPayload = searchParams.get('assignment_payload')
       const mode = searchParams.get('mode')
       const ticketId = searchParams.get('ticket')
       const ticketPayload = searchParams.get('ticket_payload')
@@ -38,11 +39,12 @@ function Login() {
 
       const params = new URLSearchParams()
       if (assignmentId) params.set('assignment', assignmentId)
+      if (assignmentPayload) params.set('assignment_payload', assignmentPayload)
       if (mode) params.set('mode', mode)
       if (ticketId) params.set('ticket', ticketId)
       if (ticketPayload) params.set('ticket_payload', ticketPayload)
 
-      const hasSharedTarget = assignmentId || mode || ticketId
+      const hasSharedTarget = assignmentId || assignmentPayload || mode || ticketId
       const query = params.toString()
       let target = `/student/${result.profile.studentId}`
       if (ticketId) {

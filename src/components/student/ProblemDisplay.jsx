@@ -21,6 +21,8 @@ function ProblemDisplay({
   const { values, type, result } = problem
   const { a, b } = values
   const isAnswering = !feedback
+  const promptText = String(problem?.metadata?.promptText || '').trim()
+  const hasPromptText = promptText.length > 0
 
   const formatNumber = (value) => {
     if (!Number.isFinite(value)) return value
@@ -48,36 +50,65 @@ function ProblemDisplay({
     <div className="w-full">
       <div className="grid gap-5 md:gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
         <div className="flex flex-col items-center">
-          {/* Fråga med input/svar inline */}
-          <div className="text-4xl md:text-5xl font-bold text-gray-800 flex items-center justify-center flex-wrap gap-y-2">
-            <span>{formatNumber(a)}</span>
-            <span className="mx-3 text-blue-600">{operators[type]}</span>
-            <span>{formatNumber(b)}</span>
-            <span className="mx-3">=</span>
-
-            {/* Input eller svar - fast höjd */}
-            <div className="w-36 h-16 flex items-center justify-center">
-              {!feedback ? (
-                <input
-                  ref={inputRef}
-                  type="text"
-                  inputMode={suppressSoftKeyboard ? 'none' : 'numeric'}
-                  value={inputValue}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && inputValue.trim() !== '') {
-                      onSubmit()
-                    }
-                  }}
-                  placeholder="?"
-                  className="w-32 h-14 text-4xl md:text-5xl text-center bg-gray-100 border-b-4 border-gray-400 focus:border-blue-500 focus:outline-none rounded"
-                  autoComplete="off"
-                />
-              ) : (
-                <span className="text-green-500">{formatNumber(result)}</span>
-              )}
+          {hasPromptText ? (
+            <div className="w-full max-w-2xl space-y-4">
+              <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-gray-800 text-lg md:text-xl font-medium leading-relaxed whitespace-pre-wrap">
+                {promptText}
+              </div>
+              <div className="text-4xl md:text-5xl font-bold text-gray-800 flex items-center justify-center flex-wrap gap-y-2">
+                <span className="mx-3">=</span>
+                <div className="w-36 h-16 flex items-center justify-center">
+                  {!feedback ? (
+                    <input
+                      ref={inputRef}
+                      type="text"
+                      inputMode={suppressSoftKeyboard ? 'none' : 'numeric'}
+                      value={inputValue}
+                      onChange={(e) => handleInputChange(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && inputValue.trim() !== '') {
+                          onSubmit()
+                        }
+                      }}
+                      placeholder="?"
+                      className="w-32 h-14 text-4xl md:text-5xl text-center bg-gray-100 border-b-4 border-gray-400 focus:border-blue-500 focus:outline-none rounded"
+                      autoComplete="off"
+                    />
+                  ) : (
+                    <span className="text-green-500">{formatNumber(result)}</span>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="text-4xl md:text-5xl font-bold text-gray-800 flex items-center justify-center flex-wrap gap-y-2">
+              <span>{formatNumber(a)}</span>
+              <span className="mx-3 text-blue-600">{operators[type]}</span>
+              <span>{formatNumber(b)}</span>
+              <span className="mx-3">=</span>
+              <div className="w-36 h-16 flex items-center justify-center">
+                {!feedback ? (
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    inputMode={suppressSoftKeyboard ? 'none' : 'numeric'}
+                    value={inputValue}
+                    onChange={(e) => handleInputChange(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && inputValue.trim() !== '') {
+                        onSubmit()
+                      }
+                    }}
+                    placeholder="?"
+                    className="w-32 h-14 text-4xl md:text-5xl text-center bg-gray-100 border-b-4 border-gray-400 focus:border-blue-500 focus:outline-none rounded"
+                    autoComplete="off"
+                  />
+                ) : (
+                  <span className="text-green-500">{formatNumber(result)}</span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Fel-info under */}
           <div className="h-8 mt-2">

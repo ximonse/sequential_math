@@ -10,7 +10,12 @@ import {
 import { getStartOfWeekTimestamp } from '../../lib/studentProfile'
 import { inferOperationFromProblemType } from '../../lib/mathUtils'
 import { getOperationLabel, OPERATION_LABELS } from '../../lib/operations'
-import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
+import {
+  decodeAssignmentPayload,
+  encodeAssignmentPayload,
+  getActiveAssignment,
+  getAssignmentById
+} from '../../lib/assignments'
 import {
   getProgressionModeLabel,
   PROGRESSION_MODE_CHALLENGE,
@@ -48,6 +53,7 @@ function StudentHome() {
   })
 
   const assignmentId = searchParams.get('assignment')
+  const assignmentPayload = searchParams.get('assignment_payload')
   const mode = searchParams.get('mode')
   const requestedPace = normalizeProgressionMode(searchParams.get('pace'), '')
   const ticketId = searchParams.get('ticket')
@@ -89,23 +95,33 @@ function StudentHome() {
       navigate(`/student/${studentId}/ticket?${params.toString()}`, { replace: true })
       return
     }
-    if (!assignmentId && !mode && !requestedPace) return
+    if (!assignmentId && !assignmentPayload && !mode && !requestedPace) return
 
     const params = new URLSearchParams()
     if (assignmentId) params.set('assignment', assignmentId)
+    if (assignmentPayload) params.set('assignment_payload', assignmentPayload)
     if (mode) params.set('mode', mode)
     if (requestedPace) params.set('pace', requestedPace)
 
     navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
-  }, [studentId, assignmentId, mode, requestedPace, ticketId, ticketPayload, navigate])
+  }, [studentId, assignmentId, assignmentPayload, mode, requestedPace, ticketId, ticketPayload, navigate])
 
   useEffect(() => {
+    const fromPayload = decodeAssignmentPayload(assignmentPayload)
     if (assignmentId) {
+      if (fromPayload && String(fromPayload.id) === String(assignmentId)) {
+        setAssignment(fromPayload)
+        return
+      }
       setAssignment(getAssignmentById(assignmentId))
       return
     }
+    if (fromPayload) {
+      setAssignment(fromPayload)
+      return
+    }
     setAssignment(getActiveAssignment())
-  }, [assignmentId])
+  }, [assignmentId, assignmentPayload])
 
   const updateHomePresence = useCallback((options = {}) => {
     if (!profile) return
@@ -288,8 +304,14 @@ function StudentHome() {
     )
   }
 
+  const encodedAssignmentPayload = assignment
+    ? (assignmentPayload || encodeAssignmentPayload(assignment))
+    : ''
   const assignmentPracticePath = assignment
-    ? `/student/${studentId}/practice?assignment=${encodeURIComponent(assignment.id)}`
+    ? `/student/${studentId}/practice?${new URLSearchParams({
+      assignment: String(assignment.id || ''),
+      ...(encodedAssignmentPayload ? { assignment_payload: encodedAssignmentPayload } : {})
+    }).toString()}`
     : `/student/${studentId}/practice`
   const activeTicketPayload = profile?.ticketInbox?.activePayload || null
   const activeTicketEncoded = String(profile?.ticketInbox?.activeEncoded || '')
@@ -319,7 +341,7 @@ function StudentHome() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-sm text-gray-500">
-                Läge: {assignment ? `Uppdrag (${assignment.title})` : 'Fri träning'}
+                Läge: {assignment ? `${assignment.kind === 'ncm' ? 'NCM-uppdrag' : 'Uppdrag'} (${assignment.title})` : 'Fri träning'}
               </p>
               {!assignment && (
                 <p className="text-xs text-gray-400 mt-1">

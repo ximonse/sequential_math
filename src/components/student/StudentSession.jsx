@@ -23,7 +23,7 @@ import {
   shouldOfferSteadyAdvance,
   shouldSuggestBreak
 } from '../../lib/difficultyAdapter'
-import { getActiveAssignment, getAssignmentById } from '../../lib/assignments'
+import { decodeAssignmentPayload, getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 import { inferOperationFromProblemType as inferOperationFromType } from '../../lib/mathUtils'
 import { getOperationLabel } from '../../lib/operations'
 import {
@@ -95,6 +95,7 @@ function StudentSession() {
   })
 
   const assignmentId = searchParams.get('assignment')
+  const assignmentPayload = searchParams.get('assignment_payload')
   const mode = searchParams.get('mode')
   const progressionMode = normalizeProgressionMode(searchParams.get('pace'))
   const fixedPracticeLevel = parsePracticeLevel(searchParams.get('level'))
@@ -141,13 +142,23 @@ function StudentSession() {
       setSessionAssignment(null)
       return
     }
+    const payloadAssignment = decodeAssignmentPayload(assignmentPayload)
+
     if (!assignmentId) {
+      if (payloadAssignment) {
+        setSessionAssignment(payloadAssignment)
+        return
+      }
       setSessionAssignment(getActiveAssignment())
+      return
+    }
+    if (payloadAssignment && String(payloadAssignment.id) === String(assignmentId)) {
+      setSessionAssignment(payloadAssignment)
       return
     }
     const assignment = getAssignmentById(assignmentId)
     setSessionAssignment(assignment)
-  }, [assignmentId, mode, tableSet])
+  }, [assignmentId, assignmentPayload, mode, tableSet])
 
   useEffect(() => {
     if (!profile) return undefined
@@ -1123,6 +1134,16 @@ function SessionModeBanner({ assignment, mode, tableSet, progressionMode, fixedL
     )
   }
 
+  if (assignment.kind === 'ncm') {
+    const codes = Array.isArray(assignment.ncmCodes) ? assignment.ncmCodes.filter(Boolean) : []
+    const codeText = codes.length > 0 ? ` | ${codes.join(', ')}` : ''
+    return (
+      <div className="mb-5 bg-white border border-indigo-200 text-indigo-700 rounded-lg px-4 py-2 text-sm">
+        Läge: NCM-uppdrag | {assignment.title}{codeText} | Tempo: {paceLabel}
+      </div>
+    )
+  }
+
   return (
     <div className="mb-5 bg-white border border-indigo-200 text-indigo-700 rounded-lg px-4 py-2 text-sm">
       Läge: Uppdrag | {assignment.title} | Nivå {assignment.minLevel}-{assignment.maxLevel} | Tempo: {paceLabel}
@@ -1134,6 +1155,13 @@ function getSessionRules(assignment, mode, warmup, solvedCount, tableSet = [], p
   const rules = { progressionMode: normalizeProgressionMode(progressionMode) }
 
   if (assignment) {
+    if (assignment.kind === 'ncm') {
+      rules.ncmFilter = {
+        codes: Array.isArray(assignment.ncmCodes) ? assignment.ncmCodes : [],
+        abilityTags: Array.isArray(assignment.ncmAbilityTags) ? assignment.ncmAbilityTags : []
+      }
+      return rules
+    }
     rules.allowedTypes = assignment.problemTypes
     rules.levelRange = [assignment.minLevel, assignment.maxLevel]
     return rules
@@ -1346,6 +1374,7 @@ function isMixedTrainingSession(mode, assignment, isTableDrill) {
   if (isTableDrill) return false
   if (mode && isKnownMode(mode)) return false
   if (!assignment) return true
+  if (assignment.kind === 'ncm') return true
   const types = Array.isArray(assignment.problemTypes) ? assignment.problemTypes : []
   return types.length !== 1
 }

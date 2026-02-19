@@ -5,6 +5,7 @@
 import { generateByDifficultyWithOptions, generateMultiplicationTableDrillProblem } from './problemGenerator'
 import { getRecentSuccessRate, getConsecutiveErrors, getCurrentStreak } from './studentProfile'
 import { inferOperationFromProblemType } from './mathUtils'
+import { generateNcmProblemFromFilter } from './ncmProblemBank'
 import {
   PROGRESSION_MODE_CHALLENGE,
   PROGRESSION_MODE_STEADY,
@@ -136,6 +137,21 @@ export function selectNextProblem(profile, options = {}) {
   const errors = getConsecutiveErrors(profile)
   const progressionMode = normalizeProgressionMode(options.progressionMode)
   const roundedDifficulty = clampLevelToRange(Math.round(profile.currentDifficulty), options.levelRange)
+  const ncmFilter = normalizeNcmFilter(options.ncmFilter)
+
+  if (ncmFilter) {
+    const problem = generateNcmProblemFromFilter(ncmFilter, { levelHint: roundedDifficulty })
+    if (!problem) {
+      throw new Error('NCM filter did not match any available problems')
+    }
+    return annotateSelectedProblem(profile, problem, {
+      reason: 'ncm_assignment',
+      bucket: 'core',
+      targetLevel: Number(problem?.difficulty?.conceptual_level || roundedDifficulty),
+      progressionMode
+    })
+  }
+
   const tableSet = normalizeTableSet(options.tableSet)
   const isTableDrill = tableSet.length > 0
   const preferredType = isTableDrill
@@ -452,6 +468,28 @@ function normalizeTableSet(tableSet) {
     }
   }
   return Array.from(unique).sort((a, b) => a - b)
+}
+
+function normalizeNcmFilter(raw) {
+  if (!raw || typeof raw !== 'object') return null
+
+  const codes = Array.isArray(raw.codes)
+    ? raw.codes
+      .map(item => String(item || '').toUpperCase().replace(/[^A-Z0-9]/g, '').trim())
+      .filter(Boolean)
+    : []
+  const abilityTags = Array.isArray(raw.abilityTags)
+    ? raw.abilityTags
+      .map(item => String(item || '').trim())
+      .filter(Boolean)
+    : []
+
+  if (codes.length === 0 && abilityTags.length === 0) return null
+
+  return {
+    codes: Array.from(new Set(codes)),
+    abilityTags: Array.from(new Set(abilityTags))
+  }
 }
 
 function clampLevelToRange(level, levelRange) {

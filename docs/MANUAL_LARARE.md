@@ -75,10 +75,11 @@ Du kan exportera elevens vy via `Exportera elevvy CSV`.
 
 I sektionen `Uppdrag via länk` kan du:
 1. Skapa ett uppdrag.
-2. Aktivera det för alla.
-3. Dela länken till elever.
+2. Skapa `NCM-uppdrag` genom att välja en eller flera NCM-koder och/eller NCM-förmågor.
+3. Aktivera det för alla.
+4. Dela länken till elever.
 
-Elever som loggar in via länken hamnar i rätt läge direkt.
+Elever som loggar in via länken hamnar i rätt läge direkt, även på annan enhet/browser, eftersom länken innehåller ett säkert uppdragspayload.
 
 ## 8. Ticket (start/exit)
 

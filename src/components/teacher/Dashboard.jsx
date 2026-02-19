@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
   addStudentsToClass,
   createClassFromRoster,
@@ -183,6 +183,9 @@ function Dashboard() {
   const [cloudSyncStatus, setCloudSyncStatus] = useState(() => getCloudProfilesSyncStatus())
   const [isCloudRefreshBusy, setIsCloudRefreshBusy] = useState(false)
   const navigate = useNavigate()
+  const { studentId: routeStudentIdParam } = useParams()
+  const routeStudentId = String(routeStudentIdParam || '').trim()
+  const isDirectStudentView = routeStudentId.length > 0
   const ncmCodeOptions = useMemo(() => getNcmCodeOptions(), [])
   const ncmAbilityOptions = useMemo(() => getNcmAbilityOptions(), [])
   const classFilterOptions = useMemo(
@@ -287,6 +290,25 @@ function Dashboard() {
     }
   }, [loadStudents])
 
+  useEffect(() => {
+    if (!isDirectStudentView) return
+    if (typeof document === 'undefined') return
+    const timer = window.setTimeout(() => {
+      const section = document.getElementById('teacher-student-detail-section')
+      if (section && typeof section.scrollIntoView === 'function') {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 80)
+    return () => window.clearTimeout(timer)
+  }, [isDirectStudentView, routeStudentId, students.length])
+
+  useEffect(() => {
+    if (!isDirectStudentView) return
+    if (students.length === 0) return
+    if (directStudentProfile) return
+    setDashboardStatus(`Kunde inte hitta elev med ID: ${routeStudentId}`)
+  }, [isDirectStudentView, routeStudentId, students.length, directStudentProfile])
+
   const handleRefresh = () => {
     void loadStudents()
     const refreshedClasses = getClasses()
@@ -335,9 +357,28 @@ function Dashboard() {
     [classFilterOptions]
   )
 
-  const filteredStudents = selectedClassIds.length > 0
-    ? students.filter(student => recordMatchesClassFilter(student, selectedClassIds))
-    : students
+  const directStudentProfile = useMemo(() => {
+    if (!isDirectStudentView) return null
+    const needle = routeStudentId.toLowerCase()
+    return students.find(student => String(student?.studentId || '').toLowerCase() === needle) || null
+  }, [students, isDirectStudentView, routeStudentId])
+
+  const filteredStudents = useMemo(() => (
+    isDirectStudentView
+      ? (directStudentProfile ? [directStudentProfile] : [])
+      : selectedClassIds.length > 0
+        ? students.filter(student => recordMatchesClassFilter(student, selectedClassIds))
+        : students
+  ), [isDirectStudentView, directStudentProfile, selectedClassIds, students])
+
+  useEffect(() => {
+    if (!isDirectStudentView) return
+    if (!directStudentProfile) return
+    if (detailStudentId !== directStudentProfile.studentId) {
+      setDetailStudentId(directStudentProfile.studentId)
+    }
+  }, [isDirectStudentView, directStudentProfile, detailStudentId])
+
   useEffect(() => {
     if (filteredStudents.length === 0) {
       if (detailStudentId !== '') setDetailStudentId('')
@@ -387,9 +428,15 @@ function Dashboard() {
     () => students.map(student => buildStudentRow(student, activeAssignment, classNameById)),
     [students, activeAssignment, classNameById]
   )
-  const filteredRows = selectedClassIds.length > 0
-    ? allRows.filter(row => recordMatchesClassFilter(row, selectedClassIds))
-    : allRows
+  const filteredRows = useMemo(() => (
+    isDirectStudentView
+      ? (directStudentProfile
+        ? allRows.filter(row => row.studentId === directStudentProfile.studentId)
+        : [])
+      : selectedClassIds.length > 0
+        ? allRows.filter(row => recordMatchesClassFilter(row, selectedClassIds))
+        : allRows
+  ), [isDirectStudentView, directStudentProfile, allRows, selectedClassIds])
   const tableRows = getSortedRows(filteredRows, sortBy, sortDir)
   const detailStudentRow = useMemo(
     () => filteredRows.find(row => row.studentId === detailStudentId) || null,
@@ -1289,14 +1336,9 @@ function Dashboard() {
   }
 
   const handleOpenStudentDetail = (studentId) => {
-    setDetailStudentId(studentId)
-    if (typeof document === 'undefined') return
-    window.setTimeout(() => {
-      const section = document.getElementById('teacher-student-detail-section')
-      if (section && typeof section.scrollIntoView === 'function') {
-        section.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
-    }, 40)
+    const normalized = String(studentId || '').trim()
+    if (!normalized) return
+    navigate(`/teacher/student/${encodeURIComponent(normalized)}`)
   }
 
   const handleCreateQuickAssignment = async (row, variant) => {
@@ -1413,23 +1455,39 @@ function Dashboard() {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Elevöversikt</h1>
-            <p className="text-gray-600">Matteträning - Dashboard</p>
+            <h1 className="text-3xl font-bold text-gray-800">
+              {isDirectStudentView ? 'Elevprofil' : 'Elevöversikt'}
+            </h1>
+            <p className="text-gray-600">
+              {isDirectStudentView
+                ? `All tillgänglig elevdata ${detailStudentProfile?.name ? `- ${detailStudentProfile.name}` : ''}`
+                : 'Matteträning - Dashboard'}
+            </p>
           </div>
 
           <div className="flex gap-4">
-            <button
-              onClick={handleJumpToPasswordReset}
-              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg"
-            >
-              Lösenord (längst ner)
-            </button>
+            {!isDirectStudentView && (
+              <button
+                onClick={handleJumpToPasswordReset}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg"
+              >
+                Lösenord (längst ner)
+              </button>
+            )}
             <button
               onClick={handleRefresh}
               className="px-4 py-2 bg-white hover:bg-gray-50 border rounded-lg text-gray-600"
             >
               Uppdatera
             </button>
+            {isDirectStudentView && (
+              <button
+                onClick={() => navigate('/teacher')}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
+              >
+                Till dashboard
+              </button>
+            )}
             <button
               onClick={() => navigate('/')}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"

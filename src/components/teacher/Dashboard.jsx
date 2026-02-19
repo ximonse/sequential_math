@@ -2436,7 +2436,7 @@ function Dashboard() {
 
         <div id="teacher-student-detail-section" className="bg-white rounded-lg shadow p-4 mb-8" style={{ order: -20 }}>
           <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <h2 className="text-lg font-semibold text-gray-800">Elevvy (lärare)</h2>
+            <h2 className="text-lg font-semibold text-gray-800">Elevprofil (allt om en elev)</h2>
             <div className="flex flex-wrap items-center gap-2">
               <select
                 value={detailStudentId}
@@ -2464,7 +2464,7 @@ function Dashboard() {
           </div>
 
           {!detailStudentProfile || !detailStudentRow || !detailStudentViewData ? (
-            <p className="text-sm text-gray-500">Välj en elev för att se tabeller, nivåstatus och nyckeldata.</p>
+            <p className="text-sm text-gray-500">Välj en elev för att se tabeller, nivåstatus, NCM-resultat och nyckeldata.</p>
           ) : (
             <>
               <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2 mb-4 text-xs">
@@ -2625,6 +2625,192 @@ function Dashboard() {
                     ) : null}
                   </div>
                 </div>
+              </div>
+
+              <div className="mt-4 rounded border border-violet-200 bg-violet-50/30 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <h3 className="text-sm font-semibold text-violet-900">NCM-resultat (elev)</h3>
+                  <p className="text-[11px] text-violet-700">
+                    Senaste NCM-kod: {detailStudentViewData.ncmDetail.lastNcmCode || '-'}
+                  </p>
+                </div>
+
+                {detailStudentViewData.ncmDetail.attemptsTotal === 0 ? (
+                  <p className="text-xs text-violet-800">Ingen NCM-data för denna elev ännu.</p>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2 text-xs">
+                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                        <p className="text-violet-700">Försök totalt</p>
+                        <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.attemptsTotal}</p>
+                      </div>
+                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                        <p className="text-violet-700">Träff totalt</p>
+                        <p className="font-semibold text-violet-900">{toPercent(detailStudentViewData.ncmDetail.successRateTotal)}</p>
+                      </div>
+                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                        <p className="text-violet-700">Kunskapsfel totalt</p>
+                        <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.knowledgeWrongTotal}</p>
+                      </div>
+                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                        <p className="text-violet-700">Ouppm. totalt</p>
+                        <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.inattentionWrongTotal}</p>
+                      </div>
+                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                        <p className="text-violet-700">Försök vecka</p>
+                        <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.attemptsWeek}</p>
+                      </div>
+                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                        <p className="text-violet-700">Träff vecka</p>
+                        <p className="font-semibold text-violet-900">{toPercent(detailStudentViewData.ncmDetail.successRateWeek)}</p>
+                      </div>
+                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                        <p className="text-violet-700">Starkast domän</p>
+                        <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.strongestDomainLabel}</p>
+                      </div>
+                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                        <p className="text-violet-700">Mest stödbehov</p>
+                        <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.weakestDomainLabel}</p>
+                      </div>
+                    </div>
+
+                    {detailStudentViewData.ncmDetail.assignmentRows.length > 0 ? (
+                      <div className="mt-3 overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="text-left text-violet-700 border-b border-violet-200">
+                              <th className="py-1 pr-2">NCM-uppdrag</th>
+                              <th className="py-1 pr-2">Klara</th>
+                              <th className="py-1 pr-2">Andel</th>
+                              <th className="py-1 pr-2">Klar</th>
+                              <th className="py-1">Senast uppd.</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {detailStudentViewData.ncmDetail.assignmentRows.slice(0, 8).map(item => (
+                              <tr key={`detail-ncm-assignment-${item.assignmentKey}`} className="border-b border-violet-100 last:border-b-0">
+                                <td className="py-1 pr-2 text-violet-900 font-medium">{item.assignmentTitle}</td>
+                                <td className="py-1 pr-2 text-violet-900">{item.completedCount}/{item.totalSkillTags || '-'}</td>
+                                <td className="py-1 pr-2 text-violet-900">{toPercent(item.completionRate)}</td>
+                                <td className="py-1 pr-2 text-violet-900">
+                                  {item.completedAt ? new Date(item.completedAt).toLocaleString('sv-SE') : '-'}
+                                </td>
+                                <td className="py-1 text-violet-900">
+                                  {item.updatedAt ? new Date(item.updatedAt).toLocaleString('sv-SE') : '-'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : null}
+
+                    <div className="mt-3 grid grid-cols-1 xl:grid-cols-2 gap-3">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="text-left text-violet-700 border-b border-violet-200">
+                              <th className="py-1 pr-2">Kod</th>
+                              <th className="py-1 pr-2">Domän</th>
+                              <th className="py-1 pr-2">Försök</th>
+                              <th className="py-1 pr-2">Träff</th>
+                              <th className="py-1 pr-2">Försök v</th>
+                              <th className="py-1 pr-2">Träff v</th>
+                              <th className="py-1">Senast</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {detailStudentViewData.ncmDetail.codeRows.map(item => (
+                              <tr key={`detail-ncm-code-${item.ncmCode}`} className="border-b border-violet-100 last:border-b-0">
+                                <td className="py-1 pr-2 text-violet-900 font-medium">{item.ncmCode}</td>
+                                <td className="py-1 pr-2 text-violet-900">{item.domainLabel}</td>
+                                <td className="py-1 pr-2 text-violet-900">{item.attemptsTotal}</td>
+                                <td className="py-1 pr-2 text-violet-900">{toPercent(item.successRateTotal)}</td>
+                                <td className="py-1 pr-2 text-violet-900">{item.attemptsWeek}</td>
+                                <td className="py-1 pr-2 text-violet-900">{toPercent(item.successRateWeek)}</td>
+                                <td className="py-1 text-violet-900">
+                                  {item.lastTimestamp ? new Date(item.lastTimestamp).toLocaleString('sv-SE') : '-'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="text-left text-violet-700 border-b border-violet-200">
+                              <th className="py-1 pr-2">Domän</th>
+                              <th className="py-1 pr-2">Försök</th>
+                              <th className="py-1 pr-2">Träff</th>
+                              <th className="py-1 pr-2">Kunskapsfel</th>
+                              <th className="py-1 pr-2">Ouppm.</th>
+                              <th className="py-1 pr-2">Försök v</th>
+                              <th className="py-1">Träff v</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {detailStudentViewData.ncmDetail.domainRows.map(item => (
+                              <tr key={`detail-ncm-domain-${item.domainTag}`} className="border-b border-violet-100 last:border-b-0">
+                                <td className="py-1 pr-2 text-violet-900 font-medium">{item.domainLabel}</td>
+                                <td className="py-1 pr-2 text-violet-900">{item.attemptsTotal}</td>
+                                <td className="py-1 pr-2 text-violet-900">{toPercent(item.successRateTotal)}</td>
+                                <td className="py-1 pr-2 text-violet-900">{item.knowledgeWrongTotal}</td>
+                                <td className="py-1 pr-2 text-violet-900">{item.inattentionWrongTotal}</td>
+                                <td className="py-1 pr-2 text-violet-900">{item.attemptsWeek}</td>
+                                <td className="py-1 text-violet-900">{toPercent(item.successRateWeek)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="text-left text-violet-700 border-b border-violet-200">
+                            <th className="py-1 pr-2">Tid</th>
+                            <th className="py-1 pr-2">Kod</th>
+                            <th className="py-1 pr-2">Domän</th>
+                            <th className="py-1 pr-2">Räknesätt</th>
+                            <th className="py-1 pr-2">Svar</th>
+                            <th className="py-1 pr-2">Facit</th>
+                            <th className="py-1 pr-2">Resultat</th>
+                            <th className="py-1 pr-2">Feltyp</th>
+                            <th className="py-1">Tid/svar</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {detailStudentViewData.ncmDetail.recentRows.map((item, index) => (
+                            <tr key={`detail-ncm-recent-${item.ncmCode}-${item.timestamp}-${index}`} className="border-b border-violet-100 last:border-b-0">
+                              <td className="py-1 pr-2 text-violet-900">{item.timestamp ? new Date(item.timestamp).toLocaleString('sv-SE') : '-'}</td>
+                              <td className="py-1 pr-2 text-violet-900 font-medium">{item.ncmCode}</td>
+                              <td className="py-1 pr-2 text-violet-900">{item.domainLabel}</td>
+                              <td className="py-1 pr-2 text-violet-900">{item.operationLabel}</td>
+                              <td className="py-1 pr-2 text-violet-900">{item.studentAnswer ?? '-'}</td>
+                              <td className="py-1 pr-2 text-violet-900">{item.correctAnswer ?? '-'}</td>
+                              <td className={`py-1 pr-2 font-semibold ${item.correct ? 'text-emerald-700' : 'text-rose-700'}`}>
+                                {item.correct ? 'Rätt' : 'Fel'}
+                              </td>
+                              <td className="py-1 pr-2 text-violet-900">
+                                {item.correct
+                                  ? '-'
+                                  : item.errorCategory === 'inattention'
+                                    ? 'Ouppmärksamhet'
+                                    : 'Kunskapsfel'}
+                              </td>
+                              <td className="py-1 text-violet-900">
+                                {Number.isFinite(item.speedTimeSec) ? `${item.speedTimeSec.toFixed(1)}s` : '-'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="mt-3 text-xs text-gray-600">
@@ -4733,12 +4919,14 @@ function buildTeacherStudentViewData(student) {
   const tablePerformanceByTable = buildTablePerformanceByTable(student)
   const operationMasteryBoards = buildOperationMasteryBoardsForTeacher(student)
   const levelErrorRows = buildLevelErrorRowsForTeacher(student)
+  const ncmDetail = buildNcmDetailForStudent(student)
 
   return {
     tableSticky,
     tablePerformanceByTable,
     operationMasteryBoards,
-    levelErrorRows
+    levelErrorRows,
+    ncmDetail
   }
 }
 
@@ -4823,6 +5011,243 @@ function buildLevelErrorRowsForTeacher(student) {
       errorShare: attempts > 0 ? wrong / attempts : 0
     }
   })
+}
+
+function buildNcmDetailForStudent(student) {
+  const source = getTableProblemSourceForStudent(student)
+  const weekStart = getStartOfWeekTimestamp()
+  const codeStats = new Map()
+  const domainStats = new Map()
+  const recentRows = []
+  let attemptsTotal = 0
+  let correctTotal = 0
+  let knowledgeWrongTotal = 0
+  let inattentionWrongTotal = 0
+  let attemptsWeek = 0
+  let correctWeek = 0
+  let knowledgeWrongWeek = 0
+  let inattentionWrongWeek = 0
+  let lastNcmCode = ''
+  let lastTimestamp = 0
+
+  for (const problem of source) {
+    const mapping = getNcmSkillMappingFromProblem(problem?.problemType, problem?.skillTag)
+    const ncmCode = String(mapping?.code || '').trim()
+    if (!ncmCode) continue
+
+    const domainTag = String(mapping?.domainTag || 'unknown').trim() || 'unknown'
+    const operationTag = String(mapping?.operationTag || 'mixed').trim() || 'mixed'
+    const abilityTags = Array.isArray(mapping?.abilityTags)
+      ? mapping.abilityTags.map(item => String(item || '').trim()).filter(Boolean)
+      : []
+    const ts = Number(problem?.timestamp || 0)
+    const inWeek = ts >= weekStart
+    const correct = Boolean(problem?.correct)
+    const knowledgeWrong = !correct && isKnowledgeError(problem)
+    const inattentionWrong = !correct && String(problem?.errorCategory || '') === 'inattention'
+    const speedTimeSec = getSpeedTime(problem)
+
+    attemptsTotal += 1
+    if (correct) correctTotal += 1
+    if (knowledgeWrong) knowledgeWrongTotal += 1
+    if (inattentionWrong) inattentionWrongTotal += 1
+
+    if (inWeek) {
+      attemptsWeek += 1
+      if (correct) correctWeek += 1
+      if (knowledgeWrong) knowledgeWrongWeek += 1
+      if (inattentionWrong) inattentionWrongWeek += 1
+    }
+
+    if (ts >= lastTimestamp) {
+      lastTimestamp = ts
+      lastNcmCode = ncmCode
+    }
+
+    const codeEntry = codeStats.get(ncmCode) || {
+      ncmCode,
+      domainTag,
+      operationTag,
+      abilityTagSet: new Set(),
+      attemptsTotal: 0,
+      correctTotal: 0,
+      knowledgeWrongTotal: 0,
+      inattentionWrongTotal: 0,
+      attemptsWeek: 0,
+      correctWeek: 0,
+      knowledgeWrongWeek: 0,
+      inattentionWrongWeek: 0,
+      lastTimestamp: 0
+    }
+    codeEntry.attemptsTotal += 1
+    if (correct) codeEntry.correctTotal += 1
+    if (knowledgeWrong) codeEntry.knowledgeWrongTotal += 1
+    if (inattentionWrong) codeEntry.inattentionWrongTotal += 1
+    if (inWeek) {
+      codeEntry.attemptsWeek += 1
+      if (correct) codeEntry.correctWeek += 1
+      if (knowledgeWrong) codeEntry.knowledgeWrongWeek += 1
+      if (inattentionWrong) codeEntry.inattentionWrongWeek += 1
+    }
+    if (ts > codeEntry.lastTimestamp) {
+      codeEntry.lastTimestamp = ts
+    }
+    for (const tag of abilityTags) {
+      codeEntry.abilityTagSet.add(tag)
+    }
+    codeStats.set(ncmCode, codeEntry)
+
+    const domainEntry = domainStats.get(domainTag) || {
+      domainTag,
+      attemptsTotal: 0,
+      correctTotal: 0,
+      knowledgeWrongTotal: 0,
+      inattentionWrongTotal: 0,
+      attemptsWeek: 0,
+      correctWeek: 0,
+      knowledgeWrongWeek: 0,
+      inattentionWrongWeek: 0
+    }
+    domainEntry.attemptsTotal += 1
+    if (correct) domainEntry.correctTotal += 1
+    if (knowledgeWrong) domainEntry.knowledgeWrongTotal += 1
+    if (inattentionWrong) domainEntry.inattentionWrongTotal += 1
+    if (inWeek) {
+      domainEntry.attemptsWeek += 1
+      if (correct) domainEntry.correctWeek += 1
+      if (knowledgeWrong) domainEntry.knowledgeWrongWeek += 1
+      if (inattentionWrong) domainEntry.inattentionWrongWeek += 1
+    }
+    domainStats.set(domainTag, domainEntry)
+
+    recentRows.push({
+      timestamp: ts,
+      ncmCode,
+      domainTag,
+      domainLabel: getNcmDomainLabelSv(domainTag),
+      operationTag,
+      operationLabel: getNcmOperationLabelSv(operationTag),
+      abilityTags,
+      correct,
+      errorCategory: String(problem?.errorCategory || ''),
+      studentAnswer: problem?.studentAnswer,
+      correctAnswer: problem?.correctAnswer,
+      speedTimeSec: Number.isFinite(speedTimeSec) ? speedTimeSec : null
+    })
+  }
+
+  const codeRows = Array.from(codeStats.values())
+    .map(item => {
+      const abilityLabels = Array.from(item.abilityTagSet)
+        .map(tag => getNcmAbilityLabelSv(tag))
+        .filter(Boolean)
+
+      return {
+        ncmCode: item.ncmCode,
+        domainTag: item.domainTag,
+        domainLabel: getNcmDomainLabelSv(item.domainTag),
+        operationTag: item.operationTag,
+        operationLabel: getNcmOperationLabelSv(item.operationTag),
+        abilityLabels,
+        abilityLabelText: abilityLabels.length > 0 ? abilityLabels.join(', ') : '-',
+        attemptsTotal: item.attemptsTotal,
+        correctTotal: item.correctTotal,
+        knowledgeWrongTotal: item.knowledgeWrongTotal,
+        inattentionWrongTotal: item.inattentionWrongTotal,
+        successRateTotal: item.attemptsTotal > 0 ? item.correctTotal / item.attemptsTotal : null,
+        attemptsWeek: item.attemptsWeek,
+        correctWeek: item.correctWeek,
+        knowledgeWrongWeek: item.knowledgeWrongWeek,
+        inattentionWrongWeek: item.inattentionWrongWeek,
+        successRateWeek: item.attemptsWeek > 0 ? item.correctWeek / item.attemptsWeek : null,
+        lastTimestamp: item.lastTimestamp
+      }
+    })
+    .sort((a, b) => {
+      if (a.attemptsTotal !== b.attemptsTotal) return b.attemptsTotal - a.attemptsTotal
+      return String(a.ncmCode || '').localeCompare(String(b.ncmCode || ''), 'sv')
+    })
+
+  const domainRows = Array.from(domainStats.values())
+    .map(item => ({
+      domainTag: item.domainTag,
+      domainLabel: getNcmDomainLabelSv(item.domainTag),
+      attemptsTotal: item.attemptsTotal,
+      correctTotal: item.correctTotal,
+      knowledgeWrongTotal: item.knowledgeWrongTotal,
+      inattentionWrongTotal: item.inattentionWrongTotal,
+      successRateTotal: item.attemptsTotal > 0 ? item.correctTotal / item.attemptsTotal : null,
+      attemptsWeek: item.attemptsWeek,
+      correctWeek: item.correctWeek,
+      knowledgeWrongWeek: item.knowledgeWrongWeek,
+      inattentionWrongWeek: item.inattentionWrongWeek,
+      successRateWeek: item.attemptsWeek > 0 ? item.correctWeek / item.attemptsWeek : null
+    }))
+    .sort((a, b) => {
+      if (a.attemptsTotal !== b.attemptsTotal) return b.attemptsTotal - a.attemptsTotal
+      return String(a.domainLabel || '').localeCompare(String(b.domainLabel || ''), 'sv')
+    })
+
+  const assignmentRows = buildNcmAssignmentProgressRows(student)
+  const weakestDomain = pickWeakestNcmDomain(domainRows)
+  const strongestDomain = pickStrongestNcmDomain(domainRows)
+
+  return {
+    attemptsTotal,
+    correctTotal,
+    successRateTotal: attemptsTotal > 0 ? correctTotal / attemptsTotal : null,
+    knowledgeWrongTotal,
+    inattentionWrongTotal,
+    attemptsWeek,
+    correctWeek,
+    successRateWeek: attemptsWeek > 0 ? correctWeek / attemptsWeek : null,
+    knowledgeWrongWeek,
+    inattentionWrongWeek,
+    lastNcmCode,
+    lastTimestamp,
+    weakestDomainLabel: weakestDomain ? getNcmDomainLabelSv(weakestDomain.domainTag) : '-',
+    strongestDomainLabel: strongestDomain ? getNcmDomainLabelSv(strongestDomain.domainTag) : '-',
+    codeRows,
+    domainRows,
+    recentRows: recentRows
+      .sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0))
+      .slice(0, 30),
+    assignmentRows
+  }
+}
+
+function buildNcmAssignmentProgressRows(student) {
+  const store = student?.assignmentProgress
+  if (!store || typeof store !== 'object') return []
+
+  const rows = []
+  for (const [assignmentKey, raw] of Object.entries(store)) {
+    if (!raw || typeof raw !== 'object') continue
+    if (String(raw.kind || '').trim() !== 'ncm') continue
+
+    const completedSkillTags = Array.isArray(raw.completedSkillTags)
+      ? raw.completedSkillTags.map(item => String(item || '').trim()).filter(Boolean)
+      : []
+    const totalSkillTags = Math.max(0, Number(raw.totalSkillTags || 0))
+    const completedCount = completedSkillTags.length
+    const completionRate = totalSkillTags > 0 ? completedCount / totalSkillTags : null
+    const completedAt = Number(raw.completedAt || 0) || 0
+    const updatedAt = Number(raw.updatedAt || 0) || 0
+
+    rows.push({
+      assignmentKey: String(assignmentKey || ''),
+      assignmentId: String(raw.assignmentId || '').trim(),
+      assignmentTitle: String(raw.assignmentTitle || '').trim() || 'NCM-uppdrag',
+      totalSkillTags,
+      completedCount,
+      completionRate,
+      completedAt: completedAt > 0 ? completedAt : null,
+      updatedAt: updatedAt > 0 ? updatedAt : null
+    })
+  }
+
+  rows.sort((a, b) => Number(b.updatedAt || 0) - Number(a.updatedAt || 0))
+  return rows
 }
 
 function createOperationLevelBucketsForTeacher() {
@@ -4921,6 +5346,10 @@ function buildStudentDetailExportRows(student, row, detailData) {
       TraffProcent: '',
       TidSek: '',
       Varde: '',
+      NCMKod: '',
+      NCMDoman: '',
+      NCMOperation: '',
+      NCMFormagor: '',
       Tidsstampel: '',
       ...partial
     })
@@ -4982,6 +5411,105 @@ function buildStudentDetailExportRows(student, row, detailData) {
           TraffProcent: toPercent(level.successRate)
         })
       }
+    }
+  }
+
+  const ncmDetail = detailData.ncmDetail
+  if (ncmDetail && Number(ncmDetail.attemptsTotal || 0) > 0) {
+    add({ Sektion: 'NCM', Nyckel: 'ForsokTotalt', Forsok: Number(ncmDetail.attemptsTotal || 0) })
+    add({ Sektion: 'NCM', Nyckel: 'TraffTotalt', TraffProcent: toPercent(ncmDetail.successRateTotal) })
+    add({ Sektion: 'NCM', Nyckel: 'KunskapsfelTotalt', Varde: String(Number(ncmDetail.knowledgeWrongTotal || 0)) })
+    add({ Sektion: 'NCM', Nyckel: 'OuppmarksamhetTotalt', Varde: String(Number(ncmDetail.inattentionWrongTotal || 0)) })
+    add({ Sektion: 'NCM', Nyckel: 'ForsokVecka', Forsok: Number(ncmDetail.attemptsWeek || 0) })
+    add({ Sektion: 'NCM', Nyckel: 'TraffVecka', TraffProcent: toPercent(ncmDetail.successRateWeek) })
+    add({ Sektion: 'NCM', Nyckel: 'StarkastDoman', NCMDoman: String(ncmDetail.strongestDomainLabel || '-') })
+    add({ Sektion: 'NCM', Nyckel: 'SvagastDoman', NCMDoman: String(ncmDetail.weakestDomainLabel || '-') })
+    add({ Sektion: 'NCM', Nyckel: 'SenasteKod', NCMKod: String(ncmDetail.lastNcmCode || '-') })
+
+    for (const assignment of Array.isArray(ncmDetail.assignmentRows) ? ncmDetail.assignmentRows : []) {
+      add({
+        Sektion: 'NCMUppdrag',
+        Nyckel: 'Progress',
+        Del: String(assignment.assignmentTitle || 'NCM-uppdrag'),
+        Forsok: Number(assignment.completedCount || 0),
+        Ratt: Number(assignment.totalSkillTags || 0),
+        TraffProcent: toPercent(assignment.completionRate),
+        Tidsstampel: assignment.updatedAt ? new Date(assignment.updatedAt).toISOString() : ''
+      })
+    }
+
+    for (const code of Array.isArray(ncmDetail.codeRows) ? ncmDetail.codeRows : []) {
+      add({
+        Sektion: 'NCMKod',
+        Nyckel: 'Kod',
+        Del: 'Totalt',
+        NCMKod: String(code.ncmCode || ''),
+        NCMDoman: String(code.domainLabel || ''),
+        NCMOperation: String(code.operationLabel || ''),
+        NCMFormagor: String(code.abilityLabelText || ''),
+        Forsok: Number(code.attemptsTotal || 0),
+        Ratt: Number(code.correctTotal || 0),
+        TraffProcent: toPercent(code.successRateTotal),
+        Tidsstampel: code.lastTimestamp ? new Date(code.lastTimestamp).toISOString() : ''
+      })
+      add({
+        Sektion: 'NCMKod',
+        Nyckel: 'Kod',
+        Del: 'Vecka',
+        NCMKod: String(code.ncmCode || ''),
+        NCMDoman: String(code.domainLabel || ''),
+        NCMOperation: String(code.operationLabel || ''),
+        NCMFormagor: String(code.abilityLabelText || ''),
+        Forsok: Number(code.attemptsWeek || 0),
+        Ratt: Number(code.correctWeek || 0),
+        TraffProcent: toPercent(code.successRateWeek),
+        Tidsstampel: code.lastTimestamp ? new Date(code.lastTimestamp).toISOString() : ''
+      })
+    }
+
+    for (const domain of Array.isArray(ncmDetail.domainRows) ? ncmDetail.domainRows : []) {
+      add({
+        Sektion: 'NCMDoman',
+        Nyckel: 'Doman',
+        Del: 'Totalt',
+        NCMDoman: String(domain.domainLabel || ''),
+        Forsok: Number(domain.attemptsTotal || 0),
+        Ratt: Number(domain.correctTotal || 0),
+        TraffProcent: toPercent(domain.successRateTotal),
+        Varde: `Kunskapsfel=${Number(domain.knowledgeWrongTotal || 0)}; Ouppm=${Number(domain.inattentionWrongTotal || 0)}`
+      })
+      add({
+        Sektion: 'NCMDoman',
+        Nyckel: 'Doman',
+        Del: 'Vecka',
+        NCMDoman: String(domain.domainLabel || ''),
+        Forsok: Number(domain.attemptsWeek || 0),
+        Ratt: Number(domain.correctWeek || 0),
+        TraffProcent: toPercent(domain.successRateWeek),
+        Varde: `Kunskapsfel=${Number(domain.knowledgeWrongWeek || 0)}; Ouppm=${Number(domain.inattentionWrongWeek || 0)}`
+      })
+    }
+
+    for (const problem of Array.isArray(ncmDetail.recentRows) ? ncmDetail.recentRows : []) {
+      const abilityLabelText = (Array.isArray(problem.abilityTags) ? problem.abilityTags : [])
+        .map(tag => getNcmAbilityLabelSv(tag))
+        .filter(Boolean)
+        .join(', ')
+
+      add({
+        Sektion: 'NCMSenaste',
+        Nyckel: 'Forsok',
+        NCMKod: String(problem.ncmCode || ''),
+        NCMDoman: String(problem.domainLabel || ''),
+        NCMOperation: String(problem.operationLabel || ''),
+        NCMFormagor: abilityLabelText,
+        Status: problem.correct ? 'Ratt' : 'Fel',
+        TidSek: Number.isFinite(problem.speedTimeSec) ? Number(problem.speedTimeSec.toFixed(2)) : '',
+        Varde: problem.correct
+          ? 'korrekt'
+          : (String(problem.errorCategory || '') === 'inattention' ? 'ouppmarksamhet' : 'kunskapsfel'),
+        Tidsstampel: problem.timestamp ? new Date(problem.timestamp).toISOString() : ''
+      })
     }
   }
 

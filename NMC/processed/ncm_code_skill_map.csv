@@ -86,11 +86,11 @@ RP1;;False;rational_numbers;mixed;ncm_rational_numbers|concept_percent;heuristic
 RP2;;False;rational_numbers;mixed;ncm_rational_numbers|concept_percent;heuristic;prefix:RP
 RP3;;False;rational_numbers;mixed;ncm_rational_numbers|concept_percent;heuristic;prefix:RP
 RP4;;False;rational_numbers;mixed;ncm_rational_numbers|concept_percent;heuristic;prefix:RP
-RP5;;False;rational_numbers;mixed;ncm_rational_numbers|concept_percent;heuristic;prefix:RP
+RP5;safe_cross_domain_word_numeric;True;rational_numbers;mixed;ncm_rational_numbers|concept_percent;heuristic;prefix:RP
 RP6;;False;rational_numbers;mixed;ncm_rational_numbers|concept_percent;heuristic;prefix:RP
 RP7;;False;rational_numbers;mixed;ncm_rational_numbers|concept_percent;heuristic;prefix:RP
 SA1;;False;statistics_probability;mixed;ncm_statistics_probability;heuristic;prefix:SA
-SA2;;False;statistics_probability;mixed;ncm_statistics_probability;heuristic;prefix:SA
+SA2;safe_cross_domain_word_numeric;True;statistics_probability;mixed;ncm_statistics_probability;heuristic;prefix:SA
 SA3;;False;statistics_probability;mixed;ncm_statistics_probability;heuristic;prefix:SA
 SA4;;False;statistics_probability;mixed;ncm_statistics_probability;heuristic;prefix:SA
 SA5;;False;statistics_probability;mixed;ncm_statistics_probability;heuristic;prefix:SA

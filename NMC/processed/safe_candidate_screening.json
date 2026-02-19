@@ -1,6 +1,6 @@
 {
-  "generated_at_utc": "2026-02-19T00:29:47.327697+00:00",
-  "candidate_safe_count": 2,
+  "generated_at_utc": "2026-02-19T00:32:08.758028+00:00",
+  "candidate_safe_count": 0,
   "review_count": 113,
   "rows": [
     {
@@ -840,17 +840,6 @@
       "numeric_answer_count": 0
     },
     {
-      "code": "RP5",
-      "status": "candidate_safe",
-      "reason": "auto_word_numeric",
-      "recommended_parser": "word",
-      "diagnos_pdf": "RP5%20diagnos.pdf",
-      "facit_pdf": "RP5%20facit.pdf",
-      "item_count": 5,
-      "facit_count": 5,
-      "numeric_answer_count": 5
-    },
-    {
       "code": "RP6",
       "status": "review",
       "reason": "facit_non_numeric_or_ambiguous",
@@ -882,17 +871,6 @@
       "item_count": 4,
       "facit_count": 4,
       "numeric_answer_count": 2
-    },
-    {
-      "code": "SA2",
-      "status": "candidate_safe",
-      "reason": "auto_word_numeric",
-      "recommended_parser": "word",
-      "diagnos_pdf": "SA2%20diagnos.pdf",
-      "facit_pdf": "SA2%20facit.pdf",
-      "item_count": 6,
-      "facit_count": 6,
-      "numeric_answer_count": 6
     },
     {
       "code": "SA3",

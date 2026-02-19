@@ -1,0 +1,37 @@
+{
+  "generated_at_utc": "2026-02-19T00:31:58.369797+00:00",
+  "batch_name": "safe_cross_domain_word_numeric",
+  "parser_mode": "word",
+  "codes": [
+    "RP5",
+    "SA2"
+  ],
+  "total_rows": 11,
+  "high_confidence_rows": 11,
+  "per_code": [
+    {
+      "code": "RP5",
+      "parser_mode": "word",
+      "diagnos_pdf": "RP5%20diagnos.pdf",
+      "facit_pdf": "RP5%20facit.pdf",
+      "diagnos_item_count": 5,
+      "facit_item_count": 5,
+      "merged_item_count": 5,
+      "high_confidence_items": 5,
+      "computed_answer_items": 0,
+      "facit_numeric_text_items": 5
+    },
+    {
+      "code": "SA2",
+      "parser_mode": "word",
+      "diagnos_pdf": "SA2%20diagnos.pdf",
+      "facit_pdf": "SA2%20facit.pdf",
+      "diagnos_item_count": 6,
+      "facit_item_count": 6,
+      "merged_item_count": 6,
+      "high_confidence_items": 6,
+      "computed_answer_items": 0,
+      "facit_numeric_text_items": 6
+    }
+  ]
+}

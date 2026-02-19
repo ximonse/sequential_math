@@ -6,6 +6,7 @@ Current safe batches:
 - safe_as_expressions: AS1, AS2, AS4, AS7, AS9, AS10
 - safe_as_expression_extra: AS5, AS8, AS11
 - safe_as_word_problems: AS3, AS6
+- safe_cross_domain_word_numeric: RP5, SA2
 
 Outputs (per batch):
 - NMC/processed/safe_batch_<batch>.json
@@ -51,6 +52,11 @@ SAFE_BATCHES = [
     {
         "name": "safe_as_word_problems",
         "codes": ["AS3", "AS6"],
+        "parser": "word",
+    },
+    {
+        "name": "safe_cross_domain_word_numeric",
+        "codes": ["RP5", "SA2"],
         "parser": "word",
     },
 ]

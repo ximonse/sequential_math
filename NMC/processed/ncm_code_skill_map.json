@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-02-19T00:29:47.330768+00:00",
+  "generated_at_utc": "2026-02-19T00:32:08.761674+00:00",
   "total_codes": 126,
   "rows": [
     {
@@ -1111,8 +1111,8 @@
     },
     {
       "ncm_code": "RP5",
-      "safe_batch": "",
-      "in_safe_batch": false,
+      "safe_batch": "safe_cross_domain_word_numeric",
+      "in_safe_batch": true,
       "domain_tag": "rational_numbers",
       "operation_tag": "mixed",
       "ability_tags": [
@@ -1162,8 +1162,8 @@
     },
     {
       "ncm_code": "SA2",
-      "safe_batch": "",
-      "in_safe_batch": false,
+      "safe_batch": "safe_cross_domain_word_numeric",
+      "in_safe_batch": true,
       "domain_tag": "statistics_probability",
       "operation_tag": "mixed",
       "ability_tags": [

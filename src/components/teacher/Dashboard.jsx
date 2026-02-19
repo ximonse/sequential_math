@@ -26,7 +26,8 @@ import {
   extractNcmCodeFromValue,
   getNcmDomainLabelSv,
   getNcmOperationLabelSv,
-  getNcmSkillMapping
+  getNcmSkillMapping,
+  getNcmSkillMappingFromProblem
 } from '../../lib/ncmSkillMap'
 import { getStartOfWeekTimestamp } from '../../lib/studentProfile'
 import {
@@ -73,6 +74,7 @@ const LEVELS = Array.from({ length: 12 }, (_, index) => index + 1)
 const MASTERY_MIN_ATTEMPTS = 5
 const MASTERY_MIN_SUCCESS_RATE = 0.8
 const DETAIL_LEVEL_ERROR_MIN_ATTEMPTS = 8
+const NCM_DOMAIN_MIN_ATTEMPTS = 2
 const TEACHER_AUTO_REFRESH_INTERVAL_MS = 5 * 60 * 1000
 const TEACHER_AUTO_REFRESH_START_HOUR = 8
 const TEACHER_AUTO_REFRESH_END_HOUR = 15
@@ -440,6 +442,10 @@ function Dashboard() {
       activeNowCount
     }
   }, [selectedClassIds, classNameById, classOverviewRows])
+  const ncmOverview = useMemo(
+    () => buildNcmOverview(filteredStudents, classNameById),
+    [filteredStudents, classNameById]
+  )
 
   const handleClassOverviewSort = (nextSortBy) => {
     if (classOverviewSortBy === nextSortBy) {
@@ -2817,6 +2823,74 @@ function Dashboard() {
         </div>
 
         <div className="bg-white rounded-lg shadow p-4 mb-8">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 className="text-lg font-semibold text-gray-800">NCM - domänöversikt</h2>
+            <span className="text-xs text-gray-500">Vecka (måndag 00:00 till nu)</span>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-sm">
+            <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2">
+              <p className="text-xs text-gray-500">NCM-försök vecka</p>
+              <p className="font-semibold text-gray-800">{ncmOverview.totalAttemptsWeek}</p>
+            </div>
+            <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2">
+              <p className="text-xs text-gray-500">Elever med NCM-data vecka</p>
+              <p className="font-semibold text-gray-800">
+                {ncmOverview.studentsWithAttemptsWeek}/{filteredStudents.length}
+              </p>
+            </div>
+            <div className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2">
+              <p className="text-xs text-emerald-700">Starkast domän (klass)</p>
+              <p className="font-semibold text-emerald-800">{ncmOverview.strongestDomainLabel}</p>
+            </div>
+            <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2">
+              <p className="text-xs text-amber-700">Mest stödbehov (klass)</p>
+              <p className="font-semibold text-amber-800">{ncmOverview.weakestDomainLabel}</p>
+            </div>
+          </div>
+
+          {ncmOverview.rows.length === 0 ? (
+            <p className="text-sm text-gray-500">Ingen NCM-relaterad data i aktuellt klassurval ännu.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-left text-gray-500 border-b">
+                    <th className="py-1 pr-2">Elev</th>
+                    <th className="py-1 pr-2">Klass</th>
+                    <th className="py-1 pr-2">Försök v</th>
+                    <th className="py-1 pr-2">Träff v</th>
+                    <th className="py-1 pr-2">Kunskapsfel v</th>
+                    <th className="py-1 pr-2">Ouppm. v</th>
+                    <th className="py-1 pr-2">Svagast domän</th>
+                    <th className="py-1 pr-2">Starkast domän</th>
+                    <th className="py-1">Senaste NCM-kod</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ncmOverview.rows.map(row => (
+                    <tr key={`ncm-${row.studentId}`} className="border-b last:border-b-0">
+                      <td className="py-1 pr-2 text-gray-700">
+                        <div className="font-medium">{row.name}</div>
+                        <div className="text-[11px] text-gray-400">{row.studentId}</div>
+                      </td>
+                      <td className="py-1 pr-2 text-gray-700">{row.className || '-'}</td>
+                      <td className="py-1 pr-2 text-gray-700">{row.weekAttempts}</td>
+                      <td className="py-1 pr-2 text-gray-700">{toPercent(row.weekSuccessRate)}</td>
+                      <td className="py-1 pr-2 text-gray-700">{row.weekKnowledgeWrong}</td>
+                      <td className="py-1 pr-2 text-gray-700">{row.weekInattentionWrong}</td>
+                      <td className="py-1 pr-2 text-gray-700">{row.weakestDomainLabel}</td>
+                      <td className="py-1 pr-2 text-gray-700">{row.strongestDomainLabel}</td>
+                      <td className="py-1 text-gray-700">{row.lastNcmCode || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4 mb-8">
           <h2 className="text-lg font-semibold text-gray-800 mb-3">Lärarlösenord</h2>
           <p className="text-sm text-gray-500 mb-3">
             Hanteras server-side via `TEACHER_API_PASSWORD` i Vercel.
@@ -3901,6 +3975,147 @@ function buildClassSummaries(classes, students, selectedClassIds, weekGoal) {
       weeklyGoalReachedRate: studentCount > 0 ? weeklyGoalReachedCount / studentCount : 0
     }
   }).sort((a, b) => a.className.localeCompare(b.className, 'sv'))
+}
+
+function buildNcmOverview(students, classNameById = new Map()) {
+  const safeStudents = Array.isArray(students) ? students : []
+  const weekStart = getStartOfWeekTimestamp()
+
+  const domainAggregate = new Map()
+  const rows = []
+  let totalAttemptsWeek = 0
+  let studentsWithAttemptsWeek = 0
+
+  for (const student of safeStudents) {
+    const problemSource = getTableProblemSourceForStudent(student)
+    const weekProblems = (Array.isArray(problemSource) ? problemSource : [])
+      .filter(problem => Number(problem?.timestamp || 0) >= weekStart)
+
+    const domainStats = new Map()
+    let weekAttempts = 0
+    let weekCorrect = 0
+    let weekKnowledgeWrong = 0
+    let weekInattentionWrong = 0
+    let lastNcmCode = ''
+    let lastNcmTs = 0
+
+    for (const problem of weekProblems) {
+      const mapping = getNcmSkillMappingFromProblem(problem?.problemType, problem?.skillTag)
+      const ncmCode = String(mapping?.code || '').trim()
+      if (!ncmCode) continue
+
+      const domainTag = String(mapping?.domainTag || 'unknown')
+      const ts = Number(problem?.timestamp || 0)
+      weekAttempts += 1
+      totalAttemptsWeek += 1
+      if (problem?.correct) weekCorrect += 1
+      if (!problem?.correct && isKnowledgeError(problem)) weekKnowledgeWrong += 1
+      if (!problem?.correct && String(problem?.errorCategory || '') === 'inattention') weekInattentionWrong += 1
+      if (ts >= lastNcmTs) {
+        lastNcmTs = ts
+        lastNcmCode = ncmCode
+      }
+
+      const entry = domainStats.get(domainTag) || {
+        domainTag,
+        attempts: 0,
+        correct: 0,
+        knowledgeWrong: 0
+      }
+      entry.attempts += 1
+      if (problem?.correct) entry.correct += 1
+      if (!problem?.correct && isKnowledgeError(problem)) entry.knowledgeWrong += 1
+      domainStats.set(domainTag, entry)
+
+      const aggregateEntry = domainAggregate.get(domainTag) || {
+        domainTag,
+        attempts: 0,
+        correct: 0,
+        knowledgeWrong: 0
+      }
+      aggregateEntry.attempts += 1
+      if (problem?.correct) aggregateEntry.correct += 1
+      if (!problem?.correct && isKnowledgeError(problem)) aggregateEntry.knowledgeWrong += 1
+      domainAggregate.set(domainTag, aggregateEntry)
+    }
+
+    if (weekAttempts > 0) studentsWithAttemptsWeek += 1
+
+    const domainList = Array.from(domainStats.values()).map(item => ({
+      ...item,
+      successRate: item.attempts > 0 ? item.correct / item.attempts : 0,
+      knowledgeWrongRate: item.attempts > 0 ? item.knowledgeWrong / item.attempts : 0
+    }))
+    const weakestDomain = pickWeakestNcmDomain(domainList)
+    const strongestDomain = pickStrongestNcmDomain(domainList)
+
+    rows.push({
+      studentId: String(student?.studentId || ''),
+      name: String(student?.name || ''),
+      className: getRecordClassLabel(student, classNameById),
+      weekAttempts,
+      weekSuccessRate: weekAttempts > 0 ? weekCorrect / weekAttempts : null,
+      weekKnowledgeWrong,
+      weekInattentionWrong,
+      weakestDomainLabel: weakestDomain ? getNcmDomainLabelSv(weakestDomain.domainTag) : '-',
+      strongestDomainLabel: strongestDomain ? getNcmDomainLabelSv(strongestDomain.domainTag) : '-',
+      lastNcmCode
+    })
+  }
+
+  rows.sort((a, b) => {
+    if (a.weekAttempts !== b.weekAttempts) return b.weekAttempts - a.weekAttempts
+    if ((a.weekSuccessRate ?? -1) !== (b.weekSuccessRate ?? -1)) return (a.weekSuccessRate ?? -1) - (b.weekSuccessRate ?? -1)
+    return compareClassNameAndName(a, b)
+  })
+
+  const domainOverview = Array.from(domainAggregate.values()).map(item => ({
+    ...item,
+    successRate: item.attempts > 0 ? item.correct / item.attempts : 0,
+    knowledgeWrongRate: item.attempts > 0 ? item.knowledgeWrong / item.attempts : 0
+  }))
+  const weakestDomain = pickWeakestNcmDomain(domainOverview)
+  const strongestDomain = pickStrongestNcmDomain(domainOverview)
+
+  return {
+    rows,
+    totalAttemptsWeek,
+    studentsWithAttemptsWeek,
+    weakestDomainLabel: weakestDomain ? getNcmDomainLabelSv(weakestDomain.domainTag) : '-',
+    strongestDomainLabel: strongestDomain ? getNcmDomainLabelSv(strongestDomain.domainTag) : '-'
+  }
+}
+
+function pickWeakestNcmDomain(domains) {
+  const eligible = (Array.isArray(domains) ? domains : [])
+    .filter(item => Number(item?.attempts || 0) >= NCM_DOMAIN_MIN_ATTEMPTS && Number(item?.knowledgeWrong || 0) > 0)
+    .sort((a, b) => {
+      if (Number(a.knowledgeWrong || 0) !== Number(b.knowledgeWrong || 0)) {
+        return Number(b.knowledgeWrong || 0) - Number(a.knowledgeWrong || 0)
+      }
+      if (Number(a.knowledgeWrongRate || 0) !== Number(b.knowledgeWrongRate || 0)) {
+        return Number(b.knowledgeWrongRate || 0) - Number(a.knowledgeWrongRate || 0)
+      }
+      return Number(b.attempts || 0) - Number(a.attempts || 0)
+    })
+
+  return eligible[0] || null
+}
+
+function pickStrongestNcmDomain(domains) {
+  const eligible = (Array.isArray(domains) ? domains : [])
+    .filter(item => Number(item?.attempts || 0) >= NCM_DOMAIN_MIN_ATTEMPTS)
+    .sort((a, b) => {
+      if (Number(a.successRate || 0) !== Number(b.successRate || 0)) {
+        return Number(b.successRate || 0) - Number(a.successRate || 0)
+      }
+      if (Number(a.correct || 0) !== Number(b.correct || 0)) {
+        return Number(b.correct || 0) - Number(a.correct || 0)
+      }
+      return Number(b.attempts || 0) - Number(a.attempts || 0)
+    })
+
+  return eligible[0] || null
 }
 
 function buildTableDevelopmentOverview(students) {

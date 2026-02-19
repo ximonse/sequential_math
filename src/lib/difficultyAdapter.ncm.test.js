@@ -48,4 +48,14 @@ describe('difficultyAdapter NCM rotation', () => {
       expect(picked[i]).not.toBe(picked[i - 1])
     }
   })
+
+  it('respects explicit preferred NCM skill from session', () => {
+    const profile = createProfile()
+    const preferredSkillTag = 'ncm_sa2_item_4'
+    const problem = selectNextProblem(profile, {
+      ncmFilter: { codes: ['SA2'] },
+      ncmPreferredSkillTag: preferredSkillTag
+    })
+    expect(problem.metadata?.skillTag).toBe(preferredSkillTag)
+  })
 })

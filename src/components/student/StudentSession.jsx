@@ -41,6 +41,7 @@ import {
   incrementTelemetryDailyMetric,
   recordTelemetryEvent
 } from '../../lib/telemetry'
+import { filterNcmProblems } from '../../lib/ncmProblemBank'
 
 const AUTO_CONTINUE_DELAY = 3000 // 3 sekunder
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
@@ -90,6 +91,12 @@ function StudentSession() {
   const attentionRef = useRef(createAttentionTracker())
   const sessionRecentCorrectnessRef = useRef([])
   const sessionTelemetryRef = useRef(null)
+  const ncmCycleRef = useRef({
+    signature: '',
+    pool: [],
+    queue: [],
+    last: ''
+  })
   const presenceSyncRef = useRef({
     lastSavedAt: 0
   })
@@ -262,6 +269,31 @@ function StudentSession() {
     resetAttentionTracker()
     setStartTime(Date.now())
   }, [profile, isTableDrill, tableSet, resetAttentionTracker])
+
+  useEffect(() => {
+    if (!sessionAssignment || sessionAssignment.kind !== 'ncm') {
+      ncmCycleRef.current = {
+        signature: '',
+        pool: [],
+        queue: [],
+        last: ''
+      }
+      return
+    }
+
+    const signature = buildNcmAssignmentSignature(sessionAssignment)
+    if (ncmCycleRef.current.signature === signature && ncmCycleRef.current.pool.length > 0) {
+      return
+    }
+
+    const pool = buildNcmAssignmentSkillPool(sessionAssignment)
+    ncmCycleRef.current = {
+      signature,
+      pool,
+      queue: shuffleStrings(pool),
+      last: ''
+    }
+  }, [sessionAssignment])
 
   const completedThisSession = useMemo(() => sessionCount, [sessionCount])
 
@@ -448,7 +480,14 @@ function StudentSession() {
   const safeSelectProblem = (currentProfile, rules) => {
     try {
       setSessionError('')
-      return selectNextProblem(currentProfile, rules)
+      const nextRules = { ...(rules || {}) }
+      if (sessionAssignment?.kind === 'ncm') {
+        const preferredSkillTag = consumeNextNcmSkillTag(ncmCycleRef.current)
+        if (preferredSkillTag) {
+          nextRules.ncmPreferredSkillTag = preferredSkillTag
+        }
+      }
+      return selectNextProblem(currentProfile, nextRules)
     } catch (err) {
       console.error('Problem selection failed', err)
       setSessionError('Kunde inte ladda nästa uppgift. Försök igen.')
@@ -1488,4 +1527,58 @@ function finalizeAttentionSnapshot(tracker) {
     hiddenDurationSec: tracker.hiddenDurationMs / 1000,
     blurCount: tracker.blurCount
   }
+}
+
+function buildNcmAssignmentSkillPool(assignment) {
+  const filter = {
+    codes: Array.isArray(assignment?.ncmCodes) ? assignment.ncmCodes : [],
+    abilityTags: Array.isArray(assignment?.ncmAbilityTags) ? assignment.ncmAbilityTags : []
+  }
+  const candidates = filterNcmProblems(filter)
+  return Array.from(new Set(
+    candidates
+      .map(item => String(item?.skillTag || '').trim())
+      .filter(Boolean)
+  )).sort((a, b) => a.localeCompare(b, 'sv'))
+}
+
+function buildNcmAssignmentSignature(assignment) {
+  const codes = Array.isArray(assignment?.ncmCodes)
+    ? assignment.ncmCodes.map(item => String(item || '').trim()).filter(Boolean).sort((a, b) => a.localeCompare(b, 'sv'))
+    : []
+  const abilities = Array.isArray(assignment?.ncmAbilityTags)
+    ? assignment.ncmAbilityTags.map(item => String(item || '').trim()).filter(Boolean).sort((a, b) => a.localeCompare(b, 'sv'))
+    : []
+  return `codes:${codes.join(',')}|abilities:${abilities.join(',')}`
+}
+
+function consumeNextNcmSkillTag(cycleState) {
+  if (!cycleState || !Array.isArray(cycleState.pool) || cycleState.pool.length === 0) return ''
+
+  if (!Array.isArray(cycleState.queue) || cycleState.queue.length === 0) {
+    cycleState.queue = shuffleStrings(cycleState.pool)
+    if (cycleState.queue.length > 1 && cycleState.last && cycleState.queue[0] === cycleState.last) {
+      const swapIndex = cycleState.queue.findIndex(item => item !== cycleState.last)
+      if (swapIndex > 0) {
+        const first = cycleState.queue[0]
+        cycleState.queue[0] = cycleState.queue[swapIndex]
+        cycleState.queue[swapIndex] = first
+      }
+    }
+  }
+
+  const next = String(cycleState.queue.shift() || '').trim()
+  if (next) cycleState.last = next
+  return next
+}
+
+function shuffleStrings(values) {
+  const arr = Array.isArray(values) ? [...values] : []
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1))
+    const tmp = arr[i]
+    arr[i] = arr[j]
+    arr[j] = tmp
+  }
+  return arr
 }

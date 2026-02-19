@@ -146,7 +146,8 @@ export function selectNextProblem(profile, options = {}) {
       throw new Error('NCM filter did not match any available problems')
     }
 
-    const preferredSkillTag = pickNextNcmSkillTag(profile, ncmFilter, ncmCandidates)
+    const preferredFromSession = String(options.ncmPreferredSkillTag || '').trim()
+    const preferredSkillTag = preferredFromSession || pickNextNcmSkillTag(profile, ncmFilter, ncmCandidates)
     const recentNcmSkills = getRecentNcmSkillTags(profile, 6)
     const problem = generateNcmProblemFromFilter(ncmFilter, {
       levelHint: roundedDifficulty,

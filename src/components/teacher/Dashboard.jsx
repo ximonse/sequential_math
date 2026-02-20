@@ -371,6 +371,10 @@ function Dashboard() {
     const needle = routeStudentId.toLowerCase()
     return students.find(student => String(student?.studentId || '').toLowerCase() === needle) || null
   }, [students, isDirectStudentView, routeStudentId])
+  const hasMissingDirectStudent = isDirectStudentView
+    && routeStudentId.length > 0
+    && students.length > 0
+    && !directStudentProfile
 
   const filteredStudents = useMemo(() => (
     isDirectStudentView
@@ -400,10 +404,14 @@ function Dashboard() {
       if (detailStudentId !== '') setDetailStudentId('')
       return
     }
+    if (hasMissingDirectStudent) {
+      if (detailStudentId !== '') setDetailStudentId('')
+      return
+    }
     if (!detailStudentId || !detailStudentSource.some(item => item.studentId === detailStudentId)) {
       setDetailStudentId(detailStudentSource[0].studentId)
     }
-  }, [detailStudentSource, detailStudentId])
+  }, [detailStudentSource, detailStudentId, hasMissingDirectStudent])
 
   const detailStudentOptions = useMemo(
     () => detailStudentSource
@@ -2217,7 +2225,15 @@ function Dashboard() {
                   <tbody>
                     {ticketResponseRows.map(row => (
                       <tr key={`ticket-response-${row.studentId}`} className="border-b last:border-b-0 hover:bg-amber-50/35">
-                        <td className="py-2 px-2 pr-2 text-gray-700 font-semibold">{row.name}</td>
+                        <td className="py-2 px-2 pr-2 text-gray-700 font-semibold">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenStudentDetail(row.studentId)}
+                            className="text-left hover:underline text-indigo-700"
+                          >
+                            {row.name}
+                          </button>
+                        </td>
                         <td className="py-2 pr-2 text-gray-600">{row.className || '-'}</td>
                         <td className="py-2 pr-2">
                           {!row.answered ? (
@@ -2488,7 +2504,13 @@ function Dashboard() {
                   {classOverviewRows.map(row => (
                     <tr key={`overview-row-${row.studentId}`} className="border-b last:border-b-0">
                       <td className="py-1 pr-2 text-gray-700 font-medium">
-                        {row.name}
+                        <button
+                          type="button"
+                          onClick={() => handleOpenStudentDetail(row.studentId)}
+                          className="text-left hover:underline text-indigo-700 font-medium"
+                        >
+                          {row.name}
+                        </button>
                         <span className="ml-1 text-xs text-gray-400">{row.studentId}</span>
                       </td>
                       <td className="py-1 pr-2"><ActivityBadge code={row.activityStatus} compact /></td>
@@ -2511,6 +2533,7 @@ function Dashboard() {
         <TableStickyStatusPanel
           rows={tableStickyStatusRows}
           onSort={handleStickySort}
+          onOpenStudentDetail={handleOpenStudentDetail}
           getSortIndicator={getStickySortIndicator}
           className="bg-white rounded-lg shadow p-4 mb-8"
           style={{ order: -30 }}
@@ -2534,11 +2557,16 @@ function Dashboard() {
                 {detailStudentOptions.length === 0 ? (
                   <option value="">Inga elever i urvalet</option>
                 ) : (
-                  detailStudentOptions.map(item => (
-                    <option key={`detail-student-${item.studentId}`} value={item.studentId}>
-                      {item.name} {item.className ? `(${item.className})` : ''}
-                    </option>
-                  ))
+                  <>
+                    {hasMissingDirectStudent && (
+                      <option value="">Okant elev-ID - valj elev</option>
+                    )}
+                    {detailStudentOptions.map(item => (
+                      <option key={`detail-student-${item.studentId}`} value={item.studentId}>
+                        {item.name} {item.className ? `(${item.className})` : ''}
+                      </option>
+                    ))}
+                  </>
                 )}
               </select>
               <button
@@ -3212,7 +3240,15 @@ function Dashboard() {
                     {supportRows.map(row => (
                       <tr key={`support-${row.studentId}`} className="border-b last:border-b-0">
                         <td className="py-1 pr-2 text-gray-700">
-                          <div className="font-medium">{row.name}</div>
+                          <div>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenStudentDetail(row.studentId)}
+                              className="text-left hover:underline text-indigo-700 font-medium"
+                            >
+                              {row.name}
+                            </button>
+                          </div>
                           <div className="text-[11px] text-gray-400">{row.studentId}</div>
                         </td>
                         <td className="py-1 pr-2 text-gray-700">{row.classNameLabel || row.className || '-'}</td>
@@ -3304,7 +3340,15 @@ function Dashboard() {
                   {ncmOverview.rows.map(row => (
                     <tr key={`ncm-${row.studentId}`} className="border-b last:border-b-0">
                       <td className="py-1 pr-2 text-gray-700">
-                        <div className="font-medium">{row.name}</div>
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenStudentDetail(row.studentId)}
+                            className="text-left hover:underline text-indigo-700 font-medium"
+                          >
+                            {row.name}
+                          </button>
+                        </div>
                         <div className="text-[11px] text-gray-400">{row.studentId}</div>
                       </td>
                       <td className="py-1 pr-2 text-gray-700">{row.className || '-'}</td>
@@ -3590,7 +3634,15 @@ function Dashboard() {
                 {visibleRows.map(row => (
                   <tr key={row.studentId} className="border-b last:border-b-0 hover:bg-gray-50">
                     <td className={`px-4 py-0 font-semibold ${row.hasLoggedIn ? 'text-green-700' : 'text-gray-800'}`}>
-                      <div>{row.name}</div>
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenStudentDetail(row.studentId)}
+                          className="text-left hover:underline text-indigo-700"
+                        >
+                          {row.name}
+                        </button>
+                      </div>
                       <div className="mt-1">
                         <RiskBadge level={row.riskLevel} score={row.riskScore} />
                       </div>
@@ -3816,7 +3868,15 @@ function Dashboard() {
                   <tbody>
                     {passwordResetRows.map(row => (
                       <tr key={`password-reset-${row.studentId}`} className="border-b last:border-b-0">
-                        <td className="px-3 py-2 text-gray-800">{row.name}</td>
+                        <td className="px-3 py-2 text-gray-800">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenStudentDetail(row.studentId)}
+                            className="text-left hover:underline text-indigo-700 font-medium"
+                          >
+                            {row.name}
+                          </button>
+                        </td>
                         <td className="px-3 py-2 text-xs text-gray-500 font-mono">{row.studentId}</td>
                         <td className="px-3 py-2 text-gray-700">{row.className || '-'}</td>
                         <td className="px-3 py-2 text-gray-600">{formatTimeAgo(row.lastLoginAt)}</td>
@@ -3847,6 +3907,7 @@ function Dashboard() {
 function TableStickyStatusPanel({
   rows,
   onSort,
+  onOpenStudentDetail,
   getSortIndicator,
   className = 'bg-white rounded-lg shadow p-4',
   style
@@ -3931,7 +3992,15 @@ function TableStickyStatusPanel({
             <tbody>
               {rows.map(row => (
                 <tr key={`teacher-table-sticky-row-${row.studentId}`} className="border-b last:border-b-0">
-                  <td className="py-1 pr-2 text-gray-700 font-medium">{row.name}</td>
+                  <td className="py-1 pr-2 text-gray-700 font-medium">
+                    <button
+                      type="button"
+                      onClick={() => onOpenStudentDetail(row.studentId)}
+                      className="text-left hover:underline text-indigo-700 font-medium"
+                    >
+                      {row.name}
+                    </button>
+                  </td>
                   <td className="py-1 pr-2 text-gray-600">{row.className || '-'}</td>
                   {TABLES.map(table => (
                     <td key={`teacher-table-sticky-cell-${row.studentId}-${table}`} className="py-1 pr-1 text-center">

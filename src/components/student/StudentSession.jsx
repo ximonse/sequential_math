@@ -21,7 +21,9 @@ import {
   adjustDifficulty,
   recordSteadyAdvanceDecision,
   shouldOfferSteadyAdvance,
-  shouldSuggestBreak
+  shouldSuggestBreak,
+  getOperationAbility,
+  setOperationAbility
 } from '../../lib/difficultyAdapter'
 import { decodeAssignmentPayload, getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 import { inferOperationFromProblemType as inferOperationFromType } from '../../lib/mathUtils'
@@ -729,6 +731,10 @@ function StudentSession() {
     if (accepted) {
       profile.currentDifficulty = Math.max(profile.currentDifficulty, advancePrompt.nextLevel)
       profile.highestDifficulty = Math.max(profile.highestDifficulty || 1, profile.currentDifficulty)
+      if (advancePrompt.operation) {
+        const current = getOperationAbility(profile, advancePrompt.operation)
+        setOperationAbility(profile, advancePrompt.operation, Math.max(current, advancePrompt.nextLevel))
+      }
     }
     recordTelemetryEvent(profile, 'steady_advance_decision', {
       sessionId: sessionTelemetryRef.current?.sessionId || '',

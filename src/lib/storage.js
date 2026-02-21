@@ -66,16 +66,19 @@ function requestCloudSync(profile, options = {}) {
   const state = getCloudProfileSyncState(normalizedId)
   if (!state) return
 
-  const syncNow = (sourceProfile = null) => {
+  const syncNow = async (sourceProfile = null) => {
     const latest = sourceProfile || loadProfile(normalizedId)
     if (!latest) return
     state.lastAttemptAt = Date.now()
-    void syncProfileToCloud(latest)
+    const merged = await syncProfileToCloud(latest)
+    if (merged) {
+      saveProfileLocalOnly(merged)
+    }
   }
 
   if (options.forceSync === true) {
     clearCloudProfileSyncTimer(state)
-    syncNow(profile)
+    void syncNow(profile)
     return
   }
 
@@ -83,7 +86,7 @@ function requestCloudSync(profile, options = {}) {
   const elapsed = now - Number(state.lastAttemptAt || 0)
   if (state.lastAttemptAt <= 0 || elapsed >= CLOUD_PROFILE_SYNC_THROTTLE_MS) {
     clearCloudProfileSyncTimer(state)
-    syncNow(profile)
+    void syncNow(profile)
     return
   }
 
@@ -91,7 +94,7 @@ function requestCloudSync(profile, options = {}) {
     const waitMs = Math.max(0, CLOUD_PROFILE_SYNC_THROTTLE_MS - elapsed)
     state.timer = setTimeout(() => {
       state.timer = null
-      syncNow()
+      void syncNow()
     }, waitMs)
   }
 }
@@ -405,21 +408,16 @@ export async function getOrCreateProfileWithSync(studentId, name = null, grade =
   const local = loadProfile(normalizedId)
   if (local) {
     if (CLOUD_ENABLED) {
-      const cloud = await loadProfileFromCloud(normalizedId, {
-        studentPassword: getActiveStudentSessionSecret(),
-        teacherPassword: getTeacherApiToken()
-      })
-
-      if (cloud) {
-        const freshest = chooseFreshestProfile(local, cloud)
-        saveProfileLocalOnly(freshest)
-        if (freshest === local) {
-          void syncProfileToCloud(local)
-        }
-        return freshest
+      // POST local profile to server and adopt the server's merged result.
+      // The server merges local data with cloud data (including teacher
+      // password changes and progress from other devices) and returns
+      // the authoritative merged profile.
+      const merged = await syncProfileToCloud(local)
+      if (merged) {
+        saveProfileLocalOnly(merged)
+        return merged
       }
-
-      void syncProfileToCloud(local)
+      // If the POST failed (e.g. network error), keep using local profile.
     }
     return local
   }
@@ -480,18 +478,13 @@ export async function authenticateStudent(studentIdInput, passwordInput) {
 
   if (CLOUD_ENABLED) {
     try {
-      const cloudProfile = await loadProfileFromCloud(studentId, {
-        studentPassword: password,
-        failOnUnauthorized: true
-      })
-      if (cloudProfile) {
-        profile = chooseFreshestProfile(profile, cloudProfile)
+      // POST local profile to server to get the authoritative merged result.
+      const merged = await syncProfileToCloud(profile)
+      if (merged) {
+        profile = merged
         saveProfileLocalOnly(profile)
       }
-    } catch (error) {
-      if (error?.code === 'UNAUTHORIZED') {
-        return { ok: false, error: 'Fel lösenord.' }
-      }
+    } catch {
       // Behåll lokal inloggning om cloud tillfälligt inte svarar.
     }
   }
@@ -954,10 +947,10 @@ function normalizeClassRecords(classes) {
     const className = String(record.name || '').trim() || classId
     const studentIds = Array.isArray(record.studentIds)
       ? Array.from(new Set(
-          record.studentIds
-            .map(studentId => normalizeStudentId(studentId))
-            .filter(Boolean)
-        ))
+        record.studentIds
+          .map(studentId => normalizeStudentId(studentId))
+          .filter(Boolean)
+      ))
       : []
 
     normalized.push({
@@ -1053,7 +1046,7 @@ async function loadProfileFromCloud(studentId, options = {}) {
 }
 
 async function syncProfileToCloud(profile) {
-  if (!CLOUD_ENABLED) return
+  if (!CLOUD_ENABLED) return null
 
   try {
     const normalizedId = normalizeStudentId(profile.studentId)
@@ -1076,9 +1069,19 @@ async function syncProfileToCloud(profile) {
         }
       })
     })
-    if (!response.ok) return
+    if (!response.ok) return null
+
+    const data = await response.json()
+    const mergedProfile = data?.profile
+    if (mergedProfile && typeof mergedProfile === 'object') {
+      return ensureProfileClassMembership(ensureProfileAuth({
+        ...mergedProfile,
+        studentId: normalizeStudentId(mergedProfile.studentId || normalizedId)
+      }))
+    }
+    return null
   } catch {
-    // no-op
+    return null
   }
 }
 

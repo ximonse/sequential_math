@@ -303,20 +303,6 @@ function Dashboard() {
     return () => window.clearTimeout(timer)
   }, [isDirectStudentView, routeStudentId, students.length])
 
-  useEffect(() => {
-    if (!isDirectStudentView) return
-    if (!routeStudentId) return
-    if (students.length === 0) return
-    if (directStudentProfile) return
-    setDashboardStatus(`Kunde inte hitta elev med ID: ${routeStudentId}`)
-  }, [isDirectStudentView, routeStudentId, students.length, directStudentProfile])
-
-  useEffect(() => {
-    if (!isDirectStudentView) return
-    if (routeStudentId) return
-    if (!detailStudentId) return
-    navigate(`/teacher/student/${encodeURIComponent(detailStudentId)}`, { replace: true })
-  }, [isDirectStudentView, routeStudentId, detailStudentId, navigate])
 
   const handleRefresh = () => {
     void loadStudents()
@@ -375,6 +361,21 @@ function Dashboard() {
     && routeStudentId.length > 0
     && students.length > 0
     && !directStudentProfile
+
+  useEffect(() => {
+    if (!isDirectStudentView) return
+    if (!routeStudentId) return
+    if (students.length === 0) return
+    if (directStudentProfile) return
+    setDashboardStatus(`Kunde inte hitta elev med ID: ${routeStudentId}`)
+  }, [isDirectStudentView, routeStudentId, students.length, directStudentProfile])
+
+  useEffect(() => {
+    if (!isDirectStudentView) return
+    if (routeStudentId) return
+    if (!detailStudentId) return
+    navigate(`/teacher/student/${encodeURIComponent(detailStudentId)}`, { replace: true })
+  }, [isDirectStudentView, routeStudentId, detailStudentId, navigate])
 
   const filteredStudents = useMemo(() => (
     isDirectStudentView
@@ -688,12 +689,12 @@ function Dashboard() {
   const tableStickyStatusRows = useMemo(
     () => getSortedTableStickyRows(
       tableScopedStudents
-      .map(student => ({
-        studentId: student.studentId,
-        name: student.name,
-        className: getRecordClassLabel(student, classNameById),
-        ...buildStickyTableStatusForStudent(student)
-      })),
+        .map(student => ({
+          studentId: student.studentId,
+          name: student.name,
+          className: getRecordClassLabel(student, classNameById),
+          ...buildStickyTableStatusForStudent(student)
+        })),
       stickySortBy,
       stickySortDir
     ),
@@ -1538,1463 +1539,982 @@ function Dashboard() {
         <div className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
 
         <div className="flex flex-col">
-        <div className="bg-white rounded-lg shadow p-4 mb-6 border border-sky-100" style={{ order: -72 }}>
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <h2 className="text-base font-semibold text-gray-800">Cloud-sync status</h2>
-            <button
-              type="button"
-              onClick={() => { void handleCloudRefreshNow() }}
-              disabled={isCloudRefreshBusy}
-              className={`px-3 py-1.5 rounded text-xs ${
-                isCloudRefreshBusy
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-sky-600 text-white hover:bg-sky-700'
-              }`}
-            >
-              {isCloudRefreshBusy ? 'Hämtar...' : 'Hämta från server nu'}
-            </button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-            <div className="rounded border border-gray-100 bg-gray-50 p-2">
-              <div className="text-[11px] uppercase tracking-wide text-gray-500">Senaste försök</div>
-              <div className="font-medium text-gray-800">{formatSyncTimestamp(cloudSyncStatus.lastAttemptAt)}</div>
-            </div>
-            <div className="rounded border border-gray-100 bg-gray-50 p-2">
-              <div className="text-[11px] uppercase tracking-wide text-gray-500">Senast lyckad</div>
-              <div className="font-medium text-gray-800">{formatSyncTimestamp(cloudSyncStatus.lastSuccessAt)}</div>
-            </div>
-            <div className="rounded border border-gray-100 bg-gray-50 p-2">
-              <div className="text-[11px] uppercase tracking-wide text-gray-500">Källa</div>
-              <div className="font-medium text-gray-800">{getCloudSyncSourceLabel(cloudSyncStatus.lastSource)}</div>
-            </div>
-            <div className="rounded border border-gray-100 bg-gray-50 p-2">
-              <div className="text-[11px] uppercase tracking-wide text-gray-500">Poster (lokal/cloud/synlig)</div>
-              <div className="font-medium text-gray-800">
-                {Number(cloudSyncStatus.localCount) || 0} / {Number(cloudSyncStatus.cloudCount) || 0} / {Number(cloudSyncStatus.mergedCount) || 0}
-              </div>
-            </div>
-          </div>
-          {cloudSyncStatus.lastError ? (
-            <p className="mt-2 text-xs text-rose-700">
-              Senaste fel: {cloudSyncStatus.lastError}
-            </p>
-          ) : (
-            <p className="mt-2 text-xs text-emerald-700">
-              Senaste hämtning ser ut att vara OK.
-            </p>
-          )}
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-4 mb-6" style={{ order: -70 }}>
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <h2 className="text-base font-semibold text-gray-800">Urval: klass/grupp</h2>
-            <p className="text-xs text-gray-500">
-              {selectedClassIds.length === 0
-                ? `Alla klasser/grupper (${students.length} elever)`
-                : `${selectedClassIds.length} klass/grupp(er) valda (${filteredStudents.length} elever)`}
-            </p>
-          </div>
-          <p className="text-[11px] text-gray-500 mb-2">
-            Valda klasser/grupper sparas som förval till nästa gång.
-          </p>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={clearClassFilter}
-              className={`px-2 py-1 rounded text-xs ${
-                selectedClassIds.length === 0
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Alla klasser
-            </button>
-            {classFilterOptions.length === 0 && (
-              <span className="text-xs text-gray-400">
-                Inga klass-/grupptaggar hittades ännu.
-              </span>
-            )}
-            {classFilterOptions.map(item => (
+          <div className="bg-white rounded-lg shadow p-4 mb-6 border border-sky-100" style={{ order: -72 }}>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <h2 className="text-base font-semibold text-gray-800">Cloud-sync status</h2>
               <button
                 type="button"
-                key={`top-filter-${item.id}`}
-                onClick={() => handleToggleClassFilter(item.id)}
-                className={`px-2 py-1 rounded text-xs ${
-                  selectedClassIds.includes(item.id)
+                onClick={() => { void handleCloudRefreshNow() }}
+                disabled={isCloudRefreshBusy}
+                className={`px-3 py-1.5 rounded text-xs ${isCloudRefreshBusy
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-sky-600 text-white hover:bg-sky-700'
+                  }`}
+              >
+                {isCloudRefreshBusy ? 'Hämtar...' : 'Hämta från server nu'}
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+              <div className="rounded border border-gray-100 bg-gray-50 p-2">
+                <div className="text-[11px] uppercase tracking-wide text-gray-500">Senaste försök</div>
+                <div className="font-medium text-gray-800">{formatSyncTimestamp(cloudSyncStatus.lastAttemptAt)}</div>
+              </div>
+              <div className="rounded border border-gray-100 bg-gray-50 p-2">
+                <div className="text-[11px] uppercase tracking-wide text-gray-500">Senast lyckad</div>
+                <div className="font-medium text-gray-800">{formatSyncTimestamp(cloudSyncStatus.lastSuccessAt)}</div>
+              </div>
+              <div className="rounded border border-gray-100 bg-gray-50 p-2">
+                <div className="text-[11px] uppercase tracking-wide text-gray-500">Källa</div>
+                <div className="font-medium text-gray-800">{getCloudSyncSourceLabel(cloudSyncStatus.lastSource)}</div>
+              </div>
+              <div className="rounded border border-gray-100 bg-gray-50 p-2">
+                <div className="text-[11px] uppercase tracking-wide text-gray-500">Poster (lokal/cloud/synlig)</div>
+                <div className="font-medium text-gray-800">
+                  {Number(cloudSyncStatus.localCount) || 0} / {Number(cloudSyncStatus.cloudCount) || 0} / {Number(cloudSyncStatus.mergedCount) || 0}
+                </div>
+              </div>
+            </div>
+            {cloudSyncStatus.lastError ? (
+              <p className="mt-2 text-xs text-rose-700">
+                Senaste fel: {cloudSyncStatus.lastError}
+              </p>
+            ) : (
+              <p className="mt-2 text-xs text-emerald-700">
+                Senaste hämtning ser ut att vara OK.
+              </p>
+            )}
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4 mb-6" style={{ order: -70 }}>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <h2 className="text-base font-semibold text-gray-800">Urval: klass/grupp</h2>
+              <p className="text-xs text-gray-500">
+                {selectedClassIds.length === 0
+                  ? `Alla klasser/grupper (${students.length} elever)`
+                  : `${selectedClassIds.length} klass/grupp(er) valda (${filteredStudents.length} elever)`}
+              </p>
+            </div>
+            <p className="text-[11px] text-gray-500 mb-2">
+              Valda klasser/grupper sparas som förval till nästa gång.
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={clearClassFilter}
+                className={`px-2 py-1 rounded text-xs ${selectedClassIds.length === 0
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {item.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg p-4 shadow">
-            <p className="text-sm text-gray-500">Antal elever</p>
-            <p className="text-3xl font-bold text-gray-800">{classStats.totalStudents}</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 shadow">
-            <p className="text-sm text-gray-500">Aktiva idag</p>
-            <p className="text-3xl font-bold text-green-600">{classStats.activeToday}</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 shadow">
-            <p className="text-sm text-gray-500">Genomsnitt success</p>
-            <p className="text-3xl font-bold text-blue-600">
-              {Math.round(classStats.avgSuccessRate * 100)}%
-            </p>
-          </div>
-          <div className="bg-white rounded-lg p-4 shadow">
-            <p className="text-sm text-gray-500">Totalt problem</p>
-            <p className="text-3xl font-bold text-purple-600">{classStats.totalProblems}</p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-800">Datakvalitet</h2>
-              <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                dataQualitySummary.overallQuality >= 0.8
-                  ? 'bg-green-100 text-green-700'
-                  : dataQualitySummary.overallQuality >= 0.6
-                    ? 'bg-amber-100 text-amber-700'
-                    : 'bg-red-100 text-red-700'
-              }`}>
-                {Math.round(dataQualitySummary.overallQuality * 100)}%
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2">
-                <p className="text-gray-500 text-xs">Telemetry täckning</p>
-                <p className="font-semibold text-gray-800">
-                  {dataQualitySummary.withTelemetry}/{dataQualitySummary.totalStudents}
-                </p>
-              </div>
-              <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2">
-                <p className="text-gray-500 text-xs">Närvarosignal idag</p>
-                <p className="font-semibold text-gray-800">
-                  {dataQualitySummary.withPresenceToday}/{dataQualitySummary.totalStudents}
-                </p>
-              </div>
-              <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2">
-                <p className="text-gray-500 text-xs">Session-gap idag</p>
-                <p className="font-semibold text-gray-800">{dataQualitySummary.sessionGapStudents}</p>
-              </div>
-              <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2">
-                <p className="text-gray-500 text-xs">Datamismatch idag</p>
-                <p className="font-semibold text-gray-800">{dataQualitySummary.answerMismatchStudents}</p>
-              </div>
-            </div>
-            <p className="text-xs text-gray-500 mt-3">
-              Behöver extra koll: {dataQualitySummary.needsFollowUpNames.length > 0
-                ? dataQualitySummary.needsFollowUpNames.join(', ')
-                : 'Ingen just nu'}
-            </p>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-800">Insikter från användning (7d)</h2>
-              <span className="text-xs text-gray-500">För förbättring av appen</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-              <div className="rounded border border-blue-200 bg-blue-50 px-3 py-2">
-                <p className="text-blue-700 text-xs">Tid på uppgift / aktiv elev</p>
-                <p className="font-semibold text-blue-800">{formatDuration(usageInsights.avgEngagedSecondsPerActiveStudent)}</p>
-              </div>
-              <div className="rounded border border-indigo-200 bg-indigo-50 px-3 py-2">
-                <p className="text-indigo-700 text-xs">Median sessionslängd</p>
-                <p className="font-semibold text-indigo-800">{formatDuration(usageInsights.medianSessionDurationSeconds)}</p>
-              </div>
-              <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2">
-                <p className="text-amber-700 text-xs">Pausacceptans</p>
-                <p className="font-semibold text-amber-800">{toPercent(usageInsights.breakTakeRate)}</p>
-              </div>
-              <div className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2">
-                <p className="text-emerald-700 text-xs">Ticket träffsäkerhet (idag)</p>
-                <p className="font-semibold text-emerald-800">{toPercent(usageInsights.ticketAccuracyToday)}</p>
-              </div>
-            </div>
-            <p className="text-xs text-gray-600">
-              Vanligaste träningsstart: {usageInsights.topLaunchModes.length > 0
-                ? usageInsights.topLaunchModes.map(item => `${item.label} (${item.count})`).join(', ')
-                : 'Ingen data ännu'}
-            </p>
-            <p className="text-xs text-gray-600 mt-1">
-              Vanligaste felkategori: {usageInsights.topErrorCategories.length > 0
-                ? usageInsights.topErrorCategories.map(item => `${item.label} (${item.count})`).join(', ')
-                : 'Ingen data ännu'}
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-4 mb-8" style={{ order: -60 }}>
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">Uppdrag via länk</h2>
-          <div className="flex flex-wrap gap-2 mb-4">
-            <button
-              onClick={() => handleCreatePreset('addition')}
-              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
-            >
-              Nytt: Bara addition
-            </button>
-            <button
-              onClick={() => handleCreatePreset('multiplication')}
-              className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm"
-            >
-              Nytt: Bara multiplikation
-            </button>
-            <button
-              onClick={() => handleCreatePreset('subtraction')}
-              className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm"
-            >
-              Nytt: Bara subtraktion
-            </button>
-            <button
-              onClick={() => handleCreatePreset('division')}
-              className="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded text-sm"
-            >
-              Nytt: Bara division
-            </button>
-            <button
-              onClick={() => handleCreatePreset('mixed')}
-              className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm"
-            >
-              Nytt: Kombination
-            </button>
-          </div>
-
-          <div className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50/70 p-3">
-            <p className="text-sm font-semibold text-indigo-900 mb-2">NCM-uppdrag via länk</p>
-            <p className="text-xs text-indigo-800 mb-3">
-              Välj en eller flera NCM-koder/förmågor. Elever får uppdraget endast via länk (eller om du aktiverar uppdraget för alla).
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-              <div className="rounded-lg border border-indigo-200 bg-white p-2.5">
-                <p className="text-xs font-semibold text-indigo-900 mb-2">Koder</p>
-                <div className="max-h-40 overflow-auto space-y-1 pr-1">
-                  {ncmCodeOptions.map(option => {
-                    const checked = ncmSelectedCodes.includes(option.code)
-                    return (
-                      <label key={option.code} className="flex items-start gap-2 text-xs text-gray-700">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => toggleNcmCode(option.code)}
-                          className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600"
-                        />
-                        <span>
-                          <span className="font-medium">{getNcmCodeLabelSv(option.code)}</span>
-                          <span className="text-gray-500"> ({option.count})</span>
-                        </span>
-                      </label>
-                    )
-                  })}
-                </div>
-              </div>
-              <div className="rounded-lg border border-indigo-200 bg-white p-2.5">
-                <p className="text-xs font-semibold text-indigo-900 mb-2">Förmågor</p>
-                <div className="max-h-40 overflow-auto space-y-1 pr-1">
-                  {ncmAbilityOptions.map(option => {
-                    const checked = ncmSelectedAbilityTags.includes(option.tag)
-                    return (
-                      <label key={option.tag} className="flex items-start gap-2 text-xs text-gray-700">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => toggleNcmAbilityTag(option.tag)}
-                          className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600"
-                        />
-                        <span>
-                          <span className="font-medium">{getNcmAbilityLabelSv(option.tag)}</span>
-                          <span className="text-gray-500"> ({option.count})</span>
-                        </span>
-                      </label>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                onClick={handleCreateNcmAssignment}
-                className="px-3 py-2 bg-indigo-700 hover:bg-indigo-800 text-white rounded text-sm"
-              >
-                Skapa NCM-uppdrag
-              </button>
-              <button
-                onClick={clearNcmFilters}
-                className="px-3 py-2 bg-white border border-indigo-200 hover:bg-indigo-100 text-indigo-800 rounded text-sm"
-              >
-                Rensa val
-              </button>
-              <p className="text-xs text-indigo-800">
-                Valda koder: {ncmSelectedCodes.length} | valda förmågor: {ncmSelectedAbilityTags.length}
-              </p>
-            </div>
-          </div>
-
-          {assignments.length === 0 ? (
-            <p className="text-sm text-gray-500">Inga uppdrag skapade ännu.</p>
-          ) : (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between py-1">
-                <p className="text-xs text-gray-500">
-                  Aktivt för alla: {activeAssignmentId ? activeAssignmentId : 'Ingen (fri träning)'}
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleClearActiveForAll}
-                    className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded text-xs"
-                  >
-                    Rensa aktivt
-                  </button>
-                  <button
-                    onClick={handleClearAllAssignments}
-                    className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
-                  >
-                    Rensa alla
-                  </button>
-                </div>
-              </div>
-              {assignments.slice(0, 10).map(assignment => (
-                <div
-                  key={assignment.id}
-                  className={`flex flex-wrap items-center justify-between gap-2 border rounded p-2 ${
-                    activeAssignmentId === assignment.id ? 'border-green-400 bg-green-50' : ''
                   }`}
+              >
+                Alla klasser
+              </button>
+              {classFilterOptions.length === 0 && (
+                <span className="text-xs text-gray-400">
+                  Inga klass-/grupptaggar hittades ännu.
+                </span>
+              )}
+              {classFilterOptions.map(item => (
+                <button
+                  type="button"
+                  key={`top-filter-${item.id}`}
+                  onClick={() => handleToggleClassFilter(item.id)}
+                  className={`px-2 py-1 rounded text-xs ${selectedClassIds.includes(item.id)
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                 >
-                  <div className="text-sm">
-                    <p className="font-medium text-gray-800">{assignment.title}</p>
-                    <p className="text-gray-500">
-                      {formatAssignmentSummaryLine(assignment)}
-                    </p>
-                    <p className="text-xs text-gray-400 font-mono">{assignment.id}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleActivateForAll(assignment.id)}
-                      className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs"
-                    >
-                      Aktivera för alla
-                    </button>
-                    <button
-                      onClick={() => handleDeleteAssignment(assignment.id)}
-                      className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
-                    >
-                      Ta bort
-                    </button>
-                    <button
-                      onClick={() => handleCopyAssignmentLink(assignment.id)}
-                      className="px-3 py-1.5 bg-gray-800 hover:bg-black text-white rounded text-xs"
-                    >
-                      {copiedId === assignment.id ? 'Kopierad' : 'Kopiera länk'}
-                    </button>
-                  </div>
-                </div>
+                  {item.name}
+                </button>
               ))}
             </div>
-          )}
-        </div>
+          </div>
 
-        <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border border-amber-200/90 rounded-2xl shadow-[0_16px_42px_-26px_rgba(146,64,14,0.55)] p-4 md:p-5 mb-8" style={{ order: -50 }}>
-          <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500" />
-          <button
-            onClick={() => setTicketSectionOpen(prev => !prev)}
-            className="w-full flex items-center justify-between text-left mb-4 pt-1"
-          >
-            <div>
-              <h2 className="text-xl font-extrabold text-amber-900">Ticket</h2>
-              <span className="text-xs text-amber-800 font-medium">Start-ticket / Exit-ticket</span>
+          <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="bg-white rounded-lg p-4 shadow">
+              <p className="text-sm text-gray-500">Antal elever</p>
+              <p className="text-3xl font-bold text-gray-800">{classStats.totalStudents}</p>
             </div>
-            <span className="px-3 py-1.5 rounded-full border border-amber-300 bg-white text-xs font-semibold text-amber-900 shadow-sm">
-              {ticketSectionOpen ? 'Dölj' : 'Visa'}
-            </span>
-          </button>
-
-          {!ticketSectionOpen ? (
-            <p className="text-xs text-amber-800 bg-amber-100/70 border border-amber-200 rounded-lg px-3 py-2 inline-block">Ticket-sektionen är minimerad.</p>
-          ) : (
-            <>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
-            <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 shadow-sm">
-              <h3 className="text-base font-bold text-gray-800 mb-2">Ny ticket-fråga</h3>
-              <textarea
-                value={ticketQuestionInput}
-                onChange={(e) => setTicketQuestionInput(e.target.value)}
-                placeholder="Fråga"
-                className="w-full min-h-20 px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm mb-2 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
-              />
-              <input
-                value={ticketAnswerInput}
-                onChange={(e) => setTicketAnswerInput(e.target.value)}
-                placeholder="Facit / rätt svar"
-                className="w-full px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm mb-2 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
-              />
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                <input
-                  value={ticketTagsInput}
-                  onChange={(e) => setTicketTagsInput(e.target.value)}
-                  placeholder="Taggar, kommaseparerat"
-                  className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
-                />
-                <select
-                  value={ticketKindInput}
-                  onChange={(e) => setTicketKindInput(e.target.value)}
-                  className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
-                >
-                  <option value="start">Start-ticket</option>
-                  <option value="exit">Exit-ticket</option>
-                </select>
-                <button
-                  onClick={handleCreateTicketTemplate}
-                  className="px-3 py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl text-sm font-semibold shadow-sm"
-                >
-                  Spara ticket
-                </button>
-              </div>
-              <p className="text-xs text-gray-500 mt-2">
-                CSV-import: `Fråga;Svar` per rad (valfritt tredje fält: `Taggar`).
+            <div className="bg-white rounded-lg p-4 shadow">
+              <p className="text-sm text-gray-500">Aktiva idag</p>
+              <p className="text-3xl font-bold text-green-600">{classStats.activeToday}</p>
+            </div>
+            <div className="bg-white rounded-lg p-4 shadow">
+              <p className="text-sm text-gray-500">Genomsnitt success</p>
+              <p className="text-3xl font-bold text-blue-600">
+                {Math.round(classStats.avgSuccessRate * 100)}%
               </p>
-              <textarea
-                value={ticketCsvInput}
-                onChange={(e) => setTicketCsvInput(e.target.value)}
-                placeholder={'Fråga 1;Svar 1\nFråga 2;Svar 2'}
-                className="w-full min-h-24 px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm mt-2 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
-              />
+            </div>
+            <div className="bg-white rounded-lg p-4 shadow">
+              <p className="text-sm text-gray-500">Totalt problem</p>
+              <p className="text-3xl font-bold text-purple-600">{classStats.totalProblems}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-8">
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold text-gray-800">Datakvalitet</h2>
+                <span className={`px-2 py-0.5 rounded text-xs font-semibold ${dataQualitySummary.overallQuality >= 0.8
+                    ? 'bg-green-100 text-green-700'
+                    : dataQualitySummary.overallQuality >= 0.6
+                      ? 'bg-amber-100 text-amber-700'
+                      : 'bg-red-100 text-red-700'
+                  }`}>
+                  {Math.round(dataQualitySummary.overallQuality * 100)}%
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2">
+                  <p className="text-gray-500 text-xs">Telemetry täckning</p>
+                  <p className="font-semibold text-gray-800">
+                    {dataQualitySummary.withTelemetry}/{dataQualitySummary.totalStudents}
+                  </p>
+                </div>
+                <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2">
+                  <p className="text-gray-500 text-xs">Närvarosignal idag</p>
+                  <p className="font-semibold text-gray-800">
+                    {dataQualitySummary.withPresenceToday}/{dataQualitySummary.totalStudents}
+                  </p>
+                </div>
+                <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2">
+                  <p className="text-gray-500 text-xs">Session-gap idag</p>
+                  <p className="font-semibold text-gray-800">{dataQualitySummary.sessionGapStudents}</p>
+                </div>
+                <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2">
+                  <p className="text-gray-500 text-xs">Datamismatch idag</p>
+                  <p className="font-semibold text-gray-800">{dataQualitySummary.answerMismatchStudents}</p>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-3">
+                Behöver extra koll: {dataQualitySummary.needsFollowUpNames.length > 0
+                  ? dataQualitySummary.needsFollowUpNames.join(', ')
+                  : 'Ingen just nu'}
+              </p>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold text-gray-800">Insikter från användning (7d)</h2>
+                <span className="text-xs text-gray-500">För förbättring av appen</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                <div className="rounded border border-blue-200 bg-blue-50 px-3 py-2">
+                  <p className="text-blue-700 text-xs">Tid på uppgift / aktiv elev</p>
+                  <p className="font-semibold text-blue-800">{formatDuration(usageInsights.avgEngagedSecondsPerActiveStudent)}</p>
+                </div>
+                <div className="rounded border border-indigo-200 bg-indigo-50 px-3 py-2">
+                  <p className="text-indigo-700 text-xs">Median sessionslängd</p>
+                  <p className="font-semibold text-indigo-800">{formatDuration(usageInsights.medianSessionDurationSeconds)}</p>
+                </div>
+                <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2">
+                  <p className="text-amber-700 text-xs">Pausacceptans</p>
+                  <p className="font-semibold text-amber-800">{toPercent(usageInsights.breakTakeRate)}</p>
+                </div>
+                <div className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2">
+                  <p className="text-emerald-700 text-xs">Ticket träffsäkerhet (idag)</p>
+                  <p className="font-semibold text-emerald-800">{toPercent(usageInsights.ticketAccuracyToday)}</p>
+                </div>
+              </div>
+              <p className="text-xs text-gray-600">
+                Vanligaste träningsstart: {usageInsights.topLaunchModes.length > 0
+                  ? usageInsights.topLaunchModes.map(item => `${item.label} (${item.count})`).join(', ')
+                  : 'Ingen data ännu'}
+              </p>
+              <p className="text-xs text-gray-600 mt-1">
+                Vanligaste felkategori: {usageInsights.topErrorCategories.length > 0
+                  ? usageInsights.topErrorCategories.map(item => `${item.label} (${item.count})`).join(', ')
+                  : 'Ingen data ännu'}
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4 mb-8" style={{ order: -60 }}>
+            <h2 className="text-lg font-semibold text-gray-800 mb-3">Uppdrag via länk</h2>
+            <div className="flex flex-wrap gap-2 mb-4">
               <button
-                onClick={handleImportTicketCsv}
-                className="mt-2 px-3 py-2.5 bg-gray-800 hover:bg-black text-white rounded-xl text-sm font-medium"
+                onClick={() => handleCreatePreset('addition')}
+                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
               >
-                Importera CSV
+                Nytt: Bara addition
+              </button>
+              <button
+                onClick={() => handleCreatePreset('multiplication')}
+                className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm"
+              >
+                Nytt: Bara multiplikation
+              </button>
+              <button
+                onClick={() => handleCreatePreset('subtraction')}
+                className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded text-sm"
+              >
+                Nytt: Bara subtraktion
+              </button>
+              <button
+                onClick={() => handleCreatePreset('division')}
+                className="px-3 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded text-sm"
+              >
+                Nytt: Bara division
+              </button>
+              <button
+                onClick={() => handleCreatePreset('mixed')}
+                className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm"
+              >
+                Nytt: Kombination
               </button>
             </div>
 
-            <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 shadow-sm">
-              <div className="flex flex-wrap items-center gap-2 mb-2">
-                <input
-                  value={ticketTemplateFilter}
-                  onChange={(e) => setTicketTemplateFilter(e.target.value)}
-                  placeholder="Sök fråga/tagg"
-                  className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm flex-1 min-w-40 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
-                />
-                <select
-                  value={ticketTagFilter}
-                  onChange={(e) => setTicketTagFilter(e.target.value)}
-                  className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
-                >
-                  <option value="">Alla taggar</option>
-                  {ticketTagOptions.map(tag => (
-                    <option key={`ticket-tag-${tag}`} value={tag}>{tag}</option>
-                  ))}
-                </select>
-                <select
-                  value={ticketSortBy}
-                  onChange={(e) => setTicketSortBy(e.target.value)}
-                  className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
-                >
-                  <option value="newest">Senaste</option>
-                  <option value="oldest">Äldsta</option>
-                  <option value="alpha">A-Ö</option>
-                </select>
-              </div>
-
-              {ticketTemplateRows.length === 0 ? (
-                <p className="text-sm text-gray-500">Inga ticket-frågor matchar urvalet.</p>
-              ) : (
-                <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
-                  {ticketTemplateRows.map(template => (
-                    <div key={template.id} className="border border-amber-100 rounded-xl p-3 bg-amber-50/35">
-                      <p className="text-sm font-semibold text-gray-800 leading-snug">{template.question}</p>
-                      <p className="text-xs text-gray-600 mt-1">Facit: {template.answer}</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {template.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket'}
-                        {Array.isArray(template.tags) && template.tags.length > 0 ? ` | ${template.tags.join(', ')}` : ''}
-                      </p>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        <button
-                          onClick={() => handleCreateTicketDispatch(template)}
-                          className="px-2.5 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
-                        >
-                          Skapa länk
-                        </button>
-                        <button
-                          onClick={() => handleDeleteTicketTemplate(template.id)}
-                          className="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-semibold"
-                        >
-                          Ta bort
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 mb-4 shadow-sm">
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <label className="text-xs text-gray-600 font-medium">Utskick</label>
-              <select
-                value={selectedTicketDispatchId}
-                onChange={(e) => setSelectedTicketDispatchId(e.target.value)}
-                className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm min-w-56 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
-              >
-                <option value="">Välj ticket-utskick</option>
-                {ticketDispatches.map(dispatch => (
-                  <option key={dispatch.id} value={dispatch.id}>
-                    {dispatch.title} ({dispatch.kind === 'exit' ? 'Exit' : 'Start'})
-                  </option>
-                ))}
-              </select>
-              <label className="inline-flex items-center gap-2 text-xs text-gray-600">
-                <input
-                  type="checkbox"
-                  checked={ticketDispatchImmediateFeedback}
-                  onChange={(e) => setTicketDispatchImmediateFeedback(e.target.checked)}
-                />
-                Nya länkar visar rätt/fel direkt
-              </label>
-            </div>
-            <div className="border border-amber-200 rounded-xl p-3 bg-amber-50/50 mb-3">
-              <div className="flex flex-wrap items-center gap-2 mb-2">
-                <p className="text-xs font-bold text-amber-900">Mottagare (för startsidan)</p>
-                <button
-                  onClick={handleTicketTargetsFromClassFilter}
-                  disabled={selectedClassIds.length === 0}
-                  className="px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Använd klassfiltret
-                </button>
-                <button
-                  onClick={handleClearTicketTargets}
-                  className="px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 hover:bg-gray-50"
-                >
-                  Nollställ mottagare
-                </button>
-              </div>
-              <p className="text-[11px] text-gray-600 mb-2">
-                Inga aktiva val = använder nuvarande urval i dashboarden ({filteredStudents.length} elev(er)).
+            <div className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50/70 p-3">
+              <p className="text-sm font-semibold text-indigo-900 mb-2">NCM-uppdrag via länk</p>
+              <p className="text-xs text-indigo-800 mb-3">
+                Välj en eller flera NCM-koder/förmågor. Elever får uppdraget endast via länk (eller om du aktiverar uppdraget för alla).
               </p>
-              <div className="flex flex-wrap gap-1 mb-2">
-                {classFilterOptions.map(classItem => {
-                  const selected = ticketTargetClassSet.has(classItem.id)
-                  return (
-                    <button
-                      key={`ticket-target-class-${classItem.id}`}
-                      onClick={() => handleToggleTicketTargetClass(classItem.id)}
-                      className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium ${
-                        selected
-                          ? 'bg-amber-600 border-amber-600 text-white shadow-sm'
-                          : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      {selected ? 'Vald: ' : ''}{classItem.name}
-                    </button>
-                  )
-                })}
-              </div>
-              <input
-                value={ticketStudentSearch}
-                onChange={(e) => setTicketStudentSearch(e.target.value)}
-                placeholder="Sök elev (namn, id, klass)"
-                className="w-full px-2.5 py-1.5 border-2 border-amber-100 rounded-lg text-xs focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
-              />
-              <div className="mt-2 max-h-40 overflow-y-auto border border-amber-100 rounded-lg bg-white divide-y divide-gray-100">
-                {ticketFilteredStudentOptions.length === 0 ? (
-                  <p className="text-xs text-gray-500 p-2">Inga elever matchar sökningen.</p>
-                ) : (
-                  ticketFilteredStudentOptions.slice(0, 140).map(item => {
-                    const selected = ticketTargetStudentSet.has(item.studentId)
-                    return (
-                      <button
-                        key={`ticket-target-student-${item.studentId}`}
-                        onClick={() => handleToggleTicketTargetStudent(item.studentId)}
-                        className={`w-full text-left px-2.5 py-1.5 text-xs ${
-                          selected ? 'bg-amber-100 text-amber-900 font-semibold' : 'text-gray-700 hover:bg-gray-50'
-                        }`}
-                      >
-                        <span className="font-medium">{item.name}</span>
-                        <span className="text-gray-500"> ({item.className || 'Ingen klass'})</span>
-                      </button>
-                    )
-                  })
-                )}
-              </div>
-              {ticketFilteredStudentOptions.length > 140 && (
-                <p className="text-[11px] text-gray-500 mt-1">
-                  Visar de första 140 matcherna. Förfina sökningen för att se fler.
-                </p>
-              )}
-              <p className="text-[11px] text-gray-700 mt-2 font-medium">
-                Målsättning: {ticketResolvedTargetStudentIds.size} elev(er)
-                {ticketHasExplicitTargets
-                  ? ` via ${ticketTargetClassIds.length} klass(er) + ${ticketTargetStudentIds.length} individval`
-                  : ' via dashboardens aktuella filter'}
-              </p>
-            </div>
-
-            {ticketDispatches.length === 0 ? (
-              <p className="text-sm text-gray-500">Inga ticket-utskick ännu.</p>
-            ) : (
-              <div className="space-y-2">
-                {ticketDispatches.slice(0, 12).map(dispatch => (
-                  <div key={dispatch.id} className="border border-amber-100 rounded-xl p-3 bg-white flex flex-wrap items-center justify-between gap-2">
-                    <div className="text-sm">
-                      <p className="font-semibold text-gray-800">{dispatch.title}</p>
-                      <p className="text-xs text-gray-500">
-                        {dispatch.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket'}
-                        {' | '}
-                        direktfeedback: {dispatch.showCorrectnessOnSubmit ? 'Ja' : 'Nej'}
-                      </p>
-                      <p className="text-[11px] text-gray-400 font-mono">{dispatch.id}</p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() => handleCopyTicketLink(dispatch.id)}
-                        className="px-2.5 py-1.5 bg-gray-800 hover:bg-black text-white rounded-lg text-xs font-semibold"
-                      >
-                        {copiedTicketDispatchId === dispatch.id ? 'Kopierad' : 'Kopiera länk'}
-                      </button>
-                      <button
-                        onClick={() => handlePublishTicketToHome(dispatch.id)}
-                        className="px-2.5 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
-                      >
-                        Visa på startsida
-                      </button>
-                      <button
-                        onClick={() => handleToggleTicketReveal(dispatch.id, !dispatch.revealCorrectness)}
-                        className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold ${
-                          dispatch.revealCorrectness
-                            ? 'bg-green-100 hover:bg-green-200 text-green-700'
-                            : 'bg-orange-100 hover:bg-orange-200 text-orange-700'
-                        }`}
-                      >
-                        {dispatch.revealCorrectness ? 'Facit visas' : 'Visa facit för alla'}
-                      </button>
-                      <button
-                        onClick={() => handleClearTicketFromHome(dispatch.id)}
-                        className="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold"
-                      >
-                        Ta bort från startsida
-                      </button>
-                      <button
-                        onClick={() => handleDeleteTicketDispatch(dispatch.id)}
-                        className="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-semibold"
-                      >
-                        Ta bort
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-base font-bold text-gray-800">Svar för valt utskick</h3>
-              {ticketSelectedDispatch && (
-                <p className="text-xs text-gray-700 font-medium">
-                  Svarat {ticketResponseMeta.answered}/{ticketResponseMeta.total}
-                  {' | '}
-                  Rätt {ticketResponseMeta.correct}
-                  {' | '}
-                  Fel {ticketResponseMeta.wrong}
-                </p>
-              )}
-            </div>
-            {!ticketSelectedDispatch ? (
-              <p className="text-sm text-gray-500">Välj ett utskick ovan för att se elevsvar.</p>
-            ) : ticketResponseRows.length === 0 ? (
-              <p className="text-sm text-gray-500">Inga mottagare eller svar ännu för detta utskick.</p>
-            ) : (
-              <div className="overflow-x-auto border border-amber-100 rounded-xl">
-                <table className="w-full text-sm bg-white">
-                  <thead>
-                    <tr className="text-left text-gray-600 border-b bg-amber-50">
-                      <th className="py-2 px-2 pr-2">Elev</th>
-                      <th className="py-2 pr-2">Klass</th>
-                      <th className="py-2 pr-2">Status</th>
-                      <th className="py-2 pr-2">Svar</th>
-                      <th className="py-2 px-2">Tid</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ticketResponseRows.map(row => (
-                      <tr key={`ticket-response-${row.studentId}`} className="border-b last:border-b-0 hover:bg-amber-50/35">
-                        <td className="py-2 px-2 pr-2 text-gray-700 font-semibold">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenStudentDetail(row.studentId)}
-                            className="text-left hover:underline text-indigo-700"
-                          >
-                            {row.name}
-                          </button>
-                        </td>
-                        <td className="py-2 pr-2 text-gray-600">{row.className || '-'}</td>
-                        <td className="py-2 pr-2">
-                          {!row.answered ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs bg-gray-50 text-gray-500 border-gray-200 font-medium">
-                              Ej svarat
-                            </span>
-                          ) : row.isCorrect ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs bg-green-50 text-green-700 border-green-200 font-semibold">
-                              Rätt
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs bg-red-50 text-red-700 border-red-200 font-semibold">
-                              Fel
-                            </span>
-                          )}
-                        </td>
-                        <td className={`py-2 pr-2 ${row.answered && !row.isCorrect ? 'text-red-700' : 'text-gray-700'}`}>
-                          {row.answered ? (row.studentAnswer || '-') : '-'}
-                        </td>
-                        <td className="py-2 px-2 text-gray-600">{formatTimeAgo(row.answeredAt)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 mt-4 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-              <h3 className="text-base font-bold text-gray-800">Elevhistorik i tickets</h3>
-              {ticketHistoryStudent && (
-                <p className="text-xs text-gray-700 font-medium">
-                  Senaste svar: {formatTimeAgo(ticketHistorySummary.latestAnsweredAt)}
-                </p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 xl:grid-cols-4 gap-2 mb-3">
-              <select
-                value={ticketHistoryStudentId}
-                onChange={(e) => setTicketHistoryStudentId(e.target.value)}
-                className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
-              >
-                {ticketHistoryStudentOptions.length === 0 ? (
-                  <option value="">Inga elever i urvalet</option>
-                ) : (
-                  ticketHistoryStudentOptions.map(item => (
-                    <option key={`ticket-history-student-${item.studentId}`} value={item.studentId}>
-                      {item.name} {item.className ? `(${item.className})` : ''}
-                    </option>
-                  ))
-                )}
-              </select>
-              <select
-                value={ticketHistoryKindFilter}
-                onChange={(e) => setTicketHistoryKindFilter(e.target.value)}
-                className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
-              >
-                <option value="all">Alla typer</option>
-                <option value="start">Start-ticket</option>
-                <option value="exit">Exit-ticket</option>
-              </select>
-              <select
-                value={ticketHistoryResultFilter}
-                onChange={(e) => setTicketHistoryResultFilter(e.target.value)}
-                className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
-              >
-                <option value="all">Alla resultat</option>
-                <option value="correct">Bara rätt</option>
-                <option value="wrong">Bara fel</option>
-              </select>
-              <input
-                value={ticketHistorySearch}
-                onChange={(e) => setTicketHistorySearch(e.target.value)}
-                placeholder="Sök i fråga/svar"
-                className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
-              />
-            </div>
-
-            {!ticketHistoryStudent ? (
-              <p className="text-sm text-gray-500">Välj klassfilter ovan eller lägg till elever för att se historik.</p>
-            ) : ticketHistorySummary.total === 0 ? (
-              <p className="text-sm text-gray-500">Den här eleven har inte svarat på någon ticket ännu.</p>
-            ) : (
-              <>
-                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 mb-3 text-xs">
-                  <div className="rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-1.5">
-                    <p className="text-gray-500">Totalt svar</p>
-                    <p className="font-semibold text-gray-800">{ticketHistorySummary.total}</p>
-                  </div>
-                  <div className="rounded-xl border border-green-200 bg-green-50 px-2.5 py-1.5">
-                    <p className="text-green-700">Rätt</p>
-                    <p className="font-semibold text-green-700">{ticketHistorySummary.correct}</p>
-                  </div>
-                  <div className="rounded-xl border border-red-200 bg-red-50 px-2.5 py-1.5">
-                    <p className="text-red-700">Fel</p>
-                    <p className="font-semibold text-red-700">{ticketHistorySummary.wrong}</p>
-                  </div>
-                  <div className="rounded-xl border border-blue-200 bg-blue-50 px-2.5 py-1.5">
-                    <p className="text-blue-700">Träffsäkerhet</p>
-                    <p className="font-semibold text-blue-700">{Math.round(ticketHistorySummary.accuracy * 100)}%</p>
-                  </div>
-                  <div className="rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-1.5">
-                    <p className="text-amber-700">Senaste 7 dagar</p>
-                    <p className="font-semibold text-amber-700">{ticketHistorySummary.last7Days}</p>
-                  </div>
-                  <div className="rounded-xl border border-indigo-200 bg-indigo-50 px-2.5 py-1.5">
-                    <p className="text-indigo-700">Unika utskick</p>
-                    <p className="font-semibold text-indigo-700">{ticketHistorySummary.uniqueDispatches}</p>
-                  </div>
-                </div>
-
-                {ticketHistoryRows.length === 0 ? (
-                  <p className="text-sm text-gray-500">Inga historikrader matchar filtret.</p>
-                ) : (
-                  <div className="overflow-x-auto border border-amber-100 rounded-xl">
-                    <table className="w-full text-sm bg-white">
-                      <thead>
-                        <tr className="text-left text-gray-600 border-b bg-amber-50">
-                          <th className="py-2 px-2 pr-2">Tid</th>
-                          <th className="py-2 pr-2">Ticket</th>
-                          <th className="py-2 pr-2">Status</th>
-                          <th className="py-2 pr-2">Svar</th>
-                          <th className="py-2 px-2">Facit</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {ticketHistoryRows.map((row, index) => (
-                          <tr key={`ticket-history-row-${row.dispatchId}-${row.answeredAt || index}`} className="border-b last:border-b-0 hover:bg-amber-50/35">
-                            <td className="py-2 px-2 pr-2 text-gray-600 whitespace-nowrap">{formatTimeAgo(row.answeredAt)}</td>
-                            <td className="py-2 pr-2 text-gray-700">
-                              <p className="font-semibold">{row.title}</p>
-                              <p className="text-[11px] text-gray-500">
-                                {row.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket'}
-                              </p>
-                              <p className="text-[11px] text-gray-500 mt-0.5">{row.question}</p>
-                            </td>
-                            <td className="py-2 pr-2">
-                              {row.isCorrect ? (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs bg-green-50 text-green-700 border-green-200 font-semibold">
-                                  Rätt
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs bg-red-50 text-red-700 border-red-200 font-semibold">
-                                  Fel
-                                </span>
-                              )}
-                            </td>
-                            <td className={`py-2 pr-2 ${row.isCorrect ? 'text-gray-700' : 'text-red-700'}`}>
-                              {row.studentAnswer || '-'}
-                            </td>
-                            <td className="py-2 px-2 text-gray-700">{row.expectedAnswer || '-'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-            </>
-          )}
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-4 mb-8" style={{ order: -40 }}>
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <h2 className="text-lg font-semibold text-gray-800">Klass/gruppvy - snabbstatus</h2>
-            <span className="text-xs text-gray-500">Styrs av urvalet högst upp</span>
-          </div>
-          <p className="text-xs text-gray-500 mb-3">
-            {classOverviewMeta.className}: {classOverviewMeta.activeNowCount}/{classOverviewMeta.studentCount} aktiv(a) just nu
-          </p>
-          <p className="text-[11px] text-gray-400 mb-3">
-            Status: Grön = fokus + aktivitet senaste 2 min, Orange = fokus men ingen aktivitet 2-4 min, Svart = inne idag men ej aktiv nu, Röd = ej inne idag.
-          </p>
-          {classOverviewRows.length === 0 ? (
-            <p className="text-sm text-gray-500">Inga elever hittades i valt urval.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-gray-500 border-b">
-                    <th className="py-1 pr-2">
-                      <button
-                        type="button"
-                        onClick={() => handleClassOverviewSort('name')}
-                        className="inline-flex items-center gap-1 hover:text-gray-700"
-                      >
-                        Elev
-                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('name')}</span>
-                      </button>
-                    </th>
-                    <th className="py-1 pr-2">
-                      <button
-                        type="button"
-                        onClick={() => handleClassOverviewSort('activity')}
-                        className="inline-flex items-center gap-1 hover:text-gray-700"
-                      >
-                        Status
-                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('activity')}</span>
-                      </button>
-                    </th>
-                    <th className="py-1 pr-2">
-                      <button
-                        type="button"
-                        onClick={() => handleClassOverviewSort('operation')}
-                        className="inline-flex items-center gap-1 hover:text-gray-700"
-                      >
-                        Jobbar med
-                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('operation')}</span>
-                      </button>
-                    </th>
-                    <th className="py-1 pr-2">
-                      <button
-                        type="button"
-                        onClick={() => handleClassOverviewSort('today_attempts')}
-                        className="inline-flex items-center gap-1 hover:text-gray-700"
-                      >
-                        Idag
-                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('today_attempts')}</span>
-                      </button>
-                    </th>
-                    <th className="py-1 pr-2">
-                      <button
-                        type="button"
-                        onClick={() => handleClassOverviewSort('today_wrong')}
-                        className="inline-flex items-center gap-1 hover:text-gray-700"
-                      >
-                        Rätt/Fel idag
-                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('today_wrong')}</span>
-                      </button>
-                    </th>
-                    <th className="py-1 pr-2">
-                      <button
-                        type="button"
-                        onClick={() => handleClassOverviewSort('today_success')}
-                        className="inline-flex items-center gap-1 hover:text-gray-700"
-                      >
-                        Träff idag
-                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('today_success')}</span>
-                      </button>
-                    </th>
-                    <th className="py-1 pr-2">
-                      <button
-                        type="button"
-                        onClick={() => handleClassOverviewSort('today_engaged')}
-                        className="inline-flex items-center gap-1 hover:text-gray-700"
-                      >
-                        Tid på uppgift idag
-                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('today_engaged')}</span>
-                      </button>
-                    </th>
-                    <th className="py-1">
-                      <button
-                        type="button"
-                        onClick={() => handleClassOverviewSort('last_active')}
-                        className="inline-flex items-center gap-1 hover:text-gray-700"
-                      >
-                        Senast aktiv
-                        <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('last_active')}</span>
-                      </button>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {classOverviewRows.map(row => (
-                    <tr key={`overview-row-${row.studentId}`} className="border-b last:border-b-0">
-                      <td className="py-1 pr-2 text-gray-700 font-medium">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenStudentDetail(row.studentId)}
-                          className="text-left hover:underline text-indigo-700 font-medium"
-                        >
-                          {row.name}
-                        </button>
-                        <span className="ml-1 text-xs text-gray-400">{row.studentId}</span>
-                      </td>
-                      <td className="py-1 pr-2"><ActivityBadge code={row.activityStatus} compact /></td>
-                      <td className="py-1 pr-2 text-gray-700">{getOperationLabel(row.focusOperation)}</td>
-                      <td className="py-1 pr-2 text-gray-700">{row.todayAttempts}</td>
-                      <td className="py-1 pr-2 text-gray-700">
-                        {row.todayCorrectCount}/{row.todayWrongCount}
-                      </td>
-                      <td className="py-1 pr-2 text-gray-700">{toPercent(row.todaySuccessRate)}</td>
-                      <td className="py-1 pr-2 text-gray-700">{formatDuration(row.todayEngagedMinutes * 60)}</td>
-                      <td className="py-1 text-gray-700">{formatTimeAgo(row.lastActive)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        <TableStickyStatusPanel
-          rows={tableStickyStatusRows}
-          onSort={handleStickySort}
-          onOpenStudentDetail={handleOpenStudentDetail}
-          getSortIndicator={getStickySortIndicator}
-          className="bg-white rounded-lg shadow p-4 mb-8"
-          style={{ order: -30 }}
-        />
-
-        <div id="teacher-student-detail-section" className="bg-white rounded-lg shadow p-4 mb-8" style={{ order: -20 }}>
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <h2 className="text-lg font-semibold text-gray-800">Elevprofil (allt om en elev)</h2>
-            <div className="flex flex-wrap items-center gap-2">
-              <select
-                value={detailStudentId}
-                onChange={(e) => {
-                  const nextStudentId = String(e.target.value || '').trim()
-                  setDetailStudentId(nextStudentId)
-                  if (isDirectStudentView && nextStudentId) {
-                    navigate(`/teacher/student/${encodeURIComponent(nextStudentId)}`)
-                  }
-                }}
-                className="px-2 py-1 border rounded text-sm min-w-56"
-              >
-                {detailStudentOptions.length === 0 ? (
-                  <option value="">Inga elever i urvalet</option>
-                ) : (
-                  <>
-                    {hasMissingDirectStudent && (
-                      <option value="">Okant elev-ID - valj elev</option>
-                    )}
-                    {detailStudentOptions.map(item => (
-                      <option key={`detail-student-${item.studentId}`} value={item.studentId}>
-                        {item.name} {item.className ? `(${item.className})` : ''}
-                      </option>
-                    ))}
-                  </>
-                )}
-              </select>
-              <button
-                onClick={handleExportStudentDetailCsv}
-                disabled={!detailStudentProfile || !detailStudentRow || !detailStudentViewData}
-                className="px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 disabled:bg-gray-100 disabled:text-gray-400 text-emerald-700 rounded text-xs font-medium"
-              >
-                Exportera elevvy CSV
-              </button>
-            </div>
-          </div>
-
-          {!detailStudentProfile || !detailStudentRow || !detailStudentViewData ? (
-            <p className="text-sm text-gray-500">Välj en elev för att se tabeller, nivåstatus, NCM-resultat och nyckeldata.</p>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2 mb-4 text-xs">
-                <div className="rounded border border-gray-200 bg-gray-50 px-2.5 py-2">
-                  <p className="text-gray-500">Totalt lösta</p>
-                  <p className="font-semibold text-gray-800">{detailStudentProfile?.stats?.totalProblems || detailStudentRow.attempts}</p>
-                </div>
-                <div className="rounded border border-blue-200 bg-blue-50 px-2.5 py-2">
-                  <p className="text-blue-700">Träff totalt</p>
-                  <p className="font-semibold text-blue-700">{toPercent(detailStudentRow.successRate)}</p>
-                </div>
-                <div className="rounded border border-indigo-200 bg-indigo-50 px-2.5 py-2">
-                  <p className="text-indigo-700">Idag</p>
-                  <p className="font-semibold text-indigo-700">{detailStudentRow.todayAttempts}</p>
-                </div>
-                <div className="rounded border border-cyan-200 bg-cyan-50 px-2.5 py-2">
-                  <p className="text-cyan-700">Vecka</p>
-                  <p className="font-semibold text-cyan-700">{detailStudentRow.weekAttempts}</p>
-                </div>
-                <div className="rounded border border-amber-200 bg-amber-50 px-2.5 py-2">
-                  <p className="text-amber-700">Tid på uppgift idag</p>
-                  <p className="font-semibold text-amber-700">{formatDuration(detailStudentRow.todayEngagedMinutes * 60)}</p>
-                </div>
-                <div className="rounded border border-emerald-200 bg-emerald-50 px-2.5 py-2">
-                  <p className="text-emerald-700">Tid på uppgift 7d</p>
-                  <p className="font-semibold text-emerald-700">{formatDuration(detailStudentRow.weekEngagedMinutes * 60)}</p>
-                </div>
-                <div className="rounded border border-purple-200 bg-purple-50 px-2.5 py-2">
-                  <p className="text-purple-700">Nivå nu/högst</p>
-                  <p className="font-semibold text-purple-700">{detailStudentRow.currentDifficulty}/{detailStudentRow.highestDifficulty}</p>
-                </div>
-                <div className="rounded border border-gray-200 bg-white px-2.5 py-2">
-                  <p className="text-gray-500">Aktivitet</p>
-                  <div className="mt-1">
-                    <ActivityBadge code={detailStudentRow.activityStatus} compact />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                <div className="rounded border border-gray-200 p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-semibold text-gray-800">Gångertabell - status</h3>
-                    <p className="text-[11px] text-gray-500">
-                      Dag: {detailStudentViewData.tableSticky.todayDoneCount} | Vecka: {detailStudentViewData.tableSticky.weekDoneCount} | Star: {detailStudentViewData.tableSticky.starCount}
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-6 gap-1.5 mb-3">
-                    {TABLES.map(table => {
-                      const status = detailStudentViewData.tableSticky.statusByTable[table] || 'default'
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                <div className="rounded-lg border border-indigo-200 bg-white p-2.5">
+                  <p className="text-xs font-semibold text-indigo-900 mb-2">Koder</p>
+                  <div className="max-h-40 overflow-auto space-y-1 pr-1">
+                    {ncmCodeOptions.map(option => {
+                      const checked = ncmSelectedCodes.includes(option.code)
                       return (
-                        <div key={`detail-table-status-${table}`} className="h-11 rounded border flex items-center justify-center text-xs font-semibold relative bg-white">
-                          <span className={`absolute inset-0 rounded border ${getTeacherTableStatusClass(status)}`} />
-                          <span className="relative z-10">{table}</span>
-                          {status === 'star' ? (
-                            <span className="absolute top-0 right-0 text-[10px] text-yellow-300 z-10">★</span>
-                          ) : null}
-                        </div>
+                        <label key={option.code} className="flex items-start gap-2 text-xs text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleNcmCode(option.code)}
+                            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600"
+                          />
+                          <span>
+                            <span className="font-medium">{getNcmCodeLabelSv(option.code)}</span>
+                            <span className="text-gray-500"> ({option.count})</span>
+                          </span>
+                        </label>
                       )
                     })}
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className="text-left text-gray-500 border-b">
-                          <th className="py-1 pr-2">Tabell</th>
-                          <th className="py-1 pr-2">Status</th>
-                          <th className="py-1 pr-2">Försök 7d</th>
-                          <th className="py-1 pr-2">Träff 7d</th>
-                          <th className="py-1">Försök totalt</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {TABLES.map(table => {
-                          const perf = detailStudentViewData.tablePerformanceByTable[table]
-                          const status = detailStudentViewData.tableSticky.statusByTable[table] || 'default'
-                          return (
-                            <tr key={`detail-table-row-${table}`} className="border-b last:border-b-0">
-                              <td className="py-1 pr-2 text-gray-700 font-medium">{table}:an</td>
-                              <td className="py-1 pr-2 text-gray-700">{getTeacherTableStatusLabel(status)}</td>
-                              <td className="py-1 pr-2 text-gray-700">{perf.attempts7d}</td>
-                              <td className="py-1 pr-2 text-gray-700">{toPercent(perf.accuracy7d)}</td>
-                              <td className="py-1 text-gray-700">{perf.attemptsTotal}</td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
                 </div>
-
-                <div className="rounded border border-gray-200 p-3">
-                  <h3 className="text-sm font-semibold text-gray-800 mb-2">Framsteg (som elevvyn)</h3>
-                  <p className="text-[11px] text-gray-500 mb-2">
-                    Grön = klarad, blå = pågående, grå = ej startad.
-                  </p>
-                  <div className="space-y-3">
-                    {detailStudentViewData.operationMasteryBoards.map(item => (
-                      <div key={`detail-mastery-${item.operation}`}>
-                        <p className="text-xs font-medium text-gray-700 mb-1">{getOperationLabel(item.operation)}</p>
-                        <TeacherMasteryLevelGrid label="Historiskt" operation={item.operation} levels={item.historical} />
-                        <TeacherMasteryLevelGrid label="Denna vecka" operation={item.operation} levels={item.weekly} />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-3 border-t border-gray-200 pt-3">
-                    <div className="flex items-center justify-between mb-2 gap-2">
-                      <h4 className="text-xs font-semibold text-gray-800">Felandel per nivå (historiskt)</h4>
-                      <p className="text-[11px] text-gray-500">
-                        Minst {DETAIL_LEVEL_ERROR_MIN_ATTEMPTS} försök per nivå
-                      </p>
-                    </div>
-                    {detailLevelErrorRows.length === 0 ? (
-                      <p className="text-xs text-gray-500">
-                        Ingen nivå har ännu tillräckligt underlag för felandel.
-                      </p>
-                    ) : (
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="text-left text-gray-500 border-b">
-                              {renderDetailLevelErrorSortHeader('Räknesätt', 'operation', { helpText: DETAIL_LEVEL_ERROR_HELP.operation })}
-                              {renderDetailLevelErrorSortHeader('Nivå', 'level', { helpText: DETAIL_LEVEL_ERROR_HELP.level })}
-                              {renderDetailLevelErrorSortHeader('Försök', 'attempts', { helpText: DETAIL_LEVEL_ERROR_HELP.attempts })}
-                              {renderDetailLevelErrorSortHeader('Rätt', 'correct', { helpText: DETAIL_LEVEL_ERROR_HELP.correct })}
-                              {renderDetailLevelErrorSortHeader('Fel', 'wrong', { helpText: DETAIL_LEVEL_ERROR_HELP.wrong })}
-                              {renderDetailLevelErrorSortHeader('Felandel', 'error_share', { helpText: DETAIL_LEVEL_ERROR_HELP.error_share })}
-                              {renderDetailLevelErrorSortHeader('Kunskapsfel', 'knowledge_wrong', { helpText: DETAIL_LEVEL_ERROR_HELP.knowledge_wrong })}
-                              {renderDetailLevelErrorSortHeader('Ouppmärksamhet', 'inattention_wrong', {
-                                className: 'py-1',
-                                helpText: DETAIL_LEVEL_ERROR_HELP.inattention_wrong
-                              })}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {detailLevelErrorRows.map(levelRow => (
-                              <tr key={`detail-level-error-${levelRow.operation}-${levelRow.level}`} className="border-b last:border-b-0">
-                                <td className="py-1 pr-2 text-gray-700">{levelRow.operationLabel}</td>
-                                <td className="py-1 pr-2 text-gray-700 font-medium">{levelRow.level}</td>
-                                <td className="py-1 pr-2 text-gray-700">{levelRow.attempts}</td>
-                                <td className="py-1 pr-2 text-gray-700">{levelRow.correct}</td>
-                                <td className="py-1 pr-2 text-gray-700">{levelRow.wrong}</td>
-                                <td className={`py-1 pr-2 font-semibold ${getErrorShareColorClass(levelRow.errorShare)}`}>
-                                  {toPercent(levelRow.errorShare)}
-                                </td>
-                                <td className="py-1 pr-2 text-gray-700">{levelRow.knowledgeWrong}</td>
-                                <td className="py-1 text-gray-700">{levelRow.inattentionWrong}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                    {detailLevelErrorUnderSampleCount > 0 ? (
-                      <p className="mt-2 text-[11px] text-gray-500">
-                        {detailLevelErrorUnderSampleCount} nivåer har för få försök och visas inte ännu.
-                      </p>
-                    ) : null}
+                <div className="rounded-lg border border-indigo-200 bg-white p-2.5">
+                  <p className="text-xs font-semibold text-indigo-900 mb-2">Förmågor</p>
+                  <div className="max-h-40 overflow-auto space-y-1 pr-1">
+                    {ncmAbilityOptions.map(option => {
+                      const checked = ncmSelectedAbilityTags.includes(option.tag)
+                      return (
+                        <label key={option.tag} className="flex items-start gap-2 text-xs text-gray-700">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleNcmAbilityTag(option.tag)}
+                            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600"
+                          />
+                          <span>
+                            <span className="font-medium">{getNcmAbilityLabelSv(option.tag)}</span>
+                            <span className="text-gray-500"> ({option.count})</span>
+                          </span>
+                        </label>
+                      )
+                    })}
                   </div>
                 </div>
               </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={handleCreateNcmAssignment}
+                  className="px-3 py-2 bg-indigo-700 hover:bg-indigo-800 text-white rounded text-sm"
+                >
+                  Skapa NCM-uppdrag
+                </button>
+                <button
+                  onClick={clearNcmFilters}
+                  className="px-3 py-2 bg-white border border-indigo-200 hover:bg-indigo-100 text-indigo-800 rounded text-sm"
+                >
+                  Rensa val
+                </button>
+                <p className="text-xs text-indigo-800">
+                  Valda koder: {ncmSelectedCodes.length} | valda förmågor: {ncmSelectedAbilityTags.length}
+                </p>
+              </div>
+            </div>
 
-              <div className="mt-4 rounded border border-violet-200 bg-violet-50/30 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                  <h3 className="text-sm font-semibold text-violet-900">NCM-resultat (elev)</h3>
-                  <p className="text-[11px] text-violet-700">
-                    Senaste NCM-kod: {detailStudentViewData.ncmDetail.lastNcmCode || '-'}
+            {assignments.length === 0 ? (
+              <p className="text-sm text-gray-500">Inga uppdrag skapade ännu.</p>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between py-1">
+                  <p className="text-xs text-gray-500">
+                    Aktivt för alla: {activeAssignmentId ? activeAssignmentId : 'Ingen (fri träning)'}
                   </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleClearActiveForAll}
+                      className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded text-xs"
+                    >
+                      Rensa aktivt
+                    </button>
+                    <button
+                      onClick={handleClearAllAssignments}
+                      className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
+                    >
+                      Rensa alla
+                    </button>
+                  </div>
+                </div>
+                {assignments.slice(0, 10).map(assignment => (
+                  <div
+                    key={assignment.id}
+                    className={`flex flex-wrap items-center justify-between gap-2 border rounded p-2 ${activeAssignmentId === assignment.id ? 'border-green-400 bg-green-50' : ''
+                      }`}
+                  >
+                    <div className="text-sm">
+                      <p className="font-medium text-gray-800">{assignment.title}</p>
+                      <p className="text-gray-500">
+                        {formatAssignmentSummaryLine(assignment)}
+                      </p>
+                      <p className="text-xs text-gray-400 font-mono">{assignment.id}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleActivateForAll(assignment.id)}
+                        className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded text-xs"
+                      >
+                        Aktivera för alla
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAssignment(assignment.id)}
+                        className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
+                      >
+                        Ta bort
+                      </button>
+                      <button
+                        onClick={() => handleCopyAssignmentLink(assignment.id)}
+                        className="px-3 py-1.5 bg-gray-800 hover:bg-black text-white rounded text-xs"
+                      >
+                        {copiedId === assignment.id ? 'Kopierad' : 'Kopiera länk'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border border-amber-200/90 rounded-2xl shadow-[0_16px_42px_-26px_rgba(146,64,14,0.55)] p-4 md:p-5 mb-8" style={{ order: -50 }}>
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500" />
+            <button
+              onClick={() => setTicketSectionOpen(prev => !prev)}
+              className="w-full flex items-center justify-between text-left mb-4 pt-1"
+            >
+              <div>
+                <h2 className="text-xl font-extrabold text-amber-900">Ticket</h2>
+                <span className="text-xs text-amber-800 font-medium">Start-ticket / Exit-ticket</span>
+              </div>
+              <span className="px-3 py-1.5 rounded-full border border-amber-300 bg-white text-xs font-semibold text-amber-900 shadow-sm">
+                {ticketSectionOpen ? 'Dölj' : 'Visa'}
+              </span>
+            </button>
+
+            {!ticketSectionOpen ? (
+              <p className="text-xs text-amber-800 bg-amber-100/70 border border-amber-200 rounded-lg px-3 py-2 inline-block">Ticket-sektionen är minimerad.</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
+                  <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 shadow-sm">
+                    <h3 className="text-base font-bold text-gray-800 mb-2">Ny ticket-fråga</h3>
+                    <textarea
+                      value={ticketQuestionInput}
+                      onChange={(e) => setTicketQuestionInput(e.target.value)}
+                      placeholder="Fråga"
+                      className="w-full min-h-20 px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm mb-2 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                    />
+                    <input
+                      value={ticketAnswerInput}
+                      onChange={(e) => setTicketAnswerInput(e.target.value)}
+                      placeholder="Facit / rätt svar"
+                      className="w-full px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm mb-2 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                    />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                      <input
+                        value={ticketTagsInput}
+                        onChange={(e) => setTicketTagsInput(e.target.value)}
+                        placeholder="Taggar, kommaseparerat"
+                        className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                      />
+                      <select
+                        value={ticketKindInput}
+                        onChange={(e) => setTicketKindInput(e.target.value)}
+                        className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                      >
+                        <option value="start">Start-ticket</option>
+                        <option value="exit">Exit-ticket</option>
+                      </select>
+                      <button
+                        onClick={handleCreateTicketTemplate}
+                        className="px-3 py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl text-sm font-semibold shadow-sm"
+                      >
+                        Spara ticket
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      CSV-import: `Fråga;Svar` per rad (valfritt tredje fält: `Taggar`).
+                    </p>
+                    <textarea
+                      value={ticketCsvInput}
+                      onChange={(e) => setTicketCsvInput(e.target.value)}
+                      placeholder={'Fråga 1;Svar 1\nFråga 2;Svar 2'}
+                      className="w-full min-h-24 px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm mt-2 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                    />
+                    <button
+                      onClick={handleImportTicketCsv}
+                      className="mt-2 px-3 py-2.5 bg-gray-800 hover:bg-black text-white rounded-xl text-sm font-medium"
+                    >
+                      Importera CSV
+                    </button>
+                  </div>
+
+                  <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 shadow-sm">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <input
+                        value={ticketTemplateFilter}
+                        onChange={(e) => setTicketTemplateFilter(e.target.value)}
+                        placeholder="Sök fråga/tagg"
+                        className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm flex-1 min-w-40 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                      />
+                      <select
+                        value={ticketTagFilter}
+                        onChange={(e) => setTicketTagFilter(e.target.value)}
+                        className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                      >
+                        <option value="">Alla taggar</option>
+                        {ticketTagOptions.map(tag => (
+                          <option key={`ticket-tag-${tag}`} value={tag}>{tag}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={ticketSortBy}
+                        onChange={(e) => setTicketSortBy(e.target.value)}
+                        className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                      >
+                        <option value="newest">Senaste</option>
+                        <option value="oldest">Äldsta</option>
+                        <option value="alpha">A-Ö</option>
+                      </select>
+                    </div>
+
+                    {ticketTemplateRows.length === 0 ? (
+                      <p className="text-sm text-gray-500">Inga ticket-frågor matchar urvalet.</p>
+                    ) : (
+                      <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
+                        {ticketTemplateRows.map(template => (
+                          <div key={template.id} className="border border-amber-100 rounded-xl p-3 bg-amber-50/35">
+                            <p className="text-sm font-semibold text-gray-800 leading-snug">{template.question}</p>
+                            <p className="text-xs text-gray-600 mt-1">Facit: {template.answer}</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {template.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket'}
+                              {Array.isArray(template.tags) && template.tags.length > 0 ? ` | ${template.tags.join(', ')}` : ''}
+                            </p>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              <button
+                                onClick={() => handleCreateTicketDispatch(template)}
+                                className="px-2.5 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
+                              >
+                                Skapa länk
+                              </button>
+                              <button
+                                onClick={() => handleDeleteTicketTemplate(template.id)}
+                                className="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-semibold"
+                              >
+                                Ta bort
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {detailStudentViewData.ncmDetail.attemptsTotal === 0 ? (
-                  <p className="text-xs text-violet-800">Ingen NCM-data för denna elev ännu.</p>
-                ) : (
-                  <>
-                    <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2 text-xs">
-                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
-                        <p className="text-violet-700">Försök totalt</p>
-                        <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.attemptsTotal}</p>
-                      </div>
-                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
-                        <p className="text-violet-700">Träff totalt</p>
-                        <p className="font-semibold text-violet-900">{toPercent(detailStudentViewData.ncmDetail.successRateTotal)}</p>
-                      </div>
-                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
-                        <p className="text-violet-700">Kunskapsfel totalt</p>
-                        <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.knowledgeWrongTotal}</p>
-                      </div>
-                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
-                        <p className="text-violet-700">Ouppm. totalt</p>
-                        <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.inattentionWrongTotal}</p>
-                      </div>
-                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
-                        <p className="text-violet-700">Försök vecka</p>
-                        <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.attemptsWeek}</p>
-                      </div>
-                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
-                        <p className="text-violet-700">Träff vecka</p>
-                        <p className="font-semibold text-violet-900">{toPercent(detailStudentViewData.ncmDetail.successRateWeek)}</p>
-                      </div>
-                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
-                        <p className="text-violet-700">Starkast domän</p>
-                        <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.strongestDomainLabel}</p>
-                      </div>
-                      <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
-                        <p className="text-violet-700">Mest stödbehov</p>
-                        <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.weakestDomainLabel}</p>
-                      </div>
+                <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 mb-4 shadow-sm">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <label className="text-xs text-gray-600 font-medium">Utskick</label>
+                    <select
+                      value={selectedTicketDispatchId}
+                      onChange={(e) => setSelectedTicketDispatchId(e.target.value)}
+                      className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm min-w-56 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                    >
+                      <option value="">Välj ticket-utskick</option>
+                      {ticketDispatches.map(dispatch => (
+                        <option key={dispatch.id} value={dispatch.id}>
+                          {dispatch.title} ({dispatch.kind === 'exit' ? 'Exit' : 'Start'})
+                        </option>
+                      ))}
+                    </select>
+                    <label className="inline-flex items-center gap-2 text-xs text-gray-600">
+                      <input
+                        type="checkbox"
+                        checked={ticketDispatchImmediateFeedback}
+                        onChange={(e) => setTicketDispatchImmediateFeedback(e.target.checked)}
+                      />
+                      Nya länkar visar rätt/fel direkt
+                    </label>
+                  </div>
+                  <div className="border border-amber-200 rounded-xl p-3 bg-amber-50/50 mb-3">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <p className="text-xs font-bold text-amber-900">Mottagare (för startsidan)</p>
+                      <button
+                        onClick={handleTicketTargetsFromClassFilter}
+                        disabled={selectedClassIds.length === 0}
+                        className="px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Använd klassfiltret
+                      </button>
+                      <button
+                        onClick={handleClearTicketTargets}
+                        className="px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 hover:bg-gray-50"
+                      >
+                        Nollställ mottagare
+                      </button>
                     </div>
-
-                    {detailStudentViewData.ncmDetail.assignmentRows.length > 0 ? (
-                      <div className="mt-3 overflow-x-auto">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="text-left text-violet-700 border-b border-violet-200">
-                              <th className="py-1 pr-2">NCM-uppdrag</th>
-                              <th className="py-1 pr-2">Klara</th>
-                              <th className="py-1 pr-2">Andel</th>
-                              <th className="py-1 pr-2">Klar</th>
-                              <th className="py-1">Senast uppd.</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {detailStudentViewData.ncmDetail.assignmentRows.slice(0, 8).map(item => (
-                              <tr key={`detail-ncm-assignment-${item.assignmentKey}`} className="border-b border-violet-100 last:border-b-0">
-                                <td className="py-1 pr-2 text-violet-900 font-medium">{item.assignmentTitle}</td>
-                                <td className="py-1 pr-2 text-violet-900">{item.completedCount}/{item.totalSkillTags || '-'}</td>
-                                <td className="py-1 pr-2 text-violet-900">{toPercent(item.completionRate)}</td>
-                                <td className="py-1 pr-2 text-violet-900">
-                                  {item.completedAt ? new Date(item.completedAt).toLocaleString('sv-SE') : '-'}
-                                </td>
-                                <td className="py-1 text-violet-900">
-                                  {item.updatedAt ? new Date(item.updatedAt).toLocaleString('sv-SE') : '-'}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    ) : null}
-
-                    <div className="mt-3 grid grid-cols-1 xl:grid-cols-2 gap-3">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="text-left text-violet-700 border-b border-violet-200">
-                              <th className="py-1 pr-2">Kod</th>
-                              <th className="py-1 pr-2">Domän</th>
-                              <th className="py-1 pr-2">Försök</th>
-                              <th className="py-1 pr-2">Träff</th>
-                              <th className="py-1 pr-2">Försök v</th>
-                              <th className="py-1 pr-2">Träff v</th>
-                              <th className="py-1">Senast</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {detailStudentViewData.ncmDetail.codeRows.map(item => (
-                              <tr key={`detail-ncm-code-${item.ncmCode}`} className="border-b border-violet-100 last:border-b-0">
-                                <td className="py-1 pr-2 text-violet-900 font-medium">{item.ncmCode}</td>
-                                <td className="py-1 pr-2 text-violet-900">{item.domainLabel}</td>
-                                <td className="py-1 pr-2 text-violet-900">{item.attemptsTotal}</td>
-                                <td className="py-1 pr-2 text-violet-900">{toPercent(item.successRateTotal)}</td>
-                                <td className="py-1 pr-2 text-violet-900">{item.attemptsWeek}</td>
-                                <td className="py-1 pr-2 text-violet-900">{toPercent(item.successRateWeek)}</td>
-                                <td className="py-1 text-violet-900">
-                                  {item.lastTimestamp ? new Date(item.lastTimestamp).toLocaleString('sv-SE') : '-'}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="text-left text-violet-700 border-b border-violet-200">
-                              <th className="py-1 pr-2">Domän</th>
-                              <th className="py-1 pr-2">Försök</th>
-                              <th className="py-1 pr-2">Träff</th>
-                              <th className="py-1 pr-2">Kunskapsfel</th>
-                              <th className="py-1 pr-2">Ouppm.</th>
-                              <th className="py-1 pr-2">Försök v</th>
-                              <th className="py-1">Träff v</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {detailStudentViewData.ncmDetail.domainRows.map(item => (
-                              <tr key={`detail-ncm-domain-${item.domainTag}`} className="border-b border-violet-100 last:border-b-0">
-                                <td className="py-1 pr-2 text-violet-900 font-medium">{item.domainLabel}</td>
-                                <td className="py-1 pr-2 text-violet-900">{item.attemptsTotal}</td>
-                                <td className="py-1 pr-2 text-violet-900">{toPercent(item.successRateTotal)}</td>
-                                <td className="py-1 pr-2 text-violet-900">{item.knowledgeWrongTotal}</td>
-                                <td className="py-1 pr-2 text-violet-900">{item.inattentionWrongTotal}</td>
-                                <td className="py-1 pr-2 text-violet-900">{item.attemptsWeek}</td>
-                                <td className="py-1 text-violet-900">{toPercent(item.successRateWeek)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                    <p className="text-[11px] text-gray-600 mb-2">
+                      Inga aktiva val = använder nuvarande urval i dashboarden ({filteredStudents.length} elev(er)).
+                    </p>
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {classFilterOptions.map(classItem => {
+                        const selected = ticketTargetClassSet.has(classItem.id)
+                        return (
+                          <button
+                            key={`ticket-target-class-${classItem.id}`}
+                            onClick={() => handleToggleTicketTargetClass(classItem.id)}
+                            className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium ${selected
+                                ? 'bg-amber-600 border-amber-600 text-white shadow-sm'
+                                : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                              }`}
+                          >
+                            {selected ? 'Vald: ' : ''}{classItem.name}
+                          </button>
+                        )
+                      })}
                     </div>
+                    <input
+                      value={ticketStudentSearch}
+                      onChange={(e) => setTicketStudentSearch(e.target.value)}
+                      placeholder="Sök elev (namn, id, klass)"
+                      className="w-full px-2.5 py-1.5 border-2 border-amber-100 rounded-lg text-xs focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                    />
+                    <div className="mt-2 max-h-40 overflow-y-auto border border-amber-100 rounded-lg bg-white divide-y divide-gray-100">
+                      {ticketFilteredStudentOptions.length === 0 ? (
+                        <p className="text-xs text-gray-500 p-2">Inga elever matchar sökningen.</p>
+                      ) : (
+                        ticketFilteredStudentOptions.slice(0, 140).map(item => {
+                          const selected = ticketTargetStudentSet.has(item.studentId)
+                          return (
+                            <button
+                              key={`ticket-target-student-${item.studentId}`}
+                              onClick={() => handleToggleTicketTargetStudent(item.studentId)}
+                              className={`w-full text-left px-2.5 py-1.5 text-xs ${selected ? 'bg-amber-100 text-amber-900 font-semibold' : 'text-gray-700 hover:bg-gray-50'
+                                }`}
+                            >
+                              <span className="font-medium">{item.name}</span>
+                              <span className="text-gray-500"> ({item.className || 'Ingen klass'})</span>
+                            </button>
+                          )
+                        })
+                      )}
+                    </div>
+                    {ticketFilteredStudentOptions.length > 140 && (
+                      <p className="text-[11px] text-gray-500 mt-1">
+                        Visar de första 140 matcherna. Förfina sökningen för att se fler.
+                      </p>
+                    )}
+                    <p className="text-[11px] text-gray-700 mt-2 font-medium">
+                      Målsättning: {ticketResolvedTargetStudentIds.size} elev(er)
+                      {ticketHasExplicitTargets
+                        ? ` via ${ticketTargetClassIds.length} klass(er) + ${ticketTargetStudentIds.length} individval`
+                        : ' via dashboardens aktuella filter'}
+                    </p>
+                  </div>
 
-                    <div className="mt-3 overflow-x-auto">
-                      <table className="w-full text-xs">
+                  {ticketDispatches.length === 0 ? (
+                    <p className="text-sm text-gray-500">Inga ticket-utskick ännu.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {ticketDispatches.slice(0, 12).map(dispatch => (
+                        <div key={dispatch.id} className="border border-amber-100 rounded-xl p-3 bg-white flex flex-wrap items-center justify-between gap-2">
+                          <div className="text-sm">
+                            <p className="font-semibold text-gray-800">{dispatch.title}</p>
+                            <p className="text-xs text-gray-500">
+                              {dispatch.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket'}
+                              {' | '}
+                              direktfeedback: {dispatch.showCorrectnessOnSubmit ? 'Ja' : 'Nej'}
+                            </p>
+                            <p className="text-[11px] text-gray-400 font-mono">{dispatch.id}</p>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              onClick={() => handleCopyTicketLink(dispatch.id)}
+                              className="px-2.5 py-1.5 bg-gray-800 hover:bg-black text-white rounded-lg text-xs font-semibold"
+                            >
+                              {copiedTicketDispatchId === dispatch.id ? 'Kopierad' : 'Kopiera länk'}
+                            </button>
+                            <button
+                              onClick={() => handlePublishTicketToHome(dispatch.id)}
+                              className="px-2.5 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
+                            >
+                              Visa på startsida
+                            </button>
+                            <button
+                              onClick={() => handleToggleTicketReveal(dispatch.id, !dispatch.revealCorrectness)}
+                              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold ${dispatch.revealCorrectness
+                                  ? 'bg-green-100 hover:bg-green-200 text-green-700'
+                                  : 'bg-orange-100 hover:bg-orange-200 text-orange-700'
+                                }`}
+                            >
+                              {dispatch.revealCorrectness ? 'Facit visas' : 'Visa facit för alla'}
+                            </button>
+                            <button
+                              onClick={() => handleClearTicketFromHome(dispatch.id)}
+                              className="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold"
+                            >
+                              Ta bort från startsida
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTicketDispatch(dispatch.id)}
+                              className="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-semibold"
+                            >
+                              Ta bort
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 shadow-sm">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-base font-bold text-gray-800">Svar för valt utskick</h3>
+                    {ticketSelectedDispatch && (
+                      <p className="text-xs text-gray-700 font-medium">
+                        Svarat {ticketResponseMeta.answered}/{ticketResponseMeta.total}
+                        {' | '}
+                        Rätt {ticketResponseMeta.correct}
+                        {' | '}
+                        Fel {ticketResponseMeta.wrong}
+                      </p>
+                    )}
+                  </div>
+                  {!ticketSelectedDispatch ? (
+                    <p className="text-sm text-gray-500">Välj ett utskick ovan för att se elevsvar.</p>
+                  ) : ticketResponseRows.length === 0 ? (
+                    <p className="text-sm text-gray-500">Inga mottagare eller svar ännu för detta utskick.</p>
+                  ) : (
+                    <div className="overflow-x-auto border border-amber-100 rounded-xl">
+                      <table className="w-full text-sm bg-white">
                         <thead>
-                          <tr className="text-left text-violet-700 border-b border-violet-200">
-                            <th className="py-1 pr-2">Tid</th>
-                            <th className="py-1 pr-2">Kod</th>
-                            <th className="py-1 pr-2">Domän</th>
-                            <th className="py-1 pr-2">Räknesätt</th>
-                            <th className="py-1 pr-2">Svar</th>
-                            <th className="py-1 pr-2">Facit</th>
-                            <th className="py-1 pr-2">Resultat</th>
-                            <th className="py-1 pr-2">Feltyp</th>
-                            <th className="py-1">Tid/svar</th>
+                          <tr className="text-left text-gray-600 border-b bg-amber-50">
+                            <th className="py-2 px-2 pr-2">Elev</th>
+                            <th className="py-2 pr-2">Klass</th>
+                            <th className="py-2 pr-2">Status</th>
+                            <th className="py-2 pr-2">Svar</th>
+                            <th className="py-2 px-2">Tid</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {detailStudentViewData.ncmDetail.recentRows.map((item, index) => (
-                            <tr key={`detail-ncm-recent-${item.ncmCode}-${item.timestamp}-${index}`} className="border-b border-violet-100 last:border-b-0">
-                              <td className="py-1 pr-2 text-violet-900">{item.timestamp ? new Date(item.timestamp).toLocaleString('sv-SE') : '-'}</td>
-                              <td className="py-1 pr-2 text-violet-900 font-medium">{item.ncmCode}</td>
-                              <td className="py-1 pr-2 text-violet-900">{item.domainLabel}</td>
-                              <td className="py-1 pr-2 text-violet-900">{item.operationLabel}</td>
-                              <td className="py-1 pr-2 text-violet-900">{item.studentAnswer ?? '-'}</td>
-                              <td className="py-1 pr-2 text-violet-900">{item.correctAnswer ?? '-'}</td>
-                              <td className={`py-1 pr-2 font-semibold ${item.correct ? 'text-emerald-700' : 'text-rose-700'}`}>
-                                {item.correct ? 'Rätt' : 'Fel'}
+                          {ticketResponseRows.map(row => (
+                            <tr key={`ticket-response-${row.studentId}`} className="border-b last:border-b-0 hover:bg-amber-50/35">
+                              <td className="py-2 px-2 pr-2 text-gray-700 font-semibold">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenStudentDetail(row.studentId)}
+                                  className="text-left hover:underline text-indigo-700"
+                                >
+                                  {row.name}
+                                </button>
                               </td>
-                              <td className="py-1 pr-2 text-violet-900">
-                                {item.correct
-                                  ? '-'
-                                  : item.errorCategory === 'inattention'
-                                    ? 'Ouppmärksamhet'
-                                    : 'Kunskapsfel'}
+                              <td className="py-2 pr-2 text-gray-600">{row.className || '-'}</td>
+                              <td className="py-2 pr-2">
+                                {!row.answered ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs bg-gray-50 text-gray-500 border-gray-200 font-medium">
+                                    Ej svarat
+                                  </span>
+                                ) : row.isCorrect ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs bg-green-50 text-green-700 border-green-200 font-semibold">
+                                    Rätt
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs bg-red-50 text-red-700 border-red-200 font-semibold">
+                                    Fel
+                                  </span>
+                                )}
                               </td>
-                              <td className="py-1 text-violet-900">
-                                {Number.isFinite(item.speedTimeSec) ? `${item.speedTimeSec.toFixed(1)}s` : '-'}
+                              <td className={`py-2 pr-2 ${row.answered && !row.isCorrect ? 'text-red-700' : 'text-gray-700'}`}>
+                                {row.answered ? (row.studentAnswer || '-') : '-'}
                               </td>
+                              <td className="py-2 px-2 text-gray-600">{formatTimeAgo(row.answeredAt)}</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
-                  </>
-                )}
-              </div>
+                  )}
+                </div>
 
-              <div className="mt-3 text-xs text-gray-600">
-                <p>Svagast typer: {formatSkillList(detailStudentProfile?.stats?.weakestTypes)}</p>
-                <p>Starkast typer: {formatSkillList(detailStudentProfile?.stats?.strongestTypes)}</p>
-              </div>
-            </>
-          )}
-        </div>
+                <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 mt-4 shadow-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <h3 className="text-base font-bold text-gray-800">Elevhistorik i tickets</h3>
+                    {ticketHistoryStudent && (
+                      <p className="text-xs text-gray-700 font-medium">
+                        Senaste svar: {formatTimeAgo(ticketHistorySummary.latestAnsweredAt)}
+                      </p>
+                    )}
+                  </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-800">Inaktivitet</h2>
-              <span className="text-xs text-gray-500">Snabb uppföljning</span>
-            </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between rounded bg-gray-50 px-3 py-2">
-                <span className="text-gray-600">Inte aktiv idag</span>
-                <span className="font-semibold text-gray-800">{inactivityBuckets.notActiveToday}</span>
-              </div>
-              <div className="flex items-center justify-between rounded bg-amber-50 px-3 py-2">
-                <span className="text-amber-800">2+ dagar utan aktivitet</span>
-                <span className="font-semibold text-amber-700">{inactivityBuckets.twoDaysOrMore}</span>
-              </div>
-              <div className="flex items-center justify-between rounded bg-red-50 px-3 py-2">
-                <span className="text-red-700">7+ dagar utan aktivitet</span>
-                <span className="font-semibold text-red-700">{inactivityBuckets.sevenDaysOrMore}</span>
-              </div>
-              <div className="flex items-center justify-between rounded bg-blue-50 px-3 py-2">
-                <span className="text-blue-700">Ej startat alls</span>
-                <span className="font-semibold text-blue-700">{inactivityBuckets.neverStarted}</span>
-              </div>
-            </div>
+                  <div className="grid grid-cols-1 xl:grid-cols-4 gap-2 mb-3">
+                    <select
+                      value={ticketHistoryStudentId}
+                      onChange={(e) => setTicketHistoryStudentId(e.target.value)}
+                      className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                    >
+                      {ticketHistoryStudentOptions.length === 0 ? (
+                        <option value="">Inga elever i urvalet</option>
+                      ) : (
+                        ticketHistoryStudentOptions.map(item => (
+                          <option key={`ticket-history-student-${item.studentId}`} value={item.studentId}>
+                            {item.name} {item.className ? `(${item.className})` : ''}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                    <select
+                      value={ticketHistoryKindFilter}
+                      onChange={(e) => setTicketHistoryKindFilter(e.target.value)}
+                      className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                    >
+                      <option value="all">Alla typer</option>
+                      <option value="start">Start-ticket</option>
+                      <option value="exit">Exit-ticket</option>
+                    </select>
+                    <select
+                      value={ticketHistoryResultFilter}
+                      onChange={(e) => setTicketHistoryResultFilter(e.target.value)}
+                      className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                    >
+                      <option value="all">Alla resultat</option>
+                      <option value="correct">Bara rätt</option>
+                      <option value="wrong">Bara fel</option>
+                    </select>
+                    <input
+                      value={ticketHistorySearch}
+                      onChange={(e) => setTicketHistorySearch(e.target.value)}
+                      placeholder="Sök i fråga/svar"
+                      className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+                    />
+                  </div>
+
+                  {!ticketHistoryStudent ? (
+                    <p className="text-sm text-gray-500">Välj klassfilter ovan eller lägg till elever för att se historik.</p>
+                  ) : ticketHistorySummary.total === 0 ? (
+                    <p className="text-sm text-gray-500">Den här eleven har inte svarat på någon ticket ännu.</p>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2 mb-3 text-xs">
+                        <div className="rounded-xl border border-gray-200 bg-gray-50 px-2.5 py-1.5">
+                          <p className="text-gray-500">Totalt svar</p>
+                          <p className="font-semibold text-gray-800">{ticketHistorySummary.total}</p>
+                        </div>
+                        <div className="rounded-xl border border-green-200 bg-green-50 px-2.5 py-1.5">
+                          <p className="text-green-700">Rätt</p>
+                          <p className="font-semibold text-green-700">{ticketHistorySummary.correct}</p>
+                        </div>
+                        <div className="rounded-xl border border-red-200 bg-red-50 px-2.5 py-1.5">
+                          <p className="text-red-700">Fel</p>
+                          <p className="font-semibold text-red-700">{ticketHistorySummary.wrong}</p>
+                        </div>
+                        <div className="rounded-xl border border-blue-200 bg-blue-50 px-2.5 py-1.5">
+                          <p className="text-blue-700">Träffsäkerhet</p>
+                          <p className="font-semibold text-blue-700">{Math.round(ticketHistorySummary.accuracy * 100)}%</p>
+                        </div>
+                        <div className="rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-1.5">
+                          <p className="text-amber-700">Senaste 7 dagar</p>
+                          <p className="font-semibold text-amber-700">{ticketHistorySummary.last7Days}</p>
+                        </div>
+                        <div className="rounded-xl border border-indigo-200 bg-indigo-50 px-2.5 py-1.5">
+                          <p className="text-indigo-700">Unika utskick</p>
+                          <p className="font-semibold text-indigo-700">{ticketHistorySummary.uniqueDispatches}</p>
+                        </div>
+                      </div>
+
+                      {ticketHistoryRows.length === 0 ? (
+                        <p className="text-sm text-gray-500">Inga historikrader matchar filtret.</p>
+                      ) : (
+                        <div className="overflow-x-auto border border-amber-100 rounded-xl">
+                          <table className="w-full text-sm bg-white">
+                            <thead>
+                              <tr className="text-left text-gray-600 border-b bg-amber-50">
+                                <th className="py-2 px-2 pr-2">Tid</th>
+                                <th className="py-2 pr-2">Ticket</th>
+                                <th className="py-2 pr-2">Status</th>
+                                <th className="py-2 pr-2">Svar</th>
+                                <th className="py-2 px-2">Facit</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {ticketHistoryRows.map((row, index) => (
+                                <tr key={`ticket-history-row-${row.dispatchId}-${row.answeredAt || index}`} className="border-b last:border-b-0 hover:bg-amber-50/35">
+                                  <td className="py-2 px-2 pr-2 text-gray-600 whitespace-nowrap">{formatTimeAgo(row.answeredAt)}</td>
+                                  <td className="py-2 pr-2 text-gray-700">
+                                    <p className="font-semibold">{row.title}</p>
+                                    <p className="text-[11px] text-gray-500">
+                                      {row.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket'}
+                                    </p>
+                                    <p className="text-[11px] text-gray-500 mt-0.5">{row.question}</p>
+                                  </td>
+                                  <td className="py-2 pr-2">
+                                    {row.isCorrect ? (
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs bg-green-50 text-green-700 border-green-200 font-semibold">
+                                        Rätt
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs bg-red-50 text-red-700 border-red-200 font-semibold">
+                                        Fel
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className={`py-2 pr-2 ${row.isCorrect ? 'text-gray-700' : 'text-red-700'}`}>
+                                    {row.studentAnswer || '-'}
+                                  </td>
+                                  <td className="py-2 px-2 text-gray-700">{row.expectedAnswer || '-'}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
-          <div className="bg-white rounded-lg shadow p-4 xl:col-span-2">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-800">Klassnivå</h2>
-              <span className="text-xs text-gray-500">Veckomål {weekGoal} uppgifter/elev</span>
+          <div className="bg-white rounded-lg shadow p-4 mb-8" style={{ order: -40 }}>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <h2 className="text-lg font-semibold text-gray-800">Klass/gruppvy - snabbstatus</h2>
+              <span className="text-xs text-gray-500">Styrs av urvalet högst upp</span>
             </div>
-            {classSummaries.length === 0 ? (
-              <p className="text-sm text-gray-500">Inga klasser i aktuellt urval.</p>
+            <p className="text-xs text-gray-500 mb-3">
+              {classOverviewMeta.className}: {classOverviewMeta.activeNowCount}/{classOverviewMeta.studentCount} aktiv(a) just nu
+            </p>
+            <p className="text-[11px] text-gray-400 mb-3">
+              Status: Grön = fokus + aktivitet senaste 2 min, Orange = fokus men ingen aktivitet 2-4 min, Svart = inne idag men ej aktiv nu, Röd = ej inne idag.
+            </p>
+            {classOverviewRows.length === 0 ? (
+              <p className="text-sm text-gray-500">Inga elever hittades i valt urval.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-gray-500 border-b">
-                      <th className="py-1 pr-2">Klass</th>
-                      <th className="py-1 pr-2">Elever</th>
-                      <th className="py-1 pr-2">Startat</th>
-                      <th className="py-1 pr-2">Ej startat</th>
-                      <th className="py-1 pr-2">Aktiva v</th>
-                      <th className="py-1">Nått veckomål</th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleClassOverviewSort('name')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Elev
+                          <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('name')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleClassOverviewSort('activity')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Status
+                          <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('activity')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleClassOverviewSort('operation')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Jobbar med
+                          <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('operation')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleClassOverviewSort('today_attempts')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Idag
+                          <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('today_attempts')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleClassOverviewSort('today_wrong')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Rätt/Fel idag
+                          <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('today_wrong')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleClassOverviewSort('today_success')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Träff idag
+                          <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('today_success')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1 pr-2">
+                        <button
+                          type="button"
+                          onClick={() => handleClassOverviewSort('today_engaged')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Tid på uppgift idag
+                          <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('today_engaged')}</span>
+                        </button>
+                      </th>
+                      <th className="py-1">
+                        <button
+                          type="button"
+                          onClick={() => handleClassOverviewSort('last_active')}
+                          className="inline-flex items-center gap-1 hover:text-gray-700"
+                        >
+                          Senast aktiv
+                          <span className="text-[10px] text-gray-400">{getClassOverviewSortIndicator('last_active')}</span>
+                        </button>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {classSummaries.map(item => (
-                      <tr key={`class-summary-${item.classId}`} className="border-b last:border-b-0">
-                        <td className="py-1 pr-2 text-gray-700 font-medium">{item.className}</td>
-                        <td className="py-1 pr-2 text-gray-700">{item.studentCount}</td>
-                        <td className="py-1 pr-2 text-green-700 font-semibold">{item.startedCount}</td>
-                        <td className="py-1 pr-2 text-amber-700 font-semibold">{item.notStartedCount}</td>
-                        <td className="py-1 pr-2 text-blue-700">{item.weeklyActiveCount}</td>
-                        <td className="py-1 text-gray-700">
-                          {item.weeklyGoalReachedCount}/{item.studentCount}{' '}
-                          <span className="text-xs text-gray-500">({toPercent(item.weeklyGoalReachedRate)})</span>
+                    {classOverviewRows.map(row => (
+                      <tr key={`overview-row-${row.studentId}`} className="border-b last:border-b-0">
+                        <td className="py-1 pr-2 text-gray-700 font-medium">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenStudentDetail(row.studentId)}
+                            className="text-left hover:underline text-indigo-700 font-medium"
+                          >
+                            {row.name}
+                          </button>
+                          <span className="ml-1 text-xs text-gray-400">{row.studentId}</span>
                         </td>
+                        <td className="py-1 pr-2"><ActivityBadge code={row.activityStatus} compact /></td>
+                        <td className="py-1 pr-2 text-gray-700">{getOperationLabel(row.focusOperation)}</td>
+                        <td className="py-1 pr-2 text-gray-700">{row.todayAttempts}</td>
+                        <td className="py-1 pr-2 text-gray-700">
+                          {row.todayCorrectCount}/{row.todayWrongCount}
+                        </td>
+                        <td className="py-1 pr-2 text-gray-700">{toPercent(row.todaySuccessRate)}</td>
+                        <td className="py-1 pr-2 text-gray-700">{formatDuration(row.todayEngagedMinutes * 60)}</td>
+                        <td className="py-1 text-gray-700">{formatTimeAgo(row.lastActive)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -3002,243 +2522,814 @@ function Dashboard() {
               </div>
             )}
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-              <h2 className="text-lg font-semibold text-gray-800">Gångertabell - urval</h2>
-              <p className="text-xs text-gray-500">
-                {tableSelectedStudentIds.length === 0
-                  ? `Alla elever i klassurvalet (${filteredStudents.length})`
-                  : `${tableSelectedStudentIds.length} vald(a) elev(er)`}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <button
-                onClick={() => setTableSelectedStudentIds([])}
-                className={`px-2.5 py-1.5 rounded text-xs ${
-                  tableSelectedStudentIds.length === 0
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Alla i klassurvalet
-              </button>
-              <input
-                value={tableStudentSearch}
-                onChange={(e) => setTableStudentSearch(e.target.value)}
-                placeholder="Filtrera elev"
-                className="px-2.5 py-1.5 border rounded text-xs min-w-48"
-              />
-            </div>
-            <div className="max-h-28 overflow-y-auto border rounded divide-y">
-              {filteredTableStudentOptions.length === 0 ? (
-                <p className="px-2.5 py-2 text-xs text-gray-500">Inga elever matchar filtret.</p>
-              ) : (
-                filteredTableStudentOptions.slice(0, 120).map(item => {
-                  const selected = tableStudentSet.has(item.studentId)
-                  return (
-                    <button
-                      key={`table-student-filter-${item.studentId}`}
-                      onClick={() => setTableSelectedStudentIds(prev => (
-                        prev.includes(item.studentId)
-                          ? prev.filter(id => id !== item.studentId)
-                          : [...prev, item.studentId]
+          <TableStickyStatusPanel
+            rows={tableStickyStatusRows}
+            onSort={handleStickySort}
+            onOpenStudentDetail={handleOpenStudentDetail}
+            getSortIndicator={getStickySortIndicator}
+            className="bg-white rounded-lg shadow p-4 mb-8"
+            style={{ order: -30 }}
+          />
+
+          <div id="teacher-student-detail-section" className="bg-white rounded-lg shadow p-4 mb-8" style={{ order: -20 }}>
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <h2 className="text-lg font-semibold text-gray-800">Elevprofil (allt om en elev)</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  value={detailStudentId}
+                  onChange={(e) => {
+                    const nextStudentId = String(e.target.value || '').trim()
+                    setDetailStudentId(nextStudentId)
+                    if (isDirectStudentView && nextStudentId) {
+                      navigate(`/teacher/student/${encodeURIComponent(nextStudentId)}`)
+                    }
+                  }}
+                  className="px-2 py-1 border rounded text-sm min-w-56"
+                >
+                  {detailStudentOptions.length === 0 ? (
+                    <option value="">Inga elever i urvalet</option>
+                  ) : (
+                    <>
+                      {hasMissingDirectStudent && (
+                        <option value="">Okant elev-ID - valj elev</option>
+                      )}
+                      {detailStudentOptions.map(item => (
+                        <option key={`detail-student-${item.studentId}`} value={item.studentId}>
+                          {item.name} {item.className ? `(${item.className})` : ''}
+                        </option>
                       ))}
-                      className={`w-full text-left px-2.5 py-1.5 text-xs ${
-                        selected
-                          ? 'bg-indigo-100 text-indigo-800 font-semibold'
-                          : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      {item.name} <span className="text-gray-500">({item.className || 'Ingen klass'})</span>
-                    </button>
-                  )
-                })
+                    </>
+                  )}
+                </select>
+                <button
+                  onClick={handleExportStudentDetailCsv}
+                  disabled={!detailStudentProfile || !detailStudentRow || !detailStudentViewData}
+                  className="px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 disabled:bg-gray-100 disabled:text-gray-400 text-emerald-700 rounded text-xs font-medium"
+                >
+                  Exportera elevvy CSV
+                </button>
+              </div>
+            </div>
+
+            {!detailStudentProfile || !detailStudentRow || !detailStudentViewData ? (
+              <p className="text-sm text-gray-500">Välj en elev för att se tabeller, nivåstatus, NCM-resultat och nyckeldata.</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2 mb-4 text-xs">
+                  <div className="rounded border border-gray-200 bg-gray-50 px-2.5 py-2">
+                    <p className="text-gray-500">Totalt lösta</p>
+                    <p className="font-semibold text-gray-800">{detailStudentProfile?.stats?.totalProblems || detailStudentRow.attempts}</p>
+                  </div>
+                  <div className="rounded border border-blue-200 bg-blue-50 px-2.5 py-2">
+                    <p className="text-blue-700">Träff totalt</p>
+                    <p className="font-semibold text-blue-700">{toPercent(detailStudentRow.successRate)}</p>
+                  </div>
+                  <div className="rounded border border-indigo-200 bg-indigo-50 px-2.5 py-2">
+                    <p className="text-indigo-700">Idag</p>
+                    <p className="font-semibold text-indigo-700">{detailStudentRow.todayAttempts}</p>
+                  </div>
+                  <div className="rounded border border-cyan-200 bg-cyan-50 px-2.5 py-2">
+                    <p className="text-cyan-700">Vecka</p>
+                    <p className="font-semibold text-cyan-700">{detailStudentRow.weekAttempts}</p>
+                  </div>
+                  <div className="rounded border border-amber-200 bg-amber-50 px-2.5 py-2">
+                    <p className="text-amber-700">Tid på uppgift idag</p>
+                    <p className="font-semibold text-amber-700">{formatDuration(detailStudentRow.todayEngagedMinutes * 60)}</p>
+                  </div>
+                  <div className="rounded border border-emerald-200 bg-emerald-50 px-2.5 py-2">
+                    <p className="text-emerald-700">Tid på uppgift 7d</p>
+                    <p className="font-semibold text-emerald-700">{formatDuration(detailStudentRow.weekEngagedMinutes * 60)}</p>
+                  </div>
+                  <div className="rounded border border-purple-200 bg-purple-50 px-2.5 py-2">
+                    <p className="text-purple-700">Nivå nu/högst</p>
+                    <p className="font-semibold text-purple-700">{detailStudentRow.currentDifficulty}/{detailStudentRow.highestDifficulty}</p>
+                  </div>
+                  <div className="rounded border border-gray-200 bg-white px-2.5 py-2">
+                    <p className="text-gray-500">Aktivitet</p>
+                    <div className="mt-1">
+                      <ActivityBadge code={detailStudentRow.activityStatus} compact />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                  <div className="rounded border border-gray-200 p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-sm font-semibold text-gray-800">Gångertabell - status</h3>
+                      <p className="text-[11px] text-gray-500">
+                        Dag: {detailStudentViewData.tableSticky.todayDoneCount} | Vecka: {detailStudentViewData.tableSticky.weekDoneCount} | Star: {detailStudentViewData.tableSticky.starCount}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-6 gap-1.5 mb-3">
+                      {TABLES.map(table => {
+                        const status = detailStudentViewData.tableSticky.statusByTable[table] || 'default'
+                        return (
+                          <div key={`detail-table-status-${table}`} className="h-11 rounded border flex items-center justify-center text-xs font-semibold relative bg-white">
+                            <span className={`absolute inset-0 rounded border ${getTeacherTableStatusClass(status)}`} />
+                            <span className="relative z-10">{table}</span>
+                            {status === 'star' ? (
+                              <span className="absolute top-0 right-0 text-[10px] text-yellow-300 z-10">★</span>
+                            ) : null}
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="text-left text-gray-500 border-b">
+                            <th className="py-1 pr-2">Tabell</th>
+                            <th className="py-1 pr-2">Status</th>
+                            <th className="py-1 pr-2">Försök 7d</th>
+                            <th className="py-1 pr-2">Träff 7d</th>
+                            <th className="py-1">Försök totalt</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {TABLES.map(table => {
+                            const perf = detailStudentViewData.tablePerformanceByTable[table]
+                            const status = detailStudentViewData.tableSticky.statusByTable[table] || 'default'
+                            return (
+                              <tr key={`detail-table-row-${table}`} className="border-b last:border-b-0">
+                                <td className="py-1 pr-2 text-gray-700 font-medium">{table}:an</td>
+                                <td className="py-1 pr-2 text-gray-700">{getTeacherTableStatusLabel(status)}</td>
+                                <td className="py-1 pr-2 text-gray-700">{perf.attempts7d}</td>
+                                <td className="py-1 pr-2 text-gray-700">{toPercent(perf.accuracy7d)}</td>
+                                <td className="py-1 text-gray-700">{perf.attemptsTotal}</td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div className="rounded border border-gray-200 p-3">
+                    <h3 className="text-sm font-semibold text-gray-800 mb-2">Framsteg (som elevvyn)</h3>
+                    <p className="text-[11px] text-gray-500 mb-2">
+                      Grön = klarad, blå = pågående, grå = ej startad.
+                    </p>
+                    <div className="space-y-3">
+                      {detailStudentViewData.operationMasteryBoards.map(item => (
+                        <div key={`detail-mastery-${item.operation}`}>
+                          <p className="text-xs font-medium text-gray-700 mb-1">{getOperationLabel(item.operation)}</p>
+                          <TeacherMasteryLevelGrid label="Historiskt" operation={item.operation} levels={item.historical} />
+                          <TeacherMasteryLevelGrid label="Denna vecka" operation={item.operation} levels={item.weekly} />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 border-t border-gray-200 pt-3">
+                      <div className="flex items-center justify-between mb-2 gap-2">
+                        <h4 className="text-xs font-semibold text-gray-800">Felandel per nivå (historiskt)</h4>
+                        <p className="text-[11px] text-gray-500">
+                          Minst {DETAIL_LEVEL_ERROR_MIN_ATTEMPTS} försök per nivå
+                        </p>
+                      </div>
+                      {detailLevelErrorRows.length === 0 ? (
+                        <p className="text-xs text-gray-500">
+                          Ingen nivå har ännu tillräckligt underlag för felandel.
+                        </p>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="text-left text-gray-500 border-b">
+                                {renderDetailLevelErrorSortHeader('Räknesätt', 'operation', { helpText: DETAIL_LEVEL_ERROR_HELP.operation })}
+                                {renderDetailLevelErrorSortHeader('Nivå', 'level', { helpText: DETAIL_LEVEL_ERROR_HELP.level })}
+                                {renderDetailLevelErrorSortHeader('Försök', 'attempts', { helpText: DETAIL_LEVEL_ERROR_HELP.attempts })}
+                                {renderDetailLevelErrorSortHeader('Rätt', 'correct', { helpText: DETAIL_LEVEL_ERROR_HELP.correct })}
+                                {renderDetailLevelErrorSortHeader('Fel', 'wrong', { helpText: DETAIL_LEVEL_ERROR_HELP.wrong })}
+                                {renderDetailLevelErrorSortHeader('Felandel', 'error_share', { helpText: DETAIL_LEVEL_ERROR_HELP.error_share })}
+                                {renderDetailLevelErrorSortHeader('Kunskapsfel', 'knowledge_wrong', { helpText: DETAIL_LEVEL_ERROR_HELP.knowledge_wrong })}
+                                {renderDetailLevelErrorSortHeader('Ouppmärksamhet', 'inattention_wrong', {
+                                  className: 'py-1',
+                                  helpText: DETAIL_LEVEL_ERROR_HELP.inattention_wrong
+                                })}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {detailLevelErrorRows.map(levelRow => (
+                                <tr key={`detail-level-error-${levelRow.operation}-${levelRow.level}`} className="border-b last:border-b-0">
+                                  <td className="py-1 pr-2 text-gray-700">{levelRow.operationLabel}</td>
+                                  <td className="py-1 pr-2 text-gray-700 font-medium">{levelRow.level}</td>
+                                  <td className="py-1 pr-2 text-gray-700">{levelRow.attempts}</td>
+                                  <td className="py-1 pr-2 text-gray-700">{levelRow.correct}</td>
+                                  <td className="py-1 pr-2 text-gray-700">{levelRow.wrong}</td>
+                                  <td className={`py-1 pr-2 font-semibold ${getErrorShareColorClass(levelRow.errorShare)}`}>
+                                    {toPercent(levelRow.errorShare)}
+                                  </td>
+                                  <td className="py-1 pr-2 text-gray-700">{levelRow.knowledgeWrong}</td>
+                                  <td className="py-1 text-gray-700">{levelRow.inattentionWrong}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                      {detailLevelErrorUnderSampleCount > 0 ? (
+                        <p className="mt-2 text-[11px] text-gray-500">
+                          {detailLevelErrorUnderSampleCount} nivåer har för få försök och visas inte ännu.
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 rounded border border-violet-200 bg-violet-50/30 p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <h3 className="text-sm font-semibold text-violet-900">NCM-resultat (elev)</h3>
+                    <p className="text-[11px] text-violet-700">
+                      Senaste NCM-kod: {detailStudentViewData.ncmDetail.lastNcmCode || '-'}
+                    </p>
+                  </div>
+
+                  {detailStudentViewData.ncmDetail.attemptsTotal === 0 ? (
+                    <p className="text-xs text-violet-800">Ingen NCM-data för denna elev ännu.</p>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2 text-xs">
+                        <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                          <p className="text-violet-700">Försök totalt</p>
+                          <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.attemptsTotal}</p>
+                        </div>
+                        <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                          <p className="text-violet-700">Träff totalt</p>
+                          <p className="font-semibold text-violet-900">{toPercent(detailStudentViewData.ncmDetail.successRateTotal)}</p>
+                        </div>
+                        <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                          <p className="text-violet-700">Kunskapsfel totalt</p>
+                          <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.knowledgeWrongTotal}</p>
+                        </div>
+                        <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                          <p className="text-violet-700">Ouppm. totalt</p>
+                          <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.inattentionWrongTotal}</p>
+                        </div>
+                        <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                          <p className="text-violet-700">Försök vecka</p>
+                          <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.attemptsWeek}</p>
+                        </div>
+                        <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                          <p className="text-violet-700">Träff vecka</p>
+                          <p className="font-semibold text-violet-900">{toPercent(detailStudentViewData.ncmDetail.successRateWeek)}</p>
+                        </div>
+                        <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                          <p className="text-violet-700">Starkast domän</p>
+                          <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.strongestDomainLabel}</p>
+                        </div>
+                        <div className="rounded border border-violet-200 bg-white px-2 py-1.5">
+                          <p className="text-violet-700">Mest stödbehov</p>
+                          <p className="font-semibold text-violet-900">{detailStudentViewData.ncmDetail.weakestDomainLabel}</p>
+                        </div>
+                      </div>
+
+                      {detailStudentViewData.ncmDetail.assignmentRows.length > 0 ? (
+                        <div className="mt-3 overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="text-left text-violet-700 border-b border-violet-200">
+                                <th className="py-1 pr-2">NCM-uppdrag</th>
+                                <th className="py-1 pr-2">Klara</th>
+                                <th className="py-1 pr-2">Andel</th>
+                                <th className="py-1 pr-2">Klar</th>
+                                <th className="py-1">Senast uppd.</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {detailStudentViewData.ncmDetail.assignmentRows.slice(0, 8).map(item => (
+                                <tr key={`detail-ncm-assignment-${item.assignmentKey}`} className="border-b border-violet-100 last:border-b-0">
+                                  <td className="py-1 pr-2 text-violet-900 font-medium">{item.assignmentTitle}</td>
+                                  <td className="py-1 pr-2 text-violet-900">{item.completedCount}/{item.totalSkillTags || '-'}</td>
+                                  <td className="py-1 pr-2 text-violet-900">{toPercent(item.completionRate)}</td>
+                                  <td className="py-1 pr-2 text-violet-900">
+                                    {item.completedAt ? new Date(item.completedAt).toLocaleString('sv-SE') : '-'}
+                                  </td>
+                                  <td className="py-1 text-violet-900">
+                                    {item.updatedAt ? new Date(item.updatedAt).toLocaleString('sv-SE') : '-'}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : null}
+
+                      <div className="mt-3 grid grid-cols-1 xl:grid-cols-2 gap-3">
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="text-left text-violet-700 border-b border-violet-200">
+                                <th className="py-1 pr-2">Kod</th>
+                                <th className="py-1 pr-2">Domän</th>
+                                <th className="py-1 pr-2">Försök</th>
+                                <th className="py-1 pr-2">Träff</th>
+                                <th className="py-1 pr-2">Försök v</th>
+                                <th className="py-1 pr-2">Träff v</th>
+                                <th className="py-1">Senast</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {detailStudentViewData.ncmDetail.codeRows.map(item => (
+                                <tr key={`detail-ncm-code-${item.ncmCode}`} className="border-b border-violet-100 last:border-b-0">
+                                  <td className="py-1 pr-2 text-violet-900 font-medium">{item.ncmCode}</td>
+                                  <td className="py-1 pr-2 text-violet-900">{item.domainLabel}</td>
+                                  <td className="py-1 pr-2 text-violet-900">{item.attemptsTotal}</td>
+                                  <td className="py-1 pr-2 text-violet-900">{toPercent(item.successRateTotal)}</td>
+                                  <td className="py-1 pr-2 text-violet-900">{item.attemptsWeek}</td>
+                                  <td className="py-1 pr-2 text-violet-900">{toPercent(item.successRateWeek)}</td>
+                                  <td className="py-1 text-violet-900">
+                                    {item.lastTimestamp ? new Date(item.lastTimestamp).toLocaleString('sv-SE') : '-'}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="text-left text-violet-700 border-b border-violet-200">
+                                <th className="py-1 pr-2">Domän</th>
+                                <th className="py-1 pr-2">Försök</th>
+                                <th className="py-1 pr-2">Träff</th>
+                                <th className="py-1 pr-2">Kunskapsfel</th>
+                                <th className="py-1 pr-2">Ouppm.</th>
+                                <th className="py-1 pr-2">Försök v</th>
+                                <th className="py-1">Träff v</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {detailStudentViewData.ncmDetail.domainRows.map(item => (
+                                <tr key={`detail-ncm-domain-${item.domainTag}`} className="border-b border-violet-100 last:border-b-0">
+                                  <td className="py-1 pr-2 text-violet-900 font-medium">{item.domainLabel}</td>
+                                  <td className="py-1 pr-2 text-violet-900">{item.attemptsTotal}</td>
+                                  <td className="py-1 pr-2 text-violet-900">{toPercent(item.successRateTotal)}</td>
+                                  <td className="py-1 pr-2 text-violet-900">{item.knowledgeWrongTotal}</td>
+                                  <td className="py-1 pr-2 text-violet-900">{item.inattentionWrongTotal}</td>
+                                  <td className="py-1 pr-2 text-violet-900">{item.attemptsWeek}</td>
+                                  <td className="py-1 text-violet-900">{toPercent(item.successRateWeek)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead>
+                            <tr className="text-left text-violet-700 border-b border-violet-200">
+                              <th className="py-1 pr-2">Tid</th>
+                              <th className="py-1 pr-2">Kod</th>
+                              <th className="py-1 pr-2">Domän</th>
+                              <th className="py-1 pr-2">Räknesätt</th>
+                              <th className="py-1 pr-2">Svar</th>
+                              <th className="py-1 pr-2">Facit</th>
+                              <th className="py-1 pr-2">Resultat</th>
+                              <th className="py-1 pr-2">Feltyp</th>
+                              <th className="py-1">Tid/svar</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {detailStudentViewData.ncmDetail.recentRows.map((item, index) => (
+                              <tr key={`detail-ncm-recent-${item.ncmCode}-${item.timestamp}-${index}`} className="border-b border-violet-100 last:border-b-0">
+                                <td className="py-1 pr-2 text-violet-900">{item.timestamp ? new Date(item.timestamp).toLocaleString('sv-SE') : '-'}</td>
+                                <td className="py-1 pr-2 text-violet-900 font-medium">{item.ncmCode}</td>
+                                <td className="py-1 pr-2 text-violet-900">{item.domainLabel}</td>
+                                <td className="py-1 pr-2 text-violet-900">{item.operationLabel}</td>
+                                <td className="py-1 pr-2 text-violet-900">{item.studentAnswer ?? '-'}</td>
+                                <td className="py-1 pr-2 text-violet-900">{item.correctAnswer ?? '-'}</td>
+                                <td className={`py-1 pr-2 font-semibold ${item.correct ? 'text-emerald-700' : 'text-rose-700'}`}>
+                                  {item.correct ? 'Rätt' : 'Fel'}
+                                </td>
+                                <td className="py-1 pr-2 text-violet-900">
+                                  {item.correct
+                                    ? '-'
+                                    : item.errorCategory === 'inattention'
+                                      ? 'Ouppmärksamhet'
+                                      : 'Kunskapsfel'}
+                                </td>
+                                <td className="py-1 text-violet-900">
+                                  {Number.isFinite(item.speedTimeSec) ? `${item.speedTimeSec.toFixed(1)}s` : '-'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <div className="mt-3 text-xs text-gray-600">
+                  <p>Svagast typer: {formatSkillList(detailStudentProfile?.stats?.weakestTypes)}</p>
+                  <p>Starkast typer: {formatSkillList(detailStudentProfile?.stats?.strongestTypes)}</p>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-8">
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold text-gray-800">Inaktivitet</h2>
+                <span className="text-xs text-gray-500">Snabb uppföljning</span>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between rounded bg-gray-50 px-3 py-2">
+                  <span className="text-gray-600">Inte aktiv idag</span>
+                  <span className="font-semibold text-gray-800">{inactivityBuckets.notActiveToday}</span>
+                </div>
+                <div className="flex items-center justify-between rounded bg-amber-50 px-3 py-2">
+                  <span className="text-amber-800">2+ dagar utan aktivitet</span>
+                  <span className="font-semibold text-amber-700">{inactivityBuckets.twoDaysOrMore}</span>
+                </div>
+                <div className="flex items-center justify-between rounded bg-red-50 px-3 py-2">
+                  <span className="text-red-700">7+ dagar utan aktivitet</span>
+                  <span className="font-semibold text-red-700">{inactivityBuckets.sevenDaysOrMore}</span>
+                </div>
+                <div className="flex items-center justify-between rounded bg-blue-50 px-3 py-2">
+                  <span className="text-blue-700">Ej startat alls</span>
+                  <span className="font-semibold text-blue-700">{inactivityBuckets.neverStarted}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-4 xl:col-span-2">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold text-gray-800">Klassnivå</h2>
+                <span className="text-xs text-gray-500">Veckomål {weekGoal} uppgifter/elev</span>
+              </div>
+              {classSummaries.length === 0 ? (
+                <p className="text-sm text-gray-500">Inga klasser i aktuellt urval.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-gray-500 border-b">
+                        <th className="py-1 pr-2">Klass</th>
+                        <th className="py-1 pr-2">Elever</th>
+                        <th className="py-1 pr-2">Startat</th>
+                        <th className="py-1 pr-2">Ej startat</th>
+                        <th className="py-1 pr-2">Aktiva v</th>
+                        <th className="py-1">Nått veckomål</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {classSummaries.map(item => (
+                        <tr key={`class-summary-${item.classId}`} className="border-b last:border-b-0">
+                          <td className="py-1 pr-2 text-gray-700 font-medium">{item.className}</td>
+                          <td className="py-1 pr-2 text-gray-700">{item.studentCount}</td>
+                          <td className="py-1 pr-2 text-green-700 font-semibold">{item.startedCount}</td>
+                          <td className="py-1 pr-2 text-amber-700 font-semibold">{item.notStartedCount}</td>
+                          <td className="py-1 pr-2 text-blue-700">{item.weeklyActiveCount}</td>
+                          <td className="py-1 text-gray-700">
+                            {item.weeklyGoalReachedCount}/{item.studentCount}{' '}
+                            <span className="text-xs text-gray-500">({toPercent(item.weeklyGoalReachedRate)})</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-800">Gångertabell - utveckling (7 dagar)</h2>
-              <span className="text-xs text-gray-500">Jämfört med föregående 7 dagar</span>
-            </div>
-            {tableDevelopmentOverview.length === 0 ? (
-              <p className="text-sm text-gray-500">Ingen tabellaktivitet i aktuellt urval.</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-gray-500 border-b">
-                      <th className="py-1 pr-2">Tabell</th>
-                      <th className="py-1 pr-2">Försök 7d</th>
-                      <th className="py-1 pr-2">Träff 7d</th>
-                      <th className="py-1 pr-2">Trend träff</th>
-                      <th className="py-1 pr-2">Median tid 7d</th>
-                      <th className="py-1">Trend tid</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tableDevelopmentOverview.map(item => (
-                      <tr key={`table-dev-${item.table}`} className="border-b last:border-b-0">
-                        <td className="py-1 pr-2 font-medium text-gray-700">{item.table}:an</td>
-                        <td className="py-1 pr-2 text-gray-700">{item.attempts7d}</td>
-                        <td className="py-1 pr-2 text-gray-700">{toPercent(item.accuracy7d)}</td>
-                        <td className="py-1 pr-2 text-gray-700">
-                          {item.accuracyTrend === null
-                            ? '-'
-                            : `${item.accuracyTrend >= 0 ? '+' : ''}${Math.round(item.accuracyTrend * 100)} pp`}
-                        </td>
-                        <td className="py-1 pr-2 text-gray-700">
-                          {Number.isFinite(item.medianTime7d) ? `${item.medianTime7d.toFixed(1)}s` : '-'}
-                        </td>
-                        <td className="py-1 text-gray-700">
-                          {item.speedTrend === null
-                            ? '-'
-                            : `${item.speedTrend >= 0 ? '+' : ''}${Math.round(item.speedTrend * 100)}%`}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          <div className="grid grid-cols-1 gap-4 mb-8">
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <h2 className="text-lg font-semibold text-gray-800">Gångertabell - urval</h2>
+                <p className="text-xs text-gray-500">
+                  {tableSelectedStudentIds.length === 0
+                    ? `Alla elever i klassurvalet (${filteredStudents.length})`
+                    : `${tableSelectedStudentIds.length} vald(a) elev(er)`}
+                </p>
               </div>
-            )}
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <button
+                  onClick={() => setTableSelectedStudentIds([])}
+                  className={`px-2.5 py-1.5 rounded text-xs ${tableSelectedStudentIds.length === 0
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                >
+                  Alla i klassurvalet
+                </button>
+                <input
+                  value={tableStudentSearch}
+                  onChange={(e) => setTableStudentSearch(e.target.value)}
+                  placeholder="Filtrera elev"
+                  className="px-2.5 py-1.5 border rounded text-xs min-w-48"
+                />
+              </div>
+              <div className="max-h-28 overflow-y-auto border rounded divide-y">
+                {filteredTableStudentOptions.length === 0 ? (
+                  <p className="px-2.5 py-2 text-xs text-gray-500">Inga elever matchar filtret.</p>
+                ) : (
+                  filteredTableStudentOptions.slice(0, 120).map(item => {
+                    const selected = tableStudentSet.has(item.studentId)
+                    return (
+                      <button
+                        key={`table-student-filter-${item.studentId}`}
+                        onClick={() => setTableSelectedStudentIds(prev => (
+                          prev.includes(item.studentId)
+                            ? prev.filter(id => id !== item.studentId)
+                            : [...prev, item.studentId]
+                        ))}
+                        className={`w-full text-left px-2.5 py-1.5 text-xs ${selected
+                            ? 'bg-indigo-100 text-indigo-800 font-semibold'
+                            : 'text-gray-700 hover:bg-gray-50'
+                          }`}
+                      >
+                        {item.name} <span className="text-gray-500">({item.className || 'Ingen klass'})</span>
+                      </button>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold text-gray-800">Gångertabell - utveckling (7 dagar)</h2>
+                <span className="text-xs text-gray-500">Jämfört med föregående 7 dagar</span>
+              </div>
+              {tableDevelopmentOverview.length === 0 ? (
+                <p className="text-sm text-gray-500">Ingen tabellaktivitet i aktuellt urval.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left text-gray-500 border-b">
+                        <th className="py-1 pr-2">Tabell</th>
+                        <th className="py-1 pr-2">Försök 7d</th>
+                        <th className="py-1 pr-2">Träff 7d</th>
+                        <th className="py-1 pr-2">Trend träff</th>
+                        <th className="py-1 pr-2">Median tid 7d</th>
+                        <th className="py-1">Trend tid</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tableDevelopmentOverview.map(item => (
+                        <tr key={`table-dev-${item.table}`} className="border-b last:border-b-0">
+                          <td className="py-1 pr-2 font-medium text-gray-700">{item.table}:an</td>
+                          <td className="py-1 pr-2 text-gray-700">{item.attempts7d}</td>
+                          <td className="py-1 pr-2 text-gray-700">{toPercent(item.accuracy7d)}</td>
+                          <td className="py-1 pr-2 text-gray-700">
+                            {item.accuracyTrend === null
+                              ? '-'
+                              : `${item.accuracyTrend >= 0 ? '+' : ''}${Math.round(item.accuracyTrend * 100)} pp`}
+                          </td>
+                          <td className="py-1 pr-2 text-gray-700">
+                            {Number.isFinite(item.medianTime7d) ? `${item.medianTime7d.toFixed(1)}s` : '-'}
+                          </td>
+                          <td className="py-1 text-gray-700">
+                            {item.speedTrend === null
+                              ? '-'
+                              : `${item.speedTrend >= 0 ? '+' : ''}${Math.round(item.speedTrend * 100)}%`}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-lg font-semibold text-gray-800">Behöver stöd nu</h2>
+                <span className="text-xs text-gray-500">Kompakt prioritering</span>
+              </div>
+              {supportRows.length === 0 ? (
+                <p className="text-sm text-gray-500">Inga akuta signaler i aktuellt urval.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-left text-gray-500 border-b">
+                        <th className="py-1 pr-2">
+                          <button
+                            type="button"
+                            onClick={() => handleSupportSort('name')}
+                            className="inline-flex items-center gap-1 hover:text-gray-700"
+                          >
+                            Elev
+                            <span className="text-[10px] text-gray-400">{getSupportSortIndicator('name')}</span>
+                          </button>
+                        </th>
+                        <th className="py-1 pr-2">
+                          <button
+                            type="button"
+                            onClick={() => handleSupportSort('class')}
+                            className="inline-flex items-center gap-1 hover:text-gray-700"
+                          >
+                            Klass
+                            <span className="text-[10px] text-gray-400">{getSupportSortIndicator('class')}</span>
+                          </button>
+                        </th>
+                        <th className="py-1 pr-2">
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleSupportSort('activity')}
+                              className="inline-flex items-center gap-1 hover:text-gray-700"
+                            >
+                              Status
+                              <span className="text-[10px] text-gray-400">{getSupportSortIndicator('activity')}</span>
+                            </button>
+                            <InlineHelp text={SUPPORT_HEADER_HELP.status} />
+                          </div>
+                        </th>
+                        <th className="py-1 pr-2">
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleSupportSort('risk')}
+                              className="inline-flex items-center gap-1 hover:text-gray-700"
+                            >
+                              Risk
+                              <span className="text-[10px] text-gray-400">{getSupportSortIndicator('risk')}</span>
+                            </button>
+                            <InlineHelp text={SUPPORT_HEADER_HELP.risk} />
+                          </div>
+                        </th>
+                        <th className="py-1 pr-2">
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleSupportSort('support_score')}
+                              className="inline-flex items-center gap-1 hover:text-gray-700"
+                            >
+                              Stöd
+                              <span className="text-[10px] text-gray-400">{getSupportSortIndicator('support_score')}</span>
+                            </button>
+                            <InlineHelp text={SUPPORT_HEADER_HELP.support_score} />
+                          </div>
+                        </th>
+                        <th className="py-1 pr-2">
+                          <button
+                            type="button"
+                            onClick={() => handleSupportSort('today_attempts')}
+                            className="inline-flex items-center gap-1 hover:text-gray-700"
+                          >
+                            Idag
+                            <span className="text-[10px] text-gray-400">{getSupportSortIndicator('today_attempts')}</span>
+                          </button>
+                        </th>
+                        <th className="py-1 pr-2">
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleSupportSort('today_wrong')}
+                              className="inline-flex items-center gap-1 hover:text-gray-700"
+                            >
+                              R/F idag
+                              <span className="text-[10px] text-gray-400">{getSupportSortIndicator('today_wrong')}</span>
+                            </button>
+                            <InlineHelp text={SUPPORT_HEADER_HELP.today_wrong} />
+                          </div>
+                        </th>
+                        <th className="py-1 pr-2">
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleSupportSort('week_success')}
+                              className="inline-flex items-center gap-1 hover:text-gray-700"
+                            >
+                              Träff v
+                              <span className="text-[10px] text-gray-400">{getSupportSortIndicator('week_success')}</span>
+                            </button>
+                            <InlineHelp text={SUPPORT_HEADER_HELP.week_success} />
+                          </div>
+                        </th>
+                        <th className="py-1 pr-2">
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleSupportSort('struggle')}
+                              className="inline-flex items-center gap-1 hover:text-gray-700"
+                            >
+                              Kämpar med
+                              <span className="text-[10px] text-gray-400">{getSupportSortIndicator('struggle')}</span>
+                            </button>
+                            <InlineHelp text={SUPPORT_HEADER_HELP.struggle} />
+                          </div>
+                        </th>
+                        <th className="py-1 pr-2">
+                          <div className="inline-flex items-center gap-1">
+                            <span>Flaggor</span>
+                            <InlineHelp text={SUPPORT_HEADER_HELP.flags} />
+                          </div>
+                        </th>
+                        <th className="py-1">Åtgärd</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {supportRows.map(row => (
+                        <tr key={`support-${row.studentId}`} className="border-b last:border-b-0">
+                          <td className="py-1 pr-2 text-gray-700">
+                            <div>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenStudentDetail(row.studentId)}
+                                className="text-left hover:underline text-indigo-700 font-medium"
+                              >
+                                {row.name}
+                              </button>
+                            </div>
+                            <div className="text-[11px] text-gray-400">{row.studentId}</div>
+                          </td>
+                          <td className="py-1 pr-2 text-gray-700">{row.classNameLabel || row.className || '-'}</td>
+                          <td className="py-1 pr-2"><ActivityBadge code={row.activityStatus} /></td>
+                          <td className="py-1 pr-2"><RiskBadge level={row.riskLevel} score={row.riskScore} /></td>
+                          <td className="py-1 pr-2 text-gray-700">{row.supportScore}</td>
+                          <td className="py-1 pr-2 text-gray-700">{row.todayAttempts}</td>
+                          <td className="py-1 pr-2 text-gray-700">{row.todayCorrectCount}/{row.todayWrongCount}</td>
+                          <td className="py-1 pr-2 text-gray-700">{toPercent(row.weekSuccessRate)}</td>
+                          <td className="py-1 pr-2 text-gray-700">{row.todayStruggle?.skillLabel || '-'}</td>
+                          <td className="py-1 pr-2 text-gray-600">{row.riskCodes.slice(0, 2).join(' | ') || '-'}</td>
+                          <td className="py-1">
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => handleOpenStudentDetail(row.studentId)}
+                                className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-[11px]"
+                              >
+                                Elevvy
+                              </button>
+                              <button
+                                onClick={() => handleCreateQuickAssignment(row, 'focus')}
+                                className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-[11px]"
+                              >
+                                Fokus
+                              </button>
+                              <button
+                                onClick={() => handleCreateQuickAssignment(row, 'warmup')}
+                                className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px]"
+                              >
+                                Värm
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-gray-800">Behöver stöd nu</h2>
-              <span className="text-xs text-gray-500">Kompakt prioritering</span>
+          <div className="bg-white rounded-lg shadow p-4 mb-8">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <h2 className="text-lg font-semibold text-gray-800">NCM - domänöversikt</h2>
+              <span className="text-xs text-gray-500">Vecka (måndag 00:00 till nu)</span>
             </div>
-            {supportRows.length === 0 ? (
-              <p className="text-sm text-gray-500">Inga akuta signaler i aktuellt urval.</p>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-sm">
+              <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2">
+                <p className="text-xs text-gray-500">NCM-försök vecka</p>
+                <p className="font-semibold text-gray-800">{ncmOverview.totalAttemptsWeek}</p>
+              </div>
+              <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2">
+                <p className="text-xs text-gray-500">Elever med NCM-data vecka</p>
+                <p className="font-semibold text-gray-800">
+                  {ncmOverview.studentsWithAttemptsWeek}/{filteredStudents.length}
+                </p>
+              </div>
+              <div className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2">
+                <p className="text-xs text-emerald-700">Starkast domän (klass)</p>
+                <p className="font-semibold text-emerald-800">{ncmOverview.strongestDomainLabel}</p>
+              </div>
+              <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2">
+                <p className="text-xs text-amber-700">Mest stödbehov (klass)</p>
+                <p className="font-semibold text-amber-800">{ncmOverview.weakestDomainLabel}</p>
+              </div>
+            </div>
+
+            {ncmOverview.rows.length === 0 ? (
+              <p className="text-sm text-gray-500">Ingen NCM-relaterad data i aktuellt klassurval ännu.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="text-left text-gray-500 border-b">
-                      <th className="py-1 pr-2">
-                        <button
-                          type="button"
-                          onClick={() => handleSupportSort('name')}
-                          className="inline-flex items-center gap-1 hover:text-gray-700"
-                        >
-                          Elev
-                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('name')}</span>
-                        </button>
-                      </th>
-                      <th className="py-1 pr-2">
-                        <button
-                          type="button"
-                          onClick={() => handleSupportSort('class')}
-                          className="inline-flex items-center gap-1 hover:text-gray-700"
-                        >
-                          Klass
-                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('class')}</span>
-                        </button>
-                      </th>
-                      <th className="py-1 pr-2">
-                        <div className="inline-flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleSupportSort('activity')}
-                            className="inline-flex items-center gap-1 hover:text-gray-700"
-                          >
-                            Status
-                            <span className="text-[10px] text-gray-400">{getSupportSortIndicator('activity')}</span>
-                          </button>
-                          <InlineHelp text={SUPPORT_HEADER_HELP.status} />
-                        </div>
-                      </th>
-                      <th className="py-1 pr-2">
-                        <div className="inline-flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleSupportSort('risk')}
-                            className="inline-flex items-center gap-1 hover:text-gray-700"
-                          >
-                            Risk
-                            <span className="text-[10px] text-gray-400">{getSupportSortIndicator('risk')}</span>
-                          </button>
-                          <InlineHelp text={SUPPORT_HEADER_HELP.risk} />
-                        </div>
-                      </th>
-                      <th className="py-1 pr-2">
-                        <div className="inline-flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleSupportSort('support_score')}
-                            className="inline-flex items-center gap-1 hover:text-gray-700"
-                          >
-                            Stöd
-                            <span className="text-[10px] text-gray-400">{getSupportSortIndicator('support_score')}</span>
-                          </button>
-                          <InlineHelp text={SUPPORT_HEADER_HELP.support_score} />
-                        </div>
-                      </th>
-                      <th className="py-1 pr-2">
-                        <button
-                          type="button"
-                          onClick={() => handleSupportSort('today_attempts')}
-                          className="inline-flex items-center gap-1 hover:text-gray-700"
-                        >
-                          Idag
-                          <span className="text-[10px] text-gray-400">{getSupportSortIndicator('today_attempts')}</span>
-                        </button>
-                      </th>
-                      <th className="py-1 pr-2">
-                        <div className="inline-flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleSupportSort('today_wrong')}
-                            className="inline-flex items-center gap-1 hover:text-gray-700"
-                          >
-                            R/F idag
-                            <span className="text-[10px] text-gray-400">{getSupportSortIndicator('today_wrong')}</span>
-                          </button>
-                          <InlineHelp text={SUPPORT_HEADER_HELP.today_wrong} />
-                        </div>
-                      </th>
-                      <th className="py-1 pr-2">
-                        <div className="inline-flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleSupportSort('week_success')}
-                            className="inline-flex items-center gap-1 hover:text-gray-700"
-                          >
-                            Träff v
-                            <span className="text-[10px] text-gray-400">{getSupportSortIndicator('week_success')}</span>
-                          </button>
-                          <InlineHelp text={SUPPORT_HEADER_HELP.week_success} />
-                        </div>
-                      </th>
-                      <th className="py-1 pr-2">
-                        <div className="inline-flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleSupportSort('struggle')}
-                            className="inline-flex items-center gap-1 hover:text-gray-700"
-                          >
-                            Kämpar med
-                            <span className="text-[10px] text-gray-400">{getSupportSortIndicator('struggle')}</span>
-                          </button>
-                          <InlineHelp text={SUPPORT_HEADER_HELP.struggle} />
-                        </div>
-                      </th>
-                      <th className="py-1 pr-2">
-                        <div className="inline-flex items-center gap-1">
-                          <span>Flaggor</span>
-                          <InlineHelp text={SUPPORT_HEADER_HELP.flags} />
-                        </div>
-                      </th>
-                      <th className="py-1">Åtgärd</th>
+                      <th className="py-1 pr-2">Elev</th>
+                      <th className="py-1 pr-2">Klass</th>
+                      <th className="py-1 pr-2">Försök v</th>
+                      <th className="py-1 pr-2">Träff v</th>
+                      <th className="py-1 pr-2">Kunskapsfel v</th>
+                      <th className="py-1 pr-2">Ouppm. v</th>
+                      <th className="py-1 pr-2">Svagast domän</th>
+                      <th className="py-1 pr-2">Starkast domän</th>
+                      <th className="py-1">Senaste NCM-kod</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {supportRows.map(row => (
-                      <tr key={`support-${row.studentId}`} className="border-b last:border-b-0">
+                    {ncmOverview.rows.map(row => (
+                      <tr key={`ncm-${row.studentId}`} className="border-b last:border-b-0">
                         <td className="py-1 pr-2 text-gray-700">
                           <div>
                             <button
@@ -3251,34 +3342,461 @@ function Dashboard() {
                           </div>
                           <div className="text-[11px] text-gray-400">{row.studentId}</div>
                         </td>
-                        <td className="py-1 pr-2 text-gray-700">{row.classNameLabel || row.className || '-'}</td>
-                        <td className="py-1 pr-2"><ActivityBadge code={row.activityStatus} /></td>
-                        <td className="py-1 pr-2"><RiskBadge level={row.riskLevel} score={row.riskScore} /></td>
-                        <td className="py-1 pr-2 text-gray-700">{row.supportScore}</td>
-                        <td className="py-1 pr-2 text-gray-700">{row.todayAttempts}</td>
-                        <td className="py-1 pr-2 text-gray-700">{row.todayCorrectCount}/{row.todayWrongCount}</td>
+                        <td className="py-1 pr-2 text-gray-700">{row.className || '-'}</td>
+                        <td className="py-1 pr-2 text-gray-700">{row.weekAttempts}</td>
                         <td className="py-1 pr-2 text-gray-700">{toPercent(row.weekSuccessRate)}</td>
-                        <td className="py-1 pr-2 text-gray-700">{row.todayStruggle?.skillLabel || '-'}</td>
-                        <td className="py-1 pr-2 text-gray-600">{row.riskCodes.slice(0, 2).join(' | ') || '-'}</td>
-                        <td className="py-1">
-                          <div className="flex gap-1">
+                        <td className="py-1 pr-2 text-gray-700">{row.weekKnowledgeWrong}</td>
+                        <td className="py-1 pr-2 text-gray-700">{row.weekInattentionWrong}</td>
+                        <td className="py-1 pr-2 text-gray-700">{row.weakestDomainLabel}</td>
+                        <td className="py-1 pr-2 text-gray-700">{row.strongestDomainLabel}</td>
+                        <td className="py-1 text-gray-700">{row.lastNcmCode || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4 mb-8">
+            <h2 className="text-lg font-semibold text-gray-800 mb-3">Lärarlösenord</h2>
+            <p className="text-sm text-gray-500 mb-3">
+              Hanteras server-side via `TEACHER_API_PASSWORD` i Vercel.
+              Ändra lösenord i projektets Environment Variables och redeploya.
+            </p>
+            <p className="text-xs text-gray-400">
+              Säkerhetsnotis: inget lärarlösenord lagras längre i frontend (`VITE_*`).
+            </p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4 mb-8">
+            <h2 className="text-lg font-semibold text-gray-800 mb-3">Klasser</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+              <input
+                type="text"
+                value={classNameInput}
+                onChange={(e) => setClassNameInput(e.target.value)}
+                placeholder="Klassnamn, t.ex. 4A"
+                className="px-3 py-2 border rounded text-sm"
+              />
+              <button
+                onClick={handleCreateClass}
+                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
+              >
+                Skapa klass från listan
+              </button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+              <select
+                value={addToClassId}
+                onChange={(e) => setAddToClassId(e.target.value)}
+                className="px-3 py-2 border rounded text-sm"
+              >
+                <option value="">Välj klass att lägga till i</option>
+                {classes.map(item => (
+                  <option key={`add-${item.id}`} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleAddStudentsToClass}
+                className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm"
+              >
+                Lägg till elever i vald klass
+              </button>
+            </div>
+            <textarea
+              value={rosterInput}
+              onChange={(e) => setRosterInput(e.target.value)}
+              placeholder={'Klistra in elevlista, en per rad\\nAnna Andersson\\nBo Berg'}
+              className="w-full min-h-28 px-3 py-2 border rounded text-sm mb-3"
+            />
+            <p className="text-xs text-gray-500 mb-2">
+              Inloggningsnamn skapas från elevens namn. Startlösenord sätts till elevens namn.
+            </p>
+            <p className="text-xs text-gray-500 mb-2">
+              En elev kan vara med i flera klasser/grupper samtidigt.
+            </p>
+            <p className="text-xs text-gray-500 mb-2">
+              Tips: klass-/gruppurval för alla vyer styrs längst upp på sidan.
+            </p>
+            <p className="text-xs text-gray-600 mb-3">{classStatus || ' '}</p>
+
+            {classes.length > 0 && (
+              <div className="space-y-1.5">
+                {classes.map(item => {
+                  const classStudents = students.filter(student => recordMatchesClassFilter(student, [item.id]))
+                  const loggedInCount = classStudents.filter(student => student.auth?.lastLoginAt).length
+                  return (
+                    <div key={item.id} className="flex items-center justify-between gap-2 border rounded px-2 py-1.5">
+                      <div>
+                        <p className="text-sm font-medium text-gray-800">{item.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {classStudents.length} elever | {loggedInCount} har loggat in
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteClass(item.id)}
+                        className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
+                      >
+                        Ta bort klass
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          <div style={{ order: -10 }}>
+            {students.length === 0 ? (
+              <div className="bg-white rounded-lg p-8 shadow text-center">
+                <p className="text-gray-500 text-lg">Inga elever ännu</p>
+                <p className="text-gray-400 mt-2">
+                  Lägg till elever via klasslistan ovan så kan de logga in.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow overflow-x-auto p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs uppercase tracking-wide text-gray-500">Resultatvy</span>
+                    <button
+                      onClick={() => setViewMode('daily')}
+                      className={`px-3 py-1.5 rounded text-sm ${viewMode === 'daily'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                    >
+                      Dagsvy
+                    </button>
+                    <button
+                      onClick={() => setViewMode('all')}
+                      className={`px-3 py-1.5 rounded text-sm ${viewMode === 'all'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                    >
+                      Alla elever
+                    </button>
+                    <button
+                      onClick={() => setViewMode('weekly')}
+                      className={`px-3 py-1.5 rounded text-sm ${viewMode === 'weekly'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                    >
+                      Veckovy
+                    </button>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <label className="text-xs text-gray-500">Sortera</label>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="px-2 py-1 border rounded text-sm"
+                    >
+                      <option value="name">Namn</option>
+                      <option value="student_id">ID</option>
+                      <option value="class">Klass</option>
+                      <option value="active_today">Aktiv idag</option>
+                      <option value="today_attempts">Dagens mängd</option>
+                      <option value="today_wrong">Dagens felsvar</option>
+                      <option value="today_success_rate">Dagens träffsäkerhet</option>
+                      <option value="today_struggle">Dagens kämp-index</option>
+                      <option value="today_engaged">Tid på uppgift idag</option>
+                      <option value="today_answer_length">Dagens svarslängd</option>
+                      <option value="active_week">Aktiv denna vecka</option>
+                      <option value="week_attempts">Veckans mängd</option>
+                      <option value="week_correct">Veckans rätt</option>
+                      <option value="week_wrong">Veckans felsvar</option>
+                      <option value="week_struggle">Veckans kämp-index</option>
+                      <option value="week_active_time">Veckans aktiv tid</option>
+                      <option value="week_engaged">Tid på uppgift 7d</option>
+                      <option value="week_success_rate">Veckans träffsäkerhet</option>
+                      <option value="week_answer_length">Veckans svarslängd</option>
+                      <option value="assignment_week">Uppdragsföljsamhet v</option>
+                      <option value="support_score">Stödscore</option>
+                      <option value="risk_score">Riskscore</option>
+                      <option value="logged_in">Har loggat in</option>
+                      <option value="last_active">Senast aktiv</option>
+                      <option value="attempts">Totala försök</option>
+                      <option value="success_rate">Total träffsäkerhet</option>
+                      <option value="reasonable_rate">Total rimlighet</option>
+                      <option value="avg_relative_error">Total medelavvikelse</option>
+                      <option value="trend">Trend</option>
+                    </select>
+                    <button
+                      onClick={() => setSortDir(prev => prev === 'desc' ? 'asc' : 'desc')}
+                      className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm"
+                    >
+                      {sortDir === 'desc' ? 'Fallande' : 'Stigande'}
+                    </button>
+                    <button
+                      onClick={handleExportSnapshotCsv}
+                      className="px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded text-sm"
+                    >
+                      Export översikt
+                    </button>
+                    <button
+                      onClick={handleExportDetailedProblemCsv}
+                      className="px-2 py-1 bg-cyan-100 hover:bg-cyan-200 text-cyan-700 rounded text-sm"
+                    >
+                      Export rådata
+                    </button>
+                    <button
+                      onClick={handleExportSkillComparisonCsv}
+                      className="px-2 py-1 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded text-sm"
+                    >
+                      Export skill
+                    </button>
+                    <button
+                      onClick={handleExportTableDevelopmentCsv}
+                      className="px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded text-sm"
+                    >
+                      Export tabeller
+                    </button>
+                    <button
+                      onClick={handleExportActivityCsv}
+                      className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-sm"
+                    >
+                      Export aktivitet
+                    </button>
+                  </div>
+                </div>
+
+                {viewMode === 'daily' && visibleRows.length === 0 && (
+                  <div className="mb-4 rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
+                    Inga elever i valt urval.
+                  </div>
+                )}
+                {viewMode === 'weekly' && visibleRows.length === 0 && (
+                  <div className="mb-4 rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
+                    Inga elever i valt urval.
+                  </div>
+                )}
+
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 border-b">
+                    <tr className="text-left text-gray-600">
+                      {renderResultSortHeader('Namn', 'name')}
+                      {renderResultSortHeader('ID', 'student_id')}
+                      {renderResultSortHeader('Klass', 'class')}
+                      {viewMode === 'daily' ? (
+                        <>
+                          {renderResultSortHeader('Gjort idag', 'today_attempts', { helpText: RESULT_HEADER_HELP.today_attempts })}
+                          {renderResultSortHeader('Rätt/fel idag', 'today_wrong', { helpText: RESULT_HEADER_HELP.today_wrong })}
+                          {renderResultSortHeader('Tid på uppgift idag', 'today_engaged', { helpText: RESULT_HEADER_HELP.today_engaged })}
+                          {renderResultSortHeader('Kämpar med idag', 'today_struggle', { helpText: RESULT_HEADER_HELP.today_struggle })}
+                          {renderResultSortHeader('Svarslängd idag', 'today_answer_length', { helpText: RESULT_HEADER_HELP.today_answer_length })}
+                          {renderResultSortHeader('Senast aktiv', 'last_active')}
+                          <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
+                        </>
+                      ) : viewMode === 'weekly' ? (
+                        <>
+                          {renderResultSortHeader('Gjort denna vecka', 'week_attempts', { helpText: RESULT_HEADER_HELP.week_attempts })}
+                          {renderResultSortHeader('Aktiv tid (svar)', 'week_active_time', { helpText: RESULT_HEADER_HELP.week_active_time })}
+                          {renderResultSortHeader('Tid på uppgift', 'week_engaged', { helpText: RESULT_HEADER_HELP.week_engaged })}
+                          {renderResultSortHeader('Rätt/fel vecka', 'week_wrong', { helpText: RESULT_HEADER_HELP.week_wrong })}
+                          {renderResultSortHeader('Kämpar med vecka', 'week_struggle', { helpText: RESULT_HEADER_HELP.week_struggle })}
+                          {renderResultSortHeader('Svarslängd vecka', 'week_answer_length', { helpText: RESULT_HEADER_HELP.week_answer_length })}
+                          {renderResultSortHeader('Senast aktiv', 'last_active')}
+                          <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
+                        </>
+                      ) : (
+                        <>
+                          {renderResultSortHeader('Försök', 'attempts')}
+                          {renderResultSortHeader('Rätt', 'success_rate', { helpText: RESULT_HEADER_HELP.success_rate })}
+                          {renderResultSortHeader('Rimlighet', 'reasonable_rate', { helpText: RESULT_HEADER_HELP.reasonable_rate })}
+                          {renderResultSortHeader('Medelavvikelse', 'avg_relative_error', { helpText: RESULT_HEADER_HELP.avg_relative_error })}
+                          {renderResultSortHeader('Trend', 'trend', { helpText: RESULT_HEADER_HELP.trend })}
+                          {renderResultSortHeader('Senast aktiv', 'last_active')}
+                          <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
+                        </>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleRows.map(row => (
+                      <tr key={row.studentId} className="border-b last:border-b-0 hover:bg-gray-50">
+                        <td className={`px-4 py-0 font-semibold ${row.hasLoggedIn ? 'text-green-700' : 'text-gray-800'}`}>
+                          <div>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenStudentDetail(row.studentId)}
+                              className="text-left hover:underline text-indigo-700"
+                            >
+                              {row.name}
+                            </button>
+                          </div>
+                          <div className="mt-1">
+                            <RiskBadge level={row.riskLevel} score={row.riskScore} />
+                          </div>
+                        </td>
+                        <td className="px-4 py-0 text-xs text-gray-400 font-mono">
+                          {row.studentId}
+                        </td>
+                        <td className="px-4 py-0 text-gray-700">
+                          {row.classNameLabel || row.className || '-'}
+                        </td>
+                        {viewMode === 'daily' ? (
+                          <>
+                            <td className="px-4 py-0 text-gray-700">
+                              {row.todayAttempts}
+                              <div className="text-xs text-gray-500 mt-1">{row.todayOperationSummary}</div>
+                            </td>
+                            <td className="px-4 py-0">
+                              <span className={getSuccessColorClass(row.todaySuccessRate)}>
+                                {toPercent(row.todaySuccessRate)} ({row.todayCorrectCount}/{row.todayAttempts || 0})
+                              </span>
+                              <div className="text-xs text-gray-500 mt-1">
+                                Rimliga fel: {row.todayWrongCount > 0 ? `${row.todayReasonableWrongCount}/${row.todayWrongCount}` : '-'}
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                Uppdrag: {row.todayAssignmentAdherenceRate === null ? '-' : toPercent(row.todayAssignmentAdherenceRate)}
+                              </div>
+                            </td>
+                            <td className="px-4 py-0 text-gray-700">
+                              {formatDuration(row.todayEngagedMinutes * 60)}
+                              <div className="text-xs text-gray-500 mt-1">
+                                {row.todayPresenceInteractions} interaktioner
+                              </div>
+                            </td>
+                            <td className="px-4 py-0 text-gray-700">
+                              {row.todayStruggle
+                                ? (
+                                  <>
+                                    <div className="font-medium">{row.todayStruggle.skillLabel}</div>
+                                    <div className="text-xs text-gray-500">
+                                      {row.todayStruggle.attempts} försök, {row.todayStruggle.wrong} fel
+                                    </div>
+                                  </>
+                                )
+                                : <span className="text-gray-400">-</span>}
+                            </td>
+                            <td className="px-4 py-0 text-gray-700">
+                              {row.todayAvgAnswerLength === null
+                                ? '-'
+                                : `${row.todayAvgAnswerLength.toFixed(1)} tecken`}
+                            </td>
+                            <td className="px-4 py-0 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
+                          </>
+                        ) : viewMode === 'weekly' ? (
+                          <>
+                            <td className="px-4 py-0 text-gray-700">
+                              {row.weekAttempts}
+                              <div className="text-xs text-gray-500 mt-1">{row.weekOperationSummary}</div>
+                            </td>
+                            <td className="px-4 py-0 text-gray-700">
+                              {formatDuration(row.weekActiveTimeSec)}
+                              <div className="text-xs text-gray-500 mt-1">
+                                snitt {row.weekAvgTimePerProblemSec > 0 ? `${Math.round(row.weekAvgTimePerProblemSec)}s/problem` : '-'}
+                              </div>
+                            </td>
+                            <td className="px-4 py-0 text-gray-700">
+                              {formatDuration(row.weekEngagedMinutes * 60)}
+                              <div className="text-xs text-gray-500 mt-1">
+                                {row.weekPresenceInteractions} interaktioner
+                              </div>
+                            </td>
+                            <td className="px-4 py-0">
+                              <span className={getSuccessColorClass(row.weekSuccessRate)}>
+                                {toPercent(row.weekSuccessRate)} ({row.weekCorrectCount}/{row.weekAttempts || 0})
+                              </span>
+                              <div className="text-xs text-gray-500 mt-1">
+                                Rimliga fel: {row.weekWrongCount > 0 ? `${row.weekReasonableWrongCount}/${row.weekWrongCount}` : '-'}
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                Uppdrag: {row.weekAssignmentAdherenceRate === null ? '-' : toPercent(row.weekAssignmentAdherenceRate)}
+                              </div>
+                            </td>
+                            <td className="px-4 py-0 text-gray-700">
+                              {row.weekStruggle
+                                ? (
+                                  <>
+                                    <div className="font-medium">{row.weekStruggle.skillLabel}</div>
+                                    <div className="text-xs text-gray-500">
+                                      {row.weekStruggle.attempts} försök, {row.weekStruggle.wrong} fel
+                                    </div>
+                                  </>
+                                )
+                                : <span className="text-gray-400">-</span>}
+                            </td>
+                            <td className="px-4 py-0 text-gray-700">
+                              {row.weekAvgAnswerLength === null
+                                ? '-'
+                                : `${row.weekAvgAnswerLength.toFixed(1)} tecken`}
+                            </td>
+                            <td className="px-4 py-0 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-4 py-0 text-gray-700">{row.attempts}</td>
+                            <td className="px-4 py-0">
+                              <span className={getSuccessColorClass(row.successRate)}>
+                                {toPercent(row.successRate)}
+                              </span>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {row.correctCount}/{row.attempts} rätt
+                              </div>
+                            </td>
+                            <td className="px-4 py-0">
+                              <span className={getReasonableColorClass(row.reasonableRate)}>
+                                {toPercent(row.reasonableRate)}
+                              </span>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {row.reasonableCount}/{row.attempts} rimliga
+                              </div>
+                            </td>
+                            <td className="px-4 py-0 text-gray-700">
+                              {row.avgRelativeError === null ? '-' : `${Math.round(row.avgRelativeError * 100)}%`}
+                            </td>
+                            <td className="px-4 py-0">
+                              {row.trend === null ? (
+                                <span className="text-gray-400">-</span>
+                              ) : (
+                                <span className={row.trend >= 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                                  {row.trend >= 0 ? '↑' : '↓'} {Math.abs(Math.round(row.trend * 100))}%
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-4 py-0 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
+                          </>
+                        )}
+                        <td className="px-4 py-0 text-right">
+                          <div className="inline-flex flex-wrap justify-end gap-1">
                             <button
                               onClick={() => handleOpenStudentDetail(row.studentId)}
-                              className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-[11px]"
+                              className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs"
                             >
                               Elevvy
                             </button>
                             <button
                               onClick={() => handleCreateQuickAssignment(row, 'focus')}
-                              className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-[11px]"
+                              className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs"
                             >
                               Fokus
                             </button>
                             <button
                               onClick={() => handleCreateQuickAssignment(row, 'warmup')}
-                              className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px]"
+                              className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs"
                             >
-                              Värm
+                              Värm upp
+                            </button>
+                            <button
+                              onClick={() => handleCreateQuickAssignment(row, 'challenge')}
+                              className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs"
+                            >
+                              Mix
+                            </button>
+                            <button
+                              onClick={() => handleResetStudentPassword(row.studentId)}
+                              disabled={passwordResetBusyId === row.studentId}
+                              className="px-2 py-1 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-200 text-gray-700 rounded text-xs"
+                            >
+                              {passwordResetBusyId === row.studentId ? 'Nollställer...' : 'Nollställ lösen'}
                             </button>
                           </div>
                         </td>
@@ -3289,618 +3807,88 @@ function Dashboard() {
               </div>
             )}
           </div>
-        </div>
 
-        <div className="bg-white rounded-lg shadow p-4 mb-8">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <h2 className="text-lg font-semibold text-gray-800">NCM - domänöversikt</h2>
-            <span className="text-xs text-gray-500">Vecka (måndag 00:00 till nu)</span>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3 text-sm">
-            <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2">
-              <p className="text-xs text-gray-500">NCM-försök vecka</p>
-              <p className="font-semibold text-gray-800">{ncmOverview.totalAttemptsWeek}</p>
-            </div>
-            <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2">
-              <p className="text-xs text-gray-500">Elever med NCM-data vecka</p>
-              <p className="font-semibold text-gray-800">
-                {ncmOverview.studentsWithAttemptsWeek}/{filteredStudents.length}
+          <div id={PASSWORD_RESET_SECTION_ID} className="bg-white rounded-lg shadow p-4 mt-8 border-2 border-rose-200">
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <h2 className="text-lg font-semibold text-rose-800">Nollställ elevlösenord</h2>
+              <p className="text-xs text-gray-500">
+                {passwordResetRows.length} elev(er) i aktuellt urval
               </p>
             </div>
-            <div className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2">
-              <p className="text-xs text-emerald-700">Starkast domän (klass)</p>
-              <p className="font-semibold text-emerald-800">{ncmOverview.strongestDomainLabel}</p>
-            </div>
-            <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2">
-              <p className="text-xs text-amber-700">Mest stödbehov (klass)</p>
-              <p className="font-semibold text-amber-800">{ncmOverview.weakestDomainLabel}</p>
-            </div>
-          </div>
-
-          {ncmOverview.rows.length === 0 ? (
-            <p className="text-sm text-gray-500">Ingen NCM-relaterad data i aktuellt klassurval ännu.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className="text-left text-gray-500 border-b">
-                    <th className="py-1 pr-2">Elev</th>
-                    <th className="py-1 pr-2">Klass</th>
-                    <th className="py-1 pr-2">Försök v</th>
-                    <th className="py-1 pr-2">Träff v</th>
-                    <th className="py-1 pr-2">Kunskapsfel v</th>
-                    <th className="py-1 pr-2">Ouppm. v</th>
-                    <th className="py-1 pr-2">Svagast domän</th>
-                    <th className="py-1 pr-2">Starkast domän</th>
-                    <th className="py-1">Senaste NCM-kod</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ncmOverview.rows.map(row => (
-                    <tr key={`ncm-${row.studentId}`} className="border-b last:border-b-0">
-                      <td className="py-1 pr-2 text-gray-700">
-                        <div>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenStudentDetail(row.studentId)}
-                            className="text-left hover:underline text-indigo-700 font-medium"
-                          >
-                            {row.name}
-                          </button>
-                        </div>
-                        <div className="text-[11px] text-gray-400">{row.studentId}</div>
-                      </td>
-                      <td className="py-1 pr-2 text-gray-700">{row.className || '-'}</td>
-                      <td className="py-1 pr-2 text-gray-700">{row.weekAttempts}</td>
-                      <td className="py-1 pr-2 text-gray-700">{toPercent(row.weekSuccessRate)}</td>
-                      <td className="py-1 pr-2 text-gray-700">{row.weekKnowledgeWrong}</td>
-                      <td className="py-1 pr-2 text-gray-700">{row.weekInattentionWrong}</td>
-                      <td className="py-1 pr-2 text-gray-700">{row.weakestDomainLabel}</td>
-                      <td className="py-1 pr-2 text-gray-700">{row.strongestDomainLabel}</td>
-                      <td className="py-1 text-gray-700">{row.lastNcmCode || '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-4 mb-8">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">Lärarlösenord</h2>
-          <p className="text-sm text-gray-500 mb-3">
-            Hanteras server-side via `TEACHER_API_PASSWORD` i Vercel.
-            Ändra lösenord i projektets Environment Variables och redeploya.
-          </p>
-          <p className="text-xs text-gray-400">
-            Säkerhetsnotis: inget lärarlösenord lagras längre i frontend (`VITE_*`).
-          </p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-4 mb-8">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">Klasser</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
-            <input
-              type="text"
-              value={classNameInput}
-              onChange={(e) => setClassNameInput(e.target.value)}
-              placeholder="Klassnamn, t.ex. 4A"
-              className="px-3 py-2 border rounded text-sm"
-            />
-            <button
-              onClick={handleCreateClass}
-              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
-            >
-              Skapa klass från listan
-            </button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
-            <select
-              value={addToClassId}
-              onChange={(e) => setAddToClassId(e.target.value)}
-              className="px-3 py-2 border rounded text-sm"
-            >
-              <option value="">Välj klass att lägga till i</option>
-              {classes.map(item => (
-                <option key={`add-${item.id}`} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={handleAddStudentsToClass}
-              className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm"
-            >
-              Lägg till elever i vald klass
-            </button>
-          </div>
-          <textarea
-            value={rosterInput}
-            onChange={(e) => setRosterInput(e.target.value)}
-            placeholder={'Klistra in elevlista, en per rad\\nAnna Andersson\\nBo Berg'}
-            className="w-full min-h-28 px-3 py-2 border rounded text-sm mb-3"
-          />
-          <p className="text-xs text-gray-500 mb-2">
-            Inloggningsnamn skapas från elevens namn. Startlösenord sätts till elevens namn.
-          </p>
-          <p className="text-xs text-gray-500 mb-2">
-            En elev kan vara med i flera klasser/grupper samtidigt.
-          </p>
-          <p className="text-xs text-gray-500 mb-2">
-            Tips: klass-/gruppurval för alla vyer styrs längst upp på sidan.
-          </p>
-          <p className="text-xs text-gray-600 mb-3">{classStatus || ' '}</p>
-
-          {classes.length > 0 && (
-            <div className="space-y-1.5">
-              {classes.map(item => {
-                const classStudents = students.filter(student => recordMatchesClassFilter(student, [item.id]))
-                const loggedInCount = classStudents.filter(student => student.auth?.lastLoginAt).length
-                return (
-                  <div key={item.id} className="flex items-center justify-between gap-2 border rounded px-2 py-1.5">
-                    <div>
-                      <p className="text-sm font-medium text-gray-800">{item.name}</p>
-                      <p className="text-xs text-gray-500">
-                        {classStudents.length} elever | {loggedInCount} har loggat in
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleDeleteClass(item.id)}
-                      className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
-                    >
-                      Ta bort klass
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-
-        <div style={{ order: -10 }}>
-          {students.length === 0 ? (
-            <div className="bg-white rounded-lg p-8 shadow text-center">
-              <p className="text-gray-500 text-lg">Inga elever ännu</p>
-              <p className="text-gray-400 mt-2">
-                Lägg till elever via klasslistan ovan så kan de logga in.
-              </p>
-            </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow overflow-x-auto p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <div className="flex items-center gap-2">
-                <span className="text-xs uppercase tracking-wide text-gray-500">Resultatvy</span>
-                <button
-                  onClick={() => setViewMode('daily')}
-                  className={`px-3 py-1.5 rounded text-sm ${
-                    viewMode === 'daily'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Dagsvy
-                </button>
-                <button
-                  onClick={() => setViewMode('all')}
-                  className={`px-3 py-1.5 rounded text-sm ${
-                    viewMode === 'all'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Alla elever
-                </button>
-                <button
-                  onClick={() => setViewMode('weekly')}
-                  className={`px-3 py-1.5 rounded text-sm ${
-                    viewMode === 'weekly'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  Veckovy
-                </button>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <label className="text-xs text-gray-500">Sortera</label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="px-2 py-1 border rounded text-sm"
-                >
-                  <option value="name">Namn</option>
-                  <option value="student_id">ID</option>
-                  <option value="class">Klass</option>
-                  <option value="active_today">Aktiv idag</option>
-                  <option value="today_attempts">Dagens mängd</option>
-                  <option value="today_wrong">Dagens felsvar</option>
-                  <option value="today_success_rate">Dagens träffsäkerhet</option>
-                  <option value="today_struggle">Dagens kämp-index</option>
-                  <option value="today_engaged">Tid på uppgift idag</option>
-                  <option value="today_answer_length">Dagens svarslängd</option>
-                  <option value="active_week">Aktiv denna vecka</option>
-                  <option value="week_attempts">Veckans mängd</option>
-                  <option value="week_correct">Veckans rätt</option>
-                  <option value="week_wrong">Veckans felsvar</option>
-                  <option value="week_struggle">Veckans kämp-index</option>
-                  <option value="week_active_time">Veckans aktiv tid</option>
-                  <option value="week_engaged">Tid på uppgift 7d</option>
-                  <option value="week_success_rate">Veckans träffsäkerhet</option>
-                  <option value="week_answer_length">Veckans svarslängd</option>
-                  <option value="assignment_week">Uppdragsföljsamhet v</option>
-                  <option value="support_score">Stödscore</option>
-                  <option value="risk_score">Riskscore</option>
-                  <option value="logged_in">Har loggat in</option>
-                  <option value="last_active">Senast aktiv</option>
-                  <option value="attempts">Totala försök</option>
-                  <option value="success_rate">Total träffsäkerhet</option>
-                  <option value="reasonable_rate">Total rimlighet</option>
-                  <option value="avg_relative_error">Total medelavvikelse</option>
-                  <option value="trend">Trend</option>
-                </select>
-                <button
-                  onClick={() => setSortDir(prev => prev === 'desc' ? 'asc' : 'desc')}
-                  className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm"
-                >
-                  {sortDir === 'desc' ? 'Fallande' : 'Stigande'}
-                </button>
-                <button
-                  onClick={handleExportSnapshotCsv}
-                  className="px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded text-sm"
-                >
-                  Export översikt
-                </button>
-                <button
-                  onClick={handleExportDetailedProblemCsv}
-                  className="px-2 py-1 bg-cyan-100 hover:bg-cyan-200 text-cyan-700 rounded text-sm"
-                >
-                  Export rådata
-                </button>
-                <button
-                  onClick={handleExportSkillComparisonCsv}
-                  className="px-2 py-1 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded text-sm"
-                >
-                  Export skill
-                </button>
-                <button
-                  onClick={handleExportTableDevelopmentCsv}
-                  className="px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded text-sm"
-                >
-                  Export tabeller
-                </button>
-                <button
-                  onClick={handleExportActivityCsv}
-                  className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-sm"
-                >
-                  Export aktivitet
-                </button>
-              </div>
-            </div>
-
-            {viewMode === 'daily' && visibleRows.length === 0 && (
-              <div className="mb-4 rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
-                Inga elever i valt urval.
-              </div>
-            )}
-            {viewMode === 'weekly' && visibleRows.length === 0 && (
-              <div className="mb-4 rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
-                Inga elever i valt urval.
-              </div>
-            )}
-
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
-                <tr className="text-left text-gray-600">
-                  {renderResultSortHeader('Namn', 'name')}
-                  {renderResultSortHeader('ID', 'student_id')}
-                  {renderResultSortHeader('Klass', 'class')}
-                  {viewMode === 'daily' ? (
-                    <>
-                      {renderResultSortHeader('Gjort idag', 'today_attempts', { helpText: RESULT_HEADER_HELP.today_attempts })}
-                      {renderResultSortHeader('Rätt/fel idag', 'today_wrong', { helpText: RESULT_HEADER_HELP.today_wrong })}
-                      {renderResultSortHeader('Tid på uppgift idag', 'today_engaged', { helpText: RESULT_HEADER_HELP.today_engaged })}
-                      {renderResultSortHeader('Kämpar med idag', 'today_struggle', { helpText: RESULT_HEADER_HELP.today_struggle })}
-                      {renderResultSortHeader('Svarslängd idag', 'today_answer_length', { helpText: RESULT_HEADER_HELP.today_answer_length })}
-                      {renderResultSortHeader('Senast aktiv', 'last_active')}
-                      <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
-                    </>
-                  ) : viewMode === 'weekly' ? (
-                    <>
-                      {renderResultSortHeader('Gjort denna vecka', 'week_attempts', { helpText: RESULT_HEADER_HELP.week_attempts })}
-                      {renderResultSortHeader('Aktiv tid (svar)', 'week_active_time', { helpText: RESULT_HEADER_HELP.week_active_time })}
-                      {renderResultSortHeader('Tid på uppgift', 'week_engaged', { helpText: RESULT_HEADER_HELP.week_engaged })}
-                      {renderResultSortHeader('Rätt/fel vecka', 'week_wrong', { helpText: RESULT_HEADER_HELP.week_wrong })}
-                      {renderResultSortHeader('Kämpar med vecka', 'week_struggle', { helpText: RESULT_HEADER_HELP.week_struggle })}
-                      {renderResultSortHeader('Svarslängd vecka', 'week_answer_length', { helpText: RESULT_HEADER_HELP.week_answer_length })}
-                      {renderResultSortHeader('Senast aktiv', 'last_active')}
-                      <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
-                    </>
-                  ) : (
-                    <>
-                      {renderResultSortHeader('Försök', 'attempts')}
-                      {renderResultSortHeader('Rätt', 'success_rate', { helpText: RESULT_HEADER_HELP.success_rate })}
-                      {renderResultSortHeader('Rimlighet', 'reasonable_rate', { helpText: RESULT_HEADER_HELP.reasonable_rate })}
-                      {renderResultSortHeader('Medelavvikelse', 'avg_relative_error', { helpText: RESULT_HEADER_HELP.avg_relative_error })}
-                      {renderResultSortHeader('Trend', 'trend', { helpText: RESULT_HEADER_HELP.trend })}
-                      {renderResultSortHeader('Senast aktiv', 'last_active')}
-                      <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
-                    </>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {visibleRows.map(row => (
-                  <tr key={row.studentId} className="border-b last:border-b-0 hover:bg-gray-50">
-                    <td className={`px-4 py-0 font-semibold ${row.hasLoggedIn ? 'text-green-700' : 'text-gray-800'}`}>
-                      <div>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenStudentDetail(row.studentId)}
-                          className="text-left hover:underline text-indigo-700"
-                        >
-                          {row.name}
-                        </button>
-                      </div>
-                      <div className="mt-1">
-                        <RiskBadge level={row.riskLevel} score={row.riskScore} />
-                      </div>
-                    </td>
-                    <td className="px-4 py-0 text-xs text-gray-400 font-mono">
-                      {row.studentId}
-                    </td>
-                    <td className="px-4 py-0 text-gray-700">
-                      {row.classNameLabel || row.className || '-'}
-                    </td>
-                    {viewMode === 'daily' ? (
-                      <>
-                        <td className="px-4 py-0 text-gray-700">
-                          {row.todayAttempts}
-                          <div className="text-xs text-gray-500 mt-1">{row.todayOperationSummary}</div>
-                        </td>
-                        <td className="px-4 py-0">
-                          <span className={getSuccessColorClass(row.todaySuccessRate)}>
-                            {toPercent(row.todaySuccessRate)} ({row.todayCorrectCount}/{row.todayAttempts || 0})
-                          </span>
-                          <div className="text-xs text-gray-500 mt-1">
-                            Rimliga fel: {row.todayWrongCount > 0 ? `${row.todayReasonableWrongCount}/${row.todayWrongCount}` : '-'}
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            Uppdrag: {row.todayAssignmentAdherenceRate === null ? '-' : toPercent(row.todayAssignmentAdherenceRate)}
-                          </div>
-                        </td>
-                        <td className="px-4 py-0 text-gray-700">
-                          {formatDuration(row.todayEngagedMinutes * 60)}
-                          <div className="text-xs text-gray-500 mt-1">
-                            {row.todayPresenceInteractions} interaktioner
-                          </div>
-                        </td>
-                        <td className="px-4 py-0 text-gray-700">
-                          {row.todayStruggle
-                            ? (
-                              <>
-                                <div className="font-medium">{row.todayStruggle.skillLabel}</div>
-                                <div className="text-xs text-gray-500">
-                                  {row.todayStruggle.attempts} försök, {row.todayStruggle.wrong} fel
-                                </div>
-                              </>
-                            )
-                            : <span className="text-gray-400">-</span>}
-                        </td>
-                        <td className="px-4 py-0 text-gray-700">
-                          {row.todayAvgAnswerLength === null
-                            ? '-'
-                            : `${row.todayAvgAnswerLength.toFixed(1)} tecken`}
-                        </td>
-                        <td className="px-4 py-0 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
-                      </>
-                    ) : viewMode === 'weekly' ? (
-                      <>
-                        <td className="px-4 py-0 text-gray-700">
-                          {row.weekAttempts}
-                          <div className="text-xs text-gray-500 mt-1">{row.weekOperationSummary}</div>
-                        </td>
-                        <td className="px-4 py-0 text-gray-700">
-                          {formatDuration(row.weekActiveTimeSec)}
-                          <div className="text-xs text-gray-500 mt-1">
-                            snitt {row.weekAvgTimePerProblemSec > 0 ? `${Math.round(row.weekAvgTimePerProblemSec)}s/problem` : '-'}
-                          </div>
-                        </td>
-                        <td className="px-4 py-0 text-gray-700">
-                          {formatDuration(row.weekEngagedMinutes * 60)}
-                          <div className="text-xs text-gray-500 mt-1">
-                            {row.weekPresenceInteractions} interaktioner
-                          </div>
-                        </td>
-                        <td className="px-4 py-0">
-                          <span className={getSuccessColorClass(row.weekSuccessRate)}>
-                            {toPercent(row.weekSuccessRate)} ({row.weekCorrectCount}/{row.weekAttempts || 0})
-                          </span>
-                          <div className="text-xs text-gray-500 mt-1">
-                            Rimliga fel: {row.weekWrongCount > 0 ? `${row.weekReasonableWrongCount}/${row.weekWrongCount}` : '-'}
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            Uppdrag: {row.weekAssignmentAdherenceRate === null ? '-' : toPercent(row.weekAssignmentAdherenceRate)}
-                          </div>
-                        </td>
-                        <td className="px-4 py-0 text-gray-700">
-                          {row.weekStruggle
-                            ? (
-                              <>
-                                <div className="font-medium">{row.weekStruggle.skillLabel}</div>
-                                <div className="text-xs text-gray-500">
-                                  {row.weekStruggle.attempts} försök, {row.weekStruggle.wrong} fel
-                                </div>
-                              </>
-                            )
-                            : <span className="text-gray-400">-</span>}
-                        </td>
-                        <td className="px-4 py-0 text-gray-700">
-                          {row.weekAvgAnswerLength === null
-                            ? '-'
-                            : `${row.weekAvgAnswerLength.toFixed(1)} tecken`}
-                        </td>
-                        <td className="px-4 py-0 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
-                      </>
-                    ) : (
-                      <>
-                        <td className="px-4 py-0 text-gray-700">{row.attempts}</td>
-                        <td className="px-4 py-0">
-                          <span className={getSuccessColorClass(row.successRate)}>
-                            {toPercent(row.successRate)}
-                          </span>
-                          <div className="text-xs text-gray-500 mt-1">
-                            {row.correctCount}/{row.attempts} rätt
-                          </div>
-                        </td>
-                        <td className="px-4 py-0">
-                          <span className={getReasonableColorClass(row.reasonableRate)}>
-                            {toPercent(row.reasonableRate)}
-                          </span>
-                          <div className="text-xs text-gray-500 mt-1">
-                            {row.reasonableCount}/{row.attempts} rimliga
-                          </div>
-                        </td>
-                        <td className="px-4 py-0 text-gray-700">
-                          {row.avgRelativeError === null ? '-' : `${Math.round(row.avgRelativeError * 100)}%`}
-                        </td>
-                        <td className="px-4 py-0">
-                          {row.trend === null ? (
-                            <span className="text-gray-400">-</span>
-                          ) : (
-                            <span className={row.trend >= 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
-                              {row.trend >= 0 ? '↑' : '↓'} {Math.abs(Math.round(row.trend * 100))}%
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-0 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
-                      </>
-                    )}
-                    <td className="px-4 py-0 text-right">
-                      <div className="inline-flex flex-wrap justify-end gap-1">
-                        <button
-                          onClick={() => handleOpenStudentDetail(row.studentId)}
-                          className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs"
-                        >
-                          Elevvy
-                        </button>
-                        <button
-                          onClick={() => handleCreateQuickAssignment(row, 'focus')}
-                          className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs"
-                        >
-                          Fokus
-                        </button>
-                        <button
-                          onClick={() => handleCreateQuickAssignment(row, 'warmup')}
-                          className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs"
-                        >
-                          Värm upp
-                        </button>
-                        <button
-                          onClick={() => handleCreateQuickAssignment(row, 'challenge')}
-                          className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs"
-                        >
-                          Mix
-                        </button>
-                        <button
-                          onClick={() => handleResetStudentPassword(row.studentId)}
-                          disabled={passwordResetBusyId === row.studentId}
-                          className="px-2 py-1 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-200 text-gray-700 rounded text-xs"
-                        >
-                          {passwordResetBusyId === row.studentId ? 'Nollställer...' : 'Nollställ lösen'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            </div>
-          )}
-        </div>
-
-        <div id={PASSWORD_RESET_SECTION_ID} className="bg-white rounded-lg shadow p-4 mt-8 border-2 border-rose-200">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <h2 className="text-lg font-semibold text-rose-800">Nollställ elevlösenord</h2>
-            <p className="text-xs text-gray-500">
-              {passwordResetRows.length} elev(er) i aktuellt urval
+            <p className="text-sm text-gray-500 mb-3">
+              Använd för att återställa elevlösenord till elevens inloggnings-ID.
             </p>
-          </div>
-          <p className="text-sm text-gray-500 mb-3">
-            Använd för att återställa elevlösenord till elevens inloggnings-ID.
-          </p>
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <input
-              type="text"
-              value={passwordResetSearch}
-              onChange={(event) => setPasswordResetSearch(event.target.value)}
-              placeholder="Sök elev (namn, ID eller klass)"
-              className="px-3 py-2 border rounded text-sm min-w-[240px] flex-1"
-            />
-            <button
-              type="button"
-              onClick={() => setPasswordResetSearch('')}
-              className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm"
-            >
-              Rensa
-            </button>
-          </div>
-          <p className="text-xs text-gray-600 mb-3 min-h-5">{passwordResetStatus || ' '}</p>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <input
+                type="text"
+                value={passwordResetSearch}
+                onChange={(event) => setPasswordResetSearch(event.target.value)}
+                placeholder="Sök elev (namn, ID eller klass)"
+                className="px-3 py-2 border rounded text-sm min-w-[240px] flex-1"
+              />
+              <button
+                type="button"
+                onClick={() => setPasswordResetSearch('')}
+                className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm"
+              >
+                Rensa
+              </button>
+            </div>
+            <p className="text-xs text-gray-600 mb-3 min-h-5">{passwordResetStatus || ' '}</p>
 
-          {passwordResetRows.length === 0 ? (
-            <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
-              Inga elever att visa i valt urval.
-            </div>
-          ) : (
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
-              <div className="max-h-80 overflow-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50 border-b text-left text-gray-600">
-                    <tr>
-                      <th className="px-3 py-2 font-semibold">Namn</th>
-                      <th className="px-3 py-2 font-semibold">ID</th>
-                      <th className="px-3 py-2 font-semibold">Klass</th>
-                      <th className="px-3 py-2 font-semibold">Senaste inloggning</th>
-                      <th className="px-3 py-2 font-semibold text-right">Åtgärd</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {passwordResetRows.map(row => (
-                      <tr key={`password-reset-${row.studentId}`} className="border-b last:border-b-0">
-                        <td className="px-3 py-2 text-gray-800">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenStudentDetail(row.studentId)}
-                            className="text-left hover:underline text-indigo-700 font-medium"
-                          >
-                            {row.name}
-                          </button>
-                        </td>
-                        <td className="px-3 py-2 text-xs text-gray-500 font-mono">{row.studentId}</td>
-                        <td className="px-3 py-2 text-gray-700">{row.className || '-'}</td>
-                        <td className="px-3 py-2 text-gray-600">{formatTimeAgo(row.lastLoginAt)}</td>
-                        <td className="px-3 py-2 text-right">
-                          <button
-                            type="button"
-                            onClick={() => handleResetStudentPassword(row.studentId)}
-                            disabled={passwordResetBusyId === row.studentId}
-                            className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white rounded text-xs font-semibold"
-                          >
-                            {passwordResetBusyId === row.studentId ? 'Nollställer...' : 'Nollställ lösenord'}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            {passwordResetRows.length === 0 ? (
+              <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
+                Inga elever att visa i valt urval.
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className="max-h-80 overflow-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 border-b text-left text-gray-600">
+                      <tr>
+                        <th className="px-3 py-2 font-semibold">Namn</th>
+                        <th className="px-3 py-2 font-semibold">ID</th>
+                        <th className="px-3 py-2 font-semibold">Klass</th>
+                        <th className="px-3 py-2 font-semibold">Senaste inloggning</th>
+                        <th className="px-3 py-2 font-semibold text-right">Åtgärd</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {passwordResetRows.map(row => (
+                        <tr key={`password-reset-${row.studentId}`} className="border-b last:border-b-0">
+                          <td className="px-3 py-2 text-gray-800">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenStudentDetail(row.studentId)}
+                              className="text-left hover:underline text-indigo-700 font-medium"
+                            >
+                              {row.name}
+                            </button>
+                          </td>
+                          <td className="px-3 py-2 text-xs text-gray-500 font-mono">{row.studentId}</td>
+                          <td className="px-3 py-2 text-gray-700">{row.className || '-'}</td>
+                          <td className="px-3 py-2 text-gray-600">{formatTimeAgo(row.lastLoginAt)}</td>
+                          <td className="px-3 py-2 text-right">
+                            <button
+                              type="button"
+                              onClick={() => handleResetStudentPassword(row.studentId)}
+                              disabled={passwordResetBusyId === row.studentId}
+                              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white rounded text-xs font-semibold"
+                            >
+                              {passwordResetBusyId === row.studentId ? 'Nollställer...' : 'Nollställ lösenord'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
-  </div>
   )
 }
 

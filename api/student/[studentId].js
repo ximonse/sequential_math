@@ -740,7 +740,7 @@ export default async function handler(req, res) {
       const indexKey = 'students:index'
       await kv.sadd(indexKey, studentId)
 
-      return res.status(200).json({ ok: true })
+      return res.status(200).json({ ok: true, profile: normalizedMerged })
     }
 
     return res.status(405).json({ error: 'Method not allowed' })

@@ -1050,7 +1050,7 @@ function StudentSession() {
           <div>
             <p className="text-sm text-gray-500">{profile.name}</p>
             <p className="text-xs text-gray-400">
-              Nivå {Math.round(profile.currentDifficulty)} | {sessionCount} denna session
+              {sessionCount} denna session
             </p>
           </div>
 

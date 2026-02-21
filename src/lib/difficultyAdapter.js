@@ -67,61 +67,53 @@ export function adjustDifficulty(profile, wasCorrect, options = {}) {
   const progressionMode = normalizeProgressionMode(options.progressionMode)
   const config = ADJUST_CONFIG[progressionMode] || ADJUST_CONFIG[PROGRESSION_MODE_CHALLENGE]
 
+  let delta = 0
   if (wasCorrect) {
-    // Rätt svar: mjukare ökning, även små steg för att undvika "fastna"
     const streak = getCurrentStreak(profile)
 
-    // Stabilt starkt → öka tydligt men inte för snabbt
     if (streak >= 3 && recentSuccess >= 0.9) {
-      profile.currentDifficulty += config.upStrong
-    }
-    // 2 rätt i rad → öka lite
-    else if (streak >= 2) {
-      profile.currentDifficulty += config.upStreak
-    }
-    // Enstaka rätt ska också kunna ge utveckling över tid
-    else if (recentSuccess >= 0.55) {
-      profile.currentDifficulty += config.upNormal
-    }
-    // Extra försiktig progression på låg nivå
-    else if (profile.currentDifficulty <= 2) {
-      profile.currentDifficulty += config.upLowLevel
+      delta = config.upStrong
+    } else if (streak >= 2) {
+      delta = config.upStreak
+    } else if (recentSuccess >= 0.55) {
+      delta = config.upNormal
+    } else if (profile.currentDifficulty <= 2) {
+      delta = config.upLowLevel
     }
 
-    // Har eleven tidigare varit högre upp? Hjälp snabbare tillbaka.
     const belowPeak = profile.currentDifficulty < profile.highestDifficulty - 0.3
     if (belowPeak && streak >= 2 && recentSuccess >= 0.7) {
-      profile.currentDifficulty += config.comebackBonus
+      delta += config.comebackBonus
     }
 
-    // Snabba korrekta svar kan ge liten bonus, men långsamhet straffas inte.
     if (isFastCorrectAnswer(options)) {
-      profile.currentDifficulty += config.speedBonus
+      delta += config.speedBonus
     }
   } else {
     if (options.errorCategory === 'inattention') {
-      const tinyPenalty = progressionMode === PROGRESSION_MODE_STEADY ? 0.02 : 0.03
-      profile.currentDifficulty -= tinyPenalty
+      delta = -(progressionMode === PROGRESSION_MODE_STEADY ? 0.02 : 0.03)
     } else {
-    // Fel svar: mindre hårda sänkningar för att minska bottenlåsning
-    const errors = getConsecutiveErrors(profile)
+      const errors = getConsecutiveErrors(profile)
 
-    // Tydlig kamp → sänk, men inte drastiskt
-    if (errors >= 3 && recentSuccess < 0.5) {
-      profile.currentDifficulty -= config.downHard
-    }
-    // 2 fel i rad → minska
-    else if (errors >= 2) {
-      profile.currentDifficulty -= config.downMid
-    }
-    // Låg trend utan streak-fel → liten nedjustering
-    else if (recentSuccess < 0.55) {
-      profile.currentDifficulty -= config.downSoft
-    }
+      if (errors >= 3 && recentSuccess < 0.5) {
+        delta = -config.downHard
+      } else if (errors >= 2) {
+        delta = -config.downMid
+      } else if (recentSuccess < 0.55) {
+        delta = -config.downSoft
+      }
     }
   }
 
-  // Clamp mellan 1 och 12 (våra nivåer)
+  // Per-operation ability: full delta
+  const operation = inferCurrentOperation(profile)
+  if (operation) {
+    const currentAbility = getOperationAbility(profile, operation)
+    setOperationAbility(profile, operation, currentAbility + delta)
+  }
+
+  // Global difficulty: reducerad delta (50%) — styr främst operation-introduktion
+  profile.currentDifficulty += delta * 0.5
   profile.currentDifficulty = Math.max(1, Math.min(12, profile.currentDifficulty))
   profile.highestDifficulty = Math.max(profile.highestDifficulty, profile.currentDifficulty)
   updateSkillStateAfterAnswer(profile)
@@ -137,7 +129,7 @@ export function selectNextProblem(profile, options = {}) {
   const recentSuccess = getRecentSuccessRate(profile, 5)
   const errors = getConsecutiveErrors(profile)
   const progressionMode = normalizeProgressionMode(options.progressionMode)
-  const roundedDifficulty = clampLevelToRange(Math.round(profile.currentDifficulty), options.levelRange)
+  const globalRoundedDifficulty = clampLevelToRange(Math.round(profile.currentDifficulty), options.levelRange)
   const ncmFilter = normalizeNcmFilter(options.ncmFilter)
 
   if (ncmFilter) {
@@ -150,7 +142,7 @@ export function selectNextProblem(profile, options = {}) {
     const preferredSkillTag = preferredFromSession || pickNextNcmSkillTag(profile, ncmFilter, ncmCandidates)
     const recentNcmSkills = getRecentNcmSkillTags(profile, 6)
     const problem = generateNcmProblemFromFilter(ncmFilter, {
-      levelHint: roundedDifficulty,
+      levelHint: globalRoundedDifficulty,
       preferredSkillTag,
       excludeSkillTags: recentNcmSkills
     })
@@ -160,7 +152,7 @@ export function selectNextProblem(profile, options = {}) {
     return annotateSelectedProblem(profile, problem, {
       reason: 'ncm_assignment',
       bucket: 'core',
-      targetLevel: Number(problem?.difficulty?.conceptual_level || roundedDifficulty),
+      targetLevel: Number(problem?.difficulty?.conceptual_level || globalRoundedDifficulty),
       progressionMode
     })
   }
@@ -170,11 +162,17 @@ export function selectNextProblem(profile, options = {}) {
   const preferredType = isTableDrill
     ? 'multiplication'
     : chooseProblemType(profile, recentSuccess, errors, progressionMode)
-  const warmupLevel = getWarmupLevel(profile, roundedDifficulty)
+
   const allowedTypes = isTableDrill
     ? ['multiplication']
     : normalizeAllowedTypes(options.allowedTypes)
   const assignmentType = allowedTypes.length === 1 ? allowedTypes[0] : null
+
+  // Per-operation ability: använd tilldelad typ om den finns, annars vald typ
+  const effectiveType = assignmentType || preferredType
+  const operationAbility = getOperationAbility(profile, effectiveType)
+  const roundedDifficulty = clampLevelToRange(Math.round(operationAbility), options.levelRange)
+  const warmupLevel = getWarmupLevel(profile, roundedDifficulty, effectiveType)
 
   // Sessionstyrd warmup (t.ex. vid fokuserat räknesättsläge)
   if (Number.isFinite(options.forcedLevel)) {
@@ -306,11 +304,11 @@ export function shouldOfferSteadyAdvance(profile, options = {}) {
   const progressionMode = normalizeProgressionMode(options.progressionMode)
   if (progressionMode !== PROGRESSION_MODE_STEADY) return null
 
-  const roundedDifficulty = Math.max(1, Math.min(12, Math.round(profile.currentDifficulty || 1)))
-  if (roundedDifficulty >= 12) return null
-
   const operation = resolveOfferOperation(options)
   if (!operation) return null
+
+  const roundedDifficulty = Math.max(1, Math.min(12, Math.round(getOperationAbility(profile, operation))))
+  if (roundedDifficulty >= 12) return null
 
   const recent = profile.recentProblems
     .filter(problem => inferOperationFromProblemType(problem.problemType, {
@@ -383,18 +381,75 @@ function ensureDifficultyMeta(profile) {
   if (!profile.adaptive.ncmRotation || typeof profile.adaptive.ncmRotation !== 'object') {
     profile.adaptive.ncmRotation = {}
   }
+  if (!profile.adaptive.operationAbilities || typeof profile.adaptive.operationAbilities !== 'object') {
+    const global = profile.currentDifficulty || 1
+    profile.adaptive.operationAbilities = {
+      addition: global,
+      subtraction: Math.max(1, global - 2),
+      multiplication: Math.max(1, global - 3),
+      division: Math.max(3, global - 4)
+    }
+  }
 }
 
-function getWarmupLevel(profile, roundedDifficulty) {
-  const lastTs = profile.recentProblems[profile.recentProblems.length - 1]?.timestamp
+export function getOperationAbility(profile, operation) {
+  ensureDifficultyMeta(profile)
+  const abilities = profile.adaptive.operationAbilities
+  if (abilities && typeof abilities[operation] === 'number' && Number.isFinite(abilities[operation])) {
+    return abilities[operation]
+  }
+  return profile.currentDifficulty || 1
+}
+
+export function setOperationAbility(profile, operation, value) {
+  ensureDifficultyMeta(profile)
+  profile.adaptive.operationAbilities[operation] = Math.max(1, Math.min(12, value))
+}
+
+export function getRecentOperationSuccessRate(profile, operation, count = 5) {
+  const recent = profile.recentProblems
+    .filter(p => inferOperationFromProblemType(p.problemType) === operation)
+    .slice(-count)
+  if (recent.length === 0) return 0.5
+  return recent.filter(p => p.correct).length / recent.length
+}
+
+export function getConsecutiveOperationErrors(profile, operation) {
+  let count = 0
+  for (let i = profile.recentProblems.length - 1; i >= 0; i--) {
+    const p = profile.recentProblems[i]
+    if (inferOperationFromProblemType(p.problemType) !== operation) continue
+    if (!p.correct) count++
+    else break
+  }
+  return count
+}
+
+function inferCurrentOperation(profile) {
+  const latest = profile.recentProblems[profile.recentProblems.length - 1]
+  if (!latest) return null
+  const op = inferOperationFromProblemType(latest.problemType)
+  return KNOWN_OPERATION_TYPES.has(op) ? op : null
+}
+
+function getWarmupLevel(profile, roundedDifficulty, operation) {
+  // Kolla senaste problem för detta räknesätt, inte generellt
+  const operationProblems = operation
+    ? profile.recentProblems.filter(
+      p => inferOperationFromProblemType(p.problemType) === operation
+    )
+    : profile.recentProblems
+  const lastTs = operationProblems[operationProblems.length - 1]?.timestamp
   if (!lastTs) return null
 
   const daysAway = (Date.now() - lastTs) / DAY_MS
   if (daysAway < 1) return null
 
-  const warmupProblemsCompletedToday = getProblemsCompletedToday(profile)
+  const todayOperationCount = operation
+    ? getOperationProblemsCompletedToday(profile, operation)
+    : getProblemsCompletedToday(profile)
   const warmupLength = Math.min(4, Math.max(2, Math.ceil(daysAway)))
-  if (warmupProblemsCompletedToday >= warmupLength) return null
+  if (todayOperationCount >= warmupLength) return null
 
   const levelDrop = daysAway >= 7 ? 2 : daysAway >= 3 ? 2 : 1
   const baseWarmup = Math.max(1, roundedDifficulty - levelDrop)
@@ -408,6 +463,14 @@ function getProblemsCompletedToday(profile) {
   const now = new Date()
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
   return profile.recentProblems.filter(p => p.timestamp >= startOfToday).length
+}
+
+function getOperationProblemsCompletedToday(profile, operation) {
+  const now = new Date()
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  return profile.recentProblems.filter(
+    p => p.timestamp >= startOfToday && inferOperationFromProblemType(p.problemType) === operation
+  ).length
 }
 
 /**

@@ -1,5 +1,5 @@
 function StudentCard({ student }) {
-  const { studentId, name, stats, currentDifficulty, recentProblems } = student
+  const { studentId, name, stats, operationAbilities, recentProblems } = student
 
   // Senaste aktivitet
   const lastActive = recentProblems[recentProblems.length - 1]?.timestamp
@@ -27,22 +27,26 @@ function StudentCard({ student }) {
         <span className="text-xs text-gray-400">{lastActiveText}</span>
       </div>
 
-      <div className="grid grid-cols-3 gap-2 text-center mb-3">
+      <div className="grid grid-cols-2 gap-2 text-center mb-3">
         <div>
           <p className="text-xs text-gray-500">Problem</p>
           <p className="text-lg font-bold text-gray-700">{stats.totalProblems}</p>
         </div>
         <div>
-          <p className="text-xs text-gray-500">Success</p>
+          <p className="text-xs text-gray-500">Rätt</p>
           <p className={`text-lg font-bold ${successColor}`}>
             {Math.round(successRate * 100)}%
           </p>
         </div>
-        <div>
-          <p className="text-xs text-gray-500">Nivå</p>
-          <p className="text-lg font-bold text-blue-600">
-            {Math.round(currentDifficulty)}
-          </p>
+      </div>
+
+      <div className="mb-3">
+        <p className="text-xs text-gray-500 mb-1">Nivå per räknesätt</p>
+        <div className="flex gap-1.5 justify-center">
+          <OperationLevel label="+" value={operationAbilities?.addition} />
+          <OperationLevel label="−" value={operationAbilities?.subtraction} />
+          <OperationLevel label="×" value={operationAbilities?.multiplication} />
+          <OperationLevel label="÷" value={operationAbilities?.division} />
         </div>
       </div>
 
@@ -169,6 +173,15 @@ function formatTypeName(type) {
     mul_dec_2dp_1dp: 'decimal(2dp)×decimal(1dp)'
   }
   return names[type] || type
+}
+
+function OperationLevel({ label, value }) {
+  const level = Math.round(Number(value) || 1)
+  return (
+    <span className="inline-flex items-center gap-0.5 text-sm font-semibold text-blue-700 bg-blue-50 border border-blue-200 rounded px-1.5 py-0.5">
+      <span className="text-blue-400">{label}</span>{level}
+    </span>
+  )
 }
 
 export default StudentCard

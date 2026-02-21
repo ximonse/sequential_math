@@ -2602,8 +2602,23 @@ function Dashboard() {
                     <p className="font-semibold text-emerald-700">{formatDuration(detailStudentRow.weekEngagedMinutes * 60)}</p>
                   </div>
                   <div className="rounded border border-purple-200 bg-purple-50 px-2.5 py-2">
-                    <p className="text-purple-700">Nivå nu/högst</p>
-                    <p className="font-semibold text-purple-700">{detailStudentRow.currentDifficulty}/{detailStudentRow.highestDifficulty}</p>
+                    <p className="text-purple-700">Nivå per räknesätt</p>
+                    <div className="flex gap-1.5 mt-0.5">
+                      {[
+                        { label: '+', key: 'addition' },
+                        { label: '−', key: 'subtraction' },
+                        { label: '×', key: 'multiplication' },
+                        { label: '÷', key: 'division' }
+                      ].map(op => (
+                        <span key={op.key} className="inline-flex items-center gap-0.5 text-sm font-semibold text-purple-700">
+                          <span className="text-purple-400">{op.label}</span>
+                          {Math.round(Number(detailStudentRow.operationAbilities?.[op.key]) || 1)}
+                        </span>
+                      ))}
+                      <span className="text-purple-400 text-xs ml-1 self-center">
+                        (högst {detailStudentRow.highestDifficulty})
+                      </span>
+                    </div>
                   </div>
                   <div className="rounded border border-gray-200 bg-white px-2.5 py-2">
                     <p className="text-gray-500">Aktivitet</p>
@@ -4398,6 +4413,8 @@ function pickFocusLevel(row, operation) {
     : null
   if (match && Number.isFinite(match.avgLevel)) return clampLevel(Math.round(match.avgLevel))
 
+  const opAbility = Number(row.operationAbilities?.[operation])
+  if (Number.isFinite(opAbility) && opAbility > 0) return clampLevel(Math.round(opAbility))
   return clampLevel(Math.round(Number(row.currentDifficulty) || 1))
 }
 
@@ -5512,6 +5529,10 @@ function buildStudentDetailExportRows(student, row, detailData) {
   add({ Sektion: 'Sammanfattning', Nyckel: 'TidPaUppgift7dSek', TidSek: Math.round((Number(row.weekEngagedMinutes || 0) * 60)) })
   add({ Sektion: 'Sammanfattning', Nyckel: 'NivaNu', Varde: String(Number(row.currentDifficulty || 1)) })
   add({ Sektion: 'Sammanfattning', Nyckel: 'NivaHogst', Varde: String(Number(row.highestDifficulty || 1)) })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'NivaAddition', Varde: String(Math.round(Number(row.operationAbilities?.addition) || 1)) })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'NivaSubtraktion', Varde: String(Math.round(Number(row.operationAbilities?.subtraction) || 1)) })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'NivaMultiplikation', Varde: String(Math.round(Number(row.operationAbilities?.multiplication) || 1)) })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'NivaDivision', Varde: String(Math.round(Number(row.operationAbilities?.division) || 1)) })
   add({ Sektion: 'Sammanfattning', Nyckel: 'Aktivitet', Status: String(row.activityStatus || '') })
   add({ Sektion: 'Sammanfattning', Nyckel: 'SvagastTyper', Varde: formatSkillList(student?.stats?.weakestTypes) })
   add({ Sektion: 'Sammanfattning', Nyckel: 'StarkastTyper', Varde: formatSkillList(student?.stats?.strongestTypes) })
@@ -5934,6 +5955,7 @@ function buildStudentRow(student, activeAssignment = null, classNameById = new M
     classNameLabel,
     currentDifficulty: Number(student.currentDifficulty) || 1,
     highestDifficulty: Number(student.highestDifficulty) || Number(student.currentDifficulty) || 1,
+    operationAbilities: extractOperationAbilities(student),
     hasLoggedIn: Boolean(student.auth?.lastLoginAt),
     loginCount: Number(student.auth?.loginCount) || 0,
     attempts,
@@ -6021,6 +6043,25 @@ function buildStudentRow(student, activeAssignment = null, classNameById = new M
     riskScore: riskSignals.riskScore,
     riskCodes: riskSignals.riskCodes,
     supportScore: riskSignals.supportScore
+  }
+}
+
+function extractOperationAbilities(student) {
+  const abilities = student?.adaptive?.operationAbilities
+  if (abilities && typeof abilities === 'object') {
+    return {
+      addition: Number(abilities.addition) || 1,
+      subtraction: Number(abilities.subtraction) || 1,
+      multiplication: Number(abilities.multiplication) || 1,
+      division: Number(abilities.division) || 1
+    }
+  }
+  const global = Number(student.currentDifficulty) || 1
+  return {
+    addition: global,
+    subtraction: Math.max(1, global - 2),
+    multiplication: Math.max(1, global - 3),
+    division: Math.max(3, global - 4)
   }
 }
 

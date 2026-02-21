@@ -1444,7 +1444,7 @@ function estimateOperationLevel(profile, operation) {
   if (relevant.length === 0) return 1
 
   const sum = relevant.reduce((acc, p) => {
-    const lvl = p.difficulty?.conceptual_level || Math.round(profile.currentDifficulty) || 1
+    const lvl = p.difficulty?.conceptual_level || Math.round(getOperationAbility(profile, operation)) || 1
     return acc + lvl
   }, 0)
 

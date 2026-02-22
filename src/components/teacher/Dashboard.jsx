@@ -2886,8 +2886,8 @@ function Dashboard() {
                                 {renderDetailLevelErrorSortHeader('Nivå', 'level', { helpText: DETAIL_LEVEL_ERROR_HELP.level })}
                                 {renderDetailLevelErrorSortHeader('Försök', 'attempts', { helpText: DETAIL_LEVEL_ERROR_HELP.attempts })}
                                 {renderDetailLevelErrorSortHeader('Träff elev', 'error_share', { helpText: 'Andel rätt (1 − felandel).' })}
-                                <th className="py-1 pr-2">Träff klass</th>
-                                <th className="py-1 pr-2">Δ Träff</th>
+                                <th className="py-1 pr-2" title="Klassens snittträff för hela räknesättet (alla nivåer), ej per nivå.">Träff klass*</th>
+                                <th className="py-1 pr-2" title="Delta mot klassens snittträff per räknesätt.">Δ*</th>
                                 {renderDetailLevelErrorSortHeader('Kunskapsfel', 'knowledge_wrong', { helpText: DETAIL_LEVEL_ERROR_HELP.knowledge_wrong })}
                                 {renderDetailLevelErrorSortHeader('Ouppmärksamhet', 'inattention_wrong', {
                                   className: 'py-1',
@@ -3087,7 +3087,7 @@ function Dashboard() {
 
                 {(() => {
                   const allLevelRows = Array.isArray(detailStudentViewData?.levelErrorRows)
-                    ? detailStudentViewData.levelErrorRows.filter(r => r.attempts >= MASTERY_MIN_ATTEMPTS)
+                    ? detailStudentViewData.levelErrorRows.filter(r => r.attempts >= DETAIL_LEVEL_ERROR_MIN_ATTEMPTS)
                     : []
                   const sorted = [...allLevelRows].sort((a, b) => a.successRate - b.successRate)
                   const weakest = sorted.slice(0, 3)
@@ -5279,7 +5279,7 @@ function buildTeacherStudentViewData(student) {
 }
 
 function buildOperationMasteryBoardsForTeacher(student) {
-  const problems = Array.isArray(student?.recentProblems) ? student.recentProblems : []
+  const problems = getTableProblemSourceForStudent(student)
   const weekStart = getStartOfWeekTimestamp()
   const buckets = Object.fromEntries(
     ALL_OPERATIONS.map(operation => [operation, createOperationLevelBucketsForTeacher()])
@@ -5742,14 +5742,14 @@ function buildClassOperationBenchmarks(students) {
   return result
 }
 
-const TRAINING_MASTERY_THRESHOLD = 0.85
-const TRAINING_MIN_ATTEMPTS = 6
+const TRAINING_MASTERY_THRESHOLD = MASTERY_MIN_SUCCESS_RATE
+const TRAINING_MIN_ATTEMPTS = MASTERY_MIN_ATTEMPTS
 const TRAINING_MAX_ITEMS = 15
 
 function buildTrainingPriorityList(student, classBenchmarks) {
   if (!student) return []
   const source = getTableProblemSourceForStudent(student)
-  const abilities = student?.operationAbility || {}
+  const abilities = student?.adaptive?.operationAbilities || {}
 
   const levelData = new Map()
   for (const problem of source) {

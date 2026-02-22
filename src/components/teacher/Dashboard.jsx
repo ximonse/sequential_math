@@ -2848,15 +2848,17 @@ function Dashboard() {
                     </div>
                     <div className="mt-3 border-t border-gray-200 pt-3">
                       <div className="flex items-center justify-between mb-2 gap-2">
-                        <h4 className="text-xs font-semibold text-gray-800">Felandel per nivå (historiskt)</h4>
-                        <p className="text-[11px] text-gray-500">
-                          Minst {DETAIL_LEVEL_ERROR_MIN_ATTEMPTS} försök per nivå
-                        </p>
+                        <h4 className="text-xs font-semibold text-gray-800">
+                          Svårighetsanalys (≥{DETAIL_LEVEL_ERROR_MIN_ATTEMPTS} försök)
+                        </h4>
+                        {studentOperationStats7d ? (
+                          <p className="text-[11px] text-gray-500">
+                            Inkl. klassjämförelse ({Math.max(...ALL_OPERATIONS.map(op => classBenchmarks[op]?.studentCount || 0))} elever)
+                          </p>
+                        ) : null}
                       </div>
                       {detailLevelErrorRows.length === 0 ? (
-                        <p className="text-xs text-gray-500">
-                          Ingen nivå har ännu tillräckligt underlag för felandel.
-                        </p>
+                        <p className="text-xs text-gray-500">Ingen nivå har ännu tillräckligt underlag.</p>
                       ) : (
                         <div className="overflow-x-auto">
                           <table className="w-full text-xs">
@@ -2865,9 +2867,9 @@ function Dashboard() {
                                 {renderDetailLevelErrorSortHeader('Räknesätt', 'operation', { helpText: DETAIL_LEVEL_ERROR_HELP.operation })}
                                 {renderDetailLevelErrorSortHeader('Nivå', 'level', { helpText: DETAIL_LEVEL_ERROR_HELP.level })}
                                 {renderDetailLevelErrorSortHeader('Försök', 'attempts', { helpText: DETAIL_LEVEL_ERROR_HELP.attempts })}
-                                {renderDetailLevelErrorSortHeader('Rätt', 'correct', { helpText: DETAIL_LEVEL_ERROR_HELP.correct })}
-                                {renderDetailLevelErrorSortHeader('Fel', 'wrong', { helpText: DETAIL_LEVEL_ERROR_HELP.wrong })}
-                                {renderDetailLevelErrorSortHeader('Felandel', 'error_share', { helpText: DETAIL_LEVEL_ERROR_HELP.error_share })}
+                                {renderDetailLevelErrorSortHeader('Träff elev', 'error_share', { helpText: 'Andel rätt (1 − felandel).' })}
+                                <th className="py-1 pr-2">Träff klass</th>
+                                <th className="py-1 pr-2">Δ Träff</th>
                                 {renderDetailLevelErrorSortHeader('Kunskapsfel', 'knowledge_wrong', { helpText: DETAIL_LEVEL_ERROR_HELP.knowledge_wrong })}
                                 {renderDetailLevelErrorSortHeader('Ouppmärksamhet', 'inattention_wrong', {
                                   className: 'py-1',
@@ -2876,20 +2878,31 @@ function Dashboard() {
                               </tr>
                             </thead>
                             <tbody>
-                              {detailLevelErrorRows.map(levelRow => (
-                                <tr key={`detail-level-error-${levelRow.operation}-${levelRow.level}`} className="border-b last:border-b-0">
-                                  <td className="py-1 pr-2 text-gray-700">{levelRow.operationLabel}</td>
-                                  <td className="py-1 pr-2 text-gray-700 font-medium">{levelRow.level}</td>
-                                  <td className="py-1 pr-2 text-gray-700">{levelRow.attempts}</td>
-                                  <td className="py-1 pr-2 text-gray-700">{levelRow.correct}</td>
-                                  <td className="py-1 pr-2 text-gray-700">{levelRow.wrong}</td>
-                                  <td className={`py-1 pr-2 font-semibold ${getErrorShareColorClass(levelRow.errorShare)}`}>
-                                    {toPercent(levelRow.errorShare)}
-                                  </td>
-                                  <td className="py-1 pr-2 text-gray-700">{levelRow.knowledgeWrong}</td>
-                                  <td className="py-1 text-gray-700">{levelRow.inattentionWrong}</td>
-                                </tr>
-                              ))}
+                              {detailLevelErrorRows.map(levelRow => {
+                                const studentAcc = levelRow.successRate
+                                const classOp = classBenchmarks?.[levelRow.operation]
+                                const classAcc = classOp?.accuracy
+                                const accDelta = studentAcc != null && classAcc != null ? studentAcc - classAcc : null
+                                const accBetter = accDelta != null && accDelta >= 0
+                                return (
+                                  <tr key={`detail-level-error-${levelRow.operation}-${levelRow.level}`} className="border-b last:border-b-0">
+                                    <td className="py-1 pr-2 text-gray-700">{levelRow.operationLabel}</td>
+                                    <td className="py-1 pr-2 text-gray-700 font-medium">{levelRow.level}</td>
+                                    <td className="py-1 pr-2 text-gray-700">{levelRow.attempts}</td>
+                                    <td className={`py-1 pr-2 font-semibold ${getErrorShareColorClass(levelRow.errorShare)}`}>
+                                      {toPercent(studentAcc)}
+                                    </td>
+                                    <td className="py-1 pr-2 text-gray-500">
+                                      {classAcc != null ? toPercent(classAcc) : '-'}
+                                    </td>
+                                    <td className={`py-1 pr-2 font-semibold ${accDelta != null ? (accBetter ? 'text-emerald-700' : 'text-red-600') : 'text-gray-400'}`}>
+                                      {accDelta != null ? `${accDelta >= 0 ? '+' : ''}${Math.round(accDelta * 100)}%` : '-'}
+                                    </td>
+                                    <td className="py-1 pr-2 text-gray-700">{levelRow.knowledgeWrong}</td>
+                                    <td className="py-1 text-gray-700">{levelRow.inattentionWrong}</td>
+                                  </tr>
+                                )
+                              })}
                             </tbody>
                           </table>
                         </div>
@@ -2902,61 +2915,6 @@ function Dashboard() {
                     </div>
                   </div>
                 </div>
-
-                {studentOperationStats7d ? (
-                  <div className="mt-4 rounded border border-sky-200 bg-sky-50/30 p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-sm font-semibold text-sky-900">Jämfört med klassen</h3>
-                      <p className="text-[11px] text-sky-700">
-                        ({Math.max(...ALL_OPERATIONS.map(op => classBenchmarks[op]?.studentCount || 0))} elever med data)
-                      </p>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
-                        <thead>
-                          <tr className="text-left text-sky-700 border-b border-sky-200">
-                            <th className="py-1 pr-2">Räknesätt</th>
-                            <th className="py-1 pr-2">Elevnivå</th>
-                            <th className="py-1 pr-2">Träff 7d</th>
-                            <th className="py-1 pr-2">Klass</th>
-                            <th className="py-1 pr-2">Snittid 7d</th>
-                            <th className="py-1">Klass</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {ALL_OPERATIONS.map(op => {
-                            const student7d = studentOperationStats7d[op]
-                            const classOp = classBenchmarks[op]
-                            const studentAcc = student7d?.accuracy
-                            const classAcc = classOp?.accuracy
-                            const studentSpeed = student7d?.medianSpeed
-                            const classSpeed = classOp?.medianSpeed
-                            const accBetter = studentAcc != null && classAcc != null && studentAcc >= classAcc
-                            const speedBetter = studentSpeed != null && classSpeed != null && studentSpeed <= classSpeed
-                            return (
-                              <tr key={`benchmark-${op}`} className="border-b border-sky-100 last:border-b-0">
-                                <td className="py-1 pr-2 text-sky-900 font-medium">{getOperationLabel(op)}</td>
-                                <td className="py-1 pr-2 text-sky-900">{Math.round(Number(detailStudentRow.operationAbilities?.[op]) || 1)}</td>
-                                <td className={`py-1 pr-2 font-semibold ${studentAcc != null ? (accBetter ? 'text-emerald-700' : 'text-red-600') : 'text-gray-400'}`}>
-                                  {studentAcc != null ? toPercent(studentAcc) : '-'}
-                                </td>
-                                <td className="py-1 pr-2 text-sky-700">
-                                  {classAcc != null ? toPercent(classAcc) : '-'}
-                                </td>
-                                <td className={`py-1 pr-2 font-semibold ${studentSpeed != null ? (speedBetter ? 'text-emerald-700' : 'text-red-600') : 'text-gray-400'}`}>
-                                  {Number.isFinite(studentSpeed) ? `${studentSpeed.toFixed(1)}s` : '-'}
-                                </td>
-                                <td className="py-1 text-sky-700">
-                                  {Number.isFinite(classSpeed) ? `${classSpeed.toFixed(1)}s` : '-'}
-                                </td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                ) : null}
 
                 <div className="mt-4 rounded border border-violet-200 bg-violet-50/30 p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
@@ -3036,110 +2994,39 @@ function Dashboard() {
                         </div>
                       ) : null}
 
-                      <div className="mt-3 grid grid-cols-1 xl:grid-cols-2 gap-3">
-                        <div className="overflow-x-auto">
+                      {detailStudentViewData.ncmDetail.recentRows.length > 0 ? (
+                        <div className="mt-3 overflow-x-auto">
+                          <h4 className="text-xs font-semibold text-violet-800 mb-1">Senaste NCM-svar (5 senaste)</h4>
                           <table className="w-full text-xs">
                             <thead>
                               <tr className="text-left text-violet-700 border-b border-violet-200">
+                                <th className="py-1 pr-2">Tid</th>
                                 <th className="py-1 pr-2">Kod</th>
-                                <th className="py-1 pr-2">Domän</th>
-                                <th className="py-1 pr-2">Försök</th>
-                                <th className="py-1 pr-2">Träff</th>
-                                <th className="py-1 pr-2">Försök v</th>
-                                <th className="py-1 pr-2">Träff v</th>
-                                <th className="py-1">Senast</th>
+                                <th className="py-1 pr-2">Svar</th>
+                                <th className="py-1 pr-2">Facit</th>
+                                <th className="py-1 pr-2">Resultat</th>
+                                <th className="py-1">Tid/svar</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {detailStudentViewData.ncmDetail.codeRows.map(item => (
-                                <tr key={`detail-ncm-code-${item.ncmCode}`} className="border-b border-violet-100 last:border-b-0">
+                              {detailStudentViewData.ncmDetail.recentRows.slice(0, 5).map((item, index) => (
+                                <tr key={`detail-ncm-recent-${item.ncmCode}-${item.timestamp}-${index}`} className="border-b border-violet-100 last:border-b-0">
+                                  <td className="py-1 pr-2 text-violet-900">{item.timestamp ? new Date(item.timestamp).toLocaleString('sv-SE') : '-'}</td>
                                   <td className="py-1 pr-2 text-violet-900 font-medium">{item.ncmCode}</td>
-                                  <td className="py-1 pr-2 text-violet-900">{item.domainLabel}</td>
-                                  <td className="py-1 pr-2 text-violet-900">{item.attemptsTotal}</td>
-                                  <td className="py-1 pr-2 text-violet-900">{toPercent(item.successRateTotal)}</td>
-                                  <td className="py-1 pr-2 text-violet-900">{item.attemptsWeek}</td>
-                                  <td className="py-1 pr-2 text-violet-900">{toPercent(item.successRateWeek)}</td>
+                                  <td className="py-1 pr-2 text-violet-900">{item.studentAnswer ?? '-'}</td>
+                                  <td className="py-1 pr-2 text-violet-900">{item.correctAnswer ?? '-'}</td>
+                                  <td className={`py-1 pr-2 font-semibold ${item.correct ? 'text-emerald-700' : 'text-rose-700'}`}>
+                                    {item.correct ? 'Rätt' : 'Fel'}
+                                  </td>
                                   <td className="py-1 text-violet-900">
-                                    {item.lastTimestamp ? new Date(item.lastTimestamp).toLocaleString('sv-SE') : '-'}
+                                    {Number.isFinite(item.speedTimeSec) ? `${item.speedTimeSec.toFixed(1)}s` : '-'}
                                   </td>
                                 </tr>
                               ))}
                             </tbody>
                           </table>
                         </div>
-
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-xs">
-                            <thead>
-                              <tr className="text-left text-violet-700 border-b border-violet-200">
-                                <th className="py-1 pr-2">Domän</th>
-                                <th className="py-1 pr-2">Försök</th>
-                                <th className="py-1 pr-2">Träff</th>
-                                <th className="py-1 pr-2">Kunskapsfel</th>
-                                <th className="py-1 pr-2">Ouppm.</th>
-                                <th className="py-1 pr-2">Försök v</th>
-                                <th className="py-1">Träff v</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {detailStudentViewData.ncmDetail.domainRows.map(item => (
-                                <tr key={`detail-ncm-domain-${item.domainTag}`} className="border-b border-violet-100 last:border-b-0">
-                                  <td className="py-1 pr-2 text-violet-900 font-medium">{item.domainLabel}</td>
-                                  <td className="py-1 pr-2 text-violet-900">{item.attemptsTotal}</td>
-                                  <td className="py-1 pr-2 text-violet-900">{toPercent(item.successRateTotal)}</td>
-                                  <td className="py-1 pr-2 text-violet-900">{item.knowledgeWrongTotal}</td>
-                                  <td className="py-1 pr-2 text-violet-900">{item.inattentionWrongTotal}</td>
-                                  <td className="py-1 pr-2 text-violet-900">{item.attemptsWeek}</td>
-                                  <td className="py-1 text-violet-900">{toPercent(item.successRateWeek)}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                      <div className="mt-3 overflow-x-auto">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="text-left text-violet-700 border-b border-violet-200">
-                              <th className="py-1 pr-2">Tid</th>
-                              <th className="py-1 pr-2">Kod</th>
-                              <th className="py-1 pr-2">Domän</th>
-                              <th className="py-1 pr-2">Räknesätt</th>
-                              <th className="py-1 pr-2">Svar</th>
-                              <th className="py-1 pr-2">Facit</th>
-                              <th className="py-1 pr-2">Resultat</th>
-                              <th className="py-1 pr-2">Feltyp</th>
-                              <th className="py-1">Tid/svar</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {detailStudentViewData.ncmDetail.recentRows.map((item, index) => (
-                              <tr key={`detail-ncm-recent-${item.ncmCode}-${item.timestamp}-${index}`} className="border-b border-violet-100 last:border-b-0">
-                                <td className="py-1 pr-2 text-violet-900">{item.timestamp ? new Date(item.timestamp).toLocaleString('sv-SE') : '-'}</td>
-                                <td className="py-1 pr-2 text-violet-900 font-medium">{item.ncmCode}</td>
-                                <td className="py-1 pr-2 text-violet-900">{item.domainLabel}</td>
-                                <td className="py-1 pr-2 text-violet-900">{item.operationLabel}</td>
-                                <td className="py-1 pr-2 text-violet-900">{item.studentAnswer ?? '-'}</td>
-                                <td className="py-1 pr-2 text-violet-900">{item.correctAnswer ?? '-'}</td>
-                                <td className={`py-1 pr-2 font-semibold ${item.correct ? 'text-emerald-700' : 'text-rose-700'}`}>
-                                  {item.correct ? 'Rätt' : 'Fel'}
-                                </td>
-                                <td className="py-1 pr-2 text-violet-900">
-                                  {item.correct
-                                    ? '-'
-                                    : item.errorCategory === 'inattention'
-                                      ? 'Ouppmärksamhet'
-                                      : 'Kunskapsfel'}
-                                </td>
-                                <td className="py-1 text-violet-900">
-                                  {Number.isFinite(item.speedTimeSec) ? `${item.speedTimeSec.toFixed(1)}s` : '-'}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                      ) : null}
                     </>
                   )}
                 </div>

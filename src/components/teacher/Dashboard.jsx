@@ -2695,6 +2695,78 @@ function Dashboard() {
                       <ActivityBadge code={detailStudentRow.activityStatus} compact />
                     </div>
                   </div>
+                  <div className="rounded border border-red-200 bg-red-50 px-2.5 py-2">
+                    <p className="text-red-700">Träningsprioritet</p>
+                    <div className="flex gap-1 mt-0.5 text-xs font-semibold">
+                      <span className="text-red-600">
+                        Hög: {trainingPriorityList.filter(i => i.priority === 'high').length}
+                      </span>
+                      <span className="text-orange-600">
+                        Medel: {trainingPriorityList.filter(i => i.priority === 'medium').length}
+                      </span>
+                      <span className="text-yellow-700">
+                        Låg: {trainingPriorityList.filter(i => i.priority === 'low').length}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded border border-red-200 bg-red-50/30 p-3 mb-4">
+                  <h3 className="text-sm font-semibold text-red-900 mb-2">Vad behöver tränas?</h3>
+                  <p className="text-[10px] text-red-700 mb-2">
+                    Prioriterad lista baserat på vad som inte övats eller är svårt. Röd = Hög, Orange = Medel, Gul = Låg.
+                  </p>
+                  {trainingPriorityList.length === 0 ? (
+                    <p className="text-xs text-red-800">Ingen träningsprioritet ännu — eleven behöver träna mer!</p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="text-left text-red-700 border-b border-red-200">
+                            <th className="py-1 pr-2">Räknesätt + Nivå</th>
+                            <th className="py-1 pr-2">Anledning</th>
+                            <th className="py-1 pr-2">Försök</th>
+                            <th className="py-1 pr-2">Träff</th>
+                            <th className="py-1 pr-2">Snittid</th>
+                            <th className="py-1">Prioritet</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {trainingPriorityList.map((item, index) => {
+                            const borderClass = item.priority === 'high'
+                              ? 'border-l-4 border-l-red-500'
+                              : item.priority === 'medium'
+                                ? 'border-l-4 border-l-orange-400'
+                                : 'border-l-4 border-l-yellow-400'
+                            return (
+                              <tr key={`priority-${index}`} className={`border-b border-red-100 last:border-b-0 ${borderClass}`}>
+                                <td className="py-1 pr-2 text-red-900 font-medium pl-2">
+                                  {item.operationLabel} nivå {item.level}
+                                </td>
+                                <td className="py-1 pr-2 text-red-900">{item.reasonLabel}</td>
+                                <td className="py-1 pr-2 text-red-900">{item.attempts}</td>
+                                <td className="py-1 pr-2 text-red-900">{item.accuracy != null ? toPercent(item.accuracy) : '-'}</td>
+                                <td className="py-1 pr-2 text-red-900">
+                                  {Number.isFinite(item.medianSpeed) ? `${item.medianSpeed.toFixed(1)}s` : '-'}
+                                </td>
+                                <td className="py-1">
+                                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold ${
+                                    item.priority === 'high'
+                                      ? 'bg-red-500 text-white'
+                                      : item.priority === 'medium'
+                                        ? 'bg-orange-400 text-white'
+                                        : 'bg-yellow-400 text-yellow-900'
+                                  }`}>
+                                    {item.priority === 'high' ? 'Hög' : item.priority === 'medium' ? 'Medel' : 'Låg'}
+                                  </span>
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </div>
 
                 <div className="rounded border border-gray-200 p-3 mb-4">

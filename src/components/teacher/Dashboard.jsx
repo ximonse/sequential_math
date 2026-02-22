@@ -484,6 +484,75 @@ function Dashboard() {
       : []
     return source.filter(item => Number(item?.attempts || 0) > 0 && Number(item?.attempts || 0) < DETAIL_LEVEL_ERROR_MIN_ATTEMPTS).length
   }, [detailStudentViewData])
+  const classBenchmarks = useMemo(
+    () => buildClassOperationBenchmarks(detailStudentSource),
+    [detailStudentSource]
+  )
+  const studentOperationStats7d = useMemo(() => {
+    if (!detailStudentProfile) return null
+    const start7d = Date.now() - (7 * DAY_MS)
+    const source = getTableProblemSourceForStudent(detailStudentProfile)
+    const buckets = Object.fromEntries(
+      ALL_OPERATIONS.map(op => [op, { attempts: 0, correct: 0, speeds: [] }])
+    )
+    for (const problem of source) {
+      const ts = Number(problem?.timestamp || 0)
+      if (ts < start7d) continue
+      const operation = inferOperationFromProblemType(problem?.problemType)
+      if (!Object.prototype.hasOwnProperty.call(buckets, operation)) continue
+      buckets[operation].attempts += 1
+      if (problem.correct) {
+        buckets[operation].correct += 1
+        const speed = getSpeedTime(problem)
+        if (Number.isFinite(speed) && speed > 0) buckets[operation].speeds.push(speed)
+      }
+    }
+    const result = {}
+    for (const op of ALL_OPERATIONS) {
+      const b = buckets[op]
+      result[op] = {
+        attempts: b.attempts,
+        accuracy: b.attempts > 0 ? b.correct / b.attempts : null,
+        medianSpeed: median(b.speeds)
+      }
+    }
+    return result
+  }, [detailStudentProfile])
+  const classTableBenchmarks = useMemo(() => {
+    const start7d = Date.now() - (7 * DAY_MS)
+    const perTable = Object.fromEntries(TABLES.map(t => [t, []]))
+    for (const student of detailStudentSource) {
+      const source = getTableProblemSourceForStudent(student)
+      const buckets = Object.fromEntries(TABLES.map(t => [t, []]))
+      for (const problem of source) {
+        const ts = Number(problem?.timestamp || 0)
+        if (ts < start7d) continue
+        const table = inferTableFromProblem(problem)
+        if (!table || !Object.prototype.hasOwnProperty.call(buckets, table)) continue
+        if (problem.correct) {
+          const speed = getSpeedTime(problem)
+          if (Number.isFinite(speed) && speed > 0) buckets[table].push(speed)
+        }
+      }
+      for (const t of TABLES) {
+        const m = median(buckets[t])
+        if (Number.isFinite(m) && m > 0) perTable[t].push(m)
+      }
+    }
+    const result = {}
+    for (const t of TABLES) {
+      result[t] = median(perTable[t])
+    }
+    return result
+  }, [detailStudentSource])
+  const trainingPriorityList = useMemo(() => {
+    if (!detailStudentProfile) return []
+    return buildTrainingPriorityList(detailStudentProfile, classBenchmarks)
+  }, [detailStudentProfile, classBenchmarks])
+  const dailyActivityBreakdown = useMemo(() => {
+    if (!detailStudentProfile) return []
+    return buildDailyActivityBreakdown(detailStudentProfile)
+  }, [detailStudentProfile])
   const passwordResetRows = useMemo(() => {
     const search = passwordResetSearch.trim().toLowerCase()
     const rows = filteredStudents
@@ -2628,71 +2697,82 @@ function Dashboard() {
                   </div>
                 </div>
 
+                <div className="rounded border border-gray-200 p-3 mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-semibold text-gray-800">Gångertabeller — hastighet 7d</h3>
+                    <p className="text-[11px] text-gray-500">
+                      Dag: {detailStudentViewData.tableSticky.todayDoneCount} | Vecka: {detailStudentViewData.tableSticky.weekDoneCount} | Star: {detailStudentViewData.tableSticky.starCount}
+                    </p>
+                  </div>
+                  <div className="flex gap-1.5">
+                    {TABLES.map(table => {
+                      const perf = detailStudentViewData.tablePerformanceByTable[table]
+                      const colorClass = getTableSpeedColorClass(perf.medianSpeed7d, perf.accuracy7d, perf.attempts7d)
+                      const classMedian = classTableBenchmarks[table]
+                      const speedLabel = Number.isFinite(perf.medianSpeed7d) ? `${perf.medianSpeed7d.toFixed(1)}s` : '-'
+                      const classSpeedLabel = Number.isFinite(classMedian) ? `${classMedian.toFixed(1)}s` : '-'
+                      const accLabel = perf.accuracy7d != null ? `${Math.round(perf.accuracy7d * 100)}%` : '-'
+                      const tooltip = `${table}:ans tabell — ${accLabel} rätt, ${speedLabel} snitt, ${perf.attempts7d} försök (klass: ${classSpeedLabel})`
+                      return (
+                        <div
+                          key={`detail-table-speed-${table}`}
+                          title={tooltip}
+                          className={`flex-1 h-12 rounded flex flex-col items-center justify-center text-xs font-semibold cursor-default ${colorClass}`}
+                        >
+                          <span className="text-[11px] font-bold">{table}</span>
+                          <span className="text-[9px] mt-0.5">{speedLabel}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <p className="text-[10px] text-gray-500 mt-1.5">
+                    Mörkgrön ≤2s | Grön ≤3.5s | Ljusgrön ≤5s | Gul ≤8s | Orange &gt;8s | Röd &lt;50% rätt | Grå = inga försök
+                  </p>
+                </div>
+
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                   <div className="rounded border border-gray-200 p-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-sm font-semibold text-gray-800">Gångertabell - status</h3>
-                      <p className="text-[11px] text-gray-500">
-                        Dag: {detailStudentViewData.tableSticky.todayDoneCount} | Vecka: {detailStudentViewData.tableSticky.weekDoneCount} | Star: {detailStudentViewData.tableSticky.starCount}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-6 gap-1.5 mb-3">
-                      {TABLES.map(table => {
-                        const status = detailStudentViewData.tableSticky.statusByTable[table] || 'default'
-                        return (
-                          <div key={`detail-table-status-${table}`} className="h-11 rounded border flex items-center justify-center text-xs font-semibold relative bg-white">
-                            <span className={`absolute inset-0 rounded border ${getTeacherTableStatusClass(status)}`} />
-                            <span className="relative z-10">{table}</span>
-                            {status === 'star' ? (
-                              <span className="absolute top-0 right-0 text-[10px] text-yellow-300 z-10">★</span>
-                            ) : null}
-                          </div>
-                        )
-                      })}
-                    </div>
+                    <h3 className="text-sm font-semibold text-gray-800 mb-2">Framsteg — mastery</h3>
+                    <p className="text-[10px] text-gray-500 mb-2">
+                      Mörkgrön = mastered | Ljusgrön = aktiv veckan | Orange = kämpigt | Röd = kämpar | Blå = startad | Grå = ej startad
+                    </p>
                     <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
+                      <table className="w-full text-xs border-collapse">
                         <thead>
-                          <tr className="text-left text-gray-500 border-b">
-                            <th className="py-1 pr-2">Tabell</th>
-                            <th className="py-1 pr-2">Status</th>
-                            <th className="py-1 pr-2">Försök 7d</th>
-                            <th className="py-1 pr-2">Träff 7d</th>
-                            <th className="py-1">Försök totalt</th>
+                          <tr>
+                            <th className="text-left py-1 pr-1 text-gray-500 font-normal text-[10px] w-20"></th>
+                            {LEVELS.map(level => (
+                              <th key={`mastery-header-${level}`} className="py-1 text-center text-gray-500 font-normal text-[10px] w-8">{level}</th>
+                            ))}
                           </tr>
                         </thead>
                         <tbody>
-                          {TABLES.map(table => {
-                            const perf = detailStudentViewData.tablePerformanceByTable[table]
-                            const status = detailStudentViewData.tableSticky.statusByTable[table] || 'default'
-                            return (
-                              <tr key={`detail-table-row-${table}`} className="border-b last:border-b-0">
-                                <td className="py-1 pr-2 text-gray-700 font-medium">{table}:an</td>
-                                <td className="py-1 pr-2 text-gray-700">{getTeacherTableStatusLabel(status)}</td>
-                                <td className="py-1 pr-2 text-gray-700">{perf.attempts7d}</td>
-                                <td className="py-1 pr-2 text-gray-700">{toPercent(perf.accuracy7d)}</td>
-                                <td className="py-1 text-gray-700">{perf.attemptsTotal}</td>
-                              </tr>
-                            )
-                          })}
+                          {detailStudentViewData.operationMasteryBoards.map(item => (
+                            <tr key={`compact-mastery-${item.operation}`}>
+                              <td className="py-0.5 pr-1 text-gray-700 font-medium text-[11px]">{getOperationLabel(item.operation)}</td>
+                              {LEVELS.map((level, index) => {
+                                const hist = item.historical[index]
+                                const week = item.weekly[index]
+                                const colorClass = getCompactMasteryColorClass(hist, week)
+                                const hLabel = hist && hist.attempts > 0 ? `${hist.correct}/${hist.attempts}` : '-'
+                                const wLabel = week && week.attempts > 0 ? `${week.correct}/${week.attempts}` : ''
+                                const hRate = hist && hist.attempts > 0 ? Math.round(hist.successRate * 100) : 0
+                                const tooltip = `${getOperationLabel(item.operation)} nivå ${level} — ${hLabel} rätt (${hRate}%)${wLabel ? `, vecka: ${wLabel}` : ''}`
+                                return (
+                                  <td key={`compact-mastery-${item.operation}-${level}`} className="p-0.5 text-center">
+                                    <span
+                                      title={tooltip}
+                                      className={`inline-flex h-7 w-7 items-center justify-center rounded text-[9px] font-bold cursor-default ${colorClass}`}
+                                    >
+                                      {level}
+                                    </span>
+                                  </td>
+                                )
+                              })}
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
-                    </div>
-                  </div>
-
-                  <div className="rounded border border-gray-200 p-3">
-                    <h3 className="text-sm font-semibold text-gray-800 mb-2">Framsteg (som elevvyn)</h3>
-                    <p className="text-[11px] text-gray-500 mb-2">
-                      Grön = klarad, blå = pågående, grå = ej startad.
-                    </p>
-                    <div className="space-y-3">
-                      {detailStudentViewData.operationMasteryBoards.map(item => (
-                        <div key={`detail-mastery-${item.operation}`}>
-                          <p className="text-xs font-medium text-gray-700 mb-1">{getOperationLabel(item.operation)}</p>
-                          <TeacherMasteryLevelGrid label="Historiskt" operation={item.operation} levels={item.historical} />
-                          <TeacherMasteryLevelGrid label="Denna vecka" operation={item.operation} levels={item.weekly} />
-                        </div>
-                      ))}
                     </div>
                     <div className="mt-3 border-t border-gray-200 pt-3">
                       <div className="flex items-center justify-between mb-2 gap-2">
@@ -2750,6 +2830,61 @@ function Dashboard() {
                     </div>
                   </div>
                 </div>
+
+                {studentOperationStats7d ? (
+                  <div className="mt-4 rounded border border-sky-200 bg-sky-50/30 p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-sm font-semibold text-sky-900">Jämfört med klassen</h3>
+                      <p className="text-[11px] text-sky-700">
+                        ({Math.max(...ALL_OPERATIONS.map(op => classBenchmarks[op]?.studentCount || 0))} elever med data)
+                      </p>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="text-left text-sky-700 border-b border-sky-200">
+                            <th className="py-1 pr-2">Räknesätt</th>
+                            <th className="py-1 pr-2">Elevnivå</th>
+                            <th className="py-1 pr-2">Träff 7d</th>
+                            <th className="py-1 pr-2">Klass</th>
+                            <th className="py-1 pr-2">Snittid 7d</th>
+                            <th className="py-1">Klass</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {ALL_OPERATIONS.map(op => {
+                            const student7d = studentOperationStats7d[op]
+                            const classOp = classBenchmarks[op]
+                            const studentAcc = student7d?.accuracy
+                            const classAcc = classOp?.accuracy
+                            const studentSpeed = student7d?.medianSpeed
+                            const classSpeed = classOp?.medianSpeed
+                            const accBetter = studentAcc != null && classAcc != null && studentAcc >= classAcc
+                            const speedBetter = studentSpeed != null && classSpeed != null && studentSpeed <= classSpeed
+                            return (
+                              <tr key={`benchmark-${op}`} className="border-b border-sky-100 last:border-b-0">
+                                <td className="py-1 pr-2 text-sky-900 font-medium">{getOperationLabel(op)}</td>
+                                <td className="py-1 pr-2 text-sky-900">{Math.round(Number(detailStudentRow.operationAbilities?.[op]) || 1)}</td>
+                                <td className={`py-1 pr-2 font-semibold ${studentAcc != null ? (accBetter ? 'text-emerald-700' : 'text-red-600') : 'text-gray-400'}`}>
+                                  {studentAcc != null ? toPercent(studentAcc) : '-'}
+                                </td>
+                                <td className="py-1 pr-2 text-sky-700">
+                                  {classAcc != null ? toPercent(classAcc) : '-'}
+                                </td>
+                                <td className={`py-1 pr-2 font-semibold ${studentSpeed != null ? (speedBetter ? 'text-emerald-700' : 'text-red-600') : 'text-gray-400'}`}>
+                                  {Number.isFinite(studentSpeed) ? `${studentSpeed.toFixed(1)}s` : '-'}
+                                </td>
+                                <td className="py-1 text-sky-700">
+                                  {Number.isFinite(classSpeed) ? `${classSpeed.toFixed(1)}s` : '-'}
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : null}
 
                 <div className="mt-4 rounded border border-violet-200 bg-violet-50/30 p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
@@ -5465,7 +5600,9 @@ function buildTablePerformanceByTable(student) {
       accuracyTotal: null,
       attempts7d: 0,
       correct7d: 0,
-      accuracy7d: null
+      accuracy7d: null,
+      correctSpeeds7d: [],
+      medianSpeed7d: null
     }])
   )
 
@@ -5479,7 +5616,11 @@ function buildTablePerformanceByTable(student) {
     const ts = Number(problem?.timestamp || 0)
     if (ts >= start7d) {
       target.attempts7d += 1
-      if (problem.correct) target.correct7d += 1
+      if (problem.correct) {
+        target.correct7d += 1
+        const speed = getSpeedTime(problem)
+        if (Number.isFinite(speed) && speed > 0) target.correctSpeeds7d.push(speed)
+      }
     }
   }
 
@@ -5487,9 +5628,220 @@ function buildTablePerformanceByTable(student) {
     const item = output[table]
     item.accuracyTotal = item.attemptsTotal > 0 ? item.correctTotal / item.attemptsTotal : null
     item.accuracy7d = item.attempts7d > 0 ? item.correct7d / item.attempts7d : null
+    item.medianSpeed7d = median(item.correctSpeeds7d)
+    delete item.correctSpeeds7d
   }
 
   return output
+}
+
+function buildClassOperationBenchmarks(students) {
+  const start7d = Date.now() - (7 * DAY_MS)
+  const MIN_ATTEMPTS = 10
+  const perOp = Object.fromEntries(
+    ALL_OPERATIONS.map(op => [op, []])
+  )
+
+  for (const student of students) {
+    const source = getTableProblemSourceForStudent(student)
+    const studentBuckets = Object.fromEntries(
+      ALL_OPERATIONS.map(op => [op, { attempts: 0, correct: 0, speeds: [] }])
+    )
+
+    for (const problem of source) {
+      const ts = Number(problem?.timestamp || 0)
+      if (ts < start7d) continue
+      const operation = inferOperationFromProblemType(problem?.problemType)
+      if (!Object.prototype.hasOwnProperty.call(studentBuckets, operation)) continue
+      const bucket = studentBuckets[operation]
+      bucket.attempts += 1
+      if (problem.correct) {
+        bucket.correct += 1
+        const speed = getSpeedTime(problem)
+        if (Number.isFinite(speed) && speed > 0) bucket.speeds.push(speed)
+      }
+    }
+
+    for (const op of ALL_OPERATIONS) {
+      const bucket = studentBuckets[op]
+      if (bucket.attempts >= MIN_ATTEMPTS) {
+        perOp[op].push({
+          accuracy: bucket.correct / bucket.attempts,
+          medianSpeed: median(bucket.speeds)
+        })
+      }
+    }
+  }
+
+  const result = {}
+  for (const op of ALL_OPERATIONS) {
+    const entries = perOp[op]
+    if (entries.length === 0) {
+      result[op] = { accuracy: null, medianSpeed: null, studentCount: 0 }
+      continue
+    }
+    const accSum = entries.reduce((sum, e) => sum + e.accuracy, 0)
+    const speeds = entries.map(e => e.medianSpeed).filter(v => Number.isFinite(v) && v > 0)
+    result[op] = {
+      accuracy: accSum / entries.length,
+      medianSpeed: median(speeds),
+      studentCount: entries.length
+    }
+  }
+  return result
+}
+
+const TRAINING_MASTERY_THRESHOLD = 0.85
+const TRAINING_MIN_ATTEMPTS = 6
+const TRAINING_MAX_ITEMS = 15
+
+function buildTrainingPriorityList(student, classBenchmarks) {
+  if (!student) return []
+  const source = getTableProblemSourceForStudent(student)
+  const abilities = student?.operationAbility || {}
+
+  const levelData = new Map()
+  for (const problem of source) {
+    const operation = inferOperationFromProblemType(problem?.problemType)
+    if (!ALL_OPERATIONS.includes(operation)) continue
+    const level = Math.round(Number(problem?.difficulty?.conceptual_level || 0))
+    if (!Number.isInteger(level) || level < 1 || level > 12) continue
+    const key = `${operation}|${level}`
+    const entry = levelData.get(key) || { attempts: 0, correct: 0, speeds: [] }
+    entry.attempts += 1
+    if (problem.correct) {
+      entry.correct += 1
+      const speed = getSpeedTime(problem)
+      if (Number.isFinite(speed) && speed > 0) entry.speeds.push(speed)
+    }
+    levelData.set(key, entry)
+  }
+
+  const items = []
+  for (const operation of ALL_OPERATIONS) {
+    const abilityLevel = Math.round(Number(abilities[operation]) || 1)
+    const maxLevel = Math.min(abilityLevel + 2, 12)
+
+    const masteredBelow = new Map()
+    for (let level = 1; level <= maxLevel; level++) {
+      const key = `${operation}|${level}`
+      const data = levelData.get(key)
+      const isMastered = data && data.attempts >= TRAINING_MIN_ATTEMPTS &&
+        (data.correct / data.attempts) >= TRAINING_MASTERY_THRESHOLD
+      masteredBelow.set(level, isMastered)
+    }
+
+    for (let level = 1; level <= maxLevel; level++) {
+      const key = `${operation}|${level}`
+      const data = levelData.get(key)
+      const attempts = data?.attempts || 0
+      const accuracy = attempts > 0 ? data.correct / attempts : null
+      const medianSpeed = data ? median(data.speeds) : null
+
+      if (attempts >= TRAINING_MIN_ATTEMPTS && accuracy >= TRAINING_MASTERY_THRESHOLD) continue
+
+      const allBelowMastered = level === 1 || Array.from({ length: level - 1 }, (_, i) => i + 1)
+        .every(l => masteredBelow.get(l))
+
+      let priority, reason, reasonLabel
+      if (attempts >= TRAINING_MIN_ATTEMPTS && accuracy < 0.5) {
+        priority = 'high'
+        reason = 'low_accuracy'
+        reasonLabel = `Låg träff (${Math.round(accuracy * 100)}%)`
+      } else if (attempts === 0 && allBelowMastered) {
+        priority = 'high'
+        reason = 'not_practiced'
+        reasonLabel = 'Ej övat (redo)'
+      } else if (attempts >= TRAINING_MIN_ATTEMPTS && accuracy < 0.7) {
+        priority = 'medium'
+        reason = 'low_accuracy'
+        reasonLabel = `Medel träff (${Math.round(accuracy * 100)}%)`
+      } else if (attempts === 0 && !allBelowMastered) {
+        priority = 'medium'
+        reason = 'not_practiced'
+        reasonLabel = 'Ej övat (hoppat över?)'
+      } else if (attempts >= TRAINING_MIN_ATTEMPTS && accuracy < TRAINING_MASTERY_THRESHOLD) {
+        priority = 'low'
+        reason = 'low_accuracy'
+        reasonLabel = `Nästan (${Math.round(accuracy * 100)}%)`
+      } else {
+        priority = 'low'
+        reason = 'low_data'
+        reasonLabel = `Lite data (${attempts} försök)`
+      }
+
+      const classOp = classBenchmarks?.[operation]
+      items.push({
+        operation,
+        operationLabel: getOperationLabel(operation),
+        level,
+        priority,
+        reason,
+        reasonLabel,
+        attempts,
+        accuracy,
+        medianSpeed: Number.isFinite(medianSpeed) ? medianSpeed : null,
+        classAccuracy: classOp?.accuracy ?? null,
+        classMedianSpeed: classOp?.medianSpeed ?? null
+      })
+    }
+  }
+
+  const priorityOrder = { high: 0, medium: 1, low: 2 }
+  items.sort((a, b) => {
+    const pDiff = priorityOrder[a.priority] - priorityOrder[b.priority]
+    if (pDiff !== 0) return pDiff
+    return a.attempts - b.attempts
+  })
+
+  return items.slice(0, TRAINING_MAX_ITEMS)
+}
+
+function buildDailyActivityBreakdown(student) {
+  if (!student) return []
+  const source = getTableProblemSourceForStudent(student)
+  const now = new Date()
+  const days = []
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now)
+    d.setDate(d.getDate() - i)
+    d.setHours(0, 0, 0, 0)
+    days.push({
+      date: d.toISOString().slice(0, 10),
+      dayStart: d.getTime(),
+      dayEnd: d.getTime() + DAY_MS,
+      attempts: 0,
+      correct: 0,
+      speeds: [],
+      operationSet: new Set()
+    })
+  }
+
+  for (const problem of source) {
+    const ts = Number(problem?.timestamp || 0)
+    if (!ts) continue
+    for (const day of days) {
+      if (ts >= day.dayStart && ts < day.dayEnd) {
+        day.attempts += 1
+        if (problem.correct) {
+          day.correct += 1
+          const speed = getSpeedTime(problem)
+          if (Number.isFinite(speed) && speed > 0) day.speeds.push(speed)
+        }
+        const op = inferOperationFromProblemType(problem?.problemType)
+        if (ALL_OPERATIONS.includes(op)) day.operationSet.add(op)
+        break
+      }
+    }
+  }
+
+  return days.map(day => ({
+    date: day.date,
+    attempts: day.attempts,
+    accuracy: day.attempts > 0 ? day.correct / day.attempts : null,
+    medianSpeed: median(day.speeds),
+    operations: Array.from(day.operationSet)
+  }))
 }
 
 function buildStudentDetailExportRows(student, row, detailData) {
@@ -6638,6 +6990,34 @@ function getTeacherTableStatusClass(status) {
   if (status === 'today') return 'bg-green-500 border-green-600 text-white'
   if (status === 'week') return 'bg-green-100 border-green-200 text-green-800'
   return 'bg-gray-100 border-gray-200 text-gray-400'
+}
+
+function getTableSpeedColorClass(medianSpeed, accuracy, attempts) {
+  if (!attempts || attempts === 0) return 'bg-gray-100 text-gray-400'
+  if (accuracy < 0.5) return 'bg-red-300 text-red-900'
+  if (medianSpeed == null) return 'bg-yellow-200 text-yellow-800'
+  if (medianSpeed <= 2 && accuracy >= 0.8) return 'bg-emerald-600 text-white'
+  if (medianSpeed <= 3.5 && accuracy >= 0.8) return 'bg-emerald-400 text-white'
+  if (medianSpeed <= 5 && accuracy >= 0.7) return 'bg-emerald-200 text-emerald-800'
+  if (medianSpeed <= 8 && accuracy >= 0.6) return 'bg-yellow-200 text-yellow-800'
+  if (accuracy >= 0.5) return 'bg-orange-300 text-orange-900'
+  return 'bg-red-300 text-red-900'
+}
+
+function getCompactMasteryColorClass(historical, weekly) {
+  const hAttempts = Number(historical?.attempts || 0)
+  const hCorrect = Number(historical?.correct || 0)
+  const hRate = hAttempts > 0 ? hCorrect / hAttempts : 0
+  const wAttempts = Number(weekly?.attempts || 0)
+  const wCorrect = Number(weekly?.correct || 0)
+  const wRate = wAttempts > 0 ? wCorrect / wAttempts : 0
+
+  if (hAttempts === 0 && wAttempts === 0) return 'bg-gray-100 text-gray-400'
+  if (hAttempts >= MASTERY_MIN_ATTEMPTS && hRate >= MASTERY_MIN_SUCCESS_RATE) return 'bg-emerald-600 text-white'
+  if (wAttempts > 0 && wRate >= 0.6) return 'bg-emerald-300 text-emerald-900'
+  if (hAttempts >= MASTERY_MIN_ATTEMPTS && hRate >= 0.5) return 'bg-orange-200 text-orange-900'
+  if (hAttempts >= MASTERY_MIN_ATTEMPTS && hRate < 0.5) return 'bg-red-300 text-red-900'
+  return 'bg-blue-200 text-blue-800'
 }
 
 function getTeacherTableStatusLabel(status) {

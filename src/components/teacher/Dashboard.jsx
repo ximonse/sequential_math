@@ -2711,14 +2711,41 @@ function Dashboard() {
                   </div>
                 </div>
 
-                <div className="rounded border border-red-200 bg-red-50/30 p-3 mb-4">
-                  <h3 className="text-sm font-semibold text-red-900 mb-2">Vad behöver tränas?</h3>
-                  <p className="text-[10px] text-red-700 mb-2">
-                    Prioriterad lista baserat på vad som inte övats eller är svårt. Röd = Hög, Orange = Medel, Gul = Låg.
-                  </p>
-                  {trainingPriorityList.length === 0 ? (
-                    <p className="text-xs text-red-800">Ingen träningsprioritet ännu — eleven behöver träna mer!</p>
-                  ) : (
+                {(() => {
+                  const notPracticed = trainingPriorityList.filter(i => i.reason === 'not_practiced')
+                  const struggled = trainingPriorityList.filter(i => i.reason !== 'not_practiced')
+                  const renderPriorityRow = (item, index) => {
+                    const borderClass = item.priority === 'high'
+                      ? 'border-l-4 border-l-red-500'
+                      : item.priority === 'medium'
+                        ? 'border-l-4 border-l-orange-400'
+                        : 'border-l-4 border-l-yellow-400'
+                    return (
+                      <tr key={`priority-${index}`} className={`border-b border-red-100 last:border-b-0 ${borderClass}`}>
+                        <td className="py-1 pr-2 text-red-900 font-medium pl-2">
+                          {item.operationLabel} nivå {item.level}
+                        </td>
+                        <td className="py-1 pr-2 text-red-900">{item.reasonLabel}</td>
+                        <td className="py-1 pr-2 text-red-900">{item.attempts}</td>
+                        <td className="py-1 pr-2 text-red-900">{item.accuracy != null ? toPercent(item.accuracy) : '-'}</td>
+                        <td className="py-1 pr-2 text-red-900">
+                          {Number.isFinite(item.medianSpeed) ? `${item.medianSpeed.toFixed(1)}s` : '-'}
+                        </td>
+                        <td className="py-1">
+                          <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold ${
+                            item.priority === 'high'
+                              ? 'bg-red-500 text-white'
+                              : item.priority === 'medium'
+                                ? 'bg-orange-400 text-white'
+                                : 'bg-yellow-400 text-yellow-900'
+                          }`}>
+                            {item.priority === 'high' ? 'Hög' : item.priority === 'medium' ? 'Medel' : 'Låg'}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  }
+                  const renderPriorityTable = (rows) => (
                     <div className="overflow-x-auto">
                       <table className="w-full text-xs">
                         <thead>
@@ -2731,43 +2758,34 @@ function Dashboard() {
                             <th className="py-1">Prioritet</th>
                           </tr>
                         </thead>
-                        <tbody>
-                          {trainingPriorityList.map((item, index) => {
-                            const borderClass = item.priority === 'high'
-                              ? 'border-l-4 border-l-red-500'
-                              : item.priority === 'medium'
-                                ? 'border-l-4 border-l-orange-400'
-                                : 'border-l-4 border-l-yellow-400'
-                            return (
-                              <tr key={`priority-${index}`} className={`border-b border-red-100 last:border-b-0 ${borderClass}`}>
-                                <td className="py-1 pr-2 text-red-900 font-medium pl-2">
-                                  {item.operationLabel} nivå {item.level}
-                                </td>
-                                <td className="py-1 pr-2 text-red-900">{item.reasonLabel}</td>
-                                <td className="py-1 pr-2 text-red-900">{item.attempts}</td>
-                                <td className="py-1 pr-2 text-red-900">{item.accuracy != null ? toPercent(item.accuracy) : '-'}</td>
-                                <td className="py-1 pr-2 text-red-900">
-                                  {Number.isFinite(item.medianSpeed) ? `${item.medianSpeed.toFixed(1)}s` : '-'}
-                                </td>
-                                <td className="py-1">
-                                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold ${
-                                    item.priority === 'high'
-                                      ? 'bg-red-500 text-white'
-                                      : item.priority === 'medium'
-                                        ? 'bg-orange-400 text-white'
-                                        : 'bg-yellow-400 text-yellow-900'
-                                  }`}>
-                                    {item.priority === 'high' ? 'Hög' : item.priority === 'medium' ? 'Medel' : 'Låg'}
-                                  </span>
-                                </td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
+                        <tbody>{rows.map(renderPriorityRow)}</tbody>
                       </table>
                     </div>
-                  )}
-                </div>
+                  )
+                  return trainingPriorityList.length === 0 ? (
+                    <div className="rounded border border-red-200 bg-red-50/30 p-3 mb-4">
+                      <h3 className="text-sm font-semibold text-red-900 mb-2">Vad behöver tränas?</h3>
+                      <p className="text-xs text-red-800">Ingen träningsprioritet ännu — eleven behöver träna mer!</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 mb-4">
+                      <div className="rounded border border-gray-300 bg-gray-50/30 p-3">
+                        <h3 className="text-sm font-semibold text-gray-800 mb-1">Har inte tränat</h3>
+                        <p className="text-[10px] text-gray-500 mb-2">Nivåer eleven inte övat på ännu.</p>
+                        {notPracticed.length === 0 ? (
+                          <p className="text-xs text-gray-500">Inga luckor — eleven har testat alla relevanta nivåer!</p>
+                        ) : renderPriorityTable(notPracticed)}
+                      </div>
+                      <div className="rounded border border-red-200 bg-red-50/30 p-3">
+                        <h3 className="text-sm font-semibold text-red-900 mb-1">Har tränat — behöver stärkas</h3>
+                        <p className="text-[10px] text-red-700 mb-2">Nivåer med för låg träff eller för lite data.</p>
+                        {struggled.length === 0 ? (
+                          <p className="text-xs text-red-800">Inga svårigheter identifierade!</p>
+                        ) : renderPriorityTable(struggled)}
+                      </div>
+                    </div>
+                  )
+                })()}
 
                 <div className="rounded border border-gray-200 p-3 mb-4">
                   <div className="flex items-center justify-between mb-2">
@@ -3067,36 +3085,48 @@ function Dashboard() {
                   )}
                 </div>
 
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                  <div className="rounded border border-red-200 bg-red-50 p-3">
-                    <h4 className="text-xs font-semibold text-red-900 mb-2">Svagast typer</h4>
-                    {Array.isArray(detailStudentProfile?.stats?.weakestTypes) && detailStudentProfile.stats.weakestTypes.length > 0 ? (
-                      <div className="space-y-1">
-                        {detailStudentProfile.stats.weakestTypes.slice(0, 3).map((type, index) => (
-                          <div key={`weak-${index}`} className="text-xs text-red-800 bg-red-100 rounded px-2 py-1">
-                            {formatSkillTypeLabel(type)}
+                {(() => {
+                  const allLevelRows = Array.isArray(detailStudentViewData?.levelErrorRows)
+                    ? detailStudentViewData.levelErrorRows.filter(r => r.attempts >= MASTERY_MIN_ATTEMPTS)
+                    : []
+                  const sorted = [...allLevelRows].sort((a, b) => a.successRate - b.successRate)
+                  const weakest = sorted.slice(0, 3)
+                  const strongest = sorted.slice(-3).reverse()
+                  return (
+                    <div className="mt-3 grid grid-cols-2 gap-3">
+                      <div className="rounded border border-red-200 bg-red-50 p-3">
+                        <h4 className="text-xs font-semibold text-red-900 mb-2">Svagast nivåer</h4>
+                        {weakest.length === 0 ? (
+                          <p className="text-xs text-red-700">Inte tillräckligt underlag ännu.</p>
+                        ) : (
+                          <div className="space-y-1">
+                            {weakest.map((row, index) => (
+                              <div key={`weak-${index}`} className="text-xs text-red-800 bg-red-100 rounded px-2 py-1 flex justify-between">
+                                <span>{row.operationLabel} nivå {row.level}</span>
+                                <span className="font-semibold">{toPercent(row.successRate)} ({row.attempts} försök)</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        )}
                       </div>
-                    ) : (
-                      <p className="text-xs text-red-700">-</p>
-                    )}
-                  </div>
-                  <div className="rounded border border-green-200 bg-green-50 p-3">
-                    <h4 className="text-xs font-semibold text-green-900 mb-2">Starkast typer</h4>
-                    {Array.isArray(detailStudentProfile?.stats?.strongestTypes) && detailStudentProfile.stats.strongestTypes.length > 0 ? (
-                      <div className="space-y-1">
-                        {detailStudentProfile.stats.strongestTypes.slice(0, 3).map((type, index) => (
-                          <div key={`strong-${index}`} className="text-xs text-green-800 bg-green-100 rounded px-2 py-1">
-                            {formatSkillTypeLabel(type)}
+                      <div className="rounded border border-green-200 bg-green-50 p-3">
+                        <h4 className="text-xs font-semibold text-green-900 mb-2">Starkast nivåer</h4>
+                        {strongest.length === 0 ? (
+                          <p className="text-xs text-green-700">Inte tillräckligt underlag ännu.</p>
+                        ) : (
+                          <div className="space-y-1">
+                            {strongest.map((row, index) => (
+                              <div key={`strong-${index}`} className="text-xs text-green-800 bg-green-100 rounded px-2 py-1 flex justify-between">
+                                <span>{row.operationLabel} nivå {row.level}</span>
+                                <span className="font-semibold">{toPercent(row.successRate)} ({row.attempts} försök)</span>
+                              </div>
+                            ))}
                           </div>
-                        ))}
+                        )}
                       </div>
-                    ) : (
-                      <p className="text-xs text-green-700">-</p>
-                    )}
-                  </div>
-                </div>
+                    </div>
+                  )
+                })()}
               </>
             )}
           </div>

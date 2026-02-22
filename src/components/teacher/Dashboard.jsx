@@ -173,6 +173,7 @@ function Dashboard() {
   const [supportSortBy, setSupportSortBy] = useState('support_score')
   const [supportSortDir, setSupportSortDir] = useState('desc')
   const [detailStudentId, setDetailStudentId] = useState('')
+  const [detailCollapsed, setDetailCollapsed] = useState(new Set())
   const [detailLevelErrorSortBy, setDetailLevelErrorSortBy] = useState('error_share')
   const [detailLevelErrorSortDir, setDetailLevelErrorSortDir] = useState('desc')
   const [classOverviewSortBy, setClassOverviewSortBy] = useState('name')
@@ -657,6 +658,27 @@ function Dashboard() {
     return supportSortDir === 'asc' ? '▲' : '▼'
   }
 
+  const toggleDetailCollapse = (section) => {
+    setDetailCollapsed(prev => {
+      const next = new Set(prev)
+      if (next.has(section)) next.delete(section)
+      else next.add(section)
+      return next
+    })
+  }
+  const renderCollapseHeader = (section, title, { className = '', rightContent = null, borderColor = 'border-gray-200' } = {}) => (
+    <button
+      type="button"
+      onClick={() => toggleDetailCollapse(section)}
+      className={`w-full flex items-center justify-between text-left ${className}`}
+    >
+      <span className="flex items-center gap-1.5">
+        <span className={`text-[10px] transition-transform ${detailCollapsed.has(section) ? '' : 'rotate-90'}`}>&#9654;</span>
+        {title}
+      </span>
+      {rightContent}
+    </button>
+  )
   const handleDetailLevelErrorSort = (nextSortBy) => {
     if (detailLevelErrorSortBy === nextSortBy) {
       setDetailLevelErrorSortDir(prev => (prev === 'asc' ? 'desc' : 'asc'))
@@ -2788,12 +2810,10 @@ function Dashboard() {
                 })()}
 
                 <div className="rounded border border-gray-200 p-3 mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-semibold text-gray-800">Gångertabeller — hastighet 7d</h3>
-                    <p className="text-[11px] text-gray-500">
-                      Dag: {detailStudentViewData.tableSticky.todayDoneCount} | Vecka: {detailStudentViewData.tableSticky.weekDoneCount} | Star: {detailStudentViewData.tableSticky.starCount}
-                    </p>
-                  </div>
+                  {renderCollapseHeader('tables', <h3 className="text-sm font-semibold text-gray-800">Gångertabeller — hastighet 7d</h3>, {
+                    rightContent: <p className="text-[11px] text-gray-500">Dag: {detailStudentViewData.tableSticky.todayDoneCount} | Vecka: {detailStudentViewData.tableSticky.weekDoneCount} | Star: {detailStudentViewData.tableSticky.starCount}</p>
+                  })}
+                  {detailCollapsed.has('tables') ? null : <div className="mt-2">
                   <div className="flex gap-1.5">
                     {TABLES.map(table => {
                       const perf = detailStudentViewData.tablePerformanceByTable[table]
@@ -2818,11 +2838,14 @@ function Dashboard() {
                   <p className="text-[10px] text-gray-500 mt-1.5">
                     Mörkgrön ≤2s | Grön ≤3.5s | Ljusgrön ≤5s | Gul ≤8s | Orange &gt;8s | Röd &lt;50% rätt | Grå = inga försök
                   </p>
+                  </div>}
                 </div>
 
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                   <div className="rounded border border-gray-200 p-3">
-                    <h3 className="text-sm font-semibold text-gray-800 mb-2">Framsteg — mastery</h3>
+                    {renderCollapseHeader('mastery', <h3 className="text-sm font-semibold text-gray-800">Framsteg — mastery</h3>)}
+                    {detailCollapsed.has('mastery') ? null : <><p className="text-[10px] text-gray-500 mb-2 mt-2">
+                      Mörkgrön = mastered | Ljusgrön = aktiv veckan | Orange = kämpigt | Röd = kämpar | Blå = startad | Grå = ej startad</p>
                     <p className="text-[10px] text-gray-500 mb-2">
                       Mörkgrön = mastered | Ljusgrön = aktiv veckan | Orange = kämpigt | Röd = kämpar | Blå = startad | Grå = ej startad
                     </p>
@@ -2931,19 +2954,20 @@ function Dashboard() {
                         </p>
                       ) : null}
                     </div>
+                    </>}
                   </div>
                 </div>
 
                 <div className="mt-4 rounded border border-violet-200 bg-violet-50/30 p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                    <h3 className="text-sm font-semibold text-violet-900">NCM-resultat (elev)</h3>
-                    <p className="text-[11px] text-violet-700">
+                  {renderCollapseHeader('ncm', <h3 className="text-sm font-semibold text-violet-900">NCM-resultat (elev)</h3>, {
+                    rightContent: <p className="text-[11px] text-violet-700">
                       Senaste NCM-kod: {detailStudentViewData.ncmDetail.lastNcmCode || '-'}
                     </p>
-                  </div>
+                  })}
+                  {detailCollapsed.has('ncm') ? null : <>
 
                   {detailStudentViewData.ncmDetail.attemptsTotal === 0 ? (
-                    <p className="text-xs text-violet-800">Ingen NCM-data för denna elev ännu.</p>
+                    <p className="text-xs text-violet-800 mt-2">Ingen NCM-data för denna elev ännu.</p>
                   ) : (
                     <>
                       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2 text-xs">
@@ -3047,10 +3071,12 @@ function Dashboard() {
                       ) : null}
                     </>
                   )}
+                  </>}
                 </div>
 
                 <div className="mt-4 rounded border border-blue-200 bg-blue-50/30 p-3">
-                  <h3 className="text-sm font-semibold text-blue-900 mb-2">Träningshistorik senaste 7 dagarna</h3>
+                  {renderCollapseHeader('history', <h3 className="text-sm font-semibold text-blue-900">Träningshistorik senaste 7 dagarna</h3>)}
+                  {detailCollapsed.has('history') ? null : <div className="mt-2">
                   {dailyActivityBreakdown.every(day => day.attempts === 0) ? (
                     <p className="text-xs text-blue-800">Ingen aktivitet senaste 7 dagarna.</p>
                   ) : (
@@ -3083,6 +3109,7 @@ function Dashboard() {
                       </table>
                     </div>
                   )}
+                  </div>}
                 </div>
 
                 {(() => {
@@ -5858,7 +5885,7 @@ function buildDailyActivityBreakdown(student) {
     d.setDate(d.getDate() - i)
     d.setHours(0, 0, 0, 0)
     days.push({
-      date: d.toISOString().slice(0, 10),
+      date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
       dayStart: d.getTime(),
       dayEnd: d.getTime() + DAY_MS,
       attempts: 0,

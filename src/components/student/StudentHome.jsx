@@ -511,33 +511,6 @@ function StudentHome() {
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
-          <h2 className="text-base font-semibold text-gray-800 mb-3">Byt elevlösenord</h2>
-          <form onSubmit={handleChangePassword} className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <input
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="Nuvarande"
-              className="px-3 py-2 border rounded text-sm"
-            />
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Nytt lösenord"
-              className="px-3 py-2 border rounded text-sm"
-            />
-            <button
-              type="submit"
-              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
-            >
-              Spara
-            </button>
-          </form>
-          <p className="text-xs text-gray-500 mt-2">{passwordMessage || ' '}</p>
-        </div>
-
         <div className="bg-white border border-gray-200 rounded-xl p-4">
           <h2 className="text-lg font-semibold text-gray-800 mb-3">Framsteg</h2>
           <p className="text-xs text-gray-500 mb-3">
@@ -573,6 +546,33 @@ function StudentHome() {
           {profile.recentProblems.length === 0 && (
             <p className="text-sm text-gray-500 mt-4">Ingen träningshistorik ännu.</p>
           )}
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-xl p-4 mt-6">
+          <h2 className="text-base font-semibold text-gray-800 mb-3">Byt elevlösenord</h2>
+          <form onSubmit={handleChangePassword} className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              placeholder="Nuvarande"
+              className="px-3 py-2 border rounded text-sm"
+            />
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Nytt lösenord"
+              className="px-3 py-2 border rounded text-sm"
+            />
+            <button
+              type="submit"
+              className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
+            >
+              Spara
+            </button>
+          </form>
+          <p className="text-xs text-gray-500 mt-2">{passwordMessage || ' '}</p>
         </div>
       </div>
     </div>

@@ -373,7 +373,7 @@ function StudentHome() {
           </div>
         </div>
 
-        {activeTicketPayload && (
+        {activeTicketPayload && !activeTicketResponse && (
           <div className="relative overflow-hidden bg-gradient-to-r from-amber-100 via-orange-100 to-yellow-100 border border-amber-300/90 rounded-2xl p-4 md:p-5 mb-6 shadow-[0_14px_36px_-24px_rgba(146,64,14,0.6)]">
             <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500" />
             <div className="flex flex-wrap items-center justify-between gap-3 pt-1">

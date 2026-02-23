@@ -486,8 +486,10 @@ function Dashboard() {
     return source.filter(item => Number(item?.attempts || 0) > 0 && Number(item?.attempts || 0) < DETAIL_LEVEL_ERROR_MIN_ATTEMPTS).length
   }, [detailStudentViewData])
   const classBenchmarks = useMemo(
-    () => buildClassOperationBenchmarks(detailStudentSource),
-    [detailStudentSource]
+    () => buildClassOperationBenchmarks(
+      detailStudentId ? detailStudentSource.filter(s => s.studentId !== detailStudentId) : detailStudentSource
+    ),
+    [detailStudentSource, detailStudentId]
   )
   const studentOperationStats7d = useMemo(() => {
     if (!detailStudentProfile) return null
@@ -522,7 +524,8 @@ function Dashboard() {
   const classTableBenchmarks = useMemo(() => {
     const start7d = Date.now() - (7 * DAY_MS)
     const perTable = Object.fromEntries(TABLES.map(t => [t, []]))
-    for (const student of detailStudentSource) {
+    const peers = detailStudentId ? detailStudentSource.filter(s => s.studentId !== detailStudentId) : detailStudentSource
+    for (const student of peers) {
       const source = getTableProblemSourceForStudent(student)
       const buckets = Object.fromEntries(TABLES.map(t => [t, []]))
       for (const problem of source) {
@@ -545,7 +548,7 @@ function Dashboard() {
       result[t] = median(perTable[t])
     }
     return result
-  }, [detailStudentSource])
+  }, [detailStudentSource, detailStudentId])
   const trainingPriorityList = useMemo(() => {
     if (!detailStudentProfile) return []
     return buildTrainingPriorityList(detailStudentProfile, classBenchmarks)

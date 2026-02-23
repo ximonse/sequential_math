@@ -342,13 +342,7 @@ function StudentSession() {
     return () => media.removeListener(update)
   }, [])
 
-  useEffect(() => {
-    if (!levelFocusMilestone) return undefined
-    const timer = setTimeout(() => {
-      setLevelFocusMilestone(null)
-    }, 2200)
-    return () => clearTimeout(timer)
-  }, [levelFocusMilestone])
+  // levelFocusMilestone visas tills eleven väljer nästa steg (ingen auto-dismiss)
 
   const updatePresence = useCallback((options = {}) => {
     if (!profile) return
@@ -509,18 +503,18 @@ function StudentSession() {
 
   // Auto-fortsätt efter 3 sekunder när feedback visas
   useEffect(() => {
-    if (!feedback || !feedback.correct || showBreakSuggestion || tableMilestone || advancePrompt) return
+    if (!feedback || !feedback.correct || showBreakSuggestion || tableMilestone || advancePrompt || levelFocusMilestone) return
 
     const timer = setTimeout(() => {
       goToNextProblem()
     }, AUTO_CONTINUE_DELAY)
 
     return () => clearTimeout(timer)
-  }, [feedback, showBreakSuggestion, tableMilestone, advancePrompt]) // Medvetet utelämnar goToNextProblem för att undvika re-triggers
+  }, [feedback, showBreakSuggestion, tableMilestone, advancePrompt, levelFocusMilestone]) // Medvetet utelämnar goToNextProblem för att undvika re-triggers
 
   // Lyssna på Enter för att fortsätta (med fördröjning för att undvika dubbel-trigger)
   useEffect(() => {
-    if (!feedback || showBreakSuggestion || tableMilestone || advancePrompt) return
+    if (!feedback || showBreakSuggestion || tableMilestone || advancePrompt || levelFocusMilestone) return
 
     let handleKeyDown = null
 
@@ -540,7 +534,7 @@ function StudentSession() {
         window.removeEventListener('keydown', handleKeyDown)
       }
     }
-  }, [feedback, showBreakSuggestion, tableMilestone, advancePrompt, goToNextProblem])
+  }, [feedback, showBreakSuggestion, tableMilestone, advancePrompt, levelFocusMilestone, goToNextProblem])
 
   const handleSubmit = () => {
     if (!currentProblem || answer.trim() === '') return
@@ -1035,6 +1029,59 @@ function StudentSession() {
     )
   }
 
+  if (levelFocusMilestone && feedback) {
+    const nextLevel = levelFocusMilestone.level < 12 ? levelFocusMilestone.level + 1 : null
+    const successPercent = levelFocusMilestone.attempts > 0
+      ? Math.round((levelFocusMilestone.correct / levelFocusMilestone.attempts) * 100)
+      : 0
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-400 to-green-600">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg text-center">
+          <div className="text-5xl mb-3">🎉</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-3">
+            Grattis!
+          </h2>
+          <p className="text-gray-600 mb-2">
+            Du har klarat nivå {levelFocusMilestone.level} i {getOperationLabel(levelFocusMilestone.operation)}!
+          </p>
+          <p className="text-sm text-gray-500 mb-6">
+            {levelFocusMilestone.correct}/{levelFocusMilestone.attempts} rätt ({successPercent}%)
+          </p>
+          <div className="grid grid-cols-1 gap-3">
+            {nextLevel && (
+              <button
+                onClick={() => {
+                  const params = new URLSearchParams(searchParams)
+                  params.set('level', String(nextLevel))
+                  setLevelFocusMilestone(null)
+                  navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
+                }}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg"
+              >
+                Öva nivå {nextLevel}
+              </button>
+            )}
+            <button
+              onClick={() => {
+                setLevelFocusMilestone(null)
+                goToNextProblem()
+              }}
+              className="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg"
+            >
+              Stanna kvar på nivå {levelFocusMilestone.level}
+            </button>
+            <button
+              onClick={() => navigate(`/student/${studentId}`)}
+              className="w-full py-2 text-sm text-gray-500 hover:text-gray-700"
+            >
+              Tillbaka till startsidan
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const streak = getCurrentStreak(profile)
   const currentOperation = currentProblem?.type || 'addition'
   const weekStart = getStartOfWeekTimestamp()
@@ -1116,14 +1163,7 @@ function StudentSession() {
             ) : null}
           />
 
-          {levelFocusMilestone && (
-            <div className="mt-4 flex justify-center">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-emerald-300 bg-emerald-100 text-emerald-800 text-sm font-semibold shadow-sm">
-                <span aria-hidden="true">🎉</span>
-                Nivå {levelFocusMilestone.level} klar!
-              </div>
-            </div>
-          )}
+          {/* levelFocusMilestone hanteras nu som fullskärms-celebration ovan */}
 
           {/* Feedback + nästa-knapp */}
           <div className="mt-8 flex flex-col items-center min-h-28">

@@ -462,7 +462,9 @@ function StudentHome() {
                 onClick={() => handleProgressionModeSelect(modeOption)}
                 className={`px-3 py-1.5 rounded text-xs font-semibold ${
                   selectedProgressionMode === modeOption
-                    ? 'bg-blue-600 text-white'
+                    ? modeOption === PROGRESSION_MODE_STEADY
+                      ? 'bg-green-600 text-white'
+                      : 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -483,7 +485,11 @@ function StudentHome() {
                   progressionMode: selectedProgressionMode
                 }))
               }}
-              className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold"
+              className={`px-4 py-2 rounded-lg text-white text-sm font-semibold ${
+                selectedProgressionMode === PROGRESSION_MODE_STEADY
+                  ? 'bg-green-600 hover:bg-green-700'
+                  : 'bg-blue-600 hover:bg-blue-700'
+              }`}
             >
               Fri träning ({getProgressionModeLabel(selectedProgressionMode)})
             </button>
@@ -503,7 +509,11 @@ function StudentHome() {
                     progressionMode: selectedProgressionMode
                   }))
                 }}
-                className="px-4 py-2 rounded-lg bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium"
+                className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                  selectedProgressionMode === PROGRESSION_MODE_STEADY
+                    ? 'bg-green-50 border border-green-300 hover:bg-green-100 text-green-800'
+                    : 'bg-white border border-gray-300 hover:bg-gray-50 text-gray-700'
+                }`}
               >
                 {getOperationLabel(operation)} ({getProgressionModeLabel(selectedProgressionMode)})
               </button>

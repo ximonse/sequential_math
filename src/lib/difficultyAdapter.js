@@ -171,7 +171,18 @@ export function selectNextProblem(profile, options = {}) {
   // Per-operation ability: använd tilldelad typ om den finns, annars vald typ
   const effectiveType = assignmentType || preferredType
   const operationAbility = getOperationAbility(profile, effectiveType)
-  const roundedDifficulty = clampLevelToRange(Math.round(operationAbility), options.levelRange)
+  let roundedDifficulty = clampLevelToRange(Math.round(operationAbility), options.levelRange)
+
+  // Mjuk introduktion av nya räknesätt: begränsa nivån tills eleven byggt upp erfarenhet
+  if (effectiveType !== 'addition') {
+    const opAttempts = profile.recentProblems.filter(
+      p => inferOperationFromProblemType(p.problemType) === effectiveType
+    ).length
+    if (opAttempts < 3) roundedDifficulty = Math.min(roundedDifficulty, 1)
+    else if (opAttempts < 6) roundedDifficulty = Math.min(roundedDifficulty, 2)
+    else if (opAttempts < 12) roundedDifficulty = Math.min(roundedDifficulty, 3)
+  }
+
   const warmupLevel = getWarmupLevel(profile, roundedDifficulty, effectiveType)
 
   // Sessionstyrd warmup (t.ex. vid fokuserat räknesättsläge)
@@ -385,9 +396,9 @@ function ensureDifficultyMeta(profile) {
     const global = profile.currentDifficulty || 1
     profile.adaptive.operationAbilities = {
       addition: global,
-      subtraction: Math.max(1, global - 2),
-      multiplication: Math.max(1, global - 3),
-      division: Math.max(3, global - 4)
+      subtraction: Math.min(3, Math.max(1, global - 2)),
+      multiplication: Math.min(2, Math.max(1, global - 3)),
+      division: Math.min(3, Math.max(1, global - 4))
     }
   }
 }

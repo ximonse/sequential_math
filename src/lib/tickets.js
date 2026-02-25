@@ -1,5 +1,11 @@
 const TICKET_TEMPLATES_KEY = 'mathapp_ticket_templates_v1'
 const TICKET_DISPATCHES_KEY = 'mathapp_ticket_dispatches_v1'
+import {
+  fromBase64Url,
+  normalizeTextAnswer,
+  parseTicketNumber,
+  toBase64Url
+} from './ticketEncodingHelpers'
 
 function readJsonList(key) {
   const raw = localStorage.getItem(key)
@@ -383,37 +389,4 @@ export function parseTicketCsvRows(text) {
     })
   }
   return rows
-}
-
-function parseTicketNumber(value) {
-  if (value === '') return null
-  const normalized = value.replace(/\s+/g, '').replace(',', '.')
-  if (!/^-?(?:\d+|\d*\.\d+)$/.test(normalized)) return null
-  const num = Number(normalized)
-  return Number.isFinite(num) ? num : null
-}
-
-function normalizeTextAnswer(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-}
-
-function toBase64Url(text) {
-  const bytes = new TextEncoder().encode(text)
-  let binary = ''
-  for (const byte of bytes) binary += String.fromCharCode(byte)
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
-}
-
-function fromBase64Url(value) {
-  let base64 = value.replace(/-/g, '+').replace(/_/g, '/')
-  const padding = base64.length % 4
-  if (padding === 2) base64 += '=='
-  else if (padding === 3) base64 += '='
-  else if (padding !== 0) throw new Error('Invalid base64url')
-  const binary = atob(base64)
-  const bytes = Uint8Array.from(binary, ch => ch.charCodeAt(0))
-  return new TextDecoder().decode(bytes)
 }

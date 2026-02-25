@@ -6,3 +6,5 @@ dist
 .DS_Store
 NMC/*.pdf
 __pycache__/
+backups/
+*.zip

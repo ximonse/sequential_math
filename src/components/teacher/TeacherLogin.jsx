@@ -1,16 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  getTeacherAuthStatus,
   isTeacherAuthenticated,
   loginTeacher
 } from '../../lib/teacherAuth'
 
 function TeacherLogin() {
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [passwordConfigured, setPasswordConfigured] = useState(true)
-  const [checkingConfig, setCheckingConfig] = useState(true)
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -19,47 +18,31 @@ function TeacherLogin() {
     }
   }, [navigate])
 
-  useEffect(() => {
-    let active = true
-    ;(async () => {
-      const status = await getTeacherAuthStatus()
-      if (!active) return
-      setPasswordConfigured(status.configured)
-      setCheckingConfig(false)
-    })()
-    return () => { active = false }
-  }, [])
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
 
-    if (checkingConfig) {
-      setError('Kontrollerar lärarinloggning...')
+    if (!username.trim()) {
+      setError('Ange användarnamn')
       return
     }
-
-    if (!passwordConfigured) {
-      setError('Lärarlösenord saknas på servern. Sätt TEACHER_API_PASSWORD i Vercel och redeploya.')
-      return
-    }
-
-    if (password.trim() === '') {
+    if (!password) {
       setError('Ange lösenord')
       return
     }
 
-    const result = await loginTeacher(password)
+    setLoading(true)
+    const result = await loginTeacher(username, password)
+    setLoading(false)
+
     if (!result.ok) {
-      if (result.code === 'INVALID_PASSWORD') {
-        setError('Fel lösenord')
-      } else if (result.code === 'MISSING_CONFIG') {
-        setError('Lärarlösenord saknas på servern. Sätt TEACHER_API_PASSWORD i Vercel.')
-      } else if (result.code === 'NETWORK_ERROR') {
-        setError('Kunde inte nå servern för inloggning.')
-      } else {
-        setError('Kunde inte logga in just nu.')
+      const messages = {
+        INVALID_PASSWORD: 'Fel användarnamn eller lösenord',
+        MISSING_CREDENTIALS: 'Ange användarnamn och lösenord',
+        NETWORK_ERROR: 'Kunde inte nå servern. Försök igen.',
+        AUTH_FAILED: 'Inloggning misslyckades.'
       }
+      setError(messages[result.code] || 'Kunde inte logga in just nu.')
       return
     }
 
@@ -72,22 +55,30 @@ function TeacherLogin() {
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
           Lärarinloggning
         </h1>
-        <p className="text-center text-gray-600 mb-8">
-          Ange lösenord för att öppna dashboarden
+        <p className="text-center text-gray-500 mb-8 text-sm">
+          Logga in med ditt lärarkonto
         </p>
-        {!passwordConfigured && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-            Inget lärarlösenord är konfigurerat. Lägg till `TEACHER_API_PASSWORD`
-            {' '}i Vercel och redeploya.
-          </div>
-        )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label
-              htmlFor="teacherPassword"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
+            <label htmlFor="teacherUsername" className="block text-sm font-medium text-gray-700 mb-1">
+              Användarnamn
+            </label>
+            <input
+              type="text"
+              id="teacherUsername"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+              autoFocus
+              autoComplete="username"
+              disabled={loading}
+              placeholder="t.ex. anna.larare"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="teacherPassword" className="block text-sm font-medium text-gray-700 mb-1">
               Lösenord
             </label>
             <input
@@ -96,8 +87,8 @@ function TeacherLogin() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-              disabled={!passwordConfigured || checkingConfig}
-              autoFocus
+              autoComplete="current-password"
+              disabled={loading}
             />
           </div>
 
@@ -107,10 +98,10 @@ function TeacherLogin() {
 
           <button
             type="submit"
-            disabled={!passwordConfigured || checkingConfig}
-            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+            disabled={loading}
+            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold rounded-lg transition-colors"
           >
-            {checkingConfig ? 'Kontrollerar...' : 'Logga in'}
+            {loading ? 'Loggar in...' : 'Logga in'}
           </button>
         </form>
 

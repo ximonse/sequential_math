@@ -15,11 +15,13 @@ import ResultsOverviewPanel from './ResultsOverviewPanel'
 import StudentDetailPanel from './StudentDetailPanel'
 import SupportPriorityPanel from './SupportPriorityPanel'
 import TableSelectionAndDevelopmentPanel from './TableSelectionAndDevelopmentPanel'
+import TeacherAdminPanel from './TeacherAdminPanel'
 import TeacherPasswordNoticePanel from './TeacherPasswordNoticePanel'
 import TicketSectionContainer from './TicketSectionContainer'
 import TableStickyStatusPanel from './TableStickyStatusPanel'
 import { ActivityBadge, InlineHelp, RiskBadge } from './dashboardStatusBadges'
 import { getOperationLabel } from '../../../lib/operations'
+import { isTeacherAdmin } from '../../../lib/teacherAuth'
 
 const PANEL_DEFS = [
   { id: 'overview',    title: 'Klassöversikt' },
@@ -35,6 +37,7 @@ const PANEL_DEFS = [
   { id: 'management',  title: 'Klasshantering' },
   { id: 'results',     title: 'Resultat' },
   { id: 'password',    title: 'Lösenordsåterställning' },
+  { id: 'admin',       title: 'Administration', adminOnly: true },
 ]
 
 const DEFAULT_ORDER = PANEL_DEFS.map(p => p.id)
@@ -147,8 +150,18 @@ export default function DashboardLayout({
   handleResetStudentPassword,
   passwordResetBusyId
 }) {
+  const teacherIsAdmin = isTeacherAdmin()
+  const visiblePanelDefs = PANEL_DEFS.filter(p => !p.adminOnly || teacherIsAdmin)
+  const visibleDefaultOrder = visiblePanelDefs.map(p => p.id)
+
   const [panelOrder, setPanelOrder] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(LS_ORDER_KEY)) || DEFAULT_ORDER } catch { return DEFAULT_ORDER }
+    try {
+      const saved = JSON.parse(localStorage.getItem(LS_ORDER_KEY)) || DEFAULT_ORDER
+      const visibleIds = new Set(visiblePanelDefs.map(p => p.id))
+      const filtered = saved.filter(id => visibleIds.has(id))
+      const missing = visibleDefaultOrder.filter(id => !filtered.includes(id))
+      return [...filtered, ...missing]
+    } catch { return visibleDefaultOrder }
   })
   const [collapsed, setCollapsed] = useState(() => {
     try { return JSON.parse(localStorage.getItem(LS_COLLAPSED_KEY)) || {} } catch { return {} }
@@ -355,6 +368,7 @@ export default function DashboardLayout({
         formatTimeAgo={formatTimeAgo}
       />
     )
+    if (id === 'admin') return <TeacherAdminPanel />
     return null
   }
 
@@ -400,7 +414,7 @@ export default function DashboardLayout({
           {panelOrder.map((id, idx) => (
             <CollapsibleSection
               key={id}
-              title={PANEL_DEFS.find(p => p.id === id).title}
+              title={visiblePanelDefs.find(p => p.id === id)?.title || id}
               collapsed={!!collapsed[id]}
               onToggle={() => toggleCollapsed(id)}
               canMoveUp={idx > 0}

@@ -53,6 +53,7 @@ import {
   getClasses,
 } from '../../lib/storage'
 import { getActiveAssignment, getAssignments } from '../../lib/assignments'
+import { getTeacherClassIds, getTeacherIdentity, isTeacherAdmin } from '../../lib/teacherAuth'
 function Dashboard() {
   const [students, setStudents] = useState([])
   const [assignments, setAssignments] = useState([])
@@ -105,7 +106,11 @@ function Dashboard() {
 
   useEffect(() => {
     void loadStudents()
-    const initialClasses = getClasses()
+    const allClasses = getClasses()
+    const teacherClassIds = getTeacherClassIds()
+    const initialClasses = teacherClassIds === null
+      ? allClasses
+      : allClasses.filter(c => teacherClassIds.includes(String(c.id || '')))
     setClasses(initialClasses)
     if (initialClasses.length > 0) {
       setAddToClassId(initialClasses[0].id)

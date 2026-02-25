@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv'
 import {
+  getAuthorizedClassIds,
   isTeacherApiAuthorized,
   withCors
 } from './_helpers.js'
@@ -48,8 +49,17 @@ export default async function handler(req, res) {
       ids.map(async (id) => kv.get(`student:${String(id).toUpperCase()}`))
     )
 
+    const authorizedClassIds = getAuthorizedClassIds(req)
+
     const sanitized = profiles
       .filter(Boolean)
+      .filter(profile => {
+        // null = admin, sees everything
+        if (authorizedClassIds === null) return true
+        const classId = String(profile?.classId || '')
+        const classIds = Array.isArray(profile?.classIds) ? profile.classIds : []
+        return authorizedClassIds.some(id => id === classId || classIds.includes(id))
+      })
       .map(sanitizeProfileForList)
       .filter(Boolean)
 

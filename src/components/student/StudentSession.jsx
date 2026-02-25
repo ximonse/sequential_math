@@ -80,7 +80,7 @@ function StudentSession() {
   const mode = searchParams.get('mode')
   const progressionMode = normalizeProgressionMode(searchParams.get('pace'))
   const fixedPracticeLevel = parsePracticeLevel(searchParams.get('level'))
-  const tableSet = parseTableSet(searchParams.get('tables'))
+  const tableSet = useMemo(() => parseTableSet(searchParams.get('tables')), [searchParams])
   const isTableDrill = tableSet.length > 0
   const isLevelFocusMode = !isTableDrill
     && mode

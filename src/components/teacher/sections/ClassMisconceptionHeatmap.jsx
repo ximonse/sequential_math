@@ -71,7 +71,7 @@ function buildHeatmapData(students) {
       if (!problem.correct && (errCat === 'knowledge' || errCat === 'misconception')) {
         cell.knowledgeWrong += 1
         if (errCat === 'misconception') cell.misconceptionCount = (cell.misconceptionCount || 0) + 1
-        if (cell.wrongAnswers.length < 5) {
+        if (cell.wrongAnswers.length < 20) {
           const a = problem.values?.a
           const b = problem.values?.b
           const question = (a != null && b != null) ? `${a} ${OP_SYMBOL[op] || '?'} ${b}` : null
@@ -81,7 +81,8 @@ function buildHeatmapData(students) {
             errorCategory: errCat,
             errorDetail: String(problem.errorDetail || ''),
             patterns: Array.isArray(problem.patterns) ? problem.patterns.slice(0, 2) : [],
-            question
+            question,
+            timestamp: problem.timestamp || 0
           })
         }
         const patterns = Array.isArray(problem.patterns) ? problem.patterns : []
@@ -196,9 +197,11 @@ function CellDetailModal({ cell, studentName, onClose }) {
 
         {cell.wrongAnswers.length > 0 && (
           <div>
-            <p className="text-[11px] font-semibold text-gray-600 mb-1">Exempelsvar (senaste felen)</p>
-            <div className="space-y-1">
-              {cell.wrongAnswers.map((ex, i) => (
+            <p className="text-[11px] font-semibold text-gray-600 mb-1">
+              Fel ({cell.wrongAnswers.length}) — senaste överst
+            </p>
+            <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
+              {[...cell.wrongAnswers].sort((a, b) => b.timestamp - a.timestamp).map((ex, i) => (
                 <div key={i} className="text-xs bg-gray-50 rounded px-2 py-1.5 space-y-0.5">
                   <div className="flex items-center gap-2">
                     {ex.question && (

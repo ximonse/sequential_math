@@ -182,7 +182,7 @@ export function useDashboardViewData({
   )
 
   const supportRows = useMemo(
-    () => getSortedSupportRows(supportCandidateRows, supportSortBy, supportSortDir).slice(0, 10),
+    () => getSortedSupportRows(supportCandidateRows, supportSortBy, supportSortDir),
     [supportCandidateRows, supportSortBy, supportSortDir]
   )
 

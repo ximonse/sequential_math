@@ -177,7 +177,7 @@ function OperationGrid({ operation, rows, onOpenStudentDetail }) {
                         onMouseEnter={() => setHoveredKey(key)}
                         onMouseLeave={() => setHoveredKey(null)}
                       >
-                        <div className={`h-7 w-7 flex items-center justify-center rounded border text-[9px] font-semibold leading-none transition-colors ${CELL_CLASSES[variant]}`}>
+                        <div className={`h-7 w-7 flex items-center justify-center rounded border text-[9px] font-semibold leading-none transition-colors ${CELL_CLASSES[variant]} ${cell.attempts > 0 && cell.attempts < 3 ? 'opacity-40' : ''}`}>
                           {cell.attempts > 0 ? `${Math.round(cell.successRate * 100)}` : ''}
                         </div>
                         {isHovered && cell.attempts > 0 && (

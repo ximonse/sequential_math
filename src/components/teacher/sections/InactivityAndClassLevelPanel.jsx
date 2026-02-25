@@ -17,7 +17,7 @@ export default function InactivityAndClassLevelPanel({
             <span className="font-semibold text-gray-800">{inactivityBuckets.notActiveToday}</span>
           </div>
           <div className="flex items-center justify-between rounded bg-amber-50 px-3 py-2">
-            <span className="text-amber-800">2+ dagar utan aktivitet</span>
+            <span className="text-amber-800">2–6 dagar utan aktivitet</span>
             <span className="font-semibold text-amber-700">{inactivityBuckets.twoDaysOrMore}</span>
           </div>
           <div className="flex items-center justify-between rounded bg-red-50 px-3 py-2">

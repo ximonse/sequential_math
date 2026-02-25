@@ -31,10 +31,18 @@ export function buildInactivityBuckets(rows) {
   }
 
   for (const row of rows) {
-    if (!row.lastActive || row.lastActive < todayStart) counts.notActiveToday += 1
-    if (!row.lastActive || now - row.lastActive >= 2 * DAY_MS) counts.twoDaysOrMore += 1
-    if (!row.lastActive || now - row.lastActive >= 7 * DAY_MS) counts.sevenDaysOrMore += 1
-    if ((row.attempts || 0) === 0) counts.neverStarted += 1
+    const neverStarted = (row.attempts || 0) === 0
+    const age = row.lastActive ? now - row.lastActive : Infinity
+
+    if (neverStarted) {
+      counts.neverStarted += 1
+    } else if (age >= 7 * DAY_MS) {
+      counts.sevenDaysOrMore += 1
+    } else if (age >= 2 * DAY_MS) {
+      counts.twoDaysOrMore += 1
+    } else if (!row.lastActive || row.lastActive < todayStart) {
+      counts.notActiveToday += 1
+    }
   }
 
   return counts

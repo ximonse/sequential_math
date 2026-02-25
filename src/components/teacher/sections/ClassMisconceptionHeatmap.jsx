@@ -5,6 +5,10 @@ import { getOperationLabel } from '../../../lib/operations'
 const LEVELS = Array.from({ length: 12 }, (_, i) => i + 1)
 const OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
 
+const OP_SYMBOL = {
+  addition: '+', subtraction: '−', multiplication: '×', division: '÷'
+}
+
 const OPERATION_ACCENT = {
   addition:       'bg-blue-500',
   subtraction:    'bg-violet-500',
@@ -68,11 +72,16 @@ function buildHeatmapData(students) {
         cell.knowledgeWrong += 1
         if (errCat === 'misconception') cell.misconceptionCount = (cell.misconceptionCount || 0) + 1
         if (cell.wrongAnswers.length < 5) {
+          const a = problem.values?.a
+          const b = problem.values?.b
+          const question = (a != null && b != null) ? `${a} ${OP_SYMBOL[op] || '?'} ${b}` : null
           cell.wrongAnswers.push({
             studentAnswer: problem.studentAnswer,
             correctAnswer: problem.correctAnswer,
             errorCategory: errCat,
-            patterns: Array.isArray(problem.patterns) ? problem.patterns.slice(0, 2) : []
+            errorDetail: String(problem.errorDetail || ''),
+            patterns: Array.isArray(problem.patterns) ? problem.patterns.slice(0, 2) : [],
+            question
           })
         }
         const patterns = Array.isArray(problem.patterns) ? problem.patterns : []
@@ -116,8 +125,11 @@ function buildHeatmapData(students) {
 
 function CellTooltip({ cell, studentName }) {
   const pct = Math.round(cell.successRate * 100)
+  const exampleWrong = cell.wrongAnswers.find(w => w.question)
+  const misconceptionType = cell.wrongAnswers.find(w => w.errorCategory === 'misconception' && w.patterns.length > 0)?.patterns[0]
+    || cell.wrongAnswers.find(w => w.errorCategory === 'misconception' && w.errorDetail)?.errorDetail
   return (
-    <div className="pointer-events-none absolute z-20 bottom-full left-1/2 mb-1.5 -translate-x-1/2 w-max max-w-56 rounded border border-gray-200 bg-white shadow-lg px-2.5 py-1.5 text-left">
+    <div className="pointer-events-none absolute z-20 bottom-full left-1/2 mb-1.5 -translate-x-1/2 w-max max-w-64 rounded border border-gray-200 bg-white shadow-lg px-2.5 py-1.5 text-left">
       <p className="text-[11px] font-semibold text-gray-800 leading-snug">{studentName} &middot; Nivå {cell.level}</p>
       <p className="text-[10px] text-gray-500 mt-0.5">
         {pct}% rätt &middot; {cell.attempts} försök
@@ -126,11 +138,21 @@ function CellTooltip({ cell, studentName }) {
       {cell.misconceptionCount > 0 && (
         <p className="text-[10px] text-red-600 font-semibold mt-0.5">⚠ {cell.misconceptionCount} missuppfattning{cell.misconceptionCount > 1 ? 'ar' : ''}</p>
       )}
+      {misconceptionType && (
+        <p className="text-[10px] text-orange-700 mt-0.5 font-mono">Typ: {misconceptionType}</p>
+      )}
+      {exampleWrong && (
+        <p className="text-[10px] text-gray-600 mt-0.5">
+          Ex: <span className="font-mono font-semibold">{exampleWrong.question}</span>
+          {' '}→ svarade <span className="text-red-600 font-semibold">{exampleWrong.studentAnswer}</span>
+          {' '}(rätt: <span className="text-green-700 font-semibold">{exampleWrong.correctAnswer}</span>)
+        </p>
+      )}
       {cell.topPatterns.length > 0 && (
         <p className="text-[10px] text-orange-600 mt-0.5 font-mono">{cell.topPatterns.join(', ')}</p>
       )}
       {getCellVariant(cell.successRate, cell.attempts) === 'concern' && (
-        <p className="text-[9px] text-gray-400 mt-1 italic">Klicka för detaljer</p>
+        <p className="text-[9px] text-gray-400 mt-1 italic">Klicka för fler detaljer</p>
       )}
     </div>
   )
@@ -177,15 +199,22 @@ function CellDetailModal({ cell, studentName, onClose }) {
             <p className="text-[11px] font-semibold text-gray-600 mb-1">Exempelsvar (senaste felen)</p>
             <div className="space-y-1">
               {cell.wrongAnswers.map((ex, i) => (
-                <div key={i} className="flex items-center gap-2 text-xs bg-gray-50 rounded px-2 py-1">
-                  <span className="text-red-600 font-semibold">{ex.studentAnswer ?? '?'}</span>
-                  <span className="text-gray-400">→</span>
-                  <span className="text-green-700 font-semibold">{ex.correctAnswer ?? '?'}</span>
-                  {ex.errorCategory === 'misconception' && (
-                    <span className="ml-auto text-[9px] bg-red-100 text-red-600 rounded px-1">missuppfattning</span>
-                  )}
-                  {ex.patterns.length > 0 && (
-                    <span className="ml-auto text-[9px] text-gray-400 font-mono">{ex.patterns[0]}</span>
+                <div key={i} className="text-xs bg-gray-50 rounded px-2 py-1.5 space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    {ex.question && (
+                      <span className="font-mono font-semibold text-gray-700">{ex.question} =</span>
+                    )}
+                    <span className="text-red-600 font-semibold">{ex.studentAnswer ?? '?'}</span>
+                    <span className="text-gray-400 text-[10px]">rätt:</span>
+                    <span className="text-green-700 font-semibold">{ex.correctAnswer ?? '?'}</span>
+                    {ex.errorCategory === 'misconception' && (
+                      <span className="ml-auto text-[9px] bg-red-100 text-red-600 rounded px-1 shrink-0">missuppfattning</span>
+                    )}
+                  </div>
+                  {(ex.patterns.length > 0 || ex.errorDetail) && (
+                    <div className="text-[10px] text-orange-700 font-mono">
+                      {ex.patterns.length > 0 ? ex.patterns.join(', ') : ex.errorDetail}
+                    </div>
                   )}
                 </div>
               ))}

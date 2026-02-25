@@ -14,10 +14,10 @@ const OPERATION_ACCENT = {
 
 const CELL_CLASSES = {
   empty:     'bg-gray-50 border-gray-200 text-gray-300 cursor-default',
-  mastered:  'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100 cursor-default',
-  progress:  'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100 cursor-default',
-  struggling:'bg-orange-50 border-orange-300 text-orange-700 hover:bg-orange-100 cursor-default',
-  concern:   'bg-red-50 border-red-300 text-red-700 hover:bg-red-100 cursor-default'
+  mastered:  'bg-emerald-100 border-emerald-400 text-emerald-700 hover:bg-emerald-200 cursor-default',
+  progress:  'bg-amber-100 border-amber-400 text-amber-700 hover:bg-amber-200 cursor-default',
+  struggling:'bg-orange-100 border-orange-400 text-orange-700 hover:bg-orange-200 cursor-default',
+  concern:   'bg-red-100 border-red-400 text-red-700 hover:bg-red-200 cursor-default'
 }
 
 function getCellVariant(successRate, attempts) {
@@ -213,10 +213,10 @@ export default function ClassMisconceptionHeatmap({ filteredStudents, onOpenStud
 
       <div className="flex flex-wrap gap-x-4 gap-y-1 mb-4">
         {[
-          { label: '≥85% rätt', cls: 'bg-emerald-50 border-emerald-300' },
-          { label: '60–84%',    cls: 'bg-amber-50 border-amber-300' },
-          { label: '40–59%',    cls: 'bg-orange-50 border-orange-300' },
-          { label: '<40% — möjlig missuppfattning', cls: 'bg-red-50 border-red-300' },
+          { label: '≥85% rätt', cls: 'bg-emerald-100 border-emerald-400' },
+          { label: '60–84%',    cls: 'bg-amber-100 border-amber-400' },
+          { label: '40–59%',    cls: 'bg-orange-100 border-orange-400' },
+          { label: '<40% — möjlig missuppfattning', cls: 'bg-red-100 border-red-400' },
           { label: 'Ej tränad', cls: 'bg-gray-50 border-gray-200' }
         ].map(item => (
           <span key={item.label} className="flex items-center gap-1.5 text-[10px] text-gray-500">
@@ -229,14 +229,16 @@ export default function ClassMisconceptionHeatmap({ filteredStudents, onOpenStud
       {!hasAnyData ? (
         <p className="text-xs text-gray-400">Ingen träningsdata tillgänglig för de valda eleverna.</p>
       ) : (
-        OPERATIONS.map(op => (
-          <OperationGrid
-            key={op}
-            operation={op}
-            rows={heatmapData[op]}
-            onOpenStudentDetail={onOpenStudentDetail}
-          />
-        ))
+        <div className="grid grid-cols-2 gap-6">
+          {OPERATIONS.map(op => (
+            <OperationGrid
+              key={op}
+              operation={op}
+              rows={heatmapData[op]}
+              onOpenStudentDetail={onOpenStudentDetail}
+            />
+          ))}
+        </div>
       )}
     </div>
   )

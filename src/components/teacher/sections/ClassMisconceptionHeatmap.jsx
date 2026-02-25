@@ -17,7 +17,7 @@ const CELL_CLASSES = {
   mastered:  'bg-emerald-100 border-emerald-400 text-emerald-700 hover:bg-emerald-200 cursor-default',
   progress:  'bg-amber-100 border-amber-400 text-amber-700 hover:bg-amber-200 cursor-default',
   struggling:'bg-orange-100 border-orange-400 text-orange-700 hover:bg-orange-200 cursor-default',
-  concern:   'bg-red-100 border-red-400 text-red-700 hover:bg-red-200 cursor-default'
+  concern:   'bg-red-100 border-red-400 text-red-700 hover:bg-red-200 cursor-pointer'
 }
 
 function getCellVariant(successRate, attempts) {
@@ -52,7 +52,13 @@ function buildHeatmapData(students) {
       }
       const entry = byOperation[op].get(student.studentId)
       if (!entry.levelData[level]) {
-        entry.levelData[level] = { attempts: 0, correct: 0, knowledgeWrong: 0, patternCounts: {} }
+        entry.levelData[level] = {
+          attempts: 0,
+          correct: 0,
+          knowledgeWrong: 0,
+          patternCounts: {},
+          wrongAnswers: []
+        }
       }
       const cell = entry.levelData[level]
       cell.attempts += 1
@@ -61,6 +67,14 @@ function buildHeatmapData(students) {
       if (!problem.correct && (errCat === 'knowledge' || errCat === 'misconception')) {
         cell.knowledgeWrong += 1
         if (errCat === 'misconception') cell.misconceptionCount = (cell.misconceptionCount || 0) + 1
+        if (cell.wrongAnswers.length < 5) {
+          cell.wrongAnswers.push({
+            studentAnswer: problem.studentAnswer,
+            correctAnswer: problem.correctAnswer,
+            errorCategory: errCat,
+            patterns: Array.isArray(problem.patterns) ? problem.patterns.slice(0, 2) : []
+          })
+        }
         const patterns = Array.isArray(problem.patterns) ? problem.patterns : []
         for (const p of patterns) {
           cell.patternCounts[p] = (cell.patternCounts[p] || 0) + 1
@@ -76,7 +90,7 @@ function buildHeatmapData(students) {
         name: entry.name,
         cells: LEVELS.map(level => {
           const d = entry.levelData[level]
-          if (!d || d.attempts === 0) return { level, attempts: 0, successRate: null, knowledgeWrong: 0, misconceptionCount: 0, topPatterns: [] }
+          if (!d || d.attempts === 0) return { level, attempts: 0, successRate: null, knowledgeWrong: 0, misconceptionCount: 0, topPatterns: [], wrongAnswers: [] }
           const topPatterns = Object.entries(d.patternCounts)
             .sort((a, b) => b[1] - a[1])
             .slice(0, 3)
@@ -88,7 +102,8 @@ function buildHeatmapData(students) {
             successRate: d.correct / d.attempts,
             knowledgeWrong: d.knowledgeWrong,
             misconceptionCount: d.misconceptionCount || 0,
-            topPatterns
+            topPatterns,
+            wrongAnswers: d.wrongAnswers || []
           }
         })
       }))
@@ -114,12 +129,81 @@ function CellTooltip({ cell, studentName }) {
       {cell.topPatterns.length > 0 && (
         <p className="text-[10px] text-orange-600 mt-0.5 font-mono">{cell.topPatterns.join(', ')}</p>
       )}
+      {getCellVariant(cell.successRate, cell.attempts) === 'concern' && (
+        <p className="text-[9px] text-gray-400 mt-1 italic">Klicka för detaljer</p>
+      )}
+    </div>
+  )
+}
+
+function CellDetailModal({ cell, studentName, onClose }) {
+  const pct = Math.round(cell.successRate * 100)
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-xl shadow-2xl border border-gray-200 p-5 max-w-sm w-full mx-4"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between mb-3">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">{studentName} — Nivå {cell.level}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{pct}% rätt &middot; {cell.attempts} försök &middot; {cell.correct} rätt / {cell.attempts - cell.correct} fel</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-lg leading-none ml-3">✕</button>
+        </div>
+
+        {cell.misconceptionCount > 0 && (
+          <div className="mb-3 rounded bg-red-50 border border-red-200 px-3 py-2">
+            <p className="text-xs font-semibold text-red-700">⚠ {cell.misconceptionCount} missuppfattning{cell.misconceptionCount > 1 ? 'ar' : ''}</p>
+          </div>
+        )}
+
+        {cell.topPatterns.length > 0 && (
+          <div className="mb-3">
+            <p className="text-[11px] font-semibold text-gray-600 mb-1">Felmönster</p>
+            <div className="flex flex-wrap gap-1">
+              {cell.topPatterns.map(p => (
+                <span key={p} className="inline-block bg-orange-50 border border-orange-200 text-orange-700 rounded px-2 py-0.5 text-[10px] font-mono">{p}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {cell.wrongAnswers.length > 0 && (
+          <div>
+            <p className="text-[11px] font-semibold text-gray-600 mb-1">Exempelsvar (senaste felen)</p>
+            <div className="space-y-1">
+              {cell.wrongAnswers.map((ex, i) => (
+                <div key={i} className="flex items-center gap-2 text-xs bg-gray-50 rounded px-2 py-1">
+                  <span className="text-red-600 font-semibold">{ex.studentAnswer ?? '?'}</span>
+                  <span className="text-gray-400">→</span>
+                  <span className="text-green-700 font-semibold">{ex.correctAnswer ?? '?'}</span>
+                  {ex.errorCategory === 'misconception' && (
+                    <span className="ml-auto text-[9px] bg-red-100 text-red-600 rounded px-1">missuppfattning</span>
+                  )}
+                  {ex.patterns.length > 0 && (
+                    <span className="ml-auto text-[9px] text-gray-400 font-mono">{ex.patterns[0]}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {cell.wrongAnswers.length === 0 && cell.knowledgeWrong === 0 && (
+          <p className="text-xs text-gray-400">Inga detaljerade feldata tillgängliga.</p>
+        )}
+      </div>
     </div>
   )
 }
 
 function OperationGrid({ operation, rows, onOpenStudentDetail }) {
   const [hoveredKey, setHoveredKey] = useState(null)
+  const [activeCell, setActiveCell] = useState(null)
 
   if (rows.length === 0) {
     return (
@@ -170,6 +254,7 @@ function OperationGrid({ operation, rows, onOpenStudentDetail }) {
                   const variant = getCellVariant(cell.successRate, cell.attempts)
                   const key = `${row.studentId}-${cell.level}`
                   const isHovered = hoveredKey === key
+                  const isClickable = cell.attempts > 0 && variant === 'concern'
                   return (
                     <td key={cell.level} className="px-0.5 py-0.5 align-middle">
                       <div
@@ -177,7 +262,10 @@ function OperationGrid({ operation, rows, onOpenStudentDetail }) {
                         onMouseEnter={() => setHoveredKey(key)}
                         onMouseLeave={() => setHoveredKey(null)}
                       >
-                        <div className={`h-7 w-7 flex items-center justify-center rounded border text-[9px] font-semibold leading-none transition-colors ${CELL_CLASSES[variant]} ${cell.attempts > 0 && cell.attempts < 3 ? 'opacity-40' : ''}`}>
+                        <div
+                          className={`h-7 w-7 flex items-center justify-center rounded border text-[9px] font-semibold leading-none transition-colors ${CELL_CLASSES[variant]} ${cell.attempts > 0 && cell.attempts < 3 ? 'opacity-40' : ''}`}
+                          onClick={isClickable ? () => setActiveCell({ cell, studentName: row.name }) : undefined}
+                        >
                           {cell.attempts > 0 ? `${Math.round(cell.successRate * 100)}` : ''}
                         </div>
                         {isHovered && cell.attempts > 0 && (
@@ -192,6 +280,14 @@ function OperationGrid({ operation, rows, onOpenStudentDetail }) {
           </tbody>
         </table>
       </div>
+
+      {activeCell && (
+        <CellDetailModal
+          cell={activeCell.cell}
+          studentName={activeCell.studentName}
+          onClose={() => setActiveCell(null)}
+        />
+      )}
     </div>
   )
 }
@@ -208,7 +304,7 @@ export default function ClassMisconceptionHeatmap({ filteredStudents, onOpenStud
     <div className="bg-white border border-gray-200 rounded-lg p-4 mb-8">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
         <h2 className="text-sm font-semibold text-gray-800">Missuppfattningar — klassöversikt</h2>
-        <span className="text-[11px] text-gray-400">Hover för detaljer &middot; klicka elevnamn för att öppna eleven</span>
+        <span className="text-[11px] text-gray-400">Hover för detaljer &middot; klicka röd cell för felanalys &middot; klicka elevnamn för att öppna eleven</span>
       </div>
 
       <div className="flex flex-wrap gap-x-4 gap-y-1 mb-4">
@@ -216,7 +312,7 @@ export default function ClassMisconceptionHeatmap({ filteredStudents, onOpenStud
           { label: '≥85% rätt', cls: 'bg-emerald-100 border-emerald-400' },
           { label: '60–84%',    cls: 'bg-amber-100 border-amber-400' },
           { label: '40–59%',    cls: 'bg-orange-100 border-orange-400' },
-          { label: '<40% — möjlig missuppfattning', cls: 'bg-red-100 border-red-400' },
+          { label: '<40% — klickbar', cls: 'bg-red-100 border-red-400' },
           { label: 'Ej tränad', cls: 'bg-gray-50 border-gray-200' }
         ].map(item => (
           <span key={item.label} className="flex items-center gap-1.5 text-[10px] text-gray-500">

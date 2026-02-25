@@ -12,7 +12,8 @@ export default function StudentDetailHistoryPanel({
     : []
   const sorted = [...allLevelRows].sort((a, b) => a.successRate - b.successRate)
   const weakest = sorted.slice(0, 3)
-  const strongest = sorted.slice(-3).reverse()
+  const weakestKeys = new Set(weakest.map(r => `${r.operationLabel}-${r.level}`))
+  const strongest = sorted.slice(-3).reverse().filter(r => !weakestKeys.has(`${r.operationLabel}-${r.level}`))
 
   return (
     <>

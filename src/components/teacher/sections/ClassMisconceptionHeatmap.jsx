@@ -201,26 +201,28 @@ function CellDetailModal({ cell, studentName, onClose }) {
               Fel ({cell.wrongAnswers.length}) — senaste överst
             </p>
             <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
-              {[...cell.wrongAnswers].sort((a, b) => b.timestamp - a.timestamp).map((ex, i) => (
-                <div key={i} className="text-xs bg-gray-50 rounded px-2 py-1.5 space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    {ex.question && (
-                      <span className="font-mono font-semibold text-gray-700">{ex.question} =</span>
-                    )}
-                    <span className="text-red-600 font-semibold">{ex.studentAnswer ?? '?'}</span>
-                    <span className="text-gray-400 text-[10px]">rätt:</span>
-                    <span className="text-green-700 font-semibold">{ex.correctAnswer ?? '?'}</span>
-                    {ex.errorCategory === 'misconception' && (
-                      <span className="ml-auto text-[9px] bg-red-100 text-red-600 rounded px-1 shrink-0">missuppfattning</span>
-                    )}
-                  </div>
-                  {(ex.patterns.length > 0 || ex.errorDetail) && (
-                    <div className="text-[10px] text-orange-700 font-mono">
-                      {ex.patterns.length > 0 ? ex.patterns.join(', ') : ex.errorDetail}
+              {[...cell.wrongAnswers].sort((a, b) => b.timestamp - a.timestamp).map((ex, i) => {
+                const errorTypeLabel = ex.patterns.length > 0
+                  ? ex.patterns.join(', ')
+                  : ex.errorDetail || (ex.errorCategory === 'misconception' ? 'Missuppfattning' : 'Kunskapsfel')
+                const isMisconception = ex.errorCategory === 'misconception'
+                return (
+                  <div key={i} className="text-xs bg-gray-50 rounded px-2 py-1.5 space-y-0.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {ex.question && (
+                        <span className="font-mono font-semibold text-gray-700">{ex.question} =</span>
+                      )}
+                      <span className="text-red-600 font-semibold">{ex.studentAnswer ?? '?'}</span>
+                      <span className="text-gray-400 text-[10px]">rätt:</span>
+                      <span className="text-green-700 font-semibold">{ex.correctAnswer ?? '?'}</span>
+                      <span className={`ml-auto text-[9px] rounded px-1 shrink-0 ${isMisconception ? 'bg-red-100 text-red-600' : 'bg-gray-200 text-gray-600'}`}>
+                        {isMisconception ? 'missuppfattning' : 'kunskapsfel'}
+                      </span>
                     </div>
-                  )}
-                </div>
-              ))}
+                    <div className="text-[10px] text-orange-700 font-mono">{errorTypeLabel}</div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         )}

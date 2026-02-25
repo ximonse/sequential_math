@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import StudentSession from './components/student/StudentSession'
+import PracticeSession from './components/student/PracticeSession'
 import StudentHome from './components/student/StudentHome'
 import StudentTicket from './components/student/StudentTicket'
 import Dashboard from './components/teacher/Dashboard'
@@ -23,7 +23,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/student/:studentId" element={<StudentHome />} />
-        <Route path="/student/:studentId/practice" element={<StudentSession />} />
+        <Route path="/student/:studentId/practice" element={<PracticeSession />} />
         <Route path="/student/:studentId/ticket" element={<StudentTicket />} />
         <Route path="/teacher-login" element={<TeacherLogin />} />
         <Route

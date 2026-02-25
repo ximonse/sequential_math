@@ -1,5 +1,5 @@
 import { THEMES } from '../../lib/theme'
-import { useTheme } from '../../context/ThemeContext'
+import { useTheme } from '../../context/useTheme'
 
 function ThemeSwitcher() {
   const { theme, setTheme } = useTheme()
@@ -23,4 +23,3 @@ function ThemeSwitcher() {
 }
 
 export default ThemeSwitcher
-

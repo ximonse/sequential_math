@@ -4,11 +4,11 @@
   "description": "Adaptiv matematikträning",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --configLoader native",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "set \"NODE_OPTIONS=--require=./scripts/vitest-node-patch.cjs\" && vitest run --configLoader native --pool threads"
   },
   "repository": {
     "type": "git",

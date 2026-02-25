@@ -2,7 +2,9 @@ const KNOWN_OPERATION_TYPES = new Set([
   'addition',
   'subtraction',
   'multiplication',
-  'division'
+  'division',
+  'algebra_evaluate',
+  'algebra_simplify'
 ])
 
 export function inferOperationFromProblemType(problemType = '', options = {}) {
@@ -17,6 +19,9 @@ export function inferOperationFromProblemType(problemType = '', options = {}) {
   if (normalized.startsWith('sub_')) return 'subtraction'
   if (normalized.startsWith('mul_')) return 'multiplication'
   if (normalized.startsWith('div_')) return 'division'
+  if (normalized === 'algebra_evaluate') return 'algebra_evaluate'
+  if (normalized === 'algebra_simplify') return 'algebra_simplify'
+  if (normalized.startsWith('alg_')) return normalized
 
   const [prefixRaw] = normalized.split('_')
   const prefix = String(prefixRaw || '').trim()

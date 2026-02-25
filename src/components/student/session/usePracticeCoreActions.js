@@ -152,10 +152,16 @@ export function usePracticeCoreActions({
     if (!profile || !currentProblem || answer.trim() === '') return
 
     const timeSpent = (Date.now() - startTime) / 1000
+    const isExpressionAnswer = currentProblem?.answer?.type === 'expression'
     const normalizedAnswer = answer.trim().replace(/,/g, '.')
-    if (!/^-?(?:\d+|\d*\.\d+)$/.test(normalizedAnswer)) return
-    const studentAnswer = Number(normalizedAnswer)
-    if (!Number.isFinite(studentAnswer)) return
+    let studentAnswer
+    if (isExpressionAnswer) {
+      studentAnswer = answer.trim()
+    } else {
+      if (!/^-?(?:\d+|\d*\.\d+)$/.test(normalizedAnswer)) return
+      studentAnswer = Number(normalizedAnswer)
+      if (!Number.isFinite(studentAnswer)) return
+    }
 
     const masteryBeforeLevelFocus = isLevelFocusMode
       ? getOperationLevelMasteryStatus(profile, mode, fixedPracticeLevel)

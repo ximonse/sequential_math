@@ -41,7 +41,23 @@ export function selectNextSkillAndLevel(profile, options = {}) {
   }
 }
 
+const ALGEBRA_SKILLS = new Set(['algebra_evaluate', 'algebra_simplify'])
+
 export function selectNextProblemForProfile(profile, options = {}) {
+  const allowedTypes = Array.isArray(options.allowedTypes) ? options.allowedTypes : []
+  const isAlgebra = allowedTypes.length > 0 && allowedTypes.every(t => ALGEBRA_SKILLS.has(t))
+
+  if (isAlgebra) {
+    const algebraDomain = getDomain('algebra')
+    if (algebraDomain && typeof algebraDomain.generate === 'function') {
+      const skill = allowedTypes[0]
+      const forcedLevel = Number.isFinite(Number(options.forcedLevel))
+        ? Number(options.forcedLevel)
+        : Math.max(1, Math.min(12, Math.round(Number(profile?.currentDifficulty || 1))))
+      return algebraDomain.generate(skill, forcedLevel, options)
+    }
+  }
+
   const legacyProblem = selectNextProblem(profile, options)
   return normalizeProblemWithDomain(legacyProblem)
 }

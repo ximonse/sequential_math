@@ -8,7 +8,9 @@ export const OPERATION_LABELS = {
   addition: 'Addition',
   subtraction: 'Subtraktion',
   multiplication: 'Multiplikation',
-  division: 'Division'
+  division: 'Division',
+  algebra_evaluate: 'Algebra (räkna ut)',
+  algebra_simplify: 'Algebra (förenkla)'
 }
 
 export function getOperationLabel(operation) {

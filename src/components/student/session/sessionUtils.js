@@ -233,6 +233,8 @@ export function isKnownMode(mode) {
     || mode === 'subtraction'
     || mode === 'multiplication'
     || mode === 'division'
+    || mode === 'algebra_evaluate'
+    || mode === 'algebra_simplify'
 }
 
 export function isMixedTrainingSession(mode, assignment, isTableDrill) {

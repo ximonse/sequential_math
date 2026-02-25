@@ -10,7 +10,9 @@ export const OPERATION_LABELS = {
   multiplication: 'Multiplikation',
   division: 'Division',
   algebra_evaluate: 'Algebra (räkna ut)',
-  algebra_simplify: 'Algebra (förenkla)'
+  algebra_simplify: 'Algebra (förenkla)',
+  arithmetic_expressions: 'Uttryck (prioriteringsregler)',
+  fractions: 'Bråk'
 }
 
 export function getOperationLabel(operation) {

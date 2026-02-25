@@ -154,9 +154,10 @@ export function usePracticeCoreActions({
 
     const timeSpent = (Date.now() - startTime) / 1000
     const isExpressionAnswer = currentProblem?.answer?.type === 'expression'
+    const isFractionAnswer = currentProblem?.answer?.type === 'fraction'
     const normalizedAnswer = answer.trim().replace(/,/g, '.')
     let studentAnswer
-    if (isExpressionAnswer) {
+    if (isExpressionAnswer || isFractionAnswer) {
       studentAnswer = answer.trim()
     } else {
       if (!/^-?(?:\d+|\d*\.\d+)$/.test(normalizedAnswer)) return

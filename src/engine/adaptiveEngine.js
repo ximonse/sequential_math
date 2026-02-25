@@ -42,10 +42,14 @@ export function selectNextSkillAndLevel(profile, options = {}) {
 }
 
 const ALGEBRA_SKILLS = new Set(['algebra_evaluate', 'algebra_simplify'])
+const EXPRESSION_SKILLS = new Set(['arithmetic_expressions'])
+const FRACTION_SKILLS = new Set(['fractions'])
 
 export function selectNextProblemForProfile(profile, options = {}) {
   const allowedTypes = Array.isArray(options.allowedTypes) ? options.allowedTypes : []
   const isAlgebra = allowedTypes.length > 0 && allowedTypes.every(t => ALGEBRA_SKILLS.has(t))
+  const isExpressions = allowedTypes.length > 0 && allowedTypes.every(t => EXPRESSION_SKILLS.has(t))
+  const isFractions = allowedTypes.length > 0 && allowedTypes.every(t => FRACTION_SKILLS.has(t))
 
   if (isAlgebra) {
     const algebraDomain = getDomain('algebra')
@@ -55,6 +59,26 @@ export function selectNextProblemForProfile(profile, options = {}) {
         ? Number(options.forcedLevel)
         : Math.max(1, Math.min(12, Math.round(Number(profile?.currentDifficulty || 1))))
       return algebraDomain.generate(skill, forcedLevel, options)
+    }
+  }
+
+  if (isExpressions) {
+    const exprDomain = getDomain('arithmetic_expressions')
+    if (exprDomain && typeof exprDomain.generate === 'function') {
+      const forcedLevel = Number.isFinite(Number(options.forcedLevel))
+        ? Number(options.forcedLevel)
+        : Math.max(1, Math.min(12, Math.round(Number(profile?.currentDifficulty || 1))))
+      return exprDomain.generate('arithmetic_expressions', forcedLevel, options)
+    }
+  }
+
+  if (isFractions) {
+    const fracDomain = getDomain('fractions')
+    if (fracDomain && typeof fracDomain.generate === 'function') {
+      const forcedLevel = Number.isFinite(Number(options.forcedLevel))
+        ? Number(options.forcedLevel)
+        : Math.max(1, Math.min(12, Math.round(Number(profile?.currentDifficulty || 1))))
+      return fracDomain.generate('fractions', forcedLevel, options)
     }
   }
 

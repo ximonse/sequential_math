@@ -1,5 +1,7 @@
 import arithmeticDomain from './arithmetic'
 import algebraDomain from './algebra'
+import arithmeticExpressionsDomain from './arithmetic_expressions'
+import fractionsDomain from './fractions'
 
 const domainMap = new Map()
 
@@ -12,6 +14,8 @@ function registerDomain(domain) {
 
 registerDomain(arithmeticDomain)
 registerDomain(algebraDomain)
+registerDomain(arithmeticExpressionsDomain)
+registerDomain(fractionsDomain)
 
 export function getDomain(domainId) {
   const normalized = String(domainId || '').trim()

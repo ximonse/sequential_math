@@ -235,6 +235,8 @@ export function isKnownMode(mode) {
     || mode === 'division'
     || mode === 'algebra_evaluate'
     || mode === 'algebra_simplify'
+    || mode === 'arithmetic_expressions'
+    || mode === 'fractions'
 }
 
 export function isMixedTrainingSession(mode, assignment, isTableDrill) {

@@ -61,6 +61,7 @@ function StudentSession() {
   const [tableQueue, setTableQueue] = useState([])
   const [tableMilestone, setTableMilestone] = useState(null)
   const [levelFocusMilestone, setLevelFocusMilestone] = useState(null)
+  const [dailyLevelStreakMilestone, setDailyLevelStreakMilestone] = useState(null)
   const [advancePrompt, setAdvancePrompt] = useState(null)
   const inputRef = useRef(null)
   const attentionRef = useRef(createAttentionTracker())
@@ -207,7 +208,8 @@ function StudentSession() {
     setTableQueue,
     setTableMilestone,
     setAdvancePrompt,
-    setLastBreakPromptAt
+    setLastBreakPromptAt,
+    setDailyLevelStreakMilestone
   })
 
   usePracticeUiEffects({
@@ -221,6 +223,7 @@ function StudentSession() {
     tableMilestone,
     advancePrompt,
     levelFocusMilestone,
+    dailyLevelStreakMilestone,
     attentionRef,
     presenceSyncRef
   })
@@ -239,6 +242,7 @@ function StudentSession() {
     advancePrompt,
     feedback,
     levelFocusMilestone,
+    dailyLevelStreakMilestone,
     sessionCount,
     breakDurationMinutes,
     openBreakGame,
@@ -251,6 +255,7 @@ function StudentSession() {
     handleAdvanceDecision,
     searchParams,
     setLevelFocusMilestone,
+    setDailyLevelStreakMilestone,
     navigate,
     studentId,
     goToNextProblem,

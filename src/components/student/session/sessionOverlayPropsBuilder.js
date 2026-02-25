@@ -7,6 +7,7 @@ export function buildSessionOverlayProps({
   advancePrompt,
   feedback,
   levelFocusMilestone,
+  dailyLevelStreakMilestone,
   sessionCount,
   breakDurationMinutes,
   openBreakGame,
@@ -19,6 +20,7 @@ export function buildSessionOverlayProps({
   handleAdvanceDecision,
   searchParams,
   setLevelFocusMilestone,
+  setDailyLevelStreakMilestone,
   navigate,
   studentId,
   goToNextProblem,
@@ -29,6 +31,7 @@ export function buildSessionOverlayProps({
     activeBreakGame
     || showBreakSuggestion
     || tableMilestone
+    || dailyLevelStreakMilestone
     || (ncmCompletedSession && sessionAssignmentKind === 'ncm')
     || (advancePrompt && feedback)
     || (levelFocusMilestone && feedback)
@@ -55,6 +58,8 @@ export function buildSessionOverlayProps({
     feedback,
     onAdvanceAccept: () => handleAdvanceDecision(true),
     onAdvanceDecline: () => handleAdvanceDecision(false),
+    dailyLevelStreakMilestone,
+    onContinueAfterDailyLevelStreak: () => setDailyLevelStreakMilestone(null),
     levelFocusMilestone,
     onPracticeNextLevel: (nextLevel) => {
       const params = new URLSearchParams(searchParams)

@@ -18,6 +18,7 @@ export function usePracticeUiEffects({
   tableMilestone,
   advancePrompt,
   levelFocusMilestone,
+  dailyLevelStreakMilestone,
   attentionRef,
   presenceSyncRef,
   autoContinueDelay = 3000
@@ -114,17 +115,17 @@ export function usePracticeUiEffects({
   }, [currentProblem, feedback, attentionRef])
 
   useEffect(() => {
-    if (!feedback || !feedback.correct || showBreakSuggestion || tableMilestone || advancePrompt || levelFocusMilestone) return
+    if (!feedback || !feedback.correct || showBreakSuggestion || tableMilestone || dailyLevelStreakMilestone || advancePrompt || levelFocusMilestone) return
 
     const timer = setTimeout(() => {
       goToNextProblem()
     }, autoContinueDelay)
 
     return () => clearTimeout(timer)
-  }, [feedback, showBreakSuggestion, tableMilestone, advancePrompt, levelFocusMilestone, goToNextProblem, autoContinueDelay])
+  }, [feedback, showBreakSuggestion, tableMilestone, dailyLevelStreakMilestone, advancePrompt, levelFocusMilestone, goToNextProblem, autoContinueDelay])
 
   useEffect(() => {
-    if (!feedback || showBreakSuggestion || tableMilestone || advancePrompt || levelFocusMilestone) return
+    if (!feedback || showBreakSuggestion || tableMilestone || dailyLevelStreakMilestone || advancePrompt || levelFocusMilestone) return
 
     let handleKeyDown = null
 
@@ -143,5 +144,5 @@ export function usePracticeUiEffects({
         window.removeEventListener('keydown', handleKeyDown)
       }
     }
-  }, [feedback, showBreakSuggestion, tableMilestone, advancePrompt, levelFocusMilestone, goToNextProblem])
+  }, [feedback, showBreakSuggestion, tableMilestone, dailyLevelStreakMilestone, advancePrompt, levelFocusMilestone, goToNextProblem])
 }

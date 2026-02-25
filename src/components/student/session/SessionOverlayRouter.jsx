@@ -4,6 +4,7 @@ import MilestoneOverlay from '../MilestoneOverlay'
 import NcmCompletionOverlay from '../NcmCompletionOverlay'
 import AdvancePromptOverlay from '../AdvancePromptOverlay'
 import LevelFocusMilestoneOverlay from '../LevelFocusMilestoneOverlay'
+import DailyLevelStreakOverlay from '../DailyLevelStreakOverlay'
 
 function SessionOverlayRouter({
   activeBreakGame,
@@ -16,6 +17,8 @@ function SessionOverlayRouter({
   onContinueAfterBreakSuggestion,
   tableMilestone,
   onContinueAfterMilestone,
+  dailyLevelStreakMilestone,
+  onContinueAfterDailyLevelStreak,
   ncmCompletedSession,
   sessionAssignmentKind,
   ncmTotalCount,
@@ -60,6 +63,15 @@ function SessionOverlayRouter({
         milestone={tableMilestone}
         tableBossUrl={tableBossUrl}
         onContinue={onContinueAfterMilestone}
+      />
+    )
+  }
+
+  if (dailyLevelStreakMilestone) {
+    return (
+      <DailyLevelStreakOverlay
+        milestone={dailyLevelStreakMilestone}
+        onContinue={onContinueAfterDailyLevelStreak}
       />
     )
   }

@@ -64,7 +64,8 @@ export function usePracticeCoreActions({
   setTableQueue,
   setTableMilestone,
   setAdvancePrompt,
-  setLastBreakPromptAt
+  setLastBreakPromptAt,
+  setDailyLevelStreakMilestone
 }) {
   const goToNextProblem = useCallback(() => {
     if (!profile) return
@@ -262,7 +263,10 @@ export function usePracticeCoreActions({
         correct: levelMasteredNow.correct,
         successRate: Number(levelMasteredNow.successRate.toFixed(3))
       }, answerTs)
-      incrementTelemetryDailyMetric(profile, 'level_focus_mastered', 1, answerTs)
+      const levelsToday = incrementTelemetryDailyMetric(profile, 'level_focus_mastered', 1, answerTs)
+      if (levelsToday === 5) {
+        setDailyLevelStreakMilestone({ count: levelsToday })
+      }
     }
 
     let breakSuggested = false
@@ -359,7 +363,8 @@ export function usePracticeCoreActions({
     setPendingBreakSuggestion,
     setBreakDurationMinutes,
     setLastBreakPromptAt,
-    setAdvancePrompt
+    setAdvancePrompt,
+    setDailyLevelStreakMilestone
   ])
 
   return {

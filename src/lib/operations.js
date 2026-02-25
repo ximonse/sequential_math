@@ -4,6 +4,8 @@
  */
 import { inferOperationFromProblemType } from './mathUtils'
 
+export const STANDARD_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
+
 export const OPERATION_LABELS = {
   addition: 'Addition',
   subtraction: 'Subtraktion',

@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams, useSearchParams } from 'react-rout
 import { changeStudentPassword, clearActiveStudentSession, getOrCreateProfileWithSync, isStudentSessionActive, saveProfile } from '../../lib/storage'
 import { getStartOfWeekTimestamp } from '../../lib/studentProfile'
 import { inferOperationFromProblemType } from '../../lib/mathUtils'
-import { getOperationLabel, OPERATION_LABELS } from '../../lib/operations'
+import { getOperationLabel, OPERATION_LABELS, STANDARD_OPERATIONS } from '../../lib/operations'
 import { decodeAssignmentPayload, encodeAssignmentPayload, getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 import { getProgressionModeLabel, PROGRESSION_MODE_CHALLENGE, PROGRESSION_MODE_STEADY, normalizeProgressionMode } from '../../lib/progressionModes'
 import { markStudentPresence, PRESENCE_HEARTBEAT_MS, PRESENCE_SAVE_THROTTLE_MS } from '../../lib/studentPresence'
@@ -22,6 +22,7 @@ function StudentHome() {
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const [profile, setProfile] = useState(null)
+  const [enabledExtras, setEnabledExtras] = useState(null) // null = loading, [] = no extras
   const [assignment, setAssignment] = useState(null)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -85,6 +86,18 @@ function StudentHome() {
 
     navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
   }, [studentId, assignmentId, assignmentPayload, mode, requestedPace, ticketId, ticketPayload, navigate])
+
+  useEffect(() => {
+    if (!profile) return
+    const classId = String(profile?.classId || '').trim()
+    if (!classId) { setEnabledExtras([]); return }
+    let active = true
+    fetch(`/api/class-config?classId=${encodeURIComponent(classId)}`)
+      .then(r => r.json())
+      .then(data => { if (active) setEnabledExtras(Array.isArray(data?.enabledExtras) ? data.enabledExtras : []) })
+      .catch(() => { if (active) setEnabledExtras([]) })
+    return () => { active = false }
+  }, [profile?.classId])
 
   useEffect(() => {
     const fromPayload = decodeAssignmentPayload(assignmentPayload)
@@ -388,7 +401,13 @@ function StudentHome() {
           onSelectProgressionMode={handleProgressionModeSelect}
           getProgressionModeLabel={getProgressionModeLabel}
           onStartFreePractice={startFreePractice}
-          operationKeys={Object.keys(OPERATION_LABELS)}
+          operationKeys={[
+            ...STANDARD_OPERATIONS,
+            ...Object.keys(OPERATION_LABELS).filter(op =>
+              !STANDARD_OPERATIONS.includes(op) &&
+              (enabledExtras ?? []).includes(op)
+            )
+          ]}
           onStartOperationPractice={startOperationPractice}
           getOperationLabel={getOperationLabel}
         />

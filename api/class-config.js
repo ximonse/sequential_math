@@ -15,10 +15,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const classRecord = await kv.get(`class:${classId}`)
-    const enabledExtras = Array.isArray(classRecord?.enabledExtras)
-      ? classRecord.enabledExtras
-      : []
+    // Try local-class extras first (set by teacher dashboard), then admin KV classes
+    const [localExtras, kvClass] = await Promise.all([
+      kv.get(`class_extras:${classId}`),
+      kv.get(`class:${classId}`)
+    ])
+    const enabledExtras = Array.isArray(localExtras?.enabledExtras)
+      ? localExtras.enabledExtras
+      : Array.isArray(kvClass?.enabledExtras)
+        ? kvClass.enabledExtras
+        : []
     return res.status(200).json({ enabledExtras })
   } catch {
     return res.status(200).json({ enabledExtras: [] })

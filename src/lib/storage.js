@@ -286,6 +286,10 @@ export async function addStudentsToClass(classId, rosterText, grade = 4) {
   return getClassApi().addStudentsToClass(classId, rosterText, grade)
 }
 
+export function updateClassExtras(classId, extras) {
+  return getClassApi().updateClassExtras(classId, extras)
+}
+
 export function removeClass(classId) {
   return getClassApi().removeClass(classId)
 }

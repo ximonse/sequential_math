@@ -8,7 +8,7 @@ import {
   isKnowledgeError
 } from './dashboardTableStatusUtils'
 
-const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
+const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division', 'arithmetic_expressions', 'fractions']
 const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 const LEVELS = Array.from({ length: 12 }, (_, index) => index + 1)
 const DAY_MS = 24 * 60 * 60 * 1000

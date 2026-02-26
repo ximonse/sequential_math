@@ -141,6 +141,7 @@ export default function DashboardLayout({
   setRosterInput,
   classStatus,
   handleDeleteClass,
+  handleSaveClassExtras,
   resultsPanelProps,
   PASSWORD_RESET_SECTION_ID,
   passwordResetRows,
@@ -348,6 +349,7 @@ export default function DashboardLayout({
           students={students}
           recordMatchesClassFilter={recordMatchesClassFilter}
           onDeleteClass={handleDeleteClass}
+          onSaveClassExtras={handleSaveClassExtras}
         />
       </>
     )

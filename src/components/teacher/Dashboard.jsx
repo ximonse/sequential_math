@@ -183,7 +183,8 @@ function Dashboard() {
     clearClassFilter,
     handleResetStudentPassword,
     handleOpenStudentDetail,
-    handleToggleTableStudent
+    handleToggleTableStudent,
+    handleSaveClassExtras
   } = buildDashboardClassAndAuthActions({
     loadStudents,
     addToClassId,
@@ -387,7 +388,7 @@ function Dashboard() {
         filteredTableStudentOptions, tableStudentSet, handleToggleTableStudent, tableDevelopmentOverview,
         supportRows, SUPPORT_HEADER_HELP, getSupportSortIndicator, handleSupportSort, handleCreateQuickAssignment,
         classNameInput, setClassNameInput, handleCreateClass, addToClassId, setAddToClassId,
-        classes, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus, handleDeleteClass,
+        classes, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus, handleDeleteClass, handleSaveClassExtras,
         resultsPanelProps, PASSWORD_RESET_SECTION_ID, passwordResetRows, passwordResetSearch,
         setPasswordResetSearch, passwordResetStatus, handleResetStudentPassword, passwordResetBusyId
       }}

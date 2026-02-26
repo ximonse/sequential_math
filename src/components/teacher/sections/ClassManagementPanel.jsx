@@ -1,3 +1,69 @@
+import { useState } from 'react'
+import { listDomains } from '../../../domains/registry'
+import { STANDARD_OPERATIONS } from '../../../lib/operations'
+
+function getTogglableExtras() {
+  return listDomains()
+    .filter(d => d.id !== 'arithmetic')
+    .flatMap(d =>
+      Array.isArray(d.skills)
+        ? d.skills.map(s => ({ id: s.id, label: s.label }))
+        : [{ id: d.id, label: d.label }]
+    )
+}
+
+function ClassExtrasRow({ classRecord, onSaveExtras }) {
+  const [open, setOpen] = useState(false)
+  const [extras, setExtras] = useState(classRecord.enabledExtras || [])
+  const [busy, setBusy] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const toggleableExtras = getTogglableExtras()
+
+  const handleSave = async () => {
+    setBusy(true)
+    await onSaveExtras(classRecord.id, extras)
+    setBusy(false)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+    setOpen(false)
+  }
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="text-xs text-indigo-600 hover:underline ml-2"
+      >
+        {open ? 'Stäng' : 'Räknesätt ▾'}
+      </button>
+      {open && (
+        <div className="mt-2 p-2 bg-indigo-50 rounded text-xs space-y-1">
+          <p className="text-gray-500 mb-1">+-×÷ är alltid på. Välj extra räknesätt:</p>
+          {toggleableExtras.map(ex => (
+            <label key={ex.id} className="flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={extras.includes(ex.id)}
+                onChange={e => setExtras(prev =>
+                  e.target.checked ? [...prev, ex.id] : prev.filter(id => id !== ex.id)
+                )}
+              />
+              {ex.label}
+            </label>
+          ))}
+          <button
+            onClick={handleSave}
+            disabled={busy}
+            className="mt-1 px-3 py-1 bg-indigo-600 text-white rounded disabled:opacity-50"
+          >
+            {saved ? '✓ Sparat' : busy ? '...' : 'Spara'}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function ClassManagementPanel({
   classNameInput,
   onSetClassNameInput,
@@ -11,7 +77,8 @@ export default function ClassManagementPanel({
   classStatus,
   students,
   recordMatchesClassFilter,
-  onDeleteClass
+  onDeleteClass,
+  onSaveClassExtras
 }) {
   return (
     <div className="bg-white rounded-lg shadow p-4 mb-8">
@@ -74,19 +141,24 @@ export default function ClassManagementPanel({
             const classStudents = students.filter(student => recordMatchesClassFilter(student, [item.id]))
             const loggedInCount = classStudents.filter(student => student.auth?.lastLoginAt).length
             return (
-              <div key={item.id} className="flex items-center justify-between gap-2 border rounded px-2 py-1.5">
-                <div>
-                  <p className="text-sm font-medium text-gray-800">{item.name}</p>
-                  <p className="text-xs text-gray-500">
-                    {classStudents.length} elever | {loggedInCount} har loggat in
-                  </p>
+              <div key={item.id} className="border rounded px-2 py-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">{item.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {classStudents.length} elever | {loggedInCount} har loggat in
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => onDeleteClass(item.id)}
+                    className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
+                  >
+                    Ta bort klass
+                  </button>
                 </div>
-                <button
-                  onClick={() => onDeleteClass(item.id)}
-                  className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
-                >
-                  Ta bort klass
-                </button>
+                {onSaveClassExtras && (
+                  <ClassExtrasRow classRecord={item} onSaveExtras={onSaveClassExtras} />
+                )}
               </div>
             )
           })}

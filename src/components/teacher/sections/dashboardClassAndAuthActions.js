@@ -6,8 +6,10 @@ import {
   getCloudProfilesSyncStatus,
   normalizeStudentId,
   removeClass,
-  resetStudentPasswordToLoginName
+  resetStudentPasswordToLoginName,
+  updateClassExtras
 } from '../../../lib/storage'
+import { getTeacherApiToken } from '../../../lib/teacherAuth'
 import {
   getActiveAssignment,
   getAssignments
@@ -188,6 +190,21 @@ export function buildDashboardClassAndAuthActions({
     ))
   }
 
+  async function handleSaveClassExtras(classId, extras) {
+    updateClassExtras(classId, extras)
+    setClasses(getClasses())
+    try {
+      await fetch('/api/teacher-class-extras', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-teacher-token': getTeacherApiToken()
+        },
+        body: JSON.stringify({ classId, enabledExtras: extras })
+      })
+    } catch { /* best-effort */ }
+  }
+
   return {
     handleRefresh,
     handleCloudRefreshNow,
@@ -200,6 +217,7 @@ export function buildDashboardClassAndAuthActions({
     clearClassFilter,
     handleResetStudentPassword,
     handleOpenStudentDetail,
-    handleToggleTableStudent
+    handleToggleTableStudent,
+    handleSaveClassExtras
   }
 }

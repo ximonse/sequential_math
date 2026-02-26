@@ -3,17 +3,20 @@ import { inferOperationFromProblemType } from '../../../lib/mathUtils'
 import { getOperationLabel } from '../../../lib/operations'
 
 const LEVELS = Array.from({ length: 12 }, (_, i) => i + 1)
-const OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
+const OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division', 'arithmetic_expressions', 'fractions']
 
 const OP_SYMBOL = {
-  addition: '+', subtraction: '−', multiplication: '×', division: '÷'
+  addition: '+', subtraction: '−', multiplication: '×', division: '÷',
+  arithmetic_expressions: '( )', fractions: '/'
 }
 
 const OPERATION_ACCENT = {
-  addition:       'bg-blue-500',
-  subtraction:    'bg-violet-500',
-  multiplication: 'bg-orange-500',
-  division:       'bg-teal-500'
+  addition:               'bg-blue-500',
+  subtraction:            'bg-violet-500',
+  multiplication:         'bg-orange-500',
+  division:               'bg-teal-500',
+  arithmetic_expressions: 'bg-rose-500',
+  fractions:              'bg-lime-600'
 }
 
 const CELL_CLASSES = {

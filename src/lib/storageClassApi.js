@@ -164,6 +164,17 @@ export function createStorageClassApi(deps) {
     }
   }
 
+  function updateClassExtras(classId, extras) {
+    const targetId = String(classId || '').trim()
+    if (!targetId) return false
+    const classes = getClasses()
+    const idx = classes.findIndex(c => String(c.id || '').trim() === targetId)
+    if (idx < 0) return false
+    classes[idx] = { ...classes[idx], enabledExtras: Array.isArray(extras) ? extras : [] }
+    saveClasses(classes)
+    return true
+  }
+
   function removeClass(classId) {
     const targetClassId = String(classId || '').trim()
     if (!targetClassId) return
@@ -184,6 +195,7 @@ export function createStorageClassApi(deps) {
     addStudentsToClass,
     createClassFromRoster,
     getClasses,
-    removeClass
+    removeClass,
+    updateClassExtras
   }
 }

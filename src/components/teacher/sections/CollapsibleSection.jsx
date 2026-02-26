@@ -9,9 +9,9 @@ export default function CollapsibleSection({
   children
 }) {
   return (
-    <div className="mb-4">
+    <div className="mb-4 border border-gray-200 rounded-lg overflow-hidden">
       <div
-        className="flex items-center justify-between px-3 py-1.5 bg-gray-100 rounded-t border border-gray-200 cursor-pointer select-none"
+        className="flex items-center justify-between px-3 py-1.5 bg-gray-100 cursor-pointer select-none"
         onClick={onToggle}
       >
         <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">{title}</span>

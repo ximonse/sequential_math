@@ -10,10 +10,14 @@ export default function StudentDetailHistoryPanel({
   const allLevelRows = Array.isArray(detailStudentViewData?.levelErrorRows)
     ? detailStudentViewData.levelErrorRows.filter(row => row.attempts >= detailLevelErrorMinAttempts)
     : []
-  const sorted = [...allLevelRows].sort((a, b) => a.successRate - b.successRate)
-  const weakest = sorted.slice(0, 3)
+  const weakest = [...allLevelRows]
+    .sort((a, b) => a.successRate - b.successRate)
+    .slice(0, 3)
   const weakestKeys = new Set(weakest.map(r => `${r.operationLabel}-${r.level}`))
-  const strongest = sorted.slice(-3).reverse().filter(r => !weakestKeys.has(`${r.operationLabel}-${r.level}`))
+  const strongest = [...allLevelRows]
+    .sort((a, b) => (b.successRate * b.level) - (a.successRate * a.level))
+    .slice(0, 3)
+    .filter(r => !weakestKeys.has(`${r.operationLabel}-${r.level}`))
 
   return (
     <>

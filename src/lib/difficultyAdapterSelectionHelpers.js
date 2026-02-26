@@ -4,7 +4,11 @@ import {
 } from './progressionModes'
 
 const NCM_ROTATION_MAX_SIGNATURES = 24
-const KNOWN_OPERATION_TYPES = new Set(['addition', 'subtraction', 'multiplication', 'division'])
+const KNOWN_OPERATION_TYPES = new Set([
+  'addition', 'subtraction', 'multiplication', 'division',
+  'algebra_evaluate', 'algebra_simplify',
+  'arithmetic_expressions', 'fractions', 'percentage'
+])
 const BUCKET_CONFIG = {
   [PROGRESSION_MODE_CHALLENGE]: [
     { name: 'very_easy', offset: -2, weight: 0.05 },

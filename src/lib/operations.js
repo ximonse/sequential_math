@@ -14,7 +14,8 @@ export const OPERATION_LABELS = {
   algebra_evaluate: 'Algebra (räkna ut)',
   algebra_simplify: 'Algebra (förenkla)',
   arithmetic_expressions: 'Uttryck (prioriteringsregler)',
-  fractions: 'Bråk'
+  fractions: 'Bråk',
+  percentage: 'Procenträkning'
 }
 
 export function getOperationLabel(operation) {

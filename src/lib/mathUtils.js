@@ -6,7 +6,8 @@ const KNOWN_OPERATION_TYPES = new Set([
   'algebra_evaluate',
   'algebra_simplify',
   'arithmetic_expressions',
-  'fractions'
+  'fractions',
+  'percentage'
 ])
 
 export function inferOperationFromProblemType(problemType = '', options = {}) {
@@ -25,6 +26,7 @@ export function inferOperationFromProblemType(problemType = '', options = {}) {
   if (normalized === 'algebra_simplify') return 'algebra_simplify'
   if (normalized === 'arithmetic_expressions') return 'arithmetic_expressions'
   if (normalized === 'fractions') return 'fractions'
+  if (normalized === 'percentage') return 'percentage'
   if (normalized.startsWith('alg_')) return normalized
 
   const [prefixRaw] = normalized.split('_')

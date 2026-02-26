@@ -243,6 +243,7 @@ export function isKnownMode(mode) {
     || mode === 'algebra_simplify'
     || mode === 'arithmetic_expressions'
     || mode === 'fractions'
+    || mode === 'percentage'
 }
 
 export function isMixedTrainingSession(mode, assignment, isTableDrill) {

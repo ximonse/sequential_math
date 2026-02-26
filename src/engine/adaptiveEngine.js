@@ -44,6 +44,7 @@ export function selectNextSkillAndLevel(profile, options = {}) {
 const ALGEBRA_SKILLS = new Set(['algebra_evaluate', 'algebra_simplify'])
 const EXPRESSION_SKILLS = new Set(['arithmetic_expressions'])
 const FRACTION_SKILLS = new Set(['fractions'])
+const PERCENTAGE_SKILLS = new Set(['percentage'])
 
 export function selectNextProblemForProfile(profile, options = {}) {
   const allowedTypes = Array.isArray(options.allowedTypes) ? options.allowedTypes : []
@@ -79,6 +80,17 @@ export function selectNextProblemForProfile(profile, options = {}) {
         ? Number(options.forcedLevel)
         : Math.max(1, Math.min(12, Math.round(Number(profile?.currentDifficulty || 1))))
       return fracDomain.generate('fractions', forcedLevel, options)
+    }
+  }
+
+  const isPercentage = allowedTypes.length > 0 && allowedTypes.every(t => PERCENTAGE_SKILLS.has(t))
+  if (isPercentage) {
+    const pctDomain = getDomain('percentage')
+    if (pctDomain && typeof pctDomain.generate === 'function') {
+      const forcedLevel = Number.isFinite(Number(options.forcedLevel))
+        ? Number(options.forcedLevel)
+        : Math.max(1, Math.min(12, Math.round(Number(profile?.currentDifficulty || 1))))
+      return pctDomain.generate('percentage', forcedLevel, options)
     }
   }
 

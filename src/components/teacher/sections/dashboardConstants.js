@@ -1,4 +1,4 @@
-export const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division', 'algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions', 'fractions']
+export const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division', 'algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions', 'fractions', 'percentage']
 export const SUPPORT_THRESHOLD = 45
 export const DEFAULT_WEEKLY_GOAL = 20
 export const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]

@@ -2,7 +2,7 @@ import { inferOperationFromProblemType, inferTableFromProblem, getSpeedTime, med
 import { getOperationLabel } from '../../../lib/operations'
 import { getTableProblemSourceForStudent } from './dashboardTableStatusUtils'
 
-const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division', 'algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions', 'fractions']
+const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division', 'algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions', 'fractions', 'percentage']
 const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 const DAY_MS = 24 * 60 * 60 * 1000
 const MASTERY_MIN_ATTEMPTS = 5

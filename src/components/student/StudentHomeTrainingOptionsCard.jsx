@@ -42,7 +42,7 @@ export default function StudentHomeTrainingOptionsCard({
               : 'bg-blue-600 hover:bg-blue-700'
           }`}
         >
-          Fri träning ({getProgressionModeLabel(selectedProgressionMode)})
+          Fri träning
         </button>
         {operationKeys.map(operation => {
           let btnClass
@@ -52,6 +52,8 @@ export default function StudentHomeTrainingOptionsCard({
             btnClass = 'bg-lime-50 border border-lime-300 hover:bg-lime-100 text-lime-800'
           } else if (operation === 'arithmetic_expressions') {
             btnClass = 'bg-rose-50 border border-rose-300 hover:bg-rose-100 text-rose-800'
+          } else if (operation === 'percentage') {
+            btnClass = 'bg-amber-50 border border-amber-300 hover:bg-amber-100 text-amber-800'
           } else if (selectedProgressionMode === PROGRESSION_MODE_STEADY) {
             btnClass = 'bg-green-50 border border-green-300 hover:bg-green-100 text-green-800'
           } else {
@@ -63,7 +65,7 @@ export default function StudentHomeTrainingOptionsCard({
               onClick={() => onStartOperationPractice(operation)}
               className={`px-4 py-2 rounded-lg text-sm font-medium ${btnClass}`}
             >
-              {getOperationLabel(operation)} ({getProgressionModeLabel(selectedProgressionMode)})
+              {getOperationLabel(operation)}
             </button>
           )
         })}

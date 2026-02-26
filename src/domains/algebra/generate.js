@@ -14,79 +14,79 @@ function pick(arr) {
 // ── Evaluate problems ────────────────────────────────────────────────────────
 
 const EVALUATE_TEMPLATES = [
-  // Level 1: n + c, simple addition
+  // Level 1: x + c
   () => {
-    const n = rand(2, 8), c = rand(2, 6)
-    return { expr: `n + ${c}`, vars: { n }, result: n + c, varDisplay: `n = ${n}` }
+    const x = rand(2, 8), c = rand(2, 6)
+    return { expr: `x + ${c}`, vars: { x }, result: x + c, varDisplay: `x = ${x}` }
   },
-  // Level 2: c − n, subtraction
+  // Level 2: c − x
   () => {
-    const n = rand(2, 5), c = rand(n + 1, n + 8)
-    return { expr: `${c} − n`, vars: { n }, result: c - n, varDisplay: `n = ${n}` }
+    const x = rand(2, 5), c = rand(x + 1, x + 8)
+    return { expr: `${c} − x`, vars: { x }, result: c - x, varDisplay: `x = ${x}` }
   },
-  // Level 3: 2n
+  // Level 3: 2x
   () => {
-    const n = rand(3, 9)
-    return { expr: '2n', vars: { n }, result: 2 * n, varDisplay: `n = ${n}` }
+    const x = rand(3, 9)
+    return { expr: '2x', vars: { x }, result: 2 * x, varDisplay: `x = ${x}` }
   },
-  // Level 4: 3n
+  // Level 4: 3x
   () => {
-    const n = rand(2, 7)
-    return { expr: '3n', vars: { n }, result: 3 * n, varDisplay: `n = ${n}` }
+    const x = rand(2, 7)
+    return { expr: '3x', vars: { x }, result: 3 * x, varDisplay: `x = ${x}` }
   },
-  // Level 5: 2n + c
+  // Level 5: 2x + c
   () => {
-    const n = rand(2, 6), c = rand(1, 5)
-    return { expr: `2n + ${c}`, vars: { n }, result: 2 * n + c, varDisplay: `n = ${n}` }
+    const x = rand(2, 6), c = rand(1, 5)
+    return { expr: `2x + ${c}`, vars: { x }, result: 2 * x + c, varDisplay: `x = ${x}` }
   },
-  // Level 6: 3n − c
+  // Level 6: 3x − c
   () => {
-    const n = rand(3, 7), c = rand(1, 4)
-    return { expr: `3n − ${c}`, vars: { n }, result: 3 * n - c, varDisplay: `n = ${n}` }
+    const x = rand(3, 7), c = rand(1, 4)
+    return { expr: `3x − ${c}`, vars: { x }, result: 3 * x - c, varDisplay: `x = ${x}` }
   },
-  // Level 7: n + n (same variable twice, hints at 2n)
+  // Level 7: x + x
   () => {
-    const n = rand(4, 10)
-    return { expr: 'n + n', vars: { n }, result: 2 * n, varDisplay: `n = ${n}` }
+    const x = rand(4, 10)
+    return { expr: 'x + x', vars: { x }, result: 2 * x, varDisplay: `x = ${x}` }
   },
-  // Level 8: an + c (larger coefficients)
+  // Level 8: ax + c (larger coefficients)
   () => {
-    const n = rand(3, 8), a = rand(4, 6), c = rand(2, 8)
-    return { expr: `${a}n + ${c}`, vars: { n }, result: a * n + c, varDisplay: `n = ${n}` }
+    const x = rand(3, 8), a = rand(4, 6), c = rand(2, 8)
+    return { expr: `${a}x + ${c}`, vars: { x }, result: a * x + c, varDisplay: `x = ${x}` }
   },
-  // Level 9: an − c (larger numbers)
+  // Level 9: ax − c
   () => {
-    const n = rand(4, 9), a = rand(3, 6), c = rand(1, 5)
-    return { expr: `${a}n − ${c}`, vars: { n }, result: a * n - c, varDisplay: `n = ${n}` }
+    const x = rand(4, 9), a = rand(3, 6), c = rand(1, 5)
+    return { expr: `${a}x − ${c}`, vars: { x }, result: a * x - c, varDisplay: `x = ${x}` }
   },
-  // Level 10: am + bn (two variables)
+  // Level 10: ax + by (two variables)
   () => {
-    const m = rand(2, 5), n = rand(2, 5), a = rand(2, 4), b = rand(2, 3)
+    const x = rand(2, 5), y = rand(2, 5), a = rand(2, 4), b = rand(2, 3)
     return {
-      expr: `${a}m + ${b}n`,
-      vars: { m, n },
-      result: a * m + b * n,
-      varDisplay: `m = ${m}, n = ${n}`
+      expr: `${a}x + ${b}y`,
+      vars: { x, y },
+      result: a * x + b * y,
+      varDisplay: `x = ${x}, y = ${y}`
     }
   },
-  // Level 11: am − bn (two variables, subtraction)
+  // Level 11: ax − by (two variables, subtraction)
   () => {
-    const m = rand(3, 7), n = rand(2, 5), a = rand(3, 5), b = rand(2, 3)
+    const x = rand(3, 7), y = rand(2, 5), a = rand(3, 5), b = rand(2, 3)
     return {
-      expr: `${a}m − ${b}n`,
-      vars: { m, n },
-      result: a * m - b * n,
-      varDisplay: `m = ${m}, n = ${n}`
+      expr: `${a}x − ${b}y`,
+      vars: { x, y },
+      result: a * x - b * y,
+      varDisplay: `x = ${x}, y = ${y}`
     }
   },
-  // Level 12: am + bn + c (two variables with constant)
+  // Level 12: ax + by + c (two variables with constant)
   () => {
-    const m = rand(2, 5), n = rand(2, 5), a = rand(2, 4), b = rand(2, 3), c = rand(1, 6)
+    const x = rand(2, 5), y = rand(2, 5), a = rand(2, 4), b = rand(2, 3), c = rand(1, 6)
     return {
-      expr: `${a}m + ${b}n + ${c}`,
-      vars: { m, n },
-      result: a * m + b * n + c,
-      varDisplay: `m = ${m}, n = ${n}`
+      expr: `${a}x + ${b}y + ${c}`,
+      vars: { x, y },
+      result: a * x + b * y + c,
+      varDisplay: `x = ${x}, y = ${y}`
     }
   }
 ]

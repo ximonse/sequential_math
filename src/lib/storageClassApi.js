@@ -191,11 +191,24 @@ export function createStorageClassApi(deps) {
     }
   }
 
+  function saveClass(classRecord) {
+    if (!classRecord || !classRecord.id) return
+    const classes = getClasses()
+    const idx = classes.findIndex(c => c.id === classRecord.id)
+    if (idx >= 0) {
+      classes[idx] = { ...classes[idx], ...classRecord }
+    } else {
+      classes.unshift({ studentIds: [], enabledExtras: [], ...classRecord })
+    }
+    saveClasses(classes)
+  }
+
   return {
     addStudentsToClass,
     createClassFromRoster,
     getClasses,
     removeClass,
+    saveClass,
     updateClassExtras
   }
 }

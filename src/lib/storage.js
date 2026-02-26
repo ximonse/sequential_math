@@ -294,6 +294,10 @@ export function removeClass(classId) {
   return getClassApi().removeClass(classId)
 }
 
+export function saveClass(classRecord) {
+  return getClassApi().saveClass(classRecord)
+}
+
 function saveProfileLocalOnly(profile) {
   const normalizedId = normalizeStudentId(profile.studentId)
   const normalized = ensureProfileClassMembership(ensureProfileAuth({

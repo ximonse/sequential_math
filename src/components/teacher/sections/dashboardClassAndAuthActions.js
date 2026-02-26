@@ -15,6 +15,66 @@ import {
   getAssignments
 } from '../../../lib/assignments'
 import { logoutTeacher } from '../../../lib/teacherAuth'
+import { saveClass } from '../../../lib/storageClassApi'
+
+// ── Server sync helpers ───────────────────────────────────────────────────────
+
+async function fetchClassesFromServer() {
+  try {
+    const res = await fetch('/api/teacher-classes', {
+      headers: { 'x-teacher-token': getTeacherApiToken() }
+    })
+    if (!res.ok) return []
+    const data = await res.json()
+    return Array.isArray(data.classes) ? data.classes : []
+  } catch {
+    return []
+  }
+}
+
+async function pushClassToServer(classRecord) {
+  try {
+    await fetch('/api/teacher-classes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-teacher-token': getTeacherApiToken()
+      },
+      body: JSON.stringify({
+        id: classRecord.id,
+        name: classRecord.name,
+        enabledExtras: classRecord.enabledExtras || [],
+        createdAt: classRecord.createdAt
+      })
+    })
+  } catch { /* best-effort */ }
+}
+
+async function deleteClassFromServer(classId) {
+  try {
+    await fetch(`/api/teacher-classes?id=${encodeURIComponent(classId)}`, {
+      method: 'DELETE',
+      headers: { 'x-teacher-token': getTeacherApiToken() }
+    })
+  } catch { /* best-effort */ }
+}
+
+// Seed localStorage from server if localStorage is empty
+async function syncClassesFromServer() {
+  const serverClasses = await fetchClassesFromServer()
+  if (serverClasses.length === 0) return
+
+  const local = getClasses()
+  const localIds = new Set(local.map(c => c.id))
+
+  for (const sc of serverClasses) {
+    if (!localIds.has(sc.id)) {
+      saveClass(sc)
+    }
+  }
+}
+
+// ── Action builders ───────────────────────────────────────────────────────────
 
 export function buildDashboardClassAndAuthActions({
   loadStudents,
@@ -54,9 +114,16 @@ export function buildDashboardClassAndAuthActions({
     setIsCloudRefreshBusy(true)
     try {
       await loadStudents()
+      // Restore classes from server if localStorage is missing any
+      await syncClassesFromServer()
       const latestSyncStatus = getCloudProfilesSyncStatus()
       setCloudSyncStatus(latestSyncStatus)
       setDashboardStatus(buildCloudSyncStatusMessage(latestSyncStatus))
+      const refreshedClasses = getClasses()
+      setClasses(refreshedClasses)
+      if (!addToClassId && refreshedClasses.length > 0) {
+        setAddToClassId(refreshedClasses[0].id)
+      }
     } finally {
       setIsCloudRefreshBusy(false)
     }
@@ -95,6 +162,8 @@ export function buildDashboardClassAndAuthActions({
     setClasses(updatedClasses)
     setAddToClassId(result.classRecord.id)
     void loadStudents()
+    // Sync new class to server
+    void pushClassToServer(result.classRecord)
   }
 
   const handleAddStudentsToClass = async () => {
@@ -125,6 +194,7 @@ export function buildDashboardClassAndAuthActions({
       setAddToClassId(updatedClasses[0]?.id || '')
     }
     setClassStatus('Klass borttagen.')
+    void deleteClassFromServer(classId)
   }
 
   const handleToggleClassFilter = (classId) => {

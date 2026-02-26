@@ -4,7 +4,11 @@ import {
 } from './progressionModes'
 
 const DAY_MS = 24 * 60 * 60 * 1000
-const KNOWN_OPERATION_TYPES = new Set(['addition', 'subtraction', 'multiplication', 'division'])
+const KNOWN_OPERATION_TYPES = new Set([
+  'addition', 'subtraction', 'multiplication', 'division',
+  'algebra_evaluate', 'algebra_simplify',
+  'arithmetic_expressions', 'fractions', 'percentage'
+])
 
 export function ensureDifficultyMeta(profile) {
   if (typeof profile.highestDifficulty !== 'number' || Number.isNaN(profile.highestDifficulty)) {
@@ -32,7 +36,18 @@ export function ensureDifficultyMeta(profile) {
       addition: global,
       subtraction: Math.max(1, global - 2),
       multiplication: Math.max(1, global - 3),
-      division: Math.max(3, global - 4)
+      division: Math.max(3, global - 4),
+      algebra_evaluate: 1,
+      algebra_simplify: 1,
+      arithmetic_expressions: 1,
+      fractions: 1,
+      percentage: 1
+    }
+  } else {
+    const abilities = profile.adaptive.operationAbilities
+    const extras = ['algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions', 'fractions', 'percentage']
+    for (const op of extras) {
+      if (typeof abilities[op] !== 'number') abilities[op] = 1
     }
   }
 }

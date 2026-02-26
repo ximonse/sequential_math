@@ -1,4 +1,5 @@
 import { selectNextProblem } from '../lib/difficultyAdapter'
+import { getOperationAbility } from '../lib/difficultyAdapterProfileHelpers'
 import { getDefaultDomainId, getDomain, normalizeProblemWithDomain } from '../domains/registry'
 
 function inferSkillFromProblem(problem) {
@@ -52,34 +53,30 @@ export function selectNextProblemForProfile(profile, options = {}) {
   const isExpressions = allowedTypes.length > 0 && allowedTypes.every(t => EXPRESSION_SKILLS.has(t))
   const isFractions = allowedTypes.length > 0 && allowedTypes.every(t => FRACTION_SKILLS.has(t))
 
+  function opLevel(skill) {
+    if (Number.isFinite(Number(options.forcedLevel))) return Number(options.forcedLevel)
+    return Math.max(1, Math.min(12, Math.round(getOperationAbility(profile, skill))))
+  }
+
   if (isAlgebra) {
     const algebraDomain = getDomain('algebra')
     if (algebraDomain && typeof algebraDomain.generate === 'function') {
       const skill = allowedTypes[0]
-      const forcedLevel = Number.isFinite(Number(options.forcedLevel))
-        ? Number(options.forcedLevel)
-        : Math.max(1, Math.min(12, Math.round(Number(profile?.currentDifficulty || 1))))
-      return algebraDomain.generate(skill, forcedLevel, options)
+      return algebraDomain.generate(skill, opLevel(skill), options)
     }
   }
 
   if (isExpressions) {
     const exprDomain = getDomain('arithmetic_expressions')
     if (exprDomain && typeof exprDomain.generate === 'function') {
-      const forcedLevel = Number.isFinite(Number(options.forcedLevel))
-        ? Number(options.forcedLevel)
-        : Math.max(1, Math.min(12, Math.round(Number(profile?.currentDifficulty || 1))))
-      return exprDomain.generate('arithmetic_expressions', forcedLevel, options)
+      return exprDomain.generate('arithmetic_expressions', opLevel('arithmetic_expressions'), options)
     }
   }
 
   if (isFractions) {
     const fracDomain = getDomain('fractions')
     if (fracDomain && typeof fracDomain.generate === 'function') {
-      const forcedLevel = Number.isFinite(Number(options.forcedLevel))
-        ? Number(options.forcedLevel)
-        : Math.max(1, Math.min(12, Math.round(Number(profile?.currentDifficulty || 1))))
-      return fracDomain.generate('fractions', forcedLevel, options)
+      return fracDomain.generate('fractions', opLevel('fractions'), options)
     }
   }
 
@@ -87,10 +84,7 @@ export function selectNextProblemForProfile(profile, options = {}) {
   if (isPercentage) {
     const pctDomain = getDomain('percentage')
     if (pctDomain && typeof pctDomain.generate === 'function') {
-      const forcedLevel = Number.isFinite(Number(options.forcedLevel))
-        ? Number(options.forcedLevel)
-        : Math.max(1, Math.min(12, Math.round(Number(profile?.currentDifficulty || 1))))
-      return pctDomain.generate('percentage', forcedLevel, options)
+      return pctDomain.generate('percentage', opLevel('percentage'), options)
     }
   }
 

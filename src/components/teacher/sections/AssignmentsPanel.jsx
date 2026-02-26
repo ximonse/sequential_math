@@ -44,6 +44,36 @@ export default function AssignmentsPanel({
         >
           Nytt: Kombination
         </button>
+        <button
+          onClick={() => onCreatePreset('fractions')}
+          className="px-3 py-2 bg-lime-600 hover:bg-lime-700 text-white rounded text-sm"
+        >
+          Nytt: Bråk
+        </button>
+        <button
+          onClick={() => onCreatePreset('percentage')}
+          className="px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded text-sm"
+        >
+          Nytt: Procent
+        </button>
+        <button
+          onClick={() => onCreatePreset('arithmetic_expressions')}
+          className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded text-sm"
+        >
+          Nytt: Prioriteringsregler
+        </button>
+        <button
+          onClick={() => onCreatePreset('algebra_evaluate')}
+          className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm"
+        >
+          Nytt: Algebra (räkna ut)
+        </button>
+        <button
+          onClick={() => onCreatePreset('algebra_simplify')}
+          className="px-3 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded text-sm"
+        >
+          Nytt: Algebra (förenkla)
+        </button>
       </div>
 
       {assignments.length === 0 ? (

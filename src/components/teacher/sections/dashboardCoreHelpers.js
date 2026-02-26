@@ -185,6 +185,22 @@ export function getPresetConfig(presetKey) {
     }
   }
 
+  if (presetKey === 'algebra_evaluate') {
+    return { title: 'Algebra – räkna ut nivå 1-8', problemTypes: ['algebra_evaluate'], minLevel: 1, maxLevel: 8, targetCount: 15 }
+  }
+  if (presetKey === 'algebra_simplify') {
+    return { title: 'Algebra – förenkla nivå 1-8', problemTypes: ['algebra_simplify'], minLevel: 1, maxLevel: 8, targetCount: 15 }
+  }
+  if (presetKey === 'arithmetic_expressions') {
+    return { title: 'Prioriteringsregler nivå 1-8', problemTypes: ['arithmetic_expressions'], minLevel: 1, maxLevel: 8, targetCount: 15 }
+  }
+  if (presetKey === 'fractions') {
+    return { title: 'Bråk nivå 1-8', problemTypes: ['fractions'], minLevel: 1, maxLevel: 8, targetCount: 15 }
+  }
+  if (presetKey === 'percentage') {
+    return { title: 'Procent nivå 1-8', problemTypes: ['percentage'], minLevel: 1, maxLevel: 8, targetCount: 15 }
+  }
+
   return {
     title: 'Kombination nivå 2-10',
     problemTypes: ['addition', 'subtraction', 'multiplication', 'division'],

@@ -1,7 +1,11 @@
 const ASSIGNMENTS_KEY = 'mathapp_assignments'
 const ACTIVE_ASSIGNMENT_KEY = 'mathapp_active_assignment'
 const ASSIGNMENT_PAYLOAD_VERSION = 1
-const KNOWN_OPERATION_TYPES = new Set(['addition', 'subtraction', 'multiplication', 'division'])
+const KNOWN_OPERATION_TYPES = new Set([
+  'addition', 'subtraction', 'multiplication', 'division',
+  'algebra_evaluate', 'algebra_simplify',
+  'arithmetic_expressions', 'fractions', 'percentage'
+])
 
 function readAssignments() {
   const raw = localStorage.getItem(ASSIGNMENTS_KEY)

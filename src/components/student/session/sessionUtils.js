@@ -15,7 +15,8 @@ export function getSessionRules(
   solvedCount,
   tableSet = [],
   progressionMode = 'challenge',
-  fixedLevel = null
+  fixedLevel = null,
+  freeOps = []
 ) {
   const rules = { progressionMode: normalizeProgressionMode(progressionMode) }
 
@@ -61,6 +62,11 @@ export function getSessionRules(
     rules.forcedType = warmup.operation
     rules.forceReason = 'operation_mode_warmup'
     rules.forceBucket = solvedCount === 0 ? 'very_easy' : 'easy'
+  }
+
+  if (!rules.allowedTypes && Array.isArray(freeOps) && freeOps.length > 0) {
+    const picked = freeOps[Math.floor(Math.random() * freeOps.length)]
+    rules.allowedTypes = [picked]
   }
 
   return rules

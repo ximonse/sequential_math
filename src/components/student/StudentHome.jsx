@@ -297,7 +297,8 @@ function StudentHome() {
     incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
     saveProfile(profile)
     navigate(buildPracticePath(studentId, {
-      progressionMode: selectedProgressionMode
+      progressionMode: selectedProgressionMode,
+      ops: operationKeys
     }))
   }
 

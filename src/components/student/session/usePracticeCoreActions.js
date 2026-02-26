@@ -65,7 +65,8 @@ export function usePracticeCoreActions({
   setTableMilestone,
   setAdvancePrompt,
   setLastBreakPromptAt,
-  setDailyLevelStreakMilestone
+  setDailyLevelStreakMilestone,
+  freeOps = []
 }) {
   const goToNextProblem = useCallback(() => {
     if (!profile) return
@@ -113,7 +114,8 @@ export function usePracticeCoreActions({
       completedThisSession,
       tableSet,
       progressionMode,
-      fixedPracticeLevel
+      fixedPracticeLevel,
+      freeOps
     )
     const nextProblem = safeSelectProblem(profile, rules)
     if (!nextProblem) return

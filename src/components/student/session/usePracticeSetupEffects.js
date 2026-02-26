@@ -64,7 +64,8 @@ export function usePracticeSetupEffects({
   setNcmRemainingCount,
   setNcmCompletedSession,
   completedThisSession,
-  safeSelectProblem
+  safeSelectProblem,
+  freeOps = []
 }) {
   useEffect(() => {
     if (!isStudentSessionActive(studentId)) {
@@ -281,7 +282,8 @@ export function usePracticeSetupEffects({
         completedThisSession,
         tableSet,
         progressionMode,
-        fixedPracticeLevel
+        fixedPracticeLevel,
+        freeOps
       )
       const problem = safeSelectProblem(profile, rules)
       if (!problem) return

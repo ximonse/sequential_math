@@ -82,6 +82,10 @@ function StudentSession() {
   const progressionMode = normalizeProgressionMode(searchParams.get('pace'))
   const fixedPracticeLevel = parsePracticeLevel(searchParams.get('level'))
   const tableSet = useMemo(() => parseTableSet(searchParams.get('tables')), [searchParams])
+  const freeOps = useMemo(() => {
+    const raw = searchParams.get('ops')
+    return raw ? raw.split(',').filter(Boolean) : []
+  }, [searchParams])
   const isTableDrill = tableSet.length > 0
   const isLevelFocusMode = !isTableDrill
     && mode
@@ -151,7 +155,8 @@ function StudentSession() {
     setNcmRemainingCount,
     setNcmCompletedSession,
     completedThisSession,
-    safeSelectProblem
+    safeSelectProblem,
+    freeOps
   })
 
   const {
@@ -209,7 +214,8 @@ function StudentSession() {
     setTableMilestone,
     setAdvancePrompt,
     setLastBreakPromptAt,
-    setDailyLevelStreakMilestone
+    setDailyLevelStreakMilestone,
+    freeOps
   })
 
   usePracticeUiEffects({

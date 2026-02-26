@@ -100,6 +100,9 @@ export function buildPracticePath(studentId, options = {}) {
   if (Number.isInteger(level) && level >= 1 && level <= 12) {
     params.set('level', String(level))
   }
+  if (Array.isArray(options.ops) && options.ops.length > 0) {
+    params.set('ops', options.ops.join(','))
+  }
   const query = params.toString()
   return query
     ? `/student/${studentId}/practice?${query}`

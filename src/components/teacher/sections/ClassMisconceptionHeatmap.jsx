@@ -3,10 +3,11 @@ import { inferOperationFromProblemType } from '../../../lib/mathUtils'
 import { getOperationLabel } from '../../../lib/operations'
 
 const LEVELS = Array.from({ length: 12 }, (_, i) => i + 1)
-const OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division', 'arithmetic_expressions', 'fractions']
+const OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division', 'algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions', 'fractions']
 
 const OP_SYMBOL = {
   addition: '+', subtraction: '−', multiplication: '×', division: '÷',
+  algebra_evaluate: 'ax', algebra_simplify: '→',
   arithmetic_expressions: '( )', fractions: '/'
 }
 
@@ -15,6 +16,8 @@ const OPERATION_ACCENT = {
   subtraction:            'bg-violet-500',
   multiplication:         'bg-orange-500',
   division:               'bg-teal-500',
+  algebra_evaluate:       'bg-indigo-500',
+  algebra_simplify:       'bg-purple-500',
   arithmetic_expressions: 'bg-rose-500',
   fractions:              'bg-lime-600'
 }

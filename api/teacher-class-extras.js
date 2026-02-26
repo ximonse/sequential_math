@@ -23,6 +23,11 @@ export default async function handler(req, res) {
 
   try {
     await kv.set(`class_extras:${classId}`, { enabledExtras: extras })
+    // Also update the class record so GET /api/teacher-classes returns fresh extras
+    const classRecord = await kv.get(`class:${classId}`)
+    if (classRecord) {
+      await kv.set(`class:${classId}`, { ...classRecord, enabledExtras: extras })
+    }
     return res.status(200).json({ ok: true })
   } catch {
     return res.status(500).json({ error: 'Failed to save' })

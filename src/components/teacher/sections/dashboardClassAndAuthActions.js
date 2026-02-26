@@ -59,17 +59,28 @@ async function deleteClassFromServer(classId) {
   } catch { /* best-effort */ }
 }
 
-// Seed localStorage from server if localStorage is empty
+// Bidirectional sync: push local → server, pull server → local
 async function syncClassesFromServer() {
-  const serverClasses = await fetchClassesFromServer()
-  if (serverClasses.length === 0) return
-
   const local = getClasses()
-  const localIds = new Set(local.map(c => c.id))
+  const serverClasses = await fetchClassesFromServer()
 
+  const serverIds = new Set(serverClasses.map(c => c.id))
+
+  // Push local classes that aren't on server yet
+  for (const lc of local) {
+    if (!serverIds.has(lc.id)) {
+      void pushClassToServer(lc)
+    }
+  }
+
+  // Pull server classes into localStorage (add missing, update enabledExtras)
+  const localMap = new Map(local.map(c => [c.id, c]))
   for (const sc of serverClasses) {
-    if (!localIds.has(sc.id)) {
+    const existing = localMap.get(sc.id)
+    if (!existing) {
       saveClass(sc)
+    } else if (JSON.stringify(existing.enabledExtras) !== JSON.stringify(sc.enabledExtras)) {
+      saveClass({ ...existing, enabledExtras: sc.enabledExtras ?? [] })
     }
   }
 }

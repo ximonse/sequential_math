@@ -45,17 +45,23 @@ export default function StudentHomeTrainingOptionsCard({
           Fri träning ({getProgressionModeLabel(selectedProgressionMode)})
         </button>
         {operationKeys.map(operation => {
-          const isExtra = !STANDARD_OPERATIONS.includes(operation)
-          const extraClass = isExtra
-            ? 'bg-violet-50 border border-violet-300 hover:bg-violet-100 text-violet-800'
-            : selectedProgressionMode === PROGRESSION_MODE_STEADY
-              ? 'bg-green-50 border border-green-300 hover:bg-green-100 text-green-800'
-              : 'bg-white border border-gray-300 hover:bg-gray-50 text-gray-700'
+          let btnClass
+          if (operation === 'algebra_evaluate' || operation === 'algebra_simplify') {
+            btnClass = 'bg-indigo-50 border border-indigo-300 hover:bg-indigo-100 text-indigo-800'
+          } else if (operation === 'fractions') {
+            btnClass = 'bg-lime-50 border border-lime-300 hover:bg-lime-100 text-lime-800'
+          } else if (operation === 'arithmetic_expressions') {
+            btnClass = 'bg-rose-50 border border-rose-300 hover:bg-rose-100 text-rose-800'
+          } else if (selectedProgressionMode === PROGRESSION_MODE_STEADY) {
+            btnClass = 'bg-green-50 border border-green-300 hover:bg-green-100 text-green-800'
+          } else {
+            btnClass = 'bg-white border border-gray-300 hover:bg-gray-50 text-gray-700'
+          }
           return (
             <button
               key={operation}
               onClick={() => onStartOperationPractice(operation)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium ${extraClass}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${btnClass}`}
             >
               {getOperationLabel(operation)} ({getProgressionModeLabel(selectedProgressionMode)})
             </button>

@@ -10,7 +10,7 @@ import {
   getProblemLevel
 } from './dashboardCoreHelpers'
 
-const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
+const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division', 'algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions', 'fractions']
 
 export function summarizeAssignmentAdherence(problems, assignment) {
   const attempts = Array.isArray(problems) ? problems.length : 0

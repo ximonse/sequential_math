@@ -99,6 +99,7 @@ export function generatePercentageProblem(skill, level) {
     values: { text: tpl.text },
     answer: { type: 'number', correct: tpl.answer },
     result: tpl.answer,
+    metadata: { promptText: tpl.text },
     generated_at: Date.now()
   }
 }

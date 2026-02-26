@@ -278,13 +278,13 @@ function StudentHome() {
     recordTelemetryEvent(profile, 'practice_launch_level_focus', {
       operation,
       level,
-      progressionMode: selectedProgressionMode
+      progressionMode: PROGRESSION_MODE_STEADY
     }, now)
     incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
     saveProfile(profile)
     navigate(buildPracticePath(studentId, {
       mode: operation,
-      progressionMode: selectedProgressionMode,
+      progressionMode: PROGRESSION_MODE_STEADY,
       level
     }))
   }, [profile, navigate, selectedProgressionMode, studentId])

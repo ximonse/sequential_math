@@ -94,6 +94,7 @@ export function generatePercentageProblem(skill, level) {
     skill: 'percentage',
     type: 'percentage',
     level: idx + 1,
+    difficulty: { conceptual_level: idx + 1 },
     display: { type: 'expression', text: tpl.text },
     values: { text: tpl.text },
     answer: { type: 'number', correct: tpl.answer },

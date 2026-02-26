@@ -8,5 +8,5 @@ export function evaluateFractionsProblem(problem, studentAnswer) {
   const parsed = parseFraction(studentAnswer)
   const correct = parsed !== null && fractionsEqual(parsed, { num: correctNum, den: correctDen })
 
-  return { correct, correctAnswer: correctStr }
+  return { correct, correctAnswer: correctStr, isReasonable: parsed !== null }
 }

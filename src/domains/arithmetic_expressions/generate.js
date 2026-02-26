@@ -145,6 +145,7 @@ export function generateArithmeticExpressionsProblem(skill, level, _options = {}
     domain: 'arithmetic_expressions',
     skill: 'arithmetic_expressions',
     level: lvl,
+    difficulty: { conceptual_level: lvl },
     display: { text: result.text },
     answer: { type: 'number', value: result.answer },
     metadata: { template: `level_${lvl}` }

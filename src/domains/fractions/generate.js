@@ -197,6 +197,7 @@ export function generateFractionsProblem(skill, level, _options = {}) {
     domain: 'fractions',
     skill: 'fractions',
     level: lvl,
+    difficulty: { conceptual_level: lvl },
     display: { text: result.text },
     answer: {
       type: 'fraction',

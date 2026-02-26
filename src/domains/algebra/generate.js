@@ -179,6 +179,7 @@ export function generateAlgebraProblem(skill, level) {
       skill: 'algebra_simplify',
       type: 'algebra_simplify',
       level: idx + 1,
+      difficulty: { conceptual_level: idx + 1 },
       display: { type: 'expression', text: `Förenkla: ${tpl.expr}` },
       values: { expression: tpl.expr },
       answer: { type: 'expression', correct: tpl.correct, alternatives: tpl.alternatives },
@@ -194,6 +195,7 @@ export function generateAlgebraProblem(skill, level) {
     skill: 'algebra_evaluate',
     type: 'algebra_evaluate',
     level: idx + 1,
+    difficulty: { conceptual_level: idx + 1 },
     display: {
       type: 'expression',
       text: `Beräkna värdet av ${tpl.expr} när ${tpl.varDisplay}`

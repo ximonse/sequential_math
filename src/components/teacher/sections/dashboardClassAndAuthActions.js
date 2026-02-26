@@ -15,7 +15,7 @@ import {
   getAssignments
 } from '../../../lib/assignments'
 import { logoutTeacher } from '../../../lib/teacherAuth'
-import { saveClass } from '../../../lib/storageClassApi'
+import { saveClass } from '../../../lib/storage'
 
 // ── Server sync helpers ───────────────────────────────────────────────────────
 

@@ -54,10 +54,10 @@ const EVALUATE_TEMPLATES = [
     const n = rand(3, 8), a = rand(4, 6), c = rand(2, 8)
     return { expr: `${a}n + ${c}`, vars: { n }, result: a * n + c, varDisplay: `n = ${n}` }
   },
-  // Level 9: n² (squares)
+  // Level 9: an − c (larger numbers)
   () => {
-    const n = rand(2, 6)
-    return { expr: 'n²', vars: { n }, result: n * n, varDisplay: `n = ${n}` }
+    const n = rand(4, 9), a = rand(3, 6), c = rand(1, 5)
+    return { expr: `${a}n − ${c}`, vars: { n }, result: a * n - c, varDisplay: `n = ${n}` }
   },
   // Level 10: am + bn (two variables)
   () => {
@@ -69,15 +69,25 @@ const EVALUATE_TEMPLATES = [
       varDisplay: `m = ${m}, n = ${n}`
     }
   },
-  // Level 11: n² + c
+  // Level 11: am − bn (two variables, subtraction)
   () => {
-    const n = rand(3, 7), c = rand(1, 6)
-    return { expr: `n² + ${c}`, vars: { n }, result: n * n + c, varDisplay: `n = ${n}` }
+    const m = rand(3, 7), n = rand(2, 5), a = rand(3, 5), b = rand(2, 3)
+    return {
+      expr: `${a}m − ${b}n`,
+      vars: { m, n },
+      result: a * m - b * n,
+      varDisplay: `m = ${m}, n = ${n}`
+    }
   },
-  // Level 12: 2n² − n
+  // Level 12: am + bn + c (two variables with constant)
   () => {
-    const n = rand(2, 5)
-    return { expr: '2n² − n', vars: { n }, result: 2 * n * n - n, varDisplay: `n = ${n}` }
+    const m = rand(2, 5), n = rand(2, 5), a = rand(2, 4), b = rand(2, 3), c = rand(1, 6)
+    return {
+      expr: `${a}m + ${b}n + ${c}`,
+      vars: { m, n },
+      result: a * m + b * n + c,
+      varDisplay: `m = ${m}, n = ${n}`
+    }
   }
 ]
 

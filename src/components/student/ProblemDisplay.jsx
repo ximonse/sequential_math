@@ -18,7 +18,7 @@ function ProblemDisplay({
 }) {
   if (!problem) return null
 
-  const { values, type, result } = problem
+  const { values = {}, type, result } = problem
   const { a, b } = values
   const isAnswering = !feedback
   const promptText = String(problem?.metadata?.promptText || '').trim()

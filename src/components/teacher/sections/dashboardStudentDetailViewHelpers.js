@@ -19,6 +19,7 @@ export function buildTeacherStudentViewData(student) {
   if (!student) return null
   const tableSticky = buildStickyTableStatusForStudent(student)
   const tablePerformanceByTable = buildTablePerformanceByTable(student)
+  const tableRecencyByTable = buildTableRecencyByTable(student)
   const operationMasteryBoards = buildOperationMasteryBoardsForTeacher(student)
   const levelErrorRows = buildLevelErrorRowsForTeacher(student)
   const ncmDetail = buildNcmDetailForStudent(student)
@@ -26,6 +27,7 @@ export function buildTeacherStudentViewData(student) {
   return {
     tableSticky,
     tablePerformanceByTable,
+    tableRecencyByTable,
     operationMasteryBoards,
     levelErrorRows,
     ncmDetail
@@ -146,6 +148,27 @@ function buildTeacherLevelView(level, bucket = {}) {
       ? `Nivå ${level}: ${correct}/${attempts} rätt (${successPercent}%)`
       : `Nivå ${level}: ingen träning ännu`
   }
+}
+
+function buildTableRecencyByTable(student) {
+  const source = getTableProblemSourceForStudent(student)
+  const output = Object.fromEntries(
+    TABLES.map(table => [table, { lastTrainedAt: null, attemptsTotal: 0, correctTotal: 0 }])
+  )
+
+  for (const problem of source) {
+    const table = inferTableFromProblem(problem)
+    if (!table || !Object.prototype.hasOwnProperty.call(output, table)) continue
+    const target = output[table]
+    target.attemptsTotal += 1
+    if (problem.correct) target.correctTotal += 1
+    const ts = Number(problem?.timestamp || 0)
+    if (ts > 0 && (target.lastTrainedAt === null || ts > target.lastTrainedAt)) {
+      target.lastTrainedAt = ts
+    }
+  }
+
+  return output
 }
 
 function buildTablePerformanceByTable(student) {

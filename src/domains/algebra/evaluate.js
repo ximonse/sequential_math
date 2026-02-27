@@ -58,6 +58,7 @@ export function evaluateAlgebraProblem(problem, studentAnswer) {
       || alternatives.some(alt => expressionEquals(alt, studentAnswer))
     return {
       correct: isCorrect,
+      correctAnswer: correct,
       studentAnswer: String(studentAnswer || ''),
       isReasonable: true,
       absError: null,
@@ -74,6 +75,7 @@ export function evaluateAlgebraProblem(problem, studentAnswer) {
 
   return {
     correct,
+    correctAnswer: String(expected),
     studentAnswer: numericAnswer,
     isReasonable: Number.isFinite(numericAnswer),
     absError: Number.isFinite(numericAnswer) ? Math.abs(numericAnswer - expected) : null,

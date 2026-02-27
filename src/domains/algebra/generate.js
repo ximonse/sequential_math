@@ -24,37 +24,37 @@ const EVALUATE_TEMPLATES = [
     const x = rand(2, 5), c = rand(x + 1, x + 8)
     return { expr: `${c} − x`, vars: { x }, result: c - x, varDisplay: `x = ${x}` }
   },
-  // Level 3: 2x
-  () => {
-    const x = rand(3, 9)
-    return { expr: '2x', vars: { x }, result: 2 * x, varDisplay: `x = ${x}` }
-  },
-  // Level 4: 3x
-  () => {
-    const x = rand(2, 7)
-    return { expr: '3x', vars: { x }, result: 3 * x, varDisplay: `x = ${x}` }
-  },
-  // Level 5: 2x + c
-  () => {
-    const x = rand(2, 6), c = rand(1, 5)
-    return { expr: `2x + ${c}`, vars: { x }, result: 2 * x + c, varDisplay: `x = ${x}` }
-  },
-  // Level 6: 3x − c
-  () => {
-    const x = rand(3, 7), c = rand(1, 4)
-    return { expr: `3x − ${c}`, vars: { x }, result: 3 * x - c, varDisplay: `x = ${x}` }
-  },
-  // Level 7: x + x
+  // Level 3: x + x (bridge: shows that adding a variable to itself = doubling)
   () => {
     const x = rand(4, 10)
     return { expr: 'x + x', vars: { x }, result: 2 * x, varDisplay: `x = ${x}` }
   },
-  // Level 8: ax + c (larger coefficients)
+  // Level 4: 2x (formalizes the x + x concept)
+  () => {
+    const x = rand(3, 9)
+    return { expr: '2x', vars: { x }, result: 2 * x, varDisplay: `x = ${x}` }
+  },
+  // Level 5: 3x
+  () => {
+    const x = rand(2, 7)
+    return { expr: '3x', vars: { x }, result: 3 * x, varDisplay: `x = ${x}` }
+  },
+  // Level 6: 2x + c
+  () => {
+    const x = rand(2, 6), c = rand(1, 5)
+    return { expr: `2x + ${c}`, vars: { x }, result: 2 * x + c, varDisplay: `x = ${x}` }
+  },
+  // Level 7: 3x − c
+  () => {
+    const x = rand(3, 7), c = rand(1, 4)
+    return { expr: `3x − ${c}`, vars: { x }, result: 3 * x - c, varDisplay: `x = ${x}` }
+  },
+  // Level 8: ax + c (larger coefficients, a = 4–6)
   () => {
     const x = rand(3, 8), a = rand(4, 6), c = rand(2, 8)
     return { expr: `${a}x + ${c}`, vars: { x }, result: a * x + c, varDisplay: `x = ${x}` }
   },
-  // Level 9: ax − c
+  // Level 9: ax − c (larger coefficients)
   () => {
     const x = rand(4, 9), a = rand(3, 6), c = rand(1, 5)
     return { expr: `${a}x − ${c}`, vars: { x }, result: a * x - c, varDisplay: `x = ${x}` }
@@ -93,38 +93,46 @@ const EVALUATE_TEMPLATES = [
 
 // ── Simplify problems ────────────────────────────────────────────────────────
 
+function pickVar() {
+  return pick(['x', 'y', 'a', 'b'])
+}
+
 const SIMPLIFY_TEMPLATES = [
-  // Level 1: n + n → 2n
-  () => ({ expr: 'n + n', correct: '2n', alternatives: [] }),
-  // Level 2: x + x + x → 3x
-  () => ({ expr: 'x + x + x', correct: '3x', alternatives: [] }),
-  // Level 3: 2x + x → 3x
-  () => ({ expr: '2x + x', correct: '3x', alternatives: [] }),
-  // Level 4: ax + bx → cx
+  // Level 1: v + v → 2v
+  () => { const v = pickVar(); return { expr: `${v} + ${v}`, correct: `2${v}`, alternatives: [] } },
+  // Level 2: v + v + v → 3v  OR  2v + v → 3v (merged, random)
   () => {
-    const a = rand(2, 5), b = rand(2, 4)
-    return { expr: `${a}x + ${b}x`, correct: `${a + b}x`, alternatives: [] }
+    const v = pickVar()
+    if (Math.random() < 0.5) {
+      return { expr: `${v} + ${v} + ${v}`, correct: `3${v}`, alternatives: [] }
+    }
+    return { expr: `2${v} + ${v}`, correct: `3${v}`, alternatives: [] }
   },
-  // Level 5: x + c + x → 2x + c
+  // Level 3: cv + dv → (c+d)v
   () => {
-    const c = rand(2, 8)
-    return { expr: `x + ${c} + x`, correct: `2x + ${c}`, alternatives: [] }
+    const v = pickVar(), c = rand(2, 5), d = rand(2, 4)
+    return { expr: `${c}${v} + ${d}${v}`, correct: `${c + d}${v}`, alternatives: [] }
   },
-  // Level 6: ax + c + bx → (a+b)x + c
+  // Level 4: v + k + v → 2v + k (introduces constants)
   () => {
-    const a = rand(2, 4), b = rand(1, 3), c = rand(1, 7)
-    return { expr: `${a}x + ${c} + ${b}x`, correct: `${a + b}x + ${c}`, alternatives: [] }
+    const v = pickVar(), k = rand(2, 8)
+    return { expr: `${v} + ${k} + ${v}`, correct: `2${v} + ${k}`, alternatives: [] }
   },
-  // Level 7: ax + c + bx + d → (a+b)x + (c+d)
+  // Level 5: cv + k + dv → (c+d)v + k
   () => {
-    const a = rand(2, 4), b = rand(1, 3), c = rand(2, 6), d = rand(1, 5)
+    const v = pickVar(), c = rand(2, 4), d = rand(1, 3), k = rand(1, 7)
+    return { expr: `${c}${v} + ${k} + ${d}${v}`, correct: `${c + d}${v} + ${k}`, alternatives: [] }
+  },
+  // Level 6: cv + k + dv + m → (c+d)v + (k+m)
+  () => {
+    const v = pickVar(), c = rand(2, 4), d = rand(1, 3), k = rand(2, 6), m = rand(1, 5)
     return {
-      expr: `${a}x + ${c} + ${b}x + ${d}`,
-      correct: `${a + b}x + ${c + d}`,
+      expr: `${c}${v} + ${k} + ${d}${v} + ${m}`,
+      correct: `${c + d}${v} + ${k + m}`,
       alternatives: []
     }
   },
-  // Level 8: ax + by + cx → (a+c)x + by
+  // Level 7: ax + by + cx → (a+c)x + by (two variables)
   () => {
     const a = rand(2, 4), b = rand(2, 3), c = rand(1, 3)
     return {
@@ -133,7 +141,7 @@ const SIMPLIFY_TEMPLATES = [
       alternatives: []
     }
   },
-  // Level 9: ax + by + cx + dy → (a+c)x + (b+d)y
+  // Level 8: ax + by + cx + dy → (a+c)x + (b+d)y (full two-variable)
   () => {
     const a = rand(2, 3), b = rand(2, 3), c = rand(1, 2), d = rand(1, 2)
     return {
@@ -142,26 +150,31 @@ const SIMPLIFY_TEMPLATES = [
       alternatives: []
     }
   },
-  // Level 10: a(x + b) → ax + ab  (distribution)
+  // Level 9: 2(v + c) → 2v + 2c (gentle bridge to distribution, always factor 2)
   () => {
-    const a = rand(2, 4), b = rand(2, 5)
-    return { expr: `${a}(x + ${b})`, correct: `${a}x + ${a * b}`, alternatives: [] }
+    const v = pickVar(), c = rand(1, 5)
+    return { expr: `2(${v} + ${c})`, correct: `2${v} + ${2 * c}`, alternatives: [] }
   },
-  // Level 11: a(x + b) + cx → (a+c)x + ab
+  // Level 10: coef(v + offset) → coef*v + coef*offset  (distribution, larger coefficients)
   () => {
-    const a = rand(2, 3), b = rand(2, 4), c = rand(1, 3)
+    const v = pickVar(), coef = rand(3, 5), offset = rand(2, 5)
+    return { expr: `${coef}(${v} + ${offset})`, correct: `${coef}${v} + ${coef * offset}`, alternatives: [] }
+  },
+  // Level 11: coef(v + offset) + extra*v → (coef+extra)v + coef*offset
+  () => {
+    const v = pickVar(), coef = rand(2, 3), offset = rand(2, 4), extra = rand(1, 3)
     return {
-      expr: `${a}(x + ${b}) + ${c}x`,
-      correct: `${a + c}x + ${a * b}`,
+      expr: `${coef}(${v} + ${offset}) + ${extra}${v}`,
+      correct: `${coef + extra}${v} + ${coef * offset}`,
       alternatives: []
     }
   },
-  // Level 12: a(x + b) + c(x + d) → (a+c)x + (ab+cd)
+  // Level 12: p(v + q) + r(v + s) → (p+r)v + (p*q+r*s)
   () => {
-    const a = rand(2, 3), b = rand(1, 3), c = rand(1, 2), d = rand(1, 3)
+    const v = pickVar(), p = rand(2, 3), q = rand(1, 3), r = rand(1, 2), s = rand(1, 3)
     return {
-      expr: `${a}(x + ${b}) + ${c}(x + ${d})`,
-      correct: `${a + c}x + ${a * b + c * d}`,
+      expr: `${p}(${v} + ${q}) + ${r}(${v} + ${s})`,
+      correct: `${p + r}${v} + ${p * q + r * s}`,
       alternatives: []
     }
   }

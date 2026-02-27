@@ -7,54 +7,54 @@ function pick(arr) {
 }
 
 const TEMPLATES = [
-  // Level 1: 50% av X
-  () => {
-    const x = 2 * rand(10, 100)
-    return { text: `Vad är 50% av ${x}?`, answer: x / 2 }
-  },
-  // Level 2: 25% av X
-  () => {
-    const x = 4 * rand(10, 50)
-    return { text: `Vad är 25% av ${x}?`, answer: x / 4 }
-  },
-  // Level 3: 10% av X
-  () => {
-    const x = 10 * rand(10, 50)
-    return { text: `Vad är 10% av ${x}?`, answer: x / 10 }
-  },
-  // Level 4: 75% av X
-  () => {
-    const x = 4 * rand(10, 50)
-    return { text: `Vad är 75% av ${x}?`, answer: 3 * x / 4 }
-  },
-  // Level 5: 20% av X
-  () => {
-    const x = 5 * rand(10, 60)
-    return { text: `Vad är 20% av ${x}?`, answer: x / 5 }
-  },
-  // Level 6: 5% av X
-  () => {
-    const x = 20 * rand(5, 25)
-    return { text: `Vad är 5% av ${x}?`, answer: x / 20 }
-  },
-  // Level 7: p% av 100
+  // Level 1: p% av 100 → answer is just p (intro: "procent = per hundra")
   () => {
     const p = pick([10, 20, 25, 30, 40, 50, 60, 70, 75, 80])
     return { text: `Vad är ${p}% av 100?`, answer: p }
   },
-  // Level 8: p% av X (p ∈ {10,25,50}, integer result)
+  // Level 2: 50% av X → halvera
+  () => {
+    const x = 2 * rand(10, 100)
+    return { text: `Vad är 50% av ${x}?`, answer: x / 2 }
+  },
+  // Level 3: 10% av X → dividera med 10
+  () => {
+    const x = 10 * rand(10, 50)
+    return { text: `Vad är 10% av ${x}?`, answer: x / 10 }
+  },
+  // Level 4: 25% av X → en fjärdedel
+  () => {
+    const x = 4 * rand(10, 50)
+    return { text: `Vad är 25% av ${x}?`, answer: x / 4 }
+  },
+  // Level 5: 75% av X → tre fjärdedelar (bygger på 25%)
+  () => {
+    const x = 4 * rand(10, 50)
+    return { text: `Vad är 75% av ${x}?`, answer: 3 * x / 4 }
+  },
+  // Level 6: 20% av X → en femtedel
+  () => {
+    const x = 5 * rand(10, 60)
+    return { text: `Vad är 20% av ${x}?`, answer: x / 5 }
+  },
+  // Level 7: 5% av X → hälften av 10%
+  () => {
+    const x = 20 * rand(5, 25)
+    return { text: `Vad är 5% av ${x}?`, answer: x / 20 }
+  },
+  // Level 8: p% av X (blandade enkla procentsatser, heltalssvar)
   () => {
     const p = pick([10, 25, 50])
     const x = (100 / p) * rand(2, 20)
     return { text: `Vad är ${p}% av ${x}?`, answer: p * x / 100 }
   },
-  // Level 9: p% av X (p ∈ {5,10,20,25,50}, larger X)
+  // Level 9: p% av X (bredare mix, större X)
   () => {
     const p = pick([5, 10, 20, 25, 50])
     const x = (100 / p) * rand(5, 40)
     return { text: `Beräkna ${p}% av ${x}.`, answer: p * x / 100 }
   },
-  // Level 10: Rabatt — vad kostar X efter p% rabatt?
+  // Level 10: Rabatt — vad kostar varan efter rabatt?
   () => {
     const p = pick([10, 20, 25, 50])
     const x = (100 / p) * rand(5, 40)
@@ -64,7 +64,7 @@ const TEMPLATES = [
       answer: x - discount
     }
   },
-  // Level 11: p% ökning
+  // Level 11: Prisökning
   () => {
     const p = pick([10, 20, 25, 50])
     const x = (100 / p) * rand(4, 20)
@@ -74,7 +74,7 @@ const TEMPLATES = [
       answer: x + increase
     }
   },
-  // Level 12: Hur många procent är X av Y?
+  // Level 12: Andel — hur många procent är X av Y?
   () => {
     const p = pick([10, 20, 25, 40, 50, 75, 80])
     const y = (100 / p) * rand(2, 10)

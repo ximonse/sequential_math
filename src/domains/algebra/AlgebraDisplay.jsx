@@ -120,8 +120,8 @@ function AlgebraKeypad({ onKey, onPrimaryAction, canSubmit, actionLabel, actionI
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-5 select-none">
       {showLetters && (
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          {['x', 'y', 'n'].map(letter => (
+        <div className="grid grid-cols-4 gap-2 mb-3">
+          {['x', 'y', 'a', 'b'].map(letter => (
             <button
               key={letter}
               type="button"

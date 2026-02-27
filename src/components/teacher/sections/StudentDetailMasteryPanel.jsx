@@ -1,3 +1,15 @@
+const DAY_MS = 24 * 60 * 60 * 1000
+
+function getTableRecencyColorClass(lastTrainedAt) {
+  if (!lastTrainedAt) return 'bg-black text-white'
+  const daysSince = (Date.now() - lastTrainedAt) / DAY_MS
+  if (daysSince < 1) return 'bg-green-700 text-white'
+  if (daysSince < 3) return 'bg-green-300 text-green-900'
+  if (daysSince < 5) return 'bg-yellow-300 text-yellow-900'
+  if (daysSince < 7) return 'bg-red-400 text-white'
+  return 'bg-gray-600 text-white'
+}
+
 export default function StudentDetailMasteryPanel({
   renderCollapseHeader,
   isCollapsed,
@@ -58,6 +70,38 @@ export default function StudentDetailMasteryPanel({
             </div>
             <p className="text-[10px] text-gray-500 mt-1.5">
               Mörkgrön ≤2s | Grön ≤3.5s | Ljusgrön ≤5s | Gul ≤8s | Orange &gt;8s | Röd &lt;50% rätt | Grå = inga försök
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="rounded border border-gray-200 p-3">
+        {renderCollapseHeader('tables-recency', <h3 className="text-sm font-semibold text-gray-800">Gångertabeller — antal rätt & senast tränad</h3>)}
+        {isCollapsed('tables-recency') ? null : (
+          <div className="mt-2">
+            <div className="flex gap-1.5">
+              {tables.map(table => {
+                const rec = detailStudentViewData.tableRecencyByTable[table]
+                const colorClass = getTableRecencyColorClass(rec.lastTrainedAt)
+                const countLabel = rec.attemptsTotal > 0 ? `${rec.correctTotal}/${rec.attemptsTotal}` : '-'
+                const daysSince = rec.lastTrainedAt ? Math.floor((Date.now() - rec.lastTrainedAt) / DAY_MS) : null
+                const tooltip = rec.attemptsTotal > 0
+                  ? `${table}:ans tabell — ${rec.correctTotal} rätt av ${rec.attemptsTotal} totalt, senast för ${daysSince} dag(ar) sedan`
+                  : `${table}:ans tabell — aldrig tränad`
+                return (
+                  <div
+                    key={`detail-table-recency-${table}`}
+                    title={tooltip}
+                    className={`flex-1 h-14 rounded flex flex-col items-center justify-center cursor-default ${colorClass}`}
+                  >
+                    <span className="text-[11px] font-bold">{table}</span>
+                    <span className="text-[9px] mt-0.5">{countLabel}</span>
+                  </div>
+                )
+              })}
+            </div>
+            <p className="text-[10px] text-gray-500 mt-1.5">
+              Mörkgrön = idag | Ljusgrön = 1–2 dagar | Gul = 3–4 dagar | Röd = 5–6 dagar | Grå = 7+ dagar | Svart = aldrig tränat
             </p>
           </div>
         )}

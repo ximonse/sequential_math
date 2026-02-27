@@ -58,9 +58,8 @@ export function selectNextProblemForProfile(profile, options = {}) {
     // Level-focus (Framsteg-klick) — exakt den nivån, ingen mix
     if (Number.isFinite(Number(options.forcedLevel))) return Number(options.forcedLevel)
 
-    const ability = getOperationAbility(profile, skill)
     const floor = getLowestUnmasteredLevel(profile, skill)
-    const target = Math.max(floor, Math.min(12, Math.round(ability)))
+    const target = floor
 
     // Distribution: ~70% target, ~15% lättare, ~15% svårare
     const roll = Math.random()

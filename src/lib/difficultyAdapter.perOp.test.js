@@ -91,23 +91,33 @@ describe('Per-operation difficulty: seeding', () => {
 })
 
 describe('Per-operation difficulty: selectNextProblem', () => {
-  it('uses per-operation ability for problem level', () => {
+  it('uses mastery-driven level for problem selection', () => {
     const profile = createProfile({ currentDifficulty: 8 })
-    // Set very different abilities
     profile.adaptive.operationAbilities = {
       addition: 10,
       subtraction: 3,
       multiplication: 5,
       division: 3
     }
-    // Enough history for stable generation
-    for (let i = 0; i < 20; i++) addCorrectProblem(profile, 'add_basic')
+    // Build mastery for addition levels 1-9 (5 correct each at 100%)
+    for (let level = 1; level <= 9; level++) {
+      for (let i = 0; i < 5; i++) {
+        profile.recentProblems.push({
+          problemType: 'add_basic',
+          correct: true,
+          isReasonable: true,
+          timestamp: Date.now(),
+          timeSpent: 5,
+          speedTimeSec: 5,
+          difficulty: { conceptual_level: level }
+        })
+      }
+    }
 
-    // Force addition with allowedTypes to control type selection
     const problem = selectNextProblem(profile, { allowedTypes: ['addition'] })
-    // Target level should be around 10 (addition ability), not 8 (global)
+    // Lowest unmastered level is 10 (1-9 mastered)
     const targetLevel = problem.metadata?.targetLevel
-    expect(targetLevel).toBeGreaterThanOrEqual(8)
+    expect(targetLevel).toBeGreaterThanOrEqual(9)
     expect(targetLevel).toBeLessThanOrEqual(12)
   })
 

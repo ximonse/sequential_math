@@ -168,10 +168,10 @@ export function selectNextProblem(profile, options = {}) {
   const operationAbility = getOperationAbility(profile, effectiveType)
   let roundedDifficulty = clampLevelToRange(Math.round(operationAbility), options.levelRange)
 
-  // Mastery-golv: hoppa inte tillbaka till mastrade nivåer i fri träning
+  // Mastery-styrd progression: träna på lägsta omastrade nivån
   if (!options.forcedLevel) {
     const floor = getLowestUnmasteredLevel(profile, effectiveType)
-    roundedDifficulty = Math.max(roundedDifficulty, floor)
+    roundedDifficulty = floor
   }
 
   if (effectiveType !== 'addition') {

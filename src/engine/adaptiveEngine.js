@@ -1,5 +1,6 @@
 import { selectNextProblem } from '../lib/difficultyAdapter'
 import { getOperationAbility } from '../lib/difficultyAdapterProfileHelpers'
+import { getLowestUnmasteredLevel } from '../lib/studentProfile'
 import { getDefaultDomainId, getDomain, normalizeProblemWithDomain } from '../domains/registry'
 
 function inferSkillFromProblem(problem) {
@@ -53,30 +54,40 @@ export function selectNextProblemForProfile(profile, options = {}) {
   const isExpressions = allowedTypes.length > 0 && allowedTypes.every(t => EXPRESSION_SKILLS.has(t))
   const isFractions = allowedTypes.length > 0 && allowedTypes.every(t => FRACTION_SKILLS.has(t))
 
-  function opLevel(skill) {
+  function sampleTrainingLevel(skill) {
+    // Level-focus (Framsteg-klick) — exakt den nivån, ingen mix
     if (Number.isFinite(Number(options.forcedLevel))) return Number(options.forcedLevel)
-    return Math.max(1, Math.min(12, Math.round(getOperationAbility(profile, skill))))
+
+    const ability = getOperationAbility(profile, skill)
+    const floor = getLowestUnmasteredLevel(profile, skill)
+    const target = Math.max(floor, Math.min(12, Math.round(ability)))
+
+    // Distribution: ~70% target, ~15% lättare, ~15% svårare
+    const roll = Math.random()
+    if (roll < 0.15 && target > 1) return target - 1   // kognitiv avlastning
+    if (roll < 0.30 && target < 12) return target + 1   // utmaning
+    return target                                         // kärnträning
   }
 
   if (isAlgebra) {
     const algebraDomain = getDomain('algebra')
     if (algebraDomain && typeof algebraDomain.generate === 'function') {
       const skill = allowedTypes[0]
-      return algebraDomain.generate(skill, opLevel(skill), options)
+      return algebraDomain.generate(skill, sampleTrainingLevel(skill), options)
     }
   }
 
   if (isExpressions) {
     const exprDomain = getDomain('arithmetic_expressions')
     if (exprDomain && typeof exprDomain.generate === 'function') {
-      return exprDomain.generate('arithmetic_expressions', opLevel('arithmetic_expressions'), options)
+      return exprDomain.generate('arithmetic_expressions', sampleTrainingLevel('arithmetic_expressions'), options)
     }
   }
 
   if (isFractions) {
     const fracDomain = getDomain('fractions')
     if (fracDomain && typeof fracDomain.generate === 'function') {
-      return fracDomain.generate('fractions', opLevel('fractions'), options)
+      return fracDomain.generate('fractions', sampleTrainingLevel('fractions'), options)
     }
   }
 
@@ -84,7 +95,7 @@ export function selectNextProblemForProfile(profile, options = {}) {
   if (isPercentage) {
     const pctDomain = getDomain('percentage')
     if (pctDomain && typeof pctDomain.generate === 'function') {
-      return pctDomain.generate('percentage', opLevel('percentage'), options)
+      return pctDomain.generate('percentage', sampleTrainingLevel('percentage'), options)
     }
   }
 

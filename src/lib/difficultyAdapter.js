@@ -3,7 +3,7 @@
  */
 
 import { generateByDifficultyWithOptions, generateMultiplicationTableDrillProblem } from './problemGenerator'
-import { getRecentSuccessRate, getConsecutiveErrors, getCurrentStreak } from './studentProfile'
+import { getRecentSuccessRate, getConsecutiveErrors, getCurrentStreak, getLowestUnmasteredLevel } from './studentProfile'
 import { inferOperationFromProblemType } from './mathUtils'
 import { filterNcmProblems, generateNcmProblemFromFilter } from './ncmProblemBank'
 import {
@@ -167,6 +167,12 @@ export function selectNextProblem(profile, options = {}) {
   const effectiveType = assignmentType || preferredType
   const operationAbility = getOperationAbility(profile, effectiveType)
   let roundedDifficulty = clampLevelToRange(Math.round(operationAbility), options.levelRange)
+
+  // Mastery-golv: hoppa inte tillbaka till mastrade nivåer i fri träning
+  if (!options.forcedLevel) {
+    const floor = getLowestUnmasteredLevel(profile, effectiveType)
+    roundedDifficulty = Math.max(roundedDifficulty, floor)
+  }
 
   if (effectiveType !== 'addition') {
     const opAttempts = profile.recentProblems.filter(

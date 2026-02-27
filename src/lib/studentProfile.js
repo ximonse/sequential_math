@@ -386,7 +386,7 @@ export function getCurrentStreak(profile) {
  */
 export function getMasteryOverview(profile, options = {}) {
   const minAttempts = options.minAttempts ?? 5
-  const minSuccessRate = options.minSuccessRate ?? 0.8
+  const minSuccessRate = options.minSuccessRate ?? 0.85
   const since = options.since ?? null
 
   const buckets = {}
@@ -432,4 +432,20 @@ export function getMasteryOverview(profile, options = {}) {
 export function getMasteryForOperation(profile, operation, options = {}) {
   const all = getMasteryOverview(profile, options)
   return all[operation] || []
+}
+
+/**
+ * Hitta lägsta nivå som INTE är mastrad (< minAttempts försök eller < 85% rätt).
+ * Används som "golv" i adaptiv träning — eleven hoppar inte förbi omastrade nivåer.
+ */
+export function getLowestUnmasteredLevel(profile, operation, maxLevel = 12) {
+  const mastered = getMasteryForOperation(profile, operation, {
+    minAttempts: 5,
+    minSuccessRate: 0.85
+  })
+  const masteredSet = new Set(mastered)
+  for (let level = 1; level <= maxLevel; level++) {
+    if (!masteredSet.has(level)) return level
+  }
+  return maxLevel
 }

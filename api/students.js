@@ -8,9 +8,12 @@ import {
 function sanitizeProfileForList(profile) {
   if (!profile || typeof profile !== 'object') return null
 
-  const safe = {
-    ...profile
-  }
+  const {
+    problemLog,     // up to 5000 entries — too large for bulk list
+    ...rest
+  } = profile
+
+  const safe = { ...rest }
 
   if (safe.auth && typeof safe.auth === 'object') {
     const {

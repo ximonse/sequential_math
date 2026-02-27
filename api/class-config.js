@@ -25,6 +25,7 @@ export default async function handler(req, res) {
       : Array.isArray(kvClass?.enabledExtras)
         ? kvClass.enabledExtras
         : []
+    res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300')
     return res.status(200).json({ enabledExtras })
   } catch {
     return res.status(200).json({ enabledExtras: [] })

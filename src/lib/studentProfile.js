@@ -1,5 +1,6 @@
 import { evaluateAnswerQuality } from './answerQuality'
 import { getSpeedTime, inferOperationFromProblemType as inferOperation } from './mathUtils'
+import { getOperationMinLevel } from './operations'
 import { classifyErrorCategory, deriveTimingMetrics } from './studentProfileTimingHelpers'
 import { analyzeStudentError, evaluateStudentAnswer, getProblemSelection } from '../engine/adaptiveEngine'
 export { getStartOfWeekTimestamp } from './studentProfileTimingHelpers'
@@ -444,7 +445,8 @@ export function getLowestUnmasteredLevel(profile, operation, maxLevel = 12) {
     minSuccessRate: 0.85
   })
   const masteredSet = new Set(mastered)
-  for (let level = 1; level <= maxLevel; level++) {
+  const minLevel = getOperationMinLevel(operation)
+  for (let level = minLevel; level <= maxLevel; level++) {
     if (!masteredSet.has(level)) return level
   }
   return maxLevel

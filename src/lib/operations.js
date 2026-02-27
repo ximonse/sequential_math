@@ -18,6 +18,19 @@ export const OPERATION_LABELS = {
   percentage: 'Procenträkning'
 }
 
+/**
+ * Lägsta nivå som faktiskt har templates/generering per operation.
+ * Division börjar på nivå 3 (inga templates för 1-2).
+ * Alla andra startar på 1.
+ */
+export const OPERATION_MIN_LEVEL = {
+  division: 3
+}
+
+export function getOperationMinLevel(operation) {
+  return OPERATION_MIN_LEVEL[operation] || 1
+}
+
 export function getOperationLabel(operation) {
   if (OPERATION_LABELS[operation]) return OPERATION_LABELS[operation]
   if (!operation) return 'Okänd'

@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams, useSearchParams } from 'react-rout
 import { changeStudentPassword, clearActiveStudentSession, getOrCreateProfileWithSync, isStudentSessionActive, saveProfile } from '../../lib/storage'
 import { getStartOfWeekTimestamp } from '../../lib/studentProfile'
 import { inferOperationFromProblemType } from '../../lib/mathUtils'
-import { getOperationLabel, OPERATION_LABELS, STANDARD_OPERATIONS } from '../../lib/operations'
+import { getOperationLabel, getOperationMinLevel, OPERATION_LABELS, STANDARD_OPERATIONS } from '../../lib/operations'
 import { decodeAssignmentPayload, encodeAssignmentPayload, getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 import { getProgressionModeLabel, PROGRESSION_MODE_CHALLENGE, PROGRESSION_MODE_STEADY, normalizeProgressionMode } from '../../lib/progressionModes'
 import { markStudentPresence, PRESENCE_HEARTBEAT_MS, PRESENCE_SAVE_THROTTLE_MS } from '../../lib/studentPresence'
@@ -196,11 +196,15 @@ function StudentHome() {
       }
     }
 
-    return operationIds.map(operation => ({
-      operation,
-      historical: LEVELS.map(level => buildLevelMasteryView(level, buckets[operation].historical[level])),
-      weekly: LEVELS.map(level => buildLevelMasteryView(level, buckets[operation].weekly[level]))
-    }))
+    return operationIds.map(operation => {
+      const minLevel = getOperationMinLevel(operation)
+      const opLevels = LEVELS.filter(l => l >= minLevel)
+      return {
+        operation,
+        historical: opLevels.map(level => buildLevelMasteryView(level, buckets[operation].historical[level])),
+        weekly: opLevels.map(level => buildLevelMasteryView(level, buckets[operation].weekly[level]))
+      }
+    })
   }, [profile])
 
   const tableStatus = useMemo(() => buildTableStatus(profile), [profile])

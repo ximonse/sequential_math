@@ -241,6 +241,14 @@ function StudentHome() {
     ))
   }
 
+  const operationKeys = useMemo(() => [
+    ...STANDARD_OPERATIONS,
+    ...Object.keys(OPERATION_LABELS).filter(op =>
+      !STANDARD_OPERATIONS.includes(op) &&
+      (enabledExtras ?? []).includes(op)
+    )
+  ], [enabledExtras])
+
   const startTableDrill = () => {
     if (selectedTables.length === 0) return
     const now = Date.now()
@@ -402,13 +410,7 @@ function StudentHome() {
           onSelectProgressionMode={handleProgressionModeSelect}
           getProgressionModeLabel={getProgressionModeLabel}
           onStartFreePractice={startFreePractice}
-          operationKeys={[
-            ...STANDARD_OPERATIONS,
-            ...Object.keys(OPERATION_LABELS).filter(op =>
-              !STANDARD_OPERATIONS.includes(op) &&
-              (enabledExtras ?? []).includes(op)
-            )
-          ]}
+          operationKeys={operationKeys}
           onStartOperationPractice={startOperationPractice}
           getOperationLabel={getOperationLabel}
         />

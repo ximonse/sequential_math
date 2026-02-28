@@ -396,8 +396,9 @@ export function getMasteryOverview(profile, options = {}) {
     if (since && result.timestamp < since) continue
 
     const operation = inferOperation(result.problemType)
-    const level = result.difficulty?.conceptual_level
-    if (!level) continue
+    const rawLevel = Number(result.difficulty?.conceptual_level)
+    if (!Number.isFinite(rawLevel) || rawLevel < 1) continue
+    const level = Math.round(rawLevel)
 
     const key = `${operation}:${level}`
     if (!buckets[key]) {

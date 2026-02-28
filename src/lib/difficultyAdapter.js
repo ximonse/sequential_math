@@ -4,6 +4,7 @@
 
 import { generateByDifficultyWithOptions, generateMultiplicationTableDrillProblem } from './problemGenerator'
 import { getRecentSuccessRate, getConsecutiveErrors, getCurrentStreak, getLowestUnmasteredLevel } from './studentProfile'
+import { getOperationMinLevel } from './operations'
 import { inferOperationFromProblemType } from './mathUtils'
 import { filterNcmProblems, generateNcmProblemFromFilter } from './ncmProblemBank'
 import {
@@ -175,12 +176,13 @@ export function selectNextProblem(profile, options = {}) {
   }
 
   if (effectiveType !== 'addition') {
+    const minLevel = getOperationMinLevel(effectiveType)
     const opAttempts = profile.recentProblems.filter(
       problem => inferOperationFromProblemType(problem.problemType) === effectiveType
     ).length
-    if (opAttempts < 3) roundedDifficulty = Math.min(roundedDifficulty, 1)
-    else if (opAttempts < 6) roundedDifficulty = Math.min(roundedDifficulty, 2)
-    else if (opAttempts < 12) roundedDifficulty = Math.min(roundedDifficulty, 3)
+    if (opAttempts < 3) roundedDifficulty = Math.min(roundedDifficulty, Math.max(minLevel, 1))
+    else if (opAttempts < 6) roundedDifficulty = Math.min(roundedDifficulty, Math.max(minLevel, 2))
+    else if (opAttempts < 12) roundedDifficulty = Math.min(roundedDifficulty, Math.max(minLevel, 3))
   }
 
   const warmupLevel = getWarmupLevel(profile, roundedDifficulty, effectiveType)
@@ -311,7 +313,7 @@ export function shouldOfferSteadyAdvance(profile, options = {}) {
   const operation = resolveOfferOperation(options)
   if (!operation) return null
 
-  const roundedDifficulty = Math.max(1, Math.min(12, Math.round(getOperationAbility(profile, operation))))
+  const roundedDifficulty = getLowestUnmasteredLevel(profile, operation)
   if (roundedDifficulty >= 12) return null
 
   const recent = profile.recentProblems

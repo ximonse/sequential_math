@@ -63,8 +63,8 @@ export function selectNextProblemForProfile(profile, options = {}) {
 
     // Distribution: ~70% target, ~15% lättare, ~15% svårare
     const roll = Math.random()
-    if (roll < 0.15 && target > 1) return target - 1   // kognitiv avlastning
-    if (roll < 0.30 && target < 12) return target + 1   // utmaning
+    if (roll < 0.15 && target > 1) return target - 1     // kognitiv avlastning
+    if (roll >= 0.15 && roll < 0.30 && target < 12) return target + 1  // utmaning
     return target                                         // kärnträning
   }
 

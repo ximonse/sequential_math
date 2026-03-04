@@ -278,7 +278,7 @@ export function getBreakPolicy(problem, isTableDrill) {
 
   return {
     enabled: true,
-    questionThreshold: 15,
+    questionThreshold: 20,
     recentWindow: 10,
     errorThreshold: 5,
     recommendedBreakMinutes: DEFAULT_BREAK_MINUTES

@@ -162,16 +162,26 @@ export function getTableSpeedColorClass(medianSpeed, accuracy, attempts) {
   return 'bg-red-300 text-red-900'
 }
 
-export function getCompactMasteryColorClass(historical, weekly) {
+export function getCompactMasteryColorClass(historical, weekly, monthly) {
   const hAttempts = Number(historical?.attempts || 0)
   const hCorrect = Number(historical?.correct || 0)
   const hRate = hAttempts > 0 ? hCorrect / hAttempts : 0
+  const hMastered = hAttempts >= MASTERY_MIN_ATTEMPTS && hRate >= MASTERY_MIN_SUCCESS_RATE
+
   const wAttempts = Number(weekly?.attempts || 0)
   const wCorrect = Number(weekly?.correct || 0)
   const wRate = wAttempts > 0 ? wCorrect / wAttempts : 0
+  const wMastered = wAttempts >= MASTERY_MIN_ATTEMPTS && wRate >= MASTERY_MIN_SUCCESS_RATE
+
+  const mAttempts = Number(monthly?.attempts || 0)
+  const mCorrect = Number(monthly?.correct || 0)
+  const mRate = mAttempts > 0 ? mCorrect / mAttempts : 0
+  const mMastered = mAttempts >= MASTERY_MIN_ATTEMPTS && mRate >= MASTERY_MIN_SUCCESS_RATE
 
   if (hAttempts === 0 && wAttempts === 0) return 'bg-gray-100 text-gray-400'
-  if (hAttempts >= MASTERY_MIN_ATTEMPTS && hRate >= MASTERY_MIN_SUCCESS_RATE) return 'bg-emerald-600 text-white'
+  if (wMastered) return 'bg-emerald-600 text-white'
+  if (mMastered) return 'bg-emerald-300 text-emerald-900'
+  if (hMastered) return 'border-2 border-emerald-400 bg-white text-emerald-700'
   if (wAttempts > 0 && wRate >= 0.6) return 'bg-emerald-300 text-emerald-900'
   if (hAttempts >= MASTERY_MIN_ATTEMPTS && hRate >= 0.5) return 'bg-orange-200 text-orange-900'
   if (hAttempts >= MASTERY_MIN_ATTEMPTS && hRate < 0.5) return 'bg-red-300 text-red-900'

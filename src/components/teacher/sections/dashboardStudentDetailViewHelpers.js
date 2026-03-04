@@ -37,6 +37,7 @@ export function buildTeacherStudentViewData(student) {
 function buildOperationMasteryBoardsForTeacher(student) {
   const problems = getTableProblemSourceForStudent(student)
   const weekStart = getStartOfWeekTimestamp()
+  const monthStart = Date.now() - 30 * DAY_MS
   const buckets = Object.fromEntries(
     ALL_OPERATIONS.map(operation => [operation, createOperationLevelBucketsForTeacher()])
   )
@@ -51,7 +52,13 @@ function buildOperationMasteryBoardsForTeacher(student) {
     buckets[operation].historical[level].attempts += 1
     if (result.correct) buckets[operation].historical[level].correct += 1
 
-    if (Number(result.timestamp || 0) >= weekStart) {
+    const ts = Number(result.timestamp || 0)
+    if (ts >= monthStart) {
+      buckets[operation].monthly[level].attempts += 1
+      if (result.correct) buckets[operation].monthly[level].correct += 1
+    }
+
+    if (ts >= weekStart) {
       buckets[operation].weekly[level].attempts += 1
       if (result.correct) buckets[operation].weekly[level].correct += 1
     }
@@ -60,7 +67,8 @@ function buildOperationMasteryBoardsForTeacher(student) {
   return ALL_OPERATIONS.map(operation => ({
     operation,
     historical: LEVELS.map(level => buildTeacherLevelView(level, buckets[operation].historical[level])),
-    weekly: LEVELS.map(level => buildTeacherLevelView(level, buckets[operation].weekly[level]))
+    weekly: LEVELS.map(level => buildTeacherLevelView(level, buckets[operation].weekly[level])),
+    monthly: LEVELS.map(level => buildTeacherLevelView(level, buckets[operation].monthly[level]))
   }))
 }
 
@@ -124,7 +132,8 @@ function createOperationLevelBucketsForTeacher() {
 
   return {
     historical: makeLevelMap(),
-    weekly: makeLevelMap()
+    weekly: makeLevelMap(),
+    monthly: makeLevelMap()
   }
 }
 

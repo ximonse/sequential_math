@@ -9,7 +9,8 @@ export default function StudentHomeTrainingOptionsCard({
   onStartFreePractice,
   operationKeys,
   onStartOperationPractice,
-  getOperationLabel
+  getOperationLabel,
+  operationProgress
 }) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
@@ -59,13 +60,26 @@ export default function StudentHomeTrainingOptionsCard({
           } else {
             btnClass = 'bg-white border border-gray-300 hover:bg-gray-50 text-gray-700'
           }
+          const progress = operationProgress?.[operation]
+          const progressPercent = progress ? Math.round(progress.ratio * 100) : 0
           return (
             <button
               key={operation}
               onClick={() => onStartOperationPractice(operation)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium ${btnClass}`}
+              className={`relative overflow-hidden px-4 py-2 rounded-lg text-sm font-medium ${btnClass}`}
             >
-              {getOperationLabel(operation)}
+              {progressPercent > 0 && (
+                <div
+                  className="absolute inset-y-0 left-0 bg-green-200/40"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              )}
+              <span className="relative flex items-center justify-center gap-1.5">
+                {getOperationLabel(operation)}
+                {progressPercent > 0 && (
+                  <span className="text-[10px] opacity-60">{progressPercent}%</span>
+                )}
+              </span>
             </button>
           )
         })}

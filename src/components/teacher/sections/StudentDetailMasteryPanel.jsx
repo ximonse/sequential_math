@@ -113,7 +113,7 @@ export default function StudentDetailMasteryPanel({
           {isCollapsed('mastery') ? null : (
             <>
               <p className="text-[10px] text-gray-500 mb-2 mt-2">
-                Mörkgrön = mastered | Ljusgrön = aktiv veckan | Orange = kämpigt | Röd = kämpar | Blå = startad | Grå = ej startad
+                Mörkgrön = klarad (vecka) | Ljusgrön = klarad (30d) | Grön kant = klarad (äldre) | Orange = kämpigt | Röd = kämpar | Blå = startad | Grå = ej startad
               </p>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs border-collapse">
@@ -132,7 +132,8 @@ export default function StudentDetailMasteryPanel({
                         {levels.map((level, index) => {
                           const hist = item.historical[index]
                           const week = item.weekly[index]
-                          const colorClass = getCompactMasteryColorClass(hist, week)
+                          const month = item.monthly?.[index]
+                          const colorClass = getCompactMasteryColorClass(hist, week, month)
                           const hLabel = hist && hist.attempts > 0 ? `${hist.correct}/${hist.attempts}` : '-'
                           const wLabel = week && week.attempts > 0 ? `${week.correct}/${week.attempts}` : ''
                           const hRate = hist && hist.attempts > 0 ? Math.round(hist.successRate * 100) : 0

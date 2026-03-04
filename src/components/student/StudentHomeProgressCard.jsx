@@ -12,14 +12,17 @@ export default function StudentHomeProgressCard({
     <div className="bg-white border border-gray-200 rounded-xl p-4">
       <h2 className="text-lg font-semibold text-gray-800 mb-3">Framsteg</h2>
       <p className="text-xs text-gray-500 mb-3">
-        Grön = klarad (minst {masteryMinAttempts} försök och minst {Math.round(masteryMinSuccessRate * 100)}% rätt), blå = pågående, transparent = ej tränad ännu.
-      </p>
-      <p className="text-xs text-gray-500 mb-3">
-        Tryck på en nivå-ruta för att öva just den nivån.
+        Klarad = minst {masteryMinAttempts} försök och minst {Math.round(masteryMinSuccessRate * 100)}% rätt. Tryck på en ruta för att öva den nivån.
       </p>
       <div className="flex flex-wrap gap-2 text-[11px] mb-4">
-        <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-green-200 bg-green-50 text-green-700">
-          Klarad
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded border-2 border-green-500 bg-green-200 text-green-900">
+          Klarad (vecka)
+        </span>
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-green-300 bg-green-100 text-green-700">
+          Klarad (30d)
+        </span>
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded border-2 border-green-300 bg-white text-green-600">
+          Klarad (äldre)
         </span>
         <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-blue-200 bg-blue-50 text-blue-700">
           Pågående

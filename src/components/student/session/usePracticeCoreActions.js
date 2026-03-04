@@ -117,7 +117,31 @@ export function usePracticeCoreActions({
       fixedPracticeLevel,
       freeOps
     )
-    const nextProblem = safeSelectProblem(profile, rules)
+
+    let nextProblem = null
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const candidate = safeSelectProblem(profile, rules)
+      if (!candidate) return
+
+      const prevA = currentProblem?.values?.a
+      const prevB = currentProblem?.values?.b
+      const cA = candidate.values?.a
+      const cB = candidate.values?.b
+      const sameType = candidate.type === currentProblem?.type
+
+      const isExactDuplicate = sameType && cA === prevA && cB === prevB
+      const isCommutativeDuplicate = sameType && cA === prevB && cB === prevA
+      const hasRepeatingNumber = attempt === 0
+        && cA != null && prevA != null
+        && (cA === prevA || cA === prevB || cB === prevA || cB === prevB)
+
+      const shouldReject = isExactDuplicate || isCommutativeDuplicate || hasRepeatingNumber
+
+      if (!shouldReject || attempt === 2) {
+        nextProblem = candidate
+        break
+      }
+    }
     if (!nextProblem) return
     setCurrentProblem(nextProblem)
     setAnswer('')
@@ -126,6 +150,7 @@ export function usePracticeCoreActions({
     setStartTime(Date.now())
   }, [
     profile,
+    currentProblem,
     pendingBreakSuggestion,
     sessionAssignment,
     mode,

@@ -14,7 +14,7 @@ import StudentHomeProgressCard from './StudentHomeProgressCard'
 import StudentHomeTableDrillCard from './StudentHomeTableDrillCard'
 import StudentHomeTicketCard from './StudentHomeTicketCard'
 import StudentHomeTrainingOptionsCard from './StudentHomeTrainingOptionsCard'
-import { buildLevelMasteryView, buildPracticePath, buildTableStatus, createOperationLevelBuckets, getTableStatusClass, LEVELS, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE, TABLES } from './studentHomeUtils'
+import { buildLevelMasteryView, buildPracticePath, buildTableStatus, createOperationLevelBuckets, getTableStatusClass, isBucketMastered, LEVELS, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE, TABLES } from './studentHomeUtils'
 
 function StudentHome() {
   const { studentId } = useParams()
@@ -170,6 +170,7 @@ function StudentHome() {
   const operationMasteryBoards = useMemo(() => {
     if (!profile) return []
     const weekStart = getStartOfWeekTimestamp()
+    const monthStart = Date.now() - 30 * 86400000
     const operationIds = Object.keys(OPERATION_LABELS)
     const buckets = Object.fromEntries(
       operationIds.map(operation => [operation, createOperationLevelBuckets()])
@@ -189,7 +190,14 @@ function StudentHome() {
       historicalBucket.attempts += 1
       if (result.correct) historicalBucket.correct += 1
 
-      if (Number(result.timestamp || 0) >= weekStart) {
+      const ts = Number(result.timestamp || 0)
+      if (ts >= monthStart) {
+        const monthlyBucket = buckets[operation].monthly[level]
+        monthlyBucket.attempts += 1
+        if (result.correct) monthlyBucket.correct += 1
+      }
+
+      if (ts >= weekStart) {
         const weeklyBucket = buckets[operation].weekly[level]
         weeklyBucket.attempts += 1
         if (result.correct) weeklyBucket.correct += 1
@@ -201,11 +209,31 @@ function StudentHome() {
       const opLevels = LEVELS.filter(l => l >= minLevel)
       return {
         operation,
-        historical: opLevels.map(level => buildLevelMasteryView(level, buckets[operation].historical[level])),
-        weekly: opLevels.map(level => buildLevelMasteryView(level, buckets[operation].weekly[level]))
+        historical: opLevels.map(level => buildLevelMasteryView(
+          level,
+          buckets[operation].historical[level],
+          buckets[operation].weekly[level],
+          buckets[operation].monthly[level]
+        ))
       }
     })
   }, [profile])
+
+  const operationProgress = useMemo(() => {
+    const result = {}
+    for (const board of operationMasteryBoards) {
+      const total = board.historical.length
+      const mastered = board.historical.filter(item =>
+        item.status === 'mastered_weekly' || item.status === 'mastered_monthly' || item.status === 'mastered_old'
+      ).length
+      result[board.operation] = {
+        ratio: total > 0 ? mastered / total : 0,
+        mastered,
+        total
+      }
+    }
+    return result
+  }, [operationMasteryBoards])
 
   const tableStatus = useMemo(() => buildTableStatus(profile), [profile])
 
@@ -417,6 +445,7 @@ function StudentHome() {
           operationKeys={operationKeys}
           onStartOperationPractice={startOperationPractice}
           getOperationLabel={getOperationLabel}
+          operationProgress={operationProgress}
         />
 
         <StudentHomeProgressCard

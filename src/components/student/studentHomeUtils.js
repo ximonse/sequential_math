@@ -13,18 +13,37 @@ export function createOperationLevelBuckets() {
 
   return {
     historical: makeLevelMap(),
-    weekly: makeLevelMap()
+    weekly: makeLevelMap(),
+    monthly: makeLevelMap()
   }
 }
 
-export function buildLevelMasteryView(level, bucket = {}) {
-  const attempts = Number(bucket.attempts || 0)
-  const correct = Number(bucket.correct || 0)
+export function isBucketMastered(bucket) {
+  const attempts = Number(bucket?.attempts || 0)
+  const correct = Number(bucket?.correct || 0)
+  const rate = attempts > 0 ? correct / attempts : 0
+  return attempts >= MASTERY_MIN_ATTEMPTS && rate >= MASTERY_MIN_SUCCESS_RATE
+}
+
+export function buildLevelMasteryView(level, historical = {}, weekly = {}, monthly = {}) {
+  const attempts = Number(historical.attempts || 0)
+  const correct = Number(historical.correct || 0)
   const successRate = attempts > 0 ? correct / attempts : 0
-  const isMastered = attempts >= MASTERY_MIN_ATTEMPTS && successRate >= MASTERY_MIN_SUCCESS_RATE
   const isStarted = attempts > 0
 
-  const status = isMastered ? 'mastered' : (isStarted ? 'started' : 'empty')
+  let status
+  if (isBucketMastered(weekly)) {
+    status = 'mastered_weekly'
+  } else if (isBucketMastered(monthly)) {
+    status = 'mastered_monthly'
+  } else if (isBucketMastered(historical)) {
+    status = 'mastered_old'
+  } else if (isStarted) {
+    status = 'started'
+  } else {
+    status = 'empty'
+  }
+
   const successPercent = Math.round(successRate * 100)
   const metricsLabel = isStarted ? `${correct}/${attempts}` : '-'
   const title = isStarted
@@ -44,13 +63,19 @@ export function buildLevelMasteryView(level, bucket = {}) {
 }
 
 export function getMasteryLevelClassName(status) {
-  if (status === 'mastered') {
-    return 'bg-green-100 text-green-800 border-green-300'
+  if (status === 'mastered_weekly') {
+    return 'bg-green-200 text-green-900 border-2 border-green-500'
+  }
+  if (status === 'mastered_monthly') {
+    return 'bg-green-100 text-green-700 border border-green-300'
+  }
+  if (status === 'mastered_old') {
+    return 'bg-white text-green-600 border-2 border-green-300'
   }
   if (status === 'started') {
-    return 'bg-blue-50 text-blue-700 border-blue-200'
+    return 'bg-blue-50 text-blue-700 border border-blue-200'
   }
-  return 'bg-gray-50 text-gray-400 border-gray-200 opacity-45'
+  return 'bg-gray-50 text-gray-400 border border-gray-200 opacity-45'
 }
 
 export function buildTableStatus(profile) {

@@ -34,6 +34,7 @@ export function usePracticeBreakActions({
   setPendingBreakSuggestion,
   setBreakDurationMinutes,
   setSessionCount,
+  setLastBreakPromptAt,
   setTableMilestone,
   setCurrentProblem,
   setAnswer,
@@ -107,6 +108,7 @@ export function usePracticeBreakActions({
     setActiveBreakGame(null)
     setShowBreakSuggestion(false)
     setSessionCount(0)
+    setLastBreakPromptAt(0)
     setBreakDurationMinutes(DEFAULT_BREAK_MINUTES)
     sessionRecentCorrectnessRef.current = []
     goToNextProblem()
@@ -119,6 +121,7 @@ export function usePracticeBreakActions({
     setActiveBreakGame,
     setShowBreakSuggestion,
     setSessionCount,
+    setLastBreakPromptAt,
     setBreakDurationMinutes
   ])
 
@@ -134,6 +137,7 @@ export function usePracticeBreakActions({
     setActiveBreakGame(null)
     setShowBreakSuggestion(false)
     setSessionCount(0)
+    setLastBreakPromptAt(0)
     setBreakDurationMinutes(DEFAULT_BREAK_MINUTES)
     sessionRecentCorrectnessRef.current = []
     goToNextProblem()
@@ -145,6 +149,7 @@ export function usePracticeBreakActions({
     setActiveBreakGame,
     setShowBreakSuggestion,
     setSessionCount,
+    setLastBreakPromptAt,
     setBreakDurationMinutes
   ])
 

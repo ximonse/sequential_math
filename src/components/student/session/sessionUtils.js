@@ -8,6 +8,7 @@ export const DEFAULT_BREAK_MINUTES = 1
 export const SINGLE_DIGIT_BREAK_MINUTES = 2
 export const LEVEL_MASTERY_MIN_ATTEMPTS = 5
 export const LEVEL_MASTERY_MIN_SUCCESS_RATE = 0.85
+const FREE_TRAINING_CATCHUP_GAP_LEVELS = 1
 
 export function getSessionRules(
   assignment,
@@ -80,20 +81,33 @@ export function getSessionRules(
     && normalizedFreeOps.length > 0
     && profile
   ) {
-    const floorByOperation = normalizedFreeOps.map(operation => ({
-      operation,
-      floor: getLowestUnmasteredLevel(profile, operation)
-    }))
-    const globalFloor = Math.min(...floorByOperation.map(item => item.floor))
-    const candidatesAtFloor = floorByOperation
-      .filter(item => item.floor === globalFloor)
-      .map(item => item.operation)
-    const picked = pickNextFreeOperationAtFloor(profile, candidatesAtFloor, globalFloor)
-    if (picked) {
-      rules.allowedTypes = [picked]
-      // Fri träning ska följa progressionens lägsta ofärdiga nivå.
-      rules.startAtLowestUnmastered = true
-      return rules
+    const floorByOperation = normalizedFreeOps.map(operation => {
+      const floor = getLowestUnmasteredLevel(profile, operation)
+      const ability = Math.max(1, Math.min(12, Math.round(getOperationAbility(profile, operation))))
+      return {
+        operation,
+        floor,
+        ability,
+        gap: Math.max(0, ability - floor)
+      }
+    })
+
+    const laggingOperations = floorByOperation.filter(
+      item => item.gap >= FREE_TRAINING_CATCHUP_GAP_LEVELS
+    )
+    if (laggingOperations.length > 0) {
+      const globalFloor = Math.min(...laggingOperations.map(item => item.floor))
+      const candidatesAtFloor = laggingOperations
+        .filter(item => item.floor === globalFloor)
+        .map(item => item.operation)
+      const picked = pickNextFreeOperationAtFloor(profile, candidatesAtFloor, globalFloor)
+      if (picked) {
+        rules.allowedTypes = [picked]
+        rules.startAtLowestUnmastered = true
+        rules.lockToMasteryFloor = true
+        rules.startReason = 'free_training_catchup'
+        return rules
+      }
     }
   }
 

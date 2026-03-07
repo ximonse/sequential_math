@@ -168,6 +168,7 @@ export function selectNextProblem(profile, options = {}) {
   const effectiveType = assignmentType || preferredType
   const operationAbility = getOperationAbility(profile, effectiveType)
   const shouldStartAtMasteryFloor = options.startAtLowestUnmastered === true
+  const shouldLockToMasteryFloor = options.lockToMasteryFloor === true
   let roundedDifficulty = clampLevelToRange(Math.round(operationAbility), options.levelRange)
   let masteryFloorLevel = roundedDifficulty
 
@@ -175,7 +176,9 @@ export function selectNextProblem(profile, options = {}) {
   if (!options.forcedLevel) {
     const floor = getLowestUnmasteredLevel(profile, effectiveType)
     masteryFloorLevel = clampLevelToRange(floor, options.levelRange)
-    roundedDifficulty = masteryFloorLevel
+    if (shouldLockToMasteryFloor) {
+      roundedDifficulty = masteryFloorLevel
+    }
   }
 
   if (effectiveType !== 'addition') {
@@ -230,7 +233,7 @@ export function selectNextProblem(profile, options = {}) {
         allowedTypes
       })
     return annotateSelectedProblem(profile, problem, {
-      reason: 'mastery_floor_start',
+      reason: String(options.startReason || 'mastery_floor_start'),
       bucket: 'core',
       targetLevel: masteryFloorLevel,
       progressionMode

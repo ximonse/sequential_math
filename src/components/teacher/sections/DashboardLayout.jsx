@@ -112,6 +112,10 @@ export default function DashboardLayout({
   detailLevelErrorUnderSampleCount,
   renderDetailLevelErrorSortHeader,
   DETAIL_LEVEL_ERROR_HELP,
+  detailLevelErrorSortBy,
+  detailLevelErrorSortDir,
+  handleDetailLevelErrorSortByChange,
+  handleDetailLevelErrorSortDirChange,
   getErrorShareColorClass,
   dailyActivityBreakdown,
   inactivityBuckets,
@@ -249,6 +253,10 @@ export default function DashboardLayout({
           detailLevelErrorUnderSampleCount,
           renderDetailLevelErrorSortHeader,
           detailLevelErrorHelp: DETAIL_LEVEL_ERROR_HELP,
+          detailLevelErrorSortBy,
+          detailLevelErrorSortDir,
+          onDetailLevelErrorSortByChange: handleDetailLevelErrorSortByChange,
+          onDetailLevelErrorSortDirChange: handleDetailLevelErrorSortDirChange,
           getErrorShareColorClass
         }}
         historyPanelProps={{

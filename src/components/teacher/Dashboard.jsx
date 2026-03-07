@@ -36,6 +36,7 @@ import {
 import {
   formatDuration,
   formatTimeAgo,
+  getDefaultDetailLevelErrorSortDir,
   getErrorShareColorClass,
   getReasonableColorClass,
   getSuccessColorClass,
@@ -357,6 +358,18 @@ function Dashboard() {
     setDashboardStatus
   })
 
+  const handleDetailLevelErrorSortByChange = useCallback((nextSortBy) => {
+    const normalized = String(nextSortBy || '').trim()
+    if (!normalized) return
+    setDetailLevelErrorSortBy(normalized)
+    setDetailLevelErrorSortDir(getDefaultDetailLevelErrorSortDir(normalized))
+  }, [])
+
+  const handleDetailLevelErrorSortDirChange = useCallback((nextSortDir) => {
+    if (nextSortDir !== 'asc' && nextSortDir !== 'desc') return
+    setDetailLevelErrorSortDir(nextSortDir)
+  }, [])
+
   const resultsPanelProps = {
     students,
     viewMode,
@@ -404,6 +417,8 @@ function Dashboard() {
         classTableBenchmarks, getCompactMasteryColorClass, LEVELS, DETAIL_LEVEL_ERROR_MIN_ATTEMPTS,
         ALL_OPERATIONS, classBenchmarks, studentOperationStats7d, detailLevelErrorRows,
         detailLevelErrorUnderSampleCount, renderDetailLevelErrorSortHeader, DETAIL_LEVEL_ERROR_HELP,
+        detailLevelErrorSortBy, detailLevelErrorSortDir,
+        handleDetailLevelErrorSortByChange, handleDetailLevelErrorSortDirChange,
         getErrorShareColorClass, dailyActivityBreakdown, inactivityBuckets, classSummaries, weekGoal,
         tableSelectedStudentIds, setTableSelectedStudentIds, tableStudentSearch, setTableStudentSearch,
         filteredTableStudentOptions, tableStudentSet, handleToggleTableStudent, tableDevelopmentOverview,

@@ -1,4 +1,12 @@
 const DAY_MS = 24 * 60 * 60 * 1000
+const DETAIL_LEVEL_SORT_OPTIONS = [
+  { value: 'operation', label: 'Räknesätt' },
+  { value: 'level', label: 'Nivå' },
+  { value: 'attempts', label: 'Försök' },
+  { value: 'error_share', label: 'Träff elev' },
+  { value: 'knowledge_wrong', label: 'Kunskapsfel' },
+  { value: 'inattention_wrong', label: 'Ouppmärksamhet' }
+]
 
 function getTableRecencyColorClass(lastTrainedAt) {
   if (!lastTrainedAt) return 'bg-black text-white'
@@ -28,9 +36,17 @@ export default function StudentDetailMasteryPanel({
   detailLevelErrorUnderSampleCount,
   renderDetailLevelErrorSortHeader,
   detailLevelErrorHelp,
+  detailLevelErrorSortBy,
+  detailLevelErrorSortDir,
+  onDetailLevelErrorSortByChange,
+  onDetailLevelErrorSortDirChange,
   getErrorShareColorClass,
   toPercent
 }) {
+  const isTextSort = detailLevelErrorSortBy === 'operation'
+  const ascLabel = isTextSort ? 'A-Ö' : 'Minst först'
+  const descLabel = isTextSort ? 'Ö-A' : 'Störst först'
+
   return (
     <div className="space-y-4">
       <div className="rounded border border-gray-200 p-3">
@@ -164,6 +180,31 @@ export default function StudentDetailMasteryPanel({
                       Inkl. klassjämförelse ({Math.max(...operationKeys.map(op => classBenchmarks[op]?.studentCount || 0))} elever)
                     </p>
                   ) : null}
+                </div>
+                <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px]">
+                  <label className="inline-flex items-center gap-1 text-gray-600">
+                    <span>Sortera efter</span>
+                    <select
+                      value={detailLevelErrorSortBy}
+                      onChange={(event) => onDetailLevelErrorSortByChange?.(event.target.value)}
+                      className="rounded border border-gray-300 bg-white px-2 py-1 text-[11px] text-gray-700"
+                    >
+                      {DETAIL_LEVEL_SORT_OPTIONS.map(option => (
+                        <option key={`detail-level-sort-${option.value}`} value={option.value}>{option.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="inline-flex items-center gap-1 text-gray-600">
+                    <span>Ordning</span>
+                    <select
+                      value={detailLevelErrorSortDir}
+                      onChange={(event) => onDetailLevelErrorSortDirChange?.(event.target.value)}
+                      className="rounded border border-gray-300 bg-white px-2 py-1 text-[11px] text-gray-700"
+                    >
+                      <option value="asc">{ascLabel}</option>
+                      <option value="desc">{descLabel}</option>
+                    </select>
+                  </label>
                 </div>
                 {detailLevelErrorRows.length === 0 ? (
                   <p className="text-xs text-gray-500">Ingen nivå har ännu tillräckligt underlag.</p>

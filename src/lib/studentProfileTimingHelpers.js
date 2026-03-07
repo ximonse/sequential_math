@@ -10,6 +10,33 @@ const INTERRUPTION_BLUR_MIN_TIME_SECONDS = 90
 const PERSONAL_OUTLIER_FACTOR = 2.8
 const MIN_PERSONAL_BASELINE_SAMPLES = 6
 
+function near(a, b, tol = 0.0001) {
+  return Math.abs(a - b) <= tol
+}
+
+function getSwapAnswer(operation, a, b) {
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return null
+  if (operation === 'addition') return a - b
+  if (operation === 'subtraction') return a + b
+  if (operation === 'multiplication') return (b !== 0 ? a / b : null)
+  if (operation === 'division') return a * b
+  return null
+}
+
+function isOperationSwapInattention(problem, studentAnswer) {
+  const operation = String(problem?.type || problem?.skill || '').trim()
+  const a = Number(problem?.values?.a)
+  const b = Number(problem?.values?.b)
+  const answer = Number(studentAnswer)
+  const correct = Number(problem?.answer?.correct ?? problem?.result)
+
+  if (!Number.isFinite(answer) || !Number.isFinite(correct)) return false
+  const swapAnswer = getSwapAnswer(operation, a, b)
+  if (!Number.isFinite(swapAnswer)) return false
+  if (near(swapAnswer, correct)) return false
+  return near(answer, swapAnswer)
+}
+
 export function deriveTimingMetrics(profile, problem, timeSpent, options = {}) {
   const rawTimeSec = Math.max(0, Number(timeSpent) || 0)
   const hiddenDurationSec = Math.max(0, Number(options?.interruption?.hiddenDurationSec) || 0)
@@ -60,6 +87,10 @@ export function classifyErrorCategory(problem, studentAnswer, correct, options =
   const domainCategory = String(errorAnalysis?.category || '').trim().toLowerCase()
   if (domainCategory === 'inattention' || domainCategory === 'knowledge' || domainCategory === 'misconception') {
     return domainCategory
+  }
+
+  if (isOperationSwapInattention(problem, studentAnswer)) {
+    return 'inattention'
   }
 
   if (!options?.isMixedMode) return 'knowledge'

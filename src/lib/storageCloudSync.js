@@ -70,6 +70,109 @@ export function createCloudSyncApi(deps) {
     state.timer = null
   }
 
+  const RECENT_PROBLEM_MERGE_LIMIT = 250
+  const PROBLEM_LOG_MERGE_LIMIT = 5000
+
+  function normalizeTimestamp(value) {
+    const ts = Number(value)
+    if (!Number.isFinite(ts) || ts <= 0) return 0
+    return ts
+  }
+
+  function stableSerialize(value) {
+    if (value === null) return 'null'
+    const valueType = typeof value
+    if (valueType === 'number' || valueType === 'boolean' || valueType === 'string') {
+      return JSON.stringify(value)
+    }
+    if (Array.isArray(value)) {
+      return `[${value.map(item => stableSerialize(item)).join(',')}]`
+    }
+    if (valueType === 'object') {
+      const keys = Object.keys(value).sort()
+      const parts = keys.map(key => `${JSON.stringify(key)}:${stableSerialize(value[key])}`)
+      return `{${parts.join(',')}}`
+    }
+    return JSON.stringify(String(value))
+  }
+
+  function buildProblemEntryKey(entry) {
+    const id = String(entry?.problemId || '').trim()
+    if (id) return `id:${id}`
+
+    const type = String(entry?.problemType || '').trim()
+    const ts = normalizeTimestamp(entry?.timestamp)
+    const studentAnswer = String(entry?.studentAnswer ?? '')
+    const correctAnswer = String(entry?.correctAnswer ?? '')
+    const values = stableSerialize(entry?.values || {})
+    return `raw:${type}|${ts}|${studentAnswer}|${correctAnswer}|${values}`
+  }
+
+  function mergeProblemEntries(existingEntries, incomingEntries, limit) {
+    const mergedByKey = new Map()
+
+    const upsert = (entry, sourceRank) => {
+      if (!entry || typeof entry !== 'object') return
+      const key = buildProblemEntryKey(entry)
+      const ts = normalizeTimestamp(entry?.timestamp)
+      const previous = mergedByKey.get(key)
+      if (!previous) {
+        mergedByKey.set(key, { entry, ts, sourceRank })
+        return
+      }
+      if (ts > previous.ts || (ts === previous.ts && sourceRank >= previous.sourceRank)) {
+        mergedByKey.set(key, { entry, ts, sourceRank })
+      }
+    }
+
+    for (const entry of (Array.isArray(existingEntries) ? existingEntries : [])) {
+      upsert(entry, 0)
+    }
+    for (const entry of (Array.isArray(incomingEntries) ? incomingEntries : [])) {
+      upsert(entry, 1)
+    }
+
+    const merged = Array.from(mergedByKey.values())
+      .map(item => item.entry)
+      .sort((a, b) => normalizeTimestamp(a?.timestamp) - normalizeTimestamp(b?.timestamp))
+
+    if (Number.isFinite(Number(limit)) && limit > 0 && merged.length > limit) {
+      return merged.slice(-limit)
+    }
+    return merged
+  }
+
+  function mergeTeacherListProfiles(localProfile, cloudProfile, options = {}) {
+    const preferred = chooseFreshestProfile(localProfile, cloudProfile, options)
+    const alternate = preferred === localProfile ? cloudProfile : localProfile
+
+    const mergedRecentProblems = mergeProblemEntries(
+      localProfile?.recentProblems,
+      cloudProfile?.recentProblems,
+      RECENT_PROBLEM_MERGE_LIMIT
+    )
+    const mergedProblemLog = mergeProblemEntries(
+      localProfile?.problemLog,
+      cloudProfile?.problemLog,
+      PROBLEM_LOG_MERGE_LIMIT
+    )
+
+    const mergedCandidate = {
+      ...alternate,
+      ...preferred,
+      recentProblems: mergedRecentProblems.length > 0
+        ? mergedRecentProblems
+        : (Array.isArray(preferred?.recentProblems) ? preferred.recentProblems : []),
+      problemLog: mergedProblemLog.length > 0
+        ? mergedProblemLog
+        : (Array.isArray(preferred?.problemLog) ? preferred.problemLog : [])
+    }
+    return normalizeLoadedProfile(
+      mergedCandidate,
+      String(mergedCandidate?.studentId || cloudProfile?.studentId || localProfile?.studentId || '')
+    ) || mergedCandidate
+  }
+
   async function loadProfileFromCloud(studentId, options = {}) {
     if (!CLOUD_ENABLED) return null
 
@@ -222,13 +325,10 @@ export function createCloudSyncApi(deps) {
         if (!prev) {
           merged.set(p.studentId, p)
         } else {
-          merged.set(
-            p.studentId,
-            chooseFreshestProfile(prev, p, {
-              getProfileClassIds,
-              futureToleranceMs: CLOUD_FRESHNESS_FUTURE_TOLERANCE_MS
-            })
-          )
+          merged.set(p.studentId, mergeTeacherListProfiles(prev, p, {
+            getProfileClassIds,
+            futureToleranceMs: CLOUD_FRESHNESS_FUTURE_TOLERANCE_MS
+          }))
         }
       }
 

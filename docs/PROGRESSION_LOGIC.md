@@ -63,6 +63,20 @@ Möjliga valvägar:
 5. **Relief easier** vid låg success  
 6. **Normal weighted mix** (default)
 
+### 3.3 Variationsskydd (anti-repeat)
+
+Efter att en kandidat valts körs en **novelty-score** mot senaste historiken
+innan uppgiften visas.
+
+- historikfönster: 8 senaste uppgifter + nuvarande uppgift
+- upp till 8 kandidatförsök per nästa uppgift
+- exakt repetition straffas hårt
+- strukturell repetition (samma uppgiftstyp/promptform) straffas medel
+- återanvändning av samma tal straffas lätt
+
+Motorn väljer den kandidat som har lägst novelty-score och accepterar tidigt
+om score redan är låg. Detta gäller alla domäner (inte bara aritmetik med `a/b`).
+
 ### 3.2 Weighted difficulty mix
 
 Basbucketar:
@@ -131,6 +145,7 @@ Dessutom:
 I `recentProblems` sparas bl.a.:
 
 - `problemType`, `difficulty`, `timeSpent`, `correct`
+- `promptText` (visad uppgiftstext)
 - `skillTag`
 - `selectionReason` (t.ex. `weighted_mix`, `warmup_after_break`)
 - `difficultyBucket` (`easy/core/hard/...`)
@@ -198,3 +213,4 @@ När nya räknesätt läggs till:
 - Många regler är heuristiska (inte IRT/BKT än).
 - Reasonableness är generell, inte ämnesspecifik per alla subskills.
 - UI visar inte ännu full loggvisualisering; datat finns för framtida dashboards.
+- Vissa tidiga nivåer har medvetet smal svårighetsyta för pedagogisk tydlighet, så viss repetition finns kvar trots anti-repeat.

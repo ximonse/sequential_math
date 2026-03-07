@@ -93,6 +93,7 @@ classDiagram
 
     class ProblemResult {
         +string problemType
+        +string promptText
         +Object difficulty
         +number studentAnswer
         +number correctAnswer
@@ -193,15 +194,22 @@ flowchart TD
         direction TB
         G1[Filtrera templates:<br/>conceptual_level == targetLevel]
         G1 --> G2{Finns preferred type<br/>på exakt nivå?}
-        G2 -->|Ja| G3[Slumpa bland preferred-type templates]
+        G2 -->|Ja| G3[Roterat urval bland preferred-type templates]
         G2 -->|Nej| G4{Finns NÅGON template<br/>på exakt nivå?}
-        G4 -->|Ja| G5[Slumpa bland alla typer]
+        G4 -->|Ja| G5[Roterat urval bland alla templates]
         G4 -->|Nej| G6[Fallback: närmaste nivå<br/>samma typ om möjligt]
-        G3 & G5 & G6 --> G7[generateProblem: slumpa a,b<br/>inom constraints<br/>validera resultat]
+        G3 & G5 & G6 --> G7[generateProblem/domängenerator:<br/>slumpa parametrar + validera]
+        G7 --> G8[Novelty-score mot historik<br/>8 senaste + current<br/>välj bästa kandidat]
     end
 
-    Generate --> Display([Visa problem för eleven])
+Generate --> Display([Visa problem för eleven])
 ```
+
+Notering:
+- Små case-pooler i domäner (t.ex. bråk/procent/algebra) kör nu roterat urval
+  så att samma mall inte upprepas innan poolen gått varvet runt.
+- Sessionen gör därefter ett novelty-val mellan flera kandidater för att minska
+  upprepad struktur och upprepade tal.
 
 ---
 

@@ -1,94 +1,134 @@
+import { pickFromRotation } from '../../lib/rotationPicker'
+
 function rand(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
-function pick(arr) {
-  return arr[Math.floor(Math.random() * arr.length)]
+function rotatePick(key, arr) {
+  const indexes = arr.map((_, index) => index)
+  const pickedIndex = pickFromRotation(key, indexes)
+  const safeIndex = Number.isInteger(pickedIndex) ? pickedIndex : 0
+  return arr[safeIndex]
+}
+
+function percentagePrompt(level, operation, value) {
+  const variants = {
+    percent_of: [
+      `Vad är ${operation}% av ${value}?`,
+      `Beräkna ${operation}% av ${value}.`,
+      `Hur mycket är ${operation}% av ${value}?`
+    ],
+    discount: [
+      `En vara kostar ${value} kr. Det är ${operation}% rabatt. Vad kostar varan nu?`,
+      `Priset är ${value} kr och sänks med ${operation}%. Vad blir nya priset?`,
+      `Du får ${operation}% rabatt på ${value} kr. Vad betalar du?`
+    ],
+    increase: [
+      `Ett pris är ${value} kr och höjs med ${operation}%. Vad är det nya priset?`,
+      `En vara kostar ${value} kr och priset ökar med ${operation}%. Vad kostar den efter ökningen?`,
+      `Utgångspriset är ${value} kr. Efter en höjning på ${operation}%, vilket pris får du?`
+    ],
+    share: [
+      `Hur många procent är ${operation} av ${value}?`,
+      `${operation} är hur stor andel i procent av ${value}?`,
+      `Beräkna procentandelen: ${operation} av ${value}.`
+    ]
+  }
+
+  const list = variants[level] || variants.percent_of
+  return rotatePick(`percentage:phrasing:${level}`, list)
+}
+
+function makeTemplate(text, answer, templateId) {
+  return { text, answer, templateId }
 }
 
 const TEMPLATES = [
-  // Level 1: p% av 100 → answer is just p (intro: "procent = per hundra")
+  // Level 1: p% av 100
   () => {
-    const p = pick([10, 20, 25, 30, 40, 50, 60, 70, 75, 80])
-    return { text: `Vad är ${p}% av 100?`, answer: p }
+    const p = Number(rotatePick('percentage:l1:p', [5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90]))
+    return makeTemplate(percentagePrompt('percent_of', p, 100), p, 'pct_l1_percent_of_100')
   },
-  // Level 2: 50% av X → halvera
+
+  // Level 2: 50% av X
   () => {
-    const x = 2 * rand(10, 100)
-    return { text: `Vad är 50% av ${x}?`, answer: x / 2 }
+    const x = 2 * rand(12, 120)
+    return makeTemplate(percentagePrompt('percent_of', 50, x), x / 2, 'pct_l2_half')
   },
-  // Level 3: 10% av X → dividera med 10
+
+  // Level 3: 10% av X
   () => {
-    const x = 10 * rand(10, 50)
-    return { text: `Vad är 10% av ${x}?`, answer: x / 10 }
+    const x = 10 * rand(8, 80)
+    return makeTemplate(percentagePrompt('percent_of', 10, x), x / 10, 'pct_l3_tenth')
   },
-  // Level 4: 25% av X → en fjärdedel
+
+  // Level 4: 25% av X
   () => {
-    const x = 4 * rand(10, 50)
-    return { text: `Vad är 25% av ${x}?`, answer: x / 4 }
+    const x = 4 * rand(12, 90)
+    return makeTemplate(percentagePrompt('percent_of', 25, x), x / 4, 'pct_l4_quarter')
   },
-  // Level 5: 75% av X → tre fjärdedelar (bygger på 25%)
+
+  // Level 5: 75% av X
   () => {
-    const x = 4 * rand(10, 50)
-    return { text: `Vad är 75% av ${x}?`, answer: 3 * x / 4 }
+    const x = 4 * rand(12, 90)
+    return makeTemplate(percentagePrompt('percent_of', 75, x), (3 * x) / 4, 'pct_l5_three_quarters')
   },
-  // Level 6: 20% av X → en femtedel
+
+  // Level 6: 20% av X
   () => {
-    const x = 5 * rand(10, 60)
-    return { text: `Vad är 20% av ${x}?`, answer: x / 5 }
+    const x = 5 * rand(10, 100)
+    return makeTemplate(percentagePrompt('percent_of', 20, x), x / 5, 'pct_l6_one_fifth')
   },
-  // Level 7: 5% av X → hälften av 10%
+
+  // Level 7: 5% av X
   () => {
-    const x = 20 * rand(5, 25)
-    return { text: `Vad är 5% av ${x}?`, answer: x / 20 }
+    const x = 20 * rand(6, 40)
+    return makeTemplate(percentagePrompt('percent_of', 5, x), x / 20, 'pct_l7_five_percent')
   },
-  // Level 8: p% av X (blandade enkla procentsatser, heltalssvar)
+
+  // Level 8: p% av X (enkla procentsatser)
   () => {
-    const p = pick([10, 25, 50])
-    const x = (100 / p) * rand(2, 20)
-    return { text: `Vad är ${p}% av ${x}?`, answer: p * x / 100 }
+    const p = Number(rotatePick('percentage:l8:p', [10, 20, 25, 40, 50]))
+    const x = (100 / p) * rand(3, 35)
+    return makeTemplate(percentagePrompt('percent_of', p, x), (p * x) / 100, 'pct_l8_simple_mix')
   },
-  // Level 9: p% av X (bredare mix, större X)
+
+  // Level 9: p% av X (bredare mix)
   () => {
-    const p = pick([5, 10, 20, 25, 50])
-    const x = (100 / p) * rand(5, 40)
-    return { text: `Beräkna ${p}% av ${x}.`, answer: p * x / 100 }
+    const p = Number(rotatePick('percentage:l9:p', [5, 10, 12.5, 20, 25, 40, 50, 75]))
+    const x = (100 / p) * rand(4, 45)
+    return makeTemplate(percentagePrompt('percent_of', p, x), (p * x) / 100, 'pct_l9_wide_mix')
   },
-  // Level 10: Rabatt — vad kostar varan efter rabatt?
+
+  // Level 10: Rabatt
   () => {
-    const p = pick([10, 20, 25, 50])
-    const x = (100 / p) * rand(5, 40)
-    const discount = p * x / 100
-    return {
-      text: `En vara kostar ${x} kr. Det är ${p}% rabatt. Vad kostar varan nu?`,
-      answer: x - discount
-    }
+    const p = Number(rotatePick('percentage:l10:p', [10, 15, 20, 25, 30, 40, 50]))
+    const x = (100 / p) * rand(6, 45)
+    const discount = (p * x) / 100
+    return makeTemplate(percentagePrompt('discount', p, x), x - discount, 'pct_l10_discount')
   },
+
   // Level 11: Prisökning
   () => {
-    const p = pick([10, 20, 25, 50])
-    const x = (100 / p) * rand(4, 20)
-    const increase = p * x / 100
-    return {
-      text: `Ett pris är ${x} kr och höjs med ${p}%. Vad är det nya priset?`,
-      answer: x + increase
-    }
+    const p = Number(rotatePick('percentage:l11:p', [5, 10, 12.5, 20, 25, 30, 40, 50]))
+    const x = (100 / p) * rand(5, 30)
+    const increase = (p * x) / 100
+    return makeTemplate(percentagePrompt('increase', p, x), x + increase, 'pct_l11_increase')
   },
-  // Level 12: Andel — hur många procent är X av Y?
+
+  // Level 12: Andel
   () => {
-    const p = pick([10, 20, 25, 40, 50, 75, 80])
-    const y = (100 / p) * rand(2, 10)
-    const x = y * p / 100
-    return {
-      text: `Hur många procent är ${x} av ${y}?`,
-      answer: p
-    }
+    const p = Number(rotatePick('percentage:l12:p', [10, 12.5, 20, 25, 40, 50, 60, 75, 80]))
+    const y = (100 / p) * rand(2, 16)
+    const x = (y * p) / 100
+    return makeTemplate(percentagePrompt('share', x, y), p, 'pct_l12_share')
   }
 ]
 
 export function generatePercentageProblem(skill, level) {
   const idx = Math.max(0, Math.min(11, Math.round(Number(level || 1)) - 1))
   const tpl = TEMPLATES[idx]()
+
   return {
     domain: 'percentage',
     skill: 'percentage',
@@ -99,7 +139,11 @@ export function generatePercentageProblem(skill, level) {
     values: { text: tpl.text },
     answer: { type: 'number', correct: tpl.answer },
     result: tpl.answer,
-    metadata: { promptText: tpl.text },
+    metadata: {
+      promptText: tpl.text,
+      varietyTemplate: tpl.templateId,
+      skillTag: `percentage_l${idx + 1}_${tpl.templateId}`
+    },
     generated_at: Date.now()
   }
 }

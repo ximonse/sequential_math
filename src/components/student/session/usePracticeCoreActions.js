@@ -10,6 +10,7 @@ import {
   incrementTelemetryDailyMetric,
   recordTelemetryEvent
 } from '../../../lib/telemetry'
+import { scoreCandidateNovelty } from '../../../lib/problemNovelty'
 import {
   createTableProblem,
   finalizeAttentionSnapshot,
@@ -24,6 +25,9 @@ import {
 } from './sessionUtils'
 
 const BREAK_PROMPT_COOLDOWN_MS = 8 * 60 * 1000
+const NEXT_PROBLEM_MAX_ATTEMPTS = 8
+const NOVELTY_ACCEPT_SCORE = 2
+const NOVELTY_HISTORY_WINDOW = 8
 
 export function usePracticeCoreActions({
   profile,
@@ -119,29 +123,27 @@ export function usePracticeCoreActions({
       profile
     )
 
+    const recentHistory = [
+      ...(Array.isArray(profile?.recentProblems) ? profile.recentProblems.slice(-NOVELTY_HISTORY_WINDOW) : []),
+      currentProblem
+    ].filter(Boolean)
+
     let nextProblem = null
-    for (let attempt = 0; attempt < 3; attempt++) {
+    let bestScore = Number.POSITIVE_INFINITY
+    for (let attempt = 0; attempt < NEXT_PROBLEM_MAX_ATTEMPTS; attempt++) {
       const candidate = safeSelectProblem(profile, rules)
-      if (!candidate) return
+      if (!candidate) continue
 
-      const prevA = currentProblem?.values?.a
-      const prevB = currentProblem?.values?.b
-      const cA = candidate.values?.a
-      const cB = candidate.values?.b
-      const sameType = candidate.type === currentProblem?.type
+      const noveltyScore = scoreCandidateNovelty(candidate, recentHistory, {
+        historyWindow: NOVELTY_HISTORY_WINDOW
+      })
 
-      const isExactDuplicate = sameType && cA === prevA && cB === prevB
-      const isCommutativeDuplicate = sameType && cA === prevB && cB === prevA
-      const hasRepeatingNumber = attempt === 0
-        && cA != null && prevA != null
-        && (cA === prevA || cA === prevB || cB === prevA || cB === prevB)
-
-      const shouldReject = isExactDuplicate || isCommutativeDuplicate || hasRepeatingNumber
-
-      if (!shouldReject || attempt === 2) {
+      if (noveltyScore < bestScore) {
+        bestScore = noveltyScore
         nextProblem = candidate
-        break
       }
+
+      if (noveltyScore <= NOVELTY_ACCEPT_SCORE) break
     }
     if (!nextProblem) return
     setCurrentProblem(nextProblem)
@@ -160,6 +162,7 @@ export function usePracticeCoreActions({
     tableSet,
     progressionMode,
     fixedPracticeLevel,
+    freeOps,
     isTableDrill,
     tableQueue,
     resetAttentionTracker,

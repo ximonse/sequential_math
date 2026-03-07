@@ -113,6 +113,7 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     level: selection.level,
     problemType,
     values: problem.values,
+    promptText: String(problem?.display?.text || problem?.metadata?.promptText || '').trim(),
     correctAnswer,
     studentAnswer,
     answerLength: getNormalizedAnswerLength(options.rawAnswer, studentAnswer),

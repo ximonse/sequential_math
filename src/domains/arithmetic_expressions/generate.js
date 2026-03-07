@@ -1,14 +1,11 @@
-function pick(arr) {
-  return arr[Math.floor(Math.random() * arr.length)]
-}
+import { pickFromRotation } from '../../lib/rotationPicker'
 
 function ri(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
-// Find a divisor pair (a, b) where b divides a and a/b is an integer
 function divisorPair(maxA = 20, maxB = 9) {
-  for (let attempt = 0; attempt < 30; attempt++) {
+  for (let attempt = 0; attempt < 30; attempt += 1) {
     const b = ri(2, maxB)
     const quotient = ri(2, Math.floor(maxA / b))
     const a = b * quotient
@@ -17,111 +14,215 @@ function divisorPair(maxA = 20, maxB = 9) {
   return { a: 12, b: 3 }
 }
 
+function chooseVariant(levelKey, variants) {
+  const indexes = variants.map((_, index) => index)
+  const pickedIndex = pickFromRotation(levelKey, indexes)
+  const safeIndex = Number.isInteger(pickedIndex) ? pickedIndex : 0
+  return variants[safeIndex]
+}
+
 function makeLevel1() {
-  // a × b + c
-  const a = ri(2, 5), b = ri(2, 5), c = ri(1, 9)
-  return { text: `${a} × ${b} + ${c}`, answer: a * b + c }
+  const variants = [
+    () => {
+      const a = ri(2, 6)
+      const b = ri(2, 6)
+      const c = ri(1, 12)
+      return { text: `${a} × ${b} + ${c}`, answer: a * b + c, templateId: 'expr_l1_mul_plus' }
+    },
+    () => {
+      const a = ri(2, 6)
+      const b = ri(2, 6)
+      const c = ri(1, 12)
+      return { text: `${c} + ${a} × ${b}`, answer: c + a * b, templateId: 'expr_l1_plus_mul' }
+    }
+  ]
+  return chooseVariant('expr:l1', variants)()
 }
 
 function makeLevel2() {
-  // a × b − c (answer ≥ 0) or a − b × c (answer ≥ 0)
-  if (Math.random() < 0.5) {
-    const a = ri(2, 5), b = ri(2, 5)
-    const prod = a * b
-    const c = ri(1, prod)
-    return { text: `${a} × ${b} − ${c}`, answer: prod - c }
-  } else {
-    const b = ri(2, 4), c = ri(2, 4)
-    const prod = b * c
-    const a = ri(prod, prod + 9)
-    return { text: `${a} − ${b} × ${c}`, answer: a - prod }
-  }
+  const variants = [
+    () => {
+      const a = ri(2, 6)
+      const b = ri(2, 6)
+      const prod = a * b
+      const c = ri(1, prod)
+      return { text: `${a} × ${b} − ${c}`, answer: prod - c, templateId: 'expr_l2_mul_minus' }
+    },
+    () => {
+      const b = ri(2, 5)
+      const c = ri(2, 5)
+      const prod = b * c
+      const a = ri(prod, prod + 12)
+      return { text: `${a} − ${b} × ${c}`, answer: a - prod, templateId: 'expr_l2_minus_mul' }
+    }
+  ]
+  return chooseVariant('expr:l2', variants)()
 }
 
 function makeLevel3() {
-  // a ÷ b + c
-  const { a, b } = divisorPair(24, 8)
-  const c = ri(1, 9)
-  return { text: `${a} ÷ ${b} + ${c}`, answer: a / b + c }
+  const variants = [
+    () => {
+      const { a, b } = divisorPair(28, 9)
+      const c = ri(1, 12)
+      return { text: `${a} ÷ ${b} + ${c}`, answer: a / b + c, templateId: 'expr_l3_div_plus' }
+    },
+    () => {
+      const { a, b } = divisorPair(28, 9)
+      const c = ri(1, 12)
+      return { text: `${c} + ${a} ÷ ${b}`, answer: c + a / b, templateId: 'expr_l3_plus_div' }
+    }
+  ]
+  return chooseVariant('expr:l3', variants)()
 }
 
 function makeLevel4() {
-  // a − b ÷ c (answer ≥ 0)
-  const { a: b, b: c } = divisorPair(20, 8)
-  const quot = b / c
-  const a = ri(quot, quot + 10)
-  return { text: `${a} − ${b} ÷ ${c}`, answer: a - quot }
+  const { a: b, b: c } = divisorPair(24, 9)
+  const quotient = b / c
+  const a = ri(quotient, quotient + 12)
+  return { text: `${a} − ${b} ÷ ${c}`, answer: a - quotient, templateId: 'expr_l4_minus_div' }
 }
 
 function makeLevel5() {
-  // a × b + c × d
-  const a = ri(2, 5), b = ri(2, 5), c = ri(2, 5), d = ri(2, 5)
-  return { text: `${a} × ${b} + ${c} × ${d}`, answer: a * b + c * d }
+  const variants = [
+    () => {
+      const a = ri(2, 6)
+      const b = ri(2, 6)
+      const c = ri(2, 6)
+      const d = ri(2, 6)
+      return { text: `${a} × ${b} + ${c} × ${d}`, answer: a * b + c * d, templateId: 'expr_l5_mul_plus_mul' }
+    },
+    () => {
+      const a = ri(2, 6)
+      const b = ri(2, 6)
+      const c = ri(2, 6)
+      const d = ri(2, 6)
+      return { text: `${c} × ${d} + ${a} × ${b}`, answer: c * d + a * b, templateId: 'expr_l5_swapped_mul_plus_mul' }
+    }
+  ]
+  return chooseVariant('expr:l5', variants)()
 }
 
 function makeLevel6() {
-  // (a + b) × c
-  const a = ri(1, 8), b = ri(1, 8), c = ri(2, 6)
-  return { text: `(${a} + ${b}) × ${c}`, answer: (a + b) * c }
+  const variants = [
+    () => {
+      const a = ri(1, 9)
+      const b = ri(1, 9)
+      const c = ri(2, 7)
+      return { text: `(${a} + ${b}) × ${c}`, answer: (a + b) * c, templateId: 'expr_l6_paren_plus_times' }
+    },
+    () => {
+      const a = ri(1, 9)
+      const b = ri(1, 9)
+      const c = ri(2, 7)
+      return { text: `${c} × (${a} + ${b})`, answer: c * (a + b), templateId: 'expr_l6_times_paren_plus' }
+    }
+  ]
+  return chooseVariant('expr:l6', variants)()
 }
 
 function makeLevel7() {
-  if (Math.random() < 0.5) {
-    // (a − b) × c, a > b
-    const b = ri(1, 7), extra = ri(1, 5), a = b + extra
-    const c = ri(2, 6)
-    return { text: `(${a} − ${b}) × ${c}`, answer: (a - b) * c }
-  } else {
-    // (a + b) ÷ c
-    const c = ri(2, 6)
-    const sum = c * ri(2, 6)
-    const a = ri(1, sum - 1), b = sum - a
-    return { text: `(${a} + ${b}) ÷ ${c}`, answer: sum / c }
-  }
+  const variants = [
+    () => {
+      const b = ri(1, 8)
+      const extra = ri(1, 6)
+      const a = b + extra
+      const c = ri(2, 7)
+      return { text: `(${a} − ${b}) × ${c}`, answer: (a - b) * c, templateId: 'expr_l7_paren_minus_times' }
+    },
+    () => {
+      const c = ri(2, 7)
+      const sum = c * ri(2, 8)
+      const a = ri(1, sum - 1)
+      const b = sum - a
+      return { text: `(${a} + ${b}) ÷ ${c}`, answer: sum / c, templateId: 'expr_l7_paren_plus_div' }
+    }
+  ]
+  return chooseVariant('expr:l7', variants)()
 }
 
 function makeLevel8() {
-  // a × b − c × d (answer ≥ 0)
-  for (let i = 0; i < 20; i++) {
-    const a = ri(2, 6), b = ri(2, 6), c = ri(2, 5), d = ri(2, 5)
-    const ans = a * b - c * d
-    if (ans >= 0) return { text: `${a} × ${b} − ${c} × ${d}`, answer: ans }
+  for (let i = 0; i < 20; i += 1) {
+    const a = ri(2, 7)
+    const b = ri(2, 7)
+    const c = ri(2, 6)
+    const d = ri(2, 6)
+    const answer = a * b - c * d
+    if (answer >= 0) {
+      return {
+        text: `${a} × ${b} − ${c} × ${d}`,
+        answer,
+        templateId: 'expr_l8_mul_minus_mul'
+      }
+    }
   }
-  return { text: `5 × 4 − 3 × 2`, answer: 14 }
+  return { text: '5 × 4 − 3 × 2', answer: 14, templateId: 'expr_l8_fallback' }
 }
 
 function makeLevel9() {
-  // (a + b) × c − d
-  const a = ri(1, 7), b = ri(1, 7), c = ri(2, 5)
-  const prod = (a + b) * c
-  const d = ri(1, prod)
-  return { text: `(${a} + ${b}) × ${c} − ${d}`, answer: prod - d }
+  const variants = [
+    () => {
+      const a = ri(1, 8)
+      const b = ri(1, 8)
+      const c = ri(2, 6)
+      const prod = (a + b) * c
+      const d = ri(1, prod)
+      return { text: `(${a} + ${b}) × ${c} − ${d}`, answer: prod - d, templateId: 'expr_l9_paren_times_minus' }
+    },
+    () => {
+      const a = ri(1, 8)
+      const b = ri(1, 8)
+      const c = ri(2, 6)
+      const prod = (a + b) * c
+      const d = ri(1, prod)
+      return { text: `${d} + (${a} + ${b}) × ${c} − ${d}`, answer: prod, templateId: 'expr_l9_compensated' }
+    }
+  ]
+  return chooseVariant('expr:l9', variants)()
 }
 
 function makeLevel10() {
-  // (a + b) × (c − d), c > d
-  const a = ri(1, 6), b = ri(1, 6)
-  const d = ri(1, 5), extra = ri(1, 5), c = d + extra
-  return { text: `(${a} + ${b}) × (${c} − ${d})`, answer: (a + b) * (c - d) }
+  const a = ri(1, 7)
+  const b = ri(1, 7)
+  const d = ri(1, 6)
+  const extra = ri(1, 6)
+  const c = d + extra
+  return {
+    text: `(${a} + ${b}) × (${c} − ${d})`,
+    answer: (a + b) * (c - d),
+    templateId: 'expr_l10_double_paren'
+  }
 }
 
 function makeLevel11() {
-  // a × (b + c) − d × e (answer ≥ 0)
-  for (let i = 0; i < 20; i++) {
-    const a = ri(2, 5), b = ri(1, 6), c = ri(1, 6)
-    const d = ri(2, 4), e = ri(2, 4)
-    const ans = a * (b + c) - d * e
-    if (ans >= 0) return { text: `${a} × (${b} + ${c}) − ${d} × ${e}`, answer: ans }
+  for (let i = 0; i < 20; i += 1) {
+    const a = ri(2, 6)
+    const b = ri(1, 7)
+    const c = ri(1, 7)
+    const d = ri(2, 5)
+    const e = ri(2, 5)
+    const answer = a * (b + c) - d * e
+    if (answer >= 0) {
+      return {
+        text: `${a} × (${b} + ${c}) − ${d} × ${e}`,
+        answer,
+        templateId: 'expr_l11_distribute_minus_mul'
+      }
+    }
   }
-  return { text: `3 × (2 + 4) − 2 × 5`, answer: 8 }
+  return { text: '3 × (2 + 4) − 2 × 5', answer: 8, templateId: 'expr_l11_fallback' }
 }
 
 function makeLevel12() {
-  // (a + b) ÷ c + d × e
-  const { a: sum, b: c } = divisorPair(24, 6)
-  const a = ri(1, sum - 1), b = sum - a
-  const d = ri(2, 5), e = ri(2, 5)
-  return { text: `(${a} + ${b}) ÷ ${c} + ${d} × ${e}`, answer: sum / c + d * e }
+  const { a: sum, b: c } = divisorPair(30, 7)
+  const a = ri(1, sum - 1)
+  const b = sum - a
+  const d = ri(2, 6)
+  const e = ri(2, 6)
+  return {
+    text: `(${a} + ${b}) ÷ ${c} + ${d} × ${e}`,
+    answer: sum / c + d * e,
+    templateId: 'expr_l12_mix_div_and_mul'
+  }
 }
 
 const LEVEL_MAKERS = [
@@ -136,8 +237,13 @@ export function generateArithmeticExpressionsProblem(skill, level, _options = {}
   const maker = LEVEL_MAKERS[lvl]
 
   let result = null
-  for (let i = 0; i < 10; i++) {
-    try { result = maker(); break } catch { /* retry */ }
+  for (let i = 0; i < 10; i += 1) {
+    try {
+      result = maker()
+      break
+    } catch {
+      // retry
+    }
   }
   if (!result) result = makeLevel1()
 
@@ -147,8 +253,14 @@ export function generateArithmeticExpressionsProblem(skill, level, _options = {}
     level: lvl,
     difficulty: { conceptual_level: lvl },
     display: { text: result.text },
+    values: { text: result.text },
     answer: { type: 'number', value: result.answer },
     result: result.answer,
-    metadata: { promptText: result.text, template: `level_${lvl}` }
+    metadata: {
+      promptText: result.text,
+      template: `level_${lvl}`,
+      varietyTemplate: result.templateId,
+      skillTag: `arithmetic_expressions_l${lvl}_${result.templateId}`
+    }
   }
 }

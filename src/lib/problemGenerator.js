@@ -20,6 +20,7 @@ import {
   randomInt,
   roundTo
 } from './problemGeneratorMathHelpers'
+import { pickFromRotation } from './rotationPicker'
 
 const allTemplates = [
   ...additionTemplates,
@@ -27,6 +28,16 @@ const allTemplates = [
   ...multiplicationTemplates,
   ...divisionTemplates
 ]
+
+function pickTemplateWithRotation(rotationKey, templates) {
+  if (!Array.isArray(templates) || templates.length === 0) return null
+  if (templates.length === 1) return templates[0]
+
+  const indexes = templates.map((_, index) => index)
+  const pickedIndex = pickFromRotation(rotationKey, indexes)
+  const safeIndex = Number.isInteger(pickedIndex) ? pickedIndex : 0
+  return templates[safeIndex]
+}
 
 /**
  * Generera ett problem från en template
@@ -285,14 +296,20 @@ export function generateByDifficultyWithOptions(level, options = {}) {
   if (preferredType) {
     const preferredAtLevel = levelCandidates.filter(t => t.type === preferredType)
     if (preferredAtLevel.length > 0) {
-      const picked = preferredAtLevel[Math.floor(Math.random() * preferredAtLevel.length)]
+      const picked = pickTemplateWithRotation(
+        `problemGenerator:${preferredType}:l${targetLevel}:preferred`,
+        preferredAtLevel
+      )
       return generateProblem(picked)
     }
   }
 
   // Annars valfri template på exakt nivå
   if (levelCandidates.length > 0) {
-    const picked = levelCandidates[Math.floor(Math.random() * levelCandidates.length)]
+    const picked = pickTemplateWithRotation(
+      `problemGenerator:any:l${targetLevel}:${String(preferredType || 'none')}`,
+      levelCandidates
+    )
     return generateProblem(picked)
   }
 

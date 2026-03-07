@@ -8,12 +8,10 @@ function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
-const SINGLE_VARS = ['x', 'y', 'a', 'b', 'm', 'n', 'p', 'q']
+const SINGLE_VARS = ['x', 'y', 'a', 'b']
 const DOUBLE_VARS = [
   ['x', 'y'],
-  ['a', 'b'],
-  ['m', 'n'],
-  ['p', 'q']
+  ['a', 'b']
 ]
 
 function pickVar() {

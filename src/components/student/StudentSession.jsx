@@ -10,6 +10,7 @@ import { usePracticeUiEffects } from './session/usePracticeUiEffects'
 import {
   createAttentionTracker,
   DEFAULT_BREAK_MINUTES,
+  getLevelFocusNextLevelAction,
   isKnownMode,
   parsePracticeLevel,
   parseTableSet,
@@ -91,12 +92,33 @@ function StudentSession() {
     && mode
     && isKnownMode(mode)
     && Number.isInteger(fixedPracticeLevel)
+  const levelFocusNextLevelAction = useMemo(
+    () => getLevelFocusNextLevelAction(profile, mode, fixedPracticeLevel),
+    [profile, mode, fixedPracticeLevel]
+  )
 
   const resetAttentionTracker = useCallback(() => {
     attentionRef.current = createAttentionTracker()
   }, [])
 
   const completedThisSession = useMemo(() => sessionCount, [sessionCount])
+  const handleGoToNextLevelFromBanner = useCallback(() => {
+    if (!profile || !levelFocusNextLevelAction || !mode || !isKnownMode(mode)) return
+
+    if (profile?.adaptive?.lastAdvanceOffer && profile.adaptive.lastAdvanceOffer.accepted === false) {
+      profile.adaptive.lastAdvanceOffer = {
+        ...profile.adaptive.lastAdvanceOffer,
+        accepted: true,
+        timestamp: Date.now()
+      }
+      saveProfile(profile)
+    }
+
+    const params = new URLSearchParams(searchParams)
+    params.set('mode', mode)
+    params.set('level', String(levelFocusNextLevelAction.nextLevel))
+    navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
+  }, [profile, levelFocusNextLevelAction, mode, searchParams, navigate, studentId])
 
   const safeSelectProblem = useCallback((currentProfile, rules) => {
     try {
@@ -292,6 +314,8 @@ function StudentSession() {
       tableSet={tableSet}
       progressionMode={progressionMode}
       fixedPracticeLevel={fixedPracticeLevel}
+      levelFocusNextLevelAction={levelFocusNextLevelAction}
+      onGoToNextLevelFromBanner={handleGoToNextLevelFromBanner}
       sessionError={sessionError}
       currentProblem={currentProblem}
       feedback={feedback}

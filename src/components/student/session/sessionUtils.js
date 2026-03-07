@@ -8,7 +8,6 @@ export const DEFAULT_BREAK_MINUTES = 1
 export const SINGLE_DIGIT_BREAK_MINUTES = 2
 export const LEVEL_MASTERY_MIN_ATTEMPTS = 5
 export const LEVEL_MASTERY_MIN_SUCCESS_RATE = 0.85
-const FREE_TRAINING_CATCHUP_GAP_LEVELS = 1
 
 export function getSessionRules(
   assignment,
@@ -68,6 +67,19 @@ export function getSessionRules(
     return rules
   }
 
+  if (
+    mode
+    && isKnownMode(mode)
+    && !Number.isInteger(fixedLevel)
+    && (!Array.isArray(tableSet) || tableSet.length === 0)
+    && !assignment
+  ) {
+    rules.startAtLowestUnmastered = true
+    rules.lockToMasteryFloor = true
+    rules.startReason = 'single_domain_floor_lock'
+    return rules
+  }
+
   if (solvedCount === 0 && !assignment && (!Array.isArray(tableSet) || tableSet.length === 0)) {
     rules.startAtLowestUnmastered = true
   }
@@ -81,31 +93,25 @@ export function getSessionRules(
     && normalizedFreeOps.length > 0
     && profile
   ) {
-    const floorByOperation = normalizedFreeOps.map(operation => {
-      const floor = getLowestUnmasteredLevel(profile, operation)
-      const ability = Math.max(1, Math.min(12, Math.round(getOperationAbility(profile, operation))))
-      return {
-        operation,
-        floor,
-        ability,
-        gap: Math.max(0, ability - floor)
-      }
-    })
+    // Strikt progression i fri träning:
+    // håll eleven på lägsta ofärdiga nivå över valda domäner innan nästa nivå tillåts.
+    const floorByOperation = normalizedFreeOps.map(operation => ({
+      operation,
+      floor: getLowestUnmasteredLevel(profile, operation)
+    }))
 
-    const laggingOperations = floorByOperation.filter(
-      item => item.gap >= FREE_TRAINING_CATCHUP_GAP_LEVELS
-    )
-    if (laggingOperations.length > 0) {
-      const globalFloor = Math.min(...laggingOperations.map(item => item.floor))
-      const candidatesAtFloor = laggingOperations
+    if (floorByOperation.length > 0) {
+      const globalFloor = Math.min(...floorByOperation.map(item => item.floor))
+      const candidatesAtFloor = floorByOperation
         .filter(item => item.floor === globalFloor)
         .map(item => item.operation)
+
       const picked = pickNextFreeOperationAtFloor(profile, candidatesAtFloor, globalFloor)
       if (picked) {
         rules.allowedTypes = [picked]
         rules.startAtLowestUnmastered = true
         rules.lockToMasteryFloor = true
-        rules.startReason = 'free_training_catchup'
+        rules.startReason = 'free_training_global_floor'
         return rules
       }
     }
@@ -382,6 +388,25 @@ function pickNextFreeOperationAtFloor(profile, candidatesAtFloor, floorLevel) {
     return candidatesAtFloor[(currentIndex + 1) % candidatesAtFloor.length]
   }
   return candidatesAtFloor[0]
+}
+
+export function getLevelFocusNextLevelAction(profile, mode, fixedLevel) {
+  if (!profile || !isKnownMode(mode) || !Number.isInteger(fixedLevel)) return null
+
+  const lastOffer = profile?.adaptive?.lastAdvanceOffer
+  if (!lastOffer || lastOffer.accepted !== false) return null
+
+  const operation = String(lastOffer.operation || '')
+  const fromLevel = Number(lastOffer.fromLevel)
+  const nextLevel = Number(lastOffer.nextLevel)
+  if (operation !== mode) return null
+  if (!Number.isInteger(fromLevel) || fromLevel !== fixedLevel) return null
+  if (!Number.isInteger(nextLevel) || nextLevel <= fixedLevel || nextLevel > 12) return null
+
+  return {
+    nextLevel,
+    label: 'Gå till nästa nivå'
+  }
 }
 
 export function getOperationLevelMasteryStatus(profile, operation, level) {

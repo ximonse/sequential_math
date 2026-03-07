@@ -2,7 +2,15 @@ import { getOperationLabel } from '../../../lib/operations'
 import { getProgressionModeLabel } from '../../../lib/progressionModes'
 import { isKnownMode } from './sessionUtils'
 
-function SessionModeBanner({ assignment, mode, tableSet, progressionMode, fixedLevel = null }) {
+function SessionModeBanner({
+  assignment,
+  mode,
+  tableSet,
+  progressionMode,
+  fixedLevel = null,
+  nextLevelAction = null,
+  onGoToNextLevel = null
+}) {
   const paceLabel = getProgressionModeLabel(progressionMode)
   if (!assignment) {
     if (tableSet.length > 0) {
@@ -14,12 +22,26 @@ function SessionModeBanner({ assignment, mode, tableSet, progressionMode, fixedL
     }
 
     if (mode && isKnownMode(mode)) {
+      const modeText = [
+        `Läge: ${getOperationLabel(mode)}`,
+        Number.isInteger(fixedLevel) ? `Nivåfokus ${fixedLevel}` : '',
+        `Tempo: ${paceLabel}`
+      ].filter(Boolean).join(' | ')
+
       return (
         <div className="mb-5 bg-white border border-emerald-200 text-emerald-700 rounded-lg px-4 py-2 text-sm">
-          Läge: {getOperationLabel(mode)}
-          {Number.isInteger(fixedLevel) ? ` | Nivåfokus ${fixedLevel}` : ''}
-          {' | '}
-          Tempo: {paceLabel}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <span className="sm:flex-1">{modeText}</span>
+            {nextLevelAction && typeof onGoToNextLevel === 'function' && (
+              <button
+                type="button"
+                onClick={onGoToNextLevel}
+                className="self-end sm:self-auto sm:ml-auto font-semibold underline underline-offset-2 text-emerald-700 hover:text-emerald-900"
+              >
+                {nextLevelAction.label || 'Nästa nivå'}
+              </button>
+            )}
+          </div>
         </div>
       )
     }

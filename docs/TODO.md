@@ -12,6 +12,9 @@
 - [x] CSV export of current teacher snapshot.
 
 ### Next
+- [x] Fri träning (Utmaning + Lugn): strikt nivålåsning per global nivåsteg. Om någon vald domän har nivå 1 ofärdig ska inga nivå 2-uppgifter visas. Samma regel för 2->3 osv, med fortsatt rotation mellan domäner på samma nivå.
+- [x] Nivåfokus-banner: när elev klarat nivån men tackat nej till nivåhöjning, visa en högerjusterad `Nästa nivå`-knapp i samma banner (`Läge: ... | Nivåfokus ... | Tempo: ...`) för att gå vidare utan att lämna passet.
+- [ ] Lägg till ett högkontrastläge (utan nytt tema): samma visuella språk men tydligare kantlinjer, starkare kontraster och bättre läsbarhet för elever med svagare syn samt visning på avstånd.
 - [ ] Break out `docs/DIDAKTISK_BLUEPRINT_V2.md` into phase-by-phase technical tickets (Fas 1 -> Fas 3).
 - [ ] Add automated tests for teacher dashboard helper logic (risk/adherence/bottlenecks/csv).
 - [ ] Add optional pagination/virtualization in student table for larger classes.

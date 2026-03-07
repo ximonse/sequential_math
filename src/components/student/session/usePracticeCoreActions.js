@@ -115,7 +115,8 @@ export function usePracticeCoreActions({
       tableSet,
       progressionMode,
       fixedPracticeLevel,
-      freeOps
+      freeOps,
+      profile
     )
 
     let nextProblem = null

@@ -280,7 +280,8 @@ export function usePracticeSetupEffects({
         tableSet,
         progressionMode,
         fixedPracticeLevel,
-        freeOps
+        freeOps,
+        profile
       )
       const problem = safeSelectProblem(profile, rules)
       if (!problem) return

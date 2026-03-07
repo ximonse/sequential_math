@@ -407,7 +407,8 @@ function StudentHome() {
       return
     }
     navigate(buildPracticePath(studentId, {
-      progressionMode: selectedProgressionMode
+      progressionMode: selectedProgressionMode,
+      ops: operationKeys
     }))
   }
 

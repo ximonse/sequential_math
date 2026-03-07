@@ -2,6 +2,7 @@ import { inferOperationFromProblemType as inferOperationFromType } from '../../.
 import { getOperationAbility } from '../../../lib/difficultyAdapter'
 import { normalizeProgressionMode } from '../../../lib/progressionModes'
 import { filterNcmProblems } from '../../../lib/ncmProblemBank'
+import { getLowestUnmasteredLevel } from '../../../lib/studentProfile'
 
 export const DEFAULT_BREAK_MINUTES = 1
 export const SINGLE_DIGIT_BREAK_MINUTES = 2
@@ -16,7 +17,8 @@ export function getSessionRules(
   tableSet = [],
   progressionMode = 'challenge',
   fixedLevel = null,
-  freeOps = []
+  freeOps = [],
+  profile = null
 ) {
   const rules = { progressionMode: normalizeProgressionMode(progressionMode) }
 
@@ -67,6 +69,32 @@ export function getSessionRules(
 
   if (solvedCount === 0 && !assignment && (!Array.isArray(tableSet) || tableSet.length === 0)) {
     rules.startAtLowestUnmastered = true
+  }
+
+  const normalizedFreeOps = normalizeKnownFreeOperations(freeOps)
+  if (
+    !rules.allowedTypes
+    && !assignment
+    && (!mode || !isKnownMode(mode))
+    && (!Array.isArray(tableSet) || tableSet.length === 0)
+    && normalizedFreeOps.length > 0
+    && profile
+  ) {
+    const floorByOperation = normalizedFreeOps.map(operation => ({
+      operation,
+      floor: getLowestUnmasteredLevel(profile, operation)
+    }))
+    const globalFloor = Math.min(...floorByOperation.map(item => item.floor))
+    const candidatesAtFloor = floorByOperation
+      .filter(item => item.floor === globalFloor)
+      .map(item => item.operation)
+    const picked = pickNextFreeOperationAtFloor(profile, candidatesAtFloor, globalFloor)
+    if (picked) {
+      rules.allowedTypes = [picked]
+      // Fri träning ska följa progressionens lägsta ofärdiga nivå.
+      rules.startAtLowestUnmastered = true
+      return rules
+    }
   }
 
   if (!rules.allowedTypes && Array.isArray(freeOps) && freeOps.length > 0) {
@@ -307,6 +335,39 @@ function isSingleDigitAddOrSubProblem(problem) {
   }
 
   return false
+}
+
+function normalizeKnownFreeOperations(freeOps) {
+  if (!Array.isArray(freeOps) || freeOps.length === 0) return []
+  const seen = new Set()
+  const normalized = []
+  for (const entry of freeOps) {
+    const operation = String(entry || '').trim()
+    if (!operation || !isKnownMode(operation) || seen.has(operation)) continue
+    seen.add(operation)
+    normalized.push(operation)
+  }
+  return normalized
+}
+
+function pickNextFreeOperationAtFloor(profile, candidatesAtFloor, floorLevel) {
+  if (!Array.isArray(candidatesAtFloor) || candidatesAtFloor.length === 0) return ''
+  if (candidatesAtFloor.length === 1) return candidatesAtFloor[0]
+  const source = Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
+  for (let i = source.length - 1; i >= 0; i -= 1) {
+    const problem = source[i]
+    const operation = inferOperationFromType(problem?.problemType, {
+      fallback: '',
+      allowUnknownPrefix: false
+    })
+    if (!candidatesAtFloor.includes(operation)) continue
+    const level = Math.round(Number(problem?.difficulty?.conceptual_level || 0))
+    if (level !== floorLevel) continue
+
+    const currentIndex = candidatesAtFloor.indexOf(operation)
+    return candidatesAtFloor[(currentIndex + 1) % candidatesAtFloor.length]
+  }
+  return candidatesAtFloor[0]
 }
 
 export function getOperationLevelMasteryStatus(profile, operation, level) {

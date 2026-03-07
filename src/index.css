@@ -365,3 +365,40 @@ body[class*="theme-"] .to-green-50,
 body[class*="theme-"] .to-purple-600 {
   --tw-gradient-to: color-mix(in srgb, var(--bg-to) 80%, var(--accent-2) 20%) var(--tw-gradient-to-position) !important;
 }
+
+body.contrast-high {
+  --border: color-mix(in srgb, var(--text-main) 56%, var(--surface) 44%);
+}
+
+body.contrast-high .theme-switcher {
+  border-width: 2px !important;
+}
+
+body.contrast-high .border,
+body.contrast-high .border-gray-100,
+body.contrast-high .border-gray-200,
+body.contrast-high .border-gray-300,
+body.contrast-high .border-blue-100,
+body.contrast-high .border-indigo-200,
+body.contrast-high .border-emerald-200,
+body.contrast-high .border-red-200,
+body.contrast-high .border-lime-300,
+body.contrast-high .border-amber-300,
+body.contrast-high .border-rose-300 {
+  border-width: 2px !important;
+}
+
+body.contrast-high .text-gray-500,
+body.contrast-high .text-gray-400,
+body.contrast-high .text-gray-300 {
+  color: color-mix(in srgb, var(--text-main) 86%, var(--surface) 14%) !important;
+}
+
+body.contrast-high button:focus-visible,
+body.contrast-high a:focus-visible,
+body.contrast-high select:focus-visible,
+body.contrast-high input:focus-visible,
+body.contrast-high textarea:focus-visible {
+  outline: 3px solid var(--accent) !important;
+  outline-offset: 2px;
+}

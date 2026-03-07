@@ -62,6 +62,11 @@ export function getSessionRules(
     rules.forcedType = warmup.operation
     rules.forceReason = 'operation_mode_warmup'
     rules.forceBucket = solvedCount === 0 ? 'very_easy' : 'easy'
+    return rules
+  }
+
+  if (solvedCount === 0 && !assignment && (!Array.isArray(tableSet) || tableSet.length === 0)) {
+    rules.startAtLowestUnmastered = true
   }
 
   if (!rules.allowedTypes && Array.isArray(freeOps) && freeOps.length > 0) {

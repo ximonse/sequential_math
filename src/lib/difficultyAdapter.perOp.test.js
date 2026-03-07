@@ -137,6 +137,37 @@ describe('Per-operation difficulty: selectNextProblem', () => {
     expect(targetLevel).toBeGreaterThanOrEqual(1)
     expect(targetLevel).toBeLessThanOrEqual(5)
   })
+
+  it('can start session exactly at lowest unmastered level when requested', () => {
+    const profile = createProfile({ currentDifficulty: 8 })
+    profile.adaptive.operationAbilities = {
+      addition: 10,
+      subtraction: 3,
+      multiplication: 5,
+      division: 3
+    }
+
+    // Mastered levels 1-4 for addition
+    for (let level = 1; level <= 4; level++) {
+      for (let i = 0; i < 5; i++) {
+        profile.recentProblems.push({
+          problemType: 'add_basic',
+          correct: true,
+          isReasonable: true,
+          timestamp: Date.now(),
+          timeSpent: 5,
+          speedTimeSec: 5,
+          difficulty: { conceptual_level: level }
+        })
+      }
+    }
+
+    const problem = selectNextProblem(profile, {
+      allowedTypes: ['addition'],
+      startAtLowestUnmastered: true
+    })
+    expect(problem.metadata?.targetLevel).toBe(5)
+  })
 })
 
 describe('Per-operation difficulty: adjustDifficulty', () => {

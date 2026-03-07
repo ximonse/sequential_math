@@ -7,6 +7,7 @@ import {
 } from '../../../lib/storage'
 import { decodeAssignmentPayload, getActiveAssignment, getAssignmentById } from '../../../lib/assignments'
 import { inferOperationFromProblemType as inferOperationFromType } from '../../../lib/mathUtils'
+import { getLowestUnmasteredLevel } from '../../../lib/studentProfile'
 import { PROGRESSION_MODE_STEADY } from '../../../lib/progressionModes'
 import {
   addTelemetryDurationMs,
@@ -17,7 +18,6 @@ import {
   buildNcmAssignmentSkillPool,
   createTableProblem,
   createTableQueue,
-  estimateOperationLevel,
   getNcmAssignmentKey,
   getSessionRules,
   isKnownMode,
@@ -174,25 +174,22 @@ export function usePracticeSetupEffects({
       p => inferOperationFromType(p.problemType, { fallback: 'addition', allowUnknownPrefix: false }) === mode
     )
     const hasHistory = operationHistory.length > 0
-    const estimatedLevel = estimateOperationLevel(profile, mode)
+    const targetLevel = getLowestUnmasteredLevel(profile, mode)
     const isSteadyMode = progressionMode === PROGRESSION_MODE_STEADY
     const warmupCount = isSteadyMode ? 4 : 3
 
     if (!hasHistory) {
       setSessionWarmup({
         operation: mode,
-        targetLevel: 1,
+        targetLevel,
         startLevel: 1,
         warmupCount
       })
       return
     }
 
-    const roundedEstimatedLevel = Math.max(1, Math.min(12, Math.round(estimatedLevel)))
     const startDrop = isSteadyMode ? 3 : 1
-    const targetDrop = isSteadyMode ? 1 : 0
-    const startLevel = Math.max(1, roundedEstimatedLevel - startDrop)
-    const targetLevel = Math.max(startLevel, roundedEstimatedLevel - targetDrop)
+    const startLevel = Math.max(1, targetLevel - startDrop)
     setSessionWarmup({
       operation: mode,
       targetLevel,

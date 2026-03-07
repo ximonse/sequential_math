@@ -167,12 +167,15 @@ export function selectNextProblem(profile, options = {}) {
 
   const effectiveType = assignmentType || preferredType
   const operationAbility = getOperationAbility(profile, effectiveType)
+  const shouldStartAtMasteryFloor = options.startAtLowestUnmastered === true
   let roundedDifficulty = clampLevelToRange(Math.round(operationAbility), options.levelRange)
+  let masteryFloorLevel = roundedDifficulty
 
   // Mastery-styrd progression: träna på lägsta omastrade nivån
   if (!options.forcedLevel) {
     const floor = getLowestUnmasteredLevel(profile, effectiveType)
-    roundedDifficulty = floor
+    masteryFloorLevel = clampLevelToRange(floor, options.levelRange)
+    roundedDifficulty = masteryFloorLevel
   }
 
   if (effectiveType !== 'addition') {
@@ -215,6 +218,21 @@ export function selectNextProblem(profile, options = {}) {
       reason: 'warmup_after_break',
       bucket: 'easy',
       targetLevel: warmupLevel,
+      progressionMode
+    })
+  }
+
+  if (shouldStartAtMasteryFloor && !Number.isFinite(options.forcedLevel)) {
+    const problem = isTableDrill
+      ? generateMultiplicationTableDrillProblem(tableSet, { level: masteryFloorLevel })
+      : generateByDifficultyWithOptions(masteryFloorLevel, {
+        preferredType: effectiveType,
+        allowedTypes
+      })
+    return annotateSelectedProblem(profile, problem, {
+      reason: 'mastery_floor_start',
+      bucket: 'core',
+      targetLevel: masteryFloorLevel,
       progressionMode
     })
   }

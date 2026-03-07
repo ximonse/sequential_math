@@ -8,3 +8,4 @@ NMC/*.pdf
 __pycache__/
 backups/
 *.zip
+.claude/

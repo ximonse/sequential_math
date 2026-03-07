@@ -9,6 +9,44 @@
 
 export const divisionTemplates = [
   {
+    id: 'div_1d_1d_intro',
+    type: 'division',
+    grade: 4,
+    difficulty: {
+      conceptual_level: 1,
+      cognitive_load: { working_memory: 1, steps_required: 1, intermediate_values: 0 },
+      procedural: { num_terms: 2, exact_division: true, mixed_digits: false },
+      magnitude: { a_digits: 1, b_digits: 1 }
+    },
+    generator: {
+      constraints: {
+        a: { min: 4, max: 16 },
+        b: { min: 2, max: 4 },
+        result: { min: 2, max: 4 }
+      }
+    },
+    metadata: { estimated_time: 10, description: 'Divisionstabeller intro' }
+  },
+  {
+    id: 'div_1d_1d_foundation',
+    type: 'division',
+    grade: 4,
+    difficulty: {
+      conceptual_level: 2,
+      cognitive_load: { working_memory: 1, steps_required: 1, intermediate_values: 0 },
+      procedural: { num_terms: 2, exact_division: true, mixed_digits: false },
+      magnitude: { a_digits: 1, b_digits: 1 }
+    },
+    generator: {
+      constraints: {
+        a: { min: 6, max: 30 },
+        b: { min: 2, max: 6 },
+        result: { min: 2, max: 6 }
+      }
+    },
+    metadata: { estimated_time: 12, description: 'Divisionstabeller grund' }
+  },
+  {
     id: 'div_1d_1d_easy',
     type: 'division',
     grade: 4,
@@ -199,4 +237,3 @@ export const divisionTemplates = [
     metadata: { estimated_time: 65, description: '4-siffrig delat med 3-siffrig' }
   }
 ]
-

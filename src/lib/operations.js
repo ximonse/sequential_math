@@ -20,11 +20,9 @@ export const OPERATION_LABELS = {
 
 /**
  * Lägsta nivå som faktiskt har templates/generering per operation.
- * Division börjar på nivå 3 (inga templates för 1-2).
- * Alla andra startar på 1.
+ * Alla operationer startar på nivå 1 om inget annat anges.
  */
 export const OPERATION_MIN_LEVEL = {
-  division: 3
 }
 
 export function getOperationMinLevel(operation) {

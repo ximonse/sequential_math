@@ -7,6 +7,15 @@ function inRange(value, min, max) {
 }
 
 describe('problemGenerator exact division', () => {
+  it('includes beginner division levels 1 and 2', () => {
+    const levels = divisionTemplates
+      .map(item => Number(item?.difficulty?.conceptual_level || 0))
+      .filter(level => Number.isInteger(level) && level > 0)
+
+    expect(levels.includes(1)).toBe(true)
+    expect(levels.includes(2)).toBe(true)
+  })
+
   const templateIds = [
     'div_3d_2d_guided',
     'div_3d_2d_full',

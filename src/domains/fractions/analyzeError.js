@@ -1,19 +1,55 @@
-import { parseFraction, fractionsEqual } from './fractionMath'
+import {
+  fractionsEqual,
+  isReducedFraction,
+  parseFraction,
+  parseFractionRaw
+} from './fractionMath'
+import { evaluateFractionsProblem } from './evaluate'
 
 export function analyzeFractionsError(problem, studentAnswer) {
   const correct = { num: Number(problem.answer?.num), den: Number(problem.answer?.den ?? 1) }
-  const parsed = parseFraction(studentAnswer)
-  if (!parsed) return { errorCategory: 'invalid_input' }
-  if (fractionsEqual(parsed, correct)) return null
+  const evaluation = evaluateFractionsProblem(problem, studentAnswer)
+  if (evaluation.correct) {
+    const raw = parseFractionRaw(studentAnswer)
+    if (evaluation.isPartial && raw && !isReducedFraction(raw)) {
+      return {
+        category: 'knowledge',
+        patterns: ['not_simplified'],
+        detail: 'Rätt värde men svaret är inte förenklat.'
+      }
+    }
+    return { category: 'none', patterns: [], detail: '' }
+  }
 
-  // Check if they got the right value but didn't simplify
-  if (parsed.num / parsed.den === correct.num / correct.den) {
-    return { errorCategory: 'not_simplified' }
+  const rawParsed = parseFractionRaw(studentAnswer)
+  if (!rawParsed) {
+    return {
+      category: 'knowledge',
+      patterns: ['invalid_input'],
+      detail: 'Svaret kunde inte tolkas som ett bråk.'
+    }
   }
-  // Check if they added/subtracted numerators without finding common denominator
-  const rawNum = Number((problem.answer?.value || '').split('/')[0])
-  if (!isNaN(rawNum) && parsed.den !== correct.den) {
-    return { errorCategory: 'wrong_denominator' }
+
+  const reducedParsed = parseFraction(studentAnswer)
+  if (reducedParsed && fractionsEqual(reducedParsed, correct)) {
+    return {
+      category: 'knowledge',
+      patterns: ['not_simplified'],
+      detail: 'Rätt värde men svaret är inte förenklat.'
+    }
   }
-  return { errorCategory: 'wrong_answer' }
+
+  if (Number.isFinite(correct.den) && rawParsed.den !== correct.den) {
+    return {
+      category: 'knowledge',
+      patterns: ['wrong_denominator'],
+      detail: 'Nämnaren stämmer inte.'
+    }
+  }
+
+  return {
+    category: 'knowledge',
+    patterns: ['wrong_answer'],
+    detail: 'Fel svar.'
+  }
 }

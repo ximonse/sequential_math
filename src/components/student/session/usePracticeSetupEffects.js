@@ -127,7 +127,8 @@ export function usePracticeSetupEffects({
       startedAt,
       answered: 0,
       correct: 0,
-      wrong: 0
+      wrong: 0,
+      partial: 0
     }
 
     recordTelemetryEvent(profile, 'practice_session_start', {
@@ -150,6 +151,7 @@ export function usePracticeSetupEffects({
         answered: meta.answered,
         correct: meta.correct,
         wrong: meta.wrong,
+        partial: Number(meta.partial || 0),
         durationSec: Math.round(durationMs / 1000)
       }, endedAt)
       incrementTelemetryDailyMetric(profile, 'practice_sessions_ended', 1, endedAt)

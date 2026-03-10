@@ -115,7 +115,16 @@ export function usePracticeUiEffects({
   }, [currentProblem, feedback, attentionRef])
 
   useEffect(() => {
-    if (!feedback || !feedback.correct || showBreakSuggestion || tableMilestone || dailyLevelStreakMilestone || advancePrompt || levelFocusMilestone) return
+    if (
+      !feedback
+      || !feedback.correct
+      || feedback.isPartial
+      || showBreakSuggestion
+      || tableMilestone
+      || dailyLevelStreakMilestone
+      || advancePrompt
+      || levelFocusMilestone
+    ) return
 
     const timer = setTimeout(() => {
       goToNextProblem()

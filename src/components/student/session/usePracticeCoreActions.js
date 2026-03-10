@@ -10,7 +10,7 @@ import {
   incrementTelemetryDailyMetric,
   recordTelemetryEvent
 } from '../../../lib/telemetry'
-import { scoreCandidateNovelty } from '../../../lib/problemNovelty'
+import { buildProblemNoveltyDescriptor, scoreCandidateNovelty } from '../../../lib/problemNovelty'
 import {
   createTableProblem,
   finalizeAttentionSnapshot,
@@ -127,9 +127,13 @@ export function usePracticeCoreActions({
       ...(Array.isArray(profile?.recentProblems) ? profile.recentProblems.slice(-NOVELTY_HISTORY_WINDOW) : []),
       currentProblem
     ].filter(Boolean)
+    const currentDescriptor = currentProblem
+      ? buildProblemNoveltyDescriptor(currentProblem)
+      : null
 
     let nextProblem = null
     let bestScore = Number.POSITIVE_INFINITY
+    let blockedImmediateRepeat = null
     for (let attempt = 0; attempt < NEXT_PROBLEM_MAX_ATTEMPTS; attempt++) {
       const candidate = safeSelectProblem(profile, rules)
       if (!candidate) continue
@@ -137,6 +141,22 @@ export function usePracticeCoreActions({
       const noveltyScore = scoreCandidateNovelty(candidate, recentHistory, {
         historyWindow: NOVELTY_HISTORY_WINDOW
       })
+      const candidateDescriptor = buildProblemNoveltyDescriptor(candidate)
+      const isImmediateExactRepeat = Boolean(
+        currentDescriptor?.exactKey
+        && candidateDescriptor?.exactKey
+        && currentDescriptor.exactKey === candidateDescriptor.exactKey
+      )
+
+      if (isImmediateExactRepeat) {
+        if (!blockedImmediateRepeat || noveltyScore < blockedImmediateRepeat.score) {
+          blockedImmediateRepeat = {
+            problem: candidate,
+            score: noveltyScore
+          }
+        }
+        continue
+      }
 
       if (noveltyScore < bestScore) {
         bestScore = noveltyScore
@@ -144,6 +164,9 @@ export function usePracticeCoreActions({
       }
 
       if (noveltyScore <= NOVELTY_ACCEPT_SCORE) break
+    }
+    if (!nextProblem && blockedImmediateRepeat) {
+      nextProblem = blockedImmediateRepeat.problem
     }
     if (!nextProblem) return
     setCurrentProblem(nextProblem)
@@ -213,8 +236,9 @@ export function usePracticeCoreActions({
         isMixedMode: mixedMode
       }
     )
+    const isPartial = Boolean(result?.isPartial)
 
-    if (!isTableDrill && !isLevelFocusMode) {
+    if (!isTableDrill && !isLevelFocusMode && !isPartial) {
       adjustDifficulty(profile, correct, {
         progressionMode,
         timeSpent: result.speedTimeSec,
@@ -245,7 +269,10 @@ export function usePracticeCoreActions({
     setFeedback({
       correct,
       correctAnswer: result.correctAnswer,
-      studentAnswer
+      studentAnswer,
+      isPartial,
+      partialCode: result.partialCode || '',
+      partialDetail: result.partialDetail || ''
     })
 
     const answerTs = Number(result?.timestamp || Date.now())
@@ -263,7 +290,9 @@ export function usePracticeCoreActions({
     const sessionMeta = sessionTelemetryRef.current
     if (sessionMeta) {
       sessionMeta.answered += 1
-      if (correct) {
+      if (isPartial) {
+        sessionMeta.partial = Number(sessionMeta.partial || 0) + 1
+      } else if (correct) {
         sessionMeta.correct += 1
       } else {
         sessionMeta.wrong += 1
@@ -271,14 +300,20 @@ export function usePracticeCoreActions({
     }
 
     incrementTelemetryDailyMetric(profile, 'practice_answers', 1, answerTs)
-    incrementTelemetryDailyMetric(profile, correct ? 'practice_correct' : 'practice_wrong', 1, answerTs)
+    if (isPartial) {
+      incrementTelemetryDailyMetric(profile, 'practice_partial', 1, answerTs)
+    } else {
+      incrementTelemetryDailyMetric(profile, correct ? 'practice_correct' : 'practice_wrong', 1, answerTs)
+    }
     recordTelemetryEvent(profile, 'practice_answer', {
       sessionId: sessionMeta?.sessionId || '',
       correct,
+      partial: isPartial,
       problemType: currentProblem.template || currentProblem.problemType || '',
       operation: currentProblem.type || '',
       skillTag: result?.skillTag || '',
       errorCategory: result?.errorCategory || '',
+      partialCode: result?.partialCode || '',
       speedTimeSec: Number.isFinite(Number(result?.speedTimeSec))
         ? Number(Number(result.speedTimeSec).toFixed(2))
         : null,

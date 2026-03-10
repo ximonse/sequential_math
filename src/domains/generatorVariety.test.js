@@ -22,6 +22,20 @@ describe('domain generators variety', () => {
     expect(new Set(prompts).size).toBe(10)
   })
 
+  it('fractions level 3 is a dedicated simplify-focus level', () => {
+    const problems = Array.from({ length: 12 }, () => generateFractionsProblem('fractions', 3))
+    expect(problems.every(problem => problem.metadata?.requiresSimplifiedAnswer === true)).toBe(true)
+    expect(problems.every(problem => String(problem.display?.text || '').startsWith('Förenkla:'))).toBe(true)
+  })
+
+  it('fractions higher levels keep a mix of simplify and non-simplify prompts', () => {
+    const flags = Array.from(
+      { length: 15 },
+      () => Boolean(generateFractionsProblem('fractions', 8).metadata?.requiresSimplifiedAnswer)
+    )
+    expect(new Set(flags).size).toBeGreaterThan(1)
+  })
+
   it('percentage level 1 uses a wider prompt pool', () => {
     const prompts = collectPrompts(24, () => generatePercentageProblem('percentage', 1))
     expect(new Set(prompts).size).toBeGreaterThan(10)

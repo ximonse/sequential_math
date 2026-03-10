@@ -319,11 +319,17 @@ export function generateByDifficultyWithOptions(level, options = {}) {
     : candidates
   const safePool = pool.length > 0 ? pool : allTemplates
 
-  const closest = safePool.reduce((prev, curr) => {
-    const prevDiff = Math.abs(prev.difficulty.conceptual_level - targetLevel)
-    const currDiff = Math.abs(curr.difficulty.conceptual_level - targetLevel)
-    return currDiff < prevDiff ? curr : prev
-  })
+  const minDiff = safePool.reduce((best, template) => {
+    const diff = Math.abs(template.difficulty.conceptual_level - targetLevel)
+    return Math.min(best, diff)
+  }, Number.POSITIVE_INFINITY)
+  const closestPool = safePool.filter(
+    template => Math.abs(template.difficulty.conceptual_level - targetLevel) === minDiff
+  )
+  const closest = pickTemplateWithRotation(
+    `problemGenerator:fallback:l${targetLevel}:${String(preferredType || 'none')}`,
+    closestPool
+  ) || closestPool[0]
 
   return generateProblem(closest)
 }

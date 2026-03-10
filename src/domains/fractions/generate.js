@@ -16,11 +16,16 @@ function rotateNumber(key, arr) {
   return Number(rotatePick(key, arr))
 }
 
+function rotateBoolean(key, arr = [false, true]) {
+  return Boolean(rotatePick(key, arr))
+}
+
 function makeFractionProblem(text, answer, templateId) {
   return { text, answer, templateId }
 }
 
 // Returns { text, answer: { num, den }, templateId }
+const SIMPLIFY_FOCUS_LEVEL = 3
 
 function level1() {
   // Addition, same denominator
@@ -41,14 +46,15 @@ function level2() {
 }
 
 function level3() {
-  // Simplify a fraction
+  // Simplify focus level
   const pairs = [
-    [2, 4], [2, 6], [3, 6], [4, 8], [2, 8], [3, 9],
-    [4, 6], [6, 9], [4, 10], [6, 8], [4, 12], [6, 10],
-    [8, 12], [9, 12], [10, 15], [12, 18]
+    [2, 4], [2, 6], [3, 6], [4, 8], [2, 8], [3, 9], [4, 10], [6, 8],
+    [4, 6], [6, 9], [4, 12], [6, 10], [8, 12], [9, 12], [10, 15], [12, 18],
+    [14, 21], [15, 20], [16, 24], [18, 24], [20, 30], [21, 28], [24, 36], [27, 36],
+    [28, 42], [30, 45], [32, 40], [35, 49], [36, 48], [40, 56], [42, 54], [45, 60]
   ]
   const [n, d] = rotatePick('fractions:l3:pairs', pairs)
-  return makeFractionProblem(`Förenkla: ${n}/${d}`, reduce(n, d), 'l3_reduce')
+  return makeFractionProblem(`Förenkla: ${n}/${d}`, reduce(n, d), 'l3_simplify_focus')
 }
 
 function level4() {
@@ -170,6 +176,20 @@ const LEVEL_FNS = [
   level9, level10, level11, level12
 ]
 
+function resolveSimplifyRequirement(level, result) {
+  const text = String(result?.text || '')
+  if (level === SIMPLIFY_FOCUS_LEVEL || text.startsWith('Förenkla')) return true
+  if (level <= 3) return false
+  const requirementKey = `fractions:l${level}:simplify_requirement`
+  if (level <= 6) {
+    return rotateBoolean(requirementKey, [false, false, false, true])
+  }
+  return rotateBoolean(
+    requirementKey,
+    [false, false, true]
+  )
+}
+
 export function generateFractionsProblem(skill, level, _options = {}) {
   const lvl = Math.max(1, Math.min(12, Number(level) || 1))
   const fn = LEVEL_FNS[lvl]
@@ -184,14 +204,18 @@ export function generateFractionsProblem(skill, level, _options = {}) {
     }
   }
   if (!result) result = level1()
+  const requiresSimplifiedAnswer = resolveSimplifyRequirement(lvl, result)
+  const displayText = requiresSimplifiedAnswer && !String(result.text).startsWith('Förenkla')
+    ? `${result.text} (Förenkla svaret.)`
+    : result.text
 
   return {
     domain: 'fractions',
     skill: 'fractions',
     level: lvl,
     difficulty: { conceptual_level: lvl },
-    display: { text: result.text },
-    values: { text: result.text },
+    display: { text: displayText },
+    values: { text: displayText },
     answer: {
       type: 'fraction',
       value: formatFraction(result.answer.num, result.answer.den),
@@ -200,9 +224,11 @@ export function generateFractionsProblem(skill, level, _options = {}) {
     },
     metadata: {
       template: `level_${lvl}`,
-      promptText: result.text,
+      promptText: displayText,
       varietyTemplate: result.templateId,
-      skillTag: `fractions_l${lvl}_${result.templateId}`
+      requiresSimplifiedAnswer,
+      simplifyFocus: lvl === SIMPLIFY_FOCUS_LEVEL,
+      skillTag: `fractions_l${lvl}_${result.templateId}${requiresSimplifiedAnswer ? '_simplify_required' : ''}`
     }
   }
 }

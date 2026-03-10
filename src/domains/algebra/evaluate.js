@@ -15,6 +15,14 @@ function normalizeExpressionString(raw) {
     .replace(/−/g, '-')
 }
 
+function normalizeImplicitUnitCoefficients(raw) {
+  return normalizeExpressionString(raw).replace(/(^|[+-])1(?=[a-z])/g, '$1')
+}
+
+function hasExplicitUnitCoefficient(raw) {
+  return /(^|[+-])1(?=[a-z])/i.test(normalizeExpressionString(raw))
+}
+
 function expressionEquals(a, b) {
   const na = normalizeExpressionString(a)
   const nb = normalizeExpressionString(b)
@@ -51,16 +59,53 @@ export function evaluateAlgebraProblem(problem, studentAnswer) {
 
   if (answerType === 'expression') {
     const correct = String(problem?.answer?.correct || '')
+    const studentExpression = String(studentAnswer || '')
     const alternatives = Array.isArray(problem?.answer?.alternatives)
       ? problem.answer.alternatives
       : []
-    const isCorrect = expressionEquals(correct, studentAnswer)
-      || alternatives.some(alt => expressionEquals(alt, studentAnswer))
+    const isExactMatch = expressionEquals(correct, studentExpression)
+      || alternatives.some(alt => expressionEquals(alt, studentExpression))
+
+    if (isExactMatch) {
+      return {
+        correct: true,
+        correctAnswer: correct,
+        studentAnswer: studentExpression,
+        isReasonable: true,
+        isPartial: false,
+        absError: null,
+        relativeError: null
+      }
+    }
+
+    const isUnitCoefficientVariant = hasExplicitUnitCoefficient(studentExpression) && (
+      expressionEquals(normalizeImplicitUnitCoefficients(correct), normalizeImplicitUnitCoefficients(studentExpression))
+      || alternatives.some(alt => expressionEquals(
+        normalizeImplicitUnitCoefficients(alt),
+        normalizeImplicitUnitCoefficients(studentExpression)
+      ))
+    )
+
+    if (isUnitCoefficientVariant) {
+      return {
+        correct: true,
+        correctAnswer: correct,
+        studentAnswer: studentExpression,
+        isReasonable: true,
+        isPartial: true,
+        partialCode: 'explicit_unit_coefficient',
+        partialDetail: 'Rätt värde, men skriv utan 1 framför variabeln.',
+        absError: null,
+        relativeError: null
+      }
+    }
+
     return {
-      correct: isCorrect,
+      correct: false,
       correctAnswer: correct,
-      studentAnswer: String(studentAnswer || ''),
+      studentAnswer: studentExpression,
       isReasonable: true,
+      isPartial: false,
       absError: null,
       relativeError: null
     }
@@ -78,6 +123,7 @@ export function evaluateAlgebraProblem(problem, studentAnswer) {
     correctAnswer: String(expected),
     studentAnswer: numericAnswer,
     isReasonable: Number.isFinite(numericAnswer),
+    isPartial: false,
     absError: Number.isFinite(numericAnswer) ? Math.abs(numericAnswer - expected) : null,
     relativeError: null
   }

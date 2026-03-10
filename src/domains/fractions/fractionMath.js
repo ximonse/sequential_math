@@ -28,8 +28,8 @@ export function formatFraction(num, den) {
   return `${num}/${den}`
 }
 
-/** Parse "3/4", "2", "-1/3" → { num, den } reduced, or null on failure */
-export function parseFraction(str) {
+/** Parse "3/4", "2", "-1/3" → { num, den } (raw), or null on failure */
+export function parseFractionRaw(str) {
   const s = String(str || '').trim()
   if (s.includes('/')) {
     const parts = s.split('/')
@@ -37,11 +37,24 @@ export function parseFraction(str) {
     const n = parseInt(parts[0], 10)
     const d = parseInt(parts[1], 10)
     if (!Number.isFinite(n) || !Number.isFinite(d) || d === 0) return null
-    return reduce(n, d)
+    return { num: n, den: d }
   }
   const n = parseInt(s, 10)
   if (!Number.isFinite(n)) return null
   return { num: n, den: 1 }
+}
+
+/** Parse "3/4", "2", "-1/3" → { num, den } reduced, or null on failure */
+export function parseFraction(str) {
+  const parsed = parseFractionRaw(str)
+  if (!parsed) return null
+  return reduce(parsed.num, parsed.den)
+}
+
+export function isReducedFraction(fraction) {
+  if (!fraction || !Number.isFinite(Number(fraction.num)) || !Number.isFinite(Number(fraction.den))) return false
+  const reduced = reduce(Number(fraction.num), Number(fraction.den))
+  return Number(fraction.num) === reduced.num && Number(fraction.den) === reduced.den
 }
 
 export function fractionsEqual(f1, f2) {

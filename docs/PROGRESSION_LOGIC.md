@@ -77,6 +77,13 @@ innan uppgiften visas.
 Motorn väljer den kandidat som har lägst novelty-score och accepterar tidigt
 om score redan är låg. Detta gäller alla domäner (inte bara aritmetik med `a/b`).
 
+Dessutom blockeras exakt samma uppgift två gånger i rad så länge det finns
+alternativ i kandidatförsöken.
+
+För bråk gäller dessutom:
+- **Nivå 3** är en dedikerad förenkla-fokusnivå.
+- Övriga bråknivåer innehåller fortfarande förenklingskrav i mix, men med lägre andel.
+
 ### 3.2 Weighted difficulty mix
 
 Basbucketar:
@@ -152,6 +159,8 @@ I `recentProblems` sparas bl.a.:
 - `targetLevel`
 - `abilityBefore`, `abilityAfter`
 - `isReasonable`, `absError`, `relativeError`, `tolerance`
+- `isPartial`, `partialCode`, `partialDetail` (för svar som är värdemässigt rätt
+  men formmässigt ofullständiga, t.ex. explicit koefficient `1x`)
 - metadata som `carryCount`, `borrowCount`
 
 I `adaptive.recentSelections` sparas urvalslogg (för framtida visualisering).

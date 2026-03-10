@@ -76,6 +76,9 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
   const correct = typeof evaluation?.correct === 'boolean'
     ? evaluation.correct
     : isAnswerCorrect(studentAnswer, problem.result)
+  const isPartial = Boolean(correct && evaluation?.isPartial)
+  const partialCode = String(evaluation?.partialCode || '').trim()
+  const partialDetail = String(evaluation?.partialDetail || '').trim()
   const errorAnalysis = analyzeStudentError(problem, studentAnswer)
   const errorCategory = classifyErrorCategory(problem, studentAnswer, correct, options, errorAnalysis)
   const timing = deriveTimingMetrics(profile, problem, timeSpent, options)
@@ -116,6 +119,9 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     promptText: String(problem?.display?.text || problem?.metadata?.promptText || '').trim(),
     correctAnswer,
     studentAnswer,
+    isPartial,
+    partialCode,
+    partialDetail,
     answerLength: getNormalizedAnswerLength(options.rawAnswer, studentAnswer),
     correct,
     errorCategory,
@@ -371,9 +377,15 @@ export function getConsecutiveErrors(profile) {
  * Hämta antal rätt i rad (streak)
  */
 export function getCurrentStreak(profile) {
+  const history = Array.isArray(profile?.problemLog) && profile.problemLog.length > 0
+    ? profile.problemLog
+    : (Array.isArray(profile?.recentProblems) ? profile.recentProblems : [])
+
   let count = 0
-  for (let i = profile.recentProblems.length - 1; i >= 0; i--) {
-    if (profile.recentProblems[i].correct) {
+  for (let i = history.length - 1; i >= 0; i--) {
+    const attempt = history[i]
+    if (attempt?.isPartial) continue
+    if (attempt?.correct) {
       count++
     } else {
       break

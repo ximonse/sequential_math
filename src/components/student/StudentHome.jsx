@@ -5,7 +5,7 @@ import { getStartOfWeekTimestamp } from '../../lib/studentProfile'
 import { inferOperationFromProblemType } from '../../lib/mathUtils'
 import { getOperationLabel, getOperationMinLevel, OPERATION_LABELS, STANDARD_OPERATIONS } from '../../lib/operations'
 import { decodeAssignmentPayload, encodeAssignmentPayload, getActiveAssignment, getAssignmentById } from '../../lib/assignments'
-import { getProgressionModeLabel, PROGRESSION_MODE_CHALLENGE, PROGRESSION_MODE_STEADY, normalizeProgressionMode } from '../../lib/progressionModes'
+import { normalizeProgressionMode } from '../../lib/progressionModes'
 import { markStudentPresence, PRESENCE_HEARTBEAT_MS, PRESENCE_SAVE_THROTTLE_MS } from '../../lib/studentPresence'
 import { incrementTelemetryDailyMetric, recordTelemetryEvent } from '../../lib/telemetry'
 import StudentHomeAssignmentLaunchCard from './StudentHomeAssignmentLaunchCard'
@@ -14,7 +14,7 @@ import StudentHomeProgressCard from './StudentHomeProgressCard'
 import StudentHomeTableDrillCard from './StudentHomeTableDrillCard'
 import StudentHomeTicketCard from './StudentHomeTicketCard'
 import StudentHomeTrainingOptionsCard from './StudentHomeTrainingOptionsCard'
-import { buildLevelMasteryView, buildPracticePath, buildTableStatus, createOperationLevelBuckets, getTableStatusClass, isBucketMastered, LEVELS, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE, TABLES } from './studentHomeUtils'
+import { buildLevelMasteryView, buildPracticePath, buildTableStatus, getTableStatusClass, LEVELS, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE, TABLES } from './studentHomeUtils'
 
 function StudentHome() {
   const { studentId } = useParams()
@@ -28,7 +28,6 @@ function StudentHome() {
   const [newPassword, setNewPassword] = useState('')
   const [passwordMessage, setPasswordMessage] = useState('')
   const [selectedTables, setSelectedTables] = useState([])
-  const [selectedProgressionMode, setSelectedProgressionMode] = useState(PROGRESSION_MODE_CHALLENGE)
   const presenceSyncRef = useRef({
     lastSavedAt: 0
   })
@@ -56,11 +55,6 @@ function StudentHome() {
         navigate('/', { replace: true })
         return
       }
-      const preferredMode = normalizeProgressionMode(
-        loaded?.preferences?.defaultProgressionMode,
-        PROGRESSION_MODE_CHALLENGE
-      )
-      setSelectedProgressionMode(preferredMode)
       setProfile(loaded)
     })()
 
@@ -169,39 +163,31 @@ function StudentHome() {
 
   const operationMasteryBoards = useMemo(() => {
     if (!profile) return []
+    const MASTERY_WINDOW = 15
     const weekStart = getStartOfWeekTimestamp()
     const monthStart = Date.now() - 30 * 86400000
     const operationIds = Object.keys(OPERATION_LABELS)
-    const buckets = Object.fromEntries(
-      operationIds.map(operation => [operation, createOperationLevelBuckets()])
-    )
 
-    for (const result of (Array.isArray(profile.recentProblems) ? profile.recentProblems : [])) {
+    const source = (Array.isArray(profile.problemLog) && profile.problemLog.length > 0)
+      ? profile.problemLog
+      : (Array.isArray(profile.recentProblems) ? profile.recentProblems : [])
+
+    const bucketResults = {}
+    for (const result of source) {
       const operation = inferOperationFromProblemType(result.problemType, {
         fallback: 'addition',
         allowUnknownPrefix: false
       })
-      if (!buckets[operation]) continue
-
+      if (!operationIds.includes(operation)) continue
       const level = Math.round(Number(result?.difficulty?.conceptual_level || 0))
       if (!Number.isInteger(level) || level < 1 || level > 12) continue
 
-      const historicalBucket = buckets[operation].historical[level]
-      historicalBucket.attempts += 1
-      if (result.correct) historicalBucket.correct += 1
-
-      const ts = Number(result.timestamp || 0)
-      if (ts >= monthStart) {
-        const monthlyBucket = buckets[operation].monthly[level]
-        monthlyBucket.attempts += 1
-        if (result.correct) monthlyBucket.correct += 1
-      }
-
-      if (ts >= weekStart) {
-        const weeklyBucket = buckets[operation].weekly[level]
-        weeklyBucket.attempts += 1
-        if (result.correct) weeklyBucket.correct += 1
-      }
+      const key = `${operation}:${level}`
+      if (!bucketResults[key]) bucketResults[key] = []
+      bucketResults[key].push({
+        correct: Boolean(result.correct),
+        ts: Number(result.timestamp || 0)
+      })
     }
 
     return operationIds.map(operation => {
@@ -209,12 +195,35 @@ function StudentHome() {
       const opLevels = LEVELS.filter(l => l >= minLevel)
       return {
         operation,
-        historical: opLevels.map(level => buildLevelMasteryView(
-          level,
-          buckets[operation].historical[level],
-          buckets[operation].weekly[level],
-          buckets[operation].monthly[level]
-        ))
+        historical: opLevels.map(level => {
+          const all = bucketResults[`${operation}:${level}`] || []
+          const windowed = all.slice(-MASTERY_WINDOW)
+          const weekAll = all.filter(r => r.ts >= weekStart)
+          const monthAll = all.filter(r => r.ts >= monthStart)
+          const weekWindowed = weekAll.slice(-MASTERY_WINDOW)
+          const monthWindowed = monthAll.slice(-MASTERY_WINDOW)
+
+          return buildLevelMasteryView(level,
+            {
+              attempts: all.length,
+              correct: all.filter(r => r.correct).length,
+              masteryAttempts: windowed.length,
+              masteryCorrect: windowed.filter(r => r.correct).length
+            },
+            {
+              attempts: weekAll.length,
+              correct: weekAll.filter(r => r.correct).length,
+              masteryAttempts: weekWindowed.length,
+              masteryCorrect: weekWindowed.filter(r => r.correct).length
+            },
+            {
+              attempts: monthAll.length,
+              correct: monthAll.filter(r => r.correct).length,
+              masteryAttempts: monthWindowed.length,
+              masteryCorrect: monthWindowed.filter(r => r.correct).length
+            }
+          )
+        })
       }
     })
   }, [profile])
@@ -285,28 +294,14 @@ function StudentHome() {
     if (selectedTables.length === 0) return
     const now = Date.now()
     recordTelemetryEvent(profile, 'practice_launch_table_drill', {
-      tables: selectedTables,
-      progressionMode: selectedProgressionMode
+      tables: selectedTables
     }, now)
     incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
     saveProfile(profile)
     const params = new URLSearchParams()
     params.set('mode', 'multiplication')
     params.set('tables', selectedTables.join(','))
-    params.set('pace', selectedProgressionMode)
     navigate(`/student/${studentId}/practice?${params.toString()}`)
-  }
-
-  const handleProgressionModeSelect = (modeValue) => {
-    const normalized = normalizeProgressionMode(modeValue, PROGRESSION_MODE_CHALLENGE)
-    setSelectedProgressionMode(normalized)
-    if (!profile) return
-
-    if (!profile.preferences || typeof profile.preferences !== 'object') {
-      profile.preferences = {}
-    }
-    profile.preferences.defaultProgressionMode = normalized
-    saveProfile(profile)
   }
 
   const startLevelPractice = useCallback((operation, level) => {
@@ -317,27 +312,22 @@ function StudentHome() {
     const now = Date.now()
     recordTelemetryEvent(profile, 'practice_launch_level_focus', {
       operation,
-      level,
-      progressionMode: PROGRESSION_MODE_STEADY
+      level
     }, now)
     incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
     saveProfile(profile)
     navigate(buildPracticePath(studentId, {
       mode: operation,
-      progressionMode: PROGRESSION_MODE_STEADY,
       level
     }))
-  }, [profile, navigate, selectedProgressionMode, studentId])
+  }, [profile, navigate, studentId])
 
   const startFreePractice = () => {
     const now = Date.now()
-    recordTelemetryEvent(profile, 'practice_launch_free', {
-      progressionMode: selectedProgressionMode
-    }, now)
+    recordTelemetryEvent(profile, 'practice_launch_free', {}, now)
     incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
     saveProfile(profile)
     navigate(buildPracticePath(studentId, {
-      progressionMode: selectedProgressionMode,
       ops: operationKeys
     }))
   }
@@ -345,14 +335,12 @@ function StudentHome() {
   const startOperationPractice = (operation) => {
     const now = Date.now()
     recordTelemetryEvent(profile, 'practice_launch_operation', {
-      operation,
-      progressionMode: selectedProgressionMode
+      operation
     }, now)
     incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
     saveProfile(profile)
     navigate(buildPracticePath(studentId, {
-      mode: operation,
-      progressionMode: selectedProgressionMode
+      mode: operation
     }))
   }
 
@@ -397,8 +385,7 @@ function StudentHome() {
   const handleStartAssignmentOrFree = () => {
     const now = Date.now()
     recordTelemetryEvent(profile, 'practice_launch_assignment_or_free', {
-      assignmentId: assignment?.id || '',
-      progressionMode: selectedProgressionMode
+      assignmentId: assignment?.id || ''
     }, now)
     incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
     saveProfile(profile)
@@ -407,7 +394,6 @@ function StudentHome() {
       return
     }
     navigate(buildPracticePath(studentId, {
-      progressionMode: selectedProgressionMode,
       ops: operationKeys
     }))
   }
@@ -438,10 +424,6 @@ function StudentHome() {
         />
 
         <StudentHomeTrainingOptionsCard
-          selectedProgressionMode={selectedProgressionMode}
-          progressionModeOptions={[PROGRESSION_MODE_CHALLENGE, PROGRESSION_MODE_STEADY]}
-          onSelectProgressionMode={handleProgressionModeSelect}
-          getProgressionModeLabel={getProgressionModeLabel}
           onStartFreePractice={startFreePractice}
           operationKeys={operationKeys}
           onStartOperationPractice={startOperationPractice}
@@ -452,7 +434,7 @@ function StudentHome() {
         <StudentHomeProgressCard
           operationMasteryBoards={operationMasteryBoards}
           onSelectLevel={startLevelPractice}
-          hasRecentProblems={profile.recentProblems.length > 0}
+          hasRecentProblems={profile.recentProblems.length > 0 || (Array.isArray(profile.problemLog) && profile.problemLog.length > 0)}
           masteryMinAttempts={MASTERY_MIN_ATTEMPTS}
           masteryMinSuccessRate={MASTERY_MIN_SUCCESS_RATE}
         />

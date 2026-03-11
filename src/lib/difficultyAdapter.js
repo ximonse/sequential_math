@@ -328,8 +328,6 @@ export function selectNextProblem(profile, options = {}) {
 
 export function shouldOfferSteadyAdvance(profile, options = {}) {
   ensureDifficultyMeta(profile)
-  const progressionMode = normalizeProgressionMode(options.progressionMode)
-  if (progressionMode !== PROGRESSION_MODE_STEADY) return null
 
   const operation = resolveOfferOperation(options)
   if (!operation) return null

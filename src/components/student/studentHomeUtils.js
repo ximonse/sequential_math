@@ -19,8 +19,8 @@ export function createOperationLevelBuckets() {
 }
 
 export function isBucketMastered(bucket) {
-  const attempts = Number(bucket?.attempts || 0)
-  const correct = Number(bucket?.correct || 0)
+  const attempts = Number(bucket?.masteryAttempts ?? bucket?.attempts ?? 0)
+  const correct = Number(bucket?.masteryCorrect ?? bucket?.correct ?? 0)
   const rate = attempts > 0 ? correct / attempts : 0
   return attempts >= MASTERY_MIN_ATTEMPTS && rate >= MASTERY_MIN_SUCCESS_RATE
 }

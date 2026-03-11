@@ -310,6 +310,191 @@ body[class*="theme-"] .hover\:bg-green-600:hover {
   filter: brightness(1.07);
 }
 
+/* --- Light background overrides (status colors → surface-soft) --- */
+body[class*="theme-"] .bg-yellow-50,
+body[class*="theme-"] .bg-yellow-100,
+body[class*="theme-"] .bg-amber-50,
+body[class*="theme-"] .bg-amber-100,
+body[class*="theme-"] .bg-orange-100,
+body[class*="theme-"] .bg-red-50,
+body[class*="theme-"] .bg-red-100,
+body[class*="theme-"] .bg-lime-50,
+body[class*="theme-"] .bg-lime-100,
+body[class*="theme-"] .bg-rose-50,
+body[class*="theme-"] .bg-indigo-50,
+body[class*="theme-"] .bg-indigo-100,
+body[class*="theme-"] .bg-purple-50,
+body[class*="theme-"] .bg-purple-100,
+body[class*="theme-"] .bg-cyan-50,
+body[class*="theme-"] .bg-cyan-100,
+body[class*="theme-"] .bg-emerald-50,
+body[class*="theme-"] .bg-emerald-100,
+body[class*="theme-"] .bg-slate-50,
+body[class*="theme-"] .bg-slate-100,
+body[class*="theme-"] .bg-sky-50 {
+  background-color: var(--surface-soft) !important;
+}
+
+body[class*="theme-"] .bg-yellow-200,
+body[class*="theme-"] .bg-yellow-300,
+body[class*="theme-"] .bg-amber-200,
+body[class*="theme-"] .bg-amber-300,
+body[class*="theme-"] .bg-orange-200,
+body[class*="theme-"] .bg-orange-300,
+body[class*="theme-"] .bg-red-200,
+body[class*="theme-"] .bg-red-300,
+body[class*="theme-"] .bg-lime-200,
+body[class*="theme-"] .bg-lime-300,
+body[class*="theme-"] .bg-emerald-200,
+body[class*="theme-"] .bg-emerald-300,
+body[class*="theme-"] .bg-indigo-200,
+body[class*="theme-"] .bg-slate-200 {
+  background-color: var(--surface-strong) !important;
+}
+
+/* --- Medium/strong background overrides (400-500 → accent-tinted) --- */
+body[class*="theme-"] .bg-yellow-400,
+body[class*="theme-"] .bg-yellow-500,
+body[class*="theme-"] .bg-amber-400,
+body[class*="theme-"] .bg-amber-500,
+body[class*="theme-"] .bg-orange-400,
+body[class*="theme-"] .bg-orange-500,
+body[class*="theme-"] .bg-orange-600 {
+  background-color: color-mix(in srgb, var(--accent) 70%, orange) !important;
+  color: #ffffff !important;
+}
+
+body[class*="theme-"] .bg-red-400,
+body[class*="theme-"] .bg-red-500 {
+  background-color: var(--danger) !important;
+  color: #ffffff !important;
+}
+
+body[class*="theme-"] .bg-amber-600,
+body[class*="theme-"] .bg-amber-700,
+body[class*="theme-"] .bg-yellow-600,
+body[class*="theme-"] .bg-yellow-700,
+body[class*="theme-"] .bg-yellow-800,
+body[class*="theme-"] .bg-amber-800 {
+  background-color: color-mix(in srgb, var(--surface-strong) 60%, var(--accent)) !important;
+  color: var(--text-main) !important;
+}
+
+body[class*="theme-"] .bg-indigo-500,
+body[class*="theme-"] .bg-violet-500,
+body[class*="theme-"] .bg-violet-600,
+body[class*="theme-"] .bg-violet-700,
+body[class*="theme-"] .bg-purple-500,
+body[class*="theme-"] .bg-purple-700 {
+  background-color: var(--accent) !important;
+}
+
+body[class*="theme-"] .bg-rose-600,
+body[class*="theme-"] .bg-rose-700 {
+  background-color: var(--danger) !important;
+}
+
+body[class*="theme-"] .bg-lime-600,
+body[class*="theme-"] .bg-lime-700 {
+  background-color: var(--accent-2) !important;
+}
+
+body[class*="theme-"] .bg-sky-600,
+body[class*="theme-"] .bg-teal-500 {
+  background-color: var(--accent) !important;
+}
+
+/* --- Dark text overrides (status text → readable on dark surfaces) --- */
+body[class*="theme-"] .text-yellow-600,
+body[class*="theme-"] .text-yellow-700,
+body[class*="theme-"] .text-yellow-800,
+body[class*="theme-"] .text-amber-600,
+body[class*="theme-"] .text-amber-700,
+body[class*="theme-"] .text-amber-800,
+body[class*="theme-"] .text-amber-900,
+body[class*="theme-"] .text-orange-600,
+body[class*="theme-"] .text-orange-700,
+body[class*="theme-"] .text-orange-900 {
+  color: var(--text-main) !important;
+}
+
+body[class*="theme-"] .text-yellow-200,
+body[class*="theme-"] .text-yellow-300,
+body[class*="theme-"] .text-yellow-500,
+body[class*="theme-"] .text-amber-200,
+body[class*="theme-"] .text-amber-300 {
+  color: var(--text-muted) !important;
+}
+
+body[class*="theme-"] .text-indigo-600,
+body[class*="theme-"] .text-indigo-700,
+body[class*="theme-"] .text-indigo-800,
+body[class*="theme-"] .text-sky-700 {
+  color: var(--accent) !important;
+}
+
+body[class*="theme-"] .text-purple-600,
+body[class*="theme-"] .text-purple-700,
+body[class*="theme-"] .text-violet-700,
+body[class*="theme-"] .text-violet-800,
+body[class*="theme-"] .text-violet-900,
+body[class*="theme-"] .text-purple-400 {
+  color: var(--accent) !important;
+}
+
+body[class*="theme-"] .text-emerald-700,
+body[class*="theme-"] .text-emerald-800,
+body[class*="theme-"] .text-emerald-900 {
+  color: var(--accent-2) !important;
+}
+
+body[class*="theme-"] .text-emerald-200 {
+  color: var(--text-muted) !important;
+}
+
+body[class*="theme-"] .text-cyan-700,
+body[class*="theme-"] .text-teal-700 {
+  color: var(--accent) !important;
+}
+
+body[class*="theme-"] .text-lime-800,
+body[class*="theme-"] .text-lime-700 {
+  color: var(--accent-2) !important;
+}
+
+body[class*="theme-"] .text-rose-700,
+body[class*="theme-"] .text-rose-800 {
+  color: var(--danger) !important;
+}
+
+body[class*="theme-"] .text-slate-700,
+body[class*="theme-"] .text-slate-600 {
+  color: var(--text-main) !important;
+}
+
+/* --- Border overrides for remaining color families --- */
+body[class*="theme-"] .border-yellow-200,
+body[class*="theme-"] .border-yellow-300,
+body[class*="theme-"] .border-amber-200,
+body[class*="theme-"] .border-amber-300,
+body[class*="theme-"] .border-orange-200,
+body[class*="theme-"] .border-orange-300,
+body[class*="theme-"] .border-lime-200,
+body[class*="theme-"] .border-lime-300,
+body[class*="theme-"] .border-rose-200,
+body[class*="theme-"] .border-rose-300,
+body[class*="theme-"] .border-violet-200,
+body[class*="theme-"] .border-violet-300,
+body[class*="theme-"] .border-purple-200,
+body[class*="theme-"] .border-purple-300,
+body[class*="theme-"] .border-cyan-200,
+body[class*="theme-"] .border-cyan-300,
+body[class*="theme-"] .border-slate-200,
+body[class*="theme-"] .border-slate-300,
+body[class*="theme-"] .border-sky-200 {
+  border-color: var(--border) !important;
+}
+
 body.theme-psychedelic .bg-white,
 body.theme-psychedelic .bg-gray-50,
 body.theme-psychedelic .bg-gray-100 {

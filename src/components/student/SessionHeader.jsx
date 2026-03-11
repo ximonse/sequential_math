@@ -25,7 +25,7 @@ function SessionHeader({
         onClick={onExit}
         className="text-gray-400 hover:text-gray-600"
       >
-        Avsluta
+        Startsida
       </button>
     </div>
   )

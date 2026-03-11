@@ -402,8 +402,9 @@ export function getMasteryOverview(profile, options = {}) {
   const minAttempts = options.minAttempts ?? 5
   const minSuccessRate = options.minSuccessRate ?? 0.85
   const since = options.since ?? null
+  const maxAttemptsPerBucket = options.maxAttemptsPerBucket ?? 15
 
-  const buckets = {}
+  const bucketLists = {}
 
   for (const result of profile.recentProblems) {
     if (since && result.timestamp < since) continue
@@ -414,23 +415,19 @@ export function getMasteryOverview(profile, options = {}) {
     const level = Math.round(rawLevel)
 
     const key = `${operation}:${level}`
-    if (!buckets[key]) {
-      buckets[key] = {
-        operation,
-        level,
-        attempts: 0,
-        correct: 0
-      }
+    if (!bucketLists[key]) {
+      bucketLists[key] = { operation, level, results: [] }
     }
-    buckets[key].attempts++
-    if (result.correct) buckets[key].correct++
+    bucketLists[key].results.push(result.correct)
   }
 
   const mastery = {}
 
-  for (const entry of Object.values(buckets)) {
-    if (entry.attempts < minAttempts) continue
-    const success = entry.correct / entry.attempts
+  for (const entry of Object.values(bucketLists)) {
+    const recent = entry.results.slice(-maxAttemptsPerBucket)
+    if (recent.length < minAttempts) continue
+    const correct = recent.filter(Boolean).length
+    const success = correct / recent.length
     if (success >= minSuccessRate) {
       if (!mastery[entry.operation]) mastery[entry.operation] = []
       mastery[entry.operation].push(entry.level)

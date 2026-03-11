@@ -61,11 +61,9 @@ export function createStorageStudentApi(deps) {
     const local = loadProfile(normalizedId)
     if (local) {
       if (CLOUD_ENABLED) {
-        const merged = await syncProfileToCloud(local)
-        if (merged) {
-          saveProfileLocalOnly(merged)
-          return merged
-        }
+        syncProfileToCloud(local).then(merged => {
+          if (merged) saveProfileLocalOnly(merged)
+        }).catch(() => {})
       }
       return local
     }

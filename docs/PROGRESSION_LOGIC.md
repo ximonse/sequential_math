@@ -86,7 +86,7 @@ För bråk gäller dessutom:
 
 ### 3.2 Weighted difficulty mix
 
-Basbucketar:
+Basbucketar (challenge-profil, används för all träning):
 
 - `very_easy` (offset -2): 5%
 - `easy` (offset -1): 25%
@@ -100,6 +100,11 @@ Bucket-vikter justeras dynamiskt:
 - mer svår/challenge vid hög success
 
 Målnivå = `round(currentDifficulty) + bucketOffset`, clamped till tillåtet nivåspann.
+
+> **Obs:** Tidigare fanns ett tempoval (Utmaning/Lugn) med olika bucket-profiler.
+> Tempovalet är borttaget — alla sessioner använder nu samma profil.
+> I praktiken hade `lockToMasteryFloor` redan gjort bucket-skillnaderna irrelevanta
+> för all single-domain- och fri träning.
 
 ## 4. Typmix (räknesätt) i fri träning
 
@@ -187,16 +192,29 @@ Detta används i:
 
 Regel för mastery:
 
-- minst 5 försök på nivån
-- minst 80% rätt
+- minst 5 försök på nivån (av de senaste 15 per nivå)
+- minst 85% rätt (beräknat på senaste 15 försök, inte alla)
+
+Sliding window: Både träningssystemet och Framsteg-kortet använder de
+**senaste 15 försöken** per operation+nivå för mastery-bedömning. Äldre misstag
+under inlärningsfasen drar inte ner snittet permanent.
+
+Datakälla: Framsteg-kortet läser från `problemLog` (max 5000 poster) för att
+undvika att resultat försvinner vid intensiv fri träning. Träningssystemets
+mastery-check (`getLowestUnmasteredLevel`) läser från `recentProblems` (max 250)
+med samma 15-fönster.
 
 Beräknas för:
 
 - historiskt
 - denna vecka
 
-I träningsvyn visas diskret bara aktuell typ.  
+I träningsvyn visas diskret bara aktuell typ.
 På elevens startsida visas klarade nivåer per räknesätt.
+
+Nivåerbjudande: När eleven klarar en nivå (6+ problem, 85%+ rätt) erbjuds hen
+att gå upp till nästa nivå. Detta gäller alla träningslägen (single-domain,
+fri träning och nivåfokus).
 
 ## 10. Assignment-logik
 

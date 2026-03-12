@@ -25,9 +25,9 @@ function pushAttempts(target, problemType, level, attempts, correctAttempts = at
 }
 
 describe('sessionUtils getSessionRules', () => {
-  it('locks free training to global lowest unfinished level across domains', () => {
+  it('picks each domain at its own mastery floor in free training (per-domain rotation)', () => {
     const recent = []
-    // Addition level 1 mastered -> floor becomes 2.
+    // Addition level 1 mastered — addition will train at level 2.
     pushAttempts(recent, 'add_basic', 1, 5, 5)
     const profile = createProfile(recent)
 
@@ -43,16 +43,17 @@ describe('sessionUtils getSessionRules', () => {
       profile
     )
 
+    // Last recent problem was addition → rotate to subtraction.
     expect(rules.allowedTypes).toEqual(['subtraction'])
     expect(rules.startAtLowestUnmastered).toBe(true)
     expect(rules.lockToMasteryFloor).toBe(true)
-    expect(rules.startReason).toBe('free_training_global_floor')
+    expect(rules.startReason).toBe('free_training_per_domain')
   })
 
-  it('rotates between domains on the same global floor in free training', () => {
+  it('rotates between all domains equally in free training', () => {
     const recent = []
     pushAttempts(recent, 'add_basic', 1, 5, 5)
-    // Latest floor-level item is subtraction level 1, so next should rotate to multiplication.
+    // Latest problem is subtraction → next should rotate to multiplication.
     pushAttempts(recent, 'sub_basic', 1, 1, 1)
     const profile = createProfile(recent)
 
@@ -62,7 +63,7 @@ describe('sessionUtils getSessionRules', () => {
       null,
       4,
       [],
-      'steady',
+      'challenge',
       null,
       ['addition', 'subtraction', 'multiplication'],
       profile
@@ -70,6 +71,7 @@ describe('sessionUtils getSessionRules', () => {
 
     expect(rules.allowedTypes).toEqual(['multiplication'])
     expect(rules.lockToMasteryFloor).toBe(true)
+    expect(rules.startReason).toBe('free_training_per_domain')
   })
 
   it('locks single-domain training to mastery floor, but not Framsteg level-focus', () => {

@@ -30,8 +30,6 @@ Elev kan starta:
 3. Tabellövning (val av tabeller).
 4. Nivåfokus via `Framsteg` (klicka en nivå-ruta).
 
-Tempo (challenge/steady) kan väljas på startsidan.
-
 ## 4. Under en uppgift
 
 - Uppgift visas med stor text.
@@ -77,9 +75,9 @@ Farger:
 
 Elev kan klicka nivå-ruta för att träna just den nivån.
 
-## 9. Avsluta pass
+## 9. Tillbaka till startsidan
 
-Eleven kan alltid gå tillbaka till sin startsida utan att logga ut och in igen.
+Eleven kan alltid gå tillbaka till sin startsida via knappen `Startsida` utan att logga ut och in igen.
 
 ## 10. Byta elevlösenord
 

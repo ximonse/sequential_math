@@ -19,7 +19,7 @@ graph TB
         TL[telemetry.js<br/>Händelser + dagliga mätvärden]
         PR[studentPresence.js<br/>Närvaro + engagemang]
         TK[tickets.js<br/>Ticket-system]
-        PM[progressionModes.js<br/>Lugn / Utmaning]
+        PM[progressionModes.js<br/>challenge default]
     end
 
     subgraph "Templates"
@@ -220,33 +220,33 @@ flowchart TD
     Answer([Elev svarar]) --> Correct{Rätt svar?}
 
     Correct -->|Ja| StreakCheck{Streak >= 3<br/>OCH success >= 90%?}
-    StreakCheck -->|Ja| Strong["delta = 0.35 (utmaning)<br/>delta = 0.22 (lugn)"]
+    StreakCheck -->|Ja| Strong["delta = +0.35"]
     StreakCheck -->|Nej| Streak2{Streak >= 2?}
-    Streak2 -->|Ja| StreakDelta["delta = 0.20 (utmaning)<br/>delta = 0.12 (lugn)"]
+    Streak2 -->|Ja| StreakDelta["delta = +0.20"]
     Streak2 -->|Nej| SuccCheck{success >= 55%?}
-    SuccCheck -->|Ja| Normal["delta = 0.10 (utmaning)<br/>delta = 0.06 (lugn)"]
+    SuccCheck -->|Ja| Normal["delta = +0.10"]
     SuccCheck -->|Nej| LowLevel{difficulty <= 2?}
-    LowLevel -->|Ja| LowDelta["delta = 0.05 (utmaning)<br/>delta = 0.03 (lugn)"]
+    LowLevel -->|Ja| LowDelta["delta = +0.05"]
     LowLevel -->|Nej| Zero["delta = 0"]
 
     Strong & StreakDelta & Normal & LowDelta & Zero --> Comeback{Under peak<br/>streak >= 2<br/>success >= 70%?}
-    Comeback -->|Ja| ComebackAdd["+ 0.15 (utmaning)<br/>+ 0.08 (lugn)"]
+    Comeback -->|Ja| ComebackAdd["+ 0.15"]
     Comeback -->|Nej| SpeedCheck
 
     ComebackAdd --> SpeedCheck{Snabbt svar?<br/>time <= estimated × 0.75}
-    SpeedCheck -->|Ja| SpeedAdd["+ 0.06 (utmaning)<br/>+ 0.03 (lugn)"]
+    SpeedCheck -->|Ja| SpeedAdd["+ 0.06"]
     SpeedCheck -->|Nej| Apply
 
     SpeedAdd --> Apply
 
     Correct -->|Fel| ErrType{Ouppmärksamhetsfel?}
-    ErrType -->|Ja| Inattention["delta = -0.03 (utmaning)<br/>delta = -0.02 (lugn)"]
+    ErrType -->|Ja| Inattention["delta = -0.03"]
     ErrType -->|Nej| ErrCount{3+ fel i rad<br/>OCH success < 50%?}
-    ErrCount -->|Ja| HardDown["delta = -0.50 (utmaning)<br/>delta = -0.35 (lugn)"]
+    ErrCount -->|Ja| HardDown["delta = -0.50"]
     ErrCount -->|Nej| Err2{2+ fel i rad?}
-    Err2 -->|Ja| MidDown["delta = -0.25 (utmaning)<br/>delta = -0.18 (lugn)"]
+    Err2 -->|Ja| MidDown["delta = -0.25"]
     Err2 -->|Nej| SoftCheck{success < 55%?}
-    SoftCheck -->|Ja| SoftDown["delta = -0.15 (utmaning)<br/>delta = -0.10 (lugn)"]
+    SoftCheck -->|Ja| SoftDown["delta = -0.15"]
     SoftCheck -->|Nej| NoDelta["delta = 0"]
 
     Inattention & HardDown & MidDown & SoftDown & NoDelta --> Apply
@@ -511,7 +511,7 @@ flowchart TD
     CheckMastery -->|Ja| Celebrate[🎉 Grattis-skärm<br/>Nästa nivå / Stanna]
     CheckMastery -->|Nej| CheckBreak{Pausförslag?<br/>>= 25 problem<br/>tappande trend}
     CheckBreak -->|Ja| Break[Visa pausförslag]
-    CheckBreak -->|Nej| CheckAdvance{Lugn-läge?<br/>shouldOfferSteadyAdvance?}
+    CheckBreak -->|Nej| CheckAdvance{Single-domain?<br/>shouldOfferSteadyAdvance?}
     CheckAdvance -->|Ja| Advance[📈 Vill du prova<br/>nästa nivå?]
     CheckAdvance -->|Nej| Feedback[Visa feedback<br/>Rätt! / Inte riktigt]
 
@@ -561,24 +561,21 @@ graph LR
 
 ---
 
-## 13. Progressionslägen — Utmaning vs Lugn
+## 13. Progressionslogik
+
+> **Borttaget:** Tempovalet Utmaning/Lugn är borttaget. Alla sessioner
+> använder nu samma challenge-profil. Skillnaden var minimal i praktiken
+> eftersom `lockToMasteryFloor` redan styrde vilken nivå problem genereras på.
 
 ```mermaid
 graph TB
-    subgraph Challenge ["Utmaning (challenge)"]
-        C_Up["Uppåt: snabbare<br/>strong: +0.35, streak: +0.20<br/>normal: +0.10, speed: +0.06"]
-        C_Down["Nedåt: måttligt<br/>hard: -0.50, mid: -0.25<br/>soft: -0.15"]
-        C_Bucket["Buckets:<br/>very_easy 5%, easy 25%<br/>core 50%, hard 15%<br/>challenge 5%"]
-        C_Push["Push vid >92% success<br/>efter 6+ problem"]
-        C_Boot["Bootstrap: 30% chans<br/>att testa nivå 2"]
-    end
-
-    subgraph Steady ["Lugn (steady)"]
-        S_Up["Uppåt: långsammare<br/>strong: +0.22, streak: +0.12<br/>normal: +0.06, speed: +0.03"]
-        S_Down["Nedåt: snällare<br/>hard: -0.35, mid: -0.18<br/>soft: -0.10"]
-        S_Bucket["Buckets:<br/>very_easy 10%, easy 35%<br/>core 45%, hard 8%<br/>challenge 2%"]
-        S_Push["Push vid >96% success<br/>efter 10+ problem"]
-        S_Boot["Bootstrap: 15% chans<br/>att testa nivå 2"]
-        S_Advance["Erbjud nivåbyte:<br/>shouldOfferSteadyAdvance<br/>6+ problem, 85%+ accuracy"]
+    subgraph Progression ["Progression (alla träningslägen)"]
+        P_Up["Uppåt:<br/>strong: +0.35, streak: +0.20<br/>normal: +0.10, speed: +0.06"]
+        P_Down["Nedåt:<br/>hard: -0.50, mid: -0.25<br/>soft: -0.15"]
+        P_Bucket["Buckets:<br/>very_easy 5%, easy 25%<br/>core 50%, hard 15%<br/>challenge 5%"]
+        P_Push["Push vid >92% success<br/>efter 6+ problem"]
+        P_Boot["Bootstrap: 30% chans<br/>att testa nivå 2"]
+        P_Advance["Erbjud nivåbyte:<br/>shouldOfferSteadyAdvance<br/>6+ problem, 85%+ accuracy"]
+        P_Mastery["Mastery: senaste 15<br/>försök per nivå, 85%+"]
     end
 ```

@@ -1,16 +1,19 @@
 # Utvärdering av Matematik.ximon.se
 
-Här är en sammanställning av utvärderingen kring appens logik, pedagogiska flöde och adaptiva svårighetsgrad, baserat på tester av de olika träningslägena ("Utmaning", "Lugn", "Fri träning" och "Framsteg").
+Här är en sammanställning av utvärderingen kring appens logik, pedagogiska flöde och adaptiva svårighetsgrad, baserat på tester av de olika träningslägena ("Fri träning", enskilda räknesätt och "Framsteg").
 
-## 1. Utmanings-läget
-*   **Adaptivitet:** Systemet anpassar sig väl efter prestationen. Vid test av multiplikation höll sig appen inledningsvis inom tabellerna för 2-8. Vid snabba och korrekta svar bibehålls en jämn och utmanande nivå. När vi medvetet svarade fel (t.ex. 2x4=7) så anpassade sig appen genom att stanna kvar i samma svårighetsspann istället för att gå vidare, vilket är pedagogiskt helt rätt för att befästa kunskapen innan man går vidare.
-*   **Användarupplevelse (UX):** Extremt snabbt och effektivt flöde. Att man kan använda "Enter" för att svara och direkt gå till nästa uppgift ger ett skönt tempo, framförallt i utmaningsläget där hastighet och flyt är viktigt. 
+> **Uppdatering 2026-03:** Tempovalet "Utmaning"/"Lugn" är borttaget. Alla
+> träningslägen använder nu samma adaptiva profil. Skillnaden var i praktiken
+> negligerbar eftersom mastery-låsningen (lockToMasteryFloor) redan styrde
+> nivån. Avsnitten nedan beskriver den gemensamma upplevelsen.
 
-## 2. Lugn-läget
-*   **Fokus:** Med ett tydligt fokus på "streaks" (t.ex. feedback som "5 i rad!") skapas en mer avslappnad miljö. Det visuella förstärker att det handlar om uthållighet snarare än stress.
-*   **Feedback:** "Success Rate"-mätaren i botten ger en omedelbar återrapportering, vilket hjälper eleven att se hur säker den är på sin nuvarande nivå.
+## 1. Adaptivitet
+*   **Svårighetsanpassning:** Systemet anpassar sig väl efter prestationen. Vid test av multiplikation höll sig appen inledningsvis inom tabellerna för 2-8. Vid snabba och korrekta svar bibehålls en jämn och utmanande nivå. När vi medvetet svarade fel (t.ex. 2x4=7) så anpassade sig appen genom att stanna kvar i samma svårighetsspann istället för att gå vidare, vilket är pedagogiskt helt rätt för att befästa kunskapen innan man går vidare.
+*   **Användarupplevelse (UX):** Extremt snabbt och effektivt flöde. Att man kan använda "Enter" för att svara och direkt gå till nästa uppgift ger ett skönt tempo.
+*   **Streaks:** Tydligt fokus på "streaks" (t.ex. feedback som "5 i rad!") skapar motivation. Det visuella förstärker att det handlar om uthållighet.
+*   **Nivåerbjudande:** När eleven klarar en nivå (85%+ på senaste 15 försök) erbjuds hen att gå upp till nästa nivå — oavsett vilket träningsläge som används.
 
-## 3. Fri träning
+## 2. Fri träning
 Genomgång av de fyra räknesätten visade på en mycket snabb och följsam adaptivitet:
 *   **Addition och Subtraktion:** Båda räknesätten började på en grundläggande entalsnivå (t.ex. 2+7=9 eller 8-4=4). Redan efter fyra korrekta svar i rad gjorde svårighetsgraden ett markerat men logiskt hopp till tiotal (t.ex. 62+4=66). Detta visar att systemet inte "håller kvar" duktiga elever på för lätta nivåer, utan omedelbart utmanar dem när de visar kompetens.
 *   **Multiplikation och Division:** Balanserade tal (t.ex. 36/6, 25/5) som fokuserar på de mest centrala tabellerna ("kärn-tabeller") för att bygga en solid matematisk grund. Responsen via tangentbordet är direkt och streak-mekaniken ger motivation.
@@ -23,6 +26,6 @@ Vi testade olika nivåer för att förstå hur trappsteget i svårighetsgrad ser
 
 ## Generella observationer & Slutsats
 *   **Ren och funktionell UI:** Avsaknaden av distraktioner är ett stort plus. Funktioner som "Ritytan" är välgjorda och fyller en konkret funktion för svårare uträkningar.
-*   **Omdöme kring progression:** Progressionen är mycket logisk. Den adaptiva algoritmen är tillräckligt känslig för att fånga upp när en elev bemästrat ett koncept och väntar inte onödigt länge med att öka svårigheten. Samtidigt, vid felaktiga svar, backar den upp eleven istället för att straffa den, vilket skapar en trygg inlärningsmiljö i både utmanings- och lugn-läget.
+*   **Omdöme kring progression:** Progressionen är mycket logisk. Den adaptiva algoritmen är tillräckligt känslig för att fånga upp när en elev bemästrat ett koncept och väntar inte onödigt länge med att öka svårigheten. Samtidigt, vid felaktiga svar, backar den upp eleven istället för att straffa den, vilket skapar en trygg inlärningsmiljö.
 
-Appen håller definitivt en bra, adaptiv nivå mellan svårighetsgraderna!
+Appen håller definitivt en bra, adaptiv nivå!

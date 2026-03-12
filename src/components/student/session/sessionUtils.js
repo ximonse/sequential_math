@@ -93,27 +93,15 @@ export function getSessionRules(
     && normalizedFreeOps.length > 0
     && profile
   ) {
-    // Strikt progression i fri träning:
-    // håll eleven på lägsta ofärdiga nivå över valda domäner innan nästa nivå tillåts.
-    const floorByOperation = normalizedFreeOps.map(operation => ({
-      operation,
-      floor: getLowestUnmasteredLevel(profile, operation)
-    }))
-
-    if (floorByOperation.length > 0) {
-      const globalFloor = Math.min(...floorByOperation.map(item => item.floor))
-      const candidatesAtFloor = floorByOperation
-        .filter(item => item.floor === globalFloor)
-        .map(item => item.operation)
-
-      const picked = pickNextFreeOperationAtFloor(profile, candidatesAtFloor, globalFloor)
-      if (picked) {
-        rules.allowedTypes = [picked]
-        rules.startAtLowestUnmastered = true
-        rules.lockToMasteryFloor = true
-        rules.startReason = 'free_training_global_floor'
-        return rules
-      }
+    // Per-domän-progression i fri träning:
+    // varje domän tränar på sitt eget mastery-golv, jämn rotation mellan alla.
+    const picked = pickNextFreeOperation(profile, normalizedFreeOps)
+    if (picked) {
+      rules.allowedTypes = [picked]
+      rules.startAtLowestUnmastered = true
+      rules.lockToMasteryFloor = true
+      rules.startReason = 'free_training_per_domain'
+      return rules
     }
   }
 
@@ -370,24 +358,20 @@ function normalizeKnownFreeOperations(freeOps) {
   return normalized
 }
 
-function pickNextFreeOperationAtFloor(profile, candidatesAtFloor, floorLevel) {
-  if (!Array.isArray(candidatesAtFloor) || candidatesAtFloor.length === 0) return ''
-  if (candidatesAtFloor.length === 1) return candidatesAtFloor[0]
+function pickNextFreeOperation(profile, candidates) {
+  if (!Array.isArray(candidates) || candidates.length === 0) return ''
+  if (candidates.length === 1) return candidates[0]
   const source = Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
   for (let i = source.length - 1; i >= 0; i -= 1) {
-    const problem = source[i]
-    const operation = inferOperationFromType(problem?.problemType, {
+    const operation = inferOperationFromType(source[i]?.problemType, {
       fallback: '',
       allowUnknownPrefix: false
     })
-    if (!candidatesAtFloor.includes(operation)) continue
-    const level = Math.round(Number(problem?.difficulty?.conceptual_level || 0))
-    if (level !== floorLevel) continue
-
-    const currentIndex = candidatesAtFloor.indexOf(operation)
-    return candidatesAtFloor[(currentIndex + 1) % candidatesAtFloor.length]
+    if (!candidates.includes(operation)) continue
+    const currentIndex = candidates.indexOf(operation)
+    return candidates[(currentIndex + 1) % candidates.length]
   }
-  return candidatesAtFloor[0]
+  return candidates[0]
 }
 
 export function getLevelFocusNextLevelAction(profile, mode, fixedLevel) {

@@ -139,7 +139,7 @@ function FractionsKeypad({ onKey, onPrimaryAction, canSubmit, actionLabel, actio
 
 function normalizeFractionInput(raw) {
   // Allow digits, /, and minus for negative fractions
-  return String(raw || '').replace(/[^0-9/\-]/g, '').slice(0, 10)
+  return String(raw || '').replace(/[^0-9/-]/g, '').slice(0, 10)
 }
 
 function applyFractionKeypadInput(currentValue, key) {

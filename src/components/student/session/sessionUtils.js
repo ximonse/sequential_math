@@ -2,7 +2,6 @@ import { inferOperationFromProblemType as inferOperationFromType } from '../../.
 import { getOperationAbility } from '../../../lib/difficultyAdapter'
 import { normalizeProgressionMode } from '../../../lib/progressionModes'
 import { filterNcmProblems } from '../../../lib/ncmProblemBank'
-import { getLowestUnmasteredLevel } from '../../../lib/studentProfile'
 
 export const DEFAULT_BREAK_MINUTES = 1
 export const SINGLE_DIGIT_BREAK_MINUTES = 2

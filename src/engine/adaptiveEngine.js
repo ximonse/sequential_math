@@ -1,5 +1,4 @@
 import { selectNextProblem } from '../lib/difficultyAdapter'
-import { getOperationAbility } from '../lib/difficultyAdapterProfileHelpers'
 import { getLowestUnmasteredLevel } from '../lib/studentProfile'
 import { getDefaultDomainId, getDomain, normalizeProblemWithDomain } from '../domains/registry'
 

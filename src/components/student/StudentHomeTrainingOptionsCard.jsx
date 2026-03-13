@@ -1,5 +1,3 @@
-import { STANDARD_OPERATIONS } from '../../lib/operations'
-
 export default function StudentHomeTrainingOptionsCard({
   onStartFreePractice,
   operationKeys,

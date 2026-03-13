@@ -55,6 +55,12 @@ export default async function handler(req, res) {
     const teacherId = payload?.teacherId || null
     const teacherIds = teacherId ? [teacherId] : []
 
+    // Prevent overwriting an existing class
+    const existing = await kv.get(`class:${id}`)
+    if (existing) {
+      return res.status(409).json({ error: 'Class ID already exists' })
+    }
+
     const classRecord = {
       id,
       name,

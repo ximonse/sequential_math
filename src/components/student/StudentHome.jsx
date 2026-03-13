@@ -8,7 +8,6 @@ import { decodeAssignmentPayload, encodeAssignmentPayload, getActiveAssignment, 
 import { normalizeProgressionMode } from '../../lib/progressionModes'
 import { markStudentPresence, PRESENCE_HEARTBEAT_MS, PRESENCE_SAVE_THROTTLE_MS } from '../../lib/studentPresence'
 import { incrementTelemetryDailyMetric, recordTelemetryEvent } from '../../lib/telemetry'
-import StudentHomeAssignmentLaunchCard from './StudentHomeAssignmentLaunchCard'
 import StudentHomePasswordCard from './StudentHomePasswordCard'
 import StudentHomeProgressCard from './StudentHomeProgressCard'
 import StudentHomeTableDrillCard from './StudentHomeTableDrillCard'
@@ -81,9 +80,8 @@ function StudentHome() {
     navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
   }, [studentId, assignmentId, assignmentPayload, mode, requestedPace, ticketId, ticketPayload, navigate])
 
+  const classId = String(profile?.classId || '').trim()
   useEffect(() => {
-    if (!profile) return
-    const classId = String(profile?.classId || '').trim()
     if (!classId) { setEnabledExtras([]); return }
     let active = true
     fetch(`/api/class-config?classId=${encodeURIComponent(classId)}`)
@@ -91,7 +89,7 @@ function StudentHome() {
       .then(data => { if (active) setEnabledExtras(Array.isArray(data?.enabledExtras) ? data.enabledExtras : []) })
       .catch(() => { if (active) setEnabledExtras([]) })
     return () => { active = false }
-  }, [profile?.classId])
+  }, [classId])
 
   useEffect(() => {
     const fromPayload = decodeAssignmentPayload(assignmentPayload)
@@ -382,7 +380,7 @@ function StudentHome() {
     saveProfile(profile)
     navigate(`/student/${studentId}/ticket?${params.toString()}`)
   }
-  const handleStartAssignmentOrFree = () => {
+  const _handleStartAssignmentOrFree = () => {
     const now = Date.now()
     recordTelemetryEvent(profile, 'practice_launch_assignment_or_free', {
       assignmentId: assignment?.id || ''

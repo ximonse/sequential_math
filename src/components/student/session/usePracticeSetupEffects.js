@@ -302,6 +302,7 @@ export function usePracticeSetupEffects({
     tableSet,
     progressionMode,
     fixedPracticeLevel,
+    freeOps,
     isTableDrill,
     tableQueue,
     resetAttentionTracker,

@@ -55,7 +55,7 @@ import {
   saveClass,
 } from '../../lib/storage'
 import { getActiveAssignment, getAssignments } from '../../lib/assignments'
-import { getTeacherClassIds, getTeacherIdentity, isTeacherAdmin } from '../../lib/teacherAuth'
+import { getTeacherClassIds } from '../../lib/teacherAuth'
 function Dashboard() {
   const [students, setStudents] = useState([])
   const [assignments, setAssignments] = useState([])

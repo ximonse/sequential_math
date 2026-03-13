@@ -4,7 +4,7 @@
  * Requires teacher auth token.
  */
 import { kv } from '@vercel/kv'
-import { getTeacherAuthPayload } from './_helpers.js'
+import { getAuthorizedClassIds, getTeacherAuthPayload } from './_helpers.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'PUT') {
@@ -20,6 +20,11 @@ export default async function handler(req, res) {
     : []
 
   if (!classId) return res.status(400).json({ error: 'classId required' })
+
+  const authorizedClassIds = getAuthorizedClassIds(req)
+  if (authorizedClassIds !== null && !authorizedClassIds.includes(classId)) {
+    return res.status(403).json({ error: 'Not authorized for this class' })
+  }
 
   try {
     await kv.set(`class_extras:${classId}`, { enabledExtras: extras })

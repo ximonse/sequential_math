@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { listDomains } from '../../../domains/registry'
-import { STANDARD_OPERATIONS } from '../../../lib/operations'
 
 function getTogglableExtras() {
   return listDomains()

@@ -9,8 +9,7 @@ import { formatNcmAssignmentScope } from '../../../lib/ncmProblemBank'
 import {
   getProblemLevel
 } from './dashboardCoreHelpers'
-
-const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division', 'algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions', 'fractions', 'percentage']
+import { ALL_OPERATIONS } from './dashboardConstants'
 
 export function summarizeAssignmentAdherence(problems, assignment) {
   const attempts = Array.isArray(problems) ? problems.length : 0

@@ -1,12 +1,9 @@
 import { inferOperationFromProblemType, inferTableFromProblem, getSpeedTime, median } from '../../../lib/mathUtils'
 import { getOperationLabel } from '../../../lib/operations'
 import { getTableProblemSourceForStudent } from './dashboardTableStatusUtils'
+import { ALL_OPERATIONS, TABLES, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './dashboardConstants'
 
-const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division', 'algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions', 'fractions', 'percentage']
-const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 const DAY_MS = 24 * 60 * 60 * 1000
-const MASTERY_MIN_ATTEMPTS = 5
-const MASTERY_MIN_SUCCESS_RATE = 0.85
 const TRAINING_MASTERY_THRESHOLD = MASTERY_MIN_SUCCESS_RATE
 const TRAINING_MIN_ATTEMPTS = MASTERY_MIN_ATTEMPTS
 const TRAINING_MAX_ITEMS = 15

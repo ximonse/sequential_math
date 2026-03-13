@@ -4,7 +4,9 @@ export function analyzeArithmeticExpressionsError(problem, studentAnswer) {
   if (!Number.isFinite(student)) {
     return { category: 'input', detail: 'invalid_input', patterns: ['invalid_input'] }
   }
-  if (student === correct) return null
+  if (Number.isFinite(correct) && Math.abs(student - correct) < 0.005) {
+    return { category: 'none', detail: '', patterns: [] }
+  }
   return {
     category: 'knowledge',
     detail: 'wrong_order_of_operations',

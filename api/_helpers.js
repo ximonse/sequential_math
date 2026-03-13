@@ -53,7 +53,7 @@ function getTeacherTokenVerificationSecrets() {
 
 export function isProdLikeServer() {
   const env = String(process.env.VERCEL_ENV || process.env.NODE_ENV || '').toLowerCase()
-  return env === 'production' || env === 'preview'
+  return env !== 'development'
 }
 
 // ── Secure compare ────────────────────────────────────────────────────────────

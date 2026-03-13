@@ -1,9 +1,6 @@
 import { getSpeedTime, inferTableFromProblem } from '../../../lib/mathUtils'
 import { getStartOfWeekTimestamp } from '../../../lib/studentProfile'
-
-const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-const MASTERY_MIN_ATTEMPTS = 5
-const MASTERY_MIN_SUCCESS_RATE = 0.85
+import { TABLES, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './dashboardConstants'
 
 function getStartOfDayTimestamp() {
   const now = new Date()

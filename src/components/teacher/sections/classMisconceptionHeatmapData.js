@@ -1,18 +1,9 @@
 import { inferOperationFromProblemType } from '../../../lib/mathUtils'
 import { getTableProblemSourceForStudent } from './dashboardTableStatusUtils'
+import { ALL_OPERATIONS, LEVELS } from './dashboardConstants'
 
-export const LEVELS = Array.from({ length: 12 }, (_, i) => i + 1)
-export const OPERATIONS = [
-  'addition',
-  'subtraction',
-  'multiplication',
-  'division',
-  'algebra_evaluate',
-  'algebra_simplify',
-  'arithmetic_expressions',
-  'fractions',
-  'percentage'
-]
+export { LEVELS }
+export const OPERATIONS = ALL_OPERATIONS
 const MAX_WRONG_ANSWERS_PER_LEVEL = 10
 
 const FEATURE_LABELS = {

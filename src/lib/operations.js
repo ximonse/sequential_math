@@ -6,6 +6,18 @@ import { inferOperationFromProblemType } from './mathUtils'
 
 export const STANDARD_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
 
+export const ALL_OPERATIONS = [
+  'addition', 'subtraction', 'multiplication', 'division',
+  'algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions',
+  'fractions', 'percentage'
+]
+
+export const MASTERY_MIN_ATTEMPTS = 5
+export const MASTERY_MIN_SUCCESS_RATE = 0.85
+
+export const ALL_LEVELS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+export const ALL_TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
 export const OPERATION_LABELS = {
   addition: 'Addition',
   subtraction: 'Subtraktion',

@@ -1,8 +1,14 @@
-export const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division', 'algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions', 'fractions', 'percentage']
+import {
+  ALL_LEVELS as LEVELS,
+  ALL_OPERATIONS,
+  ALL_TABLES as TABLES,
+  MASTERY_MIN_ATTEMPTS,
+  MASTERY_MIN_SUCCESS_RATE
+} from '../../../lib/operations'
+
+export { ALL_OPERATIONS, LEVELS, TABLES, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE }
 export const SUPPORT_THRESHOLD = 45
 export const DEFAULT_WEEKLY_GOAL = 20
-export const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-export const LEVELS = Array.from({ length: 12 }, (_, index) => index + 1)
 export const DETAIL_LEVEL_ERROR_MIN_ATTEMPTS = 8
 export const TEACHER_AUTO_REFRESH_INTERVAL_MS = 2 * 60 * 1000
 export const PASSWORD_RESET_SECTION_ID = 'teacher-password-reset-section'

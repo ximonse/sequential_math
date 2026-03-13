@@ -1,12 +1,13 @@
 import { inferOperationFromProblemType as inferOperationFromType } from '../../../lib/mathUtils'
 import { getOperationAbility } from '../../../lib/difficultyAdapter'
+import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from '../../../lib/operations'
 import { normalizeProgressionMode } from '../../../lib/progressionModes'
 import { filterNcmProblems } from '../../../lib/ncmProblemBank'
 
 export const DEFAULT_BREAK_MINUTES = 1
 export const SINGLE_DIGIT_BREAK_MINUTES = 2
-export const LEVEL_MASTERY_MIN_ATTEMPTS = 5
-export const LEVEL_MASTERY_MIN_SUCCESS_RATE = 0.85
+export const LEVEL_MASTERY_MIN_ATTEMPTS = MASTERY_MIN_ATTEMPTS
+export const LEVEL_MASTERY_MIN_SUCCESS_RATE = MASTERY_MIN_SUCCESS_RATE
 
 export function getSessionRules(
   assignment,

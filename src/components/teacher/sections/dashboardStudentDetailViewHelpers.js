@@ -7,13 +7,9 @@ import {
   getTableProblemSourceForStudent,
   isKnowledgeError
 } from './dashboardTableStatusUtils'
+import { ALL_OPERATIONS, LEVELS, TABLES, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './dashboardConstants'
 
-const ALL_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division', 'algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions', 'fractions', 'percentage']
-const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-const LEVELS = Array.from({ length: 12 }, (_, index) => index + 1)
 const DAY_MS = 24 * 60 * 60 * 1000
-const MASTERY_MIN_ATTEMPTS = 5
-const MASTERY_MIN_SUCCESS_RATE = 0.85
 
 export function buildTeacherStudentViewData(student) {
   if (!student) return null

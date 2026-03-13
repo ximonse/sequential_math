@@ -579,33 +579,6 @@ function getProfileFreshnessTimestamp(profile) {
   )
 }
 
-function authMatchesExistingProfileCredentials(incomingProfile, existingProfile) {
-  if (!incomingProfile || !existingProfile) return false
-  const incomingAuth = incomingProfile?.auth && typeof incomingProfile.auth === 'object'
-    ? incomingProfile.auth
-    : {}
-  const existingAuth = existingProfile?.auth && typeof existingProfile.auth === 'object'
-    ? existingProfile.auth
-    : {}
-
-  if (hasHashedPassword(incomingAuth) && hasHashedPassword(existingAuth)) {
-    return incomingAuth.passwordHash === existingAuth.passwordHash
-      && incomingAuth.passwordSalt === existingAuth.passwordSalt
-      && incomingAuth.passwordScheme === existingAuth.passwordScheme
-  }
-
-  if (
-    typeof incomingAuth.password === 'string'
-    && incomingAuth.password.trim() !== ''
-    && typeof existingAuth.password === 'string'
-    && existingAuth.password.trim() !== ''
-  ) {
-    return incomingAuth.password === existingAuth.password
-  }
-
-  return false
-}
-
 function mergeProfiles(existingProfile, incomingProfile) {
   const existingFreshness = getProfileFreshnessTimestamp(existingProfile)
   const incomingFreshness = getProfileFreshnessTimestamp(incomingProfile)
@@ -714,20 +687,15 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing profile in body' })
       }
 
-      const incomingMatchesExistingAuth = existingMigrated
-        ? authMatchesExistingProfileCredentials(profile, existingMigrated)
-        : false
-
       if (existingMigrated) {
         if (
           !teacherAuthorized
           && !verifyPasswordAgainstAuth(existingMigrated.auth, studentPassword)
-          && !incomingMatchesExistingAuth
         ) {
           return res.status(401).json({ error: 'Unauthorized' })
         }
-      } else if (!teacherAuthorized && studentPassword.trim() === '') {
-        return res.status(401).json({ error: 'Unauthorized' })
+      } else if (!teacherAuthorized) {
+        return res.status(401).json({ error: 'Unauthorized — teacher auth required to create student' })
       }
 
       const normalizedIncoming = normalizeProfileForStorage(profile, studentId, studentPassword)

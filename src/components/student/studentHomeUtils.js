@@ -1,10 +1,13 @@
 import { getStartOfWeekTimestamp } from '../../lib/studentProfile'
 import { normalizeProgressionMode, PROGRESSION_MODE_CHALLENGE } from '../../lib/progressionModes'
+import {
+  ALL_LEVELS as LEVELS,
+  ALL_TABLES as TABLES,
+  MASTERY_MIN_ATTEMPTS,
+  MASTERY_MIN_SUCCESS_RATE
+} from '../../lib/operations'
 
-export const MASTERY_MIN_ATTEMPTS = 5
-export const MASTERY_MIN_SUCCESS_RATE = 0.85
-export const LEVELS = Array.from({ length: 12 }, (_, index) => index + 1)
-export const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+export { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE, LEVELS, TABLES }
 
 export function createOperationLevelBuckets() {
   const makeLevelMap = () => Object.fromEntries(

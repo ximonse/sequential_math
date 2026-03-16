@@ -254,10 +254,12 @@ function buildTableDrillDailyActivity(student) {
     if (!table) continue
     const ts = Number(problem?.timestamp || 0)
     if (ts < oldestStart) continue
-    const dayIndex = Math.floor((ts - oldestStart) / DAY_MS)
-    if (dayIndex >= 0 && dayIndex < buckets.length) {
-      buckets[dayIndex].count += 1
-      if (problem.correct) buckets[dayIndex].correctCount += 1
+    for (let bi = buckets.length - 1; bi >= 0; bi--) {
+      if (ts >= buckets[bi].dayStart) {
+        buckets[bi].count += 1
+        if (problem.correct) buckets[bi].correctCount += 1
+        break
+      }
     }
   }
 

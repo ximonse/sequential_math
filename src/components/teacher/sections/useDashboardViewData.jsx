@@ -71,7 +71,8 @@ export function useDashboardViewData({
   const classStats = {
     totalStudents: filteredStudents.length,
     activeToday: filteredStudents.filter(student => {
-      const last = student.recentProblems[student.recentProblems.length - 1]?.timestamp
+      const problems = Array.isArray(student.recentProblems) ? student.recentProblems : []
+      const last = problems[problems.length - 1]?.timestamp
       if (!last) return false
       const today = new Date().setHours(0, 0, 0, 0)
       return last > today

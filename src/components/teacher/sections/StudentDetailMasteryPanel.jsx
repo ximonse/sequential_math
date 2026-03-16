@@ -8,6 +8,13 @@ const DETAIL_LEVEL_SORT_OPTIONS = [
   { value: 'inattention_wrong', label: 'Ouppmärksamhet' }
 ]
 
+function getSuccessRateColorClass(rate) {
+  if (rate == null || !Number.isFinite(rate)) return 'text-gray-400'
+  if (rate >= 0.8) return 'text-green-700'
+  if (rate >= 0.6) return 'text-amber-700'
+  return 'text-red-700'
+}
+
 function getTableRecencyColorClass(lastTrainedAt) {
   if (!lastTrainedAt) return 'bg-black text-white'
   const daysSince = (Date.now() - lastTrainedAt) / DAY_MS
@@ -40,7 +47,6 @@ export default function StudentDetailMasteryPanel({
   detailLevelErrorSortDir,
   onDetailLevelErrorSortByChange,
   onDetailLevelErrorSortDirChange,
-  getErrorShareColorClass,
   toPercent
 }) {
   const isTextSort = detailLevelErrorSortBy === 'operation'
@@ -244,7 +250,7 @@ export default function StudentDetailMasteryPanel({
                               <td className="py-1 pr-2 text-gray-700">{levelRow.operationLabel}</td>
                               <td className="py-1 pr-2 text-gray-700 font-medium">{levelRow.level}</td>
                               <td className="py-1 pr-2 text-gray-700">{levelRow.attempts}</td>
-                              <td className={`py-1 pr-2 font-semibold ${getErrorShareColorClass(levelRow.errorShare)}`}>
+                              <td className={`py-1 pr-2 font-semibold ${getSuccessRateColorClass(studentAcc)}`}>
                                 {toPercent(studentAcc)}
                               </td>
                               <td className="py-1 pr-2 text-gray-500">

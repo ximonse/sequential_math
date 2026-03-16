@@ -64,6 +64,7 @@ export function compareDetailLevelErrorRows(a, b, sortBy) {
   else if (sortBy === 'knowledge_wrong') diff = Number(a.knowledgeWrong || 0) - Number(b.knowledgeWrong || 0)
   else if (sortBy === 'inattention_wrong') diff = Number(a.inattentionWrong || 0) - Number(b.inattentionWrong || 0)
   else if (sortBy === 'success_rate') diff = Number(a.successRate || 0) - Number(b.successRate || 0)
+  else if (sortBy === 'error_share') diff = Number(a.successRate || 0) - Number(b.successRate || 0)
   else diff = Number(a.errorShare || 0) - Number(b.errorShare || 0)
 
   if (diff !== 0) return diff

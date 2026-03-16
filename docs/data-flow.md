@@ -335,9 +335,14 @@ flowchart TD
         Row --> Presence["Närvaro-status:<br/>🟢 aktiv + engagerad<br/>🟠 idle (2-4 min)<br/>⚫ stale<br/>🔴 ej sedd idag"]
     end
 
+    subgraph ClassViews [Klassvyer]
+        MasteryLevel["Nivåöversikt<br/>buildClassMasteryRows()<br/>Effektiv konsekutiv nivå"]
+    end
+
     subgraph DetailView [Elevdetaljvy]
         Summary["8 sammanfattningskort"]
         Priority["Vad behöver tränas?<br/>buildTrainingPriorityList()"]
+        TableChart["Tabellaktivitet 21d<br/>buildTableDrillDailyActivity()"]
         Mastery["Framsteg — mastery grid<br/>buildOperationMasteryBoardsForTeacher()"]
         Analysis["Svårighetsanalys<br/>detailLevelErrorRows + classBenchmarks"]
         Tables["Gångertabeller heatmap"]
@@ -345,6 +350,8 @@ flowchart TD
         History["Träningshistorik 7d<br/>buildDailyActivityBreakdown()"]
         Weak["Svagast / Starkast typer"]
     end
+
+    Profiles --> MasteryLevel
 
     Profiles --> Row
     Assignment --> Row

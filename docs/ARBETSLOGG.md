@@ -1,5 +1,29 @@
 # Arbetslogg
 
+## 2026-03-16
+
+- Fixade kritisk bugg: molnsync misslyckades tyst pa iPad nar sessionssekret lagrades i sessionStorage (som rensas vid tab-kill). Flyttade till localStorage.
+- Tabelltraningsresultat synkroniseras nu direkt (forceSync) istallet for att vanta pa 90-sekunders throttle.
+- Lade till explicit 401-hantering och authStale-flagga i molnsync sa att foraldrade sessioner upptacks.
+- Lade till CORS-headers pa teacher-class-extras och class-config API-endpoints.
+- Fixade merging av adaptiv engine-state vid profilmerge (operationAbilities tar max, skillStates behaller version med flest forsok).
+- Bytade till timing-safe jamforelse for losenord pa servern.
+- Tog bort error.message fran 500-svar (lakage).
+- Fixade UI: "Startsida"-knappen doldes bakom temaväljaren — lade till pr-44 padding.
+- Lade till 21-dagars stapeldiagram for gangertabellsaktivitet i lararens elevdetalj (mellan "senast tranad" och "Framsteg").
+- Fixade kraschbugg i useDashboardViewData — recentProblems accessades utan Array.isArray-guard pa nya elever.
+- Fixade "Traff elev"-kolumnen i Svarighetsanalys: fargkodningen anvande felandel istallet for traffprocent (inverterad signal). Nu fargas korrekt: gron >= 80%, amber >= 60%, rod < 60%.
+- Fixade sortering av "Traff elev" — sorterade pa errorShare istallet for successRate, sa "Storst forst" gav samsta eleverna overst.
+- Fixade DST-bugg i stapeldiagrammet — bytade fran fast 24h-division till per-bucket dayStart-jamforelse.
+- Ny panel: "Nivaoversikt" — klassvy med effektiv konsekutiv masteryniva per elev per operation. Visar hogsta sammanhanande klarade nivan (inte hogsta enskilda). Sortbar pa alla kolumner och snitt.
+
+Referens-commits:
+- `9b7065f` - Fix critical cloud sync bug, add CORS, harden auth and profile merge
+- `137dc5d` - Add right padding to session header so exit button clears theme switcher
+- `4de115e` - Add 21-day table drill activity bar chart to teacher dashboard
+- `9468553` - Fix dashboard bugs: crash guard, accuracy color/sort, DST bar chart
+- `65f7c14` - Add class mastery level overview panel to teacher dashboard
+
 ## 2026-03-07
 
 - Lade till division niva 1 och 2 i uppgiftsgenereringen och gjorde dem synliga i elevens Framsteg.

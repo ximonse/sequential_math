@@ -122,6 +122,56 @@ Varfor sa:
 Pedagogiskt varde:
 - Lamplig for uppfoljning av automatisering i tabeller over dag/vecka.
 
+## 7b. Nivaoversikt (klassvy)
+
+Ny panel som visar effektiv konsekutiv masteryniva per elev per operation.
+
+Kolumner:
+- `Elev`: namn (klickbar till elevdetalj).
+- `+`, `-`, `x`, `/`, `Alg(u)`, `Alg(f)`, `Uttr`, `Brak`, `%`: effektiv niva per operation.
+- `Snitt`: medel av operationer med traning.
+
+Definition "effektiv niva":
+- Hogsta **sammanhanande** klarade nivan (1, 2, 3, ... utan avbrott).
+- Om niva 1-3 ar klarade men 4 inte ar det = effektiv niva 3, aven om hogre nivaer ar klarade.
+- Klarad = minst 5 forsok OCH minst 85% ratt (samma som Framsteg-mastery).
+
+Fargkodning:
+- Rod 1-2, orange 3-4, amber 5-6, lime 7-8, gron 9-10, morkgron 11-12, gra = ej startad.
+
+Sortering:
+- Alla kolumner sorterbara (klick byter riktning).
+- Default: snitt lagst forst.
+
+Pedagogiskt varde:
+- Ger en arlig bild av var klassen befinner sig — elever kan inte "bluffa forbi" genom att hoppa over nivaer.
+- Snabbt identifiera elever med laga snittniva for riktad insats.
+
+Kodkallor:
+- `dashboardClassMasteryHelpers.js` — `buildClassMasteryRows()`, `buildEffectiveLevels()`.
+- `ClassMasteryLevelPanel.jsx` — panelkomponent.
+- `DashboardLayout.jsx` — panel-ID `mastery`, titel "Nivaoversikt".
+
+## 7c. Gangertabeller — aktivitet 3 veckor (individvy)
+
+Stapeldiagram i elevdetaljvyn som visar antal gangertabellstal per dag, 21 dagar bakut.
+
+Placering: mellan "Gangertabeller — senast tranad" och "Framsteg - mastery".
+
+Visuell design:
+- Lila stapel = idag, gron = vardag med traning, gra = helg/ingen traning.
+- Siffra ovanfor varje stapel = antal tal den dagen.
+- Extra mellanrum vid mandagar for visuell veckouppdelning.
+- Hover-tooltip: datum, antal tal, ratt antal och procent.
+- Header: "Idag: X | Totalt 21d: Y".
+
+DST-hantering:
+- Anvander per-bucket dayStart-jamforelse istallet for fast 24h-division.
+
+Kodkallor:
+- `dashboardStudentDetailViewHelpers.js` — `buildTableDrillDailyActivity()`.
+- `StudentDetailMasteryPanel.jsx` — `TableDrillDailyChart` komponent.
+
 ## 8. Elevvy (larare)
 
 ### 8.1 Sammanfattningskort

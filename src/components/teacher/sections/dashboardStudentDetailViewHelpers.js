@@ -20,10 +20,13 @@ export function buildTeacherStudentViewData(student) {
   const levelErrorRows = buildLevelErrorRowsForTeacher(student)
   const ncmDetail = buildNcmDetailForStudent(student)
 
+  const tableDrillDailyActivity = buildTableDrillDailyActivity(student)
+
   return {
     tableSticky,
     tablePerformanceByTable,
     tableRecencyByTable,
+    tableDrillDailyActivity,
     operationMasteryBoards,
     levelErrorRows,
     ncmDetail
@@ -219,4 +222,44 @@ function buildTablePerformanceByTable(student) {
   }
 
   return output
+}
+
+const DAILY_ACTIVITY_DAYS = 21
+const SWEDISH_DAY_ABBR = ['sön', 'mån', 'tis', 'ons', 'tor', 'fre', 'lör']
+
+function buildTableDrillDailyActivity(student) {
+  const source = getTableProblemSourceForStudent(student)
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
+
+  const buckets = []
+  for (let i = DAILY_ACTIVITY_DAYS - 1; i >= 0; i--) {
+    const date = new Date(now)
+    date.setDate(date.getDate() - i)
+    buckets.push({
+      date: date.toISOString().slice(0, 10),
+      dayStart: date.getTime(),
+      count: 0,
+      correctCount: 0,
+      dayLabel: SWEDISH_DAY_ABBR[date.getDay()],
+      dateLabel: `${date.getDate()}/${date.getMonth() + 1}`,
+      isToday: i === 0,
+      isWeekend: date.getDay() === 0 || date.getDay() === 6
+    })
+  }
+
+  const oldestStart = buckets[0].dayStart
+  for (const problem of source) {
+    const table = inferTableFromProblem(problem)
+    if (!table) continue
+    const ts = Number(problem?.timestamp || 0)
+    if (ts < oldestStart) continue
+    const dayIndex = Math.floor((ts - oldestStart) / DAY_MS)
+    if (dayIndex >= 0 && dayIndex < buckets.length) {
+      buckets[dayIndex].count += 1
+      if (problem.correct) buckets[dayIndex].correctCount += 1
+    }
+  }
+
+  return buckets
 }

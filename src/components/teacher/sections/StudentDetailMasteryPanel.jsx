@@ -123,6 +123,12 @@ export default function StudentDetailMasteryPanel({
         )}
       </div>
 
+      <TableDrillDailyChart
+        dailyActivity={detailStudentViewData.tableDrillDailyActivity}
+        renderCollapseHeader={renderCollapseHeader}
+        isCollapsed={isCollapsed}
+      />
+
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <div className="rounded border border-gray-200 p-3">
           {renderCollapseHeader('mastery', <h3 className="text-sm font-semibold text-gray-800">Framsteg - mastery</h3>)}
@@ -266,6 +272,85 @@ export default function StudentDetailMasteryPanel({
           )}
         </div>
       </div>
+    </div>
+  )
+}
+
+const CHART_HEIGHT = 120
+
+function TableDrillDailyChart({ dailyActivity, renderCollapseHeader, isCollapsed }) {
+  if (!Array.isArray(dailyActivity) || dailyActivity.length === 0) return null
+
+  const maxCount = Math.max(1, ...dailyActivity.map(d => d.count))
+  const totalCount = dailyActivity.reduce((sum, d) => sum + d.count, 0)
+  const todayBucket = dailyActivity[dailyActivity.length - 1]
+
+  return (
+    <div className="rounded border border-gray-200 p-3">
+      {renderCollapseHeader(
+        'table-daily-chart',
+        <h3 className="text-sm font-semibold text-gray-800">Gångertabeller — aktivitet 3 veckor</h3>,
+        {
+          rightContent: (
+            <p className="text-[11px] text-gray-500">
+              Idag: {todayBucket?.count || 0} | Totalt 21d: {totalCount}
+            </p>
+          )
+        }
+      )}
+      {isCollapsed('table-daily-chart') ? null : (
+        <div className="mt-2">
+          <div className="flex items-end gap-px" style={{ height: CHART_HEIGHT + 18 }}>
+            {dailyActivity.map((day, index) => {
+              const barHeight = day.count > 0
+                ? Math.max(4, Math.round((day.count / maxCount) * CHART_HEIGHT))
+                : 0
+              const accuracy = day.count > 0
+                ? Math.round((day.correctCount / day.count) * 100)
+                : 0
+              const barColor = day.isToday
+                ? 'bg-indigo-500'
+                : day.isWeekend
+                  ? 'bg-gray-300'
+                  : day.count === 0
+                    ? 'bg-gray-200'
+                    : 'bg-emerald-400'
+              const tooltip = day.count > 0
+                ? `${day.dateLabel} (${day.dayLabel}) — ${day.count} tal, ${day.correctCount} rätt (${accuracy}%)`
+                : `${day.dateLabel} (${day.dayLabel}) — ingen träning`
+              const isMonday = day.dayLabel === 'mån'
+
+              return (
+                <div
+                  key={`daily-bar-${day.date}`}
+                  className={`flex-1 flex flex-col items-center justify-end${isMonday && index > 0 ? ' ml-1' : ''}`}
+                  style={{ height: CHART_HEIGHT + 18 }}
+                >
+                  {day.count > 0 ? (
+                    <span className="text-[8px] text-gray-500 mb-0.5 leading-none">{day.count}</span>
+                  ) : null}
+                  <div
+                    title={tooltip}
+                    className={`w-full rounded-t cursor-default ${barColor}`}
+                    style={{ height: barHeight || 2 }}
+                  />
+                  <span className={`text-[7px] mt-0.5 leading-none ${day.isToday ? 'font-bold text-indigo-600' : 'text-gray-400'}`}>
+                    {day.dayLabel.charAt(0)}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+          <div className="flex justify-between mt-1">
+            <span className="text-[9px] text-gray-400">{dailyActivity[0]?.dateLabel}</span>
+            <span className="text-[9px] text-gray-400">{dailyActivity[Math.floor(dailyActivity.length / 2)]?.dateLabel}</span>
+            <span className="text-[9px] font-medium text-indigo-600">idag</span>
+          </div>
+          <p className="text-[10px] text-gray-500 mt-1">
+            Lila = idag | Grön = vardag | Grå = helg/ingen träning | Siffra = antal tal
+          </p>
+        </div>
+      )}
     </div>
   )
 }

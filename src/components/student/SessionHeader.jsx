@@ -5,7 +5,7 @@ function SessionHeader({
   onExit
 }) {
   return (
-    <div className="flex justify-between items-center mb-8">
+    <div className="flex justify-between items-center mb-8 pr-44">
       <div>
         <p className="text-sm text-gray-500">{profileName}</p>
         <p className="text-xs text-gray-400">

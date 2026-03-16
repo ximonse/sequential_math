@@ -14,6 +14,7 @@ import InactivityAndClassLevelPanel from './InactivityAndClassLevelPanel'
 import PasswordResetPanel from './PasswordResetPanel'
 import ResultsOverviewPanel from './ResultsOverviewPanel'
 import StudentDetailPanel from './StudentDetailPanel'
+import StudentDetailTrainingPriorityPanel from './StudentDetailTrainingPriorityPanel'
 import SupportPriorityPanel from './SupportPriorityPanel'
 import TableSelectionAndDevelopmentPanel from './TableSelectionAndDevelopmentPanel'
 import TeacherAdminPanel from './TeacherAdminPanel'
@@ -30,6 +31,7 @@ const PANEL_DEFS = [
   { id: 'heatmap',     title: 'Missuppfattningar' },
   { id: 'sticky',      title: 'Tabellstatus' },
   { id: 'detail',      title: 'Elevdetalj' },
+  { id: 'training-priority', title: 'Träningsprioritet' },
   { id: 'inactivity',  title: 'Inaktivitet & nivå' },
   { id: 'tabledev',    title: 'Tabellutveckling' },
   { id: 'support',     title: 'Stödbehov' },
@@ -274,6 +276,17 @@ export default function DashboardLayout({
         }}
       />
     )
+    if (id === 'training-priority') {
+      if (!detailStudentProfile) {
+        return <p className="text-sm text-gray-500">Välj en elev i Elevdetalj för att se träningsprioritet.</p>
+      }
+      return (
+        <StudentDetailTrainingPriorityPanel
+          trainingPriorityList={trainingPriorityList}
+          toPercent={toPercent}
+        />
+      )
+    }
     if (id === 'inactivity') return (
       <InactivityAndClassLevelPanel
         inactivityBuckets={inactivityBuckets}

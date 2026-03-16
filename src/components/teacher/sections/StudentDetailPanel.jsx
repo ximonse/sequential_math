@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import StudentDetailHistoryPanel from './StudentDetailHistoryPanel'
 import StudentDetailMasteryPanel from './StudentDetailMasteryPanel'
-import StudentDetailTrainingPriorityPanel from './StudentDetailTrainingPriorityPanel'
 
 const OPERATION_BADGES = [
   { label: '+', key: 'addition' },
@@ -109,11 +108,6 @@ export default function StudentDetailPanel({
             formatDuration={formatDuration}
             ActivityBadgeComponent={ActivityBadgeComponent}
             trainingPriorityList={trainingPriorityList}
-          />
-
-          <StudentDetailTrainingPriorityPanel
-            trainingPriorityList={trainingPriorityList}
-            toPercent={toPercent}
           />
 
           <StudentDetailMasteryPanel

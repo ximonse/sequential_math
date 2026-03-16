@@ -194,12 +194,12 @@ export function setActiveStudentSession(studentId, sessionSecret = '') {
   const normalizedId = normalizeStudentId(studentId)
   if (!normalizedId) return
   localStorage.setItem(STUDENT_SESSION_KEY, normalizedId)
-  sessionStorage.setItem(STUDENT_SESSION_SECRET_KEY, String(sessionSecret || ''))
+  localStorage.setItem(STUDENT_SESSION_SECRET_KEY, String(sessionSecret || ''))
 }
 
 export function clearActiveStudentSession() {
   localStorage.removeItem(STUDENT_SESSION_KEY)
-  sessionStorage.removeItem(STUDENT_SESSION_SECRET_KEY)
+  localStorage.removeItem(STUDENT_SESSION_SECRET_KEY)
 }
 
 export function getActiveStudentSession() {
@@ -207,7 +207,7 @@ export function getActiveStudentSession() {
 }
 
 export function getActiveStudentSessionSecret() {
-  return String(sessionStorage.getItem(STUDENT_SESSION_SECRET_KEY) || '')
+  return String(localStorage.getItem(STUDENT_SESSION_SECRET_KEY) || '')
 }
 
 export function isStudentSessionActive(studentId) {

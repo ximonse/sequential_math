@@ -2,6 +2,7 @@ import { kv } from '@vercel/kv'
 import { createHash, randomBytes } from 'node:crypto'
 import {
   isTeacherApiAuthorized,
+  secureCompare,
   withCors
 } from '../_helpers.js'
 
@@ -37,11 +38,11 @@ function verifyPasswordAgainstAuth(auth, studentPassword) {
   if (hasHashedPassword(auth)) {
     const expected = String(auth.passwordHash)
     const actual = hashPasswordWithSalt(provided, String(auth.passwordSalt))
-    return actual === expected
+    return secureCompare(actual, expected)
   }
 
   if (typeof auth?.password === 'string' && auth.password.trim() !== '') {
-    return provided === auth.password
+    return secureCompare(provided, auth.password)
   }
 
   return false
@@ -579,6 +580,49 @@ function getProfileFreshnessTimestamp(profile) {
   )
 }
 
+function mergeAdaptive(existingAdaptive, incomingAdaptive, preferIncoming) {
+  const existing = existingAdaptive && typeof existingAdaptive === 'object' ? existingAdaptive : {}
+  const incoming = incomingAdaptive && typeof incomingAdaptive === 'object' ? incomingAdaptive : {}
+  const fresher = preferIncoming ? incoming : existing
+  const older = preferIncoming ? existing : incoming
+
+  const existingAbilities = existing.operationAbilities && typeof existing.operationAbilities === 'object'
+    ? existing.operationAbilities : {}
+  const incomingAbilities = incoming.operationAbilities && typeof incoming.operationAbilities === 'object'
+    ? incoming.operationAbilities : {}
+  const mergedAbilities = { ...existingAbilities }
+  for (const op of Object.keys(incomingAbilities)) {
+    const a = toFiniteNumber(existingAbilities[op], 1)
+    const b = toFiniteNumber(incomingAbilities[op], 1)
+    mergedAbilities[op] = Math.max(a, b)
+  }
+
+  const existingSkills = existing.skillStates && typeof existing.skillStates === 'object'
+    ? existing.skillStates : {}
+  const incomingSkills = incoming.skillStates && typeof incoming.skillStates === 'object'
+    ? incoming.skillStates : {}
+  const mergedSkills = { ...existingSkills }
+  for (const tag of Object.keys(incomingSkills)) {
+    const prev = mergedSkills[tag]
+    const next = incomingSkills[tag]
+    if (!prev) {
+      mergedSkills[tag] = next
+    } else {
+      const prevAttempts = toFiniteNumber(prev?.attempts)
+      const nextAttempts = toFiniteNumber(next?.attempts)
+      mergedSkills[tag] = nextAttempts >= prevAttempts ? next : prev
+    }
+  }
+
+  return {
+    ...older,
+    ...fresher,
+    operationAbilities: mergedAbilities,
+    skillStates: mergedSkills,
+    recentSelections: Array.isArray(fresher.recentSelections) ? fresher.recentSelections : (Array.isArray(older.recentSelections) ? older.recentSelections : [])
+  }
+}
+
 function mergeProfiles(existingProfile, incomingProfile) {
   const existingFreshness = getProfileFreshnessTimestamp(existingProfile)
   const incomingFreshness = getProfileFreshnessTimestamp(incomingProfile)
@@ -637,6 +681,8 @@ function mergeProfiles(existingProfile, incomingProfile) {
     toFiniteNumber(incomingProfile?.currentDifficulty)
   )
 
+  merged.adaptive = mergeAdaptive(existingProfile?.adaptive, incomingProfile?.adaptive, preferIncoming)
+
   merged.stats = mergeStats(
     existingProfile?.stats,
     incomingProfile?.stats,
@@ -652,7 +698,7 @@ export default async function handler(req, res) {
   withCors(res, {
     methods: 'GET,POST,OPTIONS',
     headers: 'Content-Type, x-student-password, x-teacher-token, x-teacher-password'
-  })
+  }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
 
   const studentId = String(req.query.studentId || '').trim().toUpperCase()
@@ -678,7 +724,12 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'Unauthorized' })
       }
 
-      return res.status(200).json({ profile })
+      const safeProfile = { ...profile }
+      if (safeProfile.auth) {
+        const { passwordHash, passwordSalt, passwordScheme, password, ...safeAuth } = safeProfile.auth
+        safeProfile.auth = safeAuth
+      }
+      return res.status(200).json({ profile: safeProfile })
     }
 
     if (req.method === 'POST') {
@@ -714,8 +765,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   } catch (error) {
     return res.status(500).json({
-      error: 'Storage backend unavailable',
-      details: error?.message || 'unknown'
+      error: 'Storage backend unavailable'
     })
   }
 }

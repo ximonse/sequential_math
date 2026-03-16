@@ -24,7 +24,8 @@ export function createCloudSyncApi(deps) {
     lastSource: CLOUD_ENABLED ? 'never' : 'cloud_disabled',
     localCount: 0,
     cloudCount: 0,
-    mergedCount: 0
+    mergedCount: 0,
+    authStale: false
   }
 
   function setCloudProfilesSyncStatus(patch) {
@@ -227,6 +228,11 @@ export function createCloudSyncApi(deps) {
       if (studentSecret) headers['x-student-password'] = studentSecret
       if (teacherToken) applyTeacherAuthHeader(headers, teacherToken)
 
+      if (!studentSecret && !teacherToken) {
+        console.warn('[cloud-sync] No auth credentials available — skipping sync for', normalizedId)
+        return null
+      }
+
       const response = await fetch(`/api/student/${encodeURIComponent(normalizedId)}`, {
         method: 'POST',
         headers,
@@ -238,11 +244,22 @@ export function createCloudSyncApi(deps) {
           }
         })
       })
+      if (response.status === 401) {
+        console.warn('[cloud-sync] 401 Unauthorized for', normalizedId, '— session secret may be stale')
+        setCloudProfilesSyncStatus({
+          lastErrorAt: Date.now(),
+          lastError: 'Obehörig (401) — lösenordet kan ha ändrats. Logga in igen.',
+          lastSource: 'cloud_auth_stale',
+          authStale: true
+        })
+        return null
+      }
       if (!response.ok) return null
 
       const data = await response.json()
       const mergedProfile = data?.profile
       if (mergedProfile && typeof mergedProfile === 'object') {
+        setCloudProfilesSyncStatus({ authStale: false })
         return normalizeLoadedProfile(mergedProfile, normalizedId)
       }
       return null

@@ -3,8 +3,14 @@
  * Returns enabledExtras for a class. No auth required (non-sensitive config).
  */
 import { kv } from '@vercel/kv'
+import { withCors } from './_helpers.js'
 
 export default async function handler(req, res) {
+  withCors(res, {
+    methods: 'GET,OPTIONS',
+    headers: 'Content-Type'
+  }, req)
+  if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
   }

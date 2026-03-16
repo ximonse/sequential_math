@@ -401,7 +401,8 @@ export function usePracticeCoreActions({
       }
     }
 
-    saveProfile(profile, levelMasteredNow ? { forceSync: true } : undefined)
+    const shouldForceSync = Boolean(levelMasteredNow) || isTableDrill
+    saveProfile(profile, shouldForceSync ? { forceSync: true } : undefined)
   }, [
     profile,
     currentProblem,

@@ -8,13 +8,27 @@ const SCRYPT_KEY_LEN = 64
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
 
-export function withCors(res, options = {}) {
+const ALLOWED_ORIGINS = [
+  'https://matematik.ximon.se'
+]
+
+function isAllowedOrigin(origin) {
+  if (!origin) return false
+  if (ALLOWED_ORIGINS.includes(origin)) return true
+  if (/^https:\/\/[\w-]+-ximonses-projects\.vercel\.app$/.test(origin)) return true
+  if (!isProdLikeServer() && /^http:\/\/localhost(:\d+)?$/.test(origin)) return true
+  return false
+}
+
+export function withCors(res, options = {}, req = null) {
   const methods = String(options?.methods || 'GET,POST,OPTIONS')
   const headers = String(options?.headers || 'Content-Type')
-  const origin = String(options?.origin || '*')
+  const requestOrigin = String(req?.headers?.origin || options?.requestOrigin || '')
+  const origin = isAllowedOrigin(requestOrigin) ? requestOrigin : ALLOWED_ORIGINS[0]
   res.setHeader('Access-Control-Allow-Origin', origin)
   res.setHeader('Access-Control-Allow-Methods', methods)
   res.setHeader('Access-Control-Allow-Headers', headers)
+  res.setHeader('Vary', 'Origin')
 }
 
 // ── Env helpers ───────────────────────────────────────────────────────────────

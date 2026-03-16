@@ -4,9 +4,14 @@
  * Requires teacher auth token.
  */
 import { kv } from '@vercel/kv'
-import { getAuthorizedClassIds, getTeacherAuthPayload } from './_helpers.js'
+import { getAuthorizedClassIds, getTeacherAuthPayload, withCors } from './_helpers.js'
 
 export default async function handler(req, res) {
+  withCors(res, {
+    methods: 'PUT,OPTIONS',
+    headers: 'Content-Type, x-teacher-token, x-teacher-password'
+  }, req)
+  if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'PUT') {
     return res.status(405).json({ error: 'Method not allowed' })
   }

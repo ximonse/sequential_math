@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   withCors(res, {
     methods: 'GET,POST,OPTIONS',
     headers: 'Content-Type'
-  })
+  }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
 
   const configuredPassword = getConfiguredTeacherApiPassword()

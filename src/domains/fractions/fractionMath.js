@@ -5,7 +5,7 @@ export function gcd(a, b) {
 }
 
 export function reduce(num, den) {
-  if (den === 0) return { num: 0, den: 1 }
+  if (den === 0) throw new Error('Division by zero in fraction reduce')
   const g = gcd(Math.abs(num), Math.abs(den))
   const sign = den < 0 ? -1 : 1
   return { num: sign * num / g, den: sign * den / g }

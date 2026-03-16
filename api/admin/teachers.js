@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   withCors(res, {
     methods: 'GET,POST,OPTIONS',
     headers: 'Content-Type, x-teacher-token, x-teacher-password'
-  })
+  }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (!isAdminAuthorized(req)) {
     return res.status(401).json({ error: 'Admin access required' })

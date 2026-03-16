@@ -4,6 +4,7 @@ import ClassOverviewPanel from './ClassOverviewPanel'
 import ClassManagementPanel from './ClassManagementPanel'
 import ClassFilterPanel from './ClassFilterPanel'
 import ClassMisconceptionHeatmap from './ClassMisconceptionHeatmap'
+import ClassMasteryLevelPanel from './ClassMasteryLevelPanel'
 import ClassStatsCards from './ClassStatsCards'
 import CloudSyncStatusPanel from './CloudSyncStatusPanel'
 import CollapsibleSection from './CollapsibleSection'
@@ -25,6 +26,7 @@ import { isTeacherAdmin } from '../../../lib/teacherAuth'
 
 const PANEL_DEFS = [
   { id: 'overview',    title: 'Klassöversikt' },
+  { id: 'mastery',     title: 'Nivåöversikt' },
   { id: 'heatmap',     title: 'Missuppfattningar' },
   { id: 'sticky',      title: 'Tabellstatus' },
   { id: 'detail',      title: 'Elevdetalj' },
@@ -200,6 +202,12 @@ export default function DashboardLayout({
         toPercent={toPercent}
         formatDuration={formatDuration}
         formatTimeAgo={formatTimeAgo}
+      />
+    )
+    if (id === 'mastery') return (
+      <ClassMasteryLevelPanel
+        filteredStudents={filteredStudents}
+        onOpenStudentDetail={handleOpenStudentDetail}
       />
     )
     if (id === 'heatmap') return (

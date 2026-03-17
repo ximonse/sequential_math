@@ -8,17 +8,18 @@ export function buildClassMasteryRows(filteredStudents) {
   return filteredStudents.map(student => {
     const levels = buildEffectiveLevels(student)
     const values = ALL_OPERATIONS.map(op => levels[op])
-    const nonZero = values.filter(v => v > 0)
-    const average = nonZero.length > 0
-      ? nonZero.reduce((sum, v) => sum + v, 0) / nonZero.length
-      : 0
+    // Honest average: all 9 operations, zeros included
+    const average = values.reduce((sum, v) => sum + v, 0) / values.length
+    // Lowest complete level: min across ALL operations
+    const lowest = Math.min(...values)
 
     return {
       studentId: student.studentId,
       name: student.name || student.studentId,
       className: student.className || '',
       levels,
-      average
+      average,
+      lowest
     }
   })
 }
@@ -56,20 +57,27 @@ function buildEffectiveLevels(student) {
   return result
 }
 
-export function getLevelColorClass(level) {
-  if (!level || level <= 0) return 'bg-gray-100 text-gray-400'
-  if (level <= 2) return 'bg-red-100 text-red-700'
-  if (level <= 4) return 'bg-orange-100 text-orange-700'
-  if (level <= 6) return 'bg-amber-100 text-amber-700'
-  if (level <= 8) return 'bg-lime-100 text-lime-700'
-  if (level <= 10) return 'bg-emerald-200 text-emerald-800'
-  return 'bg-emerald-500 text-white'
+/**
+ * Returns inline style for level dots — high contrast color ramp.
+ */
+export function getLevelDotStyle(level) {
+  if (!level || level <= 0) return { backgroundColor: '#f3f4f6', color: '#b0b5bf', border: '1.5px solid #d1d5db' }
+  if (level <= 2) return { backgroundColor: '#fca5a5', color: '#7f1d1d', border: 'none' }
+  if (level <= 4) return { backgroundColor: '#fdba74', color: '#7c2d12', border: 'none' }
+  if (level <= 6) return { backgroundColor: '#fcd34d', color: '#713f12', border: 'none' }
+  if (level <= 8) return { backgroundColor: '#86efac', color: '#14532d', border: 'none' }
+  if (level <= 10) return { backgroundColor: '#34d399', color: '#022c22', border: 'none' }
+  return { backgroundColor: '#047857', color: '#ffffff', border: 'none' }
 }
 
-export function getAverageColorClass(avg) {
-  if (!avg || avg <= 0) return 'text-gray-400'
-  if (avg < 3) return 'text-red-600 font-semibold'
-  if (avg < 5) return 'text-orange-600 font-semibold'
-  if (avg < 7) return 'text-amber-600 font-semibold'
-  return 'text-emerald-600 font-semibold'
+/**
+ * Returns inline style for average/lowest badges.
+ */
+export function getAverageBadgeStyle(avg) {
+  if (!avg || avg <= 0) return { backgroundColor: '#f3f4f6', color: '#9ca3af' }
+  if (avg < 3) return { backgroundColor: '#fca5a5', color: '#7f1d1d' }
+  if (avg < 5) return { backgroundColor: '#fdba74', color: '#7c2d12' }
+  if (avg < 7) return { backgroundColor: '#fcd34d', color: '#713f12' }
+  if (avg < 9) return { backgroundColor: '#86efac', color: '#14532d' }
+  return { backgroundColor: '#34d399', color: '#022c22' }
 }

@@ -75,7 +75,15 @@ export async function verifyPasswordForProfile(profile, plainPassword) {
 
   if (hasHashedPassword(profile.auth)) {
     const actualHash = await hashPasswordWithSalt(plainPassword, profile.auth.passwordSalt)
-    return actualHash === profile.auth.passwordHash
+    if (actualHash === profile.auth.passwordHash) return true
+
+    // Fallback: try uppercase (reset sets password = uppercase studentId)
+    const upper = plainPassword.toUpperCase()
+    if (upper !== plainPassword) {
+      const upperHash = await hashPasswordWithSalt(upper, profile.auth.passwordSalt)
+      if (upperHash === profile.auth.passwordHash) return true
+    }
+    return false
   }
 
   const legacyPassword = String(profile.auth.password || '')

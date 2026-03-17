@@ -37,8 +37,18 @@ function verifyPasswordAgainstAuth(auth, studentPassword) {
 
   if (hasHashedPassword(auth)) {
     const expected = String(auth.passwordHash)
-    const actual = hashPasswordWithSalt(provided, String(auth.passwordSalt))
-    return secureCompare(actual, expected)
+    const salt = String(auth.passwordSalt)
+    const actual = hashPasswordWithSalt(provided, salt)
+    if (secureCompare(actual, expected)) return true
+
+    // resetStudentPasswordToLoginName sets password = uppercase studentId,
+    // but student may type lowercase — try uppercase fallback
+    const upper = provided.toUpperCase()
+    if (upper !== provided) {
+      const upperActual = hashPasswordWithSalt(upper, salt)
+      if (secureCompare(upperActual, expected)) return true
+    }
+    return false
   }
 
   if (typeof auth?.password === 'string' && auth.password.trim() !== '') {

@@ -217,7 +217,20 @@ export function createStorageStudentApi(deps) {
 
     ensureProfileAuth(profile)
     await setProfilePassword(profile, profile.studentId)
-    saveProfile(profile, { forceSync: true })
+    saveProfileLocalOnly(profile)
+
+    if (CLOUD_ENABLED) {
+      try {
+        const merged = await syncProfileToCloud(profile)
+        if (!merged) {
+          return { ok: false, error: 'Lösenordet sparades lokalt men kunde inte synkas till servern. Försök igen.' }
+        }
+        saveProfileLocalOnly(merged)
+      } catch {
+        return { ok: false, error: 'Nätverksfel vid synkning av nytt lösenord. Försök igen.' }
+      }
+    }
+
     if (isStudentSessionActive(normalizedId)) {
       setActiveStudentSession(profile.studentId, profile.studentId)
     }

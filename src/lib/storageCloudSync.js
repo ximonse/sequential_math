@@ -1,3 +1,13 @@
+import {
+  addPendingSync,
+  cancelAllRetries,
+  cancelRetries,
+  getPendingSyncIds,
+  hasPendingSyncs,
+  removePendingSync,
+  scheduleRetry
+} from './storageCloudSyncQueue'
+
 export function createCloudSyncApi(deps) {
   const {
     CLOUD_ENABLED,
@@ -371,6 +381,16 @@ export function createCloudSyncApi(deps) {
     }
   }
 
+  function retrySyncForStudent(studentId) {
+    const profile = loadProfile(studentId)
+    if (!profile) return true // nothing to sync — treat as success
+    const merged = syncProfileToCloud(profile)
+    return merged.then(m => {
+      if (m) { saveProfileLocalOnly(m); return true }
+      return false
+    }).catch(() => false)
+  }
+
   function requestCloudSync(profile, options = {}) {
     if (!CLOUD_ENABLED || !profile) return
     const normalizedId = normalizeStudentId(profile.studentId)
@@ -386,14 +406,11 @@ export function createCloudSyncApi(deps) {
       const merged = await syncProfileToCloud(latest)
       if (merged) {
         saveProfileLocalOnly(merged)
+        removePendingSync(normalizedId)
+        cancelRetries(normalizedId)
       } else {
-        setTimeout(async () => {
-          const retryProfile = loadProfile(normalizedId)
-          if (retryProfile) {
-            const retryMerged = await syncProfileToCloud(retryProfile)
-            if (retryMerged) saveProfileLocalOnly(retryMerged)
-          }
-        }, 10_000)
+        addPendingSync(normalizedId)
+        scheduleRetry(normalizedId, retrySyncForStudent)
       }
     }
 
@@ -420,11 +437,101 @@ export function createCloudSyncApi(deps) {
     }
   }
 
+  // ── Flush / health / listeners ────────────────────────────────────────────
+
+  async function flushPendingSyncs() {
+    if (!CLOUD_ENABLED) return { flushed: 0, failed: 0 }
+    const pendingIds = getPendingSyncIds()
+    let flushed = 0
+    let failed = 0
+    for (const studentId of pendingIds) {
+      const profile = loadProfile(studentId)
+      if (!profile) {
+        removePendingSync(studentId)
+        continue
+      }
+      try {
+        const merged = await syncProfileToCloud(profile)
+        if (merged) {
+          saveProfileLocalOnly(merged)
+          removePendingSync(studentId)
+          cancelRetries(studentId)
+          flushed++
+        } else {
+          failed++
+        }
+      } catch {
+        failed++
+      }
+    }
+    return { flushed, failed }
+  }
+
+  function attemptBeforeUnloadSync() {
+    if (!CLOUD_ENABLED) return
+    const pendingIds = getPendingSyncIds()
+    for (const studentId of pendingIds) {
+      const profile = loadProfile(studentId)
+      if (!profile) continue
+      const normalizedId = normalizeStudentId(studentId)
+      const headers = { 'Content-Type': 'application/json' }
+      const studentSecret = getActiveStudentSessionSecret()
+      const teacherToken = getTeacherApiToken()
+      if (studentSecret) headers['x-student-password'] = studentSecret
+      if (teacherToken) applyTeacherAuthHeader(headers, teacherToken)
+      if (!studentSecret && !teacherToken) continue
+      try {
+        fetch(`/api/student/${encodeURIComponent(normalizedId)}`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ profile: { ...profile, studentId: normalizedId } }),
+          keepalive: true
+        })
+      } catch { /* best effort */ }
+    }
+  }
+
+  function getSyncHealth() {
+    const pendingIds = getPendingSyncIds()
+    return {
+      hasPending: pendingIds.length > 0,
+      pendingCount: pendingIds.length,
+      pendingIds
+    }
+  }
+
+  let listenersRegistered = false
+
+  function initCloudSyncListeners() {
+    if (listenersRegistered || !CLOUD_ENABLED) return
+    listenersRegistered = true
+
+    window.addEventListener('online', () => {
+      void flushPendingSyncs()
+    })
+
+    window.addEventListener('beforeunload', () => {
+      attemptBeforeUnloadSync()
+    })
+
+    // Flush any leftovers from previous sessions
+    void flushPendingSyncs()
+  }
+
+  function destroyCloudSyncListeners() {
+    cancelAllRetries()
+  }
+
   return {
     getCloudProfilesSyncStatus,
     getAllProfilesWithSync,
     loadProfileFromCloud,
     requestCloudSync,
-    syncProfileToCloud
+    syncProfileToCloud,
+    flushPendingSyncs,
+    attemptBeforeUnloadSync,
+    getSyncHealth,
+    initCloudSyncListeners,
+    destroyCloudSyncListeners
   }
 }

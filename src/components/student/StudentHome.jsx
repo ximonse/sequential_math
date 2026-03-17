@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { changeStudentPassword, clearActiveStudentSession, getOrCreateProfileWithSync, isStudentSessionActive, saveProfile } from '../../lib/storage'
+import { changeStudentPassword, clearActiveStudentSession, getOrCreateProfileWithSync, getSyncHealth, isStudentSessionActive, saveProfile } from '../../lib/storage'
 import { getStartOfWeekTimestamp } from '../../lib/studentProfile'
 import { inferOperationFromProblemType } from '../../lib/mathUtils'
 import { getOperationLabel, getOperationMinLevel, OPERATION_LABELS, STANDARD_OPERATIONS } from '../../lib/operations'
@@ -404,12 +404,15 @@ function StudentHome() {
             <h1 className="text-2xl font-bold text-gray-800">Hej {profile.name}</h1>
             <p className="text-sm text-gray-500">Din matteöversikt</p>
           </div>
-          <button
-            onClick={handleStudentLogout}
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
-            Logga ut
-          </button>
+          <div className="flex flex-col items-end gap-1">
+            <button
+              onClick={handleStudentLogout}
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              Logga ut
+            </button>
+            <SyncStatusIndicator />
+          </div>
         </div>
 
         <StudentHomeTableDrillCard
@@ -455,6 +458,24 @@ function StudentHome() {
         />
       </div>
     </div>
+  )
+}
+
+function SyncStatusIndicator() {
+  const [pending, setPending] = useState(false)
+
+  useEffect(() => {
+    const check = () => setPending(getSyncHealth().hasPending)
+    check()
+    const timer = setInterval(check, 5000)
+    return () => clearInterval(timer)
+  }, [])
+
+  if (!pending) return null
+  return (
+    <span className="text-[10px] text-amber-600 animate-pulse">
+      Synkar data...
+    </span>
   )
 }
 

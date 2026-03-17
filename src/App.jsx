@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import PracticeSession from './components/student/PracticeSession'
 import StudentHome from './components/student/StudentHome'
@@ -7,6 +8,7 @@ import TeacherLogin from './components/teacher/TeacherLogin'
 import Login from './components/Login'
 import ThemeSwitcher from './components/shared/ThemeSwitcher'
 import { isTeacherAuthenticated } from './lib/teacherAuth'
+import { initCloudSyncListeners, destroyCloudSyncListeners } from './lib/storage'
 
 function RequireTeacherAuth({ children }) {
   if (!isTeacherAuthenticated()) {
@@ -17,6 +19,11 @@ function RequireTeacherAuth({ children }) {
 }
 
 function App() {
+  useEffect(() => {
+    initCloudSyncListeners()
+    return () => destroyCloudSyncListeners()
+  }, [])
+
   return (
     <div className="min-h-screen theme-app-shell">
       <ThemeSwitcher />

@@ -127,6 +127,22 @@ export function getCloudProfilesSyncStatus() {
   return getCloudSyncApi().getCloudProfilesSyncStatus()
 }
 
+export function getSyncHealth() {
+  return getCloudSyncApi().getSyncHealth()
+}
+
+export function flushPendingSyncs() {
+  return getCloudSyncApi().flushPendingSyncs()
+}
+
+export function initCloudSyncListeners() {
+  return getCloudSyncApi().initCloudSyncListeners()
+}
+
+export function destroyCloudSyncListeners() {
+  return getCloudSyncApi().destroyCloudSyncListeners()
+}
+
 function requestCloudSync(profile, options = {}) {
   return getCloudSyncApi().requestCloudSync(profile, options)
 }

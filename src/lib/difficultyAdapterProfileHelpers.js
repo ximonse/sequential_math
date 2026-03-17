@@ -34,9 +34,9 @@ export function ensureDifficultyMeta(profile) {
     const global = profile.currentDifficulty || 1
     profile.adaptive.operationAbilities = {
       addition: global,
-      subtraction: Math.max(1, global - 2),
-      multiplication: Math.max(1, global - 3),
-      division: Math.max(3, global - 4),
+      subtraction: 1,
+      multiplication: 1,
+      division: 1,
       algebra_evaluate: 1,
       algebra_simplify: 1,
       arithmetic_expressions: 1,

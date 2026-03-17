@@ -160,28 +160,31 @@ export function getTableSpeedColorClass(medianSpeed, accuracy, attempts) {
 }
 
 export function getCompactMasteryColorClass(historical, weekly, monthly) {
+  // Use windowed mastery data if available, fall back to totals
+  const hMA = Number(historical?.masteryAttempts ?? historical?.attempts ?? 0)
+  const hMC = Number(historical?.masteryCorrect ?? historical?.correct ?? 0)
   const hAttempts = Number(historical?.attempts || 0)
-  const hCorrect = Number(historical?.correct || 0)
-  const hRate = hAttempts > 0 ? hCorrect / hAttempts : 0
-  const hMastered = hAttempts >= MASTERY_MIN_ATTEMPTS && hRate >= MASTERY_MIN_SUCCESS_RATE
+  const hRate = hMA > 0 ? hMC / hMA : 0
+  const hMastered = hMA >= MASTERY_MIN_ATTEMPTS && hRate >= MASTERY_MIN_SUCCESS_RATE
 
+  const wMA = Number(weekly?.masteryAttempts ?? weekly?.attempts ?? 0)
+  const wMC = Number(weekly?.masteryCorrect ?? weekly?.correct ?? 0)
   const wAttempts = Number(weekly?.attempts || 0)
-  const wCorrect = Number(weekly?.correct || 0)
-  const wRate = wAttempts > 0 ? wCorrect / wAttempts : 0
-  const wMastered = wAttempts >= MASTERY_MIN_ATTEMPTS && wRate >= MASTERY_MIN_SUCCESS_RATE
+  const wRate = wMA > 0 ? wMC / wMA : 0
+  const wMastered = wMA >= MASTERY_MIN_ATTEMPTS && wRate >= MASTERY_MIN_SUCCESS_RATE
 
-  const mAttempts = Number(monthly?.attempts || 0)
-  const mCorrect = Number(monthly?.correct || 0)
-  const mRate = mAttempts > 0 ? mCorrect / mAttempts : 0
-  const mMastered = mAttempts >= MASTERY_MIN_ATTEMPTS && mRate >= MASTERY_MIN_SUCCESS_RATE
+  const mMA = Number(monthly?.masteryAttempts ?? monthly?.attempts ?? 0)
+  const mMC = Number(monthly?.masteryCorrect ?? monthly?.correct ?? 0)
+  const mRate = mMA > 0 ? mMC / mMA : 0
+  const mMastered = mMA >= MASTERY_MIN_ATTEMPTS && mRate >= MASTERY_MIN_SUCCESS_RATE
 
   if (hAttempts === 0 && wAttempts === 0) return 'bg-gray-100 text-gray-400'
   if (wMastered) return 'bg-emerald-600 text-white'
   if (mMastered) return 'bg-emerald-300 text-emerald-900'
   if (hMastered) return 'border-2 border-emerald-400 bg-white text-emerald-700'
   if (wAttempts > 0 && wRate >= 0.6) return 'bg-emerald-300 text-emerald-900'
-  if (hAttempts >= MASTERY_MIN_ATTEMPTS && hRate >= 0.5) return 'bg-orange-200 text-orange-900'
-  if (hAttempts >= MASTERY_MIN_ATTEMPTS && hRate < 0.5) return 'bg-red-300 text-red-900'
+  if (hMA >= MASTERY_MIN_ATTEMPTS && hRate >= 0.5) return 'bg-orange-200 text-orange-900'
+  if (hMA >= MASTERY_MIN_ATTEMPTS && hRate < 0.5) return 'bg-red-300 text-red-900'
   return 'bg-blue-200 text-blue-800'
 }
 

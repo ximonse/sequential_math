@@ -250,7 +250,7 @@ export function generateMultiplicationTableDrillProblem(tableSet, options = {}) 
     values: { a, b },
     result,
     difficulty: {
-      conceptual_level: clamp(level, 3, 6),
+      conceptual_level: clamp(level, 1, 12),
       cognitive_load: {
         working_memory: 1,
         steps_required: 1,

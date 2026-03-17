@@ -2,15 +2,15 @@ import { inferOperationFromProblemType } from '../../../lib/mathUtils'
 import { getTableProblemSourceForStudent } from './dashboardTableStatusUtils'
 import { ALL_OPERATIONS, LEVELS, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './dashboardConstants'
 
+const MASTERY_WINDOW = 10
+
 export function buildClassMasteryRows(filteredStudents) {
   if (!Array.isArray(filteredStudents)) return []
 
   return filteredStudents.map(student => {
     const levels = buildEffectiveLevels(student)
     const values = ALL_OPERATIONS.map(op => levels[op])
-    // Honest average: all 9 operations, zeros included
     const average = values.reduce((sum, v) => sum + v, 0) / values.length
-    // Lowest complete level: min across ALL operations
     const lowest = Math.min(...values)
 
     return {
@@ -26,54 +26,33 @@ export function buildClassMasteryRows(filteredStudents) {
 
 function buildEffectiveLevels(student) {
   const source = getTableProblemSourceForStudent(student)
-  const buckets = {}
+
+  // Collect problems per operation+level, preserving order for windowing
+  const problemLists = {}
   for (const op of ALL_OPERATIONS) {
-    buckets[op] = {}
+    problemLists[op] = {}
     for (const level of LEVELS) {
-      buckets[op][level] = { attempts: 0, correct: 0 }
+      problemLists[op][level] = []
     }
   }
 
   for (const problem of source) {
     const op = inferOperationFromProblemType(problem?.problemType || '')
-    if (!buckets[op]) continue
+    if (!problemLists[op]) continue
     const level = Math.round(Number(problem?.difficulty?.conceptual_level || 0))
     if (!Number.isInteger(level) || level < 1 || level > 12) continue
-    buckets[op][level].attempts += 1
-    if (problem.correct) buckets[op][level].correct += 1
-  }
-
-  // DEBUG: log multiplication buckets for students with mul activity
-  const mulBuckets = buckets['multiplication']
-  const mulTotal = LEVELS.reduce((s, lv) => s + mulBuckets[lv].attempts, 0)
-  if (mulTotal > 0) {
-    const summary = LEVELS.map(lv => {
-      const b = mulBuckets[lv]
-      if (b.attempts === 0) return null
-      const rate = (b.correct / b.attempts * 100).toFixed(0)
-      const pass = b.attempts >= MASTERY_MIN_ATTEMPTS && b.correct / b.attempts >= MASTERY_MIN_SUCCESS_RATE
-      return `L${lv}: ${b.correct}/${b.attempts} (${rate}%) ${pass ? '✓' : '✗'}`
-    }).filter(Boolean).join(', ')
-    console.log(`[DEBUG mastery] ${student.name || student.studentId} mul: ${summary}`)
+    problemLists[op][level].push(problem.correct ? 1 : 0)
   }
 
   const result = {}
   for (const op of ALL_OPERATIONS) {
     result[op] = 0
     for (const level of LEVELS) {
-      const bucket = buckets[op][level]
-      if (bucket.attempts < MASTERY_MIN_ATTEMPTS) {
-        if (op === 'multiplication' && mulTotal > 0) {
-          console.log(`[DEBUG mastery] ${student.name || student.studentId} mul BREAK at level ${level}: only ${bucket.attempts} attempts (need ${MASTERY_MIN_ATTEMPTS})`)
-        }
-        break
-      }
-      if (bucket.correct / bucket.attempts < MASTERY_MIN_SUCCESS_RATE) {
-        if (op === 'multiplication') {
-          console.log(`[DEBUG mastery] ${student.name || student.studentId} mul BREAK at level ${level}: ${(bucket.correct/bucket.attempts*100).toFixed(0)}% (need ${MASTERY_MIN_SUCCESS_RATE*100}%)`)
-        }
-        break
-      }
+      const all = problemLists[op][level]
+      if (all.length < MASTERY_MIN_ATTEMPTS) break
+      const windowed = all.slice(-MASTERY_WINDOW)
+      const correct = windowed.reduce((s, v) => s + v, 0)
+      if (correct / windowed.length < MASTERY_MIN_SUCCESS_RATE) break
       result[op] = level
     }
   }

@@ -43,13 +43,37 @@ function buildEffectiveLevels(student) {
     if (problem.correct) buckets[op][level].correct += 1
   }
 
+  // DEBUG: log multiplication buckets for students with mul activity
+  const mulBuckets = buckets['multiplication']
+  const mulTotal = LEVELS.reduce((s, lv) => s + mulBuckets[lv].attempts, 0)
+  if (mulTotal > 0) {
+    const summary = LEVELS.map(lv => {
+      const b = mulBuckets[lv]
+      if (b.attempts === 0) return null
+      const rate = (b.correct / b.attempts * 100).toFixed(0)
+      const pass = b.attempts >= MASTERY_MIN_ATTEMPTS && b.correct / b.attempts >= MASTERY_MIN_SUCCESS_RATE
+      return `L${lv}: ${b.correct}/${b.attempts} (${rate}%) ${pass ? '✓' : '✗'}`
+    }).filter(Boolean).join(', ')
+    console.log(`[DEBUG mastery] ${student.name || student.studentId} mul: ${summary}`)
+  }
+
   const result = {}
   for (const op of ALL_OPERATIONS) {
     result[op] = 0
     for (const level of LEVELS) {
       const bucket = buckets[op][level]
-      if (bucket.attempts < MASTERY_MIN_ATTEMPTS) break
-      if (bucket.correct / bucket.attempts < MASTERY_MIN_SUCCESS_RATE) break
+      if (bucket.attempts < MASTERY_MIN_ATTEMPTS) {
+        if (op === 'multiplication' && mulTotal > 0) {
+          console.log(`[DEBUG mastery] ${student.name || student.studentId} mul BREAK at level ${level}: only ${bucket.attempts} attempts (need ${MASTERY_MIN_ATTEMPTS})`)
+        }
+        break
+      }
+      if (bucket.correct / bucket.attempts < MASTERY_MIN_SUCCESS_RATE) {
+        if (op === 'multiplication') {
+          console.log(`[DEBUG mastery] ${student.name || student.studentId} mul BREAK at level ${level}: ${(bucket.correct/bucket.attempts*100).toFixed(0)}% (need ${MASTERY_MIN_SUCCESS_RATE*100}%)`)
+        }
+        break
+      }
       result[op] = level
     }
   }

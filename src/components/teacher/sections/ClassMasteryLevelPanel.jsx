@@ -9,18 +9,18 @@ import {
 
 const SHORT_LABELS = {
   addition: '+',
-  subtraction: '\u2212',
-  multiplication: '\u00d7',
-  division: '\u00f7',
+  subtraction: '−',
+  multiplication: '×',
+  division: '÷',
   algebra_evaluate: 'Alg(u)',
   algebra_simplify: 'Alg(f)',
   arithmetic_expressions: 'Uttr',
-  fractions: 'Br\u00e5k',
+  fractions: 'Bråk',
   percentage: '%'
 }
 
 const LEGEND_STEPS = [
-  { level: 0, label: '\u2013' },
+  { level: 0, label: '–' },
   { level: 2, label: '1-2' },
   { level: 4, label: '3-4' },
   { level: 6, label: '5-6' },
@@ -81,7 +81,7 @@ export default function ClassMasteryLevelPanel({
     if (sortBy !== column) return null
     return (
       <span className="text-[9px] ml-0.5 opacity-70">
-        {sortDir === 'asc' ? '\u25b2' : '\u25bc'}
+        {sortDir === 'asc' ? '▲' : '▼'}
       </span>
     )
   }
@@ -95,10 +95,10 @@ export default function ClassMasteryLevelPanel({
       {/* Header with legend */}
       <div className="flex items-center justify-between flex-wrap gap-2 px-1 pb-1">
         <p className="text-xs text-gray-400">
-          Klarad = \u22655 f\u00f6rs\u00f6k, \u226585% r\u00e4tt. Konsekutiv fr\u00e5n niv\u00e5 1.
+          Klarad = ≥5 försök, ≥85% rätt. Konsekutiv från nivå 1.
         </p>
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[10px] text-gray-400 mr-0.5">Niv\u00e5:</span>
+          <span className="text-[10px] text-gray-400 mr-0.5">Nivå:</span>
           {LEGEND_STEPS.map(({ level, label }) => (
             <span key={level} className="inline-flex items-center gap-0.5">
               <span
@@ -133,17 +133,17 @@ export default function ClassMasteryLevelPanel({
                   arrow={sortArrow(op)}
                   onClick={handleSort}
                   title={getOperationLabel(op)}
-                  className="text-center w-11"
+                  className="text-center w-14"
                 />
               ))}
               <HeaderCell
-                label="L\u00e4gsta"
+                label="Lägsta"
                 column="lowest"
                 active={sortBy === 'lowest'}
                 arrow={sortArrow('lowest')}
                 onClick={handleSort}
-                className="text-center w-14 border-l border-gray-200"
-                title="L\u00e4gsta kompletta niv\u00e5 (min av alla operationer)"
+                className="text-center w-16 border-l border-gray-200"
+                title="Lägsta kompletta nivå (min av alla operationer)"
               />
               <HeaderCell
                 label="Snitt"
@@ -151,8 +151,8 @@ export default function ClassMasteryLevelPanel({
                 active={sortBy === 'average'}
                 arrow={sortArrow('average')}
                 onClick={handleSort}
-                className="text-center w-14 border-l border-gray-100"
-                title="Snitt av alla 9 operationer (inkl ej p\u00e5b\u00f6rjade)"
+                className="text-center w-16 border-l border-gray-100"
+                title="Snitt av alla 9 operationer (inkl ej påbörjade)"
               />
             </tr>
           </thead>
@@ -174,8 +174,8 @@ export default function ClassMasteryLevelPanel({
                 {ALL_OPERATIONS.map(op => {
                   const level = row.levels[op]
                   const tooltip = level > 0
-                    ? `${getOperationLabel(op)}: niv\u00e5 1\u2013${level} klarade`
-                    : `${getOperationLabel(op)}: ej p\u00e5b\u00f6rjad`
+                    ? `${getOperationLabel(op)}: nivå 1–${level} klarade`
+                    : `${getOperationLabel(op)}: ej påbörjad`
                   return (
                     <td key={op} className="py-1.5 px-1 text-center">
                       <LevelDot level={level} tooltip={tooltip} />
@@ -223,10 +223,10 @@ function LevelDot({ level, tooltip }) {
   return (
     <div
       title={tooltip}
-      className="w-[34px] h-[34px] mx-auto rounded-md flex items-center justify-center text-[13px] font-bold tabular-nums cursor-default transition-transform hover:scale-110"
+      className="w-[38px] h-[34px] mx-auto rounded-md flex items-center justify-center text-[13px] font-bold tabular-nums cursor-default transition-transform hover:scale-110"
       style={style}
     >
-      {level > 0 ? level : '\u2013'}
+      {level > 0 ? level : '–'}
     </div>
   )
 }
@@ -235,10 +235,10 @@ function BadgeDot({ value, decimal = false }) {
   const style = getAverageBadgeStyle(value)
   const display = value > 0
     ? (decimal ? value.toFixed(1) : value)
-    : '\u2013'
+    : '–'
   return (
     <div
-      className="w-[38px] h-[34px] mx-auto rounded-lg flex items-center justify-center text-[13px] font-extrabold tabular-nums"
+      className="w-[42px] h-[34px] mx-auto rounded-lg flex items-center justify-center text-[13px] font-extrabold tabular-nums"
       style={style}
     >
       {display}

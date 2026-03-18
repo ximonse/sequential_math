@@ -272,7 +272,8 @@ export function usePracticeCoreActions({
       studentAnswer,
       isPartial,
       partialCode: result.partialCode || '',
-      partialDetail: result.partialDetail || ''
+      partialDetail: result.partialDetail || '',
+      hint: result.hint || ''
     })
 
     const answerTs = Number(result?.timestamp || Date.now())

@@ -23,18 +23,23 @@ function hasExplicitUnitCoefficient(raw) {
   return /(^|[+-])1(?=[a-z])/i.test(normalizeExpressionString(raw))
 }
 
-function expressionEquals(a, b) {
+function strictExpressionEquals(a, b) {
+  return normalizeExpressionString(a) === normalizeExpressionString(b)
+}
+
+function termOrderEquals(a, b) {
   const na = normalizeExpressionString(a)
   const nb = normalizeExpressionString(b)
-  if (na === nb) return true
-
-  // Tillåt alternativ ordning av termer: "2 + 3x" === "3x + 2"
   const termsA = splitTerms(na)
   const termsB = splitTerms(nb)
   if (termsA.length !== termsB.length) return false
-  const sortedA = [...termsA].sort()
-  const sortedB = [...termsB].sort()
+  const sortedA = [...termsA].map(t => t.replace(/^\+/, '')).sort()
+  const sortedB = [...termsB].map(t => t.replace(/^\+/, '')).sort()
   return sortedA.every((t, i) => t === sortedB[i])
+}
+
+function expressionEquals(a, b) {
+  return strictExpressionEquals(a, b) || termOrderEquals(a, b)
 }
 
 function splitTerms(expr) {
@@ -63,16 +68,32 @@ export function evaluateAlgebraProblem(problem, studentAnswer) {
     const alternatives = Array.isArray(problem?.answer?.alternatives)
       ? problem.answer.alternatives
       : []
-    const isExactMatch = expressionEquals(correct, studentExpression)
-      || alternatives.some(alt => expressionEquals(alt, studentExpression))
+    const isStrictMatch = strictExpressionEquals(correct, studentExpression)
+      || alternatives.some(alt => strictExpressionEquals(alt, studentExpression))
 
-    if (isExactMatch) {
+    if (isStrictMatch) {
       return {
         correct: true,
         correctAnswer: correct,
         studentAnswer: studentExpression,
         isReasonable: true,
         isPartial: false,
+        absError: null,
+        relativeError: null
+      }
+    }
+
+    const isReorderedMatch = termOrderEquals(correct, studentExpression)
+      || alternatives.some(alt => termOrderEquals(alt, studentExpression))
+
+    if (isReorderedMatch) {
+      return {
+        correct: true,
+        correctAnswer: correct,
+        studentAnswer: studentExpression,
+        isReasonable: true,
+        isPartial: false,
+        hint: `Tips: i algebra skriver man variabeltermen först: ${correct}`,
         absError: null,
         relativeError: null
       }

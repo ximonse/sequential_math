@@ -26,6 +26,8 @@ function FeedbackOverlay({ feedback }) {
           <p className="text-sm text-gray-400">
             {isPartial
               ? (feedback.partialDetail || 'Skriv svaret i förenklad matematisk form.')
+              : feedback.correct && feedback.hint
+              ? feedback.hint
               : feedback.correct
               ? 'Enter, knappsatsknappen eller vänta...'
               : 'Tryck Enter eller knappsatsknappen när du är redo'}

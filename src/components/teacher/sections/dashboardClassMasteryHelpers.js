@@ -5,8 +5,16 @@ export function buildClassMasteryRows(filteredStudents) {
   if (!Array.isArray(filteredStudents)) return []
 
   return filteredStudents.map(student => {
-    const source = getPreferredProblemSource(student)
-    const levels = computeEffectiveLevels(source, ALL_OPERATIONS, LEVELS)
+    // Prefer pre-computed levels (stored on profile with full problemLog data).
+    // Fall back to computing from available data (may only have recentProblems).
+    const stored = student.effectiveLevels
+    let levels
+    if (stored && typeof stored === 'object') {
+      levels = Object.fromEntries(ALL_OPERATIONS.map(op => [op, Number(stored[op]) || 0]))
+    } else {
+      const source = getPreferredProblemSource(student)
+      levels = computeEffectiveLevels(source, ALL_OPERATIONS, LEVELS)
+    }
     const values = ALL_OPERATIONS.map(op => levels[op])
     const average = values.reduce((sum, v) => sum + v, 0) / values.length
     const lowest = Math.min(...values)

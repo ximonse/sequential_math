@@ -1,4 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
+import GameOverScreen from './GameOverScreen'
 
 const PADDLE_HEIGHT = 88
 const PADDLE_WIDTH = 12
@@ -259,22 +260,15 @@ function PongGame({ onClose, studentId, studentName, classId }) {
 
       {/* Game over overlay */}
       {gameOver && (
-        <div className="absolute inset-0 bg-black/80 flex items-center justify-center rounded-2xl">
-          <div className="bg-white rounded-2xl p-6 text-center mx-4">
-            <h2 className="text-2xl font-bold mb-2">
-              {score.player > score.computer ? '🎉 Du vann!' : score.player < score.computer ? '😅 Datorn vann' : '🤝 Oavgjort!'}
-            </h2>
-            <p className="text-xl text-gray-600 mb-4">
-              {score.player} - {score.computer}
-            </p>
-            <button
-              onClick={onClose}
-              className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl"
-            >
-              Tillbaka till matten
-            </button>
-          </div>
-        </div>
+        <GameOverScreen
+          game="pong"
+          score={MAX_TIME - timeLeft}
+          timeLeft={timeLeft}
+          onClose={onClose}
+          studentId={studentId}
+          studentName={studentName}
+          classId={classId}
+        />
       )}
 
       {/* Stäng-knapp */}

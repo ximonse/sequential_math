@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import GameOverScreen from './GameOverScreen'
 
 const GRID_COLS = 20
 const GRID_ROWS = 14
@@ -248,19 +249,15 @@ function SnakeGame({ onClose, studentId, studentName, classId }) {
       </p>
 
       {gameOver && (
-        <div className="absolute inset-0 bg-black/80 flex items-center justify-center rounded-2xl">
-          <div className="bg-white rounded-2xl p-6 text-center mx-4">
-            <h2 className="text-2xl font-bold mb-2">Tid ute!</h2>
-            <p className="text-lg text-gray-700 mb-1">Du fick {score} poang.</p>
-            <p className="text-sm text-gray-500 mb-4">Bra paus, dags for matte igen.</p>
-            <button
-              onClick={onClose}
-              className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl"
-            >
-              Tillbaka till matten
-            </button>
-          </div>
-        </div>
+        <GameOverScreen
+          game="snake"
+          score={score}
+          timeLeft={timeLeft}
+          onClose={onClose}
+          studentId={studentId}
+          studentName={studentName}
+          classId={classId}
+        />
       )}
 
       {!gameOver && (

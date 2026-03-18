@@ -273,6 +273,14 @@ export function buildDashboardClassAndAuthActions({
 
   async function handleSaveClassExtras(classId, extras, options = {}) {
     updateClassExtras(classId, extras)
+    // Also persist highscoreGroup locally so it survives page refresh
+    if (options.highscoreGroup !== undefined) {
+      const allClasses = getClasses()
+      const cls = allClasses.find(c => c.id === classId)
+      if (cls) {
+        saveClass({ ...cls, highscoreGroup: options.highscoreGroup || null })
+      }
+    }
     setClasses(getClasses())
     const body = { classId, enabledExtras: extras }
     if (options.highscoreGroup !== undefined) {

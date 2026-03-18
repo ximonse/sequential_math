@@ -34,6 +34,7 @@ function PongGame({ onClose, studentId, studentName, classId }) {
   const [score, setScore] = useState({ player: 0, computer: 0 })
   const [timeLeft, setTimeLeft] = useState(MAX_TIME)
   const [gameOver, setGameOver] = useState(false)
+  const gameOverRef = useRef(false)
   const touchYRef = useRef(null)
 
   const initGame = useCallback(() => ({
@@ -47,6 +48,8 @@ function PongGame({ onClose, studentId, studentName, classId }) {
     },
     keys: { up: false, down: false }
   }), [])
+
+  useEffect(() => { gameOverRef.current = gameOver }, [gameOver])
 
   // Timer
   useEffect(() => {
@@ -106,7 +109,7 @@ function PongGame({ onClose, studentId, studentName, classId }) {
     let animationId
 
     const update = () => {
-      if (gameOver) return
+      if (gameOverRef.current) return
 
       // Flytta spelarens paddle - touch eller tangentbord
       if (touchYRef.current !== null) {
@@ -222,7 +225,7 @@ function PongGame({ onClose, studentId, studentName, classId }) {
       canvas.removeEventListener('touchend', handleTouchEnd)
       cancelAnimationFrame(animationId)
     }
-  }, [initGame, gameOver])
+  }, [initGame])
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60)

@@ -6,7 +6,7 @@ const CELL_SIZE = 20
 const CANVAS_WIDTH = GRID_COLS * CELL_SIZE
 const CANVAS_HEIGHT = GRID_ROWS * CELL_SIZE
 const BASE_TICK_MS = 170
-const MIN_TICK_MS = 95
+const MIN_TICK_MS = 70  // lowered to allow combined time+fruit acceleration
 const MAX_TIME = 120 // 2 minuter
 
 function SnakeGame({ onClose }) {
@@ -103,6 +103,7 @@ function SnakeGame({ onClose }) {
     if (!ctx) return undefined
 
     gameRef.current = createInitialGameState()
+    gameRef.current.animateStartTime = performance.now()
     setScore(0)
     setTimeLeft(MAX_TIME)
     setGameOver(false)
@@ -196,9 +197,13 @@ function SnakeGame({ onClose }) {
       previous = timestamp
 
       const game = gameRef.current
+      const elapsedSec = (timestamp - game.animateStartTime) / 1000
+      // No time bonus first 20s, then linear ramp to 50ms bonus at 120s
+      const timeBonus = elapsedSec <= 20 ? 0 : Math.min(50, ((elapsedSec - 20) / 100) * 50)
+      const effectiveTick = Math.max(MIN_TICK_MS, game.tickMs - timeBonus)
       game.elapsedMs += delta
-      while (game.elapsedMs >= game.tickMs && !gameOverRef.current) {
-        game.elapsedMs -= game.tickMs
+      while (game.elapsedMs >= effectiveTick && !gameOverRef.current) {
+        game.elapsedMs -= effectiveTick
         step()
       }
 

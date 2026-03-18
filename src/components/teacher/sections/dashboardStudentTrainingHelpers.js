@@ -1,6 +1,6 @@
 import { inferOperationFromProblemType, inferTableFromProblem, getSpeedTime, median } from '../../../lib/mathUtils'
 import { computeLevelMastery, getPreferredProblemSource } from '../../../lib/masteryCalculation'
-import { getOperationLabel } from '../../../lib/operations'
+import { getOperationLabel, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from '../../../lib/operations'
 import { getTableProblemSourceForStudent } from './dashboardTableStatusUtils'
 import { ALL_OPERATIONS, TABLES } from './dashboardConstants'
 
@@ -114,7 +114,7 @@ export function buildTrainingPriorityList(student, classBenchmarks) {
       let priority
       let reason
       let reasonLabel
-      if (attempts >= TRAINING_MIN_ATTEMPTS && accuracy < 0.5) {
+      if (attempts >= MASTERY_MIN_ATTEMPTS && accuracy < 0.5) {
         priority = 'high'
         reason = 'low_accuracy'
         reasonLabel = `Låg träff (${Math.round(accuracy * 100)}%)`
@@ -122,7 +122,7 @@ export function buildTrainingPriorityList(student, classBenchmarks) {
         priority = 'high'
         reason = 'not_practiced'
         reasonLabel = 'Ej övat (redo)'
-      } else if (attempts >= TRAINING_MIN_ATTEMPTS && accuracy < 0.7) {
+      } else if (attempts >= MASTERY_MIN_ATTEMPTS && accuracy < 0.7) {
         priority = 'medium'
         reason = 'low_accuracy'
         reasonLabel = `Medel träff (${Math.round(accuracy * 100)}%)`
@@ -130,7 +130,7 @@ export function buildTrainingPriorityList(student, classBenchmarks) {
         priority = 'medium'
         reason = 'not_practiced'
         reasonLabel = 'Ej övat (hoppat över?)'
-      } else if (attempts >= TRAINING_MIN_ATTEMPTS && accuracy < TRAINING_MASTERY_THRESHOLD) {
+      } else if (attempts >= MASTERY_MIN_ATTEMPTS && accuracy < MASTERY_MIN_SUCCESS_RATE) {
         priority = 'low'
         reason = 'low_accuracy'
         reasonLabel = `Nästan (${Math.round(accuracy * 100)}%)`

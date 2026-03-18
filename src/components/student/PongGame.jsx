@@ -4,9 +4,27 @@ const PADDLE_HEIGHT = 88
 const PADDLE_WIDTH = 12
 const BALL_SIZE = 14
 const PADDLE_SPEED = 8
-const INITIAL_BALL_SPEED = 3.4
 const MAX_TIME = 120 // 2 minuter
-const DIFFICULTY_RAMP_SECONDS = 90 // svårigheten når max vid 90s
+
+// 4-phase difficulty: warmup → gradual → hard → impossible
+function getPongDifficulty(elapsedSeconds) {
+  const t = Math.min(elapsedSeconds / MAX_TIME, 1)
+  if (t < 0.167) {        // 0-20s: warmup
+    const p = t / 0.167
+    return { aiSpeed: 0.30, ballSpeed: 3.0, maxSpeedX: 6.0 + p * 1.0, maxSpeedY: 5.0 + p * 0.5 }
+  }
+  if (t < 0.667) {        // 20-80s: gradual
+    const p = (t - 0.167) / 0.5
+    return { aiSpeed: 0.30 + p * 0.35, ballSpeed: 3.0 + p * 2.5, maxSpeedX: 7.0 + p * 2.5, maxSpeedY: 5.5 + p * 2.0 }
+  }
+  if (t < 0.917) {        // 80-110s: hard
+    const p = (t - 0.667) / 0.25
+    return { aiSpeed: 0.65 + p * 0.20, ballSpeed: 5.5 + p * 2.0, maxSpeedX: 9.5 + p * 2.5, maxSpeedY: 7.5 + p * 1.5 }
+  }
+  // 110-120s: impossible
+  const p = (t - 0.917) / 0.083
+  return { aiSpeed: 0.85 + p * 0.10, ballSpeed: 7.5 + p * 1.5, maxSpeedX: 12.0 + p * 2.0, maxSpeedY: 9.0 + p * 1.0 }
+}
 
 function PongGame({ onClose }) {
   const canvasRef = useRef(null)
@@ -17,19 +35,14 @@ function PongGame({ onClose }) {
   const [gameOver, setGameOver] = useState(false)
   const touchYRef = useRef(null)
 
-  const getDifficultyFactor = useCallback(() => {
-    const elapsed = (Date.now() - gameStartTimeRef.current) / 1000
-    return Math.min(elapsed / DIFFICULTY_RAMP_SECONDS, 1) // 0 vid start, 1 vid 90s
-  }, [])
-
   const initGame = useCallback(() => ({
     player: { y: 160 },
     computer: { y: 160 },
     ball: {
       x: 200,
       y: 150,
-      dx: INITIAL_BALL_SPEED * (Math.random() > 0.5 ? 1 : -1),
-      dy: INITIAL_BALL_SPEED * (Math.random() - 0.5)
+      dx: 3.0 * (Math.random() > 0.5 ? 1 : -1),
+      dy: 3.0 * (Math.random() - 0.5)
     },
     keys: { up: false, down: false }
   }), [])
@@ -106,9 +119,10 @@ function PongGame({ onClose }) {
         if (game.keys.down) game.player.y = Math.min(canvas.height - PADDLE_HEIGHT, game.player.y + PADDLE_SPEED)
       }
 
-      // AI svårighetsgrad ökar över tid: 0.38 → 0.78 vid 90s
-      const t = getDifficultyFactor()
-      const aiSpeedFactor = 0.38 + t * 0.40
+      // AI svårighetsgrad ökar över tid: 4-fas kurva
+      const elapsed = (Date.now() - gameStartTimeRef.current) / 1000
+      const diff = getPongDifficulty(elapsed)
+      const aiSpeedFactor = diff.aiSpeed
       const computerCenter = game.computer.y + PADDLE_HEIGHT / 2
       const ballCenter = game.ball.y
       if (computerCenter < ballCenter - 38) {
@@ -152,7 +166,7 @@ function PongGame({ onClose }) {
       }
 
       // Poäng — bollen återstartar med svårighetsanpassad hastighet
-      const resetSpeed = INITIAL_BALL_SPEED * (1 + t * 0.8) // 3.4 → 6.1 vid 90s
+      const resetSpeed = diff.ballSpeed
       if (game.ball.x < 0) {
         setScore(s => ({ ...s, computer: s.computer + 1 }))
         game.ball = { x: 200, y: 150, dx: resetSpeed, dy: resetSpeed * (Math.random() - 0.5) }
@@ -163,8 +177,8 @@ function PongGame({ onClose }) {
       }
 
       // Begränsa boll-hastighet — taket ökar med svårigheten
-      const maxSpeedX = 8.5 + t * 5.5  // 8.5 → 14 vid 90s
-      const maxSpeedY = 6.5 + t * 3.5  // 6.5 → 10 vid 90s
+      const maxSpeedX = diff.maxSpeedX
+      const maxSpeedY = diff.maxSpeedY
       game.ball.dx = Math.max(-maxSpeedX, Math.min(maxSpeedX, game.ball.dx))
       game.ball.dy = Math.max(-maxSpeedY, Math.min(maxSpeedY, game.ball.dy))
 
@@ -207,7 +221,7 @@ function PongGame({ onClose }) {
       canvas.removeEventListener('touchend', handleTouchEnd)
       cancelAnimationFrame(animationId)
     }
-  }, [initGame, gameOver, getDifficultyFactor])
+  }, [initGame, gameOver])
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60)

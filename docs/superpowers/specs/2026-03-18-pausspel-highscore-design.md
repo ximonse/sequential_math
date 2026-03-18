@@ -66,7 +66,8 @@ Triggas om spelaren överlever hela 120 sekunder (timer når 0 utan game over).
 - Stor text: "Ximon is impressed!"
 - Samma game over-flöde i övrigt (highscore-lista visas under)
 
-Gäller båda spelen identiskt.
+**Pong:** Överlever 120s = celebration.
+**Snake:** Överlever 120s OCH har minst 10 frukter = celebration. (Att bara undvika mat i 2 min räknas inte.)
 
 ---
 
@@ -103,6 +104,9 @@ Nytt fält i class config (`class_extras:{classId}`):
 - Default (tomt/saknas): klassens eget `classId` används som grupp
 - Klasser med samma `highscoreGroup`-sträng delar lista
 - Inställning i lärardashboarden under class settings
+- **Normalisering:** API:t normaliserar gruppnamnet innan det används som KV-nyckel:
+  `value.trim().toLowerCase().replace(/\s+/g, '-').normalize('NFD').replace(/[\u0300-\u036f]/g, '')`
+  Så "Årskurs 6", "årskurs 6" och " Årskurs  6 " blir alla `arskurs-6`.
 
 ### API
 
@@ -121,11 +125,16 @@ Nytt fält i class config (`class_extras:{classId}`):
   "classId": "class-uuid"
 }
 ```
+- Verifierar `x-student-password` mot `student:{studentId}` i KV (samma mönster som `/api/student/[studentId]`)
 - Slår upp `highscoreGroup` från klassens config
 - Jämför score mot nuvarande topp 7
 - Om kvalificerar: infoga, trimma till 7, spara
 - Returnerar `{ qualified: true/false, rank: 3, highscores: [...] }`
-- Auth: `x-student-password` header (som övrig elevdata)
+- Auth: `x-student-password` header, verifierad mot den specifika elevens lösenordshash
+
+**Concurrency:** Highscore-listan är max 7 entries i en klassrumsmiljö. Race condition vid
+samtidiga skrivningar är teoretiskt möjlig men acceptabel risk — worst case tappar man en
+entry som sedan skrivs vid nästa spel. Inte värt komplexiteten av atomic locking.
 
 ### Game over-skärm
 
@@ -173,7 +182,8 @@ Under befintliga class-inställningar:
 - `src/components/student/SnakeGame.jsx` — tidsbaserad bonus + highscore-rapportering
 - `src/components/student/BreakGameOverlay.jsx` — skicka classId till spelen
 - `src/components/teacher/Dashboard.jsx` — ny pausspel-sektion
-- `api/teacher-class-extras.js` (PUT) — hantera highscoreGroup-fält
+- `api/teacher-class-extras.js` (PUT) — ändra till merge-write (read existing → merge → save) för att inte skriva över `enabledExtras` vid `highscoreGroup`-sparning och vice versa
+- `src/components/student/session/SessionOverlayRouter.jsx` — tråda igenom `classId` och `studentId` från `StudentSession` → `BreakGameOverlay` → spelen
 
 ### Nya filer
 - `api/highscores.js` — GET/POST highscore-endpoint

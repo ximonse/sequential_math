@@ -406,7 +406,11 @@ export function getMasteryOverview(profile, options = {}) {
 
   const bucketLists = {}
 
-  for (const result of profile.recentProblems) {
+  const source = Array.isArray(profile?.problemLog) && profile.problemLog.length > 0
+    ? profile.problemLog
+    : (Array.isArray(profile?.recentProblems) ? profile.recentProblems : [])
+
+  for (const result of source) {
     if (since && result.timestamp < since) continue
 
     const operation = inferOperation(result.problemType)

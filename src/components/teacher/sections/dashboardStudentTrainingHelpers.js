@@ -1,11 +1,10 @@
 import { inferOperationFromProblemType, inferTableFromProblem, getSpeedTime, median } from '../../../lib/mathUtils'
+import { computeLevelMastery, getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { getOperationLabel } from '../../../lib/operations'
 import { getTableProblemSourceForStudent } from './dashboardTableStatusUtils'
-import { ALL_OPERATIONS, TABLES, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './dashboardConstants'
+import { ALL_OPERATIONS, TABLES } from './dashboardConstants'
 
 const DAY_MS = 24 * 60 * 60 * 1000
-const TRAINING_MASTERY_THRESHOLD = MASTERY_MIN_SUCCESS_RATE
-const TRAINING_MIN_ATTEMPTS = MASTERY_MIN_ATTEMPTS
 const TRAINING_MAX_ITEMS = 15
 
 export function buildClassOperationBenchmarks(students) {
@@ -66,7 +65,7 @@ export function buildClassOperationBenchmarks(students) {
 
 export function buildTrainingPriorityList(student, classBenchmarks) {
   if (!student) return []
-  const source = getTableProblemSourceForStudent(student)
+  const source = getPreferredProblemSource(student)
   const abilities = student?.adaptive?.operationAbilities || {}
 
   const levelData = new Map()
@@ -76,10 +75,9 @@ export function buildTrainingPriorityList(student, classBenchmarks) {
     const level = Math.round(Number(problem?.difficulty?.conceptual_level || 0))
     if (!Number.isInteger(level) || level < 1 || level > 12) continue
     const key = `${operation}|${level}`
-    const entry = levelData.get(key) || { attempts: 0, correct: 0, speeds: [] }
-    entry.attempts += 1
+    const entry = levelData.get(key) || { results: [], speeds: [] }
+    entry.results.push(Boolean(problem.correct))
     if (problem.correct) {
-      entry.correct += 1
       const speed = getSpeedTime(problem)
       if (Number.isFinite(speed) && speed > 0) entry.speeds.push(speed)
     }
@@ -95,19 +93,20 @@ export function buildTrainingPriorityList(student, classBenchmarks) {
     for (let level = 1; level <= maxLevel; level++) {
       const key = `${operation}|${level}`
       const data = levelData.get(key)
-      const isMastered = data && data.attempts >= TRAINING_MIN_ATTEMPTS &&
-        (data.correct / data.attempts) >= TRAINING_MASTERY_THRESHOLD
-      masteredBelow.set(level, isMastered)
+      const mastery = data ? computeLevelMastery(data.results) : { isMastered: false }
+      masteredBelow.set(level, mastery.isMastered)
     }
 
     for (let level = 1; level <= maxLevel; level++) {
       const key = `${operation}|${level}`
       const data = levelData.get(key)
-      const attempts = data?.attempts || 0
-      const accuracy = attempts > 0 ? data.correct / attempts : null
+      const attempts = data?.results.length || 0
+      const correctCount = data ? data.results.filter(Boolean).length : 0
+      const accuracy = attempts > 0 ? correctCount / attempts : null
       const medianSpeed = data ? median(data.speeds) : null
 
-      if (attempts >= TRAINING_MIN_ATTEMPTS && accuracy >= TRAINING_MASTERY_THRESHOLD) continue
+      const mastery = data ? computeLevelMastery(data.results) : { isMastered: false }
+      if (mastery.isMastered) continue
 
       const allBelowMastered = level === 1 || Array.from({ length: level - 1 }, (_, index) => index + 1)
         .every(lvl => masteredBelow.get(lvl))

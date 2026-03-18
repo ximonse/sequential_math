@@ -9,6 +9,7 @@ import ClassStatsCards from './ClassStatsCards'
 import CloudSyncStatusPanel from './CloudSyncStatusPanel'
 import CollapsibleSection from './CollapsibleSection'
 import PauseGameHighscorePanel from './PauseGameHighscorePanel'
+import DifficultyAnalysisPanel from './DifficultyAnalysisPanel'
 import DataQualityUsagePanel from './DataQualityUsagePanel'
 import DashboardHeaderBar from './DashboardHeaderBar'
 import InactivityAndClassLevelPanel from './InactivityAndClassLevelPanel'
@@ -32,6 +33,7 @@ const PANEL_DEFS = [
   { id: 'heatmap',     title: 'Missuppfattningar' },
   { id: 'sticky',      title: 'Tabellstatus' },
   { id: 'detail',      title: 'Elevdetalj' },
+  { id: 'difficulty-analysis', title: 'Svårighetsanalys' },
   { id: 'training-priority', title: 'Träningsprioritet' },
   { id: 'inactivity',  title: 'Inaktivitet & nivå' },
   { id: 'tabledev',    title: 'Tabellutveckling' },
@@ -256,20 +258,7 @@ export default function DashboardLayout({
           classTableBenchmarks,
           getCompactMasteryColorClass,
           levels: LEVELS,
-          getOperationLabel,
-          detailLevelErrorMinAttempts: DETAIL_LEVEL_ERROR_MIN_ATTEMPTS,
-          operationKeys: ALL_OPERATIONS,
-          classBenchmarks,
-          studentOperationStats7d,
-          detailLevelErrorRows,
-          detailLevelErrorUnderSampleCount,
-          renderDetailLevelErrorSortHeader,
-          detailLevelErrorHelp: DETAIL_LEVEL_ERROR_HELP,
-          detailLevelErrorSortBy,
-          detailLevelErrorSortDir,
-          onDetailLevelErrorSortByChange: handleDetailLevelErrorSortByChange,
-          onDetailLevelErrorSortDirChange: handleDetailLevelErrorSortDirChange,
-          getErrorShareColorClass
+          getOperationLabel
         }}
         historyPanelProps={{
           dailyActivityBreakdown,
@@ -278,6 +267,29 @@ export default function DashboardLayout({
         }}
       />
     )
+    if (id === 'difficulty-analysis') {
+      if (!detailStudentProfile) {
+        return <p className="text-sm text-gray-500">Välj en elev i Elevdetalj för att se svårighetsanalys.</p>
+      }
+      return (
+        <DifficultyAnalysisPanel
+          detailStudentProfile={detailStudentProfile}
+          detailLevelErrorMinAttempts={DETAIL_LEVEL_ERROR_MIN_ATTEMPTS}
+          studentOperationStats7d={studentOperationStats7d}
+          operationKeys={ALL_OPERATIONS}
+          classBenchmarks={classBenchmarks}
+          detailLevelErrorRows={detailLevelErrorRows}
+          detailLevelErrorUnderSampleCount={detailLevelErrorUnderSampleCount}
+          renderDetailLevelErrorSortHeader={renderDetailLevelErrorSortHeader}
+          detailLevelErrorHelp={DETAIL_LEVEL_ERROR_HELP}
+          detailLevelErrorSortBy={detailLevelErrorSortBy}
+          detailLevelErrorSortDir={detailLevelErrorSortDir}
+          onDetailLevelErrorSortByChange={handleDetailLevelErrorSortByChange}
+          onDetailLevelErrorSortDirChange={handleDetailLevelErrorSortDirChange}
+          toPercent={toPercent}
+        />
+      )
+    }
     if (id === 'training-priority') {
       if (!detailStudentProfile) {
         return <p className="text-sm text-gray-500">Välj en elev i Elevdetalj för att se träningsprioritet.</p>

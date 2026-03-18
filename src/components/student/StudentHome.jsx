@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { changeStudentPassword, clearActiveStudentSession, getOrCreateProfileWithSync, getSyncHealth, isStudentSessionActive, saveProfile } from '../../lib/storage'
-import { getStartOfWeekTimestamp } from '../../lib/studentProfile'
-import { inferOperationFromProblemType } from '../../lib/mathUtils'
-import { getOperationLabel, getOperationMinLevel, OPERATION_LABELS, STANDARD_OPERATIONS } from '../../lib/operations'
+import { getOperationLabel, OPERATION_LABELS, STANDARD_OPERATIONS, ALL_LEVELS as LEVELS } from '../../lib/operations'
+import { computeOperationMasteryBoards, getPreferredProblemSource } from '../../lib/masteryCalculation'
 import { decodeAssignmentPayload, encodeAssignmentPayload, getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 import { normalizeProgressionMode } from '../../lib/progressionModes'
 import { markStudentPresence, PRESENCE_HEARTBEAT_MS, PRESENCE_SAVE_THROTTLE_MS } from '../../lib/studentPresence'
@@ -13,7 +12,7 @@ import StudentHomeProgressCard from './StudentHomeProgressCard'
 import StudentHomeTableDrillCard from './StudentHomeTableDrillCard'
 import StudentHomeTicketCard from './StudentHomeTicketCard'
 import StudentHomeTrainingOptionsCard from './StudentHomeTrainingOptionsCard'
-import { buildLevelMasteryView, buildPracticePath, buildTableStatus, getTableStatusClass, LEVELS, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE, TABLES } from './studentHomeUtils'
+import { mapBoardsToMultiPeriodStatus, buildPracticePath, buildTableStatus, getTableStatusClass, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE, TABLES } from './studentHomeUtils'
 
 function StudentHome() {
   const { studentId } = useParams()
@@ -161,69 +160,10 @@ function StudentHome() {
 
   const operationMasteryBoards = useMemo(() => {
     if (!profile) return []
-    const MASTERY_WINDOW = 15
-    const weekStart = getStartOfWeekTimestamp()
-    const monthStart = Date.now() - 30 * 86400000
     const operationIds = Object.keys(OPERATION_LABELS)
-
-    const source = (Array.isArray(profile.problemLog) && profile.problemLog.length > 0)
-      ? profile.problemLog
-      : (Array.isArray(profile.recentProblems) ? profile.recentProblems : [])
-
-    const bucketResults = {}
-    for (const result of source) {
-      const operation = inferOperationFromProblemType(result.problemType, {
-        fallback: 'addition',
-        allowUnknownPrefix: false
-      })
-      if (!operationIds.includes(operation)) continue
-      const level = Math.round(Number(result?.difficulty?.conceptual_level || 0))
-      if (!Number.isInteger(level) || level < 1 || level > 12) continue
-
-      const key = `${operation}:${level}`
-      if (!bucketResults[key]) bucketResults[key] = []
-      bucketResults[key].push({
-        correct: Boolean(result.correct),
-        ts: Number(result.timestamp || 0)
-      })
-    }
-
-    return operationIds.map(operation => {
-      const minLevel = getOperationMinLevel(operation)
-      const opLevels = LEVELS.filter(l => l >= minLevel)
-      return {
-        operation,
-        historical: opLevels.map(level => {
-          const all = bucketResults[`${operation}:${level}`] || []
-          const windowed = all.slice(-MASTERY_WINDOW)
-          const weekAll = all.filter(r => r.ts >= weekStart)
-          const monthAll = all.filter(r => r.ts >= monthStart)
-          const weekWindowed = weekAll.slice(-MASTERY_WINDOW)
-          const monthWindowed = monthAll.slice(-MASTERY_WINDOW)
-
-          return buildLevelMasteryView(level,
-            {
-              attempts: all.length,
-              correct: all.filter(r => r.correct).length,
-              masteryAttempts: windowed.length,
-              masteryCorrect: windowed.filter(r => r.correct).length
-            },
-            {
-              attempts: weekAll.length,
-              correct: weekAll.filter(r => r.correct).length,
-              masteryAttempts: weekWindowed.length,
-              masteryCorrect: weekWindowed.filter(r => r.correct).length
-            },
-            {
-              attempts: monthAll.length,
-              correct: monthAll.filter(r => r.correct).length,
-              masteryAttempts: monthWindowed.length,
-              masteryCorrect: monthWindowed.filter(r => r.correct).length
-            }
-          )
-        })
-      }
-    })
+    const source = getPreferredProblemSource(profile)
+    const boards = computeOperationMasteryBoards(source, operationIds, LEVELS)
+    return mapBoardsToMultiPeriodStatus(boards)
   }, [profile])
 
   const operationProgress = useMemo(() => {

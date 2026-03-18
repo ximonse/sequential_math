@@ -1,4 +1,5 @@
 import { evaluateAnswerQuality } from './answerQuality'
+import { computeMasteryOverview, computeMasteryForOperation, computeLowestUnmasteredLevel, getPreferredProblemSource } from './masteryCalculation'
 import { getSpeedTime, inferOperationFromProblemType as inferOperation } from './mathUtils'
 import { getOperationMinLevel } from './operations'
 import { classifyErrorCategory, deriveTimingMetrics } from './studentProfileTimingHelpers'
@@ -395,74 +396,20 @@ export function getCurrentStreak(profile) {
 }
 
 /**
- * Summera elevens stabila nivåer per räknesätt.
- * Regel: minst 5 försök på nivån och minst 80% rätt (kan styras via options).
+ * Delegerar till kanonisk mastery-beräkning i masteryCalculation.js.
+ * Dessa wrappers finns kvar för bakåtkompatibilitet med befintliga anrop.
  */
 export function getMasteryOverview(profile, options = {}) {
-  const minAttempts = options.minAttempts ?? 5
-  const minSuccessRate = options.minSuccessRate ?? 0.85
-  const since = options.since ?? null
-  const maxAttemptsPerBucket = options.maxAttemptsPerBucket ?? 15
-
-  const bucketLists = {}
-
-  const source = Array.isArray(profile?.problemLog) && profile.problemLog.length > 0
-    ? profile.problemLog
-    : (Array.isArray(profile?.recentProblems) ? profile.recentProblems : [])
-
-  for (const result of source) {
-    if (since && result.timestamp < since) continue
-
-    const operation = inferOperation(result.problemType)
-    const rawLevel = Number(result.difficulty?.conceptual_level)
-    if (!Number.isFinite(rawLevel) || rawLevel < 1) continue
-    const level = Math.round(rawLevel)
-
-    const key = `${operation}:${level}`
-    if (!bucketLists[key]) {
-      bucketLists[key] = { operation, level, results: [] }
-    }
-    bucketLists[key].results.push(result.correct)
-  }
-
-  const mastery = {}
-
-  for (const entry of Object.values(bucketLists)) {
-    const recent = entry.results.slice(-maxAttemptsPerBucket)
-    if (recent.length < minAttempts) continue
-    const correct = recent.filter(Boolean).length
-    const success = correct / recent.length
-    if (success >= minSuccessRate) {
-      if (!mastery[entry.operation]) mastery[entry.operation] = []
-      mastery[entry.operation].push(entry.level)
-    }
-  }
-
-  for (const op of Object.keys(mastery)) {
-    mastery[op] = [...new Set(mastery[op])].sort((a, b) => a - b)
-  }
-
-  return mastery
+  const source = getPreferredProblemSource(profile)
+  return computeMasteryOverview(source, options)
 }
 
 export function getMasteryForOperation(profile, operation, options = {}) {
-  const all = getMasteryOverview(profile, options)
-  return all[operation] || []
+  const source = getPreferredProblemSource(profile)
+  return computeMasteryForOperation(source, operation, options)
 }
 
-/**
- * Hitta lägsta nivå som INTE är mastrad (< minAttempts försök eller < 85% rätt).
- * Används som "golv" i adaptiv träning — eleven hoppar inte förbi omastrade nivåer.
- */
 export function getLowestUnmasteredLevel(profile, operation, maxLevel = 12) {
-  const mastered = getMasteryForOperation(profile, operation, {
-    minAttempts: 5,
-    minSuccessRate: 0.85
-  })
-  const masteredSet = new Set(mastered)
-  const minLevel = getOperationMinLevel(operation)
-  for (let level = minLevel; level <= maxLevel; level++) {
-    if (!masteredSet.has(level)) return level
-  }
-  return maxLevel
+  const source = getPreferredProblemSource(profile)
+  return computeLowestUnmasteredLevel(source, operation, { maxLevel })
 }

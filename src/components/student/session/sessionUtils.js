@@ -1,4 +1,5 @@
 import { inferOperationFromProblemType as inferOperationFromType } from '../../../lib/mathUtils'
+import { computeOperationLevelMasteryStatus, getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { getOperationAbility } from '../../../lib/difficultyAdapter'
 import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from '../../../lib/operations'
 import { normalizeProgressionMode } from '../../../lib/progressionModes'
@@ -395,34 +396,11 @@ export function getLevelFocusNextLevelAction(profile, mode, fixedLevel) {
 
 export function getOperationLevelMasteryStatus(profile, operation, level) {
   if (!profile || !operation || !Number.isInteger(level)) {
-    return {
-      attempts: 0,
-      correct: 0,
-      successRate: 0,
-      isMastered: false
-    }
+    return { attempts: 0, correct: 0, rate: 0, successRate: 0, isMastered: false }
   }
-
-  const relevant = profile.recentProblems.filter((item) => {
-    const itemOperation = inferOperationFromType(item.problemType, {
-      fallback: 'addition',
-      allowUnknownPrefix: false
-    })
-    const itemLevel = Math.round(Number(item?.difficulty?.conceptual_level || 0))
-    return itemOperation === operation && itemLevel === level
-  })
-
-  const attempts = relevant.length
-  const correct = relevant.filter(item => item.correct).length
-  const successRate = attempts > 0 ? correct / attempts : 0
-  const isMastered = attempts >= LEVEL_MASTERY_MIN_ATTEMPTS && successRate >= LEVEL_MASTERY_MIN_SUCCESS_RATE
-
-  return {
-    attempts,
-    correct,
-    successRate,
-    isMastered
-  }
+  const source = getPreferredProblemSource(profile)
+  const result = computeOperationLevelMasteryStatus(source, operation, level)
+  return { ...result, successRate: result.rate }
 }
 
 export function createAttentionTracker() {

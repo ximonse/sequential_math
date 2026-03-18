@@ -1,16 +1,15 @@
 import { inferOperationFromProblemType, inferTableFromProblem, median, getSpeedTime } from '../../../lib/mathUtils'
+import { computeOperationMasteryBoards, getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { getOperationLabel } from '../../../lib/operations'
-import { getStartOfWeekTimestamp } from '../../../lib/studentProfile'
 import { buildNcmDetailForStudent } from './dashboardStudentDetailNcmHelpers'
 import {
   buildStickyTableStatusForStudent,
   getTableProblemSourceForStudent,
   isKnowledgeError
 } from './dashboardTableStatusUtils'
-import { ALL_OPERATIONS, LEVELS, TABLES, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './dashboardConstants'
+import { ALL_OPERATIONS, LEVELS, TABLES } from './dashboardConstants'
 
 const DAY_MS = 24 * 60 * 60 * 1000
-const MASTERY_WINDOW = 10
 
 export function buildTeacherStudentViewData(student) {
   if (!student) return null
@@ -35,38 +34,8 @@ export function buildTeacherStudentViewData(student) {
 }
 
 function buildOperationMasteryBoardsForTeacher(student) {
-  const problems = getTableProblemSourceForStudent(student)
-  const weekStart = getStartOfWeekTimestamp()
-  const monthStart = Date.now() - 30 * DAY_MS
-
-  // Collect problem lists per operation+level for windowing
-  const lists = Object.fromEntries(
-    ALL_OPERATIONS.map(op => [op, Object.fromEntries(
-      LEVELS.map(lv => [lv, { all: [], week: [], month: [] }])
-    )])
-  )
-
-  for (const result of problems) {
-    const operation = inferOperationFromProblemType(result.problemType)
-    if (!lists[operation]) continue
-
-    const level = Math.round(Number(result?.difficulty?.conceptual_level || 0))
-    if (!Number.isInteger(level) || level < 1 || level > 12) continue
-
-    const correct = result.correct ? 1 : 0
-    lists[operation][level].all.push(correct)
-
-    const ts = Number(result.timestamp || 0)
-    if (ts >= monthStart) lists[operation][level].month.push(correct)
-    if (ts >= weekStart) lists[operation][level].week.push(correct)
-  }
-
-  return ALL_OPERATIONS.map(operation => ({
-    operation,
-    historical: LEVELS.map(level => buildTeacherLevelViewWindowed(level, lists[operation][level].all)),
-    weekly: LEVELS.map(level => buildTeacherLevelViewWindowed(level, lists[operation][level].week)),
-    monthly: LEVELS.map(level => buildTeacherLevelViewWindowed(level, lists[operation][level].month))
-  }))
+  const problems = getPreferredProblemSource(student)
+  return computeOperationMasteryBoards(problems, ALL_OPERATIONS, LEVELS)
 }
 
 function buildLevelErrorRowsForTeacher(student) {
@@ -122,37 +91,6 @@ function buildLevelErrorRowsForTeacher(student) {
   })
 }
 
-
-function buildTeacherLevelViewWindowed(level, results = []) {
-  const attempts = results.length
-  const correct = results.reduce((s, v) => s + v, 0)
-  const successRate = attempts > 0 ? correct / attempts : 0
-
-  // Mastery based on last MASTERY_WINDOW attempts
-  const windowed = results.slice(-MASTERY_WINDOW)
-  const wAttempts = windowed.length
-  const wCorrect = windowed.reduce((s, v) => s + v, 0)
-  const wRate = wAttempts > 0 ? wCorrect / wAttempts : 0
-  const isMastered = wAttempts >= MASTERY_MIN_ATTEMPTS && wRate >= MASTERY_MIN_SUCCESS_RATE
-
-  const isStarted = attempts > 0
-  const status = isMastered ? 'mastered' : (isStarted ? 'started' : 'empty')
-  const successPercent = Math.round(successRate * 100)
-
-  return {
-    level,
-    attempts,
-    correct,
-    successRate,
-    masteryAttempts: wAttempts,
-    masteryCorrect: wCorrect,
-    status,
-    metricsLabel: isStarted ? `${correct}/${attempts}` : '-',
-    title: isStarted
-      ? `Nivå ${level}: ${correct}/${attempts} rätt (${successPercent}%)`
-      : `Nivå ${level}: ingen träning ännu`
-  }
-}
 
 function buildTableRecencyByTable(student) {
   const source = getTableProblemSourceForStudent(student)

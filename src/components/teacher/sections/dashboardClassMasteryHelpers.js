@@ -1,14 +1,12 @@
-import { inferOperationFromProblemType } from '../../../lib/mathUtils'
-import { getTableProblemSourceForStudent } from './dashboardTableStatusUtils'
-import { ALL_OPERATIONS, LEVELS, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './dashboardConstants'
-
-const MASTERY_WINDOW = 10
+import { computeEffectiveLevels, getPreferredProblemSource } from '../../../lib/masteryCalculation'
+import { ALL_OPERATIONS, LEVELS } from './dashboardConstants'
 
 export function buildClassMasteryRows(filteredStudents) {
   if (!Array.isArray(filteredStudents)) return []
 
   return filteredStudents.map(student => {
-    const levels = buildEffectiveLevels(student)
+    const source = getPreferredProblemSource(student)
+    const levels = computeEffectiveLevels(source, ALL_OPERATIONS, LEVELS)
     const values = ALL_OPERATIONS.map(op => levels[op])
     const average = values.reduce((sum, v) => sum + v, 0) / values.length
     const lowest = Math.min(...values)
@@ -22,42 +20,6 @@ export function buildClassMasteryRows(filteredStudents) {
       lowest
     }
   })
-}
-
-function buildEffectiveLevels(student) {
-  const source = getTableProblemSourceForStudent(student)
-
-  // Collect problems per operation+level, preserving order for windowing
-  const problemLists = {}
-  for (const op of ALL_OPERATIONS) {
-    problemLists[op] = {}
-    for (const level of LEVELS) {
-      problemLists[op][level] = []
-    }
-  }
-
-  for (const problem of source) {
-    const op = inferOperationFromProblemType(problem?.problemType || '')
-    if (!problemLists[op]) continue
-    const level = Math.round(Number(problem?.difficulty?.conceptual_level || 0))
-    if (!Number.isInteger(level) || level < 1 || level > 12) continue
-    problemLists[op][level].push(problem.correct ? 1 : 0)
-  }
-
-  const result = {}
-  for (const op of ALL_OPERATIONS) {
-    result[op] = 0
-    for (const level of LEVELS) {
-      const all = problemLists[op][level]
-      if (all.length < MASTERY_MIN_ATTEMPTS) break
-      const windowed = all.slice(-MASTERY_WINDOW)
-      const correct = windowed.reduce((s, v) => s + v, 0)
-      if (correct / windowed.length < MASTERY_MIN_SUCCESS_RATE) break
-      result[op] = level
-    }
-  }
-
-  return result
 }
 
 /**

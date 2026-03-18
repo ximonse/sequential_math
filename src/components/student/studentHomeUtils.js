@@ -1,5 +1,7 @@
-import { getStartOfWeekTimestamp } from '../../lib/studentProfile'
 import { normalizeProgressionMode, PROGRESSION_MODE_CHALLENGE } from '../../lib/progressionModes'
+import { getPreferredProblemSource } from '../../lib/masteryCalculation'
+import { getStartOfWeekTimestamp } from '../../lib/studentProfile'
+import { getOperationMinLevel } from '../../lib/operations'
 import {
   ALL_LEVELS as LEVELS,
   ALL_TABLES as TABLES,
@@ -9,60 +11,40 @@ import {
 
 export { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE, LEVELS, TABLES }
 
-export function createOperationLevelBuckets() {
-  const makeLevelMap = () => Object.fromEntries(
-    LEVELS.map(level => [level, { attempts: 0, correct: 0 }])
-  )
+/**
+ * Map canonical computeOperationMasteryBoards output to multi-period status
+ * (mastered_weekly / mastered_monthly / mastered_old / started / empty).
+ * Also filters levels per operation by getOperationMinLevel.
+ */
+export function mapBoardsToMultiPeriodStatus(boards) {
+  return boards.map(board => {
+    const minLevel = getOperationMinLevel(board.operation)
+    const weekByLevel = Object.fromEntries(board.weekly.map(w => [w.level, w]))
+    const monthByLevel = Object.fromEntries(board.monthly.map(m => [m.level, m]))
 
-  return {
-    historical: makeLevelMap(),
-    weekly: makeLevelMap(),
-    monthly: makeLevelMap()
-  }
-}
+    return {
+      operation: board.operation,
+      historical: board.historical
+        .filter(item => item.level >= minLevel)
+        .map(item => {
+          const weekItem = weekByLevel[item.level]
+          const monthItem = monthByLevel[item.level]
 
-export function isBucketMastered(bucket) {
-  const attempts = Number(bucket?.masteryAttempts ?? bucket?.attempts ?? 0)
-  const correct = Number(bucket?.masteryCorrect ?? bucket?.correct ?? 0)
-  const rate = attempts > 0 ? correct / attempts : 0
-  return attempts >= MASTERY_MIN_ATTEMPTS && rate >= MASTERY_MIN_SUCCESS_RATE
-}
+          let status
+          if (weekItem?.status === 'mastered') {
+            status = 'mastered_weekly'
+          } else if (monthItem?.status === 'mastered') {
+            status = 'mastered_monthly'
+          } else if (item.status === 'mastered') {
+            status = 'mastered_old'
+          } else {
+            status = item.status // 'started' or 'empty'
+          }
 
-export function buildLevelMasteryView(level, historical = {}, weekly = {}, monthly = {}) {
-  const attempts = Number(historical.attempts || 0)
-  const correct = Number(historical.correct || 0)
-  const successRate = attempts > 0 ? correct / attempts : 0
-  const isStarted = attempts > 0
-
-  let status
-  if (isBucketMastered(weekly)) {
-    status = 'mastered_weekly'
-  } else if (isBucketMastered(monthly)) {
-    status = 'mastered_monthly'
-  } else if (isBucketMastered(historical)) {
-    status = 'mastered_old'
-  } else if (isStarted) {
-    status = 'started'
-  } else {
-    status = 'empty'
-  }
-
-  const successPercent = Math.round(successRate * 100)
-  const metricsLabel = isStarted ? `${correct}/${attempts}` : '-'
-  const title = isStarted
-    ? `Nivå ${level}: ${correct}/${attempts} rätt (${successPercent}%)`
-    : `Nivå ${level}: ingen träning ännu`
-
-  return {
-    level,
-    attempts,
-    correct,
-    successRate,
-    successPercent,
-    status,
-    metricsLabel,
-    title
-  }
+          return { ...item, status }
+        })
+    }
+  })
 }
 
 export function getMasteryLevelClassName(status) {
@@ -88,7 +70,7 @@ export function buildTableStatus(profile) {
   const startToday = getStartOfDayTimestamp()
   const startWeek = getStartOfWeekTimestamp()
   const completionCountsToday = getTableCompletionCountsToday(profile, startToday)
-  const problemSource = getTableProblemSource(profile)
+  const problemSource = getPreferredProblemSource(profile)
   const todayDoneMap = computeStickyTableCompletionMap(problemSource, startToday)
   const weekDoneMap = computeStickyTableCompletionMap(problemSource, startWeek)
 
@@ -135,30 +117,6 @@ export function buildPracticePath(studentId, options = {}) {
   return query
     ? `/student/${studentId}/practice?${query}`
     : `/student/${studentId}/practice`
-}
-
-function getTableProblemSource(profile) {
-  const problemLog = Array.isArray(profile?.problemLog) ? profile.problemLog : []
-  const recentProblems = Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
-
-  if (problemLog.length === 0) return recentProblems
-  if (recentProblems.length === 0) return problemLog
-
-  const logLatest = getLatestProblemTimestamp(problemLog)
-  const recentLatest = getLatestProblemTimestamp(recentProblems)
-  if (recentLatest > logLatest) return recentProblems
-  if (logLatest > recentLatest) return problemLog
-  return problemLog.length >= recentProblems.length ? problemLog : recentProblems
-}
-
-function getLatestProblemTimestamp(list) {
-  if (!Array.isArray(list) || list.length === 0) return 0
-  let maxTs = 0
-  for (const item of list) {
-    const ts = Number(item?.timestamp || 0)
-    if (Number.isFinite(ts) && ts > maxTs) maxTs = ts
-  }
-  return maxTs
 }
 
 function computeStickyTableCompletionMap(problemSource, startTimestamp) {

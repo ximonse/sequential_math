@@ -23,6 +23,9 @@ export default async function handler(req, res) {
   const extras = Array.isArray(req.body?.enabledExtras)
     ? req.body.enabledExtras.map(String).filter(Boolean)
     : []
+  const highscoreGroup = req.body?.highscoreGroup !== undefined
+    ? String(req.body.highscoreGroup || '').trim()
+    : undefined
 
   if (!classId) return res.status(400).json({ error: 'classId required' })
 
@@ -32,11 +35,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    await kv.set(`class_extras:${classId}`, { enabledExtras: extras })
-    // Also update the class record so GET /api/teacher-classes returns fresh extras
+    // Read-merge-write to preserve other fields (e.g. highscoreGroup when saving extras)
+    const existing = (await kv.get(`class_extras:${classId}`)) || {}
+    const merged = { ...existing, enabledExtras: extras }
+    if (highscoreGroup !== undefined) {
+      merged.highscoreGroup = highscoreGroup || null
+    }
+    await kv.set(`class_extras:${classId}`, merged)
+
+    // Also update the class record so GET /api/teacher-classes returns fresh data
     const classRecord = await kv.get(`class:${classId}`)
     if (classRecord) {
-      await kv.set(`class:${classId}`, { ...classRecord, enabledExtras: extras })
+      const classUpdate = { ...classRecord, enabledExtras: extras }
+      if (highscoreGroup !== undefined) classUpdate.highscoreGroup = highscoreGroup || null
+      await kv.set(`class:${classId}`, classUpdate)
     }
     return res.status(200).json({ ok: true })
   } catch {

@@ -8,6 +8,7 @@ import ClassMasteryLevelPanel from './ClassMasteryLevelPanel'
 import ClassStatsCards from './ClassStatsCards'
 import CloudSyncStatusPanel from './CloudSyncStatusPanel'
 import CollapsibleSection from './CollapsibleSection'
+import PauseGameHighscorePanel from './PauseGameHighscorePanel'
 import DataQualityUsagePanel from './DataQualityUsagePanel'
 import DashboardHeaderBar from './DashboardHeaderBar'
 import InactivityAndClassLevelPanel from './InactivityAndClassLevelPanel'
@@ -41,6 +42,7 @@ const PANEL_DEFS = [
   { id: 'management',  title: 'Klasshantering' },
   { id: 'results',     title: 'Resultat' },
   { id: 'password',    title: 'Lösenordsåterställning' },
+  { id: 'pausegames',  title: 'Pausspel — Highscore' },
   { id: 'admin',       title: 'Administration', adminOnly: true },
 ]
 
@@ -398,6 +400,9 @@ export default function DashboardLayout({
         passwordResetBusyId={passwordResetBusyId}
         formatTimeAgo={formatTimeAgo}
       />
+    )
+    if (id === 'pausegames') return (
+      <PauseGameHighscorePanel selectedClassIds={selectedClassIds} />
     )
     if (id === 'admin') return <TeacherAdminPanel />
     return null

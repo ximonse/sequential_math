@@ -1,7 +1,7 @@
 import PongGame from './PongGame'
 import SnakeGame from './SnakeGame'
 
-function BreakGameOverlay({ activeBreakGame, onClose }) {
+function BreakGameOverlay({ activeBreakGame, onClose, studentId, studentName, classId }) {
   if (!activeBreakGame) return null
 
   const isPong = activeBreakGame === 'pong'
@@ -13,9 +13,9 @@ function BreakGameOverlay({ activeBreakGame, onClose }) {
     }`}
     >
       {isPong ? (
-        <PongGame onClose={() => onClose('pong')} />
+        <PongGame onClose={() => onClose('pong')} studentId={studentId} studentName={studentName} classId={classId} />
       ) : (
-        <SnakeGame onClose={() => onClose('snake')} />
+        <SnakeGame onClose={() => onClose('snake')} studentId={studentId} studentName={studentName} classId={classId} />
       )}
     </div>
   )

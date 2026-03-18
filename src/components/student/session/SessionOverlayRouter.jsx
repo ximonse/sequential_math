@@ -33,13 +33,19 @@ function SessionOverlayRouter({
   onStayCurrentLevel,
   onGoHomeFromLevelFocus,
   tableBossUrl,
-  onCloseBreakGame
+  onCloseBreakGame,
+  studentId,
+  studentName,
+  classId
 }) {
   if (activeBreakGame) {
     return (
       <BreakGameOverlay
         activeBreakGame={activeBreakGame}
         onClose={onCloseBreakGame}
+        studentId={studentId}
+        studentName={studentName}
+        classId={classId}
       />
     )
   }

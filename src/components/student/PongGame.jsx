@@ -26,7 +26,7 @@ function getPongDifficulty(elapsedSeconds) {
   return { aiSpeed: 0.85 + p * 0.10, ballSpeed: 7.5 + p * 1.5, maxSpeedX: 12.0 + p * 2.0, maxSpeedY: 9.0 + p * 1.0 }
 }
 
-function PongGame({ onClose }) {
+function PongGame({ onClose, studentId, studentName, classId }) {
   const canvasRef = useRef(null)
   const gameRef = useRef(null)
   const gameStartTimeRef = useRef(Date.now())

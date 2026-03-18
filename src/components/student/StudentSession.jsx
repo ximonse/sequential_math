@@ -286,6 +286,8 @@ function StudentSession() {
     setDailyLevelStreakMilestone,
     navigate,
     studentId,
+    studentName: profile.name,
+    classId: profile.classId || null,
     goToNextProblem,
     closeBreakGameAndContinue,
     tableBossUrl: TABLE_BOSS_URL

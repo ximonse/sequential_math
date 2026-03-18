@@ -9,7 +9,7 @@ const BASE_TICK_MS = 170
 const MIN_TICK_MS = 70  // lowered to allow combined time+fruit acceleration
 const MAX_TIME = 120 // 2 minuter
 
-function SnakeGame({ onClose }) {
+function SnakeGame({ onClose, studentId, studentName, classId }) {
   const canvasRef = useRef(null)
   const touchStartRef = useRef(null)
   const gameRef = useRef(createInitialGameState())

@@ -23,6 +23,8 @@ export function buildSessionOverlayProps({
   setDailyLevelStreakMilestone,
   navigate,
   studentId,
+  studentName,
+  classId,
   goToNextProblem,
   closeBreakGameAndContinue,
   tableBossUrl
@@ -73,6 +75,9 @@ export function buildSessionOverlayProps({
     },
     onGoHomeFromLevelFocus: goHome,
     tableBossUrl,
-    onCloseBreakGame: closeBreakGameAndContinue
+    onCloseBreakGame: closeBreakGameAndContinue,
+    studentId,
+    studentName,
+    classId
   }
 }

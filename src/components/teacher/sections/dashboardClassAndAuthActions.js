@@ -271,9 +271,13 @@ export function buildDashboardClassAndAuthActions({
     ))
   }
 
-  async function handleSaveClassExtras(classId, extras) {
+  async function handleSaveClassExtras(classId, extras, options = {}) {
     updateClassExtras(classId, extras)
     setClasses(getClasses())
+    const body = { classId, enabledExtras: extras }
+    if (options.highscoreGroup !== undefined) {
+      body.highscoreGroup = options.highscoreGroup
+    }
     try {
       await fetch('/api/teacher-class-extras', {
         method: 'PUT',
@@ -281,7 +285,7 @@ export function buildDashboardClassAndAuthActions({
           'Content-Type': 'application/json',
           'x-teacher-token': getTeacherApiToken()
         },
-        body: JSON.stringify({ classId, enabledExtras: extras })
+        body: JSON.stringify(body)
       })
     } catch { /* best-effort */ }
   }

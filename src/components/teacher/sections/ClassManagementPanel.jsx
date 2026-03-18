@@ -14,13 +14,14 @@ function getTogglableExtras() {
 function ClassExtrasRow({ classRecord, onSaveExtras }) {
   const [open, setOpen] = useState(false)
   const [extras, setExtras] = useState(classRecord.enabledExtras || [])
+  const [highscoreGroup, setHighscoreGroup] = useState(classRecord.highscoreGroup || '')
   const [busy, setBusy] = useState(false)
   const [saved, setSaved] = useState(false)
   const toggleableExtras = getTogglableExtras()
 
   const handleSave = async () => {
     setBusy(true)
-    await onSaveExtras(classRecord.id, extras)
+    await onSaveExtras(classRecord.id, extras, { highscoreGroup })
     setBusy(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
@@ -33,10 +34,10 @@ function ClassExtrasRow({ classRecord, onSaveExtras }) {
         onClick={() => setOpen(o => !o)}
         className="text-xs text-indigo-600 hover:underline ml-2"
       >
-        {open ? 'Stäng' : 'Räknesätt ▾'}
+        {open ? 'Stäng' : 'Inställningar ▾'}
       </button>
       {open && (
-        <div className="mt-2 p-2 bg-indigo-50 rounded text-xs space-y-1">
+        <div className="mt-2 p-2 bg-indigo-50 rounded text-xs space-y-2">
           <p className="text-gray-500 mb-1">+-×÷ är alltid på. Välj extra räknesätt:</p>
           {toggleableExtras.map(ex => (
             <label key={ex.id} className="flex items-center gap-1.5 cursor-pointer">
@@ -50,6 +51,17 @@ function ClassExtrasRow({ classRecord, onSaveExtras }) {
               {ex.label}
             </label>
           ))}
+          <div className="pt-2 border-t border-indigo-200">
+            <label className="block text-gray-600 mb-1">Highscore-grupp</label>
+            <input
+              type="text"
+              value={highscoreGroup}
+              onChange={e => setHighscoreGroup(e.target.value)}
+              placeholder="Lämna tomt = egen lista"
+              className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
+            />
+            <p className="text-gray-400 mt-0.5">Klasser med samma namn delar highscore-lista</p>
+          </div>
           <button
             onClick={handleSave}
             disabled={busy}

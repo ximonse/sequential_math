@@ -11,18 +11,14 @@ const KNOWN_OPERATION_TYPES = new Set([
 ])
 const BUCKET_CONFIG = {
   [PROGRESSION_MODE_CHALLENGE]: [
-    { name: 'very_easy', offset: -2, weight: 0.05 },
-    { name: 'easy', offset: -1, weight: 0.25 },
-    { name: 'core', offset: 0, weight: 0.5 },
-    { name: 'hard', offset: 1, weight: 0.15 },
-    { name: 'challenge', offset: 2, weight: 0.05 }
+    { name: 'easy', offset: -1, weight: 0.15 },
+    { name: 'core', offset: 0, weight: 0.70 },
+    { name: 'hard', offset: 1, weight: 0.15 }
   ],
   [PROGRESSION_MODE_STEADY]: [
-    { name: 'very_easy', offset: -2, weight: 0.1 },
-    { name: 'easy', offset: -1, weight: 0.35 },
-    { name: 'core', offset: 0, weight: 0.45 },
-    { name: 'hard', offset: 1, weight: 0.08 },
-    { name: 'challenge', offset: 2, weight: 0.02 }
+    { name: 'easy', offset: -1, weight: 0.20 },
+    { name: 'core', offset: 0, weight: 0.65 },
+    { name: 'hard', offset: 1, weight: 0.15 }
   ]
 }
 
@@ -183,17 +179,14 @@ export function selectDifficultyBucket(profile, recentSuccess, errors, progressi
 
   if (errors >= 2 || recentSuccess < 0.7) {
     adjusted = adjusted.map(item => {
-      if (item.name === 'very_easy') return { ...item, weight: item.weight * 1.7 }
       if (item.name === 'easy') return { ...item, weight: item.weight * 1.5 }
-      if (item.name === 'hard') return { ...item, weight: item.weight * 0.65 }
-      if (item.name === 'challenge') return { ...item, weight: item.weight * 0.4 }
+      if (item.name === 'hard') return { ...item, weight: item.weight * 0.5 }
       return item
     })
   } else if (recentSuccess > 0.86) {
     adjusted = adjusted.map(item => {
-      if (item.name === 'hard') return { ...item, weight: item.weight * 1.35 }
-      if (item.name === 'challenge') return { ...item, weight: item.weight * 1.45 }
-      if (item.name === 'very_easy') return { ...item, weight: item.weight * 0.8 }
+      if (item.name === 'hard') return { ...item, weight: item.weight * 1.4 }
+      if (item.name === 'easy') return { ...item, weight: item.weight * 0.7 }
       return item
     })
   }

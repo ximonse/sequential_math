@@ -64,7 +64,7 @@ export function getSessionRules(
     rules.forcedLevel = forcedLevel
     rules.forcedType = warmup.operation
     rules.forceReason = 'operation_mode_warmup'
-    rules.forceBucket = solvedCount === 0 ? 'very_easy' : 'easy'
+    rules.forceBucket = 'easy'
     return rules
   }
 

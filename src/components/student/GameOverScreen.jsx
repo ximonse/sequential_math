@@ -3,14 +3,15 @@ import { reportHighscore, fetchHighscores } from '../../lib/highscoreClient'
 
 const IMPRESSED_MIN_SNAKE_SCORE = 10
 
-function GameOverScreen({ game, score, timeLeft, onClose, studentId, studentName, classId }) {
+function GameOverScreen({ game, score, playerScore, computerScore, timeLeft, onClose, studentId, studentName, classId }) {
   const [highscores, setHighscores] = useState([])
   const [rank, setRank] = useState(null)
   const [loading, setLoading] = useState(true)
 
   const survived120 = timeLeft === 0
+  const pongWin = survived120 && (playerScore || 0) >= (computerScore || 0)
   const isImpressed = game === 'pong'
-    ? survived120
+    ? pongWin
     : survived120 && score >= IMPRESSED_MIN_SNAKE_SCORE
 
   useEffect(() => {
@@ -37,16 +38,23 @@ function GameOverScreen({ game, score, timeLeft, onClose, studentId, studentName
     <div className="absolute inset-0 bg-black/80 flex items-center justify-center rounded-2xl z-10">
       <div className="bg-white rounded-2xl p-6 text-center mx-4 max-w-sm w-full">
         {isImpressed ? (
-          <>
-            <div className="text-4xl mb-2">🏆</div>
-            <h2 className="text-2xl font-bold mb-1 text-yellow-600">Ximon is impressed!</h2>
-            <p className="text-gray-600 mb-3">Du klarade hela 2 minuter!</p>
-          </>
+          <div className="py-2">
+            <div className="text-6xl mb-3 animate-bounce">🏆</div>
+            <h2 className="text-3xl font-black mb-2 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 bg-clip-text text-transparent">
+              XIMON IS IMPRESSED!
+            </h2>
+            <p className="text-lg text-gray-700 mb-1 font-semibold">
+              {isPong
+                ? `${playerScore}-${computerScore} efter 2 minuter!`
+                : `${score} poäng på 2 minuter!`}
+            </p>
+            <p className="text-sm text-gray-500 mb-3">Du är en legend.</p>
+          </div>
         ) : (
           <>
             <h2 className="text-2xl font-bold mb-1">
               {isPong
-                ? (score > 0 ? 'Bra kampat!' : 'Tid ute!')
+                ? (survived120 ? `${playerScore}-${computerScore} — Nära!` : 'Bra kämpat!')
                 : (timeLeft > 0 ? 'Game Over!' : 'Tid ute!')}
             </h2>
             <p className="text-lg text-gray-700 mb-3">{scoreLabel}</p>

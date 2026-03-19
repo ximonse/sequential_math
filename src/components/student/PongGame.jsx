@@ -169,11 +169,11 @@ function PongGame({ onClose, studentId, studentName, classId }) {
         game.ball.dy += (Math.random() - 0.5) * 1.4
       }
 
-      // Insläppt mål = game over. Spelarens mål = poäng + fortsätt.
+      // Poäng — bollen återstartar med svårighetsanpassad hastighet
       const resetSpeed = diff.ballSpeed
       if (game.ball.x < 0) {
-        setGameOver(true)
-        return
+        setScore(s => ({ ...s, computer: s.computer + 1 }))
+        game.ball = { x: 200, y: 150, dx: resetSpeed, dy: resetSpeed * (Math.random() - 0.5) }
       }
       if (game.ball.x > canvas.width) {
         setScore(s => ({ ...s, player: s.player + 1 }))
@@ -242,8 +242,9 @@ function PongGame({ onClose, studentId, studentName, classId }) {
     <div className="flex flex-col items-center p-4">
       {/* Header */}
       <div className="flex justify-between items-center w-full max-w-[400px] mb-3">
-        <div className="text-3xl font-bold text-green-400">{score.player} mål</div>
+        <div className="text-3xl font-bold text-green-400">{score.player}</div>
         <div className="text-xl text-white bg-gray-800 px-3 py-1 rounded-full">{formatTime(timeLeft)}</div>
+        <div className="text-3xl font-bold text-red-400">{score.computer}</div>
       </div>
 
       {/* Canvas - anpassad för iPad */}
@@ -265,6 +266,8 @@ function PongGame({ onClose, studentId, studentName, classId }) {
         <GameOverScreen
           game="pong"
           score={MAX_TIME - timeLeft}
+          playerScore={score.player}
+          computerScore={score.computer}
           timeLeft={timeLeft}
           onClose={onClose}
           studentId={studentId}

@@ -246,6 +246,21 @@ export function markDailyBossShown(profile) {
   profile.tableDrill.dailyBossShownDate = getTodayKey()
 }
 
+const ALL_TABLES_RANGE = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+export function shouldTriggerAllTablesBoss(profile) {
+  if (!hasMasteredTablesToday(profile, ALL_TABLES_RANGE)) return false
+  const shownDate = profile?.tableDrill?.dailyAllTablesBossShownDate
+  return shownDate !== getTodayKey()
+}
+
+export function markAllTablesBossShown(profile) {
+  if (!profile.tableDrill || typeof profile.tableDrill !== 'object') {
+    profile.tableDrill = { completions: [] }
+  }
+  profile.tableDrill.dailyAllTablesBossShownDate = getTodayKey()
+}
+
 function getTodayKey() {
   const now = new Date()
   const y = now.getFullYear()

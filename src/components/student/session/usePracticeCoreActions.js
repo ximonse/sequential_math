@@ -21,6 +21,7 @@ import {
   isMixedTrainingSession,
   markNcmSkillCompleted,
   recordTableCompletion,
+  shouldTriggerAllTablesBoss,
   shouldTriggerDailyBoss
 } from './sessionUtils'
 
@@ -351,11 +352,13 @@ export function usePracticeCoreActions({
         if (!sameTableLeft) {
           const completionCountToday = recordTableCompletion(profile, currentItem.table)
           const remainingTables = Array.from(new Set(nextQueue.map(item => item.table)))
+          const allTablesBoss = shouldTriggerAllTablesBoss(profile)
           setTableMilestone({
             table: currentItem.table,
             remainingTablesCount: remainingTables.length,
             completionCountToday,
-            masteredTwoToNineToday: shouldTriggerDailyBoss(profile, [2, 3, 4, 5, 6, 7, 8, 9]),
+            masteredAllTablesToday: allTablesBoss,
+            masteredTwoToNineToday: !allTablesBoss && shouldTriggerDailyBoss(profile, [2, 3, 4, 5, 6, 7, 8, 9]),
             boss: completionCountToday >= 3,
             finalizeAfter: remainingTables.length === 0,
             finalCelebration: remainingTables.length === 0

@@ -33,6 +33,7 @@ function SessionOverlayRouter({
   onStayCurrentLevel,
   onGoHomeFromLevelFocus,
   tableBossUrl,
+  allTablesBossUrl,
   onCloseBreakGame,
   studentId,
   studentName,
@@ -68,6 +69,7 @@ function SessionOverlayRouter({
       <MilestoneOverlay
         milestone={tableMilestone}
         tableBossUrl={tableBossUrl}
+        allTablesBossUrl={allTablesBossUrl}
         onContinue={onContinueAfterMilestone}
       />
     )

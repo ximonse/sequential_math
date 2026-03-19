@@ -12,6 +12,7 @@ import {
 import {
   createTableProblem,
   DEFAULT_BREAK_MINUTES,
+  markAllTablesBossShown,
   markDailyBossShown
 } from './sessionUtils'
 
@@ -24,6 +25,7 @@ export function usePracticeBreakActions({
   studentId,
   navigate,
   openTableBossVideo,
+  openAllTablesBossVideo,
   sessionTelemetryRef,
   sessionRecentCorrectnessRef,
   goToNextProblem,
@@ -168,6 +170,25 @@ export function usePracticeBreakActions({
   const continueAfterMilestone = useCallback(() => {
     if (!tableMilestone || !profile) return
 
+    if (tableMilestone.masteredAllTablesToday) {
+      openAllTablesBossVideo()
+      markAllTablesBossShown(profile)
+      saveProfile(profile)
+      const finalizeAfter = tableMilestone.finalizeAfter
+      setTableMilestone(null)
+      if (finalizeAfter) {
+        navigate(`/student/${studentId}`)
+      } else if (tableQueue.length > 0) {
+        const nextProblem = createTableProblem(tableQueue[0])
+        setCurrentProblem(nextProblem)
+        setAnswer('')
+        setFeedback(null)
+        resetAttentionTracker()
+        setStartTime(Date.now())
+      }
+      return
+    }
+
     if (tableMilestone.masteredTwoToNineToday) {
       openTableBossVideo()
       markDailyBossShown(profile)
@@ -205,6 +226,7 @@ export function usePracticeBreakActions({
     tableMilestone,
     profile,
     openTableBossVideo,
+    openAllTablesBossVideo,
     tableQueue,
     navigate,
     studentId,

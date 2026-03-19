@@ -30,9 +30,16 @@ import {
   normalizeProgressionMode
 } from '../../lib/progressionModes'
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
+const ALL_TABLES_BOSS_URL = 'https://youtu.be/86URGgqONvA'
 const openTableBossVideo = () => {
   if (typeof window === 'undefined') return false
   try { return Boolean(window.open(TABLE_BOSS_URL, '_blank', 'noopener,noreferrer')) } catch {
+    return false
+  }
+}
+const openAllTablesBossVideo = () => {
+  if (typeof window === 'undefined') return false
+  try { return Boolean(window.open(ALL_TABLES_BOSS_URL, '_blank', 'noopener,noreferrer')) } catch {
     return false
   }
 }
@@ -215,6 +222,7 @@ function StudentSession() {
     resetAttentionTracker,
     safeSelectProblem,
     openTableBossVideo,
+    openAllTablesBossVideo,
     sessionTelemetryRef,
     sessionRecentCorrectnessRef,
     attentionRef,
@@ -290,7 +298,8 @@ function StudentSession() {
     classId: profile.classId || null,
     goToNextProblem,
     closeBreakGameAndContinue,
-    tableBossUrl: TABLE_BOSS_URL
+    tableBossUrl: TABLE_BOSS_URL,
+    allTablesBossUrl: ALL_TABLES_BOSS_URL
   })
   if (overlayProps) {
     return <SessionOverlayRouter {...overlayProps} />

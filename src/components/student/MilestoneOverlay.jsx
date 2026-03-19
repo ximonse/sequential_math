@@ -1,5 +1,6 @@
 function getMilestoneIcon(milestone) {
   if (!milestone) return '🎉'
+  if (milestone.masteredAllTablesToday) return '👑'
   if (milestone.finalCelebration) return '🏆'
   if (milestone.boss) return '😎'
   return '🎉'
@@ -7,6 +8,7 @@ function getMilestoneIcon(milestone) {
 
 function getMilestoneTitle(milestone) {
   if (!milestone) return ''
+  if (milestone.masteredAllTablesToday) return 'ALLA TABELLER!'
   if (milestone.masteredTwoToNineToday) return 'TABELL-BOSS!'
   if (milestone.finalCelebration) return 'Lysande!'
   if (milestone.boss) return 'Like a boss'
@@ -16,9 +18,11 @@ function getMilestoneTitle(milestone) {
 function getMilestoneText(milestone) {
   if (!milestone) return ''
 
-  const message = milestone.masteredTwoToNineToday
-    ? 'Du har klarat 2:an till 9:an idag. Dags för boss-låt!'
-    : milestone.finalCelebration
+  const message = milestone.masteredAllTablesToday
+    ? 'Du har klarat ALLA tabeller idag — 2:an till 12:an! Dags för belöningsvideo!'
+    : milestone.masteredTwoToNineToday
+      ? 'Du har klarat 2:an till 9:an idag. Dags för boss-låt!'
+      : milestone.finalCelebration
       ? 'Du klarade alla valda tabeller.'
       : milestone.boss
         ? `${milestone.table}:an klar ${milestone.completionCountToday} gånger idag.`
@@ -36,6 +40,7 @@ function getMilestoneText(milestone) {
 function MilestoneOverlay({
   milestone,
   tableBossUrl,
+  allTablesBossUrl,
   onContinue
 }) {
   if (!milestone) return null
@@ -66,15 +71,15 @@ function MilestoneOverlay({
         <p className="text-xl text-white mb-6 drop-shadow-[0_3px_8px_rgba(0,0,0,0.55)]">
           {getMilestoneText(milestone)}
         </p>
-        {milestone.masteredTwoToNineToday && (
+        {(milestone.masteredAllTablesToday || milestone.masteredTwoToNineToday) && (
           <a
-            href={tableBossUrl}
+            href={milestone.masteredAllTablesToday ? allTablesBossUrl : tableBossUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(event) => event.stopPropagation()}
             className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-white text-blue-700 font-semibold shadow hover:bg-blue-50"
           >
-            Öppna boss-video
+            {milestone.masteredAllTablesToday ? 'Öppna belöningsvideo' : 'Öppna boss-video'}
           </a>
         )}
         <p className="text-sm text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.45)]">

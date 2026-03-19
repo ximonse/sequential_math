@@ -27,7 +27,8 @@ export function buildSessionOverlayProps({
   classId,
   goToNextProblem,
   closeBreakGameAndContinue,
-  tableBossUrl
+  tableBossUrl,
+  allTablesBossUrl
 }) {
   const shouldRenderOverlay = Boolean(
     activeBreakGame
@@ -75,6 +76,7 @@ export function buildSessionOverlayProps({
     },
     onGoHomeFromLevelFocus: goHome,
     tableBossUrl,
+    allTablesBossUrl,
     onCloseBreakGame: closeBreakGameAndContinue,
     studentId,
     studentName,

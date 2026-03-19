@@ -5,10 +5,10 @@ import {
   getNcmSkillMappingFromProblem
 } from '../../../lib/ncmSkillMap'
 import { compareClassNameAndName } from './dashboardSortUtils'
+import { getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import {
   getAccuracy,
   getMedianTime,
-  getTableProblemSourceForStudent,
   isKnowledgeError
 } from './dashboardTableStatusUtils'
 import {
@@ -93,7 +93,7 @@ export function buildNcmOverview(students, classNameById = new Map()) {
   let studentsWithAttemptsWeek = 0
 
   for (const student of safeStudents) {
-    const problemSource = getTableProblemSourceForStudent(student)
+    const problemSource = getPreferredProblemSource(student)
     const weekProblems = (Array.isArray(problemSource) ? problemSource : [])
       .filter(problem => Number(problem?.timestamp || 0) >= weekStart)
 

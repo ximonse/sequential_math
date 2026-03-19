@@ -1,4 +1,5 @@
 import { getSpeedTime, inferTableFromProblem } from '../../../lib/mathUtils'
+import { getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { getStartOfWeekTimestamp } from '../../../lib/studentProfile'
 import { TABLES, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './dashboardConstants'
 
@@ -11,7 +12,7 @@ function getStartOfDayTimestamp() {
 export function buildStickyTableStatusForStudent(student) {
   const startToday = getStartOfDayTimestamp()
   const startWeek = getStartOfWeekTimestamp()
-  const source = getTableProblemSourceForStudent(student)
+  const source = getPreferredProblemSource(student)
   const todayDoneMap = computeStickyTableCompletionMapForTeacher(source, startToday)
   const weekDoneMap = computeStickyTableCompletionMapForTeacher(source, startWeek)
   const completionCountsToday = getTableCompletionCountsTodayForStudent(student, startToday)
@@ -49,29 +50,6 @@ export function buildStickyTableStatusForStudent(student) {
   }
 }
 
-export function getTableProblemSourceForStudent(student) {
-  const problemLog = Array.isArray(student?.problemLog) ? student.problemLog : []
-  const recentProblems = Array.isArray(student?.recentProblems) ? student.recentProblems : []
-
-  if (problemLog.length === 0) return recentProblems
-  if (recentProblems.length === 0) return problemLog
-
-  const logLatest = getLatestProblemTimestamp(problemLog)
-  const recentLatest = getLatestProblemTimestamp(recentProblems)
-  if (recentLatest > logLatest) return recentProblems
-  if (logLatest > recentLatest) return problemLog
-  return problemLog.length >= recentProblems.length ? problemLog : recentProblems
-}
-
-export function getLatestProblemTimestamp(list) {
-  if (!Array.isArray(list) || list.length === 0) return 0
-  let maxTs = 0
-  for (const item of list) {
-    const ts = Number(item?.timestamp || 0)
-    if (Number.isFinite(ts) && ts > maxTs) maxTs = ts
-  }
-  return maxTs
-}
 
 export function computeStickyTableCompletionMapForTeacher(problemSource, startTimestamp) {
   const progress = TABLES.reduce((acc, table) => {

@@ -1,5 +1,5 @@
 import { inferOperationFromProblemType } from '../../../lib/mathUtils'
-import { getTableProblemSourceForStudent } from './dashboardTableStatusUtils'
+import { getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { ALL_OPERATIONS, LEVELS } from './dashboardConstants'
 
 export { LEVELS }
@@ -209,7 +209,7 @@ export function buildHeatmapData(students) {
   const byOperation = Object.fromEntries(OPERATIONS.map(op => [op, new Map()]))
 
   for (const student of students) {
-    const problems = getTableProblemSourceForStudent(student)
+    const problems = getPreferredProblemSource(student)
     for (const problem of problems) {
       const op = inferOperationFromProblemType(problem.problemType || '', {
         fallback: null,

@@ -2,8 +2,8 @@ import { getSpeedTime, inferOperationFromProblemType, inferTableFromProblem } fr
 import { getNcmAbilityLabelSv } from '../../../lib/ncmProblemBank'
 import { formatSkillList } from './dashboardSkillLabelHelpers'
 import { toPercent } from './dashboardSortUtils'
+import { getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import {
-  getTableProblemSourceForStudent,
   getTeacherTableStatusLabel
 } from './dashboardTableStatusUtils'
 
@@ -196,7 +196,7 @@ export function buildStudentDetailExportRows(student, row, detailData) {
     }
   }
 
-  const problemSource = getTableProblemSourceForStudent(student)
+  const problemSource = getPreferredProblemSource(student)
   const recentProblems = problemSource
     .slice()
     .sort((a, b) => Number(b?.timestamp || 0) - Number(a?.timestamp || 0))

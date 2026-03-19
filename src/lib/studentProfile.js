@@ -1,5 +1,5 @@
 import { evaluateAnswerQuality } from './answerQuality'
-import { computeMasteryOverview, computeMasteryForOperation, computeLowestUnmasteredLevel, computeEffectiveLevels, getPreferredProblemSource } from './masteryCalculation'
+import { computeMasteryOverview, computeMasteryForOperation, computeLowestUnmasteredLevel, computeTeacherSummary, getPreferredProblemSource } from './masteryCalculation'
 import { getSpeedTime, inferOperationFromProblemType as inferOperation } from './mathUtils'
 import { ALL_OPERATIONS, ALL_LEVELS, getOperationMinLevel } from './operations'
 import { classifyErrorCategory, deriveTimingMetrics } from './studentProfileTimingHelpers'
@@ -177,9 +177,9 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
   // Uppdatera statistik
   updateStats(profile)
 
-  // Uppdatera förberäknade mastery-nivåer (synkas till molnet för lärarvyn)
-  const masterySource = getPreferredProblemSource(profile)
-  profile.effectiveLevels = computeEffectiveLevels(masterySource, ALL_OPERATIONS, ALL_LEVELS)
+  // Beräkna lärardashboard-sammanfattning (synkas till molnet)
+  profile.teacherSummary = computeTeacherSummary(profile, ALL_OPERATIONS, ALL_LEVELS)
+  profile.effectiveLevels = profile.teacherSummary.effectiveLevels
 
   return { correct, result }
 }

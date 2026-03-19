@@ -2,8 +2,8 @@ import {
   pickStrongestNcmDomain,
   pickWeakestNcmDomain
 } from './dashboardAnalyticsHelpers'
+import { getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import {
-  getTableProblemSourceForStudent,
   isKnowledgeError
 } from './dashboardTableStatusUtils'
 import { getSpeedTime } from '../../../lib/mathUtils'
@@ -16,7 +16,7 @@ import { getNcmAbilityLabelSv } from '../../../lib/ncmProblemBank'
 import { getStartOfWeekTimestamp } from '../../../lib/studentProfile'
 
 export function buildNcmDetailForStudent(student) {
-  const source = getTableProblemSourceForStudent(student)
+  const source = getPreferredProblemSource(student)
   const weekStart = getStartOfWeekTimestamp()
   const codeStats = new Map()
   const domainStats = new Map()

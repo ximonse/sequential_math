@@ -4,7 +4,6 @@ import { getOperationLabel } from '../../../lib/operations'
 import { buildNcmDetailForStudent } from './dashboardStudentDetailNcmHelpers'
 import {
   buildStickyTableStatusForStudent,
-  getTableProblemSourceForStudent,
   isKnowledgeError
 } from './dashboardTableStatusUtils'
 import { ALL_OPERATIONS, LEVELS, TABLES } from './dashboardConstants'
@@ -39,7 +38,7 @@ function buildOperationMasteryBoardsForTeacher(student) {
 }
 
 function buildLevelErrorRowsForTeacher(student) {
-  const source = getTableProblemSourceForStudent(student)
+  const source = getPreferredProblemSource(student)
   const grouped = new Map()
 
   for (const problem of source) {
@@ -93,7 +92,7 @@ function buildLevelErrorRowsForTeacher(student) {
 
 
 function buildTableRecencyByTable(student) {
-  const source = getTableProblemSourceForStudent(student)
+  const source = getPreferredProblemSource(student)
   const output = Object.fromEntries(
     TABLES.map(table => [table, { lastTrainedAt: null, attemptsTotal: 0, correctTotal: 0 }])
   )
@@ -114,7 +113,7 @@ function buildTableRecencyByTable(student) {
 }
 
 function buildTablePerformanceByTable(student) {
-  const source = getTableProblemSourceForStudent(student)
+  const source = getPreferredProblemSource(student)
   const start7d = Date.now() - (7 * DAY_MS)
   const output = Object.fromEntries(
     TABLES.map(table => [table, {
@@ -162,7 +161,7 @@ const DAILY_ACTIVITY_DAYS = 21
 const SWEDISH_DAY_ABBR = ['sön', 'mån', 'tis', 'ons', 'tor', 'fre', 'lör']
 
 function buildTableDrillDailyActivity(student) {
-  const source = getTableProblemSourceForStudent(student)
+  const source = getPreferredProblemSource(student)
   const now = new Date()
   now.setHours(0, 0, 0, 0)
 

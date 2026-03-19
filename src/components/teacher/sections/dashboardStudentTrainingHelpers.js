@@ -1,7 +1,6 @@
 import { inferOperationFromProblemType, inferTableFromProblem, getSpeedTime, median } from '../../../lib/mathUtils'
 import { computeLevelMastery, getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { getOperationLabel, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from '../../../lib/operations'
-import { getTableProblemSourceForStudent } from './dashboardTableStatusUtils'
 import { ALL_OPERATIONS, TABLES } from './dashboardConstants'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -15,7 +14,7 @@ export function buildClassOperationBenchmarks(students) {
   )
 
   for (const student of students) {
-    const source = getTableProblemSourceForStudent(student)
+    const source = getPreferredProblemSource(student)
     const studentBuckets = Object.fromEntries(
       ALL_OPERATIONS.map(op => [op, { attempts: 0, correct: 0, speeds: [] }])
     )
@@ -169,7 +168,7 @@ export function buildTrainingPriorityList(student, classBenchmarks) {
 
 export function buildDailyActivityBreakdown(student) {
   if (!student) return []
-  const source = getTableProblemSourceForStudent(student)
+  const source = getPreferredProblemSource(student)
   const now = new Date()
   const days = []
   for (let i = 0; i < 7; i++) {
@@ -217,7 +216,7 @@ export function buildDailyActivityBreakdown(student) {
 export function buildStudentOperationStats7d(student) {
   if (!student) return null
   const start7d = Date.now() - (7 * DAY_MS)
-  const source = getTableProblemSourceForStudent(student)
+  const source = getPreferredProblemSource(student)
   const buckets = Object.fromEntries(
     ALL_OPERATIONS.map(op => [op, { attempts: 0, correct: 0, speeds: [] }])
   )
@@ -252,7 +251,7 @@ export function buildClassTableBenchmarks(students) {
   const perTable = Object.fromEntries(TABLES.map(table => [table, []]))
 
   for (const student of students) {
-    const source = getTableProblemSourceForStudent(student)
+    const source = getPreferredProblemSource(student)
     const buckets = Object.fromEntries(TABLES.map(table => [table, []]))
     for (const problem of source) {
       const ts = Number(problem?.timestamp || 0)

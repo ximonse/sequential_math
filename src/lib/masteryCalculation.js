@@ -3,7 +3,7 @@
  * ALLA vyer (elev, lärare, adaptiv motor) använder dessa funktioner.
  * Ändra HÄR — inte i enskilda vyer.
  */
-import { inferOperationFromProblemType } from './mathUtils'
+import { inferOperationFromProblemType, getSpeedTime } from './mathUtils'
 import { getOperationMinLevel } from './operations'
 import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './operations'
 
@@ -232,4 +232,79 @@ function getStartOfWeekTimestamp() {
   const diff = day === 0 ? 6 : day - 1
   const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff)
   return monday.getTime()
+}
+
+/**
+ * Beräkna en lättviktig sammanfattning för lärardashboarden.
+ * Körs på elevens enhet (full problemLog) och synkas till molnet.
+ * ~500 bytes — överlever sanitizeProfileForList.
+ */
+export function computeTeacherSummary(profile, operationKeys, levelRange) {
+  const source = getPreferredProblemSource(profile)
+  const DAY_MS = 24 * 60 * 60 * 1000
+  const now = Date.now()
+  const start7d = now - 7 * DAY_MS
+
+  const effectiveLevels = computeEffectiveLevels(source, operationKeys, levelRange)
+
+  const opBuckets = Object.fromEntries(
+    operationKeys.map(op => [op, { attempts: 0, correct: 0 }])
+  )
+  const daySet = new Set()
+  let totalAttempts = 0
+  let totalCorrect = 0
+  let totalSpeedSec = 0
+  let knowledgeErrors = 0
+  let inattentionErrors = 0
+
+  for (const problem of source) {
+    const ts = Number(problem?.timestamp || 0)
+    if (ts < start7d) continue
+
+    const op = inferOperationFromProblemType(problem?.problemType || '')
+    if (opBuckets[op]) {
+      opBuckets[op].attempts += 1
+      if (problem.correct) opBuckets[op].correct += 1
+    }
+
+    totalAttempts += 1
+    if (problem.correct) totalCorrect += 1
+
+    if (ts > 0) daySet.add(new Date(ts).toDateString())
+
+    const speed = getSpeedTime(problem)
+    if (Number.isFinite(speed)) totalSpeedSec += speed
+
+    if (!problem.correct) {
+      if (String(problem.errorCategory || '') === 'inattention') {
+        inattentionErrors += 1
+      } else {
+        knowledgeErrors += 1
+      }
+    }
+  }
+
+  const operationStats7d = Object.fromEntries(
+    operationKeys.map(op => [op, {
+      attempts: opBuckets[op].attempts,
+      correct: opBuckets[op].correct,
+      accuracy: opBuckets[op].attempts > 0 ? opBuckets[op].correct / opBuckets[op].attempts : 0
+    }])
+  )
+
+  return {
+    effectiveLevels,
+    operationStats7d,
+    weeklyActivity: {
+      attempts: totalAttempts,
+      correct: totalCorrect,
+      activeDays: daySet.size,
+      totalSpeedSec: Math.round(totalSpeedSec)
+    },
+    errorBreakdown7d: {
+      knowledgeErrors,
+      inattentionErrors
+    },
+    updatedAt: now
+  }
 }

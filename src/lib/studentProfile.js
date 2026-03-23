@@ -1,5 +1,5 @@
 import { evaluateAnswerQuality } from './answerQuality'
-import { computeMasteryOverview, computeMasteryForOperation, computeLowestUnmasteredLevel, computeTeacherSummary, getPreferredProblemSource } from './masteryCalculation'
+import { computeMasteryOverview, computeMasteryForOperation, computeLowestUnmasteredLevel, computeTeacherSummary, getPreferredProblemSource, computeOperationLevelMasteryStatus, recordMasteryAchievement } from './masteryCalculation'
 import { getSpeedTime, inferOperationFromProblemType as inferOperation } from './mathUtils'
 import { ALL_OPERATIONS, ALL_LEVELS, getOperationMinLevel } from './operations'
 import { classifyErrorCategory, deriveTimingMetrics } from './studentProfileTimingHelpers'
@@ -62,6 +62,7 @@ export function createStudentProfile(studentId, name, grade = 4) {
       visibilityState: 'hidden',
       createdAt: Date.now()
     },
+    masteryFacts: { version: 1, facts: [], revokedIds: [] },
     problemLog: [],
     recentProblems: [],
     stats: createDefaultStats()
@@ -167,12 +168,29 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     stats.lifetimeSpeedTimeSpent += timing.speedTimeSec
   }
 
+  // Kolla mastery FÖRE nytt resultat (för att detektera ny mastery)
+  const opForMastery = inferOperation(problemType)
+  const levelForMastery = Math.round(Number(problem?.difficulty?.conceptual_level || 0))
+  const source = getPreferredProblemSource(profile)
+  const masteryBefore = (opForMastery && levelForMastery >= 1 && levelForMastery <= 12)
+    ? computeOperationLevelMasteryStatus(source, opForMastery, levelForMastery)
+    : null
+
   // Lägg till i historik (rullande fönster för dags/veckovy + adaptiv analys)
   profile.recentProblems.push(result)
   if (profile.recentProblems.length > MAX_RECENT_PROBLEMS) {
     profile.recentProblems.shift()
   }
   appendProblemLog(profile, result)
+
+  // Kolla mastery EFTER — registrera om ny mastery uppnåddes
+  if (masteryBefore && !masteryBefore.isMastered && opForMastery && levelForMastery >= 1) {
+    const sourceAfter = getPreferredProblemSource(profile)
+    const masteryAfter = computeOperationLevelMasteryStatus(sourceAfter, opForMastery, levelForMastery)
+    if (masteryAfter.isMastered) {
+      recordMasteryAchievement(profile, opForMastery, levelForMastery, masteryAfter)
+    }
+  }
 
   // Uppdatera statistik
   updateStats(profile)
@@ -405,15 +423,15 @@ export function getCurrentStreak(profile) {
  */
 export function getMasteryOverview(profile, options = {}) {
   const source = getPreferredProblemSource(profile)
-  return computeMasteryOverview(source, options)
+  return computeMasteryOverview(source, { ...options, profile })
 }
 
 export function getMasteryForOperation(profile, operation, options = {}) {
   const source = getPreferredProblemSource(profile)
-  return computeMasteryForOperation(source, operation, options)
+  return computeMasteryForOperation(source, operation, { ...options, profile })
 }
 
 export function getLowestUnmasteredLevel(profile, operation, maxLevel = 12) {
   const source = getPreferredProblemSource(profile)
-  return computeLowestUnmasteredLevel(source, operation, { maxLevel })
+  return computeLowestUnmasteredLevel(source, operation, { maxLevel, profile })
 }

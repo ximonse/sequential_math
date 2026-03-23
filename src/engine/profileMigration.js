@@ -1,4 +1,5 @@
 import { inferOperationFromProblemType } from '../lib/mathUtils'
+import { groupProblemsByOperationLevel, computeLevelMastery } from '../lib/masteryCalculation'
 
 function normalizeLevel(problem) {
   const explicit = Number(problem?.level)
@@ -68,19 +69,68 @@ function migrateProblemList(list) {
   return { list: next, changed }
 }
 
+function migrateMasteryFacts(profile) {
+  if (profile.masteryFacts && Array.isArray(profile.masteryFacts.facts) && profile.masteryFacts.facts.length > 0) {
+    return false // redan migrerad
+  }
+
+  const source = Array.isArray(profile.problemLog) && profile.problemLog.length > 0
+    ? profile.problemLog
+    : (Array.isArray(profile.recentProblems) ? profile.recentProblems : [])
+
+  if (source.length === 0) return false
+
+  const buckets = groupProblemsByOperationLevel(source)
+  const facts = []
+
+  for (const entry of buckets.values()) {
+    const result = computeLevelMastery(entry.results)
+    if (result.isMastered) {
+      // Använd timestamp från senaste problemet i bucketen för achievedAt
+      const relevantProblems = source.filter(p => {
+        const op = inferOperationFromProblemType(p?.problemType || '')
+        const lv = Math.round(Number(p?.difficulty?.conceptual_level || 0))
+        return op === entry.operation && lv === entry.level
+      })
+      const latestTs = relevantProblems.reduce((max, p) => {
+        const ts = Number(p?.timestamp || 0)
+        return ts > max ? ts : max
+      }, 0) || Date.now()
+
+      facts.push({
+        id: `${entry.operation}:${entry.level}:${latestTs}`,
+        operation: entry.operation,
+        level: entry.level,
+        achievedAt: latestTs,
+        window: {
+          attempts: result.attempts,
+          correct: result.correct,
+          rate: result.rate
+        },
+        source: 'migration'
+      })
+    }
+  }
+
+  profile.masteryFacts = { version: 1, facts, revokedIds: [] }
+  return facts.length > 0
+}
+
 export function migrateProfileOnLoad(profile) {
   if (!profile || typeof profile !== 'object') return profile
 
   const recentMigration = migrateProblemList(profile.recentProblems)
   const logMigration = migrateProblemList(profile.problemLog)
+  const masteryChanged = migrateMasteryFacts(profile)
 
-  if (!recentMigration.changed && !logMigration.changed) {
+  if (!recentMigration.changed && !logMigration.changed && !masteryChanged) {
     return profile
   }
 
   return {
     ...profile,
     recentProblems: recentMigration.list,
-    problemLog: logMigration.list
+    problemLog: logMigration.list,
+    masteryFacts: profile.masteryFacts
   }
 }

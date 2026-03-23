@@ -95,16 +95,37 @@ export function groupProblemsByOperationLevel(problems) {
 /**
  * Full mastery-översikt: vilka nivåer per operation är mastrade?
  * Returnerar { [operation]: [mastered level numbers] }
+ * options.profile: om satt, konsultera masteryFacts som primär källa.
  */
 export function computeMasteryOverview(problems, options = {}) {
   const buckets = groupProblemsByOperationLevel(problems)
   const mastery = {}
+  const profile = options.profile || null
 
+  // Steg 1: Hämta mastery från facts (om tillgängligt)
+  if (profile?.masteryFacts?.facts) {
+    const revokedSet = new Set(
+      Array.isArray(profile.masteryFacts.revokedIds) ? profile.masteryFacts.revokedIds : []
+    )
+    for (const fact of profile.masteryFacts.facts) {
+      if (revokedSet.has(fact.id)) continue
+      if (!mastery[fact.operation]) mastery[fact.operation] = []
+      mastery[fact.operation].push(fact.level)
+    }
+  }
+
+  // Steg 2: Komplettera med beräknad mastery från problemLog
   for (const entry of buckets.values()) {
     const result = computeLevelMastery(entry.results, options)
     if (result.isMastered) {
       if (!mastery[entry.operation]) mastery[entry.operation] = []
-      mastery[entry.operation].push(entry.level)
+      if (!mastery[entry.operation].includes(entry.level)) {
+        mastery[entry.operation].push(entry.level)
+        // Skriv retroaktivt till facts om profil finns
+        if (profile) {
+          recordMasteryAchievement(profile, entry.operation, entry.level, result)
+        }
+      }
     }
   }
 
@@ -155,20 +176,48 @@ export function computeOperationLevelMasteryStatus(problems, operation, level, o
 /**
  * Bygg "effective levels" — högsta konsekutivt mastrade nivå per operation.
  * Används i klassöversikten (Nivåöversikt).
+ * options.profile: om satt, konsultera masteryFacts som primär källa.
  */
 export function computeEffectiveLevels(problems, operationKeys, levelRange, options = {}) {
   const buckets = groupProblemsByOperationLevel(problems)
+  const profile = options.profile || null
   const result = {}
+
+  // Bygg set av mastered levels per operation från facts
+  const factsMap = {}
+  if (profile?.masteryFacts?.facts) {
+    const revokedSet = new Set(
+      Array.isArray(profile.masteryFacts.revokedIds) ? profile.masteryFacts.revokedIds : []
+    )
+    for (const fact of profile.masteryFacts.facts) {
+      if (revokedSet.has(fact.id)) continue
+      if (!factsMap[fact.operation]) factsMap[fact.operation] = new Set()
+      factsMap[fact.operation].add(fact.level)
+    }
+  }
 
   for (const op of operationKeys) {
     result[op] = 0
+    const factSet = factsMap[op] || new Set()
+
     for (const level of levelRange) {
+      // Mastered om det finns i facts ELLER om problemLog visar det
+      if (factSet.has(level)) {
+        result[op] = level
+        continue
+      }
+
       const key = `${op}:${level}`
       const bucket = buckets.get(key)
       if (!bucket || bucket.results.length < (options.minAttempts ?? MASTERY_MIN_ATTEMPTS)) break
       const mastery = computeLevelMastery(bucket.results, options)
       if (!mastery.isMastered) break
       result[op] = level
+
+      // Skriv retroaktivt till facts
+      if (profile) {
+        recordMasteryAchievement(profile, op, level, mastery)
+      }
     }
   }
 
@@ -247,6 +296,58 @@ function getStartOfWeekTimestamp() {
 }
 
 /**
+ * Registrera ett mastery-faktum i profilen.
+ * Append-only — idempotent baserat på id (operation:level:timestamp).
+ */
+export function recordMasteryAchievement(profile, operation, level, window) {
+  if (!profile.masteryFacts || typeof profile.masteryFacts !== 'object') {
+    profile.masteryFacts = { version: 1, facts: [], revokedIds: [] }
+  }
+  if (!Array.isArray(profile.masteryFacts.facts)) {
+    profile.masteryFacts.facts = []
+  }
+
+  const achievedAt = Date.now()
+  const id = `${operation}:${level}:${achievedAt}`
+
+  // Kolla om samma operation+level redan finns (behöver inte dubblett)
+  const existingIdx = profile.masteryFacts.facts.findIndex(
+    f => f.operation === operation && f.level === level
+  )
+  if (existingIdx !== -1) return // redan registrerad
+
+  profile.masteryFacts.facts.push({
+    id,
+    operation,
+    level,
+    achievedAt,
+    window: {
+      attempts: window.attempts,
+      correct: window.correct,
+      rate: window.rate
+    },
+    source: 'session'
+  })
+}
+
+/**
+ * Hämta mastered levels från masteryFacts för en operation.
+ * Returnerar array av level-nummer. Fallback till tom om inga facts finns.
+ */
+export function getMasteredLevelsFromFacts(profile, operation) {
+  if (!profile?.masteryFacts?.facts || !Array.isArray(profile.masteryFacts.facts)) {
+    return []
+  }
+  const revokedSet = new Set(
+    Array.isArray(profile.masteryFacts.revokedIds) ? profile.masteryFacts.revokedIds : []
+  )
+  return profile.masteryFacts.facts
+    .filter(f => f.operation === operation && !revokedSet.has(f.id))
+    .map(f => f.level)
+    .sort((a, b) => a - b)
+}
+
+/**
  * Beräkna en lättviktig sammanfattning för lärardashboarden.
  * Körs på elevens enhet (full problemLog) och synkas till molnet.
  * ~500 bytes — överlever sanitizeProfileForList.
@@ -257,7 +358,7 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
   const now = Date.now()
   const start7d = now - 7 * DAY_MS
 
-  const effectiveLevels = computeEffectiveLevels(source, operationKeys, levelRange)
+  const effectiveLevels = computeEffectiveLevels(source, operationKeys, levelRange, { profile })
 
   const opBuckets = Object.fromEntries(
     operationKeys.map(op => [op, { attempts: 0, correct: 0 }])

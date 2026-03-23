@@ -633,6 +633,45 @@ function mergeAdaptive(existingAdaptive, incomingAdaptive, preferIncoming) {
   }
 }
 
+function mergeMasteryFacts(existing, incoming) {
+  const a = existing?.masteryFacts
+  const b = incoming?.masteryFacts
+  if (!a && !b) return { version: 1, facts: [], revokedIds: [] }
+  if (!a) return { version: 1, facts: Array.isArray(b.facts) ? b.facts : [], revokedIds: Array.isArray(b.revokedIds) ? b.revokedIds : [] }
+  if (!b) return { version: 1, facts: Array.isArray(a.facts) ? a.facts : [], revokedIds: Array.isArray(a.revokedIds) ? a.revokedIds : [] }
+
+  // Union av facts baserat på id (idempotent)
+  const factsById = new Map()
+  for (const fact of (Array.isArray(a.facts) ? a.facts : [])) {
+    if (fact?.id) factsById.set(fact.id, fact)
+  }
+  for (const fact of (Array.isArray(b.facts) ? b.facts : [])) {
+    if (fact?.id && !factsById.has(fact.id)) factsById.set(fact.id, fact)
+  }
+
+  // Dedup: om samma operation+level finns flera gånger, behåll äldsta (first achieved)
+  const byOpLevel = new Map()
+  for (const fact of factsById.values()) {
+    const key = `${fact.operation}:${fact.level}`
+    const existing = byOpLevel.get(key)
+    if (!existing || fact.achievedAt < existing.achievedAt) {
+      byOpLevel.set(key, fact)
+    }
+  }
+
+  // Union av revokedIds
+  const revokedSet = new Set([
+    ...(Array.isArray(a.revokedIds) ? a.revokedIds : []),
+    ...(Array.isArray(b.revokedIds) ? b.revokedIds : [])
+  ])
+
+  return {
+    version: 1,
+    facts: [...byOpLevel.values()],
+    revokedIds: [...revokedSet]
+  }
+}
+
 function mergeProfiles(existingProfile, incomingProfile) {
   const existingFreshness = getProfileFreshnessTimestamp(existingProfile)
   const incomingFreshness = getProfileFreshnessTimestamp(incomingProfile)
@@ -692,6 +731,7 @@ function mergeProfiles(existingProfile, incomingProfile) {
   )
 
   merged.adaptive = mergeAdaptive(existingProfile?.adaptive, incomingProfile?.adaptive, preferIncoming)
+  merged.masteryFacts = mergeMasteryFacts(existingProfile, incomingProfile)
 
   merged.stats = mergeStats(
     existingProfile?.stats,

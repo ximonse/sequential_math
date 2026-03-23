@@ -23,11 +23,23 @@ export function computeLevelMastery(results, options = {}) {
   const correct = windowed.reduce((sum, v) => sum + (v ? 1 : 0), 0)
   const rate = attempts > 0 ? correct / attempts : 0
 
+  let isMastered = attempts >= minAttempts && rate >= minSuccessRate
+
+  // Stabilitet: med 20+ försök och 90%+ totalt ska inte ett tillfälligt
+  // dipp i fönstret radera mastery. Bara verklig regression (< 70%) bryter.
+  if (!isMastered && results.length >= 20) {
+    const totalCorrect = results.reduce((sum, v) => sum + (v ? 1 : 0), 0)
+    const totalRate = totalCorrect / results.length
+    if (totalRate >= 0.90 && rate >= 0.70) {
+      isMastered = true
+    }
+  }
+
   return {
     attempts,
     correct,
     rate,
-    isMastered: attempts >= minAttempts && rate >= minSuccessRate
+    isMastered
   }
 }
 

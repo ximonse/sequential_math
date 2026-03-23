@@ -76,7 +76,13 @@ export function usePracticeSetupEffects({
 
     let active = true
     ;(async () => {
-      const loadedProfile = await getOrCreateProfileWithSync(studentId, null, 4, { createIfMissing: false })
+      const loadedProfile = await getOrCreateProfileWithSync(studentId, null, 4, {
+        createIfMissing: false,
+        onCloudMerge: (mergedProfile) => {
+          if (!active) return
+          setProfile(mergedProfile)
+        }
+      })
       if (!active) return
       if (!loadedProfile) {
         clearActiveStudentSession()

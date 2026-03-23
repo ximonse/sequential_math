@@ -9,3 +9,6 @@ __pycache__/
 backups/
 *.zip
 .claude/
+
+.vercel
+.env*.local

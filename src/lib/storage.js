@@ -39,7 +39,7 @@ const STUDENT_SESSION_SECRET_KEY = 'mathapp_student_session_secret'
 const CLASSES_KEY = 'mathapp_classes_v1'
 const CLOUD_ENABLED = import.meta.env.VITE_ENABLE_CLOUD_SYNC === '1'
 const CLOUD_FRESHNESS_FUTURE_TOLERANCE_MS = 5 * 60 * 1000
-const CLOUD_PROFILE_SYNC_THROTTLE_MS = 90 * 1000
+const CLOUD_PROFILE_SYNC_THROTTLE_MS = 30 * 1000
 let cloudSyncApi = null
 let classApi = null
 let studentApi = null

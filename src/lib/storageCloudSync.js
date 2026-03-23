@@ -4,6 +4,7 @@ import {
   cancelRetries,
   getPendingSyncIds,
   hasPendingSyncs,
+  loadPendingSnapshot,
   removePendingSync,
   scheduleRetry
 } from './storageCloudSyncQueue'
@@ -382,7 +383,7 @@ export function createCloudSyncApi(deps) {
   }
 
   function retrySyncForStudent(studentId) {
-    const profile = loadProfile(studentId)
+    const profile = loadProfile(studentId) || loadPendingSnapshot(studentId)
     if (!profile) return true // nothing to sync — treat as success
     const merged = syncProfileToCloud(profile)
     return merged.then(m => {
@@ -409,7 +410,7 @@ export function createCloudSyncApi(deps) {
         removePendingSync(normalizedId)
         cancelRetries(normalizedId)
       } else {
-        addPendingSync(normalizedId)
+        addPendingSync(normalizedId, latest)
         scheduleRetry(normalizedId, retrySyncForStudent)
       }
     }
@@ -445,7 +446,7 @@ export function createCloudSyncApi(deps) {
     let flushed = 0
     let failed = 0
     for (const studentId of pendingIds) {
-      const profile = loadProfile(studentId)
+      const profile = loadProfile(studentId) || loadPendingSnapshot(studentId)
       if (!profile) {
         removePendingSync(studentId)
         continue
@@ -500,6 +501,35 @@ export function createCloudSyncApi(deps) {
     }
   }
 
+  function attemptSendBeaconSync() {
+    if (!CLOUD_ENABLED) return
+    const pendingIds = getPendingSyncIds()
+    for (const studentId of pendingIds) {
+      const profile = loadProfile(studentId)
+      if (!profile) continue
+      const normalizedId = normalizeStudentId(studentId)
+      const headers = { 'Content-Type': 'application/json' }
+      const studentSecret = getActiveStudentSessionSecret()
+      const teacherToken = getTeacherApiToken()
+      if (studentSecret) headers['x-student-password'] = studentSecret
+      if (teacherToken) applyTeacherAuthHeader(headers, teacherToken)
+      if (!studentSecret && !teacherToken) continue
+      try {
+        const body = JSON.stringify({ profile: { ...profile, studentId: normalizedId } })
+        const sent = navigator.sendBeacon?.(
+          `/api/student/${encodeURIComponent(normalizedId)}`,
+          new Blob([body], { type: 'application/json' })
+        )
+        if (!sent) {
+          // Fallback: keepalive fetch
+          fetch(`/api/student/${encodeURIComponent(normalizedId)}`, {
+            method: 'POST', headers, body, keepalive: true
+          }).catch(() => {})
+        }
+      } catch { /* best effort */ }
+    }
+  }
+
   let listenersRegistered = false
 
   function initCloudSyncListeners() {
@@ -512,6 +542,13 @@ export function createCloudSyncApi(deps) {
 
     window.addEventListener('beforeunload', () => {
       attemptBeforeUnloadSync()
+    })
+
+    // visibilitychange is more reliable than beforeunload on iOS Safari
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        attemptSendBeaconSync()
+      }
     })
 
     // Flush any leftovers from previous sessions

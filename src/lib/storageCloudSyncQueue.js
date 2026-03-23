@@ -7,6 +7,7 @@
  */
 
 const PENDING_SYNC_KEY = 'mathapp_pending_cloud_sync'
+const PENDING_SNAPSHOT_PREFIX = 'mathapp_pending_snapshot_'
 const RETRY_DELAYS_MS = [5_000, 15_000, 45_000, 120_000, 300_000, 300_000, 300_000, 300_000]
 const MAX_RETRIES_PER_SESSION = RETRY_DELAYS_MS.length
 
@@ -34,16 +35,36 @@ export function hasPendingSyncs() {
   return readPendingSet().size > 0
 }
 
-export function addPendingSync(studentId) {
+export function addPendingSync(studentId, profileSnapshot = null) {
   const set = readPendingSet()
   set.add(studentId)
   writePendingSet(set)
+  if (profileSnapshot) {
+    try {
+      localStorage.setItem(
+        PENDING_SNAPSHOT_PREFIX + studentId,
+        JSON.stringify(profileSnapshot)
+      )
+    } catch { /* quota exceeded — snapshot is best-effort */ }
+  }
 }
 
 export function removePendingSync(studentId) {
   const set = readPendingSet()
   set.delete(studentId)
   writePendingSet(set)
+  try {
+    localStorage.removeItem(PENDING_SNAPSHOT_PREFIX + studentId)
+  } catch { /* ignore */ }
+}
+
+export function loadPendingSnapshot(studentId) {
+  try {
+    const raw = localStorage.getItem(PENDING_SNAPSHOT_PREFIX + studentId)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
 }
 
 // ── In-memory retry scheduling ───────────────────────────────────────────────

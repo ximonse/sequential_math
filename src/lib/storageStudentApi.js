@@ -58,11 +58,15 @@ export function createStorageStudentApi(deps) {
   async function getOrCreateProfileWithSync(studentId, name = null, grade = 4, options = {}) {
     const normalizedId = normalizeStudentId(studentId)
     const createIfMissing = options.createIfMissing !== false
+    const onCloudMerge = typeof options.onCloudMerge === 'function' ? options.onCloudMerge : null
     const local = loadProfile(normalizedId)
     if (local) {
       if (CLOUD_ENABLED) {
         syncProfileToCloud(local).then(merged => {
-          if (merged) saveProfileLocalOnly(merged)
+          if (merged) {
+            saveProfileLocalOnly(merged)
+            if (onCloudMerge) onCloudMerge(merged)
+          }
         }).catch(() => {})
       }
       return local

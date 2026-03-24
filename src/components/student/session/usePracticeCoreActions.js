@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { saveProfile } from '../../../lib/storage'
 import { addProblemResult } from '../../../lib/studentProfile'
+import { createWalEntry, appendToWal } from '../../../lib/syncWal'
 import {
   adjustDifficulty,
   shouldOfferSteadyAdvance,
@@ -226,7 +227,7 @@ export function usePracticeCoreActions({
 
     const interruption = finalizeAttentionSnapshot(attentionRef.current)
     const mixedMode = isMixedTrainingSession(mode, sessionAssignment, isTableDrill)
-    const { correct, result } = addProblemResult(
+    const { correct, result, walEntries } = addProblemResult(
       profile,
       currentProblem,
       studentAnswer,
@@ -351,6 +352,9 @@ export function usePracticeCoreActions({
         const sameTableLeft = nextQueue.some(item => item.table === currentItem.table)
         if (!sameTableLeft) {
           const completionCountToday = recordTableCompletion(profile, currentItem.table)
+          if (profile.studentId) {
+            appendToWal(createWalEntry('table_completed', profile.studentId, { table: currentItem.table }))
+          }
           const remainingTables = Array.from(new Set(nextQueue.map(item => item.table)))
           const allTablesBoss = shouldTriggerAllTablesBoss(profile)
           setTableMilestone({
@@ -402,6 +406,13 @@ export function usePracticeCoreActions({
       })
       if (offer) {
         setAdvancePrompt(offer)
+      }
+    }
+
+    // Skriv WAL-entries (överlever även om sync misslyckas)
+    if (Array.isArray(walEntries) && profile.studentId) {
+      for (const we of walEntries) {
+        appendToWal(createWalEntry(we.type, profile.studentId, we.payload))
       }
     }
 

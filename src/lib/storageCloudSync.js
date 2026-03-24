@@ -8,6 +8,7 @@ import {
   removePendingSync,
   scheduleRetry
 } from './storageCloudSyncQueue'
+import { getUnsynced, markSynced, pruneWal } from './syncWal'
 
 export function createCloudSyncApi(deps) {
   const {
@@ -382,6 +383,39 @@ export function createCloudSyncApi(deps) {
     }
   }
 
+  async function syncWalEntries(studentId) {
+    const normalizedId = normalizeStudentId(studentId)
+    if (!normalizedId) return
+    const entries = getUnsynced(normalizedId)
+    if (entries.length === 0) return
+
+    try {
+      const headers = { 'Content-Type': 'application/json' }
+      const studentSecret = getActiveStudentSessionSecret()
+      const teacherToken = getTeacherApiToken()
+      if (studentSecret) headers['x-student-password'] = studentSecret
+      if (teacherToken) applyTeacherAuthHeader(headers, teacherToken)
+      if (!studentSecret && !teacherToken) return
+
+      const response = await fetch(`/api/student/${encodeURIComponent(normalizedId)}/events`, {
+        method: 'POST',
+        headers,
+        cache: 'no-store',
+        body: JSON.stringify({ entries })
+      })
+
+      if (!response.ok) return
+
+      const data = await response.json()
+      if (Array.isArray(data?.ack) && data.ack.length > 0) {
+        markSynced(normalizedId, data.ack)
+        pruneWal(normalizedId)
+      }
+    } catch {
+      // WAL sync failure is non-critical — full profile sync is the primary path
+    }
+  }
+
   function retrySyncForStudent(studentId) {
     const profile = loadProfile(studentId) || loadPendingSnapshot(studentId)
     if (!profile) return true // nothing to sync — treat as success
@@ -404,6 +438,10 @@ export function createCloudSyncApi(deps) {
       const latest = sourceProfile || loadProfile(normalizedId)
       if (!latest) return
       state.lastAttemptAt = Date.now()
+
+      // Synka WAL-entries parallellt (belt-and-suspenders)
+      syncWalEntries(normalizedId).catch(() => {})
+
       const merged = await syncProfileToCloud(latest)
       if (merged) {
         saveProfileLocalOnly(merged)

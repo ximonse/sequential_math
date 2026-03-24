@@ -184,11 +184,18 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
   appendProblemLog(profile, result)
 
   // Kolla mastery EFTER — registrera om ny mastery uppnåddes
+  const walEntries = []
+  walEntries.push({ type: 'problem_result', payload: result })
+
   if (masteryBefore && !masteryBefore.isMastered && opForMastery && levelForMastery >= 1) {
     const sourceAfter = getPreferredProblemSource(profile)
     const masteryAfter = computeOperationLevelMasteryStatus(sourceAfter, opForMastery, levelForMastery)
     if (masteryAfter.isMastered) {
       recordMasteryAchievement(profile, opForMastery, levelForMastery, masteryAfter)
+      walEntries.push({
+        type: 'mastery_achieved',
+        payload: { operation: opForMastery, level: levelForMastery, window: masteryAfter }
+      })
     }
   }
 
@@ -199,7 +206,7 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
   profile.teacherSummary = computeTeacherSummary(profile, ALL_OPERATIONS, ALL_LEVELS)
   profile.effectiveLevels = profile.teacherSummary.effectiveLevels
 
-  return { correct, result }
+  return { correct, result, walEntries }
 }
 
 function appendProblemLog(profile, result) {

@@ -56,6 +56,35 @@ Dumpade alla 44 elevprofiler från prod-KV till `backups/backup-elevprofiler-202
 Referens-commit:
 - `47aeb72` - Sync phase 2: Write-Ahead Log (WAL) for resilient event sync
 
+### Fas 3 implementerad och pushad — Cleanup
+
+**3a. Borttagen effectiveLevels-dubblett**
+- `studentProfile.js`: slutar skriva `profile.effectiveLevels`
+- `dashboardClassMasteryHelpers.js`: läser bara `teacherSummary?.effectiveLevels`
+
+**3b. teacherSummary/effectiveLevels ignoreras vid merge**
+- `api/student/[studentId].js`: `delete merged.effectiveLevels` + `delete merged.teacherSummary` efter merge — dessa är cache, inte source of truth
+
+**3c. skillStates verifierad**
+- `adaptive.skillStates` används aktivt av adaptiva motorn — behålls
+
+**3d. Explicit merge-schema**
+- Ny `profileMergeSchema.js`: varje profilfält MÅSTE ha definierad merge-strategi
+- Ny `profileMergeSchema.test.js`: testar att alla fält i createStudentProfile + runtime-fält har strategi
+- Fångar framtida fält som saknar merge-logik via test-failure
+
+Referens-commit:
+- `ace5afd` - Sync phase 3: remove duplicates, explicit merge schema, ignore cache fields
+
+### Sync-arkitekturöversyn avslutad
+
+Alla 4 faser implementerade och i prod:
+- **Fas 0**: React-state efter merge, sendBeacon, snapshot-kö (commit `e2ab609`)
+- **Fas 1**: masteryFacts — permanent mastery-logg (commit `2b881fd`)
+- **Fas 2**: WAL — event-baserad sync med dual-write (commit `47aeb72`)
+- **Fas 3**: Cleanup — dubbletter borta, merge-schema, cache ignoreras (commit `ace5afd`)
+- **Fas 2e** (immutable React-state): Uppskjuten — hög risk, begränsat mervärde
+
 ## 2026-03-23
 
 ### Problemet

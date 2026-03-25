@@ -1,5 +1,125 @@
 # Arbetslogg
 
+## 2026-03-25
+
+### Fas 1 implementerad och pushad — masteryFacts
+
+Permanent append-only mastery-logg som överlever problemLog-trimning.
+
+**1a. masteryFacts i profilen + migration**
+- `studentProfile.js`: ny `masteryFacts: { version: 1, facts: [], revokedIds: [] }` i `createStudentProfile()`
+- `profileMigration.js`: `migrateMasteryFacts()` skapar facts automatiskt från befintlig problemLog vid första load
+- `masteryCalculation.js`: ny `recordMasteryAchievement()` och `getMasteredLevelsFromFacts()`
+
+**1b. Skrivning vid mastery-uppnående**
+- `studentProfile.js`: `addProblemResult()` jämför mastery före/efter, skriver fact vid ny mastery
+- `sessionUtils.js`: `recordTableCompletion()` skriver mastery-fact för tabellträning
+
+**1c. Läsning med fallback**
+- `computeEffectiveLevels()` och `computeMasteryOverview()` konsulterar masteryFacts som primär källa
+- Fallback till problemLog-beräkning om facts saknas
+- Retroaktiv fact-skrivning om mastery finns i log men inte i facts
+
+**1d. Server merge**
+- `api/student/[studentId].js`: `mergeMasteryFacts()` — union av facts (idempotent på id), dedup per operation+level (behåll äldsta), union av revokedIds
+
+Referens-commit:
+- `2b881fd` - Sync phase 1: permanent masteryFacts
+
+### Fas 2 implementerad och pushad — Write-Ahead Log (WAL)
+
+Event-baserad sync som komplement till hel profil-sync.
+
+**2a. WAL-implementation**
+- Ny `syncWal.js`: append-only event-logg i localStorage per elev (max 500 entries)
+- Funktioner: `createWalEntry`, `appendToWal`, `getUnsynced`, `markSynced`, `pruneWal`
+
+**2b. WAL-skrivning i klient**
+- `addProblemResult()` returnerar `walEntries` (problem_result, mastery_achieved)
+- `usePracticeCoreActions.js` skriver WAL-entries vid varje svar + table completion
+
+**2c. Server-endpoint**
+- `POST /api/student/{id}/events` — tar emot WAL-entries, applicerar idempotent på server-profil
+- Stöder: problem_result, mastery_achieved, table_completed
+- Returnerar ack-array för synkade entries
+
+**2d. Sync-integration**
+- `storageCloudSync.js`: `syncWalEntries()` skickar osynkade entries parallellt med hel profil-sync
+- Dual-write under övergångsperioden (bälte och hängslen)
+- Pruning av ack:ade entries efter 24h
+
+**Beslut:** Fas 2e (immutable React-state) skjuts upp — hög risk, begränsat mervärde utöver Fas 0+1.
+
+### Backup
+Dumpade alla 44 elevprofiler från prod-KV till `backups/backup-elevprofiler-2026-03-24.json` (76 MB) innan Fas 2.
+
+Referens-commit:
+- `47aeb72` - Sync phase 2: Write-Ahead Log (WAL) for resilient event sync
+
+## 2026-03-23
+
+### Problemet
+Elever (iPads i klassrummet) förlorade sina framsteg — gångertabeller som var gröna (klara) försvann plötsligt. Lärardashboarden visade inga nivåer för majoriteten av eleverna.
+
+### Analys — systemiskt arkitekturproblem
+Djupanalys av hela sync-lagret och träningssystemet avslöjade fem grundläggande brister:
+
+1. **Mastery beräknas, aldrig lagrad.** `effectiveLevels` och `teacherSummary` räknas om från `problemLog` (max 5000 poster). Trimmas loggen → mastery försvinner. Servern räknar aldrig om efter merge.
+
+2. **React-state uppdateras aldrig efter cloud merge.** `getOrCreateProfileWithSync()` returnerar lokal profil direkt. Cloud-merge körs async och skriver till localStorage, men React-state (`setProfile`) anropas aldrig med merged profil. Eleven jobbar hela sessionen med potentiellt gammal data.
+
+3. **iPads tappar data tyst.** 90s sync-throttle + `beforeunload`/`pagehide` är opålitliga på iOS Safari. Retry-kön sparade bara `studentId`, inte profil-snapshot — om eleven loggade ut innan retry → data borta.
+
+4. **Merge-logiken gissar.** `{...older, ...fresher}` spread: alla fält som inte explicit hanteras vinner baserat på freshness-timestamp. `undefined`-fält i "vinnande" profilen skriver över befintlig data. Nya fält i framtiden hanteras inte.
+
+5. **Dubbla sanningskällor.** `effectiveLevels` på två ställen. `operationAbilities` kan säga multiplication=12 medan `effectiveLevels.multiplication=4`. `tableDrill.completions` och `effectiveLevels` kan säga motsatta saker.
+
+### Vercel/KV-åtkomst uppsatt
+Satte upp Vercel CLI mot projektet "sekvens" och hämtade KV-credentials. Kan nu köra queries direkt mot prod-datan: `node --env-file=.env.local -e "const { kv } = await import('@vercel/kv'); ..."`.
+
+### Profilscan — 30 av 44 trasiga
+Skannade alla 44 elevprofiler i prod:
+- **30 profiler** saknade `teacherSummary` och `effectiveLevels` helt (= `undefined`)
+- **Hugo** hade dessutom `currentDifficulty: 1` trots `highestDifficulty: 12` och alla `operationAbilities: 12`
+- **14 profiler** (Simon, Juni, Jasmine m.fl.) var intakta — troligen pga stabil enhet (dator, inte iPad)
+
+### Reparation
+Skrev skript som beräknade `teacherSummary` + `effectiveLevels` från befintlig `problemLog` för alla 25 profiler med data. Hugos `currentDifficulty` fixades 1 → 12. Skrevs direkt till Upstash KV.
+
+### Arkitekturplan
+Skrev komplett plan i 4 faser: `docs/superpowers/plans/2026-03-23-sync-arkitektur-plan.md`
+- **Fas 0** (akut): React-state efter merge, visibilitychange+sendBeacon, snapshot i retry-kö
+- **Fas 1**: `masteryFacts` — append-only logg av mastery-uppnåenden som aldrig trimmas
+- **Fas 2**: Write-Ahead Log (WAL) — individuella events istället för "skicka hela profilen"
+- **Fas 3**: Rensa dubbletter, explicit merge-schema, teacherSummary server-side
+
+### Fas 0 implementerad och pushad
+Ändringar i 6 filer:
+
+**0a. React-state uppdateras efter cloud merge**
+- `storageStudentApi.js`: `getOrCreateProfileWithSync` tar `onCloudMerge`-callback
+- `usePracticeSetupEffects.js`: skickar `onCloudMerge: (merged) => setProfile(merged)`
+
+**0b. visibilitychange + sendBeacon**
+- `storageCloudSync.js`: ny `attemptSendBeaconSync()` med `navigator.sendBeacon` (pålitligare på iOS)
+- `initCloudSyncListeners`: lyssnar på `visibilitychange` → `hidden` utöver `beforeunload`
+
+**0c. Profil-snapshot i retry-kö**
+- `storageCloudSyncQueue.js`: `addPendingSync` sparar profil-snapshot i `mathapp_pending_snapshot_{id}`
+- `retrySyncForStudent` och `flushPendingSyncs` använder snapshot som fallback
+
+**Bonus**
+- Sync-throttle 90s → 30s
+- Mastery-stabilitet: 20+ försök med 90%+ totalt överlever tillfälliga dipp (< 70% bryter)
+
+### Verifiering
+- `vite build` OK
+- Dev-server: appen laddar, storage-moduler fungerar, sendBeacon/visibilitychange API:er tillgängliga
+- Snapshot save/load/cleanup-cycle verifierad i browser
+
+Referens-commit:
+- `e2ab609` - Sync phase 0: fix data loss on iPads and stale React state
+
 ## 2026-03-16
 
 - Fixade kritisk bugg: molnsync misslyckades tyst pa iPad nar sessionssekret lagrades i sessionStorage (som rensas vid tab-kill). Flyttade till localStorage.

@@ -204,7 +204,6 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
 
   // Beräkna lärardashboard-sammanfattning (synkas till molnet)
   profile.teacherSummary = computeTeacherSummary(profile, ALL_OPERATIONS, ALL_LEVELS)
-  profile.effectiveLevels = profile.teacherSummary.effectiveLevels
 
   return { correct, result, walEntries }
 }

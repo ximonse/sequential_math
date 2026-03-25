@@ -7,7 +7,7 @@ export function buildClassMasteryRows(filteredStudents) {
   return filteredStudents.map(student => {
     // Prefer pre-computed levels (stored on profile with full problemLog data).
     // Fall back to computing from available data (may only have recentProblems).
-    const stored = student.teacherSummary?.effectiveLevels || student.effectiveLevels
+    const stored = student.teacherSummary?.effectiveLevels
     let levels
     if (stored && typeof stored === 'object') {
       levels = Object.fromEntries(ALL_OPERATIONS.map(op => [op, Number(stored[op]) || 0]))

@@ -741,6 +741,10 @@ function mergeProfiles(existingProfile, incomingProfile) {
     preferIncoming
   )
 
+  // teacherSummary och effectiveLevels är cache — beräknas klient-side, inte mergade
+  delete merged.effectiveLevels
+  delete merged.teacherSummary
+
   return merged
 }
 

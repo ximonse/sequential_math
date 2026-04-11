@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { reportHighscore, fetchHighscores } from '../../lib/highscoreClient'
+import { reportHighscore } from '../../lib/highscoreClient'
 
 const IMPRESSED_MIN_SNAKE_SCORE = 10
 

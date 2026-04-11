@@ -124,7 +124,6 @@ export default function DashboardLayout({
   detailLevelErrorSortDir,
   handleDetailLevelErrorSortByChange,
   handleDetailLevelErrorSortDirChange,
-  getErrorShareColorClass,
   dailyActivityBreakdown,
   inactivityBuckets,
   classSummaries,

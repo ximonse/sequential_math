@@ -19,8 +19,7 @@ export default function StudentDetailMasteryPanel({
   classTableBenchmarks,
   getCompactMasteryColorClass,
   levels,
-  getOperationLabel,
-  toPercent
+  getOperationLabel
 }) {
   return (
     <div className="space-y-4">

@@ -189,7 +189,7 @@ export default async function handler(req, res) {
       ack: acked,
       appliedCount: acked.length
     })
-  } catch (error) {
+  } catch {
     return res.status(500).json({ error: 'Storage backend unavailable' })
   }
 }

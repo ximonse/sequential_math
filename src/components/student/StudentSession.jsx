@@ -26,6 +26,7 @@ import {
 } from '../../lib/studentProfile'
 import { selectNextProblemForProfile } from '../../engine/adaptiveEngine'
 import { getOperationLabel } from '../../lib/operations'
+import { resolveProblemOperation } from '../../lib/mathUtils'
 import {
   normalizeProgressionMode
 } from '../../lib/progressionModes'
@@ -306,7 +307,7 @@ function StudentSession() {
   }
 
   const streak = getCurrentStreak(profile)
-  const currentOperation = currentProblem?.type || 'addition'
+  const currentOperation = resolveProblemOperation(currentProblem, { fallback: 'addition' })
   const weekStart = getStartOfWeekTimestamp()
   const masteredHistorical = getMasteryForOperation(profile, currentOperation)
   const masteredThisWeek = getMasteryForOperation(profile, currentOperation, { since: weekStart })

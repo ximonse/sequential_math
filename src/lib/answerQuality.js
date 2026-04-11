@@ -1,7 +1,31 @@
 /**
  * Beräkningar för "rimlighet" i elevsvar för läraröversikten.
  */
-import { inferOperationFromProblemType } from './mathUtils'
+import { resolveProblemOperation } from './mathUtils'
+
+function normalizeStoredMetric(value) {
+  if (value === null || value === undefined || value === '') return null
+  const numeric = Number(value)
+  return Number.isFinite(numeric) ? numeric : null
+}
+
+function getPrecomputedQuality(problemResult) {
+  if (!problemResult || typeof problemResult !== 'object') return null
+  if (typeof problemResult.isReasonable !== 'boolean') return null
+
+  const hasStoredQualityField = Object.prototype.hasOwnProperty.call(problemResult, 'absError')
+    || Object.prototype.hasOwnProperty.call(problemResult, 'relativeError')
+    || Object.prototype.hasOwnProperty.call(problemResult, 'tolerance')
+
+  if (!hasStoredQualityField) return null
+
+  return {
+    isReasonable: problemResult.isReasonable,
+    absError: normalizeStoredMetric(problemResult.absError),
+    relativeError: normalizeStoredMetric(problemResult.relativeError),
+    tolerance: normalizeStoredMetric(problemResult.tolerance)
+  }
+}
 
 function hasDecimal(value) {
   return Number.isFinite(value) && !Number.isInteger(value)
@@ -27,23 +51,26 @@ function getAbsoluteFloor(operation, hasDecimals) {
 }
 
 export function evaluateAnswerQuality(problemResult) {
+  const precomputed = getPrecomputedQuality(problemResult)
+  if (precomputed) return precomputed
+
   const expected = Number(problemResult.correctAnswer)
   const student = Number(problemResult.studentAnswer)
 
   if (!Number.isFinite(expected) || !Number.isFinite(student)) {
     return {
       isReasonable: false,
-      absError: Number.POSITIVE_INFINITY,
-      relativeError: Number.POSITIVE_INFINITY,
-      tolerance: 0
+      absError: null,
+      relativeError: null,
+      tolerance: null
     }
   }
 
-  const operation = inferOperationFromProblemType(problemResult.problemType, {
+  const operation = resolveProblemOperation(problemResult, {
     fallback: 'addition',
     allowUnknownPrefix: false
   })
-  const level = problemResult.difficulty?.conceptual_level || 1
+  const level = problemResult.difficulty?.conceptual_level || problemResult.level || 1
   const usesDecimals = hasDecimal(expected)
     || hasDecimal(problemResult.values?.a)
     || hasDecimal(problemResult.values?.b)

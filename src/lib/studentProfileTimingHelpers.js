@@ -1,7 +1,7 @@
 import {
   getSpeedTime,
-  inferOperationFromProblemType as inferOperation,
-  median
+  median,
+  resolveProblemOperation
 } from './mathUtils'
 
 const ABSOLUTE_TIME_CAP_SECONDS = 180
@@ -24,7 +24,7 @@ function getSwapAnswer(operation, a, b) {
 }
 
 function isOperationSwapInattention(problem, studentAnswer) {
-  const operation = String(problem?.type || problem?.skill || '').trim()
+  const operation = resolveProblemOperation(problem, { fallback: '' })
   const a = Number(problem?.values?.a)
   const b = Number(problem?.values?.b)
   const answer = Number(studentAnswer)
@@ -99,7 +99,7 @@ export function classifyErrorCategory(problem, studentAnswer, correct, options =
   const b = Number(problem?.values?.b)
   if (!Number.isFinite(a) || !Number.isFinite(b)) return 'knowledge'
 
-  if (problem?.type === 'subtraction') {
+  if (resolveProblemOperation(problem, { fallback: '' }) === 'subtraction') {
     const inattentiveCandidate = a + b
     if (Math.abs(studentAnswer - inattentiveCandidate) < 0.0001) {
       return 'inattention'
@@ -123,9 +123,11 @@ function getPersonalBaselineTimes(profile, problem) {
   if (recent.length === 0) return []
 
   const skillTag = String(problem?.metadata?.skillTag || problem?.template || '')
-  const templateId = String(problem?.template || '')
   const level = Math.round(Number(problem?.difficulty?.conceptual_level || 1))
-  const operation = inferOperation(templateId)
+  const operation = resolveProblemOperation(problem, {
+    fallback: 'addition',
+    allowUnknownPrefix: false
+  })
 
   const valid = recent.filter(item => Number.isFinite(getSpeedTime(item)))
 
@@ -139,7 +141,7 @@ function getPersonalBaselineTimes(profile, problem) {
 
   const byOperationLevel = valid.filter(item => {
     const itemLevel = Math.round(Number(item?.difficulty?.conceptual_level || item?.targetLevel || 1))
-    return inferOperation(item.problemType) === operation && itemLevel === level
+    return resolveProblemOperation(item, { fallback: '', allowUnknownPrefix: false }) === operation && itemLevel === level
   })
   if (byOperationLevel.length > 0) {
     return byOperationLevel.slice(-25).map(item => getSpeedTime(item)).filter(Number.isFinite)

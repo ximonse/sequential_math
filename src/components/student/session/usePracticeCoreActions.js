@@ -12,6 +12,7 @@ import {
   recordTelemetryEvent
 } from '../../../lib/telemetry'
 import { buildProblemNoveltyDescriptor, scoreCandidateNovelty } from '../../../lib/problemNovelty'
+import { resolveProblemOperation } from '../../../lib/mathUtils'
 import {
   createTableProblem,
   finalizeAttentionSnapshot,
@@ -290,7 +291,7 @@ export function usePracticeCoreActions({
       }
     }
 
-    const sessionMeta = sessionTelemetryRef.current
+	    const sessionMeta = sessionTelemetryRef.current
     if (sessionMeta) {
       sessionMeta.answered += 1
       if (isPartial) {
@@ -302,18 +303,19 @@ export function usePracticeCoreActions({
       }
     }
 
-    incrementTelemetryDailyMetric(profile, 'practice_answers', 1, answerTs)
+	    incrementTelemetryDailyMetric(profile, 'practice_answers', 1, answerTs)
     if (isPartial) {
       incrementTelemetryDailyMetric(profile, 'practice_partial', 1, answerTs)
     } else {
       incrementTelemetryDailyMetric(profile, correct ? 'practice_correct' : 'practice_wrong', 1, answerTs)
     }
-    recordTelemetryEvent(profile, 'practice_answer', {
-      sessionId: sessionMeta?.sessionId || '',
-      correct,
-      partial: isPartial,
-      problemType: currentProblem.template || currentProblem.problemType || '',
-      operation: currentProblem.type || '',
+	    const currentOperation = resolveProblemOperation(currentProblem, { fallback: '' })
+	    recordTelemetryEvent(profile, 'practice_answer', {
+	      sessionId: sessionMeta?.sessionId || '',
+	      correct,
+	      partial: isPartial,
+	      problemType: currentProblem.template || currentProblem.problemType || '',
+	      operation: currentOperation,
       skillTag: result?.skillTag || '',
       errorCategory: result?.errorCategory || '',
       partialCode: result?.partialCode || '',
@@ -324,10 +326,10 @@ export function usePracticeCoreActions({
       progressionMode
     }, answerTs)
 
-    if (levelMasteredNow) {
-      recordTelemetryEvent(profile, 'level_focus_mastered', {
-        sessionId: sessionMeta?.sessionId || '',
-        operation: mode || currentProblem.type || '',
+	    if (levelMasteredNow) {
+	      recordTelemetryEvent(profile, 'level_focus_mastered', {
+	        sessionId: sessionMeta?.sessionId || '',
+	        operation: mode || currentOperation,
         level: fixedPracticeLevel,
         attempts: levelMasteredNow.attempts,
         correct: levelMasteredNow.correct,
@@ -399,11 +401,11 @@ export function usePracticeCoreActions({
       }
     }
 
-    if (!isTableDrill && !sessionAssignment && !breakSuggested) {
-      const offer = shouldOfferSteadyAdvance(profile, {
-        progressionMode,
-        operation: (mode && isKnownMode(mode)) ? mode : currentProblem.type
-      })
+	    if (!isTableDrill && !sessionAssignment && !breakSuggested) {
+	      const offer = shouldOfferSteadyAdvance(profile, {
+	        progressionMode,
+	        operation: (mode && isKnownMode(mode)) ? mode : currentOperation
+	      })
       if (offer) {
         setAdvancePrompt(offer)
       }

@@ -1,4 +1,4 @@
-import { inferOperationFromProblemType, inferTableFromProblem, getSpeedTime, median } from '../../../lib/mathUtils'
+import { inferTableFromProblem, getSpeedTime, median, resolveProblemOperation } from '../../../lib/mathUtils'
 import { computeLevelMastery, getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { getOperationLabel, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from '../../../lib/operations'
 import { ALL_OPERATIONS, TABLES } from './dashboardConstants'
@@ -22,7 +22,7 @@ export function buildClassOperationBenchmarks(students) {
     for (const problem of source) {
       const ts = Number(problem?.timestamp || 0)
       if (ts < start7d) continue
-      const operation = inferOperationFromProblemType(problem?.problemType)
+      const operation = resolveProblemOperation(problem, { fallback: '', allowUnknownPrefix: false })
       if (!Object.prototype.hasOwnProperty.call(studentBuckets, operation)) continue
       const bucket = studentBuckets[operation]
       bucket.attempts += 1
@@ -69,7 +69,7 @@ export function buildTrainingPriorityList(student, classBenchmarks) {
 
   const levelData = new Map()
   for (const problem of source) {
-    const operation = inferOperationFromProblemType(problem?.problemType)
+    const operation = resolveProblemOperation(problem, { fallback: '', allowUnknownPrefix: false })
     if (!ALL_OPERATIONS.includes(operation)) continue
     const level = Math.round(Number(problem?.difficulty?.conceptual_level || 0))
     if (!Number.isInteger(level) || level < 1 || level > 12) continue
@@ -197,7 +197,7 @@ export function buildDailyActivityBreakdown(student) {
           const speed = getSpeedTime(problem)
           if (Number.isFinite(speed) && speed > 0) day.speeds.push(speed)
         }
-        const op = inferOperationFromProblemType(problem?.problemType)
+        const op = resolveProblemOperation(problem, { fallback: '', allowUnknownPrefix: false })
         if (ALL_OPERATIONS.includes(op)) day.operationSet.add(op)
         break
       }
@@ -224,7 +224,7 @@ export function buildStudentOperationStats7d(student) {
   for (const problem of source) {
     const ts = Number(problem?.timestamp || 0)
     if (ts < start7d) continue
-    const operation = inferOperationFromProblemType(problem?.problemType)
+    const operation = resolveProblemOperation(problem, { fallback: '', allowUnknownPrefix: false })
     if (!Object.prototype.hasOwnProperty.call(buckets, operation)) continue
     buckets[operation].attempts += 1
     if (problem.correct) {

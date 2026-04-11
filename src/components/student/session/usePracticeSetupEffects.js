@@ -6,7 +6,7 @@ import {
   saveProfile
 } from '../../../lib/storage'
 import { decodeAssignmentPayload, getActiveAssignment, getAssignmentById } from '../../../lib/assignments'
-import { inferOperationFromProblemType as inferOperationFromType } from '../../../lib/mathUtils'
+import { resolveProblemOperation } from '../../../lib/mathUtils'
 import { getLowestUnmasteredLevel } from '../../../lib/studentProfile'
 import { PROGRESSION_MODE_STEADY } from '../../../lib/progressionModes'
 import {
@@ -179,7 +179,7 @@ export function usePracticeSetupEffects({
     }
 
     const operationHistory = profile.recentProblems.filter(
-      p => inferOperationFromType(p.problemType, { fallback: 'addition', allowUnknownPrefix: false }) === mode
+      p => resolveProblemOperation(p, { fallback: '', allowUnknownPrefix: false }) === mode
     )
     const hasHistory = operationHistory.length > 0
     const targetLevel = getLowestUnmasteredLevel(profile, mode)

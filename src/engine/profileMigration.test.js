@@ -57,4 +57,60 @@ describe('profileMigration', () => {
     const migrated = migrateProfileOnLoad(profile)
     expect(migrated).toBe(profile)
   })
+
+  it('derives mastery facts from legacy solved levels that only store explicit level', () => {
+    const attempts = Array.from({ length: 5 }, (_, index) => ({
+      problemId: `legacy-${index}`,
+      problemType: 'add_1d_1d_no_carry',
+      level: 2,
+      correct: true,
+      timestamp: 1000 + index
+    }))
+
+    const migrated = migrateProfileOnLoad({
+      studentId: 'ELEV3',
+      recentProblems: [],
+      problemLog: attempts
+    })
+
+    expect(migrated.masteryFacts.facts).toHaveLength(1)
+    expect(migrated.masteryFacts.facts[0].operation).toBe('addition')
+    expect(migrated.masteryFacts.facts[0].level).toBe(2)
+    expect(migrated.masteryFacts.facts[0].source).toBe('migration')
+  })
+
+  it('does not overwrite existing mastery facts during migration', () => {
+    const masteryFacts = {
+      version: 1,
+      facts: [
+        {
+          id: 'addition:2:123',
+          operation: 'addition',
+          level: 2,
+          achievedAt: 123,
+          window: { attempts: 5, correct: 5, rate: 1 },
+          source: 'existing'
+        }
+      ],
+      revokedIds: []
+    }
+    const profile = {
+      studentId: 'ELEV4',
+      masteryFacts,
+      recentProblems: [],
+      problemLog: [
+        {
+          problemId: 'ok2',
+          domain: 'arithmetic',
+          skill: 'division',
+          level: 4,
+          difficulty: { conceptual_level: 4 }
+        }
+      ]
+    }
+
+    const migrated = migrateProfileOnLoad(profile)
+    expect(migrated).toBe(profile)
+    expect(migrated.masteryFacts).toEqual(masteryFacts)
+  })
 })

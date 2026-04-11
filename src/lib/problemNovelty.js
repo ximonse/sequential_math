@@ -1,4 +1,4 @@
-import { inferOperationFromProblemType } from './mathUtils'
+import { resolveProblemOperation } from './mathUtils'
 
 const EXACT_REPEAT_PENALTY = 80
 const STRUCTURE_REPEAT_PENALTY = 24
@@ -14,16 +14,9 @@ function normalizeText(raw) {
 }
 
 function getOperation(problem) {
-  const directSkill = String(problem?.skill || '').trim()
-  if (directSkill) return directSkill
-
-  const directType = String(problem?.type || '').trim()
-  if (directType) return directType
-
-  const storedType = String(problem?.problemType || '').trim()
-  if (!storedType) return ''
-  return inferOperationFromProblemType(storedType, {
-    fallback: storedType,
+  return resolveProblemOperation(problem, {
+    fallback: '',
+    allowUnknownOperation: true,
     allowUnknownPrefix: true
   })
 }

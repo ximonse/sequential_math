@@ -228,5 +228,8 @@ export function getProblemLevel(problem) {
   const fromDifficulty = Number(problem?.difficulty?.conceptual_level)
   if (Number.isFinite(fromDifficulty)) return fromDifficulty
 
+  const fromLevel = Number(problem?.level)
+  if (Number.isFinite(fromLevel)) return fromLevel
+
   return null
 }

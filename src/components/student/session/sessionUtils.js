@@ -1,4 +1,4 @@
-import { inferOperationFromProblemType as inferOperationFromType } from '../../../lib/mathUtils'
+import { resolveProblemOperation } from '../../../lib/mathUtils'
 import { computeOperationLevelMasteryStatus, getPreferredProblemSource, recordMasteryAchievement } from '../../../lib/masteryCalculation'
 import { getOperationAbility } from '../../../lib/difficultyAdapter'
 import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from '../../../lib/operations'
@@ -287,7 +287,7 @@ export function makeSessionTelemetryId(studentId) {
 export function estimateOperationLevel(profile, operation) {
   const relevant = profile.recentProblems
     .filter(
-      p => inferOperationFromType(p.problemType, { fallback: 'addition', allowUnknownPrefix: false }) === operation
+      p => resolveProblemOperation(p, { fallback: '', allowUnknownPrefix: false }) === operation
     )
     .slice(-20)
 
@@ -353,7 +353,8 @@ export function getBreakPolicy(problem, isTableDrill) {
 }
 
 function isSingleDigitAddOrSubProblem(problem) {
-  if (!problem || (problem.type !== 'addition' && problem.type !== 'subtraction')) return false
+  const operation = resolveProblemOperation(problem, { fallback: '' })
+  if (!problem || (operation !== 'addition' && operation !== 'subtraction')) return false
 
   const magnitude = problem.difficulty?.magnitude || {}
   const magA = Number(magnitude.a_digits)
@@ -389,7 +390,7 @@ function pickNextFreeOperation(profile, candidates) {
   if (candidates.length === 1) return candidates[0]
   const source = Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
   for (let i = source.length - 1; i >= 0; i -= 1) {
-    const operation = inferOperationFromType(source[i]?.problemType, {
+    const operation = resolveProblemOperation(source[i], {
       fallback: '',
       allowUnknownPrefix: false
     })

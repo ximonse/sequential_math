@@ -1,5 +1,5 @@
 import { evaluateAnswerQuality } from '../../../lib/answerQuality'
-import { getSpeedTime, inferOperationFromProblemType } from '../../../lib/mathUtils'
+import { getSpeedTime, resolveProblemOperation } from '../../../lib/mathUtils'
 import { getOperationLabel } from '../../../lib/operations'
 import { getStartOfWeekTimestamp } from '../../../lib/studentProfile'
 import { getStudentPresenceStatus } from '../../../lib/studentPresence'
@@ -109,7 +109,7 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
   const primaryOperation = (
     weekByOperation[0]?.operation
     || todayByOperation[0]?.operation
-    || inferOperationFromProblemType(recentProblems[recentProblems.length - 1]?.problemType || '')
+    || resolveProblemOperation(recentProblems[recentProblems.length - 1], { fallback: '', allowUnknownPrefix: false })
   )
   const focusOperation = todayByOperation[0]?.operation || primaryOperation || 'addition'
   const presenceStatus = getStudentPresenceStatus(student, {
@@ -262,7 +262,8 @@ function summarizeByOperation(problems) {
   const stats = new Map()
 
   for (const problem of problems) {
-    const operation = inferOperationFromProblemType(problem.problemType)
+    const operation = resolveProblemOperation(problem, { fallback: '', allowUnknownPrefix: false })
+    if (!operation) continue
     const prev = stats.get(operation) || {
       operation,
       attempts: 0,
@@ -303,7 +304,8 @@ function summarizeBySkill(problems) {
   const stats = new Map()
 
   for (const problem of problems) {
-    const operation = inferOperationFromProblemType(problem.problemType)
+    const operation = resolveProblemOperation(problem, { fallback: '', allowUnknownPrefix: false })
+    if (!operation) continue
     const rawTag = problem.skillTag || problem.problemType || operation
     const skillKey = String(rawTag)
     const level = getProblemLevel(problem)

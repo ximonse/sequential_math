@@ -1,5 +1,5 @@
 import {
-  inferOperationFromProblemType
+  resolveProblemOperation
 } from '../../../lib/mathUtils'
 import { getOperationLabel } from '../../../lib/operations'
 import {
@@ -61,7 +61,7 @@ export function summarizeAssignmentAdherence(problems, assignment) {
   }
 
   for (const problem of problems) {
-    const operation = inferOperationFromProblemType(problem.problemType)
+    const operation = resolveProblemOperation(problem, { fallback: '', allowUnknownPrefix: false })
     const level = getProblemLevel(problem)
     const operationMatch = assignment.problemTypes.includes(operation)
     const levelMatch = level === null

@@ -1,13 +1,69 @@
 import { evaluateAnswerQuality } from './answerQuality'
 import { computeMasteryOverview, computeMasteryForOperation, computeLowestUnmasteredLevel, computeTeacherSummary, getPreferredProblemSource, computeOperationLevelMasteryStatus, recordMasteryAchievement } from './masteryCalculation'
-import { getSpeedTime, inferOperationFromProblemType as inferOperation } from './mathUtils'
-import { ALL_OPERATIONS, ALL_LEVELS, getOperationMinLevel } from './operations'
+import { getSpeedTime, resolveProblemOperation } from './mathUtils'
+import { ALL_OPERATIONS, ALL_LEVELS } from './operations'
 import { classifyErrorCategory, deriveTimingMetrics } from './studentProfileTimingHelpers'
 import { analyzeStudentError, evaluateStudentAnswer, getProblemSelection } from '../engine/adaptiveEngine'
 export { getStartOfWeekTimestamp } from './studentProfileTimingHelpers'
 
 const MAX_RECENT_PROBLEMS = 250
 const MAX_PROBLEM_LOG = 5000
+
+function resolveStoredCorrectAnswer(problem, evaluation) {
+  const answerType = String(problem?.answer?.type || '').trim()
+  const evaluationAnswer = evaluation?.correctAnswer
+
+  if (typeof evaluationAnswer === 'string') {
+    const trimmed = evaluationAnswer.trim()
+    if (trimmed) {
+      if ((answerType === 'expression' || answerType === 'fraction') || !Number.isFinite(Number(trimmed))) {
+        return trimmed
+      }
+      return Number(trimmed)
+    }
+  }
+
+  if (Number.isFinite(Number(evaluationAnswer))) {
+    return Number(evaluationAnswer)
+  }
+
+  if (answerType === 'fraction') {
+    const formattedFraction = String(problem?.answer?.value || '').trim()
+    if (formattedFraction) return formattedFraction
+  }
+
+  const explicitAnswer = problem?.answer?.correct
+  if (typeof explicitAnswer === 'string') {
+    const trimmed = explicitAnswer.trim()
+    if (trimmed) {
+      if (answerType === 'expression' || !Number.isFinite(Number(trimmed))) return trimmed
+      return Number(trimmed)
+    }
+  }
+
+  if (Number.isFinite(Number(explicitAnswer))) {
+    return Number(explicitAnswer)
+  }
+
+  if (typeof problem?.result === 'string') {
+    const trimmed = problem.result.trim()
+    if (trimmed) {
+      if (answerType === 'expression' || !Number.isFinite(Number(trimmed))) return trimmed
+      return Number(trimmed)
+    }
+  }
+
+  if (Number.isFinite(Number(problem?.result))) {
+    return Number(problem.result)
+  }
+
+  return null
+}
+
+function hasFiniteMetric(value) {
+  if (value === null || value === undefined || value === '') return false
+  return Number.isFinite(Number(value))
+}
 
 /**
  * Generera unikt elev-ID (6 tecken)
@@ -85,9 +141,11 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
   const errorCategory = classifyErrorCategory(problem, studentAnswer, correct, options, errorAnalysis)
   const timing = deriveTimingMetrics(profile, problem, timeSpent, options)
   const problemType = String(problem?.template || problem?.problemType || selection.skill || '')
-  const correctAnswer = Number.isFinite(Number(problem?.answer?.correct))
-    ? Number(problem.answer.correct)
-    : Number(problem?.result)
+  const operation = resolveProblemOperation(problem, {
+    fallback: selection.skill,
+    allowUnknownPrefix: false
+  })
+  const correctAnswer = resolveStoredCorrectAnswer(problem, evaluation)
   const quality = evaluateAnswerQuality({
     problemType,
     values: problem.values,
@@ -101,13 +159,13 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
   const isReasonable = typeof evaluation?.isReasonable === 'boolean'
     ? evaluation.isReasonable
     : quality.isReasonable
-  const absError = Number.isFinite(Number(evaluation?.absError))
+  const absError = hasFiniteMetric(evaluation?.absError)
     ? Number(evaluation.absError)
     : quality.absError
-  const relativeError = Number.isFinite(Number(evaluation?.relativeError))
+  const relativeError = hasFiniteMetric(evaluation?.relativeError)
     ? Number(evaluation.relativeError)
     : quality.relativeError
-  const tolerance = Number.isFinite(Number(evaluation?.tolerance))
+  const tolerance = hasFiniteMetric(evaluation?.tolerance)
     ? Number(evaluation.tolerance)
     : quality.tolerance
 
@@ -115,6 +173,7 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     problemId: problem.id,
     domain: selection.domain,
     skill: selection.skill,
+    operation,
     level: selection.level,
     problemType,
     values: problem.values,
@@ -169,7 +228,7 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
   }
 
   // Kolla mastery FÖRE nytt resultat (för att detektera ny mastery)
-  const opForMastery = inferOperation(problemType)
+  const opForMastery = operation
   const levelForMastery = Math.round(Number(problem?.difficulty?.conceptual_level || 0))
   const source = getPreferredProblemSource(profile)
   const masteryBefore = (opForMastery && levelForMastery >= 1 && levelForMastery <= 12)
@@ -228,6 +287,10 @@ function getNormalizedAnswerLength(rawAnswer, fallbackNumber) {
   if (typeof rawAnswer === 'string') {
     const normalized = rawAnswer.trim().replace(/,/g, '.').replace('-', '').replace('.', '')
     return normalized.length
+  }
+
+  if (typeof fallbackNumber === 'string') {
+    return fallbackNumber.trim().replace(/,/g, '.').replace('-', '').replace('.', '').length
   }
 
   if (!Number.isFinite(fallbackNumber)) return 0

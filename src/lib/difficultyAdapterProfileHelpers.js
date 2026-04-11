@@ -1,4 +1,4 @@
-import { inferOperationFromProblemType } from './mathUtils'
+import { resolveProblemOperation } from './mathUtils'
 import {
   PROGRESSION_MODE_CHALLENGE
 } from './progressionModes'
@@ -34,9 +34,11 @@ export function ensureDifficultyMeta(profile) {
     const global = profile.currentDifficulty || 1
     profile.adaptive.operationAbilities = {
       addition: global,
-      subtraction: 1,
-      multiplication: 1,
-      division: 1,
+      subtraction: Math.max(1, global - 2),
+      multiplication: Math.max(1, global - 3),
+      // Division starts slightly higher than pure subtraction/multiplication seeding
+      // so students are not pushed back to trivial levels after unlocking it.
+      division: Math.max(3, global - 4),
       algebra_evaluate: 1,
       algebra_simplify: 1,
       arithmetic_expressions: 1,
@@ -68,7 +70,7 @@ export function setOperationAbility(profile, operation, value) {
 
 export function getRecentOperationSuccessRate(profile, operation, count = 5) {
   const recent = profile.recentProblems
-    .filter(problem => inferOperationFromProblemType(problem.problemType) === operation)
+    .filter(problem => resolveProblemOperation(problem, { allowUnknownPrefix: false }) === operation)
     .slice(-count)
   if (recent.length === 0) return 0.5
   return recent.filter(problem => problem.correct).length / recent.length
@@ -78,7 +80,7 @@ export function getConsecutiveOperationErrors(profile, operation) {
   let count = 0
   for (let i = profile.recentProblems.length - 1; i >= 0; i -= 1) {
     const problem = profile.recentProblems[i]
-    if (inferOperationFromProblemType(problem.problemType) !== operation) continue
+    if (resolveProblemOperation(problem, { allowUnknownPrefix: false }) !== operation) continue
     if (!problem.correct) count += 1
     else break
   }
@@ -88,15 +90,15 @@ export function getConsecutiveOperationErrors(profile, operation) {
 export function inferCurrentOperation(profile) {
   const latest = profile.recentProblems[profile.recentProblems.length - 1]
   if (!latest) return null
-  const operation = inferOperationFromProblemType(latest.problemType)
+  const operation = resolveProblemOperation(latest, { allowUnknownPrefix: false })
   return KNOWN_OPERATION_TYPES.has(operation) ? operation : null
 }
 
 export function getWarmupLevel(profile, roundedDifficulty, operation) {
-  const operationProblems = operation
-    ? profile.recentProblems.filter(
-      problem => inferOperationFromProblemType(problem.problemType) === operation
-    )
+	  const operationProblems = operation
+	    ? profile.recentProblems.filter(
+	      problem => resolveProblemOperation(problem, { allowUnknownPrefix: false }) === operation
+	    )
     : profile.recentProblems
   const lastTs = operationProblems[operationProblems.length - 1]?.timestamp
   if (!lastTs) return null
@@ -132,9 +134,9 @@ export function annotateSelectedProblem(profile, problem, details) {
   }
 
   profile.adaptive.recentSelections.push({
-    timestamp: Date.now(),
-    skillTag,
-    operation: problem.type,
+	    timestamp: Date.now(),
+	    skillTag,
+	    operation: resolveProblemOperation(problem, { fallback: '' }),
     selectionReason: details.reason,
     difficultyBucket: details.bucket,
     targetLevel: details.targetLevel,
@@ -214,7 +216,7 @@ function getOperationProblemsCompletedToday(profile, operation) {
   const now = new Date()
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
   return profile.recentProblems.filter(
-    problem => problem.timestamp >= startOfToday && inferOperationFromProblemType(problem.problemType) === operation
+    problem => problem.timestamp >= startOfToday && resolveProblemOperation(problem, { allowUnknownPrefix: false }) === operation
   ).length
 }
 

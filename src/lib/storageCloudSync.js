@@ -3,12 +3,80 @@ import {
   cancelAllRetries,
   cancelRetries,
   getPendingSyncIds,
-  hasPendingSyncs,
   loadPendingSnapshot,
   removePendingSync,
   scheduleRetry
 } from './storageCloudSyncQueue'
 import { getUnsynced, markSynced, pruneWal } from './syncWal'
+
+export function normalizeCloudSyncTimestamp(value) {
+  const ts = Number(value)
+  if (!Number.isFinite(ts) || ts <= 0) return 0
+  return ts
+}
+
+export function stableSerializeForCloudSync(value) {
+  if (value === null) return 'null'
+  const valueType = typeof value
+  if (valueType === 'number' || valueType === 'boolean' || valueType === 'string') {
+    return JSON.stringify(value)
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map(item => stableSerializeForCloudSync(item)).join(',')}]`
+  }
+  if (valueType === 'object') {
+    const keys = Object.keys(value).sort()
+    const parts = keys.map(key => `${JSON.stringify(key)}:${stableSerializeForCloudSync(value[key])}`)
+    return `{${parts.join(',')}}`
+  }
+  return JSON.stringify(String(value))
+}
+
+export function buildCloudSyncProblemEntryKey(entry) {
+  const id = String(entry?.problemId || '').trim()
+  if (id) return `id:${id}`
+
+  const type = String(entry?.problemType || '').trim()
+  const ts = normalizeCloudSyncTimestamp(entry?.timestamp)
+  const studentAnswer = String(entry?.studentAnswer ?? '')
+  const correctAnswer = String(entry?.correctAnswer ?? '')
+  const values = stableSerializeForCloudSync(entry?.values || {})
+  return `raw:${type}|${ts}|${studentAnswer}|${correctAnswer}|${values}`
+}
+
+export function mergeCloudSyncProblemEntries(existingEntries, incomingEntries, limit) {
+  const mergedByKey = new Map()
+
+  const upsert = (entry, sourceRank) => {
+    if (!entry || typeof entry !== 'object') return
+    const key = buildCloudSyncProblemEntryKey(entry)
+    const ts = normalizeCloudSyncTimestamp(entry?.timestamp)
+    const previous = mergedByKey.get(key)
+    if (!previous) {
+      mergedByKey.set(key, { entry, ts, sourceRank })
+      return
+    }
+    if (ts > previous.ts || (ts === previous.ts && sourceRank >= previous.sourceRank)) {
+      mergedByKey.set(key, { entry, ts, sourceRank })
+    }
+  }
+
+  for (const entry of (Array.isArray(existingEntries) ? existingEntries : [])) {
+    upsert(entry, 0)
+  }
+  for (const entry of (Array.isArray(incomingEntries) ? incomingEntries : [])) {
+    upsert(entry, 1)
+  }
+
+  const merged = Array.from(mergedByKey.values())
+    .map(item => item.entry)
+    .sort((a, b) => normalizeCloudSyncTimestamp(a?.timestamp) - normalizeCloudSyncTimestamp(b?.timestamp))
+
+  if (Number.isFinite(Number(limit)) && limit > 0 && merged.length > limit) {
+    return merged.slice(-limit)
+  }
+  return merged
+}
 
 export function createCloudSyncApi(deps) {
   const {
@@ -86,85 +154,16 @@ export function createCloudSyncApi(deps) {
   const RECENT_PROBLEM_MERGE_LIMIT = 250
   const PROBLEM_LOG_MERGE_LIMIT = 5000
 
-  function normalizeTimestamp(value) {
-    const ts = Number(value)
-    if (!Number.isFinite(ts) || ts <= 0) return 0
-    return ts
-  }
-
-  function stableSerialize(value) {
-    if (value === null) return 'null'
-    const valueType = typeof value
-    if (valueType === 'number' || valueType === 'boolean' || valueType === 'string') {
-      return JSON.stringify(value)
-    }
-    if (Array.isArray(value)) {
-      return `[${value.map(item => stableSerialize(item)).join(',')}]`
-    }
-    if (valueType === 'object') {
-      const keys = Object.keys(value).sort()
-      const parts = keys.map(key => `${JSON.stringify(key)}:${stableSerialize(value[key])}`)
-      return `{${parts.join(',')}}`
-    }
-    return JSON.stringify(String(value))
-  }
-
-  function buildProblemEntryKey(entry) {
-    const id = String(entry?.problemId || '').trim()
-    if (id) return `id:${id}`
-
-    const type = String(entry?.problemType || '').trim()
-    const ts = normalizeTimestamp(entry?.timestamp)
-    const studentAnswer = String(entry?.studentAnswer ?? '')
-    const correctAnswer = String(entry?.correctAnswer ?? '')
-    const values = stableSerialize(entry?.values || {})
-    return `raw:${type}|${ts}|${studentAnswer}|${correctAnswer}|${values}`
-  }
-
-  function mergeProblemEntries(existingEntries, incomingEntries, limit) {
-    const mergedByKey = new Map()
-
-    const upsert = (entry, sourceRank) => {
-      if (!entry || typeof entry !== 'object') return
-      const key = buildProblemEntryKey(entry)
-      const ts = normalizeTimestamp(entry?.timestamp)
-      const previous = mergedByKey.get(key)
-      if (!previous) {
-        mergedByKey.set(key, { entry, ts, sourceRank })
-        return
-      }
-      if (ts > previous.ts || (ts === previous.ts && sourceRank >= previous.sourceRank)) {
-        mergedByKey.set(key, { entry, ts, sourceRank })
-      }
-    }
-
-    for (const entry of (Array.isArray(existingEntries) ? existingEntries : [])) {
-      upsert(entry, 0)
-    }
-    for (const entry of (Array.isArray(incomingEntries) ? incomingEntries : [])) {
-      upsert(entry, 1)
-    }
-
-    const merged = Array.from(mergedByKey.values())
-      .map(item => item.entry)
-      .sort((a, b) => normalizeTimestamp(a?.timestamp) - normalizeTimestamp(b?.timestamp))
-
-    if (Number.isFinite(Number(limit)) && limit > 0 && merged.length > limit) {
-      return merged.slice(-limit)
-    }
-    return merged
-  }
-
   function mergeTeacherListProfiles(localProfile, cloudProfile, options = {}) {
     const preferred = chooseFreshestProfile(localProfile, cloudProfile, options)
     const alternate = preferred === localProfile ? cloudProfile : localProfile
 
-    const mergedRecentProblems = mergeProblemEntries(
+    const mergedRecentProblems = mergeCloudSyncProblemEntries(
       localProfile?.recentProblems,
       cloudProfile?.recentProblems,
       RECENT_PROBLEM_MERGE_LIMIT
     )
-    const mergedProblemLog = mergeProblemEntries(
+    const mergedProblemLog = mergeCloudSyncProblemEntries(
       localProfile?.problemLog,
       cloudProfile?.problemLog,
       PROBLEM_LOG_MERGE_LIMIT

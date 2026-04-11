@@ -10,11 +10,28 @@ const KNOWN_OPERATION_TYPES = new Set([
   'percentage'
 ])
 
+export function isKnownOperationType(value) {
+  return KNOWN_OPERATION_TYPES.has(String(value || '').trim())
+}
+
+function normalizeExplicitOperation(value, allowUnknown = false) {
+  const normalized = String(value || '').trim()
+  if (!normalized) return ''
+  if (isKnownOperationType(normalized)) return normalized
+  return allowUnknown ? normalized : ''
+}
+
+function normalizeOperationFallback(options, defaultValue = 'unknown') {
+  if (!options || !Object.prototype.hasOwnProperty.call(options, 'fallback')) {
+    return defaultValue
+  }
+  if (options.fallback === null) return null
+  if (options.fallback === undefined) return defaultValue
+  return String(options.fallback).trim()
+}
+
 export function inferOperationFromProblemType(problemType = '', options = {}) {
-  const fallbackRaw = options?.fallback
-  const fallback = typeof fallbackRaw === 'string' && fallbackRaw.trim() !== ''
-    ? fallbackRaw.trim()
-    : 'unknown'
+  const fallback = normalizeOperationFallback(options)
   const allowUnknownPrefix = options?.allowUnknownPrefix !== false
   const normalized = String(problemType || '')
 
@@ -34,6 +51,35 @@ export function inferOperationFromProblemType(problemType = '', options = {}) {
   if (!prefix) return fallback
   if (KNOWN_OPERATION_TYPES.has(prefix)) return prefix
   if (allowUnknownPrefix) return prefix
+  return fallback
+}
+
+export function resolveProblemOperation(problem, options = {}) {
+  const fallback = normalizeOperationFallback(options)
+  const allowUnknownOperation = options?.allowUnknownOperation === true
+  const allowUnknownPrefix = options?.allowUnknownPrefix === true
+
+  const direct = normalizeExplicitOperation(problem?.operation, allowUnknownOperation)
+  if (direct) return direct
+
+  const skill = normalizeExplicitOperation(problem?.skill, allowUnknownOperation)
+  if (skill) return skill
+
+  const type = normalizeExplicitOperation(problem?.type, allowUnknownOperation)
+  if (type) return type
+
+  const storedType = String(problem?.problemType || problem?.template || '').trim()
+  if (storedType) {
+    const inferred = inferOperationFromProblemType(storedType, {
+      fallback: '',
+      allowUnknownPrefix
+    })
+    if (inferred && (allowUnknownOperation || isKnownOperationType(inferred))) return inferred
+  }
+
+  const domain = normalizeExplicitOperation(problem?.domain, allowUnknownOperation)
+  if (domain) return domain
+
   return fallback
 }
 

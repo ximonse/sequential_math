@@ -1,8 +1,9 @@
-import { getSpeedTime, inferOperationFromProblemType, inferTableFromProblem } from '../../../lib/mathUtils'
+import { getSpeedTime, inferTableFromProblem, resolveProblemOperation } from '../../../lib/mathUtils'
 import { getNcmAbilityLabelSv } from '../../../lib/ncmProblemBank'
 import { formatSkillList } from './dashboardSkillLabelHelpers'
 import { toPercent } from './dashboardSortUtils'
 import { getPreferredProblemSource } from '../../../lib/masteryCalculation'
+import { getProblemLevel } from './dashboardCoreHelpers'
 import {
   getTeacherTableStatusLabel
 } from './dashboardTableStatusUtils'
@@ -207,8 +208,8 @@ export function buildStudentDetailExportRows(student, row, detailData) {
     add({
       Sektion: 'SenasteProblem',
       Nyckel: String(problem?.problemType || ''),
-      Del: inferOperationFromProblemType(problem?.problemType || ''),
-      Niva: String(Math.round(Number(problem?.difficulty?.conceptual_level || 0)) || ''),
+      Del: resolveProblemOperation(problem, { fallback: '', allowUnknownPrefix: false }),
+      Niva: String(Math.round(Number(getProblemLevel(problem) || 0)) || ''),
       Tabell: String(inferTableFromProblem(problem) || ''),
       Status: problem?.correct ? 'Ratt' : 'Fel',
       TidSek: Number.isFinite(getSpeedTime(problem)) ? Number(getSpeedTime(problem).toFixed(2)) : '',

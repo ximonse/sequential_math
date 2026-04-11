@@ -3,7 +3,8 @@ import {
   getSpeedTime,
   inferOperationFromProblemType,
   inferTableFromProblem,
-  median
+  median,
+  resolveProblemOperation
 } from './mathUtils'
 
 describe('mathUtils', () => {
@@ -17,8 +18,51 @@ describe('mathUtils', () => {
 
     it('supports configurable fallback handling', () => {
       expect(inferOperationFromProblemType('', { fallback: 'addition' })).toBe('addition')
+      expect(inferOperationFromProblemType('', { fallback: '' })).toBe('')
+      expect(inferOperationFromProblemType('mystery_thing', { fallback: null, allowUnknownPrefix: false })).toBe(null)
       expect(inferOperationFromProblemType('mystery_thing')).toBe('mystery')
       expect(inferOperationFromProblemType('mystery_thing', { allowUnknownPrefix: false })).toBe('unknown')
+    })
+  })
+
+  describe('resolveProblemOperation', () => {
+    it('prefers canonical operation and skill before legacy type fields', () => {
+      expect(resolveProblemOperation({
+        operation: 'fractions',
+        skill: 'addition',
+        type: 'subtraction',
+        problemType: 'mul_1d_1d_easy'
+      })).toBe('fractions')
+
+      expect(resolveProblemOperation({
+        skill: 'arithmetic_expressions',
+        problemType: 'add_1d_1d_no_carry'
+      })).toBe('arithmetic_expressions')
+    })
+
+    it('resolves domains without legacy type fields without falling back to addition', () => {
+      expect(resolveProblemOperation({
+        domain: 'fractions',
+        skill: 'fractions'
+      }, { fallback: 'addition' })).toBe('fractions')
+
+      expect(resolveProblemOperation({
+        domain: 'arithmetic_expressions',
+        skill: 'arithmetic_expressions'
+      }, { fallback: 'addition' })).toBe('arithmetic_expressions')
+    })
+
+    it('falls back through legacy problemType when canonical fields are absent', () => {
+      expect(resolveProblemOperation({
+        problemType: 'mul_1d_1d_easy'
+      })).toBe('multiplication')
+    })
+
+    it('honors empty fallback for callers that need to skip unknown operations', () => {
+      expect(resolveProblemOperation({}, { fallback: '' })).toBe('')
+      expect(resolveProblemOperation({
+        problemType: 'mystery_thing'
+      }, { fallback: '', allowUnknownPrefix: false })).toBe('')
     })
   })
 

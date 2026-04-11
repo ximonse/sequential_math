@@ -5,7 +5,7 @@
 import { generateByDifficultyWithOptions, generateMultiplicationTableDrillProblem } from './problemGenerator'
 import { getRecentSuccessRate, getConsecutiveErrors, getCurrentStreak, getLowestUnmasteredLevel } from './studentProfile'
 import { getOperationMinLevel } from './operations'
-import { inferOperationFromProblemType } from './mathUtils'
+import { resolveProblemOperation } from './mathUtils'
 import { filterNcmProblems, generateNcmProblemFromFilter } from './ncmProblemBank'
 import {
   PROGRESSION_MODE_CHALLENGE,
@@ -184,7 +184,7 @@ export function selectNextProblem(profile, options = {}) {
   if (effectiveType !== 'addition') {
     const minLevel = getOperationMinLevel(effectiveType)
     const opAttempts = profile.recentProblems.filter(
-      problem => inferOperationFromProblemType(problem.problemType) === effectiveType
+      problem => resolveProblemOperation(problem, { fallback: '', allowUnknownPrefix: false }) === effectiveType
     ).length
     if (opAttempts < 3) roundedDifficulty = Math.min(roundedDifficulty, Math.max(minLevel, 1))
     else if (opAttempts < 6) roundedDifficulty = Math.min(roundedDifficulty, Math.max(minLevel, 2))
@@ -336,8 +336,8 @@ export function shouldOfferSteadyAdvance(profile, options = {}) {
   if (roundedDifficulty >= 12) return null
 
   const recent = profile.recentProblems
-    .filter(problem => inferOperationFromProblemType(problem.problemType, {
-      fallback: 'addition',
+    .filter(problem => resolveProblemOperation(problem, {
+      fallback: '',
       allowUnknownPrefix: false
     }) === operation)
     .slice(-20)

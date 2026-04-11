@@ -1,4 +1,4 @@
-import { inferOperationFromProblemType } from '../lib/mathUtils'
+import { resolveProblemOperation } from '../lib/mathUtils'
 import { groupProblemsByOperationLevel, computeLevelMastery } from '../lib/masteryCalculation'
 
 function normalizeLevel(problem) {
@@ -17,11 +17,11 @@ function normalizeSkill(problem) {
   const explicit = String(problem?.skill || '').trim()
   if (explicit) return explicit
 
-  const fromType = inferOperationFromProblemType(String(problem?.problemType || ''), {
+  const fromProblem = resolveProblemOperation(problem, {
     fallback: 'addition',
     allowUnknownPrefix: false
   })
-  return String(fromType || 'addition')
+  return String(fromProblem || 'addition')
 }
 
 function hasValidMigrationFields(problem) {
@@ -88,8 +88,8 @@ function migrateMasteryFacts(profile) {
     if (result.isMastered) {
       // Använd timestamp från senaste problemet i bucketen för achievedAt
       const relevantProblems = source.filter(p => {
-        const op = inferOperationFromProblemType(p?.problemType || '')
-        const lv = Math.round(Number(p?.difficulty?.conceptual_level || 0))
+        const op = resolveProblemOperation(p, { allowUnknownPrefix: false })
+        const lv = normalizeLevel(p)
         return op === entry.operation && lv === entry.level
       })
       const latestTs = relevantProblems.reduce((max, p) => {

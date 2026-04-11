@@ -3,11 +3,25 @@
  * ALLA vyer (elev, lärare, adaptiv motor) använder dessa funktioner.
  * Ändra HÄR — inte i enskilda vyer.
  */
-import { inferOperationFromProblemType, getSpeedTime } from './mathUtils'
+import { getSpeedTime, resolveProblemOperation } from './mathUtils'
 import { getOperationMinLevel } from './operations'
 import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './operations'
 
 export const MASTERY_WINDOW = 15
+
+function getRecordedProblemLevel(problem) {
+  const conceptualLevel = Number(problem?.difficulty?.conceptual_level)
+  if (Number.isFinite(conceptualLevel) && conceptualLevel >= 1) {
+    return Math.round(conceptualLevel)
+  }
+
+  const explicitLevel = Number(problem?.level)
+  if (Number.isFinite(explicitLevel) && explicitLevel >= 1) {
+    return Math.round(explicitLevel)
+  }
+
+  return null
+}
 
 /**
  * Beräkna mastery för en nivå givet en lista med resultat (boolean/0/1).
@@ -77,10 +91,9 @@ function getLatestTimestamp(list) {
 export function groupProblemsByOperationLevel(problems) {
   const buckets = new Map()
   for (const problem of problems) {
-    const operation = inferOperationFromProblemType(problem?.problemType || '')
-    const rawLevel = Number(problem?.difficulty?.conceptual_level)
-    if (!Number.isFinite(rawLevel) || rawLevel < 1) continue
-    const level = Math.round(rawLevel)
+    const operation = resolveProblemOperation(problem, { allowUnknownPrefix: false })
+    const level = getRecordedProblemLevel(problem)
+    if (!Number.isFinite(level) || level < 1) continue
     if (level > 12) continue
 
     const key = `${operation}:${level}`
@@ -165,8 +178,8 @@ export function computeLowestUnmasteredLevel(problems, operation, options = {}) 
  */
 export function computeOperationLevelMasteryStatus(problems, operation, level, options = {}) {
   const filtered = problems.filter(item => {
-    const itemOp = inferOperationFromProblemType(item?.problemType || '')
-    const itemLevel = Math.round(Number(item?.difficulty?.conceptual_level || 0))
+    const itemOp = resolveProblemOperation(item, { allowUnknownPrefix: false })
+    const itemLevel = getRecordedProblemLevel(item) || 0
     return itemOp === operation && itemLevel === level
   })
 
@@ -241,7 +254,7 @@ export function computeOperationMasteryBoards(problems, operationKeys, levelRang
   )
 
   for (const problem of problems) {
-    const operation = inferOperationFromProblemType(problem?.problemType || '')
+    const operation = resolveProblemOperation(problem, { allowUnknownPrefix: false })
     if (!lists[operation]) continue
     const level = Math.round(Number(problem?.difficulty?.conceptual_level || 0))
     if (!Number.isInteger(level) || level < 1 || level > 12) continue
@@ -374,7 +387,7 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
     const ts = Number(problem?.timestamp || 0)
     if (ts < start7d) continue
 
-    const op = inferOperationFromProblemType(problem?.problemType || '')
+    const op = resolveProblemOperation(problem, { allowUnknownPrefix: false })
     if (opBuckets[op]) {
       opBuckets[op].attempts += 1
       if (problem.correct) opBuckets[op].correct += 1

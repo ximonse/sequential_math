@@ -1,14 +1,11 @@
 import { selectNextProblem } from '../lib/difficultyAdapter'
 import { getLowestUnmasteredLevel } from '../lib/studentProfile'
+import { resolveProblemOperation } from '../lib/mathUtils'
 import { getDefaultDomainId, getDomain, normalizeProblemWithDomain } from '../domains/registry'
 
 function inferSkillFromProblem(problem) {
-  const explicitSkill = String(problem?.skill || '').trim()
-  if (explicitSkill) return explicitSkill
-  const type = String(problem?.type || '').trim()
-  if (type === 'addition' || type === 'subtraction' || type === 'multiplication' || type === 'division') {
-    return type
-  }
+  const operation = resolveProblemOperation(problem, { fallback: '' })
+  if (operation) return operation
   return 'addition'
 }
 

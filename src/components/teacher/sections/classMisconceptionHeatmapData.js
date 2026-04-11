@@ -1,4 +1,4 @@
-import { inferOperationFromProblemType } from '../../../lib/mathUtils'
+import { resolveProblemOperation } from '../../../lib/mathUtils'
 import { getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { ALL_OPERATIONS, LEVELS } from './dashboardConstants'
 
@@ -211,8 +211,8 @@ export function buildHeatmapData(students) {
   for (const student of students) {
     const problems = getPreferredProblemSource(student)
     for (const problem of problems) {
-      const op = inferOperationFromProblemType(problem.problemType || '', {
-        fallback: null,
+      const op = resolveProblemOperation(problem, {
+        fallback: '',
         allowUnknownPrefix: false
       })
       if (!op || !byOperation[op]) continue

@@ -1,8 +1,8 @@
 import {
   getSpeedTime,
-  inferOperationFromProblemType as inferOperation,
   inferTableFromProblem as inferTable,
-  median
+  median,
+  resolveProblemOperation
 } from './mathUtils'
 import { getNcmSkillMappingFromProblem } from './ncmSkillMap'
 
@@ -237,11 +237,11 @@ function flattenProblems(profiles) {
   for (const profile of profiles) {
     const problems = getProblemsForAnalytics(profile)
     for (const problem of problems) {
-      const operation = inferOperation(problem.problemType, {
+      const operation = resolveProblemOperation(problem, {
         fallback: 'unknown',
         allowUnknownPrefix: false
       })
-      const level = Number(problem?.difficulty?.conceptual_level || 1)
+      const level = Number(problem?.targetLevel || problem?.difficulty?.conceptual_level || problem?.level || 1)
       const ncmMapping = getNcmSkillMappingFromProblem(problem.problemType, problem.skillTag)
       const ncmCode = String(ncmMapping?.code || '')
       rows.push({

@@ -5,6 +5,7 @@ import {
   secureCompare,
   withCors
 } from '../_helpers.js'
+import { withFreshTeacherSummary } from '../../src/lib/teacherSummary.js'
 
 const PASSWORD_SCHEME = 'sha256-v1'
 const MAX_RECENT_PROBLEMS = 250
@@ -778,7 +779,7 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'Unauthorized' })
       }
 
-      const safeProfile = { ...profile }
+      const safeProfile = withFreshTeacherSummary(profile)
       if (safeProfile.auth) {
         const { passwordHash, passwordSalt, passwordScheme, password, ...safeAuth } = safeProfile.auth
         safeProfile.auth = safeAuth
@@ -807,7 +808,7 @@ export default async function handler(req, res) {
       const merged = existingMigrated
         ? mergeProfiles(existingMigrated, normalizedIncoming)
         : normalizedIncoming
-      const normalizedMerged = normalizeProfileForStorage(merged, studentId, studentPassword)
+      const normalizedMerged = normalizeProfileForStorage(withFreshTeacherSummary(merged), studentId, studentPassword)
       await kv.set(key, normalizedMerged)
 
       const indexKey = 'students:index'

@@ -3,14 +3,17 @@ import algebraDomain from './algebra'
 import arithmeticExpressionsDomain from './arithmetic_expressions'
 import fractionsDomain from './fractions'
 import percentageDomain from './percentage'
+import { assertDomainContract } from './contracts'
 
 const domainMap = new Map()
 
 function registerDomain(domain) {
-  if (!domain || typeof domain !== 'object') return
-  const domainId = String(domain.id || '').trim()
-  if (!domainId) return
-  domainMap.set(domainId, domain)
+  const validDomain = assertDomainContract(domain)
+  const domainId = String(validDomain.id).trim()
+  if (domainMap.has(domainId)) {
+    throw new Error(`Domain contract violation: duplicate domain ${domainId}`)
+  }
+  domainMap.set(domainId, validDomain)
 }
 
 registerDomain(arithmeticDomain)

@@ -3,9 +3,9 @@
  * ALLA vyer (elev, lärare, adaptiv motor) använder dessa funktioner.
  * Ändra HÄR — inte i enskilda vyer.
  */
-import { getSpeedTime, resolveProblemOperation } from './mathUtils'
-import { getOperationMinLevel } from './operations'
-import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './operations'
+import { getSpeedTime, resolveProblemOperation } from './mathUtils.js'
+import { getOperationMinLevel } from './operations.js'
+import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './operations.js'
 
 export const MASTERY_WINDOW = 15
 

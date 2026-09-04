@@ -2,6 +2,7 @@ import { selectNextProblem } from '../lib/difficultyAdapter'
 import { getLowestUnmasteredLevel } from '../lib/studentProfile'
 import { resolveProblemOperation } from '../lib/mathUtils'
 import { getDefaultDomainId, getDomain, normalizeProblemWithDomain } from '../domains/registry'
+import { assertErrorAnalysisContract, assertEvaluationContract, assertProblemContract } from '../domains/contracts'
 
 function inferSkillFromProblem(problem) {
   const operation = resolveProblemOperation(problem, { fallback: '' })
@@ -43,6 +44,11 @@ const ALGEBRA_SKILLS = new Set(['algebra_evaluate', 'algebra_simplify'])
 const EXPRESSION_SKILLS = new Set(['arithmetic_expressions'])
 const FRACTION_SKILLS = new Set(['fractions'])
 const PERCENTAGE_SKILLS = new Set(['percentage'])
+function generateFromDomain(domain, skill, level, options) {
+  const problem = domain.generate(skill, level, options)
+  return assertProblemContract(problem, { domain: domain.id, skill })
+}
+
 
 export function selectNextProblemForProfile(profile, options = {}) {
   const allowedTypes = Array.isArray(options.allowedTypes) ? options.allowedTypes : []
@@ -68,21 +74,21 @@ export function selectNextProblemForProfile(profile, options = {}) {
     const algebraDomain = getDomain('algebra')
     if (algebraDomain && typeof algebraDomain.generate === 'function') {
       const skill = allowedTypes[0]
-      return algebraDomain.generate(skill, sampleTrainingLevel(skill), options)
+      return generateFromDomain(algebraDomain, skill, sampleTrainingLevel(skill), options)
     }
   }
 
   if (isExpressions) {
     const exprDomain = getDomain('arithmetic_expressions')
     if (exprDomain && typeof exprDomain.generate === 'function') {
-      return exprDomain.generate('arithmetic_expressions', sampleTrainingLevel('arithmetic_expressions'), options)
+      return generateFromDomain(exprDomain, 'arithmetic_expressions', sampleTrainingLevel('arithmetic_expressions'), options)
     }
   }
 
   if (isFractions) {
     const fracDomain = getDomain('fractions')
     if (fracDomain && typeof fracDomain.generate === 'function') {
-      return fracDomain.generate('fractions', sampleTrainingLevel('fractions'), options)
+      return generateFromDomain(fracDomain, 'fractions', sampleTrainingLevel('fractions'), options)
     }
   }
 
@@ -90,12 +96,12 @@ export function selectNextProblemForProfile(profile, options = {}) {
   if (isPercentage) {
     const pctDomain = getDomain('percentage')
     if (pctDomain && typeof pctDomain.generate === 'function') {
-      return pctDomain.generate('percentage', sampleTrainingLevel('percentage'), options)
+      return generateFromDomain(pctDomain, 'percentage', sampleTrainingLevel('percentage'), options)
     }
   }
 
   const legacyProblem = selectNextProblem(profile, options)
-  return normalizeProblemWithDomain(legacyProblem)
+  return assertProblemContract(normalizeProblemWithDomain(legacyProblem))
 }
 
 export function evaluateStudentAnswer(problem, studentAnswer) {
@@ -111,7 +117,7 @@ export function evaluateStudentAnswer(problem, studentAnswer) {
       relativeError: null
     }
   }
-  return domain.evaluate(normalizedProblem, studentAnswer)
+  return assertEvaluationContract(domain.evaluate(normalizedProblem, studentAnswer))
 }
 
 export function analyzeStudentError(problem, studentAnswer) {
@@ -125,7 +131,7 @@ export function analyzeStudentError(problem, studentAnswer) {
       detail: 'Kunde inte analysera felorsak.'
     }
   }
-  return domain.analyzeError(normalizedProblem, studentAnswer)
+  return assertErrorAnalysisContract(domain.analyzeError(normalizedProblem, studentAnswer))
 }
 
 export function createProblemForSelection(selection, options = {}) {
@@ -134,7 +140,7 @@ export function createProblemForSelection(selection, options = {}) {
   if (!domain || typeof domain.generate !== 'function') return null
   const skill = String(selection?.skill || 'addition')
   const level = Number(selection?.level || 1)
-  return domain.generate(skill, level, options)
+  return generateFromDomain(domain, skill, level, options)
 }
 
 export function getProblemSelection(problem) {

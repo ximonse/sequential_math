@@ -13,7 +13,7 @@ export function buildClassMasteryRows(filteredStudents) {
       levels = Object.fromEntries(ALL_OPERATIONS.map(op => [op, Number(stored[op]) || 0]))
     } else {
       const source = getPreferredProblemSource(student)
-      levels = computeEffectiveLevels(source, ALL_OPERATIONS, LEVELS)
+      levels = computeEffectiveLevels(source, ALL_OPERATIONS, LEVELS, { profile: student })
     }
     const values = ALL_OPERATIONS.map(op => levels[op])
     const average = values.reduce((sum, v) => sum + v, 0) / values.length

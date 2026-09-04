@@ -2,7 +2,7 @@
  * Central lista för räknesätt i elevvyer.
  * Om nya räknesätt tillkommer: lägg till id + label här.
  */
-import { inferOperationFromProblemType } from './mathUtils'
+import { inferOperationFromProblemType } from './mathUtils.js'
 
 export const STANDARD_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
 

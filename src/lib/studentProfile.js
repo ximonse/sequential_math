@@ -1,7 +1,7 @@
 import { evaluateAnswerQuality } from './answerQuality'
-import { computeMasteryOverview, computeMasteryForOperation, computeLowestUnmasteredLevel, computeTeacherSummary, getPreferredProblemSource, computeOperationLevelMasteryStatus, recordMasteryAchievement } from './masteryCalculation'
+import { computeMasteryOverview, computeMasteryForOperation, computeLowestUnmasteredLevel, getPreferredProblemSource, computeOperationLevelMasteryStatus, recordMasteryAchievement } from './masteryCalculation'
+import { refreshTeacherSummary } from './teacherSummary'
 import { getSpeedTime, resolveProblemOperation } from './mathUtils'
-import { ALL_OPERATIONS, ALL_LEVELS } from './operations'
 import { classifyErrorCategory, deriveTimingMetrics } from './studentProfileTimingHelpers'
 import { analyzeStudentError, evaluateStudentAnswer, getProblemSelection } from '../engine/adaptiveEngine'
 export { getStartOfWeekTimestamp } from './studentProfileTimingHelpers'
@@ -262,7 +262,7 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
   updateStats(profile)
 
   // Beräkna lärardashboard-sammanfattning (synkas till molnet)
-  profile.teacherSummary = computeTeacherSummary(profile, ALL_OPERATIONS, ALL_LEVELS)
+  refreshTeacherSummary(profile)
 
   return { correct, result, walEntries }
 }

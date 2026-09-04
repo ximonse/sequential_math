@@ -4,14 +4,16 @@ import {
   isTeacherApiAuthorized,
   withCors
 } from './_helpers.js'
+import { withFreshTeacherSummary } from '../src/lib/teacherSummary.js'
 
 function sanitizeProfileForList(profile) {
   if (!profile || typeof profile !== 'object') return null
 
+  const freshProfile = withFreshTeacherSummary(profile)
   const {
     problemLog,     // up to 5000 entries — too large for bulk list
     ...rest
-  } = profile
+  } = freshProfile
 
   const safe = { ...rest }
 

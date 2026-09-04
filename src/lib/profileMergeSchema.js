@@ -31,8 +31,8 @@ export const MERGE_SCHEMA = {
   // Statistik
   stats:             { strategy: 'derive_from_log', handler: 'mergeStats', description: 'Beräknas från mergade loggar' },
 
-  // Cache (ignoreras vid merge)
-  teacherSummary:    { strategy: 'ignore', description: 'Cache, beräknas klient-side' },
+  // Derived data
+  teacherSummary:    { strategy: 'derive_from_log', handler: 'deriveTeacherSummary', description: 'Computed from the merged full problem log' },
   effectiveLevels:   { strategy: 'removed', description: 'Borttagen dubblett av teacherSummary.effectiveLevels' },
 
   // Tabellträning

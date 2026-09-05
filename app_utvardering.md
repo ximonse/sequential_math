@@ -29,3 +29,20 @@ Vi testade olika nivåer för att förstå hur trappsteget i svårighetsgrad ser
 *   **Omdöme kring progression:** Progressionen är mycket logisk. Den adaptiva algoritmen är tillräckligt känslig för att fånga upp när en elev bemästrat ett koncept och väntar inte onödigt länge med att öka svårigheten. Samtidigt, vid felaktiga svar, backar den upp eleven istället för att straffa den, vilket skapar en trygg inlärningsmiljö.
 
 Appen håller definitivt en bra, adaptiv nivå!
+
+## Kodverifierat nuläge 2026-09-05
+
+Detta avsnitt beskriver körbart beteende som verifierats med tester och lokal
+browser-QA. Äldre kvalitativa omdömen ovan är inte evidens för nuvarande
+beteende.
+
+- Domäner, genererade problem, utvärderingsresultat och felanalyser valideras
+  genom exekverbara kontrakt.
+- Lärarsammanfattningar härleds på nytt från elevens fulla problemlogg vid
+  läsning och sammanslagning. Begränsad historik märks uttryckligen.
+- Prestationssignal kräver minst sex svar i aktuell vecka. Under 55 procent
+  ger prioritering och under 70 procent ger uppföljning; andra signaler bygger
+  på observerbar inaktivitet eller återkommande felsvar.
+- Elevens startsida visar ett primärt nästa steg. Övrig träning, framsteg och
+  konto är sekundära, nedfällda val.
+- Lärarens standardvy prioriterar elev, signal, orsak, underlag och nästa steg.

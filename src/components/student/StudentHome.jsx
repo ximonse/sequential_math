@@ -7,6 +7,7 @@ import { decodeAssignmentPayload, encodeAssignmentPayload, getActiveAssignment, 
 import { normalizeProgressionMode } from '../../lib/progressionModes'
 import { markStudentPresence, PRESENCE_HEARTBEAT_MS, PRESENCE_SAVE_THROTTLE_MS } from '../../lib/studentPresence'
 import { incrementTelemetryDailyMetric, recordTelemetryEvent } from '../../lib/telemetry'
+import StudentHomeAssignmentLaunchCard from './StudentHomeAssignmentLaunchCard'
 import StudentHomePasswordCard from './StudentHomePasswordCard'
 import StudentHomeProgressCard from './StudentHomeProgressCard'
 import StudentHomeTableDrillCard from './StudentHomeTableDrillCard'
@@ -158,13 +159,20 @@ function StudentHome() {
     }
   }, [profile, updateHomePresence])
 
+  const operationKeys = useMemo(() => [
+    ...STANDARD_OPERATIONS,
+    ...Object.keys(OPERATION_LABELS).filter(op =>
+      !STANDARD_OPERATIONS.includes(op) &&
+      (enabledExtras ?? []).includes(op)
+    )
+  ], [enabledExtras])
+
   const operationMasteryBoards = useMemo(() => {
     if (!profile) return []
-    const operationIds = Object.keys(OPERATION_LABELS)
     const source = getPreferredProblemSource(profile)
-    const boards = computeOperationMasteryBoards(source, operationIds, LEVELS)
+    const boards = computeOperationMasteryBoards(source, operationKeys, LEVELS)
     return mapBoardsToMultiPeriodStatus(boards)
-  }, [profile])
+  }, [profile, operationKeys])
 
   const operationProgress = useMemo(() => {
     const result = {}
@@ -220,13 +228,6 @@ function StudentHome() {
     ))
   }
 
-  const operationKeys = useMemo(() => [
-    ...STANDARD_OPERATIONS,
-    ...Object.keys(OPERATION_LABELS).filter(op =>
-      !STANDARD_OPERATIONS.includes(op) &&
-      (enabledExtras ?? []).includes(op)
-    )
-  ], [enabledExtras])
 
   const startTableDrill = () => {
     if (selectedTables.length === 0) return
@@ -320,7 +321,7 @@ function StudentHome() {
     saveProfile(profile)
     navigate(`/student/${studentId}/ticket?${params.toString()}`)
   }
-  const _handleStartAssignmentOrFree = () => {
+  const handleStartAssignmentOrFree = () => {
     const now = Date.now()
     recordTelemetryEvent(profile, 'practice_launch_assignment_or_free', {
       assignmentId: assignment?.id || ''
@@ -355,31 +356,6 @@ function StudentHome() {
           </div>
         </div>
 
-        <StudentHomeTableDrillCard
-          tables={TABLES}
-          selectedTables={selectedTables}
-          tableStatus={tableStatus}
-          onToggleTable={toggleTable}
-          getTableStatusClass={getTableStatusClass}
-          onStartTableDrill={startTableDrill}
-        />
-
-        <StudentHomeTrainingOptionsCard
-          onStartFreePractice={startFreePractice}
-          operationKeys={operationKeys}
-          onStartOperationPractice={startOperationPractice}
-          getOperationLabel={getOperationLabel}
-          operationProgress={operationProgress}
-        />
-
-        <StudentHomeProgressCard
-          operationMasteryBoards={operationMasteryBoards}
-          onSelectLevel={startLevelPractice}
-          hasRecentProblems={profile.recentProblems.length > 0 || (Array.isArray(profile.problemLog) && profile.problemLog.length > 0)}
-          masteryMinAttempts={MASTERY_MIN_ATTEMPTS}
-          masteryMinSuccessRate={MASTERY_MIN_SUCCESS_RATE}
-        />
-
         {activeTicketPayload && !activeTicketResponse && (
           <StudentHomeTicketCard
             activeTicketPayload={activeTicketPayload}
@@ -388,14 +364,60 @@ function StudentHome() {
           />
         )}
 
-        <StudentHomePasswordCard
-          currentPassword={currentPassword}
-          newPassword={newPassword}
-          passwordMessage={passwordMessage}
-          onSetCurrentPassword={setCurrentPassword}
-          onSetNewPassword={setNewPassword}
-          onSubmit={handleChangePassword}
-        />
+        {(!activeTicketPayload || activeTicketResponse) && (
+          <StudentHomeAssignmentLaunchCard
+            assignment={assignment}
+            onStart={handleStartAssignmentOrFree}
+          />
+        )}
+
+        <details className="bg-white border border-gray-200 rounded-xl mb-4">
+          <summary className="cursor-pointer select-none px-4 py-3 font-semibold text-gray-700">Välj annan träning</summary>
+          <div className="px-4 pb-4">
+            <StudentHomeTrainingOptionsCard
+              onStartFreePractice={startFreePractice}
+              operationKeys={operationKeys}
+              onStartOperationPractice={startOperationPractice}
+              getOperationLabel={getOperationLabel}
+              operationProgress={operationProgress}
+            />
+            <StudentHomeTableDrillCard
+              tables={TABLES}
+              selectedTables={selectedTables}
+              tableStatus={tableStatus}
+              onToggleTable={toggleTable}
+              getTableStatusClass={getTableStatusClass}
+              onStartTableDrill={startTableDrill}
+            />
+          </div>
+        </details>
+
+        <details className="bg-white border border-gray-200 rounded-xl mb-4">
+          <summary className="cursor-pointer select-none px-4 py-3 font-semibold text-gray-700">Se mina framsteg</summary>
+          <div className="px-4 pb-4">
+            <StudentHomeProgressCard
+              operationMasteryBoards={operationMasteryBoards}
+              onSelectLevel={startLevelPractice}
+              hasRecentProblems={profile.recentProblems.length > 0 || (Array.isArray(profile.problemLog) && profile.problemLog.length > 0)}
+              masteryMinAttempts={MASTERY_MIN_ATTEMPTS}
+              masteryMinSuccessRate={MASTERY_MIN_SUCCESS_RATE}
+            />
+          </div>
+        </details>
+
+        <details className="bg-white border border-gray-200 rounded-xl">
+          <summary className="cursor-pointer select-none px-4 py-3 font-semibold text-gray-700">Konto och lösenord</summary>
+          <div className="px-4 pb-4">
+            <StudentHomePasswordCard
+              currentPassword={currentPassword}
+              newPassword={newPassword}
+              passwordMessage={passwordMessage}
+              onSetCurrentPassword={setCurrentPassword}
+              onSetNewPassword={setNewPassword}
+              onSubmit={handleChangePassword}
+            />
+          </div>
+        </details>
       </div>
     </div>
   )

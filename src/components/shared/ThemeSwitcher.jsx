@@ -5,7 +5,7 @@ function ThemeSwitcher() {
   const { theme, setTheme, highContrast, setHighContrast } = useTheme()
 
   return (
-    <div className="fixed top-3 right-3 z-50">
+    <div className="relative z-50 flex justify-end p-2 sm:fixed sm:top-3 sm:right-3 sm:block sm:p-0">
       <div className="theme-switcher rounded-md border px-2 py-1.5 flex items-center gap-2">
         <select
           value={theme}

@@ -14,7 +14,6 @@ import {
   LEVELS,
   PASSWORD_RESET_SECTION_ID,
   RESULT_HEADER_HELP,
-  SUPPORT_HEADER_HELP,
   TABLES,
   TEACHER_AUTO_REFRESH_INTERVAL_MS
 } from './sections/dashboardConstants'
@@ -277,8 +276,6 @@ function Dashboard() {
     classOverviewMeta,
     handleStickySort,
     getStickySortIndicator,
-    getSupportSortIndicator,
-    handleSupportSort,
     renderDetailLevelErrorSortHeader,
     tableStudentSet,
     filteredTableStudentOptions,
@@ -420,7 +417,7 @@ function Dashboard() {
         getErrorShareColorClass, dailyActivityBreakdown, inactivityBuckets, classSummaries, weekGoal,
         tableSelectedStudentIds, setTableSelectedStudentIds, tableStudentSearch, setTableStudentSearch,
         filteredTableStudentOptions, tableStudentSet, handleToggleTableStudent, tableDevelopmentOverview,
-        supportRows, SUPPORT_HEADER_HELP, getSupportSortIndicator, handleSupportSort, handleCreateQuickAssignment,
+        supportRows, handleCreateQuickAssignment,
         classNameInput, setClassNameInput, handleCreateClass, addToClassId, setAddToClassId,
         classes, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus, handleDeleteClass, handleSaveClassExtras,
         resultsPanelProps, PASSWORD_RESET_SECTION_ID, passwordResetRows, passwordResetSearch,

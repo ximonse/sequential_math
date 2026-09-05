@@ -23,34 +23,35 @@ import TeacherAdminPanel from './TeacherAdminPanel'
 import TeacherPasswordNoticePanel from './TeacherPasswordNoticePanel'
 import TicketSectionContainer from './TicketSectionContainer'
 import TableStickyStatusPanel from './TableStickyStatusPanel'
-import { ActivityBadge, InlineHelp, RiskBadge } from './dashboardStatusBadges'
+import { ActivityBadge, RiskBadge } from './dashboardStatusBadges'
 import { getOperationLabel } from '../../../lib/operations'
 import { isTeacherAdmin } from '../../../lib/teacherAuth'
 
 const PANEL_DEFS = [
+  { id: 'support',     title: 'Behöver stöd nu' },
   { id: 'overview',    title: 'Klassöversikt' },
-  { id: 'mastery',     title: 'Nivåöversikt' },
-  { id: 'heatmap',     title: 'Missuppfattningar' },
-  { id: 'sticky',      title: 'Tabellstatus' },
   { id: 'detail',      title: 'Elevdetalj' },
-  { id: 'difficulty-analysis', title: 'Svårighetsanalys' },
-  { id: 'training-priority', title: 'Träningsprioritet' },
-  { id: 'inactivity',  title: 'Inaktivitet & nivå' },
-  { id: 'tabledev',    title: 'Tabellutveckling' },
-  { id: 'support',     title: 'Stödbehov' },
-  { id: 'dataquality', title: 'Datakvalitet' },
+  { id: 'results',     title: 'Resultat och export' },
   { id: 'assignments', title: 'Uppdrag' },
   { id: 'tickets',     title: 'Tickets' },
+  { id: 'mastery',     title: 'Nivåöversikt' },
+  { id: 'sticky',      title: 'Tabellstatus' },
+  { id: 'heatmap',     title: 'Felmönster' },
+  { id: 'difficulty-analysis', title: 'Svårighetsanalys' },
+  { id: 'training-priority', title: 'Träningsprioritet' },
+  { id: 'inactivity',  title: 'Inaktivitet och nivå' },
+  { id: 'tabledev',    title: 'Tabellutveckling' },
+  { id: 'dataquality', title: 'Datakvalitet' },
   { id: 'management',  title: 'Klasshantering' },
-  { id: 'results',     title: 'Resultat' },
   { id: 'password',    title: 'Lösenordsåterställning' },
   { id: 'pausegames',  title: 'Pausspel — Highscore' },
   { id: 'admin',       title: 'Administration', adminOnly: true },
 ]
 
-const DEFAULT_ORDER = PANEL_DEFS.map(p => p.id)
-const LS_ORDER_KEY = 'mathapp_dashboard_panel_order'
-const LS_COLLAPSED_KEY = 'mathapp_dashboard_panel_collapsed'
+const DEFAULT_COLLAPSED = Object.fromEntries(
+  PANEL_DEFS.map(({ id }) => [id, !['support', 'overview'].includes(id)])
+)
+const LS_COLLAPSED_KEY = 'mathapp_dashboard_panel_collapsed_v2'
 
 export default function DashboardLayout({
   isDirectStudentView,
@@ -137,9 +138,6 @@ export default function DashboardLayout({
   handleToggleTableStudent,
   tableDevelopmentOverview,
   supportRows,
-  SUPPORT_HEADER_HELP,
-  getSupportSortIndicator,
-  handleSupportSort,
   handleCreateQuickAssignment,
   classNameInput,
   setClassNameInput,
@@ -164,19 +162,17 @@ export default function DashboardLayout({
 }) {
   const teacherIsAdmin = isTeacherAdmin()
   const visiblePanelDefs = PANEL_DEFS.filter(p => !p.adminOnly || teacherIsAdmin)
-  const visibleDefaultOrder = visiblePanelDefs.map(p => p.id)
 
-  const [panelOrder, setPanelOrder] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(LS_ORDER_KEY)) || DEFAULT_ORDER
-      const visibleIds = new Set(visiblePanelDefs.map(p => p.id))
-      const filtered = saved.filter(id => visibleIds.has(id))
-      const missing = visibleDefaultOrder.filter(id => !filtered.includes(id))
-      return [...filtered, ...missing]
-    } catch { return visibleDefaultOrder }
-  })
   const [collapsed, setCollapsed] = useState(() => {
-    try { return JSON.parse(localStorage.getItem(LS_COLLAPSED_KEY)) || {} } catch { return {} }
+    const defaults = {
+      ...DEFAULT_COLLAPSED,
+      ...(isDirectStudentView ? { detail: false, support: true, overview: true } : {})
+    }
+    try {
+      return { ...defaults, ...(JSON.parse(localStorage.getItem(LS_COLLAPSED_KEY)) || {}) }
+    } catch {
+      return defaults
+    }
   })
 
   const toggleCollapsed = id => setCollapsed(prev => {
@@ -185,16 +181,6 @@ export default function DashboardLayout({
     return next
   })
 
-  const movePanel = (id, dir) => setPanelOrder(prev => {
-    const idx = prev.indexOf(id)
-    if (idx < 0) return prev
-    const next = [...prev]
-    const swap = idx + dir
-    if (swap < 0 || swap >= next.length) return prev
-    ;[next[idx], next[swap]] = [next[swap], next[idx]]
-    localStorage.setItem(LS_ORDER_KEY, JSON.stringify(next))
-    return next
-  })
 
   function renderPanelContent(id) {
     if (id === 'overview') return (
@@ -326,11 +312,6 @@ export default function DashboardLayout({
       <div className="mb-8">
         <SupportPriorityPanel
           supportRows={supportRows}
-          supportHeaderHelp={SUPPORT_HEADER_HELP}
-          getSupportSortIndicator={getSupportSortIndicator}
-          onSupportSort={handleSupportSort}
-          InlineHelpComponent={InlineHelp}
-          ActivityBadgeComponent={ActivityBadge}
           RiskBadgeComponent={RiskBadge}
           toPercent={toPercent}
           onOpenStudentDetail={handleOpenStudentDetail}
@@ -425,14 +406,9 @@ export default function DashboardLayout({
         <DashboardHeaderBar
           isDirectStudentView={isDirectStudentView}
           detailStudentName={detailStudentProfile?.name || ''}
-          syncSubtitle={cloudSyncStatus.lastSuccessAt > 0
-            ? `Senast: ${formatTimeAgo(cloudSyncStatus.lastSuccessAt)}`
-            : cloudSyncStatus.lastError || ''}
           onJumpToPasswordReset={handleJumpToPasswordReset}
           onRefresh={handleRefresh}
-          onGoStudentPage={() => navigate('/teacher/student')}
           onGoDashboard={() => navigate('/teacher')}
-          onBack={() => navigate('/')}
           onLogout={handleLogout}
         />
 
@@ -456,18 +432,14 @@ export default function DashboardLayout({
             onToggleClassFilter={handleToggleClassFilter}
           />
 
-          <ClassStatsCards classStats={classStats} />
+          <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
 
-          {panelOrder.map((id, idx) => (
+          {visiblePanelDefs.map(({ id, title }) => (
             <CollapsibleSection
               key={id}
-              title={visiblePanelDefs.find(p => p.id === id)?.title || id}
+              title={title}
               collapsed={!!collapsed[id]}
               onToggle={() => toggleCollapsed(id)}
-              canMoveUp={idx > 0}
-              canMoveDown={idx < panelOrder.length - 1}
-              onMoveUp={() => movePanel(id, -1)}
-              onMoveDown={() => movePanel(id, 1)}
             >
               {renderPanelContent(id)}
             </CollapsibleSection>

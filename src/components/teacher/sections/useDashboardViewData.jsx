@@ -67,21 +67,6 @@ export function useDashboardViewData({
   detailLevelErrorMinAttempts,
   defaultWeeklyGoal
 }) {
-  const classStats = {
-    totalStudents: filteredStudents.length,
-    activeToday: filteredStudents.filter(student => {
-      const problems = Array.isArray(student.recentProblems) ? student.recentProblems : []
-      const last = problems[problems.length - 1]?.timestamp
-      if (!last) return false
-      const today = new Date().setHours(0, 0, 0, 0)
-      return last > today
-    }).length,
-    avgSuccessRate: filteredStudents.length > 0
-      ? filteredStudents.reduce((sum, student) => sum + (student.stats.overallSuccessRate || 0), 0) / filteredStudents.length
-      : 0,
-    totalProblems: filteredStudents.reduce((sum, student) => sum + (student.stats.totalProblems || 0), 0)
-  }
-
   const weekGoal = activeAssignment?.targetCount || defaultWeeklyGoal
 
   const allRows = useMemo(
@@ -98,6 +83,12 @@ export function useDashboardViewData({
         ? allRows.filter(row => recordMatchesClassFilter(row, selectedClassIds))
         : allRows
   ), [isDirectStudentView, detailStudentId, allRows, selectedClassIds])
+  const classStats = {
+    totalStudents: filteredRows.length,
+    activeToday: filteredRows.filter(row => row.todayAttempts > 0).length,
+    activeThisWeek: filteredRows.filter(row => row.weekAttempts > 0).length
+  }
+
 
   const tableRows = getSortedRows(filteredRows, sortBy, sortDir)
   const visibleRows = tableRows

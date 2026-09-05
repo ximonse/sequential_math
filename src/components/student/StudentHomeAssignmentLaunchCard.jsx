@@ -1,27 +1,21 @@
 export default function StudentHomeAssignmentLaunchCard({
   assignment,
-  selectedProgressionMode,
-  getProgressionModeLabel,
   onStart
 }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
+    <div className="bg-white border-2 border-blue-200 rounded-xl p-5 mb-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-sm text-gray-500">
-            Läge: {assignment ? `${assignment.kind === 'ncm' ? 'NCM-uppdrag' : 'Uppdrag'} (${assignment.title})` : 'Fri träning'}
+          <h2 className="text-lg font-semibold text-gray-800">Ditt nästa steg</h2>
+          <p className="text-sm text-gray-600 mt-1">
+            {assignment ? assignment.title : 'Fortsätt med blandad träning på din nivå.'}
           </p>
-          {!assignment && (
-            <p className="text-xs text-gray-400 mt-1">
-              Tempo: {getProgressionModeLabel(selectedProgressionMode)}
-            </p>
-          )}
         </div>
         <button
           onClick={onStart}
           className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg"
         >
-          {assignment ? 'Fortsätt uppdrag' : 'Starta fri träning'}
+          {assignment ? 'Starta uppdraget' : 'Fortsätt träna'}
         </button>
       </div>
     </div>

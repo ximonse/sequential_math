@@ -370,6 +370,32 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
   const DAY_MS = 24 * 60 * 60 * 1000
   const now = Date.now()
   const start7d = now - 7 * DAY_MS
+  const weekStartDate = new Date(now)
+  const weekDay = weekStartDate.getDay()
+  weekStartDate.setDate(weekStartDate.getDate() - (weekDay === 0 ? 6 : weekDay - 1))
+  weekStartDate.setHours(0, 0, 0, 0)
+  const weekStart = weekStartDate.getTime()
+  const problemLog = Array.isArray(profile?.problemLog) ? profile.problemLog : []
+  const recentProblems = Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
+  const usesFullLog = (problemLog.length === 0 && recentProblems.length === 0)
+    || (source === problemLog
+      && (problemLog.length > 0 || recentProblems.length === 0))
+  const weekDaySet = new Set()
+  const currentWeek = {
+    periodStart: weekStart,
+    attempts: 0,
+    correct: 0,
+    activeDays: 0,
+    totalSpeedSec: 0,
+    speedSamples: 0,
+    knowledgeErrors: 0,
+    inattentionErrors: 0
+  }
+  const evidence = {
+    historySource: usesFullLog ? 'problemLog' : 'recentProblems',
+    historyComplete: usesFullLog,
+    sourceAttempts: source.length
+  }
 
   const effectiveLevels = computeEffectiveLevels(source, operationKeys, levelRange, { profile })
 
@@ -381,10 +407,30 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
   let totalCorrect = 0
   let totalSpeedSec = 0
   let knowledgeErrors = 0
+  let speedSamples = 0
   let inattentionErrors = 0
 
   for (const problem of source) {
     const ts = Number(problem?.timestamp || 0)
+    const speed = getSpeedTime(problem)
+
+    if (ts >= weekStart) {
+      currentWeek.attempts += 1
+      if (problem.correct) currentWeek.correct += 1
+      if (ts > 0) weekDaySet.add(new Date(ts).toDateString())
+      if (Number.isFinite(speed)) {
+        currentWeek.totalSpeedSec += speed
+        currentWeek.speedSamples += 1
+      }
+      if (!problem.correct) {
+        if (String(problem.errorCategory || '') === 'inattention') {
+          currentWeek.inattentionErrors += 1
+        } else {
+          currentWeek.knowledgeErrors += 1
+        }
+      }
+    }
+
     if (ts < start7d) continue
 
     const op = resolveProblemOperation(problem, { allowUnknownPrefix: false })
@@ -398,8 +444,10 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
 
     if (ts > 0) daySet.add(new Date(ts).toDateString())
 
-    const speed = getSpeedTime(problem)
-    if (Number.isFinite(speed)) totalSpeedSec += speed
+    if (Number.isFinite(speed)) {
+      totalSpeedSec += speed
+      speedSamples += 1
+    }
 
     if (!problem.correct) {
       if (String(problem.errorCategory || '') === 'inattention') {
@@ -425,8 +473,15 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
       attempts: totalAttempts,
       correct: totalCorrect,
       activeDays: daySet.size,
-      totalSpeedSec: Math.round(totalSpeedSec)
+      totalSpeedSec: Math.round(totalSpeedSec),
+      speedSamples
     },
+    currentWeek: {
+      ...currentWeek,
+      activeDays: weekDaySet.size,
+      totalSpeedSec: Math.round(currentWeek.totalSpeedSec)
+    },
+    evidence,
     errorBreakdown7d: {
       knowledgeErrors,
       inattentionErrors

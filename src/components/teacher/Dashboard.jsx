@@ -15,7 +15,6 @@ import {
   PASSWORD_RESET_SECTION_ID,
   RESULT_HEADER_HELP,
   SUPPORT_HEADER_HELP,
-  SUPPORT_THRESHOLD,
   TABLES,
   TEACHER_AUTO_REFRESH_INTERVAL_MS
 } from './sections/dashboardConstants'
@@ -75,7 +74,7 @@ function Dashboard() {
   const [tableStudentSearch, setTableStudentSearch] = useState('')
   const [stickySortBy, setStickySortBy] = useState('name')
   const [stickySortDir, setStickySortDir] = useState('asc')
-  const [supportSortBy, setSupportSortBy] = useState('support_score')
+  const [supportSortBy, setSupportSortBy] = useState('risk')
   const [supportSortDir, setSupportSortDir] = useState('desc')
   const [detailStudentId, setDetailStudentId] = useState('')
   const [detailLevelErrorSortBy, setDetailLevelErrorSortBy] = useState('error_share')
@@ -320,7 +319,6 @@ function Dashboard() {
     setTableSelectedStudentIds,
     passwordResetSearch,
     detailLevelErrorMinAttempts: DETAIL_LEVEL_ERROR_MIN_ATTEMPTS,
-    supportThreshold: SUPPORT_THRESHOLD,
     defaultWeeklyGoal: DEFAULT_WEEKLY_GOAL
   })
   const {

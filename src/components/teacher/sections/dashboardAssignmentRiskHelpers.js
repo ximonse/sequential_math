@@ -84,83 +84,82 @@ export function summarizeAssignmentAdherence(problems, assignment) {
 
 export function buildRiskSignals(input, activeAssignment) {
   const {
+    attempts,
     lastActive,
     inactiveDays,
     weekAttempts,
-    weekWrongCount,
     weekSuccessRate,
-    weekReasonableWrongCount,
-    weekAvgTimePerProblemSec,
+    weekEvidenceStatus,
     weekAssignment,
     todayAttempts,
     todaySuccessRate,
     todayStruggle
   } = input
 
-  const riskCodes = []
-  let riskScore = 0
+  const strongSignals = []
+  const followUpSignals = []
 
-  if (!lastActive) {
-    riskScore += 45
-    riskCodes.push('Aldrig aktiv')
+  if (!lastActive && attempts === 0) {
+    strongSignals.push('Inte kommit igång')
   } else if (inactiveDays >= 7) {
-    riskScore += 35
-    riskCodes.push('Inaktiv 7+ dagar')
+    strongSignals.push('Inaktiv minst 7 dagar')
   } else if (inactiveDays >= 2) {
-    riskScore += 18
-    riskCodes.push('Inaktiv 2+ dagar')
+    followUpSignals.push('Inaktiv minst 2 dagar')
   }
 
   if (weekAttempts >= 6 && weekSuccessRate < 0.55) {
-    riskScore += 24
-    riskCodes.push('Låg träff vecka')
+    strongSignals.push(`Låg träff: ${Math.round(weekSuccessRate * 100)}% av ${weekAttempts} svar`)
   } else if (weekAttempts >= 6 && weekSuccessRate < 0.7) {
-    riskScore += 10
-    riskCodes.push('Svajig träff vecka')
-  }
-
-  const reasonableWrongRate = weekWrongCount > 0
-    ? weekReasonableWrongCount / weekWrongCount
-    : 1
-  if (weekWrongCount >= 4 && reasonableWrongRate < 0.45) {
-    riskScore += 18
-    riskCodes.push('Många orimliga fel')
-  }
-
-  if (weekAttempts >= 6 && weekAvgTimePerProblemSec >= 60) {
-    riskScore += 8
-    riskCodes.push('Lång svarstid')
+    followUpSignals.push(`Osäker träff: ${Math.round(weekSuccessRate * 100)}% av ${weekAttempts} svar`)
   }
 
   if (todayAttempts >= 4 && todaySuccessRate < 0.5) {
-    riskScore += 10
-    riskCodes.push('Tuff dag idag')
+    followUpSignals.push('Tuff träning idag')
   }
 
   if (todayStruggle && todayStruggle.wrong >= 3) {
-    riskScore += 8
-    riskCodes.push(`Kämpar: ${todayStruggle.skillLabel}`)
+    followUpSignals.push(`Återkommande fel: ${todayStruggle.skillLabel}`)
   }
 
   if (activeAssignment && weekAssignment.attempts >= 4 && (weekAssignment.rate ?? 1) < 0.45) {
-    riskScore += 14
-    riskCodes.push('Låg uppdragsföljsamhet')
+    followUpSignals.push('Tränar ofta utanför uppdraget')
   }
 
-  const successPenalty = weekAttempts >= 4
-    ? Math.max(0, (0.75 - weekSuccessRate) * 30)
-    : 0
-  const reasonablePenalty = weekWrongCount >= 3
-    ? Math.max(0, (0.65 - reasonableWrongRate) * 20)
-    : 0
-  const supportScore = Math.min(100, Math.round(riskScore + successPenalty + reasonablePenalty))
-  const riskLevel = supportScore >= 70 ? 'high' : supportScore >= 40 ? 'medium' : 'low'
+  const riskLevel = strongSignals.length > 0
+    ? 'high'
+    : followUpSignals.length > 0
+      ? 'medium'
+      : 'low'
+  const priorityRank = riskLevel === 'high' ? 2 : riskLevel === 'medium' ? 1 : 0
+  const riskCodes = [...strongSignals, ...followUpSignals]
+  const limitedHistory = weekEvidenceStatus !== 'complete'
+  const evidenceLabel = weekAttempts === 0
+    ? 'Inga svar denna vecka'
+    : weekAttempts < 6
+      ? `${weekAttempts} svar – för lite för prestationssignal`
+      : `${weekAttempts} svar denna vecka${limitedHistory ? ' · begränsad historik' : ''}`
+
+  let nextAction = 'Ingen särskild åtgärd utifrån aktuell data.'
+  if (strongSignals.some(signal => signal.startsWith('Inte kommit') || signal.startsWith('Inaktiv'))) {
+    nextAction = 'Kontrollera åtkomst och hjälp eleven att komma igång.'
+  } else if (strongSignals.some(signal => signal.startsWith('Låg träff'))) {
+    nextAction = 'Titta på några felsvar och välj ett smalt träningsområde.'
+  } else if (todayStruggle && todayStruggle.wrong >= 3) {
+    nextAction = `Titta på felsvaren i ${todayStruggle.skillLabel} innan nytt uppdrag.`
+  } else if (riskCodes.includes('Tränar ofta utanför uppdraget')) {
+    nextAction = 'Kontrollera att eleven hittar och förstår uppdraget.'
+  } else if (riskLevel === 'medium') {
+    nextAction = 'Följ upp kort och kontrollera elevens lösningsstrategi.'
+  }
 
   return {
     riskLevel,
-    riskScore: Math.min(100, Math.round(riskScore)),
-    supportScore,
-    riskCodes
+    riskScore: priorityRank,
+    supportScore: priorityRank,
+    supportLabel: riskLevel === 'high' ? 'Prioritera' : riskLevel === 'medium' ? 'Följ upp' : 'Ingen signal',
+    riskCodes,
+    evidenceLabel,
+    nextAction
   }
 }
 

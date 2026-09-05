@@ -95,8 +95,6 @@ export default function ResultsOverviewPanel({
                 <option value="week_success_rate">Veckans träffsäkerhet</option>
                 <option value="week_answer_length">Veckans svarslängd</option>
                 <option value="assignment_week">Uppdragsföljsamhet v</option>
-                <option value="support_score">Stödscore</option>
-                <option value="risk_score">Riskscore</option>
                 <option value="logged_in">Har loggat in</option>
                 <option value="last_active">Senast aktiv</option>
                 <option value="attempts">Totala försök</option>
@@ -209,7 +207,7 @@ export default function ResultsOverviewPanel({
                       </button>
                     </div>
                     <div className="mt-1">
-                      <RiskBadgeComponent level={row.riskLevel} score={row.riskScore} />
+                      <RiskBadgeComponent level={row.riskLevel} />
                     </div>
                   </td>
                   <td className="px-4 py-0 text-xs text-gray-400 font-mono">

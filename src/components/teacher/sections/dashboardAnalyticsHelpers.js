@@ -6,6 +6,7 @@ import {
 } from '../../../lib/ncmSkillMap'
 import { compareClassNameAndName } from './dashboardSortUtils'
 import { getPreferredProblemSource } from '../../../lib/masteryCalculation'
+import { getCurrentWeekTeacherEvidence } from '../../../lib/teacherSummary'
 import {
   getAccuracy,
   getMedianTime,
@@ -64,8 +65,12 @@ export function buildClassSummaries(classes, students, selectedClassIds, weekGoa
 
     for (const student of classStudents) {
       const problems = Array.isArray(student.recentProblems) ? student.recentProblems : []
-      if (problems.length > 0) startedCount += 1
-      const weekAttempts = problems.filter(problem => problem.timestamp >= weekStart).length
+      const sourceAttempts = Number(student?.teacherSummary?.evidence?.sourceAttempts) || 0
+      const lifetimeAttempts = Number(student?.stats?.lifetimeProblems || student?.stats?.totalProblems) || 0
+      if (sourceAttempts > 0 || lifetimeAttempts > 0 || problems.length > 0) startedCount += 1
+      const weekEvidence = getCurrentWeekTeacherEvidence(student, weekStart)
+      const weekAttempts = weekEvidence?.attempts
+        ?? problems.filter(problem => problem.timestamp >= weekStart).length
       if (weekAttempts > 0) weeklyActiveCount += 1
       if (weekAttempts >= weekGoal) weeklyGoalReachedCount += 1
     }

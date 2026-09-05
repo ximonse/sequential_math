@@ -48,17 +48,17 @@ export function InlineHelp({ text = '' }) {
   )
 }
 
-export function RiskBadge({ level, score }) {
+export function RiskBadge({ level }) {
   const badgeClass = level === 'high'
     ? 'bg-red-100 text-red-700 border-red-200'
     : level === 'medium'
       ? 'bg-amber-100 text-amber-700 border-amber-200'
-      : 'bg-emerald-100 text-emerald-700 border-emerald-200'
+      : 'bg-gray-100 text-gray-600 border-gray-200'
 
-  const label = level === 'high' ? 'Hög risk' : level === 'medium' ? 'Medel risk' : 'Låg risk'
+  const label = level === 'high' ? 'Prioritera' : level === 'medium' ? 'Följ upp' : 'Ingen signal'
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-xs font-medium ${badgeClass}`}>
-      {label} {Number.isFinite(score) ? `(${score})` : ''}
+      {label}
     </span>
   )
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { deriveTeacherSummary, withFreshTeacherSummary } from './teacherSummary'
+import { deriveTeacherSummary, getCurrentWeekTeacherEvidence, withFreshTeacherSummary } from './teacherSummary'
 
 function result(index) {
   return {
@@ -38,6 +38,17 @@ describe('teacher summary', () => {
 
     expect(summary.weeklyActivity.attempts).toBe(300)
     expect(summary.operationStats7d.addition.attempts).toBe(300)
+    expect(summary.currentWeek.attempts).toBe(300)
+    expect(summary.currentWeek.speedSamples).toBe(300)
+    expect(summary.evidence).toMatchObject({
+      historySource: 'problemLog',
+      historyComplete: true,
+      sourceAttempts: 300
+    })
+    expect(getCurrentWeekTeacherEvidence(
+      { teacherSummary: summary },
+      summary.currentWeek.periodStart
+    )?.accuracy).toBe(0.5)
     expect(summary.effectiveLevels.addition).toBeGreaterThanOrEqual(1)
   })
 
@@ -55,5 +66,30 @@ describe('teacher summary', () => {
     expect(fresh.teacherSummary.weeklyActivity.attempts).toBe(0)
     expect(fresh.effectiveLevels).toBeUndefined()
     expect(profile.teacherSummary.weeklyActivity.attempts).toBe(999)
+  })
+
+  it('marks a recent-only history as limited evidence', () => {
+    const recentProblems = Array.from({ length: 12 }, (_, index) => result(index))
+    const profile = {
+      recentProblems,
+      masteryFacts: { version: 1, facts: [], revokedIds: [] }
+    }
+
+    const summary = deriveTeacherSummary(profile)
+    const evidence = getCurrentWeekTeacherEvidence(
+      { teacherSummary: summary },
+      summary.currentWeek.periodStart
+    )
+
+    expect(evidence).toMatchObject({
+      attempts: 12,
+      correct: 6,
+      historyComplete: false,
+      historySource: 'recentProblems'
+    })
+    expect(getCurrentWeekTeacherEvidence(
+      { teacherSummary: summary },
+      summary.currentWeek.periodStart - 1
+    )).toBeNull()
   })
 })

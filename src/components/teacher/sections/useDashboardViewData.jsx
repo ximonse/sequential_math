@@ -65,7 +65,6 @@ export function useDashboardViewData({
   setTableSelectedStudentIds,
   passwordResetSearch,
   detailLevelErrorMinAttempts,
-  supportThreshold,
   defaultWeeklyGoal
 }) {
   const classStats = {
@@ -178,8 +177,8 @@ export function useDashboardViewData({
   }, [filteredStudents, classNameById, passwordResetSearch])
 
   const supportCandidateRows = useMemo(
-    () => tableRows.filter(row => row.supportScore >= supportThreshold || row.riskLevel === 'high'),
-    [tableRows, supportThreshold]
+    () => tableRows.filter(row => row.riskLevel !== 'low'),
+    [tableRows]
   )
 
   const supportRows = useMemo(

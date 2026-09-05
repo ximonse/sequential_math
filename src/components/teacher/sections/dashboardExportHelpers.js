@@ -14,9 +14,10 @@ export function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
       TidPaUppgift7dMin: toFixedOrEmpty(row.weekEngagedMinutes, 2),
       InteraktionerIdag: row.todayPresenceInteractions,
       Interaktioner7d: row.weekPresenceInteractions,
-      RiskNiva: row.riskLevel,
-      RiskScore: row.riskScore,
-      StodScore: row.supportScore
+      Stodsignal: row.supportLabel,
+      Stodorsaker: row.riskCodes.join(' | '),
+      Underlag: row.evidenceLabel,
+      ForeslagenAtgard: row.nextAction
     }
 
     if (viewMode === 'daily') {

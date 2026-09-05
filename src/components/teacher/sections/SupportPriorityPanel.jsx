@@ -14,10 +14,10 @@ export default function SupportPriorityPanel({
     <div className="bg-white rounded-lg shadow p-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-semibold text-gray-800">Behöver stöd nu</h2>
-        <span className="text-xs text-gray-500">Kompakt prioritering</span>
+        <span className="text-xs text-gray-500">Observerbar signal · underlag · nästa steg</span>
       </div>
       {supportRows.length === 0 ? (
-        <p className="text-sm text-gray-500">Inga akuta signaler i aktuellt urval.</p>
+        <p className="text-sm text-gray-500">Inga elever uppfyller de tydliga stödreglerna just nu.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
@@ -63,7 +63,7 @@ export default function SupportPriorityPanel({
                       onClick={() => onSupportSort('risk')}
                       className="inline-flex items-center gap-1 hover:text-gray-700"
                     >
-                      Risk
+                      Signal
                       <span className="text-[10px] text-gray-400">{getSupportSortIndicator('risk')}</span>
                     </button>
                     <InlineHelpComponent text={supportHeaderHelp.risk} />
@@ -71,15 +71,8 @@ export default function SupportPriorityPanel({
                 </th>
                 <th className="py-1 pr-2">
                   <div className="inline-flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => onSupportSort('support_score')}
-                      className="inline-flex items-center gap-1 hover:text-gray-700"
-                    >
-                      Stöd
-                      <span className="text-[10px] text-gray-400">{getSupportSortIndicator('support_score')}</span>
-                    </button>
-                    <InlineHelpComponent text={supportHeaderHelp.support_score} />
+                    <span>Underlag</span>
+                    <InlineHelpComponent text={supportHeaderHelp.evidence} />
                   </div>
                 </th>
                 <th className="py-1 pr-2">
@@ -157,14 +150,15 @@ export default function SupportPriorityPanel({
                   </td>
                   <td className="py-1 pr-2 text-gray-700">{row.classNameLabel || row.className || '-'}</td>
                   <td className="py-1 pr-2"><ActivityBadgeComponent code={row.activityStatus} /></td>
-                  <td className="py-1 pr-2"><RiskBadgeComponent level={row.riskLevel} score={row.riskScore} /></td>
-                  <td className="py-1 pr-2 text-gray-700">{row.supportScore}</td>
+                  <td className="py-1 pr-2"><RiskBadgeComponent level={row.riskLevel} /></td>
+                  <td className="py-1 pr-2 text-gray-600">{row.evidenceLabel}</td>
                   <td className="py-1 pr-2 text-gray-700">{row.todayAttempts}</td>
                   <td className="py-1 pr-2 text-gray-700">{row.todayCorrectCount}/{row.todayWrongCount}</td>
                   <td className="py-1 pr-2 text-gray-700">{toPercent(row.weekSuccessRate)}</td>
                   <td className="py-1 pr-2 text-gray-700">{row.todayStruggle?.skillLabel || '-'}</td>
                   <td className="py-1 pr-2 text-gray-600">{row.riskCodes.slice(0, 2).join(' | ') || '-'}</td>
                   <td className="py-1">
+                    <p className="mb-1 max-w-64 text-[11px] text-gray-600">{row.nextAction}</p>
                     <div className="flex gap-1">
                       <button
                         onClick={() => onOpenStudentDetail(row.studentId)}

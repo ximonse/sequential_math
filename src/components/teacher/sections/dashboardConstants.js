@@ -7,7 +7,6 @@ import {
 } from '../../../lib/operations'
 
 export { ALL_OPERATIONS, LEVELS, TABLES, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE }
-export const SUPPORT_THRESHOLD = 45
 export const DEFAULT_WEEKLY_GOAL = 20
 export const DETAIL_LEVEL_ERROR_MIN_ATTEMPTS = 8
 export const TEACHER_AUTO_REFRESH_INTERVAL_MS = 2 * 60 * 1000
@@ -44,8 +43,8 @@ export const DETAIL_LEVEL_ERROR_HELP = {
 
 export const SUPPORT_HEADER_HELP = {
   status: 'Aktivitetsstatus: gron/orange/svart/rod utifran fokus och senaste interaktion.',
-  risk: 'Riskniva byggs av regelbaserade signaler som inaktivitet, lag traff och liknande.',
-  support_score: 'Stodscore (0-100) sammanvager risksignaler for prioritering av insats.',
+  risk: 'Signal visas bara nar en tydlig aktivitetsregel eller minst sex svar ger underlag.',
+  evidence: 'Visar antal svar och om historiken ar komplett eller begransad.',
   today_wrong: 'Ratt/fel idag. Tolka tillsammans med mangd och feltyp.',
   week_success: 'Andel ratt under veckan.',
   struggle: 'Skill dar eleven visar tydligast kunskapskamp i aktuellt underlag.',

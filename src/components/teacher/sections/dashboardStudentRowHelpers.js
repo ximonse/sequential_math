@@ -2,6 +2,7 @@ import { evaluateAnswerQuality } from '../../../lib/answerQuality'
 import { getSpeedTime, resolveProblemOperation } from '../../../lib/mathUtils'
 import { getOperationLabel } from '../../../lib/operations'
 import { getStartOfWeekTimestamp } from '../../../lib/studentProfile'
+import { getCurrentWeekTeacherEvidence } from '../../../lib/teacherSummary'
 import { getStudentPresenceStatus } from '../../../lib/studentPresence'
 import { summarizeTelemetryWindow } from '../../../lib/telemetry'
 import {
@@ -74,12 +75,20 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
 
   const weekStart = getStartOfWeekTimestamp()
   const weekProblems = recentProblems.filter(problem => problem.timestamp >= weekStart)
-  const weekAttempts = weekProblems.length
-  const weekCorrectCount = weekProblems.filter(problem => problem.correct).length
+  const weekEvidence = getCurrentWeekTeacherEvidence(student, weekStart)
+  const weekRecentAttempts = weekProblems.length
+  const weekRecentCorrect = weekProblems.filter(problem => problem.correct).length
+  const weekAnalyzedKnowledgeWrongCount = weekProblems.filter(
+    problem => !problem.correct && isKnowledgeError(problem)
+  ).length
+  const weekAttempts = weekEvidence?.attempts ?? weekRecentAttempts
+  const weekCorrectCount = weekEvidence?.correct ?? weekRecentCorrect
   const weekWrongCount = weekAttempts - weekCorrectCount
-  const weekKnowledgeWrongCount = weekProblems.filter(problem => !problem.correct && isKnowledgeError(problem)).length
-  const weekInattentionCount = weekProblems.filter(problem => problem.errorCategory === 'inattention').length
-  const weekSuccessRate = weekAttempts > 0 ? weekCorrectCount / weekAttempts : 0
+  const weekKnowledgeWrongCount = weekEvidence?.knowledgeErrors ?? weekAnalyzedKnowledgeWrongCount
+  const weekInattentionCount = weekEvidence?.inattentionErrors
+    ?? weekProblems.filter(problem => problem.errorCategory === 'inattention').length
+  const weekSuccessRate = weekEvidence?.accuracy
+    ?? (weekAttempts > 0 ? weekCorrectCount / weekAttempts : 0)
   const weekWrongReasonable = weekProblems
     .filter(problem => !problem.correct && isKnowledgeError(problem))
     .map(problem => evaluateAnswerQuality(problem))
@@ -88,10 +97,10 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
   const weekSpeedTimes = weekProblems
     .map(problem => getSpeedTime(problem))
     .filter(value => Number.isFinite(value))
-  const weekActiveTimeSec = weekSpeedTimes.reduce((sum, value) => sum + value, 0)
-  const weekAvgTimePerProblemSec = weekSpeedTimes.length > 0
-    ? weekActiveTimeSec / weekSpeedTimes.length
-    : 0
+  const weekActiveTimeSec = weekEvidence?.totalSpeedSec
+    ?? weekSpeedTimes.reduce((sum, value) => sum + value, 0)
+  const weekAvgTimePerProblemSec = weekEvidence?.avgSpeedSec
+    ?? (weekSpeedTimes.length > 0 ? weekActiveTimeSec / weekSpeedTimes.length : 0)
   const weekAvgAnswerLength = getAverageAnswerLength(weekProblems)
   const weekByOperation = summarizeByOperation(weekProblems)
   const weekBySkill = summarizeBySkill(weekProblems)
@@ -126,8 +135,9 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
     lastActive,
     inactiveDays,
     weekAttempts,
-    weekWrongCount: weekKnowledgeWrongCount,
+    weekWrongCount: weekAnalyzedKnowledgeWrongCount,
     weekSuccessRate,
+    weekEvidenceStatus: weekEvidence?.historyComplete ? 'complete' : 'limited',
     weekReasonableWrongCount: weekWrongReasonable,
     weekAvgTimePerProblemSec,
     weekAssignment,
@@ -216,6 +226,9 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
     weekInattentionCount,
     weekSuccessRate,
     weekReasonableWrongCount: weekWrongReasonable,
+    weekEvidenceStatus: weekEvidence?.historyComplete ? 'complete' : 'limited',
+    weekEvidenceSource: weekEvidence?.historySource || 'recentProblems',
+    weekDetailedAttempts: weekProblems.length,
     weekActiveTimeSec,
     weekAvgTimePerProblemSec,
     weekAvgAnswerLength,
@@ -235,7 +248,10 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
     riskLevel: riskSignals.riskLevel,
     riskScore: riskSignals.riskScore,
     riskCodes: riskSignals.riskCodes,
-    supportScore: riskSignals.supportScore
+    supportScore: riskSignals.supportScore,
+    supportLabel: riskSignals.supportLabel,
+    evidenceLabel: riskSignals.evidenceLabel,
+    nextAction: riskSignals.nextAction
   }
 }
 

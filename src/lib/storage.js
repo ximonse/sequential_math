@@ -6,9 +6,9 @@
  */
 
 import { createStudentProfile } from './studentProfile'
+import { isCurrentStudentProfile } from './studentProfileContract'
 import { getTeacherApiToken } from './teacherAuth'
-import { migrateProfileOnLoad } from '../engine/profileMigration'
-import { normalizeStudentId, getStudentIdCandidates } from './storageStudentId'
+import { normalizeStudentId } from './storageStudentId'
 import {
   addProfileToClassMembership,
   areClassRecordListsEqual,
@@ -45,14 +45,12 @@ let classApi = null
 let studentApi = null
 
 function normalizeLoadedProfile(profile, fallbackStudentId = '') {
-  if (!profile || typeof profile !== 'object') return null
-  const migrated = migrateProfileOnLoad(profile)
-  if (!migrated || typeof migrated !== 'object') return null
-  const normalizedId = normalizeStudentId(migrated.studentId || fallbackStudentId)
+  if (!isCurrentStudentProfile(profile)) return null
+  const normalizedId = normalizeStudentId(profile.studentId || fallbackStudentId)
   if (!normalizedId) return null
 
   const normalizedProfile = {
-    ...migrated,
+    ...profile,
     studentId: normalizedId
   }
   ensureProfileAuth(normalizedProfile)
@@ -69,7 +67,6 @@ function getCloudSyncApi() {
     getActiveStudentSessionSecret,
     getAllProfiles,
     getProfileClassIds,
-    getStudentIdCandidates,
     getTeacherApiToken,
     loadProfile,
     normalizeLoadedProfile,
@@ -156,24 +153,17 @@ function syncProfileToCloud(profile) {
 }
 
 export function loadProfile(studentId) {
-  const candidates = getStudentIdCandidates(studentId)
-  if (candidates.length === 0) return null
+  const normalizedId = normalizeStudentId(studentId)
+  if (!normalizedId) return null
+  const data = localStorage.getItem(STORAGE_PREFIX + normalizedId)
+  if (!data) return null
 
-  for (const candidateId of candidates) {
-    const data = localStorage.getItem(STORAGE_PREFIX + candidateId)
-    if (!data) continue
-
-    try {
-      const parsed = JSON.parse(data)
-      const normalized = normalizeLoadedProfile(parsed, candidateId)
-      if (!normalized) continue
-      return normalized
-    } catch (e) {
-      console.error('Failed to parse profile:', e)
-    }
+  try {
+    return normalizeLoadedProfile(JSON.parse(data), normalizedId)
+  } catch (e) {
+    console.error('Failed to parse profile:', e)
+    return null
   }
-
-  return null
 }
 
 export function saveProfile(profile, options = {}) {
@@ -229,9 +219,7 @@ export function getActiveStudentSessionSecret() {
 export function isStudentSessionActive(studentId) {
   const activeId = getActiveStudentSession()
   if (!activeId) return false
-  const activeCandidates = new Set(getStudentIdCandidates(activeId))
-  const targetCandidates = getStudentIdCandidates(studentId)
-  return targetCandidates.some(id => activeCandidates.has(id))
+  return activeId === normalizeStudentId(studentId)
 }
 
 function updateStudentsList(studentId, name) {
@@ -273,16 +261,11 @@ export async function getAllProfilesWithSync() {
 }
 
 export function deleteProfile(studentId) {
-  const candidates = getStudentIdCandidates(studentId)
-  for (const candidateId of candidates) {
-    localStorage.removeItem(STORAGE_PREFIX + candidateId)
-  }
-
-  const candidateSet = new Set(candidates)
-  const list = getStudentsList().filter((student) => {
-    const studentCandidates = getStudentIdCandidates(student.studentId)
-    return !studentCandidates.some(id => candidateSet.has(id))
-  })
+  const normalizedId = normalizeStudentId(studentId)
+  if (!normalizedId) return
+  localStorage.removeItem(STORAGE_PREFIX + normalizedId)
+  const list = getStudentsList()
+    .filter(student => normalizeStudentId(student.studentId) !== normalizedId)
   localStorage.setItem(STUDENTS_LIST_KEY, JSON.stringify(list))
 }
 

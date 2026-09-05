@@ -6,6 +6,7 @@
 
 export const MERGE_SCHEMA = {
   // Identitet
+  profileSchemaVersion: { strategy: 'keep_existing', description: 'Current persisted profile contract version' },
   studentId:         { strategy: 'keep_existing', description: 'Normaliserat ID, ändras aldrig' },
   name:              { strategy: 'prefer_fresher', description: 'Senast uppdaterat namn vinner' },
   grade:             { strategy: 'prefer_fresher', description: 'Årskurs' },

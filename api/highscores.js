@@ -1,6 +1,10 @@
 import { kv } from '@vercel/kv'
 import { createHash } from 'node:crypto'
 import { withCors } from './_helpers.js'
+import {
+  hasCurrentStudentPassword,
+  isCurrentStudentProfile
+} from '../src/lib/studentProfileContract.js'
 
 const MAX_ENTRIES = 7
 
@@ -19,9 +23,9 @@ async function getHighscoreGroup(classId) {
 
 function verifyStudentPassword(auth, password) {
   const provided = String(password || '')
+  if (!hasCurrentStudentPassword(auth)) return false
   if (!provided) return false
-  const { passwordHash, passwordSalt } = auth || {}
-  if (!passwordHash || !passwordSalt) return false
+  const { passwordHash, passwordSalt } = auth
   const actual = createHash('sha256').update(`${passwordSalt}:${provided}`).digest('hex')
   if (actual === passwordHash) return true
   const upper = provided.toUpperCase()
@@ -63,7 +67,7 @@ export default async function handler(req, res) {
     // Verify student auth
     const studentPassword = String(req.headers['x-student-password'] || '')
     const profile = await kv.get(`student:${String(studentId).toUpperCase()}`)
-    if (!profile?.auth || !verifyStudentPassword(profile.auth, studentPassword)) {
+    if (!isCurrentStudentProfile(profile) || !verifyStudentPassword(profile.auth, studentPassword)) {
       return res.status(401).json({ error: 'Unauthorized' })
     }
 

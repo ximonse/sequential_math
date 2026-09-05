@@ -5,8 +5,11 @@ import {
   secureCompare,
   withCors
 } from '../../_helpers.js'
+import {
+  hasCurrentStudentPassword,
+  isCurrentStudentProfile
+} from '../../../src/lib/studentProfileContract.js'
 
-const PASSWORD_SCHEME = 'sha256-v1'
 const MAX_PROBLEM_LOG = 5000
 const MAX_RECENT_PROBLEMS = 250
 const MAX_TABLE_COMPLETIONS = 1000
@@ -20,14 +23,7 @@ function hashPasswordWithSalt(password, salt) {
 function verifyPasswordAgainstAuth(auth, studentPassword) {
   const provided = String(studentPassword || '')
   if (!provided) return false
-  if (
-    auth
-    && auth.passwordScheme === PASSWORD_SCHEME
-    && typeof auth.passwordHash === 'string'
-    && auth.passwordHash.trim() !== ''
-    && typeof auth.passwordSalt === 'string'
-    && auth.passwordSalt.trim() !== ''
-  ) {
+  if (hasCurrentStudentPassword(auth)) {
     const expected = String(auth.passwordHash)
     const salt = String(auth.passwordSalt)
     const actual = hashPasswordWithSalt(provided, salt)
@@ -155,6 +151,9 @@ export default async function handler(req, res) {
     const existing = await kv.get(key)
     if (!existing) {
       return res.status(404).json({ error: 'Student not found' })
+    }
+    if (!isCurrentStudentProfile(existing)) {
+      return res.status(409).json({ error: 'Unsupported student profile schema' })
     }
 
     // Auth

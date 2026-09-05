@@ -3,6 +3,7 @@ import { computeMasteryOverview, computeMasteryForOperation, computeLowestUnmast
 import { refreshTeacherSummary } from './teacherSummary'
 import { getSpeedTime, resolveProblemOperation } from './mathUtils'
 import { classifyErrorCategory, deriveTimingMetrics } from './studentProfileTimingHelpers'
+import { STUDENT_PROFILE_SCHEMA_VERSION } from './studentProfileContract'
 import { analyzeStudentError, evaluateStudentAnswer, getProblemSelection } from '../engine/adaptiveEngine'
 export { getStartOfWeekTimestamp } from './studentProfileTimingHelpers'
 
@@ -100,6 +101,7 @@ function createDefaultStats() {
  */
 export function createStudentProfile(studentId, name, grade = 4) {
   return {
+    profileSchemaVersion: STUDENT_PROFILE_SCHEMA_VERSION,
     studentId,
     name,
     grade,

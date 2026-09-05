@@ -6,25 +6,19 @@ import {
   withCors
 } from '../_helpers.js'
 import { withFreshTeacherSummary } from '../../src/lib/teacherSummary.js'
+import {
+  STUDENT_PASSWORD_SCHEME,
+  STUDENT_PROFILE_SCHEMA_VERSION,
+  hasCurrentStudentPassword,
+  isCurrentStudentProfile
+} from '../../src/lib/studentProfileContract.js'
 
-const PASSWORD_SCHEME = 'sha256-v1'
 const MAX_RECENT_PROBLEMS = 250
 const MAX_PROBLEM_LOG = 5000
 const MAX_TABLE_COMPLETIONS = 1000
 const MAX_TELEMETRY_EVENTS = 1200
 const MAX_TELEMETRY_DAYS = 120
 const MAX_TICKET_RESPONSES = 500
-
-function hasHashedPassword(auth) {
-  return Boolean(
-    auth
-    && auth.passwordScheme === PASSWORD_SCHEME
-    && typeof auth.passwordHash === 'string'
-    && auth.passwordHash.trim() !== ''
-    && typeof auth.passwordSalt === 'string'
-    && auth.passwordSalt.trim() !== ''
-  )
-}
 
 function hashPasswordWithSalt(password, salt) {
   return createHash('sha256')
@@ -36,7 +30,7 @@ function verifyPasswordAgainstAuth(auth, studentPassword) {
   const provided = String(studentPassword || '')
   if (!provided) return false
 
-  if (hasHashedPassword(auth)) {
+  if (hasCurrentStudentPassword(auth)) {
     const expected = String(auth.passwordHash)
     const salt = String(auth.passwordSalt)
     const actual = hashPasswordWithSalt(provided, salt)
@@ -52,10 +46,6 @@ function verifyPasswordAgainstAuth(auth, studentPassword) {
     return false
   }
 
-  if (typeof auth?.password === 'string' && auth.password.trim() !== '') {
-    return secureCompare(provided, auth.password)
-  }
-
   return false
 }
 
@@ -68,21 +58,23 @@ function normalizeProfileForStorage(profile, studentId, fallbackPassword = '') {
     ...profile,
     studentId
   }
+  if (!isCurrentStudentProfile(normalized)) {
+    throw new Error('Unsupported student profile schema')
+  }
 
   const auth = normalized.auth && typeof normalized.auth === 'object'
     ? { ...normalized.auth }
     : {}
 
-  const plainPassword = typeof auth.password === 'string' ? auth.password : ''
-  const effectivePassword = plainPassword || String(fallbackPassword || '')
-  const alreadyHashed = hasHashedPassword(auth)
+  const alreadyHashed = hasCurrentStudentPassword(auth)
 
   if (!alreadyHashed) {
+    const effectivePassword = String(fallbackPassword || '')
     if (!effectivePassword) {
       throw new Error('Missing password credentials')
     }
     const salt = createSaltHex()
-    auth.passwordScheme = PASSWORD_SCHEME
+    auth.passwordScheme = STUDENT_PASSWORD_SCHEME
     auth.passwordSalt = salt
     auth.passwordHash = hashPasswordWithSalt(effectivePassword, salt)
   }
@@ -93,35 +85,6 @@ function normalizeProfileForStorage(profile, studentId, fallbackPassword = '') {
   delete auth.password
   normalized.auth = auth
   return normalized
-}
-
-function migrateLegacyProfileAuth(profile) {
-  if (!profile || typeof profile !== 'object') {
-    return { profile, migrated: false }
-  }
-  const auth = profile.auth && typeof profile.auth === 'object' ? { ...profile.auth } : null
-  if (!auth) return { profile, migrated: false }
-  if (hasHashedPassword(auth)) return { profile, migrated: false }
-  if (typeof auth.password !== 'string' || auth.password.trim() === '') {
-    return { profile, migrated: false }
-  }
-
-  const salt = createSaltHex()
-  auth.passwordScheme = PASSWORD_SCHEME
-  auth.passwordSalt = salt
-  auth.passwordHash = hashPasswordWithSalt(auth.password, salt)
-  auth.passwordUpdatedAt = auth.passwordUpdatedAt || Date.now()
-  auth.lastLoginAt = auth.lastLoginAt || null
-  auth.loginCount = Number.isFinite(Number(auth.loginCount)) ? Number(auth.loginCount) : 0
-  delete auth.password
-
-  return {
-    profile: {
-      ...profile,
-      auth
-    },
-    migrated: true
-  }
 }
 
 function normalizeTimestamp(value) {
@@ -544,7 +507,7 @@ function mergeAuth(existingAuth, incomingAuth) {
   if (existingPwdTs > incomingPwdTs) {
     passwordSource = existing
   } else if (existingPwdTs === incomingPwdTs) {
-    if (hasHashedPassword(existing) && !hasHashedPassword(incoming)) {
+    if (hasCurrentStudentPassword(existing) && !hasCurrentStudentPassword(incoming)) {
       passwordSource = existing
     }
   }
@@ -560,16 +523,11 @@ function mergeAuth(existingAuth, incomingAuth) {
     loginCount: Math.max(toFiniteNumber(existing.loginCount), toFiniteNumber(incoming.loginCount))
   }
 
-  if (hasHashedPassword(passwordSource)) {
-    merged.passwordScheme = PASSWORD_SCHEME
+  if (hasCurrentStudentPassword(passwordSource)) {
+    merged.passwordScheme = STUDENT_PASSWORD_SCHEME
     merged.passwordHash = passwordSource.passwordHash
     merged.passwordSalt = passwordSource.passwordSalt
     delete merged.password
-  } else if (typeof passwordSource.password === 'string' && passwordSource.password.trim() !== '') {
-    merged.password = passwordSource.password
-    delete merged.passwordHash
-    delete merged.passwordSalt
-    delete merged.passwordScheme
   }
 
   return merged
@@ -687,6 +645,7 @@ function mergeProfiles(existingProfile, incomingProfile) {
 
   merged.studentId = String(existingProfile?.studentId || incomingProfile?.studentId || '').trim().toUpperCase()
 
+  merged.profileSchemaVersion = STUDENT_PROFILE_SCHEMA_VERSION
   const createdCandidates = [
     normalizeTimestamp(existingProfile?.created_at),
     normalizeTimestamp(incomingProfile?.created_at)
@@ -763,16 +722,14 @@ export default async function handler(req, res) {
     const key = `student:${studentId}`
     const teacherAuthorized = isTeacherApiAuthorized(req)
     const studentPassword = String(req.headers['x-student-password'] || '')
-    const existing = await kv.get(key)
-
-    const migration = migrateLegacyProfileAuth(existing)
-    const existingMigrated = migration.profile
-    if (migration.migrated) {
-      await kv.set(key, existingMigrated)
-    }
+    const stored = await kv.get(key)
+    const existing = isCurrentStudentProfile(stored) ? stored : null
 
     if (req.method === 'GET') {
-      const profile = existingMigrated || null
+      if (stored && !existing) {
+        return res.status(409).json({ error: 'Unsupported student profile schema' })
+      }
+      const profile = existing
       if (!profile) return res.status(200).json({ profile: null })
 
       if (!teacherAuthorized && !verifyPasswordAgainstAuth(profile.auth, studentPassword)) {
@@ -793,10 +750,10 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing profile in body' })
       }
 
-      if (existingMigrated) {
+      if (existing) {
         if (
           !teacherAuthorized
-          && !verifyPasswordAgainstAuth(existingMigrated.auth, studentPassword)
+          && !verifyPasswordAgainstAuth(existing.auth, studentPassword)
         ) {
           return res.status(401).json({ error: 'Unauthorized' })
         }
@@ -805,8 +762,8 @@ export default async function handler(req, res) {
       }
 
       const normalizedIncoming = normalizeProfileForStorage(profile, studentId, studentPassword)
-      const merged = existingMigrated
-        ? mergeProfiles(existingMigrated, normalizedIncoming)
+      const merged = existing
+        ? mergeProfiles(existing, normalizedIncoming)
         : normalizedIncoming
       const normalizedMerged = normalizeProfileForStorage(withFreshTeacherSummary(merged), studentId, studentPassword)
       await kv.set(key, normalizedMerged)

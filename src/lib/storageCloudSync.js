@@ -86,7 +86,6 @@ export function createCloudSyncApi(deps) {
     getActiveStudentSessionSecret,
     getAllProfiles,
     getProfileClassIds,
-    getStudentIdCandidates,
     getTeacherApiToken,
     loadProfile,
     normalizeLoadedProfile,
@@ -202,24 +201,18 @@ export function createCloudSyncApi(deps) {
         requestOptions.headers = headers
       }
 
-      const idCandidates = getStudentIdCandidates(studentId)
-      for (const candidateId of idCandidates) {
-        const response = await fetch(`/api/student/${encodeURIComponent(candidateId)}`, requestOptions)
-        if (response.status === 401 && options.failOnUnauthorized) {
-          const error = new Error('Unauthorized')
-          error.code = 'UNAUTHORIZED'
-          throw error
-        }
-        if (!response.ok) continue
-
-        const data = await response.json()
-        const profile = data?.profile || null
-        if (!profile) continue
-        const normalized = normalizeLoadedProfile(profile, candidateId)
-        if (!normalized) continue
-        return normalized
+      const normalizedId = normalizeStudentId(studentId)
+      const response = await fetch(`/api/student/${encodeURIComponent(normalizedId)}`, requestOptions)
+      if (response.status === 401 && options.failOnUnauthorized) {
+        const error = new Error('Unauthorized')
+        error.code = 'UNAUTHORIZED'
+        throw error
       }
-      return null
+      if (!response.ok) return null
+
+      const data = await response.json()
+      const profile = data?.profile || null
+      return normalizeLoadedProfile(profile, normalizedId)
     } catch (error) {
       if (error?.code === 'UNAUTHORIZED') throw error
       return null

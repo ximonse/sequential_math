@@ -1,29 +1,12 @@
-export const PASSWORD_SCHEME = 'sha256-v1'
+import {
+  STUDENT_PASSWORD_SCHEME,
+  hasCurrentStudentPassword
+} from './studentProfileContract'
 
-function hasHashedPassword(auth) {
-  return Boolean(
-    auth
-    && auth.passwordScheme === PASSWORD_SCHEME
-    && typeof auth.passwordHash === 'string'
-    && auth.passwordHash.trim() !== ''
-    && typeof auth.passwordSalt === 'string'
-    && auth.passwordSalt.trim() !== ''
-  )
-}
+export const PASSWORD_SCHEME = STUDENT_PASSWORD_SCHEME
 
 export function ensureProfileAuth(profile) {
-  if (!profile.auth || typeof profile.auth !== 'object') {
-    profile.auth = {
-      password: profile.name || profile.studentId,
-      passwordUpdatedAt: profile.created_at || Date.now(),
-      lastLoginAt: null,
-      loginCount: 0
-    }
-  }
-
-  if (!hasHashedPassword(profile.auth) && (!profile.auth.password || String(profile.auth.password).trim() === '')) {
-    profile.auth.password = profile.name || profile.studentId
-  }
+  if (!profile.auth || typeof profile.auth !== 'object') profile.auth = {}
 
   if (typeof profile.auth.loginCount !== 'number') {
     profile.auth.loginCount = 0
@@ -33,10 +16,7 @@ export function ensureProfileAuth(profile) {
     profile.auth.lastLoginAt = null
   }
 
-  if (hasHashedPassword(profile.auth) && profile.auth.passwordScheme !== PASSWORD_SCHEME) {
-    profile.auth.passwordScheme = PASSWORD_SCHEME
-  }
-
+  delete profile.auth.password
   return profile
 }
 
@@ -73,7 +53,7 @@ export async function setProfilePassword(profile, plainPassword, options = {}) {
 export async function verifyPasswordForProfile(profile, plainPassword) {
   ensureProfileAuth(profile)
 
-  if (hasHashedPassword(profile.auth)) {
+  if (hasCurrentStudentPassword(profile.auth)) {
     const actualHash = await hashPasswordWithSalt(plainPassword, profile.auth.passwordSalt)
     if (actualHash === profile.auth.passwordHash) return true
 
@@ -86,11 +66,5 @@ export async function verifyPasswordForProfile(profile, plainPassword) {
     return false
   }
 
-  const legacyPassword = String(profile.auth.password || '')
-  if (!legacyPassword) return false
-  if (plainPassword !== legacyPassword) return false
-
-  // Migrera äldre klartextprofiler vid första lyckade inloggning.
-  await setProfilePassword(profile, plainPassword, { keepUpdatedAt: true })
-  return true
+  return false
 }

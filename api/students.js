@@ -5,6 +5,7 @@ import {
   withCors
 } from './_helpers.js'
 import { withFreshTeacherSummary } from '../src/lib/teacherSummary.js'
+import { isCurrentStudentProfile } from '../src/lib/studentProfileContract.js'
 
 function sanitizeProfileForList(profile) {
   if (!profile || typeof profile !== 'object') return null
@@ -57,7 +58,7 @@ export default async function handler(req, res) {
     const authorizedClassIds = getAuthorizedClassIds(req)
 
     const sanitized = profiles
-      .filter(Boolean)
+      .filter(isCurrentStudentProfile)
       .filter(profile => {
         // null = admin, sees everything
         if (authorizedClassIds === null) return true

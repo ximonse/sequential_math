@@ -219,6 +219,35 @@ export function createCloudSyncApi(deps) {
     }
   }
 
+  async function deleteProfileFromCloud(studentId) {
+    const normalizedId = normalizeStudentId(studentId)
+    if (!normalizedId) return { ok: false, error: 'Kunde inte lasa elev-ID.' }
+    if (!CLOUD_ENABLED) return { ok: true }
+
+    const teacherToken = getTeacherApiToken()
+    if (!teacherToken) {
+      return { ok: false, error: 'Logga in som larare igen innan eleven raderas.' }
+    }
+
+    try {
+      const headers = {}
+      applyTeacherAuthHeader(headers, teacherToken)
+      const response = await fetch(`/api/student/${encodeURIComponent(normalizedId)}`, {
+        method: 'DELETE',
+        headers,
+        cache: 'no-store'
+      })
+      if (!response.ok) {
+        return { ok: false, error: 'Kunde inte radera eleven fran servern.' }
+      }
+      removePendingSync(normalizedId)
+      cancelRetries(normalizedId)
+      return { ok: true }
+    } catch {
+      return { ok: false, error: 'Kunde inte kontakta servern for radering.' }
+    }
+  }
+
   async function syncProfileToCloud(profile) {
     if (!CLOUD_ENABLED) return null
 
@@ -590,6 +619,7 @@ export function createCloudSyncApi(deps) {
   }
 
   return {
+    deleteProfileFromCloud,
     getCloudProfilesSyncStatus,
     getAllProfilesWithSync,
     loadProfileFromCloud,

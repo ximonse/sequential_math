@@ -260,13 +260,29 @@ export async function getAllProfilesWithSync() {
   return getCloudSyncApi().getAllProfilesWithSync()
 }
 
-export function deleteProfile(studentId) {
+export async function deleteProfile(studentId) {
   const normalizedId = normalizeStudentId(studentId)
-  if (!normalizedId) return
+  if (!normalizedId) return { ok: false, error: 'Kunde inte lasa elev-ID.' }
+
+  const cloudResult = await getCloudSyncApi().deleteProfileFromCloud(normalizedId)
+  if (!cloudResult.ok) return cloudResult
+
   localStorage.removeItem(STORAGE_PREFIX + normalizedId)
   const list = getStudentsList()
     .filter(student => normalizeStudentId(student.studentId) !== normalizedId)
   localStorage.setItem(STUDENTS_LIST_KEY, JSON.stringify(list))
+
+  for (const classRecord of getClasses()) {
+    const studentIds = Array.isArray(classRecord.studentIds) ? classRecord.studentIds : []
+    if (studentIds.some(id => normalizeStudentId(id) === normalizedId)) {
+      saveClass({
+        ...classRecord,
+        studentIds: studentIds.filter(id => normalizeStudentId(id) !== normalizedId)
+      })
+    }
+  }
+
+  return { ok: true }
 }
 
 export function studentExists(studentId) {

@@ -19,6 +19,7 @@ export default function StudentDetailPanel({
   onNavigateDirectStudent,
   onExportCsv,
   canExportCsv,
+  onDeleteStudent,
   detailStudentProfile,
   detailStudentRow,
   detailStudentViewData,
@@ -94,6 +95,20 @@ export default function StudentDetailPanel({
           >
             Exportera elevvy CSV
           </button>
+          {detailStudentProfile && (
+            <button
+              type="button"
+              onClick={() => {
+                const name = detailStudentProfile.name || detailStudentProfile.studentId
+                if (window.confirm(`Radera ${name} permanent? All elevdata och historik tas bort och kan inte återställas.`)) {
+                  onDeleteStudent(detailStudentProfile.studentId)
+                }
+              }}
+              className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs font-medium"
+            >
+              Radera elev
+            </button>
+          )}
         </div>
       </div>
 

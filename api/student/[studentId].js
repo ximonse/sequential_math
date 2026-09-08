@@ -710,7 +710,7 @@ function mergeProfiles(existingProfile, incomingProfile) {
 
 export default async function handler(req, res) {
   withCors(res, {
-    methods: 'GET,POST,OPTIONS',
+    methods: 'GET,POST,DELETE,OPTIONS',
     headers: 'Content-Type, x-student-password, x-teacher-token, x-teacher-password'
   }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
@@ -724,6 +724,16 @@ export default async function handler(req, res) {
     const studentPassword = String(req.headers['x-student-password'] || '')
     const stored = await kv.get(key)
     const existing = isCurrentStudentProfile(stored) ? stored : null
+
+    if (req.method === 'DELETE') {
+      if (!teacherAuthorized) {
+        return res.status(401).json({ error: 'Unauthorized - teacher auth required to delete student' })
+      }
+
+      const deleted = await kv.del(key)
+      await kv.srem('students:index', studentId)
+      return res.status(200).json({ ok: true, deleted: Boolean(deleted) })
+    }
 
     if (req.method === 'GET') {
       if (stored && !existing) {

@@ -199,6 +199,7 @@ function Dashboard() {
     handleCreateClass,
     handleAddStudentsToClass,
     handleDeleteClass,
+    handleDeleteStudent,
     handleToggleClassFilter,
     clearClassFilter,
     handleResetStudentPassword,
@@ -222,6 +223,7 @@ function Dashboard() {
     rosterInput,
     setClassNameInput,
     setRosterInput,
+    setDetailStudentId,
     setSelectedClassIds,
     setPasswordResetBusyId,
     setPasswordResetStatus,
@@ -420,6 +422,7 @@ function Dashboard() {
         supportRows, handleCreateQuickAssignment,
         classNameInput, setClassNameInput, handleCreateClass, addToClassId, setAddToClassId,
         classes, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus, handleDeleteClass, handleSaveClassExtras,
+        handleDeleteStudent,
         resultsPanelProps, PASSWORD_RESET_SECTION_ID, passwordResetRows, passwordResetSearch,
         setPasswordResetSearch, passwordResetStatus, handleResetStudentPassword, passwordResetBusyId
       }}

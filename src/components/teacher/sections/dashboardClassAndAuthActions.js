@@ -2,6 +2,7 @@ import { buildCloudSyncStatusMessage } from './dashboardCoreHelpers'
 import {
   addStudentsToClass,
   createClassFromRoster,
+  deleteProfile,
   getClasses,
   getCloudProfilesSyncStatus,
   normalizeStudentId,
@@ -104,6 +105,7 @@ export function buildDashboardClassAndAuthActions({
   rosterInput,
   setClassNameInput,
   setRosterInput,
+  setDetailStudentId,
   setSelectedClassIds,
   setPasswordResetBusyId,
   setPasswordResetStatus,
@@ -208,6 +210,26 @@ export function buildDashboardClassAndAuthActions({
     void deleteClassFromServer(classId)
   }
 
+  const handleDeleteStudent = async (studentId) => {
+    let result
+    try {
+      result = await deleteProfile(studentId)
+    } catch {
+      setDashboardStatus('Kunde inte radera eleven just nu.')
+      return
+    }
+    if (!result?.ok) {
+      setDashboardStatus(result?.error || 'Kunde inte radera eleven just nu.')
+      return
+    }
+
+    setDetailStudentId('')
+    await loadStudents()
+    setClasses(getClasses())
+    setDashboardStatus('Elev och all historik ar permanent raderad.')
+    navigate('/teacher')
+  }
+
   const handleToggleClassFilter = (classId) => {
     const normalizedClassId = String(classId || '').trim()
     if (!normalizedClassId) return
@@ -306,6 +328,7 @@ export function buildDashboardClassAndAuthActions({
     handleCreateClass,
     handleAddStudentsToClass,
     handleDeleteClass,
+    handleDeleteStudent,
     handleToggleClassFilter,
     clearClassFilter,
     handleResetStudentPassword,

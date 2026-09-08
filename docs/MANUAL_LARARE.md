@@ -29,6 +29,11 @@ Notera:
 - Toppfiltret styr hela dashboarden (en eller flera klasser/grupper).
 - En elev kan ligga i flera klasser/grupper.
 
+### Radera en elev
+
+1. Öppna eleven under `Elevprofil`.
+2. Välj `Radera elev` och bekräfta. Elevens profil och all historik raderas permanent.
+
 ## 3. Daglig rutin (rekommenderat)
 
 1. Kontrollera `Klass/gruppvy - snabbstatus` för vem som är aktiv nu.

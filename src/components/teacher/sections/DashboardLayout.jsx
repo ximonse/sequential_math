@@ -150,6 +150,7 @@ export default function DashboardLayout({
   setRosterInput,
   classStatus,
   handleDeleteClass,
+  handleDeleteStudent,
   handleSaveClassExtras,
   resultsPanelProps,
   PASSWORD_RESET_SECTION_ID,
@@ -230,6 +231,7 @@ export default function DashboardLayout({
         onNavigateDirectStudent={(studentId) => navigate(`/teacher/student/${encodeURIComponent(studentId)}`)}
         onExportCsv={handleExportStudentDetailCsv}
         canExportCsv={Boolean(detailStudentProfile && detailStudentRow && detailStudentViewData)}
+        onDeleteStudent={handleDeleteStudent}
         detailStudentProfile={detailStudentProfile}
         detailStudentRow={detailStudentRow}
         detailStudentViewData={detailStudentViewData}

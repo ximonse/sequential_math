@@ -1,4 +1,5 @@
-import { kv } from '@vercel/kv'
+import { mutateStudentRecord, studentStoreError } from '../../_studentStore.js'
+import { assertTeacherStudentAccess } from '../../_studentAccess.js'
 import { createHash } from 'node:crypto'
 import {
   isTeacherApiAuthorized,
@@ -27,7 +28,7 @@ function verifyPasswordAgainstAuth(auth, studentPassword) {
     const expected = String(auth.passwordHash)
     const salt = String(auth.passwordSalt)
     const actual = hashPasswordWithSalt(provided, salt)
-    return secureCompare(actual, expected)
+    return secureCompare(actual, expected) || secureCompare(hashPasswordWithSalt(provided.toUpperCase(), salt), expected)
   }
   return false
 }
@@ -91,7 +92,7 @@ function applyMasteryAchieved(profile, payload) {
   return true
 }
 
-function applyTableCompleted(profile, payload) {
+function applyTableCompleted(profile, payload, entry) {
   const table = Number(payload?.table)
   if (!Number.isFinite(table) || table < 2 || table > 12) return false
 
@@ -102,12 +103,33 @@ function applyTableCompleted(profile, payload) {
     profile.tableDrill.completions = []
   }
 
-  profile.tableDrill.completions.push({ table, timestamp: Date.now() })
+  const timestamp = Number(payload.timestamp || entry.timestamp)
+  if (!Number.isFinite(timestamp) || timestamp <= 0) return false
+  if (profile.tableDrill.completions.some(item =>
+    item.eventId === entry.id || (item.table === table && item.timestamp === timestamp)
+  )) return false
+  profile.tableDrill.completions.push({ table, timestamp, eventId: entry.id })
   if (profile.tableDrill.completions.length > MAX_TABLE_COMPLETIONS) {
     profile.tableDrill.completions = profile.tableDrill.completions.slice(-MAX_TABLE_COMPLETIONS)
   }
 
   return true
+}
+
+function validEntry(entry, studentId) {
+  if (typeof entry?.id !== 'string' || !entry.id || !entry.payload) return false
+  if (entry.studentId && String(entry.studentId).toUpperCase() !== studentId) return false
+  const payload = entry.payload
+  if (entry.type === 'problem_result') return typeof payload.problemId === 'string'
+    && Boolean(payload.problemId) && Number.isFinite(payload.timestamp) && payload.timestamp > 0
+    && typeof payload.correct === 'boolean'
+  if (entry.type === 'table_completed') return Number.isInteger(payload.table)
+    && payload.table >= 2 && payload.table <= 12
+    && Number.isFinite(Number(payload.timestamp || entry.timestamp))
+    && Number(payload.timestamp || entry.timestamp) > 0
+  if (entry.type === 'mastery_achieved') return typeof payload.operation === 'string'
+    && Boolean(payload.operation) && Number.isInteger(payload.level) && payload.level >= 1 && payload.level <= 12
+  return false
 }
 
 function applyWalEntry(profile, entry) {
@@ -119,7 +141,7 @@ function applyWalEntry(profile, entry) {
     case 'mastery_achieved':
       return applyMasteryAchieved(profile, entry.payload)
     case 'table_completed':
-      return applyTableCompleted(profile, entry.payload)
+      return applyTableCompleted(profile, entry.payload, entry)
     default:
       return false
   }
@@ -147,48 +169,33 @@ export default async function handler(req, res) {
   }
 
   try {
-    const key = `student:${studentId}`
-    const existing = await kv.get(key)
-    if (!existing) {
-      return res.status(404).json({ error: 'Student not found' })
-    }
-    if (!isCurrentStudentProfile(existing)) {
-      return res.status(409).json({ error: 'Unsupported student profile schema' })
-    }
-
-    // Auth
     const teacherAuthorized = isTeacherApiAuthorized(req)
     const studentPassword = String(req.headers['x-student-password'] || '')
-    if (!teacherAuthorized && !verifyPasswordAgainstAuth(existing.auth, studentPassword)) {
-      return res.status(401).json({ error: 'Unauthorized' })
+    if (entries.some(entry => !validEntry(entry, studentId))) {
+      throw studentStoreError(400, 'Invalid event batch')
     }
-
-    // Applicera entries i tidsordning
-    const sorted = [...entries].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
-    const acked = []
-    const profile = { ...existing }
-
-    for (const entry of sorted) {
-      const applied = applyWalEntry(profile, entry)
-      if (entry.id) {
-        acked.push(entry.id)
+    let appliedCount = 0
+    const saved = await mutateStudentRecord(studentId, async existing => {
+      if (!existing) throw studentStoreError(404, 'Student not found')
+      if (!isCurrentStudentProfile(existing)) throw studentStoreError(409, 'Unsupported student profile schema')
+      if (teacherAuthorized) await assertTeacherStudentAccess(req, existing)
+      else if (!verifyPasswordAgainstAuth(existing.auth, studentPassword)) throw studentStoreError(401, 'Unauthorized')
+      const profile = structuredClone(existing)
+      appliedCount = 0
+      const sorted = [...entries].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
+      for (const entry of sorted) {
+        if (applyWalEntry(profile, entry)) appliedCount++
       }
-      // Ack:a även om redan applicerad (idempotent)
-      if (!applied && entry.id && !acked.includes(entry.id)) {
-        acked.push(entry.id)
-      }
-    }
-
-    if (acked.length > 0) {
-      await kv.set(key, profile)
-    }
+      return profile
+    })
 
     return res.status(200).json({
       ok: true,
-      ack: acked,
-      appliedCount: acked.length
+      ack: entries.map(entry => entry.id),
+      appliedCount,
+      serverRevision: saved.serverRevision
     })
-  } catch {
-    return res.status(500).json({ error: 'Storage backend unavailable' })
+  } catch (error) {
+    return res.status(error.status || 500).json({ error: error.status ? error.message : 'Storage backend unavailable' })
   }
 }

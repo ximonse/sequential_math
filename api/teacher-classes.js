@@ -5,8 +5,9 @@
  */
 import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
+import { createClassRecord, deleteClassRecord } from './_classStore.js'
+import { getLiveAuthorizedClassIds, canAccessClass } from './_studentAccess.js'
 import {
-  getAuthorizedClassIds,
   getTeacherAuthPayload,
   isTeacherApiAuthorized,
   withCors
@@ -22,7 +23,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
-  const authorizedClassIds = getAuthorizedClassIds(req) // null = admin sees all
+  const authorizedClassIds = await getLiveAuthorizedClassIds(req)
 
   // ── GET ────────────────────────────────────────────────────────────────────
   if (req.method === 'GET') {
@@ -69,8 +70,11 @@ export default async function handler(req, res) {
       createdAt: req.body?.createdAt || Date.now()
     }
 
-    await kv.set(`class:${id}`, classRecord)
-    await kv.sadd('classes:index', id)
+    try {
+      await createClassRecord(classRecord)
+    } catch (error) {
+      return res.status(error.status || 500).json({ error: error.status ? error.message : 'Storage error' })
+    }
 
     // Link to teacher account if applicable
     if (teacherId) {
@@ -90,12 +94,15 @@ export default async function handler(req, res) {
     if (!id) return res.status(400).json({ error: 'id required' })
 
     // Check authorization
-    if (authorizedClassIds !== null && !authorizedClassIds.includes(id)) {
+    if (authorizedClassIds !== null && !await canAccessClass(req, id)) {
       return res.status(403).json({ error: 'Not authorized for this class' })
     }
 
-    await kv.del(`class:${id}`)
-    await kv.srem('classes:index', id)
+    try {
+      await deleteClassRecord(id)
+    } catch (error) {
+      return res.status(error.status || 500).json({ error: error.status ? error.message : 'Storage error' })
+    }
 
     return res.status(200).json({ ok: true })
   }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { saveProfile } from '../../../lib/storage'
+import { saveTeacherTicketProfile as saveProfile } from '../../../lib/teacherProfileUpdate'
 import {
   buildTicketLink,
   createTicketDispatch,

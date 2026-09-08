@@ -109,14 +109,7 @@ export function classifyErrorCategory(problem, studentAnswer, correct, options =
   return 'knowledge'
 }
 
-export function getStartOfWeekTimestamp() {
-  const now = new Date()
-  const day = now.getDay() // 0 = söndag, 1 = måndag
-  const diffToMonday = day === 0 ? 6 : day - 1
-  now.setDate(now.getDate() - diffToMonday)
-  now.setHours(0, 0, 0, 0)
-  return now.getTime()
-}
+export { getStockholmWeekStart as getStartOfWeekTimestamp } from './teacherEvidencePeriods.js'
 
 function getPersonalBaselineTimes(profile, problem) {
   const recent = Array.isArray(profile?.recentProblems) ? profile.recentProblems : []

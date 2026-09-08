@@ -152,6 +152,11 @@ function syncProfileToCloud(profile) {
   return getCloudSyncApi().syncProfileToCloud(profile)
 }
 
+export async function loadTeacherProfile(studentId) {
+  if (!CLOUD_ENABLED) return loadProfile(studentId)
+  return loadProfileFromCloud(studentId, { teacherPassword: getTeacherApiToken() })
+}
+
 export function loadProfile(studentId) {
   const normalizedId = normalizeStudentId(studentId)
   if (!normalizedId) return null
@@ -167,6 +172,9 @@ export function loadProfile(studentId) {
 }
 
 export function saveProfile(profile, options = {}) {
+  if (!isCurrentStudentProfile(profile) || profile.teacherListSchemaVersion) {
+    throw new Error('Only complete student profiles can be saved')
+  }
   ensureProfileClassMembership(profile)
   saveProfileLocalOnly(profile)
   requestCloudSync(profile, options)
@@ -268,6 +276,8 @@ export async function deleteProfile(studentId) {
   if (!cloudResult.ok) return cloudResult
 
   localStorage.removeItem(STORAGE_PREFIX + normalizedId)
+  localStorage.removeItem('mathapp_wal_' + normalizedId)
+  if (isStudentSessionActive(normalizedId)) clearActiveStudentSession()
   const list = getStudentsList()
     .filter(student => normalizeStudentId(student.studentId) !== normalizedId)
   localStorage.setItem(STUDENTS_LIST_KEY, JSON.stringify(list))

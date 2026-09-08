@@ -48,7 +48,7 @@ export default function ClassOverviewPanel({
         {classOverviewMeta.className}: {classOverviewMeta.activeNowCount}/{classOverviewMeta.studentCount} aktiv(a) just nu
       </p>
       <p className="text-[11px] text-gray-400 mb-3">
-        Status: Grön = fokus + aktivitet senaste 2 min, Orange = fokus men ingen aktivitet 2-4 min, Svart = inne idag men ej aktiv nu, Röd = ej inne idag.
+        Närvaro beskriver registrerad aktivitet, inte matematikkunskaper. Inga svar betyder att resultatunderlag saknas.
       </p>
       {sortedRows.length === 0 ? (
         <p className="text-sm text-gray-500">Inga elever hittades i valt urval.</p>
@@ -58,7 +58,7 @@ export default function ClassOverviewPanel({
             <thead>
               <tr className="text-left text-gray-500 border-b">
                 <SortableHeader label="Elev" sortKey="name" onSort={handleSort} getSortIndicator={getSortIndicator} />
-                <SortableHeader label="Status" sortKey="activity" onSort={handleSort} getSortIndicator={getSortIndicator} />
+                <SortableHeader label="Närvaro" sortKey="activity" onSort={handleSort} getSortIndicator={getSortIndicator} />
                 <SortableHeader label="Jobbar med" sortKey="operation" onSort={handleSort} getSortIndicator={getSortIndicator} />
                 <SortableHeader label="Idag" sortKey="today_attempts" onSort={handleSort} getSortIndicator={getSortIndicator} />
                 <SortableHeader label="Rätt/Fel idag" sortKey="today_wrong" onSort={handleSort} getSortIndicator={getSortIndicator} />
@@ -94,12 +94,12 @@ export default function ClassOverviewPanel({
                   <td className="py-1 pr-2">
                     <ActivityBadgeComponent code={row.activityStatus} compact />
                   </td>
-                  <td className="py-1 pr-2 text-gray-700">{getOperationLabel(row.focusOperation)}</td>
+                  <td className="py-1 pr-2 text-gray-700">{row.todayAttempts > 0 ? getOperationLabel(row.focusOperation) : '—'}</td>
                   <td className="py-1 pr-2 text-gray-700">{row.todayAttempts}</td>
                   <td className="py-1 pr-2 text-gray-700">
                     {row.todayCorrectCount}/{row.todayWrongCount}
                   </td>
-                  <td className="py-1 pr-2 text-gray-700">{toPercent(row.todaySuccessRate)}</td>
+                  <td className="py-1 pr-2 text-gray-700">{row.todayAttempts > 0 ? toPercent(row.todaySuccessRate) : 'Inga svar'}</td>
                   <td className="py-1 pr-2 text-gray-700">{formatDuration(row.todayEngagedMinutes * 60)}</td>
                   <td className="py-1 text-gray-700">{formatTimeAgo(row.lastActive)}</td>
                 </tr>

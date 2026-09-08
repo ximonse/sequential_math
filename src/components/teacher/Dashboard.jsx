@@ -5,7 +5,7 @@ import {
   formatAssignmentSummaryLine
 } from './sections/dashboardAssignmentRiskHelpers'
 import { buildDashboardAssignmentActions } from './sections/dashboardAssignmentActions'
-import { buildDashboardClassAndAuthActions } from './sections/dashboardClassAndAuthActions'
+import { buildDashboardClassAndAuthActions, syncClassesFromServer } from './sections/dashboardClassAndAuthActions'
 import {
   ALL_OPERATIONS,
   DEFAULT_WEEKLY_GOAL,
@@ -103,25 +103,8 @@ function Dashboard() {
     setStudents(profiles)
     setCloudSyncStatus(getCloudProfilesSyncStatus())
 
-    // If no classes in localStorage, reconstruct from student profiles
-    if (getClasses().length === 0 && profiles.length > 0) {
-      const classMap = new Map()
-      for (const p of profiles) {
-        const id = String(p.classId || '').trim()
-        const name = String(p.className || '').trim()
-        if (!id) continue
-        if (!classMap.has(id)) {
-          classMap.set(id, { id, name, studentIds: [], enabledExtras: [] })
-        }
-        classMap.get(id).studentIds.push(p.studentId)
-      }
-      for (const classRecord of classMap.values()) {
-        saveClass(classRecord)
-      }
-      const rebuilt = getClasses()
-      const teacherClassIds = getTeacherClassIds()
-      setClasses(teacherClassIds === null ? rebuilt : rebuilt.filter(c => teacherClassIds.includes(String(c.id || ''))))
-    }
+    const serverClasses = await syncClassesFromServer()
+    setClasses(serverClasses || [])
   }, [])
 
   useEffect(() => {

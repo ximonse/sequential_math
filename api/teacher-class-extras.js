@@ -3,8 +3,10 @@
  * Saves enabledExtras for a class to KV so students can read it.
  * Requires teacher auth token.
  */
-import { kv } from '@vercel/kv'
-import { getAuthorizedClassIds, getTeacherAuthPayload, withCors } from './_helpers.js'
+import { getTeacherAuthPayload, withCors } from './_helpers.js'
+import { canAccessClass } from './_studentAccess.js'
+import { mutateClassRecord } from './_classStore.js'
+import { studentStoreError } from './_studentStore.js'
 
 export default async function handler(req, res) {
   withCors(res, {
@@ -29,29 +31,19 @@ export default async function handler(req, res) {
 
   if (!classId) return res.status(400).json({ error: 'classId required' })
 
-  const authorizedClassIds = getAuthorizedClassIds(req)
-  if (authorizedClassIds !== null && !authorizedClassIds.includes(classId)) {
+  if (!await canAccessClass(req, classId)) {
     return res.status(403).json({ error: 'Not authorized for this class' })
   }
 
   try {
-    // Read-merge-write to preserve other fields (e.g. highscoreGroup when saving extras)
-    const existing = (await kv.get(`class_extras:${classId}`)) || {}
-    const merged = { ...existing, enabledExtras: extras }
-    if (highscoreGroup !== undefined) {
-      merged.highscoreGroup = highscoreGroup || null
-    }
-    await kv.set(`class_extras:${classId}`, merged)
-
-    // Also update the class record so GET /api/teacher-classes returns fresh data
-    const classRecord = await kv.get(`class:${classId}`)
-    if (classRecord) {
-      const classUpdate = { ...classRecord, enabledExtras: extras }
-      if (highscoreGroup !== undefined) classUpdate.highscoreGroup = highscoreGroup || null
-      await kv.set(`class:${classId}`, classUpdate)
-    }
+    await mutateClassRecord(classId, current => {
+      if (!current) throw studentStoreError(404, 'Class not found')
+      const updated = { ...current, enabledExtras: extras }
+      if (highscoreGroup !== undefined) updated.highscoreGroup = highscoreGroup || null
+      return updated
+    })
     return res.status(200).json({ ok: true })
-  } catch {
-    return res.status(500).json({ error: 'Failed to save' })
+  } catch (error) {
+    return res.status(error.status || 500).json({ error: error.status ? error.message : 'Failed to save' })
   }
 }

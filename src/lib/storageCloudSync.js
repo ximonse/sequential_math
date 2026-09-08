@@ -8,6 +8,7 @@ import {
   scheduleRetry
 } from './storageCloudSyncQueue'
 import { getUnsynced, markSynced, pruneWal } from './syncWal'
+import { normalizeTeacherListProfile } from './teacherListProfile'
 
 export function normalizeCloudSyncTimestamp(value) {
   const ts = Number(value)
@@ -81,17 +82,14 @@ export function mergeCloudSyncProblemEntries(existingEntries, incomingEntries, l
 export function createCloudSyncApi(deps) {
   const {
     CLOUD_ENABLED,
-    CLOUD_FRESHNESS_FUTURE_TOLERANCE_MS,
     CLOUD_PROFILE_SYNC_THROTTLE_MS,
     getActiveStudentSessionSecret,
     getAllProfiles,
-    getProfileClassIds,
     getTeacherApiToken,
     loadProfile,
     normalizeLoadedProfile,
     normalizeStudentId,
-    saveProfileLocalOnly,
-    chooseFreshestProfile
+    saveProfileLocalOnly
   } = deps
 
   const CLOUD_PROFILE_SYNC_STATE = new Map()
@@ -150,39 +148,6 @@ export function createCloudSyncApi(deps) {
     state.timer = null
   }
 
-  const RECENT_PROBLEM_MERGE_LIMIT = 250
-  const PROBLEM_LOG_MERGE_LIMIT = 5000
-
-  function mergeTeacherListProfiles(localProfile, cloudProfile, options = {}) {
-    const preferred = chooseFreshestProfile(localProfile, cloudProfile, options)
-    const alternate = preferred === localProfile ? cloudProfile : localProfile
-
-    const mergedRecentProblems = mergeCloudSyncProblemEntries(
-      localProfile?.recentProblems,
-      cloudProfile?.recentProblems,
-      RECENT_PROBLEM_MERGE_LIMIT
-    )
-    const mergedProblemLog = mergeCloudSyncProblemEntries(
-      localProfile?.problemLog,
-      cloudProfile?.problemLog,
-      PROBLEM_LOG_MERGE_LIMIT
-    )
-
-    const mergedCandidate = {
-      ...alternate,
-      ...preferred,
-      recentProblems: mergedRecentProblems.length > 0
-        ? mergedRecentProblems
-        : (Array.isArray(preferred?.recentProblems) ? preferred.recentProblems : []),
-      problemLog: mergedProblemLog.length > 0
-        ? mergedProblemLog
-        : (Array.isArray(preferred?.problemLog) ? preferred.problemLog : [])
-    }
-    return normalizeLoadedProfile(
-      mergedCandidate,
-      String(mergedCandidate?.studentId || cloudProfile?.studentId || localProfile?.studentId || '')
-    ) || mergedCandidate
-  }
 
   async function loadProfileFromCloud(studentId, options = {}) {
     if (!CLOUD_ENABLED) return null
@@ -242,6 +207,9 @@ export function createCloudSyncApi(deps) {
       }
       removePendingSync(normalizedId)
       cancelRetries(normalizedId)
+      const state = getCloudProfileSyncState(normalizedId)
+      state.deleted = true
+      clearCloudProfileSyncTimer(state)
       return { ok: true }
     } catch {
       return { ok: false, error: 'Kunde inte kontakta servern for radering.' }
@@ -301,25 +269,6 @@ export function createCloudSyncApi(deps) {
     }
   }
 
-  function normalizeCloudListProfile(raw) {
-    if (!raw || typeof raw !== 'object') return null
-
-    const studentId = normalizeStudentId(raw.studentId)
-    if (!studentId) return null
-
-    return normalizeLoadedProfile({
-      ...raw,
-      studentId,
-      recentProblems: Array.isArray(raw.recentProblems) ? raw.recentProblems : [],
-      auth: {
-        lastLoginAt: raw.auth?.lastLoginAt || null,
-        loginCount: Number.isFinite(Number(raw.auth?.loginCount))
-          ? Number(raw.auth?.loginCount)
-          : 0,
-        passwordUpdatedAt: raw.auth?.passwordUpdatedAt || null
-      }
-    }, studentId)
-  }
 
   async function getAllProfilesWithSync() {
     const local = getAllProfiles()
@@ -358,31 +307,16 @@ export function createCloudSyncApi(deps) {
           lastError: message,
           lastSource: response.status === 401 ? 'cloud_unauthorized' : 'cloud_http_error',
           cloudCount: 0,
-          mergedCount: local.length
+          mergedCount: 0
         })
-        return local
+        return []
       }
       const data = await response.json()
       const cloud = Array.isArray(data?.profiles) ? data.profiles : []
 
-      const merged = new Map()
-      for (const p of local) merged.set(p.studentId, p)
-
-      for (const raw of cloud) {
-        const p = normalizeCloudListProfile(raw)
-        if (!p) continue
-        const prev = merged.get(p.studentId)
-        if (!prev) {
-          merged.set(p.studentId, p)
-        } else {
-          merged.set(p.studentId, mergeTeacherListProfiles(prev, p, {
-            getProfileClassIds,
-            futureToleranceMs: CLOUD_FRESHNESS_FUTURE_TOLERANCE_MS
-          }))
-        }
-      }
-
-      const mergedProfiles = Array.from(merged.values())
+      const mergedProfiles = cloud.map(raw => normalizeTeacherListProfile(raw, normalizeStudentId)).filter(Boolean)
+      if (mergedProfiles.length !== cloud.length) throw new Error('Invalid teacher list contract')
+      if (teacherApiToken !== getTeacherApiToken()) return []
       setCloudProfilesSyncStatus({
         lastSuccessAt: Date.now(),
         lastErrorAt: 0,
@@ -398,16 +332,16 @@ export function createCloudSyncApi(deps) {
         lastError: 'Nätverksfel vid elevhämtning från server.',
         lastSource: 'cloud_fetch_error',
         cloudCount: 0,
-        mergedCount: local.length
+        mergedCount: 0
       })
-      return local
+      return []
     }
   }
 
   async function syncWalEntries(studentId) {
     const normalizedId = normalizeStudentId(studentId)
     if (!normalizedId) return
-    const entries = getUnsynced(normalizedId)
+    const entries = getUnsynced(normalizedId).slice(0, 100)
     if (entries.length === 0) return
 
     try {
@@ -429,100 +363,79 @@ export function createCloudSyncApi(deps) {
 
       const data = await response.json()
       if (Array.isArray(data?.ack) && data.ack.length > 0) {
-        markSynced(normalizedId, data.ack)
+        const submitted = new Set(entries.map(entry => entry.id))
+        const ack = data.ack.filter(id => submitted.has(id))
+        if (!ack.length) return
+        markSynced(normalizedId, ack)
         pruneWal(normalizedId)
+        if (getUnsynced(normalizedId).length > 0) await syncWalEntries(normalizedId)
       }
     } catch {
       // WAL sync failure is non-critical — full profile sync is the primary path
     }
   }
 
-  function retrySyncForStudent(studentId) {
-    const profile = loadProfile(studentId) || loadPendingSnapshot(studentId)
-    if (!profile) return true // nothing to sync — treat as success
-    const merged = syncProfileToCloud(profile)
-    return merged.then(m => {
-      if (m) { saveProfileLocalOnly(m); return true }
-      return false
-    }).catch(() => false)
+  function syncQueuedStudent(studentId) {
+    const state = getCloudProfileSyncState(studentId)
+    if (!state || state.deleted) return Promise.resolve(true)
+    if (state.inFlight) return state.inFlight
+    clearCloudProfileSyncTimer(state)
+    state.lastAttemptAt = Date.now()
+    state.inFlight = (async () => {
+      await syncWalEntries(studentId)
+      if (state.deleted) return true
+      const latest = loadProfile(studentId) || loadPendingSnapshot(studentId)
+      if (!latest) { removePendingSync(studentId); return true }
+      const sent = JSON.parse(JSON.stringify(latest))
+      const fingerprint = stableSerializeForCloudSync(sent)
+      const merged = await syncProfileToCloud(sent)
+      if (state.deleted) return true
+      const current = loadProfile(studentId) || loadPendingSnapshot(studentId)
+      if (!current) { removePendingSync(studentId); return true }
+      if (!merged) return false
+      if (stableSerializeForCloudSync(current) !== fingerprint) {
+        addPendingSync(studentId, current)
+        return false
+      }
+      saveProfileLocalOnly(merged)
+      if (getUnsynced(studentId).length > 0) return false
+      removePendingSync(studentId)
+      cancelRetries(studentId)
+      return true
+    })().finally(() => { state.inFlight = null })
+    return state.inFlight
   }
 
   function requestCloudSync(profile, options = {}) {
     if (!CLOUD_ENABLED || !profile) return
-    const normalizedId = normalizeStudentId(profile.studentId)
-    if (!normalizedId) return
-
-    const state = getCloudProfileSyncState(normalizedId)
-    if (!state) return
-
-    const syncNow = async (sourceProfile = null) => {
-      const latest = sourceProfile || loadProfile(normalizedId)
-      if (!latest) return
-      state.lastAttemptAt = Date.now()
-
-      // Synka WAL-entries parallellt (belt-and-suspenders)
-      syncWalEntries(normalizedId).catch(() => {})
-
-      const merged = await syncProfileToCloud(latest)
-      if (merged) {
-        saveProfileLocalOnly(merged)
-        removePendingSync(normalizedId)
-        cancelRetries(normalizedId)
-      } else {
-        addPendingSync(normalizedId, latest)
-        scheduleRetry(normalizedId, retrySyncForStudent)
-      }
+    const studentId = normalizeStudentId(profile.studentId)
+    const state = getCloudProfileSyncState(studentId)
+    if (!state || state.deleted) return
+    addPendingSync(studentId, profile)
+    const run = async () => {
+      try {
+        if (!await syncQueuedStudent(studentId)) scheduleRetry(studentId, syncQueuedStudent)
+      } catch { scheduleRetry(studentId, syncQueuedStudent) }
     }
-
-    if (options.forceSync === true) {
+    if (state.inFlight) return
+    const elapsed = Date.now() - state.lastAttemptAt
+    if (options.forceSync || state.lastAttemptAt === 0 || elapsed >= CLOUD_PROFILE_SYNC_THROTTLE_MS) {
       clearCloudProfileSyncTimer(state)
-      void syncNow(profile)
-      return
+      return run()
     }
-
-    const now = Date.now()
-    const elapsed = now - Number(state.lastAttemptAt || 0)
-    if (state.lastAttemptAt <= 0 || elapsed >= CLOUD_PROFILE_SYNC_THROTTLE_MS) {
-      clearCloudProfileSyncTimer(state)
-      void syncNow(profile)
-      return
-    }
-
     if (!state.timer) {
-      const waitMs = Math.max(0, CLOUD_PROFILE_SYNC_THROTTLE_MS - elapsed)
-      state.timer = setTimeout(() => {
-        state.timer = null
-        void syncNow()
-      }, waitMs)
+      state.timer = setTimeout(() => { state.timer = null; void run() }, CLOUD_PROFILE_SYNC_THROTTLE_MS - elapsed)
     }
   }
 
-  // ── Flush / health / listeners ────────────────────────────────────────────
-
   async function flushPendingSyncs() {
     if (!CLOUD_ENABLED) return { flushed: 0, failed: 0 }
-    const pendingIds = getPendingSyncIds()
-    let flushed = 0
-    let failed = 0
-    for (const studentId of pendingIds) {
-      const profile = loadProfile(studentId) || loadPendingSnapshot(studentId)
-      if (!profile) {
-        removePendingSync(studentId)
-        continue
-      }
+    let flushed = 0, failed = 0
+    for (const studentId of getPendingSyncIds()) {
       try {
-        const merged = await syncProfileToCloud(profile)
-        if (merged) {
-          saveProfileLocalOnly(merged)
-          removePendingSync(studentId)
-          cancelRetries(studentId)
-          flushed++
-        } else {
-          failed++
-        }
-      } catch {
-        failed++
-      }
+        if (await syncQueuedStudent(studentId)) flushed++
+        else { failed++; scheduleRetry(studentId, syncQueuedStudent) }
+      } catch { failed++; scheduleRetry(studentId, syncQueuedStudent) }
     }
     return { flushed, failed }
   }
@@ -546,7 +459,7 @@ export function createCloudSyncApi(deps) {
           headers,
           body: JSON.stringify({ profile: { ...profile, studentId: normalizedId } }),
           keepalive: true
-        })
+        }).catch(() => {})
       } catch { /* best effort */ }
     }
   }
@@ -560,34 +473,6 @@ export function createCloudSyncApi(deps) {
     }
   }
 
-  function attemptSendBeaconSync() {
-    if (!CLOUD_ENABLED) return
-    const pendingIds = getPendingSyncIds()
-    for (const studentId of pendingIds) {
-      const profile = loadProfile(studentId)
-      if (!profile) continue
-      const normalizedId = normalizeStudentId(studentId)
-      const headers = { 'Content-Type': 'application/json' }
-      const studentSecret = getActiveStudentSessionSecret()
-      const teacherToken = getTeacherApiToken()
-      if (studentSecret) headers['x-student-password'] = studentSecret
-      if (teacherToken) applyTeacherAuthHeader(headers, teacherToken)
-      if (!studentSecret && !teacherToken) continue
-      try {
-        const body = JSON.stringify({ profile: { ...profile, studentId: normalizedId } })
-        const sent = navigator.sendBeacon?.(
-          `/api/student/${encodeURIComponent(normalizedId)}`,
-          new Blob([body], { type: 'application/json' })
-        )
-        if (!sent) {
-          // Fallback: keepalive fetch
-          fetch(`/api/student/${encodeURIComponent(normalizedId)}`, {
-            method: 'POST', headers, body, keepalive: true
-          }).catch(() => {})
-        }
-      } catch { /* best effort */ }
-    }
-  }
 
   let listenersRegistered = false
 
@@ -606,7 +491,7 @@ export function createCloudSyncApi(deps) {
     // visibilitychange is more reliable than beforeunload on iOS Safari
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') {
-        attemptSendBeaconSync()
+        attemptBeforeUnloadSync()
       }
     })
 

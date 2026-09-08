@@ -16,8 +16,10 @@ function normalizeGroupKey(value) {
 
 async function getHighscoreGroup(classId) {
   if (!classId) return null
-  const extras = await kv.get(`class_extras:${classId}`)
-  const raw = extras?.highscoreGroup
+  const classRecord = await kv.get(`class:${classId}`)
+  if (!classRecord) return null
+  const extras = classRecord.highscoreGroup === undefined ? await kv.get(`class_extras:${classId}`) : null
+  const raw = classRecord.highscoreGroup === undefined ? extras?.highscoreGroup : classRecord.highscoreGroup
   return normalizeGroupKey(raw) || classId
 }
 

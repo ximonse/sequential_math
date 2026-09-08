@@ -95,7 +95,6 @@ export function scheduleRetry(studentId, syncFn) {
     try {
       const ok = await syncFn(studentId)
       if (ok) {
-        removePendingSync(studentId)
         entry.attempts = 0
       } else {
         scheduleRetry(studentId, syncFn)

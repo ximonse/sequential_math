@@ -75,10 +75,10 @@ export function ActivityBadge({ code, compact = false }) {
 }
 
 function resolveActivityLabel(code) {
-  if (code === 'green') return 'Grön'
-  if (code === 'orange') return 'Orange'
-  if (code === 'black') return 'Svart'
-  return 'Röd'
+  if (code === 'green') return 'Aktiv nu'
+  if (code === 'orange') return 'Ingen nylig aktivitet'
+  if (code === 'black') return 'Tidigare idag'
+  return 'Ej sedd idag'
 }
 
 function resolveActivityTone(code) {
@@ -101,7 +101,7 @@ function resolveActivityTone(code) {
     }
   }
   return {
-    dotClass: 'bg-red-500',
-    badgeClass: 'bg-red-50 text-red-700 border-red-200'
+    dotClass: 'bg-gray-400',
+    badgeClass: 'bg-gray-50 text-gray-600 border-gray-200'
   }
 }

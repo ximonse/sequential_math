@@ -1,4 +1,6 @@
 import { kv } from '@vercel/kv'
+import { mutateStudentRecord, studentStoreError } from '../_studentStore.js'
+import { assertTeacherStudentAccess } from '../_studentAccess.js'
 import { createHash, randomBytes } from 'node:crypto'
 import {
   isTeacherApiAuthorized,
@@ -710,7 +712,7 @@ function mergeProfiles(existingProfile, incomingProfile) {
 
 export default async function handler(req, res) {
   withCors(res, {
-    methods: 'GET,POST,DELETE,OPTIONS',
+    methods: 'GET,POST,PATCH,DELETE,OPTIONS',
     headers: 'Content-Type, x-student-password, x-teacher-token, x-teacher-password'
   }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
@@ -726,22 +728,22 @@ export default async function handler(req, res) {
     const existing = isCurrentStudentProfile(stored) ? stored : null
 
     if (req.method === 'DELETE') {
-      if (!teacherAuthorized) {
-        return res.status(401).json({ error: 'Unauthorized - teacher auth required to delete student' })
-      }
-
-      const deleted = await kv.del(key)
-      await kv.srem('students:index', studentId)
-      return res.status(200).json({ ok: true, deleted: Boolean(deleted) })
+      await mutateStudentRecord(studentId, async current => {
+        await assertTeacherStudentAccess(req, current)
+        return null
+      })
+      return res.status(200).json({ ok: true, deleted: true })
     }
 
     if (req.method === 'GET') {
+      if (await kv.exists(`student_deleted:${studentId}`)) return res.status(410).json({ error: 'Student deleted' })
       if (stored && !existing) {
         return res.status(409).json({ error: 'Unsupported student profile schema' })
       }
       const profile = existing
       if (!profile) return res.status(200).json({ profile: null })
 
+      if (teacherAuthorized) await assertTeacherStudentAccess(req, profile)
       if (!teacherAuthorized && !verifyPasswordAgainstAuth(profile.auth, studentPassword)) {
         return res.status(401).json({ error: 'Unauthorized' })
       }
@@ -754,40 +756,74 @@ export default async function handler(req, res) {
       return res.status(200).json({ profile: safeProfile })
     }
 
+    if (req.method === 'PATCH') {
+      const changes = req.body?.changes
+      if (!changes || typeof changes !== 'object' || Array.isArray(changes)
+        || Object.keys(changes).some(field => !['ticketInbox', 'ticketRevealAll'].includes(field))) {
+        throw studentStoreError(400, 'Invalid teacher update')
+      }
+      await mutateStudentRecord(studentId, async current => {
+        if (!current) throw studentStoreError(404, 'Student not found')
+        await assertTeacherStudentAccess(req, current)
+        if (Number(req.body.serverRevision) !== Number(current.serverRevision || 0)) {
+          throw studentStoreError(409, 'Profile changed; refresh before editing')
+        }
+        const next = { ...current, ...changes }
+        if (changes.ticketRevealAll && Array.isArray(next.ticketResponses)) {
+          next.ticketResponses = next.ticketResponses.map(item => ({ ...item,
+            teacherRevealAt: next.ticketRevealAll[item.dispatchId] || null }))
+        }
+        return next
+      })
+      return res.status(200).json({ ok: true })
+    }
+
     if (req.method === 'POST') {
       const profile = req.body?.profile
-      if (!profile || typeof profile !== 'object') {
-        return res.status(400).json({ error: 'Missing profile in body' })
+      if (!isCurrentStudentProfile(profile)) {
+        return res.status(400).json({ error: 'A complete current student profile is required' })
       }
 
-      if (existing) {
-        if (
-          !teacherAuthorized
-          && !verifyPasswordAgainstAuth(existing.auth, studentPassword)
-        ) {
-          return res.status(401).json({ error: 'Unauthorized' })
+      const saved = await mutateStudentRecord(studentId, async current => {
+        // Only enrollment creates pupils; stale training snapshots cannot.
+        if (!current) throw studentStoreError(404, 'Student not found')
+        if (!isCurrentStudentProfile(current)) throw studentStoreError(409, 'Unsupported student profile schema')
+        if (teacherAuthorized) await assertTeacherStudentAccess(req, current)
+        else if (!verifyPasswordAgainstAuth(current.auth, studentPassword)) throw studentStoreError(401, 'Unauthorized')
+        const incoming = normalizeProfileForStorage({
+          ...profile,
+          auth: hasCurrentStudentPassword(profile.auth) ? profile.auth : { ...current.auth, ...profile.auth }
+        }, studentId, studentPassword)
+        const merged = mergeProfiles(current, incoming)
+        for (const field of ['name', 'grade', 'classId', 'classIds', 'className', 'enrollmentKey', 'ticketInbox', 'ticketRevealAll']) merged[field] = current[field]
+        if (Array.isArray(merged.ticketResponses)) {
+          merged.ticketResponses = merged.ticketResponses.map(item => ({ ...item,
+            teacherRevealAt: current.ticketRevealAll?.[item.dispatchId] || null }))
         }
-      } else if (!teacherAuthorized) {
-        return res.status(401).json({ error: 'Unauthorized — teacher auth required to create student' })
-      }
-
-      const normalizedIncoming = normalizeProfileForStorage(profile, studentId, studentPassword)
-      const merged = existing
-        ? mergeProfiles(existing, normalizedIncoming)
-        : normalizedIncoming
-      const normalizedMerged = normalizeProfileForStorage(withFreshTeacherSummary(merged), studentId, studentPassword)
-      await kv.set(key, normalizedMerged)
-
-      const indexKey = 'students:index'
-      await kv.sadd(indexKey, studentId)
-
-      return res.status(200).json({ ok: true, profile: normalizedMerged })
+        const studentFields = new Set([
+          'currentDifficulty', 'highestDifficulty', 'adaptive', 'activity',
+          'masteryFacts', 'problemLog', 'recentProblems', 'stats', 'tableDrill',
+          'telemetry', 'ticketResponses', 'pongHighScore', 'recentSelections', 'auth'
+        ])
+        if (!teacherAuthorized) {
+          for (const field of Object.keys(merged)) {
+            if (!studentFields.has(field)) {
+              if (Object.prototype.hasOwnProperty.call(current, field)) merged[field] = current[field]
+              else delete merged[field]
+            }
+          }
+        } else if (Number(profile.serverRevision) !== Number(current.serverRevision)) {
+          for (const field of ['ticketInbox', 'ticketRevealAll']) merged[field] = current[field]
+        }
+        return normalizeProfileForStorage(withFreshTeacherSummary(merged), studentId, studentPassword)
+      })
+      return res.status(200).json({ ok: true, profile: saved })
     }
 
     return res.status(405).json({ error: 'Method not allowed' })
-  } catch {
-    return res.status(500).json({
-      error: 'Storage backend unavailable'
+  } catch (error) {
+    return res.status(error.status || 500).json({
+      error: error.status ? error.message : 'Storage backend unavailable'
     })
   }
 }

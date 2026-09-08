@@ -1,4 +1,4 @@
-export function applyTicketRevealForAllStudents({
+export async function applyTicketRevealForAllStudents({
   dispatchId,
   reveal,
   students,
@@ -13,19 +13,20 @@ export function applyTicketRevealForAllStudents({
   const updated = setTicketDispatchReveal(dispatchId, reveal)
   if (!updated) return
 
-  const nextStudents = students.map(student => {
-    const next = { ...student }
+  try {
+  const nextStudents = await Promise.all(students.map(async student => {
+    const next = structuredClone(student)
     setTicketRevealAllForProfile(next, dispatchId, reveal)
-    saveProfile(next, { forceSync: true })
-    return next
-  })
+    return await saveProfile(next, ['ticketRevealAll'], dispatchId)
+  }))
 
   if (typeof onSetStudents === 'function') onSetStudents(nextStudents)
   setTicketDispatches(getTicketDispatches())
   setStatus(reveal ? 'Facit visas nu för alla elever.' : 'Facit är dolt igen.')
+  } catch { setStatus('Alla ändringar kunde inte sparas. Försök igen för hela urvalet.') }
 }
 
-export function publishTicketToHomeForTargets({
+export async function publishTicketToHomeForTargets({
   dispatchId,
   ticketDispatches,
   ticketResolvedTargetStudentIds,
@@ -61,10 +62,11 @@ export function publishTicketToHomeForTargets({
 
   recordTicketDispatchTargets(dispatch.id, Array.from(targetIds))
 
-  const nextStudents = students.map(student => {
+  try {
+  const nextStudents = await Promise.all(students.map(async student => {
     if (!targetIds.has(student.studentId)) return student
 
-    const next = { ...student }
+    const next = structuredClone(student)
     if (!next.ticketInbox || typeof next.ticketInbox !== 'object') next.ticketInbox = {}
     next.ticketInbox.activeDispatchId = dispatch.id
     next.ticketInbox.activePayload = payload
@@ -72,16 +74,16 @@ export function publishTicketToHomeForTargets({
     next.ticketInbox.publishedAt = now
     next.ticketInbox.updatedAt = now
     next.ticketInbox.clearedAt = 0
-    saveProfile(next, { forceSync: true })
-    return next
-  })
+    return await saveProfile(next, ['ticketInbox'])
+  }))
 
   if (typeof onSetStudents === 'function') onSetStudents(nextStudents)
   setTicketDispatches(getTicketDispatches())
   setStatus(`Ticket publicerad till startsidan för ${targetIds.size} elev(er).`)
+  } catch { setStatus('Ticket kunde inte sparas för alla elever. Försök igen för hela urvalet.') }
 }
 
-export function clearTicketFromHomeForTargets({
+export async function clearTicketFromHomeForTargets({
   dispatchId,
   ticketResolvedTargetStudentIds,
   students,
@@ -97,11 +99,12 @@ export function clearTicketFromHomeForTargets({
     return
   }
 
-  const nextStudents = students.map(student => {
+  try {
+  const nextStudents = await Promise.all(students.map(async student => {
     if (!targetIds.has(student.studentId)) return student
     if (!student.ticketInbox || student.ticketInbox.activeDispatchId !== dispatchId) return student
 
-    const next = { ...student }
+    const next = structuredClone(student)
     next.ticketInbox = {
       ...next.ticketInbox,
       activeDispatchId: '',
@@ -110,10 +113,10 @@ export function clearTicketFromHomeForTargets({
       updatedAt: now,
       clearedAt: now
     }
-    saveProfile(next, { forceSync: true })
-    return next
-  })
+    return await saveProfile(next, ['ticketInbox'])
+  }))
 
   if (typeof onSetStudents === 'function') onSetStudents(nextStudents)
   setStatus('Ticket borttagen från startsidan för valt urval.')
+  } catch { setStatus('Ticket kunde inte tas bort för alla elever. Försök igen för hela urvalet.') }
 }

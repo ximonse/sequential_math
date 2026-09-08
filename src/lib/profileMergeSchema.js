@@ -5,11 +5,14 @@
  */
 
 export const MERGE_SCHEMA = {
+  enrollmentKey: { strategy: 'server_owned', description: 'Stable enrollment identity for safe retries' },
+  serverRevision: { strategy: 'server_owned', description: 'CAS revision assigned only by the server' },
+  serverUpdatedAt: { strategy: 'server_owned', description: 'Last acknowledged server write' },
   // Identitet
   profileSchemaVersion: { strategy: 'keep_existing', description: 'Current persisted profile contract version' },
   studentId:         { strategy: 'keep_existing', description: 'Normaliserat ID, ändras aldrig' },
-  name:              { strategy: 'prefer_fresher', description: 'Senast uppdaterat namn vinner' },
-  grade:             { strategy: 'prefer_fresher', description: 'Årskurs' },
+  name:              { strategy: 'server_owned', description: 'Enrollment identity; training snapshots cannot rename pupils' },
+  grade:             { strategy: 'server_owned', description: 'Enrollment grade; training snapshots cannot change it' },
   created_at:        { strategy: 'min', description: 'Äldsta tidsstämpel behålls' },
 
   // Svårighetsgrad
@@ -44,16 +47,16 @@ export const MERGE_SCHEMA = {
 
   // Biljetter (gamification)
   ticketResponses:   { strategy: 'custom', handler: 'mergeTicketResponses', description: 'Union av biljett-svar' },
-  ticketRevealAll:   { strategy: 'custom', handler: 'mergeTicketRevealAll', description: 'Merge av reveal-state' },
-  ticketInbox:       { strategy: 'custom', handler: 'mergeTicketInbox', description: 'Union av inbox-biljetter' },
+  ticketRevealAll:   { strategy: 'server_owned', description: 'Changed only by version-checked teacher PATCH' },
+  ticketInbox:       { strategy: 'server_owned', description: 'Changed only by version-checked teacher PATCH' },
 
   // Auth
   auth:              { strategy: 'custom', handler: 'mergeAuth', description: 'Hashed lösenord, föredra nyare' },
 
   // Klassmedlemskap
-  classId:           { strategy: 'custom', handler: 'mergeClassMembership', description: 'Primär klass-ID' },
-  classIds:          { strategy: 'custom', handler: 'mergeClassMembership', description: 'Alla klass-IDs (union)' },
-  className:         { strategy: 'custom', handler: 'mergeClassMembership', description: 'Klassnamn' },
+  classId:           { strategy: 'server_owned', description: 'Primary class; enrollment and deletion own changes' },
+  classIds:          { strategy: 'server_owned', description: 'Membership; never restored from training snapshots' },
+  className:         { strategy: 'server_owned', description: 'Primary class label' },
 
   // Spel-highscores
   pongHighScore:     { strategy: 'max', description: 'Högsta pong-poäng' },

@@ -9,13 +9,13 @@ export function getCloudSyncSourceLabel(source) {
     case 'cloud_disabled':
       return 'Cloud-sync avstängd'
     case 'cloud_merged':
-      return 'Cloud + lokal sammanslagning'
+      return 'Aktuell elevlista från servern'
     case 'cloud_unauthorized':
-      return 'Lokal fallback (obehörig mot server)'
+      return 'Elevlistan kunde inte hämtas (behörighet saknas)'
     case 'cloud_http_error':
-      return 'Lokal fallback (serverfel)'
+      return 'Elevlistan kunde inte hämtas (serverfel)'
     case 'cloud_fetch_error':
-      return 'Lokal fallback (nätverksfel)'
+      return 'Elevlistan kunde inte hämtas (nätverksfel)'
     case 'never':
       return 'Ingen cloud-hämtning gjord än'
     default:
@@ -210,11 +210,7 @@ export function getPresetConfig(presetKey) {
   }
 }
 
-export function getStartOfDayTimestamp() {
-  const now = new Date()
-  now.setHours(0, 0, 0, 0)
-  return now.getTime()
-}
+export { getStockholmDayStart as getStartOfDayTimestamp } from '../../../lib/teacherEvidencePeriods.js'
 
 export function getInactiveDays(lastActive) {
   if (!lastActive) return Infinity

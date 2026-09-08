@@ -1,37 +1,27 @@
 import { kv } from '@vercel/kv'
 import {
-  getAuthorizedClassIds,
   isTeacherApiAuthorized,
   withCors
 } from './_helpers.js'
 import { withFreshTeacherSummary } from '../src/lib/teacherSummary.js'
 import { isCurrentStudentProfile } from '../src/lib/studentProfileContract.js'
+import { toTeacherListProfile } from '../src/lib/teacherListProfile.js'
+import { getLiveAuthorizedClassIds } from './_studentAccess.js'
 
-function sanitizeProfileForList(profile) {
+export function sanitizeProfileForList(profile) {
   if (!profile || typeof profile !== 'object') return null
 
   const freshProfile = withFreshTeacherSummary(profile)
-  const {
-    problemLog,     // up to 5000 entries — too large for bulk list
-    ...rest
-  } = freshProfile
-
-  const safe = { ...rest }
-
-  if (safe.auth && typeof safe.auth === 'object') {
-    const {
-      password,
-      passwordHash,
-      passwordSalt,
-      passwordScheme,
-      ...authRest
-    } = safe.auth
-    safe.auth = authRest
-  } else {
-    safe.auth = {}
-  }
-
-  return safe
+  return toTeacherListProfile({
+    ...freshProfile,
+    auth: freshProfile.auth && typeof freshProfile.auth === 'object'
+      ? {
+          lastLoginAt: freshProfile.auth.lastLoginAt || null,
+          loginCount: freshProfile.auth.loginCount || 0,
+          passwordUpdatedAt: freshProfile.auth.passwordUpdatedAt || null
+        }
+      : {}
+  })
 }
 
 export default async function handler(req, res) {
@@ -55,7 +45,7 @@ export default async function handler(req, res) {
       ids.map(async (id) => kv.get(`student:${String(id).toUpperCase()}`))
     )
 
-    const authorizedClassIds = getAuthorizedClassIds(req)
+    const authorizedClassIds = await getLiveAuthorizedClassIds(req)
 
     const sanitized = profiles
       .filter(isCurrentStudentProfile)

@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { listDomains } from '../../../domains/registry'
+import { parseRosterLines } from '../../../lib/storageClassHelpers'
 
 function getTogglableExtras() {
   return listDomains()
@@ -21,8 +22,10 @@ function ClassExtrasRow({ classRecord, onSaveExtras }) {
 
   const handleSave = async () => {
     setBusy(true)
-    await onSaveExtras(classRecord.id, extras, { highscoreGroup })
-    setBusy(false)
+    let ok = false
+    try { ok = await onSaveExtras(classRecord.id, extras, { highscoreGroup }) }
+    finally { setBusy(false) }
+    if (!ok) return
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
     setOpen(false)
@@ -91,9 +94,20 @@ export default function ClassManagementPanel({
   onDeleteClass,
   onSaveClassExtras
 }) {
+  const [busy, setBusy] = useState(false)
+  const busyRef = useRef(false)
+  const names = parseRosterLines(rosterInput)
+  const runRosterAction = async (action) => {
+    if (busyRef.current) return
+    busyRef.current = true
+    setBusy(true)
+    try { await action() }
+    finally { busyRef.current = false; setBusy(false) }
+  }
   return (
     <div className="bg-white rounded-lg shadow p-4 mb-8">
       <h2 className="text-lg font-semibold text-gray-800 mb-3">Klasser</h2>
+      <fieldset disabled={busy} aria-busy={busy}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
         <input
           type="text"
@@ -103,7 +117,7 @@ export default function ClassManagementPanel({
           className="px-3 py-2 border rounded text-sm"
         />
         <button
-          onClick={onCreateClass}
+          onClick={() => runRosterAction(onCreateClass)}
           className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
         >
           Skapa klass från listan
@@ -123,7 +137,7 @@ export default function ClassManagementPanel({
           ))}
         </select>
         <button
-          onClick={onAddStudentsToClass}
+          onClick={() => runRosterAction(onAddStudentsToClass)}
           className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm"
         >
           Lägg till elever i vald klass
@@ -136,15 +150,23 @@ export default function ClassManagementPanel({
         className="w-full min-h-28 px-3 py-2 border rounded text-sm mb-3"
       />
       <p className="text-xs text-gray-500 mb-2">
-        En elev per rad, eller separera namn med kommatecken eller semikolon. Inloggningsnamn skapas från elevens namn. Startlösenord sätts till elevens namn.
+        En elev per rad, eller separera med kommatecken eller semikolon. Förnamn räcker. Varje post skapar en ny elev med ett eget inloggnings-ID, även om namnet redan finns. Startlösenordet är elevens namn.
       </p>
       <p className="text-xs text-gray-500 mb-2">
-        En elev kan vara med i flera klasser/grupper samtidigt.
+        Listan skapar nya elever; den flyttar inte en befintlig elev med samma namn.
       </p>
       <p className="text-xs text-gray-500 mb-2">
         Tips: klass-/gruppurval för alla vyer styrs längst upp på sidan.
       </p>
-      <p className="text-xs text-gray-600 mb-3">{classStatus || ' '}</p>
+      {names.length > 0 && (
+        <details className="text-sm mb-3" open>
+          <summary>{names.length} elever i listan — kontrollera före sparning</summary>
+          <ol className="list-decimal pl-6 max-h-48 overflow-auto">
+            {names.map((name, index) => <li key={index}>{name}</li>)}
+          </ol>
+        </details>
+      )}
+      <p role="status" className="text-xs text-gray-600 mb-3">{busy ? 'Sparar på servern…' : classStatus || ' '}</p>
 
       {classes.length > 0 ? (
         <div className="space-y-1.5">
@@ -161,7 +183,7 @@ export default function ClassManagementPanel({
                     </p>
                   </div>
                   <button
-                    onClick={() => onDeleteClass(item.id)}
+                    onClick={() => runRosterAction(() => onDeleteClass(item.id))}
                     className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
                   >
                     Ta bort klass
@@ -175,6 +197,7 @@ export default function ClassManagementPanel({
           })}
         </div>
       ) : null}
+      </fieldset>
     </div>
   )
 }

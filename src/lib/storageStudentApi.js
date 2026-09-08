@@ -62,12 +62,12 @@ export function createStorageStudentApi(deps) {
     const local = loadProfile(normalizedId)
     if (local) {
       if (CLOUD_ENABLED) {
-        syncProfileToCloud(local).then(merged => {
-          if (merged) {
-            saveProfileLocalOnly(merged)
-            if (onCloudMerge) onCloudMerge(merged)
-          }
-        }).catch(() => {})
+        const merged = await syncProfileToCloud(local)
+        if (merged) {
+          saveProfileLocalOnly(merged)
+          if (onCloudMerge) onCloudMerge(merged)
+          return merged
+        }
       }
       return local
     }
@@ -189,7 +189,11 @@ export function createStorageStudentApi(deps) {
     }
 
     await setProfilePassword(profile, String(newPassword))
-    saveProfile(profile, { forceSync: true })
+    if (CLOUD_ENABLED) {
+      const saved = await syncProfileToCloud(profile)
+      if (!saved) return { ok: false, error: 'Lösenordet kunde inte bekräftas på servern. Försök igen.' }
+      saveProfileLocalOnly(saved)
+    } else saveProfileLocalOnly(profile)
     if (isStudentSessionActive(studentId)) {
       setActiveStudentSession(studentId, String(newPassword))
     }

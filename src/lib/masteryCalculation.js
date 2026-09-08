@@ -4,6 +4,7 @@
  * Ändra HÄR — inte i enskilda vyer.
  */
 import { getSpeedTime, resolveProblemOperation } from './mathUtils.js'
+import { getStockholmWeekStart, getStockholmDateKey } from './teacherEvidencePeriods.js'
 import { getOperationMinLevel } from './operations.js'
 import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './operations.js'
 
@@ -301,11 +302,7 @@ function buildMasteryView(level, results, options = {}) {
 }
 
 function getStartOfWeekTimestamp() {
-  const now = new Date()
-  const day = now.getDay()
-  const diff = day === 0 ? 6 : day - 1
-  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - diff)
-  return monday.getTime()
+  return getStockholmWeekStart()
 }
 
 /**
@@ -370,11 +367,7 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
   const DAY_MS = 24 * 60 * 60 * 1000
   const now = Date.now()
   const start7d = now - 7 * DAY_MS
-  const weekStartDate = new Date(now)
-  const weekDay = weekStartDate.getDay()
-  weekStartDate.setDate(weekStartDate.getDate() - (weekDay === 0 ? 6 : weekDay - 1))
-  weekStartDate.setHours(0, 0, 0, 0)
-  const weekStart = weekStartDate.getTime()
+  const weekStart = getStockholmWeekStart(now)
   const problemLog = Array.isArray(profile?.problemLog) ? profile.problemLog : []
   const recentProblems = Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
   const usesFullLog = (problemLog.length === 0 && recentProblems.length === 0)
@@ -393,7 +386,8 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
   }
   const evidence = {
     historySource: usesFullLog ? 'problemLog' : 'recentProblems',
-    historyComplete: usesFullLog,
+    historyComplete: usesFullLog && source.length < 5000
+      && Number(profile?.stats?.lifetimeProblems || 0) <= source.length,
     sourceAttempts: source.length
   }
 
@@ -412,12 +406,13 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
 
   for (const problem of source) {
     const ts = Number(problem?.timestamp || 0)
+    if (!Number.isFinite(ts) || ts <= 0 || ts > now) continue
     const speed = getSpeedTime(problem)
 
     if (ts >= weekStart) {
       currentWeek.attempts += 1
       if (problem.correct) currentWeek.correct += 1
-      if (ts > 0) weekDaySet.add(new Date(ts).toDateString())
+      if (ts > 0) weekDaySet.add(getStockholmDateKey(ts))
       if (Number.isFinite(speed)) {
         currentWeek.totalSpeedSec += speed
         currentWeek.speedSamples += 1
@@ -442,7 +437,7 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
     totalAttempts += 1
     if (problem.correct) totalCorrect += 1
 
-    if (ts > 0) daySet.add(new Date(ts).toDateString())
+    if (ts > 0) daySet.add(getStockholmDateKey(ts))
 
     if (Number.isFinite(speed)) {
       totalSpeedSec += speed

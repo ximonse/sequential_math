@@ -5,6 +5,7 @@
  */
 import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
+import { createClassRecord } from '../_classStore.js'
 import {
   isAdminAuthorized,
   withCors
@@ -51,8 +52,7 @@ export default async function handler(req, res) {
       createdAt: Date.now()
     }
 
-    await kv.set(`class:${id}`, classRecord)
-    await kv.sadd('classes:index', id)
+    await createClassRecord(classRecord)
 
     // Update each assigned teacher's classIds
     await Promise.all(teacherIds.map(async teacherId => {

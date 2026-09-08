@@ -1,4 +1,5 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { loadTeacherProfile } from '../../../lib/storage'
 import { getRecordClassLabel, recordMatchesClassFilter } from './dashboardCoreHelpers'
 
 export function useDashboardStudentSelection({
@@ -90,10 +91,28 @@ export function useDashboardStudentSelection({
     [detailStudentSource, classNameById]
   )
 
-  const detailStudentProfile = useMemo(
+  const selectedListProfile = useMemo(
     () => detailStudentSource.find(item => item.studentId === detailStudentId) || null,
     [detailStudentSource, detailStudentId]
   )
+
+  const [loadedDetail, setLoadedDetail] = useState(null)
+  useEffect(() => {
+    let active = true
+    setLoadedDetail(null)
+    if (!selectedListProfile) return
+    if (!selectedListProfile.teacherListSchemaVersion) {
+      setLoadedDetail(selectedListProfile)
+      return
+    }
+    void loadTeacherProfile(selectedListProfile.studentId).then(profile => {
+      if (!active) return
+      setLoadedDetail(profile)
+      if (!profile) setDashboardStatus('Kunde inte hämta elevens fullständiga historik. Försök uppdatera.')
+    })
+    return () => { active = false }
+  }, [selectedListProfile, setDashboardStatus])
+  const detailStudentProfile = loadedDetail?.studentId === selectedListProfile?.studentId ? loadedDetail : null
 
   return {
     hasMissingDirectStudent,

@@ -21,17 +21,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Try local-class extras first (set by teacher dashboard), then admin KV classes
-    const [localExtras, kvClass] = await Promise.all([
-      kv.get(`class_extras:${classId}`),
-      kv.get(`class:${classId}`)
-    ])
-    const enabledExtras = Array.isArray(localExtras?.enabledExtras)
-      ? localExtras.enabledExtras
-      : Array.isArray(kvClass?.enabledExtras)
-        ? kvClass.enabledExtras
-        : []
-    res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300')
+    const kvClass = await kv.get(`class:${classId}`)
+    const enabledExtras = Array.isArray(kvClass?.enabledExtras) ? kvClass.enabledExtras : []
+    res.setHeader('Cache-Control', 'no-store')
     return res.status(200).json({ enabledExtras })
   } catch {
     return res.status(200).json({ enabledExtras: [] })

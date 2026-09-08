@@ -25,65 +25,30 @@ async function fetchClassesFromServer() {
     const res = await fetch('/api/teacher-classes', {
       headers: { 'x-teacher-token': getTeacherApiToken() }
     })
-    if (!res.ok) return []
+    if (!res.ok) return null
     const data = await res.json()
     return Array.isArray(data.classes) ? data.classes : []
   } catch {
-    return []
+    return null
   }
-}
-
-async function pushClassToServer(classRecord) {
-  try {
-    await fetch('/api/teacher-classes', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-teacher-token': getTeacherApiToken()
-      },
-      body: JSON.stringify({
-        id: classRecord.id,
-        name: classRecord.name,
-        enabledExtras: classRecord.enabledExtras || [],
-        createdAt: classRecord.createdAt
-      })
-    })
-  } catch { /* best-effort */ }
 }
 
 async function deleteClassFromServer(classId) {
-  try {
-    await fetch(`/api/teacher-classes?id=${encodeURIComponent(classId)}`, {
-      method: 'DELETE',
-      headers: { 'x-teacher-token': getTeacherApiToken() }
-    })
-  } catch { /* best-effort */ }
+  const response = await fetch(`/api/teacher-classes?id=${encodeURIComponent(classId)}`, {
+    method: 'DELETE', headers: { 'x-teacher-token': getTeacherApiToken() }
+  })
+  if (!response.ok) throw new Error('Kunde inte ta bort klassen på servern.')
 }
 
-// Bidirectional sync: push local → server, pull server → local
-async function syncClassesFromServer() {
-  const local = getClasses()
+export async function syncClassesFromServer() {
   const serverClasses = await fetchClassesFromServer()
-
-  const serverIds = new Set(serverClasses.map(c => c.id))
-
-  // Push local classes that aren't on server yet
-  for (const lc of local) {
-    if (!serverIds.has(lc.id)) {
-      void pushClassToServer(lc)
-    }
+  if (!serverClasses) return null
+  const serverIds = new Set(serverClasses.map(record => record.id))
+  for (const record of getClasses()) {
+    if (!serverIds.has(record.id)) removeClass(record.id)
   }
-
-  // Pull server classes into localStorage (add missing, update enabledExtras)
-  const localMap = new Map(local.map(c => [c.id, c]))
-  for (const sc of serverClasses) {
-    const existing = localMap.get(sc.id)
-    if (!existing) {
-      saveClass(sc)
-    } else if (JSON.stringify(existing.enabledExtras) !== JSON.stringify(sc.enabledExtras)) {
-      saveClass({ ...existing, enabledExtras: sc.enabledExtras ?? [] })
-    }
-  }
+  for (const record of serverClasses) saveClass(record)
+  return getClasses()
 }
 
 // ── Action builders ───────────────────────────────────────────────────────────
@@ -165,6 +130,7 @@ export function buildDashboardClassAndAuthActions({
     }
     if (!result.ok) {
       setClassStatus(result.error)
+      if (result.classRecord) { setClasses(getClasses()); await loadStudents() }
       return
     }
 
@@ -175,8 +141,6 @@ export function buildDashboardClassAndAuthActions({
     setClasses(updatedClasses)
     setAddToClassId(result.classRecord.id)
     void loadStudents()
-    // Sync new class to server
-    void pushClassToServer(result.classRecord)
   }
 
   const handleAddStudentsToClass = async () => {
@@ -189,6 +153,7 @@ export function buildDashboardClassAndAuthActions({
     }
     if (!result.ok) {
       setClassStatus(result.error)
+      if (result.classRecord) { setClasses(getClasses()); await loadStudents() }
       return
     }
 
@@ -198,7 +163,9 @@ export function buildDashboardClassAndAuthActions({
     void loadStudents()
   }
 
-  const handleDeleteClass = (classId) => {
+  const handleDeleteClass = async (classId) => {
+    try { await deleteClassFromServer(classId) }
+    catch { setClassStatus('Kunde inte ta bort klassen. Försök igen.'); return }
     removeClass(classId)
     setSelectedClassIds(prev => prev.filter(id => id !== classId))
     const updatedClasses = getClasses()
@@ -207,7 +174,7 @@ export function buildDashboardClassAndAuthActions({
       setAddToClassId(updatedClasses[0]?.id || '')
     }
     setClassStatus('Klass borttagen.')
-    void deleteClassFromServer(classId)
+    await loadStudents()
   }
 
   const handleDeleteStudent = async (studentId) => {
@@ -226,7 +193,7 @@ export function buildDashboardClassAndAuthActions({
     setDetailStudentId('')
     await loadStudents()
     setClasses(getClasses())
-    setDashboardStatus('Elev och all historik ar permanent raderad.')
+    setDashboardStatus('Elevprofil och träningshistorik är raderade.')
     navigate('/teacher')
   }
 
@@ -294,22 +261,12 @@ export function buildDashboardClassAndAuthActions({
   }
 
   async function handleSaveClassExtras(classId, extras, options = {}) {
-    updateClassExtras(classId, extras)
-    // Also persist highscoreGroup locally so it survives page refresh
-    if (options.highscoreGroup !== undefined) {
-      const allClasses = getClasses()
-      const cls = allClasses.find(c => c.id === classId)
-      if (cls) {
-        saveClass({ ...cls, highscoreGroup: options.highscoreGroup || null })
-      }
-    }
-    setClasses(getClasses())
     const body = { classId, enabledExtras: extras }
     if (options.highscoreGroup !== undefined) {
       body.highscoreGroup = options.highscoreGroup
     }
     try {
-      await fetch('/api/teacher-class-extras', {
+      const response = await fetch('/api/teacher-class-extras', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -317,7 +274,14 @@ export function buildDashboardClassAndAuthActions({
         },
         body: JSON.stringify(body)
       })
-    } catch { /* best-effort */ }
+      if (!response.ok) throw new Error('Save failed')
+      updateClassExtras(classId, extras)
+      const cls = getClasses().find(record => record.id === classId)
+      if (cls && options.highscoreGroup !== undefined) saveClass({ ...cls, highscoreGroup: options.highscoreGroup || null })
+      setClasses(getClasses())
+      setClassStatus('Klassinställningarna är sparade på servern.')
+      return true
+    } catch { setClassStatus('Kunde inte spara klassinställningarna. Försök igen.'); return false }
   }
 
   return {

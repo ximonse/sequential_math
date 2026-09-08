@@ -355,7 +355,8 @@ export function usePracticeCoreActions({
         if (!sameTableLeft) {
           const completionCountToday = recordTableCompletion(profile, currentItem.table)
           if (profile.studentId) {
-            appendToWal(createWalEntry('table_completed', profile.studentId, { table: currentItem.table }))
+            const timestamp = profile.tableDrill?.completions?.at(-1)?.timestamp
+            appendToWal(createWalEntry('table_completed', profile.studentId, { table: currentItem.table, timestamp }))
           }
           const remainingTables = Array.from(new Set(nextQueue.map(item => item.table)))
           const allTablesBoss = shouldTriggerAllTablesBoss(profile)

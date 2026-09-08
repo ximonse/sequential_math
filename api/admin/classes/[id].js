@@ -5,6 +5,8 @@
  * Admin auth required.
  */
 import { kv } from '@vercel/kv'
+import { mutateClassRecord, deleteClassRecord } from '../../_classStore.js'
+import { studentStoreError } from '../../_studentStore.js'
 import {
   isAdminAuthorized,
   withCors
@@ -68,18 +70,23 @@ export default async function handler(req, res) {
       }
 
       updated.updatedAt = Date.now()
-      await kv.set(key, updated)
+      await mutateClassRecord(id, current => {
+        if (!current) throw studentStoreError(404, 'Class not found')
+        if (Number(current.serverRevision || 0) !== Number(classRecord.serverRevision || 0)) {
+          throw studentStoreError(409, 'Class changed; reload before saving')
+        }
+        return updated
+      })
       return res.status(200).json({ ok: true, class: updated })
     }
 
     if (req.method === 'DELETE') {
-      await kv.del(key)
-      await kv.srem('classes:index', id)
+      await deleteClassRecord(id)
       return res.status(200).json({ ok: true })
     }
 
     return res.status(405).json({ error: 'Method not allowed' })
   } catch (err) {
-    return res.status(500).json({ error: 'Storage error', details: err?.message })
+    return res.status(err.status || 500).json({ error: err.status ? err.message : 'Storage error' })
   }
 }

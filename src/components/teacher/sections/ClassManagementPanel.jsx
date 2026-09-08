@@ -132,11 +132,11 @@ export default function ClassManagementPanel({
       <textarea
         value={rosterInput}
         onChange={(event) => onSetRosterInput(event.target.value)}
-        placeholder={'Klistra in elevlista, en per rad\\nAnna Andersson\\nBo Berg'}
+        placeholder={'Klistra in elevlista - en per rad eller med kommatecken\\nAnna Andersson\\nBo Berg'}
         className="w-full min-h-28 px-3 py-2 border rounded text-sm mb-3"
       />
       <p className="text-xs text-gray-500 mb-2">
-        Inloggningsnamn skapas från elevens namn. Startlösenord sätts till elevens namn.
+        En elev per rad, eller separera namn med kommatecken eller semikolon. Inloggningsnamn skapas från elevens namn. Startlösenord sätts till elevens namn.
       </p>
       <p className="text-xs text-gray-500 mb-2">
         En elev kan vara med i flera klasser/grupper samtidigt.

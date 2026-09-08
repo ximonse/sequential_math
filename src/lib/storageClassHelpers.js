@@ -157,7 +157,7 @@ export function areClassRecordListsEqual(a, b) {
 
 export function parseRosterLines(rawList) {
   return String(rawList || '')
-    .split(/\r?\n/)
+    .split(/[\r\n,;]+/)
     .map(line => line.trim())
     .filter(Boolean)
 }

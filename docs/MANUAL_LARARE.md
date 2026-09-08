@@ -21,7 +21,7 @@ Notera:
 ## 2. Första setup
 
 1. Skapa klass under sektionen `Klasser`.
-2. Klistra in elevlista med en elev per rad.
+2. Klistra in elevlistan med en elev per rad, eller separera elever med kommatecken eller semikolon.
 3. Kontrollera att elever dyker upp i tabellerna.
 4. Välj klassfilter högst upp (`Urval: klasser`) innan du analyserar data.
 

@@ -16,7 +16,9 @@ export default async function handler(req, res) {
   if (!await getLiveTeacherAuthPayload(req)) return res.status(401).json({ error: 'Teacher authorization required' })
   try {
     const target = await kv.get(`class:${toClassId}`)
-    if (!target || !await canAccessClass(req, toClassId)) throw studentStoreError(403, 'Not authorized for target class')
+    if (!target || !await canAccessClass(req, toClassId) || !await canAccessClass(req, fromClassId)) {
+      throw studentStoreError(403, 'Not authorized for class move')
+    }
     const saved = await mutateStudentRecord(studentId, async current => {
       if (!current) throw studentStoreError(404, 'Student not found')
       await assertTeacherStudentAccess(req, current)

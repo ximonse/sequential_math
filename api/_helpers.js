@@ -1,4 +1,5 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
+import { kv } from '@vercel/kv'
 
 const TEACHER_SESSION_TTL_MS = 12 * 60 * 60 * 1000
 const SCRYPT_N = 16384
@@ -143,6 +144,7 @@ export function createTeacherSessionToken(options = {}) {
   const teacherId = String(options?.teacherId || '').trim()
   if (teacherId) {
     payload.teacherId = teacherId
+    payload.sessionVersion = Math.max(1, Number(options?.sessionVersion) || 1)
     payload.classIds = Array.isArray(options?.classIds)
       ? options.classIds.map(id => String(id)).filter(Boolean)
       : []
@@ -216,6 +218,7 @@ export function getTeacherAuthPayload(req) {
       teacherId: payload.teacherId,
       classIds: Array.isArray(payload.classIds) ? payload.classIds : [],
       isAdmin: Boolean(payload.isAdmin),
+      sessionVersion: Math.max(1, Number(payload.sessionVersion) || 1),
       legacy: false
     }
   }
@@ -226,6 +229,38 @@ export function getTeacherAuthPayload(req) {
   }
 
   return null
+}
+
+/**
+ * Signed account tokens are only valid while their account and session version
+ * still exist in KV. Legacy environment-password tokens remain intentionally
+ * separate until that compatibility route is retired.
+ */
+export async function getLiveTeacherAuthPayload(req, { store = kv } = {}) {
+  const tokenAuth = getTeacherAuthPayload(req)
+  if (!tokenAuth || tokenAuth.legacy) return tokenAuth
+
+  const account = await store.get(`teacher_account:${tokenAuth.teacherId}`)
+  if (!account || account.disabled === true) return null
+  const accountVersion = Math.max(1, Number(account.sessionVersion) || 1)
+  if (accountVersion !== tokenAuth.sessionVersion) return null
+
+  return {
+    teacherId: tokenAuth.teacherId,
+    classIds: Array.isArray(account.classIds) ? account.classIds.map(String).filter(Boolean) : [],
+    isAdmin: Boolean(account.isAdmin),
+    sessionVersion: accountVersion,
+    legacy: false
+  }
+}
+
+export async function isLiveTeacherApiAuthorized(req, options) {
+  return (await getLiveTeacherAuthPayload(req, options)) !== null
+}
+
+export async function isLiveAdminAuthorized(req, options) {
+  const auth = await getLiveTeacherAuthPayload(req, options)
+  return auth !== null && Boolean(auth.isAdmin)
 }
 
 /** Returns true if request has any valid teacher auth. */

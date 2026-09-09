@@ -8,8 +8,8 @@ import { randomBytes } from 'node:crypto'
 import { createClassRecord, deleteClassRecord } from './_classStore.js'
 import { getLiveAuthorizedClassIds, canAccessClass } from './_studentAccess.js'
 import {
-  getTeacherAuthPayload,
-  isTeacherApiAuthorized,
+  getLiveTeacherAuthPayload,
+  isLiveTeacherApiAuthorized,
   withCors
 } from './_helpers.js'
 
@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     headers: 'Content-Type, x-teacher-token, x-teacher-password'
   }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
-  if (!isTeacherApiAuthorized(req)) {
+  if (!await isLiveTeacherApiAuthorized(req)) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
@@ -52,7 +52,7 @@ export default async function handler(req, res) {
       ? req.body.enabledExtras.map(String)
       : []
 
-    const payload = getTeacherAuthPayload(req)
+    const payload = await getLiveTeacherAuthPayload(req)
     const teacherId = payload?.teacherId || null
     const teacherIds = teacherId ? [teacherId] : []
 
@@ -93,7 +93,7 @@ export default async function handler(req, res) {
     const id = String(req.query?.id || req.body?.id || '').trim()
     if (!id) return res.status(400).json({ error: 'id required' })
 
-    const auth = getTeacherAuthPayload(req)
+    const auth = await getLiveTeacherAuthPayload(req)
     const deletionKey = `class_deletion:${id}`
     const priorDeletion = await kv.get(deletionKey)
     const canResumeDeletion = Boolean(

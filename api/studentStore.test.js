@@ -33,7 +33,10 @@ vi.mock('@vercel/kv', () => ({ kv: {
 } }))
 vi.mock('./_helpers.js', () => ({
   getTeacherAuthPayload: req => req.teacher || null,
+  getLiveTeacherAuthPayload: async req => req.teacher || null,
   isTeacherApiAuthorized: req => Boolean(req.teacher),
+  isLiveTeacherApiAuthorized: async req => Boolean(req.teacher),
+  isLiveAdminAuthorized: async req => Boolean(req.teacher?.isAdmin),
   secureCompare: (a, b) => a === b,
   withCors: () => {}
 }))

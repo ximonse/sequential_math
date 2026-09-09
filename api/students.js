@@ -1,6 +1,6 @@
 import { kv } from '@vercel/kv'
 import {
-  isTeacherApiAuthorized,
+  isLiveTeacherApiAuthorized,
   withCors
 } from './_helpers.js'
 import { withFreshTeacherSummary } from '../src/lib/teacherSummary.js'
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
   }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
-  if (!isTeacherApiAuthorized(req)) {
+  if (!await isLiveTeacherApiAuthorized(req)) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 

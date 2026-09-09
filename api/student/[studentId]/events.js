@@ -2,7 +2,7 @@ import { mutateStudentRecord, studentStoreError } from '../../_studentStore.js'
 import { assertTeacherStudentAccess } from '../../_studentAccess.js'
 import { createHash } from 'node:crypto'
 import {
-  isTeacherApiAuthorized,
+  isLiveTeacherApiAuthorized,
   secureCompare,
   withCors
 } from '../../_helpers.js'
@@ -169,7 +169,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const teacherAuthorized = isTeacherApiAuthorized(req)
+    const teacherAuthorized = await isLiveTeacherApiAuthorized(req)
     const studentPassword = String(req.headers['x-student-password'] || '')
     if (entries.some(entry => !validEntry(entry, studentId))) {
       throw studentStoreError(400, 'Invalid event batch')

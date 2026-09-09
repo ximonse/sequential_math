@@ -3,7 +3,7 @@
  * Saves enabledExtras for a class to KV so students can read it.
  * Requires teacher auth token.
  */
-import { getTeacherAuthPayload, withCors } from './_helpers.js'
+import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
 import { mutateClassRecord } from './_classStore.js'
 import { studentStoreError } from './_studentStore.js'
@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const auth = getTeacherAuthPayload(req)
+  const auth = await getLiveTeacherAuthPayload(req)
   if (!auth) return res.status(401).json({ error: 'Unauthorized' })
 
   const classId = String(req.body?.classId || '').trim()

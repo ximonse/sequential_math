@@ -8,7 +8,7 @@ import { kv } from '@vercel/kv'
 import { mutateClassRecord, deleteClassRecord } from '../../_classStore.js'
 import { studentStoreError } from '../../_studentStore.js'
 import {
-  isAdminAuthorized,
+  isLiveAdminAuthorized,
   withCors
 } from '../../_helpers.js'
 
@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     headers: 'Content-Type, x-teacher-token, x-teacher-password'
   }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
-  if (!isAdminAuthorized(req)) {
+  if (!await isLiveAdminAuthorized(req)) {
     return res.status(401).json({ error: 'Admin access required' })
   }
 

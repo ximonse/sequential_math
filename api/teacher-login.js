@@ -61,7 +61,8 @@ export default async function handler(req, res) {
     const session = createTeacherSessionToken({
       teacherId: account.id,
       classIds,
-      isAdmin: Boolean(account.isAdmin)
+      isAdmin: Boolean(account.isAdmin),
+      sessionVersion: account.sessionVersion
     })
     if (!session) {
       return res.status(500).json({ error: 'Could not create session token', code: 'TOKEN_ERROR' })

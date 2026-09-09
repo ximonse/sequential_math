@@ -3,7 +3,7 @@ import { mutateStudentRecord, studentStoreError } from '../_studentStore.js'
 import { assertTeacherStudentAccess } from '../_studentAccess.js'
 import { createHash, randomBytes } from 'node:crypto'
 import {
-  isTeacherApiAuthorized,
+  isLiveTeacherApiAuthorized,
   secureCompare,
   withCors
 } from '../_helpers.js'
@@ -723,7 +723,7 @@ export default async function handler(req, res) {
 
   try {
     const key = `student:${studentId}`
-    const teacherAuthorized = isTeacherApiAuthorized(req)
+    const teacherAuthorized = await isLiveTeacherApiAuthorized(req)
     const studentPassword = String(req.headers['x-student-password'] || '')
     const stored = await kv.get(key)
     const existing = isCurrentStudentProfile(stored) ? stored : null

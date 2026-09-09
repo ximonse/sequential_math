@@ -1,6 +1,6 @@
 import { kv } from '@vercel/kv'
 import { createHash, randomBytes } from 'node:crypto'
-import { getTeacherAuthPayload, withCors } from './_helpers.js'
+import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass, assertTeacherStudentAccess } from './_studentAccess.js'
 import { createClassRecord } from './_classStore.js'
 import { createStudentRecord, mutateStudentRecord, studentStoreError } from './_studentStore.js'
@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   withCors(res, { methods: 'POST,OPTIONS', headers: 'Content-Type,x-teacher-token,x-teacher-password' }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
-  const teacher = getTeacherAuthPayload(req)
+  const teacher = await getLiveTeacherAuthPayload(req)
   if (!teacher) return res.status(401).json({ error: 'Teacher authorization required' })
   try {
     const { requestId, classId, className, grade = 4, names = [], existingStudentIds = [] } = req.body || {}

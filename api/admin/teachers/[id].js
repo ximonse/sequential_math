@@ -6,7 +6,7 @@
 import { kv } from '@vercel/kv'
 import {
   hashTeacherPassword,
-  isAdminAuthorized,
+  isLiveAdminAuthorized,
   withCors
 } from '../../_helpers.js'
 
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     headers: 'Content-Type, x-teacher-token, x-teacher-password'
   }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
-  if (!isAdminAuthorized(req)) {
+  if (!await isLiveAdminAuthorized(req)) {
     return res.status(401).json({ error: 'Admin access required' })
   }
 
@@ -41,23 +41,28 @@ export default async function handler(req, res) {
 
     if (req.method === 'PUT') {
       const updated = { ...account }
+      let shouldRevokeSessions = false
 
       if (typeof req.body?.displayName === 'string') {
         updated.displayName = req.body.displayName.trim() || account.displayName
       }
       if (Array.isArray(req.body?.classIds)) {
         updated.classIds = req.body.classIds.map(String).filter(Boolean)
+        shouldRevokeSessions = true
       }
       if (typeof req.body?.isAdmin === 'boolean') {
         updated.isAdmin = req.body.isAdmin
+        shouldRevokeSessions = true
       }
       if (typeof req.body?.password === 'string' && req.body.password.length >= 6) {
         const { hash, salt, scheme } = hashTeacherPassword(req.body.password)
         updated.passwordHash = hash
         updated.passwordSalt = salt
         updated.passwordScheme = scheme
+        shouldRevokeSessions = true
       }
 
+      if (shouldRevokeSessions) updated.sessionVersion = Math.max(1, Number(account.sessionVersion) || 1) + 1
       updated.updatedAt = Date.now()
       await kv.set(key, updated)
       return res.status(200).json({ ok: true, teacher: sanitizeAccount(updated) })

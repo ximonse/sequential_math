@@ -1,9 +1,9 @@
 import { kv } from '@vercel/kv'
-import { getTeacherAuthPayload } from './_helpers.js'
+import { getLiveTeacherAuthPayload } from './_helpers.js'
 import { studentStoreError } from './_studentStore.js'
 
 export async function canAccessClass(req, classId) {
-  const auth = getTeacherAuthPayload(req)
+  const auth = await getLiveTeacherAuthPayload(req)
   if (!auth || !classId) return false
   if (await kv.exists(`class_deleted:${classId}`)) return false
   const record = await kv.get(`class:${classId}`)
@@ -12,7 +12,7 @@ export async function canAccessClass(req, classId) {
 }
 
 export async function assertTeacherStudentAccess(req, profile) {
-  const auth = getTeacherAuthPayload(req)
+  const auth = await getLiveTeacherAuthPayload(req)
   if (!auth) throw studentStoreError(401, 'Teacher authorization required')
   if (auth.isAdmin) return
   const ids = [...new Set([profile?.classId, ...(profile?.classIds || [])].filter(Boolean))]
@@ -23,7 +23,7 @@ export async function assertTeacherStudentAccess(req, profile) {
 }
 
 export async function getLiveAuthorizedClassIds(req) {
-  const auth = getTeacherAuthPayload(req)
+  const auth = await getLiveTeacherAuthPayload(req)
   if (!auth) return []
   if (auth.isAdmin) return null
   const ids = await kv.smembers('classes:index')

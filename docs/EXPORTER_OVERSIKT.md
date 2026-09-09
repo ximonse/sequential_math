@@ -43,6 +43,7 @@ Kalla i kod: `buildSnapshotCsvRows(...)` i `src/components/teacher/Dashboard.jsx
 - `DagensTraff`: `DagensRatt / DagensMangd`.
 - `DagensUppdragsfoljsamhet`: andel dagens forsok som matchar aktivt uppdrag.
 - `DagensKamparMed`: svagaste skill idag.
+- `DagensDetaljurval`: hur många av dagens svar som underlaget för detaljer som skill/felsvar täcker. Totalsiffrorna kan vara kompletta även när detaljurvalet är begränsat.
 
 ### Extra i Veckovy
 
@@ -57,6 +58,7 @@ Kalla i kod: `buildSnapshotCsvRows(...)` i `src/components/teacher/Dashboard.jsx
 - `VeckansMalNatt`: `ja` om veckans mangd >= veckomal.
 - `VeckansUppdragsfoljsamhet`: andel veckoforsok som matchar uppdrag.
 - `VeckansKamparMed`: svagaste skill veckan.
+- `VeckansDetaljurval`: motsvarande underlag för veckans detaljer.
 
 ### Extra i Alla elever-laget
 

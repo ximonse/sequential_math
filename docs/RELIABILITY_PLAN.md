@@ -50,4 +50,4 @@ For each coherent change inspect the scoped diff, run meaningful tests and requi
 - Retire the legacy environment-password auth path after confirming that every intended teacher has an account. It deliberately bypasses per-account session revocation for backwards compatibility.
 - Historical highscore lists created before the per-pupil index can only be checked through the pupil's current classes; full historical key discovery would require a separate migration/indexing job.
 - Evaluate a minimal optional worked-example flow within existing domain capabilities; do not add unsupported explanations.
-- Remove the old development backup-import route and button only as a separately inspected cleanup; they were not used in QA.
+- Completed locally: the old development backup-import button was removed. It could overwrite local browser data and was not part of the verified server roster flow.

@@ -29,6 +29,7 @@ export function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
         DagensKunskapsfel: row.todayKnowledgeWrongCount,
         DagensOuppmärksamhetsfel: row.todayInattentionCount,
         DagensTraff: formatPeriodPercent(row.todaySuccessRate, row.todayAttempts),
+        DagensDetaljurval: formatDetailEvidence(row.todayDetailedAttempts, row.todayAttempts),
         DagensUppdragsföljsamhet: row.todayAssignmentAdherenceRate === null ? '-' : toPercent(row.todayAssignmentAdherenceRate),
         DagensKamparMed: row.todayStruggle?.skillLabel || ''
       }
@@ -43,6 +44,7 @@ export function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
         VeckansKunskapsfel: row.weekKnowledgeWrongCount,
         VeckansOuppmärksamhetsfel: row.weekInattentionCount,
         VeckansTraff: formatPeriodPercent(row.weekSuccessRate, row.weekAttempts),
+        VeckansDetaljurval: formatDetailEvidence(row.weekDetailedAttempts, row.weekAttempts),
         VeckansAktivTidSek: Math.round(row.weekActiveTimeSec || 0),
         VeckansMål: weekGoal,
         VeckansMålNått: row.weekAttempts >= weekGoal ? 'ja' : 'nej',
@@ -66,6 +68,13 @@ export function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
 
 function formatPeriodPercent(rate, attempts) {
   return Number(attempts) > 0 ? toPercent(rate) : '-'
+}
+
+function formatDetailEvidence(detailedAttempts, totalAttempts) {
+  const detail = Math.max(0, Number(detailedAttempts) || 0)
+  const total = Math.max(0, Number(totalAttempts) || 0)
+  if (detail >= total) return 'fullständig periodhistorik'
+  return `${detail}/${total} senaste sparade svar`
 }
 
 export function buildActivityExportRows(rows) {

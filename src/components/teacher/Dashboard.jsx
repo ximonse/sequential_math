@@ -411,50 +411,7 @@ function Dashboard() {
         setPasswordResetSearch, passwordResetStatus, handleResetStudentPassword, passwordResetBusyId
       }}
     />
-    {import.meta.env.DEV && (
-      <DevDataImportBanner onImported={loadStudents} />
-    )}
     </>
-  )
-}
-
-function DevDataImportBanner({ onImported }) {
-  const [status, setStatus] = useState('')
-  const [busy, setBusy] = useState(false)
-
-  const handleImport = async () => {
-    setBusy(true)
-    setStatus('Laddar backup...')
-    try {
-      const res = await fetch('/dev-import-students')
-      if (!res.ok) throw new Error(`HTTP ${res.status}`)
-      const { storageEntries, studentsList } = await res.json()
-      for (const [key, value] of Object.entries(storageEntries)) {
-        localStorage.setItem(key, JSON.stringify(value))
-      }
-      localStorage.setItem('mathapp_students_list', JSON.stringify(studentsList))
-      setStatus(`✓ ${studentsList.length} elever laddade. Laddar om...`)
-      await onImported()
-      setTimeout(() => setStatus(''), 3000)
-    } catch (err) {
-      setStatus(`Fel: ${err.message}`)
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <div className="fixed bottom-4 right-4 z-50 flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 shadow-lg text-sm">
-      <span className="text-amber-700 font-medium">DEV</span>
-      <button
-        onClick={handleImport}
-        disabled={busy}
-        className="px-3 py-1 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white rounded text-xs font-medium"
-      >
-        {busy ? 'Laddar...' : 'Ladda elevdata (backup)'}
-      </button>
-      {status && <span className="text-amber-800 text-xs">{status}</span>}
-    </div>
   )
 }
 

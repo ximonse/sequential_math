@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { deriveTeacherSummary, getCurrentWeekTeacherEvidence, withFreshTeacherSummary } from './teacherSummary'
+import {
+  deriveTeacherSummary,
+  getCurrentDayTeacherEvidence,
+  getCurrentWeekTeacherEvidence,
+  getRolling30DayTeacherEvidence,
+  withFreshTeacherSummary
+} from './teacherSummary'
+import { getStockholmDayStart, getStockholmDaysAgoStart } from './teacherEvidencePeriods'
 
 function result(index) {
   return {
@@ -40,6 +47,17 @@ describe('teacher summary', () => {
     expect(summary.operationStats7d.addition.attempts).toBe(300)
     expect(summary.currentWeek.attempts).toBe(300)
     expect(summary.currentWeek.speedSamples).toBe(300)
+    expect(summary.currentDay).toMatchObject({
+      periodStart: getStockholmDayStart(summary.updatedAt),
+      attempts: 300,
+      correct: 150,
+      activeDays: 1
+    })
+    expect(summary.rolling30Days).toMatchObject({
+      periodStart: getStockholmDaysAgoStart(summary.updatedAt, 29),
+      attempts: 300,
+      correct: 150
+    })
     expect(summary.evidence).toMatchObject({
       historySource: 'problemLog',
       historyComplete: true,
@@ -49,6 +67,14 @@ describe('teacher summary', () => {
       { teacherSummary: summary },
       summary.currentWeek.periodStart
     )?.accuracy).toBe(0.5)
+    expect(getCurrentDayTeacherEvidence(
+      { teacherSummary: summary },
+      summary.currentDay.periodStart
+    )?.attempts).toBe(300)
+    expect(getRolling30DayTeacherEvidence(
+      { teacherSummary: summary },
+      summary.rolling30Days.periodStart
+    )?.attempts).toBe(300)
     expect(summary.effectiveLevels.addition).toBeGreaterThanOrEqual(1)
   })
 
@@ -90,6 +116,10 @@ describe('teacher summary', () => {
     expect(getCurrentWeekTeacherEvidence(
       { teacherSummary: summary },
       summary.currentWeek.periodStart - 1
+    )).toBeNull()
+    expect(getCurrentDayTeacherEvidence(
+      { teacherSummary: summary },
+      summary.currentDay.periodStart - 1
     )).toBeNull()
   })
 })

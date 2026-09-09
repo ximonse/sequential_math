@@ -223,11 +223,13 @@ export default function ResultsOverviewPanel({
                         <div className="text-xs text-gray-500 mt-1">{row.todayOperationSummary}</div>
                       </td>
                       <td className="px-4 py-0">
-                        <span className={getSuccessColorClass(row.todaySuccessRate)}>
-                          {toPercent(row.todaySuccessRate)} ({row.todayCorrectCount}/{row.todayAttempts || 0})
-                        </span>
+                        {row.todayAttempts > 0 ? (
+                          <span className={getSuccessColorClass(row.todaySuccessRate)}>
+                            {toPercent(row.todaySuccessRate)} ({row.todayCorrectCount}/{row.todayAttempts})
+                          </span>
+                        ) : <span className="text-gray-400">Inga svar</span>}
                         <div className="text-xs text-gray-500 mt-1">
-                          Rimliga fel: {row.todayWrongCount > 0 ? `${row.todayReasonableWrongCount}/${row.todayWrongCount}` : '-'}
+                          Rimliga fel{row.todayDetailedAttempts < row.todayAttempts ? ' i detaljurval' : ''}: {row.todayWrongCount > 0 ? `${row.todayReasonableWrongCount}/${row.todayWrongCount}` : '-'}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
                           Uppdrag: {row.todayAssignmentAdherenceRate === null ? '-' : toPercent(row.todayAssignmentAdherenceRate)}
@@ -277,11 +279,13 @@ export default function ResultsOverviewPanel({
                         </div>
                       </td>
                       <td className="px-4 py-0">
-                        <span className={getSuccessColorClass(row.weekSuccessRate)}>
-                          {toPercent(row.weekSuccessRate)} ({row.weekCorrectCount}/{row.weekAttempts || 0})
-                        </span>
+                        {row.weekAttempts > 0 ? (
+                          <span className={getSuccessColorClass(row.weekSuccessRate)}>
+                            {toPercent(row.weekSuccessRate)} ({row.weekCorrectCount}/{row.weekAttempts})
+                          </span>
+                        ) : <span className="text-gray-400">Inga svar</span>}
                         <div className="text-xs text-gray-500 mt-1">
-                          Rimliga fel: {row.weekWrongCount > 0 ? `${row.weekReasonableWrongCount}/${row.weekWrongCount}` : '-'}
+                          Rimliga fel{row.weekDetailedAttempts < row.weekAttempts ? ' i detaljurval' : ''}: {row.weekWrongCount > 0 ? `${row.weekReasonableWrongCount}/${row.weekWrongCount}` : '-'}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
                           Uppdrag: {row.weekAssignmentAdherenceRate === null ? '-' : toPercent(row.weekAssignmentAdherenceRate)}

@@ -28,7 +28,7 @@ export function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
         DagensFel: row.todayWrongCount,
         DagensKunskapsfel: row.todayKnowledgeWrongCount,
         DagensOuppmärksamhetsfel: row.todayInattentionCount,
-        DagensTraff: toPercent(row.todaySuccessRate),
+        DagensTraff: formatPeriodPercent(row.todaySuccessRate, row.todayAttempts),
         DagensUppdragsföljsamhet: row.todayAssignmentAdherenceRate === null ? '-' : toPercent(row.todayAssignmentAdherenceRate),
         DagensKamparMed: row.todayStruggle?.skillLabel || ''
       }
@@ -42,7 +42,7 @@ export function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
         VeckansFel: row.weekWrongCount,
         VeckansKunskapsfel: row.weekKnowledgeWrongCount,
         VeckansOuppmärksamhetsfel: row.weekInattentionCount,
-        VeckansTraff: toPercent(row.weekSuccessRate),
+        VeckansTraff: formatPeriodPercent(row.weekSuccessRate, row.weekAttempts),
         VeckansAktivTidSek: Math.round(row.weekActiveTimeSec || 0),
         VeckansMål: weekGoal,
         VeckansMålNått: row.weekAttempts >= weekGoal ? 'ja' : 'nej',
@@ -62,6 +62,10 @@ export function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
       Trend: row.trend === null ? '' : `${row.trend >= 0 ? '+' : ''}${Math.round(row.trend * 100)}%`
     }
   })
+}
+
+function formatPeriodPercent(rate, attempts) {
+  return Number(attempts) > 0 ? toPercent(rate) : '-'
 }
 
 export function buildActivityExportRows(rows) {

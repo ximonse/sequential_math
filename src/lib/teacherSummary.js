@@ -27,27 +27,39 @@ export function withFreshTeacherSummary(profile) {
 }
 
 export function getCurrentWeekTeacherEvidence(profile, expectedPeriodStart) {
-  const summary = profile?.teacherSummary
-  const week = summary?.currentWeek
-  if (!week || typeof week !== 'object') return null
-  if (Number(week.periodStart) !== Number(expectedPeriodStart)) return null
+  return getTeacherPeriodEvidence(profile, 'currentWeek', expectedPeriodStart)
+}
 
-  const attempts = Math.max(0, Number(week.attempts) || 0)
-  const correct = Math.max(0, Math.min(attempts, Number(week.correct) || 0))
-  const speedSamples = Math.max(0, Number(week.speedSamples) || 0)
-  const totalSpeedSec = Math.max(0, Number(week.totalSpeedSec) || 0)
+export function getCurrentDayTeacherEvidence(profile, expectedPeriodStart) {
+  return getTeacherPeriodEvidence(profile, 'currentDay', expectedPeriodStart)
+}
+
+export function getRolling30DayTeacherEvidence(profile, expectedPeriodStart) {
+  return getTeacherPeriodEvidence(profile, 'rolling30Days', expectedPeriodStart)
+}
+
+function getTeacherPeriodEvidence(profile, periodKey, expectedPeriodStart) {
+  const summary = profile?.teacherSummary
+  const period = summary?.[periodKey]
+  if (!period || typeof period !== 'object') return null
+  if (Number(period.periodStart) !== Number(expectedPeriodStart)) return null
+
+  const attempts = Math.max(0, Number(period.attempts) || 0)
+  const correct = Math.max(0, Math.min(attempts, Number(period.correct) || 0))
+  const speedSamples = Math.max(0, Number(period.speedSamples) || 0)
+  const totalSpeedSec = Math.max(0, Number(period.totalSpeedSec) || 0)
 
   return {
     attempts,
     correct,
     wrong: attempts - correct,
     accuracy: attempts > 0 ? correct / attempts : 0,
-    activeDays: Math.max(0, Number(week.activeDays) || 0),
+    activeDays: Math.max(0, Number(period.activeDays) || 0),
     totalSpeedSec,
     speedSamples,
     avgSpeedSec: speedSamples > 0 ? totalSpeedSec / speedSamples : 0,
-    knowledgeErrors: Math.max(0, Number(week.knowledgeErrors) || 0),
-    inattentionErrors: Math.max(0, Number(week.inattentionErrors) || 0),
+    knowledgeErrors: Math.max(0, Number(period.knowledgeErrors) || 0),
+    inattentionErrors: Math.max(0, Number(period.inattentionErrors) || 0),
     historyComplete: summary?.evidence?.historyComplete === true,
     historySource: String(summary?.evidence?.historySource || 'recentProblems'),
     summaryUpdatedAt: Number(summary?.updatedAt) || 0

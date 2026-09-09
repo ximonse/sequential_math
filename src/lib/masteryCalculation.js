@@ -4,7 +4,12 @@
  * Ändra HÄR — inte i enskilda vyer.
  */
 import { getSpeedTime, resolveProblemOperation } from './mathUtils.js'
-import { getStockholmWeekStart, getStockholmDateKey } from './teacherEvidencePeriods.js'
+import {
+  getStockholmDayStart,
+  getStockholmDaysAgoStart,
+  getStockholmWeekStart,
+  getStockholmDateKey
+} from './teacherEvidencePeriods.js'
 import { getOperationMinLevel } from './operations.js'
 import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './operations.js'
 
@@ -245,8 +250,8 @@ export function computeEffectiveLevels(problems, operationKeys, levelRange, opti
 export function computeOperationMasteryBoards(problems, operationKeys, levelRange, options = {}) {
   const DAY_MS = 24 * 60 * 60 * 1000
   const now = Date.now()
-  const weekStart = getStartOfWeekTimestamp()
-  const monthStart = now - 30 * DAY_MS
+  const weekStart = getStartOfWeekTimestamp(now)
+  const monthStart = getStockholmDaysAgoStart(now, 29)
 
   const lists = Object.fromEntries(
     operationKeys.map(op => [op, Object.fromEntries(
@@ -301,8 +306,8 @@ function buildMasteryView(level, results, options = {}) {
   }
 }
 
-function getStartOfWeekTimestamp() {
-  return getStockholmWeekStart()
+function getStartOfWeekTimestamp(timestamp = Date.now()) {
+  return getStockholmWeekStart(timestamp)
 }
 
 /**
@@ -367,23 +372,17 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
   const DAY_MS = 24 * 60 * 60 * 1000
   const now = Date.now()
   const start7d = now - 7 * DAY_MS
+  const dayStart = getStockholmDayStart(now)
   const weekStart = getStockholmWeekStart(now)
+  const rolling30Start = getStockholmDaysAgoStart(now, 29)
   const problemLog = Array.isArray(profile?.problemLog) ? profile.problemLog : []
   const recentProblems = Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
   const usesFullLog = (problemLog.length === 0 && recentProblems.length === 0)
     || (source === problemLog
       && (problemLog.length > 0 || recentProblems.length === 0))
-  const weekDaySet = new Set()
-  const currentWeek = {
-    periodStart: weekStart,
-    attempts: 0,
-    correct: 0,
-    activeDays: 0,
-    totalSpeedSec: 0,
-    speedSamples: 0,
-    knowledgeErrors: 0,
-    inattentionErrors: 0
-  }
+  const currentDay = createTeacherPeriod(dayStart)
+  const currentWeek = createTeacherPeriod(weekStart)
+  const rolling30Days = createTeacherPeriod(rolling30Start)
   const evidence = {
     historySource: usesFullLog ? 'problemLog' : 'recentProblems',
     historyComplete: usesFullLog && source.length < 5000
@@ -409,22 +408,9 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
     if (!Number.isFinite(ts) || ts <= 0 || ts > now) continue
     const speed = getSpeedTime(problem)
 
-    if (ts >= weekStart) {
-      currentWeek.attempts += 1
-      if (problem.correct) currentWeek.correct += 1
-      if (ts > 0) weekDaySet.add(getStockholmDateKey(ts))
-      if (Number.isFinite(speed)) {
-        currentWeek.totalSpeedSec += speed
-        currentWeek.speedSamples += 1
-      }
-      if (!problem.correct) {
-        if (String(problem.errorCategory || '') === 'inattention') {
-          currentWeek.inattentionErrors += 1
-        } else {
-          currentWeek.knowledgeErrors += 1
-        }
-      }
-    }
+    if (ts >= dayStart) recordTeacherPeriod(currentDay, problem, speed, ts)
+    if (ts >= weekStart) recordTeacherPeriod(currentWeek, problem, speed, ts)
+    if (ts >= rolling30Start) recordTeacherPeriod(rolling30Days, problem, speed, ts)
 
     if (ts < start7d) continue
 
@@ -471,16 +457,57 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
       totalSpeedSec: Math.round(totalSpeedSec),
       speedSamples
     },
-    currentWeek: {
-      ...currentWeek,
-      activeDays: weekDaySet.size,
-      totalSpeedSec: Math.round(currentWeek.totalSpeedSec)
-    },
+    currentDay: finalizeTeacherPeriod(currentDay),
+    currentWeek: finalizeTeacherPeriod(currentWeek),
+    rolling30Days: finalizeTeacherPeriod(rolling30Days),
     evidence,
     errorBreakdown7d: {
       knowledgeErrors,
       inattentionErrors
     },
     updatedAt: now
+  }
+}
+
+function createTeacherPeriod(periodStart) {
+  return {
+    periodStart,
+    attempts: 0,
+    correct: 0,
+    activeDayKeys: new Set(),
+    totalSpeedSec: 0,
+    speedSamples: 0,
+    knowledgeErrors: 0,
+    inattentionErrors: 0
+  }
+}
+
+function recordTeacherPeriod(period, problem, speed, timestamp) {
+  period.attempts += 1
+  if (problem.correct) period.correct += 1
+  period.activeDayKeys.add(getStockholmDateKey(timestamp))
+  if (Number.isFinite(speed)) {
+    period.totalSpeedSec += speed
+    period.speedSamples += 1
+  }
+  if (!problem.correct) {
+    if (String(problem.errorCategory || '') === 'inattention') {
+      period.inattentionErrors += 1
+    } else {
+      period.knowledgeErrors += 1
+    }
+  }
+}
+
+function finalizeTeacherPeriod(period) {
+  return {
+    periodStart: period.periodStart,
+    attempts: period.attempts,
+    correct: period.correct,
+    activeDays: period.activeDayKeys.size,
+    totalSpeedSec: Math.round(period.totalSpeedSec),
+    speedSamples: period.speedSamples,
+    knowledgeErrors: period.knowledgeErrors,
+    inattentionErrors: period.inattentionErrors
   }
 }

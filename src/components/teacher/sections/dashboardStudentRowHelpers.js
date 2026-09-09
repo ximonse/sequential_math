@@ -2,7 +2,7 @@ import { evaluateAnswerQuality } from '../../../lib/answerQuality'
 import { getSpeedTime, resolveProblemOperation } from '../../../lib/mathUtils'
 import { getOperationLabel } from '../../../lib/operations'
 import { getStartOfWeekTimestamp } from '../../../lib/studentProfile'
-import { getCurrentWeekTeacherEvidence } from '../../../lib/teacherSummary'
+import { getCurrentDayTeacherEvidence, getCurrentWeekTeacherEvidence } from '../../../lib/teacherSummary'
 import { getStudentPresenceStatus } from '../../../lib/studentPresence'
 import { summarizeTelemetryWindow } from '../../../lib/telemetry'
 import {
@@ -51,12 +51,18 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
 
   const todayStart = getStartOfDayTimestamp()
   const todayProblems = recentProblems.filter(problem => problem.timestamp >= todayStart)
-  const todayAttempts = todayProblems.length
-  const todayCorrectCount = todayProblems.filter(problem => problem.correct).length
+  const todayEvidence = getCurrentDayTeacherEvidence(student, todayStart)
+  const todayRecentAttempts = todayProblems.length
+  const todayRecentCorrect = todayProblems.filter(problem => problem.correct).length
+  const todayAttempts = todayEvidence?.attempts ?? todayRecentAttempts
+  const todayCorrectCount = todayEvidence?.correct ?? todayRecentCorrect
   const todayWrongCount = todayAttempts - todayCorrectCount
-  const todayKnowledgeWrongCount = todayProblems.filter(problem => !problem.correct && isKnowledgeError(problem)).length
-  const todayInattentionCount = todayProblems.filter(problem => problem.errorCategory === 'inattention').length
-  const todaySuccessRate = todayAttempts > 0 ? todayCorrectCount / todayAttempts : 0
+  const todayAnalyzedKnowledgeWrongCount = todayProblems.filter(problem => !problem.correct && isKnowledgeError(problem)).length
+  const todayKnowledgeWrongCount = todayEvidence?.knowledgeErrors ?? todayAnalyzedKnowledgeWrongCount
+  const todayInattentionCount = todayEvidence?.inattentionErrors
+    ?? todayProblems.filter(problem => problem.errorCategory === 'inattention').length
+  const todaySuccessRate = todayEvidence?.accuracy
+    ?? (todayAttempts > 0 ? todayCorrectCount / todayAttempts : 0)
   const todayWrongReasonable = todayProblems
     .filter(problem => !problem.correct && isKnowledgeError(problem))
     .map(problem => evaluateAnswerQuality(problem))
@@ -65,9 +71,7 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
   const todayAvgAnswerLength = getAverageAnswerLength(todayProblems)
   const todayByOperation = summarizeByOperation(todayProblems)
   const todayBySkill = summarizeBySkill(todayProblems)
-  const todayOperationSummary = todayByOperation.length > 0
-    ? todayByOperation.map(item => `${getOperationLabel(item.operation)}: ${item.attempts}`).join(' | ')
-    : '-'
+  const todayOperationSummary = buildDetailedSummary(todayByOperation, todayProblems.length, todayAttempts)
   const todayStruggle = getStruggleSkill(todayBySkill)
   const todayStruggleIndex = todayStruggle
     ? ((todayStruggle.wrong / Math.max(1, todayStruggle.attempts)) * 100) + todayStruggle.wrong
@@ -104,9 +108,7 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
   const weekAvgAnswerLength = getAverageAnswerLength(weekProblems)
   const weekByOperation = summarizeByOperation(weekProblems)
   const weekBySkill = summarizeBySkill(weekProblems)
-  const weekOperationSummary = weekByOperation.length > 0
-    ? weekByOperation.map(item => `${getOperationLabel(item.operation)}: ${item.attempts}`).join(' | ')
-    : '-'
+  const weekOperationSummary = buildDetailedSummary(weekByOperation, weekProblems.length, weekAttempts)
   const weekStruggle = getStruggleSkill(weekBySkill)
   const weekStruggleIndex = weekStruggle
     ? ((weekStruggle.wrong / Math.max(1, weekStruggle.attempts)) * 100) + weekStruggle.wrong
@@ -144,6 +146,9 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
     todayAttempts,
     todayWrongCount: todayKnowledgeWrongCount,
     todaySuccessRate,
+    todayEvidenceStatus: todayEvidence?.historyComplete ? 'complete' : 'limited',
+    todayEvidenceSource: todayEvidence?.historySource || 'recentProblems',
+    todayDetailedAttempts: todayProblems.length,
     todayReasonableWrongCount: todayWrongReasonable,
     todayStruggle
   }, activeAssignment)
@@ -206,6 +211,9 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
     todayKnowledgeWrongCount,
     todayInattentionCount,
     todaySuccessRate,
+    todayEvidenceStatus: todayEvidence?.historyComplete ? 'complete' : 'limited',
+    todayEvidenceSource: todayEvidence?.historySource || 'recentProblems',
+    todayDetailedAttempts: todayProblems.length,
     todayReasonableWrongCount: todayWrongReasonable,
     todayAvgAnswerLength,
     todayByOperation,
@@ -301,6 +309,14 @@ function summarizeByOperation(problems) {
       avgAnswerLength: item.attempts > 0 ? item.answerLengthSum / item.attempts : 0
     }))
     .sort((a, b) => b.attempts - a.attempts)
+}
+
+function buildDetailedSummary(operationStats, detailedAttempts, periodAttempts) {
+  const summary = operationStats.length > 0
+    ? operationStats.map(item => `${getOperationLabel(item.operation)}: ${item.attempts}`).join(' | ')
+    : '-'
+  if (detailedAttempts >= periodAttempts) return summary
+  return `${summary} · detaljurval ${detailedAttempts}/${periodAttempts}`
 }
 
 function getStruggleSkill(skillStats) {

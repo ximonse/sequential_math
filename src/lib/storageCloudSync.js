@@ -115,18 +115,10 @@ export function createCloudSyncApi(deps) {
     }
   }
 
-  function isTeacherSessionToken(value) {
-    return /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(String(value || '').trim())
-  }
-
   function applyTeacherAuthHeader(headers, teacherCredential) {
     const credential = String(teacherCredential || '').trim()
     if (!credential) return
-    if (isTeacherSessionToken(credential)) {
-      headers['x-teacher-token'] = credential
-      return
-    }
-    headers['x-teacher-password'] = credential
+    headers['x-teacher-token'] = credential
   }
 
   function getCloudProfileSyncState(studentId) {

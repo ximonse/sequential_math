@@ -3,16 +3,11 @@
  * Body: { username, password }
  * Returns: { ok, token, expiresAt, teacherId, displayName, classIds, isAdmin }
  *
- * Supports two modes:
- * 1. Per-teacher accounts stored in KV (teacher_account:{id})
- * 2. Legacy admin: username == "admin" + TEACHER_API_PASSWORD (backward compat)
+ * Uses per-teacher accounts stored in KV (teacher_account:{id}).
  */
 import { kv } from '@vercel/kv'
 import {
   createTeacherSessionToken,
-  getConfiguredTeacherApiPassword,
-  isProdLikeServer,
-  secureCompare,
   verifyTeacherPassword,
   withCors
 } from './_helpers.js'
@@ -76,43 +71,6 @@ export default async function handler(req, res) {
       displayName: account.displayName || account.username,
       classIds,
       isAdmin: Boolean(account.isAdmin)
-    })
-  }
-
-  // 2. Legacy admin fallback: username "admin" + env password
-  const adminPassword = getConfiguredTeacherApiPassword()
-  const isLegacyAdmin = username.toLowerCase() === 'admin'
-    && adminPassword !== ''
-    && secureCompare(password, adminPassword)
-
-  if (isLegacyAdmin) {
-    const session = createTeacherSessionToken({ isAdmin: true })
-    if (!session) {
-      return res.status(500).json({ error: 'Could not create session token', code: 'TOKEN_ERROR' })
-    }
-    return res.status(200).json({
-      ok: true,
-      token: session.token,
-      expiresAt: session.expiresAt,
-      teacherId: null,
-      displayName: 'Admin',
-      classIds: [],
-      isAdmin: true
-    })
-  }
-
-  // Dev fallback (no password configured, not prod)
-  if (!adminPassword && !isProdLikeServer()) {
-    const session = createTeacherSessionToken({ isAdmin: true })
-    return res.status(200).json({
-      ok: true,
-      token: session?.token || '',
-      expiresAt: session?.expiresAt || null,
-      teacherId: null,
-      displayName: 'Dev Admin',
-      classIds: [],
-      isAdmin: true,
-      devFallback: true
     })
   }
 

@@ -5,8 +5,7 @@ const TEACHER_IDENTITY_KEY = 'mathapp_teacher_identity'
 // ── Login ─────────────────────────────────────────────────────────────────────
 
 /**
- * New per-teacher login. Body: { username, password }
- * Falls back to legacy /api/teacher-auth if new endpoint not available.
+ * Account login. Body: { username, password }.
  */
 export async function loginTeacher(username, password) {
   const usernameStr = String(username || '').trim()
@@ -51,19 +50,6 @@ function storeTeacherSession(data) {
   sessionStorage.setItem(TEACHER_AUTH_KEY, '1')
   sessionStorage.setItem(TEACHER_API_TOKEN_KEY, token)
   sessionStorage.setItem(TEACHER_IDENTITY_KEY, JSON.stringify(identity))
-}
-
-// ── Legacy helpers (keep for compat with old teacher-auth route) ──────────────
-
-export async function getTeacherAuthStatus() {
-  try {
-    const response = await fetch('/api/teacher-auth')
-    if (!response.ok) return { configured: false, source: 'server_error' }
-    const data = await response.json()
-    return { configured: Boolean(data?.configured), source: 'server' }
-  } catch {
-    return { configured: false, source: 'network_error' }
-  }
 }
 
 // ── Logout ────────────────────────────────────────────────────────────────────

@@ -5,7 +5,11 @@ vi.mock('@vercel/kv', () => ({ kv: {
   get: vi.fn(async key => structuredClone(records.get(key) ?? null))
 } }))
 
-import { createTeacherSessionToken, getLiveTeacherAuthPayload } from './_helpers.js'
+import {
+  createTeacherSessionToken,
+  getLiveTeacherAuthPayload,
+  getTeacherAuthPayload
+} from './_helpers.js'
 
 describe('teacher account sessions', () => {
   beforeEach(() => {
@@ -33,5 +37,13 @@ describe('teacher account sessions', () => {
       id: 'teacher-1', classIds: ['new-class'], isAdmin: false, sessionVersion: 3
     })
     expect(await getLiveTeacherAuthPayload(req)).toBeNull()
+  })
+
+  it('rejects retired raw-password and accountless token authentication', () => {
+    expect(getTeacherAuthPayload({ headers: { 'x-teacher-token': 'test-secret' } })).toBeNull()
+    expect(getTeacherAuthPayload({ headers: { 'x-teacher-password': 'test-secret' } })).toBeNull()
+
+    const accountless = createTeacherSessionToken({ isAdmin: true })
+    expect(getTeacherAuthPayload({ headers: { 'x-teacher-token': accountless.token } })).toBeNull()
   })
 })

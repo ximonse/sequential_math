@@ -192,43 +192,21 @@ export function verifyTeacherSessionToken(token) {
 
 /**
  * Returns teacher payload if authorized, null otherwise.
- * Legacy tokens (no teacherId) return { isAdmin: true, classIds: [], legacy: true }.
+ * Only account-bound signed tokens are accepted.
  */
 export function getTeacherAuthPayload(req) {
-  const configured = getConfiguredTeacherApiPassword()
-
-  // Legacy password header (backward compat)
-  const passwordHeader = String(req.headers['x-teacher-password'] || '')
-  if (passwordHeader && configured && secureCompare(passwordHeader, configured)) {
-    return { isAdmin: true, classIds: [], legacy: true }
-  }
-
   const tokenHeader = String(req.headers['x-teacher-token'] || '')
-  if (!tokenHeader) {
-    if (!configured && !isProdLikeServer()) return { isAdmin: true, classIds: [], legacy: true }
-    return null
-  }
+  if (!tokenHeader) return null
 
-  // Try new-style signed token
   const payload = verifyTeacherSessionToken(tokenHeader)
-  if (payload) {
-    // Legacy token (no teacherId): treat as admin
-    if (!payload.teacherId) return { isAdmin: true, classIds: [], legacy: true }
-    return {
-      teacherId: payload.teacherId,
-      classIds: Array.isArray(payload.classIds) ? payload.classIds : [],
-      isAdmin: Boolean(payload.isAdmin),
-      sessionVersion: Math.max(1, Number(payload.sessionVersion) || 1),
-      legacy: false
-    }
+  if (!payload?.teacherId) return null
+  return {
+    teacherId: payload.teacherId,
+    classIds: Array.isArray(payload.classIds) ? payload.classIds : [],
+    isAdmin: Boolean(payload.isAdmin),
+    sessionVersion: Math.max(1, Number(payload.sessionVersion) || 1),
+    legacy: false
   }
-
-  // Legacy fallback: token is raw password
-  if (configured && secureCompare(tokenHeader, configured)) {
-    return { isAdmin: true, classIds: [], legacy: true }
-  }
-
-  return null
 }
 
 /**
@@ -238,7 +216,7 @@ export function getTeacherAuthPayload(req) {
  */
 export async function getLiveTeacherAuthPayload(req, { store = kv } = {}) {
   const tokenAuth = getTeacherAuthPayload(req)
-  if (!tokenAuth || tokenAuth.legacy) return tokenAuth
+  if (!tokenAuth) return null
 
   const account = await store.get(`teacher_account:${tokenAuth.teacherId}`)
   if (!account || account.disabled === true) return null
@@ -268,7 +246,7 @@ export function isTeacherApiAuthorized(req) {
   return getTeacherAuthPayload(req) !== null
 }
 
-/** Returns true if request is from an admin (isAdmin flag OR legacy). */
+/** Returns true if request is from an admin account. */
 export function isAdminAuthorized(req) {
   const payload = getTeacherAuthPayload(req)
   return payload !== null && Boolean(payload.isAdmin)
@@ -276,7 +254,7 @@ export function isAdminAuthorized(req) {
 
 /**
  * Returns classIds the teacher is allowed to see.
- * Admin/legacy tokens see everything (returns null = no filter).
+ * Admin tokens see everything (returns null = no filter).
  */
 export function getAuthorizedClassIds(req) {
   const payload = getTeacherAuthPayload(req)

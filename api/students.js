@@ -27,7 +27,7 @@ export function sanitizeProfileForList(profile) {
 export default async function handler(req, res) {
   withCors(res, {
     methods: 'GET,OPTIONS',
-    headers: 'Content-Type, x-teacher-token, x-teacher-password'
+    headers: 'Content-Type, x-teacher-token'
   }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })

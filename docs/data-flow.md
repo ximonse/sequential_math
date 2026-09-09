@@ -32,7 +32,7 @@ graph TB
     subgraph "Server (Vercel)"
         API1[/api/students<br/>GET alla profiler]
         API2[/api/student/:id<br/>GET/POST + merge]
-        API3[/api/teacher-auth<br/>Lösenord + token]
+        API3[/api/teacher-login<br/>Kontolösenord + token]
         KV[(Vercel KV<br/>Redis)]
     end
 

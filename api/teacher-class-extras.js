@@ -11,7 +11,7 @@ import { studentStoreError } from './_studentStore.js'
 export default async function handler(req, res) {
   withCors(res, {
     methods: 'PUT,OPTIONS',
-    headers: 'Content-Type, x-teacher-token, x-teacher-password'
+    headers: 'Content-Type, x-teacher-token'
   }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'PUT') {

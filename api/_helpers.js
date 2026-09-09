@@ -126,7 +126,7 @@ function isTokenFormat(value) {
 /**
  * Creates a signed session token.
  * options: { teacherId, classIds, isAdmin, ttlMs }
- * Legacy (no teacherId): treated as global admin on verification.
+ * Tokens without a teacher ID are rejected during authorization.
  */
 export function createTeacherSessionToken(options = {}) {
   const signingSecret = getTeacherTokenSigningSecret()
@@ -211,8 +211,7 @@ export function getTeacherAuthPayload(req) {
 
 /**
  * Signed account tokens are only valid while their account and session version
- * still exist in KV. Legacy environment-password tokens remain intentionally
- * separate until that compatibility route is retired.
+ * still exist in KV.
  */
 export async function getLiveTeacherAuthPayload(req, { store = kv } = {}) {
   const tokenAuth = getTeacherAuthPayload(req)

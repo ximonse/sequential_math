@@ -8,7 +8,7 @@ import { createStudentRecord, mutateStudentRecord, studentStoreError } from './_
 const digest = text => createHash('sha256').update(text).digest('hex')
 
 export default async function handler(req, res) {
-  withCors(res, { methods: 'POST,OPTIONS', headers: 'Content-Type,x-teacher-token,x-teacher-password' }, req)
+  withCors(res, { methods: 'POST,OPTIONS', headers: 'Content-Type,x-teacher-token' }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
   const teacher = await getLiveTeacherAuthPayload(req)

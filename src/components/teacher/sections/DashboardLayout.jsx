@@ -369,6 +369,7 @@ export default function DashboardLayout({
           onSetAddToClassId={setAddToClassId}
           classes={classes}
           onAddExistingStudentsToClass={handleAddExistingStudentsToClass}
+          onMoveStudent={handleMoveStudent}
           onAddStudentsToClass={handleAddStudentsToClass}
           rosterInput={rosterInput}
           onSetRosterInput={setRosterInput}

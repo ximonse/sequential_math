@@ -405,7 +405,7 @@ function Dashboard() {
         filteredTableStudentOptions, tableStudentSet, handleToggleTableStudent, tableDevelopmentOverview,
         supportRows, handleCreateQuickAssignment,
         classNameInput, setClassNameInput, handleCreateClass, addToClassId, setAddToClassId,
-        classes, handleAddExistingStudentsToClass, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus, handleDeleteClass, handleSaveClassExtras,
+        classes, handleAddExistingStudentsToClass, handleMoveStudent, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus, handleDeleteClass, handleSaveClassExtras,
         handleDeleteStudent,
         resultsPanelProps, PASSWORD_RESET_SECTION_ID, passwordResetRows, passwordResetSearch,
         setPasswordResetSearch, passwordResetStatus, handleResetStudentPassword, passwordResetBusyId

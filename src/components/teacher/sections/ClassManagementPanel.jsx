@@ -93,10 +93,14 @@ export default function ClassManagementPanel({
   students,
   recordMatchesClassFilter,
   onDeleteClass,
-  onSaveClassExtras
+  onSaveClassExtras,
+  onMoveStudent
 }) {
   const [busy, setBusy] = useState(false)
   const [selectedExistingStudentIds, setSelectedExistingStudentIds] = useState([])
+  const [moveFromClassId, setMoveFromClassId] = useState('')
+  const [moveToClassId, setMoveToClassId] = useState('')
+  const [moveStudentId, setMoveStudentId] = useState('')
   const busyRef = useRef(false)
   const names = parseRosterLines(rosterInput)
   const runRosterAction = async (action) => {
@@ -109,6 +113,7 @@ export default function ClassManagementPanel({
   const availableExistingStudents = students.filter(student => (
     !recordMatchesClassFilter(student, [addToClassId])
   ))
+  const movableStudents = students.filter(student => recordMatchesClassFilter(student, [moveFromClassId]))
   const toggleExistingStudent = (studentId) => {
     setSelectedExistingStudentIds(previous => (
       previous.includes(studentId)
@@ -203,6 +208,30 @@ export default function ClassManagementPanel({
           >
             Lägg till {selectedExistingStudentIds.length || ''} vald(a) elev(er)
           </button>
+        </details>
+      ) : null}
+      {classes.length > 1 && onMoveStudent ? (
+        <details className="mb-3 rounded border border-amber-200 bg-amber-50 p-2 text-sm">
+          <summary className="cursor-pointer font-medium text-amber-900">Flytta elev till annan klass</summary>
+          <p className="mt-2 text-xs text-amber-900">Elevens ID och träningshistorik följer med. Eleven tas bort från den valda källklassen.</p>
+          <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3">
+            <select value={moveFromClassId} onChange={event => { setMoveFromClassId(event.target.value); setMoveStudentId('') }} className="rounded border px-2 py-1 text-xs">
+              <option value="">Från klass</option>
+              {classes.map(item => <option key={`move-from-${item.id}`} value={item.id}>{item.name}</option>)}
+            </select>
+            <select value={moveStudentId} onChange={event => setMoveStudentId(event.target.value)} disabled={!moveFromClassId} className="rounded border px-2 py-1 text-xs disabled:bg-gray-100">
+              <option value="">Välj elev</option>
+              {movableStudents.map(student => <option key={`move-student-${student.studentId}`} value={student.studentId}>{student.name} · {student.studentId}</option>)}
+            </select>
+            <select value={moveToClassId} onChange={event => setMoveToClassId(event.target.value)} className="rounded border px-2 py-1 text-xs">
+              <option value="">Till klass</option>
+              {classes.filter(item => item.id !== moveFromClassId).map(item => <option key={`move-to-${item.id}`} value={item.id}>{item.name}</option>)}
+            </select>
+          </div>
+          <button type="button" disabled={!moveFromClassId || !moveToClassId || !moveStudentId} onClick={() => runRosterAction(async () => {
+            const moved = await onMoveStudent(moveStudentId, moveFromClassId, moveToClassId)
+            if (moved) { setMoveStudentId(''); setMoveToClassId('') }
+          })} className="mt-2 rounded bg-amber-600 px-3 py-1.5 text-xs text-white disabled:opacity-50">Flytta elev</button>
         </details>
       ) : null}
       <p className="text-xs text-gray-500 mb-2">

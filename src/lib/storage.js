@@ -204,6 +204,18 @@ export async function resetStudentPasswordToLoginName(studentId) {
   return getStudentApi().resetStudentPasswordToLoginName(studentId)
 }
 
+export async function moveStudentBetweenClasses(studentId, fromClassId, toClassId) {
+  if (!CLOUD_ENABLED || !getTeacherApiToken()) return { ok: false, error: 'Logga in som lärare igen.' }
+  try {
+    const response = await fetch(`/api/student/${encodeURIComponent(normalizeStudentId(studentId))}/class-membership`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() },
+      body: JSON.stringify({ fromClassId, toClassId })
+    })
+    const data = await response.json()
+    return response.ok ? { ok: true, profile: data.profile } : { ok: false, error: data.error || 'Kunde inte flytta eleven.' }
+  } catch { return { ok: false, error: 'Kunde inte kontakta servern.' } }
+}
+
 export function setActiveStudentSession(studentId, sessionSecret = '') {
   const normalizedId = normalizeStudentId(studentId)
   if (!normalizedId) return

@@ -8,6 +8,7 @@ import {
   getCloudProfilesSyncStatus,
   normalizeStudentId,
   removeClass,
+  moveStudentBetweenClasses,
   resetStudentPasswordToLoginName,
   updateClassExtras
 } from '../../../lib/storage'
@@ -218,6 +219,14 @@ export function buildDashboardClassAndAuthActions({
     return true
   }
 
+  const handleMoveStudent = async (studentId, fromClassId, toClassId) => {
+    const result = await moveStudentBetweenClasses(studentId, fromClassId, toClassId)
+    if (!result.ok) { setClassStatus(result.error); return false }
+    setClassStatus('Eleven är flyttad. ID och träningshistorik är kvar.')
+    await loadStudents()
+    return true
+  }
+
   const handleToggleClassFilter = (classId) => {
     const normalizedClassId = String(classId || '').trim()
     if (!normalizedClassId) return
@@ -311,7 +320,7 @@ export function buildDashboardClassAndAuthActions({
     handleLogout,
     handleJumpToPasswordReset,
     handleCreateClass,
-    handleAddExistingStudentsToClass,
+    handleAddExistingStudentsToClass, handleMoveStudent,
     handleAddStudentsToClass,
     handleDeleteClass,
     handleDeleteStudent,

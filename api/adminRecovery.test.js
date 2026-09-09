@@ -19,9 +19,9 @@ import { hashTeacherPassword, verifyTeacherPassword } from './_helpers.js'
 function response() {
   return { code: 200, headers: {}, setHeader(name, value) { this.headers[name] = value }, status(code) { this.code = code; return this }, json(data) { this.data = data; return this }, send(data) { this.data = data; return this }, end() {} }
 }
-async function call(token, password) {
+async function call(token, password, adminId = 'admin') {
   const res = response()
-  await handler({ method: 'POST', query: { token }, headers: {}, body: { password } }, res)
+  await handler({ method: 'POST', query: { token }, headers: {}, body: { password, adminId } }, res)
   return res
 }
 
@@ -42,5 +42,14 @@ describe('temporary admin recovery', () => {
     expect(verifyTeacherPassword('new-password', account.passwordHash, account.passwordSalt)).toBe(true)
     expect(account.sessionVersion).toBe(4)
     expect(await call('one-time-token', 'another-password')).toMatchObject({ code: 410 })
+  })
+
+  it('requires an explicit account selection when multiple admins are active', async () => {
+    const { hash, salt, scheme } = hashTeacherPassword('other-password')
+    records.set('teacher_accounts:index', ['admin', 'other'])
+    records.set('teacher_account:other', { id: 'other', isAdmin: true, sessionVersion: 1, passwordHash: hash, passwordSalt: salt, passwordScheme: scheme })
+    expect(await call('one-time-token', 'new-password', 'missing')).toMatchObject({ code: 409 })
+    expect(await call('one-time-token', 'new-password', 'other')).toMatchObject({ code: 200 })
+    expect(verifyTeacherPassword('new-password', records.get('teacher_account:other').passwordHash, records.get('teacher_account:other').passwordSalt)).toBe(true)
   })
 })

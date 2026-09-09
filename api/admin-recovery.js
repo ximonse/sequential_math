@@ -16,8 +16,18 @@ function recoveryConfig() {
   return { tokenHash, expiresAt }
 }
 
-function recoveryPage() {
-  return `<!doctype html><html lang="sv"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Återställ adminlösenord</title><body><main><h1>Välj nytt adminlösenord</h1><p>Länken kan användas en gång och gäller i fem minuter.</p><form id="form"><label>Nytt lösenord <input id="password" type="password" minlength="6" required autocomplete="new-password"></label><button>Byt lösenord</button><p id="status" role="status"></p></form></main><script>const f=document.querySelector('#form'),s=document.querySelector('#status');f.addEventListener('submit',async e=>{e.preventDefault();s.textContent='Sparar…';const r=await fetch(location.href,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:document.querySelector('#password').value})});const d=await r.json();s.textContent=d.message||d.error||'Kunde inte återställa lösenordet.';if(r.ok)f.remove()})</script></body></html>`
+function recoveryPage(admins) {
+  const options = admins.map(account => `<option value="${String(account.id).replace(/"/g, '&quot;')}">${String(account.displayName || account.username || account.id).replace(/[<>&]/g, '')}</option>`).join('')
+  const accountPicker = admins.length > 1
+    ? `<label>Adminkonto <select id="adminId" required>${options}</select></label>`
+    : `<input id="adminId" type="hidden" value="${String(admins[0]?.id || '').replace(/"/g, '&quot;')}">`
+  return `<!doctype html><html lang="sv"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Återställ adminlösenord</title><body><main><h1>Välj nytt adminlösenord</h1><p>Länken kan användas en gång och gäller i fem minuter.</p><form id="form">${accountPicker}<label>Nytt lösenord <input id="password" type="password" minlength="6" required autocomplete="new-password"></label><button>Byt lösenord</button><p id="status" role="status"></p></form></main><script>const f=document.querySelector('#form'),s=document.querySelector('#status');f.addEventListener('submit',async e=>{e.preventDefault();s.textContent='Sparar…';const r=await fetch(location.href,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:document.querySelector('#password').value,adminId:document.querySelector('#adminId').value})});const d=await r.json();s.textContent=d.message||d.error||'Kunde inte återställa lösenordet.';if(r.ok)f.remove()})</script></body></html>`
+}
+
+async function getActiveAdmins() {
+  const ids = await kv.smembers('teacher_accounts:index')
+  const accounts = await Promise.all((ids || []).map(id => kv.get(`teacher_account:${id}`)))
+  return accounts.filter(account => account?.isAdmin === true && account?.disabled !== true)
 }
 
 export default async function handler(req, res) {
@@ -31,8 +41,10 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
+    const admins = await getActiveAdmins()
+    if (admins.length === 0) return res.status(409).json({ error: 'Hittade inget aktivt adminkonto.' })
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
-    return res.status(200).send(recoveryPage())
+    return res.status(200).send(recoveryPage(admins))
   }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
@@ -45,15 +57,14 @@ export default async function handler(req, res) {
   if (!claimed) return res.status(410).json({ error: 'Återställningslänken är redan använd.' })
 
   try {
-    const ids = await kv.smembers('teacher_accounts:index')
-    const accounts = await Promise.all((ids || []).map(id => kv.get(`teacher_account:${id}`)))
-    const admins = accounts.filter(account => account?.isAdmin === true && account?.disabled !== true)
-    if (admins.length !== 1) {
+    const admins = await getActiveAdmins()
+    const requestedAdminId = String(req.body?.adminId || '')
+    const account = admins.find(item => item.id === requestedAdminId)
+    if (!account) {
       await kv.del(claimKey)
-      return res.status(409).json({ error: 'Kunde inte identifiera exakt ett aktivt adminkonto.' })
+      return res.status(409).json({ error: 'Välj ett aktivt adminkonto.' })
     }
 
-    const account = admins[0]
     const { hash, salt, scheme } = hashTeacherPassword(password)
     await kv.set(`teacher_account:${account.id}`, {
       ...account,

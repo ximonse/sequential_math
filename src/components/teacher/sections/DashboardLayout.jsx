@@ -145,6 +145,7 @@ export default function DashboardLayout({
   addToClassId,
   setAddToClassId,
   classes,
+  handleAddExistingStudentsToClass,
   handleAddStudentsToClass,
   rosterInput,
   setRosterInput,
@@ -367,6 +368,7 @@ export default function DashboardLayout({
           addToClassId={addToClassId}
           onSetAddToClassId={setAddToClassId}
           classes={classes}
+          onAddExistingStudentsToClass={handleAddExistingStudentsToClass}
           onAddStudentsToClass={handleAddStudentsToClass}
           rosterInput={rosterInput}
           onSetRosterInput={setRosterInput}

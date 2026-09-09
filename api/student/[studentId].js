@@ -8,6 +8,7 @@ import {
   withCors
 } from '../_helpers.js'
 import { withFreshTeacherSummary } from '../../src/lib/teacherSummary.js'
+import { removeStudentHighscores } from '../highscores.js'
 import {
   STUDENT_PASSWORD_SCHEME,
   STUDENT_PROFILE_SCHEMA_VERSION,
@@ -728,11 +729,21 @@ export default async function handler(req, res) {
     const existing = isCurrentStudentProfile(stored) ? stored : null
 
     if (req.method === 'DELETE') {
+      let deletedClassIds = []
       await mutateStudentRecord(studentId, async current => {
         await assertTeacherStudentAccess(req, current)
+        deletedClassIds = [current?.classId, ...(current?.classIds || [])].filter(Boolean)
         return null
       })
-      return res.status(200).json({ ok: true, deleted: true })
+      let highscoreCleanup = 'complete'
+      try {
+        await removeStudentHighscores(studentId, deletedClassIds)
+      } catch {
+        // The pupil record is already tombstoned. Do not pretend the entire
+        // deletion failed, but expose the pending external cleanup explicitly.
+        highscoreCleanup = 'pending'
+      }
+      return res.status(200).json({ ok: true, deleted: true, highscoreCleanup })
     }
 
     if (req.method === 'GET') {

@@ -46,6 +46,23 @@ export function createStorageClassApi(deps) {
     return result
   }
 
+  async function addExistingStudentsToClass(classId, studentIds, grade = 4) {
+    const target = getClasses().find(item => item.id === classId)
+    const existingStudentIds = [...new Set(
+      (Array.isArray(studentIds) ? studentIds : [])
+        .map(id => String(id || '').trim().toUpperCase())
+        .filter(Boolean)
+    )]
+    if (!target) return { ok: false, error: 'Välj en klass att lägga till elever i.' }
+    if (existingStudentIds.length === 0) return { ok: false, error: 'Välj minst en befintlig elev.' }
+    const result = await submitRoster({ classId, rosterText: '', grade, existingStudentIds })
+    if (result.classRecord) {
+      result.classRecord.studentIds = [...new Set([...(target.studentIds || []), ...result.classRecord.studentIds])]
+      saveClass(result.classRecord)
+    }
+    return result
+  }
+
   function updateClassExtras(classId, extras) {
     const targetId = String(classId || '').trim()
     if (!targetId) return false
@@ -79,6 +96,7 @@ export function createStorageClassApi(deps) {
   }
 
   return {
+    addExistingStudentsToClass,
     addStudentsToClass,
     createClassFromRoster,
     getClasses,

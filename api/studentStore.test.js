@@ -179,6 +179,29 @@ describe('student persistence boundary', () => {
     expect((await call(eventsHandler, 'POST', { entries: [{ id: 'e', type: 'problem_result', payload: result('e') }] }, stranger)).code).toBe(403)
   })
 
+  it('removes a deleted pupil from indexed and current-class highscores', async () => {
+    memory.set('highscores:pong:A', [
+      { studentId: 'PUPIL', name: 'Same name', score: 100 },
+      { studentId: 'OTHER', name: 'Other', score: 90 }
+    ])
+    memory.set('highscores:snake:old-group', [
+      { studentId: 'PUPIL', name: 'Same name', score: 80 }
+    ])
+    memory.set('student_highscore_keys:PUPIL', [
+      'highscores:pong:A',
+      'highscores:snake:old-group'
+    ])
+
+    const response = await call(studentHandler, 'DELETE', {}, owner)
+
+    expect(response).toMatchObject({ code: 200, data: { ok: true, highscoreCleanup: 'complete' } })
+    expect(memory.get('highscores:pong:A')).toEqual([
+      { studentId: 'OTHER', name: 'Other', score: 90 }
+    ])
+    expect(memory.get('highscores:snake:old-group')).toEqual([])
+    expect(memory.has('student_highscore_keys:PUPIL')).toBe(false)
+  })
+
   it('prevents stale snapshots from restoring identity, class membership or teacher instructions', async () => {
     const incoming = { ...profile(), name: 'Changed', classId: 'B', classIds: ['B'], ticketInbox: { activePayload: {} } }
     expect((await call(studentHandler, 'POST', { profile: incoming }, null)).code).toBe(200)

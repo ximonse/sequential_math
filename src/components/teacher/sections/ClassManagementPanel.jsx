@@ -85,6 +85,7 @@ export default function ClassManagementPanel({
   addToClassId,
   onSetAddToClassId,
   classes,
+  onAddExistingStudentsToClass,
   onAddStudentsToClass,
   rosterInput,
   onSetRosterInput,
@@ -95,6 +96,7 @@ export default function ClassManagementPanel({
   onSaveClassExtras
 }) {
   const [busy, setBusy] = useState(false)
+  const [selectedExistingStudentIds, setSelectedExistingStudentIds] = useState([])
   const busyRef = useRef(false)
   const names = parseRosterLines(rosterInput)
   const runRosterAction = async (action) => {
@@ -103,6 +105,16 @@ export default function ClassManagementPanel({
     setBusy(true)
     try { await action() }
     finally { busyRef.current = false; setBusy(false) }
+  }
+  const availableExistingStudents = students.filter(student => (
+    !recordMatchesClassFilter(student, [addToClassId])
+  ))
+  const toggleExistingStudent = (studentId) => {
+    setSelectedExistingStudentIds(previous => (
+      previous.includes(studentId)
+        ? previous.filter(id => id !== studentId)
+        : [...previous, studentId]
+    ))
   }
   return (
     <div className="bg-white rounded-lg shadow p-4 mb-8">
@@ -155,6 +167,44 @@ export default function ClassManagementPanel({
       <p className="text-xs text-gray-500 mb-2">
         Listan skapar nya elever; den flyttar inte en befintlig elev med samma namn.
       </p>
+      {addToClassId && onAddExistingStudentsToClass ? (
+        <details className="mb-3 rounded border border-indigo-100 bg-indigo-50 p-2 text-sm">
+          <summary className="cursor-pointer font-medium text-indigo-800">
+            Lägg till befintliga elever ({availableExistingStudents.length} möjliga)
+          </summary>
+          <p className="mt-2 text-xs text-indigo-800">
+            Välj elev-ID:n här om en elev redan finns i en annan klass. Namnlistan ovan skapar alltid nya elever.
+          </p>
+          {availableExistingStudents.length > 0 ? (
+            <div className="mt-2 max-h-40 space-y-1 overflow-auto rounded bg-white p-2">
+              {availableExistingStudents.map(student => (
+                <label key={student.studentId} className="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={selectedExistingStudentIds.includes(student.studentId)}
+                    onChange={() => toggleExistingStudent(student.studentId)}
+                  />
+                  <span>{student.name}</span>
+                  <span className="font-mono text-gray-400">{student.studentId}</span>
+                </label>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-2 text-xs text-gray-500">Alla kända elever finns redan i den valda klassen.</p>
+          )}
+          <button
+            type="button"
+            disabled={selectedExistingStudentIds.length === 0}
+            onClick={() => runRosterAction(async () => {
+              const saved = await onAddExistingStudentsToClass(selectedExistingStudentIds)
+              if (saved) setSelectedExistingStudentIds([])
+            })}
+            className="mt-2 rounded bg-indigo-600 px-3 py-1.5 text-xs text-white disabled:opacity-50"
+          >
+            Lägg till {selectedExistingStudentIds.length || ''} vald(a) elev(er)
+          </button>
+        </details>
+      ) : null}
       <p className="text-xs text-gray-500 mb-2">
         Tips: klass-/gruppurval för alla vyer styrs längst upp på sidan.
       </p>

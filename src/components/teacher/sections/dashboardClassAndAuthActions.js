@@ -1,5 +1,6 @@
 import { buildCloudSyncStatusMessage } from './dashboardCoreHelpers'
 import {
+  addExistingStudentsToClass,
   addStudentsToClass,
   createClassFromRoster,
   deleteProfile,
@@ -197,6 +198,26 @@ export function buildDashboardClassAndAuthActions({
     navigate('/teacher')
   }
 
+  const handleAddExistingStudentsToClass = async (studentIds) => {
+    let result
+    try {
+      result = await addExistingStudentsToClass(addToClassId, studentIds, 4)
+    } catch {
+      setClassStatus('Kunde inte lägga till befintliga elever just nu.')
+      return false
+    }
+    if (!result.ok) {
+      setClassStatus(result.error)
+      if (result.classRecord) { setClasses(getClasses()); await loadStudents() }
+      return false
+    }
+
+    setClassStatus(`Tillagt ${result.addedCount} befintlig(a) elev(er) i ${result.classRecord.name}.`)
+    setClasses(getClasses())
+    void loadStudents()
+    return true
+  }
+
   const handleToggleClassFilter = (classId) => {
     const normalizedClassId = String(classId || '').trim()
     if (!normalizedClassId) return
@@ -290,6 +311,7 @@ export function buildDashboardClassAndAuthActions({
     handleLogout,
     handleJumpToPasswordReset,
     handleCreateClass,
+    handleAddExistingStudentsToClass,
     handleAddStudentsToClass,
     handleDeleteClass,
     handleDeleteStudent,

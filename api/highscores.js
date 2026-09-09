@@ -23,6 +23,42 @@ async function getHighscoreGroup(classId) {
   return normalizeGroupKey(raw) || classId
 }
 
+function getHighscoreIndexKey(studentId) {
+  return `student_highscore_keys:${String(studentId || '').trim().toUpperCase()}`
+}
+
+/**
+ * Remove a pupil from every indexed highscore list. The current class groups
+ * are included as a fallback for scores created before the index existed.
+ */
+export async function removeStudentHighscores(studentId, classIds = [], store = kv) {
+  const normalizedId = String(studentId || '').trim().toUpperCase()
+  if (!normalizedId) return { removedEntries: 0, inspectedLists: 0 }
+
+  const indexKey = getHighscoreIndexKey(normalizedId)
+  const indexedKeys = await store.smembers(indexKey)
+  const keys = new Set(Array.isArray(indexedKeys) ? indexedKeys : [])
+
+  for (const classId of classIds) {
+    const group = await getHighscoreGroup(classId)
+    if (!group) continue
+    keys.add(`highscores:pong:${group}`)
+    keys.add(`highscores:snake:${group}`)
+  }
+
+  let removedEntries = 0
+  for (const key of keys) {
+    if (!/^highscores:(pong|snake):/.test(String(key))) continue
+    const list = await store.get(key)
+    if (!Array.isArray(list)) continue
+    const filtered = list.filter(entry => String(entry?.studentId || '').toUpperCase() !== normalizedId)
+    removedEntries += list.length - filtered.length
+    if (filtered.length !== list.length) await store.set(key, filtered)
+  }
+  await store.del(indexKey)
+  return { removedEntries, inspectedLists: keys.size }
+}
+
 function verifyStudentPassword(auth, password) {
   const provided = String(password || '')
   if (!hasCurrentStudentPassword(auth)) return false
@@ -81,9 +117,10 @@ export default async function handler(req, res) {
     const list = Array.isArray(current) ? current : []
 
     const numericScore = Number(score)
+    const normalizedStudentId = String(studentId).toUpperCase()
     const entry = {
-      studentId: String(studentId).toUpperCase(),
-      name: String(name || studentId).slice(0, 30),
+      studentId: normalizedStudentId,
+      name: String(profile.name || studentId).slice(0, 30),
       score: numericScore,
       timestamp: Date.now()
     }
@@ -106,6 +143,7 @@ export default async function handler(req, res) {
     }
 
     await kv.set(key, trimmed)
+    await kv.sadd(getHighscoreIndexKey(normalizedStudentId), key)
     const rank = trimmed.findIndex(e => e.studentId === entry.studentId) + 1
     return res.status(200).json({ qualified: true, rank, highscores: trimmed })
   }

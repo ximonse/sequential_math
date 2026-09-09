@@ -33,6 +33,7 @@ graph TB
         API1[/api/students<br/>GET alla profiler]
         API2[/api/student/:id<br/>GET/POST + merge]
         API3[/api/teacher-login<br/>Kontolösenord + token]
+        API4[/api/admin-recovery<br/>Tidsbegränsad engångsåterställning]
         KV[(Vercel KV<br/>Redis)]
     end
 

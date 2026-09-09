@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
   try {
     const classRecord = await kv.get(key)
-    if (!classRecord) return res.status(404).json({ error: 'Class not found' })
+    if (!classRecord && req.method !== 'DELETE') return res.status(404).json({ error: 'Class not found' })
 
     if (req.method === 'GET') {
       return res.status(200).json({ class: classRecord })

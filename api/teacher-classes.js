@@ -93,12 +93,29 @@ export default async function handler(req, res) {
     const id = String(req.query?.id || req.body?.id || '').trim()
     if (!id) return res.status(400).json({ error: 'id required' })
 
-    // Check authorization
-    if (authorizedClassIds !== null && !await canAccessClass(req, id)) {
+    const auth = getTeacherAuthPayload(req)
+    const deletionKey = `class_deletion:${id}`
+    const priorDeletion = await kv.get(deletionKey)
+    const canResumeDeletion = Boolean(
+      auth?.isAdmin || (auth?.teacherId && Array.isArray(priorDeletion?.teacherIds)
+        && priorDeletion.teacherIds.includes(auth.teacherId))
+    )
+    const hasLiveAccess = authorizedClassIds === null || await canAccessClass(req, id)
+    if (!hasLiveAccess && !canResumeDeletion) {
       return res.status(403).json({ error: 'Not authorized for this class' })
     }
 
     try {
+      // Keep a narrow retry capability before tombstoning removes live access.
+      if (hasLiveAccess && !priorDeletion) {
+        const record = await kv.get(`class:${id}`)
+        if (record) {
+          await kv.set(deletionKey, {
+            teacherIds: Array.isArray(record.teacherIds) ? record.teacherIds : [],
+            startedAt: Date.now()
+          })
+        }
+      }
       await deleteClassRecord(id)
     } catch (error) {
       return res.status(error.status || 500).json({ error: error.status ? error.message : 'Storage error' })

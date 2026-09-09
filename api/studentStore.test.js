@@ -6,6 +6,7 @@ vi.mock('@vercel/kv', () => ({ kv: {
   get: vi.fn(async key => structuredClone(memory.get(key) ?? null)),
   exists: vi.fn(async key => memory.has(key) ? 1 : 0),
   smembers: vi.fn(async key => [...(memory.get(key) || [])]),
+  set: vi.fn(async (key, value) => memory.set(key, structuredClone(value))),
   del: vi.fn(async key => memory.delete(key)),
   eval: vi.fn(async (_script, keys, args) => {
     // Atomic fake Redis boundary; conflict/retry behavior runs in real handlers.
@@ -40,6 +41,7 @@ vi.mock('./_helpers.js', () => ({
 import studentHandler from './student/[studentId].js'
 import eventsHandler from './student/[studentId]/events.js'
 import rosterHandler from './student-roster.js'
+import teacherClassesHandler from './teacher-classes.js'
 import { isCurrentStudentProfile } from '../src/lib/studentProfileContract.js'
 import { sanitizeProfileForList } from './students.js'
 import { isTeacherListProfile } from '../src/lib/teacherListProfile.js'
@@ -68,6 +70,13 @@ async function call(handler, method, body = {}, teacher = admin) {
   const res = { code: 200, status(code) { this.code = code; return this },
     json(data) { this.data = data; return this } }
   await handler(req, res)
+  return res
+}
+async function callClass(method, id, teacher = owner) {
+  const req = { method, query: { id }, headers: {}, body: {}, teacher }
+  const res = { code: 200, status(code) { this.code = code; return this },
+    json(data) { this.data = data; return this } }
+  await teacherClassesHandler(req, res)
   return res
 }
 beforeEach(async () => {
@@ -194,6 +203,25 @@ describe('student persistence boundary', () => {
     expect((await call(studentHandler, 'POST', { profile: old }, null)).code).toBe(200)
     expect(memory.get('student:PUPIL').classIds).toEqual([])
     await expect(createClassRecord({ id: 'A', name: 'Old class' })).rejects.toMatchObject({ status: 410 })
+  })
+
+  it('lets the same class owner resume deletion after the class tombstone exists', async () => {
+    const originalDelete = memory.get.bind(memory)
+    let interruptOnce = true
+    memory.get = key => {
+      if (key === 'student:PUPIL' && interruptOnce) {
+        interruptOnce = false
+        throw new Error('Synthetic interruption')
+      }
+      return originalDelete(key)
+    }
+    expect((await callClass('DELETE', 'A', owner)).code).toBe(500)
+    expect(memory.has('class_deleted:A')).toBe(true)
+    expect(memory.get('class_deletion:A').teacherIds).toEqual(['owner'])
+    memory.get = originalDelete
+    expect((await callClass('DELETE', 'A', owner)).code).toBe(200)
+    expect(memory.get('student:PUPIL').classIds).toEqual([])
+    expect((await callClass('DELETE', 'A', { teacherId: 'stranger', isAdmin: false })).code).toBe(403)
   })
 
   it('does not let a concurrent write win over deletion', async () => {

@@ -42,7 +42,7 @@ For each coherent change inspect the scoped diff, run meaningful tests and requi
 
 ## Remaining work / release gates
 
-- Execute CAS Lua against an isolated real Redis, including simultaneous class deletion and enrollment. Audit interrupted cleanup/retry: a non-admin teacher currently loses live class ownership after tombstoning, so a retry may need administrative cleanup. Do not describe deletion as a fully verified multi-record transaction.
+- Execute CAS Lua against an isolated real Redis, including simultaneous class deletion and enrollment. A non-admin teacher now receives a narrowly scoped deletion-retry marker before tombstoning, so interrupted cleanup can resume; this remains unverified against real Redis and is not a multi-record transaction.
 - Reconcile all day/30-day/detail/export metrics: some still use the capped recent list while weekly totals use the full-log summary. Do not infer full statistical consistency from the tests above.
 - Test full teacher detail, tickets, password changes, successful enrollment and student practice end-to-end against a local API plus synthetic database; exercise touch on a tablet.
 - Audit account/session revocation and credentials separately. Live class ownership does not itself revoke already issued teacher tokens.

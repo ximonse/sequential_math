@@ -10,6 +10,11 @@ vi.mock('@vercel/kv', () => ({ kv: {
     return 'OK'
   }),
   del: vi.fn(async key => records.delete(key)),
+  sadd: vi.fn(async (key, ...values) => {
+    const members = new Set(records.get(key) || [])
+    values.forEach(value => members.add(value))
+    records.set(key, [...members])
+  }),
   smembers: vi.fn(async key => [...(records.get(key) || [])])
 } }))
 
@@ -19,9 +24,9 @@ import { hashTeacherPassword, verifyTeacherPassword } from './_helpers.js'
 function response() {
   return { code: 200, headers: {}, setHeader(name, value) { this.headers[name] = value }, status(code) { this.code = code; return this }, json(data) { this.data = data; return this }, send(data) { this.data = data; return this }, end() {} }
 }
-async function call(token, password, adminId = 'admin') {
+async function call(token, password, adminId = 'admin', extra = {}) {
   const res = response()
-  await handler({ method: 'POST', query: { token }, headers: {}, body: { password, adminId } }, res)
+  await handler({ method: 'POST', query: { token }, headers: {}, body: { password, adminId, ...extra } }, res)
   return res
 }
 
@@ -53,5 +58,16 @@ describe('temporary admin recovery', () => {
     expect(await call('one-time-token', 'new-password', 'other')).toMatchObject({ code: 200 })
     expect(verifyTeacherPassword('new-password', records.get('teacher_account:other').passwordHash, records.get('teacher_account:other').passwordSalt)).toBe(true)
     expect(records.get('teacher_account:other').isAdmin).toBe(true)
+  })
+
+  it('creates the first admin account when no teacher accounts exist', async () => {
+    records.clear()
+    records.set('teacher_accounts:index', [])
+    expect(await call('one-time-token', 'new-password', '', { username: 'simon', displayName: 'Simon' }))
+      .toMatchObject({ code: 201, data: { ok: true } })
+    const [id] = records.get('teacher_accounts:index')
+    const account = records.get(`teacher_account:${id}`)
+    expect(account).toMatchObject({ username: 'simon', displayName: 'Simon', isAdmin: true, sessionVersion: 1 })
+    expect(verifyTeacherPassword('new-password', account.passwordHash, account.passwordSalt)).toBe(true)
   })
 })

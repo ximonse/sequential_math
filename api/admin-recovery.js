@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import { kv } from '@vercel/kv'
 import { hashTeacherPassword, secureCompare, withCors } from './_helpers.js'
 
@@ -17,6 +17,9 @@ function recoveryConfig() {
 }
 
 function recoveryPage(accounts) {
+  if (accounts.length === 0) {
+    return `<!doctype html><html lang="sv"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Skapa första admin</title><body><main><h1>Skapa första adminkontot</h1><p>Länken kan användas en gång och gäller i fem minuter.</p><form id="form"><label>Användarnamn <input id="username" required minlength="3" autocomplete="username"></label><label>Visningsnamn <input id="displayName" autocomplete="name"></label><label>Nytt lösenord <input id="password" type="password" minlength="6" required autocomplete="new-password"></label><button>Skapa adminkonto</button><p id="status" role="status"></p></form></main><script>const f=document.querySelector('#form'),s=document.querySelector('#status');f.addEventListener('submit',async e=>{e.preventDefault();s.textContent='Sparar…';const r=await fetch(location.href,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:document.querySelector('#username').value,displayName:document.querySelector('#displayName').value,password:document.querySelector('#password').value})});const d=await r.json();s.textContent=d.message||d.error||'Kunde inte skapa adminkontot.';if(r.ok)f.remove()})</script></body></html>`
+  }
   const options = accounts.map(account => `<option value="${String(account.id).replace(/"/g, '&quot;')}">${String(account.displayName || account.username || account.id).replace(/[<>&]/g, '')}</option>`).join('')
   const accountPicker = accounts.length > 1
     ? `<label>Lärarkonto <select id="adminId" required>${options}</select></label>`
@@ -42,7 +45,6 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     const accounts = await getRecoverableAccounts()
-    if (accounts.length === 0) return res.status(409).json({ error: 'Hittade inget aktivt lärarkonto.' })
     res.setHeader('Content-Type', 'text/html; charset=utf-8')
     return res.status(200).send(recoveryPage(accounts))
   }
@@ -59,7 +61,24 @@ export default async function handler(req, res) {
   try {
     const accounts = await getRecoverableAccounts()
     const requestedAdminId = String(req.body?.adminId || '')
-    const account = accounts.find(item => item.id === requestedAdminId)
+    let account = accounts.find(item => item.id === requestedAdminId)
+    if (accounts.length === 0) {
+      const username = String(req.body?.username || '').trim().toLowerCase()
+      const displayName = String(req.body?.displayName || username).trim()
+      if (!/^[a-z0-9._-]{3,64}$/.test(username)) {
+        await kv.del(claimKey)
+        return res.status(400).json({ error: 'Användarnamnet måste ha 3–64 tecken: bokstäver, siffror, punkt, bindestreck eller understreck.' })
+      }
+      const { hash, salt, scheme } = hashTeacherPassword(password)
+      account = {
+        id: randomBytes(8).toString('hex'), username, displayName: displayName || username,
+        passwordHash: hash, passwordSalt: salt, passwordScheme: scheme,
+        classIds: [], isAdmin: true, sessionVersion: 1, createdAt: Date.now()
+      }
+      await kv.set(`teacher_account:${account.id}`, account)
+      await kv.sadd('teacher_accounts:index', account.id)
+      return res.status(201).json({ ok: true, message: 'Adminkontot är skapat. Logga nu in som lärare.' })
+    }
     if (!account) {
       await kv.del(claimKey)
       return res.status(409).json({ error: 'Välj ett aktivt lärarkonto.' })

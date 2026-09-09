@@ -233,6 +233,7 @@ export default function DashboardLayout({
         onExportCsv={handleExportStudentDetailCsv}
         canExportCsv={Boolean(detailStudentProfile && detailStudentRow && detailStudentViewData)}
         onDeleteStudent={handleDeleteStudent}
+        onRenameStudent={handleRenameStudent}
         detailStudentProfile={detailStudentProfile}
         detailStudentRow={detailStudentRow}
         detailStudentViewData={detailStudentViewData}
@@ -377,6 +378,7 @@ export default function DashboardLayout({
           students={students}
           recordMatchesClassFilter={recordMatchesClassFilter}
           onDeleteClass={handleDeleteClass}
+          onRenameClass={handleRenameClass}
           onSaveClassExtras={handleSaveClassExtras}
         />
       </>

@@ -105,6 +105,7 @@ function Dashboard() {
 
     const serverClasses = await syncClassesFromServer()
     setClasses(serverClasses || [])
+    return profiles
   }, [])
 
   useEffect(() => {
@@ -181,9 +182,12 @@ function Dashboard() {
     handleJumpToPasswordReset,
     handleCreateClass,
     handleAddExistingStudentsToClass,
+    handleMoveStudent,
     handleAddStudentsToClass,
     handleDeleteClass,
     handleDeleteStudent,
+    handleRenameStudent,
+    handleRenameClass,
     handleToggleClassFilter,
     clearClassFilter,
     handleResetStudentPassword,
@@ -405,8 +409,8 @@ function Dashboard() {
         filteredTableStudentOptions, tableStudentSet, handleToggleTableStudent, tableDevelopmentOverview,
         supportRows, handleCreateQuickAssignment,
         classNameInput, setClassNameInput, handleCreateClass, addToClassId, setAddToClassId,
-        classes, handleAddExistingStudentsToClass, handleMoveStudent, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus, handleDeleteClass, handleSaveClassExtras,
-        handleDeleteStudent,
+        classes, handleAddExistingStudentsToClass, handleMoveStudent, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus, handleDeleteClass, handleRenameClass, handleSaveClassExtras,
+        handleDeleteStudent, handleRenameStudent,
         resultsPanelProps, PASSWORD_RESET_SECTION_ID, passwordResetRows, passwordResetSearch,
         setPasswordResetSearch, passwordResetStatus, handleResetStudentPassword, passwordResetBusyId
       }}

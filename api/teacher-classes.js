@@ -5,7 +5,7 @@
  */
 import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
-import { createClassRecord, deleteClassRecord } from './_classStore.js'
+import { createClassRecord, deleteClassRecord, mutateClassRecord } from './_classStore.js'
 import { getLiveAuthorizedClassIds, canAccessClass } from './_studentAccess.js'
 import {
   getLiveTeacherAuthPayload,
@@ -15,7 +15,7 @@ import {
 
 export default async function handler(req, res) {
   withCors(res, {
-    methods: 'GET,POST,DELETE,OPTIONS',
+    methods: 'GET,POST,PUT,DELETE,OPTIONS',
     headers: 'Content-Type, x-teacher-token'
   }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
@@ -86,6 +86,21 @@ export default async function handler(req, res) {
     }
 
     return res.status(201).json({ ok: true, class: classRecord })
+  }
+
+  // ── DELETE ─────────────────────────────────────────────────────────────────
+  if (req.method === 'PUT') {
+    const id = String(req.body?.id || '').trim()
+    const name = String(req.body?.name || '').trim()
+    if (!id || !name) return res.status(400).json({ error: 'id and name required' })
+    if (!await canAccessClass(req, id)) return res.status(403).json({ error: 'Not authorized for this class' })
+    try {
+      const updated = await mutateClassRecord(id, current => {
+        if (!current) throw Object.assign(new Error('Class not found'), { status: 404 })
+        return { ...current, name }
+      })
+      return res.status(200).json({ ok: true, class: updated })
+    } catch (error) { return res.status(error.status || 500).json({ error: error.message || 'Storage error' }) }
   }
 
   // ── DELETE ─────────────────────────────────────────────────────────────────

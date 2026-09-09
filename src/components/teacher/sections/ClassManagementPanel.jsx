@@ -93,6 +93,7 @@ export default function ClassManagementPanel({
   students,
   recordMatchesClassFilter,
   onDeleteClass,
+  onRenameClass,
   onSaveClassExtras,
   onMoveStudent
 }) {
@@ -267,6 +268,7 @@ export default function ClassManagementPanel({
                   >
                     Ta bort klass
                   </button>
+                  <button onClick={() => { const name = window.prompt('Nytt klassnamn:', item.name); if (name?.trim()) onRenameClass(item.id, name) }} className="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs">Byt namn</button>
                 </div>
                 {onSaveClassExtras && (
                   <ClassExtrasRow classRecord={item} onSaveExtras={onSaveClassExtras} />

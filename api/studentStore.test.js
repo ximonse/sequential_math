@@ -75,8 +75,8 @@ async function call(handler, method, body = {}, teacher = admin) {
   await handler(req, res)
   return res
 }
-async function callClass(method, id, teacher = owner) {
-  const req = { method, query: { id }, headers: {}, body: {}, teacher }
+async function callClass(method, id, teacher = owner, body = {}) {
+  const req = { method, query: { id }, headers: {}, body, teacher }
   const res = { code: 200, status(code) { this.code = code; return this },
     json(data) { this.data = data; return this } }
   await teacherClassesHandler(req, res)
@@ -89,6 +89,14 @@ beforeEach(async () => {
 })
 
 describe('student persistence boundary', () => {
+  it('renames a pupil and class without changing their identities or history', async () => {
+    const pupil = await call(studentHandler, 'PATCH', { serverRevision: 0, changes: { name: 'New name' } }, owner)
+    expect(pupil.code).toBe(200)
+    expect(memory.get('student:PUPIL')).toMatchObject({ studentId: 'PUPIL', name: 'New name', classIds: ['A'] })
+    const klass = await callClass('PUT', 'A', owner, { id: 'A', name: '4B' })
+    expect(klass).toMatchObject({ code: 200, data: { ok: true } })
+    expect(memory.get('class:A')).toMatchObject({ id: 'A', name: '4B' })
+  })
   it('creates distinct same-name pupils and safely retries a concurrent roster submission', async () => {
     const body = { requestId: 'synthetic-request-1234', className: 'Test class', names: ['Karl', 'Karl', 'Lo A'] }
     const responses = await Promise.all([

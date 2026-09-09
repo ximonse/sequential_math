@@ -20,6 +20,7 @@ export default function StudentDetailPanel({
   onExportCsv,
   canExportCsv,
   onDeleteStudent,
+  onRenameStudent,
   detailStudentProfile,
   detailStudentRow,
   detailStudentViewData,
@@ -95,6 +96,9 @@ export default function StudentDetailPanel({
           >
             Exportera elevvy CSV
           </button>
+          {detailStudentProfile && (
+            <button type="button" onClick={() => { const name = window.prompt('Nytt namn:', detailStudentProfile.name); if (name?.trim()) onRenameStudent(detailStudentProfile.studentId, name) }} className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs font-medium">Byt namn</button>
+          )}
           {detailStudentProfile && (
             <button
               type="button"

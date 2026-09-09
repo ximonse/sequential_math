@@ -44,7 +44,7 @@ For each coherent change inspect the scoped diff, run meaningful tests and requi
 
 ## Remaining work / release gates
 
-- Execute CAS Lua against an isolated real Redis, including simultaneous class deletion and enrollment. A non-admin teacher now receives a narrowly scoped deletion-retry marker before tombstoning, so interrupted cleanup can resume; this remains unverified against real Redis and is not a multi-record transaction.
+- Completed locally: execute CAS Lua against an isolated real Redis. The reusable command is `npm run verify:redis-cas` while a temporary container named `sequential-math-redis-check` is running. It verifies stale-write conflict/retry, a class tombstone blocking enrollment, and student tombstone/index cleanup. Class deletion's multi-record cleanup remains a non-transactional retry workflow.
 - Reconcile remaining detailed breakdowns and exports: operation, skill, assignment and reasonable-error detail can still come from the capped recent list, even when the aggregate day/week total is complete. Do not infer a complete per-skill history from the aggregate tests above.
 - Test full teacher detail, tickets, password changes, successful enrollment and student practice end-to-end against a local API plus synthetic database; exercise touch on a tablet.
 - Retire the legacy environment-password auth path after confirming that every intended teacher has an account. It deliberately bypasses per-account session revocation for backwards compatibility.

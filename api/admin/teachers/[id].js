@@ -4,6 +4,7 @@
  * Both require admin auth.
  */
 import { kv } from '@vercel/kv'
+import { validateSchoolId } from '../../_schoolStore.js'
 import {
   hashTeacherPassword,
   isLiveAdminAuthorized,
@@ -46,8 +47,16 @@ export default async function handler(req, res) {
       if (typeof req.body?.displayName === 'string') {
         updated.displayName = req.body.displayName.trim() || account.displayName
       }
-      if (Array.isArray(req.body?.classIds)) {
-        updated.classIds = req.body.classIds.map(String).filter(Boolean)
+      if (Array.isArray(req.body?.schoolIds)) {
+        const schoolIds = [...new Set((await Promise.all(req.body.schoolIds.map(validateSchoolId))).filter(Boolean))]
+        const classIds = await kv.smembers('classes:index') || []
+        const classes = await Promise.all(classIds.map(classId => kv.get(`class:${classId}`)))
+        const assignedOutsideSchool = classes.some(classRecord => (
+          classRecord && Array.isArray(classRecord.teacherIds) && classRecord.teacherIds.includes(id)
+            && classRecord.schoolId && !schoolIds.includes(classRecord.schoolId)
+        ))
+        if (assignedOutsideSchool) return res.status(400).json({ error: 'Flytta eller avkoppla lärarens klasser innan skolans tilldelning tas bort.' })
+        updated.schoolIds = schoolIds
         shouldRevokeSessions = true
       }
       if (typeof req.body?.isAdmin === 'boolean') {

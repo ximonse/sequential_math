@@ -3,6 +3,7 @@
  * Visas bara för adminanvändare (isAdmin === true).
  */
 import { useSchools, SchoolSelect, NewSchoolForm } from './SchoolControls'
+import SchoolYearRollover from './SchoolYearRollover'
 import { useEffect, useState } from 'react'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
 import { listDomains } from '../../../domains/registry'
@@ -100,7 +101,8 @@ export default function TeacherAdminPanel() {
 // ── Lärare-flik ───────────────────────────────────────────────────────────────
 
 function TeachersTab({ teachers, classes, onRefresh, setStatus }) {
-  const [form, setForm] = useState({ username: '', displayName: '', password: '', isAdmin: false, classIds: [] })
+  const directory = useSchools()
+  const [form, setForm] = useState({ username: '', displayName: '', password: '', isAdmin: false, schoolIds: [] })
   const [busy, setBusy] = useState(false)
 
   const handleCreate = async (e) => {
@@ -114,7 +116,7 @@ function TeachersTab({ teachers, classes, onRefresh, setStatus }) {
     setBusy(false)
     if (ok) {
       setStatus(`✓ Lärare "${form.username}" skapad`)
-      setForm({ username: '', displayName: '', password: '', isAdmin: false, classIds: [] })
+      setForm({ username: '', displayName: '', password: '', isAdmin: false, schoolIds: [] })
       onRefresh()
     } else {
       setStatus(data?.error || 'Kunde inte skapa lärare')
@@ -154,24 +156,25 @@ function TeachersTab({ teachers, classes, onRefresh, setStatus }) {
           className="border rounded px-2 py-1.5"
         />
         <div className="col-span-2">
-          <label className="text-xs text-gray-600">Tilldela klasser:</label>
+          <label className="text-xs text-gray-600">Tilldela skolor:</label>
           <div className="flex flex-wrap gap-2 mt-1">
-            {classes.map(c => (
-              <label key={c.id} className="flex items-center gap-1 text-xs cursor-pointer">
+            {directory.schools.map(school => (
+              <label key={school.id} className="flex items-center gap-1 text-xs cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={form.classIds.includes(c.id)}
+                  checked={form.schoolIds.includes(school.id)}
                   onChange={e => setForm(f => ({
                     ...f,
-                    classIds: e.target.checked
-                      ? [...f.classIds, c.id]
-                      : f.classIds.filter(id => id !== c.id)
+                    schoolIds: e.target.checked
+                      ? [...f.schoolIds, school.id]
+                      : f.schoolIds.filter(id => id !== school.id)
                   }))}
                 />
-                {c.name}
+                {school.name}
               </label>
             ))}
           </div>
+          <p className="mt-1 text-[10px] text-gray-500">Klassansvar väljs under fliken Klasser.</p>
         </div>
         <label className="col-span-2 flex items-center gap-2 text-xs">
           <input type="checkbox" checked={form.isAdmin} onChange={e => setForm(f => ({ ...f, isAdmin: e.target.checked }))} />
@@ -188,7 +191,7 @@ function TeachersTab({ teachers, classes, onRefresh, setStatus }) {
             <tr className="text-left text-gray-500 border-b">
               <th className="py-1 pr-2">Användarnamn</th>
               <th className="py-1 pr-2">Namn</th>
-              <th className="py-1 pr-2">Klasser</th>
+              <th className="py-1 pr-2">Skolor</th>
               <th className="py-1 pr-2">Admin</th>
               <th className="py-1"></th>
             </tr>
@@ -198,7 +201,7 @@ function TeachersTab({ teachers, classes, onRefresh, setStatus }) {
               <tr><td colSpan={5} className="py-2 text-gray-400">Inga lärarkonton ännu.</td></tr>
             )}
             {teachers.map(t => (
-              <TeacherRow key={t.id} teacher={t} classes={classes} onDelete={handleDelete} onRefresh={onRefresh} setStatus={setStatus} />
+              <TeacherRow key={t.id} teacher={t} classes={classes} schools={directory.schools} onDelete={handleDelete} onRefresh={onRefresh} setStatus={setStatus} />
             ))}
           </tbody>
         </table>
@@ -207,19 +210,19 @@ function TeachersTab({ teachers, classes, onRefresh, setStatus }) {
   )
 }
 
-function TeacherRow({ teacher, classes, onDelete, onRefresh, setStatus }) {
+function TeacherRow({ teacher, classes, schools, onDelete, onRefresh, setStatus }) {
   const [editing, setEditing] = useState(false)
   const [newPassword, setNewPassword] = useState('')
-  const [classIds, setClassIds] = useState(teacher.classIds || [])
+  const [schoolIds, setSchoolIds] = useState(teacher.schoolIds || [])
   const [busy, setBusy] = useState(false)
 
-  const classNames = (teacher.classIds || [])
-    .map(id => classes.find(c => c.id === id)?.name || id)
+  const schoolNames = (teacher.schoolIds || [])
+    .map(id => schools.find(school => school.id === id)?.name || id)
     .join(', ') || '—'
 
   const handleSave = async () => {
     setBusy(true)
-    const body = { classIds }
+    const body = { schoolIds }
     if (newPassword.length >= 6) body.password = newPassword
     const { ok } = await apiFetch(`/api/admin/teachers/${teacher.id}`, {
       method: 'PUT',
@@ -237,11 +240,11 @@ function TeacherRow({ teacher, classes, onDelete, onRefresh, setStatus }) {
           <div className="space-y-2">
             <p className="text-xs font-semibold">{teacher.username}</p>
             <div className="flex flex-wrap gap-2">
-              {classes.map(c => (
-                <label key={c.id} className="flex items-center gap-1 text-xs cursor-pointer">
-                  <input type="checkbox" checked={classIds.includes(c.id)}
-                    onChange={e => setClassIds(prev => e.target.checked ? [...prev, c.id] : prev.filter(id => id !== c.id))} />
-                  {c.name}
+              {schools.map(school => (
+                <label key={school.id} className="flex items-center gap-1 text-xs cursor-pointer">
+                  <input type="checkbox" checked={schoolIds.includes(school.id)}
+                    onChange={e => setSchoolIds(prev => e.target.checked ? [...prev, school.id] : prev.filter(id => id !== school.id))} />
+                  {school.name}
                 </label>
               ))}
             </div>
@@ -262,7 +265,7 @@ function TeacherRow({ teacher, classes, onDelete, onRefresh, setStatus }) {
     <tr className="border-b last:border-b-0 hover:bg-gray-50">
       <td className="py-1 pr-2 font-mono">{teacher.username}</td>
       <td className="py-1 pr-2">{teacher.displayName || '—'}</td>
-      <td className="py-1 pr-2 text-gray-600">{classNames}</td>
+      <td className="py-1 pr-2 text-gray-600">{schoolNames}</td>
       <td className="py-1 pr-2">{teacher.isAdmin ? '✓' : ''}</td>
       <td className="py-1 flex gap-1">
         <button onClick={() => setEditing(true)} className="px-2 py-0.5 bg-gray-100 hover:bg-gray-200 rounded text-xs">Redigera</button>
@@ -319,6 +322,8 @@ function ClassesTab({ classes, teachers, onRefresh, setStatus }) {
         </button>
       </form>
 
+      <SchoolYearRollover schools={directory.schools} onCompleted={onRefresh} setStatus={setStatus} />
+
       <div className="space-y-2">
         {classes.length === 0 && <p className="text-xs text-gray-400">Inga klasser ännu.</p>}
         {classes.map(c => (
@@ -360,7 +365,7 @@ function ClassRow({ classRecord, teachers, extras, directory, onDelete, onRefres
       >
         <div>
           <span className="text-sm font-semibold text-gray-800">{classRecord.name}</span>
-          <span className="text-xs text-gray-500 ml-2">{directory.schools.find(school => school.id === classRecord.schoolId)?.name || 'Skola ej angiven'} · {teacherNames}</span>
+          <span className="text-xs text-gray-500 ml-2">ID: {classRecord.id} · {directory.schools.find(school => school.id === classRecord.schoolId)?.name || 'Skola ej angiven'} · {teacherNames}</span>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={e => { e.stopPropagation(); onDelete(classRecord.id, classRecord.name) }}

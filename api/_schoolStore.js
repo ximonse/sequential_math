@@ -9,6 +9,18 @@ export async function validateSchoolId(value) {
   return value
 }
 
+export async function assertTeachersBelongToSchool(teacherIds, schoolId) {
+  const normalizedSchoolId = await validateSchoolId(schoolId)
+  if (!normalizedSchoolId || !Array.isArray(teacherIds) || teacherIds.length === 0) return normalizedSchoolId
+
+  const accounts = await Promise.all(teacherIds.map(id => kv.get(`teacher_account:${String(id)}`)))
+  const missingSchoolMembership = accounts.some(account => (
+    !account || (!account.isAdmin && !(Array.isArray(account.schoolIds) && account.schoolIds.map(String).includes(normalizedSchoolId)))
+  ))
+  if (missingSchoolMembership) throw studentStoreError(400, 'Alla tilldelade lärare måste tillhöra klassens skola.')
+  return normalizedSchoolId
+}
+
 export async function listSchools() {
   const ids = await kv.smembers('schools:index')
   const records = await Promise.all((ids || []).map(async id => {

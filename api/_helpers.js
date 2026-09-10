@@ -225,6 +225,7 @@ export async function getLiveTeacherAuthPayload(req, { store = kv } = {}) {
   return {
     teacherId: tokenAuth.teacherId,
     classIds: Array.isArray(account.classIds) ? account.classIds.map(String).filter(Boolean) : [],
+    schoolIds: Array.isArray(account.schoolIds) ? account.schoolIds.map(String).filter(Boolean) : [],
     isAdmin: Boolean(account.isAdmin),
     sessionVersion: accountVersion,
     legacy: false

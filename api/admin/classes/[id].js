@@ -4,7 +4,7 @@
  * DELETE /api/admin/classes/:id — delete class
  * Admin auth required.
  */
-import { validateSchoolId } from '../../_schoolStore.js'
+import { assertTeachersBelongToSchool, validateSchoolId } from '../../_schoolStore.js'
 import { kv } from '@vercel/kv'
 import { mutateClassRecord, deleteClassRecord } from '../../_classStore.js'
 import { studentStoreError } from '../../_studentStore.js'
@@ -67,6 +67,7 @@ export default async function handler(req, res) {
           })
         ])
       }
+      await assertTeachersBelongToSchool(updated.teacherIds || [], updated.schoolId)
       if (Array.isArray(req.body?.enabledExtras)) {
         updated.enabledExtras = req.body.enabledExtras.map(String).filter(Boolean)
       }

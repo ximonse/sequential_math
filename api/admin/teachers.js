@@ -5,6 +5,7 @@
  */
 import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
+import { validateSchoolId } from '../_schoolStore.js'
 import {
   hashTeacherPassword,
   isLiveAdminAuthorized,
@@ -46,7 +47,7 @@ export default async function handler(req, res) {
     const displayName = String(req.body?.displayName || req.body?.username || '').trim()
     const password = String(req.body?.password || '')
     const isAdmin = Boolean(req.body?.isAdmin)
-    const classIds = Array.isArray(req.body?.classIds) ? req.body.classIds.map(String) : []
+    const schoolIds = Array.isArray(req.body?.schoolIds) ? await Promise.all(req.body.schoolIds.map(validateSchoolId)) : []
 
     if (!username || !password) {
       return res.status(400).json({ error: 'username and password required', code: 'MISSING_FIELDS' })
@@ -74,7 +75,8 @@ export default async function handler(req, res) {
       passwordHash: hash,
       passwordSalt: salt,
       passwordScheme: scheme,
-      classIds,
+      classIds: [],
+      schoolIds: [...new Set(schoolIds.filter(Boolean))],
       isAdmin,
       sessionVersion: 1,
       createdAt: Date.now()

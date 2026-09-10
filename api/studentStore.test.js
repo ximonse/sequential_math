@@ -53,7 +53,7 @@ import { createClassRecord, deleteClassRecord } from './_classStore.js'
 import { createStudentProfile } from '../src/lib/studentProfile.js'
 
 const admin = { isAdmin: true }
-const owner = { teacherId: 'owner', isAdmin: false, classIds: [] }
+const owner = { teacherId: 'owner', isAdmin: false, classIds: [], schoolIds: ['S'] }
 function profile() {
   return {
     ...createStudentProfile('PUPIL', 'Same name', 4),
@@ -68,8 +68,9 @@ function result(id) {
     studentAnswer: 2, correctAnswer: 2, timeSpent: 2, speedTimeSec: 2 }
 }
 async function call(handler, method, body = {}, teacher = admin) {
+  const requestBody = body?.className && !body?.schoolId ? { ...body, schoolId: 'S' } : body
   const req = { method, query: { studentId: 'PUPIL' },
-    headers: { 'x-student-password': 'pw' }, body, teacher }
+    headers: { 'x-student-password': 'pw' }, body: requestBody, teacher }
   const res = { code: 200, status(code) { this.code = code; return this },
     json(data) { this.data = data; return this } }
   await handler(req, res)
@@ -84,7 +85,9 @@ async function callClass(method, id, teacher = owner, body = {}) {
 }
 beforeEach(async () => {
   memory.clear()
-  await createClassRecord({ id: 'A', name: '4a', teacherIds: ['owner'] })
+  memory.set('school:S', { id: 'S', name: 'Skolan' })
+  memory.set('schools:index', ['S'])
+  await createClassRecord({ id: 'A', name: '4a', schoolId: 'S', teacherIds: ['owner'] })
   await createStudentRecord('PUPIL', profile())
 })
 
@@ -125,8 +128,8 @@ describe('student persistence boundary', () => {
     expect(added.data.ok).toBe(true)
     expect(memory.get('student:PUPIL').classIds).toContain(added.data.class.id)
     const denied = await call(rosterHandler, 'POST', { ...body, requestId: 'synthetic-request-5678' }, { teacherId: 'stranger' })
-    expect(denied.data.ok).toBe(false)
-    expect(memory.get('student:PUPIL').classIds).not.toContain(denied.data.class.id)
+    expect(denied.code).toBe(403)
+    expect(memory.get('student:PUPIL').classIds).not.toContain(denied.data.class?.id)
   })
 
   it('rejects list summaries as writable profiles and omits credentials from the list', async () => {

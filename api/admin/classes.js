@@ -6,6 +6,7 @@
 import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
 import { createClassRecord } from '../_classStore.js'
+import { assertTeachersBelongToSchool, validateSchoolId } from '../_schoolStore.js'
 import {
   isLiveAdminAuthorized,
   withCors
@@ -41,14 +42,17 @@ export default async function handler(req, res) {
     }
 
     const id = randomBytes(6).toString('hex')
-    const teacherIds = Array.isArray(req.body?.teacherIds) ? req.body.teacherIds.map(String) : []
+    const teacherIds = Array.isArray(req.body?.teacherIds) ? req.body.teacherIds.map(String).filter(Boolean) : []
+    const schoolId = await validateSchoolId(req.body?.schoolId)
+    if (!schoolId) return res.status(400).json({ error: 'Välj en skola för klassen.' })
+    await assertTeachersBelongToSchool(teacherIds, schoolId)
     const enabledExtras = Array.isArray(req.body?.enabledExtras) ? req.body.enabledExtras.map(String) : []
 
     const classRecord = {
       id,
       name,
       teacherIds,
-      schoolId: req.body?.schoolId || '',
+      schoolId,
       enabledExtras,
       createdAt: Date.now()
     }

@@ -25,6 +25,8 @@ export default async function handler(req, res) {
       throw studentStoreError(400, 'Ange 1–100 elever med giltiga namn.')
     }
     const schoolId = classId ? '' : await validateSchoolId(req.body?.schoolId)
+    if (!classId && !schoolId) throw studentStoreError(400, 'Välj en skola för klassen.')
+    if (!classId && !teacher.isAdmin && !(teacher.schoolIds || []).includes(schoolId)) throw studentStoreError(403, 'Klassen måste ligga på en skola som är tilldelad dig.')
     const owner = teacher.teacherId || 'admin'
     const enrollmentKey = digest(JSON.stringify([owner, requestId, classId || className, names, grade, existingStudentIds, ...(schoolId ? [schoolId] : [])]))
     let target

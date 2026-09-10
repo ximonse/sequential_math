@@ -31,26 +31,22 @@ Notera:
 
 ### Skolor och klasser
 
-Under `Klasser` väljer du först skola för den nya klassen eller gruppen.
-Saknas skolan öppnar du `Lägg till skola`, skriver skolnamn och ort och väljer
-`Spara skola`. Använd den befintliga skolan om den redan finns.
+Administratören skapar skolor och tilldelar varje lärare en eller flera skolor. Du ser och kan skapa klasser bara på dina tilldelade skolor. Behöver du en ny skola kontaktar du administratören.
 
-Befintliga klasser visas som `Skola ej angiven`. Välj rätt skola på klassens
-rad och klicka `Spara skolkoppling`. Det ändrar inte elevernas ID, lösenord
-eller träningshistorik. Administratören kan också välja skola vid klasskapande
-och redigering under Administration → Klasser.
+Varje klass har ett oföränderligt **klass-ID**. Klassnamnet kan däremot ändras, exempelvis `4B` till `5B`, utan att elevernas ID, träningshistorik eller elevlänk ändras. Samma klassnamn kan bara finnas en gång på samma skola.
 
-Eleven skriver sitt namn eller sitt elev-ID och lösenord. Efter godkänd
-inloggning väljer eleven en av de skolor och klasser/grupper som är tilldelade
-på elevkontot. Andra elevers klasser visas aldrig. Valet styr den aktiva
-gruppens inställningar och highscore-lista. Startlösenordet är namnet exakt
-som det skrevs vid skapandet. Vid samma namn på flera konton använder eleven
-sitt unika elev-ID i samma inloggningsfält.
+Administratören tilldelar ansvariga lärare under **Administration → Klasser**. En lärare får då se och arbeta med klassens elever, resultat, elevkoder, klasslänk och inställningar.
+
+Elever använder en klasspecifik länk eller QR-kod och loggar in med sitt namn och sin fyrsiffriga kod. De väljer aldrig själva skola eller klass.
 
 ### Radera en elev
 
 1. Öppna eleven under `Elevprofil`.
 2. Välj `Radera elev` och bekräfta. Elevens profil och all historik raderas permanent.
+
+### Nytt läsår
+
+Administratören använder **Administration → Klasser → Nytt läsår**. Välj skola och kontrollera förhandsgranskningen innan `Genomför årsbyte`. Namn som börjar på årskurs 4–8 höjs automatiskt, till exempel `4B` → `5B`. Om ett nytt namn skulle krocka med en befintlig klass stoppas årsbytet tills det är löst.
 
 ## 3. Daglig rutin (rekommenderat)
 

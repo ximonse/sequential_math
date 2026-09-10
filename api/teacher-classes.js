@@ -7,6 +7,7 @@ import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
 import { createClassLoginToken } from './_studentSession.js'
 import { createClassRecord, deleteClassRecord, mutateClassRecord } from './_classStore.js'
+import { validateSchoolId } from './_schoolStore.js'
 import { getLiveAuthorizedClassIds, canAccessClass } from './_studentAccess.js'
 import {
   getLiveTeacherAuthPayload,
@@ -49,12 +50,15 @@ export default async function handler(req, res) {
     if (!name) return res.status(400).json({ error: 'name required' })
 
     const id = String(req.body?.id || '').trim() || randomBytes(6).toString('hex')
+    const schoolId = await validateSchoolId(req.body?.schoolId)
     const enabledExtras = Array.isArray(req.body?.enabledExtras)
       ? req.body.enabledExtras.map(String)
       : []
 
     const payload = await getLiveTeacherAuthPayload(req)
     const teacherId = payload?.teacherId || null
+    if (!schoolId) return res.status(400).json({ error: 'Välj en skola för klassen.' })
+    if (!payload?.isAdmin && !(payload?.schoolIds || []).includes(schoolId)) return res.status(403).json({ error: 'Klassen måste ligga på en skola som är tilldelad dig.' })
     const teacherIds = teacherId ? [teacherId] : []
 
     // Prevent overwriting an existing class
@@ -67,7 +71,7 @@ export default async function handler(req, res) {
       id,
       name,
       teacherIds,
-      schoolId: req.body?.schoolId || '',
+      schoolId,
       enabledExtras,
       createdAt: req.body?.createdAt || Date.now()
     }
@@ -96,6 +100,13 @@ export default async function handler(req, res) {
     const name = String(req.body?.name || '').trim()
     if (!id || !name) return res.status(400).json({ error: 'id and name required' })
     if (!await canAccessClass(req, id)) return res.status(403).json({ error: 'Not authorized for this class' })
+    if (req.body?.schoolId !== undefined) {
+      let schoolId
+      try { schoolId = await validateSchoolId(req.body.schoolId) }
+      catch (error) { return res.status(error.status || 400).json({ error: error.message || 'Ogiltig skola.' }) }
+      const auth = await getLiveTeacherAuthPayload(req)
+      if (!schoolId || (!auth.isAdmin && !(auth.schoolIds || []).includes(schoolId))) return res.status(403).json({ error: 'Klassen måste ligga på en skola som är tilldelad dig.' })
+    }
     try {
       const updated = await mutateClassRecord(id, current => {
         if (!current) throw Object.assign(new Error('Class not found'), { status: 404 })

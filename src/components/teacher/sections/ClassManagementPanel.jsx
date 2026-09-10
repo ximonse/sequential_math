@@ -1,4 +1,4 @@
-import { useSchools, SchoolSelect, NewSchoolForm, ClassSchoolChoice } from './SchoolControls'
+import { useSchools, SchoolSelect, ClassSchoolChoice } from './SchoolControls'
 import { useRef, useState } from 'react'
 import { listDomains } from '../../../domains/registry'
 import { parseRosterLines } from '../../../lib/storageClassHelpers'
@@ -129,7 +129,7 @@ export default function ClassManagementPanel({
   return (
     <div className="bg-white rounded-lg shadow p-4 mb-8">
       <h2 className="text-lg font-semibold text-gray-800 mb-3">Klasser</h2>
-      <NewSchoolForm directory={directory} onCreated={setSchoolId} />
+      <p className="mb-3 text-sm text-gray-600">Välj den skola som administratören har tilldelat dig. Behöver du en ny skola kontaktar du administratören.</p>
       <fieldset disabled={busy} aria-busy={busy}>
       <div className="mb-3"><SchoolSelect schools={directory.schools} value={schoolId} onChange={setSchoolId}
         disabled={directory.loading || Boolean(directory.error)} label="Skola för ny klass/grupp" /></div>
@@ -175,7 +175,7 @@ export default function ClassManagementPanel({
         className="w-full min-h-28 px-3 py-2 border rounded text-sm mb-3"
       />
       <p className="text-xs text-gray-500 mb-2">
-        En elev per rad, eller separera med kommatecken eller semikolon. Förnamn räcker. Varje post skapar en ny elev med ett eget inloggnings-ID, även om namnet redan finns. Startlösenordet är elevens namn.
+        En elev per rad, eller separera med kommatecken eller semikolon. Namn måste vara unika inom klassen. Varje ny elev får en personlig fyrsiffrig kod som visas när listan sparas.
       </p>
       <p className="text-xs text-gray-500 mb-2">
         Listan skapar nya elever; den flyttar inte en befintlig elev med samma namn.
@@ -266,7 +266,7 @@ export default function ClassManagementPanel({
                   <div>
                     <p className="text-sm font-medium text-gray-800">{classLabel(item)}</p>
                     <p className="text-xs text-gray-500">
-                      {classStudents.length} elever | {loggedInCount} har loggat in
+                      Klass-ID: {item.id} · {classStudents.length} elever | {loggedInCount} har loggat in
                     </p>
                   </div>
                   <button

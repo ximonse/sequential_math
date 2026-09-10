@@ -1,17 +1,9 @@
-export async function loadStudentLoginClasses() {
-  const response = await fetch('/api/student-login', { cache: 'no-store' })
-  if (!response.ok) throw new Error('Klasserna kunde inte hämtas.')
-  const data = await response.json()
-  if (!Array.isArray(data?.classes)) throw new Error('Klasserna kunde inte hämtas.')
-  return data.classes.filter(item => typeof item?.id === 'string' && typeof item?.name === 'string')
-}
-
-export async function resolveClassStudentId(classId, name, password, schoolId = '') {
+export async function resolveStudentLogin(name, password) {
   try {
     const response = await fetch('/api/student-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ classId, name: name.trim(), password, schoolId })
+      body: JSON.stringify({ name: name.trim(), password })
     })
     const data = await response.json()
     if (!response.ok) return { ok: false, error: data?.error || 'Kunde inte logga in.' }

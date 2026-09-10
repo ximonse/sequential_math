@@ -9,7 +9,7 @@ vi.mock('@vercel/kv', () => ({ kv: {
 } }))
 import handler from './student-login'
 
-async function call(method = 'POST', body = { classId: 'class-a', name: 'Anna', password: 'Anna' }) {
+async function call(method = 'POST', body = { name: 'Anna', password: 'Anna' }) {
   const res = {
     code: 200, headers: {},
     setHeader(key, value) { this.headers[key] = value },
@@ -32,103 +32,82 @@ function pupil(id, name = 'Anna', classId = 'class-a', password = name) {
 beforeEach(() => {
   records.clear()
   records.set('classes:index', ['class-a', 'class-b'])
-  records.set('class:class-a', { id: 'class-a', name: '6A', teacherIds: ['private-teacher'], studentIds: ['private-student'] })
-  records.set('class:class-b', { id: 'class-b', name: '6B' })
+  records.set('class:class-a', { id: 'class-a', name: '6A', schoolId: 'north' })
+  records.set('class:class-b', { id: 'class-b', name: '6A', schoolId: 'south' })
   pupil('ANNA_A1B2C3')
 })
 
-describe('class and name login', () => {
-  it('lists class names without pupil or teacher data', async () => {
+describe('login with teacher-assigned membership', () => {
+  it('does not publish a school, class or pupil directory', async () => {
     const result = await call('GET')
-    expect(result.data).toEqual({ classes: [{ id: 'class-a', name: '6A', schoolId: '', schoolName: 'Skola ej angiven' }, { id: 'class-b', name: '6B', schoolId: '', schoolName: 'Skola ej angiven' }] })
+    expect(result.code).toBe(405)
+    expect(result.data).toEqual({ error: 'Method not allowed' })
     expect(result.headers['Cache-Control']).toBe('no-store')
   })
-  it('resolves the generated pupil ID only after a correct password', async () => {
+  it('resolves a unique display name without school or class input', async () => {
     expect(await call()).toMatchObject({ code: 200, data: { studentId: 'ANNA_A1B2C3' } })
   })
+  it('accepts the normalized stable ID without scanning the pupil index', async () => {
+    const { kv } = await import('@vercel/kv')
+    kv.smembers.mockClear()
+    expect(await call('POST', { name: ' anna_a1b2c3 ', password: 'Anna' }))
+      .toMatchObject({ code: 200, data: { studentId: 'ANNA_A1B2C3' } })
+    expect(kv.smembers).not.toHaveBeenCalled()
+  })
   it.each([
-    { classId: 'class-b', name: 'Anna', password: 'Anna' },
-    { classId: 'class-a', name: 'Nobody', password: 'Anna' },
-    { classId: 'class-a', name: 'Anna', password: 'wrong' }
+    { name: 'Nobody', password: 'Anna' },
+    { name: 'Anna', password: 'wrong' },
+    { name: 'ANNA_A1B2C3', password: 'wrong' }
   ])('does not reveal IDs for incorrect credentials', async body => {
     const result = await call('POST', body)
     expect(result.code).toBe(401)
     expect(result.data.studentId).toBeUndefined()
   })
-  it('distinguishes identical names in different classes', async () => {
-    pupil('ANNA_OTHER', 'Anna', 'class-b')
-    expect(await call('POST', { classId: 'class-b', name: 'Anna', password: 'Anna' }))
+  it('requires a stable ID when names are duplicated, even across schools', async () => {
+    pupil('ANNA_OTHER', 'Anna', 'class-b', 'different-password')
+    expect(await call()).toMatchObject({ code: 409, data: { error: expect.stringContaining('elev-ID') } })
+    expect((await call('POST', { name: 'Anna', password: 'wrong' })).code).toBe(401)
+    expect(await call('POST', { name: 'ANNA_OTHER', password: 'different-password' }))
       .toMatchObject({ code: 200, data: { studentId: 'ANNA_OTHER' } })
   })
-  it('requires a pupil ID when names are identical within a class', async () => {
-    pupil('ANNA_OTHER', 'Anna', 'class-a', 'different-password')
-    const result = await call()
-    expect(result.code).toBe(409)
-    expect(result.data.error).toContain('elev-ID')
-    expect(result.data.studentId).toBeUndefined()
-    expect((await call('POST', { classId: 'class-a', name: 'Anna', password: 'wrong' })).code).toBe(401)
+  it('preserves legacy ID login when a display name matches that ID', async () => {
+    pupil('ANNA', 'Anna Legacy', 'class-a', 'legacy-password')
+    expect(await call('POST', { name: 'Anna', password: 'legacy-password' }))
+      .toMatchObject({ code: 200, data: { studentId: 'ANNA' } })
+    expect((await call()).code).toBe(401)
   })
   it('normalizes Swedish names and whitespace, but preserves password case', async () => {
     pupil('ASA_TEST', 'Åsa   Öberg', 'class-a', 'Åsa Öberg')
-    expect(await call('POST', { classId: 'class-a', name: '  åsa öberg ', password: 'Åsa Öberg' }))
+    expect(await call('POST', { name: '  åsa öberg ', password: 'Åsa Öberg' }))
       .toMatchObject({ code: 200, data: { studentId: 'ASA_TEST' } })
-    expect((await call('POST', { classId: 'class-a', name: 'åsa öberg', password: 'åsa öberg' })).code).toBe(401)
+    expect((await call('POST', { name: 'åsa öberg', password: 'åsa öberg' })).code).toBe(401)
   })
-  it('supports current group membership and rejects a former class', async () => {
+  it('keeps teacher-assigned school and group memberships unchanged after login', async () => {
     const profile = records.get('student:ANNA_A1B2C3')
-    profile.classId = 'class-b'; profile.classIds = ['class-b']
-    expect((await call()).code).toBe(401)
-    expect((await call('POST', { classId: 'class-b', name: 'Anna', password: 'Anna' })).code).toBe(200)
-    profile.classIds.push('class-a')
-    expect((await call()).code).toBe(200)
-  })
-  it('excludes deleted classes and pupils even if stale records remain', async () => {
-    records.set('student_deleted:ANNA_A1B2C3', {})
-    expect((await call()).code).toBe(401)
-    records.delete('student_deleted:ANNA_A1B2C3')
-    records.set('class_deleted:class-a', {})
-    expect((await call()).code).toBe(401)
-    expect((await call('GET')).data.classes).toEqual([{ id: 'class-b', name: '6B', schoolId: '', schoolName: 'Skola ej angiven' }])
-  })
-  it('does not accept unsupported profiles or passwords', async () => {
-    delete records.get('student:ANNA_A1B2C3').profileSchemaVersion
-    expect((await call()).code).toBe(401)
-  })
-  it('validates input without changing stored pupil identities or history', async () => {
+    profile.classId = 'class-b'; profile.classIds = ['class-b', 'class-a']
     const before = structuredClone(records)
-    expect((await call('POST', { classId: 'class-a', name: '', password: 'Anna' })).code).toBe(400)
     expect((await call()).code).toBe(200)
+    expect((await call('POST', { name: 'ANNA_A1B2C3', password: 'Anna' })).code).toBe(200)
     expect(records).toEqual(before)
   })
-})
-
-describe('school-scoped pupil login', () => {
-  beforeEach(() => {
-    records.set('schools:index', ['north', 'south'])
-    records.set('school:north', { id: 'north', name: 'Norra skolan', createdBy: 'private' })
-    records.set('school:south', { id: 'south', name: 'Södra skolan' })
-    records.get('class:class-a').schoolId = 'north'
-    Object.assign(records.get('class:class-b'), { schoolId: 'south', name: '6A' })
-    pupil('ANNA_SOUTH', 'Anna', 'class-b')
+  it.each([{ classId: 'class-b' }, { schoolId: 'south' }])('rejects attempts to choose membership during login', async fields => {
+    const before = structuredClone(records)
+    expect((await call('POST', { name: 'Anna', password: 'Anna', ...fields })).code).toBe(400)
+    expect(records).toEqual(before)
   })
-  it('keeps two schools with the same class and pupil names distinct', async () => {
-    const directory = await call('GET')
-    expect(directory.data.classes).toEqual([
-      { id: 'class-a', name: '6A', schoolId: 'north', schoolName: 'Norra skolan' },
-      { id: 'class-b', name: '6A', schoolId: 'south', schoolName: 'Södra skolan' }
-    ])
-    expect(await call('POST', { schoolId: 'north', classId: 'class-a', name: 'Anna', password: 'Anna' }))
-      .toMatchObject({ code: 200, data: { studentId: 'ANNA_A1B2C3' } })
-    expect(await call('POST', { schoolId: 'south', classId: 'class-b', name: 'Anna', password: 'Anna' }))
-      .toMatchObject({ code: 200, data: { studentId: 'ANNA_SOUTH' } })
-  })
-  it('rejects a mismatched or omitted school', async () => {
+  it('rejects deleted pupils for names and IDs despite stale records', async () => {
+    records.set('student_deleted:ANNA_A1B2C3', {})
     expect((await call()).code).toBe(401)
-    expect((await call('POST', { schoolId: 'south', classId: 'class-a', name: 'Anna', password: 'Anna' })).code).toBe(401)
+    expect((await call('POST', { name: 'ANNA_A1B2C3', password: 'Anna' })).code).toBe(401)
   })
-  it('does not expose or authenticate classes linked to a missing school', async () => {
-    records.delete('school:north')
-    expect((await call('GET')).data.classes.map(item => item.id)).toEqual(['class-b'])
-    expect((await call('POST', { schoolId: 'north', classId: 'class-a', name: 'Anna', password: 'Anna' })).code).toBe(401)
+  it('does not lock out a pupil whose teacher has not assigned a class yet', async () => {
+    const profile = records.get('student:ANNA_A1B2C3')
+    profile.classId = null; profile.classIds = []
+    expect((await call()).code).toBe(200)
+  })
+  it('does not accept unsupported profiles or invalid input', async () => {
+    expect((await call('POST', { name: '', password: 'Anna' })).code).toBe(400)
+    delete records.get('student:ANNA_A1B2C3').profileSchemaVersion
+    expect((await call()).code).toBe(401)
   })
 })

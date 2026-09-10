@@ -116,10 +116,10 @@ describe('teacher account to pupil lifecycle', () => {
     const studentId = roster.data.results[0].studentId
 
     const loginClasses = await call(studentLoginHandler)
-    expect(loginClasses.data.classes).toContainEqual({ id: roster.data.class.id, name: '4A', schoolId: '', schoolName: 'Skola ej angiven' })
+    expect(loginClasses.code).toBe(405)
     const pupilLogin = await call(studentLoginHandler, {
       method: 'POST',
-      body: { classId: roster.data.class.id, name: 'Ada Student', password: 'Ada Student' }
+      body: { name: 'Ada Student', password: 'Ada Student' }
     })
     expect(pupilLogin).toMatchObject({ code: 200, data: { studentId } })
     const pupilProfile = await call(studentHandler, {
@@ -218,7 +218,7 @@ describe('school management lifecycle', () => {
     expect(replay.data.results[0].studentId).toBe(studentId)
     const changedRetry = await call(rosterHandler, { method: 'POST', headers: auth, body: { ...rosterBody, schoolId: '' } })
     expect(changedRetry.code).toBe(409)
-    expect(await call(studentLoginHandler, { method: 'POST', body: { schoolId, classId: roster.data.class.id, name: 'Anna', password: 'Anna' } }))
+    expect(await call(studentLoginHandler, { method: 'POST', body: { name: 'Anna', password: 'Anna' } }))
       .toMatchObject({ code: 200, data: { studentId } })
     const before = structuredClone(records.get('student:' + studentId))
     const reassigned = await call(classesHandler, { method: 'PUT', headers: auth, body: { id: roster.data.class.id, name: '6A', schoolId: '' } })

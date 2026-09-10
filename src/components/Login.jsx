@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { authenticateStudent, normalizeStudentId } from '../lib/storage'
-import { resolveClassStudentId } from '../lib/studentLoginClient'
+import { authenticateStudent } from '../lib/storage'
+import { resolveStudentLogin } from '../lib/studentLoginClient'
 import StudentLoginForm from './student/StudentLoginForm'
 
 function Login() {
@@ -10,18 +10,15 @@ function Login() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  const handleLogin = async ({ classId, name, password, schoolId = '' }) => {
+  const handleLogin = async ({ name, password }) => {
     if (isLoggingIn) return
     setError('')
     setIsLoggingIn(true)
 
     try {
-      let studentId = normalizeStudentId(name)
-      if (classId) {
-        const resolved = await resolveClassStudentId(classId, name, password, schoolId)
-        if (!resolved.ok) { setError(resolved.error); return }
-        studentId = resolved.studentId
-      }
+      const resolved = await resolveStudentLogin(name, password)
+      if (!resolved.ok) { setError(resolved.error); return }
+      const studentId = resolved.studentId
       const result = await authenticateStudent(studentId, password)
 
       if (!result.ok) {
@@ -76,7 +73,7 @@ function Login() {
           Matteträning
         </h1>
         <p className="text-center text-gray-600 mb-8">
-          Välj skola och klass och logga in med namn och lösenord
+          Logga in med namn eller elev-ID och lösenord
         </p>
 
         <StudentLoginForm onLogin={handleLogin} busy={isLoggingIn} error={error} onClearError={() => setError('')} />

@@ -4,17 +4,15 @@ Den här manualen visar hur eleven använder appen.
 
 ## 1. Logga in
 
-1. Välj din skola.
-2. Välj din klass eller grupp.
-3. Skriv ditt namn som läraren har angett i klasslistan.
-4. Skriv lösenordet och klicka `Logga in`.
+1. Skriv ditt namn eller ditt elev-ID från läraren.
+2. Skriv lösenordet och klicka `Logga in`.
 
 Startlösenordet är namnet exakt som läraren skrev det, om du inte har bytt det.
 Stora och små bokstäver spelar ingen roll för namnsökningen, men kan göra det för lösenordet.
 
-Om läraren ännu inte kopplat klassen till en skola väljer du `Skola ej angiven`.
-Om flera elever i samma klass har samma namn, välj `Logga in med elev-ID` och
-använd ditt ID från läraren. Det valet fungerar också utan skol- och klasslistan.
+Skola och klass/grupp är tilldelade av lärare eller administratör. Du väljer
+eller ändrar dem inte vid inloggningen. Om namnet finns på flera elevkonton
+skriver du ditt unika elev-ID i samma ruta. Be läraren om ditt ID.
 
 ## 2. Startsidan
 

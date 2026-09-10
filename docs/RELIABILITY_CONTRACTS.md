@@ -38,15 +38,20 @@ and explicitly save the association. New roster submissions include the selected
 school in their retry identity. Changing that selection during a partial retry
 must not silently reuse an enrollment for a different school.
 
-The public `student-login` directory returns only school/class names and IDs,
-never pupil lists, teacher IDs or profile data. Login resolves a typed name within
-a selected school and class only after verifying the password. Matching class
-names at different schools remain distinct; duplicate pupil names in the same
-class require direct student-ID login. The canonical ID authentication route
-continues to load the profile. Tombstoned classes/pupils and missing schools are
-rejected. Direct ID login remains available if the directory cannot be loaded.
+The `student-login` endpoint accepts only a name or stable student ID and
+password. It no longer provides a public school/class directory; GET returns
+405. School/class fields in login requests are rejected. Teachers and admins
+manage assignments through their authorized class and roster routes.
+
+Explicit IDs take precedence over display names and use a direct record read.
+A unique display name resolves to its canonical ID after password verification.
+Duplicate names require the pupil's stable ID, including duplicates at different
+schools. The existing ID authentication route then loads the profile with its
+teacher-assigned memberships. Login never writes assignments or training data.
+Missing school/class assignments do not prevent an otherwise valid login.
+Deleted pupils and unsupported profiles are rejected.
 
 Verification: real API handlers with synthetic KV data cover school creation,
-authorization, roster retry, school reassignment without profile mutation and
-school-scoped authentication. Browser checks use intercepted synthetic API data;
-they do not modify live schools or pupil accounts.
+authorization, roster retry, school reassignment without profile mutation,
+name/ID login and rejection of pupil-supplied membership. Browser checks use
+intercepted synthetic API data; they do not modify live schools or pupil accounts.

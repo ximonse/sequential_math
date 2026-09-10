@@ -1,4 +1,5 @@
 import { kv } from '@vercel/kv'
+import { mutateStudentRecord } from './_studentStore.js'
 import { withCors } from './_helpers.js'
 import { isCurrentStudentProfile } from '../src/lib/studentProfileContract.js'
 import { verifyPasswordAgainstAuth } from './_studentPassword.js'
@@ -39,7 +40,11 @@ export default async function handler(req, res) {
       return isCurrentStudentProfile(profile) && profile.studentId === studentId ? profile : null
     }))
     const matches = profiles.filter(profile => profile && classIdsFor(profile).has(classRecord.id) && normalizeName(profile.name) === normalizeName(name))
-    if (matches.length !== 1 || !verifyPasswordAgainstAuth(matches[0].auth, code)) return res.status(401).json({ error: 'Namnet eller koden stämmer inte. Be läraren om hjälp.' })
+    if (matches.length !== 1 || !verifyPasswordAgainstAuth(matches[0].auth, code)) {
+      if (matches.length === 1) await mutateStudentRecord(matches[0].studentId, current => ({ ...current, auth: { ...current.auth, failedCodeAttempts: Number(current.auth?.failedCodeAttempts || 0) + 1, lastFailedCodeAt: Date.now() } })).catch(() => undefined)
+      return res.status(401).json({ error: 'Namnet eller koden stämmer inte. Be läraren om hjälp.' })
+    }
+    await mutateStudentRecord(matches[0].studentId, current => ({ ...current, auth: { ...current.auth, failedCodeAttempts: 0, lastFailedCodeAt: null, lastLoginAt: Date.now(), loginCount: Number(current.auth?.loginCount || 0) + 1 } })).catch(() => undefined)
     const sessionSecret = await issueStudentSession(matches[0].studentId, req.body?.remember === true)
     return res.status(200).json({ studentId: matches[0].studentId, sessionSecret, classId: classRecord.id, className: classRecord.name })
   } catch {

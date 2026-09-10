@@ -257,41 +257,20 @@ export function buildDashboardClassAndAuthActions({
     setSelectedClassIds([])
   }
 
-  const handleResetStudentPassword = async (studentId) => {
+  const handleResetStudentPassword = async (studentId, code) => {
     const normalizedStudentId = normalizeStudentId(studentId)
-    if (!normalizedStudentId) {
-      const errorMessage = 'Kunde inte läsa elev-ID för lösenordsåterställning.'
-      setDashboardStatus(errorMessage)
-      setPasswordResetStatus(errorMessage)
-      return
-    }
-
+    if (!normalizedStudentId || !/^\d{4}$/.test(String(code || ''))) { setPasswordResetStatus('Koden måste ha fyra siffror.'); return }
     setPasswordResetBusyId(normalizedStudentId)
-    let result
     try {
-      result = await resetStudentPasswordToLoginName(normalizedStudentId)
-    } catch {
-      const errorMessage = `Kunde inte återställa lösenord för ${normalizedStudentId}.`
-      setDashboardStatus(errorMessage)
-      setPasswordResetStatus(errorMessage)
-      setPasswordResetBusyId('')
-      return
-    }
-
-    setPasswordResetBusyId('')
-    if (!result.ok) {
-      const errorMessage = result.error || `Kunde inte återställa lösenord för ${normalizedStudentId}.`
-      setDashboardStatus(errorMessage)
-      setPasswordResetStatus(errorMessage)
-      return
-    }
-
-    const successMessage = `Lösenord återställt för ${normalizedStudentId}. Nytt lösenord: ${result.password || normalizedStudentId}`
-    setDashboardStatus(successMessage)
-    setPasswordResetStatus(successMessage)
-    void loadStudents()
+      const profiles = await loadStudents()
+      const current = profiles?.find(item => item.studentId === normalizedStudentId)
+      const response = await fetch('/api/student/' + encodeURIComponent(normalizedStudentId), { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() }, body: JSON.stringify({ serverRevision: current?.serverRevision || 0, changes: { loginCode: code } }) })
+      if (!response.ok) throw new Error('save failed')
+      setPasswordResetStatus(`Ny kod sparad för ${normalizedStudentId}: ${code}`)
+      await loadStudents()
+    } catch { setPasswordResetStatus(`Kunde inte spara kod för ${normalizedStudentId}.`) }
+    finally { setPasswordResetBusyId('') }
   }
-
   const handleOpenStudentDetail = (studentId) => {
     const normalized = String(studentId || '').trim()
     if (!normalized) return

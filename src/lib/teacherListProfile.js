@@ -42,7 +42,7 @@ export function toTeacherListProfile(profile) {
   }
   listProfile.auth = { lastLoginAt: profile.auth?.lastLoginAt || null,
     loginCount: Number(profile.auth?.loginCount) || 0,
-    passwordUpdatedAt: profile.auth?.passwordUpdatedAt || null }
+    passwordUpdatedAt: profile.auth?.passwordUpdatedAt || null, failedCodeAttempts: Number(profile.auth?.failedCodeAttempts) || 0, lastFailedCodeAt: profile.auth?.lastFailedCodeAt || null }
   return listProfile
 }
 
@@ -78,7 +78,7 @@ export function normalizeTeacherListProfile(raw, normalizeStudentId) {
       loginCount: Number.isFinite(Number(raw.auth?.loginCount))
         ? Number(raw.auth.loginCount)
         : 0,
-      passwordUpdatedAt: raw.auth?.passwordUpdatedAt || null
+      passwordUpdatedAt: raw.auth?.passwordUpdatedAt || null, failedCodeAttempts: Number(raw.auth?.failedCodeAttempts) || 0, lastFailedCodeAt: raw.auth?.lastFailedCodeAt || null
     }
   }
 }

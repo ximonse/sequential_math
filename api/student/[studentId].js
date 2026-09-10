@@ -741,8 +741,9 @@ export default async function handler(req, res) {
     if (req.method === 'PATCH') {
       const changes = req.body?.changes
       if (!changes || typeof changes !== 'object' || Array.isArray(changes)
-        || Object.keys(changes).some(field => !['ticketInbox', 'ticketRevealAll', 'name'].includes(field))
-        || (changes.name !== undefined && (typeof changes.name !== 'string' || !changes.name.trim() || changes.name.length > 100))) {
+        || Object.keys(changes).some(field => !['ticketInbox', 'ticketRevealAll', 'name', 'loginCode'].includes(field))
+        || (changes.name !== undefined && (typeof changes.name !== 'string' || !changes.name.trim() || changes.name.length > 100))
+        || (changes.loginCode !== undefined && !/^\\d{4}$/.test(String(changes.loginCode)))) {
         throw studentStoreError(400, 'Invalid teacher update')
       }
       await mutateStudentRecord(studentId, async current => {
@@ -752,6 +753,7 @@ export default async function handler(req, res) {
           throw studentStoreError(409, 'Profile changed; refresh before editing')
         }
         const next = { ...current, ...changes, ...(changes.name !== undefined ? { name: changes.name.trim() } : {}) }
+        if (changes.loginCode !== undefined) { const salt = createSaltHex(); next.auth = { ...current.auth, passwordScheme: STUDENT_PASSWORD_SCHEME, passwordSalt: salt, passwordHash: hashPasswordWithSalt(changes.loginCode, salt), passwordUpdatedAt: Date.now(), failedCodeAttempts: 0, lastFailedCodeAt: null }; delete next.loginCode }
         if (changes.ticketRevealAll && Array.isArray(next.ticketResponses)) {
           next.ticketResponses = next.ticketResponses.map(item => ({ ...item,
             teacherRevealAt: next.ticketRevealAll[item.dispatchId] || null }))

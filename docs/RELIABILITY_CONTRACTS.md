@@ -39,17 +39,19 @@ school in their retry identity. Changing that selection during a partial retry
 must not silently reuse an enrollment for a different school.
 
 The `student-login` endpoint accepts only a name or stable student ID and
-password. It no longer provides a public school/class directory; GET returns
-405. School/class fields in login requests are rejected. Teachers and admins
-manage assignments through their authorized class and roster routes.
+password. It has no public school/class directory; GET returns 405 and
+school/class fields in login requests are rejected. After password verification
+it returns only the authenticated pupil's live class/group memberships, including
+the associated school name. A pupil without a live assigned group cannot continue.
 
 Explicit IDs take precedence over display names and use a direct record read.
 A unique display name resolves to its canonical ID after password verification.
 Duplicate names require the pupil's stable ID, including duplicates at different
-schools. The existing ID authentication route then loads the profile with its
-teacher-assigned memberships. Login never writes assignments or training data.
-Missing school/class assignments do not prevent an otherwise valid login.
-Deleted pupils and unsupported profiles are rejected.
+schools. The browser stores one selected assigned class for the active pupil
+session. Class configuration and game score submissions use that class; the
+highscore endpoint rejects a class not assigned to the pupil. Login never writes
+assignments or training data. Deleted pupils, deleted classes and unsupported
+profiles are rejected.
 
 Verification: real API handlers with synthetic KV data cover school creation,
 authorization, roster retry, school reassignment without profile mutation,

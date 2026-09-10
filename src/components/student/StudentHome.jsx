@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { changeStudentPassword, clearActiveStudentSession, getOrCreateProfileWithSync, getSyncHealth, isStudentSessionActive, saveProfile } from '../../lib/storage'
+import { changeStudentPassword, clearActiveStudentSession, getActiveStudentClass, getOrCreateProfileWithSync, getSyncHealth, isStudentSessionActive, saveProfile } from '../../lib/storage'
 import { getOperationLabel, OPERATION_LABELS, STANDARD_OPERATIONS, ALL_LEVELS as LEVELS } from '../../lib/operations'
 import { computeOperationMasteryBoards, getPreferredProblemSource } from '../../lib/masteryCalculation'
 import { decodeAssignmentPayload, encodeAssignmentPayload, getActiveAssignment, getAssignmentById } from '../../lib/assignments'
@@ -80,7 +80,7 @@ function StudentHome() {
     navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
   }, [studentId, assignmentId, assignmentPayload, mode, requestedPace, ticketId, ticketPayload, navigate])
 
-  const classId = String(profile?.classId || '').trim()
+  const classId = getActiveStudentClass(profile)
   useEffect(() => {
     if (!classId) { setEnabledExtras([]); return }
     let active = true

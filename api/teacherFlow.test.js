@@ -121,7 +121,7 @@ describe('teacher account to pupil lifecycle', () => {
       method: 'POST',
       body: { name: 'Ada Student', password: 'Ada Student' }
     })
-    expect(pupilLogin).toMatchObject({ code: 200, data: { studentId } })
+    expect(pupilLogin).toMatchObject({ code: 200, data: { studentId, assignments: [{ classId: roster.data.class.id }] } })
     const pupilProfile = await call(studentHandler, {
       query: { studentId: pupilLogin.data.studentId }, headers: { 'x-student-password': 'Ada Student' }
     })

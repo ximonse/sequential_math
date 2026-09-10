@@ -10,9 +10,13 @@ Den här manualen visar hur eleven använder appen.
 Startlösenordet är namnet exakt som läraren skrev det, om du inte har bytt det.
 Stora och små bokstäver spelar ingen roll för namnsökningen, men kan göra det för lösenordet.
 
-Skola och klass/grupp är tilldelade av lärare eller administratör. Du väljer
-eller ändrar dem inte vid inloggningen. Om namnet finns på flera elevkonton
-skriver du ditt unika elev-ID i samma ruta. Be läraren om ditt ID.
+Efter att namn/elev-ID och lösenord har godkänts väljer du din skola och
+klass/grupp. Du ser bara de grupper som lärare eller administratör har
+tilldelat just dig. Det valet styr bland annat klassens inställningar och
+highscore-lista under det här inloggningstillfället.
+
+Om namnet finns på flera elevkonton skriver du ditt unika elev-ID i samma
+ruta. Be läraren om ditt ID.
 
 ## 2. Startsidan
 

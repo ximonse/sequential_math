@@ -108,6 +108,12 @@ export default async function handler(req, res) {
     if (!isCurrentStudentProfile(profile) || !verifyStudentPassword(profile.auth, studentPassword)) {
       return res.status(401).json({ error: 'Unauthorized' })
     }
+    const assignedClassIds = new Set([profile.classId, ...(Array.isArray(profile.classIds) ? profile.classIds : [])]
+      .map(value => String(value || '').trim())
+      .filter(Boolean))
+    if (!assignedClassIds.has(String(classId).trim())) {
+      return res.status(403).json({ error: 'Class is not assigned to this student' })
+    }
 
     const group = await getHighscoreGroup(classId)
     if (!group) return res.status(400).json({ error: 'Could not resolve highscore group' })

@@ -17,6 +17,7 @@ import {
   peekNextNcmSkillTag
 } from './session/sessionUtils'
 import {
+  getActiveStudentClass,
   saveProfile
 } from '../../lib/storage'
 import {
@@ -296,7 +297,7 @@ function StudentSession() {
     navigate,
     studentId,
     studentName: profile.name,
-    classId: profile.classId || null,
+    classId: getActiveStudentClass(profile) || null,
     goToNextProblem,
     closeBreakGameAndContinue,
     tableBossUrl: TABLE_BOSS_URL,

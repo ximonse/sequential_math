@@ -13,6 +13,35 @@ async function liveProfile(studentId) {
   return isCurrentStudentProfile(profile) && profile.studentId === studentId ? profile : null
 }
 
+async function getAssignedClasses(profile) {
+  const ids = [...new Set([profile.classId, ...(Array.isArray(profile.classIds) ? profile.classIds : [])]
+    .map(value => String(value || '').trim())
+    .filter(Boolean))]
+  const classes = await Promise.all(ids.map(async classId => {
+    if (await kv.exists(`class_deleted:${classId}`)) return null
+    const record = await kv.get(`class:${classId}`)
+    if (!record?.id || !record?.name) return null
+    const school = record.schoolId && !await kv.exists(`school_deleted:${record.schoolId}`)
+      ? await kv.get(`school:${record.schoolId}`)
+      : null
+    return {
+      classId: record.id,
+      className: record.name,
+      schoolId: record.schoolId || '',
+      schoolName: school?.name || 'Skola ej angiven'
+    }
+  }))
+  return classes.filter(Boolean)
+}
+
+async function successfulLogin(res, profile) {
+  const assignments = await getAssignedClasses(profile)
+  if (assignments.length === 0) {
+    return res.status(403).json({ error: 'Du har ingen aktiv klass eller grupp tilldelad. Be din lärare om hjälp.' })
+  }
+  return res.status(200).json({ studentId: profile.studentId, assignments })
+}
+
 export default async function handler(req, res) {
   withCors(res, { methods: 'POST,OPTIONS', headers: 'Content-Type' }, req)
   res.setHeader('Cache-Control', 'no-store')
@@ -34,7 +63,7 @@ export default async function handler(req, res) {
     const exact = id ? await liveProfile(id) : null
     if (exact) {
       if (!verifyPasswordAgainstAuth(exact.auth, password)) return denied(res)
-      return res.status(200).json({ studentId: exact.studentId })
+      return successfulLogin(res, exact)
     }
 
     const ids = [...new Set(await kv.smembers('students:index') || [])]
@@ -55,7 +84,7 @@ export default async function handler(req, res) {
     })
     // School and group assignments are read from the authenticated profile.
     // Login never accepts or changes membership and returns no public directory.
-    return res.status(200).json({ studentId: valid[0].studentId })
+    return successfulLogin(res, valid[0])
   } catch {
     return res.status(503).json({ error: 'Kunde inte nå inloggningen. Försök igen om en stund.' })
   }

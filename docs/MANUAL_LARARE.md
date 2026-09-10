@@ -40,11 +40,12 @@ rad och klicka `Spara skolkoppling`. Det ändrar inte elevernas ID, lösenord
 eller träningshistorik. Administratören kan också välja skola vid klasskapande
 och redigering under Administration → Klasser.
 
-Eleven skriver sitt namn eller sitt elev-ID och lösenord och loggar in.
-Skola och klass/grupp tilldelas av lärare eller administratör; eleven har
-inga sådana val på inloggningssidan. Startlösenordet är namnet exakt som det
-skrevs vid skapandet. Vid samma namn på flera konton använder eleven sitt
-unika elev-ID i samma inloggningsfält.
+Eleven skriver sitt namn eller sitt elev-ID och lösenord. Efter godkänd
+inloggning väljer eleven en av de skolor och klasser/grupper som är tilldelade
+på elevkontot. Andra elevers klasser visas aldrig. Valet styr den aktiva
+gruppens inställningar och highscore-lista. Startlösenordet är namnet exakt
+som det skrevs vid skapandet. Vid samma namn på flera konton använder eleven
+sitt unika elev-ID i samma inloggningsfält.
 
 ### Radera en elev
 

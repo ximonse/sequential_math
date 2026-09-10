@@ -36,6 +36,7 @@ const STORAGE_PREFIX = 'mathapp_student_'
 const STUDENTS_LIST_KEY = 'mathapp_students_list'
 const STUDENT_SESSION_KEY = 'mathapp_student_session'
 const STUDENT_SESSION_SECRET_KEY = 'mathapp_student_session_secret'
+const STUDENT_ACTIVE_CLASS_KEY = 'mathapp_student_active_class'
 const CLASSES_KEY = 'mathapp_classes_v1'
 const CLOUD_ENABLED = import.meta.env.VITE_ENABLE_CLOUD_SYNC === '1'
 const CLOUD_FRESHNESS_FUTURE_TOLERANCE_MS = 5 * 60 * 1000
@@ -221,11 +222,28 @@ export function setActiveStudentSession(studentId, sessionSecret = '') {
   if (!normalizedId) return
   localStorage.setItem(STUDENT_SESSION_KEY, normalizedId)
   localStorage.setItem(STUDENT_SESSION_SECRET_KEY, String(sessionSecret || ''))
+  localStorage.removeItem(STUDENT_ACTIVE_CLASS_KEY)
+}
+
+export function setActiveStudentClass(classId) {
+  const normalized = String(classId || '').trim()
+  if (!normalized) return false
+  localStorage.setItem(STUDENT_ACTIVE_CLASS_KEY, normalized)
+  return true
+}
+
+export function getActiveStudentClass(profile) {
+  const selected = String(localStorage.getItem(STUDENT_ACTIVE_CLASS_KEY) || '').trim()
+  const assigned = new Set([profile?.classId, ...(Array.isArray(profile?.classIds) ? profile.classIds : [])]
+    .map(value => String(value || '').trim())
+    .filter(Boolean))
+  return selected && assigned.has(selected) ? selected : ''
 }
 
 export function clearActiveStudentSession() {
   localStorage.removeItem(STUDENT_SESSION_KEY)
   localStorage.removeItem(STUDENT_SESSION_SECRET_KEY)
+  localStorage.removeItem(STUDENT_ACTIVE_CLASS_KEY)
 }
 
 export function getActiveStudentSession() {
@@ -240,6 +258,7 @@ export function isStudentSessionActive(studentId) {
   const activeId = getActiveStudentSession()
   if (!activeId) return false
   return activeId === normalizeStudentId(studentId)
+    && String(localStorage.getItem(STUDENT_ACTIVE_CLASS_KEY) || '').trim() !== ''
 }
 
 function updateStudentsList(studentId, name) {

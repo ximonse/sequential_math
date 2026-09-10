@@ -1,0 +1,58 @@
+# Organisations- och inloggningskontrakt
+
+Detta dokument är den auktoritativa specifikationen för skolor, klasser, roller och inloggning. Koden och de körbara testerna är facit för exakt API-beteende. Ändra detta dokument i samma ändring som du ändrar något inom organisation eller inloggning.
+
+## Identiteter och relationer
+
+| Objekt | Stabil identitet | Regler |
+| --- | --- | --- |
+| Skola | `school.id` | Skapas av administratör. Namnet är visningstext. |
+| Klass | `class.id` | Består när klassnamnet ändras. Klassen har exakt en skola och ett eller flera läraransvar. |
+| Lärare | `teacher.id` | Har tilldelade skolor (`schoolIds`) och klasser (`classIds`). Klassens `teacherIds` är den direkta åtkomstgränsen. |
+| Elev | `studentId` | Behålls vid klassnamnsbyte och innehåller träningshistorik. Elevens klassmedlemskap är serverlagrad data. |
+
+En klass måste höra till en befintlig skola. Klassnamn är unika per skola efter normalisering av blanksteg och stora/små bokstäver. Samma namn kan därför användas på olika skolor. Ett elevnamn är unikt på samma sätt inom sin klass, men behöver inte vara globalt unikt.
+
+## Roller och behörighet
+
+| Åtgärd | Administratör | Lärare | Elev |
+| --- | --- | --- | --- |
+| Skapa skola | Ja | Nej | Nej |
+| Tilldela lärare till skola | Ja | Nej | Nej |
+| Skapa klass | Ja | Endast på tilldelad skola | Nej |
+| Tilldela ansvarig lärare till klass | Ja | Nej | Nej |
+| Se och ändra en klass | Alla | Endast klasser där läraren är ansvarig | Nej |
+| Skapa elev, dela elevlänk och ändra elevkod | Ja, för tilldelad klass | Ja, för tilldelad klass | Nej |
+| Välja skola eller klass | Ja, i administrationen | Endast inom behörighet | Nej |
+
+Servern kontrollerar behörighet på varje skyddat API-anrop. Dolda knappar i gränssnittet räcker aldrig som behörighetskontroll.
+
+## Lärar- och administratörsinloggning
+
+Varje lärarkonto har användarnamn, lösenord, roll, tilldelade skolor och klasser. Lösenord lagras som hash med salt. Inloggning i `POST /api/teacher-login` utfärdar en signerad session. Sessionen verifieras mot ett aktivt konto och dess `sessionVersion`, så lösenords-, roll- och direkta klasstilldelningsändringar gör äldre sessioner ogiltiga.
+
+Administratörer använder samma kontomodell, med administratörsrollen aktiverad. Råa lösenordsheaders och kontolösa sessioner godtas inte.
+
+## Elevinloggning
+
+1. Läraren eller administratören skapar elev i sin tilldelade klass. Systemet ger varje ny elev en personlig fyrsiffrig kod.
+2. Läraren delar klassens slumpmässiga elevlänk eller QR-kod.
+3. Länken visar endast klassnamnet. Eleven skriver sitt namn och sin fyrsiffriga kod.
+4. `POST /api/student-login` söker endast i klassens serverlagrade medlemskap och utfärdar därefter en sessionsnyckel.
+
+Eleven kan aldrig bläddra bland eller välja skolor och klasser. Det finns ingen publik katalog över skolor, klasser eller elevnamn. Vid fel kod räknas misslyckade försök på elevens profil; läraren kan se signalen och sätta en ny kod. En vanlig session gäller i 12 timmar. Med **Kom ihåg mig på den här enheten** gäller den i upp till 30 dagar.
+
+## Klasslänk och årsskifte
+
+Klasslänken bygger på en slumpad nyckel som hör till klassens stabila ID. Att byta namn, exempelvis `4B` till `5B`, ändrar därför inte elevernas ID, historik, klasslänk eller inställningar.
+
+Vid nytt läsår gör administratören en förhandsgranskning. Verktyget föreslår namnbyte för årskurs 4–8 och stoppar varje namnkonflikt innan ändringen genomförs. Klasser utan tydligt årskurstal ändras manuellt.
+
+## API-gränser och körbar verifiering
+
+- `GET/POST /api/teacher-schools`: listar skolor inom lärarens tilldelning; endast administratörer kan skapa.
+- `/api/admin/teachers` och `/api/admin/classes`: administratörsgränser för konton, skoltilldelning och klassansvar.
+- `/api/teacher-classes` och `/api/student-roster`: kräver levande lärarbehörighet samt rätt skola och klass.
+- `/api/student-login`: kräver giltig klasslänk, exakt ett matchande elevnamn i klassen och fyrsiffrig kod.
+
+Kontraktet verifieras främst i `api/teacherFlow.test.js`, `api/studentLogin.test.js` och `api/studentStore.test.js`. Vid en ändring av dessa regler ska tester, detta kontrakt, berörd manual och felsökningsguide uppdateras tillsammans.

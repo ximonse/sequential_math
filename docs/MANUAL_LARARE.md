@@ -11,12 +11,10 @@ Detaljerad datatolkning (kolumn för kolumn) finns i separata dokument:
 ## 1. Logga in
 
 1. Gå till startsidan och klicka `Lärare? Logga in`.
-2. Ange lärarlösenord.
+2. Ange ditt användarnamn och lösenord.
 3. Du kommer till `/teacher`.
 
-Notera:
-- Lösenordet styrs av `TEACHER_API_PASSWORD` i Vercel.
-- Om lösenord saknas i servermiljö visas felmeddelande i lärarinloggning.
+Lärarkontot skapas av administratören. Kontakta administratören om du saknar konto, har glömt lösenordet eller behöver åtkomst till en annan skola eller klass.
 
 ## 2. Första setup
 
@@ -147,19 +145,10 @@ Om elever kör på iPad/mobil och du vill se allt i lärarvyn:
 
 Annars syns bara data som finns lokalt i samma browsermiljö.
 
-## 12. Nollställ elevlösenord
+## 12. Elevkoder och inloggningssignal
 
-Längst ner i lärardashboarden finns sektionen `Nollställ elevlösenord`.
+Varje ny elev får en fyrsiffrig personlig kod. Dela koden enskilt och dela klassens elevlänk eller QR-kod med gruppen.
 
-Så använder du den:
-1. Välj klass/grupp högst upp (urvalet styr vilka elever som visas).
-2. Sök på namn, ID eller klass vid behov.
-3. Klicka `Nollställ lösenord` på rätt elev.
+När en elev inte kommer in: välj rätt elev i din tilldelade klass och använd `Byt kod`. Du kan också se hur många felaktiga kodförsök som har registrerats, så att du kan avgöra om eleven behöver hjälp eller en ny kod.
 
-Resultat:
-- Nytt lösenord sätts till elevens inloggnings-ID.
-- Status visas direkt i sektionen och i dashboardens statusrad.
-
-## Elevlänk och koder
-Varje klass/grupp har en egen elevlänk, som kopieras under **Klasser**. Dela länken eller QR-koden med rätt grupp. När en klasslista skapas visas varje ny elevs fyrsiffriga kod i sparbeskedet. Namn måste vara unika inom samma klass; använd exempelvis efternamnsinitial när det behövs.
-
+Eleven väljer aldrig skola eller klass. Klasslänken avgör klass och elevens namn och kod identifierar eleven inom just den klassen.

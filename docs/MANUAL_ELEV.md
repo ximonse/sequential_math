@@ -1,32 +1,25 @@
 # Elevmanual
 
-Den här manualen visar hur eleven använder appen.
+Den här manualen visar hur du använder appen.
 
 ## 1. Logga in
 
-1. Skriv ditt namn eller ditt elev-ID från läraren.
-2. Skriv lösenordet och klicka `Logga in`.
+1. Öppna klasslänken eller QR-koden som läraren har delat.
+2. Skriv ditt namn så som läraren har lagt in det.
+3. Skriv din personliga fyrsiffriga kod och klicka `Logga in`.
 
-Startlösenordet är namnet exakt som läraren skrev det, om du inte har bytt det.
-Stora och små bokstäver spelar ingen roll för namnsökningen, men kan göra det för lösenordet.
+Du väljer inte skola eller klass själv. De är redan kopplade till länken och lärarens klasslista. Kryssa bara i **Kom ihåg mig på den här enheten** på din egen enhet. Då kan inloggningen sparas i upp till 30 dagar; annars gäller den i upp till 12 timmar.
 
-Efter att namn/elev-ID och lösenord har godkänts väljer du din skola och
-klass/grupp. Du ser bara de grupper som lärare eller administratör har
-tilldelat just dig. Det valet styr bland annat klassens inställningar och
-highscore-lista under det här inloggningstillfället.
-
-Om namnet finns på flera elevkonton skriver du ditt unika elev-ID i samma
-ruta. Be läraren om ditt ID.
+Har du glömt koden eller får felmeddelande flera gånger, be läraren om hjälp. Läraren kan ge dig en ny kod.
 
 ## 2. Startsidan
 
 På elevens startsida finns normalt:
 - knapp för att starta pass (uppdrag/fri träning),
-- tabellövning (2-12),
+- tabellövning (2–12),
 - val av räknesätt,
 - sektionen `Framsteg`,
-- eventuellt `Aktiv ticket`,
-- byte av elevlösenord.
+- eventuellt `Aktiv ticket`.
 
 ## 3. Välj träning
 
@@ -55,9 +48,7 @@ Knappar:
 
 ## 6. Pausförslag
 
-Appen kan föreslå kort paus efter en mängd uppgifter.
-Eleven kan fortsätta direkt (ingen hård låsning).
-Om eleven vill spela en snabb pausaktivitet finns:
+Appen kan föreslå kort paus efter en mängd uppgifter. Eleven kan fortsätta direkt. Om eleven vill spela en snabb pausaktivitet finns:
 - `Pong` (max 2 minuter),
 - `Snake` (max 2 minuter).
 
@@ -74,7 +65,7 @@ Eleven svarar i ticketvyn och kan beroende på lärarens inställning:
 ## 8. Framsteg
 
 I `Framsteg` ser eleven nivå-rutor per räknesätt.
-Farger:
+
 - Grön: klarad nivå.
 - Blå: påbörjad.
 - Grå: ej startad.
@@ -84,12 +75,3 @@ Elev kan klicka nivå-ruta för att träna just den nivån.
 ## 9. Tillbaka till startsidan
 
 Eleven kan alltid gå tillbaka till sin startsida via knappen `Startsida` utan att logga ut och in igen.
-
-## 10. Byta elevlösenord
-
-I startsidan finns sektionen `Byt elevlösenord`.
-Eleven anger nuvarande lösenord och nytt lösenord.
-
-## Logga in via klasslänk
-Läraren delar en klasspecifik länk eller QR-kod. Öppna den, skriv ditt namn och din fyrsiffriga personliga kod. Kryssa i **Kom ihåg mig på den här enheten** endast på din egen enhet. Då sparas inloggningen i upp till 30 dagar; annars gäller den bara i den öppna webbläsarfliken.
-

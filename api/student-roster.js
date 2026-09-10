@@ -1,3 +1,4 @@
+import { validateSchoolId } from './_schoolStore.js'
 import { kv } from '@vercel/kv'
 import { createHash, randomBytes } from 'node:crypto'
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
@@ -21,8 +22,9 @@ export default async function handler(req, res) {
       || names.length + existingStudentIds.length > 100 || names.some(name => typeof name !== 'string' || !name.trim() || name.length > 100)) {
       throw studentStoreError(400, 'Ange 1–100 elever med giltiga namn.')
     }
+    const schoolId = classId ? '' : await validateSchoolId(req.body?.schoolId)
     const owner = teacher.teacherId || 'admin'
-    const enrollmentKey = digest(JSON.stringify([owner, requestId, classId || className, names, grade, existingStudentIds]))
+    const enrollmentKey = digest(JSON.stringify([owner, requestId, classId || className, names, grade, existingStudentIds, ...(schoolId ? [schoolId] : [])]))
     let target
     if (classId) {
       if (!await canAccessClass(req, classId)) throw studentStoreError(403, 'Not authorized for this class')
@@ -34,7 +36,7 @@ export default async function handler(req, res) {
       target = await kv.get(`class:${id}`)
       if (target && target.enrollmentKey !== enrollmentKey) throw studentStoreError(409, 'Klasslistan har ändrats under ett pågående försök.')
       if (!target) {
-        try { target = await createClassRecord({ id, name, teacherIds: teacher.teacherId ? [teacher.teacherId] : [], enabledExtras: [], createdAt: Date.now(), enrollmentKey }) }
+        try { target = await createClassRecord({ id, name, schoolId, teacherIds: teacher.teacherId ? [teacher.teacherId] : [], enabledExtras: [], createdAt: Date.now(), enrollmentKey }) }
         catch (error) {
           if (error.status !== 409) throw error
           target = await kv.get(`class:${id}`)

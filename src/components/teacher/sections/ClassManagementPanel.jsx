@@ -1,3 +1,4 @@
+import { useSchools, SchoolSelect, NewSchoolForm, ClassSchoolChoice } from './SchoolControls'
 import { useRef, useState } from 'react'
 import { listDomains } from '../../../domains/registry'
 import { parseRosterLines } from '../../../lib/storageClassHelpers'
@@ -97,12 +98,15 @@ export default function ClassManagementPanel({
   onSaveClassExtras,
   onMoveStudent
 }) {
+  const directory = useSchools()
+  const [schoolId, setSchoolId] = useState('')
   const [busy, setBusy] = useState(false)
   const [selectedExistingStudentIds, setSelectedExistingStudentIds] = useState([])
   const [moveFromClassId, setMoveFromClassId] = useState('')
   const [moveToClassId, setMoveToClassId] = useState('')
   const [moveStudentId, setMoveStudentId] = useState('')
   const busyRef = useRef(false)
+  const classLabel = item => `${item.name} · ${directory.schools.find(school => school.id === item.schoolId)?.name || 'Skola ej angiven'}`
   const names = parseRosterLines(rosterInput)
   const runRosterAction = async (action) => {
     if (busyRef.current) return
@@ -125,7 +129,10 @@ export default function ClassManagementPanel({
   return (
     <div className="bg-white rounded-lg shadow p-4 mb-8">
       <h2 className="text-lg font-semibold text-gray-800 mb-3">Klasser</h2>
+      <NewSchoolForm directory={directory} onCreated={setSchoolId} />
       <fieldset disabled={busy} aria-busy={busy}>
+      <div className="mb-3"><SchoolSelect schools={directory.schools} value={schoolId} onChange={setSchoolId}
+        disabled={directory.loading || Boolean(directory.error)} label="Skola för ny klass/grupp" /></div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
         <input
           type="text"
@@ -135,7 +142,7 @@ export default function ClassManagementPanel({
           className="px-3 py-2 border rounded text-sm"
         />
         <button
-          onClick={() => runRosterAction(onCreateClass)}
+          onClick={() => runRosterAction(() => onCreateClass(schoolId))}
           className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
         >
           Skapa klass från listan
@@ -150,7 +157,7 @@ export default function ClassManagementPanel({
           <option value="">Välj klass att lägga till i</option>
           {classes.map(item => (
             <option key={`add-${item.id}`} value={item.id}>
-              {item.name}
+              {classLabel(item)}
             </option>
           ))}
         </select>
@@ -218,7 +225,7 @@ export default function ClassManagementPanel({
           <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3">
             <select value={moveFromClassId} onChange={event => { setMoveFromClassId(event.target.value); setMoveStudentId('') }} className="rounded border px-2 py-1 text-xs">
               <option value="">Från klass</option>
-              {classes.map(item => <option key={`move-from-${item.id}`} value={item.id}>{item.name}</option>)}
+              {classes.map(item => <option key={`move-from-${item.id}`} value={item.id}>{classLabel(item)}</option>)}
             </select>
             <select value={moveStudentId} onChange={event => setMoveStudentId(event.target.value)} disabled={!moveFromClassId} className="rounded border px-2 py-1 text-xs disabled:bg-gray-100">
               <option value="">Välj elev</option>
@@ -226,7 +233,7 @@ export default function ClassManagementPanel({
             </select>
             <select value={moveToClassId} onChange={event => setMoveToClassId(event.target.value)} className="rounded border px-2 py-1 text-xs">
               <option value="">Till klass</option>
-              {classes.filter(item => item.id !== moveFromClassId).map(item => <option key={`move-to-${item.id}`} value={item.id}>{item.name}</option>)}
+              {classes.filter(item => item.id !== moveFromClassId).map(item => <option key={`move-to-${item.id}`} value={item.id}>{classLabel(item)}</option>)}
             </select>
           </div>
           <button type="button" disabled={!moveFromClassId || !moveToClassId || !moveStudentId} onClick={() => runRosterAction(async () => {
@@ -257,7 +264,7 @@ export default function ClassManagementPanel({
               <div key={item.id} className="border rounded px-2 py-1.5">
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <p className="text-sm font-medium text-gray-800">{item.name}</p>
+                    <p className="text-sm font-medium text-gray-800">{classLabel(item)}</p>
                     <p className="text-xs text-gray-500">
                       {classStudents.length} elever | {loggedInCount} har loggat in
                     </p>
@@ -270,6 +277,8 @@ export default function ClassManagementPanel({
                   </button>
                   <button onClick={() => { const name = window.prompt('Nytt klassnamn:', item.name); if (name?.trim()) onRenameClass(item.id, name) }} className="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs">Byt namn</button>
                 </div>
+                <ClassSchoolChoice key={`${item.id}-${item.schoolId || ''}`} classRecord={item} directory={directory}
+                  onSave={onRenameClass} disabled={busy} />
                 {onSaveClassExtras && (
                   <ClassExtrasRow classRecord={item} onSaveExtras={onSaveClassExtras} />
                 )}

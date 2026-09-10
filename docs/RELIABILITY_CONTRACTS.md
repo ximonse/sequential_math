@@ -18,3 +18,35 @@ Verified from implementation during the local 2026-09-08 repair. See RELIABILITY
 Local class caches are projections of the authorized server list, not a source that recreates missing server classes. Class settings/deletion and roster operations show success only after a successful response. A partial roster response preserves the list and request identity for retry.
 
 The tests cover executable boundary behavior rather than trusting this document: api/studentStore.test.js, src/lib/storageReliability.test.js, src/lib/rosterClient.test.js, src/lib/teacherEvidencePeriods.test.js, src/lib/teacherSummary.test.js and dashboardStudentRowHelpers.test.js.
+
+## Schools and pupil login (2026-09-10)
+
+Schools are separate records: `school:{id}` and `schools:index`. Creation uses
+the same atomic record/index boundary as classes. A live teacher may list and
+create schools through `teacher-schools`; school metadata grants no access to
+pupils. Class ownership remains the authorization boundary.
+
+Classes have an optional `schoolId`, validated against the school register when
+created or changed. A pupil belongs to schools through their current classes and
+groups. There is no duplicated school field on the pupil profile. The stable
+student ID, password and training history do not change when a class is linked
+to a school or a pupil changes groups. Multiple memberships remain supported.
+
+Existing classes are not automatically assigned to an invented school. Missing
+school IDs appear as "Skola ej angiven"; teachers can select the correct school
+and explicitly save the association. New roster submissions include the selected
+school in their retry identity. Changing that selection during a partial retry
+must not silently reuse an enrollment for a different school.
+
+The public `student-login` directory returns only school/class names and IDs,
+never pupil lists, teacher IDs or profile data. Login resolves a typed name within
+a selected school and class only after verifying the password. Matching class
+names at different schools remain distinct; duplicate pupil names in the same
+class require direct student-ID login. The canonical ID authentication route
+continues to load the profile. Tombstoned classes/pupils and missing schools are
+rejected. Direct ID login remains available if the directory cannot be loaded.
+
+Verification: real API handlers with synthetic KV data cover school creation,
+authorization, roster retry, school reassignment without profile mutation and
+school-scoped authentication. Browser checks use intercepted synthetic API data;
+they do not modify live schools or pupil accounts.

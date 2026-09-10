@@ -66,6 +66,7 @@ export default async function handler(req, res) {
       id,
       name,
       teacherIds,
+      schoolId: req.body?.schoolId || '',
       enabledExtras,
       createdAt: req.body?.createdAt || Date.now()
     }
@@ -97,7 +98,7 @@ export default async function handler(req, res) {
     try {
       const updated = await mutateClassRecord(id, current => {
         if (!current) throw Object.assign(new Error('Class not found'), { status: 404 })
-        return { ...current, name }
+        return { ...current, name, ...(req.body?.schoolId !== undefined ? { schoolId: req.body.schoolId } : {}) }
       })
       return res.status(200).json({ ok: true, class: updated })
     } catch (error) { return res.status(error.status || 500).json({ error: error.message || 'Storage error' }) }

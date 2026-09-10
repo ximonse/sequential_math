@@ -1,9 +1,11 @@
+import { validateSchoolId } from './_schoolStore.js'
 import { kv } from '@vercel/kv'
 import { mutateStoredRecord, mutateStudentRecord, studentStoreError } from './_studentStore.js'
 
 export function mutateClassRecord(id, transform, options) {
   return mutateStoredRecord('class', id, async current => {
     const next = await transform(current)
+    if (next && (!current || next.schoolId !== current.schoolId)) await validateSchoolId(next.schoolId)
     return next ? { ...next, id } : next
   }, options)
 }

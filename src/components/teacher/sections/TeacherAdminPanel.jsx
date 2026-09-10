@@ -2,6 +2,7 @@
  * Admin-panel för att hantera lärarkonton och klasser.
  * Visas bara för adminanvändare (isAdmin === true).
  */
+import { useSchools, SchoolSelect, NewSchoolForm } from './SchoolControls'
 import { useEffect, useState } from 'react'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
 import { listDomains } from '../../../domains/registry'
@@ -274,6 +275,8 @@ function TeacherRow({ teacher, classes, onDelete, onRefresh, setStatus }) {
 // ── Klasser-flik ──────────────────────────────────────────────────────────────
 
 function ClassesTab({ classes, teachers, onRefresh, setStatus }) {
+  const directory = useSchools()
+  const [schoolId, setSchoolId] = useState('')
   const [newName, setNewName] = useState('')
   const [busy, setBusy] = useState(false)
   const extras = getTogglableExtras()
@@ -284,7 +287,7 @@ function ClassesTab({ classes, teachers, onRefresh, setStatus }) {
     setBusy(true)
     const { ok, data } = await apiFetch('/api/admin/classes', {
       method: 'POST',
-      body: JSON.stringify({ name: newName.trim() })
+      body: JSON.stringify({ name: newName.trim(), schoolId })
     })
     setBusy(false)
     if (ok) { setStatus(`✓ Klass "${newName}" skapad`); setNewName(''); onRefresh() }
@@ -300,6 +303,9 @@ function ClassesTab({ classes, teachers, onRefresh, setStatus }) {
 
   return (
     <div className="space-y-4">
+      <NewSchoolForm directory={directory} onCreated={setSchoolId} />
+      <SchoolSelect schools={directory.schools} value={schoolId} onChange={setSchoolId}
+        disabled={directory.loading || Boolean(directory.error)} label="Skola för ny klass/grupp" />
       <form onSubmit={handleCreate} className="flex gap-2 items-end text-xs border border-gray-200 rounded-lg p-3 bg-gray-50">
         <div className="flex-1">
           <label className="block text-xs font-semibold text-gray-600 mb-1">Ny klass</label>
@@ -316,7 +322,7 @@ function ClassesTab({ classes, teachers, onRefresh, setStatus }) {
       <div className="space-y-2">
         {classes.length === 0 && <p className="text-xs text-gray-400">Inga klasser ännu.</p>}
         {classes.map(c => (
-          <ClassRow key={c.id} classRecord={c} teachers={teachers} extras={extras}
+          <ClassRow key={c.id} classRecord={c} teachers={teachers} extras={extras} directory={directory}
             onDelete={handleDelete} onRefresh={onRefresh} setStatus={setStatus} />
         ))}
       </div>
@@ -324,7 +330,8 @@ function ClassesTab({ classes, teachers, onRefresh, setStatus }) {
   )
 }
 
-function ClassRow({ classRecord, teachers, extras, onDelete, onRefresh, setStatus }) {
+function ClassRow({ classRecord, teachers, extras, directory, onDelete, onRefresh, setStatus }) {
+  const [schoolId, setSchoolId] = useState(classRecord.schoolId || '')
   const [open, setOpen] = useState(false)
   const [teacherIds, setTeacherIds] = useState(classRecord.teacherIds || [])
   const [enabledExtras, setEnabledExtras] = useState(classRecord.enabledExtras || [])
@@ -338,7 +345,7 @@ function ClassRow({ classRecord, teachers, extras, onDelete, onRefresh, setStatu
     setBusy(true)
     const { ok } = await apiFetch(`/api/admin/classes/${classRecord.id}`, {
       method: 'PUT',
-      body: JSON.stringify({ teacherIds, enabledExtras })
+      body: JSON.stringify({ teacherIds, enabledExtras, schoolId })
     })
     setBusy(false)
     if (ok) { setStatus('✓ Klass uppdaterad'); setOpen(false); onRefresh() }
@@ -353,7 +360,7 @@ function ClassRow({ classRecord, teachers, extras, onDelete, onRefresh, setStatu
       >
         <div>
           <span className="text-sm font-semibold text-gray-800">{classRecord.name}</span>
-          <span className="text-xs text-gray-500 ml-2">{teacherNames}</span>
+          <span className="text-xs text-gray-500 ml-2">{directory.schools.find(school => school.id === classRecord.schoolId)?.name || 'Skola ej angiven'} · {teacherNames}</span>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={e => { e.stopPropagation(); onDelete(classRecord.id, classRecord.name) }}
@@ -366,6 +373,8 @@ function ClassRow({ classRecord, teachers, extras, onDelete, onRefresh, setStatu
 
       {open && (
         <div className="p-3 space-y-3 text-xs">
+          <SchoolSelect schools={directory.schools} value={schoolId} onChange={setSchoolId}
+            disabled={busy || directory.loading || Boolean(directory.error)} />
           <div>
             <p className="font-semibold text-gray-600 mb-1">Tilldelade lärare</p>
             <div className="flex flex-wrap gap-2">

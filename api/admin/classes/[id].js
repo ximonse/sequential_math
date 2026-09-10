@@ -4,6 +4,7 @@
  * DELETE /api/admin/classes/:id — delete class
  * Admin auth required.
  */
+import { validateSchoolId } from '../../_schoolStore.js'
 import { kv } from '@vercel/kv'
 import { mutateClassRecord, deleteClassRecord } from '../../_classStore.js'
 import { studentStoreError } from '../../_studentStore.js'
@@ -37,6 +38,7 @@ export default async function handler(req, res) {
 
     if (req.method === 'PUT') {
       const updated = { ...classRecord }
+      if (req.body?.schoolId !== undefined) updated.schoolId = await validateSchoolId(req.body.schoolId)
 
       if (typeof req.body?.name === 'string' && req.body.name.trim()) {
         updated.name = req.body.name.trim()

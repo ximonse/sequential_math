@@ -29,6 +29,23 @@ Notera:
 - Toppfiltret styr hela dashboarden (en eller flera klasser/grupper).
 - En elev kan ligga i flera klasser/grupper.
 
+### Skolor och klasser
+
+Under `Klasser` väljer du först skola för den nya klassen eller gruppen.
+Saknas skolan öppnar du `Lägg till skola`, skriver skolnamn och ort och väljer
+`Spara skola`. Använd den befintliga skolan om den redan finns.
+
+Befintliga klasser visas som `Skola ej angiven`. Välj rätt skola på klassens
+rad och klicka `Spara skolkoppling`. Det ändrar inte elevernas ID, lösenord
+eller träningshistorik. Administratören kan också välja skola vid klasskapande
+och redigering under Administration → Klasser.
+
+Eleven väljer skola och klass/grupp, skriver sitt namn och lösenord och loggar
+in. Namnet ska motsvara klasslistan; startlösenordet är namnet exakt som det
+skrevs vid skapandet. Vid samma namn inom klassen använder eleven sitt unika
+elev-ID via `Logga in med elev-ID`. En skola syns på elevens startsida när
+den har minst en tillgänglig klass.
+
 ### Radera en elev
 
 1. Öppna eleven under `Elevprofil`.

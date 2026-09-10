@@ -29,8 +29,8 @@ export function createStorageClassApi(deps) {
     }
   }
 
-  async function createClassFromRoster(classNameInput, rosterText, grade = 4) {
-    const result = await submitRoster({ className: String(classNameInput || '').trim(), rosterText, grade })
+  async function createClassFromRoster(classNameInput, rosterText, grade = 4, schoolId = '') {
+    const result = await submitRoster({ className: String(classNameInput || '').trim(), rosterText, grade, schoolId })
     if (result.classRecord) saveClass(result.classRecord)
     return result
   }

@@ -315,8 +315,8 @@ export function getClasses() {
   return getClassApi().getClasses()
 }
 
-export async function createClassFromRoster(classNameInput, rosterText, grade = 4) {
-  return getClassApi().createClassFromRoster(classNameInput, rosterText, grade)
+export async function createClassFromRoster(classNameInput, rosterText, grade = 4, schoolId = '') {
+  return getClassApi().createClassFromRoster(classNameInput, rosterText, grade, schoolId)
 }
 
 export async function addStudentsToClass(classId, rosterText, grade = 4) {

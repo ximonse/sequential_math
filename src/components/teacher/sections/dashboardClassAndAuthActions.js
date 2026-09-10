@@ -122,10 +122,10 @@ export function buildDashboardClassAndAuthActions({
     }
   }
 
-  const handleCreateClass = async () => {
+  const handleCreateClass = async (schoolId = '') => {
     let result
     try {
-      result = await createClassFromRoster(classNameInput, rosterInput, 4)
+      result = await createClassFromRoster(classNameInput, rosterInput, 4, schoolId)
     } catch {
       setClassStatus('Kunde inte skapa klass just nu.')
       return
@@ -208,11 +208,11 @@ export function buildDashboardClassAndAuthActions({
     await loadStudents(); setDashboardStatus('Elevnamnet är ändrat.'); return true
   }
 
-  const handleRenameClass = async (id, name) => {
-    const response = await fetch('/api/teacher-classes', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() }, body: JSON.stringify({ id, name }) })
+  const handleRenameClass = async (id, name, schoolId) => {
+    const response = await fetch('/api/teacher-classes', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() }, body: JSON.stringify({ id, name, ...(schoolId !== undefined ? { schoolId } : {}) }) })
     const data = await response.json()
     if (!response.ok) { setClassStatus(data.error || 'Kunde inte byta klassnamn.'); return false }
-    saveClass(data.class); setClasses(getClasses()); setClassStatus('Klassnamnet är ändrat.'); return true
+    saveClass(data.class); setClasses(getClasses()); setClassStatus('Klassen är uppdaterad.'); return true
   }
 
   const handleAddExistingStudentsToClass = async (studentIds) => {

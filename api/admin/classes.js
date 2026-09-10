@@ -48,11 +48,13 @@ export default async function handler(req, res) {
       id,
       name,
       teacherIds,
+      schoolId: req.body?.schoolId || '',
       enabledExtras,
       createdAt: Date.now()
     }
 
-    await createClassRecord(classRecord)
+    try { await createClassRecord(classRecord) }
+    catch (error) { return res.status(error.status || 500).json({ error: error.status ? error.message : 'Storage error' }) }
 
     // Update each assigned teacher's classIds
     await Promise.all(teacherIds.map(async teacherId => {

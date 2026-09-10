@@ -1,10 +1,10 @@
+import { hashPasswordWithSalt, verifyPasswordAgainstAuth } from '../_studentPassword.js'
 import { kv } from '@vercel/kv'
 import { mutateStudentRecord, studentStoreError } from '../_studentStore.js'
 import { assertTeacherStudentAccess } from '../_studentAccess.js'
-import { createHash, randomBytes } from 'node:crypto'
+import { randomBytes } from 'node:crypto'
 import {
   isLiveTeacherApiAuthorized,
-  secureCompare,
   withCors
 } from '../_helpers.js'
 import { withFreshTeacherSummary } from '../../src/lib/teacherSummary.js'
@@ -22,35 +22,6 @@ const MAX_TABLE_COMPLETIONS = 1000
 const MAX_TELEMETRY_EVENTS = 1200
 const MAX_TELEMETRY_DAYS = 120
 const MAX_TICKET_RESPONSES = 500
-
-function hashPasswordWithSalt(password, salt) {
-  return createHash('sha256')
-    .update(`${salt}:${String(password || '')}`)
-    .digest('hex')
-}
-
-function verifyPasswordAgainstAuth(auth, studentPassword) {
-  const provided = String(studentPassword || '')
-  if (!provided) return false
-
-  if (hasCurrentStudentPassword(auth)) {
-    const expected = String(auth.passwordHash)
-    const salt = String(auth.passwordSalt)
-    const actual = hashPasswordWithSalt(provided, salt)
-    if (secureCompare(actual, expected)) return true
-
-    // resetStudentPasswordToLoginName sets password = uppercase studentId,
-    // but student may type lowercase — try uppercase fallback
-    const upper = provided.toUpperCase()
-    if (upper !== provided) {
-      const upperActual = hashPasswordWithSalt(upper, salt)
-      if (secureCompare(upperActual, expected)) return true
-    }
-    return false
-  }
-
-  return false
-}
 
 function createSaltHex() {
   return randomBytes(16).toString('hex')

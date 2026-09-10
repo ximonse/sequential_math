@@ -46,10 +46,13 @@ vi.mock('@vercel/kv', () => ({ kv: {
   })
 } }))
 
+import schoolsHandler from './teacher-schools.js'
+import classesHandler from './teacher-classes.js'
 import teacherLoginHandler from './teacher-login.js'
 import teachersHandler from './admin/teachers.js'
 import teacherHandler from './admin/teachers/[id].js'
 import rosterHandler from './student-roster.js'
+import studentLoginHandler from './student-login.js'
 import studentsHandler from './students.js'
 import studentHandler from './student/[studentId].js'
 import eventsHandler from './student/[studentId]/events.js'
@@ -112,6 +115,19 @@ describe('teacher account to pupil lifecycle', () => {
     expect(roster).toMatchObject({ code: 200, data: { ok: true } })
     const studentId = roster.data.results[0].studentId
 
+    const loginClasses = await call(studentLoginHandler)
+    expect(loginClasses.data.classes).toContainEqual({ id: roster.data.class.id, name: '4A', schoolId: '', schoolName: 'Skola ej angiven' })
+    const pupilLogin = await call(studentLoginHandler, {
+      method: 'POST',
+      body: { classId: roster.data.class.id, name: 'Ada Student', password: 'Ada Student' }
+    })
+    expect(pupilLogin).toMatchObject({ code: 200, data: { studentId } })
+    const pupilProfile = await call(studentHandler, {
+      query: { studentId: pupilLogin.data.studentId }, headers: { 'x-student-password': 'Ada Student' }
+    })
+    expect(pupilProfile).toMatchObject({ code: 200, data: { profile: { studentId, name: 'Ada Student' } } })
+
+
     const listed = await call(studentsHandler, { headers: firstTeacherHeaders })
     expect(listed).toMatchObject({ code: 200 })
     expect(listed.data.profiles.map(profile => profile.studentId)).toContain(studentId)
@@ -160,5 +176,69 @@ describe('teacher account to pupil lifecycle', () => {
     expect((await call(studentHandler, {
       query: { studentId }, headers: { 'x-teacher-token': secondLogin.data.token }
     })).code).toBe(410)
+  })
+})
+
+describe('school management lifecycle', () => {
+  beforeEach(() => {
+    records.clear()
+    process.env.TEACHER_API_PASSWORD = 'synthetic-flow-signing-secret'
+    delete process.env.TEACHER_API_PASSWORD_ROTATION_SECRET
+    const { hash, salt, scheme } = hashTeacherPassword('school-secret')
+    records.set('teacher_account:school-teacher', {
+      id: 'school-teacher', username: 'school-teacher', passwordHash: hash, passwordSalt: salt,
+      passwordScheme: scheme, classIds: [], isAdmin: false, sessionVersion: 1
+    })
+    records.set('teacher_accounts:index', ['school-teacher'])
+  })
+  async function headers() {
+    const login = await call(teacherLoginHandler, { method: 'POST', body: { username: 'school-teacher', password: 'school-secret' } })
+    expect(login.code).toBe(200)
+    return { 'x-teacher-token': login.data.token }
+  }
+  it('requires a live teacher and validates school names', async () => {
+    expect((await call(schoolsHandler, { method: 'POST', body: { name: 'Skolan' } })).code).toBe(401)
+    const auth = await headers()
+    expect((await call(schoolsHandler, { method: 'POST', headers: auth, body: { name: ' ' } })).code).toBe(400)
+    expect((await call(schoolsHandler, { method: 'POST', headers: auth, body: { name: 'x'.repeat(101) } })).code).toBe(400)
+    expect(records.has('schools:index')).toBe(false)
+  })
+  it('creates schools, enrolls in a school, and reassigns a legacy class without rewriting pupils', async () => {
+    const auth = await headers()
+    const school = await call(schoolsHandler, { method: 'POST', headers: auth, body: { name: ' Norra skolan ' } })
+    expect(school.code).toBe(201)
+    expect((await call(schoolsHandler, { headers: auth })).data.schools).toEqual([school.data.school])
+    expect(school.data.school.name).toBe('Norra skolan')
+    const schoolId = school.data.school.id
+    const rosterBody = { requestId: 'school-flow-request-1', className: '6A', names: ['Anna'], schoolId }
+    const roster = await call(rosterHandler, { method: 'POST', headers: auth, body: rosterBody })
+    expect(roster).toMatchObject({ code: 200, data: { ok: true, class: { schoolId } } })
+    const studentId = roster.data.results[0].studentId
+    const replay = await call(rosterHandler, { method: 'POST', headers: auth, body: rosterBody })
+    expect(replay.data.results[0].studentId).toBe(studentId)
+    const changedRetry = await call(rosterHandler, { method: 'POST', headers: auth, body: { ...rosterBody, schoolId: '' } })
+    expect(changedRetry.code).toBe(409)
+    expect(await call(studentLoginHandler, { method: 'POST', body: { schoolId, classId: roster.data.class.id, name: 'Anna', password: 'Anna' } }))
+      .toMatchObject({ code: 200, data: { studentId } })
+    const before = structuredClone(records.get('student:' + studentId))
+    const reassigned = await call(classesHandler, { method: 'PUT', headers: auth, body: { id: roster.data.class.id, name: '6A', schoolId: '' } })
+    expect(reassigned.code).toBe(200)
+    expect(records.get('student:' + studentId)).toEqual(before)
+    const linked = await call(classesHandler, { method: 'PUT', headers: auth, body: { id: roster.data.class.id, name: '6A', schoolId } })
+    expect(linked.code).toBe(200)
+    expect(records.get('student:' + studentId)).toEqual(before)
+    const invalid = await call(classesHandler, { method: 'PUT', headers: auth, body: { id: roster.data.class.id, name: '6A', schoolId: 'missing' } })
+    expect(invalid.code).toBe(400)
+    expect(records.get('class:' + roster.data.class.id).schoolId).toBe(schoolId)
+  })
+  it('does not grant access to another teachers classes through a shared school', async () => {
+    const auth = await headers()
+    const school = await call(schoolsHandler, { method: 'POST', headers: auth, body: { name: 'Skolan' } })
+    const schoolId = school.data.school.id
+    records.set('class:private-class', { id: 'private-class', name: '6A', schoolId, teacherIds: ['someone-else'] })
+    records.set('classes:index', ['private-class'])
+    expect((await call(classesHandler, { headers: auth })).data.classes).toEqual([])
+    expect((await call(classesHandler, { method: 'PUT', headers: auth, body: { id: 'private-class', name: '6B', schoolId } })).code).toBe(403)
+    expect((await call(rosterHandler, { method: 'POST', headers: auth, body: { requestId: 'school-access-check', classId: 'private-class', names: ['Anna'], schoolId } })).code).toBe(403)
   })
 })

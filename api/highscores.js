@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv'
 import { createHash } from 'node:crypto'
+import { verifyStudentCredential } from './_studentPassword.js'
 import { withCors } from './_helpers.js'
 import {
   hasCurrentStudentPassword,
@@ -105,7 +106,7 @@ export default async function handler(req, res) {
     // Verify student auth
     const studentPassword = String(req.headers['x-student-password'] || '')
     const profile = await kv.get(`student:${String(studentId).toUpperCase()}`)
-    if (!isCurrentStudentProfile(profile) || !verifyStudentPassword(profile.auth, studentPassword)) {
+    if (!isCurrentStudentProfile(profile) || !await verifyStudentCredential(profile, studentPassword)) {
       return res.status(401).json({ error: 'Unauthorized' })
     }
     const assignedClassIds = new Set([profile.classId, ...(Array.isArray(profile.classIds) ? profile.classIds : [])]

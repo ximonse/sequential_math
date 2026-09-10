@@ -115,15 +115,14 @@ describe('teacher account to pupil lifecycle', () => {
     expect(roster).toMatchObject({ code: 200, data: { ok: true } })
     const studentId = roster.data.results[0].studentId
 
-    const loginClasses = await call(studentLoginHandler)
-    expect(loginClasses.code).toBe(405)
+    const loginClasses = await call(studentLoginHandler, { query: { class: roster.data.class.loginToken } })
+    expect(loginClasses).toMatchObject({ code: 200, data: { className: '4A' } })
     const pupilLogin = await call(studentLoginHandler, {
-      method: 'POST',
-      body: { name: 'Ada Student', password: 'Ada Student' }
+      method: 'POST', body: { classToken: roster.data.class.loginToken, name: 'Ada Student', code: roster.data.results[0].loginCode }
     })
-    expect(pupilLogin).toMatchObject({ code: 200, data: { studentId, assignments: [{ classId: roster.data.class.id }] } })
+    expect(pupilLogin).toMatchObject({ code: 200, data: { studentId, classId: roster.data.class.id } })
     const pupilProfile = await call(studentHandler, {
-      query: { studentId: pupilLogin.data.studentId }, headers: { 'x-student-password': 'Ada Student' }
+      query: { studentId: pupilLogin.data.studentId }, headers: { 'x-student-password': pupilLogin.data.sessionSecret }
     })
     expect(pupilProfile).toMatchObject({ code: 200, data: { profile: { studentId, name: 'Ada Student' } } })
 
@@ -146,7 +145,7 @@ describe('teacher account to pupil lifecycle', () => {
     expect(ticket.code).toBe(200)
 
     const practice = await call(eventsHandler, {
-      method: 'POST', query: { studentId }, headers: { 'x-student-password': 'Ada Student' },
+      method: 'POST', query: { studentId }, headers: { 'x-student-password': pupilLogin.data.sessionSecret },
       body: { entries: [{ id: 'problem-1', type: 'problem_result', timestamp: Date.now(), payload: {
         problemId: 'addition-1', timestamp: Date.now(), correct: true, operation: 'addition',
         problemType: 'addition', difficulty: { conceptual_level: 1 }, studentAnswer: 2,
@@ -218,7 +217,7 @@ describe('school management lifecycle', () => {
     expect(replay.data.results[0].studentId).toBe(studentId)
     const changedRetry = await call(rosterHandler, { method: 'POST', headers: auth, body: { ...rosterBody, schoolId: '' } })
     expect(changedRetry.code).toBe(409)
-    expect(await call(studentLoginHandler, { method: 'POST', body: { name: 'Anna', password: 'Anna' } }))
+    expect(await call(studentLoginHandler, { method: 'POST', body: { classToken: roster.data.class.loginToken, name: 'Anna', code: roster.data.results[0].loginCode } }))
       .toMatchObject({ code: 200, data: { studentId } })
     const before = structuredClone(records.get('student:' + studentId))
     const reassigned = await call(classesHandler, { method: 'PUT', headers: auth, body: { id: roster.data.class.id, name: '6A', schoolId: '' } })

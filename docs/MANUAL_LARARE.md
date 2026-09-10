@@ -163,3 +163,7 @@ Så använder du den:
 Resultat:
 - Nytt lösenord sätts till elevens inloggnings-ID.
 - Status visas direkt i sektionen och i dashboardens statusrad.
+
+## Elevlänk och koder
+Varje klass/grupp har en egen elevlänk, som kopieras under **Klasser**. Dela länken eller QR-koden med rätt grupp. När en klasslista skapas visas varje ny elevs fyrsiffriga kod i sparbeskedet. Namn måste vara unika inom samma klass; använd exempelvis efternamnsinitial när det behövs.
+

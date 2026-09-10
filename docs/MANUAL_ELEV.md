@@ -89,3 +89,7 @@ Eleven kan alltid gå tillbaka till sin startsida via knappen `Startsida` utan a
 
 I startsidan finns sektionen `Byt elevlösenord`.
 Eleven anger nuvarande lösenord och nytt lösenord.
+
+## Logga in via klasslänk
+Läraren delar en klasspecifik länk eller QR-kod. Öppna den, skriv ditt namn och din fyrsiffriga personliga kod. Kryssa i **Kom ihåg mig på den här enheten** endast på din egen enhet. Då sparas inloggningen i upp till 30 dagar; annars gäller den bara i den öppna webbläsarfliken.
+

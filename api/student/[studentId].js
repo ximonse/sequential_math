@@ -1,4 +1,4 @@
-import { hashPasswordWithSalt, verifyPasswordAgainstAuth } from '../_studentPassword.js'
+import { hashPasswordWithSalt, verifyStudentCredential } from '../_studentPassword.js'
 import { kv } from '@vercel/kv'
 import { mutateStudentRecord, studentStoreError } from '../_studentStore.js'
 import { assertTeacherStudentAccess } from '../_studentAccess.js'
@@ -726,7 +726,7 @@ export default async function handler(req, res) {
       if (!profile) return res.status(200).json({ profile: null })
 
       if (teacherAuthorized) await assertTeacherStudentAccess(req, profile)
-      if (!teacherAuthorized && !verifyPasswordAgainstAuth(profile.auth, studentPassword)) {
+      if (!teacherAuthorized && !await verifyStudentCredential(profile, studentPassword)) {
         return res.status(401).json({ error: 'Unauthorized' })
       }
 
@@ -772,7 +772,7 @@ export default async function handler(req, res) {
         if (!current) throw studentStoreError(404, 'Student not found')
         if (!isCurrentStudentProfile(current)) throw studentStoreError(409, 'Unsupported student profile schema')
         if (teacherAuthorized) await assertTeacherStudentAccess(req, current)
-        else if (!verifyPasswordAgainstAuth(current.auth, studentPassword)) throw studentStoreError(401, 'Unauthorized')
+        else if (!await verifyStudentCredential(current, studentPassword)) throw studentStoreError(401, 'Unauthorized')
         const incoming = normalizeProfileForStorage({
           ...profile,
           auth: hasCurrentStudentPassword(profile.auth) ? profile.auth : { ...current.auth, ...profile.auth }

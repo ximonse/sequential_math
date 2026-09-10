@@ -217,23 +217,27 @@ export async function moveStudentBetweenClasses(studentId, fromClassId, toClassI
   } catch { return { ok: false, error: 'Kunde inte kontakta servern.' } }
 }
 
-export function setActiveStudentSession(studentId, sessionSecret = '') {
+export function setActiveStudentSession(studentId, sessionSecret = '', options = {}) {
   const normalizedId = normalizeStudentId(studentId)
   if (!normalizedId) return
-  localStorage.setItem(STUDENT_SESSION_KEY, normalizedId)
-  localStorage.setItem(STUDENT_SESSION_SECRET_KEY, String(sessionSecret || ''))
-  localStorage.removeItem(STUDENT_ACTIVE_CLASS_KEY)
+  const store = options.remember === true ? localStorage : sessionStorage
+  for (const candidate of [localStorage, sessionStorage]) {
+    candidate.removeItem(STUDENT_SESSION_KEY); candidate.removeItem(STUDENT_SESSION_SECRET_KEY); candidate.removeItem(STUDENT_ACTIVE_CLASS_KEY)
+  }
+  store.setItem(STUDENT_SESSION_KEY, normalizedId)
+  store.setItem(STUDENT_SESSION_SECRET_KEY, String(sessionSecret || ''))
 }
 
 export function setActiveStudentClass(classId) {
   const normalized = String(classId || '').trim()
   if (!normalized) return false
-  localStorage.setItem(STUDENT_ACTIVE_CLASS_KEY, normalized)
+  const store = localStorage.getItem(STUDENT_SESSION_KEY) ? localStorage : sessionStorage
+  store.setItem(STUDENT_ACTIVE_CLASS_KEY, normalized)
   return true
 }
 
 export function getActiveStudentClass(profile) {
-  const selected = String(localStorage.getItem(STUDENT_ACTIVE_CLASS_KEY) || '').trim()
+  const selected = String(localStorage.getItem(STUDENT_ACTIVE_CLASS_KEY) || sessionStorage.getItem(STUDENT_ACTIVE_CLASS_KEY) || '').trim()
   const assigned = new Set([profile?.classId, ...(Array.isArray(profile?.classIds) ? profile.classIds : [])]
     .map(value => String(value || '').trim())
     .filter(Boolean))
@@ -241,24 +245,24 @@ export function getActiveStudentClass(profile) {
 }
 
 export function clearActiveStudentSession() {
-  localStorage.removeItem(STUDENT_SESSION_KEY)
-  localStorage.removeItem(STUDENT_SESSION_SECRET_KEY)
-  localStorage.removeItem(STUDENT_ACTIVE_CLASS_KEY)
+  for (const store of [localStorage, sessionStorage]) {
+    store.removeItem(STUDENT_SESSION_KEY); store.removeItem(STUDENT_SESSION_SECRET_KEY); store.removeItem(STUDENT_ACTIVE_CLASS_KEY)
+  }
 }
 
 export function getActiveStudentSession() {
-  return normalizeStudentId(localStorage.getItem(STUDENT_SESSION_KEY) || '')
+  return normalizeStudentId(localStorage.getItem(STUDENT_SESSION_KEY) || sessionStorage.getItem(STUDENT_SESSION_KEY) || '')
 }
 
 export function getActiveStudentSessionSecret() {
-  return String(localStorage.getItem(STUDENT_SESSION_SECRET_KEY) || '')
+  return String(localStorage.getItem(STUDENT_SESSION_SECRET_KEY) || sessionStorage.getItem(STUDENT_SESSION_SECRET_KEY) || '')
 }
 
 export function isStudentSessionActive(studentId) {
   const activeId = getActiveStudentSession()
   if (!activeId) return false
   return activeId === normalizeStudentId(studentId)
-    && String(localStorage.getItem(STUDENT_ACTIVE_CLASS_KEY) || '').trim() !== ''
+    && String(localStorage.getItem(STUDENT_ACTIVE_CLASS_KEY) || sessionStorage.getItem(STUDENT_ACTIVE_CLASS_KEY) || '').trim() !== ''
 }
 
 function updateStudentsList(studentId, name) {

@@ -1,12 +1,14 @@
 import { validateSchoolId } from './_schoolStore.js'
 import { kv } from '@vercel/kv'
 import { createHash, randomBytes } from 'node:crypto'
+import { createClassLoginToken } from './_studentSession.js'
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass, assertTeacherStudentAccess } from './_studentAccess.js'
 import { createClassRecord } from './_classStore.js'
 import { createStudentRecord, mutateStudentRecord, studentStoreError } from './_studentStore.js'
 
 const digest = text => createHash('sha256').update(text).digest('hex')
+const normalizeRosterName = value => String(value || '').normalize('NFC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('sv')
 
 export default async function handler(req, res) {
   withCors(res, { methods: 'POST,OPTIONS', headers: 'Content-Type,x-teacher-token' }, req)
@@ -36,7 +38,7 @@ export default async function handler(req, res) {
       target = await kv.get(`class:${id}`)
       if (target && target.enrollmentKey !== enrollmentKey) throw studentStoreError(409, 'Klasslistan har ändrats under ett pågående försök.')
       if (!target) {
-        try { target = await createClassRecord({ id, name, schoolId, teacherIds: teacher.teacherId ? [teacher.teacherId] : [], enabledExtras: [], createdAt: Date.now(), enrollmentKey }) }
+        try { target = await createClassRecord({ id, name, schoolId, teacherIds: teacher.teacherId ? [teacher.teacherId] : [], enabledExtras: [], loginToken: createClassLoginToken(), createdAt: Date.now(), enrollmentKey }) }
         catch (error) {
           if (error.status !== 409) throw error
           target = await kv.get(`class:${id}`)
@@ -45,6 +47,18 @@ export default async function handler(req, res) {
       }
       if (!await canAccessClass(req, target.id)) throw studentStoreError(403, 'Not authorized for this class')
     }
+    const normalizedIncomingNames = names.map(normalizeRosterName)
+    if (new Set(normalizedIncomingNames).size !== normalizedIncomingNames.length) {
+      throw studentStoreError(409, 'Två elever i samma klass kan inte ha samma namn. Skriv ett tydligare namn i listan.')
+    }
+    const existingIds = await kv.smembers('students:index') || []
+    const existingProfiles = await Promise.all(existingIds.map(id => kv.get(`student:${String(id).toUpperCase()}`)))
+    const existingNames = new Set(existingProfiles.filter(Boolean)
+      .filter(profile => [profile.classId, ...(profile.classIds || [])].includes(target.id) && profile.enrollmentKey !== enrollmentKey)
+      .map(profile => normalizeRosterName(profile.name)))
+    if (normalizedIncomingNames.some(name => existingNames.has(name))) {
+      throw studentStoreError(409, 'Namnet finns redan i den här klassen. Skriv ett tydligare namn i listan.')
+    }
     const results = []
     for (let index = 0; index < names.length; index++) {
       const name = names[index].trim()
@@ -52,16 +66,17 @@ export default async function handler(req, res) {
       const base = name.normalize('NFC').replace(/[^a-zA-Z0-9ÅÄÖåäö]+/g, '_').replace(/^_|_$/g, '').slice(0, 24).toUpperCase() || 'ELEV'
       const studentId = `${base}_${suffix}`
       try {
+        let loginCode = null
         let current = await kv.get(`student:${studentId}`)
         if (current && current.enrollmentKey !== enrollmentKey) throw studentStoreError(409, 'Student ID conflict')
         if (!current) {
-          const now = Date.now(), salt = randomBytes(16).toString('hex')
+          const now = Date.now(), salt = randomBytes(16).toString('hex'); loginCode = String(Math.floor(1000 + Math.random() * 9000))
           const record = { profileSchemaVersion: 1, studentId, name, grade, created_at: now,
             currentDifficulty: 1, highestDifficulty: 1, adaptive: { skillStates: {}, recentSelections: [] },
             masteryFacts: { version: 1, facts: [], revokedIds: [] }, recentProblems: [], problemLog: [],
             stats: { totalProblems: 0, correctAnswers: 0, overallSuccessRate: 0, avgTimePerProblem: 0, typeStats: {}, weakestTypes: [], strongestTypes: [] },
             classId: target.id, classIds: [target.id], className: target.name, enrollmentKey,
-            auth: { passwordScheme: 'sha256-v1', passwordSalt: salt, passwordHash: digest(`${salt}:${name}`), passwordUpdatedAt: now, loginCount: 0, lastLoginAt: null } }
+            auth: { passwordScheme: 'sha256-v1', passwordSalt: salt, passwordHash: digest(`${salt}:${loginCode}`), passwordUpdatedAt: now, loginCount: 0, lastLoginAt: null } }
           try { current = await createStudentRecord(studentId, record) }
           catch (error) {
             if (error.status !== 409) throw error
@@ -69,7 +84,7 @@ export default async function handler(req, res) {
             if (current?.enrollmentKey !== enrollmentKey) throw error
           }
         }
-        results.push({ studentId, name, ok: true })
+        results.push({ studentId, name, loginCode, ok: true })
       } catch (error) { results.push({ studentId, name, ok: false, error: error.status ? error.message : 'Kunde inte spara eleven.' }) }
     }
     for (const rawId of existingStudentIds) {

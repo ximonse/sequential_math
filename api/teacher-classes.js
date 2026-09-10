@@ -5,6 +5,7 @@
  */
 import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
+import { createClassLoginToken } from './_studentSession.js'
 import { createClassRecord, deleteClassRecord, mutateClassRecord } from './_classStore.js'
 import { getLiveAuthorizedClassIds, canAccessClass } from './_studentAccess.js'
 import {
@@ -32,7 +33,7 @@ export default async function handler(req, res) {
       if (!Array.isArray(ids) || ids.length === 0) {
         return res.status(200).json({ classes: [] })
       }
-      const classes = await Promise.all(ids.map(id => kv.get(`class:${id}`)))
+      const classes = await Promise.all(ids.map(async id => { const current = await kv.get(`class:${id}`); if (!current || current.loginToken) return current; return mutateClassRecord(id, record => ({ ...record, loginToken: createClassLoginToken() })) }))
       const filtered = classes
         .filter(Boolean)
         .filter(c => authorizedClassIds === null || authorizedClassIds.includes(c.id))

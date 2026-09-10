@@ -98,7 +98,7 @@ describe('student persistence boundary', () => {
     expect(memory.get('class:A')).toMatchObject({ id: 'A', name: '4B' })
   })
   it('creates distinct same-name pupils and safely retries a concurrent roster submission', async () => {
-    const body = { requestId: 'synthetic-request-1234', className: 'Test class', names: ['Karl', 'Karl', 'Lo A'] }
+    const body = { requestId: 'synthetic-request-1234', className: 'Test class', names: ['Karl', 'Karin', 'Lo A'] }
     const responses = await Promise.all([
       call(rosterHandler, 'POST', body, owner), call(rosterHandler, 'POST', body, owner)
     ])

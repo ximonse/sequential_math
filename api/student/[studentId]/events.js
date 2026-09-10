@@ -1,6 +1,7 @@
 import { mutateStudentRecord, studentStoreError } from '../../_studentStore.js'
 import { assertTeacherStudentAccess } from '../../_studentAccess.js'
 import { createHash } from 'node:crypto'
+import { verifyStudentCredential } from '../../_studentPassword.js'
 import {
   isLiveTeacherApiAuthorized,
   secureCompare,
@@ -179,7 +180,7 @@ export default async function handler(req, res) {
       if (!existing) throw studentStoreError(404, 'Student not found')
       if (!isCurrentStudentProfile(existing)) throw studentStoreError(409, 'Unsupported student profile schema')
       if (teacherAuthorized) await assertTeacherStudentAccess(req, existing)
-      else if (!verifyPasswordAgainstAuth(existing.auth, studentPassword)) throw studentStoreError(401, 'Unauthorized')
+      else if (!await verifyStudentCredential(existing, studentPassword)) throw studentStoreError(401, 'Unauthorized')
       const profile = structuredClone(existing)
       appliedCount = 0
       const sorted = [...entries].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))

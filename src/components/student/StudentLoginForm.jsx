@@ -1,34 +1,16 @@
 import { useState } from 'react'
 
-export default function StudentLoginForm({ onLogin, busy, error, onClearError }) {
+export default function StudentLoginForm({ className, onLogin, busy, error, onClearError }) {
   const [name, setName] = useState('')
-  const [password, setPassword] = useState('')
+  const [code, setCode] = useState('')
+  const [remember, setRemember] = useState(true)
   const inputClass = 'w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none'
-
-  return (
-    <form onSubmit={event => {
-      event.preventDefault()
-      if (!busy) onLogin({ name, password })
-    }} className="space-y-4">
-      <div>
-        <label htmlFor="studentId" className="block text-sm font-medium text-gray-700 mb-2">Namn eller elev-ID</label>
-        <input type="text" id="studentId" className={inputClass} value={name} required maxLength={100}
-          onChange={event => { setName(event.target.value); onClearError() }}
-          placeholder="Ditt namn eller elev-ID från läraren"
-          autoComplete="username" disabled={busy} />
-      </div>
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">Lösenord</label>
-        <input type="password" id="password" className={inputClass} value={password} required
-          onChange={event => { setPassword(event.target.value); onClearError() }} placeholder="Ditt lösenord"
-          autoComplete="current-password" disabled={busy} />
-      </div>
-      {error && <p role="alert" className="text-red-700 text-sm text-center">{error}</p>}
-      <p className="text-xs text-gray-500">Startlösenordet är ditt namn som läraren skrev det, om du inte har bytt lösenord.</p>
-      <button type="submit" disabled={busy}
-        className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-semibold rounded-lg transition-colors">
-        {busy ? 'Loggar in…' : 'Logga in'}
-      </button>
-    </form>
-  )
+  return <form onSubmit={event => { event.preventDefault(); if (!busy) onLogin({ name, code, remember }) }} className="space-y-4">
+    <p className="rounded-lg bg-blue-50 px-3 py-2 text-center text-sm font-medium text-blue-800">{className}</p>
+    <div><label htmlFor="studentName" className="block text-sm font-medium text-gray-700 mb-2">Ditt namn</label><input id="studentName" className={inputClass} value={name} required maxLength={100} onChange={event => { setName(event.target.value); onClearError() }} autoComplete="username" disabled={busy} /></div>
+    <div><label htmlFor="studentCode" className="block text-sm font-medium text-gray-700 mb-2">Din fyrsiffriga kod</label><input id="studentCode" className={inputClass} value={code} required inputMode="numeric" pattern="[0-9]{4}" maxLength={4} onChange={event => { setCode(event.target.value.replace(/\D/g, '')); onClearError() }} autoComplete="current-password" disabled={busy} /></div>
+    <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={remember} onChange={event => setRemember(event.target.checked)} /> Kom ihåg mig på den här enheten</label>
+    {error && <p role="alert" className="text-red-700 text-sm text-center">{error}</p>}
+    <button type="submit" disabled={busy} className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-semibold rounded-lg transition-colors">{busy ? 'Loggar in…' : 'Logga in'}</button>
+  </form>
 }

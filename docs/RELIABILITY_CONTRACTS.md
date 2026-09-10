@@ -57,3 +57,7 @@ Verification: real API handlers with synthetic KV data cover school creation,
 authorization, roster retry, school reassignment without profile mutation,
 name/ID login and rejection of pupil-supplied membership. Browser checks use
 intercepted synthetic API data; they do not modify live schools or pupil accounts.
+
+## Elevinloggning via klasslänk
+En elevlänk innehåller en slumpad klassnyckel och avslöjar bara den länkade klassens namn. Inloggning kräver ett unikt elevnamn i klassen och en fyrsiffrig kod. Servern utfärdar därefter en slumpad tidsbegränsad sessionsnyckel, som används för profilsynk, svarshändelser och highscores. Inga elevnamn eller organisationslistor publiceras före inloggning.
+

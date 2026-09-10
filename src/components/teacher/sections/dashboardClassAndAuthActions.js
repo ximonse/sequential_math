@@ -138,7 +138,7 @@ export function buildDashboardClassAndAuthActions({
 
     setClassNameInput('')
     setRosterInput('')
-    setClassStatus(`Klass skapad: ${result.classRecord.name} (${result.classRecord.studentIds.length} elever)`)
+    setClassStatus(`Klass skapad: ${result.classRecord.name}. Koder: ${(result.results || []).filter(item => item.loginCode).map(item => `${item.name}: ${item.loginCode}`).join(' · ')}`)
     const updatedClasses = getClasses()
     setClasses(updatedClasses)
     setAddToClassId(result.classRecord.id)
@@ -160,7 +160,7 @@ export function buildDashboardClassAndAuthActions({
     }
 
     setRosterInput('')
-    setClassStatus(`Tillagt ${result.addedCount} elev(er) i ${result.classRecord.name}.`)
+    setClassStatus(`Tillagt ${result.addedCount} elev(er). Koder: ${(result.results || []).filter(item => item.loginCode).map(item => `${item.name}: ${item.loginCode}`).join(' · ')}`)
     setClasses(getClasses())
     void loadStudents()
   }

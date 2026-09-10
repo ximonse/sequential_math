@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import StudentDetailHistoryPanel from './StudentDetailHistoryPanel'
+import StudentDetailTrendPanel from './StudentDetailTrendPanel'
 import StudentDetailMasteryPanel from './StudentDetailMasteryPanel'
 
 const OPERATION_BADGES = [
@@ -128,6 +129,8 @@ export default function StudentDetailPanel({
             ActivityBadgeComponent={ActivityBadgeComponent}
             trainingPriorityList={trainingPriorityList}
           />
+
+          <StudentDetailTrendPanel trend={detailStudentViewData.dailyTrend} />
 
           <StudentDetailMasteryPanel
             renderCollapseHeader={renderCollapseHeader}

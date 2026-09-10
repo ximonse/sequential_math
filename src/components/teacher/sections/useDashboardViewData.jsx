@@ -94,8 +94,10 @@ export function useDashboardViewData({
   const visibleRows = tableRows
 
   const detailStudentRow = useMemo(
-    () => filteredRows.find(row => row.studentId === detailStudentId) || null,
-    [filteredRows, detailStudentId]
+    () => detailStudentProfile?.studentId === detailStudentId
+      ? buildStudentRow(detailStudentProfile, activeAssignment, classNameById)
+      : null,
+    [detailStudentProfile, detailStudentId, activeAssignment, classNameById]
   )
 
   const detailStudentViewData = useMemo(

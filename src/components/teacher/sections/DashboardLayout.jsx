@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import AssignmentsPanel from './AssignmentsPanel'
 import ClassOverviewPanel from './ClassOverviewPanel'
 import ClassManagementPanel from './ClassManagementPanel'
@@ -174,7 +174,11 @@ export default function DashboardLayout({
       ...(isDirectStudentView ? { detail: false, support: true, overview: true } : {})
     }
     try {
-      return { ...defaults, ...(JSON.parse(localStorage.getItem(LS_COLLAPSED_KEY)) || {}) }
+      return {
+        ...defaults,
+        ...(JSON.parse(localStorage.getItem(LS_COLLAPSED_KEY)) || {}),
+        ...(isDirectStudentView ? { detail: false } : {})
+      }
     } catch {
       return defaults
     }
@@ -186,6 +190,10 @@ export default function DashboardLayout({
     return next
   })
 
+
+  useEffect(() => {
+    if (isDirectStudentView) setCollapsed(prev => ({ ...prev, detail: false }))
+  }, [isDirectStudentView, detailStudentId])
 
   function renderPanelContent(id) {
     if (id === 'overview') return (

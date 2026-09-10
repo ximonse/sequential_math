@@ -242,6 +242,43 @@ Pedagogiskt varde:
 Pedagogiskt varde:
 - Underlag for riktad ovning pa delmoment (inte bara "raknesatt generellt").
 
+### 8.6 Träning över 14 dagar (2026-09-09)
+
+Elevprofilen visar idag och de föregående 13 kalenderdagarna i
+`Europe/Stockholm`. Idag omfattar bara redan registrerade svar.
+Midnatt beräknas per kalenderdag, även när dygnet är 23 eller 25 timmar.
+
+- Övre diagrammet visar antal sparade svar som staplar.
+- Nedre diagrammet visar andel rätt som punkter på en separat, fast skala
+  0–100 procent. Linjen binder bara samman angränsande dagar med minst sex
+  svar. Tomma dagar är luckor, inte noll procent.
+- Färre än sex svar visas neutralt: grå stapel och öppen grå punkt.
+  Gränsen är en försiktighetsmarkering, inte ett statistiskt säkerhetsmått.
+- Ingen automatisk bedömning av uppgång, nedgång eller kunskapsutveckling
+  görs. Räknesätt, uppgifter och svårighetsgrad kan variera mellan dagar.
+- `Visa siffror för alla 14 dagar` öppnar samma data i tabellform:
+  datum, antal svar, antal rätt, andel rätt och underlag. Diagrammen kan
+  rullas tillsammans i sidled på smala skärmar.
+
+Data beräknas vid visning från `getPreferredProblemSource` på den fullständiga
+elevprofil som laddas för detaljvyn, inte från lärarlistans begränsade urval.
+Lärarlistan och den fullständiga profilen slås inte ihop av trendvyn.
+
+**Begränsad historik** visas om den föredragna källan inte är den fullständiga
+loggen, loggen når lagringstaket 5 000, livstidsantalet överstiger antalet
+sparade poster eller poster måste utelämnas på grund av ogiltig/framtida
+tidsstämpel eller saknat resultat. Äldre `stats.totalProblems` beaktas också.
+Markeringen gäller konservativt hela perioden; appen kan inte bevisa vilka
+enskilda dagar som saknar svar. En tom dag är då inte bevis på utebliven träning.
+
+Direktlänkar till en elev öppnar elevdetaljen även om sektionen tidigare
+sparats som hopfälld. Detaljens sammanfattningsrad använder den laddade
+fullständiga profilen. Lärarlistans sammanfattningsrader är fortsatt separata.
+
+Kod: `src/lib/studentDailyTrend.js`,
+`StudentDetailTrendPanel.jsx`, `dashboardStudentDetailViewHelpers.js`,
+`useDashboardViewData.jsx` och `DashboardLayout.jsx`.
+
 ## 9. Inaktivitet
 
 Kolumner:

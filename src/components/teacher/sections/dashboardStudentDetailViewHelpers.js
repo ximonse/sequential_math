@@ -1,6 +1,7 @@
 import { inferTableFromProblem, median, getSpeedTime, resolveProblemOperation } from '../../../lib/mathUtils'
 import { computeOperationMasteryBoards, getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { getOperationLabel } from '../../../lib/operations'
+import { buildStudentDailyTrend } from '../../../lib/studentDailyTrend'
 import { buildNcmDetailForStudent } from './dashboardStudentDetailNcmHelpers'
 import {
   buildStickyTableStatusForStudent,
@@ -23,6 +24,7 @@ export function buildTeacherStudentViewData(student) {
   const tableDrillDailyActivity = buildTableDrillDailyActivity(student)
 
   return {
+    dailyTrend: buildStudentDailyTrend(student),
     tableSticky,
     tablePerformanceByTable,
     tableRecencyByTable,

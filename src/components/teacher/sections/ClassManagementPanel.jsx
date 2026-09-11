@@ -2,6 +2,7 @@ import { useSchools, SchoolSelect, ClassSchoolChoice } from './SchoolControls'
 import { useRef, useState } from 'react'
 import { listDomains } from '../../../domains/registry'
 import { parseRosterLines } from '../../../lib/storageClassHelpers'
+import ClassLoginQrDialog from './ClassLoginQrDialog'
 
 function getTogglableExtras() {
   return listDomains()
@@ -105,6 +106,7 @@ export default function ClassManagementPanel({
   const [moveFromClassId, setMoveFromClassId] = useState('')
   const [moveToClassId, setMoveToClassId] = useState('')
   const [moveStudentId, setMoveStudentId] = useState('')
+  const [qrClass, setQrClass] = useState(null)
   const busyRef = useRef(false)
   const classLabel = item => `${item.name} · ${directory.schools.find(school => school.id === item.schoolId)?.name || 'Skola ej angiven'}`
   const names = parseRosterLines(rosterInput)
@@ -276,7 +278,10 @@ export default function ClassManagementPanel({
                     Ta bort klass
                   </button>
                   <button onClick={() => { const name = window.prompt('Nytt klassnamn:', item.name); if (name?.trim()) onRenameClass(item.id, name) }} className="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs">Byt namn</button>
-                  {item.loginToken && <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/?class=${item.loginToken}`)} className="px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded text-xs">Kopiera elevlänk</button>}
+                  {item.loginToken && <>
+                    <button onClick={() => setQrClass(item)} className="px-2 py-1 bg-slate-800 hover:bg-slate-950 text-white rounded text-xs">Visa QR-kod</button>
+                    <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/?class=${item.loginToken}`)} className="px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded text-xs">Kopiera elevlänk</button>
+                  </>}
                 </div>
                 <ClassSchoolChoice key={`${item.id}-${item.schoolId || ''}`} classRecord={item} directory={directory}
                   onSave={onRenameClass} disabled={busy} />
@@ -289,6 +294,7 @@ export default function ClassManagementPanel({
         </div>
       ) : null}
       </fieldset>
+      {qrClass && <ClassLoginQrDialog classRecord={qrClass} onClose={() => setQrClass(null)} />}
     </div>
   )
 }

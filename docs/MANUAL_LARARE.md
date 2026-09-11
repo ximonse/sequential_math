@@ -147,7 +147,7 @@ Annars syns bara data som finns lokalt i samma browsermiljö.
 
 ## 12. Elevkoder och inloggningssignal
 
-Varje ny elev får en fyrsiffrig personlig kod. Dela koden enskilt och dela klassens elevlänk eller QR-kod med gruppen.
+Varje ny elev får en fyrsiffrig personlig kod. Dela koden enskilt. Under `Klasser` väljer du `Visa QR-kod` för att visa en stor skannbar kod på skärmen, eller `Kopiera elevlänk` för att dela länken på annat sätt.
 
 När en elev inte kommer in: välj rätt elev i din tilldelade klass och använd `Byt kod`. Du kan också se hur många felaktiga kodförsök som har registrerats, så att du kan avgöra om eleven behöver hjälp eller en ny kod.
 

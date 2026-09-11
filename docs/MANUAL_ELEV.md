@@ -5,8 +5,9 @@ Den här manualen visar hur du använder appen.
 ## 1. Logga in
 
 1. Öppna klasslänken eller QR-koden som läraren har delat.
-2. Skriv ditt namn så som läraren har lagt in det.
-3. Skriv din personliga fyrsiffriga kod och klicka `Logga in`.
+2. Kontrollera att rätt klassnamn visas under `Du loggar in i klass`.
+3. Skriv ditt namn så som läraren har lagt in det.
+4. Skriv din personliga fyrsiffriga kod och klicka `Logga in`.
 
 Du väljer inte skola eller klass själv. De är redan kopplade till länken och lärarens klasslista. Kryssa bara i **Kom ihåg mig på den här enheten** på din egen enhet. Då kan inloggningen sparas i upp till 30 dagar; annars gäller den i upp till 12 timmar.
 

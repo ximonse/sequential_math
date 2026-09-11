@@ -21,7 +21,7 @@ Konton har exakt en explicit roll. Serverns aktuella kontopost är auktoritativ;
 - **school_admin** arbetar inom sina tilldelade skolor men får aldrig global åtkomst genom att rollen inte är `teacher`.
 - **super_admin** hanterar skolor och globala roller.
 
-Ändrad roll, skoltilldelning eller klasstilldelning höjer `sessionVersion` och gör tidigare sessioner ogiltiga.
+Ändrad roll, skoltilldelning eller klasstilldelning höjer `sessionVersion` och gör tidigare sessioner ogiltiga. Egen superadminroll kan inte tas bort, och en atomisk serverkontroll hindrar samtidiga ändringar från att radera eller nedgradera den sista aktiva superadminen.
 
 | Åtgärd | Superadmin | Skoladmin | Lärare | Elev |
 | --- | --- | --- | --- | --- |

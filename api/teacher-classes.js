@@ -38,6 +38,7 @@ export default async function handler(req, res) {
       const classes = await Promise.all(ids.map(async id => { const current = await kv.get(`class:${id}`); if (!current || current.loginToken) return current; return mutateClassRecord(id, record => ({ ...record, loginToken: createClassLoginToken() })) }))
       const filtered = classes
         .filter(Boolean)
+        .filter(c => !c.archived)
         .filter(c => authorizedClassIds === null || authorizedClassIds.includes(c.id))
       return res.status(200).json({ classes: filtered })
     } catch (err) {

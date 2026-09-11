@@ -360,7 +360,8 @@ describe('school management lifecycle', () => {
     const school = await call(schoolsHandler, { method: 'POST', headers: await adminHeaders(), body: { name: 'Skolan' } })
     const schoolId = school.data.school.id
     records.set('class:private-class', { id: 'private-class', name: '6A', schoolId, teacherIds: ['someone-else'] })
-    records.set('classes:index', ['private-class'])
+    records.set('class:archived-class', { id: 'archived-class', name: '5A 2025/26', schoolId, teacherIds: ['school-teacher'], archived: true })
+    records.set('classes:index', ['private-class', 'archived-class'])
     expect((await call(classesHandler, { headers: auth })).data.classes).toEqual([])
     expect((await call(classesHandler, { method: 'PUT', headers: auth, body: { id: 'private-class', name: '6B', schoolId } })).code).toBe(403)
     expect((await call(rosterHandler, { method: 'POST', headers: auth, body: { requestId: 'school-access-check', classId: 'private-class', names: ['Anna'], schoolId } })).code).toBe(403)

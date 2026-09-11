@@ -3,6 +3,7 @@ import { mutateStudentRecord, studentStoreError } from '../../_studentStore.js'
 import { assertTeacherStudentAccess, canAccessClass } from '../../_studentAccess.js'
 import { getLiveTeacherAuthPayload, withCors } from '../../_helpers.js'
 import { revalidateGroupsForPupil } from '../../_groupStore.js'
+import { isSuperAdminRole } from '../../_teacherRoles.js'
 
 export default async function handler(req, res) {
   withCors(res, { methods: 'PUT,OPTIONS', headers: 'Content-Type, x-teacher-token' }, req)
@@ -14,12 +15,21 @@ export default async function handler(req, res) {
   if (!studentId || !fromClassId || !toClassId || fromClassId === toClassId) {
     return res.status(400).json({ error: 'Välj olika käll- och målklasser.' })
   }
-  if (!await getLiveTeacherAuthPayload(req)) return res.status(401).json({ error: 'Teacher authorization required' })
+  const auth = await getLiveTeacherAuthPayload(req)
+  if (!auth) return res.status(401).json({ error: 'Teacher authorization required' })
+
   try {
-    const target = await kv.get(`class:${toClassId}`)
-    if (!target || !await canAccessClass(req, toClassId) || !await canAccessClass(req, fromClassId)) {
+    const [source, target] = await Promise.all([
+      kv.get(`class:${fromClassId}`),
+      kv.get(`class:${toClassId}`)
+    ])
+    if (!source || !target || !await canAccessClass(req, toClassId) || !await canAccessClass(req, fromClassId)) {
       throw studentStoreError(403, 'Not authorized for class move')
     }
+    if (!isSuperAdminRole(auth.role, auth.isAdmin) && String(source.schoolId || '') !== String(target.schoolId || '')) {
+      throw studentStoreError(403, 'Endast superadmin kan flytta elever mellan skolor.')
+    }
+
     const saved = await mutateStudentRecord(studentId, async current => {
       if (!current) throw studentStoreError(404, 'Student not found')
       await assertTeacherStudentAccess(req, current)
@@ -30,7 +40,11 @@ export default async function handler(req, res) {
       return { ...current, classIds, classId, className: classId === toClassId ? target.name : current.className }
     })
     await revalidateGroupsForPupil(studentId)
-    return res.status(200).json({ ok: true, profile: { studentId: saved.studentId, classId: saved.classId, classIds: saved.classIds } })
+    return res.status(200).json({ ok: true, profile: {
+      studentId: saved.studentId,
+      classId: saved.classId,
+      classIds: saved.classIds
+    } })
   } catch (error) {
     return res.status(error.status || 500).json({ error: error.status ? error.message : 'Kunde inte flytta eleven.' })
   }

@@ -6,7 +6,7 @@ import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass, assertTeacherStudentAccess } from './_studentAccess.js'
 import { createClassRecord } from './_classStore.js'
 import { createStudentRecord, mutateStudentRecord, studentStoreError } from './_studentStore.js'
-import { hasSchoolScope } from './_teacherRoles.js'
+import { hasSchoolScope, isSchoolAdminRole } from './_teacherRoles.js'
 
 const digest = text => createHash('sha256').update(text).digest('hex')
 const normalizeRosterName = value => String(value || '').normalize('NFC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('sv')
@@ -26,6 +26,7 @@ export default async function handler(req, res) {
       throw studentStoreError(400, 'Ange 1–100 elever med giltiga namn.')
     }
     const schoolId = classId ? '' : await validateSchoolId(req.body?.schoolId)
+    if (!classId && !isSchoolAdminRole(teacher.role, teacher.isAdmin)) throw studentStoreError(403, 'Endast administratörer kan skapa klasser.')
     if (!classId && !schoolId) throw studentStoreError(400, 'Välj en skola för klassen.')
     if (!classId && !hasSchoolScope(teacher, schoolId)) throw studentStoreError(403, 'Klassen måste ligga på en skola som är tilldelad dig.')
     const owner = teacher.teacherId || 'admin'

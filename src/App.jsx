@@ -5,6 +5,7 @@ import StudentHome from './components/student/StudentHome'
 import StudentTicket from './components/student/StudentTicket'
 import Dashboard from './components/teacher/Dashboard'
 import TeacherLogin from './components/teacher/TeacherLogin'
+import TeacherAdminPage from './components/teacher/TeacherAdminPage'
 import Login from './components/Login'
 import ThemeSwitcher from './components/shared/ThemeSwitcher'
 import { isTeacherAuthenticated } from './lib/teacherAuth'
@@ -38,6 +39,14 @@ function App() {
           element={(
             <RequireTeacherAuth>
               <Dashboard />
+            </RequireTeacherAuth>
+          )}
+        />
+        <Route
+          path="/teacher/admin"
+          element={(
+            <RequireTeacherAuth>
+              <TeacherAdminPage />
             </RequireTeacherAuth>
           )}
         />

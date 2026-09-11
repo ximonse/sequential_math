@@ -1,90 +1,10 @@
-import { useSchools, SchoolSelect, ClassSchoolChoice } from './SchoolControls'
+import { useSchools } from './SchoolControls'
 import { useRef, useState } from 'react'
-import { listDomains } from '../../../domains/registry'
 import { parseRosterLines } from '../../../lib/storageClassHelpers'
 import ClassLoginQrDialog from './ClassLoginQrDialog'
 import TeacherGroupsPanel from './TeacherGroupsPanel'
 
-function getTogglableExtras() {
-  return listDomains()
-    .filter(d => d.id !== 'arithmetic')
-    .flatMap(d =>
-      Array.isArray(d.skills)
-        ? d.skills.map(s => ({ id: s.id, label: s.label }))
-        : [{ id: d.id, label: d.label }]
-    )
-}
-
-function ClassExtrasRow({ classRecord, onSaveExtras }) {
-  const [open, setOpen] = useState(false)
-  const [extras, setExtras] = useState(classRecord.enabledExtras || [])
-  const [highscoreGroup, setHighscoreGroup] = useState(classRecord.highscoreGroup || '')
-  const [busy, setBusy] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const toggleableExtras = getTogglableExtras()
-
-  const handleSave = async () => {
-    setBusy(true)
-    let ok = false
-    try { ok = await onSaveExtras(classRecord.id, extras, { highscoreGroup }) }
-    finally { setBusy(false) }
-    if (!ok) return
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
-    setOpen(false)
-  }
-
-  return (
-    <div>
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="text-xs text-indigo-600 hover:underline ml-2"
-      >
-        {open ? 'Stäng' : 'Inställningar ▾'}
-      </button>
-      {open && (
-        <div className="mt-2 p-2 bg-indigo-50 rounded text-xs space-y-2">
-          <p className="text-gray-500 mb-1">+-×÷ är alltid på. Välj extra räknesätt:</p>
-          {toggleableExtras.map(ex => (
-            <label key={ex.id} className="flex items-center gap-1.5 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={extras.includes(ex.id)}
-                onChange={e => setExtras(prev =>
-                  e.target.checked ? [...prev, ex.id] : prev.filter(id => id !== ex.id)
-                )}
-              />
-              {ex.label}
-            </label>
-          ))}
-          <div className="pt-2 border-t border-indigo-200">
-            <label className="block text-gray-600 mb-1">Highscore-grupp</label>
-            <input
-              type="text"
-              value={highscoreGroup}
-              onChange={e => setHighscoreGroup(e.target.value)}
-              placeholder="Lämna tomt = egen lista"
-              className="w-full px-2 py-1 border border-gray-300 rounded text-xs"
-            />
-            <p className="text-gray-400 mt-0.5">Klasser med samma namn delar highscore-lista</p>
-          </div>
-          <button
-            onClick={handleSave}
-            disabled={busy}
-            className="mt-1 px-3 py-1 bg-indigo-600 text-white rounded disabled:opacity-50"
-          >
-            {saved ? '✓ Sparat' : busy ? '...' : 'Spara'}
-          </button>
-        </div>
-      )}
-    </div>
-  )
-}
-
 export default function ClassManagementPanel({
-  classNameInput,
-  onSetClassNameInput,
-  onCreateClass,
   addToClassId,
   onSetAddToClassId,
   classes,
@@ -95,14 +15,10 @@ export default function ClassManagementPanel({
   classStatus,
   students,
   recordMatchesClassFilter,
-  onDeleteClass,
-  onRenameClass,
-  onSaveClassExtras,
   onMoveStudent,
   onStatusChange
 }) {
   const directory = useSchools()
-  const [schoolId, setSchoolId] = useState('')
   const [busy, setBusy] = useState(false)
   const [selectedExistingStudentIds, setSelectedExistingStudentIds] = useState([])
   const [moveFromClassId, setMoveFromClassId] = useState('')
@@ -132,26 +48,9 @@ export default function ClassManagementPanel({
   }
   return (
     <div className="bg-white rounded-lg shadow p-4 mb-8">
-      <h2 className="text-lg font-semibold text-gray-800 mb-3">Klasser</h2>
-      <p className="mb-3 text-sm text-gray-600">Välj den skola som administratören har tilldelat dig. Behöver du en ny skola kontaktar du administratören.</p>
+      <h2 className="text-lg font-semibold text-gray-800 mb-3">Elever och klasslänkar</h2>
+      <p className="mb-3 text-sm text-gray-600">Lägg till eller flytta elever i klasser som du ansvarar för. Klassnamn, skolor och lärartilldelningar hanteras i administrationsvyn.</p>
       <fieldset disabled={busy} aria-busy={busy}>
-      <div className="mb-3"><SchoolSelect schools={directory.schools} value={schoolId} onChange={setSchoolId}
-        disabled={directory.loading || Boolean(directory.error)} label="Skola för ny klass/grupp" /></div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
-        <input
-          type="text"
-          value={classNameInput}
-          onChange={(event) => onSetClassNameInput(event.target.value)}
-          placeholder="Klassnamn, t.ex. 4A"
-          className="px-3 py-2 border rounded text-sm"
-        />
-        <button
-          onClick={() => runRosterAction(() => onCreateClass(schoolId))}
-          className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
-        >
-          Skapa klass från listan
-        </button>
-      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
         <select
           value={addToClassId}
@@ -273,23 +172,11 @@ export default function ClassManagementPanel({
                       Klass-ID: {item.id} · {classStudents.length} elever | {loggedInCount} har loggat in
                     </p>
                   </div>
-                  <button
-                    onClick={() => runRosterAction(() => onDeleteClass(item.id))}
-                    className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
-                  >
-                    Ta bort klass
-                  </button>
-                  <button onClick={() => { const name = window.prompt('Nytt klassnamn:', item.name); if (name?.trim()) onRenameClass(item.id, name) }} className="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs">Byt namn</button>
                   {item.loginToken && <>
                     <button onClick={() => setQrClass(item)} className="px-2 py-1 bg-slate-800 hover:bg-slate-950 text-white rounded text-xs">Visa QR-kod</button>
                     <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/?class=${item.loginToken}`)} className="px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded text-xs">Kopiera elevlänk</button>
                   </>}
                 </div>
-                <ClassSchoolChoice key={`${item.id}-${item.schoolId || ''}`} classRecord={item} directory={directory}
-                  onSave={onRenameClass} disabled={busy} />
-                {onSaveClassExtras && (
-                  <ClassExtrasRow classRecord={item} onSaveExtras={onSaveClassExtras} />
-                )}
               </div>
             )
           })}

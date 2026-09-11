@@ -6,7 +6,7 @@
 import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
 import { createClassLoginToken } from './_studentSession.js'
-import { createClassRecord, deleteClassRecord, mutateClassRecord } from './_classStore.js'
+import { createClassRecord, mutateClassRecord } from './_classStore.js'
 import { validateSchoolId } from './_schoolStore.js'
 import { getLiveAuthorizedClassIds, canAccessClass } from './_studentAccess.js'
 import {
@@ -15,7 +15,7 @@ import {
   withCors
 } from './_helpers.js'
 
-import { hasSchoolScope, isSuperAdminRole } from './_teacherRoles.js'
+import { hasSchoolScope, isSchoolAdminRole } from './_teacherRoles.js'
 export default async function handler(req, res) {
   withCors(res, {
     methods: 'GET,POST,PUT,DELETE,OPTIONS',
@@ -58,6 +58,7 @@ export default async function handler(req, res) {
 
     const payload = await getLiveTeacherAuthPayload(req)
     const teacherId = payload?.teacherId || null
+    if (!isSchoolAdminRole(payload?.role, payload?.isAdmin)) return res.status(403).json({ error: 'Endast administratörer kan skapa klasser.' })
     if (!schoolId) return res.status(400).json({ error: 'Välj en skola för klassen.' })
     if (!hasSchoolScope(payload, schoolId)) return res.status(403).json({ error: 'Klassen måste ligga på en skola som är tilldelad dig.' })
     const teacherIds = teacherId ? [teacherId] : []
@@ -97,6 +98,8 @@ export default async function handler(req, res) {
 
   // ── DELETE ─────────────────────────────────────────────────────────────────
   if (req.method === 'PUT') {
+    const editAuth = await getLiveTeacherAuthPayload(req)
+    if (!isSchoolAdminRole(editAuth?.role, editAuth?.isAdmin)) return res.status(403).json({ error: 'Endast administratörer kan ändra klasser.' })
     const id = String(req.body?.id || '').trim()
     const name = String(req.body?.name || '').trim()
     if (!id || !name) return res.status(400).json({ error: 'id and name required' })
@@ -119,38 +122,7 @@ export default async function handler(req, res) {
 
   // ── DELETE ─────────────────────────────────────────────────────────────────
   if (req.method === 'DELETE') {
-    const id = String(req.query?.id || req.body?.id || '').trim()
-    if (!id) return res.status(400).json({ error: 'id required' })
-
-    const auth = await getLiveTeacherAuthPayload(req)
-    const deletionKey = `class_deletion:${id}`
-    const priorDeletion = await kv.get(deletionKey)
-    const canResumeDeletion = Boolean(
-      isSuperAdminRole(auth?.role) || (auth?.teacherId && Array.isArray(priorDeletion?.teacherIds)
-        && priorDeletion.teacherIds.includes(auth.teacherId))
-    )
-    const hasLiveAccess = authorizedClassIds === null || await canAccessClass(req, id)
-    if (!hasLiveAccess && !canResumeDeletion) {
-      return res.status(403).json({ error: 'Not authorized for this class' })
-    }
-
-    try {
-      // Keep a narrow retry capability before tombstoning removes live access.
-      if (hasLiveAccess && !priorDeletion) {
-        const record = await kv.get(`class:${id}`)
-        if (record) {
-          await kv.set(deletionKey, {
-            teacherIds: Array.isArray(record.teacherIds) ? record.teacherIds : [],
-            startedAt: Date.now()
-          })
-        }
-      }
-      await deleteClassRecord(id)
-    } catch (error) {
-      return res.status(error.status || 500).json({ error: error.status ? error.message : 'Storage error' })
-    }
-
-    return res.status(200).json({ ok: true })
+    return res.status(403).json({ error: 'Permanent klassradering görs av superadmin i administrationsvyn.' })
   }
 
   return res.status(405).json({ error: 'Method not allowed' })

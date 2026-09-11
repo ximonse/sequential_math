@@ -56,6 +56,8 @@ import classesHandler from './teacher-classes.js'
 import teacherLoginHandler from './teacher-login.js'
 import teachersHandler from './admin/teachers.js'
 import teacherHandler from './admin/teachers/[id].js'
+import adminClassesHandler from './admin/classes.js'
+import adminClassHandler from './admin/classes/[id].js'
 import rolloverHandler from './admin/classes/rollover.js'
 import rosterHandler from './student-roster.js'
 import studentLoginHandler from './student-login.js'
@@ -111,6 +113,11 @@ describe('teacher account to pupil lifecycle', () => {
     const school = await call(schoolsHandler, { method: 'POST', headers: adminHeaders, body: { name: 'Testskolan' } })
     expect(school.code).toBe(201)
     expect((await call(teacherHandler, { method: 'PUT', headers: adminHeaders, query: { id: teacherId }, body: { schoolIds: [school.data.school.id] } })).code).toBe(200)
+    const assignedClass = await call(adminClassesHandler, {
+      method: 'POST', headers: adminHeaders,
+      body: { name: '4A', schoolId: school.data.school.id, teacherIds: [teacherId] }
+    })
+    expect(assignedClass.code).toBe(201)
 
     const firstLogin = await call(teacherLoginHandler, {
       method: 'POST', body: { username: 'ada', password: 'first-secret' }
@@ -120,7 +127,7 @@ describe('teacher account to pupil lifecycle', () => {
 
     const roster = await call(rosterHandler, {
       method: 'POST', headers: firstTeacherHeaders,
-      body: { requestId: 'synthetic-flow-2026', className: '4A', grade: 4, names: ['Ada Student'], schoolId: school.data.school.id }
+      body: { requestId: 'synthetic-flow-2026', classId: assignedClass.data.class.id, grade: 4, names: ['Ada Student'] }
     })
     expect(roster).toMatchObject({ code: 200, data: { ok: true } })
     const studentId = roster.data.results[0].studentId
@@ -194,13 +201,62 @@ describe('teacher account to pupil lifecycle', () => {
       method: 'POST', body: { username: 'ada', password: 'second-secret' }
     })
     expect(secondLogin.code).toBe(200)
-    const deleteStudent = await call(studentHandler, {
+    const teacherDelete = await call(studentHandler, {
       method: 'DELETE', headers: { 'x-teacher-token': secondLogin.data.token }, query: { studentId }
+    })
+    expect(teacherDelete.code).toBe(403)
+    const deleteStudent = await call(studentHandler, {
+      method: 'DELETE', headers: adminHeaders, query: { studentId }
     })
     expect(deleteStudent).toMatchObject({ code: 200, data: { ok: true, deleted: true } })
     expect((await call(studentHandler, {
       query: { studentId }, headers: { 'x-teacher-token': secondLogin.data.token }
     })).code).toBe(410)
+  })
+})
+
+describe('explicit role boundaries', () => {
+  beforeEach(() => {
+    records.clear()
+    process.env.TEACHER_API_PASSWORD = 'synthetic-flow-signing-secret'
+    const schoolId = 'scope-school'
+    records.set('school:' + schoolId, { id: schoolId, name: 'Scopeskolan' })
+    records.set('schools:index', [schoolId])
+    const credentials = hashTeacherPassword('scope-secret')
+    records.set('teacher_account:school-admin', {
+      id: 'school-admin', username: 'school-admin', passwordHash: credentials.hash,
+      passwordSalt: credentials.salt, passwordScheme: credentials.scheme,
+      role: 'school_admin', schoolIds: [schoolId], classIds: [], sessionVersion: 1
+    })
+    records.set('teacher_accounts:index', ['school-admin'])
+  })
+
+  it('blocks disabled accounts before issuing a session', async () => {
+    records.set('teacher_account:school-admin', { ...records.get('teacher_account:school-admin'), disabled: true })
+    const login = await call(teacherLoginHandler, {
+      method: 'POST', body: { username: 'school-admin', password: 'scope-secret' }
+    })
+    expect(login).toMatchObject({ code: 403, data: { code: 'ACCOUNT_DISABLED' } })
+  })
+
+  it('keeps school admins inside their schools and prevents role escalation', async () => {
+    const login = await call(teacherLoginHandler, {
+      method: 'POST', body: { username: 'school-admin', password: 'scope-secret' }
+    })
+    const headers = { 'x-teacher-token': login.data.token }
+    expect((await call(schoolsHandler, { method: 'POST', headers, body: { name: 'Ny skola' } })).code).toBe(403)
+
+    const created = await call(teachersHandler, {
+      method: 'POST', headers,
+      body: { username: 'teacher', password: 'teacher-secret', role: 'super_admin', schoolIds: ['scope-school'] }
+    })
+    expect(created).toMatchObject({ code: 201, data: { teacher: { role: 'teacher' } } })
+
+    records.set('school:other-school', { id: 'other-school', name: 'Andra skolan' })
+    records.set('schools:index', ['scope-school', 'other-school'])
+    expect((await call(adminClassesHandler, {
+      method: 'POST', headers, body: { name: '6A', schoolId: 'other-school' }
+    })).code).toBe(403)
   })
 })
 
@@ -246,25 +302,35 @@ describe('school management lifecycle', () => {
     expect(school.data.school.name).toBe('Norra skolan')
     const schoolId = school.data.school.id
     expect((await call(teacherHandler, { method: 'PUT', headers: adminAuth, query: { id: 'school-teacher' }, body: { schoolIds: [schoolId] } })).code).toBe(200)
+    const assignedClass = await call(adminClassesHandler, {
+      method: 'POST', headers: adminAuth,
+      body: { name: '6A', schoolId, teacherIds: ['school-teacher'] }
+    })
+    expect(assignedClass.code).toBe(201)
     auth = await headers()
     expect((await call(schoolsHandler, { headers: auth })).data.schools).toEqual([school.data.school])
-    const rosterBody = { requestId: 'school-flow-request-1', className: '6A', names: ['Anna'], schoolId }
+    const rosterBody = { requestId: 'school-flow-request-1', classId: assignedClass.data.class.id, names: ['Anna'] }
     const roster = await call(rosterHandler, { method: 'POST', headers: auth, body: rosterBody })
     expect(roster).toMatchObject({ code: 200, data: { ok: true, class: { schoolId } } })
     const studentId = roster.data.results[0].studentId
-    const duplicateClass = await call(rosterHandler, { method: 'POST', headers: auth, body: { ...rosterBody, requestId: 'school-flow-request-duplicate', names: ['Bo'] } })
+    const duplicateClass = await call(adminClassesHandler, {
+      method: 'POST', headers: adminAuth, body: { name: '6A', schoolId }
+    })
     expect(duplicateClass.code).toBe(409)
     const replay = await call(rosterHandler, { method: 'POST', headers: auth, body: rosterBody })
     expect(replay.data.results[0].studentId).toBe(studentId)
-    const changedRetry = await call(rosterHandler, { method: 'POST', headers: auth, body: { ...rosterBody, schoolId: '' } })
-    expect(changedRetry.code).toBe(400)
+    const deniedCreate = await call(rosterHandler, {
+      method: 'POST', headers: auth,
+      body: { requestId: 'school-flow-denied-create', className: '6C', names: ['Bo'], schoolId }
+    })
+    expect(deniedCreate.code).toBe(403)
     expect(await call(studentLoginHandler, { method: 'POST', body: { classToken: roster.data.class.loginToken, name: 'Anna', code: roster.data.results[0].loginCode } }))
       .toMatchObject({ code: 200, data: { studentId } })
     const before = structuredClone(records.get('student:' + studentId))
-    const renamed = await call(classesHandler, { method: 'PUT', headers: auth, body: { id: roster.data.class.id, name: '6B', schoolId } })
+    const renamed = await call(adminClassHandler, { method: 'PUT', headers: adminAuth, query: { id: roster.data.class.id }, body: { name: '6B', schoolId } })
     expect(renamed.code).toBe(200)
     expect(records.get('student:' + studentId)).toEqual(before)
-    const invalid = await call(classesHandler, { method: 'PUT', headers: auth, body: { id: roster.data.class.id, name: '6A', schoolId: 'missing' } })
+    const invalid = await call(adminClassHandler, { method: 'PUT', headers: adminAuth, query: { id: roster.data.class.id }, body: { name: '6A', schoolId: 'missing' } })
     expect(invalid.code).toBe(400)
     expect(records.get('class:' + roster.data.class.id).schoolId).toBe(schoolId)
   })

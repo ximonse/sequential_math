@@ -50,7 +50,6 @@ import {
   getAllProfilesWithSync,
   getCloudProfilesSyncStatus,
   getClasses,
-  saveClass,
 } from '../../lib/storage'
 import { getActiveAssignment, getAssignments } from '../../lib/assignments'
 import { getTeacherClassIds } from '../../lib/teacherAuth'
@@ -420,9 +419,3 @@ function Dashboard() {
 }
 
 export default Dashboard
-
-
-
-
-
-

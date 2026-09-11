@@ -97,12 +97,13 @@ describe('student persistence boundary', () => {
     const pupil = await call(studentHandler, 'PATCH', { serverRevision: 0, changes: { name: 'New name' } }, owner)
     expect(pupil.code).toBe(200)
     expect(memory.get('student:PUPIL')).toMatchObject({ studentId: 'PUPIL', name: 'New name', classIds: ['A'] })
-    const klass = await callClass('PUT', 'A', owner, { id: 'A', name: '4B' })
+    const klass = await callClass('PUT', 'A', admin, { id: 'A', name: '4B' })
     expect(klass).toMatchObject({ code: 200, data: { ok: true } })
     expect(memory.get('class:A')).toMatchObject({ id: 'A', name: '4B' })
   })
   it('creates distinct same-name pupils and safely retries a concurrent roster submission', async () => {
-    const body = { requestId: 'synthetic-request-1234', className: 'Test class', names: ['Karl', 'Karin', 'Lo A'] }
+    await createClassRecord({ id: 'TEST', name: 'Test class', schoolId: 'S', teacherIds: ['owner'] })
+    const body = { requestId: 'synthetic-request-1234', classId: 'TEST', names: ['Karl', 'Karin', 'Lo A'] }
     const responses = await Promise.all([
       call(rosterHandler, 'POST', body, owner), call(rosterHandler, 'POST', body, owner)
     ])
@@ -117,14 +118,17 @@ describe('student persistence boundary', () => {
   })
 
   it('never reuses a same-name pupil when creating another class', async () => {
-    const body = { requestId: 'synthetic-request-1234', className: 'First', names: ['Karl'] }
+    await createClassRecord({ id: 'FIRST', name: 'First', schoolId: 'S', teacherIds: ['owner'] })
+    await createClassRecord({ id: 'SECOND', name: 'Second', schoolId: 'S', teacherIds: ['owner'] })
+    const body = { requestId: 'synthetic-request-1234', classId: 'FIRST', names: ['Karl'] }
     const first = await call(rosterHandler, 'POST', body, owner)
-    const second = await call(rosterHandler, 'POST', { ...body, requestId: 'synthetic-request-5678', className: 'Second' }, owner)
+    const second = await call(rosterHandler, 'POST', { ...body, requestId: 'synthetic-request-5678', classId: 'SECOND' }, owner)
     expect(first.data.results[0].studentId).not.toBe(second.data.results[0].studentId)
   })
 
   it('adds existing identity to a group only by explicit ID and live source ownership', async () => {
-    const body = { requestId: 'synthetic-request-1234', className: 'Group', existingStudentIds: ['PUPIL'] }
+    await createClassRecord({ id: 'GROUP', name: 'Group', schoolId: 'S', teacherIds: ['owner'] })
+    const body = { requestId: 'synthetic-request-1234', classId: 'GROUP', existingStudentIds: ['PUPIL'] }
     const added = await call(rosterHandler, 'POST', body, owner)
     expect(added.data.ok).toBe(true)
     expect(memory.get('student:PUPIL').classIds).toContain(added.data.class.id)
@@ -221,7 +225,7 @@ describe('student persistence boundary', () => {
       'highscores:snake:old-group'
     ])
 
-    const response = await call(studentHandler, 'DELETE', {}, owner)
+    const response = await call(studentHandler, 'DELETE', {}, admin)
 
     expect(response).toMatchObject({ code: 200, data: { ok: true, highscoreCleanup: 'complete' } })
     expect(memory.get('highscores:pong:A')).toEqual([
@@ -255,25 +259,6 @@ describe('student persistence boundary', () => {
     expect((await call(studentHandler, 'POST', { profile: old }, null)).code).toBe(200)
     expect(memory.get('student:PUPIL').classIds).toEqual([])
     await expect(createClassRecord({ id: 'A', name: 'Old class' })).rejects.toMatchObject({ status: 410 })
-  })
-
-  it('lets the same class owner resume deletion after the class tombstone exists', async () => {
-    const originalDelete = memory.get.bind(memory)
-    let interruptOnce = true
-    memory.get = key => {
-      if (key === 'student:PUPIL' && interruptOnce) {
-        interruptOnce = false
-        throw new Error('Synthetic interruption')
-      }
-      return originalDelete(key)
-    }
-    expect((await callClass('DELETE', 'A', owner)).code).toBe(500)
-    expect(memory.has('class_deleted:A')).toBe(true)
-    expect(memory.get('class_deletion:A').teacherIds).toEqual(['owner'])
-    memory.get = originalDelete
-    expect((await callClass('DELETE', 'A', owner)).code).toBe(200)
-    expect(memory.get('student:PUPIL').classIds).toEqual([])
-    expect((await callClass('DELETE', 'A', { teacherId: 'stranger', isAdmin: false })).code).toBe(403)
   })
 
   it('does not let a concurrent write win over deletion', async () => {

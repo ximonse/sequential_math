@@ -16,14 +16,14 @@ Detaljerad datatolkning (kolumn för kolumn) finns i separata dokument:
 
 Lärarkontot skapas av administratören. Kontakta administratören om du saknar konto, har glömt lösenordet eller behöver åtkomst till en annan skola eller klass.
 
-Högst upp i lärarvyn visas ditt kontonamn och din roll. Bakgrunden är ljusgrön för **Lärare** och ljusorange för **Administratör**, så att det syns direkt vilken behörighet du använder.
+Högst upp i lärarvyn visas ditt kontonamn och din roll. Bakgrunden är ljusgrön för **Lärare**, ljusorange för **Skoladministratör** och ljuslila för **Huvudadministratör**, så att det syns direkt vilken behörighet du använder.
 
 ## 2. Första setup
 
-1. Skapa klass under sektionen `Klasser`.
-2. Klistra in elevlistan med en elev per rad, eller separera elever med kommatecken eller semikolon.
+1. Välj en klass som administratören har tilldelat dig.
+2. Öppna **Klasser & elever** och klistra in elevlistan med en elev per rad, eller separera elever med kommatecken eller semikolon.
 3. Kontrollera att elever dyker upp i tabellerna.
-4. Välj klassfilter högst upp (`Urval: klasser`) innan du analyserar data.
+4. Välj klassfilter högst upp innan du analyserar data.
 
 Notera:
 - Toppfiltret styr hela dashboarden (en eller flera klasser/grupper).
@@ -31,7 +31,7 @@ Notera:
 
 ### Skolor och klasser
 
-Administratören skapar skolor och tilldelar varje lärare en eller flera skolor. Du ser och kan skapa klasser bara på dina tilldelade skolor. Behöver du en ny skola kontaktar du administratören.
+Administratören skapar skolor och tilldelar varje lärare en eller flera skolor. Du ser bara dina direkt tilldelade klasser. Behöver du en ny klass eller skola kontaktar du administratören.
 
 Varje klass har ett oföränderligt **klass-ID**. Klassnamnet kan däremot ändras, exempelvis `4B` till `5B`, utan att elevernas ID, träningshistorik eller elevlänk ändras. Samma klassnamn kan bara finnas en gång på samma skola.
 
@@ -41,14 +41,17 @@ Elever använder en klasspecifik länk eller QR-kod och loggar in med sitt namn 
 
 ### Radera en elev
 
-1. Öppna eleven under `Elevprofil`.
-2. Välj `Radera elev` och bekräfta. Elevens profil och all historik raderas permanent.
+Permanent radering görs av skoladmin eller huvudadministratör. Som lärare kan du flytta eleven mellan klasser på samma skola och ändra elevens kod.
 
 ### Nytt läsår
 
 Administratören använder **Administration → Klasser → Nytt läsår**. Välj skola och kontrollera förhandsgranskningen innan `Genomför årsbyte`. Namn som börjar på årskurs 4–8 höjs automatiskt, till exempel `4B` → `5B`. Om ett nytt namn skulle krocka med en befintlig klass stoppas årsbytet tills det är löst.
 
-## 3. Daglig rutin (rekommenderat)
+## 3. Huvuddelar
+
+Lärarvyn är indelad i **Klasser & elever**, **Uppdrag & exit tickets**, **Tabeller & kunskapsområden** och **Statistik**. Klassurvalet högst upp styr innehållet och sparas på enheten. Highscore ligger sist på sidan.
+
+## 4. Daglig rutin (rekommenderat)
 
 1. Kontrollera `Klass/gruppvy - snabbstatus` för vem som är aktiv nu.
    Du kan klicka kolumnrubrikerna för sortering (stigande/fallande).

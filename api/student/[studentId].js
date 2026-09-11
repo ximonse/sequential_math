@@ -3,11 +3,13 @@ import { kv } from '@vercel/kv'
 import { mutateStudentRecord, studentStoreError } from '../_studentStore.js'
 import { assertTeacherStudentAccess } from '../_studentAccess.js'
 import {
+  getLiveTeacherAuthPayload,
   isLiveTeacherApiAuthorized,
   withCors
 } from '../_helpers.js'
 import { withFreshTeacherSummary } from '../../src/lib/teacherSummary.js'
 import { removeStudentHighscores } from '../highscores.js'
+import { isSchoolAdminRole } from '../_teacherRoles.js'
 import {
   STUDENT_PASSWORD_SCHEME,
   hasCurrentStudentPassword,
@@ -37,6 +39,9 @@ export default async function handler(req, res) {
     const existing = isCurrentStudentProfile(stored) ? stored : null
 
     if (req.method === 'DELETE') {
+      const deleteAuth = await getLiveTeacherAuthPayload(req)
+      if (!deleteAuth) return res.status(401).json({ error: 'Teacher authorization required' })
+      if (!isSchoolAdminRole(deleteAuth.role, deleteAuth.isAdmin)) return res.status(403).json({ error: 'Endast administratörer kan radera elever permanent.' })
       let deletedClassIds = []
       await mutateStudentRecord(studentId, async current => {
         await assertTeacherStudentAccess(req, current)

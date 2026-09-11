@@ -9,7 +9,6 @@ import {
   normalizeStudentId,
   removeClass,
   moveStudentBetweenClasses,
-  resetStudentPasswordToLoginName,
   updateClassExtras
 } from '../../../lib/storage'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'

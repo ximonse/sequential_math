@@ -19,7 +19,7 @@ import StudentDetailPanel from './StudentDetailPanel'
 import StudentDetailTrainingPriorityPanel from './StudentDetailTrainingPriorityPanel'
 import SupportPriorityPanel from './SupportPriorityPanel'
 import TableSelectionAndDevelopmentPanel from './TableSelectionAndDevelopmentPanel'
-import TeacherAdminPanel from './TeacherAdminPanel'
+import DashboardWorkspaceNavigation from './DashboardWorkspaceNavigation'
 import TeacherPasswordNoticePanel from './TeacherPasswordNoticePanel'
 import TicketSectionContainer from './TicketSectionContainer'
 import TableStickyStatusPanel from './TableStickyStatusPanel'
@@ -46,8 +46,14 @@ const PANEL_DEFS = [
   { id: 'management',  title: 'Klasshantering' },
   { id: 'password',    title: 'Lösenordsåterställning' },
   { id: 'pausegames',  title: 'Pausspel — Highscore' },
-  { id: 'admin',       title: 'Administration', adminOnly: true },
 ]
+
+const WORKSPACE_PANEL_IDS = {
+  classes: ['support', 'overview', 'detail', 'management', 'password'],
+  work: ['assignments', 'tickets'],
+  knowledge: ['mastery', 'sticky', 'heatmap', 'difficulty-analysis', 'training-priority', 'tabledev'],
+  statistics: ['results', 'inactivity', 'dataquality']
+}
 
 const DEFAULT_COLLAPSED = Object.fromEntries(
   PANEL_DEFS.map(({ id }) => [id, !['support', 'overview'].includes(id)])
@@ -170,7 +176,18 @@ export default function DashboardLayout({
   const teacherIdentity = getTeacherIdentity()
   const teacherName = String(teacherIdentity.displayName || 'Lärare').trim() || 'Lärare'
   const teacherRole = getTeacherRoleLabel(teacherIdentity.role)
-  const visiblePanelDefs = PANEL_DEFS.filter(p => !p.adminOnly || teacherIsAdmin)
+  const dashboardTabKey = `mathapp_dashboard_tab_${teacherIdentity.teacherId || 'unknown'}`
+  const [activeTab, setActiveTab] = useState(() => {
+    const stored = localStorage.getItem(dashboardTabKey)
+    return WORKSPACE_PANEL_IDS[stored] ? stored : 'classes'
+  })
+  const activePanelIds = WORKSPACE_PANEL_IDS[activeTab] || WORKSPACE_PANEL_IDS.classes
+  const visiblePanelDefs = PANEL_DEFS.filter(panel => activePanelIds.includes(panel.id))
+  const surfaceClass = teacherIdentity.role === 'super_admin'
+    ? 'teacher-dashboard-surface--super-admin'
+    : teacherIsAdmin
+      ? 'teacher-dashboard-surface--admin'
+      : 'teacher-dashboard-surface--teacher'
 
   const [collapsed, setCollapsed] = useState(() => {
     const defaults = {
@@ -196,8 +213,15 @@ export default function DashboardLayout({
 
 
   useEffect(() => {
-    if (isDirectStudentView) setCollapsed(prev => ({ ...prev, detail: false }))
+    if (isDirectStudentView) {
+      setActiveTab('classes')
+      setCollapsed(prev => ({ ...prev, detail: false }))
+    }
   }, [isDirectStudentView, detailStudentId])
+
+  useEffect(() => {
+    localStorage.setItem(dashboardTabKey, activeTab)
+  }, [activeTab, dashboardTabKey])
 
   function renderPanelContent(id) {
     if (id === 'overview') return (
@@ -419,12 +443,11 @@ export default function DashboardLayout({
     if (id === 'pausegames') return (
       <PauseGameHighscorePanel selectedClassIds={selectedClassIds} />
     )
-    if (id === 'admin') return <TeacherAdminPanel />
     return null
   }
 
   return (
-    <div className={`teacher-dashboard-surface min-h-screen py-8 ${teacherIsAdmin ? 'teacher-dashboard-surface--admin' : 'teacher-dashboard-surface--teacher'}`}>
+    <div className={`teacher-dashboard-surface min-h-screen py-8 ${surfaceClass}`}>
       <div className="max-w-6xl mx-auto px-4">
         <DashboardHeaderBar
           isDirectStudentView={isDirectStudentView}
@@ -432,9 +455,13 @@ export default function DashboardLayout({
           teacherName={teacherName}
           teacherRole={teacherRole}
           isAdmin={teacherIsAdmin}
-          onJumpToPasswordReset={handleJumpToPasswordReset}
+          onJumpToPasswordReset={() => {
+            setActiveTab('classes')
+            window.setTimeout(handleJumpToPasswordReset, 0)
+          }}
           onRefresh={handleRefresh}
           onGoDashboard={() => navigate('/teacher')}
+          onGoAdmin={() => navigate('/teacher/admin')}
           onLogout={handleLogout}
         />
 
@@ -460,6 +487,10 @@ export default function DashboardLayout({
 
           <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
 
+          {!isDirectStudentView && (
+            <DashboardWorkspaceNavigation activeTab={activeTab} onChange={setActiveTab} />
+          )}
+
           {visiblePanelDefs.map(({ id, title }) => (
             <CollapsibleSection
               key={id}
@@ -470,6 +501,14 @@ export default function DashboardLayout({
               {renderPanelContent(id)}
             </CollapsibleSection>
           ))}
+
+          <CollapsibleSection
+            title="Pausspel — Highscore"
+            collapsed={!!collapsed.pausegames}
+            onToggle={() => toggleCollapsed('pausegames')}
+          >
+            {renderPanelContent('pausegames')}
+          </CollapsibleSection>
         </div>
       </div>
     </div>

@@ -23,15 +23,17 @@ Konton har exakt en explicit roll. Serverns aktuella kontopost är auktoritativ;
 
 Ändrad roll, skoltilldelning eller klasstilldelning höjer `sessionVersion` och gör tidigare sessioner ogiltiga.
 
-| Åtgärd | Administratör | Lärare | Elev |
-| --- | --- | --- | --- |
-| Skapa skola | Ja | Nej | Nej |
-| Tilldela lärare till skola | Ja | Nej | Nej |
-| Skapa klass | Ja | Endast på tilldelad skola | Nej |
-| Tilldela ansvarig lärare till klass | Ja | Nej | Nej |
-| Se och ändra en klass | Alla | Endast klasser där läraren är ansvarig | Nej |
-| Skapa elev, dela elevlänk och ändra elevkod | Ja, för tilldelad klass | Ja, för tilldelad klass | Nej |
-| Välja skola eller klass | Ja, i administrationen | Endast inom behörighet | Nej |
+| Åtgärd | Superadmin | Skoladmin | Lärare | Elev |
+| --- | --- | --- | --- | --- |
+| Skapa skola och administratörskonto | Ja | Nej | Nej | Nej |
+| Skapa lärarkonto | Ja | Ja, inom egna skolor | Nej | Nej |
+| Ändra roll eller radera lärarkonto | Ja | Nej | Nej | Nej |
+| Skapa, byta namn på eller arkivera klass | Ja | Ja, inom egna skolor | Nej | Nej |
+| Tilldela ansvarig lärare till klass | Ja | Ja, inom egna skolor | Nej | Nej |
+| Flytta elev mellan skolor | Ja | Nej | Nej | Nej |
+| Flytta elev mellan tilldelade klasser på samma skola | Ja | Ja | Ja | Nej |
+| Skapa elev, dela klasslänk och ändra elevkod | Ja | Ja | Ja, i tilldelad klass | Nej |
+| Radera elev permanent | Ja | Ja, inom egna skolor | Nej | Nej |
 
 Servern kontrollerar behörighet på varje skyddat API-anrop. Dolda knappar i gränssnittet räcker aldrig som behörighetskontroll.
 
@@ -39,7 +41,7 @@ Servern kontrollerar behörighet på varje skyddat API-anrop. Dolda knappar i gr
 
 Varje lärarkonto har användarnamn, lösenord, roll, tilldelade skolor och klasser. Lösenord lagras som hash med salt. Inloggning i `POST /api/teacher-login` utfärdar en signerad session. Sessionen verifieras mot ett aktivt konto och dess `sessionVersion`, så lösenords-, roll- och direkta klasstilldelningsändringar gör äldre sessioner ogiltiga.
 
-Administratörer använder samma kontomodell, med administratörsrollen aktiverad. Råa lösenordsheaders och kontolösa sessioner godtas inte.
+Administratörer använder samma kontomodell. Skoladministratörer är avgränsade till sina tilldelade skolor; huvudadministratörer har global behörighet. Ett avstängt konto får ingen ny session. Råa lösenordsheaders och kontolösa sessioner godtas inte.
 Äldre konton med enbart `isAdmin` behöver migreras uttryckligen innan de används för skoladministration. Migreringen väljer exakt ett användarnamn som `super_admin`, sätter övriga äldre administratörer till `school_admin` och blockerar oskopade skoladministratörer tills de har en skoltilldelning. Den körs aldrig automatiskt mot produktion.
 
 
@@ -84,3 +86,10 @@ En grupp är en separat serverresurs med stabilt ID, namn, en skola, elev-ID:n o
 - Varje delad lärare måste redan få se samtliga elever via sin klass- eller administratörstilldelning.
 - Elevflytt och ändrad lärarscope omvaliderar gruppen. En elev eller lärare som inte längre uppfyller åtkomstkravet tas bort från gruppen.
 - `GET/POST/PUT/DELETE /api/teacher-groups` använder levande lärarsession och kontrollerar dessa regler på servern.
+
+
+## Lärar- och administrationsvyer
+
+Lärarvyn har fyra huvuddelar: **Klasser & elever**, **Uppdrag & exit tickets**, **Tabeller & kunskapsområden** och **Statistik**. Klassurvalet ligger kvar ovanför delarna och highscore visas sist. Kontonamn och roll visas alltid. Bakgrunden är grön för lärare, orange för skoladmin och lila för superadmin.
+
+Klass- och kontolivscykeln ligger på den separata skyddade sidan `/teacher/admin`. Lärare når elev-, grupp-, kod- och klasslänksverktyg från lärarvyn men kan inte skapa, byta namn på, arkivera eller radera klasser.

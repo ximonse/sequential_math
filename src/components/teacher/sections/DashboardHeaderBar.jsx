@@ -7,6 +7,7 @@ function DashboardHeaderBar({
   onJumpToPasswordReset,
   onRefresh,
   onGoDashboard,
+  onGoAdmin,
   onLogout
 }) {
   return (
@@ -27,6 +28,14 @@ function DashboardHeaderBar({
           <p className="font-semibold leading-tight">{teacherName}</p>
           <p className="text-xs leading-tight opacity-80">{teacherRole}</p>
         </div>
+        {isAdmin && (
+          <button
+            onClick={onGoAdmin}
+            className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm"
+          >
+            Administration
+          </button>
+        )}
         {!isDirectStudentView && (
           <button
             onClick={onJumpToPasswordReset}

@@ -1,75 +1,60 @@
-/**
- * GET  /api/admin/classes  — list all classes
- * POST /api/admin/classes  — create a new class
- * Both require admin auth.
- */
 import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
 import { createClassRecord } from '../_classStore.js'
+import { createClassLoginToken } from '../_studentSession.js'
 import { assertTeachersBelongToSchool, validateSchoolId } from '../_schoolStore.js'
-import {
-  isLiveAdminAuthorized,
-  withCors
-} from '../_helpers.js'
+import { getLiveTeacherAuthPayload, withCors } from '../_helpers.js'
+import { hasSchoolScope, isSchoolAdminRole } from '../_teacherRoles.js'
 
 export default async function handler(req, res) {
-  withCors(res, {
-    methods: 'GET,POST,OPTIONS',
-    headers: 'Content-Type, x-teacher-token'
-  }, req)
+  withCors(res, { methods: 'GET,POST,OPTIONS', headers: 'Content-Type, x-teacher-token' }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
-  if (!await isLiveAdminAuthorized(req)) {
-    return res.status(401).json({ error: 'Admin access required' })
-  }
+  const auth = await getLiveTeacherAuthPayload(req)
+  if (!auth) return res.status(401).json({ error: 'Admin access required' })
+  if (!isSchoolAdminRole(auth.role, auth.isAdmin)) return res.status(403).json({ error: 'Admin access required' })
 
-  if (req.method === 'GET') {
-    try {
-      const ids = await kv.smembers('classes:index')
-      if (!Array.isArray(ids) || ids.length === 0) {
-        return res.status(200).json({ classes: [] })
+  try {
+    const ids = await kv.smembers('classes:index') || []
+    const records = (await Promise.all(ids.map(id => kv.get(`class:${id}`)))).filter(Boolean)
+
+    if (req.method === 'GET') {
+      return res.status(200).json({ classes: records.filter(record => hasSchoolScope(auth, record.schoolId)) })
+    }
+
+    if (req.method === 'POST') {
+      const name = String(req.body?.name || '').trim()
+      if (!name) return res.status(400).json({ error: 'name required', code: 'MISSING_NAME' })
+      const teacherIds = Array.isArray(req.body?.teacherIds) ? req.body.teacherIds.map(String).filter(Boolean) : []
+      const schoolId = await validateSchoolId(req.body?.schoolId)
+      if (!schoolId) return res.status(400).json({ error: 'Välj en skola för klassen.' })
+      if (!hasSchoolScope(auth, schoolId)) return res.status(403).json({ error: 'Skolan ligger utanför din behörighet.' })
+      await assertTeachersBelongToSchool(teacherIds, schoolId)
+
+      const id = randomBytes(6).toString('hex')
+      const classRecord = {
+        id,
+        name,
+        teacherIds,
+        schoolId,
+        enabledExtras: Array.isArray(req.body?.enabledExtras) ? req.body.enabledExtras.map(String) : [],
+        loginToken: createClassLoginToken(),
+        createdAt: Date.now()
       }
-      const classes = await Promise.all(ids.map(id => kv.get(`class:${id}`)))
-      return res.status(200).json({ classes: classes.filter(Boolean) })
-    } catch (err) {
-      return res.status(500).json({ error: 'Storage error', details: err?.message })
+      const saved = await createClassRecord(classRecord)
+      await Promise.all(teacherIds.map(async teacherId => {
+        const account = await kv.get(`teacher_account:${teacherId}`)
+        if (!account) return
+        await kv.set(`teacher_account:${teacherId}`, {
+          ...account,
+          classIds: [...new Set([...(account.classIds || []), id])],
+          sessionVersion: Math.max(1, Number(account.sessionVersion) || 1) + 1,
+          updatedAt: Date.now()
+        })
+      }))
+      return res.status(201).json({ ok: true, class: saved })
     }
+    return res.status(405).json({ error: 'Method not allowed' })
+  } catch (error) {
+    return res.status(error.status || 500).json({ error: error.status ? error.message : 'Storage error' })
   }
-
-  if (req.method === 'POST') {
-    const name = String(req.body?.name || '').trim()
-    if (!name) {
-      return res.status(400).json({ error: 'name required', code: 'MISSING_NAME' })
-    }
-
-    const id = randomBytes(6).toString('hex')
-    const teacherIds = Array.isArray(req.body?.teacherIds) ? req.body.teacherIds.map(String).filter(Boolean) : []
-    const schoolId = await validateSchoolId(req.body?.schoolId)
-    if (!schoolId) return res.status(400).json({ error: 'Välj en skola för klassen.' })
-    await assertTeachersBelongToSchool(teacherIds, schoolId)
-    const enabledExtras = Array.isArray(req.body?.enabledExtras) ? req.body.enabledExtras.map(String) : []
-
-    const classRecord = {
-      id,
-      name,
-      teacherIds,
-      schoolId,
-      enabledExtras,
-      createdAt: Date.now()
-    }
-
-    try { await createClassRecord(classRecord) }
-    catch (error) { return res.status(error.status || 500).json({ error: error.status ? error.message : 'Storage error' }) }
-
-    // Update each assigned teacher's classIds
-    await Promise.all(teacherIds.map(async teacherId => {
-      const acc = await kv.get(`teacher_account:${teacherId}`)
-      if (!acc) return
-      const updatedClassIds = Array.from(new Set([...(acc.classIds || []), id]))
-      await kv.set(`teacher_account:${teacherId}`, { ...acc, classIds: updatedClassIds })
-    }))
-
-    return res.status(201).json({ ok: true, class: classRecord })
-  }
-
-  return res.status(405).json({ error: 'Method not allowed' })
 }

@@ -48,6 +48,9 @@ export default async function handler(req, res) {
   // 1. Try per-teacher account from KV
   const account = await findTeacherByUsername(username)
   if (account) {
+    if (account.disabled === true) {
+      return res.status(403).json({ error: 'Account disabled', code: 'ACCOUNT_DISABLED' })
+    }
     const valid = verifyTeacherPassword(password, account.passwordHash, account.passwordSalt)
     if (!valid) {
       return res.status(401).json({ error: 'Unauthorized', code: 'INVALID_PASSWORD' })

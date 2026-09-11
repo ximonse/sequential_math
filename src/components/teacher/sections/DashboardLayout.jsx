@@ -6,7 +6,6 @@ import ClassFilterPanel from './ClassFilterPanel'
 import ClassMisconceptionHeatmap from './ClassMisconceptionHeatmap'
 import ClassMasteryLevelPanel from './ClassMasteryLevelPanel'
 import ClassStatsCards from './ClassStatsCards'
-import CloudSyncStatusPanel from './CloudSyncStatusPanel'
 import CollapsibleSection from './CollapsibleSection'
 import PauseGameHighscorePanel from './PauseGameHighscorePanel'
 import DifficultyAnalysisPanel from './DifficultyAnalysisPanel'
@@ -72,8 +71,6 @@ export default function DashboardLayout({
   dashboardStatus,
   isCloudRefreshBusy,
   handleCloudRefreshNow,
-  formatSyncTimestamp,
-  getCloudSyncSourceLabel,
   selectedClassIds,
   students,
   filteredStudents,
@@ -447,14 +444,17 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className={`teacher-dashboard-surface min-h-screen py-8 ${surfaceClass}`}>
-      <div className="max-w-6xl mx-auto px-4">
+    <div className={`teacher-dashboard-surface min-h-screen pb-5 pt-14 sm:pb-6 sm:pt-16 ${surfaceClass}`}>
+      <div className="max-w-6xl mx-auto px-3 sm:px-4">
         <DashboardHeaderBar
           isDirectStudentView={isDirectStudentView}
           detailStudentName={detailStudentProfile?.name || ''}
           teacherName={teacherName}
           teacherRole={teacherRole}
           isAdmin={teacherIsAdmin}
+          cloudSyncStatus={cloudSyncStatus}
+          isCloudRefreshBusy={isCloudRefreshBusy}
+          onRefreshNow={() => { void handleCloudRefreshNow() }}
           onJumpToPasswordReset={() => {
             setActiveTab('classes')
             window.setTimeout(handleJumpToPasswordReset, 0)
@@ -467,25 +467,19 @@ export default function DashboardLayout({
 
         <div className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
 
-        <div className="flex flex-col">
-          <CloudSyncStatusPanel
-            cloudSyncStatus={cloudSyncStatus}
-            isCloudRefreshBusy={isCloudRefreshBusy}
-            onRefreshNow={() => { void handleCloudRefreshNow() }}
-            formatSyncTimestamp={formatSyncTimestamp}
-            getCloudSyncSourceLabel={getCloudSyncSourceLabel}
-          />
+        <div className="flex flex-col gap-3">
+          <div className="dashboard-context-grid">
+            <ClassFilterPanel
+              selectedClassIds={selectedClassIds}
+              studentsCount={students.length}
+              filteredStudentsCount={filteredStudents.length}
+              classFilterOptions={classFilterOptions}
+              onClearClassFilter={clearClassFilter}
+              onToggleClassFilter={handleToggleClassFilter}
+            />
 
-          <ClassFilterPanel
-            selectedClassIds={selectedClassIds}
-            studentsCount={students.length}
-            filteredStudentsCount={filteredStudents.length}
-            classFilterOptions={classFilterOptions}
-            onClearClassFilter={clearClassFilter}
-            onToggleClassFilter={handleToggleClassFilter}
-          />
-
-          <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
+            <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
+          </div>
 
           {!isDirectStudentView && (
             <DashboardWorkspaceNavigation activeTab={activeTab} onChange={setActiveTab} />

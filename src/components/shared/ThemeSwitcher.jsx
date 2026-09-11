@@ -5,12 +5,12 @@ function ThemeSwitcher() {
   const { theme, setTheme, highContrast, setHighContrast } = useTheme()
 
   return (
-    <div className="relative z-50 flex justify-end p-2 sm:fixed sm:top-3 sm:right-3 sm:block sm:p-0">
-      <div className="theme-switcher rounded-md border px-2 py-1.5 flex items-center gap-2">
+    <div className="relative z-50 flex justify-end p-1 sm:fixed sm:top-2 sm:right-2 sm:block sm:p-0">
+      <div className="theme-switcher flex items-center gap-1 rounded-md border px-1 py-0.5 shadow-sm">
         <select
           value={theme}
           onChange={(e) => setTheme(e.target.value)}
-          className="text-xs px-2 py-1 rounded-md border"
+          className="rounded border px-1 py-0 text-[11px]"
           aria-label="Välj tema"
         >
           {THEMES.map(item => (
@@ -19,7 +19,7 @@ function ThemeSwitcher() {
             </option>
           ))}
         </select>
-        <label className="inline-flex items-center gap-1 text-[11px] font-medium whitespace-nowrap">
+        <label className="inline-flex items-center gap-0.5 text-[10px] font-medium whitespace-nowrap">
           <input
             type="checkbox"
             checked={highContrast}

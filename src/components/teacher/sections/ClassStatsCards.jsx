@@ -7,13 +7,13 @@ export default function ClassStatsCards({ classStats, supportCount }) {
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <section className="dashboard-class-stats grid grid-cols-2 gap-1.5 rounded-lg bg-white p-1.5 shadow sm:grid-cols-4">
       {cards.map(card => (
-        <div key={card.label} className="bg-white rounded-lg p-4 shadow">
-          <p className="text-sm text-gray-500">{card.label}</p>
-          <p className={`text-3xl font-bold ${card.valueClass}`}>{card.value}</p>
+        <div key={card.label} className="rounded-md bg-slate-50 px-2 py-1.5">
+          <p className="text-[10px] font-medium uppercase tracking-wide text-gray-500">{card.label}</p>
+          <p className={`text-lg font-bold leading-tight ${card.valueClass}`}>{card.value}</p>
         </div>
       ))}
-    </div>
+    </section>
   )
 }

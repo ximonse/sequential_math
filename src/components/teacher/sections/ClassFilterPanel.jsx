@@ -7,23 +7,23 @@ export default function ClassFilterPanel({
   onToggleClassFilter
 }) {
   return (
-    <div className="bg-white rounded-lg shadow p-4 mb-6" style={{ order: -70 }}>
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-        <h2 className="text-base font-semibold text-gray-800">Urval: klass/grupp</h2>
+    <section className="dashboard-class-filter bg-white rounded-lg shadow p-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
+        <h2 className="text-sm font-semibold text-gray-800">Välj din klass eller grupp</h2>
         <p className="text-xs text-gray-500">
           {selectedClassIds.length === 0
             ? `Alla klasser/grupper (${studentsCount} elever)`
             : `${selectedClassIds.length} klass/grupp(er) valda (${filteredStudentsCount} elever)`}
         </p>
       </div>
-      <p className="text-[11px] text-gray-500 mb-2">
+      <p className="mb-2 text-[11px] text-gray-500">
         Valda klasser/grupper sparas som förval till nästa gång.
       </p>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-1.5">
         <button
           type="button"
           onClick={onClearClassFilter}
-          className={`px-2 py-1 rounded text-xs ${selectedClassIds.length === 0
+          className={`rounded-md px-2 py-1 text-xs ${selectedClassIds.length === 0
             ? 'bg-blue-600 text-white'
             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
@@ -40,7 +40,7 @@ export default function ClassFilterPanel({
             type="button"
             key={`top-filter-${item.id}`}
             onClick={() => onToggleClassFilter(item.id)}
-            className={`px-2 py-1 rounded text-xs ${selectedClassIds.includes(item.id)
+            className={`rounded-md px-2 py-1 text-xs ${selectedClassIds.includes(item.id)
               ? 'bg-blue-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
@@ -49,6 +49,6 @@ export default function ClassFilterPanel({
           </button>
         ))}
       </div>
-    </div>
+    </section>
   )
 }

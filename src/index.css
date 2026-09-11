@@ -604,3 +604,25 @@ body.contrast-high textarea:focus-visible {
   background-color: #f4ebff !important;
   background-image: linear-gradient(145deg, #fbf7ff, #f4ebff 45%, #eadcff) !important;
 }
+
+.dashboard-context-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-context-grid {
+    grid-template-columns: minmax(0, 1.15fr) minmax(22rem, 0.85fr);
+    align-items: stretch;
+  }
+}
+
+.teacher-dashboard-surface .bg-white.rounded-lg {
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16) !important;
+}
+
+.dashboard-workspace-tabs button:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: -2px;
+}

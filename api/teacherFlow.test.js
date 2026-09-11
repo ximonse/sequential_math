@@ -24,6 +24,11 @@ vi.mock('@vercel/kv', () => ({ kv: {
     records.set(key, [...members])
   }),
   eval: vi.fn(async (_script, keys, args) => {
+    if (args[0] === 'class-rollover-v1') {
+      const updates = JSON.parse(args[4])
+      updates.forEach(update => records.set(`class:${update.id}`, clone(update.record)))
+      return updates.length
+    }
     const [key, deletedKey, indexKey] = keys
     const [expected, operation, json, id] = args
     if (records.has(deletedKey)) return -2

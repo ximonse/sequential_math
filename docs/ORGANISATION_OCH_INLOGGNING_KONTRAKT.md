@@ -56,7 +56,7 @@ Eleven kan aldrig bläddra bland eller välja skolor och klasser. Det finns inge
 
 Klasslänken bygger på en slumpad nyckel som hör till klassens stabila ID. Att byta namn, exempelvis `4B` till `5B`, ändrar därför inte elevernas ID, historik, klasslänk eller inställningar.
 
-Vid nytt läsår gör administratören en förhandsgranskning. Verktyget föreslår namnbyte för årskurs 4–8 och stoppar varje namnkonflikt innan ändringen genomförs. Klasser utan tydligt årskurstal ändras manuellt.
+Vid nytt läsår väljer skoladmin avgångsårskurs och avgångsår. Verktyget föreslår namnbyte för lägre årskurser och arkivering av avgångsklasser. Varje förslag kan redigeras eller hoppas över. Appliceringen kontrollerar hela skolans klassrevisioner och skriver alla valda ändringar i en enda atomisk Redis-operation; en samtidig ändring eller namnkonflikt stoppar hela årsbytet. Klasser utan tydligt årskurstal ändras manuellt.
 
 ## API-gränser och körbar verifiering
 

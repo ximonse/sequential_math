@@ -26,6 +26,7 @@ import TableStickyStatusPanel from './TableStickyStatusPanel'
 import { ActivityBadge, RiskBadge } from './dashboardStatusBadges'
 import { getOperationLabel } from '../../../lib/operations'
 import { getTeacherIdentity, isTeacherAdmin } from '../../../lib/teacherAuth'
+import { getTeacherRoleLabel } from '../../../lib/teacherRoles'
 
 const PANEL_DEFS = [
   { id: 'support',     title: 'Behöver stöd nu' },
@@ -168,7 +169,7 @@ export default function DashboardLayout({
   const teacherIsAdmin = isTeacherAdmin()
   const teacherIdentity = getTeacherIdentity()
   const teacherName = String(teacherIdentity.displayName || 'Lärare').trim() || 'Lärare'
-  const teacherRole = teacherIsAdmin ? 'Administratör' : 'Lärare'
+  const teacherRole = getTeacherRoleLabel(teacherIdentity.role)
   const visiblePanelDefs = PANEL_DEFS.filter(p => !p.adminOnly || teacherIsAdmin)
 
   const [collapsed, setCollapsed] = useState(() => {

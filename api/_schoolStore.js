@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv'
 import { studentStoreError } from './_studentStore.js'
+import { isSuperAdminRole, normalizeTeacherRole } from './_teacherRoles.js'
 
 export async function validateSchoolId(value) {
   if (value === undefined || value === null || value === '') return ''
@@ -15,7 +16,7 @@ export async function assertTeachersBelongToSchool(teacherIds, schoolId) {
 
   const accounts = await Promise.all(teacherIds.map(id => kv.get(`teacher_account:${String(id)}`)))
   const missingSchoolMembership = accounts.some(account => (
-    !account || (!account.isAdmin && !(Array.isArray(account.schoolIds) && account.schoolIds.map(String).includes(normalizedSchoolId)))
+    !account || (!isSuperAdminRole(normalizeTeacherRole(account.role, account.isAdmin)) && !(Array.isArray(account.schoolIds) && account.schoolIds.map(String).includes(normalizedSchoolId)))
   ))
   if (missingSchoolMembership) throw studentStoreError(400, 'Alla tilldelade lärare måste tillhöra klassens skola.')
   return normalizedSchoolId

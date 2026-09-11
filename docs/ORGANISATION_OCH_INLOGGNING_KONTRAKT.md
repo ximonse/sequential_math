@@ -15,6 +15,14 @@ En klass måste höra till en befintlig skola. Klassnamn är unika per skola eft
 
 ## Roller och behörighet
 
+Konton har exakt en explicit roll. Serverns aktuella kontopost är auktoritativ; en token innehåller aldrig den behörighet som används efter inloggning.
+
+- **teacher** arbetar i sina direkt tilldelade klasser.
+- **school_admin** arbetar inom sina tilldelade skolor men får aldrig global åtkomst genom att rollen inte är `teacher`.
+- **super_admin** hanterar skolor och globala roller.
+
+Ändrad roll, skoltilldelning eller klasstilldelning höjer `sessionVersion` och gör tidigare sessioner ogiltiga.
+
 | Åtgärd | Administratör | Lärare | Elev |
 | --- | --- | --- | --- |
 | Skapa skola | Ja | Nej | Nej |
@@ -32,6 +40,8 @@ Servern kontrollerar behörighet på varje skyddat API-anrop. Dolda knappar i gr
 Varje lärarkonto har användarnamn, lösenord, roll, tilldelade skolor och klasser. Lösenord lagras som hash med salt. Inloggning i `POST /api/teacher-login` utfärdar en signerad session. Sessionen verifieras mot ett aktivt konto och dess `sessionVersion`, så lösenords-, roll- och direkta klasstilldelningsändringar gör äldre sessioner ogiltiga.
 
 Administratörer använder samma kontomodell, med administratörsrollen aktiverad. Råa lösenordsheaders och kontolösa sessioner godtas inte.
+Äldre konton med enbart `isAdmin` behöver migreras uttryckligen innan de används för skoladministration. Migreringen väljer exakt ett användarnamn som `super_admin`, sätter övriga äldre administratörer till `school_admin` och blockerar oskopade skoladministratörer tills de har en skoltilldelning. Den körs aldrig automatiskt mot produktion.
+
 
 ## Elevinloggning
 
@@ -56,3 +66,4 @@ Vid nytt läsår gör administratören en förhandsgranskning. Verktyget föresl
 - `/api/student-login`: kräver giltig klasslänk, exakt ett matchande elevnamn i klassen och fyrsiffrig kod.
 
 Kontraktet verifieras främst i `api/teacherFlow.test.js`, `api/studentLogin.test.js` och `api/studentStore.test.js`. Vid en ändring av dessa regler ska tester, detta kontrakt, berörd manual och felsökningsguide uppdateras tillsammans.
+Rollgränserna har dessutom enhetstester i `api/teacherRoles.test.js`.

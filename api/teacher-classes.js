@@ -15,6 +15,7 @@ import {
   withCors
 } from './_helpers.js'
 
+import { hasSchoolScope, isSuperAdminRole } from './_teacherRoles.js'
 export default async function handler(req, res) {
   withCors(res, {
     methods: 'GET,POST,PUT,DELETE,OPTIONS',
@@ -58,7 +59,7 @@ export default async function handler(req, res) {
     const payload = await getLiveTeacherAuthPayload(req)
     const teacherId = payload?.teacherId || null
     if (!schoolId) return res.status(400).json({ error: 'Välj en skola för klassen.' })
-    if (!payload?.isAdmin && !(payload?.schoolIds || []).includes(schoolId)) return res.status(403).json({ error: 'Klassen måste ligga på en skola som är tilldelad dig.' })
+    if (!hasSchoolScope(payload, schoolId)) return res.status(403).json({ error: 'Klassen måste ligga på en skola som är tilldelad dig.' })
     const teacherIds = teacherId ? [teacherId] : []
 
     // Prevent overwriting an existing class
@@ -105,7 +106,7 @@ export default async function handler(req, res) {
       try { schoolId = await validateSchoolId(req.body.schoolId) }
       catch (error) { return res.status(error.status || 400).json({ error: error.message || 'Ogiltig skola.' }) }
       const auth = await getLiveTeacherAuthPayload(req)
-      if (!schoolId || (!auth.isAdmin && !(auth.schoolIds || []).includes(schoolId))) return res.status(403).json({ error: 'Klassen måste ligga på en skola som är tilldelad dig.' })
+      if (!schoolId || !hasSchoolScope(auth, schoolId)) return res.status(403).json({ error: 'Klassen måste ligga på en skola som är tilldelad dig.' })
     }
     try {
       const updated = await mutateClassRecord(id, current => {
@@ -125,7 +126,7 @@ export default async function handler(req, res) {
     const deletionKey = `class_deletion:${id}`
     const priorDeletion = await kv.get(deletionKey)
     const canResumeDeletion = Boolean(
-      auth?.isAdmin || (auth?.teacherId && Array.isArray(priorDeletion?.teacherIds)
+      isSuperAdminRole(auth?.role) || (auth?.teacherId && Array.isArray(priorDeletion?.teacherIds)
         && priorDeletion.teacherIds.includes(auth.teacherId))
     )
     const hasLiveAccess = authorizedClassIds === null || await canAccessClass(req, id)

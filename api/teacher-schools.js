@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto'
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { mutateStoredRecord, studentStoreError } from './_studentStore.js'
 import { listSchools } from './_schoolStore.js'
+import { isSuperAdminRole } from './_teacherRoles.js'
 
 export default async function handler(req, res) {
   withCors(res, { methods: 'GET,POST,OPTIONS', headers: 'Content-Type,x-teacher-token' }, req)
@@ -12,10 +13,10 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const schools = await listSchools()
-      return res.status(200).json({ schools: teacher.isAdmin ? schools : schools.filter(school => (teacher.schoolIds || []).includes(school.id)) })
+      return res.status(200).json({ schools: isSuperAdminRole(teacher.role) ? schools : schools.filter(school => (teacher.schoolIds || []).includes(school.id)) })
     }
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
-    if (!teacher.isAdmin) return res.status(403).json({ error: 'Endast administratörer kan skapa skolor.' })
+    if (!isSuperAdminRole(teacher.role)) return res.status(403).json({ error: 'Endast huvudadministratörer kan skapa skolor.' })
     const name = req.body?.name
     if (typeof name !== 'string' || !name.trim() || name.length > 100) {
       return res.status(400).json({ error: 'Ange skolans namn (högst 100 tecken).' })

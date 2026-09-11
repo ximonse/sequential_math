@@ -11,6 +11,7 @@ import {
   verifyTeacherPassword,
   withCors
 } from './_helpers.js'
+import { normalizeTeacherRole } from './_teacherRoles.js'
 
 async function findTeacherByUsername(username) {
   const normalized = String(username || '').trim().toLowerCase()
@@ -56,7 +57,7 @@ export default async function handler(req, res) {
     const session = createTeacherSessionToken({
       teacherId: account.id,
       classIds,
-      isAdmin: Boolean(account.isAdmin),
+      role: normalizeTeacherRole(account.role, account.isAdmin),
       sessionVersion: account.sessionVersion
     })
     if (!session) {
@@ -70,7 +71,8 @@ export default async function handler(req, res) {
       teacherId: account.id,
       displayName: account.displayName || account.username,
       classIds,
-      isAdmin: Boolean(account.isAdmin)
+      role: normalizeTeacherRole(account.role, account.isAdmin),
+      isAdmin: normalizeTeacherRole(account.role, account.isAdmin) !== 'teacher'
     })
   }
 

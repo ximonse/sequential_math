@@ -6,6 +6,7 @@ import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass, assertTeacherStudentAccess } from './_studentAccess.js'
 import { createClassRecord } from './_classStore.js'
 import { createStudentRecord, mutateStudentRecord, studentStoreError } from './_studentStore.js'
+import { hasSchoolScope } from './_teacherRoles.js'
 
 const digest = text => createHash('sha256').update(text).digest('hex')
 const normalizeRosterName = value => String(value || '').normalize('NFC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('sv')
@@ -26,7 +27,7 @@ export default async function handler(req, res) {
     }
     const schoolId = classId ? '' : await validateSchoolId(req.body?.schoolId)
     if (!classId && !schoolId) throw studentStoreError(400, 'Välj en skola för klassen.')
-    if (!classId && !teacher.isAdmin && !(teacher.schoolIds || []).includes(schoolId)) throw studentStoreError(403, 'Klassen måste ligga på en skola som är tilldelad dig.')
+    if (!classId && !hasSchoolScope(teacher, schoolId)) throw studentStoreError(403, 'Klassen måste ligga på en skola som är tilldelad dig.')
     const owner = teacher.teacherId || 'admin'
     const enrollmentKey = digest(JSON.stringify([owner, requestId, classId || className, names, grade, existingStudentIds, ...(schoolId ? [schoolId] : [])]))
     let target

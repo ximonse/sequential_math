@@ -1,3 +1,4 @@
+import { isSchoolAdmin, isSuperAdmin, normalizeTeacherRole } from './teacherRoles'
 const TEACHER_AUTH_KEY = 'mathapp_teacher_auth'
 const TEACHER_API_TOKEN_KEY = 'mathapp_teacher_api_token'
 const TEACHER_IDENTITY_KEY = 'mathapp_teacher_identity'
@@ -45,6 +46,7 @@ function storeTeacherSession(data) {
     teacherId: data?.teacherId || null,
     displayName: String(data?.displayName || 'Lärare'),
     classIds: Array.isArray(data?.classIds) ? data.classIds : [],
+    role: normalizeTeacherRole(data?.role, data?.isAdmin),
     isAdmin: Boolean(data?.isAdmin)
   }
   sessionStorage.setItem(TEACHER_AUTH_KEY, '1')
@@ -73,15 +75,20 @@ export function getTeacherApiToken() {
 export function getTeacherIdentity() {
   try {
     const raw = sessionStorage.getItem(TEACHER_IDENTITY_KEY)
-    if (!raw) return { teacherId: null, displayName: '', classIds: [], isAdmin: false }
-    return JSON.parse(raw)
+    if (!raw) return { teacherId: null, displayName: '', classIds: [], role: 'teacher', isAdmin: false }
+    const identity = JSON.parse(raw)
+    return { ...identity, role: normalizeTeacherRole(identity?.role, identity?.isAdmin) }
   } catch {
-    return { teacherId: null, displayName: '', classIds: [], isAdmin: false }
+    return { teacherId: null, displayName: '', classIds: [], role: 'teacher', isAdmin: false }
   }
 }
 
 export function isTeacherAdmin() {
-  return getTeacherIdentity().isAdmin
+  return isSchoolAdmin(getTeacherIdentity().role)
+}
+
+export function isTeacherSuperAdmin() {
+  return isSuperAdmin(getTeacherIdentity().role)
 }
 
 /**
@@ -90,6 +97,6 @@ export function isTeacherAdmin() {
  */
 export function getTeacherClassIds() {
   const identity = getTeacherIdentity()
-  if (identity.isAdmin) return null
+  if (isSuperAdmin(identity.role)) return null
   return Array.isArray(identity.classIds) ? identity.classIds : []
 }

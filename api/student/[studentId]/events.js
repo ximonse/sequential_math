@@ -1,37 +1,22 @@
 import { mutateStudentRecord, studentStoreError } from '../../_studentStore.js'
 import { assertTeacherStudentAccess } from '../../_studentAccess.js'
-import { createHash } from 'node:crypto'
 import { verifyStudentCredential } from '../../_studentPassword.js'
 import {
   isLiveTeacherApiAuthorized,
-  secureCompare,
   withCors
 } from '../../_helpers.js'
-import {
-  hasCurrentStudentPassword,
-  isCurrentStudentProfile
-} from '../../../src/lib/studentProfileContract.js'
+import { isCurrentStudentProfile } from '../../../src/lib/studentProfileContract.js'
 
 const MAX_PROBLEM_LOG = 5000
 const MAX_RECENT_PROBLEMS = 250
 const MAX_TABLE_COMPLETIONS = 1000
 
-function hashPasswordWithSalt(password, salt) {
-  return createHash('sha256')
-    .update(`${salt}:${String(password || '')}`)
-    .digest('hex')
-}
-
-function verifyPasswordAgainstAuth(auth, studentPassword) {
-  const provided = String(studentPassword || '')
-  if (!provided) return false
-  if (hasCurrentStudentPassword(auth)) {
-    const expected = String(auth.passwordHash)
-    const salt = String(auth.passwordSalt)
-    const actual = hashPasswordWithSalt(provided, salt)
-    return secureCompare(actual, expected) || secureCompare(hashPasswordWithSalt(provided.toUpperCase(), salt), expected)
-  }
-  return false
+function resolveClassIdAtAttempt(profile, payload) {
+  const memberships = [profile?.classId, ...(Array.isArray(profile?.classIds) ? profile.classIds : [])]
+    .map(value => String(value || '').trim())
+    .filter(Boolean)
+  const requested = String(payload?.classIdAtAttempt || '').trim()
+  return requested && memberships.includes(requested) ? requested : (memberships[0] || null)
 }
 
 function applyProblemResult(profile, payload) {
@@ -51,12 +36,13 @@ function applyProblemResult(profile, payload) {
   if (!Array.isArray(profile.recentProblems)) profile.recentProblems = []
   if (!Array.isArray(profile.problemLog)) profile.problemLog = []
 
-  profile.recentProblems.push(payload)
+  const attributedPayload = { ...payload, classIdAtAttempt: resolveClassIdAtAttempt(profile, payload) }
+  profile.recentProblems.push(attributedPayload)
   if (profile.recentProblems.length > MAX_RECENT_PROBLEMS) {
     profile.recentProblems = profile.recentProblems.slice(-MAX_RECENT_PROBLEMS)
   }
 
-  profile.problemLog.push(payload)
+  profile.problemLog.push(attributedPayload)
   if (profile.problemLog.length > MAX_PROBLEM_LOG) {
     profile.problemLog = profile.problemLog.slice(-MAX_PROBLEM_LOG)
   }

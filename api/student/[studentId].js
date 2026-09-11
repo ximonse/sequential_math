@@ -21,6 +21,20 @@ import {
   normalizeProfileForStorage
 } from './_profileMerge.js'
 
+function addLegacyClassAttribution(profile) {
+  const fallbackClassId = String(profile?.classId || profile?.classIds?.[0] || '').trim() || null
+  const attribute = entries => Array.isArray(entries) ? entries.map(entry => (
+    entry?.classIdAtAttempt
+      ? entry
+      : { ...entry, classIdAtAttempt: fallbackClassId, classIdAtAttemptInferred: true }
+  )) : entries
+  return {
+    ...profile,
+    problemLog: attribute(profile?.problemLog),
+    recentProblems: attribute(profile?.recentProblems)
+  }
+}
+
 export default async function handler(req, res) {
   withCors(res, {
     methods: 'GET,POST,PATCH,DELETE,OPTIONS',
@@ -72,7 +86,7 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'Unauthorized' })
       }
 
-      const safeProfile = withFreshTeacherSummary(profile)
+      const safeProfile = addLegacyClassAttribution(withFreshTeacherSummary(profile))
       if (safeProfile.auth) {
         const { passwordHash, passwordSalt, passwordScheme, password, ...safeAuth } = safeProfile.auth
         safeProfile.auth = safeAuth

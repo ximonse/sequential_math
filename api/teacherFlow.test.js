@@ -187,6 +187,7 @@ describe('teacher account to pupil lifecycle', () => {
     })
     expect(practice).toMatchObject({ code: 200, data: { appliedCount: 1 } })
     expect(records.get(`student:${studentId}`).problemLog).toHaveLength(1)
+    expect(records.get(`student:${studentId}`).problemLog[0].classIdAtAttempt).toBe(roster.data.class.id)
 
     const passwordChange = await call(teacherHandler, {
       method: 'PUT', headers: adminHeaders, query: { id: teacherId }, body: { password: 'second-secret' }

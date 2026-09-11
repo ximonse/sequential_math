@@ -51,8 +51,11 @@ import {
   getCloudProfilesSyncStatus,
   getClasses,
 } from '../../lib/storage'
-import { getActiveAssignment, getAssignments } from '../../lib/assignments'
+import { getActiveAssignment, hydrateAssignmentsFromServer } from '../../lib/assignments'
 import { getTeacherClassIds } from '../../lib/teacherAuth'
+import { hydrateTicketsFromServer } from '../../lib/tickets'
+import { loadTeacherWorkspace } from '../../lib/teacherWorkspaceSync'
+import { loadTeacherGroups } from './sections/teacherGroupsApi'
 function Dashboard() {
   const [students, setStudents] = useState([])
   const [assignments, setAssignments] = useState([])
@@ -60,6 +63,7 @@ function Dashboard() {
   const [sortBy, setSortBy] = useState('active_today')
   const [sortDir, setSortDir] = useState('desc')
   const [classes, setClasses] = useState([])
+  const [teacherGroups, setTeacherGroups] = useState([])
   const [selectedClassIds, setSelectedClassIds] = useState(() => loadSavedTeacherClassFilter())
   const [classNameInput, setClassNameInput] = useState('')
   const [addToClassId, setAddToClassId] = useState('')
@@ -88,24 +92,42 @@ function Dashboard() {
   const routeStudentId = String(routeStudentIdParam || '').trim()
   const isDirectStudentView = String(location?.pathname || '').startsWith('/teacher/student')
   const classFilterOptions = useMemo(
-    () => buildClassFilterOptions(classes, students),
-    [classes, students]
+    () => [
+      ...buildClassFilterOptions(classes, students),
+      ...teacherGroups.map(group => ({ id: group.id, name: `Grupp: ${group.name}`, kind: 'group' }))
+    ],
+    [classes, students, teacherGroups]
   )
 
   const loadStudents = useCallback(async () => {
-    const profiles = await getAllProfilesWithSync()
-    profiles.sort((a, b) => {
+    const [profiles, groupData] = await Promise.all([
+      getAllProfilesWithSync(),
+      loadTeacherGroups().catch(() => ({ groups: [] }))
+    ])
+    const groups = Array.isArray(groupData?.groups) ? groupData.groups : []
+    const enrichedProfiles = profiles.map(profile => ({
+      ...profile,
+      groupIds: groups.filter(group => (group.pupilIds || []).includes(profile.studentId)).map(group => group.id)
+    }))
+    enrichedProfiles.sort((a, b) => {
       const aLast = a.recentProblems[a.recentProblems.length - 1]?.timestamp || 0
       const bLast = b.recentProblems[b.recentProblems.length - 1]?.timestamp || 0
       return bLast - aLast
     })
-    setStudents(profiles)
+    setStudents(enrichedProfiles)
+    setTeacherGroups(groups)
     setCloudSyncStatus(getCloudProfilesSyncStatus())
 
     const serverClasses = await syncClassesFromServer()
     setClasses(serverClasses || [])
-    return profiles
+    return enrichedProfiles
   }, [])
+
+  useEffect(() => {
+    const onGroupsUpdated = () => { void loadStudents() }
+    window.addEventListener('teacher-groups-updated', onGroupsUpdated)
+    return () => window.removeEventListener('teacher-groups-updated', onGroupsUpdated)
+  }, [loadStudents])
 
   useEffect(() => {
     void loadStudents()
@@ -118,8 +140,11 @@ function Dashboard() {
     if (initialClasses.length > 0) {
       setAddToClassId(initialClasses[0].id)
     }
-    setAssignments(getAssignments())
-    setActiveAssignmentId(getActiveAssignment()?.id || '')
+    void loadTeacherWorkspace().then(workspace => {
+      hydrateTicketsFromServer(workspace)
+      setAssignments(hydrateAssignmentsFromServer(workspace))
+      setActiveAssignmentId(getActiveAssignment()?.id || '')
+    })
   }, [loadStudents])
 
   useEffect(() => {

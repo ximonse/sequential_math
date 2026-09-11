@@ -34,6 +34,7 @@ const NOVELTY_HISTORY_WINDOW = 8
 
 export function usePracticeCoreActions({
   profile,
+  classIdAtAttempt,
   currentProblem,
   answer,
   startTime,
@@ -236,7 +237,8 @@ export function usePracticeCoreActions({
       {
         rawAnswer: normalizedAnswer,
         interruption,
-        isMixedMode: mixedMode
+        isMixedMode: mixedMode,
+        classIdAtAttempt
       }
     )
     const isPartial = Boolean(result?.isPartial)
@@ -423,6 +425,7 @@ export function usePracticeCoreActions({
     saveProfile(profile, shouldForceSync ? { forceSync: true } : undefined)
   }, [
     profile,
+    classIdAtAttempt,
     currentProblem,
     answer,
     startTime,

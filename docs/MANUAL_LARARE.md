@@ -26,7 +26,7 @@ Högst upp i lärarvyn visas ditt kontonamn och din roll. Bakgrunden är ljusgr�
 4. Välj klassfilter högst upp innan du analyserar data.
 
 Notera:
-- Toppfiltret styr hela dashboarden (en eller flera klasser/grupper).
+- Toppfiltret styr hela dashboarden. Servergrupper visas som egna val tillsammans med klasser och sparas som förval.
 - En elev kan ligga i flera klasser/grupper.
 
 ### Skolor och klasser
@@ -101,7 +101,7 @@ I sektionen `Uppdrag via länk` kan du:
 3. Aktivera det för alla.
 4. Dela länken till elever.
 
-Elever som loggar in via länken hamnar i rätt läge direkt, även på annan enhet/browser, eftersom länken innehåller ett säkert uppdragspayload.
+Elever som loggar in via länken hamnar i rätt läge direkt, även på annan enhet/browser, eftersom länken innehåller ett säkert uppdragspayload. Uppdrag, aktivt uppdrag, ticketmallar och utskick sparas även på servern för ditt lärarkonto. Äldre material från webbläsaren importeras automatiskt första gången.
 
 ## 8. Ticket (start/exit)
 

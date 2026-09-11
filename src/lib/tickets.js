@@ -1,5 +1,6 @@
 const TICKET_TEMPLATES_KEY = 'mathapp_ticket_templates_v1'
 const TICKET_DISPATCHES_KEY = 'mathapp_ticket_dispatches_v1'
+import { mergeWorkspaceItems, saveTeacherWorkspacePatch } from './teacherWorkspaceSync'
 import {
   fromBase64Url,
   normalizeTextAnswer,
@@ -18,12 +19,29 @@ function readJsonList(key) {
   }
 }
 
-function writeJsonList(key, items) {
-  localStorage.setItem(key, JSON.stringify(Array.isArray(items) ? items : []))
+function writeJsonList(key, items, { sync = true } = {}) {
+  const normalized = Array.isArray(items) ? items : []
+  localStorage.setItem(key, JSON.stringify(normalized))
+  if (!sync) return
+  if (key === TICKET_TEMPLATES_KEY) void saveTeacherWorkspacePatch({ ticketTemplates: normalized })
+  if (key === TICKET_DISPATCHES_KEY) void saveTeacherWorkspacePatch({ ticketDispatches: normalized })
 }
 
 function makeId(prefix) {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+}
+
+export function hydrateTicketsFromServer(workspace) {
+  const ticketTemplates = Object.hasOwn(workspace || {}, 'ticketTemplates')
+    ? mergeWorkspaceItems([], workspace.ticketTemplates)
+    : mergeWorkspaceItems(readJsonList(TICKET_TEMPLATES_KEY), [])
+  const ticketDispatches = Object.hasOwn(workspace || {}, 'ticketDispatches')
+    ? mergeWorkspaceItems([], workspace.ticketDispatches)
+    : mergeWorkspaceItems(readJsonList(TICKET_DISPATCHES_KEY), [])
+  writeJsonList(TICKET_TEMPLATES_KEY, ticketTemplates, { sync: false })
+  writeJsonList(TICKET_DISPATCHES_KEY, ticketDispatches, { sync: false })
+  void saveTeacherWorkspacePatch({ ticketTemplates, ticketDispatches })
+  return { ticketTemplates, ticketDispatches }
 }
 
 export function getTicketTemplates() {

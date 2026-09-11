@@ -1,3 +1,4 @@
+import { mergeWorkspaceItems, saveTeacherWorkspacePatch } from './teacherWorkspaceSync'
 const ASSIGNMENTS_KEY = 'mathapp_assignments'
 const ACTIVE_ASSIGNMENT_KEY = 'mathapp_active_assignment'
 const ASSIGNMENT_PAYLOAD_VERSION = 1
@@ -21,8 +22,9 @@ function readAssignments() {
   }
 }
 
-function writeAssignments(assignments) {
+function writeAssignments(assignments, { sync = true } = {}) {
   localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(assignments))
+  if (sync) void saveTeacherWorkspacePatch({ assignments })
 }
 
 function makeAssignmentId() {
@@ -59,13 +61,16 @@ export function setActiveAssignment(assignmentId) {
   const normalized = String(assignmentId || '').trim()
   if (!normalized) {
     localStorage.removeItem(ACTIVE_ASSIGNMENT_KEY)
+    void saveTeacherWorkspacePatch({ activeAssignmentId: '' })
     return
   }
   localStorage.setItem(ACTIVE_ASSIGNMENT_KEY, normalized)
+  void saveTeacherWorkspacePatch({ activeAssignmentId: normalized })
 }
 
 export function clearActiveAssignment() {
   localStorage.removeItem(ACTIVE_ASSIGNMENT_KEY)
+  void saveTeacherWorkspacePatch({ activeAssignmentId: '' })
 }
 
 export function getActiveAssignment() {
@@ -82,12 +87,27 @@ export function deleteAssignment(assignmentId) {
   const activeId = localStorage.getItem(ACTIVE_ASSIGNMENT_KEY)
   if (activeId === assignmentId) {
     localStorage.removeItem(ACTIVE_ASSIGNMENT_KEY)
+    void saveTeacherWorkspacePatch({ activeAssignmentId: '' })
   }
 }
 
 export function clearAllAssignments() {
   writeAssignments([])
   localStorage.removeItem(ACTIVE_ASSIGNMENT_KEY)
+  void saveTeacherWorkspacePatch({ activeAssignmentId: '' })
+}
+
+export function hydrateAssignmentsFromServer(workspace) {
+  const assignments = Object.hasOwn(workspace || {}, 'assignments')
+    ? mergeWorkspaceItems([], workspace.assignments)
+    : mergeWorkspaceItems(readAssignments(), [])
+  writeAssignments(assignments, { sync: false })
+  const localActive = localStorage.getItem(ACTIVE_ASSIGNMENT_KEY) || ''
+  const activeId = String(workspace?.activeAssignmentId || localActive)
+  if (activeId && assignments.some(item => item.id === activeId)) localStorage.setItem(ACTIVE_ASSIGNMENT_KEY, activeId)
+  else localStorage.removeItem(ACTIVE_ASSIGNMENT_KEY)
+  void saveTeacherWorkspacePatch({ assignments, activeAssignmentId: activeId })
+  return assignments
 }
 
 export function buildAssignmentLink(assignmentId, assignmentPayload = null) {

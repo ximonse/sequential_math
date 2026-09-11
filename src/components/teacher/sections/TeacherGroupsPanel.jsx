@@ -60,6 +60,7 @@ export default function TeacherGroupsPanel({ students = [], onStatusChange }) {
       onStatusChange?.(editingId ? 'Gruppen är uppdaterad.' : 'Gruppen är skapad.')
       reset()
       await refresh()
+      window.dispatchEvent(new Event('teacher-groups-updated'))
     } catch (error) {
       onStatusChange?.(error.message)
     } finally {
@@ -75,6 +76,7 @@ export default function TeacherGroupsPanel({ students = [], onStatusChange }) {
       if (editingId === group.id) reset()
       onStatusChange?.('Gruppen är borttagen.')
       await refresh()
+      window.dispatchEvent(new Event('teacher-groups-updated'))
     } catch (error) {
       onStatusChange?.(error.message)
     } finally {

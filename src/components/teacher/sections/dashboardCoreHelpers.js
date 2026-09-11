@@ -138,7 +138,7 @@ export function getRecordClassLabel(record, classNameById = new Map()) {
 export function recordMatchesClassFilter(record, selectedClassIds) {
   const selected = Array.isArray(selectedClassIds) ? selectedClassIds.filter(Boolean) : []
   if (selected.length === 0) return true
-  const ids = getRecordClassIds(record)
+  const ids = [...getRecordClassIds(record), ...(Array.isArray(record?.groupIds) ? record.groupIds : [])]
   if (ids.length === 0) return false
   const selectedSet = new Set(selected)
   return ids.some(id => selectedSet.has(id))

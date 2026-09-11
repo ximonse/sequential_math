@@ -65,6 +65,7 @@ Vid nytt läsår väljer skoladmin avgångsårskurs och avgångsår. Verktyget f
 - `GET/POST /api/teacher-schools`: listar skolor inom lärarens tilldelning; endast administratörer kan skapa.
 - `/api/admin/teachers` och `/api/admin/classes`: administratörsgränser för konton, skoltilldelning och klassansvar.
 - `/api/teacher-classes` och `/api/student-roster`: kräver levande lärarbehörighet samt rätt skola och klass.
+- `/api/teacher-workspace`: lagrar uppdrag, aktivt uppdrag, ticketmallar och ticketutskick per autentiserat lärarkonto.
 - `/api/student-login`: kräver giltig klasslänk, exakt ett matchande elevnamn i klassen och fyrsiffrig kod.
 
 Kontraktet verifieras främst i `api/teacherFlow.test.js`, `api/studentLogin.test.js` och `api/studentStore.test.js`. Vid en ändring av dessa regler ska tester, detta kontrakt, berörd manual och felsökningsguide uppdateras tillsammans.
@@ -93,3 +94,10 @@ En grupp är en separat serverresurs med stabilt ID, namn, en skola, elev-ID:n o
 Lärarvyn har fyra huvuddelar: **Klasser & elever**, **Uppdrag & exit tickets**, **Tabeller & kunskapsområden** och **Statistik**. Klassurvalet ligger kvar ovanför delarna och highscore visas sist. Kontonamn och roll visas alltid. Bakgrunden är grön för lärare, orange för skoladmin och lila för superadmin.
 
 Klass- och kontolivscykeln ligger på den separata skyddade sidan `/teacher/admin`. Lärare når elev-, grupp-, kod- och klasslänksverktyg från lärarvyn men kan inte skapa, byta namn på, arkivera eller radera klasser.
+
+
+## Lärararbetsyta och historisk klasskoppling
+
+Uppdrag, aktivt uppdrag, ticketmallar och ticketutskick lagras per lärarkonto på servern. Vid första öppning slås äldre lokal data ihop med serverdatan efter stabilt objekt-ID och senaste uppdatering och skrivs tillbaka, så att tidigare material inte tappas.
+
+Varje nytt problemresultat innehåller `classIdAtAttempt`. Servern godtar bara ett klass-ID som eleven faktiskt är medlem i. Äldre resultat utan fältet visas med elevens nuvarande/primära klass som uttryckligen infererad attribution (`classIdAtAttemptInferred`); den uppgiften är en uppskattning och får inte behandlas som säker historik.

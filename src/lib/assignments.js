@@ -8,40 +8,34 @@ const KNOWN_OPERATION_TYPES = new Set([
   'arithmetic_expressions', 'fractions', 'percentage'
 ])
 
-function readAssignments() {
-  const raw = localStorage.getItem(ASSIGNMENTS_KEY)
-  if (!raw) return []
+let assignmentsCache = []
+let activeAssignmentIdCache = ''
+
+function readLegacyAssignments() {
   try {
-    const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return []
-    return parsed
-      .map(item => normalizeAssignment(item))
-      .filter(Boolean)
+    const parsed = JSON.parse(localStorage.getItem(ASSIGNMENTS_KEY) || '[]')
+    return Array.isArray(parsed) ? parsed.map(item => normalizeAssignment(item)).filter(Boolean) : []
   } catch {
     return []
   }
 }
 
+function readAssignments() {
+  return assignmentsCache.map(item => ({ ...item }))
+}
+
 function writeAssignments(assignments, { sync = true } = {}) {
-  localStorage.setItem(ASSIGNMENTS_KEY, JSON.stringify(assignments))
-  if (sync) void saveTeacherWorkspacePatch({ assignments })
+  assignmentsCache = Array.isArray(assignments) ? assignments.map(item => ({ ...item })) : []
+  if (sync) void saveTeacherWorkspacePatch({ assignments: assignmentsCache })
 }
 
 function makeAssignmentId() {
-  return `asg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+  return 'asg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8)
 }
 
 export function createAssignment(input) {
-  const assignment = normalizeAssignment(
-    {
-      ...(input || {}),
-      id: makeAssignmentId(),
-      createdAt: Date.now()
-    },
-    { requireId: true }
-  )
+  const assignment = normalizeAssignment({ ...(input || {}), id: makeAssignmentId(), createdAt: Date.now() }, { requireId: true })
   if (!assignment) return null
-
   const assignments = readAssignments()
   assignments.unshift(assignment)
   writeAssignments(assignments)
@@ -54,62 +48,44 @@ export function getAssignments() {
 
 export function getAssignmentById(id) {
   if (!id) return null
-  return readAssignments().find(a => String(a.id) === String(id)) || null
+  return readAssignments().find(assignment => String(assignment.id) === String(id)) || null
 }
 
 export function setActiveAssignment(assignmentId) {
-  const normalized = String(assignmentId || '').trim()
-  if (!normalized) {
-    localStorage.removeItem(ACTIVE_ASSIGNMENT_KEY)
-    void saveTeacherWorkspacePatch({ activeAssignmentId: '' })
-    return
-  }
-  localStorage.setItem(ACTIVE_ASSIGNMENT_KEY, normalized)
-  void saveTeacherWorkspacePatch({ activeAssignmentId: normalized })
+  activeAssignmentIdCache = String(assignmentId || '').trim()
+  void saveTeacherWorkspacePatch({ activeAssignmentId: activeAssignmentIdCache })
 }
 
 export function clearActiveAssignment() {
-  localStorage.removeItem(ACTIVE_ASSIGNMENT_KEY)
+  activeAssignmentIdCache = ''
   void saveTeacherWorkspacePatch({ activeAssignmentId: '' })
 }
 
 export function getActiveAssignment() {
-  const id = localStorage.getItem(ACTIVE_ASSIGNMENT_KEY)
-  if (!id) return null
-  return getAssignmentById(id)
+  return getAssignmentById(activeAssignmentIdCache)
 }
 
 export function deleteAssignment(assignmentId) {
   if (!assignmentId) return
-  const next = readAssignments().filter(a => a.id !== assignmentId)
-  writeAssignments(next)
-
-  const activeId = localStorage.getItem(ACTIVE_ASSIGNMENT_KEY)
-  if (activeId === assignmentId) {
-    localStorage.removeItem(ACTIVE_ASSIGNMENT_KEY)
-    void saveTeacherWorkspacePatch({ activeAssignmentId: '' })
-  }
+  writeAssignments(readAssignments().filter(assignment => assignment.id !== assignmentId))
+  if (activeAssignmentIdCache === assignmentId) clearActiveAssignment()
 }
 
 export function clearAllAssignments() {
   writeAssignments([])
-  localStorage.removeItem(ACTIVE_ASSIGNMENT_KEY)
-  void saveTeacherWorkspacePatch({ activeAssignmentId: '' })
+  clearActiveAssignment()
 }
 
 export function hydrateAssignmentsFromServer(workspace) {
-  const assignments = Object.hasOwn(workspace || {}, 'assignments')
-    ? mergeWorkspaceItems([], workspace.assignments)
-    : mergeWorkspaceItems(readAssignments(), [])
+  const serverAssignments = Object.hasOwn(workspace || {}, 'assignments') ? workspace.assignments : []
+  const assignments = mergeWorkspaceItems(readLegacyAssignments(), serverAssignments)
   writeAssignments(assignments, { sync: false })
-  const localActive = localStorage.getItem(ACTIVE_ASSIGNMENT_KEY) || ''
-  const activeId = String(workspace?.activeAssignmentId || localActive)
-  if (activeId && assignments.some(item => item.id === activeId)) localStorage.setItem(ACTIVE_ASSIGNMENT_KEY, activeId)
-  else localStorage.removeItem(ACTIVE_ASSIGNMENT_KEY)
-  void saveTeacherWorkspacePatch({ assignments, activeAssignmentId: activeId })
+  const requestedActiveId = String(workspace?.activeAssignmentId || '').trim()
+  activeAssignmentIdCache = assignments.some(item => item.id === requestedActiveId) ? requestedActiveId : ''
+  // A legacy browser copy is imported once and is never written again.
+  void saveTeacherWorkspacePatch({ assignments, activeAssignmentId: activeAssignmentIdCache })
   return assignments
 }
-
 export function buildAssignmentLink(assignmentId, assignmentPayload = null, classLoginToken = '') {
   const normalizedId = String(assignmentId || '').trim()
   const normalizedClassToken = String(classLoginToken || '').trim()

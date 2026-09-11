@@ -29,6 +29,7 @@ import { chooseFreshestProfile } from './storageFreshnessHelpers'
 import { createCloudSyncApi } from './storageCloudSync'
 import { createStorageClassApi } from './storageClassApi'
 import { createStorageStudentApi } from './storageStudentApi'
+import { getCachedProfile, getCachedProfiles, putCachedProfile, removeCachedProfile } from './serverDataCache'
 
 export { normalizeStudentId } from './storageStudentId'
 
@@ -37,8 +38,7 @@ const STUDENTS_LIST_KEY = 'mathapp_students_list'
 const STUDENT_SESSION_KEY = 'mathapp_student_session'
 const STUDENT_SESSION_SECRET_KEY = 'mathapp_student_session_secret'
 const STUDENT_ACTIVE_CLASS_KEY = 'mathapp_student_active_class'
-const CLASSES_KEY = 'mathapp_classes_v1'
-const CLOUD_ENABLED = import.meta.env.VITE_ENABLE_CLOUD_SYNC === '1'
+const CLOUD_ENABLED = true
 const CLOUD_FRESHNESS_FUTURE_TOLERANCE_MS = 5 * 60 * 1000
 const CLOUD_PROFILE_SYNC_THROTTLE_MS = 30 * 1000
 let cloudSyncApi = null
@@ -80,25 +80,9 @@ function getCloudSyncApi() {
 
 function getClassApi() {
   if (classApi) return classApi
-  classApi = createStorageClassApi({
-    CLASSES_KEY,
-    addProfileToClassMembership,
-    areClassRecordListsEqual,
-    createAndSaveProfile,
-    createUniqueStudentId,
-    ensureProfileAuth,
-    getAllProfiles,
-    loadProfile,
-    normalizeClassRecords,
-    normalizeStudentId,
-    parseRosterLines,
-    profileHasClass,
-    removeProfileFromClassMembership,
-    saveProfile
-  })
+  classApi = createStorageClassApi({ normalizeClassRecords })
   return classApi
 }
-
 function getStudentApi() {
   if (studentApi) return studentApi
   studentApi = createStorageStudentApi({
@@ -154,22 +138,27 @@ function syncProfileToCloud(profile) {
 }
 
 export async function loadTeacherProfile(studentId) {
-  if (!CLOUD_ENABLED) return loadProfile(studentId)
-  return loadProfileFromCloud(studentId, { teacherPassword: getTeacherApiToken() })
+  const normalizedId = normalizeStudentId(studentId)
+  const token = getTeacherApiToken()
+  if (!normalizedId || !token) return null
+  try {
+    const response = await fetch(`/api/teacher-students/${encodeURIComponent(normalizedId)}`, {
+      headers: { 'x-teacher-token': token },
+      cache: 'no-store'
+    })
+    if (!response.ok) return null
+    const profile = normalizeLoadedProfile((await response.json()).profile, normalizedId)
+    return profile ? putCachedProfile(profile) : null
+  } catch {
+    return null
+  }
 }
 
 export function loadProfile(studentId) {
   const normalizedId = normalizeStudentId(studentId)
   if (!normalizedId) return null
-  const data = localStorage.getItem(STORAGE_PREFIX + normalizedId)
-  if (!data) return null
-
-  try {
-    return normalizeLoadedProfile(JSON.parse(data), normalizedId)
-  } catch (e) {
-    console.error('Failed to parse profile:', e)
-    return null
-  }
+  const cached = getCachedProfile(normalizedId)
+  return cached ? normalizeLoadedProfile(cached, normalizedId) : null
 }
 
 export function saveProfile(profile, options = {}) {
@@ -265,38 +254,21 @@ export function isStudentSessionActive(studentId) {
     && String(localStorage.getItem(STUDENT_ACTIVE_CLASS_KEY) || sessionStorage.getItem(STUDENT_ACTIVE_CLASS_KEY) || '').trim() !== ''
 }
 
-function updateStudentsList(studentId, name) {
-  const list = getStudentsList()
-
-  const existing = list.find(s => s.studentId === studentId)
-  if (existing) {
-    existing.name = name
-    existing.lastActive = Date.now()
-  } else {
-    list.push({
-      studentId,
-      name,
-      lastActive: Date.now()
-    })
-  }
-
-  localStorage.setItem(STUDENTS_LIST_KEY, JSON.stringify(list))
+function updateStudentsList() {
+  // Student indexes belong to the server. The open page only keeps a memory
+  // cache, so a browser quota can never affect pupil data.
 }
 
 export function getStudentsList() {
-  const data = localStorage.getItem(STUDENTS_LIST_KEY)
-  if (!data) return []
-
-  try {
-    return JSON.parse(data)
-  } catch {
-    return []
-  }
+  return getCachedProfiles().map(profile => ({
+    studentId: profile.studentId,
+    name: profile.name,
+    lastActive: Number(profile.auth?.lastLoginAt || 0)
+  }))
 }
 
 export function getAllProfiles() {
-  const list = getStudentsList()
-  return list.map(s => loadProfile(s.studentId)).filter(Boolean)
+  return getCachedProfiles()
 }
 
 export async function getAllProfilesWithSync() {
@@ -310,12 +282,8 @@ export async function deleteProfile(studentId) {
   const cloudResult = await getCloudSyncApi().deleteProfileFromCloud(normalizedId)
   if (!cloudResult.ok) return cloudResult
 
-  localStorage.removeItem(STORAGE_PREFIX + normalizedId)
-  localStorage.removeItem('mathapp_wal_' + normalizedId)
+  removeCachedProfile(normalizedId)
   if (isStudentSessionActive(normalizedId)) clearActiveStudentSession()
-  const list = getStudentsList()
-    .filter(student => normalizeStudentId(student.studentId) !== normalizedId)
-  localStorage.setItem(STUDENTS_LIST_KEY, JSON.stringify(list))
 
   for (const classRecord of getClasses()) {
     const studentIds = Array.isArray(classRecord.studentIds) ? classRecord.studentIds : []
@@ -369,11 +337,7 @@ function saveProfileLocalOnly(profile) {
     studentId: normalizedId
   }))
 
-  localStorage.setItem(
-    STORAGE_PREFIX + normalized.studentId,
-    JSON.stringify(normalized)
-  )
-
+  putCachedProfile(normalized)
   updateStudentsList(normalized.studentId, normalized.name)
 }
 

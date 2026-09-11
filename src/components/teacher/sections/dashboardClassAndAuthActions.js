@@ -259,16 +259,19 @@ export function buildDashboardClassAndAuthActions({
 
   const handleResetStudentPassword = async (studentId, code) => {
     const normalizedStudentId = normalizeStudentId(studentId)
-    if (!normalizedStudentId || !/^\d{4}$/.test(String(code || ''))) { setPasswordResetStatus('Koden måste ha fyra siffror.'); return }
+    const loginCode = String(code || '').trim()
+    if (!normalizedStudentId || !/^\d{4}$/.test(loginCode)) { setPasswordResetStatus('Koden måste ha fyra siffror.'); return }
     setPasswordResetBusyId(normalizedStudentId)
     try {
       const profiles = await loadStudents()
       const current = profiles?.find(item => item.studentId === normalizedStudentId)
-      const response = await fetch('/api/student/' + encodeURIComponent(normalizedStudentId), { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() }, body: JSON.stringify({ serverRevision: current?.serverRevision || 0, changes: { loginCode: code } }) })
-      if (!response.ok) throw new Error('save failed')
-      setPasswordResetStatus(`Ny kod sparad för ${normalizedStudentId}: ${code}`)
+      if (!current) throw new Error('Eleven hittades inte i det aktuella urvalet. Uppdatera sidan och försök igen.')
+      const response = await fetch('/api/student/' + encodeURIComponent(normalizedStudentId), { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() }, body: JSON.stringify({ serverRevision: current.serverRevision, changes: { loginCode } }) })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data?.error || 'Koden kunde inte sparas.')
+      setPasswordResetStatus(`Ny kod sparad för ${normalizedStudentId}: ${loginCode}`)
       await loadStudents()
-    } catch { setPasswordResetStatus(`Kunde inte spara kod för ${normalizedStudentId}.`) }
+    } catch (error) { setPasswordResetStatus(error?.message || `Kunde inte spara kod för ${normalizedStudentId}.`) }
     finally { setPasswordResetBusyId('') }
   }
   const handleOpenStudentDetail = (studentId) => {

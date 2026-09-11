@@ -74,7 +74,10 @@ export default function PasswordResetPanel({
                     <td className="px-3 py-2 text-right">
                       <button
                         type="button"
-                        onClick={() => { const code = window.prompt('Ny fyrsiffrig kod:'); if (/^\\d{4}$/.test(code || '')) onResetStudentPassword(row.studentId, code) }}
+                        onClick={() => {
+                          const code = window.prompt('Ny fyrsiffrig kod:')
+                          if (code !== null) onResetStudentPassword(row.studentId, code)
+                        }}
                         disabled={passwordResetBusyId === row.studentId}
                         className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white rounded text-xs font-semibold"
                       >

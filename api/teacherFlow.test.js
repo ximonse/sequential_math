@@ -131,6 +131,22 @@ describe('teacher account to pupil lifecycle', () => {
     })
     expect(pupilProfile).toMatchObject({ code: 200, data: { profile: { studentId, name: 'Ada Student' } } })
 
+    const teacherStudent = await call(studentHandler, {
+      query: { studentId }, headers: firstTeacherHeaders
+    })
+    const codeChange = await call(studentHandler, {
+      method: 'PATCH', query: { studentId }, headers: firstTeacherHeaders,
+      body: { serverRevision: teacherStudent.data.profile.serverRevision, changes: { loginCode: '1234' } }
+    })
+    expect(codeChange).toMatchObject({ code: 200, data: { ok: true } })
+    const oldCodeLogin = await call(studentLoginHandler, {
+      method: 'POST', body: { classToken: roster.data.class.loginToken, name: 'Ada Student', code: roster.data.results[0].loginCode }
+    })
+    expect(oldCodeLogin.code).toBe(401)
+    const newCodeLogin = await call(studentLoginHandler, {
+      method: 'POST', body: { classToken: roster.data.class.loginToken, name: 'Ada Student', code: '1234' }
+    })
+    expect(newCodeLogin).toMatchObject({ code: 200, data: { studentId } })
 
     const listed = await call(studentsHandler, { headers: firstTeacherHeaders })
     expect(listed).toMatchObject({ code: 200 })

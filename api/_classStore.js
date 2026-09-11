@@ -12,7 +12,7 @@ export async function assertClassNameAvailable({ id, name, schoolId }) {
   if (!schoolId) return
   const ids = await kv.smembers('classes:index') || []
   const records = await Promise.all(ids.map(classId => kv.get(`class:${classId}`)))
-  const duplicate = records.some(record => record && record.id !== id && record.schoolId === schoolId && normalizeClassName(record.name) === normalizedName)
+  const duplicate = records.some(record => record && !record.archived && record.id !== id && record.schoolId === schoolId && normalizeClassName(record.name) === normalizedName)
   if (duplicate) throw studentStoreError(409, 'Det finns redan en klass med det namnet på den här skolan.')
 }
 
@@ -30,6 +30,25 @@ export function createClassRecord(record, options) {
     if (current) throw studentStoreError(409, 'Class ID already exists')
     return record
   }, options)
+}
+
+export function archiveClassRecord(id, archivedName) {
+  return mutateClassRecord(id, current => {
+    if (!current) throw studentStoreError(404, 'Class not found')
+    if (current.archived) return current
+    const historicalName = String(archivedName || `${current.name} ${new Date().getFullYear()} legacy`).trim()
+    return { ...current, name: historicalName, archived: true, archivedAt: Date.now(), activeNameBeforeArchive: current.name }
+  }, { skipClassNameCheck: true })
+}
+
+export function restoreClassRecord(id, name) {
+  return mutateClassRecord(id, current => {
+    if (!current) throw studentStoreError(404, 'Class not found')
+    if (!current.archived) return current
+    const restoredName = String(name || current.activeNameBeforeArchive || '').trim()
+    if (!restoredName) throw studentStoreError(400, 'Ange ett aktivt klassnamn vid återställning.')
+    return { ...current, name: restoredName, archived: false, archivedAt: null, activeNameBeforeArchive: null }
+  })
 }
 
 export async function deleteClassRecord(id) {

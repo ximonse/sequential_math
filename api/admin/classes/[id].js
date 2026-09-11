@@ -6,7 +6,7 @@
  */
 import { assertTeachersBelongToSchool, validateSchoolId } from '../../_schoolStore.js'
 import { kv } from '@vercel/kv'
-import { mutateClassRecord, deleteClassRecord } from '../../_classStore.js'
+import { archiveClassRecord, deleteClassRecord, mutateClassRecord, restoreClassRecord } from '../../_classStore.js'
 import { studentStoreError } from '../../_studentStore.js'
 import {
   isLiveAdminAuthorized,
@@ -38,6 +38,14 @@ export default async function handler(req, res) {
 
     if (req.method === 'PUT') {
       const updated = { ...classRecord }
+      if (req.body?.archive === true) {
+        const archived = await archiveClassRecord(id, req.body?.archivedName)
+        return res.status(200).json({ ok: true, class: archived })
+      }
+      if (req.body?.restore === true) {
+        const restored = await restoreClassRecord(id, req.body?.name)
+        return res.status(200).json({ ok: true, class: restored })
+      }
       if (req.body?.schoolId !== undefined) updated.schoolId = await validateSchoolId(req.body.schoolId)
 
       if (typeof req.body?.name === 'string' && req.body.name.trim()) {

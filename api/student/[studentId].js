@@ -80,7 +80,7 @@ export default async function handler(req, res) {
       if (!changes || typeof changes !== 'object' || Array.isArray(changes)
         || Object.keys(changes).some(field => !['ticketInbox', 'ticketRevealAll', 'name', 'loginCode'].includes(field))
         || (changes.name !== undefined && (typeof changes.name !== 'string' || !changes.name.trim() || changes.name.length > 100))
-        || (changes.loginCode !== undefined && !/^\\d{4}$/.test(String(changes.loginCode)))) {
+        || (changes.loginCode !== undefined && !/^\d{4}$/.test(String(changes.loginCode)))) {
         throw studentStoreError(400, 'Invalid teacher update')
       }
       await mutateStudentRecord(studentId, async current => {

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHash } from 'node:crypto'
+import { verifyPasswordAgainstAuth } from './_studentPassword.js'
 
 const memory = vi.hoisted(() => new Map())
 vi.mock('@vercel/kv', () => ({ kv: {
@@ -138,6 +139,20 @@ describe('student persistence boundary', () => {
     expect(dto.problemLog).toBeUndefined()
     expect(dto.auth.passwordHash).toBeUndefined()
     expect((await call(studentHandler, 'POST', { profile: dto })).code).toBe(400)
+  })
+
+  it('accepts a four digit teacher-set login code and clears failed attempts', async () => {
+    const saved = await call(studentHandler, 'PATCH', { serverRevision: 0, changes: { loginCode: '1234' } }, owner)
+    expect(saved.code).toBe(200)
+    expect(memory.get('student:PUPIL').auth).toMatchObject({
+      passwordScheme: 'sha256-v1',
+      failedCodeAttempts: 0,
+      lastFailedCodeAt: null
+    })
+    const auth = memory.get('student:PUPIL').auth
+    expect(auth.passwordHash).not.toBe(profile().auth.passwordHash)
+    expect(verifyPasswordAgainstAuth(auth, '1234')).toBe(true)
+    expect(verifyPasswordAgainstAuth(auth, '0000')).toBe(false)
   })
 
   it('acknowledges teacher patches only at the expected revision and preserves training', async () => {

@@ -67,3 +67,20 @@ Vid nytt läsår gör administratören en förhandsgranskning. Verktyget föresl
 
 Kontraktet verifieras främst i `api/teacherFlow.test.js`, `api/studentLogin.test.js` och `api/studentStore.test.js`. Vid en ändring av dessa regler ska tester, detta kontrakt, berörd manual och felsökningsguide uppdateras tillsammans.
 Rollgränserna har dessutom enhetstester i `api/teacherRoles.test.js`.
+
+
+## Arkiverade klasser
+
+En klass har ett stabilt ID oberoende av visningsnamn. Arkivering sätter `archived` och `archivedAt`, sparar det tidigare aktiva namnet och ger klassen ett historiskt namn. Därmed blir det aktiva namnet ledigt utan att elev-ID, klasslänk, träning eller statistik bryts. Arkiverade klasser är fullt fungerande men döljs i lärarens standardurval. Återställning kontrollerar aktiv namnunikhet på nytt.
+
+Permanent klassradering är en separat superadminåtgärd och får bara tillåtas för en tom arkiverad klass.
+
+## Lärarskapade grupper
+
+En grupp är en separat serverresurs med stabilt ID, namn, en skola, elev-ID:n och lärar-ID:n. Gruppen ändrar aldrig elevens klass eller inloggning och ger aldrig i sig åtkomst till en elev.
+
+- Alla elever måste ha medlemskap på samma valda skola.
+- Den som skapar eller ändrar gruppen måste redan få se varje elev.
+- Varje delad lärare måste redan få se samtliga elever via sin klass- eller administratörstilldelning.
+- Elevflytt och ändrad lärarscope omvaliderar gruppen. En elev eller lärare som inte längre uppfyller åtkomstkravet tas bort från gruppen.
+- `GET/POST/PUT/DELETE /api/teacher-groups` använder levande lärarsession och kontrollerar dessa regler på servern.

@@ -2,6 +2,7 @@ import { kv } from '@vercel/kv'
 import { mutateStudentRecord, studentStoreError } from '../../_studentStore.js'
 import { assertTeacherStudentAccess, canAccessClass } from '../../_studentAccess.js'
 import { getLiveTeacherAuthPayload, withCors } from '../../_helpers.js'
+import { revalidateGroupsForPupil } from '../../_groupStore.js'
 
 export default async function handler(req, res) {
   withCors(res, { methods: 'PUT,OPTIONS', headers: 'Content-Type, x-teacher-token' }, req)
@@ -28,6 +29,7 @@ export default async function handler(req, res) {
       const classId = current.classId === fromClassId ? toClassId : current.classId
       return { ...current, classIds, classId, className: classId === toClassId ? target.name : current.className }
     })
+    await revalidateGroupsForPupil(studentId)
     return res.status(200).json({ ok: true, profile: { studentId: saved.studentId, classId: saved.classId, classIds: saved.classIds } })
   } catch (error) {
     return res.status(error.status || 500).json({ error: error.status ? error.message : 'Kunde inte flytta eleven.' })

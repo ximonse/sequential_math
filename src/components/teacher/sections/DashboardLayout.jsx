@@ -395,6 +395,7 @@ export default function DashboardLayout({
           onDeleteClass={handleDeleteClass}
           onRenameClass={handleRenameClass}
           onSaveClassExtras={handleSaveClassExtras}
+          onStatusChange={setDashboardStatus}
         />
       </>
     )

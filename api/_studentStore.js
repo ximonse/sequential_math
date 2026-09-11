@@ -33,7 +33,7 @@ export function studentStoreError(status, message) {
 }
 
 export async function mutateStoredRecord(kind, id, transform, { store = kv } = {}) {
-  if (!id || !['student', 'class', 'school'].includes(kind)) throw studentStoreError(400, 'Invalid record identity')
+  if (!id || !['student', 'class', 'school', 'group'].includes(kind)) throw studentStoreError(400, 'Invalid record identity')
   const key = `${kind}:${id}`
   const deletedKey = `${kind}_deleted:${id}`
   for (let attempt = 0; attempt < 8; attempt++) {
@@ -46,7 +46,7 @@ export async function mutateStoredRecord(kind, id, transform, { store = kv } = {
       ...next, serverRevision: version + 1, serverUpdatedAt: Date.now()
     }
     const result = Number(await store.eval(STUDENT_CAS_SCRIPT,
-      [key, deletedKey, { student: 'students:index', class: 'classes:index', school: 'schools:index' }[kind]],
+      [key, deletedKey, { student: 'students:index', class: 'classes:index', school: 'schools:index', group: 'groups:index' }[kind]],
       [version, record === null ? 'delete' : 'write',
         record === null ? String(Date.now()) : JSON.stringify(record), id]))
     if (result === 1) return record

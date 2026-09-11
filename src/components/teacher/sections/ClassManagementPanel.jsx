@@ -3,6 +3,7 @@ import { useRef, useState } from 'react'
 import { listDomains } from '../../../domains/registry'
 import { parseRosterLines } from '../../../lib/storageClassHelpers'
 import ClassLoginQrDialog from './ClassLoginQrDialog'
+import TeacherGroupsPanel from './TeacherGroupsPanel'
 
 function getTogglableExtras() {
   return listDomains()
@@ -97,7 +98,8 @@ export default function ClassManagementPanel({
   onDeleteClass,
   onRenameClass,
   onSaveClassExtras,
-  onMoveStudent
+  onMoveStudent,
+  onStatusChange
 }) {
   const directory = useSchools()
   const [schoolId, setSchoolId] = useState('')
@@ -294,6 +296,10 @@ export default function ClassManagementPanel({
         </div>
       ) : null}
       </fieldset>
+      <div className="mt-8 border-t border-gray-200 pt-6">
+        <h2 className="mb-3 text-lg font-semibold text-gray-800">Grupper</h2>
+        <TeacherGroupsPanel students={students} onStatusChange={onStatusChange} />
+      </div>
       {qrClass && <ClassLoginQrDialog classRecord={qrClass} onClose={() => setQrClass(null)} />}
     </div>
   )

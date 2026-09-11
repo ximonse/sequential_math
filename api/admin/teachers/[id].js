@@ -10,6 +10,7 @@ import {
   isLiveAdminAuthorized,
   withCors
 } from '../../_helpers.js'
+import { revalidateGroupsForTeacher } from '../../_groupStore.js'
 
 function sanitizeAccount(account) {
   if (!account) return null
@@ -74,6 +75,7 @@ export default async function handler(req, res) {
       if (shouldRevokeSessions) updated.sessionVersion = Math.max(1, Number(account.sessionVersion) || 1) + 1
       updated.updatedAt = Date.now()
       await kv.set(key, updated)
+      if (shouldRevokeSessions) await revalidateGroupsForTeacher(id, updated)
       return res.status(200).json({ ok: true, teacher: sanitizeAccount(updated) })
     }
 

@@ -16,7 +16,7 @@ export default function DashboardWorkspaceNavigation({ activeTab, onChange }) {
             onClick={() => onChange(tab.id)}
             role="tab"
             aria-selected={activeTab === tab.id}
-            className={`-mb-px flex-1 border-b-2 px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors ${activeTab === tab.id
+            className={`-mb-px flex-1 border-b-2 px-4 py-2.5 text-base font-semibold whitespace-nowrap transition-colors ${activeTab === tab.id
               ? 'border-indigo-600 text-indigo-700'
               : 'border-transparent text-gray-600 hover:border-slate-300 hover:text-gray-900'}`}
           >

@@ -379,6 +379,8 @@ export default function DashboardLayout({
         onActivateForAll={handleActivateForAll}
         onDeleteAssignment={handleDeleteAssignment}
         onCopyAssignmentLink={handleCopyAssignmentLink}
+        classes={classes}
+        selectedClassIds={selectedClassIds}
       />
     )
     if (id === 'tickets') return (

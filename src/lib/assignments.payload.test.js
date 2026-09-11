@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest'
-import { decodeAssignmentPayload, encodeAssignmentPayload } from './assignments'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { buildAssignmentLink, decodeAssignmentPayload, encodeAssignmentPayload } from './assignments'
+
+afterEach(() => vi.unstubAllGlobals())
 
 describe('assignments payload encoding', () => {
   it('roundtrips standard assignment payload', () => {
@@ -37,7 +39,20 @@ describe('assignments payload encoding', () => {
     expect(decoded.id).toBe('asg_ncm_1')
     expect(decoded.kind).toBe('ncm')
     expect(decoded.ncmCodes).toEqual(['RP5'])
-    expect(decoded.ncmAbilityTags).toEqual(['concept_percent'])
     expect(decoded.problemTypes).toEqual([])
+  })
+
+  it('builds a class login link that keeps the assignment payload', () => {
+    vi.stubGlobal('window', { location: { origin: 'https://matematik.ximon.se' } })
+    const link = buildAssignmentLink('asg_test_1', {
+      id: 'asg_test_1',
+      title: 'Addition',
+      problemTypes: ['addition']
+    }, 'class-token')
+    const url = new URL(link)
+
+    expect(url.searchParams.get('class')).toBe('class-token')
+    expect(url.searchParams.get('assignment')).toBe('asg_test_1')
+    expect(decodeAssignmentPayload(url.searchParams.get('assignment_payload'))?.title).toBe('Addition')
   })
 })

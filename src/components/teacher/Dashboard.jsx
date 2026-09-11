@@ -345,7 +345,11 @@ function Dashboard() {
     setAssignments,
     setDashboardStatus,
     setCopiedId,
-    setActiveAssignmentId
+    setActiveAssignmentId,
+    getSelectedClassLoginToken: () => {
+      if (selectedClassIds.length !== 1) return ''
+      return String(classes.find(item => String(item.id) === String(selectedClassIds[0]))?.loginToken || '').trim()
+    }
   })
 
   const {

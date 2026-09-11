@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 import { buildAssignmentLink } from '../../../lib/assignments'
 
-export default function AssignmentQrDialog({ assignment, onClose }) {
+export default function AssignmentQrDialog({ assignment, classLoginToken, onClose }) {
   const [imageUrl, setImageUrl] = useState('')
   const [error, setError] = useState('')
-  const assignmentUrl = buildAssignmentLink(assignment.id, assignment)
+  const assignmentUrl = buildAssignmentLink(assignment.id, assignment, classLoginToken)
 
   useEffect(() => {
     let active = true

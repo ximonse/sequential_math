@@ -110,10 +110,11 @@ export function hydrateAssignmentsFromServer(workspace) {
   return assignments
 }
 
-export function buildAssignmentLink(assignmentId, assignmentPayload = null) {
+export function buildAssignmentLink(assignmentId, assignmentPayload = null, classLoginToken = '') {
   const normalizedId = String(assignmentId || '').trim()
-  if (!normalizedId) return ''
-  const base = window.location.origin
+  const normalizedClassToken = String(classLoginToken || '').trim()
+  if (!normalizedId || !normalizedClassToken) return ''
+
   const resolved = normalizeAssignment(
     assignmentPayload && typeof assignmentPayload === 'object'
       ? assignmentPayload
@@ -121,14 +122,13 @@ export function buildAssignmentLink(assignmentId, assignmentPayload = null) {
     { requireId: true }
   )
   const params = new URLSearchParams()
+  params.set('class', normalizedClassToken)
   params.set('assignment', normalizedId)
 
   const encoded = encodeAssignmentPayload(resolved)
-  if (encoded) {
-    params.set('assignment_payload', encoded)
-  }
+  if (encoded) params.set('assignment_payload', encoded)
 
-  return `${base}/?${params.toString()}`
+  return `${window.location.origin}/?${params.toString()}`
 }
 
 export function encodeAssignmentPayload(assignment) {

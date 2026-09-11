@@ -25,7 +25,7 @@ import TicketSectionContainer from './TicketSectionContainer'
 import TableStickyStatusPanel from './TableStickyStatusPanel'
 import { ActivityBadge, RiskBadge } from './dashboardStatusBadges'
 import { getOperationLabel } from '../../../lib/operations'
-import { isTeacherAdmin } from '../../../lib/teacherAuth'
+import { getTeacherIdentity, isTeacherAdmin } from '../../../lib/teacherAuth'
 
 const PANEL_DEFS = [
   { id: 'support',     title: 'Behöver stöd nu' },
@@ -166,6 +166,9 @@ export default function DashboardLayout({
   passwordResetBusyId
 }) {
   const teacherIsAdmin = isTeacherAdmin()
+  const teacherIdentity = getTeacherIdentity()
+  const teacherName = String(teacherIdentity.displayName || 'Lärare').trim() || 'Lärare'
+  const teacherRole = teacherIsAdmin ? 'Administratör' : 'Lärare'
   const visiblePanelDefs = PANEL_DEFS.filter(p => !p.adminOnly || teacherIsAdmin)
 
   const [collapsed, setCollapsed] = useState(() => {
@@ -419,11 +422,14 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
+    <div className={`min-h-screen py-8 ${teacherIsAdmin ? 'bg-orange-50' : 'bg-green-50'}`}>
       <div className="max-w-6xl mx-auto px-4">
         <DashboardHeaderBar
           isDirectStudentView={isDirectStudentView}
           detailStudentName={detailStudentProfile?.name || ''}
+          teacherName={teacherName}
+          teacherRole={teacherRole}
+          isAdmin={teacherIsAdmin}
           onJumpToPasswordReset={handleJumpToPasswordReset}
           onRefresh={handleRefresh}
           onGoDashboard={() => navigate('/teacher')}

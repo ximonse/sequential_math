@@ -1,6 +1,9 @@
 function DashboardHeaderBar({
   isDirectStudentView,
   detailStudentName,
+  teacherName,
+  teacherRole,
+  isAdmin,
   onJumpToPasswordReset,
   onRefresh,
   onGoDashboard,
@@ -19,7 +22,11 @@ function DashboardHeaderBar({
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className={`rounded-lg border px-3 py-2 text-sm shadow-sm ${isAdmin ? 'border-orange-200 bg-orange-100 text-orange-950' : 'border-green-200 bg-green-100 text-green-950'}`} aria-label="Inloggat konto">
+          <p className="font-semibold leading-tight">{teacherName}</p>
+          <p className="text-xs leading-tight opacity-80">{teacherRole}</p>
+        </div>
         {!isDirectStudentView && (
           <button
             onClick={onJumpToPasswordReset}

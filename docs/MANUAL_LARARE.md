@@ -16,6 +16,8 @@ Detaljerad datatolkning (kolumn för kolumn) finns i separata dokument:
 
 Lärarkontot skapas av administratören. Kontakta administratören om du saknar konto, har glömt lösenordet eller behöver åtkomst till en annan skola eller klass.
 
+Högst upp i lärarvyn visas ditt kontonamn och din roll. Bakgrunden är ljusgrön för **Lärare** och ljusorange för **Administratör**, så att det syns direkt vilken behörighet du använder.
+
 ## 2. Första setup
 
 1. Skapa klass under sektionen `Klasser`.

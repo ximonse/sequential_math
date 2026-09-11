@@ -34,6 +34,7 @@ describe('student detail wiring', () => {
       selectedClassIds={[]} supportRows={[]} classStats={{}} classFilterOptions={[]} filteredRows={[]}
     />)
     expect(html).toContain('Karin Lärare · Lärare')
+    expect(html).toContain('teacher-dashboard-surface--teacher')
   })
 
   it('preserves the collapsed preference in the ordinary dashboard', () => {

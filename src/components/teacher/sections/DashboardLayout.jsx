@@ -422,7 +422,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className={`min-h-screen py-8 ${teacherIsAdmin ? 'bg-orange-50' : 'bg-green-50'}`}>
+    <div className={`teacher-dashboard-surface min-h-screen py-8 ${teacherIsAdmin ? 'teacher-dashboard-surface--admin' : 'teacher-dashboard-surface--teacher'}`}>
       <div className="max-w-6xl mx-auto px-4">
         <DashboardHeaderBar
           isDirectStudentView={isDirectStudentView}

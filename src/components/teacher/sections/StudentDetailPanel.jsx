@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import QRCode from 'qrcode'
+import { getTeacherApiToken } from '../../../lib/teacherAuth'
 import StudentDetailHistoryPanel from './StudentDetailHistoryPanel'
 import StudentDetailTrendPanel from './StudentDetailTrendPanel'
 import StudentDetailMasteryPanel from './StudentDetailMasteryPanel'
@@ -9,6 +11,26 @@ const OPERATION_BADGES = [
   { label: 'x', key: 'multiplication' },
   { label: '/', key: 'division' }
 ]
+
+function ReissuedCredentialCard({ credential }) {
+  const [qrCode, setQrCode] = useState('')
+  useEffect(() => {
+    let active = true
+    QRCode.toDataURL(JSON.stringify({ version: 1, studentId: credential.studentId, qrSecret: credential.qrSecret }), {
+      errorCorrectionLevel: 'M', margin: 1, width: 280
+    }).then(value => { if (active) setQrCode(value) }).catch(() => {})
+    return () => { active = false }
+  }, [credential.studentId, credential.qrSecret])
+  return <div className="mt-3 rounded border-2 border-amber-400 bg-amber-50 p-4 text-sm print:border-gray-700 print:bg-white">
+    <p className="font-bold text-amber-950">Nytt elevkort — skriv ut nu</p>
+    <p className="mt-1 text-amber-900">Det gamla QR-kortet och den gamla PIN-koden fungerar inte längre.</p>
+    <div className="mt-3 flex items-center gap-4">
+      <div><p className="font-semibold text-lg">{credential.displayAlias || 'Elev'}</p><p className="font-mono text-xs break-all">Elev-ID: {credential.studentId}</p><p className="font-mono text-xs break-all">QR-hemlighet: {credential.qrSecret}</p><p className="font-mono text-lg font-bold">PIN: {credential.pin}</p></div>
+      {qrCode ? <img className="h-28 w-28" src={qrCode} alt="Nytt elevkorts QR-kod" /> : null}
+    </div>
+    <div className="mt-3 flex gap-2 print:hidden"><button type="button" onClick={() => window.print()} className="rounded bg-amber-700 px-3 py-1.5 text-xs font-semibold text-white">Skriv ut kortet</button></div>
+  </div>
+}
 
 export default function StudentDetailPanel({
   sectionId = 'teacher-student-detail-section',
@@ -33,6 +55,22 @@ export default function StudentDetailPanel({
   historyPanelProps
 }) {
   const [detailCollapsed, setDetailCollapsed] = useState(new Set())
+  const [issuedCredential, setIssuedCredential] = useState(null)
+  const [credentialStatus, setCredentialStatus] = useState('')
+
+  const reissueCredential = async () => {
+    if (!detailStudentProfile?.studentId) return
+    if (!window.confirm('Utfärda ett nytt elevkort? Det gamla QR-kortet och den gamla PIN-koden slutar fungera direkt.')) return
+    setCredentialStatus('Utfärdar nytt elevkort…')
+    try {
+      const response = await fetch(`/api/student/${encodeURIComponent(detailStudentProfile.studentId)}/credentials`, {
+        method: 'POST', headers: { 'x-teacher-token': getTeacherApiToken() }
+      })
+      const data = await response.json()
+      if (!response.ok || !data?.credential) throw new Error(data?.error || 'Kunde inte utfärda nytt elevkort.')
+      setIssuedCredential(data.credential); setCredentialStatus('Nytt elevkort är klart. Skriv ut det innan du lämnar sidan.')
+    } catch (error) { setCredentialStatus(error.message || 'Kunde inte utfärda nytt elevkort.') }
+  }
 
   const toggleDetailCollapse = (section) => {
     setDetailCollapsed(prev => {
@@ -100,6 +138,7 @@ export default function StudentDetailPanel({
           {detailStudentProfile && (
             <button type="button" onClick={() => { const alias = window.prompt('Visningsalias (fritext):', detailStudentProfile.displayAlias || detailStudentProfile.name || ''); if (alias?.trim()) onRenameStudent(detailStudentProfile.studentId, alias) }} className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs font-medium">Byt visningsalias</button>
           )}
+          {detailStudentProfile?.displayAlias ? <button type="button" onClick={reissueCredential} className="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded text-xs font-medium">Utfärda nytt elevkort</button> : null}
           {detailStudentProfile && (
             <button
               type="button"
@@ -129,6 +168,8 @@ export default function StudentDetailPanel({
             ActivityBadgeComponent={ActivityBadgeComponent}
             trainingPriorityList={trainingPriorityList}
           />
+          {credentialStatus ? <p role="status" className="mt-3 text-sm text-amber-900 print:hidden">{credentialStatus}</p> : null}
+          {issuedCredential ? <ReissuedCredentialCard credential={issuedCredential} /> : null}
 
           <StudentDetailTrendPanel trend={detailStudentViewData.dailyTrend} />
 

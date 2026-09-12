@@ -98,6 +98,17 @@ export async function postStudentSessionEvents(entries) {
   return { ok: true, ...result.data }
 }
 
+export async function postStudentSessionHighscore({ game, score, classId }) {
+  if (!csrfToken) return { ok: false, error: SESSION_EXPIRED_ERROR }
+  const result = await requestSession('/api/highscores', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+    body: JSON.stringify({ game, score, classId })
+  }, 'Kunde inte spara resultatet.')
+  if (!result.ok) return result
+  return { ok: true, ...result.data }
+}
+
 export function hasStudentSessionCsrfToken() {
   return Boolean(csrfToken)
 }

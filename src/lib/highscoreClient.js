@@ -1,4 +1,5 @@
 import { getActiveStudentSessionSecret } from './storage'
+import { hasStudentSessionCsrfToken, postStudentSessionHighscore } from './studentSessionClient'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
 
@@ -16,6 +17,10 @@ export async function fetchHighscores(game, classId) {
 
 export async function reportHighscore(game, studentId, name, score, classId) {
   if (!classId) return { qualified: false, rank: null, highscores: [] }
+  if (hasStudentSessionCsrfToken()) {
+    const result = await postStudentSessionHighscore({ game, score, classId })
+    return result.ok ? result : { qualified: false, rank: null, highscores: [] }
+  }
   try {
     const secret = getActiveStudentSessionSecret()
     const res = await fetch(`${API_BASE}/api/highscores`, {

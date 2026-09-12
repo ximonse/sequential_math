@@ -1,6 +1,8 @@
 import { kv } from '@vercel/kv'
 import { createHash } from 'node:crypto'
-import { withCors } from './_helpers.js'
+import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
+import { canAccessClass } from './_studentAccess.js'
+import { getLiveStudentSession, hasStudentCsrf, requestOriginIsTrusted } from './_studentSession.js'
 import {
   hasCurrentStudentPassword,
   isCurrentStudentProfile
@@ -25,6 +27,20 @@ async function getHighscoreGroup(classId) {
 
 function getHighscoreIndexKey(studentId) {
   return `student_highscore_keys:${String(studentId || '').trim().toUpperCase()}`
+}
+
+function assignedToClass(profile, classId) {
+  return new Set([profile?.classId, ...(Array.isArray(profile?.classIds) ? profile.classIds : [])]
+    .map(value => String(value || '').trim()).filter(Boolean)).has(String(classId || '').trim())
+}
+
+function highscoreDto(entry) {
+  const displayAlias = String(entry?.displayAlias || entry?.name || 'Elev').slice(0, 50)
+  return { displayAlias, name: displayAlias, score: Number(entry?.score) || 0 }
+}
+
+function highscoreListDto(list) {
+  return (Array.isArray(list) ? list : []).map(highscoreDto)
 }
 
 /**
@@ -77,8 +93,9 @@ function verifyStudentPassword(auth, password) {
 export default async function handler(req, res) {
   withCors(res, {
     methods: 'GET,POST,OPTIONS',
-    headers: 'Content-Type, x-student-password'
+    headers: 'Content-Type, x-student-password, x-csrf-token, x-teacher-token'
   }, req)
+  res.setHeader('Cache-Control', 'no-store')
   if (req.method === 'OPTIONS') return res.status(200).end()
 
   if (req.method === 'GET') {
@@ -87,31 +104,40 @@ export default async function handler(req, res) {
     if (!game || !classId) return res.status(400).json({ error: 'game and classId required' })
     if (game !== 'pong' && game !== 'snake') return res.status(400).json({ error: 'game must be pong or snake' })
 
+    const studentSession = await getLiveStudentSession(req)
+    const teacher = studentSession ? null : await getLiveTeacherAuthPayload(req)
+    if (studentSession && !assignedToClass(studentSession.profile, classId)) return res.status(403).json({ error: 'Not authorized for this class' })
+    if (!studentSession && (!teacher || !await canAccessClass(req, classId))) return res.status(401).json({ error: 'Authorization required' })
+
     const group = await getHighscoreGroup(classId)
     if (!group) return res.status(200).json({ highscores: [] })
 
     const key = `highscores:${game}:${group}`
     const list = await kv.get(key)
-    return res.status(200).json({ highscores: Array.isArray(list) ? list : [], group })
+    return res.status(200).json({ highscores: highscoreListDto(list), group })
   }
 
   if (req.method === 'POST') {
-    const { game, studentId, name, score, classId } = req.body || {}
-    if (!game || !studentId || score == null || !classId) {
-      return res.status(400).json({ error: 'game, studentId, score, classId required' })
+    const { game, studentId, score, classId } = req.body || {}
+    if (!game || score == null || !classId) {
+      return res.status(400).json({ error: 'game, score and classId required' })
     }
     if (game !== 'pong' && game !== 'snake') return res.status(400).json({ error: 'game must be pong or snake' })
 
     // Verify student auth
-    const studentPassword = String(req.headers['x-student-password'] || '')
-    const profile = await kv.get(`student:${String(studentId).toUpperCase()}`)
-    if (!isCurrentStudentProfile(profile) || !verifyStudentPassword(profile.auth, studentPassword)) {
-      return res.status(401).json({ error: 'Unauthorized' })
+    const studentSession = await getLiveStudentSession(req)
+    let profile
+    if (studentSession) {
+      if (!requestOriginIsTrusted(req) || !hasStudentCsrf(studentSession.session, req)) return res.status(403).json({ error: 'Request could not be verified' })
+      profile = studentSession.profile
+    } else {
+      const studentPassword = String(req.headers['x-student-password'] || '')
+      profile = await kv.get(`student:${String(studentId || '').toUpperCase()}`)
+      if (!isCurrentStudentProfile(profile) || profile.auth?.scheme === 'qr-pin-v1' || !verifyStudentPassword(profile.auth, studentPassword)) {
+        return res.status(401).json({ error: 'Unauthorized' })
+      }
     }
-    const assignedClassIds = new Set([profile.classId, ...(Array.isArray(profile.classIds) ? profile.classIds : [])]
-      .map(value => String(value || '').trim())
-      .filter(Boolean))
-    if (!assignedClassIds.has(String(classId).trim())) {
+    if (!assignedToClass(profile, classId)) {
       return res.status(403).json({ error: 'Class is not assigned to this student' })
     }
 
@@ -123,10 +149,13 @@ export default async function handler(req, res) {
     const list = Array.isArray(current) ? current : []
 
     const numericScore = Number(score)
-    const normalizedStudentId = String(studentId).toUpperCase()
+    if (!Number.isFinite(numericScore) || numericScore < 0 || numericScore > 1_000_000_000) {
+      return res.status(400).json({ error: 'Invalid score' })
+    }
+    const normalizedStudentId = String(profile.studentId).toUpperCase()
     const entry = {
       studentId: normalizedStudentId,
-      name: String(profile.name || studentId).slice(0, 30),
+      displayAlias: String(profile.displayAlias || profile.name || 'Elev').slice(0, 50),
       score: numericScore,
       timestamp: Date.now()
     }
@@ -134,7 +163,7 @@ export default async function handler(req, res) {
     // If student already has a better or equal score, skip
     const existingBest = list.find(e => e.studentId === entry.studentId)
     if (existingBest && existingBest.score >= numericScore) {
-      return res.status(200).json({ qualified: false, rank: null, highscores: list })
+      return res.status(200).json({ qualified: false, rank: null, highscores: highscoreListDto(list) })
     }
 
     // Remove student's old entry (if any), add new, sort, trim
@@ -145,13 +174,13 @@ export default async function handler(req, res) {
 
     // Check if student made the cut
     if (!trimmed.some(e => e.studentId === entry.studentId)) {
-      return res.status(200).json({ qualified: false, rank: null, highscores: list })
+      return res.status(200).json({ qualified: false, rank: null, highscores: highscoreListDto(list) })
     }
 
     await kv.set(key, trimmed)
     await kv.sadd(getHighscoreIndexKey(normalizedStudentId), key)
     const rank = trimmed.findIndex(e => e.studentId === entry.studentId) + 1
-    return res.status(200).json({ qualified: true, rank, highscores: trimmed })
+    return res.status(200).json({ qualified: true, rank, highscores: highscoreListDto(trimmed) })
   }
 
   return res.status(405).json({ error: 'Method not allowed' })

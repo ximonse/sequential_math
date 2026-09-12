@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fetchStudentSessionProfile, hasStudentSessionCsrfToken, loginStudentSession, logoutStudentSession, postStudentSessionEvents, resumeStudentSession } from './studentSessionClient'
+import { fetchStudentSessionProfile, hasStudentSessionCsrfToken, loginStudentSession, logoutStudentSession, postStudentSessionEvents, postStudentSessionHighscore, resumeStudentSession } from './studentSessionClient'
 
 const student = { studentId: 'A'.repeat(32), displayAlias: 'Blå Komet' }
 const sessionPayload = { ok: true, student, csrfToken: 'csrf-test-token' }
@@ -65,5 +65,21 @@ describe('student session client', () => {
     await expect(loginStudentSession({ studentId: student.studentId, qrSecret: 'qr-secret', pin: '1234' })).resolves.toMatchObject({ ok: false, status: 429, error: expect.stringContaining('För många') })
     vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('offline') }))
     await expect(resumeStudentSession()).resolves.toMatchObject({ ok: false, error: expect.stringContaining('anslutningen') })
+  })
+
+  it('submits a highscore without client-controlled pupil identity', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(jsonResponse(sessionPayload, 201))
+      .mockResolvedValueOnce(jsonResponse({ qualified: true, rank: 2, highscores: [] }))
+    vi.stubGlobal('fetch', fetchMock)
+    await loginStudentSession({ studentId: student.studentId, qrSecret: 'qr-secret', pin: '1234' })
+
+    await expect(postStudentSessionHighscore({ game: 'pong', score: 14, classId: 'class-a' }))
+      .resolves.toMatchObject({ ok: true, qualified: true, rank: 2 })
+    expect(fetchMock).toHaveBeenLastCalledWith('/api/highscores', expect.objectContaining({
+      method: 'POST', credentials: 'include',
+      body: JSON.stringify({ game: 'pong', score: 14, classId: 'class-a' }),
+      headers: expect.objectContaining({ 'X-CSRF-Token': 'csrf-test-token' })
+    }))
   })
 })

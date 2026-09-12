@@ -1,5 +1,4 @@
 import { useCallback } from 'react'
-import { saveProfile } from '../../../lib/storage'
 import {
   getOperationAbility,
   recordSteadyAdvanceDecision,
@@ -41,7 +40,8 @@ export function usePracticeBreakActions({
   setCurrentProblem,
   setAnswer,
   setFeedback,
-  setStartTime
+  setStartTime,
+  persistProfile
 }) {
   const handleAdvanceDecision = useCallback((accepted) => {
     if (!profile || !advancePrompt) return
@@ -63,10 +63,10 @@ export function usePracticeBreakActions({
       nextLevel: advancePrompt.nextLevel
     }, now)
     incrementTelemetryDailyMetric(profile, accepted ? 'steady_advances_accepted' : 'steady_advances_declined', 1, now)
-    saveProfile(profile)
+    void persistProfile(profile)
     setAdvancePrompt(null)
     goToNextProblem()
-  }, [profile, advancePrompt, sessionTelemetryRef, setAdvancePrompt, goToNextProblem])
+  }, [profile, advancePrompt, sessionTelemetryRef, setAdvancePrompt, goToNextProblem, persistProfile])
 
   const handleTakeBreak = useCallback(() => {
     if (profile) {
@@ -76,7 +76,7 @@ export function usePracticeBreakActions({
         answered: sessionTelemetryRef.current?.answered || sessionCount
       }, now)
       incrementTelemetryDailyMetric(profile, 'breaks_taken', 1, now)
-      saveProfile(profile)
+      void persistProfile(profile)
     }
     setActiveBreakGame(null)
     setShowBreakSuggestion(false)
@@ -94,7 +94,8 @@ export function usePracticeBreakActions({
     setActiveBreakGame,
     setShowBreakSuggestion,
     setPendingBreakSuggestion,
-    setBreakDurationMinutes
+    setBreakDurationMinutes,
+    persistProfile
   ])
 
   const goToNextProblemAfterBreakSuggestion = useCallback(() => {
@@ -105,7 +106,7 @@ export function usePracticeBreakActions({
         answered: sessionTelemetryRef.current?.answered || sessionCount
       }, now)
       incrementTelemetryDailyMetric(profile, 'breaks_skipped', 1, now)
-      saveProfile(profile)
+      void persistProfile(profile)
     }
     setActiveBreakGame(null)
     setShowBreakSuggestion(false)
@@ -124,7 +125,8 @@ export function usePracticeBreakActions({
     setShowBreakSuggestion,
     setSessionCount,
     setLastBreakPromptAt,
-    setBreakDurationMinutes
+    setBreakDurationMinutes,
+    persistProfile
   ])
 
   const closeBreakGameAndContinue = useCallback((gameType) => {
@@ -134,7 +136,7 @@ export function usePracticeBreakActions({
         sessionId: sessionTelemetryRef.current?.sessionId || ''
       }, now)
       incrementTelemetryDailyMetric(profile, `break_${gameType}_closed`, 1, now)
-      saveProfile(profile)
+      void persistProfile(profile)
     }
     setActiveBreakGame(null)
     setShowBreakSuggestion(false)
@@ -152,7 +154,8 @@ export function usePracticeBreakActions({
     setShowBreakSuggestion,
     setSessionCount,
     setLastBreakPromptAt,
-    setBreakDurationMinutes
+    setBreakDurationMinutes,
+    persistProfile
   ])
 
   const openBreakGame = useCallback((gameType) => {
@@ -162,10 +165,10 @@ export function usePracticeBreakActions({
         sessionId: sessionTelemetryRef.current?.sessionId || ''
       }, now)
       incrementTelemetryDailyMetric(profile, `break_${gameType}_opened`, 1, now)
-      saveProfile(profile)
+      void persistProfile(profile)
     }
     setActiveBreakGame(gameType)
-  }, [profile, sessionTelemetryRef, setActiveBreakGame])
+  }, [profile, sessionTelemetryRef, setActiveBreakGame, persistProfile])
 
   const continueAfterMilestone = useCallback(() => {
     if (!tableMilestone || !profile) return
@@ -173,7 +176,7 @@ export function usePracticeBreakActions({
     if (tableMilestone.masteredAllTablesToday) {
       openAllTablesBossVideo()
       markAllTablesBossShown(profile)
-      saveProfile(profile)
+      void persistProfile(profile)
       const finalizeAfter = tableMilestone.finalizeAfter
       setTableMilestone(null)
       if (finalizeAfter) {
@@ -192,7 +195,7 @@ export function usePracticeBreakActions({
     if (tableMilestone.masteredTwoToNineToday) {
       openTableBossVideo()
       markDailyBossShown(profile)
-      saveProfile(profile)
+      void persistProfile(profile)
       const finalizeAfter = tableMilestone.finalizeAfter
       setTableMilestone(null)
       if (finalizeAfter) {
@@ -235,7 +238,8 @@ export function usePracticeBreakActions({
     setCurrentProblem,
     setAnswer,
     setFeedback,
-    setStartTime
+    setStartTime,
+    persistProfile
   ])
 
   return {

@@ -31,6 +31,7 @@ import { resolveProblemOperation } from '../../lib/mathUtils'
 import {
   normalizeProgressionMode
 } from '../../lib/progressionModes'
+import { getPilotStudentRuntime, normalizePilotStudentId } from '../../lib/pilotStudentRuntime'
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
 const ALL_TABLES_BOSS_URL = 'https://youtu.be/86URGgqONvA'
 const openTableBossVideo = () => {
@@ -97,6 +98,7 @@ function StudentSession() {
     return raw ? raw.split(',').filter(Boolean) : []
   }, [searchParams])
   const isTableDrill = tableSet.length > 0
+  const isPilotStudent = Boolean(normalizePilotStudentId(studentId))
   const isLevelFocusMode = !isTableDrill
     && mode
     && isKnownMode(mode)
@@ -111,6 +113,10 @@ function StudentSession() {
   }, [])
 
   const completedThisSession = useMemo(() => sessionCount, [sessionCount])
+  const persistProfile = useCallback((nextProfile, options) => {
+    if (isPilotStudent) return getPilotStudentRuntime().persistCheckpoint(nextProfile)
+    return Promise.resolve(saveProfile(nextProfile, options))
+  }, [isPilotStudent])
   const handleGoToNextLevelFromBanner = useCallback(() => {
     if (!profile || !levelFocusNextLevelAction || !mode || !isKnownMode(mode)) return
 
@@ -120,14 +126,14 @@ function StudentSession() {
         accepted: true,
         timestamp: Date.now()
       }
-      saveProfile(profile)
+      void persistProfile(profile)
     }
 
     const params = new URLSearchParams(searchParams)
     params.set('mode', mode)
     params.set('level', String(levelFocusNextLevelAction.nextLevel))
     navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
-  }, [profile, levelFocusNextLevelAction, mode, searchParams, navigate, studentId])
+  }, [profile, levelFocusNextLevelAction, mode, searchParams, navigate, studentId, persistProfile])
 
   const safeSelectProblem = useCallback((currentProfile, rules) => {
     try {
@@ -187,7 +193,8 @@ function StudentSession() {
     setNcmCompletedSession,
     completedThisSession,
     safeSelectProblem,
-    freeOps
+    freeOps,
+    persistProfile
   })
 
   const {
@@ -247,7 +254,8 @@ function StudentSession() {
     setAdvancePrompt,
     setLastBreakPromptAt,
     setDailyLevelStreakMilestone,
-    freeOps
+    freeOps,
+    persistProfile
   })
 
   usePracticeUiEffects({
@@ -263,7 +271,8 @@ function StudentSession() {
     levelFocusMilestone,
     dailyLevelStreakMilestone,
     attentionRef,
-    presenceSyncRef
+    presenceSyncRef,
+    persistProfile
   })
 
   if (!profile) {
@@ -296,8 +305,8 @@ function StudentSession() {
     setDailyLevelStreakMilestone,
     navigate,
     studentId,
-    studentName: profile.name,
-    classId: getActiveStudentClass(profile) || null,
+    studentName: profile.displayAlias || profile.name,
+    classId: isPilotStudent ? profile.classId || null : getActiveStudentClass(profile) || null,
     goToNextProblem,
     closeBreakGameAndContinue,
     tableBossUrl: TABLE_BOSS_URL,
@@ -315,11 +324,11 @@ function StudentSession() {
 
   return (
     <SessionPage
-      profileName={profile.name}
+      profileName={profile.displayAlias || profile.name}
       sessionCount={sessionCount}
       streak={streak}
       onExit={() => {
-        if (profile) saveProfile(profile, { forceSync: true })
+        if (profile) void persistProfile(profile, { forceSync: true })
         goHome()
       }}
       sessionAssignment={sessionAssignment}

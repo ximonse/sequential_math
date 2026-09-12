@@ -1,5 +1,4 @@
 import { useCallback, useEffect } from 'react'
-import { saveProfile } from '../../../lib/storage'
 import {
   markStudentPresence,
   PRESENCE_HEARTBEAT_MS,
@@ -21,7 +20,8 @@ export function usePracticeUiEffects({
   dailyLevelStreakMilestone,
   attentionRef,
   presenceSyncRef,
-  autoContinueDelay = 3000
+  autoContinueDelay = 3000,
+  persistProfile
 }) {
   const updatePresence = useCallback((options = {}) => {
     if (!profile) return
@@ -37,9 +37,9 @@ export function usePracticeUiEffects({
     if (!force && (now - presenceSyncRef.current.lastSavedAt) < PRESENCE_SAVE_THROTTLE_MS) {
       return
     }
-    saveProfile(profile)
+    void persistProfile(profile)
     presenceSyncRef.current.lastSavedAt = now
-  }, [profile, presenceSyncRef])
+  }, [profile, presenceSyncRef, persistProfile])
 
   useEffect(() => {
     if (!profile) return undefined
@@ -76,11 +76,11 @@ export function usePracticeUiEffects({
 
   useEffect(() => {
     const handlePageHide = () => {
-      if (profile) saveProfile(profile, { forceSync: true })
+      if (profile) void persistProfile(profile, { forceSync: true })
     }
     window.addEventListener('pagehide', handlePageHide)
     return () => window.removeEventListener('pagehide', handlePageHide)
-  }, [profile])
+  }, [profile, persistProfile])
 
   useEffect(() => {
     if (currentProblem && !feedback && inputRef.current && !coarsePointer) {

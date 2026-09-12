@@ -7,7 +7,7 @@ import { createPilotStudentStore } from './pilotStudentStore'
 
 const CHECKPOINT_FIELDS = ['currentDifficulty', 'highestDifficulty', 'adaptive', 'operationAbilities', 'assignmentProgress', 'stats', 'telemetry', 'activity']
 
-function normalizeStudentId(value) {
+export function normalizePilotStudentId(value) {
   const id = String(value || '').trim().toUpperCase()
   return /^[A-F0-9]{32}$/.test(id) ? id : ''
 }
@@ -53,19 +53,22 @@ export function createPilotStudentRuntime({
 
   return {
     async bootstrap(expectedStudentId) {
-      const expected = normalizeStudentId(expectedStudentId)
+      const expected = normalizePilotStudentId(expectedStudentId)
       if (!expected) return { ok: false, error: 'Ogiltig elevlänk.' }
       const resumed = await resumeSession()
       if (!resumed?.ok) return resumed
-      if (normalizeStudentId(resumed.student?.studentId) !== expected) {
+      if (normalizePilotStudentId(resumed.student?.studentId) !== expected) {
         return { ok: false, error: 'Den aktiva elevsessionen stämmer inte med länken.' }
       }
-      studentId = expected
-      store = await createStore({ studentId })
+      if (studentId !== expected || !store) {
+        if (store) await store.close()
+        studentId = expected
+        store = await createStore({ studentId })
+      }
       const synced = await syncPending()
       if (!synced.ok && !String(synced.error || '').includes('anslutningen')) return synced
       const loaded = await fetchProfile()
-      if (!loaded?.ok || normalizeStudentId(loaded.profile?.studentId) !== expected) {
+      if (!loaded?.ok || normalizePilotStudentId(loaded.profile?.studentId) !== expected) {
         return loaded?.ok ? { ok: false, error: 'Profilen stämmer inte med elevsessionen.' } : loaded
       }
       await store.saveSnapshot(loaded.profile)
@@ -73,7 +76,7 @@ export function createPilotStudentRuntime({
     },
 
     async persistEvent(profile, event) {
-      if (!store || normalizeStudentId(profile?.studentId) !== studentId) {
+      if (!store || normalizePilotStudentId(profile?.studentId) !== studentId) {
         return { ok: false, error: 'Pilotlagringen tillhör inte den aktiva eleven.' }
       }
       await store.saveSnapshotAndAppendEvent({ snapshot: profile, event })

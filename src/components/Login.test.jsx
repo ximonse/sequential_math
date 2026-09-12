@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 const mocks = vi.hoisted(() => ({
   authenticate: vi.fn(), resolve: vi.fn(), navigate: vi.fn(), form: null,
-  params: new URLSearchParams(), setActiveClass: vi.fn(), clearSession: vi.fn()
+  params: new URLSearchParams(), setActiveClass: vi.fn(), clearSession: vi.fn(),
+  pilotLogin: vi.fn(), bootstrap: vi.fn(), pilotForm: null
 }))
 vi.mock('react-router-dom', () => ({
   useNavigate: () => mocks.navigate, useSearchParams: () => [mocks.params]
@@ -13,7 +14,10 @@ vi.mock('../lib/storage', () => ({
   setActiveStudentClass: mocks.setActiveClass
 }))
 vi.mock('../lib/studentLoginClient', () => ({ resolveStudentLogin: mocks.resolve }))
+vi.mock('../lib/studentSessionClient', () => ({ loginStudentSession: mocks.pilotLogin }))
+vi.mock('../lib/pilotStudentRuntime', () => ({ getPilotStudentRuntime: () => ({ bootstrap: mocks.bootstrap }) }))
 vi.mock('./student/StudentLoginForm', () => ({ default: props => { mocks.form = props; return null } }))
+vi.mock('./student/PilotStudentLoginForm', () => ({ default: props => { mocks.pilotForm = props; return null } }))
 vi.mock('./student/AssignedClassPicker', () => ({ default: () => null }))
 import Login from './Login'
 
@@ -23,6 +27,8 @@ beforeEach(() => {
   mocks.params = new URLSearchParams()
   mocks.resolve.mockResolvedValue({ ok: true, studentId: 'ANNA_A1B2C3', assignments })
   mocks.authenticate.mockResolvedValue({ ok: true, profile: { studentId: 'ANNA_A1B2C3' } })
+  mocks.pilotLogin.mockResolvedValue({ ok: true, student: { studentId: 'A'.repeat(32) } })
+  mocks.bootstrap.mockResolvedValue({ ok: true, profile: { studentId: 'A'.repeat(32) } })
 })
 describe('login identity wiring', () => {
   it('authenticates the canonical ID before showing only assigned groups', async () => {

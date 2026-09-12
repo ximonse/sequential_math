@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { saveProfile } from '../../../lib/storage'
 import { addProblemResult } from '../../../lib/studentProfile'
 import { createWalEntry, appendToWal } from '../../../lib/syncWal'
+import { getPilotStudentRuntime, normalizePilotStudentId } from '../../../lib/pilotStudentRuntime'
 import {
   adjustDifficulty,
   shouldOfferSteadyAdvance,
@@ -73,8 +74,10 @@ export function usePracticeCoreActions({
   setAdvancePrompt,
   setLastBreakPromptAt,
   setDailyLevelStreakMilestone,
-  freeOps = []
+  freeOps = [],
+  persistProfile
 }) {
+  const isPilotStudent = Boolean(normalizePilotStudentId(profile?.studentId))
   const goToNextProblem = useCallback(() => {
     if (!profile) return
 
@@ -85,7 +88,7 @@ export function usePracticeCoreActions({
         afterAnswers: sessionTelemetryRef.current?.answered || sessionCount
       }, now)
       incrementTelemetryDailyMetric(profile, 'break_prompts_shown', 1, now)
-      saveProfile(profile)
+      void persistProfile(profile)
       setPendingBreakSuggestion(false)
       setShowBreakSuggestion(true)
       return
@@ -203,10 +206,11 @@ export function usePracticeCoreActions({
     setCurrentProblem,
     setFeedback,
     setAnswer,
-    setStartTime
+    setStartTime,
+    persistProfile
   ])
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     if (!profile || !currentProblem || answer.trim() === '') return
 
     const timeSpent = (Date.now() - startTime) / 1000
@@ -343,6 +347,7 @@ export function usePracticeCoreActions({
 
     let breakSuggested = false
 
+    const pilotEvents = []
     if (isTableDrill) {
       const currentItem = tableQueue[0]
       const nextQueue = tableQueue.slice(1)
@@ -356,7 +361,9 @@ export function usePracticeCoreActions({
           const completionCountToday = recordTableCompletion(profile, currentItem.table)
           if (profile.studentId) {
             const timestamp = profile.tableDrill?.completions?.at(-1)?.timestamp
-            appendToWal(createWalEntry('table_completed', profile.studentId, { table: currentItem.table, timestamp }))
+            const tableEvent = createWalEntry('table_completed', profile.studentId, { table: currentItem.table, timestamp })
+            if (isPilotStudent) pilotEvents.push(tableEvent)
+            else appendToWal(tableEvent)
           }
           const remainingTables = Array.from(new Set(nextQueue.map(item => item.table)))
           const allTablesBoss = shouldTriggerAllTablesBoss(profile)
@@ -412,15 +419,24 @@ export function usePracticeCoreActions({
       }
     }
 
-    // Skriv WAL-entries (överlever även om sync misslyckas)
+    // Pilotens krypterade valv skrivs före nätverkssynk. Den äldre WAL:en
+    // används bara av den äldre inloggningen.
     if (Array.isArray(walEntries) && profile.studentId) {
       for (const we of walEntries) {
-        appendToWal(createWalEntry(we.type, profile.studentId, we.payload))
+        const event = createWalEntry(we.type, profile.studentId, we.payload)
+        if (isPilotStudent) pilotEvents.push(event)
+        else appendToWal(event)
       }
     }
 
     const shouldForceSync = Boolean(levelMasteredNow) || isTableDrill
-    saveProfile(profile, shouldForceSync ? { forceSync: true } : undefined)
+    if (isPilotStudent) {
+      const runtime = getPilotStudentRuntime()
+      for (const event of pilotEvents) {
+        await runtime.persistEvent(profile, event)
+      }
+      if (pilotEvents.length === 0) await persistProfile(profile, shouldForceSync ? { forceSync: true } : undefined)
+    } else saveProfile(profile, shouldForceSync ? { forceSync: true } : undefined)
   }, [
     profile,
     currentProblem,
@@ -450,7 +466,9 @@ export function usePracticeCoreActions({
     setBreakDurationMinutes,
     setLastBreakPromptAt,
     setAdvancePrompt,
-    setDailyLevelStreakMilestone
+    setDailyLevelStreakMilestone,
+    isPilotStudent,
+    persistProfile
   ])
 
   return {

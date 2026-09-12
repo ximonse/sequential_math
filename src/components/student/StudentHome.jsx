@@ -7,6 +7,8 @@ import { decodeAssignmentPayload, encodeAssignmentPayload, getActiveAssignment, 
 import { normalizeProgressionMode } from '../../lib/progressionModes'
 import { markStudentPresence, PRESENCE_HEARTBEAT_MS, PRESENCE_SAVE_THROTTLE_MS } from '../../lib/studentPresence'
 import { incrementTelemetryDailyMetric, recordTelemetryEvent } from '../../lib/telemetry'
+import { getPilotStudentRuntime, normalizePilotStudentId } from '../../lib/pilotStudentRuntime'
+import { logoutStudentSession } from '../../lib/studentSessionClient'
 import StudentHomeAssignmentLaunchCard from './StudentHomeAssignmentLaunchCard'
 import StudentHomePasswordCard from './StudentHomePasswordCard'
 import StudentHomeProgressCard from './StudentHomeProgressCard'
@@ -27,6 +29,7 @@ function StudentHome() {
   const [newPassword, setNewPassword] = useState('')
   const [passwordMessage, setPasswordMessage] = useState('')
   const [selectedTables, setSelectedTables] = useState([])
+  const isPilotStudent = Boolean(normalizePilotStudentId(studentId))
   const presenceSyncRef = useRef({
     lastSavedAt: 0
   })
@@ -38,7 +41,22 @@ function StudentHome() {
   const ticketId = searchParams.get('ticket')
   const ticketPayload = searchParams.get('ticket_payload')
 
+  const persistProfile = useCallback((nextProfile, options) => {
+    if (isPilotStudent) return getPilotStudentRuntime().persistCheckpoint(nextProfile)
+    return Promise.resolve(saveProfile(nextProfile, options))
+  }, [isPilotStudent])
+
   useEffect(() => {
+    if (isPilotStudent) {
+      let active = true
+      ;(async () => {
+        const bootstrapped = await getPilotStudentRuntime().bootstrap(studentId)
+        if (!active) return
+        if (!bootstrapped.ok) { navigate('/', { replace: true }); return }
+        setProfile(bootstrapped.profile)
+      })()
+      return () => { active = false }
+    }
     if (!isStudentSessionActive(studentId)) {
       const redirect = encodeURIComponent(`${location.pathname}${location.search}`)
       navigate(`/?redirect=${redirect}`, { replace: true })
@@ -58,7 +76,7 @@ function StudentHome() {
     })()
 
     return () => { active = false }
-  }, [studentId, navigate, location.pathname, location.search])
+  }, [studentId, navigate, location.pathname, location.search, isPilotStudent])
 
   useEffect(() => {
     if (!studentId) return
@@ -80,7 +98,7 @@ function StudentHome() {
     navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
   }, [studentId, assignmentId, assignmentPayload, mode, requestedPace, ticketId, ticketPayload, navigate])
 
-  const classId = getActiveStudentClass(profile)
+  const classId = isPilotStudent ? String(profile?.classId || '') : getActiveStudentClass(profile)
   useEffect(() => {
     if (!classId) { setEnabledExtras([]); return }
     let active = true
@@ -122,7 +140,7 @@ function StudentHome() {
     if (!force && (now - presenceSyncRef.current.lastSavedAt) < PRESENCE_SAVE_THROTTLE_MS) {
       return
     }
-    saveProfile(profile)
+    void persistProfile(profile)
     presenceSyncRef.current.lastSavedAt = now
   }, [profile])
 
@@ -194,9 +212,12 @@ function StudentHome() {
 
   const handleStudentLogout = () => {
     if (profile) {
-      saveProfile(profile, { forceSync: true })
+      void persistProfile(profile, { forceSync: true })
     }
-    clearActiveStudentSession()
+    if (isPilotStudent) {
+      void logoutStudentSession()
+      void getPilotStudentRuntime().close()
+    } else clearActiveStudentSession()
     navigate('/')
   }
 
@@ -236,7 +257,7 @@ function StudentHome() {
       tables: selectedTables
     }, now)
     incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
-    saveProfile(profile)
+    void persistProfile(profile)
     const params = new URLSearchParams()
     params.set('mode', 'multiplication')
     params.set('tables', selectedTables.join(','))
@@ -254,7 +275,7 @@ function StudentHome() {
       level
     }, now)
     incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
-    saveProfile(profile)
+    void persistProfile(profile)
     navigate(buildPracticePath(studentId, {
       mode: operation,
       level
@@ -265,7 +286,7 @@ function StudentHome() {
     const now = Date.now()
     recordTelemetryEvent(profile, 'practice_launch_free', {}, now)
     incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
-    saveProfile(profile)
+    void persistProfile(profile)
     navigate(buildPracticePath(studentId, {
       ops: operationKeys
     }))
@@ -277,7 +298,7 @@ function StudentHome() {
       operation
     }, now)
     incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
-    saveProfile(profile)
+    void persistProfile(profile)
     navigate(buildPracticePath(studentId, {
       mode: operation
     }))
@@ -318,7 +339,7 @@ function StudentHome() {
       kind: activeTicketPayload.kind || 'start'
     }, now)
     incrementTelemetryDailyMetric(profile, 'ticket_launches', 1, now)
-    saveProfile(profile)
+    void persistProfile(profile)
     navigate(`/student/${studentId}/ticket?${params.toString()}`)
   }
   const handleStartAssignmentOrFree = () => {
@@ -327,7 +348,7 @@ function StudentHome() {
       assignmentId: assignment?.id || ''
     }, now)
     incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
-    saveProfile(profile)
+    void persistProfile(profile)
     if (assignment) {
       navigate(assignmentPracticePath)
       return
@@ -342,7 +363,7 @@ function StudentHome() {
       <div className="max-w-3xl mx-auto px-4">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Hej {profile.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Hej {profile.displayAlias || profile.name || 'elev'}</h1>
             <p className="text-sm text-gray-500">Din matteöversikt</p>
           </div>
           <div className="flex flex-col items-end gap-1">
@@ -405,7 +426,7 @@ function StudentHome() {
           </div>
         </details>
 
-        <details className="bg-white border border-gray-200 rounded-xl">
+        {!isPilotStudent ? <details className="bg-white border border-gray-200 rounded-xl">
           <summary className="cursor-pointer select-none px-4 py-3 font-semibold text-gray-700">Konto och lösenord</summary>
           <div className="px-4 pb-4">
             <StudentHomePasswordCard
@@ -417,7 +438,7 @@ function StudentHome() {
               onSubmit={handleChangePassword}
             />
           </div>
-        </details>
+        </details> : null}
       </div>
     </div>
   )

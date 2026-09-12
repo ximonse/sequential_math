@@ -2,8 +2,7 @@ import { useEffect } from 'react'
 import {
   clearActiveStudentSession,
   getOrCreateProfileWithSync,
-  isStudentSessionActive,
-  saveProfile
+  isStudentSessionActive
 } from '../../../lib/storage'
 import { decodeAssignmentPayload, getActiveAssignment, getAssignmentById } from '../../../lib/assignments'
 import { resolveProblemOperation } from '../../../lib/mathUtils'
@@ -24,6 +23,7 @@ import {
   makeSessionTelemetryId,
   readNcmAssignmentProgress
 } from './sessionUtils'
+import { getPilotStudentRuntime, normalizePilotStudentId } from '../../../lib/pilotStudentRuntime'
 
 export function usePracticeSetupEffects({
   studentId,
@@ -65,9 +65,21 @@ export function usePracticeSetupEffects({
   setNcmCompletedSession,
   completedThisSession,
   safeSelectProblem,
-  freeOps = []
+  freeOps = [],
+  persistProfile
 }) {
   useEffect(() => {
+    if (normalizePilotStudentId(studentId)) {
+      let active = true
+      ;(async () => {
+        const bootstrapped = await getPilotStudentRuntime().bootstrap(studentId)
+        if (!active) return
+        if (!bootstrapped.ok) { navigate('/', { replace: true }); return }
+        sessionRecentCorrectnessRef.current = []
+        setProfile(bootstrapped.profile)
+      })()
+      return () => { active = false }
+    }
     if (!isStudentSessionActive(studentId)) {
       const redirect = encodeURIComponent(`${location.pathname}${location.search}`)
       navigate(`/?redirect=${redirect}`, { replace: true })
@@ -145,7 +157,7 @@ export function usePracticeSetupEffects({
       tableSet
     }, startedAt)
     incrementTelemetryDailyMetric(profile, 'practice_sessions_started', 1, startedAt)
-    saveProfile(profile)
+    void persistProfile(profile)
 
     return () => {
       const meta = sessionTelemetryRef.current
@@ -162,10 +174,10 @@ export function usePracticeSetupEffects({
       }, endedAt)
       incrementTelemetryDailyMetric(profile, 'practice_sessions_ended', 1, endedAt)
       addTelemetryDurationMs(profile, 'practice_session_ms', durationMs, endedAt)
-      saveProfile(profile, { forceSync: true })
+      void persistProfile(profile, { forceSync: true })
       sessionTelemetryRef.current = null
     }
-  }, [profile, studentId, assignmentId, mode, progressionMode, tableSet, sessionTelemetryRef])
+  }, [profile, studentId, assignmentId, mode, progressionMode, tableSet, sessionTelemetryRef, persistProfile])
 
   useEffect(() => {
     if (!profile) return

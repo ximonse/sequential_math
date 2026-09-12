@@ -8,6 +8,7 @@
 import { kv } from '@vercel/kv'
 import {
   createTeacherSessionToken,
+  setTeacherSessionCookie,
   verifyTeacherPassword,
   withCors
 } from './_helpers.js'
@@ -62,6 +63,9 @@ export default async function handler(req, res) {
     if (!session) {
       return res.status(500).json({ error: 'Could not create session token', code: 'TOKEN_ERROR' })
     }
+
+    setTeacherSessionCookie(res, session.token)
+    res.setHeader('Cache-Control', 'no-store')
 
     return res.status(200).json({
       ok: true,

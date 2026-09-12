@@ -2,6 +2,7 @@ import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypt
 import { kv } from '@vercel/kv'
 
 const TEACHER_SESSION_TTL_MS = 12 * 60 * 60 * 1000
+const TEACHER_SESSION_COOKIE = '__Host-teacher-session'
 const SCRYPT_N = 16384
 const SCRYPT_R = 8
 const SCRYPT_P = 1
@@ -30,6 +31,27 @@ export function withCors(res, options = {}, req = null) {
   res.setHeader('Access-Control-Allow-Methods', methods)
   res.setHeader('Access-Control-Allow-Headers', headers)
   res.setHeader('Vary', 'Origin')
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+}
+
+function readCookie(req, name) {
+  const prefix = `${name}=`
+  for (const value of String(req?.headers?.cookie || '').split(';')) {
+    const part = value.trim()
+    if (part.startsWith(prefix)) return decodeURIComponent(part.slice(prefix.length))
+  }
+  return ''
+}
+
+export function setTeacherSessionCookie(res, token, maxAgeSeconds = Math.floor(TEACHER_SESSION_TTL_MS / 1000)) {
+  const value = token ? encodeURIComponent(token) : ''
+  res.setHeader('Set-Cookie', `${TEACHER_SESSION_COOKIE}=${value}; Path=/; Max-Age=${token ? maxAgeSeconds : 0}; HttpOnly; Secure; SameSite=Strict`)
+}
+
+function cookieTeacherMutationIsTrusted(req) {
+  const method = String(req?.method || 'GET').toUpperCase()
+  if (['GET', 'HEAD', 'OPTIONS'].includes(method)) return true
+  return isAllowedOrigin(String(req?.headers?.origin || ''))
 }
 
 // ── Env helpers ───────────────────────────────────────────────────────────────
@@ -196,15 +218,20 @@ export function verifyTeacherSessionToken(token) {
  */
 export function getTeacherAuthPayload(req) {
   const tokenHeader = String(req.headers['x-teacher-token'] || '')
-  if (!tokenHeader) return null
+  const cookieToken = readCookie(req, TEACHER_SESSION_COOKIE)
+  const token = tokenHeader || cookieToken
+  if (!token) return null
 
-  const payload = verifyTeacherSessionToken(tokenHeader)
+  const payload = verifyTeacherSessionToken(token)
   if (!payload?.teacherId) return null
+  const authSource = tokenHeader ? 'header' : 'cookie'
+  if (authSource === 'cookie' && !cookieTeacherMutationIsTrusted(req)) return null
   return {
     teacherId: payload.teacherId,
     classIds: Array.isArray(payload.classIds) ? payload.classIds : [],
     isAdmin: Boolean(payload.isAdmin),
     sessionVersion: Math.max(1, Number(payload.sessionVersion) || 1),
+    authSource,
     legacy: false
   }
 }
@@ -227,6 +254,7 @@ export async function getLiveTeacherAuthPayload(req, { store = kv } = {}) {
     classIds: Array.isArray(account.classIds) ? account.classIds.map(String).filter(Boolean) : [],
     isAdmin: Boolean(account.isAdmin),
     sessionVersion: accountVersion,
+    authSource: tokenAuth.authSource,
     legacy: false
   }
 }

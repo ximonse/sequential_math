@@ -1,9 +1,36 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import QRCode from 'qrcode'
 
 function credentialText(credentials) {
   return credentials.map(({ displayAlias, studentId, qrSecret, pin }) => (
     displayAlias + '\nElev-ID: ' + studentId + '\nQR-hemlighet: ' + qrSecret + '\nPIN: ' + pin
   )).join('\n\n')
+}
+
+function PilotCredentialCard({ credential }) {
+  const [qrCode, setQrCode] = useState('')
+  useEffect(() => {
+    let active = true
+    const payload = JSON.stringify({ version: 1, studentId: credential.studentId, qrSecret: credential.qrSecret })
+    QRCode.toDataURL(payload, { errorCorrectionLevel: 'M', margin: 1, width: 260 })
+      .then(value => { if (active) setQrCode(value) })
+      .catch(() => { if (active) setQrCode('') })
+    return () => { active = false }
+  }, [credential.studentId, credential.qrSecret])
+  return (
+    <article className="pilot-card rounded border border-gray-200 p-2 text-xs text-gray-800">
+      <div className="flex h-full items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-sm">{credential.displayAlias}</p>
+          <p className="mt-1 text-[10px] uppercase tracking-wide text-gray-500">Matteträning · elevkort</p>
+          <p className="mt-2 font-mono text-[10px] break-all">Elev-ID: {credential.studentId}</p>
+          <p className="mt-1 font-mono text-[10px] break-all">QR-hemlighet: {credential.qrSecret}</p>
+          <p className="mt-1 font-mono text-sm font-bold">PIN: {credential.pin}</p>
+        </div>
+        {qrCode ? <img className="h-20 w-20 shrink-0" src={qrCode} alt={`QR-kod för ${credential.displayAlias}`} /> : null}
+      </div>
+    </article>
+  )
 }
 
 export default function PilotRosterPanel({ className, schoolId, onCreate, disabled }) {
@@ -76,16 +103,18 @@ export default function PilotRosterPanel({ className, schoolId, onCreate, disabl
             </div>
           </div>
           {copyStatus ? <p className="mt-2 text-xs text-teal-900 print:hidden">{copyStatus}</p> : null}
-          <ol className="mt-3 grid gap-2 md:grid-cols-2">
+          <ol className="pilot-card-grid mt-3 grid gap-2 md:grid-cols-2">
             {credentials.map(credential => (
-              <li key={credential.studentId} className="rounded border border-gray-200 p-2 text-xs text-gray-800">
-                <p className="font-semibold">{credential.displayAlias}</p>
-                <p className="font-mono break-all">Elev-ID: {credential.studentId}</p>
-                <p className="font-mono break-all">QR-hemlighet: {credential.qrSecret}</p>
-                <p className="font-mono">PIN: {credential.pin}</p>
-              </li>
+              <li key={credential.studentId}><PilotCredentialCard credential={credential} /></li>
             ))}
           </ol>
+          <style>{`@media print {
+            @page { size: A4 portrait; margin: 8mm; }
+            body * { visibility: hidden; }
+            .pilot-card-grid, .pilot-card-grid * { visibility: visible; }
+            .pilot-card-grid { position: absolute; left: 0; top: 0; width: 194mm; display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-auto-rows: 67.5mm; gap: 2mm; margin: 0 !important; padding: 0; list-style: none; }
+            .pilot-card { box-sizing: border-box; height: 67.5mm; border: 0.35mm solid #334155 !important; border-radius: 0 !important; padding: 5mm !important; background: white !important; break-inside: avoid; }
+          }`}</style>
         </div>
       ) : null}
     </section>

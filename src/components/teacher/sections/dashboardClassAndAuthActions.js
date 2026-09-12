@@ -222,13 +222,13 @@ export function buildDashboardClassAndAuthActions({
     navigate('/teacher')
   }
 
-  const handleRenameStudent = async (studentId, name) => {
+  const handleRenameStudent = async (studentId, displayAlias) => {
     const profiles = await loadStudents()
     const current = profiles?.find?.(item => item.studentId === studentId)
     if (!current) { setDashboardStatus('Kunde inte hitta eleven.'); return false }
-    const response = await fetch(`/api/student/${encodeURIComponent(studentId)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() }, body: JSON.stringify({ serverRevision: current.serverRevision, changes: { name } }) })
-    if (!response.ok) { setDashboardStatus('Kunde inte byta elevnamn. Uppdatera och försök igen.'); return false }
-    await loadStudents(); setDashboardStatus('Elevnamnet är ändrat.'); return true
+    const response = await fetch(`/api/student/${encodeURIComponent(studentId)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() }, body: JSON.stringify({ serverRevision: current.serverRevision, changes: { displayAlias } }) })
+    if (!response.ok) { setDashboardStatus('Kunde inte spara visningsaliaset. Uppdatera och försök igen.'); return false }
+    await loadStudents(); setDashboardStatus('Visningsaliaset är ändrat.'); return true
   }
 
   const handleRenameClass = async (id, name, schoolId) => {

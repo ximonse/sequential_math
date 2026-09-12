@@ -98,13 +98,13 @@ export default function StudentDetailPanel({
             Exportera elevvy CSV
           </button>
           {detailStudentProfile && (
-            <button type="button" onClick={() => { const name = window.prompt('Nytt namn:', detailStudentProfile.name); if (name?.trim()) onRenameStudent(detailStudentProfile.studentId, name) }} className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs font-medium">Byt namn</button>
+            <button type="button" onClick={() => { const alias = window.prompt('Visningsalias (fritext):', detailStudentProfile.displayAlias || detailStudentProfile.name || ''); if (alias?.trim()) onRenameStudent(detailStudentProfile.studentId, alias) }} className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs font-medium">Byt visningsalias</button>
           )}
           {detailStudentProfile && (
             <button
               type="button"
               onClick={() => {
-                const name = detailStudentProfile.name || detailStudentProfile.studentId
+                const name = detailStudentProfile.displayAlias || detailStudentProfile.name || detailStudentProfile.studentId
                 if (window.confirm(`Radera ${name} permanent? All elevdata och historik tas bort och kan inte återställas.`)) {
                   onDeleteStudent(detailStudentProfile.studentId)
                 }

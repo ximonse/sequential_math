@@ -752,8 +752,12 @@ export default async function handler(req, res) {
     if (req.method === 'PATCH') {
       const changes = req.body?.changes
       if (!changes || typeof changes !== 'object' || Array.isArray(changes)
-        || Object.keys(changes).some(field => !['ticketInbox', 'ticketRevealAll'].includes(field))) {
+        || Object.keys(changes).some(field => !['ticketInbox', 'ticketRevealAll', 'displayAlias'].includes(field))) {
         throw studentStoreError(400, 'Invalid teacher update')
+      }
+      if (Object.hasOwn(changes, 'displayAlias') && (typeof changes.displayAlias !== 'string'
+        || changes.displayAlias.trim().length < 1 || changes.displayAlias.trim().length > 80)) {
+        throw studentStoreError(400, 'Invalid display alias')
       }
       await mutateStudentRecord(studentId, async current => {
         if (!current) throw studentStoreError(404, 'Student not found')
@@ -761,7 +765,8 @@ export default async function handler(req, res) {
         if (Number(req.body.serverRevision) !== Number(current.serverRevision || 0)) {
           throw studentStoreError(409, 'Profile changed; refresh before editing')
         }
-        const next = { ...current, ...changes }
+        const next = { ...current, ...changes,
+          ...(Object.hasOwn(changes, 'displayAlias') ? { displayAlias: changes.displayAlias.trim() } : {}) }
         if (changes.ticketRevealAll && Array.isArray(next.ticketResponses)) {
           next.ticketResponses = next.ticketResponses.map(item => ({ ...item,
             teacherRevealAt: next.ticketRevealAll[item.dispatchId] || null }))

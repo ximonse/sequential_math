@@ -21,7 +21,7 @@ export function buildClassMasteryRows(filteredStudents) {
 
     return {
       studentId: student.studentId,
-      name: student.name || student.studentId,
+      name: student.displayAlias || student.name || student.studentId,
       className: student.className || '',
       levels,
       average,

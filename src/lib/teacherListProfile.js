@@ -2,6 +2,7 @@ export const TEACHER_LIST_PROFILE_SCHEMA_VERSION = 1
 
 const TEACHER_LIST_FIELDS = [
   'studentId',
+  'displayAlias',
   'name',
   'grade',
   'profileSchemaVersion',

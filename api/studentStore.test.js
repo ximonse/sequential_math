@@ -6,6 +6,11 @@ vi.mock('@vercel/kv', () => ({ kv: {
   get: vi.fn(async key => structuredClone(memory.get(key) ?? null)),
   exists: vi.fn(async key => memory.has(key) ? 1 : 0),
   smembers: vi.fn(async key => [...(memory.get(key) || [])]),
+  sadd: vi.fn(async (key, ...values) => {
+    const members = new Set(memory.get(key) || [])
+    values.forEach(value => members.add(value))
+    memory.set(key, [...members])
+  }),
   set: vi.fn(async (key, value) => memory.set(key, structuredClone(value))),
   del: vi.fn(async key => memory.delete(key)),
   eval: vi.fn(async (_script, keys, args) => {
@@ -71,7 +76,7 @@ function result(id) {
 async function call(handler, method, body = {}, teacher = admin) {
   const req = { method, query: { studentId: 'PUPIL' },
     headers: { 'x-student-password': 'pw' }, body, teacher }
-  const res = { code: 200, status(code) { this.code = code; return this },
+  const res = { code: 200, headers: {}, setHeader(name, value) { this.headers[name] = value }, status(code) { this.code = code; return this },
     json(data) { this.data = data; return this } }
   await handler(req, res)
   return res
@@ -85,6 +90,7 @@ async function callClass(method, id, teacher = owner, body = {}) {
 }
 beforeEach(async () => {
   memory.clear()
+  process.env.PILOT_ENROLLMENT_SECRET = 'test-only-pilot-enrollment-secret-32-bytes'
   await createClassRecord({ id: 'A', name: '4a', teacherIds: ['owner'] })
   await createStudentRecord('PUPIL', profile())
 })
@@ -118,6 +124,32 @@ describe('student persistence boundary', () => {
     const first = await call(rosterHandler, 'POST', body, owner)
     const second = await call(rosterHandler, 'POST', { ...body, requestId: 'synthetic-request-5678', className: 'Second' }, owner)
     expect(first.data.results[0].studentId).not.toBe(second.data.results[0].studentId)
+  })
+
+  it('creates idempotent pseudonymous pilot seats without storing names or raw credentials', async () => {
+    const body = { requestId: 'pilot-request-2026-a', className: 'Pilotklass', grade: 6, pilotCount: 3 }
+    const first = await call(rosterHandler, 'POST', body, owner)
+    const replay = await call(rosterHandler, 'POST', body, owner)
+
+    expect(first).toMatchObject({ code: 200, data: { ok: true } })
+    expect(first.headers['Cache-Control']).toBe('no-store')
+    expect(replay.data.results).toEqual(first.data.results)
+    expect(first.data.results).toHaveLength(3)
+    expect(new Set(first.data.results.map(row => row.displayAlias)).size).toBe(3)
+
+    for (const row of first.data.results) {
+      expect(row).toMatchObject({ ok: true })
+      expect(row.studentId).toMatch(/^[A-F0-9]{32}$/)
+      expect(row.qrSecret.length).toBeGreaterThan(40)
+      expect(row.pin).toMatch(/^\d{4}$/)
+      const stored = memory.get(`student:${row.studentId}`)
+      expect(stored).toMatchObject({ studentId: row.studentId, displayAlias: row.displayAlias, grade: 6,
+        classId: first.data.class.id, classIds: [first.data.class.id], auth: { scheme: 'qr-pin-v1' } })
+      expect(Object.hasOwn(stored, 'name')).toBe(false)
+      expect(JSON.stringify(stored)).not.toContain(row.qrSecret)
+      expect(JSON.stringify(stored)).not.toContain(`\"${row.pin}\"`)
+    }
+    expect(new Set(memory.get(`class_students:${first.data.class.id}`))).toEqual(new Set(first.data.results.map(row => row.studentId)))
   })
 
   it('adds existing identity to a group only by explicit ID and live source ownership', async () => {

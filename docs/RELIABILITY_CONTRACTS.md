@@ -7,6 +7,7 @@ Verified from implementation during the local 2026-09-08 repair. See RELIABILITY
 | Teacher list DTO | api/students.js, teacherListProfile.js | Dashboard, teacher analytics | Versioned read-only shape, no problemLog or password hash/salt; never pass to saveProfile. |
 | Full profile | student GET, loadTeacherProfile | Student state, teacher details | Complete current profile schema. Details fetch this independently of the list. |
 | Enrollment | rosterClient -> student-roster | Class UI, student store | Each row is a distinct identity. Same request and row replay the same ID; names never identify existing pupils. Existing group members are explicit IDs with source-class authorization. |
+| Pilot enrollment | student-roster pilotCount | Class UI, student store | Creates name-free profiles with a random-looking 128-bit ID, a child-safe display alias, QR secret and separate four-digit PIN. The request ID makes retries idempotent. Raw credentials are returned in a no-store response and only their verifiers are persisted. Class membership is indexed in class_students:{classId}. |
 | Profile/event persistence | _studentStore CAS | POST profile, POST events, enrollment, deletion | Revision comparison and record/index update share a Lua operation; transforms retry conflicts. Tombstones reject resurrection. Class deletion retains the initiating teachers in a narrowly scoped retry marker so cleanup can resume. Not a cross-record transaction. |
 | Teacher commands | teacherProfileUpdate -> student PATCH | Tickets | Live ownership, expected server revision, allowlisted ticket fields. Training snapshots cannot change membership, identity or teacher ticket state. |
 | Local queued sync | storageCloudSyncQueue, storageCloudSync | Student saves, online/retry/unload | Queue before request; one in-flight queued write per pupil; acknowledge only unchanged sent snapshot; retain newer local work. Events batch at 100 and accept only submitted acknowledgements. |
@@ -17,7 +18,7 @@ Verified from implementation during the local 2026-09-08 repair. See RELIABILITY
 
 Local class caches are projections of the authorized server list, not a source that recreates missing server classes. Class settings/deletion and roster operations show success only after a successful response. A partial roster response preserves the list and request identity for retry.
 
-The tests cover executable boundary behavior rather than trusting this document: api/studentStore.test.js, src/lib/storageReliability.test.js, src/lib/rosterClient.test.js, src/lib/teacherEvidencePeriods.test.js, src/lib/teacherSummary.test.js and dashboardStudentRowHelpers.test.js.
+The tests cover executable boundary behavior rather than trusting this document: api/studentAlias.test.js, api/studentStore.test.js, src/lib/storageReliability.test.js, src/lib/rosterClient.test.js, src/lib/teacherEvidencePeriods.test.js, src/lib/teacherSummary.test.js and dashboardStudentRowHelpers.test.js.
 
 ## Schools and pupil login (2026-09-10)
 

@@ -91,6 +91,12 @@ export function createPilotStudentRuntime({
       })
     },
 
+    async persistCustomEvent(profile, type, payload, timestamp = Date.now()) {
+      return this.persistEvent(profile, {
+        id: makeEventId(), type, timestamp, payload
+      })
+    },
+
     async close() {
       if (store) store.close()
       store = null

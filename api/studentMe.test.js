@@ -57,6 +57,26 @@ describe('session-bound pupil APIs', () => {
     expect(JSON.stringify(res.data)).not.toMatch(/passwordHash|passwordSalt|passwordScheme|qrSecretHash|credentialVersion|privateMarker|"pin"/i)
   })
 
+  it('does not send an active ticket answer or hidden correctness to the pilot browser', async () => {
+    const id = 'E'.repeat(32), secret = createQrSecret()
+    const profile = pupil(id, secret)
+    profile.ticketInbox = { activeDispatchId: 'ticket-1', activeEncoded: 'legacy-secret', activePayload: {
+      dispatchId: 'ticket-1', question: 'Vad är 2 + 2?', answer: '4', showCorrectnessOnSubmit: false
+    } }
+    profile.ticketResponses = [{ dispatchId: 'ticket-1', expectedAnswer: '4', studentAnswer: '3', isCorrect: false,
+      normalizedExpectedAnswer: '4', normalizedStudentAnswer: '3', showCorrectnessOnSubmit: false }]
+    records.set('class:6a', { id: '6a' }); records.set(`student:${id}`, profile)
+    const auth = await login(id, secret), res = response()
+    await profileHandler({ method: 'GET', headers: { cookie: auth.cookie } }, res)
+    expect(res.code).toBe(200)
+    expect(res.data.profile.ticketInbox.activePayload).toMatchObject({ dispatchId: 'ticket-1', question: 'Vad är 2 + 2?' })
+    expect(res.data.profile.ticketInbox.activePayload.answer).toBeUndefined()
+    expect(res.data.profile.ticketInbox.activeEncoded).toBe('')
+    expect(res.data.profile.ticketResponses[0]).not.toHaveProperty('expectedAnswer')
+    expect(res.data.profile.ticketResponses[0]).not.toHaveProperty('isCorrect')
+    expect(JSON.stringify(res.data.profile)).not.toContain('legacy-secret')
+  })
+
   it('requires origin and CSRF and rejects an entry for another pupil', async () => {
     const id = 'B'.repeat(32), secret = createQrSecret()
     records.set('class:6a', { id: '6a' }); records.set(`student:${id}`, pupil(id, secret))

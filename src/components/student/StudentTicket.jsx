@@ -22,6 +22,8 @@ import {
   incrementTelemetryDailyMetric,
   recordTelemetryEvent
 } from '../../lib/telemetry'
+import { fetchStudentSessionProfile } from '../../lib/studentSessionClient'
+import { getPilotStudentRuntime, normalizePilotStudentId } from '../../lib/pilotStudentRuntime'
 
 function StudentTicket() {
   const { studentId } = useParams()
@@ -40,12 +42,23 @@ function StudentTicket() {
   })
 
   const dispatchIdFromQuery = String(searchParams.get('ticket') || '')
+  const isPilotStudent = Boolean(normalizePilotStudentId(studentId))
   const payloadFromQuery = useMemo(
     () => decodeTicketPayload(searchParams.get('ticket_payload')),
     [searchParams]
   )
 
   useEffect(() => {
+    if (isPilotStudent) {
+      let active = true
+      ;(async () => {
+        const bootstrapped = await getPilotStudentRuntime().bootstrap(studentId)
+        if (!active) return
+        if (!bootstrapped.ok) { navigate('/', { replace: true }); return }
+        setProfile(bootstrapped.profile)
+      })()
+      return () => { active = false }
+    }
     if (!isStudentSessionActive(studentId)) {
       const redirect = encodeURIComponent(`${location.pathname}${location.search}`)
       navigate(`/?redirect=${redirect}`, { replace: true })
@@ -65,9 +78,15 @@ function StudentTicket() {
     })()
 
     return () => { active = false }
-  }, [studentId, navigate, location.pathname, location.search])
+  }, [studentId, navigate, location.pathname, location.search, isPilotStudent])
 
   const resolvedTicket = useMemo(() => {
+    if (isPilotStudent) {
+      const inboxPayload = profile?.ticketInbox?.activePayload
+      return inboxPayload && typeof inboxPayload === 'object' && inboxPayload.dispatchId === dispatchIdFromQuery
+        ? inboxPayload
+        : null
+    }
     if (payloadFromQuery) return payloadFromQuery
 
     const inboxPayload = profile?.ticketInbox?.activePayload
@@ -93,7 +112,7 @@ function StudentTicket() {
     }
 
     return null
-  }, [payloadFromQuery, profile, dispatchIdFromQuery])
+  }, [payloadFromQuery, profile, dispatchIdFromQuery, isPilotStudent])
 
   useEffect(() => {
     if (!profile || !resolvedTicket?.dispatchId) return
@@ -113,8 +132,9 @@ function StudentTicket() {
       kind: resolvedTicket.kind || 'start'
     }, now)
     incrementTelemetryDailyMetric(profile, 'ticket_opened', 1, now)
-    saveProfile(profile)
-  }, [profile, resolvedTicket])
+    if (isPilotStudent) void getPilotStudentRuntime().persistCheckpoint(profile)
+    else saveProfile(profile)
+  }, [profile, resolvedTicket, isPilotStudent])
 
   const updateTicketPresence = useCallback((options = {}) => {
     if (!profile) return
@@ -130,9 +150,10 @@ function StudentTicket() {
     if (!force && (now - presenceSyncRef.current.lastSavedAt) < PRESENCE_SAVE_THROTTLE_MS) {
       return
     }
-    saveProfile(profile)
+    if (isPilotStudent) void getPilotStudentRuntime().persistCheckpoint(profile)
+    else saveProfile(profile)
     presenceSyncRef.current.lastSavedAt = now
-  }, [profile])
+  }, [profile, isPilotStudent])
 
   useEffect(() => {
     if (!profile) return undefined
@@ -174,7 +195,10 @@ function StudentTicket() {
     let active = true
     const timer = setInterval(() => {
       void (async () => {
-        const latest = await getOrCreateProfileWithSync(studentId, null, 4, { createIfMissing: false })
+        const latestResult = isPilotStudent
+          ? await fetchStudentSessionProfile()
+          : { ok: true, profile: await getOrCreateProfileWithSync(studentId, null, 4, { createIfMissing: false }) }
+        const latest = latestResult?.profile
         if (!active || !latest) return
         setProfile(latest)
         const latestResponse = getTicketResponseForDispatch(latest, resolvedTicket.dispatchId)
@@ -186,12 +210,35 @@ function StudentTicket() {
       active = false
       clearInterval(timer)
     }
-  }, [profile, studentId, resolvedTicket, savedResponse, shouldShowCorrectness])
+  }, [profile, studentId, resolvedTicket, savedResponse, shouldShowCorrectness, isPilotStudent])
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!profile || !resolvedTicket || answer.trim() === '') return
     if (isSubmitting) return
     setIsSubmitting(true)
+
+    if (isPilotStudent) {
+      const now = Date.now()
+      const persisted = await getPilotStudentRuntime().persistCustomEvent(profile, 'ticket_response', {
+        dispatchId: resolvedTicket.dispatchId,
+        studentAnswer: answer,
+        answeredAt: now,
+        responseTimeSec: openedAtRef.current > 0 ? (now - openedAtRef.current) / 1000 : null
+      }, now)
+      if (!persisted.ok) {
+        setStatusMessage('Svaret är sparat säkert på enheten och synkas när anslutningen är tillbaka.')
+        setIsSubmitting(false)
+        return
+      }
+      const refreshed = await fetchStudentSessionProfile()
+      if (refreshed.ok) {
+        setProfile(refreshed.profile)
+        setSavedResponse(getTicketResponseForDispatch(refreshed.profile, resolvedTicket.dispatchId))
+      }
+      setStatusMessage(resolvedTicket.kind === 'exit' ? 'Svar registrerat. Tryck Färdigt för att gå tillbaka.' : 'Svar registrerat.')
+      setIsSubmitting(false)
+      return
+    }
 
     const response = recordTicketResponse(profile, {
       dispatchId: resolvedTicket.dispatchId,
@@ -230,13 +277,21 @@ function StudentTicket() {
     setIsSubmitting(false)
   }
 
-  const handleFinishTicket = () => {
+  const handleFinishTicket = async () => {
     if (!profile || !resolvedTicket?.dispatchId) {
       navigate(`/student/${studentId}`)
       return
     }
 
     const now = Date.now()
+    if (isPilotStudent) {
+      await getPilotStudentRuntime().persistCustomEvent(profile, 'ticket_finished', {
+        dispatchId: resolvedTicket.dispatchId,
+        finishedAt: now
+      }, now)
+      navigate(`/student/${studentId}`)
+      return
+    }
     if (!profile.ticketInbox || typeof profile.ticketInbox !== 'object') {
       profile.ticketInbox = {}
     }
@@ -295,7 +350,7 @@ function StudentTicket() {
                 {resolvedTicket.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket'}
               </p>
               <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800 mt-2">{title}</h1>
-              <p className="text-sm text-gray-600 mt-1">{profile.name}</p>
+              <p className="text-sm text-gray-600 mt-1">{profile.displayAlias || profile.name}</p>
             </div>
             <button
               onClick={() => navigate(`/student/${studentId}`)}
@@ -352,9 +407,9 @@ function StudentTicket() {
                       Du svarade: <span className="font-semibold">{savedResponse.studentAnswer || '-'}</span>
                     </p>
                   )}
-                  <p className="text-sm mt-1.5">
+                  {resolvedTicket.answer ? <p className="text-sm mt-1.5">
                     Facit: <span className="font-semibold">{resolvedTicket.answer}</span>
-                  </p>
+                  </p> : null}
                 </div>
               ) : (
                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-700">

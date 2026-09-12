@@ -73,7 +73,7 @@ export async function clearStudentLoginFailures(studentId, ip, { store = kv } = 
 export async function createStudentSession(profile, { store = kv } = {}) {
   const id = randomBytes(32).toString('base64url')
   const csrfToken = randomBytes(32).toString('base64url')
-  await store.set(`student_session:${id}`, { studentId: profile.studentId, credentialVersion: Number(profile.auth?.credentialVersion || 1), csrfHash: hashQrSecret(csrfToken), createdAt: Date.now() }, { ex: STUDENT_SESSION_TTL_SECONDS })
+  await store.set(`student_session:${id}`, { studentId: profile.studentId, credentialVersion: Number(profile.auth?.credentialVersion || 1), csrfHash: hashQrSecret(csrfToken), csrfToken, createdAt: Date.now() }, { ex: STUDENT_SESSION_TTL_SECONDS })
   return { id, csrfToken }
 }
 export async function getLiveStudentSession(req, { store = kv } = {}) {
@@ -81,8 +81,14 @@ export async function getLiveStudentSession(req, { store = kv } = {}) {
   if (!sessionId || sessionId.length > 200) return null
   const session = await store.get(`student_session:${sessionId}`)
   if (!session?.studentId) return null
+  if (await store.exists(`student_deleted:${session.studentId}`)) return null
   const profile = await store.get(`student:${session.studentId}`)
   if (!isCurrentStudentProfile(profile) || profile?.auth?.scheme !== 'qr-pin-v1' || profile.auth.disabled || Number(profile.auth.credentialVersion || 1) !== Number(session.credentialVersion)) return null
+  if (profile.studentId !== session.studentId) return null
+  for (const classId of [...new Set([profile.classId, ...(profile.classIds || [])].filter(Boolean))]) {
+    if (await store.exists(`class_deleted:${classId}`)) return null
+    if (!await store.get(`class:${classId}`)) return null
+  }
   return { sessionId, profile }
 }
 export async function revokeStudentSession(req, { store = kv } = {}) { const id = readCookie(req, '__Host-student-session'); if (id) await store.del(`student_session:${id}`) }

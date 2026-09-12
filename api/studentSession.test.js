@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 const records = vi.hoisted(() => new Map())
 vi.mock('@vercel/kv', () => ({ kv: {
   get: vi.fn(async key => structuredClone(records.get(key) ?? null)),
+  exists: vi.fn(async key => records.has(key) ? 1 : 0),
   set: vi.fn(async (key, value) => records.set(key, structuredClone(value))),
   del: vi.fn(async key => records.delete(key)),
   incr: vi.fn(async key => { const value = Number(records.get(key) || 0) + 1; records.set(key, value); return value }),

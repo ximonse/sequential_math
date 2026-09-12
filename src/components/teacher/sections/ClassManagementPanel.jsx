@@ -2,6 +2,7 @@ import { useSchools, SchoolSelect, NewSchoolForm, ClassSchoolChoice } from './Sc
 import { useRef, useState } from 'react'
 import { listDomains } from '../../../domains/registry'
 import { parseRosterLines } from '../../../lib/storageClassHelpers'
+import PilotRosterPanel from './PilotRosterPanel'
 
 function getTogglableExtras() {
   return listDomains()
@@ -83,6 +84,7 @@ export default function ClassManagementPanel({
   classNameInput,
   onSetClassNameInput,
   onCreateClass,
+  onCreatePilotRoster,
   addToClassId,
   onSetAddToClassId,
   classes,
@@ -148,6 +150,14 @@ export default function ClassManagementPanel({
           Skapa klass från listan
         </button>
       </div>
+      {onCreatePilotRoster ? (
+        <PilotRosterPanel
+          className={classNameInput}
+          schoolId={schoolId}
+          onCreate={onCreatePilotRoster}
+          disabled={busy}
+        />
+      ) : null}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
         <select
           value={addToClassId}

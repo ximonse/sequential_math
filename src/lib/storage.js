@@ -338,6 +338,10 @@ export async function createClassFromRoster(classNameInput, rosterText, grade = 
   return getClassApi().createClassFromRoster(classNameInput, rosterText, grade, schoolId)
 }
 
+export async function createClassFromPilotRoster(classNameInput, count, grade = 4, schoolId = '') {
+  return getClassApi().createClassFromPilotRoster(classNameInput, count, grade, schoolId)
+}
+
 export async function addStudentsToClass(classId, rosterText, grade = 4) {
   return getClassApi().addStudentsToClass(classId, rosterText, grade)
 }

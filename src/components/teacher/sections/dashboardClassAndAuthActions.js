@@ -2,6 +2,7 @@ import { buildCloudSyncStatusMessage } from './dashboardCoreHelpers'
 import {
   addExistingStudentsToClass,
   addStudentsToClass,
+  createClassFromPilotRoster,
   createClassFromRoster,
   deleteProfile,
   getClasses,
@@ -143,6 +144,28 @@ export function buildDashboardClassAndAuthActions({
     setClasses(updatedClasses)
     setAddToClassId(result.classRecord.id)
     void loadStudents()
+  }
+
+  const handleCreatePilotRoster = async (schoolId = '', count) => {
+    let result
+    try {
+      result = await createClassFromPilotRoster(classNameInput, count, 4, schoolId)
+    } catch {
+      result = { ok: false, error: 'Kunde inte skapa elevplatser just nu.' }
+    }
+    if (!result.ok) {
+      setClassStatus(result.error)
+      if (result.classRecord) { setClasses(getClasses()); await loadStudents() }
+      return result
+    }
+
+    setClassNameInput('')
+    setClassStatus('Klass skapad med ' + result.addedCount + ' pseudonyma elevplatser.')
+    const updatedClasses = getClasses()
+    setClasses(updatedClasses)
+    setAddToClassId(result.classRecord.id)
+    void loadStudents()
+    return result
   }
 
   const handleAddStudentsToClass = async () => {
@@ -336,6 +359,7 @@ export function buildDashboardClassAndAuthActions({
     handleLogout,
     handleJumpToPasswordReset,
     handleCreateClass,
+    handleCreatePilotRoster,
     handleAddExistingStudentsToClass, handleMoveStudent,
     handleAddStudentsToClass,
     handleDeleteClass,

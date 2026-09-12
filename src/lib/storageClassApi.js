@@ -1,4 +1,4 @@
-import { submitRoster } from './rosterClient'
+import { submitPilotRoster, submitRoster } from './rosterClient'
 
 export function createStorageClassApi(deps) {
   const {
@@ -31,6 +31,12 @@ export function createStorageClassApi(deps) {
 
   async function createClassFromRoster(classNameInput, rosterText, grade = 4, schoolId = '') {
     const result = await submitRoster({ className: String(classNameInput || '').trim(), rosterText, grade, schoolId })
+    if (result.classRecord) saveClass(result.classRecord)
+    return result
+  }
+
+  async function createClassFromPilotRoster(classNameInput, count, grade = 4, schoolId = '') {
+    const result = await submitPilotRoster({ className: String(classNameInput || '').trim(), count, grade, schoolId })
     if (result.classRecord) saveClass(result.classRecord)
     return result
   }
@@ -98,6 +104,7 @@ export function createStorageClassApi(deps) {
   return {
     addExistingStudentsToClass,
     addStudentsToClass,
+    createClassFromPilotRoster,
     createClassFromRoster,
     getClasses,
     removeClass,

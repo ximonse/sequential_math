@@ -142,6 +142,7 @@ export default function DashboardLayout({
   classNameInput,
   setClassNameInput,
   handleCreateClass,
+  handleCreatePilotRoster,
   addToClassId,
   setAddToClassId,
   classes,
@@ -377,6 +378,7 @@ export default function DashboardLayout({
           classNameInput={classNameInput}
           onSetClassNameInput={setClassNameInput}
           onCreateClass={handleCreateClass}
+          onCreatePilotRoster={handleCreatePilotRoster}
           addToClassId={addToClassId}
           onSetAddToClassId={setAddToClassId}
           classes={classes}

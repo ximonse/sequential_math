@@ -51,6 +51,7 @@ import { isTeacherListProfile } from '../src/lib/teacherListProfile.js'
 import { createStudentRecord, mutateStudentRecord } from './_studentStore.js'
 import { createClassRecord, deleteClassRecord } from './_classStore.js'
 import { createStudentProfile } from '../src/lib/studentProfile.js'
+import { createPilotStudentAuth, createQrSecret } from './_studentSession.js'
 
 const admin = { isAdmin: true }
 const owner = { teacherId: 'owner', isAdmin: false, classIds: [] }
@@ -135,6 +136,19 @@ describe('student persistence boundary', () => {
     expect(dto.problemLog).toBeUndefined()
     expect(dto.auth.passwordHash).toBeUndefined()
     expect((await call(studentHandler, 'POST', { profile: dto })).code).toBe(400)
+  })
+
+  it('keeps pilot credentials off legacy pupil reads and full-profile writes', async () => {
+    const pilot = { ...profile(), displayAlias: 'Röd Räv 17', auth: createPilotStudentAuth({ qrSecret: createQrSecret(), pin: '1234' }) }
+    memory.set('student:PUPIL', pilot)
+    expect((await call(studentHandler, 'GET', {}, null)).code).toBe(401)
+    expect((await call(studentHandler, 'POST', { profile: pilot }, null)).code).toBe(401)
+    expect((await call(studentHandler, 'POST', { profile: pilot }, owner)).code).toBe(405)
+    expect((await call(eventsHandler, 'POST', { entries: [{ id: 'pilot-event', type: 'problem_result', payload: result('pilot-event') }] }, null)).code).toBe(401)
+    const teacherRead = await call(studentHandler, 'GET', {}, owner)
+    expect(teacherRead.code).toBe(200)
+    expect(teacherRead.data.profile).toMatchObject({ displayAlias: 'Röd Räv 17' })
+    expect(JSON.stringify(teacherRead.data)).not.toMatch(/qrSecretHash|credentialVersion|"pin"/i)
   })
 
   it('acknowledges teacher patches only at the expected revision and preserves training', async () => {

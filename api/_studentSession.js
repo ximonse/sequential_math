@@ -7,7 +7,14 @@ export const QR_SECRET_BYTES = 32
 export const STUDENT_SESSION_TTL_SECONDS = 8 * 60 * 60
 export const MAX_STUDENT_LOGIN_FAILURES = 5
 export const STUDENT_LOGIN_WINDOW_SECONDS = 10 * 60
+export const MAX_STUDENT_LOGIN_FAILURES_PER_IP = 100
 const SCRYPT_OPTIONS = { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 }
+const DUMMY_PIN_VERIFIER = createPinVerifier('0000')
+const RATE_LIMIT_SCRIPT = `
+local value = redis.call('INCR', KEYS[1])
+if value == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end
+return value
+`
 
 function safeEqual(left, right) {
   const a = Buffer.from(String(left || ''), 'utf8')
@@ -64,11 +71,23 @@ export function requestOriginIsTrusted(req) {
   return origin === 'https://matematik.ximon.se'
 }
 function rateKey(studentId, ip) { return `student_login_failures:${createHash('sha256').update(`${studentId}|${ip}`).digest('hex')}` }
+function ipRateKey(ip) { return `student_login_ip_failures:${createHash('sha256').update(String(ip || 'unknown')).digest('hex')}` }
 export async function isStudentLoginRateLimited(studentId, ip, { store = kv } = {}) { return Number(await store.get(rateKey(studentId, ip)) || 0) >= MAX_STUDENT_LOGIN_FAILURES }
+export async function isStudentLoginIpRateLimited(ip, { store = kv } = {}) { return Number(await store.get(ipRateKey(ip)) || 0) >= MAX_STUDENT_LOGIN_FAILURES_PER_IP }
+async function incrementRateLimit(key, store) {
+  if (typeof store.eval === 'function') return Number(await store.eval(RATE_LIMIT_SCRIPT, [key], [STUDENT_LOGIN_WINDOW_SECONDS]))
+  const count = Number(await store.incr(key)); if (count === 1) await store.expire(key, STUDENT_LOGIN_WINDOW_SECONDS); return count
+}
 export async function recordStudentLoginFailure(studentId, ip, { store = kv } = {}) {
-  const key = rateKey(studentId, ip); const count = Number(await store.incr(key)); if (count === 1) await store.expire(key, STUDENT_LOGIN_WINDOW_SECONDS); return count
+  const count = await incrementRateLimit(rateKey(studentId, ip), store)
+  await incrementRateLimit(ipRateKey(ip), store)
+  return count
 }
 export async function clearStudentLoginFailures(studentId, ip, { store = kv } = {}) { await store.del(rateKey(studentId, ip)) }
+export function verifyStudentCredentialsWithDummy(profile, qrSecret, pin) {
+  const auth = profile?.auth?.scheme === 'qr-pin-v1' ? profile.auth : { scheme: 'qr-pin-v1', qrSecretHash: hashQrSecret('dummy-qr-secret'), pin: DUMMY_PIN_VERIFIER, credentialVersion: 1, disabled: false }
+  return verifyPilotStudentCredentials(auth, qrSecret, pin) && profile?.auth?.scheme === 'qr-pin-v1'
+}
 
 export async function createStudentSession(profile, { store = kv } = {}) {
   const id = randomBytes(32).toString('base64url')
@@ -89,7 +108,7 @@ export async function getLiveStudentSession(req, { store = kv } = {}) {
     if (await store.exists(`class_deleted:${classId}`)) return null
     if (!await store.get(`class:${classId}`)) return null
   }
-  return { sessionId, profile }
+  return { sessionId, session, profile }
 }
 export async function revokeStudentSession(req, { store = kv } = {}) { const id = readCookie(req, '__Host-student-session'); if (id) await store.del(`student_session:${id}`) }
 export function hasStudentCsrf(session, req) { return safeEqual(hashQrSecret(req?.headers?.['x-csrf-token']), session?.csrfHash) }

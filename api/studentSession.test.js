@@ -7,10 +7,11 @@ vi.mock('@vercel/kv', () => ({ kv: {
   set: vi.fn(async (key, value) => records.set(key, structuredClone(value))),
   del: vi.fn(async key => records.delete(key)),
   incr: vi.fn(async key => { const value = Number(records.get(key) || 0) + 1; records.set(key, value); return value }),
-  expire: vi.fn(async () => 1)
+  expire: vi.fn(async () => 1),
+  eval: vi.fn(async (_script, keys) => { const key = keys[0]; const value = Number(records.get(key) || 0) + 1; records.set(key, value); return value })
 } }))
 
-import { createPilotStudentAuth, createQrSecret, getLiveStudentSession, verifyPilotStudentCredentials } from './_studentSession.js'
+import { createPilotStudentAuth, createQrSecret, getLiveStudentSession, isStudentLoginIpRateLimited, MAX_STUDENT_LOGIN_FAILURES_PER_IP, recordStudentLoginFailure, verifyPilotStudentCredentials } from './_studentSession.js'
 import handler from './student-session.js'
 
 function response() { return { code: 200, headers: {}, setHeader(k, v) { this.headers[k] = v }, status(code) { this.code = code; return this }, json(data) { this.data = data; return this }, end() { return this } } }
@@ -41,5 +42,12 @@ describe('pilot student sessions', () => {
     await handler({ method: 'POST', body: { studentId: 'C'.repeat(32), qrSecret: secret, pin: '0000' }, headers: { origin: process.env.APP_ORIGIN }, socket: {} }, unknown)
     expect(wrong).toMatchObject({ code: 401, data: { error: 'Inloggningen kunde inte bekräftas.' } })
     expect(unknown).toMatchObject({ code: 401, data: { error: 'Inloggningen kunde inte bekräftas.' } })
+  })
+  it('uses an atomic broad IP backstop without clearing it after one successful pupil', async () => {
+    records.clear()
+    for (let index = 0; index < MAX_STUDENT_LOGIN_FAILURES_PER_IP; index++) {
+      await recordStudentLoginFailure(`PUPIL-${index}`, '192.0.2.10')
+    }
+    await expect(isStudentLoginIpRateLimited('192.0.2.10')).resolves.toBe(true)
   })
 })

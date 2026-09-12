@@ -27,8 +27,11 @@ export function sanitizeStudentProfileForResponse(profile) {
   if (!profile || typeof profile !== 'object') return profile
   const safe = { ...profile }
   if (safe.auth && typeof safe.auth === 'object') {
-    const { passwordHash, passwordSalt, passwordScheme, password, pin, qrSecretHash, credentialVersion, session, sessionId, ...metadata } = safe.auth
-    safe.auth = metadata
+    safe.auth = {
+      lastLoginAt: safe.auth.lastLoginAt || null,
+      loginCount: Number(safe.auth.loginCount) || 0,
+      passwordUpdatedAt: safe.auth.passwordUpdatedAt || null
+    }
   }
   delete safe.session
   delete safe.sessionId
@@ -738,7 +741,7 @@ export default async function handler(req, res) {
       if (!profile) return res.status(200).json({ profile: null })
 
       if (teacherAuthorized) await assertTeacherStudentAccess(req, profile)
-      if (!teacherAuthorized && !verifyPasswordAgainstAuth(profile.auth, studentPassword)) {
+      if (!teacherAuthorized && (profile.auth?.scheme === 'qr-pin-v1' || !verifyPasswordAgainstAuth(profile.auth, studentPassword))) {
         return res.status(401).json({ error: 'Unauthorized' })
       }
 
@@ -772,6 +775,12 @@ export default async function handler(req, res) {
       const profile = req.body?.profile
       if (!isCurrentStudentProfile(profile)) {
         return res.status(400).json({ error: 'A complete current student profile is required' })
+      }
+
+      if (existing?.auth?.scheme === 'qr-pin-v1') {
+        if (!teacherAuthorized) return res.status(401).json({ error: 'Unauthorized' })
+        await assertTeacherStudentAccess(req, existing)
+        return res.status(405).json({ error: 'Pilot profiles use the session event API' })
       }
 
       const saved = await mutateStudentRecord(studentId, async current => {

@@ -116,7 +116,7 @@ function applyTableCompleted(profile, payload, entry) {
   return true
 }
 
-function validEntry(entry, studentId) {
+export function validEntry(entry, studentId) {
   if (typeof entry?.id !== 'string' || !entry.id || !entry.payload) return false
   if (entry.studentId && String(entry.studentId).toUpperCase() !== studentId) return false
   const payload = entry.payload
@@ -132,7 +132,7 @@ function validEntry(entry, studentId) {
   return false
 }
 
-function applyWalEntry(profile, entry) {
+export function applyWalEntry(profile, entry) {
   if (!entry?.type || !entry?.payload) return false
 
   switch (entry.type) {
@@ -147,54 +147,42 @@ function applyWalEntry(profile, entry) {
   }
 }
 
+export async function persistStudentEvents(studentId, entries, authorize) {
+  if (!Array.isArray(entries) || entries.length === 0) {
+    throw studentStoreError(400, 'Missing or empty entries array')
+  }
+  if (entries.length > 100) throw studentStoreError(400, 'Too many entries (max 100)')
+  if (entries.some(entry => !validEntry(entry, studentId))) throw studentStoreError(400, 'Invalid event batch')
+  let appliedCount = 0
+  const saved = await mutateStudentRecord(studentId, async existing => {
+    if (!existing) throw studentStoreError(404, 'Student not found')
+    if (!isCurrentStudentProfile(existing)) throw studentStoreError(409, 'Unsupported student profile schema')
+    await authorize(existing)
+    const profile = structuredClone(existing)
+    appliedCount = 0
+    const sorted = [...entries].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
+    for (const entry of sorted) if (applyWalEntry(profile, entry)) appliedCount++
+    return profile
+  })
+  return { ack: entries.map(entry => entry.id), appliedCount, serverRevision: saved.serverRevision }
+}
+
 export default async function handler(req, res) {
-  withCors(res, {
-    methods: 'POST,OPTIONS',
-    headers: 'Content-Type, x-student-password, x-teacher-token'
-  }, req)
+  withCors(res, { methods: 'POST,OPTIONS', headers: 'Content-Type, x-student-password, x-teacher-token' }, req)
+  res.setHeader?.('Cache-Control', 'no-store')
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
-
   const studentId = String(req.query.studentId || '').trim().toUpperCase()
   if (!studentId) return res.status(400).json({ error: 'Missing studentId' })
-
-  const entries = req.body?.entries
-  if (!Array.isArray(entries) || entries.length === 0) {
-    return res.status(400).json({ error: 'Missing or empty entries array' })
-  }
-
-  // Max 100 entries per request
-  if (entries.length > 100) {
-    return res.status(400).json({ error: 'Too many entries (max 100)' })
-  }
 
   try {
     const teacherAuthorized = await isLiveTeacherApiAuthorized(req)
     const studentPassword = String(req.headers['x-student-password'] || '')
-    if (entries.some(entry => !validEntry(entry, studentId))) {
-      throw studentStoreError(400, 'Invalid event batch')
-    }
-    let appliedCount = 0
-    const saved = await mutateStudentRecord(studentId, async existing => {
-      if (!existing) throw studentStoreError(404, 'Student not found')
-      if (!isCurrentStudentProfile(existing)) throw studentStoreError(409, 'Unsupported student profile schema')
-      if (teacherAuthorized) await assertTeacherStudentAccess(req, existing)
-      else if (!verifyPasswordAgainstAuth(existing.auth, studentPassword)) throw studentStoreError(401, 'Unauthorized')
-      const profile = structuredClone(existing)
-      appliedCount = 0
-      const sorted = [...entries].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))
-      for (const entry of sorted) {
-        if (applyWalEntry(profile, entry)) appliedCount++
-      }
-      return profile
+    const result = await persistStudentEvents(studentId, req.body?.entries, async existing => {
+      if (teacherAuthorized) return assertTeacherStudentAccess(req, existing)
+      if (existing.auth?.scheme === 'qr-pin-v1' || !verifyPasswordAgainstAuth(existing.auth, studentPassword)) throw studentStoreError(401, 'Unauthorized')
     })
-
-    return res.status(200).json({
-      ok: true,
-      ack: entries.map(entry => entry.id),
-      appliedCount,
-      serverRevision: saved.serverRevision
-    })
+    return res.status(200).json({ ok: true, ...result })
   } catch (error) {
     return res.status(error.status || 500).json({ error: error.status ? error.message : 'Storage backend unavailable' })
   }

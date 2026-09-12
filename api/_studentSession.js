@@ -1,0 +1,81 @@
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
+import { kv } from '@vercel/kv'
+import { isCurrentStudentProfile } from '../src/lib/studentProfileContract.js'
+
+export const STUDENT_ID_BYTES = 16
+export const QR_SECRET_BYTES = 32
+export const STUDENT_SESSION_TTL_SECONDS = 8 * 60 * 60
+export const MAX_STUDENT_LOGIN_FAILURES = 5
+export const STUDENT_LOGIN_WINDOW_SECONDS = 10 * 60
+const SCRYPT_OPTIONS = { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 }
+
+function safeEqual(left, right) {
+  const a = Buffer.from(String(left || ''), 'utf8')
+  const b = Buffer.from(String(right || ''), 'utf8')
+  return a.length === b.length && timingSafeEqual(a, b)
+}
+
+export function createStudentId() { return randomBytes(STUDENT_ID_BYTES).toString('hex').toUpperCase() }
+export function createQrSecret() { return randomBytes(QR_SECRET_BYTES).toString('base64url') }
+export function hashQrSecret(secret) { return createHash('sha256').update(String(secret || ''), 'utf8').digest('hex') }
+
+export function createPinVerifier(pin) {
+  const value = String(pin || '')
+  if (!/^\d{4}$/.test(value)) throw new Error('PIN must contain exactly four digits')
+  const salt = randomBytes(16).toString('hex')
+  return { scheme: 'scrypt-v1', salt, hash: scryptSync(value, salt, 32, SCRYPT_OPTIONS).toString('hex') }
+}
+
+export function verifyPinVerifier(pin, verifier) {
+  if (!/^\d{4}$/.test(String(pin || '')) || verifier?.scheme !== 'scrypt-v1') return false
+  try { return safeEqual(scryptSync(String(pin), String(verifier.salt || ''), 32, SCRYPT_OPTIONS).toString('hex'), verifier.hash) } catch { return false }
+}
+
+export function createPilotStudentAuth({ qrSecret, pin }) {
+  return { scheme: 'qr-pin-v1', qrSecretHash: hashQrSecret(qrSecret), pin: createPinVerifier(pin), credentialVersion: 1, disabled: false }
+}
+
+export function verifyPilotStudentCredentials(auth, qrSecret, pin) {
+  // Always run the slow PIN verifier, including for a wrong QR secret.
+  const pinValid = verifyPinVerifier(pin, auth?.pin)
+  return Boolean(auth?.scheme === 'qr-pin-v1' && !auth.disabled && safeEqual(hashQrSecret(qrSecret), auth.qrSecretHash) && pinValid)
+}
+
+export function readCookie(req, name) {
+  const prefix = `${name}=`
+  for (const value of String(req?.headers?.cookie || '').split(';')) {
+    const part = value.trim()
+    if (part.startsWith(prefix)) return decodeURIComponent(part.slice(prefix.length))
+  }
+  return ''
+}
+
+export function setStudentSessionCookie(res, sessionId, maxAge = STUDENT_SESSION_TTL_SECONDS) {
+  const value = sessionId ? encodeURIComponent(sessionId) : ''
+  res.setHeader('Set-Cookie', `__Host-student-session=${value}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Strict`)
+}
+
+export function requestIp(req) { return String(req?.headers?.['x-forwarded-for'] || req?.socket?.remoteAddress || 'unknown').split(',')[0].trim().slice(0, 100) }
+function rateKey(studentId, ip) { return `student_login_failures:${createHash('sha256').update(`${studentId}|${ip}`).digest('hex')}` }
+export async function isStudentLoginRateLimited(studentId, ip, { store = kv } = {}) { return Number(await store.get(rateKey(studentId, ip)) || 0) >= MAX_STUDENT_LOGIN_FAILURES }
+export async function recordStudentLoginFailure(studentId, ip, { store = kv } = {}) {
+  const key = rateKey(studentId, ip); const count = Number(await store.incr(key)); if (count === 1) await store.expire(key, STUDENT_LOGIN_WINDOW_SECONDS); return count
+}
+export async function clearStudentLoginFailures(studentId, ip, { store = kv } = {}) { await store.del(rateKey(studentId, ip)) }
+
+export async function createStudentSession(profile, { store = kv } = {}) {
+  const id = randomBytes(32).toString('base64url')
+  await store.set(`student_session:${id}`, { studentId: profile.studentId, credentialVersion: Number(profile.auth?.credentialVersion || 1), createdAt: Date.now() }, { ex: STUDENT_SESSION_TTL_SECONDS })
+  return id
+}
+export async function getLiveStudentSession(req, { store = kv } = {}) {
+  const sessionId = readCookie(req, '__Host-student-session')
+  if (!sessionId || sessionId.length > 200) return null
+  const session = await store.get(`student_session:${sessionId}`)
+  if (!session?.studentId) return null
+  const profile = await store.get(`student:${session.studentId}`)
+  if (!isCurrentStudentProfile(profile) || profile?.auth?.scheme !== 'qr-pin-v1' || profile.auth.disabled || Number(profile.auth.credentialVersion || 1) !== Number(session.credentialVersion)) return null
+  return { sessionId, profile }
+}
+export async function revokeStudentSession(req, { store = kv } = {}) { const id = readCookie(req, '__Host-student-session'); if (id) await store.del(`student_session:${id}`) }
+export function studentIdentityDto(profile) { return { studentId: profile.studentId, displayAlias: String(profile.displayAlias || '').trim(), classIds: [...new Set([profile?.classId, ...(profile?.classIds || [])].map(String).filter(Boolean))], grade: Number(profile.grade) || null } }

@@ -48,16 +48,30 @@ const devDataImport = {
 const devApiMock = {
   name: 'dev-api-mock',
   configureServer(server) {
-    server.middlewares.use('/api/teacher-auth', (req, res) => {
+    const respondToTeacherLogin = (req, res) => {
       res.setHeader('Content-Type', 'application/json')
-      if (req.method === 'GET') {
-        res.end(JSON.stringify({ configured: true }))
-      } else if (req.method === 'POST') {
-        res.end(JSON.stringify({ ok: true, token: 'dev-token', expiresAt: null }))
-      } else {
+      if (req.method !== 'POST') {
         res.statusCode = 405
         res.end(JSON.stringify({ error: 'Method not allowed' }))
+        return
       }
+      res.end(JSON.stringify({
+        token: 'dev-token',
+        teacherId: 'local-teacher',
+        displayName: 'Lokal lärare',
+        classIds: [],
+        isAdmin: true
+      }))
+    }
+
+    server.middlewares.use('/api/teacher-login', respondToTeacherLogin)
+    server.middlewares.use('/api/teacher-auth', (req, res) => {
+      if (req.method === 'GET') {
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ configured: true }))
+        return
+      }
+      respondToTeacherLogin(req, res)
     })
   }
 }

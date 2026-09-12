@@ -52,6 +52,12 @@ const DEFAULT_COLLAPSED = Object.fromEntries(
   PANEL_DEFS.map(({ id }) => [id, !['support', 'overview'].includes(id)])
 )
 const LS_COLLAPSED_KEY = 'mathapp_dashboard_panel_collapsed_v2'
+const WORKSPACES = [
+  { id: 'progress', label: 'Framsteg', description: 'Kunskapsområden och elever', panels: ['overview', 'detail', 'mastery', 'sticky', 'tabledev'] },
+  { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'tickets'] },
+  { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality'] },
+  { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management', 'password', 'pausegames', 'admin'] }
+]
 
 export default function DashboardLayout({
   isDirectStudentView,
@@ -168,6 +174,7 @@ export default function DashboardLayout({
 }) {
   const teacherIsAdmin = isTeacherAdmin()
   const visiblePanelDefs = PANEL_DEFS.filter(p => !p.adminOnly || teacherIsAdmin)
+  const [activeWorkspace, setActiveWorkspace] = useState('progress')
 
   const [collapsed, setCollapsed] = useState(() => {
     const defaults = {
@@ -227,10 +234,10 @@ export default function DashboardLayout({
         onOpenStudentDetail={handleOpenStudentDetail}
       />
     )
-    if (id === 'sticky') return (
+            if (id === 'sticky') return (
       <TableStickyStatusPanel
-        rows={tableStickyStatusRows}
-        tables={TABLES}
+        rows={tableStickyStatusRows || []}
+        tables={TABLES || []}
         onSort={handleStickySort}
         onOpenStudentDetail={handleOpenStudentDetail}
         getSortIndicator={getStickySortIndicator}
@@ -318,15 +325,15 @@ export default function DashboardLayout({
     )
     if (id === 'tabledev') return (
       <TableSelectionAndDevelopmentPanel
-        tableSelectedStudentIds={tableSelectedStudentIds}
+        tableSelectedStudentIds={tableSelectedStudentIds || []}
         filteredStudentsCount={filteredStudents.length}
         onClearTableSelection={() => setTableSelectedStudentIds([])}
         tableStudentSearch={tableStudentSearch}
         onSetTableStudentSearch={setTableStudentSearch}
-        filteredTableStudentOptions={filteredTableStudentOptions}
-        tableStudentSet={tableStudentSet}
+        filteredTableStudentOptions={filteredTableStudentOptions || []}
+        tableStudentSet={tableStudentSet || new Set()}
         onToggleTableStudent={handleToggleTableStudent}
-        tableDevelopmentOverview={tableDevelopmentOverview}
+        tableDevelopmentOverview={tableDevelopmentOverview || []}
         toPercent={toPercent}
       />
     )
@@ -427,8 +434,8 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-6xl mx-auto px-4">
+    <div className="min-h-screen bg-slate-100 py-4">
+      <div className="max-w-7xl mx-auto px-3">
         <DashboardHeaderBar
           isDirectStudentView={isDirectStudentView}
           detailStudentName={detailStudentProfile?.name || ''}
@@ -440,7 +447,19 @@ export default function DashboardLayout({
 
         <div className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
 
-        <div className="flex flex-col">
+        <div className="grid gap-3 lg:grid-cols-[13rem_minmax(0,1fr)]">
+          <aside className="rounded-lg bg-slate-800 p-2 text-slate-100 lg:sticky lg:top-3 lg:h-fit">
+            <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">Arbetsläge</p>
+            <nav className="grid gap-1" aria-label="Lärarvy">
+              {WORKSPACES.map(workspace => (
+                <button key={workspace.id} type="button" onClick={() => setActiveWorkspace(workspace.id)}
+                  className={`rounded px-3 py-2 text-left text-sm transition-colors ${activeWorkspace === workspace.id ? 'bg-amber-300 font-semibold text-slate-900' : 'text-slate-100 hover:bg-slate-700'}`}>
+                  {workspace.label}<span className="mt-0.5 block text-[11px] font-normal opacity-75">{workspace.description}</span>
+                </button>
+              ))}
+            </nav>
+          </aside>
+          <div className="min-w-0">
           <CloudSyncStatusPanel
             cloudSyncStatus={cloudSyncStatus}
             isCloudRefreshBusy={isCloudRefreshBusy}
@@ -460,16 +479,11 @@ export default function DashboardLayout({
 
           <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
 
-          {visiblePanelDefs.map(({ id, title }) => (
-            <CollapsibleSection
-              key={id}
-              title={title}
-              collapsed={!!collapsed[id]}
-              onToggle={() => toggleCollapsed(id)}
-            >
-              {renderPanelContent(id)}
-            </CollapsibleSection>
-          ))}
+          {WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
+            .filter(id => visiblePanelDefs.some(panel => panel.id === id))
+            .filter(id => id !== 'detail' || isDirectStudentView || !collapsed.detail)
+            .map(id => <div key={id}>{renderPanelContent(id)}</div>)}
+          </div>
         </div>
       </div>
     </div>

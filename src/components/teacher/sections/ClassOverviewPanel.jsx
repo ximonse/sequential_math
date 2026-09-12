@@ -5,8 +5,8 @@ import {
 } from './dashboardSortUtils'
 
 export default function ClassOverviewPanel({
-  classOverviewMeta,
-  rows,
+  classOverviewMeta = { className: 'Alla klasser', activeNowCount: 0, studentCount: 0 },
+  rows = [],
   onOpenStudentDetail,
   ActivityBadgeComponent,
   getOperationLabel,

@@ -14,6 +14,18 @@ import {
 const MAX_PROBLEM_LOG = 5000
 const MAX_RECENT_PROBLEMS = 250
 const MAX_TABLE_COMPLETIONS = 1000
+const MAX_EVENT_BYTES = 32 * 1024
+const MAX_BATCH_BYTES = 256 * 1024
+const MAX_TICKET_RESPONSES = 500
+const CHECKPOINT_FIELDS = ['currentDifficulty', 'highestDifficulty', 'adaptive', 'operationAbilities', 'assignmentProgress', 'stats', 'telemetry', 'activity']
+
+function jsonBytes(value) {
+  try { return Buffer.byteLength(JSON.stringify(value), 'utf8') } catch { return Number.POSITIVE_INFINITY }
+}
+
+function isRecord(value) {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value))
+}
 
 function hashPasswordWithSalt(password, salt) {
   return createHash('sha256')
@@ -116,8 +128,70 @@ function applyTableCompleted(profile, payload, entry) {
   return true
 }
 
+function normalizeTicketAnswer(value) {
+  const text = String(value || '').normalize('NFC').trim().replace(/\s+/g, ' ')
+  const number = Number(text.replace(',', '.'))
+  return text && Number.isFinite(number) ? `number:${number}` : `text:${text.toLocaleLowerCase('sv-SE')}`
+}
+
+function applyTicketResponse(profile, payload, entry) {
+  const dispatch = profile.ticketInbox?.activePayload
+  if (!dispatch || String(dispatch.dispatchId || '') !== payload.dispatchId) return false
+  if (!Array.isArray(profile.ticketResponses)) profile.ticketResponses = []
+  const answeredAt = Number(payload.answeredAt || entry.timestamp || Date.now())
+  const studentAnswer = String(payload.studentAnswer)
+  const expectedAnswer = String(dispatch.answer || '')
+  const next = {
+    dispatchId: payload.dispatchId,
+    ticketId: String(dispatch.ticketId || '').slice(0, 100),
+    title: String(dispatch.title || '').slice(0, 200),
+    kind: dispatch.kind === 'exit' ? 'exit' : 'start',
+    question: String(dispatch.question || '').slice(0, 1000),
+    expectedAnswer: expectedAnswer.slice(0, 500),
+    studentAnswer,
+    isCorrect: normalizeTicketAnswer(expectedAnswer) === normalizeTicketAnswer(studentAnswer),
+    answeredAt,
+    responseTimeSec: payload.responseTimeSec == null ? null : Number(payload.responseTimeSec),
+    showCorrectnessOnSubmit: dispatch.showCorrectnessOnSubmit !== false,
+    teacherRevealAt: Number(profile.ticketRevealAll?.[payload.dispatchId] || 0) || null,
+    eventId: entry.id
+  }
+  const index = profile.ticketResponses.findIndex(item => item.dispatchId === payload.dispatchId)
+  if (index >= 0 && profile.ticketResponses[index].eventId === entry.id) return false
+  if (index >= 0) profile.ticketResponses[index] = next
+  else profile.ticketResponses.unshift(next)
+  profile.ticketResponses = profile.ticketResponses.slice(0, MAX_TICKET_RESPONSES)
+  return true
+}
+
+function applyTicketFinished(profile, payload) {
+  if (profile.ticketInbox?.activeDispatchId !== payload.dispatchId) return false
+  const finishedAt = Number(payload.finishedAt || Date.now())
+  profile.ticketInbox = { ...profile.ticketInbox, activeDispatchId: '', activePayload: null,
+    activeEncoded: '', updatedAt: finishedAt, clearedAt: finishedAt }
+  return true
+}
+
+function validCheckpoint(payload) {
+  if (!isRecord(payload) || !Number.isFinite(payload.capturedAt) || payload.capturedAt <= 0) return false
+  if (Object.keys(payload).some(key => key !== 'capturedAt' && !CHECKPOINT_FIELDS.includes(key))) return false
+  if (payload.currentDifficulty !== undefined && (!Number.isFinite(payload.currentDifficulty) || payload.currentDifficulty < 1 || payload.currentDifficulty > 12)) return false
+  if (payload.highestDifficulty !== undefined && (!Number.isFinite(payload.highestDifficulty) || payload.highestDifficulty < 1 || payload.highestDifficulty > 12)) return false
+  return CHECKPOINT_FIELDS.filter(field => !['currentDifficulty', 'highestDifficulty'].includes(field))
+    .every(field => payload[field] === undefined || isRecord(payload[field]))
+}
+
+function applyProfileCheckpoint(profile, payload) {
+  if (Number(payload.capturedAt) <= Number(profile.pilotCheckpointAt || 0)) return false
+  for (const field of CHECKPOINT_FIELDS) {
+    if (payload[field] !== undefined) profile[field] = structuredClone(payload[field])
+  }
+  profile.pilotCheckpointAt = Number(payload.capturedAt)
+  return true
+}
+
 export function validEntry(entry, studentId) {
-  if (typeof entry?.id !== 'string' || !entry.id || !entry.payload) return false
+  if (typeof entry?.id !== 'string' || !entry.id || entry.id.length > 100 || !entry.payload || jsonBytes(entry) > MAX_EVENT_BYTES) return false
   if (entry.studentId && String(entry.studentId).toUpperCase() !== studentId) return false
   const payload = entry.payload
   if (entry.type === 'problem_result') return typeof payload.problemId === 'string'
@@ -129,6 +203,13 @@ export function validEntry(entry, studentId) {
     && Number(payload.timestamp || entry.timestamp) > 0
   if (entry.type === 'mastery_achieved') return typeof payload.operation === 'string'
     && Boolean(payload.operation) && Number.isInteger(payload.level) && payload.level >= 1 && payload.level <= 12
+  if (entry.type === 'profile_checkpoint') return validCheckpoint(payload)
+  if (entry.type === 'ticket_response') return typeof payload.dispatchId === 'string' && payload.dispatchId.length > 0 && payload.dispatchId.length <= 100
+    && typeof payload.studentAnswer === 'string' && payload.studentAnswer.length <= 500
+    && (payload.responseTimeSec == null || (Number.isFinite(Number(payload.responseTimeSec)) && Number(payload.responseTimeSec) >= 0 && Number(payload.responseTimeSec) <= 86400))
+    && Number.isFinite(Number(payload.answeredAt || entry.timestamp)) && Number(payload.answeredAt || entry.timestamp) > 0
+  if (entry.type === 'ticket_finished') return typeof payload.dispatchId === 'string' && payload.dispatchId.length > 0 && payload.dispatchId.length <= 100
+    && Number.isFinite(Number(payload.finishedAt || entry.timestamp)) && Number(payload.finishedAt || entry.timestamp) > 0
   return false
 }
 
@@ -142,6 +223,12 @@ export function applyWalEntry(profile, entry) {
       return applyMasteryAchieved(profile, entry.payload)
     case 'table_completed':
       return applyTableCompleted(profile, entry.payload, entry)
+    case 'profile_checkpoint':
+      return applyProfileCheckpoint(profile, entry.payload)
+    case 'ticket_response':
+      return applyTicketResponse(profile, entry.payload, entry)
+    case 'ticket_finished':
+      return applyTicketFinished(profile, entry.payload)
     default:
       return false
   }
@@ -152,6 +239,7 @@ export async function persistStudentEvents(studentId, entries, authorize) {
     throw studentStoreError(400, 'Missing or empty entries array')
   }
   if (entries.length > 100) throw studentStoreError(400, 'Too many entries (max 100)')
+  if (jsonBytes(entries) > MAX_BATCH_BYTES) throw studentStoreError(413, 'Event batch too large')
   if (entries.some(entry => !validEntry(entry, studentId))) throw studentStoreError(400, 'Invalid event batch')
   let appliedCount = 0
   const saved = await mutateStudentRecord(studentId, async existing => {

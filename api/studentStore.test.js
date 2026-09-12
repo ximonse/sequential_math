@@ -227,6 +227,51 @@ describe('student persistence boundary', () => {
     expect(memory.get('student:PUPIL').tableDrill.completions).toHaveLength(1)
   })
 
+  it('persists an allowlisted pilot checkpoint without changing identity, membership or teacher tickets', async () => {
+    memory.get('student:PUPIL').ticketInbox = { activeDispatchId: 'ticket-1', activePayload: { dispatchId: 'ticket-1' } }
+    const checkpoint = { entries: [{ id: 'checkpoint-1', type: 'profile_checkpoint', timestamp: 2000, payload: {
+      capturedAt: 2000, currentDifficulty: 5, highestDifficulty: 6,
+      adaptive: { skillStates: { addition: { level: 5 } } },
+      assignmentProgress: { assignmentA: { completedSkillTags: ['skill-1'] } },
+      stats: { totalProblems: 12 }
+    } }] }
+    expect((await call(eventsHandler, 'POST', checkpoint)).data.appliedCount).toBe(1)
+    const stored = memory.get('student:PUPIL')
+    expect(stored).toMatchObject({ studentId: 'PUPIL', name: 'Same name', classIds: ['A'],
+      currentDifficulty: 5, highestDifficulty: 6, pilotCheckpointAt: 2000,
+      ticketInbox: { activeDispatchId: 'ticket-1' } })
+    expect((await call(eventsHandler, 'POST', { entries: [{ ...checkpoint.entries[0], id: 'checkpoint-stale', payload: { ...checkpoint.entries[0].payload, capturedAt: 1999, currentDifficulty: 2 } }] })).data.appliedCount).toBe(0)
+    expect(memory.get('student:PUPIL').currentDifficulty).toBe(5)
+  })
+
+  it('derives ticket grading from the active server dispatch and clears only the matching ticket', async () => {
+    memory.get('student:PUPIL').ticketInbox = { activeDispatchId: 'ticket-1', activePayload: {
+      dispatchId: 'ticket-1', ticketId: 'template-1', title: 'Exit ticket', kind: 'exit',
+      question: 'Vad är 1,5 + 0,5?', answer: '2', showCorrectnessOnSubmit: false
+    } }
+    const answered = await call(eventsHandler, 'POST', { entries: [{ id: 'ticket-answer-1', type: 'ticket_response', timestamp: 3000,
+      payload: { dispatchId: 'ticket-1', studentAnswer: '2,0', answeredAt: 3000, responseTimeSec: 12 } }] })
+    expect(answered.data.appliedCount).toBe(1)
+    expect(memory.get('student:PUPIL').ticketResponses[0]).toMatchObject({
+      dispatchId: 'ticket-1', expectedAnswer: '2', studentAnswer: '2,0', isCorrect: true,
+      question: 'Vad är 1,5 + 0,5?', showCorrectnessOnSubmit: false
+    })
+    expect((await call(eventsHandler, 'POST', { entries: [{ id: 'wrong-finish', type: 'ticket_finished', timestamp: 4000,
+      payload: { dispatchId: 'ticket-2', finishedAt: 4000 } }] })).data.appliedCount).toBe(0)
+    expect((await call(eventsHandler, 'POST', { entries: [{ id: 'right-finish', type: 'ticket_finished', timestamp: 4001,
+      payload: { dispatchId: 'ticket-1', finishedAt: 4001 } }] })).data.appliedCount).toBe(1)
+    expect(memory.get('student:PUPIL').ticketInbox.activePayload).toBeNull()
+  })
+
+  it('rejects oversized or identity-bearing checkpoint fields', async () => {
+    const extraIdentity = await call(eventsHandler, 'POST', { entries: [{ id: 'bad-checkpoint', type: 'profile_checkpoint',
+      payload: { capturedAt: 1, name: 'Injected' } }] })
+    expect(extraIdentity.code).toBe(400)
+    const oversized = await call(eventsHandler, 'POST', { entries: [{ id: 'huge-checkpoint', type: 'profile_checkpoint',
+      payload: { capturedAt: 1, telemetry: { text: 'x'.repeat(40_000) } } }] })
+    expect(oversized.code).toBe(400)
+  })
+
   it('uses live ownership and rejects another teacher for GET, POST, DELETE and events', async () => {
     expect((await call(studentHandler, 'GET', {}, owner)).code).toBe(200)
     const stranger = { teacherId: 'stranger', classIds: ['A'], isAdmin: false }

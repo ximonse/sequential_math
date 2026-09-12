@@ -157,6 +157,10 @@ export async function createPilotStudentStore({
       if (existing.studentId !== studentId || existing.schema !== VAULT_SCHEMA || !existing.key) {
         throw new PilotStudentVaultError('VAULT_BINDING_MISMATCH', 'Den lokala vaulten tillhör en annan elev.');
       }
+      if (existing.key.extractable !== false || existing.key.algorithm?.name !== 'AES-GCM'
+        || !existing.key.usages?.includes('encrypt') || !existing.key.usages?.includes('decrypt')) {
+        throw new PilotStudentVaultError('CRYPTOKEY_PERSISTENCE_UNAVAILABLE', 'Enheten kan inte använda den säkra krypteringsnyckeln för offline-arbete.');
+      }
       return existing.key;
     }
 
@@ -193,6 +197,17 @@ export async function createPilotStudentStore({
   }
 
   return {
+    async saveSnapshot(snapshot) {
+      const encryptedSnapshot = await encryptVaultValue({ cryptoApi: crypto, key, studentId, recordType: 'snapshot', value: snapshot });
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      transaction.objectStore(STORE_NAME).put(record(SNAPSHOT_RECORD_ID, 'snapshot', studentId, encryptedSnapshot, { updatedAt: Date.now() }));
+      try {
+        await transactionAsPromise(transaction);
+      } catch (error) {
+        throw new PilotStudentVaultError('VAULT_WRITE_FAILED', 'Den lokala elevbilden kunde inte sparas säkert.', error);
+      }
+    },
+
     async saveSnapshotAndAppendEvent({ snapshot, event }) {
       if (!event || typeof event.id !== 'string' || event.id.length < 8) {
         throw new PilotStudentVaultError('INVALID_EVENT', 'Offlinehändelsen saknar ett säkert id.');

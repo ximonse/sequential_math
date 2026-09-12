@@ -85,6 +85,10 @@ export function isTeacherAdmin() {
   return getTeacherIdentity().isAdmin
 }
 
+export function isTeacherPrimaryAdmin() {
+  return getTeacherAccountKind() === 'primary-admin'
+}
+
 export function getTeacherAccountKind(identity = getTeacherIdentity()) {
   if (identity?.isPrimaryAdmin || (identity?.isAdmin && String(identity?.teacherId || '').toLowerCase() === 'admin')) {
     return 'primary-admin'

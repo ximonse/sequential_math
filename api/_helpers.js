@@ -253,6 +253,7 @@ export async function getLiveTeacherAuthPayload(req, { store = kv } = {}) {
     teacherId: tokenAuth.teacherId,
     classIds: Array.isArray(account.classIds) ? account.classIds.map(String).filter(Boolean) : [],
     isAdmin: Boolean(account.isAdmin),
+    isPrimaryAdmin: Boolean(account.isPrimaryAdmin) || (Boolean(account.isAdmin) && String(account.id || '').toLowerCase() === 'admin'),
     sessionVersion: accountVersion,
     authSource: tokenAuth.authSource,
     legacy: false
@@ -266,6 +267,11 @@ export async function isLiveTeacherApiAuthorized(req, options) {
 export async function isLiveAdminAuthorized(req, options) {
   const auth = await getLiveTeacherAuthPayload(req, options)
   return auth !== null && Boolean(auth.isAdmin)
+}
+
+export async function isLivePrimaryAdminAuthorized(req, options) {
+  const auth = await getLiveTeacherAuthPayload(req, options)
+  return auth !== null && Boolean(auth.isPrimaryAdmin)
 }
 
 /** Returns true if request has any valid teacher auth. */

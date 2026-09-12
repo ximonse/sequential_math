@@ -177,6 +177,30 @@ describe('teacher account to pupil lifecycle', () => {
       query: { studentId }, headers: { 'x-teacher-token': secondLogin.data.token }
     })).code).toBe(410)
   })
+
+  it('reserves teacher-account administration for the primary admin', async () => {
+    const { hash, salt, scheme } = hashTeacherPassword('ops-secret')
+    records.set('teacher_account:ops-admin', {
+      id: 'ops-admin', username: 'ops-admin', displayName: 'Ops Admin',
+      passwordHash: hash, passwordSalt: salt, passwordScheme: scheme,
+      classIds: [], isAdmin: true, isPrimaryAdmin: false, sessionVersion: 1
+    })
+    records.set('teacher_accounts:index', ['admin', 'ops-admin'])
+
+    const adminLogin = await call(teacherLoginHandler, {
+      method: 'POST', body: { username: 'ops-admin', password: 'ops-secret' }
+    })
+    const adminHeaders = { 'x-teacher-token': adminLogin.data.token }
+    const denied = await call(teachersHandler, { headers: adminHeaders })
+    expect(denied).toMatchObject({ code: 403, data: { error: 'Primary admin access required' } })
+
+    const primaryLogin = await call(teacherLoginHandler, {
+      method: 'POST', body: { username: 'admin', password: 'admin-secret' }
+    })
+    const primaryHeaders = { 'x-teacher-token': primaryLogin.data.token }
+    const allowed = await call(teachersHandler, { headers: primaryHeaders })
+    expect(allowed).toMatchObject({ code: 200, data: { teachers: expect.any(Array) } })
+  })
 })
 
 describe('school management lifecycle', () => {

@@ -23,7 +23,7 @@ import TicketSectionContainer from './TicketSectionContainer'
 import TableStickyStatusPanel from './TableStickyStatusPanel'
 import { ActivityBadge, RiskBadge } from './dashboardStatusBadges'
 import { getOperationLabel } from '../../../lib/operations'
-import { getTeacherAccountKind, getTeacherAccountLabel, getTeacherIdentity, isTeacherAdmin } from '../../../lib/teacherAuth'
+import { getTeacherAccountKind, getTeacherAccountLabel, getTeacherIdentity, isTeacherPrimaryAdmin } from '../../../lib/teacherAuth'
 
 const PANEL_DEFS = [
   { id: 'support',     title: 'Behöver stöd nu' },
@@ -170,7 +170,7 @@ export default function DashboardLayout({
   handleResetStudentPassword,
   passwordResetBusyId
 }) {
-  const teacherIsAdmin = isTeacherAdmin()
+  const teacherIsPrimaryAdmin = isTeacherPrimaryAdmin()
   const teacherIdentity = getTeacherIdentity()
   const teacherAccountKind = getTeacherAccountKind(teacherIdentity)
   const teacherSurfaceClass = teacherAccountKind === 'primary-admin'
@@ -178,7 +178,7 @@ export default function DashboardLayout({
     : teacherAccountKind === 'admin'
       ? 'bg-orange-200'
       : 'bg-emerald-200'
-  const visiblePanelDefs = PANEL_DEFS.filter(p => !p.adminOnly || teacherIsAdmin)
+  const visiblePanelDefs = PANEL_DEFS.filter(p => !p.adminOnly || teacherIsPrimaryAdmin)
   const [activeWorkspace, setActiveWorkspace] = useState('progress')
 
   const [collapsed, setCollapsed] = useState(() => {
@@ -391,7 +391,7 @@ export default function DashboardLayout({
     )
     if (id === 'management') return (
       <>
-        <TeacherPasswordNoticePanel />
+        {teacherIsPrimaryAdmin ? <TeacherPasswordNoticePanel /> : null}
         <ClassManagementPanel
           classNameInput={classNameInput}
           onSetClassNameInput={setClassNameInput}

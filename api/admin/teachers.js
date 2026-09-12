@@ -7,7 +7,7 @@ import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
 import {
   hashTeacherPassword,
-  isLiveAdminAuthorized,
+  isLivePrimaryAdminAuthorized,
   withCors
 } from '../_helpers.js'
 
@@ -23,8 +23,8 @@ export default async function handler(req, res) {
     headers: 'Content-Type, x-teacher-token'
   }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
-  if (!await isLiveAdminAuthorized(req)) {
-    return res.status(401).json({ error: 'Admin access required' })
+  if (!await isLivePrimaryAdminAuthorized(req)) {
+    return res.status(403).json({ error: 'Primary admin access required' })
   }
 
   if (req.method === 'GET') {
@@ -76,6 +76,7 @@ export default async function handler(req, res) {
       passwordScheme: scheme,
       classIds,
       isAdmin,
+      isPrimaryAdmin: false,
       sessionVersion: 1,
       createdAt: Date.now()
     }

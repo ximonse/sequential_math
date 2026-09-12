@@ -24,7 +24,8 @@ describe('pilot student sessions', () => {
   })
   it('creates a secure cookie session and rejects it after credential rotation', async () => {
     records.clear(); const id = 'A'.repeat(32), secret = createQrSecret(); const saved = profile(id, secret); records.set(`student:${id}`, saved)
-    const login = response(); await handler({ method: 'POST', body: { studentId: id, qrSecret: secret, pin: '1234' }, headers: {}, socket: {} }, login)
+    process.env.APP_ORIGIN = 'https://matematik.ximon.se'
+    const login = response(); await handler({ method: 'POST', body: { studentId: id, qrSecret: secret, pin: '1234' }, headers: { origin: process.env.APP_ORIGIN }, socket: {} }, login)
     expect(login.code).toBe(201); expect(login.headers['Set-Cookie']).toContain('__Host-student-session='); expect(login.headers['Set-Cookie']).toContain('HttpOnly; Secure; SameSite=Strict')
     const cookie = login.headers['Set-Cookie'].split(';')[0]
     await expect(getLiveStudentSession({ headers: { cookie } })).resolves.toMatchObject({ profile: { studentId: id } })
@@ -34,8 +35,9 @@ describe('pilot student sessions', () => {
   it('does not reveal whether an unknown or wrong credential failed', async () => {
     records.clear(); const id = 'B'.repeat(32), secret = createQrSecret(); records.set(`student:${id}`, profile(id, secret))
     const wrong = response(), unknown = response()
-    await handler({ method: 'POST', body: { studentId: id, qrSecret: secret, pin: '0000' }, headers: {}, socket: {} }, wrong)
-    await handler({ method: 'POST', body: { studentId: 'C'.repeat(32), qrSecret: secret, pin: '0000' }, headers: {}, socket: {} }, unknown)
+    process.env.APP_ORIGIN = 'https://matematik.ximon.se'
+    await handler({ method: 'POST', body: { studentId: id, qrSecret: secret, pin: '0000' }, headers: { origin: process.env.APP_ORIGIN }, socket: {} }, wrong)
+    await handler({ method: 'POST', body: { studentId: 'C'.repeat(32), qrSecret: secret, pin: '0000' }, headers: { origin: process.env.APP_ORIGIN }, socket: {} }, unknown)
     expect(wrong).toMatchObject({ code: 401, data: { error: 'Inloggningen kunde inte bekräftas.' } })
     expect(unknown).toMatchObject({ code: 401, data: { error: 'Inloggningen kunde inte bekräftas.' } })
   })

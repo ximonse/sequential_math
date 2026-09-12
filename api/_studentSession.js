@@ -56,6 +56,13 @@ export function setStudentSessionCookie(res, sessionId, maxAge = STUDENT_SESSION
 }
 
 export function requestIp(req) { return String(req?.headers?.['x-forwarded-for'] || req?.socket?.remoteAddress || 'unknown').split(',')[0].trim().slice(0, 100) }
+export function requestOriginIsTrusted(req) {
+  const origin = String(req?.headers?.origin || '')
+  const configured = String(process.env.APP_ORIGIN || '').replace(/\/$/, '')
+  if (configured) return origin === configured
+  if (process.env.NODE_ENV === 'development') return /^http:\/\/localhost(?::\d+)?$/.test(origin)
+  return origin === 'https://matematik.ximon.se'
+}
 function rateKey(studentId, ip) { return `student_login_failures:${createHash('sha256').update(`${studentId}|${ip}`).digest('hex')}` }
 export async function isStudentLoginRateLimited(studentId, ip, { store = kv } = {}) { return Number(await store.get(rateKey(studentId, ip)) || 0) >= MAX_STUDENT_LOGIN_FAILURES }
 export async function recordStudentLoginFailure(studentId, ip, { store = kv } = {}) {
@@ -65,8 +72,9 @@ export async function clearStudentLoginFailures(studentId, ip, { store = kv } = 
 
 export async function createStudentSession(profile, { store = kv } = {}) {
   const id = randomBytes(32).toString('base64url')
-  await store.set(`student_session:${id}`, { studentId: profile.studentId, credentialVersion: Number(profile.auth?.credentialVersion || 1), createdAt: Date.now() }, { ex: STUDENT_SESSION_TTL_SECONDS })
-  return id
+  const csrfToken = randomBytes(32).toString('base64url')
+  await store.set(`student_session:${id}`, { studentId: profile.studentId, credentialVersion: Number(profile.auth?.credentialVersion || 1), csrfHash: hashQrSecret(csrfToken), createdAt: Date.now() }, { ex: STUDENT_SESSION_TTL_SECONDS })
+  return { id, csrfToken }
 }
 export async function getLiveStudentSession(req, { store = kv } = {}) {
   const sessionId = readCookie(req, '__Host-student-session')
@@ -78,4 +86,5 @@ export async function getLiveStudentSession(req, { store = kv } = {}) {
   return { sessionId, profile }
 }
 export async function revokeStudentSession(req, { store = kv } = {}) { const id = readCookie(req, '__Host-student-session'); if (id) await store.del(`student_session:${id}`) }
+export function hasStudentCsrf(session, req) { return safeEqual(hashQrSecret(req?.headers?.['x-csrf-token']), session?.csrfHash) }
 export function studentIdentityDto(profile) { return { studentId: profile.studentId, displayAlias: String(profile.displayAlias || '').trim(), classIds: [...new Set([profile?.classId, ...(profile?.classIds || [])].map(String).filter(Boolean))], grade: Number(profile.grade) || null } }

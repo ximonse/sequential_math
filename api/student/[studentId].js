@@ -1,6 +1,6 @@
 import { hashPasswordWithSalt, verifyPasswordAgainstAuth } from '../_studentPassword.js'
 import { kv } from '@vercel/kv'
-import { mutateStudentRecord, studentStoreError } from '../_studentStore.js'
+import { isStudentDeleted, mutateStudentRecord, studentStoreError } from '../_studentStore.js'
 import { assertTeacherStudentAccess } from '../_studentAccess.js'
 import { randomBytes } from 'node:crypto'
 import {
@@ -733,7 +733,7 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'GET') {
-      if (await kv.exists(`student_deleted:${studentId}`)) return res.status(410).json({ error: 'Student deleted' })
+      if (await isStudentDeleted(studentId)) return res.status(410).json({ error: 'Student deleted' })
       if (stored && !existing) {
         return res.status(409).json({ error: 'Unsupported student profile schema' })
       }

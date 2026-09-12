@@ -3,12 +3,13 @@ import { withCors } from './_helpers.js'
 import { verifyPasswordAgainstAuth } from './_studentPassword.js'
 import { isCurrentStudentProfile } from '../src/lib/studentProfileContract.js'
 import { normalizeStudentId } from '../src/lib/storageStudentId.js'
+import { isStudentDeleted } from './_studentStore.js'
 
 const normalizeName = value => String(value || '').normalize('NFC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('sv')
 const denied = res => res.status(401).json({ error: 'Namn, elev-ID eller lösenord stämmer inte.' })
 
 async function liveProfile(studentId) {
-  if (await kv.exists(`student_deleted:${studentId}`)) return null
+  if (await isStudentDeleted(studentId)) return null
   const profile = await kv.get(`student:${studentId}`)
   return isCurrentStudentProfile(profile) && profile.studentId === studentId ? profile : null
 }

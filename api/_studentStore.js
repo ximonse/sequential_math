@@ -1,4 +1,5 @@
 import { kv } from '@vercel/kv'
+import { createHash } from 'node:crypto'
 
 // Every student writer uses this compare-and-set boundary. Transforms rerun
 // on conflicts and must validate authorization against the latest record.
@@ -32,12 +33,23 @@ export function studentStoreError(status, message) {
   return Object.assign(new Error(message), { status })
 }
 
+export function studentDeletedKey(studentId) {
+  const digest = createHash('sha256').update(String(studentId || '').trim().toUpperCase(), 'utf8').digest('hex')
+  return `student_deleted:${digest}`
+}
+
+export async function isStudentDeleted(studentId, { store = kv } = {}) {
+  const normalized = String(studentId || '').trim().toUpperCase()
+  if (!normalized) return false
+  return Boolean(await store.exists(studentDeletedKey(normalized)) || await store.exists(`student_deleted:${normalized}`))
+}
+
 export async function mutateStoredRecord(kind, id, transform, { store = kv } = {}) {
   if (!id || !['student', 'class', 'school'].includes(kind)) throw studentStoreError(400, 'Invalid record identity')
   const key = `${kind}:${id}`
-  const deletedKey = `${kind}_deleted:${id}`
+  const deletedKey = kind === 'student' ? studentDeletedKey(id) : `${kind}_deleted:${id}`
   for (let attempt = 0; attempt < 8; attempt++) {
-    if (await store.exists(deletedKey)) throw studentStoreError(410, 'Record deleted')
+    if (kind === 'student' ? await isStudentDeleted(id, { store }) : await store.exists(deletedKey)) throw studentStoreError(410, 'Record deleted')
     const current = await store.get(key)
     const version = current ? Number(current.serverRevision) || 0 : -1
     const next = await transform(current)

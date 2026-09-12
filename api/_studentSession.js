@@ -1,6 +1,7 @@
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import { kv } from '@vercel/kv'
 import { isCurrentStudentProfile } from '../src/lib/studentProfileContract.js'
+import { isStudentDeleted } from './_studentStore.js'
 
 export const STUDENT_ID_BYTES = 16
 export const QR_SECRET_BYTES = 32
@@ -100,7 +101,7 @@ export async function getLiveStudentSession(req, { store = kv } = {}) {
   if (!sessionId || sessionId.length > 200) return null
   const session = await store.get(`student_session:${sessionId}`)
   if (!session?.studentId) return null
-  if (await store.exists(`student_deleted:${session.studentId}`)) return null
+  if (await isStudentDeleted(session.studentId, { store })) return null
   const profile = await store.get(`student:${session.studentId}`)
   if (!isCurrentStudentProfile(profile) || profile?.auth?.scheme !== 'qr-pin-v1' || profile.auth.disabled || Number(profile.auth.credentialVersion || 1) !== Number(session.credentialVersion)) return null
   if (profile.studentId !== session.studentId) return null

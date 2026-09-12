@@ -53,7 +53,7 @@ import teacherClassesHandler from './teacher-classes.js'
 import { isCurrentStudentProfile } from '../src/lib/studentProfileContract.js'
 import { sanitizeProfileForList } from './students.js'
 import { isTeacherListProfile } from '../src/lib/teacherListProfile.js'
-import { createStudentRecord, mutateStudentRecord } from './_studentStore.js'
+import { createStudentRecord, mutateStudentRecord, studentDeletedKey } from './_studentStore.js'
 import { createClassRecord, deleteClassRecord } from './_classStore.js'
 import { createStudentProfile } from '../src/lib/studentProfile.js'
 import { createPilotStudentAuth, createQrSecret } from './_studentSession.js'
@@ -310,6 +310,7 @@ describe('student persistence boundary', () => {
       mutateStudentRecord('PUPIL', () => null)
     ])
     expect(memory.has('student:PUPIL')).toBe(false)
-    expect(memory.has('student_deleted:PUPIL')).toBe(true)
+    expect(memory.has(studentDeletedKey('PUPIL'))).toBe(true)
+    expect(memory.has('student_deleted:PUPIL')).toBe(false)
   })
 })

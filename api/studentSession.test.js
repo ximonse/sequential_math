@@ -24,7 +24,7 @@ describe('pilot student sessions', () => {
     expect(verifyPilotStudentCredentials(auth, createQrSecret(), '1234')).toBe(false)
   })
   it('creates a secure cookie session and rejects it after credential rotation', async () => {
-    records.clear(); const id = 'A'.repeat(32), secret = createQrSecret(); const saved = profile(id, secret); records.set(`student:${id}`, saved)
+    records.clear(); records.set('class:6a', { id: '6a', teacherIds: ['teacher-1'] }); const id = 'A'.repeat(32), secret = createQrSecret(); const saved = profile(id, secret); records.set(`student:${id}`, saved)
     process.env.APP_ORIGIN = 'https://matematik.ximon.se'
     const login = response(); await handler({ method: 'POST', body: { studentId: id, qrSecret: secret, pin: '1234' }, headers: { origin: process.env.APP_ORIGIN }, socket: {} }, login)
     expect(login.code).toBe(201); expect(login.headers['Set-Cookie']).toContain('__Host-student-session='); expect(login.headers['Set-Cookie']).toContain('HttpOnly; Secure; SameSite=Strict')

@@ -187,7 +187,13 @@ export default function DashboardLayout({
 
   const toggleCollapsed = id => setCollapsed(prev => {
     const next = { ...prev, [id]: !prev[id] }
-    localStorage.setItem(LS_COLLAPSED_KEY, JSON.stringify(next))
+    try {
+      localStorage.setItem(LS_COLLAPSED_KEY, JSON.stringify(next))
+    } catch (error) {
+      // This is only a convenience preference; do not crash the dashboard
+      // when browser storage is full.
+      if (error?.name !== 'QuotaExceededError') throw error
+    }
     return next
   })
 

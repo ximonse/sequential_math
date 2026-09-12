@@ -9,7 +9,15 @@ export function createStorageClassApi(deps) {
 
   function saveClasses(classes) {
     const normalized = normalizeClassRecords(classes)
-    localStorage.setItem(CLASSES_KEY, JSON.stringify(normalized))
+    try {
+      localStorage.setItem(CLASSES_KEY, JSON.stringify(normalized))
+      return true
+    } catch (error) {
+      // Class data is also held server-side. A full browser cache must never
+      // make a teacher view crash or turn a completed server action into a UI failure.
+      if (error?.name === 'QuotaExceededError') return false
+      throw error
+    }
   }
 
   function getClasses() {

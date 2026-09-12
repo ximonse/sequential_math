@@ -23,6 +23,18 @@ const MAX_TELEMETRY_EVENTS = 1200
 const MAX_TELEMETRY_DAYS = 120
 const MAX_TICKET_RESPONSES = 500
 
+export function sanitizeStudentProfileForResponse(profile) {
+  if (!profile || typeof profile !== 'object') return profile
+  const safe = { ...profile }
+  if (safe.auth && typeof safe.auth === 'object') {
+    const { passwordHash, passwordSalt, passwordScheme, password, pin, qrSecretHash, credentialVersion, session, sessionId, ...metadata } = safe.auth
+    safe.auth = metadata
+  }
+  delete safe.session
+  delete safe.sessionId
+  return safe
+}
+
 function createSaltHex() {
   return randomBytes(16).toString('hex')
 }
@@ -730,19 +742,14 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'Unauthorized' })
       }
 
-      const safeProfile = withFreshTeacherSummary(profile)
-      if (safeProfile.auth) {
-        const { passwordHash, passwordSalt, passwordScheme, password, ...safeAuth } = safeProfile.auth
-        safeProfile.auth = safeAuth
-      }
+      const safeProfile = sanitizeStudentProfileForResponse(withFreshTeacherSummary(profile))
       return res.status(200).json({ profile: safeProfile })
     }
 
     if (req.method === 'PATCH') {
       const changes = req.body?.changes
       if (!changes || typeof changes !== 'object' || Array.isArray(changes)
-        || Object.keys(changes).some(field => !['ticketInbox', 'ticketRevealAll', 'name'].includes(field))
-        || (changes.name !== undefined && (typeof changes.name !== 'string' || !changes.name.trim() || changes.name.length > 100))) {
+        || Object.keys(changes).some(field => !['ticketInbox', 'ticketRevealAll'].includes(field))) {
         throw studentStoreError(400, 'Invalid teacher update')
       }
       await mutateStudentRecord(studentId, async current => {
@@ -751,7 +758,7 @@ export default async function handler(req, res) {
         if (Number(req.body.serverRevision) !== Number(current.serverRevision || 0)) {
           throw studentStoreError(409, 'Profile changed; refresh before editing')
         }
-        const next = { ...current, ...changes, ...(changes.name !== undefined ? { name: changes.name.trim() } : {}) }
+        const next = { ...current, ...changes }
         if (changes.ticketRevealAll && Array.isArray(next.ticketResponses)) {
           next.ticketResponses = next.ticketResponses.map(item => ({ ...item,
             teacherRevealAt: next.ticketRevealAll[item.dispatchId] || null }))
@@ -800,7 +807,7 @@ export default async function handler(req, res) {
         }
         return normalizeProfileForStorage(withFreshTeacherSummary(merged), studentId, studentPassword)
       })
-      return res.status(200).json({ ok: true, profile: saved })
+      return res.status(200).json({ ok: true, profile: sanitizeStudentProfileForResponse(saved) })
     }
 
     return res.status(405).json({ error: 'Method not allowed' })

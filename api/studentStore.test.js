@@ -92,7 +92,7 @@ describe('student persistence boundary', () => {
   it('rejects pupil name patches while allowing class names to change', async () => {
     const pupil = await call(studentHandler, 'PATCH', { serverRevision: 0, changes: { name: 'New name' } }, owner)
     expect(pupil.code).toBe(400)
-    expect(memory.get('student:PUPIL')).toMatchObject({ studentId: 'PUPIL', name: 'New name', classIds: ['A'] })
+    expect(memory.get('student:PUPIL')).toMatchObject({ studentId: 'PUPIL', name: 'Same name', classIds: ['A'] })
     const klass = await callClass('PUT', 'A', owner, { id: 'A', name: '4B' })
     expect(klass).toMatchObject({ code: 200, data: { ok: true } })
     expect(memory.get('class:A')).toMatchObject({ id: 'A', name: '4B' })

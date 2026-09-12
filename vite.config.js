@@ -60,7 +60,8 @@ const devApiMock = {
         teacherId: 'local-teacher',
         displayName: 'Lokal lärare',
         classIds: [],
-        isAdmin: true
+        isAdmin: true,
+        isPrimaryAdmin: true
       }))
     }
 

@@ -9,7 +9,12 @@ vi.mock('./DashboardHeaderBar', () => ({ default: () => null }))
 vi.mock('./CloudSyncStatusPanel', () => ({ default: () => null }))
 vi.mock('./ClassFilterPanel', () => ({ default: () => null }))
 vi.mock('./StudentDetailPanel', () => ({ default: () => <p>Student detail is visible</p> }))
-vi.mock('../../../lib/teacherAuth', () => ({ isTeacherAdmin: () => false }))
+vi.mock('../../../lib/teacherAuth', () => ({
+  isTeacherAdmin: () => false,
+  getTeacherIdentity: () => ({ teacherId: 'teacher-test', displayName: 'Testlärare', isAdmin: false }),
+  getTeacherAccountKind: () => 'teacher',
+  getTeacherAccountLabel: () => 'Lärare'
+}))
 
 afterEach(() => vi.unstubAllGlobals())
 

@@ -45,7 +45,8 @@ function storeTeacherSession(data) {
     teacherId: data?.teacherId || null,
     displayName: String(data?.displayName || 'Lärare'),
     classIds: Array.isArray(data?.classIds) ? data.classIds : [],
-    isAdmin: Boolean(data?.isAdmin)
+    isAdmin: Boolean(data?.isAdmin),
+    isPrimaryAdmin: Boolean(data?.isPrimaryAdmin)
   }
   sessionStorage.setItem(TEACHER_AUTH_KEY, '1')
   sessionStorage.setItem(TEACHER_API_TOKEN_KEY, token)
@@ -73,15 +74,29 @@ export function getTeacherApiToken() {
 export function getTeacherIdentity() {
   try {
     const raw = sessionStorage.getItem(TEACHER_IDENTITY_KEY)
-    if (!raw) return { teacherId: null, displayName: '', classIds: [], isAdmin: false }
+    if (!raw) return { teacherId: null, displayName: '', classIds: [], isAdmin: false, isPrimaryAdmin: false }
     return JSON.parse(raw)
   } catch {
-    return { teacherId: null, displayName: '', classIds: [], isAdmin: false }
+    return { teacherId: null, displayName: '', classIds: [], isAdmin: false, isPrimaryAdmin: false }
   }
 }
 
 export function isTeacherAdmin() {
   return getTeacherIdentity().isAdmin
+}
+
+export function getTeacherAccountKind(identity = getTeacherIdentity()) {
+  if (identity?.isPrimaryAdmin || (identity?.isAdmin && String(identity?.teacherId || '').toLowerCase() === 'admin')) {
+    return 'primary-admin'
+  }
+  return identity?.isAdmin ? 'admin' : 'teacher'
+}
+
+export function getTeacherAccountLabel(identity = getTeacherIdentity()) {
+  const kind = getTeacherAccountKind(identity)
+  if (kind === 'primary-admin') return 'Huvudadmin'
+  if (kind === 'admin') return 'Administratör'
+  return 'Lärare'
 }
 
 /**

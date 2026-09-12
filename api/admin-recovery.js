@@ -73,7 +73,7 @@ export default async function handler(req, res) {
       account = {
         id: randomBytes(8).toString('hex'), username, displayName: displayName || username,
         passwordHash: hash, passwordSalt: salt, passwordScheme: scheme,
-        classIds: [], isAdmin: true, sessionVersion: 1, createdAt: Date.now()
+        classIds: [], isAdmin: true, isPrimaryAdmin: true, sessionVersion: 1, createdAt: Date.now()
       }
       await kv.set(`teacher_account:${account.id}`, account)
       await kv.sadd('teacher_accounts:index', account.id)

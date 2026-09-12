@@ -1,7 +1,7 @@
 /**
  * POST /api/teacher-login
  * Body: { username, password }
- * Returns: { ok, token, expiresAt, teacherId, displayName, classIds, isAdmin }
+ * Returns: { ok, token, expiresAt, teacherId, displayName, classIds, isAdmin, isPrimaryAdmin }
  *
  * Uses per-teacher accounts stored in KV (teacher_account:{id}).
  */
@@ -74,7 +74,8 @@ export default async function handler(req, res) {
       teacherId: account.id,
       displayName: account.displayName || account.username,
       classIds,
-      isAdmin: Boolean(account.isAdmin)
+      isAdmin: Boolean(account.isAdmin),
+      isPrimaryAdmin: Boolean(account.isPrimaryAdmin) || (Boolean(account.isAdmin) && String(account.id || '').toLowerCase() === 'admin')
     })
   }
 

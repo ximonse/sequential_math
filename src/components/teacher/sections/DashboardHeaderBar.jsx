@@ -4,8 +4,16 @@ function DashboardHeaderBar({
   onJumpToPasswordReset,
   onRefresh,
   onGoDashboard,
-  onLogout
+  onLogout,
+  accountName,
+  accountLabel,
+  cloudSyncStatus,
+  isCloudRefreshBusy,
+  onRefreshCloud
 }) {
+  const syncIsHealthy = Boolean(cloudSyncStatus?.lastSuccessAt) && !cloudSyncStatus?.lastError
+  const syncLabel = syncIsHealthy ? 'Datakällan är synkad' : 'Datakällan behöver kontrolleras'
+
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
       <div>
@@ -20,6 +28,19 @@ function DashboardHeaderBar({
       </div>
 
       <div className="flex flex-wrap gap-2">
+        <div className="flex items-center gap-2 px-1" title={syncLabel}>
+          <button
+            type="button"
+            onClick={onRefreshCloud}
+            disabled={isCloudRefreshBusy}
+            aria-label={syncLabel}
+            className={`h-3 w-3 rounded-full ring-2 ring-white shadow-sm ${syncIsHealthy ? 'bg-emerald-500' : 'bg-rose-500'} ${isCloudRefreshBusy ? 'animate-pulse' : ''}`}
+          />
+          <div className="leading-tight">
+            <p className="text-sm font-semibold text-gray-800">{accountName || 'Lärare'}</p>
+            <p className="text-[11px] text-gray-600">{accountLabel || 'Lärare'}</p>
+          </div>
+        </div>
         {!isDirectStudentView && (
           <button
             onClick={onJumpToPasswordReset}

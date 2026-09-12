@@ -5,7 +5,6 @@ import ClassManagementPanel from './ClassManagementPanel'
 import ClassFilterPanel from './ClassFilterPanel'
 import ClassMisconceptionHeatmap from './ClassMisconceptionHeatmap'
 import ClassMasteryLevelPanel from './ClassMasteryLevelPanel'
-import CloudSyncStatusPanel from './CloudSyncStatusPanel'
 import CollapsibleSection from './CollapsibleSection'
 import PauseGameHighscorePanel from './PauseGameHighscorePanel'
 import DifficultyAnalysisPanel from './DifficultyAnalysisPanel'
@@ -24,7 +23,7 @@ import TicketSectionContainer from './TicketSectionContainer'
 import TableStickyStatusPanel from './TableStickyStatusPanel'
 import { ActivityBadge, RiskBadge } from './dashboardStatusBadges'
 import { getOperationLabel } from '../../../lib/operations'
-import { isTeacherAdmin } from '../../../lib/teacherAuth'
+import { getTeacherAccountKind, getTeacherAccountLabel, getTeacherIdentity, isTeacherAdmin } from '../../../lib/teacherAuth'
 
 const PANEL_DEFS = [
   { id: 'support',     title: 'Behöver stöd nu' },
@@ -172,6 +171,13 @@ export default function DashboardLayout({
   passwordResetBusyId
 }) {
   const teacherIsAdmin = isTeacherAdmin()
+  const teacherIdentity = getTeacherIdentity()
+  const teacherAccountKind = getTeacherAccountKind(teacherIdentity)
+  const teacherSurfaceClass = teacherAccountKind === 'primary-admin'
+    ? 'bg-lime-200'
+    : teacherAccountKind === 'admin'
+      ? 'bg-orange-200'
+      : 'bg-emerald-200'
   const visiblePanelDefs = PANEL_DEFS.filter(p => !p.adminOnly || teacherIsAdmin)
   const [activeWorkspace, setActiveWorkspace] = useState('progress')
 
@@ -433,7 +439,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-200 py-4">
+    <div className={`min-h-screen ${teacherSurfaceClass} py-4`}>
       <div className="max-w-7xl mx-auto px-3">
         <DashboardHeaderBar
           isDirectStudentView={isDirectStudentView}
@@ -442,6 +448,11 @@ export default function DashboardLayout({
           onRefresh={handleRefresh}
           onGoDashboard={() => navigate('/teacher')}
           onLogout={handleLogout}
+          accountName={teacherIdentity.displayName}
+          accountLabel={getTeacherAccountLabel(teacherIdentity)}
+          cloudSyncStatus={cloudSyncStatus}
+          isCloudRefreshBusy={isCloudRefreshBusy}
+          onRefreshCloud={() => { void handleCloudRefreshNow() }}
         />
 
         <div className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
@@ -459,14 +470,6 @@ export default function DashboardLayout({
             </nav>
           </aside>
           <div className="min-w-0">
-          <CloudSyncStatusPanel
-            cloudSyncStatus={cloudSyncStatus}
-            isCloudRefreshBusy={isCloudRefreshBusy}
-            onRefreshNow={() => { void handleCloudRefreshNow() }}
-            formatSyncTimestamp={formatSyncTimestamp}
-            getCloudSyncSourceLabel={getCloudSyncSourceLabel}
-          />
-
           <ClassFilterPanel
             selectedClassIds={selectedClassIds}
             studentsCount={students.length}

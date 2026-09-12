@@ -5,7 +5,6 @@ import ClassManagementPanel from './ClassManagementPanel'
 import ClassFilterPanel from './ClassFilterPanel'
 import ClassMisconceptionHeatmap from './ClassMisconceptionHeatmap'
 import ClassMasteryLevelPanel from './ClassMasteryLevelPanel'
-import ClassStatsCards from './ClassStatsCards'
 import CloudSyncStatusPanel from './CloudSyncStatusPanel'
 import CollapsibleSection from './CollapsibleSection'
 import PauseGameHighscorePanel from './PauseGameHighscorePanel'
@@ -434,7 +433,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 py-4">
+    <div className="min-h-screen bg-slate-200 py-4">
       <div className="max-w-7xl mx-auto px-3">
         <DashboardHeaderBar
           isDirectStudentView={isDirectStudentView}
@@ -476,8 +475,6 @@ export default function DashboardLayout({
             onClearClassFilter={clearClassFilter}
             onToggleClassFilter={handleToggleClassFilter}
           />
-
-          <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
 
           {WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
             .filter(id => visiblePanelDefs.some(panel => panel.id === id))

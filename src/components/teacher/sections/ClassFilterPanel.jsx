@@ -24,7 +24,7 @@ export default function ClassFilterPanel({
           type="button"
           onClick={onClearClassFilter}
           className={`px-2 py-1 rounded text-xs ${selectedClassIds.length === 0
-            ? 'bg-blue-600 text-white'
+            ? 'bg-slate-700 text-white hover:bg-slate-800'
             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
         >
@@ -41,7 +41,7 @@ export default function ClassFilterPanel({
             key={`top-filter-${item.id}`}
             onClick={() => onToggleClassFilter(item.id)}
             className={`px-2 py-1 rounded text-xs ${selectedClassIds.includes(item.id)
-              ? 'bg-blue-600 text-white'
+              ? 'bg-slate-700 text-white hover:bg-slate-800'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
           >

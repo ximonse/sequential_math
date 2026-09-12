@@ -25,7 +25,7 @@ export default function TableSelectionAndDevelopmentPanel({
           <button
             onClick={onClearTableSelection}
             className={`px-2.5 py-1.5 rounded text-xs ${tableSelectedStudentIds.length === 0
-              ? 'bg-indigo-600 text-white'
+              ? 'bg-slate-700 text-white hover:bg-slate-800'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
           >

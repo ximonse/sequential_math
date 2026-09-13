@@ -100,6 +100,7 @@ export default function ClassManagementPanel({
   onSaveClassExtras,
   onMoveStudent,
   onOpenStudentDetail,
+  teacherClassIds = [],
   canManageSchools = false,
   canDeleteClasses = false
 }) {
@@ -112,6 +113,12 @@ export default function ClassManagementPanel({
   const [moveStudentId, setMoveStudentId] = useState('')
   const busyRef = useRef(false)
   const classLabel = item => `${item.name} · ${directory.schools.find(school => school.id === item.schoolId)?.name || 'Skola ej angiven'}`
+  const orderedClasses = [...classes].sort((a, b) => {
+    const aOwned = teacherClassIds.includes(a.id)
+    const bOwned = teacherClassIds.includes(b.id)
+    if (aOwned !== bOwned) return aOwned ? -1 : 1
+    return String(a.name || '').localeCompare(String(b.name || ''), 'sv')
+  })
   const names = parseRosterLines(rosterInput)
   const runRosterAction = async (action) => {
     if (busyRef.current) return
@@ -136,6 +143,8 @@ export default function ClassManagementPanel({
       <h2 className="text-lg font-semibold text-gray-800 mb-3">Klasser</h2>
       {canManageSchools ? <NewSchoolForm directory={directory} onCreated={setSchoolId} /> : null}
       <fieldset disabled={busy} aria-busy={busy}>
+      <section className="rounded-lg border border-slate-200 bg-slate-50 p-3 mb-5">
+      <h3 className="mb-2 text-sm font-semibold text-slate-900">Skapa eller fyll en klass</h3>
       {canManageSchools ? <div className="mb-3"><SchoolSelect schools={directory.schools} value={schoolId} onChange={setSchoolId}
         disabled={directory.loading || Boolean(directory.error)} label="Skola för ny klass/grupp" /></div> : null}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
@@ -168,7 +177,7 @@ export default function ClassManagementPanel({
           className="px-3 py-2 border rounded text-sm"
         >
           <option value="">Välj klass att lägga till i</option>
-          {classes.map(item => (
+          {orderedClasses.map(item => (
             <option key={`add-${item.id}`} value={item.id}>
               {classLabel(item)}
             </option>
@@ -255,6 +264,7 @@ export default function ClassManagementPanel({
           })} className="mt-2 rounded bg-amber-600 px-3 py-1.5 text-xs text-white disabled:opacity-50">Flytta elev</button>
         </details>
       ) : null}
+      </section>
       <p className="text-xs text-gray-500 mb-2">
         Tips: klass-/gruppurval för alla vyer styrs längst upp på sidan.
       </p>
@@ -269,12 +279,17 @@ export default function ClassManagementPanel({
       <p role="status" className="text-xs text-gray-600 mb-3">{busy ? 'Sparar på servern…' : classStatus || ' '}</p>
 
       {classes.length > 0 ? (
-        <div className="space-y-1.5">
-          {classes.map(item => {
+        <section className="border-t border-slate-200 pt-4">
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-sm font-semibold text-slate-900">Befintliga klasser</h3>
+            <p className="text-xs text-slate-500">Dina klasser visas först.</p>
+          </div>
+        <div className="space-y-4">
+          {orderedClasses.map(item => {
             const classStudents = students.filter(student => recordMatchesClassFilter(student, [item.id]))
             const loggedInCount = classStudents.filter(student => student.auth?.lastLoginAt).length
             return (
-              <div key={item.id} className="border rounded px-2 py-1.5">
+              <div key={item.id} className="rounded-lg border border-slate-300 bg-white p-3 shadow-sm">
                 <div className="flex items-center justify-between gap-2">
                   <div>
                     <p className="text-sm font-medium text-gray-800">{classLabel(item)}</p>
@@ -303,8 +318,12 @@ export default function ClassManagementPanel({
                     </div>
                   </details>
                 ) : null}
-                {canManageSchools ? <ClassSchoolChoice key={`${item.id}-${item.schoolId || ''}`} classRecord={item} directory={directory}
-                  onSave={onRenameClass} disabled={busy} /> : null}
+                {canManageSchools ? <details className="mt-3 rounded border border-blue-200 bg-blue-50 p-2">
+                  <summary className="cursor-pointer text-xs font-medium text-blue-900">Skolkoppling (administratör)</summary>
+                  <p className="mt-1 text-xs text-blue-900">Ändra bara om klassen verkligen tillhör en annan skola.</p>
+                  <ClassSchoolChoice key={`${item.id}-${item.schoolId || ''}`} classRecord={item} directory={directory}
+                    onSave={onRenameClass} disabled={busy} />
+                </details> : null}
                 {onSaveClassExtras && (
                   <ClassExtrasRow classRecord={item} onSaveExtras={onSaveClassExtras} />
                 )}
@@ -312,6 +331,7 @@ export default function ClassManagementPanel({
             )
           })}
         </div>
+        </section>
       ) : null}
       </fieldset>
     </div>

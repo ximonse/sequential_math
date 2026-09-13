@@ -129,9 +129,10 @@ function TeachersTab({ teachers, classes, onRefresh, setStatus }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      <section>
+        <div className="mb-2"><h3 className="text-sm font-semibold text-gray-900">Skapa lärare</h3><p className="text-xs text-gray-500">Skapa ett nytt konto och tilldela klasser direkt.</p></div>
       <form onSubmit={handleCreate} className="grid grid-cols-2 gap-2 text-xs border border-gray-200 rounded-lg p-3 bg-gray-50">
-        <h3 className="col-span-2 text-xs font-semibold text-gray-600 mb-1">Ny lärare</h3>
         <input
           required
           placeholder="Användarnamn (t.ex. anna.larare)"
@@ -175,13 +176,16 @@ function TeachersTab({ teachers, classes, onRefresh, setStatus }) {
         </div>
         <label className="col-span-2 flex items-center gap-2 text-xs">
           <input type="checkbox" checked={form.isAdmin} onChange={e => setForm(f => ({ ...f, isAdmin: e.target.checked }))} />
-          Administratör (kan se alla klasser och hantera lärare)
+          Administratör (kan se och hantera alla klasser och elever)
         </label>
         <button disabled={busy} type="submit" className="col-span-2 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded font-semibold text-xs disabled:opacity-50">
           {busy ? 'Skapar...' : 'Skapa lärare'}
         </button>
       </form>
+      </section>
 
+      <section className="border-t border-slate-200 pt-4">
+        <div className="mb-2"><h3 className="text-sm font-semibold text-gray-900">Hantera befintliga lärare</h3><p className="text-xs text-gray-500">Välj Redigera för att tilldela klasser, ändra lösenord eller ge administratörsbehörighet.</p></div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
@@ -203,6 +207,7 @@ function TeachersTab({ teachers, classes, onRefresh, setStatus }) {
           </tbody>
         </table>
       </div>
+      </section>
     </div>
   )
 }
@@ -211,6 +216,7 @@ function TeacherRow({ teacher, classes, onDelete, onRefresh, setStatus }) {
   const [editing, setEditing] = useState(false)
   const [newPassword, setNewPassword] = useState('')
   const [classIds, setClassIds] = useState(teacher.classIds || [])
+  const [isAdmin, setIsAdmin] = useState(Boolean(teacher.isAdmin))
   const [busy, setBusy] = useState(false)
 
   const classNames = (teacher.classIds || [])
@@ -219,7 +225,7 @@ function TeacherRow({ teacher, classes, onDelete, onRefresh, setStatus }) {
 
   const handleSave = async () => {
     setBusy(true)
-    const body = { classIds }
+    const body = { classIds, isAdmin }
     if (newPassword.length >= 6) body.password = newPassword
     const { ok } = await apiFetch(`/api/admin/teachers/${teacher.id}`, {
       method: 'PUT',
@@ -245,6 +251,10 @@ function TeacherRow({ teacher, classes, onDelete, onRefresh, setStatus }) {
                 </label>
               ))}
             </div>
+            <label className="flex items-center gap-2 text-xs font-medium text-slate-700">
+              <input type="checkbox" checked={isAdmin} onChange={event => setIsAdmin(event.target.checked)} />
+              Administratör
+            </label>
             <input type="password" placeholder="Nytt lösenord (lämna tomt för oförändrat)"
               value={newPassword} onChange={e => setNewPassword(e.target.value)}
               className="border rounded px-2 py-1 text-xs w-full" />

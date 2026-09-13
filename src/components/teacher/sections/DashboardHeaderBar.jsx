@@ -1,3 +1,5 @@
+import ThemeSwitcher from '../../shared/ThemeSwitcher'
+
 function DashboardHeaderBar({
   isDirectStudentView,
   detailStudentName,
@@ -28,6 +30,7 @@ function DashboardHeaderBar({
       </div>
 
       <div className="flex flex-wrap gap-2">
+        <ThemeSwitcher />
         <div className="flex items-center gap-2 px-1" title={syncLabel}>
           <button
             type="button"

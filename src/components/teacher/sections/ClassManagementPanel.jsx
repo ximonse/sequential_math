@@ -1,7 +1,9 @@
 import { useSchools, SchoolSelect, NewSchoolForm, ClassSchoolChoice } from './SchoolControls'
 import { useRef, useState } from 'react'
+import QRCode from 'qrcode'
 import { listDomains } from '../../../domains/registry'
 import { parseRosterLines } from '../../../lib/storageClassHelpers'
+import { getTeacherApiToken } from '../../../lib/teacherAuth'
 import PilotRosterPanel from './PilotRosterPanel'
 
 function getTogglableExtras() {
@@ -167,9 +169,9 @@ export default function ClassManagementPanel({
                   <summary className="cursor-pointer text-xs font-medium text-slate-800">Elever och elevkort ({classStudents.length})</summary>
                   <div className="mt-2 grid gap-1">
                     {classStudents.map(student => (
-                      <div key={`${item.id}-${student.studentId}`} className="flex items-center justify-between gap-2 rounded bg-slate-50 px-2 py-1.5 text-xs">
-                        <span className="min-w-0 truncate font-medium text-slate-800">{student.displayAlias || student.name}</span>
-                        <button type="button" onClick={() => onOpenStudentDetail(student.studentId)} className="shrink-0 rounded bg-amber-100 px-2 py-1 text-amber-950 hover:bg-amber-200">Öppna elevkort</button>
+                      <div key={`${item.id}-${student.studentId}`} className="rounded bg-slate-50 px-2 py-1.5 text-xs">
+                        <div className="flex items-center justify-between gap-2"><span className="min-w-0 truncate font-medium text-slate-800">{student.displayAlias || student.name}</span><button type="button" onClick={() => onOpenStudentDetail(student.studentId)} className="shrink-0 rounded bg-slate-200 px-2 py-1 text-slate-800 hover:bg-slate-300">Öppna elevprofil</button></div>
+                        <StudentCredentialIssuer student={student} />
                       </div>
                     ))}
                   </div>
@@ -332,5 +334,44 @@ export default function ClassManagementPanel({
       </fieldset>
     </section>
     </>
+  )
+}
+
+function StudentCredentialIssuer({ student }) {
+  const [credential, setCredential] = useState(null)
+  const [qrCode, setQrCode] = useState('')
+  const [status, setStatus] = useState('')
+
+  const issue = async () => {
+    const label = student.displayAlias || student.name || student.studentId
+    if (!window.confirm(`Skapa nytt QR-kort och ny PIN för ${label}? Det gamla kortet slutar fungera direkt.`)) return
+    setStatus('Skapar nytt elevkort…')
+    try {
+      const response = await fetch(`/api/student/${encodeURIComponent(student.studentId)}/credentials`, {
+        method: 'POST', headers: { 'x-teacher-token': getTeacherApiToken() }
+      })
+      const data = await response.json()
+      if (!response.ok || !data?.credential) throw new Error(data?.error || 'Kunde inte skapa elevkortet.')
+      const next = data.credential
+      setCredential(next)
+      setQrCode(await QRCode.toDataURL(JSON.stringify({ version: 1, studentId: next.studentId, qrSecret: next.qrSecret }), {
+        errorCorrectionLevel: 'M', margin: 1, width: 260
+      }))
+      setStatus('Nytt elevkort är klart. Skriv ut eller dela ut det nu.')
+    } catch (error) { setStatus(error.message || 'Kunde inte skapa elevkortet.') }
+  }
+
+  return (
+    <div className="mt-2 rounded border border-amber-300 bg-amber-50 p-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-xs font-medium text-amber-950">Elevkort</p>
+        <button type="button" onClick={issue} className="rounded bg-amber-700 px-2 py-1 text-xs font-semibold text-white hover:bg-amber-800">Nytt QR-kort / PIN</button>
+      </div>
+      {status ? <p role="status" className="mt-1 text-xs text-amber-900">{status}</p> : null}
+      {credential ? <div className="mt-2 flex items-center gap-3 rounded bg-white p-2 text-xs text-slate-800">
+        <div className="min-w-0"><p className="font-semibold">{credential.displayAlias || student.displayAlias || student.name}</p><p className="font-mono break-all">Elev-ID: {credential.studentId}</p><p className="font-mono break-all">QR-hemlighet: {credential.qrSecret}</p><p className="font-mono text-sm font-bold">PIN: {credential.pin}</p></div>
+        {qrCode ? <img className="h-24 w-24 shrink-0" src={qrCode} alt={`QR-kod för ${credential.displayAlias || credential.studentId}`} /> : null}
+      </div> : null}
+    </div>
   )
 }

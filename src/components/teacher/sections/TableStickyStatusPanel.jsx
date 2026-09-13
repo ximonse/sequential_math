@@ -13,7 +13,7 @@ function TableStickyStatusPanel({
     <div className={className} style={style}>
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-semibold text-gray-800">Gångertabell - sticky status per elev</h2>
-        <span className="text-xs text-gray-500">Dag (mörkgrön) låser till 23:59, vecka (ljusgrön) till söndag</span>
+        <span className="text-xs text-gray-500">3/4 = rätt/försök denna vecka. Dag (mörkgrön) låser till 23:59, vecka (ljusgrön) till söndag.</span>
       </div>
       {rows.length === 0 ? (
         <p className="text-sm text-gray-500">Inga elever i aktuellt urval.</p>
@@ -101,11 +101,32 @@ function TableStickyStatusPanel({
                   <td className="py-1 pr-2 text-gray-600">{row.className || '-'}</td>
                   {tables.map(table => (
                     <td key={`teacher-table-sticky-cell-${row.studentId}-${table}`} className="py-1 pr-1 text-center">
-                      <span className={`inline-flex w-5 h-5 rounded border align-middle ${getStatusClass(row.statusByTable[table])}`} title={getStatusLabel(row.statusByTable[table])}>
-                        {row.statusByTable[table] === 'star' ? (
-                          <span className="m-auto text-[10px] text-yellow-300">★</span>
-                        ) : null}
-                      </span>
+                      {(() => {
+                        const progress = row.progressByTable?.[table] || {}
+                        const hasWeekProgress = Number(progress.weekAttempts || 0) > 0
+                        const status = row.statusByTable[table]
+                        const progressLabel = hasWeekProgress
+                          ? `${progress.weekCorrect || 0}/${progress.weekAttempts || 0}`
+                          : '–'
+                        const title = hasWeekProgress
+                          ? `${getStatusLabel(status)}. Denna vecka: ${progress.weekCorrect || 0} rätt av ${progress.weekAttempts || 0} försök.`
+                          : `${getStatusLabel(status)}. Inga gångertabellsförsök denna vecka.`
+
+                        return (
+                          <span
+                            className={`inline-flex min-w-5 h-5 px-0.5 rounded border align-middle items-center justify-center text-[10px] font-medium ${getStatusClass(status)}`}
+                            title={title}
+                          >
+                            {status === 'star' ? (
+                              <span className="text-yellow-300">★</span>
+                            ) : status === 'today' || status === 'week' ? (
+                              <span>✓</span>
+                            ) : (
+                              <span>{progressLabel}</span>
+                            )}
+                          </span>
+                        )
+                      })()}
                     </td>
                   ))}
                   <td className="py-1 pr-2 text-gray-700">{row.todayDoneCount}</td>

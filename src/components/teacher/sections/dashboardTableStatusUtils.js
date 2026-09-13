@@ -13,19 +13,29 @@ export function buildStickyTableStatusForStudent(student) {
   const startToday = getStartOfDayTimestamp()
   const startWeek = getStartOfWeekTimestamp()
   const source = getPreferredProblemSource(student)
-  const todayDoneMap = computeStickyTableCompletionMapForTeacher(source, startToday)
-  const weekDoneMap = computeStickyTableCompletionMapForTeacher(source, startWeek)
+  const todayProgress = computeStickyTableProgressForTeacher(source, startToday)
+  const weekProgress = computeStickyTableProgressForTeacher(source, startWeek)
   const completionCountsToday = getTableCompletionCountsTodayForStudent(student, startToday)
 
   const statusByTable = {}
+  const progressByTable = {}
   let todayDoneCount = 0
   let weekDoneCount = 0
   let starCount = 0
 
   for (const table of TABLES) {
-    const todayDone = Boolean(todayDoneMap[table])
-    const weekDone = Boolean(weekDoneMap[table])
+    const today = todayProgress[table]
+    const week = weekProgress[table]
+    const todayDone = Boolean(today?.reached)
+    const weekDone = Boolean(week?.reached)
     const star = Number(completionCountsToday[table] || 0) >= 3
+
+    progressByTable[table] = {
+      todayAttempts: today?.attempts || 0,
+      todayCorrect: today?.correct || 0,
+      weekAttempts: week?.attempts || 0,
+      weekCorrect: week?.correct || 0
+    }
 
     if (star) {
       statusByTable[table] = 'star'
@@ -44,6 +54,7 @@ export function buildStickyTableStatusForStudent(student) {
 
   return {
     statusByTable,
+    progressByTable,
     todayDoneCount,
     weekDoneCount,
     starCount
@@ -51,7 +62,7 @@ export function buildStickyTableStatusForStudent(student) {
 }
 
 
-export function computeStickyTableCompletionMapForTeacher(problemSource, startTimestamp) {
+export function computeStickyTableProgressForTeacher(problemSource, startTimestamp) {
   const progress = TABLES.reduce((acc, table) => {
     acc[table] = {
       attempts: 0,
@@ -61,12 +72,7 @@ export function computeStickyTableCompletionMapForTeacher(problemSource, startTi
     return acc
   }, {})
 
-  if (!Array.isArray(problemSource) || problemSource.length === 0) {
-    return TABLES.reduce((acc, table) => {
-      acc[table] = false
-      return acc
-    }, {})
-  }
+  if (!Array.isArray(problemSource) || problemSource.length === 0) return progress
 
   const scoped = problemSource
     .filter(item => Number(item?.timestamp || 0) >= startTimestamp)
@@ -84,6 +90,12 @@ export function computeStickyTableCompletionMapForTeacher(problemSource, startTi
       entry.reached = true
     }
   }
+
+  return progress
+}
+
+export function computeStickyTableCompletionMapForTeacher(problemSource, startTimestamp) {
+  const progress = computeStickyTableProgressForTeacher(problemSource, startTimestamp)
 
   return TABLES.reduce((acc, table) => {
     acc[table] = Boolean(progress[table]?.reached)

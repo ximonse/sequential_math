@@ -86,11 +86,15 @@ export default function ClassMasteryLevelPanel({
     )
   }
 
-  if (!filteredStudents || filteredStudents.length === 0) {
-    return <p className="text-sm text-gray-500">Inga elever i urvalet.</p>
-  }
-
   return (
+    <section className="mb-8 rounded-lg bg-white p-4 shadow">
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800">Nivåöversikt – hela klassen</h2>
+          <p className="text-xs text-gray-500">Nivå i alla aktiverade kunskapsområden per elev.</p>
+        </div>
+      </div>
+      {!filteredStudents || filteredStudents.length === 0 ? <p className="text-sm text-gray-500">Inga elever i urvalet.</p> : (
     <div className="space-y-1">
       {/* Header with legend */}
       <div className="flex items-center justify-between flex-wrap gap-2 px-1 pb-1">
@@ -215,6 +219,8 @@ export default function ClassMasteryLevelPanel({
         </table>
       </div>
     </div>
+      )}
+    </section>
   )
 }
 

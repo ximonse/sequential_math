@@ -211,7 +211,9 @@ export default function DashboardLayout({
 
 
   useEffect(() => {
-    if (isDirectStudentView) setCollapsed(prev => ({ ...prev, detail: false }))
+    if (!isDirectStudentView) return
+    setActiveWorkspace('progress')
+    setCollapsed(prev => ({ ...prev, detail: false }))
   }, [isDirectStudentView, detailStudentId])
 
   function renderPanelContent(id) {

@@ -22,6 +22,17 @@ describe('student session client', () => {
     expect(hasStudentSessionCsrfToken()).toBe(true)
   })
 
+  it('sends a code name and PIN without QR material when requested', async () => {
+    const fetchMock = vi.fn(async () => jsonResponse(sessionPayload, 201))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await loginStudentSession({ loginCode: 'Gul Fyr Katt', pin: '1234' })
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/student-session', expect.objectContaining({
+      method: 'POST', body: JSON.stringify({ studentId: '', qrSecret: '', loginCode: 'Gul Fyr Katt', pin: '1234' })
+    }))
+  })
+
   it('resumes a cookie session and sends the in-memory CSRF token for event writes', async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(jsonResponse(sessionPayload))

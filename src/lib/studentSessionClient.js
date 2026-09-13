@@ -50,12 +50,17 @@ function rememberSession(data) {
   return { ok: true, student: data.student }
 }
 
-export async function loginStudentSession({ studentId, qrSecret, pin }) {
+export async function loginStudentSession({ studentId, qrSecret, loginCode, pin }) {
   clearCsrfToken()
   const result = await requestSession('/api/student-session', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ studentId: String(studentId || '').trim().toUpperCase(), qrSecret: String(qrSecret || ''), pin: String(pin || '') })
+    body: JSON.stringify({
+      studentId: String(studentId || '').trim().toUpperCase(),
+      qrSecret: String(qrSecret || ''),
+      ...(String(loginCode || '').trim() ? { loginCode: String(loginCode).trim() } : {}),
+      pin: String(pin || '')
+    })
   }, 'Kunde inte logga in.')
   if (!result.ok) return result
   return rememberSession(result.data)

@@ -305,7 +305,7 @@ function StudentSession() {
     setDailyLevelStreakMilestone,
     navigate,
     studentId,
-    studentName: profile.displayAlias || profile.name,
+    studentName: profile.name || profile.displayAlias,
     classId: isPilotStudent ? profile.classId || null : getActiveStudentClass(profile) || null,
     goToNextProblem,
     closeBreakGameAndContinue,
@@ -324,7 +324,7 @@ function StudentSession() {
 
   return (
     <SessionPage
-      profileName={profile.displayAlias || profile.name}
+      profileName={profile.name || profile.displayAlias}
       sessionCount={sessionCount}
       streak={streak}
       onExit={() => {

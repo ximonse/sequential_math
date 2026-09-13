@@ -153,9 +153,14 @@ Annars syns bara data som finns lokalt i samma browsermiljö.
 ## 12. Elevkort: QR-kod och PIN
 
 I `Administration → Klasser` öppnar du `Elever och elevkort` på rätt klass och
-väljer elev. På elevprofilen väljer du `Nytt QR-kort / ny PIN` när ett kort har
-försvunnit eller behöver ersättas. Skriv ut kortet direkt: den tidigare QR-koden
-och PIN-koden slutar då fungera.
+väljer elev. `Nytt QR-kort / ny PIN` skapar eller ersätter elevens kort. För en
+äldre namnelev är det också en säker migrering: namn, elev-ID, klass och
+historik behålls, medan eleven får ett kodnamn, en QR-kod och en fyrsiffrig PIN.
+Skriv ut kortet direkt: den tidigare QR-koden och PIN-koden slutar då fungera.
+
+Eleven kan sedan skanna QR-koden och skriva PIN, eller skriva kortets kodnamn
+(tre eller fyra ord) och PIN. Kodnamnet är en inloggningsuppgift; elevens
+riktiga namn visas för eleven själv och i personalens listor och statistik.
 
 `Äldre elevinloggningar` är bara ett kompatibilitetsverktyg för konton som
 fortfarande använder namn/lösenord. Där kan lösenordet sättas om till elevens

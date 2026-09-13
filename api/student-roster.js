@@ -5,7 +5,7 @@ import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass, assertTeacherStudentAccess } from './_studentAccess.js'
 import { createClassRecord } from './_classStore.js'
 import { createStudentRecord, mutateStudentRecord, studentStoreError } from './_studentStore.js'
-import { createPilotStudentAuth } from './_studentSession.js'
+import { createPilotStudentAuth, studentLoginCodeIndexKey } from './_studentSession.js'
 import { generateDisplayAlias, generateStudentPin } from './_studentAlias.js'
 
 const digest = text => createHash('sha256').update(text).digest('hex')
@@ -133,6 +133,7 @@ export default async function handler(req, res) {
             }
           }
           takenAliases.add(current.displayAlias)
+          await kv.set(studentLoginCodeIndexKey(current.displayAlias), studentId)
           await kv.sadd(`class_students:${target.id}`, studentId)
           results.push({ studentId, displayAlias: current.displayAlias, qrSecret, pin, ok: true })
         } catch (error) {

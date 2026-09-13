@@ -136,14 +136,14 @@ export default function StudentDetailPanel({
             Exportera elevvy CSV
           </button>
           {detailStudentProfile && (
-            <button type="button" onClick={() => { const alias = window.prompt('Visningsalias (fritext):', detailStudentProfile.displayAlias || detailStudentProfile.name || ''); if (alias?.trim()) onRenameStudent(detailStudentProfile.studentId, alias) }} className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs font-medium">Byt visningsalias</button>
+            <button type="button" onClick={() => { const name = window.prompt('Elevnamn (fritext):', detailStudentProfile.name || ''); if (name?.trim()) onRenameStudent(detailStudentProfile.studentId, name) }} className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs font-medium">Byt elevnamn</button>
           )}
           {detailStudentProfile?.displayAlias ? <button type="button" onClick={reissueCredential} className="px-3 py-1.5 bg-amber-200 hover:bg-amber-300 text-amber-950 rounded text-xs font-semibold">Nytt QR-kort / ny PIN</button> : null}
           {detailStudentProfile && (
             <button
               type="button"
               onClick={() => {
-                const name = detailStudentProfile.displayAlias || detailStudentProfile.name || detailStudentProfile.studentId
+                const name = detailStudentProfile.name || detailStudentProfile.displayAlias || detailStudentProfile.studentId
                 if (window.confirm(`Radera ${name} permanent? All elevdata och historik tas bort och kan inte återställas.`)) {
                   onDeleteStudent(detailStudentProfile.studentId)
                 }

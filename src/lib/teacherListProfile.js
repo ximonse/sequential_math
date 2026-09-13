@@ -41,9 +41,10 @@ export function toTeacherListProfile(profile) {
   for (const field of TEACHER_LIST_FIELDS) {
     if (Object.hasOwn(profile, field)) listProfile[field] = profile[field]
   }
-  // All teacher-facing lists consume name. For pseudonymous pupils, make the
-  // approved display alias the canonical list label without changing legacy data.
-  listProfile.name = String(profile.displayAlias || profile.name || '').trim()
+  // Teachers use the pupil's approved name when one exists. The separate
+  // display alias remains the credential-card/login code fallback for pilot
+  // records that have not yet been given a name.
+  listProfile.name = String(profile.name || profile.displayAlias || '').trim()
   listProfile.auth = { lastLoginAt: profile.auth?.lastLoginAt || null,
     loginCount: Number(profile.auth?.loginCount) || 0,
     passwordUpdatedAt: profile.auth?.passwordUpdatedAt || null }

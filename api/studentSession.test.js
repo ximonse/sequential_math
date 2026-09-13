@@ -11,7 +11,7 @@ vi.mock('@vercel/kv', () => ({ kv: {
   eval: vi.fn(async (_script, keys) => { const key = keys[0]; const value = Number(records.get(key) || 0) + 1; records.set(key, value); return value })
 } }))
 
-import { createPilotStudentAuth, createQrSecret, getLiveStudentSession, isStudentLoginIpRateLimited, MAX_STUDENT_LOGIN_FAILURES_PER_IP, recordStudentLoginFailure, verifyPilotStudentCredentials } from './_studentSession.js'
+import { createPilotStudentAuth, createQrSecret, getLiveStudentSession, isStudentLoginIpRateLimited, MAX_STUDENT_LOGIN_FAILURES_PER_IP, recordStudentLoginFailure, studentLoginCodeIndexKey, verifyPilotStudentCredentials } from './_studentSession.js'
 import handler from './student-session.js'
 
 function response() { return { code: 200, headers: {}, setHeader(k, v) { this.headers[k] = v }, status(code) { this.code = code; return this }, json(data) { this.data = data; return this }, end() { return this } } }
@@ -33,6 +33,31 @@ describe('pilot student sessions', () => {
     await expect(getLiveStudentSession({ headers: { cookie } })).resolves.toMatchObject({ profile: { studentId: id } })
     saved.auth.credentialVersion += 1; records.set(`student:${id}`, saved)
     await expect(getLiveStudentSession({ headers: { cookie } })).resolves.toBeNull()
+  })
+  it('allows a registered three-word code plus PIN without requiring the QR secret', async () => {
+    records.clear()
+    const id = 'D'.repeat(32), secret = createQrSecret(), code = 'Gul Fyr Katt'
+    records.set('class:6a', { id: '6a', teacherIds: ['teacher-1'] })
+    records.set(`student:${id}`, { ...profile(id, secret), displayAlias: code })
+    records.set(studentLoginCodeIndexKey(code), id)
+    process.env.APP_ORIGIN = 'https://matematik.ximon.se'
+
+    const login = response()
+    await handler({ method: 'POST', body: { loginCode: ' gul  fyr katt ', pin: '1234' }, headers: { origin: process.env.APP_ORIGIN }, socket: {} }, login)
+
+    expect(login).toMatchObject({ code: 201, data: { ok: true, student: { studentId: id } } })
+  })
+  it('also accepts a QR card for an existing named pupil ID', async () => {
+    records.clear()
+    const id = 'ANNA_A1B2C3', secret = createQrSecret()
+    records.set('class:6a', { id: '6a', teacherIds: ['teacher-1'] })
+    records.set(`student:${id}`, { ...profile(id, secret), name: 'Anna' })
+    process.env.APP_ORIGIN = 'https://matematik.ximon.se'
+
+    const login = response()
+    await handler({ method: 'POST', body: { studentId: id, qrSecret: secret, pin: '1234' }, headers: { origin: process.env.APP_ORIGIN }, socket: {} }, login)
+
+    expect(login).toMatchObject({ code: 201, data: { ok: true, student: { studentId: id } } })
   })
   it('does not reveal whether an unknown or wrong credential failed', async () => {
     records.clear(); const id = 'B'.repeat(32), secret = createQrSecret(); records.set(`student:${id}`, profile(id, secret))

@@ -363,7 +363,7 @@ function StudentHome() {
       <div className="max-w-3xl mx-auto px-4">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Hej {profile.displayAlias || profile.name || 'elev'}</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Hej {profile.name || profile.displayAlias || 'elev'}</h1>
             <p className="text-sm text-gray-500">Din matteöversikt</p>
           </div>
           <div className="flex flex-col items-end gap-1">

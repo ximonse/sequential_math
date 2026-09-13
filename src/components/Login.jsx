@@ -68,12 +68,12 @@ function Login() {
     }
   }
 
-  const handlePilotLogin = async ({ studentId, qrSecret, pin }) => {
+  const handlePilotLogin = async ({ studentId, qrSecret, loginCode, pin }) => {
     if (isLoggingIn) return
     setError('')
     setIsLoggingIn(true)
     try {
-      const session = await loginStudentSession({ studentId, qrSecret, pin })
+      const session = await loginStudentSession({ studentId, qrSecret, loginCode, pin })
       if (!session.ok) { setError(session.error); return }
       const bootstrapped = await getPilotStudentRuntime().bootstrap(session.student.studentId)
       if (!bootstrapped.ok) { setError(bootstrapped.error || 'Kunde inte starta din säkra elevsession.'); return }
@@ -102,7 +102,7 @@ function Login() {
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">Matteträning</h1>
         <p className="text-center text-gray-600 mb-8">
-          {pendingLogin ? 'Välj din tilldelade skola och grupp' : pilotLogin ? 'Logga in med ditt elevkort' : 'Logga in med namn eller elev-ID och lösenord'}
+          {pendingLogin ? 'Välj din tilldelade skola och grupp' : pilotLogin ? 'Logga in med elevkort eller kodnamn' : 'Logga in med namn eller elev-ID och lösenord'}
         </p>
         {pendingLogin ? (
           <AssignedClassPicker assignments={pendingLogin.assignments} onChoose={chooseAssignedClass}
@@ -115,7 +115,7 @@ function Login() {
         {!pendingLogin ? (
           <button type="button" onClick={() => { setPilotLogin(value => !value); setError('') }} disabled={isLoggingIn}
             className="mt-4 w-full py-2 text-sm text-teal-700 hover:text-teal-900">
-            {pilotLogin ? 'Använd äldre inloggning' : 'Har du ett elevkort med QR-hemlighet?'}
+            {pilotLogin ? 'Använd äldre inloggning' : 'Har du ett elevkort eller ett kodnamn?'}
           </button>
         ) : null}
         <div className="mt-8 pt-6 border-t border-gray-200">

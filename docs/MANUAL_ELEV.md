@@ -4,6 +4,17 @@ Den här manualen visar hur eleven använder appen.
 
 ## 1. Logga in
 
+### Elevkort
+
+1. Välj `Har du ett elevkort eller ett kodnamn?`.
+2. Antingen skannar du QR-koden på kortet och skriver din fyrsiffriga PIN, eller
+   väljer `Kodnamn` och skriver kodnamnet på kortet plus PIN.
+
+QR-koden och kodnamnet är olika sätt att identifiera ditt konto. PIN-koden ska
+du inte dela med någon annan.
+
+### Äldre inloggning
+
 1. Skriv ditt namn eller ditt elev-ID från läraren.
 2. Skriv lösenordet och klicka `Logga in`.
 

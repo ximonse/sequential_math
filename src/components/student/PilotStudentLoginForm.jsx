@@ -16,7 +16,9 @@ function parseCredentialQr(value) {
 export default function PilotStudentLoginForm({ onLogin, busy, error, onClearError }) {
   const [studentId, setStudentId] = useState('')
   const [qrSecret, setQrSecret] = useState('')
+  const [loginCode, setLoginCode] = useState('')
   const [pin, setPin] = useState('')
+  const [loginMode, setLoginMode] = useState('qr')
   const [scannerOpen, setScannerOpen] = useState(false)
   const [scannerMessage, setScannerMessage] = useState('')
   const scannerId = useId().replace(/:/g, '')
@@ -59,9 +61,13 @@ export default function PilotStudentLoginForm({ onLogin, busy, error, onClearErr
   return (
     <form onSubmit={event => {
       event.preventDefault()
-      if (!busy) onLogin({ studentId, qrSecret, pin })
+      if (!busy) onLogin(loginMode === 'qr' ? { studentId, qrSecret, pin } : { loginCode, pin })
     }} className="space-y-4">
-      {!studentId || !qrSecret ? <>
+      <div className="grid grid-cols-2 rounded-lg border border-teal-200 p-1 text-sm">
+        <button type="button" onClick={() => { setLoginMode('qr'); onClearError() }} className={`rounded px-2 py-2 font-medium ${loginMode === 'qr' ? 'bg-teal-700 text-white' : 'text-teal-900'}`}>QR-kod</button>
+        <button type="button" onClick={() => { setLoginMode('code'); onClearError() }} className={`rounded px-2 py-2 font-medium ${loginMode === 'code' ? 'bg-teal-700 text-white' : 'text-teal-900'}`}>Kodnamn</button>
+      </div>
+      {loginMode === 'qr' && (!studentId || !qrSecret) ? <>
       <button type="button" onClick={() => { setScannerMessage(''); setScannerOpen(true) }} disabled={busy || scannerOpen}
         className="w-full rounded-lg bg-teal-700 px-4 py-3 font-semibold text-white hover:bg-teal-800 disabled:bg-gray-300">
         {scannerOpen ? 'Kameran är öppen' : 'Skanna elevkortets QR-kod'}
@@ -87,9 +93,15 @@ export default function PilotStudentLoginForm({ onLogin, busy, error, onClearErr
       </div>
         </div>
       </details>
-      </> : <div className="rounded-xl border border-teal-200 bg-teal-50 p-3 text-sm text-teal-950">
+      </> : loginMode === 'qr' ? <div className="rounded-xl border border-teal-200 bg-teal-50 p-3 text-sm text-teal-950">
         <p className="font-semibold">Elevkortet är läst.</p>
         <button type="button" onClick={() => { setStudentId(''); setQrSecret(''); setPin(''); setScannerMessage('') }} className="mt-1 underline">Skanna ett annat kort</button>
+      </div> : <div>
+        <label htmlFor="pilotLoginCode" className="block text-sm font-medium text-gray-700 mb-2">Kodnamn</label>
+        <input id="pilotLoginCode" type="text" className={inputClass} value={loginCode} required maxLength={80}
+          onChange={event => { setLoginCode(event.target.value); onClearError() }}
+          placeholder="Till exempel Gul Fyr Katt" autoComplete="username" disabled={busy} />
+        <p className="mt-1 text-xs text-gray-500">Kodnamnet står på ditt elevkort.</p>
       </div>}
       <div>
         <label htmlFor="pilotPin" className="block text-sm font-medium text-gray-700 mb-2">Fyrsiffrig PIN</label>

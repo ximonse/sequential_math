@@ -170,7 +170,7 @@ export default function ClassManagementPanel({
                   <div className="mt-2 grid gap-1">
                     {classStudents.map(student => (
                       <div key={`${item.id}-${student.studentId}`} className="rounded bg-slate-50 px-2 py-1.5 text-xs">
-                        <div className="flex items-center justify-between gap-2"><span className="min-w-0 truncate font-medium text-slate-800">{student.displayAlias || student.name}</span><button type="button" onClick={() => onOpenStudentDetail(student.studentId)} className="shrink-0 rounded bg-slate-200 px-2 py-1 text-slate-800 hover:bg-slate-300">Öppna elevprofil</button></div>
+                        <div className="flex items-center justify-between gap-2"><span className="min-w-0 truncate font-medium text-slate-800">{student.name || student.displayAlias}</span><button type="button" onClick={() => onOpenStudentDetail(student.studentId)} className="shrink-0 rounded bg-slate-200 px-2 py-1 text-slate-800 hover:bg-slate-300">Öppna elevprofil</button></div>
                         <StudentCredentialIssuer student={student} />
                       </div>
                     ))}
@@ -343,7 +343,7 @@ function StudentCredentialIssuer({ student }) {
   const [status, setStatus] = useState('')
 
   const issue = async () => {
-    const label = student.displayAlias || student.name || student.studentId
+    const label = student.name || student.displayAlias || student.studentId
     if (!window.confirm(`Skapa nytt QR-kort och ny PIN för ${label}? Det gamla kortet slutar fungera direkt.`)) return
     setStatus('Skapar nytt elevkort…')
     try {
@@ -369,7 +369,7 @@ function StudentCredentialIssuer({ student }) {
       </div>
       {status ? <p role="status" className="mt-1 text-xs text-amber-900">{status}</p> : null}
       {credential ? <div className="mt-2 flex items-center gap-3 rounded bg-white p-2 text-xs text-slate-800">
-        <div className="min-w-0"><p className="font-semibold">{credential.displayAlias || student.displayAlias || student.name}</p><p className="font-mono break-all">Elev-ID: {credential.studentId}</p><p className="font-mono break-all">QR-hemlighet: {credential.qrSecret}</p><p className="font-mono text-sm font-bold">PIN: {credential.pin}</p></div>
+        <div className="min-w-0"><p className="font-semibold">{student.name || credential.displayAlias || student.displayAlias}</p><p className="text-xs text-slate-600">Kodnamn: {credential.displayAlias || student.displayAlias || '–'}</p><p className="font-mono break-all">Elev-ID: {credential.studentId}</p><p className="font-mono break-all">QR-hemlighet: {credential.qrSecret}</p><p className="font-mono text-sm font-bold">PIN: {credential.pin}</p></div>
         {qrCode ? <img className="h-24 w-24 shrink-0" src={qrCode} alt={`QR-kod för ${credential.displayAlias || credential.studentId}`} /> : null}
       </div> : null}
     </div>

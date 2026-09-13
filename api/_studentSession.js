@@ -26,6 +26,12 @@ function safeEqual(left, right) {
 export function createStudentId() { return randomBytes(STUDENT_ID_BYTES).toString('hex').toUpperCase() }
 export function createQrSecret() { return randomBytes(QR_SECRET_BYTES).toString('base64url') }
 export function hashQrSecret(secret) { return createHash('sha256').update(String(secret || ''), 'utf8').digest('hex') }
+export function normalizeStudentLoginCode(value) {
+  return String(value || '').normalize('NFC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('sv-SE')
+}
+export function studentLoginCodeIndexKey(code) {
+  return `student_login_code:${hashQrSecret(normalizeStudentLoginCode(code))}`
+}
 
 export function createPinVerifier(pin) {
   const value = String(pin || '')
@@ -47,6 +53,10 @@ export function verifyPilotStudentCredentials(auth, qrSecret, pin) {
   // Always run the slow PIN verifier, including for a wrong QR secret.
   const pinValid = verifyPinVerifier(pin, auth?.pin)
   return Boolean(auth?.scheme === 'qr-pin-v1' && !auth.disabled && safeEqual(hashQrSecret(qrSecret), auth.qrSecretHash) && pinValid)
+}
+
+export function verifyPilotStudentPin(auth, pin) {
+  return Boolean(auth?.scheme === 'qr-pin-v1' && !auth.disabled && verifyPinVerifier(pin, auth?.pin))
 }
 
 export function readCookie(req, name) {
@@ -113,4 +123,4 @@ export async function getLiveStudentSession(req, { store = kv } = {}) {
 }
 export async function revokeStudentSession(req, { store = kv } = {}) { const id = readCookie(req, '__Host-student-session'); if (id) await store.del(`student_session:${id}`) }
 export function hasStudentCsrf(session, req) { return safeEqual(hashQrSecret(req?.headers?.['x-csrf-token']), session?.csrfHash) }
-export function studentIdentityDto(profile) { return { studentId: profile.studentId, displayAlias: String(profile.displayAlias || '').trim(), classIds: [...new Set([profile?.classId, ...(profile?.classIds || [])].map(String).filter(Boolean))], grade: Number(profile.grade) || null } }
+export function studentIdentityDto(profile) { return { studentId: profile.studentId, name: String(profile.name || profile.displayAlias || '').trim(), displayAlias: String(profile.displayAlias || '').trim(), classIds: [...new Set([profile?.classId, ...(profile?.classIds || [])].map(String).filter(Boolean))], grade: Number(profile.grade) || null } }

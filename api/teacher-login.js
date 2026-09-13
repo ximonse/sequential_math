@@ -75,7 +75,12 @@ export default async function handler(req, res) {
       displayName: account.displayName || account.username,
       classIds,
       isAdmin: Boolean(account.isAdmin),
-      isPrimaryAdmin: Boolean(account.isPrimaryAdmin) || (Boolean(account.isAdmin) && String(account.id || '').toLowerCase() === 'admin')
+      isPrimaryAdmin: Boolean(account.isPrimaryAdmin) || (
+        Boolean(account.isAdmin) && (
+          String(account.username || '').trim().toLowerCase() === String(process.env.PRIMARY_ADMIN_USERNAME || '').trim().toLowerCase() ||
+          String(account.id || '').toLowerCase() === 'admin'
+        )
+      )
     })
   }
 

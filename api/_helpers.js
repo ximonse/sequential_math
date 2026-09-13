@@ -236,6 +236,14 @@ export function getTeacherAuthPayload(req) {
   }
 }
 
+function isPrimaryAdminAccount(account) {
+  if (!account || !account.isAdmin) return false
+  if (account.isPrimaryAdmin) return true
+  const configuredUsername = String(process.env.PRIMARY_ADMIN_USERNAME || '').trim().toLowerCase()
+  if (configuredUsername && String(account.username || '').trim().toLowerCase() === configuredUsername) return true
+  return String(account.id || '').toLowerCase() === 'admin'
+}
+
 /**
  * Signed account tokens are only valid while their account and session version
  * still exist in KV.
@@ -253,7 +261,7 @@ export async function getLiveTeacherAuthPayload(req, { store = kv } = {}) {
     teacherId: tokenAuth.teacherId,
     classIds: Array.isArray(account.classIds) ? account.classIds.map(String).filter(Boolean) : [],
     isAdmin: Boolean(account.isAdmin),
-    isPrimaryAdmin: Boolean(account.isPrimaryAdmin) || (Boolean(account.isAdmin) && String(account.id || '').toLowerCase() === 'admin'),
+    isPrimaryAdmin: isPrimaryAdminAccount(account),
     sessionVersion: accountVersion,
     authSource: tokenAuth.authSource,
     legacy: false

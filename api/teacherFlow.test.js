@@ -209,26 +209,38 @@ describe('school management lifecycle', () => {
     process.env.TEACHER_API_PASSWORD = 'synthetic-flow-signing-secret'
     delete process.env.TEACHER_API_PASSWORD_ROTATION_SECRET
     const { hash, salt, scheme } = hashTeacherPassword('school-secret')
+    const admin = hashTeacherPassword('school-admin-secret')
     records.set('teacher_account:school-teacher', {
       id: 'school-teacher', username: 'school-teacher', passwordHash: hash, passwordSalt: salt,
       passwordScheme: scheme, classIds: [], isAdmin: false, sessionVersion: 1
     })
-    records.set('teacher_accounts:index', ['school-teacher'])
+    records.set('teacher_account:school-admin', {
+      id: 'school-admin', username: 'school-admin', passwordHash: admin.hash, passwordSalt: admin.salt,
+      passwordScheme: admin.scheme, classIds: [], isAdmin: true, sessionVersion: 1
+    })
+    records.set('teacher_accounts:index', ['school-teacher', 'school-admin'])
   })
   async function headers() {
     const login = await call(teacherLoginHandler, { method: 'POST', body: { username: 'school-teacher', password: 'school-secret' } })
     expect(login.code).toBe(200)
     return { 'x-teacher-token': login.data.token }
   }
+  async function adminHeaders() {
+    const login = await call(teacherLoginHandler, { method: 'POST', body: { username: 'school-admin', password: 'school-admin-secret' } })
+    expect(login.code).toBe(200)
+    return { 'x-teacher-token': login.data.token }
+  }
   it('requires a live teacher and validates school names', async () => {
     expect((await call(schoolsHandler, { method: 'POST', body: { name: 'Skolan' } })).code).toBe(401)
-    const auth = await headers()
+    const teacherAuth = await headers()
+    expect((await call(schoolsHandler, { method: 'POST', headers: teacherAuth, body: { name: 'Skolan' } })).code).toBe(403)
+    const auth = await adminHeaders()
     expect((await call(schoolsHandler, { method: 'POST', headers: auth, body: { name: ' ' } })).code).toBe(400)
     expect((await call(schoolsHandler, { method: 'POST', headers: auth, body: { name: 'x'.repeat(101) } })).code).toBe(400)
     expect(records.has('schools:index')).toBe(false)
   })
   it('creates schools, enrolls in a school, and reassigns a legacy class without rewriting pupils', async () => {
-    const auth = await headers()
+    const auth = await adminHeaders()
     const school = await call(schoolsHandler, { method: 'POST', headers: auth, body: { name: ' Norra skolan ' } })
     expect(school.code).toBe(201)
     expect((await call(schoolsHandler, { headers: auth })).data.schools).toEqual([school.data.school])
@@ -257,7 +269,7 @@ describe('school management lifecycle', () => {
   })
   it('does not grant access to another teachers classes through a shared school', async () => {
     const auth = await headers()
-    const school = await call(schoolsHandler, { method: 'POST', headers: auth, body: { name: 'Skolan' } })
+    const school = await call(schoolsHandler, { method: 'POST', headers: await adminHeaders(), body: { name: 'Skolan' } })
     const schoolId = school.data.school.id
     records.set('class:private-class', { id: 'private-class', name: '6A', schoolId, teacherIds: ['someone-else'] })
     records.set('classes:index', ['private-class'])

@@ -12,6 +12,7 @@ export default async function handler(req, res) {
   try {
     if (req.method === 'GET') return res.status(200).json({ schools: await listSchools() })
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+    if (!teacher.isAdmin) return res.status(403).json({ error: 'Administratörsbehörighet krävs för att lägga till skolor.' })
     const name = req.body?.name
     if (typeof name !== 'string' || !name.trim() || name.length > 100) {
       return res.status(400).json({ error: 'Ange skolans namn (högst 100 tecken).' })

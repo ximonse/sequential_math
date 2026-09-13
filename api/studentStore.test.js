@@ -340,11 +340,11 @@ describe('student persistence boundary', () => {
       }
       return originalDelete(key)
     }
-    expect((await callClass('DELETE', 'A', owner)).code).toBe(500)
+    expect((await callClass('DELETE', 'A', { ...owner, isAdmin: true })).code).toBe(500)
     expect(memory.has('class_deleted:A')).toBe(true)
     expect(memory.get('class_deletion:A').teacherIds).toEqual(['owner'])
     memory.get = originalDelete
-    expect((await callClass('DELETE', 'A', owner)).code).toBe(200)
+    expect((await callClass('DELETE', 'A', { ...owner, isAdmin: true })).code).toBe(200)
     expect(memory.get('student:PUPIL').classIds).toEqual([])
     expect((await callClass('DELETE', 'A', { teacherId: 'stranger', isAdmin: false })).code).toBe(403)
   })

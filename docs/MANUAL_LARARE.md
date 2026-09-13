@@ -31,14 +31,13 @@ Notera:
 
 ### Skolor och klasser
 
-Under `Klasser` väljer du först skola för den nya klassen eller gruppen.
-Saknas skolan öppnar du `Lägg till skola`, skriver skolnamn och ort och väljer
-`Spara skola`. Använd den befintliga skolan om den redan finns.
+Lärare kan skapa och arbeta med sina egna klasser/grupper och elevlistor, men
+kan inte lägga till skolor, koppla en klass till skola eller ta bort en klass.
+Be en administratör göra de ändringarna om det behövs.
 
-Befintliga klasser visas som `Skola ej angiven`. Välj rätt skola på klassens
-rad och klicka `Spara skolkoppling`. Det ändrar inte elevernas ID, lösenord
-eller träningshistorik. Administratören kan också välja skola vid klasskapande
-och redigering under Administration → Klasser.
+Administratörer väljer skola vid klasskapande och kan koppla en befintlig klass
+som visas som `Skola ej angiven`. Det ändrar inte elevernas ID, inloggning eller
+träningshistorik.
 
 Eleven skriver sitt namn eller sitt elev-ID och lösenord. Efter godkänd
 inloggning väljer eleven en av de skolor och klasser/grupper som är tilldelade

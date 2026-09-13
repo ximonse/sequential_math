@@ -206,6 +206,7 @@ function Dashboard() {
     setCloudSyncStatus,
     setIsCloudRefreshBusy,
     navigate,
+    isDirectStudentView,
     passwordResetSectionId: PASSWORD_RESET_SECTION_ID,
     setClassStatus,
     classNameInput,

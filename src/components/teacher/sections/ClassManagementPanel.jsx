@@ -98,7 +98,9 @@ export default function ClassManagementPanel({
   onDeleteClass,
   onRenameClass,
   onSaveClassExtras,
-  onMoveStudent
+  onMoveStudent,
+  canManageSchools = false,
+  canDeleteClasses = false
 }) {
   const directory = useSchools()
   const [schoolId, setSchoolId] = useState('')
@@ -131,10 +133,10 @@ export default function ClassManagementPanel({
   return (
     <div className="bg-white rounded-lg shadow p-4 mb-8">
       <h2 className="text-lg font-semibold text-gray-800 mb-3">Klasser</h2>
-      <NewSchoolForm directory={directory} onCreated={setSchoolId} />
+      {canManageSchools ? <NewSchoolForm directory={directory} onCreated={setSchoolId} /> : null}
       <fieldset disabled={busy} aria-busy={busy}>
-      <div className="mb-3"><SchoolSelect schools={directory.schools} value={schoolId} onChange={setSchoolId}
-        disabled={directory.loading || Boolean(directory.error)} label="Skola för ny klass/grupp" /></div>
+      {canManageSchools ? <div className="mb-3"><SchoolSelect schools={directory.schools} value={schoolId} onChange={setSchoolId}
+        disabled={directory.loading || Boolean(directory.error)} label="Skola för ny klass/grupp" /></div> : null}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
         <input
           type="text"
@@ -279,16 +281,16 @@ export default function ClassManagementPanel({
                       {classStudents.length} elever | {loggedInCount} har loggat in
                     </p>
                   </div>
-                  <button
+                  {canDeleteClasses ? <button
                     onClick={() => runRosterAction(() => onDeleteClass(item.id))}
                     className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
                   >
                     Ta bort klass
-                  </button>
+                  </button> : null}
                   <button onClick={() => { const name = window.prompt('Nytt klassnamn:', item.name); if (name?.trim()) onRenameClass(item.id, name) }} className="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs">Byt namn</button>
                 </div>
-                <ClassSchoolChoice key={`${item.id}-${item.schoolId || ''}`} classRecord={item} directory={directory}
-                  onSave={onRenameClass} disabled={busy} />
+                {canManageSchools ? <ClassSchoolChoice key={`${item.id}-${item.schoolId || ''}`} classRecord={item} directory={directory}
+                  onSave={onRenameClass} disabled={busy} /> : null}
                 {onSaveClassExtras && (
                   <ClassExtrasRow classRecord={item} onSaveExtras={onSaveClassExtras} />
                 )}

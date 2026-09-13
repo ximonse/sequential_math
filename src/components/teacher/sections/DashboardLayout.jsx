@@ -411,6 +411,8 @@ export default function DashboardLayout({
           onDeleteClass={handleDeleteClass}
           onRenameClass={handleRenameClass}
           onSaveClassExtras={handleSaveClassExtras}
+          canManageSchools={teacherIdentity.isAdmin}
+          canDeleteClasses={teacherIdentity.isAdmin}
         />
       </>
     )

@@ -94,7 +94,9 @@ export default async function handler(req, res) {
     const id = String(req.body?.id || '').trim()
     const name = String(req.body?.name || '').trim()
     if (!id || !name) return res.status(400).json({ error: 'id and name required' })
+    const auth = await getLiveTeacherAuthPayload(req)
     if (!await canAccessClass(req, id)) return res.status(403).json({ error: 'Not authorized for this class' })
+    if (req.body?.schoolId !== undefined && !auth?.isAdmin) return res.status(403).json({ error: 'Admin access required to change school' })
     try {
       const updated = await mutateClassRecord(id, current => {
         if (!current) throw Object.assign(new Error('Class not found'), { status: 404 })
@@ -110,6 +112,7 @@ export default async function handler(req, res) {
     if (!id) return res.status(400).json({ error: 'id required' })
 
     const auth = await getLiveTeacherAuthPayload(req)
+    if (!auth?.isAdmin) return res.status(403).json({ error: 'Admin access required to delete a class' })
     const deletionKey = `class_deletion:${id}`
     const priorDeletion = await kv.get(deletionKey)
     const canResumeDeletion = Boolean(

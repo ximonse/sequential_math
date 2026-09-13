@@ -25,9 +25,9 @@ The tests cover executable boundary behavior rather than trusting this document:
 ## Schools and pupil login (2026-09-10)
 
 Schools are separate records: `school:{id}` and `schools:index`. Creation uses
-the same atomic record/index boundary as classes. A live teacher may list and
-create schools through `teacher-schools`; school metadata grants no access to
-pupils. Class ownership remains the authorization boundary.
+the same atomic record/index boundary as classes. A live teacher may list
+schools, but only an administrator may create them. School metadata grants no
+access to pupils. Class ownership remains the authorization boundary.
 
 Classes have an optional `schoolId`, validated against the school register when
 created or changed. A pupil belongs to schools through their current classes and
@@ -36,10 +36,12 @@ student ID, password and training history do not change when a class is linked
 to a school or a pupil changes groups. Multiple memberships remain supported.
 
 Existing classes are not automatically assigned to an invented school. Missing
-school IDs appear as "Skola ej angiven"; teachers can select the correct school
-and explicitly save the association. New roster submissions include the selected
-school in their retry identity. Changing that selection during a partial retry
-must not silently reuse an enrollment for a different school.
+school IDs appear as "Skola ej angiven"; administrators can select the correct
+school and explicitly save the association. Ordinary teachers can manage their
+own roster and rename their classes, but cannot create schools, change a class'
+school association or delete a class. New roster submissions include the
+selected school in their retry identity. Changing that selection during a
+partial retry must not silently reuse an enrollment for a different school.
 
 The `student-login` endpoint accepts only a name or stable student ID and
 password. It has no public school/class directory; GET returns 405 and

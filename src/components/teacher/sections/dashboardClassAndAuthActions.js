@@ -67,6 +67,7 @@ export function buildDashboardClassAndAuthActions({
   setCloudSyncStatus,
   setIsCloudRefreshBusy,
   navigate,
+  isDirectStudentView,
   passwordResetSectionId,
   setClassStatus,
   classNameInput,
@@ -269,6 +270,7 @@ export function buildDashboardClassAndAuthActions({
   const handleToggleClassFilter = (classId) => {
     const normalizedClassId = String(classId || '').trim()
     if (!normalizedClassId) return
+    if (isDirectStudentView) navigate('/teacher')
     setSelectedClassIds(prev => (
       prev.includes(normalizedClassId)
         ? prev.filter(id => id !== normalizedClassId)

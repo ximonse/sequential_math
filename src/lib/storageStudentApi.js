@@ -204,40 +204,34 @@ export function createStorageStudentApi(deps) {
     const normalizedId = normalizeStudentId(studentId)
     if (!normalizedId) return { ok: false, error: 'Elev saknas.' }
 
-    let profile = loadProfile(normalizedId)
-    if (!profile && CLOUD_ENABLED) {
+    if (CLOUD_ENABLED) {
       try {
-        profile = await loadProfileFromCloud(normalizedId, {
-          teacherPassword: getTeacherApiToken(),
-          failOnUnauthorized: true
+        const response = await fetch(`/api/student/${encodeURIComponent(normalizedId)}/password-reset`, {
+          method: 'POST',
+          headers: { 'x-teacher-token': getTeacherApiToken() },
+          cache: 'no-store'
         })
-        if (profile) {
-          saveProfileLocalOnly(profile)
-        }
+        const data = await response.json().catch(() => ({}))
+        if (!response.ok) return { ok: false, error: data?.error || 'Kunde inte återställa lösenordet på servern.' }
+        const refreshed = await loadProfileFromCloud(normalizedId, {
+          teacherPassword: getTeacherApiToken(), failOnUnauthorized: true
+        })
+        if (refreshed) saveProfileLocalOnly(refreshed)
+        return { ok: true, password: data.password || normalizedId }
       } catch (error) {
         if (error?.code === 'UNAUTHORIZED') {
           return { ok: false, error: 'Lärarbehörighet saknas. Logga ut/in som lärare och försök igen.' }
         }
-        return { ok: false, error: 'Kunde inte hämta elev från servern.' }
+        return { ok: false, error: 'Kunde inte kontakta servern för lösenordsåterställning.' }
       }
     }
+
+    const profile = loadProfile(normalizedId)
     if (!profile) return { ok: false, error: 'Elev saknas lokalt och kunde inte hämtas från servern.' }
 
     ensureProfileAuth(profile)
     await setProfilePassword(profile, profile.studentId)
     saveProfileLocalOnly(profile)
-
-    if (CLOUD_ENABLED) {
-      try {
-        const merged = await syncProfileToCloud(profile)
-        if (!merged) {
-          return { ok: false, error: 'Lösenordet sparades lokalt men kunde inte synkas till servern. Försök igen.' }
-        }
-        saveProfileLocalOnly(merged)
-      } catch {
-        return { ok: false, error: 'Nätverksfel vid synkning av nytt lösenord. Försök igen.' }
-      }
-    }
 
     if (isStudentSessionActive(normalizedId)) {
       setActiveStudentSession(profile.studentId, profile.studentId)

@@ -138,9 +138,60 @@ export default function ClassManagementPanel({
         : [...previous, studentId]
     ))
   }
+  const existingClassesModule = classes.length > 0 ? (
+    <section className="mb-8 rounded-lg bg-white p-4 shadow">
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">Befintliga klasser</h2>
+          <p className="text-xs text-slate-500">Dina klasser visas först.</p>
+        </div>
+      </div>
+      <div className="space-y-4">
+        {orderedClasses.map(item => {
+          const classStudents = students.filter(student => recordMatchesClassFilter(student, [item.id]))
+          const loggedInCount = classStudents.filter(student => student.auth?.lastLoginAt).length
+          return (
+            <div key={item.id} className="rounded-lg border border-slate-300 bg-slate-50 p-3 shadow-sm">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <p className="text-sm font-medium text-gray-800">{classLabel(item)}</p>
+                  <p className="text-xs text-gray-500">{classStudents.length} elever | {loggedInCount} har loggat in</p>
+                </div>
+                <div className="flex gap-1">
+                  {canDeleteClasses ? <button onClick={() => runRosterAction(() => onDeleteClass(item.id))} className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs">Ta bort klass</button> : null}
+                  <button onClick={() => { const name = window.prompt('Nytt klassnamn:', item.name); if (name?.trim()) onRenameClass(item.id, name) }} className="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs">Byt namn</button>
+                </div>
+              </div>
+              {classStudents.length > 0 && onOpenStudentDetail ? (
+                <details className="mt-2 rounded border border-slate-200 bg-white px-2 py-1.5">
+                  <summary className="cursor-pointer text-xs font-medium text-slate-800">Elever och elevkort ({classStudents.length})</summary>
+                  <div className="mt-2 grid gap-1">
+                    {classStudents.map(student => (
+                      <div key={`${item.id}-${student.studentId}`} className="flex items-center justify-between gap-2 rounded bg-slate-50 px-2 py-1.5 text-xs">
+                        <span className="min-w-0 truncate font-medium text-slate-800">{student.displayAlias || student.name}</span>
+                        <button type="button" onClick={() => onOpenStudentDetail(student.studentId)} className="shrink-0 rounded bg-amber-100 px-2 py-1 text-amber-950 hover:bg-amber-200">Öppna elevkort</button>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              ) : null}
+              {canManageSchools ? <details className="mt-3 rounded border border-blue-200 bg-blue-50 p-2">
+                <summary className="cursor-pointer text-xs font-medium text-blue-900">Skolkoppling (administratör)</summary>
+                <p className="mt-1 text-xs text-blue-900">Ändra bara om klassen verkligen tillhör en annan skola.</p>
+                <ClassSchoolChoice key={`${item.id}-${item.schoolId || ''}`} classRecord={item} directory={directory} onSave={onRenameClass} disabled={busy} />
+              </details> : null}
+              {onSaveClassExtras && <ClassExtrasRow classRecord={item} onSaveExtras={onSaveClassExtras} />}
+            </div>
+          )
+        })}
+      </div>
+    </section>
+  ) : null
   return (
-    <div className="bg-white rounded-lg shadow p-4 mb-8">
-      <h2 className="text-lg font-semibold text-gray-800 mb-3">Klasser</h2>
+    <>
+      {existingClassesModule}
+    <section className="mb-8 rounded-lg bg-white p-4 shadow">
+      <h2 className="text-lg font-semibold text-gray-800 mb-3">Skapa eller ändra klassindelning</h2>
       {canManageSchools ? <NewSchoolForm directory={directory} onCreated={setSchoolId} /> : null}
       <fieldset disabled={busy} aria-busy={busy}>
       <section className="rounded-lg border border-slate-200 bg-slate-50 p-3 mb-5">
@@ -278,62 +329,8 @@ export default function ClassManagementPanel({
       )}
       <p role="status" className="text-xs text-gray-600 mb-3">{busy ? 'Sparar på servern…' : classStatus || ' '}</p>
 
-      {classes.length > 0 ? (
-        <section className="border-t border-slate-200 pt-4">
-          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="text-sm font-semibold text-slate-900">Befintliga klasser</h3>
-            <p className="text-xs text-slate-500">Dina klasser visas först.</p>
-          </div>
-        <div className="space-y-4">
-          {orderedClasses.map(item => {
-            const classStudents = students.filter(student => recordMatchesClassFilter(student, [item.id]))
-            const loggedInCount = classStudents.filter(student => student.auth?.lastLoginAt).length
-            return (
-              <div key={item.id} className="rounded-lg border border-slate-300 bg-white p-3 shadow-sm">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">{classLabel(item)}</p>
-                    <p className="text-xs text-gray-500">
-                      {classStudents.length} elever | {loggedInCount} har loggat in
-                    </p>
-                  </div>
-                  {canDeleteClasses ? <button
-                    onClick={() => runRosterAction(() => onDeleteClass(item.id))}
-                    className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs"
-                  >
-                    Ta bort klass
-                  </button> : null}
-                  <button onClick={() => { const name = window.prompt('Nytt klassnamn:', item.name); if (name?.trim()) onRenameClass(item.id, name) }} className="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs">Byt namn</button>
-                </div>
-                {classStudents.length > 0 && onOpenStudentDetail ? (
-                  <details className="mt-2 rounded border border-slate-200 bg-slate-50 px-2 py-1.5">
-                    <summary className="cursor-pointer text-xs font-medium text-slate-800">Elever och elevkort ({classStudents.length})</summary>
-                    <div className="mt-2 grid gap-1">
-                      {classStudents.map(student => (
-                        <div key={`${item.id}-${student.studentId}`} className="flex items-center justify-between gap-2 rounded bg-white px-2 py-1.5 text-xs">
-                          <span className="min-w-0 truncate font-medium text-slate-800">{student.displayAlias || student.name}</span>
-                          <button type="button" onClick={() => onOpenStudentDetail(student.studentId)} className="shrink-0 rounded bg-amber-100 px-2 py-1 text-amber-950 hover:bg-amber-200">Öppna elevkort</button>
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-                ) : null}
-                {canManageSchools ? <details className="mt-3 rounded border border-blue-200 bg-blue-50 p-2">
-                  <summary className="cursor-pointer text-xs font-medium text-blue-900">Skolkoppling (administratör)</summary>
-                  <p className="mt-1 text-xs text-blue-900">Ändra bara om klassen verkligen tillhör en annan skola.</p>
-                  <ClassSchoolChoice key={`${item.id}-${item.schoolId || ''}`} classRecord={item} directory={directory}
-                    onSave={onRenameClass} disabled={busy} />
-                </details> : null}
-                {onSaveClassExtras && (
-                  <ClassExtrasRow classRecord={item} onSaveExtras={onSaveClassExtras} />
-                )}
-              </div>
-            )
-          })}
-        </div>
-        </section>
-      ) : null}
       </fieldset>
-    </div>
+    </section>
+    </>
   )
 }

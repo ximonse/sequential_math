@@ -200,6 +200,27 @@ body.theme-real-psycadelic::after {
   color: var(--text-main);
 }
 
+/* Role surfaces are deliberately obvious: they orient staff before any text is read. */
+.teacher-role-surface {
+  background-attachment: fixed !important;
+}
+
+.teacher-role-surface--primary-admin {
+  background: linear-gradient(135deg, #d9f99d 0%, #ecfccb 48%, #fef9c3 100%) !important;
+}
+
+.teacher-role-surface--admin {
+  background: linear-gradient(135deg, #fed7aa 0%, #ffedd5 48%, #fef3c7 100%) !important;
+}
+
+.teacher-role-surface--teacher {
+  background: linear-gradient(135deg, #bbf7d0 0%, #dcfce7 48%, #ccfbf1 100%) !important;
+}
+
+.student-role-surface {
+  background: linear-gradient(135deg, #bfdbfe 0%, #dbeafe 48%, #e0f2fe 100%) !important;
+}
+
 .theme-switcher {
   background: var(--surface);
   color: var(--text-main);

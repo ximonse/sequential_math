@@ -46,7 +46,7 @@ function DashboardHeaderBar({
             onClick={onJumpToPasswordReset}
             className="px-3 py-2 bg-white hover:bg-gray-50 border rounded-lg text-sm text-gray-600"
           >
-            Lösenord
+            Äldre inloggningar
           </button>
         )}
         <button

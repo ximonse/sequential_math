@@ -99,6 +99,7 @@ export default function ClassManagementPanel({
   onRenameClass,
   onSaveClassExtras,
   onMoveStudent,
+  onOpenStudentDetail,
   canManageSchools = false,
   canDeleteClasses = false
 }) {
@@ -289,6 +290,19 @@ export default function ClassManagementPanel({
                   </button> : null}
                   <button onClick={() => { const name = window.prompt('Nytt klassnamn:', item.name); if (name?.trim()) onRenameClass(item.id, name) }} className="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs">Byt namn</button>
                 </div>
+                {classStudents.length > 0 && onOpenStudentDetail ? (
+                  <details className="mt-2 rounded border border-slate-200 bg-slate-50 px-2 py-1.5">
+                    <summary className="cursor-pointer text-xs font-medium text-slate-800">Elever och elevkort ({classStudents.length})</summary>
+                    <div className="mt-2 grid gap-1">
+                      {classStudents.map(student => (
+                        <div key={`${item.id}-${student.studentId}`} className="flex items-center justify-between gap-2 rounded bg-white px-2 py-1.5 text-xs">
+                          <span className="min-w-0 truncate font-medium text-slate-800">{student.displayAlias || student.name}</span>
+                          <button type="button" onClick={() => onOpenStudentDetail(student.studentId)} className="shrink-0 rounded bg-amber-100 px-2 py-1 text-amber-950 hover:bg-amber-200">Öppna elevkort</button>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                ) : null}
                 {canManageSchools ? <ClassSchoolChoice key={`${item.id}-${item.schoolId || ''}`} classRecord={item} directory={directory}
                   onSave={onRenameClass} disabled={busy} /> : null}
                 {onSaveClassExtras && (

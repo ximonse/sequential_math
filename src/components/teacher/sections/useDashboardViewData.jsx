@@ -158,9 +158,11 @@ export function useDashboardViewData({
         studentId: student.studentId,
         name: student.name,
         className: getRecordClassLabel(student, classNameById),
-        lastLoginAt: Number(student?.auth?.lastLoginAt || 0) || null
+        lastLoginAt: Number(student?.auth?.lastLoginAt || 0) || null,
+        isQrPinStudent: student?.auth?.scheme === 'qr-pin-v1'
       }))
       .filter(row => {
+        if (row.isQrPinStudent) return false
         if (!search) return true
         return `${row.name} ${row.studentId} ${row.className}`.toLowerCase().includes(search)
       })

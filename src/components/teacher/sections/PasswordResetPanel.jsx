@@ -13,13 +13,13 @@ export default function PasswordResetPanel({
   return (
     <div id={sectionId} className="bg-white rounded-lg shadow p-4 mt-8 border-2 border-rose-200">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-        <h2 className="text-lg font-semibold text-rose-800">Nollställ elevlösenord</h2>
+        <h2 className="text-lg font-semibold text-rose-800">Äldre elevinloggningar</h2>
         <p className="text-xs text-gray-500">
           {passwordResetRows.length} elev(er) i aktuellt urval
         </p>
       </div>
       <p className="text-sm text-gray-500 mb-3">
-        Använd för att återställa elevlösenord till elevens inloggnings-ID.
+        Detta gäller bara äldre namn/lösenordskonton. QR+PIN-elever hanteras via elevprofilen: välj <strong>Nytt QR-kort / ny PIN</strong>.
       </p>
       <div className="flex flex-wrap items-center gap-2 mb-2">
         <input
@@ -78,7 +78,7 @@ export default function PasswordResetPanel({
                         disabled={passwordResetBusyId === row.studentId}
                         className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white rounded text-xs font-semibold"
                       >
-                        {passwordResetBusyId === row.studentId ? 'Nollställer...' : 'Nollställ lösenord'}
+                        {passwordResetBusyId === row.studentId ? 'Nollställer...' : 'Nollställ äldre lösenord'}
                       </button>
                     </td>
                   </tr>

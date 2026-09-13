@@ -36,7 +36,7 @@ function SessionPage({
   const showInlineScratchpad = Boolean(currentProblem) && !feedback
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8">
+    <div className="min-h-screen student-role-surface py-8">
       <div className="max-w-5xl mx-auto px-4">
         <SessionHeader
           profileName={profileName}

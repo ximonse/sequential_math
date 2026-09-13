@@ -174,10 +174,10 @@ export default function DashboardLayout({
   const teacherIdentity = getTeacherIdentity()
   const teacherAccountKind = getTeacherAccountKind(teacherIdentity)
   const teacherSurfaceClass = teacherAccountKind === 'primary-admin'
-    ? 'bg-lime-200'
+    ? 'teacher-role-surface teacher-role-surface--primary-admin'
     : teacherAccountKind === 'admin'
-      ? 'bg-orange-200'
-      : 'bg-emerald-200'
+      ? 'teacher-role-surface teacher-role-surface--admin'
+      : 'teacher-role-surface teacher-role-surface--teacher'
   const visiblePanelDefs = PANEL_DEFS.filter(p => !p.adminOnly || teacherIsPrimaryAdmin)
   const [activeWorkspace, setActiveWorkspace] = useState('progress')
 
@@ -411,6 +411,7 @@ export default function DashboardLayout({
           onDeleteClass={handleDeleteClass}
           onRenameClass={handleRenameClass}
           onSaveClassExtras={handleSaveClassExtras}
+          onOpenStudentDetail={handleOpenStudentDetail}
           canManageSchools={teacherIdentity.isAdmin}
           canDeleteClasses={teacherIdentity.isAdmin}
         />

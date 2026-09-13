@@ -359,7 +359,7 @@ function StudentHome() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-8">
+    <div className="min-h-screen student-role-surface py-8">
       <div className="max-w-3xl mx-auto px-4">
         <div className="flex justify-between items-start mb-6">
           <div>

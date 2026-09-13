@@ -138,7 +138,7 @@ export default function StudentDetailPanel({
           {detailStudentProfile && (
             <button type="button" onClick={() => { const alias = window.prompt('Visningsalias (fritext):', detailStudentProfile.displayAlias || detailStudentProfile.name || ''); if (alias?.trim()) onRenameStudent(detailStudentProfile.studentId, alias) }} className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs font-medium">Byt visningsalias</button>
           )}
-          {detailStudentProfile?.displayAlias ? <button type="button" onClick={reissueCredential} className="px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded text-xs font-medium">Utfärda nytt elevkort</button> : null}
+          {detailStudentProfile?.displayAlias ? <button type="button" onClick={reissueCredential} className="px-3 py-1.5 bg-amber-200 hover:bg-amber-300 text-amber-950 rounded text-xs font-semibold">Nytt QR-kort / ny PIN</button> : null}
           {detailStudentProfile && (
             <button
               type="button"

@@ -150,15 +150,13 @@ Om elever kör på iPad/mobil och du vill se allt i lärarvyn:
 
 Annars syns bara data som finns lokalt i samma browsermiljö.
 
-## 12. Nollställ elevlösenord
+## 12. Elevkort: QR-kod och PIN
 
-Längst ner i lärardashboarden finns sektionen `Nollställ elevlösenord`.
+I `Administration → Klasser` öppnar du `Elever och elevkort` på rätt klass och
+väljer elev. På elevprofilen väljer du `Nytt QR-kort / ny PIN` när ett kort har
+försvunnit eller behöver ersättas. Skriv ut kortet direkt: den tidigare QR-koden
+och PIN-koden slutar då fungera.
 
-Så använder du den:
-1. Välj klass/grupp högst upp (urvalet styr vilka elever som visas).
-2. Sök på namn, ID eller klass vid behov.
-3. Klicka `Nollställ lösenord` på rätt elev.
-
-Resultat:
-- Nytt lösenord sätts till elevens inloggnings-ID.
-- Status visas direkt i sektionen och i dashboardens statusrad.
+`Äldre elevinloggningar` är bara ett kompatibilitetsverktyg för konton som
+fortfarande använder namn/lösenord. Där kan lösenordet sättas om till elevens
+inloggnings-ID. QR+PIN-elever visas inte i den listan.

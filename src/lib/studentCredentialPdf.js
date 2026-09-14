@@ -4,6 +4,7 @@ export const A7_CARDS_PER_A4 = 8
 const CARDS_PER_ROW = 4
 const CARD_WIDTH_MM = 297 / CARDS_PER_ROW
 const CARD_HEIGHT_MM = 105
+const QR_SIZE_MM = 46
 
 function cardLabel(credential) {
   return String(credential?.name || credential?.displayAlias || 'Elev').trim() || 'Elev'
@@ -59,14 +60,13 @@ export async function downloadStudentCredentialPdf(credentials, filename = crede
     doc.setTextColor(255, 255, 255)
     pdfText(doc, 'MATTE TRÄNING - ELEVKORT', x + 5, y + 7.5, CARD_WIDTH_MM - 10, 7, 'bold')
     doc.setTextColor(15, 23, 42)
-    pdfText(doc, name, x + 5, y + 23, 39, 11, 'bold')
-    pdfText(doc, 'Kodnamn: ' + String(credential.displayAlias || '–'), x + 5, y + 33, 38, 7)
-    pdfText(doc, 'PIN: ' + credential.pin, x + 5, y + 47, 38, 14, 'bold')
-    pdfText(doc, 'Skanna QR-koden och skriv PIN.', x + 5, y + 60, 38, 6.5)
-    pdfText(doc, 'Spara kortet. Koden visas inte igen.', x + 5, y + 70, 38, 6.5)
-    doc.addImage(qrCodes[index], 'PNG', x + 48, y + 22, 20, 20)
+    pdfText(doc, 'Skanna QR-koden och skriv PIN.', x + 5, y + 17, CARD_WIDTH_MM - 10, 6.5)
+    pdfText(doc, name, x + 5, y + 26, CARD_WIDTH_MM - 10, 10, 'bold')
+    pdfText(doc, 'Kodnamn: ' + String(credential.displayAlias || '–'), x + 5, y + 35, CARD_WIDTH_MM - 10, 7)
+    pdfText(doc, 'PIN: ' + credential.pin, x + 5, y + 44, CARD_WIDTH_MM - 10, 13, 'bold')
+    doc.addImage(qrCodes[index], 'PNG', x + (CARD_WIDTH_MM - QR_SIZE_MM) / 2, y + 48, QR_SIZE_MM, QR_SIZE_MM)
     doc.setTextColor(71, 85, 105)
-    pdfText(doc, 'Elev-ID: ' + credential.studentId, x + 5, y + 96, CARD_WIDTH_MM - 10, 5.5)
+    pdfText(doc, 'Elev-ID: ' + credential.studentId, x + 5, y + 101, CARD_WIDTH_MM - 10, 5.5)
     doc.setTextColor(15, 23, 42)
   })
 

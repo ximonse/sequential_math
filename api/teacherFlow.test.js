@@ -80,6 +80,7 @@ describe('teacher account to pupil lifecycle', () => {
     process.env.TEACHER_API_PASSWORD = 'synthetic-flow-signing-secret'
     process.env.PILOT_ENROLLMENT_SECRET = 'synthetic-pilot-enrollment-secret-32-bytes'
     delete process.env.TEACHER_API_PASSWORD_ROTATION_SECRET
+    delete process.env.PRIMARY_ADMIN_USERNAME
     const { hash, salt, scheme } = hashTeacherPassword('admin-secret')
     records.set('teacher_account:admin', {
       id: 'admin', username: 'admin', displayName: 'Admin',
@@ -164,6 +165,20 @@ describe('teacher account to pupil lifecycle', () => {
     expect((await call(studentHandler, {
       query: { studentId }, headers: { 'x-teacher-token': secondLogin.data.token }
     })).code).toBe(410)
+  })
+
+  it('does not mark an ordinary admin as the primary admin when no username is configured', async () => {
+    const { hash, salt, scheme } = hashTeacherPassword('ordinary-admin-secret')
+    records.set('teacher_account:ordinary-admin', {
+      id: 'ordinary-admin', username: 'ordinary-admin', displayName: 'Ordinary Admin',
+      passwordHash: hash, passwordSalt: salt, passwordScheme: scheme,
+      classIds: [], isAdmin: true, sessionVersion: 1
+    })
+    records.set('teacher_accounts:index', ['admin', 'ordinary-admin'])
+    const login = await call(teacherLoginHandler, {
+      method: 'POST', body: { username: 'ordinary-admin', password: 'ordinary-admin-secret' }
+    })
+    expect(login).toMatchObject({ code: 200, data: { isAdmin: true, isPrimaryAdmin: false } })
   })
 
   it('reserves teacher-account administration for the primary admin', async () => {

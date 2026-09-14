@@ -67,6 +67,14 @@ export default async function handler(req, res) {
     setTeacherSessionCookie(res, session.token)
     res.setHeader('Cache-Control', 'no-store')
 
+    const configuredPrimaryUsername = String(process.env.PRIMARY_ADMIN_USERNAME || '').trim().toLowerCase()
+    const isPrimaryAdmin = Boolean(account.isPrimaryAdmin) || (
+      Boolean(account.isAdmin) && (
+        (configuredPrimaryUsername && String(account.username || '').trim().toLowerCase() === configuredPrimaryUsername) ||
+        String(account.id || '').toLowerCase() === 'admin'
+      )
+    )
+
     return res.status(200).json({
       ok: true,
       token: session.token,
@@ -75,12 +83,7 @@ export default async function handler(req, res) {
       displayName: account.displayName || account.username,
       classIds,
       isAdmin: Boolean(account.isAdmin),
-      isPrimaryAdmin: Boolean(account.isPrimaryAdmin) || (
-        Boolean(account.isAdmin) && (
-          String(account.username || '').trim().toLowerCase() === String(process.env.PRIMARY_ADMIN_USERNAME || '').trim().toLowerCase() ||
-          String(account.id || '').toLowerCase() === 'admin'
-        )
-      )
+      isPrimaryAdmin
     })
   }
 

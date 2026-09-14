@@ -213,6 +213,7 @@ export default function ClassManagementPanel({
                 <summary className="cursor-pointer text-xs font-medium text-rose-900">Återställ alla elevkonton</summary>
                 <p className="mt-1 text-xs text-rose-900">Rensar elevdata i denna klass och utfärdar nya QR-kort/PIN. Förnamn och klasstillhörighet behålls.</p>
                 <button type="button" disabled={busy} onClick={() => runRosterAction(() => resetClassStudentAccounts(item))} className="mt-2 rounded bg-rose-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-800 disabled:bg-rose-300">Återställ och skapa nya elevkort</button>
+                {resetStatus ? <p className="mt-2 text-xs font-medium text-rose-900" role="status">{resetStatus}</p> : null}
               </details> : null}
             </div>
           )
@@ -255,7 +256,6 @@ export default function ClassManagementPanel({
         />
       ) : null}
       <StudentCredentialCards credentials={issuedCredentials} title="Elevkort från namnlistan" onClear={() => setIssuedCredentials([])} />
-      {resetStatus ? <p className="mb-3 text-sm text-slate-700" role="status">{resetStatus}</p> : null}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
         <select
           value={addToClassId}

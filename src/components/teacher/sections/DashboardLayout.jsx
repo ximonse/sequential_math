@@ -417,6 +417,7 @@ export default function DashboardLayout({
           teacherClassIds={teacherIdentity.classIds || []}
           canManageSchools={teacherIdentity.isAdmin}
           canDeleteClasses={teacherIdentity.isAdmin}
+          canResetStudentAccounts={teacherIsPrimaryAdmin}
         />
       </>
     )

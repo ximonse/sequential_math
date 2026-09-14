@@ -175,3 +175,12 @@ riktiga namn visas för eleven själv och i personalens listor och statistik.
 fortfarande använder namn/lösenord. Där kan lösenordet sättas om till elevens
 inloggnings-ID. QR+PIN-elever visas inte i den listan och kan inte av misstag
 få ett äldre lösenord återställt.
+
+### Återställa en hel klass
+
+Huvudadministratören kan under en befintlig klass välja `Återställ alla
+elevkonton`. Det tar bort elevens träningshistorik, gamla lösenord, tidigare
+QR-kort, PIN-koder, kodnamn, tickets och övrig elevdata. Elevens förnamn och
+klasstillhörighet behålls. Nya QR-kort och PIN-koder visas direkt som
+elevkort: hämta PDF:en innan sidan lämnas. Lärare och vanliga administratörer
+kan inte använda funktionen, och lärar-/admin-/huvudadminkonton påverkas inte.

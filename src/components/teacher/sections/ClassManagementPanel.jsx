@@ -106,7 +106,8 @@ export default function ClassManagementPanel({
   onOpenStudentDetail,
   teacherClassIds = [],
   canManageSchools = false,
-  canDeleteClasses = false
+  canDeleteClasses = false,
+  canResetStudentAccounts = false
 }) {
   const directory = useSchools()
   const [schoolId, setSchoolId] = useState('')
@@ -116,6 +117,7 @@ export default function ClassManagementPanel({
   const [moveToClassId, setMoveToClassId] = useState('')
   const [moveStudentId, setMoveStudentId] = useState('')
   const [issuedCredentials, setIssuedCredentials] = useState([])
+  const [resetStatus, setResetStatus] = useState('')
   const busyRef = useRef(false)
   const classLabel = item => `${item.name} · ${directory.schools.find(school => school.id === item.schoolId)?.name || 'Skola ej angiven'}`
   const orderedClasses = [...classes].sort((a, b) => {
@@ -135,6 +137,23 @@ export default function ClassManagementPanel({
   const showIssuedCredentials = result => {
     if (Array.isArray(result?.credentials) && result.credentials.length) setIssuedCredentials(result.credentials)
     return result
+  }
+  const resetClassStudentAccounts = async (classRecord) => {
+    const confirmed = window.confirm(`Återställ alla elevkonton i ${classRecord.name}?\n\nAll elevdata rensas: träningshistorik, äldre lösenord, gamla QR-kort, PIN-koder och kodnamn. Förnamn och klasstillhörighet behålls. Nya elevkort måste hämtas direkt efteråt.`)
+    if (!confirmed) return
+    setResetStatus('Återställer elevkonton...')
+    const response = await fetch('/api/student-class-reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() },
+      body: JSON.stringify({ classId: classRecord.id })
+    })
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      setResetStatus(data.error || 'Kunde inte återställa elevkontona.')
+      return
+    }
+    setIssuedCredentials(data.credentials || [])
+    setResetStatus(`${data.credentials?.length || 0} elevkonton är återställda. Hämta PDF:en innan du lämnar sidan.`)
   }
   const availableExistingStudents = students.filter(student => (
     !recordMatchesClassFilter(student, [addToClassId])
@@ -190,6 +209,11 @@ export default function ClassManagementPanel({
                 <ClassSchoolChoice key={`${item.id}-${item.schoolId || ''}`} classRecord={item} directory={directory} onSave={onRenameClass} disabled={busy} />
               </details> : null}
               {onSaveClassExtras && <ClassExtrasRow classRecord={item} onSaveExtras={onSaveClassExtras} />}
+              {canResetStudentAccounts ? <details className="mt-3 rounded border border-rose-200 bg-rose-50 p-2">
+                <summary className="cursor-pointer text-xs font-medium text-rose-900">Återställ alla elevkonton</summary>
+                <p className="mt-1 text-xs text-rose-900">Rensar elevdata i denna klass och utfärdar nya QR-kort/PIN. Förnamn och klasstillhörighet behålls.</p>
+                <button type="button" disabled={busy} onClick={() => runRosterAction(() => resetClassStudentAccounts(item))} className="mt-2 rounded bg-rose-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-rose-800 disabled:bg-rose-300">Återställ och skapa nya elevkort</button>
+              </details> : null}
             </div>
           )
         })}
@@ -231,6 +255,7 @@ export default function ClassManagementPanel({
         />
       ) : null}
       <StudentCredentialCards credentials={issuedCredentials} title="Elevkort från namnlistan" onClear={() => setIssuedCredentials([])} />
+      {resetStatus ? <p className="mb-3 text-sm text-slate-700" role="status">{resetStatus}</p> : null}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
         <select
           value={addToClassId}

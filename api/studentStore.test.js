@@ -11,6 +11,11 @@ vi.mock('@vercel/kv', () => ({ kv: {
     values.forEach(value => members.add(value))
     memory.set(key, [...members])
   }),
+  srem: vi.fn(async (key, ...values) => {
+    const members = new Set(memory.get(key) || [])
+    values.forEach(value => members.delete(value))
+    memory.set(key, [...members])
+  }),
   set: vi.fn(async (key, value) => memory.set(key, structuredClone(value))),
   del: vi.fn(async key => memory.delete(key)),
   eval: vi.fn(async (_script, keys, args) => {
@@ -49,6 +54,7 @@ vi.mock('./_helpers.js', () => ({
 import studentHandler from './student/[studentId].js'
 import eventsHandler from './student/[studentId]/events.js'
 import rosterHandler from './student-roster.js'
+import classResetHandler from './student-class-reset.js'
 import teacherClassesHandler from './teacher-classes.js'
 import { isCurrentStudentProfile } from '../src/lib/studentProfileContract.js'
 import { sanitizeProfileForList } from './students.js'
@@ -60,6 +66,7 @@ import { createPilotStudentAuth, createQrSecret } from './_studentSession.js'
 
 const admin = { isAdmin: true }
 const owner = { teacherId: 'owner', isAdmin: false, classIds: [] }
+const primaryAdmin = { teacherId: 'primary', isAdmin: true, isPrimaryAdmin: true }
 function profile() {
   return {
     ...createStudentProfile('PUPIL', 'Same name', 4),
@@ -175,6 +182,27 @@ describe('student persistence boundary', () => {
     const dto = sanitizeProfileForList(pilot)
     expect(dto.auth).toMatchObject({ scheme: 'qr-pin-v1' })
     expect(JSON.stringify(dto)).not.toMatch(/qrSecretHash|credentialVersion|"pin"/i)
+  })
+
+  it('resets a class to fresh QR+PIN accounts while retaining only first names and class membership', async () => {
+    const req = { method: 'POST', headers: {}, body: { classId: 'A' }, teacher: primaryAdmin }
+    const res = { code: 200, headers: {}, setHeader(name, value) { this.headers[name] = value }, status(code) { this.code = code; return this }, json(data) { this.data = data; return this } }
+    await classResetHandler(req, res)
+    expect(res).toMatchObject({ code: 200, data: { ok: true, classId: 'A' }, headers: { 'Cache-Control': 'no-store' } })
+    expect(res.data.credentials).toHaveLength(1)
+    expect(res.data.credentials[0]).toMatchObject({ studentId: 'PUPIL', name: 'Same', pin: expect.stringMatching(/^\d{4}$/) })
+    const stored = memory.get('student:PUPIL')
+    expect(stored).toMatchObject({ name: 'Same', classId: 'A', classIds: ['A'], auth: { scheme: 'qr-pin-v1' }, problemLog: [], recentProblems: [] })
+    expect(stored.auth.passwordHash).toBeUndefined()
+    expect(stored.ticketInbox).toBeUndefined()
+  })
+
+  it('does not let a teacher or ordinary admin reset an entire class', async () => {
+    const req = { method: 'POST', headers: {}, body: { classId: 'A' }, teacher: admin }
+    const res = { code: 200, headers: {}, setHeader(name, value) { this.headers[name] = value }, status(code) { this.code = code; return this }, json(data) { this.data = data; return this } }
+    await classResetHandler(req, res)
+    expect(res).toMatchObject({ code: 403 })
+    expect(memory.get('student:PUPIL').auth.scheme).not.toBe('qr-pin-v1')
   })
 
   it('keeps pilot credentials off legacy pupil reads and full-profile writes', async () => {

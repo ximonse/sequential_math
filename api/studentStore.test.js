@@ -170,6 +170,13 @@ describe('student persistence boundary', () => {
     expect((await call(studentHandler, 'POST', { profile: dto })).code).toBe(400)
   })
 
+  it('keeps the QR+PIN credential family in the teacher list without exposing credentials', () => {
+    const pilot = { ...profile(), auth: createPilotStudentAuth({ qrSecret: createQrSecret(), pin: '1234' }) }
+    const dto = sanitizeProfileForList(pilot)
+    expect(dto.auth).toMatchObject({ scheme: 'qr-pin-v1' })
+    expect(JSON.stringify(dto)).not.toMatch(/qrSecretHash|credentialVersion|"pin"/i)
+  })
+
   it('keeps pilot credentials off legacy pupil reads and full-profile writes', async () => {
     const pilot = { ...profile(), displayAlias: 'Röd Räv 17', auth: createPilotStudentAuth({ qrSecret: createQrSecret(), pin: '1234' }) }
     memory.set('student:PUPIL', pilot)

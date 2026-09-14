@@ -173,4 +173,5 @@ riktiga namn visas för eleven själv och i personalens listor och statistik.
 
 `Äldre elevinloggningar` är bara ett kompatibilitetsverktyg för konton som
 fortfarande använder namn/lösenord. Där kan lösenordet sättas om till elevens
-inloggnings-ID. QR+PIN-elever visas inte i den listan.
+inloggnings-ID. QR+PIN-elever visas inte i den listan och kan inte av misstag
+få ett äldre lösenord återställt.

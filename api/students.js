@@ -16,6 +16,10 @@ export function sanitizeProfileForList(profile) {
     ...freshProfile,
     auth: freshProfile.auth && typeof freshProfile.auth === 'object'
       ? {
+          // Credential family only. It lets the dashboard distinguish QR+PIN
+          // accounts from legacy name/password accounts without exposing a
+          // hash, PIN verifier, secret or credential version.
+          scheme: freshProfile.auth.scheme || null,
           lastLoginAt: freshProfile.auth.lastLoginAt || null,
           loginCount: freshProfile.auth.loginCount || 0,
           passwordUpdatedAt: freshProfile.auth.passwordUpdatedAt || null

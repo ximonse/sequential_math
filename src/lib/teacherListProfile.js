@@ -45,7 +45,10 @@ export function toTeacherListProfile(profile) {
   // display alias remains the credential-card/login code fallback for pilot
   // records that have not yet been given a name.
   listProfile.name = String(profile.name || profile.displayAlias || '').trim()
-  listProfile.auth = { lastLoginAt: profile.auth?.lastLoginAt || null,
+  // The credential family is safe metadata, not credential material. The
+  // dashboard needs it to keep QR+PIN pupils out of the legacy reset tool.
+  listProfile.auth = { scheme: profile.auth?.scheme || null,
+    lastLoginAt: profile.auth?.lastLoginAt || null,
     loginCount: Number(profile.auth?.loginCount) || 0,
     passwordUpdatedAt: profile.auth?.passwordUpdatedAt || null }
   return listProfile
@@ -79,6 +82,7 @@ export function normalizeTeacherListProfile(raw, normalizeStudentId) {
     studentId,
     recentProblems: raw.recentProblems,
     auth: {
+      scheme: raw.auth?.scheme || null,
       lastLoginAt: raw.auth?.lastLoginAt || null,
       loginCount: Number.isFinite(Number(raw.auth?.loginCount))
         ? Number(raw.auth.loginCount)

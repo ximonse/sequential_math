@@ -1,5 +1,4 @@
 import { kv } from '@vercel/kv'
-import { createStudentProfile } from '../src/lib/studentProfile.js'
 import { createPilotStudentAuth, createQrSecret, normalizeStudentLoginCode, reserveStudentLoginCode, studentLoginCodeIndexKey } from './_studentSession.js'
 import { generateDisplayAlias, generateStudentPin } from './_studentAlias.js'
 import { mutateStudentRecord, studentStoreError } from './_studentStore.js'
@@ -8,6 +7,30 @@ import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 
 function firstName(value) {
   return String(value || '').normalize('NFC').trim().split(/\s+/)[0] || ''
+}
+
+function createCleanStudentProfile(studentId, name, grade) {
+  const now = Date.now()
+  return {
+    profileSchemaVersion: 1,
+    studentId,
+    name,
+    grade,
+    created_at: now,
+    currentDifficulty: 1,
+    highestDifficulty: 1,
+    adaptive: { skillStates: {}, recentSelections: [] },
+    activity: { page: 'unknown', inFocus: false, lastPresenceAt: 0, lastInteractionAt: 0, visibilityState: 'hidden', createdAt: now },
+    masteryFacts: { version: 1, facts: [], revokedIds: [] },
+    recentProblems: [],
+    problemLog: [],
+    stats: {
+      totalProblems: 0, correctAnswers: 0, overallSuccessRate: 0, avgTimePerProblem: 0,
+      typeStats: {}, weakestTypes: [], strongestTypes: [], lifetimeProblems: 0,
+      lifetimeCorrectAnswers: 0, lifetimeTimeSpent: 0, lifetimeSpeedSamples: 0,
+      lifetimeSpeedTimeSpent: 0, avgSpeedTimePerProblem: 0
+    }
+  }
 }
 
 export default async function handler(req, res) {
@@ -39,7 +62,7 @@ export default async function handler(req, res) {
       const existingAlias = String(previous.displayAlias || '').trim()
       const displayAlias = await reserveStudentLoginCode(studentId, () => generateDisplayAlias())
       const name = firstName(previous.name)
-      const cleanProfile = createStudentProfile(studentId, name || displayAlias, Number(previous.grade) || 4)
+      const cleanProfile = createCleanStudentProfile(studentId, name || displayAlias, Number(previous.grade) || 4)
       const saved = await mutateStudentRecord(studentId, async current => {
         if (!current) throw studentStoreError(404, 'Eleven finns inte längre.')
         return {

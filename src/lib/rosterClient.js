@@ -35,9 +35,16 @@ export async function submitRoster({ classId, className, schoolId = '', rosterTe
     }
     const successful = (data.results || []).filter(item => item.ok)
     const failed = (data.results || []).filter(item => !item.ok)
+    const validCredential = item => item && item.ok === true
+      && typeof item.studentId === 'string' && typeof item.displayAlias === 'string'
+      && typeof item.qrSecret === 'string' && item.qrSecret.length >= 40
+      && typeof item.pin === 'string' && /^\d{4}$/.test(item.pin)
+    const credentials = successful.filter(validCredential).map(item => ({
+      studentId: item.studentId, name: item.name, displayAlias: item.displayAlias, qrSecret: item.qrSecret, pin: item.pin
+    }))
     if (data.ok) localStorage.removeItem(pendingKey)
     return { ok: Boolean(data.ok), classRecord: { ...data.class, studentIds: successful.map(item => item.studentId) },
-      addedCount: successful.length, results: data.results,
+      addedCount: successful.length, results: data.results, credentials,
       error: failed.length ? `${successful.length} sparade. Återstår: ${failed.map(item => item.name || item.studentId).join(', ')}. Försök igen med samma lista.` : undefined }
   } catch { return { ok: false, error: 'Kunde inte kontakta servern. Behåll listan och försök igen.' } }
 }

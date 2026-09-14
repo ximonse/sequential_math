@@ -145,6 +145,7 @@ export function buildDashboardClassAndAuthActions({
     setClasses(updatedClasses)
     setAddToClassId(result.classRecord.id)
     void loadStudents()
+    return result
   }
 
   const handleCreatePilotRoster = async (schoolId = '', count) => {
@@ -187,6 +188,7 @@ export function buildDashboardClassAndAuthActions({
     setClassStatus(`Tillagt ${result.addedCount} elev(er) i ${result.classRecord.name}.`)
     setClasses(getClasses())
     void loadStudents()
+    return result
   }
 
   const handleDeleteClass = async (classId) => {

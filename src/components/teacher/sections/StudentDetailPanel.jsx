@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
+import { downloadStudentCredentialPdf } from '../../../lib/studentCredentialPdf'
 import StudentDetailHistoryPanel from './StudentDetailHistoryPanel'
 import StudentDetailTrendPanel from './StudentDetailTrendPanel'
 import StudentDetailMasteryPanel from './StudentDetailMasteryPanel'
@@ -14,6 +15,7 @@ const OPERATION_BADGES = [
 
 function ReissuedCredentialCard({ credential }) {
   const [qrCode, setQrCode] = useState('')
+  const [pdfStatus, setPdfStatus] = useState('')
   useEffect(() => {
     let active = true
     QRCode.toDataURL(JSON.stringify({ version: 1, studentId: credential.studentId, qrSecret: credential.qrSecret }), {
@@ -25,10 +27,14 @@ function ReissuedCredentialCard({ credential }) {
     <p className="font-bold text-amber-950">Nytt elevkort — skriv ut nu</p>
     <p className="mt-1 text-amber-900">Det gamla QR-kortet och den gamla PIN-koden fungerar inte längre.</p>
     <div className="mt-3 flex items-center gap-4">
-      <div><p className="font-semibold text-lg">{credential.displayAlias || 'Elev'}</p><p className="font-mono text-xs break-all">Elev-ID: {credential.studentId}</p><p className="font-mono text-xs break-all">QR-hemlighet: {credential.qrSecret}</p><p className="font-mono text-lg font-bold">PIN: {credential.pin}</p></div>
+      <div><p className="font-semibold text-lg">{credential.name || credential.displayAlias || 'Elev'}</p><p className="text-xs">Kodnamn: {credential.displayAlias || '–'}</p><p className="font-mono text-xs break-all">Elev-ID: {credential.studentId}</p><p className="font-mono text-lg font-bold">PIN: {credential.pin}</p></div>
       {qrCode ? <img className="h-28 w-28" src={qrCode} alt="Nytt elevkorts QR-kod" /> : null}
     </div>
-    <div className="mt-3 flex gap-2 print:hidden"><button type="button" onClick={() => window.print()} className="rounded bg-amber-700 px-3 py-1.5 text-xs font-semibold text-white">Skriv ut kortet</button></div>
+    <div className="mt-3 flex gap-2 print:hidden">
+      <button type="button" onClick={async () => { setPdfStatus('Skapar PDF…'); try { await downloadStudentCredentialPdf([credential]); setPdfStatus('PDF klar. Spara filen säkert.') } catch (error) { setPdfStatus(error?.message || 'Kunde inte skapa PDF.') } }} className="rounded bg-amber-700 px-3 py-1.5 text-xs font-semibold text-white">Hämta PDF</button>
+      <button type="button" onClick={() => window.print()} className="rounded border border-amber-700 px-3 py-1.5 text-xs font-semibold text-amber-950">Skriv ut kortet</button>
+    </div>
+    {pdfStatus ? <p role="status" className="mt-2 text-xs text-amber-900 print:hidden">{pdfStatus}</p> : null}
   </div>
 }
 

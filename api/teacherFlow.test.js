@@ -78,6 +78,7 @@ describe('teacher account to pupil lifecycle', () => {
   beforeEach(() => {
     records.clear()
     process.env.TEACHER_API_PASSWORD = 'synthetic-flow-signing-secret'
+    process.env.PILOT_ENROLLMENT_SECRET = 'synthetic-pilot-enrollment-secret-32-bytes'
     delete process.env.TEACHER_API_PASSWORD_ROTATION_SECRET
     const { hash, salt, scheme } = hashTeacherPassword('admin-secret')
     records.set('teacher_account:admin', {
@@ -117,15 +118,13 @@ describe('teacher account to pupil lifecycle', () => {
 
     const loginClasses = await call(studentLoginHandler)
     expect(loginClasses.code).toBe(405)
-    const pupilLogin = await call(studentLoginHandler, {
+    const legacyPupilLogin = await call(studentLoginHandler, {
       method: 'POST',
       body: { name: 'Ada Student', password: 'Ada Student' }
     })
-    expect(pupilLogin).toMatchObject({ code: 200, data: { studentId, assignments: [{ classId: roster.data.class.id }] } })
-    const pupilProfile = await call(studentHandler, {
-      query: { studentId: pupilLogin.data.studentId }, headers: { 'x-student-password': 'Ada Student' }
-    })
-    expect(pupilProfile).toMatchObject({ code: 200, data: { profile: { studentId, name: 'Ada Student' } } })
+    expect(legacyPupilLogin.code).toBe(401)
+    expect(roster.data.results[0].qrSecret.length).toBeGreaterThan(40)
+    expect(roster.data.results[0].pin).toMatch(/^\d{4}$/)
 
 
     const listed = await call(studentsHandler, { headers: firstTeacherHeaders })
@@ -144,17 +143,6 @@ describe('teacher account to pupil lifecycle', () => {
         changes: { ticketInbox: { activeDispatchId: 'ticket-1', activePayload: { title: 'Öva addition' } } } }
     })
     expect(ticket.code).toBe(200)
-
-    const practice = await call(eventsHandler, {
-      method: 'POST', query: { studentId }, headers: { 'x-student-password': 'Ada Student' },
-      body: { entries: [{ id: 'problem-1', type: 'problem_result', timestamp: Date.now(), payload: {
-        problemId: 'addition-1', timestamp: Date.now(), correct: true, operation: 'addition',
-        problemType: 'addition', difficulty: { conceptual_level: 1 }, studentAnswer: 2,
-        correctAnswer: 2, timeSpent: 3, speedTimeSec: 3
-      } }] }
-    })
-    expect(practice).toMatchObject({ code: 200, data: { appliedCount: 1 } })
-    expect(records.get(`student:${studentId}`).problemLog).toHaveLength(1)
 
     const passwordChange = await call(teacherHandler, {
       method: 'PUT', headers: adminHeaders, query: { id: teacherId }, body: { password: 'second-secret' }
@@ -254,8 +242,7 @@ describe('school management lifecycle', () => {
     expect(replay.data.results[0].studentId).toBe(studentId)
     const changedRetry = await call(rosterHandler, { method: 'POST', headers: auth, body: { ...rosterBody, schoolId: '' } })
     expect(changedRetry.code).toBe(409)
-    expect(await call(studentLoginHandler, { method: 'POST', body: { name: 'Anna', password: 'Anna' } }))
-      .toMatchObject({ code: 200, data: { studentId } })
+    expect((await call(studentLoginHandler, { method: 'POST', body: { name: 'Anna', password: 'Anna' } })).code).toBe(401)
     const before = structuredClone(records.get('student:' + studentId))
     const reassigned = await call(classesHandler, { method: 'PUT', headers: auth, body: { id: roster.data.class.id, name: '6A', schoolId: '' } })
     expect(reassigned.code).toBe(200)

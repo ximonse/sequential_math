@@ -33,6 +33,21 @@ export function studentLoginCodeIndexKey(code) {
   return `student_login_code:${hashQrSecret(normalizeStudentLoginCode(code))}`
 }
 
+export async function reserveStudentLoginCode(studentId, generateCode, { store = kv } = {}) {
+  const id = String(studentId || '').trim().toUpperCase()
+  if (!id || typeof generateCode !== 'function') throw new Error('Invalid student login-code reservation')
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const code = String(generateCode()).trim()
+    if (!code) throw new Error('Invalid student login code')
+    const key = studentLoginCodeIndexKey(code)
+    const existing = await store.get(key)
+    if (existing && String(existing).toUpperCase() !== id) continue
+    await store.set(key, id, { nx: true })
+    if (String(await store.get(key) || '').toUpperCase() === id) return code
+  }
+  throw new Error('Could not reserve a unique student login code')
+}
+
 export function createPinVerifier(pin) {
   const value = String(pin || '')
   if (!/^\d{4}$/.test(value)) throw new Error('PIN must contain exactly four digits')

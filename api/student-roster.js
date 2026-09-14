@@ -1,11 +1,11 @@
 import { validateSchoolId } from './_schoolStore.js'
 import { kv } from '@vercel/kv'
-import { createHash, createHmac, randomBytes } from 'node:crypto'
+import { createHash, createHmac } from 'node:crypto'
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass, assertTeacherStudentAccess } from './_studentAccess.js'
 import { createClassRecord } from './_classStore.js'
 import { createStudentRecord, mutateStudentRecord, studentStoreError } from './_studentStore.js'
-import { createPilotStudentAuth, studentLoginCodeIndexKey } from './_studentSession.js'
+import { createPilotStudentAuth, reserveStudentLoginCode } from './_studentSession.js'
 import { generateDisplayAlias, generateStudentPin } from './_studentAlias.js'
 
 const digest = text => createHash('sha256').update(text).digest('hex')
@@ -122,7 +122,9 @@ export default async function handler(req, res) {
           if (current && current.enrollmentKey !== enrollmentKey) throw studentStoreError(409, 'Student ID conflict')
           if (!current) {
             const aliasBytes = deterministicBytes(secret, `${enrollmentKey}:${index}:alias`)
-            const displayAlias = generateDisplayAlias({ taken: takenAliases, randomBytesFn: aliasBytes })
+            const displayAlias = await reserveStudentLoginCode(studentId, () => (
+              generateDisplayAlias({ taken: takenAliases, randomBytesFn: aliasBytes })
+            ))
             const record = emptyPilotProfile({ studentId, displayAlias, grade, target, enrollmentKey,
               auth: createPilotStudentAuth({ qrSecret, pin }) })
             try { current = await createStudentRecord(studentId, record) }
@@ -133,7 +135,7 @@ export default async function handler(req, res) {
             }
           }
           takenAliases.add(current.displayAlias)
-          await kv.set(studentLoginCodeIndexKey(current.displayAlias), studentId)
+          await reserveStudentLoginCode(studentId, () => current.displayAlias)
           await kv.sadd(`class_students:${target.id}`, studentId)
           results.push({ studentId, displayAlias: current.displayAlias, qrSecret, pin, ok: true })
         } catch (error) {
@@ -143,6 +145,8 @@ export default async function handler(req, res) {
       res.setHeader('Cache-Control', 'no-store')
       return res.status(200).json({ ok: results.every(item => item.ok), class: target, results })
     }
+    const secret = pilotEnrollmentSecret()
+    const takenAliases = await classAliases(target.id)
     for (let index = 0; index < names.length; index++) {
       const name = names[index].trim()
       const suffix = digest(`${enrollmentKey}:${index}`).slice(0, 10).toUpperCase()
@@ -151,14 +155,21 @@ export default async function handler(req, res) {
       try {
         let current = await kv.get(`student:${studentId}`)
         if (current && current.enrollmentKey !== enrollmentKey) throw studentStoreError(409, 'Student ID conflict')
+        const credentialBytes = deterministicBytes(secret, `${enrollmentKey}:${index}:credentials`)
+        const qrSecret = credentialBytes(32).toString('base64url')
+        const pin = generateStudentPin({ randomBytesFn: credentialBytes })
         if (!current) {
-          const now = Date.now(), salt = randomBytes(16).toString('hex')
+          const now = Date.now()
+          const aliasBytes = deterministicBytes(secret, `${enrollmentKey}:${index}:alias`)
+          const displayAlias = await reserveStudentLoginCode(studentId, () => (
+            generateDisplayAlias({ taken: takenAliases, randomBytesFn: aliasBytes })
+          ))
           const record = { profileSchemaVersion: 1, studentId, name, grade, created_at: now,
             currentDifficulty: 1, highestDifficulty: 1, adaptive: { skillStates: {}, recentSelections: [] },
             masteryFacts: { version: 1, facts: [], revokedIds: [] }, recentProblems: [], problemLog: [],
             stats: { totalProblems: 0, correctAnswers: 0, overallSuccessRate: 0, avgTimePerProblem: 0, typeStats: {}, weakestTypes: [], strongestTypes: [] },
-            classId: target.id, classIds: [target.id], className: target.name, enrollmentKey,
-            auth: { passwordScheme: 'sha256-v1', passwordSalt: salt, passwordHash: digest(`${salt}:${name}`), passwordUpdatedAt: now, loginCount: 0, lastLoginAt: null } }
+            classId: target.id, classIds: [target.id], className: target.name, enrollmentKey, displayAlias,
+            auth: createPilotStudentAuth({ qrSecret, pin }) }
           try { current = await createStudentRecord(studentId, record) }
           catch (error) {
             if (error.status !== 409) throw error
@@ -167,7 +178,9 @@ export default async function handler(req, res) {
           }
         }
         await kv.sadd(`class_students:${target.id}`, studentId)
-        results.push({ studentId, name, ok: true })
+        await reserveStudentLoginCode(studentId, () => current.displayAlias)
+        takenAliases.add(current.displayAlias)
+        results.push({ studentId, name, displayAlias: current.displayAlias, qrSecret, pin, ok: true })
       } catch (error) { results.push({ studentId, name, ok: false, error: error.status ? error.message : 'Kunde inte spara eleven.' }) }
     }
     for (const rawId of existingStudentIds) {
@@ -183,6 +196,7 @@ export default async function handler(req, res) {
         results.push({ studentId, name: saved.name, ok: true })
       } catch (error) { results.push({ studentId, ok: false, error: error.status ? error.message : 'Kunde inte lägga till eleven.' }) }
     }
+    res.setHeader('Cache-Control', 'no-store')
     return res.status(200).json({ ok: results.every(item => item.ok), class: target, results })
   } catch (error) { return res.status(error.status || 500).json({ error: error.status ? error.message : 'Kunde inte spara klasslistan.' }) }
 }

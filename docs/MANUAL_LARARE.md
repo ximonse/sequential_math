@@ -156,7 +156,16 @@ I `Administration → Klasser` öppnar du `Elever och elevkort` på rätt klass 
 väljer elev. `Nytt QR-kort / ny PIN` skapar eller ersätter elevens kort. För en
 äldre namnelev är det också en säker migrering: namn, elev-ID, klass och
 historik behålls, medan eleven får ett kodnamn, en QR-kod och en fyrsiffrig PIN.
-Skriv ut kortet direkt: den tidigare QR-koden och PIN-koden slutar då fungera.
+Hämta PDF direkt: en liggande A4 innehåller åtta riktiga A7-kort. Den tidigare
+QR-koden och PIN-koden slutar då fungera.
+
+När du skapar en klass från en namnlista, eller lägger till nya elever via
+namnlistan, får varje ny elev automatiskt QR-kod, kodnamn och PIN. En
+`Hämta PDF (8 A7/A4)`-knapp visas direkt efter sparandet. PDF:en innehåller
+elevens namn, kodnamn, QR-kod, PIN och elev-ID och är lärarens reservkopia.
+Spara den bara på skolans godkända, skyddade plats. Rå QR-hemligheter sparas
+aldrig på servern eller i webbläsaren och kan därför inte skrivas ut i efterhand
+utan att ett nytt kort utfärdas.
 
 Eleven kan sedan skanna QR-koden och skriva PIN, eller skriva kortets kodnamn
 (tre eller fyra ord) och PIN. Kodnamnet är en inloggningsuppgift; elevens

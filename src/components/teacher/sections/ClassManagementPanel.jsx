@@ -4,7 +4,9 @@ import QRCode from 'qrcode'
 import { listDomains } from '../../../domains/registry'
 import { parseRosterLines } from '../../../lib/storageClassHelpers'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
+import { downloadStudentCredentialPdf } from '../../../lib/studentCredentialPdf'
 import PilotRosterPanel from './PilotRosterPanel'
+import StudentCredentialCards from './StudentCredentialCards'
 
 function getTogglableExtras() {
   return listDomains()
@@ -113,6 +115,7 @@ export default function ClassManagementPanel({
   const [moveFromClassId, setMoveFromClassId] = useState('')
   const [moveToClassId, setMoveToClassId] = useState('')
   const [moveStudentId, setMoveStudentId] = useState('')
+  const [issuedCredentials, setIssuedCredentials] = useState([])
   const busyRef = useRef(false)
   const classLabel = item => `${item.name} · ${directory.schools.find(school => school.id === item.schoolId)?.name || 'Skola ej angiven'}`
   const orderedClasses = [...classes].sort((a, b) => {
@@ -126,8 +129,12 @@ export default function ClassManagementPanel({
     if (busyRef.current) return
     busyRef.current = true
     setBusy(true)
-    try { await action() }
+    try { return await action() }
     finally { busyRef.current = false; setBusy(false) }
+  }
+  const showIssuedCredentials = result => {
+    if (Array.isArray(result?.credentials) && result.credentials.length) setIssuedCredentials(result.credentials)
+    return result
   }
   const availableExistingStudents = students.filter(student => (
     !recordMatchesClassFilter(student, [addToClassId])
@@ -209,7 +216,7 @@ export default function ClassManagementPanel({
           className="px-3 py-2 border rounded text-sm"
         />
         <button
-          onClick={() => runRosterAction(() => onCreateClass(schoolId))}
+          onClick={() => runRosterAction(async () => showIssuedCredentials(await onCreateClass(schoolId)))}
           className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm"
         >
           Skapa klass från listan
@@ -223,6 +230,7 @@ export default function ClassManagementPanel({
           disabled={busy}
         />
       ) : null}
+      <StudentCredentialCards credentials={issuedCredentials} title="Elevkort från namnlistan" onClear={() => setIssuedCredentials([])} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
         <select
           value={addToClassId}
@@ -237,7 +245,7 @@ export default function ClassManagementPanel({
           ))}
         </select>
         <button
-          onClick={() => runRosterAction(onAddStudentsToClass)}
+          onClick={() => runRosterAction(async () => showIssuedCredentials(await onAddStudentsToClass()))}
           className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-sm"
         >
           Lägg till elever i vald klass
@@ -250,7 +258,7 @@ export default function ClassManagementPanel({
         className="w-full min-h-28 px-3 py-2 border rounded text-sm mb-3"
       />
       <p className="text-xs text-gray-500 mb-2">
-        En elev per rad, eller separera med kommatecken eller semikolon. Förnamn räcker. Varje post skapar en ny elev med ett eget inloggnings-ID, även om namnet redan finns. Startlösenordet är elevens namn.
+        En elev per rad, eller separera med kommatecken eller semikolon. Förnamn räcker. Varje post skapar en ny elev med eget ID, kodnamn, QR-kod och PIN - hämta PDF:en direkt efter skapandet.
       </p>
       <p className="text-xs text-gray-500 mb-2">
         Listan skapar nya elever; den flyttar inte en befintlig elev med samma namn.
@@ -369,9 +377,10 @@ function StudentCredentialIssuer({ student }) {
       </div>
       {status ? <p role="status" className="mt-1 text-xs text-amber-900">{status}</p> : null}
       {credential ? <div className="mt-2 flex items-center gap-3 rounded bg-white p-2 text-xs text-slate-800">
-        <div className="min-w-0"><p className="font-semibold">{student.name || credential.displayAlias || student.displayAlias}</p><p className="text-xs text-slate-600">Kodnamn: {credential.displayAlias || student.displayAlias || '–'}</p><p className="font-mono break-all">Elev-ID: {credential.studentId}</p><p className="font-mono break-all">QR-hemlighet: {credential.qrSecret}</p><p className="font-mono text-sm font-bold">PIN: {credential.pin}</p></div>
+        <div className="min-w-0"><p className="font-semibold">{student.name || credential.displayAlias || student.displayAlias}</p><p className="text-xs text-slate-600">Kodnamn: {credential.displayAlias || student.displayAlias || '–'}</p><p className="font-mono break-all">Elev-ID: {credential.studentId}</p><p className="font-mono text-sm font-bold">PIN: {credential.pin}</p></div>
         {qrCode ? <img className="h-24 w-24 shrink-0" src={qrCode} alt={`QR-kod för ${credential.displayAlias || credential.studentId}`} /> : null}
       </div> : null}
+      {credential ? <button type="button" onClick={async () => { setStatus('Skapar PDF…'); try { await downloadStudentCredentialPdf([{ ...credential, name: student.name }]); setStatus('PDF klar. Spara filen säkert.') } catch (error) { setStatus(error?.message || 'Kunde inte skapa PDF.') } }} className="mt-2 rounded bg-amber-700 px-2 py-1 text-xs font-semibold text-white">Hämta PDF</button> : null}
     </div>
   )
 }

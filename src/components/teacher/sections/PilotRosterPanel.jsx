@@ -1,71 +1,26 @@
-import { useEffect, useState } from 'react'
-import QRCode from 'qrcode'
-
-function credentialText(credentials) {
-  return credentials.map(({ displayAlias, studentId, qrSecret, pin }) => (
-    displayAlias + '\nElev-ID: ' + studentId + '\nQR-hemlighet: ' + qrSecret + '\nPIN: ' + pin
-  )).join('\n\n')
-}
-
-function PilotCredentialCard({ credential }) {
-  const [qrCode, setQrCode] = useState('')
-  useEffect(() => {
-    let active = true
-    const payload = JSON.stringify({ version: 1, studentId: credential.studentId, qrSecret: credential.qrSecret })
-    QRCode.toDataURL(payload, { errorCorrectionLevel: 'M', margin: 1, width: 260 })
-      .then(value => { if (active) setQrCode(value) })
-      .catch(() => { if (active) setQrCode('') })
-    return () => { active = false }
-  }, [credential.studentId, credential.qrSecret])
-  return (
-    <article className="pilot-card rounded border border-gray-200 p-2 text-xs text-gray-800">
-      <div className="flex h-full items-center gap-2">
-        <div className="min-w-0 flex-1">
-          <p className="font-semibold text-sm">{credential.displayAlias}</p>
-          <p className="mt-1 text-[10px] uppercase tracking-wide text-gray-500">Matteträning · elevkort</p>
-          <p className="mt-2 font-mono text-[10px] break-all">Elev-ID: {credential.studentId}</p>
-          <p className="mt-1 font-mono text-[10px] break-all">QR-hemlighet: {credential.qrSecret}</p>
-          <p className="mt-1 font-mono text-sm font-bold">PIN: {credential.pin}</p>
-        </div>
-        {qrCode ? <img className="h-20 w-20 shrink-0" src={qrCode} alt={`QR-kod för ${credential.displayAlias}`} /> : null}
-      </div>
-    </article>
-  )
-}
+import { useState } from 'react'
+import StudentCredentialCards from './StudentCredentialCards'
 
 export default function PilotRosterPanel({ className, schoolId, onCreate, disabled }) {
   const [count, setCount] = useState(25)
   const [credentials, setCredentials] = useState([])
   const [status, setStatus] = useState('')
-  const [copyStatus, setCopyStatus] = useState('')
 
   const create = async () => {
     setStatus('')
-    setCopyStatus('')
     const result = await onCreate(schoolId, Number(count))
-    if (Array.isArray(result?.credentials) && result.credentials.length) {
-      setCredentials(result.credentials)
-    }
+    if (Array.isArray(result?.credentials) && result.credentials.length) setCredentials(result.credentials)
     setStatus(result?.ok
-      ? result.addedCount + ' pseudonyma elevplatser är klara. Skriv ut eller kopiera uppgifterna nu.'
+      ? result.addedCount + ' elevplatser är klara. Hämta PDF:en nu.'
       : result?.error || 'Kunde inte skapa elevplatserna.')
-  }
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(credentialText(credentials))
-      setCopyStatus('Kopierat. Klistra in i skolans godkända dokument och radera därifrån när utdelningen är klar.')
-    } catch {
-      setCopyStatus('Kunde inte kopiera automatiskt. Markera uppgifterna och kopiera manuellt.')
-    }
   }
 
   return (
     <section className="mb-4 rounded border border-teal-200 bg-teal-50 p-3">
-      <h3 className="text-sm font-semibold text-teal-950">Pseudonyma elevplatser</h3>
+      <h3 className="text-sm font-semibold text-teal-950">Namnfria elevplatser</h3>
       <p className="mt-1 text-xs text-teal-900">
-        Skapar helt namnfria elevkonton med slumpad visningskod, QR-hemlighet och fyrsiffrig PIN.
-        Uppgifterna visas bara här i minnet och sparas inte i webbläsaren.
+        Skapar elevkonton utan angivna namn, med kodnamn, QR-kod och fyrsiffrig PIN.
+        Uppgifterna visas bara här i minnet tills PDF:en har hämtats.
       </p>
       <div className="mt-3 flex flex-wrap items-end gap-2">
         <label className="text-xs font-medium text-teal-950">
@@ -85,38 +40,15 @@ export default function PilotRosterPanel({ className, schoolId, onCreate, disabl
           disabled={disabled || !String(className || '').trim()}
           className="rounded bg-teal-700 px-3 py-2 text-sm text-white hover:bg-teal-800 disabled:opacity-50"
         >
-          Skapa pseudonyma elevplatser
+          Skapa namnfria elevplatser
         </button>
       </div>
-      {!String(className || '').trim() ? (
-        <p className="mt-2 text-xs text-amber-800">Ange först klassnamn ovan. Inga elevnamn behövs.</p>
-      ) : null}
+      {!String(className || '').trim() ? <p className="mt-2 text-xs text-amber-800">Ange först klassnamn ovan.</p> : null}
       {status ? <p role="status" className="mt-2 text-xs text-teal-950">{status}</p> : null}
-      {credentials.length ? (
-        <div className="mt-3 rounded border border-teal-300 bg-white p-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-semibold text-gray-900">Inloggningsuppgifter — visas endast tills sidan laddas om</p>
-            <div className="flex gap-2 print:hidden">
-              <button type="button" onClick={copy} className="rounded bg-teal-700 px-2 py-1 text-xs text-white">Kopiera</button>
-              <button type="button" onClick={() => window.print()} className="rounded border border-teal-700 px-2 py-1 text-xs text-teal-900">Skriv ut</button>
-              <button type="button" onClick={() => { setCredentials([]); setCopyStatus(''); setStatus('Uppgifterna har tagits bort från vyn.') }} className="rounded border border-gray-400 px-2 py-1 text-xs text-gray-700">Rensa vyn</button>
-            </div>
-          </div>
-          {copyStatus ? <p className="mt-2 text-xs text-teal-900 print:hidden">{copyStatus}</p> : null}
-          <ol className="pilot-card-grid mt-3 grid gap-2 md:grid-cols-2">
-            {credentials.map(credential => (
-              <li key={credential.studentId}><PilotCredentialCard credential={credential} /></li>
-            ))}
-          </ol>
-          <style>{`@media print {
-            @page { size: A4 portrait; margin: 8mm; }
-            body * { visibility: hidden; }
-            .pilot-card-grid, .pilot-card-grid * { visibility: visible; }
-            .pilot-card-grid { position: absolute; left: 0; top: 0; width: 194mm; display: grid !important; grid-template-columns: repeat(2, 1fr) !important; grid-auto-rows: 67.5mm; gap: 2mm; margin: 0 !important; padding: 0; list-style: none; }
-            .pilot-card { box-sizing: border-box; height: 67.5mm; border: 0.35mm solid #334155 !important; border-radius: 0 !important; padding: 5mm !important; background: white !important; break-inside: avoid; }
-          }`}</style>
-        </div>
-      ) : null}
+      <StudentCredentialCards credentials={credentials} title="Nya elevkort" onClear={() => {
+        setCredentials([])
+        setStatus('Uppgifterna har tagits bort från vyn.')
+      }} />
     </section>
   )
 }

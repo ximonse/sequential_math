@@ -53,5 +53,14 @@ describe('resolveScopedSelection', () => {
       forcedType: 'percentage'
     })).toThrow('outside training scope')
   })
+
+  it('rotates mixed arithmetic sessions from the parent skill of hidden evidence', () => {
+    const selection = resolveScopedSelection(profile([{
+      skill: 'addition',
+      operation: 'positions_decimal',
+      correct: true
+    }]), { allowedTypes: ['addition', 'subtraction'] })
+    expect(selection.skill).toBe('subtraction')
+  })
 })
 

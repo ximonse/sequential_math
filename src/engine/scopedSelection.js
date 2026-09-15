@@ -31,7 +31,8 @@ function resolveSkill(profile, skills, forcedType) {
 
   const recent = Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
   for (let index = recent.length - 1; index >= 0; index -= 1) {
-    const previous = resolveProblemOperation(recent[index], { fallback: '', allowUnknownPrefix: false })
+    const previous = String(recent[index]?.skill || '').trim()
+      || resolveProblemOperation(recent[index], { fallback: '', allowUnknownPrefix: false })
     const previousIndex = skills.indexOf(previous)
     if (previousIndex >= 0) return skills[(previousIndex + 1) % skills.length]
   }

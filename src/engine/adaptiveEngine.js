@@ -8,6 +8,8 @@ import { getLowestUnmasteredLevel } from '../lib/studentProfile'
 import { chooseHiddenDecimalEvidence } from './hiddenDecimalPolicy'
 
 function inferSkillFromProblem(problem) {
+  const explicitSkill = String(problem?.skill || '').trim()
+  if (explicitSkill) return explicitSkill
   const operation = resolveProblemOperation(problem, { fallback: '' })
   if (operation) return operation
   return 'addition'

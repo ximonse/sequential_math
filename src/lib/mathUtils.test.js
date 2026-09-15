@@ -4,7 +4,8 @@ import {
   inferOperationFromProblemType,
   inferTableFromProblem,
   median,
-  resolveProblemOperation
+  resolveProblemOperation,
+  resolveProblemParentSkill
 } from './mathUtils'
 
 describe('mathUtils', () => {
@@ -54,6 +55,13 @@ describe('mathUtils', () => {
         domain: 'future_domain',
         skill: 'future_skill'
       }, { fallback: 'addition' })).toBe('future_skill')
+    })
+
+    it('keeps the parent skill for presentation when evidence is hidden', () => {
+      expect(resolveProblemParentSkill({
+        skill: 'addition',
+        metadata: { evidenceSkill: 'positions_decimal' }
+      })).toBe('addition')
     })
 
     it('falls back through legacy problemType when canonical fields are absent', () => {

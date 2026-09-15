@@ -87,6 +87,12 @@ export function resolveProblemOperation(problem, options = {}) {
   return fallback
 }
 
+export function resolveProblemParentSkill(problem, options = {}) {
+  const skill = String(problem?.skill || '').trim()
+  if (skill) return skill
+  return resolveProblemOperation(problem, options)
+}
+
 export function inferTableFromProblem(problem) {
   const skillTag = String(problem?.skillTag || '')
   const match = skillTag.match(/^mul_table_(\d{1,2})$/)

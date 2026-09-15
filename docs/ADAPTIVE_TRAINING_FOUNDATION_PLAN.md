@@ -76,3 +76,5 @@ Decimaler blir först ett dolt delområde under positionssystem. De får egen in
 - I vanlig addition/subtraktion på relevanta nivåer injiceras decimalträning med 25 % sannolikhet. Om decimalspåret ligger efter höjs den till 50 %. Nivåfokus och låsta uppdrag påverkas inte.
 
 - Dold decimal-evidens behåller samtidigt sin föräldra-skill (addition eller subtraktion) för passrotation. Den räknas dock som positions_decimal för adaptiv signal och mastery.
+
+- Elevens synliga rubrik och nivåöversikt använder föräldra-skillen Addition/Subtraktion. positions_decimal är endast intern evidens och exponeras inte som ett nytt elevområde.

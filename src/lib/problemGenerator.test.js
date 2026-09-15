@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { divisionTemplates } from '../data/templates/divisionTemplates'
+import { subtractionTemplates } from '../data/templates/subtractionTemplates'
 import { generateProblem } from './problemGenerator'
 
 function inRange(value, min, max) {
@@ -45,4 +46,14 @@ describe('problemGenerator exact division', () => {
       }
     })
   }
+})
+
+describe('problemGenerator decimal evidence', () => {
+  it('marks decimal templates as hidden positions-value evidence', () => {
+    const template = subtractionTemplates.find(item => item.id === 'sub_dec_1dp_1dp_no_borrow')
+    const problem = generateProblem(template)
+
+    expect(problem.metadata.evidenceSkill).toBe('positions_decimal')
+    expect(problem.metadata.evidenceTags).toEqual(['positions_decimal'])
+  })
 })

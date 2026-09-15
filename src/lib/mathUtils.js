@@ -55,6 +55,8 @@ export function inferOperationFromProblemType(problemType = '', options = {}) {
 }
 
 export function resolveProblemOperation(problem, options = {}) {
+  const evidenceSkill = String(problem?.evidenceSkill || problem?.metadata?.evidenceSkill || '').trim()
+  if (evidenceSkill) return evidenceSkill
   const fallback = normalizeOperationFallback(options)
   const allowUnknownOperation = options?.allowUnknownOperation === true
   const allowUnknownPrefix = options?.allowUnknownPrefix === true

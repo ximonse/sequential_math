@@ -170,6 +170,9 @@ export function generateProblem(template, maxAttempts = 100) {
       difficulty: template.difficulty,
       metadata: {
         ...template.metadata,
+        ...(String(template.id || '').includes('_dec_')
+          ? { evidenceSkill: 'positions_decimal', evidenceTags: ['positions_decimal'] }
+          : {}),
         termOrder,
         carryCount,
         borrowCount
@@ -203,6 +206,9 @@ export function generateProblem(template, maxAttempts = 100) {
     difficulty: template.difficulty,
     metadata: {
       ...template.metadata,
+      ...(String(template.id || '').includes('_dec_')
+        ? { evidenceSkill: 'positions_decimal', evidenceTags: ['positions_decimal'] }
+        : {}),
       termOrder: 'equal',
       carryCount: template.type === 'addition'
         ? countCarries(a, b)

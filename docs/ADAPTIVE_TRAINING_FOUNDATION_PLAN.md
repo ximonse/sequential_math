@@ -60,3 +60,8 @@ Decimaler blir först ett dolt delområde under positionssystem. De får egen in
 - En avslutad tabellövning sparar enbart `tableDrill.completions`; den skapar inte längre mastery för en nivå i multiplikation.
 - Vid inläsning återkallas enbart äldre fakta med den tidigare tabellsignaturen: `multiplication`, samma tabell, `1/1` och en matchande completion nära i tid. Reparationen är idempotent och lämnar alla osäkra eller riktiga nivåfakta orörda.
 - Decimal-/positionsvärde-evidens är nästa separata delområde. Det blir internt först enligt beslutet ovan och behöver ett tydligt template-kontrakt innan något elevval syns.
+
+## Utfört: dold decimal-evidens
+
+- Decimalmallar får den interna evidensnyckeln positions_decimal. Den används i historik och mastery, men visar inget nytt elevval.
+- Heltalsräkning och decimalräkning får därmed separata progressionsspår; nästa arbete är en explicit nivåmatris och lärarpresentation för det dolda spåret.

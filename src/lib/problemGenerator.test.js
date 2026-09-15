@@ -54,6 +54,7 @@ describe('problemGenerator decimal evidence', () => {
     const problem = generateProblem(template)
 
     expect(problem.metadata.evidenceSkill).toBe('positions_decimal')
+    expect(problem.metadata.evidenceLevel).toBe(1)
     expect(problem.metadata.evidenceTags).toEqual(['positions_decimal'])
   })
 })

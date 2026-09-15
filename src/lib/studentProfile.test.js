@@ -90,4 +90,12 @@ describe('addProblemResult', () => {
     expect(result.relativeError).toBeNull()
     expect(profile.recentProblems[0].correctAnswer).toBe('x+y')
   })
+  it('stores decimal problems under the hidden decimal evidence skill and level', () => {
+    const profile = createStudentProfile('ELEV3', 'Cia', 5)
+    const problem = { id: 'decimal-1', domain: 'arithmetic', skill: 'addition', level: 4, type: 'addition', values: { a: 1.2, b: 3.4 }, result: 4.6, difficulty: { conceptual_level: 4 }, metadata: { evidenceSkill: 'positions_decimal', evidenceLevel: 1 } }
+    const { result } = addProblemResult(profile, problem, 4.6, 6, { rawAnswer: '4.6' })
+    expect(result.operation).toBe('positions_decimal')
+    expect(result.evidenceLevel).toBe(1)
+  })
+
 })

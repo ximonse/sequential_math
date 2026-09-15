@@ -176,6 +176,7 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     domain: selection.domain,
     skill: selection.skill,
     operation,
+    evidenceLevel: Number(problem?.metadata?.evidenceLevel) || null,
     level: selection.level,
     problemType,
     values: problem.values,

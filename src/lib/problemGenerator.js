@@ -22,6 +22,21 @@ import {
 } from './problemGeneratorMathHelpers'
 import { pickFromRotation } from './rotationPicker'
 
+const DECIMAL_EVIDENCE_LEVELS = {
+  4: 1,
+  5: 2,
+  7: 3,
+  8: 4,
+  10: 5,
+  12: 6
+}
+
+function getDecimalEvidence(template) {
+  const level = DECIMAL_EVIDENCE_LEVELS[Number(template?.difficulty?.conceptual_level)]
+  return String(template?.id || '').includes('_dec_') && level
+    ? { evidenceSkill: 'positions_decimal', evidenceLevel: level, evidenceTags: ['positions_decimal'] }
+    : {}
+}
 const allTemplates = [
   ...additionTemplates,
   ...subtractionTemplates,
@@ -170,9 +185,7 @@ export function generateProblem(template, maxAttempts = 100) {
       difficulty: template.difficulty,
       metadata: {
         ...template.metadata,
-        ...(String(template.id || '').includes('_dec_')
-          ? { evidenceSkill: 'positions_decimal', evidenceTags: ['positions_decimal'] }
-          : {}),
+        ...getDecimalEvidence(template),
         termOrder,
         carryCount,
         borrowCount
@@ -206,9 +219,7 @@ export function generateProblem(template, maxAttempts = 100) {
     difficulty: template.difficulty,
     metadata: {
       ...template.metadata,
-      ...(String(template.id || '').includes('_dec_')
-        ? { evidenceSkill: 'positions_decimal', evidenceTags: ['positions_decimal'] }
-        : {}),
+      ...getDecimalEvidence(template),
       termOrder: 'equal',
       carryCount: template.type === 'addition'
         ? countCarries(a, b)

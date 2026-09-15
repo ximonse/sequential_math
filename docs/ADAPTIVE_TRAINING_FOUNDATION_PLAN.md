@@ -65,3 +65,5 @@ Decimaler blir först ett dolt delområde under positionssystem. De får egen in
 
 - Decimalmallar får den interna evidensnyckeln positions_decimal. Den används i historik och mastery, men visar inget nytt elevval.
 - Heltalsräkning och decimalräkning får därmed separata progressionsspår; nästa arbete är en explicit nivåmatris och lärarpresentation för det dolda spåret.
+
+- Decimalspåret har sex interna steg: 1dp utan växling, 1dp med växling, 1dp med större heltalsdel utan/med växling samt 2dp utan/med växling. De mappar från de äldre aritmetiknivåerna 4, 5, 7, 8, 10 och 12.

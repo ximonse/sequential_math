@@ -16,6 +16,11 @@ import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './operations.js'
 export const MASTERY_WINDOW = 15
 
 function getRecordedProblemLevel(problem) {
+  const evidenceLevel = Number(problem?.evidenceLevel ?? problem?.metadata?.evidenceLevel)
+  if (Number.isFinite(evidenceLevel) && evidenceLevel >= 1) {
+    return Math.round(evidenceLevel)
+  }
+
   const conceptualLevel = Number(problem?.difficulty?.conceptual_level)
   if (Number.isFinite(conceptualLevel) && conceptualLevel >= 1) {
     return Math.round(conceptualLevel)

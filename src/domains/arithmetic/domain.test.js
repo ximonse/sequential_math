@@ -64,4 +64,10 @@ describe('arithmetic domain', () => {
     expect(analysis.category).toBe('inattention')
     expect(analysis.patterns).toContain('operation_swap')
   })
+
+  it('can generate a hidden decimal-evidence problem inside arithmetic training', () => {
+    const problem = generateArithmeticProblem('addition', 4, { evidenceSkill: 'positions_decimal' })
+    expect(problem.metadata.evidenceSkill).toBe('positions_decimal')
+    expect(problem.metadata.evidenceLevel).toBe(1)
+  })
 })

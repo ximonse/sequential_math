@@ -74,7 +74,8 @@ export function generateArithmeticProblem(skill, level, options = {}) {
     ? generateMultiplicationTableDrillProblem(tableSet, { level: normalizedLevel })
     : generateByDifficultyWithOptions(normalizedLevel, {
       preferredType: inferLegacyTypeFromSkill(skill),
-      allowedTypes: Array.isArray(options.allowedTypes) ? options.allowedTypes : undefined
+      allowedTypes: Array.isArray(options.allowedTypes) ? options.allowedTypes : undefined,
+      evidenceSkill: String(options.evidenceSkill || '')
     })
 
   return normalizeArithmeticProblem(problem, normalizedLevel)

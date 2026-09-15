@@ -297,15 +297,19 @@ export function generateMultiplicationTableDrillProblem(tableSet, options = {}) 
  * Generera problem baserat på svårighetsgrad med valfri styrning av räknesätt
  */
 export function generateByDifficultyWithOptions(level, options = {}) {
-  const { preferredType = null, allowedTypes = null } = options
+  const { preferredType = null, allowedTypes = null, evidenceSkill = '' } = options
   const targetLevel = clamp(Math.round(Number(level) || 1), 1, 12)
 
   const byTypeCandidates = Array.isArray(allowedTypes) && allowedTypes.length > 0
     ? allTemplates.filter(t => allowedTypes.includes(t.type))
     : allTemplates
   const candidates = byTypeCandidates.length > 0 ? byTypeCandidates : allTemplates
+  const evidenceCandidates = evidenceSkill
+    ? candidates.filter(template => getDecimalEvidence(template).evidenceSkill === evidenceSkill)
+    : candidates
+  const scopedCandidates = evidenceCandidates.length > 0 ? evidenceCandidates : candidates
 
-  const levelCandidates = candidates.filter(
+  const levelCandidates = scopedCandidates.filter(
     t => t.difficulty.conceptual_level === targetLevel
   )
 
@@ -332,8 +336,8 @@ export function generateByDifficultyWithOptions(level, options = {}) {
 
   // Fallback: närmaste nivå, helst samma räknesätt om önskat
   const pool = preferredType
-    ? candidates.filter(t => t.type === preferredType)
-    : candidates
+    ? scopedCandidates.filter(t => t.type === preferredType)
+    : scopedCandidates
   const safePool = pool.length > 0 ? pool : allTemplates
 
   const minDiff = safePool.reduce((best, template) => {

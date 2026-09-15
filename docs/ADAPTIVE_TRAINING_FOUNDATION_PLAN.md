@@ -72,3 +72,5 @@ Decimaler blir först ett dolt delområde under positionssystem. De får egen in
 ## Utfört: mastery kräver fullt svar
 
 - Delvis korrekta svar lagras och återkopplas fortfarande, men räknas inte som korrekt evidens i mastery. Det gäller generellt, bland annat oförenklade bråk när förenklad form är målet.
+
+- I vanlig addition/subtraktion på relevanta nivåer injiceras decimalträning med 25 % sannolikhet. Om decimalspåret ligger efter höjs den till 50 %. Nivåfokus och låsta uppdrag påverkas inte.

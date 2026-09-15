@@ -4,6 +4,8 @@ import { getDefaultDomainId, getDomain, normalizeProblemWithDomain } from '../do
 import { assertErrorAnalysisContract, assertEvaluationContract, assertProblemContract } from '../domains/contracts'
 import { resolveScopedSelection } from './scopedSelection'
 import { getConsecutiveOperationErrors, getWarmupLevel } from '../lib/difficultyAdapterProfileHelpers'
+import { getLowestUnmasteredLevel } from '../lib/studentProfile'
+import { chooseHiddenDecimalEvidence } from './hiddenDecimalPolicy'
 
 function inferSkillFromProblem(problem) {
   const operation = resolveProblemOperation(problem, { fallback: '' })
@@ -63,6 +65,16 @@ function sampleTrainingLevel(profile, selection, options) {
 function generateScopedProblem(profile, selection, options) {
   const level = sampleTrainingLevel(profile, selection, options)
   if (selection.domain.id === getDefaultDomainId()) {
+    const evidenceSkill = chooseHiddenDecimalEvidence({
+      skill: selection.skill,
+      level,
+      forcedLevel: options.forcedLevel,
+      decimalFloor: getLowestUnmasteredLevel(profile, 'positions_decimal', 6)
+    })
+    if (evidenceSkill) {
+      return generateFromDomain(selection.domain, selection.skill, level, { ...options, evidenceSkill })
+    }
+
     const legacyProblem = selectNextProblem(profile, {
       ...options,
       allowedTypes: [selection.skill],

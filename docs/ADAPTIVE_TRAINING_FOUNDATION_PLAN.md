@@ -78,3 +78,24 @@ Decimaler blir först ett dolt delområde under positionssystem. De får egen in
 - Dold decimal-evidens behåller samtidigt sin föräldra-skill (addition eller subtraktion) för passrotation. Den räknas dock som positions_decimal för adaptiv signal och mastery.
 
 - Elevens synliga rubrik och nivåöversikt använder föräldra-skillen Addition/Subtraktion. positions_decimal är endast intern evidens och exponeras inte som ett nytt elevområde.
+
+## Beslut: bråk v2, begrepp före räkning
+
+Ny progression lagras under intern evidensnyckel `fractions_v2`. Äldre `fractions`-historik bevaras men styr inte den nya trappans mastery.
+
+| Steg | Kompetens | Avsedd uppgiftsform |
+| --- | --- | --- |
+| 1 | Del av hel | Identifiera täljare/nämnare från en enkel bildmodell. |
+| 2 | Del av antal | Skriva bråk för en markerad del av en mängd. |
+| 3 | Bråk på tallinje | Läsa en markerad position mellan 0 och 1. |
+| 4 | Likvärdiga bråk | Förlänga och förkorta med given representation. |
+| 5 | Jämföra bråk | Samma nämnare och enkla referenspunkter. |
+| 6 | Förenkla bråk | Förenklad form är ett masterykrav. |
+| 7 | Addition, samma nämnare | Beräkning med konkret representation vid behov. |
+| 8 | Subtraktion, samma nämnare | Beräkning med konkret representation vid behov. |
+| 9 | Addition med relaterade nämnare | En nämnare är multipel av den andra. |
+| 10 | Addition/subtraktion med olika nämnare | Gemensam nämnare. |
+| 11 | Multiplikation | Bråk gånger heltal och bråk gånger bråk. |
+| 12 | Division och blandade tillämpningar | Division genom invers samt korta kontexter. |
+
+Kvalitetsspärr: varje steg får egen generatorvariation, korrekt svarstyp, felanalys och kontraktstest innan det kopplas in i elevflödet.

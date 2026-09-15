@@ -28,6 +28,14 @@ export function getDomain(domainId) {
   return domainMap.get(normalized) || null
 }
 
+export function getDomainForSkill(skillId) {
+  const normalized = String(skillId || '').trim()
+  if (!normalized) return null
+  return Array.from(domainMap.values()).find(domain =>
+    domain.skills.some(skill => skill.id === normalized)
+  ) || null
+}
+
 export function listDomains() {
   return Array.from(domainMap.values())
 }

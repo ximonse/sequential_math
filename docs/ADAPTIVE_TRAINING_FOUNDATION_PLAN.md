@@ -67,3 +67,8 @@ Decimaler blir först ett dolt delområde under positionssystem. De får egen in
 - Heltalsräkning och decimalräkning får därmed separata progressionsspår; nästa arbete är en explicit nivåmatris och lärarpresentation för det dolda spåret.
 
 - Decimalspåret har sex interna steg: 1dp utan växling, 1dp med växling, 1dp med större heltalsdel utan/med växling samt 2dp utan/med växling. De mappar från de äldre aritmetiknivåerna 4, 5, 7, 8, 10 och 12.
+
+
+## Utfört: mastery kräver fullt svar
+
+- Delvis korrekta svar lagras och återkopplas fortfarande, men räknas inte som korrekt evidens i mastery. Det gäller generellt, bland annat oförenklade bråk när förenklad form är målet.

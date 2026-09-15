@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { addProblemResult, createStudentProfile, getCurrentStreak } from './studentProfile'
+import { computeOperationLevelMasteryStatus } from './masteryCalculation'
 
 function makeAttempts(count, values = {}) {
   return Array.from({ length: count }, () => ({ ...values }))
@@ -98,4 +99,16 @@ describe('addProblemResult', () => {
     expect(result.evidenceLevel).toBe(1)
   })
 
+})
+
+
+describe('mastery partial-answer policy', () => {
+  it('does not count partial answers toward level mastery', () => {
+    const attempts = Array.from({ length: 5 }, (_, index) => ({
+      operation: 'fractions', level: 1, difficulty: { conceptual_level: 1 }, correct: true, isPartial: index === 0
+    }))
+    const status = computeOperationLevelMasteryStatus(attempts, 'fractions', 1)
+    expect(status.correct).toBe(4)
+    expect(status.isMastered).toBe(false)
+  })
 })

@@ -15,6 +15,10 @@ import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './operations.js'
 
 export const MASTERY_WINDOW = 15
 
+function countsAsMastery(problem) {
+  return Boolean(problem?.correct) && !Boolean(problem?.isPartial)
+}
+
 function getRecordedProblemLevel(problem) {
   const evidenceLevel = Number(problem?.evidenceLevel ?? problem?.metadata?.evidenceLevel)
   if (Number.isFinite(evidenceLevel) && evidenceLevel >= 1) {
@@ -111,7 +115,7 @@ export function groupProblemsByOperationLevel(problems) {
     if (!buckets.has(key)) {
       buckets.set(key, { operation, level, results: [] })
     }
-    buckets.get(key).results.push(Boolean(problem.correct))
+    buckets.get(key).results.push(countsAsMastery(problem))
   }
   return buckets
 }
@@ -194,7 +198,7 @@ export function computeOperationLevelMasteryStatus(problems, operation, level, o
     return itemOp === operation && itemLevel === level
   })
 
-  return computeLevelMastery(filtered.map(p => Boolean(p.correct)), options)
+  return computeLevelMastery(filtered.map(countsAsMastery), options)
 }
 
 /**
@@ -270,7 +274,7 @@ export function computeOperationMasteryBoards(problems, operationKeys, levelRang
     const level = Math.round(Number(problem?.difficulty?.conceptual_level || 0))
     if (!Number.isInteger(level) || level < 1 || level > 12) continue
 
-    const correct = Boolean(problem.correct)
+    const correct = countsAsMastery(problem)
     lists[operation][level].all.push(correct)
 
     const ts = Number(problem.timestamp || 0)

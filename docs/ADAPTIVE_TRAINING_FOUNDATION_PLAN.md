@@ -37,3 +37,7 @@ Mastery räknas idag per `operation + nivå`, inte per template eller delmoment.
 - Decimaler/positionsvärde och tabellflyt ska ha egen evidensmodell innan de påverkar aritmetikens nivåöversikt.
 - Nästa kodsteg flyttar urval och evidensmodell; templates skrivs inte om i förväg.
 
+## Fastställt beslut
+
+Decimaler blir först ett dolt delområde under positionssystem. De får egen intern evidens och progression, men inget nytt synligt val i elevmenyn förrän den didaktiska nivåkartan och lärarflödet är redo.
+

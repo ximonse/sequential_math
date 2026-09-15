@@ -16,6 +16,7 @@ import {
   annotateSelectedProblem,
   ensureDifficultyMeta,
   getConsecutiveOperationErrors,
+  getCurrentOperationStreak,
   getOperationAbility,
   getRecentOperationSuccessRate,
   getWarmupLevel,
@@ -65,14 +66,21 @@ const ADJUST_CONFIG = {
 
 export function adjustDifficulty(profile, wasCorrect, options = {}) {
   ensureDifficultyMeta(profile)
-  const recentSuccess = getRecentSuccessRate(profile, 5)
+  const operation = inferCurrentOperation(profile)
+  const recentSuccess = operation
+    ? getRecentOperationSuccessRate(profile, operation, 5)
+    : getRecentSuccessRate(profile, 5)
+  const errors = operation
+    ? getConsecutiveOperationErrors(profile, operation)
+    : getConsecutiveErrors(profile)
+  const streak = operation
+    ? getCurrentOperationStreak(profile, operation)
+    : getCurrentStreak(profile)
   const progressionMode = normalizeProgressionMode(options.progressionMode)
   const config = ADJUST_CONFIG[progressionMode] || ADJUST_CONFIG[PROGRESSION_MODE_CHALLENGE]
 
   let delta = 0
   if (wasCorrect) {
-    const streak = getCurrentStreak(profile)
-
     if (streak >= 3 && recentSuccess >= 0.9) {
       delta = config.upStrong
     } else if (streak >= 2) {
@@ -95,8 +103,6 @@ export function adjustDifficulty(profile, wasCorrect, options = {}) {
     if (options.errorCategory === 'inattention') {
       delta = -(progressionMode === PROGRESSION_MODE_STEADY ? 0.02 : 0.03)
     } else {
-      const errors = getConsecutiveErrors(profile)
-
       if (errors >= 3 && recentSuccess < 0.5) {
         delta = -config.downHard
       } else if (errors >= 2) {
@@ -107,7 +113,6 @@ export function adjustDifficulty(profile, wasCorrect, options = {}) {
     }
   }
 
-  const operation = inferCurrentOperation(profile)
   if (operation) {
     const currentAbility = getOperationAbility(profile, operation)
     setOperationAbility(profile, operation, currentAbility + delta)

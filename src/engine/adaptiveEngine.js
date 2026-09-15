@@ -3,6 +3,7 @@ import { resolveProblemOperation } from '../lib/mathUtils'
 import { getDefaultDomainId, getDomain, normalizeProblemWithDomain } from '../domains/registry'
 import { assertErrorAnalysisContract, assertEvaluationContract, assertProblemContract } from '../domains/contracts'
 import { resolveScopedSelection } from './scopedSelection'
+import { getConsecutiveOperationErrors, getWarmupLevel } from '../lib/difficultyAdapterProfileHelpers'
 
 function inferSkillFromProblem(problem) {
   const operation = resolveProblemOperation(problem, { fallback: '' })
@@ -40,10 +41,19 @@ function generateFromDomain(domain, skill, level, options) {
   return assertProblemContract(problem, { domain: domain.id, skill })
 }
 
-function sampleTrainingLevel(selection, options) {
+function sampleTrainingLevel(profile, selection, options) {
   if (Number.isFinite(Number(options.forcedLevel))) return selection.level
 
   const [minimumLevel, maximumLevel] = selection.levelRange
+  const warmupLevel = getWarmupLevel(profile, selection.level, selection.skill)
+  if (warmupLevel !== null) {
+    return Math.max(minimumLevel, Math.min(maximumLevel, warmupLevel))
+  }
+
+  if (getConsecutiveOperationErrors(profile, selection.skill) >= 3) {
+    return Math.max(minimumLevel, selection.level - 1)
+  }
+
   const roll = Math.random()
   if (roll < 0.15 && selection.level > minimumLevel) return selection.level - 1
   if (roll < 0.30 && selection.level < maximumLevel) return selection.level + 1
@@ -51,7 +61,7 @@ function sampleTrainingLevel(selection, options) {
 }
 
 function generateScopedProblem(profile, selection, options) {
-  const level = sampleTrainingLevel(selection, options)
+  const level = sampleTrainingLevel(profile, selection, options)
   if (selection.domain.id === getDefaultDomainId()) {
     const legacyProblem = selectNextProblem(profile, {
       ...options,

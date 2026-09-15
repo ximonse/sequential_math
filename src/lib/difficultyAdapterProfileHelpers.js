@@ -87,11 +87,21 @@ export function getConsecutiveOperationErrors(profile, operation) {
   return count
 }
 
+export function getCurrentOperationStreak(profile, operation) {
+  let count = 0
+  for (let i = profile.recentProblems.length - 1; i >= 0; i -= 1) {
+    const problem = profile.recentProblems[i]
+    if (resolveProblemOperation(problem, { allowUnknownPrefix: false }) !== operation) continue
+    if (!problem.correct) break
+    count += 1
+  }
+  return count
+}
 export function inferCurrentOperation(profile) {
   const latest = profile.recentProblems[profile.recentProblems.length - 1]
   if (!latest) return null
   const operation = resolveProblemOperation(latest, { allowUnknownPrefix: false })
-  return KNOWN_OPERATION_TYPES.has(operation) ? operation : null
+  return operation || null
 }
 
 export function getWarmupLevel(profile, roundedDifficulty, operation) {

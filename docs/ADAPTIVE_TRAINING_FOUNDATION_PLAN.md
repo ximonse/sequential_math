@@ -49,3 +49,9 @@ Decimaler blir först ett dolt delområde under positionssystem. De får egen in
 - Blandade uppdrag roterar från senast relevanta skill; de kan inte längre av misstag generera en aritmetisk uppgift när scope består av andra domäner.
 - Aritmetik behåller tills vidare sin beprövade generator och metadata, men får sitt skill- och nivåbeslut från samma scope-kontrakt som de andra domänerna.
 - Öppen begränsning till steg 3: återhämtning, warmup och prestation är ännu inte beräknade per skill för samtliga domäner.
+## Utfört: steg 3, signaler per färdighet
+
+- Korrekthetskvot, felrad och korrekt-svit för svårighetsjustering avgränsas nu till den senast besvarade skillen.
+- `skill` är den utbyggbara kontraktsnyckeln i elevhistoriken; nya registrerade skills behöver inte läggas till i en central hårdkodad lista för att få egen signal.
+- Global `currentDifficulty` finns kvar som kompatibel passindikator, men scoped träning väljer inte längre en annan skills nivå från den.
+- Återhämtning efter tre fel och warmup efter uppehåll finns i den gemensamma urvalspolicyn. Nästa steg är att separera tabellflyt och dold decimal-/positionsvärde-evidens från operationsmastery.

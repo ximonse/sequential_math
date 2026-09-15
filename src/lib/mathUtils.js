@@ -62,7 +62,9 @@ export function resolveProblemOperation(problem, options = {}) {
   const direct = normalizeExplicitOperation(problem?.operation, allowUnknownOperation)
   if (direct) return direct
 
-  const skill = normalizeExplicitOperation(problem?.skill, allowUnknownOperation)
+  // skill is the domain contract. Unlike legacy operation/type fields it may
+  // name a newly registered domain skill, so it must not be limited by this file.
+  const skill = String(problem?.skill || '').trim()
   if (skill) return skill
 
   const type = normalizeExplicitOperation(problem?.type, allowUnknownOperation)

@@ -235,6 +235,35 @@ describe('Per-operation difficulty: adjustDifficulty', () => {
 
     expect(mulAfter).toBeLessThan(mulBefore)
   })
+  it('isolates a skill success signal from recent errors in another skill', () => {
+    const profile = createProfile({ currentDifficulty: 6 })
+    profile.adaptive.operationAbilities = {
+      addition: 6,
+      subtraction: 4,
+      multiplication: 3,
+      division: 3,
+      percentage: 4
+    }
+    addWrongProblem(profile, 'add_basic')
+    addWrongProblem(profile, 'add_basic')
+    addWrongProblem(profile, 'add_basic')
+    profile.recentProblems.push({
+      skill: 'percentage',
+      correct: true,
+      isReasonable: true,
+      timestamp: Date.now(),
+      timeSpent: 5,
+      speedTimeSec: 5,
+      difficulty: { conceptual_level: 4 }
+    })
+
+    const percentageBefore = getOperationAbility(profile, 'percentage')
+    const additionBefore = getOperationAbility(profile, 'addition')
+    adjustDifficulty(profile, true)
+
+    expect(getOperationAbility(profile, 'percentage')).toBeGreaterThan(percentageBefore)
+    expect(getOperationAbility(profile, 'addition')).toBe(additionBefore)
+  })
 })
 
 describe('Per-operation difficulty: chooseProblemType gating preserved', () => {

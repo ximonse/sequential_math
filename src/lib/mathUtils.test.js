@@ -50,6 +50,10 @@ describe('mathUtils', () => {
         domain: 'arithmetic_expressions',
         skill: 'arithmetic_expressions'
       }, { fallback: 'addition' })).toBe('arithmetic_expressions')
+      expect(resolveProblemOperation({
+        domain: 'future_domain',
+        skill: 'future_skill'
+      }, { fallback: 'addition' })).toBe('future_skill')
     })
 
     it('falls back through legacy problemType when canonical fields are absent', () => {

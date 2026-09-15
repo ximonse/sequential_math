@@ -1,5 +1,5 @@
 import { resolveProblemOperation } from '../../../lib/mathUtils'
-import { computeOperationLevelMasteryStatus, getPreferredProblemSource, recordMasteryAchievement } from '../../../lib/masteryCalculation'
+import { computeOperationLevelMasteryStatus, getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { getOperationAbility } from '../../../lib/difficultyAdapter'
 import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from '../../../lib/operations'
 import { normalizeProgressionMode } from '../../../lib/progressionModes'
@@ -199,15 +199,6 @@ export function recordTableCompletion(profile, table) {
     profile.tableDrill.completions = profile.tableDrill.completions.slice(-1000)
   }
 
-  // Registrera mastery-faktum för tabellträning (multiplication + table som level)
-  const tableNum = Number(table)
-  if (tableNum >= 2 && tableNum <= 12) {
-    recordMasteryAchievement(profile, 'multiplication', tableNum, {
-      attempts: 1,
-      correct: 1,
-      rate: 1.0
-    })
-  }
 
   const startToday = new Date()
   startToday.setHours(0, 0, 0, 0)

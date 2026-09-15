@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getLevelFocusNextLevelAction, getSessionRules } from './sessionUtils'
+import { getLevelFocusNextLevelAction, getSessionRules, recordTableCompletion } from './sessionUtils'
 
 function createProfile(recentProblems = [], adaptive = {}) {
   return {
@@ -149,5 +149,15 @@ describe('sessionUtils getLevelFocusNextLevelAction', () => {
       }
     })
     expect(getLevelFocusNextLevelAction(mismatchProfile, 'addition', 1)).toBeNull()
+  })
+})
+
+describe('sessionUtils table evidence', () => {
+  it('stores table completion separately without creating multiplication level mastery', () => {
+    const profile = { masteryFacts: { version: 1, facts: [], revokedIds: [] } }
+
+    expect(recordTableCompletion(profile, 7)).toBe(1)
+    expect(profile.tableDrill.completions).toHaveLength(1)
+    expect(profile.masteryFacts.facts).toEqual([])
   })
 })

@@ -55,3 +55,8 @@ Decimaler blir först ett dolt delområde under positionssystem. De får egen in
 - `skill` är den utbyggbara kontraktsnyckeln i elevhistoriken; nya registrerade skills behöver inte läggas till i en central hårdkodad lista för att få egen signal.
 - Global `currentDifficulty` finns kvar som kompatibel passindikator, men scoped träning väljer inte längre en annan skills nivå från den.
 - Återhämtning efter tre fel och warmup efter uppehåll finns i den gemensamma urvalspolicyn. Nästa steg är att separera tabellflyt och dold decimal-/positionsvärde-evidens från operationsmastery.
+## Utfört: tabellflyt som separat evidens
+
+- En avslutad tabellövning sparar enbart `tableDrill.completions`; den skapar inte längre mastery för en nivå i multiplikation.
+- Vid inläsning återkallas enbart äldre fakta med den tidigare tabellsignaturen: `multiplication`, samma tabell, `1/1` och en matchande completion nära i tid. Reparationen är idempotent och lämnar alla osäkra eller riktiga nivåfakta orörda.
+- Decimal-/positionsvärde-evidens är nästa separata delområde. Det blir internt först enligt beslutet ovan och behöver ett tydligt template-kontrakt innan något elevval syns.

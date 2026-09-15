@@ -6,6 +6,7 @@
  */
 
 import { createStudentProfile } from './studentProfile'
+import { repairLegacyTableMasteryFacts } from './tableDrillEvidence'
 import { isCurrentStudentProfile } from './studentProfileContract'
 import { getTeacherApiToken } from './teacherAuth'
 import { normalizeStudentId } from './storageStudentId'
@@ -56,6 +57,7 @@ function normalizeLoadedProfile(profile, fallbackStudentId = '') {
   }
   ensureProfileAuth(normalizedProfile)
   ensureProfileClassMembership(normalizedProfile)
+  repairLegacyTableMasteryFacts(normalizedProfile)
   return normalizedProfile
 }
 

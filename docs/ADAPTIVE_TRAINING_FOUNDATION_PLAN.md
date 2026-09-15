@@ -41,3 +41,11 @@ Mastery räknas idag per `operation + nivå`, inte per template eller delmoment.
 
 Decimaler blir först ett dolt delområde under positionssystem. De får egen intern evidens och progression, men inget nytt synligt val i elevmenyn förrän den didaktiska nivåkartan och lärarflödet är redo.
 
+
+## Utfört: steg 2, gemensamt domänurval
+
+- `allowedTypes` tolkas nu som en validerad lista av registrerade skills.
+- Motorn slår upp domänen via registret, väljer en skill inom scope och respekterar `levelRange` och låst nivå för alla domäner.
+- Blandade uppdrag roterar från senast relevanta skill; de kan inte längre av misstag generera en aritmetisk uppgift när scope består av andra domäner.
+- Aritmetik behåller tills vidare sin beprövade generator och metadata, men får sitt skill- och nivåbeslut från samma scope-kontrakt som de andra domänerna.
+- Öppen begränsning till steg 3: återhämtning, warmup och prestation är ännu inte beräknade per skill för samtliga domäner.

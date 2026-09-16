@@ -9,7 +9,9 @@ const CHECKPOINT_FIELDS = ['currentDifficulty', 'highestDifficulty', 'adaptive',
 
 export function normalizePilotStudentId(value) {
   const id = String(value || '').trim().toUpperCase()
-  return /^[A-F0-9]{32}$/.test(id) ? id : ''
+  // Match the server-side student reference contract. Older QR cards used
+  // 32-character hex IDs, while named seats use normalized name-based IDs.
+  return /^[A-Z0-9ÅÄÖ_]{3,100}$/u.test(id) ? id : ''
 }
 
 function randomEventId() {

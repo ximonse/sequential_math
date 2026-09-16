@@ -26,6 +26,8 @@ Om de inte finns där, använd filerna i projektroten.
 4. Om kodändringen påverkar beteende/flöde: uppdatera dokumentation i repo.
 5. Commita ofta i små, tydliga steg.
 6. Fråga människan innan `git push` och innan destruktiva kommandon.
+7. Avsluta aldrig ett arbetspass utan ett tydligt nästa steg: ställ en konkret fråga,
+   lämna ett förslag eller ge en slutlig bekräftelse när uppdraget faktiskt är klart.
 
 ## Verifiering efter kodändring
 

@@ -11,7 +11,7 @@ vi.mock('@vercel/kv', () => ({ kv: {
   eval: vi.fn(async (_script, keys) => { const key = keys[0]; const value = Number(records.get(key) || 0) + 1; records.set(key, value); return value })
 } }))
 
-import { createPilotStudentAuth, createQrSecret, getLiveStudentSession, isStudentLoginIpRateLimited, MAX_STUDENT_LOGIN_FAILURES_PER_IP, recordStudentLoginFailure, studentLoginCodeIndexKey, verifyPilotStudentCredentials } from './_studentSession.js'
+import { createPilotStudentAuth, createQrSecret, getLiveStudentSession, isStudentLoginIpRateLimited, MAX_STUDENT_LOGIN_FAILURES_PER_IP, recordStudentLoginFailure, requestOriginIsTrusted, studentLoginCodeIndexKey, verifyPilotStudentCredentials } from './_studentSession.js'
 import handler from './student-session.js'
 
 function response() { return { code: 200, headers: {}, setHeader(k, v) { this.headers[k] = v }, status(code) { this.code = code; return this }, json(data) { this.data = data; return this }, end() { return this } } }
@@ -58,6 +58,32 @@ describe('pilot student sessions', () => {
     await handler({ method: 'POST', body: { studentId: id, qrSecret: secret, pin: '1234' }, headers: { origin: process.env.APP_ORIGIN }, socket: {} }, login)
 
     expect(login).toMatchObject({ code: 201, data: { ok: true, student: { studentId: id } } })
+  })
+  it('allows only the current Vercel preview host alongside the configured production origin', () => {
+    const previousOrigin = process.env.APP_ORIGIN
+    const previousEnvironment = process.env.VERCEL_ENV
+    try {
+      process.env.APP_ORIGIN = 'https://matematik.ximon.se'
+      process.env.VERCEL_ENV = 'preview'
+      expect(requestOriginIsTrusted({ headers: {
+        origin: 'https://sekvens-abc123-ximonses-projects.vercel.app',
+        host: 'sekvens-abc123-ximonses-projects.vercel.app'
+      } })).toBe(true)
+      expect(requestOriginIsTrusted({ headers: {
+        origin: 'https://other-project.vercel.app',
+        host: 'sekvens-abc123-ximonses-projects.vercel.app'
+      } })).toBe(false)
+      process.env.VERCEL_ENV = 'production'
+      expect(requestOriginIsTrusted({ headers: {
+        origin: 'https://sekvens-abc123-ximonses-projects.vercel.app',
+        host: 'sekvens-abc123-ximonses-projects.vercel.app'
+      } })).toBe(false)
+    } finally {
+      if (previousOrigin === undefined) delete process.env.APP_ORIGIN
+      else process.env.APP_ORIGIN = previousOrigin
+      if (previousEnvironment === undefined) delete process.env.VERCEL_ENV
+      else process.env.VERCEL_ENV = previousEnvironment
+    }
   })
   it('does not reveal whether an unknown or wrong credential failed', async () => {
     records.clear(); const id = 'B'.repeat(32), secret = createQrSecret(); records.set(`student:${id}`, profile(id, secret))

@@ -89,10 +89,15 @@ export function setStudentSessionCookie(res, sessionId, maxAge = STUDENT_SESSION
 }
 
 export function requestIp(req) { return String(req?.headers?.['x-forwarded-for'] || req?.socket?.remoteAddress || 'unknown').split(',')[0].trim().slice(0, 100) }
+function isSameVercelPreviewOrigin(req, origin) {
+  if (process.env.VERCEL_ENV !== 'preview') return false
+  const host = String(req?.headers?.host || '').trim().toLowerCase().replace(/:\d+$/, '')
+  return /^[a-z0-9-]+\.vercel\.app$/.test(host) && origin === `https://${host}`
+}
 export function requestOriginIsTrusted(req) {
   const origin = String(req?.headers?.origin || '')
   const configured = String(process.env.APP_ORIGIN || '').replace(/\/$/, '')
-  if (configured) return origin === configured
+  if (configured) return origin === configured || isSameVercelPreviewOrigin(req, origin)
   if (process.env.NODE_ENV === 'development') return /^http:\/\/localhost(?::\d+)?$/.test(origin)
   return origin === 'https://matematik.ximon.se'
 }

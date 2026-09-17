@@ -1,4 +1,5 @@
 import QRCode from 'qrcode'
+import { jsPDF } from 'jspdf'
 
 export const A7_CARDS_PER_A4 = 8
 const CARDS_PER_ROW = 4
@@ -40,7 +41,6 @@ export async function downloadStudentCredentialPdf(credentials, filename = crede
   const qrCodes = await Promise.all(valid.map(item => QRCode.toDataURL(qrPayload(item), {
     errorCorrectionLevel: 'M', margin: 1, width: 360
   })))
-  const { jsPDF } = await import('jspdf')
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4', compress: true })
 
   valid.forEach((credential, index) => {

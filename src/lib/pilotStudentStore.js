@@ -23,9 +23,11 @@ function requireCrypto(cryptoApi) {
 }
 
 function requireStudentId(studentId) {
-  if (typeof studentId !== 'string' || !/^[a-f0-9]{32}$/i.test(studentId)) {
+  const normalized = String(studentId || '').trim();
+  if (!/^[A-Z0-9ÅÄÖ_]{3,100}$/iu.test(normalized)) {
     throw new PilotStudentVaultError('INVALID_STUDENT_ID', 'Elevidentiteten för den lokala vaulten är ogiltig.');
   }
+  return normalized;
 }
 
 function assertSafeValue(value, path = 'value') {
@@ -52,7 +54,7 @@ function decodeJson(bytes) {
 }
 
 export function createVaultAad({ studentId, recordType }) {
-  requireStudentId(studentId);
+  studentId = requireStudentId(studentId);
   if (!['snapshot', 'event'].includes(recordType)) {
     throw new PilotStudentVaultError('INVALID_RECORD_TYPE', 'Okänd typ av vaultpost.');
   }
@@ -137,7 +139,7 @@ export async function createPilotStudentStore({
   cryptoApi = globalThis.crypto,
   dbName,
 } = {}) {
-  requireStudentId(studentId);
+  studentId = requireStudentId(studentId);
   studentId = studentId.toUpperCase();
   dbName = dbName || `sequential-math-pilot-vault-${studentId}`;
   const crypto = requireCrypto(cryptoApi);

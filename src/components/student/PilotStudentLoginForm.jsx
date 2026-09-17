@@ -1,12 +1,13 @@
 import { useEffect, useId, useState } from 'react'
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode'
+import { normalizePilotStudentId } from '../../lib/pilotStudentRuntime'
 
 function parseCredentialQr(value) {
   try {
     const parsed = JSON.parse(String(value || ''))
-    const studentId = String(parsed?.studentId || '').trim().toUpperCase()
+    const studentId = normalizePilotStudentId(parsed?.studentId)
     const qrSecret = String(parsed?.qrSecret || '').trim()
-    if (!/^[A-F0-9]{32}$/.test(studentId) || !qrSecret) return null
+    if (!studentId || !qrSecret) return null
     return { studentId, qrSecret }
   } catch {
     return null

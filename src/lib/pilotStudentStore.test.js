@@ -42,6 +42,7 @@ describe('pilot student vault crypto contract', () => {
 
   it('creates stable AAD only for valid vault records', () => {
     expect(new TextDecoder().decode(createVaultAad({ studentId, recordType: 'snapshot' }))).toBe(`pilot-student-v1|${studentId}|snapshot`);
+    expect(new TextDecoder().decode(createVaultAad({ studentId: 'QA_PREVIEW_2026', recordType: 'snapshot' }))).toBe('pilot-student-v1|QA_PREVIEW_2026|snapshot');
     expect(() => createVaultAad({ studentId, recordType: 'other' })).toThrow(PilotStudentVaultError);
   });
 });

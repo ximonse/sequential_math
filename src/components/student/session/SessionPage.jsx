@@ -34,6 +34,7 @@ function SessionPage({
   masteredThisWeek
 }) {
   const showInlineScratchpad = Boolean(currentProblem) && !feedback
+  const showScratchpadControl = Boolean(currentProblem)
 
   return (
     <div className="min-h-[100dvh] overflow-x-hidden student-role-surface py-4 sm:py-8">
@@ -70,22 +71,23 @@ function SessionPage({
             onNext={onNext}
             inputRef={inputRef}
             suppressSoftKeyboard={coarsePointer}
-            leftPanel={showInlineScratchpad ? (
+            leftPanel={showScratchpadControl ? (
               <div className="w-full flex flex-col items-center">
                 <div className="mt-2 flex justify-center">
                   <button
                     type="button"
                     onClick={onToggleScratchpad}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                      showScratchpad
+                    disabled={!showInlineScratchpad}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium disabled:cursor-default disabled:opacity-60 ${
+                      showScratchpad && showInlineScratchpad
                         ? 'bg-indigo-100 text-indigo-700'
                         : 'bg-white text-gray-700 border border-gray-300'
                     }`}
                   >
-                    {showScratchpad ? 'Dölj rityta' : 'Visa rityta'}
+                    {showScratchpad && showInlineScratchpad ? 'Dölj rityta' : 'Visa rityta'}
                   </button>
                 </div>
-                <MathScratchpad visible={showScratchpad} />
+                <MathScratchpad visible={showScratchpad && showInlineScratchpad} />
               </div>
             ) : null}
           />

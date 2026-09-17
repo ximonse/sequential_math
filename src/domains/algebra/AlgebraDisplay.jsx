@@ -45,20 +45,20 @@ function AlgebraDisplay({
 
   return (
     <div className="w-full">
-      <div className="grid gap-5 md:gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
+      <div className="grid gap-4 sm:gap-5 md:gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
         <div className="flex flex-col items-center gap-4">
 
           {/* Uttrycksvisning */}
-          <div className="w-full max-w-xl rounded-2xl border-2 border-purple-200 bg-purple-50 px-6 py-5 text-center">
+          <div className="w-full max-w-xl rounded-2xl border-2 border-purple-200 bg-purple-50 px-4 py-4 text-center sm:px-6 sm:py-5">
             {isSimplify ? (
               <>
                 <p className="text-xs font-semibold text-purple-500 uppercase tracking-widest mb-2">Förenkla uttrycket</p>
-                <p className="text-3xl md:text-4xl font-bold text-purple-900 font-mono">{expression}</p>
+                <p className="break-words text-2xl sm:text-3xl md:text-4xl font-bold text-purple-900 font-mono">{expression}</p>
               </>
             ) : (
               <>
                 <p className="text-xs font-semibold text-purple-500 uppercase tracking-widest mb-2">Beräkna värdet</p>
-                <p className="text-2xl md:text-3xl font-bold text-purple-900 font-mono mb-3">{expression}</p>
+                <p className="break-words text-xl sm:text-2xl md:text-3xl font-bold text-purple-900 font-mono mb-3">{expression}</p>
                 <div className="flex justify-center gap-3 flex-wrap">
                   {varDisplay.split(',').map(v => (
                     <span key={v} className="inline-block rounded-lg bg-purple-100 border border-purple-300 px-3 py-1 text-base font-semibold text-purple-800 font-mono">
@@ -94,7 +94,7 @@ function AlgebraDisplay({
 
           {/* Fel-feedback */}
           {feedback && !feedback.correct && (
-            <span className="text-xl font-semibold text-red-600 line-through font-mono">
+            <span className="break-words text-center text-xl font-semibold text-red-600 line-through font-mono">
               Du svarade: {String(feedback.studentAnswer)}
             </span>
           )}
@@ -118,7 +118,7 @@ function AlgebraDisplay({
 
 function AlgebraKeypad({ onKey, onPrimaryAction, canSubmit, actionLabel, actionIsNext, showLetters }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-5 select-none">
+    <div className="w-full max-w-md mx-auto rounded-xl border border-gray-200 bg-white p-3 shadow-sm select-none sm:p-4 md:max-w-none md:p-5">
       {showLetters && (
         <div className="grid grid-cols-4 gap-2 mb-3">
           {['x', 'y', 'a', 'b'].map(letter => (
@@ -149,13 +149,13 @@ function AlgebraKeypad({ onKey, onPrimaryAction, canSubmit, actionLabel, actionI
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {NUM_KEYPAD.flat().map(key => (
           <button
             key={key}
             type="button"
             onClick={() => onKey(key)}
-            className="h-14 md:h-16 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-2xl font-semibold text-gray-800"
+            className="h-12 sm:h-14 md:h-16 rounded-xl bg-gray-100 text-xl font-semibold text-gray-800 hover:bg-gray-200 active:bg-gray-300 sm:text-2xl"
           >
             {key}
           </button>
@@ -166,7 +166,7 @@ function AlgebraKeypad({ onKey, onPrimaryAction, canSubmit, actionLabel, actionI
         type="button"
         onClick={onPrimaryAction}
         disabled={!canSubmit}
-        className={`mt-3 w-full h-24 rounded-xl disabled:bg-gray-300 text-white text-3xl font-bold ${
+        className={`mt-2 w-full h-16 rounded-xl text-2xl font-bold text-white disabled:bg-gray-300 sm:mt-3 sm:h-20 sm:text-3xl md:h-24 ${
           actionIsNext
             ? 'bg-blue-500 hover:bg-blue-600'
             : 'bg-green-500 hover:bg-green-600'
@@ -175,18 +175,18 @@ function AlgebraKeypad({ onKey, onPrimaryAction, canSubmit, actionLabel, actionI
         {actionLabel}
       </button>
 
-      <div className="grid grid-cols-2 gap-3 mt-3">
+      <div className="grid grid-cols-2 gap-2 mt-2 sm:mt-3 sm:gap-3">
         <button
           type="button"
           onClick={() => onKey('backspace')}
-          className="h-12 rounded-xl bg-amber-100 hover:bg-amber-200 text-base font-semibold text-amber-900"
+          className="h-11 rounded-xl bg-amber-100 text-sm font-semibold text-amber-900 hover:bg-amber-200 sm:h-12 sm:text-base"
         >
           Radera
         </button>
         <button
           type="button"
           onClick={() => onKey('clear')}
-          className="h-12 rounded-xl bg-red-100 hover:bg-red-200 text-base font-semibold text-red-900"
+          className="h-11 rounded-xl bg-red-100 text-sm font-semibold text-red-900 hover:bg-red-200 sm:h-12 sm:text-base"
         >
           Rensa
         </button>

@@ -36,8 +36,8 @@ function SessionPage({
   const showInlineScratchpad = Boolean(currentProblem) && !feedback
 
   return (
-    <div className="min-h-screen student-role-surface py-8">
-      <div className="max-w-5xl mx-auto px-4">
+    <div className="min-h-[100dvh] overflow-x-hidden student-role-surface py-4 sm:py-8">
+      <div className="max-w-5xl mx-auto px-3 sm:px-4">
         <SessionHeader
           profileName={profileName}
           sessionCount={sessionCount}
@@ -45,7 +45,7 @@ function SessionPage({
           onExit={onExit}
         />
 
-        <div className="py-8">
+        <div className="py-4 sm:py-8">
           <SessionModeBanner
             assignment={sessionAssignment}
             mode={mode}

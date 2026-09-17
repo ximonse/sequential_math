@@ -5,8 +5,8 @@ function SessionHeader({
   onExit
 }) {
   return (
-    <div className="flex justify-between items-center mb-8 pr-44">
-      <div>
+    <div className="flex flex-wrap justify-between items-center gap-3 mb-4 sm:mb-8 sm:pr-44">
+      <div className="min-w-0">
         <p className="text-sm text-gray-500">{profileName}</p>
         <p className="text-xs text-gray-400">
           {sessionCount} denna session

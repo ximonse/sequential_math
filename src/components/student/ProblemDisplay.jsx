@@ -48,15 +48,15 @@ function ProblemDisplay({
 
   return (
     <div className="w-full">
-      <div className="grid gap-5 md:gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
+      <div className="grid gap-4 sm:gap-5 md:gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
         <div className="flex flex-col items-center">
           {hasPromptText ? (
             <div className="w-full max-w-2xl space-y-4">
               <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-gray-800 text-lg md:text-xl font-medium leading-relaxed whitespace-pre-wrap">
                 {promptText}
               </div>
-              <div className="text-4xl md:text-5xl font-bold text-gray-800 flex items-center justify-center flex-wrap gap-y-2">
-                <span className="mx-3">=</span>
+              <div className="max-w-full text-3xl sm:text-4xl md:text-5xl font-bold text-gray-800 flex items-center justify-center flex-wrap gap-y-2">
+                <span className="mx-1 sm:mx-3">=</span>
                 <div className="w-36 h-16 flex items-center justify-center">
                   {!feedback ? (
                     <input
@@ -81,11 +81,11 @@ function ProblemDisplay({
               </div>
             </div>
           ) : (
-            <div className="text-4xl md:text-5xl font-bold text-gray-800 flex items-center justify-center flex-wrap gap-y-2">
+            <div className="max-w-full text-3xl sm:text-4xl md:text-5xl font-bold text-gray-800 flex items-center justify-center flex-wrap gap-y-2">
               <span>{formatNumber(a)}</span>
-              <span className="mx-3 text-blue-600">{operators[type]}</span>
+              <span className="mx-1 sm:mx-3 text-blue-600">{operators[type]}</span>
               <span>{formatNumber(b)}</span>
-              <span className="mx-3">=</span>
+              <span className="mx-1 sm:mx-3">=</span>
               <div className="w-36 h-16 flex items-center justify-center">
                 {!feedback ? (
                   <input
@@ -150,14 +150,14 @@ function AnswerKeypad({
   if (!visible) return null
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4 md:p-5 select-none">
-      <div className="grid grid-cols-3 gap-3">
+    <div className="w-full max-w-md mx-auto md:max-w-none rounded-xl border border-gray-200 bg-white shadow-sm p-3 sm:p-4 md:p-5 select-none">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {KEYPAD_LAYOUT.flat().map(key => (
           <button
             key={key}
             type="button"
             onClick={() => onKey(key)}
-            className="h-16 md:h-[72px] rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-2xl font-semibold text-gray-800"
+            className="h-12 sm:h-14 md:h-16 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-xl sm:text-2xl font-semibold text-gray-800"
           >
             {key}
           </button>
@@ -167,7 +167,7 @@ function AnswerKeypad({
         type="button"
         onClick={onPrimaryAction}
         disabled={!canSubmit}
-        className={`mt-3 w-full h-32 rounded-xl disabled:bg-gray-300 text-white text-3xl font-bold ${
+        className={`mt-2 sm:mt-3 w-full h-16 sm:h-20 md:h-24 rounded-xl disabled:bg-gray-300 text-white text-2xl sm:text-3xl font-bold ${
           actionIsNext
             ? 'bg-blue-500 hover:bg-blue-600'
             : 'bg-green-500 hover:bg-green-600'
@@ -175,18 +175,18 @@ function AnswerKeypad({
       >
         {actionLabel}
       </button>
-      <div className="grid grid-cols-2 gap-3 mt-3">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 mt-2 sm:mt-3">
         <button
           type="button"
           onClick={() => onKey('backspace')}
-          className="h-12 rounded-xl bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-base font-semibold text-amber-900"
+          className="h-11 sm:h-12 rounded-xl bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-sm sm:text-base font-semibold text-amber-900"
         >
           Radera
         </button>
         <button
           type="button"
           onClick={() => onKey('clear')}
-          className="h-12 rounded-xl bg-red-100 hover:bg-red-200 active:bg-red-300 text-base font-semibold text-red-900"
+          className="h-11 sm:h-12 rounded-xl bg-red-100 hover:bg-red-200 active:bg-red-300 text-sm sm:text-base font-semibold text-red-900"
         >
           Rensa
         </button>

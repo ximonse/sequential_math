@@ -1,18 +1,12 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { authenticateStudent, clearActiveStudentSession, setActiveStudentClass } from '../lib/storage'
-import { resolveStudentLogin } from '../lib/studentLoginClient'
 import { loginStudentSession } from '../lib/studentSessionClient'
 import { getPilotStudentRuntime } from '../lib/pilotStudentRuntime'
-import StudentLoginForm from './student/StudentLoginForm'
 import PilotStudentLoginForm from './student/PilotStudentLoginForm'
-import AssignedClassPicker from './student/AssignedClassPicker'
 
-function Login({ initialLoginMode = 'card' }) {
+function Login() {
   const [error, setError] = useState('')
   const [isLoggingIn, setIsLoggingIn] = useState(false)
-  const [pendingLogin, setPendingLogin] = useState(null)
-  const [pilotLogin, setPilotLogin] = useState(initialLoginMode !== 'legacy')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
@@ -47,27 +41,6 @@ function Login({ initialLoginMode = 'card' }) {
     navigate(target)
   }
 
-  const handleLogin = async ({ name, password }) => {
-    if (isLoggingIn) return
-    setError('')
-    setIsLoggingIn(true)
-
-    try {
-      const resolved = await resolveStudentLogin(name, password)
-      if (!resolved.ok) { setError(resolved.error); return }
-      const result = await authenticateStudent(resolved.studentId, password)
-      if (!result.ok) {
-        setError(result.error || 'Kunde inte logga in.')
-        return
-      }
-      setPendingLogin({ profile: result.profile, assignments: resolved.assignments })
-    } catch {
-      setError('Kunde inte logga in just nu.')
-    } finally {
-      setIsLoggingIn(false)
-    }
-  }
-
   const handlePilotLogin = async ({ studentId, qrSecret, loginCode, pin }) => {
     if (isLoggingIn) return
     setError('')
@@ -85,40 +58,15 @@ function Login({ initialLoginMode = 'card' }) {
     }
   }
 
-  const chooseAssignedClass = classId => {
-    if (isLoggingIn || !pendingLogin?.assignments.some(item => item.classId === classId)) return
-    if (!setActiveStudentClass(classId)) return
-    navigateAfterLogin(pendingLogin.profile)
-  }
-
-  const resetLogin = () => {
-    clearActiveStudentSession()
-    setPendingLogin(null)
-    setError('')
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-800 via-teal-700 to-cyan-700 px-4 py-10">
       <div className="bg-white rounded-2xl shadow-2xl p-7 sm:p-8 w-full max-w-md">
         <p className="text-center text-xs font-bold tracking-[0.18em] text-teal-700">MATEMATIK.XIMON.SE</p>
         <h1 className="mt-2 text-3xl font-bold text-center text-slate-900">Matteträning</h1>
         <p className="text-center text-slate-600 mt-2 mb-7">
-          {pendingLogin ? 'Välj din tilldelade skola och grupp' : pilotLogin ? 'Logga in med ditt elevkort' : 'Logga in med namn eller elev-ID och lösenord'}
+          Logga in med ditt elevkort
         </p>
-        {pendingLogin ? (
-          <AssignedClassPicker assignments={pendingLogin.assignments} onChoose={chooseAssignedClass}
-            onBack={resetLogin} busy={isLoggingIn} />
-        ) : pilotLogin ? (
-          <PilotStudentLoginForm onLogin={handlePilotLogin} busy={isLoggingIn} error={error} onClearError={() => setError('')} />
-        ) : (
-          <StudentLoginForm onLogin={handleLogin} busy={isLoggingIn} error={error} onClearError={() => setError('')} />
-        )}
-        {!pendingLogin ? (
-          <button type="button" onClick={() => { setPilotLogin(value => !value); setError('') }} disabled={isLoggingIn}
-            className="mt-4 w-full py-2 text-sm text-teal-700 hover:text-teal-900">
-            {pilotLogin ? 'Använd namn eller elev-ID i stället' : 'Logga in med elevkort, QR-kod eller kodnamn'}
-          </button>
-        ) : null}
+        <PilotStudentLoginForm onLogin={handlePilotLogin} busy={isLoggingIn} error={error} onClearError={() => setError('')} />
         <div className="mt-7 pt-5 border-t border-gray-200 text-center">
           <button onClick={() => navigate('/teacher-login')}
             className="rounded px-3 py-1.5 text-xs text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors">

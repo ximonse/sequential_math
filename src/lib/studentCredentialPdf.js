@@ -5,7 +5,7 @@ export const A7_CARDS_PER_A4 = 8
 const CARDS_PER_ROW = 4
 const CARD_WIDTH_MM = 297 / CARDS_PER_ROW
 const CARD_HEIGHT_MM = 105
-const QR_SIZE_MM = 46
+const QR_SIZE_MM = 28
 
 function cardLabel(credential) {
   return String(credential?.name || credential?.displayAlias || 'Elev').trim() || 'Elev'
@@ -56,17 +56,21 @@ export async function downloadStudentCredentialPdf(credentials, filename = crede
     doc.setLineWidth(0.35)
     doc.rect(x, y, CARD_WIDTH_MM, CARD_HEIGHT_MM)
     doc.setFillColor(15, 118, 110)
-    doc.rect(x, y, CARD_WIDTH_MM, 12, 'F')
+    doc.rect(x, y, CARD_WIDTH_MM, 13, 'F')
     doc.setTextColor(255, 255, 255)
-    pdfText(doc, 'MATTE TRÄNING - ELEVKORT', x + 5, y + 7.5, CARD_WIDTH_MM - 10, 7, 'bold')
+    pdfText(doc, 'MATEMATIK.XIMON.SE', x + 5, y + 8, CARD_WIDTH_MM - 10, 8, 'bold')
     doc.setTextColor(15, 23, 42)
-    pdfText(doc, 'Skanna QR-koden och skriv PIN.', x + 5, y + 17, CARD_WIDTH_MM - 10, 6.5)
-    pdfText(doc, name, x + 5, y + 26, CARD_WIDTH_MM - 10, 10, 'bold')
-    pdfText(doc, 'Kodnamn: ' + String(credential.displayAlias || '–'), x + 5, y + 35, CARD_WIDTH_MM - 10, 7)
-    pdfText(doc, 'PIN: ' + credential.pin, x + 5, y + 44, CARD_WIDTH_MM - 10, 13, 'bold')
-    doc.addImage(qrCodes[index], 'PNG', x + (CARD_WIDTH_MM - QR_SIZE_MM) / 2, y + 48, QR_SIZE_MM, QR_SIZE_MM)
-    doc.setTextColor(71, 85, 105)
-    pdfText(doc, 'Elev-ID: ' + credential.studentId, x + 5, y + 101, CARD_WIDTH_MM - 10, 5.5)
+    pdfText(doc, 'Så här loggar du in', x + 5, y + 20, CARD_WIDTH_MM - 10, 7.5, 'bold')
+    pdfText(doc, '1. Öppna en webbläsare på dator, surfplatta eller mobil.', x + 5, y + 27, CARD_WIDTH_MM - 10, 5.7)
+    pdfText(doc, '2. Skriv matematik.ximon.se i adressfältet.', x + 5, y + 38, CARD_WIDTH_MM - 10, 5.7)
+    pdfText(doc, '3. Välj ett sätt att logga in:', x + 5, y + 49, CARD_WIDTH_MM - 10, 5.7, 'bold')
+    pdfText(doc, '- Skanna QR-koden och skriv din PIN.', x + 5, y + 56, CARD_WIDTH_MM - 10, 5.7)
+    pdfText(doc, '- Eller skriv kodnamnet och din PIN.', x + 5, y + 63, CARD_WIDTH_MM - 10, 5.7)
+    doc.addImage(qrCodes[index], 'PNG', x + 5, y + 70, QR_SIZE_MM, QR_SIZE_MM)
+    pdfText(doc, name, x + 38, y + 76, CARD_WIDTH_MM - 43, 7, 'bold')
+    pdfText(doc, 'Kodnamn', x + 38, y + 83, CARD_WIDTH_MM - 43, 5.5)
+    pdfText(doc, String(credential.displayAlias || '–'), x + 38, y + 89, CARD_WIDTH_MM - 43, 6.5, 'bold')
+    pdfText(doc, 'PIN: ' + credential.pin, x + 38, y + 98, CARD_WIDTH_MM - 43, 10, 'bold')
     doc.setTextColor(15, 23, 42)
   })
 

@@ -8,11 +8,11 @@ import StudentLoginForm from './student/StudentLoginForm'
 import PilotStudentLoginForm from './student/PilotStudentLoginForm'
 import AssignedClassPicker from './student/AssignedClassPicker'
 
-function Login() {
+function Login({ initialLoginMode = 'card' }) {
   const [error, setError] = useState('')
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const [pendingLogin, setPendingLogin] = useState(null)
-  const [pilotLogin, setPilotLogin] = useState(false)
+  const [pilotLogin, setPilotLogin] = useState(initialLoginMode !== 'legacy')
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
@@ -98,11 +98,12 @@ function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">Matteträning</h1>
-        <p className="text-center text-gray-600 mb-8">
-          {pendingLogin ? 'Välj din tilldelade skola och grupp' : pilotLogin ? 'Logga in med elevkort eller kodnamn' : 'Logga in med namn eller elev-ID och lösenord'}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-800 via-teal-700 to-cyan-700 px-4 py-10">
+      <div className="bg-white rounded-2xl shadow-2xl p-7 sm:p-8 w-full max-w-md">
+        <p className="text-center text-xs font-bold tracking-[0.18em] text-teal-700">MATEMATIK.XIMON.SE</p>
+        <h1 className="mt-2 text-3xl font-bold text-center text-slate-900">Matteträning</h1>
+        <p className="text-center text-slate-600 mt-2 mb-7">
+          {pendingLogin ? 'Välj din tilldelade skola och grupp' : pilotLogin ? 'Logga in med ditt elevkort' : 'Logga in med namn eller elev-ID och lösenord'}
         </p>
         {pendingLogin ? (
           <AssignedClassPicker assignments={pendingLogin.assignments} onChoose={chooseAssignedClass}
@@ -115,13 +116,13 @@ function Login() {
         {!pendingLogin ? (
           <button type="button" onClick={() => { setPilotLogin(value => !value); setError('') }} disabled={isLoggingIn}
             className="mt-4 w-full py-2 text-sm text-teal-700 hover:text-teal-900">
-            {pilotLogin ? 'Använd äldre inloggning' : 'Har du ett elevkort eller ett kodnamn?'}
+            {pilotLogin ? 'Använd namn eller elev-ID i stället' : 'Logga in med elevkort, QR-kod eller kodnamn'}
           </button>
         ) : null}
-        <div className="mt-8 pt-6 border-t border-gray-200">
+        <div className="mt-7 pt-5 border-t border-gray-200 text-center">
           <button onClick={() => navigate('/teacher-login')}
-            className="w-full py-2 px-4 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors text-sm">
-            Lärare? Logga in
+            className="rounded px-3 py-1.5 text-xs text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors">
+            Lärare? Logga in här
           </button>
         </div>
       </div>

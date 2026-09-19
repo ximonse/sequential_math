@@ -328,6 +328,7 @@ function StudentHome() {
       ? profile.ticketResponses.find(item => item.dispatchId === activeTicketPayload.dispatchId) || null
       : null)
     : null
+  const classLabel = String(profile.className || '').trim()
   const handleOpenActiveTicket = () => {
     if (!activeTicketPayload) return
     const params = new URLSearchParams()
@@ -364,7 +365,10 @@ function StudentHome() {
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Hej {profile.name || profile.displayAlias || 'elev'}</h1>
-            <p className="text-sm text-gray-500">Din matteöversikt</p>
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-500">
+              <span>Din matteöversikt</span>
+              {classLabel ? <span className="rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-semibold text-teal-800">Klass {classLabel}</span> : null}
+            </div>
           </div>
           <div className="flex flex-col items-end gap-1">
             <button

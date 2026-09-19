@@ -49,7 +49,7 @@ export default function PilotStudentLoginForm({ onLogin, busy, error, onClearErr
           () => {}
         )
       } catch {
-        if (active) setScannerMessage('Kameran kunde inte starta. Tillåt kamera eller använd reservinmatning.')
+        if (active) setScannerMessage('Kameran kunde inte starta. Tillåt kamera eller använd kodnamnet i stället.')
       }
     })()
     return () => {
@@ -78,23 +78,6 @@ export default function PilotStudentLoginForm({ onLogin, busy, error, onClearErr
         <div id={scannerId} className="overflow-hidden rounded-lg" />
         <button type="button" onClick={() => setScannerOpen(false)} className="mt-2 text-sm text-teal-900 underline">Avbryt skanning</button>
       </div> : null}
-      <details className="rounded-lg border border-gray-200 p-3 text-sm">
-        <summary className="cursor-pointer text-gray-700">Reserv: skriv uppgifterna från kortet</summary>
-        <div className="mt-3 space-y-3">
-      <div>
-        <label htmlFor="pilotStudentId" className="block text-sm font-medium text-gray-700 mb-2">Elev-ID</label>
-        <input id="pilotStudentId" type="password" className={inputClass} value={studentId} required maxLength={32}
-          onChange={event => { setStudentId(event.target.value); onClearError() }}
-          placeholder="Koden på ditt kort" autoComplete="off" disabled={busy} />
-      </div>
-      <div>
-        <label htmlFor="pilotQrSecret" className="block text-sm font-medium text-gray-700 mb-2">QR-hemlighet</label>
-        <input id="pilotQrSecret" type="password" className={inputClass} value={qrSecret} required maxLength={100}
-          onChange={event => { setQrSecret(event.target.value); onClearError() }}
-          placeholder="Skanna eller skriv koden" autoComplete="off" disabled={busy} />
-      </div>
-        </div>
-      </details>
       </> : loginMode === 'qr' ? <div className="rounded-xl border border-teal-200 bg-teal-50 p-3 text-sm text-teal-950">
         <p className="font-semibold">Elevkortet är läst.</p>
         <button type="button" onClick={() => { setStudentId(''); setQrSecret(''); setPin(''); setScannerMessage('') }} className="mt-1 underline">Skanna ett annat kort</button>

@@ -6,6 +6,7 @@ import { classifyErrorCategory, deriveTimingMetrics } from './studentProfileTimi
 import { STUDENT_PROFILE_SCHEMA_VERSION } from './studentProfileContract'
 import { analyzeStudentError, evaluateStudentAnswer, getProblemSelection } from '../engine/adaptiveEngine'
 import { isMasteryEligible, readEvidenceClaim } from './evidenceContract'
+import { isValidTrainingContext } from './trainingContext'
 export { getStartOfWeekTimestamp } from './studentProfileTimingHelpers'
 
 const MAX_RECENT_PROBLEMS = 250
@@ -175,6 +176,9 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
 
   const answeredAt = Date.now()
   const observationId = `${String(problem.id || 'problem')}:${answeredAt}`
+  const trainingContext = isValidTrainingContext(options.trainingContext)
+    ? structuredClone(options.trainingContext)
+    : null
   const result = {
     observationId,
     problemId: problem.id,
@@ -187,6 +191,8 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     evidenceLevel: evidence.level,
     evidenceClass: evidence.class,
     evidenceRuleVersion: evidence.version,
+    trainingContext,
+    trainingMode: trainingContext?.mode || '',
     level: selection.level,
     problemType,
     values: problem.values,

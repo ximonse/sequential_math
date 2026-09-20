@@ -15,14 +15,36 @@ describe('student event evidence persistence', () => {
         evidenceSkill: 'positions_decimal',
         evidenceLevel: 1,
         evidenceClass: 'mastery_eligible',
-        evidenceRuleVersion: 1
+        evidenceRuleVersion: 1,
+        trainingContext: {
+          version: 1,
+          frameId: 'session-1',
+          mode: 'teacher_locked',
+          source: 'teacher_assignment',
+          assignmentId: 'asg-1',
+          assignmentKind: 'standard',
+          allowedSkills: ['positions_decimal'],
+          levelRange: [1, 1],
+          tableSet: [],
+          progressionMode: 'steady'
+        }
       }
     }
 
     expect(validEntry(entry, 'ELEV1')).toBe(true)
+    const profile = { recentProblems: [], problemLog: [] }
+    expect(applyWalEntry(profile, entry)).toBe(true)
+    expect(profile.problemLog[0].trainingContext).toEqual(entry.payload.trainingContext)
     expect(validEntry({
       ...entry,
       payload: { ...entry.payload, evidenceClass: 'surprise' }
+    }, 'ELEV1')).toBe(false)
+    expect(validEntry({
+      ...entry,
+      payload: {
+        ...entry.payload,
+        trainingContext: { ...entry.payload.trainingContext, mode: 'surprise' }
+      }
     }, 'ELEV1')).toBe(false)
   })
 

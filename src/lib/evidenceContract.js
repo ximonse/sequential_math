@@ -69,11 +69,14 @@ export function readEvidenceClaim(problem) {
     || problem?.metadata?.evidenceClass
     || ''
   ).trim()
+  const hasEvidenceIdentity = Boolean(evidenceSkill && evidenceSkill !== 'unknown' && evidenceLevel)
   const evidenceClass = KNOWN_EVIDENCE_CLASSES.has(explicitClass)
     ? explicitClass
     : isTableDrillEvidence(problem)
       ? EVIDENCE_CLASSES.PRACTICE_ONLY
-      : EVIDENCE_CLASSES.MASTERY_ELIGIBLE
+      : hasEvidenceIdentity
+        ? EVIDENCE_CLASSES.MASTERY_ELIGIBLE
+        : EVIDENCE_CLASSES.INVALID
 
   const version = Math.max(1, Math.round(Number(
     stored.version

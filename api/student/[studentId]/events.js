@@ -10,6 +10,7 @@ import {
   hasCurrentStudentPassword,
   isCurrentStudentProfile
 } from '../../../src/lib/studentProfileContract.js'
+import { isValidTrainingContext } from '../../../src/lib/trainingContext.js'
 
 const MAX_PROBLEM_LOG = 5000
 const MAX_RECENT_PROBLEMS = 250
@@ -213,6 +214,7 @@ export function validEntry(entry, studentId) {
     && (payload.evidenceClass == null || EVIDENCE_CLASSES.has(payload.evidenceClass))
     && (payload.evidenceRuleVersion == null || (Number.isInteger(Number(payload.evidenceRuleVersion))
       && Number(payload.evidenceRuleVersion) >= 1))
+    && (payload.trainingContext == null || isValidTrainingContext(payload.trainingContext))
   if (entry.type === 'table_completed') return Number.isInteger(payload.table)
     && payload.table >= 2 && payload.table <= 12
     && Number.isFinite(Number(payload.timestamp || entry.timestamp))

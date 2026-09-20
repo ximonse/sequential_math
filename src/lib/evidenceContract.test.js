@@ -56,5 +56,10 @@ describe('evidence contract', () => {
       level: 2
     })
   })
-})
 
+  it('does not invent mastery evidence for unclassifiable legacy entries', () => {
+    expect(readEvidenceClaim({ problemId: 'legacy-unknown' }).class)
+      .toBe(EVIDENCE_CLASSES.INVALID)
+    expect(isMasteryEligible({ problemId: 'legacy-unknown' })).toBe(false)
+  })
+})

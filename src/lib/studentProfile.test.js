@@ -104,6 +104,32 @@ describe('addProblemResult', () => {
     expect(result.observationId).toContain('decimal-1:')
   })
 
+  it('stores the training frame with each answer observation', () => {
+    const profile = createStudentProfile('ELEV5', 'Eli', 5)
+    const problem = { id: 'add-1', domain: 'arithmetic', skill: 'addition', level: 2, type: 'addition', values: { a: 2, b: 3 }, result: 5, difficulty: { conceptual_level: 2 } }
+    const trainingContext = {
+      version: 1,
+      frameId: 'session-1',
+      mode: 'teacher_locked',
+      source: 'teacher_assignment',
+      assignmentId: 'asg-1',
+      assignmentKind: 'standard',
+      allowedSkills: ['addition'],
+      levelRange: [2, 2],
+      tableSet: [],
+      progressionMode: 'steady'
+    }
+
+    const { result } = addProblemResult(profile, problem, 5, 3, {
+      rawAnswer: '5',
+      trainingContext
+    })
+
+    expect(result.trainingMode).toBe('teacher_locked')
+    expect(result.trainingContext).toEqual(trainingContext)
+    expect(profile.problemLog[0].trainingContext).toEqual(trainingContext)
+  })
+
   it('stores table-drill answers without creating general multiplication mastery', () => {
     const profile = createStudentProfile('ELEV4', 'Dea', 5)
     for (let index = 0; index < 5; index += 1) {

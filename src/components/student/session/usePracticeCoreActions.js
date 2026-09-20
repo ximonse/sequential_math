@@ -14,6 +14,7 @@ import {
 } from '../../../lib/telemetry'
 import { buildProblemNoveltyDescriptor, scoreCandidateNovelty } from '../../../lib/problemNovelty'
 import { resolveProblemOperation } from '../../../lib/mathUtils'
+import { buildTrainingContext } from '../../../lib/trainingContext'
 import {
   createTableProblem,
   finalizeAttentionSnapshot,
@@ -232,6 +233,16 @@ export function usePracticeCoreActions({
 
     const interruption = finalizeAttentionSnapshot(attentionRef.current)
     const mixedMode = isMixedTrainingSession(mode, sessionAssignment, isTableDrill)
+    const trainingContext = buildTrainingContext({
+      sessionId: sessionTelemetryRef.current?.sessionId || '',
+      assignment: sessionAssignment,
+      mode: isKnownMode(mode) ? mode : '',
+      fixedLevel: fixedPracticeLevel,
+      isTableDrill,
+      tableSet,
+      freeOps,
+      progressionMode
+    })
     const { correct, result, walEntries } = addProblemResult(
       profile,
       currentProblem,
@@ -240,7 +251,8 @@ export function usePracticeCoreActions({
       {
         rawAnswer: normalizedAnswer,
         interruption,
-        isMixedMode: mixedMode
+        isMixedMode: mixedMode,
+        trainingContext
       }
     )
     const isPartial = Boolean(result?.isPartial)
@@ -326,8 +338,11 @@ export function usePracticeCoreActions({
       speedTimeSec: Number.isFinite(Number(result?.speedTimeSec))
         ? Number(Number(result.speedTimeSec).toFixed(2))
         : null,
-      excludedFromSpeed: Boolean(result?.excludedFromSpeed),
-      progressionMode
+	      excludedFromSpeed: Boolean(result?.excludedFromSpeed),
+	      progressionMode,
+      trainingMode: trainingContext.mode,
+      trainingSource: trainingContext.source,
+      assignmentId: trainingContext.assignmentId
     }, answerTs)
 
 	    if (levelMasteredNow) {
@@ -449,6 +464,8 @@ export function usePracticeCoreActions({
     sessionAssignment,
     isTableDrill,
     progressionMode,
+    tableSet,
+    freeOps,
     sessionCount,
     sessionRecentCorrectnessRef,
     sessionTelemetryRef,

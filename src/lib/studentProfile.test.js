@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { addProblemResult, createStudentProfile, getCurrentStreak } from './studentProfile'
 import { computeOperationLevelMasteryStatus } from './masteryCalculation'
+import { createTableProblem } from '../components/student/session/sessionUtils'
 
 function makeAttempts(count, values = {}) {
   return Array.from({ length: count }, () => ({ ...values }))
@@ -96,7 +97,29 @@ describe('addProblemResult', () => {
     const problem = { id: 'decimal-1', domain: 'arithmetic', skill: 'addition', level: 4, type: 'addition', values: { a: 1.2, b: 3.4 }, result: 4.6, difficulty: { conceptual_level: 4 }, metadata: { evidenceSkill: 'positions_decimal', evidenceLevel: 1 } }
     const { result } = addProblemResult(profile, problem, 4.6, 6, { rawAnswer: '4.6' })
     expect(result.operation).toBe('positions_decimal')
+    expect(result.evidenceSkill).toBe('positions_decimal')
     expect(result.evidenceLevel).toBe(1)
+    expect(result.evidenceClass).toBe('mastery_eligible')
+    expect(result.contentSkill).toBe('addition')
+    expect(result.observationId).toContain('decimal-1:')
+  })
+
+  it('stores table-drill answers without creating general multiplication mastery', () => {
+    const profile = createStudentProfile('ELEV4', 'Dea', 5)
+    for (let index = 0; index < 5; index += 1) {
+      const problem = createTableProblem({ table: 7, factor: index + 1 })
+      const { result } = addProblemResult(profile, problem, problem.result, 4, {
+        rawAnswer: String(problem.result)
+      })
+      expect(result.evidenceClass).toBe('practice_only')
+    }
+
+    expect(computeOperationLevelMasteryStatus(
+      profile.problemLog,
+      'multiplication',
+      4
+    ).attempts).toBe(0)
+    expect(profile.masteryFacts.facts).toEqual([])
   })
 
 })

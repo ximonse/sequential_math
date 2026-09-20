@@ -1,10 +1,11 @@
 import { evaluateAnswerQuality } from './answerQuality'
-import { computeMasteryOverview, computeMasteryForOperation, computeLowestUnmasteredLevel, getPreferredProblemSource, computeOperationLevelMasteryStatus, recordMasteryAchievement } from './masteryCalculation'
+import { computeMasteryOverview, computeMasteryForOperation, computeLowestUnmasteredLevel, getPreferredProblemSource, computeOperationLevelMasteryStatus, getMasteryEvidenceObservationIds, recordMasteryAchievement } from './masteryCalculation'
 import { refreshTeacherSummary } from './teacherSummary'
 import { getSpeedTime, resolveProblemOperation } from './mathUtils'
 import { classifyErrorCategory, deriveTimingMetrics } from './studentProfileTimingHelpers'
 import { STUDENT_PROFILE_SCHEMA_VERSION } from './studentProfileContract'
 import { analyzeStudentError, evaluateStudentAnswer, getProblemSelection } from '../engine/adaptiveEngine'
+import { isMasteryEligible, readEvidenceClaim } from './evidenceContract'
 export { getStartOfWeekTimestamp } from './studentProfileTimingHelpers'
 
 const MAX_RECENT_PROBLEMS = 250
@@ -132,6 +133,7 @@ export function createStudentProfile(studentId, name, grade = 4) {
  */
 export function addProblemResult(profile, problem, studentAnswer, timeSpent, options = {}) {
   const selection = getProblemSelection(problem)
+  const evidence = readEvidenceClaim(problem)
   const evaluation = evaluateStudentAnswer(problem, studentAnswer)
   const correct = typeof evaluation?.correct === 'boolean'
     ? evaluation.correct
@@ -143,7 +145,7 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
   const errorCategory = classifyErrorCategory(problem, studentAnswer, correct, options, errorAnalysis)
   const timing = deriveTimingMetrics(profile, problem, timeSpent, options)
   const problemType = String(problem?.template || problem?.problemType || selection.skill || '')
-  const operation = resolveProblemOperation(problem, {
+  const operation = evidence.skill || resolveProblemOperation(problem, {
     fallback: selection.skill,
     allowUnknownPrefix: false
   })
@@ -171,12 +173,20 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     ? Number(evaluation.tolerance)
     : quality.tolerance
 
+  const answeredAt = Date.now()
+  const observationId = `${String(problem.id || 'problem')}:${answeredAt}`
   const result = {
+    observationId,
     problemId: problem.id,
     domain: selection.domain,
     skill: selection.skill,
+    contentSkill: evidence.contentSkill || selection.skill,
+    contentLevel: evidence.contentLevel || selection.level,
     operation,
-    evidenceLevel: Number(problem?.metadata?.evidenceLevel) || null,
+    evidenceSkill: evidence.skill || operation,
+    evidenceLevel: evidence.level,
+    evidenceClass: evidence.class,
+    evidenceRuleVersion: evidence.version,
     level: selection.level,
     problemType,
     values: problem.values,
@@ -203,7 +213,7 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     blurCount: timing.blurCount,
     personalMedianTimeSec: timing.personalMedianSec,
     personalBaselineCount: timing.personalBaselineCount,
-    timestamp: Date.now(),
+    timestamp: answeredAt,
     difficulty: problem.difficulty,
     skillTag: problem.metadata?.skillTag || problemType || selection.skill,
     selectionReason: problem.metadata?.selectionReason || 'normal',
@@ -232,9 +242,9 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
 
   // Kolla mastery FÖRE nytt resultat (för att detektera ny mastery)
   const opForMastery = operation
-  const levelForMastery = Math.round(Number(problem?.difficulty?.conceptual_level || 0))
+  const levelForMastery = evidence.level
   const source = getPreferredProblemSource(profile)
-  const masteryBefore = (opForMastery && levelForMastery >= 1 && levelForMastery <= 12)
+  const masteryBefore = (isMasteryEligible(result) && opForMastery && levelForMastery >= 1 && levelForMastery <= 12)
     ? computeOperationLevelMasteryStatus(source, opForMastery, levelForMastery)
     : null
 
@@ -253,11 +263,28 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     const sourceAfter = getPreferredProblemSource(profile)
     const masteryAfter = computeOperationLevelMasteryStatus(sourceAfter, opForMastery, levelForMastery)
     if (masteryAfter.isMastered) {
-      recordMasteryAchievement(profile, opForMastery, levelForMastery, masteryAfter)
-      walEntries.push({
-        type: 'mastery_achieved',
-        payload: { operation: opForMastery, level: levelForMastery, window: masteryAfter }
+      const evidenceObservationIds = getMasteryEvidenceObservationIds(
+        sourceAfter,
+        opForMastery,
+        levelForMastery
+      )
+      const fact = recordMasteryAchievement(profile, opForMastery, levelForMastery, masteryAfter, {
+        ruleVersion: evidence.version,
+        evidenceObservationIds
       })
+      if (fact) {
+        walEntries.push({
+          type: 'mastery_achieved',
+          payload: {
+            operation: opForMastery,
+            level: levelForMastery,
+            achievedAt: fact.achievedAt,
+            ruleVersion: fact.ruleVersion,
+            evidenceObservationIds,
+            window: masteryAfter
+          }
+        })
+      }
     }
   }
 

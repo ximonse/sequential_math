@@ -1,5 +1,6 @@
-import { inferTableFromProblem, median, getSpeedTime, resolveProblemOperation } from '../../../lib/mathUtils'
+import { inferTableFromProblem, median, getSpeedTime } from '../../../lib/mathUtils'
 import { computeOperationMasteryBoards, getPreferredProblemSource } from '../../../lib/masteryCalculation'
+import { isMasteryEligible, readEvidenceClaim } from '../../../lib/evidenceContract'
 import { getOperationLabel } from '../../../lib/operations'
 import { buildStudentDailyTrend } from '../../../lib/studentDailyTrend'
 import { buildNcmDetailForStudent } from './dashboardStudentDetailNcmHelpers'
@@ -8,7 +9,6 @@ import {
   isKnowledgeError
 } from './dashboardTableStatusUtils'
 import { ALL_OPERATIONS, LEVELS, TABLES } from './dashboardConstants'
-import { getProblemLevel } from './dashboardCoreHelpers'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -45,10 +45,12 @@ function buildLevelErrorRowsForTeacher(student) {
   const grouped = new Map()
 
   for (const problem of source) {
-    const operation = resolveProblemOperation(problem, { fallback: '', allowUnknownPrefix: false })
+    if (!isMasteryEligible(problem)) continue
+    const claim = readEvidenceClaim(problem)
+    const operation = claim.skill
     if (!ALL_OPERATIONS.includes(operation)) continue
 
-    const level = Math.round(Number(getProblemLevel(problem) || 0))
+    const level = claim.level
     if (!Number.isInteger(level) || level < 1 || level > 12) continue
 
     const key = `${operation}|${level}`

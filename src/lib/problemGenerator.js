@@ -21,6 +21,7 @@ import {
   roundTo
 } from './problemGeneratorMathHelpers'
 import { pickFromRotation } from './rotationPicker'
+import { EVIDENCE_CLASSES, attachEvidenceClaim } from './evidenceContract'
 
 const DECIMAL_EVIDENCE_LEVELS = {
   4: 1,
@@ -210,7 +211,7 @@ export function generateProblem(template, maxAttempts = 100) {
   if (template.type === 'subtraction') fallbackResult = a - b
   if (template.type === 'multiplication') fallbackResult = roundTo(a * b)
   if (template.type === 'division') fallbackResult = roundTo(a / b)
-  return {
+  return attachEvidenceClaim({
     id: `${template.id}_fallback_${Date.now()}`,
     template: template.id,
     type: template.type,
@@ -229,7 +230,7 @@ export function generateProblem(template, maxAttempts = 100) {
       borrowCount: template.type === 'subtraction' ? countBorrows(a, b) : 0
     },
     generated_at: Date.now()
-  }
+  }, { class: EVIDENCE_CLASSES.INVALID })
 }
 
 /**
@@ -260,7 +261,7 @@ export function generateMultiplicationTableDrillProblem(tableSet, options = {}) 
   const b = tableFirst ? other : table
   const result = a * b
 
-  return {
+  return attachEvidenceClaim({
     id: `mul_table_${table}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
     template: 'mul_table_drill',
     type: 'multiplication',
@@ -290,7 +291,7 @@ export function generateMultiplicationTableDrillProblem(tableSet, options = {}) 
       description: `Tabellovning ${table}:an`
     },
     generated_at: Date.now()
-  }
+  }, { class: EVIDENCE_CLASSES.PRACTICE_ONLY })
 }
 
 /**

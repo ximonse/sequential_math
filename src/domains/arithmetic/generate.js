@@ -2,6 +2,7 @@ import {
   generateByDifficultyWithOptions,
   generateMultiplicationTableDrillProblem
 } from '../../lib/problemGenerator'
+import { attachEvidenceClaim } from '../../lib/evidenceContract'
 
 function inferSkillFromLegacyType(type) {
   if (type === 'addition') return 'addition'
@@ -61,7 +62,7 @@ function normalizeArithmeticProblem(problem, fallbackLevel = 1) {
   }
   next.generated_at = Number(next.generated_at || Date.now())
 
-  return next
+  return attachEvidenceClaim(next)
 }
 
 export function generateArithmeticProblem(skill, level, options = {}) {

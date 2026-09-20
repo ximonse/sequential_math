@@ -18,6 +18,7 @@ const MAX_EVENT_BYTES = 32 * 1024
 const MAX_BATCH_BYTES = 256 * 1024
 const MAX_TICKET_RESPONSES = 500
 const CHECKPOINT_FIELDS = ['currentDifficulty', 'highestDifficulty', 'adaptive', 'operationAbilities', 'assignmentProgress', 'stats', 'telemetry', 'activity']
+const EVIDENCE_CLASSES = new Set(['mastery_eligible', 'practice_only', 'diagnostic_only', 'invalid'])
 
 function jsonBytes(value) {
   try { return Buffer.byteLength(JSON.stringify(value), 'utf8') } catch { return Number.POSITIVE_INFINITY }
@@ -52,9 +53,11 @@ function applyProblemResult(profile, payload) {
   // Dedup: kolla om redan finns i problemLog
   const ts = Number(payload.timestamp || 0)
   const pid = payload.problemId || ''
+  const oid = String(payload.observationId || '')
   if (Array.isArray(profile.problemLog) && ts > 0 && pid) {
     const exists = profile.problemLog.some(
-      p => p.problemId === pid && Number(p.timestamp) === ts
+      p => (oid && p.observationId === oid)
+        || (p.problemId === pid && Number(p.timestamp) === ts)
     )
     if (exists) return false // redan applicerad
   }
@@ -91,14 +94,18 @@ function applyMasteryAchieved(profile, payload) {
   )
   if (exists) return false
 
-  const achievedAt = payload.window?.achievedAt || Date.now()
+  const achievedAt = Number(payload.achievedAt) || Date.now()
   profile.masteryFacts.facts.push({
     id: `${payload.operation}:${payload.level}:${achievedAt}`,
     operation: payload.operation,
     level: payload.level,
     achievedAt,
     window: payload.window || { attempts: 0, correct: 0, rate: 0 },
-    source: 'wal'
+    source: 'wal',
+    ruleVersion: Math.max(1, Math.round(Number(payload.ruleVersion) || 1)),
+    evidenceObservationIds: Array.isArray(payload.evidenceObservationIds)
+      ? payload.evidenceObservationIds.map(item => String(item || '').trim()).filter(Boolean).slice(0, 50)
+      : []
   })
 
   return true
@@ -197,12 +204,26 @@ export function validEntry(entry, studentId) {
   if (entry.type === 'problem_result') return typeof payload.problemId === 'string'
     && Boolean(payload.problemId) && Number.isFinite(payload.timestamp) && payload.timestamp > 0
     && typeof payload.correct === 'boolean'
+    && (payload.observationId == null || (typeof payload.observationId === 'string'
+      && payload.observationId.length > 0 && payload.observationId.length <= 200))
+    && (payload.evidenceSkill == null || (typeof payload.evidenceSkill === 'string'
+      && payload.evidenceSkill.length > 0 && payload.evidenceSkill.length <= 100))
+    && (payload.evidenceLevel == null || (Number.isInteger(Number(payload.evidenceLevel))
+      && Number(payload.evidenceLevel) >= 1 && Number(payload.evidenceLevel) <= 12))
+    && (payload.evidenceClass == null || EVIDENCE_CLASSES.has(payload.evidenceClass))
+    && (payload.evidenceRuleVersion == null || (Number.isInteger(Number(payload.evidenceRuleVersion))
+      && Number(payload.evidenceRuleVersion) >= 1))
   if (entry.type === 'table_completed') return Number.isInteger(payload.table)
     && payload.table >= 2 && payload.table <= 12
     && Number.isFinite(Number(payload.timestamp || entry.timestamp))
     && Number(payload.timestamp || entry.timestamp) > 0
   if (entry.type === 'mastery_achieved') return typeof payload.operation === 'string'
     && Boolean(payload.operation) && Number.isInteger(payload.level) && payload.level >= 1 && payload.level <= 12
+    && (payload.achievedAt == null || (Number.isFinite(Number(payload.achievedAt)) && Number(payload.achievedAt) > 0))
+    && (payload.ruleVersion == null || (Number.isInteger(Number(payload.ruleVersion)) && Number(payload.ruleVersion) >= 1))
+    && (payload.evidenceObservationIds == null || (Array.isArray(payload.evidenceObservationIds)
+      && payload.evidenceObservationIds.length <= 50
+      && payload.evidenceObservationIds.every(id => typeof id === 'string' && id.length > 0 && id.length <= 200)))
   if (entry.type === 'profile_checkpoint') return validCheckpoint(payload)
   if (entry.type === 'ticket_response') return typeof payload.dispatchId === 'string' && payload.dispatchId.length > 0 && payload.dispatchId.length <= 100
     && typeof payload.studentAnswer === 'string' && payload.studentAnswer.length <= 500

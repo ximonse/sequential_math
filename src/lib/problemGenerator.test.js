@@ -57,4 +57,12 @@ describe('problemGenerator decimal evidence', () => {
     expect(problem.metadata.evidenceLevel).toBe(1)
     expect(problem.metadata.evidenceTags).toEqual(['positions_decimal'])
   })
+
+  it('marks a constraint fallback as invalid knowledge evidence', () => {
+    const template = subtractionTemplates.find(item => item.id === 'sub_dec_1dp_1dp_no_borrow')
+    const problem = generateProblem(template, 0)
+
+    expect(problem.id).toContain('_fallback_')
+    expect(problem.metadata.evidenceClass).toBe('invalid')
+  })
 })

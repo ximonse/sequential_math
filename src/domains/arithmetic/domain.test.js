@@ -69,5 +69,12 @@ describe('arithmetic domain', () => {
     const problem = generateArithmeticProblem('addition', 4, { evidenceSkill: 'positions_decimal' })
     expect(problem.metadata.evidenceSkill).toBe('positions_decimal')
     expect(problem.metadata.evidenceLevel).toBe(1)
+    expect(problem.metadata.evidenceClass).toBe('mastery_eligible')
+    expect(problem.metadata.evidenceClaim).toMatchObject({
+      contentSkill: 'addition',
+      contentLevel: 4,
+      skill: 'positions_decimal',
+      level: 1
+    })
   })
 })

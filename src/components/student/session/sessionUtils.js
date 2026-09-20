@@ -4,6 +4,7 @@ import { getOperationAbility } from '../../../lib/difficultyAdapter'
 import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from '../../../lib/operations'
 import { normalizeProgressionMode } from '../../../lib/progressionModes'
 import { filterNcmProblems } from '../../../lib/ncmProblemBank'
+import { EVIDENCE_CLASSES, attachEvidenceClaim } from '../../../lib/evidenceContract'
 
 export const DEFAULT_BREAK_MINUTES = 1
 export const SINGLE_DIGIT_BREAK_MINUTES = 2
@@ -150,12 +151,17 @@ export function createTableProblem(item) {
   const b = tableFirst ? factor : table
   const result = a * b
 
-  return {
+  return attachEvidenceClaim({
     id: `mul_table_${table}_${factor}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    domain: 'arithmetic',
+    skill: 'multiplication',
+    level: 4,
     template: 'mul_table_drill',
     type: 'multiplication',
     values: { a, b },
     result,
+    display: { type: 'expression', text: `${a} × ${b}` },
+    answer: { type: 'number', correct: result },
     difficulty: {
       conceptual_level: 4,
       cognitive_load: { working_memory: 1, steps_required: 1, intermediate_values: 0 },
@@ -170,7 +176,7 @@ export function createTableProblem(item) {
       description: `Tabellovning ${table}:an`
     },
     generated_at: Date.now()
-  }
+  }, { class: EVIDENCE_CLASSES.PRACTICE_ONLY })
 }
 
 function shuffle(items) {

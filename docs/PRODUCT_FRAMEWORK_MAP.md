@@ -1,6 +1,6 @@
 # Funktionsramverk — kartläggning och genomförandeplan
 
-Status: **kartläggning v0.2, 2026-09-20; E1 kontrakterat, appimplementation inte påbörjad**.
+Status: **kartläggning v0.3, 2026-09-20; E1 kontrakterat och E2:s första vertikala snitt lokalt implementerat**.
 Styrande riktning: [produktkontrakt v1.0](PRODUCT_CONTRACT.md), inklusive D1–D3.
 Acceptansfall: [S1–S10](PRODUCT_SCENARIOS.md).
 Funktionsregler: [funktionskontrakt F1–F6](FUNCTION_CONTRACTS.md).
@@ -70,7 +70,7 @@ P0 = förutsättning för pålitlig evidens; P1 = nödvändig produktfunktion. D
 | Etapp | Leverans och gräns | Beroende / prioritet | Klart först när |
 | --- | --- | --- | --- |
 | E1 Gemensamma funktionskontrakt — **kontrakterat 2026-09-20** | F1–F6 har preciserats i ett sammanhängande underkontrakt med ägare för varje beslut, lägesmatris, evidensklasser och versionspolicy. Inga nya pedagogiska trösklar har valts. | Klart som dokumenterad baslinje; implementering mäts i E2–E5. | [Funktionskontraktet](FUNCTION_CONTRACTS.md) kopplar A1–A8 till ansvar och acceptansfall utan att påstå verifierad funktion. |
-| E2 Tillförlitlig evidenskedja | En representation av vad som tränats och observerats, med kompetens, nivå, läge, ID och regelversion. Rätta decimal-/tabellvägarna genom registrering, återläsning, mastery och lärarbild. Undersök båda lagringsvägarna före ändring där. | E1, P0 | S8/S9/S10 visar samma betydelse från uppgift till lärarunderlag; retry duplicerar inte underlag. Äldre data får dokumenterad osäkerhets-/migrationspolicy. |
+| E2 Tillförlitlig evidenskedja — **pågår** | En representation av vad som tränats och observerats, med kompetens, nivå, läge, ID och regelversion. Första snittet bevarar kompetensidentitet för vanlig aritmetik/dold decimal, klassar tabellträning separat och gör mastery-läsning bieffektsfri. | E1, P0 | Kvar: full träningsram/uppdragskontext i observationen, båda lagringsvägarnas status i UI, äldre datas klassificering och samlad S8/S9/S10-verifiering. |
 | E3 Ett adaptivt beslutsflöde | Skilj historiskt kunnande från aktuellt behov. Samla beslut om start, befästande, utmaning, återhämtning och stöd inom uppdragsram. Avveckla elevens ja/nej-avancering; låt eventuell gratulation följa belagt kunnande. | E2, P1 | S1–S4/S7 körs som långa återspelbara förlopp, inklusive långsamma rätt och fortsatt fel på lättare innehåll. Nästa uppgift styrs faktiskt av beslutet. |
 | E4 Tolkningsbar lärarbild | Separera historik, aktuell prestation, aktivitet och hypoteser. Rätta nivåsnitt/okänt-noll och ge prestationssignaler innehålls-/svårighetskontext. Kontrollera lista, detalj och export för samma urval. | E2; slutverifiering med E3, P1 | S5/S6/S8/S9 visar konsekventa besked och försiktiga slutsatser. Lärare kan hitta underlag och välja uppföljning. |
 | E5 Innehåll och samlad kvalitetsgrind | Granska progression per domän, matematiskt facit, relevant variation, svarskrav och fallbackbeteende. Utöka befintliga kontraktskontroller och återspelningsfall; verifiera hela elev–lärarkedjan. | Börjar med motexempel i E1/E2, avslutas efter E3/E4; innehållsfel P0 | S1–S10 har daterat resultat och begränsningar. Tester/build samt relevanta browser-/iPad-flöden är kontrollerade. Ingen automatisk publicering. |
@@ -94,4 +94,15 @@ Historiska felaktiga masteryfakta får inte bara raderas eller omtolkas. E2 mås
 
 För varje etapp sparas: krav-ID → scenario → app-/regelversion → miljö → metod → faktiskt resultat → begränsning. Befintliga tester är kandidater att återanvända, inte redan godkända resultat för det nya kontraktet. Efter kodändringar krävs repoets test/build-kontroller; UI-flöden verifieras separat. Klasspasset använder [observationsmallen](PRODUCT_SCENARIOS.md) utan att framkalla fel eller samla nya personuppgifter.
 
-**Nästa avgränsade arbete: E2.** Första vertikala snittet är kompetensidentitet och evidensklass för vanlig aritmetik, dold decimalträning och tabellträning genom registrering, återläsning, mastery och lärarunderlag. Simon behöver bara avgöra nya pedagogiska avvägningar; modulplacering, spårbarhet och relevanta regressionsfall är implementationens ansvar. Publicering kräver separat begäran.
+**Nästa avgränsade arbete: fortsatt E2.** Nästa snitt för in träningsram och uppdragskontext i observationen, preciserar legacyklassificeringen och verifierar synkstatus genom båda lagringsvägarna. Simon behöver bara avgöra nya pedagogiska avvägningar; modulplacering, spårbarhet och relevanta regressionsfall är implementationens ansvar. Publicering kräver separat begäran.
+
+### E2 — lokalt verifierat första snitt 2026-09-20
+
+- Aritmetikuppgifter bär ett versionsmärkt evidence claim; sparade observationer bevarar innehållskompetens, evidenskompetens/-steg, evidensklass och stabilt observations-ID.
+- Dold decimalevidens överlever serialisering och räknas till `positions_decimal`, inte förälderns heltalsnivå.
+- Tabellträning, inklusive igenkännbar legacyform, är `practice_only` för generell multiplikationsmastery men finns kvar för tabellernas egna analyser.
+- Masteryöversikt och lärartavlor använder samma evidenssteg. Läsning av översikter skapar inte längre masteryfakta; nya fakta skapas i svarspipelinen med regelversion och observationsreferenser.
+- Constraint-fallback från aritmetikgeneratorn märks `invalid` som kunskapsevidens. Visningsstopp/ny kandidat enligt guardian-kontraktet återstår.
+- Elevhändelse-API:t validerar de nya evidensfälten, deduplicerar stabilt observations-ID när det finns och bevarar masteryfaktats regelversion/referenser.
+
+Verifiering: `npm run test` passerade 59 testfiler/275 tester och `npm run lint` passerade. `npm run build` passerade med varningar om åtta månader gammal browserslist-data och en bundle över 700 kB. Ingen browser-, iPad-, live- eller produktionsverifiering är gjord.

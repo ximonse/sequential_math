@@ -3,7 +3,7 @@
  * ALLA vyer (elev, lärare, adaptiv motor) använder dessa funktioner.
  * Ändra HÄR — inte i enskilda vyer.
  */
-import { getSpeedTime, resolveProblemOperation } from './mathUtils.js'
+import { getSpeedTime } from './mathUtils.js'
 import {
   getStockholmDayStart,
   getStockholmDaysAgoStart,
@@ -12,6 +12,7 @@ import {
 } from './teacherEvidencePeriods.js'
 import { getOperationMinLevel } from './operations.js'
 import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './operations.js'
+import { isMasteryEligible, readEvidenceClaim } from './evidenceContract.js'
 
 export const MASTERY_WINDOW = 15
 
@@ -20,22 +21,7 @@ function countsAsMastery(problem) {
 }
 
 function getRecordedProblemLevel(problem) {
-  const evidenceLevel = Number(problem?.evidenceLevel ?? problem?.metadata?.evidenceLevel)
-  if (Number.isFinite(evidenceLevel) && evidenceLevel >= 1) {
-    return Math.round(evidenceLevel)
-  }
-
-  const conceptualLevel = Number(problem?.difficulty?.conceptual_level)
-  if (Number.isFinite(conceptualLevel) && conceptualLevel >= 1) {
-    return Math.round(conceptualLevel)
-  }
-
-  const explicitLevel = Number(problem?.level)
-  if (Number.isFinite(explicitLevel) && explicitLevel >= 1) {
-    return Math.round(explicitLevel)
-  }
-
-  return null
+  return readEvidenceClaim(problem).level
 }
 
 /**
@@ -106,7 +92,8 @@ function getLatestTimestamp(list) {
 export function groupProblemsByOperationLevel(problems) {
   const buckets = new Map()
   for (const problem of problems) {
-    const operation = resolveProblemOperation(problem, { allowUnknownPrefix: false })
+    if (!isMasteryEligible(problem)) continue
+    const operation = readEvidenceClaim(problem).skill
     const level = getRecordedProblemLevel(problem)
     if (!Number.isFinite(level) || level < 1) continue
     if (level > 12) continue
@@ -149,10 +136,6 @@ export function computeMasteryOverview(problems, options = {}) {
       if (!mastery[entry.operation]) mastery[entry.operation] = []
       if (!mastery[entry.operation].includes(entry.level)) {
         mastery[entry.operation].push(entry.level)
-        // Skriv retroaktivt till facts om profil finns
-        if (profile) {
-          recordMasteryAchievement(profile, entry.operation, entry.level, result)
-        }
       }
     }
   }
@@ -193,7 +176,8 @@ export function computeLowestUnmasteredLevel(problems, operation, options = {}) 
  */
 export function computeOperationLevelMasteryStatus(problems, operation, level, options = {}) {
   const filtered = problems.filter(item => {
-    const itemOp = resolveProblemOperation(item, { allowUnknownPrefix: false })
+    if (!isMasteryEligible(item)) return false
+    const itemOp = readEvidenceClaim(item).skill
     const itemLevel = getRecordedProblemLevel(item) || 0
     return itemOp === operation && itemLevel === level
   })
@@ -242,10 +226,6 @@ export function computeEffectiveLevels(problems, operationKeys, levelRange, opti
       if (!mastery.isMastered) break
       result[op] = level
 
-      // Skriv retroaktivt till facts
-      if (profile) {
-        recordMasteryAchievement(profile, op, level, mastery)
-      }
     }
   }
 
@@ -269,9 +249,10 @@ export function computeOperationMasteryBoards(problems, operationKeys, levelRang
   )
 
   for (const problem of problems) {
-    const operation = resolveProblemOperation(problem, { allowUnknownPrefix: false })
+    if (!isMasteryEligible(problem)) continue
+    const operation = readEvidenceClaim(problem).skill
     if (!lists[operation]) continue
-    const level = Math.round(Number(problem?.difficulty?.conceptual_level || 0))
+    const level = getRecordedProblemLevel(problem)
     if (!Number.isInteger(level) || level < 1 || level > 12) continue
 
     const correct = countsAsMastery(problem)
@@ -323,7 +304,7 @@ function getStartOfWeekTimestamp(timestamp = Date.now()) {
  * Registrera ett mastery-faktum i profilen.
  * Append-only — idempotent baserat på id (operation:level:timestamp).
  */
-export function recordMasteryAchievement(profile, operation, level, window) {
+export function recordMasteryAchievement(profile, operation, level, window, options = {}) {
   if (!profile.masteryFacts || typeof profile.masteryFacts !== 'object') {
     profile.masteryFacts = { version: 1, facts: [], revokedIds: [] }
   }
@@ -338,9 +319,9 @@ export function recordMasteryAchievement(profile, operation, level, window) {
   const existingIdx = profile.masteryFacts.facts.findIndex(
     f => f.operation === operation && f.level === level
   )
-  if (existingIdx !== -1) return // redan registrerad
+  if (existingIdx !== -1) return null // redan registrerad
 
-  profile.masteryFacts.facts.push({
+  const fact = {
     id,
     operation,
     level,
@@ -350,8 +331,27 @@ export function recordMasteryAchievement(profile, operation, level, window) {
       correct: window.correct,
       rate: window.rate
     },
-    source: 'session'
-  })
+    source: String(options.source || 'session'),
+    ruleVersion: Math.max(1, Math.round(Number(options.ruleVersion) || 1)),
+    evidenceObservationIds: Array.isArray(options.evidenceObservationIds)
+      ? options.evidenceObservationIds.map(item => String(item || '').trim()).filter(Boolean)
+      : []
+  }
+  profile.masteryFacts.facts.push(fact)
+  return fact
+}
+
+export function getMasteryEvidenceObservationIds(problems, operation, level, options = {}) {
+  const windowSize = options.windowSize ?? MASTERY_WINDOW
+  return problems
+    .filter(problem => {
+      if (!isMasteryEligible(problem)) return false
+      const claim = readEvidenceClaim(problem)
+      return claim.skill === operation && claim.level === level
+    })
+    .slice(-windowSize)
+    .map(problem => String(problem?.observationId || problem?.problemId || '').trim())
+    .filter(Boolean)
 }
 
 /**
@@ -423,7 +423,7 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
 
     if (ts < start7d) continue
 
-    const op = resolveProblemOperation(problem, { allowUnknownPrefix: false })
+    const op = readEvidenceClaim(problem).skill
     if (opBuckets[op]) {
       opBuckets[op].attempts += 1
       if (problem.correct) opBuckets[op].correct += 1

@@ -36,7 +36,7 @@ Det som redan är tydligt från målet — exempelvis att elevsvar och lärarund
 
 Produktkontrakt v1.0 är antaget och projektkonstitutionens ingång hänvisar till dess produktmässiga rangordning. Äldre överlappande dokument är ännu inte genomgående uppdaterade; motsägelser ska hanteras i kartläggningen, inte tolkas som undantag från kontraktet.
 
-Nästa leverans är en kartläggning av F1–F6: krav-ID → berörda flöden → kodägare → nuvarande avvikelse → verifiering → prioritet. Det är ett senare steg, inte färdigställt genom dessa dokument. De redan funna buggarna ska användas som konkreta motexempel; de ska inte definiera hela produktens mål.
+Kartläggningen av F1–F6 finns nu i [funktionsramverkets karta och genomförandeplan](PRODUCT_FRAMEWORK_MAP.md): krav-ID → berörda flöden → kodägare → nuvarande avvikelse → verifiering → prioritet. Den är statiskt kodgranskad, inte körverifierad eller implementerad. Nästa steg är att precisera underkontrakten före sammanhängande kodändringar. De redan funna buggarna används som konkreta motexempel; de definierar inte hela produktens mål.
 
 ## 4. Genomförd kontroll av detta dokumentpaket
 

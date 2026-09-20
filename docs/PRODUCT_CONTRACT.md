@@ -2,7 +2,7 @@
 
 Status: **antaget v1.0 av Simon, 2026-09-20**, efter granskning och beslut D1–D3.
 Detta är avsedd produktfunktion, inte verifierat nuläge. Inga appfunktioner ändras av dokumentet.
-Beslut och bakgrund: [granskningsunderlag](PRODUCT_CONTRACT_REVIEW.md). Observerbara exempel: [scenarier](PRODUCT_SCENARIOS.md).
+Beslut och bakgrund: [granskningsunderlag](PRODUCT_CONTRACT_REVIEW.md). Observerbara exempel: [scenarier](PRODUCT_SCENARIOS.md). Underordnade regler: [funktionskontrakt F1–F6](FUNCTION_CONTRACTS.md).
 
 ## 1. Syfte och framgång
 

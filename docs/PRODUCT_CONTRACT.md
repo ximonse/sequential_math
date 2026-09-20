@@ -1,8 +1,8 @@
 # Produktkontrakt — Sequential Math
 
-Status: **förslag v0.1, 2026-09-20; väntar på Simons granskning**.
+Status: **antaget v1.0 av Simon, 2026-09-20**, efter granskning och beslut D1–D3.
 Detta är avsedd produktfunktion, inte verifierat nuläge. Inga appfunktioner ändras av dokumentet.
-Öppna beslut: [granskningsunderlag](PRODUCT_CONTRACT_REVIEW.md). Observerbara exempel: [scenarier](PRODUCT_SCENARIOS.md).
+Beslut och bakgrund: [granskningsunderlag](PRODUCT_CONTRACT_REVIEW.md). Observerbara exempel: [scenarier](PRODUCT_SCENARIOS.md).
 
 ## 1. Syfte och framgång
 
@@ -24,7 +24,7 @@ Framgång bedöms genom meningsfulla elevförlopp och användbara lärarbeslut. 
 | P4 | Observation före tolkning | Elevens svar och uppgiftens sammanhang skiljs från systemets bedömning, felhypotes och rekommendation. En matchande felmodell är en hypotes, inte en säker förklaring. |
 | P5 | Gemensam betydelse i hela flödet | Elevvy, progression, lärarvy och export bygger på samma definitioner och identifierbara observationer. Sammanfattningar får skilja sig i detalj, inte i innebörd för samma urval. |
 | P6 | Anpassning ska synas i analysen | Rättprocent och svarstid tolkas med innehåll, svårighet, urval och period. Svårare uppgifter kan ge fler fel trots utvecklat kunnande. |
-| P7 | Begriplig kontroll | Elevens och lärarens val har definierade, synliga konsekvenser. Ett valt eller tilldelat fokus får inte tyst ersättas av ett annat. |
+| P7 | Begriplig kontroll | Val av fokus och lärarens ramar har definierade konsekvenser. Svårigheten anpassas automatiskt inom ramen, utan elevens godkännande av avancering. Ett valt eller tilldelat fokus får inte tyst ersättas av ett annat. |
 | P8 | Kontinuitet och tydlig osäkerhet | Svar får inte tyst tappas, dubbelräknas eller byta betydelse. Begränsad, gammal eller ännu inte tillgänglig information markeras innan den används för starka slutsatser. |
 | P9 | Användbar och skonsam träning | Inmatning, tempo, avbrott och tekniska fel får inte utan stöd tolkas som matematiska svårigheter. Snabbhet är inte ett generellt villkor för avancering. |
 
@@ -69,11 +69,17 @@ Detta är funktionellt ansvar, inte ett krav på synkrona nätverksanrop mellan 
 | F5 Kunskapsläge och kontinuitet | Samma innebörd efter registrering, återläsning och sammanställning; separerat historiskt kunnande och aktuellt behov. | Dubblera observationer, tyst omtolka historik eller dra slutsatser av saknat underlag. |
 | F6 Lärarunderlag | Innehåll, period, omfattning, sammanhang, signal och möjlig uppföljning. | Likställa låg aktivitet, låg snabbhet och låg matematisk förmåga. |
 
-Gränser mellan träningslägen ska anges i ett underkontrakt. Förslag D3: fri träning anpassas inom aktiverat innehåll; områdesfokus inom valt område; låst nivå respekteras; tabellövning och diagnostiska uppdrag har uttryckliga egna syften. Alla lägen omfattas av P3–P8. Tickets får inte automatiskt räknas som vanlig träning.
+### Antagna pedagogiska beslut
+
+- **D1 — Automatisk progression, bekräftelse i efterhand.** Appen anpassar svårigheten och tar eleven vidare när relevant underlag motiverar det, inom träningsramen. Eleven ska inte välja mellan att stanna och att gå upp i svårighet. Övergången ska inte föregås av ett budskap om att nästa uppgifter är svårare. Eleven kan gratuleras efter att ha belagt kunnandet för en nivå eller ett område; bekräftelsen ska avse just det innehållet och inte kräva ett val för fortsatt progression. Kriterierna för sådan bekräftelse preciseras i underkontrakt. Beslutet tar inte bort tillåtna fokusval, stöd eller paus och innebär inte ett generellt förbud mot nivåöversikter.
+- **D2 — Historik och aktuellt behov hålls isär.** Bevara vad tidigare underlag belagt och visa aktuellt repetitions-/stödbehov separat. Tidigare framsteg får inte hindra anpassning nedåt och skrivs inte över av den.
+- **D3 — Lärarens ram respekteras.** Appen lämnar inte tyst ett uttryckligen låst innehåll eller en låst nivå. Om eleven fastnar erbjuds tillgängligt stöd eller paus och läraren får en signal. Adaptiva uppdrag medger återhämtning inom angiven ram.
+
+Gränser mellan träningslägen ska preciseras i ett underkontrakt: fri träning anpassas inom aktiverat innehåll; områdesfokus inom valt område; låst nivå respekteras; tabellövning och diagnostiska uppdrag har uttryckliga egna syften. Alla lägen omfattas av P3–P8. Tickets får inte automatiskt räknas som vanlig träning.
 
 ## 5. Kontrakt för underkontrakten
 
-Efter fastställande föreslås följande produktmässiga rangordning:
+Följande produktmässiga rangordning gäller:
 
 1. Detta kontrakts mål och principer.
 2. Uttryckligen antagna pedagogiska beslut som preciserar kontraktet.
@@ -100,6 +106,6 @@ Ett godkänt dokument bevisar inte funktion. Ett godkänt test bevisar bara det 
 
 En föreslagen ”guardian” består av flera kontroller: kontraktskontroll vid körning, oberoende innehållskontroller, återspelbara elevförlopp före publicering och observation av verklig användning. Den får inte själv uppfinna pedagogiska regler. Vid ett kontraktsbrott ska felaktig uppgift eller osäkert underlag inte tyst användas som giltig kunskapsevidens; exakt återhämtning och kommunikation specificeras i underkontrakt.
 
-## 7. Avgränsning av detta förslag
+## 7. Avgränsning
 
-Förslaget väljer inte nya trösklar, nya ämnen, ett nytt ramverk, en ny databas eller en ny elevmeny. Det implementerar inte en guardian och certifierar inte nuvarande app. Nästa steg efter granskning är att kartlägga funktionerna mot kontraktet och därefter planera sammanhängande implementation och verifiering.
+Kontraktet väljer inte nya trösklar, nya ämnen, ett nytt tekniskt ramverk, en ny databas eller en ny elevmeny. Det implementerar inte en guardian och certifierar inte nuvarande app. Nästa steg är att kartlägga funktionerna mot kontraktet och därefter planera sammanhängande implementation och verifiering.

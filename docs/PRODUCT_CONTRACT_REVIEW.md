@@ -1,11 +1,11 @@
 # Granskningsunderlag för produktkontraktet
 
-Status: **utkast 2026-09-20**. Hör till [produktkontrakt v0.1](PRODUCT_CONTRACT.md).
+Status: **beslutsunderlag till antaget produktkontrakt v1.0, 2026-09-20**. Se [produktkontraktet](PRODUCT_CONTRACT.md).
 Underlag: Simons mål i denna arbetsdialog, befintliga dokument nedan samt föregående kodgranskning av lokal commit `88ac8ce`. Dokumentjämförelsen är gjord nu; inga nya körtester eller klassobservationer ingår. Det är inte en fullständig kartläggning av kod eller publiceringsstatus.
 
 ## 1. Riktning att bevara
 
-Simon har i dialogen bekräftat att arbetet ska börja uppifrån: adaptiv, progressiv mängdträning och användbar läraranalys ska styra underordnade funktioner och buggfixar. Han har beställt förslag och scenarier före kodarbete. Det innebär inte att alla nya formuleringar eller avvägningar i v0.1 redan är antagna.
+Simon har i dialogen bekräftat att arbetet ska börja uppifrån: adaptiv, progressiv mängdträning och användbar läraranalys ska styra underordnade funktioner och buggfixar. Efter positiv granskning av förslaget har han godkänt D2/D3 och fastställt D1 med automatisk progression i stället för elevval. Detta är grunden för v1.0; det är inte ett godkännande av befintlig implementation.
 
 | Källa | Avsikt att bevara | Motsägelse, begränsning eller öppen fråga |
 | --- | --- | --- |
@@ -20,13 +20,13 @@ Simon har i dialogen bekräftat att arbetet ska börja uppifrån: adaptiv, progr
 | [Dataflöde](data-flow.md), [lärarlogik](LARARDASHBOARD_LOGIK.md) | Synlig kedja från svar till analys och tydliga tolkningsregler. | Dokumentens runtimepåståenden behöver senare jämföras med respektive faktisk väg; de är inte auktoritet för ny pedagogisk policy. |
 | [Tillförlitlighet](RELIABILITY_CONTRACTS.md), [verifieringsplan](RELIABILITY_PLAN.md), [rollscenarier](ROLE_PERSONA_ACCEPTANCE.md) | Kontinuitet, åtkomstgränser, verkliga användarflöden och uttalade verifieringsgränser. | Teknisk tillförlitlighet och matematisk/pedagogisk riktighet kräver olika bevis. Äldre verifieringar överförs inte automatiskt till nya versioner. |
 
-## 2. Tre beslut för Simon
+## 2. Beslut fattade av Simon 2026-09-20
 
-Rekommendationerna nedan är öppna för ändring. Ingen genomförs i appen i detta steg.
+Den auktoritativa regeltexten för D1–D3 finns i produktkontraktets avsnitt 4. Här bevaras beslutens bakgrund. Ingen genomförs i appen i detta steg.
 
-| ID | Avvägning | Rekommenderat förslag | Alternativ och konsekvens |
+| ID | Avvägning | Antagen riktning | Bakgrund / bortvalt alternativ |
 | --- | --- | --- | --- |
-| D1 | Automatisk anpassning kontra elevens val | Appen anpassar uppgifterna inom aktuellt steg; när underlaget talar för att gå vidare till ett nytt steg får eleven ett begripligt val att gå vidare eller befästa mer. Valet ska påverka urvalet. Exakt skillnad mellan utmaningsuppgift och stegbyte preciseras före kod. | Helt automatisk avancering ger färre avbrott men mindre uttrycklig kontroll. Ett ja före varje svårare uppgift ger mer kontroll men stör mängdträningen. |
+| D1 | Automatisk anpassning kontra elevens val | Automatisk progression utan val att stanna/gå vidare eller förhandsbudskap om ökad svårighet. Bekräftelse kan ges efter belagt kunnande för en nivå eller ett område. | Ersätter utkastets förslag om elevval. Simons pedagogiska motiv är att självbild och förväntan om svårighet kan bli en mental spärr. Detta är beslutets motiv, inte en här verifierad generell effekt. |
 | D2 | Historiska framsteg kontra aktuella svårigheter | Bevara vad som tidigare belagts och visa aktuellt repetitions-/stödbehov separat. Historiska framsteg hindrar inte anpassning nedåt. | En enda nivå som höjs/sänks är enklare men blandar historiskt kunnande med dagsform och aktuellt behov. |
 | D3 | Lärarens låsning kontra adaptiv återhämtning | Respektera ett uttryckligen låst innehåll/nivå. Om eleven fastnar erbjuds tillgängligt stöd eller paus och läraren får en signal; appen byter inte tyst uppdrag. I adaptiva uppdrag tillåts återhämtning inom angiven ram. | Automatiskt gå utanför ramen kan ge lättare träning men förändrar lärarens uppdrag och gör dess resultat svårare att tolka. |
 
@@ -34,13 +34,13 @@ Det som redan är tydligt från målet — exempelvis att elevsvar och lärarund
 
 ## 3. Godkännande och nästa arbete
 
-Vid granskning avgör Simon om M1/M2 uttrycker rätt löfte, om P1–P9 är rätt vägledning och hur D1–D3 ska avgöras. Därefter kan v0.1 revideras och uttryckligen antas, med datum. Först då ändras dokumentens produktmässiga rangordning och äldre överlappande riktlinjer märks som ersatta eller hänvisande.
+Produktkontrakt v1.0 är antaget och projektkonstitutionens ingång hänvisar till dess produktmässiga rangordning. Äldre överlappande dokument är ännu inte genomgående uppdaterade; motsägelser ska hanteras i kartläggningen, inte tolkas som undantag från kontraktet.
 
 Nästa leverans är en kartläggning av F1–F6: krav-ID → berörda flöden → kodägare → nuvarande avvikelse → verifiering → prioritet. Det är ett senare steg, inte färdigställt genom dessa dokument. De redan funna buggarna ska användas som konkreta motexempel; de ska inte definiera hela produktens mål.
 
 ## 4. Genomförd kontroll av detta dokumentpaket
 
 - Produktens syfte, tekniska förslag och aktuell verifieringsstatus är åtskilda.
-- Alla föreslagna principer används i minst ett scenario; varje scenario berör både elev och lärare.
+- Alla principer används i minst ett scenario; varje scenario berör både elev och lärare.
 - Klassobservation är en separat evidenskälla med tom observationsmall, inte påhittat utfall.
 - Inga nya appfunktioner, tester, datamigreringar eller produktionsåtgärder ingår.

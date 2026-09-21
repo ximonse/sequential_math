@@ -84,6 +84,10 @@ Innehållskompetens beskriver var uppgiften hör hemma. Evidenskompetens beskriv
 
 F3 ska säkerställa att uppgiften är besvarbar, att facit och accepterade svarsformer är matematiskt riktiga och att faktisk uppgift motsvarar etiketten. En fallback får inte generera innehåll från ett annat steg och behålla den begärda nivåetiketten. Variation ska bedömas i matematiskt innehåll, representation, tal och nödvändig strategi; olika frågetext ensam räcker inte.
 
+Varje domän äger en `verifyContent(problem)` som räknar facit från uppgiftens strukturerade innehåll eller uttryck utan att läsa generatorns facit som källa. Körningsguardian kräver att kontrollen passerar före visning. Ett felaktigt facit leder till ny kandidat inom den begränsade retry-policyn och därefter kontrollerat sessionsfel, aldrig till kunskapsevidens.
+
+Importerade NCM-uppgifter har en explicit kontrollklass. Uttryck med strukturerade operander räknas om oberoende. Textuppgifter som inte kan räknas om maskinellt måste i stället matcha en fryst högkonfidensrad med uppgiftskod, nummer, prompt, facit och källproveniens från både diagnos och facit; de märks `external_facit` och får inte beskrivas som oberoende matematiskt verifierade.
+
 ## 5. F4 — observation och bedömning
 
 Ett svar ska bli en oföränderlig `Observation` med ett stabilt `observationId`. Minsta betydelse är:

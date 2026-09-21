@@ -2,6 +2,7 @@ import { generateFractionsProblem } from './generate'
 import { evaluateFractionsProblem } from './evaluate'
 import { analyzeFractionsError } from './analyzeError'
 import FractionsDisplay from './FractionsDisplay'
+import { verifyFractionsContent } from './verifyContent.js'
 
 const fractionsDomain = {
   id: 'fractions',
@@ -15,6 +16,9 @@ const fractionsDomain = {
   Display: FractionsDisplay,
   evaluate(problem, studentAnswer) {
     return evaluateFractionsProblem(problem, studentAnswer)
+  },
+  verifyContent(problem) {
+    return verifyFractionsContent(problem)
   },
   analyzeError(problem, studentAnswer) {
     return analyzeFractionsError(problem, studentAnswer)

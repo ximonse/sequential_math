@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { generateAlgebraProblem } from './algebra/generate'
 import { generateFractionsProblem } from './fractions/generate'
 import { generatePercentageProblem } from './percentage/generate'
+import { createProblemForSelection } from '../engine/adaptiveEngine'
+import { listDomains } from './registry'
 
 function collectPrompts(count, factory) {
   const prompts = []
@@ -11,15 +13,40 @@ function collectPrompts(count, factory) {
   return prompts
 }
 
+function minimumUniquePrompts(domainId, skillId, level) {
+  if (skillId === 'algebra_simplify' && level === 1) return 3
+  if (domainId === 'arithmetic'
+    && ['multiplication', 'division'].includes(skillId)
+    && level === 1) return 6
+  return 8
+}
+
 describe('domain generators variety', () => {
+  it('meets a minimum prompt-variety floor for every registered skill level', () => {
+    const failures = []
+    for (const domain of listDomains()) {
+      for (const skill of domain.skills) {
+        const [min, max] = skill.levels
+        for (let level = min; level <= max; level += 1) {
+          const prompts = collectPrompts(24, () => createProblemForSelection({
+            domain: domain.id,
+            skill: skill.id,
+            level
+          }))
+          const minimumUnique = minimumUniquePrompts(domain.id, skill.id, level)
+          const unique = new Set(prompts).size
+          if (unique < minimumUnique) {
+            failures.push({ domain: domain.id, skill: skill.id, level, unique, minimumUnique })
+          }
+        }
+      }
+    }
+    expect(failures).toEqual([])
+  })
+
   it('algebra evaluate level 5 produces multiple prompt variants', () => {
     const prompts = collectPrompts(24, () => generateAlgebraProblem('algebra_evaluate', 5))
     expect(new Set(prompts).size).toBeGreaterThan(8)
-  })
-
-  it('fractions level 11 rotates across many predefined cases', () => {
-    const prompts = collectPrompts(10, () => generateFractionsProblem('fractions', 11))
-    expect(new Set(prompts).size).toBe(10)
   })
 
   it('fractions level 3 is a dedicated simplify-focus level', () => {

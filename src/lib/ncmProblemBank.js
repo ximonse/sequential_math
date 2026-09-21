@@ -170,6 +170,9 @@ export function generateNcmProblemFromEntry(entry, options = {}) {
   const estimatedTime = Number.isFinite(Number(picked.estimatedTimeSec))
     ? Number(picked.estimatedTimeSec)
     : estimatePromptTimeSec(picked.questionText)
+  const contentVerificationMode = Number.isFinite(computeStructuredAnswer(picked))
+    ? 'independent_expression'
+    : 'external_facit'
 
   return {
     id: `ncm_${picked.ncmCode}_${picked.itemNo}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -200,6 +203,11 @@ export function generateNcmProblemFromEntry(entry, options = {}) {
       ncmDomainTag: picked.domainTag,
       ncmOperationTag: picked.operationTag,
       ncmAbilityTags: picked.abilityTags,
+      contentVerificationMode,
+      answerSource: picked.answerSource,
+      extractionConfidence: picked.extractionConfidence,
+      sourceDiagnosPdf: picked.sourceDiagnosPdf,
+      sourceFacitPdf: picked.sourceFacitPdf,
       targetLevel: conceptualLevel,
       selectionReason: 'ncm_assignment'
     },
@@ -237,8 +245,55 @@ function toBankEntry(raw) {
     magnitude,
     level,
     estimatedTimeSec,
-    skillTag: `ncm_${ncmCode.toLowerCase()}_item_${Number(raw?.item_no || 0) || 0}`
+    skillTag: `ncm_${ncmCode.toLowerCase()}_item_${Number(raw?.item_no || 0) || 0}`,
+    answerSource: String(raw?.answer_source || '').trim(),
+    extractionConfidence: String(raw?.extraction_confidence || '').trim(),
+    sourceDiagnosPdf: String(raw?.source_diagnos_pdf || '').trim(),
+    sourceFacitPdf: String(raw?.source_facit_pdf || '').trim()
   }
+}
+
+export function verifyNcmSourceContent(problem) {
+  const code = normalizeNcmCode(problem?.metadata?.ncmCode)
+  const itemNo = Number(problem?.metadata?.ncmItemNo)
+  const source = NCM_SAFE_PROBLEM_BANK.find(item => item.ncmCode === code && item.itemNo === itemNo)
+  const actualAnswer = Number(problem?.answer?.correct ?? problem?.answer?.value ?? problem?.result)
+  const promptText = String(problem?.metadata?.promptText || '').trim()
+  const independentlyComputed = computeStructuredAnswer(source)
+  const expectedMode = Number.isFinite(independentlyComputed)
+    ? 'independent_expression'
+    : 'external_facit'
+  const valid = Boolean(source)
+    && source.extractionConfidence === 'high'
+    && Boolean(source.answerSource)
+    && Boolean(source.sourceDiagnosPdf)
+    && Boolean(source.sourceFacitPdf)
+    && problem?.metadata?.contentVerificationMode === expectedMode
+    && problem?.metadata?.answerSource === source.answerSource
+    && problem?.metadata?.extractionConfidence === source.extractionConfidence
+    && problem?.metadata?.sourceDiagnosPdf === source.sourceDiagnosPdf
+    && problem?.metadata?.sourceFacitPdf === source.sourceFacitPdf
+    && promptText === source.questionText
+    && Number.isFinite(actualAnswer)
+    && Math.abs(actualAnswer - source.expectedAnswer) < 1e-9
+    && (!Number.isFinite(independentlyComputed) || Math.abs(actualAnswer - independentlyComputed) < 1e-9)
+
+  return {
+    valid,
+    mode: expectedMode,
+    reason: valid ? '' : `NCM source claim failed for ${code || 'unknown'} item ${itemNo || '?'}`
+  }
+}
+
+function computeStructuredAnswer(entry) {
+  const a = Number(entry?.values?.a)
+  const b = Number(entry?.values?.b)
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return Number.NaN
+  if (entry.type === 'addition') return a + b
+  if (entry.type === 'subtraction') return a - b
+  if (entry.type === 'multiplication') return a * b
+  if (entry.type === 'division' && b !== 0) return a / b
+  return Number.NaN
 }
 
 function normalizeTag(value) {

@@ -39,65 +39,83 @@ function percentagePrompt(level, operation, value) {
   return rotatePick(`percentage:phrasing:${level}`, list)
 }
 
-function makeTemplate(text, answer, templateId) {
-  return { text, answer, templateId }
+function makeTemplate(text, answer, templateId, content) {
+  return { text, answer, templateId, content }
 }
 
 const TEMPLATES = [
   // Level 1: p% av 100
   () => {
     const p = Number(rotatePick('percentage:l1:p', [5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90]))
-    return makeTemplate(percentagePrompt('percent_of', p, 100), p, 'pct_l1_percent_of_100')
+    return makeTemplate(percentagePrompt('percent_of', p, 100), p, 'pct_l1_percent_of_100', {
+      kind: 'percent_of', percentage: p, base: 100
+    })
   },
 
   // Level 2: 50% av X
   () => {
     const x = 2 * rand(12, 120)
-    return makeTemplate(percentagePrompt('percent_of', 50, x), x / 2, 'pct_l2_half')
+    return makeTemplate(percentagePrompt('percent_of', 50, x), x / 2, 'pct_l2_half', {
+      kind: 'percent_of', percentage: 50, base: x
+    })
   },
 
   // Level 3: 10% av X
   () => {
     const x = 10 * rand(8, 80)
-    return makeTemplate(percentagePrompt('percent_of', 10, x), x / 10, 'pct_l3_tenth')
+    return makeTemplate(percentagePrompt('percent_of', 10, x), x / 10, 'pct_l3_tenth', {
+      kind: 'percent_of', percentage: 10, base: x
+    })
   },
 
   // Level 4: 25% av X
   () => {
     const x = 4 * rand(12, 90)
-    return makeTemplate(percentagePrompt('percent_of', 25, x), x / 4, 'pct_l4_quarter')
+    return makeTemplate(percentagePrompt('percent_of', 25, x), x / 4, 'pct_l4_quarter', {
+      kind: 'percent_of', percentage: 25, base: x
+    })
   },
 
   // Level 5: 75% av X
   () => {
     const x = 4 * rand(12, 90)
-    return makeTemplate(percentagePrompt('percent_of', 75, x), (3 * x) / 4, 'pct_l5_three_quarters')
+    return makeTemplate(percentagePrompt('percent_of', 75, x), (3 * x) / 4, 'pct_l5_three_quarters', {
+      kind: 'percent_of', percentage: 75, base: x
+    })
   },
 
   // Level 6: 20% av X
   () => {
     const x = 5 * rand(10, 100)
-    return makeTemplate(percentagePrompt('percent_of', 20, x), x / 5, 'pct_l6_one_fifth')
+    return makeTemplate(percentagePrompt('percent_of', 20, x), x / 5, 'pct_l6_one_fifth', {
+      kind: 'percent_of', percentage: 20, base: x
+    })
   },
 
   // Level 7: 5% av X
   () => {
     const x = 20 * rand(6, 40)
-    return makeTemplate(percentagePrompt('percent_of', 5, x), x / 20, 'pct_l7_five_percent')
+    return makeTemplate(percentagePrompt('percent_of', 5, x), x / 20, 'pct_l7_five_percent', {
+      kind: 'percent_of', percentage: 5, base: x
+    })
   },
 
   // Level 8: p% av X (enkla procentsatser)
   () => {
     const p = Number(rotatePick('percentage:l8:p', [10, 20, 25, 40, 50]))
     const x = (100 / p) * rand(3, 35)
-    return makeTemplate(percentagePrompt('percent_of', p, x), (p * x) / 100, 'pct_l8_simple_mix')
+    return makeTemplate(percentagePrompt('percent_of', p, x), (p * x) / 100, 'pct_l8_simple_mix', {
+      kind: 'percent_of', percentage: p, base: x
+    })
   },
 
   // Level 9: p% av X (bredare mix)
   () => {
     const p = Number(rotatePick('percentage:l9:p', [5, 10, 12.5, 20, 25, 40, 50, 75]))
     const x = (100 / p) * rand(4, 45)
-    return makeTemplate(percentagePrompt('percent_of', p, x), (p * x) / 100, 'pct_l9_wide_mix')
+    return makeTemplate(percentagePrompt('percent_of', p, x), (p * x) / 100, 'pct_l9_wide_mix', {
+      kind: 'percent_of', percentage: p, base: x
+    })
   },
 
   // Level 10: Rabatt
@@ -105,7 +123,9 @@ const TEMPLATES = [
     const p = Number(rotatePick('percentage:l10:p', [10, 15, 20, 25, 30, 40, 50]))
     const x = (100 / p) * rand(6, 45)
     const discount = (p * x) / 100
-    return makeTemplate(percentagePrompt('discount', p, x), x - discount, 'pct_l10_discount')
+    return makeTemplate(percentagePrompt('discount', p, x), x - discount, 'pct_l10_discount', {
+      kind: 'discount', percentage: p, base: x
+    })
   },
 
   // Level 11: Prisökning
@@ -113,7 +133,9 @@ const TEMPLATES = [
     const p = Number(rotatePick('percentage:l11:p', [5, 10, 12.5, 20, 25, 30, 40, 50]))
     const x = (100 / p) * rand(5, 30)
     const increase = (p * x) / 100
-    return makeTemplate(percentagePrompt('increase', p, x), x + increase, 'pct_l11_increase')
+    return makeTemplate(percentagePrompt('increase', p, x), x + increase, 'pct_l11_increase', {
+      kind: 'increase', percentage: p, base: x
+    })
   },
 
   // Level 12: Andel
@@ -121,7 +143,9 @@ const TEMPLATES = [
     const p = Number(rotatePick('percentage:l12:p', [10, 12.5, 20, 25, 40, 50, 60, 75, 80]))
     const y = (100 / p) * rand(2, 16)
     const x = (y * p) / 100
-    return makeTemplate(percentagePrompt('share', x, y), p, 'pct_l12_share')
+    return makeTemplate(percentagePrompt('share', x, y), p, 'pct_l12_share', {
+      kind: 'share', part: x, total: y
+    })
   }
 ]
 
@@ -136,7 +160,7 @@ export function generatePercentageProblem(skill, level) {
     level: idx + 1,
     difficulty: { conceptual_level: idx + 1 },
     display: { type: 'expression', text: tpl.text },
-    values: { text: tpl.text },
+    values: { text: tpl.text, ...tpl.content },
     answer: { type: 'number', correct: tpl.answer },
     result: tpl.answer,
     metadata: {

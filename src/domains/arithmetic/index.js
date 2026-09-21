@@ -1,6 +1,7 @@
 import { generateArithmeticProblem, normalizeArithmeticLegacyProblem } from './generate'
 import { evaluateArithmeticProblem } from './evaluate'
 import { analyzeArithmeticError } from './analyzeError'
+import { verifyArithmeticContent } from './verifyContent.js'
 
 const arithmeticDomain = {
   id: 'arithmetic',
@@ -17,6 +18,9 @@ const arithmeticDomain = {
   Display: null,
   evaluate(problem, studentAnswer) {
     return evaluateArithmeticProblem(problem, studentAnswer)
+  },
+  verifyContent(problem) {
+    return verifyArithmeticContent(problem)
   },
   analyzeError(problem, studentAnswer) {
     return analyzeArithmeticError(problem, studentAnswer)

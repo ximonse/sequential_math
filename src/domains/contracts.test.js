@@ -75,4 +75,57 @@ describe('domain contracts', () => {
     )
     expect(attempts).toBe(3)
   })
+
+  it('rejects an independently incorrect answer for every registered skill', () => {
+    for (const domain of listDomains()) {
+      for (const skill of domain.skills) {
+        const [min, max] = skill.levels
+        for (let level = min; level <= max; level += 1) {
+          const problem = domain.generate(skill.id, level)
+          const corrupted = structuredClone(problem)
+          if (corrupted.answer.type === 'fraction') {
+            corrupted.answer.num = Number(corrupted.answer.num) + 1
+          } else if (corrupted.answer.type === 'expression') {
+            corrupted.answer.correct = '0'
+          } else if (corrupted.answer.correct !== undefined) {
+            corrupted.answer.correct = Number(corrupted.answer.correct) + 1
+          } else {
+            corrupted.answer.value = Number(corrupted.answer.value) + 1
+          }
+
+          expect(() => generateWithProblemGuardian(
+            () => corrupted,
+            {
+              domain: domain.id,
+              skill: skill.id,
+              level,
+              verifyContent: domain.verifyContent
+            },
+            1
+          ), `${domain.id}/${skill.id}/${level}`).toThrow('independent answer check failed')
+        }
+      }
+    }
+  })
+
+  it('regenerates after an answer mismatch and returns the next valid candidate', () => {
+    const domain = listDomains().find(item => item.id === 'percentage')
+    const valid = domain.generate('percentage', 8)
+    const corrupted = structuredClone(valid)
+    corrupted.answer.correct = Number(corrupted.answer.correct) + 1
+    let attempts = 0
+
+    const problem = generateWithProblemGuardian(() => {
+      attempts += 1
+      return attempts === 1 ? corrupted : valid
+    }, {
+      domain: domain.id,
+      skill: 'percentage',
+      level: 8,
+      verifyContent: domain.verifyContent
+    })
+
+    expect(attempts).toBe(2)
+    expect(problem).toBe(valid)
+  })
 })

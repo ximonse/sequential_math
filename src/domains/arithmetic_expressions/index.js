@@ -1,6 +1,7 @@
 import { generateArithmeticExpressionsProblem } from './generate'
 import { evaluateArithmeticExpressionsProblem } from './evaluate'
 import { analyzeArithmeticExpressionsError } from './analyzeError'
+import { verifyArithmeticExpressionsContent } from './verifyContent.js'
 
 const arithmeticExpressionsDomain = {
   id: 'arithmetic_expressions',
@@ -13,6 +14,9 @@ const arithmeticExpressionsDomain = {
   },
   evaluate(problem, studentAnswer) {
     return evaluateArithmeticExpressionsProblem(problem, studentAnswer)
+  },
+  verifyContent(problem) {
+    return verifyArithmeticExpressionsContent(problem)
   },
   analyzeError(problem, studentAnswer) {
     return analyzeArithmeticExpressionsError(problem, studentAnswer)

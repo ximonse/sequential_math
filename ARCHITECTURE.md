@@ -17,8 +17,9 @@ Nuvarande domäner:
 ## Checklista: lägga till en ny domän
 
 ### 1. Domänfiler (`src/domains/<namn>/`)
-- [ ] `index.js` — exporterar `{ id, label, skills: [{ id, label }], generate, evaluate, analyzeError }`
+- [ ] `index.js` — exporterar `{ id, label, skills: [{ id, label }], generate, verifyContent, evaluate, analyzeError }`
 - [ ] `generate.js` — returnerar problem med **`difficulty: { conceptual_level: lvl }`** (obligatoriskt för progression)
+- [ ] `verifyContent.js` — räknar facit oberoende från generatorns `answer` och returnerar `{ valid, reason }`
 - [ ] `evaluate.js` — returnerar `{ correct, correctAnswer, isReasonable }` (**isReasonable obligatoriskt** för masterycheck)
 - [ ] `Display.jsx` (valfritt) — om frågan inte kan visas med standard `a op b`-format, använd `metadata.promptText` i generate
 

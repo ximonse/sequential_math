@@ -3,7 +3,8 @@ import {
   filterNcmProblems,
   generateNcmProblemFromFilter,
   getNcmAbilityOptions,
-  getNcmCodeOptions
+  getNcmCodeOptions,
+  verifyNcmSourceContent
 } from './ncmProblemBank'
 
 describe('ncmProblemBank', () => {
@@ -37,6 +38,16 @@ describe('ncmProblemBank', () => {
     expect(problem.result).toBeTypeOf('number')
     expect(String(problem.metadata?.promptText || '').length).toBeGreaterThan(0)
     expect(String(problem.metadata?.skillTag || '').includes('ncm_as1_item_')).toBe(true)
+    expect(verifyNcmSourceContent(problem)).toMatchObject({ valid: true, mode: 'independent_expression' })
+  })
+
+  it('rejects a prompt or answer that no longer matches the frozen source row', () => {
+    const problem = generateNcmProblemFromFilter({ codes: ['AS3'] })
+    expect(verifyNcmSourceContent({ ...problem, result: Number(problem.result) + 1 }).valid).toBe(false)
+    expect(verifyNcmSourceContent({
+      ...problem,
+      metadata: { ...problem.metadata, promptText: `${problem.metadata.promptText} ändrad` }
+    }).valid).toBe(false)
   })
 
   it('supports preferred skill selection', () => {

@@ -2,6 +2,7 @@ import { generateAlgebraProblem, normalizeAlgebraLegacyProblem } from './generat
 import { evaluateAlgebraProblem } from './evaluate'
 import { analyzeAlgebraError } from './analyzeError'
 import AlgebraDisplay from './AlgebraDisplay'
+import { verifyAlgebraContent } from './verifyContent.js'
 
 const algebraDomain = {
   id: 'algebra',
@@ -16,6 +17,9 @@ const algebraDomain = {
   Display: AlgebraDisplay,
   evaluate(problem, studentAnswer) {
     return evaluateAlgebraProblem(problem, studentAnswer)
+  },
+  verifyContent(problem) {
+    return verifyAlgebraContent(problem)
   },
   analyzeError(problem, studentAnswer) {
     return analyzeAlgebraError(problem, studentAnswer)

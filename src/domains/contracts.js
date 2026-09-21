@@ -22,6 +22,7 @@ export function assertDomainContract(domain) {
   invariant(String(domain.label || '').trim(), `${domain.id}.label is required`)
   invariant(Array.isArray(domain.skills) && domain.skills.length > 0, `${domain.id}.skills must not be empty`)
   invariant(typeof domain.generate === 'function', `${domain.id}.generate is required`)
+  invariant(typeof domain.verifyContent === 'function', `${domain.id}.verifyContent is required`)
   invariant(typeof domain.evaluate === 'function', `${domain.id}.evaluate is required`)
   invariant(typeof domain.analyzeError === 'function', `${domain.id}.analyzeError is required`)
 
@@ -88,6 +89,12 @@ export function assertDisplayableProblem(problem, expected = {}) {
   invariant(claim.class !== EVIDENCE_CLASSES.INVALID, 'problem evidence is invalid')
   invariant(claim.contentSkill === String(problem.skill || '').trim(), 'problem content skill and evidence claim disagree')
   invariant(Number(claim.contentLevel) === Number(problem.level), 'problem content level and evidence claim disagree')
+  if (expected.verifyContent !== undefined) {
+    invariant(typeof expected.verifyContent === 'function', 'problem content verifier must be a function')
+    const verification = expected.verifyContent(problem)
+    invariant(verification && typeof verification.valid === 'boolean', 'content verifier returned an invalid result')
+    invariant(verification.valid, `independent answer check failed: ${String(verification.reason || 'unknown reason')}`)
+  }
   return problem
 }
 

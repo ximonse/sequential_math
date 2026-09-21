@@ -11,6 +11,7 @@ import { getConsecutiveOperationErrors } from '../lib/difficultyAdapterProfileHe
 import { getLowestUnmasteredLevel } from '../lib/studentProfile'
 import { chooseHiddenDecimalEvidence } from './hiddenDecimalPolicy'
 import { buildAbsenceWarmupDecision } from '../lib/sessionStartDecision'
+import { verifyNcmSourceContent } from '../lib/ncmProblemBank'
 
 function inferSkillFromProblem(problem) {
   const explicitSkill = String(problem?.skill || '').trim()
@@ -48,14 +49,16 @@ export function selectNextSkillAndLevel(profile, options = {}) {
 function generateFromDomain(domain, skill, level, options) {
   return generateWithProblemGuardian(
     () => domain.generate(skill, level, options),
-    { domain: domain.id, skill, level }
+    { domain: domain.id, skill, level, verifyContent: domain.verifyContent }
   )
 }
 
 function generateFromLegacySelector(profile, options, expected = {}) {
+  const domain = getDomain(expected.domain || getDefaultDomainId())
+  const verifyContent = options?.ncmFilter ? verifyNcmSourceContent : domain?.verifyContent
   return generateWithProblemGuardian(
     () => normalizeProblemWithDomain(selectNextProblem(profile, options)),
-    expected
+    { ...expected, verifyContent }
   )
 }
 

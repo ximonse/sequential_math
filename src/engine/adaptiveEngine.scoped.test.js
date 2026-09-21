@@ -162,14 +162,19 @@ describe('adaptive engine scoped selection', () => {
     })
   })
 
-  it('keeps NCM assignments playable through the display guardian', () => {
-    const problem = selectNextProblemForProfile(profile(), {
-      ncmFilter: { codes: ['AS1'] }
-    })
+  it('keeps expression and word-based NCM assignments playable through the guardian', () => {
+    for (const code of ['AS1', 'AS3', 'RP5', 'SA2']) {
+      const problem = selectNextProblemForProfile(profile(), {
+        ncmFilter: { codes: [code] }
+      })
 
-    expect(problem.metadata.promptText).toBeTruthy()
-    expect(problem.answer.type).toBe('number')
-    expect(problem.metadata.evidenceClass).not.toBe('invalid')
+      expect(problem.metadata.promptText, code).toBeTruthy()
+      expect(problem.answer.type, code).toBe('number')
+      expect(problem.metadata.evidenceClass, code).not.toBe('invalid')
+      expect(problem.metadata.contentVerificationMode, code).toBe(
+        code === 'AS1' ? 'independent_expression' : 'external_facit'
+      )
+    }
   })
 })
 

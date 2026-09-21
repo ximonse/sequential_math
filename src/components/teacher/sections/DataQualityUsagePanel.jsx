@@ -39,6 +39,20 @@ export default function DataQualityUsagePanel({
             <p className="text-gray-500 text-xs">Datamismatch idag</p>
             <p className="font-semibold text-gray-800">{dataQualitySummary.answerMismatchStudents}</p>
           </div>
+          <div className="rounded border border-emerald-200 bg-emerald-50 px-3 py-2">
+            <p className="text-emerald-700 text-xs">Kontraktsmärkta svar</p>
+            <p className="font-semibold text-emerald-900">{dataQualitySummary.contractEvidence}</p>
+          </div>
+          <div className="rounded border border-sky-200 bg-sky-50 px-3 py-2">
+            <p className="text-sky-700 text-xs">Äldre klassificerade</p>
+            <p className="font-semibold text-sky-900">{dataQualitySummary.legacyClassifiedEvidence}</p>
+          </div>
+          <div className="rounded border border-amber-200 bg-amber-50 px-3 py-2 col-span-2">
+            <p className="text-amber-800 text-xs">Osäkra äldre svar</p>
+            <p className="font-semibold text-amber-950">
+              {dataQualitySummary.unknownEvidence} svar hos {dataQualitySummary.studentsWithUnknownEvidence} elever
+            </p>
+          </div>
         </div>
         <p className="text-xs text-gray-500 mt-3">
           Behöver extra koll: {dataQualitySummary.needsFollowUpNames.length > 0

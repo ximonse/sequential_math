@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest'
 import {
   EVIDENCE_CLASSES,
   attachEvidenceClaim,
+  classifyEvidenceRecord,
   isMasteryEligible,
-  readEvidenceClaim
+  readEvidenceClaim,
+  summarizeEvidenceHistory
 } from './evidenceContract'
 
 describe('evidence contract', () => {
@@ -61,5 +63,22 @@ describe('evidence contract', () => {
     expect(readEvidenceClaim({ problemId: 'legacy-unknown' }).class)
       .toBe(EVIDENCE_CLASSES.INVALID)
     expect(isMasteryEligible({ problemId: 'legacy-unknown' })).toBe(false)
+  })
+
+  it('separates contract evidence, classifiable legacy data and unknown history', () => {
+    const contract = attachEvidenceClaim({ skill: 'addition', level: 2 })
+    const legacy = { operation: 'subtraction', level: 2 }
+    const unknown = { problemId: 'legacy-unknown' }
+
+    expect(classifyEvidenceRecord(contract).provenance).toBe('contract')
+    expect(classifyEvidenceRecord(legacy).provenance).toBe('legacy_inferred')
+    expect(classifyEvidenceRecord(unknown).provenance).toBe('unknown')
+    expect(summarizeEvidenceHistory([contract, legacy, unknown])).toMatchObject({
+      total: 3,
+      contract: 1,
+      legacyClassified: 1,
+      unknown: 1,
+      masteryEligible: 2
+    })
   })
 })

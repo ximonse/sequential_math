@@ -93,6 +93,7 @@ export function createCloudSyncApi(deps) {
   } = deps
 
   const CLOUD_PROFILE_SYNC_STATE = new Map()
+  const SYNC_HEALTH_LISTENERS = new Set()
   const CLOUD_PROFILE_SYNC_STATUS = {
     lastAttemptAt: 0,
     lastSuccessAt: 0,
@@ -107,6 +108,12 @@ export function createCloudSyncApi(deps) {
 
   function setCloudProfilesSyncStatus(patch) {
     Object.assign(CLOUD_PROFILE_SYNC_STATUS, patch || {})
+  }
+
+  function notifySyncHealth() {
+    for (const listener of SYNC_HEALTH_LISTENERS) {
+      try { listener() } catch { /* UI listeners must not break persistence */ }
+    }
   }
 
   function getCloudProfilesSyncStatus() {
@@ -128,6 +135,9 @@ export function createCloudSyncApi(deps) {
     if (existing) return existing
     const created = {
       lastAttemptAt: 0,
+      lastSuccessAt: 0,
+      lastErrorAt: 0,
+      lastError: '',
       timer: null
     }
     CLOUD_PROFILE_SYNC_STATE.set(normalizedId, created)
@@ -373,6 +383,8 @@ export function createCloudSyncApi(deps) {
     if (state.inFlight) return state.inFlight
     clearCloudProfileSyncTimer(state)
     state.lastAttemptAt = Date.now()
+    state.lastError = ''
+    notifySyncHealth()
     state.inFlight = (async () => {
       await syncWalEntries(studentId)
       if (state.deleted) return true
@@ -384,7 +396,12 @@ export function createCloudSyncApi(deps) {
       if (state.deleted) return true
       const current = loadProfile(studentId) || loadPendingSnapshot(studentId)
       if (!current) { removePendingSync(studentId); return true }
-      if (!merged) return false
+      if (!merged) {
+        state.lastErrorAt = Date.now()
+        state.lastError = 'Svaret är sparat på enheten men väntar på servern.'
+        notifySyncHealth()
+        return false
+      }
       if (stableSerializeForCloudSync(current) !== fingerprint) {
         addPendingSync(studentId, current)
         return false
@@ -393,8 +410,20 @@ export function createCloudSyncApi(deps) {
       if (getUnsynced(studentId).length > 0) return false
       removePendingSync(studentId)
       cancelRetries(studentId)
+      state.lastSuccessAt = Date.now()
+      state.lastErrorAt = 0
+      state.lastError = ''
+      notifySyncHealth()
       return true
-    })().finally(() => { state.inFlight = null })
+    })().catch(error => {
+      state.lastErrorAt = Date.now()
+      state.lastError = String(error?.message || 'Synkningen kunde inte slutföras.')
+      notifySyncHealth()
+      throw error
+    }).finally(() => {
+      state.inFlight = null
+      notifySyncHealth()
+    })
     return state.inFlight
   }
 
@@ -404,6 +433,7 @@ export function createCloudSyncApi(deps) {
     const state = getCloudProfileSyncState(studentId)
     if (!state || state.deleted) return
     addPendingSync(studentId, profile)
+    notifySyncHealth()
     const run = async () => {
       try {
         if (!await syncQueuedStudent(studentId)) scheduleRetry(studentId, syncQueuedStudent)
@@ -456,13 +486,35 @@ export function createCloudSyncApi(deps) {
     }
   }
 
-  function getSyncHealth() {
+  function getSyncHealth(studentId = '') {
     const pendingIds = getPendingSyncIds()
+    const normalizedId = normalizeStudentId(studentId)
+    const state = normalizedId ? getCloudProfileSyncState(normalizedId) : null
+    const hasPending = normalizedId ? pendingIds.includes(normalizedId) : pendingIds.length > 0
     return {
-      hasPending: pendingIds.length > 0,
-      pendingCount: pendingIds.length,
-      pendingIds
+      state: !CLOUD_ENABLED
+        ? 'local_only'
+        : state?.inFlight
+          ? 'syncing'
+          : hasPending
+            ? 'pending'
+            : state?.lastSuccessAt > 0
+              ? 'synced'
+              : 'idle',
+      hasPending,
+      pendingCount: normalizedId ? (hasPending ? 1 : 0) : pendingIds.length,
+      pendingIds,
+      lastAttemptAt: Number(state?.lastAttemptAt || 0),
+      lastSuccessAt: Number(state?.lastSuccessAt || 0),
+      lastErrorAt: Number(state?.lastErrorAt || 0),
+      lastError: String(state?.lastError || '')
     }
+  }
+
+  function subscribeSyncHealth(listener) {
+    if (typeof listener !== 'function') return () => {}
+    SYNC_HEALTH_LISTENERS.add(listener)
+    return () => SYNC_HEALTH_LISTENERS.delete(listener)
   }
 
 
@@ -505,6 +557,7 @@ export function createCloudSyncApi(deps) {
     flushPendingSyncs,
     attemptBeforeUnloadSync,
     getSyncHealth,
+    subscribeSyncHealth,
     initCloudSyncListeners,
     destroyCloudSyncListeners
   }

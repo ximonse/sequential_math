@@ -62,6 +62,7 @@ function getTeacherPeriodEvidence(profile, periodKey, expectedPeriodStart) {
     inattentionErrors: Math.max(0, Number(period.inattentionErrors) || 0),
     historyComplete: summary?.evidence?.historyComplete === true,
     historySource: String(summary?.evidence?.historySource || 'recentProblems'),
+    evidenceClassification: summary?.evidence?.classification || null,
     summaryUpdatedAt: Number(summary?.updatedAt) || 0
   }
 }

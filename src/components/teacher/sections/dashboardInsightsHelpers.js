@@ -19,6 +19,10 @@ export function buildDataQualitySummary(rows) {
       withPresenceToday: 0,
       sessionGapStudents: 0,
       answerMismatchStudents: 0,
+      contractEvidence: 0,
+      legacyClassifiedEvidence: 0,
+      unknownEvidence: 0,
+      studentsWithUnknownEvidence: 0,
       needsFollowUpNames: [],
       overallQuality: 0
     }
@@ -33,6 +37,14 @@ export function buildDataQualitySummary(rows) {
   const answerMismatchStudents = list.filter(row => (
     Math.abs(Number(row.todayPracticeAnswersTelemetry || 0) - Number(row.todayAttempts || 0)) >= 4
   )).length
+  const evidenceTotals = list.reduce((totals, row) => {
+    const classification = row?.evidenceClassification || {}
+    totals.contractEvidence += Number(classification.contract || 0)
+    totals.legacyClassifiedEvidence += Number(classification.legacyClassified || 0)
+    totals.unknownEvidence += Number(classification.unknown || 0)
+    if (Number(classification.unknown || 0) > 0) totals.studentsWithUnknownEvidence += 1
+    return totals
+  }, { contractEvidence: 0, legacyClassifiedEvidence: 0, unknownEvidence: 0, studentsWithUnknownEvidence: 0 })
 
   const needsFollowUpNames = list
     .filter(row => (
@@ -55,6 +67,7 @@ export function buildDataQualitySummary(rows) {
     withPresenceToday,
     sessionGapStudents,
     answerMismatchStudents,
+    ...evidenceTotals,
     needsFollowUpNames,
     overallQuality
   }

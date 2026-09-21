@@ -65,6 +65,21 @@ describe('client persistence boundaries', () => {
     await api.requestCloudSync(local, { forceSync: true })
     expect(getUnsynced('TEST')).toHaveLength(1)
     expect(api.getSyncHealth().hasPending).toBe(true)
+    expect(api.getSyncHealth('TEST')).toMatchObject({ state: 'pending', pendingCount: 1 })
+  })
+
+  it('publishes a student-specific transition from pending to synced', async () => {
+    const states = []
+    const unsubscribe = api.subscribeSyncHealth(() => states.push(api.getSyncHealth('TEST').state))
+    vi.stubGlobal('fetch', vi.fn(async (_url, options) => response({ profile: JSON.parse(options.body).profile })))
+
+    await api.requestCloudSync(local, { forceSync: true })
+    unsubscribe()
+
+    expect(states).toContain('pending')
+    expect(states).toContain('syncing')
+    expect(states.at(-1)).toBe('synced')
+    expect(api.getSyncHealth('TEST')).toMatchObject({ state: 'synced', pendingCount: 0, lastError: '' })
   })
 
   it('uses server list contracts without combining stale local pupils or leaking them on failure', async () => {

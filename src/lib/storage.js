@@ -127,8 +127,12 @@ export function getCloudProfilesSyncStatus() {
   return getCloudSyncApi().getCloudProfilesSyncStatus()
 }
 
-export function getSyncHealth() {
-  return getCloudSyncApi().getSyncHealth()
+export function getSyncHealth(studentId = '') {
+  return getCloudSyncApi().getSyncHealth(studentId)
+}
+
+export function subscribeSyncHealth(listener) {
+  return getCloudSyncApi().subscribeSyncHealth(listener)
 }
 
 export function flushPendingSyncs() {

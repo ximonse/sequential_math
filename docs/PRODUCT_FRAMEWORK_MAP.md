@@ -1,6 +1,6 @@
 # Funktionsramverk — kartläggning och genomförandeplan
 
-Status: **kartläggning v0.4, 2026-09-20; E1 kontrakterat och två vertikala E2-snitt lokalt implementerade**.
+Status: **kartläggning v0.5, 2026-09-21; E1 kontrakterat och E2:s lokala evidenskedja implementerad**.
 Styrande riktning: [produktkontrakt v1.0](PRODUCT_CONTRACT.md), inklusive D1–D3.
 Acceptansfall: [S1–S10](PRODUCT_SCENARIOS.md).
 Funktionsregler: [funktionskontrakt F1–F6](FUNCTION_CONTRACTS.md).
@@ -61,7 +61,7 @@ I [masteryCalculation](../src/lib/masteryCalculation.js) använder grupperingen 
 
 ### A8 — Lagringsskydd och pedagogisk validering är olika saker
 
-[pilotStudentRuntime](../src/lib/pilotStudentRuntime.js) anropar lokal snapshot-/eventlagring före nätverk och kräver ack för skickad batch. [event-API:ts validEntry/applyWalEntry](../api/student/%5BstudentId%5D/events.js) kontrollerar bland annat ID/tid/rättboolean för svar och operation/nivå för mastery, men inte hela innehålls-/evidensrelationen. `handleSubmit` väntar på `persistEvent` men hanterar inte dess `{ ok: false }` i den granskade svarsvägen; återkoppling sätts tidigare. **Fortsatt kontroll:** precisera och verifiera lokalt sparat kontra serversynkat i gränssnittet. Inget påstående här om att den lokala kön tappar svaret eller att andra UI-vägar saknar status.
+[pilotStudentRuntime](../src/lib/pilotStudentRuntime.js) anropar lokal snapshot-/eventlagring före nätverk och kräver ack för skickad batch. [event-API:ts validEntry/applyWalEntry](../api/student/%5BstudentId%5D/events.js) validerar observationens identitet, evidensfält och träningsram. Elevvyn skiljer nu lokal lagring, väntande synk, pågående synk, serverbekräftelse och lokalt lagringsfel. Lärarvyn visar sin egen datakällestatus separat. Detta är komponent- och kontraktsverifierat; autentiserad browserkontroll återstår.
 
 ## 4. Genomförandeordning — sammanhängande leveranser
 
@@ -70,7 +70,7 @@ P0 = förutsättning för pålitlig evidens; P1 = nödvändig produktfunktion. D
 | Etapp | Leverans och gräns | Beroende / prioritet | Klart först när |
 | --- | --- | --- | --- |
 | E1 Gemensamma funktionskontrakt — **kontrakterat 2026-09-20** | F1–F6 har preciserats i ett sammanhängande underkontrakt med ägare för varje beslut, lägesmatris, evidensklasser och versionspolicy. Inga nya pedagogiska trösklar har valts. | Klart som dokumenterad baslinje; implementering mäts i E2–E5. | [Funktionskontraktet](FUNCTION_CONTRACTS.md) kopplar A1–A8 till ansvar och acceptansfall utan att påstå verifierad funktion. |
-| E2 Tillförlitlig evidenskedja — **pågår** | En representation av vad som tränats och observerats, med kompetens, nivå, läge, ID och regelversion. De två första snitten bevarar kompetensidentitet, klassar tabellträning separat, gör mastery-läsning bieffektsfri och låter träningsram/uppdragskontext följa observationen genom båda lagringsvägarna. | E1, P0 | Kvar: synkstatus i UI, samlad återspelning av S8/S9/S10 och kartläggning av äldre klassificerbar kontra osäker historik. |
+| E2 Tillförlitlig evidenskedja — **lokalt implementerad 2026-09-21** | En representation av vad som tränats och observerats, med kompetens, nivå, läge, ID och regelversion. Kompetensidentitet, evidensklass, träningsram och leveransstatus följer kedjan; äldre underlag delas i kontraktsmärkt, säkert klassificerbart och okänt. | E1, P0 | Kod-/kontraktsgrind passerad. Autentiserad browser-/iPad-kontroll och verkligt avbrottsnät återstår till E5:s samlade leveransgrind. |
 | E3 Ett adaptivt beslutsflöde | Skilj historiskt kunnande från aktuellt behov. Samla beslut om start, befästande, utmaning, återhämtning och stöd inom uppdragsram. Avveckla elevens ja/nej-avancering; låt eventuell gratulation följa belagt kunnande. | E2, P1 | S1–S4/S7 körs som långa återspelbara förlopp, inklusive långsamma rätt och fortsatt fel på lättare innehåll. Nästa uppgift styrs faktiskt av beslutet. |
 | E4 Tolkningsbar lärarbild | Separera historik, aktuell prestation, aktivitet och hypoteser. Rätta nivåsnitt/okänt-noll och ge prestationssignaler innehålls-/svårighetskontext. Kontrollera lista, detalj och export för samma urval. | E2; slutverifiering med E3, P1 | S5/S6/S8/S9 visar konsekventa besked och försiktiga slutsatser. Lärare kan hitta underlag och välja uppföljning. |
 | E5 Innehåll och samlad kvalitetsgrind | Granska progression per domän, matematiskt facit, relevant variation, svarskrav och fallbackbeteende. Utöka befintliga kontraktskontroller och återspelningsfall; verifiera hela elev–lärarkedjan. | Börjar med motexempel i E1/E2, avslutas efter E3/E4; innehållsfel P0 | S1–S10 har daterat resultat och begränsningar. Tester/build samt relevanta browser-/iPad-flöden är kontrollerade. Ingen automatisk publicering. |
@@ -94,7 +94,7 @@ Historiska felaktiga masteryfakta får inte bara raderas eller omtolkas. E2 mås
 
 För varje etapp sparas: krav-ID → scenario → app-/regelversion → miljö → metod → faktiskt resultat → begränsning. Befintliga tester är kandidater att återanvända, inte redan godkända resultat för det nya kontraktet. Efter kodändringar krävs repoets test/build-kontroller; UI-flöden verifieras separat. Klasspasset använder [observationsmallen](PRODUCT_SCENARIOS.md) utan att framkalla fel eller samla nya personuppgifter.
 
-**Nästa avgränsade arbete: slutför E2.** Nästa snitt gör leveransstatus synlig och tolkningsbar, återspelar S8/S9/S10 genom event- och helprofilvägen och redovisar vilken äldre historik som kan klassificeras respektive måste förbli osäker. Simon behöver bara avgöra nya pedagogiska avvägningar; modulplacering, spårbarhet och relevanta regressionsfall är implementationens ansvar. Publicering kräver separat begäran.
+**Nästa avgränsade arbete: E3:s gemensamma adaptiva beslut.** Börja med att ersätta elevens ja/nej-avancering med ett versionsmärkt beslut som automatiskt väljer nästa träningssteg inom F1-ramen och låter gratulationen följa redan belagt kunnande. Simon behöver bara avgöra nya pedagogiska avvägningar; modulplacering, spårbarhet och relevanta regressionsfall är implementationens ansvar. Publicering kräver separat begäran.
 
 ### E2 — lokalt verifierat första snitt 2026-09-20
 
@@ -114,3 +114,13 @@ För varje etapp sparas: krav-ID → scenario → app-/regelversion → miljö �
 - Ingen prioritet mellan konkurrerande uppdrag/URL-lägen ändrades i detta snitt; det beslutet hör till F1/E3.
 
 Verifiering: `npm run test` passerade 60 testfiler/287 tester och `npm run build` passerade med varningar om åtta månader gammal browserslist-data och en bundle över 700 kB. Avgränsad ESLint för alla ändrade kod- och testfiler passerade. Repoets fulla `npm run lint` är blockerad av 15 redan incheckade fel och 3 varningar i orelaterade filer; de är inte åtgärdade eller dolda i detta snitt. Ingen browser-, iPad-, live- eller produktionsverifiering är gjord.
+
+### E2 — lokalt verifierat tredje snitt 2026-09-21
+
+- Elevens status skiljer nu `local_only`, `pending`, `syncing`, `synced` och lokalt lagringsfel. Väntande nätverkssynk beskrivs uttryckligen som lokalt sparad, inte serverbekräftad.
+- Pilotens krypterade eventkö och den äldre helprofil-/WAL-vägen publicerar samma elevspecifika statusövergångar utan att synkfel stoppar fortsatt lokalt arbete.
+- Lärarens befintliga datakällepanel är inkopplad och hålls skild från elevens leveransstatus.
+- Lärarens datakvalitetsvy summerar kontraktsmärkt, säkert legacyklassificerat och okänt underlag. Okänt underlag blir inte masterybevis.
+- Ett återspelningstest kör samma observation genom event-API och helprofilmerge och jämför observations-ID, evidens, träningsram och lärarsammanfattning.
+
+Verifiering: `npm run test` passerade 64 testfiler/295 tester och `npm run build` passerade med oförändrade varningar om browserslist-data och stor bundle. Alla ändrade filer passerade avgränsad ESLint och komponenternas statusbudskap renderades i tester. Full `npm run lint` återstår blockerad av 7 äldre fel och 3 varningar i orelaterade filer. Localhost öppnades, men statusytorna är autentiserade och ingen testfixture finns; ingen riktig elev-/lärarinloggning, iPad-, live- eller produktionsverifiering gjordes.

@@ -5,11 +5,11 @@ import ClassManagementPanel from './ClassManagementPanel'
 import ClassFilterPanel from './ClassFilterPanel'
 import ClassMisconceptionHeatmap from './ClassMisconceptionHeatmap'
 import ClassMasteryLevelPanel from './ClassMasteryLevelPanel'
-import CollapsibleSection from './CollapsibleSection'
 import PauseGameHighscorePanel from './PauseGameHighscorePanel'
 import DifficultyAnalysisPanel from './DifficultyAnalysisPanel'
 import DataQualityUsagePanel from './DataQualityUsagePanel'
 import DashboardHeaderBar from './DashboardHeaderBar'
+import CloudSyncStatusPanel from './CloudSyncStatusPanel'
 import InactivityAndClassLevelPanel from './InactivityAndClassLevelPanel'
 import PasswordResetPanel from './PasswordResetPanel'
 import ResultsOverviewPanel from './ResultsOverviewPanel'
@@ -77,7 +77,6 @@ export default function DashboardLayout({
   classFilterOptions,
   clearClassFilter,
   handleToggleClassFilter,
-  classStats,
   dataQualitySummary,
   usageInsights,
   formatDuration,
@@ -196,19 +195,6 @@ export default function DashboardLayout({
       return defaults
     }
   })
-
-  const toggleCollapsed = id => setCollapsed(prev => {
-    const next = { ...prev, [id]: !prev[id] }
-    try {
-      localStorage.setItem(LS_COLLAPSED_KEY, JSON.stringify(next))
-    } catch (error) {
-      // This is only a convenience preference; do not crash the dashboard
-      // when browser storage is full.
-      if (error?.name !== 'QuotaExceededError') throw error
-    }
-    return next
-  })
-
 
   useEffect(() => {
     if (!isDirectStudentView) return
@@ -460,6 +446,14 @@ export default function DashboardLayout({
           cloudSyncStatus={cloudSyncStatus}
           isCloudRefreshBusy={isCloudRefreshBusy}
           onRefreshCloud={() => { void handleCloudRefreshNow() }}
+        />
+
+        <CloudSyncStatusPanel
+          cloudSyncStatus={cloudSyncStatus}
+          isCloudRefreshBusy={isCloudRefreshBusy}
+          onRefreshNow={() => { void handleCloudRefreshNow() }}
+          formatSyncTimestamp={formatSyncTimestamp}
+          getCloudSyncSourceLabel={getCloudSyncSourceLabel}
         />
 
         <div className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>

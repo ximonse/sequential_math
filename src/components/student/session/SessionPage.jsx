@@ -4,6 +4,7 @@ import ProblemView from '../ProblemView'
 import MathScratchpad from '../MathScratchpad'
 import FeedbackOverlay from '../FeedbackOverlay'
 import CurrentOperationMastery from './CurrentOperationMastery'
+import StudentSyncStatus from './StudentSyncStatus'
 
 function SessionPage({
   profileName,
@@ -31,7 +32,8 @@ function SessionPage({
   overallSuccessRate,
   currentOperationLabel,
   masteredHistorical,
-  masteredThisWeek
+  masteredThisWeek,
+  syncStatus
 }) {
   const showInlineScratchpad = Boolean(currentProblem) && !feedback
   const showScratchpadControl = Boolean(currentProblem)
@@ -45,6 +47,7 @@ function SessionPage({
           streak={streak}
           onExit={onExit}
         />
+        <StudentSyncStatus status={syncStatus} />
 
         <div className="py-4 sm:py-8">
           <SessionModeBanner

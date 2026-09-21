@@ -213,6 +213,7 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
     todaySuccessRate,
     todayEvidenceStatus: todayEvidence?.historyComplete ? 'complete' : 'limited',
     todayEvidenceSource: todayEvidence?.historySource || 'recentProblems',
+    evidenceClassification: todayEvidence?.evidenceClassification || null,
     todayDetailedAttempts: todayProblems.length,
     todayReasonableWrongCount: todayWrongReasonable,
     todayAvgAnswerLength,

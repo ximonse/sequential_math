@@ -7,6 +7,7 @@ import { buildSessionOverlayProps } from './session/sessionOverlayPropsBuilder'
 import { usePracticeSessionActions } from './session/usePracticeSessionActions'
 import { usePracticeSetupEffects } from './session/usePracticeSetupEffects'
 import { usePracticeUiEffects } from './session/usePracticeUiEffects'
+import { useStudentSyncStatus } from './session/useStudentSyncStatus'
 import {
   createAttentionTracker,
   DEFAULT_BREAK_MINUTES,
@@ -27,7 +28,7 @@ import {
 } from '../../lib/studentProfile'
 import { selectNextProblemForProfile } from '../../engine/adaptiveEngine'
 import { getOperationLabel } from '../../lib/operations'
-import { resolveProblemParentSkill, resolveProblemOperation } from '../../lib/mathUtils'
+import { resolveProblemParentSkill } from '../../lib/mathUtils'
 import {
   normalizeProgressionMode
 } from '../../lib/progressionModes'
@@ -99,6 +100,7 @@ function StudentSession() {
   }, [searchParams])
   const isTableDrill = tableSet.length > 0
   const isPilotStudent = Boolean(normalizePilotStudentId(studentId))
+  const syncStatus = useStudentSyncStatus(studentId, isPilotStudent)
   const isLevelFocusMode = !isTableDrill
     && mode
     && isKnownMode(mode)
@@ -353,6 +355,7 @@ function StudentSession() {
       currentOperationLabel={getOperationLabel(currentOperation)}
       masteredHistorical={masteredHistorical}
       masteredThisWeek={masteredThisWeek}
+      syncStatus={syncStatus}
     />
   )
 }

@@ -12,12 +12,12 @@ import {
 } from './teacherEvidencePeriods.js'
 import { getOperationMinLevel } from './operations.js'
 import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './operations.js'
-import { isMasteryEligible, readEvidenceClaim } from './evidenceContract.js'
+import { isMasteryEligible, readEvidenceClaim, summarizeEvidenceHistory } from './evidenceContract.js'
 
 export const MASTERY_WINDOW = 15
 
 function countsAsMastery(problem) {
-  return Boolean(problem?.correct) && !Boolean(problem?.isPartial)
+  return Boolean(problem?.correct) && !problem?.isPartial
 }
 
 function getRecordedProblemLevel(problem) {
@@ -237,7 +237,6 @@ export function computeEffectiveLevels(problems, operationKeys, levelRange, opti
  * Används i lärarvyn (elevdetalj, framsteg).
  */
 export function computeOperationMasteryBoards(problems, operationKeys, levelRange, options = {}) {
-  const DAY_MS = 24 * 60 * 60 * 1000
   const now = Date.now()
   const weekStart = getStartOfWeekTimestamp(now)
   const monthStart = getStockholmDaysAgoStart(now, 29)
@@ -396,7 +395,8 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
     historySource: usesFullLog ? 'problemLog' : 'recentProblems',
     historyComplete: usesFullLog && source.length < 5000
       && Number(profile?.stats?.lifetimeProblems || 0) <= source.length,
-    sourceAttempts: source.length
+    sourceAttempts: source.length,
+    classification: summarizeEvidenceHistory(source)
   }
 
   const effectiveLevels = computeEffectiveLevels(source, operationKeys, levelRange, { profile })

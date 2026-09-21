@@ -126,3 +126,45 @@ export function attachEvidenceClaim(problem, overrides = {}) {
 export function isMasteryEligible(problem) {
   return readEvidenceClaim(problem).class === EVIDENCE_CLASSES.MASTERY_ELIGIBLE
 }
+
+export function classifyEvidenceRecord(problem) {
+  const claim = readEvidenceClaim(problem)
+  const hasContractFields = Boolean(
+    problem?.metadata?.evidenceClaim
+    || problem?.evidenceClass
+    || problem?.evidenceSkill
+    || problem?.evidenceRuleVersion
+  )
+  return {
+    claim,
+    provenance: claim.class === EVIDENCE_CLASSES.INVALID
+      ? 'unknown'
+      : hasContractFields
+        ? 'contract'
+        : 'legacy_inferred'
+  }
+}
+
+export function summarizeEvidenceHistory(entries) {
+  const summary = {
+    total: 0,
+    contract: 0,
+    legacyClassified: 0,
+    unknown: 0,
+    masteryEligible: 0,
+    practiceOnly: 0,
+    diagnosticOnly: 0
+  }
+  for (const entry of (Array.isArray(entries) ? entries : [])) {
+    const { claim, provenance } = classifyEvidenceRecord(entry)
+    summary.total += 1
+    if (provenance === 'contract') summary.contract += 1
+    else if (provenance === 'legacy_inferred') summary.legacyClassified += 1
+    else summary.unknown += 1
+
+    if (claim.class === EVIDENCE_CLASSES.MASTERY_ELIGIBLE) summary.masteryEligible += 1
+    else if (claim.class === EVIDENCE_CLASSES.PRACTICE_ONLY) summary.practiceOnly += 1
+    else if (claim.class === EVIDENCE_CLASSES.DIAGNOSTIC_ONLY) summary.diagnosticOnly += 1
+  }
+  return summary
+}

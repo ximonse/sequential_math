@@ -62,4 +62,32 @@ describe('current training need', () => {
     })
     expect(need).toMatchObject({ purpose: 'recover', targetLevel: 3, frameId: 'assignment' })
   })
+
+  it('raises a teacher-only support need after four recovery observations', () => {
+    const profile = {
+      currentDifficulty: 3,
+      recentProblems: [],
+      problemLog: [],
+      adaptive: { skillStates: {}, recentSelections: [] }
+    }
+
+    let need = null
+    for (let index = 1; index <= 6; index += 1) {
+      need = update(profile, observation(index, false))
+    }
+    expect(need).toMatchObject({
+      purpose: 'support',
+      targetLevel: 2,
+      reasonCodes: ['recovery_not_yet_sufficient', 'teacher_signal_required']
+    })
+    expect(need.evidenceObservationIds).toEqual([
+      'answer-1', 'answer-2', 'answer-3', 'answer-4', 'answer-5', 'answer-6'
+    ])
+
+    expect(update(profile, observation(7, true, 2)).purpose).toBe('support')
+    expect(update(profile, observation(8, true, 2))).toMatchObject({
+      purpose: 'consolidate',
+      targetLevel: 3
+    })
+  })
 })

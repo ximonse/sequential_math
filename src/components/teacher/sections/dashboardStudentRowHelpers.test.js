@@ -75,4 +75,64 @@ describe('teacher dashboard weekly evidence', () => {
     expect(row.weekEvidenceSource).toBe('recentProblems')
     expect(row.evidenceLabel).toContain('begränsad historik')
   })
+
+  it('shows a teacher-only support signal with the actual errors', () => {
+    const problemLog = Array.from({ length: 6 }, (_, index) => ({
+      ...problem(index),
+      observationId: `answer-${index + 1}`,
+      problemId: `problem-${index + 1}`,
+      promptText: `${index + 4} + 8`,
+      correct: false,
+      studentAnswer: index + 10,
+      correctAnswer: index + 12,
+      evidenceSkill: 'addition',
+      evidenceLevel: 2,
+      evidenceClass: 'mastery_eligible',
+      evidenceRuleVersion: 1
+    }))
+    const fullProfile = {
+      studentId: 'SUP01',
+      name: 'Support',
+      classId: 'class-1',
+      classIds: ['class-1'],
+      problemLog,
+      recentProblems: problemLog,
+      adaptive: {
+        currentNeeds: {
+          addition: {
+            needId: 'need:answer-6:v1',
+            ruleVersion: 1,
+            operation: 'addition',
+            purpose: 'support',
+            targetLevel: 2,
+            reasonCodes: ['recovery_not_yet_sufficient', 'teacher_signal_required'],
+            evidenceObservationIds: problemLog.map(item => item.observationId),
+            decidedAt: Date.now()
+          }
+        }
+      },
+      masteryFacts: { version: 1, facts: [], revokedIds: [] },
+      stats: { lifetimeProblems: 6 }
+    }
+    const bulkProfile = {
+      ...fullProfile,
+      problemLog: undefined,
+      recentProblems: [],
+      teacherSummary: deriveTeacherSummary(fullProfile)
+    }
+
+    const row = buildStudentRow(bulkProfile)
+
+    expect(row.supportLabel).toBe('Felsignal')
+    expect(row.riskLevel).not.toBe('low')
+    expect(row.riskCodes[0]).toContain('Addition nivå 2')
+    expect(row.supportErrors).toHaveLength(6)
+    expect(row.supportErrors[0]).toMatchObject({
+      observationId: 'answer-1',
+      promptText: '4 + 8',
+      studentAnswer: 10,
+      correctAnswer: 12
+    })
+    expect(row.nextAction).toContain('Granska felsvaren')
+  })
 })

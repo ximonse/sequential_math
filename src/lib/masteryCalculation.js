@@ -10,7 +10,7 @@ import {
   getStockholmWeekStart,
   getStockholmDateKey
 } from './teacherEvidencePeriods.js'
-import { getOperationMinLevel } from './operations.js'
+import { getOperationLabel, getOperationMinLevel } from './operations.js'
 import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './operations.js'
 import { isMasteryEligible, readEvidenceClaim, summarizeEvidenceHistory } from './evidenceContract.js'
 
@@ -400,6 +400,7 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
   }
 
   const effectiveLevels = computeEffectiveLevels(source, operationKeys, levelRange, { profile })
+  const supportSignal = buildAdaptiveSupportSignal(profile, source)
 
   const opBuckets = Object.fromEntries(
     operationKeys.map(op => [op, { attempts: 0, correct: 0 }])
@@ -474,7 +475,50 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
       knowledgeErrors,
       inattentionErrors
     },
+    supportSignal,
     updatedAt: now
+  }
+}
+
+function buildAdaptiveSupportSignal(profile, source) {
+  const needs = Object.values(profile?.adaptive?.currentNeeds || {})
+    .filter(need => need?.purpose === 'support')
+    .sort((a, b) => Number(b.decidedAt || 0) - Number(a.decidedAt || 0))
+  const need = needs[0]
+  if (!need) return null
+
+  const evidenceIds = new Set(Array.isArray(need.evidenceObservationIds) ? need.evidenceObservationIds : [])
+  const errors = source
+    .filter(problem => {
+      const id = String(problem?.observationId || problem?.problemId || '')
+      return evidenceIds.has(id) && !problem.correct
+    })
+    .slice(-6)
+    .map(problem => ({
+      observationId: String(problem.observationId || problem.problemId || ''),
+      problemId: String(problem.problemId || ''),
+      promptText: String(problem.promptText || problem.problemType || '').slice(0, 200),
+      studentAnswer: problem.studentAnswer ?? null,
+      correctAnswer: problem.correctAnswer ?? null,
+      errorCategory: String(problem.errorCategory || 'knowledge'),
+      errorPatterns: Array.isArray(problem.errorPatterns)
+        ? problem.errorPatterns.map(value => String(value || '')).filter(Boolean).slice(0, 5)
+        : [],
+      errorDetail: String(problem.errorDetail || '').slice(0, 300),
+      level: Number(readEvidenceClaim(problem).level) || Number(need.targetLevel) || 1,
+      timestamp: Number(problem.timestamp || 0)
+    }))
+
+  return {
+    signalId: `support:${need.needId}`,
+    ruleVersion: Number(need.ruleVersion) || 1,
+    operation: String(need.operation || ''),
+    operationLabel: getOperationLabel(need.operation),
+    targetLevel: Number(need.targetLevel) || 1,
+    reasonCodes: Array.isArray(need.reasonCodes) ? need.reasonCodes : [],
+    evidenceObservationIds: Array.from(evidenceIds),
+    errors,
+    decidedAt: Number(need.decidedAt || 0)
   }
 }
 

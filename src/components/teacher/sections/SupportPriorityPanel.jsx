@@ -41,7 +41,22 @@ export default function SupportPriorityPanel({
                   </td>
                   <td className="py-3 pr-3"><RiskBadgeComponent level={row.riskLevel} /></td>
                   <td className="py-3 pr-3 text-gray-700">{row.riskCodes.slice(0, 2).join(' · ')}</td>
-                  <td className="py-3 pr-3 text-gray-600">{row.evidenceLabel}</td>
+                  <td className="py-3 pr-3 text-gray-600">
+                    <div>{row.evidenceLabel}</div>
+                    {Array.isArray(row.supportErrors) && row.supportErrors.length > 0 && (
+                      <ul className="mt-2 space-y-1 text-xs text-gray-700">
+                        {row.supportErrors.slice(0, 4).map(error => (
+                          <li key={error.observationId || error.problemId}>
+                            <span className="font-medium">{error.promptText || `Nivå ${error.level}`}</span>
+                            {' · '}svar {String(error.studentAnswer ?? 'saknas')}
+                            {error.correctAnswer !== null && error.correctAnswer !== undefined
+                              ? ` (rätt: ${String(error.correctAnswer)})`
+                              : ''}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </td>
                   <td className="py-3">
                     <p className="mb-2 max-w-72 text-xs text-gray-700">{row.nextAction}</p>
                     <div className="flex flex-wrap gap-1">

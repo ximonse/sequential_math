@@ -37,7 +37,7 @@ En `TrainingFrame` är en logisk, versionsbestämd ögonblicksbild för sessione
 | Fri adaptiv träning | Rotera mellan aktiverade kompetenser och anpassa inom deras innehållskontrakt. | Välja en avstängd kompetens eller likställa nivånummer mellan områden. | Kan belägga den kompetens som varje uppgift faktiskt prövar. |
 | Områdesfokus | Anpassa inom valt område/kompetens. | Lämna fokus tyst. | Kan belägga uppgiftens uttryckliga evidenskompetens. |
 | Lärarens adaptiva uppdrag | Anpassa inom tilldelade kompetenser och nivågränser. | Gå utanför ramen för återhämtning eller utmaning. | Kan belägga uppgiftens kompetens; uppdragskontext ska följa observationen. |
-| Låst nivå/fokus | Variera giltiga uppgifter på exakt tilldelat steg och erbjuda stöd eller paus. | Avancera eller backa utanför låsningen. | Kan belägga steget när innehålls- och underlagskrav är uppfyllda. Avslutat uppdrag är inte i sig kunnande. |
+| Låst nivå/fokus | Variera giltiga uppgifter på exakt tilldelat steg och signalera ihållande fel till läraren. | Avancera eller backa utanför låsningen eller avbryta elevens träning automatiskt. | Kan belägga steget när innehålls- och underlagskrav är uppfyllda. Avslutat uppdrag är inte i sig kunnande. |
 | Tabellträning | Träna och följa flyt för valda tabeller. | Göra tabellsvar till generell nivåmastery i multiplikation. | `practice_only` för generell multiplikationsmastery; separat tabellflyt får härledas enligt eget kontrakt. |
 | Diagnostiskt/NCM-uppdrag | Följa uppdragets uttryckliga kod/förmåga och slutföranderegel. | Automatiskt behandla slutförande som vanlig adaptiv träning eller mastery. | Kräver uttrycklig mappning till kompetens; annars diagnostiskt underlag separat från mastery. |
 | Ticket/start-/exitfråga | Registrera svar i det uttalade ticket-sammanhanget. | Räkna svaret som vanlig träning utan särskilt beslut. | `practice_only` för träningsmastery; kan användas i ticketens egen sammanställning. |
@@ -61,7 +61,7 @@ F2 ska följa dessa regler:
 3. Stabil relevant evidens leder automatiskt till meningsfull utmaning inom F1. Eleven tillfrågas inte om avancering och förvarnas inte om att nästa uppgift är svårare.
 4. Svarstid får bidra till beskrivning men är inte ett generellt krav för avancering. Avbrottsmärkt tid ska inte påverka kunskapsbedömning.
 5. Ihållande svårighet ska kunna ge mer än ett enstaka lättare problem. Ett ensamt rätt svar avslutar inte automatiskt återhämtning.
-6. Om giltig återhämtning inom ramen inte räcker returnerar F2 `support`. UI erbjuder tillgängligt stöd eller paus och F6 kan skapa en spårbar signal. F2 lämnar inte lärarens ram.
+6. Om giltig återhämtning inom ramen inte räcker returnerar F2 `support`. Eleven fortsätter träna inom ramen utan automatisk paus eller stöddialog. F6 skapar en spårbar lärarsignal med de faktiska felsvaren; signalen är underlag för lärarens beslut, inte en diagnos. F2 lämnar inte lärarens ram.
 7. Slump får variera likvärdiga uppgifter, men får inte vara ensam förklaring till ett pedagogiskt stegbyte.
 
 Trösklar, observationsfönster och återhämtningslängd ska ligga i ett namngivet, versionsbestämt `DecisionRuleSet`. V0.1 väljer inga nya värden. Befintliga värden betraktas som legacy tills de samlats i och motiverats för regeluppsättningen.
@@ -162,8 +162,8 @@ Första vertikala införandet (E2) omfattar kompetensidentitet och evidensklass 
 Följande behöver senare preciseras men blockerar inte E2:s struktur:
 
 - masterytröskel och observationsfönster per innehållskontrakt;
-- när och hur länge `recover` består innan `support`;
-- vilket elevstöd som finns per uppgiftstyp;
+- om återhämtningsgränsen behöver skilja sig mellan innehållskontrakt;
+- vilka manuellt valbara elevstöd som eventuellt ska finnas per uppgiftstyp;
 - ordalydelse och frekvens för gratulation;
 - vilka äldre observationer som säkert kan klassificeras om.
 

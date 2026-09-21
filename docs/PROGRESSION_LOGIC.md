@@ -244,11 +244,16 @@ Regelversion 1 samlar två tidigare spridda streakvärden till en uttrycklig
 - ett rätt svar behåller återhämtningen;
 - två fullständigt rätta svar i följd återgår till `consolidate` på aktuellt
   mastery-golv;
+- fyra observationer i följd medan återhämtningen är aktiv, utan två
+  fullständigt rätta svar i följd, ger `support` på samma målnivå;
 - ett nytt masterybeslut ger `challenge` på nästa steg.
 
 Lärarlåsta intervall klampas alltid; `recover` kan därför beskriva stödbehovet
-utan att lämna den tilldelade nivån. `support` efter otillräcklig återhämtning
-och ett samlat startbeslut återstår i E3.
+utan att lämna den tilldelade nivån. `support` pausar inte eleven och visar ingen
+automatisk stöddialog. Träningen fortsätter på samma återhämtningsnivå, medan
+lärarbilden får en signal med upp till sex identifierbara felsvar, inklusive
+fråga, elevsvar, facit, innehåll och nivå. Två fullständigt rätta svar i följd
+avslutar både återhämtningen och signalen. Ett samlat startbeslut återstår i E3.
 
 ## 10. Assignment-logik
 

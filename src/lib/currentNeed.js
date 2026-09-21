@@ -3,8 +3,9 @@ import { isMasteryEligible, readEvidenceClaim } from './evidenceContract'
 export const CURRENT_NEED_RULE_VERSION = 1
 export const RECOVERY_ENTER_ERROR_STREAK = 3
 export const RECOVERY_EXIT_CORRECT_STREAK = 2
+export const SUPPORT_AFTER_RECOVERY_OBSERVATIONS = 4
 const MAX_CURRENT_NEED_HISTORY = 100
-const PURPOSES = new Set(['consolidate', 'challenge', 'recover'])
+const PURPOSES = new Set(['consolidate', 'challenge', 'recover', 'support'])
 
 function clampLevel(value, range) {
   const min = Array.isArray(range) ? Number(range[0]) : 1
@@ -37,6 +38,13 @@ export function buildCurrentNeed({ profile, observation, trainingContext, master
   const errorStreak = trailingCount(history, item => !item.correct)
   const correctStreak = trailingCount(history, item => item.correct && !item.isPartial)
   const previous = profile.adaptive?.currentNeeds?.[operation] || null
+  const needHistory = Array.isArray(profile.adaptive?.currentNeedHistory)
+    ? profile.adaptive.currentNeedHistory.filter(item => item?.operation === operation)
+    : []
+  const recoveryRun = trailingCount(
+    needHistory,
+    item => item?.purpose === 'recover' || item?.purpose === 'support'
+  )
   const levelRange = trainingContext?.levelRange
 
   let purpose = 'consolidate'
@@ -47,17 +55,34 @@ export function buildCurrentNeed({ profile, observation, trainingContext, master
     purpose = 'challenge'
     targetLevel = clampLevel(progressionDecision.nextLevel, levelRange)
     reasonCodes = ['mastery_achieved', 'next_level_available']
-  } else if (previous?.purpose === 'recover' && correctStreak < RECOVERY_EXIT_CORRECT_STREAK) {
-    purpose = 'recover'
-    targetLevel = clampLevel(previous.targetLevel, levelRange)
-    reasonCodes = ['recovery_in_progress', 'stability_not_yet_reestablished']
+  } else if (previous?.purpose === 'recover' || previous?.purpose === 'support') {
+    if (correctStreak >= RECOVERY_EXIT_CORRECT_STREAK) {
+      reasonCodes = ['recovery_stabilized', 'return_to_mastery_floor']
+    } else if (
+      previous.purpose === 'support'
+      || recoveryRun >= SUPPORT_AFTER_RECOVERY_OBSERVATIONS - 1
+    ) {
+      purpose = 'support'
+      targetLevel = clampLevel(previous.targetLevel, levelRange)
+      reasonCodes = ['recovery_not_yet_sufficient', 'teacher_signal_required']
+    } else {
+      purpose = 'recover'
+      targetLevel = clampLevel(previous.targetLevel, levelRange)
+      reasonCodes = ['recovery_in_progress', 'stability_not_yet_reestablished']
+    }
   } else if (errorStreak >= RECOVERY_ENTER_ERROR_STREAK) {
     purpose = 'recover'
     targetLevel = clampLevel(observedLevel - 1, levelRange)
     reasonCodes = ['consecutive_errors', 'temporary_level_relief']
-  } else if (previous?.purpose === 'recover') {
-    reasonCodes = ['recovery_stabilized', 'return_to_mastery_floor']
   }
+
+  const evidenceObservationIds = purpose === 'support'
+    ? history
+      .filter(item => !item.correct)
+      .slice(-6)
+      .map(item => String(item.observationId || item.problemId || '').trim())
+      .filter(Boolean)
+    : [String(observation.observationId || observation.problemId || '')].filter(Boolean)
 
   const decidedAt = Number(observation.timestamp || Date.now())
   return {
@@ -70,7 +95,7 @@ export function buildCurrentNeed({ profile, observation, trainingContext, master
     frameId: String(trainingContext?.frameId || '').slice(0, 200),
     trainingMode: String(trainingContext?.mode || ''),
     assignmentId: String(trainingContext?.assignmentId || '').slice(0, 100),
-    evidenceObservationIds: [String(observation.observationId || observation.problemId || '')].filter(Boolean),
+    evidenceObservationIds,
     decidedAt
   }
 }

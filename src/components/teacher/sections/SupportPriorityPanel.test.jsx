@@ -1,0 +1,37 @@
+import { describe, expect, it, vi } from 'vitest'
+import { renderToStaticMarkup } from 'react-dom/server'
+import SupportPriorityPanel from './SupportPriorityPanel'
+
+describe('teacher support priority signal', () => {
+  it('renders the actual incorrect answer and expected answer', () => {
+    const onOpenStudentDetail = vi.fn()
+    const onCreateQuickAssignment = vi.fn()
+    const html = renderToStaticMarkup(<SupportPriorityPanel
+      supportRows={[{
+        studentId: 'SUP01',
+        name: 'Support',
+        classNameLabel: '6A',
+        riskLevel: 'medium',
+        riskCodes: ['Fortsatta fel i Addition nivå 2'],
+        evidenceLabel: '1 visat felsvar från återhämtningen',
+        nextAction: 'Granska felsvaret.',
+        supportErrors: [{
+          observationId: 'answer-1',
+          promptText: '4 + 8',
+          studentAnswer: 10,
+          correctAnswer: 12,
+          level: 2
+        }]
+      }]}
+      RiskBadgeComponent={({ level }) => <span>{level}</span>}
+      onOpenStudentDetail={onOpenStudentDetail}
+      onCreateQuickAssignment={onCreateQuickAssignment}
+    />)
+
+    expect(html).toContain('Fortsatta fel i Addition nivå 2')
+    expect(html).toContain('4 + 8')
+    expect(html).toContain('svar 10 (rätt: 12)')
+    expect(onOpenStudentDetail).not.toHaveBeenCalled()
+    expect(onCreateQuickAssignment).not.toHaveBeenCalled()
+  })
+})

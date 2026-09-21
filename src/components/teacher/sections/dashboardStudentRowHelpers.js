@@ -152,6 +152,26 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
     todayReasonableWrongCount: todayWrongReasonable,
     todayStruggle
   }, activeAssignment)
+  const adaptiveSupportSignal = student?.teacherSummary?.supportSignal || null
+  const hasAdaptiveSupportSignal = Boolean(adaptiveSupportSignal?.signalId)
+  const adaptiveSupportErrors = Array.isArray(adaptiveSupportSignal?.errors)
+    ? adaptiveSupportSignal.errors
+    : []
+  const resolvedRiskLevel = hasAdaptiveSupportSignal && riskSignals.riskLevel === 'low'
+    ? 'medium'
+    : riskSignals.riskLevel
+  const resolvedRiskCodes = hasAdaptiveSupportSignal
+    ? [
+        `Fortsatta fel i ${adaptiveSupportSignal.operationLabel || getOperationLabel(adaptiveSupportSignal.operation)} nivå ${adaptiveSupportSignal.targetLevel}`,
+        ...riskSignals.riskCodes
+      ]
+    : riskSignals.riskCodes
+  const resolvedEvidenceLabel = hasAdaptiveSupportSignal
+    ? `${adaptiveSupportErrors.length} visade felsvar från återhämtningen`
+    : riskSignals.evidenceLabel
+  const resolvedNextAction = hasAdaptiveSupportSignal
+    ? 'Granska felsvaren och avgör om eleven behöver undervisningsstöd inom detta innehåll.'
+    : riskSignals.nextAction
 
   return {
     studentId: student.studentId,
@@ -254,13 +274,15 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
     assignmentAttempts: overallAssignment.attempts,
     assignmentMatched: overallAssignment.matchedAttempts,
     assignmentAdherenceRate: overallAssignment.rate,
-    riskLevel: riskSignals.riskLevel,
+    riskLevel: resolvedRiskLevel,
     riskScore: riskSignals.riskScore,
-    riskCodes: riskSignals.riskCodes,
+    riskCodes: resolvedRiskCodes,
     supportScore: riskSignals.supportScore,
-    supportLabel: riskSignals.supportLabel,
-    evidenceLabel: riskSignals.evidenceLabel,
-    nextAction: riskSignals.nextAction
+    supportLabel: hasAdaptiveSupportSignal ? 'Felsignal' : riskSignals.supportLabel,
+    evidenceLabel: resolvedEvidenceLabel,
+    nextAction: resolvedNextAction,
+    adaptiveSupportSignal,
+    supportErrors: adaptiveSupportErrors
   }
 }
 

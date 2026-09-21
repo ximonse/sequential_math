@@ -200,7 +200,8 @@ describe('addProblemResult', () => {
     expect(finalEntries.map(entry => entry.type)).toEqual([
       'problem_result',
       'mastery_achieved',
-      'adaptation_decision'
+      'adaptation_decision',
+      'current_need_updated'
     ])
     expect(profile.adaptive.lastDecision).toMatchObject({
       action: 'advance',

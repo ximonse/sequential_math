@@ -583,6 +583,18 @@ function mergeAdaptive(existingAdaptive, incomingAdaptive, preferIncoming) {
     .sort((a, b) => Number(a.decidedAt || 0) - Number(b.decidedAt || 0))
     .slice(-100)
   const lastDecision = decisionHistory.at(-1)
+  const currentNeedById = new Map()
+  for (const need of [
+    ...(Array.isArray(existing.currentNeedHistory) ? existing.currentNeedHistory : []),
+    ...(Array.isArray(incoming.currentNeedHistory) ? incoming.currentNeedHistory : [])
+  ]) {
+    if (need?.needId) currentNeedById.set(need.needId, need)
+  }
+  const currentNeedHistory = Array.from(currentNeedById.values())
+    .sort((a, b) => Number(a.decidedAt || 0) - Number(b.decidedAt || 0))
+    .slice(-100)
+  const currentNeeds = {}
+  for (const need of currentNeedHistory) currentNeeds[need.operation] = need
 
   return {
     ...older,
@@ -591,7 +603,9 @@ function mergeAdaptive(existingAdaptive, incomingAdaptive, preferIncoming) {
     skillStates: mergedSkills,
     recentSelections: Array.isArray(fresher.recentSelections) ? fresher.recentSelections : (Array.isArray(older.recentSelections) ? older.recentSelections : []),
     decisionHistory,
-    ...(lastDecision ? { lastDecision } : {})
+    ...(lastDecision ? { lastDecision } : {}),
+    currentNeedHistory,
+    currentNeeds
   }
 }
 

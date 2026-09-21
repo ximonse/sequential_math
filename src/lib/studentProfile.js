@@ -8,6 +8,7 @@ import { analyzeStudentError, evaluateStudentAnswer, getProblemSelection } from 
 import { isMasteryEligible, readEvidenceClaim } from './evidenceContract'
 import { isValidTrainingContext } from './trainingContext'
 import { buildMasteryProgressionDecision, recordAdaptationDecision } from './adaptationDecision'
+import { buildCurrentNeed, recordCurrentNeed } from './currentNeed'
 export { getStartOfWeekTimestamp } from './studentProfileTimingHelpers'
 
 const MAX_RECENT_PROBLEMS = 250
@@ -226,6 +227,8 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     selectionReason: problem.metadata?.selectionReason || 'normal',
     difficultyBucket: problem.metadata?.difficultyBucket || 'core',
     targetLevel: problem.metadata?.targetLevel || selection.level,
+    trainingDecisionId: String(problem.metadata?.trainingDecisionId || ''),
+    trainingPurpose: String(problem.metadata?.trainingPurpose || ''),
     abilityBefore: problem.metadata?.abilityBefore ?? profile.currentDifficulty,
     progressionMode: problem.metadata?.progressionMode || 'challenge',
     isReasonable,
@@ -265,6 +268,7 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
   // Kolla mastery EFTER — registrera om ny mastery uppnåddes
   const walEntries = []
   walEntries.push({ type: 'problem_result', payload: result })
+  let progressionDecision = null
 
   if (masteryBefore && !masteryBefore.isMastered && opForMastery && levelForMastery >= 1) {
     const sourceAfter = getPreferredProblemSource(profile)
@@ -292,15 +296,31 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
           type: 'mastery_achieved',
           payload: masteryPayload
         })
-        const decision = buildMasteryProgressionDecision({
+        progressionDecision = buildMasteryProgressionDecision({
           mastery: masteryPayload,
           trainingContext
         })
-        if (decision && recordAdaptationDecision(profile, decision)) {
-          walEntries.push({ type: 'adaptation_decision', payload: decision })
+        if (progressionDecision && recordAdaptationDecision(profile, progressionDecision)) {
+          walEntries.push({ type: 'adaptation_decision', payload: progressionDecision })
         }
       }
     }
+  }
+
+  const masteryFloor = computeLowestUnmasteredLevel(
+    getPreferredProblemSource(profile),
+    opForMastery,
+    { maxLevel: 12, profile }
+  )
+  const currentNeed = buildCurrentNeed({
+    profile,
+    observation: result,
+    trainingContext,
+    masteryFloor,
+    progressionDecision
+  })
+  if (currentNeed && recordCurrentNeed(profile, currentNeed)) {
+    walEntries.push({ type: 'current_need_updated', payload: currentNeed })
   }
 
   // Uppdatera statistik

@@ -1,6 +1,7 @@
 import { getDomainForSkill } from '../domains/registry'
 import { getLowestUnmasteredLevel } from '../lib/studentProfile'
 import { resolveProblemOperation } from '../lib/mathUtils'
+import { getCurrentNeed } from '../lib/currentNeed'
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value))
@@ -63,13 +64,35 @@ export function resolveScopedSelection(profile, options = {}) {
   const domain = getDomainForSkill(skill)
   const skillDefinition = domain.skills.find(item => item.id === skill)
   const levelRange = resolveLevelRange(skillDefinition, options.levelRange)
+  const currentNeed = getCurrentNeed(profile, skill)
 
   const forcedLevel = Number(options.forcedLevel)
   if (Number.isFinite(forcedLevel)) {
-    return { domain, skill, level: clamp(Math.round(forcedLevel), ...levelRange), levelRange }
+    const level = clamp(Math.round(forcedLevel), ...levelRange)
+    const matchesNeed = currentNeed?.targetLevel === level
+    return {
+      domain,
+      skill,
+      level,
+      levelRange,
+      ...(matchesNeed
+        ? { decisionId: currentNeed.needId, decisionPurpose: currentNeed.purpose }
+        : {})
+    }
   }
 
   const floor = clamp(getLowestUnmasteredLevel(profile, skill, levelRange[1]), ...levelRange)
-  return { domain, skill, level: floor, levelRange }
+  const level = currentNeed
+    ? clamp(currentNeed.targetLevel, ...levelRange)
+    : floor
+  return {
+    domain,
+    skill,
+    level,
+    levelRange,
+    ...(currentNeed
+      ? { decisionId: currentNeed.needId, decisionPurpose: currentNeed.purpose }
+      : {})
+  }
 }
 

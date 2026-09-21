@@ -229,8 +229,26 @@ nytt mastery-belägg visas en avgränsad gratulation med en enda knapp:
 väljer den befintliga scoped-motorn nästa uppgift från det uppdaterade
 mastery-golvet inom träningsramen.
 
-Detta är E3:s första beslutssnitt. Start, flerledad återhämtning, support och
-ett uttryckligt separat `CurrentNeed` återstår att samla i samma beslutsmodell.
+### 9.1 Aktuellt träningsbehov och återhämtning
+
+Varje mastery-berättigad observation uppdaterar även ett versionsmärkt
+`CurrentNeed` per kompetens. Det är skilt från historiska masteryfakta och
+innehåller syfte, målnivå, reason codes, ram och observationens ID. Scoped
+problemval läser detta behov, och nästa uppgift bär behovets ID och syfte vidare
+till den sparade observationen.
+
+Regelversion 1 samlar två tidigare spridda streakvärden till en uttrycklig
+återhämtningsregel:
+
+- tre fel i följd ger `recover` ett steg lägre, klampat inom träningsramen;
+- ett rätt svar behåller återhämtningen;
+- två fullständigt rätta svar i följd återgår till `consolidate` på aktuellt
+  mastery-golv;
+- ett nytt masterybeslut ger `challenge` på nästa steg.
+
+Lärarlåsta intervall klampas alltid; `recover` kan därför beskriva stödbehovet
+utan att lämna den tilldelade nivån. `support` efter otillräcklig återhämtning
+och ett samlat startbeslut återstår i E3.
 
 ## 10. Assignment-logik
 

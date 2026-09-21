@@ -110,4 +110,31 @@ describe('student event evidence persistence', () => {
     expect(profile.adaptive.lastDecision).toEqual(entry.payload)
     expect(profile.adaptive.decisionHistory).toHaveLength(1)
   })
+
+  it('persists the latest current training need idempotently', () => {
+    const profile = { adaptive: {} }
+    const entry = {
+      id: 'event-need-1',
+      type: 'current_need_updated',
+      timestamp: 1235,
+      payload: {
+        needId: 'need:answer-1:v1',
+        ruleVersion: 1,
+        operation: 'addition',
+        purpose: 'recover',
+        targetLevel: 2,
+        reasonCodes: ['consecutive_errors', 'temporary_level_relief'],
+        frameId: 'session-1',
+        trainingMode: 'area_focus',
+        assignmentId: '',
+        evidenceObservationIds: ['answer-1'],
+        decidedAt: 1235
+      }
+    }
+
+    expect(validEntry(entry, 'ELEV1')).toBe(true)
+    expect(applyWalEntry(profile, entry)).toBe(true)
+    expect(applyWalEntry(profile, entry)).toBe(false)
+    expect(profile.adaptive.currentNeeds.addition).toEqual(entry.payload)
+  })
 })

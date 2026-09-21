@@ -74,7 +74,9 @@ function generateScopedProblem(profile, selection, options) {
       decimalFloor: getLowestUnmasteredLevel(profile, 'positions_decimal', 6)
     })
     if (evidenceSkill) {
-      return generateFromDomain(selection.domain, selection.skill, level, { ...options, evidenceSkill })
+      const problem = generateFromDomain(selection.domain, selection.skill, level, { ...options, evidenceSkill })
+      problem.metadata = { ...(problem.metadata || {}), trainingDecisionId: selection.decisionId, trainingPurpose: selection.decisionPurpose }
+      return problem
     }
 
     const legacyProblem = selectNextProblem(profile, {
@@ -83,10 +85,14 @@ function generateScopedProblem(profile, selection, options) {
       forcedType: selection.skill,
       forcedLevel: level
     })
-    return assertProblemContract(normalizeProblemWithDomain(legacyProblem))
+    const problem = assertProblemContract(normalizeProblemWithDomain(legacyProblem))
+    problem.metadata = { ...(problem.metadata || {}), trainingDecisionId: selection.decisionId, trainingPurpose: selection.decisionPurpose }
+    return problem
   }
 
-  return generateFromDomain(selection.domain, selection.skill, level, options)
+  const problem = generateFromDomain(selection.domain, selection.skill, level, options)
+  problem.metadata = { ...(problem.metadata || {}), trainingDecisionId: selection.decisionId, trainingPurpose: selection.decisionPurpose }
+  return problem
 }
 
 export function selectNextProblemForProfile(profile, options = {}) {

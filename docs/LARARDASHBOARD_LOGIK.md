@@ -181,11 +181,15 @@ Kolumner:
 - `Traff totalt`: total andel ratt.
 - `Idag`, `Vecka`: forsok i respektive tidsfonster.
 - `Tid pa uppgift idag`, `Tid pa uppgift 7d`: engaged tid.
-- `Niva nu/hogst`: adaptiv aktuell niva / historiskt hogsta.
+- `Belagd niva / tranar nu`: hogsta sammanhangande belagda mastery-niva och
+  separat aktuell malniva fran `CurrentNeed`. Streck betyder okant/ej belagt,
+  inte niva noll eller ett.
 - `Aktivitet`: aktivitetsfarg.
 
 Pedagogiskt varde:
-- Ger snabb helhetsbild av mangd, kvalitet, uthallighet och progression.
+- Ger snabb helhetsbild av mangd, kvalitet, uthallighet och progression utan
+  att den gamla flytande `operationAbilities`-skattningen presenteras som
+  konstaterat kunnande.
 
 ### 8.2 Gangertabell - status (individ)
 
@@ -387,10 +391,14 @@ Pedagogiskt varde:
 
 ## 15. Snabbknappar for atgard (Fokus / Varm upp / Mix)
 
-Niva valjs kring uppskattad fokusniva:
+Niva valjs kring identifierbart underlag:
 - `Fokus`: samma raknesatt, ungefarligt niva-1 till niva+1.
 - `Varm upp`: samma raknesatt, lattare intervall.
 - `Mix`: bredare intervall och alla raknesatt.
+
+Fokusnivan tas i ordning fran veckans faktiska svar, dagens faktiska svar,
+aktuellt `CurrentNeed` eller nasta steg efter belagd mastery. Den gamla
+`operationAbilities`/`currentDifficulty` anvands inte som reservdiagnos.
 
 Pedagogiskt varde:
 - Du kan omsatta diagnos i direkt, avgransad ovning utan extra administration.

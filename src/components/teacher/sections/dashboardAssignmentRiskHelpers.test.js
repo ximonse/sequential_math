@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildRiskSignals } from './dashboardAssignmentRiskHelpers'
+import { buildQuickAssignmentPreset, buildRiskSignals } from './dashboardAssignmentRiskHelpers'
 
 function input(overrides = {}) {
   return {
@@ -70,5 +70,37 @@ describe('good-enough teacher support signals', () => {
 
     expect(result.riskLevel).toBe('low')
     expect(result.evidenceLabel).toContain('begränsad historik')
+  })
+
+  it('builds a quick assignment from current need instead of legacy ability', () => {
+    const preset = buildQuickAssignmentPreset({
+      name: 'Elev',
+      weekStruggle: null,
+      todayStruggle: null,
+      primaryOperation: 'addition',
+      currentNeeds: { addition: { purpose: 'recover', targetLevel: 3 } },
+      attainmentLevels: { addition: 5 },
+      operationAbilities: { addition: 12 },
+      currentDifficulty: 11
+    }, 'focus')
+
+    expect(preset.minLevel).toBe(2)
+    expect(preset.maxLevel).toBe(4)
+  })
+
+  it('uses the next level after attainment when no current need exists', () => {
+    const preset = buildQuickAssignmentPreset({
+      name: 'Elev',
+      weekStruggle: null,
+      todayStruggle: null,
+      primaryOperation: 'addition',
+      currentNeeds: {},
+      attainmentLevels: { addition: 5 },
+      operationAbilities: { addition: 12 },
+      currentDifficulty: 11
+    }, 'focus')
+
+    expect(preset.minLevel).toBe(5)
+    expect(preset.maxLevel).toBe(7)
   })
 })

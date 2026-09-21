@@ -45,12 +45,22 @@ export function buildStudentDetailExportRows(student, row, detailData) {
   add({ Sektion: 'Sammanfattning', Nyckel: 'VeckaForsok', Forsok: Number(row.weekAttempts || 0) })
   add({ Sektion: 'Sammanfattning', Nyckel: 'TidPaUppgiftIdagSek', TidSek: Math.round((Number(row.todayEngagedMinutes || 0) * 60)) })
   add({ Sektion: 'Sammanfattning', Nyckel: 'TidPaUppgift7dSek', TidSek: Math.round((Number(row.weekEngagedMinutes || 0) * 60)) })
-  add({ Sektion: 'Sammanfattning', Nyckel: 'NivaNu', Varde: String(Number(row.currentDifficulty || 1)) })
-  add({ Sektion: 'Sammanfattning', Nyckel: 'NivaHogst', Varde: String(Number(row.highestDifficulty || 1)) })
-  add({ Sektion: 'Sammanfattning', Nyckel: 'NivaAddition', Varde: String(Math.round(Number(row.operationAbilities?.addition) || 1)) })
-  add({ Sektion: 'Sammanfattning', Nyckel: 'NivaSubtraktion', Varde: String(Math.round(Number(row.operationAbilities?.subtraction) || 1)) })
-  add({ Sektion: 'Sammanfattning', Nyckel: 'NivaMultiplikation', Varde: String(Math.round(Number(row.operationAbilities?.multiplication) || 1)) })
-  add({ Sektion: 'Sammanfattning', Nyckel: 'NivaDivision', Varde: String(Math.round(Number(row.operationAbilities?.division) || 1)) })
+  for (const operation of ['addition', 'subtraction', 'multiplication', 'division']) {
+    const attained = row.attainmentLevels?.[operation]
+    const need = row.currentNeeds?.[operation]
+    add({
+      Sektion: 'Sammanfattning',
+      Nyckel: `BelagdNiva:${operation}`,
+      Niva: Number.isInteger(attained) ? String(attained) : '',
+      Status: Number.isInteger(attained) ? 'belagd' : 'okänd'
+    })
+    add({
+      Sektion: 'Sammanfattning',
+      Nyckel: `TranarNu:${operation}`,
+      Niva: Number.isInteger(need?.targetLevel) ? String(need.targetLevel) : '',
+      Status: String(need?.purpose || 'inget aktuellt beslut')
+    })
+  }
   add({ Sektion: 'Sammanfattning', Nyckel: 'Aktivitet', Status: String(row.activityStatus || '') })
   add({ Sektion: 'Sammanfattning', Nyckel: 'SvagastTyper', Varde: formatSkillList(student?.stats?.weakestTypes) })
   add({ Sektion: 'Sammanfattning', Nyckel: 'StarkastTyper', Varde: formatSkillList(student?.stats?.strongestTypes) })

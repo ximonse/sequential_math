@@ -65,14 +65,17 @@ export function buildClassOperationBenchmarks(students) {
 export function buildTrainingPriorityList(student, classBenchmarks) {
   if (!student) return []
   const source = getPreferredProblemSource(student)
-  const abilities = student?.adaptive?.operationAbilities || {}
+  const attainmentLevels = student?.teacherSummary?.effectiveLevels || {}
+  const currentNeeds = student?.adaptive?.currentNeeds || {}
 
   const levelData = new Map()
+  const observedMaxLevels = {}
   for (const problem of source) {
     const operation = resolveProblemOperation(problem, { fallback: '', allowUnknownPrefix: false })
     if (!ALL_OPERATIONS.includes(operation)) continue
     const level = Math.round(Number(problem?.difficulty?.conceptual_level || 0))
     if (!Number.isInteger(level) || level < 1 || level > 12) continue
+    observedMaxLevels[operation] = Math.max(Number(observedMaxLevels[operation] || 0), level)
     const key = `${operation}|${level}`
     const entry = levelData.get(key) || { results: [], speeds: [] }
     entry.results.push(Boolean(problem.correct))
@@ -85,15 +88,21 @@ export function buildTrainingPriorityList(student, classBenchmarks) {
 
   const items = []
   for (const operation of ALL_OPERATIONS) {
-    const abilityLevel = Math.round(Number(abilities[operation]) || 1)
-    const maxLevel = Math.min(abilityLevel + 2, 12)
+    const attained = Number(attainmentLevels[operation])
+    const currentTarget = Number(currentNeeds[operation]?.targetLevel)
+    const maxLevel = Math.min(12, Math.max(
+      1,
+      Number(observedMaxLevels[operation] || 0),
+      Number.isInteger(attained) && attained >= 1 ? attained + 1 : 1,
+      Number.isInteger(currentTarget) ? currentTarget : 1
+    ))
 
     const masteredBelow = new Map()
     for (let level = 1; level <= maxLevel; level++) {
       const key = `${operation}|${level}`
       const data = levelData.get(key)
       const mastery = data ? computeLevelMastery(data.results) : { isMastered: false }
-      masteredBelow.set(level, mastery.isMastered)
+      masteredBelow.set(level, mastery.isMastered || (Number.isInteger(attained) && level <= attained))
     }
 
     for (let level = 1; level <= maxLevel; level++) {
@@ -105,7 +114,7 @@ export function buildTrainingPriorityList(student, classBenchmarks) {
       const medianSpeed = data ? median(data.speeds) : null
 
       const mastery = data ? computeLevelMastery(data.results) : { isMastered: false }
-      if (mastery.isMastered) continue
+      if (mastery.isMastered || (Number.isInteger(attained) && level <= attained)) continue
 
       const allBelowMastered = level === 1 || Array.from({ length: level - 1 }, (_, index) => index + 1)
         .every(lvl => masteredBelow.get(lvl))

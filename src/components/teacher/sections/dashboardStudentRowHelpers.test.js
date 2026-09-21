@@ -76,6 +76,37 @@ describe('teacher dashboard weekly evidence', () => {
     expect(row.evidenceLabel).toContain('begränsad historik')
   })
 
+  it('separates attained level from current training need and legacy ability', () => {
+    const row = buildStudentRow({
+      studentId: 'LEVEL01',
+      name: 'Levels',
+      recentProblems: [],
+      stats: { lifetimeProblems: 0 },
+      currentDifficulty: 11,
+      adaptive: {
+        operationAbilities: { addition: 12 },
+        currentNeeds: {
+          addition: {
+            needId: 'need:addition:v1',
+            ruleVersion: 1,
+            operation: 'addition',
+            purpose: 'recover',
+            targetLevel: 3,
+            reasonCodes: ['consecutive_errors'],
+            decidedAt: 1000
+          }
+        }
+      },
+      teacherSummary: {
+        effectiveLevels: { addition: 5, subtraction: 0 }
+      }
+    })
+
+    expect(row.attainmentLevels).toEqual({ addition: 5, subtraction: null })
+    expect(row.currentNeeds.addition).toMatchObject({ purpose: 'recover', targetLevel: 3 })
+    expect(row.operationAbilities.addition).toBe(12)
+  })
+
   it('shows a teacher-only support signal with the actual errors', () => {
     const problemLog = Array.from({ length: 6 }, (_, index) => ({
       ...problem(index),

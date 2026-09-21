@@ -247,17 +247,19 @@ function SummaryCards({
         textClassName="text-emerald-700"
       />
       <div className="rounded border border-purple-200 bg-purple-50 px-2.5 py-2">
-        <p className="text-purple-700">Nivå per räknesätt</p>
+        <p className="text-purple-700">Belagd nivå / tränar nu</p>
         <div className="flex gap-1.5 mt-0.5">
-          {OPERATION_BADGES.map(op => (
-            <span key={op.key} className="inline-flex items-center gap-0.5 text-sm font-semibold text-purple-700">
-              <span className="text-purple-400">{op.label}</span>
-              {Math.round(Number(detailStudentRow.operationAbilities?.[op.key]) || 1)}
-            </span>
-          ))}
-          <span className="text-purple-400 text-xs ml-1 self-center">
-            (högst {detailStudentRow.highestDifficulty})
-          </span>
+          {OPERATION_BADGES.map(op => {
+            const attained = detailStudentRow.attainmentLevels?.[op.key]
+            const need = detailStudentRow.currentNeeds?.[op.key]
+            return (
+              <span key={op.key} className="inline-flex items-center gap-0.5 text-sm font-semibold text-purple-700">
+                <span className="text-purple-400">{op.label}</span>
+                {attained ?? '–'}
+                {need ? <span className="text-xs text-purple-500">/{need.targetLevel}</span> : null}
+              </span>
+            )
+          })}
         </div>
       </div>
       <div className="rounded border border-gray-200 bg-white px-2.5 py-2">

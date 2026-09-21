@@ -233,9 +233,12 @@ function pickFocusLevel(row, operation) {
     : null
   if (match && Number.isFinite(match.avgLevel)) return clampLevel(Math.round(match.avgLevel))
 
-  const opAbility = Number(row.operationAbilities?.[operation])
-  if (Number.isFinite(opAbility) && opAbility > 0) return clampLevel(Math.round(opAbility))
-  return clampLevel(Math.round(Number(row.currentDifficulty) || 1))
+  const currentTarget = Number(row.currentNeeds?.[operation]?.targetLevel)
+  if (Number.isInteger(currentTarget)) return clampLevel(currentTarget)
+
+  const attained = Number(row.attainmentLevels?.[operation])
+  if (Number.isInteger(attained) && attained >= 1) return clampLevel(attained + 1)
+  return 1
 }
 
 function clampLevel(value) {

@@ -172,6 +172,8 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
   const resolvedNextAction = hasAdaptiveSupportSignal
     ? 'Granska felsvaren och avgör om eleven behöver undervisningsstöd inom detta innehåll.'
     : riskSignals.nextAction
+  const attainmentLevels = normalizeAttainmentLevels(student)
+  const currentNeeds = normalizeCurrentNeeds(student)
 
   return {
     studentId: student.studentId,
@@ -184,6 +186,8 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
     currentDifficulty: Number(student.currentDifficulty) || 1,
     highestDifficulty: Number(student.highestDifficulty) || Number(student.currentDifficulty) || 1,
     operationAbilities: extractOperationAbilities(student),
+    attainmentLevels,
+    currentNeeds,
     hasLoggedIn: Boolean(student.auth?.lastLoginAt),
     loginCount: Number(student.auth?.loginCount) || 0,
     attempts,
@@ -284,6 +288,31 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
     adaptiveSupportSignal,
     supportErrors: adaptiveSupportErrors
   }
+}
+
+function normalizeAttainmentLevels(student) {
+  const source = student?.teacherSummary?.effectiveLevels
+  if (!source || typeof source !== 'object') return {}
+  return Object.fromEntries(Object.entries(source).map(([operation, value]) => {
+    const level = Number(value)
+    return [operation, Number.isInteger(level) && level >= 1 && level <= 12 ? level : null]
+  }))
+}
+
+function normalizeCurrentNeeds(student) {
+  const source = student?.adaptive?.currentNeeds
+  if (!source || typeof source !== 'object') return {}
+  const result = {}
+  for (const [operation, need] of Object.entries(source)) {
+    const targetLevel = Number(need?.targetLevel)
+    if (!Number.isInteger(targetLevel) || targetLevel < 1 || targetLevel > 12) continue
+    result[operation] = {
+      purpose: String(need?.purpose || ''),
+      targetLevel,
+      reasonCodes: Array.isArray(need?.reasonCodes) ? need.reasonCodes : []
+    }
+  }
+  return result
 }
 
 function extractOperationAbilities(student) {

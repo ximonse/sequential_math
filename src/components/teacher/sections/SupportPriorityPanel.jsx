@@ -45,7 +45,7 @@ export default function SupportPriorityPanel({
                     <div>{row.evidenceLabel}</div>
                     {Array.isArray(row.supportErrors) && row.supportErrors.length > 0 && (
                       <ul className="mt-2 space-y-1 text-xs text-gray-700">
-                        {row.supportErrors.slice(0, 4).map(error => (
+                        {row.supportErrors.map(error => (
                           <li key={error.observationId || error.problemId}>
                             <span className="font-medium">{error.promptText || `Nivå ${error.level}`}</span>
                             {' · '}svar {String(error.studentAnswer ?? 'saknas')}

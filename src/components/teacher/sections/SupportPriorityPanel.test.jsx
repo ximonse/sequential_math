@@ -15,13 +15,13 @@ describe('teacher support priority signal', () => {
         riskCodes: ['Fortsatta fel i Addition nivå 2'],
         evidenceLabel: '1 visat felsvar från återhämtningen',
         nextAction: 'Granska felsvaret.',
-        supportErrors: [{
-          observationId: 'answer-1',
-          promptText: '4 + 8',
-          studentAnswer: 10,
-          correctAnswer: 12,
+        supportErrors: Array.from({ length: 6 }, (_, index) => ({
+          observationId: `answer-${index + 1}`,
+          promptText: `${index + 4} + 8`,
+          studentAnswer: index + 10,
+          correctAnswer: index + 12,
           level: 2
-        }]
+        }))
       }]}
       RiskBadgeComponent={({ level }) => <span>{level}</span>}
       onOpenStudentDetail={onOpenStudentDetail}
@@ -31,6 +31,8 @@ describe('teacher support priority signal', () => {
     expect(html).toContain('Fortsatta fel i Addition nivå 2')
     expect(html).toContain('4 + 8')
     expect(html).toContain('svar 10 (rätt: 12)')
+    expect(html).toContain('9 + 8')
+    expect(html).toContain('svar 15 (rätt: 17)')
     expect(onOpenStudentDetail).not.toHaveBeenCalled()
     expect(onCreateQuickAssignment).not.toHaveBeenCalled()
   })

@@ -64,6 +64,9 @@ Historiskt skäl — varje modul definierade sin egna lista. De ska hållas i sy
 Elev startar träning
   → adaptiveEngine.js väljer domän/operation
   → domain.generate(level) skapar problem
+  → generateWithProblemGuardian() gör högst fyra försök och kräver rätt domän,
+    kompetens, nivå, visning, svarstyp och giltig evidensklass
+  → efter fyra kontraktsbrott visas sessionsfelet; felmärkt fallback visas inte
   → ProblemDisplay visar (metadata.promptText om text-fråga, annars a op b)
   → Elev svarar
   → domain.evaluate(problem, svar) → { correct, isReasonable }

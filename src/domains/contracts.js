@@ -1,3 +1,5 @@
+import { EVIDENCE_CLASSES, readEvidenceClaim } from '../lib/evidenceContract'
+
 export const ERROR_CATEGORIES = new Set([
   'none',
   'input',
@@ -55,6 +57,55 @@ export function assertProblemContract(problem, expected = {}) {
   if (expected.domain) invariant(domain === expected.domain, `expected domain ${expected.domain}, got ${domain}`)
   if (expected.skill) invariant(skill === expected.skill, `expected skill ${expected.skill}, got ${skill}`)
   return problem
+}
+
+export function assertDisplayableProblem(problem, expected = {}) {
+  assertProblemContract(problem, expected)
+
+  const expectedLevel = Number(expected.level ?? problem.metadata?.targetLevel)
+  if (Number.isFinite(expectedLevel)) {
+    invariant(Number(problem.level) === Math.round(expectedLevel), `expected level ${Math.round(expectedLevel)}, got ${problem.level}`)
+  }
+
+  const promptText = String(problem.metadata?.promptText || problem.display?.text || '').trim()
+  invariant(promptText, 'problem display text is required')
+  invariant(!/\b(?:NaN|undefined|null)\b/.test(promptText), 'problem display text contains an invalid value')
+
+  const answerType = String(problem.answer?.type || '').trim()
+  if (answerType === 'number') {
+    const answer = problem.answer.correct ?? problem.answer.value
+    invariant(Number.isFinite(Number(answer)), 'number answer must be finite')
+  } else if (answerType === 'fraction') {
+    invariant(Number.isFinite(Number(problem.answer.num)), 'fraction numerator must be finite')
+    invariant(Number.isFinite(Number(problem.answer.den)) && Number(problem.answer.den) !== 0, 'fraction denominator must be finite and non-zero')
+  } else if (answerType === 'expression') {
+    invariant(String(problem.answer.correct || '').trim(), 'expression answer must not be empty')
+  } else {
+    invariant(false, `unsupported answer type ${answerType}`)
+  }
+
+  const claim = readEvidenceClaim(problem)
+  invariant(claim.class !== EVIDENCE_CLASSES.INVALID, 'problem evidence is invalid')
+  invariant(claim.contentSkill === String(problem.skill || '').trim(), 'problem content skill and evidence claim disagree')
+  invariant(Number(claim.contentLevel) === Number(problem.level), 'problem content level and evidence claim disagree')
+  return problem
+}
+
+export function generateWithProblemGuardian(factory, expected = {}, maxAttempts = 4) {
+  invariant(typeof factory === 'function', 'problem factory is required')
+  const attempts = Math.max(1, Math.round(Number(maxAttempts) || 1))
+  let lastError = null
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      return assertDisplayableProblem(factory(), expected)
+    } catch (error) {
+      lastError = error
+    }
+  }
+
+  const reason = String(lastError?.message || 'unknown problem contract violation')
+  throw new Error(`Problem guardian rejected ${attempts} candidates: ${reason}`)
 }
 
 export function assertEvaluationContract(evaluation) {

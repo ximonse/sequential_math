@@ -195,15 +195,18 @@ export function generateFractionsProblem(skill, level, _options = {}) {
   const fn = LEVEL_FNS[lvl]
 
   let result = null
+  let lastError = null
   for (let i = 0; i < 10; i++) {
     try {
       result = fn()
       break
-    } catch {
-      // retry
+    } catch (error) {
+      lastError = error
     }
   }
-  if (!result) result = level1()
+  if (!result) {
+    throw new Error(`Fractions level ${lvl} generation failed: ${String(lastError?.message || 'unknown error')}`)
+  }
   const requiresSimplifiedAnswer = resolveSimplifyRequirement(lvl, result)
   const displayText = requiresSimplifiedAnswer && !String(result.text).startsWith('Förenkla')
     ? `${result.text} (Förenkla svaret.)`

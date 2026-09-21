@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { analyzeStudentError, createProblemForSelection, evaluateStudentAnswer } from '../engine/adaptiveEngine'
 import { listDomains } from './registry'
+import { generateWithProblemGuardian } from './contracts'
+import { attachEvidenceClaim, EVIDENCE_CLASSES } from '../lib/evidenceContract'
 import { ALL_OPERATIONS } from '../lib/operations'
 
 function correctAnswerFor(problem) {
@@ -19,11 +21,11 @@ describe('domain contracts', () => {
     expect(new Set(skills).size).toBe(skills.length)
   })
 
-  it('generates, evaluates and analyzes every skill at its boundary levels', () => {
+  it('generates, evaluates and analyzes every registered skill level', () => {
     for (const domain of listDomains()) {
       for (const skill of domain.skills) {
         const [min, max] = skill.levels
-        const levels = [...new Set([min, Math.round((min + max) / 2), max])]
+        const levels = Array.from({ length: max - min + 1 }, (_, index) => min + index)
 
         for (const level of levels) {
           const problem = createProblemForSelection({
@@ -45,5 +47,32 @@ describe('domain contracts', () => {
   it('rejects duplicate domain registrations through the live registry', () => {
     const ids = listDomains().map(domain => domain.id)
     expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('retries an invalid candidate and returns only a displayable matching problem', () => {
+    let attempts = 0
+    const valid = createProblemForSelection({ domain: 'arithmetic', skill: 'addition', level: 2 })
+    const problem = generateWithProblemGuardian(() => {
+      attempts += 1
+      return attempts === 1
+        ? attachEvidenceClaim(valid, { class: EVIDENCE_CLASSES.INVALID })
+        : valid
+    }, { domain: 'arithmetic', skill: 'addition', level: 2 })
+
+    expect(attempts).toBe(2)
+    expect(problem).toBe(valid)
+  })
+
+  it('stops after bounded retries when generated content keeps breaking the contract', () => {
+    let attempts = 0
+    const wrongLevel = createProblemForSelection({ domain: 'percentage', skill: 'percentage', level: 1 })
+
+    expect(() => generateWithProblemGuardian(() => {
+      attempts += 1
+      return wrongLevel
+    }, { domain: 'percentage', skill: 'percentage', level: 7 }, 3)).toThrow(
+      'Problem guardian rejected 3 candidates'
+    )
+    expect(attempts).toBe(3)
   })
 })

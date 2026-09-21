@@ -237,15 +237,18 @@ export function generateArithmeticExpressionsProblem(skill, level, _options = {}
   const maker = LEVEL_MAKERS[lvl]
 
   let result = null
+  let lastError = null
   for (let i = 0; i < 10; i += 1) {
     try {
       result = maker()
       break
-    } catch {
-      // retry
+    } catch (error) {
+      lastError = error
     }
   }
-  if (!result) result = makeLevel1()
+  if (!result) {
+    throw new Error(`Arithmetic expressions level ${lvl} generation failed: ${String(lastError?.message || 'unknown error')}`)
+  }
 
   return {
     domain: 'arithmetic_expressions',

@@ -1,7 +1,11 @@
 import { selectNextProblem } from '../lib/difficultyAdapter'
 import { resolveProblemOperation } from '../lib/mathUtils'
 import { getDefaultDomainId, getDomain, normalizeProblemWithDomain } from '../domains/registry'
-import { assertErrorAnalysisContract, assertEvaluationContract, assertProblemContract } from '../domains/contracts'
+import {
+  assertErrorAnalysisContract,
+  assertEvaluationContract,
+  generateWithProblemGuardian
+} from '../domains/contracts'
 import { resolveScopedSelection } from './scopedSelection'
 import { getConsecutiveOperationErrors } from '../lib/difficultyAdapterProfileHelpers'
 import { getLowestUnmasteredLevel } from '../lib/studentProfile'
@@ -42,8 +46,17 @@ export function selectNextSkillAndLevel(profile, options = {}) {
 }
 
 function generateFromDomain(domain, skill, level, options) {
-  const problem = domain.generate(skill, level, options)
-  return assertProblemContract(problem, { domain: domain.id, skill })
+  return generateWithProblemGuardian(
+    () => domain.generate(skill, level, options),
+    { domain: domain.id, skill, level }
+  )
+}
+
+function generateFromLegacySelector(profile, options, expected = {}) {
+  return generateWithProblemGuardian(
+    () => normalizeProblemWithDomain(selectNextProblem(profile, options)),
+    expected
+  )
 }
 
 function sampleTrainingDecision(profile, selection, options) {
@@ -117,13 +130,12 @@ function generateScopedProblem(profile, selection, options) {
       return attachTrainingDecision(problem, selection, level, options, startDecision)
     }
 
-    const legacyProblem = selectNextProblem(profile, {
+    const problem = generateFromLegacySelector(profile, {
       ...options,
       allowedTypes: [selection.skill],
       forcedType: selection.skill,
       forcedLevel: level
-    })
-    const problem = assertProblemContract(normalizeProblemWithDomain(legacyProblem))
+    }, { domain: selection.domain.id, skill: selection.skill, level })
     return attachTrainingDecision(problem, selection, level, options, startDecision)
   }
 
@@ -135,8 +147,7 @@ export function selectNextProblemForProfile(profile, options = {}) {
   const scoped = resolveScopedSelection(profile, options)
   if (scoped) return generateScopedProblem(profile, scoped, options)
 
-  const legacyProblem = selectNextProblem(profile, options)
-  return assertProblemContract(normalizeProblemWithDomain(legacyProblem))
+  return generateFromLegacySelector(profile, options)
 }
 export function evaluateStudentAnswer(problem, studentAnswer) {
   const normalizedProblem = normalizeProblemWithDomain(problem)

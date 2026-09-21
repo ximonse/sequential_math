@@ -73,7 +73,7 @@ P0 = förutsättning för pålitlig evidens; P1 = nödvändig produktfunktion. D
 | E2 Tillförlitlig evidenskedja — **lokalt implementerad 2026-09-21** | En representation av vad som tränats och observerats, med kompetens, nivå, läge, ID och regelversion. Kompetensidentitet, evidensklass, träningsram och leveransstatus följer kedjan; äldre underlag delas i kontraktsmärkt, säkert klassificerbart och okänt. | E1, P0 | Kod-/kontraktsgrind passerad. Autentiserad browser-/iPad-kontroll och verkligt avbrottsnät återstår till E5:s samlade leveransgrind. |
 | E3 Ett adaptivt beslutsflöde — **fyra snitt lokalt implementerade 2026-09-21** | Historiskt kunnande, aktuellt behov, masteryövergång, start/warmup, flerledad återhämtning och lärarsignal efter ihållande fel är nu åtskilda och versionsmärkta. Elevens ja/nej-avancering är avvecklad. | E2, P1 | Den lokala beslutsmodellen täcker S1–S4/S7 med regressionsfall. Autentiserad elev-/lärarverifiering och klassunderlag hör till den samlade E5-grinden. |
 | E4 Tolkningsbar lärarbild — **två kodsnitt lokalt implementerade 2026-09-21** | Separera historik, aktuell prestation, aktivitet och hypoteser. Detaljkort, klassöversikt, snabbuppdrag, träningsprioritering och exporter skiljer nu belagd nivå från aktuellt träningsbehov, håller okänt borta från nivåsnitt och använder inte legacyförmåga som kunskapsnivå. | E2; slutverifiering med E3, P1 | S5/S6/S8/S9 visar konsekventa besked och försiktiga slutsatser. Lärare kan hitta underlag och välja uppföljning. |
-| E5 Innehåll och samlad kvalitetsgrind | Granska progression per domän, matematiskt facit, relevant variation, svarskrav och fallbackbeteende. Utöka befintliga kontraktskontroller och återspelningsfall; verifiera hela elev–lärarkedjan. | Börjar med motexempel i E1/E2, avslutas efter E3/E4; innehållsfel P0 | S1–S10 har daterat resultat och begränsningar. Tester/build samt relevanta browser-/iPad-flöden är kontrollerade. Ingen automatisk publicering. |
+| E5 Innehåll och samlad kvalitetsgrind — **första kodsnitt lokalt implementerat 2026-09-21** | En körningsguardian kasserar nu kandidater med fel domän, kompetens, nivå, visning, svarstyp eller ogiltig evidens före visning och stoppar efter begränsade omförsök. Oberoende facitkontroll, variationsgrind och samlad UI-/klassrumsverifiering återstår. | Börjar med motexempel i E1/E2, avslutas efter E3/E4; innehållsfel P0 | S1–S10 har daterat resultat och begränsningar. Tester/build samt relevanta browser-/iPad-flöden är kontrollerade. Ingen automatisk publicering. |
 
 E2 ska leverera en tunn men komplett vertikal kedja, inte en total omskrivning innan något kan verifieras. Varje etapp behåller befintliga fungerande delar och kompletterar dem med regressionsfall. Generatorproblemen som redan noterats blir motexempel i E5, inte nya fristående småfixprojekt.
 
@@ -94,7 +94,7 @@ Historiska felaktiga masteryfakta får inte bara raderas eller omtolkas. E2 mås
 
 För varje etapp sparas: krav-ID → scenario → app-/regelversion → miljö → metod → faktiskt resultat → begränsning. Befintliga tester är kandidater att återanvända, inte redan godkända resultat för det nya kontraktet. Efter kodändringar krävs repoets test/build-kontroller; UI-flöden verifieras separat. Klasspasset använder [observationsmallen](PRODUCT_SCENARIOS.md) utan att framkalla fel eller samla nya personuppgifter.
 
-**Nästa avgränsade arbete: E5:s innehålls- och guardiangrind.** Återspela generatorer och fallbackvägar mot kompetens-, nivå-, facit- och variationskontrakten. En ogiltig kandidat ska stoppas eller ersättas före visning och får inte skapa falsk evidens. `currentDifficulty` och `operationAbilities` finns kvar i profilen för kompatibilitet men ska inte presenteras som belagt kunnande eller styra nya läraråtgärder. Publicering kräver separat begäran.
+**Nästa avgränsade arbete: E5:s oberoende innehållskontroll.** Kontrollera matematiskt facit och relevant variation per kompetens/steg utan att använda generatorns eget facit som facitkontroll. Därefter återspelas hela elev–lärarkedjan och relevanta autentiserade UI-flöden. `currentDifficulty` och `operationAbilities` finns kvar i profilen för kompatibilitet men ska inte presenteras som belagt kunnande eller styra nya läraråtgärder. Publicering kräver separat begäran.
 
 ### E2 — lokalt verifierat första snitt 2026-09-20
 
@@ -182,3 +182,13 @@ Verifiering: `npm run test` passerade 71 testfiler/320 tester, avgränsad ESLint
 - Snapshot-exporten använder samma separata fält för belagd nivå/status och aktuell träningsnivå/syfte som elevdetaljen.
 
 Verifiering: `npm run test` passerade 73 testfiler/325 tester, avgränsad ESLint passerade och `npm run build` passerade med de befintliga Browserslist-/bundlevarningarna. Ingen autentiserad browser-, iPad-, live- eller produktionsverifiering gjordes.
+
+### E5 — lokalt verifierat första kodsnitt 2026-09-21
+
+- `generateWithProblemGuardian` ligger i den gemensamma domänkontraktsgränsen och används av både registrerade domäner och den kvarvarande legacyväljaren.
+- Före visning krävs överensstämmelse mellan beslut och faktisk domän/kompetens/nivå, ett användbart visningsfält, en stödd och ändlig svarsform samt en icke-ogiltig evidensklass vars innehållsidentitet matchar uppgiften.
+- Ogiltiga kandidater kasseras och genereras om högst fyra gånger. Om ingen kandidat passerar kastas ett kontrollerat fel som elevsessionens befintliga felhantering visar; ingen felmärkt fallback returneras.
+- Bråk och prioriteringsregler byter inte längre tyst till nivå 1 efter interna generatorfel. Constraint-fallback från aritmetik är fortsatt explicit `invalid` och bevisas nu bli stoppad av guardian.
+- Kontraktstestet kör samtliga registrerade kompetenser på varje tillåten nivå 1–12; NCM-vägen har ett separat regressionsfall.
+
+Verifiering: `npm run test` passerade 73 testfiler/329 tester, avgränsad ESLint passerade och `npm run build` passerade med de befintliga Browserslist-/bundlevarningarna. Testets förväntade stderr kommer från det avsiktligt framtvingade constraint-fallbackfallet. Ingen autentiserad browser-, iPad-, live- eller produktionsverifiering gjordes. Oberoende facit- och variationskontroll återstår uttryckligen.

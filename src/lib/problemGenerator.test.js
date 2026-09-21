@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { divisionTemplates } from '../data/templates/divisionTemplates'
 import { subtractionTemplates } from '../data/templates/subtractionTemplates'
 import { generateProblem } from './problemGenerator'
+import { generateWithProblemGuardian } from '../domains/contracts'
 
 function inRange(value, min, max) {
   return value >= min && value <= max
@@ -64,5 +65,14 @@ describe('problemGenerator decimal evidence', () => {
 
     expect(problem.id).toContain('_fallback_')
     expect(problem.metadata.evidenceClass).toBe('invalid')
+  })
+
+  it('never lets a constraint fallback pass the display guardian', () => {
+    const template = subtractionTemplates.find(item => item.id === 'sub_dec_1dp_1dp_no_borrow')
+    expect(() => generateWithProblemGuardian(
+      () => generateProblem(template, 0),
+      { domain: 'arithmetic', skill: 'subtraction', level: template.difficulty.conceptual_level },
+      2
+    )).toThrow('Problem guardian rejected 2 candidates')
   })
 })

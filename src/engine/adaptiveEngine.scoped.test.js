@@ -161,5 +161,15 @@ describe('adaptive engine scoped selection', () => {
       targetLevel: 3
     })
   })
+
+  it('keeps NCM assignments playable through the display guardian', () => {
+    const problem = selectNextProblemForProfile(profile(), {
+      ncmFilter: { codes: ['AS1'] }
+    })
+
+    expect(problem.metadata.promptText).toBeTruthy()
+    expect(problem.answer.type).toBe('number')
+    expect(problem.metadata.evidenceClass).not.toBe('invalid')
+  })
 })
 

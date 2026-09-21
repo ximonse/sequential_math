@@ -22,7 +22,6 @@ import {
   getWarmupLevel,
   inferCurrentOperation,
   isFastCorrectAnswer,
-  resolveOfferOperation,
   setOperationAbility,
   updateSkillStateAfterAnswer
 } from './difficultyAdapterProfileHelpers'
@@ -38,7 +37,6 @@ import {
   selectDifficultyBucket
 } from './difficultyAdapterSelectionHelpers'
 
-const ADVANCE_OFFER_COOLDOWN_MS = 20 * 60 * 1000
 const ADJUST_CONFIG = {
   [PROGRESSION_MODE_CHALLENGE]: {
     upStrong: 0.35,
@@ -329,66 +327,6 @@ export function selectNextProblem(profile, options = {}) {
     targetLevel,
     progressionMode
   })
-}
-
-export function shouldOfferSteadyAdvance(profile, options = {}) {
-  ensureDifficultyMeta(profile)
-
-  const operation = resolveOfferOperation(options)
-  if (!operation) return null
-
-  const roundedDifficulty = getLowestUnmasteredLevel(profile, operation)
-  if (roundedDifficulty >= 12) return null
-
-  const recent = profile.recentProblems
-    .filter(problem => resolveProblemOperation(problem, {
-      fallback: '',
-      allowUnknownPrefix: false
-    }) === operation)
-    .slice(-20)
-  if (recent.length < 8) return null
-
-  const currentLevelItems = recent.filter(problem => {
-    const level = Number(problem?.difficulty?.conceptual_level || 0)
-    return Math.round(level) === roundedDifficulty
-  })
-  const masteryItems = currentLevelItems.filter(problem => problem.errorCategory !== 'inattention')
-  if (masteryItems.length < 6) return null
-
-  const successRate = masteryItems.filter(problem => problem.correct).length / masteryItems.length
-  const reasonableRate = masteryItems.filter(problem => problem.isReasonable).length / masteryItems.length
-  if (successRate < 0.85 || reasonableRate < 0.7) return null
-
-  const lastOffer = profile.adaptive.lastAdvanceOffer
-  if (
-    lastOffer
-    && lastOffer.operation === operation
-    && Number(lastOffer.fromLevel) === roundedDifficulty
-    && Date.now() - Number(lastOffer.timestamp || 0) < ADVANCE_OFFER_COOLDOWN_MS
-  ) {
-    return null
-  }
-
-  return {
-    operation,
-    fromLevel: roundedDifficulty,
-    nextLevel: Math.min(12, roundedDifficulty + 1),
-    successRate,
-    sampleSize: masteryItems.length
-  }
-}
-
-export function recordSteadyAdvanceDecision(profile, offer, accepted) {
-  ensureDifficultyMeta(profile)
-  if (!offer || typeof offer !== 'object') return
-
-  profile.adaptive.lastAdvanceOffer = {
-    operation: offer.operation,
-    fromLevel: offer.fromLevel,
-    nextLevel: offer.nextLevel,
-    accepted: Boolean(accepted),
-    timestamp: Date.now()
-  }
 }
 
 export function shouldSuggestBreak(_profile, sessionProblemCount, sessionRecentCorrectness = [], options = {}) {

@@ -1,12 +1,14 @@
+import { ADAPTATION_ACTIONS } from '../../../lib/adaptationDecision'
+import { TRAINING_MODES } from '../../../lib/trainingContext'
+
 export function buildSessionOverlayProps({
   activeBreakGame,
   showBreakSuggestion,
   tableMilestone,
   ncmCompletedSession,
   sessionAssignmentKind,
-  advancePrompt,
+  progressionMilestone,
   feedback,
-  levelFocusMilestone,
   dailyLevelStreakMilestone,
   sessionCount,
   breakDurationMinutes,
@@ -17,9 +19,8 @@ export function buildSessionOverlayProps({
   ncmTotalCount,
   ncmRemainingCount,
   goHome,
-  handleAdvanceDecision,
   searchParams,
-  setLevelFocusMilestone,
+  setProgressionMilestone,
   setDailyLevelStreakMilestone,
   navigate,
   studentId,
@@ -36,8 +37,7 @@ export function buildSessionOverlayProps({
     || tableMilestone
     || dailyLevelStreakMilestone
     || (ncmCompletedSession && sessionAssignmentKind === 'ncm')
-    || (advancePrompt && feedback)
-    || (levelFocusMilestone && feedback)
+    || (progressionMilestone && feedback)
   )
   if (!shouldRenderOverlay) return null
 
@@ -57,24 +57,32 @@ export function buildSessionOverlayProps({
     ncmTotalCount,
     ncmRemainingCount,
     onGoHomeAfterNcm: goHome,
-    advancePrompt,
+    progressionMilestone,
     feedback,
-    onAdvanceAccept: () => handleAdvanceDecision(true),
-    onAdvanceDecline: () => handleAdvanceDecision(false),
     dailyLevelStreakMilestone,
     onContinueAfterDailyLevelStreak: () => setDailyLevelStreakMilestone(null),
-    levelFocusMilestone,
-    onPracticeNextLevel: (nextLevel) => {
-      const params = new URLSearchParams(searchParams)
-      params.set('level', String(nextLevel))
-      setLevelFocusMilestone(null)
-      navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
-    },
-    onStayCurrentLevel: () => {
-      setLevelFocusMilestone(null)
+    onContinueAfterProgression: () => {
+      const decision = progressionMilestone
+      setProgressionMilestone(null)
+      if (
+        decision?.trainingMode === TRAINING_MODES.LEVEL_FOCUS
+        && decision?.action === ADAPTATION_ACTIONS.ADVANCE
+        && Number.isInteger(Number(decision.nextLevel))
+      ) {
+        const params = new URLSearchParams(searchParams)
+        params.set('level', String(decision.nextLevel))
+        navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
+        return
+      }
+      if (
+        decision?.trainingMode === TRAINING_MODES.LEVEL_FOCUS
+        && decision?.action === ADAPTATION_ACTIONS.COMPLETE_DOMAIN
+      ) {
+        goHome()
+        return
+      }
       goToNextProblem()
     },
-    onGoHomeFromLevelFocus: goHome,
     tableBossUrl,
     allTablesBossUrl,
     onCloseBreakGame: closeBreakGameAndContinue,

@@ -188,7 +188,7 @@ Detta används i:
 - lärarens tabell (rimlighet/medelavvikelse)
 - per-skill adaptiv uppdatering
 
-## 9. “Klarat nivå” (elevvy)
+## 9. “Klarat nivå” och automatisk fortsättning
 
 Regel för mastery:
 
@@ -212,9 +212,25 @@ Beräknas för:
 I träningsvyn visas diskret bara aktuell typ.
 På elevens startsida visas klarade nivåer per räknesätt.
 
-Nivåerbjudande: När eleven klarar en nivå (6+ problem, 85%+ rätt) erbjuds hen
-att gå upp till nästa nivå. Detta gäller alla träningslägen (single-domain,
-fri träning och nivåfokus).
+När svarspipelinen skapar ett nytt mastery-faktum skapar
+`adaptationDecision.js` samtidigt ett `adaptation_decision` enligt regelversion
+1. Beslutet bär operation, från-/nästanivå, träningsram, observationsreferenser,
+syfte och reason codes. Händelsen lagras idempotent både lokalt och via
+event-API:t.
+
+- fri träning, områdesfokus och nivåfokus får `advance` till nästa steg;
+- nivå 12 får `complete_domain`;
+- ett låst läraruppdrag, eller taket i ett adaptivt läraruppdrag, får
+  `hold_frame` och lämnar inte lärarens ram.
+
+Eleven får inget ja/nej-val och förvarnas inte före avanceringen. Efter ett
+nytt mastery-belägg visas en avgränsad gratulation med en enda knapp:
+`Fortsätt`. I nivåfokus öppnar den redan beslutade nästa nivån. I övriga lägen
+väljer den befintliga scoped-motorn nästa uppgift från det uppdaterade
+mastery-golvet inom träningsramen.
+
+Detta är E3:s första beslutssnitt. Start, flerledad återhämtning, support och
+ett uttryckligt separat `CurrentNeed` återstår att samla i samma beslutsmodell.
 
 ## 10. Assignment-logik
 

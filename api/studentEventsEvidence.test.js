@@ -76,4 +76,38 @@ describe('student event evidence persistence', () => {
       evidenceObservationIds: ['problem-1:1200']
     })
   })
+
+  it('persists one versioned automatic adaptation decision idempotently', () => {
+    const profile = { adaptive: {} }
+    const entry = {
+      id: 'event-decision-1',
+      type: 'adaptation_decision',
+      timestamp: 1234,
+      payload: {
+        decisionId: 'mastery:addition:3:1234:v1',
+        ruleVersion: 1,
+        action: 'advance',
+        purpose: 'challenge',
+        reasonCodes: ['mastery_achieved', 'next_level_available'],
+        operation: 'addition',
+        fromLevel: 3,
+        nextLevel: 4,
+        frameId: 'session-1',
+        trainingMode: 'area_focus',
+        assignmentId: '',
+        evidenceObservationIds: ['problem-1:1200'],
+        decidedAt: 1234
+      }
+    }
+
+    expect(validEntry(entry, 'ELEV1')).toBe(true)
+    expect(validEntry({
+      ...entry,
+      payload: { ...entry.payload, trainingMode: 'surprise' }
+    }, 'ELEV1')).toBe(false)
+    expect(applyWalEntry(profile, entry)).toBe(true)
+    expect(applyWalEntry(profile, entry)).toBe(false)
+    expect(profile.adaptive.lastDecision).toEqual(entry.payload)
+    expect(profile.adaptive.decisionHistory).toHaveLength(1)
+  })
 })

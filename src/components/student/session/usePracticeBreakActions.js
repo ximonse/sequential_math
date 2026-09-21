@@ -1,10 +1,5 @@
 import { useCallback } from 'react'
 import {
-  getOperationAbility,
-  recordSteadyAdvanceDecision,
-  setOperationAbility
-} from '../../../lib/difficultyAdapter'
-import {
   incrementTelemetryDailyMetric,
   recordTelemetryEvent
 } from '../../../lib/telemetry'
@@ -17,7 +12,6 @@ import {
 
 export function usePracticeBreakActions({
   profile,
-  advancePrompt,
   tableMilestone,
   tableQueue,
   sessionCount,
@@ -29,7 +23,6 @@ export function usePracticeBreakActions({
   sessionRecentCorrectnessRef,
   goToNextProblem,
   resetAttentionTracker,
-  setAdvancePrompt,
   setActiveBreakGame,
   setShowBreakSuggestion,
   setPendingBreakSuggestion,
@@ -43,31 +36,6 @@ export function usePracticeBreakActions({
   setStartTime,
   persistProfile
 }) {
-  const handleAdvanceDecision = useCallback((accepted) => {
-    if (!profile || !advancePrompt) return
-    const now = Date.now()
-    recordSteadyAdvanceDecision(profile, advancePrompt, accepted)
-    if (accepted) {
-      profile.currentDifficulty = Math.max(profile.currentDifficulty, advancePrompt.nextLevel)
-      profile.highestDifficulty = Math.max(profile.highestDifficulty || 1, profile.currentDifficulty)
-      if (advancePrompt.operation) {
-        const current = getOperationAbility(profile, advancePrompt.operation)
-        setOperationAbility(profile, advancePrompt.operation, Math.max(current, advancePrompt.nextLevel))
-      }
-    }
-    recordTelemetryEvent(profile, 'steady_advance_decision', {
-      sessionId: sessionTelemetryRef.current?.sessionId || '',
-      accepted,
-      operation: advancePrompt.operation,
-      fromLevel: advancePrompt.fromLevel,
-      nextLevel: advancePrompt.nextLevel
-    }, now)
-    incrementTelemetryDailyMetric(profile, accepted ? 'steady_advances_accepted' : 'steady_advances_declined', 1, now)
-    void persistProfile(profile)
-    setAdvancePrompt(null)
-    goToNextProblem()
-  }, [profile, advancePrompt, sessionTelemetryRef, setAdvancePrompt, goToNextProblem, persistProfile])
-
   const handleTakeBreak = useCallback(() => {
     if (profile) {
       const now = Date.now()
@@ -243,7 +211,6 @@ export function usePracticeBreakActions({
   ])
 
   return {
-    handleAdvanceDecision,
     handleTakeBreak,
     goToNextProblemAfterBreakSuggestion,
     closeBreakGameAndContinue,

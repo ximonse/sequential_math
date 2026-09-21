@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { addProblemResult, createStudentProfile, getCurrentStreak } from './studentProfile'
 import { computeOperationLevelMasteryStatus } from './masteryCalculation'
 import { createTableProblem } from '../components/student/session/sessionUtils'
+import { selectNextProblemForProfile } from '../engine/adaptiveEngine'
 
 function makeAttempts(count, values = {}) {
   return Array.from({ length: count }, () => ({ ...values }))
@@ -146,6 +147,77 @@ describe('addProblemResult', () => {
       4
     ).attempts).toBe(0)
     expect(profile.masteryFacts.facts).toEqual([])
+  })
+
+  it('creates one automatic progression decision from the mastery event', () => {
+    const profile = createStudentProfile('ELEV6', 'Fia', 5)
+    const trainingContext = {
+      version: 1,
+      frameId: 'session-mastery',
+      mode: 'area_focus',
+      source: 'student_focus',
+      assignmentId: '',
+      assignmentKind: '',
+      allowedSkills: ['addition'],
+      levelRange: null,
+      tableSet: [],
+      progressionMode: 'steady'
+    }
+    for (let index = 0; index < 5; index += 1) {
+      const prerequisite = {
+        id: `add-prerequisite-${index}`,
+        domain: 'arithmetic',
+        skill: 'addition',
+        type: 'addition',
+        level: 1,
+        values: { a: 2, b: 3 },
+        result: 5,
+        difficulty: { conceptual_level: 1 }
+      }
+      addProblemResult(profile, prerequisite, 5, 3, {
+        rawAnswer: '5',
+        trainingContext
+      })
+    }
+    let finalEntries = []
+    for (let index = 0; index < 5; index += 1) {
+      const problem = {
+        id: `add-mastery-${index}`,
+        domain: 'arithmetic',
+        skill: 'addition',
+        type: 'addition',
+        level: 2,
+        values: { a: 2, b: 3 },
+        result: 5,
+        difficulty: { conceptual_level: 2 }
+      }
+      finalEntries = addProblemResult(profile, problem, 5, 3, {
+        rawAnswer: '5',
+        trainingContext
+      }).walEntries
+    }
+
+    expect(finalEntries.map(entry => entry.type)).toEqual([
+      'problem_result',
+      'mastery_achieved',
+      'adaptation_decision'
+    ])
+    expect(profile.adaptive.lastDecision).toMatchObject({
+      action: 'advance',
+      operation: 'addition',
+      fromLevel: 2,
+      nextLevel: 3,
+      frameId: 'session-mastery'
+    })
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0.5)
+    try {
+      const nextProblem = selectNextProblemForProfile(profile, {
+        allowedTypes: ['addition']
+      })
+      expect(nextProblem.level).toBe(3)
+    } finally {
+      random.mockRestore()
+    }
   })
 
 })

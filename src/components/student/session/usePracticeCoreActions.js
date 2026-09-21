@@ -5,7 +5,6 @@ import { createWalEntry, appendToWal } from '../../../lib/syncWal'
 import { getPilotStudentRuntime, normalizePilotStudentId } from '../../../lib/pilotStudentRuntime'
 import {
   adjustDifficulty,
-  shouldOfferSteadyAdvance,
   shouldSuggestBreak
 } from '../../../lib/difficultyAdapter'
 import {
@@ -69,10 +68,9 @@ export function usePracticeCoreActions({
   setBreakDurationMinutes,
   setNcmCompletedSession,
   setNcmRemainingCount,
-  setLevelFocusMilestone,
+  setProgressionMilestone,
   setTableQueue,
   setTableMilestone,
-  setAdvancePrompt,
   setLastBreakPromptAt,
   setDailyLevelStreakMilestone,
   freeOps = [],
@@ -227,10 +225,6 @@ export function usePracticeCoreActions({
       if (!Number.isFinite(studentAnswer)) return
     }
 
-    const masteryBeforeLevelFocus = isLevelFocusMode
-      ? getOperationLevelMasteryStatus(profile, mode, fixedPracticeLevel)
-      : null
-
     const interruption = finalizeAttentionSnapshot(attentionRef.current)
     const mixedMode = isMixedTrainingSession(mode, sessionAssignment, isTableDrill)
     const trainingContext = buildTrainingContext({
@@ -266,18 +260,33 @@ export function usePracticeCoreActions({
       })
     }
 
-    let levelMasteredNow = null
-    if (isLevelFocusMode) {
-      const masteryAfterLevelFocus = getOperationLevelMasteryStatus(profile, mode, fixedPracticeLevel)
-      if (!masteryBeforeLevelFocus?.isMastered && masteryAfterLevelFocus.isMastered) {
-        levelMasteredNow = masteryAfterLevelFocus
-        setLevelFocusMilestone({
-          operation: mode,
-          level: fixedPracticeLevel,
-          attempts: masteryAfterLevelFocus.attempts,
-          correct: masteryAfterLevelFocus.correct
-        })
-      }
+    const progressionDecision = Array.isArray(walEntries)
+      ? walEntries.find(entry => entry?.type === 'adaptation_decision')?.payload || null
+      : null
+    const masteryEvent = Array.isArray(walEntries)
+      ? walEntries.find(entry => entry?.type === 'mastery_achieved')?.payload || null
+      : null
+    const levelMasteredNow = isLevelFocusMode && progressionDecision
+      ? getOperationLevelMasteryStatus(profile, mode, fixedPracticeLevel)
+      : null
+    if (progressionDecision) {
+      setProgressionMilestone({
+        ...progressionDecision,
+        attempts: Number(masteryEvent?.window?.attempts || 0),
+        correct: Number(masteryEvent?.window?.correct || 0)
+      })
+      recordTelemetryEvent(profile, 'automatic_progression_decision', {
+        sessionId: sessionTelemetryRef.current?.sessionId || '',
+        decisionId: progressionDecision.decisionId,
+        ruleVersion: progressionDecision.ruleVersion,
+        action: progressionDecision.action,
+        purpose: progressionDecision.purpose,
+        operation: progressionDecision.operation,
+        fromLevel: progressionDecision.fromLevel,
+        nextLevel: progressionDecision.nextLevel,
+        frameId: progressionDecision.frameId
+      }, progressionDecision.decidedAt)
+      incrementTelemetryDailyMetric(profile, 'automatic_progression_decisions', 1, progressionDecision.decidedAt)
     }
 
     const newCount = sessionCount + 1
@@ -360,8 +369,6 @@ export function usePracticeCoreActions({
       }
     }
 
-    let breakSuggested = false
-
     const pilotEvents = []
     if (isTableDrill) {
       const currentItem = tableQueue[0]
@@ -420,17 +427,6 @@ export function usePracticeCoreActions({
         setPendingBreakSuggestion(true)
         setBreakDurationMinutes(breakPolicy.recommendedBreakMinutes)
         setLastBreakPromptAt(Date.now())
-        breakSuggested = true
-      }
-    }
-
-	    if (!isTableDrill && !sessionAssignment && !breakSuggested) {
-	      const offer = shouldOfferSteadyAdvance(profile, {
-	        progressionMode,
-	        operation: (mode && isKnownMode(mode)) ? mode : currentOperation
-	      })
-      if (offer) {
-        setAdvancePrompt(offer)
       }
     }
 
@@ -444,7 +440,7 @@ export function usePracticeCoreActions({
       }
     }
 
-    const shouldForceSync = Boolean(levelMasteredNow) || isTableDrill
+    const shouldForceSync = Boolean(progressionDecision) || isTableDrill
     if (isPilotStudent) {
       const runtime = getPilotStudentRuntime()
       for (const event of pilotEvents) {
@@ -473,7 +469,7 @@ export function usePracticeCoreActions({
     ncmTotalRef,
     tableQueue,
     lastBreakPromptAt,
-    setLevelFocusMilestone,
+    setProgressionMilestone,
     setSessionCount,
     setFeedback,
     setNcmRemainingCount,
@@ -482,7 +478,6 @@ export function usePracticeCoreActions({
     setPendingBreakSuggestion,
     setBreakDurationMinutes,
     setLastBreakPromptAt,
-    setAdvancePrompt,
     setDailyLevelStreakMilestone,
     isPilotStudent,
     persistProfile

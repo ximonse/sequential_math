@@ -398,25 +398,6 @@ function pickNextFreeOperation(profile, candidates) {
   return candidates[0]
 }
 
-export function getLevelFocusNextLevelAction(profile, mode, fixedLevel) {
-  if (!profile || !isKnownMode(mode) || !Number.isInteger(fixedLevel)) return null
-
-  const lastOffer = profile?.adaptive?.lastAdvanceOffer
-  if (!lastOffer || lastOffer.accepted !== false) return null
-
-  const operation = String(lastOffer.operation || '')
-  const fromLevel = Number(lastOffer.fromLevel)
-  const nextLevel = Number(lastOffer.nextLevel)
-  if (operation !== mode) return null
-  if (!Number.isInteger(fromLevel) || fromLevel !== fixedLevel) return null
-  if (!Number.isInteger(nextLevel) || nextLevel <= fixedLevel || nextLevel > 12) return null
-
-  return {
-    nextLevel,
-    label: 'Gå till nästa nivå'
-  }
-}
-
 export function getOperationLevelMasteryStatus(profile, operation, level) {
   if (!profile || !operation || !Number.isInteger(level)) {
     return { attempts: 0, correct: 0, rate: 0, successRate: 0, isMastered: false }

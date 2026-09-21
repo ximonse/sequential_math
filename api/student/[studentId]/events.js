@@ -11,6 +11,7 @@ import {
   isCurrentStudentProfile
 } from '../../../src/lib/studentProfileContract.js'
 import { isValidTrainingContext } from '../../../src/lib/trainingContext.js'
+import { isValidAdaptationDecision, recordAdaptationDecision } from '../../../src/lib/adaptationDecision.js'
 
 const MAX_PROBLEM_LOG = 5000
 const MAX_RECENT_PROBLEMS = 250
@@ -226,6 +227,7 @@ export function validEntry(entry, studentId) {
     && (payload.evidenceObservationIds == null || (Array.isArray(payload.evidenceObservationIds)
       && payload.evidenceObservationIds.length <= 50
       && payload.evidenceObservationIds.every(id => typeof id === 'string' && id.length > 0 && id.length <= 200)))
+  if (entry.type === 'adaptation_decision') return isValidAdaptationDecision(payload)
   if (entry.type === 'profile_checkpoint') return validCheckpoint(payload)
   if (entry.type === 'ticket_response') return typeof payload.dispatchId === 'string' && payload.dispatchId.length > 0 && payload.dispatchId.length <= 100
     && typeof payload.studentAnswer === 'string' && payload.studentAnswer.length <= 500
@@ -244,6 +246,8 @@ export function applyWalEntry(profile, entry) {
       return applyProblemResult(profile, entry.payload)
     case 'mastery_achieved':
       return applyMasteryAchieved(profile, entry.payload)
+    case 'adaptation_decision':
+      return recordAdaptationDecision(profile, entry.payload)
     case 'table_completed':
       return applyTableCompleted(profile, entry.payload, entry)
     case 'profile_checkpoint':

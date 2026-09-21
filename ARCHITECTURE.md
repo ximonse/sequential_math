@@ -29,7 +29,6 @@ Nuvarande domäner:
 - [ ] `src/lib/operations.js` → `OPERATION_LABELS` (visningsnamn)
 - [ ] `src/lib/assignments.js` → `KNOWN_OPERATION_TYPES` (uppdrag via länk)
 - [ ] `src/lib/difficultyAdapterSelectionHelpers.js` → `KNOWN_OPERATION_TYPES` (sessionsfiltrering)
-- [ ] `src/lib/difficultyAdapterProfileHelpers.js` → `KNOWN_OPERATION_TYPES` (progression per operation)
 - [ ] `src/lib/mathUtils.js` → `KNOWN_OPERATION_TYPES` (typ-inferens)
 - [ ] `src/components/teacher/sections/dashboardConstants.js` → `ALL_OPERATIONS` (lärarvyer)
 
@@ -68,6 +67,8 @@ Elev startar träning
   → ProblemDisplay visar (metadata.promptText om text-fråga, annars a op b)
   → Elev svarar
   → domain.evaluate(problem, svar) → { correct, isReasonable }
-  → difficultyAdapter.js uppdaterar operationAbilities[operation]
-  → Progression: shouldOfferSteadyAdvance() läser difficulty.conceptual_level
+  → addProblemResult() bevarar observation och eventuellt mastery-faktum
+  → adaptationDecision.js skapar ett versionsmärkt beslut från nytt mastery
+  → nästa uppgift följer mastery-golvet inom träningsramen
+  → UI gratulerar efter beslutet och erbjuder bara Fortsätt
 ```

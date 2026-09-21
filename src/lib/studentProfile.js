@@ -7,6 +7,7 @@ import { STUDENT_PROFILE_SCHEMA_VERSION } from './studentProfileContract'
 import { analyzeStudentError, evaluateStudentAnswer, getProblemSelection } from '../engine/adaptiveEngine'
 import { isMasteryEligible, readEvidenceClaim } from './evidenceContract'
 import { isValidTrainingContext } from './trainingContext'
+import { buildMasteryProgressionDecision, recordAdaptationDecision } from './adaptationDecision'
 export { getStartOfWeekTimestamp } from './studentProfileTimingHelpers'
 
 const MAX_RECENT_PROBLEMS = 250
@@ -279,17 +280,25 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
         evidenceObservationIds
       })
       if (fact) {
+        const masteryPayload = {
+          operation: opForMastery,
+          level: levelForMastery,
+          achievedAt: fact.achievedAt,
+          ruleVersion: fact.ruleVersion,
+          evidenceObservationIds,
+          window: masteryAfter
+        }
         walEntries.push({
           type: 'mastery_achieved',
-          payload: {
-            operation: opForMastery,
-            level: levelForMastery,
-            achievedAt: fact.achievedAt,
-            ruleVersion: fact.ruleVersion,
-            evidenceObservationIds,
-            window: masteryAfter
-          }
+          payload: masteryPayload
         })
+        const decision = buildMasteryProgressionDecision({
+          mastery: masteryPayload,
+          trainingContext
+        })
+        if (decision && recordAdaptationDecision(profile, decision)) {
+          walEntries.push({ type: 'adaptation_decision', payload: decision })
+        }
       }
     }
   }

@@ -515,22 +515,18 @@ flowchart TD
     Adjust -->|Nej| AdjustDiff[adjustDifficulty<br/>opAbility + globalDiff]
     Adjust -->|Ja| SkipAdjust[Skippa justering]
 
-    AdjustDiff & SkipAdjust --> CheckMastery{Nivåfokus?<br/>Just mastered?}
-    CheckMastery -->|Ja| Celebrate[🎉 Grattis-skärm<br/>Nästa nivå / Stanna]
-    CheckMastery -->|Nej| CheckBreak{Pausförslag?<br/>>= 25 problem<br/>tappande trend}
+    AdjustDiff & SkipAdjust --> CheckMastery{Nytt mastery-<br/>faktum?}
+    CheckMastery -->|Ja| Decide[adaptation_decision v1<br/>advance / complete / hold]
+    Decide --> Celebrate[🎉 Grattis-skärm<br/>en enda Fortsätt-knapp]
+    CheckMastery -->|Nej| CheckBreak{Pausförslag?}
     CheckBreak -->|Ja| Break[Visa pausförslag]
-    CheckBreak -->|Nej| CheckAdvance{Single-domain?<br/>shouldOfferSteadyAdvance?}
-    CheckAdvance -->|Ja| Advance[📈 Vill du prova<br/>nästa nivå?]
-    CheckAdvance -->|Nej| Feedback[Visa feedback<br/>Rätt! / Inte riktigt]
+    CheckBreak -->|Nej| Feedback[Visa feedback<br/>Rätt! / Inte riktigt]
 
-    Celebrate -->|Nästa nivå| Navigate[Navigate med level+1]
-    Celebrate -->|Stanna| GenNext
-    Advance -->|Acceptera| BumpLevel[Höj opAbility]
-    Advance -->|Avböj| GenNext
+    Celebrate -->|Fortsätt i nivåfokus| Navigate[Navigate med beslutad level+1]
+    Celebrate -->|Fortsätt i övriga lägen| GenNext
     Break -->|Ta paus| Home[Tillbaka hem]
     Break -->|Fortsätt| GenNext
 
-    BumpLevel --> GenNext
     Feedback --> AutoCont{Auto-fortsätt<br/>efter 3s om rätt}
     AutoCont --> GenNext[Generera nästa problem]
     GenNext --> Display
@@ -583,7 +579,9 @@ graph TB
         P_Bucket["Buckets:<br/>very_easy 5%, easy 25%<br/>core 50%, hard 15%<br/>challenge 5%"]
         P_Push["Push vid >92% success<br/>efter 6+ problem"]
         P_Boot["Bootstrap: 30% chans<br/>att testa nivå 2"]
-        P_Advance["Erbjud nivåbyte:<br/>shouldOfferSteadyAdvance<br/>6+ problem, 85%+ accuracy"]
         P_Mastery["Mastery: senaste 15<br/>försök per nivå, 85%+"]
+        P_Decision["Masteryövergång:<br/>adaptation_decision v1<br/>advance / complete / hold"]
+        P_Confirm["Bekräftelse efter belägg:<br/>Grattis + Fortsätt<br/>inget elevval"]
+        P_Mastery --> P_Decision --> P_Confirm
     end
 ```

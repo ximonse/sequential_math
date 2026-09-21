@@ -52,7 +52,7 @@ export function usePracticeSetupEffects({
   setTableQueue,
   tableQueue,
   setTableMilestone,
-  setAdvancePrompt,
+  setProgressionMilestone,
   setPendingBreakSuggestion,
   setCoarsePointer,
   resetAttentionTracker,
@@ -225,7 +225,7 @@ export function usePracticeSetupEffects({
     const initialQueue = createTableQueue(tableSet)
     setTableQueue(initialQueue)
     setTableMilestone(null)
-    setAdvancePrompt(null)
+    setProgressionMilestone(null)
     setPendingBreakSuggestion(false)
     sessionRecentCorrectnessRef.current = []
     setCurrentProblem(initialQueue.length > 0 ? createTableProblem(initialQueue[0]) : null)
@@ -242,7 +242,7 @@ export function usePracticeSetupEffects({
     sessionRecentCorrectnessRef,
     setTableQueue,
     setTableMilestone,
-    setAdvancePrompt,
+    setProgressionMilestone,
     setPendingBreakSuggestion,
     setCurrentProblem,
     setAnswer,

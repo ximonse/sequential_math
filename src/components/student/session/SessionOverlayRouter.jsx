@@ -2,8 +2,7 @@ import BreakGameOverlay from '../BreakGameOverlay'
 import BreakPrompt from '../BreakPrompt'
 import MilestoneOverlay from '../MilestoneOverlay'
 import NcmCompletionOverlay from '../NcmCompletionOverlay'
-import AdvancePromptOverlay from '../AdvancePromptOverlay'
-import LevelFocusMilestoneOverlay from '../LevelFocusMilestoneOverlay'
+import ProgressionMilestoneOverlay from '../ProgressionMilestoneOverlay'
 import DailyLevelStreakOverlay from '../DailyLevelStreakOverlay'
 
 function SessionOverlayRouter({
@@ -24,14 +23,9 @@ function SessionOverlayRouter({
   ncmTotalCount,
   ncmRemainingCount,
   onGoHomeAfterNcm,
-  advancePrompt,
+  progressionMilestone,
   feedback,
-  onAdvanceAccept,
-  onAdvanceDecline,
-  levelFocusMilestone,
-  onPracticeNextLevel,
-  onStayCurrentLevel,
-  onGoHomeFromLevelFocus,
+  onContinueAfterProgression,
   tableBossUrl,
   allTablesBossUrl,
   onCloseBreakGame,
@@ -95,23 +89,11 @@ function SessionOverlayRouter({
     )
   }
 
-  if (advancePrompt && feedback) {
+  if (progressionMilestone && feedback) {
     return (
-      <AdvancePromptOverlay
-        advancePrompt={advancePrompt}
-        onAccept={onAdvanceAccept}
-        onDecline={onAdvanceDecline}
-      />
-    )
-  }
-
-  if (levelFocusMilestone && feedback) {
-    return (
-      <LevelFocusMilestoneOverlay
-        milestone={levelFocusMilestone}
-        onPracticeNextLevel={onPracticeNextLevel}
-        onStayCurrentLevel={onStayCurrentLevel}
-        onGoHome={onGoHomeFromLevelFocus}
+      <ProgressionMilestoneOverlay
+        milestone={progressionMilestone}
+        onContinue={onContinueAfterProgression}
       />
     )
   }

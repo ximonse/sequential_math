@@ -5,9 +5,7 @@ function SessionModeBanner({
   assignment,
   mode,
   tableSet,
-  fixedLevel = null,
-  nextLevelAction = null,
-  onGoToNextLevel = null
+  fixedLevel = null
 }) {
   if (!assignment) {
     if (tableSet.length > 0) {
@@ -26,18 +24,7 @@ function SessionModeBanner({
 
       return (
         <div className="mb-5 bg-white border border-emerald-200 text-emerald-700 rounded-lg px-4 py-2 text-sm">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <span className="sm:flex-1">{modeText}</span>
-            {nextLevelAction && typeof onGoToNextLevel === 'function' && (
-              <button
-                type="button"
-                onClick={onGoToNextLevel}
-                className="self-end sm:self-auto sm:ml-auto font-semibold underline underline-offset-2 text-emerald-700 hover:text-emerald-900"
-              >
-                {nextLevelAction.label || 'Nästa nivå'}
-              </button>
-            )}
-          </div>
+          <span>{modeText}</span>
         </div>
       )
     }

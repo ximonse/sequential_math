@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getLevelFocusNextLevelAction, getSessionRules, recordTableCompletion } from './sessionUtils'
+import { getSessionRules, recordTableCompletion } from './sessionUtils'
 
 function createProfile(recentProblems = [], adaptive = {}) {
   return {
@@ -108,47 +108,6 @@ describe('sessionUtils getSessionRules', () => {
     expect(levelFocusRules.forcedLevel).toBe(5)
     expect(levelFocusRules.lockToMasteryFloor).toBeUndefined()
     expect(levelFocusRules.startReason).toBeUndefined()
-  })
-})
-
-describe('sessionUtils getLevelFocusNextLevelAction', () => {
-  it('returns next-level action after declined advance in matching level-focus context', () => {
-    const profile = createProfile([], {
-      lastAdvanceOffer: {
-        operation: 'addition',
-        fromLevel: 1,
-        nextLevel: 2,
-        accepted: false
-      }
-    })
-
-    const action = getLevelFocusNextLevelAction(profile, 'addition', 1)
-    expect(action).toEqual({
-      nextLevel: 2,
-      label: 'Gå till nästa nivå'
-    })
-  })
-
-  it('returns null when advance was accepted or mismatched', () => {
-    const acceptedProfile = createProfile([], {
-      lastAdvanceOffer: {
-        operation: 'addition',
-        fromLevel: 1,
-        nextLevel: 2,
-        accepted: true
-      }
-    })
-    expect(getLevelFocusNextLevelAction(acceptedProfile, 'addition', 1)).toBeNull()
-
-    const mismatchProfile = createProfile([], {
-      lastAdvanceOffer: {
-        operation: 'subtraction',
-        fromLevel: 1,
-        nextLevel: 2,
-        accepted: false
-      }
-    })
-    expect(getLevelFocusNextLevelAction(mismatchProfile, 'addition', 1)).toBeNull()
   })
 })
 

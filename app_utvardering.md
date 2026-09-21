@@ -11,7 +11,7 @@ Här är en sammanställning av utvärderingen kring appens logik, pedagogiska f
 *   **Svårighetsanpassning:** Systemet anpassar sig väl efter prestationen. Vid test av multiplikation höll sig appen inledningsvis inom tabellerna för 2-8. Vid snabba och korrekta svar bibehålls en jämn och utmanande nivå. När vi medvetet svarade fel (t.ex. 2x4=7) så anpassade sig appen genom att stanna kvar i samma svårighetsspann istället för att gå vidare, vilket är pedagogiskt helt rätt för att befästa kunskapen innan man går vidare.
 *   **Användarupplevelse (UX):** Extremt snabbt och effektivt flöde. Att man kan använda "Enter" för att svara och direkt gå till nästa uppgift ger ett skönt tempo.
 *   **Streaks:** Tydligt fokus på "streaks" (t.ex. feedback som "5 i rad!") skapar motivation. Det visuella förstärker att det handlar om uthållighet.
-*   **Nivåerbjudande:** När eleven klarar en nivå (85%+ på senaste 15 försök) erbjuds hen att gå upp till nästa nivå — oavsett vilket träningsläge som används.
+*   **Automatisk nivåövergång (uppdaterad 2026-09-21):** När svarspipelinen skapar ett nytt mastery-belägg fattas ett versionsmärkt progressionsbeslut automatiskt. Eleven gratuleras i efterhand och fortsätter med en enda knapp; appen frågar inte om eleven vill gå upp eller stanna. Ett lärarlåst uppdrag lämnas inte.
 
 ## 2. Fri träning
 Genomgång av de fyra räknesätten visade på en mycket snabb och följsam adaptivitet:

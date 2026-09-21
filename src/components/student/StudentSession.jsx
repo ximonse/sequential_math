@@ -11,7 +11,6 @@ import { useStudentSyncStatus } from './session/useStudentSyncStatus'
 import {
   createAttentionTracker,
   DEFAULT_BREAK_MINUTES,
-  getLevelFocusNextLevelAction,
   isKnownMode,
   parsePracticeLevel,
   parseTableSet,
@@ -72,9 +71,8 @@ function StudentSession() {
   const [sessionError, setSessionError] = useState('')
   const [tableQueue, setTableQueue] = useState([])
   const [tableMilestone, setTableMilestone] = useState(null)
-  const [levelFocusMilestone, setLevelFocusMilestone] = useState(null)
+  const [progressionMilestone, setProgressionMilestone] = useState(null)
   const [dailyLevelStreakMilestone, setDailyLevelStreakMilestone] = useState(null)
-  const [advancePrompt, setAdvancePrompt] = useState(null)
   const inputRef = useRef(null)
   const attentionRef = useRef(createAttentionTracker())
   const sessionRecentCorrectnessRef = useRef([])
@@ -105,11 +103,6 @@ function StudentSession() {
     && mode
     && isKnownMode(mode)
     && Number.isInteger(fixedPracticeLevel)
-  const levelFocusNextLevelAction = useMemo(
-    () => getLevelFocusNextLevelAction(profile, mode, fixedPracticeLevel),
-    [profile, mode, fixedPracticeLevel]
-  )
-
   const resetAttentionTracker = useCallback(() => {
     attentionRef.current = createAttentionTracker()
   }, [])
@@ -119,24 +112,6 @@ function StudentSession() {
     if (isPilotStudent) return getPilotStudentRuntime().persistCheckpoint(nextProfile)
     return Promise.resolve(saveProfile(nextProfile, options))
   }, [isPilotStudent])
-  const handleGoToNextLevelFromBanner = useCallback(() => {
-    if (!profile || !levelFocusNextLevelAction || !mode || !isKnownMode(mode)) return
-
-    if (profile?.adaptive?.lastAdvanceOffer && profile.adaptive.lastAdvanceOffer.accepted === false) {
-      profile.adaptive.lastAdvanceOffer = {
-        ...profile.adaptive.lastAdvanceOffer,
-        accepted: true,
-        timestamp: Date.now()
-      }
-      void persistProfile(profile)
-    }
-
-    const params = new URLSearchParams(searchParams)
-    params.set('mode', mode)
-    params.set('level', String(levelFocusNextLevelAction.nextLevel))
-    navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
-  }, [profile, levelFocusNextLevelAction, mode, searchParams, navigate, studentId, persistProfile])
-
   const safeSelectProblem = useCallback((currentProfile, rules) => {
     try {
       setSessionError('')
@@ -182,7 +157,7 @@ function StudentSession() {
     setTableQueue,
     tableQueue,
     setTableMilestone,
-    setAdvancePrompt,
+    setProgressionMilestone,
     setPendingBreakSuggestion,
     setCoarsePointer,
     resetAttentionTracker,
@@ -202,7 +177,6 @@ function StudentSession() {
   const {
     goToNextProblem,
     handleSubmit,
-    handleAdvanceDecision,
     handleTakeBreak,
     goToNextProblemAfterBreakSuggestion,
     closeBreakGameAndContinue,
@@ -221,7 +195,6 @@ function StudentSession() {
     tableQueue,
     tableMilestone,
     sessionAssignment,
-    advancePrompt,
     sessionWarmup,
     completedThisSession,
     tableSet,
@@ -250,10 +223,9 @@ function StudentSession() {
     setActiveBreakGame,
     setNcmCompletedSession,
     setNcmRemainingCount,
-    setLevelFocusMilestone,
+    setProgressionMilestone,
     setTableQueue,
     setTableMilestone,
-    setAdvancePrompt,
     setLastBreakPromptAt,
     setDailyLevelStreakMilestone,
     freeOps,
@@ -269,8 +241,7 @@ function StudentSession() {
     goToNextProblem,
     showBreakSuggestion,
     tableMilestone,
-    advancePrompt,
-    levelFocusMilestone,
+    progressionMilestone,
     dailyLevelStreakMilestone,
     attentionRef,
     presenceSyncRef,
@@ -288,9 +259,8 @@ function StudentSession() {
     tableMilestone,
     ncmCompletedSession,
     sessionAssignmentKind: sessionAssignment?.kind,
-    advancePrompt,
+    progressionMilestone,
     feedback,
-    levelFocusMilestone,
     dailyLevelStreakMilestone,
     sessionCount,
     breakDurationMinutes,
@@ -301,9 +271,8 @@ function StudentSession() {
     ncmTotalCount,
     ncmRemainingCount,
     goHome,
-    handleAdvanceDecision,
     searchParams,
-    setLevelFocusMilestone,
+    setProgressionMilestone,
     setDailyLevelStreakMilestone,
     navigate,
     studentId,
@@ -338,8 +307,6 @@ function StudentSession() {
       tableSet={tableSet}
       progressionMode={progressionMode}
       fixedPracticeLevel={fixedPracticeLevel}
-      levelFocusNextLevelAction={levelFocusNextLevelAction}
-      onGoToNextLevelFromBanner={handleGoToNextLevelFromBanner}
       sessionError={sessionError}
       currentProblem={currentProblem}
       feedback={feedback}

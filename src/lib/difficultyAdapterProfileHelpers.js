@@ -4,12 +4,6 @@ import {
 } from './progressionModes'
 
 const DAY_MS = 24 * 60 * 60 * 1000
-const KNOWN_OPERATION_TYPES = new Set([
-  'addition', 'subtraction', 'multiplication', 'division',
-  'algebra_evaluate', 'algebra_simplify',
-  'arithmetic_expressions', 'fractions', 'percentage'
-])
-
 export function ensureDifficultyMeta(profile) {
   if (typeof profile.highestDifficulty !== 'number' || Number.isNaN(profile.highestDifficulty)) {
     profile.highestDifficulty = profile.currentDifficulty || 1
@@ -203,17 +197,6 @@ export function isFastCorrectAnswer(options) {
   const estimated = Number(options.problem?.metadata?.estimated_time)
   if (!Number.isFinite(estimated) || estimated <= 0) return timeSpent <= 12
   return timeSpent <= estimated * 0.75
-}
-
-export function resolveOfferOperation(options) {
-  if (typeof options.operation === 'string' && KNOWN_OPERATION_TYPES.has(options.operation)) {
-    return options.operation
-  }
-  if (Array.isArray(options.allowedTypes) && options.allowedTypes.length === 1) {
-    const only = String(options.allowedTypes[0] || '')
-    if (KNOWN_OPERATION_TYPES.has(only)) return only
-  }
-  return null
 }
 
 function getProblemsCompletedToday(profile) {

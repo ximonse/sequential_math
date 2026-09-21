@@ -572,12 +572,26 @@ function mergeAdaptive(existingAdaptive, incomingAdaptive, preferIncoming) {
     }
   }
 
+  const decisionsById = new Map()
+  for (const decision of [
+    ...(Array.isArray(existing.decisionHistory) ? existing.decisionHistory : []),
+    ...(Array.isArray(incoming.decisionHistory) ? incoming.decisionHistory : [])
+  ]) {
+    if (decision?.decisionId) decisionsById.set(decision.decisionId, decision)
+  }
+  const decisionHistory = Array.from(decisionsById.values())
+    .sort((a, b) => Number(a.decidedAt || 0) - Number(b.decidedAt || 0))
+    .slice(-100)
+  const lastDecision = decisionHistory.at(-1)
+
   return {
     ...older,
     ...fresher,
     operationAbilities: mergedAbilities,
     skillStates: mergedSkills,
-    recentSelections: Array.isArray(fresher.recentSelections) ? fresher.recentSelections : (Array.isArray(older.recentSelections) ? older.recentSelections : [])
+    recentSelections: Array.isArray(fresher.recentSelections) ? fresher.recentSelections : (Array.isArray(older.recentSelections) ? older.recentSelections : []),
+    decisionHistory,
+    ...(lastDecision ? { lastDecision } : {})
   }
 }
 

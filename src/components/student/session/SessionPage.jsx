@@ -16,8 +16,6 @@ function SessionPage({
   tableSet,
   progressionMode,
   fixedPracticeLevel,
-  levelFocusNextLevelAction,
-  onGoToNextLevelFromBanner,
   sessionError,
   currentProblem,
   feedback,
@@ -56,8 +54,6 @@ function SessionPage({
             tableSet={tableSet}
             progressionMode={progressionMode}
             fixedLevel={fixedPracticeLevel}
-            nextLevelAction={levelFocusNextLevelAction}
-            onGoToNextLevel={onGoToNextLevelFromBanner}
           />
           {sessionError && (
             <div className="mb-4 rounded-lg bg-red-50 text-red-700 border border-red-200 px-3 py-2 text-sm">

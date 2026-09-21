@@ -228,7 +228,11 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     difficultyBucket: problem.metadata?.difficultyBucket || 'core',
     targetLevel: problem.metadata?.targetLevel || selection.level,
     trainingDecisionId: String(problem.metadata?.trainingDecisionId || ''),
+    trainingDecisionRuleVersion: Number(problem.metadata?.trainingDecisionRuleVersion || 0) || null,
     trainingPurpose: String(problem.metadata?.trainingPurpose || ''),
+    trainingReasonCodes: Array.isArray(problem.metadata?.trainingReasonCodes)
+      ? problem.metadata.trainingReasonCodes.map(value => String(value || '')).filter(Boolean).slice(0, 10)
+      : [],
     abilityBefore: problem.metadata?.abilityBefore ?? profile.currentDifficulty,
     progressionMode: problem.metadata?.progressionMode || 'challenge',
     isReasonable,

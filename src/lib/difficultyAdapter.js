@@ -19,7 +19,6 @@ import {
   getCurrentOperationStreak,
   getOperationAbility,
   getRecentOperationSuccessRate,
-  getWarmupLevel,
   inferCurrentOperation,
   isFastCorrectAnswer,
   setOperationAbility,
@@ -36,6 +35,7 @@ import {
   pickNextNcmSkillTag,
   selectDifficultyBucket
 } from './difficultyAdapterSelectionHelpers'
+import { buildAbsenceWarmupDecision } from './sessionStartDecision'
 
 const ADJUST_CONFIG = {
   [PROGRESSION_MODE_CHALLENGE]: {
@@ -194,7 +194,13 @@ export function selectNextProblem(profile, options = {}) {
     else if (opAttempts < 12) roundedDifficulty = Math.min(roundedDifficulty, Math.max(minLevel, 3))
   }
 
-  const warmupLevel = getWarmupLevel(profile, roundedDifficulty, effectiveType)
+  const absenceWarmupDecision = buildAbsenceWarmupDecision({
+    profile,
+    operation: effectiveType,
+    destinationLevel: roundedDifficulty,
+    levelRange: options.levelRange,
+    frameId: options.frameId
+  })
 
   if (Number.isFinite(options.forcedLevel)) {
     const forcedLevel = clampLevelToRange(Math.round(options.forcedLevel), options.levelRange)
@@ -213,7 +219,8 @@ export function selectNextProblem(profile, options = {}) {
     })
   }
 
-  if (warmupLevel !== null) {
+  if (absenceWarmupDecision) {
+    const warmupLevel = absenceWarmupDecision.targetLevel
     const problem = isTableDrill
       ? generateMultiplicationTableDrillProblem(tableSet, { level: warmupLevel })
       : generateByDifficultyWithOptions(warmupLevel, {
@@ -224,7 +231,11 @@ export function selectNextProblem(profile, options = {}) {
       reason: 'warmup_after_break',
       bucket: 'easy',
       targetLevel: warmupLevel,
-      progressionMode
+      progressionMode,
+      trainingDecisionId: absenceWarmupDecision.decisionId,
+      trainingDecisionRuleVersion: absenceWarmupDecision.ruleVersion,
+      trainingPurpose: absenceWarmupDecision.purpose,
+      trainingReasonCodes: absenceWarmupDecision.reasonCodes
     })
   }
 

@@ -58,11 +58,12 @@ F2 ska följa dessa regler:
 
 1. Historiskt belagt kunnande är ett ankare för vad som uppnåtts, inte ett golv som förbjuder repetition.
 2. Aktuella svar kan flytta träningsbehovet uppåt eller nedåt utan att radera historiska fakta.
-3. Stabil relevant evidens leder automatiskt till meningsfull utmaning inom F1. Eleven tillfrågas inte om avancering och förvarnas inte om att nästa uppgift är svårare.
-4. Svarstid får bidra till beskrivning men är inte ett generellt krav för avancering. Avbrottsmärkt tid ska inte påverka kunskapsbedömning.
-5. Ihållande svårighet ska kunna ge mer än ett enstaka lättare problem. Ett ensamt rätt svar avslutar inte automatiskt återhämtning.
-6. Om giltig återhämtning inom ramen inte räcker returnerar F2 `support`. Eleven fortsätter träna inom ramen utan automatisk paus eller stöddialog. F6 skapar en spårbar lärarsignal med de faktiska felsvaren; signalen är underlag för lärarens beslut, inte en diagnos. F2 lämnar inte lärarens ram.
-7. Slump får variera likvärdiga uppgifter, men får inte vara ensam förklaring till ett pedagogiskt stegbyte.
+3. Sessionens start och warmup är versionsmärkta träningsbeslut. De ska namnge syfte, målsteg, ram och skäl; de får inte ligga som dold slump i generatorn.
+4. Stabil relevant evidens leder automatiskt till meningsfull utmaning inom F1. Eleven tillfrågas inte om avancering och förvarnas inte om att nästa uppgift är svårare.
+5. Svarstid får bidra till beskrivning men är inte ett generellt krav för avancering. Avbrottsmärkt tid ska inte påverka kunskapsbedömning.
+6. Ihållande svårighet ska kunna ge mer än ett enstaka lättare problem. Ett ensamt rätt svar avslutar inte automatiskt återhämtning.
+7. Om giltig återhämtning inom ramen inte räcker returnerar F2 `support`. Eleven fortsätter träna inom ramen utan automatisk paus eller stöddialog. F6 skapar en spårbar lärarsignal med de faktiska felsvaren; signalen är underlag för lärarens beslut, inte en diagnos. F2 lämnar inte lärarens ram.
+8. Slump får variera likvärdiga uppgifter, men får inte vara ensam förklaring till ett pedagogiskt stegbyte.
 
 Trösklar, observationsfönster och återhämtningslängd ska ligga i ett namngivet, versionsbestämt `DecisionRuleSet`. V0.1 väljer inga nya värden. Befintliga värden betraktas som legacy tills de samlats i och motiverats för regeluppsättningen.
 

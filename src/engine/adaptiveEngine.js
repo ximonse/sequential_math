@@ -3,9 +3,10 @@ import { resolveProblemOperation } from '../lib/mathUtils'
 import { getDefaultDomainId, getDomain, normalizeProblemWithDomain } from '../domains/registry'
 import { assertErrorAnalysisContract, assertEvaluationContract, assertProblemContract } from '../domains/contracts'
 import { resolveScopedSelection } from './scopedSelection'
-import { getConsecutiveOperationErrors, getWarmupLevel } from '../lib/difficultyAdapterProfileHelpers'
+import { getConsecutiveOperationErrors } from '../lib/difficultyAdapterProfileHelpers'
 import { getLowestUnmasteredLevel } from '../lib/studentProfile'
 import { chooseHiddenDecimalEvidence } from './hiddenDecimalPolicy'
+import { buildAbsenceWarmupDecision } from '../lib/sessionStartDecision'
 
 function inferSkillFromProblem(problem) {
   const explicitSkill = String(problem?.skill || '').trim()
@@ -45,27 +46,65 @@ function generateFromDomain(domain, skill, level, options) {
   return assertProblemContract(problem, { domain: domain.id, skill })
 }
 
-function sampleTrainingLevel(profile, selection, options) {
-  if (Number.isFinite(Number(options.forcedLevel))) return selection.level
+function sampleTrainingDecision(profile, selection, options) {
+  if (Number.isFinite(Number(options.forcedLevel))) {
+    return { level: selection.level, startDecision: null }
+  }
 
   const [minimumLevel, maximumLevel] = selection.levelRange
-  const warmupLevel = getWarmupLevel(profile, selection.level, selection.skill)
-  if (warmupLevel !== null) {
-    return Math.max(minimumLevel, Math.min(maximumLevel, warmupLevel))
+  const activeIntervention = selection.decisionPurpose === 'recover'
+    || selection.decisionPurpose === 'support'
+  if (!activeIntervention) {
+    const startDecision = buildAbsenceWarmupDecision({
+      profile,
+      operation: selection.skill,
+      destinationLevel: selection.level,
+      levelRange: selection.levelRange,
+      frameId: options.frameId
+    })
+    if (startDecision) {
+      return { level: startDecision.targetLevel, startDecision }
+    }
+  }
+
+  if (selection.decisionId) {
+    return { level: selection.level, startDecision: null }
   }
 
   if (getConsecutiveOperationErrors(profile, selection.skill) >= 3) {
-    return Math.max(minimumLevel, selection.level - 1)
+    return { level: Math.max(minimumLevel, selection.level - 1), startDecision: null }
   }
 
   const roll = Math.random()
-  if (roll < 0.15 && selection.level > minimumLevel) return selection.level - 1
-  if (roll < 0.30 && selection.level < maximumLevel) return selection.level + 1
-  return selection.level
+  if (roll < 0.15 && selection.level > minimumLevel) {
+    return { level: selection.level - 1, startDecision: null }
+  }
+  if (roll < 0.30 && selection.level < maximumLevel) {
+    return { level: selection.level + 1, startDecision: null }
+  }
+  return { level: selection.level, startDecision: null }
+}
+
+function attachTrainingDecision(problem, selection, level, options, startDecision) {
+  const decisionId = startDecision?.decisionId || selection.decisionId
+  const purpose = startDecision?.purpose || selection.decisionPurpose
+  const selectionReason = startDecision?.reasonCodes?.[0] || options.forceReason
+  const ruleVersion = startDecision?.ruleVersion || options.trainingDecisionRuleVersion
+  const reasonCodes = startDecision?.reasonCodes || options.trainingReasonCodes
+  problem.metadata = {
+    ...(problem.metadata || {}),
+    ...(decisionId ? { trainingDecisionId: decisionId } : {}),
+    ...(ruleVersion ? { trainingDecisionRuleVersion: Number(ruleVersion) } : {}),
+    ...(purpose ? { trainingPurpose: purpose } : {}),
+    ...(Array.isArray(reasonCodes) ? { trainingReasonCodes: [...reasonCodes] } : {}),
+    ...(selectionReason ? { selectionReason } : {}),
+    targetLevel: level
+  }
+  return problem
 }
 
 function generateScopedProblem(profile, selection, options) {
-  const level = sampleTrainingLevel(profile, selection, options)
+  const { level, startDecision } = sampleTrainingDecision(profile, selection, options)
   if (selection.domain.id === getDefaultDomainId()) {
     const evidenceSkill = chooseHiddenDecimalEvidence({
       skill: selection.skill,
@@ -75,8 +114,7 @@ function generateScopedProblem(profile, selection, options) {
     })
     if (evidenceSkill) {
       const problem = generateFromDomain(selection.domain, selection.skill, level, { ...options, evidenceSkill })
-      problem.metadata = { ...(problem.metadata || {}), trainingDecisionId: selection.decisionId, trainingPurpose: selection.decisionPurpose }
-      return problem
+      return attachTrainingDecision(problem, selection, level, options, startDecision)
     }
 
     const legacyProblem = selectNextProblem(profile, {
@@ -86,13 +124,11 @@ function generateScopedProblem(profile, selection, options) {
       forcedLevel: level
     })
     const problem = assertProblemContract(normalizeProblemWithDomain(legacyProblem))
-    problem.metadata = { ...(problem.metadata || {}), trainingDecisionId: selection.decisionId, trainingPurpose: selection.decisionPurpose }
-    return problem
+    return attachTrainingDecision(problem, selection, level, options, startDecision)
   }
 
   const problem = generateFromDomain(selection.domain, selection.skill, level, options)
-  problem.metadata = { ...(problem.metadata || {}), trainingDecisionId: selection.decisionId, trainingPurpose: selection.decisionPurpose }
-  return problem
+  return attachTrainingDecision(problem, selection, level, options, startDecision)
 }
 
 export function selectNextProblemForProfile(profile, options = {}) {

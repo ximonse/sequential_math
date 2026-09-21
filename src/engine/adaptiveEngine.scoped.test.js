@@ -10,6 +10,22 @@ function profile(recentProblems = []) {
   }
 }
 
+function currentNeed(purpose, targetLevel) {
+  return {
+    needId: `need:${purpose}:v1`,
+    ruleVersion: 1,
+    operation: 'addition',
+    purpose,
+    targetLevel,
+    reasonCodes: ['test_need'],
+    frameId: 'session-need',
+    trainingMode: 'area_focus',
+    assignmentId: '',
+    evidenceObservationIds: ['answer-old'],
+    decidedAt: Date.now() - 1000
+  }
+}
+
 describe('adaptive engine scoped selection', () => {
   it('routes registered single-skill sessions through their domain', () => {
     const cases = [
@@ -77,6 +93,73 @@ describe('adaptive engine scoped selection', () => {
       level: 7
     })
     expect(problem.level).toBe(7)
+  })
+
+  it('carries a versioned session-start decision into the generated problem', () => {
+    const problem = selectNextProblemForProfile(profile(), {
+      allowedTypes: ['addition'],
+      forcedLevel: 2,
+      forceReason: 'first_operation_session',
+      trainingDecisionId: 'start:session-1:addition:1000:v1:step:1',
+      trainingDecisionRuleVersion: 1,
+      trainingPurpose: 'introduce',
+      trainingReasonCodes: ['first_operation_session', 'introduce_from_foundation']
+    })
+
+    expect(problem.level).toBe(2)
+    expect(problem.metadata).toMatchObject({
+      selectionReason: 'first_operation_session',
+      targetLevel: 2,
+      trainingDecisionId: 'start:session-1:addition:1000:v1:step:1',
+      trainingDecisionRuleVersion: 1,
+      trainingPurpose: 'introduce',
+      trainingReasonCodes: ['first_operation_session', 'introduce_from_foundation']
+    })
+  })
+
+  it('uses a versioned absence warmup without losing its reason', () => {
+    const oldTimestamp = Date.now() - (3 * 24 * 60 * 60 * 1000)
+    const student = profile([{
+      observationId: 'answer-old',
+      problemType: 'add_basic',
+      correct: true,
+      timestamp: oldTimestamp
+    }])
+    student.adaptive.currentNeeds = { addition: currentNeed('consolidate', 6) }
+
+    const problem = selectNextProblemForProfile(student, {
+      allowedTypes: ['addition'],
+      frameId: 'session-return'
+    })
+
+    expect(problem.level).toBe(4)
+    expect(problem.metadata).toMatchObject({
+      selectionReason: 'return_after_absence',
+      targetLevel: 4,
+      trainingDecisionRuleVersion: 1,
+      trainingPurpose: 'consolidate'
+    })
+    expect(problem.metadata.trainingDecisionId).toContain('start:absence:session-return:addition')
+  })
+
+  it('does not apply the legacy error relief on top of a recovery decision', () => {
+    const errors = Array.from({ length: 3 }, (_, index) => ({
+      observationId: `answer-${index + 1}`,
+      problemType: 'add_basic',
+      correct: false,
+      timestamp: Date.now() - (3000 - index)
+    }))
+    const student = profile(errors)
+    student.adaptive.currentNeeds = { addition: currentNeed('recover', 3) }
+
+    const problem = selectNextProblemForProfile(student, { allowedTypes: ['addition'] })
+
+    expect(problem.level).toBe(3)
+    expect(problem.metadata).toMatchObject({
+      trainingDecisionId: 'need:recover:v1',
+      trainingPurpose: 'recover',
+      targetLevel: 3
+    })
   })
 })
 

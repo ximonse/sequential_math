@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { getSessionRules, recordTableCompletion } from './sessionUtils'
+import { buildFocusedSessionStartPlan } from '../../../lib/sessionStartDecision'
 
 function createProfile(recentProblems = [], adaptive = {}) {
   return {
@@ -108,6 +109,82 @@ describe('sessionUtils getSessionRules', () => {
     expect(levelFocusRules.forcedLevel).toBe(5)
     expect(levelFocusRules.lockToMasteryFloor).toBeUndefined()
     expect(levelFocusRules.startReason).toBeUndefined()
+  })
+
+  it('turns a focused start plan into a traceable training decision', () => {
+    const profile = createProfile([])
+    const plan = buildFocusedSessionStartPlan({
+      profile,
+      operation: 'addition',
+      destinationLevel: 4,
+      frameId: 'session-start',
+      now: 1000
+    })
+
+    const rules = getSessionRules(
+      null,
+      'addition',
+      plan,
+      1,
+      [],
+      'challenge',
+      null,
+      [],
+      profile,
+      'session-start'
+    )
+
+    expect(rules).toMatchObject({
+      forcedLevel: 2,
+      forcedType: 'addition',
+      trainingDecisionRuleVersion: 1,
+      trainingPurpose: 'introduce',
+      trainingReasonCodes: ['first_operation_session', 'introduce_from_foundation']
+    })
+    expect(rules.trainingDecisionId).toContain('session-start')
+  })
+
+  it('lets an active recovery need take priority over the focused start plan', () => {
+    const profile = createProfile([], {
+      currentNeeds: {
+        addition: {
+          needId: 'need:recover:v1',
+          ruleVersion: 1,
+          operation: 'addition',
+          purpose: 'recover',
+          targetLevel: 2,
+          reasonCodes: ['consecutive_errors'],
+          frameId: 'session-recover',
+          trainingMode: 'area_focus',
+          assignmentId: '',
+          evidenceObservationIds: ['answer-3'],
+          decidedAt: 1000
+        }
+      }
+    })
+    const plan = buildFocusedSessionStartPlan({
+      profile,
+      operation: 'addition',
+      destinationLevel: 4,
+      frameId: 'session-recover',
+      now: 2000
+    })
+
+    const rules = getSessionRules(
+      null,
+      'addition',
+      plan,
+      0,
+      [],
+      'challenge',
+      null,
+      [],
+      profile,
+      'session-recover'
+    )
+
+    expect(rules.forcedLevel).toBeUndefined()
+    expect(rules.lockToMasteryFloor).toBe(true)
   })
 })
 

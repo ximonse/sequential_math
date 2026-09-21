@@ -5,9 +5,7 @@ import {
   isStudentSessionActive
 } from '../../../lib/storage'
 import { decodeAssignmentPayload, getActiveAssignment, getAssignmentById } from '../../../lib/assignments'
-import { resolveProblemOperation } from '../../../lib/mathUtils'
 import { getLowestUnmasteredLevel } from '../../../lib/studentProfile'
-import { PROGRESSION_MODE_STEADY } from '../../../lib/progressionModes'
 import {
   addTelemetryDurationMs,
   incrementTelemetryDailyMetric,
@@ -24,6 +22,7 @@ import {
   readNcmAssignmentProgress
 } from './sessionUtils'
 import { getPilotStudentRuntime, normalizePilotStudentId } from '../../../lib/pilotStudentRuntime'
+import { buildFocusedSessionStartPlan } from '../../../lib/sessionStartDecision'
 
 export function usePracticeSetupEffects({
   studentId,
@@ -190,33 +189,19 @@ export function usePracticeSetupEffects({
       return
     }
 
-    const operationHistory = profile.recentProblems.filter(
-      p => resolveProblemOperation(p, { fallback: '', allowUnknownPrefix: false }) === mode
-    )
-    const hasHistory = operationHistory.length > 0
     const targetLevel = getLowestUnmasteredLevel(profile, mode)
-    const isSteadyMode = progressionMode === PROGRESSION_MODE_STEADY
-    const warmupCount = isSteadyMode ? 4 : 3
-
-    if (!hasHistory) {
-      setSessionWarmup({
+    const frameId = String(sessionTelemetryRef.current?.sessionId || '')
+    setSessionWarmup(previous => {
+      if (previous?.frameId === frameId && previous?.operation === mode) return previous
+      return buildFocusedSessionStartPlan({
+        profile,
         operation: mode,
-        targetLevel,
-        startLevel: 1,
-        warmupCount
+        destinationLevel: targetLevel,
+        progressionMode,
+        frameId
       })
-      return
-    }
-
-    const startDrop = isSteadyMode ? 3 : 1
-    const startLevel = Math.max(1, targetLevel - startDrop)
-    setSessionWarmup({
-      operation: mode,
-      targetLevel,
-      startLevel,
-      warmupCount
     })
-  }, [profile, mode, isTableDrill, progressionMode, setSessionWarmup])
+  }, [profile, mode, isTableDrill, progressionMode, sessionTelemetryRef, setSessionWarmup])
 
   useEffect(() => {
     if (!profile) return
@@ -301,7 +286,8 @@ export function usePracticeSetupEffects({
         progressionMode,
         fixedPracticeLevel,
         freeOps,
-        profile
+        profile,
+        sessionTelemetryRef.current?.sessionId
       )
       const problem = safeSelectProblem(profile, rules)
       if (!problem) return
@@ -323,6 +309,7 @@ export function usePracticeSetupEffects({
     freeOps,
     isTableDrill,
     tableQueue,
+    sessionTelemetryRef,
     resetAttentionTracker,
     safeSelectProblem,
     setCurrentProblem,

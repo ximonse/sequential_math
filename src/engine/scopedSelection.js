@@ -70,12 +70,16 @@ export function resolveScopedSelection(profile, options = {}) {
   if (Number.isFinite(forcedLevel)) {
     const level = clamp(Math.round(forcedLevel), ...levelRange)
     const matchesNeed = currentNeed?.targetLevel === level
+    const explicitDecisionId = String(options.trainingDecisionId || '').trim()
+    const explicitPurpose = String(options.trainingPurpose || '').trim()
     return {
       domain,
       skill,
       level,
       levelRange,
-      ...(matchesNeed
+      ...(explicitDecisionId
+        ? { decisionId: explicitDecisionId, decisionPurpose: explicitPurpose }
+        : matchesNeed
         ? { decisionId: currentNeed.needId, decisionPurpose: currentNeed.purpose }
         : {})
     }

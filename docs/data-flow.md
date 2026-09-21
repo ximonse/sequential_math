@@ -128,6 +128,11 @@ classDiagram
 
 ## 3. Problemval — fullständigt flöde
 
+Diagrammet nedan beskriver fortfarande legacygrenen i `difficultyAdapter`.
+Registrerade kompetenser går först genom den versionsmärkta F2-kedjan:
+lärarram → aktivt `recover`/`support` → `sessionStartDecision` → övrigt
+`CurrentNeed`. Legacygrenen får bara välja när inget sådant beslut finns.
+
 ```mermaid
 flowchart TD
     Start([Elev klickar Starta]) --> ParseURL[Parsa URL-parametrar<br/>mode / level / tables / pace / assignment]
@@ -502,9 +507,10 @@ flowchart TD
     Auth -->|Nej| Redirect[Redirect till login]
     Auth -->|Ja| Load[Ladda profil + sync]
     Load --> ParseParams[Parsa URL:<br/>assignment / mode / tables / level / pace]
-    ParseParams --> ResolveMeta[Resolve assignment + warmup]
+    ParseParams --> ResolveMeta[Resolve assignment + träningsram]
 
-    ResolveMeta --> GenFirst[Generera första problem<br/>selectNextProblem]
+    ResolveMeta --> StartDecision[Versionerat startbeslut<br/>introduce / consolidate]
+    StartDecision --> GenFirst[Generera första problem<br/>selectNextProblem]
     GenFirst --> Display[Visa problem]
 
     Display --> Wait[Vänta på svar]

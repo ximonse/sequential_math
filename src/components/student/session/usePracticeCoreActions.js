@@ -125,7 +125,8 @@ export function usePracticeCoreActions({
       progressionMode,
       fixedPracticeLevel,
       freeOps,
-      profile
+      profile,
+      sessionTelemetryRef.current?.sessionId
     )
 
     const recentHistory = [

@@ -16,6 +16,10 @@ describe('student event evidence persistence', () => {
         evidenceLevel: 1,
         evidenceClass: 'mastery_eligible',
         evidenceRuleVersion: 1,
+        trainingDecisionId: 'start:session-1:positions_decimal:1000:v1:step:1',
+        trainingDecisionRuleVersion: 1,
+        trainingPurpose: 'introduce',
+        trainingReasonCodes: ['first_operation_session', 'introduce_from_foundation'],
         trainingContext: {
           version: 1,
           frameId: 'session-1',
@@ -35,6 +39,11 @@ describe('student event evidence persistence', () => {
     const profile = { recentProblems: [], problemLog: [] }
     expect(applyWalEntry(profile, entry)).toBe(true)
     expect(profile.problemLog[0].trainingContext).toEqual(entry.payload.trainingContext)
+    expect(profile.problemLog[0]).toMatchObject({
+      trainingDecisionRuleVersion: 1,
+      trainingPurpose: 'introduce',
+      trainingReasonCodes: ['first_operation_session', 'introduce_from_foundation']
+    })
     expect(validEntry({
       ...entry,
       payload: { ...entry.payload, evidenceClass: 'surprise' }
@@ -45,6 +54,14 @@ describe('student event evidence persistence', () => {
         ...entry.payload,
         trainingContext: { ...entry.payload.trainingContext, mode: 'surprise' }
       }
+    }, 'ELEV1')).toBe(false)
+    expect(validEntry({
+      ...entry,
+      payload: { ...entry.payload, trainingPurpose: 'guess' }
+    }, 'ELEV1')).toBe(false)
+    expect(validEntry({
+      ...entry,
+      payload: { ...entry.payload, trainingReasonCodes: [''] }
     }, 'ELEV1')).toBe(false)
   })
 

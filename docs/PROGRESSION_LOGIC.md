@@ -54,14 +54,17 @@ Prioritet i problemval:
 - felstreak (`getConsecutiveErrors`)
 - center-nivå (`currentDifficulty`)
 
-Möjliga valvägar:
+För registrerade kompetenser avgörs pedagogiska steg i följande ordning:
 
-1. **Forced warmup** (sessionstyrd)  
-2. **Frånvaro-warmup**  
-3. **Recovery easy** vid hög felstreak  
-4. **Push harder** vid hög stabil success  
-5. **Relief easier** vid låg success  
-6. **Normal weighted mix** (default)
+1. **Låst träningsram** (exakt nivå eller tilldelat intervall)
+2. **Aktivt `recover`/`support`** från `CurrentNeed`
+3. **Versionsmärkt session start/warmup**
+4. **`consolidate`/`challenge`** från `CurrentNeed`
+5. **Legacyval** för äldre profiler som ännu saknar ett sådant beslut
+
+Det betyder bland annat att den gamla felstreakssänkningen inte läggs ovanpå
+ett redan beslutat `recover`-steg. Viktad nivåmix finns kvar som legacyfallback,
+inte som auktoritet över ett identifierbart träningsbeslut.
 
 ### 3.3 Variationsskydd (anti-repeat)
 
@@ -123,9 +126,11 @@ Om elev kämpar (låg success/hög felstreak) prioriteras enklare bas (addition)
 
 Om elev varit borta minst 1 dag:
 
-- första uppgifterna sänks något i nivå
-- 70/30 bias mot lättare uppgifter
-- syfte: snabbare in i 80/20-känsla
+- två till fyra uppgifter, beroende på frånvarons längd, tränas ett eller två
+  steg under aktuellt behov men alltid inom träningsramen;
+- valet är deterministiskt och versionsmärkt, inte ett 70/30-slumpval;
+- beslutets ID, regelversion, syfte och reason codes följer uppgiften till
+  observationen.
 
 ### 5.2 Fokuserat räknesättsläge
 
@@ -133,7 +138,10 @@ När elev väljer t.ex. bara division:
 
 - om ingen historik i räknesättet: start på nivå 1
 - annars start lite under beräknad nivå för den typen
-- första ~3 uppgifter rampas upp snabbt mot beräknad nivå
+- de första tre uppgifterna, eller fyra i steady-läge, rampas mot aktuellt behov;
+- en låst nivå klampas och lämnas aldrig av rampen;
+- startplanen fryses för sessionen så att den inte byter innebörd efter första
+  svaret.
 
 ## 6. Hur svårigheten justeras efter svar
 
@@ -162,6 +170,8 @@ I `recentProblems` sparas bl.a.:
 - `selectionReason` (t.ex. `weighted_mix`, `warmup_after_break`)
 - `difficultyBucket` (`easy/core/hard/...`)
 - `targetLevel`
+- `trainingDecisionId`, `trainingDecisionRuleVersion`, `trainingPurpose` och
+  `trainingReasonCodes`
 - `abilityBefore`, `abilityAfter`
 - `isReasonable`, `absError`, `relativeError`, `tolerance`
 - `isPartial`, `partialCode`, `partialDetail` (för svar som är värdemässigt rätt

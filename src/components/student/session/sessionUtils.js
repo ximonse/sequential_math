@@ -5,6 +5,8 @@ import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from '../../../lib/ope
 import { normalizeProgressionMode } from '../../../lib/progressionModes'
 import { filterNcmProblems } from '../../../lib/ncmProblemBank'
 import { EVIDENCE_CLASSES, attachEvidenceClaim } from '../../../lib/evidenceContract'
+import { getFocusedSessionStartDecision } from '../../../lib/sessionStartDecision'
+import { getCurrentNeed } from '../../../lib/currentNeed'
 
 export const DEFAULT_BREAK_MINUTES = 1
 export const SINGLE_DIGIT_BREAK_MINUTES = 2
@@ -20,9 +22,13 @@ export function getSessionRules(
   progressionMode = 'challenge',
   fixedLevel = null,
   freeOps = [],
-  profile = null
+  profile = null,
+  frameId = ''
 ) {
-  const rules = { progressionMode: normalizeProgressionMode(progressionMode) }
+  const rules = {
+    progressionMode: normalizeProgressionMode(progressionMode),
+    frameId: String(frameId || '').slice(0, 200)
+  }
 
   if (assignment) {
     if (assignment.kind === 'ncm') {
@@ -57,15 +63,20 @@ export function getSessionRules(
     return rules
   }
 
-  if (warmup && solvedCount < warmup.warmupCount) {
-    const forcedLevel = Math.min(
-      warmup.targetLevel,
-      warmup.startLevel + solvedCount
-    )
-    rules.forcedLevel = forcedLevel
-    rules.forcedType = warmup.operation
-    rules.forceReason = 'operation_mode_warmup'
+  const activeNeed = warmup?.operation ? getCurrentNeed(profile, warmup.operation) : null
+  const hasInterventionNeed = activeNeed?.purpose === 'recover' || activeNeed?.purpose === 'support'
+  const startDecision = hasInterventionNeed
+    ? null
+    : getFocusedSessionStartDecision(warmup, solvedCount)
+  if (startDecision) {
+    rules.forcedLevel = startDecision.targetLevel
+    rules.forcedType = startDecision.operation
+    rules.forceReason = startDecision.reasonCodes[0]
     rules.forceBucket = 'easy'
+    rules.trainingDecisionId = startDecision.decisionId
+    rules.trainingDecisionRuleVersion = startDecision.ruleVersion
+    rules.trainingPurpose = startDecision.purpose
+    rules.trainingReasonCodes = startDecision.reasonCodes
     return rules
   }
 

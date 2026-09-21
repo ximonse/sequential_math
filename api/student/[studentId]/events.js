@@ -217,6 +217,16 @@ export function validEntry(entry, studentId) {
     && (payload.evidenceRuleVersion == null || (Number.isInteger(Number(payload.evidenceRuleVersion))
       && Number(payload.evidenceRuleVersion) >= 1))
     && (payload.trainingContext == null || isValidTrainingContext(payload.trainingContext))
+    && (payload.trainingDecisionId == null || (typeof payload.trainingDecisionId === 'string'
+      && payload.trainingDecisionId.length <= 250))
+    && (payload.trainingDecisionRuleVersion == null || (Number.isInteger(Number(payload.trainingDecisionRuleVersion))
+      && Number(payload.trainingDecisionRuleVersion) >= 1))
+    && (payload.trainingPurpose == null || ['', 'introduce', 'consolidate', 'challenge', 'recover', 'support']
+      .includes(payload.trainingPurpose))
+    && (payload.trainingReasonCodes == null || (Array.isArray(payload.trainingReasonCodes)
+      && payload.trainingReasonCodes.length <= 10
+      && payload.trainingReasonCodes.every(code => typeof code === 'string'
+        && code.length > 0 && code.length <= 100)))
   if (entry.type === 'table_completed') return Number.isInteger(payload.table)
     && payload.table >= 2 && payload.table <= 12
     && Number.isFinite(Number(payload.timestamp || entry.timestamp))

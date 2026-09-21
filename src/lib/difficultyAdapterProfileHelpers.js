@@ -3,7 +3,6 @@ import {
   PROGRESSION_MODE_CHALLENGE
 } from './progressionModes'
 
-const DAY_MS = 24 * 60 * 60 * 1000
 export function ensureDifficultyMeta(profile) {
   if (typeof profile.highestDifficulty !== 'number' || Number.isNaN(profile.highestDifficulty)) {
     profile.highestDifficulty = profile.currentDifficulty || 1
@@ -98,31 +97,6 @@ export function inferCurrentOperation(profile) {
   return operation || null
 }
 
-export function getWarmupLevel(profile, roundedDifficulty, operation) {
-	  const operationProblems = operation
-	    ? profile.recentProblems.filter(
-	      problem => resolveProblemOperation(problem, { allowUnknownPrefix: false }) === operation
-	    )
-    : profile.recentProblems
-  const lastTs = operationProblems[operationProblems.length - 1]?.timestamp
-  if (!lastTs) return null
-
-  const daysAway = (Date.now() - lastTs) / DAY_MS
-  if (daysAway < 1) return null
-
-  const todayOperationCount = operation
-    ? getOperationProblemsCompletedToday(profile, operation)
-    : getProblemsCompletedToday(profile)
-  const warmupLength = Math.min(4, Math.max(2, Math.ceil(daysAway)))
-  if (todayOperationCount >= warmupLength) return null
-
-  const levelDrop = daysAway >= 7 ? 2 : daysAway >= 3 ? 2 : 1
-  const baseWarmup = Math.max(1, roundedDifficulty - levelDrop)
-
-  if (Math.random() < 0.7) return baseWarmup
-  return Math.max(1, baseWarmup + 1)
-}
-
 export function annotateSelectedProblem(profile, problem, details) {
   const skillTag = problem.metadata?.skillTag || problem.template
   const skillState = getOrInitSkillState(profile, skillTag)
@@ -134,7 +108,15 @@ export function annotateSelectedProblem(profile, problem, details) {
     difficultyBucket: details.bucket,
     targetLevel: details.targetLevel,
     abilityBefore: skillState.ability,
-    progressionMode: details.progressionMode || PROGRESSION_MODE_CHALLENGE
+    progressionMode: details.progressionMode || PROGRESSION_MODE_CHALLENGE,
+    ...(details.trainingDecisionId ? { trainingDecisionId: details.trainingDecisionId } : {}),
+    ...(details.trainingDecisionRuleVersion
+      ? { trainingDecisionRuleVersion: Number(details.trainingDecisionRuleVersion) }
+      : {}),
+    ...(details.trainingPurpose ? { trainingPurpose: details.trainingPurpose } : {}),
+    ...(Array.isArray(details.trainingReasonCodes)
+      ? { trainingReasonCodes: details.trainingReasonCodes }
+      : {})
   }
 
   profile.adaptive.recentSelections.push({
@@ -197,20 +179,6 @@ export function isFastCorrectAnswer(options) {
   const estimated = Number(options.problem?.metadata?.estimated_time)
   if (!Number.isFinite(estimated) || estimated <= 0) return timeSpent <= 12
   return timeSpent <= estimated * 0.75
-}
-
-function getProblemsCompletedToday(profile) {
-  const now = new Date()
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-  return profile.recentProblems.filter(problem => problem.timestamp >= startOfToday).length
-}
-
-function getOperationProblemsCompletedToday(profile, operation) {
-  const now = new Date()
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
-  return profile.recentProblems.filter(
-    problem => problem.timestamp >= startOfToday && resolveProblemOperation(problem, { allowUnknownPrefix: false }) === operation
-  ).length
 }
 
 function getOrInitSkillState(profile, skillTag) {

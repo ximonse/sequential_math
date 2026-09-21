@@ -1,6 +1,6 @@
 # Elev–lärarscenarier och klassobservation
 
-Status: **acceptansunderlag till produktkontrakt v1.0, 2026-09-20; S3/F6 delvis återspelat lokalt med syntetisk elev 2026-09-21**.
+Status: **acceptansunderlag till produktkontrakt v1.0, 2026-09-20; S2 och S3/F6 delvis återspelade lokalt med syntetisk elev 2026-09-21**.
 Scenarierna konkretiserar [produktkontraktet inklusive beslut D1–D3](PRODUCT_CONTRACT.md); beslutens bakgrund finns i [granskningsunderlaget](PRODUCT_CONTRACT_REVIEW.md).
 De beskriver önskat beteende. Exakta trösklar fastställs senare i underkontrakt.
 
@@ -25,6 +25,7 @@ M1 och M2 gäller samtliga scenarier. P8 gäller även fel i underlaget för öv
 
 | Scenario | Kontrakt/appversion | Miljö och händelser | Faktiskt utfall | Begränsning |
 | --- | --- | --- | --- | --- |
+| S2, automatisk progression | Produktkontrakt 1.0 / `2e6e2a4` | Lokal Vite dev, `/qa/adaptive?reset=1`, syntetisk tvåteckenselev, lokal lagring. Fem varierade korrekta svar på addition nivå 1. | Efter femte svaret visade elevvyn `Grattis! Du har klarat nivå 1 i Addition`, 5 av 5 rätt och `Träningen fortsätter automatiskt med nästa steg`. Enda åtgärden var `Fortsätt`; inget val att stanna eller gå upp visades. Efter `Fortsätt` öppnades nästa additionsuppgift och historik/vecka visade belagd nivå 1. | Ett kort förlopp inom addition. Bevisar inte långsam men säker lösning, andra kompetenser, återläsning, autentiserad pilotlagring, iPad eller produktion. |
 | S3, lärarsignalen i F6 | Produktkontrakt 1.0 / `2e6e2a4` | Lokal Vite dev, `/qa/adaptive?reset=1`, syntetisk tvåteckenselev, lokal lagring. Sex felaktiga svar (`99`) på addition nivå 1; därefter lärarens `Statistik & stöd`. | Elevvyn registrerade sex svar och visade lokal lagringsstatus. Lärarvyn behöll belagd nivå som okänd (`–`) och visade en prioriteringssignal: fortsatta fel i addition nivå 1, 0 av 6, samt alla sex frågor med elevsvar och rätt svar. Visuellt kontrollerat. Full testsvit: 74 filer/339 tester; produktionsbuild passerade. | Bevisar inte återhämtning och återgång i hela S3. Kör inte pilotens autentiserade cookie/event/vault-väg, molnsynk, omladdning, iPad, verklig elev eller produktion. De medvetet orimliga svaren prövar inte en specifik felhypotes enligt S5. |
 
 ## 2. Bevis som kompletterar varandra

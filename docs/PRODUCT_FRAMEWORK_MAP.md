@@ -12,7 +12,7 @@ Appen saknar inte alla byggstenar: domängränssnitt, körbara formkontroller, g
 
 Det behövs ett sammanhängande funktionellt ramverk ovanpå och genom befintlig kod, inte ett nytt UI-/databasramverk eller en fristående guardian som ensam försöker korrigera allt i efterhand.
 
-Det ursprungliga kartläggningsunderlaget var en statisk granskning av de namngivna funktionerna och deras anropsvägar. Kodsnitten nedan har därefter verifierats lokalt med tester och build. En dev-only browseråterspelning med syntetisk elev har också kontrollerat sex elevsvar genom lokal lagring till lärarens felsignal. Inga riktiga elevkonton, externa nätverksanrop, iPad- eller produktionskontroller har körts. Alla exportvägar och verklig klassanvändning är inte fullständigt granskade. Därför är helhetsfunktionen **inte verifierad**. Äldre dokument och testnamn räknas inte som aktuella testresultat.
+Det ursprungliga kartläggningsunderlaget var en statisk granskning av de namngivna funktionerna och deras anropsvägar. Kodsnitten nedan har därefter verifierats lokalt med tester och build. Dev-only browseråterspelningar med syntetisk elev har också kontrollerat automatisk progression efter fem korrekta svar och sex felsvar genom lokal lagring till lärarens felsignal. Inga riktiga elevkonton, externa nätverksanrop, iPad- eller produktionskontroller har körts. Alla exportvägar och verklig klassanvändning är inte fullständigt granskade. Därför är helhetsfunktionen **inte verifierad**. Äldre dokument och testnamn räknas inte som aktuella testresultat.
 
 ## 2. Ansvarskarta uppifrån och ned
 

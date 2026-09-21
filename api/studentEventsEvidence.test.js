@@ -94,6 +94,43 @@ describe('student event evidence persistence', () => {
     })
   })
 
+  it('lets a referenced mastery event upgrade a same-level legacy fact', () => {
+    const profile = {
+      masteryFacts: {
+        version: 1,
+        facts: [{
+          id: 'positions_decimal:1:legacy',
+          operation: 'positions_decimal',
+          level: 1,
+          achievedAt: 1000,
+          window: { attempts: 5, correct: 5, rate: 1 },
+          source: 'session'
+        }],
+        revokedIds: []
+      }
+    }
+    const entry = {
+      id: 'event-upgrade-1',
+      type: 'mastery_achieved',
+      timestamp: 1234,
+      payload: {
+        operation: 'positions_decimal',
+        level: 1,
+        achievedAt: 1234,
+        ruleVersion: 1,
+        evidenceObservationIds: ['problem-1:1200'],
+        window: { attempts: 5, correct: 5, rate: 1 }
+      }
+    }
+
+    expect(applyWalEntry(profile, entry)).toBe(true)
+    expect(profile.masteryFacts.facts).toHaveLength(2)
+    expect(profile.masteryFacts.facts[1]).toMatchObject({
+      ruleVersion: 1,
+      evidenceObservationIds: ['problem-1:1200']
+    })
+  })
+
   it('persists one versioned automatic adaptation decision idempotently', () => {
     const profile = { adaptive: {} }
     const entry = {

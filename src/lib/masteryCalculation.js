@@ -13,6 +13,7 @@ import {
 import { getOperationLabel, getOperationMinLevel } from './operations.js'
 import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './operations.js'
 import { isMasteryEligible, readEvidenceClaim, summarizeEvidenceHistory } from './evidenceContract.js'
+import { isContractMasteryFact, summarizeMasteryFactAuthority } from './masteryFacts.js'
 
 export const MASTERY_WINDOW = 15
 
@@ -110,7 +111,7 @@ export function groupProblemsByOperationLevel(problems) {
 /**
  * Full mastery-översikt: vilka nivåer per operation är mastrade?
  * Returnerar { [operation]: [mastered level numbers] }
- * options.profile: om satt, konsultera masteryFacts som primär källa.
+ * options.profile: om satt, konsultera kontraktsgiltiga masteryFacts som primär källa.
  */
 export function computeMasteryOverview(problems, options = {}) {
   const buckets = groupProblemsByOperationLevel(problems)
@@ -123,7 +124,7 @@ export function computeMasteryOverview(problems, options = {}) {
       Array.isArray(profile.masteryFacts.revokedIds) ? profile.masteryFacts.revokedIds : []
     )
     for (const fact of profile.masteryFacts.facts) {
-      if (revokedSet.has(fact.id)) continue
+      if (revokedSet.has(fact.id) || !isContractMasteryFact(fact)) continue
       if (!mastery[fact.operation]) mastery[fact.operation] = []
       mastery[fact.operation].push(fact.level)
     }
@@ -188,7 +189,7 @@ export function computeOperationLevelMasteryStatus(problems, operation, level, o
 /**
  * Bygg "effective levels" — högsta konsekutivt mastrade nivå per operation.
  * Används i klassöversikten (Nivåöversikt).
- * options.profile: om satt, konsultera masteryFacts som primär källa.
+ * options.profile: om satt, konsultera kontraktsgiltiga masteryFacts som primär källa.
  */
 export function computeEffectiveLevels(problems, operationKeys, levelRange, options = {}) {
   const buckets = groupProblemsByOperationLevel(problems)
@@ -202,7 +203,7 @@ export function computeEffectiveLevels(problems, operationKeys, levelRange, opti
       Array.isArray(profile.masteryFacts.revokedIds) ? profile.masteryFacts.revokedIds : []
     )
     for (const fact of profile.masteryFacts.facts) {
-      if (revokedSet.has(fact.id)) continue
+      if (revokedSet.has(fact.id) || !isContractMasteryFact(fact)) continue
       if (!factsMap[fact.operation]) factsMap[fact.operation] = new Set()
       factsMap[fact.operation].add(fact.level)
     }
@@ -314,9 +315,16 @@ export function recordMasteryAchievement(profile, operation, level, window, opti
   const achievedAt = Date.now()
   const id = `${operation}:${level}:${achievedAt}`
 
-  // Kolla om samma operation+level redan finns (behöver inte dubblett)
+  // Ett äldre faktum utan observationsreferenser får inte blockera en
+  // verifierad ersättare för samma operation och nivå.
+  const revokedSet = new Set(Array.isArray(profile.masteryFacts.revokedIds)
+    ? profile.masteryFacts.revokedIds
+    : [])
   const existingIdx = profile.masteryFacts.facts.findIndex(
-    f => f.operation === operation && f.level === level
+    f => f.operation === operation
+      && f.level === level
+      && isContractMasteryFact(f)
+      && !revokedSet.has(f.id)
   )
   if (existingIdx !== -1) return null // redan registrerad
 
@@ -336,6 +344,7 @@ export function recordMasteryAchievement(profile, operation, level, window, opti
       ? options.evidenceObservationIds.map(item => String(item || '').trim()).filter(Boolean)
       : []
   }
+  if (!isContractMasteryFact(fact)) return null
   profile.masteryFacts.facts.push(fact)
   return fact
 }
@@ -365,7 +374,7 @@ export function getMasteredLevelsFromFacts(profile, operation) {
     Array.isArray(profile.masteryFacts.revokedIds) ? profile.masteryFacts.revokedIds : []
   )
   return profile.masteryFacts.facts
-    .filter(f => f.operation === operation && !revokedSet.has(f.id))
+    .filter(f => f.operation === operation && !revokedSet.has(f.id) && isContractMasteryFact(f))
     .map(f => f.level)
     .sort((a, b) => a - b)
 }
@@ -396,7 +405,8 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
     historyComplete: usesFullLog && source.length < 5000
       && Number(profile?.stats?.lifetimeProblems || 0) <= source.length,
     sourceAttempts: source.length,
-    classification: summarizeEvidenceHistory(source)
+    classification: summarizeEvidenceHistory(source),
+    masteryFactAuthority: summarizeMasteryFactAuthority(profile)
   }
 
   const effectiveLevels = computeEffectiveLevels(source, operationKeys, levelRange, { profile })

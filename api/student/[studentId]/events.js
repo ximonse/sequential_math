@@ -13,6 +13,7 @@ import {
 import { isValidTrainingContext } from '../../../src/lib/trainingContext.js'
 import { isValidAdaptationDecision, recordAdaptationDecision } from '../../../src/lib/adaptationDecision.js'
 import { isValidCurrentNeed, recordCurrentNeed } from '../../../src/lib/currentNeed.js'
+import { isContractMasteryFact } from '../../../src/lib/masteryFacts.js'
 
 const MAX_PROBLEM_LOG = 5000
 const MAX_RECENT_PROBLEMS = 250
@@ -91,9 +92,16 @@ function applyMasteryAchieved(profile, payload) {
     profile.masteryFacts.facts = []
   }
 
-  // Dedup: kolla om samma operation+level redan finns
+  const incomingHasEvidence = Array.isArray(payload.evidenceObservationIds)
+    && payload.evidenceObservationIds.some(id => String(id || '').trim())
+  const revokedSet = new Set(Array.isArray(profile.masteryFacts.revokedIds)
+    ? profile.masteryFacts.revokedIds
+    : [])
+  // Ett legacyfaktum utan belägg blockerar inte ett nytt kontraktsfaktum.
   const exists = profile.masteryFacts.facts.some(
-    f => f.operation === payload.operation && f.level === payload.level
+    f => f.operation === payload.operation
+      && f.level === payload.level
+      && (!incomingHasEvidence || (isContractMasteryFact(f) && !revokedSet.has(f.id)))
   )
   if (exists) return false
 

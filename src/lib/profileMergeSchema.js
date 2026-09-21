@@ -26,7 +26,7 @@ export const MERGE_SCHEMA = {
   activity:          { strategy: 'custom', handler: 'mergeActivity', description: 'Senaste presence/interaction vinner' },
 
   // Mastery (append-only)
-  masteryFacts:      { strategy: 'union_append', handler: 'mergeMasteryFacts', description: 'Union av facts, dedup per op+level, union av revokedIds' },
+  masteryFacts:      { strategy: 'union_append', handler: 'mergeMasteryFacts', description: 'Union per fact-id; legacy bevaras utan automatisk kontraktsauktoritet; union av revokedIds' },
 
   // Problemlogg
   problemLog:        { strategy: 'dedup_union', limit: 5000, description: 'Dedup + union, trimmas till 5000' },

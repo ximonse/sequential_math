@@ -22,7 +22,7 @@ function result(index) {
 }
 
 describe('teacher summary', () => {
-  it('uses the full problem log and mastery facts', () => {
+  it('uses the full problem log and reports legacy mastery authority separately', () => {
     const problemLog = Array.from({ length: 300 }, (_, index) => result(index))
     const profile = {
       problemLog,
@@ -61,7 +61,13 @@ describe('teacher summary', () => {
     expect(summary.evidence).toMatchObject({
       historySource: 'problemLog',
       historyComplete: true,
-      sourceAttempts: 300
+      sourceAttempts: 300,
+      masteryFactAuthority: {
+        total: 1,
+        contract: 0,
+        legacy: 1,
+        revoked: 0
+      }
     })
     expect(getCurrentWeekTeacherEvidence(
       { teacherSummary: summary },
@@ -75,7 +81,7 @@ describe('teacher summary', () => {
       { teacherSummary: summary },
       summary.rolling30Days.periodStart
     )?.attempts).toBe(300)
-    expect(summary.effectiveLevels.addition).toBeGreaterThanOrEqual(1)
+    expect(summary.effectiveLevels.addition).toBe(0)
   })
 
   it('replaces stale summaries without mutating the source profile', () => {

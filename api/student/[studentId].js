@@ -15,6 +15,7 @@ import {
   hasCurrentStudentPassword,
   isCurrentStudentProfile
 } from '../../src/lib/studentProfileContract.js'
+import { isContractMasteryFact } from '../../src/lib/masteryFacts.js'
 
 const MAX_RECENT_PROBLEMS = 250
 const MAX_PROBLEM_LOG = 5000
@@ -622,16 +623,10 @@ function mergeMasteryFacts(existing, incoming) {
     if (fact?.id) factsById.set(fact.id, fact)
   }
   for (const fact of (Array.isArray(b.facts) ? b.facts : [])) {
-    if (fact?.id && !factsById.has(fact.id)) factsById.set(fact.id, fact)
-  }
-
-  // Dedup: om samma operation+level finns flera gånger, behåll äldsta (first achieved)
-  const byOpLevel = new Map()
-  for (const fact of factsById.values()) {
-    const key = `${fact.operation}:${fact.level}`
-    const existing = byOpLevel.get(key)
-    if (!existing || fact.achievedAt < existing.achievedAt) {
-      byOpLevel.set(key, fact)
+    if (!fact?.id) continue
+    const stored = factsById.get(fact.id)
+    if (!stored || (!isContractMasteryFact(stored) && isContractMasteryFact(fact))) {
+      factsById.set(fact.id, fact)
     }
   }
 
@@ -643,7 +638,9 @@ function mergeMasteryFacts(existing, incoming) {
 
   return {
     version: 1,
-    facts: [...byOpLevel.values()],
+    // Bevara legacyfakta för spårbarhet. Läslagret avgör vilka fakta som har
+    // kontraktsauktoritet; merge får inte tyst kasta bort historik.
+    facts: [...factsById.values()],
     revokedIds: [...revokedSet]
   }
 }

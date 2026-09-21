@@ -109,6 +109,8 @@ F5 består av två separata modeller:
 
 Ett attainment-faktum skapas bara av den auktoritativa skrivpipelinen när ett versionsbestämt regelverk passerar. Läsning och visning får inte skapa fakta. Fakta är append-only och kan ersättas/återkallas genom en spårbar händelse; de skrivs inte om av dagsform.
 
+Ett sparat mastery-faktum har självständig kontraktsauktoritet först när det har spårbart ID och datum, en giltig regelversion och minst en konkret observationsreferens. Äldre fakta utan dessa fält bevaras för spårbarhet men får inte ensamma styra progression eller presenteras som belagt kunnande. Om den underliggande problemloggen kan klassificeras säkert får mastery fortfarande räknas fram från observationerna; ett nytt refererat faktum får då läggas till utan att legacyhistoriken raderas. Ett återkallat faktum blockerar inte att samma steg senare beläggs på nytt.
+
 CurrentNeed får röra sig under historiskt uppnått steg. Det betyder repetition eller stöd nu, inte automatiskt förlorad kunskap. Ett senare F2-beslut kan återgå till utmaning när aktuell evidens stödjer det.
 
 Legacyobservationer får användas för mängd/aktivitet när deras grundfält är giltiga. De får bara användas för kompetens-/stegmastery om evidenskompetens, steg och relevant regelversion kan fastställas utan gissning. Annars visas underlaget som legacy/okänt och inga retroaktiva attainment-fakta skapas. En framtida migrering kräver separat plan, verifiering och uttryckligt genomförande.

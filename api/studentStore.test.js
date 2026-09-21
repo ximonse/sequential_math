@@ -244,6 +244,55 @@ describe('student persistence boundary', () => {
     expect(memory.get('student:PUPIL').serverRevision).toBe(2)
   })
 
+  it('preserves a legacy mastery fact when a referenced replacement is merged', async () => {
+    const stored = memory.get('student:PUPIL')
+    stored.masteryFacts = {
+      version: 1,
+      facts: [{
+        id: 'addition:1:legacy',
+        operation: 'addition',
+        level: 1,
+        achievedAt: 1000,
+        window: { attempts: 5, correct: 5, rate: 1 },
+        source: 'session'
+      }],
+      revokedIds: []
+    }
+    memory.set('student:PUPIL', stored)
+
+    const incoming = profile()
+    incoming.masteryFacts = {
+      version: 1,
+      facts: [{
+        id: 'addition:1:legacy',
+        operation: 'addition',
+        level: 1,
+        achievedAt: 1000,
+        window: { attempts: 5, correct: 5, rate: 1 },
+        source: 'session',
+        ruleVersion: 1,
+        evidenceObservationIds: ['obs-0']
+      }, {
+        id: 'addition:1:2000',
+        operation: 'addition',
+        level: 1,
+        achievedAt: 2000,
+        window: { attempts: 5, correct: 5, rate: 1 },
+        source: 'session',
+        ruleVersion: 1,
+        evidenceObservationIds: ['obs-1']
+      }],
+      revokedIds: []
+    }
+
+    expect((await call(studentHandler, 'POST', { profile: incoming })).code).toBe(200)
+    expect(memory.get('student:PUPIL').masteryFacts.facts.map(fact => fact.id)).toEqual([
+      'addition:1:legacy',
+      'addition:1:2000'
+    ])
+    expect(memory.get('student:PUPIL').masteryFacts.facts[0].evidenceObservationIds).toEqual(['obs-0'])
+  })
+
   it('retains a simultaneous event and full-profile upload without duplicates', async () => {
     const first = result('first'), second = result('second')
     const batch = { entries: [{ id: 'event-1', type: 'problem_result', timestamp: first.timestamp, payload: first }] }

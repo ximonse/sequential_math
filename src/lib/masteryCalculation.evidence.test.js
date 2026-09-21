@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   computeMasteryOverview,
-  computeOperationLevelMasteryStatus
+  computeOperationLevelMasteryStatus,
+  getMasteredLevelsFromFacts,
+  recordMasteryAchievement
 } from './masteryCalculation'
 
 function result(index, overrides = {}) {
@@ -70,5 +72,100 @@ describe('mastery evidence policy', () => {
     expect(computeMasteryOverview(problems, { profile }).multiplication).toEqual([4])
     expect(profile.masteryFacts.facts).toEqual([])
   })
-})
 
+  it('keeps an unreferenced legacy fact out of mastery authority', () => {
+    const profile = {
+      masteryFacts: {
+        version: 1,
+        facts: [{
+          id: 'addition:1:legacy',
+          operation: 'addition',
+          level: 1,
+          achievedAt: 1000,
+          window: { attempts: 5, correct: 5, rate: 1 },
+          source: 'session'
+        }, {
+          operation: 'addition',
+          level: 1,
+          ruleVersion: 1,
+          evidenceObservationIds: ['obs-without-traceable-fact']
+        }],
+        revokedIds: []
+      }
+    }
+
+    expect(computeMasteryOverview([], { profile })).toEqual({})
+    expect(getMasteredLevelsFromFacts(profile, 'addition')).toEqual([])
+  })
+
+  it('adds a referenced contract fact without deleting the legacy record', () => {
+    const profile = {
+      masteryFacts: {
+        version: 1,
+        facts: [{
+          id: 'addition:1:legacy',
+          operation: 'addition',
+          level: 1,
+          achievedAt: 1000,
+          window: { attempts: 5, correct: 5, rate: 1 },
+          source: 'session'
+        }],
+        revokedIds: []
+      }
+    }
+
+    const fact = recordMasteryAchievement(
+      profile,
+      'addition',
+      1,
+      { attempts: 5, correct: 5, rate: 1 },
+      { ruleVersion: 1, evidenceObservationIds: ['obs-1'] }
+    )
+
+    expect(fact).toMatchObject({ ruleVersion: 1, evidenceObservationIds: ['obs-1'] })
+    expect(profile.masteryFacts.facts).toHaveLength(2)
+    expect(getMasteredLevelsFromFacts(profile, 'addition')).toEqual([1])
+  })
+
+  it('refuses to create a new mastery fact without observation references', () => {
+    const profile = { masteryFacts: { version: 1, facts: [], revokedIds: [] } }
+
+    expect(recordMasteryAchievement(
+      profile,
+      'addition',
+      1,
+      { attempts: 5, correct: 5, rate: 1 },
+      { ruleVersion: 1 }
+    )).toBeNull()
+    expect(profile.masteryFacts.facts).toEqual([])
+  })
+
+  it('allows new evidence after a previous contract fact was revoked', () => {
+    const profile = {
+      masteryFacts: {
+        version: 1,
+        facts: [{
+          id: 'addition:1:1000',
+          operation: 'addition',
+          level: 1,
+          achievedAt: 1000,
+          window: { attempts: 5, correct: 5, rate: 1 },
+          source: 'session',
+          ruleVersion: 1,
+          evidenceObservationIds: ['obs-old']
+        }],
+        revokedIds: ['addition:1:1000']
+      }
+    }
+
+    expect(recordMasteryAchievement(
+      profile,
+      'addition',
+      1,
+      { attempts: 5, correct: 5, rate: 1 },
+      { ruleVersion: 1, evidenceObservationIds: ['obs-new'] }
+    )).toMatchObject({ evidenceObservationIds: ['obs-new'] })
+    expect(profile.masteryFacts.facts).toHaveLength(2)
+    expect(getMasteredLevelsFromFacts(profile, 'addition')).toEqual([1])
+  })
+})

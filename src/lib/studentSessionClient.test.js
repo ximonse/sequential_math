@@ -33,6 +33,21 @@ describe('student session client', () => {
     }))
   })
 
+  it('distinguishes rejected credentials from an expired established session', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => jsonResponse({ error: 'Inloggningen kunde inte bekräftas.' }, 401)))
+
+    await expect(loginStudentSession({ loginCode: 'Gul Fyr Katt', pin: '9999' })).resolves.toEqual({
+      ok: false,
+      status: 401,
+      error: 'Kodnamnet eller QR-koden och PIN-koden stämmer inte.'
+    })
+    await expect(resumeStudentSession()).resolves.toEqual({
+      ok: false,
+      status: 401,
+      error: 'Din session har gått ut. Logga in igen.'
+    })
+  })
+
   it('resumes a cookie session and sends the in-memory CSRF token for event writes', async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(jsonResponse(sessionPayload))

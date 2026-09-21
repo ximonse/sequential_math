@@ -1,6 +1,7 @@
 let csrfToken = null
 
 const SESSION_EXPIRED_ERROR = 'Din session har gått ut. Logga in igen.'
+const INVALID_LOGIN_ERROR = 'Kodnamnet eller QR-koden och PIN-koden stämmer inte.'
 
 function clearCsrfToken() {
   csrfToken = null
@@ -14,10 +15,10 @@ async function readJson(response) {
   }
 }
 
-function errorForResponse(response, data, fallback) {
+function errorForResponse(response, data, fallback, authError = SESSION_EXPIRED_ERROR) {
   if (response.status === 401 || response.status === 403) {
     clearCsrfToken()
-    return SESSION_EXPIRED_ERROR
+    return authError
   }
   if (response.status === 429) return 'För många försök. Vänta en stund och försök igen.'
   if (typeof data?.error === 'string' && data.error.trim()) return data.error
@@ -30,11 +31,11 @@ function validSessionPayload(data) {
     && typeof data?.csrfToken === 'string' && data.csrfToken.trim()
 }
 
-async function requestSession(url, options, fallback) {
+async function requestSession(url, options, fallback, authError) {
   try {
     const response = await fetch(url, { credentials: 'include', ...options })
     const data = await readJson(response)
-    if (!response.ok) return { ok: false, error: errorForResponse(response, data, fallback), status: response.status }
+    if (!response.ok) return { ok: false, error: errorForResponse(response, data, fallback, authError), status: response.status }
     return { ok: true, data, status: response.status }
   } catch {
     return { ok: false, error: 'Kunde inte nå tjänsten. Kontrollera anslutningen och försök igen.' }
@@ -61,7 +62,7 @@ export async function loginStudentSession({ studentId, qrSecret, loginCode, pin 
       ...(String(loginCode || '').trim() ? { loginCode: String(loginCode).trim() } : {}),
       pin: String(pin || '')
     })
-  }, 'Kunde inte logga in.')
+  }, 'Kunde inte logga in.', INVALID_LOGIN_ERROR)
   if (!result.ok) return result
   return rememberSession(result.data)
 }

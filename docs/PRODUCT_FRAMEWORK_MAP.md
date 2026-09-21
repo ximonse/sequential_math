@@ -12,7 +12,7 @@ Appen saknar inte alla byggstenar: domängränssnitt, körbara formkontroller, g
 
 Det behövs ett sammanhängande funktionellt ramverk ovanpå och genom befintlig kod, inte ett nytt UI-/databasramverk eller en fristående guardian som ensam försöker korrigera allt i efterhand.
 
-Det ursprungliga kartläggningsunderlaget var en statisk granskning av de namngivna funktionerna och deras anropsvägar. E2-snitten nedan har därefter verifierats lokalt med tester och build, men inga servrar, elevkonton, nätverksanrop eller produktionskontroller har körts. Alla generatorer, exportvägar och verklig browser-/iPad-användning är inte fullständigt granskade. Därför är helhetsfunktionen **inte verifierad**. Äldre dokument och testnamn räknas inte som aktuella testresultat.
+Det ursprungliga kartläggningsunderlaget var en statisk granskning av de namngivna funktionerna och deras anropsvägar. Kodsnitten nedan har därefter verifierats lokalt med tester och build. En dev-only browseråterspelning med syntetisk elev har också kontrollerat sex elevsvar genom lokal lagring till lärarens felsignal. Inga riktiga elevkonton, externa nätverksanrop, iPad- eller produktionskontroller har körts. Alla exportvägar och verklig klassanvändning är inte fullständigt granskade. Därför är helhetsfunktionen **inte verifierad**. Äldre dokument och testnamn räknas inte som aktuella testresultat.
 
 ## 2. Ansvarskarta uppifrån och ned
 
@@ -96,7 +96,7 @@ Den lokala cutover-policyn bevarar därför legacyfakta men ger bara ett faktum 
 
 För varje etapp sparas: krav-ID → scenario → app-/regelversion → miljö → metod → faktiskt resultat → begränsning. Befintliga tester är kandidater att återanvända, inte redan godkända resultat för det nya kontraktet. Efter kodändringar krävs repoets test/build-kontroller; UI-flöden verifieras separat. Klasspasset använder [observationsmallen](PRODUCT_SCENARIOS.md) utan att framkalla fel eller samla nya personuppgifter.
 
-**Nästa avgränsade arbete: E5:s samlade återspelning och autentiserade UI-grind.** Återspela hela elev–lärarkedjan, kontrollera elevens verkliga träningsflöde och lärarens signaler i autentiserad browser/iPad och förbered klassobservationen. `currentDifficulty` och `operationAbilities` finns kvar i profilen för kompatibilitet men ska inte presenteras som belagt kunnande eller styra nya läraråtgärder. Publicering kräver separat begäran.
+**Nästa avgränsade arbete: E5:s samlade återspelning och autentiserade UI-grind.** En isolerad dev-only browser-fixture finns nu på `/qa/adaptive`; den använder en tom syntetisk lokal elev och vägrar starta om molnsynk är på. Den kan bevisa den sammanhängande UI-kedjan utan riktiga elevkonton, men ersätter inte autentiserad pilot-/iPad-kontroll. Återspela elev–lärarkedjan där, kontrollera därefter det verkliga autentiserade träningsflödet i separat testmiljö och förbered klassobservationen. `currentDifficulty` och `operationAbilities` finns kvar i profilen för kompatibilitet men ska inte presenteras som belagt kunnande eller styra nya läraråtgärder. Publicering kräver separat begäran.
 
 ### E2 — lokalt verifierat första snitt 2026-09-20
 

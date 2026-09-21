@@ -22,6 +22,18 @@ Local class caches are projections of the authorized server list, not a source t
 
 The tests cover executable boundary behavior rather than trusting this document: api/studentAlias.test.js, api/studentStore.test.js, src/lib/storageReliability.test.js, src/lib/rosterClient.test.js, src/lib/teacherEvidencePeriods.test.js, src/lib/teacherSummary.test.js and dashboardStudentRowHelpers.test.js.
 
+## Isolated adaptive browser fixture (2026-09-21)
+
+The development-only route `/qa/adaptive` creates or resumes the synthetic
+two-character pupil `QA` in the local class `QA adaptivitet`, starts ordinary
+addition practice and leaves results in the browser's local storage so the
+same browser can inspect them in the teacher dashboard. The short ID keeps the
+fixture on the legacy local path instead of the authenticated pilot API path.
+The route is registered only when `import.meta.env.DEV` is true and refuses to
+run when cloud sync is enabled. It never imports historical pupil backups and
+is not present as an active route in a production build. Use `?reset=1` for a
+fresh empty profile; omission preserves the current synthetic replay.
+
 ## Schools and pupil login (2026-09-10)
 
 Schools are separate records: `school:{id}` and `schools:index`. Creation uses

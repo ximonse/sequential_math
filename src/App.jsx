@@ -7,6 +7,7 @@ import Dashboard from './components/teacher/Dashboard'
 import TeacherLogin from './components/teacher/TeacherLogin'
 import Login from './components/Login'
 import ThemeSwitcher from './components/shared/ThemeSwitcher'
+import AdaptiveQaBootstrap from './dev/AdaptiveQaBootstrap'
 import { isTeacherAuthenticated } from './lib/teacherAuth'
 import { initCloudSyncListeners, destroyCloudSyncListeners } from './lib/storage'
 
@@ -40,6 +41,7 @@ function App() {
         <Route path="/student/:studentId/practice" element={<PracticeSession />} />
         <Route path="/student/:studentId/ticket" element={<StudentTicket />} />
         <Route path="/teacher-login" element={<TeacherLogin />} />
+        {import.meta.env.DEV ? <Route path="/qa/adaptive" element={<AdaptiveQaBootstrap />} /> : null}
         <Route
           path="/teacher"
           element={(

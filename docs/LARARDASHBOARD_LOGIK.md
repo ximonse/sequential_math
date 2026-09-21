@@ -128,8 +128,9 @@ Ny panel som visar effektiv konsekutiv masteryniva per elev per operation.
 
 Kolumner:
 - `Elev`: namn (klickbar till elevdetalj).
-- `+`, `-`, `x`, `/`, `Alg(u)`, `Alg(f)`, `Uttr`, `Brak`, `%`: effektiv niva per operation.
-- `Snitt`: medel av operationer med traning.
+- `+`, `-`, `x`, `/`, `Alg(u)`, `Alg(f)`, `Uttr`, `Brak`, `%`: belagd effektiv niva per operation.
+- `Lagsta belagda`: lagsta nivan bland omraden dar mastery faktiskt ar belagd.
+- `Snitt belagt`: medel av belagda operationer. Okant underlag raknas inte som niva 0.
 
 Definition "effektiv niva":
 - Hogsta **sammanhanande** klarade nivan (1, 2, 3, ... utan avbrott).
@@ -137,11 +138,11 @@ Definition "effektiv niva":
 - Klarad = minst 5 forsok OCH minst 85% ratt (samma som Framsteg-mastery).
 
 Fargkodning:
-- Rod 1-2, orange 3-4, amber 5-6, lime 7-8, gron 9-10, morkgron 11-12, gra = ej startad.
+- Rod 1-2, orange 3-4, amber 5-6, lime 7-8, gron 9-10, morkgron 11-12, gra = ej belagd.
 
 Sortering:
 - Alla kolumner sorterbara (klick byter riktning).
-- Default: snitt lagst forst.
+- Default: hogst belagt snitt forst; elever utan belagd niva sorteras sist.
 
 Pedagogiskt varde:
 - Ger en arlig bild av var klassen befinner sig — elever kan inte "bluffa forbi" genom att hoppa over nivaer.
@@ -375,6 +376,10 @@ Pedagogiskt varde:
 - Dagsvy = lektionsstyrning nu.
 - Veckovy = uppfoljning av vanor och uthallighet.
 - Alla elever = langsiktig utvecklingsbild.
+
+Snapshot-exporten anvander samma begrepp som elevdetaljen: `BelagdNiva_*` och
+`BelagdStatus_*` skiljs fran `TranarNu_*` och `Traningssyfte_*`. Tom belagd
+niva med status `okänd` far inte tolkas som niva 0.
 
 ## 14. Aktivitetsfarger (statuslogik)
 

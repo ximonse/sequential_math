@@ -72,7 +72,7 @@ P0 = förutsättning för pålitlig evidens; P1 = nödvändig produktfunktion. D
 | E1 Gemensamma funktionskontrakt — **kontrakterat 2026-09-20** | F1–F6 har preciserats i ett sammanhängande underkontrakt med ägare för varje beslut, lägesmatris, evidensklasser och versionspolicy. Inga nya pedagogiska trösklar har valts. | Klart som dokumenterad baslinje; implementering mäts i E2–E5. | [Funktionskontraktet](FUNCTION_CONTRACTS.md) kopplar A1–A8 till ansvar och acceptansfall utan att påstå verifierad funktion. |
 | E2 Tillförlitlig evidenskedja — **lokalt implementerad 2026-09-21** | En representation av vad som tränats och observerats, med kompetens, nivå, läge, ID och regelversion. Kompetensidentitet, evidensklass, träningsram och leveransstatus följer kedjan; äldre underlag delas i kontraktsmärkt, säkert klassificerbart och okänt. | E1, P0 | Kod-/kontraktsgrind passerad. Autentiserad browser-/iPad-kontroll och verkligt avbrottsnät återstår till E5:s samlade leveransgrind. |
 | E3 Ett adaptivt beslutsflöde — **fyra snitt lokalt implementerade 2026-09-21** | Historiskt kunnande, aktuellt behov, masteryövergång, start/warmup, flerledad återhämtning och lärarsignal efter ihållande fel är nu åtskilda och versionsmärkta. Elevens ja/nej-avancering är avvecklad. | E2, P1 | Den lokala beslutsmodellen täcker S1–S4/S7 med regressionsfall. Autentiserad elev-/lärarverifiering och klassunderlag hör till den samlade E5-grinden. |
-| E4 Tolkningsbar lärarbild — **första snitt lokalt implementerat 2026-09-21** | Separera historik, aktuell prestation, aktivitet och hypoteser. Detaljkort, snabbuppdrag, träningsprioritering och elevexport skiljer nu belagd nivå från aktuellt träningsbehov och använder inte legacyförmåga som kunskapsnivå. Nivåsnitt och återstående lista-/exportvägar behöver fortsatt kontroll. | E2; slutverifiering med E3, P1 | S5/S6/S8/S9 visar konsekventa besked och försiktiga slutsatser. Lärare kan hitta underlag och välja uppföljning. |
+| E4 Tolkningsbar lärarbild — **två kodsnitt lokalt implementerade 2026-09-21** | Separera historik, aktuell prestation, aktivitet och hypoteser. Detaljkort, klassöversikt, snabbuppdrag, träningsprioritering och exporter skiljer nu belagd nivå från aktuellt träningsbehov, håller okänt borta från nivåsnitt och använder inte legacyförmåga som kunskapsnivå. | E2; slutverifiering med E3, P1 | S5/S6/S8/S9 visar konsekventa besked och försiktiga slutsatser. Lärare kan hitta underlag och välja uppföljning. |
 | E5 Innehåll och samlad kvalitetsgrind | Granska progression per domän, matematiskt facit, relevant variation, svarskrav och fallbackbeteende. Utöka befintliga kontraktskontroller och återspelningsfall; verifiera hela elev–lärarkedjan. | Börjar med motexempel i E1/E2, avslutas efter E3/E4; innehållsfel P0 | S1–S10 har daterat resultat och begränsningar. Tester/build samt relevanta browser-/iPad-flöden är kontrollerade. Ingen automatisk publicering. |
 
 E2 ska leverera en tunn men komplett vertikal kedja, inte en total omskrivning innan något kan verifieras. Varje etapp behåller befintliga fungerande delar och kompletterar dem med regressionsfall. Generatorproblemen som redan noterats blir motexempel i E5, inte nya fristående småfixprojekt.
@@ -94,7 +94,7 @@ Historiska felaktiga masteryfakta får inte bara raderas eller omtolkas. E2 mås
 
 För varje etapp sparas: krav-ID → scenario → app-/regelversion → miljö → metod → faktiskt resultat → begränsning. Befintliga tester är kandidater att återanvända, inte redan godkända resultat för det nya kontraktet. Efter kodändringar krävs repoets test/build-kontroller; UI-flöden verifieras separat. Klasspasset använder [observationsmallen](PRODUCT_SCENARIOS.md) utan att framkalla fel eller samla nya personuppgifter.
 
-**Nästa avgränsade arbete: E4:s återstående lärarkonsumenter.** Kontrollera klasslistor, nivåsnitt och snapshots för okänt kontra noll samt säkerställ samma betydelse och urval i lista, detalj och export. `currentDifficulty` och `operationAbilities` finns kvar i profilen för kompatibilitet men ska inte presenteras som belagt kunnande eller styra nya läraråtgärder. Publicering kräver separat begäran.
+**Nästa avgränsade arbete: E5:s innehålls- och guardiangrind.** Återspela generatorer och fallbackvägar mot kompetens-, nivå-, facit- och variationskontrakten. En ogiltig kandidat ska stoppas eller ersättas före visning och får inte skapa falsk evidens. `currentDifficulty` och `operationAbilities` finns kvar i profilen för kompatibilitet men ska inte presenteras som belagt kunnande eller styra nya läraråtgärder. Publicering kräver separat begäran.
 
 ### E2 — lokalt verifierat första snitt 2026-09-20
 
@@ -174,3 +174,11 @@ Verifiering: `npm run test` passerade 69 testfiler/315 tester, avgränsad ESLint
 - Elevexporten använder separata rader för `BelagdNiva` och `TranarNu`; gamla `NivaNu`/`NivaAddition`-fält är borttagna för att inte ge fel innebörd.
 
 Verifiering: `npm run test` passerade 71 testfiler/320 tester, avgränsad ESLint passerade och `npm run build` passerade med de befintliga Browserslist-/bundlevarningarna. Ingen autentiserad browser-, iPad-, live- eller produktionsverifiering gjordes.
+
+### E4 — lokalt verifierat andra snitt 2026-09-21
+
+- Klassöversikten representerar obelagt/okänt som `null`, inte nivå 0. Elevens snitt och lägsta nivå omfattar bara områden med belagd mastery och visar hur många områden underlaget täcker.
+- Klassmedel per område utesluter elever utan belagd nivå för just området. Ett helt okänt område visas som streck i stället för ett missvisande nollsnitt.
+- Snapshot-exporten använder samma separata fält för belagd nivå/status och aktuell träningsnivå/syfte som elevdetaljen.
+
+Verifiering: `npm run test` passerade 73 testfiler/325 tester, avgränsad ESLint passerade och `npm run build` passerade med de befintliga Browserslist-/bundlevarningarna. Ingen autentiserad browser-, iPad-, live- eller produktionsverifiering gjordes.

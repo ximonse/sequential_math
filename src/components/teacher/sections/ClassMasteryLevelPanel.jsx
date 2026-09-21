@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { getOperationLabel } from '../../../lib/operations'
 import { ALL_OPERATIONS } from './dashboardConstants'
 import {
+  buildClassMasteryAverages,
   buildClassMasteryRows,
   getLevelDotStyle,
   getAverageBadgeStyle
@@ -42,15 +43,7 @@ export default function ClassMasteryLevelPanel({
   )
 
   const classAverages = useMemo(() => {
-    if (rows.length === 0) return null
-    const avgs = {}
-    for (const op of ALL_OPERATIONS) {
-      const vals = rows.map(r => r.levels[op])
-      avgs[op] = vals.reduce((a, b) => a + b, 0) / vals.length
-    }
-    avgs._total = rows.reduce((s, r) => s + r.average, 0) / rows.length
-    avgs._lowest = rows.reduce((s, r) => s + r.lowest, 0) / rows.length
-    return avgs
+    return buildClassMasteryAverages(rows)
   }, [rows])
 
   const sortedRows = useMemo(() => {
@@ -62,7 +55,9 @@ export default function ClassMasteryLevelPanel({
       let aVal, bVal
       if (sortBy === 'average') { aVal = a.average; bVal = b.average }
       else if (sortBy === 'lowest') { aVal = a.lowest; bVal = b.lowest }
-      else { aVal = a.levels[sortBy] || 0; bVal = b.levels[sortBy] || 0 }
+      else { aVal = a.levels[sortBy]; bVal = b.levels[sortBy] }
+      if (!Number.isFinite(aVal)) return Number.isFinite(bVal) ? 1 : 0
+      if (!Number.isFinite(bVal)) return -1
       return sortDir === 'asc' ? aVal - bVal : bVal - aVal
     })
     return sorted
@@ -91,7 +86,7 @@ export default function ClassMasteryLevelPanel({
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
         <div>
           <h2 className="text-lg font-semibold text-gray-800">Nivåöversikt – hela klassen</h2>
-          <p className="text-xs text-gray-500">Nivå i alla aktiverade kunskapsområden per elev.</p>
+          <p className="text-xs text-gray-500">Belagd nivå i aktiverade kunskapsområden per elev.</p>
         </div>
       </div>
       {!filteredStudents || filteredStudents.length === 0 ? <p className="text-sm text-gray-500">Inga elever i urvalet.</p> : (
@@ -99,7 +94,7 @@ export default function ClassMasteryLevelPanel({
       {/* Header with legend */}
       <div className="flex items-center justify-between flex-wrap gap-2 px-1 pb-1">
         <p className="text-xs text-gray-400">
-          Klarad = ≥5 försök, ≥85% rätt. Konsekutiv från nivå 1.
+          Klarad = ≥5 försök, ≥85% rätt. Konsekutiv från nivå 1. – = ännu inte belagt.
         </p>
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-[10px] text-gray-400 mr-0.5">Nivå:</span>
@@ -141,22 +136,22 @@ export default function ClassMasteryLevelPanel({
                 />
               ))}
               <HeaderCell
-                label="Lägsta"
+                label="Lägsta belagda"
                 column="lowest"
                 active={sortBy === 'lowest'}
                 arrow={sortArrow('lowest')}
                 onClick={handleSort}
                 className="text-center w-16 border-l border-gray-200"
-                title="Lägsta kompletta nivå (min av alla operationer)"
+                title="Lägsta belagda nivå bland områden med tillräckligt underlag"
               />
               <HeaderCell
-                label="Snitt"
+                label="Snitt belagt"
                 column="average"
                 active={sortBy === 'average'}
                 arrow={sortArrow('average')}
                 onClick={handleSort}
                 className="text-center w-16 border-l border-gray-100"
-                title="Snitt av alla 9 operationer (inkl ej påbörjade)"
+                title="Snitt av belagda områden; okända områden räknas inte som nivå 0"
               />
             </tr>
           </thead>
@@ -179,7 +174,7 @@ export default function ClassMasteryLevelPanel({
                   const level = row.levels[op]
                   const tooltip = level > 0
                     ? `${getOperationLabel(op)}: nivå 1–${level} klarade`
-                    : `${getOperationLabel(op)}: ej påbörjad`
+                    : `${getOperationLabel(op)}: ännu inte belagd`
                   return (
                     <td key={op} className="py-1.5 px-1 text-center">
                       <LevelDot level={level} tooltip={tooltip} />
@@ -190,7 +185,11 @@ export default function ClassMasteryLevelPanel({
                   <BadgeDot value={row.lowest} />
                 </td>
                 <td className="py-1.5 px-1.5 text-center border-l border-gray-100">
-                  <BadgeDot value={row.average} decimal />
+                  <BadgeDot
+                    value={row.average}
+                    decimal
+                    tooltip={`${row.knownCount}/${row.totalCount} områden har belagd nivå`}
+                  />
                 </td>
               </tr>
             ))}
@@ -237,13 +236,14 @@ function LevelDot({ level, tooltip }) {
   )
 }
 
-function BadgeDot({ value, decimal = false }) {
+function BadgeDot({ value, decimal = false, tooltip = '' }) {
   const style = getAverageBadgeStyle(value)
   const display = value > 0
     ? (decimal ? value.toFixed(1) : value)
     : '–'
   return (
     <div
+      title={tooltip}
       className="w-[42px] h-[34px] mx-auto rounded-lg flex items-center justify-center text-[13px] font-extrabold tabular-nums"
       style={style}
     >

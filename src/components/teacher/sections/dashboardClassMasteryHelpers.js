@@ -10,14 +10,15 @@ export function buildClassMasteryRows(filteredStudents) {
     const stored = student.teacherSummary?.effectiveLevels
     let levels
     if (stored && typeof stored === 'object') {
-      levels = Object.fromEntries(ALL_OPERATIONS.map(op => [op, Number(stored[op]) || 0]))
+      levels = Object.fromEntries(ALL_OPERATIONS.map(op => [op, normalizeAttainedLevel(stored[op])]))
     } else {
       const source = getPreferredProblemSource(student)
-      levels = computeEffectiveLevels(source, ALL_OPERATIONS, LEVELS, { profile: student })
+      const computed = computeEffectiveLevels(source, ALL_OPERATIONS, LEVELS, { profile: student })
+      levels = Object.fromEntries(ALL_OPERATIONS.map(op => [op, normalizeAttainedLevel(computed[op])]))
     }
-    const values = ALL_OPERATIONS.map(op => levels[op])
-    const average = values.reduce((sum, v) => sum + v, 0) / values.length
-    const lowest = Math.min(...values)
+    const knownValues = ALL_OPERATIONS.map(op => levels[op]).filter(Number.isInteger)
+    const average = averageOrNull(knownValues)
+    const lowest = knownValues.length > 0 ? Math.min(...knownValues) : null
 
     return {
       studentId: student.studentId,
@@ -25,9 +26,33 @@ export function buildClassMasteryRows(filteredStudents) {
       className: student.className || '',
       levels,
       average,
-      lowest
+      lowest,
+      knownCount: knownValues.length,
+      totalCount: ALL_OPERATIONS.length
     }
   })
+}
+
+export function buildClassMasteryAverages(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return null
+
+  const averages = {}
+  for (const operation of ALL_OPERATIONS) {
+    averages[operation] = averageOrNull(rows.map(row => row.levels?.[operation]).filter(Number.isInteger))
+  }
+  averages._total = averageOrNull(rows.map(row => row.average).filter(Number.isFinite))
+  averages._lowest = averageOrNull(rows.map(row => row.lowest).filter(Number.isInteger))
+  return averages
+}
+
+function normalizeAttainedLevel(value) {
+  const level = Number(value)
+  return Number.isInteger(level) && level >= 1 && level <= 12 ? level : null
+}
+
+function averageOrNull(values) {
+  if (values.length === 0) return null
+  return values.reduce((sum, value) => sum + value, 0) / values.length
 }
 
 /**

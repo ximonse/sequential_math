@@ -2,6 +2,7 @@ import {
   toFixedOrEmpty,
   toPercent
 } from './dashboardSortUtils'
+import { ALL_OPERATIONS } from './dashboardConstants'
 
 export function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
   return rows.map(row => {
@@ -18,6 +19,14 @@ export function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
       Stodorsaker: row.riskCodes.join(' | '),
       Underlag: row.evidenceLabel,
       ForeslagenAtgard: row.nextAction
+    }
+    for (const operation of ALL_OPERATIONS) {
+      const attained = row.attainmentLevels?.[operation]
+      const need = row.currentNeeds?.[operation]
+      base[`BelagdNiva_${operation}`] = Number.isInteger(attained) ? attained : ''
+      base[`BelagdStatus_${operation}`] = Number.isInteger(attained) ? 'belagd' : 'okänd'
+      base[`TranarNu_${operation}`] = Number.isInteger(need?.targetLevel) ? need.targetLevel : ''
+      base[`Traningssyfte_${operation}`] = String(need?.purpose || '')
     }
 
     if (viewMode === 'daily') {

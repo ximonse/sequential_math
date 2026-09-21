@@ -11,7 +11,9 @@ const baseRow = {
   todayDetailedAttempts: 250, todayAssignmentAdherenceRate: null, todayStruggle: null,
   weekAttempts: 0, weekCorrectCount: 0, weekWrongCount: 0,
   weekKnowledgeWrongCount: 0, weekInattentionCount: 0, weekSuccessRate: 0,
-  weekDetailedAttempts: 0, weekAssignmentAdherenceRate: null, weekStruggle: null
+  weekDetailedAttempts: 0, weekAssignmentAdherenceRate: null, weekStruggle: null,
+  attainmentLevels: { addition: 4, subtraction: null },
+  currentNeeds: { addition: { purpose: 'advance', targetLevel: 5 } }
 }
 
 describe('dashboard CSV evidence', () => {
@@ -28,5 +30,14 @@ describe('dashboard CSV evidence', () => {
 
     expect(row.VeckansTraff).toBe('-')
     expect(row.VeckansDetaljurval).toBe('fullständig periodhistorik')
+  })
+
+  it('keeps attained level, unknown status and current need separate', () => {
+    const [row] = buildSnapshotCsvRows([baseRow], 'daily', 20)
+
+    expect(row.BelagdNiva_addition).toBe(4)
+    expect(row.BelagdStatus_subtraction).toBe('okänd')
+    expect(row.TranarNu_addition).toBe(5)
+    expect(row.Traningssyfte_addition).toBe('advance')
   })
 })

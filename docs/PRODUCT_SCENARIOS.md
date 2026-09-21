@@ -1,6 +1,6 @@
 # Elev–lärarscenarier och klassobservation
 
-Status: **acceptansunderlag till produktkontrakt v1.0, 2026-09-20; inga scenarier körda inom detta dokumentarbete**.
+Status: **acceptansunderlag till produktkontrakt v1.0, 2026-09-20; S3/F6 delvis återspelat lokalt med syntetisk elev 2026-09-21**.
 Scenarierna konkretiserar [produktkontraktet inklusive beslut D1–D3](PRODUCT_CONTRACT.md); beslutens bakgrund finns i [granskningsunderlaget](PRODUCT_CONTRACT_REVIEW.md).
 De beskriver önskat beteende. Exakta trösklar fastställs senare i underkontrakt.
 
@@ -20,6 +20,12 @@ De beskriver önskat beteende. Exakta trösklar fastställs senare i underkontra
 | S10 Innehåll och fullständighet — P1/P3/P4/P9, F3/F4/F5/F6 | Många uppgifter genereras på ett steg; eleven ger rätt, fel och formmässigt ofullständiga svar. | Besvarbara, varierade uppgifter och konsekvent begriplig bedömning. | Vad steget faktiskt prövar och vilken evidens som räknas. | Oberoende facitkontroll, relevant variation och samma bedömningspolicy genom kedjan. Olika frågetext bevisar inte olika matematisk utmaning. |
 
 M1 och M2 gäller samtliga scenarier. P8 gäller även fel i underlaget för övriga scenarier.
+
+### Körda verifieringsposter
+
+| Scenario | Kontrakt/appversion | Miljö och händelser | Faktiskt utfall | Begränsning |
+| --- | --- | --- | --- | --- |
+| S3, lärarsignalen i F6 | Produktkontrakt 1.0 / `2e6e2a4` | Lokal Vite dev, `/qa/adaptive?reset=1`, syntetisk tvåteckenselev, lokal lagring. Sex felaktiga svar (`99`) på addition nivå 1; därefter lärarens `Statistik & stöd`. | Elevvyn registrerade sex svar och visade lokal lagringsstatus. Lärarvyn behöll belagd nivå som okänd (`–`) och visade en prioriteringssignal: fortsatta fel i addition nivå 1, 0 av 6, samt alla sex frågor med elevsvar och rätt svar. Visuellt kontrollerat. Full testsvit: 74 filer/339 tester; produktionsbuild passerade. | Bevisar inte återhämtning och återgång i hela S3. Kör inte pilotens autentiserade cookie/event/vault-väg, molnsynk, omladdning, iPad, verklig elev eller produktion. De medvetet orimliga svaren prövar inte en specifik felhypotes enligt S5. |
 
 ## 2. Bevis som kompletterar varandra
 

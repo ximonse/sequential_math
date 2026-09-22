@@ -4,7 +4,6 @@ import {
   addStudentsToClass,
   createClassFromPilotRoster,
   createClassFromRoster,
-  deleteProfile,
   getClasses,
   getCloudProfilesSyncStatus,
   normalizeStudentId,
@@ -14,10 +13,6 @@ import {
 } from '../../../lib/storage'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
 import { saveTeacherPupilLabel } from '../../../lib/teacherPupilLabels'
-import {
-  getActiveAssignment,
-  getAssignments
-} from '../../../lib/assignments'
 import { logoutTeacher } from '../../../lib/teacherAuth'
 import { saveClass } from '../../../lib/storage'
 
@@ -80,18 +75,6 @@ export function buildDashboardClassAndAuthActions({
   setPasswordResetStatus,
   setTableSelectedStudentIds
 }) {
-  const handleRefresh = () => {
-    void loadStudents()
-    const refreshedClasses = getClasses()
-    setClasses(refreshedClasses)
-    if (!addToClassId && refreshedClasses.length > 0) {
-      setAddToClassId(refreshedClasses[0].id)
-    }
-    setAssignments(getAssignments())
-    setActiveAssignmentId(getActiveAssignment()?.id || '')
-    setDashboardStatus('Uppdaterat.')
-  }
-
   const handleCloudRefreshNow = async () => {
     setIsCloudRefreshBusy(true)
     try {
@@ -203,26 +186,6 @@ export function buildDashboardClassAndAuthActions({
     }
     setClassStatus('Klass borttagen.')
     await loadStudents()
-  }
-
-  const handleDeleteStudent = async (studentId) => {
-    let result
-    try {
-      result = await deleteProfile(studentId)
-    } catch {
-      setDashboardStatus('Kunde inte radera eleven just nu.')
-      return
-    }
-    if (!result?.ok) {
-      setDashboardStatus(result?.error || 'Kunde inte radera eleven just nu.')
-      return
-    }
-
-    setDetailStudentId('')
-    await loadStudents()
-    setClasses(getClasses())
-    setDashboardStatus('Elevprofil och träningshistorik är raderade.')
-    navigate('/teacher')
   }
 
   const handleSetTeacherPupilLabel = async (studentId, label) => {
@@ -337,7 +300,6 @@ export function buildDashboardClassAndAuthActions({
   }
 
   return {
-    handleRefresh,
     handleCloudRefreshNow,
     handleLogout,
     handleJumpToPasswordReset,
@@ -346,7 +308,6 @@ export function buildDashboardClassAndAuthActions({
     handleAddExistingStudentsToClass, handleMoveStudent,
     handleAddStudentsToClass,
     handleDeleteClass,
-      handleDeleteStudent,
         handleSetTeacherPupilLabel,
       handleRenameClass,
     handleToggleClassFilter,

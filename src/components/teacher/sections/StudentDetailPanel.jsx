@@ -48,7 +48,6 @@ export default function StudentDetailPanel({
   onNavigateDirectStudent,
   onExportCsv,
   canExportCsv,
-  onDeleteStudent,
   onSetTeacherPupilLabel,
   detailStudentProfile,
   detailStudentRow,
@@ -145,20 +144,6 @@ export default function StudentDetailPanel({
               <button type="button" onClick={() => { const label = window.prompt('Ditt privata tilltalsnamn för eleven:', detailStudentProfile.teacherPupilLabel || ''); if (label !== null) onSetTeacherPupilLabel(detailStudentProfile.studentId, label) }} className="px-3 py-1.5 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded text-xs font-medium">Ändra tilltalsnamn</button>
             )}
           {detailStudentProfile?.displayAlias ? <button type="button" onClick={reissueCredential} className="px-3 py-1.5 bg-amber-200 hover:bg-amber-300 text-amber-950 rounded text-xs font-semibold">Nytt QR-kort / ny PIN</button> : null}
-          {detailStudentProfile && (
-            <button
-              type="button"
-              onClick={() => {
-                const name = detailStudentProfile.name || detailStudentProfile.displayAlias || detailStudentProfile.studentId
-                if (window.confirm(`Radera ${name} permanent? All elevdata och historik tas bort och kan inte återställas.`)) {
-                  onDeleteStudent(detailStudentProfile.studentId)
-                }
-              }}
-              className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs font-medium"
-            >
-              Radera elev
-            </button>
-          )}
         </div>
       </div>
 

@@ -9,7 +9,7 @@ import {
 } from '../_helpers.js'
 import { withFreshTeacherSummary } from '../../src/lib/teacherSummary.js'
 import { removeStudentHighscores } from '../highscores.js'
-import { isSchoolAdminRole } from '../_teacherRoles.js'
+import { isSuperAdminRole } from '../_teacherRoles.js'
 import {
   STUDENT_PASSWORD_SCHEME,
   hasCurrentStudentPassword,
@@ -61,7 +61,7 @@ export default async function handler(req, res) {
     if (req.method === 'DELETE') {
       const deleteAuth = await getLiveTeacherAuthPayload(req)
       if (!deleteAuth) return res.status(401).json({ error: 'Teacher authorization required' })
-      if (!isSchoolAdminRole(deleteAuth.role, deleteAuth.isAdmin)) return res.status(403).json({ error: 'Endast administratörer kan radera elever permanent.' })
+      if (!isSuperAdminRole(deleteAuth.role, deleteAuth.isAdmin)) return res.status(403).json({ error: 'Endast huvudadmin kan radera elever permanent.' })
       let deletedClassIds = []
       await mutateStudentRecord(studentId, async current => {
         await assertTeacherStudentAccess(req, current)

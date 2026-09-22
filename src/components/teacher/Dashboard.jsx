@@ -204,7 +204,6 @@ function Dashboard() {
   }, [isDirectStudentView, routeStudentId, students.length])
 
   const {
-    handleRefresh,
     handleCloudRefreshNow,
     handleLogout,
     handleJumpToPasswordReset,
@@ -214,7 +213,6 @@ function Dashboard() {
     handleMoveStudent,
     handleAddStudentsToClass,
     handleDeleteClass,
-    handleDeleteStudent,
     handleSetTeacherPupilLabel,
     handleRenameClass,
     handleToggleClassFilter,
@@ -421,7 +419,7 @@ function Dashboard() {
     <DashboardLayout
       {...{
         isDirectStudentView, detailStudentProfile, cloudSyncStatus, formatTimeAgo,
-        handleJumpToPasswordReset, handleRefresh, navigate, handleLogout, dashboardStatus,
+        handleJumpToPasswordReset, navigate, handleLogout, dashboardStatus,
         isCloudRefreshBusy, handleCloudRefreshNow, formatSyncTimestamp, getCloudSyncSourceLabel,
         selectedClassIds, students, filteredStudents, classFilterOptions, clearClassFilter,
         handleToggleClassFilter, classStats, dataQualitySummary, usageInsights, formatDuration,
@@ -444,7 +442,7 @@ function Dashboard() {
         supportRows, handleCreateQuickAssignment,
         classNameInput, setClassNameInput, handleCreateClass, handleCreatePilotRoster, addToClassId, setAddToClassId,
         classes, handleAddExistingStudentsToClass, handleMoveStudent, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus, handleDeleteClass, handleRenameClass, handleSaveClassExtras,
-        handleDeleteStudent, handleSetTeacherPupilLabel,
+        handleSetTeacherPupilLabel,
         resultsPanelProps, PASSWORD_RESET_SECTION_ID, passwordResetRows, passwordResetSearch,
         setPasswordResetSearch, passwordResetStatus, handleResetStudentPassword, passwordResetBusyId
       }}

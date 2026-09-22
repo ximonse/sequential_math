@@ -160,6 +160,18 @@ describe('teacher account to pupil lifecycle', () => {
     expect(listed).toMatchObject({ code: 200 })
     expect(listed.data.profiles.map(profile => profile.studentId)).toContain(studentId)
 
+    const archivedClass = await call(adminClassHandler, {
+      method: 'PUT', headers: adminHeaders, query: { id: assignedClass.data.class.id }, body: { archive: true }
+    })
+    expect(archivedClass).toMatchObject({ code: 200, data: { class: { archived: true } } })
+    expect((await call(classesHandler, { headers: firstTeacherHeaders })).data.classes).toEqual([])
+    expect((await call(studentsHandler, { headers: firstTeacherHeaders })).data.profiles).toEqual([])
+    const archivedPupils = await call(studentsHandler, { headers: adminHeaders, query: { includeArchived: '1' } })
+    expect(archivedPupils.data.profiles.map(profile => profile.studentId)).toContain(studentId)
+    expect((await call(adminClassHandler, {
+      method: 'PUT', headers: adminHeaders, query: { id: assignedClass.data.class.id }, body: { restore: true }
+    })).code).toBe(200)
+
     const detail = await call(studentHandler, {
       headers: firstTeacherHeaders, query: { studentId }
     })

@@ -95,9 +95,9 @@ Rollgränserna har dessutom enhetstester i `api/teacherRoles.test.js`.
 
 ## Arkiverade klasser
 
-En klass har ett stabilt ID oberoende av visningsnamn. Arkivering sätter `archived` och `archivedAt`, sparar det tidigare aktiva namnet och ger klassen ett historiskt namn. Därmed blir det aktiva namnet ledigt utan att elev-ID, klasslänk, träning eller statistik bryts. Arkiverade klasser är fullt fungerande men döljs i lärarens standardurval. Återställning kontrollerar aktiv namnunikhet på nytt.
+En klass har ett stabilt ID oberoende av visningsnamn. Vid läsårsbyte byts bara klassens visningsnamn; elev-ID, klasslänk, träning och statistik behålls. Arkivering sätter `archived` och `archivedAt`, sparar det tidigare aktiva namnet och ger klassen ett historiskt namn. Arkiverade klasser och elever som bara tillhör arkiverade klasser ska döljas i vanliga lärar- och administrationsurval. Huvudadministratören kan uttryckligen visa dem för historik och livscykelhantering. Återställning kontrollerar aktiv namnunikhet på nytt.
 
-Permanent klassradering är en separat superadminåtgärd och får bara tillåtas för en tom arkiverad klass.
+Permanent klassradering är en separat superadminåtgärd och får bara tillåtas för en tom arkiverad klass. Permanent elevradering ligger enbart i huvudadministratörens administrationsvy, kräver uttrycklig bekräftelse och tar bort elevprofil, träningshistorik och highscores.
 
 ## Lärarskapade grupper
 

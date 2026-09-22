@@ -6,7 +6,6 @@ import ClassFilterPanel from './ClassFilterPanel'
 import ClassMisconceptionHeatmap from './ClassMisconceptionHeatmap'
 import ClassMasteryLevelPanel from './ClassMasteryLevelPanel'
 import ClassStatsCards from './ClassStatsCards'
-import CloudSyncStatusPanel from './CloudSyncStatusPanel'
 import PauseGameHighscorePanel from './PauseGameHighscorePanel'
 import DifficultyAnalysisPanel from './DifficultyAnalysisPanel'
 import DataQualityUsagePanel from './DataQualityUsagePanel'
@@ -66,7 +65,6 @@ export default function DashboardLayout({
   cloudSyncStatus,
   formatTimeAgo,
   handleJumpToPasswordReset,
-  handleRefresh,
   navigate,
   handleLogout,
   dashboardStatus,
@@ -159,7 +157,6 @@ export default function DashboardLayout({
   classStatus,
   handleDeleteClass,
   handleRenameClass,
-  handleDeleteStudent,
   handleSetTeacherPupilLabel,
   handleSaveClassExtras,
   resultsPanelProps,
@@ -254,7 +251,6 @@ export default function DashboardLayout({
         onNavigateDirectStudent={(studentId) => navigate(`/teacher/student/${encodeURIComponent(studentId)}`)}
         onExportCsv={handleExportStudentDetailCsv}
         canExportCsv={Boolean(detailStudentProfile && detailStudentRow && detailStudentViewData)}
-        onDeleteStudent={handleDeleteStudent}
         onSetTeacherPupilLabel={handleSetTeacherPupilLabel}
         detailStudentProfile={detailStudentProfile}
         detailStudentRow={detailStudentRow}
@@ -451,7 +447,6 @@ export default function DashboardLayout({
             setActiveWorkspace('admin')
             window.setTimeout(handleJumpToPasswordReset, 0)
           }}
-          onRefresh={handleRefresh}
           onGoDashboard={() => navigate('/teacher')}
           onGoAdmin={() => navigate('/teacher/admin')}
           onLogout={handleLogout}
@@ -472,11 +467,6 @@ export default function DashboardLayout({
               </nav>
           </aside>
           <div className="min-w-0 flex flex-col gap-3">
-            <CloudSyncStatusPanel
-              cloudSyncStatus={cloudSyncStatus}
-              isCloudRefreshBusy={isCloudRefreshBusy}
-              onRefreshNow={() => { void handleCloudRefreshNow() }}
-            />
             <div className="dashboard-context-grid">
             <ClassFilterPanel
               selectedClassIds={selectedClassIds}

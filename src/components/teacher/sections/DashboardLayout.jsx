@@ -161,6 +161,7 @@ export default function DashboardLayout({
   handleRenameClass,
   handleDeleteStudent,
   handleRenameStudent,
+  handleSetStudentPreferredName,
   handleSaveClassExtras,
   resultsPanelProps,
   PASSWORD_RESET_SECTION_ID,
@@ -256,6 +257,7 @@ export default function DashboardLayout({
         canExportCsv={Boolean(detailStudentProfile && detailStudentRow && detailStudentViewData)}
         onDeleteStudent={handleDeleteStudent}
         onRenameStudent={handleRenameStudent}
+        onSetStudentPreferredName={handleSetStudentPreferredName}
         detailStudentProfile={detailStudentProfile}
         detailStudentRow={detailStudentRow}
         detailStudentViewData={detailStudentViewData}

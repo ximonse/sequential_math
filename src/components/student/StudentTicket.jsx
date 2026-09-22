@@ -350,7 +350,7 @@ function StudentTicket() {
                 {resolvedTicket.kind === 'exit' ? 'Exit-ticket' : 'Start-ticket'}
               </p>
               <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800 mt-2">{title}</h1>
-              <p className="text-sm text-gray-600 mt-1">{profile.name || profile.displayAlias}</p>
+              <p className="text-sm text-gray-600 mt-1">{profile.preferredName || profile.name || profile.displayAlias}</p>
             </div>
             <button
               onClick={() => navigate(`/student/${studentId}`)}

@@ -148,7 +148,7 @@ export async function getLiveStudentSession(req, { store = kv } = {}) {
 }
 export async function revokeStudentSession(req, { store = kv } = {}) { const id = readCookie(req, '__Host-student-session'); if (id) await store.del(`student_session:${id}`) }
 export function hasStudentCsrf(session, req) { return safeEqual(hashQrSecret(req?.headers?.['x-csrf-token']), session?.csrfHash) }
-export function studentIdentityDto(profile) { return { studentId: profile.studentId, name: String(profile.name || profile.displayAlias || '').trim(), displayAlias: String(profile.displayAlias || '').trim(), classIds: [...new Set([profile?.classId, ...(profile?.classIds || [])].map(String).filter(Boolean))], grade: Number(profile.grade) || null } }
+export function studentIdentityDto(profile) { return { studentId: profile.studentId, name: String(profile.preferredName || profile.name || profile.displayAlias || '').trim(), displayAlias: String(profile.displayAlias || '').trim(), classIds: [...new Set([profile?.classId, ...(profile?.classIds || [])].map(String).filter(Boolean))], grade: Number(profile.grade) || null } }
 
 export function createClassLoginToken() {
   return randomBytes(24).toString('base64url')

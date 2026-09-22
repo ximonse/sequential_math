@@ -9,7 +9,7 @@ Detta dokument är den auktoritativa specifikationen för skolor, klasser, rolle
 | Skola | `school.id` | Skapas av administratör. Namnet är visningstext. |
 | Klass | `class.id` | Består när klassnamnet ändras. Klassen har exakt en skola och ett eller flera läraransvar. |
 | Lärare | `teacher.id` | Har tilldelade skolor (`schoolIds`) och klasser (`classIds`). Klassens `teacherIds` är den direkta åtkomstgränsen. |
-| Elev | `studentId` | Behålls vid klassnamnsbyte och innehåller träningshistorik. Elevens klassmedlemskap är serverlagrad data. |
+| Elev | `studentId` | Behålls vid klassnamnsbyte och innehåller träningshistorik. Elevens klassmedlemskap är serverlagrad data. `preferredName` är ett valfritt tilltalsnamn och får aldrig användas som inloggningsidentitet. |
 
 En klass måste höra till en befintlig skola. Klassnamn är unika per skola efter normalisering av blanksteg och stora/små bokstäver. Samma namn kan därför användas på olika skolor. Ett elevnamn är unikt på samma sätt inom sin klass, men behöver inte vara globalt unikt.
 
@@ -33,6 +33,7 @@ Konton har exakt en explicit roll. Serverns aktuella kontopost är auktoritativ;
 | Flytta elev mellan skolor | Ja | Nej | Nej | Nej |
 | Flytta elev mellan tilldelade klasser på samma skola | Ja | Ja | Ja | Nej |
 | Skapa elev, dela klasslänk och ändra elevkod | Ja | Ja | Ja, i tilldelad klass | Nej |
+| Sätta eller ta bort elevens tilltalsnamn | Ja | Ja, inom egna skolor | Ja, i tilldelad klass | Nej |
 | Radera elev permanent | Ja | Ja, inom egna skolor | Nej | Nej |
 
 Servern kontrollerar behörighet på varje skyddat API-anrop. Dolda knappar i gränssnittet räcker aldrig som behörighetskontroll.
@@ -56,6 +57,14 @@ Administratörer använder samma kontomodell. Skoladministratörer är avgränsa
    träningshistorik.
 4. Samtliga ingångar ska efter verifiering utfärda samma typ av säker
    elevsession och nå samma serverlagrade profil.
+
+### Tilltalsnamn
+
+Lärare och administratörer kan sätta ett valfritt `preferredName` för en elev
+de har serververifierad åtkomst till. Tilltalsnamnet visas i elevens och
+lärarens vardagsvyer, samt i highscore-listor. Ett tomt värde tar bort det och
+återgår till elevens registrerade namn. Kodnamn, QR-kod och PIN ändras aldrig
+av detta; elevkort använder fortsatt registrerat namn och kodnamn.
 
 Eleven kan aldrig bläddra bland eller välja skolor och klasser. Det finns ingen publik katalog över skolor, klasser eller elevnamn. Vid fel kod räknas misslyckade försök på elevens profil; läraren kan se signalen och sätta en ny kod. En vanlig session gäller i 12 timmar. Med **Kom ihåg mig på den här enheten** gäller den i upp till 30 dagar.
 

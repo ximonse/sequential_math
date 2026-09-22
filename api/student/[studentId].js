@@ -86,11 +86,12 @@ export default async function handler(req, res) {
 
     if (req.method === 'PATCH') {
       const changes = req.body?.changes
-      const allowedFields = ['ticketInbox', 'ticketRevealAll', 'displayAlias', 'name', 'loginCode']
+        const allowedFields = ['ticketInbox', 'ticketRevealAll', 'displayAlias', 'name', 'preferredName', 'loginCode']
       if (!changes || typeof changes !== 'object' || Array.isArray(changes)
         || Object.keys(changes).some(field => !allowedFields.includes(field))
-        || (changes.name !== undefined && (typeof changes.name !== 'string' || !changes.name.trim() || changes.name.length > 100))
-        || (changes.displayAlias !== undefined && (typeof changes.displayAlias !== 'string' || !changes.displayAlias.trim() || changes.displayAlias.trim().length > 80))
+          || (changes.name !== undefined && (typeof changes.name !== 'string' || !changes.name.trim() || changes.name.length > 100))
+          || (changes.displayAlias !== undefined && (typeof changes.displayAlias !== 'string' || !changes.displayAlias.trim() || changes.displayAlias.trim().length > 80))
+          || (changes.preferredName !== undefined && (typeof changes.preferredName !== 'string' || changes.preferredName.trim().length > 80))
         || (changes.loginCode !== undefined && !/^\d{4}$/.test(String(changes.loginCode)))) {
         throw studentStoreError(400, 'Invalid teacher update')
       }
@@ -103,9 +104,10 @@ export default async function handler(req, res) {
         }
         const next = {
           ...current,
-          ...changes,
-          ...(changes.name !== undefined ? { name: changes.name.trim() } : {}),
-          ...(changes.displayAlias !== undefined ? { displayAlias: changes.displayAlias.trim() } : {})
+            ...changes,
+            ...(changes.name !== undefined ? { name: changes.name.trim() } : {}),
+            ...(changes.displayAlias !== undefined ? { displayAlias: changes.displayAlias.trim() } : {}),
+            ...(changes.preferredName !== undefined ? { preferredName: changes.preferredName.trim() } : {})
         }
         if (changes.loginCode !== undefined) {
           const salt = createSaltHex()

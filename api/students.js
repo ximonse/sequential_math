@@ -7,6 +7,8 @@ import { withFreshTeacherSummary } from '../src/lib/teacherSummary.js'
 import { isCurrentStudentProfile } from '../src/lib/studentProfileContract.js'
 import { toTeacherListProfile } from '../src/lib/teacherListProfile.js'
 import { getLiveAuthorizedClassIds } from './_studentAccess.js'
+import { getLiveTeacherAuthPayload } from './_helpers.js'
+import { isSuperAdminRole } from './_teacherRoles.js'
 
 export function sanitizeProfileForList(profile) {
   if (!profile || typeof profile !== 'object') return null
@@ -50,15 +52,29 @@ export default async function handler(req, res) {
     )
 
     const authorizedClassIds = await getLiveAuthorizedClassIds(req)
+    const auth = await getLiveTeacherAuthPayload(req)
+    const includeArchived = String(req.query?.includeArchived || '') === '1'
+    if (includeArchived && !isSuperAdminRole(auth?.role, auth?.isAdmin)) {
+      return res.status(403).json({ error: 'Endast huvudadmin kan visa arkiverade elever.' })
+    }
+    const classIds = await kv.smembers('classes:index') || []
+    const activeClassIds = new Set((await Promise.all(classIds.map(async id => {
+      const classRecord = await kv.get(`class:${id}`)
+      if (!classRecord || classRecord.archived) return null
+      if (authorizedClassIds !== null && !authorizedClassIds.includes(classRecord.id)) return null
+      return String(classRecord.id)
+    }))).filter(Boolean))
 
     const sanitized = profiles
       .filter(isCurrentStudentProfile)
       .filter(profile => {
-        // null = admin, sees everything
-        if (authorizedClassIds === null) return true
         const classId = String(profile?.classId || '')
         const classIds = Array.isArray(profile?.classIds) ? profile.classIds : []
-        return authorizedClassIds.some(id => id === classId || classIds.includes(id))
+        const memberships = [classId, ...classIds].filter(Boolean)
+        if (includeArchived) {
+          return authorizedClassIds === null || authorizedClassIds.some(id => memberships.includes(id))
+        }
+        return memberships.some(id => activeClassIds.has(id))
       })
       .map(sanitizeProfileForList)
       .filter(Boolean)

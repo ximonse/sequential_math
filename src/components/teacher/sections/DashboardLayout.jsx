@@ -6,7 +6,6 @@ import ClassFilterPanel from './ClassFilterPanel'
 import ClassMisconceptionHeatmap from './ClassMisconceptionHeatmap'
 import ClassMasteryLevelPanel from './ClassMasteryLevelPanel'
 import ClassStatsCards from './ClassStatsCards'
-import CloudSyncStatusPanel from './CloudSyncStatusPanel'
 import PauseGameHighscorePanel from './PauseGameHighscorePanel'
 import DifficultyAnalysisPanel from './DifficultyAnalysisPanel'
 import DataQualityUsagePanel from './DataQualityUsagePanel'
@@ -66,7 +65,6 @@ export default function DashboardLayout({
   cloudSyncStatus,
   formatTimeAgo,
   handleJumpToPasswordReset,
-  handleRefresh,
   navigate,
   handleLogout,
   dashboardStatus,
@@ -159,8 +157,7 @@ export default function DashboardLayout({
   classStatus,
   handleDeleteClass,
   handleRenameClass,
-  handleDeleteStudent,
-  handleRenameStudent,
+  handleSetTeacherPupilLabel,
   handleSaveClassExtras,
   resultsPanelProps,
   PASSWORD_RESET_SECTION_ID,
@@ -254,8 +251,7 @@ export default function DashboardLayout({
         onNavigateDirectStudent={(studentId) => navigate(`/teacher/student/${encodeURIComponent(studentId)}`)}
         onExportCsv={handleExportStudentDetailCsv}
         canExportCsv={Boolean(detailStudentProfile && detailStudentRow && detailStudentViewData)}
-        onDeleteStudent={handleDeleteStudent}
-        onRenameStudent={handleRenameStudent}
+        onSetTeacherPupilLabel={handleSetTeacherPupilLabel}
         detailStudentProfile={detailStudentProfile}
         detailStudentRow={detailStudentRow}
         detailStudentViewData={detailStudentViewData}
@@ -451,7 +447,6 @@ export default function DashboardLayout({
             setActiveWorkspace('admin')
             window.setTimeout(handleJumpToPasswordReset, 0)
           }}
-          onRefresh={handleRefresh}
           onGoDashboard={() => navigate('/teacher')}
           onGoAdmin={() => navigate('/teacher/admin')}
           onLogout={handleLogout}
@@ -460,8 +455,7 @@ export default function DashboardLayout({
         <div className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
 
         <div className="grid gap-3 lg:grid-cols-[13rem_minmax(0,1fr)]">
-          {!isDirectStudentView && (
-            <aside className="rounded-lg bg-slate-800 p-2 text-slate-100 lg:sticky lg:top-3 lg:h-fit">
+          <aside className="rounded-lg bg-slate-800 p-2 text-slate-100 lg:sticky lg:top-3 lg:h-fit">
               <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">Arbetsläge</p>
               <nav className="grid gap-1" aria-label="Lärarvy">
                 {WORKSPACES.map(workspace => (
@@ -471,14 +465,8 @@ export default function DashboardLayout({
                   </button>
                 ))}
               </nav>
-            </aside>
-          )}
+          </aside>
           <div className="min-w-0 flex flex-col gap-3">
-            <CloudSyncStatusPanel
-              cloudSyncStatus={cloudSyncStatus}
-              isCloudRefreshBusy={isCloudRefreshBusy}
-              onRefreshNow={() => { void handleCloudRefreshNow() }}
-            />
             <div className="dashboard-context-grid">
             <ClassFilterPanel
               selectedClassIds={selectedClassIds}

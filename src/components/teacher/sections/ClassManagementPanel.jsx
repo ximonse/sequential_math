@@ -97,7 +97,7 @@ export default function ClassManagementPanel({
             {availableExistingStudents.length > 0 ? <div className="mt-2 max-h-40 space-y-1 overflow-auto rounded bg-white p-2">
               {availableExistingStudents.map(student => <label key={student.studentId} className="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
                 <input type="checkbox" checked={selectedExistingStudentIds.includes(student.studentId)} onChange={() => toggleExistingStudent(student.studentId)} />
-                <span>{student.name || student.displayAlias}</span><span className="font-mono text-gray-400">{student.studentId}</span>
+                  <span>{student.name || student.displayAlias}</span><span className="font-mono text-gray-400">{student.studentId}</span>
               </label>)}
             </div> : <p className="mt-2 text-xs text-gray-500">Alla kända elever finns redan i den valda klassen.</p>}
             <button type="button" disabled={selectedExistingStudentIds.length === 0} onClick={() => runRosterAction(async () => {
@@ -154,7 +154,7 @@ function StudentCredentialIssuer({ student }) {
   const [qrCode, setQrCode] = useState('')
   const [status, setStatus] = useState('')
   const issue = async () => {
-    const label = student.name || student.displayAlias || student.studentId
+    const label = student.displayAlias || student.studentId
     if (!window.confirm(`Skapa nytt QR-kort och ny PIN för ${label}? Det gamla kortet slutar fungera direkt.`)) return
     setStatus('Skapar nytt elevkort…')
     try {
@@ -169,7 +169,7 @@ function StudentCredentialIssuer({ student }) {
   return <div className="mt-2 rounded border border-amber-300 bg-amber-50 p-2">
     <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-medium text-amber-950">Elevkort</p><button type="button" onClick={issue} className="rounded bg-amber-700 px-2 py-1 text-xs font-semibold text-white">Nytt QR-kort / PIN</button></div>
     {status && <p role="status" className="mt-1 text-xs text-amber-900">{status}</p>}
-    {credential && <div className="mt-2 flex items-center gap-3 rounded bg-white p-2 text-xs"><div className="min-w-0"><p className="font-semibold">{student.name || credential.displayAlias}</p><p>Kodnamn: {credential.displayAlias || student.displayAlias || '–'}</p><p className="font-mono break-all">Elev-ID: {credential.studentId}</p><p className="font-mono text-sm font-bold">PIN: {credential.pin}</p></div>{qrCode && <img className="h-24 w-24 shrink-0" src={qrCode} alt={`QR-kod för ${credential.displayAlias || credential.studentId}`} />}</div>}
-    {credential && <button type="button" onClick={async () => { setStatus('Skapar PDF…'); try { await downloadStudentCredentialPdf([{ ...credential, name: student.name }]); setStatus('PDF klar. Spara filen säkert.') } catch (error) { setStatus(error?.message || 'Kunde inte skapa PDF.') } }} className="mt-2 rounded bg-amber-700 px-2 py-1 text-xs font-semibold text-white">Hämta PDF</button>}
+    {credential && <div className="mt-2 flex items-center gap-3 rounded bg-white p-2 text-xs"><div className="min-w-0"><p className="font-semibold">{credential.displayAlias || student.displayAlias}</p><p>Kodnamn: {credential.displayAlias || student.displayAlias || '–'}</p><p className="font-mono break-all">Elev-ID: {credential.studentId}</p><p className="font-mono text-sm font-bold">PIN: {credential.pin}</p></div>{qrCode && <img className="h-24 w-24 shrink-0" src={qrCode} alt={`QR-kod för ${credential.displayAlias || credential.studentId}`} />}</div>}
+    {credential && <button type="button" onClick={async () => { setStatus('Skapar PDF…'); try { await downloadStudentCredentialPdf([{ ...credential, name: '' }]); setStatus('PDF klar. Spara filen säkert.') } catch (error) { setStatus(error?.message || 'Kunde inte skapa PDF.') } }} className="mt-2 rounded bg-amber-700 px-2 py-1 text-xs font-semibold text-white">Hämta PDF</button>}
   </div>
 }

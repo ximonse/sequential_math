@@ -9,7 +9,7 @@ import {
 } from '../_helpers.js'
 import { withFreshTeacherSummary } from '../../src/lib/teacherSummary.js'
 import { removeStudentHighscores } from '../highscores.js'
-import { isSchoolAdminRole } from '../_teacherRoles.js'
+import { isSuperAdminRole } from '../_teacherRoles.js'
 import {
   STUDENT_PASSWORD_SCHEME,
   hasCurrentStudentPassword,
@@ -61,7 +61,7 @@ export default async function handler(req, res) {
     if (req.method === 'DELETE') {
       const deleteAuth = await getLiveTeacherAuthPayload(req)
       if (!deleteAuth) return res.status(401).json({ error: 'Teacher authorization required' })
-      if (!isSchoolAdminRole(deleteAuth.role, deleteAuth.isAdmin)) return res.status(403).json({ error: 'Endast administratörer kan radera elever permanent.' })
+      if (!isSuperAdminRole(deleteAuth.role, deleteAuth.isAdmin)) return res.status(403).json({ error: 'Endast huvudadmin kan radera elever permanent.' })
       let deletedClassIds = []
       await mutateStudentRecord(studentId, async current => {
         await assertTeacherStudentAccess(req, current)
@@ -86,11 +86,11 @@ export default async function handler(req, res) {
 
     if (req.method === 'PATCH') {
       const changes = req.body?.changes
-      const allowedFields = ['ticketInbox', 'ticketRevealAll', 'displayAlias', 'name', 'loginCode']
+        const allowedFields = ['ticketInbox', 'ticketRevealAll', 'displayAlias', 'name', 'loginCode']
       if (!changes || typeof changes !== 'object' || Array.isArray(changes)
         || Object.keys(changes).some(field => !allowedFields.includes(field))
-        || (changes.name !== undefined && (typeof changes.name !== 'string' || !changes.name.trim() || changes.name.length > 100))
-        || (changes.displayAlias !== undefined && (typeof changes.displayAlias !== 'string' || !changes.displayAlias.trim() || changes.displayAlias.trim().length > 80))
+          || (changes.name !== undefined && (typeof changes.name !== 'string' || !changes.name.trim() || changes.name.length > 100))
+          || (changes.displayAlias !== undefined && (typeof changes.displayAlias !== 'string' || !changes.displayAlias.trim() || changes.displayAlias.trim().length > 80))
         || (changes.loginCode !== undefined && !/^\d{4}$/.test(String(changes.loginCode)))) {
         throw studentStoreError(400, 'Invalid teacher update')
       }
@@ -103,9 +103,9 @@ export default async function handler(req, res) {
         }
         const next = {
           ...current,
-          ...changes,
-          ...(changes.name !== undefined ? { name: changes.name.trim() } : {}),
-          ...(changes.displayAlias !== undefined ? { displayAlias: changes.displayAlias.trim() } : {})
+            ...changes,
+            ...(changes.name !== undefined ? { name: changes.name.trim() } : {}),
+            ...(changes.displayAlias !== undefined ? { displayAlias: changes.displayAlias.trim() } : {})
         }
         if (changes.loginCode !== undefined) {
           const salt = createSaltHex()

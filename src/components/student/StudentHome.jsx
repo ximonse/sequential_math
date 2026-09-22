@@ -364,7 +364,7 @@ function StudentHome() {
       <div className="max-w-3xl mx-auto px-4">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Hej {profile.name || profile.displayAlias || 'elev'}</h1>
+            <h1 className="text-2xl font-bold text-gray-800">Hej {profile.displayAlias || 'elev'}</h1>
             <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-gray-500">
               <span>Din matteöversikt</span>
               {classLabel ? <span className="rounded-full bg-teal-100 px-2.5 py-0.5 text-xs font-semibold text-teal-800">Klass {classLabel}</span> : null}

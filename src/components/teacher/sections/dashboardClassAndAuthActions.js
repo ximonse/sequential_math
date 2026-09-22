@@ -4,7 +4,6 @@ import {
   addStudentsToClass,
   createClassFromPilotRoster,
   createClassFromRoster,
-  deleteProfile,
   getClasses,
   getCloudProfilesSyncStatus,
   normalizeStudentId,
@@ -13,10 +12,7 @@ import {
   updateClassExtras
 } from '../../../lib/storage'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
-import {
-  getActiveAssignment,
-  getAssignments
-} from '../../../lib/assignments'
+import { saveTeacherPupilLabel } from '../../../lib/teacherPupilLabels'
 import { logoutTeacher } from '../../../lib/teacherAuth'
 import { saveClass } from '../../../lib/storage'
 
@@ -79,18 +75,6 @@ export function buildDashboardClassAndAuthActions({
   setPasswordResetStatus,
   setTableSelectedStudentIds
 }) {
-  const handleRefresh = () => {
-    void loadStudents()
-    const refreshedClasses = getClasses()
-    setClasses(refreshedClasses)
-    if (!addToClassId && refreshedClasses.length > 0) {
-      setAddToClassId(refreshedClasses[0].id)
-    }
-    setAssignments(getAssignments())
-    setActiveAssignmentId(getActiveAssignment()?.id || '')
-    setDashboardStatus('Uppdaterat.')
-  }
-
   const handleCloudRefreshNow = async () => {
     setIsCloudRefreshBusy(true)
     try {
@@ -204,33 +188,10 @@ export function buildDashboardClassAndAuthActions({
     await loadStudents()
   }
 
-  const handleDeleteStudent = async (studentId) => {
-    let result
-    try {
-      result = await deleteProfile(studentId)
-    } catch {
-      setDashboardStatus('Kunde inte radera eleven just nu.')
-      return
-    }
-    if (!result?.ok) {
-      setDashboardStatus(result?.error || 'Kunde inte radera eleven just nu.')
-      return
-    }
-
-    setDetailStudentId('')
-    await loadStudents()
-    setClasses(getClasses())
-    setDashboardStatus('Elevprofil och träningshistorik är raderade.')
-    navigate('/teacher')
-  }
-
-  const handleRenameStudent = async (studentId, name) => {
-    const profiles = await loadStudents()
-    const current = profiles?.find?.(item => item.studentId === studentId)
-    if (!current) { setDashboardStatus('Kunde inte hitta eleven.'); return false }
-    const response = await fetch(`/api/student/${encodeURIComponent(studentId)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() }, body: JSON.stringify({ serverRevision: current.serverRevision, changes: { name } }) })
-    if (!response.ok) { setDashboardStatus('Kunde inte spara elevnamnet. Uppdatera och försök igen.'); return false }
-    await loadStudents(); setDashboardStatus('Elevnamnet är ändrat.'); return true
+  const handleSetTeacherPupilLabel = async (studentId, label) => {
+    const result = await saveTeacherPupilLabel(studentId, label)
+    if (!result.ok) { setDashboardStatus(result.error || 'Kunde inte spara tilltalsnamnet.'); return false }
+    await loadStudents(); setDashboardStatus(label.trim() ? 'Ditt tilltalsnamn är sparat.' : 'Ditt tilltalsnamn är borttaget.'); return true
   }
 
   const handleRenameClass = async (id, name, schoolId) => {
@@ -339,7 +300,6 @@ export function buildDashboardClassAndAuthActions({
   }
 
   return {
-    handleRefresh,
     handleCloudRefreshNow,
     handleLogout,
     handleJumpToPasswordReset,
@@ -348,9 +308,8 @@ export function buildDashboardClassAndAuthActions({
     handleAddExistingStudentsToClass, handleMoveStudent,
     handleAddStudentsToClass,
     handleDeleteClass,
-    handleDeleteStudent,
-    handleRenameStudent,
-    handleRenameClass,
+        handleSetTeacherPupilLabel,
+      handleRenameClass,
     handleToggleClassFilter,
     clearClassFilter,
     handleResetStudentPassword,

@@ -55,6 +55,7 @@ import { getActiveAssignment, hydrateAssignmentsFromServer } from '../../lib/ass
 import { getTeacherClassIds } from '../../lib/teacherAuth'
 import { hydrateTicketsFromServer } from '../../lib/tickets'
 import { loadTeacherWorkspace } from '../../lib/teacherWorkspaceSync'
+import { loadTeacherPupilLabels } from '../../lib/teacherPupilLabels'
 import { loadTeacherGroups } from './sections/teacherGroupsApi'
 function Dashboard() {
   const [students, setStudents] = useState([])
@@ -100,13 +101,16 @@ function Dashboard() {
   )
 
   const loadStudents = useCallback(async () => {
-    const [profiles, groupData] = await Promise.all([
+    const [profiles, groupData, labels] = await Promise.all([
       getAllProfilesWithSync(),
-      loadTeacherGroups().catch(() => ({ groups: [] }))
+      loadTeacherGroups().catch(() => ({ groups: [] })),
+      loadTeacherPupilLabels()
     ])
     const groups = Array.isArray(groupData?.groups) ? groupData.groups : []
     const enrichedProfiles = profiles.map(profile => ({
       ...profile,
+      name: labels[profile.studentId] || profile.displayAlias || profile.studentId,
+      teacherPupilLabel: labels[profile.studentId] || '',
       groupIds: groups.filter(group => (group.pupilIds || []).includes(profile.studentId)).map(group => group.id)
     }))
     enrichedProfiles.sort((a, b) => {
@@ -200,7 +204,6 @@ function Dashboard() {
   }, [isDirectStudentView, routeStudentId, students.length])
 
   const {
-    handleRefresh,
     handleCloudRefreshNow,
     handleLogout,
     handleJumpToPasswordReset,
@@ -210,8 +213,7 @@ function Dashboard() {
     handleMoveStudent,
     handleAddStudentsToClass,
     handleDeleteClass,
-    handleDeleteStudent,
-    handleRenameStudent,
+    handleSetTeacherPupilLabel,
     handleRenameClass,
     handleToggleClassFilter,
     clearClassFilter,
@@ -417,7 +419,7 @@ function Dashboard() {
     <DashboardLayout
       {...{
         isDirectStudentView, detailStudentProfile, cloudSyncStatus, formatTimeAgo,
-        handleJumpToPasswordReset, handleRefresh, navigate, handleLogout, dashboardStatus,
+        handleJumpToPasswordReset, navigate, handleLogout, dashboardStatus,
         isCloudRefreshBusy, handleCloudRefreshNow, formatSyncTimestamp, getCloudSyncSourceLabel,
         selectedClassIds, students, filteredStudents, classFilterOptions, clearClassFilter,
         handleToggleClassFilter, classStats, dataQualitySummary, usageInsights, formatDuration,
@@ -440,7 +442,7 @@ function Dashboard() {
         supportRows, handleCreateQuickAssignment,
         classNameInput, setClassNameInput, handleCreateClass, handleCreatePilotRoster, addToClassId, setAddToClassId,
         classes, handleAddExistingStudentsToClass, handleMoveStudent, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus, handleDeleteClass, handleRenameClass, handleSaveClassExtras,
-        handleDeleteStudent, handleRenameStudent,
+        handleSetTeacherPupilLabel,
         resultsPanelProps, PASSWORD_RESET_SECTION_ID, passwordResetRows, passwordResetSearch,
         setPasswordResetSearch, passwordResetStatus, handleResetStudentPassword, passwordResetBusyId
       }}

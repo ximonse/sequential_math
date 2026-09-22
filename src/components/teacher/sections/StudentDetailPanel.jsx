@@ -27,11 +27,11 @@ function ReissuedCredentialCard({ credential }) {
     <p className="font-bold text-amber-950">Nytt elevkort — skriv ut nu</p>
     <p className="mt-1 text-amber-900">Det gamla QR-kortet och den gamla PIN-koden fungerar inte längre.</p>
     <div className="mt-3 flex items-center gap-4">
-      <div><p className="font-semibold text-lg">{credential.name || credential.displayAlias || 'Elev'}</p><p className="text-xs">Kodnamn: {credential.displayAlias || '–'}</p><p className="font-mono text-xs break-all">Elev-ID: {credential.studentId}</p><p className="font-mono text-lg font-bold">PIN: {credential.pin}</p></div>
+      <div><p className="font-semibold text-lg">{credential.displayAlias || 'Elev'}</p><p className="text-xs">Kodnamn: {credential.displayAlias || '–'}</p><p className="font-mono text-xs break-all">Elev-ID: {credential.studentId}</p><p className="font-mono text-lg font-bold">PIN: {credential.pin}</p></div>
       {qrCode ? <img className="h-28 w-28" src={qrCode} alt="Nytt elevkorts QR-kod" /> : null}
     </div>
     <div className="mt-3 flex gap-2 print:hidden">
-      <button type="button" onClick={async () => { setPdfStatus('Skapar PDF…'); try { await downloadStudentCredentialPdf([credential]); setPdfStatus('PDF klar. Spara filen säkert.') } catch (error) { setPdfStatus(error?.message || 'Kunde inte skapa PDF.') } }} className="rounded bg-amber-700 px-3 py-1.5 text-xs font-semibold text-white">Hämta PDF</button>
+      <button type="button" onClick={async () => { setPdfStatus('Skapar PDF…'); try { await downloadStudentCredentialPdf([{ ...credential, name: '' }]); setPdfStatus('PDF klar. Spara filen säkert.') } catch (error) { setPdfStatus(error?.message || 'Kunde inte skapa PDF.') } }} className="rounded bg-amber-700 px-3 py-1.5 text-xs font-semibold text-white">Hämta PDF</button>
       <button type="button" onClick={() => window.print()} className="rounded border border-amber-700 px-3 py-1.5 text-xs font-semibold text-amber-950">Skriv ut kortet</button>
     </div>
     {pdfStatus ? <p role="status" className="mt-2 text-xs text-amber-900 print:hidden">{pdfStatus}</p> : null}
@@ -48,8 +48,7 @@ export default function StudentDetailPanel({
   onNavigateDirectStudent,
   onExportCsv,
   canExportCsv,
-  onDeleteStudent,
-  onRenameStudent,
+  onSetTeacherPupilLabel,
   detailStudentProfile,
   detailStudentRow,
   detailStudentViewData,
@@ -141,24 +140,10 @@ export default function StudentDetailPanel({
           >
             Exportera elevvy CSV
           </button>
-          {detailStudentProfile && (
-            <button type="button" onClick={() => { const name = window.prompt('Elevnamn (fritext):', detailStudentProfile.name || ''); if (name?.trim()) onRenameStudent(detailStudentProfile.studentId, name) }} className="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs font-medium">Byt elevnamn</button>
-          )}
+            {detailStudentProfile && (
+              <button type="button" onClick={() => { const label = window.prompt('Ditt privata tilltalsnamn för eleven:', detailStudentProfile.teacherPupilLabel || ''); if (label !== null) onSetTeacherPupilLabel(detailStudentProfile.studentId, label) }} className="px-3 py-1.5 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded text-xs font-medium">Ändra tilltalsnamn</button>
+            )}
           {detailStudentProfile?.displayAlias ? <button type="button" onClick={reissueCredential} className="px-3 py-1.5 bg-amber-200 hover:bg-amber-300 text-amber-950 rounded text-xs font-semibold">Nytt QR-kort / ny PIN</button> : null}
-          {detailStudentProfile && (
-            <button
-              type="button"
-              onClick={() => {
-                const name = detailStudentProfile.name || detailStudentProfile.displayAlias || detailStudentProfile.studentId
-                if (window.confirm(`Radera ${name} permanent? All elevdata och historik tas bort och kan inte återställas.`)) {
-                  onDeleteStudent(detailStudentProfile.studentId)
-                }
-              }}
-              className="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs font-medium"
-            >
-              Radera elev
-            </button>
-          )}
         </div>
       </div>
 

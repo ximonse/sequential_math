@@ -4,7 +4,7 @@ import { downloadStudentCredentialPdf } from '../../../lib/studentCredentialPdf'
 
 function credentialText(credentials) {
   return credentials.map(({ name, displayAlias, studentId, pin }) => (
-    `${name || displayAlias}\nKodnamn: ${displayAlias || '–'}\nPIN: ${pin}\nElev-ID: ${studentId}`
+    `${displayAlias || 'Elev'}\nKodnamn: ${displayAlias || '–'}\nPIN: ${pin}\nElev-ID: ${studentId}`
   )).join('\\n\\n')
 }
 
@@ -23,14 +23,14 @@ function StudentCredentialCard({ credential }) {
     <article className="student-credential-card border border-slate-700 bg-white p-3 text-xs text-slate-800">
       <div className="flex h-full items-center gap-3">
         <div className="min-w-0 flex-1">
-          <p className="font-bold text-sm">{credential.name || credential.displayAlias || 'Elev'}</p>
+          <p className="font-bold text-sm">{credential.displayAlias || 'Elev'}</p>
           <p className="mt-1 text-[10px] uppercase tracking-wide text-slate-500">Matteträning · elevkort</p>
           <p className="mt-3">Kodnamn: <span className="font-semibold">{credential.displayAlias || '–'}</span></p>
           <p className="mt-2 font-mono text-base font-bold">PIN: {credential.pin}</p>
           <p className="mt-3 text-[10px] text-slate-600">Skanna QR-koden och skriv PIN.</p>
           <p className="mt-1 font-mono text-[9px] break-all text-slate-500">Elev-ID: {credential.studentId}</p>
         </div>
-        {qrCode ? <img className="h-24 w-24 shrink-0" src={qrCode} alt={'QR-kod för ' + (credential.name || credential.displayAlias || 'elev')} /> : null}
+        {qrCode ? <img className="h-24 w-24 shrink-0" src={qrCode} alt={'QR-kod för ' + (credential.displayAlias || 'elev')} /> : null}
       </div>
     </article>
   )
@@ -44,7 +44,7 @@ export default function StudentCredentialCards({ credentials, onClear, title = '
   const downloadPdf = async () => {
     setStatus('Skapar PDF…')
     try {
-      const result = await downloadStudentCredentialPdf(cards)
+      const result = await downloadStudentCredentialPdf(cards.map(card => ({ ...card, name: '' })))
       setStatus('PDF klar: ' + result.count + ' kort på ' + result.pages + ' A4-sida(or). Spara filen säkert.')
     } catch (error) {
       setStatus(error?.message || 'Kunde inte skapa PDF.')

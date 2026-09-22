@@ -268,6 +268,10 @@ describe('school management lifecycle', () => {
     const invalid = await call(classesHandler, { method: 'PUT', headers: auth, body: { id: roster.data.class.id, name: '6A', schoolId: 'missing' } })
     expect(invalid.code).toBe(400)
     expect(records.get('class:' + roster.data.class.id).schoolId).toBe(schoolId)
+
+    const deletedClass = await call(classesHandler, { method: 'DELETE', headers: auth, query: { id: roster.data.class.id } })
+    expect(deletedClass).toMatchObject({ code: 200, data: { ok: true } })
+    expect((await call(schoolsHandler, { headers: auth })).data.schools).toEqual([school.data.school])
   })
   it('does not grant access to another teachers classes through a shared school', async () => {
     const auth = await headers()

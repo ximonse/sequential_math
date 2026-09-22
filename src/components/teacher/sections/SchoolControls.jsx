@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
+import { isSchoolCreationDisabled } from './schoolControlsHelpers'
 
 async function schoolRequest(options = {}) {
   const response = await fetch('/api/teacher-schools', {
     ...options, headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() }, cache: 'no-store'
   })
-  const data = await response.json()
+  const data = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(data.error || 'Kunde inte hämta skolor.')
   return data
 }
@@ -20,14 +21,18 @@ export function useSchools() {
     setLoading(true)
     schoolRequest().then(data => {
       if (active) { setSchools(data.schools || []); setError('') }
-    }).catch(() => {
-      if (active) setError('Skolorna kunde inte hämtas. Försök igen.')
+    }).catch(error => {
+      if (active) setError(error.message || 'Skolorna kunde inte hämtas. Försök igen.')
     }).finally(() => { if (active) setLoading(false) })
     return () => { active = false }
   }, [attempt])
   const createSchool = async name => {
     const data = await schoolRequest({ method: 'POST', body: JSON.stringify({ name }) })
-    setSchools(previous => [...previous, data.school].sort((a, b) => a.name.localeCompare(b.name, 'sv')))
+    setSchools(previous => [
+      ...previous.filter(school => school.id !== data.school.id),
+      data.school
+    ].sort((a, b) => a.name.localeCompare(b.name, 'sv')))
+    setError('')
     return data.school
   }
   return { schools, loading, error, createSchool, retry: () => setAttempt(value => value + 1) }
@@ -53,7 +58,7 @@ export function NewSchoolForm({ directory, onCreated }) {
   const [status, setStatus] = useState('')
   return <div className="mb-4 rounded border border-blue-100 bg-blue-50 p-3 text-sm">
     <p className="text-gray-700">Välj en befintlig skola eller lägg till din skola. Klasser och grupper kopplas till skolan; elevens ID och historik följer med vid klassbyte.</p>
-    {directory.error && <p role="alert" className="mt-2 text-red-700">{directory.error} <button type="button" onClick={directory.retry} className="underline">Hämta igen</button></p>}
+    {directory.error && <p role="alert" className="mt-2 text-red-700">{directory.error} <button type="button" onClick={directory.retry} className="underline">Hämta igen</button> Du kan fortfarande försöka lägga till en skola.</p>}
     <details className="mt-2">
       <summary className="cursor-pointer text-blue-800">Lägg till skola</summary>
       <div className="mt-2 flex flex-wrap items-end gap-2">
@@ -61,7 +66,7 @@ export function NewSchoolForm({ directory, onCreated }) {
           <input value={name} maxLength={100} disabled={busy} onChange={event => setName(event.target.value)}
             placeholder="Skolnamn och ort" className="mt-1 block w-full rounded border px-3 py-2" />
         </label>
-        <button type="button" disabled={busy || directory.loading || Boolean(directory.error) || !name.trim()} onClick={async () => {
+        <button type="button" disabled={isSchoolCreationDisabled({ busy, name })} onClick={async () => {
           setBusy(true); setStatus('')
           try {
             const school = await directory.createSchool(name.trim())

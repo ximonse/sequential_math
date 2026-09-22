@@ -21,7 +21,7 @@ Högst upp i lärarvyn visas ditt kontonamn och din roll. Bakgrunden är ljusgr�
 ## 2. Första setup
 
 1. Välj en klass som administratören har tilldelat dig.
-2. Öppna **Klasser & elever** och klistra in elevlistan med en elev per rad, eller separera elever med kommatecken eller semikolon.
+2. Öppna **Administration** och klistra in elevlistan med en elev per rad, eller separera elever med kommatecken eller semikolon.
 3. Kontrollera att elever dyker upp i tabellerna.
 4. Välj klassfilter högst upp innan du analyserar data.
 
@@ -52,7 +52,7 @@ Administratören använder **Administration → Klasser → Nytt läsår**. Väl
 
 ## 3. Huvuddelar
 
-Lärarvyn är indelad i **Klasser & elever**, **Uppdrag & exit tickets**, **Tabeller & kunskapsområden** och **Statistik**. Klassurvalet högst upp styr innehållet och sparas på enheten. Highscore ligger sist på sidan.
+Lärarvyn har en sidomeny med fyra arbetslägen: **Framsteg** (kunskapsområden och elever), **Uppdrag & tickets** (planera och följ upp), **Statistik & stöd** (felmönster och hjälpbehov) och **Administration** (klasser, elevkort och konton). Klassurvalet högst upp styr innehållet. Highscore finns under **Administration**.
 
 ## 4. Daglig rutin (rekommenderat)
 

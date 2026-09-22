@@ -100,7 +100,7 @@ En grupp är en separat serverresurs med stabilt ID, namn, en skola, elev-ID:n o
 
 ## Lärar- och administrationsvyer
 
-Lärarvyn har fyra huvuddelar: **Klasser & elever**, **Uppdrag & exit tickets**, **Tabeller & kunskapsområden** och **Statistik**. Klassurvalet ligger kvar ovanför delarna och highscore visas sist. Kontonamn och roll visas alltid. Bakgrunden är grön för lärare, orange för skoladmin och lila för superadmin.
+Lärarvyn har en sidomeny med fyra arbetslägen: **Framsteg** (kunskapsområden och elever), **Uppdrag & tickets** (planera och följ upp), **Statistik & stöd** (felmönster och hjälpbehov) och **Administration** (klasser, elevkort och konton). Klassurvalet ligger kvar ovanför arbetsytan och highscore finns under Administration. Kontonamn och roll visas alltid. Bakgrunden är grön för lärare, orange för skoladmin och lila för superadmin.
 
 Klass- och kontolivscykeln ligger på den separata skyddade sidan `/teacher/admin`. Lärare når elev-, grupp-, kod- och klasslänksverktyg från lärarvyn men kan inte skapa, byta namn på, arkivera eller radera klasser.
 

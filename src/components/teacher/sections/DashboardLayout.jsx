@@ -459,9 +459,8 @@ export default function DashboardLayout({
 
         <div className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
 
-        <div className={`grid gap-3 ${isDirectStudentView ? 'grid-cols-1' : 'lg:grid-cols-[13rem_minmax(0,1fr)]'}`}>
-          {!isDirectStudentView && (
-            <aside className="rounded-lg bg-slate-800 p-2 text-slate-100 lg:sticky lg:top-3 lg:h-fit">
+        <div className="grid gap-3 lg:grid-cols-[13rem_minmax(0,1fr)]">
+          <aside className="rounded-lg bg-slate-800 p-2 text-slate-100 lg:sticky lg:top-3 lg:h-fit">
               <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">Arbetsläge</p>
               <nav className="grid gap-1" aria-label="Lärarvy">
                 {WORKSPACES.map(workspace => (
@@ -471,8 +470,7 @@ export default function DashboardLayout({
                   </button>
                 ))}
               </nav>
-            </aside>
-          )}
+          </aside>
           <div className="min-w-0 flex flex-col gap-3">
             <CloudSyncStatusPanel
               cloudSyncStatus={cloudSyncStatus}

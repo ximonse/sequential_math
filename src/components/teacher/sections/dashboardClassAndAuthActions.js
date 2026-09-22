@@ -13,6 +13,7 @@ import {
   updateClassExtras
 } from '../../../lib/storage'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
+import { saveTeacherPupilLabel } from '../../../lib/teacherPupilLabels'
 import {
   getActiveAssignment,
   getAssignments
@@ -224,22 +225,10 @@ export function buildDashboardClassAndAuthActions({
     navigate('/teacher')
   }
 
-  const handleRenameStudent = async (studentId, name) => {
-    const profiles = await loadStudents()
-    const current = profiles?.find?.(item => item.studentId === studentId)
-    if (!current) { setDashboardStatus('Kunde inte hitta eleven.'); return false }
-    const response = await fetch(`/api/student/${encodeURIComponent(studentId)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() }, body: JSON.stringify({ serverRevision: current.serverRevision, changes: { name } }) })
-    if (!response.ok) { setDashboardStatus('Kunde inte spara elevnamnet. Uppdatera och försök igen.'); return false }
-    await loadStudents(); setDashboardStatus('Elevnamnet är ändrat.'); return true
-  }
-
-  const handleSetStudentPreferredName = async (studentId, preferredName) => {
-    const profiles = await loadStudents()
-    const current = profiles?.find?.(item => item.studentId === studentId)
-    if (!current) { setDashboardStatus('Kunde inte hitta eleven.'); return false }
-    const response = await fetch(`/api/student/${encodeURIComponent(studentId)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() }, body: JSON.stringify({ serverRevision: current.serverRevision, changes: { preferredName } }) })
-    if (!response.ok) { setDashboardStatus('Kunde inte spara tilltalsnamnet. Uppdatera och försök igen.'); return false }
-    await loadStudents(); setDashboardStatus(preferredName.trim() ? 'Tilltalsnamnet är ändrat.' : 'Tilltalsnamnet är borttaget.'); return true
+  const handleSetTeacherPupilLabel = async (studentId, label) => {
+    const result = await saveTeacherPupilLabel(studentId, label)
+    if (!result.ok) { setDashboardStatus(result.error || 'Kunde inte spara tilltalsnamnet.'); return false }
+    await loadStudents(); setDashboardStatus(label.trim() ? 'Ditt tilltalsnamn är sparat.' : 'Ditt tilltalsnamn är borttaget.'); return true
   }
 
   const handleRenameClass = async (id, name, schoolId) => {
@@ -358,8 +347,7 @@ export function buildDashboardClassAndAuthActions({
     handleAddStudentsToClass,
     handleDeleteClass,
       handleDeleteStudent,
-      handleRenameStudent,
-      handleSetStudentPreferredName,
+        handleSetTeacherPupilLabel,
       handleRenameClass,
     handleToggleClassFilter,
     clearClassFilter,

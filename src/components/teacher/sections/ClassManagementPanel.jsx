@@ -97,7 +97,7 @@ export default function ClassManagementPanel({
             {availableExistingStudents.length > 0 ? <div className="mt-2 max-h-40 space-y-1 overflow-auto rounded bg-white p-2">
               {availableExistingStudents.map(student => <label key={student.studentId} className="flex cursor-pointer items-center gap-2 text-xs text-gray-700">
                 <input type="checkbox" checked={selectedExistingStudentIds.includes(student.studentId)} onChange={() => toggleExistingStudent(student.studentId)} />
-                  <span>{student.preferredName || student.name || student.displayAlias}</span><span className="font-mono text-gray-400">{student.studentId}</span>
+                  <span>{student.name || student.displayAlias}</span><span className="font-mono text-gray-400">{student.studentId}</span>
               </label>)}
             </div> : <p className="mt-2 text-xs text-gray-500">Alla kända elever finns redan i den valda klassen.</p>}
             <button type="button" disabled={selectedExistingStudentIds.length === 0} onClick={() => runRosterAction(async () => {
@@ -113,7 +113,7 @@ export default function ClassManagementPanel({
             <p className="mt-2 text-xs text-amber-900">Elevens ID och träningshistorik följer med.</p>
             <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3">
               <select value={moveFromClassId} onChange={event => { setMoveFromClassId(event.target.value); setMoveStudentId('') }} className="rounded border px-2 py-1 text-xs"><option value="">Från klass</option>{orderedClasses.map(item => <option key={`move-from-${item.id}`} value={item.id}>{classLabel(item)}</option>)}</select>
-              <select value={moveStudentId} onChange={event => setMoveStudentId(event.target.value)} disabled={!moveFromClassId} className="rounded border px-2 py-1 text-xs disabled:bg-gray-100"><option value="">Välj elev</option>{movableStudents.map(student => <option key={student.studentId} value={student.studentId}>{student.preferredName || student.name || student.displayAlias} · {student.studentId}</option>)}</select>
+              <select value={moveStudentId} onChange={event => setMoveStudentId(event.target.value)} disabled={!moveFromClassId} className="rounded border px-2 py-1 text-xs disabled:bg-gray-100"><option value="">Välj elev</option>{movableStudents.map(student => <option key={student.studentId} value={student.studentId}>{student.name || student.displayAlias} · {student.studentId}</option>)}</select>
               <select value={moveToClassId} onChange={event => setMoveToClassId(event.target.value)} className="rounded border px-2 py-1 text-xs"><option value="">Till klass</option>{orderedClasses.filter(item => item.id !== moveFromClassId).map(item => <option key={`move-to-${item.id}`} value={item.id}>{classLabel(item)}</option>)}</select>
             </div>
             <button type="button" disabled={!moveFromClassId || !moveToClassId || !moveStudentId} onClick={() => runRosterAction(async () => {
@@ -136,7 +136,7 @@ export default function ClassManagementPanel({
                 <div><p className="text-sm font-medium text-gray-800">{classLabel(item)}</p><p className="text-xs text-gray-500">Klass-ID: {item.id} · {classStudents.length} elever | {loggedInCount} har loggat in</p></div>
                 {item.loginToken && <div className="flex flex-wrap gap-1"><button onClick={() => setQrClass(item)} className="px-2 py-1 bg-slate-800 hover:bg-slate-950 text-white rounded text-xs">Visa QR-kod</button><button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/?class=${item.loginToken}`)} className="px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded text-xs">Kopiera elevlänk</button></div>}
               </div>
-              {classStudents.length > 0 && <details className="mt-2 rounded border border-slate-200 bg-slate-50 px-2 py-1.5"><summary className="cursor-pointer text-xs font-medium text-slate-800">Elever och elevkort ({classStudents.length})</summary><div className="mt-2 grid gap-1">{classStudents.map(student => <div key={`${item.id}-${student.studentId}`} className="rounded bg-white px-2 py-1.5 text-xs"><div className="flex items-center justify-between gap-2"><span className="truncate font-medium">{student.preferredName || student.name || student.displayAlias}</span>{onOpenStudentDetail && <button type="button" onClick={() => onOpenStudentDetail(student.studentId)} className="rounded bg-slate-200 px-2 py-1">Öppna elevprofil</button>}</div><StudentCredentialIssuer student={student} /></div>)}</div></details>}
+              {classStudents.length > 0 && <details className="mt-2 rounded border border-slate-200 bg-slate-50 px-2 py-1.5"><summary className="cursor-pointer text-xs font-medium text-slate-800">Elever och elevkort ({classStudents.length})</summary><div className="mt-2 grid gap-1">{classStudents.map(student => <div key={`${item.id}-${student.studentId}`} className="rounded bg-white px-2 py-1.5 text-xs"><div className="flex items-center justify-between gap-2"><span className="truncate font-medium">{student.name || student.displayAlias}</span>{onOpenStudentDetail && <button type="button" onClick={() => onOpenStudentDetail(student.studentId)} className="rounded bg-slate-200 px-2 py-1">Öppna elevprofil</button>}</div><StudentCredentialIssuer student={student} /></div>)}</div></details>}
               {canResetStudentAccounts && <details className="mt-2 rounded border border-rose-200 bg-rose-50 p-2"><summary className="cursor-pointer text-xs font-medium text-rose-900">Återställ alla elevkonton</summary><p className="mt-1 text-xs text-rose-900">Rensar elevdata i klassen och utfärdar nya QR-kort/PIN.</p><button type="button" onClick={() => runRosterAction(() => resetClassStudentAccounts(item))} className="mt-2 rounded bg-rose-700 px-3 py-1.5 text-xs font-semibold text-white">Återställ och skapa nya elevkort</button></details>}
             </div>
           })}
@@ -154,7 +154,7 @@ function StudentCredentialIssuer({ student }) {
   const [qrCode, setQrCode] = useState('')
   const [status, setStatus] = useState('')
   const issue = async () => {
-    const label = student.name || student.displayAlias || student.studentId
+    const label = student.displayAlias || student.studentId
     if (!window.confirm(`Skapa nytt QR-kort och ny PIN för ${label}? Det gamla kortet slutar fungera direkt.`)) return
     setStatus('Skapar nytt elevkort…')
     try {
@@ -169,7 +169,7 @@ function StudentCredentialIssuer({ student }) {
   return <div className="mt-2 rounded border border-amber-300 bg-amber-50 p-2">
     <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs font-medium text-amber-950">Elevkort</p><button type="button" onClick={issue} className="rounded bg-amber-700 px-2 py-1 text-xs font-semibold text-white">Nytt QR-kort / PIN</button></div>
     {status && <p role="status" className="mt-1 text-xs text-amber-900">{status}</p>}
-    {credential && <div className="mt-2 flex items-center gap-3 rounded bg-white p-2 text-xs"><div className="min-w-0"><p className="font-semibold">{student.name || credential.displayAlias}</p><p>Kodnamn: {credential.displayAlias || student.displayAlias || '–'}</p><p className="font-mono break-all">Elev-ID: {credential.studentId}</p><p className="font-mono text-sm font-bold">PIN: {credential.pin}</p></div>{qrCode && <img className="h-24 w-24 shrink-0" src={qrCode} alt={`QR-kod för ${credential.displayAlias || credential.studentId}`} />}</div>}
-    {credential && <button type="button" onClick={async () => { setStatus('Skapar PDF…'); try { await downloadStudentCredentialPdf([{ ...credential, name: student.name }]); setStatus('PDF klar. Spara filen säkert.') } catch (error) { setStatus(error?.message || 'Kunde inte skapa PDF.') } }} className="mt-2 rounded bg-amber-700 px-2 py-1 text-xs font-semibold text-white">Hämta PDF</button>}
+    {credential && <div className="mt-2 flex items-center gap-3 rounded bg-white p-2 text-xs"><div className="min-w-0"><p className="font-semibold">{credential.displayAlias || student.displayAlias}</p><p>Kodnamn: {credential.displayAlias || student.displayAlias || '–'}</p><p className="font-mono break-all">Elev-ID: {credential.studentId}</p><p className="font-mono text-sm font-bold">PIN: {credential.pin}</p></div>{qrCode && <img className="h-24 w-24 shrink-0" src={qrCode} alt={`QR-kod för ${credential.displayAlias || credential.studentId}`} />}</div>}
+    {credential && <button type="button" onClick={async () => { setStatus('Skapar PDF…'); try { await downloadStudentCredentialPdf([{ ...credential, name: '' }]); setStatus('PDF klar. Spara filen säkert.') } catch (error) { setStatus(error?.message || 'Kunde inte skapa PDF.') } }} className="mt-2 rounded bg-amber-700 px-2 py-1 text-xs font-semibold text-white">Hämta PDF</button>}
   </div>
 }

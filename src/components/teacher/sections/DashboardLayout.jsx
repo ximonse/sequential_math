@@ -160,8 +160,7 @@ export default function DashboardLayout({
   handleDeleteClass,
   handleRenameClass,
   handleDeleteStudent,
-  handleRenameStudent,
-  handleSetStudentPreferredName,
+  handleSetTeacherPupilLabel,
   handleSaveClassExtras,
   resultsPanelProps,
   PASSWORD_RESET_SECTION_ID,
@@ -256,8 +255,7 @@ export default function DashboardLayout({
         onExportCsv={handleExportStudentDetailCsv}
         canExportCsv={Boolean(detailStudentProfile && detailStudentRow && detailStudentViewData)}
         onDeleteStudent={handleDeleteStudent}
-        onRenameStudent={handleRenameStudent}
-        onSetStudentPreferredName={handleSetStudentPreferredName}
+        onSetTeacherPupilLabel={handleSetTeacherPupilLabel}
         detailStudentProfile={detailStudentProfile}
         detailStudentRow={detailStudentRow}
         detailStudentViewData={detailStudentViewData}
@@ -461,7 +459,7 @@ export default function DashboardLayout({
 
         <div className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
 
-        <div className="grid gap-3 lg:grid-cols-[13rem_minmax(0,1fr)]">
+        <div className={`grid gap-3 ${isDirectStudentView ? 'grid-cols-1' : 'lg:grid-cols-[13rem_minmax(0,1fr)]'}`}>
           {!isDirectStudentView && (
             <aside className="rounded-lg bg-slate-800 p-2 text-slate-100 lg:sticky lg:top-3 lg:h-fit">
               <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">Arbetsläge</p>

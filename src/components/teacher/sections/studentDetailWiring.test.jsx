@@ -25,6 +25,7 @@ describe('student detail wiring', () => {
       selectedClassIds={[]} supportRows={[]} classStats={{}} classFilterOptions={[]}
     />)
     expect(html).toContain('Student detail is visible')
+    expect(html).toContain('grid-cols-1')
   })
 
   it('shows the active teacher account and role in the header', () => {
@@ -48,6 +49,7 @@ describe('student detail wiring', () => {
 
   it('uses the loaded full profile for the detail row and trend, leaving list rows separate', () => {
     const fullProfile = createStudentProfile('QA01', 'Full profile')
+    fullProfile.displayAlias = 'Blå Räv Bok'
     fullProfile.problemLog = Array.from({ length: 12 }, (_, index) => ({
       timestamp: Date.now() - index * 1000, correct: true, skill: 'addition', level: 1
     }))
@@ -67,7 +69,7 @@ describe('student detail wiring', () => {
     }
     renderToStaticMarkup(<Harness detailStudentProfile={fullProfile} />)
     expect(result.detailStudentRow.name).toBe('Full profile')
-    expect(result.filteredRows[0].name).toBe('List snapshot')
+    expect(result.filteredRows[0].name).toBe('Blå Räv Bok')
     expect(result.detailStudentViewData.dailyTrend.days.reduce((sum, day) => sum + day.attempts, 0)).toBe(12)
     renderToStaticMarkup(<Harness detailStudentProfile={null} />)
     expect(result.detailStudentRow).toBeNull()

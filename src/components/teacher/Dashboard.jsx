@@ -55,6 +55,7 @@ import { getActiveAssignment, hydrateAssignmentsFromServer } from '../../lib/ass
 import { getTeacherClassIds } from '../../lib/teacherAuth'
 import { hydrateTicketsFromServer } from '../../lib/tickets'
 import { loadTeacherWorkspace } from '../../lib/teacherWorkspaceSync'
+import { loadTeacherPupilLabels } from '../../lib/teacherPupilLabels'
 import { loadTeacherGroups } from './sections/teacherGroupsApi'
 function Dashboard() {
   const [students, setStudents] = useState([])
@@ -100,13 +101,16 @@ function Dashboard() {
   )
 
   const loadStudents = useCallback(async () => {
-    const [profiles, groupData] = await Promise.all([
+    const [profiles, groupData, labels] = await Promise.all([
       getAllProfilesWithSync(),
-      loadTeacherGroups().catch(() => ({ groups: [] }))
+      loadTeacherGroups().catch(() => ({ groups: [] })),
+      loadTeacherPupilLabels()
     ])
     const groups = Array.isArray(groupData?.groups) ? groupData.groups : []
     const enrichedProfiles = profiles.map(profile => ({
       ...profile,
+      name: labels[profile.studentId] || profile.displayAlias || profile.studentId,
+      teacherPupilLabel: labels[profile.studentId] || '',
       groupIds: groups.filter(group => (group.pupilIds || []).includes(profile.studentId)).map(group => group.id)
     }))
     enrichedProfiles.sort((a, b) => {
@@ -211,7 +215,7 @@ function Dashboard() {
     handleAddStudentsToClass,
     handleDeleteClass,
     handleDeleteStudent,
-    handleRenameStudent,
+    handleSetTeacherPupilLabel,
     handleRenameClass,
     handleToggleClassFilter,
     clearClassFilter,
@@ -440,7 +444,7 @@ function Dashboard() {
         supportRows, handleCreateQuickAssignment,
         classNameInput, setClassNameInput, handleCreateClass, handleCreatePilotRoster, addToClassId, setAddToClassId,
         classes, handleAddExistingStudentsToClass, handleMoveStudent, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus, handleDeleteClass, handleRenameClass, handleSaveClassExtras,
-        handleDeleteStudent, handleRenameStudent,
+        handleDeleteStudent, handleSetTeacherPupilLabel,
         resultsPanelProps, PASSWORD_RESET_SECTION_ID, passwordResetRows, passwordResetSearch,
         setPasswordResetSearch, passwordResetStatus, handleResetStudentPassword, passwordResetBusyId
       }}

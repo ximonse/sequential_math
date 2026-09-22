@@ -2,11 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { toTeacherListProfile } from './teacherListProfile'
 
 describe('toTeacherListProfile', () => {
-  it('uses the preferred name in teacher-facing lists while retaining the login alias', () => {
+  it('uses the pseudonymous login alias in teacher-facing lists', () => {
     const profile = {
       studentId: 'PUPIL-1',
       name: 'Alex Andersson',
-      preferredName: 'Alex',
       displayAlias: 'Blå Räv Bok',
       recentProblems: [],
       stats: {},
@@ -14,8 +13,7 @@ describe('toTeacherListProfile', () => {
     }
 
     expect(toTeacherListProfile(profile)).toMatchObject({
-      name: 'Alex',
-      preferredName: 'Alex',
+      name: 'Blå Räv Bok',
       displayAlias: 'Blå Räv Bok'
     })
   })

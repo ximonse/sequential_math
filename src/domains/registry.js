@@ -3,6 +3,7 @@ import algebraDomain from './algebra'
 import arithmeticExpressionsDomain from './arithmetic_expressions'
 import fractionsDomain from './fractions'
 import percentageDomain from './percentage'
+import geometryDomain from './geometry'
 import { assertDomainContract } from './contracts'
 
 const domainMap = new Map()
@@ -21,6 +22,7 @@ registerDomain(algebraDomain)
 registerDomain(arithmeticExpressionsDomain)
 registerDomain(fractionsDomain)
 registerDomain(percentageDomain)
+registerDomain(geometryDomain)
 
 export function getDomain(domainId) {
   const normalized = String(domainId || '').trim()

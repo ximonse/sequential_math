@@ -4,7 +4,8 @@ const ASSIGNMENT_PAYLOAD_VERSION = 1
 const KNOWN_OPERATION_TYPES = new Set([
   'addition', 'subtraction', 'multiplication', 'division',
   'algebra_evaluate', 'algebra_simplify',
-  'arithmetic_expressions', 'fractions', 'percentage'
+  'arithmetic_expressions', 'fractions', 'percentage',
+  'geometry_2d_objects', 'geometry_3d_objects'
 ])
 
 function readAssignments() {

@@ -17,7 +17,9 @@ const SHORT_LABELS = {
   algebra_simplify: 'Alg(f)',
   arithmetic_expressions: 'Uttr',
   fractions: 'Bråk',
-  percentage: '%'
+  percentage: '%',
+  geometry_2d_objects: 'Geo2D',
+  geometry_3d_objects: 'Geo3D'
 }
 
 const LEGEND_STEPS = [
@@ -94,7 +96,7 @@ export default function ClassMasteryLevelPanel({
       {/* Header with legend */}
       <div className="flex items-center justify-between flex-wrap gap-2 px-1 pb-1">
         <p className="text-xs text-gray-400">
-          Klarad = ≥5 försök, ≥85% rätt. Konsekutiv från nivå 1. – = ännu inte belagt.
+          Klarad = grundregel ≥5 försök och ≥85% rätt; geometri ≥8 försök, 7 rätt och varierad evidens. – = ännu inte belagt.
         </p>
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-[10px] text-gray-400 mr-0.5">Nivå:</span>

@@ -200,6 +200,12 @@ export function getPresetConfig(presetKey) {
   if (presetKey === 'percentage') {
     return { title: 'Procent nivå 1-8', problemTypes: ['percentage'], minLevel: 1, maxLevel: 8, targetCount: 15 }
   }
+  if (presetKey === 'geometry_2d_objects') {
+    return { title: 'Geometri – plana objekt nivå 1-6', problemTypes: ['geometry_2d_objects'], minLevel: 1, maxLevel: 6, targetCount: 16 }
+  }
+  if (presetKey === 'geometry_3d_objects') {
+    return { title: 'Geometri – kroppar nivå 1-5', problemTypes: ['geometry_3d_objects'], minLevel: 1, maxLevel: 5, targetCount: 16 }
+  }
 
   return {
     title: 'Kombination nivå 2-10',

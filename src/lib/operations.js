@@ -9,7 +9,7 @@ export const STANDARD_OPERATIONS = ['addition', 'subtraction', 'multiplication',
 export const ALL_OPERATIONS = [
   'addition', 'subtraction', 'multiplication', 'division',
   'algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions',
-  'fractions', 'percentage'
+  'fractions', 'percentage', 'geometry_2d_objects', 'geometry_3d_objects'
 ]
 
 export const MASTERY_MIN_ATTEMPTS = 5
@@ -27,7 +27,9 @@ export const OPERATION_LABELS = {
   algebra_simplify: 'Algebra (förenkla)',
   arithmetic_expressions: 'Uttryck (prioriteringsregler)',
   fractions: 'Bråk',
-  percentage: 'Procenträkning'
+  percentage: 'Procenträkning',
+  geometry_2d_objects: 'Geometri – plana objekt',
+  geometry_3d_objects: 'Geometri – kroppar'
 }
 
 /**
@@ -37,8 +39,26 @@ export const OPERATION_LABELS = {
 export const OPERATION_MIN_LEVEL = {
 }
 
+export const OPERATION_MAX_LEVEL = {
+  geometry_2d_objects: 6,
+  geometry_3d_objects: 5
+}
+
+export const OPERATION_MASTERY_RULES = {
+  geometry_2d_objects: { minAttempts: 8, minSuccessRate: 0.875, minUniqueTemplates: 3, minRepresentations: 2 },
+  geometry_3d_objects: { minAttempts: 8, minSuccessRate: 0.875, minUniqueTemplates: 3, minRepresentations: 2 }
+}
+
 export function getOperationMinLevel(operation) {
   return OPERATION_MIN_LEVEL[operation] || 1
+}
+
+export function getOperationMaxLevel(operation) {
+  return OPERATION_MAX_LEVEL[operation] || 12
+}
+
+export function getOperationMasteryRule(operation) {
+  return OPERATION_MASTERY_RULES[operation] || {}
 }
 
 export function getOperationLabel(operation) {

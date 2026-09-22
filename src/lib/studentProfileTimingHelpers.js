@@ -85,7 +85,7 @@ export function classifyErrorCategory(problem, studentAnswer, correct, options =
   if (correct) return 'none'
 
   const domainCategory = String(errorAnalysis?.category || '').trim().toLowerCase()
-  if (domainCategory === 'inattention' || domainCategory === 'knowledge' || domainCategory === 'misconception') {
+  if (domainCategory === 'input' || domainCategory === 'inattention' || domainCategory === 'knowledge' || domainCategory === 'misconception') {
     return domainCategory
   }
 

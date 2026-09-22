@@ -25,6 +25,8 @@ export default function StudentHomeTrainingOptionsCard({
             btnClass = 'bg-rose-50 border border-rose-300 hover:bg-rose-100 text-rose-800'
           } else if (operation === 'percentage') {
             btnClass = 'bg-amber-50 border border-amber-300 hover:bg-amber-100 text-amber-800'
+          } else if (operation === 'geometry_2d_objects' || operation === 'geometry_3d_objects') {
+            btnClass = 'bg-cyan-50 border border-cyan-300 hover:bg-cyan-100 text-cyan-900'
           } else {
             btnClass = 'bg-white border border-gray-300 hover:bg-gray-50 text-gray-700'
           }

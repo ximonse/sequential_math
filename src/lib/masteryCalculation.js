@@ -10,7 +10,7 @@ import {
   getStockholmWeekStart,
   getStockholmDateKey
 } from './teacherEvidencePeriods.js'
-import { getOperationLabel, getOperationMinLevel } from './operations.js'
+import { getOperationLabel, getOperationMinLevel, getOperationMaxLevel, getOperationMasteryRule } from './operations.js'
 import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './operations.js'
 import { isMasteryEligible, readEvidenceClaim, summarizeEvidenceHistory } from './evidenceContract.js'
 import { isContractMasteryFact, summarizeMasteryFactAuthority } from './masteryFacts.js'
@@ -41,9 +41,19 @@ export function computeLevelMastery(results, options = {}) {
 
   let isMastered = attempts >= minAttempts && rate >= minSuccessRate
 
+  const evidenceEntries = Array.isArray(options.evidenceEntries)
+    ? options.evidenceEntries.slice(-windowSize)
+    : []
+  const uniqueTemplates = new Set(evidenceEntries.map(item => String(item?.varietyTemplate || '')).filter(Boolean)).size
+  const representations = new Set(evidenceEntries.map(item => String(item?.representation || '')).filter(Boolean)).size
+  if ((options.minUniqueTemplates || 0) > uniqueTemplates) isMastered = false
+  if ((options.minRepresentations || 0) > representations) isMastered = false
+
   // Stabilitet: med 20+ försök och 90%+ totalt ska inte ett tillfälligt
   // dipp i fönstret radera mastery. Bara verklig regression (< 70%) bryter.
-  if (!isMastered && results.length >= 20) {
+  const hasRequiredDiversity = (options.minUniqueTemplates || 0) <= uniqueTemplates
+    && (options.minRepresentations || 0) <= representations
+  if (!isMastered && hasRequiredDiversity && results.length >= 20) {
     const totalCorrect = results.reduce((sum, v) => sum + (v ? 1 : 0), 0)
     const totalRate = totalCorrect / results.length
     if (totalRate >= 0.90 && rate >= 0.70) {
@@ -55,7 +65,9 @@ export function computeLevelMastery(results, options = {}) {
     attempts,
     correct,
     rate,
-    isMastered
+    isMastered,
+    uniqueTemplates,
+    representations
   }
 }
 
@@ -101,9 +113,10 @@ export function groupProblemsByOperationLevel(problems) {
 
     const key = `${operation}:${level}`
     if (!buckets.has(key)) {
-      buckets.set(key, { operation, level, results: [] })
+      buckets.set(key, { operation, level, results: [], entries: [] })
     }
     buckets.get(key).results.push(countsAsMastery(problem))
+    buckets.get(key).entries.push(problem)
   }
   return buckets
 }
@@ -132,7 +145,7 @@ export function computeMasteryOverview(problems, options = {}) {
 
   // Steg 2: Komplettera med beräknad mastery från problemLog
   for (const entry of buckets.values()) {
-    const result = computeLevelMastery(entry.results, options)
+    const result = computeLevelMastery(entry.results, getOperationMasteryOptions(entry.operation, options, entry.entries))
     if (result.isMastered) {
       if (!mastery[entry.operation]) mastery[entry.operation] = []
       if (!mastery[entry.operation].includes(entry.level)) {
@@ -161,7 +174,7 @@ export function computeMasteryForOperation(problems, operation, options = {}) {
  * Används som "golv" i adaptiv träning.
  */
 export function computeLowestUnmasteredLevel(problems, operation, options = {}) {
-  const maxLevel = options.maxLevel ?? 12
+  const maxLevel = Math.min(options.maxLevel ?? 12, getOperationMaxLevel(operation))
   const mastered = computeMasteryForOperation(problems, operation, options)
   const masteredSet = new Set(mastered)
   const minLevel = getOperationMinLevel(operation)
@@ -183,7 +196,7 @@ export function computeOperationLevelMasteryStatus(problems, operation, level, o
     return itemOp === operation && itemLevel === level
   })
 
-  return computeLevelMastery(filtered.map(countsAsMastery), options)
+  return computeLevelMastery(filtered.map(countsAsMastery), getOperationMasteryOptions(operation, options, filtered))
 }
 
 /**
@@ -213,7 +226,8 @@ export function computeEffectiveLevels(problems, operationKeys, levelRange, opti
     result[op] = 0
     const factSet = factsMap[op] || new Set()
 
-    for (const level of levelRange) {
+    const maxLevel = getOperationMaxLevel(op)
+    for (const level of levelRange.filter(value => value >= getOperationMinLevel(op) && value <= maxLevel)) {
       // Mastered om det finns i facts ELLER om problemLog visar det
       if (factSet.has(level)) {
         result[op] = level
@@ -222,8 +236,9 @@ export function computeEffectiveLevels(problems, operationKeys, levelRange, opti
 
       const key = `${op}:${level}`
       const bucket = buckets.get(key)
-      if (!bucket || bucket.results.length < (options.minAttempts ?? MASTERY_MIN_ATTEMPTS)) break
-      const mastery = computeLevelMastery(bucket.results, options)
+      const masteryOptions = getOperationMasteryOptions(op, options, bucket?.entries || [])
+      if (!bucket || bucket.results.length < (masteryOptions.minAttempts ?? MASTERY_MIN_ATTEMPTS)) break
+      const mastery = computeLevelMastery(bucket.results, masteryOptions)
       if (!mastery.isMastered) break
       result[op] = level
 
@@ -244,7 +259,7 @@ export function computeOperationMasteryBoards(problems, operationKeys, levelRang
 
   const lists = Object.fromEntries(
     operationKeys.map(op => [op, Object.fromEntries(
-      levelRange.map(lv => [lv, { all: [], week: [], month: [] }])
+      levelRange.filter(lv => lv >= getOperationMinLevel(op) && lv <= getOperationMaxLevel(op)).map(lv => [lv, { all: [], week: [], month: [] }])
     )])
   )
 
@@ -255,28 +270,29 @@ export function computeOperationMasteryBoards(problems, operationKeys, levelRang
     const level = getRecordedProblemLevel(problem)
     if (!Number.isInteger(level) || level < 1 || level > 12) continue
 
-    const correct = countsAsMastery(problem)
-    lists[operation][level].all.push(correct)
+    if (!lists[operation][level]) continue
+    lists[operation][level].all.push(problem)
 
     const ts = Number(problem.timestamp || 0)
-    if (ts >= monthStart) lists[operation][level].month.push(correct)
-    if (ts >= weekStart) lists[operation][level].week.push(correct)
+    if (ts >= monthStart) lists[operation][level].month.push(problem)
+    if (ts >= weekStart) lists[operation][level].week.push(problem)
   }
 
   return operationKeys.map(operation => ({
     operation,
-    historical: levelRange.map(level => buildMasteryView(level, lists[operation][level].all, options)),
-    weekly: levelRange.map(level => buildMasteryView(level, lists[operation][level].week, options)),
-    monthly: levelRange.map(level => buildMasteryView(level, lists[operation][level].month, options))
+    historical: Object.keys(lists[operation]).map(Number).map(level => buildMasteryView(operation, level, lists[operation][level].all, options)),
+    weekly: Object.keys(lists[operation]).map(Number).map(level => buildMasteryView(operation, level, lists[operation][level].week, options)),
+    monthly: Object.keys(lists[operation]).map(Number).map(level => buildMasteryView(operation, level, lists[operation][level].month, options))
   }))
 }
 
-function buildMasteryView(level, results, options = {}) {
+function buildMasteryView(operation, level, entries, options = {}) {
+  const results = entries.map(countsAsMastery)
   const attempts = results.length
   const correct = results.reduce((s, v) => s + (v ? 1 : 0), 0)
   const successRate = attempts > 0 ? correct / attempts : 0
 
-  const mastery = computeLevelMastery(results, options)
+  const mastery = computeLevelMastery(results, getOperationMasteryOptions(operation, options, entries))
 
   const isStarted = attempts > 0
   const status = mastery.isMastered ? 'mastered' : (isStarted ? 'started' : 'empty')
@@ -347,6 +363,14 @@ export function recordMasteryAchievement(profile, operation, level, window, opti
   if (!isContractMasteryFact(fact)) return null
   profile.masteryFacts.facts.push(fact)
   return fact
+}
+
+function getOperationMasteryOptions(operation, options = {}, evidenceEntries = []) {
+  return {
+    ...getOperationMasteryRule(operation),
+    ...options,
+    evidenceEntries
+  }
 }
 
 export function getMasteryEvidenceObservationIds(problems, operation, level, options = {}) {

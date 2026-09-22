@@ -74,6 +74,18 @@ export default function AssignmentsPanel({
         >
           Nytt: Algebra (förenkla)
         </button>
+        <button
+          onClick={() => onCreatePreset('geometry_2d_objects')}
+          className="px-3 py-2 bg-cyan-700 hover:bg-cyan-800 text-white rounded text-sm"
+        >
+          Nytt: Geometri 2D
+        </button>
+        <button
+          onClick={() => onCreatePreset('geometry_3d_objects')}
+          className="px-3 py-2 bg-sky-700 hover:bg-sky-800 text-white rounded text-sm"
+        >
+          Nytt: Geometri 3D
+        </button>
       </div>
 
       {assignments.length === 0 ? (

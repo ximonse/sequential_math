@@ -7,7 +7,9 @@ const KNOWN_OPERATION_TYPES = new Set([
   'algebra_simplify',
   'arithmetic_expressions',
   'fractions',
-  'percentage'
+  'percentage',
+  'geometry_2d_objects',
+  'geometry_3d_objects'
 ])
 
 export function isKnownOperationType(value) {
@@ -44,6 +46,8 @@ export function inferOperationFromProblemType(problemType = '', options = {}) {
   if (normalized === 'arithmetic_expressions') return 'arithmetic_expressions'
   if (normalized === 'fractions') return 'fractions'
   if (normalized === 'percentage') return 'percentage'
+  if (normalized === 'geometry_2d_objects') return 'geometry_2d_objects'
+  if (normalized === 'geometry_3d_objects') return 'geometry_3d_objects'
   if (normalized.startsWith('alg_')) return normalized
 
   const [prefixRaw] = normalized.split('_')

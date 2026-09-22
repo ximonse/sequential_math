@@ -81,6 +81,12 @@ export function assertDisplayableProblem(problem, expected = {}) {
     invariant(Number.isFinite(Number(problem.answer.den)) && Number(problem.answer.den) !== 0, 'fraction denominator must be finite and non-zero')
   } else if (answerType === 'expression') {
     invariant(String(problem.answer.correct || '').trim(), 'expression answer must not be empty')
+  } else if (answerType === 'single_choice') {
+    const correct = String(problem.answer.correct || '').trim()
+    const options = problem.values?.options
+    invariant(correct, 'single-choice answer must not be empty')
+    invariant(Array.isArray(options) && options.length >= 2, 'single-choice options are required')
+    invariant(options.filter(item => String(item?.id || '') === correct).length === 1, 'single-choice answer must match exactly one option')
   } else {
     invariant(false, `unsupported answer type ${answerType}`)
   }

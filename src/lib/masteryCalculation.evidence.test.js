@@ -23,6 +23,30 @@ function result(index, overrides = {}) {
 }
 
 describe('mastery evidence policy', () => {
+  it('requires broader evidence before geometry mastery', () => {
+    const base = Array.from({ length: 8 }, (_, index) => result(index, {
+      operation: 'geometry_2d_objects',
+      evidenceSkill: 'geometry_2d_objects',
+      level: 1,
+      evidenceLevel: 1,
+      correct: index < 7,
+      evidenceClass: 'mastery_eligible',
+      varietyTemplate: `template_${index % 3}`,
+      representation: index % 2 === 0 ? 'diagram' : 'text_property'
+    }))
+
+    expect(computeOperationLevelMasteryStatus(base, 'geometry_2d_objects', 1)).toMatchObject({
+      attempts: 8,
+      correct: 7,
+      isMastered: true,
+      uniqueTemplates: 3,
+      representations: 2
+    })
+
+    const narrow = base.map(item => ({ ...item, varietyTemplate: 'same', representation: 'diagram' }))
+    expect(computeOperationLevelMasteryStatus(narrow, 'geometry_2d_objects', 1).isMastered).toBe(false)
+  })
+
   it('excludes current and recognizable legacy table-drill answers from general mastery', () => {
     const problems = [
       ...Array.from({ length: 5 }, (_, index) => result(index, {

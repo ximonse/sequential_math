@@ -319,6 +319,8 @@ export function isKnownMode(mode) {
     || mode === 'arithmetic_expressions'
     || mode === 'fractions'
     || mode === 'percentage'
+    || mode === 'geometry_2d_objects'
+    || mode === 'geometry_3d_objects'
 }
 
 export function isMixedTrainingSession(mode, assignment, isTableDrill) {

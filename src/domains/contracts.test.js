@@ -87,6 +87,8 @@ describe('domain contracts', () => {
             corrupted.answer.num = Number(corrupted.answer.num) + 1
           } else if (corrupted.answer.type === 'expression') {
             corrupted.answer.correct = '0'
+          } else if (corrupted.answer.type === 'single_choice') {
+            corrupted.answer.correct = corrupted.values.options.find(item => item.id !== corrupted.answer.correct)?.id || 'corrupted'
           } else if (corrupted.answer.correct !== undefined) {
             corrupted.answer.correct = Number(corrupted.answer.correct) + 1
           } else {

@@ -234,6 +234,15 @@ export function buildDashboardClassAndAuthActions({
     await loadStudents(); setDashboardStatus('Elevnamnet är ändrat.'); return true
   }
 
+  const handleSetStudentPreferredName = async (studentId, preferredName) => {
+    const profiles = await loadStudents()
+    const current = profiles?.find?.(item => item.studentId === studentId)
+    if (!current) { setDashboardStatus('Kunde inte hitta eleven.'); return false }
+    const response = await fetch(`/api/student/${encodeURIComponent(studentId)}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() }, body: JSON.stringify({ serverRevision: current.serverRevision, changes: { preferredName } }) })
+    if (!response.ok) { setDashboardStatus('Kunde inte spara tilltalsnamnet. Uppdatera och försök igen.'); return false }
+    await loadStudents(); setDashboardStatus(preferredName.trim() ? 'Tilltalsnamnet är ändrat.' : 'Tilltalsnamnet är borttaget.'); return true
+  }
+
   const handleRenameClass = async (id, name, schoolId) => {
     const response = await fetch('/api/teacher-classes', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() }, body: JSON.stringify({ id, name, ...(schoolId !== undefined ? { schoolId } : {}) }) })
     const data = await response.json()
@@ -367,9 +376,10 @@ export function buildDashboardClassAndAuthActions({
     handleAddExistingStudentsToClass, handleMoveStudent,
     handleAddStudentsToClass,
     handleDeleteClass,
-    handleDeleteStudent,
-    handleRenameStudent,
-    handleRenameClass,
+      handleDeleteStudent,
+      handleRenameStudent,
+      handleSetStudentPreferredName,
+      handleRenameClass,
     handleToggleClassFilter,
     clearClassFilter,
     handleResetStudentPassword,

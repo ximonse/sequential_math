@@ -4,6 +4,7 @@ const TEACHER_LIST_FIELDS = [
   'studentId',
   'displayAlias',
   'name',
+  'preferredName',
   'grade',
   'profileSchemaVersion',
   'created_at',
@@ -41,10 +42,10 @@ export function toTeacherListProfile(profile) {
   for (const field of TEACHER_LIST_FIELDS) {
     if (Object.hasOwn(profile, field)) listProfile[field] = profile[field]
   }
-  // Teachers use the pupil's approved name when one exists. The separate
+  // Teachers use the pupil's preferred name when one exists. The separate
   // display alias remains the credential-card/login code fallback for pilot
   // records that have not yet been given a name.
-  listProfile.name = String(profile.name || profile.displayAlias || '').trim()
+  listProfile.name = String(profile.preferredName || profile.name || profile.displayAlias || '').trim()
   // The credential family is safe metadata, not credential material. The
   // dashboard needs it to keep QR+PIN pupils out of the legacy reset tool.
   listProfile.auth = { scheme: profile.auth?.scheme || null,

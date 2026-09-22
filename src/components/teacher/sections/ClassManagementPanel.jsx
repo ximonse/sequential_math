@@ -196,7 +196,7 @@ export default function ClassManagementPanel({
                   <div className="mt-2 grid gap-1">
                     {classStudents.map(student => (
                       <div key={`${item.id}-${student.studentId}`} className="rounded bg-slate-50 px-2 py-1.5 text-xs">
-                        <div className="flex items-center justify-between gap-2"><span className="min-w-0 truncate font-medium text-slate-800">{student.name || student.displayAlias}</span><button type="button" onClick={() => onOpenStudentDetail(student.studentId)} className="shrink-0 rounded bg-slate-200 px-2 py-1 text-slate-800 hover:bg-slate-300">Öppna elevprofil</button></div>
+                        <div className="flex items-center justify-between gap-2"><span className="min-w-0 truncate font-medium text-slate-800">{student.preferredName || student.name || student.displayAlias}</span><button type="button" onClick={() => onOpenStudentDetail(student.studentId)} className="shrink-0 rounded bg-slate-200 px-2 py-1 text-slate-800 hover:bg-slate-300">Öppna elevprofil</button></div>
                         <StudentCredentialIssuer student={student} />
                       </div>
                     ))}

@@ -777,7 +777,7 @@ export default async function handler(req, res) {
     if (req.method === 'PATCH') {
       const changes = req.body?.changes
       if (!changes || typeof changes !== 'object' || Array.isArray(changes)
-        || Object.keys(changes).some(field => !['ticketInbox', 'ticketRevealAll', 'displayAlias', 'name'].includes(field))) {
+        || Object.keys(changes).some(field => !['ticketInbox', 'ticketRevealAll', 'displayAlias', 'name', 'preferredName'].includes(field))) {
         throw studentStoreError(400, 'Invalid teacher update')
       }
       if (Object.hasOwn(changes, 'displayAlias') && (typeof changes.displayAlias !== 'string'
@@ -788,6 +788,10 @@ export default async function handler(req, res) {
         || changes.name.trim().length < 1 || changes.name.trim().length > 100)) {
         throw studentStoreError(400, 'Invalid student name')
       }
+      if (Object.hasOwn(changes, 'preferredName') && (typeof changes.preferredName !== 'string'
+        || changes.preferredName.trim().length > 80)) {
+        throw studentStoreError(400, 'Invalid preferred name')
+      }
       await mutateStudentRecord(studentId, async current => {
         if (!current) throw studentStoreError(404, 'Student not found')
         await assertTeacherStudentAccess(req, current)
@@ -796,7 +800,8 @@ export default async function handler(req, res) {
         }
         const next = { ...current, ...changes,
           ...(Object.hasOwn(changes, 'displayAlias') ? { displayAlias: changes.displayAlias.trim() } : {}),
-          ...(Object.hasOwn(changes, 'name') ? { name: changes.name.trim() } : {}) }
+          ...(Object.hasOwn(changes, 'name') ? { name: changes.name.trim() } : {}),
+          ...(Object.hasOwn(changes, 'preferredName') ? { preferredName: changes.preferredName.trim() } : {}) }
         if (changes.ticketRevealAll && Array.isArray(next.ticketResponses)) {
           next.ticketResponses = next.ticketResponses.map(item => ({ ...item,
             teacherRevealAt: next.ticketRevealAll[item.dispatchId] || null }))

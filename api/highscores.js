@@ -35,7 +35,7 @@ function assignedToClass(profile, classId) {
 }
 
 function highscoreDto(entry) {
-  const displayAlias = String(entry?.name || entry?.displayAlias || 'Elev').slice(0, 50)
+  const displayAlias = String(entry?.preferredName || entry?.name || entry?.displayAlias || 'Elev').slice(0, 50)
   return { displayAlias, name: displayAlias, score: Number(entry?.score) || 0 }
 }
 
@@ -155,7 +155,7 @@ export default async function handler(req, res) {
     const normalizedStudentId = String(profile.studentId).toUpperCase()
     const entry = {
       studentId: normalizedStudentId,
-      displayAlias: String(profile.name || profile.displayAlias || 'Elev').slice(0, 50),
+      displayAlias: String(profile.preferredName || profile.name || profile.displayAlias || 'Elev').slice(0, 50),
       score: numericScore,
       timestamp: Date.now()
     }

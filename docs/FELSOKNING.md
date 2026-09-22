@@ -15,13 +15,11 @@ Om problemet kvarstår:
 ## 2. Kan inte logga in som lärare
 
 Kontrollera:
-1. Att `TEACHER_API_PASSWORD` finns i Vercel.
-2. Att senaste deployment är gjord efter ändringen.
-3. Att rätta lösenord anges i `/teacher-login`.
+1. Att du använder ett aktivt lärarkonto med rätt användarnamn och lösenord.
+2. Att senaste deployment är klar.
+3. Att en administratör har tilldelat rätt skola och klass.
 
-Symptom:
-- `Lärarlösenord saknas ...`: env-var saknas eller är tom.
-- `Fel lösenord`: inmatat lösenord matchar inte servern.
+Vid fel lösenord eller saknat konto: be administratören återställa lösenordet eller kontrollera kontot. Lärarinloggning använder konton i serverlagringen; `TEACHER_API_PASSWORD` är inte ett användarlösenord.
 
 ## 3. Elever syns inte i lärarvyn (från iPad/mobil)
 
@@ -47,12 +45,12 @@ Notera:
 ## 5. Elev kan inte logga in
 
 Kontrollera:
-1. Inloggningsnamn stavat rimligt.
-2. Rätt lösenord.
-3. Att eleven finns skapad i systemet.
+1. Att eleven öppnar rätt klasslänk eller QR-kod.
+2. Att namnet skrivs som i den klassens elevlista.
+3. Att den fyrsiffriga koden är rätt.
+4. Att eleven fortfarande finns i klassen.
 
-Tips:
-- Lärare kan byta elevlösenord i dashboardens elevtabell (`Byt lösen`).
+Lärare kan se upprepade felaktiga kodförsök och ge eleven en ny kod. Eleven väljer aldrig skola eller klass på egen hand.
 
 ## 6. Lärare ser fel/för lite aktivitet
 
@@ -76,11 +74,10 @@ Om status ser fel ut:
 
 ## 8. Vanliga Vercel-env-var
 
-- `TEACHER_API_PASSWORD`: krav för lärarinloggning i production/preview.
 - `VITE_ENABLE_CLOUD_SYNC=1`: aktiverar sync mot API/KV.
 
-Efter varje ändring:
-1. redeploya,
-2. testa inloggning,
-3. testa en elevsession,
+Lärar- och elevinloggning kräver även den serverlagring som appen använder för konton, klasser och sessioner. Efter ändringar i miljö eller deployment:
+1. deploya om,
+2. testa lärarinloggning,
+3. testa en elevsession via klasslänk,
 4. verifiera i lärardashboarden.

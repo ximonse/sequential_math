@@ -1,10 +1,9 @@
 import { kv } from '@vercel/kv'
-import { createHash } from 'node:crypto'
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
 import { getLiveStudentSession, hasStudentCsrf, requestOriginIsTrusted } from './_studentSession.js'
+import { verifyStudentCredential } from './_studentPassword.js'
 import {
-  hasCurrentStudentPassword,
   isCurrentStudentProfile
 } from '../src/lib/studentProfileContract.js'
 
@@ -75,21 +74,6 @@ export async function removeStudentHighscores(studentId, classIds = [], store = 
   return { removedEntries, inspectedLists: keys.size }
 }
 
-function verifyStudentPassword(auth, password) {
-  const provided = String(password || '')
-  if (!hasCurrentStudentPassword(auth)) return false
-  if (!provided) return false
-  const { passwordHash, passwordSalt } = auth
-  const actual = createHash('sha256').update(`${passwordSalt}:${provided}`).digest('hex')
-  if (actual === passwordHash) return true
-  const upper = provided.toUpperCase()
-  if (upper !== provided) {
-    const upperActual = createHash('sha256').update(`${passwordSalt}:${upper}`).digest('hex')
-    if (upperActual === passwordHash) return true
-  }
-  return false
-}
-
 export default async function handler(req, res) {
   withCors(res, {
     methods: 'GET,POST,OPTIONS',
@@ -133,7 +117,7 @@ export default async function handler(req, res) {
     } else {
       const studentPassword = String(req.headers['x-student-password'] || '')
       profile = await kv.get(`student:${String(studentId || '').toUpperCase()}`)
-      if (!isCurrentStudentProfile(profile) || profile.auth?.scheme === 'qr-pin-v1' || !verifyStudentPassword(profile.auth, studentPassword)) {
+      if (!isCurrentStudentProfile(profile) || !await verifyStudentCredential(profile, studentPassword)) {
         return res.status(401).json({ error: 'Unauthorized' })
       }
     }

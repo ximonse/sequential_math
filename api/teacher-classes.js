@@ -5,7 +5,9 @@
  */
 import { kv } from '@vercel/kv'
 import { randomBytes } from 'node:crypto'
-import { createClassRecord, deleteClassRecord, mutateClassRecord } from './_classStore.js'
+import { createClassLoginToken } from './_studentSession.js'
+import { createClassRecord, mutateClassRecord } from './_classStore.js'
+import { validateSchoolId } from './_schoolStore.js'
 import { getLiveAuthorizedClassIds, canAccessClass } from './_studentAccess.js'
 import {
   getLiveTeacherAuthPayload,
@@ -13,6 +15,7 @@ import {
   withCors
 } from './_helpers.js'
 
+import { hasSchoolScope, isSchoolAdminRole } from './_teacherRoles.js'
 export default async function handler(req, res) {
   withCors(res, {
     methods: 'GET,POST,PUT,DELETE,OPTIONS',
@@ -32,9 +35,10 @@ export default async function handler(req, res) {
       if (!Array.isArray(ids) || ids.length === 0) {
         return res.status(200).json({ classes: [] })
       }
-      const classes = await Promise.all(ids.map(id => kv.get(`class:${id}`)))
+      const classes = await Promise.all(ids.map(async id => { const current = await kv.get(`class:${id}`); if (!current || current.loginToken) return current; return mutateClassRecord(id, record => ({ ...record, loginToken: createClassLoginToken() })) }))
       const filtered = classes
         .filter(Boolean)
+        .filter(c => !c.archived)
         .filter(c => authorizedClassIds === null || authorizedClassIds.includes(c.id))
       return res.status(200).json({ classes: filtered })
     } catch (err) {
@@ -48,12 +52,16 @@ export default async function handler(req, res) {
     if (!name) return res.status(400).json({ error: 'name required' })
 
     const id = String(req.body?.id || '').trim() || randomBytes(6).toString('hex')
+    const schoolId = await validateSchoolId(req.body?.schoolId)
     const enabledExtras = Array.isArray(req.body?.enabledExtras)
       ? req.body.enabledExtras.map(String)
       : []
 
     const payload = await getLiveTeacherAuthPayload(req)
     const teacherId = payload?.teacherId || null
+    if (!isSchoolAdminRole(payload?.role, payload?.isAdmin)) return res.status(403).json({ error: 'Endast administratörer kan skapa klasser.' })
+    if (!schoolId) return res.status(400).json({ error: 'Välj en skola för klassen.' })
+    if (!hasSchoolScope(payload, schoolId)) return res.status(403).json({ error: 'Klassen måste ligga på en skola som är tilldelad dig.' })
     const teacherIds = teacherId ? [teacherId] : []
 
     // Prevent overwriting an existing class
@@ -66,7 +74,7 @@ export default async function handler(req, res) {
       id,
       name,
       teacherIds,
-      schoolId: req.body?.schoolId || '',
+      schoolId,
       enabledExtras,
       createdAt: req.body?.createdAt || Date.now()
     }
@@ -91,16 +99,22 @@ export default async function handler(req, res) {
 
   // ── DELETE ─────────────────────────────────────────────────────────────────
   if (req.method === 'PUT') {
+    const editAuth = await getLiveTeacherAuthPayload(req)
+    if (!isSchoolAdminRole(editAuth?.role, editAuth?.isAdmin)) return res.status(403).json({ error: 'Endast administratörer kan ändra klasser.' })
     const id = String(req.body?.id || '').trim()
     const name = String(req.body?.name || '').trim()
     if (!id || !name) return res.status(400).json({ error: 'id and name required' })
-    const auth = await getLiveTeacherAuthPayload(req)
     if (!await canAccessClass(req, id)) return res.status(403).json({ error: 'Not authorized for this class' })
-    if (req.body?.schoolId !== undefined && !auth?.isAdmin) return res.status(403).json({ error: 'Admin access required to change school' })
+    let nextSchoolId
+    if (req.body?.schoolId !== undefined) {
+      try { nextSchoolId = await validateSchoolId(req.body.schoolId) }
+      catch (error) { return res.status(error.status || 400).json({ error: error.message || 'Ogiltig skola.' }) }
+      if (!nextSchoolId || !hasSchoolScope(editAuth, nextSchoolId)) return res.status(403).json({ error: 'Klassen måste ligga på en skola som är tilldelad dig.' })
+    }
     try {
       const updated = await mutateClassRecord(id, current => {
         if (!current) throw Object.assign(new Error('Class not found'), { status: 404 })
-        return { ...current, name, ...(req.body?.schoolId !== undefined ? { schoolId: req.body.schoolId } : {}) }
+        return { ...current, name, ...(req.body?.schoolId !== undefined ? { schoolId: nextSchoolId } : {}) }
       })
       return res.status(200).json({ ok: true, class: updated })
     } catch (error) { return res.status(error.status || 500).json({ error: error.message || 'Storage error' }) }
@@ -108,39 +122,7 @@ export default async function handler(req, res) {
 
   // ── DELETE ─────────────────────────────────────────────────────────────────
   if (req.method === 'DELETE') {
-    const id = String(req.query?.id || req.body?.id || '').trim()
-    if (!id) return res.status(400).json({ error: 'id required' })
-
-    const auth = await getLiveTeacherAuthPayload(req)
-    if (!auth?.isAdmin) return res.status(403).json({ error: 'Admin access required to delete a class' })
-    const deletionKey = `class_deletion:${id}`
-    const priorDeletion = await kv.get(deletionKey)
-    const canResumeDeletion = Boolean(
-      auth?.isAdmin || (auth?.teacherId && Array.isArray(priorDeletion?.teacherIds)
-        && priorDeletion.teacherIds.includes(auth.teacherId))
-    )
-    const hasLiveAccess = authorizedClassIds === null || await canAccessClass(req, id)
-    if (!hasLiveAccess && !canResumeDeletion) {
-      return res.status(403).json({ error: 'Not authorized for this class' })
-    }
-
-    try {
-      // Keep a narrow retry capability before tombstoning removes live access.
-      if (hasLiveAccess && !priorDeletion) {
-        const record = await kv.get(`class:${id}`)
-        if (record) {
-          await kv.set(deletionKey, {
-            teacherIds: Array.isArray(record.teacherIds) ? record.teacherIds : [],
-            startedAt: Date.now()
-          })
-        }
-      }
-      await deleteClassRecord(id)
-    } catch (error) {
-      return res.status(error.status || 500).json({ error: error.status ? error.message : 'Storage error' })
-    }
-
-    return res.status(200).json({ ok: true })
+    return res.status(403).json({ error: 'Permanent klassradering görs av superadmin i administrationsvyn.' })
   }
 
   return res.status(405).json({ error: 'Method not allowed' })

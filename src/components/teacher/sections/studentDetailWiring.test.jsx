@@ -5,15 +5,14 @@ import DashboardLayout from './DashboardLayout'
 import { createStudentProfile } from '../../../lib/studentProfile'
 import { toTeacherListProfile } from '../../../lib/teacherListProfile'
 
-vi.mock('./DashboardHeaderBar', () => ({ default: () => null }))
+vi.mock('./DashboardHeaderBar', () => ({ default: ({ teacherName, teacherRole }) => <p>{teacherName} · {teacherRole}</p> }))
 vi.mock('./CloudSyncStatusPanel', () => ({ default: () => null }))
+vi.mock('./ClassOverviewPanel', () => ({ default: () => null }))
 vi.mock('./ClassFilterPanel', () => ({ default: () => null }))
 vi.mock('./StudentDetailPanel', () => ({ default: () => <p>Student detail is visible</p> }))
 vi.mock('../../../lib/teacherAuth', () => ({
-  isTeacherPrimaryAdmin: () => false,
-  getTeacherIdentity: () => ({ teacherId: 'teacher-test', displayName: 'Testlärare', isAdmin: false }),
-  getTeacherAccountKind: () => 'teacher',
-  getTeacherAccountLabel: () => 'Lärare'
+  isTeacherAdmin: () => false,
+  getTeacherIdentity: () => ({ teacherId: 'teacher-test', displayName: 'Karin Lärare', role: 'teacher', isAdmin: false })
 }))
 
 afterEach(() => vi.unstubAllGlobals())
@@ -26,6 +25,16 @@ describe('student detail wiring', () => {
       selectedClassIds={[]} supportRows={[]} classStats={{}} classFilterOptions={[]}
     />)
     expect(html).toContain('Student detail is visible')
+  })
+
+  it('shows the active teacher account and role in the header', () => {
+    vi.stubGlobal('localStorage', { getItem: () => null })
+    const html = renderToStaticMarkup(<DashboardLayout
+      isDirectStudentView={false} students={[]} filteredStudents={[]}
+      selectedClassIds={[]} supportRows={[]} classStats={{}} classFilterOptions={[]} filteredRows={[]}
+    />)
+    expect(html).toContain('Karin Lärare · Lärare')
+    expect(html).toContain('teacher-dashboard-surface--teacher')
   })
 
   it('preserves the collapsed preference in the ordinary dashboard', () => {

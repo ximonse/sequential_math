@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv'
 import { studentStoreError } from './_studentStore.js'
+import { isSuperAdminRole, normalizeTeacherRole } from './_teacherRoles.js'
 
 export async function validateSchoolId(value) {
   if (value === undefined || value === null || value === '') return ''
@@ -7,6 +8,18 @@ export async function validateSchoolId(value) {
   const record = await kv.get(`school:${value}`)
   if (!record || await kv.exists(`school_deleted:${value}`)) throw studentStoreError(400, 'Skolan finns inte. Hämta skolorna igen.')
   return value
+}
+
+export async function assertTeachersBelongToSchool(teacherIds, schoolId) {
+  const normalizedSchoolId = await validateSchoolId(schoolId)
+  if (!normalizedSchoolId || !Array.isArray(teacherIds) || teacherIds.length === 0) return normalizedSchoolId
+
+  const accounts = await Promise.all(teacherIds.map(id => kv.get(`teacher_account:${String(id)}`)))
+  const missingSchoolMembership = accounts.some(account => (
+    !account || (!isSuperAdminRole(normalizeTeacherRole(account.role, account.isAdmin)) && !(Array.isArray(account.schoolIds) && account.schoolIds.map(String).includes(normalizedSchoolId)))
+  ))
+  if (missingSchoolMembership) throw studentStoreError(400, 'Alla tilldelade lärare måste tillhöra klassens skola.')
+  return normalizedSchoolId
 }
 
 export async function listSchools() {

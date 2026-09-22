@@ -1,10 +1,10 @@
 # Reliability boundaries
 
-Verified from implementation during the local 2026-09-08 repair. See RELIABILITY_PLAN.md for verification limits and remaining work.
+Verified from implementation during the local 2026-09-08 repair. See `RELIABILITY_PLAN.md` for verification limits and remaining work.
 
 | Boundary | Producers / writers | Consumers | Invariant |
 | --- | --- | --- | --- |
-| Teacher list DTO | api/students.js, teacherListProfile.js | Dashboard, teacher analytics | Versioned read-only shape, no problemLog or password hash/salt; never pass to saveProfile. |
+| Teacher list DTO | `api/students.js`, `teacherListProfile.js` | Dashboard, teacher analytics | Versioned read-only shape, no problemLog or password hash/salt; never pass to saveProfile. |
 | Full profile | student GET, loadTeacherProfile | Student state, teacher details | Complete current profile schema. Details fetch this independently of the list. |
 | Enrollment | rosterClient -> student-roster | Class UI, student store | Each row is a distinct identity. Same request and row replay the same ID, QR secret and PIN; names never identify existing pupils. New named pupils receive a global three/four-word login code plus QR+PIN. The no-store response holds raw credentials only long enough for the teacher to download the A7-card PDF; the server stores only verifiers. The PDF renderer is part of the loaded teacher application, so issuing a card does not depend on fetching a new code chunk after a deployment transition. Existing group members are explicit IDs with source-class authorization. |
 | Pilot enrollment | PilotRosterPanel -> student-roster pilotCount | Class UI, student store | Creates profiles with a random-looking 128-bit ID, a child-safe three/four-word login code, QR secret and separate four-digit PIN. A teacher may later add the pupil's approved name without changing the login code. The request ID makes retries idempotent. The browser persists only retry metadata; raw credentials remain in React memory for immediate copy/print and are returned in a no-store response. Only credential verifiers are persisted server-side. Class membership is indexed in class_students:{classId}. |
@@ -34,43 +34,11 @@ run when cloud sync is enabled. It never imports historical pupil backups and
 is not present as an active route in a production build. Use `?reset=1` for a
 fresh empty profile; omission preserves the current synthetic replay.
 
-## Schools and pupil login (2026-09-10)
+## Organisation och inloggning
 
-Schools are separate records: `school:{id}` and `schools:index`. Creation uses
-the same atomic record/index boundary as classes. A live teacher may list
-schools, but only an administrator may create them. School metadata grants no
-access to pupils. Class ownership remains the authorization boundary.
-
-Classes have an optional `schoolId`, validated against the school register when
-created or changed. A pupil belongs to schools through their current classes and
-groups. There is no duplicated school field on the pupil profile. The stable
-student ID, password and training history do not change when a class is linked
-to a school or a pupil changes groups. Multiple memberships remain supported.
-
-Existing classes are not automatically assigned to an invented school. Missing
-school IDs appear as "Skola ej angiven"; administrators can select the correct
-school and explicitly save the association. Ordinary teachers can manage their
-own roster and rename their classes, but cannot create schools, change a class'
-school association or delete a class. New roster submissions include the
-selected school in their retry identity. Changing that selection during a
-partial retry must not silently reuse an enrollment for a different school.
-
-The `student-login` endpoint accepts only a name or stable student ID and
-password. It has no public school/class directory; GET returns 405 and
-school/class fields in login requests are rejected. After password verification
-it returns only the authenticated pupil's live class/group memberships, including
-the associated school name. A pupil without a live assigned group cannot continue.
-
-Explicit IDs take precedence over display names and use a direct record read.
-A unique display name resolves to its canonical ID after password verification.
-Duplicate names require the pupil's stable ID, including duplicates at different
-schools. The browser stores one selected assigned class for the active pupil
-session. Class configuration and game score submissions use that class; the
-highscore endpoint rejects a class not assigned to the pupil. Login never writes
-assignments or training data. Deleted pupils, deleted classes and unsupported
-profiles are rejected.
-
-Verification: real API handlers with synthetic KV data cover school creation,
-authorization, roster retry, school reassignment without profile mutation,
-name/ID login and rejection of pupil-supplied membership. Browser checks use
-intercepted synthetic API data; they do not modify live schools or pupil accounts.
+Den auktoritativa specifikationen finns i
+[ORGANISATION_OCH_INLOGGNING_KONTRAKT.md](ORGANISATION_OCH_INLOGGNING_KONTRAKT.md).
+Där definieras skol- och klassrelationer, rollernas behörighet samt hur
+personligt QR/PIN-kort, kodnamn/PIN och en kompletterande klasslänk når samma
+elevidentitet och sessionsgräns. Serverlagringen definieras i
+[DATALAGRING_KONTRAKT.md](DATALAGRING_KONTRAKT.md).

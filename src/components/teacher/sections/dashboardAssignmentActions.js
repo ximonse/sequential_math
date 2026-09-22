@@ -1,6 +1,4 @@
-import {
-  buildQuickAssignmentPreset
-} from './dashboardAssignmentRiskHelpers'
+import { buildQuickAssignmentPreset } from './dashboardAssignmentRiskHelpers'
 import { getPresetConfig } from './dashboardCoreHelpers'
 import {
   buildAssignmentLink,
@@ -13,12 +11,14 @@ import {
   getAssignments,
   setActiveAssignment
 } from '../../../lib/assignments'
+
 export function buildDashboardAssignmentActions({
   assignments,
   setAssignments,
   setDashboardStatus,
   setCopiedId,
-  setActiveAssignmentId
+  setActiveAssignmentId,
+  getSelectedClassLoginToken
 }) {
   const handleCreatePreset = (presetKey) => {
     const preset = getPresetConfig(presetKey)
@@ -31,11 +31,11 @@ export function buildDashboardAssignmentActions({
     setDashboardStatus(`Nytt uppdrag skapat: ${preset.title}`)
   }
 
-  const handleCopyAssignmentLink = async (assignmentId) => {
+  const handleCopyAssignmentLink = async (assignmentId, classLoginToken = getSelectedClassLoginToken()) => {
     const assignment = assignments.find(item => item.id === assignmentId) || getAssignmentById(assignmentId)
-    const link = buildAssignmentLink(assignmentId, assignment)
+    const link = buildAssignmentLink(assignmentId, assignment, classLoginToken)
     if (!link) {
-      setDashboardStatus('Kunde inte skapa länk för uppdraget.')
+      setDashboardStatus('Välj exakt en klass ovanför innan du delar uppdraget.')
       return
     }
     try {
@@ -86,7 +86,11 @@ export function buildDashboardAssignmentActions({
     setActiveAssignment(assignment.id)
     setActiveAssignmentId(assignment.id)
 
-    const link = buildAssignmentLink(assignment.id, assignment)
+    const link = buildAssignmentLink(assignment.id, assignment, getSelectedClassLoginToken())
+    if (!link) {
+      setDashboardStatus(`Nytt uppdrag skapat och aktiverat: ${assignment.title}. Välj exakt en klass innan du delar det.`)
+      return
+    }
     try {
       await navigator.clipboard.writeText(link)
       setCopiedId(assignment.id)

@@ -1,6 +1,7 @@
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import { kv } from '@vercel/kv'
 import { isCurrentStudentProfile } from '../src/lib/studentProfileContract.js'
+import { normalizeStudentId } from '../src/lib/storageStudentId.js'
 import { isStudentDeleted } from './_studentStore.js'
 
 export const STUDENT_ID_BYTES = 16
@@ -11,6 +12,9 @@ export const STUDENT_LOGIN_WINDOW_SECONDS = 10 * 60
 export const MAX_STUDENT_LOGIN_FAILURES_PER_IP = 100
 const SCRYPT_OPTIONS = { N: 32768, r: 8, p: 1, maxmem: 64 * 1024 * 1024 }
 const DUMMY_PIN_VERIFIER = createPinVerifier('0000')
+const REMEMBER_TTL_SECONDS = 60 * 60 * 24 * 30
+const TEMPORARY_TTL_SECONDS = 60 * 60 * 12
+const legacySessionKey = token => `student_session:${token}`
 const RATE_LIMIT_SCRIPT = `
 local value = redis.call('INCR', KEYS[1])
 if value == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end
@@ -91,7 +95,8 @@ export function setStudentSessionCookie(res, sessionId, maxAge = STUDENT_SESSION
 export function requestIp(req) { return String(req?.headers?.['x-forwarded-for'] || req?.socket?.remoteAddress || 'unknown').split(',')[0].trim().slice(0, 100) }
 function isSameVercelPreviewOrigin(req, origin) {
   if (process.env.VERCEL_ENV !== 'preview') return false
-  const host = String(req?.headers?.host || '').trim().toLowerCase().replace(/:\d+$/, '')
+  const forwardedHost = String(req?.headers?.['x-forwarded-host'] || '').split(',')[0]
+  const host = String(forwardedHost || req?.headers?.host || '').trim().toLowerCase().replace(/:\d+$/, '')
   return /^[a-z0-9-]+\.vercel\.app$/.test(host) && origin === `https://${host}`
 }
 export function requestOriginIsTrusted(req) {
@@ -144,3 +149,21 @@ export async function getLiveStudentSession(req, { store = kv } = {}) {
 export async function revokeStudentSession(req, { store = kv } = {}) { const id = readCookie(req, '__Host-student-session'); if (id) await store.del(`student_session:${id}`) }
 export function hasStudentCsrf(session, req) { return safeEqual(hashQrSecret(req?.headers?.['x-csrf-token']), session?.csrfHash) }
 export function studentIdentityDto(profile) { return { studentId: profile.studentId, name: String(profile.name || profile.displayAlias || '').trim(), displayAlias: String(profile.displayAlias || '').trim(), classIds: [...new Set([profile?.classId, ...(profile?.classIds || [])].map(String).filter(Boolean))], grade: Number(profile.grade) || null } }
+
+export function createClassLoginToken() {
+  return randomBytes(24).toString('base64url')
+}
+
+export async function issueStudentSession(studentId, remember) {
+  const normalizedId = normalizeStudentId(studentId)
+  if (!normalizedId) return ''
+  const token = `st_${randomBytes(32).toString('base64url')}`
+  await kv.set(legacySessionKey(token), normalizedId, { ex: remember ? REMEMBER_TTL_SECONDS : TEMPORARY_TTL_SECONDS })
+  return token
+}
+
+export async function verifyStudentSession(studentId, token) {
+  const normalizedId = normalizeStudentId(studentId)
+  const value = await kv.get(legacySessionKey(String(token || '')))
+  return Boolean(normalizedId && value === normalizedId)
+}

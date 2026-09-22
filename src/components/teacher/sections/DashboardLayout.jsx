@@ -5,11 +5,12 @@ import ClassManagementPanel from './ClassManagementPanel'
 import ClassFilterPanel from './ClassFilterPanel'
 import ClassMisconceptionHeatmap from './ClassMisconceptionHeatmap'
 import ClassMasteryLevelPanel from './ClassMasteryLevelPanel'
+import ClassStatsCards from './ClassStatsCards'
+import CollapsibleSection from './CollapsibleSection'
 import PauseGameHighscorePanel from './PauseGameHighscorePanel'
 import DifficultyAnalysisPanel from './DifficultyAnalysisPanel'
 import DataQualityUsagePanel from './DataQualityUsagePanel'
 import DashboardHeaderBar from './DashboardHeaderBar'
-import CloudSyncStatusPanel from './CloudSyncStatusPanel'
 import InactivityAndClassLevelPanel from './InactivityAndClassLevelPanel'
 import PasswordResetPanel from './PasswordResetPanel'
 import ResultsOverviewPanel from './ResultsOverviewPanel'
@@ -17,13 +18,14 @@ import StudentDetailPanel from './StudentDetailPanel'
 import StudentDetailTrainingPriorityPanel from './StudentDetailTrainingPriorityPanel'
 import SupportPriorityPanel from './SupportPriorityPanel'
 import TableSelectionAndDevelopmentPanel from './TableSelectionAndDevelopmentPanel'
-import TeacherAdminPanel from './TeacherAdminPanel'
+import DashboardWorkspaceNavigation from './DashboardWorkspaceNavigation'
 import TeacherPasswordNoticePanel from './TeacherPasswordNoticePanel'
 import TicketSectionContainer from './TicketSectionContainer'
 import TableStickyStatusPanel from './TableStickyStatusPanel'
 import { ActivityBadge, RiskBadge } from './dashboardStatusBadges'
 import { getOperationLabel } from '../../../lib/operations'
-import { getTeacherAccountKind, getTeacherAccountLabel, getTeacherIdentity, isTeacherPrimaryAdmin } from '../../../lib/teacherAuth'
+import { getTeacherIdentity, isTeacherAdmin } from '../../../lib/teacherAuth'
+import { getTeacherRoleLabel } from '../../../lib/teacherRoles'
 
 const PANEL_DEFS = [
   { id: 'support',     title: 'Behöver stöd nu' },
@@ -43,19 +45,19 @@ const PANEL_DEFS = [
   { id: 'management',  title: 'Klasshantering' },
   { id: 'password',    title: 'Lösenordsåterställning' },
   { id: 'pausegames',  title: 'Pausspel — Highscore' },
-  { id: 'admin',       title: 'Administration', adminOnly: true },
 ]
+
+const WORKSPACE_PANEL_IDS = {
+  classes: ['support', 'overview', 'detail', 'management', 'password'],
+  work: ['assignments', 'tickets'],
+  knowledge: ['mastery', 'sticky', 'heatmap', 'difficulty-analysis', 'training-priority', 'tabledev'],
+  statistics: ['results', 'inactivity', 'dataquality']
+}
 
 const DEFAULT_COLLAPSED = Object.fromEntries(
   PANEL_DEFS.map(({ id }) => [id, !['support', 'overview'].includes(id)])
 )
 const LS_COLLAPSED_KEY = 'mathapp_dashboard_panel_collapsed_v2'
-const WORKSPACES = [
-  { id: 'progress', label: 'Framsteg', description: 'Kunskapsområden och elever', panels: ['mastery', 'sticky', 'overview', 'detail', 'tabledev'] },
-  { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'tickets'] },
-  { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality'] },
-  { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management', 'password', 'pausegames', 'admin'] }
-]
 
 export default function DashboardLayout({
   isDirectStudentView,
@@ -69,14 +71,13 @@ export default function DashboardLayout({
   dashboardStatus,
   isCloudRefreshBusy,
   handleCloudRefreshNow,
-  formatSyncTimestamp,
-  getCloudSyncSourceLabel,
   selectedClassIds,
   students,
   filteredStudents,
   classFilterOptions,
   clearClassFilter,
   handleToggleClassFilter,
+  classStats,
   dataQualitySummary,
   usageInsights,
   formatDuration,
@@ -169,16 +170,22 @@ export default function DashboardLayout({
   handleResetStudentPassword,
   passwordResetBusyId
 }) {
-  const teacherIsPrimaryAdmin = isTeacherPrimaryAdmin()
+  const teacherIsAdmin = isTeacherAdmin()
   const teacherIdentity = getTeacherIdentity()
-  const teacherAccountKind = getTeacherAccountKind(teacherIdentity)
-  const teacherSurfaceClass = teacherAccountKind === 'primary-admin'
-    ? 'teacher-role-surface teacher-role-surface--primary-admin'
-    : teacherAccountKind === 'admin'
-      ? 'teacher-role-surface teacher-role-surface--admin'
-      : 'teacher-role-surface teacher-role-surface--teacher'
-  const visiblePanelDefs = PANEL_DEFS.filter(p => !p.adminOnly || teacherIsPrimaryAdmin)
-  const [activeWorkspace, setActiveWorkspace] = useState('progress')
+  const teacherName = String(teacherIdentity.displayName || 'Lärare').trim() || 'Lärare'
+  const teacherRole = getTeacherRoleLabel(teacherIdentity.role)
+  const dashboardTabKey = `mathapp_dashboard_tab_${teacherIdentity.teacherId || 'unknown'}`
+  const [activeTab, setActiveTab] = useState(() => {
+    const stored = localStorage.getItem(dashboardTabKey)
+    return WORKSPACE_PANEL_IDS[stored] ? stored : 'classes'
+  })
+  const activePanelIds = WORKSPACE_PANEL_IDS[activeTab] || WORKSPACE_PANEL_IDS.classes
+  const visiblePanelDefs = PANEL_DEFS.filter(panel => activePanelIds.includes(panel.id))
+  const surfaceClass = teacherIdentity.role === 'super_admin'
+    ? 'teacher-dashboard-surface--super-admin'
+    : teacherIsAdmin
+       ? 'teacher-dashboard-surface--admin'
+       : 'teacher-dashboard-surface--teacher'
 
   const [collapsed, setCollapsed] = useState(() => {
     const defaults = {
@@ -197,10 +204,15 @@ export default function DashboardLayout({
   })
 
   useEffect(() => {
-    if (!isDirectStudentView) return
-    setActiveWorkspace('progress')
-    setCollapsed(prev => ({ ...prev, detail: false }))
+    if (isDirectStudentView) {
+      setActiveTab('classes')
+      setCollapsed(prev => ({ ...prev, detail: false }))
+    }
   }, [isDirectStudentView, detailStudentId])
+
+  useEffect(() => {
+    localStorage.setItem(dashboardTabKey, activeTab)
+  }, [activeTab, dashboardTabKey])
 
   function renderPanelContent(id) {
     if (id === 'overview') return (
@@ -361,6 +373,8 @@ export default function DashboardLayout({
         onActivateForAll={handleActivateForAll}
         onDeleteAssignment={handleDeleteAssignment}
         onCopyAssignmentLink={handleCopyAssignmentLink}
+        classes={classes}
+        selectedClassIds={selectedClassIds}
       />
     )
     if (id === 'tickets') return (
@@ -379,7 +393,7 @@ export default function DashboardLayout({
     )
     if (id === 'management') return (
       <>
-        {teacherIsPrimaryAdmin ? <TeacherPasswordNoticePanel /> : null}
+        {teacherIdentity.role === 'super_admin' ? <TeacherPasswordNoticePanel /> : null}
         <ClassManagementPanel
           classNameInput={classNameInput}
           onSetClassNameInput={setClassNameInput}
@@ -399,11 +413,9 @@ export default function DashboardLayout({
           onDeleteClass={handleDeleteClass}
           onRenameClass={handleRenameClass}
           onSaveClassExtras={handleSaveClassExtras}
+          onStatusChange={setDashboardStatus}
           onOpenStudentDetail={handleOpenStudentDetail}
-          teacherClassIds={teacherIdentity.classIds || []}
-          canManageSchools={teacherIdentity.isAdmin}
-          canDeleteClasses={teacherIdentity.isAdmin}
-          canResetStudentAccounts={teacherIsPrimaryAdmin}
+          canResetStudentAccounts={teacherIdentity.role === 'super_admin'}
         />
       </>
     )
@@ -427,64 +439,69 @@ export default function DashboardLayout({
     if (id === 'pausegames') return (
       <PauseGameHighscorePanel selectedClassIds={selectedClassIds} />
     )
-    if (id === 'admin') return <TeacherAdminPanel />
     return null
   }
 
   return (
-    <div className={`min-h-screen ${teacherSurfaceClass} py-4`}>
-      <div className="max-w-7xl mx-auto px-3">
+    <div className={`teacher-dashboard-surface min-h-screen pb-5 pt-14 sm:pb-6 sm:pt-16 ${surfaceClass}`}>
+      <div className="max-w-6xl mx-auto px-3 sm:px-4">
         <DashboardHeaderBar
           isDirectStudentView={isDirectStudentView}
           detailStudentName={detailStudentProfile?.name || ''}
-          onJumpToPasswordReset={handleJumpToPasswordReset}
-          onRefresh={handleRefresh}
-          onGoDashboard={() => navigate('/teacher')}
-          onLogout={handleLogout}
-          accountName={teacherIdentity.displayName}
-          accountLabel={getTeacherAccountLabel(teacherIdentity)}
-          cloudSyncStatus={cloudSyncStatus}
-          isCloudRefreshBusy={isCloudRefreshBusy}
-          onRefreshCloud={() => { void handleCloudRefreshNow() }}
-        />
-
-        <CloudSyncStatusPanel
+          teacherName={teacherName}
+          teacherRole={teacherRole}
+          isAdmin={teacherIsAdmin}
           cloudSyncStatus={cloudSyncStatus}
           isCloudRefreshBusy={isCloudRefreshBusy}
           onRefreshNow={() => { void handleCloudRefreshNow() }}
-          formatSyncTimestamp={formatSyncTimestamp}
-          getCloudSyncSourceLabel={getCloudSyncSourceLabel}
+          onJumpToPasswordReset={() => {
+            setActiveTab('classes')
+            window.setTimeout(handleJumpToPasswordReset, 0)
+          }}
+          onRefresh={handleRefresh}
+          onGoDashboard={() => navigate('/teacher')}
+          onGoAdmin={() => navigate('/teacher/admin')}
+          onLogout={handleLogout}
         />
 
         <div className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
 
-        <div className="grid gap-3 lg:grid-cols-[13rem_minmax(0,1fr)]">
-          <aside className="rounded-lg bg-slate-800 p-2 text-slate-100 lg:sticky lg:top-3 lg:h-fit">
-            <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">Arbetsläge</p>
-            <nav className="grid gap-1" aria-label="Lärarvy">
-              {WORKSPACES.map(workspace => (
-                <button key={workspace.id} type="button" onClick={() => setActiveWorkspace(workspace.id)}
-                  className={`rounded px-3 py-2 text-left text-sm transition-colors ${activeWorkspace === workspace.id ? 'bg-amber-300 font-semibold text-slate-900' : 'text-slate-100 hover:bg-slate-700'}`}>
-                  {workspace.label}<span className="mt-0.5 block text-[11px] font-normal opacity-75">{workspace.description}</span>
-                </button>
-              ))}
-            </nav>
-          </aside>
-          <div className="min-w-0">
-          <ClassFilterPanel
-            selectedClassIds={selectedClassIds}
-            studentsCount={students.length}
-            filteredStudentsCount={filteredStudents.length}
-            classFilterOptions={classFilterOptions}
-            onClearClassFilter={clearClassFilter}
-            onToggleClassFilter={handleToggleClassFilter}
-          />
+        <div className="flex flex-col gap-3">
+          <div className="dashboard-context-grid">
+            <ClassFilterPanel
+              selectedClassIds={selectedClassIds}
+              studentsCount={students.length}
+              filteredStudentsCount={filteredStudents.length}
+              classFilterOptions={classFilterOptions}
+              onClearClassFilter={clearClassFilter}
+              onToggleClassFilter={handleToggleClassFilter}
+            />
 
-          {WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
-            .filter(id => visiblePanelDefs.some(panel => panel.id === id))
-            .filter(id => id !== 'detail' || isDirectStudentView || !collapsed.detail)
-            .map(id => <div key={id}>{renderPanelContent(id)}</div>)}
+            <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
           </div>
+
+          {!isDirectStudentView && (
+            <DashboardWorkspaceNavigation activeTab={activeTab} onChange={setActiveTab} />
+          )}
+
+          {visiblePanelDefs.map(({ id, title }) => (
+            <CollapsibleSection
+              key={id}
+              title={title}
+              collapsed={!!collapsed[id]}
+              onToggle={() => toggleCollapsed(id)}
+            >
+              {renderPanelContent(id)}
+            </CollapsibleSection>
+          ))}
+
+          <CollapsibleSection
+            title="Pausspel — Highscore"
+            collapsed={!!collapsed.pausegames}
+            onToggle={() => toggleCollapsed('pausegames')}
+          >
+            {renderPanelContent('pausegames')}
+          </CollapsibleSection>
         </div>
       </div>
     </div>

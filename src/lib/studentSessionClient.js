@@ -51,6 +51,10 @@ function rememberSession(data) {
   return { ok: true, student: data.student }
 }
 
+export function acceptStudentSessionPayload(data) {
+  return rememberSession(data)
+}
+
 export async function loginStudentSession({ studentId, qrSecret, loginCode, pin }) {
   clearCsrfToken()
   const result = await requestSession('/api/student-session', {

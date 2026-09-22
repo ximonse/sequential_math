@@ -12,6 +12,7 @@ import {
   verifyTeacherPassword,
   withCors
 } from './_helpers.js'
+import { normalizeTeacherRole } from './_teacherRoles.js'
 
 async function findTeacherByUsername(username) {
   const normalized = String(username || '').trim().toLowerCase()
@@ -48,6 +49,9 @@ export default async function handler(req, res) {
   // 1. Try per-teacher account from KV
   const account = await findTeacherByUsername(username)
   if (account) {
+    if (account.disabled === true) {
+      return res.status(403).json({ error: 'Account disabled', code: 'ACCOUNT_DISABLED' })
+    }
     const valid = verifyTeacherPassword(password, account.passwordHash, account.passwordSalt)
     if (!valid) {
       return res.status(401).json({ error: 'Unauthorized', code: 'INVALID_PASSWORD' })
@@ -57,7 +61,7 @@ export default async function handler(req, res) {
     const session = createTeacherSessionToken({
       teacherId: account.id,
       classIds,
-      isAdmin: Boolean(account.isAdmin),
+      role: normalizeTeacherRole(account.role, account.isAdmin),
       sessionVersion: account.sessionVersion
     })
     if (!session) {
@@ -68,7 +72,8 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'no-store')
 
     const configuredPrimaryUsername = String(process.env.PRIMARY_ADMIN_USERNAME || '').trim().toLowerCase()
-    const isPrimaryAdmin = Boolean(account.isPrimaryAdmin) || (
+    const normalizedRole = normalizeTeacherRole(account.role, account.isAdmin)
+    const isPrimaryAdmin = normalizedRole === 'super_admin' || Boolean(account.isPrimaryAdmin) || (
       Boolean(account.isAdmin) && (
         (configuredPrimaryUsername && String(account.username || '').trim().toLowerCase() === configuredPrimaryUsername) ||
         String(account.id || '').toLowerCase() === 'admin'
@@ -82,7 +87,8 @@ export default async function handler(req, res) {
       teacherId: account.id,
       displayName: account.displayName || account.username,
       classIds,
-      isAdmin: Boolean(account.isAdmin),
+      role: normalizedRole,
+      isAdmin: normalizedRole !== 'teacher',
       isPrimaryAdmin
     })
   }

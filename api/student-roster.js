@@ -5,10 +5,12 @@ import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass, assertTeacherStudentAccess } from './_studentAccess.js'
 import { createClassRecord } from './_classStore.js'
 import { createStudentRecord, mutateStudentRecord, studentStoreError } from './_studentStore.js'
-import { createPilotStudentAuth, reserveStudentLoginCode } from './_studentSession.js'
+import { createClassLoginToken, createPilotStudentAuth, reserveStudentLoginCode } from './_studentSession.js'
 import { generateDisplayAlias, generateStudentPin } from './_studentAlias.js'
+import { hasSchoolScope, isSchoolAdminRole } from './_teacherRoles.js'
 
 const digest = text => createHash('sha256').update(text).digest('hex')
+const normalizeRosterName = value => String(value || '').normalize('NFC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('sv')
 
 function pilotEnrollmentSecret() {
   const secret = String(process.env.PILOT_ENROLLMENT_SECRET || '')
@@ -85,6 +87,9 @@ export default async function handler(req, res) {
       throw studentStoreError(400, 'Ange 1–100 elever med giltiga namn.')
     }
     const schoolId = classId ? '' : await validateSchoolId(req.body?.schoolId)
+    if (!classId && !isSchoolAdminRole(teacher.role, teacher.isAdmin)) throw studentStoreError(403, 'Endast administratörer kan skapa klasser.')
+    if (!classId && !schoolId) throw studentStoreError(400, 'Välj en skola för klassen.')
+    if (!classId && !hasSchoolScope(teacher, schoolId)) throw studentStoreError(403, 'Klassen måste ligga på en skola som är tilldelad dig.')
     const owner = teacher.teacherId || 'admin'
     const enrollmentKey = digest(JSON.stringify([owner, requestId, classId || className, usesPilotRoster ? { pilotCount } : names, grade, existingStudentIds, ...(schoolId ? [schoolId] : [])]))
     let target
@@ -98,7 +103,7 @@ export default async function handler(req, res) {
       target = await kv.get(`class:${id}`)
       if (target && target.enrollmentKey !== enrollmentKey) throw studentStoreError(409, 'Klasslistan har ändrats under ett pågående försök.')
       if (!target) {
-        try { target = await createClassRecord({ id, name, schoolId, teacherIds: teacher.teacherId ? [teacher.teacherId] : [], enabledExtras: [], createdAt: Date.now(), enrollmentKey }) }
+        try { target = await createClassRecord({ id, name, schoolId, teacherIds: teacher.teacherId ? [teacher.teacherId] : [], enabledExtras: [], loginToken: createClassLoginToken(), createdAt: Date.now(), enrollmentKey }) }
         catch (error) {
           if (error.status !== 409) throw error
           target = await kv.get(`class:${id}`)
@@ -106,6 +111,18 @@ export default async function handler(req, res) {
         }
       }
       if (!await canAccessClass(req, target.id)) throw studentStoreError(403, 'Not authorized for this class')
+    }
+    const normalizedIncomingNames = names.map(normalizeRosterName)
+    if (new Set(normalizedIncomingNames).size !== normalizedIncomingNames.length) {
+      throw studentStoreError(409, 'Två elever i samma klass kan inte ha samma namn. Skriv ett tydligare namn i listan.')
+    }
+    const existingIds = await kv.smembers('students:index') || []
+    const existingProfiles = await Promise.all(existingIds.map(id => kv.get(`student:${String(id).toUpperCase()}`)))
+    const existingNames = new Set(existingProfiles.filter(Boolean)
+      .filter(profile => [profile.classId, ...(profile.classIds || [])].includes(target.id) && profile.enrollmentKey !== enrollmentKey)
+      .map(profile => normalizeRosterName(profile.name)))
+    if (normalizedIncomingNames.some(name => existingNames.has(name))) {
+      throw studentStoreError(409, 'Namnet finns redan i den här klassen. Skriv ett tydligare namn i listan.')
     }
     const results = []
     if (usesPilotRoster) {

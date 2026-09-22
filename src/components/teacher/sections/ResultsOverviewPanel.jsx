@@ -371,11 +371,14 @@ export default function ResultsOverviewPanel({
                         Mix
                       </button>
                       <button
-                        onClick={() => onResetStudentPassword(row.studentId)}
+                        onClick={() => {
+                          const code = window.prompt('Ny fyrsiffrig kod:')
+                          if (code !== null) onResetStudentPassword(row.studentId, code)
+                        }}
                         disabled={passwordResetBusyId === row.studentId}
                         className="px-2 py-1 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-200 text-gray-700 rounded text-xs"
                       >
-                        {passwordResetBusyId === row.studentId ? 'Nollställer...' : 'Nollställ lösen'}
+                        {passwordResetBusyId === row.studentId ? 'Sparar...' : 'Byt kod'}
                       </button>
                     </div>
                   </td>

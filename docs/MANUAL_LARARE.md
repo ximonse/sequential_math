@@ -11,47 +11,50 @@ Detaljerad datatolkning (kolumn för kolumn) finns i separata dokument:
 ## 1. Logga in
 
 1. Gå till startsidan och klicka `Lärare? Logga in`.
-2. Ange lärarlösenord.
+2. Ange ditt användarnamn och lösenord.
 3. Du kommer till `/teacher`.
 
-Notera:
-- Lösenordet styrs av `TEACHER_API_PASSWORD` i Vercel.
-- Om lösenord saknas i servermiljö visas felmeddelande i lärarinloggning.
+Lärarkontot skapas av administratören. Kontakta administratören om du saknar konto, har glömt lösenordet eller behöver åtkomst till en annan skola eller klass.
+
+Högst upp i lärarvyn visas ditt kontonamn och din roll. Bakgrunden är ljusgrön för **Lärare**, ljusorange för **Skoladministratör** och ljuslila för **Huvudadministratör**, så att det syns direkt vilken behörighet du använder.
 
 ## 2. Första setup
 
-1. Skapa klass under sektionen `Klasser`.
-2. Klistra in elevlistan med en elev per rad, eller separera elever med kommatecken eller semikolon.
+1. Välj en klass som administratören har tilldelat dig.
+2. Öppna **Klasser & elever** och klistra in elevlistan med en elev per rad, eller separera elever med kommatecken eller semikolon.
 3. Kontrollera att elever dyker upp i tabellerna.
-4. Välj klassfilter högst upp (`Urval: klasser`) innan du analyserar data.
+4. Välj klassfilter högst upp innan du analyserar data.
 
 Notera:
-- Toppfiltret styr hela dashboarden (en eller flera klasser/grupper).
+- Toppfiltret styr hela dashboarden. Servergrupper visas som egna val tillsammans med klasser och sparas som förval.
 - En elev kan ligga i flera klasser/grupper.
 
 ### Skolor och klasser
 
-Lärare kan skapa och arbeta med sina egna klasser/grupper och elevlistor, men
-kan inte lägga till skolor, koppla en klass till skola eller ta bort en klass.
-Be en administratör göra de ändringarna om det behövs.
+Administratören skapar skolor och tilldelar varje lärare en eller flera skolor. Du ser bara dina direkt tilldelade klasser. Behöver du en ny klass eller skola kontaktar du administratören.
 
-Administratörer väljer skola vid klasskapande och kan koppla en befintlig klass
-som visas som `Skola ej angiven`. Det ändrar inte elevernas ID, inloggning eller
-träningshistorik.
+Varje klass har ett oföränderligt **klass-ID**. Klassnamnet kan däremot ändras, exempelvis `4B` till `5B`, utan att elevernas ID, träningshistorik eller elevlänk ändras. Samma klassnamn kan bara finnas en gång på samma skola.
 
-Eleven skriver sitt namn eller sitt elev-ID och lösenord. Efter godkänd
-inloggning väljer eleven en av de skolor och klasser/grupper som är tilldelade
-på elevkontot. Andra elevers klasser visas aldrig. Valet styr den aktiva
-gruppens inställningar och highscore-lista. Startlösenordet är namnet exakt
-som det skrevs vid skapandet. Vid samma namn på flera konton använder eleven
-sitt unika elev-ID i samma inloggningsfält.
+Administratören tilldelar ansvariga lärare under **Administration → Klasser**. En lärare får då se och arbeta med klassens elever, resultat, elevkoder, klasslänk och inställningar.
+
+Elever använder i första hand sitt personliga QR-kort och PIN, med kodnamn och
+PIN som reservväg. En klasspecifik länk kan delas som en kompletterande ingång
+men ska alltid leda till samma personliga elevkonto. Elever väljer aldrig själva
+skola eller klass.
 
 ### Radera en elev
 
-1. Öppna eleven under `Elevprofil`.
-2. Välj `Radera elev` och bekräfta. Elevens profil och all historik raderas permanent.
+Permanent radering görs av skoladmin eller huvudadministratör. Som lärare kan du flytta eleven mellan klasser på samma skola och ändra elevens kod.
 
-## 3. Daglig rutin (rekommenderat)
+### Nytt läsår
+
+Administratören använder **Administration → Klasser → Nytt läsår**. Välj skola och kontrollera förhandsgranskningen innan `Genomför årsbyte`. Namn som börjar på årskurs 4–8 höjs automatiskt, till exempel `4B` → `5B`. Om ett nytt namn skulle krocka med en befintlig klass stoppas årsbytet tills det är löst.
+
+## 3. Huvuddelar
+
+Lärarvyn är indelad i **Klasser & elever**, **Uppdrag & exit tickets**, **Tabeller & kunskapsområden** och **Statistik**. Klassurvalet högst upp styr innehållet och sparas på enheten. Highscore ligger sist på sidan.
+
+## 4. Daglig rutin (rekommenderat)
 
 1. Kontrollera `Klass/gruppvy - snabbstatus` för vem som är aktiv nu.
    Du kan klicka kolumnrubrikerna för sortering (stigande/fallande).
@@ -101,7 +104,7 @@ I sektionen `Uppdrag via länk` kan du:
 3. Aktivera det för alla.
 4. Dela länken till elever.
 
-Elever som loggar in via länken hamnar i rätt läge direkt, även på annan enhet/browser, eftersom länken innehåller ett säkert uppdragspayload.
+Elever som loggar in via länken hamnar i rätt läge direkt, även på annan enhet/browser, eftersom länken innehåller ett säkert uppdragspayload. Uppdrag, aktivt uppdrag, ticketmallar och utskick sparas även på servern för ditt lärarkonto. Äldre material från webbläsaren importeras automatiskt första gången.
 
 ## 8. Ticket (start/exit)
 
@@ -184,3 +187,17 @@ QR-kort, PIN-koder, kodnamn, tickets och övrig elevdata. Elevens förnamn och
 klasstillhörighet behålls. Nya QR-kort och PIN-koder visas direkt som
 elevkort: hämta PDF:en innan sidan lämnas. Lärare och vanliga administratörer
 kan inte använda funktionen, och lärar-/admin-/huvudadminkonton påverkas inte.
+
+### Klasslänk och inloggningssignal
+
+En klasslänk eller dess QR-kod kan delas som en gemensam ingång. Den ersätter
+inte elevens personliga kort eller identitet. Dela alltid personliga PIN-koder
+enskilt.
+
+När en elev inte kommer in: kontrollera först att rätt personligt kort och PIN
+används. Välj därefter eleven i din tilldelade klass för att se registrerade
+inloggningsförsök eller utfärda ett nytt kort. Ett nytt kort gör det föregående
+kortet ogiltigt.
+
+Eleven väljer aldrig skola eller klass. Klasslänken avgränsar ingången men får
+inte skapa en parallell elevprofil eller träningshistorik.

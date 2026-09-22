@@ -184,6 +184,7 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
   const result = {
     observationId,
     problemId: problem.id,
+    classIdAtAttempt: String(options.classIdAtAttempt || profile.classId || profile.classIds?.[0] || '').trim() || null,
     domain: selection.domain,
     skill: selection.skill,
     contentSkill: evidence.contentSkill || selection.skill,

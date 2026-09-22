@@ -1,5 +1,6 @@
 const TICKET_TEMPLATES_KEY = 'mathapp_ticket_templates_v1'
 const TICKET_DISPATCHES_KEY = 'mathapp_ticket_dispatches_v1'
+import { mergeWorkspaceItems, saveTeacherWorkspacePatch } from './teacherWorkspaceSync'
 import {
   fromBase64Url,
   normalizeTextAnswer,
@@ -7,23 +8,43 @@ import {
   toBase64Url
 } from './ticketEncodingHelpers'
 
-function readJsonList(key) {
-  const raw = localStorage.getItem(key)
-  if (!raw) return []
+const ticketCache = new Map([
+  [TICKET_TEMPLATES_KEY, []],
+  [TICKET_DISPATCHES_KEY, []]
+])
+
+function readLegacyJsonList(key) {
   try {
-    const parsed = JSON.parse(raw)
+    const parsed = JSON.parse(localStorage.getItem(key) || '[]')
     return Array.isArray(parsed) ? parsed : []
   } catch {
     return []
   }
 }
 
-function writeJsonList(key, items) {
-  localStorage.setItem(key, JSON.stringify(Array.isArray(items) ? items : []))
+function readJsonList(key) {
+  return [...(ticketCache.get(key) || [])]
 }
 
+function writeJsonList(key, items, { sync = true } = {}) {
+  const normalized = Array.isArray(items) ? items : []
+  ticketCache.set(key, normalized)
+  if (!sync) return
+  if (key === TICKET_TEMPLATES_KEY) void saveTeacherWorkspacePatch({ ticketTemplates: normalized })
+  if (key === TICKET_DISPATCHES_KEY) void saveTeacherWorkspacePatch({ ticketDispatches: normalized })
+}
 function makeId(prefix) {
   return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+}
+
+export function hydrateTicketsFromServer(workspace) {
+  const ticketTemplates = mergeWorkspaceItems(readLegacyJsonList(TICKET_TEMPLATES_KEY), workspace?.ticketTemplates || [])
+  const ticketDispatches = mergeWorkspaceItems(readLegacyJsonList(TICKET_DISPATCHES_KEY), workspace?.ticketDispatches || [])
+  writeJsonList(TICKET_TEMPLATES_KEY, ticketTemplates, { sync: false })
+  writeJsonList(TICKET_DISPATCHES_KEY, ticketDispatches, { sync: false })
+  // A legacy browser copy is imported once and is never written again.
+  void saveTeacherWorkspacePatch({ ticketTemplates, ticketDispatches })
+  return { ticketTemplates, ticketDispatches }
 }
 
 export function getTicketTemplates() {

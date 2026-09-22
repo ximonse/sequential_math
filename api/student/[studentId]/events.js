@@ -1,13 +1,11 @@
 import { mutateStudentRecord, studentStoreError } from '../../_studentStore.js'
 import { assertTeacherStudentAccess } from '../../_studentAccess.js'
-import { createHash } from 'node:crypto'
+import { verifyStudentCredential } from '../../_studentPassword.js'
 import {
   isLiveTeacherApiAuthorized,
-  secureCompare,
   withCors
 } from '../../_helpers.js'
 import {
-  hasCurrentStudentPassword,
   isCurrentStudentProfile
 } from '../../../src/lib/studentProfileContract.js'
 import { isValidTrainingContext } from '../../../src/lib/trainingContext.js'
@@ -32,22 +30,12 @@ function isRecord(value) {
   return Boolean(value && typeof value === 'object' && !Array.isArray(value))
 }
 
-function hashPasswordWithSalt(password, salt) {
-  return createHash('sha256')
-    .update(`${salt}:${String(password || '')}`)
-    .digest('hex')
-}
-
-function verifyPasswordAgainstAuth(auth, studentPassword) {
-  const provided = String(studentPassword || '')
-  if (!provided) return false
-  if (hasCurrentStudentPassword(auth)) {
-    const expected = String(auth.passwordHash)
-    const salt = String(auth.passwordSalt)
-    const actual = hashPasswordWithSalt(provided, salt)
-    return secureCompare(actual, expected) || secureCompare(hashPasswordWithSalt(provided.toUpperCase(), salt), expected)
-  }
-  return false
+function resolveClassIdAtAttempt(profile, payload) {
+  const memberships = [profile?.classId, ...(Array.isArray(profile?.classIds) ? profile.classIds : [])]
+    .map(value => String(value || '').trim())
+    .filter(Boolean)
+  const requested = String(payload?.classIdAtAttempt || '').trim()
+  return requested && memberships.includes(requested) ? requested : (memberships[0] || null)
 }
 
 function applyProblemResult(profile, payload) {
@@ -69,12 +57,13 @@ function applyProblemResult(profile, payload) {
   if (!Array.isArray(profile.recentProblems)) profile.recentProblems = []
   if (!Array.isArray(profile.problemLog)) profile.problemLog = []
 
-  profile.recentProblems.push(payload)
+  const attributedPayload = { ...payload, classIdAtAttempt: resolveClassIdAtAttempt(profile, payload) }
+  profile.recentProblems.push(attributedPayload)
   if (profile.recentProblems.length > MAX_RECENT_PROBLEMS) {
     profile.recentProblems = profile.recentProblems.slice(-MAX_RECENT_PROBLEMS)
   }
 
-  profile.problemLog.push(payload)
+  profile.problemLog.push(attributedPayload)
   if (profile.problemLog.length > MAX_PROBLEM_LOG) {
     profile.problemLog = profile.problemLog.slice(-MAX_PROBLEM_LOG)
   }
@@ -317,7 +306,7 @@ export default async function handler(req, res) {
     const studentPassword = String(req.headers['x-student-password'] || '')
     const result = await persistStudentEvents(studentId, req.body?.entries, async existing => {
       if (teacherAuthorized) return assertTeacherStudentAccess(req, existing)
-      if (existing.auth?.scheme === 'qr-pin-v1' || !verifyPasswordAgainstAuth(existing.auth, studentPassword)) throw studentStoreError(401, 'Unauthorized')
+      if (!await verifyStudentCredential(existing, studentPassword)) throw studentStoreError(401, 'Unauthorized')
     })
     return res.status(200).json({ ok: true, ...result })
   } catch (error) {

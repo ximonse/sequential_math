@@ -1,43 +1,38 @@
 # Elevmanual
 
-Den här manualen visar hur eleven använder appen.
+Den här manualen visar hur du använder appen.
 
 ## 1. Logga in
 
 ### Elevkort
 
-1. Välj `Har du ett elevkort eller ett kodnamn?`.
-2. Antingen skannar du QR-koden på kortet och skriver din fyrsiffriga PIN, eller
-   väljer `Kodnamn` och skriver kodnamnet på kortet plus PIN.
+1. Skanna QR-koden på ditt personliga elevkort och skriv din fyrsiffriga PIN.
+2. Om du inte kan skanna väljer du `Kodnamn` och skriver kodnamnet på kortet
+   tillsammans med samma PIN.
 
 QR-koden och kodnamnet är olika sätt att identifiera ditt konto. PIN-koden ska
 du inte dela med någon annan.
 
-### Äldre inloggning
+### Klasslänk
 
-1. Skriv ditt namn eller ditt elev-ID från läraren.
-2. Skriv lösenordet och klicka `Logga in`.
+Läraren kan också ge klassen en gemensam klasslänk. Den visar klassnamnet och
+leder vidare till samma personliga elevkonto; den skapar inte ett nytt konto.
+Följ uppgifterna på sidan och använd bara en länk från din lärare.
 
-Startlösenordet är namnet exakt som läraren skrev det, om du inte har bytt det.
-Stora och små bokstäver spelar ingen roll för namnsökningen, men kan göra det för lösenordet.
+Du väljer inte skola eller klass själv. De är redan kopplade till ditt konto och
+lärarens klasslista. Om klasslänken erbjuder **Kom ihåg mig på den här enheten**
+ska den bara användas på din egen enhet.
 
-Efter att namn/elev-ID och lösenord har godkänts väljer du din skola och
-klass/grupp. Du ser bara de grupper som lärare eller administratör har
-tilldelat just dig. Det valet styr bland annat klassens inställningar och
-highscore-lista under det här inloggningstillfället.
-
-Om namnet finns på flera elevkonton skriver du ditt unika elev-ID i samma
-ruta. Be läraren om ditt ID.
+Har du glömt koden eller får felmeddelande flera gånger, be läraren om hjälp. Läraren kan ge dig en ny kod.
 
 ## 2. Startsidan
 
 På elevens startsida finns normalt:
 - knapp för att starta pass (uppdrag/fri träning),
-- tabellövning (2-12),
+- tabellövning (2–12),
 - val av räknesätt,
 - sektionen `Framsteg`,
-- eventuellt `Aktiv ticket`,
-- byte av elevlösenord.
+- eventuellt `Aktiv ticket`.
 
 ## 3. Välj träning
 
@@ -66,9 +61,7 @@ Knappar:
 
 ## 6. Pausförslag
 
-Appen kan föreslå kort paus efter en mängd uppgifter.
-Eleven kan fortsätta direkt (ingen hård låsning).
-Om eleven vill spela en snabb pausaktivitet finns:
+Appen kan föreslå kort paus efter en mängd uppgifter. Eleven kan fortsätta direkt. Om eleven vill spela en snabb pausaktivitet finns:
 - `Pong` (max 2 minuter),
 - `Snake` (max 2 minuter).
 
@@ -85,7 +78,7 @@ Eleven svarar i ticketvyn och kan beroende på lärarens inställning:
 ## 8. Framsteg
 
 I `Framsteg` ser eleven nivå-rutor per räknesätt.
-Farger:
+
 - Grön: klarad nivå.
 - Blå: påbörjad.
 - Grå: ej startad.
@@ -95,8 +88,3 @@ Elev kan klicka nivå-ruta för att träna just den nivån.
 ## 9. Tillbaka till startsidan
 
 Eleven kan alltid gå tillbaka till sin startsida via knappen `Startsida` utan att logga ut och in igen.
-
-## 10. Byta elevlösenord
-
-I startsidan finns sektionen `Byt elevlösenord`.
-Eleven anger nuvarande lösenord och nytt lösenord.

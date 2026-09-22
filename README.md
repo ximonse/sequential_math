@@ -21,20 +21,11 @@ npm run dev
 - Pedagogisk reflektion (reliabilitet/validitet): `docs/reflektion.md`
 - Felsokning: `docs/FELSOKNING.md`
 - Dokumentationsrutin (obligatorisk): `docs/DOKUMENTATIONSRUTIN.md`
+- Organisations- och inloggningskontrakt: `docs/ORGANISATION_OCH_INLOGGNING_KONTRAKT.md`
 
-## Lärardashboard lösenord
+## Konton, organisation och inloggning
 
-- Lärardashboarden kräver lösenord via `/teacher-login`.
-- Sätt server-variabel i Vercel:
-
-```bash
-TEACHER_API_PASSWORD=ditt_losenord
-```
-
-- `TEACHER_API_PASSWORD` är den enda lösenordskällan för lararinloggning.
-- I `production/preview` krävs den alltid.
-- I lokal development finns dev-fallback om variabeln saknas.
-- Om `TEACHER_API_PASSWORD` saknas blockeras lararåtkomst till skyddade API:er.
+Lärar- och administratörsinloggning använder individuella serverlagrade konton. Elever loggar in med sin klasslänk, sitt namn och en fyrsiffrig kod. Skolor, klasser, roller, sessioner och elevinloggning beskrivs i [organisations- och inloggningskontraktet](docs/ORGANISATION_OCH_INLOGGNING_KONTRAKT.md).
 
 ## Delad elevdata mellan enheter
 
@@ -62,11 +53,7 @@ När detta är aktivt:
 
 ## Elev-ID och konto
 
-- Inloggningsnamn normaliseras till versaler och säkra tecken.
-- ID-längd är flexibel (inte låst till 6 tecken).
-- Rekommenderat flöde är att lärare skapar elever via klasslistor.
-- Elevlösenord lagras hashat med salt (`sha256-v1`) och äldre klartextprofiler migreras vid inloggning/sync.
-- Vid stale lokal profil försöker inloggning verifiera mot cloud och uppdaterar lokal profil vid träff.
+Varje elev har ett stabilt tekniskt elev-ID som håller ihop profil och historik. Det används av systemet och lärarvyn, men inte som elevens vanliga inloggningsval. Eleven loggar in via sin klasslänk med namn och fyrsiffrig kod. Koden lagras hashad med salt (`sha256-v1`).
 
 ## Statistik och historik
 

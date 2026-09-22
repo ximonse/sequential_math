@@ -89,7 +89,7 @@ export function createStorageStudentApi(deps) {
     return createAndSaveProfile(normalizedId, displayName, grade)
   }
 
-  async function authenticateStudent(studentIdInput, passwordInput) {
+  async function authenticateStudent(studentIdInput, passwordInput, options = {}) {
     const studentId = normalizeStudentId(studentIdInput)
     const password = String(passwordInput || '')
 
@@ -140,7 +140,7 @@ export function createStorageStudentApi(deps) {
 
     ensureProfileAuth(profile)
 
-    let validPassword = await verifyPasswordForProfile(profile, password)
+    let validPassword = options.classroomSession === true || await verifyPasswordForProfile(profile, password)
 
     if (!validPassword && CLOUD_ENABLED) {
       try {
@@ -167,7 +167,7 @@ export function createStorageStudentApi(deps) {
 
     profile.auth.lastLoginAt = Date.now()
     profile.auth.loginCount = (profile.auth.loginCount || 0) + 1
-    setActiveStudentSession(profile.studentId, password)
+    setActiveStudentSession(profile.studentId, password, { remember: options.remember === true })
     saveProfile(profile)
 
     return { ok: true, profile }

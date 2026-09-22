@@ -1,5 +1,6 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import { kv } from '@vercel/kv'
+import { isSchoolAdminRole, isSuperAdminRole, normalizeTeacherRole } from './_teacherRoles.js'
 
 const TEACHER_SESSION_TTL_MS = 12 * 60 * 60 * 1000
 const TEACHER_SESSION_COOKIE = '__Host-teacher-session'
@@ -170,7 +171,7 @@ export function createTeacherSessionToken(options = {}) {
     payload.classIds = Array.isArray(options?.classIds)
       ? options.classIds.map(id => String(id)).filter(Boolean)
       : []
-    payload.isAdmin = Boolean(options?.isAdmin)
+    payload.role = normalizeTeacherRole(options?.role, options?.isAdmin)
   }
 
   const payloadEncoded = encodeBase64Url(JSON.stringify(payload))
@@ -229,7 +230,7 @@ export function getTeacherAuthPayload(req) {
   return {
     teacherId: payload.teacherId,
     classIds: Array.isArray(payload.classIds) ? payload.classIds : [],
-    isAdmin: Boolean(payload.isAdmin),
+    role: normalizeTeacherRole(payload.role, payload.isAdmin),
     sessionVersion: Math.max(1, Number(payload.sessionVersion) || 1),
     authSource,
     legacy: false
@@ -256,12 +257,15 @@ export async function getLiveTeacherAuthPayload(req, { store = kv } = {}) {
   if (!account || account.disabled === true) return null
   const accountVersion = Math.max(1, Number(account.sessionVersion) || 1)
   if (accountVersion !== tokenAuth.sessionVersion) return null
+  const role = normalizeTeacherRole(account.role, account.isAdmin)
 
   return {
     teacherId: tokenAuth.teacherId,
     classIds: Array.isArray(account.classIds) ? account.classIds.map(String).filter(Boolean) : [],
-    isAdmin: Boolean(account.isAdmin),
-    isPrimaryAdmin: isPrimaryAdminAccount(account),
+    schoolIds: Array.isArray(account.schoolIds) ? account.schoolIds.map(String).filter(Boolean) : [],
+    role,
+    isAdmin: isSchoolAdminRole(role),
+    isPrimaryAdmin: isSuperAdminRole(role) || isPrimaryAdminAccount(account),
     sessionVersion: accountVersion,
     authSource: tokenAuth.authSource,
     legacy: false
@@ -274,7 +278,12 @@ export async function isLiveTeacherApiAuthorized(req, options) {
 
 export async function isLiveAdminAuthorized(req, options) {
   const auth = await getLiveTeacherAuthPayload(req, options)
-  return auth !== null && Boolean(auth.isAdmin)
+  return auth !== null && isSuperAdminRole(auth.role)
+}
+
+export async function isLiveSchoolAdminAuthorized(req, options) {
+  const auth = await getLiveTeacherAuthPayload(req, options)
+  return auth !== null && isSchoolAdminRole(auth.role)
 }
 
 export async function isLivePrimaryAdminAuthorized(req, options) {
@@ -290,7 +299,7 @@ export function isTeacherApiAuthorized(req) {
 /** Returns true if request is from an admin account. */
 export function isAdminAuthorized(req) {
   const payload = getTeacherAuthPayload(req)
-  return payload !== null && Boolean(payload.isAdmin)
+  return payload !== null && isSuperAdminRole(payload.role)
 }
 
 /**
@@ -300,6 +309,6 @@ export function isAdminAuthorized(req) {
 export function getAuthorizedClassIds(req) {
   const payload = getTeacherAuthPayload(req)
   if (!payload) return [] // unauthorized
-  if (payload.isAdmin) return null // null = see all
+  if (isSuperAdminRole(payload.role)) return null // null = see all
   return payload.classIds
 }

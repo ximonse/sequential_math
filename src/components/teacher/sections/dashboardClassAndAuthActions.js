@@ -10,7 +10,6 @@ import {
   normalizeStudentId,
   removeClass,
   moveStudentBetweenClasses,
-  resetStudentPasswordToLoginName,
   updateClassExtras
 } from '../../../lib/storage'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
@@ -140,7 +139,7 @@ export function buildDashboardClassAndAuthActions({
 
     setClassNameInput('')
     setRosterInput('')
-    setClassStatus(`Klass skapad: ${result.classRecord.name} (${result.classRecord.studentIds.length} elever)`)
+    setClassStatus(`Klass skapad: ${result.classRecord.name}. ${result.credentials?.length || 0} elevkort är klara att hämta.`)
     const updatedClasses = getClasses()
     setClasses(updatedClasses)
     setAddToClassId(result.classRecord.id)
@@ -185,7 +184,7 @@ export function buildDashboardClassAndAuthActions({
     }
 
     setRosterInput('')
-    setClassStatus(`Tillagt ${result.addedCount} elev(er) i ${result.classRecord.name}.`)
+    setClassStatus(`Tillagt ${result.addedCount} elev(er). ${result.credentials?.length || 0} elevkort är klara att hämta.`)
     setClasses(getClasses())
     void loadStudents()
     return result
@@ -284,41 +283,23 @@ export function buildDashboardClassAndAuthActions({
     setSelectedClassIds([])
   }
 
-  const handleResetStudentPassword = async (studentId) => {
+  const handleResetStudentPassword = async (studentId, code) => {
     const normalizedStudentId = normalizeStudentId(studentId)
-    if (!normalizedStudentId) {
-      const errorMessage = 'Kunde inte läsa elev-ID för lösenordsåterställning.'
-      setDashboardStatus(errorMessage)
-      setPasswordResetStatus(errorMessage)
-      return
-    }
-
+    const loginCode = String(code || '').trim()
+    if (!normalizedStudentId || !/^\d{4}$/.test(loginCode)) { setPasswordResetStatus('Koden måste ha fyra siffror.'); return }
     setPasswordResetBusyId(normalizedStudentId)
-    let result
     try {
-      result = await resetStudentPasswordToLoginName(normalizedStudentId)
-    } catch {
-      const errorMessage = `Kunde inte återställa lösenord för ${normalizedStudentId}.`
-      setDashboardStatus(errorMessage)
-      setPasswordResetStatus(errorMessage)
-      setPasswordResetBusyId('')
-      return
-    }
-
-    setPasswordResetBusyId('')
-    if (!result.ok) {
-      const errorMessage = result.error || `Kunde inte återställa lösenord för ${normalizedStudentId}.`
-      setDashboardStatus(errorMessage)
-      setPasswordResetStatus(errorMessage)
-      return
-    }
-
-    const successMessage = `Lösenord återställt för ${normalizedStudentId}. Nytt lösenord: ${result.password || normalizedStudentId}`
-    setDashboardStatus(successMessage)
-    setPasswordResetStatus(successMessage)
-    void loadStudents()
+      const profiles = await loadStudents()
+      const current = profiles?.find(item => item.studentId === normalizedStudentId)
+      if (!current) throw new Error('Eleven hittades inte i det aktuella urvalet. Uppdatera sidan och försök igen.')
+      const response = await fetch('/api/student/' + encodeURIComponent(normalizedStudentId), { method: 'PATCH', headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() }, body: JSON.stringify({ serverRevision: current.serverRevision, changes: { loginCode } }) })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data?.error || 'Koden kunde inte sparas.')
+      setPasswordResetStatus(`Ny kod sparad för ${normalizedStudentId}: ${loginCode}`)
+      await loadStudents()
+    } catch (error) { setPasswordResetStatus(error?.message || `Kunde inte spara kod för ${normalizedStudentId}.`) }
+    finally { setPasswordResetBusyId('') }
   }
-
   const handleOpenStudentDetail = (studentId) => {
     const normalized = String(studentId || '').trim()
     if (!normalized) return

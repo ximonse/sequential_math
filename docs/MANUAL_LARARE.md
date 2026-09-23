@@ -163,7 +163,8 @@ Hämta PDF direkt: en liggande A4 innehåller åtta riktiga A7-kort. Den tidigar
 QR-koden och PIN-koden slutar då fungera.
 
 När du skapar en klass från en namnlista, eller lägger till nya elever via
-namnlistan, får varje ny elev automatiskt QR-kod, kodnamn och PIN. En
+namnlistan, sparas det angivna namnet som elevens första tilltalsnamn. Nya
+elever får namnlösa elev-ID samt QR-kod, kodnamn och PIN. En
 `Hämta PDF (8 A7/A4)`-knapp visas direkt efter sparandet. PDF:en innehåller
 elevens namn, kodnamn, QR-kod, PIN och elev-ID och är lärarens reservkopia.
 Spara den bara på skolans godkända, skyddade plats. Rå QR-hemligheter sparas

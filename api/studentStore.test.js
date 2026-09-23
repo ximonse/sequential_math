@@ -124,9 +124,14 @@ describe('student persistence boundary', () => {
     expect(responses.map(res => res.data.ok)).toEqual([true, true])
     const ids = responses[0].data.results.map(row => row.studentId)
     expect(new Set(ids).size).toBe(3)
+    expect(ids.every(id => /^[A-F0-9]{32}$/.test(id))).toBe(true)
     expect(responses[1].data.results.map(row => row.studentId)).toEqual(ids)
     expect(memory.get('students:index')).toHaveLength(4)
-    for (const id of ids) expect(isCurrentStudentProfile(memory.get(`student:${id}`))).toBe(true)
+    for (const [index, id] of ids.entries()) {
+      expect(isCurrentStudentProfile(memory.get(`student:${id}`))).toBe(true)
+      expect(memory.get(`student:${id}`).preferredName).toBe(body.names[index])
+      expect(responses[0].data.results[index].name).toBe(body.names[index])
+    }
     expect((await call(rosterHandler, 'POST', body, owner)).data.ok).toBe(true)
     expect(memory.get('students:index')).toHaveLength(4)
   })
@@ -138,6 +143,17 @@ describe('student persistence boundary', () => {
     const first = await call(rosterHandler, 'POST', body, owner)
     const second = await call(rosterHandler, 'POST', { ...body, requestId: 'synthetic-request-5678', classId: 'SECOND' }, owner)
     expect(first.data.results[0].studentId).not.toBe(second.data.results[0].studentId)
+  })
+
+  it('reuses an existing name-derived ID only when replaying its original request', async () => {
+    const body = { requestId: 'legacy-roster-retry-1234', classId: 'A', names: ['Anna'] }
+    const digest = value => createHash('sha256').update(value).digest('hex')
+    const enrollmentKey = digest(JSON.stringify(['owner', body.requestId, body.classId, body.names, 4, []]))
+    const legacyId = `ANNA_${digest(`${enrollmentKey}:0`).slice(0, 10).toUpperCase()}`
+    await createStudentRecord(legacyId, { ...profile(), studentId: legacyId, name: 'Anna', enrollmentKey, displayAlias: 'Blå Räv' })
+    const replay = await call(rosterHandler, 'POST', body, owner)
+    expect(replay.data.results[0].studentId).toBe(legacyId)
+    expect(memory.get('students:index')).toHaveLength(2)
   })
 
   it('creates idempotent pseudonymous pilot seats without storing names or raw credentials', async () => {

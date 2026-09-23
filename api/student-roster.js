@@ -166,9 +166,13 @@ export default async function handler(req, res) {
     const takenAliases = await classAliases(target.id)
     for (let index = 0; index < names.length; index++) {
       const name = names[index].trim()
-      const suffix = digest(`${enrollmentKey}:${index}`).slice(0, 10).toUpperCase()
-      const base = name.normalize('NFC').replace(/[^a-zA-Z0-9ÅÄÖåäö]+/g, '_').replace(/^_|_$/g, '').slice(0, 24).toUpperCase() || 'ELEV'
-      const studentId = `${base}_${suffix}`
+      const opaqueId = deterministicBytes(secret, `${enrollmentKey}:${index}:identity`)(16).toString('hex').toUpperCase()
+      // A retry of a request started before opaque IDs were introduced must reuse its existing pupil.
+      const legacySuffix = digest(`${enrollmentKey}:${index}`).slice(0, 10).toUpperCase()
+      const legacyBase = name.normalize('NFC').replace(/[^a-zA-Z0-9ÅÄÖåäö]+/g, '_').replace(/^_|_$/g, '').slice(0, 24).toUpperCase() || 'ELEV'
+      const legacyId = `${legacyBase}_${legacySuffix}`
+      const legacyRecord = await kv.get(`student:${legacyId}`)
+      const studentId = legacyRecord?.enrollmentKey === enrollmentKey ? legacyId : opaqueId
       try {
         let current = await kv.get(`student:${studentId}`)
         if (current && current.enrollmentKey !== enrollmentKey) throw studentStoreError(409, 'Student ID conflict')
@@ -181,7 +185,7 @@ export default async function handler(req, res) {
           const displayAlias = await reserveStudentLoginCode(studentId, () => (
             generateDisplayAlias({ taken: takenAliases, randomBytesFn: aliasBytes })
           ))
-          const record = { profileSchemaVersion: 1, studentId, name, grade, created_at: now,
+          const record = { profileSchemaVersion: 1, studentId, name, preferredName: name, grade, created_at: now,
             currentDifficulty: 1, highestDifficulty: 1, adaptive: { skillStates: {}, recentSelections: [] },
             masteryFacts: { version: 1, facts: [], revokedIds: [] }, recentProblems: [], problemLog: [],
             stats: { totalProblems: 0, correctAnswers: 0, overallSuccessRate: 0, avgTimePerProblem: 0, typeStats: {}, weakestTypes: [], strongestTypes: [] },
@@ -197,7 +201,7 @@ export default async function handler(req, res) {
         await kv.sadd(`class_students:${target.id}`, studentId)
         await reserveStudentLoginCode(studentId, () => current.displayAlias)
         takenAliases.add(current.displayAlias)
-        results.push({ studentId, name, displayAlias: current.displayAlias, qrSecret, pin, ok: true })
+        results.push({ studentId, name: String(current.preferredName || current.name || name).trim(), displayAlias: current.displayAlias, qrSecret, pin, ok: true })
       } catch (error) { results.push({ studentId, name, ok: false, error: error.status ? error.message : 'Kunde inte spara eleven.' }) }
     }
     for (const rawId of existingStudentIds) {

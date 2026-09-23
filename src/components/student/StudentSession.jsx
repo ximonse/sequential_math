@@ -1,8 +1,9 @@
-import { useState, useCallback, useMemo, useRef } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import SessionLoadingView from './SessionLoadingView'
 import SessionOverlayRouter from './session/SessionOverlayRouter'
 import SessionPage from './session/SessionPage'
+import { constrainClassPracticeRules } from './session/classPracticeFrame'
 import { buildSessionOverlayProps } from './session/sessionOverlayPropsBuilder'
 import { usePracticeSessionActions } from './session/usePracticeSessionActions'
 import { usePracticeSetupEffects } from './session/usePracticeSetupEffects'
@@ -26,7 +27,8 @@ import {
   getStartOfWeekTimestamp
 } from '../../lib/studentProfile'
 import { selectNextProblemForProfile } from '../../engine/adaptiveEngine'
-import { getOperationLabel } from '../../lib/operations'
+import { getOperationLabel, STANDARD_OPERATIONS } from '../../lib/operations'
+import { normalizeClassOperations } from '../../lib/classOperations'
 import { resolveProblemParentSkill } from '../../lib/mathUtils'
 import {
   normalizeProgressionMode
@@ -54,6 +56,7 @@ function StudentSession() {
   const [searchParams] = useSearchParams()
 
   const [profile, setProfile] = useState(null)
+  const [classConfig, setClassConfig] = useState({ classId: '', operations: null })
   const [currentProblem, setCurrentProblem] = useState(null)
   const [answer, setAnswer] = useState('')
   const [feedback, setFeedback] = useState(null)
@@ -99,6 +102,26 @@ function StudentSession() {
   const isTableDrill = tableSet.length > 0
   const isPilotStudent = Boolean(normalizePilotStudentId(studentId))
   const syncStatus = useStudentSyncStatus(studentId, isPilotStudent)
+  const classId = isPilotStudent ? String(profile?.classId || '') : getActiveStudentClass(profile)
+  const classAllowedOperations = classConfig.classId === classId ? classConfig.operations : null
+  const hasProfile = Boolean(profile)
+  useEffect(() => {
+    if (!hasProfile) return undefined
+    if (!classId) { setClassConfig({ classId: '', operations: STANDARD_OPERATIONS }); return undefined }
+    let active = true
+    setClassConfig({ classId, operations: null })
+    fetch(`/api/class-config?classId=${encodeURIComponent(classId)}`)
+      .then(response => { if (!response.ok) throw new Error('Class config unavailable'); return response.json() })
+      .then(data => { if (active) setClassConfig({ classId, operations: normalizeClassOperations(data?.enabledOperations) }) })
+      .catch(() => { if (active) setClassConfig({ classId, operations: [] }) })
+    return () => { active = false }
+  }, [hasProfile, classId])
+  const allowedFreeOps = useMemo(() => {
+    if (!Array.isArray(classAllowedOperations)) return []
+    return freeOps.length > 0
+      ? freeOps.filter(operation => classAllowedOperations.includes(operation))
+      : classAllowedOperations
+  }, [freeOps, classAllowedOperations])
   const isLevelFocusMode = !isTableDrill
     && mode
     && isKnownMode(mode)
@@ -114,8 +137,22 @@ function StudentSession() {
   }, [isPilotStudent])
   const safeSelectProblem = useCallback((currentProfile, rules) => {
     try {
+      let nextRules = { ...(rules || {}) }
+      if (!sessionAssignment && !isTableDrill) {
+        const frame = constrainClassPracticeRules(nextRules, classAllowedOperations, freeOps, allowedFreeOps)
+        if (frame.status === 'loading') return null
+        if (frame.status !== 'ready') {
+          const messages = {
+            unavailable: 'Kunde inte läsa klassens räknesätt. Gå tillbaka och försök igen.',
+            disallowed_link: 'Inget av länkens räknesätt är aktivt för klassen.',
+            disallowed_operation: 'Det här räknesättet är inte aktivt för klassen.'
+          }
+          setSessionError(messages[frame.status])
+          return null
+        }
+        nextRules = frame.rules
+      }
       setSessionError('')
-      const nextRules = { ...(rules || {}) }
       if (sessionAssignment?.kind === 'ncm') {
         const preferredSkillTag = peekNextNcmSkillTag(ncmQueueRef.current)
         if (preferredSkillTag) {
@@ -128,7 +165,7 @@ function StudentSession() {
       setSessionError('Kunde inte ladda nästa uppgift. Försök igen.')
       return null
     }
-  }, [sessionAssignment])
+  }, [sessionAssignment, isTableDrill, classAllowedOperations, freeOps, allowedFreeOps])
 
   usePracticeSetupEffects({
     studentId,
@@ -170,7 +207,7 @@ function StudentSession() {
     setNcmCompletedSession,
     completedThisSession,
     safeSelectProblem,
-    freeOps,
+    freeOps: allowedFreeOps,
     persistProfile
   })
 
@@ -229,7 +266,7 @@ function StudentSession() {
     setTableMilestone,
     setLastBreakPromptAt,
     setDailyLevelStreakMilestone,
-    freeOps,
+    freeOps: allowedFreeOps,
     persistProfile
   })
 

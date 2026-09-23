@@ -49,6 +49,9 @@ beteende.
   konto är sekundära, nedfällda val.
 - Tabellträning ligger som ett eget kort direkt under första modulen på elevens
   startsida; tabellval och startfunktion är oförändrade.
+- Klassadministrationen kan välja räknesätt för vanlig träning. Äldre klasser
+  behåller de fyra grundräknesätten och sina aktiverade extra räknesätt; uppdrag
+  och tabellträning har egna träningsramar.
 - I träningsvyn visas valt träningsläge som en fristående rubrik utan färgad ruta.
   Elevprofilens rättprocent beräknas fortfarande men visas inte som stapel under uppgiften.
 - Lärarens standardvy prioriterar elev, signal, orsak, underlag och nästa steg.

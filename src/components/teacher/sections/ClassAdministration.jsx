@@ -3,6 +3,8 @@ import { isTeacherSuperAdmin } from '../../../lib/teacherAuth'
 import { NewSchoolForm, SchoolSelect, useSchools } from './SchoolControls'
 import SchoolYearRollover from './SchoolYearRollover'
 import { apiFetch, getTogglableExtras } from './adminApi'
+import { STANDARD_OPERATIONS, getOperationLabel } from '../../../lib/operations'
+import { resolveClassOperations } from '../../../lib/classOperations'
 
 export default function ClassesTab({ classes, teachers, onRefresh, setStatus }) {
   const directory = useSchools()
@@ -88,16 +90,23 @@ function ClassRow({ classRecord, teachers, extras, directory, canDelete, onLifec
   const [name, setName] = useState(classRecord.name || '')
   const [open, setOpen] = useState(false)
   const [teacherIds, setTeacherIds] = useState(classRecord.teacherIds || [])
-  const [enabledExtras, setEnabledExtras] = useState(classRecord.enabledExtras || [])
+  const [enabledOperations, setEnabledOperations] = useState(() => resolveClassOperations(classRecord))
   const [busy, setBusy] = useState(false)
   const teacherNames = (classRecord.teacherIds || [])
     .map(id => teachers.find(teacher => teacher.id === id)?.displayName || id).join(', ') || '—'
 
   const handleSave = async () => {
+    if (enabledOperations.length === 0) {
+      setStatus('Välj minst ett räknesätt för klassens vanliga träning.')
+      return
+    }
     setBusy(true)
     const { ok, data } = await apiFetch('/api/admin/classes/' + classRecord.id, {
       method: 'PUT',
-      body: JSON.stringify({ name, teacherIds, enabledExtras, schoolId })
+      body: JSON.stringify({
+        name, teacherIds, schoolId, enabledOperations,
+        enabledExtras: enabledOperations.filter(id => !STANDARD_OPERATIONS.includes(id))
+      })
     })
     setBusy(false)
     if (ok) {
@@ -155,21 +164,23 @@ function ClassRow({ classRecord, teachers, extras, directory, canDelete, onLifec
               {teachers.length === 0 && <span className="text-gray-400">Skapa lärare först</span>}
             </div>
           </div>
-          {extras.length > 0 && (
-            <div>
-              <p className="mb-1 font-semibold text-gray-600">Extra räknesätt</p>
-              <div className="flex flex-wrap gap-2">
-                {extras.map(extra => (
-                  <label key={extra.id} className="flex cursor-pointer items-center gap-1">
-                    <input type="checkbox" checked={enabledExtras.includes(extra.id)}
-                      onChange={event => setEnabledExtras(current => event.target.checked
-                        ? [...current, extra.id] : current.filter(id => id !== extra.id))} />
-                    {extra.label}
-                  </label>
-                ))}
-              </div>
+          <fieldset>
+            <legend className="mb-1 font-semibold text-gray-700">Räknesätt i klassens vanliga träning</legend>
+            <p className="mb-2 text-gray-500">Grundräknesätten är förvalda. Uppdrag och tabellträning styrs separat.</p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                ...STANDARD_OPERATIONS.map(id => ({ id, label: getOperationLabel(id) })),
+                ...extras
+              ].map(operation => (
+                <label key={operation.id} className="flex cursor-pointer items-center gap-1 rounded border border-gray-200 bg-gray-50 px-2 py-1.5">
+                  <input type="checkbox" checked={enabledOperations.includes(operation.id)}
+                    onChange={event => setEnabledOperations(current => event.target.checked
+                      ? [...current, operation.id] : current.filter(id => id !== operation.id))} />
+                  {operation.label}
+                </label>
+              ))}
             </div>
-          )}
+          </fieldset>
           <div className="flex gap-2 pt-1">
             <button onClick={handleSave} disabled={busy}
               className="rounded bg-indigo-600 px-4 py-1.5 font-semibold text-white disabled:opacity-50">{busy ? '...' : 'Spara'}</button>

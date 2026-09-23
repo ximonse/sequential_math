@@ -4,6 +4,7 @@
  */
 import { kv } from '@vercel/kv'
 import { withCors } from './_helpers.js'
+import { resolveClassOperations } from '../src/lib/classOperations.js'
 
 export default async function handler(req, res) {
   withCors(res, {
@@ -17,15 +18,16 @@ export default async function handler(req, res) {
 
   const classId = String(req.query?.classId || '').trim()
   if (!classId) {
-    return res.status(200).json({ enabledExtras: [] })
+    return res.status(400).json({ error: 'classId required' })
   }
 
   try {
     const kvClass = await kv.get(`class:${classId}`)
+    if (!kvClass) return res.status(404).json({ error: 'Class not found' })
     const enabledExtras = Array.isArray(kvClass?.enabledExtras) ? kvClass.enabledExtras : []
     res.setHeader('Cache-Control', 'no-store')
-    return res.status(200).json({ enabledExtras })
+    return res.status(200).json({ enabledExtras, enabledOperations: resolveClassOperations(kvClass) })
   } catch {
-    return res.status(200).json({ enabledExtras: [] })
+    return res.status(503).json({ error: 'Class config unavailable' })
   }
 }

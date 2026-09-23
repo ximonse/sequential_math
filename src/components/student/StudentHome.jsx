@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { changeStudentPassword, clearActiveStudentSession, getActiveStudentClass, getOrCreateProfileWithSync, getSyncHealth, isStudentSessionActive, saveProfile } from '../../lib/storage'
 import { getOperationLabel, OPERATION_LABELS, STANDARD_OPERATIONS, ALL_LEVELS as LEVELS } from '../../lib/operations'
+import { normalizeClassOperations } from '../../lib/classOperations'
 import { computeOperationMasteryBoards, getPreferredProblemSource } from '../../lib/masteryCalculation'
 import { decodeAssignmentPayload, encodeAssignmentPayload, getActiveAssignment, getAssignmentById } from '../../lib/assignments'
 import { normalizeProgressionMode } from '../../lib/progressionModes'
@@ -23,7 +24,7 @@ function StudentHome() {
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const [profile, setProfile] = useState(null)
-  const [enabledExtras, setEnabledExtras] = useState(null) // null = loading, [] = no extras
+  const [classConfig, setClassConfig] = useState({ classId: '', operations: null })
   const [assignment, setAssignment] = useState(null)
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -99,13 +100,15 @@ function StudentHome() {
   }, [studentId, assignmentId, assignmentPayload, mode, requestedPace, ticketId, ticketPayload, navigate])
 
   const classId = isPilotStudent ? String(profile?.classId || '') : getActiveStudentClass(profile)
+  const enabledOperations = classConfig.classId === classId ? classConfig.operations : null
   useEffect(() => {
-    if (!classId) { setEnabledExtras([]); return }
+    if (!classId) { setClassConfig({ classId: '', operations: STANDARD_OPERATIONS }); return }
     let active = true
+    setClassConfig({ classId, operations: null })
     fetch(`/api/class-config?classId=${encodeURIComponent(classId)}`)
-      .then(r => r.json())
-      .then(data => { if (active) setEnabledExtras(Array.isArray(data?.enabledExtras) ? data.enabledExtras : []) })
-      .catch(() => { if (active) setEnabledExtras([]) })
+      .then(r => { if (!r.ok) throw new Error('Class config unavailable'); return r.json() })
+      .then(data => { if (active) setClassConfig({ classId, operations: normalizeClassOperations(data?.enabledOperations) }) })
+      .catch(() => { if (active) setClassConfig({ classId, operations: [] }) })
     return () => { active = false }
   }, [classId])
 
@@ -177,13 +180,7 @@ function StudentHome() {
     }
   }, [profile, updateHomePresence])
 
-  const operationKeys = useMemo(() => [
-    ...STANDARD_OPERATIONS,
-    ...Object.keys(OPERATION_LABELS).filter(op =>
-      !STANDARD_OPERATIONS.includes(op) &&
-      (enabledExtras ?? []).includes(op)
-    )
-  ], [enabledExtras])
+  const operationKeys = useMemo(() => enabledOperations || [], [enabledOperations])
 
   const operationMasteryBoards = useMemo(() => {
     if (!profile) return []
@@ -283,6 +280,7 @@ function StudentHome() {
   }, [profile, navigate, studentId])
 
   const startFreePractice = () => {
+    if (operationKeys.length === 0) return
     const now = Date.now()
     recordTelemetryEvent(profile, 'practice_launch_free', {}, now)
     incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
@@ -293,6 +291,7 @@ function StudentHome() {
   }
 
   const startOperationPractice = (operation) => {
+    if (!operationKeys.includes(operation)) return
     const now = Date.now()
     recordTelemetryEvent(profile, 'practice_launch_operation', {
       operation
@@ -344,6 +343,7 @@ function StudentHome() {
     navigate(`/student/${studentId}/ticket?${params.toString()}`)
   }
   const handleStartAssignmentOrFree = () => {
+    if (!assignment && operationKeys.length === 0) return
     const now = Date.now()
     recordTelemetryEvent(profile, 'practice_launch_assignment_or_free', {
       assignmentId: assignment?.id || ''
@@ -393,7 +393,14 @@ function StudentHome() {
           <StudentHomeAssignmentLaunchCard
             assignment={assignment}
             onStart={handleStartAssignmentOrFree}
+            disabled={!assignment && operationKeys.length === 0}
           />
+        )}
+
+        {enabledOperations?.length === 0 && (
+          <p role="alert" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            Kunde inte läsa klassens räknesätt. Uppdatera sidan och försök igen.
+          </p>
         )}
 
         <StudentHomeTableDrillCard
@@ -414,6 +421,7 @@ function StudentHome() {
               onStartOperationPractice={startOperationPractice}
               getOperationLabel={getOperationLabel}
               operationProgress={operationProgress}
+              operationsReady={operationKeys.length > 0}
             />
           </div>
         </details>

@@ -7,6 +7,8 @@ import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
 import { mutateClassRecord } from './_classStore.js'
 import { studentStoreError } from './_studentStore.js'
+import { normalizeClassOperations } from '../src/lib/classOperations.js'
+import { STANDARD_OPERATIONS } from '../src/lib/operations.js'
 
 export default async function handler(req, res) {
   withCors(res, {
@@ -39,6 +41,13 @@ export default async function handler(req, res) {
     await mutateClassRecord(classId, current => {
       if (!current) throw studentStoreError(404, 'Class not found')
       const updated = { ...current, enabledExtras: extras }
+      if (Array.isArray(current.enabledOperations)) {
+        updated.enabledOperations = normalizeClassOperations([
+          ...current.enabledOperations.filter(id => STANDARD_OPERATIONS.includes(id)),
+          ...extras
+        ])
+        if (updated.enabledOperations.length === 0) throw studentStoreError(400, 'Välj minst ett räknesätt.')
+      }
       if (highscoreGroup !== undefined) updated.highscoreGroup = highscoreGroup || null
       return updated
     })

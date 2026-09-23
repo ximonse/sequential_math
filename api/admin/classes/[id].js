@@ -5,6 +5,8 @@ import { getLiveTeacherAuthPayload, withCors } from '../../_helpers.js'
 import { revalidateGroupsForTeacher } from '../../_groupStore.js'
 import { studentStoreError } from '../../_studentStore.js'
 import { hasSchoolScope, isSchoolAdminRole, isSuperAdminRole } from '../../_teacherRoles.js'
+import { classOperationsAreValid, normalizeClassOperations } from '../../../src/lib/classOperations.js'
+import { STANDARD_OPERATIONS } from '../../../src/lib/operations.js'
 
 async function syncTeacherAssignments(classId, beforeIds, afterIds) {
   const affected = [...new Set([...beforeIds, ...afterIds])]
@@ -77,7 +79,20 @@ export default async function handler(req, res) {
     if (typeof req.body?.name === 'string' && req.body.name.trim()) updated.name = req.body.name.trim()
     if (Array.isArray(req.body?.teacherIds)) updated.teacherIds = [...new Set(req.body.teacherIds.map(String).filter(Boolean))]
     await assertTeachersBelongToSchool(updated.teacherIds || [], updated.schoolId)
-    if (Array.isArray(req.body?.enabledExtras)) updated.enabledExtras = req.body.enabledExtras.map(String).filter(Boolean)
+    if (req.body?.enabledOperations !== undefined) {
+      if (!classOperationsAreValid(req.body.enabledOperations)) return res.status(400).json({ error: 'Välj minst ett giltigt räknesätt.' })
+      updated.enabledOperations = normalizeClassOperations(req.body.enabledOperations)
+      updated.enabledExtras = updated.enabledOperations.filter(id => !STANDARD_OPERATIONS.includes(id))
+    } else if (Array.isArray(req.body?.enabledExtras)) {
+      updated.enabledExtras = req.body.enabledExtras.map(String).filter(Boolean)
+      if (Array.isArray(updated.enabledOperations)) {
+        updated.enabledOperations = normalizeClassOperations([
+          ...updated.enabledOperations.filter(id => STANDARD_OPERATIONS.includes(id)),
+          ...updated.enabledExtras
+        ])
+        if (updated.enabledOperations.length === 0) return res.status(400).json({ error: 'Välj minst ett räknesätt.' })
+      }
+    }
     updated.updatedAt = Date.now()
 
     const saved = await mutateClassRecord(id, current => {

@@ -58,6 +58,7 @@ import teachersHandler from './admin/teachers.js'
 import teacherHandler from './admin/teachers/[id].js'
 import adminClassesHandler from './admin/classes.js'
 import adminClassHandler from './admin/classes/[id].js'
+import classConfigHandler from './class-config.js'
 import rolloverHandler from './admin/classes/rollover.js'
 import rosterHandler from './student-roster.js'
 import studentLoginHandler from './student-login.js'
@@ -119,6 +120,20 @@ describe('teacher account to pupil lifecycle', () => {
       body: { name: '4A', schoolId: school.data.school.id, teacherIds: [teacherId] }
     })
     expect(assignedClass.code).toBe(201)
+    const classId = assignedClass.data.class.id
+    const legacyConfig = await call(classConfigHandler, { query: { classId } })
+    expect(legacyConfig.data.enabledOperations).toEqual(['addition', 'subtraction', 'multiplication', 'division'])
+    const invalidSelection = await call(adminClassHandler, {
+      method: 'PUT', headers: adminHeaders, query: { id: classId }, body: { enabledOperations: [] }
+    })
+    expect(invalidSelection.code).toBe(400)
+    const selectedOperations = await call(adminClassHandler, {
+      method: 'PUT', headers: adminHeaders, query: { id: classId },
+      body: { enabledOperations: ['addition', 'multiplication', 'fractions'] }
+    })
+    expect(selectedOperations.code).toBe(200)
+    expect((await call(classConfigHandler, { query: { classId } })).data.enabledOperations)
+      .toEqual(['addition', 'multiplication', 'fractions'])
 
     const firstLogin = await call(teacherLoginHandler, {
       method: 'POST', body: { username: 'ada', password: 'first-secret' }

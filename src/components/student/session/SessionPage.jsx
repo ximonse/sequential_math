@@ -27,7 +27,6 @@ function SessionPage({
   coarsePointer,
   showScratchpad,
   onToggleScratchpad,
-  overallSuccessRate,
   currentOperationLabel,
   masteredHistorical,
   masteredThisWeek,
@@ -92,19 +91,6 @@ function SessionPage({
           />
 
           <FeedbackOverlay feedback={feedback} />
-        </div>
-
-        <div className="mt-6">
-          <div className="flex justify-between text-xs text-gray-500 mb-1">
-            <span>Success rate</span>
-            <span>{Math.round(overallSuccessRate * 100)}%</span>
-          </div>
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-green-500 transition-all duration-300"
-              style={{ width: `${overallSuccessRate * 100}%` }}
-            />
-          </div>
         </div>
 
         <CurrentOperationMastery

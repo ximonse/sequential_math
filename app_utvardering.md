@@ -47,4 +47,6 @@ beteende.
   på observerbar inaktivitet eller återkommande felsvar.
 - Elevens startsida visar ett primärt nästa steg. Övrig träning, framsteg och
   konto är sekundära, nedfällda val.
+- I träningsvyn visas valt träningsläge som en fristående rubrik utan färgad ruta.
+  Elevprofilens rättprocent beräknas fortfarande men visas inte som stapel under uppgiften.
 - Lärarens standardvy prioriterar elev, signal, orsak, underlag och nästa steg.

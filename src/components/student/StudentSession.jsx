@@ -319,7 +319,6 @@ function StudentSession() {
       coarsePointer={coarsePointer}
       showScratchpad={showScratchpad}
       onToggleScratchpad={() => setShowScratchpad(prev => !prev)}
-      overallSuccessRate={profile.stats.overallSuccessRate}
       currentOperationLabel={getOperationLabel(currentOperation)}
       masteredHistorical={masteredHistorical}
       masteredThisWeek={masteredThisWeek}

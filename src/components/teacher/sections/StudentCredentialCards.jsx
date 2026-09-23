@@ -44,7 +44,7 @@ export default function StudentCredentialCards({ credentials, onClear, title = '
   const downloadPdf = async () => {
     setStatus('Skapar PDF…')
     try {
-      const result = await downloadStudentCredentialPdf(cards.map(card => ({ ...card, name: '' })))
+      const result = await downloadStudentCredentialPdf(cards)
       setStatus('PDF klar: ' + result.count + ' kort på ' + result.pages + ' A4-sida(or). Spara filen säkert.')
     } catch (error) {
       setStatus(error?.message || 'Kunde inte skapa PDF.')

@@ -65,8 +65,11 @@ lärare och elev-ID. Läraren får sätta eller ta bort det bara efter att serve
 har kontrollerat åtkomst till eleven. Andra lärare får aldrig läsa eller
 använda det; de ser elevens kodnamn tills de väljer ett eget tilltalsnamn.
 
-Eleven, QR-kort, PIN, kodnamnsinloggning, highscore och export använder alltid
-kodnamnet. Tilltalsnamnet skickas aldrig i en elevsession och lagras aldrig på
+Elevens inloggning, QR-kodens innehåll, PIN, kodnamnsinloggning, highscore och
+export använder kodnamnet. Den lärargenererade PDF:en med elevkort får dessutom
+visa namnet som angavs när eleven skapades, så att läraren kan dela ut rätt kort.
+Ett senare privat tilltalsnamn för en lärare ska inte läggas till på elevkortet.
+Det privata tilltalsnamnet skickas aldrig i en elevsession eller lagras på
 elevprofilen.
 
 Eleven kan aldrig bläddra bland eller välja skolor och klasser. Det finns ingen publik katalog över skolor, klasser eller elevnamn. Vid fel kod räknas misslyckade försök på elevens profil; läraren kan se signalen och sätta en ny kod. En vanlig session gäller i 12 timmar. Med **Kom ihåg mig på den här enheten** gäller den i upp till 30 dagar.

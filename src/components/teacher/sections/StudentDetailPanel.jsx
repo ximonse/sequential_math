@@ -31,7 +31,7 @@ function ReissuedCredentialCard({ credential }) {
       {qrCode ? <img className="h-28 w-28" src={qrCode} alt="Nytt elevkorts QR-kod" /> : null}
     </div>
     <div className="mt-3 flex gap-2 print:hidden">
-      <button type="button" onClick={async () => { setPdfStatus('Skapar PDF…'); try { await downloadStudentCredentialPdf([{ ...credential, name: '' }]); setPdfStatus('PDF klar. Spara filen säkert.') } catch (error) { setPdfStatus(error?.message || 'Kunde inte skapa PDF.') } }} className="rounded bg-amber-700 px-3 py-1.5 text-xs font-semibold text-white">Hämta PDF</button>
+      <button type="button" onClick={async () => { setPdfStatus('Skapar PDF…'); try { await downloadStudentCredentialPdf([credential]); setPdfStatus('PDF klar. Spara filen säkert.') } catch (error) { setPdfStatus(error?.message || 'Kunde inte skapa PDF.') } }} className="rounded bg-amber-700 px-3 py-1.5 text-xs font-semibold text-white">Hämta PDF</button>
       <button type="button" onClick={() => window.print()} className="rounded border border-amber-700 px-3 py-1.5 text-xs font-semibold text-amber-950">Skriv ut kortet</button>
     </div>
     {pdfStatus ? <p role="status" className="mt-2 text-xs text-amber-900 print:hidden">{pdfStatus}</p> : null}

@@ -52,6 +52,13 @@ Kontrollera:
 
 Lärare kan se upprepade felaktiga kodförsök och ge eleven en ny kod. Eleven väljer aldrig skola eller klass på egen hand.
 
+Om eleven loggar in men skickas tillbaka när träningen startar: kontrollera först
+produktionsloggarna för `/api/me/events`. Ett serverfel där kan lämna krypterade
+elevhändelser väntande på enheten och hindra nästa sidöppning. Rensa inte
+webbläsardata eller återställ elevkort innan de väntande svaren har hanterats.
+Kontrollera API-modulen med vanlig Node-import, utöver test och Vite-bygge,
+eftersom Vite kan godta importsökvägar som serverns Node-körning inte gör.
+
 ## 6. Lärare ser fel/för lite aktivitet
 
 Aktivitetsstatus bygger på fokus + interaktion:

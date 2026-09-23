@@ -1,4 +1,4 @@
-import { isMasteryEligible, readEvidenceClaim } from './evidenceContract'
+import { isMasteryEligible, readEvidenceClaim } from './evidenceContract.js'
 
 export const CURRENT_NEED_RULE_VERSION = 1
 export const RECOVERY_ENTER_ERROR_STREAK = 3

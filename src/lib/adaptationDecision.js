@@ -1,4 +1,4 @@
-import { TRAINING_MODES } from './trainingContext'
+import { TRAINING_MODES } from './trainingContext.js'
 
 export const ADAPTATION_DECISION_RULE_VERSION = 1
 export const MAX_ADAPTATION_DECISIONS = 100

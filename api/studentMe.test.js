@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { execFileSync } from 'node:child_process'
 
 const records = vi.hoisted(() => new Map())
 vi.mock('@vercel/kv', () => ({ kv: {
@@ -46,6 +47,12 @@ async function login(id, secret) {
 beforeEach(() => { records.clear(); process.env.APP_ORIGIN = ORIGIN })
 
 describe('session-bound pupil APIs', () => {
+  it('loads the event API with native Node module resolution', () => {
+    expect(() => execFileSync(process.execPath, [
+      '--input-type=module', '-e', "await import('./api/me/events.js')"
+    ], { cwd: process.cwd(), stdio: 'pipe' })).not.toThrow()
+  })
+
   it('returns only the authenticated profile and never credential material', async () => {
     const id = 'A'.repeat(32), secret = createQrSecret()
     records.set('class:6a', { id: '6a' }); records.set(`student:${id}`, pupil(id, secret))

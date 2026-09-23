@@ -7,8 +7,8 @@ export default function StudentHomeTableDrillCard({
   onStartTableDrill
 }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
-      <h2 className="text-base font-semibold text-gray-800 mb-3">Tabellövning - mängdträning</h2>
+    <section aria-labelledby="table-drill-title" className="bg-white border-2 border-orange-200 rounded-xl p-4 sm:p-5 mb-6 shadow-sm">
+      <h2 id="table-drill-title" className="text-lg font-semibold text-gray-800 mb-3">Tabellträning</h2>
       <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-3">
         {tables.map(table => (
           <button
@@ -41,6 +41,6 @@ export default function StudentHomeTableDrillCard({
           Kör
         </button>
       </div>
-    </div>
+    </section>
   )
 }

@@ -396,6 +396,15 @@ function StudentHome() {
           />
         )}
 
+        <StudentHomeTableDrillCard
+          tables={TABLES}
+          selectedTables={selectedTables}
+          tableStatus={tableStatus}
+          onToggleTable={toggleTable}
+          getTableStatusClass={getTableStatusClass}
+          onStartTableDrill={startTableDrill}
+        />
+
         <details className="bg-white border border-gray-200 rounded-xl mb-4">
           <summary className="cursor-pointer select-none px-4 py-3 font-semibold text-gray-700">Välj annan träning</summary>
           <div className="px-4 pb-4">
@@ -405,14 +414,6 @@ function StudentHome() {
               onStartOperationPractice={startOperationPractice}
               getOperationLabel={getOperationLabel}
               operationProgress={operationProgress}
-            />
-            <StudentHomeTableDrillCard
-              tables={TABLES}
-              selectedTables={selectedTables}
-              tableStatus={tableStatus}
-              onToggleTable={toggleTable}
-              getTableStatusClass={getTableStatusClass}
-              onStartTableDrill={startTableDrill}
             />
           </div>
         </details>

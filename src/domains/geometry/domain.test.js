@@ -75,7 +75,9 @@ describe('geometry domain', () => {
     relation.display.text = 'Är varje kvadrat också en kvadrat?'
     expect(geometryDomain.verifyContent(relation).valid).toBe(false)
 
-    const quadrilateral = geometryDomain.generate('geometry_2d_objects', 6)
+    resetRotationStore()
+    const quadrilateral = Array.from({ length: 12 }, () => geometryDomain.generate('geometry_2d_objects', 6))
+      .find(item => item.values.questionKind === 'quadrilateral_properties')
     quadrilateral.values.subject.equalSides = !quadrilateral.values.subject.equalSides
     expect(geometryDomain.verifyContent(quadrilateral).valid).toBe(false)
 
@@ -90,5 +92,41 @@ describe('geometry domain', () => {
     const visibleAnswer = geometryDomain.generate('geometry_2d_objects', 6)
     visibleAnswer.values.options.find(item => item.id === visibleAnswer.answer.correct).label = 'triangel'
     expect(geometryDomain.verifyContent(visibleAnswer).valid).toBe(false)
+  })
+
+  it('uses a finite level-six bank with three distinct reasoning tasks and no repeated card in a cycle', () => {
+    resetRotationStore()
+    const problems = Array.from({ length: 20 }, () => geometryDomain.generate('geometry_2d_objects', 6))
+    expect(new Set(problems.map(item => `${item.metadata.varietyTemplate}:${item.values.representation}`)).size).toBe(20)
+    expect(new Set(problems.map(item => item.values.questionKind))).toEqual(new Set(['quadrilateral_properties', 'quadrilateral_extension', 'quadrilateral_names']))
+    for (const problem of problems) expect(geometryDomain.verifyContent(problem).valid).toBe(true)
+  })
+
+  it('asks clear circle questions and visually highlights the named part', () => {
+    resetRotationStore()
+    const problems = Array.from({ length: 12 }, () => geometryDomain.generate('geometry_2d_objects', 5))
+    for (const problem of problems) {
+      expect(geometryDomain.verifyContent(problem).valid).toBe(true)
+      expect(problem.display.text).toContain('Vad heter')
+      if (problem.values.representation !== 'marked_diagram') continue
+      const html = renderToStaticMarkup(createElement(geometryDomain.Display, { problem, inputValue: '', onInputChange() {}, onSubmit() {}, onNext() {} }))
+      expect(html).toContain('markerad i lila')
+      expect(html).toContain('#7c3aed')
+    }
+  })
+
+  it.each([
+    ['geometry_2d_objects', 1, 6], ['geometry_2d_objects', 2, 8],
+    ['geometry_2d_objects', 3, 10], ['geometry_2d_objects', 4, 16],
+    ['geometry_2d_objects', 5, 6], ['geometry_2d_objects', 6, 20],
+    ['geometry_3d_objects', 1, 12], ['geometry_3d_objects', 2, 4],
+    ['geometry_3d_objects', 3, 18], ['geometry_3d_objects', 4, 12],
+    ['geometry_3d_objects', 5, 12]
+  ])('rotates a complete finite bank for %s level %i', (skill, level, size) => {
+    resetRotationStore()
+    const problems = Array.from({ length: size }, () => geometryDomain.generate(skill, level))
+    const cards = problems.map(item => `${item.metadata.varietyTemplate}:${item.values.representation}`)
+    expect(new Set(cards).size).toBe(size)
+    expect(problems.every(item => geometryDomain.verifyContent(item).valid)).toBe(true)
   })
 })

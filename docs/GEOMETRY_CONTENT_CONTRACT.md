@@ -20,7 +20,7 @@ Källa: *ABG Sammanfattningar A4 v-2*, sidorna 8–10.
 3. Känna igen triangel, fyrhörning och cirkel trots variation i läge och proportioner.
 4. Förstå inkluderande klassificering av kvadrat, rektangel, romb och parallellogram.
 5. Känna igen cirkelns centrum, radie och diameter.
-6. Härleda den mest precisa fyrhörningen från givna egenskaper.
+6. Härleda en fyrhörning från egenskaper, ange vilken egenskap som behövs för att få en kvadrat och skilja ett specifikt figurnamn från andra namn som alltid gäller.
 
 ### `geometry_3d_objects` – kroppar (sida 8, implementerad)
 
@@ -39,7 +39,9 @@ Källa: *ABG Sammanfattningar A4 v-2*, sidorna 8–10.
 ## Adaptiv svårighet
 
 - Varje delkunskap har ett eget nivågolv och kan tränas separat.
-- Motorn varierar språk, orientering, proportioner och representationsform inom samma nivå.
+- Varje nivå använder en ändlig, granskbar uppgiftsbank av semantiska kort. Kortet kombinerar ett bestämt begrepp/förhållande med en representation; korten roteras utan exakt upprepning innan banken är genomgången. Frågefraser används inte som variationsmått. Orientering och proportioner kan fortfarande varieras där de hör till själva uppgiften.
+- Nivå 6 för plana figurer har 20 kort: 8 egenskapsklassificeringar, 4 kompletterande egenskaper och 8 uppgifter om inkluderande figurnamn. De prövar tre olika resonemang inom samma innehållssteg; de är inte en ny nivå eller innehåll från sida 9.
+- Nivåetiketten visar "nivå 6 av 6" respektive "nivå 5 av 5" så att innehållsgränsen inte ser ut som en utebliven avancering. När sista nivån beläggs ger F2 ett `complete_domain`-beslut i stället för ett omöjligt steg uppåt. Eleven kan fortsätta repetera inom vald delkunskap tills annan aktiverad träning väljs; automatisk växling behöver ett separat produktbeslut.
 - Tre fel i följd får sänka en nivå enligt appens gemensamma stödregel; tillfälliga lättare och svårare uppgifter används inom delkunskapens faktiska nivåintervall.
 - Mastery för geometri kräver minst 8 svar, minst 7 rätt, minst 3 uppgiftsvarianter och minst 2 representationer i det aktuella fönstret. Övriga domäner behåller befintlig regel.
 - Varje implementerad nivå kan nu generera minst två synligt olika representationer och minst tre faktiska mallar i masteryfönstret. Enbart ändrad frågefras räknas inte som representationsbyte.
@@ -52,9 +54,12 @@ Svarsalternativen bär en prövbar felhypotes. Exempel:
 - `counts_corners_not_sides`: räknar hörn i stället för sidor utan att samordna begreppen.
 - `square_not_rectangle`: behandlar kategorier som ömsesidigt uteslutande.
 - `radius_diameter_confusion`: förväxlar radie och diameter.
+- `center_line_confusion`: förväxlar centrum (punkt) med en sträcka i cirkeln.
 - `cube_cuboid_confusion`: använder vardagsutseende i stället för sidoytornas egenskaper.
 - `faces_edges_vertices_confusion`: blandar sidoyta, kant och hörn.
-- `visual_prototype_bias`: känner bara igen en prototyp/orientering.
+- `shape_name_confusion`: väljer fel figurnamn; ett enstaka val visar inte i sig prototypbundenhet.
+- `quadrilateral_category_confusion`: väljer inte hela mängden figurnamn som alltid gäller.
+- `quadrilateral_underclassification`: ger en kvadrat bara ett av dess övriga giltiga namn.
 
 Ogiltigt eller saknat val klassas som inmatningsfel. Ett giltigt distraktorsvar klassas som missuppfattning när alternativet har en specifik hypotes, annars som kunskapsfel. Slarv får endast användas när den gemensamma tids- och svarskvalitetsanalysen har stöd för det; enstaka felval räcker inte.
 
@@ -63,6 +68,7 @@ Läraren ska kunna se delkunskap och nivå, uppgiftstyp, representation, valt oc
 ## Domänkontrakt
 
 - `generate(skill, level, options)` skapar originaluppgifter med semantiskt figurunderlag, alternativ och metadata.
+- Uppgiftsbanken är egen, inspirerad av Diamants innehållsindelning och didaktiska kommentarer (särskilt GFo3/GFo4), inte en digital reproduktion av NCM:s uppgifter eller bilder.
 - `verifyContent(problem)` härleder rätt svar från figurens/egenskapernas semantik och jämför med angivet facit. Den får inte lita på facit som källa.
 - `Display` ritar figuren från semantiska data och ger stora, tangentbordsåtkomliga val.
 - `evaluate(problem, answer)` accepterar endast id för ett visat alternativ och returnerar kontraktsenlig bedömning.
@@ -79,4 +85,5 @@ Utöver appens gemensamma observationsfält sparas `varietyTemplate` och `repres
 - Kontraktstest genererar, verifierar, bedömer och felanalyserar varje nivå.
 - Korruptionsprov ändrar facit, figurens strukturerade egenskaper, relationstext eller representationsanspråk och måste stoppas före visning.
 - Variationsprov kräver variation i prompt, mall och representation; visuella data testas separat från texten.
+- Bankprov går igenom samtliga kort på varje nivå, kräver unik kortidentitet per cykel och kör `verifyContent` på varje kort. Nivå 6 kontrolleras särskilt för tre resonemangstyper och 20 kort utan upprepning.
 - UI-test ska kontrollera val, återkoppling, tangentbord och läsordning. Fri ritning och draginteraktion är uttryckligen utanför v1.

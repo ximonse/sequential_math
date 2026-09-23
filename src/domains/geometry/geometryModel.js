@@ -30,6 +30,11 @@ export const QUADRILATERAL_RELATIONS = Object.freeze({
   parallelogram_rectangle: false
 })
 
+export function objectNameWithArticle(kind) {
+  const label = SHAPES_2D[kind]?.label || SOLIDS[kind]?.label
+  return `${['parallelogram', 'cuboid', 'sphere'].includes(kind) ? 'ett' : 'en'} ${label}`
+}
+
 export function option(id, label, errorPattern = '') {
   return { id, label, concept: id, errorPattern }
 }

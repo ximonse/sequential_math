@@ -1,4 +1,5 @@
 import { TRAINING_MODES } from './trainingContext.js'
+import { getOperationMaxLevel } from './operations.js'
 
 export const ADAPTATION_DECISION_RULE_VERSION = 1
 export const MAX_ADAPTATION_DECISIONS = 100
@@ -31,13 +32,14 @@ export function buildMasteryProgressionDecision({ mastery, trainingContext } = {
   const frameMax = Array.isArray(trainingContext?.levelRange)
     ? Number(trainingContext.levelRange[1])
     : 12
-  const nextLevel = fromLevel < 12 ? fromLevel + 1 : null
+  const domainMax = getOperationMaxLevel(operation)
+  const nextLevel = fromLevel < domainMax ? fromLevel + 1 : null
 
   let action = ADAPTATION_ACTIONS.ADVANCE
   let purpose = 'challenge'
   let reasonCodes = ['mastery_achieved', 'next_level_available']
 
-  if (fromLevel >= 12) {
+  if (fromLevel >= domainMax) {
     action = ADAPTATION_ACTIONS.COMPLETE_DOMAIN
     purpose = 'consolidate'
     reasonCodes = ['mastery_achieved', 'domain_ceiling_reached']

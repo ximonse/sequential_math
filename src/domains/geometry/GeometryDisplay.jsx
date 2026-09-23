@@ -1,4 +1,4 @@
-import { SHAPES_2D, SOLIDS } from './geometryModel'
+import { SHAPES_2D, SOLIDS, objectNameWithArticle } from './geometryModel'
 
 const DEFINITIONS = {
   square: 'fyra lika långa sidor och fyra räta vinklar',
@@ -29,7 +29,7 @@ function Shape({ subject, representation }) {
   const kind = subject?.kind
   const style = { fill: representation === 'filled_grid' ? '#a5f3fc' : 'rgba(14,116,144,.10)', stroke: '#0e7490', strokeWidth: 4, strokeLinejoin: 'round' }
   if (['line', 'ray', 'segment'].includes(kind)) return <svg viewBox="0 0 240 110" className="h-32 w-full" role="img" aria-label={kind === 'line' ? 'Linje med pilar åt båda håll' : kind === 'ray' ? 'Stråle med en ändpunkt och en pil' : 'Sträcka med två ändpunkter'}><line x1="45" y1="55" x2="195" y2="55" {...style}/>{kind !== 'line' && <circle cx="45" cy="55" r="7" fill="#0e7490"/>}{kind === 'segment' && <circle cx="195" cy="55" r="7" fill="#0e7490"/>}{kind === 'line' && <path d="M45 55l18-11v22z" fill="#0e7490"/>}{kind !== 'segment' && <path d="M195 55l-18-11v22z" fill="#0e7490"/>}</svg>
-  if (kind === 'circle' || subject?.part) return <svg viewBox="0 0 220 150" className="h-40 w-full" role="img" aria-label="Cirkel med markerad del"><circle cx="110" cy="75" r="58" {...style}/><circle cx="110" cy="75" r="5" fill="#0e7490"/>{subject?.part === 'radius' && <line x1="110" y1="75" x2="168" y2="75" {...style}/>} {subject?.part === 'diameter' && <line x1="52" y1="75" x2="168" y2="75" {...style}/>}</svg>
+  if (kind === 'circle' || subject?.part) return <svg viewBox="0 0 220 150" className="h-40 w-full" role="img" aria-label={subject?.part ? 'Cirkel med en del markerad i lila' : 'Cirkel'}><circle cx="110" cy="75" r="58" {...style}/><circle cx="110" cy="75" r={subject?.part === 'center' ? 10 : 4} fill={subject?.part === 'center' ? '#7c3aed' : '#0e7490'}/>{subject?.part === 'radius' && <line x1="110" y1="75" x2="168" y2="75" stroke="#7c3aed" strokeWidth="7" strokeLinecap="round"/>}{subject?.part === 'diameter' && <line x1="52" y1="75" x2="168" y2="75" stroke="#7c3aed" strokeWidth="7" strokeLinecap="round"/>}</svg>
   if (kind && SOLIDS[kind]) return <div className={subject.view === 'tilted_left' ? '-rotate-12' : subject.view === 'tilted_right' ? 'rotate-12' : ''}><Solid kind={kind} silhouette={representation === 'silhouette'}/></div>
   const sides = subject?.sides || SHAPES_2D[kind]?.sides
   const points = Array.from({ length: sides }, (_, index) => { const angle = -Math.PI / 2 + index * 2 * Math.PI / sides; return `${110 + Math.cos(angle) * 65},${78 + Math.sin(angle) * 58}` }).join(' ')
@@ -45,6 +45,8 @@ function Evidence({ problem }) {
   if (questionKind === 'quadrilateral_relation' && representation === 'category_table') return <Facts table rows={[[SHAPES_2D[subject.from].label, DEFINITIONS[subject.from]], [SHAPES_2D[subject.to].label, DEFINITIONS[subject.to]]]}/>
   if (questionKind === 'circle_part' && representation === 'description') return <Facts rows={[["Beskrivning", { center: 'punkten mitt i cirkeln', radius: 'sträckan från centrum till randen', diameter: 'sträckan genom centrum mellan två punkter på randen' }[subject.part]]]}/>
   if (questionKind === 'quadrilateral_properties') return <Facts table={representation === 'property_table'} rows={[["Alla sidor lika långa", subject.equalSides ? 'ja' : 'nej'], ["Alla vinklar räta", subject.rightAngles ? 'ja' : 'nej'], ["Motstående sidor parallella", 'ja']]}/>
+  if (questionKind === 'quadrilateral_extension') return <Facts table={representation === 'property_table'} rows={[["Figur", objectNameWithArticle(subject.kind)], ["Målet är", 'kvadrat']]}/>
+  if (questionKind === 'quadrilateral_names') return <Facts table={representation === 'property_table'} rows={[["Figur", objectNameWithArticle(subject.kind)], ["Fråga", 'vilka andra namn gäller alltid?']]}/>
   if (questionKind === 'solid_identity' && representation === 'face_properties') return <Facts rows={[["Sidoytor", subject.kind === 'cube' ? 'sex kvadrater' : 'sex rektanglar, inte alla kvadrater']]}/>
   if (questionKind === 'solid_count' && representation === 'count_description') return <Facts rows={[["Kropp", SOLIDS[subject.kind].label], ["Sök", { faces: 'ytor', edges: 'kanter', vertices: 'hörn' }[subject.property]]]}/>
   if (questionKind === 'solid_face_shapes') return <Facts table={representation === 'face_clue_table'} rows={[["Ytformer", subject.faceShape]]}/>
@@ -58,7 +60,7 @@ export default function GeometryDisplay({ problem, feedback, inputValue, onInput
   const options = problem.values?.options || []
   return <div className="w-full"><div className="mx-auto grid max-w-3xl gap-5 md:grid-cols-[minmax(0,1fr)_minmax(240px,.8fr)]">
     <section className="overflow-hidden rounded-2xl border-2 border-cyan-200 bg-cyan-50 shadow-sm">
-      <div className="border-b border-cyan-200 bg-cyan-900 px-4 py-2 text-xs font-bold uppercase tracking-[.18em] text-cyan-50">Geometriverkstad · nivå {problem.level}</div>
+      <div className="border-b border-cyan-200 bg-cyan-900 px-4 py-2 text-xs font-bold uppercase tracking-[.18em] text-cyan-50">Geometriverkstad · nivå {problem.level} av {problem.skill === 'geometry_2d_objects' ? 6 : 5}</div>
       <div className="bg-[linear-gradient(rgba(14,116,144,.08)_1px,transparent_1px),linear-gradient(90deg,rgba(14,116,144,.08)_1px,transparent_1px)] bg-[size:20px_20px] p-4 sm:p-6"><p className="mb-3 text-center text-lg font-bold text-slate-800">{problem.display?.text}</p><Evidence problem={problem}/></div>
       {leftPanel && <div className="p-4">{leftPanel}</div>}
     </section>

@@ -75,6 +75,16 @@ describe('mastery progression decision', () => {
     })
   })
 
+  it('marks geometry complete at its own ceiling instead of promising a nonexistent next level', () => {
+    const decision = buildMasteryProgressionDecision({ mastery: { ...mastery(6), operation: 'geometry_2d_objects' } })
+    expect(decision).toMatchObject({
+      action: ADAPTATION_ACTIONS.COMPLETE_DOMAIN,
+      fromLevel: 6,
+      nextLevel: null,
+      reasonCodes: ['mastery_achieved', 'domain_ceiling_reached']
+    })
+  })
+
   it('records decisions idempotently in bounded adaptive history', () => {
     const profile = { adaptive: {} }
     const decision = buildMasteryProgressionDecision({ mastery: mastery() })

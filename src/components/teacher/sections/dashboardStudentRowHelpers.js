@@ -279,6 +279,8 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
     assignmentMatched: overallAssignment.matchedAttempts,
     assignmentAdherenceRate: overallAssignment.rate,
     riskLevel: resolvedRiskLevel,
+    inactive: riskSignals.inactive,
+    inactivityReason: riskSignals.inactivityReason,
     riskScore: riskSignals.riskScore,
     riskCodes: resolvedRiskCodes,
     supportScore: riskSignals.supportScore,

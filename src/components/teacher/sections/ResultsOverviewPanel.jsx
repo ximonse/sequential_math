@@ -208,6 +208,11 @@ export default function ResultsOverviewPanel({
                     </div>
                     <div className="mt-1">
                       <RiskBadgeComponent level={row.riskLevel} />
+                      {row.inactive && (
+                        <span className="ml-1 inline-flex items-center rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800" title={row.inactivityReason}>
+                          Inaktiv
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-0 text-xs text-gray-400 font-mono">

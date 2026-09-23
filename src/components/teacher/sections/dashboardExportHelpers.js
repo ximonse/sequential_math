@@ -11,6 +11,8 @@ export function buildSnapshotCsvRows(rows, viewMode, weekGoal) {
       ID: row.studentId,
       Klass: row.classNameLabel || row.className || '',
       SenastAktiv: formatTimestampForCsv(row.lastActive),
+      Inaktiv: row.inactive ? 'ja' : 'nej',
+      Inaktivitetsorsak: row.inactivityReason || '',
       TidPaUppgiftIdagMin: toFixedOrEmpty(row.todayEngagedMinutes, 2),
       TidPaUppgift7dMin: toFixedOrEmpty(row.weekEngagedMinutes, 2),
       InteraktionerIdag: row.todayPresenceInteractions,

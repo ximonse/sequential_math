@@ -98,14 +98,13 @@ export function buildRiskSignals(input, activeAssignment) {
 
   const strongSignals = []
   const followUpSignals = []
-
-  if (!lastActive && attempts === 0) {
-    strongSignals.push('Inte kommit igång')
-  } else if (inactiveDays >= 7) {
-    strongSignals.push('Inaktiv minst 7 dagar')
-  } else if (inactiveDays >= 2) {
-    followUpSignals.push('Inaktiv minst 2 dagar')
-  }
+  const inactivityReason = !lastActive && attempts === 0
+    ? 'Inte kommit igång'
+    : inactiveDays >= 7
+      ? 'Inaktiv minst 7 dagar'
+      : inactiveDays >= 2
+        ? 'Inaktiv minst 2 dagar'
+        : ''
 
   if (weekAttempts >= 6 && weekSuccessRate < 0.55) {
     strongSignals.push(`Låg träff: ${Math.round(weekSuccessRate * 100)}% av ${weekAttempts} svar`)
@@ -140,9 +139,7 @@ export function buildRiskSignals(input, activeAssignment) {
       : `${weekAttempts} svar denna vecka${limitedHistory ? ' · begränsad historik' : ''}`
 
   let nextAction = 'Ingen särskild åtgärd utifrån aktuell data.'
-  if (strongSignals.some(signal => signal.startsWith('Inte kommit') || signal.startsWith('Inaktiv'))) {
-    nextAction = 'Kontrollera åtkomst och hjälp eleven att komma igång.'
-  } else if (strongSignals.some(signal => signal.startsWith('Låg träff'))) {
+  if (strongSignals.some(signal => signal.startsWith('Låg träff'))) {
     nextAction = 'Titta på några felsvar och välj ett smalt träningsområde.'
   } else if (todayStruggle && todayStruggle.wrong >= 3) {
     nextAction = `Titta på felsvaren i ${todayStruggle.skillLabel} innan nytt uppdrag.`
@@ -150,9 +147,13 @@ export function buildRiskSignals(input, activeAssignment) {
     nextAction = 'Kontrollera att eleven hittar och förstår uppdraget.'
   } else if (riskLevel === 'medium') {
     nextAction = 'Följ upp kort och kontrollera elevens lösningsstrategi.'
+  } else if (inactivityReason) {
+    nextAction = 'Kontrollera åtkomst och hjälp eleven att komma igång.'
   }
 
   return {
+    inactive: Boolean(inactivityReason),
+    inactivityReason,
     riskLevel,
     riskScore: priorityRank,
     supportScore: priorityRank,

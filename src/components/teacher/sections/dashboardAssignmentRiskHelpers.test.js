@@ -50,15 +50,35 @@ describe('good-enough teacher support signals', () => {
     expect(result.riskCodes).toEqual(['Osäker träff: 60% av 10 svar'])
   })
 
-  it('treats prolonged inactivity as an observable high-priority signal', () => {
+  it('keeps prolonged inactivity separate from support priority', () => {
     const result = buildRiskSignals(input({
       inactiveDays: 8,
       weekAttempts: 0
     }))
 
-    expect(result.supportLabel).toBe('Prioritera')
-    expect(result.riskCodes).toEqual(['Inaktiv minst 7 dagar'])
+    expect(result.inactive).toBe(true)
+    expect(result.inactivityReason).toBe('Inaktiv minst 7 dagar')
+    expect(result.supportLabel).toBe('Ingen signal')
+    expect(result.supportScore).toBe(0)
+    expect(result.riskCodes).toEqual([])
     expect(result.nextAction).toContain('komma igång')
+  })
+
+  it('marks a pupil who has not started as inactive without implying a learning difficulty', () => {
+    const result = buildRiskSignals(input({ attempts: 0, lastActive: null }))
+
+    expect(result.inactive).toBe(true)
+    expect(result.inactivityReason).toBe('Inte kommit igång')
+    expect(result.riskLevel).toBe('low')
+  })
+
+  it('preserves a separate support signal when an inactive pupil has sufficient error evidence', () => {
+    const result = buildRiskSignals(input({ inactiveDays: 8, weekAttempts: 6, weekSuccessRate: 0.5 }))
+
+    expect(result.inactive).toBe(true)
+    expect(result.supportLabel).toBe('Prioritera')
+    expect(result.riskCodes).toEqual(['Låg träff: 50% av 6 svar'])
+    expect(result.nextAction).toContain('felsvar')
   })
 
   it('makes incomplete history visible even when sample size is sufficient', () => {

@@ -298,6 +298,11 @@ Varfor sa:
 Pedagogiskt varde:
 - Gor uppfoljning av narvaro och arbetsvanor konkret.
 
+En elev som inte har kommit igang eller saknar svar i minst tva dagar far
+faltet `inactive` i lararraden. Orsaken visas som `Inaktiv` i resultatvyn och
+exporteras separat som `Inaktiv` och `Inaktivitetsorsak`. Inaktivitet ar en
+aktivitetssignal, inte belagg for bristande matematisk formaga.
+
 ## 10. Klassniva
 
 Kolumner:
@@ -329,20 +334,19 @@ Pedagogiskt varde:
 ## 12. Behover stod nu
 
 Urval till panelen:
-- elev kommer med om `supportScore >= 45` eller `riskLevel = high`.
+- elev kommer med om `riskLevel` ar `medium` eller `high` utifran svar och
+  ovriga befintliga uppfoljningssignaler. Enbart inaktivitet ger inte plats
+  i stodpanelen och hojer inte `supportScore`.
 
 Risksignaler (urval av regler):
-- aldrig aktiv,
-- inaktiv 2+/7+ dagar,
 - lag veckotraff,
-- manga orimliga fel,
-- lang svarstid,
 - tuff dag idag,
+- aterkommande fel,
 - lag uppdragsfoljsamhet.
 
 Nyckeltal:
 - `Risk`: visuell riskniva (lag/medel/hog).
-- `Stod`: sammanvagt supportscore 0-100.
+- `Stod`: prioritet 0-2 fran stod- och uppfoljningssignaler, utan inaktivitet.
 - `R/F idag`, `Traff v`, `Kampar med`, `Flaggor`.
 
 Pedagogiskt varde:

@@ -40,4 +40,17 @@ describe('dashboard CSV evidence', () => {
     expect(row.TranarNu_addition).toBe(5)
     expect(row.Traningssyfte_addition).toBe('advance')
   })
+
+  it('exports inactivity separately from support evidence', () => {
+    const [row] = buildSnapshotCsvRows([{
+      ...baseRow,
+      inactive: true,
+      inactivityReason: 'Inte kommit igång'
+    }], 'daily', 20)
+
+    expect(row.Inaktiv).toBe('ja')
+    expect(row.Inaktivitetsorsak).toBe('Inte kommit igång')
+    expect(row.Stodsignal).toBe('Ingen signal')
+    expect(row.Stodorsaker).toBe('')
+  })
 })

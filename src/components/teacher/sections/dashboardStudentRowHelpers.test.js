@@ -20,6 +20,21 @@ function problem(index) {
 }
 
 describe('teacher dashboard weekly evidence', () => {
+  it('does not put a pupil without answers in the support queue', () => {
+    const row = buildStudentRow({
+      studentId: 'NEW01',
+      name: 'New pupil',
+      recentProblems: [],
+      stats: { lifetimeProblems: 0 }
+    })
+
+    expect(row.inactive).toBe(true)
+    expect(row.inactivityReason).toBe('Inte kommit igång')
+    expect(row.riskLevel).toBe('low')
+    expect(row.supportScore).toBe(0)
+    expect(row.riskCodes).toEqual([])
+  })
+
   it('uses the complete server summary for weekly totals', () => {
     const problemLog = Array.from({ length: 300 }, (_, index) => problem(index))
     const fullProfile = {

@@ -58,6 +58,9 @@ elevhändelser väntande på enheten och hindra nästa sidöppning. Rensa inte
 webbläsardata eller återställ elevkort innan de väntande svaren har hanterats.
 Kontrollera API-modulen med vanlig Node-import, utöver test och Vite-bygge,
 eftersom Vite kan godta importsökvägar som serverns Node-körning inte gör.
+Under vanlig träning visas ingen blinkande sparstatus. Om serverkontakten
+fortsätter fallera visas däremot en varning om väntande svar; lokalt sparfel
+visas som ett tydligt fel.
 
 ## 6. Lärare ser fel/för lite aktivitet
 

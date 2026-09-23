@@ -1,14 +1,4 @@
 const LABELS = {
-  synced: {
-    title: 'Sparat',
-    detail: 'Dina svar är bekräftade.',
-    className: 'border-emerald-200 bg-emerald-50 text-emerald-800'
-  },
-  syncing: {
-    title: 'Sparar…',
-    detail: 'Svaret är sparat på enheten och skickas nu.',
-    className: 'border-sky-200 bg-sky-50 text-sky-800'
-  },
   pending: {
     title: 'Sparat på enheten',
     detail: 'Väntar på kontakt med servern. Du kan fortsätta arbeta.',
@@ -23,16 +13,14 @@ const LABELS = {
     title: 'Kontrollera sparningen',
     detail: 'Svaret kunde inte sparas tryggt på enheten.',
     className: 'border-rose-200 bg-rose-50 text-rose-800'
-  },
-  idle: {
-    title: 'Sparstatus',
-    detail: 'Kontrolleras när du svarar.',
-    className: 'border-slate-200 bg-white text-slate-500'
   }
 }
 
 export default function StudentSyncStatus({ status }) {
-  const presentation = LABELS[status?.state] || LABELS.idle
+  // Normal background saves should not distract the pupil or shift the problem.
+  if (status?.state !== 'error' && status?.state !== 'local_only'
+    && !(status?.state === 'pending' && status?.lastError)) return null
+  const presentation = LABELS[status.state]
   const detail = status?.state === 'pending' && status?.lastError
     ? status.lastError
     : presentation.detail

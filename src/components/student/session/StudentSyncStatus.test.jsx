@@ -3,10 +3,17 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import StudentSyncStatus from './StudentSyncStatus'
 
 describe('student sync status', () => {
-  it('states that pending work is locally saved and safe to continue', () => {
-    const html = renderToStaticMarkup(<StudentSyncStatus status={{ state: 'pending' }} />)
+  it('keeps normal save transitions out of the pupil layout', () => {
+    for (const state of ['idle', 'synced', 'syncing']) {
+      expect(renderToStaticMarkup(<StudentSyncStatus status={{ state }} />)).toBe('')
+    }
+    expect(renderToStaticMarkup(<StudentSyncStatus status={{ state: 'pending' }} />)).toBe('')
+  })
+
+  it('states that failed server sync is locally saved and safe to continue', () => {
+    const html = renderToStaticMarkup(<StudentSyncStatus status={{ state: 'pending', lastError: 'Servern svarar inte.' }} />)
     expect(html).toContain('Sparat på enheten')
-    expect(html).toContain('Du kan fortsätta arbeta')
+    expect(html).toContain('Servern svarar inte.')
     expect(html).toContain('role="status"')
   })
 

@@ -78,6 +78,9 @@ Om status ser fel ut:
 
 - `TEACHER_API_PASSWORD`: krav för lärarinloggning i production/preview.
 - `VITE_ENABLE_CLOUD_SYNC=1`: aktiverar sync mot API/KV.
+- `APP_ORIGIN`: valfri betrodd ursprungsadress. I Vercel Preview måste elevsessioner
+  även acceptera Previewns exakta egen host när variabeln saknas; en annan
+  `*.vercel.app`-host ska fortfarande avvisas.
 
 Efter varje ändring:
 1. redeploya,

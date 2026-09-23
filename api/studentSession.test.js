@@ -73,6 +73,15 @@ describe('pilot student sessions', () => {
         origin: 'https://other-project.vercel.app',
         host: 'sekvens-abc123-ximonses-projects.vercel.app'
       } })).toBe(false)
+      delete process.env.APP_ORIGIN
+      expect(requestOriginIsTrusted({ headers: {
+        origin: 'https://sekvens-abc123-ximonses-projects.vercel.app',
+        host: 'sekvens-abc123-ximonses-projects.vercel.app'
+      } })).toBe(true)
+      expect(requestOriginIsTrusted({ headers: {
+        origin: 'https://other-project.vercel.app',
+        host: 'sekvens-abc123-ximonses-projects.vercel.app'
+      } })).toBe(false)
       process.env.VERCEL_ENV = 'production'
       expect(requestOriginIsTrusted({ headers: {
         origin: 'https://sekvens-abc123-ximonses-projects.vercel.app',

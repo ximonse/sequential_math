@@ -97,7 +97,8 @@ function isSameVercelPreviewOrigin(req, origin) {
 export function requestOriginIsTrusted(req) {
   const origin = String(req?.headers?.origin || '')
   const configured = String(process.env.APP_ORIGIN || '').replace(/\/$/, '')
-  if (configured) return origin === configured || isSameVercelPreviewOrigin(req, origin)
+  if (isSameVercelPreviewOrigin(req, origin)) return true
+  if (configured) return origin === configured
   if (process.env.NODE_ENV === 'development') return /^http:\/\/localhost(?::\d+)?$/.test(origin)
   return origin === 'https://matematik.ximon.se'
 }

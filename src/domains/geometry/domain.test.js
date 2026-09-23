@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import geometryDomain from './index'
+import { computeLevelMastery } from '../../lib/masteryCalculation'
+import { getOperationMasteryRule } from '../../lib/operations'
+import { resetRotationStore } from '../../lib/rotationPicker'
 
 describe('geometry domain', () => {
   it('independently verifies every implemented skill level', () => {
@@ -22,5 +27,68 @@ describe('geometry domain', () => {
     const problem = geometryDomain.generate('geometry_2d_objects', 1)
     const distractor = problem.values.options.find(item => item.id !== problem.answer.correct)
     expect(geometryDomain.analyzeError(problem, distractor.id)).toMatchObject({ category: 'misconception' })
+  })
+
+  it('can reach mastery with real templates and representations at every level', () => {
+    for (const skill of geometryDomain.skills) {
+      for (let level = skill.levels[0]; level <= skill.levels[1]; level += 1) {
+        resetRotationStore()
+        const problems = Array.from({ length: 15 }, () => geometryDomain.generate(skill.id, level))
+        const entries = problems.map(problem => ({ varietyTemplate: problem.metadata.varietyTemplate, representation: problem.metadata.representation }))
+        const result = computeLevelMastery(problems.map(() => true), { ...getOperationMasteryRule(skill.id), evidenceEntries: entries })
+        expect(result.isMastered, `${skill.id}/${level}: ${JSON.stringify(result)}`).toBe(true)
+      }
+    }
+  })
+
+  it('renders two visibly different representations per level', () => {
+    for (const skill of geometryDomain.skills) {
+      for (let level = skill.levels[0]; level <= skill.levels[1]; level += 1) {
+        resetRotationStore()
+        const problems = Array.from({ length: 16 }, () => geometryDomain.generate(skill.id, level))
+        const byRepresentation = new Map(problems.map(problem => [problem.values.representation, problem]))
+        expect(byRepresentation.size, `${skill.id}/${level}`).toBeGreaterThanOrEqual(2)
+        const html = [...byRepresentation.values()].map(problem => renderToStaticMarkup(createElement(geometryDomain.Display, { problem, inputValue: '', onInputChange() {}, onSubmit() {}, onNext() {} })))
+        expect(html[0], `${skill.id}/${level}`).not.toBe(html[1])
+      }
+    }
+  })
+
+  it('draws two endpoints for a segment and never an arrow', () => {
+    resetRotationStore()
+    const problem = Array.from({ length: 12 }, () => geometryDomain.generate('geometry_2d_objects', 1))
+      .find(item => item.values.subject.kind === 'segment')
+    expect(problem).toBeDefined()
+    problem.values.representation = 'diagram'
+    const html = renderToStaticMarkup(createElement(geometryDomain.Display, { problem, inputValue: '', onInputChange() {}, onSubmit() {}, onNext() {} }))
+    expect(html).toContain('cx="45"')
+    expect(html).toContain('cx="195"')
+    expect(html).not.toContain('l-18-11v22z')
+  })
+
+  it('rejects mismatched subjects, prompts, and representation claims', () => {
+    const line = geometryDomain.generate('geometry_2d_objects', 1)
+    line.values.subject.kind = 'hexagon'
+    expect(geometryDomain.verifyContent(line).valid).toBe(false)
+
+    const relation = geometryDomain.generate('geometry_2d_objects', 4)
+    relation.display.text = 'Är varje kvadrat också en kvadrat?'
+    expect(geometryDomain.verifyContent(relation).valid).toBe(false)
+
+    const quadrilateral = geometryDomain.generate('geometry_2d_objects', 6)
+    quadrilateral.values.subject.equalSides = !quadrilateral.values.subject.equalSides
+    expect(geometryDomain.verifyContent(quadrilateral).valid).toBe(false)
+
+    const solid = geometryDomain.generate('geometry_3d_objects', 5)
+    solid.values.subject.vertices += 1
+    expect(geometryDomain.verifyContent(solid).valid).toBe(false)
+
+    const format = geometryDomain.generate('geometry_3d_objects', 2)
+    format.values.representation = 'silhouette'
+    expect(geometryDomain.verifyContent(format).valid).toBe(false)
+
+    const visibleAnswer = geometryDomain.generate('geometry_2d_objects', 6)
+    visibleAnswer.values.options.find(item => item.id === visibleAnswer.answer.correct).label = 'triangel'
+    expect(geometryDomain.verifyContent(visibleAnswer).valid).toBe(false)
   })
 })

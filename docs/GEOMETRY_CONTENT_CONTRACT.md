@@ -24,9 +24,9 @@ Källa: *ABG Sammanfattningar A4 v-2*, sidorna 8–10.
 
 ### `geometry_3d_objects` – kroppar (sida 8, implementerad)
 
-1. Känna igen rätblock, kub, pyramid, cylinder, kon och klot.
+1. Känna igen rätblock, kub, fyrsidig pyramid, cylinder, kon och klot.
 2. Skilja kub från rätblock oberoende av orientering och proportioner.
-3. Koppla kroppar till antal sidoytor, kanter och hörn där begreppen är entydiga.
+3. Koppla kroppar till antal ytor, kanter och hörn där begreppen är entydiga.
 4. Koppla kroppar till bas- och sidoytornas former.
 5. Härleda en kropp från flera egenskaper.
 
@@ -42,6 +42,7 @@ Källa: *ABG Sammanfattningar A4 v-2*, sidorna 8–10.
 - Motorn varierar språk, orientering, proportioner och representationsform inom samma nivå.
 - Tre fel i följd får sänka en nivå enligt appens gemensamma stödregel; tillfälliga lättare och svårare uppgifter används inom delkunskapens faktiska nivåintervall.
 - Mastery för geometri kräver minst 8 svar, minst 7 rätt, minst 3 uppgiftsvarianter och minst 2 representationer i det aktuella fönstret. Övriga domäner behåller befintlig regel.
+- Varje implementerad nivå kan nu generera minst två synligt olika representationer och minst tre faktiska mallar i masteryfönstret. Enbart ändrad frågefras räknas inte som representationsbyte.
 
 ## Felhypoteser och lärarinsikter
 
@@ -76,7 +77,6 @@ Utöver appens gemensamma observationsfält sparas `varietyTemplate` och `repres
 - Den gemensamma guardian kör schema-, evidens- och domänverifiering före visning och gör högst fyra försök.
 - Domänverifieraren avvisar okända uppgiftstyper, dubbletter, saknat entydigt rätt alternativ och facit som inte följer av figurdata.
 - Kontraktstest genererar, verifierar, bedömer och felanalyserar varje nivå.
-- Korruptionsprov ändrar facit och måste stoppas före visning.
+- Korruptionsprov ändrar facit, figurens strukturerade egenskaper, relationstext eller representationsanspråk och måste stoppas före visning.
 - Variationsprov kräver variation i prompt, mall och representation; visuella data testas separat från texten.
 - UI-test ska kontrollera val, återkoppling, tangentbord och läsordning. Fri ritning och draginteraktion är uttryckligen utanför v1.
-

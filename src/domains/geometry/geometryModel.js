@@ -11,9 +11,9 @@ export const SHAPES_2D = Object.freeze({
 })
 
 export const SOLIDS = Object.freeze({
-  cuboid: { label: 'rätblock', faces: 6, edges: 12, vertices: 8, faceShape: 'rektanglar' },
+  cuboid: { label: 'rätblock', faces: 6, edges: 12, vertices: 8, faceShape: 'rektanglar, varav minst två inte är kvadrater' },
   cube: { label: 'kub', faces: 6, edges: 12, vertices: 8, faceShape: 'kvadrater' },
-  pyramid: { label: 'pyramid', faces: 5, edges: 8, vertices: 5, faceShape: 'trianglar och en kvadrat' },
+  pyramid: { label: 'fyrsidig pyramid', faces: 5, edges: 8, vertices: 5, faceShape: 'trianglar och en kvadrat' },
   cylinder: { label: 'cylinder', faces: 3, edges: 2, vertices: 0, faceShape: 'två cirklar och en böjd yta' },
   cone: { label: 'kon', faces: 2, edges: 1, vertices: 1, faceShape: 'en cirkel och en böjd yta' },
   sphere: { label: 'klot', faces: 1, edges: 0, vertices: 0, faceShape: 'en böjd yta' }
@@ -33,4 +33,3 @@ export const QUADRILATERAL_RELATIONS = Object.freeze({
 export function option(id, label, errorPattern = '') {
   return { id, label, concept: id, errorPattern }
 }
-

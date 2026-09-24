@@ -215,7 +215,7 @@ function StudentSession() {
     continueAfterMilestone
   } = usePracticeSessionActions({
     profile,
-    classIdAtAttempt: profile.classId || null,
+    classIdAtAttempt: profile?.classId || null,
     currentProblem,
     answer,
     startTime,

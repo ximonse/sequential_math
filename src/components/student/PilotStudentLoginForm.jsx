@@ -97,7 +97,7 @@ export default function PilotStudentLoginForm({ onLogin, busy, error, onClearErr
       {scannerMessage ? <p role="status" className="text-sm text-teal-800">{scannerMessage}</p> : null}
       {error && <p role="alert" className="text-red-700 text-sm text-center">{error}</p>}
       <button type="submit" disabled={busy}
-        className="w-full py-3 px-4 bg-teal-700 hover:bg-teal-800 disabled:bg-gray-300 text-white font-semibold rounded-lg transition-colors">
+        className="w-full py-3 px-4 bg-sky-400 hover:bg-sky-500 disabled:bg-gray-300 text-slate-900 font-semibold rounded-lg transition-colors">
         {busy ? 'Loggar in…' : 'Logga in'}
       </button>
     </form>

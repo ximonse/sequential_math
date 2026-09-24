@@ -14,6 +14,6 @@ export default function StudentLoginForm({ className, onLogin, busy, error, onCl
     <div><label htmlFor="studentCode" className="block text-sm font-medium text-gray-700 mb-2">Din fyrsiffriga kod</label><input id="studentCode" className={inputClass} value={code} required inputMode="numeric" pattern="[0-9]{4}" maxLength={4} onChange={event => { setCode(event.target.value.replace(/\D/g, '')); onClearError() }} autoComplete="current-password" disabled={busy} /></div>
     <label className="flex items-center gap-2 text-sm text-gray-700"><input type="checkbox" checked={remember} onChange={event => setRemember(event.target.checked)} /> Kom ihåg mig på den här enheten</label>
     {error && <p role="alert" className="text-red-700 text-sm text-center">{error}</p>}
-    <button type="submit" disabled={busy} className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-semibold rounded-lg transition-colors">{busy ? 'Loggar in…' : 'Logga in'}</button>
+    <button type="submit" disabled={busy} className="w-full py-3 px-4 bg-sky-400 hover:bg-sky-500 disabled:bg-gray-300 text-slate-900 font-semibold rounded-lg transition-colors">{busy ? 'Loggar in…' : 'Logga in'}</button>
   </form>
 }

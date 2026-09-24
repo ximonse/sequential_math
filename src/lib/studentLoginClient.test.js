@@ -1,5 +1,0 @@
-import { afterEach, expect, it, vi } from 'vitest'
-import { getClassLogin, resolveStudentLogin } from './studentLoginClient'
-afterEach(() => vi.unstubAllGlobals())
-it('loads the linked class without a roster', async () => { vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({className:'6A'})))); await expect(getClassLogin('token')).resolves.toEqual({ok:true,className:'6A'}) })
-it('posts a name, code and remember choice to the class link', async () => { const fetchMock=vi.fn(async () => new Response(JSON.stringify({studentId:'ANNA',sessionSecret:'st_x',classId:'a'}))); vi.stubGlobal('fetch',fetchMock); await expect(resolveStudentLogin({classToken:'token',name:' Anna ',code:'1234',remember:true})).resolves.toMatchObject({ok:true,studentId:'ANNA'}); expect(fetchMock).toHaveBeenCalledWith('/api/student-login',expect.objectContaining({method:'POST'})) })

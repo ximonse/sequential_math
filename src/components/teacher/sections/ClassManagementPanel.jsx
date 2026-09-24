@@ -3,7 +3,6 @@ import QRCode from 'qrcode'
 import { parseRosterLines } from '../../../lib/storageClassHelpers'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
 import { downloadStudentCredentialPdf } from '../../../lib/studentCredentialPdf'
-import ClassLoginQrDialog from './ClassLoginQrDialog'
 import StudentCredentialCards from './StudentCredentialCards'
 import TeacherGroupsPanel from './TeacherGroupsPanel'
 import { useSchools } from './SchoolControls'
@@ -32,7 +31,6 @@ export default function ClassManagementPanel({
   const [moveStudentId, setMoveStudentId] = useState('')
   const [issuedCredentials, setIssuedCredentials] = useState([])
   const [resetStatus, setResetStatus] = useState('')
-  const [qrClass, setQrClass] = useState(null)
   const busyRef = useRef(false)
   const classLabel = item => `${item.name} · ${directory.schools.find(school => school.id === item.schoolId)?.name || 'Skola ej angiven'}`
   const orderedClasses = [...classes].sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'sv'))
@@ -134,7 +132,6 @@ export default function ClassManagementPanel({
             return <div key={item.id} className="border rounded px-2 py-1.5">
               <div className="flex items-center justify-between gap-2">
                 <div><p className="text-sm font-medium text-gray-800">{classLabel(item)}</p><p className="text-xs text-gray-500">Klass-ID: {item.id} · {classStudents.length} elever | {loggedInCount} har loggat in</p></div>
-                {item.loginToken && <div className="flex flex-wrap gap-1"><button onClick={() => setQrClass(item)} className="px-2 py-1 bg-slate-800 hover:bg-slate-950 text-white rounded text-xs">Visa QR-kod</button><button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/?class=${item.loginToken}`)} className="px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded text-xs">Kopiera elevlänk</button></div>}
               </div>
               {classStudents.length > 0 && <details className="mt-2 rounded border border-slate-200 bg-slate-50 px-2 py-1.5"><summary className="cursor-pointer text-xs font-medium text-slate-800">Elever och elevkort ({classStudents.length})</summary><div className="mt-2 grid gap-1">{classStudents.map(student => <div key={`${item.id}-${student.studentId}`} className="rounded bg-white px-2 py-1.5 text-xs"><div className="flex items-center justify-between gap-2"><span className="truncate font-medium">{student.name || student.displayAlias}</span>{onOpenStudentDetail && <button type="button" onClick={() => onOpenStudentDetail(student.studentId)} className="rounded bg-slate-200 px-2 py-1">Öppna elevprofil</button>}</div><StudentCredentialIssuer student={student} /></div>)}</div></details>}
               {canResetStudentAccounts && <details className="mt-2 rounded border border-rose-200 bg-rose-50 p-2"><summary className="cursor-pointer text-xs font-medium text-rose-900">Återställ alla elevkonton</summary><p className="mt-1 text-xs text-rose-900">Rensar elevdata i klassen och utfärdar nya QR-kort/PIN.</p><button type="button" onClick={() => runRosterAction(() => resetClassStudentAccounts(item))} className="mt-2 rounded bg-rose-700 px-3 py-1.5 text-xs font-semibold text-white">Återställ och skapa nya elevkort</button></details>}
@@ -144,7 +141,6 @@ export default function ClassManagementPanel({
       </fieldset>
 
       <div className="mt-8 border-t border-gray-200 pt-6"><h2 className="mb-3 text-lg font-semibold text-gray-800">Grupper</h2><TeacherGroupsPanel students={students} onStatusChange={onStatusChange} /></div>
-      {qrClass && <ClassLoginQrDialog classRecord={qrClass} onClose={() => setQrClass(null)} />}
     </div>
   )
 }

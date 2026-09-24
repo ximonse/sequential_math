@@ -61,7 +61,6 @@ import adminClassHandler from './admin/classes/[id].js'
 import classConfigHandler from './class-config.js'
 import rolloverHandler from './admin/classes/rollover.js'
 import rosterHandler from './student-roster.js'
-import studentLoginHandler from './student-login.js'
 import studentsHandler from './students.js'
 import studentHandler from './student/[studentId].js'
 
@@ -148,15 +147,8 @@ describe('teacher account to pupil lifecycle', () => {
     expect(roster).toMatchObject({ code: 200, data: { ok: true } })
     const studentId = roster.data.results[0].studentId
 
-    const loginClasses = await call(studentLoginHandler, { query: { class: roster.data.class.loginToken } })
-    expect(loginClasses).toMatchObject({ code: 200, data: { className: '4A' } })
     expect(roster.data.results[0].qrSecret.length).toBeGreaterThan(40)
     expect(roster.data.results[0].pin).toMatch(/^\d{4}$/)
-    const pupilLogin = await call(studentLoginHandler, {
-      method: 'POST', body: { classToken: roster.data.class.loginToken, name: 'Ada Student', code: roster.data.results[0].pin }
-    })
-    expect(pupilLogin).toMatchObject({ code: 200, data: { student: { studentId }, classId: roster.data.class.id } })
-    expect(pupilLogin.data.csrfToken).toEqual(expect.any(String))
 
     const teacherStudent = await call(studentHandler, {
       query: { studentId }, headers: firstTeacherHeaders
@@ -166,10 +158,6 @@ describe('teacher account to pupil lifecycle', () => {
       body: { serverRevision: teacherStudent.data.profile.serverRevision, changes: { loginCode: '1234' } }
     })
     expect(codeChange.code).toBe(400)
-    const unchangedPinLogin = await call(studentLoginHandler, {
-      method: 'POST', body: { classToken: roster.data.class.loginToken, name: 'Ada Student', code: roster.data.results[0].pin }
-    })
-    expect(unchangedPinLogin).toMatchObject({ code: 200, data: { student: { studentId } } })
 
     const listed = await call(studentsHandler, { headers: firstTeacherHeaders })
     expect(listed).toMatchObject({ code: 200 })
@@ -374,8 +362,6 @@ describe('school management lifecycle', () => {
       body: { requestId: 'school-flow-denied-create', className: '6C', names: ['Bo'], schoolId }
     })
     expect(deniedCreate.code).toBe(403)
-    expect(await call(studentLoginHandler, { method: 'POST', body: { classToken: roster.data.class.loginToken, name: 'Anna', code: roster.data.results[0].pin } }))
-      .toMatchObject({ code: 200, data: { student: { studentId } } })
     const before = structuredClone(records.get('student:' + studentId))
     const renamed = await call(adminClassHandler, { method: 'PUT', headers: adminAuth, query: { id: roster.data.class.id }, body: { name: '6B', schoolId } })
     expect(renamed.code).toBe(200)

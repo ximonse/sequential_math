@@ -10,6 +10,8 @@ function vault() {
     saveSnapshot: vi.fn(async () => {}),
     saveSnapshotAndAppendEvent: vi.fn(async () => {}),
     listPendingEvents: vi.fn(async () => []),
+    countRejectedEvents: vi.fn(async () => 0),
+    rejectEvents: vi.fn(async () => {}),
     acknowledgeEvents: vi.fn(async () => {}),
     close: vi.fn()
   }

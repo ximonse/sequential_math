@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { getSyncHealth } from '../../lib/storage'
 import { getOperationLabel, OPERATION_LABELS, STANDARD_OPERATIONS, ALL_LEVELS as LEVELS } from '../../lib/operations'
 import { normalizeClassOperations } from '../../lib/classOperations'
 import { computeOperationMasteryBoards, getPreferredProblemSource } from '../../lib/masteryCalculation'
@@ -10,6 +9,8 @@ import { markStudentPresence, PRESENCE_HEARTBEAT_MS, PRESENCE_SAVE_THROTTLE_MS }
 import { incrementTelemetryDailyMetric, recordTelemetryEvent } from '../../lib/telemetry'
 import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { logoutStudentSession } from '../../lib/studentSessionClient'
+import { useStudentSyncStatus } from './session/useStudentSyncStatus'
+import StudentSyncStatus from './session/StudentSyncStatus'
 import StudentHomeAssignmentLaunchCard from './StudentHomeAssignmentLaunchCard'
 import StudentHomeProgressCard from './StudentHomeProgressCard'
 import StudentHomeTableDrillCard from './StudentHomeTableDrillCard'
@@ -21,6 +22,7 @@ function StudentHome() {
   const { studentId } = useParams()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const syncStatus = useStudentSyncStatus(studentId)
   const [profile, setProfile] = useState(null)
   const [classConfig, setClassConfig] = useState({ classId: '', operations: null })
   const [assignment, setAssignment] = useState(null)
@@ -327,9 +329,9 @@ function StudentHome() {
             >
               Logga ut
             </button>
-            <SyncStatusIndicator />
           </div>
         </div>
+        <StudentSyncStatus status={syncStatus} />
 
         {activeTicketPayload && !activeTicketResponse && (
           <StudentHomeTicketCard
@@ -391,24 +393,6 @@ function StudentHome() {
 
       </div>
     </div>
-  )
-}
-
-function SyncStatusIndicator() {
-  const [pending, setPending] = useState(false)
-
-  useEffect(() => {
-    const check = () => setPending(getSyncHealth().hasPending)
-    check()
-    const timer = setInterval(check, 5000)
-    return () => clearInterval(timer)
-  }, [])
-
-  if (!pending) return null
-  return (
-    <span className="text-[10px] text-amber-600 animate-pulse">
-      Synkar data...
-    </span>
   )
 }
 

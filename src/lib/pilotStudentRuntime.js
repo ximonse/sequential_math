@@ -68,6 +68,7 @@ export function createPilotStudentRuntime({
   let syncStatus = {
     state: 'idle',
     pendingCount: 0,
+    rejectedCount: 0,
     lastAttemptAt: 0,
     lastSuccessAt: 0,
     lastErrorAt: 0,
@@ -81,28 +82,39 @@ export function createPilotStudentRuntime({
     }
   }
 
-  // One event at a time: anything the server still refuses on its own terms is
-  // unsendable forever, so it is discarded rather than left blocking the queue.
+  // Isolate rejected events without deleting their encrypted vault records.
   async function sendApart(batch) {
-    const discarded = []
     for (const event of batch) {
       let single
       try {
         single = await postEvents([event])
       } catch (error) {
-        if (discarded.length > 0) await store.acknowledgeEvents(discarded)
         return { ok: false, error: String(error?.message || 'Kunde inte kontakta servern.') }
       }
       if (single?.ok) {
+        if (!Array.isArray(single.ack) || !single.ack.includes(event.id)) {
+          return { ok: false, error: 'Servern bekräftade inte elevsvaret.' }
+        }
         await store.acknowledgeEvents([event.id])
       } else if (UNSENDABLE_STATUSES.has(single?.status)) {
-        discarded.push(event.id)
+        await store.rejectEvents([event.id])
       } else {
-        if (discarded.length > 0) await store.acknowledgeEvents(discarded)
         return { ok: false, error: String(single?.error || 'Kunde inte synka arbetet.') }
       }
     }
-    if (discarded.length > 0) await store.acknowledgeEvents(discarded)
+    return { ok: true }
+  }
+
+  async function reportCompletedSync() {
+    const rejectedCount = await store.countRejectedEvents()
+    updateSyncStatus({
+      state: rejectedCount ? 'rejected' : 'synced',
+      pendingCount: 0,
+      rejectedCount,
+      lastSuccessAt: Date.now(),
+      lastErrorAt: rejectedCount ? Date.now() : 0,
+      lastError: rejectedCount ? 'Ett eller flera svar avvisades av servern och finns kvar på enheten. Be läraren om hjälp.' : ''
+    })
     return { ok: true }
   }
 
@@ -113,8 +125,7 @@ export function createPilotStudentRuntime({
     }
     const pending = await store.listPendingEvents()
     if (pending.length === 0) {
-      updateSyncStatus({ state: 'synced', pendingCount: 0, lastSuccessAt: Date.now(), lastErrorAt: 0, lastError: '' })
-      return { ok: true }
+      return reportCompletedSync()
     }
     updateSyncStatus({ state: 'syncing', pendingCount: pending.length, lastAttemptAt: Date.now(), lastError: '' })
 
@@ -131,9 +142,7 @@ export function createPilotStudentRuntime({
       }
 
       if (!result?.ok) {
-        // A batch the server refuses on its own terms never becomes valid by
-        // waiting, and one bad event blocks every later result. Send the batch
-        // apart to keep the good events and drop the rest.
+        // Isolate individually rejected entries while preserving them in the vault.
         if (UNSENDABLE_STATUSES.has(result?.status)) {
           const outcome = await sendApart(batch)
           if (!outcome.ok) {
@@ -161,8 +170,7 @@ export function createPilotStudentRuntime({
       updateSyncStatus({ pendingCount: Math.max(0, pending.length - sent) })
     }
 
-    updateSyncStatus({ state: 'synced', pendingCount: 0, lastSuccessAt: Date.now(), lastErrorAt: 0, lastError: '' })
-    return { ok: true }
+    return reportCompletedSync()
   }
 
   return {
@@ -186,13 +194,7 @@ export function createPilotStudentRuntime({
         return loaded?.ok ? { ok: false, error: 'Profilen stämmer inte med elevsessionen.' } : loaded
       }
       await store.saveSnapshot(loaded.profile)
-      updateSyncStatus({
-        state: synced.ok ? 'synced' : 'pending',
-        lastSuccessAt: synced.ok ? Date.now() : syncStatus.lastSuccessAt,
-        lastErrorAt: synced.ok ? 0 : syncStatus.lastErrorAt,
-        lastError: synced.ok ? '' : syncStatus.lastError
-      })
-      return { ok: true, profile: loaded.profile, pendingSync: !synced.ok }
+      return { ok: true, profile: loaded.profile, pendingSync: !synced.ok, rejectedCount: syncStatus.rejectedCount }
     },
 
     async persistEvent(profile, event) {
@@ -206,7 +208,7 @@ export function createPilotStudentRuntime({
         updateSyncStatus({ state: 'error', lastErrorAt: Date.now(), lastError: String(error?.message || 'Svaret kunde inte sparas på enheten.') })
         throw error
       }
-      updateSyncStatus({ state: 'pending', pendingCount: syncStatus.pendingCount + 1, lastError: '' })
+      updateSyncStatus({ state: 'pending', pendingCount: syncStatus.pendingCount + 1 })
       return syncPending()
     },
 
@@ -238,7 +240,7 @@ export function createPilotStudentRuntime({
       if (store) store.close()
       store = null
       studentId = ''
-      updateSyncStatus({ state: 'idle', pendingCount: 0, lastAttemptAt: 0, lastSuccessAt: 0, lastErrorAt: 0, lastError: '' })
+      updateSyncStatus({ state: 'idle', pendingCount: 0, rejectedCount: 0, lastAttemptAt: 0, lastSuccessAt: 0, lastErrorAt: 0, lastError: '' })
     }
   }
 }

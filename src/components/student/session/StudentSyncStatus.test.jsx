@@ -17,9 +17,15 @@ describe('student sync status', () => {
     expect(html).toContain('role="status"')
   })
 
-  it('uses an alert only when local persistence itself failed', () => {
+  it('alerts when local persistence failed', () => {
     const html = renderToStaticMarkup(<StudentSyncStatus status={{ state: 'error' }} />)
     expect(html).toContain('Kontrollera sparningen')
+    expect(html).toContain('role="alert"')
+  })
+
+  it('alerts when the server rejected a record kept on the device', () => {
+    const html = renderToStaticMarkup(<StudentSyncStatus status={{ state: 'rejected', rejectedCount: 1 }} />)
+    expect(html).toContain('finns kvar på enheten')
     expect(html).toContain('role="alert"')
   })
 })

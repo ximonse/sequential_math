@@ -13,22 +13,27 @@ const LABELS = {
     title: 'Kontrollera sparningen',
     detail: 'Svaret kunde inte sparas tryggt på enheten.',
     className: 'border-rose-200 bg-rose-50 text-rose-800'
+  },
+  rejected: {
+    title: 'Kontrollera sparningen',
+    detail: 'Ett svar avvisades av servern och finns kvar på enheten. Be läraren om hjälp.',
+    className: 'border-rose-200 bg-rose-50 text-rose-800'
   }
 }
 
 export default function StudentSyncStatus({ status }) {
   // Normal background saves should not distract the pupil or shift the problem.
-  if (status?.state !== 'error' && status?.state !== 'local_only'
+  if (status?.state !== 'error' && status?.state !== 'rejected' && status?.state !== 'local_only'
     && !(status?.state === 'pending' && status?.lastError)) return null
   const presentation = LABELS[status.state]
-  const detail = status?.state === 'pending' && status?.lastError
+  const detail = status?.lastError
     ? status.lastError
     : presentation.detail
 
   return (
     <div
       className={`mb-3 flex items-start gap-2 rounded-lg border px-3 py-2 text-xs ${presentation.className}`}
-      role={status?.state === 'error' ? 'alert' : 'status'}
+      role={status?.state === 'error' || status?.state === 'rejected' ? 'alert' : 'status'}
       aria-live="polite"
     >
       <span className="font-semibold">{presentation.title}</span>

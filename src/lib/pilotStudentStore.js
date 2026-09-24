@@ -238,11 +238,35 @@ export async function createPilotStudentStore({
       const transaction = db.transaction(STORE_NAME, 'readonly');
       const records = await requestAsPromise(transaction.objectStore(STORE_NAME).getAll());
       await transactionAsPromise(transaction);
-      const pending = records.filter((item) => item.type === 'event' && item.studentId === studentId && item.schema === VAULT_SCHEMA && !item.acknowledgedAt);
+      const pending = records.filter((item) => item.type === 'event' && item.studentId === studentId && item.schema === VAULT_SCHEMA && !item.acknowledgedAt && !item.rejectedAt);
       return Promise.all(pending.map(async (item) => ({
         event: await decryptVaultValue({ cryptoApi: crypto, key, studentId, recordType: 'event', encrypted: item }),
         createdAt: item.createdAt,
       })));
+    },
+
+    async countRejectedEvents() {
+      const transaction = db.transaction(STORE_NAME, 'readonly');
+      const records = await requestAsPromise(transaction.objectStore(STORE_NAME).getAll());
+      await transactionAsPromise(transaction);
+      return records.filter((item) => item.type === 'event' && item.studentId === studentId && item.schema === VAULT_SCHEMA && item.rejectedAt && !item.acknowledgedAt).length;
+    },
+
+    async rejectEvents(eventIds) {
+      if (!Array.isArray(eventIds)) throw new PilotStudentVaultError('INVALID_EVENT', 'Händelser att avskilja måste vara en lista.');
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      for (const eventId of new Set(eventIds.filter((id) => typeof id === 'string'))) {
+        const stored = await requestAsPromise(store.get(`${EVENT_PREFIX}${eventId}`));
+        if (stored && stored.schema === VAULT_SCHEMA && stored.studentId === studentId && stored.type === 'event' && !stored.acknowledgedAt) {
+          store.put({ ...stored, rejectedAt: Date.now() });
+        }
+      }
+      try {
+        await transactionAsPromise(transaction);
+      } catch (error) {
+        throw new PilotStudentVaultError('VAULT_WRITE_FAILED', 'Avvisade elevsvar kunde inte bevaras säkert.', error);
+      }
     },
 
     async acknowledgeEvents(eventIds) {

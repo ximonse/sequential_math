@@ -44,12 +44,23 @@ function makeTemplate(text, answer, templateId, content) {
 }
 
 const TEMPLATES = [
-  // Level 1: p% av 100
+  // Level 1: p% av en enkel bas. Basen 100 gör svaret identiskt med
+  // procenttalet, så den används bara som ingång — var fjärde uppgift.
   () => {
-    const p = Number(rotatePick('percentage:l1:p', [5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90]))
-    return makeTemplate(percentagePrompt('percent_of', p, 100), p, 'pct_l1_percent_of_100', {
-      kind: 'percent_of', percentage: p, base: 100
-    })
+    const bases = [
+      { base: 100, percentages: [10, 25, 50, 90] },
+      { base: 200, percentages: [5, 10, 20, 25, 30, 40, 50] },
+      { base: 50, percentages: [10, 20, 30, 40, 50, 60, 80] },
+      { base: 20, percentages: [5, 10, 25, 50, 75] }
+    ]
+    const variant = bases[Number(rotatePick('percentage:l1:base', [0, 1, 2, 3]))] || bases[0]
+    const p = Number(rotatePick(`percentage:l1:p:${variant.base}`, variant.percentages))
+    return makeTemplate(
+      percentagePrompt('percent_of', p, variant.base),
+      (p * variant.base) / 100,
+      variant.base === 100 ? 'pct_l1_percent_of_100' : `pct_l1_percent_of_${variant.base}`,
+      { kind: 'percent_of', percentage: p, base: variant.base }
+    )
   },
 
   // Level 2: 50% av X

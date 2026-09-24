@@ -48,8 +48,9 @@ function AlgebraDisplay({
       <div className="grid gap-4 sm:gap-5 md:gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
         <div className="flex flex-col items-center gap-4">
 
-          {/* Uttrycksvisning */}
-          <div className="w-full max-w-xl rounded-2xl border-2 border-purple-200 bg-purple-50 px-4 py-4 text-center sm:px-6 sm:py-5">
+          {/* Uttryck och svar på samma rad; bryter till stapel när uttrycket är långt */}
+          <div className="flex w-full max-w-xl flex-wrap items-center justify-center gap-x-3 gap-y-3">
+          <div className="min-w-0 flex-1 basis-56 rounded-2xl border-2 border-purple-200 bg-purple-50 px-4 py-3 text-center sm:px-6 sm:py-4">
             {isSimplify ? (
               <>
                 <p className="text-xs font-semibold text-purple-500 uppercase tracking-widest mb-2">Förenkla uttrycket</p>
@@ -71,7 +72,7 @@ function AlgebraDisplay({
           </div>
 
           {/* Input-fält */}
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2">
             <span className="text-2xl font-bold text-gray-500">=</span>
             {isAnswering ? (
               <input
@@ -84,12 +85,13 @@ function AlgebraDisplay({
                   if (e.key === 'Enter' && inputValue.trim() !== '') onSubmit()
                 }}
                 placeholder="?"
-                className="w-40 md:w-48 h-14 text-3xl text-center bg-gray-100 border-b-4 border-gray-400 focus:border-purple-500 focus:outline-none rounded font-mono"
+                className="w-28 sm:w-36 md:w-48 h-14 text-3xl text-center bg-gray-100 border-b-4 border-gray-400 focus:border-purple-500 focus:outline-none rounded font-mono"
                 autoComplete="off"
               />
             ) : (
               <span className="text-3xl font-bold text-green-600 font-mono">{correctAnswer}</span>
             )}
+          </div>
           </div>
 
           {/* Fel-feedback */}
@@ -119,35 +121,33 @@ function AlgebraDisplay({
 function AlgebraKeypad({ onKey, onPrimaryAction, canSubmit, actionLabel, actionIsNext, showLetters }) {
   return (
     <div className="w-full max-w-md mx-auto rounded-xl border border-gray-200 bg-white p-3 shadow-sm select-none sm:p-4 md:max-w-none md:p-5">
-      {/* Reserved slot: keeps the number keys in the same place whether or not
-          the extra keys are needed, so nothing shifts under the pupil's finger. */}
-      <div className="h-[108px] mb-3" aria-hidden={!showLetters}>
-        {showLetters && (<>
-          <div className="grid grid-cols-4 gap-2 mb-2">
+      {/* Reserved slot: one row, so the number keys sit in the same place
+          whether or not the extra keys are needed. */}
+      <div className="mb-3 h-12" aria-hidden={!showLetters}>
+        {showLetters && (
+          <div className="grid h-12 grid-cols-7 gap-1.5">
             {['x', 'y', 'a', 'b'].map(letter => (
               <button
                 key={letter}
                 type="button"
                 onClick={() => onKey(letter)}
-                className="h-12 rounded-xl bg-purple-100 hover:bg-purple-200 active:bg-purple-300 text-xl font-bold text-purple-800 font-mono"
+                className="rounded-lg bg-purple-100 hover:bg-purple-200 active:bg-purple-300 text-lg font-bold text-purple-800 font-mono"
               >
                 {letter}
               </button>
             ))}
-          </div>
-          <div className="grid grid-cols-3 gap-2">
             {['+', '−', '²'].map(sym => (
               <button
                 key={sym}
                 type="button"
                 onClick={() => onKey(sym)}
-                className="h-12 rounded-xl bg-gray-200 hover:bg-gray-300 active:bg-gray-400 text-xl font-semibold text-gray-700"
+                className="rounded-lg bg-gray-200 hover:bg-gray-300 active:bg-gray-400 text-lg font-semibold text-gray-700"
               >
                 {sym}
               </button>
             ))}
           </div>
-        </>)}
+        )}
       </div>
 
       <div className="grid grid-cols-3 gap-2 sm:gap-3">

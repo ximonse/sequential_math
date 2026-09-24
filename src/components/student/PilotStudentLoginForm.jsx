@@ -14,6 +14,26 @@ function parseCredentialQr(value) {
   }
 }
 
+function CameraIcon({ crossed = false }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+      strokeLinejoin="round" className="h-6 w-6" aria-hidden="true">
+      <path d="M5 7h2l1.5-2h7L17 7h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z" />
+      <circle cx="12" cy="13" r="3.5" />
+      {crossed ? <line x1="3" y1="21" x2="21" y2="3" /> : null}
+    </svg>
+  )
+}
+
+function StepHeader({ number, label, active }) {
+  return (
+    <div className={`flex items-center gap-2 ${active ? '' : 'opacity-40'}`}>
+      <span aria-hidden="true" className={`flex h-7 w-7 flex-none items-center justify-center rounded-full text-sm font-semibold ${active ? 'bg-teal-700 text-white' : 'bg-gray-200 text-gray-600'}`}>{number}</span>
+      <span className={`text-sm font-semibold ${active ? 'text-slate-900' : 'text-gray-500'}`}>{label}</span>
+    </div>
+  )
+}
+
 export default function PilotStudentLoginForm({ onLogin, busy, error, onClearError }) {
   const [studentId, setStudentId] = useState('')
   const [qrSecret, setQrSecret] = useState('')
@@ -23,7 +43,22 @@ export default function PilotStudentLoginForm({ onLogin, busy, error, onClearErr
   const [scannerOpen, setScannerOpen] = useState(false)
   const [scannerMessage, setScannerMessage] = useState('')
   const scannerId = useId().replace(/:/g, '')
-  const inputClass = 'w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:border-teal-600 focus:outline-none'
+  const inputClass = 'w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:border-teal-600 focus:outline-none disabled:bg-gray-100'
+  const fadeClass = 'transition-opacity duration-200 motion-reduce:transition-none'
+
+  const cardRead = Boolean(studentId && qrSecret)
+  const stepOneDone = loginMode === 'qr' ? cardRead : loginCode.trim().length > 0
+  const canSubmit = stepOneDone && pin.length === 4 && !busy
+
+  const switchMode = nextMode => {
+    setLoginMode(nextMode)
+    setScannerOpen(false)
+    setScannerMessage('')
+    setStudentId('')
+    setQrSecret('')
+    setLoginCode('')
+    onClearError()
+  }
 
   useEffect(() => {
     if (!scannerOpen) return undefined
@@ -49,7 +84,7 @@ export default function PilotStudentLoginForm({ onLogin, busy, error, onClearErr
           () => {}
         )
       } catch {
-        if (active) setScannerMessage('Kameran kunde inte starta. Tillåt kamera eller använd kodnamnet i stället.')
+        if (active) setScannerMessage('Kameran kunde inte starta. Tillåt kamera eller skriv ditt kodnamn i stället.')
       }
     })()
     return () => {
@@ -62,44 +97,73 @@ export default function PilotStudentLoginForm({ onLogin, busy, error, onClearErr
   return (
     <form onSubmit={event => {
       event.preventDefault()
-      if (!busy) onLogin(loginMode === 'qr' ? { studentId, qrSecret, pin } : { loginCode, pin })
+      if (canSubmit) onLogin(loginMode === 'qr' ? { studentId, qrSecret, pin } : { loginCode, pin })
     }} className="space-y-4">
-      <p className="text-center text-sm font-medium text-slate-700">Välj ett sätt att logga in</p>
-      <div className="grid grid-cols-2 rounded-lg border border-teal-200 p-1 text-sm">
-        <button type="button" onClick={() => { setLoginMode('qr'); onClearError() }} className={`rounded px-2 py-2 font-medium ${loginMode === 'qr' ? 'bg-teal-700 text-white' : 'text-teal-900'}`}>Skanna QR-kod</button>
-        <button type="button" onClick={() => { setLoginMode('code'); onClearError() }} className={`rounded px-2 py-2 font-medium ${loginMode === 'code' ? 'bg-teal-700 text-white' : 'text-teal-900'}`}>Skriv kodnamn</button>
+
+      <div className="space-y-2">
+        <StepHeader number="1" label={loginMode === 'qr' ? 'Skanna ditt elevkort' : 'Skriv ditt kodnamn'} active />
+        <div className={fadeClass}>
+          {loginMode === 'qr' ? (cardRead ? (
+            <div className="rounded-lg bg-green-50 p-3">
+              <p className="flex items-center gap-2 text-sm font-semibold text-green-900">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"
+                  strokeLinejoin="round" className="h-5 w-5 flex-none" aria-hidden="true"><path d="m5 13 4 4L19 7" /></svg>
+                Elevkortet är läst
+              </p>
+              <button type="button" onClick={() => { setStudentId(''); setQrSecret(''); setPin(''); setScannerMessage('') }}
+                className="mt-1 text-sm text-green-900 underline">Skanna ett annat kort</button>
+            </div>
+          ) : (<>
+            <button type="button" onClick={() => { setScannerMessage(''); setScannerOpen(true) }} disabled={busy || scannerOpen}
+              className="flex w-full flex-col items-center gap-1 rounded-lg bg-teal-700 px-4 py-3 font-semibold text-white hover:bg-teal-800 disabled:bg-gray-300">
+              <CameraIcon />
+              {scannerOpen ? 'Kameran är öppen' : 'Öppna kameran'}
+            </button>
+            {scannerOpen ? <div className="mt-2 rounded-xl border-2 border-teal-200 bg-teal-50 p-3">
+              <div id={scannerId} className="overflow-hidden rounded-lg" />
+              <button type="button" onClick={() => setScannerOpen(false)} className="mt-2 text-sm text-teal-900 underline">Avbryt skanning</button>
+            </div> : null}
+            <button type="button" onClick={() => switchMode('code')}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-gray-400 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+              <CameraIcon crossed />
+              Om kameran inte fungerar, klicka här.
+            </button>
+          </>)) : (<>
+            <label htmlFor="pilotLoginCode" className="sr-only">Kodnamn</label>
+            <input id="pilotLoginCode" type="text" className={inputClass} value={loginCode} maxLength={80}
+              onChange={event => { setLoginCode(event.target.value); onClearError() }}
+              placeholder="Till exempel Gul Fyr Katt" autoComplete="username" disabled={busy} />
+            <p className="mt-1 text-xs text-gray-500">Kodnamnet står på ditt elevkort.</p>
+            <button type="button" onClick={() => switchMode('qr')}
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg border border-gray-400 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
+              <CameraIcon />
+              Tillbaka till kameran
+            </button>
+          </>)}
+        </div>
       </div>
-      {loginMode === 'qr' && (!studentId || !qrSecret) ? <>
-      <button type="button" onClick={() => { setScannerMessage(''); setScannerOpen(true) }} disabled={busy || scannerOpen}
-        className="w-full rounded-lg bg-teal-700 px-4 py-3 font-semibold text-white hover:bg-teal-800 disabled:bg-gray-300">
-        {scannerOpen ? 'Kameran är öppen' : 'Öppna kameran och skanna QR-koden'}
-      </button>
-      {scannerOpen ? <div className="rounded-xl border-2 border-teal-200 bg-teal-50 p-3">
-        <div id={scannerId} className="overflow-hidden rounded-lg" />
-        <button type="button" onClick={() => setScannerOpen(false)} className="mt-2 text-sm text-teal-900 underline">Avbryt skanning</button>
-      </div> : null}
-      </> : loginMode === 'qr' ? <div className="rounded-xl border border-teal-200 bg-teal-50 p-3 text-sm text-teal-950">
-        <p className="font-semibold">Elevkortet är läst.</p>
-        <button type="button" onClick={() => { setStudentId(''); setQrSecret(''); setPin(''); setScannerMessage('') }} className="mt-1 underline">Skanna ett annat kort</button>
-      </div> : <div>
-        <label htmlFor="pilotLoginCode" className="block text-sm font-medium text-gray-700 mb-2">Kodnamn</label>
-        <input id="pilotLoginCode" type="text" className={inputClass} value={loginCode} required maxLength={80}
-          onChange={event => { setLoginCode(event.target.value); onClearError() }}
-          placeholder="Till exempel Gul Fyr Katt" autoComplete="username" disabled={busy} />
-        <p className="mt-1 text-xs text-gray-500">Kodnamnet står på ditt elevkort. Skriv sedan din fyrsiffriga PIN-kod.</p>
-      </div>}
-      <div>
-        <label htmlFor="pilotPin" className="block text-sm font-medium text-gray-700 mb-2">Fyrsiffrig PIN</label>
-        <input id="pilotPin" type="password" inputMode="numeric" pattern="[0-9]{4}" className={inputClass} value={pin} required maxLength={4}
-          onChange={event => { setPin(event.target.value.replace(/\D/g, '').slice(0, 4)); onClearError() }}
-          placeholder="••••" autoComplete="current-password" disabled={busy} />
+
+      <div className="space-y-2">
+        <StepHeader number="2" label="Skriv din PIN" active={stepOneDone} />
+        <div className={`${fadeClass} ${stepOneDone ? '' : 'opacity-40'}`}>
+          <label htmlFor="pilotPin" className="sr-only">Fyrsiffrig PIN</label>
+          <input id="pilotPin" type="password" inputMode="numeric" pattern="[0-9]{4}" className={inputClass} value={pin}
+            maxLength={4} disabled={busy || !stepOneDone}
+            onChange={event => { setPin(event.target.value.replace(/\D/g, '').slice(0, 4)); onClearError() }}
+            placeholder="••••" autoComplete="current-password" />
+        </div>
       </div>
+
       {scannerMessage ? <p role="status" className="text-sm text-teal-800">{scannerMessage}</p> : null}
       {error && <p role="alert" className="text-red-700 text-sm text-center">{error}</p>}
-      <button type="submit" disabled={busy}
-        className="w-full py-3 px-4 bg-sky-400 hover:bg-sky-500 disabled:bg-gray-300 text-slate-900 font-semibold rounded-lg transition-colors">
-        {busy ? 'Loggar in…' : 'Logga in'}
-      </button>
+
+      <div className="space-y-2">
+        <StepHeader number="3" label="Logga in" active={canSubmit} />
+        <button type="submit" disabled={!canSubmit}
+          className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors motion-reduce:transition-none ${canSubmit ? 'bg-sky-400 hover:bg-sky-500 text-slate-900' : 'bg-gray-200 text-gray-500'}`}>
+          {busy ? 'Loggar in…' : 'Logga in'}
+        </button>
+      </div>
     </form>
   )
 }

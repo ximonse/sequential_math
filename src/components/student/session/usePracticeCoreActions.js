@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { saveProfile } from '../../../lib/storage'
 import { addProblemResult } from '../../../lib/studentProfile'
-import { createWalEntry, appendToWal } from '../../../lib/syncWal'
+import { createWalEntry } from '../../../lib/syncWal'
 import { getPilotStudentRuntime, normalizePilotStudentId } from '../../../lib/pilotStudentRuntime'
 import {
   adjustDifficulty,
@@ -386,9 +386,7 @@ export function usePracticeCoreActions({
           const completionCountToday = recordTableCompletion(profile, currentItem.table)
           if (profile.studentId) {
             const timestamp = profile.tableDrill?.completions?.at(-1)?.timestamp
-            const tableEvent = createWalEntry('table_completed', profile.studentId, { table: currentItem.table, timestamp })
-            if (isPilotStudent) pilotEvents.push(tableEvent)
-            else appendToWal(tableEvent)
+            pilotEvents.push(createWalEntry('table_completed', profile.studentId, { table: currentItem.table, timestamp }))
           }
           const remainingTables = Array.from(new Set(nextQueue.map(item => item.table)))
           const allTablesBoss = shouldTriggerAllTablesBoss(profile)
@@ -433,13 +431,10 @@ export function usePracticeCoreActions({
       }
     }
 
-    // Pilotens krypterade valv skrivs före nätverkssynk. Den äldre WAL:en
-    // används bara av den äldre inloggningen.
+    // Pupil results go to the encrypted vault before the network sync.
     if (Array.isArray(walEntries) && profile.studentId) {
       for (const we of walEntries) {
-        const event = createWalEntry(we.type, profile.studentId, we.payload)
-        if (isPilotStudent) pilotEvents.push(event)
-        else appendToWal(event)
+        pilotEvents.push(createWalEntry(we.type, profile.studentId, we.payload))
       }
     }
 

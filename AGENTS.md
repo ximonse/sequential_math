@@ -29,6 +29,23 @@ Om de inte finns där, använd filerna i projektroten.
 7. Avsluta aldrig ett arbetspass utan ett tydligt nästa steg: ställ en konkret fråga,
    lämna ett förslag eller ge en slutlig bekräftelse när uppdraget faktiskt är klart.
 
+## Publicering
+
+Publicera alltid via GitHub — aldrig direkt till Vercel.
+
+Push till `origin/master` triggar Vercel-projektet `sekvens`, som äger
+produktionsdomänen `matematik.ximon.se`. Det är den enda vägen till produktion.
+
+Kör aldrig `vercel deploy` eller annan manuell Vercel-deploy från denna mapp,
+och skapa ingen `.vercel`-länk här. Behöver något deployas utanför GitHub-flödet:
+fråga människan först.
+
+Varning: det finns ett gammalt, övergivet Vercel-projekt som heter
+`sequential_math` (domän `sequentialmath.vercel.app`). Det saknar git-koppling
+och serverar ett inaktuellt bygge. Namnet matchar repot och är lätt att förväxla
+med `sekvens` — kontrollera alltid projektnamnet innan slutsatser dras om
+deploy-status.
+
 ## Verifiering efter kodändring
 
 1. `npm run test`

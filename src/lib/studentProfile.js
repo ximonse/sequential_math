@@ -177,13 +177,17 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     : quality.tolerance
 
   const answeredAt = Date.now()
-  const observationId = `${String(problem.id || 'problem')}:${answeredAt}`
+  // A missing problemId makes the server reject the whole event batch, so fall
+  // back to a derived id rather than syncing nothing.
+  const resolvedProblemId = String(problem.id || '').trim()
+    || `${selection.domain || 'problem'}_${selection.skill || 'unknown'}_${answeredAt}`
+  const observationId = `${resolvedProblemId}:${answeredAt}`
   const trainingContext = isValidTrainingContext(options.trainingContext)
     ? structuredClone(options.trainingContext)
     : null
   const result = {
     observationId,
-    problemId: problem.id,
+    problemId: resolvedProblemId,
     classIdAtAttempt: String(options.classIdAtAttempt || profile.classId || profile.classIds?.[0] || '').trim() || null,
     domain: selection.domain,
     skill: selection.skill,

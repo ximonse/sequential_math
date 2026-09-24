@@ -76,6 +76,25 @@ export function createPilotStudentRuntime({
         return { ok: false, error: message }
       }
       if (!result?.ok) {
+        // A rejected batch never becomes valid by waiting, and one bad event
+        // blocks every later result. Isolate the offenders and drop them.
+        if (result?.status === 400 && batch.length > 0) {
+          const discarded = []
+          for (const event of batch) {
+            const single = await postEvents([event])
+            if (single?.ok) await store.acknowledgeEvents([event.id])
+            else if (single?.status === 400) discarded.push(event.id)
+            else {
+              const error = String(single?.error || 'Kunde inte synka arbetet.')
+              if (discarded.length > 0) await store.acknowledgeEvents(discarded)
+              updateSyncStatus({ state: 'pending', pendingCount: pending.length - start, lastErrorAt: Date.now(), lastError: error })
+              return { ok: false, error }
+            }
+          }
+          if (discarded.length > 0) await store.acknowledgeEvents(discarded)
+          updateSyncStatus({ pendingCount: Math.max(0, pending.length - start - batch.length) })
+          continue
+        }
         const error = String(result?.error || 'Kunde inte synka arbetet.')
         updateSyncStatus({ state: 'pending', pendingCount: pending.length - start, lastErrorAt: Date.now(), lastError: error })
         return result || { ok: false, error }

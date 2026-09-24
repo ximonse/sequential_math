@@ -119,35 +119,36 @@ function AlgebraDisplay({
 function AlgebraKeypad({ onKey, onPrimaryAction, canSubmit, actionLabel, actionIsNext, showLetters }) {
   return (
     <div className="w-full max-w-md mx-auto rounded-xl border border-gray-200 bg-white p-3 shadow-sm select-none sm:p-4 md:max-w-none md:p-5">
-      {showLetters && (
-        <div className="grid grid-cols-4 gap-2 mb-3">
-          {['x', 'y', 'a', 'b'].map(letter => (
-            <button
-              key={letter}
-              type="button"
-              onClick={() => onKey(letter)}
-              className="h-12 rounded-xl bg-purple-100 hover:bg-purple-200 active:bg-purple-300 text-xl font-bold text-purple-800 font-mono"
-            >
-              {letter}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {showLetters && (
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          {['+', '−', '²'].map(sym => (
-            <button
-              key={sym}
-              type="button"
-              onClick={() => onKey(sym)}
-              className="h-12 rounded-xl bg-gray-200 hover:bg-gray-300 active:bg-gray-400 text-xl font-semibold text-gray-700"
-            >
-              {sym}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Reserved slot: keeps the number keys in the same place whether or not
+          the extra keys are needed, so nothing shifts under the pupil's finger. */}
+      <div className="h-[108px] mb-3" aria-hidden={!showLetters}>
+        {showLetters && (<>
+          <div className="grid grid-cols-4 gap-2 mb-2">
+            {['x', 'y', 'a', 'b'].map(letter => (
+              <button
+                key={letter}
+                type="button"
+                onClick={() => onKey(letter)}
+                className="h-12 rounded-xl bg-purple-100 hover:bg-purple-200 active:bg-purple-300 text-xl font-bold text-purple-800 font-mono"
+              >
+                {letter}
+              </button>
+            ))}
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {['+', '−', '²'].map(sym => (
+              <button
+                key={sym}
+                type="button"
+                onClick={() => onKey(sym)}
+                className="h-12 rounded-xl bg-gray-200 hover:bg-gray-300 active:bg-gray-400 text-xl font-semibold text-gray-700"
+              >
+                {sym}
+              </button>
+            ))}
+          </div>
+        </>)}
+      </div>
 
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {NUM_KEYPAD.flat().map(key => (

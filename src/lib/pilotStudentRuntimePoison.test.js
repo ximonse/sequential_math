@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { createPilotStudentRuntime } from './pilotStudentRuntime'
+import { buildBatches, createPilotStudentRuntime } from './pilotStudentRuntime'
 
 // Events queued before a validation fix stay invalid forever. Without a guard
 // they block every later result from ever reaching the server.
@@ -51,5 +51,24 @@ describe('synk med ogiltiga händelser i kön', () => {
 
     expect(result.ok).toBe(false)
     expect(store.acknowledged).toEqual([])
+  })
+})
+
+describe('batchstorlek', () => {
+  it('delar på byte-gränsen, inte bara på antal', () => {
+    const big = { id: 'x', type: 'profile_checkpoint', payload: { blob: 'a'.repeat(100 * 1024) } }
+    const batches = buildBatches([big, { ...big, id: 'y' }, { ...big, id: 'z' }])
+    expect(batches.length).toBeGreaterThan(1)
+    expect(batches.every(batch => batch.length <= 100)).toBe(true)
+  })
+
+  it('kastar en händelse som är för stor för servern', async () => {
+    const store = makeStore([{ id: 'huge', type: 'problem_result', payload: { problemId: 'p1' } }])
+    const postEvents = vi.fn(async () => ({ ok: false, status: 413, error: 'Event batch too large' }))
+
+    const result = await runSync(store, postEvents)
+
+    expect(result.ok).toBe(true)
+    expect(store.acknowledged).toEqual(['huge'])
   })
 })

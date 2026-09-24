@@ -20,6 +20,33 @@ function randomEventId() {
   return `pilot_${Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('')}`
 }
 
+const MAX_BATCH_EVENTS = 100
+// Stay clear of the server's 256 kB batch ceiling; checkpoints carry stats.
+const MAX_BATCH_BYTES = 180 * 1024
+const UNSENDABLE_STATUSES = new Set([400, 413])
+
+function eventBytes(event) {
+  try { return new TextEncoder().encode(JSON.stringify(event)).length } catch { return Number.POSITIVE_INFINITY }
+}
+
+export function buildBatches(events, maxEvents = MAX_BATCH_EVENTS, maxBytes = MAX_BATCH_BYTES) {
+  const batches = []
+  let batch = []
+  let bytes = 0
+  for (const event of events) {
+    const size = eventBytes(event)
+    if (batch.length > 0 && (batch.length >= maxEvents || bytes + size > maxBytes)) {
+      batches.push(batch)
+      batch = []
+      bytes = 0
+    }
+    batch.push(event)
+    bytes += size
+  }
+  if (batch.length > 0) batches.push(batch)
+  return batches
+}
+
 function checkpointPayload(profile, capturedAt) {
   const payload = { capturedAt }
   for (const field of CHECKPOINT_FIELDS) {
@@ -54,6 +81,31 @@ export function createPilotStudentRuntime({
     }
   }
 
+  // One event at a time: anything the server still refuses on its own terms is
+  // unsendable forever, so it is discarded rather than left blocking the queue.
+  async function sendApart(batch) {
+    const discarded = []
+    for (const event of batch) {
+      let single
+      try {
+        single = await postEvents([event])
+      } catch (error) {
+        if (discarded.length > 0) await store.acknowledgeEvents(discarded)
+        return { ok: false, error: String(error?.message || 'Kunde inte kontakta servern.') }
+      }
+      if (single?.ok) {
+        await store.acknowledgeEvents([event.id])
+      } else if (UNSENDABLE_STATUSES.has(single?.status)) {
+        discarded.push(event.id)
+      } else {
+        if (discarded.length > 0) await store.acknowledgeEvents(discarded)
+        return { ok: false, error: String(single?.error || 'Kunde inte synka arbetet.') }
+      }
+    }
+    if (discarded.length > 0) await store.acknowledgeEvents(discarded)
+    return { ok: true }
+  }
+
   async function syncPending() {
     if (!store) {
       updateSyncStatus({ state: 'error', lastErrorAt: Date.now(), lastError: 'Pilotlagringen är inte startad.' })
@@ -65,50 +117,50 @@ export function createPilotStudentRuntime({
       return { ok: true }
     }
     updateSyncStatus({ state: 'syncing', pendingCount: pending.length, lastAttemptAt: Date.now(), lastError: '' })
-    for (let start = 0; start < pending.length; start += 100) {
-      const batch = pending.slice(start, start + 100).map(item => item.event)
+
+    const batches = buildBatches(pending.map(item => item.event))
+    let sent = 0
+    for (const batch of batches) {
       let result
       try {
         result = await postEvents(batch)
       } catch (error) {
         const message = String(error?.message || 'Kunde inte kontakta servern.')
-        updateSyncStatus({ state: 'pending', pendingCount: pending.length - start, lastErrorAt: Date.now(), lastError: message })
+        updateSyncStatus({ state: 'pending', pendingCount: pending.length - sent, lastErrorAt: Date.now(), lastError: message })
         return { ok: false, error: message }
       }
+
       if (!result?.ok) {
-        // A rejected batch never becomes valid by waiting, and one bad event
-        // blocks every later result. Isolate the offenders and drop them.
-        if (result?.status === 400 && batch.length > 0) {
-          const discarded = []
-          for (const event of batch) {
-            const single = await postEvents([event])
-            if (single?.ok) await store.acknowledgeEvents([event.id])
-            else if (single?.status === 400) discarded.push(event.id)
-            else {
-              const error = String(single?.error || 'Kunde inte synka arbetet.')
-              if (discarded.length > 0) await store.acknowledgeEvents(discarded)
-              updateSyncStatus({ state: 'pending', pendingCount: pending.length - start, lastErrorAt: Date.now(), lastError: error })
-              return { ok: false, error }
-            }
+        // A batch the server refuses on its own terms never becomes valid by
+        // waiting, and one bad event blocks every later result. Send the batch
+        // apart to keep the good events and drop the rest.
+        if (UNSENDABLE_STATUSES.has(result?.status)) {
+          const outcome = await sendApart(batch)
+          if (!outcome.ok) {
+            updateSyncStatus({ state: 'pending', pendingCount: pending.length - sent, lastErrorAt: Date.now(), lastError: outcome.error })
+            return { ok: false, error: outcome.error }
           }
-          if (discarded.length > 0) await store.acknowledgeEvents(discarded)
-          updateSyncStatus({ pendingCount: Math.max(0, pending.length - start - batch.length) })
+          sent += batch.length
+          updateSyncStatus({ pendingCount: Math.max(0, pending.length - sent) })
           continue
         }
         const error = String(result?.error || 'Kunde inte synka arbetet.')
-        updateSyncStatus({ state: 'pending', pendingCount: pending.length - start, lastErrorAt: Date.now(), lastError: error })
+        updateSyncStatus({ state: 'pending', pendingCount: pending.length - sent, lastErrorAt: Date.now(), lastError: error })
         return result || { ok: false, error }
       }
+
       const submitted = new Set(batch.map(event => event.id))
       const ack = (Array.isArray(result.ack) ? result.ack : []).filter(id => submitted.has(id))
       if (ack.length !== batch.length) {
         const error = 'Servern bekräftade inte hela händelsebatchen.'
-        updateSyncStatus({ state: 'pending', pendingCount: pending.length - start, lastErrorAt: Date.now(), lastError: error })
+        updateSyncStatus({ state: 'pending', pendingCount: pending.length - sent, lastErrorAt: Date.now(), lastError: error })
         return { ok: false, error }
       }
       await store.acknowledgeEvents(ack)
-      updateSyncStatus({ pendingCount: Math.max(0, pending.length - start - batch.length) })
+      sent += batch.length
+      updateSyncStatus({ pendingCount: Math.max(0, pending.length - sent) })
     }
+
     updateSyncStatus({ state: 'synced', pendingCount: 0, lastSuccessAt: Date.now(), lastErrorAt: 0, lastError: '' })
     return { ok: true }
   }

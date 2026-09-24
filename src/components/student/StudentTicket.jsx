@@ -1,17 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
-  clearActiveStudentSession,
-  getOrCreateProfileWithSync,
-  isStudentSessionActive,
-  saveProfile
-} from '../../lib/storage'
-import {
-  decodeTicketPayload,
-  getTicketDispatchById,
   getTicketResponseForDispatch,
-  isTicketCorrectnessVisible,
-  recordTicketResponse
+  isTicketCorrectnessVisible
 } from '../../lib/tickets'
 import {
   markStudentPresence,
@@ -23,12 +14,11 @@ import {
   recordTelemetryEvent
 } from '../../lib/telemetry'
 import { fetchStudentSessionProfile } from '../../lib/studentSessionClient'
-import { getPilotStudentRuntime, normalizePilotStudentId } from '../../lib/pilotStudentRuntime'
+import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 
 function StudentTicket() {
   const { studentId } = useParams()
   const navigate = useNavigate()
-  const location = useLocation()
   const [searchParams] = useSearchParams()
   const [profile, setProfile] = useState(null)
   const [answer, setAnswer] = useState('')
@@ -42,77 +32,24 @@ function StudentTicket() {
   })
 
   const dispatchIdFromQuery = String(searchParams.get('ticket') || '')
-  const isPilotStudent = Boolean(normalizePilotStudentId(studentId))
-  const payloadFromQuery = useMemo(
-    () => decodeTicketPayload(searchParams.get('ticket_payload')),
-    [searchParams]
-  )
 
   useEffect(() => {
-    if (isPilotStudent) {
-      let active = true
-      ;(async () => {
-        const bootstrapped = await getPilotStudentRuntime().bootstrap(studentId)
-        if (!active) return
-        if (!bootstrapped.ok) { navigate('/', { replace: true }); return }
-        setProfile(bootstrapped.profile)
-      })()
-      return () => { active = false }
-    }
-    if (!isStudentSessionActive(studentId)) {
-      const redirect = encodeURIComponent(`${location.pathname}${location.search}`)
-      navigate(`/?redirect=${redirect}`, { replace: true })
-      return undefined
-    }
-
     let active = true
     ;(async () => {
-      const loadedProfile = await getOrCreateProfileWithSync(studentId, null, 4, { createIfMissing: false })
+      const bootstrapped = await getPilotStudentRuntime().bootstrap(studentId)
       if (!active) return
-      if (!loadedProfile) {
-        clearActiveStudentSession()
-        navigate('/', { replace: true })
-        return
-      }
-      setProfile(loadedProfile)
+      if (!bootstrapped.ok) { navigate('/', { replace: true }); return }
+      setProfile(bootstrapped.profile)
     })()
-
     return () => { active = false }
-  }, [studentId, navigate, location.pathname, location.search, isPilotStudent])
+  }, [studentId, navigate])
 
   const resolvedTicket = useMemo(() => {
-    if (isPilotStudent) {
-      const inboxPayload = profile?.ticketInbox?.activePayload
-      return inboxPayload && typeof inboxPayload === 'object' && inboxPayload.dispatchId === dispatchIdFromQuery
-        ? inboxPayload
-        : null
-    }
-    if (payloadFromQuery) return payloadFromQuery
-
     const inboxPayload = profile?.ticketInbox?.activePayload
-    if (inboxPayload && typeof inboxPayload === 'object') {
-      if (!dispatchIdFromQuery || dispatchIdFromQuery === inboxPayload.dispatchId) {
-        return inboxPayload
-      }
-    }
-
-    if (dispatchIdFromQuery) {
-      const localDispatch = getTicketDispatchById(dispatchIdFromQuery)
-      if (localDispatch) {
-        return {
-          dispatchId: localDispatch.id,
-          ticketId: localDispatch.ticketId || '',
-          title: localDispatch.title || '',
-          kind: localDispatch.kind || 'start',
-          question: localDispatch.question || '',
-          answer: localDispatch.answer || '',
-          showCorrectnessOnSubmit: localDispatch.showCorrectnessOnSubmit !== false
-        }
-      }
-    }
-
-    return null
-  }, [payloadFromQuery, profile, dispatchIdFromQuery, isPilotStudent])
+    return inboxPayload && typeof inboxPayload === 'object' && inboxPayload.dispatchId === dispatchIdFromQuery
+      ? inboxPayload
+      : null
+  }, [profile, dispatchIdFromQuery])
 
   useEffect(() => {
     if (!profile || !resolvedTicket?.dispatchId) return
@@ -132,9 +69,8 @@ function StudentTicket() {
       kind: resolvedTicket.kind || 'start'
     }, now)
     incrementTelemetryDailyMetric(profile, 'ticket_opened', 1, now)
-    if (isPilotStudent) void getPilotStudentRuntime().persistCheckpoint(profile)
-    else saveProfile(profile)
-  }, [profile, resolvedTicket, isPilotStudent])
+    void getPilotStudentRuntime().persistCheckpoint(profile)
+  }, [profile, resolvedTicket])
 
   const updateTicketPresence = useCallback((options = {}) => {
     if (!profile) return
@@ -150,10 +86,9 @@ function StudentTicket() {
     if (!force && (now - presenceSyncRef.current.lastSavedAt) < PRESENCE_SAVE_THROTTLE_MS) {
       return
     }
-    if (isPilotStudent) void getPilotStudentRuntime().persistCheckpoint(profile)
-    else saveProfile(profile)
+    void getPilotStudentRuntime().persistCheckpoint(profile)
     presenceSyncRef.current.lastSavedAt = now
-  }, [profile, isPilotStudent])
+  }, [profile])
 
   useEffect(() => {
     if (!profile) return undefined
@@ -195,9 +130,7 @@ function StudentTicket() {
     let active = true
     const timer = setInterval(() => {
       void (async () => {
-        const latestResult = isPilotStudent
-          ? await fetchStudentSessionProfile()
-          : { ok: true, profile: await getOrCreateProfileWithSync(studentId, null, 4, { createIfMissing: false }) }
+        const latestResult = await fetchStudentSessionProfile()
         const latest = latestResult?.profile
         if (!active || !latest) return
         setProfile(latest)
@@ -210,70 +143,31 @@ function StudentTicket() {
       active = false
       clearInterval(timer)
     }
-  }, [profile, studentId, resolvedTicket, savedResponse, shouldShowCorrectness, isPilotStudent])
+  }, [profile, studentId, resolvedTicket, savedResponse, shouldShowCorrectness])
 
   const handleSubmit = async () => {
     if (!profile || !resolvedTicket || answer.trim() === '') return
     if (isSubmitting) return
     setIsSubmitting(true)
 
-    if (isPilotStudent) {
       const now = Date.now()
-      const persisted = await getPilotStudentRuntime().persistCustomEvent(profile, 'ticket_response', {
-        dispatchId: resolvedTicket.dispatchId,
-        studentAnswer: answer,
-        answeredAt: now,
-        responseTimeSec: openedAtRef.current > 0 ? (now - openedAtRef.current) / 1000 : null
-      }, now)
-      if (!persisted.ok) {
-        setStatusMessage('Svaret är sparat säkert på enheten och synkas när anslutningen är tillbaka.')
-        setIsSubmitting(false)
-        return
-      }
-      const refreshed = await fetchStudentSessionProfile()
-      if (refreshed.ok) {
-        setProfile(refreshed.profile)
-        setSavedResponse(getTicketResponseForDispatch(refreshed.profile, resolvedTicket.dispatchId))
-      }
-      setStatusMessage(resolvedTicket.kind === 'exit' ? 'Svar registrerat. Tryck Färdigt för att gå tillbaka.' : 'Svar registrerat.')
+    const persisted = await getPilotStudentRuntime().persistCustomEvent(profile, 'ticket_response', {
+      dispatchId: resolvedTicket.dispatchId,
+      studentAnswer: answer,
+      answeredAt: now,
+      responseTimeSec: openedAtRef.current > 0 ? (now - openedAtRef.current) / 1000 : null
+    }, now)
+    if (!persisted.ok) {
+      setStatusMessage('Svaret är sparat säkert på enheten och synkas när anslutningen är tillbaka.')
       setIsSubmitting(false)
       return
     }
-
-    const response = recordTicketResponse(profile, {
-      dispatchId: resolvedTicket.dispatchId,
-      ticketId: resolvedTicket.ticketId,
-      title: resolvedTicket.title,
-      kind: resolvedTicket.kind,
-      question: resolvedTicket.question,
-      answer: resolvedTicket.answer,
-      studentAnswer: answer,
-      responseTimeSec: openedAtRef.current > 0
-        ? (Date.now() - openedAtRef.current) / 1000
-        : null,
-      showCorrectnessOnSubmit: resolvedTicket.showCorrectnessOnSubmit !== false
-    })
-
-    const now = Date.now()
-    recordTelemetryEvent(profile, 'ticket_submitted', {
-      dispatchId: resolvedTicket.dispatchId,
-      kind: resolvedTicket.kind || 'start',
-      correct: response?.isCorrect === true,
-      responseTimeSec: Number.isFinite(Number(response?.responseTimeSec))
-        ? Number(Number(response.responseTimeSec).toFixed(2))
-        : null
-    }, now)
-    incrementTelemetryDailyMetric(profile, 'ticket_submitted', 1, now)
-    incrementTelemetryDailyMetric(profile, response?.isCorrect ? 'ticket_correct' : 'ticket_wrong', 1, now)
-
-    saveProfile(profile, { forceSync: true })
-    setProfile({ ...profile })
-    setSavedResponse(response)
-    setStatusMessage(
-      resolvedTicket.kind === 'exit'
-        ? 'Svar registrerat. Tryck Färdigt för att gå tillbaka.'
-        : 'Svar registrerat.'
-    )
+    const refreshed = await fetchStudentSessionProfile()
+    if (refreshed.ok) {
+      setProfile(refreshed.profile)
+      setSavedResponse(getTicketResponseForDispatch(refreshed.profile, resolvedTicket.dispatchId))
+    }
+    setStatusMessage(resolvedTicket.kind === 'exit' ? 'Svar registrerat. Tryck Färdigt för att gå tillbaka.' : 'Svar registrerat.')
     setIsSubmitting(false)
   }
 
@@ -284,31 +178,10 @@ function StudentTicket() {
     }
 
     const now = Date.now()
-    if (isPilotStudent) {
-      await getPilotStudentRuntime().persistCustomEvent(profile, 'ticket_finished', {
-        dispatchId: resolvedTicket.dispatchId,
-        finishedAt: now
-      }, now)
-      navigate(`/student/${studentId}`)
-      return
-    }
-    if (!profile.ticketInbox || typeof profile.ticketInbox !== 'object') {
-      profile.ticketInbox = {}
-    }
-    if (profile.ticketInbox.activeDispatchId === resolvedTicket.dispatchId) {
-      profile.ticketInbox.activeDispatchId = ''
-      profile.ticketInbox.activePayload = null
-      profile.ticketInbox.activeEncoded = ''
-      profile.ticketInbox.updatedAt = now
-      profile.ticketInbox.clearedAt = now
-    }
-
-    recordTelemetryEvent(profile, 'ticket_finished', {
+    await getPilotStudentRuntime().persistCustomEvent(profile, 'ticket_finished', {
       dispatchId: resolvedTicket.dispatchId,
-      kind: resolvedTicket.kind || 'start'
+      finishedAt: now
     }, now)
-    incrementTelemetryDailyMetric(profile, 'ticket_finished', 1, now)
-    saveProfile(profile, { forceSync: true })
     navigate(`/student/${studentId}`)
   }
 

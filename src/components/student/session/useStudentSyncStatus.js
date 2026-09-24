@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { getSyncHealth, subscribeSyncHealth } from '../../../lib/storage'
 import { getPilotStudentRuntime } from '../../../lib/pilotStudentRuntime'
 
 const INITIAL_STATUS = Object.freeze({
@@ -10,21 +9,15 @@ const INITIAL_STATUS = Object.freeze({
   lastError: ''
 })
 
-export function useStudentSyncStatus(studentId, isPilotStudent) {
+export function useStudentSyncStatus(studentId) {
   const [status, setStatus] = useState(INITIAL_STATUS)
 
   useEffect(() => {
     if (!studentId) return undefined
-    if (isPilotStudent) {
-      const runtime = getPilotStudentRuntime()
-      setStatus(runtime.getSyncStatus())
-      return runtime.subscribeSyncStatus(setStatus)
-    }
-
-    const readStatus = () => setStatus(getSyncHealth(studentId))
-    readStatus()
-    return subscribeSyncHealth(readStatus)
-  }, [studentId, isPilotStudent])
+    const runtime = getPilotStudentRuntime()
+    setStatus(runtime.getSyncStatus())
+    return runtime.subscribeSyncStatus(setStatus)
+  }, [studentId])
 
   return status
 }

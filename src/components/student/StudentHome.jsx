@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { changeStudentPassword, clearActiveStudentSession, getActiveStudentClass, getOrCreateProfileWithSync, getSyncHealth, isStudentSessionActive, saveProfile } from '../../lib/storage'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { getSyncHealth } from '../../lib/storage'
 import { getOperationLabel, OPERATION_LABELS, STANDARD_OPERATIONS, ALL_LEVELS as LEVELS } from '../../lib/operations'
 import { normalizeClassOperations } from '../../lib/classOperations'
 import { computeOperationMasteryBoards, getPreferredProblemSource } from '../../lib/masteryCalculation'
@@ -8,10 +8,9 @@ import { decodeAssignmentPayload, encodeAssignmentPayload, getActiveAssignment, 
 import { normalizeProgressionMode } from '../../lib/progressionModes'
 import { markStudentPresence, PRESENCE_HEARTBEAT_MS, PRESENCE_SAVE_THROTTLE_MS } from '../../lib/studentPresence'
 import { incrementTelemetryDailyMetric, recordTelemetryEvent } from '../../lib/telemetry'
-import { getPilotStudentRuntime, normalizePilotStudentId } from '../../lib/pilotStudentRuntime'
+import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { logoutStudentSession } from '../../lib/studentSessionClient'
 import StudentHomeAssignmentLaunchCard from './StudentHomeAssignmentLaunchCard'
-import StudentHomePasswordCard from './StudentHomePasswordCard'
 import StudentHomeProgressCard from './StudentHomeProgressCard'
 import StudentHomeTableDrillCard from './StudentHomeTableDrillCard'
 import StudentHomeTicketCard from './StudentHomeTicketCard'
@@ -21,16 +20,11 @@ import { mapBoardsToMultiPeriodStatus, buildPracticePath, buildTableStatus, getT
 function StudentHome() {
   const { studentId } = useParams()
   const navigate = useNavigate()
-  const location = useLocation()
   const [searchParams] = useSearchParams()
   const [profile, setProfile] = useState(null)
   const [classConfig, setClassConfig] = useState({ classId: '', operations: null })
   const [assignment, setAssignment] = useState(null)
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [passwordMessage, setPasswordMessage] = useState('')
   const [selectedTables, setSelectedTables] = useState([])
-  const isPilotStudent = Boolean(normalizePilotStudentId(studentId))
   const presenceSyncRef = useRef({
     lastSavedAt: 0
   })
@@ -42,42 +36,20 @@ function StudentHome() {
   const ticketId = searchParams.get('ticket')
   const ticketPayload = searchParams.get('ticket_payload')
 
-  const persistProfile = useCallback((nextProfile, options) => {
-    if (isPilotStudent) return getPilotStudentRuntime().persistCheckpoint(nextProfile)
-    return Promise.resolve(saveProfile(nextProfile, options))
-  }, [isPilotStudent])
+  const persistProfile = useCallback(nextProfile => {
+    return getPilotStudentRuntime().persistCheckpoint(nextProfile)
+  }, [])
 
   useEffect(() => {
-    if (isPilotStudent) {
-      let active = true
-      ;(async () => {
-        const bootstrapped = await getPilotStudentRuntime().bootstrap(studentId)
-        if (!active) return
-        if (!bootstrapped.ok) { navigate('/', { replace: true }); return }
-        setProfile(bootstrapped.profile)
-      })()
-      return () => { active = false }
-    }
-    if (!isStudentSessionActive(studentId)) {
-      const redirect = encodeURIComponent(`${location.pathname}${location.search}`)
-      navigate(`/?redirect=${redirect}`, { replace: true })
-      return
-    }
-
     let active = true
     ;(async () => {
-      const loaded = await getOrCreateProfileWithSync(studentId, null, 4, { createIfMissing: false })
+      const bootstrapped = await getPilotStudentRuntime().bootstrap(studentId)
       if (!active) return
-      if (!loaded) {
-        clearActiveStudentSession()
-        navigate('/', { replace: true })
-        return
-      }
-      setProfile(loaded)
+      if (!bootstrapped.ok) { navigate('/', { replace: true }); return }
+      setProfile(bootstrapped.profile)
     })()
-
     return () => { active = false }
-  }, [studentId, navigate, location.pathname, location.search, isPilotStudent])
+  }, [studentId, navigate])
 
   useEffect(() => {
     if (!studentId) return
@@ -99,7 +71,7 @@ function StudentHome() {
     navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
   }, [studentId, assignmentId, assignmentPayload, mode, requestedPace, ticketId, ticketPayload, navigate])
 
-  const classId = isPilotStudent ? String(profile?.classId || '') : getActiveStudentClass(profile)
+  const classId = String(profile?.classId || '')
   const enabledOperations = classConfig.classId === classId ? classConfig.operations : null
   useEffect(() => {
     if (!classId) { setClassConfig({ classId: '', operations: STANDARD_OPERATIONS }); return }
@@ -211,31 +183,9 @@ function StudentHome() {
     if (profile) {
       void persistProfile(profile, { forceSync: true })
     }
-    if (isPilotStudent) {
-      void logoutStudentSession()
-      void getPilotStudentRuntime().close()
-    } else clearActiveStudentSession()
+    void logoutStudentSession()
+    void getPilotStudentRuntime().close()
     navigate('/')
-  }
-
-  const handleChangePassword = async (e) => {
-    e.preventDefault()
-    let result
-    try {
-      result = await changeStudentPassword(studentId, currentPassword, newPassword)
-    } catch {
-      setPasswordMessage('Kunde inte byta lösenord just nu.')
-      return
-    }
-
-    if (!result.ok) {
-      setPasswordMessage(result.error)
-      return
-    }
-
-    setCurrentPassword('')
-    setNewPassword('')
-    setPasswordMessage('Lösenord uppdaterat.')
   }
 
   const toggleTable = (table) => {
@@ -439,19 +389,6 @@ function StudentHome() {
           </div>
         </details>
 
-        {!isPilotStudent ? <details className="bg-white border border-gray-200 rounded-xl">
-          <summary className="cursor-pointer select-none px-4 py-3 font-semibold text-gray-700">Konto och lösenord</summary>
-          <div className="px-4 pb-4">
-            <StudentHomePasswordCard
-              currentPassword={currentPassword}
-              newPassword={newPassword}
-              passwordMessage={passwordMessage}
-              onSetCurrentPassword={setCurrentPassword}
-              onSetNewPassword={setNewPassword}
-              onSubmit={handleChangePassword}
-            />
-          </div>
-        </details> : null}
       </div>
     </div>
   )

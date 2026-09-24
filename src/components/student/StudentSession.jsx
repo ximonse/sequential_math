@@ -18,10 +18,6 @@ import {
   peekNextNcmSkillTag
 } from './session/sessionUtils'
 import {
-  getActiveStudentClass,
-  saveProfile
-} from '../../lib/storage'
-import {
   getCurrentStreak,
   getMasteryForOperation,
   getStartOfWeekTimestamp
@@ -33,7 +29,7 @@ import { resolveProblemParentSkill } from '../../lib/mathUtils'
 import {
   normalizeProgressionMode
 } from '../../lib/progressionModes'
-import { getPilotStudentRuntime, normalizePilotStudentId } from '../../lib/pilotStudentRuntime'
+import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
 const ALL_TABLES_BOSS_URL = 'https://youtu.be/86URGgqONvA'
 const openTableBossVideo = () => {
@@ -100,9 +96,8 @@ function StudentSession() {
     return raw ? raw.split(',').filter(Boolean) : []
   }, [searchParams])
   const isTableDrill = tableSet.length > 0
-  const isPilotStudent = Boolean(normalizePilotStudentId(studentId))
-  const syncStatus = useStudentSyncStatus(studentId, isPilotStudent)
-  const classId = isPilotStudent ? String(profile?.classId || '') : getActiveStudentClass(profile)
+  const syncStatus = useStudentSyncStatus(studentId)
+  const classId = String(profile?.classId || '')
   const classAllowedOperations = classConfig.classId === classId ? classConfig.operations : null
   const hasProfile = Boolean(profile)
   useEffect(() => {
@@ -131,10 +126,9 @@ function StudentSession() {
   }, [])
 
   const completedThisSession = useMemo(() => sessionCount, [sessionCount])
-  const persistProfile = useCallback((nextProfile, options) => {
-    if (isPilotStudent) return getPilotStudentRuntime().persistCheckpoint(nextProfile)
-    return Promise.resolve(saveProfile(nextProfile, options))
-  }, [isPilotStudent])
+  const persistProfile = useCallback(nextProfile => {
+    return getPilotStudentRuntime().persistCheckpoint(nextProfile)
+  }, [])
   const safeSelectProblem = useCallback((currentProfile, rules) => {
     try {
       let nextRules = { ...(rules || {}) }
@@ -221,7 +215,7 @@ function StudentSession() {
     continueAfterMilestone
   } = usePracticeSessionActions({
     profile,
-    classIdAtAttempt: getActiveStudentClass(profile) || null,
+    classIdAtAttempt: profile.classId || null,
     currentProblem,
     answer,
     startTime,
@@ -315,7 +309,7 @@ function StudentSession() {
     navigate,
     studentId,
     studentName: profile.displayAlias,
-    classId: isPilotStudent ? profile.classId || null : getActiveStudentClass(profile) || null,
+    classId: profile.classId || null,
     goToNextProblem,
     closeBreakGameAndContinue,
     tableBossUrl: TABLE_BOSS_URL,

@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
-import { saveProfile } from '../../../lib/storage'
 import { addProblemResult } from '../../../lib/studentProfile'
 import { createWalEntry } from '../../../lib/syncWal'
-import { getPilotStudentRuntime, normalizePilotStudentId } from '../../../lib/pilotStudentRuntime'
+import { getPilotStudentRuntime } from '../../../lib/pilotStudentRuntime'
 import {
   adjustDifficulty,
   shouldSuggestBreak
@@ -77,7 +76,6 @@ export function usePracticeCoreActions({
   freeOps = [],
   persistProfile
 }) {
-  const isPilotStudent = Boolean(normalizePilotStudentId(profile?.studentId))
   const goToNextProblem = useCallback(() => {
     if (!profile) return
 
@@ -439,13 +437,11 @@ export function usePracticeCoreActions({
     }
 
     const shouldForceSync = Boolean(progressionDecision) || isTableDrill
-    if (isPilotStudent) {
-      const runtime = getPilotStudentRuntime()
-      for (const event of pilotEvents) {
-        await runtime.persistEvent(profile, event)
-      }
-      if (pilotEvents.length === 0) await persistProfile(profile, shouldForceSync ? { forceSync: true } : undefined)
-    } else saveProfile(profile, shouldForceSync ? { forceSync: true } : undefined)
+    const runtime = getPilotStudentRuntime()
+    for (const event of pilotEvents) {
+      await runtime.persistEvent(profile, event)
+    }
+    if (pilotEvents.length === 0) await persistProfile(profile, shouldForceSync ? { forceSync: true } : undefined)
   }, [
     profile,
     classIdAtAttempt,
@@ -478,7 +474,6 @@ export function usePracticeCoreActions({
     setBreakDurationMinutes,
     setLastBreakPromptAt,
     setDailyLevelStreakMilestone,
-    isPilotStudent,
     persistProfile
   ])
 

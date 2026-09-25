@@ -84,3 +84,21 @@ describe('rader utan tidsstämpel', () => {
     expect(downloaded[0].content).toContain('Alva')
   })
 })
+
+describe('rådatans detaljnivå', () => {
+  it('ger maskinläsbar tid och svenska decimaltecken', () => {
+    const file = runExport({ from: '', to: '' })
+    expect(file.content).toContain('TidsstampelISO')
+    expect(file.content).toContain('TidsstampelUnixMs')
+    expect(file.content).toContain('Veckodag')
+    expect(file.content).toContain('DecimalTecken')
+    expect(file.content).toMatch(/\d+,\d+/)
+  })
+
+  it('tar med evidens- och felfälten', () => {
+    const file = runExport({ from: '', to: '' })
+    for (const column of ['ObservationsID', 'EvidensNivå', 'Felmönster', 'EgenMediantidSek', 'TräningsSyfte']) {
+      expect(file.content).toContain(column)
+    }
+  })
+})

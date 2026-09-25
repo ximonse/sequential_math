@@ -33,48 +33,81 @@ export function buildDetailedProblemExportRows(snapshot) {
     const peerMedian = templateBenchmark?.medianTimeCorrectSec || null
     const peerAccuracy = templateBenchmark?.accuracy || null
     const tablePeerMedian = tableBenchmark?.medianTimeCorrectSec || null
+    const source = item.source || {}
+    const local = localDateParts(item.timestamp)
 
     return {
-      DatumTid: formatTimestamp(item.timestamp),
+      DecimalTecken: ',',
+      TidsstampelISO: formatTimestamp(item.timestamp),
+      TidsstampelUnixMs: item.timestamp || '',
+      Datum: local.date,
+      Klockslag: local.time,
+      Veckodag: local.weekday,
       ElevNamn: item.name,
       ElevID: item.studentId,
       Klass: item.className || '',
+      KlassVidTillfallet: String(source.classIdAtAttempt || ''),
+      ObservationsID: String(source.observationId || ''),
+      UppgiftsID: String(source.problemId || ''),
+      Domän: String(source.domain || ''),
       Räknesätt: item.operation,
       Problemtyp: item.problemType,
       Uppgift: item.promptText,
       ElevensSvar: item.studentAnswer,
       RättSvar: item.correctAnswer,
+      SvarsLängd: source.answerLength ?? '',
       SkillTag: item.skillTag,
+      InnehållsSkill: String(source.contentSkill || ''),
+      InnehållsNivå: source.contentLevel ?? '',
+      EvidensSkill: String(source.evidenceSkill || ''),
+      EvidensNivå: source.evidenceLevel ?? '',
+      EvidensKlass: String(source.evidenceClass || ''),
+      EvidensRegelversion: source.evidenceRuleVersion ?? '',
       NCMKod: item.ncmCode || '',
       NCMDomän: item.ncmDomainTag || '',
       NCMOperation: item.ncmOperationTag || '',
       NCMFörmågor: item.ncmAbilityTags || '',
       Nivå: item.level,
       Rätt: item.correct ? 1 : 0,
+      Delvis: source.isPartial ? 1 : 0,
+      DelvisKod: String(source.partialCode || ''),
+      DelvisDetalj: String(source.partialDetail || ''),
       Felkategori: item.errorCategory,
+      Felmönster: Array.isArray(source.errorPatterns) ? source.errorPatterns.join('|') : '',
+      Feldetalj: String(source.errorDetail || ''),
       Kunskapsfel: item.isKnowledgeError ? 1 : 0,
       Ouppmärksamhetsfel: item.isInattentionError ? 1 : 0,
       RimligtSvar: item.isReasonable ? 1 : 0,
-      SvarstidSek: toFixedOrEmpty(item.rawTimeSpentSec, 2),
-      SpeedTidSek: toFixedOrEmpty(item.speedTimeSec, 2),
+      AbsolutFel: toExcelNumber(source.absError),
+      RelativtFel: toExcelNumber(source.relativeError),
+      Tolerans: toExcelNumber(source.tolerance),
+      SvarstidSek: toExcelNumber(item.rawTimeSpentSec, 2),
+      SpeedTidSek: toExcelNumber(item.speedTimeSec, 2),
       ExkluderadSpeed: item.excludedFromSpeed ? 1 : 0,
       ExkluderingsOrsak: item.speedExclusionReason || '',
       AvbrottMisstänkt: item.interruptionSuspected ? 1 : 0,
-      DoldTidSek: toFixedOrEmpty(item.hiddenDurationSec, 2),
+      DoldTidSek: toExcelNumber(item.hiddenDurationSec, 2),
+      TappatFokusAntal: source.blurCount ?? '',
+      EgenMediantidSek: toExcelNumber(source.personalMedianTimeSec, 2),
+      EgenMediantidUnderlag: source.personalBaselineCount ?? '',
+      Träningsläge: String(source.trainingMode || ''),
+      TräningsSyfte: String(source.trainingPurpose || ''),
+      TräningsOrsaker: Array.isArray(source.trainingReasonCodes) ? source.trainingReasonCodes.join('|') : '',
+      TräningsBeslutsID: String(source.trainingDecisionId || ''),
       Progressionsläge: item.progressionMode,
       SelectionReason: item.selectionReason,
       DifficultyBucket: item.difficultyBucket,
       TargetLevel: item.targetLevel,
-      AbilityBefore: toFixedOrEmpty(item.abilityBefore, 2),
+      AbilityBefore: toExcelNumber(item.abilityBefore, 2),
       CarryCount: item.carryCount,
       BorrowCount: item.borrowCount,
       TermOrder: item.termOrder,
-      PeerMedianTidTemplateNivå: toFixedOrEmpty(peerMedian, 2),
-      PeerAccuracyTemplateNivå: toFixedOrEmpty(peerAccuracy, 3),
-      SpeedIndexTemplateNivå: toFixedOrEmpty(computeSpeedIndex(peerMedian, item.speedTimeSec), 3),
+      PeerMedianTidTemplateNivå: toExcelNumber(peerMedian, 2),
+      PeerAccuracyTemplateNivå: toExcelNumber(peerAccuracy, 3),
+      SpeedIndexTemplateNivå: toExcelNumber(computeSpeedIndex(peerMedian, item.speedTimeSec), 3),
       Tabell: item.table || '',
-      PeerMedianTidTabell: toFixedOrEmpty(tablePeerMedian, 2),
-      SpeedIndexTabell: toFixedOrEmpty(computeSpeedIndex(tablePeerMedian, item.speedTimeSec), 3)
+      PeerMedianTidTabell: toExcelNumber(tablePeerMedian, 2),
+      SpeedIndexTabell: toExcelNumber(computeSpeedIndex(tablePeerMedian, item.speedTimeSec), 3)
     }
   })
 }
@@ -273,6 +306,7 @@ function flattenProblems(profiles) {
         operation,
         problemType: String(problem.problemType || ''),
         promptText: describeProblem(problem),
+        source: problem,
         studentAnswer: String(problem.studentAnswer ?? ''),
         correctAnswer: String(problem.correctAnswer ?? ''),
         skillTag: String(problem.skillTag || problem.problemType || operation),
@@ -397,6 +431,27 @@ function getLatestTimestamp(list) {
 function formatTimestamp(timestamp) {
   if (!timestamp) return ''
   return new Date(timestamp).toISOString()
+}
+
+// Swedish Excel reads a dot as text when the delimiter is a semicolon. The
+// comma keeps the cells numeric; another reader is told by the DecimalTecken
+// column what it is looking at.
+function toExcelNumber(value, digits = null) {
+  const numeric = Number(value)
+  if (!Number.isFinite(numeric)) return ''
+  const text = digits === null ? String(numeric) : numeric.toFixed(digits)
+  return text.replace('.', ',')
+}
+
+function localDateParts(timestamp) {
+  if (!timestamp) return { date: '', time: '', weekday: '' }
+  const date = new Date(timestamp)
+  const pad = value => String(value).padStart(2, '0')
+  return {
+    date: `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`,
+    time: `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`,
+    weekday: ['sön', 'mån', 'tis', 'ons', 'tors', 'fre', 'lör'][date.getDay()] || ''
+  }
 }
 
 function rate(items, options = {}) {

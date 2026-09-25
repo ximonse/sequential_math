@@ -23,6 +23,8 @@ function randomEventId() {
 const MAX_BATCH_EVENTS = 100
 // Stay clear of the server's 256 kB batch ceiling; checkpoints carry stats.
 const MAX_BATCH_BYTES = 180 * 1024
+const MAX_SERVER_EVENT_BYTES = 32 * 1024
+const MAX_SAFE_EVENT_BYTES = 30 * 1024
 const UNSENDABLE_STATUSES = new Set([400, 413])
 
 function eventBytes(event) {
@@ -55,6 +57,24 @@ function checkpointPayload(profile, capturedAt) {
   return payload
 }
 
+// A full telemetry event log can exceed the server's 32 kB per-event limit.
+// Keep daily aggregates and the newest event detail; the encrypted snapshot
+// still holds the full local profile until the server confirms this checkpoint.
+export function compactCheckpointEvent(event) {
+  if (event?.type !== 'profile_checkpoint' || eventBytes(event) <= MAX_SAFE_EVENT_BYTES) return event
+  const telemetry = event.payload?.telemetry
+  if (!telemetry || !Array.isArray(telemetry.events)) return event
+  const compacted = {
+    ...event,
+    payload: { ...event.payload, telemetry: { ...telemetry, events: [...telemetry.events] } }
+  }
+  while (compacted.payload.telemetry.events.length > 0 && eventBytes(compacted) > MAX_SAFE_EVENT_BYTES) {
+    const events = compacted.payload.telemetry.events
+    compacted.payload.telemetry.events = events.slice(Math.max(1, Math.ceil(events.length / 2)))
+  }
+  return compacted
+}
+
 export function createPilotStudentRuntime({
   createStore = createPilotStudentStore,
   resumeSession = resumeStudentSession,
@@ -64,6 +84,7 @@ export function createPilotStudentRuntime({
 } = {}) {
   let studentId = ''
   let store = null
+  let recoveryAttempted = false
   const listeners = new Set()
   let syncStatus = {
     state: 'idle',
@@ -118,19 +139,40 @@ export function createPilotStudentRuntime({
     return { ok: true }
   }
 
-  async function syncPending() {
+  async function recoverRejectedCheckpoints() {
+    let rejected
+    try { rejected = await store.listRejectedEvents() } catch { return }
+    const checkpoints = rejected.filter(item => item.event?.type === 'profile_checkpoint')
+    if (checkpoints.length === 0) return
+    const latest = checkpoints.reduce((best, item) =>
+      !best || Number(item.event.payload?.capturedAt || 0) > Number(best.event.payload?.capturedAt || 0) ? item : best, null)
+    const repaired = compactCheckpointEvent(latest.event)
+    if (eventBytes(repaired) > MAX_SERVER_EVENT_BYTES) return
+    let result
+    try { result = await postEvents([repaired]) } catch { return }
+    if (!result?.ok || !Array.isArray(result.ack) || !result.ack.includes(repaired.id)) return
+    await store.acknowledgeEvents([repaired.id])
+    const olderIds = checkpoints.filter(item => item.event.id !== repaired.id).map(item => item.event.id)
+    if (olderIds.length > 0) await store.supersedeRejectedEvents(olderIds)
+  }
+
+  async function syncPending({ recoverRejected = false } = {}) {
     if (!store) {
       updateSyncStatus({ state: 'error', lastErrorAt: Date.now(), lastError: 'Pilotlagringen är inte startad.' })
       return { ok: false, error: 'Pilotlagringen är inte startad.' }
     }
     const pending = await store.listPendingEvents()
     if (pending.length === 0) {
+      if (recoverRejected) await recoverRejectedCheckpoints()
       return reportCompletedSync()
     }
     updateSyncStatus({ state: 'syncing', pendingCount: pending.length, lastAttemptAt: Date.now(), lastError: '' })
 
-    const batches = buildBatches(pending.map(item => item.event))
-    let sent = 0
+    const prepared = pending.map(item => compactCheckpointEvent(item.event))
+    const oversized = prepared.filter(event => eventBytes(event) > MAX_SERVER_EVENT_BYTES)
+    if (oversized.length > 0) await store.rejectEvents(oversized.map(event => event.id))
+    const batches = buildBatches(prepared.filter(event => eventBytes(event) <= MAX_SERVER_EVENT_BYTES))
+    let sent = oversized.length
     for (const batch of batches) {
       let result
       try {
@@ -170,6 +212,7 @@ export function createPilotStudentRuntime({
       updateSyncStatus({ pendingCount: Math.max(0, pending.length - sent) })
     }
 
+    if (recoverRejected) await recoverRejectedCheckpoints()
     return reportCompletedSync()
   }
 
@@ -186,8 +229,11 @@ export function createPilotStudentRuntime({
         if (store) await store.close()
         studentId = expected
         store = await createStore({ studentId })
+        recoveryAttempted = false
       }
-      const synced = await syncPending()
+      const shouldRecover = !recoveryAttempted
+      recoveryAttempted = true
+      const synced = await syncPending({ recoverRejected: shouldRecover })
       if (!synced.ok && !String(synced.error || '').includes('anslutningen')) return synced
       const loaded = await fetchProfile()
       if (!loaded?.ok || normalizePilotStudentId(loaded.profile?.studentId) !== expected) {
@@ -224,10 +270,10 @@ export function createPilotStudentRuntime({
 
     async persistCheckpoint(profile) {
       const capturedAt = Date.now()
-      return this.persistEvent(profile, {
+      return this.persistEvent(profile, compactCheckpointEvent({
         id: makeEventId(), type: 'profile_checkpoint', timestamp: capturedAt,
         payload: checkpointPayload(profile, capturedAt)
-      })
+      }))
     },
 
     async persistCustomEvent(profile, type, payload, timestamp = Date.now()) {
@@ -240,6 +286,7 @@ export function createPilotStudentRuntime({
       if (store) store.close()
       store = null
       studentId = ''
+      recoveryAttempted = false
       updateSyncStatus({ state: 'idle', pendingCount: 0, rejectedCount: 0, lastAttemptAt: 0, lastSuccessAt: 0, lastErrorAt: 0, lastError: '' })
     }
   }

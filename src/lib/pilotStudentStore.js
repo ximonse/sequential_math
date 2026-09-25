@@ -249,7 +249,18 @@ export async function createPilotStudentStore({
       const transaction = db.transaction(STORE_NAME, 'readonly');
       const records = await requestAsPromise(transaction.objectStore(STORE_NAME).getAll());
       await transactionAsPromise(transaction);
-      return records.filter((item) => item.type === 'event' && item.studentId === studentId && item.schema === VAULT_SCHEMA && item.rejectedAt && !item.acknowledgedAt).length;
+      return records.filter((item) => item.type === 'event' && item.studentId === studentId && item.schema === VAULT_SCHEMA && item.rejectedAt && !item.acknowledgedAt && !item.supersededAt).length;
+    },
+
+    async listRejectedEvents() {
+      const transaction = db.transaction(STORE_NAME, 'readonly');
+      const records = await requestAsPromise(transaction.objectStore(STORE_NAME).getAll());
+      await transactionAsPromise(transaction);
+      const rejected = records.filter((item) => item.type === 'event' && item.studentId === studentId && item.schema === VAULT_SCHEMA && item.rejectedAt && !item.acknowledgedAt && !item.supersededAt);
+      return Promise.all(rejected.map(async (item) => ({
+        event: await decryptVaultValue({ cryptoApi: crypto, key, studentId, recordType: 'event', encrypted: item }),
+        rejectedAt: item.rejectedAt,
+      })));
     },
 
     async rejectEvents(eventIds) {
@@ -266,6 +277,25 @@ export async function createPilotStudentStore({
         await transactionAsPromise(transaction);
       } catch (error) {
         throw new PilotStudentVaultError('VAULT_WRITE_FAILED', 'Avvisade elevsvar kunde inte bevaras säkert.', error);
+      }
+    },
+
+    async supersedeRejectedEvents(eventIds) {
+      if (!Array.isArray(eventIds)) throw new PilotStudentVaultError('INVALID_EVENT', 'Händelser att ersätta måste vara en lista.');
+      const ids = new Set(eventIds.filter((id) => typeof id === 'string'));
+      if (!ids.size) return;
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const records = await requestAsPromise(store.getAll());
+      for (const stored of records) {
+        if (ids.has(stored.eventId) && stored.schema === VAULT_SCHEMA && stored.studentId === studentId && stored.type === 'event' && stored.rejectedAt && !stored.acknowledgedAt && !stored.supersededAt) {
+          store.put({ ...stored, supersededAt: Date.now() });
+        }
+      }
+      try {
+        await transactionAsPromise(transaction);
+      } catch (error) {
+        throw new PilotStudentVaultError('VAULT_WRITE_FAILED', 'Äldre checkpoints kunde inte bevaras säkert.', error);
       }
     },
 

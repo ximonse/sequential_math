@@ -34,7 +34,7 @@ function AlgebraDisplay({
 
   const handleKeypadKey = (key) => {
     if (!isAnswering) return
-    const next = applyAlgebraKeypadInput(inputValue, key, isSimplify)
+    const next = applyAlgebraKeypadInput(inputValue, key)
     onInputChange(next)
   }
 
@@ -206,18 +206,15 @@ function normalizeAlgebraInput(raw, isSimplify) {
   return s.replace(/[^0-9-]/g, '')
 }
 
-function applyAlgebraKeypadInput(currentValue, key, isSimplify) {
+function applyAlgebraKeypadInput(currentValue, key) {
   const current = String(currentValue || '')
   if (key === 'clear') return ''
   if (key === '⌫' || key === 'backspace') return current.slice(0, -1)
 
   if (key === '±') {
-    if (!isSimplify) {
-      if (current.startsWith('-')) return current.slice(1)
-      if (current === '') return '-'
-      return `-${current}`
-    }
-    return current
+    if (current.startsWith('-')) return current.slice(1)
+    if (current === '') return '-'
+    return `-${current}`
   }
 
   if (key === '−') return current + '-'

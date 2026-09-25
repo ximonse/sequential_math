@@ -97,17 +97,17 @@ body {
   --bg-from: #ff00ff;
   --bg-mid: #ff66ff;
   --bg-to: #00ffff;
-  /* Opaque panels: text on the raw magenta-to-cyan gradient is unreadable. */
-  --surface: rgba(32, 0, 40, 0.86);
-  --surface-soft: rgba(48, 4, 60, 0.88);
-  --surface-strong: rgba(70, 8, 84, 0.9);
-  --border: #ff5cff;
-  --text-main: #fffdff;
-  --text-muted: #ffe9ff;
-  --text-faint: #f3c9ff;
-  --accent: #ffe600;
-  --accent-2: #7dfcff;
-  --danger: #ff9aa8;
+  --surface: rgba(255, 255, 0, 0.15);
+  --surface-soft: rgba(255, 255, 0, 0.2);
+  --surface-strong: rgba(255, 255, 0, 0.28);
+  --border: #ff00ff;
+  /* Dark text: white and yellow disappear against cyan and yellow. */
+  --text-main: #1a0033;
+  --text-muted: #2d0a4d;
+  --text-faint: #3d1a5c;
+  --accent: #6b0080;
+  --accent-2: #00565e;
+  --danger: #8b0020;
   --shadow-color: rgba(255, 0, 255, 0.34);
 }
 

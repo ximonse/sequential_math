@@ -1,6 +1,7 @@
 /**
  * GET /api/class-config?classId=xxx
- * Returns enabledExtras for a class. No auth required (non-sensitive config).
+ * Returns enabledExtras, enabled operations and the active assignment
+ * ("Aktivera för alla") for a class. No auth required (non-sensitive config).
  */
 import { kv } from '@vercel/kv'
 import { withCors } from './_helpers.js'
@@ -26,7 +27,11 @@ export default async function handler(req, res) {
     if (!kvClass) return res.status(404).json({ error: 'Class not found' })
     const enabledExtras = Array.isArray(kvClass?.enabledExtras) ? kvClass.enabledExtras : []
     res.setHeader('Cache-Control', 'no-store')
-    return res.status(200).json({ enabledExtras, enabledOperations: resolveClassOperations(kvClass) })
+    return res.status(200).json({
+      enabledExtras,
+      enabledOperations: resolveClassOperations(kvClass),
+      activeAssignmentPayload: String(kvClass?.activeAssignmentPayload || '')
+    })
   } catch {
     return res.status(503).json({ error: 'Class config unavailable' })
   }

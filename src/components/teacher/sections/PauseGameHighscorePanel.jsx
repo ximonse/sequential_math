@@ -34,7 +34,7 @@ export default function PauseGameHighscorePanel({ selectedClassIds }) {
   }, [classId])
 
   if (!classId) {
-    return <p className="text-sm text-gray-500">Valj en enskild klass for att se highscore.</p>
+    return <p className="text-sm text-gray-500">Välj en enskild klass för att se highscore.</p>
   }
 
   if (loading) {

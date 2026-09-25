@@ -13,40 +13,40 @@ export const TEACHER_AUTO_REFRESH_INTERVAL_MS = 2 * 60 * 1000
 export const PASSWORD_RESET_SECTION_ID = 'teacher-password-reset-section'
 
 export const RESULT_HEADER_HELP = {
-  today_attempts: 'Antal uppgifter eleven har svarat pa idag.',
-  today_wrong: 'Visar ratt/fel idag. Ouppmarksamhetsfel raknas som fel har.',
-  today_engaged: 'Tid pa uppgift = fokus + interaktion, inte bara oppen flik.',
+  today_attempts: 'Antal uppgifter eleven har svarat på idag.',
+  today_wrong: 'Visar rätt/fel idag. Ouppmärksamhetsfel räknas som fel här.',
+  today_engaged: 'Tid på uppgift = fokus + interaktion, inte bara öppen flik.',
   today_struggle: 'Skill med tydligast kunskapsfel i dagens underlag.',
-  today_answer_length: 'Medel antal tecken i elevsvar idag. Tolkas tillsammans med andra matt.',
-  week_attempts: 'Antal uppgifter sedan veckostart (mandag 00:00).',
-  week_active_time: 'Aktiv tid (svar) summerar speed-tider pa loggade svar.',
-  week_engaged: 'Tid pa uppgift = fokus + interaktion senaste 7 dagar.',
-  week_wrong: 'Visar ratt/fel under veckan. Se ocksa kunskapsfel/ouppmarksamhet i andra vyer.',
+  today_answer_length: 'Medelantal tecken i elevsvar idag. Tolkas tillsammans med andra mått.',
+  week_attempts: 'Antal uppgifter sedan veckostart (måndag 00:00).',
+  week_active_time: 'Aktiv tid (svar) summerar svarstiderna på loggade svar.',
+  week_engaged: 'Tid på uppgift = fokus + interaktion senaste 7 dagarna.',
+  week_wrong: 'Visar rätt/fel under veckan. Se också kunskapsfel/ouppmärksamhet i andra vyer.',
   week_struggle: 'Skill med tydligast kunskapsfel i veckans underlag.',
   week_answer_length: 'Medel antal tecken i elevsvar denna vecka.',
-  success_rate: 'Andel ratt av total antal forsok.',
-  reasonable_rate: 'Andel svar inom rimlighetstolerans for respektive uppgift.',
-  avg_relative_error: 'Genomsnittlig relativ avvikelse pa kunskapsfel.',
-  trend: 'Skillnad i traff mellan senaste 10 och foregaende 10 svar.'
+  success_rate: 'Andel rätt av totalt antal försök.',
+  reasonable_rate: 'Andel svar inom rimlighetstolerans för respektive uppgift.',
+  avg_relative_error: 'Genomsnittlig relativ avvikelse på kunskapsfel.',
+  trend: 'Skillnad i träff mellan senaste 10 och föregående 10 svar.'
 }
 
 export const DETAIL_LEVEL_ERROR_HELP = {
-  operation: 'Raknesatt som nivan tillhor.',
-  level: 'Konceptuell niva (1-12) inom raknesattet.',
-  attempts: `Antal forsok pa nivan. Minst ${DETAIL_LEVEL_ERROR_MIN_ATTEMPTS} kravs for visning.`,
-  correct: 'Antal korrekta svar pa nivan.',
-  wrong: 'Antal felaktiga svar pa nivan.',
-  error_share: 'Felandel = Fel/Forsok pa nivan. Jamfor inom samma raknesatt + niva.',
+  operation: 'Räknesätt som nivån tillhör.',
+  level: 'Konceptuell nivå (1–12) inom räknesättet.',
+  attempts: `Antal försök på nivån. Minst ${DETAIL_LEVEL_ERROR_MIN_ATTEMPTS} krävs för visning.`,
+  correct: 'Antal korrekta svar på nivån.',
+  wrong: 'Antal felaktiga svar på nivån.',
+  error_share: 'Felandel = fel/försök på nivån. Jämför inom samma räknesätt och nivå.',
   knowledge_wrong: 'Fel som klassats som kunskapsfel.',
-  inattention_wrong: 'Fel som klassats som ouppmarksamhet.'
+  inattention_wrong: 'Fel som klassats som ouppmärksamhet.'
 }
 
 export const SUPPORT_HEADER_HELP = {
-  status: 'Aktivitetsstatus: gron/orange/svart/rod utifran fokus och senaste interaktion.',
-  risk: 'Signal visas bara nar en tydlig aktivitetsregel eller minst sex svar ger underlag.',
-  evidence: 'Visar antal svar och om historiken ar komplett eller begransad.',
-  today_wrong: 'Ratt/fel idag. Tolka tillsammans med mangd och feltyp.',
-  week_success: 'Andel ratt under veckan.',
-  struggle: 'Skill dar eleven visar tydligast kunskapskamp i aktuellt underlag.',
-  flags: 'Korta riskkoder som forklarar varfor eleven prioriteras.'
+  status: 'Aktivitetsstatus: grön/orange/svart/röd utifrån fokus och senaste interaktion.',
+  risk: 'Signal visas bara när en tydlig aktivitetsregel eller minst sex svar ger underlag.',
+  evidence: 'Visar antal svar och om historiken är komplett eller begränsad.',
+  today_wrong: 'Rätt/fel idag. Tolka tillsammans med mängd och feltyp.',
+  week_success: 'Andel rätt under veckan.',
+  struggle: 'Skill där eleven visar tydligast kunskapskamp i aktuellt underlag.',
+  flags: 'Korta riskkoder som förklarar varför eleven prioriteras.'
 }

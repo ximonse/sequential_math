@@ -164,10 +164,9 @@ function Dashboard() {
   }, [loadStudents])
 
   useEffect(() => {
-    if (classFilterOptions.length === 0) {
-      if (selectedClassIds.length > 0) setSelectedClassIds([])
-      return
-    }
+    // The class list is empty until it has loaded; clearing then would wipe
+    // (and save over) the teacher's saved choice on every reload.
+    if (classFilterOptions.length === 0) return
     const valid = new Set(classFilterOptions.map(item => item.id))
     setSelectedClassIds(prev => prev.filter(id => valid.has(id)))
   }, [classFilterOptions, selectedClassIds.length])
@@ -365,7 +364,10 @@ function Dashboard() {
     getSelectedClassLoginToken: () => {
       if (selectedClassIds.length !== 1) return ''
       return String(classes.find(item => String(item.id) === String(selectedClassIds[0]))?.loginToken || '').trim()
-    }
+    },
+    getTargetClasses: () => (selectedClassIds.length > 0
+      ? classes.filter(item => selectedClassIds.includes(String(item.id)))
+      : classes)
   })
 
   const {

@@ -12,3 +12,9 @@ backups/
 
 .vercel
 .env*.local
+
+# Klickrobotar
+test-results/
+robots/test-results/
+robots/report/
+robots/.build/

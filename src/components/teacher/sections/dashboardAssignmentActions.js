@@ -1,11 +1,13 @@
 import { buildQuickAssignmentPreset } from './dashboardAssignmentRiskHelpers'
 import { getPresetConfig } from './dashboardCoreHelpers'
+import { getTeacherApiToken } from '../../../lib/teacherAuth'
 import {
   buildAssignmentLink,
   clearActiveAssignment,
   clearAllAssignments,
   createAssignment,
   deleteAssignment,
+  encodeAssignmentPayload,
   getActiveAssignment,
   getAssignmentById,
   getAssignments,
@@ -18,8 +20,31 @@ export function buildDashboardAssignmentActions({
   setDashboardStatus,
   setCopiedId,
   setActiveAssignmentId,
-  getSelectedClassLoginToken
+  getSelectedClassLoginToken,
+  getTargetClasses = () => []
 }) {
+  // "Aktivera för alla" is stored on each class on the server, where pupils'
+  // own devices read it. Targets are the selected classes, or all of them.
+  const saveClassAssignment = async (assignment) => {
+    const targets = getTargetClasses()
+    const assignmentPayload = assignment ? encodeAssignmentPayload(assignment) : ''
+    const results = await Promise.all(targets.map(async target => {
+      try {
+        const response = await fetch('/api/teacher-class-assignment', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() },
+          body: JSON.stringify({ classId: target.id, assignmentPayload })
+        })
+        return response.ok
+      } catch {
+        return false
+      }
+    }))
+    const saved = targets.filter((_, index) => results[index]).map(target => target.name || target.id)
+    const failed = targets.length - saved.length
+    return { saved, failed }
+  }
+
   const handleCreatePreset = (presetKey) => {
     const preset = getPresetConfig(presetKey)
     const created = createAssignment(preset)
@@ -48,19 +73,29 @@ export function buildDashboardAssignmentActions({
     }
   }
 
-  const handleActivateForAll = (assignmentId) => {
+  const handleActivateForAll = async (assignmentId) => {
+    const assignment = assignments.find(item => item.id === assignmentId) || getAssignmentById(assignmentId)
     setActiveAssignment(assignmentId)
     setActiveAssignmentId(assignmentId)
-    setDashboardStatus(`Aktivt uppdrag ändrat till ${assignmentId}.`)
+    const { saved, failed } = await saveClassAssignment(assignment)
+    if (saved.length === 0) {
+      setDashboardStatus('Kunde inte aktivera uppdraget för eleverna. Försök igen.')
+      return
+    }
+    setDashboardStatus(`${assignment?.title || 'Uppdraget'} är aktivt för ${saved.join(', ')}.${failed ? ` ${failed} klass(er) kunde inte sparas.` : ''}`)
   }
 
-  const handleClearActiveForAll = () => {
+  const handleClearActiveForAll = async () => {
     clearActiveAssignment()
     setActiveAssignmentId('')
-    setDashboardStatus('Aktivt uppdrag rensat.')
+    const { saved, failed } = await saveClassAssignment(null)
+    setDashboardStatus(failed
+      ? `Aktivt uppdrag rensat för ${saved.join(', ') || 'inga klasser'}. ${failed} klass(er) kunde inte sparas.`
+      : 'Aktivt uppdrag rensat.')
   }
 
   const handleDeleteAssignment = (assignmentId) => {
+    if (getActiveAssignment()?.id === assignmentId) void saveClassAssignment(null)
     deleteAssignment(assignmentId)
     setAssignments(getAssignments())
     setActiveAssignmentId(getActiveAssignment()?.id || '')
@@ -68,6 +103,7 @@ export function buildDashboardAssignmentActions({
   }
 
   const handleClearAllAssignments = () => {
+    if (getActiveAssignment()) void saveClassAssignment(null)
     clearAllAssignments()
     setAssignments([])
     setActiveAssignmentId('')

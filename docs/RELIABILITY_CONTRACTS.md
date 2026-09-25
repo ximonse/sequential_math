@@ -65,6 +65,12 @@ run when cloud sync is enabled. It never imports historical pupil backups and
 is not present as an active route in a production build. Use `?reset=1` for a
 fresh empty profile; omission preserves the current synthetic replay.
 
+**2026-09-25:** the route no longer reaches practice. It redirects to the login
+page because the pupil home now always boots through the pilot session. The
+click robots in `robots/` replace it: they log in with a code name and PIN
+against the real API handlers backed by an in-memory store. See
+[KONTROLLKARTA.md](KONTROLLKARTA.md).
+
 ## Organisation och inloggning
 
 Den auktoritativa specifikationen finns i

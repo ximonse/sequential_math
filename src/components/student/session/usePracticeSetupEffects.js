@@ -137,28 +137,29 @@ export function usePracticeSetupEffects({
     if (!profile) return undefined
     if (sessionTelemetryRef.current) return undefined
 
-    const startedAt = Date.now()
-    const sessionId = makeSessionTelemetryId(studentId)
-    sessionTelemetryRef.current = {
-      sessionId,
-      startedAt,
-      answered: 0,
-      correct: 0,
-      wrong: 0,
-      partial: 0
+    const startSession = () => {
+      const startedAt = Date.now()
+      const sessionId = makeSessionTelemetryId(studentId)
+      sessionTelemetryRef.current = {
+        sessionId,
+        startedAt,
+        answered: 0,
+        correct: 0,
+        wrong: 0,
+        partial: 0
+      }
+      recordTelemetryEvent(profile, 'practice_session_start', {
+        sessionId,
+        mode: mode || '',
+        assignmentId: assignmentId || '',
+        progressionMode,
+        tableSet
+      }, startedAt)
+      incrementTelemetryDailyMetric(profile, 'practice_sessions_started', 1, startedAt)
+      void persistProfile(profile)
     }
 
-    recordTelemetryEvent(profile, 'practice_session_start', {
-      sessionId,
-      mode: mode || '',
-      assignmentId: assignmentId || '',
-      progressionMode,
-      tableSet
-    }, startedAt)
-    incrementTelemetryDailyMetric(profile, 'practice_sessions_started', 1, startedAt)
-    void persistProfile(profile)
-
-    return () => {
+    const endSession = () => {
       const meta = sessionTelemetryRef.current
       if (!meta) return
       const endedAt = Date.now()
@@ -175,6 +176,23 @@ export function usePracticeSetupEffects({
       addTelemetryDurationMs(profile, 'practice_session_ms', durationMs, endedAt)
       void persistProfile(profile, { forceSync: true })
       sessionTelemetryRef.current = null
+    }
+
+    // Pupils rarely press Startsida: they lock the iPad, switch app or close
+    // the tab. A hidden page therefore ends the session, and coming back
+    // starts a new one, so started and ended sessions stay paired.
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') endSession()
+      else if (!sessionTelemetryRef.current) startSession()
+    }
+
+    startSession()
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    window.addEventListener('pagehide', endSession)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      window.removeEventListener('pagehide', endSession)
+      endSession()
     }
   }, [profile, studentId, assignmentId, mode, progressionMode, tableSet, sessionTelemetryRef, persistProfile])
 

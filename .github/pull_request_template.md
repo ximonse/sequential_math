@@ -6,6 +6,7 @@ Beskriv ändringen och vilket användarflöde den påverkar.
 
 - [ ] `npm run test`
 - [ ] `npm run build`
+- [ ] `npm run robots`
 
 ## Dokumentation
 

@@ -205,7 +205,7 @@ export function createCloudSyncApi(deps) {
         cache: 'no-store'
       })
       if (!response.ok) {
-        return { ok: false, error: 'Kunde inte radera eleven fran servern.' }
+        return { ok: false, error: 'Kunde inte radera eleven från servern.' }
       }
       removePendingSync(normalizedId)
       cancelRetries(normalizedId)

@@ -50,6 +50,16 @@ deploy-status.
 
 1. `npm run test`
 2. `npm run build`
+3. `npm run robots` — klickrobotar som använder appen som en elev (se `robots/README.md`).
+
+Varje ändring ska hålla de fyra vardagsreglerna, oavsett vad uppgiften gällde:
+
+- **R1** Det jag väljer är det jag får.
+- **R2** Det jag valt ligger kvar tills jag själv ändrar det.
+- **R3** Det jag trycker på händer.
+- **R4** Appen gör ingenting bakom min rygg.
+
+Hittar du ett fel som bryter mot någon av dem: lägg först till en robotkontroll som blir röd och rätta sedan felet.
 
 Om test eller build faller: rapportera felet tydligt, gör inga fler riskfyllda steg
 och committa inte som om ändringen vore klar.

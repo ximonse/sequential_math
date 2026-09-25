@@ -8,13 +8,13 @@ const MAX_WRONG_ANSWERS_PER_LEVEL = 10
 
 const FEATURE_LABELS = {
   decimal: 'Decimaltal',
-  carry: 'Tiotalsovergang',
-  borrow: 'Vaxling i subtraktion',
-  large_numbers: 'Storre tal',
+  carry: 'Tiotalsövergång',
+  borrow: 'Växling i subtraktion',
+  large_numbers: 'Större tal',
   negative_numbers: 'Negativa tal',
   parentheses: 'Parenteser',
-  mixed_operations: 'Blandade raknesatt',
-  fractions_notation: 'Braknotation',
+  mixed_operations: 'Blandade räknesätt',
+  fractions_notation: 'Bråknotation',
   different_denominators: 'Olika namnare',
   percentage_context: 'Procentsammanhang',
   algebra_variable: 'Variabler',

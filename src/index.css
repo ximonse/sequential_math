@@ -490,9 +490,15 @@ body[class*="theme-"] .text-rose-800 {
   color: var(--danger) !important;
 }
 
+body[class*="theme-"] .text-slate-900,
+body[class*="theme-"] .text-slate-800,
 body[class*="theme-"] .text-slate-700,
 body[class*="theme-"] .text-slate-600 {
   color: var(--text-main) !important;
+}
+
+body[class*="theme-"] .text-slate-500 {
+  color: var(--text-muted) !important;
 }
 
 /* --- Border overrides for remaining color families --- */

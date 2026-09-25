@@ -6,7 +6,9 @@ export const RULES = {
   R3: 'Det jag trycker på händer',
   R4: 'Appen gör ingenting bakom min rygg',
   C1: 'Uppgiften är rätt och går att svara på',
-  V1: 'Uppgifterna varierar'
+  V1: 'Uppgifterna varierar',
+  L1: 'Lärarvyn visar det eleverna faktiskt gjorde',
+  T1: 'Texten på skärmen är hel och begriplig'
 }
 
 export function createFindings(testInfo) {

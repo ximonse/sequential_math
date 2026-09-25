@@ -10,7 +10,7 @@ function wrongAnswer(text) {
 
 const norm = value => String(value ?? '').replace(/\s+/g, '').replace('−', '-').replace('.', ',')
 
-export async function answerTasks(page, findings, { count, choice, strategy = 'correct', breakChoice, onTask, stopWhen, onLeave } = {}) {
+export async function answerTasks(page, findings, { count, choice, strategy = 'correct', breakChoice, onTask, stopWhen, onLeave, thinkMs = 0 } = {}) {
   const log = []
   const practiceUrl = page.url()
   for (let i = 0; i < count; i++) {
@@ -38,6 +38,7 @@ export async function answerTasks(page, findings, { count, choice, strategy = 'c
     const toType = wantCorrect ? correctText : wrongAnswer(correctText)
     if (!correctText) findings.add('C1', 'Uppgiften saknar facit', { uppgift: taskLabel(problem) })
 
+    if (thinkMs) await page.waitForTimeout(thinkMs)
     const pressed = await pressKeys(page, toType)
     if (!pressed.typed) {
       findings.add('C1', 'Svaret går inte att skriva med knapparna på skärmen', { uppgift: taskLabel(problem), svar: toType, saknas: pressed.missing.join(' ') })
@@ -53,7 +54,7 @@ export async function answerTasks(page, findings, { count, choice, strategy = 'c
       if (wantCorrect && judged.feedback.correct !== true) findings.add('C1', 'Rätt svar bedömdes som fel', { uppgift: taskLabel(problem), svar: toType })
       if (!wantCorrect && judged.feedback.correct === true) findings.add('C1', 'Fel svar bedömdes som rätt', { uppgift: taskLabel(problem), svar: toType })
     }
-    const entry = { i, key: taskKey(problem), op: taskOperation(problem), type: problem.type, level: taskLevel(problem), correct: wantCorrect, interruptions, reason: problem?.metadata?.selectionReason, purpose: problem?.metadata?.trainingPurpose }
+    const entry = { i, key: taskKey(problem), op: taskOperation(problem), type: problem.type, level: taskLevel(problem), correct: wantCorrect, answer: toType, rightAnswer: correctText, interruptions, reason: problem?.metadata?.selectionReason, purpose: problem?.metadata?.trainingPurpose }
     log.push(entry)
     if (onTask) await onTask(entry, problem)
     if (stopWhen && stopWhen(log)) break

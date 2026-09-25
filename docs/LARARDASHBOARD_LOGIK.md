@@ -51,6 +51,10 @@ Kolumner:
 - `Telemetry tackning`: antal elever med minst 1 telemetry-event.
 - `Narvarosignal idag`: antal elever med `presenceLastSeenAt` idag.
 - `Session-gap idag`: elever dar `sessions_started > sessions_ended`.
+  Ett traningspass avslutas nar eleven lamnar via Startsida och aven nar sidan doljs
+  (last skarm, byte av app, stangd flik). Kommer eleven tillbaka startar ett nytt pass.
+  Session-gap betyder darfor att ett slut faktiskt gick forlorat, inte att eleven
+  bara lade ifran sig surfplattan (andrat 2026-09-25).
 - `Datamismatch idag`: elever dar `|telemetry_svar - registrerade_forsok| >= 4`.
 - `Overall quality %`: medel av fyra delscore:
   - telemetryCoverage,

@@ -2,10 +2,10 @@
 // the on-screen keys like a pupil and get past celebration/break screens.
 import { expect } from '@playwright/test'
 
-export async function createPupil(request, { operations, name } = {}) {
+export async function createPupil(request, { operations, name, classId: sharedClassId, className } = {}) {
   const pupilName = name || `Robot ${Math.random().toString(36).slice(2, 8)}`
-  const classId = operations ? `klass-${pupilName.replace(/\W+/g, '-').toLowerCase()}` : undefined
-  const response = await request.post('/__robot/seed', { data: { operations, classId, pupils: [pupilName] } })
+  const classId = sharedClassId || (operations ? `klass-${pupilName.replace(/\W+/g, '-').toLowerCase()}` : undefined)
+  const response = await request.post('/__robot/seed', { data: { operations, classId, className, pupils: [pupilName] } })
   const data = await response.json()
   if (!data.ok) throw new Error(`Seed failed: ${JSON.stringify(data)}`)
   return data.pupils[0]

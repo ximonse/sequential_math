@@ -82,6 +82,28 @@ test('Paus: är borta 10 minuter mitt i en uppgift', async ({ page, request }, t
   expect.soft(findings.items.map(f => `${f.rule}: ${f.message}`)).toEqual([])
 })
 
+test('Paus: låser surfplattan och låser upp igen', async ({ page, request }, testInfo) => {
+  const findings = createFindings(testInfo)
+  const { pupil, before } = await warmUp(page, request, findings)
+  const setHidden = hidden => page.evaluate(value => {
+    Object.defineProperty(document, 'visibilityState', { value: value ? 'hidden' : 'visible', configurable: true })
+    Object.defineProperty(document, 'hidden', { value, configurable: true })
+    document.dispatchEvent(new Event('visibilitychange'))
+  }, hidden)
+  await setHidden(true)
+  await page.waitForTimeout(1500)
+  await setHidden(false)
+  const after = await answerTasks(page, findings, { count: 6, choice: AREA })
+  compareAfter(findings, 'låst och upplåst surfplatta', before, after)
+  await page.waitForTimeout(1500)
+  const profile = await (await request.post('/__robot/student', { data: { studentId: pupil.studentId } })).json()
+  const today = Object.values(profile.profile?.telemetry?.daily || {}).at(-1) || {}
+  if (Number(today.practice_sessions_ended || 0) < 1) findings.add('L1', 'Ett låst pass räknades inte som avslutat', { idag: today })
+  if (Number(today.practice_sessions_started || 0) < 2) findings.add('L1', 'Att låsa upp igen startade inget nytt pass', { idag: today })
+  await findings.attach()
+  expect.soft(findings.items.map(f => `${f.rule}: ${f.message}`)).toEqual([])
+})
+
 test('Paus: laddar om sidan mitt i en uppgift', async ({ page, request }, testInfo) => {
   const findings = createFindings(testInfo)
   const { before } = await warmUp(page, request, findings)

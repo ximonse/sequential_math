@@ -1,6 +1,6 @@
 # Klickrobotar
 
-Robotarna använder appen som en elev: de loggar in med kodnamn och PIN, väljer träning, trycker på knapparna på skärmen och svarar. Efter varje steg kontrollerar de sex regler:
+Robotarna använder appen som elever och lärare: de loggar in med kodnamn och PIN, väljer träning, trycker på knapparna på skärmen och svarar. En lärarrobot loggar sedan in och kontrollerar att lärarvyn visar det eleverna gjorde. Efter varje steg kontrolleras åtta regler:
 
 | Regel | Innebörd |
 | --- | --- |
@@ -10,6 +10,8 @@ Robotarna använder appen som en elev: de loggar in med kodnamn och PIN, väljer
 | R4 | Appen gör ingenting bakom min rygg. |
 | C1 | Uppgiften är rätt och går att svara på med knapparna. |
 | V1 | Uppgifterna varierar. |
+| L1 | Lärarvyn visar det eleverna faktiskt gjorde. |
+| T1 | Texten på skärmen är hel och begriplig (å, ä, ö; inga `undefined`, `NaN` eller interna koder). |
 
 Reglerna är skrivna så att de inte behöver veta hur appen är byggd. De jämför bara det eleven valde med det eleven fick. Därför behöver robotarna inte skrivas om när koden ändras.
 
@@ -40,6 +42,7 @@ Hela sviten tar ungefär 2–3 minuter med sex parallella webbläsare.
 | `pause.robot.js` | Pausspel, nej tack till paus, startsidan och tillbaka, 10 minuter borta, omladdning och ny flik. |
 | `buttons.robot.js` | Varje knapp på sifferbordet i sex områden, tangentbordet, tema och kontrast samt in- och utloggning. |
 | `training.robot.js` | Fri träning inom klassens räknesätt, Fortsätt träna och en elev som svarar fel på allt. |
+| `teacher.robot.js` | Fyra elever tränar på kända sätt (rätt, bara fel, inget, tabell 7) och en femte i en annan klass. Läraren loggar in och kontrollerar klassval, antal och rätt/fel per elev, okänt ≠ 0, tabellstatus, Behöver stöd nu med elevens riktiga felsvar, datakvalitet, exporten och att klassvalet ligger kvar. Dessutom en textgranskning av elevens sidor. |
 
 ## Lägga till en robot
 
@@ -52,6 +55,13 @@ Skapa `robots/<namn>.robot.js`. Använd `createPupil`, `login` och `answerTasks`
 - **R3 — Algebra (förenkla): ±-knappen visades men gjorde ingenting.** Rättat i samma ändring som robotarna: ± växlar nu minustecken som i Algebra (räkna ut).
 - **R2 (bara i utvecklingsläget) — tema och kontrast återställs vid varje omladdning.** I produktionsbygget ligger de kvar. Se [kontrollkartan](../docs/KONTROLLKARTA.md).
 - Inga brott mot R1, R4, C1 eller V1 i tabellträning, alla nio områden genom nivå 1–12, pauser eller fri träning.
+
+Lärarroboten, samma dag:
+
+- **R2 — Lärarens klassval försvann vid varje omladdning**, trots att sidan lovar att valet sparas. Klasslistan var tom en kort stund när sidan laddades, och då rensades valet och sparades tomt. Rättat.
+- **L1 — Datakvaliteten flaggade alla elever som tränat vanligt** under "Behöver extra koll". Ett pass räknades bara som avslutat via Startsida, men elever låser surfplattan eller stänger fliken. Nu avslutas passet när sidan döljs, och ett nytt startar om eleven kommer tillbaka. Rättat.
+- **T1 — Texter utan å/ä/ö** i temaväljaren ("Morkt gulgron"), felmönsterpanelen ("Ej tranad", ">=85% ratt", "pa nivan") och verktygstipsen i lärarvyn. Rättat.
+- Allt annat stämde: antal svar och rätt/fel per elev, okänd nivå visas som "–", tabellstatus, felsvaren under Behöver stöd nu och antalet rader i exporten.
 
 ### Fångar robotarna verkligen fel?
 

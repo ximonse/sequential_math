@@ -84,6 +84,7 @@ const alias = { '@vercel/kv': path.join(root, 'robots/memoryKv.js') }
 export async function startRobotServer({ port = 5288, production = process.env.ROBOT_DEV !== '1' } = {}) {
   process.env.APP_ORIGIN = `http://localhost:${port}`
   process.env.PILOT_ENROLLMENT_SECRET ||= 'robot-enrollment-secret'
+  process.env.TEACHER_API_PASSWORD_ROTATION_SECRET ||= 'robot-teacher-token-secret'
   if (!production) {
     const server = await createServer({
       root, configFile: false, logLevel: 'warn',

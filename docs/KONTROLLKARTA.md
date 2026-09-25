@@ -22,8 +22,10 @@ Dessutom saknas de vardagliga självklarheterna helt i kontrakten. Kontrakten ha
 | R4 | Appen gör ingenting bakom min rygg (nivåfall, utloggning, byte av område). | P9 och F2 regel 5 delvis |
 | C1 | Uppgiften är rätt och går att svara på med knapparna. | F3 |
 | V1 | Uppgifterna varierar. | F3 (variation), S10 |
+| L1 | Lärarvyn visar det eleverna faktiskt gjorde. | P5, F6 |
+| T1 | Texten på skärmen är hel och begriplig. | Saknas |
 
-Klickrobotarna i [`robots/`](../robots/README.md) kontrollerar alla sex vid varje körning.
+Klickrobotarna i [`robots/`](../robots/README.md) kontrollerar alla åtta vid varje körning.
 
 ## Kontraktet regel för regel
 
@@ -44,7 +46,8 @@ Klickrobotarna i [`robots/`](../robots/README.md) kontrollerar alla sex vid varj
 | R2 — tema ligger kvar | Enhetstest av `themeRole` | Tema och kontrast genom inloggning, omladdning, övning, lärarsidan och utloggning | — |
 | R2/R3 — inloggning | Enhetstester av sessionen | Ingen utloggning vid omladdning, ny flik, en timmes paus eller övning; Logga ut loggar ut; bakåtknappen tar inte tillbaka eleven | QR-inloggning |
 | R3 — knappar | Saknades | Varje siffra, Radera/⌫, Rensa, ±, komma, fysiskt tangentbord, Enter och dubbeltryck på Svara i 6 områden | Rityta, pausspelen |
-| F6 — lärarsignal | Enhetstester av sammanställningar | **Inte täckt** | Robot som loggar in som lärare efter elevrobotarna |
+| F6 — lärarsignal | Enhetstester av sammanställningar | Lärarrobot: klassval, antal och rätt/fel per elev, okänt visas inte som 0, tabellstatus, Behöver stöd nu med elevens riktiga felsvar, datakvalitet och rådataexport jämförs med vad eleverna faktiskt gjorde | Veckovy, elevdetaljens siffror, uppdrag |
+| P5 — samma betydelse i lista och export | Enhetstester | Lärarroboten jämför snabbstatus med exporten, elev för elev | Övriga exporter |
 | NCM, tickets, läraruppdrag | Enhetstester | **Inte täckt** | Egna robotar |
 
 ## Vad robotarna hittade 2026-09-25
@@ -55,7 +58,15 @@ Se [robotarnas README](../robots/README.md#senaste-fynd) för detaljer. Kort:
 2. **Tema och kontrast återställs vid varje omladdning i utvecklingsläget** (R2). I produktionsbygget ligger temat kvar. Orsaken är att `ThemeContext` skriver standardtemat till lagringen innan det sparade temat har lästs, vilket React StrictMode avslöjar. Det drabbar inte eleverna, men det gör att den som testar lokalt ser ett fel som inte finns i produktion.
 3. **Testläget `/qa/adaptive` fungerar inte längre** och skickar direkt tillbaka till inloggningen. Robotarna ersätter det.
 
+4. **Lärarens klassval försvann vid varje omladdning** (R2), trots att sidan lovar att det sparas. Rättat.
+5. **Datakvaliteten flaggade alla elever som tränat vanligt** (L1), eftersom ett pass bara räknades som avslutat via Startsida. Nu avslutas passet när sidan döljs (låst skärm, byte av app, stängd flik). Rättat efter beslut av Simon 2026-09-25.
+6. **Texter utan å/ä/ö** i temaväljaren och lärarvyns felmönsterpanel och verktygstips (T1). Rättat.
+
 Utöver det hittade robotarna **inga brott** mot R1, R4, C1 eller V1 i de områden och flöden som körs. Det gäller tabellträning, alla nio områden genom nivå 1–12, pauser och fri träning. Felen som eleverna såg i klassrummet (fel tabell, nivåfall efter paus) kunde inte återskapas i nuvarande kod, vilket stämmer med att de redan är rättade.
+
+## Öppen fråga till Simon
+
+Nivåöversikten visar kolumnen **Snitt belagt** (ett medel av belagda nivåer i olika områden per elev) och raden **Klassmedel**, och sorterar som standard på snittet. [F6](FUNCTION_CONTRACTS.md#7-f6--lärarunderlag) säger att "nivåer i olika kompetenser får inte summeras till en generell matematiknivå eller användas i ett jämförande klassnitt". Robotarna kontrollerar inte detta, eftersom det är en tolkningsfråga: är snittet tillåtet när okänt hålls utanför, eller ska det bort?
 
 ## Hur kartan hålls aktuell
 

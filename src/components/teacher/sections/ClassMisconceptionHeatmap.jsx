@@ -148,11 +148,11 @@ function CellTooltip({ cell, studentName }) {
     <div className="pointer-events-none absolute z-20 bottom-full left-1/2 mb-1.5 -translate-x-1/2 w-max max-w-72 rounded border border-gray-200 bg-white shadow-lg px-2.5 py-1.5 text-left">
       <p className="text-[11px] font-semibold text-gray-800 leading-snug">{studentName} · Niva {cell.level}</p>
       <p className="text-[10px] text-gray-500 mt-0.5">
-        {pct}% ratt · {cell.attempts} forsok · {cell.knowledgeWrong} kunskapsfel
+        {pct}% rätt · {cell.attempts} försök · {cell.knowledgeWrong} kunskapsfel
       </p>
       {cell.newLevelSignals.length > 0 && (
         <p className="text-[10px] text-blue-700 mt-0.5">
-          Nytt pa nivan: {cell.newLevelSignals.map(item => item.label).join(', ')}
+          Nytt på nivån: {cell.newLevelSignals.map(item => item.label).join(', ')}
         </p>
       )}
       {cell.misconceptionCount > 0 && (
@@ -169,7 +169,7 @@ function CellTooltip({ cell, studentName }) {
         </p>
       )}
       {cell.knowledgeWrong > 0 && (
-        <p className="text-[9px] text-gray-400 mt-1 italic">Klicka for senaste 10 av {cell.knowledgeWrong} kunskapsfel</p>
+        <p className="text-[9px] text-gray-400 mt-1 italic">Klicka för senaste 10 av {cell.knowledgeWrong} kunskapsfel</p>
       )}
     </div>
   )
@@ -194,14 +194,14 @@ function CellDetailModal({ cell, studentName, onClose }) {
           <div>
             <p className="text-sm font-semibold text-gray-900">{studentName} - Niva {cell.level}</p>
             <p className="text-xs text-gray-500 mt-0.5">
-              {pct}% ratt · {cell.attempts} forsok · {cell.correct} ratt / {cell.attempts - cell.correct} fel
+              {pct}% rätt · {cell.attempts} försök · {cell.correct} rätt / {cell.attempts - cell.correct} fel
             </p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-lg leading-none ml-3">✕</button>
         </div>
 
         <FeatureSignalList
-          title="Nytt pa nivan jamfort med lagre nivaer"
+          title="Nytt på nivån jämfört med lägre nivåer"
           signals={cell.newLevelSignals}
         />
         {cell.newLevelSignals.length === 0 && (
@@ -211,7 +211,7 @@ function CellDetailModal({ cell, studentName, onClose }) {
         )}
 
         <FeatureSignalList
-          title="Svarast pa denna niva just nu"
+          title="Svårast på denna nivå just nu"
           signals={cell.challengeSignals.slice(0, 6)}
         />
 
@@ -263,7 +263,7 @@ function CellDetailModal({ cell, studentName, onClose }) {
         </div>
 
         {visibleWrongAnswers.length === 0 && (
-          <p className="text-xs text-gray-400">Inga kunskapsfel hittades pa denna niva.</p>
+          <p className="text-xs text-gray-400">Inga kunskapsfel hittades på denna nivå.</p>
         )}
       </div>
     </div>
@@ -468,18 +468,18 @@ export default function ClassMisconceptionHeatmap({ filteredStudents, onOpenStud
   const hasAnyData = OPERATIONS.some(op => heatmapData[op].length > 0)
 
   const cloudStatusLine = cloudStatus.loading
-    ? 'Synkar full historik fran cloud for missuppfattningar...'
+    ? 'Synkar full historik från molnet för missuppfattningar...'
     : cloudStatus.total === 0
       ? 'Ingen elev vald.'
       : cloudStatus.failedCount > 0
-        ? `Cloud-data saknas for ${cloudStatus.failedCount} elev(er). Lokal fallback visas for dem.`
+        ? `Molndata saknas för ${cloudStatus.failedCount} elev(er). Lokal kopia visas för dem.`
         : `Full historik synkad (${cloudStatus.total} elever)${cloudStatus.lastSyncAt ? `, ${new Date(cloudStatus.lastSyncAt).toLocaleTimeString('sv-SE')}` : ''}.`
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 mb-8">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
-        <h2 className="text-sm font-semibold text-gray-800">Missuppfattningar - klassoversikt</h2>
-        <span className="text-[11px] text-gray-400">Hover for detaljer · klicka cell med kunskapsfel for komplett fellista pa nivan</span>
+        <h2 className="text-sm font-semibold text-gray-800">Missuppfattningar – klassöversikt</h2>
+        <span className="text-[11px] text-gray-400">Håll muspekaren över en cell för detaljer · klicka på en cell med kunskapsfel för hela fellistan på nivån</span>
       </div>
 
       <p className={`text-[11px] mb-3 ${cloudStatus.failedCount > 0 ? 'text-amber-700' : 'text-gray-500'}`}>
@@ -488,11 +488,11 @@ export default function ClassMisconceptionHeatmap({ filteredStudents, onOpenStud
 
       <div className="flex flex-wrap gap-x-4 gap-y-1 mb-4">
         {[
-          { label: '>=85% ratt', cls: 'bg-emerald-100 border-emerald-400' },
+          { label: '≥85 % rätt', cls: 'bg-emerald-100 border-emerald-400' },
           { label: '60-84%', cls: 'bg-amber-100 border-amber-400' },
           { label: '40-59%', cls: 'bg-orange-100 border-orange-400' },
           { label: '<40%', cls: 'bg-red-100 border-red-400' },
-          { label: 'Ej tranad', cls: 'bg-gray-50 border-gray-200' }
+          { label: 'Ej tränad', cls: 'bg-gray-50 border-gray-200' }
         ].map(item => (
           <span key={item.label} className="flex items-center gap-1.5 text-[10px] text-gray-500">
             <span className={`inline-block h-3 w-3 rounded-sm border ${item.cls}`} />
@@ -502,7 +502,7 @@ export default function ClassMisconceptionHeatmap({ filteredStudents, onOpenStud
       </div>
 
       {!hasAnyData ? (
-        <p className="text-xs text-gray-400">Ingen traningsdata tillganglig for de valda eleverna.</p>
+        <p className="text-xs text-gray-400">Ingen träningsdata tillgänglig för de valda eleverna.</p>
       ) : (
         <div className="grid grid-cols-2 gap-6">
           {OPERATIONS.map(operation => (

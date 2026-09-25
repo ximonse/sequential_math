@@ -15,6 +15,21 @@ export async function loadTeacherPupilLabels() {
   }
 }
 
+export async function fillTeacherPupilLabelsFromCreationNames() {
+  const token = getTeacherApiToken()
+  if (!token) return { ok: false, error: 'Du är inte inloggad som lärare.' }
+  try {
+    const response = await fetch('/api/teacher-pupil-labels', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-teacher-token': token },
+      body: JSON.stringify({ action: 'fill_from_creation_names' })
+    })
+    const data = await response.json().catch(() => ({}))
+    return { ok: response.ok, added: Number(data?.added) || 0, labels: data?.labels || {}, error: data?.error || '' }
+  } catch {
+    return { ok: false, error: 'Kunde inte hämta tilltalsnamnen.' }
+  }
+}
+
 export async function saveTeacherPupilLabel(studentId, label) {
   const token = getTeacherApiToken()
   if (!token) return { ok: false }

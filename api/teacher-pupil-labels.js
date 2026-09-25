@@ -34,14 +34,49 @@ async function readableLabels(req, teacherId) {
   return readable
 }
 
+// The name a teacher typed when creating the pupil stays on the pupil record
+// and is never sent to a dashboard. Copying it into this teacher's own labels
+// keeps the name private to them while saving a manual pass over the class.
+async function fillFromCreationNames(req, teacherId) {
+  const labels = normalizeLabels(await kv.get(studentLabelsKey(teacherId)))
+  const ids = await kv.smembers('students:index')
+  let added = 0
+  for (const rawId of Array.isArray(ids) ? ids : []) {
+    const studentId = String(rawId || '').trim().toUpperCase()
+    if (labels[studentId]) continue
+    if (Object.keys(labels).length + 1 > MAX_LABELS) break
+    const profile = await kv.get(`student:${studentId}`)
+    if (!profile) continue
+    const creationName = String(profile.preferredName || profile.name || '').trim()
+    if (!creationName || creationName.length > MAX_LABEL_LENGTH) continue
+    if (creationName === String(profile.displayAlias || '').trim()) continue
+    try {
+      await assertTeacherStudentAccess(req, profile)
+    } catch {
+      continue
+    }
+    labels[studentId] = creationName
+    added += 1
+  }
+  if (added > 0) await kv.set(studentLabelsKey(teacherId), labels)
+  return { added, labels: await readableLabels(req, teacherId) }
+}
+
 export default async function handler(req, res) {
-  withCors(res, { methods: 'GET,PUT,OPTIONS', headers: 'Content-Type,x-teacher-token' }, req)
+  withCors(res, { methods: 'GET,PUT,POST,OPTIONS', headers: 'Content-Type,x-teacher-token' }, req)
   if (req.method === 'OPTIONS') return res.status(204).end()
   const auth = await getLiveTeacherAuthPayload(req)
   if (!auth) return res.status(401).json({ error: 'Teacher authorization required' })
 
   if (req.method === 'GET') {
     return res.status(200).json({ labels: await readableLabels(req, auth.teacherId) })
+  }
+  if (req.method === 'POST') {
+    if (String(req.body?.action || '') !== 'fill_from_creation_names') {
+      return res.status(400).json({ error: 'Unknown label action' })
+    }
+    const filled = await fillFromCreationNames(req, auth.teacherId)
+    return res.status(200).json({ ok: true, ...filled })
   }
   if (req.method !== 'PUT') return res.status(405).json({ error: 'Method not allowed' })
 

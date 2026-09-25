@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const records = vi.hoisted(() => new Map())
 vi.mock('@vercel/kv', () => ({ kv: {
   get: vi.fn(async key => structuredClone(records.get(key) ?? null)),
-  set: vi.fn(async (key, value) => records.set(key, structuredClone(value)))
+  set: vi.fn(async (key, value) => records.set(key, structuredClone(value))),
+  smembers: vi.fn(async key => structuredClone(records.get(key) ?? []))
 } }))
 vi.mock('./_helpers.js', () => ({
   getLiveTeacherAuthPayload: vi.fn(async req => req.auth || null),
@@ -39,5 +40,30 @@ describe('teacher pupil labels', () => {
 
   it('rejects a label for a pupil outside the teacher scope', async () => {
     expect((await call('PUT', { teacherId: 'teacher-b' }, { studentId: 'PUPIL-1', label: 'Alex' })).code).toBe(403)
+  })
+
+  it('fyller tomma etiketter från skapandenamnen inom lärarens räckvidd', async () => {
+    records.set('students:index', ['PUPIL-1', 'PUPIL-2'])
+    records.set('student:PUPIL-1', { allowedTeacherIds: ['teacher-a'], preferredName: 'Alva', displayAlias: 'Blå Räv' })
+    records.set('student:PUPIL-2', { allowedTeacherIds: ['teacher-b'], preferredName: 'Bo', displayAlias: 'Gul Fyr' })
+
+    const filled = await call('POST', { teacherId: 'teacher-a' }, { action: 'fill_from_creation_names' })
+
+    expect(filled).toMatchObject({ code: 200, data: { ok: true, added: 1, labels: { 'PUPIL-1': 'Alva' } } })
+    expect(filled.data.labels['PUPIL-2']).toBeUndefined()
+  })
+
+  it('skriver inte över ett tilltalsnamn läraren redan valt', async () => {
+    records.set('students:index', ['PUPIL-1'])
+    records.set('student:PUPIL-1', { allowedTeacherIds: ['teacher-a'], preferredName: 'Alva', displayAlias: 'Blå Räv' })
+    await call('PUT', { teacherId: 'teacher-a' }, { studentId: 'PUPIL-1', label: 'Alva S' })
+
+    const filled = await call('POST', { teacherId: 'teacher-a' }, { action: 'fill_from_creation_names' })
+
+    expect(filled.data).toMatchObject({ added: 0, labels: { 'PUPIL-1': 'Alva S' } })
+  })
+
+  it('avvisar en okänd åtgärd', async () => {
+    expect((await call('POST', { teacherId: 'teacher-a' }, { action: 'annat' })).code).toBe(400)
   })
 })

@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import QRCode from 'qrcode'
 import { downloadStudentCredentialPdf } from './studentCredentialPdf'
 
 const pdf = vi.hoisted(() => ({
@@ -10,7 +9,6 @@ const pdf = vi.hoisted(() => ({
   addImage: vi.fn()
 }))
 
-vi.mock('qrcode', () => ({ default: { toDataURL: vi.fn(async () => 'data:image/png;base64,qr') } }))
 vi.mock('jspdf', () => ({
   jsPDF: class {
     setFont() {}
@@ -41,16 +39,17 @@ const credential = {
 describe('student credential PDF', () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it('prints the creation name without putting it in the QR login payload', async () => {
+  it('prints the creation name and the code name', async () => {
     await downloadStudentCredentialPdf([credential])
 
     expect(pdf.text.mock.calls.some(([lines]) => lines.includes('Alva'))).toBe(true)
     expect(pdf.text.mock.calls.some(([lines]) => lines.includes('Blå Räv'))).toBe(true)
-    expect(QRCode.toDataURL).toHaveBeenCalledWith(
-      JSON.stringify({ version: 1, studentId: credential.studentId, qrSecret: credential.qrSecret }),
-      expect.any(Object)
-    )
     expect(pdf.save).toHaveBeenCalledWith(expect.stringContaining('Alva'))
+  })
+
+  it('ritar ingen QR-kod', async () => {
+    await downloadStudentCredentialPdf([credential])
+    expect(pdf.addImage).not.toHaveBeenCalled()
   })
 
   it('uses the code name when an unnamed pupil has no creation name', async () => {
@@ -65,17 +64,14 @@ describe('student credential PDF', () => {
     const nameCall = pdf.text.mock.calls.find(([lines]) => lines.includes('Alva'))
     expect(nameCall[2]).toBeGreaterThanOrEqual(97.5)
     expect(pdf.line).toHaveBeenCalledWith(0, 91, 74.25, 91)
-    const [, , imageY, , imageHeight] = pdf.addImage.mock.calls[0]
-    expect(imageY + imageHeight).toBeLessThan(91)
   })
 
   it('beskriver samma steg som inloggningssidan', async () => {
     await downloadStudentCredentialPdf([credential])
     const printed = pdf.text.mock.calls.map(([lines]) => String(lines))
-    expect(printed).toContain('1. Skanna ditt elevkort')
+    expect(printed).toContain('1. Skriv ditt kodnamn')
     expect(printed).toContain('2. Skriv din PIN')
     expect(printed).toContain('3. Tryck Logga in')
-    expect(printed).toContain('Om kameran inte fungerar:')
-    expect(printed.some(line => line.includes('Klicka Logga in'))).toBe(false)
+    expect(printed.some(line => line.includes('Skanna'))).toBe(false)
   })
 })

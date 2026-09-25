@@ -5,7 +5,8 @@ export const A7_CARDS_PER_A4 = 8
 const CARDS_PER_ROW = 4
 const CARD_WIDTH_MM = 297 / CARDS_PER_ROW
 const CARD_HEIGHT_MM = 105
-const QR_SIZE_MM = 28
+const QR_SIZE_MM = 30
+const NAME_STRIP_TOP_MM = 91
 
 function cardLabel(credential) {
   return String(credential?.name || credential?.displayAlias || 'Elev').trim() || 'Elev'
@@ -20,6 +21,27 @@ function pdfText(doc, text, x, y, width, size, style = 'normal') {
   doc.setFontSize(size)
   const lines = doc.splitTextToSize(String(text || ''), width)
   doc.text(lines.slice(0, 2), x, y)
+}
+
+// The name sits on a tear-off strip so a teacher can hand out cards by name
+// without the login details being readable across the table.
+function printTearOffName(doc, name, x, y) {
+  doc.setDrawColor(100, 116, 139)
+  doc.setLineWidth(0.25)
+  doc.setLineDashPattern([2, 1], 0)
+  doc.line(x, y + NAME_STRIP_TOP_MM, x + CARD_WIDTH_MM, y + NAME_STRIP_TOP_MM)
+  doc.setLineDashPattern([], 0)
+  doc.setTextColor(15, 23, 42)
+  doc.setFont('helvetica', 'bold')
+  let fontSize = 12
+  let lines
+  do {
+    doc.setFontSize(fontSize)
+    lines = doc.splitTextToSize(name, CARD_WIDTH_MM - 10)
+    if (lines.length <= 2) break
+    fontSize -= 1
+  } while (fontSize >= 6)
+  doc.text(lines.slice(0, 2), x + CARD_WIDTH_MM / 2, y + (lines.length === 1 ? 100 : 97.5), { align: 'center' })
 }
 
 export function credentialCardsFilename(credentials) {
@@ -58,20 +80,19 @@ export async function downloadStudentCredentialPdf(credentials, filename = crede
     doc.setFillColor(15, 118, 110)
     doc.rect(x, y, CARD_WIDTH_MM, 13, 'F')
     doc.setTextColor(255, 255, 255)
-    pdfText(doc, 'MATEMATIK.XIMON.SE', x + 5, y + 8, CARD_WIDTH_MM - 10, 8, 'bold')
+    pdfText(doc, 'MATEMATIK.XIMON.SE', x + 5, y + 8, CARD_WIDTH_MM - 10, 9, 'bold')
     doc.setTextColor(15, 23, 42)
-    pdfText(doc, 'Så här loggar du in', x + 5, y + 20, CARD_WIDTH_MM - 10, 7.5, 'bold')
-    pdfText(doc, '1. Öppna en webbläsare på dator, surfplatta eller mobil.', x + 5, y + 27, CARD_WIDTH_MM - 10, 5.7)
-    pdfText(doc, '2. Skriv matematik.ximon.se i adressfältet.', x + 5, y + 38, CARD_WIDTH_MM - 10, 5.7)
-    pdfText(doc, '3. Välj ett sätt att logga in:', x + 5, y + 49, CARD_WIDTH_MM - 10, 5.7, 'bold')
-    pdfText(doc, '- Skanna QR-koden och skriv din PIN.', x + 5, y + 56, CARD_WIDTH_MM - 10, 5.7)
-    pdfText(doc, '- Eller skriv kodnamnet och din PIN.', x + 5, y + 63, CARD_WIDTH_MM - 10, 5.7)
-    doc.addImage(qrCodes[index], 'PNG', x + 5, y + 70, QR_SIZE_MM, QR_SIZE_MM)
-    pdfText(doc, name, x + 38, y + 76, CARD_WIDTH_MM - 43, 7, 'bold')
-    pdfText(doc, 'Kodnamn', x + 38, y + 83, CARD_WIDTH_MM - 43, 5.5)
-    pdfText(doc, String(credential.displayAlias || '–'), x + 38, y + 89, CARD_WIDTH_MM - 43, 6.5, 'bold')
-    pdfText(doc, 'PIN: ' + credential.pin, x + 38, y + 98, CARD_WIDTH_MM - 43, 10, 'bold')
-    doc.setTextColor(15, 23, 42)
+    // The numbers match the steps the pupil sees on the login screen.
+    pdfText(doc, 'Öppna matematik.ximon.se', x + 5, y + 20, CARD_WIDTH_MM - 10, 9.5, 'bold')
+    pdfText(doc, '1. Skanna ditt elevkort', x + 5, y + 29, CARD_WIDTH_MM - 10, 9.5)
+    pdfText(doc, '2. Skriv din PIN', x + 5, y + 37, CARD_WIDTH_MM - 10, 9.5)
+    pdfText(doc, '3. Tryck Logga in', x + 5, y + 45, CARD_WIDTH_MM - 10, 9.5)
+    doc.addImage(qrCodes[index], 'PNG', x + 5, y + 50, QR_SIZE_MM, QR_SIZE_MM)
+    pdfText(doc, 'Om kameran inte fungerar:', x + 39, y + 52, CARD_WIDTH_MM - 44, 8.5, 'bold')
+    pdfText(doc, 'Kodnamn:', x + 39, y + 61, CARD_WIDTH_MM - 44, 8.5)
+    pdfText(doc, String(credential.displayAlias || '–'), x + 39, y + 68, CARD_WIDTH_MM - 44, 8, 'bold')
+    pdfText(doc, 'PIN: ' + credential.pin, x + 39, y + 78, CARD_WIDTH_MM - 44, 11, 'bold')
+    printTearOffName(doc, name, x, y)
   })
 
   doc.save(filename)

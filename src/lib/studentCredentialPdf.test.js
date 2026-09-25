@@ -4,7 +4,10 @@ import { downloadStudentCredentialPdf } from './studentCredentialPdf'
 
 const pdf = vi.hoisted(() => ({
   text: vi.fn(),
-  save: vi.fn()
+  save: vi.fn(),
+  line: vi.fn(),
+  rect: vi.fn(),
+  addImage: vi.fn()
 }))
 
 vi.mock('qrcode', () => ({ default: { toDataURL: vi.fn(async () => 'data:image/png;base64,qr') } }))
@@ -16,10 +19,12 @@ vi.mock('jspdf', () => ({
     text(...args) { pdf.text(...args) }
     setDrawColor() {}
     setLineWidth() {}
-    rect() {}
+    setLineDashPattern() {}
+    line(...args) { pdf.line(...args) }
+    rect(...args) { pdf.rect(...args) }
     setFillColor() {}
     setTextColor() {}
-    addImage() {}
+    addImage(...args) { pdf.addImage(...args) }
     addPage() {}
     save(...args) { pdf.save(...args) }
   }
@@ -53,5 +58,24 @@ describe('student credential PDF', () => {
 
     expect(pdf.text.mock.calls.some(([lines]) => lines.includes('Blå Räv'))).toBe(true)
     expect(pdf.save).toHaveBeenCalledWith(expect.stringContaining('Blå-Räv'))
+  })
+
+  it('sätter namnet på en avrivningsremsa under innehållet', async () => {
+    await downloadStudentCredentialPdf([credential])
+    const nameCall = pdf.text.mock.calls.find(([lines]) => lines.includes('Alva'))
+    expect(nameCall[2]).toBeGreaterThanOrEqual(97.5)
+    expect(pdf.line).toHaveBeenCalledWith(0, 91, 74.25, 91)
+    const [, , imageY, , imageHeight] = pdf.addImage.mock.calls[0]
+    expect(imageY + imageHeight).toBeLessThan(91)
+  })
+
+  it('beskriver samma steg som inloggningssidan', async () => {
+    await downloadStudentCredentialPdf([credential])
+    const printed = pdf.text.mock.calls.map(([lines]) => String(lines))
+    expect(printed).toContain('1. Skanna ditt elevkort')
+    expect(printed).toContain('2. Skriv din PIN')
+    expect(printed).toContain('3. Tryck Logga in')
+    expect(printed).toContain('Om kameran inte fungerar:')
+    expect(printed.some(line => line.includes('Klicka Logga in'))).toBe(false)
   })
 })

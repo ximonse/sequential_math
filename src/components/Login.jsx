@@ -24,12 +24,12 @@ export default function Login() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  const handleCardLogin = async ({ studentId, qrSecret, loginCode, pin }) => {
+  const handleCardLogin = async ({ loginCode, pin }) => {
     if (isLoggingIn) return
     setError('')
     setIsLoggingIn(true)
     try {
-      const session = await loginStudentSession({ studentId, qrSecret, loginCode, pin })
+      const session = await loginStudentSession({ loginCode, pin })
       if (!session.ok) { setError(session.error); return }
       const bootstrapped = await getPilotStudentRuntime().bootstrap(session.student.studentId)
       if (!bootstrapped.ok) {

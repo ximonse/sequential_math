@@ -42,6 +42,7 @@ Hela sviten tar ungefär 2–3 minuter med sex parallella webbläsare.
 | `pause.robot.js` | Pausspel, nej tack till paus, startsidan och tillbaka, 10 minuter borta, omladdning och ny flik. |
 | `buttons.robot.js` | Varje knapp på sifferbordet i sex områden, tangentbordet, tema och kontrast samt in- och utloggning. |
 | `training.robot.js` | Fri träning inom klassens räknesätt, Fortsätt träna och en elev som svarar fel på allt. |
+| `assignments.robot.js` | Läraren skapar uppdrag i lärarvyn och kopierar länken; elever loggar in via länken och svarar rätt respektive fel. Varje uppgift ska ligga inom uppdragets räknesätt och nivåram, även ett låst uppdrag på exakt en nivå. Aktivera för alla och Rensa aktivt kontrolleras på elevens egen enhet. |
 | `teacher.robot.js` | Fyra elever tränar på kända sätt (rätt, bara fel, inget, tabell 7) och en femte i en annan klass. Läraren loggar in och kontrollerar klassval, antal och rätt/fel per elev, okänt ≠ 0, tabellstatus, Behöver stöd nu med elevens riktiga felsvar, datakvalitet, exporten och att klassvalet ligger kvar. Dessutom en textgranskning av elevens sidor. |
 
 ## Lägga till en robot
@@ -60,6 +61,7 @@ Lärarroboten, samma dag:
 
 - **R2 — Lärarens klassval försvann vid varje omladdning**, trots att sidan lovar att valet sparas. Klasslistan var tom en kort stund när sidan laddades, och då rensades valet och sparades tomt. Rättat.
 - **L1 — Datakvaliteten flaggade alla elever som tränat vanligt** under "Behöver extra koll". Ett pass räknades bara som avslutat via Startsida, men elever låser surfplattan eller stänger fliken. Nu avslutas passet när sidan döljs, och ett nytt startar om eleven kommer tillbaka. Rättat.
+- **R1 — "Aktivera för alla" nådde aldrig eleverna.** Uppdraget sparades bara i lärarens webbläsare. Nu sparas det på klassen på servern och syns på elevens startsida. Rättat.
 - **T1 — Texter utan å/ä/ö** i temaväljaren ("Morkt gulgron"), felmönsterpanelen ("Ej tranad", ">=85% ratt", "pa nivan") och verktygstipsen i lärarvyn. Rättat.
 - Allt annat stämde: antal svar och rätt/fel per elev, okänd nivå visas som "–", tabellstatus, felsvaren under Behöver stöd nu och antalet rader i exporten.
 

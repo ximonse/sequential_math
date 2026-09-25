@@ -19,6 +19,8 @@ Servern är den enda auktoritativa källan för verksamhetsdata.
 3. Starta om sidan och verifiera att uppgifter, statistik och historik hämtas från servern.
 4. Radera inte äldre webbläsardata förrän exporten och serverkontrollen är godkända.
 
+Klassens aktiva uppdrag ("Aktivera för alla") lagras på klassposten som `activeAssignmentPayload`, samma normaliserade uppdragsinnehåll som i en uppdragslänk. Läraren sätter eller rensar det med `PUT /api/teacher-class-assignment` (kräver lärarsession och åtkomst till klassen). Eleverna läser det via `GET /api/class-config`.
+
 Klassens stabila `class.id` och elevens `studentId` ändras aldrig när klassnamn eller läsår ändras. Arkivering och årsskifte utförs på servern, så historiska uppdrag och försök behåller sin klasskoppling via `classIdAtAttempt`.
 
 ## Läraråtkomst

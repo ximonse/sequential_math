@@ -51,7 +51,7 @@ export default function AssignmentsPanel({
       ) : (
         <div className="space-y-1.5">
           <div className="flex items-center justify-between gap-2 py-0.5">
-            <p className="text-xs text-gray-500">Aktivt för alla: {activeAssignmentId ? activeAssignmentId : 'Ingen (fri träning)'}</p>
+            <p className="text-xs text-gray-500">Aktivt för alla: {activeAssignmentId ? (assignments.find(item => item.id === activeAssignmentId)?.title || 'okänt uppdrag') : 'Inget (fri träning)'}</p>
             <div className="flex gap-1">
               <button onClick={onClearActiveForAll} className="rounded bg-gray-200 px-2 py-1 text-xs text-gray-700 hover:bg-gray-300">Rensa aktivt</button>
               <button onClick={onClearAllAssignments} className="rounded bg-red-100 px-2 py-1 text-xs text-red-700 hover:bg-red-200">Rensa alla</button>

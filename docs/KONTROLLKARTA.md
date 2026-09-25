@@ -33,7 +33,7 @@ Klickrobotarna i [`robots/`](../robots/README.md) kontrollerar alla åtta vid va
 
 | Regel | Före | Nu (robot) | Kvar att kontrollera |
 | --- | --- | --- | --- |
-| P7/D3 — valt fokus byts inte tyst | Enhetstest av regelfunktioner (`sessionUtils`, `classPracticeFrame`) | Alla 9 områden, 6 tabellval och fri träning med 3 klassuppsättningar kontrolleras uppgift för uppgift | Läraruppdrag (låst/adaptivt), NCM, tickets |
+| P7/D3 — valt fokus byts inte tyst | Enhetstest av regelfunktioner (`sessionUtils`, `classPracticeFrame`) | Alla 9 områden, 6 tabellval och fri träning med 3 klassuppsättningar kontrolleras uppgift för uppgift | NCM, tickets |
 | F1 — tabellträning håller sig till valda tabeller | Enhetstest av `createTableQueue` | 6 tabellval, upp till 3 rundor; varje runda ska ta varje gångerfaktum exakt en gång | — |
 | F1 — fri träning bara inom klassens räknesätt | Enhetstest av `classPracticeFrame` | 3 klassuppsättningar, 60 uppgifter vardera, med blandat rätt och fel | Klass där läraren ändrar räknesätten mitt i ett pass |
 | D1/S2 — automatisk progression | 1 manuell körning (5 svar, addition) | Alla 9 områden från nivå 1 till 12 med bara rätta svar | Långsamma men säkra svar |
@@ -48,7 +48,8 @@ Klickrobotarna i [`robots/`](../robots/README.md) kontrollerar alla åtta vid va
 | R3 — knappar | Saknades | Varje siffra, Radera/⌫, Rensa, ±, komma, fysiskt tangentbord, Enter och dubbeltryck på Svara i 6 områden | Rityta, pausspelen |
 | F6 — lärarsignal | Enhetstester av sammanställningar | Lärarrobot: klassval, antal och rätt/fel per elev, okänt visas inte som 0, tabellstatus, Behöver stöd nu med elevens riktiga felsvar, datakvalitet och rådataexport jämförs med vad eleverna faktiskt gjorde | Veckovy, elevdetaljens siffror, uppdrag |
 | P5 — samma betydelse i lista och export | Enhetstester | Lärarroboten jämför snabbstatus med exporten, elev för elev | Övriga exporter |
-| NCM, tickets, läraruppdrag | Enhetstester | **Inte täckt** | Egna robotar |
+| D3/S7 — läraruppdrag | Enhetstester | Uppdragsrobot: tre färdiga uppdrag via lärarens kopierade länk och ett låst uppdrag (exakt en nivå), med en elev som svarar rätt och en som svarar fel. Varje uppgift ska ligga inom uppdragets räknesätt och nivåram. Aktivera för alla och Rensa aktivt kontrolleras på elevens egen enhet | Snabbuppdrag från elevraden, uppdragsföljsamhet i lärarvyn |
+| NCM, tickets | Enhetstester | **Inte täckt** | Egna robotar |
 
 ## Vad robotarna hittade 2026-09-25
 
@@ -60,7 +61,8 @@ Se [robotarnas README](../robots/README.md#senaste-fynd) för detaljer. Kort:
 
 4. **Lärarens klassval försvann vid varje omladdning** (R2), trots att sidan lovar att det sparas. Rättat.
 5. **Datakvaliteten flaggade alla elever som tränat vanligt** (L1), eftersom ett pass bara räknades som avslutat via Startsida. Nu avslutas passet när sidan döljs (låst skärm, byte av app, stängd flik). Rättat efter beslut av Simon 2026-09-25.
-6. **Texter utan å/ä/ö** i temaväljaren och lärarvyns felmönsterpanel och verktygstips (T1). Rättat.
+6. **"Aktivera för alla" nådde aldrig eleverna** (R1). Det aktiva uppdraget sparades bara i lärarens egen webbläsare. Lärarvyn visade "Aktivt för alla: asg_…" medan eleverna fick fri träning. Nu sparas det på klassen och visas på elevens startsida, och lärarvyn visar uppdragets namn. Rättat.
+7. **Texter utan å/ä/ö** i temaväljaren och lärarvyns felmönsterpanel och verktygstips (T1). Rättat.
 
 Utöver det hittade robotarna **inga brott** mot R1, R4, C1 eller V1 i de områden och flöden som körs. Det gäller tabellträning, alla nio områden genom nivå 1–12, pauser och fri träning. Felen som eleverna såg i klassrummet (fel tabell, nivåfall efter paus) kunde inte återskapas i nuvarande kod, vilket stämmer med att de redan är rättade.
 

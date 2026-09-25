@@ -81,7 +81,7 @@ function StudentHome() {
     setClassConfig({ classId, operations: null })
     fetch(`/api/class-config?classId=${encodeURIComponent(classId)}`)
       .then(r => { if (!r.ok) throw new Error('Class config unavailable'); return r.json() })
-      .then(data => { if (active) setClassConfig({ classId, operations: normalizeClassOperations(data?.enabledOperations) }) })
+      .then(data => { if (active) setClassConfig({ classId, operations: normalizeClassOperations(data?.enabledOperations), assignmentPayload: String(data?.activeAssignmentPayload || '') }) })
       .catch(() => { if (active) setClassConfig({ classId, operations: [] }) })
     return () => { active = false }
   }, [classId])
@@ -100,8 +100,10 @@ function StudentHome() {
       setAssignment(fromPayload)
       return
     }
-    setAssignment(getActiveAssignment())
-  }, [assignmentId, assignmentPayload])
+    // "Aktivera för alla" is stored on the pupil's class on the server.
+    const classAssignment = classConfig.classId === classId ? decodeAssignmentPayload(classConfig.assignmentPayload) : null
+    setAssignment(classAssignment || getActiveAssignment())
+  }, [assignmentId, assignmentPayload, classConfig, classId])
 
   const updateHomePresence = useCallback((options = {}) => {
     if (!profile) return

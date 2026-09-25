@@ -104,7 +104,9 @@ I sektionen `Uppdrag via länk` kan du:
 3. Aktivera det för alla.
 4. Dela länken till elever.
 
-Elever som loggar in via länken hamnar i rätt läge direkt, även på annan enhet/browser, eftersom länken innehåller ett säkert uppdragspayload. Uppdrag, aktivt uppdrag, ticketmallar och utskick sparas även på servern för ditt lärarkonto. Äldre material från webbläsaren importeras automatiskt första gången.
+Elever som loggar in via länken hamnar i rätt läge direkt, även på annan enhet/browser, eftersom länken innehåller ett säkert uppdragspayload.
+
+`Aktivera för alla` gäller klasserna du valt i klassväljaren, eller alla dina klasser om `Alla klasser` är valt. Uppdraget sparas på klassen på servern, och eleverna ser det på sin startsida under `Ditt nästa steg` med knappen `Starta uppdraget`, på sina egna enheter. `Rensa aktivt` tar bort det för samma klasser. (Före 2026-09-25 sparades det aktiva uppdraget bara i lärarens egen webbläsare och nådde aldrig elevernas enheter.) Uppdrag, aktivt uppdrag, ticketmallar och utskick sparas även på servern för ditt lärarkonto. Äldre material från webbläsaren importeras automatiskt första gången.
 
 ## 8. Ticket (start/exit)
 

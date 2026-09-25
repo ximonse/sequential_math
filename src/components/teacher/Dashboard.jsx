@@ -364,7 +364,10 @@ function Dashboard() {
     getSelectedClassLoginToken: () => {
       if (selectedClassIds.length !== 1) return ''
       return String(classes.find(item => String(item.id) === String(selectedClassIds[0]))?.loginToken || '').trim()
-    }
+    },
+    getTargetClasses: () => (selectedClassIds.length > 0
+      ? classes.filter(item => selectedClassIds.includes(String(item.id)))
+      : classes)
   })
 
   const {

@@ -100,6 +100,8 @@ function Dashboard() {
     [classes, students, teacherGroups]
   )
 
+  const [exportRange, setExportRange] = useState({ from: '', to: '' })
+
   const loadStudents = useCallback(async () => {
     // Labels are fetched after the list renders: a slow or failing label call
     // must never keep the pupils themselves off the screen.
@@ -382,6 +384,7 @@ function Dashboard() {
     detailStudentProfile,
     detailStudentRow,
     detailStudentViewData,
+    exportRange,
     setDashboardStatus
   })
 
@@ -408,6 +411,8 @@ function Dashboard() {
     onToggleSortDir: () => setSortDir(prev => prev === 'desc' ? 'asc' : 'desc'),
     onExportSnapshotCsv: handleExportSnapshotCsv,
     onExportDetailedProblemCsv: handleExportDetailedProblemCsv,
+    exportRange,
+    onExportRangeChange: setExportRange,
     onExportSkillComparisonCsv: handleExportSkillComparisonCsv,
     onExportTableDevelopmentCsv: handleExportTableDevelopmentCsv,
     onExportActivityCsv: handleExportActivityCsv,

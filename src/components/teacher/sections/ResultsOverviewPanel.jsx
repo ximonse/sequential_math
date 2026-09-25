@@ -9,6 +9,8 @@ export default function ResultsOverviewPanel({
   onToggleSortDir,
   onExportSnapshotCsv,
   onExportDetailedProblemCsv,
+  exportRange = { from: '', to: '' },
+  onExportRangeChange = () => {},
   onExportSkillComparisonCsv,
   onExportTableDevelopmentCsv,
   onExportActivityCsv,
@@ -115,8 +117,27 @@ export default function ResultsOverviewPanel({
               >
                 Export översikt
               </button>
+              <label className="flex items-center gap-1 text-xs text-gray-600">
+                Från
+                <input
+                  type="date"
+                  value={exportRange.from}
+                  onChange={event => onExportRangeChange({ ...exportRange, from: event.target.value })}
+                  className="rounded border border-gray-300 px-1.5 py-1 text-xs"
+                />
+              </label>
+              <label className="flex items-center gap-1 text-xs text-gray-600">
+                Till
+                <input
+                  type="date"
+                  value={exportRange.to}
+                  onChange={event => onExportRangeChange({ ...exportRange, to: event.target.value })}
+                  className="rounded border border-gray-300 px-1.5 py-1 text-xs"
+                />
+              </label>
               <button
                 onClick={onExportDetailedProblemCsv}
+                title="Rådata med en rad per uppgift. Tom datumruta betyder ingen gräns."
                 className="px-2 py-1 bg-cyan-100 hover:bg-cyan-200 text-cyan-700 rounded text-sm"
               >
                 Export rådata

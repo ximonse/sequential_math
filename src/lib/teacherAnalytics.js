@@ -41,6 +41,9 @@ export function buildDetailedProblemExportRows(snapshot) {
       Klass: item.className || '',
       Räknesätt: item.operation,
       Problemtyp: item.problemType,
+      Uppgift: item.promptText,
+      ElevensSvar: item.studentAnswer,
+      RättSvar: item.correctAnswer,
       SkillTag: item.skillTag,
       NCMKod: item.ncmCode || '',
       NCMDomän: item.ncmDomainTag || '',
@@ -232,6 +235,24 @@ export function buildTableDevelopmentExportRows(snapshot) {
   })
 }
 
+// The stored prompt is the readable form of the task. Older rows predate it,
+// so fall back to the operands a teacher would recognise.
+function describeProblem(problem) {
+  const prompt = String(problem?.promptText || '').trim()
+  if (prompt) return prompt
+  const values = problem?.values
+  if (values && typeof values === 'object') {
+    if (values.a !== undefined && values.b !== undefined) {
+      const symbols = { addition: '+', subtraction: '−', multiplication: '×', division: '÷' }
+      const symbol = symbols[String(problem?.problemType || '').split('_')[0]] || ''
+      return symbol ? `${values.a} ${symbol} ${values.b}` : `${values.a} ${values.b}`
+    }
+    if (typeof values.expression === 'string') return values.expression
+    if (typeof values.text === 'string') return values.text
+  }
+  return ''
+}
+
 function flattenProblems(profiles) {
   const rows = []
   for (const profile of profiles) {
@@ -251,6 +272,9 @@ function flattenProblems(profiles) {
         className: String(profile.className || ''),
         operation,
         problemType: String(problem.problemType || ''),
+        promptText: describeProblem(problem),
+        studentAnswer: String(problem.studentAnswer ?? ''),
+        correctAnswer: String(problem.correctAnswer ?? ''),
         skillTag: String(problem.skillTag || problem.problemType || operation),
         level: Number.isFinite(level) ? level : 1,
         correct: Boolean(problem.correct),

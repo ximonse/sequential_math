@@ -21,8 +21,37 @@ export function buildDashboardExportActions({
   detailStudentProfile,
   detailStudentRow,
   detailStudentViewData,
+  exportRange,
   setDashboardStatus
 }) {
+  // An empty field means "no bound", so a teacher can ask for one day, one
+  // week, or everything without switching tools.
+  const rangeBounds = () => {
+    const from = Date.parse(`${String(exportRange?.from || '')}T00:00:00`)
+    const to = Date.parse(`${String(exportRange?.to || '')}T23:59:59.999`)
+    return {
+      from: Number.isFinite(from) ? from : null,
+      to: Number.isFinite(to) ? to : null
+    }
+  }
+
+  const withinRange = rows => {
+    const { from, to } = rangeBounds()
+    if (from === null && to === null) return rows
+    return rows.filter(row => {
+      const timestamp = Number(row?.timestamp || 0)
+      if (from !== null && timestamp < from) return false
+      if (to !== null && timestamp > to) return false
+      return true
+    })
+  }
+
+  const rangeLabel = () => {
+    const from = String(exportRange?.from || '')
+    const to = String(exportRange?.to || '')
+    if (!from && !to) return ''
+    return `_${from || 'start'}_${to || 'nu'}`
+  }
   const handleExportSnapshotCsv = () => {
     const csvRows = buildSnapshotCsvRows(visibleRows, viewMode, weekGoal)
     if (csvRows.length === 0) {
@@ -38,15 +67,16 @@ export function buildDashboardExportActions({
 
   const handleExportDetailedProblemCsv = () => {
     const snapshot = buildAnalyticsSnapshot(filteredStudents)
-    const csvRows = buildDetailedProblemExportRows(snapshot)
+    const ranged = { ...snapshot, rows: withinRange(snapshot.rows || []) }
+    const csvRows = buildDetailedProblemExportRows(ranged)
     if (csvRows.length === 0) {
-      setDashboardStatus('Ingen rå problemdata att exportera.')
+      setDashboardStatus('Ingen rå problemdata att exportera för vald period.')
       return
     }
 
     const csv = rowsToCsv(csvRows)
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
-    downloadTextFile(csv, `problemdata_detalj_${stamp}.csv`, 'text/csv;charset=utf-8;')
+    downloadTextFile(csv, `problemdata_detalj${rangeLabel()}_${stamp}.csv`, 'text/csv;charset=utf-8;')
     setDashboardStatus(`Detalj-CSV klar (${csvRows.length} rader).`)
   }
 

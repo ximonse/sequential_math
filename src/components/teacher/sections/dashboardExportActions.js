@@ -35,13 +35,17 @@ export function buildDashboardExportActions({
     }
   }
 
+  // Rows carry their time either per answered problem or as a last-active
+  // stamp. A row with neither is kept: silently dropping it would understate
+  // the export rather than narrow it.
   const withinRange = rows => {
     const { from, to } = rangeBounds()
     if (from === null && to === null) return rows
     return rows.filter(row => {
-      const timestamp = Number(row?.timestamp || 0)
-      if (from !== null && timestamp < from) return false
-      if (to !== null && timestamp > to) return false
+      const raw = Number(row?.timestamp ?? row?.lastActive ?? NaN)
+      if (!Number.isFinite(raw) || raw <= 0) return true
+      if (from !== null && raw < from) return false
+      if (to !== null && raw > to) return false
       return true
     })
   }
@@ -82,7 +86,7 @@ export function buildDashboardExportActions({
 
   const handleExportSkillComparisonCsv = () => {
     const snapshot = buildAnalyticsSnapshot(filteredStudents)
-    const csvRows = buildSkillComparisonExportRows(snapshot)
+    const csvRows = buildSkillComparisonExportRows({ ...snapshot, rows: withinRange(snapshot.rows || []) })
     if (csvRows.length === 0) {
       setDashboardStatus('Ingen skill-jämförelsedata att exportera.')
       return
@@ -90,13 +94,13 @@ export function buildDashboardExportActions({
 
     const csv = rowsToCsv(csvRows)
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
-    downloadTextFile(csv, `skill_jamforelse_${stamp}.csv`, 'text/csv;charset=utf-8;')
+    downloadTextFile(csv, `skill_jamforelse${rangeLabel()}_${stamp}.csv`, 'text/csv;charset=utf-8;')
     setDashboardStatus(`Skill-CSV klar (${csvRows.length} rader).`)
   }
 
   const handleExportTableDevelopmentCsv = () => {
     const snapshot = buildAnalyticsSnapshot(filteredStudents)
-    const csvRows = buildTableDevelopmentExportRows(snapshot)
+    const csvRows = buildTableDevelopmentExportRows({ ...snapshot, rows: withinRange(snapshot.rows || []) })
     if (csvRows.length === 0) {
       setDashboardStatus('Ingen tabellutvecklingsdata att exportera.')
       return
@@ -104,12 +108,12 @@ export function buildDashboardExportActions({
 
     const csv = rowsToCsv(csvRows)
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
-    downloadTextFile(csv, `tabellutveckling_${stamp}.csv`, 'text/csv;charset=utf-8;')
+    downloadTextFile(csv, `tabellutveckling${rangeLabel()}_${stamp}.csv`, 'text/csv;charset=utf-8;')
     setDashboardStatus(`Tabell-CSV klar (${csvRows.length} rader).`)
   }
 
   const handleExportActivityCsv = () => {
-    const csvRows = buildActivityExportRows(filteredRows)
+    const csvRows = buildActivityExportRows(withinRange(filteredRows))
     if (csvRows.length === 0) {
       setDashboardStatus('Ingen aktivitetsdata att exportera.')
       return
@@ -117,7 +121,7 @@ export function buildDashboardExportActions({
 
     const csv = rowsToCsv(csvRows)
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
-    downloadTextFile(csv, `aktivitet_telemetri_${stamp}.csv`, 'text/csv;charset=utf-8;')
+    downloadTextFile(csv, `aktivitet_telemetri${rangeLabel()}_${stamp}.csv`, 'text/csv;charset=utf-8;')
     setDashboardStatus(`Aktivitets-CSV klar (${csvRows.length} rader).`)
   }
 

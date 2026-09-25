@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 const downloaded = vi.hoisted(() => [])
 vi.mock('./dashboardExportHelpers', () => ({
-  buildActivityExportRows: () => [],
+  buildActivityExportRows: rows => rows.map(row => ({ ElevNamn: row.name })),
   buildSnapshotCsvRows: () => [],
   rowsToCsv: rows => JSON.stringify(rows),
   downloadTextFile: (content, filename) => { downloaded.push({ content, filename }) }
@@ -67,5 +67,20 @@ describe('rådataexport med datumintervall', () => {
     const file = runExport({ from: '', to: '' })
     expect(file.content).toContain('7 × 2')
     expect(file.content).toContain('7 × 4')
+  })
+})
+
+describe('rader utan tidsstämpel', () => {
+  it('behåller rader som saknar tid i stället för att tappa dem', () => {
+    downloaded.length = 0
+    const actions = buildDashboardExportActions({
+      visibleRows: [], viewMode: 'day', weekGoal: 0,
+      filteredStudents: [], filteredRows: [{ name: 'Alva', studentId: 'ABC123' }],
+      detailStudentProfile: null, detailStudentRow: null, detailStudentViewData: null,
+      exportRange: { from: '2026-09-23', to: '2026-09-23' },
+      setDashboardStatus: () => {}
+    })
+    actions.handleExportActivityCsv()
+    expect(downloaded[0].content).toContain('Alva')
   })
 })

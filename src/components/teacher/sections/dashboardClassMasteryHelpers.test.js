@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildClassMasteryAverages, buildClassMasteryRows } from './dashboardClassMasteryHelpers'
+import { buildClassMasteryAverages, buildClassMasteryExportRows, buildClassMasteryRows } from './dashboardClassMasteryHelpers'
 
 describe('class mastery meaning', () => {
   it('keeps unknown areas out of pupil averages and minimums', () => {
@@ -40,5 +40,18 @@ describe('class mastery meaning', () => {
     expect(averages.subtraction).toBe(6)
     expect(averages.multiplication).toBeNull()
     expect(averages._total).toBe(4)
+  })
+
+  it('exports the same levels and averages as the panel, with unknown left empty', () => {
+    const rows = buildClassMasteryRows([
+      { studentId: 'A', name: 'Anna', className: '5A', teacherSummary: { effectiveLevels: { addition: 4, subtraction: 3 } } },
+      { studentId: 'B', name: 'Bert', className: '5A', teacherSummary: { effectiveLevels: {} } }
+    ])
+    const exported = buildClassMasteryExportRows(rows, buildClassMasteryAverages(rows))
+
+    expect(exported).toHaveLength(3)
+    expect(exported[0]).toMatchObject({ Elev: 'Anna', addition: 4, subtraction: 3, multiplication: '', LägstaBelagda: 3, SnittBelagt: '3,5' })
+    expect(exported[1]).toMatchObject({ Elev: 'Bert', addition: '', SnittBelagt: '', BelagdaOmråden: '0/9' })
+    expect(exported[2]).toMatchObject({ Elev: 'Klassmedel', addition: '4,0', SnittBelagt: '3,5' })
   })
 })

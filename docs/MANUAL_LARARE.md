@@ -134,6 +134,9 @@ Tillgängliga exporter i huvudtabellen:
 I elevvy finns:
 - `Exportera elevvy CSV`
 
+I `Nivåöversikt – hela klassen` (Framsteg) finns:
+- `Exportera nivåöversikt` — belagd nivå per område, lägsta, snitt och klassmedel, precis som i panelen. Tom cell betyder ännu inte belagt.
+
 Tips:
 - Exportera översikt dagligen.
 - Exportera rådata/aktivitet veckovis för djupare analys.

@@ -175,6 +175,20 @@ Format:
 Pedagogiskt varde:
 - ger individnara underlag for samtal med elev och planering av nasta steg.
 
+## 5b. Exportera nivåöversikt
+
+Knapp i panelen `Nivåöversikt – hela klassen` (fliken Framsteg). Kalla i kod:
+`buildClassMasteryExportRows(...)` i `src/components/teacher/sections/dashboardClassMasteryHelpers.js`.
+Filen byggs av samma rader och snitt som panelen visar och följer panelens sortering och klassurval.
+
+- en rad per elev: `Elev`, `ElevID`, `Klass`, en kolumn per kunskapsområde med belagd nivå,
+  `LägstaBelagda`, `SnittBelagt`, `BelagdaOmråden` (t.ex. `3/9`).
+- sista raden `Klassmedel` med snitt per område, lägsta och totalt.
+- tom cell = ännu inte belagt (visas som `–` i panelen), aldrig nivå 0.
+- decimaler skrivs med komma så att svenska Excel läser dem som tal.
+
+Klickrobotarna (`robots/teacher.robot.js`) jämför filen med panelen cell för cell.
+
 ## 6. Rekommenderad tolkning i Excel
 
 - Filtrera bort mycket sma underlag innan jamforelse.

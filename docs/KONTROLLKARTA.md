@@ -64,9 +64,9 @@ Se [robotarnas README](../robots/README.md#senaste-fynd) för detaljer. Kort:
 
 Utöver det hittade robotarna **inga brott** mot R1, R4, C1 eller V1 i de områden och flöden som körs. Det gäller tabellträning, alla nio områden genom nivå 1–12, pauser och fri träning. Felen som eleverna såg i klassrummet (fel tabell, nivåfall efter paus) kunde inte återskapas i nuvarande kod, vilket stämmer med att de redan är rättade.
 
-## Öppen fråga till Simon
+## Beslut om snittet
 
-Nivåöversikten visar kolumnen **Snitt belagt** (ett medel av belagda nivåer i olika områden per elev) och raden **Klassmedel**, och sorterar som standard på snittet. [F6](FUNCTION_CONTRACTS.md#7-f6--lärarunderlag) säger att "nivåer i olika kompetenser får inte summeras till en generell matematiknivå eller användas i ett jämförande klassnitt". Robotarna kontrollerar inte detta, eftersom det är en tolkningsfråga: är snittet tillåtet när okänt hålls utanför, eller ska det bort?
+Nivåöversikten visar **Snitt belagt** per elev och **Klassmedel**. [F6](FUNCTION_CONTRACTS.md#7-f6--lärarunderlag) säger att nivåer i olika kompetenser inte får summeras till en generell nivå eller ett jämförande klassnitt. Simon beslutade 2026-09-25 att snittet ska vara kvar, och att nivåöversikten ska gå att exportera (`Exportera nivåöversikt`). Okända områden räknas inte in i snittet. Lärarroboten jämför exporten med panelen cell för cell.
 
 ## Hur kartan hålls aktuell
 

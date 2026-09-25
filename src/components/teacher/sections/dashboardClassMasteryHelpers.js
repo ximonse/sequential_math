@@ -45,6 +45,34 @@ export function buildClassMasteryAverages(rows) {
   return averages
 }
 
+// The same rows and averages as the panel, one CSV row per pupil and a last
+// Klassmedel row. An empty cell means "not yet attained", never level 0.
+// Decimals use a comma so Swedish Excel keeps them numeric.
+export function buildClassMasteryExportRows(rows, averages, getLabel = op => op) {
+  if (!Array.isArray(rows) || rows.length === 0) return []
+  const decimal = value => (Number.isFinite(value) ? value.toFixed(1).replace('.', ',') : '')
+  const whole = value => (Number.isInteger(value) ? value : '')
+  const pupilRows = rows.map(row => ({
+    Elev: row.name,
+    ElevID: row.studentId,
+    Klass: row.className,
+    ...Object.fromEntries(ALL_OPERATIONS.map(op => [getLabel(op), whole(row.levels?.[op])])),
+    LägstaBelagda: whole(row.lowest),
+    SnittBelagt: decimal(row.average),
+    BelagdaOmråden: `${row.knownCount}/${row.totalCount}`
+  }))
+  if (!averages) return pupilRows
+  return [...pupilRows, {
+    Elev: 'Klassmedel',
+    ElevID: '',
+    Klass: '',
+    ...Object.fromEntries(ALL_OPERATIONS.map(op => [getLabel(op), decimal(averages[op])])),
+    LägstaBelagda: decimal(averages._lowest),
+    SnittBelagt: decimal(averages._total),
+    BelagdaOmråden: ''
+  }]
+}
+
 function normalizeAttainedLevel(value) {
   const level = Number(value)
   return Number.isInteger(level) && level >= 1 && level <= 12 ? level : null

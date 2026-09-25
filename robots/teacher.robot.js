@@ -100,6 +100,30 @@ test('Lärare: lärarvyn visar det eleverna gjorde', async ({ page, request, bro
   const bertLevels = rowFor(levels, bert.loginCode)
   if (bertLevels && bertLevels.slice(1).some(cell => /^[1-9]/.test(cell))) findings.add('L1', 'En elev med bara fel visas med en belagd nivå', { elev: bert.loginCode, rad: bertLevels.join(' | ') })
 
+  // The level overview export holds exactly what the table shows.
+  const [levelDownload] = await Promise.all([
+    page.waitForEvent('download', { timeout: 10000 }).catch(() => null),
+    page.getByRole('button', { name: 'Exportera nivåöversikt', exact: true }).click().catch(() => null)
+  ])
+  if (!levelDownload) findings.add('R3', 'Exportera nivåöversikt gav ingen fil')
+  else {
+    const csv = String(await (await levelDownload.createReadStream()).toArray().then(parts => Buffer.concat(parts))).replace(/^\uFEFF/, '')
+    const [head, ...body] = csv.split(/\r?\n/).filter(Boolean).map(line => line.split(';'))
+    const screenRows = await tableUnder(page, 'Nivåöversikt')
+    const asScreen = value => (value === '' ? '–' : value.replace(',', '.'))
+    const firstLevelColumn = head.indexOf('Elev') + 3
+    for (const screen of screenRows || []) {
+      if (!screen?.length) continue
+      const name = screen[0].replace(/^KLASSMEDEL$/i, 'Klassmedel')
+      const fileRow = body.find(cells => cells[0] === name)
+      if (!fileRow) { findings.add('L1', 'En rad i nivåöversikten saknas i exporten', { rad: name }); continue }
+      const fromFile = fileRow.slice(firstLevelColumn, firstLevelColumn + screen.length - 1).map(asScreen)
+      const onScreen = screen.slice(1)
+      if (fromFile.join('|') !== onScreen.join('|')) findings.add('L1', 'Exporten av nivåöversikten visar andra värden än skärmen', { rad: name, skärm: onScreen.join(' '), fil: fromFile.join(' ') })
+    }
+    if (body.length !== (screenRows?.length || 0)) findings.add('L1', 'Exporten av nivåöversikten har ett annat antal rader än skärmen', { skärm: screenRows?.length, fil: body.length })
+  }
+
   // Table status: Dina did table 7 and nobody else did.
   const tables = await tableUnder(page, 'Gångertabell - sticky')
   const header = await page.evaluate(() => {

@@ -19,19 +19,20 @@ function normalizeLabels(value) {
   return labels
 }
 
+// Checked per pupil, but in parallel: a whole class read sequentially runs
+// into the serverless time limit and the dashboard then renders no pupils.
 async function readableLabels(req, teacherId) {
   const labels = normalizeLabels(await kv.get(studentLabelsKey(teacherId)))
-  const readable = {}
-  for (const [studentId, label] of Object.entries(labels)) {
-    const profile = await kv.get(`student:${studentId}`)
+  const checked = await Promise.all(Object.entries(labels).map(async ([studentId, label]) => {
     try {
-      await assertTeacherStudentAccess(req, profile)
-      readable[studentId] = label
+      await assertTeacherStudentAccess(req, await kv.get(`student:${studentId}`))
+      return [studentId, label]
     } catch {
       // A former teacher must not receive labels for pupils outside their live scope.
+      return null
     }
-  }
-  return readable
+  }))
+  return Object.fromEntries(checked.filter(Boolean))
 }
 
 // The name a teacher typed when creating the pupil stays on the pupil record

@@ -10,12 +10,14 @@ vi.mock('./_helpers.js', () => ({
   getLiveTeacherAuthPayload: vi.fn(async req => req.auth || null),
   withCors: vi.fn()
 }))
+const accessMock = vi.hoisted(() => vi.fn())
 vi.mock('./_studentAccess.js', () => ({
-  assertTeacherStudentAccess: vi.fn(async (req, profile) => {
-    if (!profile || !profile.allowedTeacherIds?.includes(req.auth?.teacherId)) {
-      throw Object.assign(new Error('Not authorized for this student'), { status: 403 })
-    }
-  })
+  assertTeacherStudentAccess: accessMock
+}))
+const defaultAccess = vi.hoisted(() => (async (req, profile) => {
+  if (!profile || !profile.allowedTeacherIds?.includes(req.auth?.teacherId)) {
+    throw Object.assign(new Error('Not authorized for this student'), { status: 403 })
+  }
 }))
 
 import handler from './teacher-pupil-labels.js'
@@ -28,6 +30,8 @@ async function call(method, auth, body = {}) {
 
 describe('teacher pupil labels', () => {
   beforeEach(() => {
+    accessMock.mockReset()
+    accessMock.mockImplementation(defaultAccess)
     records.clear()
     records.set('student:PUPIL-1', { allowedTeacherIds: ['teacher-a'] })
   })
@@ -65,5 +69,38 @@ describe('teacher pupil labels', () => {
 
   it('avvisar en okänd åtgärd', async () => {
     expect((await call('POST', { teacherId: 'teacher-a' }, { action: 'annat' })).code).toBe(400)
+  })
+
+  it('läser en hel klass etiketter parallellt och behåller behörighetskontrollen', async () => {
+    const mine = Array.from({ length: 30 }, (_, index) => `PUPIL-MINE-${index}`)
+    const theirs = Array.from({ length: 30 }, (_, index) => `PUPIL-OTHER-${index}`)
+    const labels = {}
+    for (const id of mine) {
+      records.set(`student:${id}`, { allowedTeacherIds: ['teacher-a'] })
+      labels[id] = `Namn ${id}`
+    }
+    for (const id of theirs) {
+      records.set(`student:${id}`, { allowedTeacherIds: ['teacher-b'] })
+      labels[id] = `Namn ${id}`
+    }
+    records.set('teacher_pupil_labels:teacher-a', labels)
+
+    let concurrent = 0
+    let peakConcurrent = 0
+    accessMock.mockImplementation(async (req, profile) => {
+      concurrent += 1
+      peakConcurrent = Math.max(peakConcurrent, concurrent)
+      await new Promise(resolve => setTimeout(resolve, 1))
+      concurrent -= 1
+      if (!profile?.allowedTeacherIds?.includes(req.auth?.teacherId)) {
+        throw Object.assign(new Error('Not authorized for this student'), { status: 403 })
+      }
+    })
+
+    const read = await call('GET', { teacherId: 'teacher-a' })
+
+    expect(Object.keys(read.data.labels)).toHaveLength(30)
+    expect(read.data.labels['PUPIL-OTHER-0']).toBeUndefined()
+    expect(peakConcurrent).toBeGreaterThan(1)
   })
 })

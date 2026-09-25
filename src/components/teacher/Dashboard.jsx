@@ -101,16 +101,17 @@ function Dashboard() {
   )
 
   const loadStudents = useCallback(async () => {
-    const [profiles, groupData, labels] = await Promise.all([
+    // Labels are fetched after the list renders: a slow or failing label call
+    // must never keep the pupils themselves off the screen.
+    const [profiles, groupData] = await Promise.all([
       getAllProfilesWithSync(),
-      loadTeacherGroups().catch(() => ({ groups: [] })),
-      loadTeacherPupilLabels()
+      loadTeacherGroups().catch(() => ({ groups: [] }))
     ])
     const groups = Array.isArray(groupData?.groups) ? groupData.groups : []
     const enrichedProfiles = profiles.map(profile => ({
       ...profile,
-      name: labels[profile.studentId] || profile.displayAlias || profile.studentId,
-      teacherPupilLabel: labels[profile.studentId] || '',
+      name: profile.displayAlias || profile.studentId,
+      teacherPupilLabel: '',
       groupIds: groups.filter(group => (group.pupilIds || []).includes(profile.studentId)).map(group => group.id)
     }))
     enrichedProfiles.sort((a, b) => {
@@ -121,6 +122,15 @@ function Dashboard() {
     setStudents(enrichedProfiles)
     setTeacherGroups(groups)
     setCloudSyncStatus(getCloudProfilesSyncStatus())
+
+    void loadTeacherPupilLabels().then(labels => {
+      if (!labels || Object.keys(labels).length === 0) return
+      setStudents(current => current.map(profile => (
+        labels[profile.studentId]
+          ? { ...profile, name: labels[profile.studentId], teacherPupilLabel: labels[profile.studentId] }
+          : profile
+      )))
+    })
 
     const serverClasses = await syncClassesFromServer()
     setClasses(serverClasses || [])

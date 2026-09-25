@@ -58,6 +58,8 @@ function StudentSession() {
   const [feedback, setFeedback] = useState(null)
   const [startTime, setStartTime] = useState(null)
   const [sessionCount, setSessionCount] = useState(0)
+  // Break cadence resets after a break; the warm-up ladder must not.
+  const [answeredTotal, setAnsweredTotal] = useState(0)
   const [showBreakSuggestion, setShowBreakSuggestion] = useState(false)
   const [pendingBreakSuggestion, setPendingBreakSuggestion] = useState(false)
   const [lastBreakPromptAt, setLastBreakPromptAt] = useState(0)
@@ -125,7 +127,7 @@ function StudentSession() {
     attentionRef.current = createAttentionTracker()
   }, [])
 
-  const completedThisSession = useMemo(() => sessionCount, [sessionCount])
+  const completedThisSession = useMemo(() => answeredTotal, [answeredTotal])
   const persistProfile = useCallback(nextProfile => {
     return getPilotStudentRuntime().persistCheckpoint(nextProfile)
   }, [])
@@ -214,6 +216,7 @@ function StudentSession() {
     openBreakGame,
     continueAfterMilestone
   } = usePracticeSessionActions({
+    setAnsweredTotal,
     profile,
     classIdAtAttempt: profile?.classId || null,
     currentProblem,

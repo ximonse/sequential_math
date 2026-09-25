@@ -17,6 +17,7 @@ import {
   createTableProblem,
   finalizeAttentionSnapshot,
   getBreakPolicy,
+  createTableQueue,
   getOperationLevelMasteryStatus,
   getSessionRules,
   isKnownMode,
@@ -63,6 +64,7 @@ export function usePracticeCoreActions({
   setFeedback,
   setStartTime,
   setSessionCount,
+  setAnsweredTotal,
   setShowBreakSuggestion,
   setPendingBreakSuggestion,
   setBreakDurationMinutes,
@@ -105,8 +107,12 @@ export function usePracticeCoreActions({
     }
 
     if (isTableDrill) {
-      if (tableQueue.length === 0) return
-      const nextProblem = createTableProblem(tableQueue[0])
+      // Refill rather than fall through: an empty queue must never hand the
+      // pupil back to the adaptive selector, which serves any multiplication.
+      const queue = tableQueue.length > 0 ? tableQueue : createTableQueue(tableSet)
+      if (queue.length === 0) return
+      if (tableQueue.length === 0) setTableQueue(queue)
+      const nextProblem = createTableProblem(queue[0])
       setCurrentProblem(nextProblem)
       setAnswer('')
       setFeedback(null)
@@ -183,6 +189,7 @@ export function usePracticeCoreActions({
     profile,
     currentProblem,
     pendingBreakSuggestion,
+    setTableQueue,
     sessionAssignment,
     mode,
     sessionWarmup,
@@ -294,6 +301,7 @@ export function usePracticeCoreActions({
     const updatedSessionCorrectness = [...sessionRecentCorrectnessRef.current, correct].slice(-10)
     sessionRecentCorrectnessRef.current = updatedSessionCorrectness
     setSessionCount(newCount)
+    setAnsweredTotal(total => total + 1)
 
     setFeedback({
       correct,
@@ -466,6 +474,7 @@ export function usePracticeCoreActions({
     lastBreakPromptAt,
     setProgressionMilestone,
     setSessionCount,
+    setAnsweredTotal,
     setFeedback,
     setNcmRemainingCount,
     setTableQueue,

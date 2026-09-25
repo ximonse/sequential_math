@@ -113,6 +113,12 @@ export function buildPracticePath(studentId, options = {}) {
   if (Array.isArray(options.ops) && options.ops.length > 0) {
     params.set('ops', options.ops.join(','))
   }
+  // Table practice lives entirely in this parameter. Dropping it turns the
+  // session back into ordinary practice, which then serves any multiplication.
+  const tables = Array.isArray(options.tables)
+    ? options.tables.map(Number).filter(table => Number.isInteger(table) && table >= 2 && table <= 12)
+    : []
+  if (tables.length > 0) params.set('tables', tables.join(','))
   const query = params.toString()
   return query
     ? `/student/${studentId}/practice?${query}`

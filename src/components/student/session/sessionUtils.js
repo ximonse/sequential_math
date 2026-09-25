@@ -144,10 +144,14 @@ export function parsePracticeLevel(value) {
   return level
 }
 
+// Table practice stays inside the table the pupil chose: factors 1-10, so a
+// drill never serves a two-digit factor.
+export const TABLE_DRILL_MAX_FACTOR = 10
+
 export function createTableQueue(tableSet) {
   const queue = []
   for (const table of tableSet) {
-    for (let factor = 1; factor <= 12; factor++) {
+    for (let factor = 1; factor <= TABLE_DRILL_MAX_FACTOR; factor++) {
       queue.push({ table, factor })
     }
   }

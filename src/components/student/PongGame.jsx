@@ -5,7 +5,7 @@ const PADDLE_HEIGHT = 88
 const PADDLE_WIDTH = 12
 const BALL_SIZE = 14
 const PADDLE_SPEED = 8
-const MAX_TIME = 120 // 2 minuter
+const MAX_TIME = 90 // 1,5 minut
 
 // 4-phase difficulty: warmup → gradual → hard → impossible
 function getPongDifficulty(elapsedSeconds) {

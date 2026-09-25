@@ -8,7 +8,7 @@ const CANVAS_WIDTH = GRID_COLS * CELL_SIZE
 const CANVAS_HEIGHT = GRID_ROWS * CELL_SIZE
 const BASE_TICK_MS = 170
 const MIN_TICK_MS = 70  // lowered to allow combined time+fruit acceleration
-const MAX_TIME = 120 // 2 minuter
+const MAX_TIME = 90 // 1,5 minut
 
 function SnakeGame({ onClose, studentId, studentName, classId }) {
   const canvasRef = useRef(null)

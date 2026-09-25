@@ -251,9 +251,9 @@ export function generateMultiplicationTableDrillProblem(tableSet, options = {}) 
   const table = tables[Math.floor(Math.random() * tables.length)]
   const level = clamp(Math.round(Number(options.level) || 4), 1, 12)
 
+  // A table drill never leaves its table, and never uses a two-digit factor.
   let maxFactor = 6
   if (level >= 4) maxFactor = 10
-  if (level >= 6) maxFactor = 12
 
   const other = randomInt(1, maxFactor)
   const tableFirst = Math.random() < 0.5

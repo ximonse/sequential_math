@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getSessionRules, recordTableCompletion } from './sessionUtils'
+import { createTableQueue, getSessionRules, recordTableCompletion } from './sessionUtils'
 import { buildFocusedSessionStartPlan } from '../../../lib/sessionStartDecision'
 
 function createProfile(recentProblems = [], adaptive = {}) {
@@ -195,5 +195,14 @@ describe('sessionUtils table evidence', () => {
     expect(recordTableCompletion(profile, 7)).toBe(1)
     expect(profile.tableDrill.completions).toHaveLength(1)
     expect(profile.masteryFacts.facts).toEqual([])
+  })
+})
+
+describe('tabellkön', () => {
+  it('håller sig i vald tabell och undviker tvåsiffriga faktorer', () => {
+    const queue = createTableQueue([7])
+    expect(queue.length).toBe(10)
+    expect(queue.every(item => item.table === 7)).toBe(true)
+    expect(queue.every(item => item.factor >= 1 && item.factor <= 10)).toBe(true)
   })
 })

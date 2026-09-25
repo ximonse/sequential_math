@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
 import { buildBatches, compactCheckpointEvent, createPilotStudentRuntime } from './pilotStudentRuntime'
-import { validEntry } from '../../api/student/[studentId]/events.js'
+import { applyWalEntry, validEntry } from '../../api/student/[studentId]/events.js'
+import { addProblemResult, createStudentProfile } from './studentProfile'
+import { annotateSelectedProblem } from './difficultyAdapterProfileHelpers'
+import { getDomain } from '../domains/registry'
 
 // Events queued before a validation fix stay invalid forever. Without a guard
 // they block every later result from ever reaching the server.
@@ -35,6 +38,26 @@ async function runSync(store, postEvents) {
 }
 
 describe('synk med ogiltiga händelser i kön', () => {
+  it.each([false, true])('recovers a legacy result without a problem ID (already rejected: %s)', async alreadyRejected => {
+    const event = { id: 'legacy-result-123', type: 'problem_result', timestamp: 1000,
+      payload: { observationId: 'undefined:1000', timestamp: 1000, correct: false,
+        operation: 'fractions', studentAnswer: '1/3', correctAnswer: '1/2' } }
+    const store = makeStore([event], alreadyRejected ? [event.id] : [])
+    const serverProfile = createStudentProfile('A'.repeat(32), 'Test')
+    const postEvents = vi.fn(async entries => {
+      if (!entries.every(entry => validEntry(entry, serverProfile.studentId))) return { ok: false, status: 400 }
+      entries.forEach(entry => applyWalEntry(serverProfile, entry))
+      return { ok: true, ack: entries.map(entry => entry.id) }
+    })
+    expect(await runSync(store, postEvents)).toMatchObject({ ok: true, rejectedCount: 0 })
+    expect(serverProfile.problemLog).toHaveLength(1)
+    expect(serverProfile.problemLog[0]).toMatchObject(event.payload)
+    expect(store.acknowledged).toEqual([event.id])
+    expect(event.payload.problemId).toBeUndefined()
+    // Simulate a lost local acknowledgement followed by a fresh browser session.
+    expect(await runSync(makeStore([event], [event.id]), postEvents)).toMatchObject({ rejectedCount: 0 })
+    expect(serverProfile.problemLog).toHaveLength(1)
+  })
   it('bevarar den avvisade händelsen och skickar de giltiga', async () => {
     const store = makeStore([
       { id: 'bad', type: 'problem_result', payload: {} },
@@ -63,9 +86,76 @@ describe('synk med ogiltiga händelser i kön', () => {
     expect(result.ok).toBe(false)
     expect(store.acknowledged).toEqual([])
   })
+
+  it('isolates one bad event in a full batch without 100 sequential requests', async () => {
+    const events = Array.from({ length: 100 }, (_, i) => ({ id: `queued-${i}`, type: 'problem_result',
+      payload: i === 50 ? {} : { problemId: `problem-${i}`, timestamp: i + 1, correct: true } }))
+    const store = makeStore(events)
+    const postEvents = vi.fn(async entries => entries.every(event => validEntry(event, 'A'.repeat(32)))
+      ? { ok: true, ack: entries.map(event => event.id) }
+      : { ok: false, status: 400 })
+    expect(await runSync(store, postEvents)).toMatchObject({ ok: true, rejectedCount: 1 })
+    expect(store.acknowledged).toHaveLength(99)
+    expect(store.rejected).toEqual(['queued-50'])
+    expect(postEvents.mock.calls.length).toBeLessThanOrEqual(15)
+  })
+
+  it('retains a recoverable legacy answer when no acknowledgement arrives', async () => {
+    const event = { id: 'unconfirmed-legacy', type: 'problem_result',
+      payload: { timestamp: 1000, correct: true } }
+    const store = makeStore([event], [event.id])
+    expect(await runSync(store, async () => ({ ok: true, ack: ['someone-else'] })))
+      .toMatchObject({ ok: true, rejectedCount: 1 })
+    expect(store.acknowledged).toEqual([])
+  })
 })
 
 describe('batchstorlek', () => {
+  it('keeps a full session syncable without overwriting separately persisted need history', () => {
+    const profile = createStudentProfile('A'.repeat(32), 'Test')
+    const server = structuredClone(profile)
+    for (let i = 0; i < 150; i++) {
+      const problem = getDomain('arithmetic').generate('addition', 1, {})
+      annotateSelectedProblem(profile, problem, { reason: 'normal', bucket: 'core', targetLevel: 1 })
+      const { walEntries } = addProblemResult(profile, problem, '999', 3, {})
+      walEntries.forEach((entry, j) => applyWalEntry(server, { ...entry, id: `answer-${i}-${j}`, timestamp: i + 1 }))
+    }
+    const event = { id: 'full-session-checkpoint', type: 'profile_checkpoint', timestamp: Date.now(),
+      payload: { capturedAt: Date.now(), adaptive: profile.adaptive, stats: profile.stats } }
+    expect(validEntry(event, profile.studentId)).toBe(false)
+    const compacted = compactCheckpointEvent(event)
+    expect(validEntry(compacted, profile.studentId)).toBe(true)
+    const needs = structuredClone(server.adaptive.currentNeedHistory)
+    expect(needs).toHaveLength(100)
+    applyWalEntry(server, compacted)
+    expect(server.adaptive.currentNeedHistory).toEqual(needs)
+    expect(server.adaptive.currentNeeds).toEqual(profile.adaptive.currentNeeds)
+    expect(server.problemLog).toHaveLength(150)
+    expect(server.adaptive.skillStates).toEqual(profile.adaptive.skillStates)
+    // An older client may still send a full checkpoint after a newer event.
+    applyWalEntry(server, { ...event, payload: { ...event.payload,
+      capturedAt: event.payload.capturedAt + 1,
+      adaptive: { ...profile.adaptive, currentNeedHistory: [], currentNeeds: {} } } })
+    expect(server.adaptive.currentNeedHistory).toEqual(needs)
+    expect(server.adaptive.currentNeeds).toEqual(profile.adaptive.currentNeeds)
+  })
+  it('compacts actual selection history as well as telemetry, preserving ability and aggregates', () => {
+    const profile = createStudentProfile('A'.repeat(32), 'Test')
+    for (let i = 0; i < 200; i++) {
+      annotateSelectedProblem(profile, { operation: 'addition', metadata: { skillTag: 'add_1d_1d' } },
+        { reason: 'normal', bucket: 'core', targetLevel: 1 })
+    }
+    const event = { id: 'long-session-checkpoint', type: 'profile_checkpoint', timestamp: 1000,
+      payload: { capturedAt: 1000, adaptive: profile.adaptive, stats: profile.stats,
+        telemetry: { events: [], daily: { '2026-09-25': { practice_answers: 200 } } } } }
+    expect(validEntry(event, profile.studentId)).toBe(false)
+    const repaired = compactCheckpointEvent(event)
+    expect(validEntry(repaired, profile.studentId)).toBe(true)
+    expect(repaired.payload.adaptive.skillStates).toEqual(profile.adaptive.skillStates)
+    expect(repaired.payload.stats).toEqual(profile.stats)
+    expect(repaired.payload.telemetry.daily).toEqual(event.payload.telemetry.daily)
+    expect(profile.adaptive.recentSelections).toHaveLength(200)
+  })
   it('håller ett växande checkpoint under serverns gräns utan att ändra lokalt original', () => {
     const events = Array.from({ length: 200 }, (_, index) => ({ ts: index + 1, type: 'practice_answer', payload: { sessionId: 'test', correct: true, operation: 'addition', skillTag: 'add_1d_1d', speedTimeSec: 3, trainingMode: 'mixed', trainingSource: 'free' } }))
     const event = { id: 'checkpoint_1', type: 'profile_checkpoint', studentId: 'A'.repeat(32), timestamp: Date.now(), payload: { capturedAt: Date.now(), currentDifficulty: 1, highestDifficulty: 1, telemetry: { events, daily: { '2026-09-25': { practice_answers: 200 } } } } }

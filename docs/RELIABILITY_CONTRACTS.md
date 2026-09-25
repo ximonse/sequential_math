@@ -18,6 +18,37 @@ Verified from implementation during the local 2026-09-08 repair. See `RELIABILIT
 | Existing-pupil enrollment | ClassManagementPanel -> student-roster | Class membership | Names in the roster box always create new identities. Moving an existing pupil requires an explicit ID-backed checkbox selection and existing source-class authorization. |
 | Teacher account session | teacher-login -> signed HttpOnly cookie/header transition -> getLiveTeacherAuthPayload | Every teacher-protected API route | A signed account token must match a live account and its current sessionVersion. The login sets a Secure, SameSite=Strict, HttpOnly cookie. Cookie-authenticated mutations require a trusted Origin. The header token remains temporarily supported during client migration. Password, role or direct account-class changes increment the version; deleted/disabled accounts are rejected immediately. Raw password headers and accountless tokens are rejected. `isPrimaryAdmin` is the root-admin marker: only it may list, create, change or delete teacher accounts; ordinary admins still manage whole-school classes and pupils. The root is set either on the account, through the protected `PRIMARY_ADMIN_USERNAME` environment variable, or by the legacy account ID `admin` during migration. |
 
+### Existing-browser recovery (2026-09-25)
+
+Checkpoint size is measured across the complete event. Both telemetry detail and
+`adaptive.recentSelections` are shortened when needed. Ability state, answer
+results and daily aggregates are preserved. Adaptation decisions and current-need
+history travel through their dedicated events; checkpoints omit those four
+event-owned adaptive fields. The server preserves them even when an older client
+sends a checkpoint containing stale copies. The encrypted local snapshot remains
+full before the server profile is fetched at bootstrap.
+
+Pending and previously rejected legacy results missing `problemId` receive a
+stable transport ID derived from their existing vault event ID. Answer, timestamp
+and observation references remain unchanged. Recovery requires the original
+timestamp and correctness flag; it does not invent missing answer data. Original
+encrypted records remain unchanged and only server acknowledgements clear their
+rejection status. Unknown invalid entries remain visible as rejected.
+
+Failed batches are bisected to isolate invalid entries without sending every valid
+answer separately. A 100-event batch containing one invalid entry takes at most
+15 requests in the regression test. Recovery does not require clearing browser
+storage or starting a new browser session in incognito mode.
+
+Local verification: 447 tests pass, including a 150-answer session through the
+actual result generators and server event application, legacy retry deduplication,
+and missing acknowledgements. A localhost browser test used actual encrypted
+IndexedDB plus simulated API responses: a 96,747-byte rejected checkpoint became
+15,743 bytes; it and a legacy result were acknowledged, and the pupil home showed
+no warning after reload without retrying those records. This does not verify the
+reported production browser's actual queue or physical iPad behavior. Production
+build passed with the existing bundle-size and Browserslist-data warnings.
+
 Local class caches are projections of the authorized server list, not a source that recreates missing server classes. Class settings/deletion and roster operations show success only after a successful response. A partial roster response preserves the list and request identity for retry.
 
 The tests cover executable boundary behavior rather than trusting this document: api/studentAlias.test.js, api/studentStore.test.js, src/lib/storageReliability.test.js, src/lib/rosterClient.test.js, src/lib/teacherEvidencePeriods.test.js, src/lib/teacherSummary.test.js and dashboardStudentRowHelpers.test.js.

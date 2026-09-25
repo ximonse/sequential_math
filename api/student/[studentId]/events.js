@@ -12,6 +12,7 @@ import { isValidTrainingContext } from '../../../src/lib/trainingContext.js'
 import { isValidAdaptationDecision, recordAdaptationDecision } from '../../../src/lib/adaptationDecision.js'
 import { isValidCurrentNeed, recordCurrentNeed } from '../../../src/lib/currentNeed.js'
 import { isContractMasteryFact } from '../../../src/lib/masteryFacts.js'
+import { EVENT_OWNED_ADAPTIVE_FIELDS } from '../../../src/lib/pilotCheckpointContract.js'
 
 const MAX_PROBLEM_LOG = 5000
 const MAX_RECENT_PROBLEMS = 250
@@ -191,7 +192,14 @@ function validCheckpoint(payload) {
 function applyProfileCheckpoint(profile, payload) {
   if (Number(payload.capturedAt) <= Number(profile.pilotCheckpointAt || 0)) return false
   for (const field of CHECKPOINT_FIELDS) {
-    if (payload[field] !== undefined) profile[field] = structuredClone(payload[field])
+    if (payload[field] === undefined) continue
+    if (field === 'adaptive') {
+      const incoming = structuredClone(payload.adaptive)
+      // Result events own this evidence. Even an older client's full checkpoint
+      // must not replace newer server evidence or erase it after compaction.
+      for (const key of EVENT_OWNED_ADAPTIVE_FIELDS) delete incoming[key]
+      profile.adaptive = { ...profile.adaptive, ...incoming }
+    } else profile[field] = structuredClone(payload[field])
   }
   profile.pilotCheckpointAt = Number(payload.capturedAt)
   return true

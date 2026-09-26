@@ -26,7 +26,7 @@ ROBOT_TASKS=300 npm run robots -- operations   # fler uppgifter per område
 
 Resultatet hamnar i `robots/report/latest.md`: varje regelbrott med några konkreta exempel. En robot som hittar ett regelbrott blir röd.
 
-Hela sviten tar ungefär 2–3 minuter med sex parallella webbläsare.
+Hela sviten tar ungefär 2–3 minuter med sex parallella webbläsare. Den körs inte automatiskt: starta den lokalt eller på GitHub under Actions → Robots → Run workflow.
 
 ## Hur det fungerar
 

@@ -50,7 +50,7 @@ deploy-status.
 
 1. `npm run test`
 2. `npm run build`
-3. `npm run robots` — klickrobotar som använder appen som en elev (se `robots/README.md`).
+3. `npm run robots` — klickrobotar som använder appen som en elev (se `robots/README.md`). Behövs när logik ändras (uppgifter, nivåer, uppdrag, tabeller, pauser, inloggning, sparande, lärarvyns siffror), inte för CSS, texter eller dokument. De körs inte automatiskt i CI.
 
 Varje ändring ska hålla de fyra vardagsreglerna, oavsett vad uppgiften gällde:
 

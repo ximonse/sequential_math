@@ -1,0 +1,24 @@
+name: Robots
+
+# The click robots take a few minutes and are not needed for CSS, text or
+# small changes, so they run only when started by hand under Actions.
+on:
+  workflow_dispatch:
+
+jobs:
+  robots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run robots
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: robotrapport
+          path: robots/report/

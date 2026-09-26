@@ -72,6 +72,6 @@ Nivåöversikten visar **Snitt belagt** per elev och **Klassmedel**. [F6](FUNCTI
 
 ## Hur kartan hålls aktuell
 
-- Robotarna körs i CI (`robots`-jobbet i `.github/workflows/verify.yml`) på varje pull request. Rapporten laddas upp som artefakten `robotrapport`.
+- Robotarna körs inte automatiskt. Starta dem när logik ändras (uppgifter, nivåer, uppdrag, tabeller, pauser, inloggning, sparande, lärarvyns siffror): lokalt med `npm run robots`, eller på GitHub under Actions → Robots → Run workflow. Rapporten laddas då upp som artefakten `robotrapport`. CSS-, text- och dokumentändringar behöver ingen robotkörning.
 - En ny regel i ett kontrakt ska få en rad här: hur den kontrolleras, eller "Inte täckt".
 - Ett fel som elever eller lärare hittar blir först en robotkontroll som blir röd, och rättas sedan.

@@ -28,19 +28,3 @@ jobs:
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
 
-  robots:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm run robots
-      - if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: robotrapport
-          path: robots/report/

@@ -10,6 +10,8 @@ vi.mock('./CloudSyncStatusPanel', () => ({ default: () => null }))
 vi.mock('./ClassOverviewPanel', () => ({ default: () => null }))
 vi.mock('./ClassFilterPanel', () => ({ default: () => null }))
 vi.mock('./StudentDetailPanel', () => ({ default: () => <p>Student detail is visible</p> }))
+vi.mock('./ClassMasteryLevelPanel', () => ({ default: () => <p>Mastery panel is visible</p> }))
+vi.mock('./TablePracticeProgressPanel', () => ({ default: () => <p>Table progress is visible</p> }))
 vi.mock('../../../lib/teacherAuth', () => ({
   isTeacherAdmin: () => false,
   getTeacherIdentity: () => ({ teacherId: 'teacher-test', displayName: 'Karin Lärare', role: 'teacher', isAdmin: false })
@@ -46,6 +48,20 @@ describe('student detail wiring', () => {
       selectedClassIds={[]} supportRows={[]} classStats={{}} classFilterOptions={[]}
     />)
     expect(html).not.toContain('Student detail is visible')
+    expect(html).toContain('Visa Elevprofil')
+  })
+
+  it('places the level overview first and table progress last, with a toggle for each module', () => {
+    vi.stubGlobal('localStorage', { getItem: () => null })
+    const html = renderToStaticMarkup(<DashboardLayout
+      isDirectStudentView={false} students={[]} filteredStudents={[]}
+      selectedClassIds={[]} supportRows={[]} classStats={{}} classFilterOptions={[]} filteredRows={[]}
+    />)
+    expect(html.indexOf('Mastery panel is visible')).toBeLessThan(html.indexOf('Student detail is visible'))
+    expect(html.indexOf('Student detail is visible')).toBeLessThan(html.indexOf('Table progress is visible'))
+    for (const title of ['Klassurval', 'Klassstatistik', 'Nivåöversikt – hela klassen', 'Klass/gruppvy – snabbstatus', 'Elevprofil', 'Tabellträning – utveckling']) {
+      expect(html).toContain(`Minimera ${title}`)
+    }
   })
 
   it('uses the loaded full profile for the detail row and trend, leaving list rows separate', () => {

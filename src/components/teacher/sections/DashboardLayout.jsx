@@ -29,18 +29,18 @@ import { getTeacherRoleLabel } from '../../../lib/teacherRoles'
 
 const PANEL_DEFS = [
   { id: 'support',     title: 'Behöver stöd nu' },
-  { id: 'overview',    title: 'Klassöversikt' },
-  { id: 'detail',      title: 'Elevdetalj' },
+  { id: 'overview',    title: 'Klass/gruppvy – snabbstatus' },
+  { id: 'detail',      title: 'Elevprofil' },
   { id: 'results',     title: 'Resultat och export' },
   { id: 'assignments', title: 'Uppdrag' },
   { id: 'tickets',     title: 'Tickets' },
-  { id: 'mastery',     title: 'Nivåöversikt' },
+  { id: 'mastery',     title: 'Nivåöversikt – hela klassen' },
 
   { id: 'heatmap',     title: 'Felmönster' },
   { id: 'difficulty-analysis', title: 'Svårighetsanalys' },
   { id: 'training-priority', title: 'Träningsprioritet' },
   { id: 'inactivity',  title: 'Inaktivitet och nivå' },
-  { id: 'tabledev',    title: 'Tabellutveckling' },
+  { id: 'tabledev',    title: 'Tabellträning – utveckling' },
   { id: 'dataquality', title: 'Datakvalitet' },
   { id: 'management',  title: 'Klasshantering' },
   { id: 'password',    title: 'Lösenordsåterställning' },
@@ -49,14 +49,14 @@ const PANEL_DEFS = [
 ]
 
 const WORKSPACES = [
-  { id: 'progress', label: 'Framsteg', description: 'Kunskapsområden och elever', panels: ['tabledev', 'overview', 'detail', 'mastery'] },
+  { id: 'progress', label: 'Framsteg', description: 'Kunskapsområden och elever', panels: ['mastery', 'overview', 'detail', 'tabledev'] },
   { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'tickets'] },
   { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality'] },
   { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management', 'password', 'pausegames', 'admin'] }
 ]
 
 const DEFAULT_COLLAPSED = Object.fromEntries(
-  PANEL_DEFS.map(({ id }) => [id, !['support', 'overview'].includes(id)])
+  PANEL_DEFS.map(({ id }) => [id, false])
 )
 const LS_COLLAPSED_KEY = 'mathapp_dashboard_panel_collapsed_v2'
 
@@ -178,6 +178,7 @@ export default function DashboardLayout({
   }, [students, tableProgressStudents, tableSelection.studentId])
   const openTableProgress = () => {
     setTableSelection(previous => ({ ...previous, studentId: detailStudentId }))
+    setCollapsed(previous => ({ ...previous, tabledev: false }))
     setActiveWorkspace('progress')
     window.setTimeout(() => document.getElementById('table-practice-progress')?.scrollIntoView({ behavior: 'smooth' }), 0)
   }
@@ -191,6 +192,9 @@ export default function DashboardLayout({
   const [collapsed, setCollapsed] = useState(() => {
     const defaults = {
       ...DEFAULT_COLLAPSED,
+      filter: false,
+      stats: false,
+      testdata: false,
       ...(isDirectStudentView ? { detail: false, support: true, overview: true } : {})
     }
     try {
@@ -205,11 +209,28 @@ export default function DashboardLayout({
   })
 
   useEffect(() => {
+    try { localStorage.setItem(LS_COLLAPSED_KEY, JSON.stringify(collapsed)) } catch { /* Preferences are optional. */ }
+  }, [collapsed])
+
+  useEffect(() => {
     if (isDirectStudentView) {
       setActiveWorkspace('progress')
       setCollapsed(prev => ({ ...prev, detail: false }))
     }
   }, [isDirectStudentView, detailStudentId])
+
+  function renderProgressModule(id, title, content) {
+    return <div key={id}>
+      <div className="mb-1 flex justify-end">
+        <button type="button" aria-expanded={!collapsed[id]} aria-controls={`progress-panel-${id}`}
+          onClick={() => setCollapsed(previous => ({ ...previous, [id]: !previous[id] }))}
+          className="rounded border border-slate-300 bg-white px-3 py-1 text-sm text-slate-700 hover:bg-slate-100">
+          {collapsed[id] ? `Visa ${title}` : `Minimera ${title}`}
+        </button>
+      </div>
+      <div id={`progress-panel-${id}`}>{!collapsed[id] && content}</div>
+    </div>
+  }
 
   function renderPanelContent(id) {
     if (id === 'overview') return (
@@ -420,6 +441,16 @@ export default function DashboardLayout({
     return null
   }
 
+  const classFilterPanel = <ClassFilterPanel
+    selectedClassIds={selectedClassIds}
+    studentsCount={students.length}
+    filteredStudentsCount={filteredStudents.length}
+    classFilterOptions={classFilterOptions}
+    onClearClassFilter={clearClassFilter}
+    onToggleClassFilter={handleToggleClassFilter}
+  />
+  const classStatsPanel = <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
+
   return (
     <div className={`teacher-dashboard-surface min-h-screen pb-5 pt-14 sm:pb-6 sm:pt-16 ${surfaceClass}`}>
       <div className="max-w-6xl mx-auto px-3 sm:px-4">
@@ -457,24 +488,19 @@ export default function DashboardLayout({
           </aside>
           <div className="min-w-0 flex flex-col gap-3">
             <div className="dashboard-context-grid">
-            <ClassFilterPanel
-              selectedClassIds={selectedClassIds}
-              studentsCount={students.length}
-              filteredStudentsCount={filteredStudents.length}
-              classFilterOptions={classFilterOptions}
-              onClearClassFilter={clearClassFilter}
-              onToggleClassFilter={handleToggleClassFilter}
-            />
-
-            <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
+            {activeWorkspace === 'progress' ? renderProgressModule('filter', 'Klassurval', classFilterPanel) : classFilterPanel}
+            {activeWorkspace === 'progress'
+              ? renderProgressModule('stats', 'Klassstatistik', classStatsPanel)
+              : classStatsPanel}
             </div>
 
-            {activeWorkspace === 'progress' && import.meta.env.DEV && <LocalTestDataPanel mode="import" onImported={onLocalTestDataImported} />}
+            {activeWorkspace === 'progress' && import.meta.env.DEV && renderProgressModule('testdata', 'Lokal testdata', <LocalTestDataPanel mode="import" onImported={onLocalTestDataImported} />)}
 
             {WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
               .filter(id => visiblePanelDefs.some(panel => panel.id === id))
-              .filter(id => id !== 'detail' || isDirectStudentView || !collapsed.detail)
-              .map(id => <div key={id}>{renderPanelContent(id)}</div>)}
+              .map(id => activeWorkspace === 'progress'
+                ? renderProgressModule(id, PANEL_DEFS.find(panel => panel.id === id)?.title, renderPanelContent(id))
+                : <div key={id}>{renderPanelContent(id)}</div>)}
           </div>
         </div>
       </div>

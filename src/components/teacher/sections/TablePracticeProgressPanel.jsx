@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { buildTablePracticeProgress } from '../../../lib/tablePracticeProgress'
 import { downloadTextFile, rowsToCsv } from './dashboardExportHelpers'
 import TablePracticeProgressChart from './TablePracticeProgressChart'
+import { TABLE_STUDENT_COLUMNS, defaultTableStudentSortDir, sortTableStudents } from './tablePracticeProgressSort'
 
 const DEFAULT_SELECTION = { table: 7, days: 7, studentId: '' }
 const TABLES = Array.from({ length: 11 }, (_, index) => index + 2)
@@ -26,8 +27,15 @@ function Metrics({ label, current, previous, available = true }) {
 }
 
 export default function TablePracticeProgressPanel({ students = [], selection, onSelectionChange, onOpenStudentDetail, groupLabel }) {
+  const [sortBy, setSortBy] = useState('name')
+  const [sortDir, setSortDir] = useState('asc')
   const safeSelection = selection || DEFAULT_SELECTION
   const progress = useMemo(() => buildTablePracticeProgress(students, safeSelection), [students, safeSelection])
+  const sortedStudents = useMemo(() => sortTableStudents(progress.students, sortBy, sortDir), [progress.students, sortBy, sortDir])
+  const handleSort = key => {
+    if (sortBy === key) setSortDir(previous => previous === 'asc' ? 'desc' : 'asc')
+    else { setSortBy(key); setSortDir(defaultTableStudentSortDir(key)) }
+  }
   const selected = progress.selectedStudent
   const subject = selected || progress.cohort
   const subjectName = selected?.name || groupLabel || 'Hela urvalet'
@@ -89,8 +97,12 @@ export default function TablePracticeProgressPanel({ students = [], selection, o
       <div className="mt-4 flex items-baseline justify-between gap-2"><h3 className="font-semibold">Elever · {progress.table}:ans tabell</h3><span className="text-xs text-slate-500">Välj ett namn för jämförelse</span></div>
       <div className="mt-1 overflow-x-auto">
         <table aria-label="Tabellresultat per elev" className="w-full text-sm"><thead><tr className="border-b border-slate-300 text-left text-xs text-slate-600">
-          <th className="py-2 pr-2">Elev</th><th className="pr-2">Svar</th><th className="pr-2">Rätt</th><th className="pr-2">Andel rätt</th><th className="pr-2">Tidigare</th><th className="pr-2">Median rätt</th><th className="pr-2">Faktorer</th><th className="pr-2">Rundor</th><th>Underlag</th>
-        </tr></thead><tbody>{progress.students.map(item => <tr key={item.studentId} className={`border-b border-slate-100 ${selected?.studentId === item.studentId ? 'bg-teal-50' : ''}`}>
+          {TABLE_STUDENT_COLUMNS.map(([key, label]) => <th key={key} scope="col" aria-sort={sortBy === key ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="py-2 pr-2 whitespace-nowrap">
+            <button type="button" onClick={() => handleSort(key)} className="font-semibold hover:text-teal-800 hover:underline">
+              {label} <span aria-hidden="true">{sortBy === key ? (sortDir === 'asc' ? '▲' : '▼') : '↕'}</span>
+            </button>
+          </th>)}
+        </tr></thead><tbody>{sortedStudents.map(item => <tr key={item.studentId} className={`border-b border-slate-100 ${selected?.studentId === item.studentId ? 'bg-teal-50' : ''}`}>
           <th className="py-2 pr-2 text-left font-medium"><button type="button" onClick={() => choose({ studentId: item.studentId })} className="text-teal-800 underline decoration-teal-300 underline-offset-2">{item.name}</button></th>
           <td className="pr-2 tabular-nums">{item.available ? item.current.attempts : '–'}</td><td className="pr-2 tabular-nums">{item.available ? item.current.correct : '–'}</td>
           <td className={`pr-2 tabular-nums ${item.current.smallSample ? 'text-slate-500' : ''}`}>{percent(item.current.accuracy)}</td>

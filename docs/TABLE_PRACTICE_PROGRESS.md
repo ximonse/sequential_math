@@ -7,6 +7,11 @@ jämför en elev med övriga i samma urval. Samma underlag används för
 periodjämförelse, daglig utveckling och export. Detta är den första
 avgränsade leveransen enligt PRODUCT_CONTRACT M2/P3–P8 och F6.
 
+I Framsteg visas nivåöversikten först och tabellutvecklingen sist. Varje
+analysmodul kan minimeras och öppnas igen; valet sparas lokalt i webbläsaren.
+Elevlistan i tabellutvecklingen kan sorteras på varje rubrik. Sorteringen
+ändrar bara visningsordningen, inte beräkningarna eller CSV-exporten.
+
 Progressionsregler, elevens tabellgenerator, uppdrag och nivåbedömning i
 addition/subtraktion/multiplikation/division ändras inte i denna leverans.
 

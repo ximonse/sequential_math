@@ -3,7 +3,7 @@ import { loadTeacherProfile } from '../../../lib/storage'
 import { buildAnonymizedClassExport } from '../../../lib/localTestDataTransfer'
 import { downloadTextFile } from './dashboardExportHelpers'
 
-export default function LocalTestDataPanel({ classes = [], students = [], onImported = async () => {}, mode = 'export' }) {
+export default function LocalTestDataPanel({ classes = [], students = [], onImported = async () => {}, mode = 'export', collapseControl }) {
   const [classId, setClassId] = useState('')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
@@ -67,7 +67,7 @@ export default function LocalTestDataPanel({ classes = [], students = [], onImpo
   }
 
   return <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" aria-label={mode === 'export' ? 'Exportera testdata' : 'Importera testklass'}>
-    <h2 className="text-lg font-semibold text-slate-900">{mode === 'export' ? 'Exportera testdata' : 'Importera testklass'}</h2>
+    <div className="flex items-center justify-between gap-2"><h2 className="text-lg font-semibold text-slate-900">{mode === 'export' ? 'Exportera testdata' : 'Importera testklass'}</h2>{collapseControl}</div>
     <p className="mt-1 text-sm text-slate-600">{mode === 'export'
       ? 'Exportera en klass med påhittade namn och förskjutna datum. Filen innehåller sparade svar, men inga elev-ID:n eller inloggningsuppgifter.'
       : 'Läs in en anonymiserad JSON-fil som en separat testklass på localhost.'}</p>

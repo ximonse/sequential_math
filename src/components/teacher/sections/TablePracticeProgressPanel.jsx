@@ -26,7 +26,7 @@ function Metrics({ label, current, previous, available = true }) {
   </tr>
 }
 
-export default function TablePracticeProgressPanel({ students = [], selection, onSelectionChange, onOpenStudentDetail, groupLabel }) {
+export default function TablePracticeProgressPanel({ students = [], selection, onSelectionChange, onOpenStudentDetail, groupLabel, collapseControl }) {
   const [sortBy, setSortBy] = useState('name')
   const [sortDir, setSortDir] = useState('asc')
   const safeSelection = selection || DEFAULT_SELECTION
@@ -62,7 +62,7 @@ export default function TablePracticeProgressPanel({ students = [], selection, o
       <div><p className="text-xs font-semibold uppercase tracking-wider text-teal-800">{groupLabel || 'Vald klass eller grupp'}</p>
         <h2 className="text-xl font-semibold">Tabellträning – utveckling</h2>
         <p className="mt-1 text-sm text-slate-600">Följ träningen och jämför inom samma tabell.</p></div>
-      <button type="button" onClick={exportCsv} disabled={students.length === 0} className="rounded border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 disabled:opacity-50">Exportera tabellunderlag</button>
+      <div className="flex items-center gap-2"><button type="button" onClick={exportCsv} disabled={students.length === 0} className="rounded border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 disabled:opacity-50">Exportera tabellunderlag</button>{collapseControl}</div>
     </div>
     <div className="my-3 flex flex-wrap gap-3 border-y border-slate-200 py-3">
       <label className="text-sm font-medium">Tabell

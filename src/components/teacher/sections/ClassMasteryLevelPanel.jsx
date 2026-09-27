@@ -34,7 +34,8 @@ const LEGEND_STEPS = [
 
 export default function ClassMasteryLevelPanel({
   filteredStudents,
-  onOpenStudentDetail
+  onOpenStudentDetail,
+  collapseControl
 }) {
   const [sortBy, setSortBy] = useState('average')
   const [sortDir, setSortDir] = useState('desc')
@@ -97,7 +98,7 @@ export default function ClassMasteryLevelPanel({
           <h2 className="text-lg font-semibold text-gray-800">Nivåöversikt – hela klassen</h2>
           <p className="text-xs text-gray-500">Belagd nivå i aktiverade kunskapsområden per elev.</p>
         </div>
-        {filteredStudents?.length > 0 ? (
+        <div className="flex items-center gap-2">{filteredStudents?.length > 0 ? (
           <button
             type="button"
             onClick={handleExport}
@@ -105,7 +106,7 @@ export default function ClassMasteryLevelPanel({
           >
             Exportera nivåöversikt
           </button>
-        ) : null}
+        ) : null}{collapseControl}</div>
       </div>
       {!filteredStudents || filteredStudents.length === 0 ? <p className="text-sm text-gray-500">Inga elever i urvalet.</p> : (
     <div className="space-y-1">

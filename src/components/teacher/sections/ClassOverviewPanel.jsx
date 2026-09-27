@@ -13,6 +13,7 @@ export default function ClassOverviewPanel({
   toPercent,
   formatDuration,
   formatTimeAgo,
+  collapseControl,
   className = 'bg-white rounded-lg shadow p-4 mb-8',
   style
 }) {
@@ -42,7 +43,7 @@ export default function ClassOverviewPanel({
     <div className={className} style={style}>
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <h2 className="text-lg font-semibold text-gray-800">Klass/gruppvy - snabbstatus</h2>
-        <span className="text-xs text-gray-500">Styrs av urvalet högst upp</span>
+        <div className="flex items-center gap-2"><span className="text-xs text-gray-500">Styrs av urvalet högst upp</span>{collapseControl}</div>
       </div>
       <p className="text-xs text-gray-500 mb-3">
         {classOverviewMeta.className}: {classOverviewMeta.activeNowCount}/{classOverviewMeta.studentCount} aktiv(a) just nu

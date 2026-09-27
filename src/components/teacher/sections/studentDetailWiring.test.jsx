@@ -7,11 +7,11 @@ import { toTeacherListProfile } from '../../../lib/teacherListProfile'
 
 vi.mock('./DashboardHeaderBar', () => ({ default: ({ teacherName, teacherRole }) => <p>{teacherName} · {teacherRole}</p> }))
 vi.mock('./CloudSyncStatusPanel', () => ({ default: () => null }))
-vi.mock('./ClassOverviewPanel', () => ({ default: () => null }))
-vi.mock('./ClassFilterPanel', () => ({ default: () => null }))
-vi.mock('./StudentDetailPanel', () => ({ default: () => <p>Student detail is visible</p> }))
-vi.mock('./ClassMasteryLevelPanel', () => ({ default: () => <p>Mastery panel is visible</p> }))
-vi.mock('./TablePracticeProgressPanel', () => ({ default: () => <p>Table progress is visible</p> }))
+vi.mock('./ClassOverviewPanel', () => ({ default: ({ collapseControl }) => collapseControl || null }))
+vi.mock('./ClassFilterPanel', () => ({ default: ({ collapseControl }) => collapseControl || null }))
+vi.mock('./StudentDetailPanel', () => ({ default: ({ collapseControl }) => <>{collapseControl}<p>Student detail is visible</p></> }))
+vi.mock('./ClassMasteryLevelPanel', () => ({ default: ({ collapseControl }) => <>{collapseControl}<p>Mastery panel is visible</p></> }))
+vi.mock('./TablePracticeProgressPanel', () => ({ default: ({ collapseControl }) => <>{collapseControl}<p>Table progress is visible</p></> }))
 vi.mock('../../../lib/teacherAuth', () => ({
   isTeacherAdmin: () => false,
   getTeacherIdentity: () => ({ teacherId: 'teacher-test', displayName: 'Karin Lärare', role: 'teacher', isAdmin: false })

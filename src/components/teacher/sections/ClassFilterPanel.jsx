@@ -4,17 +4,18 @@ export default function ClassFilterPanel({
   filteredStudentsCount,
   classFilterOptions,
   onClearClassFilter,
-  onToggleClassFilter
+  onToggleClassFilter,
+  collapseControl
 }) {
   return (
     <section className="dashboard-class-filter bg-white rounded-lg shadow p-3">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
         <h2 className="text-sm font-semibold text-gray-800">Välj din klass eller grupp</h2>
-        <p className="text-xs text-gray-500">
+        <div className="flex items-center gap-2"><p className="text-xs text-gray-500">
           {selectedClassIds.length === 0
             ? `Alla klasser/grupper (${studentsCount} elever)`
             : `${selectedClassIds.length} klass/grupp(er) valda (${filteredStudentsCount} elever)`}
-        </p>
+        </p>{collapseControl}</div>
       </div>
       <p className="mb-2 text-[11px] text-gray-500">
         Valda klasser/grupper sparas som förval till nästa gång.

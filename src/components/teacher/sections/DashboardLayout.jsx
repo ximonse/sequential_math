@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { cloneElement, useEffect, useState } from 'react'
 import AssignmentsPanel from './AssignmentsPanel'
 import ClassOverviewPanel from './ClassOverviewPanel'
 import ClassManagementPanel from './ClassManagementPanel'
@@ -220,15 +220,19 @@ export default function DashboardLayout({
   }, [isDirectStudentView, detailStudentId])
 
   function renderProgressModule(id, title, content) {
-    return <div key={id}>
-      <div className="mb-1 flex justify-end">
-        <button type="button" aria-expanded={!collapsed[id]} aria-controls={`progress-panel-${id}`}
-          onClick={() => setCollapsed(previous => ({ ...previous, [id]: !previous[id] }))}
-          className="rounded border border-slate-300 bg-white px-3 py-1 text-sm text-slate-700 hover:bg-slate-100">
-          {collapsed[id] ? `Visa ${title}` : `Minimera ${title}`}
-        </button>
-      </div>
-      <div id={`progress-panel-${id}`}>{!collapsed[id] && content}</div>
+    const toggle = <button type="button" aria-label={`${collapsed[id] ? 'Visa' : 'Minimera'} ${title}`}
+      aria-expanded={!collapsed[id]} aria-controls={`progress-panel-${id}`}
+      onClick={() => setCollapsed(previous => ({ ...previous, [id]: !previous[id] }))}
+      className="rounded p-1 text-lg leading-none text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+      title={`${collapsed[id] ? 'Visa' : 'Minimera'} ${title}`}>
+      <span aria-hidden="true">{collapsed[id] ? '⌄' : '⌃'}</span>
+    </button>
+    return <div key={id} id={`progress-panel-${id}`}>
+      {collapsed[id]
+        ? <section className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2 shadow-sm">
+          <h2 className="font-semibold text-slate-800">{title}</h2>{toggle}
+        </section>
+        : cloneElement(content, { collapseControl: toggle })}
     </div>
   }
 

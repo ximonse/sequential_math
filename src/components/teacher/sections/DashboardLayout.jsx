@@ -16,11 +16,11 @@ import ResultsOverviewPanel from './ResultsOverviewPanel'
 import StudentDetailPanel from './StudentDetailPanel'
 import StudentDetailTrainingPriorityPanel from './StudentDetailTrainingPriorityPanel'
 import SupportPriorityPanel from './SupportPriorityPanel'
-import TableSelectionAndDevelopmentPanel from './TableSelectionAndDevelopmentPanel'
+import TablePracticeProgressPanel from './TablePracticeProgressPanel'
 import TeacherAdminPanel from './TeacherAdminPanel'
 import TeacherPasswordNoticePanel from './TeacherPasswordNoticePanel'
 import TicketSectionContainer from './TicketSectionContainer'
-import TableStickyStatusPanel from './TableStickyStatusPanel'
+
 import { ActivityBadge, RiskBadge } from './dashboardStatusBadges'
 import { getOperationLabel } from '../../../lib/operations'
 import { getTeacherIdentity, isTeacherAdmin } from '../../../lib/teacherAuth'
@@ -34,7 +34,7 @@ const PANEL_DEFS = [
   { id: 'assignments', title: 'Uppdrag' },
   { id: 'tickets',     title: 'Tickets' },
   { id: 'mastery',     title: 'Nivåöversikt' },
-  { id: 'sticky',      title: 'Tabellstatus' },
+
   { id: 'heatmap',     title: 'Felmönster' },
   { id: 'difficulty-analysis', title: 'Svårighetsanalys' },
   { id: 'training-priority', title: 'Träningsprioritet' },
@@ -48,7 +48,7 @@ const PANEL_DEFS = [
 ]
 
 const WORKSPACES = [
-  { id: 'progress', label: 'Framsteg', description: 'Kunskapsområden och elever', panels: ['overview', 'detail', 'mastery', 'sticky', 'tabledev'] },
+  { id: 'progress', label: 'Framsteg', description: 'Kunskapsområden och elever', panels: ['tabledev', 'overview', 'detail', 'mastery'] },
   { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'tickets'] },
   { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality'] },
   { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management', 'password', 'pausegames', 'admin'] }
@@ -98,12 +98,6 @@ export default function DashboardLayout({
   handleOpenStudentDetail,
   classOverviewMeta,
   filteredRows,
-  tableStickyStatusRows,
-  TABLES,
-  handleStickySort,
-  getStickySortIndicator,
-  getTeacherTableStatusClass,
-  getTeacherTableStatusLabel,
   detailStudentId,
   detailStudentOptions,
   hasMissingDirectStudent,
@@ -112,8 +106,6 @@ export default function DashboardLayout({
   detailStudentRow,
   detailStudentViewData,
   trainingPriorityList,
-  getTableSpeedColorClass,
-  classTableBenchmarks,
   getCompactMasteryColorClass,
   LEVELS,
   DETAIL_LEVEL_ERROR_MIN_ATTEMPTS,
@@ -132,14 +124,6 @@ export default function DashboardLayout({
   inactivityBuckets,
   classSummaries,
   weekGoal,
-  tableSelectedStudentIds,
-  setTableSelectedStudentIds,
-  tableStudentSearch,
-  setTableStudentSearch,
-  filteredTableStudentOptions,
-  tableStudentSet,
-  handleToggleTableStudent,
-  tableDevelopmentOverview,
   supportRows,
   handleCreateQuickAssignment,
   classNameInput,
@@ -173,6 +157,28 @@ export default function DashboardLayout({
   const teacherName = String(teacherIdentity.displayName || 'Lärare').trim() || 'Lärare'
   const teacherRole = getTeacherRoleLabel(teacherIdentity.role)
   const [activeWorkspace, setActiveWorkspace] = useState('progress')
+  const [tableSelection, setTableSelection] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem('mathapp_table_progress_selection') || '{}')
+      return { table: Number.isInteger(Number(saved.table)) && Number(saved.table) >= 2 && Number(saved.table) <= 12 ? Number(saved.table) : 7,
+        days: Number(saved.days) === 14 ? 14 : 7, studentId: String(saved.studentId || '') }
+    } catch { return { table: 7, days: 7, studentId: '' } }
+  })
+  const tableProgressStudents = selectedClassIds.length > 0
+    ? students.filter(student => recordMatchesClassFilter(student, selectedClassIds)) : students
+  useEffect(() => {
+    try { localStorage.setItem('mathapp_table_progress_selection', JSON.stringify(tableSelection)) } catch { /* Preferences are optional. */ }
+  }, [tableSelection])
+  useEffect(() => {
+    if (students.length > 0 && tableSelection.studentId && !tableProgressStudents.some(student => student.studentId === tableSelection.studentId)) {
+      setTableSelection(previous => ({ ...previous, studentId: '' }))
+    }
+  }, [students, tableProgressStudents, tableSelection.studentId])
+  const openTableProgress = () => {
+    setTableSelection(previous => ({ ...previous, studentId: detailStudentId }))
+    setActiveWorkspace('progress')
+    window.setTimeout(() => document.getElementById('table-practice-progress')?.scrollIntoView({ behavior: 'smooth' }), 0)
+  }
   const visiblePanelDefs = PANEL_DEFS.filter(panel => !panel.adminOnly || teacherIsAdmin)
   const surfaceClass = teacherIdentity.role === 'super_admin'
     ? 'teacher-dashboard-surface--super-admin'
@@ -228,18 +234,6 @@ export default function DashboardLayout({
         onOpenStudentDetail={handleOpenStudentDetail}
       />
     )
-            if (id === 'sticky') return (
-      <TableStickyStatusPanel
-        rows={tableStickyStatusRows || []}
-        tables={TABLES || []}
-        onSort={handleStickySort}
-        onOpenStudentDetail={handleOpenStudentDetail}
-        getSortIndicator={getStickySortIndicator}
-        getStatusClass={getTeacherTableStatusClass}
-        getStatusLabel={getTeacherTableStatusLabel}
-        className="bg-white rounded-lg shadow p-4 mb-8"
-      />
-    )
     if (id === 'detail') return (
       <StudentDetailPanel
         sectionId="teacher-student-detail-section"
@@ -250,6 +244,7 @@ export default function DashboardLayout({
         onChangeDetailStudentId={setDetailStudentId}
         onNavigateDirectStudent={(studentId) => navigate(`/teacher/student/${encodeURIComponent(studentId)}`)}
         onExportCsv={handleExportStudentDetailCsv}
+        onOpenTableProgress={openTableProgress}
         canExportCsv={Boolean(detailStudentProfile && detailStudentRow && detailStudentViewData)}
         onSetTeacherPupilLabel={handleSetTeacherPupilLabel}
         detailStudentProfile={detailStudentProfile}
@@ -260,10 +255,7 @@ export default function DashboardLayout({
         ActivityBadgeComponent={ActivityBadge}
         trainingPriorityList={trainingPriorityList}
         tableMasteryPanelProps={{
-          tables: TABLES,
-          getTableSpeedColorClass,
-          classTableBenchmarks,
-          getCompactMasteryColorClass,
+                          getCompactMasteryColorClass,
           levels: LEVELS,
           getOperationLabel
         }}
@@ -317,17 +309,12 @@ export default function DashboardLayout({
       />
     )
     if (id === 'tabledev') return (
-      <TableSelectionAndDevelopmentPanel
-        tableSelectedStudentIds={tableSelectedStudentIds || []}
-        filteredStudentsCount={filteredStudents.length}
-        onClearTableSelection={() => setTableSelectedStudentIds([])}
-        tableStudentSearch={tableStudentSearch}
-        onSetTableStudentSearch={setTableStudentSearch}
-        filteredTableStudentOptions={filteredTableStudentOptions || []}
-        tableStudentSet={tableStudentSet || new Set()}
-        onToggleTableStudent={handleToggleTableStudent}
-        tableDevelopmentOverview={tableDevelopmentOverview || []}
-        toPercent={toPercent}
+      <TablePracticeProgressPanel
+        students={tableProgressStudents}
+        selection={tableSelection}
+        onSelectionChange={setTableSelection}
+        groupLabel={selectedClassIds.map(id => classNameById?.get(id)).filter(Boolean).join(', ') || 'Alla klasser och grupper'}
+        onOpenStudentDetail={handleOpenStudentDetail}
       />
     )
     if (id === 'support') return (

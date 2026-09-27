@@ -12,7 +12,6 @@ export default function ResultsOverviewPanel({
   exportRange = { from: '', to: '' },
   onExportRangeChange = () => {},
   onExportSkillComparisonCsv,
-  onExportTableDevelopmentCsv,
   onExportActivityCsv,
   renderResultSortHeader,
   resultHeaderHelp,
@@ -147,12 +146,6 @@ export default function ResultsOverviewPanel({
                 className="px-2 py-1 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded text-sm"
               >
                 Export skill
-              </button>
-              <button
-                onClick={onExportTableDevelopmentCsv}
-                className="px-2 py-1 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded text-sm"
-              >
-                Export tabeller
               </button>
               <button
                 onClick={onExportActivityCsv}

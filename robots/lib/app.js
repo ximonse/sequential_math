@@ -117,7 +117,13 @@ export async function submit(page) {
 
 export async function next(page) {
   const button = page.getByRole('button', { name: 'Nästa', exact: true })
-  if (await button.isVisible().catch(() => false)) await button.click()
+  if (await button.isVisible().catch(() => false)) {
+    try { await button.click({ timeout: 2000 }) } catch (error) {
+      // Finishing a table round can navigate home between visibility and click.
+      // The caller checks the completed round and treats other departures as errors.
+      if (/\/practice/.test(page.url())) throw error
+    }
+  }
 }
 
 // Anything that is not the answer screen: celebrations, break prompts etc.

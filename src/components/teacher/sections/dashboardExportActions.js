@@ -8,8 +8,7 @@ import { buildStudentDetailExportRows } from './dashboardStudentDetailExportHelp
 import {
   buildAnalyticsSnapshot,
   buildDetailedProblemExportRows,
-  buildSkillComparisonExportRows,
-  buildTableDevelopmentExportRows
+  buildSkillComparisonExportRows
 } from '../../../lib/teacherAnalytics'
 
 export function buildDashboardExportActions({
@@ -98,19 +97,6 @@ export function buildDashboardExportActions({
     setDashboardStatus(`Skill-CSV klar (${csvRows.length} rader).`)
   }
 
-  const handleExportTableDevelopmentCsv = () => {
-    const snapshot = buildAnalyticsSnapshot(filteredStudents)
-    const csvRows = buildTableDevelopmentExportRows({ ...snapshot, rows: withinRange(snapshot.rows || []) })
-    if (csvRows.length === 0) {
-      setDashboardStatus('Ingen tabellutvecklingsdata att exportera.')
-      return
-    }
-
-    const csv = rowsToCsv(csvRows)
-    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
-    downloadTextFile(csv, `tabellutveckling${rangeLabel()}_${stamp}.csv`, 'text/csv;charset=utf-8;')
-    setDashboardStatus(`Tabell-CSV klar (${csvRows.length} rader).`)
-  }
 
   const handleExportActivityCsv = () => {
     const csvRows = buildActivityExportRows(withinRange(filteredRows))
@@ -148,7 +134,6 @@ export function buildDashboardExportActions({
     handleExportSnapshotCsv,
     handleExportDetailedProblemCsv,
     handleExportSkillComparisonCsv,
-    handleExportTableDevelopmentCsv,
     handleExportActivityCsv,
     handleExportStudentDetailCsv
   }

@@ -14,7 +14,6 @@ import {
   LEVELS,
   PASSWORD_RESET_SECTION_ID,
   RESULT_HEADER_HELP,
-  TABLES,
   TEACHER_AUTO_REFRESH_INTERVAL_MS
 } from './sections/dashboardConstants'
 import { buildDashboardExportActions } from './sections/dashboardExportActions'
@@ -42,9 +41,6 @@ import {
 } from './sections/dashboardSortUtils'
 import {
   getCompactMasteryColorClass,
-  getTableSpeedColorClass,
-  getTeacherTableStatusClass,
-  getTeacherTableStatusLabel
 } from './sections/dashboardTableStatusUtils'
 import {
   getAllProfilesWithSync,
@@ -73,10 +69,6 @@ function Dashboard() {
   const [dashboardStatus, setDashboardStatus] = useState('')
   const [copiedId, setCopiedId] = useState('')
   const [activeAssignmentId, setActiveAssignmentId] = useState('')
-  const [tableSelectedStudentIds, setTableSelectedStudentIds] = useState([])
-  const [tableStudentSearch, setTableStudentSearch] = useState('')
-  const [stickySortBy, setStickySortBy] = useState('name')
-  const [stickySortDir, setStickySortDir] = useState('asc')
   const [supportSortBy, setSupportSortBy] = useState('risk')
   const [supportSortDir, setSupportSortDir] = useState('desc')
   const [detailStudentId, setDetailStudentId] = useState('')
@@ -175,14 +167,6 @@ function Dashboard() {
     saveTeacherClassFilterSelection(selectedClassIds)
   }, [selectedClassIds])
 
-  useEffect(() => {
-    if (students.length === 0) {
-      if (tableSelectedStudentIds.length > 0) setTableSelectedStudentIds([])
-      return
-    }
-    const valid = new Set(students.map(item => item.studentId))
-    setTableSelectedStudentIds(prev => prev.filter(id => valid.has(id)))
-  }, [students, tableSelectedStudentIds.length])
 
   useEffect(() => {
     const runAutoRefreshIfAllowed = () => {
@@ -230,7 +214,6 @@ function Dashboard() {
     clearClassFilter,
     handleResetStudentPassword,
     handleOpenStudentDetail,
-    handleToggleTableStudent,
     handleSaveClassExtras
   } = buildDashboardClassAndAuthActions({
     loadStudents,
@@ -254,8 +237,7 @@ function Dashboard() {
     setSelectedClassIds,
     setPasswordResetBusyId,
     setPasswordResetStatus,
-    setTableSelectedStudentIds
-  })
+    })
 
   const activeAssignment = useMemo(
     () => assignments.find(item => item.id === activeAssignmentId) || null,
@@ -295,7 +277,6 @@ function Dashboard() {
     detailLevelErrorUnderSampleCount,
     classBenchmarks,
     studentOperationStats7d,
-    classTableBenchmarks,
     trainingPriorityList,
     dailyActivityBreakdown,
     passwordResetRows,
@@ -303,13 +284,7 @@ function Dashboard() {
     inactivityBuckets,
     classSummaries,
     classOverviewMeta,
-    handleStickySort,
-    getStickySortIndicator,
     renderDetailLevelErrorSortHeader,
-    tableStudentSet,
-    filteredTableStudentOptions,
-    tableDevelopmentOverview,
-    tableStickyStatusRows,
     dataQualitySummary,
     usageInsights,
     renderResultSortHeader
@@ -332,17 +307,10 @@ function Dashboard() {
     sortDir,
     setSortBy,
     setSortDir,
-    stickySortBy,
-    stickySortDir,
-    setStickySortBy,
-    setStickySortDir,
     supportSortBy,
     supportSortDir,
     setSupportSortBy,
     setSupportSortDir,
-    tableSelectedStudentIds,
-    tableStudentSearch,
-    setTableSelectedStudentIds,
     passwordResetSearch,
     detailLevelErrorMinAttempts: DETAIL_LEVEL_ERROR_MIN_ATTEMPTS,
     defaultWeeklyGoal: DEFAULT_WEEKLY_GOAL
@@ -374,7 +342,6 @@ function Dashboard() {
     handleExportSnapshotCsv,
     handleExportDetailedProblemCsv,
     handleExportSkillComparisonCsv,
-    handleExportTableDevelopmentCsv,
     handleExportActivityCsv,
     handleExportStudentDetailCsv
   } = buildDashboardExportActions({
@@ -416,7 +383,6 @@ function Dashboard() {
     exportRange,
     onExportRangeChange: setExportRange,
     onExportSkillComparisonCsv: handleExportSkillComparisonCsv,
-    onExportTableDevelopmentCsv: handleExportTableDevelopmentCsv,
     onExportActivityCsv: handleExportActivityCsv,
     renderResultSortHeader,
     resultHeaderHelp: RESULT_HEADER_HELP,
@@ -444,18 +410,14 @@ function Dashboard() {
         formatAssignmentSummaryLine, handleCreatePreset, handleClearActiveForAll, handleClearAllAssignments,
         handleActivateForAll, handleDeleteAssignment, handleCopyAssignmentLink, classNameById,
         recordMatchesClassFilter, setStudents, setDashboardStatus, handleOpenStudentDetail,
-        classOverviewMeta, filteredRows, tableStickyStatusRows, TABLES, handleStickySort,
-        getStickySortIndicator, getTeacherTableStatusClass, getTeacherTableStatusLabel, detailStudentId,
+        classOverviewMeta, filteredRows, detailStudentId,
         detailStudentOptions, hasMissingDirectStudent, setDetailStudentId, handleExportStudentDetailCsv,
-        detailStudentRow, detailStudentViewData, trainingPriorityList, getTableSpeedColorClass,
-        classTableBenchmarks, getCompactMasteryColorClass, LEVELS, DETAIL_LEVEL_ERROR_MIN_ATTEMPTS,
+        detailStudentRow, detailStudentViewData, trainingPriorityList, getCompactMasteryColorClass, LEVELS, DETAIL_LEVEL_ERROR_MIN_ATTEMPTS,
         ALL_OPERATIONS, classBenchmarks, studentOperationStats7d, detailLevelErrorRows,
         detailLevelErrorUnderSampleCount, renderDetailLevelErrorSortHeader, DETAIL_LEVEL_ERROR_HELP,
         detailLevelErrorSortBy, detailLevelErrorSortDir,
         handleDetailLevelErrorSortByChange, handleDetailLevelErrorSortDirChange,
         getErrorShareColorClass, dailyActivityBreakdown, inactivityBuckets, classSummaries, weekGoal,
-        tableSelectedStudentIds, setTableSelectedStudentIds, tableStudentSearch, setTableStudentSearch,
-        filteredTableStudentOptions, tableStudentSet, handleToggleTableStudent, tableDevelopmentOverview,
         supportRows, handleCreateQuickAssignment,
         classNameInput, setClassNameInput, handleCreateClass, handleCreatePilotRoster, addToClassId, setAddToClassId,
         classes, handleAddExistingStudentsToClass, handleMoveStudent, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus, handleDeleteClass, handleRenameClass, handleSaveClassExtras,

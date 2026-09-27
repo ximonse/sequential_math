@@ -10,6 +10,79 @@ export const ROBOT_CLASS_ID = 'robot-klass'
 export const ROBOT_PIN = '2468'
 export const ROBOT_TEACHER_PASSWORD = 'robot-larare-losen'
 
+const DAY_MS = 24 * 60 * 60 * 1000
+
+// Synthetic history fixture for the table-progress robot. Keep this independent
+// of app/profile helpers so it exercises the exact persisted server shape.
+function makeTableDrillHistory(studentId, classId, {
+  currentAttempts = 20,
+  currentCorrect = 16,
+  previousAttempts = 20,
+  previousCorrect = 10,
+  noiseAttempts = 251,
+  noiseTable = 8
+} = {}) {
+  const now = Date.now()
+  let sequence = 0
+  const makeResult = (table, timestamp, correct) => {
+    const factor = (sequence % 10) + 1
+    const a = table
+    const b = factor
+    const problemId = `robot-table-history-${studentId}-${sequence}`
+    const result = {
+      observationId: `${problemId}:${timestamp}`,
+      problemId,
+      classIdAtAttempt: classId,
+      domain: 'arithmetic',
+      skill: 'multiplication',
+      contentSkill: 'multiplication',
+      evidenceSkill: `mul_table_${table}`,
+      evidenceClass: 'practice_only',
+      trainingMode: 'table_drill',
+      trainingContext: {
+        version: 1,
+        frameId: `robot-table-history-${studentId}`,
+        mode: 'table_drill',
+        source: 'student_focus',
+        assignmentId: '',
+        assignmentKind: '',
+        allowedSkills: ['multiplication'],
+        levelRange: null,
+        tableSet: [table],
+        progressionMode: 'challenge'
+      },
+      operation: 'multiplication',
+      level: 4,
+      problemType: 'mul_table_drill',
+      values: { a, b },
+      correctAnswer: a * b,
+      studentAnswer: correct ? a * b : a * b + 1,
+      correct,
+      errorCategory: correct ? 'none' : 'knowledge',
+      timeSpent: 3,
+      speedTimeSec: 3,
+      timestamp,
+      difficulty: { conceptual_level: 4 },
+      skillTag: `mul_table_${table}`
+    }
+    sequence += 1
+    return result
+  }
+
+  const rows = []
+  for (let i = 0; i < previousAttempts; i += 1) {
+    rows.push(makeResult(7, now - (10 * DAY_MS) + i * 1000, i < previousCorrect))
+  }
+  for (let i = 0; i < currentAttempts; i += 1) {
+    rows.push(makeResult(7, now - (2 * DAY_MS) + i * 1000, i < currentCorrect))
+  }
+  for (let i = 0; i < noiseAttempts; i += 1) {
+    rows.push(makeResult(noiseTable, now - DAY_MS + i * 1000, i % 2 === 0))
+  }
+
+  return rows
+}
+
 function emptyPupil(studentId, displayAlias, classId, className = classId) {
   const now = Date.now()
   return {
@@ -66,6 +139,23 @@ export async function handleControl(action, body = {}) {
     const profile = await kv.get(`student:${String(body.studentId || '').toUpperCase()}`)
     if (profile) delete profile.auth
     return { ok: Boolean(profile), profile }
+  }
+  if (action === 'seed-table-progress') {
+    const seeded = []
+    for (const fixture of Array.isArray(body.students) ? body.students : []) {
+      const studentId = String(fixture?.studentId || '').trim().toUpperCase()
+      const profile = await kv.get(`student:${studentId}`)
+      if (!profile) return { ok: false, error: `Unknown synthetic student ${studentId}` }
+      const rows = makeTableDrillHistory(studentId, String(profile.classId || ''), fixture)
+      await kv.set(`student:${studentId}`, {
+        ...profile,
+        problemLog: rows,
+        stats: { ...profile.stats, lifetimeProblems: rows.length },
+        recentProblems: rows.slice(-250)
+      })
+      seeded.push({ studentId, problemLogCount: rows.length, recentProblemsCount: Math.min(rows.length, 250) })
+    }
+    return { ok: true, students: seeded }
   }
   if (action === 'verify') {
     const registry = await import('../src/domains/registry.js')

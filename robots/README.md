@@ -39,11 +39,12 @@ Hela sviten tar ungefär 2–3 minuter med sex parallella webbläsare. Den körs
 | --- | --- |
 | `operations.robot.js` | Väljer vart och ett av de nio områdena och svarar rätt tills nivå 12 är nådd. |
 | `tables.robot.js` | Sex olika tabellval, upp till tre rundor var. |
+| `table-progress.robot.js` | Lärarens tabellhistorik över 250-svarsgränsen, elev mot grupp, klassval, period, dagsrader och CSV. |
 | `pause.robot.js` | Pausspel, nej tack till paus, startsidan och tillbaka, 10 minuter borta, omladdning och ny flik. |
 | `buttons.robot.js` | Varje knapp på sifferbordet i sex områden, tangentbordet, tema och kontrast samt in- och utloggning. |
 | `training.robot.js` | Fri träning inom klassens räknesätt, Fortsätt träna och en elev som svarar fel på allt. |
 | `assignments.robot.js` | Läraren skapar uppdrag i lärarvyn och kopierar länken; elever loggar in via länken och svarar rätt respektive fel. Varje uppgift ska ligga inom uppdragets räknesätt och nivåram, även ett låst uppdrag på exakt en nivå. Aktivera för alla och Rensa aktivt kontrolleras på elevens egen enhet. |
-| `teacher.robot.js` | Fyra elever tränar på kända sätt (rätt, bara fel, inget, tabell 7) och en femte i en annan klass. Läraren loggar in och kontrollerar klassval, antal och rätt/fel per elev, okänt ≠ 0, tabellstatus, Behöver stöd nu med elevens riktiga felsvar, datakvalitet, exporten och att klassvalet ligger kvar. Dessutom en textgranskning av elevens sidor. |
+| `teacher.robot.js` | Fyra elever tränar på kända sätt (rätt, bara fel, inget, tabell 7) och en femte i en annan klass. Läraren loggar in och kontrollerar klassval, antal och rätt/fel per elev, okänt ≠ 0, tabellträning, Behöver stöd nu med elevens riktiga felsvar, datakvalitet, exporten och att klassvalet ligger kvar. Dessutom en textgranskning av elevens sidor. |
 
 ## Lägga till en robot
 

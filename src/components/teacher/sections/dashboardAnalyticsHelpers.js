@@ -1,5 +1,4 @@
 import { getStartOfWeekTimestamp } from '../../../lib/studentProfile'
-import { inferTableFromProblem } from '../../../lib/mathUtils'
 import {
   getNcmDomainLabelSv,
   getNcmSkillMappingFromProblem
@@ -8,8 +7,6 @@ import { compareClassNameAndName } from './dashboardSortUtils'
 import { getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { getCurrentWeekTeacherEvidence } from '../../../lib/teacherSummary'
 import {
-  getAccuracy,
-  getMedianTime,
   isKnowledgeError
 } from './dashboardTableStatusUtils'
 import {
@@ -195,57 +192,6 @@ export function buildNcmOverview(students, classNameById = new Map()) {
     weakestDomainLabel: weakestDomain ? getNcmDomainLabelSv(weakestDomain.domainTag) : '-',
     strongestDomainLabel: strongestDomain ? getNcmDomainLabelSv(strongestDomain.domainTag) : '-'
   }
-}
-
-export function buildTableDevelopmentOverview(students) {
-  const start7d = Date.now() - (7 * DAY_MS)
-  const start14d = Date.now() - (14 * DAY_MS)
-  const tables = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-  const stats = new Map()
-
-  for (const table of tables) {
-    stats.set(table, {
-      table,
-      recent: [],
-      previous: []
-    })
-  }
-
-  for (const student of students) {
-    const problems = Array.isArray(student?.recentProblems) ? student.recentProblems : []
-    for (const problem of problems) {
-      const table = inferTableFromProblem(problem)
-      if (!table || !stats.has(table)) continue
-      const ts = Number(problem.timestamp || 0)
-      if (!Number.isFinite(ts) || ts <= 0) continue
-      if (ts >= start7d) {
-        stats.get(table).recent.push(problem)
-      } else if (ts >= start14d) {
-        stats.get(table).previous.push(problem)
-      }
-    }
-  }
-
-  const output = []
-  for (const entry of stats.values()) {
-    if (entry.recent.length === 0 && entry.previous.length === 0) continue
-    const accuracy7d = getAccuracy(entry.recent)
-    const accuracyPrev = getAccuracy(entry.previous)
-    const medianTime7d = getMedianTime(entry.recent)
-    const medianTimePrev = getMedianTime(entry.previous)
-    output.push({
-      table: entry.table,
-      attempts7d: entry.recent.length,
-      accuracy7d,
-      accuracyTrend: (accuracy7d === null || accuracyPrev === null) ? null : accuracy7d - accuracyPrev,
-      medianTime7d,
-      speedTrend: (medianTime7d === null || medianTimePrev === null || medianTimePrev <= 0)
-        ? null
-        : (medianTimePrev - medianTime7d) / medianTimePrev
-    })
-  }
-
-  return output.sort((a, b) => a.table - b.table)
 }
 
 export function pickWeakestNcmDomain(domains) {

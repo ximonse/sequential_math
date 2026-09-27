@@ -1,9 +1,8 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import {
   buildClassSummaries,
   buildInactivityBuckets,
   buildNcmOverview,
-  buildTableDevelopmentOverview
 } from './dashboardAnalyticsHelpers'
 import {
   buildDataQualitySummary,
@@ -13,7 +12,6 @@ import { buildTeacherStudentViewData } from './dashboardStudentDetailViewHelpers
 import { buildStudentRow } from './dashboardStudentRowHelpers'
 import {
   buildClassOperationBenchmarks,
-  buildClassTableBenchmarks,
   buildDailyActivityBreakdown,
   buildStudentOperationStats7d,
   buildTrainingPriorityList
@@ -24,14 +22,11 @@ import {
   compareClassNameAndName,
   getDefaultDetailLevelErrorSortDir,
   getDefaultResultSortDir,
-  getDefaultStickySortDir,
   getDefaultSupportSortDir,
   getSortedDetailLevelErrorRows,
   getSortedRows,
   getSortedSupportRows,
-  getSortedTableStickyRows
 } from './dashboardSortUtils'
-import { buildStickyTableStatusForStudent } from './dashboardTableStatusUtils'
 
 export function useDashboardViewData({
   students,
@@ -52,17 +47,10 @@ export function useDashboardViewData({
   sortDir,
   setSortBy,
   setSortDir,
-  stickySortBy,
-  stickySortDir,
-  setStickySortBy,
-  setStickySortDir,
   supportSortBy,
   supportSortDir,
   setSupportSortBy,
   setSupportSortDir,
-  tableSelectedStudentIds,
-  tableStudentSearch,
-  setTableSelectedStudentIds,
   passwordResetSearch,
   detailLevelErrorMinAttempts,
   defaultWeeklyGoal
@@ -132,13 +120,6 @@ export function useDashboardViewData({
   const studentOperationStats7d = useMemo(
     () => buildStudentOperationStats7d(detailStudentProfile),
     [detailStudentProfile]
-  )
-
-  const classTableBenchmarks = useMemo(
-    () => buildClassTableBenchmarks(
-      detailStudentId ? detailStudentSource.filter(student => student.studentId !== detailStudentId) : detailStudentSource
-    ),
-    [detailStudentSource, detailStudentId]
   )
 
   const trainingPriorityList = useMemo(() => {
@@ -215,20 +196,6 @@ export function useDashboardViewData({
     return sortDir === 'asc' ? '▲' : '▼'
   }
 
-  const handleStickySort = (nextSortBy) => {
-    if (stickySortBy === nextSortBy) {
-      setStickySortDir(prev => (prev === 'asc' ? 'desc' : 'asc'))
-      return
-    }
-    setStickySortBy(nextSortBy)
-    setStickySortDir(getDefaultStickySortDir(nextSortBy))
-  }
-
-  const getStickySortIndicator = (sortKey) => {
-    if (stickySortBy !== sortKey) return '↕'
-    return stickySortDir === 'asc' ? '▲' : '▼'
-  }
-
   const handleSupportSort = (nextSortBy) => {
     if (supportSortBy === nextSortBy) {
       setSupportSortDir(prev => (prev === 'asc' ? 'desc' : 'asc'))
@@ -301,67 +268,6 @@ export function useDashboardViewData({
     )
   }
 
-  const tableStudentSet = useMemo(
-    () => new Set(tableSelectedStudentIds),
-    [tableSelectedStudentIds]
-  )
-
-  const tableScopedStudents = useMemo(() => {
-    if (tableStudentSet.size === 0) return filteredStudents
-    return filteredStudents.filter(student => tableStudentSet.has(student.studentId))
-  }, [filteredStudents, tableStudentSet])
-
-  const tableStudentOptions = useMemo(
-    () => filteredStudents
-      .map(student => ({
-        studentId: student.studentId,
-        name: student.name,
-        className: getRecordClassLabel(student, classNameById)
-      }))
-      .sort((a, b) => {
-        const classCompare = String(a.className).localeCompare(String(b.className), 'sv')
-        if (classCompare !== 0) return classCompare
-        return String(a.name).localeCompare(String(b.name), 'sv')
-      }),
-    [filteredStudents, classNameById]
-  )
-
-  const filteredTableStudentOptions = useMemo(() => {
-    const search = tableStudentSearch.trim().toLowerCase()
-    if (!search) return tableStudentOptions
-    return tableStudentOptions.filter(item => (
-      `${item.name} ${item.studentId} ${item.className}`.toLowerCase().includes(search)
-    ))
-  }, [tableStudentOptions, tableStudentSearch])
-
-  useEffect(() => {
-    const valid = new Set(tableStudentOptions.map(item => item.studentId))
-    setTableSelectedStudentIds(prev => {
-      const next = prev.filter(id => valid.has(id))
-      return next.length === prev.length ? prev : next
-    })
-  }, [tableStudentOptions, setTableSelectedStudentIds])
-
-  const tableDevelopmentOverview = useMemo(
-    () => buildTableDevelopmentOverview(tableScopedStudents),
-    [tableScopedStudents]
-  )
-
-  const tableStickyStatusRows = useMemo(
-    () => getSortedTableStickyRows(
-      tableScopedStudents
-        .map(student => ({
-          studentId: student.studentId,
-          name: student.name,
-          className: getRecordClassLabel(student, classNameById),
-          ...buildStickyTableStatusForStudent(student)
-        })),
-      stickySortBy,
-      stickySortDir
-    ),
-    [tableScopedStudents, classNameById, stickySortBy, stickySortDir]
-  )
-
   const dataQualitySummary = useMemo(
     () => buildDataQualitySummary(filteredRows),
     [filteredRows]
@@ -383,7 +289,6 @@ export function useDashboardViewData({
     detailLevelErrorUnderSampleCount,
     classBenchmarks,
     studentOperationStats7d,
-    classTableBenchmarks,
     trainingPriorityList,
     dailyActivityBreakdown,
     passwordResetRows,
@@ -392,15 +297,9 @@ export function useDashboardViewData({
     classSummaries,
     classOverviewMeta,
     ncmOverview,
-    handleStickySort,
-    getStickySortIndicator,
     getSupportSortIndicator,
     handleSupportSort,
     renderDetailLevelErrorSortHeader,
-    tableStudentSet,
-    filteredTableStudentOptions,
-    tableDevelopmentOverview,
-    tableStickyStatusRows,
     dataQualitySummary,
     usageInsights,
     renderResultSortHeader

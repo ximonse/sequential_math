@@ -1,7 +1,7 @@
-import { inferTableFromProblem, getSpeedTime, median, resolveProblemOperation } from '../../../lib/mathUtils'
+import { getSpeedTime, median, resolveProblemOperation } from '../../../lib/mathUtils'
 import { computeLevelMastery, getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { getOperationLabel, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from '../../../lib/operations'
-import { ALL_OPERATIONS, TABLES } from './dashboardConstants'
+import { ALL_OPERATIONS } from './dashboardConstants'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const TRAINING_MAX_ITEMS = 15
@@ -251,36 +251,6 @@ export function buildStudentOperationStats7d(student) {
       accuracy: bucket.attempts > 0 ? bucket.correct / bucket.attempts : null,
       medianSpeed: median(bucket.speeds)
     }
-  }
-  return result
-}
-
-export function buildClassTableBenchmarks(students) {
-  const start7d = Date.now() - (7 * DAY_MS)
-  const perTable = Object.fromEntries(TABLES.map(table => [table, []]))
-
-  for (const student of students) {
-    const source = getPreferredProblemSource(student)
-    const buckets = Object.fromEntries(TABLES.map(table => [table, []]))
-    for (const problem of source) {
-      const ts = Number(problem?.timestamp || 0)
-      if (ts < start7d) continue
-      const table = inferTableFromProblem(problem)
-      if (!table || !Object.prototype.hasOwnProperty.call(buckets, table)) continue
-      if (problem.correct) {
-        const speed = getSpeedTime(problem)
-        if (Number.isFinite(speed) && speed > 0) buckets[table].push(speed)
-      }
-    }
-    for (const table of TABLES) {
-      const value = median(buckets[table])
-      if (Number.isFinite(value) && value > 0) perTable[table].push(value)
-    }
-  }
-
-  const result = {}
-  for (const table of TABLES) {
-    result[table] = median(perTable[table])
   }
   return result
 }

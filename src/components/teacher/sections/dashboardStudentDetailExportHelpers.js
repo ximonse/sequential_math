@@ -4,11 +4,7 @@ import { formatSkillList } from './dashboardSkillLabelHelpers'
 import { toPercent } from './dashboardSortUtils'
 import { getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { getProblemLevel } from './dashboardCoreHelpers'
-import {
-  getTeacherTableStatusLabel
-} from './dashboardTableStatusUtils'
 
-const TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
 export function buildStudentDetailExportRows(student, row, detailData) {
   if (!student || !row || !detailData) return []
@@ -65,30 +61,8 @@ export function buildStudentDetailExportRows(student, row, detailData) {
   add({ Sektion: 'Sammanfattning', Nyckel: 'SvagastTyper', Varde: formatSkillList(student?.stats?.weakestTypes) })
   add({ Sektion: 'Sammanfattning', Nyckel: 'StarkastTyper', Varde: formatSkillList(student?.stats?.strongestTypes) })
 
-  for (const table of TABLES) {
-    const perf = detailData.tablePerformanceByTable[table]
-    const status = detailData.tableSticky.statusByTable[table] || 'default'
-    add({
-      Sektion: 'Tabellstatus',
-      Nyckel: 'Tabell',
-      Tabell: `${table}`,
-      Status: getTeacherTableStatusLabel(status),
-      Forsok: Number(perf.attemptsTotal || 0),
-      Ratt: Number(perf.correctTotal || 0),
-      TraffProcent: toPercent(perf.accuracyTotal),
-      Del: 'Totalt'
-    })
-    add({
-      Sektion: 'Tabellstatus',
-      Nyckel: 'Tabell7d',
-      Tabell: `${table}`,
-      Status: getTeacherTableStatusLabel(status),
-      Forsok: Number(perf.attempts7d || 0),
-      Ratt: Number(perf.correct7d || 0),
-      TraffProcent: toPercent(perf.accuracy7d),
-      Del: '7d'
-    })
-  }
+  add({ Sektion: 'Tabellträning', Nyckel: 'Underlag', Varde: 'Använd Exportera tabellunderlag i Tabellträning – utveckling.' })
+
 
   for (const operationItem of detailData.operationMasteryBoards) {
     for (const period of ['historical', 'weekly']) {

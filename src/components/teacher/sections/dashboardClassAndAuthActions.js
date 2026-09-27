@@ -73,7 +73,6 @@ export function buildDashboardClassAndAuthActions({
   setSelectedClassIds,
   setPasswordResetBusyId,
   setPasswordResetStatus,
-  setTableSelectedStudentIds
 }) {
   const handleCloudRefreshNow = async () => {
     setIsCloudRefreshBusy(true)
@@ -267,14 +266,6 @@ export function buildDashboardClassAndAuthActions({
     navigate(`/teacher/student/${encodeURIComponent(normalized)}`)
   }
 
-  const handleToggleTableStudent = (studentId) => {
-    setTableSelectedStudentIds(prev => (
-      prev.includes(studentId)
-        ? prev.filter(id => id !== studentId)
-        : [...prev, studentId]
-    ))
-  }
-
   async function handleSaveClassExtras(classId, extras, options = {}) {
     const body = { classId, enabledExtras: extras }
     if (options.highscoreGroup !== undefined) {
@@ -314,7 +305,6 @@ export function buildDashboardClassAndAuthActions({
     clearClassFilter,
     handleResetStudentPassword,
     handleOpenStudentDetail,
-    handleToggleTableStudent,
     handleSaveClassExtras
   }
 }

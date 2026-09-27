@@ -124,22 +124,11 @@ test('Lärare: lärarvyn visar det eleverna gjorde', async ({ page, request, bro
     if (body.length !== (screenRows?.length || 0)) findings.add('L1', 'Exporten av nivåöversikten har ett annat antal rader än skärmen', { skärm: screenRows?.length, fil: body.length })
   }
 
-  // Table status: Dina did table 7 and nobody else did.
-  const tables = await tableUnder(page, 'Gångertabell - sticky')
-  const header = await page.evaluate(() => {
-    const h = [...document.querySelectorAll('h1,h2,h3,h4')].find(x => x.textContent.trim().startsWith('Gångertabell - sticky'))
-    let box = h?.parentElement
-    for (let d = 0; box && d < 5 && !box.querySelector('table'); d++) box = box.parentElement
-    return box ? [...box.querySelectorAll('table thead th')].map(th => th.innerText.replace(/[↕▲▼]/g, '').trim()) : []
-  })
-  const col7 = header.indexOf('7')
-  if (col7 > 0) {
-    const dinaRow = rowFor(tables, dina.loginCode)
-    if (dinaRow && /^[–-]$/.test(dinaRow[col7])) findings.add('L1', 'Tabellstatus visar inget för en elev som just gjort 7:ans tabell', { elev: dina.loginCode, cell: dinaRow[col7] })
-    for (const { pupil } of expected.filter(e => e.pupil !== dina)) {
-      const row = rowFor(tables, pupil.loginCode)
-      if (row && !/^[–-]$/.test(row[col7])) findings.add('L1', 'Tabellstatus visar 7:an för en elev som inte tränat tabeller', { elev: pupil.loginCode, cell: row[col7] })
-    }
+  // Table practice is separate from ordinary multiplication.
+  const tableRows = page.getByRole('table', { name: 'Tabellresultat per elev' })
+  for (const { pupil } of expected) {
+    const row = tableRows.getByRole('row').filter({ hasText: pupil.loginCode })
+    await expect(row.locator('td').nth(0)).toHaveText(String(pupil === dina ? dinaLog.length : 0))
   }
   await checkScreenText(page, findings, 'Framsteg')
 
@@ -180,7 +169,9 @@ test('Lärare: lärarvyn visar det eleverna gjorde', async ({ page, request, bro
 
   // Pupil detail agrees with the list.
   await openTab(page, 'Framsteg')
-  await page.getByRole('button', { name: anna.loginCode, exact: true }).first().click().catch(() => null)
+  await page.getByLabel('Elev att jämföra', { exact: true }).selectOption(anna.studentId)
+  await page.getByRole('button', { name: new RegExp('^Öppna ' + anna.loginCode) }).click()
+  await page.waitForURL(new RegExp('/teacher/student/' + anna.studentId))
   await page.waitForTimeout(1500)
   await checkScreenText(page, findings, 'Elevdetalj')
   const detailText = await page.locator('body').innerText()

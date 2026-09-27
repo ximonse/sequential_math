@@ -124,7 +124,7 @@ function getLogCompleteness(profile, source, sourceName, problemLog, recentProbl
     logAtCap,
     lifetimeExceedsStored,
     missingFullLog,
-    complete: !logAtCap && !lifetimeExceedsStored && !missingFullLog
+    complete: profile?.importHistoryComplete !== false && !logAtCap && !lifetimeExceedsStored && !missingFullLog
   }
 }
 

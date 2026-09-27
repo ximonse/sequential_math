@@ -17,6 +17,7 @@ import StudentDetailPanel from './StudentDetailPanel'
 import StudentDetailTrainingPriorityPanel from './StudentDetailTrainingPriorityPanel'
 import SupportPriorityPanel from './SupportPriorityPanel'
 import TablePracticeProgressPanel from './TablePracticeProgressPanel'
+import LocalTestDataPanel from './LocalTestDataPanel'
 import TeacherAdminPanel from './TeacherAdminPanel'
 import TeacherPasswordNoticePanel from './TeacherPasswordNoticePanel'
 import TicketSectionContainer from './TicketSectionContainer'
@@ -133,6 +134,7 @@ export default function DashboardLayout({
   addToClassId,
   setAddToClassId,
   classes,
+  onLocalTestDataImported,
   handleAddExistingStudentsToClass,
   handleMoveStudent,
   handleAddStudentsToClass,
@@ -466,6 +468,8 @@ export default function DashboardLayout({
 
             <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
             </div>
+
+            {activeWorkspace === 'progress' && <LocalTestDataPanel classes={classes} students={students} onImported={onLocalTestDataImported} />}
 
             {WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
               .filter(id => visiblePanelDefs.some(panel => panel.id === id))

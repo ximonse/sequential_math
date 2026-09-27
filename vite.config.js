@@ -1,47 +1,129 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import fs from 'fs'
-import path from 'path'
+import { randomBytes } from 'node:crypto'
+import { toTeacherListProfile } from './src/lib/teacherListProfile.js'
 
-const BACKUP_PATH = path.resolve(
-  'C:/Users/ximon/Kodprojekt/sequential_math_original/backups/studentdata_20260223_203428/cloud_export_20260223_195714/cloud_student_profiles_full.json'
-)
+const LOCAL_TEST_IMPORT_PATH = '/__local-test-class/import'
+const MAX_IMPORT_BYTES = 100 * 1024 * 1024
 
-const devDataImport = {
-  name: 'dev-data-import',
-  configureServer(server) {
-    server.middlewares.use('/dev-import-students', (req, res) => {
-      res.setHeader('Content-Type', 'application/json')
-      if (req.method !== 'GET') {
-        res.statusCode = 405
-        res.end(JSON.stringify({ error: 'Method not allowed' }))
-        return
-      }
-      try {
-        const MAX_PROBLEMS_PER_STUDENT = 150
-        const PROBLEM_FIELDS = ['problemType','correct','errorCategory','patterns','timestamp','timeSpent','speedTimeSec','skillTag','targetLevel','difficulty','values','result']
-        const raw = fs.readFileSync(BACKUP_PATH, 'utf8')
-        const profiles = JSON.parse(raw)
-        const storageEntries = {}
-        const studentsList = []
-        for (const [studentId, profile] of Object.entries(profiles)) {
-          const recentProblems = (Array.isArray(profile.recentProblems) ? profile.recentProblems : [])
-            .slice(-MAX_PROBLEMS_PER_STUDENT)
-            .map(p => Object.fromEntries(PROBLEM_FIELDS.filter(f => f in p).map(f => [f, p[f]])))
-          const trimmed = { ...profile, recentProblems }
-          storageEntries[`mathapp_student_${studentId}`] = trimmed
-          studentsList.push({
-            studentId,
-            name: profile.name || studentId,
-            lastActive: profile.recentProblems?.slice(-1)[0]?.timestamp || Date.now()
-          })
+function isLoopbackRequest(req) {
+  const host = String(req.headers?.host || '').trim().toLowerCase()
+  let hostname = ''
+  try {
+    hostname = new URL(`http://${host}`).hostname.replace(/^\[|\]$/g, '')
+  } catch {
+    return false
+  }
+  const address = String(req.socket?.remoteAddress || '').toLowerCase().replace(/^::ffff:/, '')
+  const loopbackHost = hostname === 'localhost' || hostname === '::1' || /^127(?:\.\d{1,3}){3}$/.test(hostname)
+  const loopbackClient = address === '::1' || /^127(?:\.\d{1,3}){3}$/.test(address)
+  return loopbackHost && loopbackClient
+}
+
+function sendJson(res, statusCode, body) {
+  res.statusCode = statusCode
+  res.setHeader('Content-Type', 'application/json; charset=utf-8')
+  res.setHeader('Cache-Control', 'no-store')
+  res.end(JSON.stringify(body))
+}
+
+function withoutCredentialMaterial(profile) {
+  const safe = { ...profile }
+  for (const field of ['passwordHash', 'passwordSalt', 'passwordScheme', 'password']) delete safe[field]
+  if (safe.auth && typeof safe.auth === 'object') {
+    safe.auth = { ...safe.auth }
+    for (const field of ['passwordHash', 'passwordSalt', 'passwordScheme', 'password']) delete safe.auth[field]
+  }
+  return safe
+}
+
+async function readJsonBody(req) {
+  const chunks = []
+  let size = 0
+  for await (const chunk of req) {
+    size += chunk.length
+    if (size > MAX_IMPORT_BYTES) throw Object.assign(new Error('Importfilen är för stor.'), { status: 413 })
+    chunks.push(chunk)
+  }
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString('utf8'))
+  } catch {
+    throw Object.assign(new Error('Filen innehåller inte giltig JSON.'), { status: 400 })
+  }
+}
+
+export function createLocalTestClassPlugin() {
+  const importedClasses = new Map()
+  const importedProfiles = new Map()
+  const importedGroups = new Map()
+  let importerPromise = null
+
+  return {
+    name: 'local-test-class',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        const pathname = new URL(req.url || '/', 'http://localhost').pathname
+        const isImport = pathname === LOCAL_TEST_IMPORT_PATH
+        const isMockApi = pathname === '/api/students'
+          || pathname === '/api/teacher-classes'
+          || pathname === '/api/teacher-groups'
+          || /^\/api\/teacher-students\/[^/]+\/?$/.test(pathname)
+        if (!isImport && !isMockApi) return next()
+        if (!isLoopbackRequest(req)) return sendJson(res, 403, { error: 'Endast lokal åtkomst är tillåten.' })
+
+        if (isImport) {
+          if (req.method !== 'POST') return sendJson(res, 405, { error: 'Method not allowed' })
+          try {
+            const data = await readJsonBody(req)
+            const classId = `local-test-${Date.now().toString(36)}-${randomBytes(3).toString('hex')}`
+            importerPromise ||= server.ssrLoadModule('/src/lib/localTestDataTransfer.js')
+            const { createImportedTestClass } = await importerPromise
+            const created = createImportedTestClass(data, classId)
+            if (!created?.classRecord || !Array.isArray(created.profiles)) {
+              return sendJson(res, 400, { error: 'Testdatafilen kunde inte importeras.' })
+            }
+            importedClasses.set(created.classRecord.id, created.classRecord)
+            for (const profile of created.profiles) importedProfiles.set(String(profile.studentId).toUpperCase(), profile)
+            if (created.profiles.length >= 2) {
+              for (const [index, letter] of ['A', 'B'].entries()) {
+                importedGroups.set(`${classId}-group-${letter.toLowerCase()}`, {
+                  id: `${classId}-group-${letter.toLowerCase()}`,
+                  name: `Testgrupp ${letter} (${created.classRecord.name})`,
+                  pupilIds: created.profiles.filter((_, pupilIndex) => pupilIndex % 2 === index).map(profile => profile.studentId),
+                  teacherIds: ['local-teacher'],
+                  schoolId: null
+                })
+              }
+            }
+            return sendJson(res, 200, {
+              ok: true,
+              classId: created.classRecord.id,
+              className: created.classRecord.name,
+              studentCount: created.profiles.length
+            })
+          } catch (error) {
+            return sendJson(res, error.status || 400, { error: error.message || 'Kunde inte läsa testdatafilen.' })
+          }
         }
-        res.end(JSON.stringify({ storageEntries, studentsList }))
-      } catch (err) {
-        res.statusCode = 500
-        res.end(JSON.stringify({ error: String(err.message) }))
-      }
-    })
+
+        if (pathname === '/api/students') {
+          return sendJson(res, 200, { profiles: [...importedProfiles.values()].map(toTeacherListProfile).filter(Boolean) })
+        }
+        if (pathname === '/api/teacher-classes') {
+          return sendJson(res, 200, { classes: [...importedClasses.values()] })
+        }
+        if (pathname === '/api/teacher-groups') {
+          if (req.method !== 'GET') return sendJson(res, 405, { error: 'Testgrupper kan inte ändras här.' })
+          return sendJson(res, 200, { groups: [...importedGroups.values()], teachers: [] })
+        }
+
+        const studentId = decodeURIComponent(pathname.split('/').at(-1)).toUpperCase()
+        const profile = importedProfiles.get(studentId)
+        if (!profile) return sendJson(res, 404, { error: 'Student not found' })
+        return sendJson(res, 200, { profile: withoutCredentialMaterial(profile) })
+      })
+    }
   }
 }
 
@@ -78,7 +160,7 @@ const devApiMock = {
 }
 
 export default defineConfig({
-  plugins: [react(), devApiMock, devDataImport],
+  plugins: [react(), devApiMock, createLocalTestClassPlugin()],
   build: {
     chunkSizeWarningLimit: 700
   }

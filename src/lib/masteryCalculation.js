@@ -402,7 +402,7 @@ export function computeTeacherSummary(profile, operationKeys, levelRange) {
   const rolling30Days = createTeacherPeriod(rolling30Start)
   const evidence = {
     historySource: usesFullLog ? 'problemLog' : 'recentProblems',
-    historyComplete: usesFullLog && source.length < 5000
+    historyComplete: profile?.importHistoryComplete !== false && usesFullLog && source.length < 5000
       && Number(profile?.stats?.lifetimeProblems || 0) <= source.length,
     sourceAttempts: source.length,
     classification: summarizeEvidenceHistory(source),

@@ -1,6 +1,7 @@
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import TeacherAdminPanel from './sections/TeacherAdminPanel'
+import LocalTestDataExportPanel from './sections/LocalTestDataExportPanel'
 import CloudSyncStatusPanel from './sections/CloudSyncStatusPanel'
 import { getCloudProfilesSyncStatus, getAllProfilesWithSync } from '../../lib/storage'
 import { getTeacherIdentity, isTeacherAdmin, logoutTeacher } from '../../lib/teacherAuth'
@@ -49,6 +50,7 @@ export default function TeacherAdminPage() {
           </div>
         </header>
         <TeacherAdminPanel />
+        {isSuperAdmin && <LocalTestDataExportPanel />}
       </div>
     </main>
   )

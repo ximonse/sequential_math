@@ -469,7 +469,7 @@ export default function DashboardLayout({
             <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
             </div>
 
-            {activeWorkspace === 'progress' && <LocalTestDataPanel classes={classes} students={students} onImported={onLocalTestDataImported} />}
+            {activeWorkspace === 'progress' && import.meta.env.DEV && <LocalTestDataPanel mode="import" onImported={onLocalTestDataImported} />}
 
             {WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
               .filter(id => visiblePanelDefs.some(panel => panel.id === id))

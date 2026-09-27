@@ -3,7 +3,7 @@ import { loadTeacherProfile } from '../../../lib/storage'
 import { buildAnonymizedClassExport } from '../../../lib/localTestDataTransfer'
 import { downloadTextFile } from './dashboardExportHelpers'
 
-export default function LocalTestDataPanel({ classes = [], students = [], onImported = async () => {} }) {
+export default function LocalTestDataPanel({ classes = [], students = [], onImported = async () => {}, mode = 'export' }) {
   const [classId, setClassId] = useState('')
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
@@ -66,10 +66,13 @@ export default function LocalTestDataPanel({ classes = [], students = [], onImpo
     }
   }
 
-  return <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" aria-label="Testdata för lärarvyn">
-    <h2 className="text-lg font-semibold text-slate-900">Testdata för lärarvyn</h2>
-    <p className="mt-1 text-sm text-slate-600">Exportera en klass med påhittade namn och förskjutna datum. Filen innehåller sparade svar, men inga elev-ID:n eller inloggningsuppgifter.</p>
+  return <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm" aria-label={mode === 'export' ? 'Exportera testdata' : 'Importera testklass'}>
+    <h2 className="text-lg font-semibold text-slate-900">{mode === 'export' ? 'Exportera testdata' : 'Importera testklass'}</h2>
+    <p className="mt-1 text-sm text-slate-600">{mode === 'export'
+      ? 'Exportera en klass med påhittade namn och förskjutna datum. Filen innehåller sparade svar, men inga elev-ID:n eller inloggningsuppgifter.'
+      : 'Läs in en anonymiserad JSON-fil som en separat testklass på localhost.'}</p>
     <div className="mt-3 flex flex-wrap items-end gap-3">
+      {mode === 'export' && <>
       <label className="text-sm font-medium text-slate-800">Klass
         <select className="mt-1 block rounded border border-slate-300 bg-white px-3 py-2" value={classId} onChange={event => setClassId(event.target.value)}>
           <option value="">Välj klass</option>
@@ -77,7 +80,8 @@ export default function LocalTestDataPanel({ classes = [], students = [], onImpo
         </select>
       </label>
       <button type="button" disabled={!selected || busy} onClick={exportClass} className="rounded bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Exportera vald klass som JSON</button>
-      {import.meta.env.DEV && <label className="cursor-pointer rounded bg-amber-300 px-4 py-2 text-sm font-semibold text-slate-900">
+      </>}
+      {mode === 'import' && import.meta.env.DEV && <label className="cursor-pointer rounded bg-amber-300 px-4 py-2 text-sm font-semibold text-slate-900">
         Importera testklass på localhost
         <input type="file" accept=".json,application/json" onChange={importFile} disabled={busy} className="sr-only" />
       </label>}

@@ -196,6 +196,30 @@ Pedagogiskt varde:
   att den gamla flytande `operationAbilities`-skattningen presenteras som
   konstaterat kunnande.
 
+### 8.1a Framsteg – mastery i elevprofilen
+
+Rutorna visar varje kunskapsområde och nivå 1–12. Bara svar som får användas
+som masteryunderlag ingår; tabellträning ger exempelvis inte generell mastery i
+multiplikation. En belagd nivå följer den gemensamma masteryberäkningen (minst
+fem svar, minst 85 procent rätt i bedömningsfönstret, med dess stabilitetsregel)
+eller ett giltigt sparat mastery-faktum. Ett enstaka rätt svar ger inte grönt.
+
+- Mörkgrönt: nivån belagd från svar sedan veckostart (måndag).
+- Ljusgrönt: nivån belagd från svar de senaste 30 dagarna.
+- Grön kant: historiskt belagd, även när ett giltigt äldre mastery-faktum finns
+  men svaren inte längre ligger i aktuell problemlogg.
+- Orange/rött: minst fem svar i senaste bedömningsfönstret och under 85/50
+  procent rätt. Det beskriver underlaget, inte en säker diagnos av eleven.
+- Blått: masterygrundande svar finns, men nivån är inte belagd och underlaget
+  räcker ännu inte till orange/röd signal. Grått: sådana svar saknas.
+- En orange eller röd prick på en grön ruta visar svårigheter i senaste
+  bedömningsfönstret, samtidigt som historiskt belagd nivå behålls.
+
+Rutan visar nivå och färg; dess verktygstips visar status, antal rätt/svar och
+det senaste bedömningsfönstret. Historiskt belagt kunnande och aktuell
+svårighet hålls åtskilda. Varje ruta bedöms för sig; klassens nivåöversikt
+visar den sammanhängande belagda nivån.
+
 ### 8.2 Gangertabell - status (individ)
 
 Kolumner:

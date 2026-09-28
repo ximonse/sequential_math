@@ -167,9 +167,6 @@ export default function StudentDetailPanel({
 
           <StudentDetailTrendPanel trend={detailStudentViewData.dailyTrend} />
 
-          <button type="button" onClick={onOpenTableProgress} className="my-3 rounded border border-teal-700 px-3 py-2 text-sm font-semibold text-teal-800 hover:bg-teal-50">
-            Tabellträning: utveckling och jämförelse med gruppen
-          </button>
           <StudentDetailMasteryPanel
             renderCollapseHeader={renderCollapseHeader}
             isCollapsed={isCollapsed}
@@ -187,6 +184,9 @@ export default function StudentDetailPanel({
             detailLevelErrorMinAttempts={historyPanelProps.detailLevelErrorMinAttempts}
             toPercent={toPercent}
           />
+          <button type="button" onClick={onOpenTableProgress} className="mt-4 rounded border border-teal-700 px-3 py-2 text-sm font-semibold text-teal-800 hover:bg-teal-50">
+            Jämför elevens tabellträning med gruppen ↓
+          </button>
         </>
       )}
     </div>

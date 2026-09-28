@@ -149,33 +149,42 @@ export function getTableSpeedColorClass(medianSpeed, accuracy, attempts) {
   return 'bg-red-300 text-red-900'
 }
 
+export function getCompactMasteryStatus(historical, weekly, monthly) {
+  const attempts = Number(historical?.attempts || 0)
+  const windowAttempts = Number(historical?.masteryAttempts || 0)
+  const windowCorrect = Number(historical?.masteryCorrect || 0)
+  const windowRate = windowAttempts > 0 ? windowCorrect / windowAttempts : 0
+
+  if (weekly?.status === 'mastered') return 'mastered_week'
+  if (monthly?.status === 'mastered') return 'mastered_month'
+  if (historical?.status === 'mastered') return 'mastered_older'
+  if (attempts === 0) return 'empty'
+  if (windowAttempts >= MASTERY_MIN_ATTEMPTS && windowRate < 0.5) return 'struggling'
+  if (windowAttempts >= MASTERY_MIN_ATTEMPTS && windowRate < MASTERY_MIN_SUCCESS_RATE) return 'difficult'
+  return 'started'
+}
+
+export function getCompactMasteryConcern(historical) {
+  const attempts = Number(historical?.masteryAttempts || 0)
+  if (attempts < MASTERY_MIN_ATTEMPTS) return null
+  const rate = Number(historical?.masteryCorrect || 0) / attempts
+  if (rate < 0.5) return 'many_errors'
+  if (rate < MASTERY_MIN_SUCCESS_RATE) return 'below_threshold'
+  return null
+}
+
+const COMPACT_MASTERY_COLORS = {
+  mastered_week: 'bg-emerald-600 text-white',
+  mastered_month: 'bg-emerald-300 text-emerald-900',
+  mastered_older: 'border-2 border-emerald-400 bg-white text-emerald-700',
+  struggling: 'bg-red-300 text-red-900',
+  difficult: 'bg-orange-200 text-orange-900',
+  started: 'bg-blue-200 text-blue-800',
+  empty: 'bg-gray-100 text-gray-400'
+}
+
 export function getCompactMasteryColorClass(historical, weekly, monthly) {
-  // Use windowed mastery data if available, fall back to totals
-  const hMA = Number(historical?.masteryAttempts ?? historical?.attempts ?? 0)
-  const hMC = Number(historical?.masteryCorrect ?? historical?.correct ?? 0)
-  const hAttempts = Number(historical?.attempts || 0)
-  const hRate = hMA > 0 ? hMC / hMA : 0
-  const hMastered = hMA >= MASTERY_MIN_ATTEMPTS && hRate >= MASTERY_MIN_SUCCESS_RATE
-
-  const wMA = Number(weekly?.masteryAttempts ?? weekly?.attempts ?? 0)
-  const wMC = Number(weekly?.masteryCorrect ?? weekly?.correct ?? 0)
-  const wAttempts = Number(weekly?.attempts || 0)
-  const wRate = wMA > 0 ? wMC / wMA : 0
-  const wMastered = wMA >= MASTERY_MIN_ATTEMPTS && wRate >= MASTERY_MIN_SUCCESS_RATE
-
-  const mMA = Number(monthly?.masteryAttempts ?? monthly?.attempts ?? 0)
-  const mMC = Number(monthly?.masteryCorrect ?? monthly?.correct ?? 0)
-  const mRate = mMA > 0 ? mMC / mMA : 0
-  const mMastered = mMA >= MASTERY_MIN_ATTEMPTS && mRate >= MASTERY_MIN_SUCCESS_RATE
-
-  if (hAttempts === 0 && wAttempts === 0) return 'bg-gray-100 text-gray-400'
-  if (wMastered) return 'bg-emerald-600 text-white'
-  if (mMastered) return 'bg-emerald-300 text-emerald-900'
-  if (hMastered) return 'border-2 border-emerald-400 bg-white text-emerald-700'
-  if (wAttempts > 0 && wRate >= 0.6) return 'bg-emerald-300 text-emerald-900'
-  if (hMA >= MASTERY_MIN_ATTEMPTS && hRate >= 0.5) return 'bg-orange-200 text-orange-900'
-  if (hMA >= MASTERY_MIN_ATTEMPTS && hRate < 0.5) return 'bg-red-300 text-red-900'
-  return 'bg-blue-200 text-blue-800'
+  return COMPACT_MASTERY_COLORS[getCompactMasteryStatus(historical, weekly, monthly)]
 }
 
 export function getTeacherTableStatusLabel(status) {

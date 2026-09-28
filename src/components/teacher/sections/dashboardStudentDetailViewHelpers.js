@@ -22,7 +22,7 @@ export function buildTeacherStudentViewData(student) {
 
 function buildOperationMasteryBoardsForTeacher(student) {
   const problems = getPreferredProblemSource(student)
-  return computeOperationMasteryBoards(problems, ALL_OPERATIONS, LEVELS)
+  return computeOperationMasteryBoards(problems, ALL_OPERATIONS, LEVELS, { profile: student })
 }
 
 function buildLevelErrorRowsForTeacher(student) {

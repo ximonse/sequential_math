@@ -241,6 +241,9 @@ export function computeOperationMasteryBoards(problems, operationKeys, levelRang
   const now = Date.now()
   const weekStart = getStartOfWeekTimestamp(now)
   const monthStart = getStockholmDaysAgoStart(now, 29)
+  const factLevels = Object.fromEntries(operationKeys.map(operation => [
+    operation, new Set(getMasteredLevelsFromFacts(options.profile, operation))
+  ]))
 
   const lists = Object.fromEntries(
     operationKeys.map(op => [op, Object.fromEntries(
@@ -265,7 +268,10 @@ export function computeOperationMasteryBoards(problems, operationKeys, levelRang
 
   return operationKeys.map(operation => ({
     operation,
-    historical: levelRange.map(level => buildMasteryView(level, lists[operation][level].all, options)),
+    historical: levelRange.map(level => {
+      const view = buildMasteryView(level, lists[operation][level].all, options)
+      return factLevels[operation].has(level) ? { ...view, status: 'mastered' } : view
+    }),
     weekly: levelRange.map(level => buildMasteryView(level, lists[operation][level].week, options)),
     monthly: levelRange.map(level => buildMasteryView(level, lists[operation][level].month, options))
   }))

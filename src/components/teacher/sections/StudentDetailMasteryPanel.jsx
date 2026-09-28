@@ -1,3 +1,15 @@
+import { getCompactMasteryConcern, getCompactMasteryStatus } from './dashboardTableStatusUtils'
+
+const STATUS_LABELS = {
+  mastered_week: 'Belagd sedan veckostart',
+  mastered_month: 'Belagd de senaste 30 dagarna',
+  mastered_older: 'Historiskt belagd',
+  difficult: 'Svårt i senaste underlaget',
+  struggling: 'Många fel i senaste underlaget',
+  started: 'Prövad, ännu inte belagd',
+  empty: 'Inga svar som räknas för mastery'
+}
+
 export default function StudentDetailMasteryPanel({
   renderCollapseHeader,
   isCollapsed,
@@ -8,44 +20,55 @@ export default function StudentDetailMasteryPanel({
 }) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+      <div>
         <div className="rounded border border-gray-200 p-3">
-          {renderCollapseHeader('mastery', <h3 className="text-sm font-semibold text-gray-800">Framsteg - mastery</h3>)}
+          {renderCollapseHeader('mastery', <h3 className="text-base font-semibold text-gray-800">Framsteg – mastery</h3>)}
           {isCollapsed('mastery') ? null : (
             <>
-              <p className="text-[10px] text-gray-500 mb-2 mt-2">
-                Mörkgrön = klarad (vecka) | Ljusgrön = klarad (30d) | Grön kant = klarad (äldre) | Orange = kämpigt | Röd = kämpar | Blå = startad | Grå = ej startad
+              <p className="mb-3 mt-2 text-sm leading-relaxed text-gray-600">
+                Mörkgrön = belagd sedan veckostart · Ljusgrön = belagd senaste 30 dagarna · Grön kant = historiskt belagd · Orange = svårt i senaste underlaget · Röd = många fel i senaste underlaget · Blå = prövad, ännu inte belagd · Grå = inga svar som räknas för mastery
               </p>
+              <p className="mb-3 text-sm text-gray-600">En orange eller röd prick på en grön ruta visar nya svårigheter utan att ta bort tidigare belagd nivå. Varje ruta bedöms för sig; sammanhängande nivå visas i klassens nivåöversikt.</p>
               <div className="overflow-x-auto">
-                <table className="w-full text-xs border-collapse">
+                <table className="w-full border-collapse text-sm">
                   <thead>
                     <tr>
-                      <th className="text-left py-1 pr-1 text-gray-500 font-normal text-[10px] w-20"></th>
+                      <th className="min-w-40 py-1 pr-2 text-left text-xs font-normal text-gray-500"><span className="sr-only">Kunskapsområde</span></th>
                       {levels.map(level => (
-                        <th key={`mastery-header-${level}`} className="py-1 text-center text-gray-500 font-normal text-[10px] w-8">{level}</th>
+                        <th key={`mastery-header-${level}`} className="w-9 py-1 text-center text-xs font-medium text-gray-600">{level}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {detailStudentViewData.operationMasteryBoards.map(item => (
                       <tr key={`compact-mastery-${item.operation}`}>
-                        <td className="py-0.5 pr-1 text-gray-700 font-medium text-[11px]">{getOperationLabel(item.operation)}</td>
+                        <th scope="row" className="py-1 pr-2 text-left text-sm font-medium text-gray-700">{getOperationLabel(item.operation)}</th>
                         {levels.map((level, index) => {
                           const hist = item.historical[index]
                           const week = item.weekly[index]
                           const month = item.monthly?.[index]
                           const colorClass = getCompactMasteryColorClass(hist, week, month)
-                          const hLabel = hist && hist.attempts > 0 ? `${hist.correct}/${hist.attempts}` : '-'
-                          const wLabel = week && week.attempts > 0 ? `${week.correct}/${week.attempts}` : ''
-                          const hRate = hist && hist.attempts > 0 ? Math.round(hist.successRate * 100) : 0
-                          const tooltip = `${getOperationLabel(item.operation)} nivå ${level} - ${hLabel} rätt (${hRate}%)${wLabel ? `, vecka: ${wLabel}` : ''}`
+                          const status = getCompactMasteryStatus(hist, week, month)
+                          const concern = getCompactMasteryConcern(hist)
+                          const hasAttainment = status.startsWith('mastered_')
+                          const evidence = hist?.attempts
+                            ? `${hist.correct} av ${hist.attempts} masterygrundande svar rätt totalt; senaste bedömningsfönstret ${hist.masteryCorrect} av ${hist.masteryAttempts} rätt.`
+                            : status === 'mastered_older'
+                              ? 'Giltigt äldre mastery-belägg finns, men ursprungliga svar saknas i aktuell problemlogg.'
+                              : 'Inga masterygrundande svar i sparad historik.'
+                          const concernText = hasAttainment && concern
+                            ? ` Senaste underlaget visar ${concern === 'many_errors' ? 'många fel' : 'svårigheter'}, trots tidigare belagd nivå.`
+                            : ''
+                          const tooltip = `${getOperationLabel(item.operation)} nivå ${level}: ${STATUS_LABELS[status]}. ${evidence}${concernText}`
                           return (
-                            <td key={`compact-mastery-${item.operation}-${level}`} className="p-0.5 text-center">
+                            <td key={`compact-mastery-${item.operation}-${level}`} className="p-1 text-center">
                               <span
                                 title={tooltip}
-                                className={`inline-flex h-7 w-7 items-center justify-center rounded text-[9px] font-bold cursor-default ${colorClass}`}
+                                aria-label={tooltip}
+                                className={`relative inline-flex h-9 w-9 items-center justify-center rounded text-sm font-bold cursor-default ${colorClass}`}
                               >
                                 {level}
+                                {hasAttainment && concern && <span aria-hidden="true" className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-white ${concern === 'many_errors' ? 'bg-red-500' : 'bg-orange-500'}`} />}
                               </span>
                             </td>
                           )

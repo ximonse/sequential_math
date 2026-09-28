@@ -9,7 +9,7 @@ describe('class mastery level presentation', () => {
         {
           studentId: 'ELEV1',
           name: 'Belagd',
-          teacherSummary: { effectiveLevels: { addition: 4 } }
+          teacherSummary: { effectiveLevels: { addition: 4, subtraction: 2 } }
         },
         {
           studentId: 'ELEV2',
@@ -23,8 +23,10 @@ describe('class mastery level presentation', () => {
     expect(html).toContain('Belagd nivå i aktiverade kunskapsområden')
     expect(html).toContain('Lägsta belagda')
     expect(html).toContain('Snitt belagt')
-    expect(html).toContain('1/9 områden har belagd nivå')
+    expect(html).toContain('2/9 områden har belagd nivå')
     expect(html).toContain('0/9 områden har belagd nivå')
+    expect(html).toContain('Exempel på nivå 2: 17 − 8')
+    expect(html).toContain('Exempel på nivå 4: 4,2 + 1,4')
     expect(html).not.toContain('>0<')
   })
 })

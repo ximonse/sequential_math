@@ -9,6 +9,7 @@ import {
   getAverageBadgeStyle
 } from './dashboardClassMasteryHelpers'
 import { downloadTextFile, rowsToCsv } from './dashboardExportHelpers'
+import { getLevelExample } from './dashboardLevelExamples'
 
 const SHORT_LABELS = {
   addition: '+',
@@ -191,8 +192,9 @@ export default function ClassMasteryLevelPanel({
                 </td>
                 {ALL_OPERATIONS.map(op => {
                   const level = row.levels[op]
+                  const example = getLevelExample(op, level)
                   const tooltip = level > 0
-                    ? `${getOperationLabel(op)}: nivå 1–${level} klarade`
+                    ? `${getOperationLabel(op)}: nivå 1–${level} klarade. Exempel på nivå ${level}: ${example}`
                     : `${getOperationLabel(op)}: ännu inte belagd`
                   return (
                     <td key={op} className="py-1.5 px-1 text-center">

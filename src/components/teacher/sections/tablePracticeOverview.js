@@ -1,18 +1,27 @@
 import { buildTablePracticeProgress } from '../../../lib/tablePracticeProgress'
+import { tableCompletionStatus } from '../../../lib/tableDrillCompletion'
 
 export const TABLE_NUMBERS = Array.from({ length: 11 }, (_, index) => index + 2)
 
 export function buildTablePracticeOverview(students, days, now = Date.now()) {
   const byTable = TABLE_NUMBERS.map(table => buildTablePracticeProgress(students, { table, days, now }))
+  const sourceById = new Map((Array.isArray(students) ? students : []).map(student => [String(student.studentId || ''), student]))
   const rows = byTable[0].students.map(student => ({
     studentId: student.studentId,
     name: student.name,
     tables: Object.fromEntries(byTable.map(progress => [progress.table,
-      progress.students.find(item => item.studentId === student.studentId)]))
+      {
+        ...progress.students.find(item => item.studentId === student.studentId),
+        completionStatus: tableCompletionStatus(sourceById.get(student.studentId)?.tableDrill, progress.table, now)
+      }]))
   }))
   return {
     rows,
-    cohorts: Object.fromEntries(byTable.map(progress => [progress.table, progress.cohort])),
+    cohorts: Object.fromEntries(byTable.map(progress => [progress.table, {
+      ...progress.cohort,
+      completedPupils: rows.filter(row => row.tables[progress.table].completionStatus.knownEver).length,
+      totalPupils: rows.length
+    }])),
     period: { start: byTable[0].currentStart, end: byTable[0].endDate }
   }
 }

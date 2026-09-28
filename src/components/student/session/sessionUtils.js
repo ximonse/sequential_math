@@ -4,6 +4,7 @@ import { getOperationAbility } from '../../../lib/difficultyAdapter'
 import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from '../../../lib/operations'
 import { normalizeProgressionMode } from '../../../lib/progressionModes'
 import { filterNcmProblems } from '../../../lib/ncmProblemBank'
+import { markTableCompleted } from '../../../lib/tableDrillCompletion'
 import { EVIDENCE_CLASSES, attachEvidenceClaim } from '../../../lib/evidenceContract'
 import { getFocusedSessionStartDecision } from '../../../lib/sessionStartDecision'
 import { getCurrentNeed } from '../../../lib/currentNeed'
@@ -215,6 +216,7 @@ export function recordTableCompletion(profile, table) {
 
   const now = Date.now()
   profile.tableDrill.completions.push({ table: Number(table), timestamp: now })
+  markTableCompleted(profile.tableDrill, table)
 
   if (profile.tableDrill.completions.length > 1000) {
     profile.tableDrill.completions = profile.tableDrill.completions.slice(-1000)

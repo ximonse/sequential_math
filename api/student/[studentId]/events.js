@@ -13,6 +13,7 @@ import { isValidAdaptationDecision, recordAdaptationDecision } from '../../../sr
 import { isValidCurrentNeed, recordCurrentNeed } from '../../../src/lib/currentNeed.js'
 import { isContractMasteryFact } from '../../../src/lib/masteryFacts.js'
 import { EVENT_OWNED_ADAPTIVE_FIELDS } from '../../../src/lib/pilotCheckpointContract.js'
+import { markTableCompleted } from '../../../src/lib/tableDrillCompletion.js'
 
 const MAX_PROBLEM_LOG = 5000
 const MAX_RECENT_PROBLEMS = 250
@@ -129,6 +130,7 @@ function applyTableCompleted(profile, payload, entry) {
     item.eventId === entry.id || (item.table === table && item.timestamp === timestamp)
   )) return false
   profile.tableDrill.completions.push({ table, timestamp, eventId: entry.id })
+  markTableCompleted(profile.tableDrill, table)
   if (profile.tableDrill.completions.length > MAX_TABLE_COMPLETIONS) {
     profile.tableDrill.completions = profile.tableDrill.completions.slice(-MAX_TABLE_COMPLETIONS)
   }

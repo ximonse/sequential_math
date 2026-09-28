@@ -1,3 +1,5 @@
+import { completedTablesEver } from '../../src/lib/tableDrillCompletion.js'
+
 const MAX_TABLE_COMPLETIONS = 1000
 const MAX_TELEMETRY_EVENTS = 1200
 const MAX_TELEMETRY_DAYS = 120
@@ -121,6 +123,7 @@ export function mergeTableDrill(existingTableDrill, incomingTableDrill) {
     ...existing,
     ...incoming,
     completions: trimmedCompletions,
+    completedTablesEver: [...new Set([...completedTablesEver(existing), ...completedTablesEver(incoming)])].sort((a, b) => a - b),
     dailyBossShownDate
   }
 }

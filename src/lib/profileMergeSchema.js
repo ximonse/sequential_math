@@ -40,7 +40,7 @@ export const MERGE_SCHEMA = {
   effectiveLevels:   { strategy: 'removed', description: 'Borttagen dubblett av teacherSummary.effectiveLevels' },
 
   // Tabellträning
-  tableDrill:        { strategy: 'custom', handler: 'mergeTableDrill', description: 'Union av completions' },
+  tableDrill:        { strategy: 'custom', handler: 'mergeTableDrill', description: 'Union av completions och historiskt bekräftade tabeller' },
 
   // Telemetri
   telemetry:         { strategy: 'custom', handler: 'mergeTelemetry', description: 'Max av räknare, senaste timestamp' },

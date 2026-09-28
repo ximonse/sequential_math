@@ -347,6 +347,7 @@ describe('student persistence boundary', () => {
     expect((await call(eventsHandler, 'POST', batch)).data.appliedCount).toBe(1)
     expect((await call(eventsHandler, 'POST', batch)).data.appliedCount).toBe(0)
     expect(memory.get('student:PUPIL').tableDrill.completions).toHaveLength(1)
+    expect(memory.get('student:PUPIL').tableDrill.completedTablesEver).toEqual([3])
   })
 
   it('persists an allowlisted pilot checkpoint without changing identity, membership or teacher tickets', async () => {

@@ -227,6 +227,8 @@ function emptySummary(startDate, endDate, available = true) {
     medianTimeSec: null,
     factorsCovered: 0,
     factorCounts: Object.fromEntries(FACTORS.map(factor => [String(factor), 0])),
+    factorsCorrect: 0,
+    factorCorrectCounts: Object.fromEntries(FACTORS.map(factor => [String(factor), 0])),
     smallSample: true,
     available
   }
@@ -249,6 +251,7 @@ function summarizeDays(days, table, startIndex, count, availableDates) {
     speedTimes.push(...(Array.isArray(bucket.correctSpeedTimes) ? bucket.correctSpeedTimes : []))
     for (const factor of FACTORS) {
       summary.factorCounts[String(factor)] += Number(bucket.factors?.[String(factor)]?.attempts) || 0
+      summary.factorCorrectCounts[String(factor)] += Number(bucket.factors?.[String(factor)]?.correct) || 0
     }
   }
 
@@ -257,6 +260,7 @@ function summarizeDays(days, table, startIndex, count, availableDates) {
   summary.speedSamples = speedTimes.length
   summary.medianTimeSec = median(speedTimes)
   summary.factorsCovered = Object.values(summary.factorCounts).filter(attempts => attempts > 0).length
+  summary.factorsCorrect = Object.values(summary.factorCorrectCounts).filter(correct => correct > 0).length
   summary.smallSample = summary.attempts < 6
   summary.available = completeDays === count
   return summary
@@ -296,12 +300,16 @@ function aggregate(items, period) {
     result.attempts += summary.attempts
     result.correct += summary.correct
     result.completions += summary.completions
-    for (const factor of FACTORS) result.factorCounts[factor] += summary.factorCounts[factor]
+    for (const factor of FACTORS) {
+      result.factorCounts[factor] += summary.factorCounts[factor]
+      result.factorCorrectCounts[factor] += summary.factorCorrectCounts[factor]
+    }
   }
   result.accuracy = result.attempts ? result.correct / result.attempts : null
   result.speedSamples = result.correctSpeedTimes.length
   result.medianTimeSec = median(result.correctSpeedTimes)
   result.factorsCovered = Object.values(result.factorCounts).filter(count => count > 0).length
+  result.factorsCorrect = Object.values(result.factorCorrectCounts).filter(count => count > 0).length
   result.smallSample = result.attempts < 6
   return result
 }

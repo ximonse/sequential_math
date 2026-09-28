@@ -1,21 +1,24 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { buildTablePracticeHistory } from '../../../lib/tablePracticeProgress'
 import { buildTablePracticeOverview, sortTablePracticeOverviewRows } from './tablePracticeOverview'
+import TablePracticeOverviewPanel from './TablePracticeOverviewPanel'
 
 const now = Date.parse('2026-09-28T12:00:00Z')
 
-function pupil(studentId, answers) {
-  const problemLog = answers.map(({ table, correct, speedTimeSec, interruptionSuspected }) => ({
+function pupil(studentId, answers, tableDrill) {
+  const problemLog = answers.map(({ table, factor = 4, correct, speedTimeSec, interruptionSuspected }) => ({
     timestamp: now,
     problemType: 'mul_table_drill',
     skillTag: `mul_table_${table}`,
-    values: { a: table, b: 4 },
+    values: { a: table, b: factor },
     correct,
     speedTimeSec,
     interruptionSuspected
   }))
   return {
-    studentId, name: studentId,
+    studentId, name: studentId, tableDrill,
     teacherSummary: { tablePractice: buildTablePracticeHistory({
       problemLog, recentProblems: problemLog, stats: { lifetimeProblems: problemLog.length }
     }, now) }
@@ -41,5 +44,30 @@ describe('class table practice overview', () => {
     expect(sortTablePracticeOverviewRows(overview.rows, 7, 'asc').map(row => row.name)).toEqual(['Bo', 'Alma', 'Cia'])
     expect(sortTablePracticeOverviewRows(overview.rows, 7, 'desc').map(row => row.name)).toEqual(['Alma', 'Bo', 'Cia'])
     expect(sortTablePracticeOverviewRows(overview.rows, 8, 'asc').map(row => row.name)).toEqual(['Cia', 'Bo', 'Alma'])
+  })
+
+  it('keeps repeated correct answers grey until a full round is evidenced and counts distinct correct facts', () => {
+    const repeated = pupil('Repeated', Array.from({ length: 12 }, (_, index) => ({ table: 4, factor: index % 3 + 1, correct: true, speedTimeSec: 2 })))
+    const full = pupil('Full', Array.from({ length: 10 }, (_, index) => ({ table: 4, factor: index + 1, correct: true, speedTimeSec: 4 })), {
+      completions: [{ table: 4, timestamp: now }]
+    })
+    const overview = buildTablePracticeOverview([repeated, full], 14, now)
+    expect(overview.rows.find(row => row.name === 'Repeated').tables[4]).toMatchObject({
+      completionStatus: { knownEver: false, todayCompleted: false }, current: { factorsCorrect: 3, accuracy: 1 }
+    })
+    expect(overview.rows.find(row => row.name === 'Full').tables[4]).toMatchObject({
+      completionStatus: { knownEver: true, todayCompleted: true }, current: { factorsCorrect: 10 }
+    })
+    expect(overview.cohorts[4]).toMatchObject({ completedPupils: 1, totalPupils: 2 })
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(now)
+    try {
+      const html = renderToStaticMarkup(createElement(TablePracticeOverviewPanel, { students: [repeated, full], days: 14 }))
+      expect(html).toContain('3/10')
+      expect(html).toContain('Ingen hel tabell belagd i sparad historik')
+      expect(html).toContain('Hel tabell klarad idag')
+      expect(html).toContain('Rött tidsstreck')
+    } finally {
+      clock.mockRestore()
+    }
   })
 })

@@ -100,7 +100,11 @@ describe('table practice evidence summaries', () => {
     expect(table.correct).toBe(4)
     expect(table.factors['1'].attempts).toBe(1)
     expect(table.factors['3'].attempts).toBe(1)
+    expect(table.factors['3'].correct).toBe(1)
     expect(table.correctSpeedTimes).toEqual([4])
+    const summary = buildTablePracticeProgress([student('a', buildTablePracticeHistory(profile(records), now))], { table: 7, now }).students[0].current
+    expect(summary.factorsCorrect).toBe(4)
+    expect(summary.factorCorrectCounts['2']).toBe(0)
   })
 
   it('marks fallback, capped, and lifetime-exceeding logs incomplete', () => {

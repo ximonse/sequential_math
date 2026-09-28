@@ -11,6 +11,102 @@ import { buildMasteryProgressionDecision, recordAdaptationDecision } from './ada
 import { buildCurrentNeed, recordCurrentNeed } from './currentNeed'
 export { getStartOfWeekTimestamp } from './studentProfileTimingHelpers'
 
+export function addMathPracticeSessionResult(profile, assignment, sessionData) {
+  if (!profile || !assignment || assignment.kind !== 'math_practice' || !sessionData) return profile
+
+  const { totalProblems, correctAnswers, totalTimeMs, operations } = sessionData
+  if (totalProblems <= 0 || operations.length === 0) return profile
+
+  const operation = operations.length === 1 ? operations[0] : null
+  if (!operation) return profile
+
+  const nextProfile = structuredClone(profile)
+  const stats = ensureLifetimeStats(nextProfile)
+
+  stats.lifetimeProblems += totalProblems
+  stats.lifetimeCorrectAnswers += correctAnswers
+  stats.lifetimeTimeSpent += Math.round(totalTimeMs / 1000)
+  if (Number.isFinite(totalTimeMs) && totalTimeMs > 0) {
+    stats.lifetimeSpeedSamples += totalProblems
+    stats.lifetimeSpeedTimeSpent += Math.round(totalTimeMs / 1000)
+  }
+
+  const problemResults = sessionData.problemDetails || []
+  for (const detail of problemResults) {
+    if (!detail || typeof detail !== 'object') continue
+
+    const result = {
+      observationId: `mp_${assignment.id}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      problemId: `mp_${assignment.id}`,
+      classIdAtAttempt: String(nextProfile.classId || nextProfile.classIds?.[0] || '').trim() || null,
+      domain: 'arithmetic',
+      skill: operation,
+      contentSkill: operation,
+      contentLevel: 1,
+      operation,
+      evidenceSkill: operation,
+      evidenceLevel: 1,
+      evidenceClass: 'unknown',
+      evidenceRuleVersion: 0,
+      trainingContext: null,
+      trainingMode: '',
+      level: 1,
+      problemType: operation,
+      values: {},
+      promptText: String(detail.problem || '').trim(),
+      correctAnswer: String(detail.correctAnswer || '').trim(),
+      studentAnswer: String(detail.studentAnswer || '').trim(),
+      isPartial: false,
+      partialCode: '',
+      partialDetail: '',
+      answerLength: String(detail.studentAnswer || '').length,
+      correct: Boolean(detail.isCorrect),
+      errorCategory: detail.isCorrect ? '' : 'knowledge_error',
+      patterns: [],
+      errorPatterns: [],
+      errorDetail: '',
+      isInattentionError: false,
+      isKnowledgeError: !detail.isCorrect,
+      timeSpent: Math.round((detail.timeMs || 0) / 1000),
+      speedTimeSec: Math.round((detail.timeMs || 0) / 1000),
+      excludedFromSpeed: false,
+      speedExclusionReason: '',
+      interruptionSuspected: false,
+      hiddenDurationSec: 0,
+      blurCount: 0,
+      personalMedianTimeSec: 0,
+      personalBaselineCount: 0,
+      timestamp: Date.now(),
+      difficulty: {},
+      skillTag: operation,
+      selectionReason: 'math_practice_assignment',
+      difficultyBucket: 'core',
+      targetLevel: 1,
+      trainingDecisionId: '',
+      trainingDecisionRuleVersion: null,
+      trainingPurpose: 'math_practice',
+      trainingReasonCodes: ['math_practice'],
+      abilityBefore: nextProfile.currentDifficulty,
+      progressionMode: 'math_practice',
+      isReasonable: true,
+      absError: 0,
+      relativeError: 0,
+      tolerance: 0,
+      termOrder: 'equal',
+      carryCount: 0,
+      borrowCount: 0
+    }
+
+    nextProfile.recentProblems.push(result)
+    if (nextProfile.recentProblems.length > MAX_RECENT_PROBLEMS) {
+      nextProfile.recentProblems.shift()
+    }
+    appendProblemLog(nextProfile, result)
+  }
+
+  return nextProfile
+}
+
 const MAX_RECENT_PROBLEMS = 250
 const MAX_PROBLEM_LOG = 5000
 

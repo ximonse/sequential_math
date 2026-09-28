@@ -88,6 +88,8 @@ function StudentSession() {
   const [ncmRemainingCount, setNcmRemainingCount] = useState(0)
   const [ncmTotalCount, setNcmTotalCount] = useState(0)
   const [ncmCompletedSession, setNcmCompletedSession] = useState(false)
+  const mathPracticeProblemsRef = useRef([])
+  const mathPracticeSessionStartRef = useRef(Date.now())
 
   const assignmentId = searchParams.get('assignment')
   const assignmentPayload = searchParams.get('assignment_payload')
@@ -133,6 +135,17 @@ function StudentSession() {
   const persistProfile = useCallback(nextProfile => {
     return getPilotStudentRuntime().persistCheckpoint(nextProfile)
   }, [])
+  const recordMathPracticeAnswer = useCallback((problem, studentAnswer, isCorrect, timeSpentMs) => {
+    if (!problem || sessionAssignment?.kind !== 'math_practice') return
+    mathPracticeProblemsRef.current.push({
+      problem: problem.format || String(problem.problem || ''),
+      studentAnswer: String(studentAnswer || '').trim(),
+      correctAnswer: problem.correctAnswer || String(problem.answer || ''),
+      isCorrect: Boolean(isCorrect),
+      timeMs: Math.max(0, Number(timeSpentMs) || 0)
+    })
+  }, [sessionAssignment])
+
   const safeSelectProblem = useCallback((currentProfile, rules) => {
     try {
       if (sessionAssignment?.kind === 'math_practice') {

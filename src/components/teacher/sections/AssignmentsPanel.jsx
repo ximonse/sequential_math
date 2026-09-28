@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import AssignmentQrDialog from './AssignmentQrDialog'
+import MathPracticeCreatorDialog from './MathPracticeCreatorDialog'
 
 const PRESET_BUTTONS = [
   ['addition', 'Nytt: Bara addition', 'bg-blue-600 hover:bg-blue-700'],
@@ -26,9 +27,11 @@ export default function AssignmentsPanel({
   onDeleteAssignment,
   onCopyAssignmentLink,
   classes,
-  selectedClassIds
+  selectedClassIds,
+  onCreateMathPractice
 }) {
   const [qrAssignment, setQrAssignment] = useState(null)
+  const [showMathPracticeCreator, setShowMathPracticeCreator] = useState(false)
   const selectedClass = selectedClassIds.length === 1
     ? classes.find(item => String(item.id) === String(selectedClassIds[0]))
     : null
@@ -37,7 +40,10 @@ export default function AssignmentsPanel({
 
   return (
     <section className="bg-white rounded-lg shadow p-3" style={{ order: -60 }}>
-      <h2 className="mb-2 text-lg font-semibold text-gray-800">Uppdrag via länk</h2>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-gray-800">Uppdrag via länk</h2>
+        <button onClick={() => setShowMathPracticeCreator(true)} className="rounded bg-orange-600 px-2.5 py-1.5 text-sm text-white hover:bg-orange-700">+ Matematikövning</button>
+      </div>
       <div className="mb-3 flex flex-wrap gap-1.5">
         {PRESET_BUTTONS.map(([key, label, colorClass]) => (
           <button key={key} type="button" onClick={() => onCreatePreset(key)} className={`rounded px-2.5 py-1.5 text-sm text-white ${colorClass}`}>
@@ -78,6 +84,15 @@ export default function AssignmentsPanel({
         </div>
       )}
       {qrAssignment && <AssignmentQrDialog assignment={qrAssignment} classLoginToken={classLoginToken} onClose={() => setQrAssignment(null)} />}
+      {showMathPracticeCreator && (
+        <MathPracticeCreatorDialog
+          onCreate={(assignment) => {
+            onCreateMathPractice(assignment)
+            setShowMathPracticeCreator(false)
+          }}
+          onClose={() => setShowMathPracticeCreator(false)}
+        />
+      )}
     </section>
   )
 }

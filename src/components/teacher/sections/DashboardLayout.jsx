@@ -89,6 +89,7 @@ export default function DashboardLayout({
   copiedId,
   formatAssignmentSummaryLine,
   handleCreatePreset,
+  handleCreateMathPractice,
   handleClearActiveForAll,
   handleClearAllAssignments,
   handleActivateForAll,
@@ -384,6 +385,7 @@ export default function DashboardLayout({
         copiedId={copiedId}
         formatAssignmentSummaryLine={formatAssignmentSummaryLine}
         onCreatePreset={handleCreatePreset}
+        onCreateMathPractice={handleCreateMathPractice}
         onClearActiveForAll={handleClearActiveForAll}
         onClearAllAssignments={handleClearAllAssignments}
         onActivateForAll={handleActivateForAll}

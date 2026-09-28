@@ -32,6 +32,7 @@ import {
 import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { generateMathPracticeProblem } from '../../lib/mathPracticeGenerator'
 import { recordMathPracticeResult } from '../../lib/mathPracticeResults'
+import { addMathPracticeSessionResult } from '../../lib/studentProfile'
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
 const ALL_TABLES_BOSS_URL = 'https://youtu.be/86URGgqONvA'
 const openTableBossVideo = () => {
@@ -145,6 +146,38 @@ function StudentSession() {
       timeMs: Math.max(0, Number(timeSpentMs) || 0)
     })
   }, [sessionAssignment])
+
+  const saveMathPracticeResults = useCallback(async () => {
+    if (sessionAssignment?.kind !== 'math_practice' || !profile) return
+    if (mathPracticeProblemsRef.current.length === 0) return
+
+    const problemDetails = mathPracticeProblemsRef.current
+    const totalProblems = problemDetails.length
+    const correctAnswers = problemDetails.filter(p => p.isCorrect).length
+    const totalTimeMs = problemDetails.reduce((sum, p) => sum + (p.timeMs || 0), 0)
+
+    const sessionData = {
+      totalProblems,
+      correctAnswers,
+      totalTimeMs,
+      problemDetails,
+      operations: sessionAssignment.operations
+    }
+
+    recordMathPracticeResult(profile.studentId, sessionAssignment.id, sessionAssignment.title, sessionData)
+
+    const updatedProfile = addMathPracticeSessionResult(profile, sessionAssignment, sessionData)
+    setProfile(updatedProfile)
+    void persistProfile(updatedProfile)
+
+    mathPracticeProblemsRef.current = []
+  }, [sessionAssignment, profile, persistProfile])
+
+  useEffect(() => {
+    return () => {
+      saveMathPracticeResults()
+    }
+  }, [])
 
   const safeSelectProblem = useCallback((currentProfile, rules) => {
     try {
@@ -289,7 +322,8 @@ function StudentSession() {
     setLastBreakPromptAt,
     setDailyLevelStreakMilestone,
     freeOps: allowedFreeOps,
-    persistProfile
+    persistProfile,
+    recordMathPracticeAnswer
   })
 
   usePracticeUiEffects({

@@ -76,7 +76,8 @@ export function usePracticeCoreActions({
   setLastBreakPromptAt,
   setDailyLevelStreakMilestone,
   freeOps = [],
-  persistProfile
+  persistProfile,
+  recordMathPracticeAnswer = () => {}
 }) {
   const goToNextProblem = useCallback(() => {
     if (!profile) return
@@ -312,6 +313,10 @@ export function usePracticeCoreActions({
       partialDetail: result.partialDetail || '',
       hint: result.hint || ''
     })
+
+    if (sessionAssignment?.kind === 'math_practice') {
+      recordMathPracticeAnswer(currentProblem, studentAnswer, correct, timeSpent * 1000)
+    }
 
     const answerTs = Number(result?.timestamp || Date.now())
     if (sessionAssignment?.kind === 'ncm') {

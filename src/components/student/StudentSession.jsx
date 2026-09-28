@@ -30,6 +30,8 @@ import {
   normalizeProgressionMode
 } from '../../lib/progressionModes'
 import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
+import { generateMathPracticeProblem } from '../../lib/mathPracticeGenerator'
+import { recordMathPracticeResult } from '../../lib/mathPracticeResults'
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
 const ALL_TABLES_BOSS_URL = 'https://youtu.be/86URGgqONvA'
 const openTableBossVideo = () => {
@@ -133,6 +135,16 @@ function StudentSession() {
   }, [])
   const safeSelectProblem = useCallback((currentProfile, rules) => {
     try {
+      if (sessionAssignment?.kind === 'math_practice') {
+        setSessionError('')
+        const problem = generateMathPracticeProblem(sessionAssignment, Math.random())
+        if (!problem) {
+          setSessionError('Kunde inte generera uppgift. Försök igen.')
+          return null
+        }
+        return problem
+      }
+
       let nextRules = { ...(rules || {}) }
       if (!sessionAssignment && !isTableDrill) {
         const frame = constrainClassPracticeRules(nextRules, classAllowedOperations, freeOps, allowedFreeOps)

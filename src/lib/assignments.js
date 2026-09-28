@@ -110,6 +110,7 @@ export function buildAssignmentLink(assignmentId, assignmentPayload = null, clas
 export function encodeAssignmentPayload(assignment) {
   const normalized = normalizeAssignment(assignment, { requireId: true })
   if (!normalized) return ''
+
   const payload = {
     v: ASSIGNMENT_PAYLOAD_VERSION,
     id: normalized.id,
@@ -123,6 +124,13 @@ export function encodeAssignmentPayload(assignment) {
     ncmAbilityTags: normalized.ncmAbilityTags,
     createdAt: normalized.createdAt
   }
+
+  if (normalized.kind === 'math_practice') {
+    payload.operations = normalized.operations
+    payload.numberRange = normalized.numberRange
+    payload.settings = normalized.settings
+  }
+
   return toBase64Url(JSON.stringify(payload))
 }
 
@@ -146,9 +154,14 @@ function normalizeAssignment(input, options = {}) {
   const id = String(input.id || '').trim()
   if (options.requireId && !id) return null
 
-  const kind = String(input.kind || 'standard').trim() === 'ncm' ? 'ncm' : 'standard'
-  const title = String(input.title || '').trim() || (kind === 'ncm' ? 'NCM-uppdrag' : 'Uppdrag')
-  const targetCount = normalizePositiveInt(input.targetCount, kind === 'ncm' ? 10 : 15)
+  const kindRaw = String(input.kind || 'standard').trim()
+  const kind = ['ncm', 'math_practice'].includes(kindRaw) ? kindRaw : 'standard'
+  const title = String(input.title || '').trim() || (
+    kind === 'ncm' ? 'NCM-uppdrag' :
+    kind === 'math_practice' ? 'Matematikövning' :
+    'Uppdrag'
+  )
+  const targetCount = normalizePositiveInt(input.targetCount, kind === 'ncm' ? 10 : 30)
   const createdAt = Number(input.createdAt || 0) > 0 ? Number(input.createdAt) : Date.now()
 
   if (kind === 'ncm') {
@@ -168,6 +181,10 @@ function normalizeAssignment(input, options = {}) {
     }
   }
 
+  if (kind === 'math_practice') {
+    return normalizeMathPracticeAssignment(input, { id, title, targetCount, createdAt })
+  }
+
   const problemTypes = normalizeProblemTypes(input.problemTypes)
   const minLevel = clampLevel(Number(input.minLevel || 1))
   const maxLevel = Math.max(minLevel, clampLevel(Number(input.maxLevel || 12)))
@@ -183,6 +200,80 @@ function normalizeAssignment(input, options = {}) {
     createdAt,
     ncmCodes: [],
     ncmAbilityTags: []
+  }
+}
+
+function normalizeMathPracticeAssignment(input, { id, title, targetCount, createdAt }) {
+  const operations = normalizeOperationsList(input.operations)
+  const numberRange = normalizeNumberRange(input.numberRange)
+  const settings = normalizeSettings(input.settings)
+
+  return {
+    id,
+    kind: 'math_practice',
+    title,
+    operations,
+    numberRange,
+    settings,
+    targetCount,
+    createdAt,
+    problemTypes: [],
+    minLevel: 1,
+    maxLevel: 12,
+    ncmCodes: [],
+    ncmAbilityTags: []
+  }
+}
+
+function normalizeOperationsList(ops) {
+  const list = Array.isArray(ops) ? ops : []
+  const valid = ['addition', 'subtraction', 'multiplication', 'division']
+  const unique = []
+  for (const op of list) {
+    const normalized = String(op || '').trim()
+    if (!valid.includes(normalized)) continue
+    if (!unique.includes(normalized)) unique.push(normalized)
+  }
+  return unique.length > 0 ? unique : ['addition']
+}
+
+function normalizeNumberRange(range) {
+  if (!range || typeof range !== 'object') {
+    return {
+      first: { min: 0, max: 10, filter: 'all' },
+      second: { min: 0, max: 10, filter: 'all' }
+    }
+  }
+
+  const normalizeNumRange = (numRange) => {
+    if (!numRange || typeof numRange !== 'object') {
+      return { min: 0, max: 10, filter: 'all' }
+    }
+    const min = Math.max(0, Number(numRange.min) || 0)
+    const max = Math.max(min, Number(numRange.max) || 10)
+    const validFilters = ['all', 'even', 'odd', 'ten', 'five']
+    const filter = validFilters.includes(String(numRange.filter || '')) ? String(numRange.filter) : 'all'
+    return { min, max, filter }
+  }
+
+  return {
+    first: normalizeNumRange(range.first),
+    second: normalizeNumRange(range.second)
+  }
+}
+
+function normalizeSettings(settings) {
+  if (!settings || typeof settings !== 'object') {
+    return {
+      maxTimePerProblem: 120,
+      randomizeOrder: false,
+      hideCountdown: false
+    }
+  }
+  return {
+    maxTimePerProblem: Math.max(5, Number(settings.maxTimePerProblem) || 120),
+    randomizeOrder: Boolean(settings.randomizeOrder),
+    hideCountdown: Boolean(settings.hideCountdown)
   }
 }
 

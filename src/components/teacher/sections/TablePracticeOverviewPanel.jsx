@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { buildTablePracticeOverview, sortTablePracticeOverviewRows, TABLE_NUMBERS } from './tablePracticeOverview'
 
-const percentage = value => Number.isFinite(value) ? `${Math.round(value * 100)} %` : '–'
+const percentage = value => Number.isFinite(value) ? `${Math.round(value * 100)}%` : '–'
 const seconds = value => Number.isFinite(value) ? value.toFixed(1).replace('.', ',') : '–'
 
 function appearance(summary, available) {
@@ -19,13 +19,13 @@ function TableCell({ item, table, onOpenTableProgress }) {
   const title = !available
     ? `${table}:ans tabell: underlag saknas`
     : `${table}:ans tabell: ${summary.correct} rätt av ${attempts} svar, ${percentage(summary.accuracy)} rätt, median ${seconds(speed)} sekunder från ${summary.speedSamples} ostörda korrekta svar${item.historyComplete ? '' : '. Begränsad historik'}`
-  return <td className="px-1 py-1.5 text-center">
+  return <td className="px-0.5 py-1 text-center">
     <button type="button" title={title} aria-label={title} onClick={onOpenTableProgress}
-      className="group/cell mx-auto flex min-w-[62px] flex-col items-center rounded-md px-0.5 py-0.5 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-teal-700">
-      <span className={`flex h-11 w-11 items-center justify-center rounded-full border-2 text-sm font-bold tabular-nums ${appearance(summary || { attempts: 0 }, available)} ${attempts < 6 || !available ? 'border-dashed' : ''}`}>
+      className="group/cell mx-auto flex min-w-[49px] flex-col items-center rounded-md py-0.5 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-teal-700">
+      <span className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-[13px] font-bold tabular-nums ${appearance(summary || { attempts: 0 }, available)} ${attempts < 6 || !available ? 'border-dashed' : ''}`}>
         {seconds(speed)}
       </span>
-      <span className="mt-1 whitespace-nowrap text-[11px] tabular-nums text-slate-600">{available ? `${percentage(summary.accuracy)} · ${attempts}` : '–'}</span>
+      <span className="mt-0.5 whitespace-nowrap text-[11px] tabular-nums text-slate-600">{available ? `${percentage(summary.accuracy)}·${attempts}` : '–'}</span>
     </button>
   </td>
 }
@@ -68,24 +68,24 @@ export default function TablePracticeOverviewPanel({ students = [], days = 14, o
       <div className="overflow-x-auto rounded border border-slate-200">
         <table aria-label="Tabellträning per elev och tabell" className="w-full border-collapse text-sm">
           <thead><tr className="border-b border-slate-200 bg-slate-50 text-slate-700">
-            <th scope="col" aria-sort={sortBy === 'name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="sticky left-0 z-10 min-w-36 bg-slate-50 px-3 py-2 text-left">
+            <th scope="col" aria-sort={sortBy === 'name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="sticky left-0 z-10 w-28 min-w-28 bg-slate-50 px-2 py-2 text-left">
               <button type="button" onClick={() => sort('name')} className="font-semibold hover:text-teal-800 hover:underline">Elev <span aria-hidden="true">{sortBy === 'name' ? (sortDir === 'asc' ? '▲' : '▼') : '↕'}</span></button>
             </th>
-            {TABLE_NUMBERS.map(table => <th key={table} scope="col" aria-sort={sortBy === table ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="min-w-[68px] px-1 py-2 text-center">
+            {TABLE_NUMBERS.map(table => <th key={table} scope="col" aria-sort={sortBy === table ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="min-w-[51px] whitespace-nowrap px-0.5 py-2 text-center">
               <button type="button" onClick={() => sort(table)} title={`Sortera ${table}:ans tabell efter mediansekunder`} className="font-semibold hover:text-teal-800 hover:underline">
                 {table}:an <span aria-hidden="true">{sortBy === table ? (sortDir === 'asc' ? '▲' : '▼') : '↕'}</span>
               </button>
             </th>)}
           </tr></thead>
           <tbody>{rows.map((row, index) => <tr key={row.studentId} className={`border-b border-slate-100 ${index % 2 ? 'bg-slate-50/50' : 'bg-white'}`}>
-            <th scope="row" className={`sticky left-0 z-10 px-3 py-2 text-left font-medium ${index % 2 ? 'bg-slate-50' : 'bg-white'}`}>
-              <button type="button" onClick={() => onOpenStudentDetail?.(row.studentId)} className="max-w-44 truncate text-left text-slate-800 hover:text-teal-800 hover:underline" title={row.name}>{row.name}</button>
+            <th scope="row" className={`sticky left-0 z-10 w-28 min-w-28 px-2 py-1.5 text-left font-medium ${index % 2 ? 'bg-slate-50' : 'bg-white'}`}>
+              <button type="button" onClick={() => onOpenStudentDetail?.(row.studentId)} className="block max-w-24 truncate text-left text-slate-800 hover:text-teal-800 hover:underline" title={row.name}>{row.name}</button>
             </th>
             {TABLE_NUMBERS.map(table => <TableCell key={table} item={row.tables[table]} table={table}
               onOpenTableProgress={() => onOpenTableProgress?.(table, row.studentId)} />)}
           </tr>)}</tbody>
           <tfoot><tr className="border-t-2 border-slate-300 bg-slate-50">
-            <th scope="row" className="sticky left-0 z-10 bg-slate-50 px-3 py-2 text-left font-semibold text-slate-700">Hela urvalet</th>
+            <th scope="row" className="sticky left-0 z-10 w-28 min-w-28 bg-slate-50 px-2 py-2 text-left font-semibold text-slate-700">Hela urvalet</th>
             {TABLE_NUMBERS.map(table => <TableCell key={table} item={overview.cohorts[table]} table={table}
               onOpenTableProgress={() => onOpenTableProgress?.(table, '')} />)}
           </tr></tfoot>

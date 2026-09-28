@@ -42,6 +42,8 @@ En `TrainingFrame` är en logisk, versionsbestämd ögonblicksbild för sessione
 | Diagnostiskt/NCM-uppdrag | Följa uppdragets uttryckliga kod/förmåga och slutföranderegel. | Automatiskt behandla slutförande som vanlig adaptiv träning eller mastery. | Kräver uttrycklig mappning till kompetens; annars diagnostiskt underlag separat från mastery. |
 | Ticket/start-/exitfråga | Registrera svar i det uttalade ticket-sammanhanget. | Räkna svaret som vanlig träning utan särskilt beslut. | `practice_only` för träningsmastery; kan användas i ticketens egen sammanställning. |
 
+Lärarens tabellöversikt visar samma 7-/14-dagarsunderlag som detaljvyn för tabellträning: rättandel av alla svar, antal svar och mediansekunder av korrekta svar utan registrerade avbrott. Varje tabellkolumn kan sortera elever efter mediansekunder, med saknade tider sist. Färg visar rättandel först vid minst sex svar; tiden påverkar inte färgen eller generell multiplikationsmastery. Klassen/gruppen sammanställs från svaren, inte som ett medel av elevprocenttal.
+
 Ett giltigt läraruppdrag har företräde framför elevens manuella fokus och fria träning. En explicit uppdragslänk som inte kan lösas får inte tyst bli fri träning. Motstridiga parametrar ska ge en identifierbar konflikt och ett begripligt stopp eller en säker väg tillbaka. Exakt nivå som eleven frivilligt återbesöker behandlas som låst fokus för den sessionen; detta är ett fokusval, inte ett val om huruvida appen får avancera i adaptiv träning.
 
 ## 3. F2 — nästa träningsbeslut

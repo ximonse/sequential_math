@@ -17,6 +17,7 @@ import StudentDetailPanel from './StudentDetailPanel'
 import StudentDetailTrainingPriorityPanel from './StudentDetailTrainingPriorityPanel'
 import SupportPriorityPanel from './SupportPriorityPanel'
 import TablePracticeProgressPanel from './TablePracticeProgressPanel'
+import TablePracticeOverviewPanel from './TablePracticeOverviewPanel'
 import LocalTestDataPanel from './LocalTestDataPanel'
 import TeacherAdminPanel from './TeacherAdminPanel'
 import TeacherPasswordNoticePanel from './TeacherPasswordNoticePanel'
@@ -35,6 +36,7 @@ const PANEL_DEFS = [
   { id: 'assignments', title: 'Uppdrag' },
   { id: 'tickets',     title: 'Tickets' },
   { id: 'mastery',     title: 'Nivåöversikt – hela klassen' },
+  { id: 'tableoverview', title: 'Tabellöversikt – hela klassen' },
 
   { id: 'heatmap',     title: 'Felmönster' },
   { id: 'difficulty-analysis', title: 'Svårighetsanalys' },
@@ -49,7 +51,7 @@ const PANEL_DEFS = [
 ]
 
 const WORKSPACES = [
-  { id: 'progress', label: 'Framsteg', description: 'Kunskapsområden och elever', panels: ['mastery', 'overview', 'detail', 'tabledev'] },
+  { id: 'progress', label: 'Framsteg', description: 'Kunskapsområden och elever', panels: ['mastery', 'tableoverview', 'overview', 'detail', 'tabledev'] },
   { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'tickets'] },
   { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality'] },
   { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management', 'password', 'pausegames', 'admin'] }
@@ -176,8 +178,11 @@ export default function DashboardLayout({
       setTableSelection(previous => ({ ...previous, studentId: '' }))
     }
   }, [students, tableProgressStudents, tableSelection.studentId])
-  const openTableProgress = () => {
-    setTableSelection(previous => ({ ...previous, studentId: detailStudentId }))
+  const openTableProgress = (table, studentId) => {
+    setTableSelection(previous => ({ ...previous,
+      table: Number.isInteger(table) ? table : previous.table,
+      studentId: studentId === undefined ? detailStudentId : studentId
+    }))
     setCollapsed(previous => ({ ...previous, tabledev: false }))
     setActiveWorkspace('progress')
     window.setTimeout(() => document.getElementById('table-practice-progress')?.scrollIntoView({ behavior: 'smooth' }), 0)
@@ -255,6 +260,15 @@ export default function DashboardLayout({
         onOpenStudentDetail={handleOpenStudentDetail}
       />
     )
+    if (id === 'tableoverview') return (
+      <TablePracticeOverviewPanel
+        students={tableProgressStudents}
+        days={tableSelection.days}
+        onDaysChange={days => setTableSelection(previous => ({ ...previous, days }))}
+        onOpenStudentDetail={handleOpenStudentDetail}
+        onOpenTableProgress={openTableProgress}
+      />
+    )
     if (id === 'heatmap') return (
       <ClassMisconceptionHeatmap
         filteredStudents={filteredStudents}
@@ -271,7 +285,7 @@ export default function DashboardLayout({
         onChangeDetailStudentId={setDetailStudentId}
         onNavigateDirectStudent={(studentId) => navigate(`/teacher/student/${encodeURIComponent(studentId)}`)}
         onExportCsv={handleExportStudentDetailCsv}
-        onOpenTableProgress={openTableProgress}
+        onOpenTableProgress={() => openTableProgress()}
         canExportCsv={Boolean(detailStudentProfile && detailStudentRow && detailStudentViewData)}
         onSetTeacherPupilLabel={handleSetTeacherPupilLabel}
         detailStudentProfile={detailStudentProfile}

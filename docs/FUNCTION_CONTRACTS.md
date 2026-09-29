@@ -67,6 +67,18 @@ F2 ska följa dessa regler:
 7. Om giltig återhämtning inom ramen inte räcker returnerar F2 `support`. Eleven fortsätter träna inom ramen utan automatisk paus eller stöddialog. F6 skapar en spårbar lärarsignal med de faktiska felsvaren; signalen är underlag för lärarens beslut, inte en diagnos. F2 lämnar inte lärarens ram.
 8. Slump får variera likvärdiga uppgifter, men får inte vara ensam förklaring till ett pedagogiskt stegbyte.
 
+### Talautomatisering
+
+`number_bonds` och `doubles` är egna kompetenser och får inte räknas som
+generell additions- eller multiplikationsmastery. Talpar har tre innehållsblock:
+summa 10 på nivå 1–4, summa 15 på nivå 5–8 och summa 20 på nivå 9–12.
+Inom varje block är flytmålen 10, 7, 4 respektive 2 sekunder. Mastery kräver
+både den vanliga korrekthetströskeln och minst fem ostörda korrekta tidprov vars
+median når nivåns flytmål. Vid ett nytt innehållsblock återställs flytmålet till
+10 sekunder. Dubblor utvecklar först additionsrelationen från `1 + 1` till
+`38 + 38` och prövar därefter överföring till `2 × n`, `n × 2`, saknad faktor
+och halvering; svarstid är inte ett masterykrav för dubblor.
+
 Trösklar, observationsfönster och återhämtningslängd ska ligga i ett namngivet, versionsbestämt `DecisionRuleSet`. V0.1 väljer inga nya värden. Befintliga värden betraktas som legacy tills de samlats i och motiverats för regeluppsättningen.
 
 En gratulation är följden av en ny F5-prestation, aldrig dess orsak. Den ska namnge avgränsat innehåll, komma efter belägget och inte kräva ett val för att träningen ska fortsätta.

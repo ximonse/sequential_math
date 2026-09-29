@@ -15,6 +15,7 @@ function collectPrompts(count, factory) {
 
 function minimumUniquePrompts(domainId, skillId, level) {
   if (skillId === 'algebra_simplify' && level === 1) return 3
+  if (domainId === 'number_fluency' && skillId === 'doubles' && level === 1) return 5
   if (domainId === 'arithmetic'
     && ['multiplication', 'division'].includes(skillId)
     && level === 1) return 6

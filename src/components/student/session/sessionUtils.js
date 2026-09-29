@@ -1,4 +1,4 @@
-import { resolveProblemOperation } from '../../../lib/mathUtils'
+import { isKnownOperationType, resolveProblemOperation } from '../../../lib/mathUtils'
 import { computeOperationLevelMasteryStatus, getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { getOperationAbility } from '../../../lib/difficultyAdapter'
 import { MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from '../../../lib/operations'
@@ -316,15 +316,7 @@ export function estimateOperationLevel(profile, operation) {
 }
 
 export function isKnownMode(mode) {
-  return mode === 'addition'
-    || mode === 'subtraction'
-    || mode === 'multiplication'
-    || mode === 'division'
-    || mode === 'algebra_evaluate'
-    || mode === 'algebra_simplify'
-    || mode === 'arithmetic_expressions'
-    || mode === 'fractions'
-    || mode === 'percentage'
+  return isKnownOperationType(mode)
 }
 
 export function isMixedTrainingSession(mode, assignment, isTableDrill) {

@@ -36,11 +36,16 @@ export function ensureDifficultyMeta(profile) {
       algebra_simplify: 1,
       arithmetic_expressions: 1,
       fractions: 1,
-      percentage: 1
+      percentage: 1,
+      number_bonds: 1,
+      doubles: 1
     }
   } else {
     const abilities = profile.adaptive.operationAbilities
-    const extras = ['algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions', 'fractions', 'percentage']
+    const extras = [
+      'algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions',
+      'fractions', 'percentage', 'number_bonds', 'doubles'
+    ]
     for (const op of extras) {
       if (typeof abilities[op] !== 'number') abilities[op] = 1
     }

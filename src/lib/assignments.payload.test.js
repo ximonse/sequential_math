@@ -24,6 +24,26 @@ describe('assignments payload encoding', () => {
     expect(decoded.maxLevel).toBe(4)
   })
 
+  it('roundtrips number-fluency assignment types', () => {
+    const encoded = encodeAssignmentPayload({
+      id: 'asg_fluency_1',
+      kind: 'standard',
+      title: 'Talpar och dubblor nivå 1-12',
+      problemTypes: ['number_bonds', 'doubles'],
+      minLevel: 1,
+      maxLevel: 12,
+      targetCount: 20,
+      createdAt: 1700000000000
+    })
+
+    expect(decodeAssignmentPayload(encoded)).toMatchObject({
+      id: 'asg_fluency_1',
+      problemTypes: ['number_bonds', 'doubles'],
+      minLevel: 1,
+      maxLevel: 12
+    })
+  })
+
   it('roundtrips ncm assignment payload', () => {
     const encoded = encodeAssignmentPayload({
       id: 'asg_ncm_1',

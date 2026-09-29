@@ -7,7 +7,9 @@ const KNOWN_OPERATION_TYPES = new Set([
   'algebra_simplify',
   'arithmetic_expressions',
   'fractions',
-  'percentage'
+  'percentage',
+  'number_bonds',
+  'doubles'
 ])
 
 export function isKnownOperationType(value) {

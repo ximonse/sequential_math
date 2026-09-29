@@ -168,4 +168,45 @@ describe('mastery evidence policy', () => {
     expect(profile.masteryFacts.facts).toHaveLength(2)
     expect(getMasteredLevelsFromFacts(profile, 'addition')).toEqual([1])
   })
+
+  it('requires both accuracy and median fluency for number bonds', () => {
+    const numberBonds = speedTimeSec => Array.from({ length: 5 }, (_, index) => result(index, {
+      operation: 'number_bonds',
+      skill: 'number_bonds',
+      level: 1,
+      evidenceSkill: 'number_bonds',
+      evidenceLevel: 1,
+      evidenceClass: 'mastery_eligible',
+      speedTimeSec
+    }))
+
+    expect(computeOperationLevelMasteryStatus(numberBonds(11), 'number_bonds', 1)).toMatchObject({
+      correct: 5,
+      isMastered: false,
+      fluency: { targetSec: 10, samples: 5, medianSpeedSec: 11, isMastered: false }
+    })
+    expect(computeOperationLevelMasteryStatus(numberBonds(9), 'number_bonds', 1)).toMatchObject({
+      correct: 5,
+      isMastered: true,
+      fluency: { targetSec: 10, samples: 5, medianSpeedSec: 9, isMastered: true }
+    })
+  })
+
+  it('does not use interrupted answers as number-bond fluency samples', () => {
+    const problems = Array.from({ length: 5 }, (_, index) => result(index, {
+      operation: 'number_bonds',
+      skill: 'number_bonds',
+      level: 4,
+      evidenceSkill: 'number_bonds',
+      evidenceLevel: 4,
+      evidenceClass: 'mastery_eligible',
+      speedTimeSec: 1,
+      excludedFromSpeed: index > 0
+    }))
+
+    expect(computeOperationLevelMasteryStatus(problems, 'number_bonds', 4)).toMatchObject({
+      isMastered: false,
+      fluency: { targetSec: 2, samples: 1, isMastered: false }
+    })
+  })
 })

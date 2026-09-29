@@ -56,6 +56,16 @@ const LEVEL_EXAMPLES = {
     'Du får 30 % rabatt på 100 kr. Vad betalar du?',
     'Ett pris är 100 kr och höjs med 30 %. Vad är det nya priset?',
     'Beräkna procentandelen: 10 av 20.'
+  ],
+  number_bonds: [
+    '3 + ? = 10', '? + 6 = 10', '8 + ? = 10', '? + 9 = 10',
+    '4 + ? = 15', '? + 7 = 15', '11 + ? = 15', '? + 13 = 15',
+    '6 + ? = 20', '? + 9 = 20', '14 + ? = 20', '? + 17 = 20'
+  ],
+  doubles: [
+    '4 + 4', '8 + 8', '13 + 13', '18 + 18', '22 + 22', '28 + 28',
+    '38 + 38', '2 × 14', '19 × 2', '2 × 23',
+    '2 × ? = 68', '76 ÷ 2'
   ]
 }
 

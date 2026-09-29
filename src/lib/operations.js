@@ -9,7 +9,7 @@ export const STANDARD_OPERATIONS = ['addition', 'subtraction', 'multiplication',
 export const ALL_OPERATIONS = [
   'addition', 'subtraction', 'multiplication', 'division',
   'algebra_evaluate', 'algebra_simplify', 'arithmetic_expressions',
-  'fractions', 'percentage'
+  'fractions', 'percentage', 'number_bonds', 'doubles'
 ]
 
 export const MASTERY_MIN_ATTEMPTS = 5
@@ -27,7 +27,17 @@ export const OPERATION_LABELS = {
   algebra_simplify: 'Algebra (förenkla)',
   arithmetic_expressions: 'Uttryck (prioriteringsregler)',
   fractions: 'Bråk',
-  percentage: 'Procenträkning'
+  percentage: 'Procenträkning',
+  number_bonds: 'Talpar',
+  doubles: 'Dubblor'
+}
+
+const NUMBER_BOND_FLUENCY_TARGETS = [10, 7, 4, 2]
+
+export function getFluencyTargetSec(operation, level) {
+  if (operation !== 'number_bonds') return null
+  const normalizedLevel = Math.max(1, Math.min(12, Math.round(Number(level) || 1)))
+  return NUMBER_BOND_FLUENCY_TARGETS[(normalizedLevel - 1) % 4]
 }
 
 /**

@@ -51,7 +51,7 @@ describe('class mastery meaning', () => {
 
     expect(exported).toHaveLength(3)
     expect(exported[0]).toMatchObject({ Elev: 'Anna', addition: 4, subtraction: 3, multiplication: '', LägstaBelagda: 3, SnittBelagt: '3,5' })
-    expect(exported[1]).toMatchObject({ Elev: 'Bert', addition: '', SnittBelagt: '', BelagdaOmråden: '0/9' })
+    expect(exported[1]).toMatchObject({ Elev: 'Bert', addition: '', SnittBelagt: '', BelagdaOmråden: '0/11' })
     expect(exported[2]).toMatchObject({ Elev: 'Klassmedel', addition: '4,0', SnittBelagt: '3,5' })
   })
 })

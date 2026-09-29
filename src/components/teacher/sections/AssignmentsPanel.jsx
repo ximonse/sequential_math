@@ -9,6 +9,8 @@ const PRESET_BUTTONS = [
   ['mixed', 'Nytt: Kombination', 'bg-emerald-600 hover:bg-emerald-700'],
   ['fractions', 'Nytt: Bråk', 'bg-lime-600 hover:bg-lime-700'],
   ['percentage', 'Nytt: Procent', 'bg-amber-600 hover:bg-amber-700'],
+  ['number_bonds', 'Nytt: Talpar', 'bg-teal-600 hover:bg-teal-700'],
+  ['doubles', 'Nytt: Dubblor', 'bg-sky-600 hover:bg-sky-700'],
   ['arithmetic_expressions', 'Nytt: Prioriteringsregler', 'bg-rose-600 hover:bg-rose-700'],
   ['algebra_evaluate', 'Nytt: Algebra (räkna ut)', 'bg-indigo-600 hover:bg-indigo-700'],
   ['algebra_simplify', 'Nytt: Algebra (förenkla)', 'bg-violet-600 hover:bg-violet-700']

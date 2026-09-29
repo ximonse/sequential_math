@@ -62,14 +62,16 @@ function checkFrame(findings, log, frame) {
 const PRESETS = [
   { label: 'Nytt: Bara subtraktion', types: ['subtraction'], min: 1, max: 8 },
   { label: 'Nytt: Bara multiplikation', types: ['multiplication'], min: 3, max: 10 },
-  { label: 'Nytt: Bråk', types: ['fractions'], min: 1, max: 12 }
+  { label: 'Nytt: Bråk', types: ['fractions'], min: 1, max: 12 },
+  { label: 'Nytt: Talpar', types: ['number_bonds'], min: 1, max: 12 },
+  { label: 'Nytt: Dubblor', types: ['doubles'], min: 1, max: 12 }
 ]
 
 for (const preset of PRESETS) {
   test(`Uppdrag via länk: ${preset.label.replace('Nytt: ', '')}, rätt och fel`, async ({ browser, request }, testInfo) => {
     test.setTimeout(5 * 60 * 1000)
     const findings = createFindings(testInfo)
-    const { klass, pupil, teacher } = await setupClass(request, ['addition', 'subtraction', 'multiplication', 'division', 'fractions'])
+    const { klass, pupil, teacher } = await setupClass(request, ['addition', 'subtraction', 'multiplication', 'division', 'fractions', 'number_bonds', 'doubles'])
     const teacherSide = await createPresetLink(browser, teacher, klass, preset.label)
     if (!teacherSide.link) {
       findings.add('R3', 'Kopiera länk gav ingen länk', { uppdrag: preset.label })

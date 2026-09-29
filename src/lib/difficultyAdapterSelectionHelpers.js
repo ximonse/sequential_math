@@ -7,7 +7,8 @@ const NCM_ROTATION_MAX_SIGNATURES = 24
 const KNOWN_OPERATION_TYPES = new Set([
   'addition', 'subtraction', 'multiplication', 'division',
   'algebra_evaluate', 'algebra_simplify',
-  'arithmetic_expressions', 'fractions', 'percentage'
+  'arithmetic_expressions', 'fractions', 'percentage',
+  'number_bonds', 'doubles'
 ])
 const BUCKET_CONFIG = {
   [PROGRESSION_MODE_CHALLENGE]: [

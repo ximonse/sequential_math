@@ -11,6 +11,7 @@ Nuvarande domäner:
 - `arithmetic_expressions` — prioriteringsregler
 - `fractions` — bråk
 - `percentage` — procent
+- `number_fluency` — talpar och dubblor
 
 ---
 

@@ -200,6 +200,12 @@ export function getPresetConfig(presetKey) {
   if (presetKey === 'percentage') {
     return { title: 'Procent nivå 1-8', problemTypes: ['percentage'], minLevel: 1, maxLevel: 8, targetCount: 15 }
   }
+  if (presetKey === 'number_bonds') {
+    return { title: 'Talpar nivå 1-12', problemTypes: ['number_bonds'], minLevel: 1, maxLevel: 12, targetCount: 20 }
+  }
+  if (presetKey === 'doubles') {
+    return { title: 'Dubblor nivå 1-12', problemTypes: ['doubles'], minLevel: 1, maxLevel: 12, targetCount: 20 }
+  }
 
   return {
     title: 'Kombination nivå 2-10',

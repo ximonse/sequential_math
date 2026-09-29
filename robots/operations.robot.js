@@ -9,7 +9,8 @@ import { repetitionStats } from './lib/checks.js'
 const AREAS = [
   ['addition', 'Addition'], ['subtraction', 'Subtraktion'], ['multiplication', 'Multiplikation'],
   ['division', 'Division'], ['algebra_evaluate', 'Algebra (räkna ut)'], ['algebra_simplify', 'Algebra (förenkla)'],
-  ['arithmetic_expressions', 'Uttryck (prioriteringsregler)'], ['fractions', 'Bråk'], ['percentage', 'Procenträkning']
+  ['arithmetic_expressions', 'Uttryck (prioriteringsregler)'], ['fractions', 'Bråk'], ['percentage', 'Procenträkning'],
+  ['number_bonds', 'Talpar'], ['doubles', 'Dubblor']
 ]
 const MAX_TASKS = Number(process.env.ROBOT_TASKS || 150)
 

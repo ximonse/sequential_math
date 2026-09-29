@@ -232,6 +232,7 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     selectionReason: problem.metadata?.selectionReason || 'normal',
     difficultyBucket: problem.metadata?.difficultyBucket || 'core',
     targetLevel: problem.metadata?.targetLevel || selection.level,
+    fluencyTargetSec: Number(problem.metadata?.fluencyTargetSec) || null,
     trainingDecisionId: String(problem.metadata?.trainingDecisionId || ''),
     trainingDecisionRuleVersion: Number(problem.metadata?.trainingDecisionRuleVersion || 0) || null,
     trainingPurpose: String(problem.metadata?.trainingPurpose || ''),

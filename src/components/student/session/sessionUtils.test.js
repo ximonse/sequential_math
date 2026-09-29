@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createTableQueue, getSessionRules, recordTableCompletion } from './sessionUtils'
+import { createTableQueue, getSessionRules, isKnownMode, recordTableCompletion } from './sessionUtils'
 import { buildFocusedSessionStartPlan } from '../../../lib/sessionStartDecision'
 
 function createProfile(recentProblems = [], adaptive = {}) {
@@ -26,6 +26,12 @@ function pushAttempts(target, problemType, level, attempts, correctAttempts = at
 }
 
 describe('sessionUtils getSessionRules', () => {
+  it('recognizes every registered focused practice mode', () => {
+    expect(isKnownMode('number_bonds')).toBe(true)
+    expect(isKnownMode('doubles')).toBe(true)
+    expect(isKnownMode('unknown')).toBe(false)
+  })
+
   it('picks each domain at its own mastery floor in free training (per-domain rotation)', () => {
     const recent = []
     // Addition level 1 mastered — addition will train at level 2.

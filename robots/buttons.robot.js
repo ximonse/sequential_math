@@ -5,7 +5,10 @@ import { createPupil, goHomeFromPractice, login, openOtherTraining, readState, t
 import { createFindings } from './lib/findings.js'
 import { answerTasks } from './lib/session.js'
 
-const AREAS = ['Addition', 'Bråk', 'Algebra (förenkla)', 'Algebra (räkna ut)', 'Procenträkning', 'Uttryck (prioriteringsregler)']
+const AREAS = [
+  'Addition', 'Bråk', 'Algebra (förenkla)', 'Algebra (räkna ut)',
+  'Procenträkning', 'Uttryck (prioriteringsregler)', 'Talpar', 'Dubblor'
+]
 
 for (const label of AREAS) {
   test(`Knappar: varje knapp på sifferbordet i ${label}`, async ({ page, request }, testInfo) => {

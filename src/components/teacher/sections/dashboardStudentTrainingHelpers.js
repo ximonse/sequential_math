@@ -1,5 +1,8 @@
 import { getSpeedTime, median, resolveProblemOperation } from '../../../lib/mathUtils'
-import { computeLevelMastery, getPreferredProblemSource } from '../../../lib/masteryCalculation'
+import {
+  computeOperationLevelMasteryStatus,
+  getPreferredProblemSource
+} from '../../../lib/masteryCalculation'
 import { getOperationLabel, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from '../../../lib/operations'
 import { ALL_OPERATIONS } from './dashboardConstants'
 
@@ -101,7 +104,9 @@ export function buildTrainingPriorityList(student, classBenchmarks) {
     for (let level = 1; level <= maxLevel; level++) {
       const key = `${operation}|${level}`
       const data = levelData.get(key)
-      const mastery = data ? computeLevelMastery(data.results) : { isMastered: false }
+      const mastery = data
+        ? computeOperationLevelMasteryStatus(source, operation, level)
+        : { isMastered: false }
       masteredBelow.set(level, mastery.isMastered || (Number.isInteger(attained) && level <= attained))
     }
 
@@ -113,7 +118,9 @@ export function buildTrainingPriorityList(student, classBenchmarks) {
       const accuracy = attempts > 0 ? correctCount / attempts : null
       const medianSpeed = data ? median(data.speeds) : null
 
-      const mastery = data ? computeLevelMastery(data.results) : { isMastered: false }
+      const mastery = data
+        ? computeOperationLevelMasteryStatus(source, operation, level)
+        : { isMastered: false }
       if (mastery.isMastered || (Number.isInteger(attained) && level <= attained)) continue
 
       const allBelowMastered = level === 1 || Array.from({ length: level - 1 }, (_, index) => index + 1)

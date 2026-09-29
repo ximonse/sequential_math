@@ -4,6 +4,7 @@
  * Ändra HÄR — inte i enskilda vyer.
  */
 import { getSpeedTime } from './mathUtils.js'
+import { applyFluencyMasteryRequirement } from './fluencyMastery.js'
 import {
   getStockholmDayStart,
   getStockholmDaysAgoStart,
@@ -19,6 +20,19 @@ export const MASTERY_WINDOW = 15
 
 function countsAsMastery(problem) {
   return Boolean(problem?.correct) && !problem?.isPartial
+}
+
+function computeProblemMastery(problems, operation, level, options = {}) {
+  const mastery = computeLevelMastery(problems.map(countsAsMastery), options)
+  return applyFluencyMasteryRequirement({
+    mastery,
+    problems,
+    operation,
+    level,
+    windowSize: options.windowSize ?? MASTERY_WINDOW,
+    minSamples: options.minFluencySamples ?? MASTERY_MIN_ATTEMPTS,
+    countsAsMastery
+  })
 }
 
 function getRecordedProblemLevel(problem) {
@@ -87,8 +101,8 @@ function getLatestTimestamp(list) {
 }
 
 /**
- * Gruppera problems per operation+nivå → lista av correct-booleans.
- * Returnerar Map<string, { operation, level, results: boolean[] }>
+ * Gruppera problems per operation+nivå med både korrekthet och observationer.
+ * Observationerna behövs för kompetenser där flyt ingår i mastery-kontraktet.
  */
 export function groupProblemsByOperationLevel(problems) {
   const buckets = new Map()
@@ -101,9 +115,10 @@ export function groupProblemsByOperationLevel(problems) {
 
     const key = `${operation}:${level}`
     if (!buckets.has(key)) {
-      buckets.set(key, { operation, level, results: [] })
+      buckets.set(key, { operation, level, results: [], problems: [] })
     }
     buckets.get(key).results.push(countsAsMastery(problem))
+    buckets.get(key).problems.push(problem)
   }
   return buckets
 }
@@ -132,7 +147,7 @@ export function computeMasteryOverview(problems, options = {}) {
 
   // Steg 2: Komplettera med beräknad mastery från problemLog
   for (const entry of buckets.values()) {
-    const result = computeLevelMastery(entry.results, options)
+    const result = computeProblemMastery(entry.problems, entry.operation, entry.level, options)
     if (result.isMastered) {
       if (!mastery[entry.operation]) mastery[entry.operation] = []
       if (!mastery[entry.operation].includes(entry.level)) {
@@ -183,7 +198,7 @@ export function computeOperationLevelMasteryStatus(problems, operation, level, o
     return itemOp === operation && itemLevel === level
   })
 
-  return computeLevelMastery(filtered.map(countsAsMastery), options)
+  return computeProblemMastery(filtered, operation, level, options)
 }
 
 /**
@@ -223,7 +238,7 @@ export function computeEffectiveLevels(problems, operationKeys, levelRange, opti
       const key = `${op}:${level}`
       const bucket = buckets.get(key)
       if (!bucket || bucket.results.length < (options.minAttempts ?? MASTERY_MIN_ATTEMPTS)) break
-      const mastery = computeLevelMastery(bucket.results, options)
+      const mastery = computeProblemMastery(bucket.problems, op, level, options)
       if (!mastery.isMastered) break
       result[op] = level
 
@@ -258,31 +273,31 @@ export function computeOperationMasteryBoards(problems, operationKeys, levelRang
     const level = getRecordedProblemLevel(problem)
     if (!Number.isInteger(level) || level < 1 || level > 12) continue
 
-    const correct = countsAsMastery(problem)
-    lists[operation][level].all.push(correct)
+    lists[operation][level].all.push(problem)
 
     const ts = Number(problem.timestamp || 0)
-    if (ts >= monthStart) lists[operation][level].month.push(correct)
-    if (ts >= weekStart) lists[operation][level].week.push(correct)
+    if (ts >= monthStart) lists[operation][level].month.push(problem)
+    if (ts >= weekStart) lists[operation][level].week.push(problem)
   }
 
   return operationKeys.map(operation => ({
     operation,
     historical: levelRange.map(level => {
-      const view = buildMasteryView(level, lists[operation][level].all, options)
+      const view = buildMasteryView(operation, level, lists[operation][level].all, options)
       return factLevels[operation].has(level) ? { ...view, status: 'mastered' } : view
     }),
-    weekly: levelRange.map(level => buildMasteryView(level, lists[operation][level].week, options)),
-    monthly: levelRange.map(level => buildMasteryView(level, lists[operation][level].month, options))
+    weekly: levelRange.map(level => buildMasteryView(operation, level, lists[operation][level].week, options)),
+    monthly: levelRange.map(level => buildMasteryView(operation, level, lists[operation][level].month, options))
   }))
 }
 
-function buildMasteryView(level, results, options = {}) {
-  const attempts = results.length
+function buildMasteryView(operation, level, problems, options = {}) {
+  const results = problems.map(countsAsMastery)
+  const attempts = problems.length
   const correct = results.reduce((s, v) => s + (v ? 1 : 0), 0)
   const successRate = attempts > 0 ? correct / attempts : 0
 
-  const mastery = computeLevelMastery(results, options)
+  const mastery = computeProblemMastery(problems, operation, level, options)
 
   const isStarted = attempts > 0
   const status = mastery.isMastered ? 'mastered' : (isStarted ? 'started' : 'empty')
@@ -294,6 +309,7 @@ function buildMasteryView(level, results, options = {}) {
     successRate,
     masteryAttempts: mastery.attempts,
     masteryCorrect: mastery.correct,
+    fluency: mastery.fluency || null,
     status,
     metricsLabel: isStarted ? `${correct}/${attempts}` : '-',
     title: isStarted

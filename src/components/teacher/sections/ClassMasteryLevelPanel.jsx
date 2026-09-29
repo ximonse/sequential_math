@@ -20,7 +20,9 @@ const SHORT_LABELS = {
   algebra_simplify: 'Alg(f)',
   arithmetic_expressions: 'Uttr',
   fractions: 'Bråk',
-  percentage: '%'
+  percentage: '%',
+  number_bonds: 'Talpar',
+  doubles: '2×'
 }
 
 const LEGEND_STEPS = [

@@ -3,7 +3,7 @@ export const GRID_ROWS = 8
 export const GRID_COLUMNS = 12
 
 const MAIN_CHARACTERS = /^[0-9+−,─]$/u
-const NOTE_CHARACTERS = /^[0-9]$/u
+const NOTE_CHARACTERS = /^[0-9]{1,2}$/u
 const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'answer_change', 'pause', 'resume', 'focus_lost', 'submit'])
 
 function isValidPosition(value, rows, columns) {
@@ -64,7 +64,11 @@ export function applyDiagnosticGridEvent(state, event) {
     const key = cellKey(event.position)
     const previous = state.cells[key] || { main: '', note: '' }
     if (event.before !== previous[event.layer]) throw new Error('Cell history mismatch')
-    const after = event.type === 'erase' ? '' : normalizeCharacter(event.after, event.layer)
+    const after = event.type === 'erase' ? (event.after ?? '') : normalizeCharacter(event.after, event.layer)
+    if (event.type === 'erase' && after !== ''
+      && !(event.layer === 'note' && after === previous.note.slice(0, -1))) {
+      throw new Error('Invalid grid erasure')
+    }
     const changed = { ...previous, [event.layer]: after }
     next.cells = { ...state.cells }
     if (changed.main || changed.note) next.cells[key] = changed

@@ -60,15 +60,15 @@ function checkFrame(findings, log, frame) {
 }
 
 const PRESETS = [
-  { label: 'Nytt: Bara subtraktion', types: ['subtraction'], min: 1, max: 8 },
-  { label: 'Nytt: Bara multiplikation', types: ['multiplication'], min: 3, max: 10 },
-  { label: 'Nytt: Bråk', types: ['fractions'], min: 1, max: 12 },
-  { label: 'Nytt: Talpar', types: ['number_bonds'], min: 1, max: 12 },
-  { label: 'Nytt: Dubblor', types: ['doubles'], min: 1, max: 12 }
+  { label: 'Bara subtraktion', types: ['subtraction'], min: 1, max: 8 },
+  { label: 'Bara multiplikation', types: ['multiplication'], min: 3, max: 10 },
+  { label: 'Bråk', types: ['fractions'], min: 1, max: 12 },
+  { label: 'Talpar', types: ['number_bonds'], min: 1, max: 12 },
+  { label: 'Dubblor', types: ['doubles'], min: 1, max: 12 }
 ]
 
 for (const preset of PRESETS) {
-  test(`Uppdrag via länk: ${preset.label.replace('Nytt: ', '')}, rätt och fel`, async ({ browser, request }, testInfo) => {
+  test(`Uppdrag via länk: ${preset.label}, rätt och fel`, async ({ browser, request }, testInfo) => {
     test.setTimeout(5 * 60 * 1000)
     const findings = createFindings(testInfo)
     const { klass, pupil, teacher } = await setupClass(request, ['addition', 'subtraction', 'multiplication', 'division', 'fractions', 'number_bonds', 'doubles'])
@@ -101,7 +101,7 @@ test('Låst uppdrag: exakt en nivå håller även när eleven fastnar', async ({
   test.setTimeout(5 * 60 * 1000)
   const findings = createFindings(testInfo)
   const { klass, pupil, teacher } = await setupClass(request)
-  const teacherSide = await createPresetLink(browser, teacher, klass, 'Nytt: Bara addition')
+  const teacherSide = await createPresetLink(browser, teacher, klass, 'Bara addition')
   const classToken = new URL(teacherSide.link || 'http://x/').searchParams.get('class')
   await teacherSide.context.close()
   const locked = { v: 1, id: `asg_robot_${Date.now()}`, kind: 'standard', title: 'Addition nivå 4 (låst)', problemTypes: ['addition'], minLevel: 4, maxLevel: 4, targetCount: 15, ncmCodes: [], ncmAbilityTags: [], createdAt: Date.now() }
@@ -120,7 +120,7 @@ test('Låst uppdrag: exakt en nivå håller även när eleven fastnar', async ({
 test('Aktivera för alla: uppdraget når elevernas egna enheter', async ({ browser, request }, testInfo) => {
   const findings = createFindings(testInfo)
   const { klass, pupil, teacher } = await setupClass(request)
-  const teacherSide = await createPresetLink(browser, teacher, klass, 'Nytt: Bara subtraktion')
+  const teacherSide = await createPresetLink(browser, teacher, klass, 'Bara subtraktion')
   await teacherSide.row.getByRole('button', { name: 'Aktivera för alla', exact: true }).click()
   await teacherSide.page.waitForTimeout(1500)
   const shownActive = await teacherSide.page.getByText(/Aktivt för alla:/).innerText()

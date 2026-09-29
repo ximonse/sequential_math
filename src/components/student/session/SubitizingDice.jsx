@@ -10,7 +10,6 @@ export default function SubitizingDice({ value, onAnswer, disabled = false }) {
 
   const getDicePattern = (num) => {
     const patterns = {
-      0: [],
       1: [[50, 50]],
       2: [[25, 25], [75, 75]],
       3: [[50, 50], [25, 25], [75, 75]],
@@ -125,7 +124,7 @@ export default function SubitizingDice({ value, onAnswer, disabled = false }) {
       <p className="text-gray-600 text-sm font-medium">Hur många prickar?</p>
 
       <div className="grid grid-cols-5 gap-3">
-        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
           <button
             key={num}
             onClick={() => handleNumberClick(num)}

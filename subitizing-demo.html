@@ -186,12 +186,11 @@
 
         <div class="controls">
             <label class="control-label" for="slider">Antal prickar: <strong id="count">5</strong></label>
-            <input type="range" id="slider" class="slider" min="0" max="10" value="5">
+            <input type="range" id="slider" class="slider" min="1" max="10" value="5">
 
             <p style="color: #6b7280; margin: 15px 0;">Hur många prickar?</p>
 
             <div class="buttons">
-                <button class="number-btn" onclick="selectNumber(0)">0</button>
                 <button class="number-btn" onclick="selectNumber(1)">1</button>
                 <button class="number-btn" onclick="selectNumber(2)">2</button>
                 <button class="number-btn" onclick="selectNumber(3)">3</button>
@@ -216,7 +215,6 @@
 
     <script>
         const patterns = {
-            0: [],
             1: [[50, 50]],
             2: [[25, 25], [75, 75]],
             3: [[50, 50], [25, 25], [75, 75]],

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import PracticeSession from './components/student/PracticeSession'
 import SubitizingSession from './components/student/SubitizingSession'
 import StudentHome from './components/student/StudentHome'
@@ -22,9 +22,6 @@ function RequireTeacherAuth({ children }) {
 }
 
 function App() {
-  const location = useLocation()
-  const isTeacherRoute = location.pathname.startsWith('/teacher')
-
   useEffect(() => {
     initCloudSyncListeners()
     return () => destroyCloudSyncListeners()
@@ -32,11 +29,9 @@ function App() {
 
   return (
     <div className="min-h-screen theme-app-shell">
-      {!isTeacherRoute ? (
-        <div className="flex justify-end px-3 pt-3">
-          <ThemeSwitcher />
-        </div>
-      ) : null}
+      <div className="flex justify-end px-3 pt-3">
+        <ThemeSwitcher />
+      </div>
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/student/:studentId" element={<StudentHome />} />

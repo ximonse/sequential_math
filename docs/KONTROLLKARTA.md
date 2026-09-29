@@ -63,6 +63,7 @@ Se [robotarnas README](../robots/README.md#senaste-fynd) för detaljer. Kort:
 5. **Datakvaliteten flaggade alla elever som tränat vanligt** (L1), eftersom ett pass bara räknades som avslutat via Startsida. Nu avslutas passet när sidan döljs (låst skärm, byte av app, stängd flik). Rättat efter beslut av Simon 2026-09-25.
 6. **"Aktivera för alla" nådde aldrig eleverna** (R1). Det aktiva uppdraget sparades bara i lärarens egen webbläsare. Lärarvyn visade "Aktivt för alla: asg_…" medan eleverna fick fri träning. Nu sparas det på klassen och visas på elevens startsida, och lärarvyn visar uppdragets namn. Rättat.
 7. **Texter utan å/ä/ö** i temaväljaren och lärarvyns felmönsterpanel och verktygstips (T1). Rättat.
+8. **Temaväljaren doldes på lärar- och adminsidorna och rollbakgrunden skrev visuellt över valt tema** (R1/R2). Temaväljaren visas nu i alla vyer och personalytorna använder det valda temats bakgrund.
 
 Utöver det hittade robotarna **inga brott** mot R1, R4, C1 eller V1 i de områden och flöden som körs. Det gäller tabellträning, alla nio områden genom nivå 1–12, pauser och fri träning. Felen som eleverna såg i klassrummet (fel tabell, nivåfall efter paus) kunde inte återskapas i nuvarande kod, vilket stämmer med att de redan är rättade.
 

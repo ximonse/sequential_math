@@ -19,6 +19,8 @@ function SessionOverlayRouter({
   dailyLevelStreakMilestone,
   onContinueAfterDailyLevelStreak,
   ncmCompletedSession,
+  fluencyCompleted,
+  fluencyTotal,
   sessionAssignmentKind,
   ncmTotalCount,
   ncmRemainingCount,
@@ -74,6 +76,17 @@ function SessionOverlayRouter({
       <DailyLevelStreakOverlay
         milestone={dailyLevelStreakMilestone}
         onContinue={onContinueAfterDailyLevelStreak}
+      />
+    )
+  }
+
+  if (fluencyCompleted) {
+    return (
+      <NcmCompletionOverlay
+        solved={fluencyTotal}
+        total={fluencyTotal}
+        title="Starkt jobbat! Övningen är klar"
+        onGoHome={onGoHomeAfterNcm}
       />
     )
   }

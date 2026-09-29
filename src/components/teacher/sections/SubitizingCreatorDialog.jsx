@@ -3,6 +3,7 @@ import { createAssignment } from '../../../lib/assignments'
 
 export default function SubitizingCreatorDialog({ onCreate, onClose }) {
   const [name, setName] = useState('')
+  const [targetCount, setTargetCount] = useState('30')
   const [error, setError] = useState('')
 
   const handleCreate = () => {
@@ -14,7 +15,7 @@ export default function SubitizingCreatorDialog({ onCreate, onClose }) {
     const assignment = createAssignment({
       kind: 'subitizing',
       title: name.trim(),
-      targetCount: 30
+      targetCount: Math.min(200, Math.max(1, Math.floor(Number(targetCount)) || 30))
     })
 
     if (!assignment) {
@@ -44,6 +45,20 @@ export default function SubitizingCreatorDialog({ onCreate, onClose }) {
               }}
               placeholder="T.ex. Talbild vecka 1"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Max antal tärningar (nedräkning för eleven)
+            </label>
+            <input
+              type="number"
+              min="1"
+              max="200"
+              value={targetCount}
+              onChange={(e) => setTargetCount(e.target.value)}
+              className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 

@@ -33,6 +33,7 @@ import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { generateMathPracticeProblem } from '../../lib/mathPracticeGenerator'
 import { recordMathPracticeResult } from '../../lib/mathPracticeResults'
 import { addMathPracticeSessionResult } from '../../lib/studentProfile'
+import { getFluencyTarget, isFluencyAssignment } from '../../lib/fluencySession'
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
 const ALL_TABLES_BOSS_URL = 'https://youtu.be/86URGgqONvA'
 const openTableBossVideo = () => {
@@ -90,6 +91,16 @@ function StudentSession() {
   const [ncmTotalCount, setNcmTotalCount] = useState(0)
   const [ncmCompletedSession, setNcmCompletedSession] = useState(false)
   const mathPracticeProblemsRef = useRef([])
+  const fluencyCountRef = useRef(0)
+  const [fluencyAnswered, setFluencyAnswered] = useState(0)
+  const [fluencyCompleted, setFluencyCompleted] = useState(false)
+  const [fluencyPraise, setFluencyPraise] = useState('')
+  const fluency = useMemo(() => ({
+    countRef: fluencyCountRef,
+    setAnswered: setFluencyAnswered,
+    setCompleted: setFluencyCompleted,
+    setPraise: setFluencyPraise
+  }), [])
   const mathPracticeSessionStartRef = useRef(Date.now())
 
   const assignmentId = searchParams.get('assignment')
@@ -322,6 +333,7 @@ function StudentSession() {
     setLastBreakPromptAt,
     setDailyLevelStreakMilestone,
     freeOps: allowedFreeOps,
+    fluency,
     persistProfile,
     recordMathPracticeAnswer
   })
@@ -352,6 +364,8 @@ function StudentSession() {
     showBreakSuggestion,
     tableMilestone,
     ncmCompletedSession,
+    fluencyCompleted,
+    fluencyTotal: fluencyAnswered,
     sessionAssignmentKind: sessionAssignment?.kind,
     progressionMilestone,
     feedback,
@@ -416,6 +430,8 @@ function StudentSession() {
       masteredHistorical={masteredHistorical}
       masteredThisWeek={masteredThisWeek}
       syncStatus={syncStatus}
+      remainingCount={isFluencyAssignment(sessionAssignment) ? Math.max(0, getFluencyTarget(sessionAssignment) - fluencyAnswered) : null}
+      praise={fluencyPraise}
     />
   )
 }

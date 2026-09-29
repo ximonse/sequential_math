@@ -30,7 +30,9 @@ function SessionPage({
   currentOperationLabel,
   masteredHistorical,
   masteredThisWeek,
-  syncStatus
+  syncStatus,
+  remainingCount = null,
+  praise = ''
 }) {
   const showInlineScratchpad = Boolean(currentProblem) && !feedback
   const showScratchpadControl = Boolean(currentProblem)
@@ -42,6 +44,7 @@ function SessionPage({
           profileName={profileName}
           sessionCount={sessionCount}
           streak={streak}
+          remainingCount={remainingCount}
           onExit={onExit}
         />
         <StudentSyncStatus status={syncStatus} />
@@ -57,6 +60,12 @@ function SessionPage({
           {sessionError && (
             <div className="mb-4 rounded-lg bg-red-50 text-red-700 border border-red-200 px-3 py-2 text-sm">
               {sessionError}
+            </div>
+          )}
+
+          {praise && (
+            <div role="status" className="mb-4 rounded-lg bg-emerald-100 px-4 py-3 text-center text-2xl font-bold text-emerald-800 shadow">
+              {praise}
             </div>
           )}
 

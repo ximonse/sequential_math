@@ -27,6 +27,12 @@ import {
   shouldTriggerAllTablesBoss,
   shouldTriggerDailyBoss
 } from './sessionUtils'
+import {
+  FLUENCY_BREAK_MINUTES,
+  getFluencyStep,
+  getFluencyTarget,
+  isFluencyAssignment
+} from '../../../lib/fluencySession'
 
 const BREAK_PROMPT_COOLDOWN_MS = 8 * 60 * 1000
 const NEXT_PROBLEM_MAX_ATTEMPTS = 8
@@ -76,6 +82,7 @@ export function usePracticeCoreActions({
   setLastBreakPromptAt,
   setDailyLevelStreakMilestone,
   freeOps = [],
+  fluency = null,
   persistProfile,
   recordMathPracticeAnswer = () => {}
 }) {
@@ -93,6 +100,17 @@ export function usePracticeCoreActions({
       setPendingBreakSuggestion(false)
       setShowBreakSuggestion(true)
       return
+    }
+
+    if (fluency && isFluencyAssignment(sessionAssignment)) {
+      fluency.setPraise('')
+      if (fluency.countRef.current >= getFluencyTarget(sessionAssignment)) {
+        fluency.setCompleted(true)
+        setCurrentProblem(null)
+        setFeedback(null)
+        setAnswer('')
+        return
+      }
     }
 
     if (
@@ -199,6 +217,7 @@ export function usePracticeCoreActions({
     progressionMode,
     fixedPracticeLevel,
     freeOps,
+    fluency,
     isTableDrill,
     tableQueue,
     resetAttentionTracker,
@@ -413,6 +432,17 @@ export function usePracticeCoreActions({
           })
         }
       }
+    } else if (fluency && isFluencyAssignment(sessionAssignment)) {
+      const answered = fluency.countRef.current + 1
+      fluency.countRef.current = answered
+      fluency.setAnswered(answered)
+      const step = getFluencyStep(answered, getFluencyTarget(sessionAssignment))
+      if (step.kind === 'break') {
+        setPendingBreakSuggestion(true)
+        setBreakDurationMinutes(FLUENCY_BREAK_MINUTES)
+      } else if (step.kind === 'praise') {
+        fluency.setPraise(step.message)
+      }
     } else if (!sessionAssignment) {
       const breakPolicy = getBreakPolicy(currentProblem, isTableDrill)
       const shouldPromptBreak = breakPolicy.enabled && shouldSuggestBreak(
@@ -470,6 +500,7 @@ export function usePracticeCoreActions({
     progressionMode,
     tableSet,
     freeOps,
+    fluency,
     sessionCount,
     sessionRecentCorrectnessRef,
     sessionTelemetryRef,

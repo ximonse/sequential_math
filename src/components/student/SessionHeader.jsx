@@ -2,6 +2,7 @@ function SessionHeader({
   profileName,
   sessionCount,
   streak,
+  remainingCount = null,
   onExit
 }) {
   return (
@@ -10,6 +11,7 @@ function SessionHeader({
         <p className="text-sm text-gray-500">{profileName}</p>
         <p className="text-xs text-gray-400">
           {sessionCount} denna session
+          {remainingCount !== null ? ` · ${remainingCount} kvar` : ''}
         </p>
       </div>
 

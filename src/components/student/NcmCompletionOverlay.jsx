@@ -1,6 +1,7 @@
 function NcmCompletionOverlay({
   solved,
   total,
+  title = 'NCM-uppdrag klart',
   onGoHome
 }) {
   return (
@@ -8,7 +9,7 @@ function NcmCompletionOverlay({
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg text-center">
         <div className="text-6xl mb-4">✅</div>
         <h2 className="text-2xl font-bold text-gray-800 mb-3">
-          NCM-uppdrag klart
+          {title}
         </h2>
         <p className="text-gray-600 mb-6">
           Du har gjort {solved} av {total} frågor i uppdraget.

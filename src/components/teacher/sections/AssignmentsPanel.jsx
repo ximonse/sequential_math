@@ -12,6 +12,8 @@ const TONES = {
   custom: 'border-stone-300 bg-stone-100 text-stone-800 hover:bg-stone-200'
 }
 
+const FLUENCY_KEYS = ['number_bonds', 'doubles']
+
 const PRESET_GROUPS = [
   [
     ['number_bonds', 'Talpar'],
@@ -54,6 +56,7 @@ export default function AssignmentsPanel({
   const [qrAssignment, setQrAssignment] = useState(null)
   const [showMathPracticeCreator, setShowMathPracticeCreator] = useState(false)
   const [showSubitizingCreator, setShowSubitizingCreator] = useState(false)
+  const [presetTarget, setPresetTarget] = useState('')
   const selectedClass = selectedClassIds.length === 1
     ? classes.find(item => String(item.id) === String(selectedClassIds[0]))
     : null
@@ -73,7 +76,7 @@ export default function AssignmentsPanel({
               <button
                 key={key}
                 type="button"
-                onClick={() => (key === 'talbild' ? setShowSubitizingCreator(true) : onCreatePreset(key))}
+                onClick={() => (key === 'talbild' ? setShowSubitizingCreator(true) : onCreatePreset(key, FLUENCY_KEYS.includes(key) ? presetTarget : undefined))}
                 className={`${BUTTON_BASE} ${tone}`}
               >
                 {label}
@@ -82,6 +85,17 @@ export default function AssignmentsPanel({
           </div>
         ))}
       </div>
+      <label className="mb-3 flex items-center gap-2 text-xs text-gray-600">
+        Max antal uppgifter för Talpar/Dubblor (tomt = 20)
+        <input
+          type="number"
+          min="1"
+          max="200"
+          value={presetTarget}
+          onChange={(event) => setPresetTarget(event.target.value)}
+          className="w-16 rounded border border-gray-300 px-1.5 py-0.5 text-sm"
+        />
+      </label>
 
       {assignments.length === 0 ? (
         <p className="text-sm text-gray-500">Inga uppdrag skapade ännu.</p>

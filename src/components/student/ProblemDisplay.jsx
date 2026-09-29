@@ -23,6 +23,7 @@ function ProblemDisplay({
   const isAnswering = !feedback
   const promptText = String(problem?.metadata?.promptText || '').trim()
   const hasPromptText = promptText.length > 0
+  const isFluencyPrompt = problem?.skill === 'number_bonds' || problem?.skill === 'doubles'
 
   const formatNumber = (value) => {
     if (!Number.isFinite(value)) return value
@@ -52,7 +53,11 @@ function ProblemDisplay({
         <div className="flex flex-col items-center">
           {hasPromptText ? (
             <div className="w-full max-w-2xl space-y-4">
-              <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-gray-800 text-lg md:text-xl font-medium leading-relaxed whitespace-pre-wrap">
+              <div className={`rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-gray-800 whitespace-pre-wrap ${
+                isFluencyPrompt
+                  ? 'text-lg md:text-5xl md:py-5 font-bold md:text-center leading-tight'
+                  : 'text-lg md:text-xl font-medium leading-relaxed'
+              }`}>
                 {promptText}
               </div>
               <div className="max-w-full text-3xl sm:text-4xl md:text-5xl font-bold text-gray-800 flex items-center justify-center flex-wrap gap-y-2">

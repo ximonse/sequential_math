@@ -70,7 +70,12 @@ function StudentHome() {
     if (mode) params.set('mode', mode)
     if (requestedPace) params.set('pace', requestedPace)
 
-    navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
+    // Check assignment kind to route to the correct session
+    const decodedAssignment = decodeAssignmentPayload(assignmentPayload) || (assignmentId ? getAssignmentById(assignmentId) : null)
+    const isSubitizing = decodedAssignment?.kind === 'subitizing'
+    const path = isSubitizing ? 'subitizing' : 'practice'
+
+    navigate(`/student/${studentId}/${path}?${params.toString()}`, { replace: true })
   }, [studentId, assignmentId, assignmentPayload, mode, requestedPace, ticketId, ticketPayload, navigate])
 
   const classId = String(profile?.classId || '')

@@ -129,7 +129,7 @@ export default function SubitizingDice({ value, onAnswer, disabled = false }) {
             key={num}
             onClick={() => handleNumberClick(num)}
             disabled={disabled}
-            className="w-12 h-12 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-lg"
+            className="w-12 h-12 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-3xl leading-none flex items-center justify-center"
           >
             {num}
           </button>

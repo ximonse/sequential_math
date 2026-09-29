@@ -34,32 +34,93 @@ export default function SubitizingDice({ value, onAnswer, disabled = false }) {
   const dots = getDicePattern(value)
   const dotSize = 12
 
+  const renderDice = () => {
+    if (value <= 5) {
+      return (
+        <div
+          ref={diceRef}
+          className="relative bg-white rounded-lg shadow-lg p-8"
+          style={{
+            width: 240,
+            height: 240,
+            border: '2px solid #e5e7eb'
+          }}
+          tabIndex={0}
+        >
+          {dots.map((pos, i) => (
+            <div
+              key={i}
+              className="absolute bg-red-600 rounded-full"
+              style={{
+                width: dotSize,
+                height: dotSize,
+                left: `${pos[0]}%`,
+                top: `${pos[1]}%`,
+                transform: 'translate(-50%, -50%)'
+              }}
+            />
+          ))}
+        </div>
+      )
+    } else {
+      const firstDots = getDicePattern(5)
+      const secondDots = getDicePattern(value - 5)
+      return (
+        <div className="flex gap-5 justify-center flex-wrap">
+          <div
+            className="relative bg-white rounded-lg shadow-lg p-8"
+            style={{
+              width: 240,
+              height: 240,
+              border: '2px solid #e5e7eb'
+            }}
+          >
+            {firstDots.map((pos, i) => (
+              <div
+                key={i}
+                className="absolute bg-red-600 rounded-full"
+                style={{
+                  width: dotSize,
+                  height: dotSize,
+                  left: `${pos[0]}%`,
+                  top: `${pos[1]}%`,
+                  transform: 'translate(-50%, -50%)'
+                }}
+              />
+            ))}
+          </div>
+          <div
+            ref={diceRef}
+            className="relative bg-white rounded-lg shadow-lg p-8"
+            style={{
+              width: 240,
+              height: 240,
+              border: '2px solid #e5e7eb'
+            }}
+            tabIndex={0}
+          >
+            {secondDots.map((pos, i) => (
+              <div
+                key={i}
+                className="absolute bg-red-600 rounded-full"
+                style={{
+                  width: dotSize,
+                  height: dotSize,
+                  left: `${pos[0]}%`,
+                  top: `${pos[1]}%`,
+                  transform: 'translate(-50%, -50%)'
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )
+    }
+  }
+
   return (
     <div className="flex flex-col gap-8 items-center justify-center py-8">
-      <div
-        ref={diceRef}
-        className="relative bg-white rounded-lg shadow-lg p-8"
-        style={{
-          width: 240,
-          height: 240,
-          border: '2px solid #e5e7eb'
-        }}
-        tabIndex={0}
-      >
-        {dots.map((pos, i) => (
-          <div
-            key={i}
-            className="absolute bg-red-600 rounded-full"
-            style={{
-              width: dotSize,
-              height: dotSize,
-              left: `${pos[0]}%`,
-              top: `${pos[1]}%`,
-              transform: 'translate(-50%, -50%)'
-            }}
-          />
-        ))}
-      </div>
+      {renderDice()}
 
       <p className="text-gray-600 text-sm font-medium">Hur många prickar?</p>
 

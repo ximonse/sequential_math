@@ -191,7 +191,7 @@ function SubitizingSession() {
           </div>
 
           {currentDiceValue !== null && sessionActive && (
-            <div className="bg-white rounded-lg shadow p-8 mb-6">
+            <div className="bg-white rounded-lg shadow p-3 sm:p-8 mb-6">
               <SubitizingDice
                 value={currentDiceValue}
                 onAnswer={handleDiceAnswer}

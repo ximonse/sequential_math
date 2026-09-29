@@ -258,9 +258,29 @@ export function shouldTriggerDailyBoss(profile, tables) {
   return !isDailyBossAlreadyShown(profile)
 }
 
+// The profile flag can be lost to a sync overwrite, so a local per-device mirror backs it up.
+function bossMirrorKey(profile, kind) {
+  return `boss-shown:${String(profile?.studentId || '')}:${kind}`
+}
+
+function readBossMirror(profile, kind) {
+  try {
+    return globalThis.localStorage?.getItem(bossMirrorKey(profile, kind)) === getTodayKey()
+  } catch {
+    return false
+  }
+}
+
+function writeBossMirror(profile, kind) {
+  try {
+    globalThis.localStorage?.setItem(bossMirrorKey(profile, kind), getTodayKey())
+  } catch {
+    // storage unavailable; the profile flag still applies
+  }
+}
+
 function isDailyBossAlreadyShown(profile) {
-  const shownDate = profile?.tableDrill?.dailyBossShownDate
-  return shownDate === getTodayKey()
+  return profile?.tableDrill?.dailyBossShownDate === getTodayKey() || readBossMirror(profile, 'daily')
 }
 
 export function markDailyBossShown(profile) {
@@ -268,6 +288,7 @@ export function markDailyBossShown(profile) {
     profile.tableDrill = { completions: [] }
   }
   profile.tableDrill.dailyBossShownDate = getTodayKey()
+  writeBossMirror(profile, 'daily')
 }
 
 const ALL_TABLES_RANGE = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
@@ -275,7 +296,7 @@ const ALL_TABLES_RANGE = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 export function shouldTriggerAllTablesBoss(profile) {
   if (!hasMasteredTablesToday(profile, ALL_TABLES_RANGE)) return false
   const shownDate = profile?.tableDrill?.dailyAllTablesBossShownDate
-  return shownDate !== getTodayKey()
+  return shownDate !== getTodayKey() && !readBossMirror(profile, 'all')
 }
 
 export function markAllTablesBossShown(profile) {
@@ -283,6 +304,7 @@ export function markAllTablesBossShown(profile) {
     profile.tableDrill = { completions: [] }
   }
   profile.tableDrill.dailyAllTablesBossShownDate = getTodayKey()
+  writeBossMirror(profile, 'all')
 }
 
 function getTodayKey() {

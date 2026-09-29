@@ -25,7 +25,9 @@ import {
   markNcmSkillCompleted,
   recordTableCompletion,
   shouldTriggerAllTablesBoss,
-  shouldTriggerDailyBoss
+  shouldTriggerDailyBoss,
+  markAllTablesBossShown,
+  markDailyBossShown
 } from './sessionUtils'
 import {
   FLUENCY_BREAK_MINUTES,
@@ -420,12 +422,15 @@ export function usePracticeCoreActions({
           }
           const remainingTables = Array.from(new Set(nextQueue.map(item => item.table)))
           const allTablesBoss = shouldTriggerAllTablesBoss(profile)
+          const twoToNineBoss = !allTablesBoss && shouldTriggerDailyBoss(profile, [2, 3, 4, 5, 6, 7, 8, 9])
+          if (allTablesBoss) markAllTablesBossShown(profile)
+          else if (twoToNineBoss) markDailyBossShown(profile)
           setTableMilestone({
             table: currentItem.table,
             remainingTablesCount: remainingTables.length,
             completionCountToday,
             masteredAllTablesToday: allTablesBoss,
-            masteredTwoToNineToday: !allTablesBoss && shouldTriggerDailyBoss(profile, [2, 3, 4, 5, 6, 7, 8, 9]),
+            masteredTwoToNineToday: twoToNineBoss,
             boss: completionCountToday >= 3,
             finalizeAfter: remainingTables.length === 0,
             finalCelebration: remainingTables.length === 0

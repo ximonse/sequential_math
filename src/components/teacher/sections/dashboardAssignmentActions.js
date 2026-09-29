@@ -14,6 +14,31 @@ import {
   setActiveAssignment
 } from '../../../lib/assignments'
 
+async function copyTextToClipboard(text) {
+  try {
+    await Promise.race([
+      navigator.clipboard.writeText(text),
+      new Promise((_, reject) => setTimeout(reject, 1500))
+    ])
+    return true
+  } catch {
+    // Some browsers reject or never settle; fall through to the legacy path.
+  }
+  try {
+    const field = document.createElement('textarea')
+    field.value = text
+    field.setAttribute('readonly', '')
+    field.style.cssText = 'position:fixed;top:0;left:0;opacity:0'
+    document.body.appendChild(field)
+    field.select()
+    const ok = document.execCommand('copy')
+    document.body.removeChild(field)
+    return ok
+  } catch {
+    return false
+  }
+}
+
 export function buildDashboardAssignmentActions({
   assignments,
   setAssignments,
@@ -72,14 +97,14 @@ export function buildDashboardAssignmentActions({
       setDashboardStatus('Välj exakt en klass ovanför innan du delar uppdraget.')
       return
     }
-    try {
-      await navigator.clipboard.writeText(link)
+    if (await copyTextToClipboard(link)) {
       setCopiedId(assignmentId)
       window.setTimeout(() => setCopiedId(''), 1200)
       setDashboardStatus('Länk kopierad.')
-    } catch {
-      setDashboardStatus('Kunde inte kopiera länk just nu.')
+      return
     }
+    setDashboardStatus('Kunde inte kopiera länk automatiskt.')
+    window.prompt('Kopiera länken manuellt (Ctrl+C):', link)
   }
 
   const handleActivateForAll = async (assignmentId) => {

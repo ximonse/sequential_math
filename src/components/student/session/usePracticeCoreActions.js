@@ -300,11 +300,14 @@ export function usePracticeCoreActions({
       ? getOperationLevelMasteryStatus(profile, mode, fixedPracticeLevel)
       : null
     if (progressionDecision) {
-      setProgressionMilestone({
-        ...progressionDecision,
-        attempts: Number(masteryEvent?.window?.attempts || 0),
-        correct: Number(masteryEvent?.window?.correct || 0)
-      })
+      // Talpar/Dubblor have their own countdown and praise; a full-screen level celebration would break the rhythm.
+      if (!(fluency && isFluencyAssignment(sessionAssignment))) {
+        setProgressionMilestone({
+          ...progressionDecision,
+          attempts: Number(masteryEvent?.window?.attempts || 0),
+          correct: Number(masteryEvent?.window?.correct || 0)
+        })
+      }
       recordTelemetryEvent(profile, 'automatic_progression_decision', {
         sessionId: sessionTelemetryRef.current?.sessionId || '',
         decisionId: progressionDecision.decisionId,

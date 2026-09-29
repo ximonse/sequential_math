@@ -92,7 +92,8 @@ async function fluencyRun(browser, request, testInfo, { label, skill, cap, strat
         const answered = entry.i + 1
         const text = await bodyText(page)
         // A level celebration covers the countdown; only the plain answer screen can be checked.
-        const covered = /Du har klarat nivå [0-9]+ i/.test(text)
+        const covered = false
+        if (/Du har klarat nivå [0-9]+ i/.test(text)) findings.add('R4', 'Nivågrattis mitt i Talpar/Dubblor', { svarade: answered })
         if (entry.op !== skill && entry.type !== skill) findings.add('R1', `${label} gav fel sorts uppgift`, { fick: entry.op, uppgift: entry.key })
         if (!covered && !new RegExp(`\\b${cap - answered} kvar`).test(text) && answered < cap) findings.add('R3', 'Nedräkningen visar fel antal kvar', { svarade: answered, förväntat: cap - answered, text: text.replace(/\s+/g, ' ').slice(0, 160) })
         const praiseExpected = answered % 15 === 8 && answered < cap

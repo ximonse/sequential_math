@@ -39,14 +39,14 @@ function SubitizingSession() {
     const loadSession = async () => {
       try {
         const runtime = getPilotStudentRuntime()
-        const loadedProfile = await runtime.getCheckpoint(studentId)
+        const bootstrapped = await runtime.bootstrap(studentId)
 
-        if (!loadedProfile) {
-          navigate(`/student/${studentId}`)
+        if (!bootstrapped.ok) {
+          navigate('/', { replace: true })
           return
         }
 
-        setProfile(loadedProfile)
+        setProfile(bootstrapped.profile)
 
         // Load assignment if provided
         if (assignmentPayload) {

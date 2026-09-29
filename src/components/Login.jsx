@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getPilotStudentRuntime } from '../lib/pilotStudentRuntime'
 import { loginStudentSession } from '../lib/studentSessionClient'
+import { decodeAssignmentPayload } from '../lib/assignments'
 import PilotStudentLoginForm from './student/PilotStudentLoginForm'
 
 function getStudentDestination(searchParams, studentId) {
@@ -14,7 +15,10 @@ function getStudentDestination(searchParams, studentId) {
   }
   const query = params.toString()
   if (params.has('ticket')) return `/student/${studentId}/ticket${query ? `?${query}` : ''}`
-  if (query) return `/student/${studentId}/practice?${query}`
+  if (query) {
+    const kind = decodeAssignmentPayload(params.get('assignment_payload'))?.kind
+    return `/student/${studentId}/${kind === 'subitizing' ? 'subitizing' : 'practice'}?${query}`
+  }
   return `/student/${studentId}`
 }
 

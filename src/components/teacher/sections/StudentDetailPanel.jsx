@@ -165,8 +165,6 @@ export default function StudentDetailPanel({
           {credentialStatus ? <p role="status" className="mt-3 text-sm text-amber-900 print:hidden">{credentialStatus}</p> : null}
           {issuedCredential ? <ReissuedCredentialCard credential={issuedCredential} /> : null}
 
-          <StudentDetailTrendPanel trend={detailStudentViewData.dailyTrend} />
-
           <StudentDetailMasteryPanel
             renderCollapseHeader={renderCollapseHeader}
             isCollapsed={isCollapsed}
@@ -174,6 +172,8 @@ export default function StudentDetailPanel({
             toPercent={toPercent}
             {...tableMasteryPanelProps}
           />
+
+          <StudentDetailTrendPanel trend={detailStudentViewData.dailyTrend} />
 
           <StudentDetailHistoryPanel
             renderCollapseHeader={renderCollapseHeader}

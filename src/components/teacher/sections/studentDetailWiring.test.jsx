@@ -59,6 +59,9 @@ describe('student detail wiring', () => {
     />)
     expect(html.indexOf('Mastery panel is visible')).toBeLessThan(html.indexOf('Student detail is visible'))
     expect(html.indexOf('Student detail is visible')).toBeLessThan(html.indexOf('Table progress is visible'))
+    const overviewAt = html.indexOf('Minimera Klass/gruppvy – snabbstatus')
+    expect(overviewAt).toBeGreaterThan(html.indexOf('Student detail is visible'))
+    expect(overviewAt).toBeLessThan(html.indexOf('Table progress is visible'))
     for (const title of ['Klassurval', 'Klassstatistik', 'Nivåöversikt – hela klassen', 'Klass/gruppvy – snabbstatus', 'Elevprofil', 'Tabellträning – utveckling']) {
       expect(html).toContain(`Minimera ${title}`)
     }

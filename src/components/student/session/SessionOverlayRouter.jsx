@@ -12,6 +12,7 @@ function SessionOverlayRouter({
   breakDurationMinutes,
   onOpenPong,
   onOpenSnake,
+  breakGames,
   onTakeBreak,
   onContinueAfterBreakSuggestion,
   tableMilestone,
@@ -54,6 +55,7 @@ function SessionOverlayRouter({
         breakDurationMinutes={breakDurationMinutes}
         onOpenPong={onOpenPong}
         onOpenSnake={onOpenSnake}
+        showGames={breakGames}
         onTakeBreak={onTakeBreak}
         onContinue={onContinueAfterBreakSuggestion}
       />

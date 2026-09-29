@@ -4,6 +4,7 @@ import { createAssignment } from '../../../lib/assignments'
 export default function SubitizingCreatorDialog({ onCreate, onClose }) {
   const [name, setName] = useState('')
   const [targetCount, setTargetCount] = useState('30')
+  const [breakGames, setBreakGames] = useState(false)
   const [error, setError] = useState('')
 
   const handleCreate = () => {
@@ -15,6 +16,7 @@ export default function SubitizingCreatorDialog({ onCreate, onClose }) {
     const assignment = createAssignment({
       kind: 'subitizing',
       title: name.trim(),
+      breakGames,
       targetCount: Math.min(200, Math.max(1, Math.floor(Number(targetCount)) || 30))
     })
 
@@ -61,6 +63,11 @@ export default function SubitizingCreatorDialog({ onCreate, onClose }) {
               className="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
+
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input type="checkbox" checked={breakGames} onChange={(e) => setBreakGames(e.target.checked)} />
+            Pausspel (Pong/Snake) vid paus. Av = vanlig vilopaus.
+          </label>
 
           {error && (
             <div className="text-red-600 text-sm bg-red-50 p-2 rounded">

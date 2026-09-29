@@ -4,6 +4,7 @@ import { TRAINING_MODES } from '../../../lib/trainingContext'
 export function buildSessionOverlayProps({
   activeBreakGame,
   showBreakSuggestion,
+  breakGames = true,
   tableMilestone,
   ncmCompletedSession,
   fluencyCompleted,
@@ -47,6 +48,7 @@ export function buildSessionOverlayProps({
   return {
     activeBreakGame,
     showBreakSuggestion,
+    breakGames,
     sessionCount,
     breakDurationMinutes,
     onOpenPong: () => openBreakGame('pong'),

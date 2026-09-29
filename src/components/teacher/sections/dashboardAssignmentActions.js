@@ -70,10 +70,10 @@ export function buildDashboardAssignmentActions({
     return { saved, failed }
   }
 
-  const handleCreatePreset = (presetKey, targetCount) => {
+  const handleCreatePreset = (presetKey, targetCount, breakGames = false) => {
     const base = getPresetConfig(presetKey)
     const cap = Math.floor(Number(targetCount))
-    const preset = Number.isFinite(cap) && cap > 0 ? { ...base, targetCount: cap } : base
+    const preset = { ...base, breakGames, ...(Number.isFinite(cap) && cap > 0 ? { targetCount: cap } : {}) }
     const created = createAssignment(preset)
     if (!created) {
       setDashboardStatus('Kunde inte skapa uppdrag just nu.')

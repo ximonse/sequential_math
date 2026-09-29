@@ -217,6 +217,7 @@ function SubitizingSession() {
         breakDurationMinutes={BREAK_MINUTES}
         onOpenPong={() => setActiveBreakGame('pong')}
         onOpenSnake={() => setActiveBreakGame('snake')}
+        showGames={sessionAssignment.id === 'talbild_free' || sessionAssignment.breakGames === true}
         onTakeBreak={handleEndSession}
         onContinue={continueAfterBreak}
       />

@@ -362,6 +362,7 @@ function StudentSession() {
   const overlayProps = buildSessionOverlayProps({
     activeBreakGame,
     showBreakSuggestion,
+    breakGames: !sessionAssignment || sessionAssignment.breakGames === true,
     tableMilestone,
     ncmCompletedSession,
     fluencyCompleted,

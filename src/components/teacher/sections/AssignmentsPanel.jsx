@@ -57,6 +57,7 @@ export default function AssignmentsPanel({
   const [showMathPracticeCreator, setShowMathPracticeCreator] = useState(false)
   const [showSubitizingCreator, setShowSubitizingCreator] = useState(false)
   const [presetTarget, setPresetTarget] = useState('')
+  const [breakGames, setBreakGames] = useState(false)
   const selectedClass = selectedClassIds.length === 1
     ? classes.find(item => String(item.id) === String(selectedClassIds[0]))
     : null
@@ -76,7 +77,7 @@ export default function AssignmentsPanel({
               <button
                 key={key}
                 type="button"
-                onClick={() => (key === 'talbild' ? setShowSubitizingCreator(true) : onCreatePreset(key, FLUENCY_KEYS.includes(key) ? presetTarget : undefined))}
+                onClick={() => (key === 'talbild' ? setShowSubitizingCreator(true) : onCreatePreset(key, FLUENCY_KEYS.includes(key) ? presetTarget : undefined, breakGames))}
                 className={`${BUTTON_BASE} ${tone}`}
               >
                 {label}
@@ -95,6 +96,11 @@ export default function AssignmentsPanel({
           onChange={(event) => setPresetTarget(event.target.value)}
           className="w-16 rounded border border-gray-300 px-1.5 py-0.5 text-sm"
         />
+      </label>
+
+      <label className="mb-3 flex items-center gap-2 text-xs text-gray-600">
+        <input type="checkbox" checked={breakGames} onChange={(event) => setBreakGames(event.target.checked)} />
+        Pausspel (Pong/Snake) i nya uppdrag. Av = vanlig vilopaus.
       </label>
 
       {assignments.length === 0 ? (

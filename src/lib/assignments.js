@@ -126,6 +126,8 @@ export function encodeAssignmentPayload(assignment) {
     createdAt: normalized.createdAt
   }
 
+  if (normalized.breakGames) payload.breakGames = true
+
   if (normalized.kind === 'math_practice') {
     payload.operations = normalized.operations
     payload.numberRange = normalized.numberRange
@@ -153,7 +155,14 @@ export function decodeAssignmentPayload(encoded) {
   }
 }
 
+// Pause games are opt-in per assignment; without the flag a break is plain rest.
 function normalizeAssignment(input, options = {}) {
+  const normalized = normalizeAssignmentCore(input, options)
+  if (!normalized) return null
+  return { ...normalized, breakGames: input.breakGames === true }
+}
+
+function normalizeAssignmentCore(input, options = {}) {
   if (!input || typeof input !== 'object') return null
 
   const id = String(input.id || '').trim()

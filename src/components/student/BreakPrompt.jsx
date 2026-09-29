@@ -3,6 +3,7 @@ function BreakPrompt({
   breakDurationMinutes,
   onOpenPong,
   onOpenSnake,
+  showGames = true,
   onTakeBreak,
   onContinue
 }) {
@@ -16,7 +17,12 @@ function BreakPrompt({
         <p className="text-gray-600 mb-6">
           Du har gjort {sessionCount} uppgifter! Ta gärna cirka {breakDurationMinutes} min paus innan du fortsätter.
         </p>
+        {!showGames && (
+          <p className="text-gray-500 mb-6">Res dig, sträck på dig och ta ett glas vatten.</p>
+        )}
         <div className="space-y-3">
+          {showGames && (
+          <>
           <button
             onClick={onOpenPong}
             className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg flex items-center justify-center gap-2"
@@ -29,6 +35,8 @@ function BreakPrompt({
           >
             🐍 Spela Snake (max 2 min)
           </button>
+          </>
+          )}
           <button
             onClick={onTakeBreak}
             className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg"

@@ -205,16 +205,16 @@ function DiagnosticGridPrototype() {
           </button>
           <button type="button" onClick={() => { setLayer('note'); focusSelectedCell() }} disabled={grid.status === 'submitted'}
             className={`rounded-lg px-3 py-2 ${grid.cursor.layer === 'note' ? 'bg-slate-900 text-white' : 'bg-slate-200'}`}>
-            Liten anteckning (N)
+            Minnessiffra (N)
           </button>
-          <span className="ml-2 text-sm text-slate-600">Visa anteckning:</span>
+          <span className="ml-2 text-sm text-slate-600">Visa minnessiffra:</span>
           <button type="button" onClick={() => setNoteView('small')} aria-pressed={noteView === 'small'}
             className="rounded-lg border border-slate-400 px-3 py-2">I rutan</button>
           <button type="button" onClick={() => setNoteView('row')} aria-pressed={noteView === 'row'}
             className="rounded-lg border border-slate-400 px-3 py-2">På hjälprad</button>
         </div>
 
-        <p className="mt-4 text-sm text-slate-700">Tryck på en ruta och skriv med enhetens tangentbord. Pilar eller tabulator flyttar markören. Backspace raderar. N växlar anteckningsläge. Svep i sidled om alla kolumner inte syns.</p>
+        <p className="mt-4 text-sm text-slate-700">Tryck på en ruta och skriv med enhetens tangentbord. Pilar eller tabulator flyttar markören. Backspace raderar. N växlar till minnessiffra. Svep i sidled om alla kolumner inte syns.</p>
         <div className="mt-3 overflow-x-auto pb-2">
           <div ref={gridRef} className={`diagnostic-grid ${noteView === 'row' ? 'diagnostic-grid--helper-row' : ''}`} role="group" aria-label="Rutat räknehäfte">
             {Array.from({ length: grid.rows * grid.columns }, (_, index) => {
@@ -237,7 +237,7 @@ function DiagnosticGridPrototype() {
                     value=""
                     data-cell={`${row}:${column}`}
                     tabIndex={selected && grid.status !== 'submitted' ? 0 : -1}
-                    aria-label={`${selected ? 'Markerad ruta, ' : ''}rad ${row + 1}, kolumn ${column + 1}${cell.main ? `, ${cell.main}` : ', tom'}${cell.note ? `, anteckning ${cell.note}` : ''}`}
+                    aria-label={`${selected ? 'Markerad ruta, ' : ''}rad ${row + 1}, kolumn ${column + 1}${cell.main ? `, ${cell.main}` : ', tom'}${cell.note ? `, minnessiffra ${cell.note}` : ''}`}
                     className="diagnostic-cell__input"
                     onFocus={() => moveCursor({ row, column })}
                     onChange={event => {
@@ -255,7 +255,7 @@ function DiagnosticGridPrototype() {
             })}
           </div>
         </div>
-        <p className="mt-2 text-sm text-slate-700">Markerad ruta: rad {grid.cursor.row + 1}, kolumn {grid.cursor.column + 1}, {grid.cursor.layer === 'note' ? 'anteckning' : 'stor siffra'}. Händelser: {grid.events.length}.</p>
+        <p className="mt-2 text-sm text-slate-700">Markerad ruta: rad {grid.cursor.row + 1}, kolumn {grid.cursor.column + 1}, {grid.cursor.layer === 'note' ? 'minnessiffra' : 'stor siffra'}. Händelser: {grid.events.length}.</p>
         <label className="mt-4 block text-base font-semibold" htmlFor="diagnostic-answer">Mitt svar</label>
         <input id="diagnostic-answer" type="text" inputMode="numeric" value={grid.answer}
           onChange={event => {

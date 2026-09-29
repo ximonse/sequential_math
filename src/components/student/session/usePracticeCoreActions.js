@@ -443,7 +443,7 @@ export function usePracticeCoreActions({
       } else if (step.kind === 'praise') {
         fluency.setPraise(step.message)
       }
-    } else if (!sessionAssignment) {
+    } else {
       const breakPolicy = getBreakPolicy(currentProblem, isTableDrill)
       const shouldPromptBreak = breakPolicy.enabled && shouldSuggestBreak(
         profile,

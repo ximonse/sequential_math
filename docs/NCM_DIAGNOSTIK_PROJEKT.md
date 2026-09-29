@@ -210,7 +210,72 @@ Sammanfattningar över flera uppgifter eller tillfällen får skapas först när
 urval, omfattning och osäkerhet visas. Ett enstaka matchat mönster ska inte
 presenteras som en stabil elevprofil.
 
-## 9. Vägen framåt
+## 9. Utskrift, reservväg och uppläsning
+
+Diagnostiken ska kunna användas även när en elev inte kan eller bör arbeta på
+iPad. Utskrift och tillgänglighet är därför delar av produktens riktning, inte
+fristående efterhandsfunktioner.
+
+### 9.1 Ogenomförd diagnos
+
+Relativt tidigt ska läraren kunna skapa en tom version av ett diagnostiskt
+uppdrag som Word och PDF. Den ska kunna användas för:
+
+- didaktisk granskning innan uppdraget delas ut;
+- vanlig pappersutskrift;
+- reservväg för en elev som inte kan använda iPad;
+- gemensam genomgång eller riktad intervju.
+
+Word och PDF ska bygga på samma versionsmärkta uppgiftsunderlag som elevvyn.
+Word är den redigerbara lärarversionen och PDF den stabila utskriftsversionen.
+De ska inte ha separata manuellt underhållna frågebanker.
+
+Pappersversionen ska innehålla tillräckligt med rutat utrymme för elevens
+uppställning. På utskrift kan rutornas fysiska mått kontrolleras mer exakt än på
+skärm.
+
+### 9.2 Genomförd diagnos
+
+När digitala observationer kan återskapas tillförlitligt ska läraren kunna
+skriva ut eller exportera en genomförd diagnos. Den ska visa:
+
+- uppgiften;
+- elevens slutliga uppställning;
+- elevens slutsvar och bedömning;
+- relevanta automatiska hypoteser med tydlig osäkerhet;
+- en kommentarsyta till höger för lärarens anteckningar;
+- känd kontext, exempelvis använd uppläsning eller avbrutet försök.
+
+Exporten ska i första hand återge vad eleven gjorde. En automatisk tolkning får
+inte visuellt dominera eller ersätta originalet. Personuppgifter och
+analyskommentarer kräver samma behörighets- och integritetsskydd som lärarvyn.
+
+En framtida pappersinlämning kan registreras eller bifogas manuellt, men
+automatisk tolkning av handskrift ingår inte i den första riktningen.
+
+### 9.3 Uppläsning och markerbar text
+
+Frågetext ska vara riktig, semantiskt strukturerad och markerbar text, inte en
+bild. Det gör att eleven kan använda iPadens eller webbläsarens befintliga
+uppläsningsstöd.
+
+Senare ska läraren kunna aktivera inbyggd uppläsning för en eller flera utvalda
+elever i ett diagnostiskt uppdrag. Inställningen ska:
+
+- vara lärarstyrd och knuten till eleven eller det aktuella uppdraget;
+- vara tydlig för eleven utan att upplevas som en varning eller avvikelse;
+- läsa frågan utan att avslöja lösningsmetod eller svar;
+- bevara vilken textversion och vilket språk som lästes;
+- registrera att uppläsning var tillgänglig och, om det är relevant och
+  proportionerligt, om den användes.
+
+Uppläsning är en del av försökets kända kontext. Den ska inte i sig sänka
+bedömningen eller tolkas som en matematisk svårighet. Samtidigt måste det vara
+synligt för läraren när en uppgift uttryckligen avser att pröva elevens egen
+tolkning av text. Läraren avgör då om uppläsning är en tillåten anpassning för
+just det diagnostiska syftet.
+
+## 10. Vägen framåt
 
 Etapperna är beslutspunkter, inte en låst tidsplan. Varje etapp ska ge ett
 granskningsbart resultat och ny kunskap innan nästa omfattning bestäms.
@@ -223,6 +288,8 @@ granskningsbart resultat och ny kunskap innan nästa omfattning bestäms.
   som tillhör det gamla mängdträningsliknande flödet.
 - Välj två additioner och två subtraktioner som analysfall, med egna
   formuleringar och känd diagnostisk avsikt.
+- Definiera ett gemensamt uppgiftsunderlag för elevvy, tom Word-version och tom
+  PDF-version, så att tidig utskrift inte blir ett parallellt innehållssystem.
 
 **Beslutsgrind:** samma försök har entydig betydelse i elevvy, lagring,
 analys, lärarvy och export.
@@ -234,6 +301,8 @@ analys, lärarvy och export.
 - Kontrollera på elevens verkliga skärmstorlek att rutorna är läsbara och
   att markören aldrig försvinner.
 - Spara och återskapa slutläge och händelser utan informationsförlust.
+- Kontrollera att frågetexten kan markeras och användas med plattformens
+  befintliga uppläsningsstöd.
 
 **Beslutsgrind:** elever kan uttrycka en naturlig uppställning utan att
 gränssnittet lär dem en dold specialmetod.
@@ -253,6 +322,8 @@ och läraren kan se varför den träffade.
 - Visa arbetsyta, förlopp, hypotes, osäkerhet och föreslagen uppföljning.
 - Låt läraren bekräfta, avvisa eller kommentera utan att skriva över rådata.
 - Kontrollera att klassöversikt, elevdetalj och export använder samma urval.
+- Skapa utskriftsbar Word/PDF för genomförd diagnos med elevens uppställning
+  och kommentarsyta till höger.
 
 **Beslutsgrind:** en lärare kan förstå signalen och kontrollera den mot
 elevens faktiska uträkning på kort tid.
@@ -290,11 +361,12 @@ Möjliga fortsättningar, en i taget efter nytt innehållskontrakt:
 - negativa tal, potenser och andra numeriska NCM-delområden;
 - fler representationer och så småningom tallinje, drag-and-drop och
   geometri.
+- lärarstyrd inbyggd uppläsning för utvalda elever eller uppdrag.
 
 Expansion styrs av analysvärde och klassrumsbehov, inte av hur många
 NCM-koder som kan importeras.
 
-## 10. Verifiering genom hela projektet
+## 11. Verifiering genom hela projektet
 
 Varje etapp ska verifiera kedjan:
 
@@ -309,9 +381,14 @@ Minsta kontrolluppsättning när implementationen börjar:
 - robotflöde från lärarutdelning till elevsvar och tillbaka till lärarvy;
 - visuell och tangentbordsbaserad QA på elevens avsedda enhet;
 - jämförelse mellan lärarsignal, elevdetalj och export;
+- kontroll att Word, PDF och elevvy visar samma uppgiftsversion;
+- visuell kontroll av tom och genomförd utskrift, inklusive kommentarsyta och
+  rutornas fysiska mått;
+- tillgänglighetskontroll av markerbar text och uppläsning utan att
+  lösningsinformation avslöjas;
 - manuell didaktisk granskning av hypotesernas begriplighet.
 
-## 11. Frågor som ska hållas öppna tills de kan prövas
+## 12. Frågor som ska hållas öppna tills de kan prövas
 
 - Vilken interaktion för minnessiffra och lån är mest naturlig för eleverna?
 - Hur fri får placeringen vara innan automatisk tolkning blir missvisande?
@@ -322,11 +399,15 @@ Minsta kontrolluppsättning när implementationen börjar:
   observationer?
 - Vilken käll- och licenspolicy ska gälla om originalmaterial används i en
   begränsad pilot?
+- Vilka diagnostiska syften tillåter uppläsning utan att det som ska prövas
+  förändras?
+- Ska en pappersdiagnos endast arkiveras som dokument, eller senare kunna
+  registreras strukturerat av läraren?
 
 Frågorna är avsiktligt inte låsta nu. Projektet ska samla tillräckligt
 underlag för att Simon ska kunna fatta dessa beslut stegvis.
 
-## 12. Förhållande till nuvarande NCM-funktion
+## 13. Förhållande till nuvarande NCM-funktion
 
 Den nuvarande NCM-banken och lärarstatistiken kan ge källproveniens,
 uppgiftsmappning och historisk kontext. De ska inte antas vara rätt grund för

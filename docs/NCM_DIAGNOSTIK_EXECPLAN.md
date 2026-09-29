@@ -58,9 +58,10 @@ Inga nya elevfunktioner eller utskriftsgeneratorer ingår i Etapp 0.
 - [x] Dev-/QA-route `/qa/diagnostic-grid` läser de fyra uppgifterna från
   manifestet som markerbar text. Normal produktionsbuild exponerar inte routen.
 - [x] Rutnät med fokuserbara inmatningsfält för enhetens tangentbord, pilar,
-  tabulator, direkt rutval, radering och operatorer. Varje kolumn har en egen
-  tryckbar minnessifferruta ovanför den stora siffrans ruta. Båda siffrorna är
-  centrerade. Minnessifferrutan tar upp till två siffror; Backspace tar bort
+  tabulator, direkt rutval, radering och operatorer. Vanliga rader ligger
+  direkt efter varandra. När eleven väljer minnessiffra visas en hjälprad
+  ovanför markerad rad; den ligger kvar om den innehåller siffror. Varje
+  hjälpruta kan ta upp till två siffror och Backspace tar bort
   sista siffran. UI-kontrollen heter `Minnessiffra`; händelsedatat behåller
   separata `note`- och `main`-lager på samma koordinat.
 - [x] Append-only-förlopp med versionsnummer, cellföre/-efter, markör,
@@ -145,6 +146,12 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   pilflytt, lagerväxling och JSON-återläsning passerade lokalt. En full
   robotkörning stannade efter majoriteten av fallen utan slutrapport och
   avbröts; den är inte verifierad för detta snitt.
+- Efter korrigeringen av rutlayouten passerade 545 tester, normal build och
+  QA-build. Browserkontrollen visade åtta sammanhängande vanliga rader, en
+  hjälprad först efter uttryckligt val, bibehållen tvåsiffrig minnessiffra
+  vid JSON-återläsning och att den tomma hjälpraden försvinner efter radering.
+  En uppställning av `268 + 431` med streck och resultat fick plats på fyra
+  på varandra följande vanliga rader; skärmbilden granskades.
 - Nästa steg: prova rutnät och minnessiffra/lån med elever på avsedd iPad.
   Specificera samtidigt en separat serverresurs och dess konflikt- och
   raderingsregler utifrån lagringsauditen ovan, före serveranslutning.

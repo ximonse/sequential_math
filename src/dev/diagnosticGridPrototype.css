@@ -8,10 +8,12 @@
 }
 
 .diagnostic-cell {
-  display: grid;
-  grid-template-rows: repeat(2, var(--diagnostic-cell-size));
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: var(--diagnostic-cell-size);
-  height: calc(2 * var(--diagnostic-cell-size));
+  height: var(--diagnostic-cell-size);
   padding: 0;
   border-right: 1px solid #94a3b8;
   border-bottom: 1px solid #94a3b8;
@@ -20,21 +22,11 @@
   font-variant-numeric: tabular-nums;
 }
 
-.diagnostic-cell__slot {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 0;
-  min-height: 0;
-}
-
-.diagnostic-cell__slot--note {
-  border-bottom: 1px solid #94a3b8;
+.diagnostic-cell--note {
   background: #fff7ed;
 }
 
-.diagnostic-cell__slot--selected {
+.diagnostic-cell--selected {
   z-index: 1;
   outline: 2px solid #1d4ed8;
   outline-offset: -2px;
@@ -60,12 +52,12 @@
   pointer-events: none;
 }
 
-.diagnostic-cell__slot--main .diagnostic-cell__digit {
+.diagnostic-cell--main .diagnostic-cell__digit {
   font-size: 1.6rem;
   line-height: 1;
 }
 
-.diagnostic-cell__slot--note .diagnostic-cell__digit {
+.diagnostic-cell--note .diagnostic-cell__digit {
   font-size: 0.8rem;
   line-height: 1;
   font-weight: 700;

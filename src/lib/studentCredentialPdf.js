@@ -87,15 +87,8 @@ function printTearOffName(doc, name, x, y) {
   doc.setLineDashPattern([], 0)
   doc.setTextColor(...INK)
   doc.setFont('helvetica', 'bold')
-  let fontSize = 11
-  let lines
-  do {
-    doc.setFontSize(fontSize)
-    lines = doc.splitTextToSize(name, CARD_WIDTH_MM - 10)
-    if (lines.length === 1 || (lines.length === 2 && fontSize <= 9)) break
-    fontSize -= 1
-  } while (fontSize >= 6)
-  doc.text(lines.slice(0, 2), x + CARD_WIDTH_MM / 2, y + (lines.length === 1 ? 100 : 97.6), { align: 'center' })
+  shrinkToFit(doc, name, CARD_WIDTH_MM - 10, 11, 6)
+  doc.text(name, x + CARD_WIDTH_MM / 2, y + 100, { align: 'center' })
 }
 
 export function credentialCardsFilename(credentials) {

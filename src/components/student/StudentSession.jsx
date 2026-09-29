@@ -30,6 +30,9 @@ import {
   normalizeProgressionMode
 } from '../../lib/progressionModes'
 import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
+import { generateMathPracticeProblem } from '../../lib/mathPracticeGenerator'
+import { recordMathPracticeResult } from '../../lib/mathPracticeResults'
+import { addMathPracticeSessionResult } from '../../lib/studentProfile'
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
 const ALL_TABLES_BOSS_URL = 'https://youtu.be/86URGgqONvA'
 const openTableBossVideo = () => {
@@ -86,6 +89,8 @@ function StudentSession() {
   const [ncmRemainingCount, setNcmRemainingCount] = useState(0)
   const [ncmTotalCount, setNcmTotalCount] = useState(0)
   const [ncmCompletedSession, setNcmCompletedSession] = useState(false)
+  const mathPracticeProblemsRef = useRef([])
+  const mathPracticeSessionStartRef = useRef(Date.now())
 
   const assignmentId = searchParams.get('assignment')
   const assignmentPayload = searchParams.get('assignment_payload')
@@ -131,8 +136,61 @@ function StudentSession() {
   const persistProfile = useCallback(nextProfile => {
     return getPilotStudentRuntime().persistCheckpoint(nextProfile)
   }, [])
+  const recordMathPracticeAnswer = useCallback((problem, studentAnswer, isCorrect, timeSpentMs) => {
+    if (!problem || sessionAssignment?.kind !== 'math_practice') return
+    mathPracticeProblemsRef.current.push({
+      problem: problem.format || String(problem.problem || ''),
+      studentAnswer: String(studentAnswer || '').trim(),
+      correctAnswer: problem.correctAnswer || String(problem.answer || ''),
+      isCorrect: Boolean(isCorrect),
+      timeMs: Math.max(0, Number(timeSpentMs) || 0)
+    })
+  }, [sessionAssignment])
+
+  const saveMathPracticeResults = useCallback(async () => {
+    if (sessionAssignment?.kind !== 'math_practice' || !profile) return
+    if (mathPracticeProblemsRef.current.length === 0) return
+
+    const problemDetails = mathPracticeProblemsRef.current
+    const totalProblems = problemDetails.length
+    const correctAnswers = problemDetails.filter(p => p.isCorrect).length
+    const totalTimeMs = problemDetails.reduce((sum, p) => sum + (p.timeMs || 0), 0)
+
+    const sessionData = {
+      totalProblems,
+      correctAnswers,
+      totalTimeMs,
+      problemDetails,
+      operations: sessionAssignment.operations
+    }
+
+    recordMathPracticeResult(profile.studentId, sessionAssignment.id, sessionAssignment.title, sessionData)
+
+    const updatedProfile = addMathPracticeSessionResult(profile, sessionAssignment, sessionData)
+    setProfile(updatedProfile)
+    void persistProfile(updatedProfile)
+
+    mathPracticeProblemsRef.current = []
+  }, [sessionAssignment, profile, persistProfile])
+
+  useEffect(() => {
+    return () => {
+      saveMathPracticeResults()
+    }
+  }, [])
+
   const safeSelectProblem = useCallback((currentProfile, rules) => {
     try {
+      if (sessionAssignment?.kind === 'math_practice') {
+        setSessionError('')
+        const problem = generateMathPracticeProblem(sessionAssignment, Math.random())
+        if (!problem) {
+          setSessionError('Kunde inte generera uppgift. Försök igen.')
+          return null
+        }
+        return problem
+      }
+
       let nextRules = { ...(rules || {}) }
       if (!sessionAssignment && !isTableDrill) {
         const frame = constrainClassPracticeRules(nextRules, classAllowedOperations, freeOps, allowedFreeOps)
@@ -264,7 +322,8 @@ function StudentSession() {
     setLastBreakPromptAt,
     setDailyLevelStreakMilestone,
     freeOps: allowedFreeOps,
-    persistProfile
+    persistProfile,
+    recordMathPracticeAnswer
   })
 
   usePracticeUiEffects({

@@ -56,6 +56,15 @@ export function buildDashboardAssignmentActions({
     setDashboardStatus(`Nytt uppdrag skapat: ${preset.title}`)
   }
 
+  const handleCreateMathPractice = (assignment) => {
+    if (!assignment) {
+      setDashboardStatus('Kunde inte skapa matematikövning just nu.')
+      return
+    }
+    setAssignments(getAssignments())
+    setDashboardStatus(`Matematikövning skapad: ${assignment.title}`)
+  }
+
   const handleCopyAssignmentLink = async (assignmentId, classLoginToken = getSelectedClassLoginToken()) => {
     const assignment = assignments.find(item => item.id === assignmentId) || getAssignmentById(assignmentId)
     const link = buildAssignmentLink(assignmentId, assignment, classLoginToken)
@@ -139,6 +148,7 @@ export function buildDashboardAssignmentActions({
 
   return {
     handleCreatePreset,
+    handleCreateMathPractice,
     handleCopyAssignmentLink,
     handleActivateForAll,
     handleClearActiveForAll,

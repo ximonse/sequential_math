@@ -317,6 +317,7 @@ function Dashboard() {
   })
   const {
     handleCreatePreset,
+    handleCreateMathPractice,
     handleCopyAssignmentLink,
     handleActivateForAll,
     handleClearActiveForAll,
@@ -407,7 +408,7 @@ function Dashboard() {
         selectedClassIds, students, filteredStudents, classFilterOptions, clearClassFilter,
         handleToggleClassFilter, classStats, dataQualitySummary, usageInsights, formatDuration,
         toPercent, assignments, activeAssignmentId, copiedId,
-        formatAssignmentSummaryLine, handleCreatePreset, handleClearActiveForAll, handleClearAllAssignments,
+        formatAssignmentSummaryLine, handleCreatePreset, handleCreateMathPractice, handleClearActiveForAll, handleClearAllAssignments,
         handleActivateForAll, handleDeleteAssignment, handleCopyAssignmentLink, classNameById,
         recordMatchesClassFilter, setStudents, setDashboardStatus, handleOpenStudentDetail,
         classOverviewMeta, filteredRows, detailStudentId,

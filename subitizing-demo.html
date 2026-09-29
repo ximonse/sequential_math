@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subitizing Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .dice-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px auto;
+            flex-wrap: wrap;
+        }
+
+        .dice {
+            width: 240px;
+            height: 240px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            background: #dc2626;
+            border-radius: 50%;
+            position: absolute;
+            transform: translate(-50%, -50%);
+        }
+
+        .controls {
+            margin-top: 30px;
+        }
+
+        .control-label {
+            color: #6b7280;
+            font-weight: 500;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e7eb;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            margin-bottom: 15px;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .number-btn {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .number-btn:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .number-btn:active {
+            background: #1d4ed8;
+            transform: translateY(0);
+        }
+
+        .info {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f0f9ff;
+            border-left: 4px solid #0284c7;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .info h3 {
+            color: #0c4a6e;
+            margin-bottom: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info p {
+            color: #0c4a6e;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .demo-note {
+            color: #6b7280;
+            font-size: 12px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎲 Snabb taluppfattning</h1>
+        <p class="subtitle">Testa subitizing-komponenten</p>
+
+        <div class="dice-container">
+            <div class="dice" id="dice1"></div>
+            <div class="dice" id="dice2" style="display: none;"></div>
+        </div>
+
+        <div class="controls">
+            <label class="control-label" for="slider">Antal prickar: <strong id="count">5</strong></label>
+            <input type="range" id="slider" class="slider" min="1" max="10" value="5">
+
+            <p style="color: #6b7280; margin: 15px 0;">Hur många prickar?</p>
+
+            <div class="buttons">
+                <button class="number-btn" onclick="selectNumber(1)">1</button>
+                <button class="number-btn" onclick="selectNumber(2)">2</button>
+                <button class="number-btn" onclick="selectNumber(3)">3</button>
+                <button class="number-btn" onclick="selectNumber(4)">4</button>
+                <button class="number-btn" onclick="selectNumber(5)">5</button>
+                <button class="number-btn" onclick="selectNumber(6)">6</button>
+                <button class="number-btn" onclick="selectNumber(7)">7</button>
+                <button class="number-btn" onclick="selectNumber(8)">8</button>
+                <button class="number-btn" onclick="selectNumber(9)">9</button>
+                <button class="number-btn" onclick="selectNumber(10)">10</button>
+            </div>
+        </div>
+
+        <div class="info">
+            <h3>Om subitizing</h3>
+            <p>Subitizing är förmågan att omedelbar uppfatta antal utan att räkna. Det är en viktig del av taluppfattningen och hjälper elever att utveckla mental aritmetik.</p>
+            <p style="margin-top: 10px;">Tärnings-mönstren följer autentiska tärning-format för att eleverna ska känna igen dem i verkliga sammanhang.</p>
+        </div>
+
+        <p class="demo-note">💡 Detta är en statisk demo. I appen mäts reaktionstiden automatiskt när eleven klickar.</p>
+    </div>
+
+    <script>
+        const patterns = {
+            1: [[50, 50]],
+            2: [[25, 25], [75, 75]],
+            3: [[50, 50], [25, 25], [75, 75]],
+            4: [[25, 25], [75, 25], [25, 75], [75, 75]],
+            5: [[25, 25], [75, 25], [50, 50], [25, 75], [75, 75]],
+            6: [[25, 25], [75, 25], [25, 50], [75, 50], [25, 75], [75, 75]],
+            7: [[25, 25], [75, 25], [25, 50], [50, 50], [75, 50], [25, 75], [75, 75]],
+            8: [[25, 25], [50, 25], [75, 25], [25, 50], [75, 50], [25, 75], [50, 75], [75, 75]],
+            9: [[25, 25], [50, 25], [75, 25], [25, 50], [50, 50], [75, 50], [25, 75], [50, 75], [75, 75]],
+            10: [[20, 20], [50, 20], [80, 20], [20, 50], [50, 50], [80, 50], [20, 80], [50, 80], [80, 80], [50, 92]]
+        };
+
+        const slider = document.getElementById('slider');
+        const countDisplay = document.getElementById('count');
+        const dice1 = document.getElementById('dice1');
+        const dice2 = document.getElementById('dice2');
+
+        function renderDots(diceElement, num) {
+            diceElement.innerHTML = '';
+            const pattern = patterns[num] || [];
+            pattern.forEach(([x, y]) => {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.style.left = x + '%';
+                dot.style.top = y + '%';
+                diceElement.appendChild(dot);
+            });
+        }
+
+        function renderDice(num) {
+            if (num <= 5) {
+                // En tärning för 0-5
+                renderDots(dice1, num);
+                dice2.style.display = 'none';
+            } else {
+                // Två tärningar för 6-10: 5 + resten
+                renderDots(dice1, 5);
+                renderDots(dice2, num - 5);
+                dice2.style.display = 'block';
+            }
+        }
+
+        function selectNumber(num) {
+            const correct = parseInt(slider.value);
+            const isCorrect = num === correct;
+            const btn = event.target;
+
+            btn.style.background = isCorrect ? '#10b981' : '#ef4444';
+            btn.style.transform = 'scale(1.1)';
+
+            setTimeout(() => {
+                btn.style.background = '#3b82f6';
+                btn.style.transform = '';
+            }, 300);
+
+            console.log(`Svar: ${num}, Rätt svar: ${correct} - ${isCorrect ? '✓ Rätt!' : '✗ Fel!'}`);
+        }
+
+        slider.addEventListener('input', (e) => {
+            const num = parseInt(e.target.value);
+            countDisplay.textContent = num;
+            renderDice(num);
+        });
+
+        // Initial render
+        renderDice(5);
+    </script>
+</body>
+</html>

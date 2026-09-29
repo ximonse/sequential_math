@@ -13,6 +13,7 @@ import DashboardHeaderBar from './DashboardHeaderBar'
 import InactivityAndClassLevelPanel from './InactivityAndClassLevelPanel'
 import PasswordResetPanel from './PasswordResetPanel'
 import ResultsOverviewPanel from './ResultsOverviewPanel'
+import MathPracticeResultsPanel from './MathPracticeResultsPanel'
 import StudentDetailPanel from './StudentDetailPanel'
 import StudentDetailTrainingPriorityPanel from './StudentDetailTrainingPriorityPanel'
 import SupportPriorityPanel from './SupportPriorityPanel'
@@ -33,6 +34,7 @@ const PANEL_DEFS = [
   { id: 'overview',    title: 'Klass/gruppvy – snabbstatus' },
   { id: 'detail',      title: 'Elevprofil' },
   { id: 'results',     title: 'Resultat och export' },
+  { id: 'mathresults', title: 'Matematikövningar — Resultat' },
   { id: 'assignments', title: 'Uppdrag' },
   { id: 'tickets',     title: 'Tickets' },
   { id: 'mastery',     title: 'Nivåöversikt – hela klassen' },
@@ -52,7 +54,7 @@ const PANEL_DEFS = [
 
 const WORKSPACES = [
   { id: 'progress', label: 'Framsteg', description: 'Kunskapsområden och elever', panels: ['mastery', 'tableoverview', 'overview', 'detail', 'tabledev'] },
-  { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'tickets'] },
+  { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'mathresults', 'tickets'] },
   { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality'] },
   { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management', 'password', 'pausegames', 'admin'] }
 ]
@@ -89,6 +91,7 @@ export default function DashboardLayout({
   copiedId,
   formatAssignmentSummaryLine,
   handleCreatePreset,
+  handleCreateMathPractice,
   handleClearActiveForAll,
   handleClearAllAssignments,
   handleActivateForAll,
@@ -384,6 +387,7 @@ export default function DashboardLayout({
         copiedId={copiedId}
         formatAssignmentSummaryLine={formatAssignmentSummaryLine}
         onCreatePreset={handleCreatePreset}
+        onCreateMathPractice={handleCreateMathPractice}
         onClearActiveForAll={handleClearActiveForAll}
         onClearAllAssignments={handleClearAllAssignments}
         onActivateForAll={handleActivateForAll}
@@ -437,6 +441,9 @@ export default function DashboardLayout({
     )
     if (id === 'results') return (
       <ResultsOverviewPanel {...resultsPanelProps} RiskBadgeComponent={RiskBadge} />
+    )
+    if (id === 'mathresults') return (
+      <MathPracticeResultsPanel students={students} filteredStudents={filteredStudents} />
     )
     if (id === 'password') return (
       <PasswordResetPanel

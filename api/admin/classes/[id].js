@@ -93,6 +93,7 @@ export default async function handler(req, res) {
         if (updated.enabledOperations.length === 0) return res.status(400).json({ error: 'Välj minst ett räknesätt.' })
       }
     }
+    if (typeof req.body?.talbildEnabled === 'boolean') updated.talbildEnabled = req.body.talbildEnabled
     updated.updatedAt = Date.now()
 
     const saved = await mutateClassRecord(id, current => {

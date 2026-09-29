@@ -4,7 +4,9 @@ export default function StudentHomeTrainingOptionsCard({
   onStartOperationPractice,
   getOperationLabel,
   operationProgress,
-  operationsReady = true
+  operationsReady = true,
+  talbildEnabled = false,
+  onStartTalbild
 }) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
@@ -17,6 +19,14 @@ export default function StudentHomeTrainingOptionsCard({
         >
           Fri träning
         </button>
+        {talbildEnabled && (
+          <button
+            onClick={onStartTalbild}
+            className="px-4 py-2 rounded-lg text-sm font-medium bg-red-50 border border-red-300 hover:bg-red-100 text-red-800"
+          >
+            Talbild
+          </button>
+        )}
         {operationKeys.map(operation => {
           let btnClass
           if (operation === 'algebra_evaluate' || operation === 'algebra_simplify') {

@@ -164,7 +164,7 @@ function normalizeAssignment(input, options = {}) {
   const title = String(input.title || '').trim() || (
     kind === 'ncm' ? 'NCM-uppdrag' :
     kind === 'math_practice' ? 'Matematikövning' :
-    kind === 'subitizing' ? 'Snabb taluppfattning' :
+    kind === 'subitizing' ? 'Talbild' :
     'Uppdrag'
   )
   const targetCount = normalizePositiveInt(input.targetCount, kind === 'ncm' ? 10 : 30)

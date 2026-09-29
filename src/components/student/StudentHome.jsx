@@ -86,7 +86,7 @@ function StudentHome() {
     setClassConfig({ classId, operations: null })
     fetch(`/api/class-config?classId=${encodeURIComponent(classId)}`)
       .then(r => { if (!r.ok) throw new Error('Class config unavailable'); return r.json() })
-      .then(data => { if (active) setClassConfig({ classId, operations: normalizeClassOperations(data?.enabledOperations), assignmentPayload: String(data?.activeAssignmentPayload || '') }) })
+      .then(data => { if (active) setClassConfig({ classId, operations: normalizeClassOperations(data?.enabledOperations), talbildEnabled: data?.talbildEnabled === true, assignmentPayload: String(data?.activeAssignmentPayload || '') }) })
       .catch(() => { if (active) setClassConfig({ classId, operations: [] }) })
     return () => { active = false }
   }, [classId])
@@ -262,6 +262,11 @@ function StudentHome() {
     }))
   }
 
+  const startTalbild = () => {
+    void persistProfile(profile)
+    navigate(`/student/${studentId}/subitizing`)
+  }
+
   if (!profile) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -381,6 +386,8 @@ function StudentHome() {
               getOperationLabel={getOperationLabel}
               operationProgress={operationProgress}
               operationsReady={operationKeys.length > 0}
+              talbildEnabled={classId !== '' && classConfig.classId === classId && classConfig.talbildEnabled === true}
+              onStartTalbild={startTalbild}
             />
           </div>
         </details>

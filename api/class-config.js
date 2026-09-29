@@ -30,6 +30,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       enabledExtras,
       enabledOperations: resolveClassOperations(kvClass),
+      talbildEnabled: kvClass?.talbildEnabled === true,
       activeAssignmentPayload: String(kvClass?.activeAssignmentPayload || '')
     })
   } catch {

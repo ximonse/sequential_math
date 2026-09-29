@@ -1,5 +1,6 @@
 import { cloneElement, useEffect, useState } from 'react'
 import AssignmentsPanel from './AssignmentsPanel'
+import ChevronIcon from './ChevronIcon'
 import ClassOverviewPanel from './ClassOverviewPanel'
 import ClassManagementPanel from './ClassManagementPanel'
 import ClassFilterPanel from './ClassFilterPanel'
@@ -231,9 +232,9 @@ export default function DashboardLayout({
     const toggle = <button type="button" aria-label={`${collapsed[id] ? 'Visa' : 'Minimera'} ${title}`}
       aria-expanded={!collapsed[id]} aria-controls={`progress-panel-${id}`}
       onClick={() => setCollapsed(previous => ({ ...previous, [id]: !previous[id] }))}
-      className="rounded p-1 text-lg leading-none text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+      className="inline-flex h-7 w-7 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
       title={`${collapsed[id] ? 'Visa' : 'Minimera'} ${title}`}>
-      <span aria-hidden="true">{collapsed[id] ? '⌄' : '⌃'}</span>
+      <ChevronIcon expanded={!collapsed[id]} />
     </button>
     return <div key={id} id={`progress-panel-${id}`}>
       {collapsed[id]

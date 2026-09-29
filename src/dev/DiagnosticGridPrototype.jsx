@@ -8,7 +8,6 @@ import {
 import './diagnosticGridPrototype.css'
 
 const TASKS = taskManifest.tasks
-const GRID_KEYS = ['7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '+', '−', ',', '─']
 
 function newGrid(task) {
   return createDiagnosticGrid({
@@ -37,6 +36,7 @@ function DiagnosticGridPrototype() {
   }
 
   useEffect(() => {
+    if (!document.activeElement?.classList?.contains('diagnostic-cell__input')) return
     const element = gridRef.current?.querySelector(
       `[data-cell="${grid.cursor.row}:${grid.cursor.column}"]`
     )
@@ -70,6 +70,12 @@ function DiagnosticGridPrototype() {
     record(previous => to.row === previous.cursor.row && to.column === previous.cursor.column
       ? null
       : { type: 'move', from: { row: previous.cursor.row, column: previous.cursor.column }, to })
+  }
+
+  function focusSelectedCell() {
+    gridRef.current?.querySelector(
+      `[data-cell="${grid.cursor.row}:${grid.cursor.column}"]`
+    )?.focus({ preventScroll: true })
   }
 
   function setLayer(layer) {
@@ -193,11 +199,11 @@ function DiagnosticGridPrototype() {
         <p className="mt-2 text-lg">{taskManifest.instructionSv}</p>
 
         <div className="mt-5 flex flex-wrap items-center gap-2">
-          <button type="button" onClick={() => setLayer('main')} disabled={grid.status === 'submitted'}
+          <button type="button" onClick={() => { setLayer('main'); focusSelectedCell() }} disabled={grid.status === 'submitted'}
             className={`rounded-lg px-3 py-2 ${grid.cursor.layer === 'main' ? 'bg-slate-900 text-white' : 'bg-slate-200'}`}>
             Stora siffror (Esc)
           </button>
-          <button type="button" onClick={() => setLayer('note')} disabled={grid.status === 'submitted'}
+          <button type="button" onClick={() => { setLayer('note'); focusSelectedCell() }} disabled={grid.status === 'submitted'}
             className={`rounded-lg px-3 py-2 ${grid.cursor.layer === 'note' ? 'bg-slate-900 text-white' : 'bg-slate-200'}`}>
             Liten anteckning (N)
           </button>
@@ -208,7 +214,7 @@ function DiagnosticGridPrototype() {
             className="rounded-lg border border-slate-400 px-3 py-2">På hjälprad</button>
         </div>
 
-        <p className="mt-4 text-sm text-slate-700">Tryck på en ruta och använd knapparna nedan, eller skriv med tangentbord. Pilar eller tabulator flyttar markören. Backspace raderar. N växlar anteckningsläge. Svep i sidled om alla kolumner inte syns.</p>
+        <p className="mt-4 text-sm text-slate-700">Tryck på en ruta och skriv med enhetens tangentbord. Pilar eller tabulator flyttar markören. Backspace raderar. N växlar anteckningsläge. Svep i sidled om alla kolumner inte syns.</p>
         <div className="mt-3 overflow-x-auto pb-2">
           <div ref={gridRef} className={`diagnostic-grid ${noteView === 'row' ? 'diagnostic-grid--helper-row' : ''}`} role="group" aria-label="Rutat räknehäfte">
             {Array.from({ length: grid.rows * grid.columns }, (_, index) => {
@@ -217,36 +223,37 @@ function DiagnosticGridPrototype() {
               const cell = grid.cells[`${row}:${column}`] || { main: '', note: '' }
               const selected = grid.cursor.row === row && grid.cursor.column === column
               return (
-                <button
+                <div
                   key={`${row}:${column}`}
-                  type="button"
-                  data-cell={`${row}:${column}`}
-                  tabIndex={selected && grid.status !== 'submitted' ? 0 : -1}
-                  aria-label={`${selected ? 'Markerad ruta, ' : ''}rad ${row + 1}, kolumn ${column + 1}${cell.main ? `, ${cell.main}` : ', tom'}${cell.note ? `, anteckning ${cell.note}` : ''}`}
                   className={`diagnostic-cell ${selected ? 'diagnostic-cell--selected' : ''}`}
-                  onClick={() => moveCursor({ row, column })}
-                  onKeyDown={handleKeyDown}
-                  disabled={grid.status === 'submitted'}
                 >
+                  <input
+                    type="text"
+                    inputMode="text"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="off"
+                    spellCheck="false"
+                    value=""
+                    data-cell={`${row}:${column}`}
+                    tabIndex={selected && grid.status !== 'submitted' ? 0 : -1}
+                    aria-label={`${selected ? 'Markerad ruta, ' : ''}rad ${row + 1}, kolumn ${column + 1}${cell.main ? `, ${cell.main}` : ', tom'}${cell.note ? `, anteckning ${cell.note}` : ''}`}
+                    className="diagnostic-cell__input"
+                    onFocus={() => moveCursor({ row, column })}
+                    onChange={event => {
+                      const entered = event.target.value
+                      if (entered.length !== 1) return
+                      writeCell(entered === '-' ? '−' : entered === '=' ? '─' : entered)
+                    }}
+                    onKeyDown={handleKeyDown}
+                    disabled={grid.status === 'submitted'}
+                  />
                   <span className="diagnostic-cell__note">{cell.note}</span>
                   <span className="diagnostic-cell__main">{cell.main}</span>
-                </button>
+                </div>
               )
             })}
           </div>
-        </div>
-        <div className="mt-3 flex max-w-sm flex-wrap gap-2" role="group" aria-label="Inmatningsknappar för rutnätet">
-          {GRID_KEYS.map(character => (
-            <button key={character} type="button" onClick={() => writeCell(character)}
-              disabled={grid.status === 'submitted' || (grid.cursor.layer === 'note' && !/^[0-9]$/u.test(character))}
-              className="min-h-11 min-w-11 rounded-lg border border-slate-500 bg-slate-50 text-xl font-semibold disabled:opacity-40">
-              {character}
-            </button>
-          ))}
-          <button type="button" onClick={eraseCell} disabled={grid.status === 'submitted'}
-            className="min-h-11 rounded-lg border border-slate-500 bg-slate-50 px-3 text-base font-semibold disabled:opacity-40">
-            Radera
-          </button>
         </div>
         <p className="mt-2 text-sm text-slate-700">Markerad ruta: rad {grid.cursor.row + 1}, kolumn {grid.cursor.column + 1}, {grid.cursor.layer === 'note' ? 'anteckning' : 'stor siffra'}. Händelser: {grid.events.length}.</p>
         <label className="mt-4 block text-base font-semibold" htmlFor="diagnostic-answer">Mitt svar</label>

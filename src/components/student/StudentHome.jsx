@@ -274,7 +274,7 @@ function StudentHome() {
     ? (assignmentPayload || encodeAssignmentPayload(assignment))
     : ''
   const assignmentPracticePath = assignment
-    ? `/student/${studentId}/practice?${new URLSearchParams({
+    ? `/student/${studentId}/${assignment.kind === 'subitizing' ? 'subitizing' : 'practice'}?${new URLSearchParams({
       assignment: String(assignment.id || ''),
       ...(encodedAssignmentPayload ? { assignment_payload: encodedAssignmentPayload } : {})
     }).toString()}`

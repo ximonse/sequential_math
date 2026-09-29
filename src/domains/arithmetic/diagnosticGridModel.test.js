@@ -54,6 +54,27 @@ describe('diagnostic grid observation', () => {
       .toThrow('immutable')
   })
 
+  it('replays a two-digit carry note and deletion of its last digit', () => {
+    let grid = startingGrid()
+    grid = recordDiagnosticGridEvent(grid, {
+      type: 'write', position: { row: 0, column: 0 }, layer: 'note', before: '', after: '1'
+    }, 1001)
+    grid = recordDiagnosticGridEvent(grid, {
+      type: 'write', position: { row: 0, column: 0 }, layer: 'note', before: '1', after: '12'
+    }, 1002)
+    expect(grid.cells['0:0'].note).toBe('12')
+    expect(replayDiagnosticGrid(JSON.parse(JSON.stringify(grid)))).toEqual(grid)
+
+    grid = recordDiagnosticGridEvent(grid, {
+      type: 'erase', position: { row: 0, column: 0 }, layer: 'note', before: '12', after: '1'
+    }, 1003)
+    expect(grid.cells['0:0'].note).toBe('1')
+    expect(replayDiagnosticGrid(JSON.parse(JSON.stringify(grid)))).toEqual(grid)
+    expect(() => recordDiagnosticGridEvent(grid, {
+      type: 'write', position: { row: 0, column: 0 }, layer: 'note', before: '1', after: '123'
+    }, 1004)).toThrow('character')
+  })
+
   it('keeps separate attempts and task versions distinct', () => {
     const first = startingGrid()
     const repeat = createDiagnosticGrid({ attemptId: 'attempt-2', taskId: first.taskId, taskVersion: 1 })

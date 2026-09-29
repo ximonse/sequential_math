@@ -22,7 +22,6 @@ function DiagnosticGridPrototype() {
   const [grid, setGrid] = useState(() => newGrid(TASKS[0]))
   const [snapshotText, setSnapshotText] = useState('')
   const [message, setMessage] = useState('')
-  const [noteView, setNoteView] = useState('small')
   const gridRef = useRef(null)
   const gridsRef = useRef(new Map())
 
@@ -38,7 +37,7 @@ function DiagnosticGridPrototype() {
   useEffect(() => {
     if (!document.activeElement?.classList?.contains('diagnostic-cell__input')) return
     const element = gridRef.current?.querySelector(
-      `[data-cell="${grid.cursor.row}:${grid.cursor.column}"]`
+      `[data-cell="${grid.cursor.row}:${grid.cursor.column}"][data-layer="${grid.cursor.layer}"]`
     )
     element?.focus({ preventScroll: true })
   }, [grid.cursor])
@@ -72,9 +71,14 @@ function DiagnosticGridPrototype() {
       : { type: 'move', from: { row: previous.cursor.row, column: previous.cursor.column }, to })
   }
 
-  function focusSelectedCell() {
+  function selectCell(row, column, layer) {
+    moveCursor({ row, column })
+    setLayer(layer)
+  }
+
+  function focusSelectedCell(layer = grid.cursor.layer) {
     gridRef.current?.querySelector(
-      `[data-cell="${grid.cursor.row}:${grid.cursor.column}"]`
+      `[data-cell="${grid.cursor.row}:${grid.cursor.column}"][data-layer="${layer}"]`
     )?.focus({ preventScroll: true })
   }
 
@@ -84,21 +88,24 @@ function DiagnosticGridPrototype() {
       : { type: 'layer', from: previous.cursor.layer, to: layer })
   }
 
-  function eraseCell() {
+  function eraseCell(clear = false) {
     record(previous => {
       const { row, column, layer } = previous.cursor
       const before = previous.cells[`${row}:${column}`]?.[layer] || ''
-      return before ? { type: 'erase', position: { row, column }, layer, before, after: '' } : null
+      const after = layer === 'note' && !clear ? before.slice(0, -1) : ''
+      return before ? { type: 'erase', position: { row, column }, layer, before, after } : null
     })
   }
 
   function writeCell(character) {
     record(previous => {
       const { row, column, layer } = previous.cursor
-      const allowedNow = layer === 'note' ? /^[0-9]$/u : /^[0-9+−,─]$/u
+      const allowedNow = layer === 'note' ? /^[0-9]{1,2}$/u : /^[0-9+−,─]$/u
       if (!allowedNow.test(character)) return null
       const before = previous.cells[`${row}:${column}`]?.[layer] || ''
-      return before === character ? null : { type: 'write', position: { row, column }, layer, before, after: character }
+      const after = layer === 'note' ? `${before}${character}` : character
+      return after.length > 2 || before === after ? null
+        : { type: 'write', position: { row, column }, layer, before, after }
     })
   }
 
@@ -142,10 +149,10 @@ function DiagnosticGridPrototype() {
     }
     if (key === 'Backspace' || key === 'Delete') {
       event.preventDefault()
-      eraseCell()
+      eraseCell(key === 'Delete')
       return
     }
-    const character = key === '=' ? '─' : key === '-' ? '−' : key
+      const character = key === '=' ? '─' : key === '-' ? '−' : key
     if (!/^[0-9+−,─]$/u.test(character) || event.ctrlKey || event.metaKey || event.altKey) return
     event.preventDefault()
     writeCell(character)
@@ -199,57 +206,53 @@ function DiagnosticGridPrototype() {
         <p className="mt-2 text-lg">{taskManifest.instructionSv}</p>
 
         <div className="mt-5 flex flex-wrap items-center gap-2">
-          <button type="button" onClick={() => { setLayer('main'); focusSelectedCell() }} disabled={grid.status === 'submitted'}
+          <button type="button" onClick={() => { setLayer('main'); focusSelectedCell('main') }} disabled={grid.status === 'submitted'}
             className={`rounded-lg px-3 py-2 ${grid.cursor.layer === 'main' ? 'bg-slate-900 text-white' : 'bg-slate-200'}`}>
             Stora siffror (Esc)
           </button>
-          <button type="button" onClick={() => { setLayer('note'); focusSelectedCell() }} disabled={grid.status === 'submitted'}
+          <button type="button" onClick={() => { setLayer('note'); focusSelectedCell('note') }} disabled={grid.status === 'submitted'}
             className={`rounded-lg px-3 py-2 ${grid.cursor.layer === 'note' ? 'bg-slate-900 text-white' : 'bg-slate-200'}`}>
             Minnessiffra (N)
           </button>
-          <span className="ml-2 text-sm text-slate-600">Visa minnessiffra:</span>
-          <button type="button" onClick={() => setNoteView('small')} aria-pressed={noteView === 'small'}
-            className="rounded-lg border border-slate-400 px-3 py-2">I rutan</button>
-          <button type="button" onClick={() => setNoteView('row')} aria-pressed={noteView === 'row'}
-            className="rounded-lg border border-slate-400 px-3 py-2">På hjälprad</button>
         </div>
 
-        <p className="mt-4 text-sm text-slate-700">Tryck på en ruta och skriv med enhetens tangentbord. Pilar eller tabulator flyttar markören. Backspace raderar. N växlar till minnessiffra. Svep i sidled om alla kolumner inte syns.</p>
+        <p className="mt-4 text-sm text-slate-700">Tryck på en stor ruta eller minnessifferrutan ovanför och skriv med enhetens tangentbord. Minnessiffran kan ha två siffror. Pilar eller tabulator flyttar markören. Backspace tar bort sista siffran, Delete tömmer rutan. N växlar mellan rutorna. Svep i sidled om alla kolumner inte syns.</p>
         <div className="mt-3 overflow-x-auto pb-2">
-          <div ref={gridRef} className={`diagnostic-grid ${noteView === 'row' ? 'diagnostic-grid--helper-row' : ''}`} role="group" aria-label="Rutat räknehäfte">
+          <div ref={gridRef} className="diagnostic-grid" role="group" aria-label="Rutat räknehäfte">
             {Array.from({ length: grid.rows * grid.columns }, (_, index) => {
               const row = Math.floor(index / grid.columns)
               const column = index % grid.columns
               const cell = grid.cells[`${row}:${column}`] || { main: '', note: '' }
               const selected = grid.cursor.row === row && grid.cursor.column === column
               return (
-                <div
-                  key={`${row}:${column}`}
-                  className={`diagnostic-cell ${selected ? 'diagnostic-cell--selected' : ''}`}
-                >
-                  <input
-                    type="text"
-                    inputMode="text"
-                    autoComplete="off"
-                    autoCorrect="off"
-                    autoCapitalize="off"
-                    spellCheck="false"
-                    value=""
-                    data-cell={`${row}:${column}`}
-                    tabIndex={selected && grid.status !== 'submitted' ? 0 : -1}
-                    aria-label={`${selected ? 'Markerad ruta, ' : ''}rad ${row + 1}, kolumn ${column + 1}${cell.main ? `, ${cell.main}` : ', tom'}${cell.note ? `, minnessiffra ${cell.note}` : ''}`}
-                    className="diagnostic-cell__input"
-                    onFocus={() => moveCursor({ row, column })}
-                    onChange={event => {
-                      const entered = event.target.value
-                      if (entered.length !== 1) return
-                      writeCell(entered === '-' ? '−' : entered === '=' ? '─' : entered)
-                    }}
-                    onKeyDown={handleKeyDown}
-                    disabled={grid.status === 'submitted'}
-                  />
-                  <span className="diagnostic-cell__note">{cell.note}</span>
-                  <span className="diagnostic-cell__main">{cell.main}</span>
+                <div key={`${row}:${column}`} className="diagnostic-cell">
+                  {['note', 'main'].map(layer => (
+                    <div key={layer} className={`diagnostic-cell__slot diagnostic-cell__slot--${layer} ${selected && grid.cursor.layer === layer ? 'diagnostic-cell__slot--selected' : ''}`}>
+                      <input
+                        type="text"
+                        inputMode={layer === 'note' ? 'numeric' : 'text'}
+                        autoComplete="off"
+                        autoCorrect="off"
+                        autoCapitalize="off"
+                        spellCheck="false"
+                        value=""
+                        data-cell={`${row}:${column}`}
+                        data-layer={layer}
+                        tabIndex={selected && grid.cursor.layer === layer && grid.status !== 'submitted' ? 0 : -1}
+                        aria-label={`${selected && grid.cursor.layer === layer ? 'Markerad ruta, ' : ''}rad ${row + 1}, kolumn ${column + 1}, ${layer === 'note' ? 'minnessiffra' : 'stor siffra'}${cell[layer] ? ` ${cell[layer]}` : ', tom'}`}
+                        className="diagnostic-cell__input"
+                        onFocus={() => selectCell(row, column, layer)}
+                        onChange={event => {
+                          const entered = event.target.value
+                          if (entered.length < 1 || entered.length > 2) return
+                          writeCell(entered === '-' ? '−' : entered === '=' ? '─' : entered)
+                        }}
+                        onKeyDown={handleKeyDown}
+                        disabled={grid.status === 'submitted'}
+                      />
+                      <span className="diagnostic-cell__digit">{cell[layer]}</span>
+                    </div>
+                  ))}
                 </div>
               )
             })}

@@ -58,11 +58,11 @@ Inga nya elevfunktioner eller utskriftsgeneratorer ingår i Etapp 0.
 - [x] Dev-/QA-route `/qa/diagnostic-grid` läser de fyra uppgifterna från
   manifestet som markerbar text. Normal produktionsbuild exponerar inte routen.
 - [x] Rutnät med fokuserbara inmatningsfält för enhetens tangentbord, pilar,
-  tabulator, direkt rutval, radering, operatorer och en separat
-  anteckningsposition. Två visuella placeringar av anteckningen kan jämföras
-  utan att observationsformatet ändras.
-- [x] UI-kontrollen heter `Minnessiffra`; stora siffror centreras i rutan och
-  minnessiffran centreras i sitt övre fält. Detta ändrar inte händelsedatat.
+  tabulator, direkt rutval, radering och operatorer. Varje kolumn har en egen
+  tryckbar minnessifferruta ovanför den stora siffrans ruta. Båda siffrorna är
+  centrerade. Minnessifferrutan tar upp till två siffror; Backspace tar bort
+  sista siffran. UI-kontrollen heter `Minnessiffra`; händelsedatat behåller
+  separata `note`- och `main`-lager på samma koordinat.
 - [x] Append-only-förlopp med versionsnummer, cellföre/-efter, markör,
   anteckningsläge, svar, paus/fokusförlust och inlämning. JSON-återläsning
   återskapar slutbilden eller stoppar vid mismatch.
@@ -140,6 +140,11 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   bevis för hur iPadens tangentbord visas eller fungerar med elever. Bygget gav
   befintliga varningar om gammal Browserslist-data, blandad statisk/dynamisk
   import och stor bundle.
+- Separata minnessifferrutor och tvåsiffrig inmatning: 110 testfiler/545 tester,
+  normal build, QA-build och riktad browserkontroll av tryck, `12`, Backspace,
+  pilflytt, lagerväxling och JSON-återläsning passerade lokalt. En full
+  robotkörning stannade efter majoriteten av fallen utan slutrapport och
+  avbröts; den är inte verifierad för detta snitt.
 - Nästa steg: prova rutnät och minnessiffra/lån med elever på avsedd iPad.
   Specificera samtidigt en separat serverresurs och dess konflikt- och
   raderingsregler utifrån lagringsauditen ovan, före serveranslutning.

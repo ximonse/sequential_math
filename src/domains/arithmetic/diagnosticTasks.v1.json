@@ -1,0 +1,51 @@
+{
+  "manifestId": "written-integer-add-sub",
+  "manifestVersion": 1,
+  "language": "sv-SE",
+  "status": "contract_draft",
+  "evidenceClass": "diagnostic_only",
+  "sourceKind": "original",
+  "instructionSv": "Visa hur du räknar i rutorna. Skriv också ditt svar.",
+  "tasks": [
+    {
+      "taskId": "add-no-carry-001",
+      "taskVersion": 1,
+      "operation": "addition",
+      "operands": [268, 431],
+      "promptSv": "Räkna ut 268 + 431.",
+      "answerRule": "integer_addition",
+      "intentCode": "aligned_columns_without_carry",
+      "analysisCaseId": "A1"
+    },
+    {
+      "taskId": "add-carry-001",
+      "taskVersion": 1,
+      "operation": "addition",
+      "operands": [248, 327],
+      "promptSv": "Räkna ut 248 + 327.",
+      "answerRule": "integer_addition",
+      "intentCode": "ones_to_tens_carry",
+      "analysisCaseId": "A2"
+    },
+    {
+      "taskId": "sub-no-exchange-001",
+      "taskVersion": 1,
+      "operation": "subtraction",
+      "operands": [764, 231],
+      "promptSv": "Räkna ut 764 − 231.",
+      "answerRule": "integer_subtraction",
+      "intentCode": "aligned_columns_without_exchange",
+      "analysisCaseId": "S1"
+    },
+    {
+      "taskId": "sub-through-zero-001",
+      "taskVersion": 1,
+      "operation": "subtraction",
+      "operands": [402, 178],
+      "promptSv": "Räkna ut 402 − 178.",
+      "answerRule": "integer_subtraction",
+      "intentCode": "exchange_through_zero",
+      "analysisCaseId": "S2"
+    }
+  ]
+}

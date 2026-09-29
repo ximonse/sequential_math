@@ -75,6 +75,39 @@ ingen vanlig mastery-/adaptivitetspipeline och ingen Word/PDF-renderare.
 Att JSON går att återläsa i en flik bevisar ännu inte lagring efter avbrott,
 serverbekräftelse eller att en elev naturligt kan skriva minnessiffra/lån.
 
+### Lagringsaudit inför nästa implementation (första kodpasset)
+
+- `api/me/events.js` kontrollerar levande elevsession, ursprung och CSRF och
+  skickar sedan till `api/student/[studentId]/events.js`. Den senare accepterar
+  bara nuvarande händelsetyper. `problem_result` hamnar i `recentProblems` och
+  `problemLog`, som kapas till 250 respektive 5 000 poster. En ny observation
+  får därför inte skickas som `problem_result`, även med `diagnostic_only`.
+- Event-API:t begränsar en händelse till 32 KiB, en batch till 256 KiB och
+  sorterar efter tidsstämpel före applicering. Rutnätsordning måste i stället
+  valideras med försöks-ID och sekvens; en stor slutbild kan inte antas rymmas
+  i ett vanligt event. Befintligt API returnerar ack för även redan applicerade
+  händelser, vilket är rimligt för retry men inte bevisar att en ny typ lagrats.
+- `pilotStudentRuntime.js` håller en krypterad IndexedDB-kö, delar batcher,
+  kräver ack och bevarar avvisade original lokalt. Den sparar samtidigt
+  elevprofilssnapshot. Eventets storlek kontrolleras först vid synk; för ett
+  diagnostiskt försök behövs storlekskontroll före lokal acceptans och en
+  synlig gräns mellan lokalt köad och serverbekräftad revision.
+- `api/student/_profileMerge.js` slår ihop elevprofiler efter färskhet och
+  kapar vanliga resultatfält. Ett nytt diagnostikfält på profilen skulle kunna
+  överskrivas av äldre klienter eller blandas i statistik. En separat
+  serverauktoritativ försöksresurs är därför arbetsförslaget; dess exakta
+  nyckel, kvot, CAS-/konfliktregel, behörighet och raderingslivscykel återstår
+  att specificera och testa.
+- Gammalt `kind: ncm` i `assignments.js` är ett kodfilter med `targetCount`.
+  Ny diagnostisk tilldelning behöver fryst uppgiftslista och serververifierad
+  koppling till elev/klass; en länkpayload ensam får inte ge rätt att skriva
+  ett försök. Lärarens läsrätt ska följa aktuell klassåtkomst medan
+  `classIdAtAttempt` bevarar historiskt sammanhang.
+
+Detta är en kodgranskning, inte en körbar garanti för en ny lagringsväg.
+Innan serverkod skrivs krävs en konkret resursmodell och tester för parallella
+enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
+
 ## Beslut och öppna frågor
 
 - Antaget: första omfattningen är flersiffrig addition och subtraktion med
@@ -104,4 +137,5 @@ serverbekräftelse eller att en elev naturligt kan skriva minnessiffra/lån.
   ett test på fysisk iPad eller med elev. Bygget gav befintliga varningar om
   gammal Browserslist-data, blandad statisk/dynamisk import och stor bundle.
 - Nästa steg: prova rutnät och minnessiffra/lån med elever på avsedd iPad.
-  Granska därefter hela synkvägen före serveranslutning.
+  Specificera samtidigt en separat serverresurs och dess konflikt- och
+  raderingsregler utifrån lagringsauditen ovan, före serveranslutning.

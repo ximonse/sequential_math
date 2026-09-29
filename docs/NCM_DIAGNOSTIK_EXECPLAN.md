@@ -57,9 +57,10 @@ Inga nya elevfunktioner eller utskriftsgeneratorer ingår i Etapp 0.
 
 - [x] Dev-/QA-route `/qa/diagnostic-grid` läser de fyra uppgifterna från
   manifestet som markerbar text. Normal produktionsbuild exponerar inte routen.
-- [x] Rutnät med tangentbord, pekknappar, pilar, tabulator, direkt rutval,
-  radering, operatorer och en separat anteckningsposition. Två visuella placeringar av
-  anteckningen kan jämföras utan att observationsformatet ändras.
+- [x] Rutnät med fokuserbara inmatningsfält för enhetens tangentbord, pilar,
+  tabulator, direkt rutval, radering, operatorer och en separat
+  anteckningsposition. Två visuella placeringar av anteckningen kan jämföras
+  utan att observationsformatet ändras.
 - [x] Append-only-förlopp med versionsnummer, cellföre/-efter, markör,
   anteckningsläge, svar, paus/fokusförlust och inlämning. JSON-återläsning
   återskapar slutbilden eller stoppar vid mismatch.
@@ -112,6 +113,8 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
 
 - Antaget: första omfattningen är flersiffrig addition och subtraktion med
   tangentbordsinmatad uppställning; diagnostik är skild från mängdträning.
+- Beslutat av Simon: siffrorna skrivs med enhetens tangentbord. Prototypens
+  egen sifferpanel har tagits bort.
 - Antaget: egna uppgifter används tills rätt till originalmaterial klarlagts.
 - Föreslaget i [Etapp 0-kontraktet](NCM_DIAGNOSTIK_ETAPP0.md): läraren avslutar
   ett försök uttryckligen. Detta är ännu inte ett antaget pedagogiskt beslut.
@@ -126,16 +129,15 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   samt [uppgiftsmanifest v1](../src/domains/arithmetic/diagnosticTasks.v1.json).
 - Etapp 1-prototyp: lokal QA-route utan elevkonton eller serverlagring.
   Prototypens JSON är en synlig arbetskopia, inte en säker sparfunktion.
-- Verifierat lokalt efter pekknappsjusteringen: `npm run test` 110 filer/
-  544 tester och `npm run build`. `npm run robots` kördes före den isolerade
-  pekknappsjusteringen: 68 godkända, 0 regelbrott.
-  Normal produktionsbuild innehöll ingen prototyproute. Lokalt QA-bygge prövades
-  med Playwright i 768×1024 och 390×844: inmatning, anteckning, uppgiftsbyte,
-  separat svar, frysning och JSON-återläsning. Senaste mobilkontrollen omfattade
-  pekknappar och JSON-återläsning mellan uppgifter; skärmbilden granskades.
-  Detta är webbläsarkontroll, inte
-  ett test på fysisk iPad eller med elev. Bygget gav befintliga varningar om
-  gammal Browserslist-data, blandad statisk/dynamisk import och stor bundle.
+- Verifierat lokalt efter ändringen till enhetens tangentbord: `npm run test`
+  110 filer/544 tester, `npm run build` och `npm run robots` 68 godkända,
+  0 regelbrott. Normal produktionsbuild innehöll ingen prototyproute.
+  QA-bygget prövades med Playwright i mobilvy 390×844: inget automatiskt
+  rutnätsfokus, fokus vid tryck, siffror, pilflytt, anteckning, radering och
+  JSON-återläsning. Skärmbilden granskades. Detta är webbläsarkontroll, inte
+  bevis för hur iPadens tangentbord visas eller fungerar med elever. Bygget gav
+  befintliga varningar om gammal Browserslist-data, blandad statisk/dynamisk
+  import och stor bundle.
 - Nästa steg: prova rutnät och minnessiffra/lån med elever på avsedd iPad.
   Specificera samtidigt en separat serverresurs och dess konflikt- och
   raderingsregler utifrån lagringsauditen ovan, före serveranslutning.

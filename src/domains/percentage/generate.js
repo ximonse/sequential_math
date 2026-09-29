@@ -11,6 +11,21 @@ function rotatePick(key, arr) {
   return arr[safeIndex]
 }
 
+// A whole-number base whose p% is also a whole number, sized like
+// (100 / p) * rand(minUnits, maxUnits) but never fractional (100 / 30 is not).
+function cleanBase(percentage, minUnits, maxUnits) {
+  let step = 1
+  while (step < 100) {
+    const part = (percentage * step) / 100
+    if (Math.abs(part - Math.round(part)) < 1e-9) break
+    step += 1
+  }
+  const exact = 100 / percentage
+  const low = Math.max(1, Math.ceil((minUnits * exact) / step))
+  const high = Math.max(low, Math.round((maxUnits * exact) / step))
+  return step * rand(low, high)
+}
+
 function percentagePrompt(level, operation, value) {
   const variants = {
     percent_of: [
@@ -114,7 +129,7 @@ const TEMPLATES = [
   // Level 8: p% av X (enkla procentsatser)
   () => {
     const p = Number(rotatePick('percentage:l8:p', [10, 20, 25, 40, 50]))
-    const x = (100 / p) * rand(3, 35)
+    const x = cleanBase(p, 3, 35)
     return makeTemplate(percentagePrompt('percent_of', p, x), (p * x) / 100, 'pct_l8_simple_mix', {
       kind: 'percent_of', percentage: p, base: x
     })
@@ -123,7 +138,7 @@ const TEMPLATES = [
   // Level 9: p% av X (bredare mix)
   () => {
     const p = Number(rotatePick('percentage:l9:p', [5, 10, 12.5, 20, 25, 40, 50, 75]))
-    const x = (100 / p) * rand(4, 45)
+    const x = cleanBase(p, 4, 45)
     return makeTemplate(percentagePrompt('percent_of', p, x), (p * x) / 100, 'pct_l9_wide_mix', {
       kind: 'percent_of', percentage: p, base: x
     })
@@ -132,7 +147,7 @@ const TEMPLATES = [
   // Level 10: Rabatt
   () => {
     const p = Number(rotatePick('percentage:l10:p', [10, 15, 20, 25, 30, 40, 50]))
-    const x = (100 / p) * rand(6, 45)
+    const x = cleanBase(p, 6, 45)
     const discount = (p * x) / 100
     return makeTemplate(percentagePrompt('discount', p, x), x - discount, 'pct_l10_discount', {
       kind: 'discount', percentage: p, base: x
@@ -142,7 +157,7 @@ const TEMPLATES = [
   // Level 11: Prisökning
   () => {
     const p = Number(rotatePick('percentage:l11:p', [5, 10, 12.5, 20, 25, 30, 40, 50]))
-    const x = (100 / p) * rand(5, 30)
+    const x = cleanBase(p, 5, 30)
     const increase = (p * x) / 100
     return makeTemplate(percentagePrompt('increase', p, x), x + increase, 'pct_l11_increase', {
       kind: 'increase', percentage: p, base: x
@@ -152,7 +167,7 @@ const TEMPLATES = [
   // Level 12: Andel
   () => {
     const p = Number(rotatePick('percentage:l12:p', [10, 12.5, 20, 25, 40, 50, 60, 75, 80]))
-    const y = (100 / p) * rand(2, 16)
+    const y = cleanBase(p, 2, 16)
     const x = (y * p) / 100
     return makeTemplate(percentagePrompt('share', x, y), p, 'pct_l12_share', {
       kind: 'share', part: x, total: y

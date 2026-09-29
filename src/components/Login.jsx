@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { getPilotStudentRuntime } from '../lib/pilotStudentRuntime'
-import { loginStudentSession } from '../lib/studentSessionClient'
+import { loginStudentSession, resumeStudentSession } from '../lib/studentSessionClient'
+import SessionLoadingView from './student/SessionLoadingView'
 import { decodeAssignmentPayload } from '../lib/assignments'
 import PilotStudentLoginForm from './student/PilotStudentLoginForm'
 
@@ -22,11 +23,38 @@ function getStudentDestination(searchParams, studentId) {
   return `/student/${studentId}`
 }
 
+const DESTINATION_KEYS = ['assignment', 'assignment_payload', 'mode', 'ticket', 'ticket_payload', 'redirect']
+
 export default function Login() {
   const [error, setError] = useState('')
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const hasDestination = DESTINATION_KEYS.some(key => searchParams.get(key))
+  const [resuming, setResuming] = useState(hasDestination)
+
+  useEffect(() => {
+    if (!hasDestination) return undefined
+    let active = true
+    ;(async () => {
+      try {
+        const session = await resumeStudentSession()
+        if (!active) return
+        if (session.ok) {
+          const bootstrapped = await getPilotStudentRuntime().bootstrap(session.student.studentId)
+          if (!active) return
+          if (bootstrapped.ok) {
+            navigate(getStudentDestination(searchParams, bootstrapped.profile.studentId), { replace: true })
+            return
+          }
+        }
+      } catch {
+        // No usable session: fall back to the login form.
+      }
+      if (active) setResuming(false)
+    })()
+    return () => { active = false }
+  }, [hasDestination, searchParams, navigate])
 
   const handleCardLogin = async ({ loginCode, pin }) => {
     if (isLoggingIn) return
@@ -47,6 +75,8 @@ export default function Login() {
       setIsLoggingIn(false)
     }
   }
+
+  if (resuming) return <SessionLoadingView />
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-800 via-teal-700 to-cyan-700 px-4 py-10">

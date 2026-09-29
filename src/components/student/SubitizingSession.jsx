@@ -77,7 +77,7 @@ function SubitizingSession() {
   }, [studentId, assignmentId, assignmentPayload, navigate])
 
   const generateDiceValue = useCallback(() => {
-    return Math.floor(Math.random() * 11)
+    return Math.floor(Math.random() * 10) + 1
   }, [])
 
   const startNewProblem = useCallback(() => {

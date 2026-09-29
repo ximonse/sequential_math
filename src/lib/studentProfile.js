@@ -107,6 +107,21 @@ export function addMathPracticeSessionResult(profile, assignment, sessionData) {
   return nextProfile
 }
 
+export function addSubitizingSessionResult(profile, assignment, sessionData) {
+  if (!profile || !assignment || assignment.kind !== 'subitizing' || !sessionData) return profile
+
+  const { totalProblems, correctAnswers } = sessionData
+  if (totalProblems <= 0) return profile
+
+  const nextProfile = structuredClone(profile)
+  const stats = ensureLifetimeStats(nextProfile)
+
+  stats.lifetimeProblems += totalProblems
+  stats.lifetimeCorrectAnswers += correctAnswers
+
+  return nextProfile
+}
+
 const MAX_RECENT_PROBLEMS = 250
 const MAX_PROBLEM_LOG = 5000
 

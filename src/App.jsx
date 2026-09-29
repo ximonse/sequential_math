@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import PracticeSession from './components/student/PracticeSession'
+import SubitizingSession from './components/student/SubitizingSession'
 import StudentHome from './components/student/StudentHome'
 import StudentTicket from './components/student/StudentTicket'
 import Dashboard from './components/teacher/Dashboard'
@@ -40,6 +41,7 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/student/:studentId" element={<StudentHome />} />
         <Route path="/student/:studentId/practice" element={<PracticeSession />} />
+        <Route path="/student/:studentId/subitizing" element={<SubitizingSession />} />
         <Route path="/student/:studentId/ticket" element={<StudentTicket />} />
         <Route path="/teacher-login" element={<TeacherLogin />} />
         {import.meta.env.DEV ? <Route path="/qa/adaptive" element={<AdaptiveQaBootstrap />} /> : null}

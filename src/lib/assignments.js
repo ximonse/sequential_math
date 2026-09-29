@@ -131,6 +131,10 @@ export function encodeAssignmentPayload(assignment) {
     payload.settings = normalized.settings
   }
 
+  if (normalized.kind === 'subitizing') {
+    // subitizing doesn't need extra payload data
+  }
+
   return toBase64Url(JSON.stringify(payload))
 }
 
@@ -155,10 +159,11 @@ function normalizeAssignment(input, options = {}) {
   if (options.requireId && !id) return null
 
   const kindRaw = String(input.kind || 'standard').trim()
-  const kind = ['ncm', 'math_practice'].includes(kindRaw) ? kindRaw : 'standard'
+  const kind = ['ncm', 'math_practice', 'subitizing'].includes(kindRaw) ? kindRaw : 'standard'
   const title = String(input.title || '').trim() || (
     kind === 'ncm' ? 'NCM-uppdrag' :
     kind === 'math_practice' ? 'Matematikövning' :
+    kind === 'subitizing' ? 'Snabb taluppfattning' :
     'Uppdrag'
   )
   const targetCount = normalizePositiveInt(input.targetCount, kind === 'ncm' ? 10 : 30)
@@ -183,6 +188,21 @@ function normalizeAssignment(input, options = {}) {
 
   if (kind === 'math_practice') {
     return normalizeMathPracticeAssignment(input, { id, title, targetCount, createdAt })
+  }
+
+  if (kind === 'subitizing') {
+    return {
+      id,
+      kind: 'subitizing',
+      title,
+      targetCount,
+      createdAt,
+      problemTypes: [],
+      minLevel: 1,
+      maxLevel: 12,
+      ncmCodes: [],
+      ncmAbilityTags: []
+    }
   }
 
   const problemTypes = normalizeProblemTypes(input.problemTypes)

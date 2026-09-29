@@ -84,7 +84,9 @@ for (const preset of PRESETS) {
         const { context, page } = await openAsPupil(browser, teacherSide.link, kid)
         if (!/\/practice/.test(page.url())) findings.add('R1', 'Uppdragslänken ledde inte in i uppdraget efter inloggning', { uppdrag: title, url: page.url() })
         else {
-          const log = await answerTasks(page, findings, { count: 25, choice: {}, strategy, onLeave: async () => false })
+          // Talpar and Dubblor stop at the teacher's cap (20 by default) with a finish screen.
+          const count = ['number_bonds', 'doubles'].includes(preset.types[0]) ? 20 : 25
+          const log = await answerTasks(page, findings, { count, choice: {}, strategy, onLeave: async () => false })
           checkFrame(findings, log, frame)
           findings.stat(`${who}`, `${log.length} svar, nivåer ${[...new Set(log.map(e => e.level))].join(',')}`)
         }

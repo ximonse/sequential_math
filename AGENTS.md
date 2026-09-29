@@ -18,6 +18,14 @@ Om något är oklart: fråga människan. Gissa inte.
 Notis: I vissa miljöer kan motsvarande dokument refereras under `src/`.
 Om de inte finns där, använd filerna i projektroten.
 
+## Aktiv projektriktning: NCM-diagnostik
+
+Vid arbete med NCM, diagnostiska uppdrag, uppställningar eller analys av
+elevens räknesätt: läs `docs/NCM_DIAGNOSTIK_PROJEKT.md` innan planering eller
+kodändring. Projektets kärna är att bevara och analysera elevens uträkning
+som underlag för begripliga lärarsignaler. Det är inte mängdträning och får
+inte tyst påverka vanlig mastery eller adaptiv progression.
+
 ## Arbetsflöde
 
 1. Börja med kontextanalys mot arkitekturen innan större ändringar.

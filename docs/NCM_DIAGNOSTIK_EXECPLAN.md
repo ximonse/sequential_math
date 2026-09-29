@@ -61,6 +61,8 @@ Inga nya elevfunktioner eller utskriftsgeneratorer ingår i Etapp 0.
   tabulator, direkt rutval, radering, operatorer och en separat
   anteckningsposition. Två visuella placeringar av anteckningen kan jämföras
   utan att observationsformatet ändras.
+- [x] UI-kontrollen heter `Minnessiffra`; stora siffror centreras i rutan och
+  minnessiffran centreras i sitt övre fält. Detta ändrar inte händelsedatat.
 - [x] Append-only-förlopp med versionsnummer, cellföre/-efter, markör,
   anteckningsläge, svar, paus/fokusförlust och inlämning. JSON-återläsning
   återskapar slutbilden eller stoppar vid mismatch.

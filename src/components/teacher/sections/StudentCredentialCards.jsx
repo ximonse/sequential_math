@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 import { downloadStudentCredentialPdf } from '../../../lib/studentCredentialPdf'
-
-function credentialText(credentials) {
-  return credentials.map(({ name, displayAlias, studentId, pin }) => (
-    `${displayAlias || 'Elev'}\nKodnamn: ${displayAlias || '–'}\nPIN: ${pin}\nElev-ID: ${studentId}`
-  )).join('\\n\\n')
-}
+import { credentialText } from '../../../lib/studentCredentialText'
 
 function StudentCredentialCard({ credential }) {
   const [qrCode, setQrCode] = useState('')

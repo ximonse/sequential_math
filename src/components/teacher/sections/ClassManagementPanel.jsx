@@ -3,6 +3,7 @@ import QRCode from 'qrcode'
 import { parseRosterLines } from '../../../lib/storageClassHelpers'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
 import { downloadStudentCredentialPdf } from '../../../lib/studentCredentialPdf'
+import BulkCredentialReissue from './BulkCredentialReissue'
 import StudentCredentialCards from './StudentCredentialCards'
 import TeacherGroupsPanel from './TeacherGroupsPanel'
 import { useSchools } from './SchoolControls'
@@ -134,6 +135,7 @@ export default function ClassManagementPanel({
                 <div><p className="text-sm font-medium text-gray-800">{classLabel(item)}</p><p className="text-xs text-gray-500">Klass-ID: {item.id} · {classStudents.length} elever | {loggedInCount} har loggat in</p></div>
               </div>
               {classStudents.length > 0 && <details className="mt-2 rounded border border-slate-200 bg-slate-50 px-2 py-1.5"><summary className="cursor-pointer text-xs font-medium text-slate-800">Elever och elevkort ({classStudents.length})</summary><div className="mt-2 grid gap-1">{classStudents.map(student => <div key={`${item.id}-${student.studentId}`} className="rounded bg-white px-2 py-1.5 text-xs"><div className="flex items-center justify-between gap-2"><span className="truncate font-medium">{student.name || student.displayAlias}</span>{onOpenStudentDetail && <button type="button" onClick={() => onOpenStudentDetail(student.studentId)} className="rounded bg-slate-200 px-2 py-1">Öppna elevprofil</button>}</div><StudentCredentialIssuer student={student} /></div>)}</div></details>}
+              {classStudents.length > 0 && <BulkCredentialReissue students={classStudents} />}
               {canResetStudentAccounts && <details className="mt-2 rounded border border-rose-200 bg-rose-50 p-2"><summary className="cursor-pointer text-xs font-medium text-rose-900">Återställ alla elevkonton</summary><p className="mt-1 text-xs text-rose-900">Rensar elevdata i klassen och utfärdar nya QR-kort/PIN.</p><button type="button" onClick={() => runRosterAction(() => resetClassStudentAccounts(item))} className="mt-2 rounded bg-rose-700 px-3 py-1.5 text-xs font-semibold text-white">Återställ och skapa nya elevkort</button></details>}
             </div>
           })}

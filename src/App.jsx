@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import PracticeSession from './components/student/PracticeSession'
 import SubitizingSession from './components/student/SubitizingSession'
@@ -12,6 +12,11 @@ import ThemeSwitcher from './components/shared/ThemeSwitcher'
 import AdaptiveQaBootstrap from './dev/AdaptiveQaBootstrap'
 import { isTeacherAuthenticated } from './lib/teacherAuth'
 import { initCloudSyncListeners, destroyCloudSyncListeners } from './lib/storage'
+
+const diagnosticQaEnabled = import.meta.env.DEV || import.meta.env.MODE === 'diagnostic-qa'
+const DiagnosticGridPrototype = diagnosticQaEnabled
+  ? lazy(() => import('./dev/DiagnosticGridPrototype'))
+  : null
 
 function RequireTeacherAuth({ children }) {
   if (!isTeacherAuthenticated()) {
@@ -40,6 +45,9 @@ function App() {
         <Route path="/student/:studentId/ticket" element={<StudentTicket />} />
         <Route path="/teacher-login" element={<TeacherLogin />} />
         {import.meta.env.DEV ? <Route path="/qa/adaptive" element={<AdaptiveQaBootstrap />} /> : null}
+        {diagnosticQaEnabled ? (
+          <Route path="/qa/diagnostic-grid" element={<Suspense fallback={<p>Öppnar räknehäftet...</p>}><DiagnosticGridPrototype /></Suspense>} />
+        ) : null}
         <Route
           path="/teacher"
           element={(

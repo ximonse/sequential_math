@@ -91,6 +91,7 @@ function ClassRow({ classRecord, teachers, extras, directory, canDelete, onLifec
   const [open, setOpen] = useState(false)
   const [teacherIds, setTeacherIds] = useState(classRecord.teacherIds || [])
   const [enabledOperations, setEnabledOperations] = useState(() => resolveClassOperations(classRecord))
+  const [talbildEnabled, setTalbildEnabled] = useState(classRecord.talbildEnabled === true)
   const [busy, setBusy] = useState(false)
   const teacherNames = (classRecord.teacherIds || [])
     .map(id => teachers.find(teacher => teacher.id === id)?.displayName || id).join(', ') || '—'
@@ -104,7 +105,7 @@ function ClassRow({ classRecord, teachers, extras, directory, canDelete, onLifec
     const { ok, data } = await apiFetch('/api/admin/classes/' + classRecord.id, {
       method: 'PUT',
       body: JSON.stringify({
-        name, teacherIds, schoolId, enabledOperations,
+        name, teacherIds, schoolId, enabledOperations, talbildEnabled,
         enabledExtras: enabledOperations.filter(id => !STANDARD_OPERATIONS.includes(id))
       })
     })
@@ -179,6 +180,11 @@ function ClassRow({ classRecord, teachers, extras, directory, canDelete, onLifec
                   {operation.label}
                 </label>
               ))}
+              <label className="flex cursor-pointer items-center gap-1 rounded border border-gray-200 bg-gray-50 px-2 py-1.5">
+                <input type="checkbox" checked={talbildEnabled}
+                  onChange={event => setTalbildEnabled(event.target.checked)} />
+                Talbild (snabb taluppfattning)
+              </label>
             </div>
           </fieldset>
           <div className="flex gap-2 pt-1">

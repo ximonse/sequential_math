@@ -45,7 +45,7 @@ export default function AssignmentsPanel({
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="text-lg font-semibold text-gray-800">Uppdrag via länk</h2>
         <div className="flex gap-2">
-          <button onClick={() => setShowSubitizingCreator(true)} className="rounded bg-red-600 px-2.5 py-1.5 text-sm text-white hover:bg-red-700">+ Snabb tal</button>
+          <button onClick={() => setShowSubitizingCreator(true)} className="rounded bg-red-600 px-2.5 py-1.5 text-sm text-white hover:bg-red-700">+ Talbild</button>
           <button onClick={() => setShowMathPracticeCreator(true)} className="rounded bg-orange-600 px-2.5 py-1.5 text-sm text-white hover:bg-orange-700">+ Matematikövning</button>
         </div>
       </div>

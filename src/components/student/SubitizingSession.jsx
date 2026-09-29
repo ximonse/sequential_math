@@ -66,6 +66,8 @@ function SubitizingSession() {
           } catch {
             console.error('Failed to load assignment')
           }
+        } else {
+          setSessionAssignment({ id: 'talbild_free', kind: 'subitizing', title: 'Talbild', targetCount: 30 })
         }
       } catch (err) {
         console.error('Session load error', err)

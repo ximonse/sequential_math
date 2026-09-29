@@ -8,7 +8,7 @@ ett påstående om levererad funktion.
 
 ## Mål och gräns
 
-Bygg ett kort diagnostiskt uppdrag där elevens tangentbordsinmatade uppställning
+Bygg ett kort diagnostiskt uppdrag där elevens inmatade uppställning
 och händelseförlopp bevaras, analyseras med versionsbestämda regler och visas
 som spårbart, försiktigt lärarunderlag. Alla nya observationer ska vara
 `diagnostic_only` och hållas utanför vanlig träningsmängd, mastery och
@@ -53,6 +53,28 @@ Inga nya elevfunktioner eller utskriftsgeneratorer ingår i Etapp 0.
 5. Lärarstyrda förslag till uppföljande uppdrag.
 6. Expansion först efter nytt innehållskontrakt och nytt beslut.
 
+## Etapp 1 – första isolerade prototypsnittet (pågår)
+
+- [x] Dev-/QA-route `/qa/diagnostic-grid` läser de fyra uppgifterna från
+  manifestet som markerbar text. Normal produktionsbuild exponerar inte routen.
+- [x] Rutnät med tangentbord, pekknappar, pilar, tabulator, direkt rutval,
+  radering, operatorer och en separat anteckningsposition. Två visuella placeringar av
+  anteckningen kan jämföras utan att observationsformatet ändras.
+- [x] Append-only-förlopp med versionsnummer, cellföre/-efter, markör,
+  anteckningsläge, svar, paus/fokusförlust och inlämning. JSON-återläsning
+  återskapar slutbilden eller stoppar vid mismatch.
+- [x] Arbete i flera uppgifter bevaras i den öppna prototypfliken när eleven
+  byter uppgift. Det är endast minnesstate, inte sparat elevunderlag.
+- [ ] Prova antecknings-/låneinteraktionen med elever på avsedd iPad och välj
+  sedan metod. Den nuvarande prototypen gör inget pedagogiskt metodanspråk.
+- [ ] Anslut en säker serverauktoritativ försökslagring med idempotent synk,
+  storleksgräns och återupptagning. Granska först hela event-/mergevägen.
+
+Den isolerade prototypen har ingen lärartilldelning, ingen diagnostisk analys,
+ingen vanlig mastery-/adaptivitetspipeline och ingen Word/PDF-renderare.
+Att JSON går att återläsa i en flik bevisar ännu inte lagring efter avbrott,
+serverbekräftelse eller att en elev naturligt kan skriva minnessiffra/lån.
+
 ## Beslut och öppna frågor
 
 - Antaget: första omfattningen är flersiffrig addition och subtraktion med
@@ -69,11 +91,17 @@ Inga nya elevfunktioner eller utskriftsgeneratorer ingår i Etapp 0.
 
 - Etapp 0-underlag: [försökskontrakt och nulägeskarta](NCM_DIAGNOSTIK_ETAPP0.md)
   samt [uppgiftsmanifest v1](../src/domains/arithmetic/diagnosticTasks.v1.json).
-  Inget nytt elevflöde, Word eller PDF är implementerat.
-- Verifierat lokalt: JSON parsad, fyra unika ID:n och facit omräknade; `npm run
-  test` 109 filer/541 tester och `npm run build` passerade. Bygget gav varningar
-  om gammal Browserslist-data, blandad statisk/dynamisk import och stor bundle.
-  `npm run robots` behövs först när beteendelogik ändras.
-- Nästa steg: isolerad Etapp 1-prototyp för tangentbordsrutnät och
-  informationsbevarande serialisering. Granska den på verklig elevskärm innan
-  minnessiffra/lån låses.
+- Etapp 1-prototyp: lokal QA-route utan elevkonton eller serverlagring.
+  Prototypens JSON är en synlig arbetskopia, inte en säker sparfunktion.
+- Verifierat lokalt efter pekknappsjusteringen: `npm run test` 110 filer/
+  544 tester och `npm run build`. `npm run robots` kördes före den isolerade
+  pekknappsjusteringen: 68 godkända, 0 regelbrott.
+  Normal produktionsbuild innehöll ingen prototyproute. Lokalt QA-bygge prövades
+  med Playwright i 768×1024 och 390×844: inmatning, anteckning, uppgiftsbyte,
+  separat svar, frysning och JSON-återläsning. Senaste mobilkontrollen omfattade
+  pekknappar och JSON-återläsning mellan uppgifter; skärmbilden granskades.
+  Detta är webbläsarkontroll, inte
+  ett test på fysisk iPad eller med elev. Bygget gav befintliga varningar om
+  gammal Browserslist-data, blandad statisk/dynamisk import och stor bundle.
+- Nästa steg: prova rutnät och minnessiffra/lån med elever på avsedd iPad.
+  Granska därefter hela synkvägen före serveranslutning.

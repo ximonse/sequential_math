@@ -18,7 +18,7 @@ function StudentCredentialCard({ credential }) {
     <article className="student-credential-card border border-slate-700 bg-white p-3 text-xs text-slate-800">
       <div className="flex h-full items-center gap-3">
         <div className="min-w-0 flex-1">
-          <p className="font-bold text-sm">{credential.displayAlias || 'Elev'}</p>
+          <p className="font-bold text-sm">{String(credential.name || '').trim() || credential.displayAlias || 'Elev'}</p>
           <p className="mt-1 text-[10px] uppercase tracking-wide text-slate-500">Matteträning · elevkort</p>
           <p className="mt-3">Kodnamn: <span className="font-semibold">{credential.displayAlias || '–'}</span></p>
           <p className="mt-2 font-mono text-base font-bold">PIN: {credential.pin}</p>

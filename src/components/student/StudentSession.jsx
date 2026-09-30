@@ -401,6 +401,17 @@ function StudentSession() {
   const weekStart = getStartOfWeekTimestamp()
   const masteredHistorical = getMasteryForOperation(profile, currentOperation)
   const masteredThisWeek = getMasteryForOperation(profile, currentOperation, { since: weekStart })
+  const revisitingMasteredLevel = isLevelFocusMode
+    && getMasteryForOperation(profile, mode).includes(fixedPracticeLevel)
+
+  const continueAdaptively = () => {
+    const params = new URLSearchParams(searchParams)
+    params.delete('level')
+    setCurrentProblem(null)
+    setFeedback(null)
+    setAnswer('')
+    navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
+  }
 
   return (
     <SessionPage
@@ -416,6 +427,8 @@ function StudentSession() {
       tableSet={tableSet}
       progressionMode={progressionMode}
       fixedPracticeLevel={fixedPracticeLevel}
+      revisitingMasteredLevel={revisitingMasteredLevel}
+      onContinueAdaptively={continueAdaptively}
       sessionError={sessionError}
       currentProblem={currentProblem}
       feedback={feedback}
@@ -427,7 +440,7 @@ function StudentSession() {
       coarsePointer={coarsePointer}
       showScratchpad={showScratchpad}
       onToggleScratchpad={() => setShowScratchpad(prev => !prev)}
-      currentOperationLabel={getOperationLabel(currentOperation)}
+      currentOperationLabel={getOperationLabel(mode || currentOperation)}
       masteredHistorical={masteredHistorical}
       masteredThisWeek={masteredThisWeek}
       syncStatus={syncStatus}

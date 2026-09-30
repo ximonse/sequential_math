@@ -16,6 +16,8 @@ function SessionPage({
   tableSet,
   progressionMode,
   fixedPracticeLevel,
+  revisitingMasteredLevel = false,
+  onContinueAdaptively,
   sessionError,
   currentProblem,
   feedback,
@@ -57,6 +59,14 @@ function SessionPage({
             progressionMode={progressionMode}
             fixedLevel={fixedPracticeLevel}
           />
+          {revisitingMasteredLevel && (
+            <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+              <p>Du har redan klarat nivå {fixedPracticeLevel}. Här tränar du bara den nivån.</p>
+              <button type="button" onClick={onContinueAdaptively} className="mt-2 rounded bg-blue-700 px-3 py-2 font-semibold text-white hover:bg-blue-800">
+                Fortsätt med {currentOperationLabel}
+              </button>
+            </div>
+          )}
           {sessionError && (
             <div className="mb-4 rounded-lg bg-red-50 text-red-700 border border-red-200 px-3 py-2 text-sm">
               {sessionError}

@@ -42,6 +42,10 @@ Elev kan starta:
 3. Tabellövning (val av tabeller).
 4. Nivåfokus via `Framsteg` (klicka en nivå-ruta).
 
+En vald nivå övas separat. Om nivån redan är klar visar passet en knapp för att
+fortsätta adaptivt inom räknesättet. En kort uppvärmning kan då komma före
+nästa ännu oklara nivå.
+
 ## 4. Under en uppgift
 
 - Uppgift visas med stor text.

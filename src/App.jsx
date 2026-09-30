@@ -10,13 +10,10 @@ import TeacherAdminPage from './components/teacher/TeacherAdminPage'
 import Login from './components/Login'
 import ThemeSwitcher from './components/shared/ThemeSwitcher'
 import AdaptiveQaBootstrap from './dev/AdaptiveQaBootstrap'
-import { isTeacherAuthenticated } from './lib/teacherAuth'
+import { isTeacherAdmin, isTeacherAuthenticated } from './lib/teacherAuth'
 import { initCloudSyncListeners, destroyCloudSyncListeners } from './lib/storage'
 
-const diagnosticQaEnabled = import.meta.env.DEV || import.meta.env.MODE === 'diagnostic-qa'
-const DiagnosticGridPrototype = diagnosticQaEnabled
-  ? lazy(() => import('./dev/DiagnosticGridPrototype'))
-  : null
+const DiagnosticGridPrototype = lazy(() => import('./dev/DiagnosticGridPrototype'))
 
 function RequireTeacherAuth({ children }) {
   if (!isTeacherAuthenticated()) {
@@ -25,6 +22,16 @@ function RequireTeacherAuth({ children }) {
 
   return children
 }
+
+function RequireNcmAdmin({ children }) {
+  if (!isTeacherAuthenticated()) return <Navigate to="/teacher-login" replace />
+  if (!isTeacherAdmin()) return <Navigate to="/teacher" replace />
+  return children
+}
+
+const diagnosticGridRoute = <RequireNcmAdmin>
+  <Suspense fallback={<p>Öppnar räknehäftet...</p>}><DiagnosticGridPrototype /></Suspense>
+</RequireNcmAdmin>
 
 function App() {
   useEffect(() => {
@@ -45,9 +52,8 @@ function App() {
         <Route path="/student/:studentId/ticket" element={<StudentTicket />} />
         <Route path="/teacher-login" element={<TeacherLogin />} />
         {import.meta.env.DEV ? <Route path="/qa/adaptive" element={<AdaptiveQaBootstrap />} /> : null}
-        {diagnosticQaEnabled ? (
-          <Route path="/qa/diagnostic-grid" element={<Suspense fallback={<p>Öppnar räknehäftet...</p>}><DiagnosticGridPrototype /></Suspense>} />
-        ) : null}
+        <Route path="/teacher/ncm/diagnostic-grid" element={diagnosticGridRoute} />
+        {import.meta.env.DEV ? <Route path="/qa/diagnostic-grid" element={<Navigate to="/teacher/ncm/diagnostic-grid" replace />} /> : null}
         <Route
           path="/teacher"
           element={(

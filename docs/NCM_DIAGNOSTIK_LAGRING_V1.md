@@ -144,8 +144,13 @@ skiljer uttryckligen på anonymisering och pseudonymisering.
 
 En ren validator (`diagnosticAttemptAppend.js`) kontrollerar nu append och
 exakt retry mot en återskapad slutbild utan att skriva till KV. Den verifierar
-inte Redis-transaktionen, tilldelningsbehörighet eller faktisk återupptagning.
-Nästa implementation är en testbar serverlagringsmodul och dess CAS-tester.
-UI och elevsynk ansluts först när dessa fall är gröna. Arkivets exakta fält,
+inte tilldelningsbehörighet eller faktisk återupptagning. En separat
+servermodul (`api/_diagnosticAttemptStore.js`) återläser ett redan skapat försök
+och dess händelselista, validerar append och använder Redis `eval` för atomisk
+revision/sekvens/append. En lagringsdubbel testar konkurrens och retry; ett
+verkligt Redis- och API-flöde är ännu inte verifierat. Modulen skapar inga
+uppdrag eller försök och ger inte i sig klienten skrivbehörighet. UI och elevsynk
+ansluts först när tilldelning, behörighet och hela återupptagningsflödet finns.
+Arkivets exakta fält,
 retention och behörighet samt lärarens uttryckliga återöppning av inlämnat
-försök behöver fortfarande fastställas före serverimplementation.
+försök behöver fortfarande fastställas före verkliga elevuppdrag.

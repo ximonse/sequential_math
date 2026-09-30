@@ -77,6 +77,11 @@ Inga nya elevfunktioner eller utskriftsgeneratorer ingår i Etapp 0.
 - [x] Lägg till en isolerad append-validator som kontrollerar återspelning,
   sekvens, exakt retry, konkurrerande revisioner och kvoter utan att röra
   elevprofilen eller KV. Den är inte en färdig lagrings- eller API-väg.
+- [x] Lägg till en separat serverlagringsmodul för append till ett redan
+  serverregistrerat försök. Den återläser händelselista och slutbild, kör
+  validatorn och gör revision, sekvens och append atomiskt i Redis. Test med
+  lagringsdubbel täcker återläsning, samtidig skrivning, retry, korruption och
+  tombstone. Modulen är ännu inte ansluten till ett API eller elevvyn.
 - [ ] Implementera och testa serverauktoritativ försökslagring, idempotent
   synk, storleksgräns och återupptagning enligt det granskade resurskontraktet.
 
@@ -170,6 +175,14 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   elevens användning. Simon har provat NCM-prototypen och begärt
   siffertangentbord även för stora siffror; den ändringen ingår i committen.
 - Nästa steg: prova rutnät och minnessiffra/lån med elever på avsedd iPad;
-  implementera under tiden serverresursens rena lagringsmodul och CAS-tester.
-  Lärarens återöppning av inlämnat försök samt arkivets exakta fält,
-  retention och behörighet behöver fastställas före verkliga elevuppdrag.
+  specificera atomiskt skapande av tilldelning/försök och behörighetsgränsen
+  innan appendmodulen får en API-väg. Lärarens återöppning av inlämnat försök
+  samt arkivets exakta fält, retention och behörighet behöver fastställas före
+  verkliga elevuppdrag.
+- Lagringsmodulens aktuella snitt: 113 testfiler/560 tester och normal build
+  passerade lokalt. I full robotkörning rapporterades alla 72 testfall som
+  godkända, men processen lämnade ingen slutrapport och avbröts. Därför räknas
+  inte robotkörningen som fullständigt verifierad för detta snitt. Redis-Lua
+  har testats med en lagringsdubbel, inte med en verklig Redis-instans. Ett
+  separat riktat robotfall rapporterade också godkänt men fastnade vid
+  avslutningen utan slutrapport.

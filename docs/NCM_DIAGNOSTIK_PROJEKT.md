@@ -117,7 +117,9 @@ analysbarhet, inte av vilken variant som är enklast att koda.
 Den isolerade prototypen använder tills vidare ett sammanhängande rutnät med
 proportionen 5:8. Eleven väljer själv en tom ruta för en minnessiffra; inget
 anteckningsläge lägger till eller flyttar rader. Minnessiffran visas mindre och
-kan vara tvåsiffrig. Interaktionen behöver fortfarande prövas med elever.
+kan vara tvåsiffrig. Både stora siffror och minnessiffror begär enhetens
+siffertangentbord när en ruta väljs. Interaktionen behöver fortfarande prövas
+med elever.
 
 I den adminbegränsade prototypen blir en nyskriven siffra stor. En kort dutt
 markerar rutan, håll och släpp växlar mellan stor siffra och minnessiffra,

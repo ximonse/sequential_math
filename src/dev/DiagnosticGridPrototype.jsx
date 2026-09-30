@@ -342,7 +342,7 @@ function DiagnosticGridPrototype() {
                 <div key={`${row}:${column}`} className={`diagnostic-cell diagnostic-cell--${layer} ${selected ? 'diagnostic-cell--selected' : ''} ${dragPreview === `${row}:${column}` ? 'diagnostic-cell--drag-preview' : ''}`}>
                   <input
                     type="text"
-                    inputMode={layer === 'note' ? 'numeric' : 'text'}
+                    inputMode="numeric"
                     autoComplete="off"
                     autoCorrect="off"
                     autoCapitalize="off"

@@ -222,7 +222,7 @@ function checkDice(findings, dice, context) {
   }
 }
 
-async function talbildAnswer(page, findings, { answerFor, strategy = 'correct', delayMs = 0 }) {
+async function talbildAnswer(page, findings, { strategy = 'correct', delayMs = 0 }) {
   const dice = await readDice(page)
   const value = dice.reduce((sum, die) => sum + die.dots.length, 0)
   if (value < 1 || value > 10) findings.add('C1', 'Talbilden visar ett tal utanför 1–10', { antal: value })
@@ -307,9 +307,10 @@ test('Talbild: snabb elev får svårare bilder, långsam eller felande får lät
   const link = await talbildLink(browser, teacher, klass, 120)
   const { context, page } = await openAsPupil(browser, link, pupils[1])
   const observed = { level1: false, level2: false, level3: false, back: false }
+  let eligibleLevel1 = false
   await page.waitForTimeout(3200) // a slow start must not count against the pupil's speed
   let sizesVary = false
-  const record = async (n, strategy) => {
+  const record = async n => {
     const seen = await waitForDice(page)
     if (!seen) { findings.add('R3', 'Ingen ny tärning kom fram', { efter: n }); return null }
     checkDice(findings, seen.dice, { svar: n })
@@ -326,10 +327,11 @@ test('Talbild: snabb elev får svårare bilder, långsam eller felande får lät
     for (let i = 0; i < count; i++) {
       // Answers 1–5 are level 0, 6–10 level 1, 11–15 level 2, 16–20 level 3.
       if (i > 0 && (i + 1) % 15 === 1 && n % 15 === 0) await dismissTalbildBreak(page)
-      const seen = await record(++n, strategy)
+      const seen = await record(++n)
       if (!seen) return
       const total = seen.dice.reduce((s, die) => s + die.dots.length, 0)
-      if (tag === 'up' && n > 5 && n <= 10 && total >= 2 && seen.dice.length === 2 && seen.dice[0].dots.length !== Math.min(total, 5)) observed.level1 = true
+      if (tag === 'up' && n > 5 && n <= 10 && total >= 6 && total <= 9) eligibleLevel1 = true
+      if (tag === 'up' && n > 5 && n <= 10 && total >= 6 && total <= 9 && seen.dice.length === 2 && seen.dice[0].dots.length !== 5) observed.level1 = true
       if (tag === 'up' && n > 10 && n <= 15 && seen.dice.some(die => die.dots.some(dot => /\.\d/.test(dot.x)))) observed.level2 = true
       if (tag === 'up' && n > 15 && new Set(seen.dice.flatMap(die => die.dots.map(dot => Math.round(dot.d)))).size > 1) { observed.level3 = true; sizesVary = true }
       if (tag === 'down' && classic(seen.dice)) observed.back = true
@@ -339,7 +341,7 @@ test('Talbild: snabb elev får svårare bilder, långsam eller felande får lät
   }
   await play(20, 'correct', 'up')
   findings.stat('svårare bilder', JSON.stringify(observed))
-  if (!observed.level1) findings.add('R3', 'Ingen ojämn fördelning (t.ex. 3+5) efter fem snabba rätt')
+  if (eligibleLevel1 && !observed.level1) findings.add('R3', 'Ingen ojämn fördelning när talet 6–9 visades efter fem snabba rätt')
   if (!observed.level2) findings.add('R3', 'Inga slumpade prickar efter tio snabba rätt')
   if (!observed.level3 || !sizesVary) findings.add('R3', 'Inga olika prickstorlekar efter femton snabba rätt')
   await play(18, 'wrong', 'down')

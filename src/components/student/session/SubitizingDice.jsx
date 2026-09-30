@@ -7,8 +7,9 @@ function Die({ dots, dieRef }) {
       ref={dieRef}
       className="relative bg-white shadow-lg"
       style={{
-        width: DIE_SIZE,
-        height: DIE_SIZE,
+        width: `min(${DIE_SIZE}px, calc((100vw - 100px) / 2))`,
+        aspectRatio: '1',
+        flex: 'none',
         border: '3px solid #374151',
         borderRadius: 4
       }}
@@ -19,8 +20,8 @@ function Die({ dots, dieRef }) {
           key={i}
           className="absolute bg-red-600 rounded-full"
           style={{
-            width: dot.size,
-            height: dot.size,
+            width: `${(dot.size / DIE_SIZE) * 100}%`,
+            height: `${(dot.size / DIE_SIZE) * 100}%`,
             left: `${dot.x}%`,
             top: `${dot.y}%`,
             transform: 'translate(-50%, -50%)'
@@ -47,7 +48,7 @@ export default function SubitizingDice({ layout, onAnswer, disabled = false }) {
 
   return (
     <div className="flex flex-col gap-8 items-center justify-center py-8">
-      <div className="flex gap-5 justify-center flex-wrap">
+      <div className="flex gap-5 justify-center flex-nowrap">
         {layout.map((dots, index) => (
           <Die key={index} dots={dots} dieRef={index === layout.length - 1 ? diceRef : undefined} />
         ))}

@@ -8,7 +8,7 @@ import SubitizingDice from './session/SubitizingDice'
 import { getCurrentStreak, addSubitizingSessionResult } from '../../lib/studentProfile'
 import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { recordSubitizingResult } from '../../lib/subitizingResults'
-import { createTalbildLayout, nextTalbildLevel } from '../../lib/talbildLayout'
+import { createTalbildLayout, nextTalbildLevel, nextTalbildValue } from '../../lib/talbildLayout'
 
 const DEFAULT_TARGET_COUNT = 30
 const BREAK_EVERY = 15
@@ -39,6 +39,7 @@ function SubitizingSession() {
   const levelRef = useRef(0)
   const levelWindowRef = useRef([])
   const answerLockRef = useRef(false)
+  const lastDiceValueRef = useRef(null)
 
   const assignmentId = searchParams.get('assignment')
   const assignmentPayload = searchParams.get('assignment_payload')
@@ -94,7 +95,8 @@ function SubitizingSession() {
     : DEFAULT_TARGET_COUNT
 
   const startNewProblem = useCallback(() => {
-    const value = Math.floor(Math.random() * 10) + 1
+    const value = nextTalbildValue(lastDiceValueRef.current)
+    lastDiceValueRef.current = value
     answerLockRef.current = false
     problemCountRef.current += 1
     setProblemNumber(problemCountRef.current)

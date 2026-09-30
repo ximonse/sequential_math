@@ -205,7 +205,12 @@ async function readDice(page) {
 }
 
 function checkDice(findings, dice, context) {
+  if (dice.length > 2) findings.add('C1', 'Talbilden visar fler än två tärningar', context)
+  if (dice.length === 2 && (Math.abs(dice[0].top - dice[1].top) > 1 || dice[0].right > dice[1].left + 1)) {
+    findings.add('C1', 'Tärningarna ligger inte bredvid varandra', context)
+  }
   for (const die of dice) {
+    if (die.dots.length > 5) findings.add('C1', 'En tärning har fler än fem prickar', { ...context, prickar: die.dots.length })
     die.dots.forEach((dot, index) => {
       const half = dot.d / 2
       if (dot.cx - half < die.left - 0.5 || dot.cx + half > die.right + 0.5 || dot.cy - half < die.top - 0.5 || dot.cy + half > die.bottom + 0.5) findings.add('C1', 'En prick ligger utanför tärningen', context)
@@ -256,10 +261,14 @@ test('Talbild: tak, nedräkning, paus, uppmuntran och avslut', async ({ browser,
   if (!/\/subitizing/.test(page.url())) findings.add('R1', 'Talbild-länken ledde inte till Talbild', { url: page.url() })
   else {
     let breaks = 0
+    let previousValue = null
     for (let n = 1; n <= cap; n++) {
       const seen = await waitForDice(page)
       if (!seen) { findings.add('R3', 'Ingen ny tärning kom fram', { efter: n - 1, skärm: (await bodyText(page)).replace(/\s+/g, ' ').slice(0, 160) }); break }
       checkDice(findings, seen.dice, { svar: n })
+      const value = seen.dice.reduce((sum, die) => sum + die.dots.length, 0)
+      if (value === previousValue) findings.add('C1', 'Samma tal kom två gånger i rad', { tal: value, svar: n })
+      previousValue = value
       const before = await bodyText(page)
       const remaining = cap - (n - 1)
       if (!new RegExp(`\\b${remaining} kvar`).test(before)) findings.add('R3', 'Nedräkningen visar fel antal kvar i Talbild', { innan: n, förväntat: remaining, visar: (before.match(/\d+ kvar/g) || []).join(' | ') })

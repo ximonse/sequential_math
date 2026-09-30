@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createTalbildLayout, nextTalbildLevel, DIE_SIZE } from './talbildLayout'
+import { createTalbildLayout, nextTalbildLevel, nextTalbildValue, DIE_SIZE } from './talbildLayout'
 
 const total = layout => layout.reduce((sum, die) => sum + die.length, 0)
 
@@ -8,7 +8,10 @@ describe('createTalbildLayout', () => {
     for (let level = 0; level <= 3; level += 1) {
       for (let value = 1; value <= 10; value += 1) {
         for (let run = 0; run < 20; run += 1) {
-          expect(total(createTalbildLayout(value, level))).toBe(value)
+          const dice = createTalbildLayout(value, level)
+          expect(total(dice)).toBe(value)
+          expect(dice).toHaveLength(value <= 5 ? 1 : 2)
+          expect(dice.every(die => die.length >= 1 && die.length <= 5)).toBe(true)
         }
       }
     }
@@ -26,6 +29,18 @@ describe('createTalbildLayout', () => {
       expect(dice.every(die => die.length >= 1)).toBe(true)
       expect(dice[0].length).not.toBe(5)
     }
+  })
+
+  it('never repeats the previous number, including at the random boundaries', () => {
+    for (let previous = 1; previous <= 10; previous += 1) {
+      for (const random of [0, 0.25, 0.5, 0.999999]) {
+        const next = nextTalbildValue(previous, () => random)
+        expect(next).toBeGreaterThanOrEqual(1)
+        expect(next).toBeLessThanOrEqual(10)
+        expect(next).not.toBe(previous)
+      }
+    }
+    expect(nextTalbildValue(null, () => 0)).toBe(1)
   })
 
   it('keeps scattered dots apart and inside the die, even with varied sizes', () => {

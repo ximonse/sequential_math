@@ -1,5 +1,9 @@
 # Utvärdering av Matematik.ximon.se
 
+## Talbild
+
+Talbild visar 1–5 på en tärning och 6–10 på två tärningar med högst fem prickar per tärning, även när prickarna sprids eller får olika storlek. Två tärningar hålls på samma rad på smala skärmar. Ett nytt tal skiljer sig alltid från det närmast föregående talet i samma övning.
+
 Här är en sammanställning av utvärderingen kring appens logik, pedagogiska flöde och adaptiva svårighetsgrad, baserat på tester av de olika träningslägena ("Fri träning", enskilda räknesätt och "Framsteg").
 
 > **Uppdatering 2026-03:** Tempovalet "Utmaning"/"Lugn" är borttaget. Alla

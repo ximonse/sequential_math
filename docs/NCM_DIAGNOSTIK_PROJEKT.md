@@ -1,6 +1,6 @@
 # NCM-diagnostik: projektinriktning och flexibel genomförandeplan
 
-Status: **antagen projektriktning 2026-09-29; implementation inte påbörjad**.
+Status: **antagen projektriktning 2026-09-29; isolerad interaktionsprototyp pågår**.
 
 Detta är ett design- och planeringsdokument. Det beskriver avsedd riktning,
 inte nuvarande appbeteende. Vid konflikt gäller
@@ -113,6 +113,19 @@ Den exakta interaktionen för minnessiffror och lån ska prototypas innan den
 låses. Tänkbara former är en liten anteckningsposition i varje ruta, en separat
 hjälprad eller ett tydligt växlingsläge. Valet ska avgöras av elevtestning och
 analysbarhet, inte av vilken variant som är enklast att koda.
+
+Den isolerade prototypen använder tills vidare ett sammanhängande rutnät med
+proportionen 5:8. Eleven väljer själv en tom ruta för en minnessiffra; inget
+anteckningsläge lägger till eller flyttar rader. Minnessiffran visas mindre och
+kan vara tvåsiffrig. Interaktionen behöver fortfarande prövas med elever.
+
+I den adminbegränsade prototypen blir en nyskriven siffra stor. En kort dutt
+markerar rutan, håll och släpp växlar mellan stor siffra och minnessiffra,
+och håll följt av drag växlar överstrykning. Storlek och överstrykning är
+oberoende och kan ångras var för sig. Tre synliga knappar ger samma val;
+högerklick öppnar dem även på dator. Varje ändring bevaras i händelseförloppet.
+Prototypen och dess NCM-modul visas endast för administratör och huvudadmin,
+med orange bakgrund för att skilja den från ordinarie träningsvyer.
 
 Rutnätet ska vara en egen generell komponent. Uppgiften bestämmer vilka
 tecken, markeringar och semantiska roller som är tillåtna.

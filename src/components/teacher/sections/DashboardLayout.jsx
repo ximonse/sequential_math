@@ -50,6 +50,7 @@ const PANEL_DEFS = [
   { id: 'management',  title: 'Klasshantering' },
   { id: 'password',    title: 'Lösenordsåterställning' },
   { id: 'pausegames',  title: 'Pausspel — Highscore' },
+  { id: 'ncm-grid',    title: 'Digitalt räknehäfte', adminOnly: true },
   { id: 'admin',       title: 'Administration', adminOnly: true },
 ]
 
@@ -57,6 +58,7 @@ const WORKSPACES = [
   { id: 'progress', label: 'Framsteg', description: 'Kunskapsområden och elever', panels: ['mastery', 'tableoverview', 'detail', 'overview', 'tabledev'] },
   { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'mathresults', 'tickets'] },
   { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality'] },
+  { id: 'ncm', label: 'NCM-diagnostik', description: 'Prova digitalt räknehäfte', panels: ['ncm-grid'], adminOnly: true },
   { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management', 'password', 'pausegames', 'admin'] }
 ]
 
@@ -463,6 +465,16 @@ export default function DashboardLayout({
     if (id === 'pausegames') return (
       <PauseGameHighscorePanel selectedClassIds={selectedClassIds} />
     )
+    if (id === 'ncm-grid') return (
+      <section className="rounded-lg border border-orange-300 bg-orange-100 p-4 shadow-sm">
+        <h2 className="text-lg font-semibold text-orange-950">Digitalt räknehäfte</h2>
+        <p className="mt-1 text-sm text-orange-900">Isolerad prototyp för uppställning, minnessiffror och lån. Arbetet stannar i fliken och sparas inte som elevdata.</p>
+        <button type="button" onClick={() => navigate('/teacher/ncm/diagnostic-grid')}
+          className="mt-3 rounded-md bg-orange-700 px-4 py-2 font-semibold text-white hover:bg-orange-800">
+          Öppna räknehäftet
+        </button>
+      </section>
+    )
     if (id === 'admin') return <TeacherAdminPanel />
     return null
   }
@@ -504,21 +516,21 @@ export default function DashboardLayout({
           <aside className="rounded-lg bg-slate-800 p-2 text-slate-100 lg:sticky lg:top-3 lg:h-fit">
               <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">Arbetsläge</p>
               <nav className="grid gap-1" aria-label="Lärarvy">
-                {WORKSPACES.map(workspace => (
+                {WORKSPACES.filter(workspace => !workspace.adminOnly || teacherIsAdmin).map(workspace => (
                   <button key={workspace.id} type="button" onClick={() => setActiveWorkspace(workspace.id)}
-                    className={`rounded px-3 py-2 text-left text-sm transition-colors ${activeWorkspace === workspace.id ? 'bg-amber-300 font-semibold text-slate-900' : 'text-slate-100 hover:bg-slate-700'}`}>
+                    className={`rounded px-3 py-2 text-left text-sm transition-colors ${activeWorkspace === workspace.id ? `${workspace.id === 'ncm' ? 'bg-orange-300' : 'bg-amber-300'} font-semibold text-slate-900` : workspace.id === 'ncm' ? 'bg-orange-900 text-orange-50 hover:bg-orange-800' : 'text-slate-100 hover:bg-slate-700'}`}>
                     {workspace.label}<span className="mt-0.5 block text-[11px] font-normal opacity-75">{workspace.description}</span>
                   </button>
                 ))}
               </nav>
           </aside>
           <div className="min-w-0 flex flex-col gap-3">
-            <div className="dashboard-context-grid">
+            {activeWorkspace !== 'ncm' && <div className="dashboard-context-grid">
             {activeWorkspace === 'progress' ? renderProgressModule('filter', 'Klassurval', classFilterPanel) : classFilterPanel}
             {activeWorkspace === 'progress'
               ? renderProgressModule('stats', 'Klassstatistik', classStatsPanel)
               : classStatsPanel}
-            </div>
+            </div>}
 
             {activeWorkspace === 'progress' && import.meta.env.DEV && renderProgressModule('testdata', 'Lokal testdata', <LocalTestDataPanel mode="import" onImported={onLocalTestDataImported} />)}
 

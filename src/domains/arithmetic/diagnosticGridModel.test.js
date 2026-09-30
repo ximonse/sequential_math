@@ -83,4 +83,29 @@ describe('diagnostic grid observation', () => {
     expect(repeat.events).toEqual([])
     expect(() => replayDiagnosticGrid({ ...first, version: 2 })).toThrow('version')
   })
+
+  it('converts a digit repeatedly and crosses out both large and small digits', () => {
+    let grid = startingGrid()
+    grid = recordDiagnosticGridEvent(grid, {
+      type: 'write', position: { row: 0, column: 0 }, layer: 'main', before: '', after: '8'
+    }, 1001)
+    grid = recordDiagnosticGridEvent(grid, {
+      type: 'cross_out', position: { row: 0, column: 0 }, before: false, after: true
+    }, 1002)
+    grid = recordDiagnosticGridEvent(grid, {
+      type: 'reclassify', position: { row: 0, column: 0 }, from: 'main', to: 'note', value: '8'
+    }, 1003)
+    grid = recordDiagnosticGridEvent(grid, {
+      type: 'write', position: { row: 0, column: 0 }, layer: 'note', before: '8', after: '82'
+    }, 1004)
+    expect(grid.cells['0:0']).toEqual({ main: '', note: '82', struck: true })
+    grid = recordDiagnosticGridEvent(grid, {
+      type: 'cross_out', position: { row: 0, column: 0 }, before: true, after: false
+    }, 1005)
+    grid = recordDiagnosticGridEvent(grid, {
+      type: 'reclassify', position: { row: 0, column: 0 }, from: 'note', to: 'main', value: '82'
+    }, 1006)
+    expect(grid.cells['0:0']).toEqual({ main: '82', note: '' })
+    expect(replayDiagnosticGrid(JSON.parse(JSON.stringify(grid)))).toEqual(grid)
+  })
 })

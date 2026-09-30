@@ -4,7 +4,7 @@ export const GRID_COLUMNS = 12
 
 const MAIN_CHARACTERS = /^[0-9+−,─]$/u
 const NOTE_CHARACTERS = /^[0-9]{1,2}$/u
-const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'answer_change', 'pause', 'resume', 'focus_lost', 'submit'])
+const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'answer_change', 'pause', 'resume', 'focus_lost', 'submit'])
 
 function isValidPosition(value, rows, columns) {
   return Number.isInteger(value?.row) && value.row >= 0 && value.row < rows
@@ -73,6 +73,32 @@ export function applyDiagnosticGridEvent(state, event) {
     next.cells = { ...state.cells }
     if (changed.main || changed.note) next.cells[key] = changed
     else delete next.cells[key]
+  } else if (event.type === 'reclassify') {
+    if (!isValidPosition(event.position, state.rows, state.columns)
+      || !['main', 'note'].includes(event.from)
+      || !['main', 'note'].includes(event.to)
+      || event.from === event.to) throw new Error('Invalid digit conversion')
+    const key = cellKey(event.position)
+    const previous = state.cells[key]
+    if (!previous || !/^[0-9]{1,2}$/u.test(previous[event.from])
+      || previous[event.to] || event.value !== previous[event.from]) {
+      throw new Error('Digit conversion history mismatch')
+    }
+    next.cells = { ...state.cells, [key]: { ...previous, [event.from]: '', [event.to]: event.value } }
+    if (state.cursor.row === event.position.row && state.cursor.column === event.position.column) {
+      next.cursor = { ...state.cursor, layer: event.to }
+    }
+  } else if (event.type === 'cross_out') {
+    if (!isValidPosition(event.position, state.rows, state.columns)) throw new Error('Invalid crossed-out cell')
+    const key = cellKey(event.position)
+    const previous = state.cells[key]
+    if (!previous || !/^[0-9]{1,2}$/u.test(previous.main || previous.note)
+      || event.before !== Boolean(previous.struck)
+      || event.after !== !event.before) throw new Error('Cross-out history mismatch')
+    const changed = { ...previous }
+    if (event.after) changed.struck = true
+    else delete changed.struck
+    next.cells = { ...state.cells, [key]: changed }
   } else if (event.type === 'move') {
     if (!isValidPosition(event.to, state.rows, state.columns)
       || !isValidPosition(event.from, state.rows, state.columns)

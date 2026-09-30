@@ -8,6 +8,8 @@ import {
 import './diagnosticGridPrototype.css'
 
 const TASKS = taskManifest.tasks
+const HOLD_MS = 500
+const DRAG_PX = 12
 
 function newGrid(task) {
   return createDiagnosticGrid({
@@ -24,6 +26,9 @@ function DiagnosticGridPrototype() {
   const [message, setMessage] = useState('')
   const gridRef = useRef(null)
   const gridsRef = useRef(new Map())
+  const gestureRef = useRef(null)
+  const [dragPreview, setDragPreview] = useState('')
+  const [contextMenu, setContextMenu] = useState(null)
 
   function record(actionOrBuilder) {
     const timestamp = Date.now()
@@ -39,7 +44,7 @@ function DiagnosticGridPrototype() {
     if (!activeElement?.classList?.contains('diagnostic-cell__input')
       && !activeElement?.classList?.contains('diagnostic-layer-button')) return
     const element = gridRef.current?.querySelector(
-      `[data-cell="${grid.cursor.row}:${grid.cursor.column}"][data-layer="${grid.cursor.layer}"]`
+      `[data-cell="${grid.cursor.row}:${grid.cursor.column}"]`
     )
     element?.focus({ preventScroll: true })
   }, [grid.cursor])
@@ -73,21 +78,107 @@ function DiagnosticGridPrototype() {
       : { type: 'move', from: { row: previous.cursor.row, column: previous.cursor.column }, to })
   }
 
-  function selectCell(row, column, layer) {
-    moveCursor({ row, column })
-    setLayer(layer)
+  function selectCell(row, column) {
+    record(previous => {
+      const current = previous.cells[`${row}:${column}`]
+      const layer = current?.note ? 'note' : 'main'
+      if (previous.cursor.row !== row || previous.cursor.column !== column) {
+        return { type: 'move', from: { row: previous.cursor.row, column: previous.cursor.column }, to: { row, column } }
+      }
+      return previous.cursor.layer === layer ? null : { type: 'layer', from: previous.cursor.layer, to: layer }
+    })
+    record(previous => {
+      const current = previous.cells[`${row}:${column}`]
+      const layer = current?.note ? 'note' : 'main'
+      return previous.cursor.layer === layer ? null : { type: 'layer', from: previous.cursor.layer, to: layer }
+    })
   }
 
-  function focusSelectedCell(layer = grid.cursor.layer) {
+  function focusSelectedCell() {
     gridRef.current?.querySelector(
-      `[data-cell="${grid.cursor.row}:${grid.cursor.column}"][data-layer="${layer}"]`
+      `[data-cell="${grid.cursor.row}:${grid.cursor.column}"]`
     )?.focus({ preventScroll: true })
   }
 
   function setLayer(layer) {
-    record(previous => layer === previous.cursor.layer
-      ? null
-      : { type: 'layer', from: previous.cursor.layer, to: layer })
+    record(previous => {
+      const position = { row: previous.cursor.row, column: previous.cursor.column }
+      const cell = previous.cells[`${position.row}:${position.column}`]
+      const from = cell?.note ? 'note' : cell?.main ? 'main' : null
+      if (from && from !== layer) {
+        if (!/^[0-9]{1,2}$/u.test(cell[from])) return null
+        return { type: 'reclassify', position, from, to: layer, value: cell[from] }
+      }
+      return layer === previous.cursor.layer ? null : { type: 'layer', from: previous.cursor.layer, to: layer }
+    })
+  }
+
+  function toggleCrossOut(position = grid.cursor) {
+    record(previous => {
+      const cell = previous.cells[`${position.row}:${position.column}`]
+      if (!/^[0-9]{1,2}$/u.test(cell?.main || cell?.note || '')) return null
+      return { type: 'cross_out', position: { row: position.row, column: position.column },
+        before: Boolean(cell.struck), after: !cell.struck }
+    })
+  }
+
+  function stopGesture() {
+    const gesture = gestureRef.current
+    if (gesture?.timer) window.clearTimeout(gesture.timer)
+    gestureRef.current = null
+    setDragPreview('')
+  }
+
+  function startGesture(event, row, column) {
+    setContextMenu(null)
+    selectCell(row, column)
+    if (event.pointerType === 'mouse') return
+    stopGesture()
+    const gesture = { pointerId: event.pointerId, row, column, x: event.clientX, y: event.clientY,
+      lastX: event.clientX, lastY: event.clientY, held: false, cancelled: false, dragged: false, timer: null }
+    try { event.currentTarget.setPointerCapture?.(event.pointerId) } catch { /* Synthetic pointer events have no active pointer. */ }
+    gesture.timer = window.setTimeout(() => {
+      if (gestureRef.current === gesture && !gesture.cancelled) gesture.held = true
+    }, HOLD_MS)
+    gestureRef.current = gesture
+  }
+
+  function moveGesture(event) {
+    const gesture = gestureRef.current
+    if (!gesture || event.pointerId !== gesture.pointerId) return
+    const distance = Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y)
+    if (gesture.cancelled) {
+      const scroller = gridRef.current?.parentElement
+      if (scroller) scroller.scrollLeft -= event.clientX - gesture.lastX
+      window.scrollBy(0, gesture.lastY - event.clientY)
+      gesture.lastX = event.clientX
+      gesture.lastY = event.clientY
+      return
+    }
+    if (distance < DRAG_PX) return
+    if (!gesture.held) {
+      gesture.cancelled = true
+      window.clearTimeout(gesture.timer)
+      return
+    }
+    gesture.dragged = true
+    setDragPreview(`${gesture.row}:${gesture.column}`)
+  }
+
+  function finishGesture(event) {
+    const gesture = gestureRef.current
+    if (!gesture || event.pointerId !== gesture.pointerId) return
+    const position = { row: gesture.row, column: gesture.column }
+    const held = gesture.held && !gesture.cancelled
+    const dragged = gesture.dragged
+    stopGesture()
+    if (!held) return
+    event.preventDefault()
+    if (dragged) toggleCrossOut(position)
+    else {
+      const cell = grid.cells[`${position.row}:${position.column}`]
+      setLayer(cell?.note ? 'main' : 'note')
+    }
   }
 
   function eraseCell(clear = false) {
@@ -104,7 +195,9 @@ function DiagnosticGridPrototype() {
       const { row, column, layer } = previous.cursor
       const allowedNow = layer === 'note' ? /^[0-9]{1,2}$/u : /^[0-9+−,─]$/u
       if (!allowedNow.test(character)) return null
-      const before = previous.cells[`${row}:${column}`]?.[layer] || ''
+      const cell = previous.cells[`${row}:${column}`]
+      if (cell?.[layer === 'note' ? 'main' : 'note']) return null
+      const before = cell?.[layer] || ''
       const after = layer === 'note' ? `${before}${character}` : character
       return after.length > 2 || before === after ? null
         : { type: 'write', position: { row, column }, layer, before, after }
@@ -140,8 +233,12 @@ function DiagnosticGridPrototype() {
     }
     if (key.toLowerCase() === 'n' && !event.ctrlKey && !event.metaKey) {
       event.preventDefault()
-      record(previous => ({ type: 'layer', from: previous.cursor.layer,
-        to: previous.cursor.layer === 'main' ? 'note' : 'main' }))
+      setLayer(grid.cursor.layer === 'main' ? 'note' : 'main')
+      return
+    }
+    if (key.toLowerCase() === 'x' && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault()
+      toggleCrossOut()
       return
     }
     if (key === 'Escape') {
@@ -154,7 +251,7 @@ function DiagnosticGridPrototype() {
       eraseCell(key === 'Delete')
       return
     }
-      const character = key === '=' ? '─' : key === '-' ? '−' : key
+    const character = key === '=' ? '─' : key === '-' ? '−' : key
     if (!/^[0-9+−,─]$/u.test(character) || event.ctrlKey || event.metaKey || event.altKey) return
     event.preventDefault()
     writeCell(character)
@@ -181,15 +278,21 @@ function DiagnosticGridPrototype() {
     }
   }
 
-  const visibleCells = []
-  for (let row = 0; row < grid.rows; row += 1) {
-    const showNoteRow = (grid.cursor.row === row && grid.cursor.layer === 'note')
-      || Array.from({ length: grid.columns }, (_, column) => grid.cells[`${row}:${column}`]?.note).some(Boolean)
-    for (const layer of showNoteRow ? ['note', 'main'] : ['main']) {
-      for (let column = 0; column < grid.columns; column += 1) {
-        visibleCells.push({ row, column, layer })
-      }
-    }
+  const visibleCells = Array.from({ length: grid.rows * grid.columns }, (_, index) => ({
+    row: Math.floor(index / grid.columns),
+    column: index % grid.columns
+  }))
+  const selectedCell = grid.cells[`${grid.cursor.row}:${grid.cursor.column}`]
+  const selectedIsDigit = /^[0-9]{1,2}$/u.test(selectedCell?.main || selectedCell?.note || '')
+
+  function formatButton(layer, label) {
+    const active = grid.cursor.layer === layer
+    const cannotConvert = selectedCell && !selectedIsDigit && Boolean(selectedCell.main || selectedCell.note)
+    return <button type="button" onClick={() => { setLayer(layer); setContextMenu(null); focusSelectedCell() }}
+      disabled={grid.status === 'submitted' || cannotConvert}
+      className={`diagnostic-layer-button rounded-lg border px-3 py-2 font-medium ${active ? 'border-orange-700 bg-orange-700 text-white' : 'border-orange-300 bg-orange-100 text-orange-950'} disabled:opacity-50`}>
+      {label}
+    </button>
   }
 
   return (
@@ -213,30 +316,30 @@ function DiagnosticGridPrototype() {
         ))}
       </div>
 
-      <section className="rounded-2xl border border-slate-300 bg-white p-4 shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-orange-300 bg-orange-50 p-4 shadow-sm sm:p-6">
         <p className="text-sm text-slate-600">Uppgift {task.taskId}, version {task.taskVersion}</p>
         <h2 className="mt-1 text-2xl font-semibold">{task.promptSv}</h2>
         <p className="mt-2 text-lg">{taskManifest.instructionSv}</p>
 
         <div className="mt-5 flex flex-wrap items-center gap-2">
-          <button type="button" onClick={() => { setLayer('main'); focusSelectedCell('main') }} disabled={grid.status === 'submitted'}
-            className={`diagnostic-layer-button rounded-lg px-3 py-2 ${grid.cursor.layer === 'main' ? 'bg-slate-900 text-white' : 'bg-slate-200'}`}>
-            Stora siffror (Esc)
-          </button>
-          <button type="button" onClick={() => { setLayer('note'); focusSelectedCell('note') }} disabled={grid.status === 'submitted'}
-            className={`diagnostic-layer-button rounded-lg px-3 py-2 ${grid.cursor.layer === 'note' ? 'bg-slate-900 text-white' : 'bg-slate-200'}`}>
-            Minnessiffra (N)
+          {formatButton('main', 'Stor (Esc)')}
+          {formatButton('note', 'Minnessiffra (N)')}
+          <button type="button" onClick={() => { toggleCrossOut(); setContextMenu(null); focusSelectedCell() }}
+            disabled={grid.status === 'submitted' || !selectedIsDigit}
+            className="diagnostic-layer-button rounded-lg border border-orange-300 bg-orange-100 px-3 py-2 font-medium text-orange-950 disabled:opacity-50">
+            {selectedCell?.struck ? 'Ta bort lånestreck (X)' : 'Stryk/låna (X)'}
           </button>
         </div>
 
-        <p className="mt-4 text-sm text-slate-700">Tryck på en ruta och skriv med enhetens tangentbord. Välj Minnessiffra för att visa egna hjälprutor ovanför markerad rad; en använd hjälprad ligger kvar. Minnessiffran kan ha två siffror. Pilar eller tabulator flyttar markören. Backspace tar bort sista siffran, Delete tömmer rutan. N växlar mellan lägena. Svep i sidled om alla kolumner inte syns.</p>
+        <p className="mt-4 text-sm text-slate-700">Dutta på en ruta och skriv med enhetens tangentbord. En ny siffra blir stor. Håll och släpp för att växla storlek; håll och dra för att stryka eller ta bort lånestrecket. Knapparna ovan gör samma sak, och högerklick visar valen på dator. En minnessiffra kan ha två siffror. Pilar eller tabulator flyttar markören. Backspace raderar, Delete tömmer rutan. Svep i sidled om alla kolumner inte syns.</p>
         <div className="mt-3 overflow-x-auto pb-2">
           <div ref={gridRef} className="diagnostic-grid" role="group" aria-label="Rutat räknehäfte">
-            {visibleCells.map(({ row, column, layer }) => {
+            {visibleCells.map(({ row, column }) => {
               const cell = grid.cells[`${row}:${column}`] || { main: '', note: '' }
-              const selected = grid.cursor.row === row && grid.cursor.column === column && grid.cursor.layer === layer
+              const selected = grid.cursor.row === row && grid.cursor.column === column
+              const layer = selected ? grid.cursor.layer : cell.note ? 'note' : 'main'
               return (
-                <div key={`${row}:${column}:${layer}`} className={`diagnostic-cell diagnostic-cell--${layer} ${selected ? 'diagnostic-cell--selected' : ''}`}>
+                <div key={`${row}:${column}`} className={`diagnostic-cell diagnostic-cell--${layer} ${selected ? 'diagnostic-cell--selected' : ''} ${dragPreview === `${row}:${column}` ? 'diagnostic-cell--drag-preview' : ''}`}>
                   <input
                     type="text"
                     inputMode={layer === 'note' ? 'numeric' : 'text'}
@@ -248,9 +351,19 @@ function DiagnosticGridPrototype() {
                     data-cell={`${row}:${column}`}
                     data-layer={layer}
                     tabIndex={selected && grid.status !== 'submitted' ? 0 : -1}
-                    aria-label={`${selected ? 'Markerad ruta, ' : ''}rad ${row + 1}, kolumn ${column + 1}, ${layer === 'note' ? 'minnessiffra' : 'stor siffra'}${cell[layer] ? ` ${cell[layer]}` : ', tom'}`}
+                    aria-label={`${selected ? 'Markerad ruta, ' : ''}rad ${row + 1}, kolumn ${column + 1}${cell.main ? `, stor siffra ${cell.main}` : ''}${cell.note ? `, minnessiffra ${cell.note}` : ''}${cell.struck ? ', struken' : ''}${!cell.main && !cell.note ? ', tom' : ''}`}
                     className="diagnostic-cell__input"
-                    onFocus={() => selectCell(row, column, layer)}
+                    onPointerDown={event => startGesture(event, row, column)}
+                    onPointerMove={moveGesture}
+                    onPointerUp={finishGesture}
+                    onPointerCancel={stopGesture}
+                    onContextMenu={event => {
+                      event.preventDefault()
+                      if (event.button !== 2) return
+                      selectCell(row, column)
+                      setContextMenu({ x: Math.min(event.clientX, window.innerWidth - 190), y: Math.min(event.clientY, window.innerHeight - 145) })
+                    }}
+                    onFocus={() => moveCursor({ row, column })}
                     onChange={event => {
                       const entered = event.target.value
                       if (entered.length < 1 || entered.length > 2) return
@@ -259,12 +372,20 @@ function DiagnosticGridPrototype() {
                     onKeyDown={handleKeyDown}
                     disabled={grid.status === 'submitted'}
                   />
-                  <span className="diagnostic-cell__digit">{cell[layer]}</span>
+                  {cell.main && <span className={`diagnostic-cell__digit diagnostic-cell__digit--main ${cell.main.length > 1 ? 'diagnostic-cell__digit--double' : ''} ${cell.struck ? 'diagnostic-cell__digit--struck' : ''}`}>{cell.main}</span>}
+                  {cell.note && <span className={`diagnostic-cell__digit diagnostic-cell__digit--note ${cell.struck ? 'diagnostic-cell__digit--struck' : ''}`}>{cell.note}</span>}
                 </div>
               )
             })}
           </div>
         </div>
+        {contextMenu && <div className="diagnostic-context-menu" role="group" aria-label="Ändra markerad siffra" style={{ left: Math.max(8, contextMenu.x), top: Math.max(8, contextMenu.y) }}>
+          {formatButton('main', 'Stor')}
+          {formatButton('note', 'Minnessiffra')}
+          <button type="button" disabled={!selectedIsDigit} onClick={() => { toggleCrossOut(); setContextMenu(null); focusSelectedCell() }}>
+            {selectedCell?.struck ? 'Ta bort streck' : 'Stryk/låna'}
+          </button>
+        </div>}
         <p className="mt-2 text-sm text-slate-700">Markerad ruta: rad {grid.cursor.row + 1}, kolumn {grid.cursor.column + 1}, {grid.cursor.layer === 'note' ? 'minnessiffra' : 'stor siffra'}. Händelser: {grid.events.length}.</p>
         <label className="mt-4 block text-base font-semibold" htmlFor="diagnostic-answer">Mitt svar</label>
         <input id="diagnostic-answer" type="text" inputMode="numeric" value={grid.answer}
@@ -279,7 +400,7 @@ function DiagnosticGridPrototype() {
           className="mt-1 w-full max-w-xs rounded-lg border border-slate-500 px-3 py-2 text-xl" />
       </section>
 
-      <section className="mt-5 rounded-2xl border border-slate-300 bg-white p-4 sm:p-6">
+      <section className="mt-5 rounded-2xl border border-orange-300 bg-orange-50 p-4 sm:p-6">
         <h2 className="text-xl font-semibold">Kontrollera observationen</h2>
         <p className="mt-1 text-sm text-slate-700">Prototypen bedömer inte om svaret eller metoden är rätt.</p>
         <div className="mt-3 flex flex-wrap gap-2">

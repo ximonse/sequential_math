@@ -178,6 +178,7 @@ export function buildStudentRow(student, activeAssignment = null, classNameById 
   return {
     studentId: student.studentId,
     name: student.name,
+    displayAlias: student.displayAlias,
     classId: classIds[0] || '',
     classIds,
     className: primaryClassName,

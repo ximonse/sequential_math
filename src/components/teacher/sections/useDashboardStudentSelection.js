@@ -107,7 +107,11 @@ export function useDashboardStudentSelection({
     }
     void loadTeacherProfile(selectedListProfile.studentId).then(profile => {
       if (!active) return
-      setLoadedDetail(profile)
+      setLoadedDetail(profile ? {
+        ...profile,
+        name: selectedListProfile.name,
+        teacherPupilLabel: selectedListProfile.teacherPupilLabel
+      } : null)
       if (!profile) setDashboardStatus('Kunde inte hämta elevens fullständiga historik. Försök uppdatera.')
     })
     return () => { active = false }

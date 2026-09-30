@@ -32,7 +32,7 @@ export function buildStudentDetailExportRows(student, row, detailData) {
   }
 
   const now = Date.now()
-  add({ Sektion: 'Sammanfattning', Nyckel: 'Elev', Varde: String(student.name || '') })
+  add({ Sektion: 'Sammanfattning', Nyckel: 'Elev', Varde: String(student.displayAlias || student.studentId || '') })
   add({ Sektion: 'Sammanfattning', Nyckel: 'ElevID', Varde: String(student.studentId || '') })
   add({ Sektion: 'Sammanfattning', Nyckel: 'Klass', Varde: String(row.classNameLabel || row.className || '') })
   add({ Sektion: 'Sammanfattning', Nyckel: 'TotaltLosta', Forsok: Number(student?.stats?.totalProblems || row.attempts || 0) })

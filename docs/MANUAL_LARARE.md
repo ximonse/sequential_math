@@ -173,6 +173,10 @@ namnlistan, sparas det angivna namnet som elevens första tilltalsnamn. Nya
 elever får namnlösa elev-ID samt QR-kod, kodnamn och PIN. En
 `Hämta PDF (8 A7/A4)`-knapp visas direkt efter sparandet. PDF:en innehåller
 elevens namn, kodnamn, QR-kod, PIN och elev-ID och är lärarens reservkopia.
+I lärarvyn kan du trycka **Visa tilltalsnamn** för att fylla i saknade privata
+tilltalsnamn från namnlistan. Elevmenyer och resultat visar därefter ditt
+tilltalsnamn där det finns sparat; annars visas kodnamnet. Elevkort,
+elevinloggning och export fortsätter använda kodnamnet.
 Spara den bara på skolans godkända, skyddade plats. Rå QR-hemligheter sparas
 aldrig på servern eller i webbläsaren och kan därför inte skrivas ut i efterhand
 utan att ett nytt kort utfärdas.

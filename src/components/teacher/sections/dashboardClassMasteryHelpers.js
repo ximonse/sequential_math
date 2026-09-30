@@ -23,6 +23,7 @@ export function buildClassMasteryRows(filteredStudents) {
     return {
       studentId: student.studentId,
       name: student.name || student.displayAlias || student.studentId,
+      displayAlias: student.displayAlias || student.studentId,
       className: student.className || '',
       levels,
       average,
@@ -53,7 +54,7 @@ export function buildClassMasteryExportRows(rows, averages, getLabel = op => op)
   const decimal = value => (Number.isFinite(value) ? value.toFixed(1).replace('.', ',') : '')
   const whole = value => (Number.isInteger(value) ? value : '')
   const pupilRows = rows.map(row => ({
-    Elev: row.name,
+    Elev: row.displayAlias || row.studentId,
     ElevID: row.studentId,
     Klass: row.className,
     ...Object.fromEntries(ALL_OPERATIONS.map(op => [getLabel(op), whole(row.levels?.[op])])),

@@ -109,11 +109,13 @@ export async function handleControl(action, body = {}) {
       await kv.sadd('classes:index', classId)
     }
     const pupils = []
-    for (const name of body.pupils || ['Robot Ett']) {
+    for (const [index, name] of (body.pupils || ['Robot Ett']).entries()) {
       const studentId = Buffer.from(name).toString('hex').toUpperCase().padEnd(32, '0').slice(0, 32)
       const loginCode = await reserveStudentLoginCode(studentId, () => name)
       const className = (await kv.get(`class:${classId}`))?.name || classId
-      await createStudentRecord(studentId, emptyPupil(studentId, loginCode, classId, className))
+      const profile = emptyPupil(studentId, loginCode, classId, className)
+      if (body.creationNames?.[index]) profile.name = String(body.creationNames[index])
+      await createStudentRecord(studentId, profile)
       await kv.sadd(`class_students:${classId}`, studentId)
       pupils.push({ studentId, loginCode, pin: ROBOT_PIN, classId })
     }

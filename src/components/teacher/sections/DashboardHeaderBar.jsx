@@ -9,6 +9,8 @@ function DashboardHeaderBar({
   cloudSyncStatus,
   isCloudRefreshBusy,
   onRefreshNow,
+  onShowPupilNames,
+  fillingPupilNames,
   onJumpToPasswordReset,
   onGoDashboard,
   onGoAdmin,
@@ -27,6 +29,10 @@ function DashboardHeaderBar({
 
       <div className="flex flex-wrap items-center justify-end gap-1.5">
         <CloudSyncStatusPanel cloudSyncStatus={cloudSyncStatus} isCloudRefreshBusy={isCloudRefreshBusy} onRefreshNow={onRefreshNow} />
+        <button type="button" onClick={onShowPupilNames} disabled={fillingPupilNames}
+          className="rounded-md bg-violet-100 px-2 py-1.5 text-xs font-semibold text-violet-800 hover:bg-violet-200 disabled:opacity-50">
+          {fillingPupilNames ? 'Hämtar namn…' : 'Visa tilltalsnamn'}
+        </button>
         <div className={`rounded-md border px-2 py-1 text-xs shadow-sm ${teacherRole === 'Huvudadministratör' ? 'border-violet-200 bg-violet-100 text-violet-950' : isAdmin ? 'border-orange-200 bg-orange-100 text-orange-950' : 'border-green-200 bg-green-100 text-green-950'}`} aria-label="Inloggat konto">
           <p className="font-semibold leading-tight">{teacherName}</p>
           <p className="text-[10px] leading-tight opacity-80">{teacherRole}</p>

@@ -59,7 +59,6 @@ export default function BulkCredentialReissue({ students }) {
           <label key={student.studentId} className="flex cursor-pointer items-center gap-2 text-xs text-gray-800">
             <input type="checkbox" checked={selectedIds.includes(student.studentId)} onChange={() => toggle(student.studentId)} disabled={busy} />
             <span className="truncate font-medium">{studentLabel(student)}</span>
-            {student.displayAlias && student.name ? <span className="truncate text-gray-400">{student.displayAlias}</span> : null}
           </label>
         ))}
       </div>

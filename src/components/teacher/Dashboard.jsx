@@ -51,7 +51,7 @@ import { getActiveAssignment, hydrateAssignmentsFromServer } from '../../lib/ass
 import { getTeacherClassIds } from '../../lib/teacherAuth'
 import { hydrateTicketsFromServer } from '../../lib/tickets'
 import { loadTeacherWorkspace } from '../../lib/teacherWorkspaceSync'
-import { loadTeacherPupilLabels } from '../../lib/teacherPupilLabels'
+import { fillTeacherPupilLabelsFromCreationNames, loadTeacherPupilLabels } from '../../lib/teacherPupilLabels'
 import { loadTeacherGroups } from './sections/teacherGroupsApi'
 function Dashboard() {
   const [students, setStudents] = useState([])
@@ -67,6 +67,7 @@ function Dashboard() {
   const [rosterInput, setRosterInput] = useState('')
   const [classStatus, setClassStatus] = useState('')
   const [dashboardStatus, setDashboardStatus] = useState('')
+  const [fillingPupilNames, setFillingPupilNames] = useState(false)
   const [copiedId, setCopiedId] = useState('')
   const [activeAssignmentId, setActiveAssignmentId] = useState('')
   const [supportSortBy, setSupportSortBy] = useState('risk')
@@ -130,6 +131,28 @@ function Dashboard() {
     setClasses(serverClasses || [])
     return enrichedProfiles
   }, [])
+
+  const showPupilNames = async () => {
+    setFillingPupilNames(true)
+    try {
+      const result = await fillTeacherPupilLabelsFromCreationNames()
+      if (!result.ok) {
+        setDashboardStatus(result.error || 'Kunde inte hämta tilltalsnamnen.')
+        return
+      }
+      await loadStudents()
+      setStudents(current => current.map(profile => (
+        result.labels?.[profile.studentId]
+          ? { ...profile, name: result.labels[profile.studentId], teacherPupilLabel: result.labels[profile.studentId] }
+          : profile
+      )))
+      setDashboardStatus(result.added > 0
+        ? `${result.added} tilltalsnamn visas nu i dina lärarvyer.`
+        : 'Tilltalsnamnen visas i dina lärarvyer där de finns sparade.')
+    } finally {
+      setFillingPupilNames(false)
+    }
+  }
 
   useEffect(() => {
     const onGroupsUpdated = () => { void loadStudents() }
@@ -422,7 +445,7 @@ function Dashboard() {
         supportRows, handleCreateQuickAssignment,
         classNameInput, setClassNameInput, handleCreateClass, handleCreatePilotRoster, addToClassId, setAddToClassId,
         classes, onLocalTestDataImported: loadStudents, handleAddExistingStudentsToClass, handleMoveStudent, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus, handleDeleteClass, handleRenameClass, handleSaveClassExtras,
-        handleSetTeacherPupilLabel,
+        handleSetTeacherPupilLabel, showPupilNames, fillingPupilNames,
         resultsPanelProps, PASSWORD_RESET_SECTION_ID, passwordResetRows, passwordResetSearch,
         setPasswordResetSearch, passwordResetStatus, handleResetStudentPassword, passwordResetBusyId
       }}

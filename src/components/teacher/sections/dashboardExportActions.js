@@ -23,6 +23,10 @@ export function buildDashboardExportActions({
   exportRange,
   setDashboardStatus
 }) {
+  const withExportName = record => ({
+    ...record,
+    name: record?.displayAlias || record?.studentId || ''
+  })
   // An empty field means "no bound", so a teacher can ask for one day, one
   // week, or everything without switching tools.
   const rangeBounds = () => {
@@ -56,7 +60,7 @@ export function buildDashboardExportActions({
     return `_${from || 'start'}_${to || 'nu'}`
   }
   const handleExportSnapshotCsv = () => {
-    const csvRows = buildSnapshotCsvRows(visibleRows, viewMode, weekGoal)
+    const csvRows = buildSnapshotCsvRows(visibleRows.map(withExportName), viewMode, weekGoal)
     if (csvRows.length === 0) {
       setDashboardStatus('Inget att exportera i aktuell vy.')
       return
@@ -69,7 +73,7 @@ export function buildDashboardExportActions({
   }
 
   const handleExportDetailedProblemCsv = () => {
-    const snapshot = buildAnalyticsSnapshot(filteredStudents)
+    const snapshot = buildAnalyticsSnapshot(filteredStudents.map(withExportName))
     const ranged = { ...snapshot, rows: withinRange(snapshot.rows || []) }
     const csvRows = buildDetailedProblemExportRows(ranged)
     if (csvRows.length === 0) {
@@ -84,7 +88,7 @@ export function buildDashboardExportActions({
   }
 
   const handleExportSkillComparisonCsv = () => {
-    const snapshot = buildAnalyticsSnapshot(filteredStudents)
+    const snapshot = buildAnalyticsSnapshot(filteredStudents.map(withExportName))
     const csvRows = buildSkillComparisonExportRows({ ...snapshot, rows: withinRange(snapshot.rows || []) })
     if (csvRows.length === 0) {
       setDashboardStatus('Ingen skill-jämförelsedata att exportera.')
@@ -99,7 +103,7 @@ export function buildDashboardExportActions({
 
 
   const handleExportActivityCsv = () => {
-    const csvRows = buildActivityExportRows(withinRange(filteredRows))
+    const csvRows = buildActivityExportRows(withinRange(filteredRows).map(withExportName))
     if (csvRows.length === 0) {
       setDashboardStatus('Ingen aktivitetsdata att exportera.')
       return

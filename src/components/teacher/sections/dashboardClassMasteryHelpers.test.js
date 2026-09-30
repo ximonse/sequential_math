@@ -44,14 +44,14 @@ describe('class mastery meaning', () => {
 
   it('exports the same levels and averages as the panel, with unknown left empty', () => {
     const rows = buildClassMasteryRows([
-      { studentId: 'A', name: 'Anna', className: '5A', teacherSummary: { effectiveLevels: { addition: 4, subtraction: 3 } } },
-      { studentId: 'B', name: 'Bert', className: '5A', teacherSummary: { effectiveLevels: {} } }
+      { studentId: 'A', name: 'Anna', displayAlias: 'Blå Bok Räv', className: '5A', teacherSummary: { effectiveLevels: { addition: 4, subtraction: 3 } } },
+      { studentId: 'B', name: 'Bert', displayAlias: 'Grön Sol Uggla', className: '5A', teacherSummary: { effectiveLevels: {} } }
     ])
     const exported = buildClassMasteryExportRows(rows, buildClassMasteryAverages(rows))
 
     expect(exported).toHaveLength(3)
-    expect(exported[0]).toMatchObject({ Elev: 'Anna', addition: 4, subtraction: 3, multiplication: '', LägstaBelagda: 3, SnittBelagt: '3,5' })
-    expect(exported[1]).toMatchObject({ Elev: 'Bert', addition: '', SnittBelagt: '', BelagdaOmråden: '0/11' })
+    expect(exported[0]).toMatchObject({ Elev: 'Blå Bok Räv', addition: 4, subtraction: 3, multiplication: '', LägstaBelagda: 3, SnittBelagt: '3,5' })
+    expect(exported[1]).toMatchObject({ Elev: 'Grön Sol Uggla', addition: '', SnittBelagt: '', BelagdaOmråden: '0/11' })
     expect(exported[2]).toMatchObject({ Elev: 'Klassmedel', addition: '4,0', SnittBelagt: '3,5' })
   })
 })

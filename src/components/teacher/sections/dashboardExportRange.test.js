@@ -75,13 +75,14 @@ describe('rader utan tidsstämpel', () => {
     downloaded.length = 0
     const actions = buildDashboardExportActions({
       visibleRows: [], viewMode: 'day', weekGoal: 0,
-      filteredStudents: [], filteredRows: [{ name: 'Alva', studentId: 'ABC123' }],
+      filteredStudents: [], filteredRows: [{ name: 'Alva', displayAlias: 'Blå Bok Räv', studentId: 'ABC123' }],
       detailStudentProfile: null, detailStudentRow: null, detailStudentViewData: null,
       exportRange: { from: '2026-09-23', to: '2026-09-23' },
       setDashboardStatus: () => {}
     })
     actions.handleExportActivityCsv()
-    expect(downloaded[0].content).toContain('Alva')
+    expect(downloaded[0].content).toContain('Blå Bok Räv')
+    expect(downloaded[0].content).not.toContain('Alva')
   })
 })
 

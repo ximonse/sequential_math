@@ -152,7 +152,7 @@ function StudentCredentialIssuer({ student }) {
   const [qrCode, setQrCode] = useState('')
   const [status, setStatus] = useState('')
   const issue = async () => {
-    const label = student.displayAlias || student.studentId
+    const label = student.name || student.displayAlias || student.studentId
     if (!window.confirm(`Skapa nytt QR-kort och ny PIN för ${label}? Det gamla kortet slutar fungera direkt.`)) return
     setStatus('Skapar nytt elevkort…')
     try {

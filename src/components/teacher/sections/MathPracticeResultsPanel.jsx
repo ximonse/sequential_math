@@ -55,8 +55,8 @@ export default function MathPracticeResultsPanel({ students, filteredStudents })
   const assignments = useMemo(() => getAssignments().filter(a => a.kind === 'math_practice'), [])
 
   const getStudentName = (studentId) => {
-    const student = students.find(s => s.id === studentId)
-    return student?.displayAlias || studentId
+    const student = students.find(s => s.studentId === studentId)
+    return student?.name || student?.displayAlias || studentId
   }
 
   const getSuccessColor = (rate) => {
@@ -113,7 +113,7 @@ export default function MathPracticeResultsPanel({ students, filteredStudents })
           >
             <option value="">Alla elever</option>
             {filteredStudents.map(s => (
-              <option key={s.id} value={s.id}>{s.displayAlias || s.id}</option>
+              <option key={s.studentId} value={s.studentId}>{s.name || s.displayAlias || s.studentId}</option>
             ))}
           </select>
         </div>

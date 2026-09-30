@@ -331,6 +331,7 @@ export function buildTablePracticeProgress(students, options = {}) {
     )
     return {
       studentId: String(student.studentId || ''), name: String(student.name || student.displayAlias || student.studentId || ''),
+      displayAlias: String(student.displayAlias || student.studentId || ''),
       current: summarize(28 - days, days), previous: summarize(28 - 2 * days, days),
       daily: dates.slice(28 - days).map((date, index) => ({ date, ...summarize(28 - days + index, 1) })),
       available: status.available, historyComplete: status.historyComplete

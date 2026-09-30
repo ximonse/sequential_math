@@ -12,7 +12,7 @@ describe('BulkCredentialReissue', () => {
     const html = renderToStaticMarkup(<BulkCredentialReissue students={students} />)
     expect(html).toContain('Nya kort för valda elever')
     expect(html).toContain('Hilma')
-    expect(html).toContain('Lila Nyckel Uggla')
+    expect(html).not.toContain('Lila Nyckel Uggla')
     expect(html).toContain('Blå Bro Uggla')
     expect(html.match(/type="checkbox"/g)).toHaveLength(2)
     expect(html).not.toContain('checked=""')

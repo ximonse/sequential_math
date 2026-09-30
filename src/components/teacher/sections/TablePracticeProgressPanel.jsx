@@ -43,7 +43,7 @@ export default function TablePracticeProgressPanel({ students = [], selection, o
   const exportCsv = () => {
     const subjects = [...progress.students, { ...progress.cohort, name: selected ? 'Övriga i urvalet' : 'Hela urvalet', studentId: '' }]
     const rows = subjects.flatMap(item => ['current', 'previous'].map(period => ({
-      Elev: item.name, ElevID: item.studentId, Tabell: progress.table,
+      Elev: item.studentId ? item.displayAlias : item.name, ElevID: item.studentId, Tabell: progress.table,
       Period: period === 'current' ? 'Vald period' : 'Föregående period',
       Fran: period === 'current' ? progress.currentStart : progress.previousStart,
       Till: period === 'current' ? progress.endDate : progress.previousEnd,

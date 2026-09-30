@@ -112,7 +112,10 @@ servern utan att raderas vid konflikt.
 - Radering som avbryts mitt i städningen kan köras igen utan att ett försök
   blir läsbart under tiden.
 
-Nästa implementation börjar med en testbar serverlagringsmodul och dess CAS-
-tester. UI och elevsynk ansluts först när dessa fall är gröna. Gallring efter
+En ren validator (`diagnosticAttemptAppend.js`) kontrollerar nu append och
+exakt retry mot en återskapad slutbild utan att skriva till KV. Den verifierar
+inte Redis-transaktionen, tilldelningsbehörighet eller faktisk återupptagning.
+Nästa implementation är en testbar serverlagringsmodul och dess CAS-tester.
+UI och elevsynk ansluts först när dessa fall är gröna. Gallring efter
 klassradering och lärarens uttryckliga återöppning av inlämnat försök är
 fortfarande produktbeslut, inte färdiga serverregler.

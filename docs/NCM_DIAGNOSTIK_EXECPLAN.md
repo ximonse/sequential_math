@@ -74,6 +74,9 @@ Inga nya elevfunktioner eller utskriftsgeneratorer ingår i Etapp 0.
 - [x] Gör en kodförankrad avgränsning mot befintlig event-, synk- och
   profilmergeväg och skriv en [föreslagen separat försöksresurs](NCM_DIAGNOSTIK_LAGRING_V1.md)
   med CAS, sekvens, kvot, behörighet och raderingsfall.
+- [x] Lägg till en isolerad append-validator som kontrollerar återspelning,
+  sekvens, exakt retry, konkurrerande revisioner och kvoter utan att röra
+  elevprofilen eller KV. Den är inte en färdig lagrings- eller API-väg.
 - [ ] Implementera och testa serverauktoritativ försökslagring, idempotent
   synk, storleksgräns och återupptagning enligt det granskade resurskontraktet.
 

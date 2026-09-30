@@ -94,8 +94,37 @@ servern utan att raderas vid konflikt.
   läs-/skriv-API även om indexstädningen avbryts. Rå försök, händelser,
   aktiva pekare, index och framtida analys-/exportnycklar städas återupptagbart
   från elevindex. Klassradering stoppar nya försök och åtkomst via den klassen.
-  Om historiska försök ska raderas eller behållas efter klassradering kräver
-  ett uttryckligt gallringsbeslut före implementation.
+
+## Bevarad statistik efter radering
+
+Simon har beslutat att diagnostisk statistik ska kunna bevaras utan namn när
+elev eller klass raderas, så att utveckling över tid kan jämföras. Detta är en
+separat härledd resurs, inte ett undantag som låter råa försök, elev-ID,
+uppställningar eller händelseloggar ligga kvar i försökslagringen. En
+raderingsprocess får inte rapportera klart förrän den antingen har skapat den
+tillåtna statistikresursen och städat personkopplingen, eller har rapporterat
+ett synligt fel som går att återuppta. Ingen statistik får visas från en
+halvfärdig radering.
+
+Två olika jämförelser behöver särskiljas före implementation:
+
+- **Grupp över tid:** sammanställningar per tillräckligt stor grupp och
+  tidsperiod utan elevnyckel. Små grupper och kombinationer som kan peka ut en
+  elev måste undertryckas eller slås ihop. Detta kan efter kontroll bli
+  anonym statistik, men enbart borttagna namn räcker inte.
+- **Samma elev över tid:** en stabil kod binder ihop elevens mätpunkter.
+  Det är pseudonymiserade personuppgifter om eleven kan identifieras med
+  kompletterande information, även om namn och direkt elev-ID saknas.
+  Då behövs en uttrycklig livscykel och behörighetsregel för kodnyckel,
+  individuella tidsserier, radering och åtkomst. En sådan tidsserie får inte
+  kallas anonym i appen eller lagringskontraktet.
+
+Valet mellan dessa två nivåer är öppet. Därför får ingen statistikpipeline
+eller automatisk gallring byggas med antagandet att en stabil elevkod uppfyller
+kravet på anonymisering. Innan verkliga elevdata ansluts ska fält, retention,
+gruppstorlek och en återupptagbar raderingsordning fastställas och testas.
+[IMY:s vägledning](https://www.imy.se/verksamhet/dataskydd/innovationsportalen/vi-guidar-dig/vi-hanterar-bara-anonymiserade-personuppgifter-da-kan-vi-val-bortse-fran-gdpr/)
+skiljer uttryckligen på anonymisering och pseudonymisering.
 
 ## Acceptansfall före anslutning till elevvyn
 
@@ -111,11 +140,14 @@ servern utan att raderas vid konflikt.
   vanlig träningsstatistik och det gamla NCM-completionflödet oförändrade.
 - Radering som avbryts mitt i städningen kan köras igen utan att ett försök
   blir läsbart under tiden.
+- Bevarad statistik innehåller inga råa uppställningar, händelser eller direkta
+  elev-ID. Små urval eller kombinerade filter kan inte avslöja en elev; en
+  individuell tidsserie hanteras uttryckligen som pseudonymiserad data.
 
 En ren validator (`diagnosticAttemptAppend.js`) kontrollerar nu append och
 exakt retry mot en återskapad slutbild utan att skriva till KV. Den verifierar
 inte Redis-transaktionen, tilldelningsbehörighet eller faktisk återupptagning.
 Nästa implementation är en testbar serverlagringsmodul och dess CAS-tester.
-UI och elevsynk ansluts först när dessa fall är gröna. Gallring efter
-klassradering och lärarens uttryckliga återöppning av inlämnat försök är
+UI och elevsynk ansluts först när dessa fall är gröna. Nivån på bevarad
+statistik och lärarens uttryckliga återöppning av inlämnat försök är
 fortfarande produktbeslut, inte färdiga serverregler.

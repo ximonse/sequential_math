@@ -125,6 +125,10 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
 - Beslutat av Simon: siffrorna skrivs med enhetens tangentbord. Prototypens
   egen sifferpanel har tagits bort.
 - Antaget: egna uppgifter används tills rätt till originalmaterial klarlagts.
+- Beslutat av Simon: diagnostisk statistik ska finnas kvar utan namn efter
+  radering och kunna användas för jämförelser över tid. Om jämförelsen ska
+  gälla samma elev med en beständig kod eller enbart grupper är ännu öppet;
+  kodade individuella serier är pseudonymiserade personuppgifter.
 - Föreslaget i [Etapp 0-kontraktet](NCM_DIAGNOSTIK_ETAPP0.md): läraren avslutar
   ett försök uttryckligen. Detta är ännu inte ett antaget pedagogiskt beslut.
 - Öppet för Etapp 1: naturlig inmatning av minnessiffra och lån avgörs genom
@@ -166,5 +170,5 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   siffertangentbord även för stora siffror; den ändringen ingår i committen.
 - Nästa steg: prova rutnät och minnessiffra/lån med elever på avsedd iPad;
   implementera under tiden serverresursens rena lagringsmodul och CAS-tester.
-  Lärarens återöppning av inlämnat försök och gallring vid klassradering
+  Lärarens återöppning av inlämnat försök och nivån på bevarad statistik
   behöver produktbeslut före anslutning till verkliga elevuppdrag.

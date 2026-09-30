@@ -53,17 +53,17 @@ Inga nya elevfunktioner eller utskriftsgeneratorer ingår i Etapp 0.
 5. Lärarstyrda förslag till uppföljande uppdrag.
 6. Expansion först efter nytt innehållskontrakt och nytt beslut.
 
-## Etapp 1 – första isolerade prototypsnittet (pågår)
+## Etapp 1 – adminbegränsad interaktionsprototyp (pågår)
 
-- [x] Dev-/QA-route `/qa/diagnostic-grid` läser de fyra uppgifterna från
-  manifestet som markerbar text. Normal produktionsbuild exponerar inte routen.
+- [x] Adminbegränsad route `/teacher/ncm/diagnostic-grid` läser de fyra
+  uppgifterna från manifestet som markerbar text. Vanliga lärare och elever
+  får inte öppna prototypen; NCM-modulen har orange bakgrund.
 - [x] Rutnät med fokuserbara inmatningsfält för enhetens tangentbord, pilar,
   tabulator, direkt rutval, radering och operatorer. Vanliga rader ligger
-  direkt efter varandra. När eleven väljer minnessiffra visas en hjälprad
-  ovanför markerad rad; den ligger kvar om den innehåller siffror. Varje
-  hjälpruta kan ta upp till två siffror och Backspace tar bort
-  sista siffran. UI-kontrollen heter `Minnessiffra`; händelsedatat behåller
-  separata `note`- och `main`-lager på samma koordinat.
+  direkt efter varandra. Stor siffra och minnessiffra använder samma ruta;
+  minnessiffran visas mindre och kan vara tvåsiffrig. Båda lägena begär
+  siffertangentbord. Håll/släpp växlar storlek, håll/drag växlar lånestreck,
+  och synliga knappar samt högerklick ger samma val. Ändringarna kan ångras.
 - [x] Append-only-förlopp med versionsnummer, cellföre/-efter, markör,
   anteckningsläge, svar, paus/fokusförlust och inlämning. JSON-återläsning
   återskapar slutbilden eller stoppar vid mismatch.
@@ -71,8 +71,11 @@ Inga nya elevfunktioner eller utskriftsgeneratorer ingår i Etapp 0.
   byter uppgift. Det är endast minnesstate, inte sparat elevunderlag.
 - [ ] Prova antecknings-/låneinteraktionen med elever på avsedd iPad och välj
   sedan metod. Den nuvarande prototypen gör inget pedagogiskt metodanspråk.
-- [ ] Anslut en säker serverauktoritativ försökslagring med idempotent synk,
-  storleksgräns och återupptagning. Granska först hela event-/mergevägen.
+- [x] Gör en kodförankrad avgränsning mot befintlig event-, synk- och
+  profilmergeväg och skriv en [föreslagen separat försöksresurs](NCM_DIAGNOSTIK_LAGRING_V1.md)
+  med CAS, sekvens, kvot, behörighet och raderingsfall.
+- [ ] Implementera och testa serverauktoritativ försökslagring, idempotent
+  synk, storleksgräns och återupptagning enligt det granskade resurskontraktet.
 
 Den isolerade prototypen har ingen lärartilldelning, ingen diagnostisk analys,
 ingen vanlig mastery-/adaptivitetspipeline och ingen Word/PDF-renderare.
@@ -152,6 +155,13 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   vid JSON-återläsning och att den tomma hjälpraden försvinner efter radering.
   En uppställning av `268 + 431` med streck och resultat fick plats på fyra
   på varandra följande vanliga rader; skärmbilden granskades.
-- Nästa steg: prova rutnät och minnessiffra/lån med elever på avsedd iPad.
-  Specificera samtidigt en separat serverresurs och dess konflikt- och
-  raderingsregler utifrån lagringsauditen ovan, före serveranslutning.
+- Publicerat via GitHub `master` till Vercel-projektet `sekvens` som
+  adminbegränsad prototyp i commit `533aa6a` (READY 2026-09-30). Den
+  sammansatta produktionsgrenen klarade 547 enhetstester, build och 69 robotar
+  utan regelbrott. Detta verifierar inte iPadens faktiska tangentbord eller
+  elevens användning. Simon har provat NCM-prototypen och begärt
+  siffertangentbord även för stora siffror; den ändringen ingår i committen.
+- Nästa steg: prova rutnät och minnessiffra/lån med elever på avsedd iPad;
+  implementera under tiden serverresursens rena lagringsmodul och CAS-tester.
+  Lärarens återöppning av inlämnat försök och gallring vid klassradering
+  behöver produktbeslut före anslutning till verkliga elevuppdrag.

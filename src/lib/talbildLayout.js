@@ -11,12 +11,7 @@ export const DICE_PATTERNS = {
   2: [[25, 25], [75, 75]],
   3: [[50, 50], [25, 25], [75, 75]],
   4: [[25, 25], [75, 25], [25, 75], [75, 75]],
-  5: [[25, 25], [75, 25], [50, 50], [25, 75], [75, 75]],
-  6: [[25, 25], [75, 25], [25, 50], [75, 50], [25, 75], [75, 75]],
-  7: [[25, 25], [75, 25], [25, 50], [50, 50], [75, 50], [25, 75], [75, 75]],
-  8: [[25, 25], [50, 25], [75, 25], [25, 50], [75, 50], [25, 75], [50, 75], [75, 75]],
-  9: [[25, 25], [50, 25], [75, 25], [25, 50], [50, 50], [75, 50], [25, 75], [50, 75], [75, 75]],
-  10: [[20, 20], [50, 20], [80, 20], [20, 50], [50, 50], [80, 50], [20, 80], [50, 80], [80, 80], [50, 92]]
+  5: [[25, 25], [75, 25], [50, 50], [25, 75], [75, 75]]
 }
 
 function canonicalDots(count) {
@@ -24,18 +19,25 @@ function canonicalDots(count) {
 }
 
 function splitCounts(value, level, rng) {
-  if (level >= 1 && value >= 2) {
-    const canonicalLeft = Math.min(value, 5)
-    const options = []
-    for (let left = 1; left < value; left += 1) {
-      if (left <= 9 && value - left <= 9 && left !== canonicalLeft) options.push(left)
-    }
-    if (options.length === 0) options.push(1)
-    const left = options[Math.floor(rng() * options.length)]
-    return [left, value - left]
-  }
   if (value <= 5) return [value]
+  if (level >= 1) {
+    const options = []
+    for (let left = 1; left <= 5; left += 1) {
+      if (value - left >= 1 && value - left <= 5 && left !== 5) options.push(left)
+    }
+    if (options.length > 0) {
+      const left = options[Math.floor(rng() * options.length)]
+      return [left, value - left]
+    }
+  }
   return [5, value - 5]
+}
+
+export function nextTalbildValue(previousValue, rng = Math.random) {
+  if (!Number.isInteger(previousValue) || previousValue < 1 || previousValue > 10) {
+    return Math.floor(rng() * 10) + 1
+  }
+  return ((previousValue - 1 + Math.floor(rng() * 9) + 1) % 10) + 1
 }
 
 // Rejection sampling with pairwise minimum distance; null when the die is too crowded.

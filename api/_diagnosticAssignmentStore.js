@@ -32,7 +32,9 @@ for i = 1, n do
   if not member then return -5 end
 end
 redis.call('SET', KEYS[1], ARGV[3])
-redis.call('SADD', KEYS[4 + 3*n], cjson.decode(ARGV[3]).assignmentId)
+local assignmentId = cjson.decode(ARGV[3]).assignmentId
+redis.call('SADD', KEYS[4 + 3*n], assignmentId)
+for i = 1, n do redis.call('SADD', KEYS[4 + 3*n + i], assignmentId) end
 return 1
 `
 
@@ -110,7 +112,8 @@ export async function createDiagnosticAssignment({ classId, studentIds, taskIds,
   const keys = [`diagnostic_assignment:${assignmentId}`, `class_deleted:${classId}`, `class:${classId}`,
     ...studentIds.map(id => `student:${id}`), ...studentIds.map(studentDeletedKey),
     ...studentIds.map(id => `student_deleted:${id}`),
-    `diagnostic_assignments_by_class:${classId}`]
+    `diagnostic_assignments_by_class:${classId}`,
+    ...studentIds.map(id => `diagnostic_assignments_by_student:${id}`)]
   const result = Number(await store.eval(CREATE_DIAGNOSTIC_ASSIGNMENT_SCRIPT, keys,
     [studentIds.length, classId, JSON.stringify(assignment)]))
   if (result === -2) fail(410, 'class_unavailable', 'Diagnostic class is unavailable')

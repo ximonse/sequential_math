@@ -42,6 +42,9 @@ export const kv = {
       const assignment = parse(json)
       values.set(assignmentKey, assignment)
       await kv.sadd(keys[3 + 3 * count], assignment.assignmentId)
+      for (let index = 0; index < count; index++) {
+        await kv.sadd(keys[4 + 3 * count + index], assignment.assignmentId)
+      }
       return 1
     }
     if (script === OPEN_DIAGNOSTIC_ATTEMPT_SCRIPT) {

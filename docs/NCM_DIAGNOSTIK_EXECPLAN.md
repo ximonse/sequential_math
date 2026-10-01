@@ -261,6 +261,17 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   För detta snitt passerade 120 testfiler/587 tester, normal build,
   arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
   regelbrott.
+- Nya tilldelningar indexeras atomiskt även per testkonto. Det gör att
+  raderingskedjan kan hitta uppdrag som aldrig öppnats och uppdrag från en
+  tidigare klass. Det här indexet innehåller fortfarande elev-ID och måste
+  därför städas i den kommande raderingsintegrationen.
+- En läsande rensningsplan samlar efter tombstone uppdrag, även oöppnade,
+  aktiva pekare och råa försöksnycklar från elevindexen. Den vägrar främmande
+  eller motsägande indexposter och gör inga raderingar. Den framtida exekveraren
+  måste säkra arkivet först och sedan rensa personkopplingarna återupptagbart.
+  För detta lokala snitt passerade 125 testfiler/602 tester, normal build,
+  arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
+  regelbrott.
 - Lärarens avgränsade testunderlag: admin/huvudadmin kan, med aktuell
   klassåtkomst och ett explicit tillåtet testkonto, lista försök och öppna
   serverns sparade rutnät. Vyn visar uttryckligt slutsvar, reproducerbara

@@ -34,6 +34,10 @@ function storage() {
         data.set(assignmentKey, JSON.parse(json))
         const indexKey = keys[3 + 3 * count]
         data.set(indexKey, [...new Set([...(data.get(indexKey) || []), JSON.parse(json).assignmentId])])
+        for (let index = 0; index < count; index++) {
+          const pupilIndex = keys[4 + 3 * count + index]
+          data.set(pupilIndex, [...new Set([...(data.get(pupilIndex) || []), JSON.parse(json).assignmentId])])
+        }
         return 1
       }
       if (script === OPEN_DIAGNOSTIC_ATTEMPT_SCRIPT) {
@@ -124,6 +128,7 @@ describe('diagnostic assignment and attempt creation', () => {
     expect(store.data.get(`diagnostic_attempts_by_student:PUPIL`)).toEqual([first.record.attemptId])
     expect(store.data.get(`diagnostic_attempts_by_assignment:${assignment.assignmentId}`)).toEqual([first.record.attemptId])
     expect(store.data.get('diagnostic_assignments_by_class:CLASS')).toEqual([assignment.assignmentId])
+    expect(store.data.get('diagnostic_assignments_by_student:PUPIL')).toEqual([assignment.assignmentId])
     expect(store.data.get('student:PUPIL')).toEqual(profileBefore)
   })
 
@@ -144,6 +149,7 @@ describe('diagnostic assignment and attempt creation', () => {
     await expect(create({ taskIds: ['not-in-manifest'] })).rejects.toMatchObject({ status: 400 })
     await expect(create({ studentIds: ['OTHER'] })).rejects.toMatchObject({ status: 409 })
     expect([...store.data.keys()].filter(key => key.startsWith('diagnostic_assignment:'))).toEqual([])
+    expect([...store.data.keys()].filter(key => key.startsWith('diagnostic_assignments_by_'))).toEqual([])
     const assignment = await create()
     store.data.get('student:PUPIL').classIds = []
     await expect(open(assignment)).rejects.toMatchObject({ status: 410 })
@@ -151,6 +157,14 @@ describe('diagnostic assignment and attempt creation', () => {
     store.data.set(studentDeletedKey('PUPIL'), 'deleted')
     await expect(open(assignment)).rejects.toMatchObject({ status: 410 })
     expect([...store.data.keys()].filter(key => key.startsWith('diagnostic_attempt:'))).toEqual([])
+  })
+
+  it('indexes one frozen assignment for every target pupil in the same atomic step', async () => {
+    store.data.get('student:OTHER').classIds = ['CLASS']
+    const assignment = await create({ studentIds: ['PUPIL', 'OTHER'] })
+    expect(store.data.get('diagnostic_assignments_by_student:PUPIL')).toEqual([assignment.assignmentId])
+    expect(store.data.get('diagnostic_assignments_by_student:OTHER')).toEqual([assignment.assignmentId])
+    expect(store.data.get('diagnostic_assignments_by_class:CLASS')).toEqual([assignment.assignmentId])
   })
 
   it('rejects a stopped assignment even when the caller read it before the atomic step', async () => {

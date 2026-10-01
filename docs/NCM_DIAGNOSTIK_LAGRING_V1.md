@@ -37,6 +37,7 @@ uppdragslista.
 | `diagnostic_active:{studentId}:{assignmentItemId}` | Pekare till högst ett aktivt försök för elev och uppdragspost. Skapas atomärt med försöket. |
 | `diagnostic_attempts_by_student:{studentId}` | Index för återläsning och raderingsstädning. Ett separat uppdragsindex behövs om lärare ska lista försök utan att skanna elever. |
 | `diagnostic_assignments_by_class:{classId}` / `diagnostic_attempts_by_assignment:{assignmentId}` | Separata index för lärarens framtida listvy och raderingsstädning. |
+| `diagnostic_assignments_by_student:{studentId}` | Atomiskt index vid tilldelning, även om eleven aldrig öppnar uppgiften. Behövs för full rensning efter klassbyte. |
 
 Manifestet och uppgiftsversionen måste finnas kvar så länge ett försök kan
 återges eller exporteras. `classIdAtAttempt` är historiskt sammanhang, inte
@@ -137,6 +138,12 @@ korrupt händelseordning ger fel i stället för tyst bortfall. Funktionen
 varken skriver arkivet eller raderar rådata. Det behövs fortfarande en
 återupptagbar servertransaktion som först säkrar serien och därefter städar
 råa nycklar och personkopplingar.
+`api/_diagnosticDeletionPlan.js` läser efter tombstone de två elevindexen och
+listar uppdragsmedlemskap, aktiva pekare, försöksposter och händelsenycklar
+som rensningen behöver hantera. Den validerar indexerade poster men skriver
+eller raderar inget. Äldre tilldelningar utan det nya elevindexet behöver en
+separat migrering eller verifierad rekonstruktion innan planen får köras på
+sådana data.
 
 Gruppjämförelser kan härledas separat från historiska serier. Små grupper och
 filterkombinationer som kan peka ut en elev måste undertryckas eller slås

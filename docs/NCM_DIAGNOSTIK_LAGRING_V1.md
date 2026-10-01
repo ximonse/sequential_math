@@ -177,7 +177,12 @@ med konton i `NCM_DIAGNOSTIC_TEST_STUDENT_IDS`; utan den går ingen elevväg
 att använda och inga tilldelningar får skapas. Lärarens NCM-modul och en
 separat elevroute använder API:erna, men hela vägen har ännu inte verifierats
 med ett faktiskt testkonto och en riktig Redis-instans.
-Lärarvägen kräver levande lärarsession och aktuell klassåtkomst; elevvägen
+Lärarvägen kräver levande admin-/huvudadminsession och aktuell klassåtkomst;
+vanliga lärare avvisas även av API:t. `api/teacher-diagnostic-attempts.js`
+listar endast testkontots försök och återger rå arbetsyta först efter en
+separat, behörighetskontrollerad detaljbegäran. Den versionsmärkta
+faktasammanfattningen och kolumnobservationen härleds vid läsning utan att
+skriva över råförsöket. Elevvägen
 kräver levande QR/PIN-session och origin/CSRF för mutationer. Elevens
 klassmedlemskap, frysta tilldelning och uppgift kontrolleras före läsning och
 skrivning, och append gör dessutom dessa kontroller atomiskt i Redis-skriptet.

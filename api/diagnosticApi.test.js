@@ -31,7 +31,7 @@ snapshot: { events: [] } }
 beforeEach(() => {
   vi.clearAllMocks()
   delete process.env.NCM_DIAGNOSTIC_API_ENABLED
-  mocked.teacher.mockResolvedValue({ teacherId: 'TEACHER' })
+  mocked.teacher.mockResolvedValue({ teacherId: 'TEACHER', role: 'school_admin' })
   mocked.classAccess.mockResolvedValue(true)
   mocked.create.mockResolvedValue({ assignmentId: 'ASSIGNMENT' })
   mocked.pupil.mockResolvedValue({ profile: { studentId: 'PUPIL', classIds: ['CLASS'] }, session: {} })
@@ -76,6 +76,18 @@ describe('diagnostic pilot API boundary', () => {
     expect(created.code).toBe(201)
     expect(mocked.create).toHaveBeenCalledWith({ classId: 'CLASS', studentIds: ['PUPIL'],
       taskIds: ['add-no-carry-001'], teacherId: 'TEACHER' })
+  })
+
+  it('does not let a regular teacher call the hidden NCM pilot API', async () => {
+    process.env.NCM_DIAGNOSTIC_API_ENABLED = 'true'
+    mocked.teacher.mockResolvedValue({ teacherId: 'TEACHER', role: 'teacher' })
+    const listed = response(), created = response()
+    await teacherHandler({ method: 'GET', headers: {}, query: { classId: 'CLASS' } }, listed)
+    await teacherHandler({ method: 'POST', headers: {}, body: { classId: 'CLASS',
+      studentIds: ['PUPIL'], taskIds: ['add-no-carry-001'] } }, created)
+    expect([listed.code, created.code]).toEqual([403, 403])
+    expect(mocked.listClass).not.toHaveBeenCalled()
+    expect(mocked.create).not.toHaveBeenCalled()
   })
 
   it('lists only within the live teacher class and live pupil session', async () => {

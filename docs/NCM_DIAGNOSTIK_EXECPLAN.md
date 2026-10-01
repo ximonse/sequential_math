@@ -261,3 +261,14 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   För detta snitt passerade 120 testfiler/587 tester, normal build,
   arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
   regelbrott.
+- Lärarens avgränsade testunderlag: admin/huvudadmin kan, med aktuell
+  klassåtkomst och ett explicit tillåtet testkonto, lista försök och öppna
+  serverns sparade rutnät. Vyn visar uttryckligt slutsvar, reproducerbara
+  fakta och kolumnobservationen med `unknown` när den inte går att avgöra.
+  Vanliga lärare får varken skapa eller läsa NCM-testuppdrag via API.
+  Testunderlaget är fortfarande avstängt utan serverflaggor och bygger ännu
+  inte på verifierad verklig Redis eller ett driftsatt testkonto.
+  För detta snitt passerade 121 testfiler/592 tester, normal build,
+  arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
+  regelbrott. Lärarvyns skärmbild granskades och prototypkortets felaktiga
+  uppgift om lagring rättades.

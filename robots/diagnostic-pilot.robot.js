@@ -14,6 +14,7 @@ test('An isolated test pupil can receive, save and resume a diagnostic grid', as
 
   await teacherLogin(page, teacher)
   await openTab(page, 'NCM-diagnostik')
+  await expect(page.getByText(/Testuppdraget nedan sparas separat/)).toBeVisible()
   const panel = page.getByRole('heading', { name: 'Testuppdrag för elevkonto' }).locator('xpath=..')
   await panel.getByRole('combobox', { name: 'Klass' }).selectOption(classId)
   await expect(panel.getByRole('combobox', { name: 'Testkonto' }).locator('option')).toHaveCount(2)
@@ -36,6 +37,14 @@ test('An isolated test pupil can receive, save and resume a diagnostic grid', as
   await expect(studentPage.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
   await studentPage.reload()
   await expect(studentPage.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 8/)
+
+  await panel.getByRole('button', { name: 'Uppdatera försök' }).click()
+  await expect(panel.getByRole('button', { name: 'Visa underlag' })).toBeVisible()
+  await panel.getByRole('button', { name: 'Visa underlag' }).click()
+  const evidence = panel.getByRole('region', { name: 'Diagnostiskt elevunderlag' })
+  await expect(evidence.getByRole('gridcell', { name: /rad 1, kolumn 1, 8/ })).toBeVisible()
+  await expect(evidence.getByText(/Kolumnplacering: kan inte avgöras säkert/)).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('diagnostic-teacher-evidence.png'), fullPage: true })
 
   const secondContext = await browser.newContext()
   const secondPage = await secondContext.newPage()

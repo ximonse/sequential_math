@@ -472,7 +472,7 @@ export default function DashboardLayout({
       <div>
       <section className="rounded-lg border border-orange-300 bg-orange-100 p-4 shadow-sm">
         <h2 className="text-lg font-semibold text-orange-950">Digitalt räknehäfte</h2>
-        <p className="mt-1 text-sm text-orange-900">Isolerad prototyp för uppställning, minnessiffror och lån. Arbetet stannar i fliken och sparas inte som elevdata.</p>
+        <p className="mt-1 text-sm text-orange-900">Knappen öppnar en osparad prototyp för uppställning, minnessiffror och lån. Testuppdraget nedan sparas separat för det valda testkontot.</p>
         <button type="button" onClick={() => navigate('/teacher/ncm/diagnostic-grid')}
           className="mt-3 rounded-md bg-orange-700 px-4 py-2 font-semibold text-white hover:bg-orange-800">
           Öppna räknehäftet

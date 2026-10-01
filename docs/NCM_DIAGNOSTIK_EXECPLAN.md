@@ -240,3 +240,14 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   Testläget kräver både `NCM_DIAGNOSTIC_API_ENABLED=true` och explicit lista
   över testkontons elev-id i `NCM_DIAGNOSTIC_TEST_STUDENT_IDS`. Det är avstängt
   utan dessa inställningar och är inte publicerat i detta snitt.
+- Etapp 2 har nu en ren, versionsmärkt faktasammanfattning av ett återspelat
+  försök. Den skiljer uttryckligt slutsvar, facit, inlämning, slutliga ifyllda
+  rutor och om skrivhändelser funnits. Den klassificerar inte elevens metod,
+  skapar ingen lärarsignal och är inte ansluten till vanlig träning eller arkiv.
+  Raderingsgranskningen visar att elevens tombstone spärrar NCM:s läsning och
+  skrivning, men råa NCM-nycklar städas ännu inte. Arkivfält och återupptagbar
+  radering måste vara klara innan verkliga elevdata används.
+  För detta lokala snitt passerade 119 testfiler/583 tester, normal build,
+  arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
+  regelbrott. Robotsviten behövde normal lokal filåtkomst; sandboxen nekade
+  Vites filskanning.

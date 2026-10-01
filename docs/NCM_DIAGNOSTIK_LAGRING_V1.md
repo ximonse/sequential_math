@@ -163,6 +163,12 @@ Arkivets exakta fält,
 retention och behörighet samt lärarens uttryckliga återöppning av inlämnat
 försök behöver fortfarande fastställas före verkliga elevuppdrag.
 
+`diagnosticObservation.js` ger nu endast reproducerbara fakta från fryst
+uppgift och validerat rutnät: facit, uttryckligt slutsvar, svarsläge, inlämning,
+slutliga ifyllda rutor och om skrivhändelser förekommit. Resultatet är ingen
+arkivresurs eller metodanalys och får inte användas som ersättning för den
+beslutade avidentifierade historiska serien.
+
 `api/teacher-diagnostic-assignments.js` och `api/me/diagnostic-attempt.js`
 exponerar nu ett avgränsat pilotkontrakt för skapande respektive elevens
 öppning, återläsning och append. Båda svarar 404 tills servern uttryckligen

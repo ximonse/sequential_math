@@ -12,7 +12,8 @@ function fixture() {
     ['diagnostic_assignment:UNOPENED', { assignmentId: 'UNOPENED', classId: 'NEW_CLASS',
       studentIds: ['PUPIL'], items: [{ assignmentItemId: 'SECOND' }] }],
     ['diagnostic_attempt:ATTEMPT', { attemptId: 'ATTEMPT', studentId: 'PUPIL',
-      assignmentId: 'OPENED', evidenceClass: 'diagnostic_only' }]
+      assignmentId: 'OPENED', assignmentItemId: 'ITEM', evidenceClass: 'diagnostic_only' }],
+    ['diagnostic_active:PUPIL:ITEM', 'ATTEMPT']
   ])
   return { data, exists: async key => Number(data.has(key)),
     get: async key => structuredClone(data.get(key) ?? null),
@@ -29,7 +30,7 @@ describe('read-only diagnostic deletion plan', () => {
       { assignmentId: 'UNOPENED', remainingStudentIds: [],
         activeKeys: ['diagnostic_active:PUPIL:SECOND'] }
     ])
-    expect(plan.attempts).toEqual([{ attemptId: 'ATTEMPT', assignmentId: 'OPENED',
+    expect(plan.attempts).toEqual([{ attemptId: 'ATTEMPT', assignmentId: 'OPENED', assignmentItemId: 'ITEM',
       recordKey: 'diagnostic_attempt:ATTEMPT', eventsKey: 'diagnostic_attempt_events:ATTEMPT' }])
     expect(store.data.has('diagnostic_attempt:ATTEMPT')).toBe(true)
   })
@@ -40,6 +41,15 @@ describe('read-only diagnostic deletion plan', () => {
     await expect(planDiagnosticPupilDeletion('PUPIL', { store })).rejects.toThrow()
     store.data.set(studentDeletedKey('PUPIL'), 1)
     store.data.get('diagnostic_attempt:ATTEMPT').assignmentId = 'UNKNOWN'
+    await expect(planDiagnosticPupilDeletion('PUPIL', { store })).rejects.toThrow()
+  })
+
+  it('refuses an active pointer outside the pupil attempt index', async () => {
+    const store = fixture()
+    store.data.set('diagnostic_active:PUPIL:ITEM', 'ORPHAN')
+    await expect(planDiagnosticPupilDeletion('PUPIL', { store })).rejects.toThrow()
+    store.data.set('diagnostic_active:PUPIL:ITEM', null)
+    store.data.set('diagnostic_active:PUPIL:SECOND', 'ATTEMPT')
     await expect(planDiagnosticPupilDeletion('PUPIL', { store })).rejects.toThrow()
   })
 })

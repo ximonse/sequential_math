@@ -272,6 +272,10 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   För detta lokala snitt passerade 125 testfiler/602 tester, normal build,
   arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
   regelbrott.
+- Rensningsplanens läsning verifierar nu även att varje aktiv pekare finns i
+  elevens försöksindex och tillhör rätt uppdragspost. Denna frikopplade
+  kontroll passerade 125 testfiler/603 tester, normal build och
+  arkitekturkontroll. Ingen körbar elev- eller lärarväg ändrades i detta snitt.
 - Lärarens avgränsade testunderlag: admin/huvudadmin kan, med aktuell
   klassåtkomst och ett explicit tillåtet testkonto, lista försök och öppna
   serverns sparade rutnät. Vyn visar uttryckligt slutsvar, reproducerbara

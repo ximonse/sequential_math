@@ -140,7 +140,8 @@ varken skriver arkivet eller raderar rådata. Det behövs fortfarande en
 råa nycklar och personkopplingar.
 `api/_diagnosticDeletionPlan.js` läser efter tombstone de två elevindexen och
 listar uppdragsmedlemskap, aktiva pekare, försöksposter och händelsenycklar
-som rensningen behöver hantera. Den validerar indexerade poster men skriver
+som rensningen behöver hantera. Den validerar att aktiva pekare hör till
+rätt uppdragspost och finns i elevens försöksindex. Den skriver
 eller raderar inget. Äldre tilldelningar utan det nya elevindexet behöver en
 separat migrering eller verifierad rekonstruktion innan planen får köras på
 sådana data.

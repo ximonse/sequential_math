@@ -26,15 +26,30 @@ export async function planDiagnosticPupilDeletion(studentId, { store = kv } = {}
     return { assignmentId, remainingStudentIds: assignment.studentIds.filter(id => id !== studentId),
       activeKeys: assignment.items.map(item => `diagnostic_active:${studentId}:${item.assignmentItemId}`) }
   }))
+  const activeRefs = assignments.flatMap(assignment => assignment.activeKeys.map(key => ({
+    assignmentId: assignment.assignmentId, assignmentItemId: key.split(':').at(-1), key
+  })))
+  const pointerIds = await Promise.all(activeRefs.map(ref => store.get(ref.key)))
+  if (pointerIds.some(id => id !== null && (!validId(id) || !attemptIds.includes(id)))
+    || new Set(pointerIds.filter(Boolean)).size !== pointerIds.filter(Boolean).length) invalid()
   const attempts = await Promise.all(attemptIds.map(async attemptId => {
     const record = await store.get(`diagnostic_attempt:${attemptId}`)
     if (record?.attemptId !== attemptId || record.studentId !== studentId
       || !assignmentIds.includes(record.assignmentId)
       || record.evidenceClass !== 'diagnostic_only') invalid()
+    const assignment = await store.get(`diagnostic_assignment:${record.assignmentId}`)
+    if (!assignment?.items?.some(item => item.assignmentItemId === record.assignmentItemId)) invalid()
     return { attemptId, assignmentId: record.assignmentId,
+      assignmentItemId: record.assignmentItemId,
       recordKey: `diagnostic_attempt:${attemptId}`,
       eventsKey: `diagnostic_attempt_events:${attemptId}` }
   }))
+  for (let index = 0; index < pointerIds.length; index++) {
+    if (!pointerIds[index]) continue
+    const pointed = attempts.find(attempt => attempt.attemptId === pointerIds[index])
+    if (pointed?.assignmentId !== activeRefs[index].assignmentId
+      || pointed?.assignmentItemId !== activeRefs[index].assignmentItemId) invalid()
+  }
   return { assignments, attempts,
     studentAssignmentIndexKey: `diagnostic_assignments_by_student:${studentId}`,
     studentAttemptIndexKey: `diagnostic_attempts_by_student:${studentId}` }

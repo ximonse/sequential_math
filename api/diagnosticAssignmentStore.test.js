@@ -44,7 +44,8 @@ function storage() {
         if (data.has(classDeletedKey) || !data.has(classKey) || data.get(classKey).archived) return '-class'
         const assignment = data.get(assignmentKey)
         if (!assignment) return '-missing'
-        if (assignment.status !== 'active' || assignment.classId !== classId || assignment.assignmentVersion !== version) return '-stopped'
+        if (assignment.status !== 'active' || assignment.evidenceClass !== 'diagnostic_only'
+          || assignment.classId !== classId || assignment.assignmentVersion !== version) return '-stopped'
         if (!assignment.studentIds.includes(studentId)) return '-unauthorized'
         if (!assignment.items.some(item => item.assignmentItemId === itemId && item.taskId === taskId && item.taskVersion === taskVersion)) return '-item'
         const pupil = data.get(studentKey)
@@ -60,14 +61,22 @@ function storage() {
         return `created:${attemptId}`
       }
       if (script === DIAGNOSTIC_APPEND_CAS_SCRIPT) {
-        const [attemptKey, eventsKey, deletedKey, legacyDeletedKey, classDeletedKey, assignmentKey] = keys
+        const [attemptKey, eventsKey, deletedKey, legacyDeletedKey, classDeletedKey, assignmentKey,
+          studentKey, classKey] = keys
         const [revision, sequence, nextJson, studentId, assignmentId, count, ...eventJson] = args
         if (data.has(deletedKey) || data.has(legacyDeletedKey)) return -2
         if (data.has(classDeletedKey)) return -3
-        if (data.get(assignmentKey)?.status !== 'active') return -9
+        const activeAssignment = data.get(assignmentKey)
+        if (activeAssignment?.status !== 'active') return -9
         const record = data.get(attemptKey)
         if (!record) return -4
         if (record.studentId !== studentId || record.assignmentId !== assignmentId) return -5
+        if (activeAssignment.classId !== record.classIdAtAttempt || activeAssignment.evidenceClass !== 'diagnostic_only'
+          || !activeAssignment.studentIds.includes(studentId)
+          || !activeAssignment.items.some(item => item.assignmentItemId === record.assignmentItemId
+            && item.taskId === record.taskId && item.taskVersion === record.taskVersion)
+          || !data.has(classKey) || data.get(classKey).archived
+          || !data.has(studentKey) || !data.get(studentKey).classIds.includes(activeAssignment.classId)) return -9
         if (record.serverRevision !== revision || record.lastSequence !== sequence) return 0
         if (record.status !== 'in_progress') return -6
         if ((data.get(eventsKey) || []).length !== sequence) return -7

@@ -1,6 +1,6 @@
 # NCM-diagnostik: föreslagen försökslagring v0.1
 
-Status: **implementationsförslag, inte levererad lagring**. Detta dokument
+Status: **delvis implementerat, ej öppnat för elever**. Detta dokument
 preciserar nästa Etapp 1-snitt mot [försökskontraktet](NCM_DIAGNOSTIK_ETAPP0.md).
 Inga elevförsök skrivs till servern av den nuvarande prototypen.
 
@@ -151,7 +151,7 @@ och dess händelselista, validerar append och använder Redis `eval` för atomis
 revision/sekvens/append. En lagringsdubbel testar konkurrens och retry; ett
 verkligt Redis- och API-flöde är ännu inte verifierat. Modulen skapar inga
 uppdrag eller försök och ger inte i sig klienten skrivbehörighet. UI och elevsynk
-ansluts först när tilldelning, behörighet och hela återupptagningsflödet finns.
+ansluts först när tilldelning, behörighet, radering och hela återupptagningsflödet finns.
 `api/_diagnosticAssignmentStore.js` fryser uppgiftsmanifestets innehåll i en
 serverstyrd tilldelning och skapar/återöppnar högst ett aktivt försök atomiskt
 per elev och uppdragspost. Denna rena lagringsmodul kräver en auktoriserad
@@ -161,3 +161,14 @@ stoppad tilldelning kontrolleras i Redis-transaktionen.
 Arkivets exakta fält,
 retention och behörighet samt lärarens uttryckliga återöppning av inlämnat
 försök behöver fortfarande fastställas före verkliga elevuppdrag.
+
+`api/teacher-diagnostic-assignments.js` och `api/me/diagnostic-attempt.js`
+exponerar nu ett avgränsat pilotkontrakt för skapande respektive elevens
+öppning, återläsning och append. Båda svarar 404 tills servern uttryckligen
+sätter `NCM_DIAGNOSTIC_API_ENABLED=true`. Ingen klient använder dem ännu.
+Lärarvägen kräver levande lärarsession och aktuell klassåtkomst; elevvägen
+kräver levande QR/PIN-session och origin/CSRF för mutationer. Elevens
+klassmedlemskap, frysta tilldelning och uppgift kontrolleras före läsning och
+skrivning, och append gör dessutom dessa kontroller atomiskt i Redis-skriptet.
+Raderings-/arkivkopplingen och en körning mot verklig Redis återstår innan
+flaggan får aktiveras med elevdata.

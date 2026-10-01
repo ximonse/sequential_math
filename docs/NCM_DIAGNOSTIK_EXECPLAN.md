@@ -86,7 +86,12 @@ Inga nya elevfunktioner eller utskriftsgeneratorer ingår i Etapp 0.
   atomiskt öppnande av högst ett aktivt försök per elev och uppdragspost.
   Test med lagringsdubbel täcker parallell öppning, återupptagning, ändrat
   klassmedlemskap, tombstone och stoppad tilldelning. Lärare/elev kan ännu
-  inte anropa detta via API.
+  inte anropa detta i den nuvarande piloten.
+- [x] Lägg till separata lärar-/elev-API:er för skapande, öppning, läsning och
+  append. De använder levande session, aktuell klass/tilldelning och elevens
+  origin/CSRF. API:erna är avstängda som standard med
+  `NCM_DIAGNOSTIC_API_ENABLED`; flaggan får inte aktiveras för verkliga elever
+  innan raderingskedja och statistikarkiv är specificerade och testade.
 - [ ] Implementera och testa serverauktoritativ försökslagring, idempotent
   synk, storleksgräns och återupptagning enligt det granskade resurskontraktet.
 
@@ -198,3 +203,7 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   använder modulen och inga verkliga elevdata skrivs av den isolerade prototypen.
   Hela robotkörningen rapporterade 72 godkända fall men processen avslutades
   inte och saknar därför slutrapport/exitstatus.
+- API-snittet: 116 testfiler/571 tester, normal build, riktad lint och
+  `npm run robots` (72 godkända, 0 regelbrott) passerade lokalt.
+  Behörighets- och avvisningsfall testades med lagrings-/sessionsdubblar.
+  Verklig Redis, autentiserad elevwebbläsare och raderingskedja återstår.

@@ -44,7 +44,8 @@ if not classRaw or cjson.decode(classRaw).archived == true then return '-class' 
 local raw = redis.call('GET', KEYS[1])
 if not raw then return '-missing' end
 local assignment = cjson.decode(raw)
-if assignment.status ~= 'active' or assignment.classId ~= ARGV[1]
+if assignment.status ~= 'active' or assignment.evidenceClass ~= 'diagnostic_only'
+  or assignment.classId ~= ARGV[1]
   or tonumber(assignment.assignmentVersion) ~= tonumber(ARGV[2]) then return '-stopped' end
 local target = false
 for _, id in ipairs(assignment.studentIds) do

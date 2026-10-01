@@ -17,14 +17,22 @@ function storeFixture() {
     lrange: async (key, start) => copy((data.get(key) || []).slice(start)),
     exists: async key => Number(data.has(key)),
     eval: async (_script, keys, args) => {
-      const [headerKey, eventKey, deletedKey, legacyDeletedKey, classDeletedKey, assignmentKey] = keys
+      const [headerKey, eventKey, deletedKey, legacyDeletedKey, classDeletedKey, assignmentKey,
+        studentKey, classKey] = keys
       const [expectedRevision, lastSequence, nextJson, pupil, assignment, eventCount, ...eventJson] = args
       if (data.has(deletedKey) || data.has(legacyDeletedKey)) return -2
       if (data.has(classDeletedKey)) return -3
-      if (data.get(assignmentKey)?.status !== 'active') return -9
+      const activeAssignment = data.get(assignmentKey)
+      if (activeAssignment?.status !== 'active') return -9
       const current = data.get(headerKey)
       if (!current) return -4
       if (current.studentId !== pupil || current.assignmentId !== assignment) return -5
+      if (activeAssignment.classId !== current.classIdAtAttempt || activeAssignment.evidenceClass !== 'diagnostic_only'
+        || !activeAssignment.studentIds.includes(pupil)
+        || !activeAssignment.items.some(item => item.assignmentItemId === current.assignmentItemId
+          && item.taskId === current.taskId && item.taskVersion === current.taskVersion)
+        || !data.has(classKey) || data.get(classKey).archived
+        || !data.has(studentKey) || !data.get(studentKey).classIds.includes(activeAssignment.classId)) return -9
       if (current.serverRevision !== expectedRevision || current.lastSequence !== lastSequence) return 0
       if (current.status !== 'in_progress') return -6
       if ((data.get(eventKey) || []).length !== lastSequence) return -7
@@ -42,7 +50,11 @@ function storeFixture() {
     serverRevision: 0, lastSequence: 0, status: 'in_progress', grid: copy(grid)
   })
   data.set(`diagnostic_attempt_events:${attemptId}`, [])
-  data.set(`diagnostic_assignment:${assignmentId}`, { assignmentId, status: 'active' })
+  data.set(`diagnostic_assignment:${assignmentId}`, { assignmentId, classId: 'class-a', status: 'active',
+    evidenceClass: 'diagnostic_only', studentIds: [studentId], items: [{ assignmentItemId: 'item-a',
+      taskId: grid.taskId, taskVersion: grid.taskVersion }] })
+  data.set(`student:${studentId}`, { studentId, classIds: ['class-a'] })
+  data.set('class:class-a', { id: 'class-a' })
   return store
 }
 
@@ -110,6 +122,17 @@ describe('diagnostic attempt storage boundary', () => {
     const realEval = store.eval
     store.eval = async (...args) => {
       store.data.get(`diagnostic_assignment:${assignmentId}`).status = 'stopped'
+      return realEval(...args)
+    }
+    await expect(append(store, [first])).rejects.toMatchObject({ status: 410 })
+    expect(store.data.get(`diagnostic_attempt_events:${attemptId}`)).toEqual([])
+  })
+
+  it('blocks a pupil moved out of the class inside the atomic append', async () => {
+    const first = write((await readDiagnosticAttempt(attemptId, { store })).snapshot, '8')
+    const realEval = store.eval
+    store.eval = async (...args) => {
+      store.data.get(`student:${studentId}`).classIds = []
       return realEval(...args)
     }
     await expect(append(store, [first])).rejects.toMatchObject({ status: 410 })

@@ -14,6 +14,33 @@ local raw = redis.call('GET', KEYS[1])
 if not raw then return -4 end
 local current = cjson.decode(raw)
 if current.studentId ~= ARGV[4] or current.assignmentId ~= ARGV[5] then return -5 end
+local assignment = cjson.decode(assignmentRaw)
+if assignment.classId ~= current.classIdAtAttempt
+  or assignment.evidenceClass ~= 'diagnostic_only' then return -9 end
+local target = false
+for _, id in ipairs(assignment.studentIds) do
+  if id == ARGV[4] then target = true end
+end
+if not target then return -9 end
+local item = false
+for _, candidate in ipairs(assignment.items) do
+  if candidate.assignmentItemId == current.assignmentItemId
+    and candidate.taskId == current.taskId
+    and tonumber(candidate.taskVersion) == tonumber(current.taskVersion) then item = true end
+end
+if not item then return -9 end
+local classRaw = redis.call('GET', KEYS[8])
+if not classRaw or cjson.decode(classRaw).archived == true then return -9 end
+local studentRaw = redis.call('GET', KEYS[7])
+if not studentRaw then return -2 end
+local student = cjson.decode(studentRaw)
+local member = student.classId == assignment.classId
+if student.classIds then
+  for _, id in ipairs(student.classIds) do
+    if id == assignment.classId then member = true end
+  end
+end
+if not member then return -9 end
 if tonumber(current.serverRevision) ~= tonumber(ARGV[1])
   or tonumber(current.lastSequence) ~= tonumber(ARGV[2]) then return 0 end
 if current.status ~= 'in_progress' then return -6 end
@@ -76,7 +103,8 @@ export async function appendDiagnosticAttempt({ attemptId, studentId, expectedRe
   // A retry is still subject to deletion. It does not mutate storage.
   const keys = [`diagnostic_attempt:${attemptId}`, `diagnostic_attempt_events:${attemptId}`,
     studentDeletedKey(studentId), `student_deleted:${studentId}`, `class_deleted:${record.classIdAtAttempt}`,
-    `diagnostic_assignment:${record.assignmentId}`]
+    `diagnostic_assignment:${record.assignmentId}`, `student:${studentId}`,
+    `class:${record.classIdAtAttempt}`]
   if (prepared.kind === 'duplicate') {
     const assignment = await store.get(keys[5])
     if (await store.exists(keys[2]) || await store.exists(keys[3]) || await store.exists(keys[4])

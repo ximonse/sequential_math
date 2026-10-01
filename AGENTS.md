@@ -37,6 +37,27 @@ inte tyst påverka vanlig mastery eller adaptiv progression.
 7. Avsluta aldrig ett arbetspass utan ett tydligt nästa steg: ställ en konkret fråga,
    lämna ett förslag eller ge en slutlig bekräftelse när uppdraget faktiskt är klart.
 
+### Fortsättning och stoppregel för alla agenter
+
+När Simon säger ”fortsätt” eller ”jobba på” ska agenten ta nästa genomförbara
+delmål i den aktiva projektplanen och arbeta vidare. En lokal commit, en grön
+testkörning eller ett svar med ”nästa steg” är inte i sig ett stoppvillkor.
+
+Innan ett ofärdigt projekt lämnas tillbaka till Simon ska agenten kontrollera:
+
+1. Är det efterfrågade målet faktiskt klart och verifierat?
+2. Krävs ett **konkret** beslut eller en uppgift som bara Simon kan utföra nu?
+3. Finns ett **verifierat** tekniskt hinder som stoppar nästa genomförbara steg?
+
+Om alla svar är nej fortsätter agenten med nästa steg. Om ett beslut eller hinder
+finns ska agenten ange exakt vad det gäller, vad som redan är gjort och vilket
+arbete som kan fortsätta utan svar. Fråga inte om beslut som ännu inte påverkar
+arbetet. Förväxla inte en avgränsad provning med driftsättning för riktiga elever.
+
+Be aldrig Simon testa en funktion innan agenten har verifierat att just den
+funktionens kod, åtkomstväg, kontotyp och publiceringsstatus gör testet möjligt.
+Särskilj alltid lokal kod, lokal webbläsare, pushad gren och produktion.
+
 ## Publicering
 
 Publicera alltid via GitHub — aldrig direkt till Vercel.

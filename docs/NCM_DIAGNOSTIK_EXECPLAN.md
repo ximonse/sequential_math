@@ -22,6 +22,12 @@ gör en liten lokal commit. Kodändringar verifieras med `npm run test` och
 `npm run build`; logikändringar även med `npm run robots`. Publicering är
 ett separat beslut.
 
+En commit avslutar inte ett pågående delmål. Efter varje verifierat steg
+fortsätter agenten till nästa genomförbara steg tills målet är klart,
+ett konkret Simon-beslut behövs eller ett verifierat hinder stoppar arbetet.
+Innan Simon får en testuppgift anges vilken kontotyp och vilken faktisk
+version som gör just testet möjligt.
+
 ## Etapp 0 – kontrakt och nulägesgräns (lokalt levererad)
 
 Syfte: ge samma försök entydig betydelse i elevvy, lagring, analys,

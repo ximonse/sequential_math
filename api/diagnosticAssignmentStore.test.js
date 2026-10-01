@@ -118,6 +118,8 @@ describe('diagnostic assignment and attempt creation', () => {
     const [first, second] = await Promise.all([open(assignment), open(assignment)])
     expect([first.kind, second.kind].sort()).toEqual(['created', 'existing'])
     expect(first.record.attemptId).toBe(second.record.attemptId)
+    expect(Number.isFinite(first.record.createdAt)).toBe(true)
+    expect(second.record.createdAt).toBe(first.record.createdAt)
     expect(first.snapshot.events).toEqual([])
     expect(store.data.get(`diagnostic_attempts_by_student:PUPIL`)).toEqual([first.record.attemptId])
     expect(store.data.get(`diagnostic_attempts_by_assignment:${assignment.assignmentId}`)).toEqual([first.record.attemptId])

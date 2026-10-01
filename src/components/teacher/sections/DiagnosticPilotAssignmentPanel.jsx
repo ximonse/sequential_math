@@ -158,7 +158,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
       {attemptStatus && <p role="status" className="mt-1 text-sm">{attemptStatus}</p>}
       {attempts.length > 0 && <ul className="mt-2 space-y-2">
         {attempts.map(attempt => <li key={attempt.attemptId} className="flex flex-wrap items-center gap-2 text-sm">
-          <span>{attempt.taskId} · {attempt.status === 'submitted' ? 'fryst' : 'pågående'} · {attempt.lastSequence} händelser</span>
+          <span>{attempt.taskId} · {attempt.createdAt ? new Date(attempt.createdAt).toLocaleString('sv-SE') : 'äldre försök'} · {attempt.status === 'submitted' ? 'fryst' : 'pågående'} · {attempt.lastSequence} händelser</span>
           <button type="button" onClick={() => openEvidence(attempt)} className="rounded border border-orange-700 bg-white px-3 py-1 text-orange-950">Visa underlag</button>
         </li>)}
       </ul>}

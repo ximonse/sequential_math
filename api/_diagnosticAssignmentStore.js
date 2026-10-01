@@ -136,7 +136,7 @@ export async function openDiagnosticAttempt({ assignmentId, assignmentItemId, st
   const record = { attemptId, studentId, assignmentId, assignmentItemId,
     classIdAtAttempt: assignment.classId, taskId: item.taskId, taskVersion: item.taskVersion,
     evidenceClass: 'diagnostic_only', serverRevision: 0, lastSequence: 0,
-    status: 'in_progress', grid: { ...grid, events: undefined } }
+    status: 'in_progress', createdAt: Date.now(), grid: { ...grid, events: undefined } }
   delete record.grid.events
   const keys = [`diagnostic_assignment:${assignmentId}`, `student:${studentId}`,
     studentDeletedKey(studentId), `student_deleted:${studentId}`,

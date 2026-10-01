@@ -43,7 +43,8 @@ export default async function handler(req, res) {
       return res.status(200).json({ attempts: attempts.map(record => ({ attemptId: record.attemptId,
         assignmentItemId: record.assignmentItemId, taskId: record.taskId,
         taskVersion: record.taskVersion, status: record.status,
-        serverRevision: record.serverRevision, lastSequence: record.lastSequence })) })
+        serverRevision: record.serverRevision, lastSequence: record.lastSequence,
+        createdAt: record.createdAt || null })) })
     }
     const record = attempts.find(item => item.attemptId === attemptId)
     if (!record) return res.status(404).json({ error: 'Diagnostic attempt not found' })

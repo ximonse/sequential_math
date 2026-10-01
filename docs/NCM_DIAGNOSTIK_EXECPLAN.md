@@ -272,3 +272,8 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
   regelbrott. Lärarvyns skärmbild granskades och prototypkortets felaktiga
   uppgift om lagring rättades.
+- Nya försök får serverns `createdAt`, som ligger kvar vid återöppning och visas
+  i lärarens försökslista. Äldre försök märks utan påhittad tid. För detta
+  lokala snitt passerade 121 testfiler/592 tester, normal build,
+  arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
+  regelbrott.

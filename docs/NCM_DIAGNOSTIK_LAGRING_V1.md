@@ -182,8 +182,10 @@ vanliga lärare avvisas även av API:t. `api/teacher-diagnostic-attempts.js`
 listar endast testkontots försök och återger rå arbetsyta först efter en
 separat, behörighetskontrollerad detaljbegäran. Den versionsmärkta
 faktasammanfattningen och kolumnobservationen härleds vid läsning utan att
-skriva över råförsöket. Elevvägen
-kräver levande QR/PIN-session och origin/CSRF för mutationer. Elevens
+skriva över råförsöket. Nya försök får en serverbestämd `createdAt` som
+bevaras vid återöppning och visas i lärarens försökslista. Äldre poster utan
+fältet visas utan påhittad tid. Elevvägen kräver levande QR/PIN-session och
+origin/CSRF för mutationer. Elevens
 klassmedlemskap, frysta tilldelning och uppgift kontrolleras före läsning och
 skrivning, och append gör dessutom dessa kontroller atomiskt i Redis-skriptet.
 Raderings-/arkivkopplingen och en körning mot verklig Redis återstår innan

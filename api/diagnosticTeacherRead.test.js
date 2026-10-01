@@ -18,7 +18,8 @@ const query = { classId: 'CLASS', studentId: 'PUPIL', assignmentId: 'ASSIGNMENT'
 const task = { taskId: 'add-no-carry-001', taskVersion: 1 }
 const record = { attemptId: 'ATTEMPT', assignmentId: 'ASSIGNMENT', assignmentItemId: 'ITEM',
   studentId: 'PUPIL', classIdAtAttempt: 'CLASS', evidenceClass: 'diagnostic_only',
-  taskId: task.taskId, taskVersion: 1, status: 'in_progress', serverRevision: 1, lastSequence: 2 }
+  taskId: task.taskId, taskVersion: 1, status: 'in_progress', serverRevision: 1, lastSequence: 2,
+  createdAt: 123456789 }
 const response = () => ({ code: 200, setHeader() {}, status(code) { this.code = code; return this },
   json(data) { this.data = data; return this }, end() { return this } })
 const call = async (input = query) => {
@@ -66,7 +67,9 @@ describe('teacher diagnostic evidence read boundary', () => {
   it('lists only the requested pupil and returns validated detail separately', async () => {
     const listed = await call()
     expect(listed.data.attempts).toEqual([{ attemptId: 'ATTEMPT', assignmentItemId: 'ITEM',
-      taskId: task.taskId, taskVersion: 1, status: 'in_progress', serverRevision: 1, lastSequence: 2 }])
+      taskId: task.taskId, taskVersion: 1, status: 'in_progress', serverRevision: 1, lastSequence: 2,
+      createdAt: 123456789 }])
+    expect(listed.data.attempts[0].createdAt).toBe(123456789)
     expect(listed.data.snapshot).toBeUndefined()
     const detail = await call({ ...query, attemptId: 'ATTEMPT' })
     expect(detail.code).toBe(200)

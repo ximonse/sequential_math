@@ -277,3 +277,12 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   lokala snitt passerade 121 testfiler/592 tester, normal build,
   arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
   regelbrott.
+- Ett rent utkast till en historisk statistikpunkt härleder endast begränsade
+  fakta ur validerat försök, utan identiteter, exakt klockslag, exakt slutsvar,
+  rutnät eller händelser. En ren seriefunktion ordnar punkterna efter månad
+  och markerar serien fryst. Inget av detta lagras eller visas ännu.
+  Arkivets livscykel, retention
+  och åtkomst är fortfarande öppna före raderingsintegration och riktiga elever.
+  För utkastet passerade 123 testfiler/596 tester, normal build,
+  arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
+  regelbrott. Inget arkiv skrivs av den körande appen.

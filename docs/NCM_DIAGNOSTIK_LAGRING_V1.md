@@ -117,6 +117,20 @@ en källa som återkopplas till framtida konton. En individuell historisk kurva
 kan ändå vara möjlig att identifiera, exempelvis i en liten klass. Den
 behandlas därför som pseudonymiserade personuppgifter, inte som anonym data.
 
+Ett ännu **opublicerat och opersisterat** punktutkast finns i
+`diagnosticArchivePoint.js`. Det tillåter bara uppgifts-ID/version,
+serverbestämd startmånad (eller `null` för äldre försök), inlämningsstatus,
+svarsläge, om arbetshändelser finns, antal slutligt ifyllda rutor och
+observerad kolumnplacering eller `unknown`. Elev-/klass-/lärar-ID, försöks-ID,
+exakt klockslag, exakt slutsvar, råa rutor och händelser följer inte med. Funktionen kontrollerar
+att försöksrevision, uppgiftsversion och händelseantal hänger ihop före
+omvandlingen. Detta är inte ett beslut om retention, åtkomst eller att
+statistikresursen är anonym.
+`diagnosticArchiveSeries.js` bygger ett fryst, kronologiskt utkast av dessa
+punkter. Serien innehåller ingen aktiv kontonyckel. Slumpmässigt arkiv-ID,
+persistens, behörig läsning, gallring och återupptagbar rensning ingår ännu
+inte; inget anrop från elevradering använder utkastet.
+
 Gruppjämförelser kan härledas separat från historiska serier. Små grupper och
 filterkombinationer som kan peka ut en elev måste undertryckas eller slås
 ihop. Innan verkliga elevdata ansluts ska arkivets fält, retention,

@@ -36,6 +36,7 @@ uppdragslista.
 | `diagnostic_attempt_events:{attemptId}` | Append-only Redis-lista av normaliserade händelser i sekvensordning. Ingen automatisk kapning eller tidsstämpelsortering. |
 | `diagnostic_active:{studentId}:{assignmentItemId}` | Pekare till högst ett aktivt försök för elev och uppdragspost. Skapas atomärt med försöket. |
 | `diagnostic_attempts_by_student:{studentId}` | Index för återläsning och raderingsstädning. Ett separat uppdragsindex behövs om lärare ska lista försök utan att skanna elever. |
+| `diagnostic_assignments_by_class:{classId}` / `diagnostic_attempts_by_assignment:{assignmentId}` | Separata index för lärarens framtida listvy och raderingsstädning. |
 
 Manifestet och uppgiftsversionen måste finnas kvar så länge ett försök kan
 återges eller exporteras. `classIdAtAttempt` är historiskt sammanhang, inte
@@ -151,6 +152,12 @@ revision/sekvens/append. En lagringsdubbel testar konkurrens och retry; ett
 verkligt Redis- och API-flöde är ännu inte verifierat. Modulen skapar inga
 uppdrag eller försök och ger inte i sig klienten skrivbehörighet. UI och elevsynk
 ansluts först när tilldelning, behörighet och hela återupptagningsflödet finns.
+`api/_diagnosticAssignmentStore.js` fryser uppgiftsmanifestets innehåll i en
+serverstyrd tilldelning och skapar/återöppnar högst ett aktivt försök atomiskt
+per elev och uppdragspost. Denna rena lagringsmodul kräver en auktoriserad
+anropare; inga elev- eller lärarendpoints använder den ännu. Behörighets- och
+raderingskedjan är därför inte färdig trots att medlemskap, tombstones och
+stoppad tilldelning kontrolleras i Redis-transaktionen.
 Arkivets exakta fält,
 retention och behörighet samt lärarens uttryckliga återöppning av inlämnat
 försök behöver fortfarande fastställas före verkliga elevuppdrag.

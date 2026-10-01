@@ -82,6 +82,11 @@ Inga nya elevfunktioner eller utskriftsgeneratorer ingår i Etapp 0.
   validatorn och gör revision, sekvens och append atomiskt i Redis. Test med
   lagringsdubbel täcker återläsning, samtidig skrivning, retry, korruption och
   tombstone. Modulen är ännu inte ansluten till ett API eller elevvyn.
+- [x] Lägg till serverstyrd frysning av uppgiftsmanifestets innehåll och
+  atomiskt öppnande av högst ett aktivt försök per elev och uppdragspost.
+  Test med lagringsdubbel täcker parallell öppning, återupptagning, ändrat
+  klassmedlemskap, tombstone och stoppad tilldelning. Lärare/elev kan ännu
+  inte anropa detta via API.
 - [ ] Implementera och testa serverauktoritativ försökslagring, idempotent
   synk, storleksgräns och återupptagning enligt det granskade resurskontraktet.
 
@@ -175,8 +180,9 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   elevens användning. Simon har provat NCM-prototypen och begärt
   siffertangentbord även för stora siffror; den ändringen ingår i committen.
 - Nästa steg: prova rutnät och minnessiffra/lån med elever på avsedd iPad;
-  specificera atomiskt skapande av tilldelning/försök och behörighetsgränsen
-  innan appendmodulen får en API-väg. Lärarens återöppning av inlämnat försök
+  bygg och testa lärar-/elev-API:er med levande session, CSRF, aktuell
+  klassåtkomst och serververifierad tilldelning innan elevvyn ansluts.
+  Lärarens återöppning av inlämnat försök
   samt arkivets exakta fält, retention och behörighet behöver fastställas före
   verkliga elevuppdrag.
 - Lagringsmodulens aktuella snitt: 113 testfiler/560 tester och normal build
@@ -186,3 +192,9 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   har testats med en lagringsdubbel, inte med en verklig Redis-instans. Ett
   separat riktat robotfall rapporterade också godkänt men fastnade vid
   avslutningen utan slutrapport.
+- Tilldelnings-/öppningsmodulen: 114 testfiler/564 tester och normal build
+  passerade lokalt. Den atomiska Redis-logiken är än så länge prövad med
+  lagringsdubbel, inte med en verklig Redis-instans. Inga elev- eller lärar-API:er
+  använder modulen och inga verkliga elevdata skrivs av den isolerade prototypen.
+  Hela robotkörningen rapporterade 72 godkända fall men processen avslutades
+  inte och saknar därför slutrapport/exitstatus.

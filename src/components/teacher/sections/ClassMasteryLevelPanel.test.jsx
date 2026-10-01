@@ -22,9 +22,9 @@ describe('class mastery level presentation', () => {
 
     expect(html).toContain('Belagd nivå i aktiverade kunskapsområden')
     expect(html).toContain('Lägsta belagda')
-    expect(html).toContain('Snitt belagt')
-    expect(html).toContain('2/11 områden har belagd nivå')
-    expect(html).toContain('0/11 områden har belagd nivå')
+    expect(html).toContain('+*/ genomsnitt')
+    expect(html).toContain('2/4 grundräknesätt har belagd nivå; genomsnitt visas när alla fyra har underlag')
+    expect(html).toContain('0/4 grundräknesätt har belagd nivå; genomsnitt visas när alla fyra har underlag')
     expect(html).toContain('Exempel på nivå 2: 17 − 8')
     expect(html).toContain('Exempel på nivå 4: 4,2 + 1,4')
     expect(html).not.toContain('>0<')

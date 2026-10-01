@@ -137,7 +137,7 @@ I elevvy finns:
 - `Exportera elevvy CSV`
 
 I `Nivåöversikt – hela klassen` (Framsteg) finns:
-- `Exportera nivåöversikt` — belagd nivå per område, lägsta, snitt och klassmedel, precis som i panelen. Tom cell betyder ännu inte belagt.
+- `Exportera nivåöversikt` — belagd nivå per område, lägsta och `+*/ genomsnitt`, precis som i panelen. Genomsnittet använder endast addition, subtraktion, multiplikation och division och visas först när alla fyra har belagd nivå. Klassraden använder endast elever med sådant underlag. Tom cell betyder ännu inte belagt.
 - Håll muspekaren över en elevs nivåruta för ett representativt tal från just det området och den nivån. Exemplet är inte nödvändigtvis en uppgift eleven själv har fått.
 
 Tips:

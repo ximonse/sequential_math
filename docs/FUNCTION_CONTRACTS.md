@@ -146,7 +146,7 @@ En `TeacherSignal` ska innehålla:
 - konkret orsak till signalen, osäkerhet och länkbar underlagsmängd;
 - möjlig undervisningsuppföljning formulerad som förslag, inte diagnos.
 
-Okänt/ej tränat visas som okänt, inte nivå noll. Nivåer i olika kompetenser får inte summeras till en generell matematiknivå eller användas i ett jämförande klassnitt. Rättandel över blandade svårigheter får beskriva svaren men får inte ensam kallas utveckling eller regression. Mindre än sex svar behåller nuvarande neutrala markering; det är en försiktighetsgräns, inte ett generellt statistiskt beviskrav.
+Okänt/ej tränat visas som okänt, inte nivå noll. Nivåer i olika kompetenser får inte summeras till en generell matematiknivå eller användas i ett jämförande klassnitt. Lärarens särskilt märkta `+*/ genomsnitt` är ett deskriptivt undantag: medelvärdet av historiskt belagd nivå i addition, subtraktion, multiplikation och division visas endast när alla fyra är belagda. Det är inte en bedömning av generell matematikförmåga; övriga områden, däribland talpar och dubblor, ingår inte. Klassraden använder bara elever med komplett underlag för de fyra räknesätten. Rättandel över blandade svårigheter får beskriva svaren men får inte ensam kallas utveckling eller regression. Mindre än sex svar behåller nuvarande neutrala markering; det är en försiktighetsgräns, inte ett generellt statistiskt beviskrav.
 
 Lärarlista, elevdetalj och export ska använda samma urval, tidsgränser, kompetensidentitet och signaldefinition när de påstår samma sak. En sammanfattning får vara kortare men måste bära tillräcklig osäkerhets- och omfattningsinformation för att inte ändra innebörden.
 

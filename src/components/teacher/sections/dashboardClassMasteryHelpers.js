@@ -1,5 +1,6 @@
 import { computeEffectiveLevels, getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { ALL_OPERATIONS, LEVELS } from './dashboardConstants'
+import { STANDARD_OPERATIONS } from '../../../lib/operations'
 
 export function buildClassMasteryRows(filteredStudents) {
   if (!Array.isArray(filteredStudents)) return []
@@ -17,7 +18,9 @@ export function buildClassMasteryRows(filteredStudents) {
       levels = Object.fromEntries(ALL_OPERATIONS.map(op => [op, normalizeAttainedLevel(computed[op])]))
     }
     const knownValues = ALL_OPERATIONS.map(op => levels[op]).filter(Number.isInteger)
-    const average = averageOrNull(knownValues)
+    const coreLevels = STANDARD_OPERATIONS.map(op => levels[op])
+    const coreKnownCount = coreLevels.filter(Number.isInteger).length
+    const average = coreKnownCount === STANDARD_OPERATIONS.length ? averageOrNull(coreLevels) : null
     const lowest = knownValues.length > 0 ? Math.min(...knownValues) : null
 
     return {
@@ -28,8 +31,8 @@ export function buildClassMasteryRows(filteredStudents) {
       levels,
       average,
       lowest,
-      knownCount: knownValues.length,
-      totalCount: ALL_OPERATIONS.length
+      knownCount: coreKnownCount,
+      totalCount: STANDARD_OPERATIONS.length
     }
   })
 }
@@ -59,8 +62,8 @@ export function buildClassMasteryExportRows(rows, averages, getLabel = op => op)
     Klass: row.className,
     ...Object.fromEntries(ALL_OPERATIONS.map(op => [getLabel(op), whole(row.levels?.[op])])),
     LägstaBelagda: whole(row.lowest),
-    SnittBelagt: decimal(row.average),
-    BelagdaOmråden: `${row.knownCount}/${row.totalCount}`
+    '+*/ genomsnitt': decimal(row.average),
+    BelagdaGrundräknesätt: `${row.knownCount}/${row.totalCount}`
   }))
   if (!averages) return pupilRows
   return [...pupilRows, {
@@ -69,8 +72,8 @@ export function buildClassMasteryExportRows(rows, averages, getLabel = op => op)
     Klass: '',
     ...Object.fromEntries(ALL_OPERATIONS.map(op => [getLabel(op), decimal(averages[op])])),
     LägstaBelagda: decimal(averages._lowest),
-    SnittBelagt: decimal(averages._total),
-    BelagdaOmråden: ''
+    '+*/ genomsnitt': decimal(averages._total),
+    BelagdaGrundräknesätt: ''
   }]
 }
 

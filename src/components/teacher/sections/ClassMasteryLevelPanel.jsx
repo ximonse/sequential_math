@@ -167,13 +167,13 @@ export default function ClassMasteryLevelPanel({
                 title="Lägsta belagda nivå bland områden med tillräckligt underlag"
               />
               <HeaderCell
-                label="Snitt belagt"
+                label="+*/ genomsnitt"
                 column="average"
                 active={sortBy === 'average'}
                 arrow={sortArrow('average')}
                 onClick={handleSort}
                 className="text-center w-16 border-l border-gray-100"
-                title="Snitt av belagda områden; okända områden räknas inte som nivå 0"
+                title="Medelvärde av belagd nivå i addition, subtraktion, multiplikation och division när alla fyra har underlag"
               />
             </tr>
           </thead>
@@ -211,7 +211,7 @@ export default function ClassMasteryLevelPanel({
                   <BadgeDot
                     value={row.average}
                     decimal
-                    tooltip={`${row.knownCount}/${row.totalCount} områden har belagd nivå`}
+                    tooltip={`${row.knownCount}/${row.totalCount} grundräknesätt har belagd nivå${row.average === null ? '; genomsnitt visas när alla fyra har underlag' : ''}`}
                   />
                 </td>
               </tr>

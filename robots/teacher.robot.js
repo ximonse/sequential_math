@@ -95,6 +95,8 @@ test('Lärare: lärarvyn visar det eleverna gjorde', async ({ page, request, bro
 
   // Unknown is not zero (F6): a pupil without answers has no level.
   const levels = await tableUnder(page, 'Nivåöversikt')
+  const annaLevels = rowFor(levels, anna.loginCode)
+  if (annaLevels?.at(-1) !== '–') findings.add('L1', 'Addition ensam gav ett genomsnitt för fyra grundräknesätt', { elev: anna.loginCode, rad: annaLevels?.join(' | ') })
   const cillaLevels = rowFor(levels, cilla.loginCode)
   if (cillaLevels && cillaLevels.slice(1).some(cell => /^0(\.0)?$/.test(cell))) findings.add('L1', 'En elev som inte tränat visas med nivå 0 i stället för okänt', { elev: cilla.loginCode, rad: cillaLevels.join(' | ') })
   const bertLevels = rowFor(levels, bert.loginCode)
@@ -109,6 +111,7 @@ test('Lärare: lärarvyn visar det eleverna gjorde', async ({ page, request, bro
   else {
     const csv = String(await (await levelDownload.createReadStream()).toArray().then(parts => Buffer.concat(parts))).replace(/^\uFEFF/, '')
     const [head, ...body] = csv.split(/\r?\n/).filter(Boolean).map(line => line.split(';'))
+    if (!head.includes('+*/ genomsnitt')) findings.add('L1', 'Exporten saknar den nya rubriken för grundräknesättens genomsnitt')
     const screenRows = await tableUnder(page, 'Nivåöversikt')
     const asScreen = value => (value === '' ? '–' : value.replace(',', '.'))
     const firstLevelColumn = head.indexOf('Elev') + 3

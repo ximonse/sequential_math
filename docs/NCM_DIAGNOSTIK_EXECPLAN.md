@@ -251,3 +251,13 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
   regelbrott. Robotsviten behövde normal lokal filåtkomst; sandboxen nekade
   Vites filskanning.
+- Den första separata analysregeln känner bara igen en entydig uppställning
+  med två rader
+  av manifestets operandtal med rätt operator direkt till vänster om andra
+  talet. Den anger om entalskolumnerna ligger i linje och redovisar exakt vilka
+  rutor som gav observationen. Saknad operator, extra siffror, flera kopior
+  eller andra layouter ger `unknown`. Regeln påstår inte varför eleven
+  placerat talen så och är ännu inte kopplad till lärarvyn.
+  För detta snitt passerade 120 testfiler/587 tester, normal build,
+  arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
+  regelbrott.

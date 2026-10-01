@@ -286,3 +286,11 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   För utkastet passerade 123 testfiler/596 tester, normal build,
   arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
   regelbrott. Inget arkiv skrivs av den körande appen.
+- En serverintern förberedelsefunktion läser efter elevtombstone alla råa
+  försök och deras frysta uppgifter, återspelar händelserna och bygger den
+  frysta serien. Den vägrar saknade eller motsägande poster och gör inga
+  skrivningar. Själva arkivpersistensen, åtkomsten och rådatastädningen är
+  fortfarande inte anslutna till permanent elevradering.
+  För detta lokala snitt passerade 124 testfiler/599 tester, normal build,
+  arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
+  regelbrott.

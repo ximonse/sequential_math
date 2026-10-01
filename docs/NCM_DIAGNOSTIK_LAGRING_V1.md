@@ -130,6 +130,13 @@ statistikresursen är anonym.
 punkter. Serien innehåller ingen aktiv kontonyckel. Slumpmässigt arkiv-ID,
 persistens, behörig läsning, gallring och återupptagbar rensning ingår ännu
 inte; inget anrop från elevradering använder utkastet.
+`api/_diagnosticArchivePreparation.js` kan, efter en verifierad elevtombstone,
+läsa hela elevens råa försöksindex, återspela varje försök mot dess frysta
+uppgift och bygga serien. Saknade poster, bruten uppgiftskoppling eller
+korrupt händelseordning ger fel i stället för tyst bortfall. Funktionen
+varken skriver arkivet eller raderar rådata. Det behövs fortfarande en
+återupptagbar servertransaktion som först säkrar serien och därefter städar
+råa nycklar och personkopplingar.
 
 Gruppjämförelser kan härledas separat från historiska serier. Små grupper och
 filterkombinationer som kan peka ut en elev måste undertryckas eller slås

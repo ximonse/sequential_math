@@ -46,6 +46,7 @@ Hela sviten tar ungefär 2–3 minuter med sex parallella webbläsare. Den körs
 | `assignments.robot.js` | Läraren skapar uppdrag i lärarvyn och kopierar länken; elever loggar in via länken och svarar rätt respektive fel. Varje uppgift ska ligga inom uppdragets räknesätt och nivåram, även ett låst uppdrag på exakt en nivå. Aktivera för alla och Rensa aktivt kontrolleras på elevens egen enhet. |
 | `fluency.robot.js` | Talpar, Dubblor och Talbild via lärarens länk: eget tak (5, 15, 16, 32, tomt = 20), nedräkning, paus var 15:e, uppmuntran efter 8, avslutsskärm, fel svar räknas mot taket, textstorlek på dator/mobil, pausförslag i vanliga länkuppdrag. Talbild: snabba rätt ger ojämn fördelning, slumpade prickar och olika storlekar (utan överlapp och innanför tärningen), fel svar ger lättare bilder, knappar 5+5 på mobil/iPad/dator. |
 | `teacher.robot.js` | Fyra elever tränar på kända sätt (rätt, bara fel, inget, tabell 7) och en femte i en annan klass. Läraren loggar in och kontrollerar klassval, antal och rätt/fel per elev, okänt ≠ 0, tabellträning, Behöver stöd nu med elevens riktiga felsvar, datakvalitet, exporten och att klassvalet ligger kvar. Dessutom en textgranskning av elevens sidor. |
+| `diagnostic-pilot.robot.js` | Admin tilldelar en uppgift till ett uttryckligen tillåtet syntetiskt testkonto. Testeleven skriver, sparar och återupptar rutnätet via riktiga API-handlare och isolerad minnesdatabas. Ett annat elevkonto får ingen uppgift och den vanliga problemloggen förblir tom. |
 
 ## Lägga till en robot
 

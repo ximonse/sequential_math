@@ -128,7 +128,7 @@ export async function handleControl(action, body = {}) {
     await kv.set(`teacher_account:${id}`, {
       id, username: id, displayName: body.displayName || 'Robotläraren',
       passwordHash: hash, passwordSalt: salt, passwordScheme: scheme,
-      classIds, role: 'teacher', sessionVersion: 1
+      classIds, role: body.role === 'super_admin' ? 'super_admin' : 'teacher', sessionVersion: 1
     })
     await kv.sadd('teacher_accounts:index', id)
     for (const classId of classIds) {

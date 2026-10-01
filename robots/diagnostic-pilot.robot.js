@@ -1,0 +1,67 @@
+import { test, expect } from '@playwright/test'
+import { createPupil, login, readServerProfile } from './lib/app.js'
+import { openTab, teacherLogin } from './lib/teacher.js'
+
+test('An isolated test pupil can receive, save and resume a diagnostic grid', async ({ page, request, browser }, testInfo) => {
+  const tag = Math.random().toString(36).slice(2, 7)
+  const classId = `ncm-test-${tag}`
+  const className = `NCM test ${tag}`
+  const pupil = await createPupil(request, { name: 'Robot NCM', classId, className, operations: ['addition'] })
+  const other = await createPupil(request, { name: `Other ${tag}`, classId, className })
+  const teacher = await (await request.post('/__robot/teacher', { data: {
+    id: `ncm-admin-${tag}`, classIds: [classId], role: 'super_admin'
+  } })).json()
+
+  await teacherLogin(page, teacher)
+  await openTab(page, 'NCM-diagnostik')
+  const panel = page.getByRole('heading', { name: 'Testuppdrag för elevkonto' }).locator('xpath=..')
+  await panel.getByRole('combobox', { name: 'Klass' }).selectOption(classId)
+  await expect(panel.getByRole('combobox', { name: 'Testkonto' }).locator('option')).toHaveCount(2)
+  await panel.getByRole('combobox', { name: 'Testkonto' }).selectOption(pupil.studentId)
+  await panel.getByRole('button', { name: 'Ge testuppdrag' }).click()
+  await expect(panel.getByText('Testuppdraget är tilldelat.')).toBeVisible()
+
+  const context = await browser.newContext()
+  const studentPage = await context.newPage()
+  await login(studentPage, pupil)
+  const card = studentPage.getByRole('heading', { name: 'Digitalt räknehäfte' }).locator('xpath=..')
+  await expect(card.getByRole('button', { name: 'Räkna ut 268 + 431.' })).toBeVisible()
+  await card.getByRole('button', { name: 'Räkna ut 268 + 431.' }).click()
+  await expect(studentPage.locator('input[data-cell="0:0"]')).toBeVisible()
+  await studentPage.screenshot({ path: testInfo.outputPath('diagnostic-pupil.png'), fullPage: true })
+  await studentPage.locator('input[data-cell="0:0"]').click()
+  await studentPage.keyboard.press('8')
+  await expect(studentPage.getByText(/Osparade ändringar/)).toBeVisible()
+  await studentPage.getByRole('button', { name: 'Spara arbetet' }).click()
+  await expect(studentPage.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
+  await studentPage.reload()
+  await expect(studentPage.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 8/)
+
+  const secondContext = await browser.newContext()
+  const secondPage = await secondContext.newPage()
+  await login(secondPage, pupil)
+  await secondPage.getByRole('button', { name: 'Räkna ut 268 + 431.' }).click()
+  await expect(secondPage.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 8/)
+  await studentPage.locator('input[data-cell="0:0"]').click()
+  await studentPage.keyboard.press('7')
+  await studentPage.getByRole('button', { name: 'Spara arbetet' }).click()
+  await expect(studentPage.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
+  await secondPage.locator('input[data-cell="0:0"]').click()
+  await secondPage.keyboard.press('9')
+  await secondPage.getByRole('button', { name: 'Spara arbetet' }).click()
+  await expect(secondPage.getByText(/Arbetet finns kvar i den här fliken/)).toBeVisible()
+  await expect(secondPage.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 9/)
+  await studentPage.reload()
+  await expect(studentPage.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 7/)
+  const profile = await readServerProfile(request, pupil.studentId)
+  expect(profile.problemLog).toEqual([])
+  expect(profile.recentProblems).toEqual([])
+
+  const otherContext = await browser.newContext()
+  const otherPage = await otherContext.newPage()
+  await login(otherPage, other)
+  await expect(otherPage.getByRole('heading', { name: 'Digitalt räknehäfte' })).toHaveCount(0)
+  await otherContext.close()
+  await secondContext.close()
+  await context.close()
+})

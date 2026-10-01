@@ -9,6 +9,7 @@ import { markStudentPresence, PRESENCE_HEARTBEAT_MS, PRESENCE_SAVE_THROTTLE_MS }
 import { incrementTelemetryDailyMetric, recordTelemetryEvent } from '../../lib/telemetry'
 import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { logoutStudentSession } from '../../lib/studentSessionClient'
+import { fetchStudentDiagnosticAssignments } from '../../lib/studentSessionClient'
 import { useStudentSyncStatus } from './session/useStudentSyncStatus'
 import StudentSyncStatus from './session/StudentSyncStatus'
 import StudentHomeAssignmentLaunchCard from './StudentHomeAssignmentLaunchCard'
@@ -26,6 +27,8 @@ function StudentHome() {
   const [profile, setProfile] = useState(null)
   const [classConfig, setClassConfig] = useState({ classId: '', operations: null })
   const [assignment, setAssignment] = useState(null)
+  const [diagnosticAssignments, setDiagnosticAssignments] = useState([])
+  const diagnosticProfileId = profile?.studentId
   const [selectedTables, setSelectedTables] = useState([])
   const presenceSyncRef = useRef({
     lastSavedAt: 0
@@ -52,6 +55,15 @@ function StudentHome() {
     })()
     return () => { active = false }
   }, [studentId, navigate])
+
+  useEffect(() => {
+    if (!diagnosticProfileId) return undefined
+    let active = true
+    void fetchStudentDiagnosticAssignments().then(result => {
+      if (active && result.ok) setDiagnosticAssignments(result.assignments)
+    })
+    return () => { active = false }
+  }, [diagnosticProfileId])
 
   useEffect(() => {
     if (!studentId) return
@@ -344,6 +356,18 @@ function StudentHome() {
           </div>
         </div>
         <StudentSyncStatus status={syncStatus} />
+
+        {diagnosticAssignments.length > 0 && <section className="mb-4 rounded-xl border border-orange-300 bg-orange-50 p-4">
+          <h2 className="text-lg font-semibold text-orange-950">Digitalt räknehäfte</h2>
+          <p className="mt-1 text-sm text-orange-900">Dina testuppgifter. Spara arbetet i räknehäftet innan du lämnar sidan.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {diagnosticAssignments.flatMap(item => item.items.map(task => <button key={task.assignmentItemId}
+              type="button" onClick={() => navigate(`/student/${studentId}/diagnostic?assignment=${encodeURIComponent(item.assignmentId)}&item=${encodeURIComponent(task.assignmentItemId)}`)}
+              className="rounded border border-orange-600 bg-white px-3 py-2 font-medium text-orange-950">
+              {task.promptSv}
+            </button>))}
+          </div>
+        </section>}
 
         {activeTicketPayload && !activeTicketResponse && (
           <StudentHomeTicketCard

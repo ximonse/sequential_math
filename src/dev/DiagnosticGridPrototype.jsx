@@ -19,9 +19,10 @@ function newGrid(task) {
   })
 }
 
-function DiagnosticGridPrototype() {
-  const [task, setTask] = useState(TASKS[0])
-  const [grid, setGrid] = useState(() => newGrid(TASKS[0]))
+function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = null, saveState = null }) {
+  const availableTasks = pilot ? [pilot.task] : TASKS
+  const [task, setTask] = useState(pilot?.task || TASKS[0])
+  const [grid, setGrid] = useState(() => pilot?.snapshot || newGrid(TASKS[0]))
   const [snapshotText, setSnapshotText] = useState('')
   const [message, setMessage] = useState('')
   const gridRef = useRef(null)
@@ -29,6 +30,8 @@ function DiagnosticGridPrototype() {
   const gestureRef = useRef(null)
   const [dragPreview, setDragPreview] = useState('')
   const [contextMenu, setContextMenu] = useState(null)
+
+  useEffect(() => { onGridChange?.(grid.events.length) }, [grid.events.length, onGridChange])
 
   function record(actionOrBuilder) {
     const timestamp = Date.now()
@@ -265,7 +268,7 @@ function DiagnosticGridPrototype() {
   function reloadSnapshot() {
     try {
       const restored = replayDiagnosticGrid(JSON.parse(snapshotText))
-      const restoredTask = TASKS.find(item => item.taskId === restored.taskId
+      const restoredTask = availableTasks.find(item => item.taskId === restored.taskId
         && item.taskVersion === restored.taskVersion)
       if (!restoredTask) throw new Error('Uppgiftsversionen finns inte i manifestet.')
       gridsRef.current.set(task.taskId, grid)
@@ -298,13 +301,13 @@ function DiagnosticGridPrototype() {
   return (
     <main className="diagnostic-prototype mx-auto max-w-5xl px-4 pb-12 pt-5">
       <header className="mb-5">
-        <p className="text-sm font-semibold uppercase tracking-wide text-slate-600">Isolerad utvecklingsprototyp</p>
+        <p className="text-sm font-semibold uppercase tracking-wide text-slate-600">{pilot ? 'Ditt testuppdrag' : 'Isolerad utvecklingsprototyp'}</p>
         <h1 className="text-3xl font-bold">Digitalt räknehäfte</h1>
-        <p className="mt-2 text-slate-700">Ingen elevdata sparas. Här prövas endast inmatning och återspelning.</p>
+        <p className="mt-2 text-slate-700">{pilot ? 'Spara ditt arbete innan du lämnar sidan. Sparstatus visas nedan.' : 'Ingen elevdata sparas. Här prövas endast inmatning och återspelning.'}</p>
       </header>
 
-      <div className="mb-5 flex flex-wrap gap-2" aria-label="Välj exempeluppgift">
-        {TASKS.map(item => (
+      {!pilot && <div className="mb-5 flex flex-wrap gap-2" aria-label="Välj exempeluppgift">
+        {availableTasks.map(item => (
           <button
             key={item.taskId}
             type="button"
@@ -314,12 +317,12 @@ function DiagnosticGridPrototype() {
             {item.promptSv}
           </button>
         ))}
-      </div>
+      </div>}
 
       <section className="rounded-2xl border border-orange-300 bg-orange-50 p-4 shadow-sm sm:p-6">
         <p className="text-sm text-slate-600">Uppgift {task.taskId}, version {task.taskVersion}</p>
         <h2 className="mt-1 text-2xl font-semibold">{task.promptSv}</h2>
-        <p className="mt-2 text-lg">{taskManifest.instructionSv}</p>
+        <p className="mt-2 text-lg">{pilot ? pilot.instructionSv : taskManifest.instructionSv}</p>
 
         <div className="mt-5 flex flex-wrap items-center gap-2">
           {formatButton('main', 'Stor (Esc)')}
@@ -401,18 +404,24 @@ function DiagnosticGridPrototype() {
       </section>
 
       <section className="mt-5 rounded-2xl border border-orange-300 bg-orange-50 p-4 sm:p-6">
-        <h2 className="text-xl font-semibold">Kontrollera observationen</h2>
-        <p className="mt-1 text-sm text-slate-700">Prototypen bedömer inte om svaret eller metoden är rätt.</p>
+        <h2 className="text-xl font-semibold">{pilot ? 'Spara observationen' : 'Kontrollera observationen'}</h2>
+        <p className="mt-1 text-sm text-slate-700">Räknehäftet bedömer inte om svaret eller metoden är rätt.</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          <button type="button" onClick={showSnapshot} className="rounded-lg bg-blue-700 px-4 py-2 text-white">Visa JSON</button>
-          <button type="button" onClick={reloadSnapshot} disabled={!snapshotText.trim()} className="rounded-lg border border-blue-700 px-4 py-2 text-blue-800 disabled:opacity-50">Återläs JSON</button>
+          {pilot && <button type="button" onClick={() => onSave?.(grid)} disabled={saveState?.busy || grid.events.length <= (saveState?.savedSequence || 0)}
+            className="rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white disabled:opacity-50">{saveState?.busy ? 'Sparar...' : 'Spara arbetet'}</button>}
+          {!pilot && <button type="button" onClick={showSnapshot} className="rounded-lg bg-blue-700 px-4 py-2 text-white">Visa JSON</button>}
+          {!pilot && <button type="button" onClick={reloadSnapshot} disabled={!snapshotText.trim()} className="rounded-lg border border-blue-700 px-4 py-2 text-blue-800 disabled:opacity-50">Återläs JSON</button>}
           <button type="button" onClick={() => record({ type: 'submit' })} disabled={grid.status === 'submitted'}
             className="rounded-lg border border-slate-500 px-4 py-2 disabled:opacity-50">Frys försöket</button>
         </div>
-        <p className="mt-3 text-sm" role="status">{message || `Status: ${grid.status === 'submitted' ? 'fryst' : 'pågående'}`}</p>
-        <label className="mt-3 block text-sm font-medium" htmlFor="diagnostic-snapshot">Arbetskopia av JSON för återläsning</label>
+        <p className="mt-3 text-sm" role="status">{pilot
+          ? saveState?.busy ? 'Sparar...' : saveState?.error || (grid.events.length > (saveState?.savedSequence || 0)
+            ? 'Osparade ändringar. Tryck på Spara arbetet innan du lämnar sidan.'
+            : saveState?.message || 'Alla ändringar är sparade på servern.')
+          : message || `Status: ${grid.status === 'submitted' ? 'fryst' : 'pågående'}`}</p>
+        {!pilot && <><label className="mt-3 block text-sm font-medium" htmlFor="diagnostic-snapshot">Arbetskopia av JSON för återläsning</label>
         <textarea id="diagnostic-snapshot" value={snapshotText} onChange={event => setSnapshotText(event.target.value)}
-          className="mt-1 h-44 w-full rounded-lg border border-slate-400 p-3 font-mono text-xs" spellCheck="false" />
+          className="mt-1 h-44 w-full rounded-lg border border-slate-400 p-3 font-mono text-xs" spellCheck="false" /></>}
       </section>
     </main>
   )

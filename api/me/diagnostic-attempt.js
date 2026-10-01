@@ -2,7 +2,7 @@ import { getLiveStudentSession, hasStudentCsrf, requestOriginIsTrusted } from '.
 import { withCors } from '../_helpers.js'
 import { openDiagnosticAttempt } from '../_diagnosticAssignmentStore.js'
 import { appendDiagnosticAttempt, readDiagnosticAttempt } from '../_diagnosticAttemptStore.js'
-import { assertDiagnosticPupilAccess, diagnosticApiEnabled } from '../_diagnosticApiAccess.js'
+import { assertDiagnosticPupilAccess, diagnosticApiEnabled, diagnosticTestStudentAllowed } from '../_diagnosticApiAccess.js'
 
 export default async function handler(req, res) {
   withCors(res, { methods: 'GET,POST,OPTIONS', headers: 'Content-Type,x-csrf-token' }, req)
@@ -14,6 +14,9 @@ export default async function handler(req, res) {
     const live = await getLiveStudentSession(req)
     if (!live || (req.method === 'POST' && (!requestOriginIsTrusted(req) || !hasStudentCsrf(live.session, req)))) {
       return res.status(401).json({ error: 'Inloggningen kunde inte bekräftas.' })
+    }
+    if (!diagnosticTestStudentAllowed(live.profile.studentId)) {
+      return res.status(404).json({ error: 'Diagnostic pilot is unavailable' })
     }
     if (req.method === 'POST' && req.body?.action === 'open') {
       const opened = await openDiagnosticAttempt({ assignmentId: req.body?.assignmentId,

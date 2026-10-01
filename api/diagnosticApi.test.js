@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocked = vi.hoisted(() => ({ teacher: vi.fn(), classAccess: vi.fn(), create: vi.fn(),
   pupil: vi.fn(), origin: vi.fn(), csrf: vi.fn(), open: vi.fn(), read: vi.fn(),
-  append: vi.fn(), pupilAccess: vi.fn() }))
+  append: vi.fn(), pupilAccess: vi.fn(), listClass: vi.fn(), listPupil: vi.fn(), testStudents: vi.fn() }))
 vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mocked.teacher, withCors: vi.fn() }))
 vi.mock('./_studentAccess.js', () => ({ canAccessClass: mocked.classAccess }))
 vi.mock('./_studentSession.js', () => ({ getLiveStudentSession: mocked.pupil,
@@ -12,10 +12,14 @@ vi.mock('./_diagnosticAssignmentStore.js', () => ({ createDiagnosticAssignment: 
 vi.mock('./_diagnosticAttemptStore.js', () => ({ readDiagnosticAttempt: mocked.read,
   appendDiagnosticAttempt: mocked.append }))
 vi.mock('./_diagnosticApiAccess.js', () => ({ diagnosticApiEnabled: () => process.env.NCM_DIAGNOSTIC_API_ENABLED === 'true',
+  diagnosticTestStudentAllowed: studentId => studentId === 'PUPIL', diagnosticTestStudentsInClass: mocked.testStudents,
   assertDiagnosticPupilAccess: mocked.pupilAccess }))
+vi.mock('./_diagnosticAssignmentList.js', () => ({ listClassDiagnosticAssignments: mocked.listClass,
+  listPupilDiagnosticAssignments: mocked.listPupil }))
 
 import teacherHandler from './teacher-diagnostic-assignments.js'
 import pupilHandler from './me/diagnostic-attempt.js'
+import pupilAssignmentsHandler from './me/diagnostic-assignments.js'
 
 const response = () => ({ code: 200, headers: {}, setHeader(key, value) { this.headers[key] = value },
   status(code) { this.code = code; return this }, json(data) { this.data = data; return this },
@@ -36,6 +40,9 @@ beforeEach(() => {
   mocked.open.mockResolvedValue({ kind: 'created', ...attempt })
   mocked.read.mockResolvedValue(attempt)
   mocked.append.mockResolvedValue({ kind: 'append', ack: ['ATTEMPT:1'], serverRevision: 1 })
+  mocked.listClass.mockResolvedValue([{ assignmentId: 'ASSIGNMENT' }])
+  mocked.listPupil.mockResolvedValue([{ assignmentId: 'ASSIGNMENT', items: [] }])
+  mocked.testStudents.mockResolvedValue(['PUPIL'])
 })
 
 describe('diagnostic pilot API boundary', () => {
@@ -59,12 +66,36 @@ describe('diagnostic pilot API boundary', () => {
     await teacherHandler({ method: 'POST', headers: {}, body: { classId: 'CLASS' } }, noClass)
     expect(noClass.code).toBe(403)
     expect(mocked.create).not.toHaveBeenCalled()
+    const realPupil = response()
+    await teacherHandler({ method: 'POST', headers: {}, body: { classId: 'CLASS',
+      studentIds: ['REAL-PUPIL'], taskIds: ['add-no-carry-001'] } }, realPupil)
+    expect(realPupil.code).toBe(403)
     const created = response()
     await teacherHandler({ method: 'POST', headers: {}, body: { classId: 'CLASS', studentIds: ['PUPIL'],
       taskIds: ['add-no-carry-001'] } }, created)
     expect(created.code).toBe(201)
     expect(mocked.create).toHaveBeenCalledWith({ classId: 'CLASS', studentIds: ['PUPIL'],
       taskIds: ['add-no-carry-001'], teacherId: 'TEACHER' })
+  })
+
+  it('lists only within the live teacher class and live pupil session', async () => {
+    process.env.NCM_DIAGNOSTIC_API_ENABLED = 'true'
+    mocked.classAccess.mockResolvedValueOnce(false)
+    const deniedTeacher = response()
+    await teacherHandler({ method: 'GET', headers: {}, query: { classId: 'CLASS' } }, deniedTeacher)
+    expect(deniedTeacher.code).toBe(403)
+    const teacher = response()
+    await teacherHandler({ method: 'GET', headers: {}, query: { classId: 'CLASS' } }, teacher)
+    expect(teacher.data.assignments).toEqual([{ assignmentId: 'ASSIGNMENT' }])
+    expect(teacher.data.testStudentIds).toEqual(['PUPIL'])
+    mocked.pupil.mockResolvedValueOnce(null)
+    const deniedPupil = response()
+    await pupilAssignmentsHandler({ method: 'GET', headers: {} }, deniedPupil)
+    expect(deniedPupil.code).toBe(401)
+    const pupil = response()
+    await pupilAssignmentsHandler({ method: 'GET', headers: {} }, pupil)
+    expect(pupil.data.assignments).toEqual([{ assignmentId: 'ASSIGNMENT', items: [] }])
+    expect(mocked.listPupil).toHaveBeenCalledWith(expect.objectContaining({ studentId: 'PUPIL' }))
   })
 
   it('requires live pupil session, origin and CSRF for mutation', async () => {

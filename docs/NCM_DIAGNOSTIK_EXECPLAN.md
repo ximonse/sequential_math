@@ -98,6 +98,14 @@ Inga nya elevfunktioner eller utskriftsgeneratorer ingår i Etapp 0.
   origin/CSRF. API:erna är avstängda som standard med
   `NCM_DIAGNOSTIC_API_ENABLED`; flaggan får inte aktiveras för verkliga elever
   innan raderingskedja och statistikarkiv är specificerade och testade.
+- [x] Bygg en första väg för Simons eget testkonto: en uttrycklig serverlista
+  `NCM_DIAGNOSTIC_TEST_STUDENT_IDS` begränsar API:erna; admin kan välja ett
+  tillåtet konto och en fryst uppgift, och eleven kan öppna rutnätet, spara
+  händelser i ordnade batcher och återuppta serverns bekräftade version.
+  Osparade ändringar visas och skyddas med lämnad-sidan-varning.
+- [ ] Verifiera hela vägen med ett separat testkonto och en riktig Redis-instans
+  innan den beskrivs som redo för Simons provning. Testa även konflikt och
+  avbrott i webbläsaren; använd inte riktiga elevers konton.
 - [ ] Implementera och testa serverauktoritativ försökslagring, idempotent
   synk, storleksgräns och återupptagning enligt det granskade resurskontraktet.
 
@@ -105,6 +113,9 @@ Den isolerade prototypen har ingen lärartilldelning, ingen diagnostisk analys,
 ingen vanlig mastery-/adaptivitetspipeline och ingen Word/PDF-renderare.
 Att JSON går att återläsa i en flik bevisar ännu inte lagring efter avbrott,
 serverbekräftelse eller att en elev naturligt kan skriva minnessiffra/lån.
+Testkontoflödet är separat från adminprototypen och är avstängt så länge
+serverflagga och kontolista saknas. Manuell sparning i testflödet är en
+mellanlösning; automatisk och tålig lokal kö återstår före en elevpilot.
 
 ### Lagringsaudit inför nästa implementation (första kodpasset)
 
@@ -190,10 +201,9 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   utan regelbrott. Detta verifierar inte iPadens faktiska tangentbord eller
   elevens användning. Simon har provat NCM-prototypen och begärt
   siffertangentbord även för stora siffror; den ändringen ingår i committen.
-- Nästa steg: prova rutnät och minnessiffra/lån med elever på avsedd iPad;
-  bygg och testa lärar-/elev-API:er med levande session, CSRF, aktuell
-  klassåtkomst och serververifierad tilldelning innan elevvyn ansluts.
-  Lärarens återöppning av inlämnat försök
+- Nästa steg: prova rutnät och minnessiffra/lån på avsedd iPad; verifiera
+  testkontoflödet mot verklig Redis och därefter med Simons separata
+  testkonto. Lärarens återöppning av inlämnat försök
   samt arkivets exakta fält, retention och behörighet behöver fastställas före
   verkliga elevuppdrag.
 - Lagringsmodulens aktuella snitt: 113 testfiler/560 tester och normal build
@@ -213,3 +223,20 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   `npm run robots` (72 godkända, 0 regelbrott) passerade lokalt.
   Behörighets- och avvisningsfall testades med lagrings-/sessionsdubblar.
   Verklig Redis, autentiserad elevwebbläsare och raderingskedja återstår.
+- Testkontovägen: en riktad klickrobot loggade in admin och en syntetisk elev,
+  tilldelade en uppgift, skrev en siffra, sparade, laddade om och såg samma
+  siffra från servern; en annan elev fick ingen uppgift. Robotservern använde
+  riktig API-kod och isolerad minnesdatabas (1 godkänt, 0 regelbrott).
+  Detta verifierar inte verklig Redis eller driftsatt åtkomst.
+- Testkontovägen efter komplettering: `npm run test` gav 118 godkända filer och
+  579 tester, `npm run build` och arkitekturkontrollen passerade. Den fulla
+  robotkörningen rapporterade 73 godkända fall men lämnade ingen slutstatus
+  och avbröts efter att alla fall rapporterats. Den riktade roboten
+  rapporterade också godkänt men fastnade vid avslutningen. Den verifierade
+  att en konflikt mellan två öppna flikar inte skriver
+  över den andra flikens arbete och att osparade ändringar visas kvar där.
+  Skärmbilden av elevvyn granskades lokalt. Både robot och API-tester använder
+  lagringsdubbel; verklig Redis och ett separat testkonto återstår.
+  Testläget kräver både `NCM_DIAGNOSTIC_API_ENABLED=true` och explicit lista
+  över testkontons elev-id i `NCM_DIAGNOSTIC_TEST_STUDENT_IDS`. Det är avstängt
+  utan dessa inställningar och är inte publicerat i detta snitt.

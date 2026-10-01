@@ -24,6 +24,7 @@ import LocalTestDataPanel from './LocalTestDataPanel'
 import TeacherAdminPanel from './TeacherAdminPanel'
 import TeacherPasswordNoticePanel from './TeacherPasswordNoticePanel'
 import TicketSectionContainer from './TicketSectionContainer'
+import DiagnosticPilotAssignmentPanel from './DiagnosticPilotAssignmentPanel'
 
 import { ActivityBadge, RiskBadge } from './dashboardStatusBadges'
 import { getOperationLabel } from '../../../lib/operations'
@@ -468,6 +469,7 @@ export default function DashboardLayout({
       <PauseGameHighscorePanel selectedClassIds={selectedClassIds} />
     )
     if (id === 'ncm-grid') return (
+      <div>
       <section className="rounded-lg border border-orange-300 bg-orange-100 p-4 shadow-sm">
         <h2 className="text-lg font-semibold text-orange-950">Digitalt räknehäfte</h2>
         <p className="mt-1 text-sm text-orange-900">Isolerad prototyp för uppställning, minnessiffror och lån. Arbetet stannar i fliken och sparas inte som elevdata.</p>
@@ -476,6 +478,8 @@ export default function DashboardLayout({
           Öppna räknehäftet
         </button>
       </section>
+      <DiagnosticPilotAssignmentPanel classes={classes} students={students} />
+      </div>
     )
     if (id === 'admin') return <TeacherAdminPanel />
     return null

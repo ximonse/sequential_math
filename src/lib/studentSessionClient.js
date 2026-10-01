@@ -122,3 +122,36 @@ export async function postStudentSessionHighscore({ game, score, classId }) {
 export function hasStudentSessionCsrfToken() {
   return Boolean(csrfToken)
 }
+
+export async function fetchStudentDiagnosticAssignments() {
+  const result = await requestSession('/api/me/diagnostic-assignments', { method: 'GET' },
+    'Kunde inte hämta räknehäftets uppgifter.')
+  if (!result.ok) return result
+  return Array.isArray(result.data?.assignments)
+    ? { ok: true, assignments: result.data.assignments }
+    : { ok: false, error: 'Uppgiftslistan gav ett ogiltigt svar.' }
+}
+
+async function postStudentDiagnostic(body) {
+  if (!csrfToken) return { ok: false, error: SESSION_EXPIRED_ERROR }
+  const result = await requestSession('/api/me/diagnostic-attempt', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
+    body: JSON.stringify(body)
+  }, 'Kunde inte spara räknehäftet.')
+  if (!result.ok) {
+    if (result.status === 409) return { ok: false, status: 409,
+      error: 'Räknehäftet har ändrats på en annan enhet. Dina ändringar är inte sparade.' }
+    if (result.status === 410) return { ok: false, status: 410,
+      error: 'Testuppdraget är inte längre tillgängligt.' }
+    return result
+  }
+  return { ok: true, ...result.data }
+}
+
+export function openStudentDiagnosticAttempt(assignmentId, assignmentItemId) {
+  return postStudentDiagnostic({ action: 'open', assignmentId, assignmentItemId })
+}
+
+export function appendStudentDiagnosticAttempt(attemptId, expectedRevision, events) {
+  return postStudentDiagnostic({ action: 'append', attemptId, expectedRevision, events })
+}

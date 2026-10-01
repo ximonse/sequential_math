@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { assertDiagnosticPupilAccess } from './_diagnosticApiAccess.js'
+import { assertDiagnosticPupilAccess, diagnosticTestStudentAllowed, diagnosticTestStudentIds,
+  diagnosticTestStudentsInClass } from './_diagnosticApiAccess.js'
 
 const profile = { studentId: 'PUPIL', classIds: ['CLASS'] }
 const record = { studentId: 'PUPIL', assignmentId: 'ASSIGNMENT', assignmentItemId: 'ITEM',
@@ -14,6 +15,34 @@ function store(override = {}) {
 }
 
 describe('diagnostic pupil access', () => {
+  it('requires an explicit test-account allowlist even when the API flag is enabled', () => {
+    const previous = process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS
+    try {
+      delete process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS
+      expect(diagnosticTestStudentAllowed('PUPIL')).toBe(false)
+      process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS = ' PUPIL, PUPIL,OTHER '
+      expect(diagnosticTestStudentIds()).toEqual(['PUPIL', 'OTHER'])
+      expect(diagnosticTestStudentAllowed('PUPIL')).toBe(true)
+      expect(diagnosticTestStudentAllowed('UNKNOWN')).toBe(false)
+    } finally {
+      if (previous === undefined) delete process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS
+      else process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS = previous
+    }
+  })
+
+  it('lists allowed test accounts only inside the requested class', async () => {
+    const previous = process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS
+    try {
+      process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS = 'PUPIL,OTHER'
+      const data = new Map([['student:PUPIL', { studentId: 'PUPIL', classIds: ['CLASS'] }],
+        ['student:OTHER', { studentId: 'OTHER', classIds: ['FOREIGN'] }]])
+      const store = { get: async key => data.get(key) || null, exists: async key => Number(data.has(key)) }
+      expect(await diagnosticTestStudentsInClass('CLASS', { store })).toEqual(['PUPIL'])
+    } finally {
+      if (previous === undefined) delete process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS
+      else process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS = previous
+    }
+  })
   it('accepts only the current assigned pupil and frozen item', async () => {
     await expect(assertDiagnosticPupilAccess(profile, record, { store: store() })).resolves.toMatchObject(assignment)
     await expect(assertDiagnosticPupilAccess({ ...profile, studentId: 'OTHER' }, record, { store: store() }))

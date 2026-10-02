@@ -2,6 +2,24 @@ import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
 import { openTab, teacherLogin } from './lib/teacher.js'
 
+async function localDiagnosticKeys(page, studentId) {
+  return page.evaluate(async id => {
+    const open = indexedDB.open(`sequential-math-pilot-vault-${id}`)
+    const db = await new Promise((resolve, reject) => {
+      open.onsuccess = () => resolve(open.result)
+      open.onerror = () => reject(open.error)
+    })
+    const transaction = db.transaction('records', 'readonly')
+    const keys = await new Promise((resolve, reject) => {
+      const request = transaction.objectStore('records').getAllKeys()
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+    db.close()
+    return keys.filter(key => String(key).startsWith('diagnostic:'))
+  }, studentId)
+}
+
 test('An isolated test pupil can receive, save and resume a diagnostic grid', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 7)
   const classId = `ncm-test-${tag}`
@@ -35,6 +53,7 @@ test('An isolated test pupil can receive, save and resume a diagnostic grid', as
   await expect(studentPage.getByText(/Osparade ändringar/)).toBeVisible()
   await studentPage.getByRole('button', { name: 'Spara arbetet' }).click()
   await expect(studentPage.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
+  expect(await localDiagnosticKeys(studentPage, pupil.studentId)).toEqual([])
   await studentPage.reload()
   await expect(studentPage.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 8/)
 
@@ -72,6 +91,7 @@ test('An isolated test pupil can receive, save and resume a diagnostic grid', as
   await expect(secondPage.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 9/)
   await expect(secondPage.getByText(/Arbetet skiljer sig från serverns version/)).toBeVisible()
   await expect(secondPage.getByRole('button', { name: 'Spara arbetet' })).toBeDisabled()
+  expect(await localDiagnosticKeys(secondPage, pupil.studentId)).toHaveLength(1)
   await studentPage.reload()
   await expect(studentPage.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 7/)
   await studentPage.route('**/api/me/diagnostic-attempt', route => {
@@ -81,12 +101,14 @@ test('An isolated test pupil can receive, save and resume a diagnostic grid', as
   await studentPage.locator('input[data-cell="0:0"]').click()
   await studentPage.keyboard.press('6')
   await expect(studentPage.getByText('Sparat krypterat på den här enheten. Väntar på serverkvittens.')).toBeVisible()
+  expect(await localDiagnosticKeys(studentPage, pupil.studentId)).toHaveLength(1)
   studentPage.once('dialog', dialog => dialog.accept())
   await studentPage.reload()
   await expect(studentPage.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 6/)
   await studentPage.unroute('**/api/me/diagnostic-attempt')
   await studentPage.getByRole('button', { name: 'Spara arbetet' }).click()
   await expect(studentPage.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
+  expect(await localDiagnosticKeys(studentPage, pupil.studentId)).toEqual([])
   await studentPage.reload()
   await expect(studentPage.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 6/)
   const profile = await readServerProfile(request, pupil.studentId)

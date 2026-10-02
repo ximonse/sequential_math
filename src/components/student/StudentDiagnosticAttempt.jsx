@@ -57,6 +57,10 @@ export default function StudentDiagnosticAttempt() {
       setConflict(recovered.conflict)
       setOpened({ attemptId: result.record.attemptId, task, instructionSv: assignment.instructionSv,
         snapshot: recovered.snapshot })
+      if (local && !recovered.conflict && local.events.length <= result.snapshot.events.length) {
+        void getPilotStudentRuntime().clearConfirmedDiagnosticDraft(studentId, result.record.attemptId, result.snapshot)
+          .catch(() => setSaveMessage('Servern har sparat arbetet, men den äldre lokala kopian kunde inte rensas.'))
+      }
     })().catch(error => { if (active) setLoadError(error.message || 'Kunde inte öppna räknehäftet.') })
     return () => { active = false }
   }, [studentId, assignmentId, itemId, navigate])
@@ -72,11 +76,11 @@ export default function StudentDiagnosticAttempt() {
     latestGridRef.current = grid
     setEventCount(count)
     setSaveError('')
-    if (!opened || grid.attemptId !== opened.attemptId) return
+    if (!opened || grid.attemptId !== opened.attemptId || count <= savedSequence) return
     void getPilotStudentRuntime().saveDiagnosticDraft(studentId, opened.attemptId, grid)
       .then(() => { setLocalSequence(count); setLocalError('') })
       .catch(error => setLocalError(`${error.message || 'Kunde inte spara lokalt.'} Lämna inte sidan.`))
-  }, [opened, studentId])
+  }, [opened, studentId, savedSequence])
 
   const save = useCallback(async (grid) => {
     if (!opened || conflict || savingRef.current) return
@@ -89,14 +93,19 @@ export default function StudentDiagnosticAttempt() {
       await savePendingDiagnosticEvents({ attemptId: opened.attemptId, events: grid.events,
         savedSequence, revision: revisionRef.current, append: appendStudentDiagnosticAttempt,
         onAck: ({ sequence, revision }) => { revisionRef.current = revision; setSavedSequence(sequence) } })
-      setSaveMessage('Alla skickade ändringar är sparade på servern.')
+      try {
+        await getPilotStudentRuntime().clearConfirmedDiagnosticDraft(studentId, opened.attemptId, grid)
+        setSaveMessage('Alla skickade ändringar är sparade på servern.')
+      } catch {
+        setSaveMessage('Servern har sparat arbetet, men den lokala kopian kunde inte rensas.')
+      }
     } catch (error) {
       setSaveError(`${error.message || 'Kunde inte spara.'} Arbetet finns kvar i den här fliken. Lämna inte sidan.`)
     } finally {
       savingRef.current = false
       setBusy(false)
     }
-  }, [opened, savedSequence, conflict])
+  }, [opened, savedSequence, conflict, studentId])
 
   useEffect(() => {
     if (!opened || !unsaved || busy || saveError || conflict) return undefined

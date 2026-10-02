@@ -141,6 +141,9 @@ inlämningar i följd, återuppta där genomgången avbröts och se vilka som
   servern: en lokal fortsättning återtas, en redan bekräftad kopia ersätts av
   serverns nyare version och en avvikelse stoppar automatisk skrivning utan
   att kasta elevens lokala original.
+- [x] Rensa arbetskopian efter en verifierad serverkvittens om hela den
+  lokala händelseföljden är ett exakt prefix till serverns bekräftade följd.
+  Samtidigt tillkommet arbete och avvikande kopior bevaras.
 - [ ] Verifiera hela vägen med ett separat testkonto och en riktig Redis-instans
   innan den beskrivs som redo för Simons provning. Testa även konflikt och
   avbrott i webbläsaren; använd inte riktiga elevers konton.
@@ -156,8 +159,8 @@ serverflagga och kontolista saknas. Automatisk serversparning minskar behovet
 av den manuella knappen. Den krypterade arbetskopian skyddar ändringar som
 IndexedDB har hunnit kvittera även om servern inte nås, men öppning kräver
 fortfarande serverkontakt och ett avbrott före lokal kvittens kan förlora den
-senaste inmatningen. Rensning av bekräftade lokala kopior, export vid full
-kvot och en prövad konfliktlösning återstår före en elevpilot.
+senaste inmatningen. Export vid full kvot och en prövad konfliktlösning
+återstår före en elevpilot.
 
 ### Lagringsaudit inför nästa implementation (första kodpasset)
 

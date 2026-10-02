@@ -227,5 +227,9 @@ lokala bilden; bara ett exakt händelseprefix återtas automatiskt. Avvikande
 lokalt arbete visas kvar och ny append stoppas. Robotprovet har täckt
 nätavbrott, omladdning, serveråterkoppling och en tvåflikskonflikt med
 lagringsdubbel. Det bevisar inte beteendet med riktig Redis eller att en
-inmatning som avbryts före lokal IndexedDB-kvittens bevaras. Bekräftade
-arbetskopior behöver också rensas enligt en prövad lokal livscykel.
+inmatning som avbryts före lokal IndexedDB-kvittens bevaras. En lokal kopia
+rensas nu först efter serverkvittens och kontroll av händelseprefixet samt
+postens unika version i IndexedDB. En nyare eller avvikande kopia blir kvar.
+Robotprovet kontrollerar att bekräftade kopior försvinner och konfliktkopian
+finns kvar; radering av elevkontots lokala vault behöver fortfarande en egen
+livscykel före verkliga elevers användning.

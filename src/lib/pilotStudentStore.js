@@ -70,6 +70,11 @@ function requireAttemptId(attemptId) {
   return attemptId;
 }
 
+function randomDraftVersion(cryptoApi) {
+  const bytes = cryptoApi.getRandomValues(new Uint8Array(16));
+  return Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
 export async function encryptVaultValue({ cryptoApi = globalThis.crypto, key, studentId, recordType, value }) {
   const crypto = requireCrypto(cryptoApi);
   const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -215,14 +220,16 @@ export async function createPilotStudentStore({
       }
       const encrypted = await encryptVaultValue({ cryptoApi: crypto, key, studentId,
         recordType: `${DIAGNOSTIC_PREFIX}${attemptId}`, value: snapshot });
+      const draftVersion = randomDraftVersion(crypto);
       const transaction = db.transaction(STORE_NAME, 'readwrite');
       transaction.objectStore(STORE_NAME).put(record(`${DIAGNOSTIC_PREFIX}${attemptId}`, 'diagnostic',
-        studentId, encrypted, { updatedAt: Date.now() }));
+        studentId, encrypted, { updatedAt: Date.now(), draftVersion }));
       try {
         await transactionAsPromise(transaction);
       } catch (error) {
         throw new PilotStudentVaultError('VAULT_WRITE_FAILED', 'Räknehäftet kunde inte sparas säkert på enheten.', error);
       }
+      return draftVersion;
     },
 
     async readDiagnosticDraft(attemptId) {
@@ -235,6 +242,34 @@ export async function createPilotStudentStore({
         throw new PilotStudentVaultError('INVALID_DIAGNOSTIC_DRAFT', 'Den lokala arbetskopian hör till ett annat räknehäfte.');
       }
       return snapshot;
+    },
+
+    async clearDiagnosticDraftIfConfirmed(attemptId, confirmedSnapshot) {
+      attemptId = requireAttemptId(attemptId);
+      const id = `${DIAGNOSTIC_PREFIX}${attemptId}`;
+      const stored = await readRecord(id, 'diagnostic');
+      if (!stored) return false;
+      if (typeof stored.draftVersion !== 'string') return false;
+      const snapshot = await decryptVaultValue({ cryptoApi: crypto, key, studentId,
+        recordType: id, encrypted: stored });
+      if (snapshot?.attemptId !== attemptId || confirmedSnapshot?.attemptId !== attemptId
+        || snapshot.taskId !== confirmedSnapshot.taskId
+        || snapshot.taskVersion !== confirmedSnapshot.taskVersion
+        || !Array.isArray(snapshot.events) || !Array.isArray(confirmedSnapshot.events)
+        || snapshot.events.length > confirmedSnapshot.events.length
+        || !snapshot.events.every((event, index) =>
+          JSON.stringify(event) === JSON.stringify(confirmedSnapshot.events[index]))) return false;
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const records = transaction.objectStore(STORE_NAME);
+      const current = await requestAsPromise(records.get(id));
+      if (current?.draftVersion === stored.draftVersion && current.studentId === studentId
+        && current.schema === VAULT_SCHEMA && current.type === 'diagnostic') records.delete(id);
+      try {
+        await transactionAsPromise(transaction);
+      } catch (error) {
+        throw new PilotStudentVaultError('VAULT_WRITE_FAILED', 'En bekräftad lokal arbetskopia kunde inte rensas.', error);
+      }
+      return current?.draftVersion === stored.draftVersion;
     },
 
     async saveSnapshot(snapshot) {

@@ -322,6 +322,17 @@ export function createPilotStudentRuntime({
       return operation
     },
 
+    clearConfirmedDiagnosticDraft(expectedStudentId, attemptId, confirmedSnapshot) {
+      if (!store || normalizePilotStudentId(expectedStudentId) !== studentId) {
+        return Promise.reject(new Error('Den lokala arbetskopian tillhör inte den aktiva eleven.'))
+      }
+      const activeStore = store
+      const operation = diagnosticWriteTail.then(() =>
+        activeStore.clearDiagnosticDraftIfConfirmed(attemptId, confirmedSnapshot))
+      diagnosticWriteTail = operation.catch(() => {})
+      return operation
+    },
+
     getSyncStatus() {
       return { ...syncStatus }
     },

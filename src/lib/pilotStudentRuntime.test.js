@@ -15,6 +15,9 @@ function vault() {
     rejectEvents: vi.fn(async () => {}),
     supersedeRejectedEvents: vi.fn(async () => {}),
     acknowledgeEvents: vi.fn(async () => {}),
+    saveDiagnosticDraft: vi.fn(async () => {}),
+    readDiagnosticDraft: vi.fn(async () => null),
+    clearDiagnosticDraftIfConfirmed: vi.fn(async () => true),
     close: vi.fn()
   }
 }
@@ -70,5 +73,25 @@ describe('pilot student runtime', () => {
       pendingCount: 1,
       lastError: 'Ingen anslutning'
     })
+  })
+
+  it('waits for queued diagnostic writes before clearing a confirmed draft', async () => {
+    const store = vault()
+    let finishWrite
+    store.saveDiagnosticDraft.mockImplementation(() => new Promise(resolve => { finishWrite = resolve }))
+    const runtime = createPilotStudentRuntime({
+      createStore: vi.fn(async () => store),
+      resumeSession: vi.fn(async () => ({ ok: true, student: { studentId } })),
+      fetchProfile: vi.fn(async () => ({ ok: true, profile }))
+    })
+    await runtime.bootstrap(studentId)
+    const snapshot = { attemptId: 'attempt-a', events: [{ eventId: 'attempt-a:1' }] }
+    const write = runtime.saveDiagnosticDraft(studentId, 'attempt-a', snapshot)
+    const clear = runtime.clearConfirmedDiagnosticDraft(studentId, 'attempt-a', snapshot)
+    await Promise.resolve()
+    expect(store.clearDiagnosticDraftIfConfirmed).not.toHaveBeenCalled()
+    finishWrite()
+    await Promise.all([write, clear])
+    expect(store.clearDiagnosticDraftIfConfirmed).toHaveBeenCalledWith('attempt-a', snapshot)
   })
 })

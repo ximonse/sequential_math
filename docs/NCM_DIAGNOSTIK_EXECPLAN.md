@@ -284,7 +284,7 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   talet. Den anger om entalskolumnerna ligger i linje och redovisar exakt vilka
   rutor som gav observationen. Saknad operator, extra siffror, flera kopior
   eller andra layouter ger `unknown`. Regeln påstår inte varför eleven
-  placerat talen så och är ännu inte kopplad till lärarvyn.
+  placerat talen så. Den visas nu i lärarens testunderlag.
   För detta snitt passerade 120 testfiler/587 tester, normal build,
   arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
   regelbrott.
@@ -305,6 +305,15 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   och säger uttryckligen att mönstret inte bevisar elevens metod.
   För detta lokala snitt passerade 128 testfiler/610 tester, normal build,
   arkitekturkontroll och 73 robotar med 0 regelbrott.
+- Lärarens detaljläsning får ett deterministiskt `observationRevisionId`
+  från serverns försöks-ID, revision och händelsesekvens. Det gör det möjligt
+  att peka på exakt den sparade elevbild som visades. Lärarvyn visar
+  serverrevisionen och att analysen beräknas vid öppning. Analysen är ännu
+  inte en persisterad historisk analysrevision; ett sådant ID får inte
+  antas finnas förrän dess lagring är byggd.
+  För detta lokala delmål passerade 129 testfiler/612 tester, normal build,
+  arkitekturkontroll och 73 robotar med 0 regelbrott. Lärarvyns skärmbild
+  granskades.
 - Nya tilldelningar indexeras atomiskt även per testkonto. Det gör att
   raderingskedjan kan hitta uppdrag som aldrig öppnats och uppdrag från en
   tidigare klass. Det här indexet innehåller fortfarande elev-ID och måste

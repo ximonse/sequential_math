@@ -171,6 +171,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
       </ul>}
       {detail && <section className="mt-4 rounded border border-orange-300 bg-white p-3" aria-label="Diagnostiskt elevunderlag">
         <h4 className="font-semibold">{detail.task.promptSv}</h4>
+        <p className="text-xs text-slate-700">Sparad elevrevision {detail.evidenceRevision.serverRevision} · {detail.evidenceRevision.lastSequence} {detail.evidenceRevision.lastSequence === 1 ? 'händelse' : 'händelser'}. Analysen beräknas när underlaget öppnas.</p>
         <p className="mt-1 text-sm">Slutsvar: {detail.observation.explicitAnswer || 'inte skrivet'} · {answerLabels[detail.observation.answerStatus] || 'okänt'}</p>
         <p className="text-sm">Kolumnplacering: {detail.columnAlignment.status === 'observed'
           ? detail.columnAlignment.alignment === 'aligned' ? 'entalen i samma kolumn' : 'entalen i olika kolumner'

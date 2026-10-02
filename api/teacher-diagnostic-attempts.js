@@ -9,6 +9,7 @@ import { summarizeDiagnosticObservation } from '../src/domains/arithmetic/diagno
 import { analyzeDiagnosticColumnAlignment } from '../src/domains/arithmetic/diagnosticColumnAlignment.js'
 import { analyzeDiagnosticVisibleResult } from '../src/domains/arithmetic/diagnosticVisibleResult.js'
 import { analyzeDiagnosticSubtractionPattern } from '../src/domains/arithmetic/diagnosticSubtractionPattern.js'
+import { identifyDiagnosticObservationRevision } from '../src/domains/arithmetic/diagnosticObservationRevision.js'
 
 const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/u.test(value)
 
@@ -57,12 +58,14 @@ export default async function handler(req, res) {
     if (!saved || saved.record.studentId !== studentId || saved.record.assignmentId !== assignmentId) {
       return res.status(409).json({ error: 'Diagnostic attempt changed during read' })
     }
+    const evidenceRevision = identifyDiagnosticObservationRevision(saved.record, saved.snapshot)
+    const observation = summarizeDiagnosticObservation(item.taskSnapshot, saved.snapshot)
+    const columnAlignment = analyzeDiagnosticColumnAlignment(item.taskSnapshot, saved.snapshot)
+    const visibleResult = analyzeDiagnosticVisibleResult(item.taskSnapshot, saved.snapshot)
+    const subtractionPattern = analyzeDiagnosticSubtractionPattern(item.taskSnapshot, saved.snapshot)
     return res.status(200).json({ record: saved.record, snapshot: saved.snapshot,
-      task: item.taskSnapshot,
-      observation: summarizeDiagnosticObservation(item.taskSnapshot, saved.snapshot),
-      columnAlignment: analyzeDiagnosticColumnAlignment(item.taskSnapshot, saved.snapshot),
-      visibleResult: analyzeDiagnosticVisibleResult(item.taskSnapshot, saved.snapshot),
-      subtractionPattern: analyzeDiagnosticSubtractionPattern(item.taskSnapshot, saved.snapshot) })
+      task: item.taskSnapshot, evidenceRevision, observation, columnAlignment,
+      visibleResult, subtractionPattern })
   } catch (error) {
     return res.status(error.status || 503).json({ error: error.status ? error.message : 'Diagnostic storage unavailable', code: error.code })
   }

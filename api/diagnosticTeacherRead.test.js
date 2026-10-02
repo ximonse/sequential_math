@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocked = vi.hoisted(() => ({ teacher: vi.fn(), classAccess: vi.fn(), testStudents: vi.fn(),
-  assignments: vi.fn(), members: vi.fn(), get: vi.fn(), read: vi.fn(), observe: vi.fn(), align: vi.fn(), visible: vi.fn(), subtract: vi.fn() }))
+  assignments: vi.fn(), members: vi.fn(), get: vi.fn(), read: vi.fn(), observe: vi.fn(), align: vi.fn(), visible: vi.fn(), subtract: vi.fn(), revision: vi.fn() }))
 vi.mock('@vercel/kv', () => ({ kv: { smembers: mocked.members, get: mocked.get } }))
 vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mocked.teacher, withCors: vi.fn() }))
 vi.mock('./_studentAccess.js', () => ({ canAccessClass: mocked.classAccess }))
@@ -13,6 +13,7 @@ vi.mock('../src/domains/arithmetic/diagnosticObservation.js', () => ({ summarize
 vi.mock('../src/domains/arithmetic/diagnosticColumnAlignment.js', () => ({ analyzeDiagnosticColumnAlignment: mocked.align }))
 vi.mock('../src/domains/arithmetic/diagnosticVisibleResult.js', () => ({ analyzeDiagnosticVisibleResult: mocked.visible }))
 vi.mock('../src/domains/arithmetic/diagnosticSubtractionPattern.js', () => ({ analyzeDiagnosticSubtractionPattern: mocked.subtract }))
+vi.mock('../src/domains/arithmetic/diagnosticObservationRevision.js', () => ({ identifyDiagnosticObservationRevision: mocked.revision }))
 
 import handler from './teacher-diagnostic-attempts.js'
 
@@ -46,6 +47,7 @@ beforeEach(() => {
   mocked.align.mockReturnValue({ status: 'unknown' })
   mocked.visible.mockReturnValue({ status: 'unknown' })
   mocked.subtract.mockReturnValue({ status: 'not_applicable' })
+  mocked.revision.mockReturnValue({ observationRevisionId: 'ATTEMPT:r1:s2', serverRevision: 1, lastSequence: 2 })
 })
 
 describe('teacher diagnostic evidence read boundary', () => {
@@ -79,7 +81,9 @@ describe('teacher diagnostic evidence read boundary', () => {
     expect(detail.code).toBe(200)
     expect(detail.data).toMatchObject({ record, observation: { answerStatus: 'unanswered' },
       columnAlignment: { status: 'unknown' }, visibleResult: { status: 'unknown' },
-      subtractionPattern: { status: 'not_applicable' } })
+      subtractionPattern: { status: 'not_applicable' },
+      evidenceRevision: { observationRevisionId: 'ATTEMPT:r1:s2' } })
+    expect(mocked.revision).toHaveBeenCalledWith(record, { events: [] })
     expect(mocked.observe).toHaveBeenCalledWith(task, { events: [] })
   })
 

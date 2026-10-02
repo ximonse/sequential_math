@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import taskManifest from '../../../domains/arithmetic/diagnosticTasks.v1.json'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
+import DiagnosticAttemptHistory from './DiagnosticAttemptHistory'
 import '../../../dev/diagnosticGridPrototype.css'
 
 const taskIds = taskManifest.tasks.map(task => task.taskId)
@@ -168,20 +169,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
         <p className="text-sm">Kolumnplacering: {detail.columnAlignment.status === 'observed'
           ? detail.columnAlignment.alignment === 'aligned' ? 'entalen i samma kolumn' : 'entalen i olika kolumner'
           : 'kan inte avgöras säkert'}. Detta beskriver placeringen, inte varför eleven räknade så.</p>
-        <div className="mt-3 overflow-x-auto">
-          <div className="diagnostic-grid" role="grid" aria-label="Elevens sparade uppställning">
-            {Array.from({ length: detail.snapshot.rows * detail.snapshot.columns }, (_, index) => {
-              const row = Math.floor(index / detail.snapshot.columns)
-              const column = index % detail.snapshot.columns
-              const cell = detail.snapshot.cells[`${row}:${column}`] || {}
-              return <div key={`${row}:${column}`} className={`diagnostic-cell ${cell.note ? 'diagnostic-cell--note' : ''}`}
-                role="gridcell" aria-label={`rad ${row + 1}, kolumn ${column + 1}, ${cell.main || cell.note || 'tom'}`}>
-                {cell.main && <span className={`diagnostic-cell__digit diagnostic-cell__digit--main ${cell.struck ? 'diagnostic-cell__digit--struck' : ''}`}>{cell.main}</span>}
-                {cell.note && <span className={`diagnostic-cell__digit diagnostic-cell__digit--note ${cell.struck ? 'diagnostic-cell__digit--struck' : ''}`}>{cell.note}</span>}
-              </div>
-            })}
-          </div>
-        </div>
+        <DiagnosticAttemptHistory key={`${detail.record.attemptId}:${detail.record.serverRevision}`} snapshot={detail.snapshot} />
         <p className="mt-2 text-xs text-slate-700">Uppgift {detail.record.taskId}, version {detail.record.taskVersion}. Analysversion {detail.columnAlignment.analysisVersion}. Händelser: {detail.snapshot.events.length}.</p>
       </section>}
     </div>}

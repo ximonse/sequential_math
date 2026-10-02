@@ -280,6 +280,12 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   klassåtkomst och ett explicit tillåtet testkonto, lista försök och öppna
   serverns sparade rutnät. Vyn visar uttryckligt slutsvar, reproducerbara
   fakta och kolumnobservationen med `unknown` när den inte går att avgöra.
+  Vyn kan nu också stega genom hela den sparade händelseföljden och återskapa
+  rutnät och slutsvar vid varje steg. Händelsetexterna beskriver endast
+  inmatning och korrigeringar, inte elevens avsikt eller metod.
+  För detta lokala förlopp passerade 126 testfiler/605 tester, normal build,
+  arkitekturkontroll och 73 robotar med 0 regelbrott. Lärarvyns skärmbild
+  granskades efter robotkörningen.
   Vanliga lärare får varken skapa eller läsa NCM-testuppdrag via API.
   Testunderlaget är fortfarande avstängt utan serverflaggor och bygger ännu
   inte på verifierad verklig Redis eller ett driftsatt testkonto.

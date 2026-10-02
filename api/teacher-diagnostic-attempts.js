@@ -7,6 +7,7 @@ import { listClassDiagnosticAssignments } from './_diagnosticAssignmentList.js'
 import { readDiagnosticAttempt } from './_diagnosticAttemptStore.js'
 import { summarizeDiagnosticObservation } from '../src/domains/arithmetic/diagnosticObservation.js'
 import { analyzeDiagnosticColumnAlignment } from '../src/domains/arithmetic/diagnosticColumnAlignment.js'
+import { analyzeDiagnosticVisibleResult } from '../src/domains/arithmetic/diagnosticVisibleResult.js'
 
 const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/u.test(value)
 
@@ -58,7 +59,8 @@ export default async function handler(req, res) {
     return res.status(200).json({ record: saved.record, snapshot: saved.snapshot,
       task: item.taskSnapshot,
       observation: summarizeDiagnosticObservation(item.taskSnapshot, saved.snapshot),
-      columnAlignment: analyzeDiagnosticColumnAlignment(item.taskSnapshot, saved.snapshot) })
+      columnAlignment: analyzeDiagnosticColumnAlignment(item.taskSnapshot, saved.snapshot),
+      visibleResult: analyzeDiagnosticVisibleResult(item.taskSnapshot, saved.snapshot) })
   } catch (error) {
     return res.status(error.status || 503).json({ error: error.status ? error.message : 'Diagnostic storage unavailable', code: error.code })
   }

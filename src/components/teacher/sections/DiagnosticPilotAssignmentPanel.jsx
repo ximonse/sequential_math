@@ -111,6 +111,12 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
 
   const answerLabels = { unanswered: 'inget slutsvar', incomplete: 'ofullständigt slutsvar',
     correct: 'rätt slutsvar', incorrect: 'fel slutsvar' }
+  const visibleResultReasons = { no_unique_aligned_setup: 'uppställningen inte är entydigt kolumnjusterad',
+    no_complete_explicit_answer: 'ett fullständigt slutsvar saknas', no_result_row: 'resultatrad saknas',
+    crossed_out_operand: 'en av talsiffrorna är överstruken', no_unambiguous_answer_line: 'ett entydigt svarsstreck saknas',
+    no_unambiguous_result: 'ett entydigt resultat saknas under strecket',
+    other_visible_work: 'det finns ytterligare arbete utanför uppställningen',
+    result_outside_safe_range: 'resultatet ligger utanför säkert talintervall' }
 
   return <section className="mt-4 rounded-lg border border-orange-300 bg-orange-100 p-4 shadow-sm">
     <h2 className="text-lg font-semibold text-orange-950">Testuppdrag för elevkonto</h2>
@@ -169,8 +175,11 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
         <p className="text-sm">Kolumnplacering: {detail.columnAlignment.status === 'observed'
           ? detail.columnAlignment.alignment === 'aligned' ? 'entalen i samma kolumn' : 'entalen i olika kolumner'
           : 'kan inte avgöras säkert'}. Detta beskriver placeringen, inte varför eleven räknade så.</p>
+        <p className="text-sm">Synligt resultat och slutsvar: {detail.visibleResult.status === 'observed'
+          ? `${detail.visibleResult.visibleResult} i rutorna och ${detail.visibleResult.explicitAnswer} som slutsvar ${detail.visibleResult.consistency === 'same' ? 'stämmer överens' : 'skiljer sig åt'}. Resultatet lästes på rad ${detail.visibleResult.evidence.resultCells[0].row + 1}. Detta visar ingen orsak till skillnaden.`
+          : `kan inte jämföras säkert eftersom ${visibleResultReasons[detail.visibleResult.reason] || 'underlaget är otydligt'}.`}</p>
         <DiagnosticAttemptHistory key={`${detail.record.attemptId}:${detail.record.serverRevision}`} snapshot={detail.snapshot} />
-        <p className="mt-2 text-xs text-slate-700">Uppgift {detail.record.taskId}, version {detail.record.taskVersion}. Analysversion {detail.columnAlignment.analysisVersion}. Händelser: {detail.snapshot.events.length}.</p>
+        <p className="mt-2 text-xs text-slate-700">Uppgift {detail.record.taskId}, version {detail.record.taskVersion}. Analysversioner: kolumn {detail.columnAlignment.analysisVersion}, resultat {detail.visibleResult.analysisVersion}. Händelser: {detail.snapshot.events.length}.</p>
       </section>}
     </div>}
   </section>

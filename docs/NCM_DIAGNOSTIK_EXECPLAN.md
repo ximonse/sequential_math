@@ -261,6 +261,14 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   För detta snitt passerade 120 testfiler/587 tester, normal build,
   arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
   regelbrott.
+- En andra begränsad observation jämför ett synligt resultat under ett
+  entydigt svarsstreck med elevens uttryckliga slutsvar. Den kräver en unik,
+  kolumnjusterad tvåtalsuppställning och en obruten resultatrad; annars blir
+  resultatet `unknown`. Skillnad mellan de två värdena är inte en automatisk
+  hypotes om elevens metod eller kunnande. Lärarvyn visar jämförelsen och
+  varför den inte går att göra i otydliga fall.
+  Detta lokala delmål passerade full testsvit, normal build, arkitekturkontroll
+  och 73 robotar med 0 regelbrott. Skärmbilden av lärarvyn granskades.
 - Nya tilldelningar indexeras atomiskt även per testkonto. Det gör att
   raderingskedjan kan hitta uppdrag som aldrig öppnats och uppdrag från en
   tidigare klass. Det här indexet innehåller fortfarande elev-ID och måste

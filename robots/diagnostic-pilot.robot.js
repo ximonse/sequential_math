@@ -44,6 +44,7 @@ test('An isolated test pupil can receive, save and resume a diagnostic grid', as
   const evidence = panel.getByRole('region', { name: 'Diagnostiskt elevunderlag' })
   await expect(evidence.getByRole('gridcell', { name: /rad 1, kolumn 1, 8/ })).toBeVisible()
   await expect(evidence.getByText(/Kolumnplacering: kan inte avgöras säkert/)).toBeVisible()
+  await expect(evidence.getByText(/Synligt resultat och slutsvar: kan inte jämföras säkert/)).toBeVisible()
   await evidence.getByRole('button', { name: 'Början' }).click()
   await expect(evidence.getByRole('gridcell', { name: 'rad 1, kolumn 1, tom' })).toBeVisible()
   await evidence.getByRole('button', { name: 'Slutbild' }).click()

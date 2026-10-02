@@ -7,6 +7,9 @@ function fixture() {
     [studentDeletedKey('PUPIL'), 1],
     ['diagnostic_assignments_by_student:PUPIL', ['OPENED', 'UNOPENED']],
     ['diagnostic_attempts_by_student:PUPIL', ['ATTEMPT']],
+    ['diagnostic_assignments_by_class:OLD_CLASS', ['OPENED']],
+    ['diagnostic_assignments_by_class:NEW_CLASS', ['UNOPENED']],
+    ['diagnostic_attempts_by_assignment:OPENED', ['ATTEMPT']],
     ['diagnostic_assignment:OPENED', { assignmentId: 'OPENED', classId: 'OLD_CLASS',
       studentIds: ['PUPIL', 'OTHER'], items: [{ assignmentItemId: 'ITEM' }] }],
     ['diagnostic_assignment:UNOPENED', { assignmentId: 'UNOPENED', classId: 'NEW_CLASS',
@@ -26,8 +29,12 @@ describe('read-only diagnostic deletion plan', () => {
     const plan = await planDiagnosticPupilDeletion('PUPIL', { store })
     expect(plan.assignments).toEqual([
       { assignmentId: 'OPENED', remainingStudentIds: ['OTHER'],
+        classIndexKey: 'diagnostic_assignments_by_class:OLD_CLASS',
+        attemptIndexKey: 'diagnostic_attempts_by_assignment:OPENED',
         activeKeys: ['diagnostic_active:PUPIL:ITEM'] },
       { assignmentId: 'UNOPENED', remainingStudentIds: [],
+        classIndexKey: 'diagnostic_assignments_by_class:NEW_CLASS',
+        attemptIndexKey: 'diagnostic_attempts_by_assignment:UNOPENED',
         activeKeys: ['diagnostic_active:PUPIL:SECOND'] }
     ])
     expect(plan.attempts).toEqual([{ attemptId: 'ATTEMPT', assignmentId: 'OPENED', assignmentItemId: 'ITEM',
@@ -50,6 +57,21 @@ describe('read-only diagnostic deletion plan', () => {
     await expect(planDiagnosticPupilDeletion('PUPIL', { store })).rejects.toThrow()
     store.data.set('diagnostic_active:PUPIL:ITEM', null)
     store.data.set('diagnostic_active:PUPIL:SECOND', 'ATTEMPT')
+    await expect(planDiagnosticPupilDeletion('PUPIL', { store })).rejects.toThrow()
+  })
+
+  it('refuses missing class or assignment index membership', async () => {
+    const store = fixture()
+    store.data.set('diagnostic_assignments_by_class:OLD_CLASS', [])
+    await expect(planDiagnosticPupilDeletion('PUPIL', { store })).rejects.toThrow()
+    store.data.set('diagnostic_assignments_by_class:OLD_CLASS', ['OPENED'])
+    store.data.set('diagnostic_attempts_by_assignment:OPENED', [])
+    await expect(planDiagnosticPupilDeletion('PUPIL', { store })).rejects.toThrow()
+  })
+
+  it('refuses a pupil attempt found only through its assignment index', async () => {
+    const store = fixture()
+    store.data.set('diagnostic_attempts_by_student:PUPIL', [])
     await expect(planDiagnosticPupilDeletion('PUPIL', { store })).rejects.toThrow()
   })
 })

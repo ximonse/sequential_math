@@ -19,11 +19,24 @@ export async function planDiagnosticPupilDeletion(studentId, { store = kv } = {}
   const attemptIds = uniqueIds(await store.smembers(`diagnostic_attempts_by_student:${studentId}`) || [])
   const assignments = await Promise.all(assignmentIds.map(async assignmentId => {
     const assignment = await store.get(`diagnostic_assignment:${assignmentId}`)
-    if (assignment?.assignmentId !== assignmentId || !assignment.studentIds?.includes(studentId)
+    if (assignment?.assignmentId !== assignmentId || !validId(assignment.classId)
+      || !assignment.studentIds?.includes(studentId)
       || !Array.isArray(assignment.items) || !assignment.items.every(item => validId(item.assignmentItemId))) invalid()
     uniqueIds(assignment.studentIds)
     uniqueIds(assignment.items.map(item => item.assignmentItemId))
+    const classIndexKey = `diagnostic_assignments_by_class:${assignment.classId}`
+    const attemptIndexKey = `diagnostic_attempts_by_assignment:${assignmentId}`
+    const classAssignmentIds = uniqueIds(await store.smembers(classIndexKey) || [])
+    const assignmentAttemptIds = uniqueIds(await store.smembers(attemptIndexKey) || [])
+    if (!classAssignmentIds.includes(assignmentId)) invalid()
+    for (const attemptId of assignmentAttemptIds) {
+      const record = await store.get(`diagnostic_attempt:${attemptId}`)
+      if (record?.attemptId !== attemptId || record.assignmentId !== assignmentId
+        || !validId(record.studentId) || record.evidenceClass !== 'diagnostic_only'
+        || (record.studentId === studentId && !attemptIds.includes(attemptId))) invalid()
+    }
     return { assignmentId, remainingStudentIds: assignment.studentIds.filter(id => id !== studentId),
+      classIndexKey, attemptIndexKey, assignmentAttemptIds,
       activeKeys: assignment.items.map(item => `diagnostic_active:${studentId}:${item.assignmentItemId}`) }
   }))
   const activeRefs = assignments.flatMap(assignment => assignment.activeKeys.map(key => ({
@@ -37,8 +50,10 @@ export async function planDiagnosticPupilDeletion(studentId, { store = kv } = {}
     if (record?.attemptId !== attemptId || record.studentId !== studentId
       || !assignmentIds.includes(record.assignmentId)
       || record.evidenceClass !== 'diagnostic_only') invalid()
-    const assignment = await store.get(`diagnostic_assignment:${record.assignmentId}`)
-    if (!assignment?.items?.some(item => item.assignmentItemId === record.assignmentItemId)) invalid()
+    const assignment = assignments.find(item => item.assignmentId === record.assignmentId)
+    const assignmentRecord = await store.get(`diagnostic_assignment:${record.assignmentId}`)
+    if (!assignment?.assignmentAttemptIds.includes(attemptId)
+      || !assignmentRecord?.items?.some(item => item.assignmentItemId === record.assignmentItemId)) invalid()
     return { attemptId, assignmentId: record.assignmentId,
       assignmentItemId: record.assignmentItemId,
       recordKey: `diagnostic_attempt:${attemptId}`,
@@ -50,7 +65,7 @@ export async function planDiagnosticPupilDeletion(studentId, { store = kv } = {}
     if (pointed?.assignmentId !== activeRefs[index].assignmentId
       || pointed?.assignmentItemId !== activeRefs[index].assignmentItemId) invalid()
   }
-  return { assignments, attempts,
+  return { assignments: assignments.map(({ assignmentAttemptIds, ...assignment }) => assignment), attempts,
     studentAssignmentIndexKey: `diagnostic_assignments_by_student:${studentId}`,
     studentAttemptIndexKey: `diagnostic_attempts_by_student:${studentId}` }
 }

@@ -24,6 +24,18 @@ function jsonBytes(value) {
   try { return encoder.encode(JSON.stringify(value)).length } catch { return Number.POSITIVE_INFINITY }
 }
 
+// Leave room for one final UI event so the pupil sees a clear full state
+// before a subsequent action could be rejected by the server quota.
+export function isDiagnosticAttemptFull(events) {
+  return events.length >= MAX_DIAGNOSTIC_ATTEMPT_EVENTS
+    || jsonBytes(events) >= MAX_DIAGNOSTIC_ATTEMPT_BYTES - 1024
+}
+
+export function exceedsDiagnosticAttemptQuota(events) {
+  return events.length > MAX_DIAGNOSTIC_ATTEMPT_EVENTS
+    || jsonBytes(events) > MAX_DIAGNOSTIC_ATTEMPT_BYTES
+}
+
 function hasOnlyCoordinates(value) {
   return value && typeof value === 'object' && !Array.isArray(value)
     && Object.keys(value).length === 2
@@ -94,8 +106,7 @@ export function prepareDiagnosticAppend({ snapshot, serverRevision, expectedRevi
   }
 
   if (current.status === 'submitted') conflict('Submitted diagnostic attempt is immutable')
-  if (current.events.length + events.length > MAX_DIAGNOSTIC_ATTEMPT_EVENTS
-    || jsonBytes([...current.events, ...events]) > MAX_DIAGNOSTIC_ATTEMPT_BYTES) {
+  if (exceedsDiagnosticAttemptQuota([...current.events, ...events])) {
     throw new DiagnosticAppendError(413, 'attempt_too_large', 'Diagnostic attempt is full')
   }
 

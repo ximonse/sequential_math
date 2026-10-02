@@ -5,6 +5,7 @@ import {
   recordDiagnosticGridEvent,
   replayDiagnosticGrid
 } from '../domains/arithmetic/diagnosticGridModel'
+import { exceedsDiagnosticAttemptQuota, isDiagnosticAttemptFull } from '../domains/arithmetic/diagnosticAttemptAppend'
 import './diagnosticGridPrototype.css'
 
 const TASKS = taskManifest.tasks
@@ -37,8 +38,11 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
     const timestamp = Date.now()
     setGrid(previous => {
       if (previous.status === 'submitted') return previous
+      if (pilot && isDiagnosticAttemptFull(previous.events)) return previous
       const action = typeof actionOrBuilder === 'function' ? actionOrBuilder(previous) : actionOrBuilder
-      return action ? recordDiagnosticGridEvent(previous, action, timestamp) : previous
+      if (!action) return previous
+      const next = recordDiagnosticGridEvent(previous, action, timestamp)
+      return pilot && exceedsDiagnosticAttemptQuota(next.events) ? previous : next
     })
   }
 
@@ -287,6 +291,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   }))
   const selectedCell = grid.cells[`${grid.cursor.row}:${grid.cursor.column}`]
   const selectedIsDigit = /^[0-9]{1,2}$/u.test(selectedCell?.main || selectedCell?.note || '')
+  const attemptFull = Boolean(pilot && isDiagnosticAttemptFull(grid.events))
 
   function formatButton(layer, label) {
     const active = grid.cursor.layer === layer
@@ -390,6 +395,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
           </button>
         </div>}
         <p className="mt-2 text-sm text-slate-700">Markerad ruta: rad {grid.cursor.row + 1}, kolumn {grid.cursor.column + 1}, {grid.cursor.layer === 'note' ? 'minnessiffra' : 'stor siffra'}. Händelser: {grid.events.length}.</p>
+        {attemptFull && <p role="alert" className="mt-2 rounded-lg border border-amber-500 bg-amber-100 p-3 text-amber-950">Räknehäftet är fullt. Du kan inte skriva mer i det här försöket. Det du redan skrivit finns kvar; kontrollera sparstatus nedan.</p>}
         <label className="mt-4 block text-base font-semibold" htmlFor="diagnostic-answer">Mitt svar</label>
         <input id="diagnostic-answer" type="text" inputMode="numeric" value={grid.answer}
           onChange={event => {

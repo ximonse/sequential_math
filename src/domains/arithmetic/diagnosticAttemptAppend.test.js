@@ -4,6 +4,9 @@ import {
   DiagnosticAppendError,
   MAX_DIAGNOSTIC_APPEND_BYTES,
   MAX_DIAGNOSTIC_ATTEMPT_EVENTS,
+  MAX_DIAGNOSTIC_ATTEMPT_BYTES,
+  exceedsDiagnosticAttemptQuota,
+  isDiagnosticAttemptFull,
   prepareDiagnosticAppend
 } from './diagnosticAttemptAppend.js'
 
@@ -19,6 +22,20 @@ function expectAppendError(action, code, status) {
 }
 
 describe('prepareDiagnosticAppend', () => {
+  it('uses the same event and byte ceilings for pupil input and server append', () => {
+    const events = Array.from({ length: MAX_DIAGNOSTIC_ATTEMPT_EVENTS }, (_, index) => ({
+      type: 'pause', attemptId: 'attempt-a', eventId: `attempt-a:${index + 1}`,
+      sequence: index + 1, timestamp: 1000 + index
+    }))
+    expect(isDiagnosticAttemptFull(events.slice(0, -1))).toBe(false)
+    expect(isDiagnosticAttemptFull(events)).toBe(true)
+    expect(exceedsDiagnosticAttemptQuota(events)).toBe(false)
+    expect(exceedsDiagnosticAttemptQuota([...events, events[0]])).toBe(true)
+    const nearByteLimit = [{ note: 'x'.repeat(MAX_DIAGNOSTIC_ATTEMPT_BYTES - 1024) }]
+    expect(isDiagnosticAttemptFull(nearByteLimit)).toBe(true)
+    expect(exceedsDiagnosticAttemptQuota(nearByteLimit)).toBe(false)
+  })
+
   it('keeps sequential writes and a submitted snapshot replayable without changing the input', () => {
     const start = initial()
     const first = event(start, '8')

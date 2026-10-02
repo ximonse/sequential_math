@@ -133,6 +133,9 @@ inlämningar i följd, återuppta där genomgången avbröts och se vilka som
 - [x] Lägg till automatisk serversparning efter en kort inmatningspaus i
   testkontoflödet. Den använder samma kvittens, revision och konfliktstopp som
   den manuella sparknappen. Osparat arbete ligger kvar i fliken vid fel.
+- [x] Stoppa ny inmatning i testkontots rutnät innan försökets serverkvot
+  överskrids och visa att häftet är fullt. Redan inmatat arbete finns kvar för
+  serversparning; lokal export och krypterad väntkö återstår.
 - [ ] Verifiera hela vägen med ett separat testkonto och en riktig Redis-instans
   innan den beskrivs som redo för Simons provning. Testa även konflikt och
   avbrott i webbläsaren; använd inte riktiga elevers konton.

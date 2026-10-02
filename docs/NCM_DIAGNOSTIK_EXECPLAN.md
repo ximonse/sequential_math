@@ -59,6 +59,33 @@ Inga nya elevfunktioner eller utskriftsgeneratorer ingår i Etapp 0.
 5. Lärarstyrda förslag till uppföljande uppdrag.
 6. Expansion först efter nytt innehållskontrakt och nytt beslut.
 
+## Framtida delmål före lärartest: dela ut och granska i skilda flöden
+
+**Status: planerat, inte aktuellt implementationsarbete.** Nuvarande
+adminbegränsade testutdelning får ligga i NCM-fliken tills elev–lagring–analys
+är tillräckligt prövat. På sikt ska läraren kunna skapa och dela ut
+räknehäftesuppgifter i vanliga **Uppdrag & tickets**. Utdelning och genomgång
+av inlämnade arbeten ska då vara tydligt separata arbetsflöden.
+
+Granskningsflödet ska vara byggt för en klass, inte som en lång lista av
+utdelningsinställningar: visa **en elevs samlade uppdragssvar åt gången**,
+med uppställning, förlopp och försiktig analys; bläddra enkelt till nästa
+eller föregående elev; visa var läraren befinner sig i gruppen; och låt
+läraren uttryckligen markera att elevens arbete är genomgånget. Den
+markeringen är skild från rätt/fel, automatisk bedömning och att eleven
+skickat in. Granskning och kommentarer får inte ändra elevens original.
+
+Läraren ska kunna kommentera ett eller flera valda svar utan krav på att
+kommentera alla. Kommentarer kan behöva knytas till enskilda svar, till hela
+uppdraget eller en utskrivbar sammanfattning. **Öppet beslut inför utformning:** vilka
+kommentarer eleven ska se, när de i så fall publiceras, samt om
+granskningsytan blir en egen minimalistisk sida eller en stor overlay med
+nedtonad bakgrund. Bygg inte ett av dessa alternativ som ett tyst antagande.
+
+Acceptans inför lärartest: en lärare kan gå igenom ungefär 30 elevers
+inlämningar i följd, återuppta där genomgången avbröts och se vilka som
+är genomgångna utan att blanda ihop genomgångsstatus med prestation.
+
 ## Etapp 1 – adminbegränsad interaktionsprototyp (pågår)
 
 - [x] Adminbegränsad route `/teacher/ncm/diagnostic-grid` läser de fyra

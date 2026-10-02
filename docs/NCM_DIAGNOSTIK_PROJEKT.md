@@ -336,6 +336,11 @@ och läraren kan se varför den träffade.
 
 - Visa arbetsyta, förlopp, hypotes, osäkerhet och föreslagen uppföljning.
 - Låt läraren bekräfta, avvisa eller kommentera utan att skriva över rådata.
+- Skilj utdelning från genomgång av inlämningar. Läraren ska kunna granska
+  en elevs uppdragssvar åt gången, gå vidare mellan elever och uttryckligen
+  markera ett arbete som genomgånget. Framtida utdelning hör hemma i
+  **Uppdrag & tickets**; detaljerna för kommentarer och granskningsyta
+  avgörs inför lärartest enligt den levande planen.
 - Kontrollera att klassöversikt, elevdetalj och export använder samma urval.
 - Skapa utskriftsbar Word/PDF för genomförd diagnos med elevens uppställning
   och kommentarsyta till höger.

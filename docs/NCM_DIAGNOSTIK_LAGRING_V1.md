@@ -219,3 +219,13 @@ klassmedlemskap, frysta tilldelning och uppgift kontrolleras före läsning och
 skrivning, och append gör dessutom dessa kontroller atomiskt i Redis-skriptet.
 Raderings-/arkivkopplingen och en körning mot verklig Redis återstår innan
 flaggan får aktiveras med elevdata.
+
+Testkontots elevvy skriver nu en separat AES-GCM-krypterad arbetskopia av
+rutnätet i elevens befintliga IndexedDB-vault. Krypteringens AAD binder kopian
+till elev-ID och försöks-ID. Vid ny öppning återspelas både serverns och den
+lokala bilden; bara ett exakt händelseprefix återtas automatiskt. Avvikande
+lokalt arbete visas kvar och ny append stoppas. Robotprovet har täckt
+nätavbrott, omladdning, serveråterkoppling och en tvåflikskonflikt med
+lagringsdubbel. Det bevisar inte beteendet med riktig Redis eller att en
+inmatning som avbryts före lokal IndexedDB-kvittens bevaras. Bekräftade
+arbetskopior behöver också rensas enligt en prövad lokal livscykel.

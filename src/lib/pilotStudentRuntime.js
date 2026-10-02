@@ -102,6 +102,7 @@ export function createPilotStudentRuntime({
   let studentId = ''
   let store = null
   let recoveryAttempted = false
+  let diagnosticWriteTail = Promise.resolve()
   const listeners = new Set()
   let syncStatus = {
     state: 'idle',
@@ -267,9 +268,13 @@ export function createPilotStudentRuntime({
         return { ok: false, error: 'Den aktiva elevsessionen stämmer inte med länken.' }
       }
       if (studentId !== expected || !store) {
-        if (store) await store.close()
+        if (store) {
+          await diagnosticWriteTail
+          await store.close()
+        }
         studentId = expected
         store = await createStore({ studentId })
+        diagnosticWriteTail = Promise.resolve()
         recoveryAttempted = false
       }
       const shouldRecover = !recoveryAttempted
@@ -299,6 +304,24 @@ export function createPilotStudentRuntime({
       return syncPending()
     },
 
+    async readDiagnosticDraft(expectedStudentId, attemptId) {
+      if (!store || normalizePilotStudentId(expectedStudentId) !== studentId) {
+        throw new Error('Den lokala arbetskopian tillhör inte den aktiva eleven.')
+      }
+      await diagnosticWriteTail
+      return store.readDiagnosticDraft(attemptId)
+    },
+
+    saveDiagnosticDraft(expectedStudentId, attemptId, snapshot) {
+      if (!store || normalizePilotStudentId(expectedStudentId) !== studentId) {
+        return Promise.reject(new Error('Den lokala arbetskopian tillhör inte den aktiva eleven.'))
+      }
+      const activeStore = store
+      const operation = diagnosticWriteTail.then(() => activeStore.saveDiagnosticDraft(attemptId, snapshot))
+      diagnosticWriteTail = operation.catch(() => {})
+      return operation
+    },
+
     getSyncStatus() {
       return { ...syncStatus }
     },
@@ -324,10 +347,12 @@ export function createPilotStudentRuntime({
     },
 
     async close() {
+      await diagnosticWriteTail
       if (store) store.close()
       store = null
       studentId = ''
       recoveryAttempted = false
+      diagnosticWriteTail = Promise.resolve()
       updateSyncStatus({ state: 'idle', pendingCount: 0, rejectedCount: 0, lastAttemptAt: 0, lastSuccessAt: 0, lastErrorAt: 0, lastError: '' })
     }
   }

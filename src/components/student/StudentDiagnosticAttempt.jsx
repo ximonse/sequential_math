@@ -5,6 +5,7 @@ import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { appendStudentDiagnosticAttempt, fetchStudentDiagnosticAssignments,
   openStudentDiagnosticAttempt } from '../../lib/studentSessionClient'
 import { savePendingDiagnosticEvents } from '../../lib/diagnosticStudentSave'
+import { recoverDiagnosticDraft } from '../../lib/diagnosticDraftRecovery'
 
 export default function StudentDiagnosticAttempt() {
   const { studentId } = useParams()
@@ -19,6 +20,9 @@ export default function StudentDiagnosticAttempt() {
   const [busy, setBusy] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [saveMessage, setSaveMessage] = useState('')
+  const [localSequence, setLocalSequence] = useState(0)
+  const [localError, setLocalError] = useState('')
+  const [conflict, setConflict] = useState(false)
   const revisionRef = useRef(0)
   const savingRef = useRef(false)
   const latestGridRef = useRef(null)
@@ -43,11 +47,16 @@ export default function StudentDiagnosticAttempt() {
         || result.record?.taskVersion !== task.taskVersion || !Array.isArray(result.snapshot?.events)) {
         throw new Error('Serverns räknehäfte stämmer inte med uppgiften.')
       }
+      const local = await getPilotStudentRuntime().readDiagnosticDraft(studentId, result.record.attemptId)
+      if (!active) return
+      const recovered = recoverDiagnosticDraft(result.snapshot, local)
       revisionRef.current = result.record.serverRevision
       setSavedSequence(result.record.lastSequence)
-      setEventCount(result.record.lastSequence)
+      setEventCount(recovered.snapshot.events.length)
+      setLocalSequence(local ? local.events.length : 0)
+      setConflict(recovered.conflict)
       setOpened({ attemptId: result.record.attemptId, task, instructionSv: assignment.instructionSv,
-        snapshot: result.snapshot })
+        snapshot: recovered.snapshot })
     })().catch(error => { if (active) setLoadError(error.message || 'Kunde inte öppna räknehäftet.') })
     return () => { active = false }
   }, [studentId, assignmentId, itemId, navigate])
@@ -63,10 +72,14 @@ export default function StudentDiagnosticAttempt() {
     latestGridRef.current = grid
     setEventCount(count)
     setSaveError('')
-  }, [])
+    if (!opened || grid.attemptId !== opened.attemptId) return
+    void getPilotStudentRuntime().saveDiagnosticDraft(studentId, opened.attemptId, grid)
+      .then(() => { setLocalSequence(count); setLocalError('') })
+      .catch(error => setLocalError(`${error.message || 'Kunde inte spara lokalt.'} Lämna inte sidan.`))
+  }, [opened, studentId])
 
   const save = useCallback(async (grid) => {
-    if (!opened || savingRef.current) return
+    if (!opened || conflict || savingRef.current) return
     if (grid.events.length <= savedSequence) return
     savingRef.current = true
     setBusy(true)
@@ -83,15 +96,15 @@ export default function StudentDiagnosticAttempt() {
       savingRef.current = false
       setBusy(false)
     }
-  }, [opened, savedSequence])
+  }, [opened, savedSequence, conflict])
 
   useEffect(() => {
-    if (!opened || !unsaved || busy || saveError) return undefined
+    if (!opened || !unsaved || busy || saveError || conflict) return undefined
     const timer = window.setTimeout(() => {
       if (latestGridRef.current?.events.length > savedSequence) void save(latestGridRef.current)
     }, 1200)
     return () => window.clearTimeout(timer)
-  }, [opened, unsaved, eventCount, savedSequence, busy, saveError, save])
+  }, [opened, unsaved, eventCount, savedSequence, busy, saveError, conflict, save])
 
   const goBack = () => {
     if (unsaved && !window.confirm('Du har osparade ändringar. Lämna ändå?')) return
@@ -106,6 +119,8 @@ export default function StudentDiagnosticAttempt() {
     {!loadError && !opened && <p className="mx-auto max-w-5xl px-4 py-5">Öppnar räknehäftet...</p>}
     {opened && <DiagnosticGridPrototype key={opened.attemptId} pilot={{ task: opened.task,
       snapshot: opened.snapshot, instructionSv: opened.instructionSv }} onSave={save}
-      onGridChange={onGridChange} saveState={{ savedSequence, busy, error: saveError, message: saveMessage }} />}
+      onGridChange={onGridChange} saveState={{ savedSequence, localSequence, busy, conflict,
+        error: conflict ? 'Arbetet skiljer sig från serverns version. Den lokala arbetskopian finns kvar på enheten. Be läraren om hjälp.'
+          : saveError || (unsaved ? localError : ''), message: saveMessage }} />}
   </div>
 }

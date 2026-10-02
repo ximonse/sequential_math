@@ -32,6 +32,10 @@ describe('pilot student vault crypto contract', () => {
 
     await expect(decryptVaultValue({ cryptoApi: webcrypto, key, studentId: 'b'.repeat(32), recordType: 'event', encrypted })).rejects.toMatchObject({ code: 'DECRYPT_FAILED' });
     await expect(decryptVaultValue({ cryptoApi: webcrypto, key, studentId, recordType: 'snapshot', encrypted })).rejects.toMatchObject({ code: 'DECRYPT_FAILED' });
+    const draft = await encryptVaultValue({ cryptoApi: webcrypto, key, studentId,
+      recordType: 'diagnostic:attempt-a', value: { attemptId: 'attempt-a', events: [] } });
+    await expect(decryptVaultValue({ cryptoApi: webcrypto, key, studentId,
+      recordType: 'diagnostic:attempt-b', encrypted: draft })).rejects.toMatchObject({ code: 'DECRYPT_FAILED' });
   });
 
   it('refuses to encrypt credentials or CSRF data', async () => {
@@ -44,5 +48,6 @@ describe('pilot student vault crypto contract', () => {
     expect(new TextDecoder().decode(createVaultAad({ studentId, recordType: 'snapshot' }))).toBe(`pilot-student-v1|${studentId}|snapshot`);
     expect(new TextDecoder().decode(createVaultAad({ studentId: 'QA_PREVIEW_2026', recordType: 'snapshot' }))).toBe('pilot-student-v1|QA_PREVIEW_2026|snapshot');
     expect(() => createVaultAad({ studentId, recordType: 'other' })).toThrow(PilotStudentVaultError);
+    expect(() => createVaultAad({ studentId, recordType: 'diagnostic:../other' })).toThrow(PilotStudentVaultError);
   });
 });

@@ -4,6 +4,7 @@ const STORE_NAME = 'records';
 const KEY_RECORD_ID = 'vault-key';
 const SNAPSHOT_RECORD_ID = 'snapshot';
 const EVENT_PREFIX = 'event:';
+const DIAGNOSTIC_PREFIX = 'diagnostic:';
 const FORBIDDEN_FIELD = /(?:^|[_-])(qr|pin|csrf)(?:$|[_-]|token|secret|code)/i;
 
 export class PilotStudentVaultError extends Error {
@@ -55,10 +56,18 @@ function decodeJson(bytes) {
 
 export function createVaultAad({ studentId, recordType }) {
   studentId = requireStudentId(studentId);
-  if (!['snapshot', 'event'].includes(recordType)) {
+  if (!['snapshot', 'event'].includes(recordType)
+    && !/^diagnostic:[A-Za-z0-9_-]{1,128}$/u.test(recordType || '')) {
     throw new PilotStudentVaultError('INVALID_RECORD_TYPE', 'Okänd typ av vaultpost.');
   }
   return new TextEncoder().encode(`${VAULT_SCHEMA}|${studentId}|${recordType}`);
+}
+
+function requireAttemptId(attemptId) {
+  if (!/^[A-Za-z0-9_-]{1,128}$/u.test(attemptId || '')) {
+    throw new PilotStudentVaultError('INVALID_ATTEMPT_ID', 'Räknehäftets id är ogiltigt.');
+  }
+  return attemptId;
 }
 
 export async function encryptVaultValue({ cryptoApi = globalThis.crypto, key, studentId, recordType, value }) {
@@ -199,6 +208,35 @@ export async function createPilotStudentStore({
   }
 
   return {
+    async saveDiagnosticDraft(attemptId, snapshot) {
+      attemptId = requireAttemptId(attemptId);
+      if (snapshot?.attemptId !== attemptId || !Array.isArray(snapshot.events)) {
+        throw new PilotStudentVaultError('INVALID_DIAGNOSTIC_DRAFT', 'Räknehäftets arbetskopia är ogiltig.');
+      }
+      const encrypted = await encryptVaultValue({ cryptoApi: crypto, key, studentId,
+        recordType: `${DIAGNOSTIC_PREFIX}${attemptId}`, value: snapshot });
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      transaction.objectStore(STORE_NAME).put(record(`${DIAGNOSTIC_PREFIX}${attemptId}`, 'diagnostic',
+        studentId, encrypted, { updatedAt: Date.now() }));
+      try {
+        await transactionAsPromise(transaction);
+      } catch (error) {
+        throw new PilotStudentVaultError('VAULT_WRITE_FAILED', 'Räknehäftet kunde inte sparas säkert på enheten.', error);
+      }
+    },
+
+    async readDiagnosticDraft(attemptId) {
+      attemptId = requireAttemptId(attemptId);
+      const stored = await readRecord(`${DIAGNOSTIC_PREFIX}${attemptId}`, 'diagnostic');
+      if (!stored) return null;
+      const snapshot = await decryptVaultValue({ cryptoApi: crypto, key, studentId,
+        recordType: `${DIAGNOSTIC_PREFIX}${attemptId}`, encrypted: stored });
+      if (snapshot?.attemptId !== attemptId || !Array.isArray(snapshot.events)) {
+        throw new PilotStudentVaultError('INVALID_DIAGNOSTIC_DRAFT', 'Den lokala arbetskopian hör till ett annat räknehäfte.');
+      }
+      return snapshot;
+    },
+
     async saveSnapshot(snapshot) {
       const encryptedSnapshot = await encryptVaultValue({ cryptoApi: crypto, key, studentId, recordType: 'snapshot', value: snapshot });
       const transaction = db.transaction(STORE_NAME, 'readwrite');

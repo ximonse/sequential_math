@@ -413,7 +413,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
         <h2 className="text-xl font-semibold">{pilot ? 'Spara observationen' : 'Kontrollera observationen'}</h2>
         <p className="mt-1 text-sm text-slate-700">Räknehäftet bedömer inte om svaret eller metoden är rätt.</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {pilot && <button type="button" onClick={() => onSave?.(grid)} disabled={saveState?.busy || grid.events.length <= (saveState?.savedSequence || 0)}
+          {pilot && <button type="button" onClick={() => onSave?.(grid)} disabled={saveState?.busy || saveState?.conflict || grid.events.length <= (saveState?.savedSequence || 0)}
             className="rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white disabled:opacity-50">{saveState?.busy ? 'Sparar...' : 'Spara arbetet'}</button>}
           {!pilot && <button type="button" onClick={showSnapshot} className="rounded-lg bg-blue-700 px-4 py-2 text-white">Visa JSON</button>}
           {!pilot && <button type="button" onClick={reloadSnapshot} disabled={!snapshotText.trim()} className="rounded-lg border border-blue-700 px-4 py-2 text-blue-800 disabled:opacity-50">Återläs JSON</button>}
@@ -422,7 +422,9 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
         </div>
         <p className="mt-3 text-sm" role="status">{pilot
           ? saveState?.busy ? 'Sparar...' : saveState?.error || (grid.events.length > (saveState?.savedSequence || 0)
-            ? 'Osparade ändringar. Sparas automatiskt snart; du kan också trycka på Spara arbetet.'
+            ? grid.events.length <= (saveState?.localSequence || 0)
+              ? 'Sparat krypterat på den här enheten. Väntar på serverkvittens.'
+              : 'Osparade ändringar. Sparas krypterat på enheten och skickas automatiskt till servern.'
             : saveState?.message || 'Alla ändringar är sparade på servern.')
           : message || `Status: ${grid.status === 'submitted' ? 'fryst' : 'pågående'}`}</p>
         {!pilot && <><label className="mt-3 block text-sm font-medium" htmlFor="diagnostic-snapshot">Arbetskopia av JSON för återläsning</label>

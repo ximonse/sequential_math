@@ -136,6 +136,11 @@ inlämningar i följd, återuppta där genomgången avbröts och se vilka som
 - [x] Stoppa ny inmatning i testkontots rutnät innan försökets serverkvot
   överskrids och visa att häftet är fullt. Redan inmatat arbete finns kvar för
   serversparning; lokal export och krypterad väntkö återstår.
+- [x] Bevara testkontots pågående rutnät som en separat krypterad arbetskopia
+  i elevens IndexedDB-vault. Vid återöppning jämförs händelseprefixet med
+  servern: en lokal fortsättning återtas, en redan bekräftad kopia ersätts av
+  serverns nyare version och en avvikelse stoppar automatisk skrivning utan
+  att kasta elevens lokala original.
 - [ ] Verifiera hela vägen med ett separat testkonto och en riktig Redis-instans
   innan den beskrivs som redo för Simons provning. Testa även konflikt och
   avbrott i webbläsaren; använd inte riktiga elevers konton.
@@ -148,9 +153,11 @@ Att JSON går att återläsa i en flik bevisar ännu inte lagring efter avbrott,
 serverbekräftelse eller att en elev naturligt kan skriva minnessiffra/lån.
 Testkontoflödet är separat från adminprototypen och är avstängt så länge
 serverflagga och kontolista saknas. Automatisk serversparning minskar behovet
-av den manuella knappen men skyddar inte osparat arbete om fliken stängs,
-enheten kraschar eller nätet faller innan serverkvittens. En tålig, krypterad
-lokal väntkö återstår före en elevpilot.
+av den manuella knappen. Den krypterade arbetskopian skyddar ändringar som
+IndexedDB har hunnit kvittera även om servern inte nås, men öppning kräver
+fortfarande serverkontakt och ett avbrott före lokal kvittens kan förlora den
+senaste inmatningen. Rensning av bekräftade lokala kopior, export vid full
+kvot och en prövad konfliktlösning återstår före en elevpilot.
 
 ### Lagringsaudit inför nästa implementation (första kodpasset)
 

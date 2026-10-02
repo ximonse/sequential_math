@@ -8,6 +8,14 @@
   border-left: 1px solid #94a3b8;
 }
 
+.diagnostic-sign-button {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
 .diagnostic-cell {
   position: relative;
   display: flex;

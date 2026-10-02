@@ -2,7 +2,7 @@ export const DIAGNOSTIC_GRID_VERSION = 1
 export const GRID_ROWS = 8
 export const GRID_COLUMNS = 12
 
-const MAIN_CHARACTERS = /^[0-9+−,─]$/u
+const MAIN_CHARACTERS = /^[0-9+−×/÷,─]$/u
 const NOTE_CHARACTERS = /^[0-9]{1,2}$/u
 const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'answer_change', 'pause', 'resume', 'focus_lost', 'submit'])
 
@@ -16,7 +16,7 @@ function cellKey(position) {
 }
 
 function normalizeCharacter(value, layer) {
-  const character = value === '-' ? '−' : String(value ?? '')
+  const character = value === '-' ? '−' : value === '*' ? '×' : String(value ?? '')
   const allowed = layer === 'note' ? NOTE_CHARACTERS : MAIN_CHARACTERS
   if (!allowed.test(character)) throw new Error('Unsupported grid character')
   return character

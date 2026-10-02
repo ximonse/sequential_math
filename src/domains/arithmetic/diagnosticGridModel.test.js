@@ -84,6 +84,20 @@ describe('diagnostic grid observation', () => {
     expect(() => replayDiagnosticGrid({ ...first, version: 2 })).toThrow('version')
   })
 
+  it('keeps all operation signs in the main layer through replay', () => {
+    let grid = startingGrid()
+    for (const [column, sign] of ['+', '−', '*', '/'].entries()) {
+      grid = recordDiagnosticGridEvent(grid, {
+        type: 'write', position: { row: 0, column }, layer: 'main', before: '', after: sign
+      }, 1001 + column)
+    }
+    expect([0, 1, 2, 3].map(column => grid.cells[`0:${column}`].main)).toEqual(['+', '−', '×', '/'])
+    expect(replayDiagnosticGrid(JSON.parse(JSON.stringify(grid)))).toEqual(grid)
+    expect(() => recordDiagnosticGridEvent(grid, {
+      type: 'write', position: { row: 1, column: 0 }, layer: 'note', before: '', after: '/'
+    }, 1005)).toThrow('character')
+  })
+
   it('converts a digit repeatedly and crosses out both large and small digits', () => {
     let grid = startingGrid()
     grid = recordDiagnosticGridEvent(grid, {

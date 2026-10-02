@@ -70,3 +70,22 @@ test('NCM grid is admin-only and reversible with buttons, touch and right click'
     await context.close()
   }
 })
+
+test('NCM grid lets an iPad user enter all four operation signs without changing the number keyboard', async ({ browser }) => {
+  const { context, page } = await openAsRole(browser, 'school_admin', '/teacher/ncm/diagnostic-grid')
+  const signs = ['+', '−', '×', '/']
+  for (const [index, sign] of signs.entries()) {
+    const cell = page.locator('.diagnostic-cell').nth(index)
+    const input = cell.locator('input')
+    await input.click()
+    await expect(input).toHaveAttribute('inputmode', 'numeric')
+    await page.getByRole('group', { name: 'Räknetecken' }).getByRole('button', { name: `Skriv ${sign}` }).click()
+    await expect(cell.locator('.diagnostic-cell__digit--main')).toHaveText(sign)
+  }
+  await page.getByRole('button', { name: 'Visa JSON' }).click()
+  await page.getByRole('button', { name: 'Återläs JSON' }).click()
+  for (const [index, sign] of signs.entries()) {
+    await expect(page.locator('.diagnostic-cell').nth(index).locator('.diagnostic-cell__digit--main')).toHaveText(sign)
+  }
+  await context.close()
+})

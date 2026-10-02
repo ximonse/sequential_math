@@ -9,6 +9,7 @@ import { exceedsDiagnosticAttemptQuota, isDiagnosticAttemptFull } from '../domai
 import './diagnosticGridPrototype.css'
 
 const TASKS = taskManifest.tasks
+const OPERATION_SIGNS = ['+', '−', '×', '/']
 const HOLD_MS = 500
 const DRAG_PX = 12
 
@@ -200,7 +201,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   function writeCell(character) {
     record(previous => {
       const { row, column, layer } = previous.cursor
-      const allowedNow = layer === 'note' ? /^[0-9]{1,2}$/u : /^[0-9+−,─]$/u
+      const allowedNow = layer === 'note' ? /^[0-9]{1,2}$/u : /^[0-9+−×/÷,─]$/u
       if (!allowedNow.test(character)) return null
       const cell = previous.cells[`${row}:${column}`]
       if (cell?.[layer === 'note' ? 'main' : 'note']) return null
@@ -258,8 +259,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       eraseCell(key === 'Delete')
       return
     }
-    const character = key === '=' ? '─' : key === '-' ? '−' : key
-    if (!/^[0-9+−,─]$/u.test(character) || event.ctrlKey || event.metaKey || event.altKey) return
+    const character = key === '=' ? '─' : key === '-' ? '−' : key === '*' ? '×' : key
+    if (!/^[0-9+−×/÷,─]$/u.test(character) || event.ctrlKey || event.metaKey || event.altKey) return
     event.preventDefault()
     writeCell(character)
   }
@@ -303,6 +304,13 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
     </button>
   }
 
+  function writeOperationSign(sign) {
+    if (selectedCell?.note || selectedCell?.struck) return
+    setLayer('main')
+    writeCell(sign)
+    focusSelectedCell()
+  }
+
   return (
     <main className="diagnostic-prototype mx-auto max-w-5xl px-4 pb-12 pt-5">
       <header className="mb-5">
@@ -339,7 +347,18 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
           </button>
         </div>
 
-        <p className="mt-4 text-sm text-slate-700">Dutta på en ruta och skriv med enhetens tangentbord. En ny siffra blir stor. Håll och släpp för att växla storlek; håll och dra för att stryka eller ta bort lånestrecket. Knapparna ovan gör samma sak, och högerklick visar valen på dator. En minnessiffra kan ha två siffror. Pilar eller tabulator flyttar markören. Backspace raderar, Delete tömmer rutan. Svep i sidled om alla kolumner inte syns.</p>
+        <div className="mt-3 flex flex-wrap items-center gap-2" role="group" aria-label="Räknetecken">
+          <span className="mr-1 text-sm font-medium text-orange-950">Räknetecken i markerad ruta</span>
+          {OPERATION_SIGNS.map(sign => <button key={sign} type="button"
+            aria-label={`Skriv ${sign}`}
+            onClick={() => writeOperationSign(sign)}
+            disabled={grid.status === 'submitted' || attemptFull || Boolean(selectedCell?.note || selectedCell?.struck)}
+            className="diagnostic-sign-button rounded-lg border border-orange-400 bg-white font-semibold text-orange-950 disabled:opacity-50">
+            {sign}
+          </button>)}
+        </div>
+
+        <p className="mt-4 text-sm text-slate-700">Dutta på en ruta och skriv siffror med enhetens tangentbord. Tryck på ett räknetecken ovan för att skriva det i markerad ruta. En ny siffra blir stor. Håll och släpp för att växla storlek; håll och dra för att stryka eller ta bort lånestrecket. Knapparna ovan gör samma sak, och högerklick visar valen på dator. En minnessiffra kan ha två siffror. Pilar eller tabulator flyttar markören. Backspace raderar, Delete tömmer rutan. Svep i sidled om alla kolumner inte syns.</p>
         <div className="mt-3 overflow-x-auto pb-2">
           <div ref={gridRef} className="diagnostic-grid" role="group" aria-label="Rutat räknehäfte">
             {visibleCells.map(({ row, column }) => {
@@ -375,7 +394,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
                     onChange={event => {
                       const entered = event.target.value
                       if (entered.length < 1 || entered.length > 2) return
-                      writeCell(entered === '-' ? '−' : entered === '=' ? '─' : entered)
+                      writeCell(entered === '-' ? '−' : entered === '*' ? '×' : entered === '=' ? '─' : entered)
                     }}
                     onKeyDown={handleKeyDown}
                     disabled={grid.status === 'submitted'}

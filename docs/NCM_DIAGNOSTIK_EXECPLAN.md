@@ -95,8 +95,11 @@ inlämningar i följd, återuppta där genomgången avbröts och se vilka som
   tabulator, direkt rutval, radering och operatorer. Vanliga rader ligger
   direkt efter varandra. Stor siffra och minnessiffra använder samma ruta;
   minnessiffran visas mindre och kan vara tvåsiffrig. Båda lägena begär
-  siffertangentbord. Håll/släpp växlar storlek, håll/drag växlar lånestreck,
-  och synliga knappar samt högerklick ger samma val. Ändringarna kan ångras.
+  siffertangentbord. Synliga teckenknappar skriver `+`, `−`, `×` eller `/` i
+  markerad ruta eftersom iPadens siffertangentbord inte erbjuder alla dessa
+  tecken. Fysiskt `*` normaliseras till `×`. Håll/släpp växlar storlek,
+  håll/drag växlar lånestreck, och synliga knappar samt högerklick ger samma
+  val. Ändringarna kan ångras.
 - [x] Append-only-förlopp med versionsnummer, cellföre/-efter, markör,
   anteckningsläge, svar, paus/fokusförlust och inlämning. JSON-återläsning
   återskapar slutbilden eller stoppar vid mismatch.

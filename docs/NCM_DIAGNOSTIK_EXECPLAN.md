@@ -100,6 +100,10 @@ inlämningar i följd, återuppta där genomgången avbröts och se vilka som
   tecken. Fysiskt `*` normaliseras till `×`. Håll/släpp växlar storlek,
   håll/drag växlar lånestreck, och synliga knappar samt högerklick ger samma
   val. Ändringarna kan ångras.
+- [x] I mobilvyn ligger rutnätet direkt efter uppgiften och de kompakta
+  teckenknapparna. Instruktion och handhavandehjälp ligger under rutnätet i
+  en infällbar sektion som är stängd från början. Lägesknapparna ligger också
+  under rutnätet så att uppgiften och första rutan ryms närmare varandra.
 - [x] Append-only-förlopp med versionsnummer, cellföre/-efter, markör,
   anteckningsläge, svar, paus/fokusförlust och inlämning. JSON-återläsning
   återskapar slutbilden eller stoppar vid mismatch.

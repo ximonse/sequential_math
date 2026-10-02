@@ -335,20 +335,9 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       <section className="rounded-2xl border border-orange-300 bg-orange-50 p-4 shadow-sm sm:p-6">
         <p className="text-sm text-slate-600">Uppgift {task.taskId}, version {task.taskVersion}</p>
         <h2 className="mt-1 text-2xl font-semibold">{task.promptSv}</h2>
-        <p className="mt-2 text-lg">{pilot ? pilot.instructionSv : taskManifest.instructionSv}</p>
-
-        <div className="mt-5 flex flex-wrap items-center gap-2">
-          {formatButton('main', 'Stor (Esc)')}
-          {formatButton('note', 'Minnessiffra (N)')}
-          <button type="button" onClick={() => { toggleCrossOut(); setContextMenu(null); focusSelectedCell() }}
-            disabled={grid.status === 'submitted' || !selectedIsDigit}
-            className="diagnostic-layer-button rounded-lg border border-orange-300 bg-orange-100 px-3 py-2 font-medium text-orange-950 disabled:opacity-50">
-            {selectedCell?.struck ? 'Ta bort lånestreck (X)' : 'Stryk/låna (X)'}
-          </button>
-        </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2" role="group" aria-label="Räknetecken">
-          <span className="mr-1 text-sm font-medium text-orange-950">Räknetecken i markerad ruta</span>
+          <span className="mr-1 text-sm font-medium text-orange-950">Tecken</span>
           {OPERATION_SIGNS.map(sign => <button key={sign} type="button"
             aria-label={`Skriv ${sign}`}
             onClick={() => writeOperationSign(sign)}
@@ -358,7 +347,6 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
           </button>)}
         </div>
 
-        <p className="mt-4 text-sm text-slate-700">Dutta på en ruta och skriv siffror med enhetens tangentbord. Tryck på ett räknetecken ovan för att skriva det i markerad ruta. En ny siffra blir stor. Håll och släpp för att växla storlek; håll och dra för att stryka eller ta bort lånestrecket. Knapparna ovan gör samma sak, och högerklick visar valen på dator. En minnessiffra kan ha två siffror. Pilar eller tabulator flyttar markören. Backspace raderar, Delete tömmer rutan. Svep i sidled om alla kolumner inte syns.</p>
         <div className="mt-3 overflow-x-auto pb-2">
           <div ref={gridRef} className="diagnostic-grid" role="group" aria-label="Rutat räknehäfte">
             {visibleCells.map(({ row, column }) => {
@@ -406,6 +394,20 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             })}
           </div>
         </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {formatButton('main', 'Stor (Esc)')}
+          {formatButton('note', 'Minnessiffra (N)')}
+          <button type="button" onClick={() => { toggleCrossOut(); setContextMenu(null); focusSelectedCell() }}
+            disabled={grid.status === 'submitted' || !selectedIsDigit}
+            className="diagnostic-layer-button rounded-lg border border-orange-300 bg-orange-100 px-3 py-2 font-medium text-orange-950 disabled:opacity-50">
+            {selectedCell?.struck ? 'Ta bort lånestreck (X)' : 'Stryk/låna (X)'}
+          </button>
+        </div>
+        <details className="diagnostic-instructions mt-3 rounded-lg border border-orange-300 bg-white p-3 text-sm text-slate-700">
+          <summary className="cursor-pointer font-semibold text-orange-950">Visa instruktion och hjälp</summary>
+          <p className="mt-3 text-base">{pilot ? pilot.instructionSv : taskManifest.instructionSv}</p>
+          <p className="mt-2">Dutta på en ruta och skriv siffror med enhetens tangentbord. Tryck på ett räknetecken ovan för att skriva det i markerad ruta. En ny siffra blir stor. Håll och släpp för att växla storlek; håll och dra för att stryka eller ta bort lånestrecket. Knapparna ovan gör samma sak, och högerklick visar valen på dator. En minnessiffra kan ha två siffror. Pilar eller tabulator flyttar markören. Backspace raderar, Delete tömmer rutan. Svep i sidled om alla kolumner inte syns.</p>
+        </details>
         {contextMenu && <div className="diagnostic-context-menu" role="group" aria-label="Ändra markerad siffra" style={{ left: Math.max(8, contextMenu.x), top: Math.max(8, contextMenu.y) }}>
           {formatButton('main', 'Stor')}
           {formatButton('note', 'Minnessiffra')}

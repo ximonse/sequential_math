@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
-async function openAsRole(browser, role, path) {
-  const context = await browser.newContext({ viewport: { width: 820, height: 1180 }, hasTouch: true })
+async function openAsRole(browser, role, path, viewport = { width: 820, height: 1180 }) {
+  const context = await browser.newContext({ viewport, hasTouch: true })
   const page = await context.newPage()
   await page.goto('/')
   await page.evaluate(currentRole => {
@@ -87,5 +87,25 @@ test('NCM grid lets an iPad user enter all four operation signs without changing
   for (const [index, sign] of signs.entries()) {
     await expect(page.locator('.diagnostic-cell').nth(index).locator('.diagnostic-cell__digit--main')).toHaveText(sign)
   }
+  await context.close()
+})
+
+test('NCM mobile grid stays close to the question and instructions expand below it', async ({ browser }) => {
+  const { context, page } = await openAsRole(browser, 'school_admin', '/teacher/ncm/diagnostic-grid',
+    { width: 390, height: 844 })
+  const question = await page.getByRole('heading', { name: 'Räkna ut 268 + 431.' }).boundingBox()
+  const grid = await page.getByRole('group', { name: 'Rutat räknehäfte' }).boundingBox()
+  expect(grid.y - question.y - question.height).toBeLessThan(110)
+  const instructions = page.locator('details.diagnostic-instructions')
+  const helpText = instructions.getByText('Visa hur du räknar i rutorna. Skriv också ditt svar.')
+  await expect(instructions).not.toHaveAttribute('open', '')
+  await expect(helpText).toBeHidden()
+  await instructions.locator('summary').click()
+  await expect(helpText).toBeVisible()
+  const { gridBottom, helpTop } = await page.evaluate(() => ({
+    gridBottom: document.querySelector('.diagnostic-grid').getBoundingClientRect().bottom + window.scrollY,
+    helpTop: document.querySelector('.diagnostic-instructions p').getBoundingClientRect().top + window.scrollY
+  }))
+  expect(helpTop).toBeGreaterThan(gridBottom)
   await context.close()
 })

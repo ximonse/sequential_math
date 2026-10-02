@@ -269,6 +269,15 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   varför den inte går att göra i otydliga fall.
   Detta lokala delmål passerade full testsvit, normal build, arkitekturkontroll
   och 73 robotar med 0 regelbrott. Skärmbilden av lärarvyn granskades.
+- Den första uppgiftsspecifika hypotesregeln gäller enbart S2 (`402 − 178`).
+  Ett entydigt synligt `376` som också är elevens slutsvar, utan hjälp- eller
+  överstrykningar, markeras som ett mönster förenligt med större minus mindre
+  i varje kolumn. `224` med lika tydligt arbete är ett motexempel (`no_match`);
+  enbart slutsvaret `376`, motstridigt slutsvar eller otydliga markeringar ger
+  `insufficient_evidence`. Lärartexten föreslår en fråga om lånet genom noll
+  och säger uttryckligen att mönstret inte bevisar elevens metod.
+  För detta lokala snitt passerade 128 testfiler/610 tester, normal build,
+  arkitekturkontroll och 73 robotar med 0 regelbrott.
 - Nya tilldelningar indexeras atomiskt även per testkonto. Det gör att
   raderingskedjan kan hitta uppdrag som aldrig öppnats och uppdrag från en
   tidigare klass. Det här indexet innehåller fortfarande elev-ID och måste

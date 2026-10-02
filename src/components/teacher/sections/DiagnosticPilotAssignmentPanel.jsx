@@ -178,8 +178,15 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
         <p className="text-sm">Synligt resultat och slutsvar: {detail.visibleResult.status === 'observed'
           ? `${detail.visibleResult.visibleResult} i rutorna och ${detail.visibleResult.explicitAnswer} som slutsvar ${detail.visibleResult.consistency === 'same' ? 'stämmer överens' : 'skiljer sig åt'}. Resultatet lästes på rad ${detail.visibleResult.evidence.resultCells[0].row + 1}. Detta visar ingen orsak till skillnaden.`
           : `kan inte jämföras säkert eftersom ${visibleResultReasons[detail.visibleResult.reason] || 'underlaget är otydligt'}.`}</p>
+        {detail.subtractionPattern.status !== 'not_applicable' && <p className="mt-1 text-sm">
+          Subtraktionsmönster: {detail.subtractionPattern.status === 'matched'
+            ? 'Resultatet 376 är förenligt med att ta större siffra minus mindre i varje kolumn. Fråga eleven hur tiotalet och lånet genom noll hanterades. Mönstret bevisar inte metoden.'
+            : detail.subtractionPattern.status === 'no_match'
+              ? 'Det synliga resultatet följer inte mönstret större minus mindre i varje kolumn.'
+              : 'För lite entydigt underlag för att bedöma detta mönster.'}
+        </p>}
         <DiagnosticAttemptHistory key={`${detail.record.attemptId}:${detail.record.serverRevision}`} snapshot={detail.snapshot} />
-        <p className="mt-2 text-xs text-slate-700">Uppgift {detail.record.taskId}, version {detail.record.taskVersion}. Analysversioner: kolumn {detail.columnAlignment.analysisVersion}, resultat {detail.visibleResult.analysisVersion}. Händelser: {detail.snapshot.events.length}.</p>
+        <p className="mt-2 text-xs text-slate-700">Uppgift {detail.record.taskId}, version {detail.record.taskVersion}. Analysversioner: kolumn {detail.columnAlignment.analysisVersion}, resultat {detail.visibleResult.analysisVersion}, subtraktion {detail.subtractionPattern.analysisVersion}. Händelser: {detail.snapshot.events.length}.</p>
       </section>}
     </div>}
   </section>

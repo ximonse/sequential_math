@@ -31,7 +31,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const [dragPreview, setDragPreview] = useState('')
   const [contextMenu, setContextMenu] = useState(null)
 
-  useEffect(() => { onGridChange?.(grid.events.length) }, [grid.events.length, onGridChange])
+  useEffect(() => { onGridChange?.(grid.events.length, grid) }, [grid, onGridChange])
 
   function record(actionOrBuilder) {
     const timestamp = Date.now()
@@ -303,7 +303,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       <header className="mb-5">
         <p className="text-sm font-semibold uppercase tracking-wide text-slate-600">{pilot ? 'Ditt testuppdrag' : 'Isolerad utvecklingsprototyp'}</p>
         <h1 className="text-3xl font-bold">Digitalt räknehäfte</h1>
-        <p className="mt-2 text-slate-700">{pilot ? 'Spara ditt arbete innan du lämnar sidan. Sparstatus visas nedan.' : 'Ingen elevdata sparas. Här prövas endast inmatning och återspelning.'}</p>
+        <p className="mt-2 text-slate-700">{pilot ? 'Arbetet sparas automatiskt efter en kort paus. Kontrollera sparstatus innan du lämnar sidan.' : 'Ingen elevdata sparas. Här prövas endast inmatning och återspelning.'}</p>
       </header>
 
       {!pilot && <div className="mb-5 flex flex-wrap gap-2" aria-label="Välj exempeluppgift">
@@ -416,7 +416,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
         </div>
         <p className="mt-3 text-sm" role="status">{pilot
           ? saveState?.busy ? 'Sparar...' : saveState?.error || (grid.events.length > (saveState?.savedSequence || 0)
-            ? 'Osparade ändringar. Tryck på Spara arbetet innan du lämnar sidan.'
+            ? 'Osparade ändringar. Sparas automatiskt snart; du kan också trycka på Spara arbetet.'
             : saveState?.message || 'Alla ändringar är sparade på servern.')
           : message || `Status: ${grid.status === 'submitted' ? 'fryst' : 'pågående'}`}</p>
         {!pilot && <><label className="mt-3 block text-sm font-medium" htmlFor="diagnostic-snapshot">Arbetskopia av JSON för återläsning</label>

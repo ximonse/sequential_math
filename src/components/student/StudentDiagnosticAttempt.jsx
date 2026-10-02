@@ -21,6 +21,7 @@ export default function StudentDiagnosticAttempt() {
   const [saveMessage, setSaveMessage] = useState('')
   const revisionRef = useRef(0)
   const savingRef = useRef(false)
+  const latestGridRef = useRef(null)
   const unsaved = eventCount > savedSequence
 
   useEffect(() => {
@@ -58,9 +59,13 @@ export default function StudentDiagnosticAttempt() {
     return () => window.removeEventListener('beforeunload', warn)
   }, [unsaved])
 
-  const onGridChange = useCallback(count => setEventCount(count), [])
+  const onGridChange = useCallback((count, grid) => {
+    latestGridRef.current = grid
+    setEventCount(count)
+    setSaveError('')
+  }, [])
 
-  async function save(grid) {
+  const save = useCallback(async (grid) => {
     if (!opened || savingRef.current) return
     if (grid.events.length <= savedSequence) return
     savingRef.current = true
@@ -78,7 +83,15 @@ export default function StudentDiagnosticAttempt() {
       savingRef.current = false
       setBusy(false)
     }
-  }
+  }, [opened, savedSequence])
+
+  useEffect(() => {
+    if (!opened || !unsaved || busy || saveError) return undefined
+    const timer = window.setTimeout(() => {
+      if (latestGridRef.current?.events.length > savedSequence) void save(latestGridRef.current)
+    }, 1200)
+    return () => window.clearTimeout(timer)
+  }, [opened, unsaved, eventCount, savedSequence, busy, saveError, save])
 
   const goBack = () => {
     if (unsaved && !window.confirm('Du har osparade ändringar. Lämna ändå?')) return

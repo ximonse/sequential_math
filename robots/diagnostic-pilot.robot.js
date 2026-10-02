@@ -59,7 +59,8 @@ test('An isolated test pupil can receive, save and resume a diagnostic grid', as
   await expect(secondPage.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 8/)
   await studentPage.locator('input[data-cell="0:0"]').click()
   await studentPage.keyboard.press('7')
-  await studentPage.getByRole('button', { name: 'Spara arbetet' }).click()
+  // This edit is saved by the delayed automatic path, while the other tab
+  // still holds an older revision and must keep its conflicting original.
   await expect(studentPage.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
   await secondPage.locator('input[data-cell="0:0"]').click()
   await secondPage.keyboard.press('9')

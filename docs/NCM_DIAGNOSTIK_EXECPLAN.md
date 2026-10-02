@@ -130,6 +130,9 @@ inlämningar i följd, återuppta där genomgången avbröts och se vilka som
   tillåtet konto och en fryst uppgift, och eleven kan öppna rutnätet, spara
   händelser i ordnade batcher och återuppta serverns bekräftade version.
   Osparade ändringar visas och skyddas med lämnad-sidan-varning.
+- [x] Lägg till automatisk serversparning efter en kort inmatningspaus i
+  testkontoflödet. Den använder samma kvittens, revision och konfliktstopp som
+  den manuella sparknappen. Osparat arbete ligger kvar i fliken vid fel.
 - [ ] Verifiera hela vägen med ett separat testkonto och en riktig Redis-instans
   innan den beskrivs som redo för Simons provning. Testa även konflikt och
   avbrott i webbläsaren; använd inte riktiga elevers konton.
@@ -141,8 +144,10 @@ ingen vanlig mastery-/adaptivitetspipeline och ingen Word/PDF-renderare.
 Att JSON går att återläsa i en flik bevisar ännu inte lagring efter avbrott,
 serverbekräftelse eller att en elev naturligt kan skriva minnessiffra/lån.
 Testkontoflödet är separat från adminprototypen och är avstängt så länge
-serverflagga och kontolista saknas. Manuell sparning i testflödet är en
-mellanlösning; automatisk och tålig lokal kö återstår före en elevpilot.
+serverflagga och kontolista saknas. Automatisk serversparning minskar behovet
+av den manuella knappen men skyddar inte osparat arbete om fliken stängs,
+enheten kraschar eller nätet faller innan serverkvittens. En tålig, krypterad
+lokal väntkö återstår före en elevpilot.
 
 ### Lagringsaudit inför nästa implementation (första kodpasset)
 

@@ -78,6 +78,13 @@ function robotApi(ssrServer) {
 
 const alias = { '@vercel/kv': path.join(root, 'robots/memoryKv.js') }
 
+// The seed derives a pupil's id from the name, so the default allowed id is
+// known before the account exists. Set NCM_DIAGNOSTIC_TEST_STUDENT_IDS to
+// allow another account instead.
+export const NCM_TEST_PUPIL_NAME = 'Robot NCM'
+export const NCM_TEST_PUPIL_ID = Buffer.from(NCM_TEST_PUPIL_NAME)
+  .toString('hex').toUpperCase().padEnd(32, '0').slice(0, 32)
+
 // By default the robots test the production bundle, which is what pupils get
 // (no React StrictMode double effects). ROBOT_DEV=1 uses the dev server
 // instead: faster to start, but StrictMode can show dev-only faults.
@@ -85,8 +92,8 @@ export async function startRobotServer({ port = 5288, production = process.env.R
   process.env.APP_ORIGIN = `http://localhost:${port}`
   process.env.PILOT_ENROLLMENT_SECRET ||= 'robot-enrollment-secret'
   process.env.TEACHER_API_PASSWORD_ROTATION_SECRET ||= 'robot-teacher-token-secret'
-  process.env.NCM_DIAGNOSTIC_API_ENABLED = 'true'
-  process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS = Buffer.from('Robot NCM').toString('hex').toUpperCase().padEnd(32, '0').slice(0, 32)
+  process.env.NCM_DIAGNOSTIC_API_ENABLED ||= 'true'
+  process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS ||= NCM_TEST_PUPIL_ID
   if (!production) {
     const server = await createServer({
       root, configFile: false, logLevel: 'warn',

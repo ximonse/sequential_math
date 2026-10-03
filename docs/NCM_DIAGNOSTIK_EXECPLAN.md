@@ -145,6 +145,14 @@ inlämningar i följd, återuppta där genomgången avbröts och se vilka som
   tillåtet konto och en fryst uppgift, och eleven kan öppna rutnätet, spara
   händelser i ordnade batcher och återuppta serverns bekräftade version.
   Osparade ändringar visas och skyddas med lämnad-sidan-varning.
+- [x] Gör testläget körbart för hand. Serverlistan är det enda som styr vilka
+  konton som får användas, så även ett befintligt konto kan tillåtas; dess
+  elev-id går nu att läsa och kopiera i lärarpanelen eftersom det inte syns
+  någon annanstans. `npm run ncm:manual` startar appen med riktiga API:er mot
+  minnesdatabasen och seedar klass, admin-lärare och en testelev vars id
+  redan ligger i den tillåtna listan. Robotservern skriver inte längre över
+  flaggorna, så ett eget id kan sättas i miljön. Ingen av vägarna rör
+  produktion, och riktiga elevkonton ska fortfarande inte användas.
 - [x] Lägg till automatisk serversparning efter en kort inmatningspaus i
   testkontoflödet. Den använder samma kvittens, revision och konfliktstopp som
   den manuella sparknappen. Osparat arbete ligger kvar i fliken vid fel.

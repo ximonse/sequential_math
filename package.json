@@ -11,7 +11,8 @@
     "test": "set \"NODE_OPTIONS=--require=./scripts/vitest-node-patch.cjs\" && vitest run --configLoader native --pool threads",
     "verify:redis-cas": "node scripts/verify-real-redis-cas.mjs",
     "check:architecture": "node scripts/check-architecture.mjs",
-    "robots": "playwright test -c robots/playwright.config.js"
+    "robots": "playwright test -c robots/playwright.config.js",
+    "ncm:manual": "node robots/manualServer.mjs"
   },
   "repository": {
     "type": "git",

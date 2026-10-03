@@ -40,6 +40,6 @@ export function summarizeDiagnosticObservation(task, snapshot) {
       : Number(answer.replace('−', '-')) === expected ? 'correct' : 'incorrect',
     answerEventId: lastAnswerEvent?.eventId || null,
     finalOccupiedCells: finalCells.length,
-    hasWorkHistory: grid.events.some(event => ['write', 'erase', 'reclassify', 'cross_out'].includes(event.type))
+    hasWorkHistory: grid.events.some(event => ['write', 'erase', 'reclassify', 'cross_out', 'line_add'].includes(event.type))
   }
 }

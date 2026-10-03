@@ -50,6 +50,22 @@ describe('prepareDiagnosticAppend', () => {
     expect(two.snapshot.events.map(item => item.sequence)).toEqual([1, 2, 3])
   })
 
+  it('persists line events without occupying cells and rejects hidden line fields', () => {
+    const start = initial()
+    const first = recordDiagnosticGridEvent(start, { type: 'line_add', axis: 'vertical',
+      from: { row: 0, column: 2 }, to: { row: 3, column: 2 } }, 1000).events[0]
+    const saved = prepareDiagnosticAppend({ snapshot: start, serverRevision: 0,
+      expectedRevision: 0, events: [first] })
+    expect(saved.snapshot.lines).toHaveLength(1)
+    expect(saved.snapshot.cells).toEqual({})
+    const removed = recordDiagnosticGridEvent(saved.snapshot,
+      { type: 'line_remove', lineId: first.eventId }, 1001).events.at(-1)
+    expect(prepareDiagnosticAppend({ snapshot: saved.snapshot, serverRevision: 1,
+      expectedRevision: 1, events: [removed] }).snapshot.lines).toEqual([])
+    expectAppendError(() => prepareDiagnosticAppend({ snapshot: start, serverRevision: 0,
+      expectedRevision: 0, events: [{ ...first, hidden: 'x' }] }), 'invalid_event', 400)
+  })
+
   it('acknowledges an exact retry but rejects a changed duplicate or stale new work', () => {
     const start = initial()
     const first = event(start, '8')

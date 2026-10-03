@@ -13,6 +13,8 @@ const EVENT_FIELDS = {
   layer: ['from', 'to'],
   reclassify: ['position', 'from', 'to', 'value'],
   cross_out: ['position', 'before', 'after'],
+  line_add: ['axis', 'from', 'to'],
+  line_remove: ['lineId'],
   answer_change: ['before', 'after'],
   pause: [],
   resume: [],
@@ -46,7 +48,9 @@ function hasValidPositionShape(event) {
   if (['write', 'erase', 'reclassify', 'cross_out'].includes(event.type)) {
     return hasOnlyCoordinates(event.position)
   }
-  if (event.type === 'move') return hasOnlyCoordinates(event.from) && hasOnlyCoordinates(event.to)
+  if (event.type === 'move' || event.type === 'line_add') {
+    return hasOnlyCoordinates(event.from) && hasOnlyCoordinates(event.to)
+  }
   return true
 }
 

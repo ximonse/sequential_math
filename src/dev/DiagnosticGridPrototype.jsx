@@ -6,12 +6,24 @@ import {
   replayDiagnosticGrid
 } from '../domains/arithmetic/diagnosticGridModel'
 import { exceedsDiagnosticAttemptQuota, isDiagnosticAttemptFull } from '../domains/arithmetic/diagnosticAttemptAppend'
+import DiagnosticGridLines from './DiagnosticGridLines'
 import './diagnosticGridPrototype.css'
 
 const TASKS = taskManifest.tasks
 const OPERATION_SIGNS = ['+', '−', '×', '/']
 const HOLD_MS = 500
 const DRAG_PX = 12
+
+function lineBetween(from, to, horizontalOnly = false) {
+  const axis = horizontalOnly || Math.abs(to.column - from.column) >= Math.abs(to.row - from.row)
+    ? 'horizontal' : 'vertical'
+  if (axis === 'horizontal') return { axis,
+    from: { row: from.row, column: Math.min(from.column, to.column) },
+    to: { row: from.row, column: Math.max(from.column, to.column) } }
+  return { axis,
+    from: { row: Math.min(from.row, to.row), column: from.column },
+    to: { row: Math.max(from.row, to.row), column: from.column } }
+}
 
 function newGrid(task) {
   return createDiagnosticGrid({
@@ -31,6 +43,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const gridsRef = useRef(new Map())
   const gestureRef = useRef(null)
   const [dragPreview, setDragPreview] = useState('')
+  const [linePreview, setLinePreview] = useState(null)
+  const [lineMode, setLineMode] = useState(false)
   const [contextMenu, setContextMenu] = useState(null)
 
   useEffect(() => { onGridChange?.(grid.events.length, grid) }, [grid, onGridChange])
@@ -135,17 +149,38 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
     if (gesture?.timer) window.clearTimeout(gesture.timer)
     gestureRef.current = null
     setDragPreview('')
+    setLinePreview(null)
+  }
+
+  function cellAtPoint(x, y) {
+    const bounds = gridRef.current?.getBoundingClientRect()
+    if (!bounds) return null
+    return { row: Math.max(0, Math.min(grid.rows - 1,
+      Math.floor((y - bounds.top) / (bounds.height / grid.rows)))),
+    column: Math.max(0, Math.min(grid.columns - 1,
+      Math.floor((x - bounds.left) / (bounds.width / grid.columns)))) }
+  }
+
+  function addLine(line) {
+    record(previous => previous.lines?.some(item => item.axis === line.axis
+      && item.from.row === line.from.row && item.from.column === line.from.column
+      && item.to.row === line.to.row && item.to.column === line.to.column)
+      ? null : { type: 'line_add', ...line })
   }
 
   function startGesture(event, row, column) {
     setContextMenu(null)
     selectCell(row, column)
-    if (event.pointerType === 'mouse') return
+    if (lineMode) event.preventDefault()
+    if (event.pointerType === 'mouse' && !lineMode) return
     stopGesture()
+    const sign = grid.cells[`${row}:${column}`]?.main
     const gesture = { pointerId: event.pointerId, row, column, x: event.clientX, y: event.clientY,
-      lastX: event.clientX, lastY: event.clientY, held: false, cancelled: false, dragged: false, timer: null }
+      lastX: event.clientX, lastY: event.clientY, end: { row, column },
+      line: lineMode, quickLine: ['+', '−', '×'].includes(sign),
+      held: lineMode, cancelled: false, dragged: false, timer: null }
     try { event.currentTarget.setPointerCapture?.(event.pointerId) } catch { /* Synthetic pointer events have no active pointer. */ }
-    gesture.timer = window.setTimeout(() => {
+    if (!lineMode) gesture.timer = window.setTimeout(() => {
       if (gestureRef.current === gesture && !gesture.cancelled) gesture.held = true
     }, HOLD_MS)
     gestureRef.current = gesture
@@ -170,7 +205,11 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       return
     }
     gesture.dragged = true
-    setDragPreview(`${gesture.row}:${gesture.column}`)
+    if (gesture.line || gesture.quickLine) {
+      gesture.end = cellAtPoint(event.clientX, event.clientY) || gesture.end
+      setLinePreview(lineBetween({ row: gesture.row, column: gesture.column },
+        gesture.end, gesture.quickLine && !gesture.line))
+    } else setDragPreview(`${gesture.row}:${gesture.column}`)
   }
 
   function finishGesture(event) {
@@ -179,13 +218,18 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
     const position = { row: gesture.row, column: gesture.column }
     const held = gesture.held && !gesture.cancelled
     const dragged = gesture.dragged
+    const line = gesture.line || (gesture.quickLine && dragged)
+    const lineAction = lineBetween(position, gesture.end, gesture.quickLine && !gesture.line)
     stopGesture()
     if (!held) return
     event.preventDefault()
-    if (dragged) toggleCrossOut(position)
+    if (line) addLine(lineAction)
+    else if (dragged) toggleCrossOut(position)
     else {
       const cell = grid.cells[`${position.row}:${position.column}`]
-      setLayer(cell?.note ? 'main' : 'note')
+      if (/^[0-9]{1,2}$/u.test(cell?.main || cell?.note || '')) {
+        setLayer(cell?.note ? 'main' : 'note')
+      }
     }
   }
 
@@ -337,7 +381,6 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
         <h2 className="mt-1 text-2xl font-semibold">{task.promptSv}</h2>
 
         <div className="mt-3 flex flex-wrap items-center gap-2" role="group" aria-label="Räknetecken">
-          <span className="mr-1 text-sm font-medium text-orange-950">Tecken</span>
           {OPERATION_SIGNS.map(sign => <button key={sign} type="button"
             aria-label={`Skriv ${sign}`}
             onClick={() => writeOperationSign(sign)}
@@ -345,10 +388,16 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             className="diagnostic-sign-button rounded-lg border border-orange-400 bg-white font-semibold text-orange-950 disabled:opacity-50">
             {sign}
           </button>)}
+          <button type="button" aria-label="Streckläge" aria-pressed={lineMode} onClick={() => setLineMode(current => !current)}
+            disabled={grid.status === 'submitted' || attemptFull}
+            className={`diagnostic-line-button rounded-lg border px-2 font-semibold ${lineMode ? 'border-orange-700 bg-orange-700 text-white' : 'border-orange-400 bg-white text-orange-950'} disabled:opacity-50`}>
+            {lineMode ? '✓ Streck' : 'Streck'}
+          </button>
         </div>
 
         <div className="mt-3 overflow-x-auto pb-2">
           <div ref={gridRef} className="diagnostic-grid" role="group" aria-label="Rutat räknehäfte">
+            <DiagnosticGridLines lines={grid.lines} preview={linePreview} rows={grid.rows} columns={grid.columns} />
             {visibleCells.map(({ row, column }) => {
               const cell = grid.cells[`${row}:${column}`] || { main: '', note: '' }
               const selected = grid.cursor.row === row && grid.cursor.column === column
@@ -402,11 +451,17 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             className="diagnostic-layer-button rounded-lg border border-orange-300 bg-orange-100 px-3 py-2 font-medium text-orange-950 disabled:opacity-50">
             {selectedCell?.struck ? 'Ta bort lånestreck (X)' : 'Stryk/låna (X)'}
           </button>
+          <button type="button" onClick={() => record(previous => previous.lines?.length
+            ? { type: 'line_remove', lineId: previous.lines.at(-1).id } : null)}
+            disabled={grid.status === 'submitted' || attemptFull || !grid.lines?.length}
+            className="diagnostic-layer-button rounded-lg border border-orange-300 bg-orange-100 px-3 py-2 font-medium text-orange-950 disabled:opacity-50">
+            Ta bort senaste streck
+          </button>
         </div>
         <details className="diagnostic-instructions mt-3 rounded-lg border border-orange-300 bg-white p-3 text-sm text-slate-700">
           <summary className="cursor-pointer font-semibold text-orange-950">Visa instruktion och hjälp</summary>
           <p className="mt-3 text-base">{pilot ? pilot.instructionSv : taskManifest.instructionSv}</p>
-          <p className="mt-2">Dutta på en ruta och skriv siffror med enhetens tangentbord. Tryck på ett räknetecken ovan för att skriva det i markerad ruta. En ny siffra blir stor. Håll och släpp för att växla storlek; håll och dra för att stryka eller ta bort lånestrecket. Knapparna ovan gör samma sak, och högerklick visar valen på dator. En minnessiffra kan ha två siffror. Pilar eller tabulator flyttar markören. Backspace raderar, Delete tömmer rutan. Svep i sidled om alla kolumner inte syns.</p>
+          <p className="mt-2">Dutta på en ruta och skriv siffror med enhetens tangentbord. Tryck på ett räknetecken ovan för att skriva det i markerad ruta. Tryck Streck och dra över tomma eller ifyllda rutor för ett vågrätt eller lodrätt streck; ett tryck ger ett kort vågrätt streck. Tryck Streck igen för att skriva siffror. Du kan också hålla på +, − eller × och dra för ett vågrätt streck. En ny siffra blir stor. Håll och släpp på en siffra för att växla storlek; håll och dra på siffran för att stryka eller ta bort lånestrecket. Knapparna nedanför gör samma sak, och högerklick visar valen på dator. En minnessiffra kan ha två siffror. Pilar eller tabulator flyttar markören. Backspace raderar, Delete tömmer rutan. Svep i sidled om alla kolumner inte syns.</p>
         </details>
         {contextMenu && <div className="diagnostic-context-menu" role="group" aria-label="Ändra markerad siffra" style={{ left: Math.max(8, contextMenu.x), top: Math.max(8, contextMenu.y) }}>
           {formatButton('main', 'Stor')}

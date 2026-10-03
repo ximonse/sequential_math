@@ -104,6 +104,14 @@ inlämningar i följd, återuppta där genomgången avbröts och se vilka som
   teckenknapparna. Instruktion och handhavandehjälp ligger under rutnätet i
   en infällbar sektion som är stängd från början. Lägesknapparna ligger också
   under rutnätet så att uppgiften och första rutan ryms närmare varandra.
+- [x] Streckläget lägger vågräta eller lodräta streck över både tomma och
+  ifyllda rutor utan att ta upp cellernas sifferlager. Eleven kan dra i
+  streckläget eller hålla och dra från `+`, `−` och `×` för vågrätt streck.
+  Strecken sparas som egna tilläggs-/borttagningshändelser, kan tas bort med
+  knapp och återspelas i lärarens händelsevy. Befintlig analys av synligt
+  slutsvar tolkar fortfarande bara den äldre `─`-raden; streckets nya
+  placering ger därför försiktigt `okänt` tills en separat analysrevision
+  definierats.
 - [x] Append-only-förlopp med versionsnummer, cellföre/-efter, markör,
   anteckningsläge, svar, paus/fokusförlust och inlämning. JSON-återläsning
   återskapar slutbilden eller stoppar vid mismatch.

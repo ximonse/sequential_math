@@ -4,7 +4,7 @@ export const GRID_COLUMNS = 12
 
 const MAIN_CHARACTERS = /^[0-9+−×/÷,─]$/u
 const NOTE_CHARACTERS = /^[0-9]{1,2}$/u
-const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'answer_change', 'pause', 'resume', 'focus_lost', 'submit'])
+const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'line_add', 'line_remove', 'answer_change', 'pause', 'resume', 'focus_lost', 'submit'])
 
 function isValidPosition(value, rows, columns) {
   return Number.isInteger(value?.row) && value.row >= 0 && value.row < rows
@@ -38,6 +38,7 @@ export function createDiagnosticGrid({ attemptId, taskId, taskVersion, rows = GR
     rows,
     columns,
     cells: {},
+    lines: [],
     answer: '',
     cursor: { row: 0, column: 0, layer: 'main' },
     status: 'in_progress',
@@ -99,6 +100,22 @@ export function applyDiagnosticGridEvent(state, event) {
     if (event.after) changed.struck = true
     else delete changed.struck
     next.cells = { ...state.cells, [key]: changed }
+  } else if (event.type === 'line_add') {
+    if (!['horizontal', 'vertical'].includes(event.axis)
+      || !isValidPosition(event.from, state.rows, state.columns)
+      || !isValidPosition(event.to, state.rows, state.columns)
+      || (event.axis === 'horizontal' && (event.from.row !== event.to.row || event.from.column > event.to.column))
+      || (event.axis === 'vertical' && (event.from.column !== event.to.column || event.from.row > event.to.row))) {
+      throw new Error('Invalid grid line')
+    }
+    next.lines = [...(state.lines || []), { id: event.eventId, axis: event.axis,
+      from: event.from, to: event.to }]
+  } else if (event.type === 'line_remove') {
+    const lines = state.lines || []
+    if (typeof event.lineId !== 'string' || !lines.some(line => line.id === event.lineId)) {
+      throw new Error('Invalid grid line removal')
+    }
+    next.lines = lines.filter(line => line.id !== event.lineId)
   } else if (event.type === 'move') {
     if (!isValidPosition(event.to, state.rows, state.columns)
       || !isValidPosition(event.from, state.rows, state.columns)
@@ -144,6 +161,7 @@ export function replayDiagnosticGrid(snapshot) {
   if (!Array.isArray(events)) throw new Error('Missing grid event stream')
   const replayed = events.reduce(applyDiagnosticGridEvent, initial)
   if (JSON.stringify(replayed.cells) !== JSON.stringify(snapshot.cells)
+    || JSON.stringify(replayed.lines) !== JSON.stringify(snapshot.lines ?? [])
     || replayed.answer !== snapshot.answer
     || JSON.stringify(replayed.cursor) !== JSON.stringify(snapshot.cursor)
     || replayed.status !== snapshot.status) {

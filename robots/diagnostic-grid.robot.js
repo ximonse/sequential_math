@@ -26,6 +26,18 @@ async function touchGesture(page, cell, drag = false) {
   await browser.detach()
 }
 
+async function dragBetweenCells(page, from, to, hold = false) {
+  const start = await from.boundingBox()
+  const end = await to.boundingBox()
+  const point = box => ({ x: box.x + box.width / 2, y: box.y + box.height / 2, id: 1 })
+  const browser = await page.context().newCDPSession(page)
+  await browser.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point(start)] })
+  if (hold) await page.waitForTimeout(550)
+  await browser.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [point(end)] })
+  await browser.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  await browser.detach()
+}
+
 test('NCM grid is admin-only and reversible with buttons, touch and right click', async ({ browser }) => {
   test.setTimeout(90 * 1000)
   const ordinary = await openAsRole(browser, 'teacher', '/teacher/ncm/diagnostic-grid')
@@ -107,5 +119,32 @@ test('NCM mobile grid stays close to the question and instructions expand below 
     helpTop: document.querySelector('.diagnostic-instructions p').getBoundingClientRect().top + window.scrollY
   }))
   expect(helpTop).toBeGreaterThan(gridBottom)
+  await context.close()
+})
+
+test('NCM lines cross empty cells in both directions and keep cells writable', async ({ browser }) => {
+  const { context, page } = await openAsRole(browser, 'school_admin', '/teacher/ncm/diagnostic-grid')
+  const cell = (row, column) => page.locator('.diagnostic-cell').nth(row * 12 + column).locator('input')
+  const lineButton = page.getByRole('button', { name: 'Streckläge' })
+  await lineButton.click()
+  await expect(lineButton).toHaveAttribute('aria-pressed', 'true')
+  await dragBetweenCells(page, cell(0, 0), cell(0, 4))
+  await dragBetweenCells(page, cell(1, 5), cell(3, 5))
+  await expect(page.locator('.diagnostic-grid__line')).toHaveCount(2)
+  expect(await page.evaluate(() => document.activeElement?.classList.contains('diagnostic-cell__input'))).toBe(false)
+  await lineButton.click()
+  await cell(1, 5).click()
+  await cell(1, 5).press('8')
+  await expect(page.locator('.diagnostic-cell').nth(17).locator('.diagnostic-cell__digit--main')).toHaveText('8')
+  await page.getByRole('button', { name: 'Visa JSON' }).click()
+  await page.getByRole('button', { name: 'Återläs JSON' }).click()
+  await expect(page.locator('.diagnostic-grid__line')).toHaveCount(2)
+  await page.getByRole('button', { name: 'Ta bort senaste streck' }).click()
+  await expect(page.locator('.diagnostic-grid__line')).toHaveCount(1)
+
+  await cell(4, 0).click()
+  await page.getByRole('group', { name: 'Räknetecken' }).getByRole('button', { name: 'Skriv +' }).click()
+  await dragBetweenCells(page, cell(4, 0), cell(4, 4), true)
+  await expect(page.locator('.diagnostic-grid__line')).toHaveCount(2)
   await context.close()
 })

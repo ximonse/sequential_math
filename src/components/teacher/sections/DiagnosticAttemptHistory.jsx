@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { describeDiagnosticEvent, diagnosticHistoryFrame } from '../../../domains/arithmetic/diagnosticHistory'
+import DiagnosticGridLines from '../../../dev/DiagnosticGridLines'
 
 export default function DiagnosticAttemptHistory({ snapshot }) {
   const lastStep = snapshot.events.length
@@ -23,6 +24,7 @@ export default function DiagnosticAttemptHistory({ snapshot }) {
     <p className="mt-2 text-sm" aria-live="polite">{describeDiagnosticEvent(event)} Slutsvar då: {frame.answer || 'inte skrivet'}.</p>
     <div className="mt-3 overflow-x-auto">
       <div className="diagnostic-grid" role="grid" aria-label={`Elevens uppställning efter steg ${step}`}>
+        <DiagnosticGridLines lines={frame.lines} rows={frame.rows} columns={frame.columns} />
         {Array.from({ length: frame.rows * frame.columns }, (_, index) => {
           const row = Math.floor(index / frame.columns)
           const column = index % frame.columns

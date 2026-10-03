@@ -122,4 +122,26 @@ describe('diagnostic grid observation', () => {
     expect(grid.cells['0:0']).toEqual({ main: '82', note: '' })
     expect(replayDiagnosticGrid(JSON.parse(JSON.stringify(grid)))).toEqual(grid)
   })
+
+  it('keeps horizontal and vertical lines independent of empty and occupied cells', () => {
+    let grid = startingGrid()
+    grid = recordDiagnosticGridEvent(grid, { type: 'line_add', axis: 'horizontal',
+      from: { row: 1, column: 2 }, to: { row: 1, column: 6 } }, 1001)
+    grid = recordDiagnosticGridEvent(grid, { type: 'line_add', axis: 'vertical',
+      from: { row: 0, column: 4 }, to: { row: 3, column: 4 } }, 1002)
+    grid = recordDiagnosticGridEvent(grid, { type: 'write', position: { row: 1, column: 4 },
+      layer: 'main', before: '', after: '8' }, 1003)
+    expect(grid.lines).toHaveLength(2)
+    expect(grid.cells['1:4'].main).toBe('8')
+    expect(replayDiagnosticGrid(JSON.parse(JSON.stringify(grid)))).toEqual(grid)
+
+    grid = recordDiagnosticGridEvent(grid, { type: 'line_remove', lineId: grid.lines[0].id }, 1004)
+    expect(grid.lines).toHaveLength(1)
+    expect(grid.cells['1:4'].main).toBe('8')
+    expect(replayDiagnosticGrid(JSON.parse(JSON.stringify(grid)))).toEqual(grid)
+    expect(() => recordDiagnosticGridEvent(grid, { type: 'line_remove', lineId: 'missing' }, 1005))
+      .toThrow('line removal')
+    expect(() => recordDiagnosticGridEvent(grid, { type: 'line_add', axis: 'horizontal',
+      from: { row: 1, column: 6 }, to: { row: 1, column: 2 } }, 1005)).toThrow('grid line')
+  })
 })

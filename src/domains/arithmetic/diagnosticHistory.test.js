@@ -24,6 +24,19 @@ it('reconstructs each saved step, including a correction, carry note and crossed
 })
 
 describe('history integrity', () => {
+  it('shows drawn and removed lines at the correct steps', () => {
+    const start = createDiagnosticGrid({ attemptId: 'A', taskId: 'T', taskVersion: 1 })
+    const added = recordDiagnosticGridEvent(start, { type: 'line_add', axis: 'horizontal',
+      from: { row: 1, column: 0 }, to: { row: 1, column: 3 } }, 1001)
+    const removed = recordDiagnosticGridEvent(added,
+      { type: 'line_remove', lineId: added.lines[0].id }, 1002)
+    expect(diagnosticHistoryFrame(removed, 0).lines).toEqual([])
+    expect(diagnosticHistoryFrame(removed, 1).lines).toEqual(added.lines)
+    expect(diagnosticHistoryFrame(removed, 2).lines).toEqual([])
+    expect(describeDiagnosticEvent(added.events[0])).toContain('vågrätt streck')
+    expect(describeDiagnosticEvent(removed.events[1])).toBe('Tog bort ett streck.')
+  })
+
   it('rejects an out-of-range step and a final image that disagrees with the event stream', () => {
     const grid = recordDiagnosticGridEvent(
       createDiagnosticGrid({ attemptId: 'A', taskId: 'T', taskVersion: 1 }),

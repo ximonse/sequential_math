@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import taskManifest from '../../../domains/arithmetic/diagnosticTasks.v1.json'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
+import { copyTextToClipboard } from './dashboardAssignmentActions'
 import DiagnosticAttemptHistory from './DiagnosticAttemptHistory'
 import '../../../dev/diagnosticGridPrototype.css'
 
@@ -27,6 +28,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
   const [attemptStatus, setAttemptStatus] = useState('')
   const [detail, setDetail] = useState(null)
   const [refreshVersion, setRefreshVersion] = useState(0)
+  const [copyStatus, setCopyStatus] = useState('')
   const selectionRef = useRef('')
   selectionRef.current = `${classId}:${studentId}`
 
@@ -75,8 +77,18 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
     return () => { active = false }
   }, [classId, studentId, assignments, refreshVersion])
 
-  const pupils = students.filter(student => testStudentIds.includes(student.studentId)
-    && [student.classId, ...(student.classIds || [])].includes(classId))
+  const classPupils = students.filter(student => [student.classId, ...(student.classIds || [])].includes(classId))
+  const pupils = classPupils.filter(student => testStudentIds.includes(student.studentId))
+  // The server list is the only gate, so an existing account can be allowed too.
+  // Its studentId is not shown anywhere else, hence this copyable candidate list.
+  const candidates = classPupils.filter(student => !testStudentIds.includes(student.studentId))
+
+  async function copyStudentId(student) {
+    const ok = await copyTextToClipboard(student.studentId)
+    setCopyStatus(ok
+      ? `Kopierade elev-id för ${student.name || student.displayAlias || student.studentId}.`
+      : `Kunde inte kopiera. Elev-id: ${student.studentId}`)
+  }
 
   async function createAssignment() {
     if (!classId || !studentId || !selectedTasks.length || busy) return
@@ -150,6 +162,20 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
       {busy ? 'Skapar...' : 'Ge testuppdrag'}
     </button>
     <p className="mt-2 text-sm" role="status">{status}</p>
+    {classId && candidates.length > 0 && <details className="mt-3 rounded border border-orange-300 bg-white p-3 text-sm">
+      <summary className="cursor-pointer font-semibold text-orange-950">Ge testrättighet till ett befintligt konto</summary>
+      <p className="mt-2">Serverlistan <code>NCM_DIAGNOSTIC_TEST_STUDENT_IDS</code> är det enda som styr vilka konton som får användas här. Kopiera elev-id nedan, lägg till det i listan (kommaseparerat) tillsammans med <code>NCM_DIAGNOSTIC_API_ENABLED=true</code> och starta om servern. Kontot behöver inte vara nyskapat.</p>
+      <p className="mt-2 font-semibold text-orange-950">Använd inte en riktig elevs konto. Diagnostiken sparar separat underlag och raderingskedjan är ännu inte färdigställd.</p>
+      <ul className="mt-2 space-y-1">
+        {candidates.map(student => <li key={student.studentId} className="flex flex-wrap items-center gap-2">
+          <span>{student.name || student.displayAlias || student.studentId}</span>
+          <code className="rounded bg-orange-100 px-1">{student.studentId}</code>
+          <button type="button" onClick={() => copyStudentId(student)}
+            className="rounded border border-orange-700 bg-white px-2 py-1 text-xs text-orange-950">Kopiera elev-id</button>
+        </li>)}
+      </ul>
+      {copyStatus && <p className="mt-2" role="status">{copyStatus}</p>}
+    </details>}
     {assignments.length > 0 && <div className="mt-3 text-sm">
       <h3 className="font-semibold">Tilldelningar i klassen</h3>
       <ul className="mt-1 list-inside list-disc">

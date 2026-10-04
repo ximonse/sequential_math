@@ -21,7 +21,8 @@ export function describeDiagnosticEvent(event) {
   if (event.type === 'erase') return `${place}: ${event.after ? `raderade sista siffran i minnessiffran ${event.before}` : `raderade ${kind} ${event.before}`}.`
   if (event.type === 'reclassify') return `${place}: ändrade ${event.value} till ${event.to === 'note' ? 'minnessiffra' : 'stor siffra'}.`
   if (event.type === 'cross_out') return `${place}: ${event.after ? 'strök över' : 'tog bort överstrykning'}.`
-  if (event.type === 'line_add') return `Drog ett ${event.axis === 'horizontal' ? 'vågrätt' : 'lodrätt'} streck från rad ${event.from.row + 1}, kolumn ${event.from.column + 1} till rad ${event.to.row + 1}, kolumn ${event.to.column + 1}.`
+  // Placement is judged visually in the replayed grid, so the wording stays plain.
+  if (event.type === 'line_add') return `Ett ${event.axis === 'horizontal' ? 'vågrätt' : 'lodrätt'} streck drogs.`
   if (event.type === 'line_remove') return 'Tog bort ett streck.'
   if (event.type === 'answer_change') return `Ändrade slutsvaret från ${event.before || 'tomt'} till ${event.after || 'tomt'}.`
   if (event.type === 'move') return `Flyttade markören till rad ${event.to.row + 1}, kolumn ${event.to.column + 1}.`

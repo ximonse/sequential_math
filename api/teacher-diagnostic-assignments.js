@@ -1,7 +1,7 @@
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
 import { createDiagnosticAssignment } from './_diagnosticAssignmentStore.js'
-import { diagnosticApiEnabled, diagnosticTestStudentAllowed, diagnosticTestStudentsInClass } from './_diagnosticApiAccess.js'
+import { diagnosticApiEnabled, diagnosticAssignablePupilsInClass } from './_diagnosticApiAccess.js'
 import { listClassDiagnosticAssignments } from './_diagnosticAssignmentList.js'
 import { isSchoolAdminRole } from './_teacherRoles.js'
 
@@ -23,11 +23,12 @@ export default async function handler(req, res) {
     }
     if (req.method === 'GET') {
       const assignments = await listClassDiagnosticAssignments(classId)
-      return res.status(200).json({ assignments, testStudentIds: await diagnosticTestStudentsInClass(classId) })
+      return res.status(200).json({ assignments, testStudentIds: await diagnosticAssignablePupilsInClass(classId) })
     }
+    const assignable = await diagnosticAssignablePupilsInClass(classId)
     if (!Array.isArray(req.body?.studentIds) || !req.body.studentIds.length
-      || !req.body.studentIds.every(diagnosticTestStudentAllowed)) {
-      return res.status(403).json({ error: 'Only configured diagnostic test accounts are allowed' })
+      || !req.body.studentIds.every(studentId => assignable.includes(studentId))) {
+      return res.status(403).json({ error: 'Only pupils in this class can be assigned' })
     }
     const assignment = await createDiagnosticAssignment({ classId,
       studentIds: req.body?.studentIds, taskIds: req.body?.taskIds, teacherId: auth.teacherId })

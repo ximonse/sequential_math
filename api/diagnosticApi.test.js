@@ -12,7 +12,7 @@ vi.mock('./_diagnosticAssignmentStore.js', () => ({ createDiagnosticAssignment: 
 vi.mock('./_diagnosticAttemptStore.js', () => ({ readDiagnosticAttempt: mocked.read,
   appendDiagnosticAttempt: mocked.append }))
 vi.mock('./_diagnosticApiAccess.js', () => ({ diagnosticApiEnabled: () => process.env.NCM_DIAGNOSTIC_API_ENABLED === 'true',
-  diagnosticTestStudentAllowed: studentId => studentId === 'PUPIL', diagnosticTestStudentsInClass: mocked.testStudents,
+  diagnosticTestStudentAllowed: studentId => studentId === 'PUPIL', diagnosticAssignablePupilsInClass: mocked.testStudents,
   assertDiagnosticPupilAccess: mocked.pupilAccess }))
 vi.mock('./_diagnosticAssignmentList.js', () => ({ listClassDiagnosticAssignments: mocked.listClass,
   listPupilDiagnosticAssignments: mocked.listPupil }))

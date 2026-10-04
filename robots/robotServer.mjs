@@ -92,8 +92,10 @@ export async function startRobotServer({ port = 5288, production = process.env.R
   process.env.APP_ORIGIN = `http://localhost:${port}`
   process.env.PILOT_ENROLLMENT_SECRET ||= 'robot-enrollment-secret'
   process.env.TEACHER_API_PASSWORD_ROTATION_SECRET ||= 'robot-teacher-token-secret'
-  process.env.NCM_DIAGNOSTIC_API_ENABLED ||= 'true'
-  process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS ||= NCM_TEST_PUPIL_ID
+  // ??= so an empty allowlist set by the caller survives and means "the whole
+  // class roster", which is what the manual server exercises.
+  process.env.NCM_DIAGNOSTIC_API_ENABLED ??= 'true'
+  process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS ??= NCM_TEST_PUPIL_ID
   if (!production) {
     const server = await createServer({
       root, configFile: false, logLevel: 'warn',

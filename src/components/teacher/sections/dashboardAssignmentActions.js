@@ -14,7 +14,7 @@ import {
   setActiveAssignment
 } from '../../../lib/assignments'
 
-export async function copyTextToClipboard(text) {
+async function copyTextToClipboard(text) {
   try {
     await Promise.race([
       navigator.clipboard.writeText(text),

@@ -2,7 +2,7 @@ import { kv } from '@vercel/kv'
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
 import { isSchoolAdminRole } from './_teacherRoles.js'
-import { diagnosticApiEnabled, diagnosticTestStudentsInClass } from './_diagnosticApiAccess.js'
+import { diagnosticApiEnabled, diagnosticAssignablePupilsInClass } from './_diagnosticApiAccess.js'
 import { listClassDiagnosticAssignments } from './_diagnosticAssignmentList.js'
 import { readDiagnosticAttempt } from './_diagnosticAttemptStore.js'
 import { summarizeDiagnosticObservation } from '../src/domains/arithmetic/diagnosticObservation.js'
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid diagnostic identity' })
     }
     if (!await canAccessClass(req, classId)
-      || !(await diagnosticTestStudentsInClass(classId)).includes(studentId)) {
+      || !(await diagnosticAssignablePupilsInClass(classId)).includes(studentId)) {
       return res.status(403).json({ error: 'Not authorized for this pupil and class' })
     }
     const assignment = (await listClassDiagnosticAssignments(classId))

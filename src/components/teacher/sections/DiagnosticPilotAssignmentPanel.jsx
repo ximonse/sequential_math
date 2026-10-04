@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import taskManifest from '../../../domains/arithmetic/diagnosticTasks.v1.json'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
-import { copyTextToClipboard } from './dashboardAssignmentActions'
 import DiagnosticAttemptHistory from './DiagnosticAttemptHistory'
 import '../../../dev/diagnosticGridPrototype.css'
 
@@ -22,13 +21,12 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
   const [selectedTasks, setSelectedTasks] = useState([taskIds[0]])
   const [testStudentIds, setTestStudentIds] = useState([])
   const [assignments, setAssignments] = useState([])
-  const [status, setStatus] = useState('Välj en klass för att se testkonton.')
+  const [status, setStatus] = useState('Välj en klass för att se eleverna.')
   const [busy, setBusy] = useState(false)
   const [attempts, setAttempts] = useState([])
   const [attemptStatus, setAttemptStatus] = useState('')
   const [detail, setDetail] = useState(null)
   const [refreshVersion, setRefreshVersion] = useState(0)
-  const [copyStatus, setCopyStatus] = useState('')
   const selectionRef = useRef('')
   selectionRef.current = `${classId}:${studentId}`
 
@@ -37,7 +35,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
     let active = true
     setStudentId('')
     setAssignments([])
-    setStatus('Hämtar testkonton...')
+    setStatus('Hämtar klasslistan...')
     void request(`/api/teacher-diagnostic-assignments?classId=${encodeURIComponent(classId)}`)
       .then(result => {
         if (!active) return
@@ -50,8 +48,8 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
         setTestStudentIds(result.data.testStudentIds || [])
         setAssignments(result.data.assignments || [])
         setStatus(result.data.testStudentIds?.length
-          ? 'Välj ett särskilt testkonto. Inga vanliga elevkonton kan tilldelas här.'
-          : 'Inga testkonton är tillåtna på servern ännu.')
+          ? 'Välj en elev i klassen.'
+          : 'Inga elever kan tilldelas i den här klassen.')
       })
       .catch(error => { if (active) setStatus(error.message || 'Kunde inte nå servern.') })
     return () => { active = false }
@@ -72,23 +70,15 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
       if (!active) return
       const found = groups.flat()
       setAttempts(found)
-      setAttemptStatus(found.length ? '' : 'Testkontot har ännu inget sparat försök.')
+      setAttemptStatus(found.length ? '' : 'Eleven har ännu inget sparat försök.')
     }).catch(error => { if (active) setAttemptStatus(error.message || 'Kunde inte hämta försök.') })
     return () => { active = false }
   }, [classId, studentId, assignments, refreshVersion])
 
-  const classPupils = students.filter(student => [student.classId, ...(student.classIds || [])].includes(classId))
-  const pupils = classPupils.filter(student => testStudentIds.includes(student.studentId))
-  // The server list is the only gate, so an existing account can be allowed too.
-  // Its studentId is not shown anywhere else, hence this copyable candidate list.
-  const candidates = classPupils.filter(student => !testStudentIds.includes(student.studentId))
-
-  async function copyStudentId(student) {
-    const ok = await copyTextToClipboard(student.studentId)
-    setCopyStatus(ok
-      ? `Kopierade elev-id för ${student.name || student.displayAlias || student.studentId}.`
-      : `Kunde inte kopiera. Elev-id: ${student.studentId}`)
-  }
+  // The server decides who may be assigned: the whole class roster, or only the
+  // accounts named in NCM_DIAGNOSTIC_TEST_STUDENT_IDS when that list is set.
+  const pupils = students.filter(student => testStudentIds.includes(student.studentId)
+    && [student.classId, ...(student.classIds || [])].includes(classId))
 
   async function createAssignment() {
     if (!classId || !studentId || !selectedTasks.length || busy) return
@@ -98,7 +88,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
         body: JSON.stringify({ classId, studentIds: [studentId], taskIds: selectedTasks }) })
       if (!result.ok) throw new Error(result.data.error || 'Kunde inte skapa testuppdraget.')
       setAssignments(previous => [result.data.assignment, ...previous])
-      setStatus('Testuppdraget är tilldelat. Logga in med testkontot för att se det.')
+      setStatus('Testuppdraget är tilldelat. Logga in som eleven för att se det.')
     } catch (error) {
       setStatus(error.message || 'Kunde inte skapa testuppdraget.')
     } finally { setBusy(false) }
@@ -131,8 +121,8 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
     result_outside_safe_range: 'resultatet ligger utanför säkert talintervall' }
 
   return <section className="mt-4 rounded-lg border border-orange-300 bg-orange-100 p-4 shadow-sm">
-    <h2 className="text-lg font-semibold text-orange-950">Testuppdrag för elevkonto</h2>
-    <p className="mt-1 text-sm text-orange-950">Endast konton som särskilt tillåts på servern visas här. Vanliga elever ingår inte i detta test.</p>
+    <h2 className="text-lg font-semibold text-orange-950">Testuppdrag till en elev</h2>
+    <p className="mt-1 text-sm text-orange-950">Välj en elev i en klass du administrerar. Uppdraget ges till en elev i taget och sparas separat från vanlig träning. Sätts serverlistan <code>NCM_DIAGNOSTIC_TEST_STUDENT_IDS</code> visas bara de kontona här.</p>
     <div className="mt-3 grid gap-3 sm:grid-cols-2">
       <label className="text-sm font-medium">Klass
         <select value={classId} onChange={event => setClassId(event.target.value)} className="mt-1 block w-full rounded border border-orange-400 bg-white p-2">
@@ -140,9 +130,9 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
           {classes.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select>
       </label>
-      <label className="text-sm font-medium">Testkonto
+      <label className="text-sm font-medium">Elev
         <select value={studentId} onChange={event => setStudentId(event.target.value)} className="mt-1 block w-full rounded border border-orange-400 bg-white p-2">
-          <option value="">Välj testkonto</option>
+          <option value="">Välj elev</option>
           {pupils.map(pupil => <option key={pupil.studentId} value={pupil.studentId}>{pupil.name || pupil.displayAlias || pupil.studentId}</option>)}
         </select>
       </label>
@@ -162,20 +152,6 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
       {busy ? 'Skapar...' : 'Ge testuppdrag'}
     </button>
     <p className="mt-2 text-sm" role="status">{status}</p>
-    {classId && candidates.length > 0 && <details className="mt-3 rounded border border-orange-300 bg-white p-3 text-sm">
-      <summary className="cursor-pointer font-semibold text-orange-950">Ge testrättighet till ett befintligt konto</summary>
-      <p className="mt-2">Serverlistan <code>NCM_DIAGNOSTIC_TEST_STUDENT_IDS</code> är det enda som styr vilka konton som får användas här. Kopiera elev-id nedan, lägg till det i listan (kommaseparerat) tillsammans med <code>NCM_DIAGNOSTIC_API_ENABLED=true</code> och starta om servern. Kontot behöver inte vara nyskapat.</p>
-      <p className="mt-2 font-semibold text-orange-950">Använd inte en riktig elevs konto. Diagnostiken sparar separat underlag och raderingskedjan är ännu inte färdigställd.</p>
-      <ul className="mt-2 space-y-1">
-        {candidates.map(student => <li key={student.studentId} className="flex flex-wrap items-center gap-2">
-          <span>{student.name || student.displayAlias || student.studentId}</span>
-          <code className="rounded bg-orange-100 px-1">{student.studentId}</code>
-          <button type="button" onClick={() => copyStudentId(student)}
-            className="rounded border border-orange-700 bg-white px-2 py-1 text-xs text-orange-950">Kopiera elev-id</button>
-        </li>)}
-      </ul>
-      {copyStatus && <p className="mt-2" role="status">{copyStatus}</p>}
-    </details>}
     {assignments.length > 0 && <div className="mt-3 text-sm">
       <h3 className="font-semibold">Tilldelningar i klassen</h3>
       <ul className="mt-1 list-inside list-disc">
@@ -185,7 +161,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
       </ul>
     </div>}
     {studentId && <div className="mt-5 border-t border-orange-300 pt-4">
-      <h3 className="font-semibold">Sparade försök för testkontot</h3>
+      <h3 className="font-semibold">Sparade försök för eleven</h3>
       <button type="button" onClick={() => setRefreshVersion(value => value + 1)}
         className="mt-2 rounded border border-orange-700 bg-white px-3 py-1 text-sm text-orange-950">Uppdatera försök</button>
       {attemptStatus && <p role="status" className="mt-1 text-sm">{attemptStatus}</p>}

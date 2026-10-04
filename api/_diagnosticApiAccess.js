@@ -13,16 +13,25 @@ export function diagnosticTestStudentIds() {
     .map(id => id.trim()).filter(id => /^[A-Za-z0-9_-]{1,128}$/u.test(id)))]
 }
 
+// An explicit server list restricts the pilot to those accounts. Left empty,
+// an admin may pick any pupil in a class they already administer, which is the
+// normal case now that the pilot is driven from the ordinary class roster.
 export function diagnosticTestStudentAllowed(studentId) {
-  return diagnosticTestStudentIds().includes(studentId)
+  const allowed = diagnosticTestStudentIds()
+  return allowed.length === 0 || allowed.includes(studentId)
 }
 
-export async function diagnosticTestStudentsInClass(classId, { store = kv } = {}) {
-  const checked = await Promise.all(diagnosticTestStudentIds().map(async studentId => {
-    if (await store.exists(studentDeletedKey(studentId)) || await store.exists(`student_deleted:${studentId}`)) return null
-    const pupil = await store.get(`student:${studentId}`)
-    return pupil && [pupil.classId, ...(pupil.classIds || [])].includes(classId) ? studentId : null
-  }))
+async function livePupilInClass(studentId, classId, store) {
+  if (!/^[A-Za-z0-9_-]{1,128}$/u.test(studentId)) return null
+  if (await store.exists(studentDeletedKey(studentId)) || await store.exists(`student_deleted:${studentId}`)) return null
+  const pupil = await store.get(`student:${studentId}`)
+  return pupil && [pupil.classId, ...(pupil.classIds || [])].includes(classId) ? studentId : null
+}
+
+export async function diagnosticAssignablePupilsInClass(classId, { store = kv } = {}) {
+  const allowed = diagnosticTestStudentIds()
+  const roster = allowed.length ? allowed : (await store.smembers(`class_students:${classId}`)) || []
+  const checked = await Promise.all(roster.map(studentId => livePupilInClass(studentId, classId, store)))
   return checked.filter(Boolean)
 }
 

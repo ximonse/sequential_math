@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { assertDiagnosticPupilAccess, diagnosticTestStudentAllowed, diagnosticTestStudentIds,
-  diagnosticTestStudentsInClass } from './_diagnosticApiAccess.js'
+import { assertDiagnosticPupilAccess, diagnosticAssignablePupilsInClass,
+  diagnosticTestStudentAllowed, diagnosticTestStudentIds } from './_diagnosticApiAccess.js'
 
 const profile = { studentId: 'PUPIL', classIds: ['CLASS'] }
 const record = { studentId: 'PUPIL', assignmentId: 'ASSIGNMENT', assignmentItemId: 'ITEM',
@@ -15,11 +15,12 @@ function store(override = {}) {
 }
 
 describe('diagnostic pupil access', () => {
-  it('requires an explicit test-account allowlist even when the API flag is enabled', () => {
+  it('restricts to the server allowlist only when one is configured', () => {
     const previous = process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS
     try {
       delete process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS
-      expect(diagnosticTestStudentAllowed('PUPIL')).toBe(false)
+      expect(diagnosticTestStudentIds()).toEqual([])
+      expect(diagnosticTestStudentAllowed('PUPIL')).toBe(true)
       process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS = ' PUPIL, PUPIL,OTHER '
       expect(diagnosticTestStudentIds()).toEqual(['PUPIL', 'OTHER'])
       expect(diagnosticTestStudentAllowed('PUPIL')).toBe(true)
@@ -30,14 +31,23 @@ describe('diagnostic pupil access', () => {
     }
   })
 
-  it('lists allowed test accounts only inside the requested class', async () => {
+  it('assigns from the class roster, or from the allowlist when one is set', async () => {
     const previous = process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS
+    const data = new Map([['student:PUPIL', { studentId: 'PUPIL', classIds: ['CLASS'] }],
+      ['student:OTHER', { studentId: 'OTHER', classIds: ['FOREIGN'] }],
+      ['student:GONE', { studentId: 'GONE', classIds: ['CLASS'] }]])
+    const roster = new Map([['class_students:CLASS', ['PUPIL', 'GONE', 'OTHER']]])
+    const store = { get: async key => data.get(key) || null,
+      smembers: async key => roster.get(key) || [],
+      exists: async key => Number(data.has(key) || key === 'student_deleted:GONE') }
     try {
+      // A tombstoned pupil and a pupil from another class are both left out.
+      delete process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS
+      expect(await diagnosticAssignablePupilsInClass('CLASS', { store })).toEqual(['PUPIL'])
+      process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS = 'OTHER'
+      expect(await diagnosticAssignablePupilsInClass('CLASS', { store })).toEqual([])
       process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS = 'PUPIL,OTHER'
-      const data = new Map([['student:PUPIL', { studentId: 'PUPIL', classIds: ['CLASS'] }],
-        ['student:OTHER', { studentId: 'OTHER', classIds: ['FOREIGN'] }]])
-      const store = { get: async key => data.get(key) || null, exists: async key => Number(data.has(key)) }
-      expect(await diagnosticTestStudentsInClass('CLASS', { store })).toEqual(['PUPIL'])
+      expect(await diagnosticAssignablePupilsInClass('CLASS', { store })).toEqual(['PUPIL'])
     } finally {
       if (previous === undefined) delete process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS
       else process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS = previous

@@ -6,7 +6,7 @@ vi.mock('@vercel/kv', () => ({ kv: { smembers: mocked.members, get: mocked.get }
 vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mocked.teacher, withCors: vi.fn() }))
 vi.mock('./_studentAccess.js', () => ({ canAccessClass: mocked.classAccess }))
 vi.mock('./_diagnosticApiAccess.js', () => ({ diagnosticApiEnabled: () => process.env.NCM_DIAGNOSTIC_API_ENABLED === 'true',
-  diagnosticTestStudentsInClass: mocked.testStudents }))
+  diagnosticAssignablePupilsInClass: mocked.testStudents }))
 vi.mock('./_diagnosticAssignmentList.js', () => ({ listClassDiagnosticAssignments: mocked.assignments }))
 vi.mock('./_diagnosticAttemptStore.js', () => ({ readDiagnosticAttempt: mocked.read }))
 vi.mock('../src/domains/arithmetic/diagnosticObservation.js', () => ({ summarizeDiagnosticObservation: mocked.observe }))

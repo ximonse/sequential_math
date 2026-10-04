@@ -145,14 +145,20 @@ inlämningar i följd, återuppta där genomgången avbröts och se vilka som
   tillåtet konto och en fryst uppgift, och eleven kan öppna rutnätet, spara
   händelser i ordnade batcher och återuppta serverns bekräftade version.
   Osparade ändringar visas och skyddas med lämnad-sidan-varning.
-- [x] Gör testläget körbart för hand. Serverlistan är det enda som styr vilka
-  konton som får användas, så även ett befintligt konto kan tillåtas; dess
-  elev-id går nu att läsa och kopiera i lärarpanelen eftersom det inte syns
-  någon annanstans. `npm run ncm:manual` startar appen med riktiga API:er mot
-  minnesdatabasen och seedar klass, admin-lärare och en testelev vars id
-  redan ligger i den tillåtna listan. Robotservern skriver inte längre över
-  flaggorna, så ett eget id kan sättas i miljön. Ingen av vägarna rör
-  produktion, och riktiga elevkonton ska fortfarande inte användas.
+- [x] Låt admin välja elev ur den vanliga klasslistan. `NCM_DIAGNOSTIC_API_ENABLED`
+  är nu den enda obligatoriska spärren; därefter kan admin tilldela vilken elev
+  som helst i en klass som admin redan administrerar, en elev i taget. Servern
+  godkänner bara elever som finns i den begärda klassen, och tombstonade elever
+  samt elever från andra klasser faller bort. `NCM_DIAGNOSTIC_TEST_STUDENT_IDS`
+  är kvar som frivillig avsmalning: är listan satt visas och godkänns bara de
+  kontona, är den tom gäller hela klasslistan. `npm run ncm:manual` startar
+  appen med riktiga API:er mot minnesdatabasen, lämnar listan tom och seedar
+  klass, admin-lärare och två elever, så hela flödet kan klickas igenom lokalt
+  utan att röra produktion.
+- [ ] Anslut raderingskedjan innan detta används för riktiga elever. Planerings-
+  och arkivmodulerna finns men är inte anropade från permanent elevradering, så
+  råa diagnostiknycklar ligger kvar efter radering även om tombstonen spärrar
+  läsning och skrivning.
 - [x] Lägg till automatisk serversparning efter en kort inmatningspaus i
   testkontoflödet. Den använder samma kvittens, revision och konfliktstopp som
   den manuella sparknappen. Osparat arbete ligger kvar i fliken vid fel.

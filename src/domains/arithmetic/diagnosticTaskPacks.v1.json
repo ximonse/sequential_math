@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "sourceKind": "original",
+  "packs": [
+    { "id": "written-addition", "labelSv": "Skriftlig addition · 6 uppgifter", "taskIds": ["add-no-carry-001", "add-no-carry-002", "add-carry-001", "add-tens-carry-001", "add-chain-carry-001", "add-chain-carry-002"] },
+    { "id": "written-subtraction", "labelSv": "Skriftlig subtraktion · 6 uppgifter", "taskIds": ["sub-no-exchange-001", "sub-no-exchange-002", "sub-exchange-001", "sub-exchange-002", "sub-through-zero-001", "sub-through-zero-002"] },
+    { "id": "written-add-sub", "labelSv": "Addition och subtraktion · 12 uppgifter", "taskIds": ["add-no-carry-001", "add-no-carry-002", "add-carry-001", "add-tens-carry-001", "add-chain-carry-001", "add-chain-carry-002", "sub-no-exchange-001", "sub-no-exchange-002", "sub-exchange-001", "sub-exchange-002", "sub-through-zero-001", "sub-through-zero-002"] }
+  ],
+  "guides": {
+    "aligned_columns_without_carry": { "goalSv": "Kolumnplacering och addition utan minnessiffra", "questionSv": "Be eleven visa vilka siffror som hör till ental, tiotal och hundratal." },
+    "ones_to_tens_carry": { "goalSv": "Minnessiffra från ental till tiotal", "questionSv": "Fråga var tiotalet från entalens summa hamnar och hur det används i nästa kolumn." },
+    "tens_to_hundreds_carry": { "goalSv": "Minnessiffra från tiotal till hundratal", "questionSv": "Fråga vad som händer när tiotalens summa är större än nio tiotal." },
+    "consecutive_carries": { "goalSv": "Minnessiffror i två kolumner i följd", "questionSv": "Be eleven förklara hur varje minnessiffra används en gång i nästa kolumn." },
+    "aligned_columns_without_exchange": { "goalSv": "Kolumnplacering och subtraktion utan växling", "questionSv": "Be eleven visa vilket tal som minskas och vilka siffror som jämförs i varje kolumn." },
+    "single_exchange": { "goalSv": "En växling från tiotal till ental", "questionSv": "Fråga vad som förändras i både tiotals- och entalskolumnen när ett tiotal växlas." },
+    "exchange_through_zero": { "goalSv": "Växling genom noll i tiotalskolumnen", "questionSv": "Be eleven visa hur ett hundratal blir tiotal och hur ett av dessa tiotal blir ental." }
+  }
+}

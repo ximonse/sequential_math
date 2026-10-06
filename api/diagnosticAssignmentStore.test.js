@@ -114,7 +114,7 @@ describe('diagnostic assignment and attempt creation', () => {
   it('freezes original tasks and atomically reuses one active attempt across devices', async () => {
     const profileBefore = clone(store.data.get('student:PUPIL'))
     const assignment = await create()
-    expect(assignment).toMatchObject({ evidenceClass: 'diagnostic_only', manifestVersion: 1,
+    expect(assignment).toMatchObject({ evidenceClass: 'diagnostic_only', manifestVersion: 2,
       instructionSv: 'Visa hur du räknar i rutorna. Skriv också ditt svar.', status: 'active' })
     expect(assignment.items.map(item => item.taskSnapshot.promptSv)).toEqual([
       'Räkna ut 268 + 431.', 'Räkna ut 402 − 178.'

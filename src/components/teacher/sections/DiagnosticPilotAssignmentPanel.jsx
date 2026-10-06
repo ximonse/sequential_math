@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import taskManifest from '../../../domains/arithmetic/diagnosticTasks.v1.json'
+import taskPacks from '../../../domains/arithmetic/diagnosticTaskPacks.v1.json'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
 import DiagnosticAttemptHistory from './DiagnosticAttemptHistory'
 import '../../../dev/diagnosticGridPrototype.css'
@@ -85,6 +86,8 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
   // accounts named in NCM_DIAGNOSTIC_TEST_STUDENT_IDS when that list is set.
   const pupils = students.filter(student => testStudentIds.includes(student.studentId)
     && [student.classId, ...(student.classIds || [])].includes(classId))
+  const selectedPack = taskPacks.packs.find(pack => JSON.stringify(pack.taskIds) === JSON.stringify(selectedTasks))
+  const guideFor = task => taskPacks.guides[task?.intentCode]
 
   async function createAssignment(wholeClass = false) {
     if (!classId || (wholeClass ? !wholeClassAvailable : !studentId) || !selectedTasks.length || busy) return
@@ -144,7 +147,17 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
         </select>
       </label>
     </div>
-    <fieldset className="mt-3">
+    <label className="mt-3 block text-sm font-medium">Diagnospaket
+      <select value={selectedPack?.id || ''} disabled={busy} onChange={event => {
+        const pack = taskPacks.packs.find(item => item.id === event.target.value)
+        if (pack) setSelectedTasks([...pack.taskIds])
+      }} className="mt-1 block w-full rounded border border-orange-400 bg-white p-2">
+        <option value="" disabled>Eget urval</option>
+        {taskPacks.packs.map(pack => <option key={pack.id} value={pack.id}>{pack.labelSv}</option>)}
+      </select>
+    </label>
+    <p className="mt-1 text-sm">Egna uppgifter för diagnostisk provning. Det här är inte ett originalprov från NCM. Valda uppgifter: {selectedTasks.length}.</p>
+    <fieldset className="mt-3" disabled={busy}>
       <legend className="text-sm font-medium">Uppgifter</legend>
       <div className="mt-1 flex flex-wrap gap-3">
         {taskManifest.tasks.map(task => <label key={task.taskId} className="flex items-center gap-1 text-sm">
@@ -154,6 +167,15 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
         </label>)}
       </div>
     </fieldset>
+    <details className="mt-3 rounded border border-orange-300 bg-white p-3 text-sm">
+      <summary className="cursor-pointer font-semibold">Lärarstöd för valda uppgifter</summary>
+      <p className="mt-2">Granska uppställningen och fråga eleven. Rätt slutsvar bevisar inte en viss metod. Appens automatiska metodanalys är begränsad.</p>
+      <ol className="mt-2 list-decimal space-y-2 pl-5">
+        {selectedTasks.map(id => taskManifest.tasks.find(task => task.taskId === id)).filter(Boolean).map(task => <li key={task.taskId}>
+          <strong>{task.promptSv}</strong> {guideFor(task)?.goalSv}. {guideFor(task)?.questionSv}
+        </li>)}
+      </ol>
+    </details>
     <button type="button" onClick={() => createAssignment()} disabled={!pupils.some(pupil => pupil.studentId === studentId) || !selectedTasks.length || busy}
       className="mt-3 rounded bg-orange-700 px-4 py-2 font-semibold text-white disabled:opacity-50">
       {busy ? 'Skapar...' : 'Ge testuppdrag'}
@@ -185,6 +207,11 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
       </ul>}
       {detail && <section className="mt-4 rounded border border-orange-300 bg-white p-3" aria-label="Diagnostiskt elevunderlag">
         <h4 className="font-semibold">{detail.task.promptSv}</h4>
+        {guideFor(detail.task) && <div className="mt-2 rounded bg-orange-50 p-2 text-sm">
+          <p><strong>Att granska:</strong> {guideFor(detail.task).goalSv}.</p>
+          <p><strong>Fråga eleven:</strong> {guideFor(detail.task).questionSv}</p>
+          <p className="text-xs">Lärarstöd för uppgiftens syfte; detta är inte en automatiskt konstaterad felorsak.</p>
+        </div>}
         <p className="text-xs text-slate-700">Sparad elevrevision {detail.evidenceRevision.serverRevision} · {detail.evidenceRevision.lastSequence} {detail.evidenceRevision.lastSequence === 1 ? 'händelse' : 'händelser'}. Analysen beräknas när underlaget öppnas.</p>
         <p className="mt-1 text-sm">Slutsvar: {detail.observation.explicitAnswer || 'inte skrivet'} · {answerLabels[detail.observation.answerStatus] || 'okänt'}</p>
         <p className="text-sm">Kolumnplacering: {detail.columnAlignment.status === 'observed'

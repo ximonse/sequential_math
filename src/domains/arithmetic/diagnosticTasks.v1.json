@@ -1,6 +1,6 @@
 {
   "manifestId": "written-integer-add-sub",
-  "manifestVersion": 1,
+  "manifestVersion": 2,
   "language": "sv-SE",
   "status": "contract_draft",
   "evidenceClass": "diagnostic_only",
@@ -46,6 +46,14 @@
       "answerRule": "integer_subtraction",
       "intentCode": "exchange_through_zero",
       "analysisCaseId": "S2"
-    }
+    },
+    { "taskId": "add-no-carry-002", "taskVersion": 1, "operation": "addition", "operands": [352, 426], "promptSv": "Räkna ut 352 + 426.", "answerRule": "integer_addition", "intentCode": "aligned_columns_without_carry", "analysisCaseId": "A1" },
+    { "taskId": "add-tens-carry-001", "taskVersion": 1, "operation": "addition", "operands": [283, 462], "promptSv": "Räkna ut 283 + 462.", "answerRule": "integer_addition", "intentCode": "tens_to_hundreds_carry", "analysisCaseId": "A3" },
+    { "taskId": "add-chain-carry-001", "taskVersion": 1, "operation": "addition", "operands": [357, 268], "promptSv": "Räkna ut 357 + 268.", "answerRule": "integer_addition", "intentCode": "consecutive_carries", "analysisCaseId": "A4" },
+    { "taskId": "add-chain-carry-002", "taskVersion": 1, "operation": "addition", "operands": [587, 246], "promptSv": "Räkna ut 587 + 246.", "answerRule": "integer_addition", "intentCode": "consecutive_carries", "analysisCaseId": "A4" },
+    { "taskId": "sub-no-exchange-002", "taskVersion": 1, "operation": "subtraction", "operands": [986, 452], "promptSv": "Räkna ut 986 − 452.", "answerRule": "integer_subtraction", "intentCode": "aligned_columns_without_exchange", "analysisCaseId": "S1" },
+    { "taskId": "sub-exchange-001", "taskVersion": 1, "operation": "subtraction", "operands": [642, 217], "promptSv": "Räkna ut 642 − 217.", "answerRule": "integer_subtraction", "intentCode": "single_exchange", "analysisCaseId": "S3" },
+    { "taskId": "sub-exchange-002", "taskVersion": 1, "operation": "subtraction", "operands": [753, 428], "promptSv": "Räkna ut 753 − 428.", "answerRule": "integer_subtraction", "intentCode": "single_exchange", "analysisCaseId": "S3" },
+    { "taskId": "sub-through-zero-002", "taskVersion": 1, "operation": "subtraction", "operands": [503, 267], "promptSv": "Räkna ut 503 − 267.", "answerRule": "integer_subtraction", "intentCode": "exchange_through_zero", "analysisCaseId": "S2" }
   ]
 }

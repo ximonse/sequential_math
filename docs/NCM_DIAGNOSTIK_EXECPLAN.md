@@ -88,6 +88,11 @@ inlämningar i följd, återuppta där genomgången avbröts och se vilka som
 
 ## Etapp 1 – adminbegränsad interaktionsprototyp (pågår)
 
+- [x] Bygg ett [eget diagnospaket](NCM_DIAGNOSTIK_PAKET.md) efter granskning
+  av den äldre importerade banken: sex additioner, sex subtraktioner och
+  kombinerat urval. Bevara tidigare uppgiftsversioner, frys nya tilldelningar
+  och visa manuellt lärarstöd utan att utvidga metodanalysens anspråk.
+
 - [x] Admin kan tilldela valda uppgifter till hela vald klass med ett klick.
   Servern bestämmer aktuella levande mottagare, kontrollerar klassåtkomst
   och fryser mottagarlistan i samma uppdrag. En serverlista som utesluter

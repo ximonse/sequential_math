@@ -19,7 +19,14 @@
       "decision": "",
       "evidence": "NCM_DIAGNOSTIK_PROJEKT.md; Simons beslut i chatten",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-direction",
+          "text": "Använd som gräns vid varje ny funktion.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "dispatch",
@@ -37,7 +44,14 @@
       "decision": "",
       "evidence": "dc129da; tidigare publicerat enligt denna tråd. Ingen ny produktionskontroll.",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-dispatch",
+          "text": "Pröva utdelningsflödet med realistisk klass och förhandsgranskning.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "packs",
@@ -55,7 +69,14 @@
       "decision": "",
       "evidence": "5ebf603; tidigare publicerat enligt denna tråd. Inga officiella NCM-original.",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-packs",
+          "text": "Pröva uppgifternas diagnostiska värde med elever.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "dispatch-ux",
@@ -73,7 +94,14 @@
       "decision": "Hur ska nya, aktiva och avslutade uppdrag visas?",
       "evidence": "",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-dispatch-ux",
+          "text": "Skissa kompakt paketöversikt och mottagarbekräftelse.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "original",
@@ -93,7 +121,14 @@
       "decision": "",
       "evidence": "Diagnostisk försökslagring; versions- och kvittensskydd finns. Verklig driftverifiering separat.",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-original",
+          "text": "Verifiera lagring och avbrott mot riktig Redis.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "grid",
@@ -110,7 +145,14 @@
       "decision": "",
       "evidence": "5552783; tidigare publicerat enligt denna tråd.",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-grid",
+          "text": "Prova med elever på avsedd iPad.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "cursor",
@@ -127,7 +169,14 @@
       "decision": "Avgränsa till startuppställningen; pröva tangentbord och touch.",
       "evidence": "",
       "issue": "https://github.com/ximonse/sequential_math/issues/8",
-      "kind": "deluppgift"
+      "kind": "deluppgift",
+      "tasks": [
+        {
+          "id": "next-cursor",
+          "text": "Definiera slut på rad, korrigering och skillnad mot uträkning; implementera smalt.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "ipad",
@@ -147,7 +196,14 @@
       "decision": "",
       "evidence": "",
       "issue": "",
-      "kind": "verifiering"
+      "kind": "verifiering",
+      "tasks": [
+        {
+          "id": "next-ipad",
+          "text": "Låt några elever lösa korta heltalsuppdrag på avsedd enhet.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "matrix",
@@ -167,7 +223,14 @@
       "decision": "",
       "evidence": "0b1eaa8; 652 tester, build, lint, 81 robotfall. Ej pushat/publicerat.",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-matrix",
+          "text": "Pröva full klass och många uppgifter; publicera endast efter uttryckligt mandat.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "scale",
@@ -187,7 +250,14 @@
       "decision": "",
       "evidence": "",
       "issue": "",
-      "kind": "verifiering"
+      "kind": "verifiering",
+      "tasks": [
+        {
+          "id": "next-scale",
+          "text": "Mät realistiskt antal elever, uppgifter och händelser innan optimering.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "review",
@@ -208,7 +278,14 @@
       "decision": "",
       "evidence": "fec960e + 0b1eaa8; lokalt testat. Ej pushat/publicerat.",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-review",
+          "text": "Utveckla sammanhållen elevgenomgång, därefter en återkopplingsfunktion åt gången.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "pupil-review",
@@ -225,7 +302,14 @@
       "decision": "Vilken position ska sparas och för vem? Nuvarande bläddring är inom vald uppgift.",
       "evidence": "",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-pupil-review",
+          "text": "Bestäm hur hela uppdraget, aktuell position och nästa elev visas.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "draft",
@@ -244,7 +328,14 @@
       "decision": "",
       "evidence": "",
       "issue": "",
-      "kind": "deluppgift"
+      "kind": "deluppgift",
+      "tasks": [
+        {
+          "id": "next-draft",
+          "text": "Lägg skydd vid utträde ur hela sektionen; välj om lokal textåterhämtning behövs.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "feedback",
@@ -265,7 +356,14 @@
       "decision": "Ingen elevsynlig kommentar eller återlämning är byggd.",
       "evidence": "",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-feedback",
+          "text": "Besluta publiceringsögonblick och vad som händer om eleven ändrar arbetet.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "feedback-policy",
@@ -283,7 +381,14 @@
       "decision": "",
       "evidence": "",
       "issue": "",
-      "kind": "beslut"
+      "kind": "beslut",
+      "tasks": [
+        {
+          "id": "next-feedback-policy",
+          "text": "Välj om återlämning låser arbetet eller öppnar en ny revision.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "print",
@@ -301,7 +406,14 @@
       "decision": "Word/PDF/utskriftsvy är inte byggd.",
       "evidence": "",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-print",
+          "text": "Bestäm innehåll; gör utskriftsutkast före renderingsarbete.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "print-policy",
@@ -318,7 +430,14 @@
       "decision": "",
       "evidence": "",
       "issue": "",
-      "kind": "beslut"
+      "kind": "beslut",
+      "tasks": [
+        {
+          "id": "next-print-policy",
+          "text": "Bestäm lärar- respektive elevutskrift.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "analysis",
@@ -339,7 +458,14 @@
       "decision": "",
       "evidence": "Versionerade regler finns; signalerna i matrisen är lokala i 0b1eaa8.",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-analysis",
+          "text": "Kalibrera mot lärares granskning; kalla inte ett svar för säker felorsak.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "rules",
@@ -359,7 +485,14 @@
       "decision": "Slarv, decimalfel och allmänna lånefel kan inte idag klassificeras automatiskt.",
       "evidence": "",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-rules",
+          "text": "Välj en heltalsregel, definiera matchning, motexempel och okänt; låt lärare pröva.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "tips",
@@ -378,7 +511,14 @@
       "decision": "",
       "evidence": "",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-tips",
+          "text": "Knyt ett litet lärarstöd till befintlig signal och visa osäkerhet.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "followup",
@@ -398,7 +538,14 @@
       "decision": "",
       "evidence": "",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-followup",
+          "text": "Bestäm screening eller träning; bygg därefter förhandsgranskning och explicit tilldelning.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "followup-policy",
@@ -417,7 +564,14 @@
       "decision": "",
       "evidence": "",
       "issue": "",
-      "kind": "beslut"
+      "kind": "beslut",
+      "tasks": [
+        {
+          "id": "next-followup-policy",
+          "text": "Definiera två uttryckliga vägar om båda behövs.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "lifecycle",
@@ -435,7 +589,14 @@
       "decision": "",
       "evidence": "9b9f894 tidigare publicerat; anteckningsstädning i lokal fec960e. Verklig Redis separat.",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-lifecycle",
+          "text": "Koppla varje ny personbunden datatyp till livscykelstädningen.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "redis",
@@ -456,7 +617,14 @@
       "decision": "",
       "evidence": "",
       "issue": "",
-      "kind": "verifiering"
+      "kind": "verifiering",
+      "tasks": [
+        {
+          "id": "next-redis",
+          "text": "Pröva separat testkonto: kvittens, retry, CAS, elevändring, radering och avbrott.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "pilot",
@@ -479,7 +647,14 @@
       "decision": "",
       "evidence": "",
       "issue": "",
-      "kind": "verifiering"
+      "kind": "verifiering",
+      "tasks": [
+        {
+          "id": "next-pilot",
+          "text": "Avgränsa grupp, uppgifter, framgångskriterier och sätt att fånga hinder.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "expansion",
@@ -497,7 +672,14 @@
       "decision": "Ingen automatisk decimaldiagnos är byggd.",
       "evidence": "",
       "issue": "",
-      "kind": "funktion"
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "next-expansion",
+          "text": "Nytt innehålls- och analyskontrakt per uppgiftstyp.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "permissions",
@@ -517,7 +699,14 @@
       "decision": "Eventuell vanlig läraråtkomst kräver nytt uttryckligt beslut.",
       "evidence": "",
       "issue": "",
-      "kind": "beslut"
+      "kind": "beslut",
+      "tasks": [
+        {
+          "id": "next-permissions",
+          "text": "Kontrollera samma gräns för framtida feedback och utskrifter.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "issue3",
@@ -532,7 +721,14 @@
       "decision": "",
       "evidence": "",
       "issue": "https://github.com/ximonse/sequential_math/issues/3",
-      "kind": "issue"
+      "kind": "issue",
+      "tasks": [
+        {
+          "id": "next-issue3",
+          "text": "Prioritera separat från Screening.",
+          "done": false
+        }
+      ]
     },
     {
       "id": "issue2",
@@ -547,7 +743,51 @@
       "decision": "",
       "evidence": "",
       "issue": "https://github.com/ximonse/sequential_math/issues/2",
-      "kind": "issue"
+      "kind": "issue",
+      "tasks": [
+        {
+          "id": "next-issue2",
+          "text": "Prioritera separat från Screening.",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "map-editor",
+      "area": "Projektöversikt",
+      "title": "Redigerbar gemensam projektkarta",
+      "status": "Lokalt klart",
+      "purpose": "Simon och agenten skriver i samma planfil; uppgifter kan kryssas av direkt i kortet.",
+      "next": "Använd kartan vid nästa funktionsarbete; bevara nya anteckningar och verifiera beskrivet läge.",
+      "acceptance": "Explicit sparande, återläsning, konfliktstopp och backup; agentregler och CI fångar glömd kartuppdatering.",
+      "requires": [],
+      "affects": [],
+      "decision": "Simon har valt HTML-kartan som gemensam arbetsyta. SC-exporten är en äldre separat snapshot, inte aktiv synk.",
+      "evidence": "Lokalt verifierat: text och kryssruta sparade och återlästa i webbläsaren; 137 testfiler/656 tester, build och lint godkända. CAS, backup och två samtidiga skrivningar testade. Kartkontrollen prövad röd utan kartuppdatering och grön med den. Ej pushat eller publicerat.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "edit-save",
+          "text": "Verifiera redigering, kryssruta och återläsning i webbläsaren",
+          "done": true
+        },
+        {
+          "id": "concurrent",
+          "text": "Verifiera att en gammal version inte skriver över en ny",
+          "done": true
+        },
+        {
+          "id": "gate",
+          "text": "Verifiera kartkontroll och dokumentera agenternas arbetsflöde",
+          "done": true
+        },
+        {
+          "id": "e4e9f389-17ec-4aa0-815a-6e83e0134e5c",
+          "text": "Uppdatera kartan vid nästa funktionsändring",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [

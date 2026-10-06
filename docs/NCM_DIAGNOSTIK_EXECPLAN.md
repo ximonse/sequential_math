@@ -8,7 +8,9 @@ ett påstående om levererad funktion.
 
 Aktuell översikt 2026-10-06: [Screening-projektkartan](screening-map/README.md)
 samlar funktioner, deluppgifter, beslut, belägg och beroenden. Kartan har en
-klickbar HTML-vy och en separat Soul Canvas-arbetsyta. Äldre avsnitt nedan är
+klickbar HTML-vy; den redigerbara servervyn och `plan.json` är nu den aktiva
+gemensamma översikten. Soul Canvas-exporten är en äldre snapshot. Se kartans
+README och arbetsregeln i AGENTS.md för revisionsskyddat sparande. Äldre avsnitt nedan är
 historiska arbetsanteckningar; öppna checklistor är inte automatiskt aktuell
 restlista. Kartans föreslagna ordning är inte ett nytt produktbeslut.
 

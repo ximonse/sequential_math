@@ -28,6 +28,35 @@ inte tyst påverka vanlig mastery eller adaptiv progression.
 
 ## Arbetsflöde
 
+### Projektkartan är den gemensamma arbetsöversikten
+
+Läs `docs/screening-map/plan.json` och `docs/screening-map/README.md` före
+implementation. Simon redigerar samma plan i HTML-kartan; agenten ansvarar för
+att visualisera arbetet och hålla kort, deluppgifter, beslut, tanketrådar,
+beroenden och belägg aktuella. Kartan omfattar nu främst Screening; när annat
+repoarbete saknar kort, lägg till relevant kort/område i denna karta.
+
+- Läs alltid senaste fil/revision innan skrivning. Bevara Simons ändringar,
+  kryssrutor och anteckningar. Återgenerera aldrig planen från `generate.py`.
+- Uppdatera kartan i samma ändringssjok när kod, funktion, verifieringsstatus,
+  beslut, issue, beroende eller publiceringsstatus ändras. Skilj mellan
+  föreslaget, beslutat, byggt, lokalt testat, pushat och produktion i beläggen.
+  Ett avbockat delmoment innebär inte automatiskt en publicerad funktion.
+- Skriv en kort nästa uppgift och ett konkret klart-när-villkor. Behåll
+  tanketrådar och beslutshistorik. Ändra inte produktbeslut utan Simons mandat.
+- Agentens skrivning ska använda `scripts/update-project-map.mjs` med en
+  uttryckligt läst SHA256-revision; HTML-vyn använder samma lås/CAS/backup.
+  Vid konflikt: läs nytt underlag och sammanför avsiktliga ändringar; skriv
+  inte över med en gammal helplan. Se README för kommandon.
+- Kör `npm run check:project-map` och före commit
+  `npm run check:project-map -- --staged`. CI kontrollerar också att kartan
+  ingår vid kodändringar. Kontrollens täckning är syntaktisk: agenten måste
+  själv kontrollera att texten faktiskt beskriver ändringen korrekt.
+
+HTML-kartan körs lokalt med `npm run plan:dev` på port 5325. Uttrycklig Spara
+kort skriver `plan.json`; ingen dold autosparning. Produktionspublicering
+av matematikappen är ett separat mandat och följer reglerna nedan.
+
 1. Börja med kontextanalys mot arkitekturen innan större ändringar.
 2. Vid domänspecifika uppgifter: läs relevant dokument i `docs/` först.
 3. Efter större ändringar: verifiera mot målbilden i `app_utvardering.md`.

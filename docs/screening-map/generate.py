@@ -6,6 +6,8 @@ that has been edited in Soul Canvas; work on a copy instead.
 import json
 from pathlib import Path
 
+raise SystemExit('Historical bootstrap only. Update the shared plan with scripts/update-project-map.mjs; never regenerate it.')
+
 ROOT = Path(__file__).parent
 if (ROOT / 'soul-workspace' / 'data.json').exists():
     raise SystemExit('Refusing to overwrite an existing Soul Canvas workspace. Generate in a fresh copy.')

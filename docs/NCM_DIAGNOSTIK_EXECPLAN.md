@@ -88,6 +88,11 @@ inlämningar i följd, återuppta där genomgången avbröts och se vilka som
 
 ## Etapp 1 – adminbegränsad interaktionsprototyp (pågår)
 
+- [x] Bygg [klassöversikt och genomgångsvy](NCM_DIAGNOSTIK_GENOMGANG.md):
+  påbörjat/inlämnat/kvar per elev, uppgiftsvis bläddring mellan lösningar och
+  separat revisionsskyddad läraranteckning/genomgångsmarkering. Radera
+  anteckningar vid båda elevlivscykelåtgärderna; bevara elevens original.
+
 - [x] Bygg ett [eget diagnospaket](NCM_DIAGNOSTIK_PAKET.md) efter granskning
   av den äldre importerade banken: sex additioner, sex subtraktioner och
   kombinerat urval. Bevara tidigare uppgiftsversioner, frys nya tilldelningar

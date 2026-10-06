@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocked = vi.hoisted(() => ({ teacher: vi.fn(), classAccess: vi.fn(), testStudents: vi.fn(),
-  assignments: vi.fn(), members: vi.fn(), get: vi.fn(), read: vi.fn(), observe: vi.fn(), align: vi.fn(), visible: vi.fn(), subtract: vi.fn(), revision: vi.fn() }))
+  assignments: vi.fn(), members: vi.fn(), get: vi.fn(), read: vi.fn(), observe: vi.fn(), align: vi.fn(), visible: vi.fn(), subtract: vi.fn(), revision: vi.fn(), saveReview: vi.fn() }))
 vi.mock('@vercel/kv', () => ({ kv: { smembers: mocked.members, get: mocked.get } }))
 vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mocked.teacher, withCors: vi.fn() }))
 vi.mock('./_studentAccess.js', () => ({ canAccessClass: mocked.classAccess }))
@@ -9,6 +9,7 @@ vi.mock('./_diagnosticApiAccess.js', () => ({ diagnosticApiEnabled: () => proces
   diagnosticAssignablePupilsInClass: mocked.testStudents }))
 vi.mock('./_diagnosticAssignmentList.js', () => ({ listClassDiagnosticAssignments: mocked.assignments }))
 vi.mock('./_diagnosticAttemptStore.js', () => ({ readDiagnosticAttempt: mocked.read }))
+vi.mock('./_diagnosticReviewStore.js', async importOriginal => ({ ...await importOriginal(), saveDiagnosticReview: mocked.saveReview }))
 vi.mock('../src/domains/arithmetic/diagnosticObservation.js', () => ({ summarizeDiagnosticObservation: mocked.observe }))
 vi.mock('../src/domains/arithmetic/diagnosticColumnAlignment.js', () => ({ analyzeDiagnosticColumnAlignment: mocked.align }))
 vi.mock('../src/domains/arithmetic/diagnosticVisibleResult.js', () => ({ analyzeDiagnosticVisibleResult: mocked.visible }))
@@ -41,16 +42,42 @@ beforeEach(() => {
     studentIds: ['PUPIL'], items: [{ assignmentItemId: 'ITEM', ...task, taskSnapshot: task }] }])
   mocked.members.mockResolvedValue(['ATTEMPT', 'OTHER'])
   mocked.get.mockImplementation(async key => key === 'diagnostic_attempt:ATTEMPT' ? record
-    : { ...record, attemptId: 'OTHER', studentId: 'OTHER' })
+    : key === 'diagnostic_attempt:OTHER' ? { ...record, attemptId: 'OTHER', studentId: 'OTHER' } : null)
   mocked.read.mockResolvedValue({ record, snapshot: { events: [] } })
   mocked.observe.mockReturnValue({ answerStatus: 'unanswered' })
   mocked.align.mockReturnValue({ status: 'unknown' })
   mocked.visible.mockReturnValue({ status: 'unknown' })
   mocked.subtract.mockReturnValue({ status: 'not_applicable' })
   mocked.revision.mockReturnValue({ observationRevisionId: 'ATTEMPT:r1:s2', serverRevision: 1, lastSequence: 2 })
+  mocked.saveReview.mockResolvedValue({ reviewRevision: 1, reviewed: true, note: 'Follow up' })
 })
 
 describe('teacher diagnostic evidence read boundary', () => {
+  it('lists the current assigned class roster without exposing another pupil or free text', async () => {
+    const result = await call({ classId: 'CLASS', assignmentId: 'ASSIGNMENT' })
+    expect(result.code).toBe(200)
+    expect(result.data.rows).toHaveLength(1)
+    expect(result.data.rows[0]).toMatchObject({ studentId: 'PUPIL', status: 'in_progress', submitted: 0, remaining: 1 })
+    expect(JSON.stringify(result.data)).not.toContain('OTHER')
+  })
+  it('authorizes review writes with the same live admin, class and pupil boundary', async () => {
+    const body = { ...query, attemptId: 'ATTEMPT', note: 'Follow up', reviewed: true,
+      evidenceRevision: 1, evidenceSequence: 2, expectedReviewRevision: 0 }
+    const post = async () => {
+      const res = response()
+      await handler({ method: 'POST', headers: {}, body }, res)
+      return res
+    }
+    mocked.teacher.mockResolvedValueOnce({ role: 'teacher' })
+    expect((await post()).code).toBe(403)
+    mocked.classAccess.mockResolvedValueOnce(false)
+    expect((await post()).code).toBe(403)
+    mocked.testStudents.mockResolvedValueOnce([])
+    expect((await post()).code).toBe(403)
+    expect(mocked.saveReview).not.toHaveBeenCalled()
+    expect((await post()).data.review.reviewRevision).toBe(1)
+    expect(mocked.saveReview).toHaveBeenCalledWith(record, body, 'ADMIN')
+  })
   it('stays closed until explicitly enabled and requires an admin session', async () => {
     delete process.env.NCM_DIAGNOSTIC_API_ENABLED
     expect((await call()).code).toBe(404)

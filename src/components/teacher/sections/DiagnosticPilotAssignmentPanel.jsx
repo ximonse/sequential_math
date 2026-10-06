@@ -1,20 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import taskManifest from '../../../domains/arithmetic/diagnosticTasks.v1.json'
 import taskPacks from '../../../domains/arithmetic/diagnosticTaskPacks.v1.json'
-import { getTeacherApiToken } from '../../../lib/teacherAuth'
-import DiagnosticAttemptHistory from './DiagnosticAttemptHistory'
+import { diagnosticRequest as request } from './diagnosticRequest'
+import DiagnosticClassReviewPanel from './DiagnosticClassReviewPanel'
+import DiagnosticEvidenceDetails from './DiagnosticEvidenceDetails'
 import '../../../dev/diagnosticGridPrototype.css'
 
 const taskIds = taskManifest.tasks.map(task => task.taskId)
-
-async function request(url, options = {}) {
-  const token = getTeacherApiToken()
-  const response = await fetch(url, { credentials: 'include', ...options,
-    headers: { ...(options.body ? { 'Content-Type': 'application/json' } : {}),
-      ...(token ? { 'x-teacher-token': token } : {}) } })
-  const data = await response.json().catch(() => ({}))
-  return { status: response.status, ok: response.ok, data }
-}
 
 export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
   const [classId, setClassId] = useState('')
@@ -31,6 +23,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
   const [detail, setDetail] = useState(null)
   const [refreshVersion, setRefreshVersion] = useState(0)
   const selectionRef = useRef('')
+  const reviewDirty = useRef(false)
   selectionRef.current = `${classId}:${studentId}`
 
   useEffect(() => {
@@ -121,21 +114,16 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
     }
   }
 
-  const answerLabels = { unanswered: 'inget slutsvar', incomplete: 'ofullständigt slutsvar',
-    correct: 'rätt slutsvar', incorrect: 'fel slutsvar' }
-  const visibleResultReasons = { no_unique_aligned_setup: 'uppställningen inte är entydigt kolumnjusterad',
-    no_complete_explicit_answer: 'ett fullständigt slutsvar saknas', no_result_row: 'resultatrad saknas',
-    crossed_out_operand: 'en av talsiffrorna är överstruken', no_unambiguous_answer_line: 'ett entydigt svarsstreck saknas',
-    no_unambiguous_result: 'ett entydigt resultat saknas under strecket',
-    other_visible_work: 'det finns ytterligare arbete utanför uppställningen',
-    result_outside_safe_range: 'resultatet ligger utanför säkert talintervall' }
-
   return <section className="mt-4 rounded-lg border border-orange-300 bg-orange-100 p-4 shadow-sm">
     <h2 className="text-lg font-semibold text-orange-950">Testuppdrag till elev eller klass</h2>
     <p className="mt-1 text-sm text-orange-950">Välj klass och uppgifter. Ge uppdraget till en vald elev eller hela klassen. Det sparas separat från vanlig träning.</p>
     <div className="mt-3 grid gap-3 sm:grid-cols-2">
       <label className="text-sm font-medium">Klass
-        <select value={classId} onChange={event => setClassId(event.target.value)} className="mt-1 block w-full rounded border border-orange-400 bg-white p-2">
+        <select value={classId} onChange={event => {
+          if (reviewDirty.current && !window.confirm('Genomgången har osparade ändringar. Vill du byta klass och lämna dem?')) return
+          reviewDirty.current = false
+          setClassId(event.target.value)
+        }} className="mt-1 block w-full rounded border border-orange-400 bg-white p-2">
           <option value="">Välj klass</option>
           {classes.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select>
@@ -194,6 +182,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
         </li>)}
       </ul>
     </div>}
+    {classId && assignments.length > 0 && <DiagnosticClassReviewPanel key={classId} classId={classId} assignments={assignments} pupils={pupils} onDirtyChange={value => { reviewDirty.current = value }} />}
     {studentId && <div className="mt-5 border-t border-orange-300 pt-4">
       <h3 className="font-semibold">Sparade försök för eleven</h3>
       <button type="button" onClick={() => setRefreshVersion(value => value + 1)}
@@ -205,31 +194,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
           <button type="button" onClick={() => openEvidence(attempt)} className="rounded border border-orange-700 bg-white px-3 py-1 text-orange-950">Visa underlag</button>
         </li>)}
       </ul>}
-      {detail && <section className="mt-4 rounded border border-orange-300 bg-white p-3" aria-label="Diagnostiskt elevunderlag">
-        <h4 className="font-semibold">{detail.task.promptSv}</h4>
-        {guideFor(detail.task) && <div className="mt-2 rounded bg-orange-50 p-2 text-sm">
-          <p><strong>Att granska:</strong> {guideFor(detail.task).goalSv}.</p>
-          <p><strong>Fråga eleven:</strong> {guideFor(detail.task).questionSv}</p>
-          <p className="text-xs">Lärarstöd för uppgiftens syfte; detta är inte en automatiskt konstaterad felorsak.</p>
-        </div>}
-        <p className="text-xs text-slate-700">Sparad elevrevision {detail.evidenceRevision.serverRevision} · {detail.evidenceRevision.lastSequence} {detail.evidenceRevision.lastSequence === 1 ? 'händelse' : 'händelser'}. Analysen beräknas när underlaget öppnas.</p>
-        <p className="mt-1 text-sm">Slutsvar: {detail.observation.explicitAnswer || 'inte skrivet'} · {answerLabels[detail.observation.answerStatus] || 'okänt'}</p>
-        <p className="text-sm">Kolumnplacering: {detail.columnAlignment.status === 'observed'
-          ? detail.columnAlignment.alignment === 'aligned' ? 'entalen i samma kolumn' : 'entalen i olika kolumner'
-          : 'kan inte avgöras säkert'}. Detta beskriver placeringen, inte varför eleven räknade så.</p>
-        <p className="text-sm">Synligt resultat och slutsvar: {detail.visibleResult.status === 'observed'
-          ? `${detail.visibleResult.visibleResult} i rutorna och ${detail.visibleResult.explicitAnswer} som slutsvar ${detail.visibleResult.consistency === 'same' ? 'stämmer överens' : 'skiljer sig åt'}. Resultatet lästes på rad ${detail.visibleResult.evidence.resultCells[0].row + 1}. Detta visar ingen orsak till skillnaden.`
-          : `kan inte jämföras säkert eftersom ${visibleResultReasons[detail.visibleResult.reason] || 'underlaget är otydligt'}.`}</p>
-        {detail.subtractionPattern.status !== 'not_applicable' && <p className="mt-1 text-sm">
-          Subtraktionsmönster: {detail.subtractionPattern.status === 'matched'
-            ? 'Resultatet 376 är förenligt med att ta större siffra minus mindre i varje kolumn. Fråga eleven hur tiotalet och lånet genom noll hanterades. Mönstret bevisar inte metoden.'
-            : detail.subtractionPattern.status === 'no_match'
-              ? 'Det synliga resultatet följer inte mönstret större minus mindre i varje kolumn.'
-              : 'För lite entydigt underlag för att bedöma detta mönster.'}
-        </p>}
-        <DiagnosticAttemptHistory key={`${detail.record.attemptId}:${detail.record.serverRevision}`} snapshot={detail.snapshot} />
-        <p className="mt-2 text-xs text-slate-700">Uppgift {detail.record.taskId}, version {detail.record.taskVersion}. Analysversioner: kolumn {detail.columnAlignment.analysisVersion}, resultat {detail.visibleResult.analysisVersion}, subtraktion {detail.subtractionPattern.analysisVersion}. Händelser: {detail.snapshot.events.length}.</p>
-      </section>}
+      {detail && <DiagnosticEvidenceDetails detail={detail} />}
     </div>}
   </section>
 }

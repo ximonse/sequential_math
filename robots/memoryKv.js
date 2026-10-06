@@ -4,6 +4,7 @@
 import { STUDENT_CAS_SCRIPT } from '../api/_studentStore.js'
 import { CREATE_DIAGNOSTIC_ASSIGNMENT_SCRIPT, OPEN_DIAGNOSTIC_ATTEMPT_SCRIPT } from '../api/_diagnosticAssignmentStore.js'
 import { DIAGNOSTIC_APPEND_CAS_SCRIPT } from '../api/_diagnosticAttemptStore.js'
+import { DIAGNOSTIC_REVIEW_CAS_SCRIPT } from '../api/_diagnosticReviewStore.js'
 import { BEGIN_PUPIL_LIFECYCLE_SCRIPT, FINISH_PUPIL_LIFECYCLE_SCRIPT } from '../api/_pupilLifecycle.js'
 import { PUPIL_REFERENCE_WRITE_SCRIPT, GUARDED_PUPIL_KEY_SCRIPT, removePupilReferences } from '../api/_pupilReferenceWrite.js'
 
@@ -33,6 +34,24 @@ export const kv = {
   async sadd(key, ...members) { const set = sets.get(key) || new Set(); sets.set(key, set); let n = 0; for (const m of members.flat()) { if (!set.has(m)) { set.add(m); n++ } } return n },
   async srem(key, ...members) { const set = sets.get(key); if (!set) return 0; let n = 0; for (const m of members.flat()) if (set.delete(m)) n++; return n },
   async eval(script, keys = [], args = []) {
+    if (script === DIAGNOSTIC_REVIEW_CAS_SCRIPT) {
+      const [attemptKey, reviewKey, deletedKey, legacyDeletedKey, classDeletedKey, pupilKey, classKey, assignmentKey] = keys
+      const [revision, sequence, reviewRevision, studentId, json] = args
+      const record = values.get(attemptKey), pupil = values.get(pupilKey)
+      const klass = values.get(classKey), assignment = values.get(assignmentKey)
+      if (values.has(deletedKey) || values.has(legacyDeletedKey) || values.has(classDeletedKey)
+        || !record || !pupil || !klass || !assignment || klass.archived
+        || record.studentId !== studentId || record.assignmentId !== assignment.assignmentId
+        || record.classIdAtAttempt !== assignment.classId || record.evidenceClass !== 'diagnostic_only'
+        || (pupil.classId !== assignment.classId && !pupil.classIds?.includes(assignment.classId))
+        || !assignment.studentIds.includes(studentId)
+        || !assignment.items.some(item => item.assignmentItemId === record.assignmentItemId
+          && item.taskId === record.taskId && item.taskVersion === record.taskVersion)) return -1
+      if (record.serverRevision !== Number(revision) || record.lastSequence !== Number(sequence)) return -2
+      if ((values.get(reviewKey)?.reviewRevision || 0) !== Number(reviewRevision)) return -3
+      values.set(reviewKey, parse(json))
+      return 1
+    }
     if (script === GUARDED_PUPIL_KEY_SCRIPT) {
       if (values.has(keys[1]) || values.has(keys[2]) || (args[3] === 'live' && !values.has(keys[3]))) return 0
       if (args[0] === 'member') await kv.sadd(keys[0], args[1])

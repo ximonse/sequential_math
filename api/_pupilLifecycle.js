@@ -100,6 +100,7 @@ export async function buildPupilCleanup(id, job, store) {
     if (!record && job.mode === 'anonymize') throw studentStoreError(409, 'Diagnostikunderlaget är ofullständigt. Städningen kan återupptas.')
     deletes.add(`diagnostic_attempt:${attemptId}`)
     deletes.add(`diagnostic_attempt_events:${attemptId}`)
+    deletes.add(`diagnostic_review:${attemptId}`)
   }
   // Scan also finds older diagnostic assignments that predate pupil indexes.
   for (const key of await scanPupilKeys(store, 'diagnostic_attempt:*')) {
@@ -107,6 +108,7 @@ export async function buildPupilCleanup(id, job, store) {
     if (!isPupil(record?.studentId, id)) continue
     deletes.add(key)
     deletes.add(`diagnostic_attempt_events:${record.attemptId}`)
+    deletes.add(`diagnostic_review:${record.attemptId}`)
     deletes.add(`diagnostic_active:${id}:${record.assignmentItemId}`)
     removals.push({ key: `diagnostic_attempts_by_assignment:${record.assignmentId}`, member: record.attemptId })
     if (job.mode === 'anonymize') {
@@ -130,6 +132,9 @@ export async function buildPupilCleanup(id, job, store) {
     }
   }
   for (const key of await scanPupilKeys(store, `diagnostic_active:${id}:*`)) deletes.add(key)
+  for (const key of await scanPupilKeys(store, 'diagnostic_review:*')) {
+    if (isPupil((await store.get(key))?.studentId, id)) deletes.add(key)
+  }
   for (const key of await scanPupilKeys(store, 'class_students:*')) removals.push({ key, member: id })
   for (const key of await scanPupilKeys(store, 'group:*')) {
     const before = await store.get(key)

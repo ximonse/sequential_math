@@ -35,6 +35,7 @@ async function seed() {
   await kv.set('diagnostic_attempt:ATTEMPT', { attemptId: 'ATTEMPT', studentId: 'PUPIL',
     assignmentId: 'ASSIGN', assignmentItemId: 'ITEM' })
   await kv.set('diagnostic_attempt_events:ATTEMPT', [{ private: 'work' }])
+  await kv.set('diagnostic_review:ATTEMPT', { studentId: 'PUPIL', note: 'Private Name needs help' })
   await kv.set('diagnostic_active:PUPIL:ITEM', 'ATTEMPT')
   await kv.sadd('diagnostic_attempts_by_assignment:ASSIGN', 'ATTEMPT', 'OTHER-ATTEMPT')
 }
@@ -57,7 +58,7 @@ describe('pupil lifecycle', () => {
     expect(await retirePupil('PUPIL', 'delete', authorize)).toMatchObject({ ok: true, deleted: true })
     for (const key of ['student:PUPIL', 'student_session:old-session', 'student_session:legacy-session',
       'student_login_code:old-code', 'diagnostic_attempt:ATTEMPT', 'diagnostic_attempt_events:ATTEMPT',
-      'diagnostic_active:PUPIL:ITEM', 'pupil_lifecycle:PUPIL']) expect(await kv.get(key)).toBeNull()
+      'diagnostic_active:PUPIL:ITEM', 'diagnostic_review:ATTEMPT', 'pupil_lifecycle:PUPIL']) expect(await kv.get(key)).toBeNull()
     expect(await kv.smembers('pupil_analysis:index')).toEqual([])
     expect(await kv.smembers('class_students:A')).toEqual(['OTHER'])
     expect(await kv.get('teacher_pupil_labels:T')).toEqual({ OTHER: 'Other Name' })
@@ -78,6 +79,7 @@ describe('pupil lifecycle', () => {
     expect(archive.training.attempts.map(attempt => attempt.timestamp)).toEqual([100000000, 100000100])
     expect(archive.training.totals).toEqual({ totalProblems: 2, correctAnswers: 1, lifetimeProblems: 2 })
     expect(archive.frozen).toBe(true)
+    expect(await kv.get('diagnostic_review:ATTEMPT')).toBeNull()
     for (const privateText of ['Private Name', 'Secret Code', 'PUPIL', 'never-copy-this', 'classIdAtAttempt']) {
       expect(JSON.stringify(archive)).not.toContain(privateText)
     }

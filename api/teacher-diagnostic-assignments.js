@@ -23,15 +23,20 @@ export default async function handler(req, res) {
     }
     if (req.method === 'GET') {
       const assignments = await listClassDiagnosticAssignments(classId)
-      return res.status(200).json({ assignments, testStudentIds: await diagnosticAssignablePupilsInClass(classId) })
+      const allowed = await diagnosticAssignablePupilsInClass(classId)
+      const roster = await diagnosticAssignablePupilsInClass(classId, { wholeClass: true })
+      return res.status(200).json({ assignments, testStudentIds: allowed,
+        classStudentCount: roster.length, wholeClassAvailable: roster.length > 0 && roster.every(id => allowed.includes(id)) })
     }
     const assignable = await diagnosticAssignablePupilsInClass(classId)
-    if (!Array.isArray(req.body?.studentIds) || !req.body.studentIds.length
-      || !req.body.studentIds.every(studentId => assignable.includes(studentId))) {
+    const studentIds = req.body?.audience === 'class'
+      ? await diagnosticAssignablePupilsInClass(classId, { wholeClass: true }) : req.body?.studentIds
+    if (!Array.isArray(studentIds) || !studentIds.length
+      || !studentIds.every(studentId => assignable.includes(studentId))) {
       return res.status(403).json({ error: 'Only pupils in this class can be assigned' })
     }
     const assignment = await createDiagnosticAssignment({ classId,
-      studentIds: req.body?.studentIds, taskIds: req.body?.taskIds, teacherId: auth.teacherId })
+      studentIds, taskIds: req.body?.taskIds, teacherId: auth.teacherId })
     return res.status(201).json({ assignment })
   } catch (error) {
     return res.status(error.status || 503).json({ error: error.status ? error.message : 'Diagnostic storage unavailable', code: error.code })

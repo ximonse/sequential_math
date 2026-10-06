@@ -80,7 +80,7 @@ test('An isolated test pupil can receive, save and resume a diagnostic grid', as
   await teacherLogin(page, teacher)
   await openTab(page, 'NCM-diagnostik')
   await expect(page.getByText(/Testuppdraget nedan sparas separat/)).toBeVisible()
-  const panel = page.getByRole('heading', { name: 'Testuppdrag till en elev' }).locator('xpath=..')
+  const panel = page.getByRole('heading', { name: 'Testuppdrag till elev eller klass' }).locator('xpath=..')
   await panel.getByRole('combobox', { name: 'Klass' }).selectOption(classId)
   await expect(panel.getByRole('combobox', { name: 'Elev' }).locator('option')).toHaveCount(2)
   await panel.getByRole('combobox', { name: 'Elev' }).selectOption(pupil.studentId)

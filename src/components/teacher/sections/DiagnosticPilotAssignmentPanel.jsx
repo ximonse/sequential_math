@@ -23,6 +23,8 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
   const [assignments, setAssignments] = useState([])
   const [status, setStatus] = useState('Välj en klass för att se eleverna.')
   const [busy, setBusy] = useState(false)
+  const [wholeClassAvailable, setWholeClassAvailable] = useState(false)
+  const [classStudentCount, setClassStudentCount] = useState(0)
   const [attempts, setAttempts] = useState([])
   const [attemptStatus, setAttemptStatus] = useState('')
   const [detail, setDetail] = useState(null)
@@ -34,6 +36,8 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
     if (!classId) return undefined
     let active = true
     setStudentId('')
+    setWholeClassAvailable(false)
+    setClassStudentCount(0)
     setAssignments([])
     setStatus('Hämtar klasslistan...')
     void request(`/api/teacher-diagnostic-assignments?classId=${encodeURIComponent(classId)}`)
@@ -46,6 +50,8 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
         }
         if (!result.ok) throw new Error(result.data.error || 'Kunde inte hämta tilldelningar.')
         setTestStudentIds(result.data.testStudentIds || [])
+        setWholeClassAvailable(Boolean(result.data.wholeClassAvailable))
+        setClassStudentCount(result.data.classStudentCount || 0)
         setAssignments(result.data.assignments || [])
         setStatus(result.data.testStudentIds?.length
           ? 'Välj en elev i klassen.'
@@ -80,15 +86,16 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
   const pupils = students.filter(student => testStudentIds.includes(student.studentId)
     && [student.classId, ...(student.classIds || [])].includes(classId))
 
-  async function createAssignment() {
-    if (!classId || !studentId || !selectedTasks.length || busy) return
+  async function createAssignment(wholeClass = false) {
+    if (!classId || (wholeClass ? !wholeClassAvailable : !studentId) || !selectedTasks.length || busy) return
     setBusy(true)
     try {
       const result = await request('/api/teacher-diagnostic-assignments', { method: 'POST',
-        body: JSON.stringify({ classId, studentIds: [studentId], taskIds: selectedTasks }) })
+        body: JSON.stringify({ classId, ...(wholeClass ? { audience: 'class' } : { studentIds: [studentId] }), taskIds: selectedTasks }) })
       if (!result.ok) throw new Error(result.data.error || 'Kunde inte skapa testuppdraget.')
       setAssignments(previous => [result.data.assignment, ...previous])
-      setStatus('Testuppdraget är tilldelat. Logga in som eleven för att se det.')
+      setStatus(wholeClass ? `Uppdraget är tilldelat hela klassen (${result.data.assignment.studentIds.length} elever).`
+        : 'Testuppdraget är tilldelat. Logga in som eleven för att se det.')
     } catch (error) {
       setStatus(error.message || 'Kunde inte skapa testuppdraget.')
     } finally { setBusy(false) }
@@ -121,8 +128,8 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
     result_outside_safe_range: 'resultatet ligger utanför säkert talintervall' }
 
   return <section className="mt-4 rounded-lg border border-orange-300 bg-orange-100 p-4 shadow-sm">
-    <h2 className="text-lg font-semibold text-orange-950">Testuppdrag till en elev</h2>
-    <p className="mt-1 text-sm text-orange-950">Välj en elev i en klass du administrerar. Uppdraget ges till en elev i taget och sparas separat från vanlig träning. Sätts serverlistan <code>NCM_DIAGNOSTIC_TEST_STUDENT_IDS</code> visas bara de kontona här.</p>
+    <h2 className="text-lg font-semibold text-orange-950">Testuppdrag till elev eller klass</h2>
+    <p className="mt-1 text-sm text-orange-950">Välj klass och uppgifter. Ge uppdraget till en vald elev eller hela klassen. Det sparas separat från vanlig träning.</p>
     <div className="mt-3 grid gap-3 sm:grid-cols-2">
       <label className="text-sm font-medium">Klass
         <select value={classId} onChange={event => setClassId(event.target.value)} className="mt-1 block w-full rounded border border-orange-400 bg-white p-2">
@@ -147,10 +154,15 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
         </label>)}
       </div>
     </fieldset>
-    <button type="button" onClick={createAssignment} disabled={!pupils.some(pupil => pupil.studentId === studentId) || !selectedTasks.length || busy}
+    <button type="button" onClick={() => createAssignment()} disabled={!pupils.some(pupil => pupil.studentId === studentId) || !selectedTasks.length || busy}
       className="mt-3 rounded bg-orange-700 px-4 py-2 font-semibold text-white disabled:opacity-50">
       {busy ? 'Skapar...' : 'Ge testuppdrag'}
     </button>
+    <button type="button" onClick={() => createAssignment(true)} disabled={!classId || !wholeClassAvailable || !selectedTasks.length || busy}
+      className="ml-2 mt-3 rounded bg-orange-700 px-4 py-2 font-semibold text-white disabled:opacity-50">
+      Ge till hela klassen{classStudentCount ? ` (${classStudentCount} elever)` : ''}
+    </button>
+    {classId && classStudentCount > 0 && !wholeClassAvailable && <p className="mt-2 text-sm">Serverns testbegränsning tillåter inte hela klassen.</p>}
     <p className="mt-2 text-sm" role="status">{status}</p>
     {assignments.length > 0 && <div className="mt-3 text-sm">
       <h3 className="font-semibold">Tilldelningar i klassen</h3>

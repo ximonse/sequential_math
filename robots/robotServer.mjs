@@ -96,7 +96,8 @@ export async function startRobotServer({ port = 5288, production = process.env.R
   // class roster", which is what the manual server exercises.
   process.env.NCM_DIAGNOSTIC_API_ENABLED ??= 'true'
   process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS ??= [NCM_TEST_PUPIL_ID,
-    Buffer.from('Robot NCM next').toString('hex').toUpperCase().padEnd(32, '0').slice(0, 32)].join(',')
+    ...['Robot NCM next', 'NCM class A', 'NCM class B'].map(name =>
+      Buffer.from(name).toString('hex').toUpperCase().padEnd(32, '0').slice(0, 32))].join(',')
   if (!production) {
     const server = await createServer({
       root, configFile: false, logLevel: 'warn',

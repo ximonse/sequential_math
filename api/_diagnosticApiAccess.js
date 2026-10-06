@@ -28,8 +28,8 @@ async function livePupilInClass(studentId, classId, store) {
   return pupil && [pupil.classId, ...(pupil.classIds || [])].includes(classId) ? studentId : null
 }
 
-export async function diagnosticAssignablePupilsInClass(classId, { store = kv } = {}) {
-  const allowed = diagnosticTestStudentIds()
+export async function diagnosticAssignablePupilsInClass(classId, { store = kv, wholeClass = false } = {}) {
+  const allowed = wholeClass ? [] : diagnosticTestStudentIds()
   const roster = allowed.length ? allowed : (await store.smembers(`class_students:${classId}`)) || []
   const checked = await Promise.all(roster.map(studentId => livePupilInClass(studentId, classId, store)))
   return checked.filter(Boolean)

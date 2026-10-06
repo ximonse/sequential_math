@@ -46,6 +46,24 @@ beforeEach(() => {
 })
 
 describe('diagnostic pilot API boundary', () => {
+  it('uses the current server roster for a whole-class assignment instead of client pupil ids', async () => {
+    process.env.NCM_DIAGNOSTIC_API_ENABLED = 'true'
+    mocked.testStudents.mockResolvedValue(['PUPIL', 'SECOND'])
+    const res = response()
+    await teacherHandler({ method: 'POST', headers: {}, body: { classId: 'CLASS',
+      audience: 'class', studentIds: ['FOREIGN'], taskIds: ['add-no-carry-001'] } }, res)
+    expect(res.code).toBe(201)
+    expect(mocked.create).toHaveBeenCalledWith(expect.objectContaining({ studentIds: ['PUPIL', 'SECOND'] }))
+  })
+  it('rejects the whole class if the server test restriction excludes a member', async () => {
+    process.env.NCM_DIAGNOSTIC_API_ENABLED = 'true'
+    mocked.testStudents.mockResolvedValueOnce(['PUPIL']).mockResolvedValueOnce(['PUPIL', 'SECOND'])
+    const res = response()
+    await teacherHandler({ method: 'POST', headers: {}, body: { classId: 'CLASS', audience: 'class',
+      taskIds: ['add-no-carry-001'] } }, res)
+    expect(res.code).toBe(403)
+    expect(mocked.create).not.toHaveBeenCalled()
+  })
   it('is closed by default before pupil deletion and archive integration', async () => {
     const teacher = response(), pupil = response()
     await teacherHandler({ method: 'POST', headers: {}, body: {} }, teacher)

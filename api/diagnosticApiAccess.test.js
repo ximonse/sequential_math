@@ -46,6 +46,7 @@ describe('diagnostic pupil access', () => {
       expect(await diagnosticAssignablePupilsInClass('CLASS', { store })).toEqual(['PUPIL'])
       process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS = 'OTHER'
       expect(await diagnosticAssignablePupilsInClass('CLASS', { store })).toEqual([])
+      expect(await diagnosticAssignablePupilsInClass('CLASS', { store, wholeClass: true })).toEqual(['PUPIL'])
       process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS = 'PUPIL,OTHER'
       expect(await diagnosticAssignablePupilsInClass('CLASS', { store })).toEqual(['PUPIL'])
     } finally {

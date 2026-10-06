@@ -88,6 +88,12 @@ inlämningar i följd, återuppta där genomgången avbröts och se vilka som
 
 ## Etapp 1 – adminbegränsad interaktionsprototyp (pågår)
 
+- [x] Admin kan tilldela valda uppgifter till hela vald klass med ett klick.
+  Servern bestämmer aktuella levande mottagare, kontrollerar klassåtkomst
+  och fryser mottagarlistan i samma uppdrag. En serverlista som utesluter
+  någon elev stoppar helklassåtgärden i stället för att dela ut delvis.
+  Senare tillkomna elever får inte uppdraget automatiskt.
+
 - [x] Streckverktyget växlar överlappande streck i samma rad/kolumn till
   borttagning, även vid drag i omvänd riktning. Borttagningen bevaras som
   `line_remove` i försöket. Ett vinkelrätt korsande streck behålls.

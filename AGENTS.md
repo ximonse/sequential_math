@@ -36,6 +36,13 @@ att visualisera arbetet och hålla kort, deluppgifter, beslut, tanketrådar,
 beroenden och belägg aktuella. Kartan omfattar nu främst Screening; när annat
 repoarbete saknar kort, lägg till relevant kort/område i denna karta.
 
+**Språkregel:** ”karta” eller ”kartan” syftar normalt på projektkartan om
+sammanhanget inte tydligt betyder något annat. Läs alltid senaste versionen.
+En fråga om kartan innebär läsning och svar; ”uppdatera kartan” innebär
+uppdatering av berörda kort. Bara ”kartan” betyder ta fram och stäm av kartan,
+inte mandat att bygga nästa funktion, pusha eller publicera. Genomfört arbete
+och fattade beslut dokumenteras enligt arbetsregeln nedan.
+
 - Läs alltid senaste fil/revision innan skrivning. Bevara Simons ändringar,
   kryssrutor och anteckningar. Återgenerera aldrig planen från `generate.py`.
 - Uppdatera kartan i samma ändringssjok när kod, funktion, verifieringsstatus,

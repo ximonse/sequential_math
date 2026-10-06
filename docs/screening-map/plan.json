@@ -762,7 +762,7 @@
       "acceptance": "Explicit sparande, återläsning, konfliktstopp och backup; agentregler och CI fångar glömd kartuppdatering.",
       "requires": [],
       "affects": [],
-      "decision": "Simon har valt HTML-kartan som gemensam arbetsyta. SC-exporten är en äldre separat snapshot, inte aktiv synk.",
+      "decision": "Simon har valt HTML-kartan som gemensam arbetsyta. SC-exporten är en äldre separat snapshot, inte aktiv synk.\n\nBeslutat 2026-10-06: karta/kartan syftar normalt på projektkartan om inget annat tydligt avses. Läs senaste. Fråga betyder läsning och svar; uppdatera kartan betyder uppdatera berörda kort. Bara kartan betyder ta fram och stäm av, inte bygga nästa funktion eller publicera. Genomfört arbete och fattade beslut dokumenteras i kartan.",
       "evidence": "Lokalt verifierat: text och kryssruta sparade och återlästa i webbläsaren; 137 testfiler/656 tester, build och lint godkända. CAS, backup och två samtidiga skrivningar testade. Kartkontrollen prövad röd utan kartuppdatering och grön med den. Ej pushat eller publicerat.",
       "issue": "",
       "kind": "funktion",

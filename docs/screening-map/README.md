@@ -2,6 +2,12 @@
 
 ## Aktiv gemensam karta: redigerbar HTML
 
+**Överenskommet språkbruk:** ”karta”/”kartan” betyder normalt projektkartan,
+om inget annat tydligt avses. Agenten läser senaste versionen. En fråga ger
+läsning och svar; ”uppdatera kartan” ger uppdatering av berörda kort. Bara
+”kartan” betyder ta fram och stäm av, inte börja bygga nästa funktion eller
+publicera. Genomfört arbete och fattade beslut ska dokumenteras i kartan.
+
 Kör `npm run plan:dev` i denna checkout och öppna
 `http://127.0.0.1:5325/screening-map.html`. Servern lyssnar bara på den lokala
 datorn och serverar endast kartan/API:t, inte andra projektfiler. Den läser

@@ -1,0 +1,921 @@
+{
+  "date": "2026-10-06",
+  "title": "Screening — projektkarta",
+  "cards": [
+    {
+      "id": "direction",
+      "area": "Beslut",
+      "title": "Screening, inte mängdträning",
+      "status": "Beslutat",
+      "purpose": "Förstå hur eleven räknar genom korta uppdrag och bevarade original.",
+      "next": "Använd som gräns vid varje ny funktion.",
+      "acceptance": "Ingen dold påverkan på mastery eller adaptiv progression.",
+      "requires": [],
+      "affects": [
+        "dispatch",
+        "analysis",
+        "followup"
+      ],
+      "decision": "",
+      "evidence": "NCM_DIAGNOSTIK_PROJEKT.md; Simons beslut i chatten",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "dispatch",
+      "area": "Dela ut",
+      "title": "Tilldela elev eller hel klass",
+      "status": "Byggt",
+      "purpose": "Admin väljer mottagare och ett diagnostiskt uppdrag.",
+      "next": "Pröva utdelningsflödet med realistisk klass och förhandsgranskning.",
+      "acceptance": "Exakt valda mottagare får exakt valt paket; andra får inget.",
+      "requires": [],
+      "affects": [
+        "matrix",
+        "original"
+      ],
+      "decision": "",
+      "evidence": "dc129da; tidigare publicerat enligt denna tråd. Ingen ny produktionskontroll.",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "packs",
+      "area": "Dela ut",
+      "title": "Egna additions- och subtraktionspaket",
+      "status": "Byggt",
+      "purpose": "Tolv egna heltalsuppgifter med facit och lärarunderlag.",
+      "next": "Pröva uppgifternas diagnostiska värde med elever.",
+      "acceptance": "Varje uppgift har fryst facit, syfte och tydlig källstatus.",
+      "requires": [],
+      "affects": [
+        "dispatch",
+        "analysis"
+      ],
+      "decision": "",
+      "evidence": "5ebf603; tidigare publicerat enligt denna tråd. Inga officiella NCM-original.",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "dispatch-ux",
+      "area": "Dela ut",
+      "title": "Urval och förhandsgranskning",
+      "status": "Föreslaget",
+      "purpose": "Läraren förstår vad som delas ut innan tilldelningen.",
+      "next": "Skissa kompakt paketöversikt och mottagarbekräftelse.",
+      "acceptance": "Innehåll, mottagare och konsekvens framgår före tilldelning.",
+      "requires": [
+        "dispatch",
+        "packs"
+      ],
+      "affects": [],
+      "decision": "Hur ska nya, aktiva och avslutade uppdrag visas?",
+      "evidence": "",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "original",
+      "area": "Elevarbete",
+      "title": "Bevara uppställning och förlopp",
+      "status": "Byggt",
+      "purpose": "Rutnät, slutsvar och händelser förblir originalunderlag.",
+      "next": "Verifiera lagring och avbrott mot riktig Redis.",
+      "acceptance": "Samma sparade revision kan återspelas utan ändrat elevoriginal.",
+      "requires": [],
+      "affects": [
+        "matrix",
+        "review",
+        "analysis",
+        "lifecycle"
+      ],
+      "decision": "",
+      "evidence": "Diagnostisk försökslagring; versions- och kvittensskydd finns. Verklig driftverifiering separat.",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "grid",
+      "area": "Elevarbete",
+      "title": "Skriv, markera och gå vidare",
+      "status": "Byggt",
+      "purpose": "Eleven räknar i räknehäftet; överlappande streck kan tas bort och nästa fråga öppnas.",
+      "next": "Prova med elever på avsedd iPad.",
+      "acceptance": "Siffror, lån, minnessiffror och streck går att hantera utan oavsiktliga ändringar.",
+      "requires": [
+        "original"
+      ],
+      "affects": [],
+      "decision": "",
+      "evidence": "5552783; tidigare publicerat enligt denna tråd.",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "cursor",
+      "area": "Elevarbete",
+      "title": "Nästa ruta efter varje siffra",
+      "status": "Planerat",
+      "purpose": "Skriv exempelvis 256 i startuppställningen utan att välja ruta tre gånger.",
+      "next": "Definiera slut på rad, korrigering och skillnad mot uträkning; implementera smalt.",
+      "acceptance": "Varje siffra fyller vald ruta och flyttar markören ett steg i startuppställningen.",
+      "requires": [
+        "grid"
+      ],
+      "affects": [],
+      "decision": "Avgränsa till startuppställningen; pröva tangentbord och touch.",
+      "evidence": "",
+      "issue": "https://github.com/ximonse/sequential_math/issues/8",
+      "kind": "deluppgift"
+    },
+    {
+      "id": "ipad",
+      "area": "Elevarbete",
+      "title": "Elevprovning av lån och minnessiffror",
+      "status": "Saknas",
+      "purpose": "Avgöra om den faktiska inmatningen fungerar i klassrummet.",
+      "next": "Låt några elever lösa korta heltalsuppdrag på avsedd enhet.",
+      "acceptance": "Dokumenterade observationer av träffsäkerhet, korrigering och naturligt arbetssätt.",
+      "requires": [
+        "grid"
+      ],
+      "affects": [
+        "analysis",
+        "pilot"
+      ],
+      "decision": "",
+      "evidence": "",
+      "issue": "",
+      "kind": "verifiering"
+    },
+    {
+      "id": "matrix",
+      "area": "Överblick",
+      "title": "Gruppmatris med faktiska svar",
+      "status": "Lokalt klart",
+      "purpose": "En elev per rad, uppgifter i kolumner; hover visar elevsvar, facit och signaler.",
+      "next": "Pröva full klass och många uppgifter; publicera endast efter uttryckligt mandat.",
+      "acceptance": "Rätt, fel, obesvarat och metodsignal går att skilja; touch öppnar originalet.",
+      "requires": [
+        "original",
+        "dispatch"
+      ],
+      "affects": [
+        "review"
+      ],
+      "decision": "",
+      "evidence": "0b1eaa8; 652 tester, build, lint, 81 robotfall. Ej pushat/publicerat.",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "scale",
+      "area": "Överblick",
+      "title": "Stor klass och laddningstid",
+      "status": "Saknas",
+      "purpose": "Matrisen läser validerad historik för varje senaste cell; kostnaden växer med klassen.",
+      "next": "Mät realistiskt antal elever, uppgifter och händelser innan optimering.",
+      "acceptance": "Dokumenterad svarstid och läskostnad; felaktig data blir synligt fel, inte grå cell.",
+      "requires": [
+        "matrix",
+        "redis"
+      ],
+      "affects": [
+        "pilot"
+      ],
+      "decision": "",
+      "evidence": "",
+      "issue": "",
+      "kind": "verifiering"
+    },
+    {
+      "id": "review",
+      "area": "Genomgång",
+      "title": "Original och anteckning i overlay",
+      "status": "Lokalt klart",
+      "purpose": "Öppna elevens arbete, bläddra och spara intern läraranteckning med revisionsskydd.",
+      "next": "Utveckla sammanhållen elevgenomgång, därefter en återkopplingsfunktion åt gången.",
+      "acceptance": "Kommentar ändrar inte original; elev- eller lärarkonflikt skriver inte över annan data.",
+      "requires": [
+        "original"
+      ],
+      "affects": [
+        "pupil-review",
+        "feedback",
+        "print"
+      ],
+      "decision": "",
+      "evidence": "fec960e + 0b1eaa8; lokalt testat. Ej pushat/publicerat.",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "pupil-review",
+      "area": "Genomgång",
+      "title": "Elevens hela uppdrag och återuppta",
+      "status": "Föreslaget",
+      "purpose": "Gå igenom en elev åt gången och återuppta där arbetet avbröts.",
+      "next": "Bestäm hur hela uppdraget, aktuell position och nästa elev visas.",
+      "acceptance": "Ungefär 30 elevers arbeten kan granskas i följd utan tappad position.",
+      "requires": [
+        "review"
+      ],
+      "affects": [],
+      "decision": "Vilken position ska sparas och för vem? Nuvarande bläddring är inom vald uppgift.",
+      "evidence": "",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "draft",
+      "area": "Genomgång",
+      "title": "Skydda osparad lärartext överallt",
+      "status": "Saknas",
+      "purpose": "Nuvarande skydd täcker intern navigation och stängning men inte alla andra lärarflikar.",
+      "next": "Lägg skydd vid utträde ur hela sektionen; välj om lokal textåterhämtning behövs.",
+      "acceptance": "Alla relevanta utträden varnar eller bevarar utkast efter uttryckligt valt beteende.",
+      "requires": [
+        "review"
+      ],
+      "affects": [
+        "feedback"
+      ],
+      "decision": "",
+      "evidence": "",
+      "issue": "",
+      "kind": "deluppgift"
+    },
+    {
+      "id": "feedback",
+      "area": "Återkoppling",
+      "title": "Elevsynlig kommentar och återlämning",
+      "status": "Beslut behövs",
+      "purpose": "Skilj intern läraranteckning från feedback som eleven får tillbaka.",
+      "next": "Besluta publiceringsögonblick och vad som händer om eleven ändrar arbetet.",
+      "acceptance": "Eleven ser endast uttryckligen återlämnad feedback för rätt underlagsrevision.",
+      "requires": [
+        "review",
+        "feedback-policy",
+        "lifecycle"
+      ],
+      "affects": [
+        "followup"
+      ],
+      "decision": "Ingen elevsynlig kommentar eller återlämning är byggd.",
+      "evidence": "",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "feedback-policy",
+      "area": "Beslut",
+      "title": "När ser eleven vad?",
+      "status": "Beslut behövs",
+      "purpose": "Fastställa utkast, publicerad feedback och möjlighet till fortsatt elevarbete.",
+      "next": "Välj om återlämning låser arbetet eller öppnar en ny revision.",
+      "acceptance": "Tydligt kontrakt för utkast → återlämnat → eventuell elevändring.",
+      "requires": [],
+      "affects": [
+        "feedback",
+        "print"
+      ],
+      "decision": "",
+      "evidence": "",
+      "issue": "",
+      "kind": "beslut"
+    },
+    {
+      "id": "print",
+      "area": "Återkoppling",
+      "title": "Skriv ut granskad uppgift",
+      "status": "Planerat",
+      "purpose": "Ge ett begripligt papper med elevens arbete och valda lärarkommentarer.",
+      "next": "Bestäm innehåll; gör utskriftsutkast före renderingsarbete.",
+      "acceptance": "Läsbar utskrift av en bestämd revision; facit och interna anteckningar läcker inte av misstag.",
+      "requires": [
+        "review",
+        "print-policy"
+      ],
+      "affects": [],
+      "decision": "Word/PDF/utskriftsvy är inte byggd.",
+      "evidence": "",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "print-policy",
+      "area": "Beslut",
+      "title": "Vad ska ingå i utskriften?",
+      "status": "Beslut behövs",
+      "purpose": "Välj original, facit, kommentar och uppgiftssammanfattning.",
+      "next": "Bestäm lärar- respektive elevutskrift.",
+      "acceptance": "Innehåll och målgrupp är uttryckligt valda.",
+      "requires": [],
+      "affects": [
+        "print"
+      ],
+      "decision": "",
+      "evidence": "",
+      "issue": "",
+      "kind": "beslut"
+    },
+    {
+      "id": "analysis",
+      "area": "Analys",
+      "title": "Tre försiktiga analyssignaler",
+      "status": "Byggt",
+      "purpose": "Observera kolumnplacering, synligt resultat kontra slutsvar och S2-mönstret 402−178→376.",
+      "next": "Kalibrera mot lärares granskning; kalla inte ett svar för säker felorsak.",
+      "acceptance": "Varje signal pekar på underlag; otydligt arbete ger okänt.",
+      "requires": [
+        "original"
+      ],
+      "affects": [
+        "matrix",
+        "rules",
+        "tips"
+      ],
+      "decision": "",
+      "evidence": "Versionerade regler finns; signalerna i matrisen är lokala i 0b1eaa8.",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "rules",
+      "area": "Analys",
+      "title": "Fler felmönster med motexempel",
+      "status": "Föreslaget",
+      "purpose": "Utöka först när uppställning och elevunderlag stödjer en säker observation.",
+      "next": "Välj en heltalsregel, definiera matchning, motexempel och okänt; låt lärare pröva.",
+      "acceptance": "Regeln har belägg, version och gränser. Felsvaret ensamt räcker inte.",
+      "requires": [
+        "analysis",
+        "ipad"
+      ],
+      "affects": [
+        "tips"
+      ],
+      "decision": "Slarv, decimalfel och allmänna lånefel kan inte idag klassificeras automatiskt.",
+      "evidence": "",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "tips",
+      "area": "Analys",
+      "title": "Frågor och tips för läraren",
+      "status": "Föreslaget",
+      "purpose": "Hjälpa läraren välja en fråga som undersöker elevens tänkande.",
+      "next": "Knyt ett litet lärarstöd till befintlig signal och visa osäkerhet.",
+      "acceptance": "Tipset är förslag, visar varför och kräver inte att läraren accepterar hypotesen.",
+      "requires": [
+        "analysis"
+      ],
+      "affects": [
+        "followup"
+      ],
+      "decision": "",
+      "evidence": "",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "followup",
+      "area": "Återkoppling",
+      "title": "Välj liknande uppgifter igen",
+      "status": "Föreslaget",
+      "purpose": "Läraren väljer riktad uppföljning efter granskning.",
+      "next": "Bestäm screening eller träning; bygg därefter förhandsgranskning och explicit tilldelning.",
+      "acceptance": "Inget skickas automatiskt. Valda uppgifter håller sig till valt syfte och talområde.",
+      "requires": [
+        "dispatch",
+        "feedback",
+        "tips",
+        "followup-policy"
+      ],
+      "affects": [],
+      "decision": "",
+      "evidence": "",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "followup-policy",
+      "area": "Beslut",
+      "title": "Ny screening eller vanlig träning?",
+      "status": "Beslut behövs",
+      "purpose": "Avgöra evidensklass, lagring och eventuell mastery-påverkan för uppföljningen.",
+      "next": "Definiera två uttryckliga vägar om båda behövs.",
+      "acceptance": "Screening kan inte tyst bli mängdträning.",
+      "requires": [
+        "direction"
+      ],
+      "affects": [
+        "followup"
+      ],
+      "decision": "",
+      "evidence": "",
+      "issue": "",
+      "kind": "beslut"
+    },
+    {
+      "id": "lifecycle",
+      "area": "Drift",
+      "title": "Radera allt eller anonymisera statistik",
+      "status": "Byggt",
+      "purpose": "Radering tar bort elevdata; anonymisering bevarar fryst statistik utan namn och råoriginal.",
+      "next": "Koppla varje ny personbunden datatyp till livscykelstädningen.",
+      "acceptance": "Nya kommentarer, feedback och exportregler följer valt livscykelflöde.",
+      "requires": [],
+      "affects": [
+        "feedback",
+        "redis"
+      ],
+      "decision": "",
+      "evidence": "9b9f894 tidigare publicerat; anteckningsstädning i lokal fec960e. Verklig Redis separat.",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "redis",
+      "area": "Drift",
+      "title": "Riktig Redis och avbrottsprovning",
+      "status": "Saknas",
+      "purpose": "Robotarna använder isolerad minnesdatabas och emulerar Lua-transaktioner.",
+      "next": "Pröva separat testkonto: kvittens, retry, CAS, elevändring, radering och avbrott.",
+      "acceptance": "Samma kontrakt håller mot verklig lagring; inga riktiga elevers konton används.",
+      "requires": [
+        "original",
+        "review",
+        "lifecycle"
+      ],
+      "affects": [
+        "pilot"
+      ],
+      "decision": "",
+      "evidence": "",
+      "issue": "",
+      "kind": "verifiering"
+    },
+    {
+      "id": "pilot",
+      "area": "Drift",
+      "title": "Liten klassrumspilot",
+      "status": "Planerat",
+      "purpose": "Pröva att elev- och lärarflödet fungerar som screening i vardagen.",
+      "next": "Avgränsa grupp, uppgifter, framgångskriterier och sätt att fånga hinder.",
+      "acceptance": "Elever kan lämna in och läraren kan granska; problem dokumenteras före expansion.",
+      "requires": [
+        "redis",
+        "ipad",
+        "matrix",
+        "review",
+        "scale"
+      ],
+      "affects": [
+        "expansion"
+      ],
+      "decision": "",
+      "evidence": "",
+      "issue": "",
+      "kind": "verifiering"
+    },
+    {
+      "id": "expansion",
+      "area": "Analys",
+      "title": "Decimaler och fler räknesätt",
+      "status": "Senare",
+      "purpose": "Utvidga först efter prövad heltalsscreening.",
+      "next": "Nytt innehålls- och analyskontrakt per uppgiftstyp.",
+      "acceptance": "Representation, facit och osäkerhet är definierade och testade.",
+      "requires": [
+        "pilot",
+        "rules"
+      ],
+      "affects": [],
+      "decision": "Ingen automatisk decimaldiagnos är byggd.",
+      "evidence": "",
+      "issue": "",
+      "kind": "funktion"
+    },
+    {
+      "id": "permissions",
+      "area": "Beslut",
+      "title": "Adminbehörighet ligger fast",
+      "status": "Beslutat",
+      "purpose": "Endast admin/huvudadmin med aktuell klassåtkomst använder Screening.",
+      "next": "Kontrollera samma gräns för framtida feedback och utskrifter.",
+      "acceptance": "Varje API läser och skriver inom uttryckligen tillåten klass.",
+      "requires": [],
+      "affects": [
+        "dispatch",
+        "matrix",
+        "review",
+        "feedback"
+      ],
+      "decision": "Eventuell vanlig läraråtkomst kräver nytt uttryckligt beslut.",
+      "evidence": "",
+      "issue": "",
+      "kind": "beslut"
+    },
+    {
+      "id": "issue3",
+      "area": "Övriga issues",
+      "title": "Inaktivitet kontra stödsignal",
+      "status": "Planerat",
+      "purpose": "Separat arbete för vanliga lärardashboarden.",
+      "next": "Prioritera separat från Screening.",
+      "acceptance": "Inaktivitet blandas inte ihop med belagd matematisk svårighet.",
+      "requires": [],
+      "affects": [],
+      "decision": "",
+      "evidence": "",
+      "issue": "https://github.com/ximonse/sequential_math/issues/3",
+      "kind": "issue"
+    },
+    {
+      "id": "issue2",
+      "area": "Övriga issues",
+      "title": "Räknesätt för blandad träning",
+      "status": "Planerat",
+      "purpose": "Separat önskemål om lärarstyrning av vanlig träning.",
+      "next": "Prioritera separat från Screening.",
+      "acceptance": "Klassens träning håller sig till valda räknesätt.",
+      "requires": [],
+      "affects": [],
+      "decision": "",
+      "evidence": "",
+      "issue": "https://github.com/ximonse/sequential_math/issues/2",
+      "kind": "issue"
+    }
+  ],
+  "edges": [
+    {
+      "source": "direction",
+      "target": "dispatch",
+      "kind": "påverkar"
+    },
+    {
+      "source": "direction",
+      "target": "analysis",
+      "kind": "påverkar"
+    },
+    {
+      "source": "direction",
+      "target": "followup",
+      "kind": "påverkar"
+    },
+    {
+      "source": "dispatch",
+      "target": "matrix",
+      "kind": "påverkar"
+    },
+    {
+      "source": "dispatch",
+      "target": "original",
+      "kind": "påverkar"
+    },
+    {
+      "source": "packs",
+      "target": "dispatch",
+      "kind": "påverkar"
+    },
+    {
+      "source": "packs",
+      "target": "analysis",
+      "kind": "påverkar"
+    },
+    {
+      "source": "dispatch",
+      "target": "dispatch-ux",
+      "kind": "kräver"
+    },
+    {
+      "source": "packs",
+      "target": "dispatch-ux",
+      "kind": "kräver"
+    },
+    {
+      "source": "original",
+      "target": "matrix",
+      "kind": "påverkar"
+    },
+    {
+      "source": "original",
+      "target": "review",
+      "kind": "påverkar"
+    },
+    {
+      "source": "original",
+      "target": "analysis",
+      "kind": "påverkar"
+    },
+    {
+      "source": "original",
+      "target": "lifecycle",
+      "kind": "påverkar"
+    },
+    {
+      "source": "original",
+      "target": "grid",
+      "kind": "kräver"
+    },
+    {
+      "source": "grid",
+      "target": "cursor",
+      "kind": "kräver"
+    },
+    {
+      "source": "grid",
+      "target": "ipad",
+      "kind": "kräver"
+    },
+    {
+      "source": "ipad",
+      "target": "analysis",
+      "kind": "påverkar"
+    },
+    {
+      "source": "ipad",
+      "target": "pilot",
+      "kind": "påverkar"
+    },
+    {
+      "source": "original",
+      "target": "matrix",
+      "kind": "kräver"
+    },
+    {
+      "source": "dispatch",
+      "target": "matrix",
+      "kind": "kräver"
+    },
+    {
+      "source": "matrix",
+      "target": "review",
+      "kind": "påverkar"
+    },
+    {
+      "source": "matrix",
+      "target": "scale",
+      "kind": "kräver"
+    },
+    {
+      "source": "redis",
+      "target": "scale",
+      "kind": "kräver"
+    },
+    {
+      "source": "scale",
+      "target": "pilot",
+      "kind": "påverkar"
+    },
+    {
+      "source": "original",
+      "target": "review",
+      "kind": "kräver"
+    },
+    {
+      "source": "review",
+      "target": "pupil-review",
+      "kind": "påverkar"
+    },
+    {
+      "source": "review",
+      "target": "feedback",
+      "kind": "påverkar"
+    },
+    {
+      "source": "review",
+      "target": "print",
+      "kind": "påverkar"
+    },
+    {
+      "source": "review",
+      "target": "pupil-review",
+      "kind": "kräver"
+    },
+    {
+      "source": "review",
+      "target": "draft",
+      "kind": "kräver"
+    },
+    {
+      "source": "draft",
+      "target": "feedback",
+      "kind": "påverkar"
+    },
+    {
+      "source": "review",
+      "target": "feedback",
+      "kind": "kräver"
+    },
+    {
+      "source": "feedback-policy",
+      "target": "feedback",
+      "kind": "kräver"
+    },
+    {
+      "source": "lifecycle",
+      "target": "feedback",
+      "kind": "kräver"
+    },
+    {
+      "source": "feedback",
+      "target": "followup",
+      "kind": "påverkar"
+    },
+    {
+      "source": "feedback-policy",
+      "target": "feedback",
+      "kind": "påverkar"
+    },
+    {
+      "source": "feedback-policy",
+      "target": "print",
+      "kind": "påverkar"
+    },
+    {
+      "source": "review",
+      "target": "print",
+      "kind": "kräver"
+    },
+    {
+      "source": "print-policy",
+      "target": "print",
+      "kind": "kräver"
+    },
+    {
+      "source": "print-policy",
+      "target": "print",
+      "kind": "påverkar"
+    },
+    {
+      "source": "original",
+      "target": "analysis",
+      "kind": "kräver"
+    },
+    {
+      "source": "analysis",
+      "target": "matrix",
+      "kind": "påverkar"
+    },
+    {
+      "source": "analysis",
+      "target": "rules",
+      "kind": "påverkar"
+    },
+    {
+      "source": "analysis",
+      "target": "tips",
+      "kind": "påverkar"
+    },
+    {
+      "source": "analysis",
+      "target": "rules",
+      "kind": "kräver"
+    },
+    {
+      "source": "ipad",
+      "target": "rules",
+      "kind": "kräver"
+    },
+    {
+      "source": "rules",
+      "target": "tips",
+      "kind": "påverkar"
+    },
+    {
+      "source": "analysis",
+      "target": "tips",
+      "kind": "kräver"
+    },
+    {
+      "source": "tips",
+      "target": "followup",
+      "kind": "påverkar"
+    },
+    {
+      "source": "dispatch",
+      "target": "followup",
+      "kind": "kräver"
+    },
+    {
+      "source": "feedback",
+      "target": "followup",
+      "kind": "kräver"
+    },
+    {
+      "source": "tips",
+      "target": "followup",
+      "kind": "kräver"
+    },
+    {
+      "source": "followup-policy",
+      "target": "followup",
+      "kind": "kräver"
+    },
+    {
+      "source": "direction",
+      "target": "followup-policy",
+      "kind": "kräver"
+    },
+    {
+      "source": "followup-policy",
+      "target": "followup",
+      "kind": "påverkar"
+    },
+    {
+      "source": "lifecycle",
+      "target": "feedback",
+      "kind": "påverkar"
+    },
+    {
+      "source": "lifecycle",
+      "target": "redis",
+      "kind": "påverkar"
+    },
+    {
+      "source": "original",
+      "target": "redis",
+      "kind": "kräver"
+    },
+    {
+      "source": "review",
+      "target": "redis",
+      "kind": "kräver"
+    },
+    {
+      "source": "lifecycle",
+      "target": "redis",
+      "kind": "kräver"
+    },
+    {
+      "source": "redis",
+      "target": "pilot",
+      "kind": "påverkar"
+    },
+    {
+      "source": "redis",
+      "target": "pilot",
+      "kind": "kräver"
+    },
+    {
+      "source": "ipad",
+      "target": "pilot",
+      "kind": "kräver"
+    },
+    {
+      "source": "matrix",
+      "target": "pilot",
+      "kind": "kräver"
+    },
+    {
+      "source": "review",
+      "target": "pilot",
+      "kind": "kräver"
+    },
+    {
+      "source": "scale",
+      "target": "pilot",
+      "kind": "kräver"
+    },
+    {
+      "source": "pilot",
+      "target": "expansion",
+      "kind": "påverkar"
+    },
+    {
+      "source": "pilot",
+      "target": "expansion",
+      "kind": "kräver"
+    },
+    {
+      "source": "rules",
+      "target": "expansion",
+      "kind": "kräver"
+    },
+    {
+      "source": "permissions",
+      "target": "dispatch",
+      "kind": "påverkar"
+    },
+    {
+      "source": "permissions",
+      "target": "matrix",
+      "kind": "påverkar"
+    },
+    {
+      "source": "permissions",
+      "target": "review",
+      "kind": "påverkar"
+    },
+    {
+      "source": "permissions",
+      "target": "feedback",
+      "kind": "påverkar"
+    }
+  ],
+  "note": "Planeringssnapshot. Lokalt klart är inte publicerat. Tidigare publicering bygger på denna tråds verifiering; ingen ny livekontroll. Förslag är inte fattade beslut."
+}

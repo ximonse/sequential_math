@@ -6,6 +6,12 @@ Status: aktiv arbetsplan, startad 2026-09-29. Styrande produktbeslut finns i
 [funktionskontrakten](FUNCTION_CONTRACTS.md). Denna fil är arbetsstatus, inte
 ett påstående om levererad funktion.
 
+Aktuell översikt 2026-10-06: [Screening-projektkartan](screening-map/README.md)
+samlar funktioner, deluppgifter, beslut, belägg och beroenden. Kartan har en
+klickbar HTML-vy och en separat Soul Canvas-arbetsyta. Äldre avsnitt nedan är
+historiska arbetsanteckningar; öppna checklistor är inte automatiskt aktuell
+restlista. Kartans föreslagna ordning är inte ett nytt produktbeslut.
+
 ## Mål och gräns
 
 Bygg ett kort diagnostiskt uppdrag där elevens inmatade uppställning

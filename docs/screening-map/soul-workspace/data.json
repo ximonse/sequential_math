@@ -1,0 +1,1104 @@
+{
+  "schemaVersion": 2,
+  "exportedAt": "2026-10-06T12:00:00Z",
+  "revision": "screening-initial-2026-10-06",
+  "nodes": [
+    {
+      "id": "direction",
+      "title": "Screening, inte mängdträning",
+      "content": "Screening, inte mängdträning\n\nStatus: Beslutat · 2026-10-06\nID: direction\nOmråde: Beslut\n\nSyfte: Förstå hur eleven räknar genom korta uppdrag och bevarade original.\n\nNästa steg: Använd som gräns vid varje ny funktion.\n\nKlart när: Ingen dold påverkan på mastery eller adaptiv progression.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: NCM_DIAGNOSTIK_PROJEKT.md; Simons beslut i chatten\n\nRelationer:\nPåverkar: direction → dispatch\nPåverkar: direction → analysis\nPåverkar: direction → followup\nKräver: direction → followup-policy\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Beslut",
+        "Beslutat",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#e2e8f0",
+      "caption": "Beslutat",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "feedback-policy",
+      "title": "När ser eleven vad?",
+      "content": "När ser eleven vad?\n\nStatus: Beslut behövs · 2026-10-06\nID: feedback-policy\nOmråde: Beslut\n\nSyfte: Fastställa utkast, publicerad feedback och möjlighet till fortsatt elevarbete.\n\nNästa steg: Välj om återlämning låser arbetet eller öppnar en ny revision.\n\nKlart när: Tydligt kontrakt för utkast → återlämnat → eventuell elevändring.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nKräver: feedback-policy → feedback\nPåverkar: feedback-policy → feedback\nPåverkar: feedback-policy → print\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 0,
+      "y": 680,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Beslut",
+        "Beslut behövs",
+        "beslut"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#fef3c7",
+      "caption": "Beslut behövs",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "print-policy",
+      "title": "Vad ska ingå i utskriften?",
+      "content": "Vad ska ingå i utskriften?\n\nStatus: Beslut behövs · 2026-10-06\nID: print-policy\nOmråde: Beslut\n\nSyfte: Välj original, facit, kommentar och uppgiftssammanfattning.\n\nNästa steg: Bestäm lärar- respektive elevutskrift.\n\nKlart när: Innehåll och målgrupp är uttryckligt valda.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nKräver: print-policy → print\nPåverkar: print-policy → print\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 0,
+      "y": 1360,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Beslut",
+        "Beslut behövs",
+        "beslut"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#fef3c7",
+      "caption": "Beslut behövs",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "followup-policy",
+      "title": "Ny screening eller vanlig träning?",
+      "content": "Ny screening eller vanlig träning?\n\nStatus: Beslut behövs · 2026-10-06\nID: followup-policy\nOmråde: Beslut\n\nSyfte: Avgöra evidensklass, lagring och eventuell mastery-påverkan för uppföljningen.\n\nNästa steg: Definiera två uttryckliga vägar om båda behövs.\n\nKlart när: Screening kan inte tyst bli mängdträning.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nKräver: followup-policy → followup\nKräver: direction → followup-policy\nPåverkar: followup-policy → followup\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 0,
+      "y": 2040,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Beslut",
+        "Beslut behövs",
+        "beslut"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#fef3c7",
+      "caption": "Beslut behövs",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "permissions",
+      "title": "Adminbehörighet ligger fast",
+      "content": "Adminbehörighet ligger fast\n\nStatus: Beslutat · 2026-10-06\nID: permissions\nOmråde: Beslut\n\nSyfte: Endast admin/huvudadmin med aktuell klassåtkomst använder Screening.\n\nNästa steg: Kontrollera samma gräns för framtida feedback och utskrifter.\n\nKlart när: Varje API läser och skriver inom uttryckligen tillåten klass.\n\nÖppet beslut: Eventuell vanlig läraråtkomst kräver nytt uttryckligt beslut.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nPåverkar: permissions → dispatch\nPåverkar: permissions → matrix\nPåverkar: permissions → review\nPåverkar: permissions → feedback\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 0,
+      "y": 2720,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Beslut",
+        "Beslutat",
+        "beslut"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#e2e8f0",
+      "caption": "Beslutat",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "dispatch",
+      "title": "Tilldela elev eller hel klass",
+      "content": "Tilldela elev eller hel klass\n\nStatus: Byggt · 2026-10-06\nID: dispatch\nOmråde: Dela ut\n\nSyfte: Admin väljer mottagare och ett diagnostiskt uppdrag.\n\nNästa steg: Pröva utdelningsflödet med realistisk klass och förhandsgranskning.\n\nKlart när: Exakt valda mottagare får exakt valt paket; andra får inget.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: dc129da; tidigare publicerat enligt denna tråd. Ingen ny produktionskontroll.\n\nRelationer:\nPåverkar: direction → dispatch\nPåverkar: dispatch → matrix\nPåverkar: dispatch → original\nPåverkar: packs → dispatch\nKräver: dispatch → dispatch-ux\nKräver: dispatch → matrix\nKräver: dispatch → followup\nPåverkar: permissions → dispatch\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 420,
+      "y": 0,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Dela ut",
+        "Byggt",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#dcfce7",
+      "caption": "Byggt",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "packs",
+      "title": "Egna additions- och subtraktionspaket",
+      "content": "Egna additions- och subtraktionspaket\n\nStatus: Byggt · 2026-10-06\nID: packs\nOmråde: Dela ut\n\nSyfte: Tolv egna heltalsuppgifter med facit och lärarunderlag.\n\nNästa steg: Pröva uppgifternas diagnostiska värde med elever.\n\nKlart när: Varje uppgift har fryst facit, syfte och tydlig källstatus.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: 5ebf603; tidigare publicerat enligt denna tråd. Inga officiella NCM-original.\n\nRelationer:\nPåverkar: packs → dispatch\nPåverkar: packs → analysis\nKräver: packs → dispatch-ux\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 420,
+      "y": 680,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Dela ut",
+        "Byggt",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#dcfce7",
+      "caption": "Byggt",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "dispatch-ux",
+      "title": "Urval och förhandsgranskning",
+      "content": "Urval och förhandsgranskning\n\nStatus: Föreslaget · 2026-10-06\nID: dispatch-ux\nOmråde: Dela ut\n\nSyfte: Läraren förstår vad som delas ut innan tilldelningen.\n\nNästa steg: Skissa kompakt paketöversikt och mottagarbekräftelse.\n\nKlart när: Innehåll, mottagare och konsekvens framgår före tilldelning.\n\nÖppet beslut: Hur ska nya, aktiva och avslutade uppdrag visas?\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nKräver: dispatch → dispatch-ux\nKräver: packs → dispatch-ux\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 420,
+      "y": 1360,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Dela ut",
+        "Föreslaget",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#f1f5f9",
+      "caption": "Föreslaget",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "original",
+      "title": "Bevara uppställning och förlopp",
+      "content": "Bevara uppställning och förlopp\n\nStatus: Byggt · 2026-10-06\nID: original\nOmråde: Elevarbete\n\nSyfte: Rutnät, slutsvar och händelser förblir originalunderlag.\n\nNästa steg: Verifiera lagring och avbrott mot riktig Redis.\n\nKlart när: Samma sparade revision kan återspelas utan ändrat elevoriginal.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: Diagnostisk försökslagring; versions- och kvittensskydd finns. Verklig driftverifiering separat.\n\nRelationer:\nPåverkar: dispatch → original\nPåverkar: original → matrix\nPåverkar: original → review\nPåverkar: original → analysis\nPåverkar: original → lifecycle\nKräver: original → grid\nKräver: original → matrix\nKräver: original → review\nKräver: original → analysis\nKräver: original → redis\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 840,
+      "y": 0,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Elevarbete",
+        "Byggt",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#dcfce7",
+      "caption": "Byggt",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "grid",
+      "title": "Skriv, markera och gå vidare",
+      "content": "Skriv, markera och gå vidare\n\nStatus: Byggt · 2026-10-06\nID: grid\nOmråde: Elevarbete\n\nSyfte: Eleven räknar i räknehäftet; överlappande streck kan tas bort och nästa fråga öppnas.\n\nNästa steg: Prova med elever på avsedd iPad.\n\nKlart när: Siffror, lån, minnessiffror och streck går att hantera utan oavsiktliga ändringar.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: 5552783; tidigare publicerat enligt denna tråd.\n\nRelationer:\nKräver: original → grid\nKräver: grid → cursor\nKräver: grid → ipad\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 840,
+      "y": 680,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Elevarbete",
+        "Byggt",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#dcfce7",
+      "caption": "Byggt",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "cursor",
+      "title": "Nästa ruta efter varje siffra",
+      "content": "Nästa ruta efter varje siffra\n\nStatus: Planerat · 2026-10-06\nID: cursor\nOmråde: Elevarbete\n\nSyfte: Skriv exempelvis 256 i startuppställningen utan att välja ruta tre gånger.\n\nNästa steg: Definiera slut på rad, korrigering och skillnad mot uträkning; implementera smalt.\n\nKlart när: Varje siffra fyller vald ruta och flyttar markören ett steg i startuppställningen.\n\nÖppet beslut: Avgränsa till startuppställningen; pröva tangentbord och touch.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nKräver: grid → cursor\n\nIssue: https://github.com/ximonse/sequential_math/issues/8",
+      "type": "text",
+      "x": 840,
+      "y": 1360,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Elevarbete",
+        "Planerat",
+        "deluppgift"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#fef9c3",
+      "caption": "Planerat",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": "[GitHub issue](https://github.com/ximonse/sequential_math/issues/8)"
+    },
+    {
+      "id": "ipad",
+      "title": "Elevprovning av lån och minnessiffror",
+      "content": "Elevprovning av lån och minnessiffror\n\nStatus: Saknas · 2026-10-06\nID: ipad\nOmråde: Elevarbete\n\nSyfte: Avgöra om den faktiska inmatningen fungerar i klassrummet.\n\nNästa steg: Låt några elever lösa korta heltalsuppdrag på avsedd enhet.\n\nKlart när: Dokumenterade observationer av träffsäkerhet, korrigering och naturligt arbetssätt.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nKräver: grid → ipad\nPåverkar: ipad → analysis\nPåverkar: ipad → pilot\nKräver: ipad → rules\nKräver: ipad → pilot\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 840,
+      "y": 2040,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Elevarbete",
+        "Saknas",
+        "verifiering"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#fee2e2",
+      "caption": "Saknas",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "matrix",
+      "title": "Gruppmatris med faktiska svar",
+      "content": "Gruppmatris med faktiska svar\n\nStatus: Lokalt klart · 2026-10-06\nID: matrix\nOmråde: Överblick\n\nSyfte: En elev per rad, uppgifter i kolumner; hover visar elevsvar, facit och signaler.\n\nNästa steg: Pröva full klass och många uppgifter; publicera endast efter uttryckligt mandat.\n\nKlart när: Rätt, fel, obesvarat och metodsignal går att skilja; touch öppnar originalet.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: 0b1eaa8; 652 tester, build, lint, 81 robotfall. Ej pushat/publicerat.\n\nRelationer:\nPåverkar: dispatch → matrix\nPåverkar: original → matrix\nKräver: original → matrix\nKräver: dispatch → matrix\nPåverkar: matrix → review\nKräver: matrix → scale\nPåverkar: analysis → matrix\nKräver: matrix → pilot\nPåverkar: permissions → matrix\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 1260,
+      "y": 0,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Överblick",
+        "Lokalt klart",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#dbeafe",
+      "caption": "Lokalt klart",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "scale",
+      "title": "Stor klass och laddningstid",
+      "content": "Stor klass och laddningstid\n\nStatus: Saknas · 2026-10-06\nID: scale\nOmråde: Överblick\n\nSyfte: Matrisen läser validerad historik för varje senaste cell; kostnaden växer med klassen.\n\nNästa steg: Mät realistiskt antal elever, uppgifter och händelser innan optimering.\n\nKlart när: Dokumenterad svarstid och läskostnad; felaktig data blir synligt fel, inte grå cell.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nKräver: matrix → scale\nKräver: redis → scale\nPåverkar: scale → pilot\nKräver: scale → pilot\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 1260,
+      "y": 680,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Överblick",
+        "Saknas",
+        "verifiering"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#fee2e2",
+      "caption": "Saknas",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "review",
+      "title": "Original och anteckning i overlay",
+      "content": "Original och anteckning i overlay\n\nStatus: Lokalt klart · 2026-10-06\nID: review\nOmråde: Genomgång\n\nSyfte: Öppna elevens arbete, bläddra och spara intern läraranteckning med revisionsskydd.\n\nNästa steg: Utveckla sammanhållen elevgenomgång, därefter en återkopplingsfunktion åt gången.\n\nKlart när: Kommentar ändrar inte original; elev- eller lärarkonflikt skriver inte över annan data.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: fec960e + 0b1eaa8; lokalt testat. Ej pushat/publicerat.\n\nRelationer:\nPåverkar: original → review\nPåverkar: matrix → review\nKräver: original → review\nPåverkar: review → pupil-review\nPåverkar: review → feedback\nPåverkar: review → print\nKräver: review → pupil-review\nKräver: review → draft\nKräver: review → feedback\nKräver: review → print\nKräver: review → redis\nKräver: review → pilot\nPåverkar: permissions → review\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 1680,
+      "y": 0,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Genomgång",
+        "Lokalt klart",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#dbeafe",
+      "caption": "Lokalt klart",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "pupil-review",
+      "title": "Elevens hela uppdrag och återuppta",
+      "content": "Elevens hela uppdrag och återuppta\n\nStatus: Föreslaget · 2026-10-06\nID: pupil-review\nOmråde: Genomgång\n\nSyfte: Gå igenom en elev åt gången och återuppta där arbetet avbröts.\n\nNästa steg: Bestäm hur hela uppdraget, aktuell position och nästa elev visas.\n\nKlart när: Ungefär 30 elevers arbeten kan granskas i följd utan tappad position.\n\nÖppet beslut: Vilken position ska sparas och för vem? Nuvarande bläddring är inom vald uppgift.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nPåverkar: review → pupil-review\nKräver: review → pupil-review\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 1680,
+      "y": 680,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Genomgång",
+        "Föreslaget",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#f1f5f9",
+      "caption": "Föreslaget",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "draft",
+      "title": "Skydda osparad lärartext överallt",
+      "content": "Skydda osparad lärartext överallt\n\nStatus: Saknas · 2026-10-06\nID: draft\nOmråde: Genomgång\n\nSyfte: Nuvarande skydd täcker intern navigation och stängning men inte alla andra lärarflikar.\n\nNästa steg: Lägg skydd vid utträde ur hela sektionen; välj om lokal textåterhämtning behövs.\n\nKlart när: Alla relevanta utträden varnar eller bevarar utkast efter uttryckligt valt beteende.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nKräver: review → draft\nPåverkar: draft → feedback\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 1680,
+      "y": 1360,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Genomgång",
+        "Saknas",
+        "deluppgift"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#fee2e2",
+      "caption": "Saknas",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "feedback",
+      "title": "Elevsynlig kommentar och återlämning",
+      "content": "Elevsynlig kommentar och återlämning\n\nStatus: Beslut behövs · 2026-10-06\nID: feedback\nOmråde: Återkoppling\n\nSyfte: Skilj intern läraranteckning från feedback som eleven får tillbaka.\n\nNästa steg: Besluta publiceringsögonblick och vad som händer om eleven ändrar arbetet.\n\nKlart när: Eleven ser endast uttryckligen återlämnad feedback för rätt underlagsrevision.\n\nÖppet beslut: Ingen elevsynlig kommentar eller återlämning är byggd.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nPåverkar: review → feedback\nPåverkar: draft → feedback\nKräver: review → feedback\nKräver: feedback-policy → feedback\nKräver: lifecycle → feedback\nPåverkar: feedback → followup\nPåverkar: feedback-policy → feedback\nKräver: feedback → followup\nPåverkar: lifecycle → feedback\nPåverkar: permissions → feedback\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 2100,
+      "y": 0,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Återkoppling",
+        "Beslut behövs",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#fef3c7",
+      "caption": "Beslut behövs",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "print",
+      "title": "Skriv ut granskad uppgift",
+      "content": "Skriv ut granskad uppgift\n\nStatus: Planerat · 2026-10-06\nID: print\nOmråde: Återkoppling\n\nSyfte: Ge ett begripligt papper med elevens arbete och valda lärarkommentarer.\n\nNästa steg: Bestäm innehåll; gör utskriftsutkast före renderingsarbete.\n\nKlart när: Läsbar utskrift av en bestämd revision; facit och interna anteckningar läcker inte av misstag.\n\nÖppet beslut: Word/PDF/utskriftsvy är inte byggd.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nPåverkar: review → print\nPåverkar: feedback-policy → print\nKräver: review → print\nKräver: print-policy → print\nPåverkar: print-policy → print\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 2100,
+      "y": 680,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Återkoppling",
+        "Planerat",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#fef9c3",
+      "caption": "Planerat",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "followup",
+      "title": "Välj liknande uppgifter igen",
+      "content": "Välj liknande uppgifter igen\n\nStatus: Föreslaget · 2026-10-06\nID: followup\nOmråde: Återkoppling\n\nSyfte: Läraren väljer riktad uppföljning efter granskning.\n\nNästa steg: Bestäm screening eller träning; bygg därefter förhandsgranskning och explicit tilldelning.\n\nKlart när: Inget skickas automatiskt. Valda uppgifter håller sig till valt syfte och talområde.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nPåverkar: direction → followup\nPåverkar: feedback → followup\nPåverkar: tips → followup\nKräver: dispatch → followup\nKräver: feedback → followup\nKräver: tips → followup\nKräver: followup-policy → followup\nPåverkar: followup-policy → followup\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 2100,
+      "y": 1360,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Återkoppling",
+        "Föreslaget",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#f1f5f9",
+      "caption": "Föreslaget",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "analysis",
+      "title": "Tre försiktiga analyssignaler",
+      "content": "Tre försiktiga analyssignaler\n\nStatus: Byggt · 2026-10-06\nID: analysis\nOmråde: Analys\n\nSyfte: Observera kolumnplacering, synligt resultat kontra slutsvar och S2-mönstret 402−178→376.\n\nNästa steg: Kalibrera mot lärares granskning; kalla inte ett svar för säker felorsak.\n\nKlart när: Varje signal pekar på underlag; otydligt arbete ger okänt.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: Versionerade regler finns; signalerna i matrisen är lokala i 0b1eaa8.\n\nRelationer:\nPåverkar: direction → analysis\nPåverkar: packs → analysis\nPåverkar: original → analysis\nPåverkar: ipad → analysis\nKräver: original → analysis\nPåverkar: analysis → matrix\nPåverkar: analysis → rules\nPåverkar: analysis → tips\nKräver: analysis → rules\nKräver: analysis → tips\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 2520,
+      "y": 0,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Analys",
+        "Byggt",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#dcfce7",
+      "caption": "Byggt",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "rules",
+      "title": "Fler felmönster med motexempel",
+      "content": "Fler felmönster med motexempel\n\nStatus: Föreslaget · 2026-10-06\nID: rules\nOmråde: Analys\n\nSyfte: Utöka först när uppställning och elevunderlag stödjer en säker observation.\n\nNästa steg: Välj en heltalsregel, definiera matchning, motexempel och okänt; låt lärare pröva.\n\nKlart när: Regeln har belägg, version och gränser. Felsvaret ensamt räcker inte.\n\nÖppet beslut: Slarv, decimalfel och allmänna lånefel kan inte idag klassificeras automatiskt.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nPåverkar: analysis → rules\nKräver: analysis → rules\nKräver: ipad → rules\nPåverkar: rules → tips\nKräver: rules → expansion\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 2520,
+      "y": 680,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Analys",
+        "Föreslaget",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#f1f5f9",
+      "caption": "Föreslaget",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "tips",
+      "title": "Frågor och tips för läraren",
+      "content": "Frågor och tips för läraren\n\nStatus: Föreslaget · 2026-10-06\nID: tips\nOmråde: Analys\n\nSyfte: Hjälpa läraren välja en fråga som undersöker elevens tänkande.\n\nNästa steg: Knyt ett litet lärarstöd till befintlig signal och visa osäkerhet.\n\nKlart när: Tipset är förslag, visar varför och kräver inte att läraren accepterar hypotesen.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nPåverkar: analysis → tips\nPåverkar: rules → tips\nKräver: analysis → tips\nPåverkar: tips → followup\nKräver: tips → followup\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 2520,
+      "y": 1360,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Analys",
+        "Föreslaget",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#f1f5f9",
+      "caption": "Föreslaget",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "expansion",
+      "title": "Decimaler och fler räknesätt",
+      "content": "Decimaler och fler räknesätt\n\nStatus: Senare · 2026-10-06\nID: expansion\nOmråde: Analys\n\nSyfte: Utvidga först efter prövad heltalsscreening.\n\nNästa steg: Nytt innehålls- och analyskontrakt per uppgiftstyp.\n\nKlart när: Representation, facit och osäkerhet är definierade och testade.\n\nÖppet beslut: Ingen automatisk decimaldiagnos är byggd.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nPåverkar: pilot → expansion\nKräver: pilot → expansion\nKräver: rules → expansion\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 2520,
+      "y": 2040,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Analys",
+        "Senare",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#f3e8ff",
+      "caption": "Senare",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "lifecycle",
+      "title": "Radera allt eller anonymisera statistik",
+      "content": "Radera allt eller anonymisera statistik\n\nStatus: Byggt · 2026-10-06\nID: lifecycle\nOmråde: Drift\n\nSyfte: Radering tar bort elevdata; anonymisering bevarar fryst statistik utan namn och råoriginal.\n\nNästa steg: Koppla varje ny personbunden datatyp till livscykelstädningen.\n\nKlart när: Nya kommentarer, feedback och exportregler följer valt livscykelflöde.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: 9b9f894 tidigare publicerat; anteckningsstädning i lokal fec960e. Verklig Redis separat.\n\nRelationer:\nPåverkar: original → lifecycle\nKräver: lifecycle → feedback\nPåverkar: lifecycle → feedback\nPåverkar: lifecycle → redis\nKräver: lifecycle → redis\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 2940,
+      "y": 0,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Drift",
+        "Byggt",
+        "funktion"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#dcfce7",
+      "caption": "Byggt",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "redis",
+      "title": "Riktig Redis och avbrottsprovning",
+      "content": "Riktig Redis och avbrottsprovning\n\nStatus: Saknas · 2026-10-06\nID: redis\nOmråde: Drift\n\nSyfte: Robotarna använder isolerad minnesdatabas och emulerar Lua-transaktioner.\n\nNästa steg: Pröva separat testkonto: kvittens, retry, CAS, elevändring, radering och avbrott.\n\nKlart när: Samma kontrakt håller mot verklig lagring; inga riktiga elevers konton används.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nKräver: redis → scale\nPåverkar: lifecycle → redis\nKräver: original → redis\nKräver: review → redis\nKräver: lifecycle → redis\nPåverkar: redis → pilot\nKräver: redis → pilot\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 2940,
+      "y": 680,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Drift",
+        "Saknas",
+        "verifiering"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#fee2e2",
+      "caption": "Saknas",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "pilot",
+      "title": "Liten klassrumspilot",
+      "content": "Liten klassrumspilot\n\nStatus: Planerat · 2026-10-06\nID: pilot\nOmråde: Drift\n\nSyfte: Pröva att elev- och lärarflödet fungerar som screening i vardagen.\n\nNästa steg: Avgränsa grupp, uppgifter, framgångskriterier och sätt att fånga hinder.\n\nKlart när: Elever kan lämna in och läraren kan granska; problem dokumenteras före expansion.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nPåverkar: ipad → pilot\nPåverkar: scale → pilot\nPåverkar: redis → pilot\nKräver: redis → pilot\nKräver: ipad → pilot\nKräver: matrix → pilot\nKräver: review → pilot\nKräver: scale → pilot\nPåverkar: pilot → expansion\nKräver: pilot → expansion\n\nIssue: Saknar separat issue.",
+      "type": "text",
+      "x": 2940,
+      "y": 1360,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Drift",
+        "Planerat",
+        "verifiering"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#fef9c3",
+      "caption": "Planerat",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": ""
+    },
+    {
+      "id": "issue3",
+      "title": "Inaktivitet kontra stödsignal",
+      "content": "Inaktivitet kontra stödsignal\n\nStatus: Planerat · 2026-10-06\nID: issue3\nOmråde: Övriga issues\n\nSyfte: Separat arbete för vanliga lärardashboarden.\n\nNästa steg: Prioritera separat från Screening.\n\nKlart när: Inaktivitet blandas inte ihop med belagd matematisk svårighet.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nInga angivna.\n\nIssue: https://github.com/ximonse/sequential_math/issues/3",
+      "type": "text",
+      "x": 3360,
+      "y": 0,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Övriga issues",
+        "Planerat",
+        "issue"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#fef9c3",
+      "caption": "Planerat",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": "[GitHub issue](https://github.com/ximonse/sequential_math/issues/3)"
+    },
+    {
+      "id": "issue2",
+      "title": "Räknesätt för blandad träning",
+      "content": "Räknesätt för blandad träning\n\nStatus: Planerat · 2026-10-06\nID: issue2\nOmråde: Övriga issues\n\nSyfte: Separat önskemål om lärarstyrning av vanlig träning.\n\nNästa steg: Prioritera separat från Screening.\n\nKlart när: Klassens träning håller sig till valda räknesätt.\n\nÖppet beslut: Inget ytterligare beslut angivet.\n\nBelägg / publicering: Ingen implementerad leverans angiven.\n\nRelationer:\nInga angivna.\n\nIssue: https://github.com/ximonse/sequential_math/issues/2",
+      "type": "text",
+      "x": 3360,
+      "y": 680,
+      "z": 0,
+      "width": 370,
+      "height": 620,
+      "tags": [
+        "Screening",
+        "Övriga issues",
+        "Planerat",
+        "issue"
+      ],
+      "createdAt": "2026-10-06T12:00:00Z",
+      "updatedAt": "2026-10-06T12:00:00Z",
+      "backgroundColor": "#fef9c3",
+      "caption": "Planerat",
+      "comment": "Relationslinjer i Soul Canvas är generella. Riktning och typ anges i korttexten.",
+      "link": "[GitHub issue](https://github.com/ximonse/sequential_math/issues/2)"
+    }
+  ],
+  "synapses": [
+    {
+      "id": "rel-0",
+      "sourceId": "analysis",
+      "targetId": "matrix",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-1",
+      "sourceId": "analysis",
+      "targetId": "rules",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-2",
+      "sourceId": "analysis",
+      "targetId": "tips",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-3",
+      "sourceId": "direction",
+      "targetId": "analysis",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-4",
+      "sourceId": "direction",
+      "targetId": "dispatch",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-5",
+      "sourceId": "direction",
+      "targetId": "followup",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-6",
+      "sourceId": "direction",
+      "targetId": "followup-policy",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-7",
+      "sourceId": "dispatch",
+      "targetId": "dispatch-ux",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-8",
+      "sourceId": "dispatch",
+      "targetId": "followup",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-9",
+      "sourceId": "dispatch",
+      "targetId": "matrix",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-10",
+      "sourceId": "dispatch",
+      "targetId": "original",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-11",
+      "sourceId": "draft",
+      "targetId": "feedback",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-12",
+      "sourceId": "feedback",
+      "targetId": "followup",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-13",
+      "sourceId": "feedback-policy",
+      "targetId": "feedback",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-14",
+      "sourceId": "feedback-policy",
+      "targetId": "print",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-15",
+      "sourceId": "followup-policy",
+      "targetId": "followup",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-16",
+      "sourceId": "grid",
+      "targetId": "cursor",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-17",
+      "sourceId": "grid",
+      "targetId": "ipad",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-18",
+      "sourceId": "ipad",
+      "targetId": "analysis",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-19",
+      "sourceId": "ipad",
+      "targetId": "pilot",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-20",
+      "sourceId": "ipad",
+      "targetId": "rules",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-21",
+      "sourceId": "lifecycle",
+      "targetId": "feedback",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-22",
+      "sourceId": "lifecycle",
+      "targetId": "redis",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-23",
+      "sourceId": "matrix",
+      "targetId": "pilot",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-24",
+      "sourceId": "matrix",
+      "targetId": "review",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-25",
+      "sourceId": "matrix",
+      "targetId": "scale",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-26",
+      "sourceId": "original",
+      "targetId": "analysis",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-27",
+      "sourceId": "original",
+      "targetId": "grid",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-28",
+      "sourceId": "original",
+      "targetId": "lifecycle",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-29",
+      "sourceId": "original",
+      "targetId": "matrix",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-30",
+      "sourceId": "original",
+      "targetId": "redis",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-31",
+      "sourceId": "original",
+      "targetId": "review",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-32",
+      "sourceId": "packs",
+      "targetId": "analysis",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-33",
+      "sourceId": "packs",
+      "targetId": "dispatch",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-34",
+      "sourceId": "packs",
+      "targetId": "dispatch-ux",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-35",
+      "sourceId": "permissions",
+      "targetId": "dispatch",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-36",
+      "sourceId": "permissions",
+      "targetId": "feedback",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-37",
+      "sourceId": "permissions",
+      "targetId": "matrix",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-38",
+      "sourceId": "permissions",
+      "targetId": "review",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-39",
+      "sourceId": "pilot",
+      "targetId": "expansion",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-40",
+      "sourceId": "print-policy",
+      "targetId": "print",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-41",
+      "sourceId": "redis",
+      "targetId": "pilot",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-42",
+      "sourceId": "redis",
+      "targetId": "scale",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-43",
+      "sourceId": "review",
+      "targetId": "draft",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-44",
+      "sourceId": "review",
+      "targetId": "feedback",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-45",
+      "sourceId": "review",
+      "targetId": "pilot",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-46",
+      "sourceId": "review",
+      "targetId": "print",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-47",
+      "sourceId": "review",
+      "targetId": "pupil-review",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-48",
+      "sourceId": "review",
+      "targetId": "redis",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-49",
+      "sourceId": "rules",
+      "targetId": "expansion",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-50",
+      "sourceId": "rules",
+      "targetId": "tips",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-51",
+      "sourceId": "scale",
+      "targetId": "pilot",
+      "strength": 1,
+      "autoGenerated": false
+    },
+    {
+      "id": "rel-52",
+      "sourceId": "tips",
+      "targetId": "followup",
+      "strength": 1,
+      "autoGenerated": false
+    }
+  ],
+  "sessions": [
+    {
+      "id": "screening-2026-10-06",
+      "name": "Screening · plan 2026-10-06",
+      "cardIds": [
+        "direction",
+        "feedback-policy",
+        "print-policy",
+        "followup-policy",
+        "permissions",
+        "dispatch",
+        "packs",
+        "dispatch-ux",
+        "original",
+        "grid",
+        "cursor",
+        "ipad",
+        "matrix",
+        "scale",
+        "review",
+        "pupil-review",
+        "draft",
+        "feedback",
+        "print",
+        "followup",
+        "analysis",
+        "rules",
+        "tips",
+        "expansion",
+        "lifecycle",
+        "redis",
+        "pilot",
+        "issue3",
+        "issue2"
+      ],
+      "viewState": {
+        "x": 30,
+        "y": 30,
+        "zoom": 0.28
+      },
+      "createdAt": 1791288000000,
+      "lastOpened": 1791288000000
+    }
+  ],
+  "activeSessionId": "screening-2026-10-06",
+  "conversations": [],
+  "trails": [],
+  "sequences": [],
+  "trailUi": {
+    "selectedTrailIds": [],
+    "showActiveTrailLine": true
+  },
+  "omnical": {
+    "pendingFiles": [],
+    "ignoredNoteIds": []
+  },
+  "cardFiles": {}
+}

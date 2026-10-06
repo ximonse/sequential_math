@@ -5,6 +5,8 @@ import { createPilotStudentAuth, createQrSecret, reserveStudentLoginCode } from 
 import { createStudentRecord } from '../api/_studentStore.js'
 import { hashTeacherPassword } from '../api/_helpers.js'
 import { ALL_OPERATIONS } from '../src/lib/operations.js'
+import { createDiagnosticGrid, recordDiagnosticGridEvent } from '../src/domains/arithmetic/diagnosticGridModel.js'
+import diagnosticManifest from '../src/domains/arithmetic/diagnosticTasks.v1.json'
 
 export const ROBOT_CLASS_ID = 'robot-klass'
 export const ROBOT_PIN = '2468'
@@ -100,6 +102,34 @@ function emptyPupil(studentId, displayAlias, classId, className = classId) {
 }
 
 export async function handleControl(action, body = {}) {
+  if (action === 'seed-pupil-lifecycle') {
+    const studentId = String(body.studentId)
+    const profile = await kv.get(`student:${studentId}`)
+    if (!profile) return { ok: false }
+    const task = diagnosticManifest.tasks[0]
+    const attemptId = `retire-${studentId}`
+    const assignmentId = `retire-assignment-${studentId}`
+    const itemId = `retire-item-${studentId}`
+    const grid = recordDiagnosticGridEvent(createDiagnosticGrid({ attemptId, taskId: task.taskId,
+      taskVersion: task.taskVersion }), { type: 'answer_change', before: '', after: '699' }, Date.now())
+    await kv.set(`diagnostic_assignment:${assignmentId}`, { assignmentId, classId: profile.classId,
+      studentIds: [studentId], items: [{ assignmentItemId: itemId, taskSnapshot: task }] })
+    await kv.set(`diagnostic_attempt:${attemptId}`, { attemptId, studentId, assignmentId, assignmentItemId: itemId,
+      taskId: task.taskId, taskVersion: task.taskVersion, serverRevision: 1, lastSequence: 1,
+      evidenceClass: 'diagnostic_only', status: 'in_progress', grid: { ...grid, events: [] }, createdAt: Date.now() })
+    await kv.set(`diagnostic_attempt_events:${attemptId}`, grid.events)
+    await kv.set(`diagnostic_active:${studentId}:${itemId}`, attemptId)
+    await kv.set(`student:${studentId}`, { ...profile, name: 'Private retirement name', preferredName: 'Private retirement name',
+      problemLog: [{ timestamp: Date.now(), correct: true, operation: 'addition', studentAnswer: 4, correctAnswer: 4 }],
+      stats: { ...profile.stats, totalProblems: 1, lifetimeProblems: 1, correctAnswers: 1 } })
+    return { ok: true, attemptId, assignmentId }
+  }
+  if (action === 'inspect-pupil-lifecycle') {
+    return { profileExists: Boolean(await kv.get(`student:${body.studentId}`)),
+      attemptExists: Boolean(await kv.get(`diagnostic_attempt:${body.attemptId}`)),
+      eventsExist: Boolean(await kv.get(`diagnostic_attempt_events:${body.attemptId}`)),
+      assignmentExists: Boolean(await kv.get(`diagnostic_assignment:${body.assignmentId}`)) }
+  }
   if (action === 'reset') { kv._reset(); return { ok: true } }
   if (action === 'seed') {
     const operations = Array.isArray(body.operations) ? body.operations : ALL_OPERATIONS

@@ -1,10 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createHash } from 'node:crypto'
 import { verifyPasswordAgainstAuth } from './_studentPassword.js'
+import { emulatePupilLifecycle } from './testHelpers/pupilLifecycleKv.js'
 
 const memory = vi.hoisted(() => new Map())
 vi.mock('@vercel/kv', () => ({ kv: {
   get: vi.fn(async key => structuredClone(memory.get(key) ?? null)),
+  scan: vi.fn(async (_cursor, { match }) => [0, [...memory.keys()].filter(key => key.startsWith(match.replace('*', '')))]),
   exists: vi.fn(async key => memory.has(key) ? 1 : 0),
   smembers: vi.fn(async key => [...(memory.get(key) || [])]),
   sadd: vi.fn(async (key, ...values) => {
@@ -20,6 +22,8 @@ vi.mock('@vercel/kv', () => ({ kv: {
   set: vi.fn(async (key, value) => memory.set(key, structuredClone(value))),
   del: vi.fn(async key => memory.delete(key)),
   eval: vi.fn(async (_script, keys, args) => {
+    const lifecycle = emulatePupilLifecycle(memory, _script, keys, args)
+    if (lifecycle) return lifecycle.result
     // Atomic fake Redis boundary; conflict/retry behavior runs in real handlers.
     const [key, deletedKey, indexKey] = keys
     const [expected, operation, json, id] = args
@@ -419,7 +423,7 @@ describe('student persistence boundary', () => {
 
     const response = await call(studentHandler, 'DELETE', {}, admin)
 
-    expect(response).toMatchObject({ code: 200, data: { ok: true, highscoreCleanup: 'complete' } })
+    expect(response).toMatchObject({ code: 200, data: { ok: true, deleted: true } })
     expect(memory.get('highscores:pong:A')).toEqual([
       { studentId: 'OTHER', name: 'Other', score: 90 }
     ])

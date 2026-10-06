@@ -4,6 +4,8 @@
 import { STUDENT_CAS_SCRIPT } from '../api/_studentStore.js'
 import { CREATE_DIAGNOSTIC_ASSIGNMENT_SCRIPT, OPEN_DIAGNOSTIC_ATTEMPT_SCRIPT } from '../api/_diagnosticAssignmentStore.js'
 import { DIAGNOSTIC_APPEND_CAS_SCRIPT } from '../api/_diagnosticAttemptStore.js'
+import { BEGIN_PUPIL_LIFECYCLE_SCRIPT, FINISH_PUPIL_LIFECYCLE_SCRIPT } from '../api/_pupilLifecycle.js'
+import { PUPIL_REFERENCE_WRITE_SCRIPT, GUARDED_PUPIL_KEY_SCRIPT, removePupilReferences } from '../api/_pupilReferenceWrite.js'
 
 const values = new Map()
 const sets = new Map()
@@ -20,6 +22,10 @@ export const kv = {
   },
   async del(...keys) { let n = 0; for (const key of keys.flat()) { if (values.delete(key) || sets.delete(key)) n++ } return n },
   async exists(...keys) { return keys.flat().filter(key => values.has(key) || sets.has(key)).length },
+  async scan(_cursor, { match } = {}) {
+    const expression = new RegExp('^' + String(match || '*').split('*').map(part => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*') + '$')
+    return [0, [...new Set([...values.keys(), ...sets.keys()])].filter(key => expression.test(key))]
+  },
   async incr(key) { const next = Number(values.get(key) || 0) + 1; values.set(key, next); return next },
   async expire() { return 1 },
   async smembers(key) { return [...(sets.get(key) || [])] },
@@ -27,6 +33,56 @@ export const kv = {
   async sadd(key, ...members) { const set = sets.get(key) || new Set(); sets.set(key, set); let n = 0; for (const m of members.flat()) { if (!set.has(m)) { set.add(m); n++ } } return n },
   async srem(key, ...members) { const set = sets.get(key); if (!set) return 0; let n = 0; for (const m of members.flat()) if (set.delete(m)) n++; return n },
   async eval(script, keys = [], args = []) {
+    if (script === GUARDED_PUPIL_KEY_SCRIPT) {
+      if (values.has(keys[1]) || values.has(keys[2]) || (args[3] === 'live' && !values.has(keys[3]))) return 0
+      if (args[0] === 'member') await kv.sadd(keys[0], args[1])
+      else if (args[0] === 'score-member') await kv.sadd(keys[0], parse(args[1]))
+      else if (args[0] !== 'reserve' || !values.has(keys[0])) values.set(keys[0], parse(args[1]))
+      return 1
+    }
+    if (script === PUPIL_REFERENCE_WRITE_SCRIPT) {
+      const ids = parse(args[1])
+      const blocked = new Set(ids.filter((_id, index) => values.has(keys[index + 1])))
+      values.set(keys[0], removePupilReferences(parse(args[0]), blocked))
+      return 1
+    }
+    if (script === BEGIN_PUPIL_LIFECYCLE_SCRIPT) {
+      const [profileKey, deletedKey, jobKey, indexKey, pendingKey] = keys
+      const [revision, json, timestamp, id] = args
+      if (values.has(jobKey)) return 2
+      if (values.has(deletedKey)) return -2
+      const profile = values.get(profileKey)
+      if (!profile) return -1
+      if ((profile.serverRevision || 0) !== Number(revision)) return 0
+      values.set(jobKey, { ...parse(json), profile: clone(profile) })
+      values.set(deletedKey, timestamp)
+      values.delete(profileKey)
+      await kv.srem(indexKey, id)
+      await kv.sadd(pendingKey, id)
+      return 1
+    }
+    if (script === FINISH_PUPIL_LIFECYCLE_SCRIPT) {
+      const [jobKey, pendingKey, archiveKey, archiveIndex] = keys
+      const [json, archiveJson, id, archiveId] = args
+      if (!values.has(jobKey)) return 2
+      const plan = parse(json)
+      const stable = value => value && typeof value === 'object' && !Array.isArray(value)
+        ? Object.fromEntries(Object.keys(value).sort().map(key => [key, stable(value[key])]))
+        : Array.isArray(value) ? value.map(stable) : value
+      for (const patch of plan.patches) {
+        if (JSON.stringify(stable(values.get(patch.key) ?? null)) !== JSON.stringify(stable(patch.before))) return 0
+      }
+      for (const patch of plan.patches) {
+        if (patch.after === null) values.delete(patch.key)
+        else values.set(patch.key, clone(patch.after))
+      }
+      await kv.del(...plan.deletes)
+      for (const removal of plan.removals) await kv.srem(removal.key, removal.member)
+      if (archiveJson) { values.set(archiveKey, parse(archiveJson)); await kv.sadd(archiveIndex, archiveId) }
+      values.delete(jobKey)
+      await kv.srem(pendingKey, id)
+      return 1
+    }
     if (script === CREATE_DIAGNOSTIC_ASSIGNMENT_SCRIPT) {
       const [assignmentKey, deletedClassKey, classKey] = keys
       const [count, classId, json] = args
@@ -111,6 +167,7 @@ export const kv = {
       if (operation === 'delete') {
         values.set(deletedKey, payload); values.delete(recordKey); await kv.srem(indexKey, id)
       } else {
+        for (const pupilKey of keys.slice(3)) if (values.has(pupilKey)) return -4
         const next = parse(payload)
         for (const classId of next?.classIds || []) if (values.has(`class_deleted:${classId}`)) return -3
         values.set(recordKey, next); await kv.sadd(indexKey, id)

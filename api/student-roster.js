@@ -8,6 +8,7 @@ import { createStudentRecord, mutateStudentRecord, studentStoreError } from './_
 import { createClassLoginToken, createPilotStudentAuth, reserveStudentLoginCode } from './_studentSession.js'
 import { generateDisplayAlias, generateStudentPin } from './_studentAlias.js'
 import { hasSchoolScope, isSchoolAdminRole } from './_teacherRoles.js'
+import { guardPupilKey } from './_pupilReferenceWrite.js'
 
 const digest = text => createHash('sha256').update(text).digest('hex')
 const normalizeRosterName = value => String(value || '').normalize('NFC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('sv')
@@ -153,7 +154,7 @@ export default async function handler(req, res) {
           }
           takenAliases.add(current.displayAlias)
           await reserveStudentLoginCode(studentId, () => current.displayAlias)
-          await kv.sadd(`class_students:${target.id}`, studentId)
+          if (!await guardPupilKey(`class_students:${target.id}`, studentId, studentId, { operation: 'member', live: true })) throw studentStoreError(410, 'Eleven har tagits bort.')
           results.push({ studentId, displayAlias: current.displayAlias, qrSecret, pin, ok: true })
         } catch (error) {
           results.push({ studentId, ok: false, error: error.status ? error.message : 'Kunde inte skapa elevplatsen.' })
@@ -198,7 +199,7 @@ export default async function handler(req, res) {
             if (current?.enrollmentKey !== enrollmentKey) throw error
           }
         }
-        await kv.sadd(`class_students:${target.id}`, studentId)
+        if (!await guardPupilKey(`class_students:${target.id}`, studentId, studentId, { operation: 'member', live: true })) throw studentStoreError(410, 'Eleven har tagits bort.')
         await reserveStudentLoginCode(studentId, () => current.displayAlias)
         takenAliases.add(current.displayAlias)
         results.push({ studentId, name: String(current.preferredName || current.name || name).trim(), displayAlias: current.displayAlias, qrSecret, pin, ok: true })
@@ -213,7 +214,7 @@ export default async function handler(req, res) {
           return { ...current, classIds: [...new Set([current.classId, ...(current.classIds || []), target.id].filter(Boolean))],
             classId: current.classId || target.id, className: current.className || target.name }
         })
-        await kv.sadd(`class_students:${target.id}`, studentId)
+        if (!await guardPupilKey(`class_students:${target.id}`, studentId, studentId, { operation: 'member', live: true })) throw studentStoreError(410, 'Eleven har tagits bort.')
         results.push({ studentId, name: saved.name, ok: true })
       } catch (error) { results.push({ studentId, ok: false, error: error.status ? error.message : 'Kunde inte lägga till eleven.' }) }
     }

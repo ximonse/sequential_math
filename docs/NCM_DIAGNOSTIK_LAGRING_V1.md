@@ -97,63 +97,24 @@ servern utan att raderas vid konflikt.
   aktiva pekare, index och framtida analys-/exportnycklar städas återupptagbart
   från elevindex. Klassradering stoppar nya försök och åtkomst via den klassen.
 
-## Bevarad statistik efter radering
+## Radering och anonymisering är separata åtgärder
 
-Simon har beslutat att diagnostisk statistik ska kunna bevaras utan namn när
-elev eller klass raderas. Den historiska serien ska visa elevens utveckling
-fram till raderingen och därefter frysas. En ny elevprofil eller senare
-användning av appen får aldrig automatiskt knytas till den gamla serien.
-Detta är en separat härledd resurs, inte ett undantag som låter råa försök,
-elev-ID, uppställningar eller händelseloggar ligga kvar i försökslagringen. En
-raderingsprocess får inte rapportera klart förrän den antingen har skapat den
-tillåtna statistikresursen och städat personkopplingen, eller har rapporterat
-ett synligt fel som går att återuppta. Ingen statistik får visas från en
-halvfärdig radering.
+Permanent elevradering tar bort träningsstatistik och NCM-original utan att
+skapa ett statistikarkiv. Anonymisering tar bort samma konto och original,
+men sparar en fryst historisk statistikserie utan namn eller kontokoppling.
+Detta ersätter det tidigare beslutet om bevarad statistik efter radering.
 
-En slumpmässig arkivnyckel får hålla ihop mätpunkter som redan fanns för en
-elev före raderingen. Kopplingen mellan arkivnyckeln och aktivt elev-ID får
-bara finnas under den återupptagbara raderingsprocessen och tas bort när den
-är klar. Arkivet får inte vara en sökbar aliaslista för tidigare elever eller
-en källa som återkopplas till framtida konton. En individuell historisk kurva
-kan ändå vara möjlig att identifiera, exempelvis i en liten klass. Den
-behandlas därför som pseudonymiserade personuppgifter, inte som anonym data.
+`api/_pupilLifecycle.js` ansluter båda åtgärderna till elev-API:t. Den spärrar
+nya elevskrivningar, fryser underlaget i ett återupptagbart jobb och städar
+råa försök, händelser, sessioner och referenser. Vid anonymisering används
+`diagnosticArchiveSeries.js`; arkivet publiceras atomiskt när städningen är
+klar. Saknat eller korrupt diagnostikunderlag ger ett synligt fel.
 
-Ett ännu **opublicerat och opersisterat** punktutkast finns i
-`diagnosticArchivePoint.js`. Det tillåter bara uppgifts-ID/version,
-serverbestämd startmånad (eller `null` för äldre försök), inlämningsstatus,
-svarsläge, om arbetshändelser finns, antal slutligt ifyllda rutor och
-observerad kolumnplacering eller `unknown`. Elev-/klass-/lärar-ID, försöks-ID,
-exakt klockslag, exakt slutsvar, råa rutor och händelser följer inte med. Funktionen kontrollerar
-att försöksrevision, uppgiftsversion och händelseantal hänger ihop före
-omvandlingen. Detta är inte ett beslut om retention, åtkomst eller att
-statistikresursen är anonym.
-`diagnosticArchiveSeries.js` bygger ett fryst, kronologiskt utkast av dessa
-punkter. Serien innehåller ingen aktiv kontonyckel. Slumpmässigt arkiv-ID,
-persistens, behörig läsning, gallring och återupptagbar rensning ingår ännu
-inte; inget anrop från elevradering använder utkastet.
-`api/_diagnosticArchivePreparation.js` kan, efter en verifierad elevtombstone,
-läsa hela elevens råa försöksindex, återspela varje försök mot dess frysta
-uppgift och bygga serien. Saknade poster, bruten uppgiftskoppling eller
-korrupt händelseordning ger fel i stället för tyst bortfall. Funktionen
-varken skriver arkivet eller raderar rådata. Det behövs fortfarande en
-återupptagbar servertransaktion som först säkrar serien och därefter städar
-råa nycklar och personkopplingar.
-`api/_diagnosticDeletionPlan.js` läser efter tombstone de två elevindexen och
-listar uppdragsmedlemskap, aktiva pekare, försöksposter och händelsenycklar
-som rensningen behöver hantera. Den validerar att aktiva pekare hör till
-rätt uppdragspost och finns i elevens försöksindex. Den kontrollerar även
-klassens uppdragsindex och uppdragets försöksindex, inklusive att inget försök
-för eleven saknas i elevindexet. Den skriver
-eller raderar inget. Äldre tilldelningar utan det nya elevindexet behöver en
-separat migrering eller verifierad rekonstruktion innan planen får köras på
-sådana data.
-
-Gruppjämförelser kan härledas separat från historiska serier. Små grupper och
-filterkombinationer som kan peka ut en elev måste undertryckas eller slås
-ihop. Innan verkliga elevdata ansluts ska arkivets fält, retention,
-behörigheter och en återupptagbar raderingsordning fastställas och testas.
-[IMY:s vägledning](https://www.imy.se/verksamhet/dataskydd/innovationsportalen/vi-guidar-dig/vi-hanterar-bara-anonymiserade-personuppgifter-da-kan-vi-val-bortse-fran-gdpr/)
-skiljer uttryckligen på anonymisering och pseudonymisering.
+Huvudadministratören kan läsa, exportera och radera statistikarkivet och
+återuppta avbruten städning. Se [hela livscykelkontraktet](PUPIL_LIFECYCLE.md)
+för fält, åtkomst, lokala kopior och kvarvarande verifieringsgränser.
+En individuell serie kan fortfarande vara möjlig att identifiera genom
+annan kunskap; avsaknad av namn garanterar inte full anonymitet.
 
 ## Acceptansfall före anslutning till elevvyn
 
@@ -170,7 +131,7 @@ skiljer uttryckligen på anonymisering och pseudonymisering.
 - Radering som avbryts mitt i städningen kan köras igen utan att ett försök
   blir läsbart under tiden.
 - Bevarad statistik innehåller inga råa uppställningar, händelser eller direkta
-  elev-ID. En historisk elevserie fryses vid radering och kan inte få nya
+  elev-ID. En historisk elevserie fryses vid anonymisering och kan inte få nya
   mätpunkter. Individuella serier hanteras som pseudonymiserade personuppgifter;
   små gruppurval eller kombinerade filter får inte avslöja en elev.
 
@@ -187,9 +148,7 @@ och hela återupptagningsflödet finns.
 `api/_diagnosticAssignmentStore.js` fryser uppgiftsmanifestets innehåll i en
 serverstyrd tilldelning och skapar/återöppnar högst ett aktivt försök atomiskt
 per elev och uppdragspost. Lagringsmodulen kräver en auktoriserad anropare;
-pilot-API:erna tillhandahåller den gränsen när de är aktiverade. Raderingskedjan
-är fortfarande inte färdig trots att medlemskap, tombstones och
-stoppad tilldelning kontrolleras i Redis-transaktionen.
+pilot-API:erna tillhandahåller den gränsen när de är aktiverade. Elevraderingskedjan är ansluten lokalt; faktisk Redis-körning återstår.
 Arkivets exakta fält,
 retention och behörighet samt lärarens uttryckliga återöppning av inlämnat
 försök behöver fortfarande fastställas före verkliga elevuppdrag.
@@ -219,7 +178,7 @@ fältet visas utan påhittad tid. Elevvägen kräver levande QR/PIN-session och
 origin/CSRF för mutationer. Elevens
 klassmedlemskap, frysta tilldelning och uppgift kontrolleras före läsning och
 skrivning, och append gör dessutom dessa kontroller atomiskt i Redis-skriptet.
-Raderings-/arkivkopplingen och en körning mot verklig Redis återstår innan
+Raderings-/arkivkopplingen finns lokalt. En körning mot verklig Redis återstår innan
 flaggan får aktiveras med elevdata.
 
 Testkontots elevvy skriver nu en separat AES-GCM-krypterad arbetskopia av

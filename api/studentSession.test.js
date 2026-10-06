@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { emulatePupilLifecycle } from './testHelpers/pupilLifecycleKv.js'
 
 const records = vi.hoisted(() => new Map())
 vi.mock('@vercel/kv', () => ({ kv: {
@@ -8,7 +9,11 @@ vi.mock('@vercel/kv', () => ({ kv: {
   del: vi.fn(async key => records.delete(key)),
   incr: vi.fn(async key => { const value = Number(records.get(key) || 0) + 1; records.set(key, value); return value }),
   expire: vi.fn(async () => 1),
-  eval: vi.fn(async (_script, keys) => { const key = keys[0]; const value = Number(records.get(key) || 0) + 1; records.set(key, value); return value })
+  eval: vi.fn(async (script, keys, args) => {
+    const lifecycle = emulatePupilLifecycle(records, script, keys, args)
+    if (lifecycle) return lifecycle.result
+    const key = keys[0]; const value = Number(records.get(key) || 0) + 1; records.set(key, value); return value
+  })
 } }))
 
 import { createPilotStudentAuth, createQrSecret, getLiveStudentSession, isStudentLoginIpRateLimited, MAX_STUDENT_LOGIN_FAILURES_PER_IP, recordStudentLoginFailure, requestOriginIsTrusted, studentLoginCodeIndexKey, verifyPilotStudentCredentials } from './_studentSession.js'

@@ -3,6 +3,7 @@ import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
 import { getLiveStudentSession, hasStudentCsrf, requestOriginIsTrusted } from './_studentSession.js'
 import { verifyStudentCredential } from './_studentPassword.js'
+import { writePupilReferences, guardPupilKey } from './_pupilReferenceWrite.js'
 import {
   isCurrentStudentProfile
 } from '../src/lib/studentProfileContract.js'
@@ -68,7 +69,7 @@ export async function removeStudentHighscores(studentId, classIds = [], store = 
     if (!Array.isArray(list)) continue
     const filtered = list.filter(entry => String(entry?.studentId || '').toUpperCase() !== normalizedId)
     removedEntries += list.length - filtered.length
-    if (filtered.length !== list.length) await store.set(key, filtered)
+    if (filtered.length !== list.length) await writePupilReferences(key, filtered, { store })
   }
   await store.del(indexKey)
   return { removedEntries, inspectedLists: keys.size }
@@ -161,8 +162,10 @@ export default async function handler(req, res) {
       return res.status(200).json({ qualified: false, rank: null, highscores: highscoreListDto(list) })
     }
 
-    await kv.set(key, trimmed)
-    await kv.sadd(getHighscoreIndexKey(normalizedStudentId), key)
+    await writePupilReferences(key, trimmed)
+    // The cleanup scans score lists too; do not recreate a retired pupil's index.
+    if (!await guardPupilKey(getHighscoreIndexKey(normalizedStudentId), normalizedStudentId, key,
+      { operation: 'score-member', live: true })) return res.status(410).json({ error: 'Elevkontot har tagits bort.' })
     const rank = trimmed.findIndex(e => e.studentId === entry.studentId) + 1
     return res.status(200).json({ qualified: true, rank, highscores: highscoreListDto(trimmed) })
   }

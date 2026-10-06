@@ -1,9 +1,10 @@
 import {
   fetchStudentSessionProfile,
   postStudentSessionEvents,
-  resumeStudentSession
+  resumeStudentSession,
+  isStudentRetired
 } from './studentSessionClient'
-import { createPilotStudentStore } from './pilotStudentStore'
+import { createPilotStudentStore, deletePilotStudentStore } from './pilotStudentStore'
 import { EVENT_OWNED_ADAPTIVE_FIELDS } from './pilotCheckpointContract.js'
 
 const CHECKPOINT_FIELDS = ['currentDifficulty', 'highestDifficulty', 'adaptive', 'operationAbilities', 'assignmentProgress', 'stats', 'telemetry', 'activity']
@@ -97,6 +98,8 @@ export function createPilotStudentRuntime({
   resumeSession = resumeStudentSession,
   fetchProfile = fetchStudentSessionProfile,
   postEvents = postStudentSessionEvents,
+  checkRetired = isStudentRetired,
+  deleteStore = deletePilotStudentStore,
   makeEventId = randomEventId
 } = {}) {
   let studentId = ''
@@ -119,6 +122,19 @@ export function createPilotStudentRuntime({
     for (const listener of listeners) {
       try { listener({ ...syncStatus }) } catch { /* UI listeners must not break persistence */ }
     }
+  }
+
+  async function clearRetiredPupil(id) {
+    if (!id || !await checkRetired(id)) return false
+    await diagnosticWriteTail
+    if (studentId === id && store) {
+      await store.close()
+      store = null
+      studentId = ''
+    }
+    await deleteStore(id)
+    updateSyncStatus({ state: 'error', pendingCount: 0, rejectedCount: 0, lastError: 'Elevkontot har tagits bort.' })
+    return true
   }
 
   // Bisect failed batches: one obsolete entry must not cause 100 sequential
@@ -226,6 +242,7 @@ export function createPilotStudentRuntime({
       }
 
       if (!result?.ok) {
+        if (result?.status === 401 || result?.status === 410) await clearRetiredPupil(studentId)
         // Isolate individually rejected entries while preserving them in the vault.
         if (UNSENDABLE_STATUSES.has(result?.status)) {
           const outcome = await sendApart(batch)
@@ -263,7 +280,10 @@ export function createPilotStudentRuntime({
       const expected = normalizePilotStudentId(expectedStudentId)
       if (!expected) return { ok: false, error: 'Ogiltig elevlänk.' }
       const resumed = await resumeSession()
-      if (!resumed?.ok) return resumed
+      if (!resumed?.ok) {
+        if (resumed?.status === 401 || resumed?.status === 410) await clearRetiredPupil(expected)
+        return resumed
+      }
       if (normalizePilotStudentId(resumed.student?.studentId) !== expected) {
         return { ok: false, error: 'Den aktiva elevsessionen stämmer inte med länken.' }
       }

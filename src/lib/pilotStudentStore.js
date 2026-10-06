@@ -130,8 +130,22 @@ function openDatabase(indexedDb, dbName) {
         request.result.createObjectStore(STORE_NAME, { keyPath: 'id' });
       }
     };
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      request.result.onversionchange = () => request.result.close();
+      resolve(request.result);
+    };
     request.onerror = () => reject(new PilotStudentVaultError('INDEXEDDB_UNAVAILABLE', 'Offline-lagringen kunde inte öppnas.', request.error));
+  });
+}
+
+export async function deletePilotStudentStore(studentId, indexedDb = globalThis.indexedDB) {
+  const id = requireStudentId(studentId).toUpperCase();
+  if (!indexedDb?.deleteDatabase) return;
+  await new Promise((resolve, reject) => {
+    const request = indexedDb.deleteDatabase(`sequential-math-pilot-vault-${id}`);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(new PilotStudentVaultError('VAULT_DELETE_FAILED', 'Den lokala elevkopian kunde inte raderas.', request.error));
+    request.onblocked = () => reject(new PilotStudentVaultError('VAULT_DELETE_BLOCKED', 'Stäng andra elevflikar för att radera den lokala kopian.'));
   });
 }
 

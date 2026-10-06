@@ -1,6 +1,7 @@
 import { kv } from '@vercel/kv'
 import { withCors } from './_helpers.js'
 import { clearStudentLoginFailures, createStudentSession, getLiveStudentSession, hasStudentCsrf, isStudentLoginIpRateLimited, isStudentLoginRateLimited, normalizeStudentLoginCode, recordStudentLoginFailure, requestIp, requestOriginIsTrusted, revokeStudentSession, setStudentSessionCookie, studentIdentityDto, studentLoginCodeIndexKey, verifyPilotStudentCredentials, verifyPilotStudentPin } from './_studentSession.js'
+import { guardPupilKey } from './_pupilReferenceWrite.js'
 
 const denied = res => res.status(401).json({ error: 'Inloggningen kunde inte bekräftas.' })
 const isValidStudentReference = value => /^[A-Z0-9ÅÄÖ_]{3,100}$/u.test(String(value || ''))
@@ -29,6 +30,8 @@ export default async function handler(req, res) {
   if (!credentialsValid) { await recordStudentLoginFailure(rateSubject, ip); return denied(res) }
   await clearStudentLoginFailures(rateSubject, ip)
   // QR sign-in gradually backfills the code index for cards issued before this migration.
-  if (hasQrCredential && profile?.displayAlias) await kv.set(studentLoginCodeIndexKey(profile.displayAlias), studentId)
-  const session = await createStudentSession(profile); setStudentSessionCookie(res, session.id); return res.status(201).json({ ok: true, student: studentIdentityDto(profile), csrfToken: session.csrfToken })
+  if (hasQrCredential && profile?.displayAlias) await guardPupilKey(studentLoginCodeIndexKey(profile.displayAlias), studentId, studentId, { live: true })
+  const session = await createStudentSession(profile)
+  if (!session) return denied(res)
+  setStudentSessionCookie(res, session.id); return res.status(201).json({ ok: true, student: studentIdentityDto(profile), csrfToken: session.csrfToken })
 }

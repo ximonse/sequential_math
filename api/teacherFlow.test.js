@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { hashTeacherPassword } from './_helpers.js'
+import { emulatePupilLifecycle } from './testHelpers/pupilLifecycleKv.js'
 
 const records = vi.hoisted(() => new Map())
 
@@ -9,6 +10,7 @@ function clone(value) {
 
 vi.mock('@vercel/kv', () => ({ kv: {
   get: vi.fn(async key => clone(records.get(key) ?? null)),
+  scan: vi.fn(async (_cursor, { match }) => [0, [...records.keys()].filter(key => key.startsWith(match.replace('*', '')))]),
   exists: vi.fn(async key => records.has(key) ? 1 : 0),
   set: vi.fn(async (key, value) => records.set(key, clone(value))),
   del: vi.fn(async key => records.delete(key)),
@@ -24,6 +26,8 @@ vi.mock('@vercel/kv', () => ({ kv: {
     records.set(key, [...members])
   }),
   eval: vi.fn(async (_script, keys, args) => {
+    const lifecycle = emulatePupilLifecycle(records, _script, keys, args)
+    if (lifecycle) return lifecycle.result
     if (args[0] === 'class-rollover-v1') {
       const updates = JSON.parse(args[4])
       updates.forEach(update => records.set(`class:${update.id}`, clone(update.record)))

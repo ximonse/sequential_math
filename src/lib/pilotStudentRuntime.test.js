@@ -23,6 +23,18 @@ function vault() {
 }
 
 describe('pilot student runtime', () => {
+  it('deletes a local vault only after the server confirms that the pupil was retired', async () => {
+    const deleteStore = vi.fn(async () => {})
+    const checkRetired = vi.fn(async () => true)
+    const runtime = createPilotStudentRuntime({ resumeSession: async () => ({ ok: false, status: 401 }), checkRetired, deleteStore })
+    await runtime.bootstrap(studentId)
+    expect(checkRetired).toHaveBeenCalledWith(studentId)
+    expect(deleteStore).toHaveBeenCalledWith(studentId)
+    deleteStore.mockClear()
+    checkRetired.mockResolvedValue(false)
+    await runtime.bootstrap(studentId)
+    expect(deleteStore).not.toHaveBeenCalled()
+  })
   it('binds bootstrap to the resumed cookie identity and saves the server profile encrypted', async () => {
     const store = vault()
     const runtime = createPilotStudentRuntime({

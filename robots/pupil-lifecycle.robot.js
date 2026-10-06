@@ -1,0 +1,46 @@
+import { test, expect } from '@playwright/test'
+import { createPupil, login } from './lib/app.js'
+import { teacherLogin } from './lib/teacher.js'
+
+test('Permanent deletion removes diagnostic work; anonymization preserves only statistics', async ({ page, request, browser }, testInfo) => {
+  const tag = Math.random().toString(36).slice(2, 8)
+  const classId = `lifecycle-${tag}`
+  const pupil = await createPupil(request, { name: `Retire ${tag}`, classId })
+  const keeper = await createPupil(request, { name: `Keep ${tag}`, classId })
+  const fixture = await (await request.post('/__robot/seed-pupil-lifecycle', { data: { studentId: pupil.studentId } })).json()
+  const keeperFixture = await (await request.post('/__robot/seed-pupil-lifecycle', { data: { studentId: keeper.studentId } })).json()
+  const context = await browser.newContext()
+  const studentPage = await context.newPage()
+  await login(studentPage, pupil)
+  const teacher = await (await request.post('/__robot/teacher', { data: {
+    id: `lifecycle-admin-${tag}`, classIds: [classId], role: 'super_admin'
+  } })).json()
+  await teacherLogin(page, teacher)
+  await page.goto('/teacher/admin')
+  await page.getByRole('button', { name: 'Elever', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Anonymisera elev', exact: true }).first()).toBeVisible()
+  const row = page.getByRole('listitem').filter({ hasText: pupil.loginCode })
+  page.once('dialog', dialog => dialog.accept())
+  await row.getByRole('button', { name: 'Anonymisera elev', exact: true }).click()
+  await expect(page.getByText('✓ Elev anonymiserad. Statistik finns kvar för analys.', { exact: true })).toBeVisible()
+  const archive = page.getByRole('region', { name: 'Statistik utan elevnamn' })
+  await expect(archive.getByRole('button', { name: 'Visa statistik' }).first()).toBeVisible()
+  await archive.getByRole('button', { name: 'Visa statistik' }).first().click()
+  await expect(archive).not.toContainText(pupil.loginCode)
+  await expect(archive.getByText('Sparade träningssvar: 1', { exact: true })).toBeVisible()
+  await expect(archive.getByText('Diagnostikpunkter: 1', { exact: true })).toBeVisible()
+  expect(await (await request.post('/__robot/inspect-pupil-lifecycle', { data: { ...fixture, studentId: pupil.studentId } })).json())
+    .toEqual({ profileExists: false, attemptExists: false, eventsExist: false, assignmentExists: false })
+  await studentPage.reload()
+  await studentPage.waitForURL(/\/$/)
+  expect(await studentPage.evaluate(async id => (await indexedDB.databases()).some(db => db.name === `sequential-math-pilot-vault-${id}`), pupil.studentId)).toBe(false)
+  await page.screenshot({ path: testInfo.outputPath('pupil-statistics.png'), fullPage: true })
+  const keeperRow = page.getByRole('listitem').filter({ hasText: keeper.loginCode })
+  page.once('dialog', dialog => dialog.accept())
+  await keeperRow.getByRole('button', { name: 'Radera permanent', exact: true }).click()
+  await expect(page.getByText('✓ Elev raderad permanent', { exact: true })).toBeVisible()
+  await expect(archive.getByRole('button', { name: 'Visa statistik' })).toHaveCount(1)
+  expect(await (await request.post('/__robot/inspect-pupil-lifecycle', { data: { ...keeperFixture, studentId: keeper.studentId } })).json())
+    .toEqual({ profileExists: false, attemptExists: false, eventsExist: false, assignmentExists: false })
+  await context.close()
+})

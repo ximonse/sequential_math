@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { emulatePupilLifecycle } from './testHelpers/pupilLifecycleKv.js'
 
 const records = vi.hoisted(() => new Map())
 vi.mock('@vercel/kv', () => ({ kv: {
   get: vi.fn(async key => structuredClone(records.get(key) ?? null)),
+  eval: vi.fn(async (script, keys, args) => emulatePupilLifecycle(records, script, keys, args)?.result),
   exists: vi.fn(async key => records.has(key) ? 1 : 0),
   set: vi.fn(async (key, value) => records.set(key, structuredClone(value))),
   del: vi.fn(async key => records.delete(key)),

@@ -34,7 +34,7 @@ Konton har exakt en explicit roll. Serverns aktuella kontopost är auktoritativ;
 | Flytta elev mellan tilldelade klasser på samma skola | Ja | Ja | Ja | Nej |
 | Skapa elev, dela klasslänk och ändra elevkod | Ja | Ja | Ja, i tilldelad klass | Nej |
 | Sätta eller ta bort eget tilltalsnamn för elev | Ja | Ja, inom egna skolor | Ja, i tilldelad klass | Nej |
-| Radera elev permanent | Ja | Ja, inom egna skolor | Nej | Nej |
+| Radera eller anonymisera elev | Ja | Nej | Nej | Nej |
 
 Servern kontrollerar behörighet på varje skyddat API-anrop. Dolda knappar i gränssnittet räcker aldrig som behörighetskontroll.
 
@@ -100,7 +100,7 @@ Rollgränserna har dessutom enhetstester i `api/teacherRoles.test.js`.
 
 En klass har ett stabilt ID oberoende av visningsnamn. Vid läsårsbyte byts bara klassens visningsnamn; elev-ID, klasslänk, träning och statistik behålls. Arkivering sätter `archived` och `archivedAt`, sparar det tidigare aktiva namnet och ger klassen ett historiskt namn. Arkiverade klasser och elever som bara tillhör arkiverade klasser ska döljas i vanliga lärar- och administrationsurval. Huvudadministratören kan uttryckligen visa dem för historik och livscykelhantering. Återställning kontrollerar aktiv namnunikhet på nytt.
 
-Permanent klassradering är en separat superadminåtgärd och får bara tillåtas för en tom arkiverad klass. Permanent elevradering ligger enbart i huvudadministratörens administrationsvy, kräver uttrycklig bekräftelse och tar bort elevprofil, träningshistorik och highscores.
+Permanent klassradering är en separat superadminåtgärd och får bara tillåtas för en tom arkiverad klass. Permanent elevradering ligger enbart i huvudadministratörens administrationsvy, kräver uttrycklig bekräftelse och tar bort elevprofil, träningshistorik, highscores och NCM-original. En separat anonymiseringsåtgärd bevarar en fryst statistikserie utan namn. Se [elevlivscykelkontraktet](PUPIL_LIFECYCLE.md).
 
 ## Lärarskapade grupper
 

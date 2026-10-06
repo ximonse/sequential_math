@@ -1,6 +1,7 @@
 import { kv } from '@vercel/kv'
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { assertTeacherStudentAccess } from './_studentAccess.js'
+import { writePupilReferences } from './_pupilReferenceWrite.js'
 
 const MAX_LABELS = 500
 const MAX_LABEL_LENGTH = 80
@@ -59,7 +60,7 @@ async function fillFromCreationNames(req, teacherId) {
     labels[studentId] = creationName
     added += 1
   }
-  if (added > 0) await kv.set(studentLabelsKey(teacherId), labels)
+  if (added > 0) await writePupilReferences(studentLabelsKey(teacherId), labels, { labels: true })
   return { added, labels: await readableLabels(req, teacherId) }
 }
 
@@ -97,6 +98,6 @@ export default async function handler(req, res) {
   if (label) labels[studentId] = label
   else delete labels[studentId]
   if (Object.keys(labels).length > MAX_LABELS) return res.status(400).json({ error: 'Too many pupil labels' })
-  await kv.set(studentLabelsKey(auth.teacherId), labels)
+  await writePupilReferences(studentLabelsKey(auth.teacherId), labels, { labels: true })
   return res.status(200).json({ ok: true, labels: await readableLabels(req, auth.teacherId) })
 }

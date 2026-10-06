@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv'
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
+import { writePupilReferences } from './_pupilReferenceWrite.js'
 
 const ARRAY_FIELDS = new Set(['assignments', 'ticketTemplates', 'ticketDispatches'])
 const ALLOWED_FIELDS = new Set([...ARRAY_FIELDS, 'activeAssignmentId'])
@@ -51,7 +52,7 @@ export default async function handler(req, res) {
     }
     if (req.method !== 'PUT') return res.status(405).json({ error: 'Method not allowed' })
     const patch = normalizePatch(req.body)
-    await Promise.all(Object.entries(patch).map(([field, value]) => kv.set(fieldKey(auth.teacherId, field), value)))
+    await Promise.all(Object.entries(patch).map(([field, value]) => writePupilReferences(fieldKey(auth.teacherId, field), value)))
     const workspace = await readWorkspace(auth.teacherId)
     return res.status(200).json({ ok: true, workspace })
   } catch (error) {

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { execFileSync } from 'node:child_process'
+import { emulatePupilLifecycle } from './testHelpers/pupilLifecycleKv.js'
 
 const records = vi.hoisted(() => new Map())
 vi.mock('@vercel/kv', () => ({ kv: {
@@ -10,6 +11,8 @@ vi.mock('@vercel/kv', () => ({ kv: {
   incr: vi.fn(async key => { const value = Number(records.get(key) || 0) + 1; records.set(key, value); return value }),
   expire: vi.fn(async () => 1),
   eval: vi.fn(async (script, keys, args) => {
+    const lifecycle = emulatePupilLifecycle(records, script, keys, args)
+    if (lifecycle) return lifecycle.result
     if (keys.length === 1) { const value = Number(records.get(keys[0]) || 0) + 1; records.set(keys[0], value); return value }
     const [key, deletedKey, indexKey] = keys
     const [expected, operation, json, id] = args

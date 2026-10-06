@@ -3,6 +3,7 @@ import { kv } from '@vercel/kv'
 import { isCurrentStudentProfile } from '../src/lib/studentProfileContract.js'
 import { normalizeStudentId } from '../src/lib/storageStudentId.js'
 import { isStudentDeleted } from './_studentStore.js'
+import { guardPupilKey } from './_pupilReferenceWrite.js'
 
 export const STUDENT_ID_BYTES = 16
 export const QR_SECRET_BYTES = 32
@@ -46,7 +47,7 @@ export async function reserveStudentLoginCode(studentId, generateCode, { store =
     const key = studentLoginCodeIndexKey(code)
     const existing = await store.get(key)
     if (existing && String(existing).toUpperCase() !== id) continue
-    await store.set(key, id, { nx: true })
+    if (!await guardPupilKey(key, id, id, { operation: 'reserve', store })) throw new Error('Student retired')
     if (String(await store.get(key) || '').toUpperCase() === id) return code
   }
   throw new Error('Could not reserve a unique student login code')
@@ -128,7 +129,10 @@ export function verifyStudentCredentialsWithDummy(profile, qrSecret, pin) {
 export async function createStudentSession(profile, { store = kv } = {}) {
   const id = randomBytes(32).toString('base64url')
   const csrfToken = randomBytes(32).toString('base64url')
-  await store.set(`student_session:${id}`, { studentId: profile.studentId, credentialVersion: Number(profile.auth?.credentialVersion || 1), csrfHash: hashQrSecret(csrfToken), csrfToken, createdAt: Date.now() }, { ex: STUDENT_SESSION_TTL_SECONDS })
+  const saved = await guardPupilKey(`student_session:${id}`, profile.studentId,
+    { studentId: profile.studentId, credentialVersion: Number(profile.auth?.credentialVersion || 1), csrfHash: hashQrSecret(csrfToken), csrfToken, createdAt: Date.now() },
+    { ttl: STUDENT_SESSION_TTL_SECONDS, live: true, store })
+  if (!saved) return null
   return { id, csrfToken }
 }
 export async function getLiveStudentSession(req, { store = kv } = {}) {
@@ -158,7 +162,8 @@ export async function issueStudentSession(studentId, remember) {
   const normalizedId = normalizeStudentId(studentId)
   if (!normalizedId) return ''
   const token = `st_${randomBytes(32).toString('base64url')}`
-  await kv.set(legacySessionKey(token), normalizedId, { ex: remember ? REMEMBER_TTL_SECONDS : TEMPORARY_TTL_SECONDS })
+  if (!await guardPupilKey(legacySessionKey(token), normalizedId, normalizedId,
+    { ttl: remember ? REMEMBER_TTL_SECONDS : TEMPORARY_TTL_SECONDS, live: true })) return ''
   return token
 }
 

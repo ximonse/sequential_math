@@ -8,7 +8,7 @@ import {
   withCors
 } from '../_helpers.js'
 import { withFreshTeacherSummary } from '../../src/lib/teacherSummary.js'
-import { removeStudentHighscores } from '../highscores.js'
+import { retirePupil } from '../_pupilLifecycle.js'
 import { isSuperAdminRole } from '../_teacherRoles.js'
 import {
   STUDENT_PASSWORD_SCHEME,
@@ -58,19 +58,13 @@ export default async function handler(req, res) {
     const teacherAuthorized = await isLiveTeacherApiAuthorized(req)
     const studentPassword = String(req.headers['x-student-password'] || '')
 
-    if (req.method === 'DELETE') {
+    if (req.method === 'DELETE' || (req.method === 'PATCH' && req.body?.action === 'anonymize')) {
       const deleteAuth = await getLiveTeacherAuthPayload(req)
       if (!deleteAuth) return res.status(401).json({ error: 'Teacher authorization required' })
       if (!isSuperAdminRole(deleteAuth.role, deleteAuth.isAdmin)) return res.status(403).json({ error: 'Endast huvudadmin kan radera elever permanent.' })
-      let deletedClassIds = []
-      await mutateStudentRecord(studentId, async current => {
-        await assertTeacherStudentAccess(req, current)
-        deletedClassIds = [current?.classId, ...(current?.classIds || [])].filter(Boolean)
-        return null
-      })
-      let highscoreCleanup = 'complete'
-      try { await removeStudentHighscores(studentId, deletedClassIds) } catch { highscoreCleanup = 'pending' }
-      return res.status(200).json({ ok: true, deleted: true, highscoreCleanup })
+      const result = await retirePupil(studentId, req.method === 'DELETE' ? 'delete' : 'anonymize',
+        current => assertTeacherStudentAccess(req, current))
+      return res.status(200).json(result)
     }
 
     if (req.method === 'GET') {

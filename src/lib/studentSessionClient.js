@@ -3,6 +3,13 @@ let csrfToken = null
 const SESSION_EXPIRED_ERROR = 'Din session har gått ut. Logga in igen.'
 const INVALID_LOGIN_ERROR = 'Kodnamnet eller QR-koden och PIN-koden stämmer inte.'
 
+export async function isStudentRetired(studentId) {
+  try {
+    const response = await fetch(`/api/student/${encodeURIComponent(studentId)}`, { cache: 'no-store' })
+    return response.status === 410
+  } catch { return false }
+}
+
 function clearCsrfToken() {
   csrfToken = null
 }

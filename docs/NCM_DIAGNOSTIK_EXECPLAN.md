@@ -155,10 +155,7 @@ inlämningar i följd, återuppta där genomgången avbröts och se vilka som
   appen med riktiga API:er mot minnesdatabasen, lämnar listan tom och seedar
   klass, admin-lärare och två elever, så hela flödet kan klickas igenom lokalt
   utan att röra produktion.
-- [ ] Anslut raderingskedjan innan detta används för riktiga elever. Planerings-
-  och arkivmodulerna finns men är inte anropade från permanent elevradering, så
-  råa diagnostiknycklar ligger kvar efter radering även om tombstonen spärrar
-  läsning och skrivning.
+- [x] Anslut separata flöden för permanent radering och anonymisering. Radering tar bort statistik och NCM-original; anonymisering sparar en fryst serie utan namn. Återupptagbar städning och superadminarkiv finns lokalt. Verklig Redis-verifiering återstår.
 - [x] Lägg till automatisk serversparning efter en kort inmatningspaus i
   testkontoflödet. Den använder samma kvittens, revision och konfliktstopp som
   den manuella sparknappen. Osparat arbete ligger kvar i fliken vid fel.
@@ -232,8 +229,8 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   egen sifferpanel har tagits bort.
 - Antaget: egna uppgifter används tills rätt till originalmaterial klarlagts.
 - Beslutat av Simon: en elevs historiska diagnostiska statistik ska finnas
-  kvar utan namn efter radering, så att elevens tidigare utveckling kan
-  jämföras över tid. Serien fryses vid radering; den ska inte följa elevens
+  kvar utan namn efter anonymisering, så att elevens tidigare utveckling kan
+  jämföras över tid. Serien fryses vid anonymisering; den ska inte följa elevens
   eventuella fortsatta användning av appen. En individuell historisk serie
   behandlas som pseudonymiserade personuppgifter.
 - Föreslaget i [Etapp 0-kontraktet](NCM_DIAGNOSTIK_ETAPP0.md): läraren avslutar
@@ -415,3 +412,7 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
   För detta lokala snitt passerade 124 testfiler/599 tester, normal build,
   arkitekturkontroll och hela robotsviten med 73 godkända fall och 0
   regelbrott.
+
+## Uppdatering 2026-10-06: elevlivscykel
+
+Simons förtydligande ersätter tidigare beslut: permanent radering tar bort all elevstatistik; anonymisering bevarar statistik utan namn. Se [PUPIL_LIFECYCLE.md](PUPIL_LIFECYCLE.md). Historiska verifieringsanteckningar ovan beskriver respektive tidigare snitt.

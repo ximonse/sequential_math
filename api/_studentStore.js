@@ -18,6 +18,9 @@ if ARGV[2] == 'delete' then
   redis.call('SREM', KEYS[3], ARGV[4])
 else
   local nextRecord = cjson.decode(ARGV[3])
+  for i = 4, #KEYS do
+    if redis.call('EXISTS', KEYS[i]) == 1 then return -4 end
+  end
   if nextRecord.classIds then
     for _, classId in ipairs(nextRecord.classIds) do
       if redis.call('EXISTS', 'class_deleted:' .. classId) == 1 then return -3 end
@@ -58,12 +61,14 @@ export async function mutateStoredRecord(kind, id, transform, { store = kv } = {
       ...next, serverRevision: version + 1, serverUpdatedAt: Date.now()
     }
     const result = Number(await store.eval(STUDENT_CAS_SCRIPT,
-      [key, deletedKey, { student: 'students:index', class: 'classes:index', school: 'schools:index', group: 'groups:index' }[kind]],
+      [key, deletedKey, { student: 'students:index', class: 'classes:index', school: 'schools:index', group: 'groups:index' }[kind],
+        ...(record?.pupilIds || []).flatMap(pupilId => [studentDeletedKey(pupilId), `student_deleted:${pupilId}`])],
       [version, record === null ? 'delete' : 'write',
         record === null ? String(Date.now()) : JSON.stringify(record), id]))
     if (result === 1) return record
     if (result === -2) throw studentStoreError(410, 'Record deleted')
     if (result === -3) throw studentStoreError(409, 'Class deleted; refresh membership')
+    if (result === -4) throw studentStoreError(409, 'En elev har tagits bort. Läs in gruppen igen.')
   }
   throw studentStoreError(409, 'Concurrent update; retry the request')
 }

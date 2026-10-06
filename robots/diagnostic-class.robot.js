@@ -12,8 +12,8 @@ test('An admin assigns one diagnostic to the whole selected class and each pupil
     id: `class-admin-${tag}`, classIds: [classId], role: 'super_admin'
   } })).json()
   await teacherLogin(page, teacher)
-  await openTab(page, 'NCM-diagnostik')
-  const panel = page.getByRole('heading', { name: 'Testuppdrag till elev eller klass' }).locator('xpath=..')
+  await openTab(page, 'Screening')
+  const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('xpath=..')
   await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(classId)
   const publish = panel.getByRole('button', { name: 'Ge till hela klassen (2 elever)', exact: true })
   await expect(publish).toBeEnabled()

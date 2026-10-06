@@ -9,6 +9,7 @@ import '../../../dev/diagnosticGridPrototype.css'
 const taskIds = taskManifest.tasks.map(task => task.taskId)
 
 export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
+  const [view, setView] = useState('dispatch')
   const [classId, setClassId] = useState('')
   const [studentId, setStudentId] = useState('')
   const [selectedTasks, setSelectedTasks] = useState([taskIds[0]])
@@ -114,32 +115,37 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
     }
   }
 
-  return <section className="mt-4 rounded-lg border border-orange-300 bg-orange-100 p-4 shadow-sm">
-    <h2 className="text-lg font-semibold text-orange-950">Testuppdrag till elev eller klass</h2>
-    <p className="mt-1 text-sm text-orange-950">Välj klass och uppgifter. Ge uppdraget till en vald elev eller hela klassen. Det sparas separat från vanlig träning.</p>
+  return <section className="mt-4 rounded-lg border border-slate-300 bg-white p-3 shadow-sm">
+    <h2 className="text-lg font-semibold text-slate-800">Screening till elev eller klass</h2>
+    <p className="mt-1 text-sm text-slate-800">Välj klass och uppgifter. Ge uppdraget till en vald elev eller hela klassen. Det sparas separat från vanlig träning.</p>
+    <div className="mt-2 flex gap-1" aria-label="Screeningvyer">
+      <button type="button" aria-pressed={view === 'dispatch'} onClick={() => { if (!reviewDirty.current || window.confirm('Genomgången har osparade ändringar. Vill du lämna dem?')) { reviewDirty.current = false; setView('dispatch') } }} className="rounded border border-slate-300 px-2 py-1 text-sm aria-pressed:bg-indigo-100">Dela ut</button>
+      <button type="button" aria-pressed={view === 'group'} onClick={() => setView('group')} className="rounded border border-slate-300 px-2 py-1 text-sm aria-pressed:bg-indigo-100">Grupp</button>
+    </div>
     <div className="mt-3 grid gap-3 sm:grid-cols-2">
       <label className="text-sm font-medium">Klass
         <select value={classId} onChange={event => {
           if (reviewDirty.current && !window.confirm('Genomgången har osparade ändringar. Vill du byta klass och lämna dem?')) return
           reviewDirty.current = false
           setClassId(event.target.value)
-        }} className="mt-1 block w-full rounded border border-orange-400 bg-white p-2">
+        }} className="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1">
           <option value="">Välj klass</option>
           {classes.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select>
       </label>
-      <label className="text-sm font-medium">Elev
-        <select value={studentId} onChange={event => setStudentId(event.target.value)} className="mt-1 block w-full rounded border border-orange-400 bg-white p-2">
+      <label hidden={view !== 'dispatch'} className="text-sm font-medium">Elev
+        <select value={studentId} onChange={event => setStudentId(event.target.value)} className="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1">
           <option value="">Välj elev</option>
           {pupils.map(pupil => <option key={pupil.studentId} value={pupil.studentId}>{pupil.name || pupil.displayAlias || pupil.studentId}</option>)}
         </select>
       </label>
     </div>
+    <div hidden={view !== 'dispatch'}>
     <label className="mt-3 block text-sm font-medium">Diagnospaket
       <select value={selectedPack?.id || ''} disabled={busy} onChange={event => {
         const pack = taskPacks.packs.find(item => item.id === event.target.value)
         if (pack) setSelectedTasks([...pack.taskIds])
-      }} className="mt-1 block w-full rounded border border-orange-400 bg-white p-2">
+      }} className="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1">
         <option value="" disabled>Eget urval</option>
         {taskPacks.packs.map(pack => <option key={pack.id} value={pack.id}>{pack.labelSv}</option>)}
       </select>
@@ -155,7 +161,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
         </label>)}
       </div>
     </fieldset>
-    <details className="mt-3 rounded border border-orange-300 bg-white p-3 text-sm">
+    <details className="mt-3 rounded border border-slate-300 bg-white p-3 text-sm">
       <summary className="cursor-pointer font-semibold">Lärarstöd för valda uppgifter</summary>
       <p className="mt-2">Granska uppställningen och fråga eleven. Rätt slutsvar bevisar inte en viss metod. Appens automatiska metodanalys är begränsad.</p>
       <ol className="mt-2 list-decimal space-y-2 pl-5">
@@ -165,11 +171,11 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
       </ol>
     </details>
     <button type="button" onClick={() => createAssignment()} disabled={!pupils.some(pupil => pupil.studentId === studentId) || !selectedTasks.length || busy}
-      className="mt-3 rounded bg-orange-700 px-4 py-2 font-semibold text-white disabled:opacity-50">
+      className="mt-3 rounded bg-indigo-600 px-2 py-1 font-semibold text-white disabled:opacity-50">
       {busy ? 'Skapar...' : 'Ge testuppdrag'}
     </button>
     <button type="button" onClick={() => createAssignment(true)} disabled={!classId || !wholeClassAvailable || !selectedTasks.length || busy}
-      className="ml-2 mt-3 rounded bg-orange-700 px-4 py-2 font-semibold text-white disabled:opacity-50">
+      className="ml-2 mt-3 rounded bg-indigo-600 px-2 py-1 font-semibold text-white disabled:opacity-50">
       Ge till hela klassen{classStudentCount ? ` (${classStudentCount} elever)` : ''}
     </button>
     {classId && classStudentCount > 0 && !wholeClassAvailable && <p className="mt-2 text-sm">Serverns testbegränsning tillåter inte hela klassen.</p>}
@@ -182,16 +188,19 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
         </li>)}
       </ul>
     </div>}
-    {classId && assignments.length > 0 && <DiagnosticClassReviewPanel key={classId} classId={classId} assignments={assignments} pupils={pupils} onDirtyChange={value => { reviewDirty.current = value }} />}
-    {studentId && <div className="mt-5 border-t border-orange-300 pt-4">
+    </div>
+    <div hidden={view !== 'group'}>
+      {classId && assignments.length > 0 && <DiagnosticClassReviewPanel key={classId} classId={classId} assignments={assignments} pupils={pupils} onDirtyChange={value => { reviewDirty.current = value }} />}
+    </div>
+    {view === 'dispatch' && studentId && <div className="mt-5 border-t border-slate-300 pt-4">
       <h3 className="font-semibold">Sparade försök för eleven</h3>
       <button type="button" onClick={() => setRefreshVersion(value => value + 1)}
-        className="mt-2 rounded border border-orange-700 bg-white px-3 py-1 text-sm text-orange-950">Uppdatera försök</button>
+        className="mt-2 rounded border border-orange-700 bg-white px-3 py-1 text-sm text-slate-800">Uppdatera försök</button>
       {attemptStatus && <p role="status" className="mt-1 text-sm">{attemptStatus}</p>}
       {attempts.length > 0 && <ul className="mt-2 space-y-2">
         {attempts.map(attempt => <li key={attempt.attemptId} className="flex flex-wrap items-center gap-2 text-sm">
           <span>{attempt.taskId} · {attempt.createdAt ? new Date(attempt.createdAt).toLocaleString('sv-SE') : 'äldre försök'} · {attempt.status === 'submitted' ? 'fryst' : 'pågående'} · {attempt.lastSequence} händelser</span>
-          <button type="button" onClick={() => openEvidence(attempt)} className="rounded border border-orange-700 bg-white px-3 py-1 text-orange-950">Visa underlag</button>
+          <button type="button" onClick={() => openEvidence(attempt)} className="rounded border border-orange-700 bg-white px-3 py-1 text-slate-800">Visa underlag</button>
         </li>)}
       </ul>}
       {detail && <DiagnosticEvidenceDetails detail={detail} />}

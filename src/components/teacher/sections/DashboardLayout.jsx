@@ -59,7 +59,7 @@ const WORKSPACES = [
   { id: 'progress', label: 'Framsteg', description: 'Kunskapsområden och elever', panels: ['mastery', 'tableoverview', 'detail', 'overview', 'tabledev'] },
   { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'mathresults', 'tickets'] },
   { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality'] },
-  { id: 'ncm', label: 'NCM-diagnostik', description: 'Prova digitalt räknehäfte', panels: ['ncm-grid'], adminOnly: true },
+  { id: 'ncm', label: 'Screening', description: 'Screening och analys av elevens uträkning', panels: ['ncm-grid'], adminOnly: true },
   { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management', 'password', 'pausegames', 'admin'] }
 ]
 
@@ -470,11 +470,11 @@ export default function DashboardLayout({
     )
     if (id === 'ncm-grid') return (
       <div>
-      <section className="rounded-lg border border-orange-300 bg-orange-100 p-4 shadow-sm">
-        <h2 className="text-lg font-semibold text-orange-950">Digitalt räknehäfte</h2>
-        <p className="mt-1 text-sm text-orange-900">Knappen öppnar en osparad prototyp för uppställning, minnessiffror och lån. Testuppdraget nedan sparas separat för varje tilldelad elev.</p>
+      <section className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 shadow-sm">
+        <h2 className="text-sm font-semibold text-slate-800">Digitalt räknehäfte</h2>
+        <p className="mr-auto text-xs text-slate-600">Osparad prototyp för att prova räknehäftet.</p>
         <button type="button" onClick={() => navigate('/teacher/ncm/diagnostic-grid')}
-          className="mt-3 rounded-md bg-orange-700 px-4 py-2 font-semibold text-white hover:bg-orange-800">
+          className="rounded-md border border-slate-300 px-2 py-1 text-sm text-slate-800 hover:bg-slate-50">
           Öppna räknehäftet
         </button>
       </section>

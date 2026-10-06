@@ -440,3 +440,16 @@ enheter, dublett/retry, sekvensglapp, avbrott, kvotfel, klassbyte och radering.
 ## Uppdatering 2026-10-06: elevlivscykel
 
 Simons förtydligande ersätter tidigare beslut: permanent radering tar bort all elevstatistik; anonymisering bevarar statistik utan namn. Se [PUPIL_LIFECYCLE.md](PUPIL_LIFECYCLE.md). Historiska verifieringsanteckningar ovan beskriver respektive tidigare snitt.
+
+## Uppdatering 2026-10-06: Screening och gruppmatris
+
+Simon har valt riktningen Screening med gruppöversikt och separat elevgenomgång.
+Lokalt implementerat: fliknamn Screening, Dela ut/Grupp, faktiska elevsvar per
+uppgift, hover/fokus med facit och befintliga analyssignaler samt klick/touch
+till en rättningsoverlay. Återanvänder versionerade observationsregler och
+befintliga anteckningar. Se [NCM_DIAGNOSTIK_GENOMGANG.md](NCM_DIAGNOSTIK_GENOMGANG.md).
+
+Nästa funktion beslutas separat: utveckla elevgenomgången och sedan utskrift,
+återlämning, elevsynlig kommentar eller riktade uppföljningsuppgifter en i taget.
+Ingen automatisk slarvbedömning, decimaldiagnos eller tilldelning har lagts till.
+Publicering kräver en ny uttrycklig begäran; detta snitt är lokalt.

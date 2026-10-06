@@ -42,12 +42,12 @@ test('NCM grid is admin-only and reversible with buttons, touch and right click'
   test.setTimeout(90 * 1000)
   const ordinary = await openAsRole(browser, 'teacher', '/teacher/ncm/diagnostic-grid')
   await expect(ordinary.page).toHaveURL(/\/teacher$/)
-  await expect(ordinary.page.getByRole('button', { name: /NCM-diagnostik/ })).toHaveCount(0)
+  await expect(ordinary.page.getByRole('button', { name: /Screening/ })).toHaveCount(0)
   await ordinary.context.close()
 
   for (const role of ['school_admin', 'super_admin']) {
     const { context, page } = await openAsRole(browser, role, '/teacher')
-    await page.getByRole('button', { name: /NCM-diagnostik/ }).click()
+    await page.getByRole('button', { name: /Screening/ }).click()
     await expect(page.getByRole('button', { name: 'Öppna räknehäftet' })).toBeVisible()
     await page.getByRole('button', { name: 'Öppna räknehäftet' }).click()
     await expect(page).toHaveURL(/\/teacher\/ncm\/diagnostic-grid$/)

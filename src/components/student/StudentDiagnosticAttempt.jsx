@@ -10,6 +10,12 @@ import { recoverDiagnosticDraft } from '../../lib/diagnosticDraftRecovery'
 export default function StudentDiagnosticAttempt() {
   const { studentId } = useParams()
   const [params] = useSearchParams()
+  return <AssignedDiagnosticAttempt key={`${studentId}:${params.get('assignment')}:${params.get('item')}`} />
+}
+
+function AssignedDiagnosticAttempt() {
+  const { studentId } = useParams()
+  const [params] = useSearchParams()
   const navigate = useNavigate()
   const assignmentId = params.get('assignment') || ''
   const itemId = params.get('item') || ''
@@ -56,7 +62,8 @@ export default function StudentDiagnosticAttempt() {
       setLocalSequence(local ? local.events.length : 0)
       setConflict(recovered.conflict)
       setOpened({ attemptId: result.record.attemptId, task, instructionSv: assignment.instructionSv,
-        snapshot: recovered.snapshot })
+        snapshot: recovered.snapshot,
+        nextItem: assignment.items[assignment.items.findIndex(item => item.assignmentItemId === itemId) + 1] })
       if (local && !recovered.conflict && local.events.length <= result.snapshot.events.length) {
         void getPilotStudentRuntime().clearConfirmedDiagnosticDraft(studentId, result.record.attemptId, result.snapshot)
           .catch(() => setSaveMessage('Servern har sparat arbetet, men den äldre lokala kopian kunde inte rensas.'))
@@ -128,6 +135,9 @@ export default function StudentDiagnosticAttempt() {
     {!loadError && !opened && <p className="mx-auto max-w-5xl px-4 py-5">Öppnar räknehäftet...</p>}
     {opened && <DiagnosticGridPrototype key={opened.attemptId} pilot={{ task: opened.task,
       snapshot: opened.snapshot, instructionSv: opened.instructionSv }} onSave={save}
+      onNext={() => navigate(opened.nextItem
+        ? `/student/${studentId}/diagnostic?assignment=${encodeURIComponent(assignmentId)}&item=${encodeURIComponent(opened.nextItem.assignmentItemId)}`
+        : `/student/${studentId}`)} nextLabel={opened.nextItem ? 'Nästa fråga' : 'Till min översikt'}
       onGridChange={onGridChange} saveState={{ savedSequence, localSequence, busy, conflict,
         error: conflict ? 'Arbetet skiljer sig från serverns version. Den lokala arbetskopian finns kvar på enheten. Be läraren om hjälp.'
           : saveError || (unsaved ? localError : ''), message: saveMessage }} />}

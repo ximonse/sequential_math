@@ -1,6 +1,53 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
 import { openTab, teacherLogin } from './lib/teacher.js'
+import { readFileSync } from 'node:fs'
+const manifest = JSON.parse(readFileSync(new URL('../src/domains/arithmetic/diagnosticTasks.v1.json', import.meta.url), 'utf8'))
+test.describe.configure({ mode: 'serial' })
+
+test('A pupil submits each assigned question before continuing without losing saved work', async ({ page, request }, testInfo) => {
+  const tag = Math.random().toString(36).slice(2, 8)
+  const classId = `ncm-next-${tag}`
+  const pupil = await createPupil(request, { name: 'Robot NCM next', classId })
+  const teacher = await (await request.post('/__robot/teacher', { data: {
+    id: `next-admin-${tag}`, classIds: [classId], role: 'super_admin'
+  } })).json()
+  await teacherLogin(page, teacher)
+  const result = await page.evaluate(async data => {
+    const response = await fetch('/api/teacher-diagnostic-assignments', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-teacher-token': sessionStorage.getItem('mathapp_teacher_api_token') }, body: JSON.stringify(data)
+    })
+    return response.json()
+  }, { classId, studentIds: [pupil.studentId], taskIds: manifest.tasks.slice(0, 2).map(task => task.taskId) })
+  expect(result.assignment.items).toHaveLength(2)
+  await login(page, pupil)
+  await page.getByRole('button', { name: manifest.tasks[0].promptSv }).click()
+  const firstUrl = page.url()
+  await expect(page.getByRole('button', { name: 'Nästa fråga', exact: true })).toBeDisabled()
+  await page.locator('input[data-cell="0:0"]').fill('8')
+  await page.route('**/api/me/diagnostic-attempt', route => {
+    if (route.request().postDataJSON()?.action === 'append') return route.abort('failed')
+    return route.continue()
+  })
+  await page.getByRole('button', { name: 'Lämna in svaret', exact: true }).click()
+  await expect(page.getByText(/Arbetet finns kvar i den här fliken/)).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Nästa fråga', exact: true })).toBeDisabled()
+  await page.unroute('**/api/me/diagnostic-attempt')
+  await page.getByRole('button', { name: 'Spara arbetet', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Nästa fråga', exact: true })).toBeEnabled()
+  await page.screenshot({ path: testInfo.outputPath('assigned-next-question.png'), fullPage: true })
+  await page.getByRole('button', { name: 'Nästa fråga', exact: true }).click()
+  await expect(page.getByRole('heading', { name: manifest.tasks[1].promptSv })).toBeVisible()
+  await expect(page.locator('input[data-cell="0:0"]')).toBeEnabled()
+  await expect(page.locator('input[data-cell="0:0"]')).not.toHaveAttribute('aria-label', /stor siffra 8/)
+  await page.getByRole('button', { name: 'Lämna in svaret', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Till min översikt', exact: true })).toBeEnabled()
+  await page.getByRole('button', { name: 'Till min översikt', exact: true }).click()
+  await expect(page).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
+  await page.goto(firstUrl)
+  await expect(page.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 8/)
+  await expect(page.locator('input[data-cell="0:0"]')).toBeDisabled()
+})
 
 async function localDiagnosticKeys(page, studentId) {
   return page.evaluate(async id => {

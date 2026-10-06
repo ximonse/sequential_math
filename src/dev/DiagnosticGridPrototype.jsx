@@ -33,7 +33,7 @@ function newGrid(task) {
   })
 }
 
-function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = null, saveState = null }) {
+function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = null, saveState = null, onNext = null, nextLabel = 'Nästa fråga' }) {
   const availableTasks = pilot ? [pilot.task] : TASKS
   const [task, setTask] = useState(pilot?.task || TASKS[0])
   const [grid, setGrid] = useState(() => pilot?.snapshot || newGrid(TASKS[0]))
@@ -162,10 +162,13 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   }
 
   function addLine(line) {
-    record(previous => previous.lines?.some(item => item.axis === line.axis
-      && item.from.row === line.from.row && item.from.column === line.from.column
-      && item.to.row === line.to.row && item.to.column === line.to.column)
-      ? null : { type: 'line_add', ...line })
+    const overlapping = (grid.lines || []).filter(item => item.axis === line.axis
+      && (line.axis === 'horizontal'
+        ? item.from.row === line.from.row && item.from.column <= line.to.column && item.to.column >= line.from.column
+        : item.from.column === line.from.column && item.from.row <= line.to.row && item.to.row >= line.from.row))
+    if (overlapping.length) {
+      for (const item of overlapping) record({ type: 'line_remove', lineId: item.id })
+    } else record({ type: 'line_add', ...line })
   }
 
   function startGesture(event, row, column) {
@@ -461,7 +464,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
         <details className="diagnostic-instructions mt-3 rounded-lg border border-orange-300 bg-white p-3 text-sm text-slate-700">
           <summary className="cursor-pointer font-semibold text-orange-950">Visa instruktion och hjälp</summary>
           <p className="mt-3 text-base">{pilot ? pilot.instructionSv : taskManifest.instructionSv}</p>
-          <p className="mt-2">Dutta på en ruta och skriv siffror med enhetens tangentbord. Tryck på ett räknetecken ovan för att skriva det i markerad ruta. Tryck Streck och dra över tomma eller ifyllda rutor för ett vågrätt eller lodrätt streck; ett tryck ger ett kort vågrätt streck. Tryck Streck igen för att skriva siffror. Du kan också hålla på +, − eller × och dra för ett vågrätt streck. En ny siffra blir stor. Håll och släpp på en siffra för att växla storlek; håll och dra på siffran för att stryka eller ta bort lånestrecket. Knapparna nedanför gör samma sak, och högerklick visar valen på dator. En minnessiffra kan ha två siffror. Pilar eller tabulator flyttar markören. Backspace raderar, Delete tömmer rutan. Svep i sidled om alla kolumner inte syns.</p>
+          <p className="mt-2">Dutta på en ruta och skriv siffror med enhetens tangentbord. Tryck på ett räknetecken ovan för att skriva det i markerad ruta. Tryck Streck och dra över tomma eller ifyllda rutor för ett vågrätt eller lodrätt streck; ett tryck ger ett kort vågrätt streck. Dra längs ett befintligt streck för att ta bort hela strecket. Tryck Streck igen för att skriva siffror. Du kan också hålla på +, − eller × och dra för ett vågrätt streck. En ny siffra blir stor. Håll och släpp på en siffra för att växla storlek; håll och dra på siffran för att stryka eller ta bort lånestrecket. Knapparna nedanför gör samma sak, och högerklick visar valen på dator. En minnessiffra kan ha två siffror. Pilar eller tabulator flyttar markören. Backspace raderar, Delete tömmer rutan. Svep i sidled om alla kolumner inte syns.</p>
         </details>
         {contextMenu && <div className="diagnostic-context-menu" role="group" aria-label="Ändra markerad siffra" style={{ left: Math.max(8, contextMenu.x), top: Math.max(8, contextMenu.y) }}>
           {formatButton('main', 'Stor')}
@@ -494,7 +497,10 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
           {!pilot && <button type="button" onClick={showSnapshot} className="rounded-lg bg-blue-700 px-4 py-2 text-white">Visa JSON</button>}
           {!pilot && <button type="button" onClick={reloadSnapshot} disabled={!snapshotText.trim()} className="rounded-lg border border-blue-700 px-4 py-2 text-blue-800 disabled:opacity-50">Återläs JSON</button>}
           <button type="button" onClick={() => record({ type: 'submit' })} disabled={grid.status === 'submitted'}
-            className="rounded-lg border border-slate-500 px-4 py-2 disabled:opacity-50">Frys försöket</button>
+              className="rounded-lg border border-slate-500 px-4 py-2 disabled:opacity-50">{pilot ? 'Lämna in svaret' : 'Frys försöket'}</button>
+          {pilot && onNext && <button type="button" onClick={onNext}
+            disabled={grid.status !== 'submitted' || saveState?.busy || saveState?.conflict || grid.events.length > (saveState?.savedSequence || 0)}
+            className="rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white disabled:opacity-50">{nextLabel}</button>}
         </div>
         <p className="mt-3 text-sm" role="status">{pilot
           ? saveState?.busy ? 'Sparar...' : saveState?.error || (grid.events.length > (saveState?.savedSequence || 0)

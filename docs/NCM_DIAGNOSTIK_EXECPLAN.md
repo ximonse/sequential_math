@@ -88,6 +88,14 @@ inlämningar i följd, återuppta där genomgången avbröts och se vilka som
 
 ## Etapp 1 – adminbegränsad interaktionsprototyp (pågår)
 
+- [x] Streckverktyget växlar överlappande streck i samma rad/kolumn till
+  borttagning, även vid drag i omvänd riktning. Borttagningen bevaras som
+  `line_remove` i försöket. Ett vinkelrätt korsande streck behålls.
+- [x] Tilldelad elev kan lämna in svaret och välja **Nästa fråga** efter
+  serverkvittens. Nästa fråga följer det frysta uppdragets ordning och öppnar
+  sitt eget försök. Sista frågan leder till elevöversikten. Konflikt eller
+  osparat arbete stoppar nästa-knappen; vanlig mastery påverkas inte.
+
 - [x] Adminbegränsad route `/teacher/ncm/diagnostic-grid` läser de fyra
   uppgifterna från manifestet som markerbar text. Vanliga lärare och elever
   får inte öppna prototypen; NCM-modulen har orange bakgrund.

@@ -378,7 +378,7 @@
         "feedback",
         "print"
       ],
-      "decision": "",
+      "decision": "kommentarer är privata utkast tills du klickar \"lämna tillbaks\". om en elev \"lämnat in\" så kan lärare klicka så den blir oinlämnad, men bara fram till lärare börjat rätta/kolla genom svaren.",
       "evidence": "",
       "issue": "",
       "kind": "beslut",
@@ -762,8 +762,8 @@
       "acceptance": "Explicit sparande, återläsning, konfliktstopp och backup; agentregler och CI fångar glömd kartuppdatering.",
       "requires": [],
       "affects": [],
-      "decision": "Simon har valt HTML-kartan som gemensam arbetsyta. SC-exporten är en äldre separat snapshot, inte aktiv synk.\n\nBeslutat 2026-10-06: karta/kartan syftar normalt på projektkartan om inget annat tydligt avses. Läs senaste. Fråga betyder läsning och svar; uppdatera kartan betyder uppdatera berörda kort. Bara kartan betyder ta fram och stäm av, inte bygga nästa funktion eller publicera. Genomfört arbete och fattade beslut dokumenteras i kartan.",
-      "evidence": "Lokalt verifierat: text och kryssruta sparade och återlästa i webbläsaren; 137 testfiler/656 tester, build och lint godkända. CAS, backup och två samtidiga skrivningar testade. Kartkontrollen prövad röd utan kartuppdatering och grön med den. Ej pushat eller publicerat.",
+      "decision": "Simon har valt HTML-kartan som gemensam arbetsyta. SC-exporten är en äldre separat snapshot, inte aktiv synk.\n\nBeslutat 2026-10-06: karta/kartan syftar normalt på projektkartan om inget annat tydligt avses. Läs senaste. Fråga betyder läsning och svar; uppdatera kartan betyder uppdatera berörda kort. Bara kartan betyder ta fram och stäm av, inte bygga nästa funktion eller publicera. Genomfört arbete och fattade beslut dokumenteras i kartan.\n\n2026-10-07: Kortsparande sammanför ändringar i olika kort och fält. Motstridiga ändringar i samma fält stoppas; deluppgifter är ett gemensamt fält. Simons osparade beslutstext om återlämning räddades till feedback-policy.",
+      "evidence": "Lokalt verifierat: 137 testfiler/658 tester, build och lint godkända. Testar bevarande av andra kort/fält och konflikt i samma fält, backup samt revisionsskydd. Ingen publicering. Webbläsarprov godkänt: feedback-policy sparades från en äldre flik efter att map-editor ändrats, med båda kortens innehåll bevarat.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -785,7 +785,7 @@
         {
           "id": "e4e9f389-17ec-4aa0-815a-6e83e0134e5c",
           "text": "Uppdatera kartan vid nästa funktionsändring",
-          "done": false
+          "done": true
         }
       ]
     }

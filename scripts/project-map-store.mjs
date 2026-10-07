@@ -47,6 +47,30 @@ export async function loadPlan(path) {
   const text = await readFile(path, 'utf8')
   return { plan: validatePlan(JSON.parse(text)), revision: revisionOf(text) }
 }
+export function mergeCard(base, draft, current) {
+  if (!base || !draft || !current || base.id !== draft.id || base.id !== current.id) throw Object.assign(Error('Kortet saknas eller har bytt identitet.'), { status: 409 })
+  const merged = structuredClone(current)
+  const allowed = ['title', 'area', 'status', 'purpose', 'next', 'acceptance', 'decision', 'evidence', 'issue', 'kind', 'requires', 'affects', 'tasks']
+  for (const field of allowed) {
+    const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+    if (same(base[field], draft[field])) continue
+    if (!same(current[field], base[field]) && !same(current[field], draft[field])) {
+      throw Object.assign(Error(`Samma fält har ändrats av någon annan: ${field}. Ditt utkast finns kvar.`), { status: 409 })
+    }
+    merged[field] = structuredClone(draft[field])
+  }
+  return merged
+}
+export async function saveCard(path, base, draft) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const latest = await loadPlan(path)
+    const index = latest.plan.cards.findIndex(c => c.id === base?.id)
+    latest.plan.cards[index] = mergeCard(base, draft, latest.plan.cards[index])
+    latest.plan.edges = deriveEdges(latest.plan.cards)
+    try { return await savePlan(path, latest.plan, latest.revision) }
+    catch (error) { if (error.status !== 409 || attempt === 3) throw error }
+  }
+}
 export async function savePlan(path, plan, baseRevision) {
   validatePlan(plan)
   const lockPath = `${path}.lock`, tempPath = `${path}.${randomUUID()}.tmp`

@@ -1,6 +1,6 @@
 // The local server embeds this controller; standalone copies remain read-only.
 const connection = __CONNECTION__;
-let draft = null, currentCardId = null, dirty = false, saving = false;
+let draft = null, baseCard = null, currentCardId = null, dirty = false, saving = false;
 const allStatuses = ['Beslutat','Byggt','Föreslaget','Planerat','Saknas','Lokalt klart','Beslut behövs','Senare'];
 const notice = document.createElement('p');
 notice.id = 'save-state'; notice.setAttribute('role','status');
@@ -11,7 +11,6 @@ reloadButton.textContent='Läs senaste plan'; reloadButton.disabled=!connection;
 document.querySelector('.tools').append(reloadButton);
 const updateDirty = () => { dirty=true; $('edit-state').textContent='Osparade ändringar'; };
 const allowLeave = () => !saving && (!dirty || confirm('Kortet har osparade ändringar. Lämna utan att spara?'));
-const makeEdges = cards => cards.flatMap(c=>[...c.requires.map(source=>({source,target:c.id,kind:'kräver'})),...c.affects.map(target=>({source:c.id,target,kind:'påverkar'}))]);
 function acceptPlan(data) {
   Object.assign(plan,data.plan); connection.revision=data.revision;
   byId.clear(); plan.cards.forEach(c=>byId.set(c.id,c)); render();
@@ -30,7 +29,7 @@ function bindTasks() {
 }
 open = function(id) {
   if(!allowLeave())return;
-  currentCardId=id;draft=structuredClone(byId.get(id));dirty=false;
+  currentCardId=id;baseCard=structuredClone(byId.get(id));draft=structuredClone(baseCard);dirty=false;
   const c=draft;
   $('detail-title').textContent=c.title;
   const fields=[['purpose','Syfte'],['next','Nästa deluppgift'],['acceptance','Klart när'],['decision','Beslut / tanketråd'],['evidence','Gjort, belägg och publicering'],['issue','GitHub-issue']];
@@ -42,13 +41,14 @@ open = function(id) {
     saving=true;$('save-card').disabled=true;$('edit-state').textContent='Sparar…';
     // Freeze the submitted draft; late edits are prevented while awaiting ack.
     const controls=[...$('edit-form').querySelectorAll('input,textarea,select,button')];controls.forEach(el=>el.disabled=true);
-    const submitted=structuredClone(draft), candidate=structuredClone(plan);
-    candidate.cards[candidate.cards.findIndex(c=>c.id===currentCardId)]=submitted;
-    candidate.edges=makeEdges(candidate.cards);candidate.date=new Date().toLocaleDateString('sv-SE');
+    const submitted=structuredClone(draft);
     try {
-      const response=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json','X-Plan-Token':connection.token},body:JSON.stringify({plan:candidate,baseRevision:connection.revision})});
+      const response=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json','X-Plan-Token':connection.token},body:JSON.stringify({baseCard,card:submitted})});
       const data=await response.json();if(!response.ok)throw Error(data.error||'Sparandet misslyckades');
       acceptPlan(data);dirty=false;$('edit-state').textContent='Sparat i planfilen';notice.textContent='Sparat i planfilen · '+new Date().toLocaleTimeString('sv-SE');
+      baseCard=structuredClone(byId.get(currentCardId));draft=structuredClone(baseCard);
+      for(const field of $('edit-form').querySelectorAll('[name]'))field.value=draft[field.name];
+      $('tasks').innerHTML=tasksHtml();bindTasks();
       $('detail-title').textContent=submitted.title;
     } catch(error) {$('edit-state').textContent=error.message;notice.textContent='Inte sparat. Ditt utkast ligger kvar i kortet.'}
     finally {saving=false;controls.forEach(el=>el.disabled=false)}

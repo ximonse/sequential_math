@@ -19,9 +19,12 @@ ny deluppgift. Expandera **Redigera text och anteckningar** för övriga texter.
 stängning och omladdning. Utkast som aldrig sparats överlever inte ett
 webbläsarkrasch; de förvaras inte i någon separat lokal kö.
 
-Varje sparning jämför den lästa filens SHA256-revision, använder exklusivt
+Kortsparning sammanför ändrade fält med senaste planfilen. Ändringar i andra
+kort eller andra fält bevaras och blockerar inte sparningen. Olika ändringar
+i samma fält avvisas; deluppgiftslistan behandlas som ett gemensamt fält.
+Själva filskrivningen kontrollerar SHA256-revision, använder exklusivt
 fillås, säkerhetskopierar tidigare fil i `.backups/` och byter fil atomärt.
-Samtidig eller föråldrad skrivning avvisas; utkastet visas kvar. Kopiera text
+Vid konflikt visas utkastet kvar. Kopiera text
 du vill behålla innan du använder **Läs senaste plan** och sammanför sedan
 ändringarna uttryckligen. En avbockning ändrar inte automatiskt kortets
 status eller publiceringsbelägg. Varje fält behöver beskriva faktiska läget.
@@ -49,7 +52,7 @@ agenten. Dokumentationsändringar ensamma kräver inte automatiskt ny korttext.
 
 Testat lokalt: verkligt browser-sparande och återläsning av text/kryssruta,
 backup och konflikter, en vinnare bland två samtidiga skrivningar samt
-avvisning av cross-origin/obehöriga skrivningar. 137 testfiler/656 tester och
+avvisning av cross-origin/obehöriga skrivningar. 137 testfiler/658 tester och
 produktionsbuild godkända. Detta är ett lokalt verktyg, inte publicering av
 matematikappen. Kartans server måste vara igång när den används.
 

@@ -2,7 +2,7 @@ import { createServer } from 'node:http'
 import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { randomBytes } from 'node:crypto'
-import { loadPlan, savePlan } from './project-map-store.mjs'
+import { loadPlan, savePlan, saveCard } from './project-map-store.mjs'
 
 export const defaultPlanPath = fileURLToPath(new URL('../docs/screening-map/plan.json', import.meta.url))
 const templatePath = fileURLToPath(new URL('../docs/screening-map/preview.template.html', import.meta.url))
@@ -33,7 +33,8 @@ export function createMapServer(planPath = defaultPlanPath, token = randomBytes(
           if (size > 2_000_000) return reply(413, { error: 'Planen är för stor' })
           chunks.push(chunk)
         }
-        const { plan, baseRevision } = JSON.parse(Buffer.concat(chunks).toString('utf8'))
+        const { plan, baseRevision, baseCard, card } = JSON.parse(Buffer.concat(chunks).toString('utf8'))
+        if (baseCard && card) return reply(200, await saveCard(planPath, baseCard, card))
         return reply(200, await savePlan(planPath, plan, baseRevision))
       }
       reply(404, { error: 'Finns inte' })

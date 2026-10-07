@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { mkdtemp, readFile, writeFile, readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { loadPlan, savePlan, deriveEdges, validatePlan } from './project-map-store.mjs'
+import { loadPlan, savePlan, saveCard, deriveEdges, validatePlan } from './project-map-store.mjs'
 import { createMapServer } from './project-map-server.mjs'
 
 async function fixture(run) {
@@ -15,6 +15,28 @@ async function fixture(run) {
   } finally { await rm(dir, { recursive: true, force: true }) }
 }
 describe('Shared project map persistence', () => {
+  it('merges a stale card edit with changes to another card and another field', async () => fixture(async path => {
+    const first = await loadPlan(path)
+    const base = structuredClone(first.plan.cards[0])
+    const draft = structuredClone(base); draft.decision = 'Simons beslut'
+    first.plan.cards[1].title = 'Agent updated another card'
+    first.plan.cards[0].evidence = 'New verified evidence'
+    await savePlan(path, first.plan, first.revision)
+    const saved = await saveCard(path, base, draft)
+    expect(saved.plan.cards[0].decision).toBe('Simons beslut')
+    expect(saved.plan.cards[0].evidence).toBe('New verified evidence')
+    expect(saved.plan.cards[1].title).toBe('Agent updated another card')
+  }))
+  it('preserves both drafts when the same field conflicts', async () => fixture(async path => {
+    const first = await loadPlan(path)
+    const base = structuredClone(first.plan.cards[0])
+    const draft = structuredClone(base); draft.decision = 'User draft'
+    first.plan.cards[0].decision = 'Other decision'
+    const saved = await savePlan(path, first.plan, first.revision)
+    await expect(saveCard(path, base, draft)).rejects.toMatchObject({ status: 409 })
+    expect((await loadPlan(path)).revision).toBe(saved.revision)
+    expect(draft.decision).toBe('User draft')
+  }))
   it('preserves checkboxes, Unicode text and a backup; rejects an old full-plan overwrite', async () => fixture(async (path, dir) => {
     const first = await loadPlan(path)
     first.plan.cards[0].tasks = [{ id: 'review', text: 'Läs Simons ändringar', done: true }]

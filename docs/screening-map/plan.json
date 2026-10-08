@@ -498,25 +498,25 @@
       "id": "tips",
       "area": "Analys",
       "title": "Frågor och tips för läraren",
-      "status": "Föreslaget",
+      "status": "Lokalt klart",
       "purpose": "Hjälpa läraren välja en fråga som undersöker elevens tänkande.",
-      "next": "Knyt ett litet lärarstöd till befintlig signal och visa osäkerhet.",
-      "acceptance": "Tipset är förslag, visar varför och kräver inte att läraren accepterar hypotesen.",
+      "next": "Didaktisk granskning av frågornas formulering med lärare; publicering kräver separat beslut.",
+      "acceptance": "Frågan visar observerat underlag och osäkerhet. Felsvar ensamt ger inget signalbaserat tips. Ingen elevåterkoppling eller mastery-påverkan.",
       "requires": [
         "analysis"
       ],
       "affects": [
         "followup"
       ],
-      "decision": "",
-      "evidence": "",
+      "decision": "\n2026-10-08: Simon valde lärarstöd i Screening. Enbart frågor utifrån befintliga observerade signaler; automatisk elevtipsfunktion från den äldre träningsgrenen integreras inte.",
+      "evidence": "2026-10-08: Lokalt verifierat i codex/ncm-teacher-tips: 138 testfiler/660 tester, build, riktad ESLint och samtliga 81 robotfall passerade. Robotflödet kontrollerar frågan, osäkerheten och att stöd saknas utan signal. Ingen separat visuell granskning utförd. Ej pushat eller publicerat.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
         {
           "id": "next-tips",
           "text": "Knyt ett litet lärarstöd till befintlig signal och visa osäkerhet.",
-          "done": false
+          "done": true
         }
       ]
     },

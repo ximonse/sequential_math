@@ -49,8 +49,16 @@ händelsehistorik läses för att validera och analysera senaste försök för v
 cell; större klasser innebär därmed fler databasläsningar. Ett saknat eller
 inkonsistent sparat försök ger läsfel, inte ett påhittat obesvarat resultat.
 
-Utskrift, återlämning, elevsynliga kommentarer, förslag på tips och nya
-uppföljningsuppgifter ingår inte i denna etapp.
+Genomgången visar möjliga frågor till eleven när befintlig analys observerar
+förskjutna entalskolumner, olika svar i häfte och svarsfält eller det smala
+subtraktionsmönstret. Varje fråga visar sitt underlag och en tydlig gräns:
+observationen bevisar ingen felorsak. Okänt underlag eller ett felsvar ensamt
+ger inga signalbaserade frågor. Uppgiftens allmänna lärarstöd visas fortfarande.
+Frågorna visas bara i lärarens befintliga behörighetsskyddade detaljvy och
+skickas inte till eleven. Ingen ny analys, lagring eller mastery-påverkan införs.
+
+Utskrift, återlämning, elevsynliga kommentarer och nya uppföljningsuppgifter
+ingår inte i denna etapp.
 
 ## Gemensam anteckning och revisionsskydd
 

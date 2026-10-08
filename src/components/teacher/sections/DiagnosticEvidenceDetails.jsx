@@ -1,9 +1,11 @@
 import taskPacks from '../../../domains/arithmetic/diagnosticTaskPacks.v1.json'
 import DiagnosticAttemptHistory from './DiagnosticAttemptHistory'
 import DiagnosticReviewForm from './DiagnosticReviewForm'
+import { buildDiagnosticTeacherSupport } from '../../../domains/arithmetic/diagnosticTeacherSupport.js'
 
 export default function DiagnosticEvidenceDetails({ detail, onSaved, onDirtyChange, reviewable = false }) {
   const guideFor = task => taskPacks.guides[task?.intentCode]
+  const teacherSupport = buildDiagnosticTeacherSupport(detail)
   const answerLabels = { unanswered: 'inget slutsvar', incomplete: 'ofullständigt slutsvar',
     correct: 'rätt slutsvar', incorrect: 'fel slutsvar' }
   const visibleResultReasons = { no_unique_aligned_setup: 'uppställningen inte är entydigt kolumnjusterad',
@@ -38,6 +40,14 @@ export default function DiagnosticEvidenceDetails({ detail, onSaved, onDirtyChan
               : 'För lite entydigt underlag för att bedöma detta mönster.'}
         </p>}
         <DiagnosticAttemptHistory key={`${detail.record.attemptId}:${detail.record.serverRevision}`} snapshot={detail.snapshot} />
+        {teacherSupport.length > 0 && <section aria-label="Lärarstöd utifrån underlaget" className="mt-3 rounded border border-amber-300 bg-amber-50 p-2 text-sm">
+          <h5 className="font-semibold">Möjliga frågor till eleven</h5>
+          <p className="text-xs">Förslag för lärarens samtal. Underlaget visar ingen säker felorsak.</p>
+          {teacherSupport.map(item => <div key={item.code} className="mt-2">
+            <p><strong>Underlag:</strong> {item.reason}</p>
+            <p><strong>Fråga eleven:</strong> {item.question}</p>
+          </div>)}
+        </section>}
         <p className="mt-2 text-xs text-slate-700">Uppgift {detail.record.taskId}, version {detail.record.taskVersion}. Analysversioner: kolumn {detail.columnAlignment.analysisVersion}, resultat {detail.visibleResult.analysisVersion}, subtraktion {detail.subtractionPattern.analysisVersion}. Händelser: {detail.snapshot.events.length}.</p>
       </section>
   )

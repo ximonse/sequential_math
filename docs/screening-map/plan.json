@@ -42,7 +42,7 @@
         "original"
       ],
       "decision": "",
-      "evidence": "dc129da; tidigare publicerat enligt denna tråd. Ingen ny produktionskontroll.",
+      "evidence": "dc129da; tidigare publicerat enligt denna tråd. Ingen ny produktionskontroll.\n2026-10-09: Inloggad produktionsprovning via Chrome. Separat konto test (elevvy Röd Bro Björn), klass Test, fick exakt 268+431 och 402−178 i en en-elevstilldelning. Äldre separat tilldelning till Testelev kvar; inget raderat eller PIN ändrat.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -119,7 +119,7 @@
         "lifecycle"
       ],
       "decision": "",
-      "evidence": "Diagnostisk försökslagring; versions- och kvittensskydd finns. Verklig driftverifiering separat.",
+      "evidence": "Diagnostisk försökslagring; versions- och kvittensskydd finns. Verklig driftverifiering separat.\n2026-10-09: På matematik.ximon.se sparades additionens nio siffror och slutsvar 699; serverkvittens följdes av omladdning med samma rutor, slutsvar och 22 händelser. Inlämning gav fryst underlag med 23 händelser. Separat subtraktion 402−178→376 återlästes i lärarvyn med 22 händelser. Ingen nätverksfelinjektion eller full återhämtningsmatris utförd.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -221,7 +221,7 @@
         "review"
       ],
       "decision": "",
-      "evidence": "0b1eaa8; 652 tester, build, lint, 81 robotfall.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.",
+      "evidence": "0b1eaa8; 652 tester, build, lint, 81 robotfall.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.\n2026-10-09: Produktionsmatris för enbart testtilldelningen visar 699 rätt, 376 fel utan identifierat mönster, 1/2 rätt och 2/2 inlämnade. Efter sparad lärargranskning visar den 1/2 genomgångna. Full klass och skalmätning återstår.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -276,7 +276,7 @@
         "print"
       ],
       "decision": "",
-      "evidence": "fec960e + 0b1eaa8; lokalt testat.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.",
+      "evidence": "fec960e + 0b1eaa8; lokalt testat.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.\n2026-10-09: Produktionsoverlay för testkontots subtraktion visade sparat original och förlopp. Teknisk läraranteckning och genomgångsmarkering sparades med serverkvittens och återlästes efter stängning/återöppning. Underlaget var fortsatt elevrevision 3 med 22 händelser. Samtidig CAS-konflikt och radering ej provade.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -456,7 +456,7 @@
         "tips"
       ],
       "decision": "",
-      "evidence": "Versionerade regler finns; signalerna i matrisen är lokala i 0b1eaa8.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.",
+      "evidence": "Versionerade regler finns; signalerna i matrisen är lokala i 0b1eaa8.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.\n2026-10-09: Avsiktligt felsvar 376 utan svarsstreck gav korrekt okänt/otillräckligt underlag för metodmönstret i produktion; slutsvaret klassades fel och entalen som kolumnjusterade. Positiv M-träff och signalbaserade frågor inte verifierade i detta produktionsprov.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -509,7 +509,7 @@
         "followup"
       ],
       "decision": "\n2026-10-08: Simon valde lärarstöd i Screening. Enbart frågor utifrån befintliga observerade signaler; automatisk elevtipsfunktion från den äldre träningsgrenen integreras inte.",
-      "evidence": "2026-10-08: Lokalt verifierat i codex/ncm-teacher-tips: 138 testfiler/660 tester, build, riktad ESLint och samtliga 81 robotfall passerade. Robotflödet kontrollerar frågan, osäkerheten och att stöd saknas utan signal. Ingen separat visuell granskning utförd.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.",
+      "evidence": "2026-10-08: Lokalt verifierat i codex/ncm-teacher-tips: 138 testfiler/660 tester, build, riktad ESLint och samtliga 81 robotfall passerade. Robotflödet kontrollerar frågan, osäkerheten och att stöd saknas utan signal. Ingen separat visuell granskning utförd.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.\n2026-10-09: Produktionsprov visar lärarstöd för uppgiftens syfte samt tydlig osäkerhet vid otydligt underlag. Ingen signalbaserad fråga uppstod när svarsstreck saknades; positiv M-fråga återstår att prova i produktion.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -604,7 +604,7 @@
       "title": "Riktig Redis och avbrottsprovning",
       "status": "Saknas",
       "purpose": "Robotarna använder isolerad minnesdatabas och emulerar Lua-transaktioner.",
-      "next": "Pröva separat testkonto: kvittens, retry, CAS, elevändring, radering och avbrott.",
+      "next": "Pröva separat testkonto: retry/nätverksavbrott, CAS-konflikt och livscykel; radering först efter uttrycklig bekräftelse.",
       "acceptance": "Samma kontrakt håller mot verklig lagring; inga riktiga elevers konton används.",
       "requires": [
         "original",
@@ -615,7 +615,7 @@
         "pilot"
       ],
       "decision": "",
-      "evidence": "",
+      "evidence": "2026-10-09: Delvis driftverifierat på separat testkonto i produktion: tilldelning, serverkvittens, omladdning/återupptagning, två inlämningar, lärarmatris och sparad/återläst intern kommentar. Detta är inte full Redis-verifiering: retry vid nätverksfel, samtidighetskonflikt/CAS, elevändring och radering återstår. Inga verkliga elevers data användes; inga autentiseringsuppgifter ändrades.",
       "issue": "",
       "kind": "verifiering",
       "tasks": [

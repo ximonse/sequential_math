@@ -808,23 +808,23 @@
       "id": "grid-digit-size",
       "area": "Elevarbete",
       "title": "Större siffror som nästan fyller rutorna",
-      "status": "Planerat",
+      "status": "Lokalt klart",
       "purpose": "Göra stora siffror lättare att läsa i räknehäftets rektangulära rutor.",
-      "next": "Öka stora siffrors storlek i elevvy och lärarens originalåtergivning; verifiera utan klippning.",
+      "next": "Fysisk iPad-provning efter separat beslut om publicering.",
       "acceptance": "Siffrorna 0–9 nästan fyller rutorna med liten marginal. Rutproportioner, minnessiffror, lån och överstrykningar bevaras. Visuellt kontrollerat i webbläsare och på avsedd iPad.",
       "requires": [
         "grid"
       ],
       "affects": [],
       "decision": "2026-10-09: Simon bad om en issue: gör siffrorna större så de nästan fyller upp rektanglarna.",
-      "evidence": "2026-10-09: GitHub issue #9 skapad. Ingen kodändring eller publicering.",
+      "evidence": "2026-10-09: GitHub issue #9 skapad. Ingen kodändring eller publicering.\n2026-10-09: Ny lokal räknehäftsöverföring, se notebook-workstation. Inte pushad/publicerad. Större normalviktiga siffror i elevvy och lärarens original, gemensamma NumberKeys, kompakt verktygsrad, touchgenvägar, utfällbar fullbred ritpappersvy och serverkvitterad navigation. 681 tester och build gröna; Chromium-touch och alla fem teman granskade. Fysisk iPad återstår.",
       "issue": "https://github.com/ximonse/sequential_math/issues/9",
       "kind": "deluppgift",
       "tasks": [
         {
           "id": "next-grid-digit-size",
           "text": "Öka sifferstorleken och verifiera läsbarhet utan klippning.",
-          "done": false
+          "done": true
         }
       ]
     },
@@ -865,7 +865,7 @@
         "ipad"
       ],
       "decision": "2026-10-09: Simon bad om en issue för numpad på sidan som i de andra uppgifterna. Separat från automatisk markörförflyttning i #8; samordnas med större siffror i #9.",
-      "evidence": "GitHub issue #11 skapad. Ingen implementation eller publicering.\n2026-10-09: lokalt byggt, ej pushat/publicerat. Samlingsrobot och 666 enhetstester godkända. Full regression samt nya skriv/rit/återkopplingsflöden återstår.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.\n2026-10-09: Nya samlingslagringsgränsen i b81f007 verifierad mot sekvens faktiska Redis med 12 godkända kontroller: atomisk inlämning, återläsning, tomma arrayer, skrivsvar/ritning, retry utan dubbelhändelser, samtidighet, revisions-/loggkonflikter, medlemskap/arkivering/stängning/testtombstone, quota och fryst original. Slumpmässig testnamnrymd; tio spårade slutnycklar rensade och frånvaro verifierad. Säkerhetstester för skriptet 3/3. Inte ny driftsatt HTTP-handler eller faktiskt nätavbrott; ingen push/publicering eller elevdatapåverkan.\n2026-10-09: Publicerat efter Simons begäran via GitHub master 1395e65. Vercel sekvens READY, matematik.ximon.se tilldelad. Publikt huvudpaket och två nya elev/räknehäfts-chunks matchar lokalt build byte för byte. Inga error/fatal-poster för nya deploymenten vid kontrollen. Fysiskt iPad-test och verkligt nätavbrott i driftsatt klient/API återstår; inga riktiga elevdata ändrade.",
+      "evidence": "GitHub issue #11 skapad. Ingen implementation eller publicering.\n2026-10-09: lokalt byggt, ej pushat/publicerat. Samlingsrobot och 666 enhetstester godkända. Full regression samt nya skriv/rit/återkopplingsflöden återstår.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.\n2026-10-09: Nya samlingslagringsgränsen i b81f007 verifierad mot sekvens faktiska Redis med 12 godkända kontroller: atomisk inlämning, återläsning, tomma arrayer, skrivsvar/ritning, retry utan dubbelhändelser, samtidighet, revisions-/loggkonflikter, medlemskap/arkivering/stängning/testtombstone, quota och fryst original. Slumpmässig testnamnrymd; tio spårade slutnycklar rensade och frånvaro verifierad. Säkerhetstester för skriptet 3/3. Inte ny driftsatt HTTP-handler eller faktiskt nätavbrott; ingen push/publicering eller elevdatapåverkan.\n2026-10-09: Publicerat efter Simons begäran via GitHub master 1395e65. Vercel sekvens READY, matematik.ximon.se tilldelad. Publikt huvudpaket och två nya elev/räknehäfts-chunks matchar lokalt build byte för byte. Inga error/fatal-poster för nya deploymenten vid kontrollen. Fysiskt iPad-test och verkligt nätavbrott i driftsatt klient/API återstår; inga riktiga elevdata ändrade.\n2026-10-09: Ny lokal räknehäftsöverföring, se notebook-workstation. Inte pushad/publicerad. Större normalviktiga siffror i elevvy och lärarens original, gemensamma NumberKeys, kompakt verktygsrad, touchgenvägar, utfällbar fullbred ritpappersvy och serverkvitterad navigation. 681 tester och build gröna; Chromium-touch och alla fem teman granskade. Fysisk iPad återstår.",
       "issue": "https://github.com/ximonse/sequential_math/issues/11",
       "kind": "deluppgift",
       "tasks": [
@@ -936,7 +936,7 @@
       "requires": [],
       "affects": [],
       "decision": "Simons önskemål 2026-10-09",
-      "evidence": "Lokalt byggt, verifiering pågår; ej publicerat.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.\n2026-10-09: Nya samlingslagringsgränsen i b81f007 verifierad mot sekvens faktiska Redis med 12 godkända kontroller: atomisk inlämning, återläsning, tomma arrayer, skrivsvar/ritning, retry utan dubbelhändelser, samtidighet, revisions-/loggkonflikter, medlemskap/arkivering/stängning/testtombstone, quota och fryst original. Slumpmässig testnamnrymd; tio spårade slutnycklar rensade och frånvaro verifierad. Säkerhetstester för skriptet 3/3. Inte ny driftsatt HTTP-handler eller faktiskt nätavbrott; ingen push/publicering eller elevdatapåverkan.\n2026-10-09: Publicerat efter Simons begäran via GitHub master 1395e65. Vercel sekvens READY, matematik.ximon.se tilldelad. Publikt huvudpaket och två nya elev/räknehäfts-chunks matchar lokalt build byte för byte. Inga error/fatal-poster för nya deploymenten vid kontrollen. Fysiskt iPad-test och verkligt nätavbrott i driftsatt klient/API återstår; inga riktiga elevdata ändrade.",
+      "evidence": "Lokalt byggt, verifiering pågår; ej publicerat.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.\n2026-10-09: Nya samlingslagringsgränsen i b81f007 verifierad mot sekvens faktiska Redis med 12 godkända kontroller: atomisk inlämning, återläsning, tomma arrayer, skrivsvar/ritning, retry utan dubbelhändelser, samtidighet, revisions-/loggkonflikter, medlemskap/arkivering/stängning/testtombstone, quota och fryst original. Slumpmässig testnamnrymd; tio spårade slutnycklar rensade och frånvaro verifierad. Säkerhetstester för skriptet 3/3. Inte ny driftsatt HTTP-handler eller faktiskt nätavbrott; ingen push/publicering eller elevdatapåverkan.\n2026-10-09: Publicerat efter Simons begäran via GitHub master 1395e65. Vercel sekvens READY, matematik.ximon.se tilldelad. Publikt huvudpaket och två nya elev/räknehäfts-chunks matchar lokalt build byte för byte. Inga error/fatal-poster för nya deploymenten vid kontrollen. Fysiskt iPad-test och verkligt nätavbrott i driftsatt klient/API återstår; inga riktiga elevdata ändrade.\n2026-10-09: Ny lokal räknehäftsöverföring, se notebook-workstation. Inte pushad/publicerad. Större normalviktiga siffror i elevvy och lärarens original, gemensamma NumberKeys, kompakt verktygsrad, touchgenvägar, utfällbar fullbred ritpappersvy och serverkvitterad navigation. 681 tester och build gröna; Chromium-touch och alla fem teman granskade. Fysisk iPad återstår.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -984,7 +984,7 @@
         "feedback"
       ],
       "decision": "Simon 2026-10-09: godkänt. Redigering tillåten före inlämning.",
-      "evidence": "Samlingsrobot godkänd med nätfel, varning, navigation och originalbevarande. Ej publicerad.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.\n2026-10-09: Nya samlingslagringsgränsen i b81f007 verifierad mot sekvens faktiska Redis med 12 godkända kontroller: atomisk inlämning, återläsning, tomma arrayer, skrivsvar/ritning, retry utan dubbelhändelser, samtidighet, revisions-/loggkonflikter, medlemskap/arkivering/stängning/testtombstone, quota och fryst original. Slumpmässig testnamnrymd; tio spårade slutnycklar rensade och frånvaro verifierad. Säkerhetstester för skriptet 3/3. Inte ny driftsatt HTTP-handler eller faktiskt nätavbrott; ingen push/publicering eller elevdatapåverkan.\nSlutkontroll verifieringssjok: 141 testfiler/674 tester, build och riktad lint godkända. Oförändrad app/API-kod; senaste fulla robotsvit för samma kod 83/83, inte omkörd i detta verifieringssjok.\n2026-10-09: Publicerat efter Simons begäran via GitHub master 1395e65. Vercel sekvens READY, matematik.ximon.se tilldelad. Publikt huvudpaket och två nya elev/räknehäfts-chunks matchar lokalt build byte för byte. Inga error/fatal-poster för nya deploymenten vid kontrollen. Fysiskt iPad-test och verkligt nätavbrott i driftsatt klient/API återstår; inga riktiga elevdata ändrade.",
+      "evidence": "Samlingsrobot godkänd med nätfel, varning, navigation och originalbevarande. Ej publicerad.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.\n2026-10-09: Nya samlingslagringsgränsen i b81f007 verifierad mot sekvens faktiska Redis med 12 godkända kontroller: atomisk inlämning, återläsning, tomma arrayer, skrivsvar/ritning, retry utan dubbelhändelser, samtidighet, revisions-/loggkonflikter, medlemskap/arkivering/stängning/testtombstone, quota och fryst original. Slumpmässig testnamnrymd; tio spårade slutnycklar rensade och frånvaro verifierad. Säkerhetstester för skriptet 3/3. Inte ny driftsatt HTTP-handler eller faktiskt nätavbrott; ingen push/publicering eller elevdatapåverkan.\nSlutkontroll verifieringssjok: 141 testfiler/674 tester, build och riktad lint godkända. Oförändrad app/API-kod; senaste fulla robotsvit för samma kod 83/83, inte omkörd i detta verifieringssjok.\n2026-10-09: Publicerat efter Simons begäran via GitHub master 1395e65. Vercel sekvens READY, matematik.ximon.se tilldelad. Publikt huvudpaket och två nya elev/räknehäfts-chunks matchar lokalt build byte för byte. Inga error/fatal-poster för nya deploymenten vid kontrollen. Fysiskt iPad-test och verkligt nätavbrott i driftsatt klient/API återstår; inga riktiga elevdata ändrade.\n2026-10-09: Ny lokal räknehäftsöverföring, se notebook-workstation. Inte pushad/publicerad. Större normalviktiga siffror i elevvy och lärarens original, gemensamma NumberKeys, kompakt verktygsrad, touchgenvägar, utfällbar fullbred ritpappersvy och serverkvitterad navigation. 681 tester och build gröna; Chromium-touch och alla fem teman granskade. Fysisk iPad återstår.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -1009,7 +1009,7 @@
         "drawing-patterns"
       ],
       "decision": "Simon 2026-10-09: Rensa på utkastets rityta och överför färger/funktioner till appens andra rityta. Övriga utkaständringar överförs inte i detta sjok.",
-      "evidence": "2026-10-09: Lokalt byggt i MathScratchpad; även diagnostiska återspelningar stöds. 143 testfiler/680 tester, build och riktad lint godkända. Ritytans klickrobot 1/1 godkänd; full robotregression pågår. Rutnätsval är lokalt för arbetsytan, inte diagnostisk historik. Ingen push eller publicering.\nSlutkontroll 2026-10-09: 680 projekttester, build och riktad lint godkända. Full robotsvit 84/84, 0 regelbrott. Därefter enbart kontrastjustering av svart penna; separat rityterobot på aktuellt bygge verifierar alla teman, färgbyte, sudd, rutnät, dölj/visa samt avbruten/bekräftad rensning. Faktisk renderad lokal elevvy granskad. Ingen push eller publicering. Projektets testkörning avgränsades från andra agenters inbäddade worktrees; Chromium krävde utökad processbehörighet.",
+      "evidence": "2026-10-09: Lokalt byggt i MathScratchpad; även diagnostiska återspelningar stöds. 143 testfiler/680 tester, build och riktad lint godkända. Ritytans klickrobot 1/1 godkänd; full robotregression pågår. Rutnätsval är lokalt för arbetsytan, inte diagnostisk historik. Ingen push eller publicering.\nSlutkontroll 2026-10-09: 680 projekttester, build och riktad lint godkända. Full robotsvit 84/84, 0 regelbrott. Därefter enbart kontrastjustering av svart penna; separat rityterobot på aktuellt bygge verifierar alla teman, färgbyte, sudd, rutnät, dölj/visa samt avbruten/bekräftad rensning. Faktisk renderad lokal elevvy granskad. Ingen push eller publicering. Projektets testkörning avgränsades från andra agenters inbäddade worktrees; Chromium krävde utökad processbehörighet.\n2026-10-09: Ny lokal räknehäftsöverföring, se notebook-workstation. Inte pushad/publicerad. Större normalviktiga siffror i elevvy och lärarens original, gemensamma NumberKeys, kompakt verktygsrad, touchgenvägar, utfällbar fullbred ritpappersvy och serverkvitterad navigation. 681 tester och build gröna; Chromium-touch och alla fem teman granskade. Fysisk iPad återstår.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -1021,6 +1021,46 @@
         {
           "id": "drawing-tools-verification",
           "text": "Full regression samt visuell lokal kontroll.",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "notebook-workstation",
+      "area": "Elevarbete",
+      "title": "Godkänd räknehäftsdesign och touchgenvägar",
+      "status": "Lokalt klart",
+      "purpose": "Överföra det annoterade utkastet till elevens riktiga räknehäfte utan att ändra original, sparande eller inlämningsgräns.",
+      "next": "Separat beslut om samlad publicering av räknehäftet och de redan lokalt sparade gemensamma ritverktygen. Därefter fysisk iPad-provning av publicerad version med separat testkonto.",
+      "acceptance": "Kompakt femverktygsrad och gemensam numpad, normalviktiga större siffror, centrerad fråga, svar direkt under rutnätet, utfällbar fullbred rityta. Håll utan drag ändrar inget; horisontellt drag stryker stor/liten siffra; ned/upp ändrar storlek; tom ruta tillåter rutlinjestreck. Autosparande, navigation, historik och helsamlingsinlämning bevarade. Fysisk iPad-provning separat.",
+      "requires": [
+        "grid",
+        "student-collections",
+        "shared-drawing-tools"
+      ],
+      "affects": [
+        "ipad",
+        "grid-digit-size",
+        "grid-numpad"
+      ],
+      "decision": "2026-10-09: Simon godkände den annoterade designen och de senaste touchrörelserna. Mandat: implementation, lokal verifiering och commit. Ingen push/publicering i detta sjok. Ritytans ursprungliga koordinatproportioner bevaras i en fullbred, rullbar pappersvy; ingen omformning av tidigare elevritningar. Sparfel får inte döljas: explicit retry visas vid fel och navigation inväntar också ändringar som tillkommer under en långsam sparning. Rutnätets befintliga åtta rader bevaras, inte beskärning till mockens sex rader.",
+      "evidence": "2026-10-09: Överfört till appen, ej publicerat. 144 testfiler/681 tester, build, riktad lint och diffkontroll gröna. Full robotregression: 84/85; enda återstående fel var en gammal assertion om orange bakgrund i adminprototypen, som inte längre gäller den godkända temadesignen. Assertionen uppdaterad och räknehäftets fem robotar omkörda. Samtliga 85 unika robotkontroller verifierade över dessa körningar. Alla fem temarenderingar samt elevens skriv-/ritvy granskade. Ny robot blev röd på serverkvittens för en ändring under pågående frågebytes-sparning; navigationsgränsen rättad och robot grön. Tom-ruta-streck, upp/ned-storlek, horisontell överstrykning och håll utan drag verifierade med Chromium-touch. Fysisk iPad och drift återstår. Lokal commit följer i samma sjok.",
+      "issue": "",
+      "kind": "deluppgift",
+      "tasks": [
+        {
+          "id": "notebook-layout",
+          "text": "Överför den godkända kompakta layouten och numpad.",
+          "done": true
+        },
+        {
+          "id": "notebook-touch",
+          "text": "Implementera och verifiera samtliga beslutade touchrörelser.",
+          "done": true
+        },
+        {
+          "id": "notebook-verification",
+          "text": "Verifiera hela elev/lärarflödet, samtliga teman och lokal commit.",
           "done": true
         }
       ]
@@ -1440,6 +1480,36 @@
     {
       "source": "shared-drawing-tools",
       "target": "drawing-patterns",
+      "kind": "påverkar"
+    },
+    {
+      "source": "grid",
+      "target": "notebook-workstation",
+      "kind": "kräver"
+    },
+    {
+      "source": "student-collections",
+      "target": "notebook-workstation",
+      "kind": "kräver"
+    },
+    {
+      "source": "shared-drawing-tools",
+      "target": "notebook-workstation",
+      "kind": "kräver"
+    },
+    {
+      "source": "notebook-workstation",
+      "target": "ipad",
+      "kind": "påverkar"
+    },
+    {
+      "source": "notebook-workstation",
+      "target": "grid-digit-size",
+      "kind": "påverkar"
+    },
+    {
+      "source": "notebook-workstation",
+      "target": "grid-numpad",
       "kind": "påverkar"
     }
   ],

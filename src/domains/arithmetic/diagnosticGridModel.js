@@ -2,7 +2,8 @@ export const DIAGNOSTIC_GRID_VERSION = 1
 export const GRID_ROWS = 8
 export const GRID_COLUMNS = 12
 
-const MAIN_CHARACTERS = /^[0-9+−×/÷,─]$/u
+export const MAIN_CHARACTERS = /^[0-9+−×/÷,─=()%xyabnc²]$/u
+export const NUMBER_ANSWER = /^[−-]?\d{0,12}(,\d{0,12})?$/u
 const NOTE_CHARACTERS = /^[0-9]{1,2}$/u
 const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'line_add', 'line_remove', 'answer_change', 'drawing_stroke', 'drawing_clear', 'pause', 'resume', 'focus_lost', 'submit'])
 
@@ -134,7 +135,7 @@ export function applyDiagnosticGridEvent(state, event) {
     next.cursor = { ...state.cursor, layer: event.to }
   } else if (event.type === 'answer_change') {
     if (event.before !== state.answer || typeof event.after !== 'string'
-      || (state.answerType === 'text' ? event.after.length > 2000 : !/^[−-]?\d{0,12}$/u.test(event.after))) throw new Error('Answer history mismatch')
+      || (state.answerType === 'text' ? event.after.length > 2000 : !NUMBER_ANSWER.test(event.after))) throw new Error('Answer history mismatch')
     next.answer = event.after
   } else if (event.type === 'drawing_stroke') {
     if (!Array.isArray(event.points) || event.points.length < 1 || event.points.length > 200

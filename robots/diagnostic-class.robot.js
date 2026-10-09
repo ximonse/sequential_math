@@ -35,10 +35,10 @@ test('An admin assigns one diagnostic to the whole selected class and each pupil
       await task.click()
       for (const [index, label] of ['Räkna ut 268 + 431.', 'Räkna ut 352 + 426.', 'Räkna ut 248 + 327.',
         'Räkna ut 283 + 462.', 'Räkna ut 357 + 268.', 'Räkna ut 587 + 246.'].entries()) {
-        await expect(student.getByRole('heading', { name: label, exact: true })).toBeVisible()
+        await expect(student.getByRole('heading', { name: label.replace(/^Räkna ut /u, '').replace(/\.$/u, ''), exact: true })).toBeVisible()
         if (index < 5) await student.getByRole('button', { name: 'Nästa fråga', exact: true }).click()
       }
-      await expect(student.getByRole('button', { name: 'Nästa fråga', exact: true })).toHaveCount(0)
+      await expect(student.getByRole('button', { name: 'Nästa fråga', exact: true })).toBeDisabled()
     }
     await context.close()
   }

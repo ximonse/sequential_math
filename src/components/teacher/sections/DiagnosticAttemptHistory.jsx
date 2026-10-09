@@ -32,7 +32,7 @@ export default function DiagnosticAttemptHistory({ snapshot }) {
           const cell = frame.cells[`${row}:${column}`] || {}
           return <div key={`${row}:${column}`} className={`diagnostic-cell ${cell.note ? 'diagnostic-cell--note' : ''}`}
             role="gridcell" aria-label={`rad ${row + 1}, kolumn ${column + 1}, ${cell.main || cell.note || 'tom'}`}>
-            {cell.main && <span className={`diagnostic-cell__digit diagnostic-cell__digit--main ${cell.struck ? 'diagnostic-cell__digit--struck' : ''}`}>{cell.main}</span>}
+            {cell.main && <span className={`diagnostic-cell__digit diagnostic-cell__digit--main ${cell.main.length > 1 ? 'diagnostic-cell__digit--double' : ''} ${cell.struck ? 'diagnostic-cell__digit--struck' : ''}`}>{cell.main}</span>}
             {cell.note && <span className={`diagnostic-cell__digit diagnostic-cell__digit--note ${cell.struck ? 'diagnostic-cell__digit--struck' : ''}`}>{cell.note}</span>}
           </div>
         })}

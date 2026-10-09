@@ -27,7 +27,6 @@ test('Admin reviews a class with submitted, ongoing and unopened work; notes sur
     await login(student, pupil)
     await student.getByRole('button', { name: 'Screening', exact: true }).click()
     await student.locator('input[data-cell="0:0"]').press('8')
-    await student.getByRole('button', { name: 'Spara arbetet', exact: true }).click()
     await expect(student.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
   }
   studentPages[0].once('dialog', dialog => dialog.accept())
@@ -59,7 +58,6 @@ test('Admin reviews a class with submitted, ongoing and unopened work; notes sur
   await form.getByRole('button', { name: 'Spara genomgång', exact: true }).click()
   await expect(form.getByText('Genomgången är sparad på servern.')).toBeVisible()
   await studentPages[1].locator('input[data-cell="0:0"]').press('7')
-  await studentPages[1].getByRole('button', { name: 'Spara arbetet', exact: true }).click()
   await expect(studentPages[1].getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
   await review.getByRole('button', { name: 'Stäng genomgång', exact: true }).click()
   await review.getByRole('button', { name: 'Uppdatera klassöversikt', exact: true }).click()

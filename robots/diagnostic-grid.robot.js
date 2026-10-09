@@ -14,14 +14,14 @@ async function openAsRole(browser, role, path, viewport = { width: 820, height: 
   return { context, page }
 }
 
-async function touchGesture(page, cell, drag = false) {
+async function touchGesture(page, cell, drag = false, dy = 0) {
   const box = await cell.boundingBox()
   const x = box.x + box.width / 2
   const y = box.y + box.height / 2
   const browser = await page.context().newCDPSession(page)
   await browser.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y, id: 1 }] })
   await page.waitForTimeout(550)
-  if (drag) await browser.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x + 18, y, id: 1 }] })
+  if (drag || dy) await browser.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: x + (drag ? 18 : 0), y: y + dy, id: 1 }] })
   await browser.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
   await browser.detach()
 }
@@ -51,8 +51,7 @@ test('NCM grid is admin-only and reversible with buttons, touch and right click'
     await expect(page.getByRole('button', { name: 'Öppna räknehäftet' })).toBeVisible()
     await page.getByRole('button', { name: 'Öppna räknehäftet' }).click()
     await expect(page).toHaveURL(/\/teacher\/ncm\/diagnostic-grid$/)
-    const sectionColor = await page.locator('.diagnostic-prototype > section').first().evaluate(element => getComputedStyle(element).backgroundColor)
-    expect(sectionColor).not.toBe('rgb(255, 255, 255)')
+    await expect(page.locator('.notebook-debug')).toBeVisible()
 
     const cell = page.locator('.diagnostic-cell').first()
     const input = cell.locator('input')
@@ -61,16 +60,21 @@ test('NCM grid is admin-only and reversible with buttons, touch and right click'
     await input.press('8')
     await expect(cell.locator('.diagnostic-cell__digit--main')).toHaveText('8')
     await touchGesture(page, input)
+    await expect(cell.locator('.diagnostic-cell__digit--main')).toHaveText('8')
+    await touchGesture(page, input, false, 20)
     await expect(cell.locator('.diagnostic-cell__digit--note')).toHaveText('8')
+    await touchGesture(page, input, false, -20)
+    await expect(cell.locator('.diagnostic-cell__digit--main')).toHaveText('8')
+    await touchGesture(page, input, false, 20)
     await expect(input).toHaveAttribute('inputmode', 'none')
     await input.press('2')
     await expect(cell.locator('.diagnostic-cell__digit--note')).toHaveText('82')
     await touchGesture(page, input, true)
     await expect(input).toHaveAttribute('aria-label', /struken/)
-    await page.getByRole('button', { name: 'Stor (Esc)' }).click()
+    await page.getByRole('button', { name: 'Stor', exact: true }).click()
     await expect(cell.locator('.diagnostic-cell__digit--main')).toHaveText('82')
     await expect(input).toHaveAttribute('inputmode', 'none')
-    await page.getByRole('button', { name: 'Ta bort lånestreck (X)' }).click()
+    await page.getByRole('button', { name: 'Låna', exact: true }).click()
     await expect(input).not.toHaveAttribute('aria-label', /struken/)
     await input.click({ button: 'right' })
     await expect(page.getByRole('group', { name: 'Ändra markerad siffra' })).toBeVisible()
@@ -102,23 +106,51 @@ test('NCM grid lets an iPad user enter all four operation signs without changing
   await context.close()
 })
 
-test('NCM mobile grid stays close to the question and instructions expand below it', async ({ browser }) => {
+test('Notebook touch draws from empty cells; symbols and every theme keep the geometry stable', async ({ browser }, testInfo) => {
+  const { context, page } = await openAsRole(browser, 'school_admin', '/teacher/ncm/diagnostic-grid', { width: 1034, height: 930 })
+  const cell = index => page.locator('.diagnostic-cell').nth(index).locator('input')
+  await dragBetweenCells(page, cell(24), cell(29), true)
+  await expect(page.locator('.diagnostic-grid__line')).toHaveCount(1)
+  await cell(0).click()
+  await page.getByRole('button', { name: 'Skriv 8', exact: true }).click()
+  await page.getByRole('button', { name: 'Låna', exact: true }).click()
+  await expect(cell(0)).toHaveAttribute('aria-label', /struken/)
+  await expect(page.getByRole('button', { name: 'Streckläge' })).toHaveAttribute('aria-pressed', 'false')
+  await cell(1).click()
+  await page.getByRole('button', { name: /Fler tecken/ }).click()
+  const before = await page.locator('.notebook-numbers').boundingBox()
+  await page.getByRole('button', { name: 'Skriv %', exact: true }).click()
+  await expect(cell(1)).toHaveAttribute('aria-label', /%/)
+  await page.keyboard.press('Escape')
+  expect((await page.locator('.notebook-numbers').boundingBox()).y).toBe(before.y)
+  await cell(2).click()
+  await cell(2).press('8')
+  await page.getByRole('button', { name: 'Liten', exact: true }).click()
+  await page.getByRole('button', { name: 'Låna', exact: true }).click()
+  await expect(cell(2)).toHaveAttribute('aria-label', /minnessiffra 8, struken/)
+  for (const theme of ['light', 'dark', 'dark-lime', 'psychedelic', 'real-psycadelic']) {
+    await page.getByRole('combobox', { name: 'Välj tema' }).selectOption(theme)
+    await expect(page.locator('body')).toHaveClass(new RegExp(`theme-${theme}`))
+    await expect(page.locator('.diagnostic-cell__digit--main').first()).toHaveCSS('font-weight', '400')
+    expect((await page.locator('.notebook-numbers').boundingBox()).y).toBe(before.y)
+    await page.screenshot({ path: testInfo.outputPath(`notebook-${theme}.png`), fullPage: true })
+  }
+  await context.close()
+})
+
+test('NCM mobile grid stays close to the question and touch help does not shift the layout', async ({ browser }) => {
   const { context, page } = await openAsRole(browser, 'school_admin', '/teacher/ncm/diagnostic-grid',
     { width: 390, height: 844 })
-  const question = await page.getByRole('heading', { name: 'Räkna ut 268 + 431.' }).boundingBox()
+  const question = await page.getByRole('heading', { name: '268 + 431' }).boundingBox()
   const grid = await page.getByRole('group', { name: 'Rutat räknehäfte' }).boundingBox()
   expect(grid.y - question.y - question.height).toBeLessThan(110)
-  const instructions = page.locator('details.diagnostic-instructions')
-  const helpText = instructions.getByText('Visa hur du räknar i rutorna. Skriv också ditt svar.')
-  await expect(instructions).not.toHaveAttribute('open', '')
-  await expect(helpText).toBeHidden()
-  await instructions.locator('summary').click()
-  await expect(helpText).toBeVisible()
-  const { gridBottom, helpTop } = await page.evaluate(() => ({
-    gridBottom: document.querySelector('.diagnostic-grid').getBoundingClientRect().bottom + window.scrollY,
-    helpTop: document.querySelector('.diagnostic-instructions p').getBoundingClientRect().top + window.scrollY
-  }))
-  expect(helpTop).toBeGreaterThan(gridBottom)
+  const before = await page.locator('.notebook-numbers').evaluate(element => element.getBoundingClientRect().top + window.scrollY)
+  await page.getByRole('button', { name: 'Touchgenvägar' }).tap()
+  await expect(page.getByRole('heading', { name: 'Touchgenvägar' })).toBeVisible()
+  const after = await page.locator('.notebook-numbers').evaluate(element => element.getBoundingClientRect().top + window.scrollY)
+  expect(after).toBe(before)
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('heading', { name: 'Touchgenvägar' })).toHaveCount(0)
   await context.close()
 })
 

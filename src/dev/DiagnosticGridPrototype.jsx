@@ -9,10 +9,11 @@ import { exceedsDiagnosticAttemptQuota, isDiagnosticAttemptFull } from '../domai
 import DiagnosticGridLines from './DiagnosticGridLines'
 import { lineTouchesPoint } from '../domains/arithmetic/diagnosticLineGeometry'
 import MathScratchpad from '../components/student/MathScratchpad'
+import NotebookTools from './NotebookTools'
+import { MAIN_CHARACTERS, NUMBER_ANSWER } from '../domains/arithmetic/diagnosticGridModel'
 import './diagnosticGridPrototype.css'
 
 const TASKS = taskManifest.tasks
-const OPERATION_SIGNS = ['+', '−', '×', '/']
 const HOLD_MS = 500
 const DRAG_PX = 12
 
@@ -36,7 +37,7 @@ function newGrid(task) {
 }
 
 function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = null, saveState = null,
-  onNext = null, onPrevious = null, onSubmitCollection = null, collectionTitle = '', questionIndex = 1, questionCount = 1 }) {
+  onNext = null, onPrevious = null, onHome = null, onSubmitCollection = null, collectionTitle = '', questionIndex = 1, questionCount = 1 }) {
   const availableTasks = pilot ? [pilot.task] : TASKS
   const [task, setTask] = useState(pilot?.task || TASKS[0])
   const [grid, setGrid] = useState(() => pilot?.snapshot || newGrid(TASKS[0]))
@@ -51,6 +52,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const [eraseMode, setEraseMode] = useState(false)
   const [inputTarget, setInputTarget] = useState(pilot?.task.gridEnabled === false ? 'answer' : 'grid')
   const [contextMenu, setContextMenu] = useState(null)
+  const [drawingVisible, setDrawingVisible] = useState(false)
   const isPilot = Boolean(pilot)
   const submitting = Boolean(saveState?.submitting)
   const editingLocked = grid.status === 'submitted' || submitting
@@ -195,10 +197,12 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
     if (lineMode) event.preventDefault()
     if (event.pointerType === 'mouse' && !lineMode) return
     stopGesture()
-    const sign = grid.cells[`${row}:${column}`]?.main
+    const startCell = grid.cells[`${row}:${column}`]
+    const sign = startCell?.main
     const gesture = { pointerId: event.pointerId, row, column, x: event.clientX, y: event.clientY,
       lastX: event.clientX, lastY: event.clientY, end: { row, column },
-      line: lineMode, quickLine: ['+', '−', '×'].includes(sign),
+      line: lineMode, quickLine: !startCell?.main && !startCell?.note || ['+', '−', '×', '/'].includes(sign),
+      horizontalLine: ['+', '−', '×', '/'].includes(sign),
       held: lineMode, cancelled: false, dragged: false, timer: null }
     try { event.currentTarget.setPointerCapture?.(event.pointerId) } catch { /* Synthetic pointer events have no active pointer. */ }
     if (!lineMode) gesture.timer = window.setTimeout(() => {
@@ -235,11 +239,13 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       return
     }
     gesture.dragged = true
+    gesture.dx = event.clientX - gesture.x
+    gesture.dy = event.clientY - gesture.y
     if (gesture.line || gesture.quickLine) {
       gesture.end = cellAtPoint(event.clientX, event.clientY) || gesture.end
       setLinePreview(lineBetween({ row: gesture.row, column: gesture.column },
-        gesture.end, gesture.quickLine && !gesture.line))
-    } else setDragPreview(`${gesture.row}:${gesture.column}`)
+        gesture.end, gesture.horizontalLine && !gesture.line))
+    } else setDragPreview(Math.abs(gesture.dx) >= Math.abs(gesture.dy) ? `${gesture.row}:${gesture.column}` : '')
   }
 
   function finishGesture(event) {
@@ -250,17 +256,14 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
     const held = gesture.held && !gesture.cancelled
     const dragged = gesture.dragged
     const line = gesture.line || (gesture.quickLine && dragged)
-    const lineAction = lineBetween(position, gesture.end, gesture.quickLine && !gesture.line)
+    const lineAction = lineBetween(position, gesture.end, gesture.horizontalLine && !gesture.line)
     stopGesture()
     if (!held) return
     event.preventDefault()
     if (line) addLine(lineAction)
-    else if (dragged) toggleCrossOut(position)
-    else {
-      const cell = grid.cells[`${position.row}:${position.column}`]
-      if (/^[0-9]{1,2}$/u.test(cell?.main || cell?.note || '')) {
-        setLayer(cell?.note ? 'main' : 'note')
-      }
+    else if (dragged) {
+      if (Math.abs(gesture.dx) >= Math.abs(gesture.dy)) toggleCrossOut(position)
+      else setLayer(gesture.dy > 0 ? 'note' : 'main')
     }
   }
 
@@ -289,20 +292,23 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   }
 
   function changeAnswer(after) {
-    if (task.answerType === 'text' ? after.length > 2000 : !/^[−-]?\d{0,12}$/u.test(after)) return
+    if (task.answerType === 'text' ? after.length > 2000 : !NUMBER_ANSWER.test(after)) return
     record(previous => previous.answer === after ? null : { type: 'answer_change', before: previous.answer, after })
   }
 
   function keypad(character) {
-    if (inputTarget === 'answer') changeAnswer(character === 'erase' ? grid.answer.slice(0, -1) : `${grid.answer}${character}`)
-    else if (character === 'erase') eraseCell()
+    if (inputTarget === 'answer') changeAnswer(character === 'backspace' ? grid.answer.slice(0, -1)
+      : character === 'clear' ? '' : character === '±' ? grid.answer.startsWith('−') || grid.answer.startsWith('-') ? grid.answer.slice(1) : `−${grid.answer}`
+      : character === ',' && !grid.answer.replace(/^[−-]/u, '') ? `${grid.answer}0,` : `${grid.answer}${character}`)
+    else if (character === 'backspace' || character === 'clear') eraseCell(character === 'clear')
+    else if (character === '±') writeCell('−')
     else writeCell(character)
   }
 
   function writeCell(character) {
     record(previous => {
       const { row, column, layer } = previous.cursor
-      const allowedNow = layer === 'note' ? /^[0-9]{1,2}$/u : /^[0-9+−×/÷,─]$/u
+      const allowedNow = layer === 'note' ? /^[0-9]{1,2}$/u : MAIN_CHARACTERS
       if (!allowedNow.test(character)) return null
       const cell = previous.cells[`${row}:${column}`]
       if (cell?.[layer === 'note' ? 'main' : 'note']) return null
@@ -361,7 +367,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       return
     }
     const character = key === '=' ? '─' : key === '-' ? '−' : key === '*' ? '×' : key
-    if (!/^[0-9+−×/÷,─]$/u.test(character) || event.ctrlKey || event.metaKey || event.altKey) return
+    if (!MAIN_CHARACTERS.test(character) || event.ctrlKey || event.metaKey || event.altKey) return
     event.preventDefault()
     writeCell(character)
   }
@@ -398,71 +404,46 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   function formatButton(layer, label) {
     const active = grid.cursor.layer === layer
     const cannotConvert = selectedCell && !selectedIsDigit && Boolean(selectedCell.main || selectedCell.note)
-    return <button type="button" onClick={() => { setLayer(layer); setContextMenu(null); focusSelectedCell() }}
-      disabled={grid.status === 'submitted' || cannotConvert}
-      className={`diagnostic-layer-button rounded-lg border px-3 py-2 font-medium ${active ? 'border-orange-700 bg-orange-700 text-white' : 'border-orange-300 bg-orange-100 text-orange-950'} disabled:opacity-50`}>
+    return <button type="button" onClick={() => { setInputTarget('grid'); setLineMode(false); setEraseMode(false); setLayer(layer); setContextMenu(null); focusSelectedCell() }}
+      disabled={editingLocked || attemptFull || cannotConvert}
+      aria-pressed={active}
+      className="diagnostic-layer-button">
       {label}
     </button>
   }
 
   function writeOperationSign(sign) {
     if (selectedCell?.note || selectedCell?.struck) return
+    setInputTarget('grid')
     setLayer('main')
     writeCell(sign)
     focusSelectedCell()
   }
 
+  const pending = grid.events.length > (saveState?.savedSequence || 0)
+  const status = !pilot ? 'Skiss · ingen serverlagring' : saveState?.busy ? 'Sparar…'
+    : saveState?.error ? 'Inte sparat på servern' : pending ? 'Väntar på serverkvittens'
+    : grid.status === 'submitted' ? 'Inlämnat' : '• Sparat'
+  const navigationLocked = saveState?.busy || saveState?.conflict || submitting
+  const question = /^Räkna ut [0-9+−×/÷,. ]+\.$/u.test(task.promptSv)
+    ? task.promptSv.replace(/^Räkna ut /u, '').replace(/\.$/u, '') : task.promptSv
+
   return (
-    <main className="diagnostic-prototype mx-auto max-w-5xl px-4 pb-12 pt-5">
-      <header className="mb-2">
-        <p className="text-sm font-semibold text-slate-600">{pilot ? `${collectionTitle || 'Din samling'} · Fråga ${questionIndex} av ${questionCount}` : 'Isolerad utvecklingsprototyp'}</p>
-        <h1 className="text-3xl font-bold">Digitalt räknehäfte</h1>
-        <p className="mt-2 text-slate-700">{pilot ? 'Arbetet sparas automatiskt efter en kort paus. Kontrollera sparstatus innan du lämnar sidan.' : 'Ingen elevdata sparas. Här prövas endast inmatning och återspelning.'}</p>
+    <main className="diagnostic-prototype">
+      <header className="notebook-header">
+        <div><strong>Screening</strong><span>{collectionTitle || 'Räknehäfte'}</span></div>
+        {onHome && <a href="#" onClick={event => { event.preventDefault(); if (!navigationLocked) onHome() }}
+          aria-disabled={Boolean(navigationLocked)}>Startsida</a>}
       </header>
-
-      {!pilot && <div className="mb-5 flex flex-wrap gap-2" aria-label="Välj exempeluppgift">
-        {availableTasks.map(item => (
-          <button
-            key={item.taskId}
-            type="button"
-            className={`rounded-lg border px-3 py-2 font-medium ${task.taskId === item.taskId ? 'border-blue-700 bg-blue-700 text-white' : 'border-slate-400 bg-white text-slate-800'}`}
-            onClick={() => chooseTask(item)}
-          >
-            {item.promptSv}
-          </button>
-        ))}
+      {!pilot && <div className="notebook-examples" aria-label="Välj exempeluppgift">
+        {availableTasks.map(item => <button key={item.taskId} type="button" onClick={() => chooseTask(item)}>{item.promptSv}</button>)}
       </div>}
-
-      <section className="rounded-lg border border-orange-300 bg-orange-50 p-2 shadow-sm">
-        <p className="text-sm text-slate-600">Uppgift {task.taskId}, version {task.taskVersion}</p>
-        <h2 className="mt-1 text-2xl font-semibold">{task.promptSv}</h2>
-
-        <div className={task.gridEnabled === false ? 'hidden' : 'mt-3 flex flex-wrap items-center gap-2'} role="group" aria-label="Räknetecken">
-          {OPERATION_SIGNS.map(sign => <button key={sign} type="button"
-            aria-label={`Skriv ${sign}`}
-            onClick={() => writeOperationSign(sign)}
-            disabled={grid.status === 'submitted' || attemptFull || Boolean(selectedCell?.note || selectedCell?.struck)}
-            className="diagnostic-sign-button rounded-lg border border-orange-400 bg-white font-semibold text-orange-950 disabled:opacity-50">
-            {sign}
-          </button>)}
-          <button type="button" aria-label="Streckläge" aria-pressed={lineMode} onClick={() => { setLineMode(current => !current); setEraseMode(false) }}
-            disabled={grid.status === 'submitted' || attemptFull}
-            className={`diagnostic-line-button rounded-lg border px-2 font-semibold ${lineMode ? 'border-orange-700 bg-orange-700 text-white' : 'border-orange-400 bg-white text-orange-950'} disabled:opacity-50`}>
-            {lineMode ? '✓ Streck' : 'Streck'}
-          </button>
-          <button type="button" aria-label="Suddverktyg" aria-pressed={eraseMode}
-            disabled={grid.status === 'submitted' || attemptFull}
-            onClick={() => { setEraseMode(current => !current); setLineMode(false) }}
-            className={`rounded border px-2 py-1 font-semibold ${eraseMode ? 'border-orange-700 bg-orange-700 text-white' : 'border-orange-400 bg-white text-orange-950'}`}>
-            <svg className="mr-1 inline-block h-4 w-4" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 14 10-10 8 8-9 9H8zM8 9l8 8M12 21h10" fill="none" stroke="currentColor" strokeWidth="2" /></svg>
-            Sudd
-          </button>
-        </div>
-
+      <section className="notebook-sheet">
         <div className="diagnostic-workspace">
-        <div className="min-w-0">
-        <div hidden={task.gridEnabled === false}>
-        <div className="mt-3 overflow-x-auto pb-2">
+          <div className="notebook-left">
+            <p className="notebook-question-count">Fråga {questionIndex} av {questionCount}</p>
+            <h2 className="notebook-question">{question}</h2>
+            <div hidden={task.gridEnabled === false} className="notebook-grid-scroll">
           <div ref={gridRef} className="diagnostic-grid" role="group" aria-label="Rutat räknehäfte">
             <DiagnosticGridLines lines={grid.lines} preview={linePreview} rows={grid.rows} columns={grid.columns} />
             {visibleCells.map(({ row, column }) => {
@@ -510,103 +491,75 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
               )
             })}
           </div>
-        </div>
-        </div>
-        <div className="diagnostic-answer-row mt-1 flex items-end gap-1">
-          <label className="block min-w-0 flex-1 text-base font-semibold" htmlFor="diagnostic-answer">Mitt svar
-            {task.answerType === 'text' ? <textarea id="diagnostic-answer" maxLength={2000} value={grid.answer}
-              onChange={event => changeAnswer(event.target.value)} disabled={editingLocked}
-              className="mt-1 block min-h-24 w-full rounded border border-slate-500 bg-white px-2 py-1 font-normal" />
-              : <input id="diagnostic-answer" type="text" inputMode="none" readOnly value={grid.answer}
-                onFocus={() => setInputTarget('answer')}
-                onKeyDown={event => {
-                  if (event.ctrlKey || event.metaKey || event.altKey) return
-                  if (event.key === 'Backspace' || event.key === 'Delete') { event.preventDefault(); changeAnswer(event.key === 'Delete' ? '' : grid.answer.slice(0, -1)) }
-                  else if (/^[0-9−-]$/u.test(event.key)) { event.preventDefault(); changeAnswer(`${grid.answer}${event.key}`) }
-                }} disabled={editingLocked}
-                className="mt-1 block w-full rounded border border-slate-500 bg-white px-2 py-1 text-xl font-normal" />}
-          </label>
-          {pilot && <button type="button" onClick={() => onSave?.(grid)} disabled={grid.status === 'submitted' || saveState?.busy || saveState?.conflict}
-            className="rounded bg-blue-700 px-2 py-1 font-semibold text-white disabled:opacity-50">Svara</button>}
-        </div>
-        </div>
-        {task.gridEnabled !== false || task.answerType !== 'text' ? <div className="diagnostic-keypad mt-3" role="group" aria-label="Sifferknappar">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(digit => <button key={digit} type="button" aria-label={`Skriv ${digit}`}
-            onClick={() => keypad(String(digit))} disabled={editingLocked || attemptFull}
-            className="rounded border border-slate-400 bg-white font-semibold text-slate-900 disabled:opacity-50">{digit}</button>)}
-          <button type="button" aria-label="Radera siffra" onClick={() => keypad('erase')} disabled={editingLocked || attemptFull}
-            className="rounded border border-slate-400 bg-white">⌫</button>
-        </div> : null}
-        </div>
-        {task.drawingEnabled && <MathScratchpad visible strokes={grid.drawing} readOnly={editingLocked || attemptFull}
-          onStroke={stroke => record({ type: 'drawing_stroke', ...stroke })}
-          onClear={() => record({ type: 'drawing_clear' })} />}
-        <div className={task.gridEnabled === false ? 'hidden' : 'mt-3 flex flex-wrap items-center gap-2'}>
-          {formatButton('main', 'Stor (Esc)')}
-          {formatButton('note', 'Minnessiffra (N)')}
-          <button type="button" onClick={() => { toggleCrossOut(); setContextMenu(null); focusSelectedCell() }}
-            disabled={grid.status === 'submitted' || !selectedIsDigit}
-            className="diagnostic-layer-button rounded-lg border border-orange-300 bg-orange-100 px-3 py-2 font-medium text-orange-950 disabled:opacity-50">
-            {selectedCell?.struck ? 'Ta bort lånestreck (X)' : 'Stryk/låna (X)'}
-          </button>
-          <button type="button" onClick={() => record(previous => previous.lines?.length
-            ? { type: 'line_remove', lineId: previous.lines.at(-1).id } : null)}
-            disabled={grid.status === 'submitted' || attemptFull || !grid.lines?.length}
-            className="diagnostic-layer-button rounded-lg border border-orange-300 bg-orange-100 px-3 py-2 font-medium text-orange-950 disabled:opacity-50">
-            Ta bort senaste streck
-          </button>
-        </div>
-        <details className="diagnostic-instructions mt-3 rounded-lg border border-orange-300 bg-white p-3 text-sm text-slate-700">
-          <summary className="cursor-pointer font-semibold text-orange-950">Visa instruktion och hjälp</summary>
-          <p className="mt-3 text-base">{pilot ? pilot.instructionSv : taskManifest.instructionSv}</p>
-          <div className="mt-2 space-y-2">
-            <p><strong>Skriv siffror:</strong> Välj en ruta och använd sifferknapparna. Fysiskt tangentbord fungerar också. Välj Mitt svar för att skriva slutsvaret.</p>
-            <p><strong>Minnessiffror och lån:</strong> Använd Minnessiffra och Stryk/låna. Håll och släpp på en siffra för att växla storlek; håll och dra för överstrykning.</p>
-            <p><strong>Streck:</strong> Aktivera Streck och dra. Nya streck följer rutornas gränser. Tryck Streck igen för att skriva.</p>
-            <p><strong>Sudda:</strong> Aktivera sudd-ikonen och dutta eller dra över det du vill ta bort. Stäng av suddet för att skriva igen.</p>
-            <p><strong>Spara och lämna in:</strong> Svara sparar utan att låsa frågan. Du kan gå tillbaka och ändra. Lämna in svaren lämnar in hela samlingen.</p>
-            <p><strong>På dator:</strong> Pilar och tabulator flyttar markören. Backspace raderar. N väljer minnessiffra och X växlar överstrykning.</p>
+            </div>
+            <div className="diagnostic-answer-row">
+              {task.answerType === 'text' ? <textarea id="diagnostic-answer" aria-label="Mitt svar" placeholder="Skriv ditt svar här"
+                maxLength={2000} value={grid.answer} onChange={event => changeAnswer(event.target.value)} disabled={editingLocked} />
+                : <input id="diagnostic-answer" aria-label="Mitt svar" placeholder="Skriv ditt svar här" type="text" inputMode="none"
+                  readOnly value={grid.answer} onFocus={() => setInputTarget('answer')}
+                  onKeyDown={event => {
+                    if (event.ctrlKey || event.metaKey || event.altKey) return
+                    if (event.key === 'Backspace' || event.key === 'Delete') { event.preventDefault(); changeAnswer(event.key === 'Delete' ? '' : grid.answer.slice(0, -1)) }
+                    else if (/^[0-9−,-]$/u.test(event.key)) { event.preventDefault(); changeAnswer(`${grid.answer}${event.key}`) }
+                  }} disabled={editingLocked} />}
+              {pilot && <button type="button" className="notebook-next" onClick={onNext} disabled={!onNext || navigationLocked}>
+                Nästa fråga <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 12h16m-7-7 7 7-7 7" fill="none" stroke="currentColor" strokeWidth="3" /></svg>
+              </button>}
+            </div>
           </div>
-        </details>
-        {contextMenu && <div className="diagnostic-context-menu" role="group" aria-label="Ändra markerad siffra" style={{ left: Math.max(8, contextMenu.x), top: Math.max(8, contextMenu.y) }}>
-          {formatButton('main', 'Stor')}
-          {formatButton('note', 'Minnessiffra')}
-          <button type="button" disabled={!selectedIsDigit} onClick={() => { toggleCrossOut(); setContextMenu(null); focusSelectedCell() }}>
-            {selectedCell?.struck ? 'Ta bort streck' : 'Stryk/låna'}
-          </button>
-        </div>}
-        <p hidden={task.gridEnabled === false} className="mt-2 text-sm text-slate-700">Markerad ruta: rad {grid.cursor.row + 1}, kolumn {grid.cursor.column + 1}, {grid.cursor.layer === 'note' ? 'minnessiffra' : 'stor siffra'}. Händelser: {grid.events.length}.</p>
-        {attemptFull && <p role="alert" className="mt-2 rounded-lg border border-amber-500 bg-amber-100 p-3 text-amber-950">Räknehäftet är fullt. Du kan inte skriva mer i det här försöket. Det du redan skrivit finns kvar; kontrollera sparstatus nedan.</p>}
-      </section>
-
-      <section className="mt-5 rounded-2xl border border-orange-300 bg-orange-50 p-4 sm:p-6">
-        <h2 className="text-xl font-semibold">{pilot ? 'Spara observationen' : 'Kontrollera observationen'}</h2>
-        <p className="mt-1 text-sm text-slate-700">Räknehäftet bedömer inte om svaret eller metoden är rätt.</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {pilot && <button type="button" onClick={() => onSave?.(grid)} disabled={saveState?.busy || saveState?.conflict || grid.events.length <= (saveState?.savedSequence || 0)}
-            className={`rounded px-2 py-1 font-semibold text-white disabled:opacity-70 ${saveState?.error ? 'bg-red-700' : grid.events.length <= (saveState?.savedSequence || 0) ? 'bg-emerald-700' : 'bg-blue-700'}`}>{saveState?.busy ? 'Sparar...' : 'Spara arbetet'}</button>}
-          {!pilot && <button type="button" onClick={showSnapshot} className="rounded-lg bg-blue-700 px-4 py-2 text-white">Visa JSON</button>}
-          {!pilot && <button type="button" onClick={reloadSnapshot} disabled={!snapshotText.trim()} className="rounded-lg border border-blue-700 px-4 py-2 text-blue-800 disabled:opacity-50">Återläs JSON</button>}
-          <button type="button" onClick={() => pilot ? onSubmitCollection?.(grid) : record({ type: 'submit' })}
-            disabled={(pilot ? saveState?.collectionSubmitted : grid.status === 'submitted') || saveState?.busy || saveState?.conflict}
-            className={`rounded border px-2 py-1 font-semibold disabled:opacity-50 ${pilot && !onNext ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-500'}`}>{pilot ? 'Lämna in svaren' : 'Frys försöket'}</button>
-          {pilot && onPrevious && <button type="button" onClick={onPrevious} disabled={saveState?.busy || saveState?.conflict}
-            className="rounded border border-blue-700 px-2 py-1 font-semibold text-blue-800 disabled:opacity-50">Förra frågan</button>}
-          {pilot && onNext && <button type="button" onClick={onNext}
-            disabled={saveState?.busy || saveState?.conflict}
-            className="rounded bg-blue-700 px-2 py-1 font-semibold text-white disabled:opacity-50">Nästa fråga</button>}
+          {(task.gridEnabled !== false || task.answerType !== 'text') && <NotebookTools
+            formats={<>{formatButton('main', 'Stor')}{formatButton('note', 'Liten')}</>}
+            disabled={editingLocked || attemptFull} gridEnabled={task.gridEnabled !== false}
+            lineMode={lineMode} eraseMode={eraseMode}
+            onLine={() => { setInputTarget('grid'); setLineMode(current => !current); setEraseMode(false) }}
+            onErase={() => { setInputTarget('grid'); setEraseMode(current => !current); setLineMode(false) }}
+            canLoan={selectedIsDigit} onLoan={() => { setInputTarget('grid'); toggleCrossOut(); setLineMode(false); setEraseMode(false); focusSelectedCell() }}
+            onKey={keypad} onSign={writeOperationSign} signsDisabled={Boolean(selectedCell?.note || selectedCell?.struck)}
+            status={status} />}
         </div>
-        <p className="mt-2 text-sm" role={saveState?.error ? 'alert' : 'status'}>{pilot
-          ? saveState?.busy ? 'Sparar...' : saveState?.error || (grid.events.length > (saveState?.savedSequence || 0)
-            ? grid.events.length <= (saveState?.localSequence || 0)
-              ? 'Sparat krypterat på den här enheten. Väntar på serverkvittens.'
-              : 'Osparade ändringar. Sparas krypterat på enheten och skickas automatiskt till servern.'
-            : saveState?.message || 'Alla ändringar är sparade på servern.')
-          : message || `Status: ${grid.status === 'submitted' ? 'fryst' : 'pågående'}`}</p>
-        {!pilot && <><label className="mt-3 block text-sm font-medium" htmlFor="diagnostic-snapshot">Arbetskopia av JSON för återläsning</label>
-        <textarea id="diagnostic-snapshot" value={snapshotText} onChange={event => setSnapshotText(event.target.value)}
-          className="mt-1 h-44 w-full rounded-lg border border-slate-400 p-3 font-mono text-xs" spellCheck="false" /></>}
+        {task.drawingEnabled && <div className="notebook-drawing">
+          <button type="button" className="notebook-drawing-toggle" aria-label="Rityta" aria-expanded={drawingVisible}
+            onClick={() => setDrawingVisible(current => !current)}>
+            <svg viewBox="0 0 32 32" width="34" height="34" aria-hidden="true"><path d="M17 5H6a2 2 0 0 0-2 2v21h22V17M11 22l2-7L25 3l4 4-12 12-6 3zm2-7 4 4" fill="none" stroke="currentColor" strokeWidth="2" /></svg>
+          </button>
+          <MathScratchpad visible={drawingVisible} wide strokes={grid.drawing} readOnly={editingLocked || attemptFull}
+            onStroke={stroke => record({ type: 'drawing_stroke', ...stroke })}
+            onClear={() => record({ type: 'drawing_clear' })} />
+        </div>}
+        {contextMenu && <div className="diagnostic-context-menu" role="group" aria-label="Ändra markerad siffra"
+          style={{ left: Math.max(8, contextMenu.x), top: Math.max(8, contextMenu.y) }}>
+          {formatButton('main', 'Stor')}{formatButton('note', 'Minnessiffra')}
+          <button type="button" disabled={editingLocked || !selectedIsDigit}
+            onClick={() => { toggleCrossOut(); setContextMenu(null); focusSelectedCell() }}>{selectedCell?.struck ? 'Ta bort streck' : 'Stryk/låna'}</button>
+        </div>}
+        {attemptFull && <p role="alert">Räknehäftet är fullt. Det du redan skrivit finns kvar; kontrollera sparstatus.</p>}
+        {pilot && <footer className="notebook-footer">
+          <button type="button" onClick={onPrevious} disabled={!onPrevious || navigationLocked}>← Förra frågan</button>
+          <button type="button" onClick={() => onSubmitCollection?.(grid)}
+            className={!onNext ? 'notebook-submit-ready' : ''}
+            disabled={saveState?.collectionSubmitted || navigationLocked}>Lämna in svaren</button>
+        </footer>}
+        {pilot && <div className="notebook-save-detail" role={saveState?.error ? 'alert' : 'status'}>
+          {saveState?.error || (pending ? grid.events.length <= (saveState?.localSequence || 0)
+            ? 'Sparat krypterat på den här enheten. Väntar på serverkvittens.'
+            : 'Osparade ändringar. Sparas krypterat på enheten och skickas automatiskt till servern.'
+            : saveState?.message || 'Alla ändringar är sparade på servern.')}
+          {saveState?.error && !saveState.conflict && <button type="button" onClick={() => onSave?.(grid)}
+            disabled={saveState.busy}>Försök spara igen</button>}
+        </div>}
       </section>
+      {!pilot && <section className="notebook-debug">
+        <h2>Kontrollera observationen</h2>
+        <button type="button" onClick={showSnapshot}>Visa JSON</button>
+        <button type="button" onClick={reloadSnapshot} disabled={!snapshotText.trim()}>Återläs JSON</button>
+        <button type="button" onClick={() => record({ type: 'submit' })} disabled={editingLocked}>Frys försöket</button>
+        <button type="button" onClick={() => record(previous => previous.lines?.length
+          ? { type: 'line_remove', lineId: previous.lines.at(-1).id } : null)}
+          disabled={editingLocked || !grid.lines?.length}>Ta bort senaste streck</button>
+        <p role="status">{message || `Status: ${grid.status === 'submitted' ? 'fryst' : 'pågående'}`}</p>
+        <label htmlFor="diagnostic-snapshot">Arbetskopia av JSON för återläsning</label>
+        <textarea id="diagnostic-snapshot" value={snapshotText} onChange={event => setSnapshotText(event.target.value)} spellCheck="false" />
+      </section>}
     </main>
   )
 }

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
 import { teacherLogin, openTab } from './lib/teacher.js'
 
-test('R2/R3: Svara saves without freezing; navigation preserves work and submission covers the collection', async ({ page, request }) => {
+test('R2/R3: autosave does not freeze; navigation preserves work and submission covers the collection', async ({ page, request }) => {
   const tag = Math.random().toString(36).slice(2, 8)
   const classId = `collection-${tag}`
   const pupil = await createPupil(request, { name: 'Collections A', classId })
@@ -25,18 +25,38 @@ test('R2/R3: Svara saves without freezing; navigation preserves work and submiss
   await expect(page.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 8/)
   await page.locator('#diagnostic-answer').click()
   await page.getByRole('button', { name: 'Skriv 5', exact: true }).click()
-  await page.getByRole('button', { name: 'Svara', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Svara', exact: true })).toHaveCount(0)
   await expect(page.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
   await expect(page.locator('input[data-cell="0:0"]')).toBeEnabled()
+  let releaseAppend
+  let appendStarted = false
+  let nineAcknowledged = false
+  const appendGate = new Promise(resolve => { releaseAppend = resolve })
+  await page.route('**/api/me/diagnostic-attempt', async route => {
+    const body = route.request().postDataJSON()
+    if (body?.action === 'append') {
+      appendStarted = true
+      await appendGate
+      const response = await route.fetch()
+      if (response.ok() && body.events?.some(event => event.type === 'write' && event.after === '9')) nineAcknowledged = true
+      await route.fulfill({ response })
+    } else await route.continue()
+  })
+  await page.locator('input[data-cell="0:0"]').press('7')
   await page.getByRole('button', { name: 'Nästa fråga', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Räkna ut 402 − 178.' })).toBeVisible()
-  await page.getByRole('button', { name: 'Förra frågan', exact: true }).click()
+  await expect.poll(() => appendStarted).toBe(true)
+  await page.locator('input[data-cell="0:0"]').press('9')
+  releaseAppend()
+  await expect(page.getByRole('heading', { name: '402 − 178' })).toBeVisible()
+  expect(nineAcknowledged).toBe(true)
+  await page.unroute('**/api/me/diagnostic-attempt')
+  await page.getByRole('button', { name: '← Förra frågan', exact: true }).click()
   await expect(page.locator('#diagnostic-answer')).toHaveValue('5')
-  await expect(page.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 8/)
+  await expect(page.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 9/)
   await page.locator('#diagnostic-answer').press('Delete')
   await page.locator('#diagnostic-answer').pressSequentially('575')
   await page.getByRole('button', { name: 'Nästa fråga', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Nästa fråga', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Nästa fråga', exact: true })).toBeDisabled()
   const submit = page.getByRole('button', { name: 'Lämna in svaren', exact: true })
   let warning = ''
   page.once('dialog', async dialog => { warning = dialog.message(); await dialog.dismiss() })
@@ -53,7 +73,7 @@ test('R2/R3: Svara saves without freezing; navigation preserves work and submiss
   await page.unroute('**/api/me/diagnostic-attempt')
   await submit.click()
   await expect(page.getByText('Samlingen är inlämnad.')).toBeVisible()
-  await page.getByRole('button', { name: '← Till min översikt', exact: true }).click()
+  await page.getByRole('link', { name: 'Startsida', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Screening – växling', exact: true })).toHaveCount(0)
   await page.getByRole('combobox', { name: 'Inlämnade samlingar', exact: true }).selectOption({ label: 'Screening – växling · Inlämnad' })
   await expect(page.locator('#diagnostic-answer')).toHaveValue('575')
@@ -94,6 +114,7 @@ test('Teacher assigns a written answer with saved drawing; eraser and explicit f
   await expect(student.locator('input[data-cell="0:0"]')).not.toHaveAttribute('aria-label', /stor siffra 8/)
   await student.getByRole('button', { name: 'Suddverktyg', exact: true }).click()
   await student.locator('#diagnostic-answer').fill('En tia blir tio ental.')
+  await student.getByRole('button', { name: 'Rityta', exact: true }).click()
   const canvas = student.locator('canvas')
   const blank = await canvas.evaluate(element => element.toDataURL())
   const box = await canvas.boundingBox()
@@ -103,10 +124,10 @@ test('Teacher assigns a written answer with saved drawing; eraser and explicit f
   await student.mouse.up()
   await expect.poll(() => canvas.evaluate(element => element.toDataURL())).not.toBe(blank)
   const drawn = await canvas.evaluate(element => element.toDataURL())
-  await student.getByRole('button', { name: 'Svara', exact: true }).click()
   await expect(student.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
   await student.reload()
   await expect(student.locator('#diagnostic-answer')).toHaveValue('En tia blir tio ental.')
+  await student.getByRole('button', { name: 'Rityta', exact: true }).click()
   await expect.poll(() => canvas.evaluate(element => element.toDataURL())).toBe(drawn)
   await student.screenshot({ path: testInfo.outputPath('written-drawing-ipad.png'), fullPage: true })
   await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
@@ -123,12 +144,13 @@ test('Teacher assigns a written answer with saved drawing; eraser and explicit f
   await form.getByRole('textbox', { name: 'Återkoppling till eleven', exact: true }).fill('Bra förklaring. Visa även i rutorna.')
   await form.getByRole('button', { name: 'Skicka återkoppling', exact: true }).click()
   await expect(form.getByText('Återkopplingen är skickad till eleven.')).toBeVisible()
-  await student.getByRole('button', { name: '← Till min översikt', exact: true }).click()
+  await student.getByRole('link', { name: 'Startsida', exact: true }).click()
   await student.getByRole('combobox', { name: 'Inlämnade samlingar', exact: true })
     .selectOption({ label: 'Skriv – förklara · Återkoppling finns' })
   await expect(student.getByRole('region', { name: 'Återkoppling från läraren' })).toContainText('Bra förklaring.')
   await expect(student.getByText('PRIVATE INTERNAL NOTE')).toHaveCount(0)
   await expect(student.locator('#diagnostic-answer')).toBeDisabled()
+  await student.getByRole('button', { name: 'Rityta', exact: true }).click()
   await expect.poll(() => canvas.evaluate(element => element.toDataURL())).toBe(drawn)
   await context.close()
 })

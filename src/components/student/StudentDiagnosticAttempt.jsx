@@ -124,10 +124,18 @@ function AssignedDiagnosticAttempt() {
     return result
   }, [opened, conflict, studentId])
 
+  async function saveLatestBeforeLeaving() {
+    // Editing remains available during an append. Flush any edits made while
+    // awaiting that append too; navigating must never outrun the server ack.
+    do {
+      if (!await save(latestGridRef.current || opened.snapshot)) return false
+    } while ((latestGridRef.current || opened.snapshot).events.length > savedSequenceRef.current)
+    return true
+  }
+
   async function changeQuestion(item) {
     if (!item || conflict) return
-    const grid = latestGridRef.current || opened.snapshot
-    if (!await save(grid)) return
+    if (!await saveLatestBeforeLeaving()) return
     navigate(`/student/${studentId}/diagnostic?assignment=${encodeURIComponent(assignmentId)}&item=${encodeURIComponent(item.assignmentItemId)}`)
   }
 
@@ -183,15 +191,15 @@ function AssignedDiagnosticAttempt() {
     return () => window.clearTimeout(timer)
   }, [opened, unsaved, eventCount, savedSequence, busy, saveError, conflict, save])
 
-  const goBack = () => {
-    if (unsaved && !window.confirm('Du har osparade ändringar. Lämna ändå?')) return
+  const goBack = async () => {
+    if (opened && !await saveLatestBeforeLeaving()) return
     navigate(`/student/${studentId}`)
   }
 
   return <div className="student-role-surface min-h-screen">
-    <div className="mx-auto max-w-5xl px-4 pt-4">
-      <button type="button" onClick={goBack} className="rounded border border-slate-500 px-2 py-1">← Till min översikt</button>
-    </div>
+    {!opened && <div className="mx-auto max-w-5xl px-4 pt-4 text-right">
+      <a href="#" onClick={event => { event.preventDefault(); goBack() }}>Startsida</a>
+    </div>}
     {loadError && <p role="alert" className="mx-auto max-w-5xl px-4 py-5 text-red-800">{loadError}</p>}
     {!loadError && !opened && <p className="mx-auto max-w-5xl px-4 py-5">Öppnar räknehäftet...</p>}
     {opened?.task.feedback && <section aria-label="Återkoppling från läraren" className="mx-auto mt-2 max-w-5xl rounded border border-emerald-500 bg-emerald-50 px-2 py-1">
@@ -199,7 +207,7 @@ function AssignedDiagnosticAttempt() {
       <p className="whitespace-pre-wrap">{opened.task.feedback.text}</p>
     </section>}
     {opened && <DiagnosticGridPrototype key={`${opened.attemptId}:${opened.frozen || ''}`} pilot={{ task: opened.task,
-      snapshot: opened.snapshot, instructionSv: opened.instructionSv }} onSave={save}
+      snapshot: opened.snapshot, instructionSv: opened.instructionSv }} onSave={save} onHome={goBack}
       collectionTitle={opened.assignment.titleSv} questionIndex={opened.assignment.items.findIndex(item => item.assignmentItemId === itemId) + 1}
       questionCount={opened.assignment.items.length} onSubmitCollection={submitCollection}
       onPrevious={opened.previousItem ? () => changeQuestion(opened.previousItem) : null}

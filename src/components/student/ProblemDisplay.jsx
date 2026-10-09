@@ -1,9 +1,4 @@
-const KEYPAD_LAYOUT = [
-  ['7', '8', '9'],
-  ['4', '5', '6'],
-  ['1', '2', '3'],
-  ['0', ',', '±']
-]
+import NumberKeys from './NumberKeys'
 
 function ProblemDisplay({
   problem,
@@ -157,16 +152,8 @@ function AnswerKeypad({
   return (
     <div className="w-full max-w-md mx-auto md:max-w-none rounded-xl border border-gray-200 bg-white shadow-sm p-3 sm:p-4 md:p-5 select-none">
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        {KEYPAD_LAYOUT.flat().map(key => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onKey(key)}
-            className="h-12 sm:h-14 md:h-16 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-xl sm:text-2xl font-semibold text-gray-800"
-          >
-            {key}
-          </button>
-        ))}
+        <NumberKeys onKey={onKey}
+          buttonClassName="h-12 sm:h-14 md:h-16 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-xl sm:text-2xl font-semibold text-gray-800" />
       </div>
       <button
         type="button"

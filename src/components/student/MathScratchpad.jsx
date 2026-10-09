@@ -8,7 +8,7 @@ const GRID_STEP_Y = 118
 const BASE_WIDTH = 740
 const BASE_HEIGHT = Math.round(BASE_WIDTH * CANVAS_RATIO)
 
-function MathScratchpad({ visible, strokes = null, onStroke = null, onClear = null, readOnly = false }) {
+function MathScratchpad({ visible, strokes = null, onStroke = null, onClear = null, readOnly = false, wide = false }) {
   const canvasRef = useRef(null)
   const containerRef = useRef(null)
   const drawingRef = useRef(false)
@@ -137,7 +137,7 @@ function MathScratchpad({ visible, strokes = null, onStroke = null, onClear = nu
   }
 
   return (
-    <div className="mt-6 w-full max-w-2xl rounded-xl bg-white shadow border border-gray-200 p-3">
+    <div className={wide ? 'notebook-scratchpad' : 'mt-6 w-full max-w-2xl rounded-xl bg-white shadow border border-gray-200 p-3'}>
       <div className="flex items-center justify-between mb-2">
         <p className="text-sm font-medium text-gray-700">Rityta</p>
         {!readOnly && <div className="flex flex-wrap gap-1" role="group" aria-label="Ritverktyg">
@@ -171,7 +171,7 @@ function MathScratchpad({ visible, strokes = null, onStroke = null, onClear = nu
           </button>}
         </div>}
       </div>
-      <div ref={containerRef} className="w-full">
+      <div ref={containerRef} className={wide ? 'notebook-drawing-paper' : 'w-full'}>
         <canvas
           ref={canvasRef}
           width={canvasSize.width}

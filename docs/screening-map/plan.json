@@ -812,6 +812,28 @@
           "done": false
         }
       ]
+    },
+    {
+      "id": "issue10",
+      "area": "Övriga issues",
+      "title": "Långsamma vybyten",
+      "status": "Planerat",
+      "purpose": "Minska väntan när nya vyer öppnas, exempelvis tabellträning och återgång till startsidan.",
+      "next": "Reproducera på separat testkonto och mät klick till användbar vy; skilj nätverk, dataläsning och rendering åt.",
+      "acceptance": "Flaskhals belagd och vybyten tydligt snabbare med dokumenterad före/efter-mätning. Sparande, synk och respons under träning bevaras.",
+      "requires": [],
+      "affects": [],
+      "decision": "2026-10-09: Simon bad om en issue för långsam navigation. Träningen fungerar bättre när den väl är igång.",
+      "evidence": "Användarrapport 2026-10-09; GitHub issue #10 skapad. Inte tekniskt diagnostiserat eller åtgärdat.",
+      "issue": "https://github.com/ximonse/sequential_math/issues/10",
+      "kind": "issue",
+      "tasks": [
+        {
+          "id": "next-issue10",
+          "text": "Reproducera långsamma vybyten och dokumentera flaskhals med mätning.",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [

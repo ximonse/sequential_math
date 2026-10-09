@@ -175,3 +175,34 @@ obesvarat-varning, nätavbrott och atomisk inlämning. Ett fullt original med
 1024 händelser tillåter exakt en avslutande submit-händelse, inte fortsatt
 skrivande. Verklig Redis för nya samlingstransaktionen och fysisk iPad med
 den nya versionen återstår. Inget i detta sjok är pushat eller publicerat.
+
+## Verklig lagringskontroll – 2026-10-09
+
+Den nya samlingstransaktionen har nu körts mot den Redis-anslutning som
+Vercel-projektet `sekvens` använder. `scripts/verify-diagnostic-collection-redis.mjs`
+anropar den faktiska JS-lagringsgränsen och dess Lua-skript, inte robotarnas
+emulator. Varje läs- och skrivnyckel får en slumpmässig separat namnrymd;
+inga elevkonton, klassindex eller vanliga träningsresultat används. Befintliga
+autentiseringsuppgifter användes utan att skrivas ut eller sparas på disk.
+
+12 kontroller godkända: gemensam inlämning/återläsning; tomma JSON-arrayer;
+retry efter borttappad kvittens; siffer-/skrivsvar och rithistorik; saknade,
+dubbla och gamla revisioner; revisions- och händelseloppskonflikter precis
+före Lua; borttaget medlemskap; arkiverad klass; stängd samling; enbart
+testnycklars tombstone; samtidiga inlämningar; full 1024-händelsehistorik
+med en slutlig submit; samt skrivskyddat inlämnat original. Inget scenario
+gav en halvt inlämnad samling. Efter sista kontrollen rensades testets tio
+spårade nycklar och deras frånvaro verifierades. Ingen FLUSHDB eller bred
+nyckelsökning används. Skriptets namnrymd, TTL och begränsade rensning har
+egna säkerhetstester.
+
+Detta verifierar serverlagringsgränsen för lokal kod i b81f007; det är inte
+en publicering, ett test av en ny driftsatt HTTP-handler eller ett fysiskt
+iPad-prov. Borttappad kvittens prövades genom återförsök utan att använda
+första svaret, inte genom ett verkligt nätverksavbrott. Avbrottsprovning
+genom hela klient/API-flödet och fysisk iPad med nya versionen återstår
+efter separat godkänd publicering. Inga produktionsinställningar ändrades.
+
+Slutkontroll för verifieringssjoket: 141 testfiler/674 tester, build och
+riktad lint godkända. App/API-kod har inte ändrats i detta sjok; den senaste
+fulla robotsviten för samma appkod är fortfarande 83/83. Kartan uppdaterad.

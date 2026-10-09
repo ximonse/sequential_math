@@ -343,7 +343,7 @@
       "title": "Elevsynlig kommentar och återlämning",
       "status": "Byggt",
       "purpose": "Skilj intern läraranteckning från feedback som eleven får tillbaka.",
-      "next": "Återöppning före lärargranskning återstår separat enligt feedback-policy; verifiera Redis före publicering.",
+      "next": "Återöppning före lärargranskning återstår separat enligt feedback-policy. Samlingslagringen Redis-verifierad; publicering kräver separat godkännande.",
       "acceptance": "Eleven ser endast uttryckligen återlämnad feedback för rätt underlagsrevision.",
       "requires": [
         "review",
@@ -609,7 +609,7 @@
       "title": "Riktig Redis och avbrottsprovning",
       "status": "Saknas",
       "purpose": "Robotarna använder isolerad minnesdatabas och emulerar Lua-transaktioner.",
-      "next": "Prova kontrollerat nätverksavbrott och elevrevision mot riktig lagring; radering endast efter uttrycklig bekräftelse. Nuvarande browserverktyg saknar nätverksfelinjektion.",
+      "next": "Prova verkligt nätverksavbrott genom klient/API och elevrevision efter separat godkänd publicering. Nya samlings-Lua är verifierad mot riktig Redis; verkliga elevkonton får inte användas.",
       "acceptance": "Samma kontrakt håller mot verklig lagring; inga riktiga elevers konton används.",
       "requires": [
         "original",
@@ -620,7 +620,7 @@
         "pilot"
       ],
       "decision": "",
-      "evidence": "2026-10-09: Delvis driftverifierat på separat testkonto i produktion: tilldelning, serverkvittens, omladdning/återupptagning, två inlämningar, lärarmatris och sparad/återläst intern kommentar. Detta är inte full Redis-verifiering: retry vid nätverksfel, samtidighetskonflikt/CAS, elevändring och radering återstår. Inga verkliga elevers data användes; inga autentiseringsuppgifter ändrades.\n2026-10-09: Ytterligare verkligt driftprov: omladdning under väntande kvittens, positiv metodsignal/lärarfråga, återspelning och samtidig lärarkommentar-CAS passerade. Ingen faktisk nätverksfelinjektion utförd; browserverktyget erbjuder inte nätverksavbrott. Elevändring och radering fortfarande oprövade; inga autentiseringsuppgifter ändrades.",
+      "evidence": "2026-10-09: Delvis driftverifierat på separat testkonto i produktion: tilldelning, serverkvittens, omladdning/återupptagning, två inlämningar, lärarmatris och sparad/återläst intern kommentar. Detta är inte full Redis-verifiering: retry vid nätverksfel, samtidighetskonflikt/CAS, elevändring och radering återstår. Inga verkliga elevers data användes; inga autentiseringsuppgifter ändrades.\n2026-10-09: Ytterligare verkligt driftprov: omladdning under väntande kvittens, positiv metodsignal/lärarfråga, återspelning och samtidig lärarkommentar-CAS passerade. Ingen faktisk nätverksfelinjektion utförd; browserverktyget erbjuder inte nätverksavbrott. Elevändring och radering fortfarande oprövade; inga autentiseringsuppgifter ändrades.\n2026-10-09: Nya samlingslagringsgränsen i b81f007 verifierad mot sekvens faktiska Redis med 12 godkända kontroller: atomisk inlämning, återläsning, tomma arrayer, skrivsvar/ritning, retry utan dubbelhändelser, samtidighet, revisions-/loggkonflikter, medlemskap/arkivering/stängning/testtombstone, quota och fryst original. Slumpmässig testnamnrymd; tio spårade slutnycklar rensade och frånvaro verifierad. Säkerhetstester för skriptet 3/3. Inte ny driftsatt HTTP-handler eller faktiskt nätavbrott; ingen push/publicering eller elevdatapåverkan.\nSlutkontroll verifieringssjok: 141 testfiler/674 tester, build och riktad lint godkända. Oförändrad app/API-kod; senaste fulla robotsvit för samma kod 83/83, inte omkörd i detta verifieringssjok.",
       "issue": "",
       "kind": "verifiering",
       "tasks": [
@@ -628,6 +628,11 @@
           "id": "next-redis",
           "text": "Prova kontrollerat nätverksavbrott och elevrevision mot riktig lagring; radering endast efter uttrycklig bekräftelse. Nuvarande browserverktyg saknar nätverksfelinjektion.",
           "done": false
+        },
+        {
+          "id": "collection-real-redis",
+          "text": "Verifiera nya samlings-Lua och JS-lagringsgräns mot riktig Redis med isolerade testnycklar.",
+          "done": true
         }
       ]
     },
@@ -846,7 +851,7 @@
       "title": "Numpad bredvid räknehäftet",
       "status": "Lokalt klart",
       "purpose": "Mata in siffror via en synlig numpad som i övriga uppgifter, utan att enhetens skärmtangentbord behöver öppnas.",
-      "next": "Verifiera nya samlingsinlämningen mot riktig Redis; därefter separat godkänd samlad publicering och verklig iPad-provning.",
+      "next": "Separat godkänd samlad GitHub-publicering; därefter fysisk iPad-provning av nya versionen och klient/API-avbrottsprovning.",
       "acceptance": "0–9 och radering fungerar på avsedd iPad utan skärmtangentbord eller hoppande rutnät. Markering, minnessiffror, lån, förlopp, sparande och fysiskt tangentbord bevaras.",
       "requires": [
         "grid"
@@ -855,7 +860,7 @@
         "ipad"
       ],
       "decision": "2026-10-09: Simon bad om en issue för numpad på sidan som i de andra uppgifterna. Separat från automatisk markörförflyttning i #8; samordnas med större siffror i #9.",
-      "evidence": "GitHub issue #11 skapad. Ingen implementation eller publicering.\n2026-10-09: lokalt byggt, ej pushat/publicerat. Samlingsrobot och 666 enhetstester godkända. Full regression samt nya skriv/rit/återkopplingsflöden återstår.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.",
+      "evidence": "GitHub issue #11 skapad. Ingen implementation eller publicering.\n2026-10-09: lokalt byggt, ej pushat/publicerat. Samlingsrobot och 666 enhetstester godkända. Full regression samt nya skriv/rit/återkopplingsflöden återstår.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.\n2026-10-09: Nya samlingslagringsgränsen i b81f007 verifierad mot sekvens faktiska Redis med 12 godkända kontroller: atomisk inlämning, återläsning, tomma arrayer, skrivsvar/ritning, retry utan dubbelhändelser, samtidighet, revisions-/loggkonflikter, medlemskap/arkivering/stängning/testtombstone, quota och fryst original. Slumpmässig testnamnrymd; tio spårade slutnycklar rensade och frånvaro verifierad. Säkerhetstester för skriptet 3/3. Inte ny driftsatt HTTP-handler eller faktiskt nätavbrott; ingen push/publicering eller elevdatapåverkan.",
       "issue": "https://github.com/ximonse/sequential_math/issues/11",
       "kind": "deluppgift",
       "tasks": [
@@ -872,7 +877,7 @@
       "title": "Dragna streck på rutmönstrets linjer",
       "status": "Lokalt klart",
       "purpose": "Placera streck i uppställningar på rutornas gränser, inte mitt i rutorna.",
-      "next": "Verifiera nya samlingsinlämningen mot riktig Redis; därefter separat godkänd samlad publicering och verklig iPad-provning.",
+      "next": "Separat godkänd samlad GitHub-publicering; därefter fysisk iPad-provning av nya versionen och klient/API-avbrottsprovning.",
       "acceptance": "Horisontella och vertikala streck samt start/slut följer rutgränser. Förhandsvisning visar placeringen; siffror täcks inte oavsiktligt. Touch, mus och borttagning fungerar. Samma placering återges i elevvy och läraroriginal; äldre original ändras inte tyst.",
       "requires": [
         "grid"
@@ -882,7 +887,7 @@
         "original"
       ],
       "decision": "2026-10-09: Simon bad om en issue: strecken som dras i uppställningar ska ligga på rutmönsterstrecken.",
-      "evidence": "GitHub issue #12 skapad. Ingen implementation eller publicering av kod.\n2026-10-09: lokalt byggt, ej pushat/publicerat. Samlingsrobot och 666 enhetstester godkända. Full regression samt nya skriv/rit/återkopplingsflöden återstår.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.",
+      "evidence": "GitHub issue #12 skapad. Ingen implementation eller publicering av kod.\n2026-10-09: lokalt byggt, ej pushat/publicerat. Samlingsrobot och 666 enhetstester godkända. Full regression samt nya skriv/rit/återkopplingsflöden återstår.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.\n2026-10-09: Nya samlingslagringsgränsen i b81f007 verifierad mot sekvens faktiska Redis med 12 godkända kontroller: atomisk inlämning, återläsning, tomma arrayer, skrivsvar/ritning, retry utan dubbelhändelser, samtidighet, revisions-/loggkonflikter, medlemskap/arkivering/stängning/testtombstone, quota och fryst original. Slumpmässig testnamnrymd; tio spårade slutnycklar rensade och frånvaro verifierad. Säkerhetstester för skriptet 3/3. Inte ny driftsatt HTTP-handler eller faktiskt nätavbrott; ingen push/publicering eller elevdatapåverkan.",
       "issue": "https://github.com/ximonse/sequential_math/issues/12",
       "kind": "deluppgift",
       "tasks": [
@@ -899,12 +904,12 @@
       "title": "Skrivsvar och valda arbetsytor",
       "status": "Lokalt klart",
       "purpose": "Läraren väljer siffer-/skrivsvar samt räknehäfte och/eller rityta per fråga; egna skrivfrågor stöds. Ritning och sudd sparas i originalet.",
-      "next": "Verifiera nya samlingsinlämningen mot riktig Redis; därefter separat godkänd samlad publicering och verklig iPad-provning.",
+      "next": "Separat godkänd samlad GitHub-publicering; därefter fysisk iPad-provning av nya versionen och klient/API-avbrottsprovning.",
       "acceptance": "Läraren väljer siffer-/skrivsvar samt räknehäfte och/eller rityta per fråga; egna skrivfrågor stöds. Ritning och sudd sparas i originalet.",
       "requires": [],
       "affects": [],
       "decision": "Simons önskemål 2026-10-09",
-      "evidence": "Lokalt byggt, verifiering pågår; ej publicerat.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.",
+      "evidence": "Lokalt byggt, verifiering pågår; ej publicerat.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.\n2026-10-09: Nya samlingslagringsgränsen i b81f007 verifierad mot sekvens faktiska Redis med 12 godkända kontroller: atomisk inlämning, återläsning, tomma arrayer, skrivsvar/ritning, retry utan dubbelhändelser, samtidighet, revisions-/loggkonflikter, medlemskap/arkivering/stängning/testtombstone, quota och fryst original. Slumpmässig testnamnrymd; tio spårade slutnycklar rensade och frånvaro verifierad. Säkerhetstester för skriptet 3/3. Inte ny driftsatt HTTP-handler eller faktiskt nätavbrott; ingen push/publicering eller elevdatapåverkan.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -921,12 +926,12 @@
       "title": "Kompakta knappar, sudd och sparstatus",
       "status": "Lokalt klart",
       "purpose": "Sudd via drag/dutt, svar under nätet, feta instruktionsrubriker och liten padding. Grön sparstatus bara efter serverkvittens.",
-      "next": "Verifiera nya samlingsinlämningen mot riktig Redis; därefter separat godkänd samlad publicering och verklig iPad-provning.",
+      "next": "Separat godkänd samlad GitHub-publicering; därefter fysisk iPad-provning av nya versionen och klient/API-avbrottsprovning.",
       "acceptance": "Sudd via drag/dutt, svar under nätet, feta instruktionsrubriker och liten padding. Grön sparstatus bara efter serverkvittens.",
       "requires": [],
       "affects": [],
       "decision": "Simons önskemål 2026-10-09",
-      "evidence": "Lokalt byggt, verifiering pågår; ej publicerat.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.",
+      "evidence": "Lokalt byggt, verifiering pågår; ej publicerat.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.\n2026-10-09: Nya samlingslagringsgränsen i b81f007 verifierad mot sekvens faktiska Redis med 12 godkända kontroller: atomisk inlämning, återläsning, tomma arrayer, skrivsvar/ritning, retry utan dubbelhändelser, samtidighet, revisions-/loggkonflikter, medlemskap/arkivering/stängning/testtombstone, quota och fryst original. Slumpmässig testnamnrymd; tio spårade slutnycklar rensade och frånvaro verifierad. Säkerhetstester för skriptet 3/3. Inte ny driftsatt HTTP-handler eller faktiskt nätavbrott; ingen push/publicering eller elevdatapåverkan.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -965,7 +970,7 @@
       "title": "Valbara samlingar och gemensam inlämning",
       "status": "Lokalt klart",
       "purpose": "Aktiva ogjorda samlingar syns alltid; inlämnade i dropdown med återkopplingsstatus.",
-      "next": "Verifiera nya samlingsinlämningen mot riktig Redis; därefter separat godkänd samlad publicering och verklig iPad-provning.",
+      "next": "Separat godkänd samlad GitHub-publicering; därefter fysisk iPad-provning av nya versionen och klient/API-avbrottsprovning.",
       "acceptance": "Svara sparar utan låsning; Förra/Nästa bevarar arbete; varna om obesvarat; lämna in hela samlingen atomiskt.",
       "requires": [
         "dispatch"
@@ -974,7 +979,7 @@
         "feedback"
       ],
       "decision": "Simon 2026-10-09: godkänt. Redigering tillåten före inlämning.",
-      "evidence": "Samlingsrobot godkänd med nätfel, varning, navigation och originalbevarande. Ej publicerad.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.",
+      "evidence": "Samlingsrobot godkänd med nätfel, varning, navigation och originalbevarande. Ej publicerad.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.\n2026-10-09: Nya samlingslagringsgränsen i b81f007 verifierad mot sekvens faktiska Redis med 12 godkända kontroller: atomisk inlämning, återläsning, tomma arrayer, skrivsvar/ritning, retry utan dubbelhändelser, samtidighet, revisions-/loggkonflikter, medlemskap/arkivering/stängning/testtombstone, quota och fryst original. Slumpmässig testnamnrymd; tio spårade slutnycklar rensade och frånvaro verifierad. Säkerhetstester för skriptet 3/3. Inte ny driftsatt HTTP-handler eller faktiskt nätavbrott; ingen push/publicering eller elevdatapåverkan.\nSlutkontroll verifieringssjok: 141 testfiler/674 tester, build och riktad lint godkända. Oförändrad app/API-kod; senaste fulla robotsvit för samma kod 83/83, inte omkörd i detta verifieringssjok.",
       "issue": "",
       "kind": "funktion",
       "tasks": [

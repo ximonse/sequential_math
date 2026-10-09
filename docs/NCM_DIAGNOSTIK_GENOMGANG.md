@@ -206,3 +206,23 @@ efter separat godkänd publicering. Inga produktionsinställningar ändrades.
 Slutkontroll för verifieringssjoket: 141 testfiler/674 tester, build och
 riktad lint godkända. App/API-kod har inte ändrats i detta sjok; den senaste
 fulla robotsviten för samma appkod är fortfarande 83/83. Kartan uppdaterad.
+
+## Samlad publicering – 2026-10-09
+
+Efter Simons uttryckliga begäran pushades samlings-/arbetsytepaketet,
+återkopplingen, räknehäftets förbättringar och verifieringen via GitHub
+master till `1395e65`. Vercel-projektet `sekvens` är READY för samma fulla
+SHA `1395e659febb0d47730cee311cafb659c9a24b8e` och domänen
+`matematik.ximon.se` är tilldelad denna deployment.
+
+Den publika domänens huvudpaket, `StudentDiagnosticAttempt` och
+`DiagnosticGridPrototype` jämfördes byte för byte med lokalt verifierat
+build: alla tre matchar. Avgränsad fel/fatal-loggkontroll för just den nya
+deploymenten gav inga poster vid kontrollen; detta är ingen garanti om
+framtida drift eller en provning med riktiga elever. Fysisk iPad-provning
+och faktisk nätavbrottsprovning genom hela driftsatta klient/API-flödet
+återstår. Inga riktiga elevdata ändrades vid publiceringskontrollen.
+
+Kartan har även fått Nytt kort / idé, verifierat med skyddat API och ett
+isolerat webbläsartest. Kartan körs fortfarande bara lokalt; att verktygets
+källkod ligger på GitHub betyder inte att kartservern är publicerad.

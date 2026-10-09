@@ -209,9 +209,9 @@
       "id": "matrix",
       "area": "Överblick",
       "title": "Gruppmatris med faktiska svar",
-      "status": "Lokalt klart",
+      "status": "Byggt",
       "purpose": "En elev per rad, uppgifter i kolumner; hover visar elevsvar, facit och signaler.",
-      "next": "Pröva full klass och många uppgifter; publicera endast efter uttryckligt mandat.",
+      "next": "Pröva full klass och många uppgifter; verklig Redis-verifiering är separat.",
       "acceptance": "Rätt, fel, obesvarat och metodsignal går att skilja; touch öppnar originalet.",
       "requires": [
         "original",
@@ -221,7 +221,7 @@
         "review"
       ],
       "decision": "",
-      "evidence": "0b1eaa8; 652 tester, build, lint, 81 robotfall. Ej pushat/publicerat.",
+      "evidence": "0b1eaa8; 652 tester, build, lint, 81 robotfall.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -263,7 +263,7 @@
       "id": "review",
       "area": "Genomgång",
       "title": "Original och anteckning i overlay",
-      "status": "Lokalt klart",
+      "status": "Byggt",
       "purpose": "Öppna elevens arbete, bläddra och spara intern läraranteckning med revisionsskydd.",
       "next": "Utveckla sammanhållen elevgenomgång, därefter en återkopplingsfunktion åt gången.",
       "acceptance": "Kommentar ändrar inte original; elev- eller lärarkonflikt skriver inte över annan data.",
@@ -276,7 +276,7 @@
         "print"
       ],
       "decision": "",
-      "evidence": "fec960e + 0b1eaa8; lokalt testat. Ej pushat/publicerat.",
+      "evidence": "fec960e + 0b1eaa8; lokalt testat.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -456,7 +456,7 @@
         "tips"
       ],
       "decision": "",
-      "evidence": "Versionerade regler finns; signalerna i matrisen är lokala i 0b1eaa8.",
+      "evidence": "Versionerade regler finns; signalerna i matrisen är lokala i 0b1eaa8.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -498,9 +498,9 @@
       "id": "tips",
       "area": "Analys",
       "title": "Frågor och tips för läraren",
-      "status": "Lokalt klart",
+      "status": "Byggt",
       "purpose": "Hjälpa läraren välja en fråga som undersöker elevens tänkande.",
-      "next": "Didaktisk granskning av frågornas formulering med lärare; publicering kräver separat beslut.",
+      "next": "Didaktisk granskning av frågornas formulering med lärare.",
       "acceptance": "Frågan visar observerat underlag och osäkerhet. Felsvar ensamt ger inget signalbaserat tips. Ingen elevåterkoppling eller mastery-påverkan.",
       "requires": [
         "analysis"
@@ -509,7 +509,7 @@
         "followup"
       ],
       "decision": "\n2026-10-08: Simon valde lärarstöd i Screening. Enbart frågor utifrån befintliga observerade signaler; automatisk elevtipsfunktion från den äldre träningsgrenen integreras inte.",
-      "evidence": "2026-10-08: Lokalt verifierat i codex/ncm-teacher-tips: 138 testfiler/660 tester, build, riktad ESLint och samtliga 81 robotfall passerade. Robotflödet kontrollerar frågan, osäkerheten och att stöd saknas utan signal. Ingen separat visuell granskning utförd. Ej pushat eller publicerat.",
+      "evidence": "2026-10-08: Lokalt verifierat i codex/ncm-teacher-tips: 138 testfiler/660 tester, build, riktad ESLint och samtliga 81 robotfall passerade. Robotflödet kontrollerar frågan, osäkerheten och att stöd saknas utan signal. Ingen separat visuell granskning utförd.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -587,7 +587,7 @@
         "redis"
       ],
       "decision": "",
-      "evidence": "9b9f894 tidigare publicerat; anteckningsstädning i lokal fec960e. Verklig Redis separat.",
+      "evidence": "9b9f894 tidigare publicerat; anteckningsstädning i lokal fec960e. Verklig Redis separat.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -763,7 +763,7 @@
       "requires": [],
       "affects": [],
       "decision": "Simon har valt HTML-kartan som gemensam arbetsyta. SC-exporten är en äldre separat snapshot, inte aktiv synk.\n\nBeslutat 2026-10-06: karta/kartan syftar normalt på projektkartan om inget annat tydligt avses. Läs senaste. Fråga betyder läsning och svar; uppdatera kartan betyder uppdatera berörda kort. Bara kartan betyder ta fram och stäm av, inte bygga nästa funktion eller publicera. Genomfört arbete och fattade beslut dokumenteras i kartan.\n\n2026-10-07: Kortsparande sammanför ändringar i olika kort och fält. Motstridiga ändringar i samma fält stoppas; deluppgifter är ett gemensamt fält. Simons osparade beslutstext om återlämning räddades till feedback-policy.",
-      "evidence": "Lokalt verifierat: 137 testfiler/658 tester, build och lint godkända. Testar bevarande av andra kort/fält och konflikt i samma fält, backup samt revisionsskydd. Ingen publicering. Webbläsarprov godkänt: feedback-policy sparades från en äldre flik efter att map-editor ändrats, med båda kortens innehåll bevarat.",
+      "evidence": "Lokalt verifierat: 137 testfiler/658 tester, build och lint godkända. Testar bevarande av andra kort/fält och konflikt i samma fält, backup samt revisionsskydd. Ingen publicering. Webbläsarprov godkänt: feedback-policy sparades från en äldre flik efter att map-editor ändrats, med båda kortens innehåll bevarat.\n2026-10-09: Kartverktyget pushat till GitHub i paketet till d725bd5. Fortfarande ett lokalt verktyg, inte en publicerad webbserver.",
       "issue": "",
       "kind": "funktion",
       "tasks": [

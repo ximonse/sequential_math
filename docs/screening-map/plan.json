@@ -953,12 +953,12 @@
       "title": "Valbart mönster på ritytan",
       "status": "Senare",
       "purpose": "Högställda rektanglar, kvadratiska rutor eller olinjerat.",
-      "next": "Framtida arbete; ingen implementation nu.",
+      "next": "Olinjerat och fullt mönsterval återstår; kvadratiskt rutnät ingår lokalt i ritverktygen.",
       "acceptance": "Högställda rektanglar, kvadratiska rutor eller olinjerat.",
       "requires": [],
       "affects": [],
-      "decision": "Simons önskemål 2026-10-09",
-      "evidence": "Issue #13 skapad; inte byggt.",
+      "decision": "Simons önskemål 2026-10-09\n2026-10-09: Simon godkände kvadratiskt rutnätsval i gemensamma ritytan. Övriga mönsterval ligger kvar som framtida arbete.",
+      "evidence": "Issue #13 skapad; inte byggt.\n2026-10-09: Kvadratiskt rutnät lokalt byggt som bakgrund, med oförändrad ritning vid byte. Riktad klickrobot godkänd. Ej pushat eller publicerat.",
       "issue": "https://github.com/ximonse/sequential_math/issues/13",
       "kind": "funktion",
       "tasks": [
@@ -991,6 +991,36 @@
         {
           "id": "verify-student-collections",
           "text": "Verifiera hela samlingsflödet, uppdatera belägg och spara lokalt.",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "shared-drawing-tools",
+      "area": "Elevflöde",
+      "title": "Gemensamma ritverktyg: färg, sudd, rutnät och Rensa",
+      "status": "Lokalt klart",
+      "purpose": "Samma kompakta ritverktyg i träning och diagnostik, med bevarat elevoriginal.",
+      "next": "Ingår i nästa uttryckligen godkända publiceringssjok. Fysiskt iPad-test efter åtkomlig publicerad version.",
+      "acceptance": "Aktiv penna växlar svart/magenta; Sudd bevarar rutnät. Rensa kräver bekräftelse och påverkar bara ritningen. Diagnostisk färg och rensning återspelas från historiken; äldre svart ritning fungerar.",
+      "requires": [],
+      "affects": [
+        "original",
+        "drawing-patterns"
+      ],
+      "decision": "Simon 2026-10-09: Rensa på utkastets rityta och överför färger/funktioner till appens andra rityta. Övriga utkaständringar överförs inte i detta sjok.",
+      "evidence": "2026-10-09: Lokalt byggt i MathScratchpad; även diagnostiska återspelningar stöds. 143 testfiler/680 tester, build och riktad lint godkända. Ritytans klickrobot 1/1 godkänd; full robotregression pågår. Rutnätsval är lokalt för arbetsytan, inte diagnostisk historik. Ingen push eller publicering.\nSlutkontroll 2026-10-09: 680 projekttester, build och riktad lint godkända. Full robotsvit 84/84, 0 regelbrott. Därefter enbart kontrastjustering av svart penna; separat rityterobot på aktuellt bygge verifierar alla teman, färgbyte, sudd, rutnät, dölj/visa samt avbruten/bekräftad rensning. Faktisk renderad lokal elevvy granskad. Ingen push eller publicering. Projektets testkörning avgränsades från andra agenters inbäddade worktrees; Chromium krävde utökad processbehörighet.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "drawing-tools-implementation",
+          "text": "Överför ritverktyg, bevara färger/rensning i diagnostisk historik och gamla original.",
+          "done": true
+        },
+        {
+          "id": "drawing-tools-verification",
+          "text": "Full regression samt visuell lokal kontroll.",
           "done": true
         }
       ]
@@ -1400,6 +1430,16 @@
     {
       "source": "student-collections",
       "target": "feedback",
+      "kind": "påverkar"
+    },
+    {
+      "source": "shared-drawing-tools",
+      "target": "original",
+      "kind": "påverkar"
+    },
+    {
+      "source": "shared-drawing-tools",
+      "target": "drawing-patterns",
       "kind": "påverkar"
     }
   ],

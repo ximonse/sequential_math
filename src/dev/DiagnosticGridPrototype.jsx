@@ -539,7 +539,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
         </div> : null}
         </div>
         {task.drawingEnabled && <MathScratchpad visible strokes={grid.drawing} readOnly={editingLocked || attemptFull}
-          onStroke={stroke => record({ type: 'drawing_stroke', ...stroke })} />}
+          onStroke={stroke => record({ type: 'drawing_stroke', ...stroke })}
+          onClear={() => record({ type: 'drawing_clear' })} />}
         <div className={task.gridEnabled === false ? 'hidden' : 'mt-3 flex flex-wrap items-center gap-2'}>
           {formatButton('main', 'Stor (Esc)')}
           {formatButton('note', 'Minnessiffra (N)')}

@@ -4,7 +4,7 @@ export const GRID_COLUMNS = 12
 
 const MAIN_CHARACTERS = /^[0-9+−×/÷,─]$/u
 const NOTE_CHARACTERS = /^[0-9]{1,2}$/u
-const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'line_add', 'line_remove', 'answer_change', 'drawing_stroke', 'pause', 'resume', 'focus_lost', 'submit'])
+const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'line_add', 'line_remove', 'answer_change', 'drawing_stroke', 'drawing_clear', 'pause', 'resume', 'focus_lost', 'submit'])
 
 function isValidPosition(value, rows, columns) {
   return Number.isInteger(value?.row) && value.row >= 0 && value.row < rows
@@ -139,11 +139,15 @@ export function applyDiagnosticGridEvent(state, event) {
   } else if (event.type === 'drawing_stroke') {
     if (!Array.isArray(event.points) || event.points.length < 1 || event.points.length > 200
       || typeof event.erasing !== 'boolean'
+      || (event.color !== undefined && !['black', 'magenta'].includes(event.color))
       || event.points.some(point => !Array.isArray(point) || point.length !== 2
         || point.some(value => !Number.isFinite(value) || value < 0 || value > 1))) {
       throw new Error('Invalid drawing stroke')
     }
-    next.drawing = [...(state.drawing || []), { points: event.points, erasing: event.erasing }]
+    next.drawing = [...(state.drawing || []), { points: event.points, erasing: event.erasing,
+      ...(event.color !== undefined ? { color: event.color } : {}) }]
+  } else if (event.type === 'drawing_clear') {
+    next.drawing = []
   } else if (event.type === 'submit') {
     next.status = 'submitted'
   }

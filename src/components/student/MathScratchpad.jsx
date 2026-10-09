@@ -8,12 +8,17 @@ const GRID_STEP_Y = 118
 const BASE_WIDTH = 740
 const BASE_HEIGHT = Math.round(BASE_WIDTH * CANVAS_RATIO)
 
-function MathScratchpad({ visible, strokes = null, onStroke = null, readOnly = false }) {
+function MathScratchpad({ visible, strokes = null, onStroke = null, onClear = null, readOnly = false }) {
   const canvasRef = useRef(null)
   const containerRef = useRef(null)
   const drawingRef = useRef(false)
   const strokeRef = useRef([])
   const [isErasing, setIsErasing] = useState(false)
+  const [penColor, setPenColor] = useState('black')
+  const [squareGrid, setSquareGrid] = useState(false)
+  const [localStrokes, setLocalStrokes] = useState([])
+  const drawing = strokes ?? localStrokes
+  const saveStroke = stroke => onStroke ? onStroke(stroke) : setLocalStrokes(previous => [...previous, stroke])
   const [canvasSize, setCanvasSize] = useState({
     width: BASE_WIDTH,
     height: BASE_HEIGHT
@@ -38,7 +43,7 @@ function MathScratchpad({ visible, strokes = null, onStroke = null, readOnly = f
     const observer = new ResizeObserver(updateSize)
     observer.observe(container)
     return () => observer.disconnect()
-  }, [])
+  }, [visible])
 
   useEffect(() => {
     if (!visible) return
@@ -46,9 +51,10 @@ function MathScratchpad({ visible, strokes = null, onStroke = null, readOnly = f
     if (!canvas) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    drawGrid(ctx, canvas.width, canvas.height)
-    for (const stroke of strokes || []) {
-      ctx.strokeStyle = stroke.erasing ? '#ffffff' : '#1f2937'
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    for (const stroke of drawing) {
+      ctx.globalCompositeOperation = stroke.erasing ? 'destination-out' : 'source-over'
+      ctx.strokeStyle = stroke.color === 'magenta' ? '#b00070' : '#1f2937'
       ctx.lineWidth = stroke.erasing ? 18 : 2.8
       ctx.lineCap = 'round'
       ctx.lineJoin = 'round'
@@ -64,7 +70,8 @@ function MathScratchpad({ visible, strokes = null, onStroke = null, readOnly = f
       }
       ctx.stroke()
     }
-  }, [visible, canvasSize.width, canvasSize.height, strokes])
+    ctx.globalCompositeOperation = 'source-over'
+  }, [visible, canvasSize.width, canvasSize.height, drawing])
 
   if (!visible) return null
 
@@ -92,6 +99,7 @@ function MathScratchpad({ visible, strokes = null, onStroke = null, readOnly = f
     strokeRef.current = [[clamp(point.x / canvas.width, 0, 1), clamp(point.y / canvas.height, 0, 1)]]
     ctx.beginPath()
     ctx.moveTo(point.x, point.y)
+    drawStroke(event)
   }
 
   const drawStroke = (event) => {
@@ -100,60 +108,64 @@ function MathScratchpad({ visible, strokes = null, onStroke = null, readOnly = f
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     const point = getPoint(event)
-    if (onStroke) {
-      strokeRef.current.push([clamp(point.x / canvas.width, 0, 1), clamp(point.y / canvas.height, 0, 1)])
-      if (strokeRef.current.length === 200) {
-        onStroke({ points: strokeRef.current, erasing: isErasing })
-        strokeRef.current = [strokeRef.current.at(-1)]
-      }
+    strokeRef.current.push([clamp(point.x / canvas.width, 0, 1), clamp(point.y / canvas.height, 0, 1)])
+    if (strokeRef.current.length === 200) {
+      saveStroke({ points: strokeRef.current, erasing: isErasing, color: penColor })
+      strokeRef.current = [strokeRef.current.at(-1)]
     }
 
     ctx.lineWidth = isErasing ? 18 : 2.8
     ctx.lineCap = 'round'
     ctx.lineJoin = 'round'
-    ctx.strokeStyle = isErasing ? '#ffffff' : '#1f2937'
-    ctx.lineTo(point.x, point.y)
+    ctx.globalCompositeOperation = isErasing ? 'destination-out' : 'source-over'
+    ctx.strokeStyle = penColor === 'magenta' ? '#b00070' : '#1f2937'
+    ctx.lineTo(point.x + 0.1, point.y + 0.1)
     ctx.stroke()
   }
 
   const endStroke = () => {
-    if (drawingRef.current && onStroke && strokeRef.current.length) onStroke({ points: strokeRef.current, erasing: isErasing })
+    if (drawingRef.current && strokeRef.current.length) saveStroke({ points: strokeRef.current, erasing: isErasing, color: penColor })
     drawingRef.current = false
     strokeRef.current = []
   }
 
   const clearCanvas = () => {
     if (readOnly) return
-    if (onStroke) return
-    const canvas = canvasRef.current
-    const ctx = canvas.getContext('2d')
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    drawGrid(ctx, canvas.width, canvas.height)
+    if (!window.confirm('Rensa hela ritytan? Din ritning tas bort, men svaret och räknehäftet påverkas inte.')) return
+    if (onClear) onClear()
+    else if (!onStroke) setLocalStrokes([])
   }
 
   return (
     <div className="mt-6 w-full max-w-2xl rounded-xl bg-white shadow border border-gray-200 p-3">
       <div className="flex items-center justify-between mb-2">
         <p className="text-sm font-medium text-gray-700">Rityta</p>
-        {!readOnly && <div className="flex gap-1">
+        {!readOnly && <div className="flex flex-wrap gap-1" role="group" aria-label="Ritverktyg">
           <button
             type="button"
-            onClick={() => setIsErasing(false)}
-            className={`px-3 py-1 rounded text-xs ${!isErasing ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+            onClick={() => { if (!isErasing) setPenColor(previous => previous === 'black' ? 'magenta' : 'black'); setIsErasing(false) }}
+            aria-label={`Penna, ${penColor === 'magenta' ? 'magenta' : 'svart'}`}
+            aria-pressed={!isErasing}
+            className={`px-2 py-1 min-h-11 rounded text-sm border ${!isErasing ? penColor === 'magenta' ? 'bg-fuchsia-700 text-white border-fuchsia-700' : 'bg-slate-900 text-white border-slate-900' : 'bg-white text-gray-800 border-gray-400'}`}
           >
             Penna
           </button>
           <button
             type="button"
             onClick={() => setIsErasing(true)}
-            className={`px-3 py-1 rounded text-xs ${isErasing ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700'}`}
+            aria-pressed={isErasing}
+            className={`px-2 py-1 min-h-11 rounded text-sm border ${isErasing ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-gray-800 border-gray-400'}`}
           >
             Sudd
           </button>
-          {!onStroke && <button
+          <button type="button" aria-label="Kvadratiskt rutmönster" aria-pressed={squareGrid}
+            onClick={() => setSquareGrid(previous => !previous)}
+            className={`px-2 py-1 min-h-11 rounded text-sm border ${squareGrid ? 'bg-blue-700 text-white border-blue-700' : 'bg-white text-gray-800 border-gray-400'}`}>Rutnät</button>
+          {(!onStroke || onClear) && <button
             type="button"
             onClick={clearCanvas}
-            className="px-3 py-1 rounded text-xs bg-gray-800 text-white"
+            aria-label="Rensa ritytan"
+            className="px-2 py-1 min-h-11 rounded text-sm border border-red-700 bg-white text-red-700"
           >
             Rensa
           </button>}
@@ -164,9 +176,11 @@ function MathScratchpad({ visible, strokes = null, onStroke = null, readOnly = f
           ref={canvasRef}
           width={canvasSize.width}
           height={canvasSize.height}
-          className="w-full rounded border border-gray-300 bg-white touch-none"
+          className="w-full rounded border border-gray-300 touch-none"
           aria-label="Rityta"
-          style={{ touchAction: 'none', aspectRatio: `1 / ${CANVAS_RATIO}` }}
+          style={{ touchAction: 'none', aspectRatio: `1 / ${CANVAS_RATIO}`, backgroundColor: '#ffffff',
+            backgroundImage: 'linear-gradient(to right, #d1d5db 1px, transparent 1px), linear-gradient(to bottom, #d1d5db 1px, transparent 1px)',
+            backgroundSize: squareGrid ? '24px 24px' : `${GRID_STEP_X}px ${GRID_STEP_Y}px` }}
           onPointerDown={beginStroke}
           onPointerMove={drawStroke}
           onPointerUp={endStroke}
@@ -176,28 +190,6 @@ function MathScratchpad({ visible, strokes = null, onStroke = null, readOnly = f
       </div>
     </div>
   )
-}
-
-function drawGrid(ctx, width, height) {
-  ctx.fillStyle = '#ffffff'
-  ctx.fillRect(0, 0, width, height)
-
-  ctx.strokeStyle = '#e5e7eb'
-  ctx.lineWidth = 1
-
-  for (let x = 0; x <= width; x += GRID_STEP_X) {
-    ctx.beginPath()
-    ctx.moveTo(x, 0)
-    ctx.lineTo(x, height)
-    ctx.stroke()
-  }
-
-  for (let y = 0; y <= height; y += GRID_STEP_Y) {
-    ctx.beginPath()
-    ctx.moveTo(0, y)
-    ctx.lineTo(width, y)
-    ctx.stroke()
-  }
 }
 
 function clamp(value, min, max) {

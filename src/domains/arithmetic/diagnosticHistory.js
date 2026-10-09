@@ -6,7 +6,7 @@ export function diagnosticHistoryFrame(snapshot, step) {
     throw new Error('Invalid diagnostic history step')
   }
   let current = createDiagnosticGrid({ attemptId: snapshot.attemptId, taskId: snapshot.taskId,
-    taskVersion: snapshot.taskVersion, rows: snapshot.rows, columns: snapshot.columns })
+    taskVersion: snapshot.taskVersion, rows: snapshot.rows, columns: snapshot.columns, answerType: snapshot.answerType || 'number' })
   for (const event of snapshot.events.slice(0, step)) {
     current = applyDiagnosticGridEvent(current, event)
   }
@@ -25,6 +25,7 @@ export function describeDiagnosticEvent(event) {
   if (event.type === 'line_add') return `Ett ${event.axis === 'horizontal' ? 'vågrätt' : 'lodrätt'} streck drogs.`
   if (event.type === 'line_remove') return 'Tog bort ett streck.'
   if (event.type === 'answer_change') return `Ändrade slutsvaret från ${event.before || 'tomt'} till ${event.after || 'tomt'}.`
+  if (event.type === 'drawing_stroke') return event.erasing ? 'Suddade i ritytan.' : 'Ritade i ritytan.'
   if (event.type === 'move') return `Flyttade markören till rad ${event.to.row + 1}, kolumn ${event.to.column + 1}.`
   if (event.type === 'layer') return `Valde ${event.to === 'note' ? 'minnessiffra' : 'stor siffra'} för nästa inmatning.`
   if (event.type === 'focus_lost') return 'Lämnade räknehäftets fokus.'

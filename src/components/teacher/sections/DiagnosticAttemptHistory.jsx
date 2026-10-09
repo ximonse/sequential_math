@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { describeDiagnosticEvent, diagnosticHistoryFrame } from '../../../domains/arithmetic/diagnosticHistory'
 import DiagnosticGridLines from '../../../dev/DiagnosticGridLines'
+import MathScratchpad from '../../student/MathScratchpad'
 
 export default function DiagnosticAttemptHistory({ snapshot }) {
   const lastStep = snapshot.events.length
@@ -37,5 +38,6 @@ export default function DiagnosticAttemptHistory({ snapshot }) {
         })}
       </div>
     </div>
+    {frame.drawing?.length > 0 && <MathScratchpad visible strokes={frame.drawing} readOnly />}
   </section>
 }

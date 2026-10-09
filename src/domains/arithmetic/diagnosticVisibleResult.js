@@ -1,7 +1,7 @@
 import { replayDiagnosticGrid } from './diagnosticGridModel.js'
 import { analyzeDiagnosticColumnAlignment } from './diagnosticColumnAlignment.js'
 
-export const VISIBLE_RESULT_ANALYSIS_VERSION = 1
+export const VISIBLE_RESULT_ANALYSIS_VERSION = 2
 
 // Only a conventional, four-row calculation with an explicit answer line is
 // interpreted. Other valid ways of calculating remain unknown to this rule.
@@ -17,7 +17,10 @@ export function analyzeDiagnosticVisibleResult(task, snapshot) {
   if (!/^[−-]?\d+$/u.test(grid.answer)) return unknown('no_complete_explicit_answer')
   const { upper, lower } = alignment.evidence
   const lineRow = lower.row + 1
-  const resultRow = lower.row + 2
+  const borderLines = (grid.lines || []).filter(line => line.axis === 'horizontal'
+    && line.placement === 'grid-border' && line.from.row === lower.row)
+  const border = borderLines.length === 1 ? borderLines[0] : null
+  const resultRow = border ? lower.row + 1 : lower.row + 2
   if (resultRow >= grid.rows) return unknown('no_result_row')
 
   const mainCells = Object.entries(grid.cells).flatMap(([key, cell]) => {
@@ -31,7 +34,8 @@ export function analyzeDiagnosticVisibleResult(task, snapshot) {
   if (mainCells.some(cell => (cell.row === upper.row || cell.row === lower.row) && cell.struck)) {
     return unknown('crossed_out_operand')
   }
-  if (line.length < lower.digitCells.length
+  if (border ? border.from.column > firstOperandColumn || border.to.column !== lower.lastColumn
+    : line.length < lower.digitCells.length
     || line.some(cell => cell.value !== '─' || cell.struck)
     || line[0]?.column > firstOperandColumn || line.at(-1)?.column !== lower.lastColumn
     || line.some((cell, index) => index > 0 && cell.column !== line[index - 1].column + 1)) {
@@ -53,6 +57,7 @@ export function analyzeDiagnosticVisibleResult(task, snapshot) {
   }
   return { ...base, status: 'observed', consistency: visibleResult === explicitAnswer ? 'same' : 'different',
     visibleResult, explicitAnswer,
-    evidence: { answerLine: line.map(({ row, column }) => ({ row, column })),
+    evidence: { answerLine: border ? [{ from: border.from, to: border.to, placement: border.placement }]
+      : line.map(({ row, column }) => ({ row, column })),
       resultCells: result.map(({ row, column }) => ({ row, column })) } }
 }

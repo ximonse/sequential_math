@@ -13,9 +13,10 @@ const EVENT_FIELDS = {
   layer: ['from', 'to'],
   reclassify: ['position', 'from', 'to', 'value'],
   cross_out: ['position', 'before', 'after'],
-  line_add: ['axis', 'from', 'to'],
+  line_add: ['axis', 'from', 'to', 'placement'],
   line_remove: ['lineId'],
   answer_change: ['before', 'after'],
+  drawing_stroke: ['points', 'erasing'],
   pause: [],
   resume: [],
   focus_lost: [],
@@ -34,7 +35,8 @@ export function isDiagnosticAttemptFull(events) {
 }
 
 export function exceedsDiagnosticAttemptQuota(events) {
-  return events.length > MAX_DIAGNOSTIC_ATTEMPT_EVENTS
+  const finalSubmission = events.length === MAX_DIAGNOSTIC_ATTEMPT_EVENTS + 1 && events.at(-1)?.type === 'submit'
+  return (events.length > MAX_DIAGNOSTIC_ATTEMPT_EVENTS && !finalSubmission)
     || jsonBytes(events) > MAX_DIAGNOSTIC_ATTEMPT_BYTES
 }
 

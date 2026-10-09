@@ -111,6 +111,17 @@ const open = (assignment, item = assignment.items[0], studentId = 'PUPIL') => op
 }, { store, makeId: id })
 
 describe('diagnostic assignment and attempt creation', () => {
+  it('freezes selected answer types and surfaces, including a custom written question', async () => {
+    const assignment = await create({ titleSv: 'Läxa 1', taskIds: ['add-no-carry-001'],
+      itemOptions: { 'add-no-carry-001': { answerType: 'text', gridEnabled: false, drawingEnabled: true } },
+      customTasks: [{ promptSv: 'Förklara din metod.', gridEnabled: true, drawingEnabled: false }] })
+    expect(assignment.titleSv).toBe('Läxa 1')
+    expect(assignment.items[0].taskSnapshot).toMatchObject({ answerType: 'text', gridEnabled: false, drawingEnabled: true })
+    expect(assignment.items[1].taskSnapshot).toMatchObject({ answerType: 'text', answerRule: 'teacher_review',
+      promptSv: 'Förklara din metod.', gridEnabled: true, drawingEnabled: false })
+    expect((await open(assignment)).snapshot.answerType).toBe('text')
+    await expect(create({ itemOptions: { 'add-no-carry-001': { drawingEnabled: 'yes' } } })).rejects.toMatchObject({ status: 400 })
+  })
   it('freezes original tasks and atomically reuses one active attempt across devices', async () => {
     const profileBefore = clone(store.data.get('student:PUPIL'))
     const assignment = await create()

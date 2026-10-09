@@ -47,14 +47,23 @@ export const isCurrentDiagnosticReview = (review, record) => Boolean(review?.rev
   && review.evidenceRevision === record.serverRevision && review.evidenceSequence === record.lastSequence)
 
 export async function saveDiagnosticReview(record, input, teacherId, { store = kv, now = Date.now() } = {}) {
+  if (input.publishFeedback !== undefined && (input.publishFeedback !== true
+    || record.status !== 'submitted' || typeof input.feedbackText !== 'string'
+    || !input.feedbackText.trim() || input.feedbackText.length > 1000)) {
+    throw new DiagnosticAppendError(400, 'invalid_feedback', 'Återkoppling behöver text och ett inlämnat elevunderlag.')
+  }
   if (!teacherId || typeof input.note !== 'string' || input.note.length > 1000
     || typeof input.reviewed !== 'boolean'
     || ![input.expectedReviewRevision, input.evidenceRevision, input.evidenceSequence].every(value => Number.isSafeInteger(value) && value >= 0)) {
     throw new DiagnosticAppendError(400, 'invalid_review', 'Anteckningen får vara högst 1000 tecken och måste avse en sparad revision.')
   }
+  const previous = await store.get(`diagnostic_review:${record.attemptId}`)
+  const feedback = input.publishFeedback ? { text: input.feedbackText.trim(), publishedAt: now,
+    evidenceRevision: input.evidenceRevision, evidenceSequence: input.evidenceSequence } : previous?.feedback
   const review = { studentId: record.studentId, reviewRevision: input.expectedReviewRevision + 1,
     evidenceRevision: input.evidenceRevision, evidenceSequence: input.evidenceSequence,
-    reviewed: input.reviewed, note: input.note, updatedAt: now, updatedBy: teacherId }
+    reviewed: input.reviewed, note: input.note, updatedAt: now, updatedBy: teacherId,
+    ...(feedback ? { feedback } : {}) }
   const result = Number(await store.eval(DIAGNOSTIC_REVIEW_CAS_SCRIPT,
     [`diagnostic_attempt:${record.attemptId}`, `diagnostic_review:${record.attemptId}`,
       studentDeletedKey(record.studentId), `student_deleted:${record.studentId}`,

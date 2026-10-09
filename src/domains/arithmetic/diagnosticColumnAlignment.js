@@ -33,6 +33,9 @@ export function analyzeDiagnosticColumnAlignment(task, snapshot) {
     throw new Error('Diagnostic task and grid version do not match')
   }
   const grid = replayDiagnosticGrid(snapshot)
+  if (task.answerType === 'text' || task.answerRule === 'teacher_review') return {
+    analysisVersion: COLUMN_ALIGNMENT_ANALYSIS_VERSION, attemptId: grid.attemptId,
+    taskId: task.taskId, taskVersion: task.taskVersion, status: 'unknown', reason: 'written_response' }
   if (!['addition', 'subtraction'].includes(task.operation)
     || !Array.isArray(task.operands) || task.operands.length !== 2
     || !task.operands.every(value => Number.isSafeInteger(value) && value >= 0)) {

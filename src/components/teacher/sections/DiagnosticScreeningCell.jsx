@@ -3,10 +3,10 @@ import { createPortal } from 'react-dom'
 import './diagnosticScreening.css'
 
 const labels = { correct: 'Rätt svar', incorrect: 'Fel svar utan identifierat mönster',
-  incomplete: 'Ofullständigt svar', unanswered: 'Ej svar' }
+  incomplete: 'Ofullständigt svar', unanswered: 'Ej svar', unassessed: 'Skrivsvar – inte bedömt' }
 const colors = { correct: 'screening-answer--correct', incorrect: 'screening-answer--incorrect',
   incomplete: 'screening-answer--incomplete', unanswered: 'screening-answer--unanswered',
-  M: 'screening-answer--M', P: 'screening-answer--P', Ö: 'screening-answer--transfer' }
+  unassessed: 'screening-answer--unanswered', M: 'screening-answer--M', P: 'screening-answer--P', Ö: 'screening-answer--transfer' }
 
 export default function DiagnosticScreeningCell({ item, pupilName, prompt, onOpen }) {
   const id = useId()

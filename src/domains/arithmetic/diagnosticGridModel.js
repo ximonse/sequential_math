@@ -4,7 +4,7 @@ export const GRID_COLUMNS = 12
 
 const MAIN_CHARACTERS = /^[0-9+−×/÷,─]$/u
 const NOTE_CHARACTERS = /^[0-9]{1,2}$/u
-const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'line_add', 'line_remove', 'answer_change', 'pause', 'resume', 'focus_lost', 'submit'])
+const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'line_add', 'line_remove', 'answer_change', 'drawing_stroke', 'pause', 'resume', 'focus_lost', 'submit'])
 
 function isValidPosition(value, rows, columns) {
   return Number.isInteger(value?.row) && value.row >= 0 && value.row < rows
@@ -22,7 +22,7 @@ function normalizeCharacter(value, layer) {
   return character
 }
 
-export function createDiagnosticGrid({ attemptId, taskId, taskVersion, rows = GRID_ROWS, columns = GRID_COLUMNS }) {
+export function createDiagnosticGrid({ attemptId, taskId, taskVersion, rows = GRID_ROWS, columns = GRID_COLUMNS, answerType = 'number' }) {
   if (!attemptId || !taskId || !Number.isInteger(taskVersion) || taskVersion < 1) {
     throw new Error('A versioned task and attempt ID are required')
   }
@@ -30,6 +30,7 @@ export function createDiagnosticGrid({ attemptId, taskId, taskVersion, rows = GR
     || !Number.isInteger(columns) || columns < 1 || columns > 24) {
     throw new Error('Invalid grid dimensions')
   }
+  if (!['number', 'text'].includes(answerType)) throw new Error('Invalid diagnostic answer type')
   return {
     version: DIAGNOSTIC_GRID_VERSION,
     attemptId,
@@ -39,6 +40,8 @@ export function createDiagnosticGrid({ attemptId, taskId, taskVersion, rows = GR
     columns,
     cells: {},
     lines: [],
+    ...(answerType === 'text' ? { answerType } : {}),
+    drawing: [],
     answer: '',
     cursor: { row: 0, column: 0, layer: 'main' },
     status: 'in_progress',
@@ -108,7 +111,9 @@ export function applyDiagnosticGridEvent(state, event) {
       || (event.axis === 'vertical' && (event.from.column !== event.to.column || event.from.row > event.to.row))) {
       throw new Error('Invalid grid line')
     }
+    if (event.placement !== undefined && event.placement !== 'grid-border') throw new Error('Invalid line placement')
     next.lines = [...(state.lines || []), { id: event.eventId, axis: event.axis,
+      ...(event.placement ? { placement: event.placement } : {}),
       from: event.from, to: event.to }]
   } else if (event.type === 'line_remove') {
     const lines = state.lines || []
@@ -129,8 +134,16 @@ export function applyDiagnosticGridEvent(state, event) {
     next.cursor = { ...state.cursor, layer: event.to }
   } else if (event.type === 'answer_change') {
     if (event.before !== state.answer || typeof event.after !== 'string'
-      || !/^[−-]?\d{0,12}$/u.test(event.after)) throw new Error('Answer history mismatch')
+      || (state.answerType === 'text' ? event.after.length > 2000 : !/^[−-]?\d{0,12}$/u.test(event.after))) throw new Error('Answer history mismatch')
     next.answer = event.after
+  } else if (event.type === 'drawing_stroke') {
+    if (!Array.isArray(event.points) || event.points.length < 1 || event.points.length > 200
+      || typeof event.erasing !== 'boolean'
+      || event.points.some(point => !Array.isArray(point) || point.length !== 2
+        || point.some(value => !Number.isFinite(value) || value < 0 || value > 1))) {
+      throw new Error('Invalid drawing stroke')
+    }
+    next.drawing = [...(state.drawing || []), { points: event.points, erasing: event.erasing }]
   } else if (event.type === 'submit') {
     next.status = 'submitted'
   }
@@ -155,13 +168,15 @@ export function replayDiagnosticGrid(snapshot) {
     taskId: snapshot?.taskId,
     taskVersion: snapshot?.taskVersion,
     rows: snapshot?.rows,
-    columns: snapshot?.columns
+    columns: snapshot?.columns,
+    answerType: snapshot?.answerType || 'number'
   })
   const events = snapshot?.events
   if (!Array.isArray(events)) throw new Error('Missing grid event stream')
   const replayed = events.reduce(applyDiagnosticGridEvent, initial)
   if (JSON.stringify(replayed.cells) !== JSON.stringify(snapshot.cells)
     || JSON.stringify(replayed.lines) !== JSON.stringify(snapshot.lines ?? [])
+    || JSON.stringify(replayed.drawing) !== JSON.stringify(snapshot.drawing ?? [])
     || replayed.answer !== snapshot.answer
     || JSON.stringify(replayed.cursor) !== JSON.stringify(snapshot.cursor)
     || replayed.status !== snapshot.status) {

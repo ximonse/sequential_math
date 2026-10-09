@@ -13,6 +13,11 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
   const [classId, setClassId] = useState('')
   const [studentId, setStudentId] = useState('')
   const [selectedTasks, setSelectedTasks] = useState([taskIds[0]])
+  const [titleSv, setTitleSv] = useState('Screening')
+  const [itemOptions, setItemOptions] = useState({})
+  const [customPrompt, setCustomPrompt] = useState('')
+  const [customGrid, setCustomGrid] = useState(false)
+  const [customDrawing, setCustomDrawing] = useState(false)
   const [testStudentIds, setTestStudentIds] = useState([])
   const [assignments, setAssignments] = useState([])
   const [status, setStatus] = useState('Välj en klass för att se eleverna.')
@@ -84,11 +89,13 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
   const guideFor = task => taskPacks.guides[task?.intentCode]
 
   async function createAssignment(wholeClass = false) {
-    if (!classId || (wholeClass ? !wholeClassAvailable : !studentId) || !selectedTasks.length || busy) return
+    if (!classId || (wholeClass ? !wholeClassAvailable : !studentId) || (!selectedTasks.length && !customPrompt.trim()) || busy) return
     setBusy(true)
     try {
       const result = await request('/api/teacher-diagnostic-assignments', { method: 'POST',
-        body: JSON.stringify({ classId, ...(wholeClass ? { audience: 'class' } : { studentIds: [studentId] }), taskIds: selectedTasks }) })
+        body: JSON.stringify({ classId, ...(wholeClass ? { audience: 'class' } : { studentIds: [studentId] }),
+          taskIds: selectedTasks, titleSv, itemOptions: Object.fromEntries(selectedTasks.filter(id => itemOptions[id]).map(id => [id, itemOptions[id]])),
+          customTasks: customPrompt.trim() ? [{ promptSv: customPrompt, gridEnabled: customGrid, drawingEnabled: customDrawing }] : [] }) })
       if (!result.ok) throw new Error(result.data.error || 'Kunde inte skapa testuppdraget.')
       setAssignments(previous => [result.data.assignment, ...previous])
       setStatus(wholeClass ? `Uppdraget är tilldelat hela klassen (${result.data.assignment.studentIds.length} elever).`
@@ -141,6 +148,10 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
       </label>
     </div>
     <div hidden={view !== 'dispatch'}>
+    <label className="mt-2 block text-sm font-semibold">Samlingens namn
+      <input value={titleSv} maxLength={100} onChange={event => setTitleSv(event.target.value)}
+        className="ml-2 rounded border border-slate-400 px-2 py-1" placeholder="Exempel: Läxa vecka 42" />
+    </label>
     <label className="mt-3 block text-sm font-medium">Diagnospaket
       <select value={selectedPack?.id || ''} disabled={busy} onChange={event => {
         const pack = taskPacks.packs.find(item => item.id === event.target.value)
@@ -161,6 +172,27 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
         </label>)}
       </div>
     </fieldset>
+    <fieldset className="mt-2 space-y-1" disabled={busy}>
+      <legend className="text-sm font-semibold">Svarstyp och arbetsytor per fråga</legend>
+      {selectedTasks.map(id => {
+        const options = itemOptions[id] || {}
+        const change = patch => setItemOptions(previous => ({ ...previous, [id]: { ...previous[id], ...patch } }))
+        return <div key={id} className="flex flex-wrap items-center gap-x-2 text-sm">
+          <strong>{taskManifest.tasks.find(task => task.taskId === id)?.promptSv}</strong>
+          <label>Svarstyp <select value={options.answerType || 'number'} onChange={event => change({ answerType: event.target.value })} className="rounded border px-1 py-0.5">
+            <option value="number">Siffersvar</option><option value="text">Skrivsvar</option>
+          </select></label>
+          <label><input type="checkbox" checked={options.gridEnabled !== false} onChange={event => change({ gridEnabled: event.target.checked })} /> Räknehäfte</label>
+          <label><input type="checkbox" checked={Boolean(options.drawingEnabled)} onChange={event => change({ drawingEnabled: event.target.checked })} /> Rityta</label>
+        </div>
+      })}
+    </fieldset>
+    <details className="mt-2 text-sm">
+      <summary className="font-semibold">Lägg till egen skrivfråga</summary>
+      <label className="block">Frågetext<textarea value={customPrompt} maxLength={2000} onChange={event => setCustomPrompt(event.target.value)} className="mt-1 block w-full rounded border p-1" /></label>
+      <label className="mr-2"><input type="checkbox" checked={customGrid} onChange={event => setCustomGrid(event.target.checked)} /> Räknehäfte till skrivfrågan</label>
+      <label><input type="checkbox" checked={customDrawing} onChange={event => setCustomDrawing(event.target.checked)} /> Rityta till skrivfrågan</label>
+    </details>
     <details className="mt-3 rounded border border-slate-300 bg-white p-3 text-sm">
       <summary className="cursor-pointer font-semibold">Lärarstöd för valda uppgifter</summary>
       <p className="mt-2">Granska uppställningen och fråga eleven. Rätt slutsvar bevisar inte en viss metod. Appens automatiska metodanalys är begränsad.</p>
@@ -170,11 +202,11 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
         </li>)}
       </ol>
     </details>
-    <button type="button" onClick={() => createAssignment()} disabled={!pupils.some(pupil => pupil.studentId === studentId) || !selectedTasks.length || busy}
+    <button type="button" onClick={() => createAssignment()} disabled={!pupils.some(pupil => pupil.studentId === studentId) || (!selectedTasks.length && !customPrompt.trim()) || busy}
       className="mt-3 rounded bg-indigo-600 px-2 py-1 font-semibold text-white disabled:opacity-50">
       {busy ? 'Skapar...' : 'Ge testuppdrag'}
     </button>
-    <button type="button" onClick={() => createAssignment(true)} disabled={!classId || !wholeClassAvailable || !selectedTasks.length || busy}
+    <button type="button" onClick={() => createAssignment(true)} disabled={!classId || !wholeClassAvailable || (!selectedTasks.length && !customPrompt.trim()) || busy}
       className="ml-2 mt-3 rounded bg-indigo-600 px-2 py-1 font-semibold text-white disabled:opacity-50">
       Ge till hela klassen{classStudentCount ? ` (${classStudentCount} elever)` : ''}
     </button>
@@ -184,7 +216,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
       <h3 className="font-semibold">Tilldelningar i klassen</h3>
       <ul className="mt-1 list-inside list-disc">
         {assignments.map(assignment => <li key={assignment.assignmentId}>
-          {assignment.items.length} uppgift{assignment.items.length === 1 ? '' : 'er'} · {assignment.status === 'active' ? 'aktiv' : 'stoppad'} · {assignment.assignmentId}
+          {assignment.titleSv || 'Screening'} · {assignment.items.length} uppgift{assignment.items.length === 1 ? '' : 'er'} · {assignment.status === 'active' ? 'aktiv' : 'stoppad'} · {assignment.assignmentId}
         </li>)}
       </ul>
     </div>}

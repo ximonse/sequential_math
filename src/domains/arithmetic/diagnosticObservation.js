@@ -21,8 +21,9 @@ export function summarizeDiagnosticObservation(task, snapshot) {
     throw new Error('Diagnostic task and grid version do not match')
   }
   const grid = replayDiagnosticGrid(snapshot)
-  const expected = expectedAnswer(task)
-  if (!Number.isSafeInteger(expected)) throw new Error('Diagnostic answer is outside the safe integer range')
+  const manual = task.answerType === 'text' || task.answerRule === 'teacher_review'
+  const expected = manual ? null : expectedAnswer(task)
+  if (!manual && !Number.isSafeInteger(expected)) throw new Error('Diagnostic answer is outside the safe integer range')
   const answer = grid.answer.trim()
   const completeAnswer = /^[−-]?\d+$/u.test(answer)
   const lastAnswerEvent = [...grid.events].reverse().find(event => event.type === 'answer_change')
@@ -36,10 +37,10 @@ export function summarizeDiagnosticObservation(task, snapshot) {
     submitted: grid.status === 'submitted',
     explicitAnswer: answer || null,
     expectedAnswer: expected,
-    answerStatus: !answer ? 'unanswered' : !completeAnswer ? 'incomplete'
+    answerStatus: !answer ? 'unanswered' : manual ? 'unassessed' : !completeAnswer ? 'incomplete'
       : Number(answer.replace('−', '-')) === expected ? 'correct' : 'incorrect',
     answerEventId: lastAnswerEvent?.eventId || null,
     finalOccupiedCells: finalCells.length,
-    hasWorkHistory: grid.events.some(event => ['write', 'erase', 'reclassify', 'cross_out', 'line_add'].includes(event.type))
+    hasWorkHistory: grid.events.some(event => ['write', 'erase', 'reclassify', 'cross_out', 'line_add', 'drawing_stroke'].includes(event.type))
   }
 }

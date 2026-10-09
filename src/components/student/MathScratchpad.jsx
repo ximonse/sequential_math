@@ -8,10 +8,11 @@ const GRID_STEP_Y = 118
 const BASE_WIDTH = 740
 const BASE_HEIGHT = Math.round(BASE_WIDTH * CANVAS_RATIO)
 
-function MathScratchpad({ visible }) {
+function MathScratchpad({ visible, strokes = null, onStroke = null, readOnly = false }) {
   const canvasRef = useRef(null)
   const containerRef = useRef(null)
   const drawingRef = useRef(false)
+  const strokeRef = useRef([])
   const [isErasing, setIsErasing] = useState(false)
   const [canvasSize, setCanvasSize] = useState({
     width: BASE_WIDTH,
@@ -46,7 +47,24 @@ function MathScratchpad({ visible }) {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     drawGrid(ctx, canvas.width, canvas.height)
-  }, [visible, canvasSize.width, canvasSize.height])
+    for (const stroke of strokes || []) {
+      ctx.strokeStyle = stroke.erasing ? '#ffffff' : '#1f2937'
+      ctx.lineWidth = stroke.erasing ? 18 : 2.8
+      ctx.lineCap = 'round'
+      ctx.lineJoin = 'round'
+      ctx.beginPath()
+      stroke.points.forEach(([x, y], index) => {
+        const px = x * canvas.width, py = y * canvas.height
+        if (index === 0) ctx.moveTo(px, py)
+        else ctx.lineTo(px, py)
+      })
+      if (stroke.points.length === 1) {
+        const [x, y] = stroke.points[0]
+        ctx.lineTo(x * canvas.width + 0.1, y * canvas.height + 0.1)
+      }
+      ctx.stroke()
+    }
+  }, [visible, canvasSize.width, canvasSize.height, strokes])
 
   if (!visible) return null
 
@@ -64,12 +82,14 @@ function MathScratchpad({ visible }) {
   }
 
   const beginStroke = (event) => {
+    if (readOnly) return
     event.preventDefault()
     const canvas = canvasRef.current
     canvas.setPointerCapture?.(event.pointerId)
     const ctx = canvas.getContext('2d')
     const point = getPoint(event)
     drawingRef.current = true
+    strokeRef.current = [[clamp(point.x / canvas.width, 0, 1), clamp(point.y / canvas.height, 0, 1)]]
     ctx.beginPath()
     ctx.moveTo(point.x, point.y)
   }
@@ -80,6 +100,13 @@ function MathScratchpad({ visible }) {
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     const point = getPoint(event)
+    if (onStroke) {
+      strokeRef.current.push([clamp(point.x / canvas.width, 0, 1), clamp(point.y / canvas.height, 0, 1)])
+      if (strokeRef.current.length === 200) {
+        onStroke({ points: strokeRef.current, erasing: isErasing })
+        strokeRef.current = [strokeRef.current.at(-1)]
+      }
+    }
 
     ctx.lineWidth = isErasing ? 18 : 2.8
     ctx.lineCap = 'round'
@@ -90,10 +117,14 @@ function MathScratchpad({ visible }) {
   }
 
   const endStroke = () => {
+    if (drawingRef.current && onStroke && strokeRef.current.length) onStroke({ points: strokeRef.current, erasing: isErasing })
     drawingRef.current = false
+    strokeRef.current = []
   }
 
   const clearCanvas = () => {
+    if (readOnly) return
+    if (onStroke) return
     const canvas = canvasRef.current
     const ctx = canvas.getContext('2d')
     ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -104,7 +135,7 @@ function MathScratchpad({ visible }) {
     <div className="mt-6 w-full max-w-2xl rounded-xl bg-white shadow border border-gray-200 p-3">
       <div className="flex items-center justify-between mb-2">
         <p className="text-sm font-medium text-gray-700">Rityta</p>
-        <div className="flex gap-2">
+        {!readOnly && <div className="flex gap-1">
           <button
             type="button"
             onClick={() => setIsErasing(false)}
@@ -119,14 +150,14 @@ function MathScratchpad({ visible }) {
           >
             Sudd
           </button>
-          <button
+          {!onStroke && <button
             type="button"
             onClick={clearCanvas}
             className="px-3 py-1 rounded text-xs bg-gray-800 text-white"
           >
             Rensa
-          </button>
-        </div>
+          </button>}
+        </div>}
       </div>
       <div ref={containerRef} className="w-full">
         <canvas
@@ -134,11 +165,13 @@ function MathScratchpad({ visible }) {
           width={canvasSize.width}
           height={canvasSize.height}
           className="w-full rounded border border-gray-300 bg-white touch-none"
+          aria-label="Rityta"
           style={{ touchAction: 'none', aspectRatio: `1 / ${CANVAS_RATIO}` }}
           onPointerDown={beginStroke}
           onPointerMove={drawStroke}
           onPointerUp={endStroke}
           onPointerLeave={endStroke}
+          onPointerCancel={endStroke}
         />
       </div>
     </div>

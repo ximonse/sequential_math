@@ -32,6 +32,17 @@ beforeEach(async () => {
 })
 
 describe('revision-bound diagnostic teacher reviews', () => {
+  it('publishes only explicit pupil feedback and preserves it across internal note edits', async () => {
+    const first = await saveDiagnosticReview(record, { ...input, publishFeedback: true,
+      feedbackText: 'Visa hur du växlade.' }, 'ADMIN', { store: kv, now: 123 })
+    expect(first.feedback).toEqual({ text: 'Visa hur du växlade.', publishedAt: 123,
+      evidenceRevision: 2, evidenceSequence: 3 })
+    const next = await saveDiagnosticReview(record, { ...input, expectedReviewRevision: 1,
+      note: 'Private internal note.' }, 'ADMIN', { store: kv })
+    expect(next.feedback).toEqual(first.feedback)
+    await expect(saveDiagnosticReview({ ...record, status: 'in_progress' }, { ...input,
+      publishFeedback: true, feedbackText: 'Text' }, 'ADMIN', { store: kv })).rejects.toMatchObject({ status: 400 })
+  })
   it('persists shared review metadata without mutating pupil evidence', async () => {
     const review = await saveDiagnosticReview(record, input, 'ADMIN', { store: kv, now: 123 })
     expect(await kv.get('diagnostic_review:TRY')).toEqual(review)

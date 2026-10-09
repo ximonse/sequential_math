@@ -136,3 +136,16 @@
 .diagnostic-context-menu button {
   text-align: left;
 }
+
+.diagnostic-prototype { padding: 0.5rem 0.75rem 1rem; }
+.diagnostic-prototype button { padding: 0.2rem 0.45rem; border-radius: 0.35rem; }
+.diagnostic-prototype > section { padding: 0.5rem; border-radius: 0.5rem; margin-top: 0.5rem; }
+.diagnostic-workspace { display: flex; align-items: flex-start; gap: 0.5rem; }
+.diagnostic-keypad { display: grid; grid-template-columns: repeat(3, 2.5rem); gap: 0.2rem; flex-shrink: 0; }
+.diagnostic-keypad button { min-height: 2.5rem; font-size: 1.25rem; }
+.diagnostic-instructions { padding: 0.5rem; }
+.diagnostic-answer-row { max-width: 27rem; }
+@media (max-width: 600px) {
+  .diagnostic-workspace { flex-direction: column; }
+  .diagnostic-keypad { grid-template-columns: repeat(6, minmax(2rem, 1fr)); width: 100%; margin-top: 0.25rem; }
+}

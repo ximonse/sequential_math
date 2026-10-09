@@ -162,3 +162,7 @@ export function openStudentDiagnosticAttempt(assignmentId, assignmentItemId) {
 export function appendStudentDiagnosticAttempt(attemptId, expectedRevision, events) {
   return postStudentDiagnostic({ action: 'append', attemptId, expectedRevision, events })
 }
+
+export function submitStudentDiagnosticCollection(assignmentId, attempts) {
+  return postStudentDiagnostic({ action: 'submit_collection', assignmentId, attempts })
+}

@@ -19,7 +19,7 @@ test('An admin assigns one diagnostic to the whole selected class and each pupil
   await expect(publish).toBeEnabled()
   await expect(panel.getByRole('combobox', { name: 'Elev', exact: true })).toHaveValue('')
   await panel.getByRole('combobox', { name: 'Diagnospaket', exact: true }).selectOption('written-addition')
-  await expect(panel.getByRole('checkbox', { checked: true })).toHaveCount(6)
+  await expect(panel.locator('fieldset').first().getByRole('checkbox', { checked: true })).toHaveCount(6)
   await expect(panel.getByText(/Valda uppgifter: 6/)).toBeVisible()
   await publish.click()
   await expect(panel.getByText('Uppdraget är tilldelat hela klassen (2 elever).', { exact: true })).toBeVisible()
@@ -28,17 +28,17 @@ test('An admin assigns one diagnostic to the whole selected class and each pupil
     const context = await browser.newContext()
     const student = await context.newPage()
     await login(student, pupil)
-    const task = student.getByRole('button', { name: 'Räkna ut 268 + 431.', exact: true })
+    const task = student.getByRole('button', { name: 'Screening', exact: true })
     if (pupil === outsider) await expect(task).toHaveCount(0)
     else {
-      for (const label of ['Räkna ut 268 + 431.', 'Räkna ut 352 + 426.', 'Räkna ut 248 + 327.',
-        'Räkna ut 283 + 462.', 'Räkna ut 357 + 268.', 'Räkna ut 587 + 246.']) {
-        await expect(student.getByRole('button', { name: label, exact: true })).toBeVisible()
-      }
-      await expect(student.getByRole('button', { name: 'Räkna ut 402 − 178.', exact: true })).toHaveCount(0)
       await expect(task).toBeVisible()
       await task.click()
-      await expect(student.getByRole('heading', { name: 'Räkna ut 268 + 431.', exact: true })).toBeVisible()
+      for (const [index, label] of ['Räkna ut 268 + 431.', 'Räkna ut 352 + 426.', 'Räkna ut 248 + 327.',
+        'Räkna ut 283 + 462.', 'Räkna ut 357 + 268.', 'Räkna ut 587 + 246.'].entries()) {
+        await expect(student.getByRole('heading', { name: label, exact: true })).toBeVisible()
+        if (index < 5) await student.getByRole('button', { name: 'Nästa fråga', exact: true }).click()
+      }
+      await expect(student.getByRole('button', { name: 'Nästa fråga', exact: true })).toHaveCount(0)
     }
     await context.close()
   }

@@ -5,6 +5,7 @@ import { STUDENT_CAS_SCRIPT } from '../api/_studentStore.js'
 import { CREATE_DIAGNOSTIC_ASSIGNMENT_SCRIPT, OPEN_DIAGNOSTIC_ATTEMPT_SCRIPT } from '../api/_diagnosticAssignmentStore.js'
 import { DIAGNOSTIC_APPEND_CAS_SCRIPT } from '../api/_diagnosticAttemptStore.js'
 import { DIAGNOSTIC_REVIEW_CAS_SCRIPT } from '../api/_diagnosticReviewStore.js'
+import { SUBMIT_DIAGNOSTIC_COLLECTION_SCRIPT } from '../api/_diagnosticCollectionStore.js'
 import { BEGIN_PUPIL_LIFECYCLE_SCRIPT, FINISH_PUPIL_LIFECYCLE_SCRIPT } from '../api/_pupilLifecycle.js'
 import { PUPIL_REFERENCE_WRITE_SCRIPT, GUARDED_PUPIL_KEY_SCRIPT, removePupilReferences } from '../api/_pupilReferenceWrite.js'
 
@@ -34,6 +35,33 @@ export const kv = {
   async sadd(key, ...members) { const set = sets.get(key) || new Set(); sets.set(key, set); let n = 0; for (const m of members.flat()) { if (!set.has(m)) { set.add(m); n++ } } return n },
   async srem(key, ...members) { const set = sets.get(key); if (!set) return 0; let n = 0; for (const m of members.flat()) if (set.delete(m)) n++; return n },
   async eval(script, keys = [], args = []) {
+    if (script === SUBMIT_DIAGNOSTIC_COLLECTION_SCRIPT) {
+      const [deleted, legacyDeleted, classDeleted, classKey, assignmentKey, pupilKey] = keys
+      const [studentId, raw] = args
+      const proposals = parse(raw), assignment = values.get(assignmentKey), pupil = values.get(pupilKey)
+      if ([deleted, legacyDeleted, classDeleted].some(key => values.has(key))
+        || !values.get(classKey) || values.get(classKey).archived || !pupil || !assignment
+        || assignment.status !== 'active' || assignment.evidenceClass !== 'diagnostic_only'
+        || assignment.items.length !== proposals.length || !assignment.studentIds.includes(studentId)
+        || (pupil.classId !== assignment.classId && !pupil.classIds?.includes(assignment.classId))) return -1
+      for (const [i, proposal] of proposals.entries()) {
+        const record = values.get(keys[6 + 2*i]), item = assignment.items[i]
+        if (!record) return -2
+        if (record.studentId !== studentId || record.assignmentId !== assignment.assignmentId
+          || record.assignmentItemId !== item.assignmentItemId || record.taskId !== item.taskId
+          || record.taskVersion !== item.taskVersion || record.classIdAtAttempt !== assignment.classId
+          || record.evidenceClass !== 'diagnostic_only') return -1
+        if (record.serverRevision !== proposal.revision || record.lastSequence !== proposal.sequence
+          || (values.get(keys[7 + 2*i]) || []).length !== proposal.sequence
+          || (proposal.next && record.status !== 'in_progress')) return -2
+      }
+      for (const [i, proposal] of proposals.entries()) if (proposal.next) {
+        const events = values.get(keys[7 + 2*i]) || []
+        values.set(keys[7 + 2*i], [...events, parse(proposal.eventJson)])
+        values.set(keys[6 + 2*i], parse(proposal.nextJson))
+      }
+      return 1
+    }
     if (script === DIAGNOSTIC_REVIEW_CAS_SCRIPT) {
       const [attemptKey, reviewKey, deletedKey, legacyDeletedKey, classDeletedKey, pupilKey, classKey, assignmentKey] = keys
       const [revision, sequence, reviewRevision, studentId, json] = args

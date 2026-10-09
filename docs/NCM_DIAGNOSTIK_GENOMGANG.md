@@ -128,3 +128,50 @@ hela robotsviten med 81 godkända fall och 0 regelbrott. Uppdragsvalet ligger
 kvar vid byte mellan Dela ut och Grupp. Skärmbilder av den faktiska matrisen,
 hoverinformationen och genomgångsöverlägget har granskats. Ej pushat eller
 publicerat.
+
+## Samlingar och arbetsytor – lokalt ändringssjok 2026-10-09
+
+Detta avsnitt ersätter äldre beskrivningar av enskild frågeinlämning för den
+nya lokala versionen. Det innebär inte att ändringarna är publicerade.
+
+- Läraren namnger en samling, väljer frågor och anger siffer-/skrivsvar,
+  räknehäfte och/eller rityta per fråga. En egen skrivfråga kan också läggas
+  till. Valen fryses i samlingens uppgiftssnapshots.
+- Aktiva, ej inlämnade samlingar syns direkt på elevens översikt. Inlämnade
+  samlingar finns i dropdown med status Inlämnad eller Återkoppling finns.
+- Svara och Spara arbetet sparar utan att låsa. Förra/Nästa fråga sparar
+  aktuell fråga innan navigation. Eleven kan ändra tills samlingen lämnas in.
+- Lämna in svaren sparar först kvarvarande arbetskopior, varnar för frågor
+  utan slutsvar och fryser hela samlingen i en gemensam revisionskontrollerad
+  transaktion. Bekräftad inlämning är skrivskyddad; återlämning/redigerings-
+  revisioner är inte införda. Nätfel eller konflikt får inte frysa halva
+  samlingen. Tidigare frysta original lämnas oförändrade.
+- Räknehäftet har fasta sifferknappar utan systemets numeriska tangentbord,
+  svarsfält direkt under nätet, kompakt knapppadding och formaterad hjälp.
+  Suddverktyget raderar genom dutt eller drag; nya dragna streck ligger på
+  rutgränserna. Äldre originals streck flyttas inte. Resultatanalys v2 känner
+  även igen ett entydigt nytt rutgränsstreck.
+- Rit- och suddstreck sparas som normaliserade punkter i händelsehistoriken
+  och visas i lärarens återspelning. Textsvar rättas inte automatiskt och
+  räknas inte som felaktiga numeriska svar eller vanlig mastery.
+- Elevsynlig återkoppling har ett separat textfält. Skicka återkoppling
+  publicerar uttryckligen texten för det aktuella inlämnade originalet.
+  Intern läraranteckning och genomgångsmarkering blir aldrig elevfeedback.
+  Äldre/stale återkoppling visas inte på en annan elevrevision.
+- Samlingsinlämning använder `_diagnosticCollectionStore.js`. Alla revisioner,
+  medlemskap, frysta uppgiftsidentiteter och tombstones kontrolleras innan
+  första skrivningen. Lua skriver ursprungliga JSON-strängar för att bevara
+  tomma arrayer och händelsernas exakta innehåll. Lokala tester emulerar Redis;
+  den nya Lua-transaktionen har ännu inte provats mot verklig Redis.
+
+Issue #13 gäller framtida val av ritytemönster: högställda rektanglar,
+kvadratiska rutor eller olinjerat. Mönsterväljaren byggs inte i detta sjok.
+
+Slutkontroll lokalt: 140 testfiler/671 tester, build, riktad lint och hela
+robotsviten 83/83 med 0 regelbrott. Renderad iPad-layout granskad. Kontroller
+täcker dutt/drag-sudd, faktisk linjegeometri, lärarvalda arbetsytor,
+återläst skriv-/ritoriginal, explicit återkoppling utan privat textläckage,
+obesvarat-varning, nätavbrott och atomisk inlämning. Ett fullt original med
+1024 händelser tillåter exakt en avslutande submit-händelse, inte fortsatt
+skrivande. Verklig Redis för nya samlingstransaktionen och fysisk iPad med
+den nya versionen återstår. Inget i detta sjok är pushat eller publicerat.

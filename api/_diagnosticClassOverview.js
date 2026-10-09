@@ -43,5 +43,6 @@ export async function diagnosticClassOverview(assignment, studentIds, { store = 
       reviewed: items.filter(item => item.reviewed).length,
       status: submitted === items.length ? 'submitted' : started ? 'in_progress' : 'not_started' }
   }))
-  return { items: assignment.items.map(item => ({ assignmentItemId: item.assignmentItemId, taskId: item.taskId, promptSv: item.taskSnapshot.promptSv })), rows }
+  return { items: assignment.items.map(item => ({ assignmentItemId: item.assignmentItemId, taskId: item.taskId,
+    promptSv: item.taskSnapshot.promptSv, ...(item.taskSnapshot.answerType === 'text' ? { answerType: 'text' } : {}) })), rows }
 }

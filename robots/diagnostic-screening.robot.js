@@ -21,15 +21,17 @@ test('Screening matrix shows server answers, evidence-backed hover and a touch-a
     const context = await browser.newContext()
     const student = await context.newPage()
     await login(student, pupil)
-    await student.getByRole('button', { name: task.promptSv, exact: true }).click()
+    await student.getByRole('button', { name: 'Screening', exact: true }).click()
     const result = index ? '376' : '224'
     if (index) {
       const rows = [{ 5: '4', 6: '0', 7: '2' }, { 4: '−', 5: '1', 6: '7', 7: '8' }, { 4: '─', 5: '─', 6: '─', 7: '─' }, { 5: '3', 6: '7', 7: '6' }]
-      for (const [row, cells] of rows.entries()) for (const [column, digit] of Object.entries(cells)) await student.locator(`input[data-cell="${row}:${column}"]`).fill(digit)
+      for (const [row, cells] of rows.entries()) for (const [column, digit] of Object.entries(cells)) {
+        await student.locator(`input[data-cell="${row}:${column}"]`).press(digit === '−' ? '-' : digit === '─' ? '=' : digit)
+      }
     }
-    await student.getByRole('textbox', { name: 'Mitt svar', exact: true }).fill(result)
-    await student.getByRole('button', { name: 'Lämna in svaret', exact: true }).click()
-    await expect(student.getByRole('button', { name: 'Till min översikt', exact: true })).toBeEnabled()
+    await student.getByRole('textbox', { name: 'Mitt svar', exact: true }).pressSequentially(result)
+    await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
+    await expect(student.getByText('Samlingen är inlämnad.')).toBeVisible()
     await context.close()
   }
   await page.reload()

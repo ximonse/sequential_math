@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import taskManifest from '../domains/arithmetic/diagnosticTasks.v1.json'
 import {
   createDiagnosticGrid,
@@ -7,6 +7,8 @@ import {
 } from '../domains/arithmetic/diagnosticGridModel'
 import { exceedsDiagnosticAttemptQuota, isDiagnosticAttemptFull } from '../domains/arithmetic/diagnosticAttemptAppend'
 import DiagnosticGridLines from './DiagnosticGridLines'
+import { lineTouchesPoint } from '../domains/arithmetic/diagnosticLineGeometry'
+import MathScratchpad from '../components/student/MathScratchpad'
 import './diagnosticGridPrototype.css'
 
 const TASKS = taskManifest.tasks
@@ -17,10 +19,10 @@ const DRAG_PX = 12
 function lineBetween(from, to, horizontalOnly = false) {
   const axis = horizontalOnly || Math.abs(to.column - from.column) >= Math.abs(to.row - from.row)
     ? 'horizontal' : 'vertical'
-  if (axis === 'horizontal') return { axis,
+  if (axis === 'horizontal') return { axis, placement: 'grid-border',
     from: { row: from.row, column: Math.min(from.column, to.column) },
     to: { row: from.row, column: Math.max(from.column, to.column) } }
-  return { axis,
+  return { axis, placement: 'grid-border',
     from: { row: Math.min(from.row, to.row), column: from.column },
     to: { row: Math.max(from.row, to.row), column: from.column } }
 }
@@ -29,11 +31,12 @@ function newGrid(task) {
   return createDiagnosticGrid({
     attemptId: `prototype:${crypto.randomUUID()}`,
     taskId: task.taskId,
-    taskVersion: task.taskVersion
+    taskVersion: task.taskVersion, answerType: task.answerType || 'number'
   })
 }
 
-function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = null, saveState = null, onNext = null, nextLabel = 'Nästa fråga' }) {
+function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = null, saveState = null,
+  onNext = null, onPrevious = null, onSubmitCollection = null, collectionTitle = '', questionIndex = 1, questionCount = 1 }) {
   const availableTasks = pilot ? [pilot.task] : TASKS
   const [task, setTask] = useState(pilot?.task || TASKS[0])
   const [grid, setGrid] = useState(() => pilot?.snapshot || newGrid(TASKS[0]))
@@ -45,21 +48,27 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const [dragPreview, setDragPreview] = useState('')
   const [linePreview, setLinePreview] = useState(null)
   const [lineMode, setLineMode] = useState(false)
+  const [eraseMode, setEraseMode] = useState(false)
+  const [inputTarget, setInputTarget] = useState(pilot?.task.gridEnabled === false ? 'answer' : 'grid')
   const [contextMenu, setContextMenu] = useState(null)
+  const isPilot = Boolean(pilot)
+  const submitting = Boolean(saveState?.submitting)
+  const editingLocked = grid.status === 'submitted' || submitting
 
   useEffect(() => { onGridChange?.(grid.events.length, grid) }, [grid, onGridChange])
 
-  function record(actionOrBuilder) {
+  const record = useCallback((actionOrBuilder) => {
+    if (submitting) return
     const timestamp = Date.now()
     setGrid(previous => {
       if (previous.status === 'submitted') return previous
-      if (pilot && isDiagnosticAttemptFull(previous.events)) return previous
+      if (isPilot && isDiagnosticAttemptFull(previous.events)) return previous
       const action = typeof actionOrBuilder === 'function' ? actionOrBuilder(previous) : actionOrBuilder
       if (!action) return previous
       const next = recordDiagnosticGridEvent(previous, action, timestamp)
-      return pilot && exceedsDiagnosticAttemptQuota(next.events) ? previous : next
+      return isPilot && exceedsDiagnosticAttemptQuota(next.events) ? previous : next
     })
-  }
+  }, [isPilot, submitting])
 
   useEffect(() => {
     const activeElement = document.activeElement
@@ -84,7 +93,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       window.removeEventListener('blur', onBlur)
       document.removeEventListener('visibilitychange', onVisibility)
     }
-  }, [grid.status])
+  }, [grid.status, record])
 
   function chooseTask(nextTask) {
     gridsRef.current.set(task.taskId, grid)
@@ -173,6 +182,15 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
 
   function startGesture(event, row, column) {
     setContextMenu(null)
+    setInputTarget('grid')
+    if (eraseMode) {
+      event.preventDefault()
+      stopGesture()
+      gestureRef.current = { erasing: true, pointerId: event.pointerId, lastX: event.clientX, lastY: event.clientY }
+      try { event.currentTarget.setPointerCapture?.(event.pointerId) } catch { /* Synthetic event. */ }
+      eraseAtPoint(event.clientX, event.clientY)
+      return
+    }
     selectCell(row, column)
     if (lineMode) event.preventDefault()
     if (event.pointerType === 'mouse' && !lineMode) return
@@ -192,6 +210,15 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   function moveGesture(event) {
     const gesture = gestureRef.current
     if (!gesture || event.pointerId !== gesture.pointerId) return
+    if (gesture.erasing) {
+      const steps = Math.max(1, Math.ceil(Math.hypot(event.clientX - gesture.lastX, event.clientY - gesture.lastY) / 8))
+      for (let step = 1; step <= steps; step++) eraseAtPoint(
+        gesture.lastX + (event.clientX - gesture.lastX) * step / steps,
+        gesture.lastY + (event.clientY - gesture.lastY) * step / steps)
+      gesture.lastX = event.clientX
+      gesture.lastY = event.clientY
+      return
+    }
     const distance = Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y)
     if (gesture.cancelled) {
       const scroller = gridRef.current?.parentElement
@@ -218,6 +245,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   function finishGesture(event) {
     const gesture = gestureRef.current
     if (!gesture || event.pointerId !== gesture.pointerId) return
+    if (gesture.erasing) { eraseAtPoint(event.clientX, event.clientY); stopGesture(); return }
     const position = { row: gesture.row, column: gesture.column }
     const held = gesture.held && !gesture.cancelled
     const dragged = gesture.dragged
@@ -243,6 +271,32 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       const after = layer === 'note' && !clear ? before.slice(0, -1) : ''
       return before ? { type: 'erase', position: { row, column }, layer, before, after } : null
     })
+  }
+
+  function eraseAtPoint(x, y) {
+    const bounds = gridRef.current?.getBoundingClientRect()
+    if (!bounds || x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom) return
+    const point = { row: (y - bounds.top) / (bounds.height / grid.rows),
+      column: (x - bounds.left) / (bounds.width / grid.columns) }
+    const position = cellAtPoint(x, y)
+    record(previous => {
+      const line = previous.lines?.find(item => lineTouchesPoint(item, point))
+      if (line) return { type: 'line_remove', lineId: line.id }
+      const cell = previous.cells[`${position.row}:${position.column}`]
+      const layer = cell?.note ? 'note' : 'main'
+      return cell?.[layer] ? { type: 'erase', position, layer, before: cell[layer], after: '' } : null
+    })
+  }
+
+  function changeAnswer(after) {
+    if (task.answerType === 'text' ? after.length > 2000 : !/^[−-]?\d{0,12}$/u.test(after)) return
+    record(previous => previous.answer === after ? null : { type: 'answer_change', before: previous.answer, after })
+  }
+
+  function keypad(character) {
+    if (inputTarget === 'answer') changeAnswer(character === 'erase' ? grid.answer.slice(0, -1) : `${grid.answer}${character}`)
+    else if (character === 'erase') eraseCell()
+    else writeCell(character)
   }
 
   function writeCell(character) {
@@ -360,8 +414,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
 
   return (
     <main className="diagnostic-prototype mx-auto max-w-5xl px-4 pb-12 pt-5">
-      <header className="mb-5">
-        <p className="text-sm font-semibold uppercase tracking-wide text-slate-600">{pilot ? 'Ditt testuppdrag' : 'Isolerad utvecklingsprototyp'}</p>
+      <header className="mb-2">
+        <p className="text-sm font-semibold text-slate-600">{pilot ? `${collectionTitle || 'Din samling'} · Fråga ${questionIndex} av ${questionCount}` : 'Isolerad utvecklingsprototyp'}</p>
         <h1 className="text-3xl font-bold">Digitalt räknehäfte</h1>
         <p className="mt-2 text-slate-700">{pilot ? 'Arbetet sparas automatiskt efter en kort paus. Kontrollera sparstatus innan du lämnar sidan.' : 'Ingen elevdata sparas. Här prövas endast inmatning och återspelning.'}</p>
       </header>
@@ -379,11 +433,11 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
         ))}
       </div>}
 
-      <section className="rounded-2xl border border-orange-300 bg-orange-50 p-4 shadow-sm sm:p-6">
+      <section className="rounded-lg border border-orange-300 bg-orange-50 p-2 shadow-sm">
         <p className="text-sm text-slate-600">Uppgift {task.taskId}, version {task.taskVersion}</p>
         <h2 className="mt-1 text-2xl font-semibold">{task.promptSv}</h2>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2" role="group" aria-label="Räknetecken">
+        <div className={task.gridEnabled === false ? 'hidden' : 'mt-3 flex flex-wrap items-center gap-2'} role="group" aria-label="Räknetecken">
           {OPERATION_SIGNS.map(sign => <button key={sign} type="button"
             aria-label={`Skriv ${sign}`}
             onClick={() => writeOperationSign(sign)}
@@ -391,13 +445,23 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             className="diagnostic-sign-button rounded-lg border border-orange-400 bg-white font-semibold text-orange-950 disabled:opacity-50">
             {sign}
           </button>)}
-          <button type="button" aria-label="Streckläge" aria-pressed={lineMode} onClick={() => setLineMode(current => !current)}
+          <button type="button" aria-label="Streckläge" aria-pressed={lineMode} onClick={() => { setLineMode(current => !current); setEraseMode(false) }}
             disabled={grid.status === 'submitted' || attemptFull}
             className={`diagnostic-line-button rounded-lg border px-2 font-semibold ${lineMode ? 'border-orange-700 bg-orange-700 text-white' : 'border-orange-400 bg-white text-orange-950'} disabled:opacity-50`}>
             {lineMode ? '✓ Streck' : 'Streck'}
           </button>
+          <button type="button" aria-label="Suddverktyg" aria-pressed={eraseMode}
+            disabled={grid.status === 'submitted' || attemptFull}
+            onClick={() => { setEraseMode(current => !current); setLineMode(false) }}
+            className={`rounded border px-2 py-1 font-semibold ${eraseMode ? 'border-orange-700 bg-orange-700 text-white' : 'border-orange-400 bg-white text-orange-950'}`}>
+            <svg className="mr-1 inline-block h-4 w-4" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 14 10-10 8 8-9 9H8zM8 9l8 8M12 21h10" fill="none" stroke="currentColor" strokeWidth="2" /></svg>
+            Sudd
+          </button>
         </div>
 
+        <div className="diagnostic-workspace">
+        <div className="min-w-0">
+        <div hidden={task.gridEnabled === false}>
         <div className="mt-3 overflow-x-auto pb-2">
           <div ref={gridRef} className="diagnostic-grid" role="group" aria-label="Rutat räknehäfte">
             <DiagnosticGridLines lines={grid.lines} preview={linePreview} rows={grid.rows} columns={grid.columns} />
@@ -409,7 +473,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
                 <div key={`${row}:${column}`} className={`diagnostic-cell diagnostic-cell--${layer} ${selected ? 'diagnostic-cell--selected' : ''} ${dragPreview === `${row}:${column}` ? 'diagnostic-cell--drag-preview' : ''}`}>
                   <input
                     type="text"
-                    inputMode="numeric"
+                    inputMode="none"
+                    readOnly
                     autoComplete="off"
                     autoCorrect="off"
                     autoCapitalize="off"
@@ -437,7 +502,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
                       writeCell(entered === '-' ? '−' : entered === '*' ? '×' : entered === '=' ? '─' : entered)
                     }}
                     onKeyDown={handleKeyDown}
-                    disabled={grid.status === 'submitted'}
+                    disabled={editingLocked}
                   />
                   {cell.main && <span className={`diagnostic-cell__digit diagnostic-cell__digit--main ${cell.main.length > 1 ? 'diagnostic-cell__digit--double' : ''} ${cell.struck ? 'diagnostic-cell__digit--struck' : ''}`}>{cell.main}</span>}
                   {cell.note && <span className={`diagnostic-cell__digit diagnostic-cell__digit--note ${cell.struck ? 'diagnostic-cell__digit--struck' : ''}`}>{cell.note}</span>}
@@ -446,7 +511,36 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             })}
           </div>
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        </div>
+        <div className="diagnostic-answer-row mt-1 flex items-end gap-1">
+          <label className="block min-w-0 flex-1 text-base font-semibold" htmlFor="diagnostic-answer">Mitt svar
+            {task.answerType === 'text' ? <textarea id="diagnostic-answer" maxLength={2000} value={grid.answer}
+              onChange={event => changeAnswer(event.target.value)} disabled={editingLocked}
+              className="mt-1 block min-h-24 w-full rounded border border-slate-500 bg-white px-2 py-1 font-normal" />
+              : <input id="diagnostic-answer" type="text" inputMode="none" readOnly value={grid.answer}
+                onFocus={() => setInputTarget('answer')}
+                onKeyDown={event => {
+                  if (event.ctrlKey || event.metaKey || event.altKey) return
+                  if (event.key === 'Backspace' || event.key === 'Delete') { event.preventDefault(); changeAnswer(event.key === 'Delete' ? '' : grid.answer.slice(0, -1)) }
+                  else if (/^[0-9−-]$/u.test(event.key)) { event.preventDefault(); changeAnswer(`${grid.answer}${event.key}`) }
+                }} disabled={editingLocked}
+                className="mt-1 block w-full rounded border border-slate-500 bg-white px-2 py-1 text-xl font-normal" />}
+          </label>
+          {pilot && <button type="button" onClick={() => onSave?.(grid)} disabled={grid.status === 'submitted' || saveState?.busy || saveState?.conflict}
+            className="rounded bg-blue-700 px-2 py-1 font-semibold text-white disabled:opacity-50">Svara</button>}
+        </div>
+        </div>
+        {task.gridEnabled !== false || task.answerType !== 'text' ? <div className="diagnostic-keypad mt-3" role="group" aria-label="Sifferknappar">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(digit => <button key={digit} type="button" aria-label={`Skriv ${digit}`}
+            onClick={() => keypad(String(digit))} disabled={editingLocked || attemptFull}
+            className="rounded border border-slate-400 bg-white font-semibold text-slate-900 disabled:opacity-50">{digit}</button>)}
+          <button type="button" aria-label="Radera siffra" onClick={() => keypad('erase')} disabled={editingLocked || attemptFull}
+            className="rounded border border-slate-400 bg-white">⌫</button>
+        </div> : null}
+        </div>
+        {task.drawingEnabled && <MathScratchpad visible strokes={grid.drawing} readOnly={editingLocked || attemptFull}
+          onStroke={stroke => record({ type: 'drawing_stroke', ...stroke })} />}
+        <div className={task.gridEnabled === false ? 'hidden' : 'mt-3 flex flex-wrap items-center gap-2'}>
           {formatButton('main', 'Stor (Esc)')}
           {formatButton('note', 'Minnessiffra (N)')}
           <button type="button" onClick={() => { toggleCrossOut(); setContextMenu(null); focusSelectedCell() }}
@@ -464,7 +558,14 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
         <details className="diagnostic-instructions mt-3 rounded-lg border border-orange-300 bg-white p-3 text-sm text-slate-700">
           <summary className="cursor-pointer font-semibold text-orange-950">Visa instruktion och hjälp</summary>
           <p className="mt-3 text-base">{pilot ? pilot.instructionSv : taskManifest.instructionSv}</p>
-          <p className="mt-2">Dutta på en ruta och skriv siffror med enhetens tangentbord. Tryck på ett räknetecken ovan för att skriva det i markerad ruta. Tryck Streck och dra över tomma eller ifyllda rutor för ett vågrätt eller lodrätt streck; ett tryck ger ett kort vågrätt streck. Dra längs ett befintligt streck för att ta bort hela strecket. Tryck Streck igen för att skriva siffror. Du kan också hålla på +, − eller × och dra för ett vågrätt streck. En ny siffra blir stor. Håll och släpp på en siffra för att växla storlek; håll och dra på siffran för att stryka eller ta bort lånestrecket. Knapparna nedanför gör samma sak, och högerklick visar valen på dator. En minnessiffra kan ha två siffror. Pilar eller tabulator flyttar markören. Backspace raderar, Delete tömmer rutan. Svep i sidled om alla kolumner inte syns.</p>
+          <div className="mt-2 space-y-2">
+            <p><strong>Skriv siffror:</strong> Välj en ruta och använd sifferknapparna. Fysiskt tangentbord fungerar också. Välj Mitt svar för att skriva slutsvaret.</p>
+            <p><strong>Minnessiffror och lån:</strong> Använd Minnessiffra och Stryk/låna. Håll och släpp på en siffra för att växla storlek; håll och dra för överstrykning.</p>
+            <p><strong>Streck:</strong> Aktivera Streck och dra. Nya streck följer rutornas gränser. Tryck Streck igen för att skriva.</p>
+            <p><strong>Sudda:</strong> Aktivera sudd-ikonen och dutta eller dra över det du vill ta bort. Stäng av suddet för att skriva igen.</p>
+            <p><strong>Spara och lämna in:</strong> Svara sparar utan att låsa frågan. Du kan gå tillbaka och ändra. Lämna in svaren lämnar in hela samlingen.</p>
+            <p><strong>På dator:</strong> Pilar och tabulator flyttar markören. Backspace raderar. N väljer minnessiffra och X växlar överstrykning.</p>
+          </div>
         </details>
         {contextMenu && <div className="diagnostic-context-menu" role="group" aria-label="Ändra markerad siffra" style={{ left: Math.max(8, contextMenu.x), top: Math.max(8, contextMenu.y) }}>
           {formatButton('main', 'Stor')}
@@ -473,19 +574,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             {selectedCell?.struck ? 'Ta bort streck' : 'Stryk/låna'}
           </button>
         </div>}
-        <p className="mt-2 text-sm text-slate-700">Markerad ruta: rad {grid.cursor.row + 1}, kolumn {grid.cursor.column + 1}, {grid.cursor.layer === 'note' ? 'minnessiffra' : 'stor siffra'}. Händelser: {grid.events.length}.</p>
+        <p hidden={task.gridEnabled === false} className="mt-2 text-sm text-slate-700">Markerad ruta: rad {grid.cursor.row + 1}, kolumn {grid.cursor.column + 1}, {grid.cursor.layer === 'note' ? 'minnessiffra' : 'stor siffra'}. Händelser: {grid.events.length}.</p>
         {attemptFull && <p role="alert" className="mt-2 rounded-lg border border-amber-500 bg-amber-100 p-3 text-amber-950">Räknehäftet är fullt. Du kan inte skriva mer i det här försöket. Det du redan skrivit finns kvar; kontrollera sparstatus nedan.</p>}
-        <label className="mt-4 block text-base font-semibold" htmlFor="diagnostic-answer">Mitt svar</label>
-        <input id="diagnostic-answer" type="text" inputMode="numeric" value={grid.answer}
-          onChange={event => {
-            const after = event.target.value
-            if (!/^[−-]?\d{0,12}$/u.test(after)) return
-            record(previous => previous.answer === after
-              ? null
-              : { type: 'answer_change', before: previous.answer, after })
-          }}
-          disabled={grid.status === 'submitted'}
-          className="mt-1 w-full max-w-xs rounded-lg border border-slate-500 px-3 py-2 text-xl" />
       </section>
 
       <section className="mt-5 rounded-2xl border border-orange-300 bg-orange-50 p-4 sm:p-6">
@@ -493,16 +583,19 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
         <p className="mt-1 text-sm text-slate-700">Räknehäftet bedömer inte om svaret eller metoden är rätt.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {pilot && <button type="button" onClick={() => onSave?.(grid)} disabled={saveState?.busy || saveState?.conflict || grid.events.length <= (saveState?.savedSequence || 0)}
-            className="rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white disabled:opacity-50">{saveState?.busy ? 'Sparar...' : 'Spara arbetet'}</button>}
+            className={`rounded px-2 py-1 font-semibold text-white disabled:opacity-70 ${saveState?.error ? 'bg-red-700' : grid.events.length <= (saveState?.savedSequence || 0) ? 'bg-emerald-700' : 'bg-blue-700'}`}>{saveState?.busy ? 'Sparar...' : 'Spara arbetet'}</button>}
           {!pilot && <button type="button" onClick={showSnapshot} className="rounded-lg bg-blue-700 px-4 py-2 text-white">Visa JSON</button>}
           {!pilot && <button type="button" onClick={reloadSnapshot} disabled={!snapshotText.trim()} className="rounded-lg border border-blue-700 px-4 py-2 text-blue-800 disabled:opacity-50">Återläs JSON</button>}
-          <button type="button" onClick={() => record({ type: 'submit' })} disabled={grid.status === 'submitted'}
-              className="rounded-lg border border-slate-500 px-4 py-2 disabled:opacity-50">{pilot ? 'Lämna in svaret' : 'Frys försöket'}</button>
+          <button type="button" onClick={() => pilot ? onSubmitCollection?.(grid) : record({ type: 'submit' })}
+            disabled={(pilot ? saveState?.collectionSubmitted : grid.status === 'submitted') || saveState?.busy || saveState?.conflict}
+            className={`rounded border px-2 py-1 font-semibold disabled:opacity-50 ${pilot && !onNext ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-500'}`}>{pilot ? 'Lämna in svaren' : 'Frys försöket'}</button>
+          {pilot && onPrevious && <button type="button" onClick={onPrevious} disabled={saveState?.busy || saveState?.conflict}
+            className="rounded border border-blue-700 px-2 py-1 font-semibold text-blue-800 disabled:opacity-50">Förra frågan</button>}
           {pilot && onNext && <button type="button" onClick={onNext}
-            disabled={grid.status !== 'submitted' || saveState?.busy || saveState?.conflict || grid.events.length > (saveState?.savedSequence || 0)}
-            className="rounded-lg bg-blue-700 px-4 py-2 font-semibold text-white disabled:opacity-50">{nextLabel}</button>}
+            disabled={saveState?.busy || saveState?.conflict}
+            className="rounded bg-blue-700 px-2 py-1 font-semibold text-white disabled:opacity-50">Nästa fråga</button>}
         </div>
-        <p className="mt-3 text-sm" role="status">{pilot
+        <p className="mt-2 text-sm" role={saveState?.error ? 'alert' : 'status'}>{pilot
           ? saveState?.busy ? 'Sparar...' : saveState?.error || (grid.events.length > (saveState?.savedSequence || 0)
             ? grid.events.length <= (saveState?.localSequence || 0)
               ? 'Sparat krypterat på den här enheten. Väntar på serverkvittens.'

@@ -88,18 +88,40 @@ const newId = () => randomBytes(16).toString('hex')
 const fail = (status, code, message) => { throw new DiagnosticAppendError(status, code, message) }
 const validId = value => typeof value === 'string' && idPattern.test(value)
 
-export async function createDiagnosticAssignment({ classId, studentIds, taskIds, teacherId },
+export async function createDiagnosticAssignment({ classId, studentIds, taskIds, teacherId,
+  titleSv = '', itemOptions = {}, customTasks = [] },
   { store = kv, makeId = newId } = {}) {
   if (!validId(classId) || !validId(teacherId)
     || !Array.isArray(studentIds) || studentIds.length < 1 || studentIds.length > 100
     || !studentIds.every(validId) || new Set(studentIds).size !== studentIds.length
-    || !Array.isArray(taskIds) || taskIds.length < 1 || taskIds.length > manifest.tasks.length
+    || !Array.isArray(taskIds) || taskIds.length > manifest.tasks.length
+    || !Array.isArray(customTasks) || customTasks.length > 12 || taskIds.length + customTasks.length < 1
+    || typeof titleSv !== 'string' || titleSv.length > 100
+    || !itemOptions || typeof itemOptions !== 'object' || Array.isArray(itemOptions)
     || new Set(taskIds).size !== taskIds.length) fail(400, 'invalid_assignment', 'Invalid diagnostic assignment')
   const tasks = taskIds.map(id => manifest.tasks.find(task => task.taskId === id))
   if (tasks.some(task => !task)) fail(400, 'invalid_task', 'Unknown diagnostic task')
   const assignmentId = makeId()
-  const items = tasks.map(task => ({ assignmentItemId: makeId(), taskId: task.taskId,
-    taskVersion: task.taskVersion, taskSnapshot: structuredClone(task) }))
+  for (const custom of customTasks) {
+    if (typeof custom?.promptSv !== 'string' || !custom.promptSv.trim() || custom.promptSv.length > 2000) {
+      fail(400, 'invalid_task', 'En egen fråga behöver text, högst 2000 tecken.')
+    }
+    const taskId = `custom-${makeId()}`
+    tasks.push({ taskId, taskVersion: 1, promptSv: custom.promptSv.trim(), operation: 'written_response',
+      answerRule: 'teacher_review', answerType: 'text', gridEnabled: custom.gridEnabled ?? false,
+      drawingEnabled: custom.drawingEnabled ?? false })
+  }
+  const items = tasks.map(task => {
+    const options = itemOptions[task.taskId] || {}
+    if (Object.keys(options).some(key => !['answerType', 'gridEnabled', 'drawingEnabled'].includes(key))
+      || (options.answerType !== undefined && !['number', 'text'].includes(options.answerType))
+      || ['gridEnabled', 'drawingEnabled'].some(key => options[key] !== undefined && typeof options[key] !== 'boolean')
+      || ['gridEnabled', 'drawingEnabled'].some(key => task[key] !== undefined && typeof task[key] !== 'boolean')) {
+      fail(400, 'invalid_task_options', 'Ogiltiga svarstyper eller arbetsytor.')
+    }
+    return { assignmentItemId: makeId(), taskId: task.taskId,
+      taskVersion: task.taskVersion, taskSnapshot: { ...structuredClone(task), ...options } }
+  })
   if (![assignmentId, ...items.map(item => item.assignmentItemId)].every(validId)
     || new Set(items.map(item => item.assignmentItemId)).size !== items.length) {
     fail(500, 'id_generation', 'Could not create diagnostic IDs')
@@ -108,7 +130,7 @@ export async function createDiagnosticAssignment({ classId, studentIds, taskIds,
     items, teacherId, status: 'active', evidenceClass: 'diagnostic_only',
     manifestId: manifest.manifestId, manifestVersion: manifest.manifestVersion,
     language: manifest.language, sourceKind: manifest.sourceKind,
-    instructionSv: manifest.instructionSv, createdAt: Date.now() }
+    titleSv: titleSv.trim() || 'Screening', instructionSv: manifest.instructionSv, createdAt: Date.now() }
   const keys = [`diagnostic_assignment:${assignmentId}`, `class_deleted:${classId}`, `class:${classId}`,
     ...studentIds.map(id => `student:${id}`), ...studentIds.map(studentDeletedKey),
     ...studentIds.map(id => `student_deleted:${id}`),
@@ -135,7 +157,8 @@ export async function openDiagnosticAttempt({ assignmentId, assignmentItemId, st
   if (!item || !assignment.studentIds?.includes(studentId)) fail(403, 'not_assigned', 'Pupil is not assigned this task')
   const attemptId = makeId()
   if (!validId(attemptId)) fail(500, 'id_generation', 'Could not create diagnostic attempt ID')
-  const grid = createDiagnosticGrid({ attemptId, taskId: item.taskId, taskVersion: item.taskVersion })
+  const grid = createDiagnosticGrid({ attemptId, taskId: item.taskId, taskVersion: item.taskVersion,
+    answerType: item.taskSnapshot?.answerType || 'number' })
   const record = { attemptId, studentId, assignmentId, assignmentItemId,
     classIdAtAttempt: assignment.classId, taskId: item.taskId, taskVersion: item.taskVersion,
     evidenceClass: 'diagnostic_only', serverRevision: 0, lastSequence: 0,

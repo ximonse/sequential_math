@@ -3,6 +3,7 @@ import { withCors } from '../_helpers.js'
 import { openDiagnosticAttempt } from '../_diagnosticAssignmentStore.js'
 import { appendDiagnosticAttempt, readDiagnosticAttempt } from '../_diagnosticAttemptStore.js'
 import { assertDiagnosticPupilAccess, diagnosticApiEnabled, diagnosticTestStudentAllowed } from '../_diagnosticApiAccess.js'
+import { submitDiagnosticCollection } from '../_diagnosticCollectionStore.js'
 
 export default async function handler(req, res) {
   withCors(res, { methods: 'GET,POST,OPTIONS', headers: 'Content-Type,x-csrf-token' }, req)
@@ -17,6 +18,12 @@ export default async function handler(req, res) {
     }
     if (!diagnosticTestStudentAllowed(live.profile.studentId)) {
       return res.status(404).json({ error: 'Diagnostic pilot is unavailable' })
+    }
+    if (req.method === 'POST' && req.body?.action === 'submit_collection') {
+      if (!/^[A-Za-z0-9_-]{1,128}$/u.test(req.body?.assignmentId || '')) return res.status(400).json({ error: 'Invalid assignment ID' })
+      const submitted = await submitDiagnosticCollection({ assignmentId: req.body.assignmentId,
+        studentId: live.profile.studentId, attempts: req.body.attempts })
+      return res.status(200).json({ ...submitted, saveStatus: 'server_confirmed' })
     }
     if (req.method === 'POST' && req.body?.action === 'open') {
       const opened = await openDiagnosticAttempt({ assignmentId: req.body?.assignmentId,

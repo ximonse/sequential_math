@@ -10,6 +10,7 @@ import { incrementTelemetryDailyMetric, recordTelemetryEvent } from '../../lib/t
 import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { logoutStudentSession } from '../../lib/studentSessionClient'
 import { fetchStudentDiagnosticAssignments } from '../../lib/studentSessionClient'
+import StudentDiagnosticCollections from './StudentDiagnosticCollections'
 import { useStudentSyncStatus } from './session/useStudentSyncStatus'
 import StudentSyncStatus from './session/StudentSyncStatus'
 import StudentHomeAssignmentLaunchCard from './StudentHomeAssignmentLaunchCard'
@@ -357,17 +358,7 @@ function StudentHome() {
         </div>
         <StudentSyncStatus status={syncStatus} />
 
-        {diagnosticAssignments.length > 0 && <section className="mb-4 rounded-xl border border-orange-300 bg-orange-50 p-4">
-          <h2 className="text-lg font-semibold text-orange-950">Digitalt räknehäfte</h2>
-          <p className="mt-1 text-sm text-orange-900">Dina testuppgifter. Spara arbetet i räknehäftet innan du lämnar sidan.</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {diagnosticAssignments.flatMap(item => item.items.map(task => <button key={task.assignmentItemId}
-              type="button" onClick={() => navigate(`/student/${studentId}/diagnostic?assignment=${encodeURIComponent(item.assignmentId)}&item=${encodeURIComponent(task.assignmentItemId)}`)}
-              className="rounded border border-orange-600 bg-white px-3 py-2 font-medium text-orange-950">
-              {task.promptSv}
-            </button>))}
-          </div>
-        </section>}
+        {diagnosticAssignments.length > 0 && <StudentDiagnosticCollections assignments={diagnosticAssignments} studentId={studentId} />}
 
         {activeTicketPayload && !activeTicketResponse && (
           <StudentHomeTicketCard

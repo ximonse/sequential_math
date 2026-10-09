@@ -293,14 +293,14 @@
       "title": "Elevens hela uppdrag och återuppta",
       "status": "Föreslaget",
       "purpose": "Gå igenom en elev åt gången och återuppta där arbetet avbröts.",
-      "next": "Bestäm hur hela uppdraget, aktuell position och nästa elev visas.",
+      "next": "Separat lärarflöde för elevens hela uppdrag och sparad genomgångsposition återstår.",
       "acceptance": "Ungefär 30 elevers arbeten kan granskas i följd utan tappad position.",
       "requires": [
         "review"
       ],
       "affects": [],
-      "decision": "Vilken position ska sparas och för vem? Nuvarande bläddring är inom vald uppgift.",
-      "evidence": "",
+      "decision": "Vilken position ska sparas och för vem? Nuvarande bläddring är inom vald uppgift.\nSimon 2026-10-09: aktiva ogjorda samlingar synliga, inlämnade i dropdown. Svara sparar utan låsning; Förra/Nästa behåller arbete; hela samlingen lämnas in atomiskt med varning för obesvarat.",
+      "evidence": "\n2026-10-09: lokalt byggt, ej pushat/publicerat. Samlingsrobot och 666 enhetstester godkända. Full regression samt nya skriv/rit/återkopplingsflöden återstår.\nFörtydligande: elevens samlingsnavigation byggs i eget kort; detta innebär inte att lärarens 30-elevsgenomgång är klar.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -341,9 +341,9 @@
       "id": "feedback",
       "area": "Återkoppling",
       "title": "Elevsynlig kommentar och återlämning",
-      "status": "Beslut behövs",
+      "status": "Byggt",
       "purpose": "Skilj intern läraranteckning från feedback som eleven får tillbaka.",
-      "next": "Besluta publiceringsögonblick och vad som händer om eleven ändrar arbetet.",
+      "next": "Återöppning före lärargranskning återstår separat enligt feedback-policy; verifiera Redis före publicering.",
       "acceptance": "Eleven ser endast uttryckligen återlämnad feedback för rätt underlagsrevision.",
       "requires": [
         "review",
@@ -353,8 +353,8 @@
       "affects": [
         "followup"
       ],
-      "decision": "Ingen elevsynlig kommentar eller återlämning är byggd.",
-      "evidence": "",
+      "decision": "Ingen elevsynlig kommentar eller återlämning är byggd.\n2026-10-09: separat elevsynlig text och uttryckligt utskick nu byggt lokalt. Återöppning av inlämnat underlag är inte byggd i detta sjok.",
+      "evidence": "\n2026-10-09: lokalt byggt, ej pushat/publicerat. Samlingsrobot och 666 enhetstester godkända. Full regression samt nya skriv/rit/återkopplingsflöden återstår.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -362,6 +362,11 @@
           "id": "next-feedback",
           "text": "Besluta publiceringsögonblick och vad som händer om eleven ändrar arbetet.",
           "done": false
+        },
+        {
+          "id": "feedback-explicit-send",
+          "text": "Separat återkoppling med uttryckligt utskick och skydd för intern lärartext, verifierat lokalt.",
+          "done": true
         }
       ]
     },
@@ -369,17 +374,17 @@
       "id": "feedback-policy",
       "area": "Beslut",
       "title": "När ser eleven vad?",
-      "status": "Beslut behövs",
+      "status": "Beslutat",
       "purpose": "Fastställa utkast, publicerad feedback och möjlighet till fortsatt elevarbete.",
-      "next": "Välj om återlämning låser arbetet eller öppnar en ny revision.",
+      "next": "Separat återöppning före påbörjad lärargranskning återstår; inga original skrivs över.",
       "acceptance": "Tydligt kontrakt för utkast → återlämnat → eventuell elevändring.",
       "requires": [],
       "affects": [
         "feedback",
         "print"
       ],
-      "decision": "kommentarer är privata utkast tills du klickar \"lämna tillbaks\". om en elev \"lämnat in\" så kan lärare klicka så den blir oinlämnad, men bara fram till lärare börjat rätta/kolla genom svaren.",
-      "evidence": "",
+      "decision": "kommentarer är privata utkast tills du klickar \"lämna tillbaks\". om en elev \"lämnat in\" så kan lärare klicka så den blir oinlämnad, men bara fram till lärare börjat rätta/kolla genom svaren.\nSeparat elevsynlig återkoppling skickas uttryckligen. Interna läraranteckningar hålls privata.",
+      "evidence": "\n2026-10-09: lokalt byggt, ej pushat/publicerat. Samlingsrobot och 666 enhetstester godkända. Full regression samt nya skriv/rit/återkopplingsflöden återstår.",
       "issue": "",
       "kind": "beslut",
       "tasks": [
@@ -839,9 +844,9 @@
       "id": "grid-numpad",
       "area": "Elevarbete",
       "title": "Numpad bredvid räknehäftet",
-      "status": "Föreslaget",
+      "status": "Lokalt klart",
       "purpose": "Mata in siffror via en synlig numpad som i övriga uppgifter, utan att enhetens skärmtangentbord behöver öppnas.",
-      "next": "Pröva befintlig numpad mot markerad ruta; definiera radering, smal skärm och Mitt svar före implementation.",
+      "next": "Verifiera nya samlingsinlämningen mot riktig Redis; därefter separat godkänd samlad publicering och verklig iPad-provning.",
       "acceptance": "0–9 och radering fungerar på avsedd iPad utan skärmtangentbord eller hoppande rutnät. Markering, minnessiffror, lån, förlopp, sparande och fysiskt tangentbord bevaras.",
       "requires": [
         "grid"
@@ -850,14 +855,14 @@
         "ipad"
       ],
       "decision": "2026-10-09: Simon bad om en issue för numpad på sidan som i de andra uppgifterna. Separat från automatisk markörförflyttning i #8; samordnas med större siffror i #9.",
-      "evidence": "GitHub issue #11 skapad. Ingen implementation eller publicering.",
+      "evidence": "GitHub issue #11 skapad. Ingen implementation eller publicering.\n2026-10-09: lokalt byggt, ej pushat/publicerat. Samlingsrobot och 666 enhetstester godkända. Full regression samt nya skriv/rit/återkopplingsflöden återstår.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.",
       "issue": "https://github.com/ximonse/sequential_math/issues/11",
       "kind": "deluppgift",
       "tasks": [
         {
           "id": "next-grid-numpad",
           "text": "Pröva numpad bredvid rutnätet och bevarad markering på iPad.",
-          "done": false
+          "done": true
         }
       ]
     },
@@ -865,9 +870,9 @@
       "id": "grid-line-alignment",
       "area": "Elevarbete",
       "title": "Dragna streck på rutmönstrets linjer",
-      "status": "Planerat",
+      "status": "Lokalt klart",
       "purpose": "Placera streck i uppställningar på rutornas gränser, inte mitt i rutorna.",
-      "next": "Anpassa dragna strecks geometri och kontrollera kontraktet för svarsstreck i analys och återspelning.",
+      "next": "Verifiera nya samlingsinlämningen mot riktig Redis; därefter separat godkänd samlad publicering och verklig iPad-provning.",
       "acceptance": "Horisontella och vertikala streck samt start/slut följer rutgränser. Förhandsvisning visar placeringen; siffror täcks inte oavsiktligt. Touch, mus och borttagning fungerar. Samma placering återges i elevvy och läraroriginal; äldre original ändras inte tyst.",
       "requires": [
         "grid"
@@ -877,14 +882,106 @@
         "original"
       ],
       "decision": "2026-10-09: Simon bad om en issue: strecken som dras i uppställningar ska ligga på rutmönsterstrecken.",
-      "evidence": "GitHub issue #12 skapad. Ingen implementation eller publicering av kod.",
+      "evidence": "GitHub issue #12 skapad. Ingen implementation eller publicering av kod.\n2026-10-09: lokalt byggt, ej pushat/publicerat. Samlingsrobot och 666 enhetstester godkända. Full regression samt nya skriv/rit/återkopplingsflöden återstår.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.",
       "issue": "https://github.com/ximonse/sequential_math/issues/12",
       "kind": "deluppgift",
       "tasks": [
         {
           "id": "next-grid-line-alignment",
           "text": "Linjera dragna streck med rutgränser utan att ändra äldre sparade original.",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "workspace-answer-types",
+      "area": "Elevflöde",
+      "title": "Skrivsvar och valda arbetsytor",
+      "status": "Lokalt klart",
+      "purpose": "Läraren väljer siffer-/skrivsvar samt räknehäfte och/eller rityta per fråga; egna skrivfrågor stöds. Ritning och sudd sparas i originalet.",
+      "next": "Verifiera nya samlingsinlämningen mot riktig Redis; därefter separat godkänd samlad publicering och verklig iPad-provning.",
+      "acceptance": "Läraren väljer siffer-/skrivsvar samt räknehäfte och/eller rityta per fråga; egna skrivfrågor stöds. Ritning och sudd sparas i originalet.",
+      "requires": [],
+      "affects": [],
+      "decision": "Simons önskemål 2026-10-09",
+      "evidence": "Lokalt byggt, verifiering pågår; ej publicerat.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "verify-workspace-answer-types",
+          "text": "Verifiera från lärarval till återläst elevoriginal.",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "compact-grid-controls",
+      "area": "Elevflöde",
+      "title": "Kompakta knappar, sudd och sparstatus",
+      "status": "Lokalt klart",
+      "purpose": "Sudd via drag/dutt, svar under nätet, feta instruktionsrubriker och liten padding. Grön sparstatus bara efter serverkvittens.",
+      "next": "Verifiera nya samlingsinlämningen mot riktig Redis; därefter separat godkänd samlad publicering och verklig iPad-provning.",
+      "acceptance": "Sudd via drag/dutt, svar under nätet, feta instruktionsrubriker och liten padding. Grön sparstatus bara efter serverkvittens.",
+      "requires": [],
+      "affects": [],
+      "decision": "Simons önskemål 2026-10-09",
+      "evidence": "Lokalt byggt, verifiering pågår; ej publicerat.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "verify-compact-grid-controls",
+          "text": "Verifiera touch och iPad/smal layout.",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "drawing-patterns",
+      "area": "Elevflöde",
+      "title": "Valbart mönster på ritytan",
+      "status": "Senare",
+      "purpose": "Högställda rektanglar, kvadratiska rutor eller olinjerat.",
+      "next": "Framtida arbete; ingen implementation nu.",
+      "acceptance": "Högställda rektanglar, kvadratiska rutor eller olinjerat.",
+      "requires": [],
+      "affects": [],
+      "decision": "Simons önskemål 2026-10-09",
+      "evidence": "Issue #13 skapad; inte byggt.",
+      "issue": "https://github.com/ximonse/sequential_math/issues/13",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "verify-drawing-patterns",
+          "text": "Framtida arbete; ingen implementation nu.",
           "done": false
+        }
+      ]
+    },
+    {
+      "id": "student-collections",
+      "area": "Elevflöde",
+      "title": "Valbara samlingar och gemensam inlämning",
+      "status": "Lokalt klart",
+      "purpose": "Aktiva ogjorda samlingar syns alltid; inlämnade i dropdown med återkopplingsstatus.",
+      "next": "Verifiera nya samlingsinlämningen mot riktig Redis; därefter separat godkänd samlad publicering och verklig iPad-provning.",
+      "acceptance": "Svara sparar utan låsning; Förra/Nästa bevarar arbete; varna om obesvarat; lämna in hela samlingen atomiskt.",
+      "requires": [
+        "dispatch"
+      ],
+      "affects": [
+        "feedback"
+      ],
+      "decision": "Simon 2026-10-09: godkänt. Redigering tillåten före inlämning.",
+      "evidence": "Samlingsrobot godkänd med nätfel, varning, navigation och originalbevarande. Ej publicerad.\nSlutkontroll 2026-10-09: 140 testfiler/671 tester, build, riktad lint och full robotsvit 83/83, 0 regelbrott. Touch-sudd via drag/dutt och faktisk rutlinjegeometri verifierade. Skrivsvar/ritning återlästa, lärarens explicita återkoppling mottagen utan privat notläckage. Renderad iPad-layout granskad. Lokal commit i detta sjok; ingen push eller publicering. Nya samlings-Lua emulerad, verklig Redis återstår.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "verify-student-collections",
+          "text": "Verifiera hela samlingsflödet, uppdatera belägg och spara lokalt.",
+          "done": true
         }
       ]
     }
@@ -1283,6 +1380,16 @@
     {
       "source": "grid-line-alignment",
       "target": "original",
+      "kind": "påverkar"
+    },
+    {
+      "source": "dispatch",
+      "target": "student-collections",
+      "kind": "kräver"
+    },
+    {
+      "source": "student-collections",
+      "target": "feedback",
       "kind": "påverkar"
     }
   ],

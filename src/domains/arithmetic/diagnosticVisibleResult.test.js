@@ -25,9 +25,16 @@ const rows = [
 ]
 
 describe('visible result and explicit answer comparison', () => {
+  it('recognizes a grid-border line without requiring an empty line row', () => {
+    const snapshot = recordDiagnosticGridEvent(gridWith([rows[0], rows[1], rows[3]]), {
+      type: 'line_add', lineId: 'border', axis: 'horizontal', placement: 'grid-border',
+      from: { row: 1, column: 4 }, to: { row: 1, column: 7 }
+    })
+    expect(analyzeDiagnosticVisibleResult(task, snapshot)).toMatchObject({ status: 'observed', consistency: 'same' })
+  })
   it('reports matching or differing written results with exact evidence cells', () => {
     const same = analyzeDiagnosticVisibleResult(task, gridWith(rows))
-    expect(same).toMatchObject({ analysisVersion: 1, status: 'observed', consistency: 'same',
+    expect(same).toMatchObject({ analysisVersion: 2, status: 'observed', consistency: 'same',
       visibleResult: 699, explicitAnswer: 699,
       evidence: { resultCells: [{ row: 3, column: 5 }, { row: 3, column: 6 }, { row: 3, column: 7 }] } })
     const different = analyzeDiagnosticVisibleResult(task, gridWith(rows, '698'))

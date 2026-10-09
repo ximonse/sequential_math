@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { mkdtemp, readFile, writeFile, readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { loadPlan, savePlan, saveCard, deriveEdges, validatePlan } from './project-map-store.mjs'
+import { loadPlan, savePlan, saveCard, createCard, deriveEdges, validatePlan } from './project-map-store.mjs'
 import { createMapServer } from './project-map-server.mjs'
 
 async function fixture(run) {
@@ -15,6 +15,52 @@ async function fixture(run) {
   } finally { await rm(dir, { recursive: true, force: true }) }
 }
 describe('Shared project map persistence', () => {
+  const idea = () => ({ id: 'idea-test', area: 'Idéer', title: 'En ny idé', status: 'Föreslaget',
+    purpose: 'Fritext med åäö och <taggar>.', next: '', acceptance: '', decision: '', evidence: '',
+    issue: '', kind: 'idé', requires: [], affects: [], tasks: [] })
+  it('adds a card to the latest plan without losing other edits; retries do not duplicate it', async () => fixture(async (path, dir) => {
+    const first = await loadPlan(path)
+    first.plan.cards[0].decision += '\nSimon: ny anteckning.'
+    first.plan.cards[0].tasks[0].done = true
+    await savePlan(path, first.plan, first.revision)
+    const card = idea()
+    const added = await createCard(path, card)
+    expect(added.plan.cards).toHaveLength(first.plan.cards.length + 1)
+    expect(added.plan.cards[0]).toEqual(first.plan.cards[0])
+    expect(added.plan.cards.at(-1)).toEqual(card)
+    const retry = await createCard(path, card)
+    expect(retry.revision).toBe(added.revision)
+    expect(await readdir(join(dir, '.backups'))).toHaveLength(2)
+    await expect(createCard(path, { ...card, title: 'Collision' })).rejects.toMatchObject({ status: 409 })
+    expect((await loadPlan(path)).revision).toBe(added.revision)
+  }))
+  it('rejects invalid new cards without altering the file', async () => fixture(async path => {
+    const first = await loadPlan(path)
+    for (const card of [null, { ...idea(), title: ' ' }, { ...idea(), area: ' ' }, { ...idea(), requires: ['missing'] }]) {
+      await expect(createCard(path, card)).rejects.toThrow()
+      expect((await loadPlan(path)).revision).toBe(first.revision)
+    }
+  }))
+  it('creates through the protected API and subsequently edits the new card normally', async () => fixture(async path => {
+    const server = createMapServer(path, 'test-token')
+    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+    try {
+      const origin = `http://127.0.0.1:${server.address().port}`
+      const post = (body, headers = {}) => fetch(`${origin}/api/plan`, { method: 'POST',
+        headers: { 'Content-Type': 'application/json', Origin: origin, 'X-Plan-Token': 'test-token', ...headers },
+        body: JSON.stringify(body) })
+      const body = { action: 'create_card', card: idea() }
+      expect((await post(body, { Origin: 'https://example.org' })).status).toBe(403)
+      expect((await post(body, { 'X-Plan-Token': '' })).status).toBe(403)
+      const response = await post(body)
+      expect(response.status).toBe(200)
+      const saved = await response.json()
+      const baseCard = saved.plan.cards.at(-1)
+      const edited = { ...baseCard, purpose: 'Ändrad idé' }
+      expect((await post({ baseCard, card: edited })).status).toBe(200)
+      expect((await loadPlan(path)).plan.cards.at(-1)).toEqual(edited)
+    } finally { await new Promise(resolve => server.close(resolve)) }
+  }))
   it('merges a stale card edit with changes to another card and another field', async () => fixture(async path => {
     const first = await loadPlan(path)
     const base = structuredClone(first.plan.cards[0])

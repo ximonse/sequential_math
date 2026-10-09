@@ -71,6 +71,23 @@ export async function saveCard(path, base, draft) {
     catch (error) { if (error.status !== 409 || attempt === 3) throw error }
   }
 }
+// Add against the latest plan, preserving edits made while the draft was open.
+// The browser keeps the same UUID for retries after a lost acknowledgement.
+export async function createCard(path, card) {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const latest = await loadPlan(path)
+    const existing = latest.plan.cards.find(item => item.id === card?.id)
+    if (existing) {
+      if (JSON.stringify(existing) === JSON.stringify(card)) return latest
+      throw Object.assign(Error('Kortets ID används redan. Ditt utkast finns kvar.'), { status: 409 })
+    }
+    latest.plan.cards.push(structuredClone(card))
+    latest.plan.edges = deriveEdges(latest.plan.cards)
+    validatePlan(latest.plan)
+    try { return await savePlan(path, latest.plan, latest.revision) }
+    catch (error) { if (error.status !== 409 || attempt === 3) throw error }
+  }
+}
 export async function savePlan(path, plan, baseRevision) {
   validatePlan(plan)
   const lockPath = `${path}.lock`, tempPath = `${path}.${randomUUID()}.tmp`

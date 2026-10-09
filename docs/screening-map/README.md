@@ -13,6 +13,14 @@ Kör `npm run plan:dev` i denna checkout och öppna
 datorn och serverar endast kartan/API:t, inte andra projektfiler. Den läser
 `plan.json` direkt; HTML-kopior och SC-export är inte den aktiva datakällan.
 
+**Nytt kort / idé** högst upp öppnar ett tomt utkast med rubrik, område och
+fritext. Område kan väljas från förslag eller skrivas fritt. Status är
+Föreslaget från början. **Spara kort till planfil** skapar kortet; att öppna
+eller skriva i formuläret sparar ingenting. Osparat utkast varnar när det
+lämnas. Nya kort läggs till i senaste planen utan att skriva över andra kort;
+ett återförsök efter borttappad kvittens skapar inte dubbla kort. Efter
+sparandet syns kortet och dess område kan väljas i områdesfiltret.
+
 Klicka ett kort, ändra rubrik/status, kryssa deluppgifter eller lägg till en
 ny deluppgift. Expandera **Redigera text och anteckningar** för övriga texter.
 **Spara kort till planfil** är den enda skrivningen. Utkast varnar vid byte,

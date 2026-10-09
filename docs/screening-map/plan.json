@@ -768,12 +768,12 @@
       "title": "Redigerbar gemensam projektkarta",
       "status": "Lokalt klart",
       "purpose": "Simon och agenten skriver i samma planfil; uppgifter kan kryssas av direkt i kortet.",
-      "next": "Använd kartan vid nästa funktionsarbete; bevara nya anteckningar och verifiera beskrivet läge.",
+      "next": "Använd Nytt kort / idé för egna tillägg; ange nästa uppgift och klart-när när idén blir planerad.",
       "acceptance": "Explicit sparande, återläsning, konfliktstopp och backup; agentregler och CI fångar glömd kartuppdatering.",
       "requires": [],
       "affects": [],
-      "decision": "Simon har valt HTML-kartan som gemensam arbetsyta. SC-exporten är en äldre separat snapshot, inte aktiv synk.\n\nBeslutat 2026-10-06: karta/kartan syftar normalt på projektkartan om inget annat tydligt avses. Läs senaste. Fråga betyder läsning och svar; uppdatera kartan betyder uppdatera berörda kort. Bara kartan betyder ta fram och stäm av, inte bygga nästa funktion eller publicera. Genomfört arbete och fattade beslut dokumenteras i kartan.\n\n2026-10-07: Kortsparande sammanför ändringar i olika kort och fält. Motstridiga ändringar i samma fält stoppas; deluppgifter är ett gemensamt fält. Simons osparade beslutstext om återlämning räddades till feedback-policy.",
-      "evidence": "Lokalt verifierat: 137 testfiler/658 tester, build och lint godkända. Testar bevarande av andra kort/fält och konflikt i samma fält, backup samt revisionsskydd. Ingen publicering. Webbläsarprov godkänt: feedback-policy sparades från en äldre flik efter att map-editor ändrats, med båda kortens innehåll bevarat.\n2026-10-09: Kartverktyget pushat till GitHub i paketet till d725bd5. Fortfarande ett lokalt verktyg, inte en publicerad webbserver.",
+      "decision": "Simon har valt HTML-kartan som gemensam arbetsyta. SC-exporten är en äldre separat snapshot, inte aktiv synk.\n\nBeslutat 2026-10-06: karta/kartan syftar normalt på projektkartan om inget annat tydligt avses. Läs senaste. Fråga betyder läsning och svar; uppdatera kartan betyder uppdatera berörda kort. Bara kartan betyder ta fram och stäm av, inte bygga nästa funktion eller publicera. Genomfört arbete och fattade beslut dokumenteras i kartan.\n\n2026-10-07: Kortsparande sammanför ändringar i olika kort och fält. Motstridiga ändringar i samma fält stoppas; deluppgifter är ett gemensamt fält. Simons osparade beslutstext om återlämning räddades till feedback-policy.\n2026-10-09: Simon godkände Nytt kort / idé med rubrik, område och fritext. Explicit Spara; inga automatiskt skapade kort.",
+      "evidence": "Lokalt verifierat: 137 testfiler/658 tester, build och lint godkända. Testar bevarande av andra kort/fält och konflikt i samma fält, backup samt revisionsskydd. Ingen publicering. Webbläsarprov godkänt: feedback-policy sparades från en äldre flik efter att map-editor ändrats, med båda kortens innehåll bevarat.\n2026-10-09: Kartverktyget pushat till GitHub i paketet till d725bd5. Fortfarande ett lokalt verktyg, inte en publicerad webbserver.\n2026-10-09: Nytt kort / idé byggt och aktiverat i lokal server. Additiv sparning mot senaste plan, idempotent retry och ID-konfliktskydd. 9 lagring/API-tester och isolerat verkligt webbläsartest godkända: ingen autosparning, osparat-varning behåller utkast, sparning, områdesfilter och återläsning av text/deluppgift. Renderad skärmbild granskad. Inga testkort i riktiga planen. Lokal funktion, ingen publicerad kartserver.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -795,6 +795,11 @@
         {
           "id": "e4e9f389-17ec-4aa0-815a-6e83e0134e5c",
           "text": "Uppdatera kartan vid nästa funktionsändring",
+          "done": true
+        },
+        {
+          "id": "create-idea-card",
+          "text": "Skapa helt nya kort/idéer med uttryckligt sparande och säkert bevarande av andra kort.",
           "done": true
         }
       ]

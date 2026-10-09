@@ -788,6 +788,30 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "grid-digit-size",
+      "area": "Elevarbete",
+      "title": "Större siffror som nästan fyller rutorna",
+      "status": "Planerat",
+      "purpose": "Göra stora siffror lättare att läsa i räknehäftets rektangulära rutor.",
+      "next": "Öka stora siffrors storlek i elevvy och lärarens originalåtergivning; verifiera utan klippning.",
+      "acceptance": "Siffrorna 0–9 nästan fyller rutorna med liten marginal. Rutproportioner, minnessiffror, lån och överstrykningar bevaras. Visuellt kontrollerat i webbläsare och på avsedd iPad.",
+      "requires": [
+        "grid"
+      ],
+      "affects": [],
+      "decision": "2026-10-09: Simon bad om en issue: gör siffrorna större så de nästan fyller upp rektanglarna.",
+      "evidence": "2026-10-09: GitHub issue #9 skapad. Ingen kodändring eller publicering.",
+      "issue": "https://github.com/ximonse/sequential_math/issues/9",
+      "kind": "deluppgift",
+      "tasks": [
+        {
+          "id": "next-grid-digit-size",
+          "text": "Öka sifferstorleken och verifiera läsbarhet utan klippning.",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [
@@ -1155,6 +1179,11 @@
       "source": "permissions",
       "target": "feedback",
       "kind": "påverkar"
+    },
+    {
+      "source": "grid",
+      "target": "grid-digit-size",
+      "kind": "kräver"
     }
   ],
   "note": "Planeringssnapshot. Lokalt klart är inte publicerat. Tidigare publicering bygger på denna tråds verifiering; ingen ny livekontroll. Förslag är inte fattade beslut."

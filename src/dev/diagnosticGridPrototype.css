@@ -192,3 +192,12 @@
   .notebook-tools { max-width: 433px; }
   .notebook-header span { display: block; margin-left: 0; }
 }
+.notebook-fold-toggle {
+  margin-bottom: 6px;
+  padding: 3px 8px;
+  min-height: 44px;
+  color: var(--text-main, #172033);
+  background: var(--surface-strong, #fff);
+  border: 1px solid var(--border, #7c8da8);
+  border-radius: 5px;
+}

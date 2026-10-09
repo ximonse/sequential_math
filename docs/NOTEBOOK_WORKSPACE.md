@@ -1,5 +1,26 @@
 # Diagnostic notebook workspace
 
+## Optional workspaces in ordinary assignments
+
+Teachers choose Notebook and Drawing when creating an ordinary arithmetic/domain
+assignment by preset or a custom math-practice assignment. The explicit choices
+travel in `workspaces: { notebook, drawing }` through shared normalization,
+class activation and assignment links. Legacy assignments without that field
+retain drawing and do not silently gain a notebook. Talbild uses its separate
+quick-recognition view and is not part of these arithmetic workspaces.
+
+The pupil opens the ordinary notebook on demand. Folding leaves the editor mounted
+and preserves its cells, marks, pen preferences and strokes for the active page/
+training session, just like ordinary drawing. This scratch work is not uploaded,
+recovered after a reload or submitted to the teacher. It does not create a
+diagnostic attempt or change the answer/mastery pipeline. Normal answers still
+use the existing task's answer input and submission button.
+
+Screening keeps its existing per-question workspace flags and encrypted/server
+save contract. Its notebook starts open for compatibility but can now be folded
+without clearing the observation; the answer remains available while folded.
+Its drawing remains foldable independently. Submitted observations stay read-only.
+
 The approved compact workspace uses shared `NumberKeys` with ordinary practice.
 The paper remains 12 by 8 cells with the existing rectangular proportions: saved
 attempts are never cropped or reconstructed. Main digits use regular 38px type;

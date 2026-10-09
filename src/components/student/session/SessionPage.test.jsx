@@ -3,6 +3,17 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import SessionPage from './SessionPage'
 
 describe('student session page', () => {
+  it('honors explicit workspace choices without changing legacy drawing access', () => {
+    const htmlFor = assignment => renderToStaticMarkup(<SessionPage
+      sessionAssignment={assignment} currentProblem={{ type: 'addition', values: { a: 2, b: 3 }, result: 5 }}
+      answer="" tableSet={[]} syncStatus={{ state: 'synced' }} />)
+    expect(htmlFor({ workspaces: { notebook: true, drawing: false } })).toContain('Visa räknehäfte')
+    expect(htmlFor({ workspaces: { notebook: true, drawing: false } })).not.toContain('Visa rityta')
+    expect(htmlFor({ workspaces: { notebook: false, drawing: false } })).not.toContain('Visa räknehäfte')
+    expect(htmlFor({ workspaces: { notebook: false, drawing: false } })).not.toContain('Visa rityta')
+    expect(htmlFor({})).toContain('Visa rityta')
+    expect(htmlFor({})).not.toContain('Visa räknehäfte')
+  })
   it('shows the practice mode as an unboxed heading and no success-rate bar', () => {
     const html = renderToStaticMarkup(
       <SessionPage

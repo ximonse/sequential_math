@@ -2,6 +2,7 @@ import { useState } from 'react'
 import AssignmentQrDialog from './AssignmentQrDialog'
 import MathPracticeCreatorDialog from './MathPracticeCreatorDialog'
 import SubitizingCreatorDialog from './SubitizingCreatorDialog'
+import AssignmentWorkspaceOptions from './AssignmentWorkspaceOptions'
 
 const BUTTON_BASE = 'rounded-md border px-2.5 py-1.5 text-sm font-medium transition-colors'
 const TONES = {
@@ -58,6 +59,7 @@ export default function AssignmentsPanel({
   const [showSubitizingCreator, setShowSubitizingCreator] = useState(false)
   const [presetTarget, setPresetTarget] = useState('')
   const [breakGames, setBreakGames] = useState(false)
+  const [workspaces, setWorkspaces] = useState({ notebook: false, drawing: true })
   const selectedClass = selectedClassIds.length === 1
     ? classes.find(item => String(item.id) === String(selectedClassIds[0]))
     : null
@@ -70,6 +72,7 @@ export default function AssignmentsPanel({
         <h2 className="text-lg font-semibold text-gray-800">Uppdrag via länk</h2>
         <button onClick={() => setShowMathPracticeCreator(true)} className={`${BUTTON_BASE} ${TONES.custom}`}>Skapa egna</button>
       </div>
+      <AssignmentWorkspaceOptions value={workspaces} onChange={setWorkspaces} />
       <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1.5">
         {PRESET_GROUPS.map((group, index) => (
           <div key={index} className="flex flex-wrap gap-1.5">
@@ -77,7 +80,7 @@ export default function AssignmentsPanel({
               <button
                 key={key}
                 type="button"
-                onClick={() => (key === 'talbild' ? setShowSubitizingCreator(true) : onCreatePreset(key, FLUENCY_KEYS.includes(key) ? presetTarget : undefined, breakGames))}
+                onClick={() => (key === 'talbild' ? setShowSubitizingCreator(true) : onCreatePreset(key, FLUENCY_KEYS.includes(key) ? presetTarget : undefined, breakGames, workspaces))}
                 className={`${BUTTON_BASE} ${tone}`}
               >
                 {label}
@@ -122,6 +125,9 @@ export default function AssignmentsPanel({
               <div className="min-w-0 text-sm">
                 <p className={`font-medium ${isActive ? 'text-gray-800' : 'text-gray-500'}`}>{assignment.title}</p>
                 <p className="text-gray-500">{formatAssignmentSummaryLine(assignment)}</p>
+                {assignment.workspaces && <p className="text-xs text-gray-600">Arbetsytor: {
+                  [assignment.workspaces.notebook && 'räknehäfte', assignment.workspaces.drawing && 'rityta'].filter(Boolean).join(', ') || 'inga'
+                }</p>}
                 <p className="font-mono text-xs text-gray-400">{assignment.id}</p>
               </div>
               <div className="ml-auto flex items-center gap-1">
@@ -144,6 +150,7 @@ export default function AssignmentsPanel({
       {qrAssignment && <AssignmentQrDialog assignment={qrAssignment} classLoginToken={classLoginToken} onClose={() => setQrAssignment(null)} />}
       {showMathPracticeCreator && (
         <MathPracticeCreatorDialog
+          initialWorkspaces={workspaces}
           onCreate={(assignment) => {
             onCreateMathPractice(assignment)
             setShowMathPracticeCreator(false)

@@ -1064,6 +1064,44 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "optional-assignment-workspaces",
+      "area": "Elevflöde",
+      "title": "Valbara och utfällbara arbetsytor i uppdrag",
+      "status": "Lokalt klart",
+      "purpose": "Läraren väljer räknehäfte och rityta; eleven fäller ut/ihop utan att arbetet rensas.",
+      "next": "Beslut om samlad publicering via GitHub; därefter fysisk iPad-provning med separat testkonto.",
+      "acceptance": "Valen bevaras i uppdragslänk och klassaktivering. Vanliga räkneuppdrag erbjuder bara valda arbetsytor; äldre uppdrag behåller ritytan. Hopfällning bevarar arbete i passet. Screening bevarar serverlagrad observation och svar vid hopfällning. Vanlig arbetsyta skapar inga diagnostiska anrop och ändrar inte svar/mastery.",
+      "requires": [
+        "notebook-workstation",
+        "shared-drawing-tools"
+      ],
+      "affects": [
+        "dispatch",
+        "ipad"
+      ],
+      "decision": "2026-10-09: Simon godkände generell valbar arbetsyta vid utdelning och utfällbart räknehäfte som ritytan. Vanliga räkneuppdrag använder passets kladdyta utan diagnostisk inlämning; Screening behåller sparat original och analysgräns. Talbild är fortsatt separat snabbigenkänning.",
+      "evidence": "2026-10-09: Lokalt implementerat i standard- och egna matematikuppdrag, delad payload-normalisering, elevvy och Screening. Riktad robot verifierar lärarval, länk, oförändrat svar, ingen diagnostisk skrivning och bevarat häfte vid dölj/visa. Renderad elevvy i iPad-storlek granskad. 144 testfiler/683 tester och build gröna; full regression pågår. Ingen push eller publicering.\nSlutkontroll 2026-10-09: 144 testfiler/683 tester, build, riktad lint, arkitektur- och diffkontroll gröna. Full robotsvit 86/86, 0 regelbrott. Efter två små lärar-UI-justeringar omkörda uppdrags-/rit-/pilotrobotar: 11/12, enda fel var en tidsberoende assertion för övergående osparad-text. Den ersattes med verifierad synlig ändring, följd av oförändrad serverkvittens, lokal rensning och återläsning; pilotrobotar därefter 2/2. Den nya extra roboten för egna matematikuppdrag är grön. Samtliga 87 unika robotkontroller verifierade över körningarna. Både klassaktivering och länk bevarar lärarval; ordinary notebook-dutt och numpad ändrar inte slutsvaret och skickar inga diagnostiska skrivningar. Renderad elevvy i iPad-storlek granskad. Vanligt kladdarbete bevaras vid hopfällning i passet, inte efter omladdning. Fysisk iPad och ny publicering återstår. Lokal commit i samma sjok; ingen push.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "workspace-assignment-options",
+          "text": "Lärarval och bevarade flaggor genom länk/klassaktivering.",
+          "done": true
+        },
+        {
+          "id": "workspace-pupil-folding",
+          "text": "Utfällbara arbetsytor utan rensning eller diagnostisk sidoeffekt.",
+          "done": true
+        },
+        {
+          "id": "workspace-regression",
+          "text": "Full regression, visuell kontroll och lokal commit.",
+          "done": true
+        }
+      ]
     }
   ],
   "edges": [
@@ -1510,6 +1548,26 @@
     {
       "source": "notebook-workstation",
       "target": "grid-numpad",
+      "kind": "påverkar"
+    },
+    {
+      "source": "notebook-workstation",
+      "target": "optional-assignment-workspaces",
+      "kind": "kräver"
+    },
+    {
+      "source": "shared-drawing-tools",
+      "target": "optional-assignment-workspaces",
+      "kind": "kräver"
+    },
+    {
+      "source": "optional-assignment-workspaces",
+      "target": "dispatch",
+      "kind": "påverkar"
+    },
+    {
+      "source": "optional-assignment-workspaces",
+      "target": "ipad",
       "kind": "påverkar"
     }
   ],

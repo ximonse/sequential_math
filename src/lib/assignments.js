@@ -1,6 +1,5 @@
 import { mergeWorkspaceItems, saveTeacherWorkspacePatch } from './teacherWorkspaceSync'
 const ASSIGNMENTS_KEY = 'mathapp_assignments'
-const ACTIVE_ASSIGNMENT_KEY = 'mathapp_active_assignment'
 const ASSIGNMENT_PAYLOAD_VERSION = 1
 const KNOWN_OPERATION_TYPES = new Set([
   'addition', 'subtraction', 'multiplication', 'division',
@@ -127,6 +126,7 @@ export function encodeAssignmentPayload(assignment) {
   }
 
   if (normalized.breakGames) payload.breakGames = true
+  if (normalized.workspaces) payload.workspaces = normalized.workspaces
 
   if (normalized.kind === 'math_practice') {
     payload.operations = normalized.operations
@@ -159,7 +159,10 @@ export function decodeAssignmentPayload(encoded) {
 function normalizeAssignment(input, options = {}) {
   const normalized = normalizeAssignmentCore(input, options)
   if (!normalized) return null
-  return { ...normalized, breakGames: input.breakGames === true }
+  const workspaces = input.workspaces && typeof input.workspaces === 'object'
+    ? { notebook: input.workspaces.notebook === true, drawing: input.workspaces.drawing === true }
+    : undefined
+  return { ...normalized, breakGames: input.breakGames === true, ...(workspaces ? { workspaces } : {}) }
 }
 
 function normalizeAssignmentCore(input, options = {}) {

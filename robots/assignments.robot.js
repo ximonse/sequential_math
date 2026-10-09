@@ -23,12 +23,16 @@ async function setupClass(request, operations = ['addition', 'subtraction', 'mul
 }
 
 // Creates a preset in the teacher view and returns the link the teacher copies.
-async function createPresetLink(browser, teacher, klass, presetLabel) {
+async function createPresetLink(browser, teacher, klass, presetLabel, workspaces = null) {
   const context = await browser.newContext({ permissions: ['clipboard-read', 'clipboard-write'] })
   const page = await context.newPage()
   await teacherLogin(page, teacher)
   await selectOnlyClass(page, klass.name)
   await openTab(page, 'Uppdrag & tickets')
+  if (workspaces) {
+    await page.getByRole('checkbox', { name: 'Räknehäfte', exact: true }).setChecked(workspaces.notebook)
+    await page.getByRole('checkbox', { name: 'Rityta', exact: true }).setChecked(workspaces.drawing)
+  }
   await page.getByRole('button', { name: presetLabel, exact: true }).click()
   await page.waitForTimeout(500)
   const row = page.locator('div.rounded.border', { hasText: 'asg_' }).first()
@@ -66,6 +70,69 @@ const PRESETS = [
   { label: 'Talpar', types: ['number_bonds'], min: 1, max: 12 },
   { label: 'Dubblor', types: ['doubles'], min: 1, max: 12 }
 ]
+
+test('Teacher workspace choices reach the pupil and folding preserves notebook work without diagnostic writes', async ({ browser, request }) => {
+  const { klass, pupil, teacher } = await setupClass(request)
+  const side = await createPresetLink(browser, teacher, klass, 'Bara addition', { notebook: true, drawing: false })
+  const kid = await pupil('Elev')
+  const student = await openAsPupil(browser, side.link, kid)
+  const page = student.page
+  const diagnosticWrites = []
+  page.on('request', request => { if (request.url().includes('diagnostic') && request.method() !== 'GET') diagnosticWrites.push(request.url()) })
+  await expect(page.getByRole('button', { name: 'Visa rityta', exact: true })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Visa räknehäfte', exact: true }).click()
+  const notebook = page.locator('.diagnostic-prototype')
+  const input = notebook.locator('[data-cell="0:0"]')
+  await input.click()
+  await notebook.getByRole('button', { name: 'Skriv 8', exact: true }).click()
+  await expect(notebook.locator('.diagnostic-cell__digit--main').first()).toHaveText('8')
+  await expect(notebook.getByRole('button', { name: 'Lämna in svaren' })).toHaveCount(0)
+  await expect(notebook.getByRole('textbox', { name: 'Mitt svar', exact: true })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Dölj räknehäfte', exact: true }).click()
+  await expect(notebook).not.toBeVisible()
+  await page.getByRole('button', { name: 'Visa räknehäfte', exact: true }).click()
+  await expect(notebook.locator('.diagnostic-cell__digit--main').first()).toHaveText('8')
+  await page.setViewportSize({ width: 820, height: 1180 })
+  await page.screenshot({ path: 'test-results/practice-notebook-ipad.png', fullPage: true })
+  expect(diagnosticWrites).toEqual([])
+  await expect(page.locator('input[placeholder="?"]')).toHaveValue('')
+  await student.context.close()
+  await side.row.getByRole('button', { name: 'Aktivera för alla', exact: true }).click()
+  const classContext = await browser.newContext()
+  const classPage = await classContext.newPage()
+  await login(classPage, await pupil('Stark'))
+  await classPage.getByRole('button', { name: 'Starta uppdraget', exact: true }).click()
+  await expect(classPage.getByRole('button', { name: 'Visa räknehäfte', exact: true })).toBeVisible()
+  await expect(classPage.getByRole('button', { name: 'Visa rityta', exact: true })).toHaveCount(0)
+  await classContext.close()
+  await side.context.close()
+})
+
+test('Custom math assignment keeps teacher workspace choices in its shared link', async ({ browser, request }) => {
+  const { klass, pupil, teacher } = await setupClass(request)
+  const context = await browser.newContext({ permissions: ['clipboard-read', 'clipboard-write'] })
+  const page = await context.newPage()
+  await teacherLogin(page, teacher)
+  await selectOnlyClass(page, klass.name)
+  await openTab(page, 'Uppdrag & tickets')
+  await page.getByRole('checkbox', { name: 'Räknehäfte', exact: true }).check()
+  await page.getByRole('checkbox', { name: 'Rityta', exact: true }).uncheck()
+  await page.getByRole('button', { name: 'Skapa egna', exact: true }).click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByRole('checkbox', { name: 'Räknehäfte', exact: true })).toBeChecked()
+  await expect(dialog.getByRole('checkbox', { name: 'Rityta', exact: true })).not.toBeChecked()
+  await dialog.getByPlaceholder('t.ex. Lilla plus, Division 1-5').fill('Robot egen med räknehäfte')
+  await dialog.getByRole('button', { name: 'Skapa övning', exact: true }).click()
+  const row = page.locator('div.rounded.border', { hasText: 'asg_' }).first()
+  await expect(row).toContainText('Arbetsytor: räknehäfte')
+  await row.getByRole('button', { name: 'Kopiera länk', exact: true }).click()
+  const link = await page.evaluate(() => navigator.clipboard.readText())
+  const student = await openAsPupil(browser, link, await pupil('Elev'))
+  await expect(student.page.getByRole('button', { name: 'Visa räknehäfte', exact: true })).toBeVisible()
+  await expect(student.page.getByRole('button', { name: 'Visa rityta', exact: true })).toHaveCount(0)
+  await student.context.close()
+  await context.close()
+})
 
 for (const preset of PRESETS) {
   test(`Uppdrag via länk: ${preset.label}, rätt och fel`, async ({ browser, request }, testInfo) => {

@@ -25,6 +25,11 @@ test('A pupil saves before continuing and submits the whole collection without l
   const firstUrl = page.url()
   await expect(page.getByRole('button', { name: 'Nästa fråga', exact: true })).toBeEnabled()
   await page.locator('input[data-cell="0:0"]').press('8')
+  await page.getByRole('button', { name: 'Dölj räknehäfte', exact: true }).click()
+  await expect(page.locator('input[data-cell="0:0"]')).not.toBeVisible()
+  await expect(page.getByRole('textbox', { name: 'Mitt svar', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Visa räknehäfte', exact: true }).click()
+  await expect(page.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 8/)
   await page.route('**/api/me/diagnostic-attempt', route => {
     if (route.request().postDataJSON()?.action === 'append') return route.abort('failed')
     return route.continue()
@@ -98,7 +103,9 @@ test('An isolated test pupil can receive, save and resume a diagnostic grid', as
   await studentPage.screenshot({ path: testInfo.outputPath('diagnostic-pupil.png'), fullPage: true })
   await studentPage.locator('input[data-cell="0:0"]').click()
   await studentPage.keyboard.press('8')
-  await expect(studentPage.getByText(/Osparade ändringar/)).toBeVisible()
+  // The encrypted local write may complete before Playwright can read the
+  // transient unsaved label. Verify the visible edit, then the server ack.
+  await expect(studentPage.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 8/)
   await expect(studentPage.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
   expect(await localDiagnosticKeys(studentPage, pupil.studentId)).toEqual([])
   await studentPage.reload()

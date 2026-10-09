@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { createAssignment } from '../../../lib/assignments'
+import AssignmentWorkspaceOptions from './AssignmentWorkspaceOptions'
 
-export default function MathPracticeCreatorDialog({ onCreate, onClose }) {
+export default function MathPracticeCreatorDialog({ onCreate, onClose, initialWorkspaces = { notebook: false, drawing: true } }) {
+  const [workspaces, setWorkspaces] = useState(initialWorkspaces)
   const [title, setTitle] = useState('')
   const [operations, setOperations] = useState(['addition'])
   const [firstMin, setFirstMin] = useState('0')
@@ -35,6 +37,7 @@ export default function MathPracticeCreatorDialog({ onCreate, onClose }) {
 
     const assignment = createAssignment({
       kind: 'math_practice',
+      workspaces,
       title: title.trim(),
       operations,
       numberRange: {
@@ -66,7 +69,7 @@ export default function MathPracticeCreatorDialog({ onCreate, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4" role="dialog" aria-modal="true">
-      <div className="w-full max-w-2xl rounded-xl bg-white p-6 shadow-2xl">
+      <div className="max-h-[90dvh] overflow-y-auto w-full max-w-2xl rounded-xl bg-white p-6 shadow-2xl">
         <h2 className="mb-4 text-xl font-bold text-slate-900">Ny matematikövning</h2>
 
         <div className="space-y-4">
@@ -202,6 +205,7 @@ export default function MathPracticeCreatorDialog({ onCreate, onClose }) {
           </div>
 
           {/* Checkboxes */}
+          <AssignmentWorkspaceOptions value={workspaces} onChange={setWorkspaces} />
           <div className="space-y-2">
             <label className="flex items-center gap-2 cursor-pointer">
               <input

@@ -1,3 +1,4 @@
+import { lazy, Suspense, useState } from 'react'
 import SessionHeader from '../SessionHeader'
 import SessionModeBanner from './SessionModeBanner'
 import ProblemView from '../ProblemView'
@@ -5,6 +6,7 @@ import MathScratchpad from '../MathScratchpad'
 import FeedbackOverlay from '../FeedbackOverlay'
 import CurrentOperationMastery from './CurrentOperationMastery'
 import StudentSyncStatus from './StudentSyncStatus'
+const PracticeNotebook = lazy(() => import('../PracticeNotebook'))
 
 function SessionPage({
   profileName,
@@ -36,6 +38,10 @@ function SessionPage({
   remainingCount = null,
   praise = ''
 }) {
+  const [notebookVisible, setNotebookVisible] = useState(false)
+  const [notebookOpened, setNotebookOpened] = useState(false)
+  const notebookAllowed = sessionAssignment?.workspaces?.notebook === true
+  const drawingAllowed = !sessionAssignment?.workspaces || sessionAssignment.workspaces.drawing === true
   const showInlineScratchpad = Boolean(currentProblem) && !feedback
   const showScratchpadControl = Boolean(currentProblem)
 
@@ -88,14 +94,14 @@ function SessionPage({
             onNext={onNext}
             inputRef={inputRef}
             suppressSoftKeyboard={coarsePointer}
-            leftPanel={showScratchpadControl ? (
+            leftPanel={showScratchpadControl && drawingAllowed ? (
               <div className="w-full flex flex-col items-center">
                 <div className="mt-2 flex justify-center">
                   <button
                     type="button"
                     onClick={onToggleScratchpad}
                     disabled={!showInlineScratchpad}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium disabled:cursor-default disabled:opacity-60 ${
+                    className={`px-2 py-1 min-h-11 rounded-lg text-sm font-medium disabled:cursor-default disabled:opacity-60 ${
                       showScratchpad && showInlineScratchpad
                         ? 'bg-indigo-100 text-indigo-700'
                         : 'bg-white text-gray-700 border border-gray-300'
@@ -108,6 +114,17 @@ function SessionPage({
               </div>
             ) : null}
           />
+
+          {notebookAllowed && currentProblem && <section className="mt-2" aria-label="Arbetsyta för uppdraget">
+            <button type="button" aria-expanded={notebookVisible} disabled={!showInlineScratchpad}
+              className="rounded border border-slate-400 bg-white px-2 py-1 min-h-11 text-sm text-slate-900"
+              onClick={() => { setNotebookOpened(true); setNotebookVisible(value => !value) }}>
+              {notebookVisible ? 'Dölj räknehäfte' : 'Visa räknehäfte'}
+            </button>
+            <div hidden={!notebookVisible || !showInlineScratchpad}>
+              {notebookOpened && <Suspense fallback={<p>Öppnar räknehäftet…</p>}><PracticeNotebook /></Suspense>}
+            </div>
+          </section>}
 
           <FeedbackOverlay feedback={feedback} />
         </div>

@@ -4,6 +4,17 @@ import { buildAssignmentLink, decodeAssignmentPayload, encodeAssignmentPayload }
 afterEach(() => vi.unstubAllGlobals())
 
 describe('assignments payload encoding', () => {
+  it('preserves explicit workspace choices and legacy defaults through shared server encoding', () => {
+    for (const kind of ['standard', 'math_practice', 'ncm']) {
+      for (const notebook of [false, true]) for (const drawing of [false, true]) {
+        const assignment = { id: 'workspaces', kind, workspaces: { notebook, drawing, unknown: true } }
+        expect(decodeAssignmentPayload(encodeAssignmentPayload(assignment)).workspaces).toEqual({ notebook, drawing })
+      }
+      expect(decodeAssignmentPayload(encodeAssignmentPayload({ id: 'legacy', kind })).workspaces).toBeUndefined()
+    }
+    expect(decodeAssignmentPayload(encodeAssignmentPayload({ id: 'invalid', workspaces: { notebook: 'true', drawing: 1 } })).workspaces)
+      .toEqual({ notebook: false, drawing: false })
+  })
   it('roundtrips standard assignment payload', () => {
     const encoded = encodeAssignmentPayload({
       id: 'asg_test_1',

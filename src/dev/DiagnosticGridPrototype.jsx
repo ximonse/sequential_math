@@ -36,11 +36,11 @@ function newGrid(task) {
   })
 }
 
-function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = null, saveState = null,
+function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = null, saveState = null, workspaceOnly = false,
   onNext = null, onPrevious = null, onHome = null, onSubmitCollection = null, collectionTitle = '', questionIndex = 1, questionCount = 1 }) {
   const availableTasks = pilot ? [pilot.task] : TASKS
   const [task, setTask] = useState(pilot?.task || TASKS[0])
-  const [grid, setGrid] = useState(() => pilot?.snapshot || newGrid(TASKS[0]))
+  const [grid, setGrid] = useState(() => pilot?.snapshot || newGrid(pilot?.task || TASKS[0]))
   const [snapshotText, setSnapshotText] = useState('')
   const [message, setMessage] = useState('')
   const gridRef = useRef(null)
@@ -53,6 +53,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const [inputTarget, setInputTarget] = useState(pilot?.task.gridEnabled === false ? 'answer' : 'grid')
   const [contextMenu, setContextMenu] = useState(null)
   const [drawingVisible, setDrawingVisible] = useState(false)
+  const [notebookVisible, setNotebookVisible] = useState(true)
   const isPilot = Boolean(pilot)
   const submitting = Boolean(saveState?.submitting)
   const editingLocked = grid.status === 'submitted' || submitting
@@ -421,7 +422,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   }
 
   const pending = grid.events.length > (saveState?.savedSequence || 0)
-  const status = !pilot ? 'Skiss · ingen serverlagring' : saveState?.busy ? 'Sparar…'
+  const status = workspaceOnly ? 'Arbetsyta i detta träningspass' : !pilot ? 'Skiss · ingen serverlagring' : saveState?.busy ? 'Sparar…'
     : saveState?.error ? 'Inte sparat på servern' : pending ? 'Väntar på serverkvittens'
     : grid.status === 'submitted' ? 'Inlämnat' : '• Sparat'
   const navigationLocked = saveState?.busy || saveState?.conflict || submitting
@@ -430,20 +431,26 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
 
   return (
     <main className="diagnostic-prototype">
-      <header className="notebook-header">
+      {!workspaceOnly && <header className="notebook-header">
         <div><strong>Screening</strong><span>{collectionTitle || 'Räknehäfte'}</span></div>
         {onHome && <a href="#" onClick={event => { event.preventDefault(); if (!navigationLocked) onHome() }}
           aria-disabled={Boolean(navigationLocked)}>Startsida</a>}
-      </header>
+      </header>}
       {!pilot && <div className="notebook-examples" aria-label="Välj exempeluppgift">
         {availableTasks.map(item => <button key={item.taskId} type="button" onClick={() => chooseTask(item)}>{item.promptSv}</button>)}
       </div>}
       <section className="notebook-sheet">
+        {pilot && !workspaceOnly && task.gridEnabled !== false && <button type="button" className="notebook-fold-toggle"
+          aria-expanded={notebookVisible} onClick={() => {
+            setNotebookVisible(value => !value)
+            setInputTarget(notebookVisible ? 'answer' : 'grid')
+            setContextMenu(null)
+          }}>{notebookVisible ? 'Dölj räknehäfte' : 'Visa räknehäfte'}</button>}
         <div className="diagnostic-workspace">
           <div className="notebook-left">
-            <p className="notebook-question-count">Fråga {questionIndex} av {questionCount}</p>
-            <h2 className="notebook-question">{question}</h2>
-            <div hidden={task.gridEnabled === false} className="notebook-grid-scroll">
+            {!workspaceOnly && <p className="notebook-question-count">Fråga {questionIndex} av {questionCount}</p>}
+            {!workspaceOnly && <h2 className="notebook-question">{question}</h2>}
+            <div hidden={task.gridEnabled === false || !notebookVisible} className="notebook-grid-scroll">
           <div ref={gridRef} className="diagnostic-grid" role="group" aria-label="Rutat räknehäfte">
             <DiagnosticGridLines lines={grid.lines} preview={linePreview} rows={grid.rows} columns={grid.columns} />
             {visibleCells.map(({ row, column }) => {
@@ -492,7 +499,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             })}
           </div>
             </div>
-            <div className="diagnostic-answer-row">
+            {!workspaceOnly && <div className="diagnostic-answer-row">
               {task.answerType === 'text' ? <textarea id="diagnostic-answer" aria-label="Mitt svar" placeholder="Skriv ditt svar här"
                 maxLength={2000} value={grid.answer} onChange={event => changeAnswer(event.target.value)} disabled={editingLocked} />
                 : <input id="diagnostic-answer" aria-label="Mitt svar" placeholder="Skriv ditt svar här" type="text" inputMode="none"
@@ -505,11 +512,11 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
               {pilot && <button type="button" className="notebook-next" onClick={onNext} disabled={!onNext || navigationLocked}>
                 Nästa fråga <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 12h16m-7-7 7 7-7 7" fill="none" stroke="currentColor" strokeWidth="3" /></svg>
               </button>}
-            </div>
+            </div>}
           </div>
           {(task.gridEnabled !== false || task.answerType !== 'text') && <NotebookTools
             formats={<>{formatButton('main', 'Stor')}{formatButton('note', 'Liten')}</>}
-            disabled={editingLocked || attemptFull} gridEnabled={task.gridEnabled !== false}
+            disabled={editingLocked || attemptFull} gridEnabled={task.gridEnabled !== false && notebookVisible}
             lineMode={lineMode} eraseMode={eraseMode}
             onLine={() => { setInputTarget('grid'); setLineMode(current => !current); setEraseMode(false) }}
             onErase={() => { setInputTarget('grid'); setEraseMode(current => !current); setLineMode(false) }}
@@ -533,13 +540,13 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             onClick={() => { toggleCrossOut(); setContextMenu(null); focusSelectedCell() }}>{selectedCell?.struck ? 'Ta bort streck' : 'Stryk/låna'}</button>
         </div>}
         {attemptFull && <p role="alert">Räknehäftet är fullt. Det du redan skrivit finns kvar; kontrollera sparstatus.</p>}
-        {pilot && <footer className="notebook-footer">
+        {pilot && !workspaceOnly && <footer className="notebook-footer">
           <button type="button" onClick={onPrevious} disabled={!onPrevious || navigationLocked}>← Förra frågan</button>
           <button type="button" onClick={() => onSubmitCollection?.(grid)}
             className={!onNext ? 'notebook-submit-ready' : ''}
             disabled={saveState?.collectionSubmitted || navigationLocked}>Lämna in svaren</button>
         </footer>}
-        {pilot && <div className="notebook-save-detail" role={saveState?.error ? 'alert' : 'status'}>
+        {pilot && !workspaceOnly && <div className="notebook-save-detail" role={saveState?.error ? 'alert' : 'status'}>
           {saveState?.error || (pending ? grid.events.length <= (saveState?.localSequence || 0)
             ? 'Sparat krypterat på den här enheten. Väntar på serverkvittens.'
             : 'Osparade ändringar. Sparas krypterat på enheten och skickas automatiskt till servern.'

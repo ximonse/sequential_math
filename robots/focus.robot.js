@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile, readState, next } from './lib/app.js'
 import { createFindings } from './lib/findings.js'
-import { answerTasks } from './lib/session.js'
+import { answerTasks, waitForServerAnswers } from './lib/session.js'
 
 const FOCUS = 'Fokuspunkten – 2 min'
 const point = page => page.getByTestId('focus-point')
@@ -150,6 +150,8 @@ test('Fokus: vanlig paus behåller uppdrag och räknesätt utan nya matematiksva
   await next(page)
   await expect(page.getByText('Dags för en paus?')).toBeVisible()
   const url = page.url()
+  const saved = await waitForServerAnswers(request, pupil.studentId, 20, readServerProfile)
+  expect(saved.ok, 'All twenty math answers must reach the server before the focus-data comparison').toBe(true)
   const before = mathData(await readServerProfile(request, pupil.studentId))
   await page.getByRole('button', { name: FOCUS, exact: true }).tap()
   await page.getByRole('button', { name: 'Tillbaka', exact: true }).tap()

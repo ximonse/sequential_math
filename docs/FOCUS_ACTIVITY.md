@@ -68,4 +68,12 @@ instruktion, signal och resultatskärm har granskats visuellt. De fem temana
 behåller svart bakgrund, vit väntpunkt, fasta signalfärger och läsbar text.
 Detta är lokal webbläsarverifiering, inte provning på fysisk elevplatta.
 Build har befintliga varningar om Browserslist, blandade imports och stor
-bundle. Ingen push eller produktionspublicering har gjorts.
+bundle.
+
+Inför publicering 2026-10-13 inväntar pausroboten uttryckligen att alla
+20 matematiksvar nått testservern innan fokusaktivitetens data jämförs.
+Det förhindrar att senare synkning av tidigare svar felaktigt ser ut som
+matematikdata skapad av fokusaktiviteten. Verify-flödet installerar nu
+Chromium eftersom projektkartans befintliga UI-test behöver en webbläsare.
+Simon har godkänt produktion efter verifiering; publiceringsstatus och
+verifierad revision följs i projektkartan.

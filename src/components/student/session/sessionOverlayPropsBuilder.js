@@ -52,6 +52,7 @@ export function buildSessionOverlayProps({
     sessionCount,
     breakDurationMinutes,
     onOpenPong: () => openBreakGame('pong'),
+    onOpenFocus: () => openBreakGame('focus'),
     onOpenSnake: () => openBreakGame('snake'),
     onTakeBreak: handleTakeBreak,
     onContinueAfterBreakSuggestion: goToNextProblemAfterBreakSuggestion,

@@ -1102,6 +1102,38 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "focus-activity",
+      "area": "Fokusuppvärmning",
+      "title": "Fokuspunkten: Upptäck och Välj",
+      "status": "Lokalt klart",
+      "purpose": "Frivillig tvåminutersaktivitet för att vänta, upptäcka och hejda ett tryck, med resultat endast för stunden.",
+      "next": "Vid separat begäran: publicera via GitHub eller planera klassprovning. Historik och matematikjämförelse kräver ett nytt beslut.",
+      "acceptance": "Båda lägena nås från start och tillåtna aktivitetspauser; uppdrag och matematisk progression bevaras; ingen fokusdata sparas.",
+      "requires": [],
+      "affects": [],
+      "decision": "Simon godkände implementation 2026-10-13: start och paus, kort progression 3–10 till 3–20 sekunder, ingen historik eller matematikjämförelse i v1. Femminutersväntan och regelväxling ingår inte.",
+      "evidence": "2026-10-13: Byggt i lokal checkout. Aktuella checkoutens 145 testfiler/691 tester passerar (äldre .claude-worktrees undantagna). Robot- och bildkontroller pågår. Inte pushat eller publicerat.\n2026-10-13: Slutlig lokal verifiering: 145 testfiler/691 tester, build och diffkontroll passerar. Robotsviten: 92/94 direkt; klassaktivering och screeninggenomgång passerade vid separat omkörning med en worker. Slutlig omkörning 9/9 inklusive samtliga 7 fokusprov. Touchhändelser, tangentbord, inga ändrade matematikdata, åtkomst och återgång verifierade. Skärmbilder av instruktion, signal och resultat granskade; färger/kontrast kontrollerade i alla fem teman. Ingen fysisk elevplatta provad. Befintliga buildvarningar kvar. Lokal commit förbereds; inte pushat eller publicerat.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "focus-build",
+          "text": "Bygg två lägen, tillfälliga resultat och åtkomst med lärarbegränsningar",
+          "done": true
+        },
+        {
+          "id": "focus-verify",
+          "text": "Verifiera robotar, touch, tangentbord, skärmbilder och build",
+          "done": true
+        },
+        {
+          "id": "focus-delivery",
+          "text": "Dokumentera verifiering och förbered en avgränsad lokal commit",
+          "done": true
+        }
+      ]
     }
   ],
   "edges": [

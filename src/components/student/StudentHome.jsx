@@ -18,6 +18,7 @@ import StudentHomeProgressCard from './StudentHomeProgressCard'
 import StudentHomeTableDrillCard from './StudentHomeTableDrillCard'
 import StudentHomeTicketCard from './StudentHomeTicketCard'
 import StudentHomeTrainingOptionsCard from './StudentHomeTrainingOptionsCard'
+import FocusActivity from './FocusActivity'
 import { mapBoardsToMultiPeriodStatus, buildPracticePath, buildTableStatus, getTableStatusClass, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE, TABLES } from './studentHomeUtils'
 
 function StudentHome() {
@@ -28,6 +29,8 @@ function StudentHome() {
   const [profile, setProfile] = useState(null)
   const [classConfig, setClassConfig] = useState({ classId: '', operations: null })
   const [assignment, setAssignment] = useState(null)
+  const [assignmentResolutionKey, setAssignmentResolutionKey] = useState('')
+  const [focusOpen, setFocusOpen] = useState(false)
   const [diagnosticAssignments, setDiagnosticAssignments] = useState([])
   const diagnosticProfileId = profile?.studentId
   const [selectedTables, setSelectedTables] = useState([])
@@ -94,34 +97,42 @@ function StudentHome() {
   const classId = String(profile?.classId || '')
   const enabledOperations = classConfig.classId === classId ? classConfig.operations : null
   useEffect(() => {
-    if (!classId) { setClassConfig({ classId: '', operations: STANDARD_OPERATIONS }); return }
+    if (!classId) { setClassConfig({ classId: '', operations: STANDARD_OPERATIONS, ready: true }); return }
     let active = true
     setClassConfig({ classId, operations: null })
     fetch(`/api/class-config?classId=${encodeURIComponent(classId)}`)
       .then(r => { if (!r.ok) throw new Error('Class config unavailable'); return r.json() })
-      .then(data => { if (active) setClassConfig({ classId, operations: normalizeClassOperations(data?.enabledOperations), talbildEnabled: data?.talbildEnabled === true, assignmentPayload: String(data?.activeAssignmentPayload || '') }) })
+      .then(data => { if (active) setClassConfig({ classId, ready: true, operations: normalizeClassOperations(data?.enabledOperations), talbildEnabled: data?.talbildEnabled === true, assignmentPayload: String(data?.activeAssignmentPayload || '') }) })
       .catch(() => { if (active) setClassConfig({ classId, operations: [] }) })
     return () => { active = false }
   }, [classId])
 
+  const assignmentSourceKey = JSON.stringify([classId, assignmentId, assignmentPayload, classConfig.classId, classConfig.ready, classConfig.assignmentPayload])
   useEffect(() => {
+    const resolve = value => { setAssignment(value); setAssignmentResolutionKey(assignmentSourceKey) }
     const fromPayload = decodeAssignmentPayload(assignmentPayload)
     if (assignmentId) {
       if (fromPayload && String(fromPayload.id) === String(assignmentId)) {
-        setAssignment(fromPayload)
+        resolve(fromPayload)
         return
       }
-      setAssignment(getAssignmentById(assignmentId))
+      resolve(getAssignmentById(assignmentId))
       return
     }
     if (fromPayload) {
-      setAssignment(fromPayload)
+      resolve(fromPayload)
       return
     }
     // "Aktivera för alla" is stored on the pupil's class on the server.
     const classAssignment = classConfig.classId === classId ? decodeAssignmentPayload(classConfig.assignmentPayload) : null
-    setAssignment(classAssignment || getActiveAssignment())
-  }, [assignmentId, assignmentPayload, classConfig, classId])
+    resolve(classAssignment || getActiveAssignment())
+  }, [assignmentId, assignmentPayload, classConfig, classId, assignmentSourceKey])
+
+  const focusAllowed = classConfig.classId === classId && classConfig.ready === true
+    && assignmentResolutionKey === assignmentSourceKey
+    && (!(assignmentId || assignmentPayload || classConfig.assignmentPayload) || !!assignment)
+    && (!assignment || assignment.breakGames === true)
+  useEffect(() => { if (!focusAllowed) setFocusOpen(false) }, [focusAllowed])
 
   const updateHomePresence = useCallback((options = {}) => {
     if (!profile) return
@@ -338,7 +349,8 @@ function StudentHome() {
 
   return (
     <div className="min-h-screen student-role-surface py-8">
-      <div className="max-w-3xl mx-auto px-4">
+      {focusOpen && focusAllowed && <FocusActivity onClose={() => setFocusOpen(false)} />}
+      <div inert={focusOpen && focusAllowed ? true : undefined} className="max-w-3xl mx-auto px-4">
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Hej {profile.displayAlias || 'elev'}</h1>
@@ -357,6 +369,7 @@ function StudentHome() {
           </div>
         </div>
         <StudentSyncStatus status={syncStatus} />
+        {focusAllowed && <button onClick={() => setFocusOpen(true)} className="mb-4 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-left font-semibold text-gray-800 focus-visible:outline-2 focus-visible:outline-gray-800">Fokuspunkten – 2 min<span className="mt-1 block text-sm font-normal text-gray-500">Frivillig fokusuppvärmning</span></button>}
 
         {diagnosticAssignments.length > 0 && <StudentDiagnosticCollections assignments={diagnosticAssignments} studentId={studentId} />}
 

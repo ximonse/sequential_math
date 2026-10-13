@@ -204,7 +204,7 @@ function SubitizingSession() {
     return (
       <BreakGameOverlay
         activeBreakGame={activeBreakGame}
-        onClose={() => setActiveBreakGame(null)}
+        onClose={game => game === 'focus' ? continueAfterBreak() : setActiveBreakGame(null)}
         studentId={studentId}
         studentName={profile.displayAlias}
         classId={profile.classId || ''}
@@ -219,6 +219,7 @@ function SubitizingSession() {
         breakDurationMinutes={BREAK_MINUTES}
         onOpenPong={() => setActiveBreakGame('pong')}
         onOpenSnake={() => setActiveBreakGame('snake')}
+        onOpenFocus={() => setActiveBreakGame('focus')}
         showGames={sessionAssignment.id === 'talbild_free' || sessionAssignment.breakGames === true}
         onTakeBreak={handleEndSession}
         onContinue={continueAfterBreak}

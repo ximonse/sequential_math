@@ -3,6 +3,7 @@ function BreakPrompt({
   breakDurationMinutes,
   onOpenPong,
   onOpenSnake,
+  onOpenFocus,
   showGames = true,
   onTakeBreak,
   onContinue
@@ -23,6 +24,7 @@ function BreakPrompt({
         <div className="space-y-3">
           {showGames && (
           <>
+          {onOpenFocus && <button onClick={onOpenFocus} className="w-full py-3 bg-gray-900 text-white font-semibold rounded-lg">Fokuspunkten – 2 min</button>}
           <button
             onClick={onOpenPong}
             className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg flex items-center justify-center gap-2"

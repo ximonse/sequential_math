@@ -1109,12 +1109,12 @@
       "title": "Fokuspunkten: Upptäck och Välj",
       "status": "Lokalt klart",
       "purpose": "Frivillig tvåminutersaktivitet för att vänta, upptäcka och hejda ett tryck, med resultat endast för stunden.",
-      "next": "Pusha godkänd leverans via GitHub; verifiera Verify, Vercel READY och matematik.ximon.se för exakt revision.",
+      "next": "Samla återkoppling vid frivillig klassprovning. Historik, matematikjämförelse och längre väntetider kräver nytt beslut.",
       "acceptance": "Båda lägena nås från start och tillåtna aktivitetspauser; uppdrag och matematisk progression bevaras; ingen fokusdata sparas.",
       "requires": [],
       "affects": [],
       "decision": "Simon godkände implementation 2026-10-13: start och paus, kort progression 3–10 till 3–20 sekunder, ingen historik eller matematikjämförelse i v1. Femminutersväntan och regelväxling ingår inte.\n2026-10-13: Simon begär produktion när agenten är nöjd med verifieringen. Publicera genom push till origin/master och Vercel-projektet sekvens.",
-      "evidence": "2026-10-13: Byggt i lokal checkout. Aktuella checkoutens 145 testfiler/691 tester passerar (äldre .claude-worktrees undantagna). Robot- och bildkontroller pågår. Inte pushat eller publicerat.\n2026-10-13: Slutlig lokal verifiering: 145 testfiler/691 tester, build och diffkontroll passerar. Robotsviten: 92/94 direkt; klassaktivering och screeninggenomgång passerade vid separat omkörning med en worker. Slutlig omkörning 9/9 inklusive samtliga 7 fokusprov. Touchhändelser, tangentbord, inga ändrade matematikdata, åtkomst och återgång verifierade. Skärmbilder av instruktion, signal och resultat granskade; färger/kontrast kontrollerade i alla fem teman. Ingen fysisk elevplatta provad. Befintliga buildvarningar kvar. Lokal commit förbereds; inte pushat eller publicerat.\n2026-10-13 publiceringskontroll: 9/9 robotprov passerar med en worker, inklusive samtliga fokusprov. Pausroboten inväntar alla 20 tidigare matematiksvar på testservern före jämförelse; en osynkad jämförelse gav ett falskt fel. Befintlig GitHub Verify saknade Chromium för projektkartans UI-test; installationssteg tillagt. Arkitektur och projektkartans täckning mot origin/master passerar. Publicering godkänd men ännu inte pushad.",
+      "evidence": "2026-10-13: Byggt i lokal checkout. Aktuella checkoutens 145 testfiler/691 tester passerar (äldre .claude-worktrees undantagna). Robot- och bildkontroller pågår. Inte pushat eller publicerat.\n2026-10-13: Slutlig lokal verifiering: 145 testfiler/691 tester, build och diffkontroll passerar. Robotsviten: 92/94 direkt; klassaktivering och screeninggenomgång passerade vid separat omkörning med en worker. Slutlig omkörning 9/9 inklusive samtliga 7 fokusprov. Touchhändelser, tangentbord, inga ändrade matematikdata, åtkomst och återgång verifierade. Skärmbilder av instruktion, signal och resultat granskade; färger/kontrast kontrollerade i alla fem teman. Ingen fysisk elevplatta provad. Befintliga buildvarningar kvar. Lokal commit förbereds; inte pushat eller publicerat.\n2026-10-13 publiceringskontroll: 9/9 robotprov passerar med en worker, inklusive samtliga fokusprov. Pausroboten inväntar alla 20 tidigare matematiksvar på testservern före jämförelse; en osynkad jämförelse gav ett falskt fel. Befintlig GitHub Verify saknade Chromium för projektkartans UI-test; installationssteg tillagt. Arkitektur och projektkartans täckning mot origin/master passerar. Publicering godkänd men ännu inte pushad.\n2026-10-13 PRODUKTION: origin/master pushad till 986c1cecd3b196389c443521c4841b38d333c9ed. GitHub Verify 38457424499 success (arkitektur, projektkarta, tester, build). Vercel sekvens, prj_EoQGQufPrEgDHwHr6FlnFpd9IwNo, deployment dpl_71QhS1JuUzDbpiSaoSqKQ7527siW READY; matematik.ximon.se verifierat på samma deployment/revision. Publik inloggningssida laddad och /assets/index-BwIFAnsx.js HTTP 200 med Fokuspunkten, signalregel och tillfälliga resultat. SHA256 3aa9a8776095dd564bee3b565824a03c5fac9c54c9231937179a4f7d26bf615a matchar lokalt verifierat bygge. Elevflöden verifierade med lokala isolerade robotkonton; inget riktigt elevkonto provat i produktion. Publiceringsbeläggen sparas i en lokal dokumentationscommit.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -1136,7 +1136,7 @@
         {
           "id": "focus-production",
           "text": "Verifiera GitHub CI, Vercel sekvens och produktionsdomän efter godkänd push",
-          "done": false
+          "done": true
         }
       ]
     }

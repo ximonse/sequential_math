@@ -77,3 +77,20 @@ matematikdata skapad av fokusaktiviteten. Verify-flödet installerar nu
 Chromium eftersom projektkartans befintliga UI-test behöver en webbläsare.
 Simon har godkänt produktion efter verifiering; publiceringsstatus och
 verifierad revision följs i projektkartan.
+
+## Produktion 2026-10-13
+
+Publicerat genom GitHub `origin/master`, revision
+`986c1cecd3b196389c443521c4841b38d333c9ed` (innehåller Fokuspunkten från
+`d27e3a4`). [GitHub Verify](https://github.com/ximonse/sequential_math/actions/runs/38457424499)
+passerade arkitektur, projektkarta, tester och build.
+Vercel-projektet `sekvens` visar READY för
+`dpl_71QhS1JuUzDbpiSaoSqKQ7527siW`, och
+[matematik.ximon.se](https://matematik.ximon.se) pekar på den leveransen.
+
+Den publika inloggningssidan laddades i en separat webbläsarkontext.
+`/assets/index-BwIFAnsx.js` svarade HTTP 200, innehöll Fokuspunkten och
+hade samma SHA256 som lokalt verifierat bygge:
+`3aa9a8776095dd564bee3b565824a03c5fac9c54c9231937179a4f7d26bf615a`.
+Funktionsprov med elevinloggning, touch och återgång gjordes i den isolerade
+lokala robotmiljön; detta är inte ett prov av ett riktigt elevkonto i produktion.

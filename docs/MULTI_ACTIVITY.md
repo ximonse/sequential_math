@@ -103,3 +103,17 @@ klocka med styrd progression. Separat omkörning av screening och samtliga
 fem MULTI-prov gav 6/6, utan regelbrott. Surfplatteinstruktion, felpåminnelse
 och mobilbild 390 × 667 har granskats; påminnelsen ryms inom rätt ruta.
 Denna ändring är lokalt verifierad och ännu inte publicerad.
+
+## Produktion: tydligare regler och felpåminnelse 2026-10-14
+
+Publicerat efter Simons begäran via GitHub master, revision
+`04d0a4bbe88797f17db817cc8d9eafbf536c3cb3` (funktionscommit `5017eb9`).
+[GitHub Verify](https://github.com/ximonse/sequential_math/actions/runs/38579234875)
+passerar. Vercel `sekvens`, deployment `dpl_EnBP8QbaMbjFxXXoQhKM7k4vEZVj`,
+är READY och produktionsdomänen visar samma revision.
+Den publika inloggningssidan laddades i isolerad webbläsare.
+`/assets/index-BW1JY7Mf.js` svarar HTTP 200, innehåller de nya rutreglerna
+och felpåminnelsen och matchar det lokalt testade byggets SHA256:
+`214af6fc1468b6aec11a41705423ac09502d5ee6fe6c588101b0ea1246774723`.
+Elevflöden och bildkontroller gjordes lokalt; inget riktigt elevkonto
+provades i produktion. Publiceringsbeläggen sparas i en lokal dokumentationscommit.

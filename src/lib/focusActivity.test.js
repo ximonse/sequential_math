@@ -27,7 +27,7 @@ describe('focus activity', () => {
       advance(1000)
       expect(session.signal).toBe(signal)
       if (signal === 'go') session.press()
-      advance(2000)
+      else advance(2000)
       expect(session.practiceFeedback.outcome).toBe(signal === 'go' ? 'hit' : 'withheld')
       advance(1800)
     }
@@ -42,11 +42,14 @@ describe('focus activity', () => {
     session.start()
     const due = session.due
     session.press(); session.press()
+    expect(session.early).toBe(1)
+    advance(400); session.press()
     expect(session.early).toBe(2)
     expect(session.due).toBe(due)
-    advance(3000); advance(220)
+    advance(2600); advance(220)
     session.press(); session.press()
-    advance(1780)
+    expect(session.signal).toBe(null)
+    expect(session.due - session.now()).toBe(3000)
     expect(session.summary()).toMatchObject({ hits: 1, wrong: 0, median: 220, early: 2 })
   })
   it('counts missed and withheld signals separately from wrong presses', () => {
@@ -60,13 +63,13 @@ describe('focus activity', () => {
     advance(session.due - session.now()); advance(2000)
     expect(session.summary().misses).toBe(1)
   })
-  it('excludes paused signals, freezes time and resumes with a new wait', () => {
+  it('keeps completed presses, excludes unanswered paused signals and freezes time', () => {
     const { session, advance } = fixture()
     session.start(); advance(3000); advance(100); session.press(); session.pause()
     advance(300000)
     expect(session.phase).toBe('paused')
     expect(session.activeTime()).toBe(3100)
-    expect(session.summary().hits).toBe(0)
+    expect(session.summary().hits).toBe(1)
     session.resume()
     expect(session.signal).toBe(null)
     expect(session.due - session.now()).toBe(3000)
@@ -75,14 +78,14 @@ describe('focus activity', () => {
   })
   it('finishes at 120 active seconds and discards unfinished signals, including on abort', () => {
     const { session, set } = fixture()
-    session.start(); set(119000); session.press(); set(120000)
+    session.start(); set(119000); set(120000)
     expect(session.phase).toBe('finished')
     expect(session.aborted).toBe(false)
     expect(session.summary().hits).toBe(0)
     const other = fixture()
     other.session.start(); other.advance(3000); other.session.press(); other.session.finish()
     expect(other.session.aborted).toBe(true)
-    expect(other.session.summary().hits).toBe(0)
+    expect(other.session.summary().hits).toBe(1)
   })
   it('does not turn a late-rendered waiting point green as a consequence of pressing', () => {
     let now = 0
@@ -90,5 +93,22 @@ describe('focus activity', () => {
     session.start(); now = 3100; session.press()
     expect(session.signal).toBe(null)
     expect(session.early).toBe(1)
+  })
+  it('immediately completes both go and no-go presses and ignores their quick second taps', () => {
+    for (const [mode, random, outcome] of [['discover', () => 0, 'hits'], ['choose', () => 0.8, 'wrong']]) {
+      const { session, advance } = fixture(random)
+      session.mode = mode; session.start()
+      advance(session.due)
+      session.press()
+      expect(session.signal).toBe(null)
+      expect(session.summary()[outcome]).toBe(1)
+      const due = session.due
+      advance(120); session.press()
+      expect(session.early).toBe(0)
+      expect(session.due).toBe(due)
+      advance(280); session.press()
+      expect(session.early).toBe(1)
+      expect(session.summary()[outcome]).toBe(1)
+    }
   })
 })

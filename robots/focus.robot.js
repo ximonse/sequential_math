@@ -8,12 +8,17 @@ const point = page => page.getByTestId('focus-point')
 const mathData = profile => JSON.stringify(Object.fromEntries(Object.entries(profile || {}).filter(([key]) => /problem|mastery|level|abilit|stats|subitizing/i.test(key))))
 const payload = assignment => Buffer.from(JSON.stringify({ v: 1, id: 'focus-robot', kind: 'standard', title: 'Focus robot assignment', problemTypes: ['multiplication'], minLevel: 3, maxLevel: 3, targetCount: 40, createdAt: Date.now(), ...assignment })).toString('base64')
 
-async function practice(page, mode = 'Upptäck') {
+const surface = page => page.getByRole('dialog', { name: 'Fokuspunkten', exact: true })
+const tapScreen = page => page.touchscreen.tap(25, 400)
+
+async function practice(page, mode = '1 - FOKUS') {
   await page.getByRole('button', { name: new RegExp(`^${mode}`) }).click()
   for (let i = 0; i < 3; i++) {
     await page.clock.runFor(1000)
-    if (await point(page).getAttribute('data-signal') === 'go') await page.getByRole('button', { name: 'Dutta', exact: true }).tap()
-    await page.clock.runFor(3800)
+    if (await point(page).getAttribute('data-signal') === 'go') {
+      await tapScreen(page)
+      await page.clock.runFor(1800)
+    } else await page.clock.runFor(3800)
   }
   await page.getByRole('button', { name: 'Starta passet' }).click()
 }
@@ -36,7 +41,7 @@ test('Fokus: svart yta, vit punkt och läsbar text behålls i alla teman', async
     const color = await text.evaluate(element => getComputedStyle(element).color)
     // A fixed light instruction colour prevents the global theme from making it dark on black.
     expect(color).toBe('rgb(148, 163, 184)')
-    await page.getByRole('button', { name: /^Upptäck/ }).click()
+    await page.getByRole('button', { name: /^1 - FOKUS/ }).click()
     await expect(point(page)).toHaveCSS('background-color', 'rgb(255, 255, 255)')
     await expect(page.getByRole('dialog')).toHaveCSS('background-color', 'rgb(0, 0, 0)')
     await page.clock.runFor(1000)
@@ -44,7 +49,7 @@ test('Fokus: svart yta, vit punkt och läsbar text behålls i alla teman', async
     await page.getByRole('button', { name: 'Avsluta', exact: true }).click()
     await page.getByRole('button', { name: 'Tillbaka', exact: true }).last().click()
     await page.getByRole('button', { name: new RegExp(`^${FOCUS}`) }).click()
-    await page.getByRole('button', { name: /^Välj/ }).click()
+    await page.getByRole('button', { name: /^2 - KONTROLL/ }).click()
     await page.clock.runFor(5800)
     await expect(point(page)).toHaveAttribute('data-signal', 'red')
     await expect(point(page)).toHaveCSS('background-color', 'rgb(248, 113, 113)')
@@ -57,6 +62,29 @@ test('Fokus: svart yta, vit punkt och läsbar text behålls i alla teman', async
   }
 })
 
+test('Fokus: hela skärmen återställer en halvstor prick direkt och skyddar mot dubbeltryck', async ({ page, request }, testInfo) => {
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await page.clock.install()
+  await login(page, await createPupil(request))
+  await page.getByRole('button', { name: new RegExp(`^${FOCUS}`) }).tap()
+  await practice(page)
+  await expect(surface(page)).toHaveText('Avsluta')
+  await expect(point(page)).toHaveCSS('width', '14px')
+  await expect(point(page)).toHaveCSS('height', '14px')
+  await expect(page.getByRole('button', { name: 'Avsluta', exact: true })).toHaveCSS('color', 'rgb(148, 163, 184)')
+  await expect(page.getByRole('button', { name: 'Dutta', exact: true })).toHaveCount(0)
+  await untilSignal(page)
+  await tapScreen(page)
+  await expect(point(page)).toHaveAttribute('data-signal', 'waiting')
+  await expect(point(page)).toHaveCSS('background-color', 'rgb(255, 255, 255)')
+  await page.clock.runFor(120)
+  await page.touchscreen.tap(740, 960)
+  await page.screenshot({ path: testInfo.outputPath('focus-minimal-tablet.png') })
+  await page.getByRole('button', { name: 'Avsluta', exact: true }).tap()
+  await expect(page.locator('dl > div').filter({ hasText: 'Träffar' }).locator('dd')).toHaveText('1')
+  await expect(page.locator('dl > div').filter({ hasText: 'För tidiga tryck' }).locator('dd')).toHaveText('0')
+})
+
 test('Fokus: touch, övningssignaler, pausad tid och resultat utan matematikdata', async ({ page, request }, testInfo) => {
   await page.setViewportSize({ width: 768, height: 1024 })
   await page.clock.install()
@@ -64,15 +92,15 @@ test('Fokus: touch, övningssignaler, pausad tid och resultat utan matematikdata
   await login(page, pupil)
   await page.getByRole('button', { name: new RegExp(`^${FOCUS}`) }).tap()
   await page.screenshot({ path: testInfo.outputPath('focus-tablet-setup.png') })
-  await practice(page, 'Välj')
+  await practice(page, '2 - KONTROLL')
   const before = mathData(await readServerProfile(request, pupil.studentId))
   await untilSignal(page)
   const signal = await point(page).getAttribute('data-signal')
   await page.screenshot({ path: testInfo.outputPath('focus-tablet-signal.png') })
   if (signal === 'go') {
-    await page.getByRole('button', { name: 'Dutta', exact: true }).tap()
-    await page.getByRole('button', { name: 'Dutta', exact: true }).tap()
-    await expect(page.getByText('Tryck registrerat', { exact: true })).toBeVisible()
+    await tapScreen(page)
+    await tapScreen(page)
+    await expect(point(page)).toHaveAttribute('data-signal', 'waiting')
   }
   const visibility = hidden => page.evaluate(value => {
     Object.defineProperty(document, 'hidden', { value, configurable: true })
@@ -98,12 +126,13 @@ test('Fokus: tangentbord fungerar och tabbfokus stannar i aktiviteten', async ({
   await login(page, await createPupil(request))
   await page.getByRole('button', { name: new RegExp(`^${FOCUS}`) }).click()
   await practice(page)
-  await page.getByRole('button', { name: 'Dutta', exact: true }).tap()
+  await tapScreen(page)
+  await page.clock.runFor(400)
   await page.keyboard.press('Space')
   await untilSignal(page)
-  await page.getByRole('button', { name: 'Dutta', exact: true }).focus()
+  await surface(page).focus()
   await page.keyboard.press('Space')
-  await expect(page.getByText('Tryck registrerat', { exact: true })).toBeVisible()
+  await expect(point(page)).toHaveAttribute('data-signal', 'waiting')
   await page.keyboard.press('Tab')
   await expect(page.getByRole('button', { name: 'Avsluta', exact: true })).toBeFocused()
   await page.clock.runFor(2000)

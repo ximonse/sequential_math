@@ -2,6 +2,7 @@ export const FOCUS_DURATION_MS = 120000
 export const FOCUS_SIGNAL_MS = 2000
 const PRACTICE_WAIT_MS = 1000
 const FEEDBACK_MS = 1800
+export const FOCUS_DOUBLE_PRESS_MS = 400
 
 export function focusWaitMs(elapsed, random = Math.random) {
   const maximum = elapsed < 40000 ? 10000 : elapsed < 80000 ? 15000 : 20000
@@ -26,7 +27,7 @@ export class FocusActivitySession {
     this.early = 0
     this.practiceIndex = 0
     this.signal = null
-    this.ackUntil = 0
+    this.ignorePressUntil = 0
   }
 
   practice(mode) {
@@ -60,6 +61,18 @@ export class FocusActivitySession {
     this.reactionMs = outcome === 'hit' ? now - this.signalStart : null
   }
 
+  completeSignal(now) {
+    if (!this.outcome) this.record(this.signal === 'go' ? 'miss' : 'withheld', now)
+    if (this.phase === 'running') {
+      this.results.push({ outcome: this.outcome, reactionMs: this.reactionMs })
+      this.queue(now)
+    } else {
+      this.practiceFeedback = { signal: this.signal, outcome: this.outcome }
+      this.signal = null
+      this.due = now + FEEDBACK_MS
+    }
+  }
+
   tick() {
     const now = this.now()
     if (this.phase === 'running' && this.activeTime(now) >= FOCUS_DURATION_MS) {
@@ -79,13 +92,7 @@ export class FocusActivitySession {
       this.signalStart = now
       this.due = now + FOCUS_SIGNAL_MS
     } else {
-      if (!this.outcome) this.record(this.signal === 'go' ? 'miss' : 'withheld', now)
-      if (this.phase === 'running') this.results.push({ outcome: this.outcome, reactionMs: this.reactionMs })
-      if (this.phase === 'practice') {
-        this.practiceFeedback = { signal: this.signal, outcome: this.outcome }
-        this.signal = null
-        this.due = now + FEEDBACK_MS
-      } else this.queue(now)
+      this.completeSignal(now)
     }
   }
 
@@ -94,10 +101,14 @@ export class FocusActivitySession {
     if (this.signal || (this.phase === 'running' && this.activeTime() >= FOCUS_DURATION_MS)) this.tick()
     if (!['practice', 'running'].includes(this.phase) || this.practiceFeedback || this.outcome) return
     const now = this.now()
+    if (now < this.ignorePressUntil) return
+    this.ignorePressUntil = now + FOCUS_DOUBLE_PRESS_MS
     if (!this.signal) {
       if (this.phase === 'running') this.early += 1
-    } else this.record(this.signal === 'go' ? 'hit' : 'wrong', now)
-    this.ackUntil = now + 450
+    } else {
+      this.record(this.signal === 'go' ? 'hit' : 'wrong', now)
+      this.completeSignal(now)
+    }
   }
 
   pause() {
@@ -107,7 +118,6 @@ export class FocusActivitySession {
     this.phase = 'paused'
     this.signal = null
     this.practiceFeedback = null
-    this.ackUntil = 0
   }
 
   resume() {

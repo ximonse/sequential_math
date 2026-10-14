@@ -1,7 +1,7 @@
 # Fokuspunkten
 
-Frivillig fokusuppvärmning med två lägen: Upptäck (tryck vid grön cirkel)
-och Välj (tryck vid grön cirkel, avstå vid röd cirkel eller grön fyrkant).
+Frivillig fokusuppvärmning med två lägen: **1 - FOKUS** (tryck vid grön cirkel)
+och **2 - KONTROLL** (tryck vid grön cirkel, avstå vid röd cirkel eller grön fyrkant).
 Aktiviteten gör inga påståenden om förbättrade skolresultat och ersätter
 inte en rörelsepaus.
 
@@ -16,20 +16,27 @@ inom befintlig träningsram. Pong och Snake behåller sina befintliga flöden.
 
 ## Pass och signaler
 
-Tre övningssignaler med instruktion följs av en uttrycklig start av ett
-120 sekunder långt pass. Välj övar alla tre signaltyperna före passet.
+Instruktionerna visas före start. Tre övningssignaler följs av en uttrycklig
+start av ett 120 sekunder långt pass. KONTROLL övar alla tre signaltyperna före passet.
 Under passet väljs grön cirkel med sannolikhet 70 %, röd cirkel 15 % och
 grön fyrkant 15 %. Slumpade väntetider är 3–10 sekunder under första
 40 sekunderna, 3–15 under nästa 40 och 3–20 under sista 40. Progressionen
 börjar om varje pass; ingen nivå sparas.
 
-Signalen visas i två sekunder. Första trycket avgör utfallet; fler tryck
-under samma signal ignoreras. För tidiga tryck räknas utan att flytta
-signalens tidpunkt. Bekräftelsen säger endast
-att ett tryck registrerats. Signalutfallet färdigställs vid signalens slut.
+Under både övning och pass visas endast en centrerad prick (14 × 14 px,
+hälften av ursprungliga diametern) och en grå Avsluta-knapp. Hela skärmen
+är tryckyta utom knappen; ingen rubrik, instruktion, nedräkning eller
+tryckbekräftelse visas under körningen.
+
+Signalen visas i högst två sekunder. Första trycket avgör och färdigställer
+utfallet direkt; pricken återställs samtidigt till en vit cirkel och nästa
+väntan börjar. Tryck inom 400 ms efter ett registrerat tryck ignoreras,
+så ett snabbt dubbeltryck inte blir ett för tidigt tryck. Övriga för tidiga
+tryck räknas utan att flytta signalens tidpunkt. En obesvarad signal
+färdigställs när dess svarstid tar slut.
 
 När fliken döljs fryser den aktiva tiden och pågående signal kasseras utan
-resultat, även om eleven redan tryckt. Eleven måste välja Fortsätt och
+resultat. Redan besvarade signaler är färdiga och behålls. Eleven måste välja Fortsätt och
 en ny väntetid börjar. En pågående övningssignal görs om. Avslut och
 120-sekundersgränsen kasserar också ofärdiga signaler. Timers städas vid
 paus, avslut och när aktiviteten lämnas.
@@ -37,14 +44,16 @@ paus, avslut och när aktiviteten lämnas.
 ## Resultat och gräns mot matematiken
 
 Resultatet innehåller träffar, missade signaler, för tidiga tryck, tryck på
-fel signal, korrekt avstådda signaler (Välj) och medianreaktionstid för
+fel signal, korrekt avstådda signaler (KONTROLL) och medianreaktionstid för
 träffar när sådana finns. Avbrutna pass märks som avbrutna. Resultaten
 finns endast i komponentens minne och försvinner när aktiviteten lämnas.
 
 Ingen fokusdata skrivs till elevprofil, matematiklogg, mastery eller API.
 Befintliga paushändelser kan registrera öppning/stängning från vanlig
 träning, utan signaler eller resultat. Reaktionstid använder
-`performance.now()`. Touch, mus och tangentbord aktiverar samma knapp.
+`performance.now()`. Touch och mus registreras vid pointerdown på skärmen.
+Mellanslag och Enter registrerar samma svar när tryckytan har fokus;
+tangentrepetition ignoreras. Avsluta räknas aldrig som ett svar.
 
 Väntetider och svarsfönster är produktens provningsvärden, inte
 forskningsfastställda normalvärden eller diagnostiska gränser.
@@ -94,3 +103,14 @@ hade samma SHA256 som lokalt verifierat bygge:
 `3aa9a8776095dd564bee3b565824a03c5fac9c54c9231937179a4f7d26bf615a`.
 Funktionsprov med elevinloggning, touch och återgång gjordes i den isolerade
 lokala robotmiljön; detta är inte ett prov av ett riktigt elevkonto i produktion.
+
+## Lokal ändring 2026-10-14
+
+Den rena tryckytan, halverade pricken, direkt återställning, dubbeltrycksskyddet
+och de nya lägesnamnen är byggda lokalt efter Simons begäran. 145 testfiler/
+692 tester, build och åtta fokusrobotprov passerar. Skärmbild i 768 × 1024
+har granskats; pricken är centrerad och endast den grå Avsluta-texten syns.
+Hela robotsviten passerar: 95 av 95 prov och inga regelbrott. Arkitektur,
+projektkarta och lint för ändrade kodfiler passerar också.
+Denna ändring är ännu inte publicerad;
+produktionsbeläggen ovan gäller den tidigare versionen.

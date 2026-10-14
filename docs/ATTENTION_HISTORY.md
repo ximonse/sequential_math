@@ -62,4 +62,22 @@ och hela robotsviten 104/104 passerar, utan regelbrott. Lint för nya och
 Arkitektur och projektkarta passerar. Lärarhistorikens skärmbild har granskats.
 Touch och tangentbord har provats i lokal webbläsare, inte fysisk elevplatta.
 Produktionspublicering följer Simons begäran att publicera när allt är testat
-och färdigt. Bekräftad produktionsrevision dokumenteras efter leveransen.
+och färdigt.
+
+## Produktion 2026-10-14
+
+Publicerat genom GitHub `origin/master`, revision
+`ff9262550b569d1275cbcd8147ca368b974ad18d`.
+[GitHub Verify](https://github.com/ximonse/sequential_math/actions/runs/38521583255)
+passerar arkitektur, projektkarta, tester och build. Vercel-projektet
+`sekvens`, deployment `dpl_CWVySp7wNDQmxCKMyN6AJFdErxEs`, är READY och
+[matematik.ximon.se](https://matematik.ximon.se) visar samma revision.
+
+Den publika inloggningssidan laddades i isolerad webbläsarkontext.
+`/assets/index-RJ6kpL6g.js` svarar HTTP 200 och innehåller lärarhistoriken,
+resultathändelsen och sparbekräftelsen. SHA256 matchar lokalt testat bygge:
+`f5fba3b71028a6a8292c43eb7801fe93d10cba3bbfc73d13dbd7235dc71f01b0`.
+Ett oinloggat POST till `/api/me/events` nekas med HTTP 401.
+Fulla elev–lärarflöden verifierades i lokal robotmiljö; inga riktiga elevkonton
+eller nya historikposter användes för produktionskontrollen.
+Publiceringsbeläggen sparas i en lokal dokumentationscommit.

@@ -127,3 +127,13 @@ Slutlig lokal verifiering av dessa ändringar: 146 testfiler/703 tester,
 build och hela robotsviten (100/100, utan regelbrott) passerar. Lint,
 arkitektur och projektkartans kontroll passerar. Surfplatte- och mobilbilder
 har granskats. Dessa ändringar är ännu inte publicerade.
+
+## Produktion 2026-10-14
+
+Den rena tryckytan, halverade pricken, direkt återställning,
+dubbeltrycksskyddet, KONTROLLs signalgaranti och MULTI är nu publicerade
+via GitHub master, revision `ea0acea71e128e805b234bd6e9110316e8591336`.
+GitHub Verify 38490758041 passerar. Vercel `sekvens`, deployment
+`dpl_FM8Ab57nG3Jv7YfvfcNL5Z8ghmb6`, är READY och produktionsdomänen
+visar samma revision. Levererat JavaScript matchar det lokalt verifierade
+bygget exakt; se [MULTI:s publiceringsbelägg](MULTI_ACTIVITY.md).

@@ -62,4 +62,18 @@ Byggt lokalt 2026-10-14. 146 testfiler/703 tester och build passerar.
 Hela robotsviten passerar: 100 av 100 prov, utan regelbrott. Lint för
 ändrade kodfiler, arkitektur och projektkartans kontroll passerar också.
 Touchhändelser har verifierats i webbläsaren; ingen fysisk elevplatta har
-provats. Ändringen är lokalt verifierad och ännu inte publicerad.
+provats.
+
+## Produktion 2026-10-14
+
+Publicerat via GitHub master, revision `ea0acea71e128e805b234bd6e9110316e8591336`.
+[GitHub Verify](https://github.com/ximonse/sequential_math/actions/runs/38490758041)
+passerar. Vercel-projektet `sekvens`, deployment
+`dpl_FM8Ab57nG3Jv7YfvfcNL5Z8ghmb6`, är READY och äger
+[matematik.ximon.se](https://matematik.ximon.se) för denna revision.
+Den publika inloggningssidan laddades i isolerad webbläsarkontext.
+`/assets/index-80MHqhxg.js` svarar HTTP 200, innehåller MULTI och båda
+fokuslägena och matchar det lokalt testade byggets SHA256:
+`b30f97891290f63cc6d7f5bb79521ae31b191ecaf738eb96673101437bfd1682`.
+Elevflödena provades med lokala robotkonton; inget riktigt elevkonto
+provades i produktion. Publiceringsbeläggen sparas i en lokal dokumentationscommit.

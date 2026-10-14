@@ -18,7 +18,16 @@
 .focus-activity .focus-back { color: var(--focus-muted); background: transparent; border: 0; padding: 12px 16px; border-radius: 16px; }
 .focus-activity .multi-stage { position: absolute; inset: 80px 20px 90px; pointer-events: none; display: grid; grid-template-rows: 1fr 1fr; gap: 16px; max-width: 520px; margin: auto; }
 .focus-activity .multi-zone { position: relative; display: flex; align-items: center; justify-content: center; border-radius: 32px; border: 1px solid #283435; background: #151d1e; }
-.focus-activity .multi-zone-label { position: absolute; top: 16px; left: 20px; font-size: 12px; letter-spacing: .15em; color: #7e9290; }
+.focus-activity .multi-zone-label { position: absolute; top: 16px; left: 20px; font-size: 16px; font-weight: 600; color: var(--focus-mint); }
+.focus-activity .multi-zone[data-rule="count"] .multi-zone-label { color: var(--focus-blue); }
+.focus-activity .multi-instruction { border: 1px solid #718e87; }
+.focus-activity .multi-instruction[data-rule="count"] { border-color: #758d9e; background: #1c262d; }
+.focus-activity .multi-instruction h3 { color: var(--focus-mint); font-size: 18px; }
+.focus-activity .multi-instruction[data-rule="count"] h3 { color: var(--focus-blue); }
+.focus-activity .multi-zone[data-correction="true"] { flex-direction: column; gap: 10px; padding: 48px 12px 14px; }
+.focus-activity .multi-zone[data-correction="true"] .multi-symbol { width: 90px; height: 90px; }
+.focus-activity .multi-correction { text-align: center; font-size: 14px; line-height: 1.4; }
+.focus-activity .multi-correction-title { color: var(--focus-muted); margin-bottom: 6px; }
 .focus-activity .multi-zone[data-active="true"] { border-color: #718e87; background: #1b2928; }
 .focus-activity .multi-zone[data-rule="count"][data-active="true"] { border-color: #758d9e; background: #1c262d; }
 .focus-activity .multi-symbol { width: 140px; height: 140px; overflow: visible; }
@@ -29,9 +38,17 @@
 .focus-activity .multi-hit-label { position: absolute; bottom: 24px; left: 0; right: 0; text-align: center; font-size: 14px; }
 .focus-activity .multi-practice-feedback { position: absolute; bottom: 66px; left: 20px; right: 20px; z-index: 2; text-align: center; pointer-events: none; color: var(--focus-ink); font-size: 14px; }
 .focus-activity .multi-rule-card { color: var(--focus-ink); background: #202b2b; border-radius: 18px; padding: 14px 16px; }
+@media (max-height: 750px) {
+  .focus-activity .multi-zone[data-correction="true"] { flex-direction: row; gap: 8px; padding: 38px 8px 8px; }
+  .focus-activity .multi-zone[data-correction="true"] .multi-symbol { width: 60px; height: 60px; }
+  .focus-activity .multi-correction { font-size: 12px; }
+}
 @media (max-height: 550px) {
   .focus-activity .multi-stage { inset: 55px 16px 64px; gap: 8px; }
   .focus-activity .multi-symbol { width: 80px; height: 80px; }
-  .focus-activity .multi-zone-label { top: 8px; left: 12px; }
+  .focus-activity .multi-zone-label { top: 8px; left: 12px; font-size: 13px; }
+  .focus-activity .multi-zone[data-correction="true"] { flex-direction: row; gap: 8px; padding: 30px 8px 8px; }
+  .focus-activity .multi-zone[data-correction="true"] .multi-symbol { width: 60px; height: 60px; }
+  .focus-activity .multi-correction { font-size: 12px; }
   .focus-activity .multi-practice-feedback { bottom: 46px; font-size: 12px; }
 }

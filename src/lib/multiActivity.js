@@ -5,6 +5,7 @@ export const MULTI_RESPONSE_MS = 4000
 const WAIT_MS = 600
 const PRACTICE_FEEDBACK_MS = 1200
 const FEEDBACK_MS = 500
+export const MULTI_CORRECTION_MS = 1800
 const DOUBLE_PRESS_MS = 400
 
 export function multiAnswer(trial) {
@@ -92,7 +93,9 @@ export class MultiActivitySession {
     }
     this.feedback = result
     this.trial = null
-    this.due = this.now() + (this.phase === 'practice' ? PRACTICE_FEEDBACK_MS : FEEDBACK_MS)
+    const feedbackMs = !result.correct && !result.timeout ? MULTI_CORRECTION_MS
+      : this.phase === 'practice' ? PRACTICE_FEEDBACK_MS : result.timeout ? MULTI_CORRECTION_MS : FEEDBACK_MS
+    this.due = this.now() + feedbackMs
   }
 
   tick() {

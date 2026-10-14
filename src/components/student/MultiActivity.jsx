@@ -6,6 +6,17 @@ import './focusActivities.css'
 
 const RULES = { shape: 'Form', count: 'Antal' }
 const FIGURES = { diamond: 'romb', square: 'fyrkant' }
+const RULE_REMINDERS = { shape: 'Övre rutan: titta på formen.', count: 'Nedre rutan: räkna prickarna.' }
+const RULE_ANSWERS = { shape: 'Romb → vänster. Fyrkant → höger.', count: 'Två prickar → vänster. Tre prickar → höger.' }
+
+function MultiCorrection({ result }) {
+  return <div className="multi-correction" data-testid="multi-correction" role="status">
+    <p className="multi-correction-title">{result.timeout ? 'Tiden gick ut. Kom ihåg:' : 'Kom ihåg:'}</p>
+    <p className="font-semibold">{RULE_REMINDERS[result.rule]}</p>
+    <p className="mt-2">{RULE_ANSWERS[result.rule]}</p>
+    <p className="mt-2 font-semibold">Här skulle du trycka {result.expectedSide === 'left' ? 'vänster' : 'höger'}.</p>
+  </div>
+}
 
 function MultiSymbol({ trial }) {
   const positions = trial.dots === 2 ? [62, 98] : [54, 80, 106]
@@ -54,6 +65,8 @@ export default function MultiActivity({ onClose, onBack, studentId }) {
     else dialog.current?.querySelector('button')?.focus()
   }, [session.phase])
   const trial = session.trial
+  const correction = session.feedback && !session.feedback.correct ? session.feedback : null
+  const shownTrial = trial || correction
   const displayedTrial = trial || session.feedback || session.trials?.[session.trialIndex]
   const practiceRule = session.trialIndex < 4 ? 'Bara form' : session.trialIndex < 8 ? 'Bara antal' : 'Blandade regler'
   const close = () => active || session.phase === 'paused' ? act(() => session.finish()) : session.phase === 'setup' ? onBack() : onClose()
@@ -85,12 +98,13 @@ export default function MultiActivity({ onClose, onBack, studentId }) {
         <div className="pointer-events-none absolute left-5 top-5 text-sm focus-muted">MULTI{session.phase === 'practice' ? ` · ${practiceRule} · ${session.trialIndex + 1}/16` : ''}</div>
         <button data-close className="focus-back absolute right-3 top-2 z-10" onClick={close}>Avsluta</button>
         <div className="multi-stage">
-          {['shape', 'count'].map(rule => <div key={rule} className="multi-zone" data-rule={rule} data-active={trial?.rule === rule}>
-            <span className="multi-zone-label">{RULES[rule].toUpperCase()}</span>
-            {trial?.rule === rule && <div data-testid="multi-trial" data-rule={rule} data-shape={trial.shape} data-dots={trial.dots}><MultiSymbol trial={trial} /></div>}
+          {['shape', 'count'].map(rule => <div key={rule} className="multi-zone" data-rule={rule} data-active={shownTrial?.rule === rule} data-correction={correction?.rule === rule}>
+            <span className="multi-zone-label">{rule === 'shape' ? 'Övre rutan' : 'Nedre rutan'} · {RULES[rule].toUpperCase()}</span>
+            {shownTrial?.rule === rule && <div data-testid={trial ? 'multi-trial' : undefined} data-rule={rule} data-shape={shownTrial.shape} data-dots={shownTrial.dots}><MultiSymbol trial={shownTrial} /></div>}
+            {correction?.rule === rule && <MultiCorrection result={correction} />}
           </div>)}
         </div>
-        {session.phase === 'practice' && <div className="multi-practice-feedback" role="status">
+        {session.phase === 'practice' && !correction && <div className="multi-practice-feedback" role="status">
           {session.feedback && <p className="mb-1">{session.feedback.correct ? 'Rätt!' : session.feedback.timeout ? 'Tiden gick ut.' : 'Prova nästa uppgift.'}</p>}
           {displayedTrial && <p>{displayedTrial.rule === 'shape' ? 'Form: romb till vänster, fyrkant till höger.' : 'Antal: två till vänster, tre till höger.'}</p>}
         </div>}
@@ -100,16 +114,18 @@ export default function MultiActivity({ onClose, onBack, studentId }) {
           {session.phase === 'setup' && <>
             <p className="focus-muted mb-2 text-sm">VÄXLA MELLAN TVÅ REGLER</p>
             <h2 className="mb-4 text-2xl font-semibold">Samma figur. Ny regel.</h2>
+            <p className="focus-muted mb-4">Titta först på vilken ruta figuren visas i. Rutan bestämmer vilken regel du ska följa.</p>
             <div className="grid gap-3">
-              <div className="multi-rule-card"><h3 className="font-semibold">Överst: titta på formen</h3><p className="focus-muted mt-1">Romb → vänster. Fyrkant → höger.</p></div>
-              <div className="multi-rule-card"><h3 className="font-semibold">Nederst: räkna prickarna</h3><p className="focus-muted mt-1">Två → vänster. Tre → höger.</p></div>
+              <div className="multi-rule-card multi-instruction" data-rule="shape"><h3 className="font-semibold">Övre rutan: FORM</h3><p className="mt-2">Titta på figurens form. Bortse från prickarna.</p><p className="mt-2 font-semibold">{RULE_ANSWERS.shape}</p></div>
+              <div className="multi-rule-card multi-instruction" data-rule="count"><h3 className="font-semibold">Nedre rutan: ANTAL</h3><p className="mt-2">Räkna prickarna. Bortse från figurens form.</p><p className="mt-2 font-semibold">{RULE_ANSWERS.count}</p></div>
             </div>
             <p className="focus-muted my-4">Dutta på vänster eller höger skärmhalva. På tangentbordet använder du piltangenterna. Du har fyra sekunder per uppgift.</p>
             <p className="focus-muted mb-5 text-sm">Öva först: fyra formuppgifter, fyra antalsuppgifter och åtta blandade. Sedan följer ett tvåminuterspass.</p>
+            <p className="focus-muted mb-5 text-sm">Vid feltryck får du en påminnelse om rätt regel och en kort paus innan nästa uppgift.</p>
             <p className="focus-muted mb-5 text-sm">Passets resultat sparas till din lärare. Introduktionen sparas inte.</p>
             <button className="focus-action w-full" onClick={() => act(() => session.practice())}>Öva reglerna</button>
           </>}
-          {session.phase === 'ready' && <><h2 className="text-2xl font-semibold">Redo att växla?</h2><p className="focus-muted my-4">Nu blandas reglerna. Överst gäller form, nederst gäller antal. Passet pågår i två minuter.</p><button className="focus-action w-full" onClick={() => act(() => session.start())}>Starta MULTI</button></>}
+          {session.phase === 'ready' && <><h2 className="text-2xl font-semibold">Redo att växla?</h2><p className="focus-muted my-4">Figur i övre rutan → titta på formen. Figur i nedre rutan → räkna prickarna. Vid feltryck får du en kort regelpåminnelse. Passet pågår i två minuter.</p><button className="focus-action w-full" onClick={() => act(() => session.start())}>Starta MULTI</button></>}
           {session.phase === 'paused' && <><h2 className="text-2xl font-semibold">MULTI är pausat</h2><p className="focus-muted my-4">Tiden står stilla. En obesvarad uppgift visas igen när du fortsätter.</p><button className="focus-action" onClick={() => act(() => session.resume())}>Fortsätt</button></>}
           {session.phase === 'finished' && <><h2 className="text-2xl font-semibold">{session.aborted ? 'MULTI avbröts' : 'MULTI är klart'}</h2><MultiResult summary={session.summary()} /><AttentionSaveStatus status={saveStatus} /><button disabled={saveStatus.hasResult && ['idle', 'saving'].includes(saveStatus.state)} className="focus-action w-full disabled:opacity-50" onClick={onClose}>Tillbaka</button></>}
         </section>

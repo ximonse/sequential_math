@@ -56,9 +56,14 @@ describe('MULTI', () => {
     expect(session.summary()).toMatchObject({ total: 4, correct: 4, wrong: 0,
       repeat: { total: 2, correct: 2, median: 250 }, switch: { total: 1, correct: 1, median: 250 } })
   })
-  it('counts wrong answers and timeouts without a punishment delay', () => {
+  it('counts wrong answers once and holds the correction for 1.8 seconds', () => {
     const { session, advance } = fixture()
-    session.start(); advance(600); session.press('right'); advance(500)
+    session.start(); advance(600); session.press('right'); session.press('left'); advance(1700)
+    expect(session.feedback).toMatchObject({ correct: false, expectedSide: 'left', rule: 'shape' })
+    expect(session.trial).toBe(null)
+    expect(session.summary().wrong).toBe(1)
+    advance(100)
+    expect(session.feedback).toBe(null)
     advance(600); advance(4000)
     expect(session.summary()).toMatchObject({ wrong: 1, missed: 1, total: 2 })
   })
@@ -73,10 +78,19 @@ describe('MULTI', () => {
     expect(session.summary().total).toBe(0)
   })
   it('keeps completed trials when pausing during feedback and does not repeat them', () => {
+    for (const side of ['left', 'right']) {
+      const { session, advance } = fixture()
+      session.start(); advance(600); session.press(side); session.pause(); session.resume(); advance(600)
+      expect(session.summary().total).toBe(1)
+      expect(session.trial.shape).toBe('square')
+    }
+  })
+  it('finishes on time during an error reminder and retains the completed wrong answer', () => {
     const { session, advance } = fixture()
-    session.start(); advance(600); session.press('left'); session.pause(); session.resume(); advance(600)
-    expect(session.summary().total).toBe(1)
-    expect(session.trial.shape).toBe('square')
+    session.start(); advance(119400); session.press('right'); advance(600)
+    expect(session.phase).toBe('finished')
+    expect(session.elapsed).toBe(120000)
+    expect(session.summary()).toMatchObject({ total: 1, wrong: 1 })
   })
   it('finishes after 120 active seconds and discards the unfinished trial', () => {
     const { session, advance } = fixture()

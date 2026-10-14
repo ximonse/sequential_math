@@ -45,8 +45,8 @@ test('MULTI: svenska regler, touch, rätt jämförelser och ingen matematikdata'
   await login(page, pupil)
   const before = mathData(await readServerProfile(request, pupil.studentId))
   await openMulti(page)
-  await expect(page.getByText('Överst: titta på formen', { exact: true })).toBeVisible()
-  await expect(page.getByText('Nederst: räkna prickarna', { exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Övre rutan: FORM', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Nedre rutan: ANTAL', exact: true })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('multi-tablet-instructions.png') })
   await practiceMulti(page)
   for (let i = 0; i < 4; i++) {
@@ -139,4 +139,43 @@ test('MULTI: tillåten aktivitetspaus återgår till samma läraruppdrag', async
   expect((await readState(page)).problem.difficulty.conceptual_level).toBe(3)
   expect(mathData(await readServerProfile(request, pupil.studentId))).toEqual(before)
   expect(findings.items).toEqual([])
+})
+
+test('MULTI: feltryck ger regelpåminnelse och kort paus utan extra registreringar', async ({ page, request }, testInfo) => {
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await page.clock.install()
+  await login(page, await createPupil(request))
+  // Screenshot/viewport work must not consume a response window under load.
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 100))
+  await openMulti(page)
+  await practiceMulti(page)
+  for (let i = 0; i < 3; i++) {
+    await page.clock.runFor(600)
+    const trial = trialView(page)
+    const rule = await trial.getAttribute('data-rule')
+    const shape = await trial.getAttribute('data-shape')
+    const dots = await trial.getAttribute('data-dots')
+    const expectedLeft = rule === 'shape' ? shape === 'diamond' : dots === '2'
+    await page.getByRole('button', { name: `Svara ${expectedLeft ? 'höger' : 'vänster'}`, exact: true }).tap()
+    const reminder = page.getByTestId('multi-correction')
+    await expect(reminder).toContainText(rule === 'shape' ? 'Övre rutan: titta på formen.' : 'Nedre rutan: räkna prickarna.')
+    await expect(reminder).toContainText(expectedLeft ? 'vänster' : 'höger')
+    if (i === 0) {
+      await page.screenshot({ path: testInfo.outputPath('multi-wrong-reminder.png') })
+      await page.setViewportSize({ width: 390, height: 667 })
+      const bounds = await reminder.boundingBox()
+      const zone = await page.locator('.multi-zone[data-correction="true"]').boundingBox()
+      expect(bounds.y).toBeGreaterThanOrEqual(zone.y)
+      expect(bounds.y + bounds.height).toBeLessThanOrEqual(zone.y + zone.height)
+      await page.screenshot({ path: testInfo.outputPath('multi-wrong-mobile.png') })
+    }
+    await page.getByRole('button', { name: 'Svara vänster', exact: true }).tap()
+    await page.clock.runFor(1700)
+    await expect(reminder).toBeVisible()
+    await expect(trialView(page)).toHaveCount(0)
+    await page.clock.runFor(100)
+    await expect(reminder).toHaveCount(0)
+  }
+  await page.getByRole('button', { name: 'Avsluta', exact: true }).tap()
+  await expect(page.getByText('0 % rätt av 3 uppgifter.', { exact: true })).toBeVisible()
 })

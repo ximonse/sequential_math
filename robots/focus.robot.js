@@ -85,6 +85,22 @@ test('Fokus: hela skärmen återställer en halvstor prick direkt och skyddar mo
   await expect(page.locator('dl > div').filter({ hasText: 'För tidiga tryck' }).locator('dd')).toHaveText('0')
 })
 
+test('KONTROLL: själva passet visar båda stoppsignalerna även när slumpen alltid väljer grönt', async ({ page, request }) => {
+  await page.clock.install()
+  await login(page, await createPupil(request))
+  await page.evaluate(() => { Math.random = () => 0 })
+  await page.getByRole('button', { name: new RegExp(`^${FOCUS}`) }).tap()
+  await practice(page, '2 - KONTROLL')
+  const seen = new Set()
+  for (let elapsed = 0; elapsed < 30000; elapsed += 250) {
+    await page.clock.runFor(250)
+    const signal = await point(page).getAttribute('data-signal')
+    if (signal !== 'waiting') seen.add(signal)
+    if (signal === 'go') await tapScreen(page)
+  }
+  expect([...seen].sort()).toEqual(['go', 'red', 'square'])
+})
+
 test('Fokus: touch, övningssignaler, pausad tid och resultat utan matematikdata', async ({ page, request }, testInfo) => {
   await page.setViewportSize({ width: 768, height: 1024 })
   await page.clock.install()
@@ -181,6 +197,7 @@ test('Fokus: vanlig paus behåller uppdrag och räknesätt utan nya matematiksva
   const url = page.url()
   const saved = await waitForServerAnswers(request, pupil.studentId, 20, readServerProfile)
   expect(saved.ok, 'All twenty math answers must reach the server before the focus-data comparison').toBe(true)
+  await expect.poll(async () => (await readServerProfile(request, pupil.studentId)).stats?.totalProblems).toBe(20)
   const before = mathData(await readServerProfile(request, pupil.studentId))
   await page.getByRole('button', { name: FOCUS, exact: true }).tap()
   await page.getByRole('button', { name: 'Tillbaka', exact: true }).tap()

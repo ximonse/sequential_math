@@ -2,6 +2,7 @@
 
 Frivillig fokusuppvärmning med två lägen: **1 - FOKUS** (tryck vid grön cirkel)
 och **2 - KONTROLL** (tryck vid grön cirkel, avstå vid röd cirkel eller grön fyrkant).
+Menyn innehåller också [MULTI](MULTI_ACTIVITY.md), som växlar mellan form och antal.
 Aktiviteten gör inga påståenden om förbättrade skolresultat och ersätter
 inte en rörelsepaus.
 
@@ -18,7 +19,10 @@ inom befintlig träningsram. Pong och Snake behåller sina befintliga flöden.
 
 Instruktionerna visas före start. Tre övningssignaler följs av en uttrycklig
 start av ett 120 sekunder långt pass. KONTROLL övar alla tre signaltyperna före passet.
-Under passet väljs grön cirkel med sannolikhet 70 %, röd cirkel 15 % och
+De första tre färdigställda signalerna i KONTROLL-passet innehåller alltid
+grön cirkel, röd cirkel och grön fyrkant i blandad ordning. En signal som
+avbryts genom dold flik visas igen, så garantin inte förbrukas av pausen.
+Därefter väljs grön cirkel med sannolikhet 70 %, röd cirkel 15 % och
 grön fyrkant 15 %. Slumpade väntetider är 3–10 sekunder under första
 40 sekunderna, 3–15 under nästa 40 och 3–20 under sista 40. Progressionen
 börjar om varje pass; ingen nivå sparas.
@@ -114,3 +118,12 @@ Hela robotsviten passerar: 95 av 95 prov och inga regelbrott. Arkitektur,
 projektkarta och lint för ändrade kodfiler passerar också.
 Denna ändring är ännu inte publicerad;
 produktionsbeläggen ovan gäller den tidigare versionen.
+
+KONTROLLs signalgaranti under själva passet tillkom 2026-10-14 efter ett
+robotprov som reproducerade ett pass med enbart gröna cirklar. Menyn har
+nu mjukare kort och fasta färger; FOKUS/KONTROLL behåller den rena svarta
+körvyn. MULTI har en separat fast palett som sidans tema inte påverkar.
+Slutlig lokal verifiering av dessa ändringar: 146 testfiler/703 tester,
+build och hela robotsviten (100/100, utan regelbrott) passerar. Lint,
+arkitektur och projektkartans kontroll passerar. Surfplatte- och mobilbilder
+har granskats. Dessa ändringar är ännu inte publicerade.

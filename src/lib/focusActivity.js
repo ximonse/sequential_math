@@ -1,3 +1,5 @@
+import { shuffled } from './attentionActivityUtils'
+
 export const FOCUS_DURATION_MS = 120000
 export const FOCUS_SIGNAL_MS = 2000
 const PRACTICE_WAIT_MS = 1000
@@ -43,6 +45,7 @@ export class FocusActivitySession {
     this.segmentStart = this.now()
     this.results = []
     this.early = 0
+    this.controlIntro = this.mode === 'choose' ? shuffled(['go', 'red', 'square'], this.random) : []
     this.queue(this.segmentStart)
   }
 
@@ -65,6 +68,7 @@ export class FocusActivitySession {
     if (!this.outcome) this.record(this.signal === 'go' ? 'miss' : 'withheld', now)
     if (this.phase === 'running') {
       this.results.push({ outcome: this.outcome, reactionMs: this.reactionMs })
+      this.controlIntro.shift()
       this.queue(now)
     } else {
       this.practiceFeedback = { signal: this.signal, outcome: this.outcome }
@@ -88,7 +92,7 @@ export class FocusActivitySession {
     } else if (!this.signal) {
       this.signal = this.phase === 'practice'
         ? (this.mode === 'discover' ? 'go' : ['go', 'red', 'square'][this.practiceIndex])
-        : focusSignal(this.mode, this.random)
+        : this.controlIntro[0] || focusSignal(this.mode, this.random)
       this.signalStart = now
       this.due = now + FOCUS_SIGNAL_MS
     } else {

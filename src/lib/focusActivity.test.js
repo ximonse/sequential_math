@@ -55,13 +55,12 @@ describe('focus activity', () => {
   it('counts missed and withheld signals separately from wrong presses', () => {
     const { session, advance } = fixture(() => 0.8)
     session.mode = 'choose'; session.start()
-    advance(session.due); advance(2000)
-    expect(session.summary().withheld).toBe(1)
-    advance(session.due - session.now()); session.press(); advance(2000)
-    expect(session.summary().wrong).toBe(1)
-    session.mode = 'discover'
-    advance(session.due - session.now()); advance(2000)
-    expect(session.summary().misses).toBe(1)
+    for (let i = 0; i < 3; i++) {
+      advance(session.due - session.now())
+      if (session.signal === 'square') session.press()
+      else advance(2000)
+    }
+    expect(session.summary()).toMatchObject({ withheld: 1, wrong: 1, misses: 1 })
   })
   it('keeps completed presses, excludes unanswered paused signals and freezes time', () => {
     const { session, advance } = fixture()
@@ -99,6 +98,10 @@ describe('focus activity', () => {
       const { session, advance } = fixture(random)
       session.mode = mode; session.start()
       advance(session.due)
+      if (mode === 'choose' && session.signal === 'go') {
+        advance(2000)
+        advance(session.due - session.now())
+      }
       session.press()
       expect(session.signal).toBe(null)
       expect(session.summary()[outcome]).toBe(1)
@@ -110,5 +113,24 @@ describe('focus activity', () => {
       expect(session.early).toBe(1)
       expect(session.summary()[outcome]).toBe(1)
     }
+  })
+  it('guarantees all three control signals in the pass even with an always-green random source', () => {
+    const { session, advance } = fixture()
+    session.mode = 'choose'; session.start()
+    const seen = []
+    for (let i = 0; i < 3; i++) {
+      advance(session.due - session.now())
+      seen.push(session.signal)
+      advance(2000)
+    }
+    expect(seen.sort()).toEqual(['go', 'red', 'square'])
+  })
+  it('replays an unfinished guaranteed control signal after hiding the page', () => {
+    const { session, advance } = fixture()
+    session.mode = 'choose'; session.start(); advance(session.due)
+    const signal = session.signal
+    session.pause(); advance(20000); session.resume()
+    advance(session.due - session.now())
+    expect(session.signal).toBe(signal)
   })
 })

@@ -1109,12 +1109,12 @@
       "title": "Fokuspunkten: 1 - FOKUS och 2 - KONTROLL",
       "status": "Lokalt klart",
       "purpose": "Frivillig tvåminutersaktivitet för att vänta, upptäcka och hejda ett tryck, med resultat endast för stunden.",
-      "next": "Invänta separat publiceringsbegäran för den rena tryckytan. Föregående version är publicerad enligt beläggen 2026-10-13.",
+      "next": "Invänta separat publiceringsbegäran. Sparad lärarhistorik kräver ett separat omfattningsbeslut.",
       "acceptance": "Båda lägena nås från start och tillåtna aktivitetspauser; uppdrag och matematisk progression bevaras; ingen fokusdata sparas.",
       "requires": [],
       "affects": [],
-      "decision": "Simon godkände implementation 2026-10-13: start och paus, kort progression 3–10 till 3–20 sekunder, ingen historik eller matematikjämförelse i v1. Femminutersväntan och regelväxling ingår inte.\n2026-10-13: Simon begär produktion när agenten är nöjd med verifieringen. Publicera genom push till origin/master och Vercel-projektet sekvens.\n2026-10-14: Simon begär halverad prick, direkt återställning vid tryck, skydd mot snabba dubbeltryck, hela skärmen som tryckyta utom grå Avsluta och inga andra texter under körning. Lägena heter 1 - FOKUS och 2 - KONTROLL. Dubbeltrycksskyddet är 400 ms.",
-      "evidence": "2026-10-13: Byggt i lokal checkout. Aktuella checkoutens 145 testfiler/691 tester passerar (äldre .claude-worktrees undantagna). Robot- och bildkontroller pågår. Inte pushat eller publicerat.\n2026-10-13: Slutlig lokal verifiering: 145 testfiler/691 tester, build och diffkontroll passerar. Robotsviten: 92/94 direkt; klassaktivering och screeninggenomgång passerade vid separat omkörning med en worker. Slutlig omkörning 9/9 inklusive samtliga 7 fokusprov. Touchhändelser, tangentbord, inga ändrade matematikdata, åtkomst och återgång verifierade. Skärmbilder av instruktion, signal och resultat granskade; färger/kontrast kontrollerade i alla fem teman. Ingen fysisk elevplatta provad. Befintliga buildvarningar kvar. Lokal commit förbereds; inte pushat eller publicerat.\n2026-10-13 publiceringskontroll: 9/9 robotprov passerar med en worker, inklusive samtliga fokusprov. Pausroboten inväntar alla 20 tidigare matematiksvar på testservern före jämförelse; en osynkad jämförelse gav ett falskt fel. Befintlig GitHub Verify saknade Chromium för projektkartans UI-test; installationssteg tillagt. Arkitektur och projektkartans täckning mot origin/master passerar. Publicering godkänd men ännu inte pushad.\n2026-10-13 PRODUKTION: origin/master pushad till 986c1cecd3b196389c443521c4841b38d333c9ed. GitHub Verify 38457424499 success (arkitektur, projektkarta, tester, build). Vercel sekvens, prj_EoQGQufPrEgDHwHr6FlnFpd9IwNo, deployment dpl_71QhS1JuUzDbpiSaoSqKQ7527siW READY; matematik.ximon.se verifierat på samma deployment/revision. Publik inloggningssida laddad och /assets/index-BwIFAnsx.js HTTP 200 med Fokuspunkten, signalregel och tillfälliga resultat. SHA256 3aa9a8776095dd564bee3b565824a03c5fac9c54c9231937179a4f7d26bf615a matchar lokalt verifierat bygge. Elevflöden verifierade med lokala isolerade robotkonton; inget riktigt elevkonto provat i produktion. Publiceringsbeläggen sparas i en lokal dokumentationscommit.\n2026-10-14: Byggt lokalt: 14x14 px centrerad prick och endast grå Avsluta under övning/pass. Touch via pointerdown över hela skärmen och tangentbord; Avsluta undantas. Besvarade signaler färdigställs och återställs direkt. 145 testfiler/692 tester, build, 8/8 fokusrobotprov och bildgranskning 768x1024 passerar. Full robotsvit pågår. Ändringen är inte pushad eller publicerad; produktionsbelägg 2026-10-13 ovan gäller föregående version.\n2026-10-14 slutverifiering: 145 testfiler/692 tester, build, lint för ändrade kodfiler, arkitektur och hela robotsviten 95/95 passerar med 0 regelbrott. Skärmbild 768x1024 granskad: endast 14x14 px centrerad prick och grå Avsluta. Ren tryckyta, direkt återställning och 400 ms dubbeltrycksskydd är lokalt klara; ingen push eller ny produktionpublicering.",
+      "decision": "Simon godkände implementation 2026-10-13: start och paus, kort progression 3–10 till 3–20 sekunder, ingen historik eller matematikjämförelse i v1. Femminutersväntan och regelväxling ingår inte.\n2026-10-13: Simon begär produktion när agenten är nöjd med verifieringen. Publicera genom push till origin/master och Vercel-projektet sekvens.\n2026-10-14: Simon begär halverad prick, direkt återställning vid tryck, skydd mot snabba dubbeltryck, hela skärmen som tryckyta utom grå Avsluta och inga andra texter under körning. Lägena heter 1 - FOKUS och 2 - KONTROLL. Dubbeltrycksskyddet är 400 ms.\n2026-10-14: Simon förtydligar att stoppsignalerna saknades i själva KONTROLL-passet, godkänner MULTI enligt förslaget och begär svenska texter, mjukare former/färger samt palett som sidtemat inte påverkar.",
+      "evidence": "2026-10-13: Byggt i lokal checkout. Aktuella checkoutens 145 testfiler/691 tester passerar (äldre .claude-worktrees undantagna). Robot- och bildkontroller pågår. Inte pushat eller publicerat.\n2026-10-13: Slutlig lokal verifiering: 145 testfiler/691 tester, build och diffkontroll passerar. Robotsviten: 92/94 direkt; klassaktivering och screeninggenomgång passerade vid separat omkörning med en worker. Slutlig omkörning 9/9 inklusive samtliga 7 fokusprov. Touchhändelser, tangentbord, inga ändrade matematikdata, åtkomst och återgång verifierade. Skärmbilder av instruktion, signal och resultat granskade; färger/kontrast kontrollerade i alla fem teman. Ingen fysisk elevplatta provad. Befintliga buildvarningar kvar. Lokal commit förbereds; inte pushat eller publicerat.\n2026-10-13 publiceringskontroll: 9/9 robotprov passerar med en worker, inklusive samtliga fokusprov. Pausroboten inväntar alla 20 tidigare matematiksvar på testservern före jämförelse; en osynkad jämförelse gav ett falskt fel. Befintlig GitHub Verify saknade Chromium för projektkartans UI-test; installationssteg tillagt. Arkitektur och projektkartans täckning mot origin/master passerar. Publicering godkänd men ännu inte pushad.\n2026-10-13 PRODUKTION: origin/master pushad till 986c1cecd3b196389c443521c4841b38d333c9ed. GitHub Verify 38457424499 success (arkitektur, projektkarta, tester, build). Vercel sekvens, prj_EoQGQufPrEgDHwHr6FlnFpd9IwNo, deployment dpl_71QhS1JuUzDbpiSaoSqKQ7527siW READY; matematik.ximon.se verifierat på samma deployment/revision. Publik inloggningssida laddad och /assets/index-BwIFAnsx.js HTTP 200 med Fokuspunkten, signalregel och tillfälliga resultat. SHA256 3aa9a8776095dd564bee3b565824a03c5fac9c54c9231937179a4f7d26bf615a matchar lokalt verifierat bygge. Elevflöden verifierade med lokala isolerade robotkonton; inget riktigt elevkonto provat i produktion. Publiceringsbeläggen sparas i en lokal dokumentationscommit.\n2026-10-14: Byggt lokalt: 14x14 px centrerad prick och endast grå Avsluta under övning/pass. Touch via pointerdown över hela skärmen och tangentbord; Avsluta undantas. Besvarade signaler färdigställs och återställs direkt. 145 testfiler/692 tester, build, 8/8 fokusrobotprov och bildgranskning 768x1024 passerar. Full robotsvit pågår. Ändringen är inte pushad eller publicerad; produktionsbelägg 2026-10-13 ovan gäller föregående version.\n2026-10-14 slutverifiering: 145 testfiler/692 tester, build, lint för ändrade kodfiler, arkitektur och hela robotsviten 95/95 passerar med 0 regelbrott. Skärmbild 768x1024 granskad: endast 14x14 px centrerad prick och grå Avsluta. Ren tryckyta, direkt återställning och 400 ms dubbeltrycksskydd är lokalt klara; ingen push eller ny produktionpublicering.\n2026-10-14: Robot reproducerade KONTROLL-pass med enbart gröna cirklar. De första tre färdigställda signalerna innehåller nu alla typer i blandad ordning; dold flik förbrukar inte garantin. Svensk MULTI-meny och avgränsad fast palett tillagda. 146 testfiler/703 tester och build passerar; bred robotverifiering pågår. Ej pushat/publicerat.\n2026-10-14 slutverifiering: 146 testfiler/703 tester, build och hela robotsviten 100/100 passerar med 0 regelbrott. Lint för ändrade kodfiler, arkitektur och projektkarta passerar. Touchhändelser, tangentbord, fasta färger i alla fem teman och oförändrade matematikdata verifierade i lokal webbläsare; surfplatte- och mobilbilder granskade. Ingen fysisk elevplatta provad. Avgränsad lokal commit förberedd; ej pushat eller publicerat. Resultaten är fortfarande endast för det aktuella passet.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -1141,6 +1141,40 @@
         {
           "id": "focus-minimal-screen",
           "text": "Verifiera den rena tryckytan med direkt återställning och dubbeltrycksskydd samt förbered lokal commit",
+          "done": true
+        },
+        {
+          "id": "control-signal-guarantee",
+          "text": "Garantera båda stoppsignalerna i själva KONTROLL-passet",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "multi-activity",
+      "area": "Fokusuppvärmning",
+      "title": "MULTI: växla mellan form och antal",
+      "status": "Lokalt klart",
+      "purpose": "Frivillig aktivitet med två regler och begripliga resultat för upprepningar respektive regelbyten.",
+      "next": "Invänta separat publiceringsbegäran. Sparad lärarhistorik kräver ett separat omfattningsbeslut.",
+      "acceptance": "Svensk 4+4+8-introduktion och tvåminuterspass fungerar med touch och tangentbord; samma uppdrag återupptas, inga matematikdata ändras och sidtemat ändrar inte paletten.",
+      "requires": [
+        "focus-activity"
+      ],
+      "affects": [],
+      "decision": "Simon godkänner MULTI enligt förslaget 2026-10-14. Mjuka egna SVG-former och dämpade fasta mint/blå färger. Resultat visar rätt/fel/timeout och upprepade/bytta regler; inga normer eller fokusbetyg.",
+      "evidence": "2026-10-14: Byggt lokalt. 9 modelltester och 4 webbläsarprov täcker regler, introduktion, timing, paus, touch/tangentbord, palett i alla fem teman, svenska texter och matematikdata. 146 testfiler/703 tester och build passerar. Pausroboten inväntar både tidigare matematiksvar och statistik före jämförelse eftersom de synkas separat. Skärmbilder 768x1024 granskade. Bred robotsvit pågår; ingen push eller produktionpublicering.\n2026-10-14 slutverifiering: 146 testfiler/703 tester, build och hela robotsviten 100/100 passerar med 0 regelbrott. Lint för ändrade kodfiler, arkitektur och projektkarta passerar. Touchhändelser, tangentbord, fasta färger i alla fem teman och oförändrade matematikdata verifierade i lokal webbläsare; surfplatte- och mobilbilder granskade. Ingen fysisk elevplatta provad. Avgränsad lokal commit förberedd; ej pushat eller publicerat. Resultaten är fortfarande endast för det aktuella passet.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "multi-built",
+          "text": "Bygg introduktion, regelväxling, fasta färger och resultat för stunden",
+          "done": true
+        },
+        {
+          "id": "multi-verified",
+          "text": "Verifiera alla robotar, granska mobilbild och förbered lokal commit",
           "done": true
         }
       ]
@@ -1611,6 +1645,11 @@
       "source": "optional-assignment-workspaces",
       "target": "ipad",
       "kind": "påverkar"
+    },
+    {
+      "source": "focus-activity",
+      "target": "multi-activity",
+      "kind": "kräver"
     }
   ],
   "note": "Planeringssnapshot. Lokalt klart är inte publicerat. Tidigare publicering bygger på denna tråds verifiering; ingen ny livekontroll. Förslag är inte fattade beslut."

@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { FocusActivitySession } from '../../lib/focusActivity'
+import MultiActivity from './MultiActivity'
+import './focusActivities.css'
 
 const BUTTON = 'rounded-xl px-5 py-3 font-semibold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white'
 const MODE_LABELS = { discover: '1 - FOKUS', choose: '2 - KONTROLL' }
 
 export default function FocusActivity({ onClose }) {
   const [session] = useState(() => new FocusActivitySession())
+  const [multiOpen, setMultiOpen] = useState(false)
   const [, redraw] = useState(0)
   const dialog = useRef(null)
   const refresh = () => redraw(value => value + 1)
@@ -23,7 +26,7 @@ export default function FocusActivity({ onClose }) {
   useEffect(() => {
     if (['practice', 'running'].includes(session.phase)) dialog.current?.focus()
     else dialog.current?.querySelector('button')?.focus()
-  }, [session.phase])
+  }, [session.phase, multiOpen])
 
   const active = ['practice', 'running'].includes(session.phase)
   const summary = session.summary()
@@ -35,6 +38,7 @@ export default function FocusActivity({ onClose }) {
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
     if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
   }
+  if (multiOpen) return <MultiActivity onClose={onClose} onBack={() => setMultiOpen(false)} />
   if (active) {
     return (
       <div ref={dialog} role="dialog" aria-modal="true" aria-label="Fokuspunkten" tabIndex={0}
@@ -60,7 +64,7 @@ export default function FocusActivity({ onClose }) {
     )
   }
   return (
-    <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="focus-title" onKeyDown={trapFocus} className="fixed inset-0 z-50 overflow-y-auto bg-black text-white">
+    <div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="focus-title" onKeyDown={trapFocus} className="focus-activity fixed inset-0 z-50 overflow-y-auto">
       <div className="mx-auto flex min-h-[100dvh] max-w-xl flex-col px-5 py-5 sm:px-8">
         <header className="flex items-start justify-between gap-4 border-b border-white/20 pb-4">
           <div><h1 id="focus-title" className="text-xl font-semibold tracking-wide">Fokuspunkten</h1><p className="mt-1 text-sm text-[#94a3b8]">En stund att vänta, upptäcka och välja.</p></div>
@@ -71,8 +75,9 @@ export default function FocusActivity({ onClose }) {
           <p className="mt-4 text-[#cbd5e1]">Titta på punkten och dutta var som helst på skärmen vid rätt signal. Du får blinka normalt. På tangentbordet använder du mellanslag eller Enter.</p>
           <p className="mt-3 text-[#cbd5e1]">Du provar tre signaler först. Sedan följer två minuter. Väntan blandas och ökar från 3–10 till 3–20 sekunder under passet.</p>
           <div className="mt-6 grid gap-3">
-            <button className={`${BUTTON} border border-white/30 text-left`} onClick={() => act(() => session.practice('discover'))}><span className="block text-lg">1 - FOKUS</span><span className="block text-sm font-normal text-[#cbd5e1]">Dutta när den vita cirkeln blir grön.</span></button>
-            <button className={`${BUTTON} border border-white/30 text-left`} onClick={() => act(() => session.practice('choose'))}><span className="block text-lg">2 - KONTROLL</span><span className="block text-sm font-normal text-[#cbd5e1]">Dutta vid grön cirkel. Avstå vid röd cirkel eller grön fyrkant.</span></button>
+            <button className="focus-choice" onClick={() => act(() => session.practice('discover'))}><span className="block text-lg font-semibold">1 - FOKUS</span><span className="mt-1 block text-sm focus-muted">Dutta när den vita cirkeln blir grön.</span></button>
+            <button className="focus-choice" onClick={() => act(() => session.practice('choose'))}><span className="block text-lg font-semibold">2 - KONTROLL</span><span className="mt-1 block text-sm focus-muted">Dutta vid grön cirkel. Avstå vid röd cirkel eller grön fyrkant.</span></button>
+            <button className="focus-choice" onClick={() => setMultiOpen(true)}><span className="block text-lg font-semibold">MULTI</span><span className="mt-1 block text-sm focus-muted">Växla mellan figurens form och antalet prickar.</span></button>
           </div>
         </section>}
         {session.phase === 'paused' && <section className="my-auto py-8"><h2 className="text-2xl font-semibold">Passet är pausat</h2><p className="my-4 text-[#cbd5e1]">Tiden står stilla. När du fortsätter börjar en ny väntan.</p><button className={`${BUTTON} bg-[#ffffff] text-black`} onClick={() => act(() => session.resume())}>Fortsätt</button></section>}

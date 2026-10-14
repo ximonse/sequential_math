@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { MultiActivitySession } from '../../lib/multiActivity'
+import useAttentionResult from './useAttentionResult'
+import AttentionSaveStatus from './AttentionSaveStatus'
 import './focusActivities.css'
 
 const RULES = { shape: 'Form', count: 'Antal' }
@@ -26,14 +28,15 @@ function MultiResult({ summary }) {
     <div className="grid gap-3 sm:grid-cols-2">
       {[[ 'Upprepad regel', summary.repeat ], [ 'Bytt regel', summary.switch ]].map(([label, group]) => <section key={label} className="multi-rule-card"><h3 className="font-semibold">{label}</h3><p className="focus-muted mt-2 text-sm">{group.correct} rätt av {group.total}</p><p className="mt-2">{group.median === null ? 'Ingen svarstid att jämföra ännu.' : `Median: ${Math.round(group.median)} ms`}</p></section>)}
     </div>
-    <p className="focus-muted my-4 text-sm">Svarstiderna gäller rätta svar i det här passet. Resultatet sparas inte.</p>
+    <p className="focus-muted my-4 text-sm">Svarstiderna gäller rätta svar i det här passet.</p>
   </>
 }
 
-export default function MultiActivity({ onClose, onBack }) {
+export default function MultiActivity({ onClose, onBack, studentId }) {
   const [session] = useState(() => new MultiActivitySession())
   const [, redraw] = useState(0)
   const dialog = useRef(null)
+  const saveStatus = useAttentionResult(session, studentId, 'multi')
   const active = ['practice', 'running'].includes(session.phase)
   const act = action => { action(); redraw(value => value + 1) }
   useEffect(() => {
@@ -92,7 +95,7 @@ export default function MultiActivity({ onClose, onBack }) {
           {displayedTrial && <p>{displayedTrial.rule === 'shape' ? 'Form: romb till vänster, fyrkant till höger.' : 'Antal: två till vänster, tre till höger.'}</p>}
         </div>}
       </> : <div className="mx-auto flex min-h-[100dvh] max-w-xl flex-col px-5 py-5">
-        <header className="flex items-center justify-between"><h1 className="text-xl font-semibold">MULTI</h1><button className="focus-back" onClick={close}>{session.phase === 'paused' ? 'Avsluta' : 'Tillbaka'}</button></header>
+        <header className="flex items-center justify-between"><h1 className="text-xl font-semibold">MULTI</h1><button disabled={session.phase === 'finished' && ['idle', 'saving'].includes(saveStatus.state) && saveStatus.hasResult} className="focus-back disabled:opacity-50" onClick={close}>{session.phase === 'paused' ? 'Avsluta' : 'Tillbaka'}</button></header>
         <section className="focus-panel my-auto">
           {session.phase === 'setup' && <>
             <p className="focus-muted mb-2 text-sm">VÄXLA MELLAN TVÅ REGLER</p>
@@ -103,11 +106,12 @@ export default function MultiActivity({ onClose, onBack }) {
             </div>
             <p className="focus-muted my-4">Dutta på vänster eller höger skärmhalva. På tangentbordet använder du piltangenterna. Du har fyra sekunder per uppgift.</p>
             <p className="focus-muted mb-5 text-sm">Öva först: fyra formuppgifter, fyra antalsuppgifter och åtta blandade. Sedan följer ett tvåminuterspass.</p>
+            <p className="focus-muted mb-5 text-sm">Passets resultat sparas till din lärare. Introduktionen sparas inte.</p>
             <button className="focus-action w-full" onClick={() => act(() => session.practice())}>Öva reglerna</button>
           </>}
           {session.phase === 'ready' && <><h2 className="text-2xl font-semibold">Redo att växla?</h2><p className="focus-muted my-4">Nu blandas reglerna. Överst gäller form, nederst gäller antal. Passet pågår i två minuter.</p><button className="focus-action w-full" onClick={() => act(() => session.start())}>Starta MULTI</button></>}
           {session.phase === 'paused' && <><h2 className="text-2xl font-semibold">MULTI är pausat</h2><p className="focus-muted my-4">Tiden står stilla. En obesvarad uppgift visas igen när du fortsätter.</p><button className="focus-action" onClick={() => act(() => session.resume())}>Fortsätt</button></>}
-          {session.phase === 'finished' && <><h2 className="text-2xl font-semibold">{session.aborted ? 'MULTI avbröts' : 'MULTI är klart'}</h2><MultiResult summary={session.summary()} /><button className="focus-action w-full" onClick={onClose}>Tillbaka</button></>}
+          {session.phase === 'finished' && <><h2 className="text-2xl font-semibold">{session.aborted ? 'MULTI avbröts' : 'MULTI är klart'}</h2><MultiResult summary={session.summary()} /><AttentionSaveStatus status={saveStatus} /><button disabled={saveStatus.hasResult && ['idle', 'saving'].includes(saveStatus.state)} className="focus-action w-full disabled:opacity-50" onClick={onClose}>Tillbaka</button></>}
         </section>
       </div>}
     </div>

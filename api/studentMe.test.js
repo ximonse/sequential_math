@@ -50,6 +50,31 @@ async function login(id, secret) {
 beforeEach(() => { records.clear(); process.env.APP_ORIGIN = ORIGIN })
 
 describe('session-bound pupil APIs', () => {
+  it('saves attention summaries once, preserves math, and rejects malformed or cross-pupil events', async () => {
+    const id = 'F'.repeat(32), secret = createQrSecret()
+    records.set('class:6a', { id: '6a' }); records.set(`student:${id}`, pupil(id, secret))
+    const auth = await login(id, secret)
+    const payload = { id: 'attention-api-pass', version: 1, mode: 'discover', startedAt: 1000, finishedAt: 5000,
+      activeMs: 4000, aborted: true, summary: { hits: 1, misses: 0, wrong: 0, early: 0, withheld: 0, median: 200 } }
+    const entry = { id: 'attention-event', studentId: id, type: 'attention_result', timestamp: 5000, payload }
+    const send = async event => {
+      const res = response()
+      await eventsHandler({ method: 'POST', headers: { cookie: auth.cookie, origin: ORIGIN, 'x-csrf-token': auth.csrfToken }, body: { entries: [event] } }, res)
+      return res
+    }
+    expect((await send(entry)).data.appliedCount).toBe(1)
+    expect((await send({ ...entry, id: 'another-retry-event' })).data.appliedCount).toBe(0)
+    expect((await send({ ...entry, studentId: 'G'.repeat(32) })).code).toBe(400)
+    expect((await send({ ...entry, payload: { ...payload, activeMs: -1 } })).code).toBe(400)
+    const saved = records.get(`student:${id}`)
+    expect(saved.attentionHistory).toEqual([payload])
+    expect(saved.problemLog).toEqual([])
+    expect(saved.stats).toEqual({})
+    expect(saved.masteryFacts.facts).toEqual([])
+    const loaded = response()
+    await profileHandler({ method: 'GET', headers: { cookie: auth.cookie } }, loaded)
+    expect(loaded.data.profile.attentionHistory).toEqual([payload])
+  })
   it('loads the event API with native Node module resolution', () => {
     expect(() => execFileSync(process.execPath, [
       '--input-type=module', '-e', "await import('./api/me/events.js')"

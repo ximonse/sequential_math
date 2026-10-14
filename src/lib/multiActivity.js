@@ -57,6 +57,7 @@ export class MultiActivitySession {
   }
 
   start() {
+    this.hasStarted = true
     this.phase = 'running'
     this.trials = multiPassTrials(this.random)
     this.trialIndex = 0

@@ -349,7 +349,7 @@ function StudentHome() {
 
   return (
     <div className="min-h-screen student-role-surface py-8">
-      {focusOpen && focusAllowed && <FocusActivity onClose={() => setFocusOpen(false)} />}
+      {focusOpen && focusAllowed && <FocusActivity studentId={studentId} onClose={() => setFocusOpen(false)} />}
       <div inert={focusOpen && focusAllowed ? true : undefined} className="max-w-3xl mx-auto px-4">
         <div className="flex justify-between items-start mb-6">
           <div>

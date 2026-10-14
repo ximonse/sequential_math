@@ -39,9 +39,10 @@ för rätta svar. Första uppgiften saknar föregående regel och ingår inte i
 någon av jämförelsegrupperna. Klassningen beräknas från faktiskt föregående
 färdigställda uppgift, även när den besvarades fel eller fick timeout.
 
-Allt finns endast i komponentens minne. Ingen resultatdata, ny API eller
-profilschemamigrering införs; matematiklogg och mastery påverkas inte.
-Eventuell lärarhistorik är en separat omfattningsfråga. Normal registrering
+Efter Simons godkännande 2026-10-14 sparas sammanfattningen för riktiga pass
+till [lärarhistoriken](ATTENTION_HISTORY.md). Introduktioner och enskilda
+uppgiftssvar sparas inte. Befintlig händelse-API återanvänds utan ny
+profilschemamigrering; matematiklogg och mastery påverkas inte. Normal registrering
 av öppnad/stängd aktivitetspaus återanvänds utan MULTI-resultat.
 
 ## Utformning och verifiering

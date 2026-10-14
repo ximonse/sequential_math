@@ -47,6 +47,7 @@ export const MERGE_SCHEMA = {
 
   // Biljetter (gamification)
   ticketResponses:   { strategy: 'custom', handler: 'mergeTicketResponses', description: 'Union av biljett-svar' },
+  attentionHistory:  { strategy: 'server_owned', description: 'Immutable attention results appended by authenticated events; snapshots cannot overwrite them' },
   ticketRevealAll:   { strategy: 'server_owned', description: 'Changed only by version-checked teacher PATCH' },
   ticketInbox:       { strategy: 'server_owned', description: 'Changed only by version-checked teacher PATCH' },
 

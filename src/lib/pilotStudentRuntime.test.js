@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createPilotStudentRuntime } from './pilotStudentRuntime'
+const focusResult = () => ({ id: 'pass-1', version: 1, mode: 'choose', startedAt: 1000, finishedAt: 21000,
+  activeMs: 20000, aborted: true, summary: { hits: 1, misses: 1, wrong: 0, withheld: 1, early: 0, median: 350 } })
 
 const studentId = 'A'.repeat(32)
 const profile = { studentId, currentDifficulty: 3, highestDifficulty: 4,
@@ -23,6 +25,36 @@ function vault() {
 }
 
 describe('pilot student runtime', () => {
+  it('persists an attention pass locally, retries the same queued event and refuses another pupil', async () => {
+    const store = vault()
+    let saved = false, acknowledged = false
+    store.readSnapshot = vi.fn(async () => structuredClone(profile))
+    store.readEventState = vi.fn(async () => saved ? { acknowledged, rejected: false } : null)
+    store.saveSnapshotAndAppendEvent.mockImplementation(async () => { saved = true })
+    store.listPendingEvents.mockImplementation(async () => saved && !acknowledged ? [{ event: { id: 'attention_pass-1', type: 'attention_result', payload: focusResult() } }] : [])
+    store.acknowledgeEvents.mockImplementation(async () => { acknowledged = true })
+    const postEvents = vi.fn(async () => ({ ok: false, error: 'Offline' }))
+    const runtime = createPilotStudentRuntime({ createStore: async () => store, resumeSession: async () => ({ ok: true, student: { studentId } }), fetchProfile: async () => ({ ok: true, profile }), postEvents })
+    await runtime.bootstrap(studentId)
+    await expect(runtime.persistAttentionResult('OTHER', focusResult())).resolves.toMatchObject({ ok: false, locallySaved: false })
+    const onLocalSaved = vi.fn(() => { expect(store.saveSnapshotAndAppendEvent).toHaveBeenCalledTimes(1) })
+    await expect(runtime.persistAttentionResult(studentId, focusResult(), { onLocalSaved })).resolves.toMatchObject({ ok: false, locallySaved: true })
+    expect(onLocalSaved).toHaveBeenCalledTimes(1)
+    expect(store.saveSnapshotAndAppendEvent).toHaveBeenCalledTimes(1)
+    postEvents.mockImplementation(async entries => ({ ok: true, ack: entries.map(e => e.id) }))
+    await expect(runtime.persistAttentionResult(studentId, focusResult())).resolves.toMatchObject({ ok: true, locallySaved: true })
+    expect(store.saveSnapshotAndAppendEvent).toHaveBeenCalledTimes(1)
+    await expect(runtime.persistAttentionResult(studentId, focusResult())).resolves.toMatchObject({ ok: true })
+    const snapshot = store.saveSnapshotAndAppendEvent.mock.calls[0][0].snapshot
+    const { attentionHistory, ...math } = snapshot
+    expect(math).toEqual(profile)
+    expect(attentionHistory).toHaveLength(1)
+    saved = false; acknowledged = false
+    store.saveSnapshotAndAppendEvent.mockRejectedValueOnce(new Error('Storage quota exceeded'))
+    const sentBefore = postEvents.mock.calls.length
+    await expect(runtime.persistAttentionResult(studentId, focusResult())).rejects.toThrow('Storage quota')
+    expect(postEvents).toHaveBeenCalledTimes(sentBefore)
+  })
   it('deletes a local vault only after the server confirms that the pupil was retired', async () => {
     const deleteStore = vi.fn(async () => {})
     const checkRetired = vi.fn(async () => true)

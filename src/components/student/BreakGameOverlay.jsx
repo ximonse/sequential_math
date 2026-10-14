@@ -4,7 +4,7 @@ import FocusActivity from './FocusActivity'
 
 function BreakGameOverlay({ activeBreakGame, onClose, studentId, studentName, classId }) {
   if (!activeBreakGame) return null
-  if (activeBreakGame === 'focus') return <FocusActivity onClose={() => onClose('focus')} />
+  if (activeBreakGame === 'focus') return <FocusActivity studentId={studentId} onClose={() => onClose('focus')} />
   if (!['pong', 'snake'].includes(activeBreakGame)) return null
 
   const isPong = activeBreakGame === 'pong'

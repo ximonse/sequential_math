@@ -5,6 +5,7 @@ import { downloadStudentCredentialPdf } from '../../../lib/studentCredentialPdf'
 import StudentDetailHistoryPanel from './StudentDetailHistoryPanel'
 import StudentDetailTrendPanel from './StudentDetailTrendPanel'
 import StudentDetailMasteryPanel from './StudentDetailMasteryPanel'
+import StudentAttentionHistoryPanel from './StudentAttentionHistoryPanel'
 
 const OPERATION_BADGES = [
   { label: '+', key: 'addition' },
@@ -174,6 +175,7 @@ export default function StudentDetailPanel({
           />
 
           <StudentDetailTrendPanel trend={detailStudentViewData.dailyTrend} />
+          <StudentAttentionHistoryPanel key={detailStudentProfile.studentId} history={detailStudentProfile.attentionHistory} />
 
           <StudentDetailHistoryPanel
             renderCollapseHeader={renderCollapseHeader}

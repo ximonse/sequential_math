@@ -49,10 +49,13 @@ paus, avslut och när aktiviteten lämnas.
 
 Resultatet innehåller träffar, missade signaler, för tidiga tryck, tryck på
 fel signal, korrekt avstådda signaler (KONTROLL) och medianreaktionstid för
-träffar när sådana finns. Avbrutna pass märks som avbrutna. Resultaten
-finns endast i komponentens minne och försvinner när aktiviteten lämnas.
+träffar när sådana finns. Avbrutna pass märks som avbrutna. Efter Simons
+godkännande 2026-10-14 sparas sammanfattningar för riktiga pass till en
+separat lärarhistorik; introduktioner sparas inte. Se
+[historikens lagring och verifieringsstatus](ATTENTION_HISTORY.md).
 
-Ingen fokusdata skrivs till elevprofil, matematiklogg, mastery eller API.
+Historiken använder ett eget profilfält och den autentiserade händelse-API:n.
+Ingen fokusdata skrivs till matematiklogg, mastery eller matematikstatistik.
 Befintliga paushändelser kan registrera öppning/stängning från vanlig
 träning, utan signaler eller resultat. Reaktionstid använder
 `performance.now()`. Touch och mus registreras vid pointerdown på skärmen.

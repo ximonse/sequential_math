@@ -6,6 +6,7 @@ import {
 } from './studentSessionClient'
 import { createPilotStudentStore, deletePilotStudentStore } from './pilotStudentStore'
 import { EVENT_OWNED_ADAPTIVE_FIELDS } from './pilotCheckpointContract.js'
+import { isValidAttentionResult, recordAttentionResult } from './attentionHistory.js'
 
 const CHECKPOINT_FIELDS = ['currentDifficulty', 'highestDifficulty', 'adaptive', 'operationAbilities', 'assignmentProgress', 'stats', 'telemetry', 'activity']
 
@@ -309,7 +310,7 @@ export function createPilotStudentRuntime({
       return { ok: true, profile: loaded.profile, pendingSync: !synced.ok, rejectedCount: syncStatus.rejectedCount }
     },
 
-    async persistEvent(profile, event) {
+    async persistEvent(profile, event, onLocalSaved) {
       if (!store || normalizePilotStudentId(profile?.studentId) !== studentId) {
         updateSyncStatus({ state: 'error', lastErrorAt: Date.now(), lastError: 'Pilotlagringen tillhör inte den aktiva eleven.' })
         return { ok: false, error: 'Pilotlagringen tillhör inte den aktiva eleven.' }
@@ -321,6 +322,7 @@ export function createPilotStudentRuntime({
         throw error
       }
       updateSyncStatus({ state: 'pending', pendingCount: syncStatus.pendingCount + 1 })
+      onLocalSaved?.()
       return syncPending()
     },
 
@@ -375,6 +377,30 @@ export function createPilotStudentRuntime({
       return this.persistEvent(profile, {
         id: makeEventId(), type, timestamp, payload
       })
+    },
+
+    async persistAttentionResult(expectedStudentId, payload, { onLocalSaved } = {}) {
+      if (!store || normalizePilotStudentId(expectedStudentId) !== studentId || !isValidAttentionResult(payload)) {
+        return { ok: false, locallySaved: false, error: 'Resultatet kunde inte kopplas till din elevsession.' }
+      }
+      const event = { id: `attention_${payload.id}`, type: 'attention_result', timestamp: payload.finishedAt, payload }
+      const existing = await store.readEventState(event.id)
+      if (existing?.acknowledged) return { ok: true, locallySaved: true }
+      if (existing?.rejected) return { ok: false, locallySaved: true, rejected: true }
+      if (existing) {
+        onLocalSaved?.()
+        const synced = await syncPending()
+        const state = await store.readEventState(event.id)
+        return { ...synced, locallySaved: true, ok: Boolean(state?.acknowledged), rejected: Boolean(state?.rejected) }
+      }
+      const profile = await store.readSnapshot()
+      if (normalizePilotStudentId(profile?.studentId) !== studentId) {
+        return { ok: false, locallySaved: false, error: 'Elevprofilen kunde inte läsas. Försök igen.' }
+      }
+      recordAttentionResult(profile, payload)
+      const result = await this.persistEvent(profile, event, onLocalSaved)
+      const rejected = (await store.listRejectedEvents()).some(item => item.event.id === event.id)
+      return { ...result, ok: result.ok && !rejected, locallySaved: true, rejected }
     },
 
     async close() {

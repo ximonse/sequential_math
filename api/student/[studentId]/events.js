@@ -14,6 +14,7 @@ import { isValidCurrentNeed, recordCurrentNeed } from '../../../src/lib/currentN
 import { isContractMasteryFact } from '../../../src/lib/masteryFacts.js'
 import { EVENT_OWNED_ADAPTIVE_FIELDS } from '../../../src/lib/pilotCheckpointContract.js'
 import { markTableCompleted } from '../../../src/lib/tableDrillCompletion.js'
+import { isValidAttentionResult, recordAttentionResult } from '../../../src/lib/attentionHistory.js'
 
 const MAX_PROBLEM_LOG = 5000
 const MAX_RECENT_PROBLEMS = 250
@@ -211,6 +212,7 @@ export function validEntry(entry, studentId) {
   if (typeof entry?.id !== 'string' || !entry.id || entry.id.length > 100 || !entry.payload || jsonBytes(entry) > MAX_EVENT_BYTES) return false
   if (entry.studentId && String(entry.studentId).toUpperCase() !== studentId) return false
   const payload = entry.payload
+  if (entry.type === 'attention_result') return isValidAttentionResult(payload)
   if (entry.type === 'problem_result') return typeof payload.problemId === 'string'
     && Boolean(payload.problemId) && Number.isFinite(payload.timestamp) && payload.timestamp > 0
     && typeof payload.correct === 'boolean'
@@ -261,6 +263,8 @@ export function applyWalEntry(profile, entry) {
   if (!entry?.type || !entry?.payload) return false
 
   switch (entry.type) {
+    case 'attention_result':
+      return recordAttentionResult(profile, entry.payload)
     case 'problem_result':
       return applyProblemResult(profile, entry.payload)
     case 'mastery_achieved':

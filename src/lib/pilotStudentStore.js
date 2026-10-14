@@ -321,6 +321,11 @@ export async function createPilotStudentStore({
       return stored ? decryptVaultValue({ cryptoApi: crypto, key, studentId, recordType: 'snapshot', encrypted: stored }) : null;
     },
 
+    async readEventState(eventId) {
+      const stored = await readRecord(`${EVENT_PREFIX}${eventId}`, 'event')
+      return stored ? { acknowledged: Boolean(stored.acknowledgedAt), rejected: Boolean(stored.rejectedAt) } : null
+    },
+
     async listPendingEvents() {
       const transaction = db.transaction(STORE_NAME, 'readonly');
       const records = await requestAsPromise(transaction.objectStore(STORE_NAME).getAll());

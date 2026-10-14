@@ -1,5 +1,6 @@
 import { hashPasswordWithSalt } from '../_studentPassword.js'
 import { randomBytes } from 'node:crypto'
+import { mergeAttentionHistory } from '../../src/lib/attentionHistory.js'
 import {
   STUDENT_PASSWORD_SCHEME,
   STUDENT_PROFILE_SCHEMA_VERSION,
@@ -340,6 +341,7 @@ export function mergeProfiles(existingProfile, incomingProfile) {
   merged.tableDrill = mergeTableDrill(existingProfile?.tableDrill, incomingProfile?.tableDrill)
   merged.telemetry = mergeTelemetry(existingProfile?.telemetry, incomingProfile?.telemetry)
   merged.ticketResponses = mergeTicketResponses(existingProfile?.ticketResponses, incomingProfile?.ticketResponses)
+  merged.attentionHistory = mergeAttentionHistory(existingProfile?.attentionHistory, incomingProfile?.attentionHistory)
   merged.ticketRevealAll = mergeTicketRevealAll(existingProfile?.ticketRevealAll, incomingProfile?.ticketRevealAll)
   merged.ticketInbox = mergeTicketInbox(existingProfile?.ticketInbox, incomingProfile?.ticketInbox)
   merged.activity = mergeActivity(existingProfile?.activity, incomingProfile?.activity)

@@ -1,0 +1,132 @@
+import { test, expect } from '@playwright/test'
+import { createPupil, login, readServerProfile } from './lib/app.js'
+import { createTeacher, teacherLogin } from './lib/teacher.js'
+
+const math = profile => Object.fromEntries(Object.entries(profile).filter(([key]) => /problem|mastery|level|abilit|stats|subitizing/i.test(key)))
+const open = page => page.getByRole('button', { name: /^Fokuspunkten – 2 min/ }).tap()
+async function focusPractice(page, label) {
+  await page.getByRole('button', { name: new RegExp(`^${label}`) }).tap()
+  // Let all three practice signals expire. Practice errors must never be persisted.
+  await page.clock.runFor(14400)
+  await page.getByRole('button', { name: 'Starta passet', exact: true }).tap()
+}
+async function finished(page) {
+  await expect(page.getByRole('dialog').getByRole('status')).toContainText('Resultatet är sparat')
+  await page.getByRole('button', { name: 'Tillbaka', exact: true }).last().tap()
+}
+test('Historik: fokus, kontroll och MULTI överlever omladdning och visas endast för behörig lärare', async ({ page, request, browser }, testInfo) => {
+  const classId = `attention-${Math.random().toString(36).slice(2, 8)}`
+  const pupil = await createPupil(request, { classId, className: 'Fokushistorik', operations: ['addition'] })
+  const before = math(await readServerProfile(request, pupil.studentId))
+  await page.clock.install()
+  await login(page, pupil)
+  await open(page)
+  await page.getByRole('button', { name: /^2 - KONTROLL/ }).tap()
+  await page.clock.runFor(1000)
+  await page.getByRole('button', { name: 'Avsluta', exact: true }).tap()
+  await expect(page.getByRole('dialog').getByRole('status')).toContainText('Introduktionen sparas inte')
+  await page.getByRole('button', { name: 'Tillbaka', exact: true }).last().tap()
+  expect((await readServerProfile(request, pupil.studentId)).attentionHistory || []).toHaveLength(0)
+  for (const label of ['1 - FOKUS', '2 - KONTROLL']) {
+    await open(page); await focusPractice(page, label)
+    await page.clock.runFor(label.startsWith('1') ? 120000 : 18000)
+    if (label.startsWith('2')) await page.getByRole('button', { name: 'Avsluta', exact: true }).tap()
+    await finished(page)
+  }
+  await open(page)
+  await page.getByRole('button', { name: /^MULTI/ }).tap()
+  await page.getByRole('button', { name: 'Öva reglerna', exact: true }).tap()
+  await page.clock.runFor(16 * 5800)
+  await page.getByRole('button', { name: 'Starta MULTI', exact: true }).tap()
+  await page.clock.runFor(600)
+  await page.getByRole('button', { name: 'Svara vänster', exact: true }).tap()
+  await page.getByRole('button', { name: 'Avsluta', exact: true }).tap()
+  await finished(page)
+  const saved = await readServerProfile(request, pupil.studentId)
+  expect(saved.attentionHistory).toHaveLength(3)
+  expect(saved.attentionHistory.find(item => item.mode === 'discover')).toMatchObject({ activeMs: 120000, aborted: false })
+  expect(saved.attentionHistory.find(item => item.mode === 'multi').summary).toMatchObject({ total: 1, correct: 1 })
+  expect(math(saved)).toEqual(before)
+  await page.reload()
+  await expect(page.getByText(`Hej ${pupil.loginCode}`)).toBeVisible()
+  expect((await readServerProfile(request, pupil.studentId)).attentionHistory).toEqual(saved.attentionHistory)
+  const context = await browser.newContext()
+  const teacherPage = await context.newPage()
+  try {
+    const teacher = await createTeacher(request, { classIds: [classId] })
+    await teacherLogin(teacherPage, teacher)
+    await teacherPage.goto(`/teacher/student/${pupil.studentId}`)
+    await expect(teacherPage.getByTestId('attention-history-row')).toHaveCount(3)
+    await teacherPage.getByRole('combobox', { name: 'Filtrera fokusaktiviteter' }).selectOption('multi')
+    await expect(teacherPage.getByTestId('attention-history-row')).toHaveCount(1)
+    await expect(teacherPage.getByTestId('attention-history-row')).toContainText('Avbrutet')
+    await teacherPage.setViewportSize({ width: 1024, height: 768 })
+    await teacherPage.getByRole('region', { name: 'Fokusaktiviteter' }).screenshot({ path: testInfo.outputPath('teacher-attention-history.png') })
+    await teacherPage.reload()
+    await expect(teacherPage.getByTestId('attention-history-row')).toHaveCount(3)
+    // The authenticated page can read its pupil; an unauthenticated request cannot.
+    expect((await request.get(`/api/teacher-students/${pupil.studentId}`)).status()).toBe(401)
+    const deniedTeacher = await createTeacher(request, { classIds: [`other-${classId}`] })
+    const deniedLogin = await request.post('/api/teacher-login', { data: { username: deniedTeacher.username, password: deniedTeacher.password } })
+    const deniedAuth = await deniedLogin.json()
+    expect(deniedLogin.ok()).toBe(true)
+    const denied = await request.get(`/api/teacher-students/${pupil.studentId}`, { headers: { 'x-teacher-token': deniedAuth.token } })
+    expect(denied.status()).toBe(403)
+  } finally { await context.close() }
+})
+
+test('Historik: nätfel behåller krypterad kö och återförsök sparar samma pass exakt en gång', async ({ page, request }) => {
+  const pupil = await createPupil(request)
+  await page.clock.install(); await login(page, pupil)
+  await open(page); await focusPractice(page, '1 - FOKUS')
+  await page.clock.runFor(15000)
+  let blocked = true
+  await page.route('**/api/me/events', route => blocked ? route.abort() : route.continue())
+  await page.getByRole('button', { name: 'Avsluta', exact: true }).tap()
+  await expect(page.getByRole('dialog').getByRole('status')).toContainText('väntar på synkning')
+  expect((await readServerProfile(request, pupil.studentId)).attentionHistory || []).toHaveLength(0)
+  blocked = false
+  await page.getByRole('button', { name: 'Försök spara igen', exact: true }).tap()
+  await expect(page.getByRole('dialog').getByRole('status')).toContainText('Resultatet är sparat')
+  expect((await readServerProfile(request, pupil.studentId)).attentionHistory).toHaveLength(1)
+  await page.getByRole('button', { name: 'Tillbaka', exact: true }).last().tap()
+  await page.reload()
+  await expect(page.getByText(`Hej ${pupil.loginCode}`)).toBeVisible()
+  expect((await readServerProfile(request, pupil.studentId)).attentionHistory).toHaveLength(1)
+})
+
+test('Historik: ett osynkat resultat överlever att aktivitetens vy lämnas och skickas vid omladdning', async ({ page, request }) => {
+  const pupil = await createPupil(request)
+  await page.clock.install(); await login(page, pupil)
+  await open(page); await focusPractice(page, '2 - KONTROLL')
+  await page.clock.runFor(15000)
+  await page.route('**/api/me/events', route => route.abort())
+  await page.getByRole('button', { name: 'Avsluta', exact: true }).tap()
+  await expect(page.getByRole('dialog').getByRole('status')).toContainText('väntar på synkning')
+  await page.getByRole('button', { name: 'Tillbaka', exact: true }).last().tap()
+  expect((await readServerProfile(request, pupil.studentId)).attentionHistory || []).toHaveLength(0)
+  await page.unroute('**/api/me/events')
+  await page.reload()
+  await expect(page.getByText(`Hej ${pupil.loginCode}`)).toBeVisible()
+  await expect.poll(async () => (await readServerProfile(request, pupil.studentId)).attentionHistory?.length).toBe(1)
+  await page.reload()
+  await expect(page.getByText(`Hej ${pupil.loginCode}`)).toBeVisible()
+  expect((await readServerProfile(request, pupil.studentId)).attentionHistory).toHaveLength(1)
+})
+
+test('Historik: eleven kan lämna efter säker lokal skrivning medan nätanropet väntar', async ({ page, request }) => {
+  const pupil = await createPupil(request)
+  await page.clock.install(); await login(page, pupil)
+  await open(page); await focusPractice(page, '1 - FOKUS')
+  await page.clock.runFor(15000)
+  let release
+  const gate = new Promise(resolve => { release = resolve })
+  await page.route('**/api/me/events', async route => { await gate; await route.continue() })
+  await page.getByRole('button', { name: 'Avsluta', exact: true }).tap()
+  await expect(page.getByRole('dialog').getByRole('status')).toContainText('väntar på synkning')
+  await page.getByRole('button', { name: 'Tillbaka', exact: true }).last().tap()
+  await expect(page.getByText(`Hej ${pupil.loginCode}`)).toBeVisible()
+  expect((await readServerProfile(request, pupil.studentId)).attentionHistory || []).toHaveLength(0)
+  release()
+  await expect.poll(async () => (await readServerProfile(request, pupil.studentId)).attentionHistory?.length).toBe(1)
+})

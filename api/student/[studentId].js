@@ -133,7 +133,7 @@ export default async function handler(req, res) {
           auth: hasCurrentStudentPassword(profile.auth) ? profile.auth : { ...current.auth, ...profile.auth }
         }, studentId, studentPassword)
         const merged = mergeProfiles(current, incoming)
-        for (const field of ['name', 'grade', 'classId', 'classIds', 'className', 'enrollmentKey', 'ticketInbox', 'ticketRevealAll']) merged[field] = current[field]
+        for (const field of ['name', 'grade', 'classId', 'classIds', 'className', 'enrollmentKey', 'ticketInbox', 'ticketRevealAll', 'attentionHistory']) merged[field] = current[field]
         if (Array.isArray(merged.ticketResponses)) merged.ticketResponses = merged.ticketResponses.map(item => ({
           ...item, teacherRevealAt: current.ticketRevealAll?.[item.dispatchId] || null
         }))

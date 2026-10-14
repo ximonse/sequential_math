@@ -40,6 +40,7 @@ export class FocusActivitySession {
   }
 
   start() {
+    this.hasStarted = true
     this.phase = 'running'
     this.elapsed = 0
     this.segmentStart = this.now()

@@ -1,4 +1,4 @@
-.focus-module { --focus-ink: #193d40; --focus-soft: #e9f1ef; --focus-line: #d7e3e0; --focus-teal: #216b68; --focus-blue: #436b9a; color: var(--focus-ink); background: #fff; border: 1px solid var(--focus-line); border-radius: 18px; padding: 20px; min-width: 0; }
+.focus-module { --focus-ink: #193d40; --focus-soft: #e9f1ef; --focus-line: #d7e3e0; --focus-teal: #216b68; --focus-blue: #436b9a; color: var(--focus-ink); background: #fff; border: 1px solid var(--focus-line); border-radius: 12px; padding: 12px; min-width: 0; }
 .focus-module h2 { font-size: 1.6rem; font-weight: 650; letter-spacing: -.035em; }
 .focus-module h3 { font-size: 1.25rem; font-weight: 650; }
 .focus-module .focus-eyebrow { color: #536b68; font-size: .75rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; margin-bottom: 4px; }
@@ -9,23 +9,25 @@
 .focus-module button { cursor: pointer; }
 .focus-module button:disabled { opacity: .55; cursor: wait; }
 .focus-module .focus-action { font-size: .85rem; border: 1px solid #a9c4bd; border-radius: 10px; padding: 8px 12px; background: #f4f8f6; color: var(--focus-ink); }
-.focus-toolbar { display: flex; align-items: end; gap: 16px; flex-wrap: wrap; margin-top: 20px; padding: 14px 0; border-block: 1px solid var(--focus-line); }
+.focus-toolbar { display: flex; align-items: end; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding: 8px 0; border-block: 1px solid var(--focus-line); }
 .focus-module label { display: flex; flex-direction: column; gap: 5px; font-size: .8rem; color: #536b68; }
 .focus-module select { min-height: 38px; max-width: 100%; border: 1px solid #b8ccc6; border-radius: 8px; padding: 5px 8px; color: var(--focus-ink); background: white; }
 .focus-view-picker { display: flex; gap: 3px; padding: 3px; border-radius: 10px; background: var(--focus-soft); }
 .focus-view-picker button { padding: 8px 10px; border-radius: 8px; font-size: .85rem; }
 .focus-module button[aria-pressed="true"] { background: var(--focus-ink); color: #fff; }
 .focus-load-status { margin-top: 12px; font-size: .8rem; font-variant-numeric: tabular-nums; }
-.focus-table-scroll { overflow-x: auto; margin: 16px -6px; }
+.focus-table-scroll { overflow-x: auto; margin: 8px 0; }
 .focus-matrix { width: 100%; border-collapse: collapse; font-size: .85rem; }
 .focus-matrix th, .focus-matrix td { padding: 10px 8px; border-bottom: 1px solid var(--focus-line); text-align: left; vertical-align: top; }
 .focus-matrix thead th { font-size: .75rem; color: #536b68; background: #f4f8f6; letter-spacing: .025em; }
 .focus-matrix tbody th { min-width: 110px; max-width: 170px; }
 .focus-matrix tbody tr[aria-selected="true"] { background: #edf5f2; }
 .focus-pupil-button { text-align: left; font-weight: 600; text-decoration: underline; text-decoration-color: #b6ccc4; text-underline-offset: 4px; }
-.focus-column-exercise { display: block; margin-top: 4px; font-size: .7rem; font-weight: 400; }
-.focus-signal-matrix td { padding: 8px 5px; }
-.focus-module .focus-signal { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; width: 100%; min-width: 110px; min-height: 76px; padding: 10px 8px; border: 1px solid transparent; border-radius: 12px; transition: filter .15s; }
+.focus-column-exercise { display: block; margin-top: 2px; font-size: .7rem; font-weight: 400; }
+.focus-signal-matrix { width: auto; }
+.focus-signal-matrix th { padding: 5px 6px; vertical-align: middle; }
+.focus-signal-matrix td { padding: 2px; }
+.focus-module .focus-signal { display: flex; align-items: center; gap: 4px; width: 128px; min-height: 44px; padding: 3px 5px; border: 1px solid transparent; border-radius: 6px; transition: filter .15s; }
 .focus-signal:hover { filter: brightness(.96); }
 .focus-signal-white { background: #fff; color: #536b68; border: 1px dashed #a2b6b1 !important; }
 .focus-signal-yellow { background: #fff0b5; color: #675211; }
@@ -33,8 +35,8 @@
 .focus-signal-blue { background: #d9eafa; color: #214a73; }
 .focus-signal-mark { font-size: 1.1rem; font-weight: 600; }
 .focus-signal-label { font-size: .75rem; line-height: 1.3; }
-.focus-signal-trend { position: absolute; right: 7px; top: 4px; font-size: .95rem; }
-.focus-signal-legend { display: flex; flex-wrap: wrap; gap: 10px 16px; margin: 12px 0; font-size: .8rem; }
+.focus-signal-trend { margin-left: auto; font-size: .95rem; }
+.focus-signal-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 8px 0; font-size: .8rem; }
 .focus-signal-legend>span { display: flex; align-items: center; gap: 6px; }
 .focus-signal-swatch { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 6px; font-style: normal; }
 .focus-signal-details { border-bottom: 1px solid var(--focus-line); padding-bottom: 8px; font-size: .85rem; line-height: 1.55; }
@@ -42,9 +44,9 @@
 .focus-signal-details p { margin-top: 6px; color: #536b68; }
 .focus-module small { display: block; font-size: .73rem; color: #536b68; line-height: 1.5; }
 .focus-empty { padding: 18px 0; color: #536b68; font-size: .9rem; }
-.focus-student-picker { margin: 22px 0 14px; padding-top: 16px; border-top: 1px solid var(--focus-line); }
+.focus-student-picker { margin: 12px 0 8px; padding-top: 8px; border-top: 1px solid var(--focus-line); }
 .focus-student-picker select { width: min(100%, 340px); }
-.focus-individual { padding: 16px; border-radius: 14px; background: #f6f9f7; border: 1px solid var(--focus-line); }
+.focus-individual { padding: 10px; border-radius: 10px; background: #f6f9f7; border: 1px solid var(--focus-line); }
 .focus-chart { width: 100%; max-height: 380px; margin-top: 12px; overflow: visible; }
 .focus-chart text { fill: #536b68; font-size: 12px; }
 .focus-grid-line line { stroke: var(--focus-line); stroke-width: 1; }
@@ -67,4 +69,4 @@
 .focus-explanation { margin-top: 16px; font-size: .85rem; line-height: 1.55; }
 .focus-explanation dt { font-weight: 600; margin-top: 8px; }
 .focus-explanation p { margin-top: 12px; color: #536b68; }
-@media (max-width: 640px) { .focus-module { padding: 14px; } .focus-toolbar { gap: 10px; } .focus-individual { padding: 10px; } }
+@media (max-width: 640px) { .focus-module { padding: 8px; } .focus-toolbar { gap: 8px; } }

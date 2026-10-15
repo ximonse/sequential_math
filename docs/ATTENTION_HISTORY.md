@@ -20,14 +20,46 @@ Vid lokal lagringsbrist visas fel och eleven kan försöka igen.
 Ett pass som lämnas genom omladdning eller stängning innan resultatsidan
 visas har ännu ingen sparad sammanfattning.
 
-Lärarens **Elevprofil → Fokusaktiviteter** visar de senaste passen med
-aktivitetsfilter och Visa fler. Varje pass visar datum/tid i Stockholm,
-läge, aktiv tid, klart/avbrutet och respektive aktivitets resultat.
-FOKUS/KONTROLL visar träffar, missade, för tidiga tryck, fel signal,
-korrekt avstådda signaler i KONTROLL samt median för träffar. MULTI visar
-rätt/fel/missade och antal rätt samt median för upprepade/bytta regler.
-Saknade reaktionstider visas som –. Ingen norm, klassrankning, diagnos,
-matematikjämförelse eller sammanvägt fokusbetyg införs.
+Lärarens **Elevprofil → Fokusaktiviteter** visar en översikt över färdiga
+tvåminuterspass och en separat passhistorik. Aktivitetsfilter och tidsperiod
+(all sparad historik, senaste 7 eller 30 dygnen) gäller båda. Visa fler ändrar
+bara hur många historikrader som syns; översikten använder hela urvalet.
+Avbrutna pass kan döljas i historiken och ingår aldrig i översiktens mått.
+Varje pass visar datum/tid i Stockholm, aktiv tid och klart/avbrutet.
+
+### Jämförbara mått
+
+- FOKUS/KONTROLL: upptäckta gröna signaler = träffar / (träffar + missade).
+  KONTROLL visar också rätt avstådda stopp / (rätt avstådda + feltryck på
+  stoppsignaler). Stoppsignaler är röda cirklar och gröna fyrkanter.
+- För tidiga tryck redovisas per aktiv minut med totalt antal synligt.
+  Aktiv tid används, inte väggtid inklusive dold flik. Vid noll aktiv tid
+  visas – i stället för en påhittad frekvens.
+- MULTI: rätta svar / alla färdiga uppgifter, inklusive fel och missade.
+  Upprepad och bytt regel har egna andelar och synliga nämnare. Första
+  uppgiften ingår bara i passets total, eftersom den saknar föregående regel.
+- Översiktens andelar använder summerade täljare och nämnare från färdiga
+  pass, inte medelvärdet av passens procenttal. Aktiviteter blandas inte.
+- Svarstider är medianer för rätta svar inom samma pass med antal rätta
+  svar synligt. Ingen gemensam median räknas ur sparade passmedianer.
+  MULTI visar skillnaden mellan bytt och upprepad regels median i samma
+  pass när båda finns. Plus betyder längre svarstid vid byte.
+
+Alla andelar visar procent och antal, till exempel 75 % (3 av 4).
+Saknat underlag visas som – med förklaring; observerade noll rätt visas som
+0 %. Avbrutna pass märks att de inte ingår i översikten. Måttförklaringar
+finns under Så läser du måtten. Ingen norm, klassrankning, diagnos,
+matematikjämförelse eller sammanvägt fokusbetyg införs. Slumpade signaler
+och ändrat aktivitetsupplägg begränsar jämförbarheten; inga råa historiska
+svar återskapas eller äldre protokollversioner gissas fram.
+
+Statistikförtydligandet är lokalt verifierat 2026-10-15: 149 testfiler/719
+tester, build och hela robotsviten 106/106 passerar utan regelbrott. Riktad
+lint, arkitektur och projektkarta passerar. Robotverifiering täcker korrekta
+nämnare, viktning, ofullständiga pass, tomt underlag, tidsskillnad, period- och
+aktivitetsfilter samt oberoende av pagination. Lärarbilder på dator/surfplatta
+har granskats. Befintlig historik, matematikdata och lagringskontrakt ändras
+inte. Ändringen är ännu inte pushad eller publicerad.
 
 ## Lagringskontrakt
 

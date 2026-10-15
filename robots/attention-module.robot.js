@@ -1,0 +1,103 @@
+import { test, expect } from '@playwright/test'
+import { createPupil, login, readServerProfile } from './lib/app.js'
+import { createTeacher, selectOnlyClass, teacherLogin } from './lib/teacher.js'
+
+test('Fokusmodul: gruppmatris, individer, diagram, gruppbyte, fel och oförändrad elevdata', async ({ page, request }, testInfo) => {
+  const suffix = Math.random().toString(36).slice(2, 8)
+  const classA = `focus-a-${suffix}`, classB = `focus-b-${suffix}`
+  const pupils = []
+  for (let i = 0; i < 4; i++) pupils.push(await createPupil(request, {
+    classId: i === 3 ? classB : classA, className: i === 3 ? 'Fokusgrupp B' : 'Fokusgrupp A', operations: ['addition']
+  }))
+  const now = Date.now() - 1000
+  const pass = (id, changes = {}) => ({ id, version: 1, mode: 'choose', startedAt: now - 120000, finishedAt: now,
+    activeMs: 120000, aborted: false, summary: { hits: 3, misses: 1, wrong: 1, withheld: 1, early: 3, median: 300 }, ...changes })
+  for (let i = 0; i < 2; i++) {
+    await login(page, pupils[i])
+    const results = [pass(`group-control-${i}`), pass(`group-old-${i}`, { startedAt: now - 9 * 86400000 - 120000, finishedAt: now - 9 * 86400000 }),
+      pass(`group-abort-${i}`, { aborted: true }),
+      pass(`group-focus-${i}`, { mode: 'discover', summary: { hits: 2, misses: 2, wrong: 0, withheld: 0, early: 1, median: 450 } }),
+      pass(`group-multi-${i}`, { mode: 'multi', summary: { total: 5, correct: 3, wrong: 1, missed: 1, repeat: { total: 2, correct: 2, median: 300 }, switch: { total: 2, correct: 1, median: 450 } } })]
+    expect(await page.evaluate(async entries => {
+      const session = await (await fetch('/api/student-session')).json()
+      return (await fetch('/api/me/events', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-csrf-token': session.csrfToken },
+        body: JSON.stringify({ entries: entries.map(payload => ({ id: `event-${payload.id}`, type: 'attention_result', timestamp: payload.finishedAt, payload })) }) })).status
+    }, results)).toBe(200)
+  }
+  const before = await Promise.all(pupils.map(pupil => readServerProfile(request, pupil.studentId)))
+  await teacherLogin(page, await createTeacher(request, { classIds: [classA, classB] }))
+  await selectOnlyClass(page, 'Fokusgrupp A')
+  await page.getByRole('button', { name: /^Fokusövningar/ }).click()
+  await expect(page).toHaveURL(/\/teacher\/focus$/)
+  const panel = page.getByRole('region', { name: 'Fokusövningar', exact: true })
+  await expect(panel.getByRole('status')).toHaveText('3 av 3 elever hämtade')
+  await expect(panel.getByTestId('focus-group-row')).toHaveCount(3)
+  await expect(panel).toContainText('Inga färdiga pass')
+  await expect(panel).toContainText('75 %')
+  await expect(panel).toContainText('6 av 8')
+  await panel.getByRole('button', { name: `${before[0].displayAlias}, 2 - KONTROLL, visa pass`, exact: true }).tap()
+  const individual = panel.getByRole('region', { name: 'Individens fokusresultat' })
+  await expect(individual).toContainText(before[0].displayAlias)
+  await expect(individual).toContainText('2 färdiga pass')
+  await individual.getByText('Passdetaljer · 3 pass', { exact: true }).click()
+  await expect(individual).toContainText('Avbrutet')
+  await panel.getByRole('combobox', { name: 'Period för fokusgruppen' }).selectOption('7')
+  await expect(individual).toContainText('1 färdiga pass')
+  await page.setViewportSize({ width: 1280, height: 960 })
+  await panel.screenshot({ path: testInfo.outputPath('focus-module-matrix.png') })
+  await panel.getByRole('button', { name: 'Punktdiagram', exact: true }).click()
+  await expect(panel.getByRole('img', { name: /^Gruppens punktdiagram/ })).toBeVisible()
+  // Equal values are clustered; both pupils remain individually selectable.
+  await expect(panel).toContainText('2 av 3 elever visas')
+  await panel.getByRole('button', { name: new RegExp(`^${before[1].displayAlias}`) }).tap()
+  await expect(individual).toContainText(before[1].displayAlias)
+  await panel.getByRole('combobox', { name: 'Övning för fokusdiagram' }).selectOption('multi')
+  await individual.getByRole('combobox', { name: 'Mått i elevens tidslinje' }).selectOption('time')
+  await expect(individual.getByRole('img')).toHaveAttribute('aria-label', /millisekunder/)
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await panel.screenshot({ path: testInfo.outputPath('focus-module-plot-tablet.png') })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  // A new group must not retain another group's selected pupil or history.
+  await selectOnlyClass(page, 'Fokusgrupp B')
+  await expect(panel.getByRole('status')).toHaveText('1 av 1 elever hämtade')
+  await expect(individual).toHaveCount(0)
+  await panel.getByRole('button', { name: 'Matris', exact: true }).press('Enter')
+  await expect(panel.getByTestId('focus-group-row')).toHaveCount(1)
+  await expect(panel).not.toContainText(before[0].displayAlias)
+  await page.reload()
+  await expect(panel.getByRole('status')).toHaveText('1 av 1 elever hämtade')
+  await expect(panel.getByTestId('focus-group-row')).toHaveCount(1)
+  // A failed read is an explicit error, never "no results". Retry recovers.
+  await page.route(`**/api/teacher-students/${pupils[3].studentId}`, route => route.fulfill({ status: 503, json: { error: 'Unavailable' } }))
+  await panel.getByRole('button', { name: 'Uppdatera fokusresultat' }).click()
+  await expect(panel.getByRole('status')).toContainText('1 kunde inte hämtas')
+  await expect(panel.getByTestId('focus-group-row')).toContainText('Kunde inte hämtas')
+  await page.unroute(`**/api/teacher-students/${pupils[3].studentId}`)
+  await panel.getByRole('button', { name: 'Uppdatera fokusresultat' }).click()
+  await expect(panel.getByRole('status')).toHaveText('1 av 1 elever hämtade')
+  for (let i = 0; i < pupils.length; i++) expect(await readServerProfile(request, pupils[i].studentId)).toEqual(before[i])
+})
+
+test('Fokusmodulen kräver lärarinloggning', async ({ page }) => {
+  await page.goto('/teacher/focus')
+  await expect(page).toHaveURL(/\/teacher-login$/)
+})
+
+test('Fokusgruppen visar bara elever läraren har åtkomst till', async ({ page, request }) => {
+  const suffix = Math.random().toString(36).slice(2, 8)
+  const ownClass = `own-focus-${suffix}`
+  const own = await createPupil(request, { classId: ownClass, operations: ['addition'] })
+  const other = await createPupil(request, { classId: `other-focus-${suffix}`, operations: ['addition'] })
+  await teacherLogin(page, await createTeacher(request, { classIds: [ownClass] }))
+  await page.getByRole('button', { name: /^Fokusövningar/ }).click()
+  const panel = page.getByRole('region', { name: 'Fokusövningar', exact: true })
+  await expect(panel.getByRole('status')).toHaveText('1 av 1 elever hämtade')
+  await expect(panel.getByTestId('focus-group-row')).toHaveCount(1)
+  await expect(panel.getByRole('combobox', { name: 'Elev i fokusmodulen' }).locator('option')).toHaveCount(2)
+  const status = await page.evaluate(async studentId => (await fetch(`/api/teacher-students/${studentId}`, {
+    headers: { 'x-teacher-token': sessionStorage.getItem('mathapp_teacher_api_token') }
+  })).status, other.studentId)
+  expect(status).toBe(403)
+  await panel.getByRole('combobox', { name: 'Elev i fokusmodulen' }).selectOption(own.studentId)
+  await expect(panel.getByRole('region', { name: 'Individens fokusresultat' })).toContainText('Inga färdiga pass')
+})

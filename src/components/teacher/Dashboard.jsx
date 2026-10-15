@@ -424,6 +424,7 @@ function Dashboard() {
   return (
     <>
     <DashboardLayout
+      isFocusView={location.pathname === '/teacher/focus'}
       {...{
         isDirectStudentView, detailStudentProfile, cloudSyncStatus, formatTimeAgo,
         handleJumpToPasswordReset, navigate, handleLogout, dashboardStatus,

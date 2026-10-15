@@ -65,6 +65,10 @@ function App() {
           )}
         />
         <Route
+          path="/teacher/focus"
+          element={<RequireTeacherAuth><Dashboard /></RequireTeacherAuth>}
+        />
+        <Route
           path="/teacher/admin"
           element={(
             <RequireTeacherAuth>

@@ -1,4 +1,5 @@
-import { cloneElement, useEffect, useState } from 'react'
+import { cloneElement, useEffect, useMemo, useState } from 'react'
+import AttentionModule from '../attention/AttentionModule'
 import AssignmentsPanel from './AssignmentsPanel'
 import ChevronIcon from './ChevronIcon'
 import ClassOverviewPanel from './ClassOverviewPanel'
@@ -37,6 +38,7 @@ const PANEL_DEFS = [
   { id: 'detail',      title: 'Elevprofil' },
   { id: 'results',     title: 'Resultat och export' },
   { id: 'mathresults', title: 'Matematikövningar — Resultat' },
+  { id: 'focus', title: 'Fokusövningar' },
   { id: 'assignments', title: 'Uppdrag' },
   { id: 'tickets',     title: 'Tickets' },
   { id: 'mastery',     title: 'Nivåöversikt – hela klassen' },
@@ -57,6 +59,7 @@ const PANEL_DEFS = [
 
 const WORKSPACES = [
   { id: 'progress', label: 'Framsteg', description: 'Kunskapsområden och elever', panels: ['mastery', 'tableoverview', 'detail', 'overview', 'tabledev'] },
+  { id: 'focus', label: 'Fokusövningar', description: 'Grupp, individ och pass', panels: ['focus'] },
   { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'mathresults', 'tickets'] },
   { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality'] },
   { id: 'ncm', label: 'Screening', description: 'Screening och analys av elevens uträkning', panels: ['ncm-grid'], adminOnly: true },
@@ -69,6 +72,7 @@ const DEFAULT_COLLAPSED = Object.fromEntries(
 const LS_COLLAPSED_KEY = 'mathapp_dashboard_panel_collapsed_v2'
 
 export default function DashboardLayout({
+  isFocusView = false,
   isDirectStudentView,
   detailStudentProfile,
   cloudSyncStatus,
@@ -169,7 +173,11 @@ export default function DashboardLayout({
   const teacherIdentity = getTeacherIdentity()
   const teacherName = String(teacherIdentity.displayName || 'Lärare').trim() || 'Lärare'
   const teacherRole = getTeacherRoleLabel(teacherIdentity.role)
-  const [activeWorkspace, setActiveWorkspace] = useState('progress')
+  const [activeWorkspace, setActiveWorkspace] = useState(() => isFocusView ? 'focus' : 'progress')
+  useEffect(() => {
+    if (isFocusView) setActiveWorkspace('focus')
+    else setActiveWorkspace(current => current === 'focus' ? 'progress' : current)
+  }, [isFocusView])
   const [tableSelection, setTableSelection] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('mathapp_table_progress_selection') || '{}')
@@ -177,8 +185,9 @@ export default function DashboardLayout({
         days: Number(saved.days) === 14 ? 14 : 7, studentId: String(saved.studentId || '') }
     } catch { return { table: 7, days: 7, studentId: '' } }
   })
-  const tableProgressStudents = selectedClassIds.length > 0
-    ? students.filter(student => recordMatchesClassFilter(student, selectedClassIds)) : students
+  const tableProgressStudents = useMemo(() => selectedClassIds.length > 0
+    ? students.filter(student => recordMatchesClassFilter(student, selectedClassIds)) : students,
+  [students, selectedClassIds, recordMatchesClassFilter])
   useEffect(() => {
     try { localStorage.setItem('mathapp_table_progress_selection', JSON.stringify(tableSelection)) } catch { /* Preferences are optional. */ }
   }, [tableSelection])
@@ -251,6 +260,7 @@ export default function DashboardLayout({
   }
 
   function renderPanelContent(id) {
+    if (id === 'focus') return <AttentionModule students={tableProgressStudents} />
     if (id === 'overview') return (
       <ClassOverviewPanel
         classOverviewMeta={classOverviewMeta}
@@ -525,7 +535,11 @@ export default function DashboardLayout({
               <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">Arbetsläge</p>
               <nav className="grid gap-1" aria-label="Lärarvy">
                 {WORKSPACES.filter(workspace => !workspace.adminOnly || teacherIsAdmin).map(workspace => (
-                  <button key={workspace.id} type="button" onClick={() => setActiveWorkspace(workspace.id)}
+                  <button key={workspace.id} type="button" onClick={() => {
+                    setActiveWorkspace(workspace.id)
+                    if (workspace.id === 'focus') navigate('/teacher/focus')
+                    else if (isFocusView) navigate('/teacher')
+                  }}
                     className={`rounded px-3 py-2 text-left text-sm transition-colors ${activeWorkspace === workspace.id ? `${workspace.id === 'ncm' ? 'bg-orange-300' : 'bg-amber-300'} font-semibold text-slate-900` : workspace.id === 'ncm' ? 'bg-orange-900 text-orange-50 hover:bg-orange-800' : 'text-slate-100 hover:bg-slate-700'}`}>
                     {workspace.label}<span className="mt-0.5 block text-[11px] font-normal opacity-75">{workspace.description}</span>
                   </button>
@@ -537,7 +551,7 @@ export default function DashboardLayout({
             {activeWorkspace === 'progress' ? renderProgressModule('filter', 'Klassurval', classFilterPanel) : classFilterPanel}
             {activeWorkspace === 'progress'
               ? renderProgressModule('stats', 'Klassstatistik', classStatsPanel)
-              : classStatsPanel}
+              : activeWorkspace === 'focus' ? null : classStatsPanel}
             </div>}
 
             {activeWorkspace === 'progress' && import.meta.env.DEV && renderProgressModule('testdata', 'Lokal testdata', <LocalTestDataPanel mode="import" onImported={onLocalTestDataImported} />)}

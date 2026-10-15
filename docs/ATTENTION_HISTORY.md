@@ -59,7 +59,56 @@ lint, arkitektur och projektkarta passerar. Robotverifiering täcker korrekta
 nämnare, viktning, ofullständiga pass, tomt underlag, tidsskillnad, period- och
 aktivitetsfilter samt oberoende av pagination. Lärarbilder på dator/surfplatta
 har granskats. Befintlig historik, matematikdata och lagringskontrakt ändras
-inte. Ändringen är ännu inte pushad eller publicerad.
+inte. Statistikförtydligandet publicerades 2026-10-15 genom GitHub som
+`a9904569229b03ab31d5804aaca11342c5dd8cf9`; GitHub Verify 38806010490 godkänd,
+Vercel `sekvens` READY med samma revision på `matematik.ximon.se`.
+
+## Fristående fokusmodul i lärarvyn
+
+Arbetsläget **Fokusövningar** har en egen adress `/teacher/focus`. Samma
+klass-/gruppurval och lärarbehörigheter gäller som i övriga lärarvyn.
+Modulen ligger i `src/components/teacher/attention/` och behöver inte en
+vald elevprofil för att visa gruppen. Den tidigare historiken i elevprofilen
+finns kvar. Matematikstatistik och elevövningarnas upplägg ändras inte.
+
+- **Matris:** en rad per elev, en kolumn per övning. Andelar med staplar från
+  0 till 100 procent, täljare/nämnare och antal färdiga/avbrutna pass. Även
+  elever utan pass syns. Hämtningsfel visas uttryckligen, inte som tom historik.
+- **Punktdiagram:** FOKUS visar tidiga tryck per aktiv minut mot upptäckta
+  signaler; KONTROLL visar upptäckta signaler mot rätt avstådda stopp; MULTI
+  visar rätt vid upprepad mot bytt regel. Samma summerade underlag som i
+  matrisen. Inga elever med saknat axelunderlag ritas som noll. Identiska
+  positioner samlas med antal, och varje individ är valbar via namnknappar
+  med båda axelvärdena. Procentaxlarna är alltid 0–100.
+- **Individens tidslinje:** välj elev från matris, diagrammets namnlista
+  eller elevlista. Varje punkt är ett färdigt pass, med proportionell tid på
+  x-axeln. Växla mellan andelar och medianreaktionstid per pass. MULTI håller
+  upprepad/bytt regel åtskilda. Avbrutna pass finns i passdetaljerna. Ingen
+  gemensam reaktionsmedian räknas ut. Passdetaljerna visar råa sammanfattningar
+  och underlag även för tidslinjens värden.
+
+Perioden (all sparad historik, 7 eller 30 dygn) gäller matris, punktdiagram
+och individ. Inga normer, rangordning, matematikjämförelser eller samlat
+fokusbetyg införs. Få signaler och ändrat övningsupplägg begränsar tolkningen.
+Det sparade version-1-kontraktet innehåller inga råa enskilda svar eller
+protokollhistorik att rekonstruera.
+
+Historik hämtas endast när modulen öppnas, via befintligt
+`GET /api/teacher-students/:studentId`, högst fyra samtidiga läsningar.
+Endast fokusfältet används i modulen. Sena svar från ett tidigare gruppurval
+ignoreras och fler läsningar slutar schemaläggas. Uppdatera fokusresultat
+gör nya läsningar; ingen elevdata skrivs och inget nytt API eller schema införs.
+
+Gruppmodulen är ny lokal kod och har ännu inte publicerats. Lokalt godkända:
+150 testfiler/723 tester, produktionsbuild, riktad ESLint, arkitektur och
+projektkarta. Dator-/surfplattebilder har granskats, browser-touch och Enter
+provats. Robotar verifierar gruppbyten, omladdning, diagram, hämtningsfel och
+återförsök, inloggning, nekad elevåtkomst och oförändrade elevprofiler.
+Bred robotsvit: 107/108 godkända; en timeout före elevinloggning under samtidig
+ombyggnad i delad robotbyggmapp. Separat omkörning av den kontrollen och tre
+modulrobotar: 4/4 godkända. Alla 109 aktuella kontroller har därmed passerat,
+men ingen helt grön fullsvit i en enda körning påstås. Ingen procenträkningskod
+ändrades. Detaljer finns i projektkartans `attention-group-module`.
 
 ## Lagringskontrakt
 

@@ -1223,6 +1223,35 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "attention-group-module",
+      "area": "Fokusuppvärmning",
+      "title": "Fristående fokusmodul med gruppmatris och individuella diagram",
+      "status": "Lokalt klart",
+      "purpose": "Se individerna i en vald klass eller grupp och följ deras fokusövningar visuellt.",
+      "next": "Invänta separat publiceringsbegäran för fokusmodulen; visa därefter rätt revision på matematik.ximon.se.",
+      "acceptance": "Eget arbetsläge Fokusövningar med direktlänk. Alla elever i gruppen syns, även utan resultat. Matris, punktdiagram och individuell tidslinje har synligt underlag; fel döljs inte som tom historik. Endast behöriga lärarläsningar och ingen elevdata ändras.",
+      "requires": [
+        "attention-history"
+      ],
+      "affects": [],
+      "decision": "2026-10-15: Simon vill se individerna i gruppen, visuell redogörelse och fokusövningar som en fristående modul. Eget arbetsläge i lärarvyn med gruppmatris för alla tre övningar, punktdiagram inom vald övning och individuell tidslinje. Befintliga övningar, lagring och matematikflöden ändras inte. Ingen rangordning eller fokuspoäng. Svarstid visas per pass eftersom endast passmedianer finns sparade.",
+      "evidence": "2026-10-15: Lokal implementation pågår. Historik hämtas först när modulen öppnas, med högst fyra samtidiga läsningar via befintlig behörighetskontrollerad elevprofil. Elever utan färdiga pass och läsfel skiljs åt. Inaktuella gruppsvar kasseras. Ny direktlänk /teacher/focus. Ännu inte slutverifierat, committat eller publicerat.\n2026-10-15 lokal slutverifiering: 150 testfiler/723 tester och produktionsbuild godkända. Riktad ESLint utan fel/varningar; arkitektur och projektkarta godkända. Gruppmatris och punktdiagram/individtidslinje granskade i skärmbilder på 1280-px dator och 768-px surfplatta. Riktiga browser-touchhändelser och Enter verifierade i robot. Gruppbyte och omladdning bevarar rätt urval, sena svar kasseras, läsfel kan återförsökas, obehörig elevåtkomst ger 403 och oinloggad modul kräver inloggning. Elevprofiler oförändrade efter läsning. Bred robotsvit 107/108 passerade, en timeout på elevinloggningen före procenträkning samtidigt som två robotservrar byggde i delad robots/.build; testupplägget stördes sannolikt av parallell ombyggnad. Separat slutlig omkörning av procenträkning plus samtliga tre modulrobotar 4/4 godkänd med 0 regelbrott. Totalt samtliga 109 aktuella kontroller täckta med godkänt resultat efter omkörning; ingen helt grön fullsvit i en och samma körning påstås. Ingen procenträkningskod ändrad. Byggt och lokalt verifierat; inte pushat eller publicerat.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "group-build",
+          "text": "Bygg egen modul med gruppmatris, punktdiagram och individsida",
+          "done": true
+        },
+        {
+          "id": "group-verify",
+          "text": "Verifiera gruppurval, hämtningsfel, diagram och oförändrad elevdata",
+          "done": true
+        }
+      ]
     }
   ],
   "edges": [
@@ -1704,6 +1733,11 @@
     {
       "source": "multi-activity",
       "target": "attention-history",
+      "kind": "kräver"
+    },
+    {
+      "source": "attention-history",
+      "target": "attention-group-module",
       "kind": "kräver"
     }
   ],

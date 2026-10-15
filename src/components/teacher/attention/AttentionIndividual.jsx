@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ATTENTION_LABELS } from '../../../lib/attentionHistory'
 import { attentionPassStatistics, attentionNumber } from '../../../lib/attentionStatistics'
 import AttentionPassStatistics from '../sections/AttentionPassStatistics'
+import AttentionSignalDetails from './AttentionSignalDetails'
 
 const date = time => new Date(time).toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm', dateStyle: 'short', timeStyle: 'short' })
 
@@ -46,7 +47,7 @@ export default function AttentionIndividual({ row, mode }) {
         <option value="accuracy">Träffsäkerhet</option><option value="time">Svarstid per pass</option>
       </select></label></div>
     {row.status !== 'ready' ? <p role="status">{row.status === 'error' ? 'Elevens resultat kunde inte hämtas. Försök uppdatera gruppen.' : 'Hämtar elevens resultat…'}</p>
-      : <><Timeline results={results} mode={mode} measure={measure} />
+      : <><AttentionSignalDetails row={row} mode={mode} /><Timeline results={results} mode={mode} measure={measure} />
         <details><summary>Passdetaljer · {results.length} pass</summary>
           {!results.length && <p>Inga sparade pass i urvalet.</p>}
           {results.slice(0, limit).map(pass => <article className="focus-pass" key={pass.id}>

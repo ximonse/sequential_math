@@ -32,10 +32,9 @@ test('Fokusmodul: gruppmatris, individer, diagram, gruppbyte, fel och oförändr
   const panel = page.getByRole('region', { name: 'Fokusövningar', exact: true })
   await expect(panel.getByRole('status')).toHaveText('3 av 3 elever hämtade')
   await expect(panel.getByTestId('focus-group-row')).toHaveCount(3)
-  await expect(panel).toContainText('Inga färdiga pass')
-  await expect(panel).toContainText('75 %')
-  await expect(panel).toContainText('6 av 8')
-  await panel.getByRole('button', { name: `${before[0].displayAlias}, 2 - KONTROLL, visa pass`, exact: true }).tap()
+  await expect(panel).toContainText('Samlar underlag')
+  await expect(panel.getByRole('region', { name: 'Gruppmatris för fokusövningar' })).not.toContainText('%')
+  await panel.getByTestId(`focus-signal-${pupils[0].studentId}-choose-go`).tap()
   const individual = panel.getByRole('region', { name: 'Individens fokusresultat' })
   await expect(individual).toContainText(before[0].displayAlias)
   await expect(individual).toContainText('2 färdiga pass')
@@ -75,6 +74,58 @@ test('Fokusmodul: gruppmatris, individer, diagram, gruppbyte, fel och oförändr
   await page.unroute(`**/api/teacher-students/${pupils[3].studentId}`)
   await panel.getByRole('button', { name: 'Uppdatera fokusresultat' }).click()
   await expect(panel.getByRole('status')).toHaveText('1 av 1 elever hämtade')
+  for (let i = 0; i < pupils.length; i++) expect(await readServerProfile(request, pupils[i].studentId)).toEqual(before[i])
+})
+
+test('Fokusfärger: försiktiga dagsmönster, dolda siffror, gruppoberoende och touchdetaljer', async ({ page, request }, testInfo) => {
+  const suffix = Math.random().toString(36).slice(2, 8)
+  const classId = `colors-${suffix}`, otherClass = `color-peer-${suffix}`
+  const pupils = []
+  for (let i = 0; i < 4; i++) pupils.push(await createPupil(request, { classId, className: 'Färggruppen', operations: ['addition'] }))
+  await createPupil(request, { classId: otherClass, className: 'Annan färggrupp', operations: ['addition'] })
+  const now = Date.now() - 3600000
+  const fixtures = [
+    Array.from({ length: 3 }, (_, day) => [day, 6, 4]),
+    Array.from({ length: 5 }, (_, day) => [day, 10, 0]),
+    Array.from({ length: 3 }, (_, day) => [day, 0, 10]),
+    [[0, 10, 0]]
+  ]
+  for (let i = 0; i < pupils.length; i++) {
+    await login(page, pupils[i])
+    const results = fixtures[i].map(([day, hits, misses]) => ({ id: `color-${i}-${day}`, version: 1, mode: 'discover',
+      startedAt: now - day * 86400000 - 120000, finishedAt: now - day * 86400000, activeMs: 120000, aborted: false,
+      summary: { hits, misses, wrong: 0, withheld: 0, early: 0, median: hits ? 300 : null } }))
+    expect(await page.evaluate(async entries => {
+      const session = await (await fetch('/api/student-session')).json()
+      return (await fetch('/api/me/events', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-csrf-token': session.csrfToken },
+        body: JSON.stringify({ entries: entries.map(payload => ({ id: `event-${payload.id}`, type: 'attention_result', timestamp: payload.finishedAt, payload })) }) })).status
+    }, results)).toBe(200)
+  }
+  const before = await Promise.all(pupils.map(pupil => readServerProfile(request, pupil.studentId)))
+  await teacherLogin(page, await createTeacher(request, { classIds: [classId, otherClass] }))
+  await page.getByRole('button', { name: /^Fokusövningar/ }).click()
+  const panel = page.getByRole('region', { name: 'Fokusövningar', exact: true })
+  await expect(panel.getByRole('status')).toHaveText('5 av 5 elever hämtade')
+  const colors = ['green', 'blue', 'yellow', 'white']
+  for (let i = 0; i < pupils.length; i++) await expect(panel.getByTestId(`focus-signal-${pupils[i].studentId}-discover-go`)).toHaveAttribute('data-signal', colors[i])
+  const matrix = panel.getByRole('region', { name: 'Gruppmatris för fokusövningar' })
+  await expect(matrix).not.toContainText('%')
+  await expect(panel).toContainText('Rött och orange är avstängda')
+  await selectOnlyClass(page, 'Färggruppen')
+  await expect(panel.getByRole('status')).toHaveText('4 av 4 elever hämtade')
+  for (let i = 0; i < pupils.length; i++) await expect(panel.getByTestId(`focus-signal-${pupils[i].studentId}-discover-go`)).toHaveAttribute('data-signal', colors[i])
+  await page.setViewportSize({ width: 1280, height: 960 })
+  await matrix.screenshot({ path: testInfo.outputPath('focus-colors-desktop.png') })
+  await panel.getByTestId(`focus-signal-${pupils[0].studentId}-discover-go`).tap()
+  const individual = panel.getByRole('region', { name: 'Individens fokusresultat' })
+  await individual.getByText(`Färg och underlag för ${before[0].displayAlias}`, { exact: true }).click()
+  await expect(individual).toContainText('18 rätt av 30 svar')
+  await expect(individual).toContainText('3 dagar')
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await matrix.screenshot({ path: testInfo.outputPath('focus-colors-tablet.png') })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await panel.getByTestId(`focus-signal-${pupils[1].studentId}-discover-go`).press('Enter')
+  await expect(individual).toContainText(before[1].displayAlias)
   for (let i = 0; i < pupils.length; i++) expect(await readServerProfile(request, pupils[i].studentId)).toEqual(before[i])
 })
 

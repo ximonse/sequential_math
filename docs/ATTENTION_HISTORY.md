@@ -71,13 +71,16 @@ Modulen ligger i `src/components/teacher/attention/` och behöver inte en
 vald elevprofil för att visa gruppen. Den tidigare historiken i elevprofilen
 finns kvar. Matematikstatistik och elevövningarnas upplägg ändras inte.
 
-- **Matris:** en rad per elev, en kolumn per övning. Andelar med staplar från
-  0 till 100 procent, täljare/nämnare och antal färdiga/avbrutna pass. Även
-  elever utan pass syns. Hämtningsfel visas uttryckligen, inte som tom historik.
+- **Matris:** en rad per elev, med separata färgfält för Upptäcka i FOKUS,
+  Upptäcka i KONTROLL, Hejda i KONTROLL och Växla i MULTI. Inga procenttal
+  visas i grundvyn. Text och symbol kompletterar färgen. Underlag nås via
+  hovring eller val av elev och Färg och underlag. Även elever utan pass
+  syns. Hämtningsfel visas uttryckligen, inte som tom historik.
 - **Punktdiagram:** FOKUS visar tidiga tryck per aktiv minut mot upptäckta
   signaler; KONTROLL visar upptäckta signaler mot rätt avstådda stopp; MULTI
-  visar rätt vid upprepad mot bytt regel. Samma summerade underlag som i
-  matrisen. Inga elever med saknat axelunderlag ritas som noll. Identiska
+  visar rätt vid upprepad mot bytt regel. Diagrammet använder summerade
+  svar; matrisens färger använder dagsmönster enligt reglerna nedan.
+  Inga elever med saknat axelunderlag ritas som noll. Identiska
   positioner samlas med antal, och varje individ är valbar via namnknappar
   med båda axelvärdena. Procentaxlarna är alltid 0–100.
 - **Individens tidslinje:** välj elev från matris, diagrammets namnlista
@@ -109,6 +112,49 @@ ombyggnad i delad robotbyggmapp. Separat omkörning av den kontrollen och tre
 modulrobotar: 4/4 godkända. Alla 109 aktuella kontroller har därmed passerat,
 men ingen helt grön fullsvit i en enda körning påstås. Ingen procenträkningskod
 ändrades. Detaljer finns i projektkartans `attention-group-module`.
+
+### Beskrivande färgmatris, lokal uppdatering 2026-10-16
+
+Det finns ännu ingen utprövad referens för samma ålder och övningsversion.
+Rött och orange är därför **avstängda**. Inga färger hävdar att eleven ligger
+över/under genomsnittet. Gul, grön och blå beskriver elevens egna träffmönster
+med fasta, uttryckligen preliminära designvärden. Andra elevers resultat eller
+ett annat klass-/gruppurval kan aldrig flytta gränserna. Periodvalet kan ändra
+elevens underlag och därmed färgen. Ingen ny lagring eller API införs.
+
+Regler i `attentionSignals.js`, `descriptive-v1`:
+
+- Endast färdiga pass räknas. Stockholm-datum delar in passen i dagar.
+  Varje informativ dags andel väger lika i färgregeln; flera pass samma dag
+  ersätter inte flera dagar. Dagen behöver fyra svar, eller två stoppsignaler.
+- **Vit/streckad:** färre än tre informativa dagar eller totalt färre än
+  20 svar från dessa dagar (12 för Hejda). Noll rätt med tillräckligt många
+  svar skiljs från inga svar. Även äldre profiler utan historik visas vitt.
+- **Grön – Oftast träff:** minst 60 procent träffar under minst två tredjedelar
+  av de informativa dagarna och medianen av dagsandelarna minst 60 procent.
+  Annars **gul – Färre träffar**. Gult är inte en under-genomsnittet-markering.
+- **Blå – Stabilt träffsäker:** minst fem informativa dagar, minst 40 svar,
+  minst 90 procent varje informativ dag och en dagmedian på minst 95 procent.
+- **Pil:** sex informativa dagar behövs. De tre senaste jämförs med de tre
+  föregående. Dagmedianerna ska skilja minst 15 procentenheter, och samtliga
+  senaste dagar ska ligga högre/lägre än samtliga tidigare. Annars ingen
+  tydlig riktning. Pilarna är beskrivningar, inte signifikanstest eller
+  säkerställd förändring. Saknat underlag markeras särskilt.
+
+Färgen för Växla bygger på rätt vid bytt regel, inte skillnad mellan
+passmedianer. Svarstid, upprepad regel och tidiga tryck finns i diagram och
+passdetaljer. De påverkar inte färgen. Före en framtida aktivering av rött och
+orange behöver jämförelsereferens, jämförbar övningsversion, osäkerhet och
+gränser för återkommande stora avvikelser bedömas separat.
+
+Denna färguppdatering är lokal och ännu inte publicerad. Verifierat 2026-10-16:
+151 testfiler/729 tester, produktionsbuild och hela robotsviten 110/110
+godkända i en körning med 0 regelbrott. Riktad ESLint, arkitektur och
+projektkarta godkända. Sex nya modelltester täcker minimiunderlag, Stockholm-dagar,
+dagviktning, separat färg per moment och försiktiga pilar. Robot testar alla
+fyra aktiva färger, oförändrad färg vid gruppbyte, dolda procenttal, touch,
+Enter, tillgängliga detaljer och oförändrade elevprofiler. Skärmbilder på dator
+och surfplatta granskade. Detaljer finns i projektkartans `attention-group-module`.
 
 ## Lagringskontrakt
 

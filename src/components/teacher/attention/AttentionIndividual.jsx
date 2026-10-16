@@ -37,7 +37,7 @@ function Timeline({ results, mode, measure }) {
   </>
 }
 
-export default function AttentionIndividual({ row, mode }) {
+export default function AttentionIndividual({ row, mode, reference }) {
   const [measure, setMeasure] = useState('accuracy')
   const [limit, setLimit] = useState(5)
   const results = row.history.filter(pass => pass.mode === mode)
@@ -47,7 +47,7 @@ export default function AttentionIndividual({ row, mode }) {
         <option value="accuracy">Träffsäkerhet</option><option value="time">Svarstid per pass</option>
       </select></label></div>
     {row.status !== 'ready' ? <p role="status">{row.status === 'error' ? 'Elevens resultat kunde inte hämtas. Försök uppdatera gruppen.' : 'Hämtar elevens resultat…'}</p>
-      : <><AttentionSignalDetails row={row} mode={mode} /><Timeline results={results} mode={mode} measure={measure} />
+      : <><AttentionSignalDetails row={row} mode={mode} reference={reference} /><Timeline results={results} mode={mode} measure={measure} />
         <details><summary>Passdetaljer · {results.length} pass</summary>
           {!results.length && <p>Inga sparade pass i urvalet.</p>}
           {results.slice(0, limit).map(pass => <article className="focus-pass" key={pass.id}>

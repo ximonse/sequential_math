@@ -14,7 +14,9 @@ export const FOCUS_SIGNALS = {
   white: { label: 'Samlar underlag', mark: '…' },
   yellow: { label: 'Färre träffar', mark: '◐' },
   green: { label: 'Oftast träff', mark: '●' },
-  blue: { label: 'Stabilt träffsäker', mark: '◆' }
+  blue: { label: 'Stabilt träffsäker', mark: '◆' },
+  orange: { label: 'Återkommande lägre', mark: '△' },
+  red: { label: 'Följ upp', mark: '!' }
 }
 const median = values => {
   const sorted = [...values].sort((a, b) => a - b)
@@ -65,9 +67,12 @@ export function focusSignal(history, dimensionId) {
       && rates.every(rate => rate >= FOCUS_SIGNAL_RULES.blueDaily) && median(rates) >= FOCUS_SIGNAL_RULES.blueMedian) color = 'blue'
   }
   return { color, ...FOCUS_SIGNALS[color], correct, total, completed: full.length, aborted: passes.length - full.length,
-    days: informativeDays.length, trend: trendFor(informativeDays), reference: 'descriptive-v1' }
+    days: informativeDays.length, daily: informativeDays, eligibleTotal, trend: trendFor(informativeDays), reference: 'descriptive-v1' }
 }
 
 export function describeFocusEvidence(signal) {
-  return `${signal.correct} rätt av ${signal.total} svar, ${signal.completed} färdiga pass, ${signal.days} dagar med tillräckligt underlag. ${signal.aborted} avbrutna pass ingår inte. Preliminär beskrivning; ingen jämförelse med genomsnitt eller åldersnorm.`
+  const evidence = `${signal.correct} rätt av ${signal.total} svar, ${signal.completed} färdiga pass, ${signal.days} dagar med tillräckligt underlag. ${signal.aborted} avbrutna pass ingår inte.`
+  if (!signal.comparison) return `${evidence} Beskrivande färg; lokalt jämförelseunderlag saknas eller hämtas. Ingen åldersnorm.`
+  const comparison = signal.comparison
+  return `${evidence} Preliminär lokal jämförelse med ${comparison.peers} andra elever: genomsnitt ${Math.round(comparison.mean * 100)} %, spridning ${Math.round(comparison.sd * 100)} procentenheter. Elevens dagmedian ${Math.round(comparison.rate * 100)} % under de senaste ${comparison.days} jämförbara dagarna. Ingen åldersnorm eller statistiskt säkerställd avvikelse.`
 }

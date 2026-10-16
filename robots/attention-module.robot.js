@@ -110,7 +110,7 @@ test('Fokusfärger: försiktiga dagsmönster, dolda siffror, gruppoberoende och 
   for (let i = 0; i < pupils.length; i++) await expect(panel.getByTestId(`focus-signal-${pupils[i].studentId}-discover-go`)).toHaveAttribute('data-signal', colors[i])
   const matrix = panel.getByRole('region', { name: 'Gruppmatris för fokusövningar' })
   await expect(matrix).not.toContainText('%')
-  await expect(panel).toContainText('Rött och orange är avstängda')
+  await expect(panel).toContainText('Rött och orange kräver återkommande stora skillnader')
   await selectOnlyClass(page, 'Färggruppen')
   await expect(panel.getByRole('status')).toHaveText('4 av 4 elever hämtade')
   for (let i = 0; i < pupils.length; i++) await expect(panel.getByTestId(`focus-signal-${pupils[i].studentId}-discover-go`)).toHaveAttribute('data-signal', colors[i])
@@ -151,4 +151,62 @@ test('Fokusgruppen visar bara elever läraren har åtkomst till', async ({ page,
   expect(status).toBe(403)
   await panel.getByRole('combobox', { name: 'Elev i fokusmodulen' }).selectOption(own.studentId)
   await expect(panel.getByRole('region', { name: 'Individens fokusresultat' })).toContainText('Inga färdiga pass')
+})
+
+test('Lokal fokusjämförelse: hela lärarunderlaget, stabila gruppval, röda/orange signaler och saknade läsningar', async ({ page, request }, testInfo) => {
+  const suffix = Math.random().toString(36).slice(2, 8)
+  const classA = `reference-target-${suffix}`, classB = `reference-peers-${suffix}`
+  const pupils = []
+  for (let i = 0; i < 16; i++) pupils.push(await createPupil(request, { classId: i < 2 ? classA : classB,
+    className: i < 2 ? 'Referensgrupp A' : 'Referensgrupp B', operations: ['addition'] }))
+  const now = Date.now() - 3600000
+  for (let i = 0; i < pupils.length; i++) {
+    await login(page, pupils[i])
+    const hits = i === 0 ? 0 : i === 1 ? 5 : 10
+    const results = Array.from({ length: 5 }, (_, day) => ({ id: `ref-${i}-${day}`, version: 1, mode: 'discover',
+      startedAt: now - day * 86400000 - 120000, finishedAt: now - day * 86400000, activeMs: 120000, aborted: false,
+      summary: { hits, misses: 10 - hits, wrong: 0, withheld: 0, early: 0, median: hits ? 300 : null } }))
+    expect(await page.evaluate(async entries => {
+      const session = await (await fetch('/api/student-session')).json()
+      return (await fetch('/api/me/events', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-csrf-token': session.csrfToken },
+        body: JSON.stringify({ entries: entries.map(payload => ({ id: `event-${payload.id}`, type: 'attention_result', timestamp: payload.finishedAt, payload })) }) })).status
+    }, results)).toBe(200)
+  }
+  const before = await Promise.all(pupils.map(pupil => readServerProfile(request, pupil.studentId)))
+  await teacherLogin(page, await createTeacher(request, { classIds: [classA, classB] }))
+  await selectOnlyClass(page, 'Referensgrupp A')
+  await page.getByRole('button', { name: /^Fokusövningar/ }).click()
+  const panel = page.getByRole('region', { name: 'Fokusövningar', exact: true })
+  const red = panel.getByTestId(`focus-signal-${pupils[0].studentId}-discover-go`)
+  const orange = panel.getByTestId(`focus-signal-${pupils[1].studentId}-discover-go`)
+  await expect(red).toHaveAttribute('data-signal', 'red')
+  await expect(orange).toHaveAttribute('data-signal', 'orange')
+  await expect(panel.getByTestId('focus-reference-status')).toContainText('(16 elever)')
+  const referenceText = await panel.getByTestId('focus-reference-status').innerText()
+  await panel.screenshot({ path: testInfo.outputPath('focus-local-reference-desktop.png') })
+  await selectOnlyClass(page, 'Referensgrupp B')
+  await expect(panel.getByTestId('focus-group-row')).toHaveCount(14)
+  await selectOnlyClass(page, 'Referensgrupp A')
+  await expect(red).toHaveAttribute('data-signal', 'red')
+  await expect(orange).toHaveAttribute('data-signal', 'orange')
+  await expect(panel.getByTestId('focus-reference-status')).toHaveText(referenceText)
+  await red.tap()
+  const individual = panel.getByRole('region', { name: 'Individens fokusresultat' })
+  await individual.locator('.focus-signal-details summary').click()
+  await expect(individual).toContainText('jämförelse med 15 andra elever')
+  await expect(individual).toContainText('Ingen åldersnorm eller statistiskt säkerställd avvikelse')
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await panel.screenshot({ path: testInfo.outputPath('focus-local-reference-tablet.png') })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  // Even a hidden peer's failed read disables the comparison as a whole.
+  await page.route(`**/api/teacher-students/${pupils[15].studentId}`, route => route.fulfill({ status: 503, json: { error: 'Unavailable' } }))
+  await panel.getByRole('button', { name: 'Uppdatera fokusresultat' }).click()
+  await expect(panel.getByTestId('focus-reference-status')).toContainText('Jämförelsen är avstängd')
+  await expect(red).toHaveAttribute('data-signal', 'yellow')
+  await expect(orange).toHaveAttribute('data-signal', 'yellow')
+  await page.unroute(`**/api/teacher-students/${pupils[15].studentId}`)
+  await panel.getByRole('button', { name: 'Uppdatera fokusresultat' }).click()
+  await expect(red).toHaveAttribute('data-signal', 'red')
+  await expect(orange).toHaveAttribute('data-signal', 'orange')
+  for (let i = 0; i < pupils.length; i++) expect(await readServerProfile(request, pupils[i].studentId)).toEqual(before[i])
 })

@@ -99,7 +99,8 @@ fokusbetyg införs. Få signaler och ändrat övningsupplägg begränsar tolknin
 Det sparade version-1-kontraktet innehåller inga råa enskilda svar eller
 protokollhistorik att rekonstruera.
 
-Historik hämtas endast när modulen öppnas, via befintligt
+Historik hämtas när modulen öppnas, vid ändrad behörig elevlista eller när
+läraren uttryckligen väljer Uppdatera fokusresultat, via befintligt
 `GET /api/teacher-students/:studentId`, högst fyra samtidiga läsningar.
 Endast fokusfältet används i modulen. Sena svar från ett tidigare gruppurval
 ignoreras och fler läsningar slutar schemaläggas. Uppdatera fokusresultat
@@ -119,8 +120,9 @@ men ingen helt grön fullsvit i en enda körning påstås. Ingen procenträkning
 ### Beskrivande färgmatris, lokal uppdatering 2026-10-16
 
 Det finns ännu ingen utprövad referens för samma ålder och övningsversion.
-Rött och orange är därför **avstängda**. Inga färger hävdar att eleven ligger
-över/under genomsnittet. Gul, grön och blå beskriver elevens egna träffmönster
+Först hölls rött/orange avstängda. Simon har därefter uttryckligen valt en
+preliminär lokal jämförelse från sitt elevunderlag (se nästa avsnitt).
+Gul, grön och blå beskriver elevens egna träffmönster
 med fasta, uttryckligen preliminära designvärden. Andra elevers resultat eller
 ett annat klass-/gruppurval kan aldrig flytta gränserna. Periodvalet kan ändra
 elevens underlag och därmed färgen. Ingen ny lagring eller API införs.
@@ -146,9 +148,8 @@ Regler i `attentionSignals.js`, `descriptive-v1`:
 
 Färgen för Växla bygger på rätt vid bytt regel, inte skillnad mellan
 passmedianer. Svarstid, upprepad regel och tidiga tryck finns i diagram och
-passdetaljer. De påverkar inte färgen. Före en framtida aktivering av rött och
-orange behöver jämförelsereferens, jämförbar övningsversion, osäkerhet och
-gränser för återkommande stora avvikelser bedömas separat.
+passdetaljer. De påverkar inte färgen. Orange/röd uppföljning är en separat,
+preliminär lokal jämförelse enligt nästa avsnitt.
 
 Denna färguppdatering är lokal och ännu inte publicerad. Verifierat 2026-10-16:
 151 testfiler/729 tester, produktionsbuild och hela robotsviten 110/110
@@ -158,6 +159,54 @@ dagviktning, separat färg per moment och försiktiga pilar. Robot testar alla
 fyra aktiva färger, oförändrad färg vid gruppbyte, dolda procenttal, touch,
 Enter, tillgängliga detaljer och oförändrade elevprofiler. Skärmbilder på dator
 och surfplatta granskade. Detaljer finns i projektkartans `attention-group-module`.
+
+### Preliminär lokal jämförelse, vald av Simon 2026-10-16
+
+Simon valde uttryckligen hela sitt elevunderlag som lokal jämförelse.
+`local-pilot-v1` använder hela den inloggade lärarens behöriga elevlista,
+inte den visade klassen/gruppen. Samma periodfilter gäller elev och referens.
+Varje bidragande elev väger lika med medianen av sina senaste upp till fem
+informativa dagars träffandelar. Aktuell elev tas bort från sin egen referens.
+Tre informativa dagar och minst 20 svar behövs (12 för Hejda) i detta senaste
+dagsfönster. Äldre svar får inte fylla ut ett glest senaste dagsfönster.
+Ingen blandning sker mellan de fyra momenten.
+
+Minst åtta **andra** behöriga elever med tillräckligt underlag behövs för
+jämförelse. Deras genomsnitt och stickprovsstandardavvikelse används:
+
+- **Orange – Återkommande lägre:** elevens dagmedian och minst 80 procent av
+  de senaste upp till fem informativa dagarna ligger minst 20 procentenheter
+  **och** 1,5 standardavvikelser under genomsnittet.
+- **Röd – Följ upp:** samtliga fem senaste informativa dagar ligger minst
+  30 procentenheter **och** två standardavvikelser under genomsnittet, med
+  minst 40 svar under dessa dagar. En enstaka svag dag ger inte rött.
+- Utan en sådan uppföljningssignal används de beskrivande färgreglerna ovan.
+  Vitt för otillräckligt elevunderlag kan aldrig ersättas med en varningsfärg.
+
+Genomsnittet är medelvärdet av elevernas dagmedianer, inte ett svarsviktat
+medel som låter elever med många pass dominera. Spridningskravet gör gränsen
+vidare när elevunderlaget varierar mycket. Detta är konservativa designregler
+för lokal provning, inte en validerad norm eller ett signifikanstest. Ålder
+och historisk övningsversion kan inte matchas med befintlig data. Texten i
+modulen, färgförklaringen och elevens detaljer anger begränsningarna.
+
+`useAttentionCohort` fryser hela referensens roster och lästa historik vid
+modulstart. Automatisk dashboardpoll och byte av visad grupp kan inte ändra
+referensen. Uttrycklig Uppdatera fokusresultat, omladdning av modulen eller
+ändrad behörig elevlista hämtar ett nytt underlag. Tid och antal elever visas.
+Alla profiler måste hämtas utan fel innan referensen används. Ett fel hos en
+dold jämförelseelev stänger också av orange/rött; beskrivande färger kvarstår.
+Inga profilscheman, API-routes, matematiksvar eller lagrade färger införs.
+
+Lokal jämförelse är ny lokal kod, inte publicerad. Verifierat 2026-10-16:
+152 testfiler/735 tester, build och hela robotsviten 111/111 passerar med
+0 regelbrott. Riktad ESLint, arkitektur och projektkarta godkända. Sex nya
+modelltester granskar viktning, egen elev exkluderad, minimiunderlag, spridning
+och upprepning. Ny robot använder 16 testelever i två klasser och verifierar
+stabila röda/orange signaler vid gruppbyte, kompletta detaljer, dolda läsfel,
+återförsök samt oförändrade elevprofiler. Dator-/surfplattebilder granskade;
+44-px-layouten kvar. Inga riktiga produktionselever analyserades. Detaljer
+finns i projektkartans `attention-group-module`.
 
 ## Lagringskontrakt
 

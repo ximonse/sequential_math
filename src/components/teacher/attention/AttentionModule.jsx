@@ -1,23 +1,26 @@
 import { useMemo, useState } from 'react'
 import { ATTENTION_LABELS } from '../../../lib/attentionHistory'
-import useAttentionGroup from './useAttentionGroup'
+import useAttentionCohort from './useAttentionCohort'
+import { buildAttentionReference } from './attentionReference'
 import { buildAttentionGroup } from './attentionGroup'
 import AttentionMatrix from './AttentionMatrix'
 import AttentionPlot from './AttentionPlot'
 import AttentionIndividual from './AttentionIndividual'
 import './attentionModule.css'
 
-export default function AttentionModule({ students = [] }) {
+export default function AttentionModule({ students = [], allStudents = students }) {
   const [days, setDays] = useState('all')
   const [mode, setMode] = useState('choose')
   const [view, setView] = useState('matrix')
   const [selectedId, setSelectedId] = useState('')
-  const { records, refresh } = useAttentionGroup(students)
-  const rows = useMemo(() => buildAttentionGroup(students, records, { days }), [students, records, days])
+  const { records, roster, ready, asOf, refresh } = useAttentionCohort(allStudents)
+  const rows = useMemo(() => buildAttentionGroup(students, records, { days, now: asOf || Date.now() }), [students, records, days, asOf])
+  const referenceRows = useMemo(() => buildAttentionGroup(roster, records, { days, now: asOf || Date.now() }), [roster, records, days, asOf])
+  const reference = useMemo(() => ready ? buildAttentionReference(referenceRows) : null, [ready, referenceRows])
   const selected = rows.find(row => row.studentId === selectedId)
   const loaded = rows.filter(row => row.status === 'ready').length
   const errors = rows.filter(row => row.status === 'error').length
-  const loading = rows.some(row => row.status === 'loading')
+  const loading = rows.some(row => row.status === 'loading') || referenceRows.some(row => row.status === 'loading')
   const select = (id, nextMode) => { setSelectedId(id); if (nextMode) setMode(nextMode) }
   return <section className="focus-module" aria-label="Fokusövningar">
     <header className="focus-section-heading"><div><p className="focus-eyebrow">Grupp → individ → pass</p><h2>Fokusövningar</h2>
@@ -34,13 +37,16 @@ export default function AttentionModule({ students = [] }) {
       </select></label></div>
     <p className="focus-load-status" role="status">{loaded} av {rows.length} elever hämtade{loading ? ' · hämtar…' : ''}{errors ? ` · ${errors} kunde inte hämtas. Försök uppdatera.` : ''}</p>
     <p className="focus-muted">Se mönster över flera dagar. Välj ett färgfält för elevens tidslinje och underlag. Färgerna är preliminära beskrivningar av övningen.</p>
+    <p className="focus-muted" data-testid="focus-reference-status">Preliminär lokal jämförelse · hela ditt tillgängliga elevunderlag ({roster.length} elever). {ready
+      ? `Underlaget läst ${new Date(asOf).toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm', dateStyle: 'short', timeStyle: 'short' })}. Gruppval ändrar inte referensen. Uppdatera fokusresultat hämtar ett nytt underlag.`
+      : 'Jämförelsen är avstängd tills hela underlaget har hämtats utan fel. Beskrivande färger kan visas under tiden.'}</p>
     {!rows.length ? <p className="focus-empty">Inga elever i klass-/gruppurvalet. Välj en grupp ovan.</p>
-      : view === 'matrix' ? <AttentionMatrix rows={rows} selectedId={selectedId} onSelect={select} />
+      : view === 'matrix' ? <AttentionMatrix rows={rows} selectedId={selectedId} onSelect={select} reference={reference} />
         : <AttentionPlot rows={rows} mode={mode} selectedId={selectedId} onSelect={select} />}
     <div className="focus-student-picker"><label>Följ en elev<select aria-label="Elev i fokusmodulen" value={selected?.studentId || ''} onChange={event => setSelectedId(event.target.value)}>
       <option value="">Välj elev</option>{rows.map(row => <option key={row.studentId} value={row.studentId}>{row.name}</option>)}
     </select></label></div>
-    {selected ? <AttentionIndividual key={`${selected.studentId}-${mode}-${days}`} row={selected} mode={mode} /> : <p className="focus-empty">Välj en elev i matrisen eller listan för att följa passen över tid.</p>}
+    {selected ? <AttentionIndividual key={`${selected.studentId}-${mode}-${days}`} row={selected} mode={mode} reference={reference} /> : <p className="focus-empty">Välj en elev i matrisen eller listan för att följa passen över tid.</p>}
     <details className="focus-explanation"><summary>Vad visar övningarna och diagrammen?</summary><dl>
       <dt>1 - FOKUS · upptäcka</dt><dd>Träffar av gröna signaler och för tidiga tryck per aktiv minut.</dd>
       <dt>2 - KONTROLL · upptäcka och avstå</dt><dd>Träffar på gröna cirklar och rätt avstådda röda cirklar/gröna fyrkanter redovisas separat.</dd>
@@ -49,6 +55,8 @@ export default function AttentionModule({ students = [] }) {
       <details><summary>Preliminära färgregler</summary><p>Vit tills det finns minst tre dagar med tillräckligt underlag och totalt minst 20 svar (12 stoppsignaler för Hejda). En dag behöver minst fyra svar, eller två stoppsignaler. Bara färdiga pass används.</p>
         <p>Grön när dagens träffandel når minst 60 procent under minst två tredjedelar av dessa dagar och medianen av dagarnas andelar också når 60 procent. Annars gul. Blå kräver minst fem dagar och 40 svar, minst 90 procent varje dag och en dagmedian på minst 95 procent.</p>
         <p>En pil kräver sex jämförbara dagar: de tre senaste jämförs med de tre föregående. Pil visas först vid minst 15 procentenheters skillnad i dagmedian och när samtliga senaste dagar ligger på samma sida om samtliga tidigare dagar. Annars visas ingen tydlig riktning. Reglerna är designvärden för provning, inte forskningsfastställda gränser eller statistiska signifikanstest.</p>
+        <p>Lokal jämförelse kräver minst åtta andra elever med minst tre dagar och tillräckligt antal svar i samma moment och period. Varje elev väger lika med medianen av sina senaste upp till fem dagar. Den aktuella eleven räknas bort från referensen.</p>
+        <p>Orange kräver minst 20 procentenheter och 1,5 standardavvikelser under de andra elevernas genomsnitt, både för elevens dagmedian och minst 80 procent av de senaste upp till fem dagarna. Rött kräver minst 30 procentenheter och två standardavvikelser under genomsnittet under samtliga fem senaste jämförbara dagar, med minst 40 svar. Referensen har ingen ålders- eller protokollmatchning; färgerna är preliminära uppföljningssignaler, inte säkra mått på koncentrationsförmåga.</p>
       </details></details>
   </section>
 }

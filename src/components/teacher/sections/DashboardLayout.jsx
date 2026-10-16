@@ -260,7 +260,7 @@ export default function DashboardLayout({
   }
 
   function renderPanelContent(id) {
-    if (id === 'focus') return <AttentionModule students={tableProgressStudents} />
+    if (id === 'focus') return <AttentionModule students={tableProgressStudents} allStudents={students} />
     if (id === 'overview') return (
       <ClassOverviewPanel
         classOverviewMeta={classOverviewMeta}

@@ -28,6 +28,6 @@ export default function AttentionMatrix({ rows, selectedId, onSelect, reference 
     <div className="focus-signal-legend" aria-label="Färgernas betydelse">{Object.entries(FOCUS_SIGNALS).map(([color, signal]) =>
       <span key={color}><i className={`focus-signal-swatch focus-signal-${color}`} aria-hidden="true">{signal.mark}</i>{signal.label}</span>)}
     </div>
-    <p className="focus-muted">Vit och streckad: mer underlag behövs. Rött och orange kräver återkommande stora skillnader mot minst åtta andra elever. Saknas det underlaget används enbart beskrivande färger. Ingen åldersnorm eller statistiskt säkerställd avvikelse.</p>
+    <p className="focus-muted">FOKUS visar svarstid över flera dagar; Ej fullföljt är separat. Övriga moment: vit och streckad betyder mer underlag. Rött och orange kräver återkommande stora skillnader mot minst åtta andra elever. Ingen åldersnorm eller statistiskt säkerställd avvikelse.</p>
   </>
 }

@@ -8,6 +8,38 @@ function fixture(random = () => 0) {
 }
 
 describe('focus activity', () => {
+  it('accepts a response after two seconds but before five and never counts no-response as a miss', () => {
+    const { session, advance } = fixture()
+    session.start(); advance(3000); advance(4999); session.press()
+    expect(session.summary()).toMatchObject({ hits: 1, median: 4999, misses: 0 })
+    advance(3000); advance(5000)
+    expect(session).toMatchObject({ phase: 'finished', aborted: true, completionReason: 'no_response' })
+    expect(session.summary()).toMatchObject({ hits: 1, misses: 0 })
+    session.press()
+    expect(session.summary().hits).toBe(1)
+  })
+  it('stops at the signal deadline even when the timer wakes late, and handles the pass boundary', () => {
+    const { session, advance } = fixture()
+    session.start(); advance(3000); advance(117000)
+    expect(session).toMatchObject({ aborted: true, completionReason: 'no_response', elapsed: 8000 })
+    const boundary = fixture()
+    boundary.session.start(); boundary.set(115000); boundary.set(120000)
+    expect(boundary.session.completionReason).toBe('no_response')
+    const unfinished = fixture()
+    unfinished.session.start(); unfinished.set(119000); unfinished.set(120000)
+    expect(unfinished.session).toMatchObject({ aborted: false, completionReason: 'completed' })
+  })
+  it('keeps practice errors separate and discards a hidden nearly-expired signal before resuming', () => {
+    const f = fixture()
+    f.session.practice('discover'); f.advance(1000); f.advance(5000)
+    expect(f.session.practiceFeedback.outcome).toBe('miss')
+    expect(f.session.summary().misses).toBe(0)
+    f.session.start(); f.advance(3000); f.advance(4900); f.session.pause(); f.advance(100000)
+    expect(f.session.phase).toBe('paused')
+    f.session.resume(); f.advance(3000); f.advance(200)
+    f.session.press()
+    expect(f.session.summary()).toMatchObject({ hits: 1, median: 200, misses: 0 })
+  })
   it('mixes wait intervals within the three progressive ranges', () => {
     for (const [elapsed, max] of [[0, 10000], [39999, 10000], [40000, 15000], [80000, 20000]]) {
       expect(focusWaitMs(elapsed, () => 0)).toBe(3000)

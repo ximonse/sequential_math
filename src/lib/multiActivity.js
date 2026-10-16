@@ -88,7 +88,7 @@ export class MultiActivitySession {
       transition: this.previousRule === null ? 'first' : this.previousRule === trial.rule ? 'repeat' : 'switch'
     }
     if (this.phase === 'running') {
-      this.results.push(result)
+      this.results.push({ ...result, at: this.activeTime(this.trialStart) })
       this.previousRule = trial.rule
     }
     this.feedback = result
@@ -170,5 +170,10 @@ export class MultiActivitySession {
       missed: this.results.filter(result => result.timeout).length,
       repeat: group('repeat'), switch: group('switch')
     }
+  }
+
+  trace() {
+    return this.results.map(result => ({ at: result.at, kind: result.transition,
+      outcome: result.timeout ? 'miss' : result.correct ? 'hit' : 'wrong', responseMs: result.responseMs }))
   }
 }

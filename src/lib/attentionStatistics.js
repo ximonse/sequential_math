@@ -1,4 +1,4 @@
-import { mergeAttentionHistory } from './attentionHistory'
+import { isComparableAttentionPass, mergeAttentionHistory } from './attentionHistory'
 
 export const attentionPercent = rate => rate.percent === null ? '–' : `${Math.round(rate.percent)} %`
 export const attentionNumber = value => value === null ? '–' : value.toLocaleString('sv-SE', { maximumFractionDigits: 1 })
@@ -33,12 +33,13 @@ export function filterAttentionResults(history, { mode = 'all', days = 'all', no
 export function summarizeAttentionResults(results) {
   return ['discover', 'choose', 'multi'].map(mode => {
     const passes = results.filter(result => result.mode === mode)
-    const complete = passes.filter(result => !result.aborted)
+    const complete = passes.filter(isComparableAttentionPass)
     const sum = field => complete.reduce((total, result) => total + field(result.summary), 0)
     const activeMs = complete.reduce((total, result) => total + result.activeMs, 0)
     const early = mode === 'multi' ? null : sum(s => s.early)
     return {
-      mode, completed: complete.length, aborted: passes.length - complete.length, activeMs,
+      mode, completed: complete.length, aborted: passes.filter(result => result.aborted).length,
+      legacy: passes.filter(result => result.mode === 'discover' && result.version === 1).length, activeMs,
       ...(mode === 'multi' ? {
         accuracy: attentionRate(sum(s => s.correct), sum(s => s.total)),
         repeat: attentionRate(sum(s => s.repeat.correct), sum(s => s.repeat.total)),
@@ -49,5 +50,5 @@ export function summarizeAttentionResults(results) {
         early, earlyPerMinute: activeMs > 0 ? early * 60000 / activeMs : null
       })
     }
-  }).filter(group => group.completed + group.aborted > 0)
+  }).filter(group => group.completed + group.aborted + group.legacy > 0)
 }

@@ -6,6 +6,26 @@ import { mergeProfiles } from '../../api/student/_profileMerge.js'
 export const focusResult = (id = 'pass-1') => ({ id, version: 1, mode: 'choose', startedAt: 1000, finishedAt: 21000,
   activeMs: 20000, aborted: true, summary: { hits: 1, misses: 1, wrong: 0, withheld: 1, early: 0, median: 350 } })
 describe('attention result persistence contract', () => {
+  it('accepts version-2 five-second FOKUS results and validates completion reasons without weakening version 1', () => {
+    const result = { ...focusResult(), version: 2, mode: 'discover', completionReason: 'no_response',
+      trials: [{ at: 3000, kind: 'go', outcome: 'hit', responseMs: 4500 }],
+      summary: { hits: 1, misses: 0, wrong: 0, withheld: 0, early: 0, median: 4500 } }
+    expect(isValidAttentionResult(result)).toBe(true)
+    expect(isValidAttentionResult({ ...result, activeMs: 15500.09999999999,
+      trials: [{ ...result.trials[0], at: 3000.1 }] })).toBe(true)
+    expect(validEntry({ id: 'v2-event', studentId: 'A', type: 'attention_result', payload: result }, 'A')).toBe(true)
+    const profile = { problemLog: [], stats: {}, masteryFacts: { facts: [], revokedIds: [] } }
+    applyWalEntry(profile, { id: 'v2-event', type: 'attention_result', payload: result })
+    expect(profile.attentionHistory).toEqual([result])
+    expect(mergeAttentionHistory([focusResult('old')], [result])).toHaveLength(2)
+    for (const patch of [{ completionReason: 'completed' }, { completionReason: 'unknown' }, { mode: 'choose' }, { summary: null },
+      { summary: { ...result.summary, median: 5000 } }, { summary: { ...result.summary, misses: 1 } },
+      { trials: [] }, { trials: [{ ...result.trials[0], at: 19000 }] }, { trials: [{ ...result.trials[0], responseMs: -1 }] },
+      { trials: [{ ...result.trials[0], kind: 'stop' }] }, { trials: null }]) {
+      expect(isValidAttentionResult({ ...result, ...patch })).toBe(false)
+    }
+    expect(isValidAttentionResult({ ...result, aborted: false, activeMs: 120000, completionReason: 'completed' })).toBe(true)
+  })
   it('accepts only consistent versioned summaries with bounded counters and timing', () => {
     expect(isValidAttentionResult(focusResult())).toBe(true)
     for (const patch of [{ version: 2 }, { activeMs: 120001 }, { mode: 'unknown' }, { aborted: false }, { finishedAt: 999 }, { id: '<script>' }]) {

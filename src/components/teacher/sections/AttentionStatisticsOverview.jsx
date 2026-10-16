@@ -13,13 +13,14 @@ export default function AttentionStatisticsOverview({ groups }) {
     <div className={`mt-3 grid gap-3 ${groups.length > 1 ? 'lg:grid-cols-3' : ''}`}>{groups.map(group => <article key={group.mode} data-testid={`attention-overview-${group.mode}`} className="rounded-xl border border-slate-200 bg-white p-3">
       <h5 className="text-sm font-semibold text-slate-800">{ATTENTION_LABELS[group.mode]}</h5>
       <p className="mt-1 text-xs text-slate-500">Färdiga: {group.completed} · Avbrutna: {group.aborted}</p>
+      {group.legacy > 0 && <p className="text-xs text-slate-500">Äldre FOKUS-upplägg: {group.legacy} · endast historik</p>}
       <dl className={`mt-3 ${groups.length > 1 ? 'space-y-2' : 'grid gap-3 sm:grid-cols-3'}`}>
         {group.mode === 'multi' ? <>
           <AttentionRate label="Rätta svar" rate={group.accuracy} />
           <AttentionRate label="Upprepad regel" rate={group.repeat} />
           <AttentionRate label="Bytt regel" rate={group.switch} />
         </> : <>
-          <AttentionRate label="Upptäckta gröna signaler" rate={group.go} />
+          {group.mode !== 'discover' && <AttentionRate label="Upptäckta gröna signaler" rate={group.go} />}
           {group.mode === 'choose' && <AttentionRate label="Rätt avstådda stopp" rate={group.stop} />}
           <div><dt className="text-xs text-slate-500">För tidiga tryck / aktiv minut</dt><dd className="mt-0.5 font-semibold text-slate-900">{attentionNumber(group.earlyPerMinute)} <span className="text-xs font-normal text-slate-600">{group.completed ? `(${group.early} tryck på ${attentionNumber(group.activeMs / 60000)} min)` : 'Inget underlag'}</span></dd></div>
         </>}

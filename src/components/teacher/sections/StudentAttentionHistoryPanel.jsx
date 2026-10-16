@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ATTENTION_LABELS } from '../../../lib/attentionHistory'
+import { ATTENTION_LABELS, attentionCompletionLabel } from '../../../lib/attentionHistory'
 import { filterAttentionResults, summarizeAttentionResults } from '../../../lib/attentionStatistics'
 import AttentionStatisticsOverview from './AttentionStatisticsOverview'
 import AttentionPassStatistics from './AttentionPassStatistics'
@@ -29,9 +29,10 @@ export default function StudentAttentionHistoryPanel({ history }) {
     {!results.length && <p className="text-sm text-slate-600">Inga sparade pass i urvalet.</p>}
     <div className="space-y-3">{results.slice(0, limit).map(result => {
       return <article key={result.id} className="rounded-xl border border-slate-200 bg-white p-3" data-testid="attention-history-row">
-        <div className="flex flex-wrap justify-between gap-2 text-sm"><strong>{ATTENTION_LABELS[result.mode]}</strong><span>{result.aborted ? 'Avbrutet' : 'Klart'} · {Math.round(result.activeMs / 1000)} s aktiv tid</span></div>
+        <div className="flex flex-wrap justify-between gap-2 text-sm"><strong>{ATTENTION_LABELS[result.mode]}</strong><span>{attentionCompletionLabel(result)} · {Math.round(result.activeMs / 1000)} s aktiv tid</span></div>
         <time className="text-xs text-slate-500" dateTime={new Date(result.finishedAt).toISOString()}>{new Date(result.finishedAt).toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm', dateStyle: 'short', timeStyle: 'short' })}</time>
-        {result.aborted && <p className="mt-1 text-xs text-amber-800">Kortare pass · ingår inte i översikten</p>}
+        {result.aborted && <p className="mt-1 text-xs text-amber-800">{result.completionReason === 'no_response' ? 'Inget svar inom fem sekunder · ej fullföljt · ingår inte i översikten' : 'Kortare pass · ingår inte i översikten'}</p>}
+        {result.mode === 'discover' && result.version === 1 && <p className="mt-1 text-xs text-slate-600">Äldre upplägg (2 s) · bara historik, inte ny jämförelse</p>}
         <AttentionPassStatistics result={result} />
       </article>
     })}</div>

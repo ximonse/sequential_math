@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile, readState, next } from './lib/app.js'
 import { createFindings } from './lib/findings.js'
 import { answerTasks, waitForServerAnswers } from './lib/session.js'
+import { createTeacher, teacherLogin } from './lib/teacher.js'
 
 const FOCUS = 'Fokuspunkten – 2 min'
 const point = page => page.getByTestId('focus-point')
@@ -10,6 +11,57 @@ const payload = assignment => Buffer.from(JSON.stringify({ v: 1, id: 'focus-robo
 
 const surface = page => page.getByRole('dialog', { name: 'Fokuspunkten', exact: true })
 const tapScreen = page => page.touchscreen.tap(25, 400)
+
+test('FOKUS: fem sekunder ger omstartsfråga och separat försök utan miss eller fokusnivå', async ({ page, request, browser }, testInfo) => {
+  const classId = `focus-timeout-${Math.random().toString(36).slice(2, 8)}`
+  const pupil = await createPupil(request, { classId, operations: ['addition'] })
+  await page.clock.install(); await login(page, pupil)
+  const before = mathData(await readServerProfile(request, pupil.studentId))
+  await page.getByRole('button', { name: new RegExp(`^${FOCUS}`) }).tap()
+  await practice(page)
+  await untilSignal(page)
+  await page.clock.runFor(3000)
+  await tapScreen(page)
+  await expect(point(page)).toHaveAttribute('data-signal', 'waiting')
+  await untilSignal(page)
+  await page.clock.runFor(5000)
+  await expect(page.getByRole('heading', { name: 'Ska vi starta om?', exact: true })).toBeVisible()
+  await expect(page.getByRole('dialog').getByRole('status')).toContainText('Resultatet är sparat')
+  const after = await readServerProfile(request, pupil.studentId)
+  expect(after.attentionHistory).toHaveLength(1)
+  expect(after.attentionHistory[0]).toMatchObject({ version: 2, mode: 'discover', aborted: true, completionReason: 'no_response', summary: { hits: 1, misses: 0 } })
+  expect(after.attentionHistory[0].summary.median).toBeGreaterThanOrEqual(3000)
+  expect(after.attentionHistory[0].activeMs).toBeLessThan(120000)
+  expect(mathData(after)).toBe(before)
+  const context = await browser.newContext()
+  try {
+    const teacher = await context.newPage()
+    await teacherLogin(teacher, await createTeacher(request, { classIds: [classId] }))
+    await teacher.getByRole('button', { name: /^Fokusövningar/ }).click()
+    const panel = teacher.getByRole('region', { name: 'Fokusövningar', exact: true })
+    const cell = panel.getByTestId(`focus-signal-${pupil.studentId}-discover-go`)
+    await expect(cell).toContainText('Ej fullföljt')
+    await expect(cell).toHaveAttribute('data-signal', 'white')
+    await cell.click()
+    const individual = panel.getByRole('region', { name: 'Individens fokusresultat' })
+    await expect(individual).toContainText('Inga färdiga pass')
+    await individual.getByText('Passdetaljer · 1 pass', { exact: true }).click()
+    await expect(individual).toContainText('Ej fullföljt')
+    await expect(individual.getByRole('region', { name: 'Utveckling under passet' })).toContainText('omstart erbjöds')
+    await individual.screenshot({ path: testInfo.outputPath('endurance-incomplete.png') })
+  } finally { await context.close() }
+  await page.getByRole('button', { name: 'Ja, starta om', exact: true }).tap()
+  await expect(point(page)).toHaveAttribute('data-signal', 'waiting')
+  await untilSignal(page); await tapScreen(page)
+  await page.getByRole('button', { name: 'Avsluta', exact: true }).tap()
+  await expect(page.getByRole('dialog').getByRole('status')).toContainText('Resultatet är sparat')
+  const restarted = await readServerProfile(request, pupil.studentId)
+  expect(restarted.attentionHistory).toHaveLength(2)
+  expect(new Set(restarted.attentionHistory.map(pass => pass.id)).size).toBe(2)
+  expect(restarted.attentionHistory.find(pass => pass.id !== after.attentionHistory[0].id).summary.hits).toBe(1)
+  expect(restarted.attentionHistory.find(pass => pass.id === after.attentionHistory[0].id)).toEqual(after.attentionHistory[0])
+  expect(mathData(restarted)).toBe(before)
+})
 
 async function practice(page, mode = '1 - FOKUS') {
   await page.getByRole('button', { name: new RegExp(`^${mode}`) }).click()
@@ -22,6 +74,50 @@ async function practice(page, mode = '1 - FOKUS') {
   }
   await page.getByRole('button', { name: 'Starta passet' }).click()
 }
+
+test('FOKUS: läraren ser längre svar efter en minut i fullföljt pass', async ({ page, request, browser }, testInfo) => {
+  const classId = `endurance-${Math.random().toString(36).slice(2, 8)}`
+  const pupil = await createPupil(request, { classId, operations: ['addition'] })
+  await page.clock.install(); await login(page, pupil)
+  const before = mathData(await readServerProfile(request, pupil.studentId))
+  await page.evaluate(() => { Math.random = () => 0 })
+  await page.getByRole('button', { name: new RegExp(`^${FOCUS}`) }).tap()
+  await practice(page)
+  const start = await page.evaluate(() => performance.now())
+  while (await point(page).count()) {
+    await page.clock.runFor(250)
+    if (!await point(page).count()) break
+    if (await point(page).getAttribute('data-signal') === 'go') {
+      const elapsed = await page.evaluate(() => performance.now()) - start
+      await page.clock.runFor(elapsed < 60000 ? 300 : 1300)
+      if (await point(page).count()) await tapScreen(page)
+    }
+  }
+  await expect(page.getByRole('heading', { name: 'Passet är klart', exact: true })).toBeVisible()
+  await expect(page.getByRole('dialog').getByRole('status')).toContainText('Resultatet är sparat')
+  const profile = await readServerProfile(request, pupil.studentId)
+  expect(profile.attentionHistory[0]).toMatchObject({ version: 2, aborted: false, activeMs: 120000 })
+  expect(profile.attentionHistory[0].trials.some(trial => trial.at >= 60000 && trial.responseMs >= 1300)).toBe(true)
+  expect(mathData(profile)).toBe(before)
+  const context = await browser.newContext()
+  try {
+    const teacher = await context.newPage()
+    await teacherLogin(teacher, await createTeacher(request, { classIds: [classId] }))
+    await teacher.getByRole('button', { name: /^Fokusövningar/ }).click()
+    await teacher.getByTestId(`focus-signal-${pupil.studentId}-discover-go`).click()
+    const endurance = teacher.getByRole('region', { name: 'Utveckling under passet', exact: true })
+    await expect(endurance).toContainText('Längre svar från cirka 60 s')
+    await expect(endurance.getByRole('img', { name: 'Svar för svar under två minuter' })).toBeVisible()
+    await endurance.screenshot({ path: testInfo.outputPath('endurance-desktop.png') })
+    await teacher.setViewportSize({ width: 768, height: 1024 })
+    await endurance.screenshot({ path: testInfo.outputPath('endurance-tablet.png') })
+    await endurance.getByText(/^Signaler under passet/).press('Enter')
+    await expect(endurance.getByRole('table')).toBeVisible()
+    await teacher.reload()
+    await teacher.getByTestId(`focus-signal-${pupil.studentId}-discover-go`).click()
+    await expect(teacher.getByRole('region', { name: 'Utveckling under passet', exact: true })).toContainText('Längre svar från cirka 60 s')
+  } finally { await context.close() }
+})
 
 async function untilSignal(page) {
   for (let i = 0; i < 85; i++) {

@@ -15,7 +15,7 @@ export default function AttentionPassStatistics({ result }) {
       <AttentionRate label="Bytt regel" rate={stats.switch} detail={`Median ${ms(s.switch.median)} · ${s.switch.correct} rätta svar`} />
       <Metric label="Tidsskillnad: byte − upprepning" value={stats.switchTimeDifference === null ? '–' : `${stats.switchTimeDifference > 0 ? '+' : ''}${Math.round(stats.switchTimeDifference)} ms`} detail="Plus betyder längre tid vid regelbyte. Första uppgiften ingår inte i regeljämförelsen." />
     </> : <>
-      <AttentionRate label="Upptäckta gröna signaler" rate={stats.go} detail={`${s.misses} missade signaler`} />
+      {result.mode !== 'discover' || result.version === 1 ? <AttentionRate label="Upptäckta gröna signaler" rate={stats.go} detail={`${s.misses} missade signaler`} /> : <Metric label="Registrerade svar" value={s.hits} />}
       {result.mode === 'choose' && <AttentionRate label="Rätt avstådda stopp" rate={stats.stop} detail={`${s.wrong} tryck på fel signal`} />}
       <Metric label="För tidiga tryck / aktiv minut" value={attentionNumber(stats.earlyPerMinute)} detail={`${s.early} för tidiga tryck totalt`} />
       <Metric label="Medianreaktionstid (träffar)" value={ms(s.median)} detail={`${s.hits} träffar med svarstid`} />

@@ -50,6 +50,8 @@
 .focus-student-picker select { width: min(100%, 340px); }
 .focus-individual { padding: 10px; border-radius: 10px; background: #f6f9f7; border: 1px solid var(--focus-line); }
 .focus-chart { width: 100%; max-height: 380px; margin-top: 12px; overflow: visible; }
+.focus-endurance .focus-chart { max-height: 210px; }
+.focus-endurance .focus-matrix th, .focus-endurance .focus-matrix td { padding: 2px 6px; }
 .focus-chart text { fill: #536b68; font-size: 12px; }
 .focus-grid-line line { stroke: var(--focus-line); stroke-width: 1; }
 .focus-chart .focus-axis-title { fill: var(--focus-ink); font-size: 13px; }

@@ -1,4 +1,5 @@
 import { filterAttentionResults, summarizeAttentionResults } from '../../../lib/attentionStatistics'
+import { isComparableAttentionPass } from '../../../lib/attentionHistory'
 
 export const FOCUS_MODES = ['discover', 'choose', 'multi']
 
@@ -16,6 +17,10 @@ export function buildAttentionGroup(students, records, { days = 'all', now = Dat
 
 // Different exercises keep separate axes; no joint score or pooled reaction median.
 export function attentionCoordinates(row, mode) {
+  if (mode === 'discover') {
+    const latest = row.history.find(pass => pass.mode === mode && isComparableAttentionPass(pass) && pass.summary.median !== null)
+    return latest ? { x: latest.summary.median, y: latest.summary.early * 60000 / latest.activeMs, row } : null
+  }
   const group = row.groups[mode]
   if (!group?.completed) return null
   const x = mode === 'discover' ? group.earlyPerMinute : mode === 'choose' ? group.go.percent : group.repeat.percent

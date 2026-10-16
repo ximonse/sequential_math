@@ -32,12 +32,12 @@ hälften av ursprungliga diametern) och en grå Avsluta-knapp. Hela skärmen
 är tryckyta utom knappen; ingen rubrik, instruktion, nedräkning eller
 tryckbekräftelse visas under körningen.
 
-Signalen visas i högst två sekunder. Första trycket avgör och färdigställer
+I FOKUS väntar den gröna signalen på svar i högst fem sekunder; i KONTROLL är svarsfönstret två sekunder. Första trycket avgör och färdigställer
 utfallet direkt; pricken återställs samtidigt till en vit cirkel och nästa
 väntan börjar. Tryck inom 400 ms efter ett registrerat tryck ignoreras,
 så ett snabbt dubbeltryck inte blir ett för tidigt tryck. Övriga för tidiga
 tryck räknas utan att flytta signalens tidpunkt. En obesvarad signal
-färdigställs när dess svarstid tar slut.
+färdigställs när dess svarstid tar slut i KONTROLL. I ett riktigt FOKUS-pass ger fem sekunder utan svar i stället frågan **Ska vi starta om?**. Försöket sparas som **Ej fullföljt**, utan miss för den obesvarade signalen. Eleven kan välja Ja, starta om eller Tillbaka. Omstart kräver att föregående försök skrivits säkert lokalt och börjar två nya minuter med nytt pass-ID; introduktionen upprepas inte. Fullföljande, svarstid och utvecklingen under passet hålls isär i lärarvyn.
 
 När fliken döljs fryser den aktiva tiden och pågående signal kasseras utan
 resultat. Redan besvarade signaler är färdiga och behålls. Eleven måste välja Fortsätt och
@@ -50,7 +50,7 @@ paus, avslut och när aktiviteten lämnas.
 Resultatet innehåller träffar, missade signaler, för tidiga tryck, tryck på
 fel signal, korrekt avstådda signaler (KONTROLL) och medianreaktionstid för
 träffar när sådana finns. Avbrutna pass märks som avbrutna. Efter Simons
-godkännande 2026-10-14 sparas sammanfattningar för riktiga pass till en
+godkännande 2026-10-14 sparas resultat för riktiga pass till en
 separat lärarhistorik; introduktioner sparas inte. Se
 [historikens lagring och verifieringsstatus](ATTENTION_HISTORY.md).
 
@@ -140,3 +140,7 @@ GitHub Verify 38490758041 passerar. Vercel `sekvens`, deployment
 `dpl_FM8Ab57nG3Jv7YfvfcNL5Z8ghmb6`, är READY och produktionsdomänen
 visar samma revision. Levererat JavaScript matchar det lokalt verifierade
 bygget exakt; se [MULTI:s publiceringsbelägg](MULTI_ACTIVITY.md).
+
+## Lokal vidareutveckling 2026-10-16
+
+Nya pass i alla tre aktiviteter sparar aktiv signaltid, utfall och svarstid enligt version 2. Läraren kan följa utvecklingen inom passet, även före ett avbrott; se [historikens aktuella regler](ATTENTION_HISTORY.md#utveckling-under-passet-och-fokus-svarstid-2026-10-16). Fem sekunder är en produktregel för omstart, inte belägg för att eleven har gett upp. Äldre tvåsekunderspass bevaras och blandas inte med nya FOKUS-jämförelser. Detta är lokal vidareutveckling; produktionsbeläggen ovan avser tidigare versioner.

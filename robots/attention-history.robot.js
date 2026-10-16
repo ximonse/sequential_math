@@ -7,7 +7,7 @@ const open = page => page.getByRole('button', { name: /^Fokuspunkten – 2 min/ 
 async function focusPractice(page, label) {
   await page.getByRole('button', { name: new RegExp(`^${label}`) }).tap()
   // Let all three practice signals expire. Practice errors must never be persisted.
-  await page.clock.runFor(14400)
+  await page.clock.runFor(label.startsWith('1') ? 23400 : 14400)
   await page.getByRole('button', { name: 'Starta passet', exact: true }).tap()
 }
 async function finished(page) {
@@ -29,7 +29,12 @@ test('Historik: fokus, kontroll och MULTI överlever omladdning och visas endast
   expect((await readServerProfile(request, pupil.studentId)).attentionHistory || []).toHaveLength(0)
   for (const label of ['1 - FOKUS', '2 - KONTROLL']) {
     await open(page); await focusPractice(page, label)
-    await page.clock.runFor(label.startsWith('1') ? 120000 : 18000)
+    if (label.startsWith('1')) {
+      for (let tick = 0; tick < 480; tick++) {
+        await page.clock.runFor(250)
+        if (await page.getByTestId('focus-point').count() && await page.getByTestId('focus-point').getAttribute('data-signal') === 'go') await page.touchscreen.tap(25, 400)
+      }
+    } else await page.clock.runFor(18000)
     if (label.startsWith('2')) await page.getByRole('button', { name: 'Avsluta', exact: true }).tap()
     await finished(page)
   }
@@ -46,6 +51,10 @@ test('Historik: fokus, kontroll och MULTI överlever omladdning och visas endast
   expect(saved.attentionHistory).toHaveLength(3)
   expect(saved.attentionHistory.find(item => item.mode === 'discover')).toMatchObject({ activeMs: 120000, aborted: false })
   expect(saved.attentionHistory.find(item => item.mode === 'multi').summary).toMatchObject({ total: 1, correct: 1 })
+  expect(saved.attentionHistory.every(pass => pass.version === 2 && Array.isArray(pass.trials))).toBe(true)
+  expect(saved.attentionHistory.find(pass => pass.mode === 'discover').trials.length).toBeGreaterThan(0)
+  expect(saved.attentionHistory.find(pass => pass.mode === 'multi').trials[0]).toMatchObject({ kind: 'first', outcome: 'hit' })
+  expect(saved.attentionHistory.find(pass => pass.mode === 'multi').trials[0].responseMs).toBeLessThan(4000)
   expect(math(saved)).toEqual(before)
   await page.reload()
   await expect(page.getByText(`Hej ${pupil.loginCode}`)).toBeVisible()
@@ -79,7 +88,7 @@ test('Historik: nätfel behåller krypterad kö och återförsök sparar samma p
   const pupil = await createPupil(request)
   await page.clock.install(); await login(page, pupil)
   await open(page); await focusPractice(page, '1 - FOKUS')
-  await page.clock.runFor(15000)
+  await page.clock.runFor(1000)
   let blocked = true
   await page.route('**/api/me/events', route => blocked ? route.abort() : route.continue())
   await page.getByRole('button', { name: 'Avsluta', exact: true }).tap()
@@ -118,7 +127,7 @@ test('Historik: eleven kan lämna efter säker lokal skrivning medan nätanropet
   const pupil = await createPupil(request)
   await page.clock.install(); await login(page, pupil)
   await open(page); await focusPractice(page, '1 - FOKUS')
-  await page.clock.runFor(15000)
+  await page.clock.runFor(1000)
   let release
   const gate = new Promise(resolve => { release = resolve })
   await page.route('**/api/me/events', async route => { await gate; await route.continue() })

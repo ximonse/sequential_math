@@ -3,6 +3,74 @@
 Simon godkände sparad lärarhistorik för FOKUS, KONTROLL och MULTI 2026-10-14,
 efter den första produktionsversionen med tillfälliga resultat.
 
+## Utveckling under passet och FOKUS-svarstid 2026-10-16
+
+Aktuell lokal vidareutveckling ersätter tidigare FOKUS-färg baserad på träffandel.
+Den är ännu inte publicerad. Tidigare verifierings-/produktionsbelägg längre ned
+avser de uttryckligen daterade äldre revisionerna.
+
+- **FOKUS:** grönt inväntar svar i högst fem sekunder. Utan svar avslutas försöket
+  som **Ej fullföljt**, utan miss för signalen, och eleven får **Ska vi starta om?**.
+  Ja börjar två nya minuter utan ny introduktion, efter säker lokal skrivning.
+  Det gamla försöket behåller sitt ID och det nya får ett eget. KONTROLL behåller
+  tvåsekundersfönstret; MULTI behåller fyra sekunder och sin felpåminnelse.
+- **Alla tre övningar:** nya version-2-resultat innehåller `completionReason`
+  (`completed`, `ended`, eller enbart FOKUS `no_response`) och `trials`.
+  Varje färdig signal sparar `at` (aktiv tid vid signalstart), `kind`, `outcome`
+  och `responseMs` (null vid uteblivet svar/korrekt avstående). Inga skärmkoordinater,
+  figurer, praktiksignaler eller råa upprepade tryck sparas. Dold tid räknas bort;
+  ofärdiga signaler vid paus, manuellt avslut och 120 s kasseras.
+  No-response-tidpunkten i FOKUS fås av aktiv sluttid minus fem sekunder.
+- **Individ → Utveckling under passet:** välj ett sparat pass, även ej fullföljda.
+  Diagrammet visar svar för svar från 0 till 120 aktiva sekunder: rätt, fel,
+  uteblivet svar och korrekt avstående. MULTI skiljer bytt/upprepad regel.
+  En tangentbordsåtkomlig tabell visar samma signaler. Äldre pass säger uttryckligen
+  att tidpunkter saknas; de rekonstrueras aldrig från en passmedian.
+- **Beskrivande uthållighet:** första 30 s jämförs med senare 30-sekundersdelar
+  inom samma signaltyp (bara rätta svar). Minst tre startsvar och minst två svar
+  i vardera av två följande delar behövs. Båda delarnas median måste vara minst
+  50 % och 300 ms längre än starten för texten ”Längre svar från cirka …”.
+  För få jämförbara svar anges uttryckligen. Minst två följande missade
+  svarssignaler ger en separat tidpunkt; avstå-signaler räknas aldrig som miss.
+  FOKUS femsekundersavbrott visas separat. Tiderna är beskrivande provningsregler,
+  inte en uppskattning av när eleven gav upp eller en diagnos om intresse/fokus.
+- **FOKUS-färg:** endast fullföljda nya femsekunderspass. Senaste fullföljda pass
+  med minst fyra träffar per Stockholm-dag är dagens representant. Tre sådana
+  dagar och totalt 20 träffar behövs för grönt; medianen av dessa passmedianer
+  minst 1 s ger gult. Detta är inte en gemensam median av alla reaktioner.
+  Blått kräver minst fem dagar/40 träffar och under 600 ms varje dag.
+  Senaste ofullföljda försök visas vitt som Ej fullföljt/Avbrutet och sänker
+  inte prestationen. Äldre version-1-FOKUS finns kvar bara i historiken.
+- **Lokal FOKUS-jämförelse:** samma lärarunderlag och minst åtta andra elever.
+  Varje elev bidrar med medianen av senaste upp till fem representativa dagars
+  passmedianer (minst tre dagar/20 svar). Orange kräver minst 1 s, minst 500 ms
+  och 1,5 standardavvikelser över andras genomsnitt; elevens median och minst
+  80 % av dagarna ska passera gränsen. Rött kräver minst 1,5 s, minst 750 ms och
+  två standardavvikelser över genomsnittet alla fem dagarna, med minst 40 svar.
+  Detta är generösa lokala designgränser, ingen åldersnorm eller signifikanstest.
+  KONTROLL/MULTI behåller nedanstående träffregler. En elevs tidigare fullföljda
+  pass kan bidra till referensen även om senaste försöket inte fullföljdes.
+
+Version 1 bevaras oförändrad. Version 2 validerar exakt schema, tidsordning,
+svarsfönster, antal och medianer mot signallistan på både klient och server.
+Samma krypterade kö, autentiserade API, idempotenta merge och 500-passgräns används.
+Ingen ny API-route eller matematikdata införs. Lagringsformatet utökas uttryckligen
+för tidsförloppet; inga äldre resultat skrivs om.
+
+Lokal slutverifiering 2026-10-16: 154 testfiler/745 tester, build, riktad
+ESLint, arkitektur och projektkarta passerar. Full robotsvit: 112/113;
+en screeninggenomgång fastnade vid en inaktiverad sparknapp. Separat körning
+med en worker av screeninggenomgången och fokusmodul/elevflöden: 18/18 godkända,
+inklusive ny kontroll av orange/rött för giltiga FOKUS-svar och signaldiagram
+för alla tre lägen. Efter sista täthets-/avrundningsjusteringen: 2/2 riktade
+bild-/touchrobotar godkända, 0 regelbrott. Samtliga 114 aktuella kontroller har
+därmed passerat över dessa körningar; ingen helt grön fullsvit i en enda körning
+påstås. Dator-/768-px surfplattebilder granskade, inklusive ökande svarstider
+efter 60 s, ej fullföljt försök, tät matris och kompakt signaltabell. Tangentbord,
+touch, dold flik, säker omstart, krypterad kö, lärarbehörighet och oförändrad
+matematikdata täcks. Inte verifierat på fysisk elevplatta och inte publicerat.
+Build har befintliga Browserslist/import-/bundlestorleksvarningar.
+
 ## Elev och lärare
 
 Före aktivitetens start får eleven veta att passets resultat sparas till
@@ -29,8 +97,8 @@ Varje pass visar datum/tid i Stockholm, aktiv tid och klart/avbrutet.
 
 ### Jämförbara mått
 
-- FOKUS/KONTROLL: upptäckta gröna signaler = träffar / (träffar + missade).
-  KONTROLL visar också rätt avstådda stopp / (rätt avstådda + feltryck på
+- KONTROLL: upptäckta gröna signaler = träffar / (träffar + missade).
+  Övningen visar också rätt avstådda stopp / (rätt avstådda + feltryck på
   stoppsignaler). Stoppsignaler är röda cirklar och gröna fyrkanter.
 - För tidiga tryck redovisas per aktiv minut med totalt antal synligt.
   Aktiv tid används, inte väggtid inklusive dold flik. Vid noll aktiv tid
@@ -80,8 +148,7 @@ finns kvar. Matematikstatistik och elevövningarnas upplägg ändras inte.
   fast minhöjd, med 1 px padding ovanför/under innehållet och 1 px vertikal
   cellpadding. Tätare celler och mindre kringmarginaler håller översikten
   kompakt utan att minska textstorleken. Detta ersätter tidigare 44-px-minhöjd.
-- **Punktdiagram:** FOKUS visar tidiga tryck per aktiv minut mot upptäckta
-  signaler; KONTROLL visar upptäckta signaler mot rätt avstådda stopp; MULTI
+- **Punktdiagram:** FOKUS visar senaste fullföljda femsekunderspassets medianreaktionstid mot tidiga tryck per aktiv minut i samma pass; KONTROLL visar upptäckta signaler mot rätt avstådda stopp; MULTI
   visar rätt vid upprepad mot bytt regel. Diagrammet använder summerade
   svar; matrisens färger använder dagsmönster enligt reglerna nedan.
   Inga elever med saknat axelunderlag ritas som noll. Identiska
@@ -213,9 +280,7 @@ finns i projektkartans `attention-group-module`.
 
 - `attention_result` använder befintlig autentiserad `/api/me/events` med
   cookie, betrodd origin och CSRF. Elev-ID hämtas från sessionen.
-- Resultatet har ett stabilt UUID, version 1, läge, start/sluttid, aktiv
-  tid, avbrottsflagga och validerad sammanfattning. Råa tryck, figurer och
-  enskilda svar sparas inte. Endast de senaste 500 passen per elev behålls.
+- Resultatet har ett stabilt UUID, läge, start/sluttid, aktiv tid, avbrottsflagga och validerad sammanfattning. Version 1 har endast sammanfattning; nya version 2 har även avbrottsorsak och färdiga signalers tidsförlopp enligt avsnittet ovan. Skärmkoordinater och figurer sparas inte. Endast de senaste 500 passen per elev behålls.
 - Den befintliga krypterade IndexedDB-vaulten skriver snapshot och händelse
   atomärt innan nätanrop. Återförsök kontrollerar redan köad/kvitterad
   händelse i stället för att försöka skapa en dubbel lokal post.

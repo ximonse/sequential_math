@@ -2,6 +2,7 @@ import { shuffled } from './attentionActivityUtils'
 
 export const FOCUS_DURATION_MS = 120000
 export const FOCUS_SIGNAL_MS = 2000
+export const FOCUS_RESPONSE_MS = 5000
 const PRACTICE_WAIT_MS = 1000
 const FEEDBACK_MS = 1800
 export const FOCUS_DOUBLE_PRESS_MS = 400
@@ -46,6 +47,7 @@ export class FocusActivitySession {
     this.segmentStart = this.now()
     this.results = []
     this.early = 0
+    this.completionReason = null
     this.controlIntro = this.mode === 'choose' ? shuffled(['go', 'red', 'square'], this.random) : []
     this.queue(this.segmentStart)
   }
@@ -62,13 +64,14 @@ export class FocusActivitySession {
 
   record(outcome, now) {
     this.outcome = outcome
-    this.reactionMs = outcome === 'hit' ? now - this.signalStart : null
+    this.reactionMs = ['hit', 'wrong'].includes(outcome) ? now - this.signalStart : null
   }
 
   completeSignal(now) {
     if (!this.outcome) this.record(this.signal === 'go' ? 'miss' : 'withheld', now)
     if (this.phase === 'running') {
-      this.results.push({ outcome: this.outcome, reactionMs: this.reactionMs })
+      this.results.push({ outcome: this.outcome, reactionMs: this.reactionMs,
+        at: this.activeTime(this.signalStart), kind: this.signal === 'go' ? 'go' : 'stop' })
       this.controlIntro.shift()
       this.queue(now)
     } else {
@@ -80,6 +83,11 @@ export class FocusActivitySession {
 
   tick() {
     const now = this.now()
+    const passEnd = this.segmentStart + FOCUS_DURATION_MS - this.elapsed
+    if (this.phase === 'running' && this.mode === 'discover' && this.signal === 'go' && now >= this.due && this.due <= passEnd) {
+      this.finish(true, 'no_response', this.due)
+      return
+    }
     if (this.phase === 'running' && this.activeTime(now) >= FOCUS_DURATION_MS) {
       this.finish(false)
       return
@@ -95,7 +103,7 @@ export class FocusActivitySession {
         ? (this.mode === 'discover' ? 'go' : ['go', 'red', 'square'][this.practiceIndex])
         : this.controlIntro[0] || focusSignal(this.mode, this.random)
       this.signalStart = now
-      this.due = now + FOCUS_SIGNAL_MS
+      this.due = now + (this.mode === 'discover' ? FOCUS_RESPONSE_MS : FOCUS_SIGNAL_MS)
     } else {
       this.completeSignal(now)
     }
@@ -132,10 +140,11 @@ export class FocusActivitySession {
     this.queue(this.segmentStart)
   }
 
-  finish(aborted = true) {
-    this.elapsed = Math.min(FOCUS_DURATION_MS, this.activeTime())
+  finish(aborted = true, reason = aborted ? 'ended' : 'completed', at = this.now()) {
+    this.elapsed = Math.min(FOCUS_DURATION_MS, this.activeTime(at))
     this.phase = 'finished'
     this.aborted = aborted
+    this.completionReason = reason
     this.signal = null
     this.practiceFeedback = null
   }
@@ -148,5 +157,9 @@ export class FocusActivitySession {
       hits: count('hit'), misses: count('miss'), wrong: count('wrong'), withheld: count('withheld'), early: this.early,
       median: times.length ? (times.length % 2 ? times[middle] : (times[middle - 1] + times[middle]) / 2) : null
     }
+  }
+
+  trace() {
+    return this.results.map(({ at, kind, outcome, reactionMs }) => ({ at, kind, outcome, responseMs: reactionMs }))
   }
 }

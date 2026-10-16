@@ -17,7 +17,7 @@ export function buildAttentionReference(rows) {
     // sparse recent window appear well supported.
     const total = days.reduce((sum, day) => sum + day.total, 0)
     const minimum = dimension.id === 'choose-stop' ? 12 : 20
-    return signal.color !== 'white' && days.length >= 3 && total >= minimum
+    return days.length >= 3 && total >= minimum
       ? { studentId: row.studentId, rate: median(days.map(day => day.rate)) } : null
   }).filter(Boolean)]))
 }
@@ -32,6 +32,15 @@ export function compareAttentionSignal(signal, studentId, dimensionId, reference
   const mean = peers.reduce((sum, peer) => sum + peer.rate, 0) / peers.length
   const sd = Math.sqrt(peers.reduce((sum, peer) => sum + (peer.rate - mean) ** 2, 0) / (peers.length - 1))
   const rate = median(days.map(day => day.rate))
+  if (dimensionId === 'discover-go') {
+    const orangeBoundary = Math.max(1000, mean + Math.max(500, 1.5 * sd))
+    const redBoundary = Math.max(1500, mean + Math.max(750, 2 * sd))
+    let color = signal.color
+    if (days.length >= 5 && total >= 40 && days.every(day => day.rate >= redBoundary)) color = 'red'
+    else if (rate >= orangeBoundary && days.filter(day => day.rate >= orangeBoundary).length >= Math.ceil(days.length * .8)) color = 'orange'
+    const special = color === 'red' ? { label: 'Följ upp', mark: '!' } : color === 'orange' ? { label: 'Ofta långsamt', mark: '△' } : {}
+    return { ...signal, color, ...special, comparison: { peers: peers.length, mean, sd, rate, days: days.length, total } }
+  }
   const redBoundary = mean - Math.max(LOCAL_REFERENCE_RULES.redGap, LOCAL_REFERENCE_RULES.redSd * sd)
   const orangeBoundary = mean - Math.max(LOCAL_REFERENCE_RULES.orangeGap, LOCAL_REFERENCE_RULES.orangeSd * sd)
   const below = (value, boundary) => value <= boundary + 1e-9

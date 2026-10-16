@@ -1,13 +1,14 @@
 import { useState } from 'react'
-import { ATTENTION_LABELS } from '../../../lib/attentionHistory'
+import { ATTENTION_LABELS, attentionCompletionLabel, isComparableAttentionPass } from '../../../lib/attentionHistory'
 import { attentionPassStatistics, attentionNumber } from '../../../lib/attentionStatistics'
 import AttentionPassStatistics from '../sections/AttentionPassStatistics'
 import AttentionSignalDetails from './AttentionSignalDetails'
+import AttentionEndurance from './AttentionEndurance'
 
 const date = time => new Date(time).toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm', dateStyle: 'short', timeStyle: 'short' })
 
 function Timeline({ results, mode, measure }) {
-  const full = results.filter(pass => !pass.aborted).sort((a, b) => a.finishedAt - b.finishedAt || a.id.localeCompare(b.id))
+  const full = results.filter(isComparableAttentionPass).sort((a, b) => a.finishedAt - b.finishedAt || a.id.localeCompare(b.id))
   const series = mode === 'multi' ? ['Upprepad regel', 'Bytt regel'] : mode === 'choose' && measure === 'accuracy' ? ['Gröna signaler', 'Avstådda stopp'] : ['Gröna signaler']
   const values = full.map(pass => {
     const stats = attentionPassStatistics(pass)
@@ -19,7 +20,7 @@ function Timeline({ results, mode, measure }) {
   const start = full[0].finishedAt
   const end = full.at(-1).finishedAt
   const x = time => end === start ? 335 : 65 + (time - start) / (end - start) * 545
-  const max = measure === 'time' ? mode === 'multi' ? 4000 : 2000 : 100
+  const max = measure === 'time' ? mode === 'discover' ? 5000 : mode === 'multi' ? 4000 : 2000 : 100
   const y = value => 240 - value / max * 200
   return <>
     <div className="focus-legend">{series.map((label, i) => <span key={label}><i className={`focus-series-${i}`} />{label}</span>)}</div>
@@ -38,20 +39,24 @@ function Timeline({ results, mode, measure }) {
 }
 
 export default function AttentionIndividual({ row, mode, reference }) {
-  const [measure, setMeasure] = useState('accuracy')
+  const [measure, setMeasure] = useState(mode === 'discover' ? 'time' : 'accuracy')
   const [limit, setLimit] = useState(5)
+  const [passId, setPassId] = useState('')
   const results = row.history.filter(pass => pass.mode === mode)
+  const selectedPass = results.find(pass => pass.id === passId) || results[0]
   return <section className="focus-individual" aria-label="Individens fokusresultat">
     <div className="focus-section-heading"><div><p className="focus-eyebrow">Individ · {ATTENTION_LABELS[mode]}</p><h3>{row.name}</h3></div>
       <label>Visa i tidslinjen<select aria-label="Mått i elevens tidslinje" value={measure} onChange={event => setMeasure(event.target.value)}>
-        <option value="accuracy">Träffsäkerhet</option><option value="time">Svarstid per pass</option>
+        {mode !== 'discover' && <option value="accuracy">Träffsäkerhet</option>}<option value="time">Svarstid per pass</option>
       </select></label></div>
     {row.status !== 'ready' ? <p role="status">{row.status === 'error' ? 'Elevens resultat kunde inte hämtas. Försök uppdatera gruppen.' : 'Hämtar elevens resultat…'}</p>
       : <><AttentionSignalDetails row={row} mode={mode} reference={reference} /><Timeline results={results} mode={mode} measure={measure} />
+        {selectedPass && <><label>Pass för utveckling under passet<select aria-label="Pass för uthållighet" value={selectedPass.id} onChange={event => setPassId(event.target.value)}>{results.map(pass => <option key={pass.id} value={pass.id}>{date(pass.finishedAt)} · {attentionCompletionLabel(pass)}</option>)}</select></label><AttentionEndurance pass={selectedPass} /></>}
         <details><summary>Passdetaljer · {results.length} pass</summary>
           {!results.length && <p>Inga sparade pass i urvalet.</p>}
           {results.slice(0, limit).map(pass => <article className="focus-pass" key={pass.id}>
-            <h4>{date(pass.finishedAt)} · {pass.aborted ? 'Avbrutet' : 'Färdigt'} · {Math.round(pass.activeMs / 1000)} s</h4>
+            <h4>{date(pass.finishedAt)} · {attentionCompletionLabel(pass)} · {Math.round(pass.activeMs / 1000)} s{pass.mode === 'discover' && pass.version === 1 ? ' · Äldre upplägg (2 s)' : ''}</h4>
+            {pass.completionReason === 'no_response' && <p className="focus-muted">Inget svar inom fem sekunder. Passet undantas från färgnivå, jämförelse och graf över fullföljda pass. Registrerade svar visas i Utveckling under passet.</p>}
             <AttentionPassStatistics result={pass} />
           </article>)}
           {results.length > limit && <button type="button" className="focus-action" onClick={() => setLimit(value => value + 10)}>Visa fler pass</button>}

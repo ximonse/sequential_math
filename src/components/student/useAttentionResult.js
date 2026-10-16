@@ -23,8 +23,9 @@ export default function useAttentionResult(session, studentId, mode) {
     if (session.hasStarted && !pass.current) pass.current = { id: crypto.randomUUID(), startedAt: Date.now() }
     if (session.phase !== 'finished' || !session.hasStarted || attempted.current) return
     attempted.current = true
-    pass.current.result = { id: pass.current.id, version: 1, mode, startedAt: pass.current.startedAt,
-      finishedAt: Date.now(), activeMs: session.elapsed, aborted: session.aborted, summary: session.summary() }
+    pass.current.result = { id: pass.current.id, version: 2, mode, startedAt: pass.current.startedAt,
+      finishedAt: Date.now(), activeMs: session.elapsed, aborted: session.aborted, summary: session.summary(),
+      completionReason: session.completionReason || (session.aborted ? 'ended' : 'completed'), trials: session.trace() }
     void save()
     // The mutable model changes phase only through a render; one pass has one stable result ID.
     // eslint-disable-next-line react-hooks/exhaustive-deps

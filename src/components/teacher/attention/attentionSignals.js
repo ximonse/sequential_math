@@ -1,11 +1,12 @@
 import { filterAttentionResults } from '../../../lib/attentionStatistics'
+import { focusResponseSignal } from './focusResponseSignal'
 
 // Descriptive design values, not age norms or validated reliability cutoffs.
 // Never infer a below-average flag from the pupils currently visible in a group.
 export const FOCUS_SIGNAL_RULES = Object.freeze({ days: 3, dailyGo: 4, dailyStop: 2, answers: 20, stopAnswers: 12,
   green: 0.6, blueDays: 5, blueAnswers: 40, blueDaily: 0.9, blueMedian: 0.95, trendChange: 0.15 })
 export const FOCUS_DIMENSIONS = [
-  { id: 'discover-go', mode: 'discover', label: 'Upptäcka', exercise: 'FOKUS' },
+  { id: 'discover-go', mode: 'discover', label: 'Svarstid', exercise: 'FOKUS' },
   { id: 'choose-go', mode: 'choose', label: 'Upptäcka', exercise: 'KONTROLL' },
   { id: 'choose-stop', mode: 'choose', label: 'Hejda', exercise: 'KONTROLL' },
   { id: 'multi-switch', mode: 'multi', label: 'Växla', exercise: 'MULTI' }
@@ -42,6 +43,7 @@ export function focusSignal(history, dimensionId) {
   const dimension = FOCUS_DIMENSIONS.find(item => item.id === dimensionId)
   if (!dimension) throw new Error('Unknown focus dimension')
   const passes = filterAttentionResults(history, { mode: dimension.mode })
+  if (dimension.mode === 'discover') return focusResponseSignal(passes)
   const full = passes.filter(pass => !pass.aborted)
   const days = new Map()
   let correct = 0, total = 0
@@ -71,6 +73,10 @@ export function focusSignal(history, dimensionId) {
 }
 
 export function describeFocusEvidence(signal) {
+  if (signal.reference === 'response-v2') {
+    const c = signal.comparison
+    return `${signal.completed} fullföljda pass, ${signal.aborted} avbrutna/ej fullföljda och ${signal.legacy} äldre pass. ${signal.days} dagar med underlag. Svarstid från senaste fullföljda pass med minst fyra träffar per dag. Äldre tvåsekunderspass ingår bara i historiken.${c ? ` Preliminär lokal jämförelse med ${c.peers} andra elever: genomsnitt ${Math.round(c.mean)} ms, spridning ${Math.round(c.sd)} ms; elevens median av dagarnas passmedianer ${Math.round(c.rate)} ms. Ingen åldersnorm eller säkerställd avvikelse.` : ' Lokalt jämförelseunderlag saknas eller hämtas.'}`
+  }
   const evidence = `${signal.correct} rätt av ${signal.total} svar, ${signal.completed} färdiga pass, ${signal.days} dagar med tillräckligt underlag. ${signal.aborted} avbrutna pass ingår inte.`
   if (!signal.comparison) return `${evidence} Beskrivande färg; lokalt jämförelseunderlag saknas eller hämtas. Ingen åldersnorm.`
   const comparison = signal.comparison

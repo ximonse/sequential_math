@@ -76,9 +76,10 @@ finns kvar. Matematikstatistik och elevövningarnas upplägg ändras inte.
   visas i grundvyn. Text och symbol kompletterar färgen. Underlag nås via
   hovring eller val av elev och Färg och underlag. Även elever utan pass
   syns. Hämtningsfel visas uttryckligen, inte som tom historik.
-  Fälten har liggande innehåll, 44 px minsta tryckhöjd och 128 px bredd;
-  tabellen växer efter innehållet. Tätare celler och mindre kringmarginaler
-  håller översikten kompakt utan att minska textstorleken.
+  Fälten har liggande innehåll och 128 px bredd. Höjden följer texten, utan
+  fast minhöjd, med 1 px padding ovanför/under innehållet och 1 px vertikal
+  cellpadding. Tätare celler och mindre kringmarginaler håller översikten
+  kompakt utan att minska textstorleken. Detta ersätter tidigare 44-px-minhöjd.
 - **Punktdiagram:** FOKUS visar tidiga tryck per aktiv minut mot upptäckta
   signaler; KONTROLL visar upptäckta signaler mot rätt avstådda stopp; MULTI
   visar rätt vid upprepad mot bytt regel. Diagrammet använder summerade

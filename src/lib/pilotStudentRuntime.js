@@ -107,6 +107,7 @@ export function createPilotStudentRuntime({
   let store = null
   let recoveryAttempted = false
   let diagnosticWriteTail = Promise.resolve()
+  let attentionWriteTail = Promise.resolve()
   const listeners = new Set()
   let syncStatus = {
     state: 'idle',
@@ -128,6 +129,7 @@ export function createPilotStudentRuntime({
   async function clearRetiredPupil(id) {
     if (!id || !await checkRetired(id)) return false
     await diagnosticWriteTail
+    await attentionWriteTail
     if (studentId === id && store) {
       await store.close()
       store = null
@@ -290,6 +292,7 @@ export function createPilotStudentRuntime({
       }
       if (studentId !== expected || !store) {
         if (store) {
+          await attentionWriteTail
           await diagnosticWriteTail
           await store.close()
         }
@@ -379,8 +382,22 @@ export function createPilotStudentRuntime({
       })
     },
 
+    async persistAttentionCheckpoint(expectedStudentId, payload) {
+      if (!store || normalizePilotStudentId(expectedStudentId) !== studentId || !isValidAttentionResult(payload.result)
+        || payload.result.completionReason !== 'unfinished') throw new Error('Fokusförsöket kunde inte sparas.')
+      // Append-only writes cannot overwrite a concurrent mathematics snapshot.
+      const activeStore = store
+      const operation = attentionWriteTail.then(() => activeStore.appendEvent({ id: `attention_progress_${payload.result.id}_${payload.revision}`,
+        type: 'attention_checkpoint', timestamp: payload.result.finishedAt, payload }))
+      attentionWriteTail = operation.catch(() => {})
+      await operation
+      if (store !== activeStore) return
+      updateSyncStatus({ state: 'pending', pendingCount: syncStatus.pendingCount + 1 })
+      void syncPending().catch(error => updateSyncStatus({ state: 'pending', lastErrorAt: Date.now(), lastError: String(error?.message || 'Fokusförsöket väntar på synkning.') }))
+    },
+
     async persistAttentionResult(expectedStudentId, payload, { onLocalSaved } = {}) {
-      if (!store || normalizePilotStudentId(expectedStudentId) !== studentId || !isValidAttentionResult(payload)) {
+      if (!store || normalizePilotStudentId(expectedStudentId) !== studentId || payload?.completionReason === 'unfinished' || !isValidAttentionResult(payload)) {
         return { ok: false, locallySaved: false, error: 'Resultatet kunde inte kopplas till din elevsession.' }
       }
       const event = { id: `attention_${payload.id}`, type: 'attention_result', timestamp: payload.finishedAt, payload }
@@ -405,11 +422,13 @@ export function createPilotStudentRuntime({
 
     async close() {
       await diagnosticWriteTail
+      await attentionWriteTail
       if (store) store.close()
       store = null
       studentId = ''
       recoveryAttempted = false
       diagnosticWriteTail = Promise.resolve()
+      attentionWriteTail = Promise.resolve()
       updateSyncStatus({ state: 'idle', pendingCount: 0, rejectedCount: 0, lastAttemptAt: 0, lastSuccessAt: 0, lastErrorAt: 0, lastError: '' })
     }
   }

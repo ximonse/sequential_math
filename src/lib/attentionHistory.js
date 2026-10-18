@@ -1,4 +1,5 @@
-export const MAX_ATTENTION_RESULTS = 500
+import { ATTENTION_PROTOCOLS } from './attentionProtocols.js'
+export const MAX_ATTENTION_RESULTS = 500 // Profile cache only; the archive has no age/count expiry.
 export const ATTENTION_LABELS = { discover: '1 - FOKUS', choose: '2 - KONTROLL', multi: 'MULTI' }
 const count = value => Number.isInteger(value) && value >= 0 && value <= 1000
 const median = value => value === null || (Number.isFinite(value) && value >= 0 && value <= 4000)
@@ -8,9 +9,12 @@ const keysOnly = (value, keys) => value && typeof value === 'object' && !Array.i
   && Object.keys(value).length === keys.length && keys.every(key => Object.hasOwn(value, key))
 
 export function isValidAttentionResult(result) {
-  const detailed = result?.version === 2
+  const modern = result?.version === 3
+  const detailed = result?.version === 2 || modern
   const isNewFocus = detailed && result?.mode === 'discover'
-  if (!keysOnly(result, ['id', 'version', 'mode', 'startedAt', 'finishedAt', 'activeMs', 'aborted', 'summary', ...(detailed ? ['completionReason', 'trials'] : [])])) return false
+  if (!keysOnly(result, ['id', 'version', 'mode', 'startedAt', 'finishedAt', 'activeMs', 'aborted', 'summary', ...(detailed ? ['completionReason', 'trials'] : []), ...(modern ? ['protocolId', 'protocol', 'events', 'stimuli'] : [])])) return false
+  if (modern && (!ATTENTION_PROTOCOLS[result.protocolId] || ATTENTION_PROTOCOLS[result.protocolId].mode !== result.mode
+    || !sameDefinition(result.protocol, ATTENTION_PROTOCOLS[result.protocolId]) || !validMeasurements(result))) return false
   if (typeof result.id !== 'string' || !/^[A-Za-z0-9_-]{1,80}$/.test(result.id) || (!detailed && result.version !== 1)
     || !Object.hasOwn(ATTENTION_LABELS, result.mode) || typeof result.aborted !== 'boolean'
     || !Number.isFinite(result.startedAt) || result.startedAt <= 0 || !Number.isFinite(result.finishedAt)
@@ -18,7 +22,7 @@ export function isValidAttentionResult(result) {
     || result.activeMs > 120000 || (!result.aborted && result.activeMs !== 120000)) return false
   const s = result.summary
   if (!s || typeof s !== 'object') return false
-  if (detailed && (!['completed', 'ended', ...(isNewFocus ? ['no_response'] : [])].includes(result.completionReason)
+  if (detailed && (!['completed', 'ended', ...(modern ? ['unfinished'] : []), ...(isNewFocus ? ['no_response'] : [])].includes(result.completionReason)
     || result.aborted !== (result.completionReason !== 'completed')
     || (result.completionReason === 'no_response' && result.activeMs < 8000)
     || !validTrials(result))) return false
@@ -74,21 +78,55 @@ function validTrials(result) {
   })
 }
 
-export const isCurrentFocusResult = result => result.mode === 'discover' && result.version === 2
+function sameDefinition(a, b) {
+  if (a === b) return true
+  return Boolean(a && b && typeof a === 'object' && typeof b === 'object'
+    && Object.keys(a).length === Object.keys(b).length && Object.keys(b).every(key => Object.hasOwn(a, key) && sameDefinition(a[key], b[key])))
+}
+
+function validMeasurements(result) {
+  const { events, stimuli, activeMs, mode } = result
+  if (!Array.isArray(events) || events.length > 1500 || !Array.isArray(stimuli) || stimuli.length !== result.trials?.length) return false
+  const types = ['start', 'signal', 'early', 'ignored', 'pause', 'resume', 'finish']
+  let last = 0, wall = 0
+  for (const event of events) {
+    if (!keysOnly(event, ['at', 'wallMs', 'type', 'stimulus']) || !types.includes(event.type) || !Number.isFinite(event.at)
+      || !Number.isFinite(event.wallMs) || event.wallMs < wall || event.wallMs < event.at - TIMING_EPSILON_MS
+      || event.at < last || event.at > activeMs + TIMING_EPSILON_MS) return false
+    if (event.type === 'signal') {
+      const s = event.stimulus
+      if (mode === 'multi' ? !keysOnly(s, ['shape', 'dots', 'rule']) || !['diamond', 'square'].includes(s.shape)
+        || ![2, 3].includes(s.dots) || !['shape', 'count'].includes(s.rule)
+        : !keysOnly(s, ['signal', 'waitMs']) || !['go', 'red', 'square'].includes(s.signal)
+          || !Number.isFinite(s.waitMs) || s.waitMs < 4000 || s.waitMs > 17000) return false
+    } else if (event.stimulus !== null) return false
+    last = event.at
+    wall = event.wallMs
+  }
+  return stimuli.every(stimulus => mode === 'multi'
+    ? keysOnly(stimulus, ['shape', 'dots', 'rule', 'side', 'expectedSide'])
+      && ['diamond', 'square'].includes(stimulus.shape) && [2, 3].includes(stimulus.dots)
+      && ['shape', 'count'].includes(stimulus.rule) && [null, 'left', 'right'].includes(stimulus.side)
+      && ['left', 'right'].includes(stimulus.expectedSide)
+    : keysOnly(stimulus, ['signal', 'waitMs']) && ['go', 'red', 'square'].includes(stimulus.signal)
+      && Number.isFinite(stimulus.waitMs) && stimulus.waitMs >= 4000 && stimulus.waitMs <= 17000)
+}
+
+export const isCurrentFocusResult = result => result.mode === 'discover' && result.version >= 2
 export const isComparableAttentionPass = result => !result.aborted && (result.mode !== 'discover' || isCurrentFocusResult(result))
-export const attentionCompletionLabel = result => result.completionReason === 'no_response' ? 'Ej fullföljt' : result.aborted ? 'Avbrutet' : 'Klart'
+export const attentionCompletionLabel = result => result.completionReason === 'unfinished' ? 'Ej avslutat · senast sparat' : result.completionReason === 'no_response' ? 'Ej fullföljt' : result.aborted ? 'Avbrutet' : 'Klart'
 
 // Immutable pass IDs make acknowledgements, retries and profile merges idempotent.
-export function mergeAttentionHistory(existing = [], incoming = []) {
+export function mergeAttentionHistory(existing = [], incoming = [], limit = MAX_ATTENTION_RESULTS) {
   const results = new Map()
   for (const result of [...(Array.isArray(existing) ? existing : []), ...(Array.isArray(incoming) ? incoming : [])]) {
     if (isValidAttentionResult(result) && !results.has(result.id)) results.set(result.id, structuredClone(result))
   }
-  return [...results.values()].sort((a, b) => b.finishedAt - a.finishedAt || a.id.localeCompare(b.id)).slice(0, MAX_ATTENTION_RESULTS)
+  return [...results.values()].sort((a, b) => b.finishedAt - a.finishedAt || a.id.localeCompare(b.id)).slice(0, limit)
 }
 
 export function recordAttentionResult(profile, result) {
-  if (!isValidAttentionResult(result) || (Array.isArray(profile.attentionHistory) && profile.attentionHistory.some(item => item.id === result.id))) return false
+  if (result?.completionReason === 'unfinished' || !isValidAttentionResult(result) || (Array.isArray(profile.attentionHistory) && profile.attentionHistory.some(item => item.id === result.id))) return false
   profile.attentionHistory = mergeAttentionHistory(profile.attentionHistory, [result])
   return true
 }

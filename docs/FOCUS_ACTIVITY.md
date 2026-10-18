@@ -23,9 +23,12 @@ De första tre färdigställda signalerna i KONTROLL-passet innehåller alltid
 grön cirkel, röd cirkel och grön fyrkant i blandad ordning. En signal som
 avbryts genom dold flik visas igen, så garantin inte förbrukas av pausen.
 Därefter väljs grön cirkel med sannolikhet 70 %, röd cirkel 15 % och
-grön fyrkant 15 %. Slumpade väntetider är 3–10 sekunder under första
-40 sekunderna, 3–15 under nästa 40 och 3–20 under sista 40. Progressionen
-börjar om varje pass; ingen nivå sparas.
+grön fyrkant 15 %. Rikttiderna är 6, 10 och 15 sekunder i passets tre
+40-sekundersdelar, med oberoende slumpad variation ±2 sekunder per väntan.
+Progressionen börjar om varje pass; ingen nivå sparas. Den lokala versionen
+använder nya protokoll-ID:n; äldre 3–10/3–15/3–20-pass behåller sina mätregler.
+Se [arkiv, versioner och nya vyer](ATTENTION_ARCHIVE_AND_VIEWS.md) för
+sparpunkter under passet, obegränsat tidsarkiv och export.
 
 Under både övning och pass visas endast en centrerad prick (14 × 14 px,
 hälften av ursprungliga diametern) och en grå Avsluta-knapp. Hela skärmen

@@ -51,7 +51,7 @@ test('Historik: fokus, kontroll och MULTI överlever omladdning och visas endast
   expect(saved.attentionHistory).toHaveLength(3)
   expect(saved.attentionHistory.find(item => item.mode === 'discover')).toMatchObject({ activeMs: 120000, aborted: false })
   expect(saved.attentionHistory.find(item => item.mode === 'multi').summary).toMatchObject({ total: 1, correct: 1 })
-  expect(saved.attentionHistory.every(pass => pass.version === 2 && Array.isArray(pass.trials))).toBe(true)
+  expect(saved.attentionHistory.every(pass => pass.version === 3 && pass.protocolId && Array.isArray(pass.trials))).toBe(true)
   expect(saved.attentionHistory.find(pass => pass.mode === 'discover').trials.length).toBeGreaterThan(0)
   expect(saved.attentionHistory.find(pass => pass.mode === 'multi').trials[0]).toMatchObject({ kind: 'first', outcome: 'hit' })
   expect(saved.attentionHistory.find(pass => pass.mode === 'multi').trials[0].responseMs).toBeLessThan(4000)

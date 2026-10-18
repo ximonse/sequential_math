@@ -42,7 +42,7 @@ describe('within-pass endurance evidence', () => {
       const result = { id: mode, version: 2, mode, startedAt: 1000, finishedAt: 200000,
         activeMs: session.elapsed, aborted: true, completionReason: 'ended', summary: session.summary(), trials: session.trace() }
       expect(result.trials).toHaveLength(1)
-      expect(result.trials[0]).toMatchObject({ at: mode === 'multi' ? 600 : 3000, responseMs: 250 })
+      expect(result.trials[0]).toMatchObject({ at: mode === 'multi' ? 600 : 4000, responseMs: 250 })
       expect(isValidAttentionResult(result)).toBe(true)
       expect(isValidAttentionResult({ ...result, trials: [...result.trials, ...result.trials] })).toBe(false)
       if (mode === 'choose') expect(isValidAttentionResult({ ...result,

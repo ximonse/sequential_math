@@ -1,5 +1,6 @@
 import { filterAttentionResults } from '../../../lib/attentionStatistics'
 import { focusResponseSignal } from './focusResponseSignal'
+import { attentionProtocolId } from '../../../lib/attentionProtocols'
 
 // Descriptive design values, not age norms or validated reliability cutoffs.
 // Never infer a below-average flag from the pupils currently visible in a group.
@@ -42,8 +43,12 @@ function trendFor(days) {
 export function focusSignal(history, dimensionId) {
   const dimension = FOCUS_DIMENSIONS.find(item => item.id === dimensionId)
   if (!dimension) throw new Error('Unknown focus dimension')
-  const passes = filterAttentionResults(history, { mode: dimension.mode })
-  if (dimension.mode === 'discover') return focusResponseSignal(passes)
+  const available = filterAttentionResults(history, { mode: dimension.mode })
+  const latest = available[0]
+  // Existing overview also isolates explicit protocols; historical values remain in details.
+  const protocolId = latest?.protocolId || null
+  const passes = latest ? available.filter(pass => protocolId ? attentionProtocolId(pass) === protocolId : !pass.protocolId) : []
+  if (dimension.mode === 'discover') return { ...focusResponseSignal(passes), protocolId }
   const full = passes.filter(pass => !pass.aborted)
   const days = new Map()
   let correct = 0, total = 0
@@ -69,7 +74,7 @@ export function focusSignal(history, dimensionId) {
       && rates.every(rate => rate >= FOCUS_SIGNAL_RULES.blueDaily) && median(rates) >= FOCUS_SIGNAL_RULES.blueMedian) color = 'blue'
   }
   return { color, ...FOCUS_SIGNALS[color], correct, total, completed: full.length, aborted: passes.length - full.length,
-    days: informativeDays.length, daily: informativeDays, eligibleTotal, trend: trendFor(informativeDays), reference: 'descriptive-v1' }
+    days: informativeDays.length, daily: informativeDays, eligibleTotal, trend: trendFor(informativeDays), reference: 'descriptive-v1', protocolId }
 }
 
 export function describeFocusEvidence(signal) {

@@ -24,7 +24,7 @@ export function attentionPassStatistics(result) {
 
 export function filterAttentionResults(history, { mode = 'all', days = 'all', now = Date.now() } = {}) {
   const cutoff = days === 'all' ? null : now - Number(days) * 86400000
-  return mergeAttentionHistory(history).filter(result => (mode === 'all' || result.mode === mode)
+  return mergeAttentionHistory(history, [], Infinity).filter(result => (mode === 'all' || result.mode === mode)
     && (cutoff === null || (result.finishedAt >= cutoff && result.finishedAt <= now)))
 }
 

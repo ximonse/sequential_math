@@ -59,6 +59,8 @@ export class MultiActivitySession {
 
   start() {
     this.hasStarted = true
+    this.wallStart = this.now()
+    this.events = [{ at: 0, wallMs: 0, type: 'start', stimulus: null }]
     this.phase = 'running'
     this.trials = multiPassTrials(this.random)
     this.trialIndex = 0
@@ -113,6 +115,7 @@ export class MultiActivitySession {
     else {
       this.trial = this.trials[this.trialIndex]
       this.trialStart = this.now()
+      this.log('signal')
       this.due = this.now() + MULTI_RESPONSE_MS
     }
   }
@@ -128,6 +131,7 @@ export class MultiActivitySession {
   pause() {
     if (!['practice', 'running'].includes(this.phase)) return
     this.resumePhase = this.phase
+    this.log('pause')
     this.elapsed = this.activeTime()
     // A finished trial remains finished, even if the app is hidden during its feedback.
     if (this.feedback) this.trialIndex += 1
@@ -145,11 +149,13 @@ export class MultiActivitySession {
       this.trialIndex = 0
     }
     this.segmentStart = this.now()
+    this.log('resume')
     this.queue()
   }
 
   finish(aborted = true) {
     this.elapsed = Math.min(MULTI_DURATION_MS, this.activeTime())
+    if (this.hasStarted) this.events.push({ at: this.elapsed, wallMs: this.now() - this.wallStart, type: 'finish', stimulus: null })
     this.phase = 'finished'
     this.aborted = aborted
     this.trial = null
@@ -176,4 +182,11 @@ export class MultiActivitySession {
     return this.results.map(result => ({ at: result.at, kind: result.transition,
       outcome: result.timeout ? 'miss' : result.correct ? 'hit' : 'wrong', responseMs: result.responseMs }))
   }
+
+  log(type) {
+    if (this.phase === 'running') this.events.push({ at: Math.min(MULTI_DURATION_MS, this.activeTime()), wallMs: this.now() - this.wallStart,
+      type, stimulus: type === 'signal' ? { ...this.trial } : null })
+  }
+
+  stimuli() { return this.results.map(({ shape, dots, rule, side, expectedSide }) => ({ shape, dots, rule, side, expectedSide })) }
 }

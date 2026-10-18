@@ -297,6 +297,14 @@ export async function createPilotStudentStore({
       }
     },
 
+    async appendEvent(event) {
+      if (!event || typeof event.id !== 'string' || event.id.length < 8) throw new PilotStudentVaultError('INVALID_EVENT', 'Offlinehändelsen saknar id.');
+      const encrypted = await encryptVaultValue({ cryptoApi: crypto, key, studentId, recordType: 'event', value: event });
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      transaction.objectStore(STORE_NAME).add(record(`${EVENT_PREFIX}${event.id}`, 'event', studentId, encrypted, { eventId: event.id, createdAt: Date.now() }));
+      await transactionAsPromise(transaction);
+    },
+
     async saveSnapshotAndAppendEvent({ snapshot, event }) {
       if (!event || typeof event.id !== 'string' || event.id.length < 8) {
         throw new PilotStudentVaultError('INVALID_EVENT', 'Offlinehändelsen saknar ett säkert id.');

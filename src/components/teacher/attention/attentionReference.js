@@ -18,13 +18,13 @@ export function buildAttentionReference(rows) {
     const total = days.reduce((sum, day) => sum + day.total, 0)
     const minimum = dimension.id === 'choose-stop' ? 12 : 20
     return days.length >= 3 && total >= minimum
-      ? { studentId: row.studentId, rate: median(days.map(day => day.rate)) } : null
+      ? { studentId: row.studentId, rate: median(days.map(day => day.rate)), protocolId: signal.protocolId } : null
   }).filter(Boolean)]))
 }
 
 export function compareAttentionSignal(signal, studentId, dimensionId, reference) {
   if (signal.color === 'white' || !reference) return signal
-  const peers = (reference[dimensionId] || []).filter(peer => peer.studentId !== studentId)
+  const peers = (reference[dimensionId] || []).filter(peer => peer.studentId !== studentId && (peer.protocolId || null) === (signal.protocolId || null))
   if (peers.length < LOCAL_REFERENCE_RULES.peers) return signal
   const days = recent(signal)
   const total = days.reduce((sum, day) => sum + day.total, 0)

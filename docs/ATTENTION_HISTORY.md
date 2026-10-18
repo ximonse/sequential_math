@@ -3,6 +3,15 @@
 Simon godkände sparad lärarhistorik för FOKUS, KONTROLL och MULTI 2026-10-14,
 efter den första produktionsversionen med tillfälliga resultat.
 
+## Aktuell lokal vidareutveckling 2026-10-18
+
+Simon har nu beställt beständig lagring utan 500-passrensning, självförklarande
+export med aktivitetsversion, dagsform med klass-/egen 21-dagarsreferens och
+timindelat veckomönster. Se [arkiv och vyer](ATTENTION_ARCHIVE_AND_VIEWS.md).
+Det dokumentet ersätter äldre lagringsgränser/mätregler nedan. Profilen har
+fortfarande 500 slutresultat som cache; fokusmodulen/exporten läser hela
+det separata arkivet. Detta är lokal implementation, inte publicering.
+
 ## Resultatåtkomst 2026-10-18
 
 Endast huvudadmin (`super_admin`) får läsa sparade fokusresultat i personalens

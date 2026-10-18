@@ -5,8 +5,12 @@
 Simon vill kunna uppmärksamma elever som återkommande skiljer sig tydligt i
 svarshastighet eller uthållighet från klasskamrater och åldersförväntan.
 Syftet är en pedagogisk heads-up, inte en medicinsk bedömning.
-Nedanstående mät- och analysförslag är **inte implementerat eller beslutat**.
-Behörighetsbegränsningen i nästa avsnitt är däremot uttryckligen beställd.
+Det ursprungliga förslaget nedan beskriver även ett separat standardiserat
+mätupplägg och åldersreferens som **inte är implementerade eller beslutade**.
+Simon har därefter godkänt lokala observationsvyer, ökande rikttider med
+variation, timschema och beständig versionerad export; dessa byggs enligt
+[aktuell leveransbeskrivning](ATTENTION_ARCHIVE_AND_VIEWS.md).
+Det innebär inga åldersnormer, förlängda pass eller medicinska slutsatser.
 
 ## Projektminne: vem får se resultaten?
 

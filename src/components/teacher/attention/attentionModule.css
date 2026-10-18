@@ -74,3 +74,11 @@
 .focus-explanation dt { font-weight: 600; margin-top: 8px; }
 .focus-explanation p { margin-top: 12px; color: #536b68; }
 @media (max-width: 640px) { .focus-module { padding: 8px; } .focus-toolbar { gap: 8px; } }
+.focus-form-matrix th, .focus-form-matrix td { padding: 2px 5px; vertical-align: middle; }
+.focus-module .focus-form-cell { display: flex; align-items: center; gap: 5px; padding: 1px 2px; font-size: .75rem; text-align: left; }
+.focus-form-dot { display: inline-block; flex: 0 0 7px; width: 7px; height: 7px; border: 1px solid #8ca69c; border-radius: 50%; }
+.focus-week-chart { width: 100%; max-width: 780px; }
+.focus-week-chart text { fill: #536b68; font-size: 11px; }
+.focus-module svg [role="button"] { cursor: pointer; }
+.focus-module svg [role="button"]:focus-visible { outline: 2px solid #193d40; }
+.focus-export input { font: inherit; padding: 4px 6px; border: 1px solid #b8ccc6; border-radius: 6px; max-width: 150px; }

@@ -93,6 +93,14 @@ export async function buildPupilCleanup(id, job, store) {
   const patches = []
   const removals = [{ key: 'students:index', member: id }]
   const sources = []
+  const attention = new Map((job.profile.attentionHistory || []).map(pass => [pass.id, pass]))
+  for (const key of await scanPupilKeys(store, `attention_pass:${id}:*`)) {
+    const stored = await store.get(key)
+    if (stored?.result) attention.set(stored.result.id, stored.result)
+    deletes.add(key)
+  }
+  deletes.add(`attention_passes:${id}`)
+  deletes.add(`attention_migrated:${id}`)
   // An interrupted older write may leave indexed events without a record.
   for (const attemptId of await store.smembers(`diagnostic_attempts_by_student:${id}`)) {
     const record = await store.get(`diagnostic_attempt:${attemptId}`)
@@ -165,7 +173,9 @@ export async function buildPupilCleanup(id, job, store) {
     }
   }
   const archive = job.mode === 'anonymize' ? { archiveId: job.archiveId, format: 'pupil-analysis-v1',
-    frozen: true, training: trainingStatistics(job.profile), diagnostics: buildDiagnosticArchiveSeries(sources) } : null
+    frozen: true, training: trainingStatistics(job.profile), diagnostics: buildDiagnosticArchiveSeries(sources),
+    // Keep measurements/protocols but remove dates and pass identities on explicit anonymization.
+    attention: [...attention.values()].map(({ id: passId, startedAt, finishedAt, ...measurement }) => measurement) } : null
   return { plan: { deletes: [...deletes], patches: patches.map(patch => ({ ...patch, afterJson: JSON.stringify(patch.after) })), removals }, archive }
 }
 

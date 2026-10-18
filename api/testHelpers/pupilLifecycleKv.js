@@ -1,7 +1,10 @@
 import { BEGIN_PUPIL_LIFECYCLE_SCRIPT, FINISH_PUPIL_LIFECYCLE_SCRIPT } from '../_pupilLifecycle.js'
+import { emulateAttentionArchive } from './attentionArchiveKv.js'
 import { PUPIL_REFERENCE_WRITE_SCRIPT, GUARDED_PUPIL_KEY_SCRIPT, removePupilReferences } from '../_pupilReferenceWrite.js'
 
 export function emulatePupilLifecycle(records, script, keys, args) {
+  const attention = emulateAttentionArchive(records, script, keys, args)
+  if (attention) return attention
   if (script === GUARDED_PUPIL_KEY_SCRIPT) {
     if (records.has(keys[1]) || records.has(keys[2]) || (args[3] === 'live' && !records.has(keys[3]))) return { result: 0 }
     if (args[0] === 'member') records.set(keys[0], [...new Set([...(records.get(keys[0]) || []), args[1]])])

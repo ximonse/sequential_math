@@ -15,6 +15,7 @@ import { isContractMasteryFact } from '../../../src/lib/masteryFacts.js'
 import { EVENT_OWNED_ADAPTIVE_FIELDS } from '../../../src/lib/pilotCheckpointContract.js'
 import { markTableCompleted } from '../../../src/lib/tableDrillCompletion.js'
 import { isValidAttentionResult, recordAttentionResult } from '../../../src/lib/attentionHistory.js'
+import { archiveAttentionEvents } from '../../_attentionArchive.js'
 
 const MAX_PROBLEM_LOG = 5000
 const MAX_RECENT_PROBLEMS = 250
@@ -212,7 +213,10 @@ export function validEntry(entry, studentId) {
   if (typeof entry?.id !== 'string' || !entry.id || entry.id.length > 100 || !entry.payload || jsonBytes(entry) > MAX_EVENT_BYTES) return false
   if (entry.studentId && String(entry.studentId).toUpperCase() !== studentId) return false
   const payload = entry.payload
-  if (entry.type === 'attention_result') return isValidAttentionResult(payload)
+  if (entry.type === 'attention_result') return payload?.completionReason !== 'unfinished' && isValidAttentionResult(payload)
+  if (entry.type === 'attention_checkpoint') return isRecord(payload) && Object.keys(payload).length === 2
+    && Object.hasOwn(payload, 'revision') && Object.hasOwn(payload, 'result') && Number.isInteger(payload.revision) && payload.revision > 0 && payload.revision <= 5000
+    && payload.result?.version === 3 && payload.result.completionReason === 'unfinished' && isValidAttentionResult(payload.result)
   if (entry.type === 'problem_result') return typeof payload.problemId === 'string'
     && Boolean(payload.problemId) && Number.isFinite(payload.timestamp) && payload.timestamp > 0
     && typeof payload.correct === 'boolean'
@@ -298,6 +302,7 @@ export async function persistStudentEvents(studentId, entries, authorize) {
     if (!existing) throw studentStoreError(404, 'Student not found')
     if (!isCurrentStudentProfile(existing)) throw studentStoreError(409, 'Unsupported student profile schema')
     await authorize(existing)
+    await archiveAttentionEvents(studentId, existing, entries)
     const profile = structuredClone(existing)
     appliedCount = 0
     const sorted = [...entries].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0))

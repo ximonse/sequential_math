@@ -8,8 +8,8 @@ const FEEDBACK_MS = 1800
 export const FOCUS_DOUBLE_PRESS_MS = 400
 
 export function focusWaitMs(elapsed, random = Math.random) {
-  const maximum = elapsed < 40000 ? 10000 : elapsed < 80000 ? 15000 : 20000
-  return 3000 + random() * (maximum - 3000)
+  const target = elapsed < 40000 ? 6000 : elapsed < 80000 ? 10000 : 15000
+  return target - 2000 + random() * 4000
 }
 
 export function focusSignal(mode, random = Math.random) {
@@ -48,6 +48,8 @@ export class FocusActivitySession {
     this.results = []
     this.early = 0
     this.completionReason = null
+    this.wallStart = this.now()
+    this.events = [{ at: 0, wallMs: 0, type: 'start', stimulus: null }]
     this.controlIntro = this.mode === 'choose' ? shuffled(['go', 'red', 'square'], this.random) : []
     this.queue(this.segmentStart)
   }
@@ -59,7 +61,8 @@ export class FocusActivitySession {
   queue(now) {
     this.signal = null
     this.outcome = null
-    this.due = now + (this.phase === 'practice' ? PRACTICE_WAIT_MS : focusWaitMs(this.activeTime(now), this.random))
+    this.waitMs = this.phase === 'practice' ? PRACTICE_WAIT_MS : focusWaitMs(this.activeTime(now), this.random)
+    this.due = now + this.waitMs
   }
 
   record(outcome, now) {
@@ -71,7 +74,7 @@ export class FocusActivitySession {
     if (!this.outcome) this.record(this.signal === 'go' ? 'miss' : 'withheld', now)
     if (this.phase === 'running') {
       this.results.push({ outcome: this.outcome, reactionMs: this.reactionMs,
-        at: this.activeTime(this.signalStart), kind: this.signal === 'go' ? 'go' : 'stop' })
+        at: this.activeTime(this.signalStart), kind: this.signal === 'go' ? 'go' : 'stop', signal: this.signal, waitMs: this.waitMs })
       this.controlIntro.shift()
       this.queue(now)
     } else {
@@ -103,6 +106,7 @@ export class FocusActivitySession {
         ? (this.mode === 'discover' ? 'go' : ['go', 'red', 'square'][this.practiceIndex])
         : this.controlIntro[0] || focusSignal(this.mode, this.random)
       this.signalStart = now
+      this.log('signal')
       this.due = now + (this.mode === 'discover' ? FOCUS_RESPONSE_MS : FOCUS_SIGNAL_MS)
     } else {
       this.completeSignal(now)
@@ -117,7 +121,7 @@ export class FocusActivitySession {
     if (now < this.ignorePressUntil) return
     this.ignorePressUntil = now + FOCUS_DOUBLE_PRESS_MS
     if (!this.signal) {
-      if (this.phase === 'running') this.early += 1
+      if (this.phase === 'running') { this.early += 1; this.log('early') }
     } else {
       this.record(this.signal === 'go' ? 'hit' : 'wrong', now)
       this.completeSignal(now)
@@ -127,6 +131,7 @@ export class FocusActivitySession {
   pause() {
     if (!['practice', 'running'].includes(this.phase)) return
     this.resumePhase = this.phase
+    this.log('pause')
     this.elapsed = this.activeTime()
     this.phase = 'paused'
     this.signal = null
@@ -137,11 +142,13 @@ export class FocusActivitySession {
     if (this.phase !== 'paused') return
     this.phase = this.resumePhase
     this.segmentStart = this.now()
+    this.log('resume')
     this.queue(this.segmentStart)
   }
 
   finish(aborted = true, reason = aborted ? 'ended' : 'completed', at = this.now()) {
     this.elapsed = Math.min(FOCUS_DURATION_MS, this.activeTime(at))
+    if (this.hasStarted) this.events.push({ at: this.elapsed, wallMs: at - this.wallStart, type: 'finish', stimulus: null })
     this.phase = 'finished'
     this.aborted = aborted
     this.completionReason = reason
@@ -158,6 +165,13 @@ export class FocusActivitySession {
       median: times.length ? (times.length % 2 ? times[middle] : (times[middle - 1] + times[middle]) / 2) : null
     }
   }
+
+  log(type) {
+    if (this.phase === 'running') this.events.push({ at: Math.min(FOCUS_DURATION_MS, this.activeTime()), wallMs: this.now() - this.wallStart,
+      type, stimulus: type === 'signal' ? { signal: this.signal, waitMs: this.waitMs } : null })
+  }
+
+  stimuli() { return this.results.map(({ signal, waitMs }) => ({ signal, waitMs })) }
 
   trace() {
     return this.results.map(({ at, kind, outcome, reactionMs }) => ({ at, kind, outcome, responseMs: reactionMs }))

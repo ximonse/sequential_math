@@ -6,6 +6,8 @@ import { buildAttentionGroup } from './attentionGroup'
 import AttentionMatrix from './AttentionMatrix'
 import AttentionPlot from './AttentionPlot'
 import AttentionIndividual from './AttentionIndividual'
+import AttentionForm, { AttentionWeek } from './AttentionForm'
+import AttentionExport from './AttentionExport'
 import './attentionModule.css'
 
 export default function AttentionModule({ students = [], allStudents = students }) {
@@ -13,9 +15,12 @@ export default function AttentionModule({ students = [], allStudents = students 
   const [mode, setMode] = useState('choose')
   const [view, setView] = useState('matrix')
   const [selectedId, setSelectedId] = useState('')
+  const [linkedPassId, setLinkedPassId] = useState('')
   const { records, roster, ready, asOf, refresh } = useAttentionCohort(allStudents)
   const rows = useMemo(() => buildAttentionGroup(students, records, { days, now: asOf || Date.now() }), [students, records, days, asOf])
   const referenceRows = useMemo(() => buildAttentionGroup(roster, records, { days, now: asOf || Date.now() }), [roster, records, days, asOf])
+  const archiveRows = useMemo(() => buildAttentionGroup(roster, records, { now: asOf || Date.now() }), [roster, records, asOf])
+  const selectedArchiveRows = archiveRows.filter(row => students.some(student => student.studentId === row.studentId))
   const reference = useMemo(() => ready ? buildAttentionReference(referenceRows) : null, [ready, referenceRows])
   const selected = rows.find(row => row.studentId === selectedId)
   const loaded = rows.filter(row => row.status === 'ready').length
@@ -29,24 +34,29 @@ export default function AttentionModule({ students = [], allStudents = students 
     <div className="focus-toolbar"><div className="focus-view-picker" role="group" aria-label="Visualisering">
       <button type="button" aria-pressed={view === 'matrix'} onClick={() => setView('matrix')}>Matris</button>
       <button type="button" aria-pressed={view === 'plot'} onClick={() => setView('plot')}>Punktdiagram</button></div>
+      <button type="button" className="focus-action" aria-pressed={view === 'form'} onClick={() => setView('form')}>Dagsform</button>
+      <button type="button" className="focus-action" aria-pressed={view === 'week'} onClick={() => setView('week')}>Veckomönster</button>
       <label>Övning för diagram och individ<select value={mode} aria-label="Övning för fokusdiagram" onChange={event => setMode(event.target.value)}>
         {Object.entries(ATTENTION_LABELS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
       </select></label>
-      <label>Period<select aria-label="Period för fokusgruppen" value={days} onChange={event => setDays(event.target.value)}>
+      <label>Period för historik<select aria-label="Period för fokusgruppen" value={days} onChange={event => setDays(event.target.value)}>
         <option value="all">All sparad historik</option><option value="7">Senaste 7 dygnen</option><option value="30">Senaste 30 dygnen</option>
       </select></label></div>
     <p className="focus-load-status" role="status">{loaded} av {rows.length} elever hämtade{loading ? ' · hämtar…' : ''}{errors ? ` · ${errors} kunde inte hämtas. Försök uppdatera.` : ''}</p>
-    <p className="focus-muted">Se mönster över flera dagar. Välj ett färgfält för elevens tidslinje och underlag. Färgerna är preliminära beskrivningar av övningen.</p>
+    {['matrix', 'plot'].includes(view) && <><p className="focus-muted">Se mönster över flera dagar. Välj ett färgfält för elevens tidslinje och underlag. Färgerna är preliminära beskrivningar av övningen.</p>
     <p className="focus-muted" data-testid="focus-reference-status">Preliminär lokal jämförelse · hela ditt tillgängliga elevunderlag ({roster.length} elever). {ready
       ? `Underlaget läst ${new Date(asOf).toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm', dateStyle: 'short', timeStyle: 'short' })}. Gruppval ändrar inte referensen. Uppdatera fokusresultat hämtar ett nytt underlag.`
-      : 'Jämförelsen är avstängd tills hela underlaget har hämtats utan fel. Beskrivande färger kan visas under tiden.'}</p>
+      : 'Jämförelsen är avstängd tills hela underlaget har hämtats utan fel. Beskrivande färger kan visas under tiden.'}</p></>}
     {!rows.length ? <p className="focus-empty">Inga elever i klass-/gruppurvalet. Välj en grupp ovan.</p>
       : view === 'matrix' ? <AttentionMatrix rows={rows} selectedId={selectedId} onSelect={select} reference={reference} />
-        : <AttentionPlot rows={rows} mode={mode} selectedId={selectedId} onSelect={select} />}
+        : view === 'plot' ? <AttentionPlot rows={rows} mode={mode} selectedId={selectedId} onSelect={select} />
+          : view === 'form' ? <AttentionForm rows={selectedArchiveRows} referenceRows={ready ? archiveRows : []} mode={mode} asOf={asOf || Date.now()} onSelect={select} />
+            : selected ? <AttentionWeek row={selected} referenceRows={ready ? archiveRows : []} mode={mode} asOf={asOf || Date.now()} onPass={pass => setLinkedPassId(pass.id)} /> : <p className="focus-empty">Välj en elev för veckomönstret.</p>}
     <div className="focus-student-picker"><label>Följ en elev<select aria-label="Elev i fokusmodulen" value={selected?.studentId || ''} onChange={event => setSelectedId(event.target.value)}>
       <option value="">Välj elev</option>{rows.map(row => <option key={row.studentId} value={row.studentId}>{row.name}</option>)}
     </select></label></div>
-    {selected ? <AttentionIndividual key={`${selected.studentId}-${mode}-${days}`} row={selected} mode={mode} reference={reference} /> : <p className="focus-empty">Välj en elev i matrisen eller listan för att följa passen över tid.</p>}
+    {selected ? <AttentionIndividual key={`${selected.studentId}-${mode}-${days}-${linkedPassId}`} initialPassId={linkedPassId} row={selected} mode={mode} reference={reference} /> : <p className="focus-empty">Välj en elev i matrisen eller listan för att följa passen över tid.</p>}
+    <AttentionExport rows={selectedArchiveRows} asOf={asOf || Date.now()} />
     <details className="focus-explanation"><summary>Vad visar övningarna och diagrammen?</summary><dl>
       <dt>1 - FOKUS · fullföljande och svarstid</dt><dd>Fem sekunder utan svar på grönt erbjuder omstart och sparar försöket som ej fullföljt. Färgen använder svarstid från fullföljda pass över flera dagar. Utveckling under passet visar när svaren blir långsammare eller uteblir. Äldre tvåsekunderspass visas bara i historiken.</dd>
       <dt>2 - KONTROLL · upptäcka och avstå</dt><dd>Träffar på gröna cirklar och rätt avstådda röda cirklar/gröna fyrkanter redovisas separat.</dd>

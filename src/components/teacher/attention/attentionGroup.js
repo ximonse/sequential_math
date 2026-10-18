@@ -9,6 +9,7 @@ export function buildAttentionGroup(students, records, { days = 'all', now = Dat
     const history = record?.status === 'ready' ? filterAttentionResults(record.history, { days, now }) : []
     return {
       studentId: student.studentId, name: student.name || student.displayAlias || student.studentId,
+      classIds: [...new Set([student.classId, ...(student.classIds || [])].filter(Boolean))],
       status: record?.status || 'loading', history,
       groups: Object.fromEntries(summarizeAttentionResults(history).map(group => [group.mode, group]))
     }

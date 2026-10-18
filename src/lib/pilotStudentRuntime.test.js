@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createPilotStudentRuntime } from './pilotStudentRuntime'
+import { ATTENTION_PROTOCOLS } from './attentionProtocols'
 const focusResult = () => ({ id: 'pass-1', version: 1, mode: 'choose', startedAt: 1000, finishedAt: 21000,
   activeMs: 20000, aborted: true, summary: { hits: 1, misses: 1, wrong: 0, withheld: 1, early: 0, median: 350 } })
 
@@ -25,6 +26,28 @@ function vault() {
 }
 
 describe('pilot student runtime', () => {
+  it('appends focus checkpoints without replacing a mathematics snapshot and waits for the encrypted write before closing', async () => {
+    const store = vault()
+    let release, started
+    const writing = new Promise(resolve => { started = resolve })
+    store.appendEvent = vi.fn(() => { started(); return new Promise(resolve => { release = resolve }) })
+    const runtime = createPilotStudentRuntime({ createStore: async () => store,
+      resumeSession: async () => ({ ok: true, student: { studentId } }),
+      fetchProfile: async () => ({ ok: true, profile }), postEvents: async () => ({ ok: true, ack: [] }) })
+    await runtime.bootstrap(studentId)
+    const result = { id: 'progress-test', version: 3, mode: 'discover', startedAt: 1000, finishedAt: 1001, activeMs: 0,
+      aborted: true, completionReason: 'unfinished', trials: [], stimuli: [], events: [],
+      protocolId: 'focus-targets-1', protocol: ATTENTION_PROTOCOLS['focus-targets-1'],
+      summary: { hits: 0, misses: 0, wrong: 0, withheld: 0, early: 0, median: null } }
+    const saving = runtime.persistAttentionCheckpoint(studentId, { revision: 1, result })
+    await writing
+    const closing = runtime.close()
+    expect(store.close).not.toHaveBeenCalled()
+    expect(store.saveSnapshotAndAppendEvent).not.toHaveBeenCalled()
+    release(); await saving; await closing
+    expect(store.appendEvent).toHaveBeenCalledWith(expect.objectContaining({ type: 'attention_checkpoint' }))
+    expect(store.close).toHaveBeenCalledOnce()
+  })
   it('persists an attention pass locally, retries the same queued event and refuses another pupil', async () => {
     const store = vault()
     let saved = false, acknowledged = false

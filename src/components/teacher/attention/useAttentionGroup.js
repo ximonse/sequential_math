@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { loadTeacherProfile } from '../../../lib/storage'
+import { loadAttentionArchive } from '../../../lib/attentionArchiveClient'
 import { loadAttentionGroup } from './attentionGroup'
 
 export default function useAttentionGroup(students) {
@@ -7,7 +7,7 @@ export default function useAttentionGroup(students) {
   const [state, setState] = useState({ source: null, revision: -1, records: {} })
   useEffect(() => {
     let active = true
-    void loadAttentionGroup(students, loadTeacherProfile, (id, record) => {
+    void loadAttentionGroup(students, id => loadAttentionArchive(id, { isActive: () => active }), (id, record) => {
       setState(previous => ({ source: students, revision,
         records: { ...(previous.source === students && previous.revision === revision ? previous.records : {}), [id]: record } }))
     }, () => active)

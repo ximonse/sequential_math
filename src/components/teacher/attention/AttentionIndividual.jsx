@@ -38,10 +38,10 @@ function Timeline({ results, mode, measure }) {
   </>
 }
 
-export default function AttentionIndividual({ row, mode, reference }) {
+export default function AttentionIndividual({ row, mode, reference, initialPassId = '' }) {
   const [measure, setMeasure] = useState(mode === 'discover' ? 'time' : 'accuracy')
   const [limit, setLimit] = useState(5)
-  const [passId, setPassId] = useState('')
+  const [passId, setPassId] = useState(initialPassId)
   const results = row.history.filter(pass => pass.mode === mode)
   const selectedPass = results.find(pass => pass.id === passId) || results[0]
   return <section className="focus-individual" aria-label="Individens fokusresultat">
@@ -56,6 +56,7 @@ export default function AttentionIndividual({ row, mode, reference }) {
           {!results.length && <p>Inga sparade pass i urvalet.</p>}
           {results.slice(0, limit).map(pass => <article className="focus-pass" key={pass.id}>
             <h4>{date(pass.finishedAt)} · {attentionCompletionLabel(pass)} · {Math.round(pass.activeMs / 1000)} s{pass.mode === 'discover' && pass.version === 1 ? ' · Äldre upplägg (2 s)' : ''}</h4>
+            {pass.protocolId && <p className="focus-muted">Protokoll {pass.protocolId} · dataformat {pass.version}. Mätbeskrivning och rådata finns i exporten.</p>}
             {pass.completionReason === 'no_response' && <p className="focus-muted">Inget svar inom fem sekunder. Passet undantas från färgnivå, jämförelse och graf över fullföljda pass. Registrerade svar visas i Utveckling under passet.</p>}
             <AttentionPassStatistics result={pass} />
           </article>)}

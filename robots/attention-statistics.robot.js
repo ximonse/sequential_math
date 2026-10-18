@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
-import { createTeacher, teacherLogin } from './lib/teacher.js'
+import { createAttentionAdmin, teacherLogin } from './lib/teacher.js'
 
 test('Fokusstatistik: jämför färdiga pass med rätt nämnare, filter och tydliga avbrott', async ({ page, request, browser }, testInfo) => {
   const classId = `stats-${Math.random().toString(36).slice(2, 8)}`
@@ -30,7 +30,7 @@ test('Fokusstatistik: jämför färdiga pass med rätt nämnare, filter och tydl
   const context = await browser.newContext({ hasTouch: true, viewport: { width: 1024, height: 768 } })
   const teacherPage = await context.newPage()
   try {
-    await teacherLogin(teacherPage, await createTeacher(request, { classIds: [classId] }))
+    await teacherLogin(teacherPage, await createAttentionAdmin(request, { classIds: [classId] }))
     await teacherPage.goto(`/teacher/student/${pupil.studentId}`)
     const panel = teacherPage.getByRole('region', { name: 'Fokusaktiviteter', exact: true })
     const overview = panel.getByTestId('attention-overview-choose')

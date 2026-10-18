@@ -40,6 +40,7 @@ function ReissuedCredentialCard({ credential }) {
 }
 
 export default function StudentDetailPanel({
+  canViewAttentionResults = false,
   sectionId = 'teacher-student-detail-section',
   detailStudentId,
   detailStudentOptions,
@@ -175,7 +176,7 @@ export default function StudentDetailPanel({
           />
 
           <StudentDetailTrendPanel trend={detailStudentViewData.dailyTrend} />
-          <StudentAttentionHistoryPanel key={detailStudentProfile.studentId} history={detailStudentProfile.attentionHistory} />
+          {canViewAttentionResults && <StudentAttentionHistoryPanel key={detailStudentProfile.studentId} history={detailStudentProfile.attentionHistory} />}
 
           <StudentDetailHistoryPanel
             renderCollapseHeader={renderCollapseHeader}

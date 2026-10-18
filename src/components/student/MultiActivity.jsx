@@ -122,7 +122,7 @@ export default function MultiActivity({ onClose, onBack, studentId }) {
             <p className="focus-muted my-4">Dutta på vänster eller höger skärmhalva. På tangentbordet använder du piltangenterna. Du har fyra sekunder per uppgift.</p>
             <p className="focus-muted mb-5 text-sm">Öva först: fyra formuppgifter, fyra antalsuppgifter och åtta blandade. Sedan följer ett tvåminuterspass.</p>
             <p className="focus-muted mb-5 text-sm">Vid feltryck får du en påminnelse om rätt regel och en kort paus innan nästa uppgift.</p>
-            <p className="focus-muted mb-5 text-sm">Passets resultat och svarens tidpunkter sparas till din lärare. Introduktionen sparas inte.</p>
+            <p className="focus-muted mb-5 text-sm">Passets resultat och svarens tidpunkter sparas. Introduktionen sparas inte.</p>
             <button className="focus-action w-full" onClick={() => act(() => session.practice())}>Öva reglerna</button>
           </>}
           {session.phase === 'ready' && <><h2 className="text-2xl font-semibold">Redo att växla?</h2><p className="focus-muted my-4">Figur i övre rutan → titta på formen. Figur i nedre rutan → räkna prickarna. Vid feltryck får du en kort regelpåminnelse. Passet pågår i två minuter.</p><button className="focus-action w-full" onClick={() => act(() => session.start())}>Starta MULTI</button></>}

@@ -4,12 +4,12 @@ import { isStudentDeleted, mutateStudentRecord, studentStoreError } from '../_st
 import { assertTeacherStudentAccess } from '../_studentAccess.js'
 import {
   getLiveTeacherAuthPayload,
-  isLiveTeacherApiAuthorized,
   withCors
 } from '../_helpers.js'
 import { withFreshTeacherSummary } from '../../src/lib/teacherSummary.js'
 import { retirePupil } from '../_pupilLifecycle.js'
 import { isSuperAdminRole } from '../_teacherRoles.js'
+import { attentionProfileForViewer } from '../../src/lib/attentionAccess.js'
 import {
   STUDENT_PASSWORD_SCHEME,
   hasCurrentStudentPassword,
@@ -55,7 +55,8 @@ export default async function handler(req, res) {
   try {
     const stored = await kv.get(`student:${studentId}`)
     const existing = isCurrentStudentProfile(stored) ? stored : null
-    const teacherAuthorized = await isLiveTeacherApiAuthorized(req)
+    const teacherAuth = await getLiveTeacherAuthPayload(req)
+    const teacherAuthorized = Boolean(teacherAuth)
     const studentPassword = String(req.headers['x-student-password'] || '')
 
     if (req.method === 'DELETE' || (req.method === 'PATCH' && req.body?.action === 'anonymize')) {
@@ -73,9 +74,9 @@ export default async function handler(req, res) {
       if (!existing) return res.status(200).json({ profile: null })
       if (teacherAuthorized) await assertTeacherStudentAccess(req, existing)
       if (!teacherAuthorized && !await verifyStudentCredential(existing, studentPassword)) return res.status(401).json({ error: 'Unauthorized' })
-      return res.status(200).json({
-        profile: sanitizeStudentProfileForResponse(addLegacyClassAttribution(withFreshTeacherSummary(existing)))
-      })
+      res.setHeader('Cache-Control', 'no-store')
+      const safeProfile = sanitizeStudentProfileForResponse(addLegacyClassAttribution(withFreshTeacherSummary(existing)))
+      return res.status(200).json({ profile: teacherAuthorized ? attentionProfileForViewer(safeProfile, teacherAuth) : safeProfile })
     }
 
     if (req.method === 'PATCH') {
@@ -152,7 +153,8 @@ export default async function handler(req, res) {
         }
         return normalizeProfileForStorage(withFreshTeacherSummary(merged), studentId, studentPassword)
       })
-      return res.status(200).json({ ok: true, profile: sanitizeStudentProfileForResponse(saved) })
+      const safeProfile = sanitizeStudentProfileForResponse(saved)
+      return res.status(200).json({ ok: true, profile: teacherAuthorized ? attentionProfileForViewer(safeProfile, teacherAuth) : safeProfile })
     }
 
     return res.status(405).json({ error: 'Method not allowed' })

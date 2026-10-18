@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
-import { createTeacher, teacherLogin } from './lib/teacher.js'
+import { createTeacher, createAttentionAdmin, teacherLogin } from './lib/teacher.js'
 
 const math = profile => Object.fromEntries(Object.entries(profile).filter(([key]) => /problem|mastery|level|abilit|stats|subitizing/i.test(key)))
 const open = page => page.getByRole('button', { name: /^Fokuspunkten – 2 min/ }).tap()
@@ -62,7 +62,7 @@ test('Historik: fokus, kontroll och MULTI överlever omladdning och visas endast
   const context = await browser.newContext()
   const teacherPage = await context.newPage()
   try {
-    const teacher = await createTeacher(request, { classIds: [classId] })
+    const teacher = await createAttentionAdmin(request, { classIds: [classId] })
     await teacherLogin(teacherPage, teacher)
     await teacherPage.goto(`/teacher/student/${pupil.studentId}`)
     await expect(teacherPage.getByTestId('attention-history-row')).toHaveCount(3)

@@ -1,13 +1,28 @@
 // Teacher helpers: log in, pick class and tab, read a table by its heading.
 import { expect } from '@playwright/test'
 
-export async function createTeacher(request, { classIds }) {
+export async function createTeacher(request, { classIds, role = 'teacher' }) {
   const id = `larare-${Math.random().toString(36).slice(2, 8)}`
-  const response = await request.post('/__robot/teacher', { data: { id, classIds } })
+  const response = await request.post('/__robot/teacher', { data: { id, classIds, role } })
   return response.json()
 }
 
+export async function createAttentionAdmin(request, { classIds }) {
+  return { ...await createTeacher(request, { classIds, role: 'super_admin' }), attentionFixtureClassIds: classIds }
+}
+
 export async function teacherLogin(page, teacher) {
+  if (teacher.attentionFixtureClassIds) {
+    // Keep synthetic comparison cohorts independent of other parallel robot fixtures.
+    // Production authorization and the real security robot still use unfiltered APIs.
+    await page.route('**/api/students*', async route => {
+      const response = await route.fetch()
+      const data = await response.json()
+      if (Array.isArray(data.profiles)) data.profiles = data.profiles.filter(profile =>
+        [profile.classId, ...(profile.classIds || [])].some(id => teacher.attentionFixtureClassIds.includes(id)))
+      await route.fulfill({ response, json: data })
+    })
+  }
   await page.goto('/teacher-login')
   await page.getByPlaceholder('t.ex. anna.larare').fill(teacher.username)
   await page.locator('input[type=password]').fill(teacher.password)

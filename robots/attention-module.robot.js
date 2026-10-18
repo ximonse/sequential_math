@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
-import { createTeacher, selectOnlyClass, teacherLogin } from './lib/teacher.js'
+import { createTeacher, createAttentionAdmin, selectOnlyClass, teacherLogin } from './lib/teacher.js'
 
 test('Fokusmodul: gruppmatris, individer, diagram, gruppbyte, fel och oförändrad elevdata', async ({ page, request }, testInfo) => {
   const suffix = Math.random().toString(36).slice(2, 8)
@@ -25,7 +25,7 @@ test('Fokusmodul: gruppmatris, individer, diagram, gruppbyte, fel och oförändr
     }, results)).toBe(200)
   }
   const before = await Promise.all(pupils.map(pupil => readServerProfile(request, pupil.studentId)))
-  await teacherLogin(page, await createTeacher(request, { classIds: [classA, classB] }))
+  await teacherLogin(page, await createAttentionAdmin(request, { classIds: [classA, classB] }))
   await selectOnlyClass(page, 'Fokusgrupp A')
   await page.getByRole('button', { name: /^Fokusövningar/ }).click()
   await expect(page).toHaveURL(/\/teacher\/focus$/)
@@ -102,7 +102,7 @@ test('Fokusfärger: försiktiga dagsmönster, dolda siffror, gruppoberoende och 
     }, results)).toBe(200)
   }
   const before = await Promise.all(pupils.map(pupil => readServerProfile(request, pupil.studentId)))
-  await teacherLogin(page, await createTeacher(request, { classIds: [classId, otherClass] }))
+  await teacherLogin(page, await createAttentionAdmin(request, { classIds: [classId, otherClass] }))
   await page.getByRole('button', { name: /^Fokusövningar/ }).click()
   const panel = page.getByRole('region', { name: 'Fokusövningar', exact: true })
   await expect(panel.getByRole('status')).toHaveText('5 av 5 elever hämtade')
@@ -134,23 +134,14 @@ test('Fokusmodulen kräver lärarinloggning', async ({ page }) => {
   await expect(page).toHaveURL(/\/teacher-login$/)
 })
 
-test('Fokusgruppen visar bara elever läraren har åtkomst till', async ({ page, request }) => {
-  const suffix = Math.random().toString(36).slice(2, 8)
-  const ownClass = `own-focus-${suffix}`
-  const own = await createPupil(request, { classId: ownClass, operations: ['addition'] })
-  const other = await createPupil(request, { classId: `other-focus-${suffix}`, operations: ['addition'] })
-  await teacherLogin(page, await createTeacher(request, { classIds: [ownClass] }))
-  await page.getByRole('button', { name: /^Fokusövningar/ }).click()
-  const panel = page.getByRole('region', { name: 'Fokusövningar', exact: true })
-  await expect(panel.getByRole('status')).toHaveText('1 av 1 elever hämtade')
-  await expect(panel.getByTestId('focus-group-row')).toHaveCount(1)
-  await expect(panel.getByRole('combobox', { name: 'Elev i fokusmodulen' }).locator('option')).toHaveCount(2)
-  const status = await page.evaluate(async studentId => (await fetch(`/api/teacher-students/${studentId}`, {
-    headers: { 'x-teacher-token': sessionStorage.getItem('mathapp_teacher_api_token') }
-  })).status, other.studentId)
-  expect(status).toBe(403)
-  await panel.getByRole('combobox', { name: 'Elev i fokusmodulen' }).selectOption(own.studentId)
-  await expect(panel.getByRole('region', { name: 'Individens fokusresultat' })).toContainText('Inga färdiga pass')
+test('Fokusgruppen döljs för lärare, även via direktlänk', async ({ page, request }) => {
+  const classId = `own-focus-${Math.random().toString(36).slice(2, 8)}`
+  await createPupil(request, { classId, operations: ['addition'] })
+  await teacherLogin(page, await createTeacher(request, { classIds: [classId] }))
+  await expect(page.getByRole('button', { name: /^Fokusövningar/ })).toHaveCount(0)
+  await page.goto('/teacher/focus')
+  await expect(page.getByRole('region', { name: 'Fokusövningar', exact: true })).toHaveCount(0)
+  await expect(page.getByText('Fokusresultat är endast tillgängliga för huvudadmin.')).toBeVisible()
 })
 
 test('Lokal fokusjämförelse: hela lärarunderlaget, stabila gruppval, röda/orange signaler och saknade läsningar', async ({ page, request }, testInfo) => {
@@ -173,7 +164,7 @@ test('Lokal fokusjämförelse: hela lärarunderlaget, stabila gruppval, röda/or
     }, results)).toBe(200)
   }
   const before = await Promise.all(pupils.map(pupil => readServerProfile(request, pupil.studentId)))
-  await teacherLogin(page, await createTeacher(request, { classIds: [classA, classB] }))
+  await teacherLogin(page, await createAttentionAdmin(request, { classIds: [classA, classB] }))
   await selectOnlyClass(page, 'Referensgrupp A')
   await page.getByRole('button', { name: /^Fokusövningar/ }).click()
   const panel = page.getByRole('region', { name: 'Fokusövningar', exact: true })
@@ -241,7 +232,7 @@ test('FOKUS-svarstid: röda/orange giltiga svar och signaldiagram för alla tre 
     }, results)).toBe(200)
   }
   const before = await Promise.all(pupils.map(pupil => readServerProfile(request, pupil.studentId)))
-  await teacherLogin(page, await createTeacher(request, { classIds: [classId] }))
+  await teacherLogin(page, await createAttentionAdmin(request, { classIds: [classId] }))
   await page.getByRole('button', { name: /^Fokusövningar/ }).click()
   const panel = page.getByRole('region', { name: 'Fokusövningar', exact: true })
   const red = panel.getByTestId(`focus-signal-${pupils[0].studentId}-discover-go`)

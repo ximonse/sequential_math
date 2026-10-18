@@ -86,7 +86,7 @@ function FocusAttempt({ onClose, studentId, restart, onRestart }) {
           <h2 className="text-2xl font-semibold">Välj din uppvärmning</h2>
           <p className="mt-4 text-[#cbd5e1]">Titta på punkten och dutta var som helst på skärmen vid rätt signal. Du får blinka normalt. På tangentbordet använder du mellanslag eller Enter.</p>
           <p className="mt-3 text-[#cbd5e1]">Du provar tre signaler först. Sedan följer två minuter. Väntan blandas och ökar från 3–10 till 3–20 sekunder under passet.</p>
-          <p className="mt-3 text-sm text-[#cbd5e1]">Passets resultat och svarens tidpunkter sparas till din lärare. Introduktionen sparas inte.</p>
+          <p className="mt-3 text-sm text-[#cbd5e1]">Passets resultat och svarens tidpunkter sparas. Introduktionen sparas inte.</p>
           <div className="mt-6 grid gap-3">
             <button className="focus-choice" onClick={() => act(() => session.practice('discover'))}><span className="block text-lg font-semibold">1 - FOKUS</span><span className="mt-1 block text-sm focus-muted">Dutta när den vita cirkeln blir grön.</span></button>
             <button className="focus-choice" onClick={() => act(() => session.practice('choose'))}><span className="block text-lg font-semibold">2 - KONTROLL</span><span className="mt-1 block text-sm focus-muted">Dutta vid grön cirkel. Avstå vid röd cirkel eller grön fyrkant.</span></button>

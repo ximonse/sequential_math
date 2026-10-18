@@ -3,12 +3,15 @@ import { getLiveTeacherAuthPayload, withCors } from '../_helpers.js'
 import { assertTeacherStudentAccess } from '../_studentAccess.js'
 import { isCurrentStudentProfile } from '../../src/lib/studentProfileContract.js'
 import { withFreshTeacherSummary } from '../../src/lib/teacherSummary.js'
+import { attentionProfileForViewer } from '../../src/lib/attentionAccess.js'
 
 export default async function handler(req, res) {
   withCors(res, { methods: 'GET,OPTIONS', headers: 'Content-Type,x-teacher-token' }, req)
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
-  if (!await getLiveTeacherAuthPayload(req)) return res.status(401).json({ error: 'Teacher authorization required' })
+  const teacher = await getLiveTeacherAuthPayload(req)
+  if (!teacher) return res.status(401).json({ error: 'Teacher authorization required' })
+  res.setHeader('Cache-Control', 'no-store')
 
   const studentId = String(req.query?.studentId || '').trim().toUpperCase()
   if (!studentId) return res.status(400).json({ error: 'Missing studentId' })
@@ -21,7 +24,7 @@ export default async function handler(req, res) {
       const { passwordHash, passwordSalt, passwordScheme, password, ...auth } = safeProfile.auth
       safeProfile.auth = auth
     }
-    return res.status(200).json({ profile: safeProfile })
+    return res.status(200).json({ profile: attentionProfileForViewer(safeProfile, teacher) })
   } catch (error) {
     return res.status(error.status || 500).json({ error: error.status ? error.message : 'Storage backend unavailable' })
   }

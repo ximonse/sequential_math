@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile, readState, next } from './lib/app.js'
 import { createFindings } from './lib/findings.js'
 import { answerTasks, waitForServerAnswers } from './lib/session.js'
-import { createTeacher, teacherLogin } from './lib/teacher.js'
+import { createAttentionAdmin, teacherLogin } from './lib/teacher.js'
 
 const FOCUS = 'Fokuspunkten – 2 min'
 const point = page => page.getByTestId('focus-point')
@@ -36,7 +36,7 @@ test('FOKUS: fem sekunder ger omstartsfråga och separat försök utan miss elle
   const context = await browser.newContext()
   try {
     const teacher = await context.newPage()
-    await teacherLogin(teacher, await createTeacher(request, { classIds: [classId] }))
+    await teacherLogin(teacher, await createAttentionAdmin(request, { classIds: [classId] }))
     await teacher.getByRole('button', { name: /^Fokusövningar/ }).click()
     const panel = teacher.getByRole('region', { name: 'Fokusövningar', exact: true })
     const cell = panel.getByTestId(`focus-signal-${pupil.studentId}-discover-go`)
@@ -102,7 +102,7 @@ test('FOKUS: läraren ser längre svar efter en minut i fullföljt pass', async 
   const context = await browser.newContext()
   try {
     const teacher = await context.newPage()
-    await teacherLogin(teacher, await createTeacher(request, { classIds: [classId] }))
+    await teacherLogin(teacher, await createAttentionAdmin(request, { classIds: [classId] }))
     await teacher.getByRole('button', { name: /^Fokusövningar/ }).click()
     await teacher.getByTestId(`focus-signal-${pupil.studentId}-discover-go`).click()
     const endurance = teacher.getByRole('region', { name: 'Utveckling under passet', exact: true })

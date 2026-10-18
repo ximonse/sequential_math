@@ -31,6 +31,7 @@ import { ActivityBadge, RiskBadge } from './dashboardStatusBadges'
 import { getOperationLabel } from '../../../lib/operations'
 import { getTeacherIdentity, isTeacherAdmin } from '../../../lib/teacherAuth'
 import { getTeacherRoleLabel } from '../../../lib/teacherRoles'
+import { canViewAttentionResults } from '../../../lib/attentionAccess'
 
 const PANEL_DEFS = [
   { id: 'support',     title: 'Behöver stöd nu' },
@@ -38,7 +39,7 @@ const PANEL_DEFS = [
   { id: 'detail',      title: 'Elevprofil' },
   { id: 'results',     title: 'Resultat och export' },
   { id: 'mathresults', title: 'Matematikövningar — Resultat' },
-  { id: 'focus', title: 'Fokusövningar' },
+  { id: 'focus', title: 'Fokusövningar', attentionOnly: true },
   { id: 'assignments', title: 'Uppdrag' },
   { id: 'tickets',     title: 'Tickets' },
   { id: 'mastery',     title: 'Nivåöversikt – hela klassen' },
@@ -59,7 +60,7 @@ const PANEL_DEFS = [
 
 const WORKSPACES = [
   { id: 'progress', label: 'Framsteg', description: 'Kunskapsområden och elever', panels: ['mastery', 'tableoverview', 'detail', 'overview', 'tabledev'] },
-  { id: 'focus', label: 'Fokusövningar', description: 'Grupp, individ och pass', panels: ['focus'] },
+  { id: 'focus', label: 'Fokusövningar', description: 'Grupp, individ och pass', panels: ['focus'], attentionOnly: true },
   { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'mathresults', 'tickets'] },
   { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality'] },
   { id: 'ncm', label: 'Screening', description: 'Screening och analys av elevens uträkning', panels: ['ncm-grid'], adminOnly: true },
@@ -171,6 +172,7 @@ export default function DashboardLayout({
 }) {
   const teacherIsAdmin = isTeacherAdmin()
   const teacherIdentity = getTeacherIdentity()
+  const canViewAttention = canViewAttentionResults(teacherIdentity)
   const teacherName = String(teacherIdentity.displayName || 'Lärare').trim() || 'Lärare'
   const teacherRole = getTeacherRoleLabel(teacherIdentity.role)
   const [activeWorkspace, setActiveWorkspace] = useState(() => isFocusView ? 'focus' : 'progress')
@@ -205,7 +207,7 @@ export default function DashboardLayout({
     setActiveWorkspace('progress')
     window.setTimeout(() => document.getElementById('table-practice-progress')?.scrollIntoView({ behavior: 'smooth' }), 0)
   }
-  const visiblePanelDefs = PANEL_DEFS.filter(panel => !panel.adminOnly || teacherIsAdmin)
+  const visiblePanelDefs = PANEL_DEFS.filter(panel => (!panel.adminOnly || teacherIsAdmin) && (!panel.attentionOnly || canViewAttention))
   const surfaceClass = teacherIdentity.role === 'super_admin'
     ? 'teacher-dashboard-surface--super-admin'
     : teacherIsAdmin
@@ -260,7 +262,7 @@ export default function DashboardLayout({
   }
 
   function renderPanelContent(id) {
-    if (id === 'focus') return <AttentionModule students={tableProgressStudents} allStudents={students} />
+    if (id === 'focus') return canViewAttention ? <AttentionModule students={tableProgressStudents} allStudents={students} /> : null
     if (id === 'overview') return (
       <ClassOverviewPanel
         classOverviewMeta={classOverviewMeta}
@@ -296,6 +298,7 @@ export default function DashboardLayout({
     )
     if (id === 'detail') return (
       <StudentDetailPanel
+        canViewAttentionResults={canViewAttention}
         sectionId="teacher-student-detail-section"
         detailStudentId={detailStudentId}
         detailStudentOptions={detailStudentOptions}
@@ -534,7 +537,7 @@ export default function DashboardLayout({
           <aside className="rounded-lg bg-slate-800 p-2 text-slate-100 lg:sticky lg:top-3 lg:h-fit">
               <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">Arbetsläge</p>
               <nav className="grid gap-1" aria-label="Lärarvy">
-                {WORKSPACES.filter(workspace => !workspace.adminOnly || teacherIsAdmin).map(workspace => (
+                {WORKSPACES.filter(workspace => (!workspace.adminOnly || teacherIsAdmin) && (!workspace.attentionOnly || canViewAttention)).map(workspace => (
                   <button key={workspace.id} type="button" onClick={() => {
                     setActiveWorkspace(workspace.id)
                     if (workspace.id === 'focus') navigate('/teacher/focus')
@@ -556,6 +559,7 @@ export default function DashboardLayout({
 
             {activeWorkspace === 'progress' && import.meta.env.DEV && renderProgressModule('testdata', 'Lokal testdata', <LocalTestDataPanel mode="import" onImported={onLocalTestDataImported} />)}
 
+            {activeWorkspace === 'focus' && !canViewAttention && <p role="status">Fokusresultat är endast tillgängliga för huvudadmin.</p>}
             {WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
               .filter(id => visiblePanelDefs.some(panel => panel.id === id))
               .map(id => activeWorkspace === 'progress'

@@ -57,6 +57,7 @@ vi.mock('./_helpers.js', () => ({
 }))
 
 import studentHandler from './student/[studentId].js'
+import teacherStudentHandler from './teacher-students/[studentId].js'
 import eventsHandler from './student/[studentId]/events.js'
 import rosterHandler from './student-roster.js'
 import classResetHandler from './student-class-reset.js'
@@ -111,6 +112,32 @@ beforeEach(async () => {
 })
 
 describe('student persistence boundary', () => {
+  it('returns attention history only to a live super admin across both teacher profile read paths and legacy write responses', async () => {
+    const attentionHistory = [{ id: 'private-result', version: 1, mode: 'choose', startedAt: 1000, finishedAt: 121000,
+      activeMs: 120000, aborted: false, summary: { hits: 8, misses: 0, wrong: 0, withheld: 2, early: 0, median: 300 } }]
+    memory.set('student:PUPIL', { ...memory.get('student:PUPIL'), attentionHistory })
+    for (const identity of [
+      { ...owner, role: 'teacher', attentionResults: true },
+      { teacherId: 'school', role: 'school_admin', isAdmin: true, schoolIds: ['S'] },
+      { teacherId: 'head', role: 'super_admin', isAdmin: true },
+      admin
+    ]) {
+      const allowed = identity.role === 'super_admin' || identity === admin
+      for (const handler of [teacherStudentHandler, studentHandler]) {
+        const res = await call(handler, 'GET', {}, identity)
+        expect(res.code).toBe(200)
+        expect(res.data.profile.studentId).toBe('PUPIL')
+        expect(Object.hasOwn(res.data.profile, 'attentionHistory')).toBe(allowed)
+        expect(res.headers['Cache-Control']).toBe('no-store')
+      }
+      const saved = await call(studentHandler, 'POST', { profile: memory.get('student:PUPIL') }, identity)
+      expect(saved.code).toBe(200)
+      expect(Object.hasOwn(saved.data.profile, 'attentionHistory')).toBe(allowed)
+      expect(memory.get('student:PUPIL').attentionHistory).toEqual(attentionHistory)
+    }
+    expect((await call(teacherStudentHandler, 'GET', {}, null)).code).toBe(401)
+    expect((await call(studentHandler, 'GET', {}, null)).data.profile.attentionHistory).toEqual(attentionHistory)
+  })
   it('allows a teacher to update a pupil name while allowing class names to change', async () => {
     const pupil = await call(studentHandler, 'PATCH', { serverRevision: 0, changes: { name: 'New name' } }, owner)
     expect(pupil.code).toBe(200)

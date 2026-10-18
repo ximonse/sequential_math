@@ -3,6 +3,38 @@
 Simon godkände sparad lärarhistorik för FOKUS, KONTROLL och MULTI 2026-10-14,
 efter den första produktionsversionen med tillfälliga resultat.
 
+## Resultatåtkomst 2026-10-18
+
+Endast huvudadmin (`super_admin`) får läsa sparade fokusresultat i personalens
+vyer. Det gäller både Fokusövningar och fokuspanelen i elevprofilen, även när
+huvudadmin arbetar i vanlig lärarvy. Vanliga lärare och skoladmin får inte
+`attentionHistory` via lärarprofilens GET eller äldre profil-GET/POST-svar.
+Servern kontrollerar aktuellt autentiserat konto; att ändra vy ger ingen rätt.
+Elevens egen återkoppling och befintliga spar-/synkflöde ändras inte.
+
+**Projektminne för framtiden:** Simon kan senare vilja ge särskilt utvalda
+lärare uttrycklig läsrätt. Det är dokumenterat men inte aktiverat; varken
+lärarroll, skoladminroll eller klasstillhörighet räcker idag. Vid framtida
+utökning behövs serverkontrollerad tilldelning/återkallelse och elevavgränsning.
+
+Se [förslaget om pedagogiska uppföljningssignaler](ATTENTION_MEASUREMENT_PROPOSAL.md).
+Mätförslaget är inte implementerat. Äldre text om läraråtkomst längre ned är
+historik och ersätts i denna punkt av begränsningen ovan. Ändringen är lokal,
+inte publicerad.
+
+Lokalt verifierat 2026-10-18: 154 testfiler/746 tester, build, riktad ESLint,
+arkitektur och projektkarta passerar. Hela robotsviten 115/115 godkänd med
+0 regelbrott. Nya åtkomstroboten var röd före rättningen och verifierar nu
+nekad visning för vanlig lärare via meny, elevprofil och direktlänk, båda
+profil-API:ernas filtrering av fokusfältet samt huvudadmins åtkomst i vanlig lärarvy.
+API-test täcker också skoladmin och äldre profil-POST-svar. Elevens sparade
+historik bevaras. Ett inledande historiksparfel kunde inte reproduceras i
+isolerad omkörning 5/5 eller i den gröna fullsviten; orsaken är inte fastställd.
+Positiva färg-/historikrobotar använder nu huvudadmin med isolerade syntetiska
+jämförelsegrupper; säkerhetsroboten använder ofiltrerade profil-API:er.
+Bygget har befintliga Browserslist/import-/bundlestorleksvarningar.
+Ingen push eller publicering har gjorts.
+
 ## Utveckling under passet och FOKUS-svarstid 2026-10-16
 
 Aktuell lokal vidareutveckling ersätter tidigare FOKUS-färg baserad på träffandel.

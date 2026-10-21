@@ -1,15 +1,15 @@
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
-import { createDiagnosticAssignment } from './_diagnosticAssignmentStore.js'
+import { createDiagnosticAssignment, stopDiagnosticAssignment } from './_diagnosticAssignmentStore.js'
 import { diagnosticApiEnabled, diagnosticAssignablePupilsInClass } from './_diagnosticApiAccess.js'
 import { listClassDiagnosticAssignments } from './_diagnosticAssignmentList.js'
 import { isSchoolAdminRole } from './_teacherRoles.js'
 
 export default async function handler(req, res) {
-  withCors(res, { methods: 'GET,POST,OPTIONS', headers: 'Content-Type,x-teacher-token' }, req)
+  withCors(res, { methods: 'GET,POST,PATCH,OPTIONS', headers: 'Content-Type,x-teacher-token' }, req)
   res.setHeader('Cache-Control', 'no-store')
   if (req.method === 'OPTIONS') return res.status(204).end()
-  if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+  if (!['GET', 'POST', 'PATCH'].includes(req.method)) return res.status(405).json({ error: 'Method not allowed' })
   if (!diagnosticApiEnabled()) return res.status(404).json({ error: 'Diagnostic pilot is unavailable' })
   try {
     const auth = await getLiveTeacherAuthPayload(req)
@@ -27,6 +27,12 @@ export default async function handler(req, res) {
       const roster = await diagnosticAssignablePupilsInClass(classId, { wholeClass: true })
       return res.status(200).json({ assignments, testStudentIds: allowed,
         classStudentCount: roster.length, wholeClassAvailable: roster.length > 0 && roster.every(id => allowed.includes(id)) })
+    }
+    if (req.method === 'PATCH') {
+      if (req.body?.status !== 'stopped') return res.status(400).json({ error: 'Only stopping is supported' })
+      const assignment = await stopDiagnosticAssignment({ classId,
+        assignmentId: req.body?.assignmentId, teacherId: auth.teacherId })
+      return res.status(200).json({ assignment })
     }
     const assignable = await diagnosticAssignablePupilsInClass(classId)
     const studentIds = req.body?.audience === 'class'

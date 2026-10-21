@@ -105,6 +105,20 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
     } finally { setBusy(false) }
   }
 
+  async function stopAssignment(assignment) {
+    if (busy || !window.confirm(`Stäng "${assignment.titleSv || 'Screening'}"? Eleverna ser den inte längre och kan inte fortsätta. Sparade svar finns kvar för genomgång.`)) return
+    setBusy(true)
+    try {
+      const result = await request('/api/teacher-diagnostic-assignments', { method: 'PATCH',
+        body: JSON.stringify({ classId, assignmentId: assignment.assignmentId, status: 'stopped' }) })
+      if (!result.ok) throw new Error(result.data.error || 'Kunde inte stänga screeningen.')
+      setAssignments(previous => previous.map(item => item.assignmentId === assignment.assignmentId ? result.data.assignment : item))
+      setStatus(`${assignment.titleSv || 'Screeningen'} är stängd.`)
+    } catch (error) {
+      setStatus(error.message || 'Kunde inte stänga screeningen.')
+    } finally { setBusy(false) }
+  }
+
   async function openEvidence(attempt) {
     const selection = selectionRef.current
     setDetail(null)
@@ -216,7 +230,9 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
       <h3 className="font-semibold">Tilldelningar i klassen</h3>
       <ul className="mt-1 list-inside list-disc">
         {assignments.map(assignment => <li key={assignment.assignmentId}>
-          {assignment.titleSv || 'Screening'} · {assignment.items.length} uppgift{assignment.items.length === 1 ? '' : 'er'} · {assignment.status === 'active' ? 'aktiv' : 'stoppad'} · {assignment.assignmentId}
+          {assignment.titleSv || 'Screening'} · {assignment.items.length} uppgift{assignment.items.length === 1 ? '' : 'er'} · {assignment.status === 'active' ? 'aktiv' : 'stängd'} · {assignment.assignmentId}
+          {assignment.status === 'active' && <button type="button" onClick={() => stopAssignment(assignment)} disabled={busy}
+            className="ml-2 rounded border border-slate-400 bg-white px-2 py-0.5 text-xs text-slate-800 disabled:opacity-50">Stäng</button>}
         </li>)}
       </ul>
     </div>}

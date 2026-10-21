@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocked = vi.hoisted(() => ({ teacher: vi.fn(), classAccess: vi.fn(), create: vi.fn(),
   pupil: vi.fn(), origin: vi.fn(), csrf: vi.fn(), open: vi.fn(), read: vi.fn(),
-  append: vi.fn(), pupilAccess: vi.fn(), listClass: vi.fn(), listPupil: vi.fn(), testStudents: vi.fn() }))
+  append: vi.fn(), pupilAccess: vi.fn(), listClass: vi.fn(), listPupil: vi.fn(), testStudents: vi.fn(), stop: vi.fn() }))
 vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mocked.teacher, withCors: vi.fn() }))
 vi.mock('./_studentAccess.js', () => ({ canAccessClass: mocked.classAccess }))
 vi.mock('./_studentSession.js', () => ({ getLiveStudentSession: mocked.pupil,
   requestOriginIsTrusted: mocked.origin, hasStudentCsrf: mocked.csrf }))
 vi.mock('./_diagnosticAssignmentStore.js', () => ({ createDiagnosticAssignment: mocked.create,
-  openDiagnosticAttempt: mocked.open }))
+  openDiagnosticAttempt: mocked.open, stopDiagnosticAssignment: mocked.stop }))
 vi.mock('./_diagnosticAttemptStore.js', () => ({ readDiagnosticAttempt: mocked.read,
   appendDiagnosticAttempt: mocked.append }))
 vi.mock('./_diagnosticApiAccess.js', () => ({ diagnosticApiEnabled: () => process.env.NCM_DIAGNOSTIC_API_ENABLED === 'true',
@@ -64,6 +64,24 @@ describe('diagnostic pilot API boundary', () => {
     expect(res.code).toBe(403)
     expect(mocked.create).not.toHaveBeenCalled()
   })
+  it('stops an assignment only for a teacher with class access', async () => {
+    process.env.NCM_DIAGNOSTIC_API_ENABLED = 'true'
+    mocked.stop.mockResolvedValue({ assignmentId: 'ASSIGNMENT', status: 'stopped' })
+    const unknown = response()
+    await teacherHandler({ method: 'PATCH', headers: {}, body: { classId: 'CLASS', assignmentId: 'ASSIGNMENT', status: 'active' } }, unknown)
+    expect(unknown.code).toBe(400)
+    mocked.classAccess.mockResolvedValueOnce(false)
+    const noClass = response()
+    await teacherHandler({ method: 'PATCH', headers: {}, body: { classId: 'CLASS', assignmentId: 'ASSIGNMENT', status: 'stopped' } }, noClass)
+    expect(noClass.code).toBe(403)
+    expect(mocked.stop).not.toHaveBeenCalled()
+    const stopped = response()
+    await teacherHandler({ method: 'PATCH', headers: {}, body: { classId: 'CLASS', assignmentId: 'ASSIGNMENT', status: 'stopped' } }, stopped)
+    expect(stopped.code).toBe(200)
+    expect(stopped.data.assignment.status).toBe('stopped')
+    expect(mocked.stop).toHaveBeenCalledWith({ classId: 'CLASS', assignmentId: 'ASSIGNMENT', teacherId: 'TEACHER' })
+  })
+
   it('is closed by default before pupil deletion and archive integration', async () => {
     const teacher = response(), pupil = response()
     await teacherHandler({ method: 'POST', headers: {}, body: {} }, teacher)

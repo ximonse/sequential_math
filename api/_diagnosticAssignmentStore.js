@@ -83,6 +83,19 @@ redis.call('SADD', KEYS[11], ARGV[8])
 return 'created:' .. ARGV[8]
 `
 
+// Stopping writes a JS-built record, so the script re-checks that status and
+// pupil list are unchanged; a concurrent pupil removal must not be undone.
+export const STOP_DIAGNOSTIC_ASSIGNMENT_SCRIPT = `
+local raw = redis.call('GET', KEYS[1])
+if not raw then return -1 end
+local assignment = cjson.decode(raw)
+if assignment.classId ~= ARGV[1] then return -1 end
+if assignment.status ~= 'active' then return 0 end
+if table.concat(assignment.studentIds, ',') ~= ARGV[2] then return -2 end
+redis.call('SET', KEYS[1], ARGV[3])
+return 1
+`
+
 const idPattern = /^[A-Za-z0-9_-]{1,128}$/u
 const newId = () => randomBytes(16).toString('hex')
 const fail = (status, code, message) => { throw new DiagnosticAppendError(status, code, message) }
@@ -142,6 +155,24 @@ export async function createDiagnosticAssignment({ classId, studentIds, taskIds,
   if (result === -3 || result === -4 || result === -5) fail(409, 'student_unavailable', 'Diagnostic pupil is unavailable in this class')
   if (result !== 1) fail(409, 'assignment_conflict', 'Diagnostic assignment ID already exists')
   return assignment
+}
+
+// Pupils lose the assignment and cannot write to it; saved attempts, events and
+// reviews stay so the teacher can still go through them.
+export async function stopDiagnosticAssignment({ classId, assignmentId, teacherId }, { store = kv } = {}) {
+  if (![classId, assignmentId, teacherId].every(validId)) fail(400, 'invalid_identity', 'Invalid diagnostic assignment identity')
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const assignment = await store.get(`diagnostic_assignment:${assignmentId}`)
+    if (!assignment || assignment.classId !== classId) fail(404, 'assignment_unavailable', 'Diagnostic assignment is unavailable')
+    if (assignment.status !== 'active') return assignment
+    const stopped = { ...assignment, status: 'stopped', stoppedAt: Date.now(), stoppedBy: teacherId }
+    const result = Number(await store.eval(STOP_DIAGNOSTIC_ASSIGNMENT_SCRIPT, [`diagnostic_assignment:${assignmentId}`],
+      [classId, assignment.studentIds.join(','), JSON.stringify(stopped)]))
+    if (result === 1) return stopped
+    if (result === -1) fail(404, 'assignment_unavailable', 'Diagnostic assignment is unavailable')
+    if (result === 0) return store.get(`diagnostic_assignment:${assignmentId}`)
+  }
+  fail(409, 'assignment_conflict', 'Screeningen ändrades samtidigt. Försök igen.')
 }
 
 export async function openDiagnosticAttempt({ assignmentId, assignmentItemId, studentId },

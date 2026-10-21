@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { appendDiagnosticAttempt } from './_diagnosticAttemptStore.js'
-import { createDiagnosticAssignment, openDiagnosticAttempt,
-  CREATE_DIAGNOSTIC_ASSIGNMENT_SCRIPT, OPEN_DIAGNOSTIC_ATTEMPT_SCRIPT } from './_diagnosticAssignmentStore.js'
+import { createDiagnosticAssignment, openDiagnosticAttempt, stopDiagnosticAssignment,
+  CREATE_DIAGNOSTIC_ASSIGNMENT_SCRIPT, OPEN_DIAGNOSTIC_ATTEMPT_SCRIPT,
+  STOP_DIAGNOSTIC_ASSIGNMENT_SCRIPT } from './_diagnosticAssignmentStore.js'
 import { DIAGNOSTIC_APPEND_CAS_SCRIPT } from './_diagnosticAttemptStore.js'
 import { recordDiagnosticGridEvent } from '../src/domains/arithmetic/diagnosticGridModel.js'
 import { studentDeletedKey } from './_studentStore.js'
@@ -90,6 +91,15 @@ function storage() {
         data.set(attemptKey, next)
         return 1
       }
+      if (script === STOP_DIAGNOSTIC_ASSIGNMENT_SCRIPT) {
+        const [classId, studentIds, json] = args
+        const assignment = data.get(keys[0])
+        if (!assignment || assignment.classId !== classId) return -1
+        if (assignment.status !== 'active') return 0
+        if (assignment.studentIds.join(',') !== studentIds) return -2
+        data.set(keys[0], JSON.parse(json))
+        return 1
+      }
       throw new Error('Unexpected storage script')
     }
   }
@@ -176,6 +186,40 @@ describe('diagnostic assignment and attempt creation', () => {
     expect(store.data.get('diagnostic_assignments_by_student:PUPIL')).toEqual([assignment.assignmentId])
     expect(store.data.get('diagnostic_assignments_by_student:OTHER')).toEqual([assignment.assignmentId])
     expect(store.data.get('diagnostic_assignments_by_class:CLASS')).toEqual([assignment.assignmentId])
+  })
+
+  it('stops an assignment so pupils can no longer write, while saved attempts stay', async () => {
+    const assignment = await create()
+    const first = await open(assignment)
+    const stop = () => stopDiagnosticAssignment({ classId: 'CLASS', assignmentId: assignment.assignmentId, teacherId: 'TEACHER' }, { store })
+    await expect(stopDiagnosticAssignment({ classId: 'OTHER_CLASS', assignmentId: assignment.assignmentId,
+      teacherId: 'TEACHER' }, { store })).rejects.toMatchObject({ status: 404 })
+    const stopped = await stop()
+    expect(stopped).toMatchObject({ status: 'stopped', stoppedBy: 'TEACHER' })
+    expect((await stop()).stoppedAt).toBe(stopped.stoppedAt)
+    await expect(open(assignment)).rejects.toMatchObject({ status: 404 })
+    const event = recordDiagnosticGridEvent(first.snapshot, { type: 'write', position: { row: 0, column: 0 },
+      layer: 'main', before: '', after: '8' }, 1000).events[0]
+    await expect(appendDiagnosticAttempt({ attemptId: first.record.attemptId, studentId: 'PUPIL',
+      expectedRevision: 0, events: [event] }, { store })).rejects.toBeTruthy()
+    expect(store.data.has(`diagnostic_attempt:${first.record.attemptId}`)).toBe(true)
+  })
+
+  it('does not restore a pupil removed while the stop was in flight', async () => {
+    store.data.get('student:OTHER').classIds = ['CLASS']
+    const assignment = await create({ studentIds: ['PUPIL', 'OTHER'] })
+    const key = `diagnostic_assignment:${assignment.assignmentId}`
+    const realEval = store.eval
+    let raced = false
+    store.eval = async (script, keys, args) => {
+      if (script === STOP_DIAGNOSTIC_ASSIGNMENT_SCRIPT && !raced) {
+        raced = true
+        store.data.get(key).studentIds = ['PUPIL']
+      }
+      return realEval(script, keys, args)
+    }
+    await stopDiagnosticAssignment({ classId: 'CLASS', assignmentId: assignment.assignmentId, teacherId: 'TEACHER' }, { store })
+    expect(store.data.get(key)).toMatchObject({ status: 'stopped', studentIds: ['PUPIL'] })
   })
 
   it('rejects a stopped assignment even when the caller read it before the atomic step', async () => {

@@ -6,6 +6,7 @@
 import { kv } from '@vercel/kv'
 import { withCors } from './_helpers.js'
 import { resolveClassOperations } from '../src/lib/classOperations.js'
+import { readActiveAssignments } from '../src/lib/activeAssignments.js'
 
 export default async function handler(req, res) {
   withCors(res, {
@@ -31,7 +32,7 @@ export default async function handler(req, res) {
       enabledExtras,
       enabledOperations: resolveClassOperations(kvClass),
       talbildEnabled: kvClass?.talbildEnabled === true,
-      activeAssignmentPayload: String(kvClass?.activeAssignmentPayload || '')
+      activeAssignmentPayload: String(readActiveAssignments(kvClass)[0]?.payload || '')
     })
   } catch {
     return res.status(503).json({ error: 'Class config unavailable' })

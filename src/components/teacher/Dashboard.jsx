@@ -48,6 +48,7 @@ import {
   getClasses,
 } from '../../lib/storage'
 import { getActiveAssignment, hydrateAssignmentsFromServer } from '../../lib/assignments'
+import { activeAssignmentIds } from '../../lib/activeAssignments'
 import { getTeacherClassIds } from '../../lib/teacherAuth'
 import { hydrateTicketsFromServer } from '../../lib/tickets'
 import { loadTeacherWorkspace } from '../../lib/teacherWorkspaceSync'
@@ -270,6 +271,11 @@ function Dashboard() {
     () => new Map(classFilterOptions.map(item => [item.id, item.name])),
     [classFilterOptions]
   )
+  // Where each assignment is active, from the server's class and group records.
+  const assignmentTargets = useMemo(() => [
+    ...classes.map(item => ({ type: 'class', id: String(item.id), name: item.name || String(item.id), assignmentIds: activeAssignmentIds(item) })),
+    ...teacherGroups.map(item => ({ type: 'group', id: String(item.id), name: `Grupp: ${item.name}`, assignmentIds: activeAssignmentIds(item) }))
+  ], [classes, teacherGroups])
 
   const {
     hasMissingDirectStudent,
@@ -342,8 +348,8 @@ function Dashboard() {
     handleCreatePreset,
     handleCreateMathPractice,
     handleCopyAssignmentLink,
-    handleActivateForAll,
-    handleClearActiveForAll,
+    handleActivateAssignment,
+    handleDeactivateAssignment,
     handleDeleteAssignment,
     handleClearAllAssignments,
     handleCreateQuickAssignment
@@ -357,9 +363,21 @@ function Dashboard() {
       if (selectedClassIds.length !== 1) return ''
       return String(classes.find(item => String(item.id) === String(selectedClassIds[0]))?.loginToken || '').trim()
     },
-    getTargetClasses: () => (selectedClassIds.length > 0
-      ? classes.filter(item => selectedClassIds.includes(String(item.id)))
-      : classes)
+    getTargets: ({ selectedOnly = false } = {}) => {
+      const all = [
+        ...classes.map(item => ({ type: 'class', id: String(item.id), name: item.name || String(item.id) })),
+        ...teacherGroups.map(item => ({ type: 'group', id: String(item.id), name: `Grupp: ${item.name}` }))
+      ]
+      if (selectedClassIds.length > 0) return all.filter(item => selectedClassIds.includes(item.id))
+      return selectedOnly ? [] : all.filter(item => item.type === 'class')
+    },
+    getActiveTargets: assignmentId => assignmentTargets.filter(item => item.assignmentIds.includes(assignmentId)),
+    onTargetActiveChange: (target, activeAssignments) => {
+      const update = list => list.map(item => String(item.id) === target.id
+        ? { ...item, activeAssignments, activeAssignmentPayload: activeAssignments[0]?.payload || null } : item)
+      if (target.type === 'group') setTeacherGroups(update)
+      else setClasses(update)
+    }
   })
 
   const {
@@ -431,9 +449,9 @@ function Dashboard() {
         isCloudRefreshBusy, handleCloudRefreshNow, formatSyncTimestamp, getCloudSyncSourceLabel,
         selectedClassIds, students, filteredStudents, classFilterOptions, clearClassFilter,
         handleToggleClassFilter, classStats, dataQualitySummary, usageInsights, formatDuration,
-        toPercent, assignments, activeAssignmentId, copiedId,
-        formatAssignmentSummaryLine, handleCreatePreset, handleCreateMathPractice, handleClearActiveForAll, handleClearAllAssignments,
-        handleActivateForAll, handleDeleteAssignment, handleCopyAssignmentLink, classNameById,
+        toPercent, assignments, copiedId,
+        formatAssignmentSummaryLine, handleCreatePreset, handleCreateMathPractice, handleDeactivateAssignment, handleClearAllAssignments,
+        handleActivateAssignment, assignmentTargets, handleDeleteAssignment, handleCopyAssignmentLink, classNameById,
         recordMatchesClassFilter, setStudents, setDashboardStatus, handleOpenStudentDetail,
         classOverviewMeta, filteredRows, detailStudentId,
         detailStudentOptions, hasMissingDirectStudent, setDetailStudentId, handleExportStudentDetailCsv,

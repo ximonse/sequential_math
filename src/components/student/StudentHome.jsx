@@ -9,7 +9,7 @@ import { markStudentPresence, PRESENCE_HEARTBEAT_MS, PRESENCE_SAVE_THROTTLE_MS }
 import { incrementTelemetryDailyMetric, recordTelemetryEvent } from '../../lib/telemetry'
 import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { logoutStudentSession } from '../../lib/studentSessionClient'
-import { fetchStudentDiagnosticAssignments } from '../../lib/studentSessionClient'
+import { fetchStudentActiveAssignments, fetchStudentDiagnosticAssignments } from '../../lib/studentSessionClient'
 import StudentDiagnosticCollections from './StudentDiagnosticCollections'
 import { useStudentSyncStatus } from './session/useStudentSyncStatus'
 import StudentSyncStatus from './session/StudentSyncStatus'
@@ -29,6 +29,8 @@ function StudentHome() {
   const [profile, setProfile] = useState(null)
   const [classConfig, setClassConfig] = useState({ classId: '', operations: null })
   const [assignment, setAssignment] = useState(null)
+  // Active assignments from every class and group; null until the server answers.
+  const [targetAssignments, setTargetAssignments] = useState(null)
   const [assignmentResolutionKey, setAssignmentResolutionKey] = useState('')
   const [focusOpen, setFocusOpen] = useState(false)
   const [diagnosticAssignments, setDiagnosticAssignments] = useState([])
@@ -107,6 +109,19 @@ function StudentHome() {
     return () => { active = false }
   }, [classId])
 
+  useEffect(() => {
+    if (!diagnosticProfileId) return undefined
+    let active = true
+    void fetchStudentActiveAssignments().then(result => {
+      if (!active) return
+      // On failure the class's newest assignment from class-config still shows.
+      setTargetAssignments(result.ok
+        ? result.assignments.map(item => decodeAssignmentPayload(item.payload)).filter(Boolean)
+        : false)
+    })
+    return () => { active = false }
+  }, [diagnosticProfileId])
+
   const assignmentSourceKey = JSON.stringify([classId, assignmentId, assignmentPayload, classConfig.classId, classConfig.ready, classConfig.assignmentPayload])
   useEffect(() => {
     const resolve = value => { setAssignment(value); setAssignmentResolutionKey(assignmentSourceKey) }
@@ -128,10 +143,12 @@ function StudentHome() {
     resolve(classAssignment || getActiveAssignment())
   }, [assignmentId, assignmentPayload, classConfig, classId, assignmentSourceKey])
 
+  const homeAssignments = Array.isArray(targetAssignments) ? targetAssignments : assignment ? [assignment] : []
   const focusAllowed = classConfig.classId === classId && classConfig.ready === true
+    && targetAssignments !== null
     && assignmentResolutionKey === assignmentSourceKey
     && (!(assignmentId || assignmentPayload || classConfig.assignmentPayload) || !!assignment)
-    && (!assignment || assignment.breakGames === true)
+    && homeAssignments.every(item => item.breakGames === true)
   useEffect(() => { if (!focusAllowed) setFocusOpen(false) }, [focusAllowed])
 
   const updateHomePresence = useCallback((options = {}) => {
@@ -299,15 +316,10 @@ function StudentHome() {
     )
   }
 
-  const encodedAssignmentPayload = assignment
-    ? (assignmentPayload || encodeAssignmentPayload(assignment))
-    : ''
-  const assignmentPracticePath = assignment
-    ? `/student/${studentId}/${assignment.kind === 'subitizing' ? 'subitizing' : 'practice'}?${new URLSearchParams({
-      assignment: String(assignment.id || ''),
-      ...(encodedAssignmentPayload ? { assignment_payload: encodedAssignmentPayload } : {})
-    }).toString()}`
-    : `/student/${studentId}/practice`
+  const assignmentPracticePath = item => `/student/${studentId}/${item.kind === 'subitizing' ? 'subitizing' : 'practice'}?${new URLSearchParams({
+    assignment: String(item.id || ''),
+    assignment_payload: item === assignment && assignmentPayload ? assignmentPayload : encodeAssignmentPayload(item)
+  }).toString()}`
   const activeTicketPayload = profile?.ticketInbox?.activePayload || null
   const activeTicketEncoded = String(profile?.ticketInbox?.activeEncoded || '')
   const activeTicketResponse = activeTicketPayload
@@ -330,16 +342,16 @@ function StudentHome() {
     void persistProfile(profile)
     navigate(`/student/${studentId}/ticket?${params.toString()}`)
   }
-  const handleStartAssignmentOrFree = () => {
-    if (!assignment && operationKeys.length === 0) return
+  const handleStartAssignmentOrFree = (item = null) => {
+    if (!item && operationKeys.length === 0) return
     const now = Date.now()
     recordTelemetryEvent(profile, 'practice_launch_assignment_or_free', {
-      assignmentId: assignment?.id || ''
+      assignmentId: item?.id || ''
     }, now)
     incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
     void persistProfile(profile)
-    if (assignment) {
-      navigate(assignmentPracticePath)
+    if (item) {
+      navigate(assignmentPracticePath(item))
       return
     }
     navigate(buildPracticePath(studentId, {
@@ -381,13 +393,18 @@ function StudentHome() {
           />
         )}
 
-        {(!activeTicketPayload || activeTicketResponse) && (
-          <StudentHomeAssignmentLaunchCard
-            assignment={assignment}
-            onStart={handleStartAssignmentOrFree}
-            disabled={!assignment && operationKeys.length === 0}
-          />
-        )}
+        {(!activeTicketPayload || activeTicketResponse) && (homeAssignments.length > 0
+          ? homeAssignments.map((item, index) => <StudentHomeAssignmentLaunchCard
+            key={item.id}
+            heading={index === 0 ? 'Ditt nästa steg' : 'Uppdrag'}
+            assignment={item}
+            onStart={() => handleStartAssignmentOrFree(item)}
+          />)
+          : <StudentHomeAssignmentLaunchCard
+            assignment={null}
+            onStart={() => handleStartAssignmentOrFree(null)}
+            disabled={operationKeys.length === 0}
+          />)}
 
         {enabledOperations?.length === 0 && (
           <p role="alert" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">

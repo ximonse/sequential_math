@@ -96,14 +96,14 @@ export default function DashboardLayout({
   formatDuration,
   toPercent,
   assignments,
-  activeAssignmentId,
   copiedId,
   formatAssignmentSummaryLine,
   handleCreatePreset,
   handleCreateMathPractice,
-  handleClearActiveForAll,
+  handleDeactivateAssignment,
   handleClearAllAssignments,
-  handleActivateForAll,
+  handleActivateAssignment,
+  assignmentTargets,
   handleDeleteAssignment,
   handleCopyAssignmentLink,
   classNameById,
@@ -402,14 +402,14 @@ export default function DashboardLayout({
     if (id === 'assignments') return (
       <AssignmentsPanel
         assignments={assignments}
-        activeAssignmentId={activeAssignmentId}
+        assignmentTargets={assignmentTargets}
         copiedId={copiedId}
         formatAssignmentSummaryLine={formatAssignmentSummaryLine}
         onCreatePreset={handleCreatePreset}
         onCreateMathPractice={handleCreateMathPractice}
-        onClearActiveForAll={handleClearActiveForAll}
+        onDeactivateAssignment={handleDeactivateAssignment}
         onClearAllAssignments={handleClearAllAssignments}
-        onActivateForAll={handleActivateForAll}
+        onActivateAssignment={handleActivateAssignment}
         onDeleteAssignment={handleDeleteAssignment}
         onCopyAssignmentLink={handleCopyAssignmentLink}
         classes={classes}

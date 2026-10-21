@@ -139,6 +139,14 @@ export async function fetchStudentDiagnosticAssignments() {
     : { ok: false, error: 'Uppgiftslistan gav ett ogiltigt svar.' }
 }
 
+export async function fetchStudentActiveAssignments() {
+  const result = await requestSession('/api/me/assignments', { method: 'GET' }, 'Kunde inte hämta dina uppdrag.')
+  if (!result.ok) return result
+  return Array.isArray(result.data?.assignments)
+    ? { ok: true, assignments: result.data.assignments }
+    : { ok: false, error: 'Uppdragslistan gav ett ogiltigt svar.' }
+}
+
 async function postStudentDiagnostic(body) {
   if (!csrfToken) return { ok: false, error: SESSION_EXPIRED_ERROR }
   const result = await requestSession('/api/me/diagnostic-attempt', {

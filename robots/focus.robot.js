@@ -258,24 +258,22 @@ test('Fokus: inväntar klassvillkor, respekterar uppdrag och håller stängt vid
   const pupil = await createPupil(request)
   let release
   const gate = new Promise(resolve => { release = resolve })
-  await page.route('**/api/class-config?*', async route => {
-    const response = await route.fetch()
+  // Active assignments come from every class and group through /api/me/assignments.
+  const assignments = breakGames => ({ assignments: [{ payload: payload({ breakGames }), activatedAt: 1, source: { type: 'class', id: 'x', name: 'x' } }] })
+  await page.route('**/api/me/assignments', async route => {
     await gate
-    await route.fulfill({ response, json: { ...await response.json(), activeAssignmentPayload: payload({ breakGames: false }) } })
+    await route.fulfill({ json: assignments(false) })
   })
   await login(page, pupil)
   await expect(page.getByRole('button', { name: new RegExp(`^${FOCUS}`) })).toHaveCount(0)
   release()
   await expect(page.getByText('Focus robot assignment', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: new RegExp(`^${FOCUS}`) })).toHaveCount(0)
-  await page.unroute('**/api/class-config?*')
-  await page.route('**/api/class-config?*', async route => {
-    const response = await route.fetch()
-    await route.fulfill({ response, json: { ...await response.json(), activeAssignmentPayload: payload({ breakGames: true }) } })
-  })
+  await page.unroute('**/api/me/assignments')
+  await page.route('**/api/me/assignments', route => route.fulfill({ json: assignments(true) }))
   await page.reload()
   await expect(page.getByRole('button', { name: new RegExp(`^${FOCUS}`) })).toBeVisible()
-  await page.unroute('**/api/class-config?*')
+  await page.unroute('**/api/me/assignments')
   await page.route('**/api/class-config?*', route => route.fulfill({ status: 503, body: '{}' }))
   await page.reload()
   await expect(page.getByRole('alert')).toContainText('Kunde inte läsa klassens räknesätt')

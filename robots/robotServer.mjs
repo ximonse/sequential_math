@@ -47,6 +47,11 @@ function robotApiMiddleware(server) {
   return async (req, res, next) => {
         const url = new URL(req.url, 'http://localhost')
         try {
+          if (url.pathname === '/__robot/group') {
+            const control = await server.ssrLoadModule(path.join(root, 'robots/groupControl.js'))
+            decorate(res).status(200).json(await control.handleGroupControl(req.method === 'POST' ? await readBody(req) : {}))
+            return
+          }
           if (url.pathname.startsWith('/__robot/')) {
             const control = await server.ssrLoadModule(path.join(root, 'robots/seed.js'))
             const body = req.method === 'POST' ? await readBody(req) : {}
@@ -96,7 +101,7 @@ export async function startRobotServer({ port = 5288, production = process.env.R
   // class roster", which is what the manual server exercises.
   process.env.NCM_DIAGNOSTIC_API_ENABLED ??= 'true'
   process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS ??= [NCM_TEST_PUPIL_ID,
-    ...['Collections A', 'Collections B', 'Robot NCM next', 'NCM class A', 'NCM class B', 'NCM review A', 'NCM review B', 'NCM review C', 'Matrix Correct', 'Matrix Pattern', 'Matrix Waiting', 'Back Edit', 'Back Edit Tablet', 'Close Collect', 'Long Text'].map(name =>
+    ...['Collections A', 'Collections B', 'Robot NCM next', 'NCM class A', 'NCM class B', 'NCM review A', 'NCM review B', 'NCM review C', 'Matrix Correct', 'Matrix Pattern', 'Matrix Waiting', 'Back Edit', 'Back Edit Tablet', 'Close Collect', 'Long Text', 'Guide Pupil'].map(name =>
       Buffer.from(name).toString('hex').toUpperCase().padEnd(32, '0').slice(0, 32))].join(',')
   if (!production) {
     const server = await createServer({

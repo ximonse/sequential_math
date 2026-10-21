@@ -7,24 +7,26 @@ const BALL_SIZE = 14
 const PADDLE_SPEED = 8
 const MAX_TIME = 90 // 1,5 minut
 
-// 4-phase difficulty: warmup → gradual → hard → impossible
+// 4-phase difficulty over MAX_TIME: warmup → gradual → hard → nearly impossible.
+// ballSpeed is also a floor during rallies, so the ball speeds up without a goal.
+// maxSpeedX stays below the 26 px paddle hit window so the ball cannot tunnel.
 function getPongDifficulty(elapsedSeconds) {
   const t = Math.min(elapsedSeconds / MAX_TIME, 1)
-  if (t < 0.167) {        // 0-20s: warmup
-    const p = t / 0.167
-    return { aiSpeed: 0.30, ballSpeed: 3.0, maxSpeedX: 6.0 + p * 1.0, maxSpeedY: 5.0 + p * 0.5 }
+  if (t < 1 / 6) {        // 0-15s: warmup
+    const p = t * 6
+    return { aiSpeed: 0.35, ballSpeed: 3.0 + p * 0.5, maxSpeedX: 6.0 + p * 1.0, maxSpeedY: 5.0 + p * 0.5 }
   }
-  if (t < 0.667) {        // 20-80s: gradual
-    const p = (t - 0.167) / 0.5
-    return { aiSpeed: 0.30 + p * 0.35, ballSpeed: 3.0 + p * 2.5, maxSpeedX: 7.0 + p * 2.5, maxSpeedY: 5.5 + p * 2.0 }
+  if (t < 0.5) {          // 15-45s: gradual, hard by half time
+    const p = (t - 1 / 6) * 3
+    return { aiSpeed: 0.35 + p * 0.35, ballSpeed: 3.5 + p * 3.0, maxSpeedX: 7.0 + p * 2.5, maxSpeedY: 5.5 + p * 2.0 }
   }
-  if (t < 0.917) {        // 80-110s: hard
-    const p = (t - 0.667) / 0.25
-    return { aiSpeed: 0.65 + p * 0.20, ballSpeed: 5.5 + p * 2.0, maxSpeedX: 9.5 + p * 2.5, maxSpeedY: 7.5 + p * 1.5 }
+  if (t < 5 / 6) {        // 45-75s: hard
+    const p = (t - 0.5) * 3
+    return { aiSpeed: 0.70 + p * 0.25, ballSpeed: 6.5 + p * 2.5, maxSpeedX: 9.5 + p * 3.5, maxSpeedY: 7.5 + p * 2.0 }
   }
-  // 110-120s: impossible
-  const p = (t - 0.917) / 0.083
-  return { aiSpeed: 0.85 + p * 0.10, ballSpeed: 7.5 + p * 1.5, maxSpeedX: 12.0 + p * 2.0, maxSpeedY: 9.0 + p * 1.0 }
+  // 75-90s: nearly impossible
+  const p = (t - 5 / 6) * 6
+  return { aiSpeed: 0.95 + p * 0.05, ballSpeed: 9.0 + p * 2.0, maxSpeedX: 13.0 + p * 3.0, maxSpeedY: 9.5 + p * 1.5 }
 }
 
 function PongGame({ onClose, studentId, studentName, classId }) {
@@ -153,7 +155,7 @@ function PongGame({ onClose, studentId, studentName, classId }) {
         game.ball.y <= game.player.y + PADDLE_HEIGHT + 8 &&
         game.ball.dx < 0
       ) {
-        game.ball.dx = Math.abs(game.ball.dx) * 1.015
+        game.ball.dx = Math.abs(game.ball.dx) * 1.04
         game.ball.dy += (Math.random() - 0.5) * 1.4
       }
 
@@ -165,7 +167,7 @@ function PongGame({ onClose, studentId, studentName, classId }) {
         game.ball.y <= game.computer.y + PADDLE_HEIGHT &&
         game.ball.dx > 0
       ) {
-        game.ball.dx = -Math.abs(game.ball.dx) * 1.015
+        game.ball.dx = -Math.abs(game.ball.dx) * 1.04
         game.ball.dy += (Math.random() - 0.5) * 1.4
       }
 
@@ -179,6 +181,9 @@ function PongGame({ onClose, studentId, studentName, classId }) {
         setScore(s => ({ ...s, player: s.player + 1 }))
         game.ball = { x: 200, y: 150, dx: -resetSpeed, dy: resetSpeed * (Math.random() - 0.5) }
       }
+
+      // Golvet höjs med tiden även mitt i en bollväxling
+      if (Math.abs(game.ball.dx) < diff.ballSpeed) game.ball.dx = Math.sign(game.ball.dx || 1) * diff.ballSpeed
 
       // Begränsa boll-hastighet — taket ökar med svårigheten
       const maxSpeedX = diff.maxSpeedX

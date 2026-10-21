@@ -161,6 +161,12 @@
 .diagnostic-prototype .notebook-next { flex: 0 0 126px; display: flex; gap: 6px; align-items: center; justify-content: center; font-size: 13px; }
 .diagnostic-prototype .notebook-next, .diagnostic-prototype .notebook-submit-ready { background: #256343; border-color: #256343; color: #fff; }
 .notebook-save-status { height: 26px; font-size: 12px; color: var(--text-muted, #53667c); }
+.notebook-status-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.notebook-status-row .notebook-save-status { flex: 1; min-width: 0; }
+.diagnostic-prototype .notebook-guide-button { position: relative; flex: 0 0 auto; width: 24px; height: 24px; min-height: 0; padding: 0;
+  border: 1.5px solid #53667c; border-radius: 50%; background: #fff; color: #33475b; font-size: 14px; font-weight: 700; line-height: 1; }
+/* Wider hit area sideways only, so it never covers the tool buttons below. */
+.diagnostic-prototype .notebook-guide-button::before { position: absolute; inset: -1px -10px; content: ''; }
 .notebook-tool-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) 44px; gap: 4px; margin-bottom: 8px; }
 .notebook-tool-row button { width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; padding: 2px; }
 .notebook-tool-row button[aria-pressed="true"] { background: #e8f0ff; border-color: #215aff; color: #133fbb; }

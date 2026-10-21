@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import NumberKeys from '../components/student/NumberKeys'
 
 export default function NotebookTools({ formats, disabled, lineMode, eraseMode, onLine, onErase, onLoan,
-  canLoan, onKey, onSign, signsDisabled, gridEnabled, status }) {
+  canLoan, onKey, onSign, signsDisabled, gridEnabled, status, onGuide = null }) {
   const [helpOpen, setHelpOpen] = useState(false)
   const [helpHovered, setHelpHovered] = useState(false)
   const helpVisible = helpOpen || helpHovered
@@ -18,7 +18,11 @@ export default function NotebookTools({ formats, disabled, lineMode, eraseMode, 
     return () => { document.removeEventListener('pointerdown', dismiss); document.removeEventListener('keydown', dismiss) }
   }, [])
   return <aside className="notebook-tools">
-    <div className="notebook-save-status" role="status">{status}</div>
+    <div className="notebook-status-row">
+      <div className="notebook-save-status" role="status">{status}</div>
+      {gridEnabled && onGuide && <button type="button" className="notebook-guide-button" aria-label="Visa hur räknehäftet fungerar"
+        title="Visa hur räknehäftet fungerar" onClick={onGuide}>?</button>}
+    </div>
     {gridEnabled && <div className="notebook-tool-row">
       {formats}
       <button type="button" aria-label="Streckläge" aria-pressed={lineMode} onClick={onLine} disabled={disabled}>━</button>

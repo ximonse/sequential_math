@@ -10,6 +10,8 @@ import DiagnosticGridLines from './DiagnosticGridLines'
 import { lineTouchesPoint } from '../domains/arithmetic/diagnosticLineGeometry'
 import MathScratchpad from '../components/student/MathScratchpad'
 import NotebookTools from './NotebookTools'
+import NotebookTutorial from './NotebookTutorial'
+import { shouldShowNotebookTutorial } from './notebookTutorialSeen'
 import { MAIN_CHARACTERS, NUMBER_ANSWER } from '../domains/arithmetic/diagnosticGridModel'
 import './diagnosticGridPrototype.css'
 
@@ -55,6 +57,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const [contextMenu, setContextMenu] = useState(null)
   const [drawingVisible, setDrawingVisible] = useState(false)
   const [notebookVisible, setNotebookVisible] = useState(true)
+  // The first notebook a pupil opens on a device starts with the gesture guide.
+  const [guideOpen, setGuideOpen] = useState(() => (pilot?.task || TASKS[0]).gridEnabled !== false && shouldShowNotebookTutorial())
   const isPilot = Boolean(pilot)
   const submitting = Boolean(saveState?.submitting)
   const editingLocked = grid.status === 'submitted' || submitting
@@ -531,7 +535,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             onErase={() => { setInputTarget('grid'); setEraseMode(current => !current); setLineMode(false) }}
             canLoan={selectedIsDigit} onLoan={() => { setInputTarget('grid'); toggleCrossOut(); setLineMode(false); setEraseMode(false); focusSelectedCell() }}
             onKey={keypad} onSign={writeOperationSign} signsDisabled={Boolean(selectedCell?.note || selectedCell?.struck)}
-            status={status} />}
+            status={status} onGuide={() => setGuideOpen(true)} />}
         </div>
         {task.drawingEnabled && <div className="notebook-drawing">
           <button type="button" className="notebook-drawing-toggle" aria-label="Rityta" aria-expanded={drawingVisible}
@@ -576,6 +580,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
         <label htmlFor="diagnostic-snapshot">Arbetskopia av JSON för återläsning</label>
         <textarea id="diagnostic-snapshot" value={snapshotText} onChange={event => setSnapshotText(event.target.value)} spellCheck="false" />
       </section>}
+      {guideOpen && <NotebookTutorial onClose={() => setGuideOpen(false)} />}
     </main>
   )
 }

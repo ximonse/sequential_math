@@ -1,6 +1,7 @@
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
 import { createDiagnosticAssignment, stopDiagnosticAssignment } from './_diagnosticAssignmentStore.js'
+import { freezeStoppedDiagnosticAttempts } from './_diagnosticAssignmentClose.js'
 import { diagnosticApiEnabled, diagnosticAssignablePupilsInClass } from './_diagnosticApiAccess.js'
 import { listClassDiagnosticAssignments } from './_diagnosticAssignmentList.js'
 import { isSchoolAdminRole } from './_teacherRoles.js'
@@ -32,7 +33,9 @@ export default async function handler(req, res) {
       if (req.body?.status !== 'stopped') return res.status(400).json({ error: 'Only stopping is supported' })
       const assignment = await stopDiagnosticAssignment({ classId,
         assignmentId: req.body?.assignmentId, teacherId: auth.teacherId })
-      return res.status(200).json({ assignment })
+      // Repeating the call retries any answer that could not be handed in.
+      const { frozen, failed } = await freezeStoppedDiagnosticAttempts(assignment)
+      return res.status(200).json({ assignment, frozen, failed })
     }
     const assignable = await diagnosticAssignablePupilsInClass(classId)
     const studentIds = req.body?.audience === 'class'

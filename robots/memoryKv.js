@@ -3,7 +3,9 @@
 // and emulates the few Lua scripts the API runs through kv.eval.
 import { STUDENT_CAS_SCRIPT } from '../api/_studentStore.js'
 import { emulateAttentionArchive } from '../api/testHelpers/attentionArchiveKv.js'
-import { CREATE_DIAGNOSTIC_ASSIGNMENT_SCRIPT, OPEN_DIAGNOSTIC_ATTEMPT_SCRIPT } from '../api/_diagnosticAssignmentStore.js'
+import { CREATE_DIAGNOSTIC_ASSIGNMENT_SCRIPT, OPEN_DIAGNOSTIC_ATTEMPT_SCRIPT,
+  STOP_DIAGNOSTIC_ASSIGNMENT_SCRIPT } from '../api/_diagnosticAssignmentStore.js'
+import { FREEZE_DIAGNOSTIC_ATTEMPT_SCRIPT } from '../api/_diagnosticAssignmentClose.js'
 import { DIAGNOSTIC_APPEND_CAS_SCRIPT } from '../api/_diagnosticAttemptStore.js'
 import { DIAGNOSTIC_REVIEW_CAS_SCRIPT } from '../api/_diagnosticReviewStore.js'
 import { SUBMIT_DIAGNOSTIC_COLLECTION_SCRIPT } from '../api/_diagnosticCollectionStore.js'
@@ -67,6 +69,26 @@ export const kv = {
         values.set(keys[7 + 2*i], [...events, parse(proposal.eventJson)])
         values.set(keys[6 + 2*i], parse(proposal.nextJson))
       }
+      return 1
+    }
+    if (script === STOP_DIAGNOSTIC_ASSIGNMENT_SCRIPT) {
+      const [classId, studentIds, json] = args
+      const assignment = values.get(keys[0])
+      if (!assignment || assignment.classId !== classId) return -1
+      if (assignment.status !== 'active') return 0
+      if (assignment.studentIds.join(',') !== studentIds) return -2
+      values.set(keys[0], parse(json))
+      return 1
+    }
+    if (script === FREEZE_DIAGNOSTIC_ATTEMPT_SCRIPT) {
+      const [attemptKey, eventsKey, assignmentKey] = keys
+      const [revision, sequence, nextJson, eventJson] = args
+      const assignment = values.get(assignmentKey), record = values.get(attemptKey)
+      if (!assignment || assignment.status === 'active' || !record) return -1
+      if (record.status !== 'in_progress') return 0
+      if (record.serverRevision !== Number(revision) || (values.get(eventsKey) || []).length !== Number(sequence)) return -2
+      values.set(eventsKey, [...(values.get(eventsKey) || []), parse(eventJson)])
+      values.set(attemptKey, parse(nextJson))
       return 1
     }
     if (script === DIAGNOSTIC_REVIEW_CAS_SCRIPT) {

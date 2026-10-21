@@ -106,16 +106,19 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
   }
 
   async function stopAssignment(assignment) {
-    if (busy || !window.confirm(`Stäng "${assignment.titleSv || 'Screening'}"? Eleverna ser den inte längre och kan inte fortsätta. Sparade svar finns kvar för genomgång.`)) return
+    const title = assignment.titleSv || 'Screening'
+    if (busy || (assignment.status === 'active' && !window.confirm(`Avsluta "${title}"? Eleverna kan inte fortsätta. Alla påbörjade svar lämnas in som de är, även om eleven inte har lämnat in.`))) return
     setBusy(true)
     try {
       const result = await request('/api/teacher-diagnostic-assignments', { method: 'PATCH',
         body: JSON.stringify({ classId, assignmentId: assignment.assignmentId, status: 'stopped' }) })
-      if (!result.ok) throw new Error(result.data.error || 'Kunde inte stänga screeningen.')
+      if (!result.ok) throw new Error(result.data.error || 'Kunde inte avsluta screeningen.')
       setAssignments(previous => previous.map(item => item.assignmentId === assignment.assignmentId ? result.data.assignment : item))
-      setStatus(`${assignment.titleSv || 'Screeningen'} är stängd.`)
+      setStatus(result.data.failed
+        ? `${title} är avslutad, men ${result.data.failed} svar kunde inte lämnas in. Klicka på Lämna in pågående igen.`
+        : `${title} är avslutad. ${result.data.frozen} påbörjade svar lämnades in.`)
     } catch (error) {
-      setStatus(error.message || 'Kunde inte stänga screeningen.')
+      setStatus(error.message || 'Kunde inte avsluta screeningen.')
     } finally { setBusy(false) }
   }
 
@@ -230,9 +233,10 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
       <h3 className="font-semibold">Tilldelningar i klassen</h3>
       <ul className="mt-1 list-inside list-disc">
         {assignments.map(assignment => <li key={assignment.assignmentId}>
-          {assignment.titleSv || 'Screening'} · {assignment.items.length} uppgift{assignment.items.length === 1 ? '' : 'er'} · {assignment.status === 'active' ? 'aktiv' : 'stängd'} · {assignment.assignmentId}
-          {assignment.status === 'active' && <button type="button" onClick={() => stopAssignment(assignment)} disabled={busy}
-            className="ml-2 rounded border border-slate-400 bg-white px-2 py-0.5 text-xs text-slate-800 disabled:opacity-50">Stäng</button>}
+          {assignment.titleSv || 'Screening'} · {assignment.items.length} uppgift{assignment.items.length === 1 ? '' : 'er'} · {assignment.status === 'active' ? 'aktiv' : 'avslutad'} · {assignment.assignmentId}
+          <button type="button" onClick={() => stopAssignment(assignment)} disabled={busy}
+            className="ml-2 rounded border border-slate-400 bg-white px-2 py-0.5 text-xs text-slate-800 disabled:opacity-50">
+            {assignment.status === 'active' ? 'Avsluta' : 'Lämna in pågående'}</button>
         </li>)}
       </ul>
     </div>}

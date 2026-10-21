@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocked = vi.hoisted(() => ({ teacher: vi.fn(), classAccess: vi.fn(), create: vi.fn(),
   pupil: vi.fn(), origin: vi.fn(), csrf: vi.fn(), open: vi.fn(), read: vi.fn(),
-  append: vi.fn(), pupilAccess: vi.fn(), listClass: vi.fn(), listPupil: vi.fn(), testStudents: vi.fn(), stop: vi.fn() }))
+  append: vi.fn(), pupilAccess: vi.fn(), listClass: vi.fn(), listPupil: vi.fn(), testStudents: vi.fn(), stop: vi.fn(),
+  freeze: vi.fn() }))
+vi.mock('./_diagnosticAssignmentClose.js', () => ({ freezeStoppedDiagnosticAttempts: mocked.freeze }))
 vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mocked.teacher, withCors: vi.fn() }))
 vi.mock('./_studentAccess.js', () => ({ canAccessClass: mocked.classAccess }))
 vi.mock('./_studentSession.js', () => ({ getLiveStudentSession: mocked.pupil,
@@ -67,6 +69,7 @@ describe('diagnostic pilot API boundary', () => {
   it('stops an assignment only for a teacher with class access', async () => {
     process.env.NCM_DIAGNOSTIC_API_ENABLED = 'true'
     mocked.stop.mockResolvedValue({ assignmentId: 'ASSIGNMENT', status: 'stopped' })
+    mocked.freeze.mockResolvedValue({ frozen: 2, failed: 0 })
     const unknown = response()
     await teacherHandler({ method: 'PATCH', headers: {}, body: { classId: 'CLASS', assignmentId: 'ASSIGNMENT', status: 'active' } }, unknown)
     expect(unknown.code).toBe(400)
@@ -78,7 +81,8 @@ describe('diagnostic pilot API boundary', () => {
     const stopped = response()
     await teacherHandler({ method: 'PATCH', headers: {}, body: { classId: 'CLASS', assignmentId: 'ASSIGNMENT', status: 'stopped' } }, stopped)
     expect(stopped.code).toBe(200)
-    expect(stopped.data.assignment.status).toBe('stopped')
+    expect(stopped.data).toMatchObject({ assignment: { status: 'stopped' }, frozen: 2, failed: 0 })
+    expect(mocked.freeze).toHaveBeenCalledWith({ assignmentId: 'ASSIGNMENT', status: 'stopped' })
     expect(mocked.stop).toHaveBeenCalledWith({ classId: 'CLASS', assignmentId: 'ASSIGNMENT', teacherId: 'TEACHER' })
   })
 

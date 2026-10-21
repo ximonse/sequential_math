@@ -17,6 +17,8 @@ export default function DiagnosticScreeningCell({ item, pupilName, prompt, onOpe
   const status = summary?.answerStatus || 'unanswered'
   const signals = summary?.signals || []
   const value = summary?.explicitAnswer ?? '—'
+  // Written answers can be long; the cell shows a start and the tooltip and review show all of it.
+  const shortValue = value.length > 24 ? `${value.slice(0, 22).trimEnd()}…` : value
   const label = status === 'incorrect' && signals.length ? 'Fel svar' : labels[status]
   useEffect(() => () => clearTimeout(timer.current), [])
   function show() {
@@ -34,13 +36,16 @@ export default function DiagnosticScreeningCell({ item, pupilName, prompt, onOpe
       aria-describedby={position ? id : undefined}
       aria-label={`${pupilName}, ${prompt}, svar ${value}, ${label}${signals.length ? `, ${signals.map(signal => signal.label).join(', ')}` : ''}`}
       className={`w-full min-w-16 rounded px-2 py-1 font-semibold tabular-nums outline-offset-2 focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:cursor-default ${status === 'correct' ? colors.correct : colors[signals[0]?.code] || colors[status]}`}>
-      {value}{signals.map(signal => <span key={signal.code} className="ml-1 text-[10px] font-medium">{signal.code}</span>)}
+      {shortValue}{signals.map(signal => <span key={signal.code} className="ml-1 text-[10px] font-medium">{signal.code}</span>)}
     </button>
     {position && createPortal(<div id={id} role="tooltip" onMouseEnter={() => clearTimeout(timer.current)} onMouseLeave={hideSoon}
       className="fixed z-[100] w-[280px] rounded border border-slate-300 bg-white p-2 text-sm text-slate-800 shadow-lg"
       style={{ left: position.left, top: position.top, transform: position.above ? 'translateY(-100%)' : undefined }}>
-      <strong>{prompt}</strong><dl className="mt-1 grid grid-cols-2 gap-x-3"><dt>Elevens svar</dt><dd className="text-right font-semibold">{value}</dd>
-        <dt>Rätt svar</dt><dd className="text-right font-semibold">{summary?.expectedAnswer ?? '—'}</dd></dl>
+      <strong className="whitespace-pre-wrap">{prompt}</strong>
+      {value.length > 24
+        ? <><p className="mt-1 font-medium">Elevens svar</p><p className="max-h-60 overflow-y-auto whitespace-pre-wrap break-words">{value}</p></>
+        : <dl className="mt-1 grid grid-cols-2 gap-x-3"><dt>Elevens svar</dt><dd className="text-right font-semibold">{value}</dd>
+          <dt>Rätt svar</dt><dd className="text-right font-semibold">{summary?.expectedAnswer ?? '—'}</dd></dl>}
       {signals.map(signal => <p key={signal.code} className="mt-1 border-t border-slate-200 pt-1">{signal.message}</p>)}
       <p className="mt-1 text-xs text-slate-600">{label} · {item.status === 'submitted' ? 'Inlämnat' : 'Pågående'}</p>
     </div>, document.body)}

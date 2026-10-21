@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import taskManifest from '../domains/arithmetic/diagnosticTasks.v1.json'
 import {
   createDiagnosticGrid,
@@ -44,6 +44,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const [snapshotText, setSnapshotText] = useState('')
   const [message, setMessage] = useState('')
   const gridRef = useRef(null)
+  const answerRef = useRef(null)
   const gridsRef = useRef(new Map())
   const gestureRef = useRef(null)
   const [dragPreview, setDragPreview] = useState('')
@@ -59,6 +60,14 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const editingLocked = grid.status === 'submitted' || submitting
 
   useEffect(() => { onGridChange?.(grid.events.length, grid) }, [grid, onGridChange])
+
+  // A written answer grows with its text so the whole answer is always visible.
+  useLayoutEffect(() => {
+    const element = answerRef.current
+    if (!element || element.tagName !== 'TEXTAREA') return
+    element.style.height = 'auto'
+    element.style.height = `${element.scrollHeight + 2}px`
+  }, [grid.answer, task.answerType])
 
   const record = useCallback((actionOrBuilder) => {
     if (submitting) return
@@ -426,8 +435,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
     : saveState?.error ? 'Inte sparat på servern' : pending ? 'Väntar på serverkvittens'
     : grid.status === 'submitted' ? 'Inlämnat' : '• Sparat'
   const navigationLocked = saveState?.busy || saveState?.conflict || submitting
-  const question = /^Räkna ut [0-9+−×/÷,. ]+\.$/u.test(task.promptSv)
-    ? task.promptSv.replace(/^Räkna ut /u, '').replace(/\.$/u, '') : task.promptSv
+  const isExpression = /^Räkna ut [0-9+−×/÷,. ]+\.$/u.test(task.promptSv)
+  const question = isExpression ? task.promptSv.replace(/^Räkna ut /u, '').replace(/\.$/u, '') : task.promptSv
 
   return (
     <main className="diagnostic-prototype">
@@ -449,7 +458,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
         <div className="diagnostic-workspace">
           <div className="notebook-left">
             {!workspaceOnly && <p className="notebook-question-count">Fråga {questionIndex} av {questionCount}</p>}
-            {!workspaceOnly && <h2 className="notebook-question">{question}</h2>}
+            {!workspaceOnly && <h2 className={`notebook-question ${isExpression ? '' : 'notebook-question--text'}`}>{question}</h2>}
             <div hidden={task.gridEnabled === false || !notebookVisible} className="notebook-grid-scroll">
           <div ref={gridRef} className="diagnostic-grid" role="group" aria-label="Rutat räknehäfte">
             <DiagnosticGridLines lines={grid.lines} preview={linePreview} rows={grid.rows} columns={grid.columns} />
@@ -499,8 +508,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             })}
           </div>
             </div>
-            {!workspaceOnly && <div className="diagnostic-answer-row">
-              {task.answerType === 'text' ? <textarea id="diagnostic-answer" aria-label="Mitt svar" placeholder="Skriv ditt svar här"
+            {!workspaceOnly && <div className={`diagnostic-answer-row ${task.answerType === 'text' ? 'diagnostic-answer-row--text' : ''}`}>
+              {task.answerType === 'text' ? <textarea ref={answerRef} id="diagnostic-answer" aria-label="Mitt svar" placeholder="Skriv ditt svar här"
                 maxLength={2000} value={grid.answer} onChange={event => changeAnswer(event.target.value)} disabled={editingLocked} />
                 : <input id="diagnostic-answer" aria-label="Mitt svar" placeholder="Skriv ditt svar här" type="text" inputMode="none"
                   readOnly value={grid.answer} onFocus={() => setInputTarget('answer')}

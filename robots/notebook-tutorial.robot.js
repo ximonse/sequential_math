@@ -37,6 +37,9 @@ test('The notebook guide shows on the first notebook, can be reopened with ?, an
   }
   await student.getByRole('button', { name: 'Börja räkna', exact: true }).click()
   await expect(student.getByRole('dialog')).toHaveCount(0)
+  // Shared iPads: the next pupil on this device still gets the guide.
+  expect(await student.evaluate(id => [localStorage.getItem(`mathapp_notebook_tutorial_seen:${id}`),
+    localStorage.getItem('mathapp_notebook_tutorial_seen:SOMEONE-ELSE')], pupil.studentId)).toEqual(['1', null])
 
   await student.locator('input[data-cell="0:0"]').tap()
   await student.getByRole('button', { name: 'Skriv 6', exact: true }).click()

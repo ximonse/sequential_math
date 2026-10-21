@@ -33,7 +33,7 @@ function Demo({ step }) {
   </div>
 }
 
-export default function NotebookTutorial({ onClose }) {
+export default function NotebookTutorial({ onClose, scope = '' }) {
   const [index, setIndex] = useState(0)
   const dialogRef = useRef(null)
   const primaryRef = useRef(null)
@@ -41,7 +41,7 @@ export default function NotebookTutorial({ onClose }) {
   const last = index === STEPS.length - 1
 
   useEffect(() => { primaryRef.current?.focus() }, [index])
-  const close = () => { markNotebookTutorialSeen(); onClose() }
+  const close = () => { markNotebookTutorialSeen(scope); onClose() }
 
   return <div className="notebook-tutorial" role="presentation" onKeyDown={event => { if (event.key === 'Escape') close() }}>
     <section ref={dialogRef} className="notebook-tutorial__card" role="dialog" aria-modal="true" aria-labelledby="notebook-tutorial-title">

@@ -212,7 +212,7 @@ function AssignedDiagnosticAttempt() {
       questionCount={opened.assignment.items.length} onSubmitCollection={submitCollection}
       onPrevious={opened.previousItem ? () => changeQuestion(opened.previousItem) : null}
       onNext={opened.nextItem ? () => changeQuestion(opened.nextItem) : null}
-      onGridChange={onGridChange} saveState={{ savedSequence, localSequence, busy, conflict, submitting,
+      guideScope={studentId} onGridChange={onGridChange} saveState={{ savedSequence, localSequence, busy, conflict, submitting,
         collectionSubmitted: opened.assignment.submissionStatus === 'submitted',
         error: conflict ? 'Arbetet skiljer sig från serverns version. Den lokala arbetskopian finns kvar på enheten. Be läraren om hjälp.'
           : saveError || (unsaved ? localError : ''), message: saveMessage }} />}

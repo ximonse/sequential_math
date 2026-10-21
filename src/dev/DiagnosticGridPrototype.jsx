@@ -39,7 +39,8 @@ function newGrid(task) {
 }
 
 function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = null, saveState = null, workspaceOnly = false,
-  onNext = null, onPrevious = null, onHome = null, onSubmitCollection = null, collectionTitle = '', questionIndex = 1, questionCount = 1 }) {
+  onNext = null, onPrevious = null, onHome = null, onSubmitCollection = null, collectionTitle = '', questionIndex = 1, questionCount = 1,
+  guideScope = '' }) {
   const availableTasks = pilot ? [pilot.task] : TASKS
   const [task, setTask] = useState(pilot?.task || TASKS[0])
   const [grid, setGrid] = useState(() => pilot?.snapshot || newGrid(pilot?.task || TASKS[0]))
@@ -58,7 +59,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const [drawingVisible, setDrawingVisible] = useState(false)
   const [notebookVisible, setNotebookVisible] = useState(true)
   // The first notebook a pupil opens on a device starts with the gesture guide.
-  const [guideOpen, setGuideOpen] = useState(() => (pilot?.task || TASKS[0]).gridEnabled !== false && shouldShowNotebookTutorial())
+  const [guideOpen, setGuideOpen] = useState(() => (pilot?.task || TASKS[0]).gridEnabled !== false && shouldShowNotebookTutorial(guideScope))
   const isPilot = Boolean(pilot)
   const submitting = Boolean(saveState?.submitting)
   const editingLocked = grid.status === 'submitted' || submitting
@@ -580,7 +581,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
         <label htmlFor="diagnostic-snapshot">Arbetskopia av JSON för återläsning</label>
         <textarea id="diagnostic-snapshot" value={snapshotText} onChange={event => setSnapshotText(event.target.value)} spellCheck="false" />
       </section>}
-      {guideOpen && <NotebookTutorial onClose={() => setGuideOpen(false)} />}
+      {guideOpen && <NotebookTutorial scope={guideScope} onClose={() => setGuideOpen(false)} />}
     </main>
   )
 }

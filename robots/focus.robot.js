@@ -259,7 +259,7 @@ test('Fokus: inväntar klassvillkor, respekterar uppdrag och håller stängt vid
   let release
   const gate = new Promise(resolve => { release = resolve })
   // Active assignments come from every class and group through /api/me/assignments.
-  const assignments = breakGames => ({ assignments: [{ payload: payload({ breakGames }), activatedAt: 1, source: { type: 'class', id: 'x', name: 'x' } }] })
+  const assignments = breakGames => ({ assignments: [{ payload: payload({ breakGames }), activatedAt: 1, source: { type: 'class', id: 'x' } }] })
   await page.route('**/api/me/assignments', async route => {
     await gate
     await route.fulfill({ json: assignments(false) })

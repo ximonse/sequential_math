@@ -33,7 +33,8 @@ import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { generateMathPracticeProblem } from '../../lib/mathPracticeGenerator'
 import { recordMathPracticeResult } from '../../lib/mathPracticeResults'
 import { addMathPracticeSessionResult } from '../../lib/studentProfile'
-import { getFluencyTarget, isFluencyAssignment } from '../../lib/fluencySession'
+import { getFluencyLevelRange, getFluencyTarget, isFluencyAssignment, startFluencyLap } from '../../lib/fluencySession'
+import { recordTelemetryEvent } from '../../lib/telemetry'
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
 const ALL_TABLES_BOSS_URL = 'https://youtu.be/86URGgqONvA'
 const openTableBossVideo = () => {
@@ -95,11 +96,19 @@ function StudentSession() {
   const [fluencyAnswered, setFluencyAnswered] = useState(0)
   const [fluencyCompleted, setFluencyCompleted] = useState(false)
   const [fluencyPraise, setFluencyPraise] = useState('')
+  const [fluencyTopChoice, setFluencyTopChoice] = useState(false)
+  const fluencyLapRef = useRef(null)
+  const fluencyTopPromptedRef = useRef(false)
+  const fluencyTopChoicePendingRef = useRef(false)
   const fluency = useMemo(() => ({
     countRef: fluencyCountRef,
+    lapRef: fluencyLapRef,
+    topPromptedRef: fluencyTopPromptedRef,
+    topChoicePendingRef: fluencyTopChoicePendingRef,
     setAnswered: setFluencyAnswered,
     setCompleted: setFluencyCompleted,
-    setPraise: setFluencyPraise
+    setPraise: setFluencyPraise,
+    setTopChoice: setFluencyTopChoice
   }), [])
   const mathPracticeSessionStartRef = useRef(Date.now())
 
@@ -359,6 +368,23 @@ function StudentSession() {
   }
 
   const goHome = () => navigate(`/student/${studentId}`)
+  // A new lap keeps every saved result and mastery; only this session's climb restarts.
+  const restartFluencyLap = () => {
+    recordTelemetryEvent(profile, 'fluency_lap_restarted', {
+      sessionId: sessionTelemetryRef.current?.sessionId || ''
+    })
+    fluencyLapRef.current = startFluencyLap(sessionAssignment)
+    fluencyTopPromptedRef.current = false
+    fluencyCountRef.current = 0
+    setFluencyAnswered(0)
+    setFluencyCompleted(false)
+    setFluencyTopChoice(false)
+    goToNextProblem()
+  }
+  const quitAfterFluencyTop = () => {
+    void persistProfile(profile, { forceSync: true })
+    goHome()
+  }
   const overlayProps = buildSessionOverlayProps({
     activeBreakGame,
     showBreakSuggestion,
@@ -367,6 +393,10 @@ function StudentSession() {
     ncmCompletedSession,
     fluencyCompleted,
     fluencyTotal: fluencyAnswered,
+    fluencyTopChoice,
+    fluencyStartLevel: getFluencyLevelRange(sessionAssignment)[0],
+    onRestartFluencyLap: restartFluencyLap,
+    onQuitAfterFluencyTop: quitAfterFluencyTop,
     sessionAssignmentKind: sessionAssignment?.kind,
     progressionMilestone,
     feedback,

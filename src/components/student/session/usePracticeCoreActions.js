@@ -30,10 +30,12 @@ import {
   markDailyBossShown
 } from './sessionUtils'
 import {
+  advanceFluencyLap,
   FLUENCY_BREAK_MINUTES,
   getFluencyStep,
   getFluencyTarget,
-  isFluencyAssignment
+  isFluencyAssignment,
+  isFluencyTopLevelFinish
 } from '../../../lib/fluencySession'
 
 const BREAK_PROMPT_COOLDOWN_MS = 8 * 60 * 1000
@@ -106,6 +108,14 @@ export function usePracticeCoreActions({
 
     if (fluency && isFluencyAssignment(sessionAssignment)) {
       fluency.setPraise('')
+      if (fluency.topChoicePendingRef.current) {
+        fluency.topChoicePendingRef.current = false
+        fluency.setTopChoice(true)
+        setCurrentProblem(null)
+        setFeedback(null)
+        setAnswer('')
+        return
+      }
       if (fluency.countRef.current >= getFluencyTarget(sessionAssignment)) {
         fluency.setCompleted(true)
         setCurrentProblem(null)
@@ -154,6 +164,9 @@ export function usePracticeCoreActions({
       profile,
       sessionTelemetryRef.current?.sessionId
     )
+    if (fluency?.lapRef.current && isFluencyAssignment(sessionAssignment)) {
+      rules.forcedLevel = fluency.lapRef.current.level
+    }
 
     const recentHistory = [
       ...(Array.isArray(profile?.recentProblems) ? profile.recentProblems.slice(-NOVELTY_HISTORY_WINDOW) : []),
@@ -444,8 +457,18 @@ export function usePracticeCoreActions({
       const answered = fluency.countRef.current + 1
       fluency.countRef.current = answered
       fluency.setAnswered(answered)
+      fluency.lapRef.current = advanceFluencyLap(fluency.lapRef.current, correct, sessionAssignment)
       const step = getFluencyStep(answered, getFluencyTarget(sessionAssignment))
-      if (step.kind === 'break') {
+      if (!fluency.topPromptedRef.current && isFluencyTopLevelFinish(currentProblem, correct && !isPartial, sessionAssignment)) {
+        // The choice offers its own pause games, so it replaces this answer's break or praise.
+        fluency.topPromptedRef.current = true
+        fluency.topChoicePendingRef.current = true
+        recordTelemetryEvent(profile, 'fluency_top_level_reached', {
+          sessionId: sessionMeta?.sessionId || '',
+          level: Number(currentProblem.level),
+          answered
+        }, answerTs)
+      } else if (step.kind === 'break') {
         setPendingBreakSuggestion(true)
         setBreakDurationMinutes(FLUENCY_BREAK_MINUTES)
       } else if (step.kind === 'praise') {

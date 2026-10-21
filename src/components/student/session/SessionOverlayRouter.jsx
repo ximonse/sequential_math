@@ -4,6 +4,7 @@ import MilestoneOverlay from '../MilestoneOverlay'
 import NcmCompletionOverlay from '../NcmCompletionOverlay'
 import ProgressionMilestoneOverlay from '../ProgressionMilestoneOverlay'
 import DailyLevelStreakOverlay from '../DailyLevelStreakOverlay'
+import FluencyTopLevelChoice from '../FluencyTopLevelChoice'
 
 function SessionOverlayRouter({
   activeBreakGame,
@@ -23,6 +24,10 @@ function SessionOverlayRouter({
   ncmCompletedSession,
   fluencyCompleted,
   fluencyTotal,
+  fluencyTopChoice,
+  fluencyStartLevel,
+  onRestartFluencyLap,
+  onQuitAfterFluencyTop,
   sessionAssignmentKind,
   ncmTotalCount,
   ncmRemainingCount,
@@ -80,6 +85,20 @@ function SessionOverlayRouter({
       <DailyLevelStreakOverlay
         milestone={dailyLevelStreakMilestone}
         onContinue={onContinueAfterDailyLevelStreak}
+      />
+    )
+  }
+
+  // After a pause game the pupil returns here, so the choice still has to be made.
+  if (fluencyTopChoice) {
+    return (
+      <FluencyTopLevelChoice
+        startLevel={fluencyStartLevel}
+        showGames={breakGames}
+        onRestart={onRestartFluencyLap}
+        onOpenPong={onOpenPong}
+        onOpenSnake={onOpenSnake}
+        onQuit={onQuitAfterFluencyTop}
       />
     )
   }

@@ -9,6 +9,10 @@ export function buildSessionOverlayProps({
   ncmCompletedSession,
   fluencyCompleted,
   fluencyTotal,
+  fluencyTopChoice = false,
+  fluencyStartLevel = 1,
+  onRestartFluencyLap,
+  onQuitAfterFluencyTop,
   sessionAssignmentKind,
   progressionMilestone,
   feedback,
@@ -39,6 +43,7 @@ export function buildSessionOverlayProps({
     || showBreakSuggestion
     || tableMilestone
     || dailyLevelStreakMilestone
+    || fluencyTopChoice
     || fluencyCompleted
     || (ncmCompletedSession && sessionAssignmentKind === 'ncm')
     || (progressionMilestone && feedback)
@@ -61,6 +66,10 @@ export function buildSessionOverlayProps({
     ncmCompletedSession,
     fluencyCompleted,
     fluencyTotal,
+    fluencyTopChoice,
+    fluencyStartLevel,
+    onRestartFluencyLap,
+    onQuitAfterFluencyTop,
     sessionAssignmentKind,
     ncmTotalCount,
     ncmRemainingCount,

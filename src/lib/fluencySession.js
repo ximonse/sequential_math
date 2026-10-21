@@ -17,6 +17,36 @@ export function getFluencyTarget(assignment) {
   return Number.isFinite(target) && target > 0 ? Math.floor(target) : FLUENCY_DEFAULT_TARGET
 }
 
+export const FLUENCY_LAP_STREAK = 3
+
+function clampLevel(level, fallback) {
+  const value = Math.round(Number(level))
+  return Number.isFinite(value) ? Math.max(1, Math.min(12, value)) : fallback
+}
+
+export function getFluencyLevelRange(assignment) {
+  const min = clampLevel(assignment?.minLevel, 1)
+  return [min, Math.max(min, clampLevel(assignment?.maxLevel, 12))]
+}
+
+// Any correct answer on the assignment's top level offers the pupil a choice.
+export function isFluencyTopLevelFinish(problem, correct, assignment) {
+  return Boolean(correct) && Number(problem?.level) >= getFluencyLevelRange(assignment)[1]
+}
+
+// A restarted lap climbs from the bottom again: one level up per streak of correct answers.
+export function startFluencyLap(assignment) {
+  return { level: getFluencyLevelRange(assignment)[0], streak: 0 }
+}
+
+export function advanceFluencyLap(lap, correct, assignment) {
+  if (!lap) return lap
+  if (!correct) return { ...lap, streak: 0 }
+  const streak = lap.streak + 1
+  if (streak < FLUENCY_LAP_STREAK || lap.level >= getFluencyLevelRange(assignment)[1]) return { ...lap, streak }
+  return { level: lap.level + 1, streak: 0 }
+}
+
 // What should happen after the pupil's Nth answer: finish, break, praise, or nothing.
 export function getFluencyStep(answered, target) {
   if (answered >= target) return { kind: 'done' }

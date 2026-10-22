@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createPupil } from './lib/app.js'
-import { createTeacher, openTab, rowFor, selectOnlyClass, tableUnder, teacherLogin } from './lib/teacher.js'
+import { createTeacher, openClass, rowFor, selectOnlyClass, tableUnder, teacherLogin } from './lib/teacher.js'
 
 test('A teacher reveals private pupil names throughout their menus', async ({ page, request }) => {
   const tag = Math.random().toString(36).slice(2, 7)
@@ -33,9 +33,8 @@ test('A teacher reveals private pupil names throughout their menus', async ({ pa
   expect(csv).toContain(pupil.loginCode)
   expect(csv).not.toContain(creationName)
 
-  await openTab(page, 'Administration')
-  await page.getByText('Elever och elevkort (1)').click()
-  await expect(page.getByText(creationName, { exact: true }).first()).toBeVisible()
+  const classPanel = await openClass(page, className)
+  await expect(classPanel.getByText(creationName, { exact: true }).first()).toBeVisible()
   await expect(page.getByText(pupil.loginCode, { exact: true })).toHaveCount(0)
 
   await page.reload()

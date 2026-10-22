@@ -36,6 +36,15 @@ export async function openTab(page, label) {
   await page.waitForTimeout(400)
 }
 
+// Opens a class under Administration and, optionally, one of its tabs.
+export async function openClass(page, className, tab) {
+  await page.getByRole('button', { name: /^Administration Klasser/ }).click()
+  await page.getByRole('button', { name: new RegExp(`^${className} `) }).first().click()
+  const panel = page.locator('[data-open-item]')
+  if (tab) await panel.getByRole('tab', { name: tab, exact: true }).click()
+  return panel
+}
+
 export async function selectOnlyClass(page, className) {
   const panel = page.locator('section.dashboard-class-filter')
   await panel.getByRole('button', { name: 'Alla klasser', exact: true }).click()

@@ -5,7 +5,7 @@ import RecipientPicker from './RecipientPicker'
 import RecipientActiveOverview from './RecipientActiveOverview'
 import ChevronIcon from './ChevronIcon'
 import ClassOverviewPanel from './ClassOverviewPanel'
-import ClassManagementPanel from './ClassManagementPanel'
+import ClassesAndPupilsPanel from './ClassesAndPupilsPanel'
 import ClassFilterPanel from './ClassFilterPanel'
 import ClassMisconceptionHeatmap from './ClassMisconceptionHeatmap'
 import ClassMasteryLevelPanel from './ClassMasteryLevelPanel'
@@ -24,7 +24,6 @@ import SupportPriorityPanel from './SupportPriorityPanel'
 import TablePracticeProgressPanel from './TablePracticeProgressPanel'
 import TablePracticeOverviewPanel from './TablePracticeOverviewPanel'
 import LocalTestDataPanel from './LocalTestDataPanel'
-import TeacherAdminPanel from './TeacherAdminPanel'
 import LocalTestDataExportPanel from './LocalTestDataExportPanel'
 import TicketSectionContainer from './TicketSectionContainer'
 import DiagnosticPilotAssignmentPanel from './DiagnosticPilotAssignmentPanel'
@@ -57,7 +56,6 @@ const PANEL_DEFS = [
   { id: 'password',    title: 'Lösenordsåterställning' },
   { id: 'pausegames',  title: 'Pausspel — Highscore' },
   { id: 'ncm-grid',    title: 'Digitalt räknehäfte', adminOnly: true },
-  { id: 'admin',       title: 'Administration', adminOnly: true },
 ]
 
 const WORKSPACES = [
@@ -66,7 +64,7 @@ const WORKSPACES = [
   { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'mathresults', 'tickets'] },
   { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality', 'pausegames'] },
   { id: 'ncm', label: 'Screening', description: 'Screening och analys av elevens uträkning', panels: ['ncm-grid'], adminOnly: true },
-  { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management', 'password', 'admin'] }
+  { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management', 'password'] }
 ]
 
 const DEFAULT_COLLAPSED = Object.fromEntries(
@@ -148,7 +146,6 @@ export default function DashboardLayout({
   weekGoal,
   supportRows,
   handleCreateQuickAssignment,
-  addToClassId,
   setAddToClassId,
   classes,
   onLocalTestDataImported,
@@ -261,6 +258,9 @@ export default function DashboardLayout({
         : cloneElement(content, { collapseControl: toggle })}
     </div>
   }
+
+  // The class filter is hidden on Screening, so it must not pre-pick classes there.
+  const screeningRecipients = recipientsFollowFilter ? [] : recipients
 
   function renderPanelContent(id) {
     if (id === 'focus') return canViewAttention ? <AttentionModule students={tableProgressStudents} allStudents={students} /> : null
@@ -436,22 +436,22 @@ export default function DashboardLayout({
     )
     if (id === 'management') return (
       <>
-        <ClassManagementPanel
-          addToClassId={addToClassId}
-          onSetAddToClassId={setAddToClassId}
+        <ClassesAndPupilsPanel
           classes={classes}
-          onAddExistingStudentsToClass={handleAddExistingStudentsToClass}
-          onMoveStudent={handleMoveStudent}
-          onAddStudentsToClass={handleAddStudentsToClass}
+          students={students}
+          recordMatchesClassFilter={recordMatchesClassFilter}
+          onSetAddToClassId={setAddToClassId}
           rosterInput={rosterInput}
           onSetRosterInput={setRosterInput}
           classStatus={classStatus}
-          students={students}
-          recordMatchesClassFilter={recordMatchesClassFilter}
-          onStatusChange={setDashboardStatus}
+          onAddStudentsToClass={handleAddStudentsToClass}
+          onAddExistingStudentsToClass={handleAddExistingStudentsToClass}
+          onMoveStudent={handleMoveStudent}
           onOpenStudentDetail={handleOpenStudentDetail}
-          canResetStudentAccounts={teacherIdentity.role === 'super_admin'}
+          onStatusChange={setDashboardStatus}
+          onClassesChanged={onLocalTestDataImported}
         />
+        {teacherIdentity.role === 'super_admin' && <LocalTestDataExportPanel />}
       </>
     )
     if (id === 'results') return (
@@ -487,14 +487,8 @@ export default function DashboardLayout({
           Öppna räknehäftet
         </button>
       </section>
-      <DiagnosticPilotAssignmentPanel classes={classes} students={students} recipients={recipients} teacherGroups={teacherGroups} />
+      <DiagnosticPilotAssignmentPanel classes={classes} students={students} recipients={screeningRecipients} teacherGroups={teacherGroups} />
       </div>
-    )
-    if (id === 'admin') return (
-      <>
-        <TeacherAdminPanel />
-        {teacherIdentity.role === 'super_admin' && <LocalTestDataExportPanel />}
-      </>
     )
     return null
   }
@@ -562,7 +556,8 @@ export default function DashboardLayout({
             {activeWorkspace === 'focus' && !canViewAttention && <p role="status">Fokusresultat är endast tillgängliga för huvudadmin.</p>}
             {(activeWorkspace === 'teaching' || activeWorkspace === 'ncm') && (
               <RecipientPicker classes={classes} groups={teacherGroups} students={students}
-                recipients={recipients} onChange={setDeliveryPicks} followsFilter={recipientsFollowFilter && activeWorkspace === 'teaching'} />
+                recipients={activeWorkspace === 'ncm' ? screeningRecipients : recipients} onChange={setDeliveryPicks}
+                followsFilter={recipientsFollowFilter && activeWorkspace === 'teaching'} />
             )}
             {activeWorkspace === 'teaching' && (
               <RecipientActiveOverview recipients={recipients} assignmentTargets={assignmentTargets}

@@ -15,12 +15,12 @@ Mål: ett sätt att välja mottagare och en samlad bild av vad som är aktivt.
    elevposten via `mutateStudentRecord`. Elevens synk lägger bara på händelser
    och den äldre profilvägen räknar fältet som serverägt. Läraren måste ha
    åtkomst till eleven. `/api/me/assignments` läser även elevens egna.
-2. Gemensam mottagarväljare i lärarvyn: klasser, grupper och sökbara elever.
-   Används av uppdrag, tickets och screening i stället för tre olika väljare.
-3. Screening från samma val: hela klasser eller valda elever; elever i flera
-   klasser ger en utdelning per klass (servern kräver en klass per screening).
-4. Översikt "Aktivt för valda mottagare": uppdrag, aktiv ticket och
-   screeningar.
+2. Klart: gemensam mottagarväljare överst under Uppdrag & tickets och under
+   Screening. Uppdrag och tickets använder den; tickets egen väljare är borta.
+3. Klart: screening från samma val, en screening per klass. De gamla knapparna
+   (en elev, hela klassen) finns kvar tills vidare; städas i fas 2/4.
+4. Klart: "Aktivt för valda mottagare" visar egna uppdrag och aktiva tickets.
+   Screeningar listas fortfarande per klass under Screening.
 
 ## Fas 1: En enda Administration
 

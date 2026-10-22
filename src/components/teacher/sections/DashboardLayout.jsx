@@ -2,6 +2,7 @@ import { cloneElement, useEffect, useMemo, useState } from 'react'
 import AttentionModule from '../attention/AttentionModule'
 import AssignmentsPanel from './AssignmentsPanel'
 import RecipientPicker from './RecipientPicker'
+import RecipientActiveOverview from './RecipientActiveOverview'
 import ChevronIcon from './ChevronIcon'
 import ClassOverviewPanel from './ClassOverviewPanel'
 import ClassManagementPanel from './ClassManagementPanel'
@@ -571,6 +572,10 @@ export default function DashboardLayout({
             {(activeWorkspace === 'teaching' || activeWorkspace === 'ncm') && (
               <RecipientPicker classes={classes} groups={teacherGroups} students={students}
                 recipients={recipients} onChange={setDeliveryPicks} followsFilter={recipientsFollowFilter && activeWorkspace === 'teaching'} />
+            )}
+            {activeWorkspace === 'teaching' && (
+              <RecipientActiveOverview recipients={recipients} assignmentTargets={assignmentTargets}
+                assignments={assignments} groups={teacherGroups} students={students} />
             )}
             {WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
               .filter(id => visiblePanelDefs.some(panel => panel.id === id))

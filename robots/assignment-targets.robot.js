@@ -77,6 +77,7 @@ test('An assignment can be given to one pupil through the recipient picker', asy
   const subtraction = await createPreset(page, 'Bara subtraktion')
   await subtraction.row.getByRole('button', { name: 'Aktivera', exact: true }).click()
   await expect(subtraction.row).toContainText('Aktiv i')
+  await expect(page.locator('[data-recipient-overview-row]')).toContainText(`Uppdrag: ${subtraction.title}`)
   expect(await pupilCards(browser, inGroup)).toContain(subtraction.title)
   expect(await pupilCards(browser, outside)).not.toContain(subtraction.title)
   await subtraction.row.getByRole('button', { name: 'Avaktivera', exact: true }).click()
@@ -110,6 +111,7 @@ test('A ticket shown on the home page reaches only the pupil picked in the recip
     await context.close()
     return text
   }
+  await expect(page.locator('[data-recipient-overview-row]').first()).toContainText('Ticket:')
   expect(await homeText(inGroup)).toContain(question.slice(0, 20))
   expect(await homeText(outside)).not.toContain(question.slice(0, 20))
 })

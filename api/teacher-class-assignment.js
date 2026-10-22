@@ -1,16 +1,16 @@
 /**
  * PUT /api/teacher-class-assignment
- * Body: { targetType: 'class'|'group', targetId, action: 'activate'|'deactivate'|'clear',
+ * Body: { targetType: 'class'|'group'|'student', targetId, action: 'activate'|'deactivate'|'clear',
  *   assignmentPayload, assignmentId } — changes the class's or group's list of active
  * assignments. Older clients send { classId, assignmentPayload }: a payload activates
  * it and an empty payload clears the list. Pupils read it through GET /api/me/assignments
  * (and the newest one through GET /api/class-config). Requires teacher auth.
  */
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
-import { canAccessClass } from './_studentAccess.js'
+import { assertTeacherStudentAccess, canAccessClass } from './_studentAccess.js'
 import { mutateClassRecord } from './_classStore.js'
 import { authCanManageGroup, listGroupRecords, mutateGroupRecord } from './_groupStore.js'
-import { studentStoreError } from './_studentStore.js'
+import { mutateStudentRecord, studentStoreError } from './_studentStore.js'
 import { decodeAssignmentPayload, encodeAssignmentPayload } from '../src/lib/assignments.js'
 import { activeAssignmentFields, withActiveAssignment, withoutActiveAssignment } from '../src/lib/activeAssignments.js'
 
@@ -25,7 +25,7 @@ export default async function handler(req, res) {
   const auth = await getLiveTeacherAuthPayload(req)
   if (!auth) return res.status(401).json({ error: 'Unauthorized' })
 
-  const targetType = req.body?.targetType === 'group' ? 'group' : 'class'
+  const targetType = ['group', 'student'].includes(req.body?.targetType) ? req.body.targetType : 'class'
   const targetId = String(req.body?.targetId || req.body?.classId || '').trim()
   if (!targetId) return res.status(400).json({ error: 'targetId required' })
 
@@ -44,7 +44,14 @@ export default async function handler(req, res) {
 
   try {
     let saved
-    if (targetType === 'group') {
+    if (targetType === 'student') {
+      // Kept on the pupil record; the legacy profile save treats it as server-owned.
+      saved = await mutateStudentRecord(targetId, async current => {
+        if (!current) throw studentStoreError(404, 'Eleven finns inte.')
+        await assertTeacherStudentAccess(req, current)
+        return { ...current, ...change(current) }
+      })
+    } else if (targetType === 'group') {
       const group = (await listGroupRecords()).find(item => item.id === targetId)
       if (!group) return res.status(404).json({ error: 'Gruppen finns inte.' })
       if (!authCanManageGroup(auth, group)) return res.status(403).json({ error: 'Not authorized for this group' })

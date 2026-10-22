@@ -43,6 +43,7 @@ const PRESET_GROUPS = [
 export default function AssignmentsPanel({
   assignments,
   assignmentTargets = [],
+  recipients = [],
   copiedId,
   formatAssignmentSummaryLine,
   onCreatePreset,
@@ -66,7 +67,7 @@ export default function AssignmentsPanel({
     : null
   const classLoginToken = String(selectedClass?.loginToken || '').trim()
   const canShareAssignment = Boolean(classLoginToken)
-  const selectedTargets = assignmentTargets.filter(item => selectedClassIds.includes(item.id))
+  const selectedTargets = assignmentTargets.filter(item => recipients.some(pick => pick.type === item.type && pick.id === item.id))
 
   return (
     <section className="bg-white rounded-lg shadow p-3" style={{ order: -60 }}>

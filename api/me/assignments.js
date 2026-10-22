@@ -16,6 +16,7 @@ export async function listPupilActiveAssignments(profile, { store = kv } = {}) {
     await store.exists(`class_deleted:${id}`) ? null : store.get(`class:${id}`))))
   const groups = (await listGroupRecords({ store })).filter(group => (group.pupilIds || []).includes(studentId))
   const sources = [
+    { record: profile, source: { type: 'student', id: studentId } },
     // Group names are the teachers' own labels, so pupils only get the kind and id.
     ...classes.filter(record => record && !record.archived).map(record => ({ record, source: { type: 'class', id: record.id } })),
     ...groups.map(record => ({ record, source: { type: 'group', id: record.id } }))

@@ -65,6 +65,25 @@ test('Several assignments activated for a group reach its pupils only, and can b
     .getByRole('button', { name: /^Avaktivera/ })).toBeVisible()
 })
 
+test('An assignment can be given to one pupil through the recipient picker', async ({ browser, page, request }) => {
+  const { inGroup, outside, teacher } = await setup(request)
+  await teacherLogin(page, teacher)
+  await openTab(page, 'Uppdrag & tickets')
+  const picker = page.locator('[data-recipient-picker]')
+  // Pupils are named "Grupp <tag>" and "Utanför <tag>" in setup().
+  await picker.getByRole('searchbox', { name: 'Sök elev' }).fill('Grupp')
+  await picker.getByRole('button', { name: /^Lägg till Grupp/ }).first().click()
+  await expect(picker.locator('[data-recipient-summary]')).toHaveText('1 elev totalt')
+  const subtraction = await createPreset(page, 'Bara subtraktion')
+  await subtraction.row.getByRole('button', { name: 'Aktivera', exact: true }).click()
+  await expect(subtraction.row).toContainText('Aktiv i')
+  expect(await pupilCards(browser, inGroup)).toContain(subtraction.title)
+  expect(await pupilCards(browser, outside)).not.toContain(subtraction.title)
+  await subtraction.row.getByRole('button', { name: 'Avaktivera', exact: true }).click()
+  await expect(subtraction.row).toContainText('Inte aktiv')
+  expect(await pupilCards(browser, inGroup)).not.toContain(subtraction.title)
+})
+
 test('An assignment activated for a class shows per class and starts for its pupils', async ({ browser, page, request }) => {
   const { klass, outside, teacher } = await setup(request)
   await teacherLogin(page, teacher)

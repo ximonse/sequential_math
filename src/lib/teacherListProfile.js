@@ -18,6 +18,7 @@ const TEACHER_LIST_FIELDS = [
   'ticketInbox',
   'ticketRevealAll',
   'ticketResponses',
+  'activeAssignments',
   'classId',
   'classIds',
   'className',

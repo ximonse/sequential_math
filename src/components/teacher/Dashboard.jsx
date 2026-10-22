@@ -271,11 +271,17 @@ function Dashboard() {
     () => new Map(classFilterOptions.map(item => [item.id, item.name])),
     [classFilterOptions]
   )
-  // Where each assignment is active, from the server's class and group records.
+  // Where each assignment is active, from the server's class, group and pupil records.
   const assignmentTargets = useMemo(() => [
     ...classes.map(item => ({ type: 'class', id: String(item.id), name: item.name || String(item.id), assignmentIds: activeAssignmentIds(item) })),
-    ...teacherGroups.map(item => ({ type: 'group', id: String(item.id), name: `Grupp: ${item.name}`, assignmentIds: activeAssignmentIds(item) }))
-  ], [classes, teacherGroups])
+    ...teacherGroups.map(item => ({ type: 'group', id: String(item.id), name: `Grupp: ${item.name}`, assignmentIds: activeAssignmentIds(item) })),
+    ...students.map(item => ({ type: 'student', id: String(item.studentId), name: item.name || item.studentId, assignmentIds: activeAssignmentIds(item) }))
+  ], [classes, teacherGroups, students])
+  // Who to hand work to. Until the teacher picks, it follows the class filter above.
+  const [deliveryPicks, setDeliveryPicks] = useState(null)
+  const recipients = useMemo(() => deliveryPicks ?? selectedClassIds.map(id => ({
+    type: teacherGroups.some(group => String(group.id) === String(id)) ? 'group' : 'class', id: String(id)
+  })), [deliveryPicks, selectedClassIds, teacherGroups])
 
   const {
     hasMissingDirectStudent,
@@ -364,19 +370,20 @@ function Dashboard() {
       return String(classes.find(item => String(item.id) === String(selectedClassIds[0]))?.loginToken || '').trim()
     },
     getTargets: ({ selectedOnly = false } = {}) => {
-      const all = [
-        ...classes.map(item => ({ type: 'class', id: String(item.id), name: item.name || String(item.id) })),
-        ...teacherGroups.map(item => ({ type: 'group', id: String(item.id), name: `Grupp: ${item.name}` }))
-      ]
-      if (selectedClassIds.length > 0) return all.filter(item => selectedClassIds.includes(item.id))
-      return selectedOnly ? [] : all.filter(item => item.type === 'class')
+      if (recipients.length > 0) return recipients.flatMap(pick => {
+        const target = assignmentTargets.find(item => item.type === pick.type && item.id === pick.id)
+        return target ? [{ type: target.type, id: target.id, name: target.name }] : []
+      })
+      return selectedOnly ? [] : assignmentTargets.filter(item => item.type === 'class').map(({ type, id, name }) => ({ type, id, name }))
     },
     getActiveTargets: assignmentId => assignmentTargets.filter(item => item.assignmentIds.includes(assignmentId)),
     onTargetActiveChange: (target, activeAssignments) => {
       const update = list => list.map(item => String(item.id) === target.id
         ? { ...item, activeAssignments, activeAssignmentPayload: activeAssignments[0]?.payload || null } : item)
       if (target.type === 'group') setTeacherGroups(update)
-      else setClasses(update)
+      else if (target.type === 'student') {
+        setStudents(list => list.map(item => String(item.studentId) === target.id ? { ...item, activeAssignments } : item))
+      } else setClasses(update)
     }
   })
 
@@ -451,7 +458,8 @@ function Dashboard() {
         handleToggleClassFilter, classStats, dataQualitySummary, usageInsights, formatDuration,
         toPercent, assignments, copiedId,
         formatAssignmentSummaryLine, handleCreatePreset, handleCreateMathPractice, handleDeactivateAssignment, handleClearAllAssignments,
-        handleActivateAssignment, assignmentTargets, handleDeleteAssignment, handleCopyAssignmentLink, classNameById,
+        handleActivateAssignment, assignmentTargets, recipients, setDeliveryPicks, teacherGroups,
+        recipientsFollowFilter: deliveryPicks === null, handleDeleteAssignment, handleCopyAssignmentLink, classNameById,
         recordMatchesClassFilter, setStudents, setDashboardStatus, handleOpenStudentDetail,
         classOverviewMeta, filteredRows, detailStudentId,
         detailStudentOptions, hasMissingDirectStudent, setDetailStudentId, handleExportStudentDetailCsv,

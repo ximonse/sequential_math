@@ -1,6 +1,7 @@
 import { cloneElement, useEffect, useMemo, useState } from 'react'
 import AttentionModule from '../attention/AttentionModule'
 import AssignmentsPanel from './AssignmentsPanel'
+import RecipientPicker from './RecipientPicker'
 import ChevronIcon from './ChevronIcon'
 import ClassOverviewPanel from './ClassOverviewPanel'
 import ClassManagementPanel from './ClassManagementPanel'
@@ -104,6 +105,10 @@ export default function DashboardLayout({
   handleClearAllAssignments,
   handleActivateAssignment,
   assignmentTargets,
+  recipients,
+  setDeliveryPicks,
+  teacherGroups = [],
+  recipientsFollowFilter = false,
   handleDeleteAssignment,
   handleCopyAssignmentLink,
   classNameById,
@@ -400,9 +405,13 @@ export default function DashboardLayout({
       />
     )
     if (id === 'assignments') return (
+      <>
+      <RecipientPicker classes={classes} groups={teacherGroups} students={students}
+        recipients={recipients} onChange={setDeliveryPicks} followsFilter={recipientsFollowFilter} />
       <AssignmentsPanel
         assignments={assignments}
         assignmentTargets={assignmentTargets}
+        recipients={recipients}
         copiedId={copiedId}
         formatAssignmentSummaryLine={formatAssignmentSummaryLine}
         onCreatePreset={handleCreatePreset}
@@ -415,6 +424,7 @@ export default function DashboardLayout({
         classes={classes}
         selectedClassIds={selectedClassIds}
       />
+      </>
     )
     if (id === 'tickets') return (
       <TicketSectionContainer

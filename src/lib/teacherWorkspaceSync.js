@@ -1,4 +1,4 @@
-import { getTeacherApiToken } from './teacherAuth'
+import { getTeacherApiToken } from './teacherAuth.js'
 
 export async function loadTeacherWorkspace() {
   const token = getTeacherApiToken()

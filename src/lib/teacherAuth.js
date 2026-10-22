@@ -1,4 +1,4 @@
-import { isSchoolAdmin, isSuperAdmin, normalizeTeacherRole } from './teacherRoles'
+import { isSchoolAdmin, isSuperAdmin, normalizeTeacherRole } from './teacherRoles.js'
 const TEACHER_AUTH_KEY = 'mathapp_teacher_auth'
 const TEACHER_API_TOKEN_KEY = 'mathapp_teacher_api_token'
 const TEACHER_IDENTITY_KEY = 'mathapp_teacher_identity'

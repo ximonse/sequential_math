@@ -1,4 +1,4 @@
-import { mergeWorkspaceItems, saveTeacherWorkspacePatch } from './teacherWorkspaceSync'
+import { mergeWorkspaceItems, saveTeacherWorkspacePatch } from './teacherWorkspaceSync.js'
 const ASSIGNMENTS_KEY = 'mathapp_assignments'
 const ASSIGNMENT_PAYLOAD_VERSION = 1
 const KNOWN_OPERATION_TYPES = new Set([

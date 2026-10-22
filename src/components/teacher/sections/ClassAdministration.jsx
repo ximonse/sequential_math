@@ -19,6 +19,14 @@ export default function ClassesTab({ classes, teachers, onRefresh, setStatus }) 
     [classes, showArchived]
   )
 
+  const withoutSchool = visibleClasses.filter(classRecord => !classRecord.schoolId)
+  const withSchool = visibleClasses.filter(classRecord => classRecord.schoolId)
+  const renderRow = classRecord => (
+    <ClassRow key={classRecord.id} classRecord={classRecord} teachers={teachers} extras={extras}
+      directory={directory} canDelete={canManageSchools}
+      onLifecycle={updateLifecycle} onRefresh={onRefresh} setStatus={setStatus} />
+  )
+
   const handleCreate = async (event) => {
     event.preventDefault()
     if (!newName.trim()) return
@@ -73,13 +81,14 @@ export default function ClassesTab({ classes, teachers, onRefresh, setStatus }) 
         <input type="checkbox" checked={showArchived} onChange={event => setShowArchived(event.target.checked)} />
         Visa arkiverade klasser
       </label>
+      {withoutSchool.length > 0 && <section data-classes-without-school aria-labelledby="classes-without-school" className="space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-3">
+        <h3 id="classes-without-school" className="text-sm font-semibold text-amber-900">Utan skola ({withoutSchool.length})</h3>
+        <p className="text-xs text-amber-900">De här klasserna saknar skola. Välj skola och spara.</p>
+        {withoutSchool.map(renderRow)}
+      </section>}
       <div className="space-y-2">
         {visibleClasses.length === 0 && <p className="text-xs text-gray-400">Inga klasser att visa.</p>}
-        {visibleClasses.map(classRecord => (
-          <ClassRow key={classRecord.id} classRecord={classRecord} teachers={teachers} extras={extras}
-            directory={directory} canDelete={canManageSchools}
-            onLifecycle={updateLifecycle} onRefresh={onRefresh} setStatus={setStatus} />
-        ))}
+        {withSchool.map(renderRow)}
       </div>
     </div>
   )
@@ -99,6 +108,10 @@ function ClassRow({ classRecord, teachers, extras, directory, canDelete, onLifec
   const handleSave = async () => {
     if (enabledOperations.length === 0) {
       setStatus('Välj minst ett räknesätt för klassens vanliga träning.')
+      return
+    }
+    if (!schoolId) {
+      setStatus('Välj en skola för klassen.')
       return
     }
     setBusy(true)

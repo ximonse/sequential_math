@@ -4,7 +4,7 @@ import { archiveClassRecord, deleteClassRecord, mutateClassRecord, restoreClassR
 import { getLiveTeacherAuthPayload, withCors } from '../../_helpers.js'
 import { revalidateGroupsForTeacher } from '../../_groupStore.js'
 import { studentStoreError } from '../../_studentStore.js'
-import { hasSchoolScope, isSchoolAdminRole, isSuperAdminRole } from '../../_teacherRoles.js'
+import { hasClassAdminScope, hasSchoolScope, isSchoolAdminRole, isSuperAdminRole } from '../../_teacherRoles.js'
 import { classOperationsAreValid, normalizeClassOperations } from '../../../src/lib/classOperations.js'
 import { STANDARD_OPERATIONS } from '../../../src/lib/operations.js'
 
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
   try {
     const classRecord = await kv.get(`class:${id}`)
     if (!classRecord && req.method !== 'DELETE') return res.status(404).json({ error: 'Class not found' })
-    if (classRecord && !hasSchoolScope(auth, classRecord.schoolId)) {
+    if (classRecord && !hasClassAdminScope(auth, classRecord.schoolId)) {
       return res.status(403).json({ error: 'Klassen ligger utanför din behörighet.' })
     }
 

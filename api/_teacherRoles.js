@@ -25,6 +25,13 @@ export function hasSchoolScope(auth, schoolId) {
   return Array.isArray(auth.schoolIds) && auth.schoolIds.map(String).includes(String(schoolId))
 }
 
+// Classes saved without a school are only reachable by the super admin, who
+// can then move them to a school.
+export function hasClassAdminScope(auth, schoolId) {
+  if (!schoolId) return Boolean(auth) && isSuperAdminRole(auth.role, auth.isAdmin)
+  return hasSchoolScope(auth, schoolId)
+}
+
 export function canManageClass(auth, classRecord) {
   if (!auth || !classRecord) return false
   if (isSuperAdminRole(auth.role, auth.isAdmin)) return true

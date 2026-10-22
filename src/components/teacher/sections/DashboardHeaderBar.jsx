@@ -13,7 +13,6 @@ function DashboardHeaderBar({
   fillingPupilNames,
   onJumpToPasswordReset,
   onGoDashboard,
-  onGoAdmin,
   onLogout
 }) {
   return (
@@ -37,7 +36,6 @@ function DashboardHeaderBar({
           <p className="font-semibold leading-tight">{teacherName}</p>
           <p className="text-[10px] leading-tight opacity-80">{teacherRole}</p>
         </div>
-        {isAdmin && <button onClick={onGoAdmin} className="rounded-md bg-indigo-600 px-2 py-1.5 text-xs text-white hover:bg-indigo-700">Administration</button>}
         {!isDirectStudentView && <button onClick={onJumpToPasswordReset} className="rounded-md border bg-white px-2 py-1.5 text-xs text-gray-600 hover:bg-gray-50">Äldre inloggningar</button>}
         {isDirectStudentView && <button onClick={onGoDashboard} className="rounded-md bg-indigo-600 px-2 py-1.5 text-xs text-white hover:bg-indigo-700">Elevöversikt</button>}
         <button onClick={onLogout} className="rounded-md bg-gray-800 px-2 py-1.5 text-xs text-white hover:bg-gray-900">Logga ut</button>

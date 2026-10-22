@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { canManageClass, canManageTeacher, normalizeTeacherRole } from './_teacherRoles.js'
+import { canManageClass, canManageTeacher, hasClassAdminScope, normalizeTeacherRole } from './_teacherRoles.js'
 
 describe('teacher role boundaries', () => {
+  it('lets only the super admin reach classes saved without a school', () => {
+    expect(hasClassAdminScope({ role: 'super_admin' }, '')).toBe(true)
+    expect(hasClassAdminScope({ role: 'school_admin', schoolIds: ['north'] }, '')).toBe(false)
+    expect(hasClassAdminScope({ role: 'school_admin', schoolIds: ['north'] }, 'north')).toBe(true)
+    expect(hasClassAdminScope(null, '')).toBe(false)
+  })
+
   it('does not infer global administration from a non-teacher role', () => {
     expect(normalizeTeacherRole('school_admin')).toBe('school_admin')
     expect(normalizeTeacherRole('unexpected')).toBe('teacher')

@@ -4,7 +4,7 @@ import { createClassRecord } from '../_classStore.js'
 import { createClassLoginToken } from '../_studentSession.js'
 import { assertTeachersBelongToSchool, validateSchoolId } from '../_schoolStore.js'
 import { getLiveTeacherAuthPayload, withCors } from '../_helpers.js'
-import { hasSchoolScope, isSchoolAdminRole } from '../_teacherRoles.js'
+import { hasClassAdminScope, hasSchoolScope, isSchoolAdminRole } from '../_teacherRoles.js'
 
 export default async function handler(req, res) {
   withCors(res, { methods: 'GET,POST,OPTIONS', headers: 'Content-Type, x-teacher-token' }, req)
@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     const records = (await Promise.all(ids.map(id => kv.get(`class:${id}`)))).filter(Boolean)
 
     if (req.method === 'GET') {
-      return res.status(200).json({ classes: records.filter(record => hasSchoolScope(auth, record.schoolId)) })
+      return res.status(200).json({ classes: records.filter(record => hasClassAdminScope(auth, record.schoolId)) })
     }
 
     if (req.method === 'POST') {

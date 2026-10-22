@@ -25,7 +25,7 @@ import TablePracticeProgressPanel from './TablePracticeProgressPanel'
 import TablePracticeOverviewPanel from './TablePracticeOverviewPanel'
 import LocalTestDataPanel from './LocalTestDataPanel'
 import TeacherAdminPanel from './TeacherAdminPanel'
-import TeacherPasswordNoticePanel from './TeacherPasswordNoticePanel'
+import LocalTestDataExportPanel from './LocalTestDataExportPanel'
 import TicketSectionContainer from './TicketSectionContainer'
 import DiagnosticPilotAssignmentPanel from './DiagnosticPilotAssignmentPanel'
 
@@ -64,9 +64,9 @@ const WORKSPACES = [
   { id: 'progress', label: 'Framsteg', description: 'Kunskapsområden och elever', panels: ['mastery', 'tableoverview', 'detail', 'overview', 'tabledev'] },
   { id: 'focus', label: 'Fokusövningar', description: 'Grupp, individ och pass', panels: ['focus'], attentionOnly: true },
   { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'mathresults', 'tickets'] },
-  { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality'] },
+  { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality', 'pausegames'] },
   { id: 'ncm', label: 'Screening', description: 'Screening och analys av elevens uträkning', panels: ['ncm-grid'], adminOnly: true },
-  { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management', 'password', 'pausegames', 'admin'] }
+  { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management', 'password', 'admin'] }
 ]
 
 const DEFAULT_COLLAPSED = Object.fromEntries(
@@ -76,6 +76,7 @@ const LS_COLLAPSED_KEY = 'mathapp_dashboard_panel_collapsed_v2'
 
 export default function DashboardLayout({
   isFocusView = false,
+  initialWorkspace,
   isDirectStudentView,
   detailStudentProfile,
   cloudSyncStatus,
@@ -147,10 +148,6 @@ export default function DashboardLayout({
   weekGoal,
   supportRows,
   handleCreateQuickAssignment,
-  classNameInput,
-  setClassNameInput,
-  handleCreateClass,
-  handleCreatePilotRoster,
   addToClassId,
   setAddToClassId,
   classes,
@@ -161,12 +158,9 @@ export default function DashboardLayout({
   rosterInput,
   setRosterInput,
   classStatus,
-  handleDeleteClass,
-  handleRenameClass,
   handleSetTeacherPupilLabel,
   showPupilNames,
   fillingPupilNames,
-  handleSaveClassExtras,
   resultsPanelProps,
   PASSWORD_RESET_SECTION_ID,
   passwordResetRows,
@@ -181,7 +175,8 @@ export default function DashboardLayout({
   const canViewAttention = canViewAttentionResults(teacherIdentity)
   const teacherName = String(teacherIdentity.displayName || 'Lärare').trim() || 'Lärare'
   const teacherRole = getTeacherRoleLabel(teacherIdentity.role)
-  const [activeWorkspace, setActiveWorkspace] = useState(() => isFocusView ? 'focus' : 'progress')
+  const [activeWorkspace, setActiveWorkspace] = useState(() => isFocusView ? 'focus'
+    : WORKSPACES.some(workspace => workspace.id === initialWorkspace) ? initialWorkspace : 'progress')
   useEffect(() => {
     if (isFocusView) setActiveWorkspace('focus')
     else setActiveWorkspace(current => current === 'focus' ? 'progress' : current)
@@ -441,12 +436,7 @@ export default function DashboardLayout({
     )
     if (id === 'management') return (
       <>
-        {teacherIdentity.role === 'super_admin' ? <TeacherPasswordNoticePanel /> : null}
         <ClassManagementPanel
-          classNameInput={classNameInput}
-          onSetClassNameInput={setClassNameInput}
-          onCreateClass={handleCreateClass}
-          onCreatePilotRoster={handleCreatePilotRoster}
           addToClassId={addToClassId}
           onSetAddToClassId={setAddToClassId}
           classes={classes}
@@ -458,9 +448,6 @@ export default function DashboardLayout({
           classStatus={classStatus}
           students={students}
           recordMatchesClassFilter={recordMatchesClassFilter}
-          onDeleteClass={handleDeleteClass}
-          onRenameClass={handleRenameClass}
-          onSaveClassExtras={handleSaveClassExtras}
           onStatusChange={setDashboardStatus}
           onOpenStudentDetail={handleOpenStudentDetail}
           canResetStudentAccounts={teacherIdentity.role === 'super_admin'}
@@ -503,7 +490,12 @@ export default function DashboardLayout({
       <DiagnosticPilotAssignmentPanel classes={classes} students={students} recipients={recipients} teacherGroups={teacherGroups} />
       </div>
     )
-    if (id === 'admin') return <TeacherAdminPanel />
+    if (id === 'admin') return (
+      <>
+        <TeacherAdminPanel />
+        {teacherIdentity.role === 'super_admin' && <LocalTestDataExportPanel />}
+      </>
+    )
     return null
   }
 
@@ -536,7 +528,6 @@ export default function DashboardLayout({
             window.setTimeout(handleJumpToPasswordReset, 0)
           }}
           onGoDashboard={() => navigate('/teacher')}
-          onGoAdmin={() => navigate('/teacher/admin')}
           onLogout={handleLogout}
         />
 

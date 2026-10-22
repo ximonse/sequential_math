@@ -226,19 +226,14 @@ function Dashboard() {
     handleCloudRefreshNow,
     handleLogout,
     handleJumpToPasswordReset,
-    handleCreateClass,
-    handleCreatePilotRoster,
     handleAddExistingStudentsToClass,
     handleMoveStudent,
     handleAddStudentsToClass,
-    handleDeleteClass,
     handleSetTeacherPupilLabel,
-    handleRenameClass,
     handleToggleClassFilter,
     clearClassFilter,
     handleResetStudentPassword,
-    handleOpenStudentDetail,
-    handleSaveClassExtras
+    handleOpenStudentDetail
   } = buildDashboardClassAndAuthActions({
     loadStudents,
     addToClassId,
@@ -450,6 +445,7 @@ function Dashboard() {
     <>
     <DashboardLayout
       isFocusView={location.pathname === '/teacher/focus'}
+      initialWorkspace={location.state?.workspace}
       {...{
         isDirectStudentView, detailStudentProfile, cloudSyncStatus, formatTimeAgo,
         handleJumpToPasswordReset, navigate, handleLogout, dashboardStatus,
@@ -470,8 +466,8 @@ function Dashboard() {
         handleDetailLevelErrorSortByChange, handleDetailLevelErrorSortDirChange,
         getErrorShareColorClass, dailyActivityBreakdown, inactivityBuckets, classSummaries, weekGoal,
         supportRows, handleCreateQuickAssignment,
-        classNameInput, setClassNameInput, handleCreateClass, handleCreatePilotRoster, addToClassId, setAddToClassId,
-        classes, onLocalTestDataImported: loadStudents, handleAddExistingStudentsToClass, handleMoveStudent, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus, handleDeleteClass, handleRenameClass, handleSaveClassExtras,
+        addToClassId, setAddToClassId,
+        classes, onLocalTestDataImported: loadStudents, handleAddExistingStudentsToClass, handleMoveStudent, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus,
         handleSetTeacherPupilLabel, showPupilNames, fillingPupilNames,
         resultsPanelProps, PASSWORD_RESET_SECTION_ID, passwordResetRows, passwordResetSearch,
         setPasswordResetSearch, passwordResetStatus, handleResetStudentPassword, passwordResetBusyId

@@ -405,9 +405,6 @@ export default function DashboardLayout({
       />
     )
     if (id === 'assignments') return (
-      <>
-      <RecipientPicker classes={classes} groups={teacherGroups} students={students}
-        recipients={recipients} onChange={setDeliveryPicks} followsFilter={recipientsFollowFilter} />
       <AssignmentsPanel
         assignments={assignments}
         assignmentTargets={assignmentTargets}
@@ -424,7 +421,6 @@ export default function DashboardLayout({
         classes={classes}
         selectedClassIds={selectedClassIds}
       />
-      </>
     )
     if (id === 'tickets') return (
       <TicketSectionContainer
@@ -434,6 +430,8 @@ export default function DashboardLayout({
         selectedClassIds={selectedClassIds}
         classNameById={classNameById}
         recordMatchesClassFilter={recordMatchesClassFilter}
+        recipients={recipients}
+        teacherGroups={teacherGroups}
         onSetStudents={setStudents}
         onStatusChange={setDashboardStatus}
         onOpenStudentDetail={handleOpenStudentDetail}
@@ -570,6 +568,10 @@ export default function DashboardLayout({
             {activeWorkspace === 'progress' && import.meta.env.DEV && renderProgressModule('testdata', 'Lokal testdata', <LocalTestDataPanel mode="import" onImported={onLocalTestDataImported} />)}
 
             {activeWorkspace === 'focus' && !canViewAttention && <p role="status">Fokusresultat är endast tillgängliga för huvudadmin.</p>}
+            {activeWorkspace === 'teaching' && (
+              <RecipientPicker classes={classes} groups={teacherGroups} students={students}
+                recipients={recipients} onChange={setDeliveryPicks} followsFilter={recipientsFollowFilter} />
+            )}
             {WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
               .filter(id => visiblePanelDefs.some(panel => panel.id === id))
               .map(id => activeWorkspace === 'progress'

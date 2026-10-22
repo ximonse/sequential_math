@@ -28,7 +28,8 @@ import {
   buildTicketTagOptions,
   buildTicketTemplateRows,
   filterTicketStudentOptions,
-  getSelectedTicketDispatch
+  getSelectedTicketDispatch,
+  splitTicketRecipients
 } from './ticketSectionDataHelpers'
 import { buildTicketSectionPanelProps } from './ticketSectionPanelPropsBuilder'
 import {
@@ -44,6 +45,8 @@ export default function TicketSectionContainer({
   selectedClassIds,
   classNameById,
   recordMatchesClassFilter,
+  recipients,
+  teacherGroups = [],
   onSetStudents,
   onStatusChange,
   onOpenStudentDetail,
@@ -128,6 +131,15 @@ export default function TicketSectionContainer({
     [ticketResponseRows]
   )
 
+  // With the shared recipient picker the dashboard owns the selection.
+  const sharedRecipients = Array.isArray(recipients)
+  const sharedTargets = useMemo(
+    () => (sharedRecipients ? splitTicketRecipients(recipients, teacherGroups, students) : null),
+    [sharedRecipients, recipients, teacherGroups, students]
+  )
+  const targetClassIds = sharedTargets ? sharedTargets.classIds : ticketTargetClassIds
+  const targetStudentIds = sharedTargets ? sharedTargets.studentIds : ticketTargetStudentIds
+
   const ticketTargetClassSet = useMemo(() => new Set(ticketTargetClassIds), [ticketTargetClassIds])
   const ticketTargetStudentSet = useMemo(() => new Set(ticketTargetStudentIds), [ticketTargetStudentIds])
 
@@ -143,16 +155,16 @@ export default function TicketSectionContainer({
 
   const ticketResolvedTargetStudentIds = useMemo(
     () => buildTicketResolvedTargetStudentIds({
-      ticketTargetClassIds,
-      ticketTargetStudentIds,
+      ticketTargetClassIds: targetClassIds,
+      ticketTargetStudentIds: targetStudentIds,
       filteredStudents,
       students,
       recordMatchesClassFilter
     }),
-    [ticketTargetClassIds, ticketTargetStudentIds, filteredStudents, students, recordMatchesClassFilter]
+    [targetClassIds, targetStudentIds, filteredStudents, students, recordMatchesClassFilter]
   )
 
-  const ticketHasExplicitTargets = ticketTargetClassIds.length > 0 || ticketTargetStudentIds.length > 0
+  const ticketHasExplicitTargets = targetClassIds.length > 0 || targetStudentIds.length > 0
 
   const ticketDispatchMap = useMemo(
     () => buildTicketDispatchMap(ticketDispatches),
@@ -382,8 +394,9 @@ export default function TicketSectionContainer({
     ticketTargetStudentSet,
     ticketResolvedTargetStudentIds,
     ticketHasExplicitTargets,
-    ticketTargetClassIds,
-    ticketTargetStudentIds,
+    ticketTargetClassIds: targetClassIds,
+    ticketTargetStudentIds: targetStudentIds,
+    sharedRecipients,
     copiedTicketDispatchId,
     setSelectedTicketDispatchId,
     setTicketDispatchImmediateFeedback,

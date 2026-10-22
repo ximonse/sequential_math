@@ -120,6 +120,27 @@ export function buildTicketResolvedTargetStudentIds({
   return ids
 }
 
+// Turns the shared recipient picks into the class ids and pupil ids tickets use.
+// Group members and single pupils become pupil ids, matched to loaded pupils.
+export function splitTicketRecipients(recipients = [], groups = [], students = []) {
+  const studentIdByKey = new Map(students.map(item => [String(item.studentId).toLowerCase(), item.studentId]))
+  const classIds = []
+  const studentIds = new Set()
+  const addStudent = (id) => {
+    const studentId = studentIdByKey.get(String(id).toLowerCase())
+    if (studentId) studentIds.add(studentId)
+  }
+  for (const pick of recipients) {
+    if (pick.type === 'class') classIds.push(String(pick.id))
+    else if (pick.type === 'student') addStudent(pick.id)
+    else if (pick.type === 'group') {
+      const group = groups.find(item => String(item.id) === String(pick.id))
+      for (const pupilId of group?.pupilIds || []) addStudent(pupilId)
+    }
+  }
+  return { classIds, studentIds: [...studentIds] }
+}
+
 export function buildTicketDispatchMap(ticketDispatches) {
   const map = new Map()
   for (const dispatch of ticketDispatches) map.set(dispatch.id, dispatch)

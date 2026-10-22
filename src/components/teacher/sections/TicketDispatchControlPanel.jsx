@@ -13,6 +13,7 @@ export default function TicketDispatchControlPanel({
   ticketHasExplicitTargets,
   ticketTargetClassCount,
   ticketTargetStudentCount,
+  sharedRecipients = false,
   copiedTicketDispatchId,
   onSetSelectedTicketDispatchId,
   onSetTicketDispatchImmediateFeedback,
@@ -52,6 +53,11 @@ export default function TicketDispatchControlPanel({
           Nya länkar visar rätt/fel direkt
         </label>
       </div>
+      {sharedRecipients ? (
+        <p data-ticket-recipients className="border border-amber-200 rounded-xl p-3 bg-amber-50/50 mb-3 text-xs text-gray-700">
+          Startsidan når {ticketResolvedTargetStudentCount} elev(er). Mottagare väljs i rutan Mottagare överst.
+        </p>
+      ) : (
       <div className="border border-amber-200 rounded-xl p-3 bg-amber-50/50 mb-3">
         <div className="flex flex-wrap items-center gap-2 mb-2">
           <p className="text-xs font-bold text-amber-900">Mottagare (för startsidan)</p>
@@ -129,6 +135,7 @@ export default function TicketDispatchControlPanel({
             : ' via dashboardens aktuella filter'}
         </p>
       </div>
+      )}
 
       {ticketDispatches.length === 0 ? (
         <p className="text-sm text-gray-500">Inga ticket-utskick ännu.</p>

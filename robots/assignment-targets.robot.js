@@ -84,6 +84,36 @@ test('An assignment can be given to one pupil through the recipient picker', asy
   expect(await pupilCards(browser, inGroup)).not.toContain(subtraction.title)
 })
 
+test('A ticket shown on the home page reaches only the pupil picked in the recipient picker', async ({ browser, page, request }) => {
+  const { inGroup, outside, teacher } = await setup(request)
+  await teacherLogin(page, teacher)
+  await openTab(page, 'Uppdrag & tickets')
+  const picker = page.locator('[data-recipient-picker]')
+  await picker.getByRole('searchbox', { name: 'Sök elev' }).fill('Grupp')
+  await picker.getByRole('button', { name: /^Lägg till Grupp/ }).first().click()
+  await page.getByRole('button', { name: /^Ticket/ }).click()
+  await expect(page.locator('[data-ticket-recipients]')).toContainText('Startsidan når 1 elev(er)')
+  const question = `Vad är 6 · 7? ${Math.random().toString(36).slice(2, 6)}`
+  await page.getByPlaceholder('Fråga', { exact: true }).fill(question)
+  await page.getByPlaceholder('Facit / rätt svar').fill('42')
+  await page.getByRole('button', { name: 'Spara ticket' }).click()
+  await page.getByRole('button', { name: 'Skapa länk' }).first().click()
+  await page.getByRole('button', { name: 'Visa på startsida' }).first().click()
+  await expect(page.getByText('Ticket publicerad till startsidan för 1 elev(er).')).toBeVisible()
+
+  async function homeText(pupil) {
+    const context = await browser.newContext()
+    const pupilPage = await context.newPage()
+    await login(pupilPage, pupil)
+    await pupilPage.waitForTimeout(800)
+    const text = await pupilPage.locator('body').innerText()
+    await context.close()
+    return text
+  }
+  expect(await homeText(inGroup)).toContain(question.slice(0, 20))
+  expect(await homeText(outside)).not.toContain(question.slice(0, 20))
+})
+
 test('An assignment activated for a class shows per class and starts for its pupils', async ({ browser, page, request }) => {
   const { klass, outside, teacher } = await setup(request)
   await teacherLogin(page, teacher)

@@ -13,13 +13,22 @@ export default function FocusActivity(props) {
   return <FocusAttempt key={attempt} {...props} restart={attempt > 0} onRestart={() => setAttempt(value => value + 1)} />
 }
 
-function FocusAttempt({ onClose, studentId, restart, onRestart }) {
+// An assigned exercise (initialMode) skips the choice screen; onCompleted fires once
+// for a pass that ran to its end, not for an aborted or restarted one.
+function FocusAttempt({ onClose, studentId, restart, onRestart, initialMode = '', onCompleted = null }) {
   const [session] = useState(() => {
     const model = new FocusActivitySession()
     if (restart) model.start()
+    else if (['discover', 'choose'].includes(initialMode)) model.practice(initialMode)
     return model
   })
-  const [multiOpen, setMultiOpen] = useState(false)
+  const [multiOpen, setMultiOpen] = useState(initialMode === 'multi')
+  const completedRef = useRef(false)
+  useEffect(() => {
+    if (session.phase !== 'finished' || session.aborted || completedRef.current) return
+    completedRef.current = true
+    onCompleted?.()
+  })
   const [, redraw] = useState(0)
   const dialog = useRef(null)
   const saveStatus = useAttentionResult(session, studentId, session.mode)
@@ -50,7 +59,7 @@ function FocusAttempt({ onClose, studentId, restart, onRestart }) {
     if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
     if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
   }
-  if (multiOpen) return <MultiActivity studentId={studentId} onClose={onClose} onBack={() => setMultiOpen(false)} />
+  if (multiOpen) return <MultiActivity studentId={studentId} onClose={onClose} onBack={() => setMultiOpen(false)} onCompleted={onCompleted} />
   if (active) {
     return (
       <div ref={dialog} role="dialog" aria-modal="true" aria-label="Fokuspunkten" tabIndex={0}

@@ -174,16 +174,19 @@ test('Talpar/Dubblor: uppgiftstexten är stor på dator och liten på mobil', as
   expect.soft(findings.items.map(f => `${f.rule}: ${f.message}`)).toEqual([])
 })
 
-test('Länkuppdrag utan eget tak (Bara addition) får pausförslag', async ({ browser, request }, testInfo) => {
+test('Långt länkuppdrag (addition, 40 uppgifter) får pausförslag innan det tar slut', async ({ browser, request }, testInfo) => {
   test.setTimeout(5 * 60 * 1000)
   const findings = createFindings(testInfo)
   const { klass, pupils, teacher } = await setupClass(request)
-  const link = await presetLink(browser, teacher, klass, 'Bara addition')
+  // Presets end after 20 tasks, before the ordinary break threshold, so use a longer assignment.
+  const presetUrl = new URL(await presetLink(browser, teacher, klass, 'Bara addition'))
+  const long = { v: 1, id: `asg_long_${Date.now()}`, kind: 'standard', title: 'Addition lång', problemTypes: ['addition'], minLevel: 1, maxLevel: 8, targetCount: 40, createdAt: Date.now() }
+  const link = `${presetUrl.origin}/?class=${presetUrl.searchParams.get('class')}&assignment=${long.id}&assignment_payload=${Buffer.from(JSON.stringify(long)).toString('base64url')}`
   const { context, page } = await openAsPupil(browser, link, pupils[0])
-  const log = await answerTasks(page, findings, { count: 26, choice: {}, strategy: 'correct', onLeave: async () => false })
+  const log = await answerTasks(page, findings, { count: 38, choice: {}, strategy: 'correct', onLeave: async () => false })
   const breakAt = log.findIndex(entry => entry.interruptions.includes('Fortsätt räkna'))
   findings.stat('paus efter svar nr', String(breakAt))
-  if (breakAt < 0) findings.add('R3', 'Inget pausförslag i ett länkuppdrag efter 26 svar', { svar: log.length })
+  if (breakAt < 0) findings.add('R3', 'Inget pausförslag i ett länkuppdrag före sitt slut', { svar: log.length })
   await context.close()
   await findings.attach()
   expect.soft(findings.items.map(f => `${f.rule}: ${f.message}`)).toEqual([])
@@ -287,6 +290,9 @@ test('Talbild: tak, nedräkning, paus, uppmuntran och avslut', async ({ browser,
       }
     }
     if (breaks !== Math.floor((cap - 1) / 15)) findings.add('R3', 'Fel antal pauser i Talbild', { fick: breaks, förväntat: Math.floor((cap - 1) / 15) })
+    // An assigned Talbild ends on its completion screen, which leads home.
+    const home = page.getByRole('button', { name: 'Till startsidan', exact: true })
+    await home.click({ timeout: 8000 }).catch(() => findings.add('R3', 'Talbild visade ingen klar-skärm vid taket', { url: page.url() }))
     await page.waitForURL(/\/student\/[^/]+$/, { timeout: 8000 }).catch(() => findings.add('R3', 'Talbild avslutades inte vid taket', { url: page.url() }))
     if (/\/student\/[^/]+$/.test(page.url())) {
       const profile = await request.post('/__robot/student', { data: { studentId: pupils[0].studentId } }).then(r => r.json()).then(d => d.profile)

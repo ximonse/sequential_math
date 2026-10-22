@@ -2,7 +2,7 @@
 // reach them by link or by "Aktivera för alla". Every task must stay inside
 // the teacher's frame (D3), whether the pupil answers right or wrong.
 import { test, expect } from '@playwright/test'
-import { createPupil, login, waitForTask } from './lib/app.js'
+import { createPupil, login, next, waitForTask } from './lib/app.js'
 import { createFindings } from './lib/findings.js'
 import { answerTasks } from './lib/session.js'
 import { taskLabel, taskLevel, taskOperation } from './lib/checks.js'
@@ -64,11 +64,12 @@ function checkFrame(findings, log, frame) {
 }
 
 const PRESETS = [
-  { label: 'Bara subtraktion', types: ['subtraction'], min: 1, max: 8 },
-  { label: 'Bara multiplikation', types: ['multiplication'], min: 3, max: 10 },
-  { label: 'Bråk', types: ['fractions'], min: 1, max: 12 },
-  { label: 'Talpar', types: ['number_bonds'], min: 1, max: 12 },
-  { label: 'Dubblor', types: ['doubles'], min: 1, max: 12 }
+  // target: the preset's number of tasks, after which the assignment ends.
+  { label: 'Bara subtraktion', types: ['subtraction'], min: 1, max: 8, target: 20 },
+  { label: 'Bara multiplikation', types: ['multiplication'], min: 3, max: 10, target: 20 },
+  { label: 'Bråk', types: ['fractions'], min: 1, max: 12, target: 15 },
+  { label: 'Talpar', types: ['number_bonds'], min: 1, max: 12, target: 20 },
+  { label: 'Dubblor', types: ['doubles'], min: 1, max: 12, target: 20 }
 ]
 
 test('Teacher workspace choices reach the pupil and folding preserves notebook work without diagnostic writes', async ({ browser, request }) => {
@@ -101,7 +102,7 @@ test('Teacher workspace choices reach the pupil and folding preserves notebook w
   const classContext = await browser.newContext()
   const classPage = await classContext.newPage()
   await login(classPage, await pupil('Stark'))
-  await classPage.getByRole('button', { name: 'Starta uppdraget', exact: true }).click()
+  await classPage.getByRole('button', { name: /^Starta nästa:/ }).click()
   await expect(classPage.getByRole('button', { name: 'Visa räknehäfte', exact: true })).toBeVisible()
   await expect(classPage.getByRole('button', { name: 'Visa rityta', exact: true })).toHaveCount(0)
   await classContext.close()
@@ -151,9 +152,13 @@ for (const preset of PRESETS) {
         const { context, page } = await openAsPupil(browser, teacherSide.link, kid)
         if (!/\/practice/.test(page.url())) findings.add('R1', 'Uppdragslänken ledde inte in i uppdraget efter inloggning', { uppdrag: title, url: page.url() })
         else {
-          // Talpar and Dubblor stop at the teacher's cap (20 by default) with a finish screen.
-          const count = ['number_bonds', 'doubles'].includes(preset.types[0]) ? 20 : 25
-          const log = await answerTasks(page, findings, { count, choice: {}, strategy, onLeave: async () => false })
+          // Every assignment stops at its number of tasks with a finish screen.
+          const log = await answerTasks(page, findings, { count: preset.target, choice: {}, strategy, onLeave: async () => false })
+          await next(page)
+          const levelUp = page.getByRole('button', { name: 'Fortsätt', exact: true })
+          if (await levelUp.isVisible().catch(() => false)) await levelUp.click()
+          await expect(page.getByText(/är klart!|Övningen är klar/).first()).toBeVisible({ timeout: 8000 })
+            .catch(() => findings.add('R3', 'Uppdraget avslutades inte vid sitt antal uppgifter', { uppdrag: title, svar: log.length }))
           checkFrame(findings, log, frame)
           findings.stat(`${who}`, `${log.length} svar, nivåer ${[...new Set(log.map(e => e.level))].join(',')}`)
         }
@@ -177,7 +182,7 @@ test('Låst uppdrag: exakt en nivå håller även när eleven fastnar', async ({
   const link = `http://localhost/?class=${classToken}&assignment=${locked.id}&assignment_payload=${toBase64Url(JSON.stringify(locked))}`
   for (const [who, strategy] of [['Stark', 'correct'], ['Kämpar', 'wrong']]) {
     const { context, page } = await openAsPupil(browser, link, await pupil(who))
-    const log = await answerTasks(page, findings, { count: 25, choice: {}, strategy, onLeave: async () => false })
+    const log = await answerTasks(page, findings, { count: locked.targetCount, choice: {}, strategy, onLeave: async () => false })
     checkFrame(findings, log, { title: locked.title, types: ['addition'], min: 4, max: 4 })
     findings.stat(who, `${log.length} svar, nivåer ${[...new Set(log.map(e => e.level))].join(',')}`)
     await context.close()
@@ -197,11 +202,12 @@ test('Aktivera för alla: uppdraget når elevernas egna enheter', async ({ brows
   const context = await browser.newContext()
   const page = await context.newPage()
   await login(page, kid)
-  const card = await page.locator('div', { hasText: 'Ditt nästa steg' }).last().innerText()
+  await page.waitForTimeout(800)
+  const card = await page.locator('body').innerText()
   if (!card.includes(teacherSide.title)) {
     findings.add('R1', 'Ett uppdrag som läraren aktiverat för alla syns inte hos eleven', { lärarvyn: shownActive, elevensKort: card.replace(/\s+/g, ' ').slice(0, 120) })
   } else {
-    await page.getByRole('button', { name: 'Starta uppdraget', exact: true }).click()
+    await page.getByRole('button', { name: `Starta nästa: ${teacherSide.title}`, exact: true }).click()
     await page.waitForURL(/\/practice/)
     const { state } = await waitForTask(page)
     if (taskOperation(state.problem) !== 'subtraction') findings.add('R1', 'Det aktiverade uppdraget startade något annat än uppdraget', { uppgift: taskLabel(state.problem), nivå: taskLevel(state.problem) })
@@ -210,7 +216,7 @@ test('Aktivera för alla: uppdraget når elevernas egna enheter', async ({ brows
     await teacherSide.page.waitForTimeout(1500)
     await page.goto(`/student/${kid.studentId}`)
     await page.waitForTimeout(1500)
-    const after = await page.locator('div', { hasText: 'Ditt nästa steg' }).last().innerText()
+    const after = await page.locator('body').innerText()
     if (after.includes(teacherSide.title)) findings.add('R1', 'Ett uppdrag som läraren rensat finns kvar hos eleven', { elevensKort: after.replace(/\s+/g, ' ').slice(0, 120) })
   }
   if (/asg_\d/.test(shownActive)) findings.add('T1', 'Lärarvyn visar uppdragets interna id i stället för namnet', { text: shownActive })

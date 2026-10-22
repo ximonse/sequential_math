@@ -107,15 +107,17 @@ export function usePracticeSetupEffects({
   }, [studentId, navigate, location.pathname, location.search, sessionRecentCorrectnessRef, setProfile])
 
   useEffect(() => {
+    const payloadAssignment = decodeAssignmentPayload(assignmentPayload)
+    // Free table and operation practice carries no assignment; an assigned table keeps its own.
+    if (tableSet.length > 0) {
+      setSessionAssignment(payloadAssignment?.kind === 'table' && String(payloadAssignment.id) === String(assignmentId)
+        ? payloadAssignment : null)
+      return
+    }
     if (mode && isKnownMode(mode)) {
       setSessionAssignment(null)
       return
     }
-    if (tableSet.length > 0) {
-      setSessionAssignment(null)
-      return
-    }
-    const payloadAssignment = decodeAssignmentPayload(assignmentPayload)
 
     if (!assignmentId) {
       if (payloadAssignment) {

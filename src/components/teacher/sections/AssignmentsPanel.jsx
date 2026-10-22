@@ -3,6 +3,7 @@ import AssignmentQrDialog from './AssignmentQrDialog'
 import MathPracticeCreatorDialog from './MathPracticeCreatorDialog'
 import SubitizingCreatorDialog from './SubitizingCreatorDialog'
 import AssignmentWorkspaceOptions from './AssignmentWorkspaceOptions'
+import AssignmentExtraPresets from './AssignmentExtraPresets'
 
 const BUTTON_BASE = 'rounded-md border px-2.5 py-1.5 text-sm font-medium transition-colors'
 const TONES = {
@@ -90,6 +91,7 @@ export default function AssignmentsPanel({
           </div>
         ))}
       </div>
+      <AssignmentExtraPresets breakGames={breakGames} onCreated={onCreateMathPractice} />
       <label className="mb-3 flex items-center gap-2 text-xs text-gray-600">
         Max antal uppgifter för Talpar/Dubblor (tomt = 20)
         <input

@@ -267,7 +267,7 @@ test('Fokus: inväntar klassvillkor, respekterar uppdrag och håller stängt vid
   await login(page, pupil)
   await expect(page.getByRole('button', { name: new RegExp(`^${FOCUS}`) })).toHaveCount(0)
   release()
-  await expect(page.getByText('Focus robot assignment', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Starta nästa: Focus robot assignment', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: new RegExp(`^${FOCUS}`) })).toHaveCount(0)
   await page.unroute('**/api/me/assignments')
   await page.route('**/api/me/assignments', route => route.fulfill({ json: assignments(true) }))

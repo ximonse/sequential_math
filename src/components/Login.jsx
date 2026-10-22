@@ -4,6 +4,7 @@ import { getPilotStudentRuntime } from '../lib/pilotStudentRuntime'
 import { loginStudentSession, resumeStudentSession } from '../lib/studentSessionClient'
 import SessionLoadingView from './student/SessionLoadingView'
 import { decodeAssignmentPayload } from '../lib/assignments'
+import { assignmentLaunchPath } from '../lib/assignmentQueue'
 import PilotStudentLoginForm from './student/PilotStudentLoginForm'
 
 function getStudentDestination(searchParams, studentId) {
@@ -17,8 +18,12 @@ function getStudentDestination(searchParams, studentId) {
   const query = params.toString()
   if (params.has('ticket')) return `/student/${studentId}/ticket${query ? `?${query}` : ''}`
   if (query) {
-    const kind = decodeAssignmentPayload(params.get('assignment_payload'))?.kind
-    return `/student/${studentId}/${kind === 'subitizing' ? 'subitizing' : 'practice'}?${query}`
+    const assignment = decodeAssignmentPayload(params.get('assignment_payload'))
+    if (assignment) {
+      const target = assignmentLaunchPath(studentId, assignment)
+      return params.get('mode') && !target.includes('mode=') ? `${target}&mode=${encodeURIComponent(params.get('mode'))}` : target
+    }
+    return `/student/${studentId}/practice?${query}`
   }
   return `/student/${studentId}`
 }

@@ -34,7 +34,9 @@ export function usePracticeBreakActions({
   setAnswer,
   setFeedback,
   setStartTime,
-  persistProfile
+  persistProfile,
+  sessionAssignment = null,
+  assignmentRun = null
 }) {
   const handleTakeBreak = useCallback(() => {
     if (profile) {
@@ -140,6 +142,11 @@ export function usePracticeBreakActions({
 
   const continueAfterMilestone = useCallback(() => {
     if (!tableMilestone || !profile) return
+    // A table assignment ends on its completion screen, where the next assignment can start.
+    const finishTables = () => {
+      if (sessionAssignment?.kind === 'table' && assignmentRun) assignmentRun.setDone(true)
+      else navigate(`/student/${studentId}`)
+    }
 
     if (tableMilestone.masteredAllTablesToday) {
       openAllTablesBossVideo()
@@ -148,7 +155,7 @@ export function usePracticeBreakActions({
       const finalizeAfter = tableMilestone.finalizeAfter
       setTableMilestone(null)
       if (finalizeAfter) {
-        navigate(`/student/${studentId}`)
+        finishTables()
       } else if (tableQueue.length > 0) {
         const nextProblem = createTableProblem(tableQueue[0])
         setCurrentProblem(nextProblem)
@@ -167,7 +174,7 @@ export function usePracticeBreakActions({
       const finalizeAfter = tableMilestone.finalizeAfter
       setTableMilestone(null)
       if (finalizeAfter) {
-        navigate(`/student/${studentId}`)
+        finishTables()
       } else if (tableQueue.length > 0) {
         const nextProblem = createTableProblem(tableQueue[0])
         setCurrentProblem(nextProblem)
@@ -182,7 +189,7 @@ export function usePracticeBreakActions({
     const finalizeAfter = tableMilestone.finalizeAfter
     setTableMilestone(null)
     if (finalizeAfter) {
-      navigate(`/student/${studentId}`)
+      finishTables()
       return
     }
     if (tableQueue.length > 0) {
@@ -207,7 +214,9 @@ export function usePracticeBreakActions({
     setAnswer,
     setFeedback,
     setStartTime,
-    persistProfile
+    persistProfile,
+    sessionAssignment,
+    assignmentRun
   ])
 
   return {

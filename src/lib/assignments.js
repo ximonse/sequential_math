@@ -134,9 +134,8 @@ export function encodeAssignmentPayload(assignment) {
     payload.settings = normalized.settings
   }
 
-  if (normalized.kind === 'subitizing') {
-    // subitizing doesn't need extra payload data
-  }
+  if (normalized.kind === 'table') payload.tables = normalized.tables
+  if (normalized.kind === 'focus') payload.focusMode = normalized.focusMode
 
   return toBase64Url(JSON.stringify(payload))
 }
@@ -172,11 +171,16 @@ function normalizeAssignmentCore(input, options = {}) {
   if (options.requireId && !id) return null
 
   const kindRaw = String(input.kind || 'standard').trim()
-  const kind = ['ncm', 'math_practice', 'subitizing'].includes(kindRaw) ? kindRaw : 'standard'
+  const kind = ['ncm', 'math_practice', 'subitizing', 'table', 'focus'].includes(kindRaw) ? kindRaw : 'standard'
+  const tables = kind === 'table' ? normalizeTables(input.tables) : []
+  const focusMode = kind === 'focus' ? normalizeFocusMode(input.focusMode) : ''
+  if (kind === 'table' && tables.length === 0) return null
   const title = String(input.title || '').trim() || (
     kind === 'ncm' ? 'NCM-uppdrag' :
     kind === 'math_practice' ? 'Matematikövning' :
     kind === 'subitizing' ? 'Talbild' :
+    kind === 'table' ? `${tables.length === 1 ? 'Tabell' : 'Tabellerna'} ${tables.join(', ')}` :
+    kind === 'focus' ? `Fokusövning: ${FOCUS_MODE_LABELS[focusMode]}` :
     'Uppdrag'
   )
   const targetCount = normalizePositiveInt(input.targetCount, kind === 'ncm' ? 10 : 30)
@@ -201,6 +205,22 @@ function normalizeAssignmentCore(input, options = {}) {
 
   if (kind === 'math_practice') {
     return normalizeMathPracticeAssignment(input, { id, title, targetCount, createdAt })
+  }
+
+  if (kind === 'table' || kind === 'focus') {
+    return {
+      id,
+      kind,
+      title,
+      targetCount,
+      createdAt,
+      problemTypes: kind === 'table' ? ['multiplication'] : [],
+      minLevel: 1,
+      maxLevel: 12,
+      ncmCodes: [],
+      ncmAbilityTags: [],
+      ...(kind === 'table' ? { tables } : { focusMode })
+    }
   }
 
   if (kind === 'subitizing') {
@@ -256,6 +276,19 @@ function normalizeMathPracticeAssignment(input, { id, title, targetCount, create
     ncmCodes: [],
     ncmAbilityTags: []
   }
+}
+
+// Same tables as the pupil drill (ALL_TABLES); a table assignment is done when every fact is right.
+export const ASSIGNABLE_TABLES = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+export const FOCUS_MODE_LABELS = { discover: 'FOKUS', choose: 'KONTROLL', multi: 'MULTI' }
+
+function normalizeTables(values) {
+  const list = Array.isArray(values) ? values.map(Number) : []
+  return ASSIGNABLE_TABLES.filter(table => list.includes(table))
+}
+
+function normalizeFocusMode(value) {
+  return Object.hasOwn(FOCUS_MODE_LABELS, value) ? value : 'discover'
 }
 
 function normalizeOperationsList(ops) {

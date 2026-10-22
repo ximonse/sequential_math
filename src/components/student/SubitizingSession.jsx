@@ -9,6 +9,10 @@ import { getCurrentStreak, addSubitizingSessionResult } from '../../lib/studentP
 import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { recordSubitizingResult } from '../../lib/subitizingResults'
 import { createTalbildLayout, nextTalbildLevel, nextTalbildValue } from '../../lib/talbildLayout'
+import { decodeAssignmentPayload } from '../../lib/assignments'
+import { assignmentLaunchPath, markAssignmentCompleted } from '../../lib/assignmentQueue'
+import NcmCompletionOverlay from './NcmCompletionOverlay'
+import { useNextAssignment } from './useNextAssignment'
 
 const DEFAULT_TARGET_COUNT = 30
 const BREAK_EVERY = 15
@@ -33,6 +37,8 @@ function SubitizingSession() {
   const [showBreak, setShowBreak] = useState(false)
   const [activeBreakGame, setActiveBreakGame] = useState(null)
   const [praise, setPraise] = useState('')
+  const [assignmentDone, setAssignmentDone] = useState(false)
+  const nextAssignment = useNextAssignment(profile, sessionAssignment?.id, assignmentDone)
 
   const problemCountRef = useRef(0)
   const problemsRef = useRef([])
@@ -61,13 +67,9 @@ function SubitizingSession() {
 
         setProfile(bootstrapped.profile)
 
-        if (assignmentPayload) {
-          try {
-            const payload = JSON.parse(atob(assignmentPayload))
-            setSessionAssignment(payload)
-          } catch {
-            console.error('Failed to parse assignment')
-          }
+        const payload = decodeAssignmentPayload(assignmentPayload)
+        if (payload) {
+          setSessionAssignment(payload)
         } else if (assignmentId) {
           try {
             const { getAssignmentById } = await import('../../lib/assignments')
@@ -104,10 +106,11 @@ function SubitizingSession() {
     setLayout(createTalbildLayout(value, levelRef.current))
   }, [])
 
-  const handleEndSession = useCallback(async () => {
+  const handleEndSession = useCallback(async ({ completed = false } = {}) => {
     setSessionActive(false)
 
     if (!profile || !sessionAssignment) return
+    const isAssignment = sessionAssignment.id !== 'talbild_free'
 
     const details = problemsRef.current
     const totalProblems = details.length
@@ -128,10 +131,12 @@ function SubitizingSession() {
     recordSubitizingResult(profile.studentId, sessionAssignment.id, sessionAssignment.title, sessionResult)
 
     const updatedProfile = addSubitizingSessionResult(profile, sessionAssignment, sessionResult)
+    if (completed && isAssignment) markAssignmentCompleted(updatedProfile, sessionAssignment)
     setProfile(updatedProfile)
-    await persistProfile(updatedProfile)
+    await persistProfile(updatedProfile, completed && isAssignment ? { forceSync: true } : undefined)
 
-    navigate(`/student/${studentId}`)
+    if (completed && isAssignment) setAssignmentDone(true)
+    else navigate(`/student/${studentId}`)
   }, [profile, sessionAssignment, studentId, navigate, persistProfile])
 
   const handleDiceAnswer = useCallback((selectedNumber, timeMs) => {
@@ -156,7 +161,7 @@ function SubitizingSession() {
     const answered = problemsRef.current.length
     if (answered >= targetCount) {
       setSessionActive(false)
-      setTimeout(() => handleEndSession(), 300)
+      setTimeout(() => handleEndSession({ completed: true }), 300)
       return
     }
     if (answered % BREAK_EVERY === 0) {
@@ -198,6 +203,19 @@ function SubitizingSession() {
 
   if (!profile || !sessionAssignment) {
     return <SessionLoadingView />
+  }
+
+  if (assignmentDone) {
+    return (
+      <NcmCompletionOverlay
+        solved={answeredCount}
+        total={targetCount}
+        title={`${sessionAssignment.title} är klar!`}
+        onGoHome={() => navigate(`/student/${studentId}`)}
+        nextAssignment={nextAssignment}
+        onNextAssignment={() => navigate(assignmentLaunchPath(studentId, nextAssignment))}
+      />
+    )
   }
 
   if (activeBreakGame) {

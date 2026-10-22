@@ -35,6 +35,8 @@ import { recordMathPracticeResult } from '../../lib/mathPracticeResults'
 import { addMathPracticeSessionResult } from '../../lib/studentProfile'
 import { getFluencyLevelRange, getFluencyTarget, isFluencyAssignment, startFluencyLap } from '../../lib/fluencySession'
 import { recordTelemetryEvent } from '../../lib/telemetry'
+import { assignmentLaunchPath, getAssignmentTarget, markAssignmentCompleted } from '../../lib/assignmentQueue'
+import { useNextAssignment } from './useNextAssignment'
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
 const ALL_TABLES_BOSS_URL = 'https://youtu.be/86URGgqONvA'
 const openTableBossVideo = () => {
@@ -111,6 +113,10 @@ function StudentSession() {
     setTopChoice: setFluencyTopChoice
   }), [])
   const mathPracticeSessionStartRef = useRef(Date.now())
+  // An assigned exercise is done after its number of tasks (or its own end, e.g. NCM or tables).
+  const [assignmentDone, setAssignmentDone] = useState(false)
+  const assignmentAnsweredRef = useRef(0)
+  const assignmentDonePendingRef = useRef(false)
 
   const assignmentId = searchParams.get('assignment')
   const assignmentPayload = searchParams.get('assignment_payload')
@@ -156,6 +162,15 @@ function StudentSession() {
   const persistProfile = useCallback(nextProfile => {
     return getPilotStudentRuntime().persistCheckpoint(nextProfile)
   }, [])
+  const finishAssignment = useCallback(() => {
+    if (!profile || !sessionAssignment?.id) return
+    markAssignmentCompleted(profile, sessionAssignment)
+    void persistProfile(profile, { forceSync: true })
+  }, [profile, sessionAssignment, persistProfile])
+  const assignmentRun = useMemo(() => ({ answeredRef: assignmentAnsweredRef, pendingRef: assignmentDonePendingRef,
+    finish: finishAssignment, setDone: setAssignmentDone }), [finishAssignment])
+  const nextAssignment = useNextAssignment(profile, sessionAssignment?.id,
+    Boolean(sessionAssignment?.id) && (assignmentDone || fluencyCompleted || ncmCompletedSession))
   const recordMathPracticeAnswer = useCallback((problem, studentAnswer, isCorrect, timeSpentMs) => {
     if (!problem || sessionAssignment?.kind !== 'math_practice') return
     mathPracticeProblemsRef.current.push({
@@ -343,6 +358,7 @@ function StudentSession() {
     setDailyLevelStreakMilestone,
     freeOps: allowedFreeOps,
     fluency,
+    assignmentRun,
     persistProfile,
     recordMathPracticeAnswer
   })
@@ -397,6 +413,11 @@ function StudentSession() {
     fluencyStartLevel: getFluencyLevelRange(sessionAssignment)[0],
     onRestartFluencyLap: restartFluencyLap,
     onQuitAfterFluencyTop: quitAfterFluencyTop,
+    assignmentDone,
+    assignmentTitle: sessionAssignment?.title || '',
+    assignmentTarget: getAssignmentTarget(sessionAssignment),
+    nextAssignment,
+    onNextAssignment: () => navigate(assignmentLaunchPath(studentId, nextAssignment)),
     sessionAssignmentKind: sessionAssignment?.kind,
     progressionMilestone,
     feedback,

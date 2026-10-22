@@ -37,6 +37,7 @@ import {
   isFluencyAssignment,
   isFluencyTopLevelFinish
 } from '../../../lib/fluencySession'
+import { endsAtTaskCount, getAssignmentTarget } from '../../../lib/assignmentQueue'
 
 const BREAK_PROMPT_COOLDOWN_MS = 8 * 60 * 1000
 const NEXT_PROBLEM_MAX_ATTEMPTS = 8
@@ -87,11 +88,24 @@ export function usePracticeCoreActions({
   setDailyLevelStreakMilestone,
   freeOps = [],
   fluency = null,
+  assignmentRun = null,
   persistProfile,
   recordMathPracticeAnswer = () => {}
 }) {
   const goToNextProblem = useCallback(() => {
     if (!profile) return
+
+    // Reaching the task count ends the assignment, even if a break was also due.
+    if (assignmentRun?.pendingRef.current) {
+      assignmentRun.pendingRef.current = false
+      setPendingBreakSuggestion(false)
+      assignmentRun.finish()
+      assignmentRun.setDone(true)
+      setCurrentProblem(null)
+      setFeedback(null)
+      setAnswer('')
+      return
+    }
 
     if (pendingBreakSuggestion) {
       const now = Date.now()
@@ -117,6 +131,7 @@ export function usePracticeCoreActions({
         return
       }
       if (fluency.countRef.current >= getFluencyTarget(sessionAssignment)) {
+        assignmentRun?.finish()
         fluency.setCompleted(true)
         setCurrentProblem(null)
         setFeedback(null)
@@ -130,6 +145,7 @@ export function usePracticeCoreActions({
       && ncmTotalRef.current > 0
       && ncmQueueRef.current.length === 0
     ) {
+      assignmentRun?.finish()
       setNcmCompletedSession(true)
       setCurrentProblem(null)
       setFeedback(null)
@@ -233,6 +249,7 @@ export function usePracticeCoreActions({
     fixedPracticeLevel,
     freeOps,
     fluency,
+    assignmentRun,
     isTableDrill,
     tableQueue,
     resetAttentionTracker,
@@ -333,6 +350,11 @@ export function usePracticeCoreActions({
         frameId: progressionDecision.frameId
       }, progressionDecision.decidedAt)
       incrementTelemetryDailyMetric(profile, 'automatic_progression_decisions', 1, progressionDecision.decidedAt)
+    }
+
+    if (assignmentRun && endsAtTaskCount(sessionAssignment) && !isTableDrill) {
+      assignmentRun.answeredRef.current += 1
+      if (assignmentRun.answeredRef.current >= getAssignmentTarget(sessionAssignment)) assignmentRun.pendingRef.current = true
     }
 
     const newCount = sessionCount + 1
@@ -437,6 +459,7 @@ export function usePracticeCoreActions({
             pilotEvents.push(createWalEntry('table_completed', profile.studentId, { table: currentItem.table, timestamp }))
           }
           const remainingTables = Array.from(new Set(nextQueue.map(item => item.table)))
+          if (remainingTables.length === 0 && sessionAssignment?.kind === 'table') assignmentRun?.finish()
           const allTablesBoss = shouldTriggerAllTablesBoss(profile)
           const twoToNineBoss = !allTablesBoss && shouldTriggerDailyBoss(profile, [2, 3, 4, 5, 6, 7, 8, 9])
           if (allTablesBoss) markAllTablesBossShown(profile)
@@ -532,6 +555,7 @@ export function usePracticeCoreActions({
     tableSet,
     freeOps,
     fluency,
+    assignmentRun,
     sessionCount,
     sessionRecentCorrectnessRef,
     sessionTelemetryRef,

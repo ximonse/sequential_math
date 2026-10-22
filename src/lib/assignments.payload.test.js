@@ -15,6 +15,16 @@ describe('assignments payload encoding', () => {
     expect(decodeAssignmentPayload(encodeAssignmentPayload({ id: 'invalid', workspaces: { notebook: 'true', drawing: 1 } })).workspaces)
       .toEqual({ notebook: false, drawing: false })
   })
+  it('roundtrips table and focus assignments instead of turning them into addition', () => {
+    const table = decodeAssignmentPayload(encodeAssignmentPayload({ id: 'asg_table', kind: 'table', tables: [6, 13, '8', 6] }))
+    expect(table).toMatchObject({ kind: 'table', tables: [6, 8], title: 'Tabellerna 6, 8', problemTypes: ['multiplication'] })
+    expect(decodeAssignmentPayload(encodeAssignmentPayload({ id: 'asg_one', kind: 'table', tables: [6] })).title).toBe('Tabell 6')
+    expect(encodeAssignmentPayload({ id: 'asg_none', kind: 'table', tables: [13] })).toBe('')
+    const focus = decodeAssignmentPayload(encodeAssignmentPayload({ id: 'asg_focus', kind: 'focus', focusMode: 'choose' }))
+    expect(focus).toMatchObject({ kind: 'focus', focusMode: 'choose', title: 'Fokusövning: KONTROLL' })
+    expect(decodeAssignmentPayload(encodeAssignmentPayload({ id: 'asg_f2', kind: 'focus', focusMode: 'nope' })).focusMode).toBe('discover')
+  })
+
   it('roundtrips standard assignment payload', () => {
     const encoded = encodeAssignmentPayload({
       id: 'asg_test_1',

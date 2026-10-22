@@ -28,6 +28,11 @@ function SessionOverlayRouter({
   fluencyStartLevel,
   onRestartFluencyLap,
   onQuitAfterFluencyTop,
+  assignmentDone,
+  assignmentTitle,
+  assignmentTarget,
+  nextAssignment,
+  onNextAssignment,
   sessionAssignmentKind,
   ncmTotalCount,
   ncmRemainingCount,
@@ -105,6 +110,19 @@ function SessionOverlayRouter({
     )
   }
 
+  if (assignmentDone) {
+    return (
+      <NcmCompletionOverlay
+        solved={sessionAssignmentKind === 'table' ? null : assignmentTarget}
+        total={assignmentTarget}
+        title={`${assignmentTitle || 'Uppdraget'} är klart!`}
+        onGoHome={onGoHomeAfterNcm}
+        nextAssignment={nextAssignment}
+        onNextAssignment={onNextAssignment}
+      />
+    )
+  }
+
   if (fluencyCompleted) {
     return (
       <NcmCompletionOverlay
@@ -113,6 +131,8 @@ function SessionOverlayRouter({
         title="Starkt jobbat! Övningen är klar"
         onGoHome={onGoHomeAfterNcm}
         onRestart={onRestartFluencyLap}
+        nextAssignment={nextAssignment}
+        onNextAssignment={onNextAssignment}
       />
     )
   }
@@ -124,6 +144,8 @@ function SessionOverlayRouter({
         solved={solved}
         total={ncmTotalCount}
         onGoHome={onGoHomeAfterNcm}
+        nextAssignment={nextAssignment}
+        onNextAssignment={onNextAssignment}
       />
     )
   }

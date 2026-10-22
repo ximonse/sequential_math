@@ -43,10 +43,16 @@ function MultiResult({ summary }) {
   </>
 }
 
-export default function MultiActivity({ onClose, onBack, studentId }) {
+export default function MultiActivity({ onClose, onBack, studentId, onCompleted = null }) {
   const [session] = useState(() => new MultiActivitySession())
   const [, redraw] = useState(0)
   const dialog = useRef(null)
+  const completedRef = useRef(false)
+  useEffect(() => {
+    if (session.phase !== 'finished' || session.aborted || completedRef.current) return
+    completedRef.current = true
+    onCompleted?.()
+  })
   const saveStatus = useAttentionResult(session, studentId, 'multi')
   const active = ['practice', 'running'].includes(session.phase)
   const act = action => { action(); redraw(value => value + 1) }

@@ -210,6 +210,9 @@ export function formatAssignmentSummaryLine(assignment) {
     const scope = formatNcmAssignmentScope(assignment)
     return scope || 'NCM-uppdrag'
   }
+  if (assignment.kind === 'table') return `Multiplikation | ${assignment.tables?.length === 1 ? 'tabell' : 'tabellerna'} ${(assignment.tables || []).join(', ')} | klart när alla tal är rätt`
+  if (assignment.kind === 'focus') return 'Fokusövning | klart när passet är gjort'
+  if (assignment.kind === 'subitizing') return `Talbild | ${assignment.targetCount} uppgifter`
 
   const types = Array.isArray(assignment.problemTypes)
     ? assignment.problemTypes.map(type => getOperationLabel(type))

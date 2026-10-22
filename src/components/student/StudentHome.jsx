@@ -10,10 +10,11 @@ import { incrementTelemetryDailyMetric, recordTelemetryEvent } from '../../lib/t
 import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { logoutStudentSession } from '../../lib/studentSessionClient'
 import { fetchStudentActiveAssignments, fetchStudentDiagnosticAssignments } from '../../lib/studentSessionClient'
+import { assignmentLaunchPath, markAssignmentCompleted, splitAssignments } from '../../lib/assignmentQueue'
+import StudentHomeAssignments from './StudentHomeAssignments'
 import StudentDiagnosticCollections from './StudentDiagnosticCollections'
 import { useStudentSyncStatus } from './session/useStudentSyncStatus'
 import StudentSyncStatus from './session/StudentSyncStatus'
-import StudentHomeAssignmentLaunchCard from './StudentHomeAssignmentLaunchCard'
 import StudentHomeProgressCard from './StudentHomeProgressCard'
 import StudentHomeTableDrillCard from './StudentHomeTableDrillCard'
 import StudentHomeTicketCard from './StudentHomeTicketCard'
@@ -33,6 +34,10 @@ function StudentHome() {
   const [targetAssignments, setTargetAssignments] = useState(null)
   const [assignmentResolutionKey, setAssignmentResolutionKey] = useState('')
   const [focusOpen, setFocusOpen] = useState(false)
+  // An assigned focus exercise opens here; focusDone offers the next assignment afterwards.
+  const [focusAssignment, setFocusAssignment] = useState(null)
+  const [focusDone, setFocusDone] = useState(null)
+  const [progressVersion, setProgressVersion] = useState(0)
   const [diagnosticAssignments, setDiagnosticAssignments] = useState([])
   const diagnosticProfileId = profile?.studentId
   const [selectedTables, setSelectedTables] = useState([])
@@ -88,12 +93,22 @@ function StudentHome() {
     if (mode) params.set('mode', mode)
     if (requestedPace) params.set('pace', requestedPace)
 
-    // Check assignment kind to route to the correct session
+    // Links and QR codes route by kind; a focus exercise opens on this page.
     const decodedAssignment = decodeAssignmentPayload(assignmentPayload) || (assignmentId ? getAssignmentById(assignmentId) : null)
-    const isSubitizing = decodedAssignment?.kind === 'subitizing'
-    const path = isSubitizing ? 'subitizing' : 'practice'
+    if (decodedAssignment?.kind === 'focus') {
+      setFocusAssignment(decodedAssignment)
+      navigate(`/student/${studentId}`, { replace: true })
+      return
+    }
+    if (decodedAssignment) {
+      const target = new URL(assignmentLaunchPath(studentId, decodedAssignment), window.location.origin)
+      if (mode && !target.searchParams.has('mode')) target.searchParams.set('mode', mode)
+      if (requestedPace) target.searchParams.set('pace', requestedPace)
+      navigate(`${target.pathname}${target.search}`, { replace: true })
+      return
+    }
 
-    navigate(`/student/${studentId}/${path}?${params.toString()}`, { replace: true })
+    navigate(`/student/${studentId}/practice?${params.toString()}`, { replace: true })
   }, [studentId, assignmentId, assignmentPayload, mode, requestedPace, ticketId, ticketPayload, navigate])
 
   const classId = String(profile?.classId || '')
@@ -115,9 +130,7 @@ function StudentHome() {
     void fetchStudentActiveAssignments().then(result => {
       if (!active) return
       // On failure the class's newest assignment from class-config still shows.
-      setTargetAssignments(result.ok
-        ? result.assignments.map(item => decodeAssignmentPayload(item.payload)).filter(Boolean)
-        : false)
+      setTargetAssignments(result.ok ? result.assignments : false)
     })
     return () => { active = false }
   }, [diagnosticProfileId])
@@ -143,12 +156,18 @@ function StudentHome() {
     resolve(classAssignment || getActiveAssignment())
   }, [assignmentId, assignmentPayload, classConfig, classId, assignmentSourceKey])
 
-  const homeAssignments = Array.isArray(targetAssignments) ? targetAssignments : assignment ? [assignment] : []
+  const homeItems = useMemo(() => (Array.isArray(targetAssignments) ? targetAssignments
+    : assignment ? [{ payload: encodeAssignmentPayload(assignment), activatedAt: 0 }] : []), [targetAssignments, assignment])
+  // progressVersion re-reads completions written into the profile object.
+  const { todo: todoAssignments, done: doneAssignments } = useMemo(
+    () => splitAssignments(profile, homeItems), [profile, homeItems, progressVersion]) // eslint-disable-line react-hooks/exhaustive-deps
+  const homeAssignments = [...todoAssignments, ...doneAssignments]
+  // Assigned focus exercises do not count as practice that forbids the voluntary warm-up.
   const focusAllowed = classConfig.classId === classId && classConfig.ready === true
     && targetAssignments !== null
     && assignmentResolutionKey === assignmentSourceKey
     && (!(assignmentId || assignmentPayload || classConfig.assignmentPayload) || !!assignment)
-    && homeAssignments.every(item => item.breakGames === true)
+    && homeAssignments.filter(item => item.kind !== 'focus').every(item => item.breakGames === true)
   useEffect(() => { if (!focusAllowed) setFocusOpen(false) }, [focusAllowed])
 
   const updateHomePresence = useCallback((options = {}) => {
@@ -316,10 +335,13 @@ function StudentHome() {
     )
   }
 
-  const assignmentPracticePath = item => `/student/${studentId}/${item.kind === 'subitizing' ? 'subitizing' : 'practice'}?${new URLSearchParams({
-    assignment: String(item.id || ''),
-    assignment_payload: item === assignment && assignmentPayload ? assignmentPayload : encodeAssignmentPayload(item)
-  }).toString()}`
+  const finishFocusAssignment = () => {
+    markAssignmentCompleted(profile, focusAssignment)
+    void persistProfile(profile, { forceSync: true })
+    setProgressVersion(value => value + 1)
+    setFocusDone(focusAssignment)
+  }
+  const nextAfterFocus = focusDone ? todoAssignments.find(item => item.id !== focusDone.id) || null : null
   const activeTicketPayload = profile?.ticketInbox?.activePayload || null
   const activeTicketEncoded = String(profile?.ticketInbox?.activeEncoded || '')
   const activeTicketResponse = activeTicketPayload
@@ -350,8 +372,13 @@ function StudentHome() {
     }, now)
     incrementTelemetryDailyMetric(profile, 'practice_launches', 1, now)
     void persistProfile(profile)
+    if (item?.kind === 'focus') {
+      setFocusDone(null)
+      setFocusAssignment(item)
+      return
+    }
     if (item) {
-      navigate(assignmentPracticePath(item))
+      navigate(assignmentLaunchPath(studentId, item))
       return
     }
     navigate(buildPracticePath(studentId, {
@@ -361,8 +388,11 @@ function StudentHome() {
 
   return (
     <div className="min-h-screen student-role-surface py-8">
-      {focusOpen && focusAllowed && <FocusActivity studentId={studentId} onClose={() => setFocusOpen(false)} />}
-      <div inert={focusOpen && focusAllowed ? true : undefined} className="max-w-3xl mx-auto px-4">
+      {focusAssignment
+        ? <FocusActivity key={focusAssignment.id} studentId={studentId} initialMode={focusAssignment.focusMode}
+          onCompleted={finishFocusAssignment} onClose={() => setFocusAssignment(null)} />
+        : focusOpen && focusAllowed && <FocusActivity studentId={studentId} onClose={() => setFocusOpen(false)} />}
+      <div inert={focusAssignment || (focusOpen && focusAllowed) ? true : undefined} className="max-w-3xl mx-auto px-4">
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Hej {profile.displayAlias || 'elev'}</h1>
@@ -393,18 +423,23 @@ function StudentHome() {
           />
         )}
 
-        {(!activeTicketPayload || activeTicketResponse) && (homeAssignments.length > 0
-          ? homeAssignments.map((item, index) => <StudentHomeAssignmentLaunchCard
-            key={item.id}
-            heading={index === 0 ? 'Ditt nästa steg' : 'Uppdrag'}
-            assignment={item}
-            onStart={() => handleStartAssignmentOrFree(item)}
-          />)
-          : <StudentHomeAssignmentLaunchCard
-            assignment={null}
-            onStart={() => handleStartAssignmentOrFree(null)}
-            disabled={operationKeys.length === 0}
-          />)}
+        {focusDone && !focusAssignment && <section role="status" className="mb-4 rounded-xl border-2 border-emerald-300 bg-emerald-50 p-4">
+          <p className="font-semibold text-emerald-900">{focusDone.title} är klar ✓</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {nextAfterFocus && <button type="button" onClick={() => handleStartAssignmentOrFree(nextAfterFocus)}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg">Nästa uppdrag: {nextAfterFocus.title}</button>}
+            <button type="button" onClick={() => setFocusDone(null)}
+              className="px-4 py-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 font-semibold rounded-lg">Stanna på startsidan</button>
+          </div>
+        </section>}
+
+        {(!activeTicketPayload || activeTicketResponse) && <StudentHomeAssignments
+          todo={todoAssignments}
+          done={doneAssignments}
+          onStart={item => handleStartAssignmentOrFree(item)}
+          onFreePractice={() => handleStartAssignmentOrFree(null)}
+          freeDisabled={operationKeys.length === 0}
+        />}
 
         {enabledOperations?.length === 0 && (
           <p role="alert" className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">

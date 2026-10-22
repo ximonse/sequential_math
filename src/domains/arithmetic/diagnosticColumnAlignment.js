@@ -36,6 +36,9 @@ export function analyzeDiagnosticColumnAlignment(task, snapshot) {
   if (task.answerType === 'text' || task.answerRule === 'teacher_review') return {
     analysisVersion: COLUMN_ALIGNMENT_ANALYSIS_VERSION, attemptId: grid.attemptId,
     taskId: task.taskId, taskVersion: task.taskVersion, status: 'unknown', reason: 'written_response' }
+  if (task.answerRule === 'ncm_facit') return {
+    analysisVersion: COLUMN_ALIGNMENT_ANALYSIS_VERSION, attemptId: grid.attemptId,
+    taskId: task.taskId, taskVersion: task.taskVersion, status: 'unknown', reason: 'not_a_column_task' }
   if (!['addition', 'subtraction'].includes(task.operation)
     || !Array.isArray(task.operands) || task.operands.length !== 2
     || !task.operands.every(value => Number.isSafeInteger(value) && value >= 0)) {

@@ -1,10 +1,11 @@
-import taskPacks from '../../../domains/arithmetic/diagnosticTaskPacks.v1.json'
+import { diagnosticCatalog } from '../../../domains/arithmetic/diagnosticCatalog.browser'
 import DiagnosticAttemptHistory from './DiagnosticAttemptHistory'
 import DiagnosticReviewForm from './DiagnosticReviewForm'
 import { buildDiagnosticTeacherSupport } from '../../../domains/arithmetic/diagnosticTeacherSupport.js'
 
 export default function DiagnosticEvidenceDetails({ detail, onSaved, onDirtyChange, reviewable = false }) {
-  const guideFor = task => taskPacks.guides[task?.intentCode]
+  const guideFor = diagnosticCatalog.guideFor
+  const ncm = Boolean(detail.task.ncmCode)
   const teacherSupport = buildDiagnosticTeacherSupport(detail)
   const answerLabels = { unanswered: 'inget slutsvar', incomplete: 'ofullständigt slutsvar',
     correct: 'rätt slutsvar', incorrect: 'fel slutsvar', unassessed: 'skrivsvar – bedöms av läraren' }
@@ -20,13 +21,14 @@ export default function DiagnosticEvidenceDetails({ detail, onSaved, onDirtyChan
         {reviewable && <DiagnosticReviewForm key={`${detail.record.attemptId}:${detail.record.serverRevision}`} detail={detail} onSaved={onSaved} onDirtyChange={onDirtyChange} />}
         <h4 className="font-semibold">{detail.task.promptSv}</h4>
         {guideFor(detail.task) && <div className="mt-2 rounded bg-orange-50 p-2 text-sm">
-          <p><strong>Att granska:</strong> {guideFor(detail.task).goalSv}.</p>
-          <p><strong>Fråga eleven:</strong> {guideFor(detail.task).questionSv}</p>
-          <p className="text-xs">Lärarstöd för uppgiftens syfte; detta är inte en automatiskt konstaterad felorsak.</p>
+          <p><strong>{ncm ? 'NCM prövar' : 'Att granska'}:</strong> {guideFor(detail.task).goalSv}.</p>
+          {ncm && <p><strong>Facit:</strong> {detail.task.facitSv}</p>}
+          <p><strong>{ncm ? 'NCM:s uppföljning' : 'Fråga eleven'}:</strong> {guideFor(detail.task).questionSv}</p>
+          <p className="text-xs">{ncm ? guideFor(detail.task).sourceSv : 'Lärarstöd för uppgiftens syfte; detta är inte en automatiskt konstaterad felorsak.'}</p>
         </div>}
         <p className="text-xs text-slate-700">Sparad elevrevision {detail.evidenceRevision.serverRevision} · {detail.evidenceRevision.lastSequence} {detail.evidenceRevision.lastSequence === 1 ? 'händelse' : 'händelser'}. Analysen beräknas när underlaget öppnas.</p>
         <p className="mt-1 whitespace-pre-wrap text-sm">Slutsvar: {detail.observation.explicitAnswer || 'inte skrivet'} · {answerLabels[detail.observation.answerStatus] || 'okänt'}</p>
-        {detail.task.answerType !== 'text' && <><p className="text-sm">Kolumnplacering: {detail.columnAlignment.status === 'observed'
+        {detail.task.answerType !== 'text' && !ncm && <><p className="text-sm">Kolumnplacering: {detail.columnAlignment.status === 'observed'
           ? detail.columnAlignment.alignment === 'aligned' ? 'entalen i samma kolumn' : 'entalen i olika kolumner'
           : 'kan inte avgöras säkert'}. Detta beskriver placeringen, inte varför eleven räknade så.</p>
         <p className="text-sm">Synligt resultat och slutsvar: {detail.visibleResult.status === 'observed'

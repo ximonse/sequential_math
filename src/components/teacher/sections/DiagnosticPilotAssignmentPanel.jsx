@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import taskManifest from '../../../domains/arithmetic/diagnosticTasks.v1.json'
-import taskPacks from '../../../domains/arithmetic/diagnosticTaskPacks.v1.json'
+import { diagnosticCatalog } from '../../../domains/arithmetic/diagnosticCatalog.browser'
 import { diagnosticRequest as request } from './diagnosticRequest'
 import DiagnosticClassReviewPanel from './DiagnosticClassReviewPanel'
 import DiagnosticEvidenceDetails from './DiagnosticEvidenceDetails'
 import '../../../dev/diagnosticGridPrototype.css'
 
-const taskIds = taskManifest.tasks.map(task => task.taskId)
+const taskIds = diagnosticCatalog.tasks.map(task => task.taskId)
+const writtenTasks = diagnosticCatalog.tasks.filter(task => !task.ncmCode)
+const ncmPacks = diagnosticCatalog.packs.filter(pack => pack.id.startsWith('ncm-') && pack.id !== 'ncm-overview')
+const findTask = diagnosticCatalog.findTask
 
 export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
   const [view, setView] = useState('dispatch')
@@ -85,8 +87,14 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
   // accounts named in NCM_DIAGNOSTIC_TEST_STUDENT_IDS when that list is set.
   const pupils = students.filter(student => testStudentIds.includes(student.studentId)
     && [student.classId, ...(student.classIds || [])].includes(classId))
-  const selectedPack = taskPacks.packs.find(pack => JSON.stringify(pack.taskIds) === JSON.stringify(selectedTasks))
-  const guideFor = task => taskPacks.guides[task?.intentCode]
+  const selectedPack = diagnosticCatalog.packs.find(pack => JSON.stringify(pack.taskIds) === JSON.stringify(selectedTasks))
+  const guideFor = diagnosticCatalog.guideFor
+  const usesNcm = selectedTasks.some(id => findTask(id)?.ncmCode)
+  const taskCheckbox = task => <label key={task.taskId} className="flex items-center gap-1 text-sm">
+    <input type="checkbox" checked={selectedTasks.includes(task.taskId)} onChange={event => setSelectedTasks(previous => event.target.checked
+      ? [...previous, task.taskId] : previous.filter(id => id !== task.taskId))} />
+    {task.ncmCode ? `${task.ncmCode} ${task.ncmItem}: ` : ''}{task.promptSv}
+  </label>
 
   async function createAssignment(wholeClass = false) {
     if (!classId || (wholeClass ? !wholeClassAvailable : !studentId) || (!selectedTasks.length && !customPrompt.trim()) || busy) return
@@ -171,34 +179,40 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
     </label>
     <label className="mt-3 block text-sm font-medium">Diagnospaket
       <select value={selectedPack?.id || ''} disabled={busy} onChange={event => {
-        const pack = taskPacks.packs.find(item => item.id === event.target.value)
+        const pack = diagnosticCatalog.packs.find(item => item.id === event.target.value)
         if (pack) setSelectedTasks([...pack.taskIds])
       }} className="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1">
         <option value="" disabled>Eget urval</option>
-        {taskPacks.packs.map(pack => <option key={pack.id} value={pack.id}>{pack.labelSv}</option>)}
+        {diagnosticCatalog.packs.map(pack => <option key={pack.id} value={pack.id}>{pack.labelSv}</option>)}
       </select>
     </label>
-    <p className="mt-1 text-sm">Egna uppgifter för diagnostisk provning. Det här är inte ett originalprov från NCM. Valda uppgifter: {selectedTasks.length}.</p>
+    <p className="mt-1 text-sm">{usesNcm
+      ? 'Uppgifter ur NCM:s Diamant-diagnoser med NCM:s facit och analys. Svaren rättas automatiskt mot facit.'
+      : 'Egna uppgifter för diagnostisk provning. Det här är inte ett originalprov från NCM.'} Valda uppgifter: {selectedTasks.length}.</p>
     <fieldset className="mt-3" disabled={busy}>
       <legend className="text-sm font-medium">Uppgifter</legend>
-      <div className="mt-1 flex flex-wrap gap-3">
-        {taskManifest.tasks.map(task => <label key={task.taskId} className="flex items-center gap-1 text-sm">
-          <input type="checkbox" checked={selectedTasks.includes(task.taskId)} onChange={event => setSelectedTasks(previous => event.target.checked
-            ? [...previous, task.taskId] : previous.filter(id => id !== task.taskId))} />
-          {task.promptSv}
-        </label>)}
-      </div>
+      <div className="mt-1 flex flex-wrap gap-3">{writtenTasks.map(taskCheckbox)}</div>
+      <details className="mt-2">
+        <summary className="cursor-pointer text-sm font-semibold">NCM Diamant-uppgifter ({diagnosticCatalog.tasks.length - writtenTasks.length})</summary>
+        {ncmPacks.map(pack => <div key={pack.id} className="mt-2">
+          <p className="text-sm font-medium">{pack.labelSv.replace(/^NCM · /u, '')}</p>
+          <div className="mt-1 flex flex-col gap-1">{pack.taskIds.map(id => taskCheckbox(findTask(id)))}</div>
+        </div>)}
+      </details>
     </fieldset>
     <fieldset className="mt-2 space-y-1" disabled={busy}>
       <legend className="text-sm font-semibold">Svarstyp och arbetsytor per fråga</legend>
       {selectedTasks.map(id => {
         const options = itemOptions[id] || {}
         const change = patch => setItemOptions(previous => ({ ...previous, [id]: { ...previous[id], ...patch } }))
+        const task = findTask(id)
         return <div key={id} className="flex flex-wrap items-center gap-x-2 text-sm">
-          <strong>{taskManifest.tasks.find(task => task.taskId === id)?.promptSv}</strong>
-          <label>Svarstyp <select value={options.answerType || 'number'} onChange={event => change({ answerType: event.target.value })} className="rounded border px-1 py-0.5">
-            <option value="number">Siffersvar</option><option value="text">Skrivsvar</option>
-          </select></label>
+          <strong>{task?.promptSv}</strong>
+          {/* NCM answers are marked against the facit, so their answer type is fixed. */}
+          {task?.ncmCode ? <span className="text-slate-600">Facit: {task.facitSv}</span>
+            : <label>Svarstyp <select value={options.answerType || 'number'} onChange={event => change({ answerType: event.target.value })} className="rounded border px-1 py-0.5">
+              <option value="number">Siffersvar</option><option value="text">Skrivsvar</option>
+            </select></label>}
           <label><input type="checkbox" checked={options.gridEnabled !== false} onChange={event => change({ gridEnabled: event.target.checked })} /> Räknehäfte</label>
           <label><input type="checkbox" checked={Boolean(options.drawingEnabled)} onChange={event => change({ drawingEnabled: event.target.checked })} /> Rityta</label>
         </div>
@@ -214,7 +228,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students }) {
       <summary className="cursor-pointer font-semibold">Lärarstöd för valda uppgifter</summary>
       <p className="mt-2">Granska uppställningen och fråga eleven. Rätt slutsvar bevisar inte en viss metod. Appens automatiska metodanalys är begränsad.</p>
       <ol className="mt-2 list-decimal space-y-2 pl-5">
-        {selectedTasks.map(id => taskManifest.tasks.find(task => task.taskId === id)).filter(Boolean).map(task => <li key={task.taskId}>
+        {selectedTasks.map(findTask).filter(Boolean).map(task => <li key={task.taskId}>
           <strong>{task.promptSv}</strong> {guideFor(task)?.goalSv}. {guideFor(task)?.questionSv}
         </li>)}
       </ol>

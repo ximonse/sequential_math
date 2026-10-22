@@ -1,0 +1,56 @@
+import { test, expect } from '@playwright/test'
+import { createPupil, login } from './lib/app.js'
+import { openTab, teacherLogin } from './lib/teacher.js'
+
+test('An NCM Diamant booklet is marked against its facit and shows NCM analysis to the teacher', async ({ page, request, browser }, testInfo) => {
+  const tag = Math.random().toString(36).slice(2, 8)
+  const classId = `ncm-${tag}`
+  const pupil = await createPupil(request, { name: 'NCM Diamant', classId })
+  const teacher = await (await request.post('/__robot/teacher', { data: {
+    id: `ncm-admin-${tag}`, classIds: [classId], role: 'super_admin'
+  } })).json()
+  await teacherLogin(page, teacher)
+  await openTab(page, 'Screening')
+  const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('xpath=..')
+  await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(classId)
+  await panel.getByRole('combobox', { name: 'Elev', exact: true }).selectOption(pupil.studentId)
+  await panel.getByRole('combobox', { name: 'Diagnospaket', exact: true }).selectOption({ label: 'NCM · + och − · 8 uppgifter' })
+  await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('NCM plus minus')
+  await expect(panel.getByText(/Uppgifter ur NCM:s Diamant-diagnoser/)).toBeVisible()
+  await panel.getByRole('button', { name: 'Ge testuppdrag', exact: true }).click()
+  await expect(panel.getByText('Testuppdraget är tilldelat.')).toBeVisible()
+
+  const context = await browser.newContext({ viewport: { width: 820, height: 1180 }, hasTouch: true })
+  const student = await context.newPage()
+  await login(student, pupil)
+  await student.getByRole('button', { name: 'NCM plus minus', exact: true }).click()
+  const answer = student.locator('#diagnostic-answer')
+  await expect(student.locator('.notebook-question')).toHaveText('Räkna i huvudet: 84 + 9')
+  await answer.click()
+  await answer.pressSequentially('93')
+  await student.getByRole('button', { name: 'Nästa fråga', exact: true }).click()
+  await expect(student.locator('.notebook-question')).toHaveText('Räkna i huvudet: 63 − 8')
+  await answer.click()
+  await answer.pressSequentially('65')
+  for (let i = 0; i < 4; i++) await student.getByRole('button', { name: 'Nästa fråga', exact: true }).click()
+  await expect(student.locator('.notebook-question')).toContainText('Malin sparar till en cykel')
+  await answer.click()
+  await answer.pressSequentially('147')
+  await expect(student.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
+  await student.screenshot({ path: testInfo.outputPath('ncm-pupil.png'), fullPage: true })
+  await context.close()
+
+  await panel.getByRole('button', { name: 'Grupp', exact: true }).click()
+  const review = panel.getByRole('region', { name: 'Klassgenomgång', exact: true })
+  await review.getByRole('combobox', { name: 'Uppdrag att gå igenom', exact: true }).selectOption({ index: 1 })
+  const cells = review.locator('tbody button')
+  await expect(cells.nth(0)).toHaveAccessibleName(/svar 93, Rätt svar/)
+  await expect(cells.nth(1)).toHaveAccessibleName(/svar 65, Fel svar/)
+  await expect(cells.nth(5)).toHaveAccessibleName(/svar 147, Rätt svar/)
+  await cells.nth(1).click()
+  const dialog = page.getByRole('dialog', { name: 'Elevgenomgång' })
+  await expect(dialog).toContainText('NCM prövar')
+  await expect(dialog).toContainText('Facit: 55')
+  await expect(dialog).toContainText('NCM:s uppföljning')
+  await page.screenshot({ path: testInfo.outputPath('ncm-teacher.png'), fullPage: true })
+})

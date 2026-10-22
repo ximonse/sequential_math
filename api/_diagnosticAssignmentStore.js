@@ -5,9 +5,13 @@ import { createDiagnosticGrid } from '../src/domains/arithmetic/diagnosticGridMo
 import { DiagnosticAppendError } from '../src/domains/arithmetic/diagnosticAttemptAppend.js'
 import { studentDeletedKey } from './_studentStore.js'
 import { readDiagnosticAttempt } from './_diagnosticAttemptStore.js'
+import { buildDiagnosticCatalog } from '../src/domains/arithmetic/diagnosticCatalog.js'
 
 const require = createRequire(import.meta.url)
 const manifest = require('../src/domains/arithmetic/diagnosticTasks.v1.json')
+const catalog = buildDiagnosticCatalog({ writtenManifest: manifest,
+  writtenPacks: require('../src/domains/arithmetic/diagnosticTaskPacks.v1.json'),
+  ncmManifest: require('../src/domains/arithmetic/ncmScreeningTasks.v1.json') })
 
 // Both functions require an authorized caller. These scripts enforce frozen
 // membership and tombstones again at the atomic storage boundary.
@@ -107,12 +111,12 @@ export async function createDiagnosticAssignment({ classId, studentIds, taskIds,
   if (!validId(classId) || !validId(teacherId)
     || !Array.isArray(studentIds) || studentIds.length < 1 || studentIds.length > 100
     || !studentIds.every(validId) || new Set(studentIds).size !== studentIds.length
-    || !Array.isArray(taskIds) || taskIds.length > manifest.tasks.length
+    || !Array.isArray(taskIds) || taskIds.length > catalog.tasks.length
     || !Array.isArray(customTasks) || customTasks.length > 12 || taskIds.length + customTasks.length < 1
     || typeof titleSv !== 'string' || titleSv.length > 100
     || !itemOptions || typeof itemOptions !== 'object' || Array.isArray(itemOptions)
     || new Set(taskIds).size !== taskIds.length) fail(400, 'invalid_assignment', 'Invalid diagnostic assignment')
-  const tasks = taskIds.map(id => manifest.tasks.find(task => task.taskId === id))
+  const tasks = taskIds.map(id => catalog.findTask(id))
   if (tasks.some(task => !task)) fail(400, 'invalid_task', 'Unknown diagnostic task')
   const assignmentId = makeId()
   for (const custom of customTasks) {

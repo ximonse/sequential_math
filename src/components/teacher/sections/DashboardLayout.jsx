@@ -499,7 +499,7 @@ export default function DashboardLayout({
           Öppna räknehäftet
         </button>
       </section>
-      <DiagnosticPilotAssignmentPanel classes={classes} students={students} />
+      <DiagnosticPilotAssignmentPanel classes={classes} students={students} recipients={recipients} teacherGroups={teacherGroups} />
       </div>
     )
     if (id === 'admin') return <TeacherAdminPanel />
@@ -568,9 +568,9 @@ export default function DashboardLayout({
             {activeWorkspace === 'progress' && import.meta.env.DEV && renderProgressModule('testdata', 'Lokal testdata', <LocalTestDataPanel mode="import" onImported={onLocalTestDataImported} />)}
 
             {activeWorkspace === 'focus' && !canViewAttention && <p role="status">Fokusresultat är endast tillgängliga för huvudadmin.</p>}
-            {activeWorkspace === 'teaching' && (
+            {(activeWorkspace === 'teaching' || activeWorkspace === 'ncm') && (
               <RecipientPicker classes={classes} groups={teacherGroups} students={students}
-                recipients={recipients} onChange={setDeliveryPicks} followsFilter={recipientsFollowFilter} />
+                recipients={recipients} onChange={setDeliveryPicks} followsFilter={recipientsFollowFilter && activeWorkspace === 'teaching'} />
             )}
             {WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
               .filter(id => visiblePanelDefs.some(panel => panel.id === id))

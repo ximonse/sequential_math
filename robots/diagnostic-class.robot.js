@@ -43,3 +43,29 @@ test('An admin assigns one diagnostic to the whole selected class and each pupil
     await context.close()
   }
 })
+
+test('An admin gives a screening to one pupil picked in the shared recipient picker', async ({ page, request, browser }) => {
+  const tag = Math.random().toString(36).slice(2, 8)
+  const classId = `ncm-pick-${tag}`
+  const picked = await createPupil(request, { name: 'Recipient A', classId })
+  const other = await createPupil(request, { name: 'Recipient B', classId })
+  const teacher = await (await request.post('/__robot/teacher', { data: {
+    id: `pick-admin-${tag}`, classIds: [classId], role: 'super_admin'
+  } })).json()
+  await teacherLogin(page, teacher)
+  await openTab(page, 'Screening')
+  const picker = page.locator('[data-recipient-picker]')
+  await picker.getByRole('searchbox', { name: 'Sök elev' }).fill('Recipient A')
+  await picker.getByRole('button', { name: 'Lägg till Recipient A', exact: true }).click()
+  const box = page.locator('[data-screening-recipients]')
+  await expect(box).toContainText('1 screening, en per klass')
+  await box.getByRole('button', { name: 'Ge till valda mottagare (1 screening)', exact: true }).click()
+  await expect(page.getByText(/Screening skapad för .* \(1 elev\)\./)).toBeVisible()
+  for (const [pupil, sees] of [[picked, true], [other, false]]) {
+    const context = await browser.newContext()
+    const student = await context.newPage()
+    await login(student, pupil)
+    await expect(student.getByRole('button', { name: 'Screening', exact: true })).toHaveCount(sees ? 1 : 0)
+    await context.close()
+  }
+})

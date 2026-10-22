@@ -1,3 +1,5 @@
+import CompletionChoices from './CompletionChoices'
+
 function getMilestoneIcon(milestone) {
   if (!milestone) return '🎉'
   if (milestone.masteredAllTablesToday) return '👑'
@@ -41,24 +43,18 @@ function MilestoneOverlay({
   milestone,
   tableBossUrl,
   allTablesBossUrl,
-  onContinue
+  onContinue,
+  onGoHome
 }) {
   if (!milestone) return null
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center cursor-pointer pointer-events-auto"
-      role="button"
-      tabIndex={0}
-      onClick={onContinue}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault()
-          onContinue()
-        }
-      }}
-    >
-      <div className="text-center px-4">
+    <div className="fixed inset-0 z-[100] flex flex-col items-center px-4 pointer-events-auto">
+      <CompletionChoices choices={[
+        { label: 'Fortsätt', onClick: onContinue, primary: true },
+        ...(onGoHome ? [{ label: 'Till startsidan', onClick: onGoHome }] : [])
+      ]} />
+      <div className="text-center">
         <div className="text-7xl mb-2 drop-shadow-[0_4px_8px_rgba(0,0,0,0.45)]">
           {getMilestoneIcon(milestone)}
         </div>
@@ -76,15 +72,11 @@ function MilestoneOverlay({
             href={milestone.masteredAllTablesToday ? allTablesBossUrl : tableBossUrl}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={(event) => event.stopPropagation()}
             className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-white text-blue-700 font-semibold shadow hover:bg-blue-50"
           >
             {milestone.masteredAllTablesToday ? 'Öppna belöningsvideo' : 'Öppna boss-video'}
           </a>
         )}
-        <p className="text-sm text-white/90 drop-shadow-[0_2px_6px_rgba(0,0,0,0.45)]">
-          Tryck var som helst för att fortsätta
-        </p>
       </div>
     </div>
   )

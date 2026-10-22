@@ -76,6 +76,7 @@ function SessionOverlayRouter({
         tableBossUrl={tableBossUrl}
         allTablesBossUrl={allTablesBossUrl}
         onContinue={onContinueAfterMilestone}
+        onGoHome={onGoHomeAfterNcm}
       />
     )
   }
@@ -85,6 +86,7 @@ function SessionOverlayRouter({
       <DailyLevelStreakOverlay
         milestone={dailyLevelStreakMilestone}
         onContinue={onContinueAfterDailyLevelStreak}
+        onGoHome={onGoHomeAfterNcm}
       />
     )
   }
@@ -110,6 +112,7 @@ function SessionOverlayRouter({
         total={fluencyTotal}
         title="Starkt jobbat! Övningen är klar"
         onGoHome={onGoHomeAfterNcm}
+        onRestart={onRestartFluencyLap}
       />
     )
   }
@@ -130,6 +133,7 @@ function SessionOverlayRouter({
       <ProgressionMilestoneOverlay
         milestone={progressionMilestone}
         onContinue={onContinueAfterProgression}
+        onGoHome={onGoHomeAfterNcm}
       />
     )
   }

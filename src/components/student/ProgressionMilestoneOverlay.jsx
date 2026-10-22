@@ -1,7 +1,8 @@
 import { ADAPTATION_ACTIONS } from '../../lib/adaptationDecision'
 import { getOperationLabel } from '../../lib/operations'
+import CompletionChoices from './CompletionChoices'
 
-function ProgressionMilestoneOverlay({ milestone, onContinue }) {
+function ProgressionMilestoneOverlay({ milestone, onContinue, onGoHome }) {
   const successPercent = milestone.attempts > 0
     ? Math.round((milestone.correct / milestone.attempts) * 100)
     : 0
@@ -12,7 +13,11 @@ function ProgressionMilestoneOverlay({ milestone, onContinue }) {
       : 'Träningen fortsätter automatiskt med nästa steg.'
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-400 to-green-600">
+    <div className="min-h-screen flex flex-col items-center bg-gradient-to-br from-emerald-400 to-green-600 px-4">
+      <CompletionChoices choices={[
+        { label: 'Fortsätt', onClick: onContinue, primary: true },
+        ...(onGoHome ? [{ label: 'Till startsidan', onClick: onGoHome }] : [])
+      ]} />
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg text-center">
         <div className="text-5xl mb-3">🎉</div>
         <h2 className="text-2xl font-bold text-gray-800 mb-3">
@@ -26,14 +31,7 @@ function ProgressionMilestoneOverlay({ milestone, onContinue }) {
             {milestone.correct}/{milestone.attempts} rätt ({successPercent}%)
           </p>
         )}
-        <p className="text-gray-600 mb-6">{continuation}</p>
-        <button
-          type="button"
-          onClick={onContinue}
-          className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg"
-        >
-          Fortsätt
-        </button>
+        <p className="text-gray-600">{continuation}</p>
       </div>
     </div>
   )

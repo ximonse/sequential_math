@@ -1,25 +1,26 @@
+import CompletionChoices from './CompletionChoices'
+
 function NcmCompletionOverlay({
   solved,
   total,
   title = 'NCM-uppdrag klart',
-  onGoHome
+  onGoHome,
+  onRestart
 }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-200 to-cyan-200 px-4">
+    <div className="min-h-screen flex flex-col items-center bg-gradient-to-br from-emerald-200 to-cyan-200 px-4">
+      <CompletionChoices choices={[
+        ...(onRestart ? [{ label: 'Börja om', onClick: onRestart, primary: true }] : []),
+        { label: 'Till startsidan', onClick: onGoHome, primary: !onRestart }
+      ]} />
       <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg text-center">
         <div className="text-6xl mb-4">✅</div>
         <h2 className="text-2xl font-bold text-gray-800 mb-3">
           {title}
         </h2>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600">
           Du har gjort {solved} av {total} frågor i uppdraget.
         </p>
-        <button
-          onClick={onGoHome}
-          className="w-full py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg"
-        >
-          Till startsidan
-        </button>
       </div>
     </div>
   )

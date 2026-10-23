@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
-import { teacherLogin, openTab } from './lib/teacher.js'
+import { teacherLogin, openTab, sendScreening } from './lib/teacher.js'
 
 test('R2/R3: autosave does not freeze; navigation preserves work and submission covers the collection', async ({ page, request }) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -101,8 +101,7 @@ test('Teacher assigns a written answer with saved drawing; eraser and explicit f
   await panel.getByRole('textbox', { name: 'Frågetext', exact: true }).fill('Förklara hur du växlar en tia.')
   await panel.getByRole('checkbox', { name: 'Räknehäfte till skrivfrågan', exact: true }).check()
   await panel.getByRole('checkbox', { name: 'Rityta till skrivfrågan', exact: true }).check()
-  await panel.getByRole('button', { name: 'Ge testuppdrag', exact: true }).click()
-  await expect(panel.getByText('Testuppdraget är tilldelat.')).toBeVisible()
+  await sendScreening(page, { pupilName: 'Collections B' })
   const context = await browser.newContext({ viewport: { width: 820, height: 1180 }, hasTouch: true })
   const student = await context.newPage()
   await login(student, pupil)

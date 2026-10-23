@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
-import { openTab, teacherLogin } from './lib/teacher.js'
+import { openTab, sendScreening, teacherLogin } from './lib/teacher.js'
 import { readFileSync } from 'node:fs'
 const manifest = JSON.parse(readFileSync(new URL('../src/domains/arithmetic/diagnosticTasks.v1.json', import.meta.url), 'utf8'))
 test.describe.configure({ mode: 'serial' })
@@ -90,8 +90,13 @@ test('An isolated test pupil can receive, save and resume a diagnostic grid', as
   await panel.getByRole('combobox', { name: 'Klass' }).selectOption(classId)
   await expect(panel.getByRole('combobox', { name: 'Elev' }).locator('option')).toHaveCount(2)
   await panel.getByRole('combobox', { name: 'Elev' }).selectOption(pupil.studentId)
-  await panel.getByRole('button', { name: 'Ge testuppdrag' }).click()
-  await expect(panel.getByText('Testuppdraget är tilldelat.')).toBeVisible()
+  // The class also has a pupil outside the test list, so the whole class is refused up front.
+  const picker = page.locator('[data-recipient-picker]')
+  await picker.getByRole('button', { name: className, exact: true }).click()
+  await expect(page.locator('[data-screening-recipients]')).toContainText(`${className}: testbegränsningen tillåter inte hela klassen`)
+  await expect(page.getByRole('button', { name: 'Ge till valda mottagare (0 screeningar)', exact: true })).toBeDisabled()
+  await picker.getByRole('button', { name: className, exact: true }).click()
+  await sendScreening(page, { pupilName: 'Robot NCM' })
 
   const context = await browser.newContext()
   const studentPage = await context.newPage()

@@ -1,12 +1,13 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
-import { teacherLogin, openTab } from './lib/teacher.js'
+import { teacherLogin, openTab, sendScreening } from './lib/teacher.js'
 
 test('An admin assigns one diagnostic to the whole selected class and each pupil receives it', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
   const classId = `ncm-class-${tag}`
-  const first = await createPupil(request, { name: 'NCM class A', classId })
-  const second = await createPupil(request, { name: 'NCM class B', classId })
+  const className = `Hela ${tag}`
+  const first = await createPupil(request, { name: 'NCM class A', classId, className })
+  const second = await createPupil(request, { name: 'NCM class B', classId, className })
   const outsider = await createPupil(request, { name: `Outside ${tag}`, classId: `outside-${tag}` })
   const teacher = await (await request.post('/__robot/teacher', { data: {
     id: `class-admin-${tag}`, classIds: [classId], role: 'super_admin'
@@ -15,14 +16,12 @@ test('An admin assigns one diagnostic to the whole selected class and each pupil
   await openTab(page, 'Screening')
   const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('xpath=..')
   await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(classId)
-  const publish = panel.getByRole('button', { name: 'Ge till hela klassen (2 elever)', exact: true })
-  await expect(publish).toBeEnabled()
   await expect(panel.getByRole('combobox', { name: 'Elev', exact: true })).toHaveValue('')
   await panel.getByRole('combobox', { name: 'Diagnospaket', exact: true }).selectOption('written-addition')
   await expect(panel.locator('fieldset').first().getByRole('checkbox', { checked: true })).toHaveCount(6)
   await expect(panel.getByText(/Valda uppgifter: 6/)).toBeVisible()
-  await publish.click()
-  await expect(panel.getByText('Uppdraget är tilldelat hela klassen (2 elever).', { exact: true })).toBeVisible()
+  await sendScreening(page, { className })
+  await expect(panel.getByText(`Screening skapad för ${className} (2 elever).`, { exact: true })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('whole-class-assignment.png'), fullPage: true })
   for (const pupil of [first, second, outsider]) {
     const context = await browser.newContext()

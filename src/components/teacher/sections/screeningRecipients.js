@@ -29,3 +29,28 @@ export function buildScreeningDispatches(recipients = [], { classes = [], groups
   const dispatches = [...byClass.values()].map(item => (item.wholeClass ? { ...item, studentIds: [] } : item))
   return { dispatches, withoutClass }
 }
+
+// Checks each dispatch against what the server lets this class receive: the
+// whole roster, or only the accounts on the test list. Unchecked classes wait.
+export function applyScreeningLimits(dispatches = [], limits = {}) {
+  const ready = []
+  const blocked = []
+  const pending = []
+  for (const dispatch of dispatches) {
+    const limit = limits[dispatch.classId]
+    if (!limit) { pending.push(dispatch); continue }
+    if (limit.unavailable) { blocked.push({ ...dispatch, reason: 'screening är inte aktiverat på servern' }); continue }
+    if (dispatch.wholeClass) {
+      if (limit.wholeClassAvailable) ready.push(dispatch)
+      else blocked.push({ ...dispatch, reason: 'testbegränsningen tillåter inte hela klassen' })
+      continue
+    }
+    const allowed = dispatch.studentIds.filter(id => limit.allowed.includes(id))
+    if (allowed.length === dispatch.studentIds.length) ready.push(dispatch)
+    else if (allowed.length > 0) {
+      ready.push({ ...dispatch, studentIds: allowed })
+      blocked.push({ ...dispatch, studentIds: dispatch.studentIds.filter(id => !allowed.includes(id)), reason: 'eleverna finns inte på testlistan' })
+    } else blocked.push({ ...dispatch, reason: 'eleverna finns inte på testlistan' })
+  }
+  return { ready, blocked, pending }
+}

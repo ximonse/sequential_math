@@ -18,23 +18,22 @@ Mål: ett sätt att välja mottagare och en samlad bild av vad som är aktivt.
 2. Klart: gemensam mottagarväljare överst under Uppdrag & tickets och under
    Screening. Uppdrag och tickets använder den; tickets egen väljare är borta.
 3. Klart: screening från samma val, en screening per klass. De gamla knapparna
-   (en elev, hela klassen) finns kvar tills vidare; städas i fas 2/4.
+   är borta; panelen visar testbegränsningen per klass innan något skickas.
+   Klass och elev i panelen styr bara vad som visas.
 4. Klart: "Aktivt för valda mottagare" visar egna uppdrag och aktiva tickets.
    Screeningar listas fortfarande per klass under Screening.
 
-## Fas 1: En enda Administration
+## Fas 1: En enda Administration (klar)
 
 - Ta bort `/teacher/admin` och sidhuvudsknappen "Administration"; gamla länkar
   leder till fliken i lärarvyn.
 - Flytta ut: rutan "Lärarkonton" (bara text), pausspelets highscore (till
   Statistik), räknehäftesprototypen (länk under Screening).
-- Klasser utan skola: öppen fråga till Simon (visa dem, eller kolla först om
-  de finns i produktion).
-- Öppen fråga: ska vanliga lärare kunna hantera sina egna klasser (namn,
-  arkivering) eller bara lägga till och flytta elever som i dag?
+- Klart: klasser utan skola visas för huvudadmin i gruppen "Utan skola".
+- Beslut: vanliga lärare hanterar elever som i dag, inte namn eller arkivering.
 - Ta bort döda props i `ClassManagementPanel`-anropet.
 
-## Fas 2: Klasser och elever
+## Fas 2: Klasser och elever (klar)
 
 Lista med klasser och grupper. En klass öppnas med flikarna Elever,
 Inloggning och kort, Inställningar, Farliga åtgärder (avskilda, sist).

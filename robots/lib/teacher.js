@@ -45,6 +45,21 @@ export async function openClass(page, className, tab) {
   return panel
 }
 
+// Picks screening recipients in the shared picker and sends the screening.
+export async function sendScreening(page, { className, pupilName, count = 1 }) {
+  const picker = page.locator('[data-recipient-picker]')
+  if (className) await picker.getByRole('button', { name: className, exact: true }).click()
+  if (pupilName) {
+    await picker.getByRole('searchbox', { name: 'Sök elev' }).fill(pupilName)
+    await picker.getByRole('button', { name: `Lägg till ${pupilName}`, exact: true }).click()
+  }
+  const send = page.locator('[data-screening-recipients]')
+    .getByRole('button', { name: `Ge till valda mottagare (${count} screening${count === 1 ? '' : 'ar'})`, exact: true })
+  await expect(send).toBeEnabled()
+  await send.click()
+  await expect(page.getByText(/^Screening skapad för /)).toBeVisible()
+}
+
 export async function selectOnlyClass(page, className) {
   const panel = page.locator('section.dashboard-class-filter')
   await panel.getByRole('button', { name: 'Alla klasser', exact: true }).click()

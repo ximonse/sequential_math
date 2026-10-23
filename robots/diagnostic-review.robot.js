@@ -1,20 +1,20 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
-import { teacherLogin, openTab } from './lib/teacher.js'
+import { teacherLogin, openTab, sendScreening } from './lib/teacher.js'
 
 test('Admin reviews a class with submitted, ongoing and unopened work; notes survive retries and competing edits', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
   const classId = `review-${tag}`
   const pupils = []
-  for (const name of ['NCM review A', 'NCM review B', 'NCM review C']) pupils.push(await createPupil(request, { name, classId }))
+  const className = `Genomgång ${tag}`
+  for (const name of ['NCM review A', 'NCM review B', 'NCM review C']) pupils.push(await createPupil(request, { name, classId, className }))
   const teacher = await (await request.post('/__robot/teacher', { data: { id: `review-admin-${tag}`, classIds: [classId], role: 'super_admin' } })).json()
   await teacherLogin(page, teacher)
   await openTab(page, 'Screening')
   const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('xpath=..')
   await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(classId)
   await panel.getByRole('combobox', { name: 'Diagnospaket', exact: true }).selectOption('written-addition')
-  await panel.getByRole('button', { name: 'Ge till hela klassen (3 elever)', exact: true }).click()
-  await expect(panel.getByText('Uppdraget är tilldelat hela klassen (3 elever).')).toBeVisible()
+  await sendScreening(page, { className })
   await panel.getByRole('button', { name: 'Grupp', exact: true }).click()
   const assignmentId = await panel.getByRole('combobox', { name: 'Uppdrag att gå igenom', exact: true }).locator('option').nth(1).getAttribute('value')
   const contexts = []

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
-import { openTab, teacherLogin } from './lib/teacher.js'
+import { openTab, sendScreening, teacherLogin } from './lib/teacher.js'
 
 test('An NCM Diamant booklet is marked against its facit and shows NCM analysis to the teacher', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -17,8 +17,7 @@ test('An NCM Diamant booklet is marked against its facit and shows NCM analysis 
   await panel.getByRole('combobox', { name: 'Diagnospaket', exact: true }).selectOption({ label: 'NCM · + och − · 8 uppgifter' })
   await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('NCM plus minus')
   await expect(panel.getByText(/Uppgifter ur NCM:s Diamant-diagnoser/)).toBeVisible()
-  await panel.getByRole('button', { name: 'Ge testuppdrag', exact: true }).click()
-  await expect(panel.getByText('Testuppdraget är tilldelat.')).toBeVisible()
+  await sendScreening(page, { pupilName: 'NCM Diamant' })
 
   const context = await browser.newContext({ viewport: { width: 820, height: 1180 }, hasTouch: true })
   const student = await context.newPage()

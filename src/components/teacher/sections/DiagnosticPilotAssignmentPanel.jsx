@@ -3,13 +3,15 @@ import { diagnosticCatalog } from '../../../domains/arithmetic/diagnosticCatalog
 import { diagnosticRequest as request } from './diagnosticRequest'
 import DiagnosticClassReviewPanel from './DiagnosticClassReviewPanel'
 import DiagnosticEvidenceDetails from './DiagnosticEvidenceDetails'
-import { buildScreeningDispatches } from './screeningRecipients'
+import { applyScreeningLimits, buildScreeningDispatches } from './screeningRecipients'
 import '../../../dev/diagnosticGridPrototype.css'
 
 const taskIds = diagnosticCatalog.tasks.map(task => task.taskId)
 const writtenTasks = diagnosticCatalog.tasks.filter(task => !task.ncmCode)
 const ncmPacks = diagnosticCatalog.packs.filter(pack => pack.id.startsWith('ncm-') && pack.id !== 'ncm-overview')
 const findTask = diagnosticCatalog.findTask
+const describeDispatch = item => item.wholeClass ? `${item.className} (hela klassen)`
+  : `${item.className} (${item.studentIds.length} elev${item.studentIds.length === 1 ? '' : 'er'})`
 
 export default function DiagnosticPilotAssignmentPanel({ classes, students, recipients = [], teacherGroups = [] }) {
   const [view, setView] = useState('dispatch')
@@ -25,12 +27,11 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
   const [assignments, setAssignments] = useState([])
   const [status, setStatus] = useState('Välj en klass för att se eleverna.')
   const [busy, setBusy] = useState(false)
-  const [wholeClassAvailable, setWholeClassAvailable] = useState(false)
-  const [classStudentCount, setClassStudentCount] = useState(0)
   const [attempts, setAttempts] = useState([])
   const [attemptStatus, setAttemptStatus] = useState('')
   const [detail, setDetail] = useState(null)
   const [refreshVersion, setRefreshVersion] = useState(0)
+  const [limits, setLimits] = useState({})
   const selectionRef = useRef('')
   const reviewDirty = useRef(false)
   selectionRef.current = `${classId}:${studentId}`
@@ -39,8 +40,6 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
     if (!classId) return undefined
     let active = true
     setStudentId('')
-    setWholeClassAvailable(false)
-    setClassStudentCount(0)
     setAssignments([])
     setStatus('Hämtar klasslistan...')
     void request(`/api/teacher-diagnostic-assignments?classId=${encodeURIComponent(classId)}`)
@@ -53,11 +52,9 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
         }
         if (!result.ok) throw new Error(result.data.error || 'Kunde inte hämta tilldelningar.')
         setTestStudentIds(result.data.testStudentIds || [])
-        setWholeClassAvailable(Boolean(result.data.wholeClassAvailable))
-        setClassStudentCount(result.data.classStudentCount || 0)
         setAssignments(result.data.assignments || [])
         setStatus(result.data.testStudentIds?.length
-          ? 'Välj en elev i klassen.'
+          ? 'Välj en elev för att se elevens svar.'
           : 'Inga elever kan tilldelas i den här klassen.')
       })
       .catch(error => { if (active) setStatus(error.message || 'Kunde inte nå servern.') })
@@ -99,6 +96,25 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
 
   const hasTasks = selectedTasks.length > 0 || Boolean(customPrompt.trim())
   const recipientPlan = buildScreeningDispatches(recipients, { classes, groups: teacherGroups, students })
+  const limitCheck = applyScreeningLimits(recipientPlan.dispatches, limits)
+  const pendingClassIds = limitCheck.pending.map(item => item.classId).join(',')
+
+  // The server may only allow accounts on its test list, so check each picked
+  // class before offering to send.
+  useEffect(() => {
+    if (!pendingClassIds) return undefined
+    let active = true
+    for (const pendingId of pendingClassIds.split(',')) {
+      void request(`/api/teacher-diagnostic-assignments?classId=${encodeURIComponent(pendingId)}`).then(result => {
+        if (!active) return
+        const limit = result.status === 404 ? { unavailable: true }
+          : result.ok ? { allowed: result.data.testStudentIds || [], wholeClassAvailable: Boolean(result.data.wholeClassAvailable) }
+            : { allowed: [], wholeClassAvailable: false }
+        setLimits(previous => ({ ...previous, [pendingId]: limit }))
+      }).catch(() => {})
+    }
+    return () => { active = false }
+  }, [pendingClassIds])
 
   function postAssignment(targetClassId, audience) {
     return request('/api/teacher-diagnostic-assignments', { method: 'POST',
@@ -108,11 +124,11 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
   }
 
   async function createForRecipients() {
-    if (!recipientPlan.dispatches.length || !hasTasks || busy) return
+    if (!limitCheck.ready.length || limitCheck.pending.length || !hasTasks || busy) return
     setBusy(true)
     const done = []
     const failed = []
-    for (const dispatch of recipientPlan.dispatches) {
+    for (const dispatch of limitCheck.ready) {
       try {
         const result = await postAssignment(dispatch.classId, dispatch.wholeClass ? { audience: 'class' } : { studentIds: dispatch.studentIds })
         if (!result.ok) throw new Error(result.data.error || 'Kunde inte skapa screeningen.')
@@ -126,20 +142,6 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
     setStatus([done.length ? `Screening skapad för ${done.join(', ')}.` : '', failed.length ? `Misslyckades för ${failed.join('; ')}` : '']
       .filter(Boolean).join(' '))
     setBusy(false)
-  }
-
-  async function createAssignment(wholeClass = false) {
-    if (!classId || (wholeClass ? !wholeClassAvailable : !studentId) || !hasTasks || busy) return
-    setBusy(true)
-    try {
-      const result = await postAssignment(classId, wholeClass ? { audience: 'class' } : { studentIds: [studentId] })
-      if (!result.ok) throw new Error(result.data.error || 'Kunde inte skapa testuppdraget.')
-      setAssignments(previous => [result.data.assignment, ...previous])
-      setStatus(wholeClass ? `Uppdraget är tilldelat hela klassen (${result.data.assignment.studentIds.length} elever).`
-        : 'Testuppdraget är tilldelat. Logga in som eleven för att se det.')
-    } catch (error) {
-      setStatus(error.message || 'Kunde inte skapa testuppdraget.')
-    } finally { setBusy(false) }
   }
 
   async function stopAssignment(assignment) {
@@ -178,7 +180,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
 
   return <section className="mt-4 rounded-lg border border-slate-300 bg-white p-3 shadow-sm">
     <h2 className="text-lg font-semibold text-slate-800">Screening till elev eller klass</h2>
-    <p className="mt-1 text-sm text-slate-800">Välj klass och uppgifter. Ge uppdraget till en vald elev eller hela klassen. Det sparas separat från vanlig träning.</p>
+    <p className="mt-1 text-sm text-slate-800">Välj mottagare i rutan Mottagare överst och välj uppgifter. Klass och elev nedan styr vilka tilldelningar och svar som visas. Det sparas separat från vanlig träning.</p>
     <div className="mt-2 flex gap-1" aria-label="Screeningvyer">
       <button type="button" aria-pressed={view === 'dispatch'} onClick={() => { if (!reviewDirty.current || window.confirm('Genomgången har osparade ändringar. Vill du lämna dem?')) { reviewDirty.current = false; setView('dispatch') } }} className="rounded border border-slate-300 px-2 py-1 text-sm aria-pressed:bg-indigo-100">Dela ut</button>
       <button type="button" aria-pressed={view === 'group'} onClick={() => setView('group')} className="rounded border border-slate-300 px-2 py-1 text-sm aria-pressed:bg-indigo-100">Grupp</button>
@@ -264,23 +266,19 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
     </details>
     <div data-screening-recipients className="mt-3 rounded border border-indigo-200 bg-indigo-50 p-2 text-sm">
       <p>{recipientPlan.dispatches.length
-        ? `Valda mottagare ger ${recipientPlan.dispatches.length} screening${recipientPlan.dispatches.length === 1 ? '' : 'ar'}, en per klass: ${recipientPlan.dispatches.map(item => item.wholeClass ? `${item.className} (hela klassen)` : `${item.className} (${item.studentIds.length} elev${item.studentIds.length === 1 ? '' : 'er'})`).join(', ')}.`
-        : 'Välj klasser, grupper eller elever i rutan Mottagare överst, eller välj en elev nedan.'}</p>
+        ? `Valda mottagare ger ${recipientPlan.dispatches.length} screening${recipientPlan.dispatches.length === 1 ? '' : 'ar'}, en per klass: ${recipientPlan.dispatches.map(describeDispatch).join(', ')}.`
+        : 'Välj klasser, grupper eller elever i rutan Mottagare överst.'}</p>
       {recipientPlan.withoutClass.length > 0 && <p className="mt-1">Utan klass, får ingen screening: {recipientPlan.withoutClass.join(', ')}.</p>}
-      {recipientPlan.dispatches.length > 0 && <button type="button" onClick={createForRecipients} disabled={!hasTasks || busy}
+      {limitCheck.blocked.map(item => <p key={`${item.classId}-${item.reason}`} className="mt-1 text-amber-900">
+        {item.className}: {item.reason}{item.wholeClass ? '' : ` (${item.studentIds.length} elev${item.studentIds.length === 1 ? '' : 'er'})`}. De får ingen screening.
+      </p>)}
+      {limitCheck.pending.length > 0 && <p className="mt-1 text-slate-600">Kontrollerar vilka elever som kan få screening…</p>}
+      {recipientPlan.dispatches.length > 0 && <button type="button" onClick={createForRecipients}
+        disabled={!hasTasks || busy || limitCheck.pending.length > 0 || limitCheck.ready.length === 0}
         className="mt-2 rounded bg-indigo-600 px-2 py-1 font-semibold text-white disabled:opacity-50">
-        {busy ? 'Skapar...' : `Ge till valda mottagare (${recipientPlan.dispatches.length} screening${recipientPlan.dispatches.length === 1 ? '' : 'ar'})`}
+        {busy ? 'Skapar...' : `Ge till valda mottagare (${limitCheck.ready.length} screening${limitCheck.ready.length === 1 ? '' : 'ar'})`}
       </button>}
     </div>
-    <button type="button" onClick={() => createAssignment()} disabled={!pupils.some(pupil => pupil.studentId === studentId) || !hasTasks || busy}
-      className="mt-3 rounded bg-indigo-600 px-2 py-1 font-semibold text-white disabled:opacity-50">
-      {busy ? 'Skapar...' : 'Ge testuppdrag'}
-    </button>
-    <button type="button" onClick={() => createAssignment(true)} disabled={!classId || !wholeClassAvailable || !hasTasks || busy}
-      className="ml-2 mt-3 rounded bg-indigo-600 px-2 py-1 font-semibold text-white disabled:opacity-50">
-      Ge till hela klassen{classStudentCount ? ` (${classStudentCount} elever)` : ''}
-    </button>
-    {classId && classStudentCount > 0 && !wholeClassAvailable && <p className="mt-2 text-sm">Serverns testbegränsning tillåter inte hela klassen.</p>}
     <p className="mt-2 text-sm" role="status">{status}</p>
     {assignments.length > 0 && <div className="mt-3 text-sm">
       <h3 className="font-semibold">Tilldelningar i klassen</h3>

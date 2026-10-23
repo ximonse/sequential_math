@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildScreeningDispatches } from './screeningRecipients.js'
+import { applyScreeningLimits, buildScreeningDispatches } from './screeningRecipients.js'
 
 const classes = [{ id: 'k1', name: '6A' }, { id: 'k2', name: '6B' }]
 const students = [
@@ -26,5 +26,23 @@ describe('buildScreeningDispatches', () => {
 
   it('returns nothing for an empty selection', () => {
     expect(buildScreeningDispatches([], { classes, groups, students })).toEqual({ dispatches: [], withoutClass: [] })
+  })
+})
+
+describe('applyScreeningLimits', () => {
+  const whole = { classId: 'k1', className: '6A', wholeClass: true, studentIds: [] }
+  const some = { classId: 'k2', className: '6B', wholeClass: false, studentIds: ['bo', 'cia'] }
+
+  it('keeps allowed pupils, blocks the rest and waits for unchecked classes', () => {
+    const result = applyScreeningLimits([whole, some, { ...some, classId: 'k3' }], {
+      k1: { allowed: [], wholeClassAvailable: false },
+      k2: { allowed: ['bo'], wholeClassAvailable: false }
+    })
+    expect(result.ready).toEqual([{ ...some, studentIds: ['bo'] }])
+    expect(result.blocked.map(item => [item.classId, item.reason])).toEqual([
+      ['k1', 'testbegränsningen tillåter inte hela klassen'],
+      ['k2', 'eleverna finns inte på testlistan']
+    ])
+    expect(result.pending.map(item => item.classId)).toEqual(['k3'])
   })
 })

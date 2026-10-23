@@ -9,7 +9,7 @@ export default function RecipientActiveOverview({ recipients = [], assignmentTar
       <ul className="mt-1.5 space-y-1.5">
         {rows.map(row => (
           <li key={`${row.type}-${row.id}`} data-recipient-overview-row className="text-sm text-slate-700">
-            <span className="font-medium text-slate-900">{row.type === 'group' ? `Grupp: ${row.name}` : row.name}</span>
+            <span className="font-medium text-slate-900">{row.type === 'group' && !row.name.startsWith('Grupp: ') ? `Grupp: ${row.name}` : row.name}</span>
             {' · '}
             {row.assignmentTitles.length ? `Uppdrag: ${row.assignmentTitles.join(', ')}` : 'Inga egna uppdrag'}
             {row.tickets.length > 0 && ` · Ticket: ${row.tickets.map(item => row.type === 'student' ? item.title : `${item.title} (${item.count} av ${row.pupilCount})`).join(', ')}`}

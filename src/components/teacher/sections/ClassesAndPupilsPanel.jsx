@@ -124,20 +124,6 @@ export default function ClassesAndPupilsPanel({
       <h2 className="text-lg font-semibold text-gray-800">Klasser och elever</h2>
       <p className="mt-1 text-sm text-gray-600">Välj en klass eller grupp för att se eleverna, skapa elevkort och ändra inställningar.</p>
 
-      {isAdmin && (
-        <form onSubmit={createClass} className="mt-3 flex flex-wrap items-end gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-xs">
-          <div className="min-w-40 flex-1">
-            <SchoolSelect schools={directory.schools} value={newClassSchoolId} onChange={setNewClassSchoolId}
-              disabled={directory.loading || Boolean(directory.error)} label="Skola för ny klass" />
-          </div>
-          <label className="min-w-40 flex-1 text-sm text-gray-700">
-            <span className="mb-1 block">Ny klass</span>
-            <input required placeholder="Klassnamn (t.ex. 4A)" value={newClassName}
-              onChange={event => setNewClassName(event.target.value)} className="w-full rounded border px-2 py-2" />
-          </label>
-          <button disabled={busy} type="submit" className="rounded bg-indigo-600 px-4 py-2 font-semibold text-white disabled:opacity-50">Skapa klass</button>
-        </form>
-      )}
 
       {withoutSchool.length > 0 && (
         <section data-classes-without-school aria-labelledby="classes-without-school" className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3">
@@ -236,6 +222,24 @@ export default function ClassesAndPupilsPanel({
 
       {isAdmin && <AdminDirectorySection teachers={admin.teachers} classes={admin.classes} directory={directory}
         canManageSchools={isSuperAdmin} canRetirePupils={isSuperAdmin} onRefresh={refreshClasses} setStatus={setStatus} />}
+
+      {isAdmin && (
+        <section data-new-class aria-labelledby="new-class-title" className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-3">
+        <h3 id="new-class-title" className="text-base font-semibold text-gray-800">Skapa ny klass</h3>
+        <form onSubmit={createClass} className="mt-2 flex flex-wrap items-end gap-2 text-xs">
+          <div className="min-w-40 flex-1">
+            <SchoolSelect schools={directory.schools} value={newClassSchoolId} onChange={setNewClassSchoolId}
+              disabled={directory.loading || Boolean(directory.error)} label="Skola för ny klass" />
+          </div>
+          <label className="min-w-40 flex-1 text-sm text-gray-700">
+            <span className="mb-1 block">Klassnamn</span>
+            <input required placeholder="Klassnamn (t.ex. 4A)" value={newClassName}
+              onChange={event => setNewClassName(event.target.value)} className="w-full rounded border px-2 py-2" />
+          </label>
+          <button disabled={busy} type="submit" className="rounded bg-indigo-600 px-4 py-2 font-semibold text-white disabled:opacity-50">Skapa klass</button>
+        </form>
+        </section>
+      )}
     </div>
   )
 }

@@ -10,6 +10,16 @@ import { getLiveAuthorizedClassIds } from './_studentAccess.js'
 import { getLiveTeacherAuthPayload } from './_helpers.js'
 import { isSuperAdminRole } from './_teacherRoles.js'
 
+async function batchLoadKvKeys(keys, batchSize = 20) {
+  const results = []
+  for (let i = 0; i < keys.length; i += batchSize) {
+    const batch = keys.slice(i, i + batchSize)
+    const batchResults = await Promise.all(batch.map(key => kv.get(key)))
+    results.push(...batchResults)
+  }
+  return results
+}
+
 export function sanitizeProfileForList(profile) {
   if (!profile || typeof profile !== 'object') return null
 
@@ -47,9 +57,8 @@ export default async function handler(req, res) {
       return res.status(200).json({ profiles: [] })
     }
 
-    const profiles = await Promise.all(
-      ids.map(async (id) => kv.get(`student:${String(id).toUpperCase()}`))
-    )
+    const studentKeys = ids.map(id => `student:${String(id).toUpperCase()}`)
+    const profiles = await batchLoadKvKeys(studentKeys)
 
     const authorizedClassIds = await getLiveAuthorizedClassIds(req)
     const auth = await getLiveTeacherAuthPayload(req)
@@ -58,12 +67,15 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'Endast huvudadmin kan visa arkiverade elever.' })
     }
     const classIds = await kv.smembers('classes:index') || []
-    const activeClassIds = new Set((await Promise.all(classIds.map(async id => {
-      const classRecord = await kv.get(`class:${id}`)
-      if (!classRecord || classRecord.archived) return null
-      if (authorizedClassIds !== null && !authorizedClassIds.includes(classRecord.id)) return null
-      return String(classRecord.id)
-    }))).filter(Boolean))
+    const classKeys = classIds.map(id => `class:${id}`)
+    const classRecords = await batchLoadKvKeys(classKeys)
+    const activeClassIds = new Set(classRecords
+      .filter(classRecord => {
+        if (!classRecord || classRecord.archived) return false
+        if (authorizedClassIds !== null && !authorizedClassIds.includes(classRecord.id)) return false
+        return true
+      })
+      .map(classRecord => String(classRecord.id)))
 
     const sanitized = profiles
       .filter(isCurrentStudentProfile)

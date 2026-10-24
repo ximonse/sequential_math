@@ -7,6 +7,16 @@ const MAX_LABELS = 500
 const MAX_LABEL_LENGTH = 80
 const studentLabelsKey = teacherId => `teacher_pupil_labels:${teacherId}`
 
+async function batchLoadKvKeys(keys, batchSize = 20) {
+  const results = []
+  for (let i = 0; i < keys.length; i += batchSize) {
+    const batch = keys.slice(i, i + batchSize)
+    const batchResults = await Promise.all(batch.map(key => kv.get(key)))
+    results.push(...batchResults)
+  }
+  return results
+}
+
 function normalizeLabels(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
   const labels = {}
@@ -20,13 +30,17 @@ function normalizeLabels(value) {
   return labels
 }
 
-// Checked per pupil, but in parallel: a whole class read sequentially runs
-// into the serverless time limit and the dashboard then renders no pupils.
+// Checked per pupil, batched to avoid connection saturation: a whole class
+// in parallel with no batching runs into KV connection limits and slows other requests.
 async function readableLabels(req, teacherId) {
   const labels = normalizeLabels(await kv.get(studentLabelsKey(teacherId)))
-  const checked = await Promise.all(Object.entries(labels).map(async ([studentId, label]) => {
+  const entries = Object.entries(labels)
+  const studentKeys = entries.map(([studentId]) => `student:${studentId}`)
+  const profiles = await batchLoadKvKeys(studentKeys)
+
+  const checked = await Promise.all(entries.map(async ([studentId, label], index) => {
     try {
-      await assertTeacherStudentAccess(req, await kv.get(`student:${studentId}`))
+      await assertTeacherStudentAccess(req, profiles[index])
       return [studentId, label]
     } catch {
       // A former teacher must not receive labels for pupils outside their live scope.
@@ -42,13 +56,21 @@ async function readableLabels(req, teacherId) {
 async function fillFromCreationNames(req, teacherId) {
   const labels = normalizeLabels(await kv.get(studentLabelsKey(teacherId)))
   const ids = await kv.smembers('students:index')
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return { added: 0, labels }
+  }
+
+  const studentKeys = ids.map(id => `student:${String(id || '').trim().toUpperCase()}`).filter(Boolean)
+  const profiles = await batchLoadKvKeys(studentKeys)
+
   let added = 0
-  for (const rawId of Array.isArray(ids) ? ids : []) {
-    const studentId = String(rawId || '').trim().toUpperCase()
+  for (let i = 0; i < profiles.length; i++) {
+    const profile = profiles[i]
+    if (!profile) continue
+    const studentId = String(profile.studentId || '').trim().toUpperCase()
+    if (!studentId) continue
     if (labels[studentId]) continue
     if (Object.keys(labels).length + 1 > MAX_LABELS) break
-    const profile = await kv.get(`student:${studentId}`)
-    if (!profile) continue
     const creationName = String(profile.preferredName || profile.name || '').trim()
     if (!creationName || creationName.length > MAX_LABEL_LENGTH) continue
     if (creationName === String(profile.displayAlias || '').trim()) continue

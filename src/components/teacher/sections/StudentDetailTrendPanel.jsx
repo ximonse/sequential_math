@@ -113,7 +113,7 @@ export default function StudentDetailTrendPanel({ trend }) {
       </p>
 
       <details className="mt-3 rounded border border-slate-200 bg-white">
-        <summary className="cursor-pointer p-3 text-sm font-medium text-slate-800 focus-visible:outline-2 focus-visible:outline-blue-700">
+        <summary className="cursor-pointer px-1.5 py-0.5 text-sm font-medium text-slate-800 focus-visible:outline-2 focus-visible:outline-blue-700">
           Visa siffror för alla 14 dagar
         </summary>
         <div className="overflow-x-auto px-3 pb-3">

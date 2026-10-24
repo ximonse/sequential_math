@@ -37,7 +37,7 @@ export function SchoolSelect({ schools, value, onChange, disabled, label = 'Skol
   return <label className="block text-sm text-gray-700">
     <span className="mb-1 block">{label}</span>
     <select value={value || ''} disabled={disabled} onChange={event => onChange(event.target.value)}
-      className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm disabled:bg-gray-100">
+      className="w-full rounded border border-gray-300 bg-white px-1.5 py-0.5 text-sm disabled:bg-gray-100">
       <option value="">Skola ej angiven</option>
       {value && !schools.some(school => school.id === value) && <option value={value}>Hämtar vald skola…</option>}
       {schools.map(school => <option key={school.id} value={school.id}>
@@ -68,7 +68,7 @@ export function NewSchoolForm({ directory, onCreated }) {
             setName(''); setStatus('Skolan är sparad.'); onCreated?.(school.id)
           } catch (error) { setStatus(error.message || 'Skolan kunde inte sparas. Försök igen.') }
           finally { setBusy(false) }
-        }} className="rounded bg-blue-600 px-3 py-2 text-white disabled:opacity-50">{busy ? 'Sparar…' : 'Spara skola'}</button>
+        }} className="rounded bg-blue-600 px-1.5 py-0.5 text-white disabled:opacity-50">{busy ? 'Sparar…' : 'Spara skola'}</button>
       </div>
       <p role="status" className="mt-1">{status}</p>
     </details>
@@ -88,7 +88,7 @@ export function ClassSchoolChoice({ classRecord, directory, onSave, disabled }) 
         try { if (!await onSave(classRecord.id, classRecord.name, schoolId)) setError('Kunde inte spara skolkopplingen.') }
         catch { setError('Kunde inte spara skolkopplingen. Försök igen.') }
         finally { setBusy(false) }
-      }} className="rounded bg-blue-100 px-3 py-2 text-sm text-blue-800 disabled:opacity-50">{busy ? 'Sparar…' : 'Spara skolkoppling'}</button>
+      }} className="rounded bg-blue-100 px-1.5 py-0.5 text-sm text-blue-800 disabled:opacity-50">{busy ? 'Sparar…' : 'Spara skolkoppling'}</button>
     {error && <p role="alert" className="w-full text-sm text-red-700">{error}</p>}
   </div>
 }

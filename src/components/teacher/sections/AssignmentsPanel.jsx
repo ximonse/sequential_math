@@ -5,7 +5,7 @@ import SubitizingCreatorDialog from './SubitizingCreatorDialog'
 import AssignmentWorkspaceOptions from './AssignmentWorkspaceOptions'
 import AssignmentExtraPresets from './AssignmentExtraPresets'
 
-const BUTTON_BASE = 'rounded-md border px-2.5 py-1.5 text-sm font-medium transition-colors'
+const BUTTON_BASE = 'rounded-md border px-1.5 py-0.5 text-sm font-medium transition-colors'
 const TONES = {
   numberSense: 'border-amber-200 bg-amber-100 text-amber-900 hover:bg-amber-200',
   basic: 'border-sky-200 bg-sky-100 text-sky-900 hover:bg-sky-200',
@@ -116,7 +116,7 @@ export default function AssignmentsPanel({
         <div className="space-y-1.5">
           <div className="flex items-center justify-between gap-2 py-0.5">
             <p className="text-xs text-gray-500">Aktiverar för: {selectedTargets.length ? selectedTargets.map(item => item.name).join(', ') : 'alla klasser'}</p>
-            <button onClick={onClearAllAssignments} className="rounded bg-red-100 px-2 py-1 text-xs text-red-700 hover:bg-red-200">Rensa alla</button>
+            <button onClick={onClearAllAssignments} className="rounded bg-red-100 px-1.5 py-0.5 text-xs text-red-700 hover:bg-red-200">Rensa alla</button>
           </div>
           {!canShareAssignment && <p className="text-xs text-amber-700">Välj exakt en klass ovanför innan du delar ett uppdrag.</p>}
           {assignments.slice(0, 10).map(assignment => {
@@ -137,15 +137,15 @@ export default function AssignmentsPanel({
                 <p className="font-mono text-xs text-gray-400">{assignment.id}</p>
               </div>
               <div className="ml-auto flex items-center gap-1">
-                {canActivate && <button onClick={() => onActivateAssignment(assignment.id)} className="rounded bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700">
+                {canActivate && <button onClick={() => onActivateAssignment(assignment.id)} className="rounded bg-green-600 px-1.5 py-0.5 text-xs text-white hover:bg-green-700">
                   {selectedTargets.length ? 'Aktivera' : 'Aktivera för alla klasser'}</button>}
-                {isActive && <button onClick={() => onDeactivateAssignment(assignment.id)} className="rounded bg-gray-600 px-2 py-1 text-xs text-white hover:bg-gray-700">
+                {isActive && <button onClick={() => onDeactivateAssignment(assignment.id)} className="rounded bg-gray-600 px-1.5 py-0.5 text-xs text-white hover:bg-gray-700">
                   {selectedTargets.length ? 'Avaktivera' : 'Avaktivera överallt'}</button>}
-                <button onClick={() => onCopyAssignmentLink(assignment.id, classLoginToken)} disabled={!canShareAssignment} className="rounded bg-gray-800 px-2 py-1 text-xs text-white hover:bg-black disabled:cursor-not-allowed disabled:bg-gray-300">{copiedId === assignment.id ? 'Kopierad' : 'Kopiera länk'}</button>
+                <button onClick={() => onCopyAssignmentLink(assignment.id, classLoginToken)} disabled={!canShareAssignment} className="rounded bg-gray-800 px-1.5 py-0.5 text-xs text-white hover:bg-black disabled:cursor-not-allowed disabled:bg-gray-300">{copiedId === assignment.id ? 'Kopierad' : 'Kopiera länk'}</button>
                 <button type="button" onClick={() => setQrAssignment(assignment)} disabled={!canShareAssignment} className="inline-flex h-7 w-7 items-center justify-center rounded bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-300" aria-label={`Visa QR-kod för ${assignment.title}`} title="Visa QR-kod">
                   <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current"><path d="M3 3h7v7H3V3Zm2 2v3h3V5H5Zm9-2h7v7h-7V3Zm2 2v3h3V5h-3ZM3 14h7v7H3v-7Zm2 2v3h3v-3H5Zm7-2h2v2h-2v-2Zm3 0h6v3h-2v-1h-2v2h-2v-4Zm-3 3h3v4h-3v-4Zm5 2h4v2h-4v-2Z" /></svg>
                 </button>
-                <button onClick={() => onDeleteAssignment(assignment.id)} className="rounded bg-red-100 px-1.5 py-1 text-[11px] text-red-700 hover:bg-red-200">Ta bort</button>
+                <button onClick={() => onDeleteAssignment(assignment.id)} className="rounded bg-red-100 px-1.5 py-0.5 text-[11px] text-red-700 hover:bg-red-200">Ta bort</button>
               </div>
             </div>
             )

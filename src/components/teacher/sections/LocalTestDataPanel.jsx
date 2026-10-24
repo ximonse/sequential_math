@@ -74,12 +74,12 @@ export default function LocalTestDataPanel({ classes = [], students = [], onImpo
     <div className="mt-3 flex flex-wrap items-end gap-3">
       {mode === 'export' && <>
       <label className="text-sm font-medium text-slate-800">Klass
-        <select className="mt-1 block rounded border border-slate-300 bg-white px-3 py-2" value={classId} onChange={event => setClassId(event.target.value)}>
+        <select className="mt-1 block rounded border border-slate-300 bg-white px-1.5 py-0.5" value={classId} onChange={event => setClassId(event.target.value)}>
           <option value="">Välj klass</option>
           {classes.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select>
       </label>
-      <button type="button" disabled={!selected || busy} onClick={exportClass} className="rounded bg-slate-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Exportera vald klass som JSON</button>
+      <button type="button" disabled={!selected || busy} onClick={exportClass} className="rounded bg-slate-800 px-1.5 py-0.5 text-sm font-semibold text-white disabled:opacity-50">Exportera vald klass som JSON</button>
       </>}
       {mode === 'import' && import.meta.env.DEV && <label className="cursor-pointer rounded bg-amber-300 px-4 py-2 text-sm font-semibold text-slate-900">
         Importera testklass på localhost

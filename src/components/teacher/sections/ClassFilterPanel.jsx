@@ -24,7 +24,7 @@ export default function ClassFilterPanel({
         <button
           type="button"
           onClick={onClearClassFilter}
-          className={`rounded-md px-2 py-1 text-xs ${selectedClassIds.length === 0
+          className={`rounded-md px-1.5 py-0.5 text-xs ${selectedClassIds.length === 0
             ? 'bg-blue-600 text-white'
             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
@@ -41,7 +41,7 @@ export default function ClassFilterPanel({
             type="button"
             key={`top-filter-${item.id}`}
             onClick={() => onToggleClassFilter(item.id)}
-            className={`rounded-md px-2 py-1 text-xs ${selectedClassIds.includes(item.id)
+            className={`rounded-md px-1.5 py-0.5 text-xs ${selectedClassIds.includes(item.id)
               ? 'bg-blue-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}

@@ -35,7 +35,7 @@ export default function DiagnosticScreeningCell({ item, pupilName, prompt, onOpe
       onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); setPosition(null) } }}
       aria-describedby={position ? id : undefined}
       aria-label={`${pupilName}, ${prompt}, svar ${value}, ${label}${signals.length ? `, ${signals.map(signal => signal.label).join(', ')}` : ''}`}
-      className={`w-full min-w-16 rounded px-2 py-1 font-semibold tabular-nums outline-offset-2 focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:cursor-default ${status === 'correct' ? colors.correct : colors[signals[0]?.code] || colors[status]}`}>
+      className={`w-full min-w-16 rounded px-1.5 py-0.5 font-semibold tabular-nums outline-offset-2 focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:cursor-default ${status === 'correct' ? colors.correct : colors[signals[0]?.code] || colors[status]}`}>
       {shortValue}{signals.map(signal => <span key={signal.code} className="ml-1 text-[10px] font-medium">{signal.code}</span>)}
     </button>
     {position && createPortal(<div id={id} role="tooltip" onMouseEnter={() => clearTimeout(timer.current)} onMouseLeave={hideSoon}

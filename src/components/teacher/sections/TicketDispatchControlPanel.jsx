@@ -35,7 +35,7 @@ export default function TicketDispatchControlPanel({
         <select
           value={selectedTicketDispatchId}
           onChange={(event) => onSetSelectedTicketDispatchId(event.target.value)}
-          className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm min-w-56 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+          className="px-1.5 py-0.5 border-2 border-amber-100 rounded-xl text-sm min-w-56 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
         >
           <option value="">Välj ticket-utskick</option>
           {ticketDispatches.map(dispatch => (
@@ -64,13 +64,13 @@ export default function TicketDispatchControlPanel({
           <button
             onClick={onTicketTargetsFromClassFilter}
             disabled={selectedClassIds.length === 0}
-            className="px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-1.5 py-0.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Använd klassfiltret
           </button>
           <button
             onClick={onClearTicketTargets}
-            className="px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 hover:bg-gray-50"
+            className="px-1.5 py-0.5 bg-white border border-gray-200 rounded-lg text-xs text-gray-700 hover:bg-gray-50"
           >
             Nollställ mottagare
           </button>
@@ -85,7 +85,7 @@ export default function TicketDispatchControlPanel({
               <button
                 key={`ticket-target-class-${classItem.id}`}
                 onClick={() => onToggleTicketTargetClass(classItem.id)}
-                className={`px-2.5 py-1.5 rounded-lg border text-xs font-medium ${selected
+                className={`px-1.5 py-0.5 rounded-lg border text-xs font-medium ${selected
                   ? 'bg-amber-600 border-amber-600 text-white shadow-sm'
                   : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
                   }`}
@@ -111,7 +111,7 @@ export default function TicketDispatchControlPanel({
                 <button
                   key={`ticket-target-student-${item.studentId}`}
                   onClick={() => onToggleTicketTargetStudent(item.studentId)}
-                  className={`w-full text-left px-2.5 py-1.5 text-xs ${selected
+                  className={`w-full text-left px-1.5 py-0.5 text-xs ${selected
                     ? 'bg-amber-100 text-amber-900 font-semibold'
                     : 'text-gray-700 hover:bg-gray-50'
                     }`}
@@ -155,19 +155,19 @@ export default function TicketDispatchControlPanel({
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => onCopyTicketLink(dispatch.id)}
-                  className="px-2.5 py-1.5 bg-gray-800 hover:bg-black text-white rounded-lg text-xs font-semibold"
+                  className="px-1.5 py-0.5 bg-gray-800 hover:bg-black text-white rounded-lg text-xs font-semibold"
                 >
                   {copiedTicketDispatchId === dispatch.id ? 'Kopierad' : 'Kopiera länk'}
                 </button>
                 <button
                   onClick={() => onPublishTicketToHome(dispatch.id)}
-                  className="px-2.5 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
+                  className="px-1.5 py-0.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
                 >
                   Visa på startsida
                 </button>
                 <button
                   onClick={() => onToggleTicketReveal(dispatch.id, !dispatch.revealCorrectness)}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold ${dispatch.revealCorrectness
+                  className={`px-1.5 py-0.5 rounded-lg text-xs font-semibold ${dispatch.revealCorrectness
                     ? 'bg-green-100 hover:bg-green-200 text-green-700'
                     : 'bg-orange-100 hover:bg-orange-200 text-orange-700'
                     }`}
@@ -176,13 +176,13 @@ export default function TicketDispatchControlPanel({
                 </button>
                 <button
                   onClick={() => onClearTicketFromHome(dispatch.id)}
-                  className="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold"
+                  className="px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold"
                 >
                   Ta bort från startsida
                 </button>
                 <button
                   onClick={() => onDeleteTicketDispatch(dispatch.id)}
-                  className="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-semibold"
+                  className="px-1.5 py-0.5 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-semibold"
                 >
                   Ta bort
                 </button>

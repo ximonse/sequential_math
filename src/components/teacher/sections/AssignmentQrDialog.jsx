@@ -35,7 +35,7 @@ export default function AssignmentQrDialog({ assignment, classLoginToken, onClos
           <p className="my-20 text-sm text-red-700">{error}</p>
         )}
         <p className="mx-auto max-w-lg break-all text-xs text-slate-500">{assignmentUrl}</p>
-        <button type="button" onClick={onClose} className="mt-4 rounded-md bg-slate-800 px-3 py-1.5 text-sm font-semibold text-white hover:bg-slate-950">Stäng</button>
+        <button type="button" onClick={onClose} className="mt-4 rounded-md bg-slate-800 px-1.5 py-0.5 text-sm font-semibold text-white hover:bg-slate-950">Stäng</button>
       </div>
     </div>
   )

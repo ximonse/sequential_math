@@ -8,12 +8,12 @@
 .focus-module button:focus-visible, .focus-module select:focus-visible, .focus-module summary:focus-visible, .focus-table-scroll:focus-visible { outline: 3px solid var(--focus-teal); outline-offset: 3px; }
 .focus-module button { cursor: pointer; }
 .focus-module button:disabled { opacity: .55; cursor: wait; }
-.focus-module .focus-action { font-size: .85rem; border: 1px solid #a9c4bd; border-radius: 10px; padding: 8px 12px; background: #f4f8f6; color: var(--focus-ink); }
+.focus-module .focus-action { font-size: .85rem; border: 1px solid #a9c4bd; border-radius: 10px; padding: 3px 6px; background: #f4f8f6; color: var(--focus-ink); }
 .focus-toolbar { display: flex; align-items: end; gap: 10px; flex-wrap: wrap; margin-top: 10px; padding: 8px 0; border-block: 1px solid var(--focus-line); }
 .focus-module label { display: flex; flex-direction: column; gap: 5px; font-size: .8rem; color: #536b68; }
-.focus-module select { min-height: 38px; max-width: 100%; border: 1px solid #b8ccc6; border-radius: 8px; padding: 5px 8px; color: var(--focus-ink); background: white; }
+.focus-module select { max-width: 100%; border: 1px solid #b8ccc6; border-radius: 8px; padding: 2px 6px; color: var(--focus-ink); background: white; }
 .focus-view-picker { display: flex; gap: 3px; padding: 3px; border-radius: 10px; background: var(--focus-soft); }
-.focus-view-picker button { padding: 8px 10px; border-radius: 8px; font-size: .85rem; }
+.focus-view-picker button { padding: 3px 6px; border-radius: 8px; font-size: .85rem; }
 .focus-module button[aria-pressed="true"] { background: var(--focus-ink); color: #fff; }
 .focus-load-status { margin-top: 12px; font-size: .8rem; font-variant-numeric: tabular-nums; }
 .focus-table-scroll { overflow-x: auto; margin: 8px 0; }
@@ -59,7 +59,7 @@
 .focus-point.is-selected circle { fill: #b65d31; opacity: 1; stroke: #fff; stroke-width: 2; }
 .focus-chart .focus-cluster-count { fill: #fff; font-weight: 600; }
 .focus-plot-names { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.focus-plot-names button { border: 1px solid var(--focus-line); background: #f4f8f6; border-radius: 10px; padding: 7px 10px; text-align: left; font-size: .8rem; }
+.focus-plot-names button { border: 1px solid var(--focus-line); background: #f4f8f6; border-radius: 10px; padding: 3px 6px; text-align: left; font-size: .8rem; }
 .focus-plot-names span { display: block; font-variant-numeric: tabular-nums; }
 .focus-series-0 { fill: var(--focus-teal); background: var(--focus-teal); }
 .focus-series-1 { fill: var(--focus-blue); background: var(--focus-blue); }
@@ -67,7 +67,7 @@
 .focus-legend span { display: flex; align-items: center; gap: 6px; }
 .focus-legend i { width: 9px; height: 9px; display: inline-block; }
 .focus-legend span:first-child i { border-radius: 50%; }
-.focus-module summary { cursor: pointer; font-size: .9rem; font-weight: 600; padding: 10px 0; }
+.focus-module summary { cursor: pointer; font-size: .9rem; font-weight: 600; padding: 3px 0; }
 .focus-pass { padding: 12px 0; border-top: 1px solid var(--focus-line); }
 .focus-pass h4 { font-weight: 600; font-size: .8rem; }
 .focus-explanation { margin-top: 16px; font-size: .85rem; line-height: 1.55; }
@@ -81,4 +81,4 @@
 .focus-week-chart text { fill: #536b68; font-size: 11px; }
 .focus-module svg [role="button"] { cursor: pointer; }
 .focus-module svg [role="button"]:focus-visible { outline: 2px solid #193d40; }
-.focus-export input { font: inherit; padding: 4px 6px; border: 1px solid #b8ccc6; border-radius: 6px; max-width: 150px; }
+.focus-export input { font: inherit; padding: 2px 6px; border: 1px solid #b8ccc6; border-radius: 6px; max-width: 150px; }

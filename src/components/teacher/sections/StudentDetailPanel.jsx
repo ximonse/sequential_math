@@ -32,8 +32,8 @@ function ReissuedCredentialCard({ credential }) {
       {qrCode ? <img className="h-28 w-28" src={qrCode} alt="Nytt elevkorts QR-kod" /> : null}
     </div>
     <div className="mt-3 flex gap-2 print:hidden">
-      <button type="button" onClick={async () => { setPdfStatus('Skapar PDF…'); try { await downloadStudentCredentialPdf([credential]); setPdfStatus('PDF klar. Spara filen säkert.') } catch (error) { setPdfStatus(error?.message || 'Kunde inte skapa PDF.') } }} className="rounded bg-amber-700 px-3 py-1.5 text-xs font-semibold text-white">Hämta PDF</button>
-      <button type="button" onClick={() => window.print()} className="rounded border border-amber-700 px-3 py-1.5 text-xs font-semibold text-amber-950">Skriv ut kortet</button>
+      <button type="button" onClick={async () => { setPdfStatus('Skapar PDF…'); try { await downloadStudentCredentialPdf([credential]); setPdfStatus('PDF klar. Spara filen säkert.') } catch (error) { setPdfStatus(error?.message || 'Kunde inte skapa PDF.') } }} className="rounded bg-amber-700 px-1.5 py-0.5 text-xs font-semibold text-white">Hämta PDF</button>
+      <button type="button" onClick={() => window.print()} className="rounded border border-amber-700 px-1.5 py-0.5 text-xs font-semibold text-amber-950">Skriv ut kortet</button>
     </div>
     {pdfStatus ? <p role="status" className="mt-2 text-xs text-amber-900 print:hidden">{pdfStatus}</p> : null}
   </div>
@@ -123,7 +123,7 @@ export default function StudentDetailPanel({
                 onNavigateDirectStudent(nextStudentId)
               }
             }}
-            className="px-2 py-1 border rounded text-sm min-w-56"
+            className="px-1.5 py-0.5 border rounded text-sm min-w-56"
           >
             {detailStudentOptions.length === 0 ? (
               <option value="">Inga elever i urvalet</option>
@@ -143,14 +143,14 @@ export default function StudentDetailPanel({
           <button
             onClick={onExportCsv}
             disabled={!canExportCsv}
-            className="px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 disabled:bg-gray-100 disabled:text-gray-400 text-emerald-700 rounded text-xs font-medium"
+            className="px-1.5 py-0.5 bg-emerald-100 hover:bg-emerald-200 disabled:bg-gray-100 disabled:text-gray-400 text-emerald-700 rounded text-xs font-medium"
           >
             Exportera elevvy CSV
           </button>
             {detailStudentProfile && (
-              <button type="button" onClick={() => { const label = window.prompt('Ditt privata tilltalsnamn för eleven:', detailStudentProfile.teacherPupilLabel || ''); if (label !== null) onSetTeacherPupilLabel(detailStudentProfile.studentId, label) }} className="px-3 py-1.5 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded text-xs font-medium">Ändra tilltalsnamn</button>
+              <button type="button" onClick={() => { const label = window.prompt('Ditt privata tilltalsnamn för eleven:', detailStudentProfile.teacherPupilLabel || ''); if (label !== null) onSetTeacherPupilLabel(detailStudentProfile.studentId, label) }} className="px-1.5 py-0.5 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded text-xs font-medium">Ändra tilltalsnamn</button>
             )}
-          {detailStudentProfile?.displayAlias ? <button type="button" onClick={reissueCredential} className="px-3 py-1.5 bg-amber-200 hover:bg-amber-300 text-amber-950 rounded text-xs font-semibold">Nytt QR-kort / ny PIN</button> : null}
+          {detailStudentProfile?.displayAlias ? <button type="button" onClick={reissueCredential} className="px-1.5 py-0.5 bg-amber-200 hover:bg-amber-300 text-amber-950 rounded text-xs font-semibold">Nytt QR-kort / ny PIN</button> : null}
         </div>
       </div>
 
@@ -189,7 +189,7 @@ export default function StudentDetailPanel({
             detailLevelErrorMinAttempts={historyPanelProps.detailLevelErrorMinAttempts}
             toPercent={toPercent}
           />
-          <button type="button" onClick={onOpenTableProgress} className="mt-4 rounded border border-teal-700 px-3 py-2 text-sm font-semibold text-teal-800 hover:bg-teal-50">
+          <button type="button" onClick={onOpenTableProgress} className="mt-4 rounded border border-teal-700 px-1.5 py-0.5 text-sm font-semibold text-teal-800 hover:bg-teal-50">
             Jämför elevens tabellträning med gruppen ↓
           </button>
         </>

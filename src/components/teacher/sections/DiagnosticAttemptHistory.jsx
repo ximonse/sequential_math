@@ -13,14 +13,14 @@ export default function DiagnosticAttemptHistory({ snapshot }) {
     <h5 className="font-semibold">Så ändrades räknehäftet</h5>
     <p className="text-sm text-slate-700">Stega genom sparade händelser. Det visar vad eleven skrev och ändrade, inte varför.</p>
     <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-      <button type="button" onClick={() => setStep(0)} disabled={step === 0} className="rounded border px-2 py-1 disabled:opacity-40">Början</button>
-      <button type="button" onClick={() => setStep(value => value - 1)} disabled={step === 0} className="rounded border px-2 py-1 disabled:opacity-40">Föregående</button>
+      <button type="button" onClick={() => setStep(0)} disabled={step === 0} className="rounded border px-1.5 py-0.5 disabled:opacity-40">Början</button>
+      <button type="button" onClick={() => setStep(value => value - 1)} disabled={step === 0} className="rounded border px-1.5 py-0.5 disabled:opacity-40">Föregående</button>
       <label className="flex items-center gap-2">Steg {step} av {lastStep}
         <input type="range" min="0" max={lastStep || 1} value={step} disabled={!lastStep}
           onChange={change => setStep(Number(change.target.value))} aria-label="Välj steg i elevens inmatningsförlopp" />
       </label>
-      <button type="button" onClick={() => setStep(value => value + 1)} disabled={step === lastStep} className="rounded border px-2 py-1 disabled:opacity-40">Nästa</button>
-      <button type="button" onClick={() => setStep(lastStep)} disabled={step === lastStep} className="rounded border px-2 py-1 disabled:opacity-40">Slutbild</button>
+      <button type="button" onClick={() => setStep(value => value + 1)} disabled={step === lastStep} className="rounded border px-1.5 py-0.5 disabled:opacity-40">Nästa</button>
+      <button type="button" onClick={() => setStep(lastStep)} disabled={step === lastStep} className="rounded border px-1.5 py-0.5 disabled:opacity-40">Slutbild</button>
     </div>
     <p className="mt-2 text-sm" aria-live="polite">{describeDiagnosticEvent(event)} Slutsvar då: {frame.answer || 'inte skrivet'}.</p>
     <div className="mt-3 overflow-x-auto">

@@ -83,13 +83,13 @@ export default function SubitizingCreatorDialog({ onCreate, onClose }) {
         <div className="flex gap-3 mt-6">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+            className="flex-1 px-1.5 py-0.5 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
           >
             Avbryt
           </button>
           <button
             onClick={handleCreate}
-            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+            className="flex-1 px-1.5 py-0.5 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
           >
             Skapa övning
           </button>

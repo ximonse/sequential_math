@@ -17,7 +17,7 @@ export default function AdminDirectorySection({ teachers, classes, directory, ca
       <div role="tablist" aria-label="Lärare och skolor" className="mt-2 flex flex-wrap gap-1">
         {tabs.map(([id, label]) => (
           <button key={id} type="button" role="tab" aria-selected={activeTab === id} onClick={() => setActiveTab(id)}
-            className={'rounded-lg px-3 py-0.5 text-xs font-semibold ' + (activeTab === id ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}>
+            className={'rounded-lg px-1.5 py-0.5 text-xs font-semibold ' + (activeTab === id ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200')}>
             {label}
           </button>
         ))}

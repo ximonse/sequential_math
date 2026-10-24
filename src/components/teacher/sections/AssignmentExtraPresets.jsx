@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ASSIGNABLE_TABLES, FOCUS_MODE_LABELS, createAssignment } from '../../../lib/assignments'
 
-const CHIP = 'rounded-md border px-2 py-1 text-sm font-medium'
+const CHIP = 'rounded-md border px-1.5 py-0.5 text-sm font-medium'
 
 // Table and focus assignments: pick tables, or pick which focus exercise to assign.
 export default function AssignmentExtraPresets({ onCreated, breakGames }) {

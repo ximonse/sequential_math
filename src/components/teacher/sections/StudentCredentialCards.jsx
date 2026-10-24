@@ -63,10 +63,10 @@ export default function StudentCredentialCards({ credentials, onClear, title = '
           <p className="text-xs text-teal-900">Uppgifterna finns bara i denna vy tills sidan laddas om. Hämta PDF:en nu.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={downloadPdf} className="rounded bg-teal-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-800">Hämta PDF (8 A7/A4)</button>
-          <button type="button" onClick={copy} className="rounded border border-teal-700 px-3 py-1.5 text-xs font-semibold text-teal-900">Kopiera reservlista</button>
-          <button type="button" onClick={() => window.print()} className="rounded border border-teal-700 px-3 py-1.5 text-xs font-semibold text-teal-900">Skriv ut</button>
-          {onClear ? <button type="button" onClick={onClear} className="rounded border border-slate-400 px-3 py-1.5 text-xs text-slate-700">Rensa vyn</button> : null}
+          <button type="button" onClick={downloadPdf} className="rounded bg-teal-700 px-1.5 py-0.5 text-xs font-semibold text-white hover:bg-teal-800">Hämta PDF (8 A7/A4)</button>
+          <button type="button" onClick={copy} className="rounded border border-teal-700 px-1.5 py-0.5 text-xs font-semibold text-teal-900">Kopiera reservlista</button>
+          <button type="button" onClick={() => window.print()} className="rounded border border-teal-700 px-1.5 py-0.5 text-xs font-semibold text-teal-900">Skriv ut</button>
+          {onClear ? <button type="button" onClick={onClear} className="rounded border border-slate-400 px-1.5 py-0.5 text-xs text-slate-700">Rensa vyn</button> : null}
         </div>
       </div>
       {status ? <p role="status" className="mt-2 text-xs text-teal-950 print:hidden">{status}</p> : null}

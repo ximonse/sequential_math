@@ -42,20 +42,20 @@ export default function PupilAnalysisArchive({ refreshVersion }) {
     {status && <p role="status" className="text-sm">{status}</p>}
     {pending.map(job => <div key={job.studentId} className="text-sm">
       {job.mode === 'delete' ? 'Radering' : 'Anonymisering'} väntar på städning.
-      <button onClick={() => resume(job.studentId)} className="ml-2 rounded bg-amber-100 px-2 py-1">Återuppta städning</button>
+      <button onClick={() => resume(job.studentId)} className="ml-2 rounded bg-amber-100 px-1.5 py-0.5">Återuppta städning</button>
     </div>)}
     {archives.length === 0 && <p className="text-xs">Inga sparade statistikposter.</p>}
     {archives.map((archive, index) => <div key={archive.archiveId} className="flex flex-wrap items-center gap-2 text-xs">
       <span>Serie {index + 1} · åk {archive.grade} · {archive.trainingAnswers} träningssvar · {archive.diagnosticPoints} diagnostikpunkter</span>
-      <button onClick={() => open(archive.archiveId)} className="rounded bg-indigo-100 px-2 py-1">Visa statistik</button>
-      <button onClick={() => remove(archive.archiveId)} className="rounded bg-red-50 px-2 py-1 text-red-700">Radera statistik</button>
+      <button onClick={() => open(archive.archiveId)} className="rounded bg-indigo-100 px-1.5 py-0.5">Visa statistik</button>
+      <button onClick={() => remove(archive.archiveId)} className="rounded bg-red-50 px-1.5 py-0.5 text-red-700">Radera statistik</button>
     </div>)}
     {detail && <div className="space-y-1 rounded bg-gray-50 p-2 text-sm">
       <p>Sparade träningssvar: {detail.training.attempts.length}</p>
       <p>Rätt av sparade svar: {detail.training.attempts.filter(attempt => attempt.correct).length}</p>
       <p>Diagnostikpunkter: {detail.diagnostics.points.length}</p>
       <p className="text-xs">{detail.training.historyComplete ? 'Den sparade träningshistoriken är fullständig.' : 'Träningshistoriken kan vara begränsad. Livstidssummor finns i exporten när de har lagrats.'}</p>
-      <button onClick={download} className="rounded bg-indigo-600 px-2 py-1 text-white">Exportera statistik (JSON)</button>
+      <button onClick={download} className="rounded bg-indigo-600 px-1.5 py-0.5 text-white">Exportera statistik (JSON)</button>
     </div>}
   </section>
 }

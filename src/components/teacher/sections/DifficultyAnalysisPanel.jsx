@@ -56,7 +56,7 @@ export default function DifficultyAnalysisPanel({
           <select
             value={detailLevelErrorSortBy}
             onChange={(event) => onDetailLevelErrorSortByChange?.(event.target.value)}
-            className="rounded border border-gray-300 bg-white px-2 py-1 text-[11px] text-gray-700"
+            className="rounded border border-gray-300 bg-white px-1.5 py-0.5 text-[11px] text-gray-700"
           >
             {DETAIL_LEVEL_SORT_OPTIONS.map(option => (
               <option key={`detail-level-sort-${option.value}`} value={option.value}>{option.label}</option>
@@ -68,7 +68,7 @@ export default function DifficultyAnalysisPanel({
           <select
             value={detailLevelErrorSortDir}
             onChange={(event) => onDetailLevelErrorSortDirChange?.(event.target.value)}
-            className="rounded border border-gray-300 bg-white px-2 py-1 text-[11px] text-gray-700"
+            className="rounded border border-gray-300 bg-white px-1.5 py-0.5 text-[11px] text-gray-700"
           >
             <option value="asc">{ascLabel}</option>
             <option value="desc">{descLabel}</option>

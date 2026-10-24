@@ -49,7 +49,7 @@ export default function DiagnosticReviewForm({ detail, onSaved, onDirtyChange })
         onChange={event => { setNote(event.target.value); updateState({ busy: false, message: '', dirty: true }) }}
         className="mt-1 block w-full rounded border border-orange-300 bg-white p-2" />
     </label>
-    <button type="submit" disabled={state.busy || !state.dirty} className="mt-2 rounded bg-orange-700 px-3 py-1 text-sm font-semibold text-white disabled:opacity-50">Spara genomgång</button>
+    <button type="submit" disabled={state.busy || !state.dirty} className="mt-2 rounded bg-orange-700 px-1.5 py-0.5 text-sm font-semibold text-white disabled:opacity-50">Spara genomgång</button>
     {detail.record.status === 'submitted' && <div className="mt-2 border-t border-orange-300 pt-2">
       <label className="block text-sm font-semibold">Återkoppling till eleven
         <textarea value={feedbackText} maxLength={1000} rows={2} disabled={state.busy}
@@ -58,7 +58,7 @@ export default function DiagnosticReviewForm({ detail, onSaved, onDirtyChange })
       </label>
       <p className="text-xs">Bara den här texten skickas. Den interna läraranteckningen visas aldrig för eleven.</p>
       <button type="button" onClick={event => save(event, true)} disabled={state.busy || !feedbackText.trim()}
-        className="mt-1 rounded bg-emerald-700 px-2 py-1 text-sm font-semibold text-white disabled:opacity-50">Skicka återkoppling</button>
+        className="mt-1 rounded bg-emerald-700 px-1.5 py-0.5 text-sm font-semibold text-white disabled:opacity-50">Skicka återkoppling</button>
     </div>}
     <p role="status" className="mt-1 text-sm">{state.message || (state.dirty ? 'Osparade ändringar i genomgången.' : '')}</p>
   </form>

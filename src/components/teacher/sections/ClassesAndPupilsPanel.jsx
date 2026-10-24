@@ -14,8 +14,8 @@ import { useAdminDirectory } from './useAdminDirectory'
 
 // Dense teacher workspace: compact controls, separate modules with a clear shadow.
 const MODULE = 'rounded-md bg-white px-[21px] py-[19px] shadow-[0_8px_13px_-2px_rgba(15,23,42,0.32)]'
-const TAB = 'rounded-md px-3 py-0.5 text-sm font-semibold'
-const ITEM = 'rounded-md border px-2.5 py-0.5 text-left text-sm'
+const TAB = 'rounded-md px-1.5 py-0.5 text-sm font-semibold'
+const ITEM = 'rounded-md border px-1.5 py-0.5 text-left text-sm'
 const ITEM_OFF = 'border-gray-200 bg-white text-gray-800 hover:bg-gray-50'
 const ITEM_ON = 'border-indigo-600 bg-indigo-600 text-white'
 
@@ -199,7 +199,7 @@ export default function ClassesAndPupilsPanel({
             <h2 id="open-item-title" className="text-lg font-semibold text-gray-900">
               {openClass ? openClass.name : openGroup ? `Grupp: ${openGroup.name}` : 'Ny grupp'}
             </h2>
-            <button type="button" onClick={() => setOpen(null)} className="rounded-md border border-gray-300 px-2 py-0.5 text-xs text-gray-700 hover:bg-gray-50">Stäng</button>
+            <button type="button" onClick={() => setOpen(null)} className="rounded-md border border-gray-300 px-1.5 py-0.5 text-xs text-gray-700 hover:bg-gray-50">Stäng</button>
           </div>
           <div role="tablist" aria-label={openClass ? `Klass ${openClass.name}` : 'Grupp'} className="mt-2 flex flex-wrap gap-1 border-b border-gray-200 pb-2">
             {tabs.map(([id, label]) => (
@@ -235,7 +235,7 @@ export default function ClassesAndPupilsPanel({
               <p className="font-semibold text-rose-900">Ta bort gruppen</p>
               <p className="mt-1 text-rose-900">Eleverna finns kvar i sina klasser. Uppdrag som bara var aktiva för gruppen slutar gälla.</p>
               <button type="button" disabled={groupsState.busy} onClick={async () => { if (await groupsState.remove(openGroup)) setOpen(null) }}
-                className="mt-2 rounded bg-rose-700 px-3 py-1.5 font-semibold text-white disabled:opacity-50">Ta bort grupp</button>
+                className="mt-2 rounded bg-rose-700 px-1.5 py-0.5 font-semibold text-white disabled:opacity-50">Ta bort grupp</button>
             </div>}
           </fieldset>
         </section>
@@ -254,7 +254,7 @@ export default function ClassesAndPupilsPanel({
             <input required placeholder="Klassnamn (t.ex. 4A)" value={newClassName}
               onChange={event => setNewClassName(event.target.value)} className="w-full rounded border border-gray-300 px-2 py-1.5" />
           </label>
-          <button disabled={busy} type="submit" className="rounded-md bg-indigo-600 px-3 py-0.5 text-sm font-semibold text-white disabled:opacity-50">Skapa klass</button>
+          <button disabled={busy} type="submit" className="rounded-md bg-indigo-600 px-1.5 py-0.5 text-sm font-semibold text-white disabled:opacity-50">Skapa klass</button>
         </form>
         </section>
       )}

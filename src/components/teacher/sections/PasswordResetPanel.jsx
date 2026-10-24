@@ -32,7 +32,7 @@ export default function PasswordResetPanel({
         <button
           type="button"
           onClick={onClearPasswordResetSearch}
-          className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm"
+          className="px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm"
         >
           Rensa
         </button>
@@ -79,7 +79,7 @@ export default function PasswordResetPanel({
                           if (code !== null) onResetStudentPassword(row.studentId, code)
                         }}
                         disabled={passwordResetBusyId === row.studentId}
-                        className="px-3 py-1.5 bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white rounded text-xs font-semibold"
+                        className="px-1.5 py-0.5 bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white rounded text-xs font-semibold"
                       >
                         {passwordResetBusyId === row.studentId ? 'Nollställer...' : 'Nollställ äldre lösenord'}
                       </button>

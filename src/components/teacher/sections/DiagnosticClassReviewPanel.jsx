@@ -74,14 +74,14 @@ export default function DiagnosticClassReviewPanel({ classId, assignments, pupil
   return <section className="mt-5 border-t border-slate-300 pt-4" aria-label="Klassgenomgång">
     <h3 className="font-semibold">Klassöversikt och genomgång</h3>
     <label className="mt-2 block text-sm">Uppdrag att gå igenom
-      <select value={assignmentId} onChange={event => { if (!resetDetail()) return; setOverview(null); setItemId(''); setAssignmentId(event.target.value) }} className="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1">
+      <select value={assignmentId} onChange={event => { if (!resetDetail()) return; setOverview(null); setItemId(''); setAssignmentId(event.target.value) }} className="mt-1 block w-full rounded border border-slate-300 bg-white px-1.5 py-0.5">
         <option value="">Välj uppdrag</option>
         {assignments.map(assignment => <option key={assignment.assignmentId} value={assignment.assignmentId}>
           {new Date(assignment.createdAt).toLocaleString('sv-SE')} · {assignment.items.length} uppgifter · {assignment.studentIds.length} elever · {assignment.assignmentId.slice(0, 8)}
         </option>)}
       </select>
     </label>
-    {assignmentId && <button type="button" onClick={() => setRefresh(value => value + 1)} className="mt-2 rounded border border-slate-300 bg-white px-2 py-1 text-sm">Uppdatera klassöversikt</button>}
+    {assignmentId && <button type="button" onClick={() => setRefresh(value => value + 1)} className="mt-2 rounded border border-slate-300 bg-white px-1.5 py-0.5 text-sm">Uppdatera klassöversikt</button>}
     <p role="status" className="mt-2 text-sm">{message}</p>
     {overview && <>
       <DiagnosticScreeningMatrix overview={overview} name={name} onOpen={open} />
@@ -90,15 +90,15 @@ export default function DiagnosticClassReviewPanel({ classId, assignments, pupil
     {detail && <>
       <p role="status" className="text-sm">{message}</p>
       <div className="mt-3 flex flex-wrap items-center gap-2"><strong className="mr-auto">{name(detail.record.studentId)}</strong>
-        <button type="button" onClick={resetDetail} className="rounded border border-slate-300 px-2 py-1 text-sm">Stäng genomgång</button>
-        <button type="button" disabled={current <= 0} onClick={() => open(queue[current - 1])} className="rounded border border-slate-300 bg-white px-2 py-1 text-sm disabled:opacity-50">Föregående elev</button>
-        <button type="button" disabled={current < 0 || current >= queue.length - 1} onClick={() => open(queue[current + 1])} className="rounded border border-slate-300 bg-white px-2 py-1 text-sm disabled:opacity-50">Nästa elev</button>
-        <button type="button" onClick={() => open({ studentId: detail.record.studentId, attemptId: detail.record.attemptId })} className="rounded border border-slate-300 bg-white px-2 py-1 text-sm">Öppna senaste underlag</button>
+        <button type="button" onClick={resetDetail} className="rounded border border-slate-300 px-1.5 py-0.5 text-sm">Stäng genomgång</button>
+        <button type="button" disabled={current <= 0} onClick={() => open(queue[current - 1])} className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-sm disabled:opacity-50">Föregående elev</button>
+        <button type="button" disabled={current < 0 || current >= queue.length - 1} onClick={() => open(queue[current + 1])} className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-sm disabled:opacity-50">Nästa elev</button>
+        <button type="button" onClick={() => open({ studentId: detail.record.studentId, attemptId: detail.record.attemptId })} className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-sm">Öppna senaste underlag</button>
       </div>
       <div className="mt-2 flex flex-wrap gap-1" aria-label="Elevens uppgifter">{overview?.items.map((item, index) => {
         const attempt = overview.rows.find(row => row.studentId === detail.record.studentId)?.items.find(value => value.assignmentItemId === item.assignmentItemId)
         return <button key={item.assignmentItemId} type="button" disabled={!attempt?.attemptId} aria-pressed={detail.record.assignmentItemId === item.assignmentItemId}
-          onClick={() => open({ ...attempt, studentId: detail.record.studentId })} className="rounded border border-slate-300 px-2 py-1 text-sm aria-pressed:border-indigo-500 aria-pressed:bg-indigo-100 disabled:opacity-40">Uppgift {index + 1}</button>
+          onClick={() => open({ ...attempt, studentId: detail.record.studentId })} className="rounded border border-slate-300 px-1.5 py-0.5 text-sm aria-pressed:border-indigo-500 aria-pressed:bg-indigo-100 disabled:opacity-40">Uppgift {index + 1}</button>
       })}</div>
       <DiagnosticEvidenceDetails key={`${detail.record.attemptId}:${detail.record.serverRevision}:${detail.readVersion}`} detail={detail} reviewable onDirtyChange={value => { dirty.current = value; onDirtyChange?.(value) }} onSaved={() => setRefresh(value => value + 1)} />
     </>}

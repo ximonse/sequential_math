@@ -66,7 +66,7 @@ export default function TablePracticeOverviewPanel({ students = [], days = 14, o
       <div className="flex items-center gap-2">
         <label className="text-sm font-medium text-slate-700">Period
           <select aria-label="Period för tabellöversikt" value={days} onChange={event => onDaysChange?.(Number(event.target.value))}
-            className="ml-2 rounded border border-slate-300 bg-white px-2 py-1 text-sm">
+            className="ml-2 rounded border border-slate-300 bg-white px-1.5 py-0.5 text-sm">
             <option value={7}>7 dagar</option><option value={14}>14 dagar</option>
           </select>
         </label>

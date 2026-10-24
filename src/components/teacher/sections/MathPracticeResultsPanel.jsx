@@ -95,7 +95,7 @@ export default function MathPracticeResultsPanel({ students, filteredStudents })
           <select
             value={filterAssignmentId}
             onChange={(e) => setFilterAssignmentId(e.target.value)}
-            className="rounded border border-gray-300 px-2 py-1 text-sm"
+            className="rounded border border-gray-300 px-1.5 py-0.5 text-sm"
           >
             <option value="">Alla övningar</option>
             {assignments.map(a => (
@@ -109,7 +109,7 @@ export default function MathPracticeResultsPanel({ students, filteredStudents })
           <select
             value={filterStudentId}
             onChange={(e) => setFilterStudentId(e.target.value)}
-            className="rounded border border-gray-300 px-2 py-1 text-sm"
+            className="rounded border border-gray-300 px-1.5 py-0.5 text-sm"
           >
             <option value="">Alla elever</option>
             {filteredStudents.map(s => (
@@ -123,7 +123,7 @@ export default function MathPracticeResultsPanel({ students, filteredStudents })
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="rounded border border-gray-300 px-2 py-1 text-sm"
+            className="rounded border border-gray-300 px-1.5 py-0.5 text-sm"
           >
             <option value="timestamp">Senaste först</option>
             <option value="success">Framgångsgrad</option>

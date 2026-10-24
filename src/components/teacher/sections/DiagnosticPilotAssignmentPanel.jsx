@@ -182,8 +182,8 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
     <h2 className="text-lg font-semibold text-slate-800">Screening till elev eller klass</h2>
     <p className="mt-1 text-sm text-slate-800">Välj mottagare i rutan Mottagare överst och välj uppgifter. Klass och elev nedan styr vilka tilldelningar och svar som visas. Det sparas separat från vanlig träning.</p>
     <div className="mt-2 flex gap-1" aria-label="Screeningvyer">
-      <button type="button" aria-pressed={view === 'dispatch'} onClick={() => { if (!reviewDirty.current || window.confirm('Genomgången har osparade ändringar. Vill du lämna dem?')) { reviewDirty.current = false; setView('dispatch') } }} className="rounded border border-slate-300 px-2 py-1 text-sm aria-pressed:bg-indigo-100">Dela ut</button>
-      <button type="button" aria-pressed={view === 'group'} onClick={() => setView('group')} className="rounded border border-slate-300 px-2 py-1 text-sm aria-pressed:bg-indigo-100">Grupp</button>
+      <button type="button" aria-pressed={view === 'dispatch'} onClick={() => { if (!reviewDirty.current || window.confirm('Genomgången har osparade ändringar. Vill du lämna dem?')) { reviewDirty.current = false; setView('dispatch') } }} className="rounded border border-slate-300 px-1.5 py-0.5 text-sm aria-pressed:bg-indigo-100">Dela ut</button>
+      <button type="button" aria-pressed={view === 'group'} onClick={() => setView('group')} className="rounded border border-slate-300 px-1.5 py-0.5 text-sm aria-pressed:bg-indigo-100">Grupp</button>
     </div>
     <div className="mt-3 grid gap-3 sm:grid-cols-2">
       <label className="text-sm font-medium">Klass
@@ -191,13 +191,13 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
           if (reviewDirty.current && !window.confirm('Genomgången har osparade ändringar. Vill du byta klass och lämna dem?')) return
           reviewDirty.current = false
           setClassId(event.target.value)
-        }} className="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1">
+        }} className="mt-1 block w-full rounded border border-slate-300 bg-white px-1.5 py-0.5">
           <option value="">Välj klass</option>
           {classes.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select>
       </label>
       <label hidden={view !== 'dispatch'} className="text-sm font-medium">Elev
-        <select value={studentId} onChange={event => setStudentId(event.target.value)} className="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1">
+        <select value={studentId} onChange={event => setStudentId(event.target.value)} className="mt-1 block w-full rounded border border-slate-300 bg-white px-1.5 py-0.5">
           <option value="">Välj elev</option>
           {pupils.map(pupil => <option key={pupil.studentId} value={pupil.studentId}>{pupil.name || pupil.displayAlias || pupil.studentId}</option>)}
         </select>
@@ -212,7 +212,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
       <select value={selectedPack?.id || ''} disabled={busy} onChange={event => {
         const pack = diagnosticCatalog.packs.find(item => item.id === event.target.value)
         if (pack) setSelectedTasks([...pack.taskIds])
-      }} className="mt-1 block w-full rounded border border-slate-300 bg-white px-2 py-1">
+      }} className="mt-1 block w-full rounded border border-slate-300 bg-white px-1.5 py-0.5">
         <option value="" disabled>Eget urval</option>
         {diagnosticCatalog.packs.map(pack => <option key={pack.id} value={pack.id}>{pack.labelSv}</option>)}
       </select>
@@ -275,7 +275,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
       {limitCheck.pending.length > 0 && <p className="mt-1 text-slate-600">Kontrollerar vilka elever som kan få screening…</p>}
       {recipientPlan.dispatches.length > 0 && <button type="button" onClick={createForRecipients}
         disabled={!hasTasks || busy || limitCheck.pending.length > 0 || limitCheck.ready.length === 0}
-        className="mt-2 rounded bg-indigo-600 px-2 py-1 font-semibold text-white disabled:opacity-50">
+        className="mt-2 rounded bg-indigo-600 px-1.5 py-0.5 font-semibold text-white disabled:opacity-50">
         {busy ? 'Skapar...' : `Ge till valda mottagare (${limitCheck.ready.length} screening${limitCheck.ready.length === 1 ? '' : 'ar'})`}
       </button>}
     </div>
@@ -286,7 +286,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
         {assignments.map(assignment => <li key={assignment.assignmentId}>
           {assignment.titleSv || 'Screening'} · {assignment.items.length} uppgift{assignment.items.length === 1 ? '' : 'er'} · {assignment.status === 'active' ? 'aktiv' : 'avslutad'} · {assignment.assignmentId}
           <button type="button" onClick={() => stopAssignment(assignment)} disabled={busy}
-            className="ml-2 rounded border border-slate-400 bg-white px-2 py-0.5 text-xs text-slate-800 disabled:opacity-50">
+            className="ml-2 rounded border border-slate-400 bg-white px-1.5 py-0.5 text-xs text-slate-800 disabled:opacity-50">
             {assignment.status === 'active' ? 'Avsluta' : 'Lämna in pågående'}</button>
         </li>)}
       </ul>
@@ -298,12 +298,12 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
     {view === 'dispatch' && studentId && <div className="mt-5 border-t border-slate-300 pt-4">
       <h3 className="font-semibold">Sparade försök för eleven</h3>
       <button type="button" onClick={() => setRefreshVersion(value => value + 1)}
-        className="mt-2 rounded border border-orange-700 bg-white px-3 py-1 text-sm text-slate-800">Uppdatera försök</button>
+        className="mt-2 rounded border border-orange-700 bg-white px-1.5 py-0.5 text-sm text-slate-800">Uppdatera försök</button>
       {attemptStatus && <p role="status" className="mt-1 text-sm">{attemptStatus}</p>}
       {attempts.length > 0 && <ul className="mt-2 space-y-2">
         {attempts.map(attempt => <li key={attempt.attemptId} className="flex flex-wrap items-center gap-2 text-sm">
           <span>{attempt.taskId} · {attempt.createdAt ? new Date(attempt.createdAt).toLocaleString('sv-SE') : 'äldre försök'} · {attempt.status === 'submitted' ? 'fryst' : 'pågående'} · {attempt.lastSequence} händelser</span>
-          <button type="button" onClick={() => openEvidence(attempt)} className="rounded border border-orange-700 bg-white px-3 py-1 text-slate-800">Visa underlag</button>
+          <button type="button" onClick={() => openEvidence(attempt)} className="rounded border border-orange-700 bg-white px-1.5 py-0.5 text-slate-800">Visa underlag</button>
         </li>)}
       </ul>}
       {detail && <DiagnosticEvidenceDetails detail={detail} />}

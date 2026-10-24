@@ -102,7 +102,7 @@ export default function TicketResponsesHistoryPanel({
           <select
             value={ticketHistoryStudentId}
             onChange={(event) => onSetTicketHistoryStudentId(event.target.value)}
-            className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+            className="px-1.5 py-0.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
           >
             {ticketHistoryStudentOptions.length === 0 ? (
               <option value="">Inga elever i urvalet</option>
@@ -117,7 +117,7 @@ export default function TicketResponsesHistoryPanel({
           <select
             value={ticketHistoryKindFilter}
             onChange={(event) => onSetTicketHistoryKindFilter(event.target.value)}
-            className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+            className="px-1.5 py-0.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
           >
             <option value="all">Alla typer</option>
             <option value="start">Start-ticket</option>
@@ -126,7 +126,7 @@ export default function TicketResponsesHistoryPanel({
           <select
             value={ticketHistoryResultFilter}
             onChange={(event) => onSetTicketHistoryResultFilter(event.target.value)}
-            className="px-3 py-2.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
+            className="px-1.5 py-0.5 border-2 border-amber-100 rounded-xl text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 focus:outline-none"
           >
             <option value="all">Alla resultat</option>
             <option value="correct">Bara rätt</option>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 const SEARCH_LIMIT = 8
-const BUTTON_BASE = 'rounded-md border px-2.5 py-1 text-sm'
+const BUTTON_BASE = 'rounded-md border px-1.5 py-0.5 text-sm'
 const BUTTON_OFF = 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
 const BUTTON_ON = 'bg-indigo-600 text-white border-indigo-600'
 

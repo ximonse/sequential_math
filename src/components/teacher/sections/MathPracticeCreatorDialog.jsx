@@ -93,7 +93,7 @@ export default function MathPracticeCreatorDialog({ onCreate, onClose, initialWo
                 <button
                   key={op}
                   onClick={() => toggleOperation(op)}
-                  className={`px-3 py-1.5 rounded text-sm font-medium ${
+                  className={`px-1.5 py-0.5 rounded text-sm font-medium ${
                     operations.includes(op)
                       ? 'bg-blue-600 text-white'
                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -133,7 +133,7 @@ export default function MathPracticeCreatorDialog({ onCreate, onClose, initialWo
               <select
                 value={firstFilter}
                 onChange={(e) => setFirstFilter(e.target.value)}
-                className="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm"
+                className="mt-1 w-full rounded border border-slate-300 px-1.5 py-0.5 text-sm"
               >
                 <option value="all">Alla</option>
                 <option value="even">Jämna</option>
@@ -169,7 +169,7 @@ export default function MathPracticeCreatorDialog({ onCreate, onClose, initialWo
               <select
                 value={secondFilter}
                 onChange={(e) => setSecondFilter(e.target.value)}
-                className="mt-1 w-full rounded border border-slate-300 px-2 py-1 text-sm"
+                className="mt-1 w-full rounded border border-slate-300 px-1.5 py-0.5 text-sm"
               >
                 <option value="all">Alla</option>
                 <option value="even">Jämna</option>
@@ -232,13 +232,13 @@ export default function MathPracticeCreatorDialog({ onCreate, onClose, initialWo
         <div className="mt-6 flex gap-2 justify-end">
           <button
             onClick={onClose}
-            className="rounded-md bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-800 hover:bg-slate-300"
+            className="rounded-md bg-slate-200 px-1.5 py-0.5 text-sm font-semibold text-slate-800 hover:bg-slate-300"
           >
             Avbryt
           </button>
           <button
             onClick={handleCreate}
-            className="rounded-md bg-orange-600 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-700"
+            className="rounded-md bg-orange-600 px-1.5 py-0.5 text-sm font-semibold text-white hover:bg-orange-700"
           >
             Skapa övning
           </button>

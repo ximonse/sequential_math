@@ -68,8 +68,8 @@ export default function PupilAdministration({ classes, onRefresh, setStatus }) {
                   <p className="truncate text-gray-500">{names.join(', ') || 'Ingen aktiv klass'}{archivedOnly ? ' · arkiverad' : ''}</p>
                 </div>
                 <div className="flex shrink-0 flex-wrap gap-2">
-                  <button type="button" disabled={busy} onClick={() => { void retirePupil(profile, 'anonymize') }} className="rounded bg-indigo-50 px-2 py-1 text-indigo-700 disabled:opacity-50">Anonymisera elev</button>
-                  <button type="button" disabled={busy} onClick={() => { void retirePupil(profile, 'delete') }} className="rounded bg-red-50 px-2 py-1 text-red-700 disabled:opacity-50">Radera permanent</button>
+                  <button type="button" disabled={busy} onClick={() => { void retirePupil(profile, 'anonymize') }} className="rounded bg-indigo-50 px-1.5 py-0.5 text-indigo-700 disabled:opacity-50">Anonymisera elev</button>
+                  <button type="button" disabled={busy} onClick={() => { void retirePupil(profile, 'delete') }} className="rounded bg-red-50 px-1.5 py-0.5 text-red-700 disabled:opacity-50">Radera permanent</button>
                 </div>
               </li>
             })}

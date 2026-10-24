@@ -62,19 +62,19 @@ export default function TablePracticeProgressPanel({ students = [], selection, o
       <div><p className="text-xs font-semibold uppercase tracking-wider text-teal-800">{groupLabel || 'Vald klass eller grupp'}</p>
         <h2 className="text-xl font-semibold">Tabellträning – utveckling</h2>
         <p className="mt-1 text-sm text-slate-600">Följ träningen och jämför inom samma tabell.</p></div>
-      <div className="flex items-center gap-2"><button type="button" onClick={exportCsv} disabled={students.length === 0} className="rounded border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 disabled:opacity-50">Exportera tabellunderlag</button>{collapseControl}</div>
+      <div className="flex items-center gap-2"><button type="button" onClick={exportCsv} disabled={students.length === 0} className="rounded border border-slate-300 px-1.5 py-0.5 text-sm hover:bg-slate-100 disabled:opacity-50">Exportera tabellunderlag</button>{collapseControl}</div>
     </div>
     <div className="my-3 flex flex-wrap gap-3 border-y border-slate-200 py-3">
       <label className="text-sm font-medium">Tabell
-        <select aria-label="Tabell" value={progress.table} onChange={e => choose({ table: Number(e.target.value) })} className="ml-2 rounded border border-slate-300 px-2 py-1.5">
+        <select aria-label="Tabell" value={progress.table} onChange={e => choose({ table: Number(e.target.value) })} className="ml-2 rounded border border-slate-300 px-1.5 py-0.5">
           {TABLES.map(table => <option key={table} value={table}>{table}:ans tabell</option>)}
         </select></label>
       <label className="text-sm font-medium">Period
-        <select aria-label="Period" value={progress.days} onChange={e => choose({ days: Number(e.target.value) })} className="ml-2 rounded border border-slate-300 px-2 py-1.5">
+        <select aria-label="Period" value={progress.days} onChange={e => choose({ days: Number(e.target.value) })} className="ml-2 rounded border border-slate-300 px-1.5 py-0.5">
           <option value={7}>Senaste 7 dagarna</option><option value={14}>Senaste 14 dagarna</option>
         </select></label>
       <label className="text-sm font-medium">Elev att jämföra
-        <select aria-label="Elev att jämföra" value={selected?.studentId || ''} onChange={e => choose({ studentId: e.target.value })} className="ml-2 max-w-full rounded border border-slate-300 px-2 py-1.5">
+        <select aria-label="Elev att jämföra" value={selected?.studentId || ''} onChange={e => choose({ studentId: e.target.value })} className="ml-2 max-w-full rounded border border-slate-300 px-1.5 py-0.5">
           <option value="">Hela urvalet</option>{progress.students.map(item => <option key={item.studentId} value={item.studentId}>{item.name}</option>)}
         </select></label>
     </div>
@@ -112,7 +112,7 @@ export default function TablePracticeProgressPanel({ students = [], selection, o
           <td className="pr-2 tabular-nums">{item.available ? item.current.completions : '–'}</td><td className="text-xs text-slate-500"><Evidence item={item} /></td>
         </tr>)}</tbody></table>
       </div>
-      {selected && <button type="button" onClick={() => onOpenStudentDetail?.(selected.studentId)} className="mt-3 rounded border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100">Öppna {selected.name}s elevprofil</button>}
+      {selected && <button type="button" onClick={() => onOpenStudentDetail?.(selected.studentId)} className="mt-3 rounded border border-slate-300 px-1.5 py-0.5 text-sm hover:bg-slate-100">Öppna {selected.name}s elevprofil</button>}
       <details className="mt-3 text-xs text-slate-600"><summary className="cursor-pointer font-medium">Så läser du underlaget</summary>
         <p className="mt-2">Endast tabellträning ingår. Faktorer visar hur många av talen 1–10 som tränats; fördelningen kan skilja mellan elever och perioder. Rundor är sparade avslutade tabellrundor, inte ett kunskapsbetyg.</p>
         <p className="mt-1">Färre än sex svar är ett litet underlag. Medianen använder bara korrekta svar utan registrerade avbrott. Snabbare svar eller högre rättandel är inte i sig bevis på ökat kunnande.</p>

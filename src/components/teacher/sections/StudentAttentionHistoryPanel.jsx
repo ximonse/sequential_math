@@ -14,10 +14,10 @@ export default function StudentAttentionHistoryPanel({ history }) {
   const results = filtered.filter(result => showAborted || !result.aborted)
   return <section className="my-4 rounded-xl border border-slate-200 bg-slate-50 p-4" aria-label="Fokusaktiviteter">
     <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="font-semibold text-slate-800">Fokusaktiviteter</h3>
-      <select aria-label="Filtrera fokusaktiviteter" value={mode} onChange={event => { setMode(event.target.value); setLimit(10) }} className="rounded-lg border px-2 py-1 text-sm">
+      <select aria-label="Filtrera fokusaktiviteter" value={mode} onChange={event => { setMode(event.target.value); setLimit(10) }} className="rounded-lg border px-1.5 py-0.5 text-sm">
         <option value="all">Alla aktiviteter</option>{Object.entries(ATTENTION_LABELS).map(([id, label]) => <option key={id} value={id}>{label}</option>)}
       </select>
-      <select aria-label="Tidsperiod för fokusaktiviteter" value={days} onChange={event => { setDays(event.target.value); setLimit(10) }} className="rounded-lg border px-2 py-1 text-sm">
+      <select aria-label="Tidsperiod för fokusaktiviteter" value={days} onChange={event => { setDays(event.target.value); setLimit(10) }} className="rounded-lg border px-1.5 py-0.5 text-sm">
         <option value="all">All sparad historik</option><option value="7">Senaste 7 dygnen</option><option value="30">Senaste 30 dygnen</option>
       </select>
     </div>
@@ -36,7 +36,7 @@ export default function StudentAttentionHistoryPanel({ history }) {
         <AttentionPassStatistics result={result} />
       </article>
     })}</div>
-    {results.length > limit && <button type="button" className="mt-3 rounded-lg border px-3 py-2 text-sm" onClick={() => setLimit(value => value + 10)}>Visa fler pass</button>}
+    {results.length > limit && <button type="button" className="mt-3 rounded-lg border px-1.5 py-0.5 text-sm" onClick={() => setLimit(value => value + 10)}>Visa fler pass</button>}
     <details className="mt-4 text-xs text-slate-600"><summary className="cursor-pointer font-semibold">Så läser du måtten</summary>
       <div className="mt-2 space-y-2">
         <p><strong>Gröna signaler:</strong> träffar av alla gröna cirklar. <strong>Stopp:</strong> rätt avstådda röda cirklar och gröna fyrkanter. För tidiga tryck räknas separat per aktiv minut.</p>

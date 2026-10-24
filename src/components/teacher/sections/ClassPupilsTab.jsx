@@ -40,7 +40,7 @@ export default function ClassPupilsTab({
           <ol className="max-h-40 list-decimal overflow-auto pl-6">{names.map((name, index) => <li key={index}>{name}</li>)}</ol></details>}
         <button type="button" disabled={names.length === 0}
           onClick={() => runAction(async () => onCredentials((await onAddStudentsToClass())?.credentials))}
-          className="mt-2 rounded bg-emerald-600 px-3 py-0.5 text-sm text-white hover:bg-emerald-700 disabled:opacity-50">
+          className="mt-2 rounded bg-emerald-600 px-1.5 py-0.5 text-sm text-white hover:bg-emerald-700 disabled:opacity-50">
           Lägg till elever i {classRecord.name}
         </button>
       </section>
@@ -58,7 +58,7 @@ export default function ClassPupilsTab({
           <button type="button" disabled={selectedExistingStudentIds.length === 0} onClick={() => runAction(async () => {
             const saved = await onAddExistingStudentsToClass(selectedExistingStudentIds)
             if (saved) setSelectedExistingStudentIds([])
-          })} className="mt-2 rounded bg-indigo-600 px-3 py-0.5 text-xs text-white disabled:opacity-50">Lägg till {selectedExistingStudentIds.length || ''} vald(a) elev(er)</button>
+          })} className="mt-2 rounded bg-indigo-600 px-1.5 py-0.5 text-xs text-white disabled:opacity-50">Lägg till {selectedExistingStudentIds.length || ''} vald(a) elev(er)</button>
         </details>
       )}
 
@@ -67,11 +67,11 @@ export default function ClassPupilsTab({
           <summary className="cursor-pointer font-medium text-amber-900">Flytta elev till annan klass</summary>
           <p className="mt-2 text-xs text-amber-900">Elevens träningshistorik följer med.</p>
           <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
-            <select aria-label="Elev att flytta" value={moveStudentId} onChange={event => setMoveStudentId(event.target.value)} className="rounded border px-2 py-1 text-xs">
+            <select aria-label="Elev att flytta" value={moveStudentId} onChange={event => setMoveStudentId(event.target.value)} className="rounded border px-1.5 py-0.5 text-xs">
               <option value="">Välj elev</option>
               {classStudents.map(student => <option key={student.studentId} value={student.studentId}>{student.name || student.displayAlias}</option>)}
             </select>
-            <select aria-label="Till klass" value={moveToClassId} onChange={event => setMoveToClassId(event.target.value)} className="rounded border px-2 py-1 text-xs">
+            <select aria-label="Till klass" value={moveToClassId} onChange={event => setMoveToClassId(event.target.value)} className="rounded border px-1.5 py-0.5 text-xs">
               <option value="">Till klass</option>
               {otherClasses.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
             </select>
@@ -79,7 +79,7 @@ export default function ClassPupilsTab({
           <button type="button" disabled={!moveToClassId || !moveStudentId} onClick={() => runAction(async () => {
             const moved = await onMoveStudent(moveStudentId, classRecord.id, moveToClassId)
             if (moved) { setMoveStudentId(''); setMoveToClassId('') }
-          })} className="mt-2 rounded bg-amber-600 px-3 py-0.5 text-xs text-white disabled:opacity-50">Flytta elev</button>
+          })} className="mt-2 rounded bg-amber-600 px-1.5 py-0.5 text-xs text-white disabled:opacity-50">Flytta elev</button>
         </details>
       )}
 
@@ -91,7 +91,7 @@ export default function ClassPupilsTab({
               <span className="truncate font-medium">{student.name || student.displayAlias}</span>
               <span className="flex shrink-0 items-center gap-2">
                 <span className="text-gray-500">{student.auth?.lastLoginAt ? 'Har loggat in' : 'Inte inloggad än'}</span>
-                {onOpenStudentDetail && <button type="button" onClick={() => onOpenStudentDetail(student.studentId)} className="rounded bg-slate-200 px-2 py-1">Öppna elevprofil</button>}
+                {onOpenStudentDetail && <button type="button" onClick={() => onOpenStudentDetail(student.studentId)} className="rounded bg-slate-200 px-1.5 py-0.5">Öppna elevprofil</button>}
               </span>
             </li>)}
           </ul>

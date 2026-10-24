@@ -58,7 +58,7 @@ export default function TeachersTab({ teachers, onRefresh, setStatus }) {
           <label className="col-span-2">
             <span className="mb-1 block text-gray-600">Roll</span>
             <select value={form.role} onChange={event => setForm(current => ({ ...current, role: event.target.value }))}
-              className="w-full rounded border px-2 py-1.5">
+              className="w-full rounded border px-1.5 py-0.5">
               <option value="teacher">Lärare</option>
               <option value="school_admin">Skoladministratör</option>
               <option value="super_admin">Huvudadministratör</option>
@@ -67,7 +67,7 @@ export default function TeachersTab({ teachers, onRefresh, setStatus }) {
         )}
         <SchoolAssignments schools={directory.schools} selected={form.schoolIds}
           onChange={schoolIds => setForm(current => ({ ...current, schoolIds }))} />
-        <button disabled={busy} type="submit" className="col-span-2 rounded bg-indigo-600 py-1.5 font-semibold text-white disabled:opacity-50">
+        <button disabled={busy} type="submit" className="col-span-2 rounded bg-indigo-600 py-0.5 font-semibold text-white disabled:opacity-50">
           {busy ? 'Skapar...' : 'Skapa konto'}
         </button>
       </form>
@@ -146,7 +146,7 @@ function TeacherRow({ teacher, schools, canManageRoles, onDelete, onRefresh, set
           className="w-full rounded border px-2 py-1" placeholder="Visningsnamn" />
         <SchoolAssignments schools={schools} selected={schoolIds} onChange={setSchoolIds} />
         {canManageRoles && (
-          <select value={role} onChange={event => setRole(event.target.value)} className="w-full rounded border px-2 py-1">
+          <select value={role} onChange={event => setRole(event.target.value)} className="w-full rounded border px-1.5 py-0.5">
             <option value="teacher">Lärare</option><option value="school_admin">Skoladministratör</option>
             <option value="super_admin">Huvudadministratör</option>
           </select>
@@ -154,8 +154,8 @@ function TeacherRow({ teacher, schools, canManageRoles, onDelete, onRefresh, set
         <input type="password" placeholder="Nytt lösenord (tomt behåller det gamla)" value={newPassword}
           onChange={event => setNewPassword(event.target.value)} className="w-full rounded border px-2 py-1" />
         <div className="flex gap-2">
-          <button onClick={handleSave} disabled={busy} className="rounded bg-indigo-600 px-3 py-1 text-white disabled:opacity-50">{busy ? '...' : 'Spara'}</button>
-          <button onClick={() => setEditing(false)} className="rounded bg-gray-200 px-3 py-1">Avbryt</button>
+          <button onClick={handleSave} disabled={busy} className="rounded bg-indigo-600 px-1.5 py-0.5 text-white disabled:opacity-50">{busy ? '...' : 'Spara'}</button>
+          <button onClick={() => setEditing(false)} className="rounded bg-gray-200 px-1.5 py-0.5">Avbryt</button>
         </div>
       </td></tr>
     )
@@ -168,9 +168,9 @@ function TeacherRow({ teacher, schools, canManageRoles, onDelete, onRefresh, set
       <td className="py-1 pr-2 text-gray-600">{schoolNames}</td>
       <td className="py-1 pr-2">{getTeacherRoleLabel(teacher.role)}</td>
       <td className="flex gap-1 py-1">
-        <button onClick={() => setEditing(true)} className="rounded bg-gray-100 px-2 py-0.5 hover:bg-gray-200">Redigera</button>
+        <button onClick={() => setEditing(true)} className="rounded bg-gray-100 px-1.5 py-0.5 hover:bg-gray-200">Redigera</button>
         {canManageRoles && <button onClick={() => onDelete(teacher.id, teacher.username)}
-          className="rounded bg-red-50 px-2 py-0.5 text-red-700 hover:bg-red-100">Ta bort</button>}
+          className="rounded bg-red-50 px-1.5 py-0.5 text-red-700 hover:bg-red-100">Ta bort</button>}
       </td>
     </tr>
   )

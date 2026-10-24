@@ -62,7 +62,7 @@ export default function SchoolYearRollover({ schools, onCompleted, setStatus }) 
       </p>
       <div className="mt-2 grid gap-2 sm:grid-cols-3">
         <label className="text-gray-700">Skola
-          <select value={schoolId} onChange={event => { setSchoolId(event.target.value); clearPreview() }} className="mt-1 block w-full rounded border px-2 py-1.5" disabled={busy}>
+          <select value={schoolId} onChange={event => { setSchoolId(event.target.value); clearPreview() }} className="mt-1 block w-full rounded border px-1.5 py-0.5" disabled={busy}>
             <option value="">Välj skola</option>
             {schools.map(school => <option key={school.id} value={school.id}>{school.name}</option>)}
           </select>
@@ -74,7 +74,7 @@ export default function SchoolYearRollover({ schools, onCompleted, setStatus }) 
           <input type="number" min="2000" max="2200" value={exitYear} onChange={event => { setExitYear(Number(event.target.value)); clearPreview() }} className="mt-1 block w-full rounded border px-2 py-1.5" />
         </label>
       </div>
-      <button type="button" onClick={preview} disabled={!schoolId || busy} className="mt-2 rounded bg-amber-700 px-3 py-1.5 font-semibold text-white disabled:opacity-50">
+      <button type="button" onClick={preview} disabled={!schoolId || busy} className="mt-2 rounded bg-amber-700 px-1.5 py-0.5 font-semibold text-white disabled:opacity-50">
         Förhandsgranska
       </button>
       {error && <p role="alert" className="mt-2 text-red-700">{error}</p>}
@@ -85,7 +85,7 @@ export default function SchoolYearRollover({ schools, onCompleted, setStatus }) 
             {changes.map(change => (
               <div key={change.id} className="grid items-center gap-2 rounded bg-white p-2 sm:grid-cols-[1fr_9rem_2fr]">
                 <span className="font-medium text-gray-800">{change.from}</span>
-                <select value={change.action} onChange={event => updateChange(change.id, 'action', event.target.value)} className="rounded border px-2 py-1">
+                <select value={change.action} onChange={event => updateChange(change.id, 'action', event.target.value)} className="rounded border px-1.5 py-0.5">
                   <option value="rename">Byt namn</option>
                   <option value="archive">Arkivera</option>
                   <option value="skip">Hoppa över</option>
@@ -94,7 +94,7 @@ export default function SchoolYearRollover({ schools, onCompleted, setStatus }) 
               </div>
             ))}
           </div>
-          <button type="button" onClick={apply} disabled={busy || !changes.some(change => change.action !== 'skip')} className="mt-3 rounded bg-indigo-600 px-3 py-1.5 font-semibold text-white disabled:opacity-50">
+          <button type="button" onClick={apply} disabled={busy || !changes.some(change => change.action !== 'skip')} className="mt-3 rounded bg-indigo-600 px-1.5 py-0.5 font-semibold text-white disabled:opacity-50">
             Genomför årsbyte
           </button>
         </div>

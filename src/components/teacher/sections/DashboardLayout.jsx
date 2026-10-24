@@ -486,7 +486,7 @@ export default function DashboardLayout({
         <h2 className="text-sm font-semibold text-slate-800">Digitalt räknehäfte</h2>
         <p className="mr-auto text-xs text-slate-600">Osparad prototyp för att prova räknehäftet.</p>
         <button type="button" onClick={() => navigate('/teacher/ncm/diagnostic-grid')}
-          className="rounded-md border border-slate-300 px-2 py-1 text-sm text-slate-800 hover:bg-slate-50">
+          className="rounded-md border border-slate-300 px-1.5 py-0.5 text-sm text-slate-800 hover:bg-slate-50">
           Öppna räknehäftet
         </button>
       </section>
@@ -542,7 +542,7 @@ export default function DashboardLayout({
                     if (workspace.id === 'focus') navigate('/teacher/focus')
                     else if (isFocusView) navigate('/teacher')
                   }}
-                    className={`rounded px-3 py-2 text-left text-sm transition-colors ${activeWorkspace === workspace.id ? 'bg-amber-300 font-semibold text-slate-900' : 'text-slate-100 hover:bg-slate-700'}`}>
+                    className={`rounded px-1.5 py-0.5 text-left text-sm transition-colors ${activeWorkspace === workspace.id ? 'bg-amber-300 font-semibold text-slate-900' : 'text-slate-100 hover:bg-slate-700'}`}>
                     {workspace.label}<span className="mt-0.5 block text-[11px] font-normal opacity-75">{workspace.description}</span>
                   </button>
                 ))}

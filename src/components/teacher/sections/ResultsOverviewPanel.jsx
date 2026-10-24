@@ -42,7 +42,7 @@ export default function ResultsOverviewPanel({
               <span className="text-xs uppercase tracking-wide text-gray-500">Resultatvy</span>
               <button
                 onClick={() => onSetViewMode('daily')}
-                className={`px-3 py-1.5 rounded text-sm ${viewMode === 'daily'
+                className={`px-1.5 py-0.5 rounded text-sm ${viewMode === 'daily'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
@@ -51,7 +51,7 @@ export default function ResultsOverviewPanel({
               </button>
               <button
                 onClick={() => onSetViewMode('all')}
-                className={`px-3 py-1.5 rounded text-sm ${viewMode === 'all'
+                className={`px-1.5 py-0.5 rounded text-sm ${viewMode === 'all'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
@@ -60,7 +60,7 @@ export default function ResultsOverviewPanel({
               </button>
               <button
                 onClick={() => onSetViewMode('weekly')}
-                className={`px-3 py-1.5 rounded text-sm ${viewMode === 'weekly'
+                className={`px-1.5 py-0.5 rounded text-sm ${viewMode === 'weekly'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
@@ -74,7 +74,7 @@ export default function ResultsOverviewPanel({
               <select
                 value={sortBy}
                 onChange={(event) => onSetSortBy(event.target.value)}
-                className="px-2 py-1 border rounded text-sm"
+                className="px-1.5 py-0.5 border rounded text-sm"
               >
                 <option value="name">Namn</option>
                 <option value="student_id">ID</option>
@@ -106,13 +106,13 @@ export default function ResultsOverviewPanel({
               </select>
               <button
                 onClick={onToggleSortDir}
-                className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm"
+                className="px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm"
               >
                 {sortDir === 'desc' ? 'Fallande' : 'Stigande'}
               </button>
               <button
                 onClick={onExportSnapshotCsv}
-                className="px-2 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded text-sm"
+                className="px-1.5 py-0.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded text-sm"
               >
                 Export översikt
               </button>
@@ -137,19 +137,19 @@ export default function ResultsOverviewPanel({
               <button
                 onClick={onExportDetailedProblemCsv}
                 title="Rådata med en rad per uppgift. Tom datumruta betyder ingen gräns."
-                className="px-2 py-1 bg-cyan-100 hover:bg-cyan-200 text-cyan-700 rounded text-sm"
+                className="px-1.5 py-0.5 bg-cyan-100 hover:bg-cyan-200 text-cyan-700 rounded text-sm"
               >
                 Export rådata
               </button>
               <button
                 onClick={onExportSkillComparisonCsv}
-                className="px-2 py-1 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded text-sm"
+                className="px-1.5 py-0.5 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded text-sm"
               >
                 Export skill
               </button>
               <button
                 onClick={onExportActivityCsv}
-                className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-sm"
+                className="px-1.5 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-sm"
               >
                 Export aktivitet
               </button>
@@ -367,25 +367,25 @@ export default function ResultsOverviewPanel({
                     <div className="inline-flex flex-wrap justify-end gap-1">
                       <button
                         onClick={() => onOpenStudentDetail(row.studentId)}
-                        className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs"
+                        className="px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs"
                       >
                         Elevvy
                       </button>
                       <button
                         onClick={() => onCreateQuickAssignment(row, 'focus')}
-                        className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs"
+                        className="px-1.5 py-0.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs"
                       >
                         Fokus
                       </button>
                       <button
                         onClick={() => onCreateQuickAssignment(row, 'warmup')}
-                        className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs"
+                        className="px-1.5 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs"
                       >
                         Värm upp
                       </button>
                       <button
                         onClick={() => onCreateQuickAssignment(row, 'challenge')}
-                        className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs"
+                        className="px-1.5 py-0.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs"
                       >
                         Mix
                       </button>
@@ -395,7 +395,7 @@ export default function ResultsOverviewPanel({
                           if (code !== null) onResetStudentPassword(row.studentId, code)
                         }}
                         disabled={passwordResetBusyId === row.studentId}
-                        className="px-2 py-1 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-200 text-gray-700 rounded text-xs"
+                        className="px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-200 text-gray-700 rounded text-xs"
                       >
                         {passwordResetBusyId === row.studentId ? 'Sparar...' : 'Byt kod'}
                       </button>

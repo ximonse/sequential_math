@@ -105,7 +105,7 @@ export default function ClassMasteryLevelPanel({
           <button
             type="button"
             onClick={handleExport}
-            className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-700 hover:bg-gray-200"
+            className="rounded-md bg-gray-100 px-1.5 py-0.5 text-xs text-gray-700 hover:bg-gray-200"
           >
             Exportera nivåöversikt
           </button>

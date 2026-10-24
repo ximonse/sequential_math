@@ -82,7 +82,7 @@ export default function ClassSettingsForm({ classRecord, teachers, directory, on
         </div>
       </fieldset>
       <button type="button" onClick={handleSave} disabled={busy}
-        className="rounded bg-indigo-600 px-4 py-1.5 font-semibold text-white disabled:opacity-50">{busy ? 'Sparar…' : 'Spara inställningar'}</button>
+        className="rounded bg-indigo-600 px-4 py-0.5 font-semibold text-white disabled:opacity-50">{busy ? 'Sparar…' : 'Spara inställningar'}</button>
     </div>
   )
 }

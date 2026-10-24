@@ -64,7 +64,7 @@ const WORKSPACES = [
   { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'mathresults', 'tickets'] },
   { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality', 'pausegames'] },
   { id: 'ncm', label: 'Screening', description: 'Screening och analys av elevens uträkning', panels: ['ncm-grid'], adminOnly: true },
-  { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management', 'password'] }
+  { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management'] }
 ]
 
 const DEFAULT_COLLAPSED = Object.fromEntries(
@@ -450,8 +450,9 @@ export default function DashboardLayout({
           onOpenStudentDetail={handleOpenStudentDetail}
           onStatusChange={setDashboardStatus}
           onClassesChanged={onLocalTestDataImported}
+          legacyLoginPanel={renderPanelContent('password')}
+          testDataPanel={teacherIdentity.role === 'super_admin' ? <LocalTestDataExportPanel /> : null}
         />
-        {teacherIdentity.role === 'super_admin' && <LocalTestDataExportPanel />}
       </>
     )
     if (id === 'results') return (

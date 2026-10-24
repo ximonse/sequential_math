@@ -35,12 +35,12 @@ export default function ClassPupilsTab({
         <textarea aria-label="Elevlista" value={rosterInput} onChange={event => onSetRosterInput(event.target.value)}
           placeholder={'En elev per rad, eller med kommatecken\nAnna Andersson\nBo Berg'}
           className="mt-2 block min-h-24 w-full rounded border bg-white px-3 py-2 text-sm" />
-        <p className="mt-1 text-xs text-emerald-900">Namn måste vara unika i klassen. Varje ny elev får eget kodnamn, QR-kod och PIN. Hämta elevkorten direkt efteråt. Listan flyttar inte en befintlig elev med samma namn.</p>
+        <p className="mt-1 text-xs text-emerald-900">Namnen måste vara unika i klassen. Varje ny elev får ett elevkort; hämta korten direkt efteråt.</p>
         {names.length > 0 && <details className="mt-2 text-xs" open><summary>{names.length} elever i listan, kontrollera före sparning</summary>
           <ol className="max-h-40 list-decimal overflow-auto pl-6">{names.map((name, index) => <li key={index}>{name}</li>)}</ol></details>}
         <button type="button" disabled={names.length === 0}
           onClick={() => runAction(async () => onCredentials((await onAddStudentsToClass())?.credentials))}
-          className="mt-2 rounded bg-emerald-600 px-3 py-1.5 text-sm text-white hover:bg-emerald-700 disabled:opacity-50">
+          className="mt-2 rounded bg-emerald-600 px-3 py-0.5 text-sm text-white hover:bg-emerald-700 disabled:opacity-50">
           Lägg till elever i {classRecord.name}
         </button>
       </section>
@@ -58,7 +58,7 @@ export default function ClassPupilsTab({
           <button type="button" disabled={selectedExistingStudentIds.length === 0} onClick={() => runAction(async () => {
             const saved = await onAddExistingStudentsToClass(selectedExistingStudentIds)
             if (saved) setSelectedExistingStudentIds([])
-          })} className="mt-2 rounded bg-indigo-600 px-3 py-1.5 text-xs text-white disabled:opacity-50">Lägg till {selectedExistingStudentIds.length || ''} vald(a) elev(er)</button>
+          })} className="mt-2 rounded bg-indigo-600 px-3 py-0.5 text-xs text-white disabled:opacity-50">Lägg till {selectedExistingStudentIds.length || ''} vald(a) elev(er)</button>
         </details>
       )}
 
@@ -79,7 +79,7 @@ export default function ClassPupilsTab({
           <button type="button" disabled={!moveToClassId || !moveStudentId} onClick={() => runAction(async () => {
             const moved = await onMoveStudent(moveStudentId, classRecord.id, moveToClassId)
             if (moved) { setMoveStudentId(''); setMoveToClassId('') }
-          })} className="mt-2 rounded bg-amber-600 px-3 py-1.5 text-xs text-white disabled:opacity-50">Flytta elev</button>
+          })} className="mt-2 rounded bg-amber-600 px-3 py-0.5 text-xs text-white disabled:opacity-50">Flytta elev</button>
         </details>
       )}
 

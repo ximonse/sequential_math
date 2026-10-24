@@ -12,7 +12,10 @@ import { useTeacherGroups } from './useTeacherGroups'
 import { SchoolSelect, useSchools } from './SchoolControls'
 import { useAdminDirectory } from './useAdminDirectory'
 
-const ITEM = 'rounded-md border px-3 py-1.5 text-left text-sm'
+// Dense teacher workspace: compact controls, separate modules with a clear shadow.
+const MODULE = 'rounded-md bg-white px-[21px] py-[19px] shadow-[0_8px_13px_-2px_rgba(15,23,42,0.32)]'
+const TAB = 'rounded-md px-3 py-0.5 text-sm font-semibold'
+const ITEM = 'rounded-md border px-2.5 py-0.5 text-left text-sm'
 const ITEM_OFF = 'border-gray-200 bg-white text-gray-800 hover:bg-gray-50'
 const ITEM_ON = 'border-indigo-600 bg-indigo-600 text-white'
 
@@ -35,7 +38,9 @@ export default function ClassesAndPupilsPanel({
   onMoveStudent,
   onOpenStudentDetail,
   onStatusChange,
-  onClassesChanged
+  onClassesChanged,
+  legacyLoginPanel,
+  testDataPanel
 }) {
   const isAdmin = isTeacherAdmin()
   const isSuperAdmin = isTeacherSuperAdmin()
@@ -44,6 +49,7 @@ export default function ClassesAndPupilsPanel({
   const groupsState = useTeacherGroups(onStatusChange)
   const [open, setOpen] = useState(null)
   const [tab, setTab] = useState('pupils')
+  const [area, setArea] = useState('classes')
   const [showArchived, setShowArchived] = useState(false)
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
@@ -120,10 +126,24 @@ export default function ClassesAndPupilsPanel({
   const tabs = openClass ? classTabs : open?.type === 'group' || open?.type === 'new-group' ? (openGroup ? groupTabs : groupTabs.slice(0, 1)) : []
 
   return (
-    <div className="mb-8 rounded-lg bg-white p-4 shadow">
-      <h2 className="text-lg font-semibold text-gray-800">Klasser och elever</h2>
-      <p className="mt-1 text-sm text-gray-600">Välj en klass eller grupp för att se eleverna, skapa elevkort och ändra inställningar.</p>
+    <div className="mb-8 flex flex-col gap-5">
+      {isAdmin && <div role="tablist" aria-label="Administration" className="flex flex-wrap gap-1">
+        {[['classes', 'Klasser och elever'], ['directory', 'Lärare och skolor']].map(([id, label]) => (
+          <button key={id} type="button" role="tab" aria-selected={area === id} onClick={() => { setArea(id); setStatus('') }}
+            className={TAB + ' ' + (area === id ? 'bg-slate-800 text-white' : 'bg-white text-gray-700 shadow-sm hover:bg-gray-50')}>
+            {label}
+          </button>
+        ))}
+      </div>}
+      {(busy || status || (area === 'classes' && classStatus)) && <p role="status" className="-my-2 text-xs text-gray-700">
+        {busy ? 'Sparar på servern…' : status || classStatus}</p>}
 
+      {area === 'directory' && isAdmin && <div className={MODULE}><AdminDirectorySection teachers={admin.teachers} classes={admin.classes} directory={directory}
+        canManageSchools={isSuperAdmin} canRetirePupils={isSuperAdmin} onRefresh={refreshClasses} setStatus={setStatus} testDataPanel={testDataPanel} /></div>}
+
+      {area === 'classes' && <>
+      <section aria-labelledby="class-list-heading" className={MODULE}>
+      <h2 id="class-list-heading" className="text-lg font-semibold text-gray-800">Klasser och grupper</h2>
 
       {withoutSchool.length > 0 && (
         <section data-classes-without-school aria-labelledby="classes-without-school" className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3">
@@ -168,22 +188,23 @@ export default function ClassesAndPupilsPanel({
         </div>
       </section>
 
-      <p role="status" className="mt-3 min-h-5 text-xs text-gray-600">{busy ? 'Sparar på servern…' : status || classStatus || ' '}</p>
-      <StudentCredentialCards credentials={issuedCredentials} title="Nya elevkort"
-        onClear={() => { setIssuedCredentials([]); setStatus('Elevkorten har tagits bort från vyn.') }} />
+      </section>
+
+      {issuedCredentials.length > 0 && <div className={MODULE}><StudentCredentialCards credentials={issuedCredentials} title="Nya elevkort"
+        onClear={() => { setIssuedCredentials([]); setStatus('Elevkorten har tagits bort från vyn.') }} /></div>}
 
       {open && tabs.length > 0 && (
-        <section data-open-item aria-labelledby="open-item-title" className="mt-2 rounded-lg border border-indigo-200 p-3">
+        <section data-open-item aria-labelledby="open-item-title" className={MODULE}>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h3 id="open-item-title" className="text-base font-semibold text-gray-900">
+            <h2 id="open-item-title" className="text-lg font-semibold text-gray-900">
               {openClass ? openClass.name : openGroup ? `Grupp: ${openGroup.name}` : 'Ny grupp'}
-            </h3>
-            <button type="button" onClick={() => setOpen(null)} className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-700">Stäng</button>
+            </h2>
+            <button type="button" onClick={() => setOpen(null)} className="rounded-md border border-gray-300 px-2 py-0.5 text-xs text-gray-700 hover:bg-gray-50">Stäng</button>
           </div>
           <div role="tablist" aria-label={openClass ? `Klass ${openClass.name}` : 'Grupp'} className="mt-2 flex flex-wrap gap-1 border-b border-gray-200 pb-2">
             {tabs.map(([id, label]) => (
               <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)}
-                className={'rounded-md px-3 py-1.5 text-xs font-semibold ' + (tab === id
+                className={TAB + ' ' + (tab === id
                   ? (id === 'danger' ? 'bg-rose-700 text-white' : 'bg-indigo-600 text-white')
                   : (id === 'danger' ? 'ml-auto bg-rose-50 text-rose-800 hover:bg-rose-100' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'))}>
                 {label}
@@ -220,12 +241,9 @@ export default function ClassesAndPupilsPanel({
         </section>
       )}
 
-      {isAdmin && <AdminDirectorySection teachers={admin.teachers} classes={admin.classes} directory={directory}
-        canManageSchools={isSuperAdmin} canRetirePupils={isSuperAdmin} onRefresh={refreshClasses} setStatus={setStatus} />}
-
       {isAdmin && (
-        <section data-new-class aria-labelledby="new-class-title" className="mt-6 rounded-lg border border-gray-200 bg-gray-50 p-3">
-        <h3 id="new-class-title" className="text-base font-semibold text-gray-800">Skapa ny klass</h3>
+        <section data-new-class aria-labelledby="new-class-title" className={MODULE}>
+        <h2 id="new-class-title" className="text-lg font-semibold text-gray-800">Skapa ny klass</h2>
         <form onSubmit={createClass} className="mt-2 flex flex-wrap items-end gap-2 text-xs">
           <div className="min-w-40 flex-1">
             <SchoolSelect schools={directory.schools} value={newClassSchoolId} onChange={setNewClassSchoolId}
@@ -234,12 +252,14 @@ export default function ClassesAndPupilsPanel({
           <label className="min-w-40 flex-1 text-sm text-gray-700">
             <span className="mb-1 block">Klassnamn</span>
             <input required placeholder="Klassnamn (t.ex. 4A)" value={newClassName}
-              onChange={event => setNewClassName(event.target.value)} className="w-full rounded border px-2 py-2" />
+              onChange={event => setNewClassName(event.target.value)} className="w-full rounded border border-gray-300 px-2 py-1.5" />
           </label>
-          <button disabled={busy} type="submit" className="rounded bg-indigo-600 px-4 py-2 font-semibold text-white disabled:opacity-50">Skapa klass</button>
+          <button disabled={busy} type="submit" className="rounded-md bg-indigo-600 px-3 py-0.5 text-sm font-semibold text-white disabled:opacity-50">Skapa klass</button>
         </form>
         </section>
       )}
+      {legacyLoginPanel}
+      </>}
     </div>
   )
 }

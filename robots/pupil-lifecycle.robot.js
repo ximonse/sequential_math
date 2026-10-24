@@ -17,6 +17,7 @@ test('Permanent deletion removes diagnostic work; anonymization preserves only s
   } })).json()
   await teacherLogin(page, teacher)
   await page.goto('/teacher/admin')
+  await page.getByRole('tab', { name: 'Lärare och skolor', exact: true }).click()
   await page.getByRole('tab', { name: 'Elevdata', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Anonymisera elev', exact: true }).first()).toBeVisible()
   const row = page.getByRole('listitem').filter({ hasText: pupil.loginCode })

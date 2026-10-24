@@ -538,14 +538,14 @@ export default function DashboardLayout({
                     if (workspace.id === 'focus') navigate('/teacher/focus')
                     else if (isFocusView) navigate('/teacher')
                   }}
-                    className={`rounded px-3 py-2 text-left text-sm transition-colors ${activeWorkspace === workspace.id ? `${workspace.id === 'ncm' ? 'bg-orange-300' : 'bg-amber-300'} font-semibold text-slate-900` : workspace.id === 'ncm' ? 'bg-orange-900 text-orange-50 hover:bg-orange-800' : 'text-slate-100 hover:bg-slate-700'}`}>
+                    className={`rounded px-3 py-2 text-left text-sm transition-colors ${activeWorkspace === workspace.id ? 'bg-amber-300 font-semibold text-slate-900' : 'text-slate-100 hover:bg-slate-700'}`}>
                     {workspace.label}<span className="mt-0.5 block text-[11px] font-normal opacity-75">{workspace.description}</span>
                   </button>
                 ))}
               </nav>
           </aside>
           <div className="min-w-0 flex flex-col gap-3">
-            {activeWorkspace !== 'ncm' && <div className="dashboard-context-grid">
+            {activeWorkspace !== 'ncm' && activeWorkspace !== 'admin' && <div className="dashboard-context-grid">
             {activeWorkspace === 'progress' ? renderProgressModule('filter', 'Klassurval', classFilterPanel) : classFilterPanel}
             {activeWorkspace === 'progress'
               ? renderProgressModule('stats', 'Klassstatistik', classStatsPanel)

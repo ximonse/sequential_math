@@ -134,7 +134,8 @@ export function useDashboardViewData({
 
   const passwordResetRows = useMemo(() => {
     const search = passwordResetSearch.trim().toLowerCase()
-    const rows = filteredStudents
+    // Administration has no class filter, so legacy logins cover every pupil.
+    const rows = students
       .map(student => ({
         studentId: student.studentId,
         name: student.name,
@@ -150,7 +151,7 @@ export function useDashboardViewData({
 
     rows.sort((a, b) => compareClassNameAndName(a, b))
     return rows
-  }, [filteredStudents, classNameById, passwordResetSearch])
+  }, [students, classNameById, passwordResetSearch])
 
   const supportCandidateRows = useMemo(
     () => tableRows.filter(row => row.riskLevel !== 'low'),

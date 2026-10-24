@@ -108,9 +108,12 @@ export default function StudentDetailPanel({
 
   return (
     <div id={sectionId} className="bg-white rounded-lg shadow p-4 mb-8" style={{ order: -20 }}>
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-        <h2 className="text-lg font-semibold text-gray-800">Elevprofil (allt om en elev)</h2>
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="mb-3">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold text-gray-800">Elevprofil (allt om en elev)</h2>
+          {collapseControl}
+        </div>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           <select
             value={detailStudentId}
             onChange={(event) => {
@@ -148,7 +151,6 @@ export default function StudentDetailPanel({
               <button type="button" onClick={() => { const label = window.prompt('Ditt privata tilltalsnamn för eleven:', detailStudentProfile.teacherPupilLabel || ''); if (label !== null) onSetTeacherPupilLabel(detailStudentProfile.studentId, label) }} className="px-3 py-1.5 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded text-xs font-medium">Ändra tilltalsnamn</button>
             )}
           {detailStudentProfile?.displayAlias ? <button type="button" onClick={reissueCredential} className="px-3 py-1.5 bg-amber-200 hover:bg-amber-300 text-amber-950 rounded text-xs font-semibold">Nytt QR-kort / ny PIN</button> : null}
-          {collapseControl}
         </div>
       </div>
 

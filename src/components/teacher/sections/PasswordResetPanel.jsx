@@ -15,7 +15,7 @@ export default function PasswordResetPanel({
       <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
         <h2 className="text-lg font-semibold text-rose-800">Äldre elevinloggningar</h2>
         <p className="text-xs text-gray-500">
-          {passwordResetRows.length} elev(er) i aktuellt urval
+          {passwordResetRows.length} elev(er) med äldre inloggning
         </p>
       </div>
       <p className="text-sm text-gray-500 mb-3">
@@ -41,7 +41,7 @@ export default function PasswordResetPanel({
 
       {passwordResetRows.length === 0 ? (
         <div className="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600">
-          Inga elever att visa i valt urval.
+          Inga elever har äldre inloggning.
         </div>
       ) : (
         <div className="border border-gray-200 rounded-lg overflow-hidden">

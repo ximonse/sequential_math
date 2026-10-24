@@ -60,15 +60,15 @@ async function fillFromCreationNames(req, teacherId) {
     return { added: 0, labels }
   }
 
-  const studentKeys = ids.map(id => `student:${String(id || '').trim().toUpperCase()}`).filter(Boolean)
-  const profiles = await batchLoadKvKeys(studentKeys)
+  // The index id is the record key; older profiles may lack a studentId field.
+  const studentIds = ids.map(id => String(id || '').trim().toUpperCase())
+  const profiles = await batchLoadKvKeys(studentIds.map(id => `student:${id}`))
 
   let added = 0
   for (let i = 0; i < profiles.length; i++) {
     const profile = profiles[i]
-    if (!profile) continue
-    const studentId = String(profile.studentId || '').trim().toUpperCase()
-    if (!studentId) continue
+    const studentId = studentIds[i]
+    if (!profile || !studentId) continue
     if (labels[studentId]) continue
     if (Object.keys(labels).length + 1 > MAX_LABELS) break
     const creationName = String(profile.preferredName || profile.name || '').trim()

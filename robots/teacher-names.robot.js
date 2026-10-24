@@ -40,4 +40,14 @@ test('A teacher reveals private pupil names throughout their menus', async ({ pa
   await page.reload()
   await expect.poll(async () => Boolean(rowFor(await tableUnder(page, 'Klass/gruppvy'), creationName)))
     .toBe(true)
+
+  // Switching back shows code names again, and the choice survives a reload.
+  await page.getByRole('button', { name: 'Byt till kodnamn' }).click()
+  await page.getByRole('button', { name: /^Framsteg/ }).click()
+  await expect.poll(async () => Boolean(rowFor(await tableUnder(page, 'Klass/gruppvy'), pupil.loginCode)))
+    .toBe(true)
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Visa tilltalsnamn' })).toBeVisible()
+  await expect.poll(async () => Boolean(rowFor(await tableUnder(page, 'Klass/gruppvy'), pupil.loginCode)))
+    .toBe(true)
 })

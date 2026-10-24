@@ -158,6 +158,8 @@ export default function DashboardLayout({
   handleSetTeacherPupilLabel,
   showPupilNames,
   fillingPupilNames,
+  showCodeNames,
+  pupilLabelsShown,
   resultsPanelProps,
   PASSWORD_RESET_SECTION_ID,
   passwordResetRows,
@@ -518,6 +520,8 @@ export default function DashboardLayout({
           onRefreshNow={() => { void handleCloudRefreshNow() }}
           onShowPupilNames={showPupilNames}
           fillingPupilNames={fillingPupilNames}
+          onShowCodeNames={showCodeNames}
+          pupilLabelsShown={pupilLabelsShown}
           onJumpToPasswordReset={() => {
             setActiveWorkspace('admin')
             window.setTimeout(handleJumpToPasswordReset, 0)

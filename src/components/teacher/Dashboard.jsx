@@ -54,6 +54,15 @@ import { hydrateTicketsFromServer } from '../../lib/tickets'
 import { loadTeacherWorkspace } from '../../lib/teacherWorkspaceSync'
 import { fillTeacherPupilLabelsFromCreationNames, loadTeacherPupilLabels } from '../../lib/teacherPupilLabels'
 import { loadTeacherGroups } from './sections/teacherGroupsApi'
+// The teacher's choice to see code names instead of private labels, per device.
+const CODE_NAMES_KEY = 'mathapp_teacher_code_names_only'
+function prefersCodeNames() {
+  try { return localStorage.getItem(CODE_NAMES_KEY) === '1' } catch { return false }
+}
+function storeCodeNamesPreference(enabled) {
+  try { if (enabled) localStorage.setItem(CODE_NAMES_KEY, '1'); else localStorage.removeItem(CODE_NAMES_KEY) } catch { /* Preferences are optional. */ }
+}
+
 function Dashboard() {
   const [students, setStudents] = useState([])
   const [assignments, setAssignments] = useState([])
@@ -69,6 +78,7 @@ function Dashboard() {
   const [classStatus, setClassStatus] = useState('')
   const [dashboardStatus, setDashboardStatus] = useState('')
   const [fillingPupilNames, setFillingPupilNames] = useState(false)
+  const [codeNamesOnly, setCodeNamesOnly] = useState(prefersCodeNames)
   const [copiedId, setCopiedId] = useState('')
   const [activeAssignmentId, setActiveAssignmentId] = useState('')
   const [supportSortBy, setSupportSortBy] = useState('risk')
@@ -120,7 +130,7 @@ function Dashboard() {
     setCloudSyncStatus(getCloudProfilesSyncStatus())
 
     void loadTeacherPupilLabels().then(labels => {
-      if (!labels || Object.keys(labels).length === 0) return
+      if (!labels || Object.keys(labels).length === 0 || prefersCodeNames()) return
       setStudents(current => current.map(profile => (
         labels[profile.studentId]
           ? { ...profile, name: labels[profile.studentId], teacherPupilLabel: labels[profile.studentId] }
@@ -133,7 +143,16 @@ function Dashboard() {
     return enrichedProfiles
   }, [])
 
+  const showCodeNames = () => {
+    storeCodeNamesPreference(true)
+    setCodeNamesOnly(true)
+    setStudents(current => current.map(profile => ({ ...profile, name: profile.displayAlias || profile.studentId })))
+    setDashboardStatus('Kodnamnen visas nu i dina lärarvyer.')
+  }
+
   const showPupilNames = async () => {
+    storeCodeNamesPreference(false)
+    setCodeNamesOnly(false)
     setFillingPupilNames(true)
     try {
       const result = await fillTeacherPupilLabelsFromCreationNames()
@@ -468,7 +487,8 @@ function Dashboard() {
         supportRows, handleCreateQuickAssignment,
         addToClassId, setAddToClassId,
         classes, onLocalTestDataImported: loadStudents, handleAddExistingStudentsToClass, handleMoveStudent, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus,
-        handleSetTeacherPupilLabel, showPupilNames, fillingPupilNames,
+        handleSetTeacherPupilLabel, showPupilNames, fillingPupilNames, showCodeNames,
+        pupilLabelsShown: !codeNamesOnly && students.some(profile => profile.teacherPupilLabel),
         resultsPanelProps, PASSWORD_RESET_SECTION_ID, passwordResetRows, passwordResetSearch,
         setPasswordResetSearch, passwordResetStatus, handleResetStudentPassword, passwordResetBusyId
       }}

@@ -39,8 +39,8 @@ function DashboardHeaderBar({
           <p className="text-[10px] leading-tight opacity-80">{teacherRole}</p>
         </div>
         {!isDirectStudentView && <button onClick={onJumpToPasswordReset} className="rounded-md border bg-white px-1.5 py-0.5 text-xs text-gray-600 hover:bg-gray-50">Äldre inloggningar</button>}
-        {isDirectStudentView && <button onClick={onGoDashboard} className="rounded-md bg-indigo-600 px-1.5 py-0.5 text-xs text-white hover:bg-indigo-700">Elevöversikt</button>}
-        <button onClick={onLogout} className="rounded-md bg-gray-800 px-1.5 py-0.5 text-xs text-white hover:bg-gray-900">Logga ut</button>
+        {isDirectStudentView && <button onClick={onGoDashboard} className="rounded-md bg-indigo-600 px-3 py-1 text-xs text-white hover:bg-indigo-700 font-semibold">Elevöversikt</button>}
+        <button onClick={onLogout} className="rounded-md bg-gray-800 px-3 py-1 text-xs text-white hover:bg-gray-900 font-semibold">Logga ut</button>
       </div>
     </header>
   )

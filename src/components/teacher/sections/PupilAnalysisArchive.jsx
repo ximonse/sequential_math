@@ -55,7 +55,7 @@ export default function PupilAnalysisArchive({ refreshVersion }) {
       <p>Rätt av sparade svar: {detail.training.attempts.filter(attempt => attempt.correct).length}</p>
       <p>Diagnostikpunkter: {detail.diagnostics.points.length}</p>
       <p className="text-xs">{detail.training.historyComplete ? 'Den sparade träningshistoriken är fullständig.' : 'Träningshistoriken kan vara begränsad. Livstidssummor finns i exporten när de har lagrats.'}</p>
-      <button onClick={download} className="rounded bg-indigo-600 px-1.5 py-0.5 text-white">Exportera statistik (JSON)</button>
+      <button onClick={download} className="rounded bg-indigo-600 px-3 py-1 text-white font-semibold">Exportera statistik (JSON)</button>
     </div>}
   </section>
 }

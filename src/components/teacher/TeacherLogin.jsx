@@ -99,7 +99,7 @@ function TeacherLogin() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-0.5 px-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold rounded-lg transition-colors"
+            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold rounded-lg transition-colors"
           >
             {loading ? 'Loggar in...' : 'Logga in'}
           </button>
@@ -108,7 +108,7 @@ function TeacherLogin() {
         <div className="mt-8 pt-6 border-t border-gray-200">
           <button
             onClick={() => navigate('/')}
-            className="w-full py-0.5 px-1.5 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors text-sm"
+            className="w-full py-2 px-4 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors text-sm"
           >
             Tillbaka till startsidan
           </button>

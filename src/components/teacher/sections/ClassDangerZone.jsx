@@ -44,18 +44,18 @@ export default function ClassDangerZone({ classRecord, canArchive, canDelete, ca
       {canResetAccounts && !classRecord.archived && <div className={BOX}>
         <p className="font-semibold text-rose-900">Återställ alla elevkonton</p>
         <p className="mt-1 text-rose-900">Rensar elevdata i klassen och utfärdar nya QR-kort och PIN-koder.</p>
-        <button type="button" onClick={() => runAction(resetAccounts)} className="mt-2 rounded bg-rose-700 px-1.5 py-0.5 font-semibold text-white">Återställ och skapa nya elevkort</button>
+        <button type="button" onClick={() => runAction(resetAccounts)} className="mt-2 rounded bg-rose-700 px-3 py-1 font-semibold text-white">Återställ och skapa nya elevkort</button>
       </div>}
       {canArchive && (classRecord.archived ? <div className={BOX}>
         <p className="font-semibold text-rose-900">Klassen är arkiverad</p>
         <div className="mt-2 flex flex-wrap gap-2">
           <button type="button" onClick={() => runAction(() => updateLifecycle('restore'))} className="rounded bg-white px-1.5 py-0.5 font-semibold text-green-800 ring-1 ring-green-300">Återställ</button>
-          {canDelete && <button type="button" onClick={() => runAction(() => updateLifecycle('delete'))} className="rounded bg-rose-700 px-1.5 py-0.5 font-semibold text-white">Radera permanent</button>}
+          {canDelete && <button type="button" onClick={() => runAction(() => updateLifecycle('delete'))} className="rounded bg-rose-700 px-3 py-1 font-semibold text-white">Radera permanent</button>}
         </div>
       </div> : <div className={BOX}>
         <p className="font-semibold text-rose-900">Arkivera klassen</p>
         <p className="mt-1 text-rose-900">Klassen döljs i lärarvyn. Eleverna och deras resultat finns kvar.</p>
-        <button type="button" onClick={() => runAction(() => updateLifecycle('archive'))} className="mt-2 rounded bg-rose-700 px-1.5 py-0.5 font-semibold text-white">Arkivera</button>
+        <button type="button" onClick={() => runAction(() => updateLifecycle('archive'))} className="mt-2 rounded bg-rose-700 px-3 py-1 font-semibold text-white">Arkivera</button>
       </div>)}
       {!canArchive && !canResetAccounts && <p className="text-gray-600">Inga åtgärder här för ditt konto.</p>}
     </div>

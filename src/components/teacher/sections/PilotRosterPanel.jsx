@@ -38,7 +38,7 @@ export default function PilotRosterPanel({ className, schoolId, onCreate, disabl
           type="button"
           onClick={create}
           disabled={disabled || !String(className || '').trim()}
-          className="rounded bg-teal-700 px-1.5 py-0.5 text-sm text-white hover:bg-teal-800 disabled:opacity-50"
+          className="rounded bg-teal-700 px-3 py-1 text-sm text-white hover:bg-teal-800 disabled:opacity-50 font-semibold"
         >
           Skapa namnfria elevplatser
         </button>

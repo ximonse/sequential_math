@@ -40,7 +40,7 @@ export default function ClassPupilsTab({
           <ol className="max-h-40 list-decimal overflow-auto pl-6">{names.map((name, index) => <li key={index}>{name}</li>)}</ol></details>}
         <button type="button" disabled={names.length === 0}
           onClick={() => runAction(async () => onCredentials((await onAddStudentsToClass())?.credentials))}
-          className="mt-2 rounded bg-emerald-600 px-1.5 py-0.5 text-sm text-white hover:bg-emerald-700 disabled:opacity-50">
+          className="mt-2 rounded bg-emerald-600 px-3 py-1 text-sm text-white hover:bg-emerald-700 disabled:opacity-50 font-semibold">
           Lägg till elever i {classRecord.name}
         </button>
       </section>
@@ -58,7 +58,7 @@ export default function ClassPupilsTab({
           <button type="button" disabled={selectedExistingStudentIds.length === 0} onClick={() => runAction(async () => {
             const saved = await onAddExistingStudentsToClass(selectedExistingStudentIds)
             if (saved) setSelectedExistingStudentIds([])
-          })} className="mt-2 rounded bg-indigo-600 px-1.5 py-0.5 text-xs text-white disabled:opacity-50">Lägg till {selectedExistingStudentIds.length || ''} vald(a) elev(er)</button>
+          })} className="mt-2 rounded bg-indigo-600 px-3 py-1 text-xs text-white disabled:opacity-50 font-semibold">Lägg till {selectedExistingStudentIds.length || ''} vald(a) elev(er)</button>
         </details>
       )}
 
@@ -79,7 +79,7 @@ export default function ClassPupilsTab({
           <button type="button" disabled={!moveToClassId || !moveStudentId} onClick={() => runAction(async () => {
             const moved = await onMoveStudent(moveStudentId, classRecord.id, moveToClassId)
             if (moved) { setMoveStudentId(''); setMoveToClassId('') }
-          })} className="mt-2 rounded bg-amber-600 px-1.5 py-0.5 text-xs text-white disabled:opacity-50">Flytta elev</button>
+          })} className="mt-2 rounded bg-amber-600 px-3 py-1 text-xs text-white disabled:opacity-50 font-semibold">Flytta elev</button>
         </details>
       )}
 

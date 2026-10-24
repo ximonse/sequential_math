@@ -62,7 +62,7 @@ export default function BulkCredentialReissue({ students }) {
           </label>
         ))}
       </div>
-      <button type="button" onClick={issue} disabled={busy || chosen.length === 0} className="mt-2 rounded bg-amber-700 px-1.5 py-0.5 text-xs font-semibold text-white hover:bg-amber-800 disabled:opacity-50">
+      <button type="button" onClick={issue} disabled={busy || chosen.length === 0} className="mt-2 rounded bg-amber-700 px-3 py-1 text-xs font-semibold text-white hover:bg-amber-800 disabled:opacity-50">
         {busy ? 'Skapar kort…' : `Skapa nya kort för ${chosen.length} vald${chosen.length === 1 ? '' : 'a'} elev${chosen.length === 1 ? '' : 'er'}`}
       </button>
       {status ? <p role="status" className="mt-2 text-xs text-amber-950">{status}</p> : null}

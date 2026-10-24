@@ -275,7 +275,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
       {limitCheck.pending.length > 0 && <p className="mt-1 text-slate-600">Kontrollerar vilka elever som kan få screening…</p>}
       {recipientPlan.dispatches.length > 0 && <button type="button" onClick={createForRecipients}
         disabled={!hasTasks || busy || limitCheck.pending.length > 0 || limitCheck.ready.length === 0}
-        className="mt-2 rounded bg-indigo-600 px-1.5 py-0.5 font-semibold text-white disabled:opacity-50">
+        className="mt-2 rounded bg-indigo-600 px-3 py-1 font-semibold text-white disabled:opacity-50">
         {busy ? 'Skapar...' : `Ge till valda mottagare (${limitCheck.ready.length} screening${limitCheck.ready.length === 1 ? '' : 'ar'})`}
       </button>}
     </div>

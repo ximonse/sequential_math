@@ -238,7 +238,7 @@ export default function MathPracticeCreatorDialog({ onCreate, onClose, initialWo
           </button>
           <button
             onClick={handleCreate}
-            className="rounded-md bg-orange-600 px-1.5 py-0.5 text-sm font-semibold text-white hover:bg-orange-700"
+            className="rounded-md bg-orange-600 px-3 py-1 text-sm font-semibold text-white hover:bg-orange-700"
           >
             Skapa övning
           </button>

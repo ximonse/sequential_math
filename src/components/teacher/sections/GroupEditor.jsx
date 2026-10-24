@@ -56,7 +56,7 @@ export default function GroupEditor({ group, students, teachers, busy, onSave })
         </fieldset>
       )}
       <button type="submit" disabled={busy || !name.trim() || pupilIds.length === 0}
-        className="rounded bg-blue-600 px-1.5 py-0.5 text-sm font-medium text-white disabled:opacity-40">
+        className="rounded bg-blue-600 px-3 py-1 text-sm font-semibold text-white disabled:opacity-40">
         {group ? 'Spara grupp' : 'Skapa grupp'}
       </button>
     </form>

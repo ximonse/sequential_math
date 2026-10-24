@@ -68,7 +68,7 @@ export function NewSchoolForm({ directory, onCreated }) {
             setName(''); setStatus('Skolan är sparad.'); onCreated?.(school.id)
           } catch (error) { setStatus(error.message || 'Skolan kunde inte sparas. Försök igen.') }
           finally { setBusy(false) }
-        }} className="rounded bg-blue-600 px-1.5 py-0.5 text-white disabled:opacity-50">{busy ? 'Sparar…' : 'Spara skola'}</button>
+        }} className="rounded bg-blue-600 px-3 py-1 text-white disabled:opacity-50 font-semibold">{busy ? 'Sparar…' : 'Spara skola'}</button>
       </div>
       <p role="status" className="mt-1">{status}</p>
     </details>

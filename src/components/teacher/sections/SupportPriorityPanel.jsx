@@ -61,8 +61,8 @@ export default function SupportPriorityPanel({
                     <p className="mb-2 max-w-72 text-xs text-gray-700">{row.nextAction}</p>
                     <div className="flex flex-wrap gap-1">
                       <button onClick={() => onOpenStudentDetail(row.studentId)} className="px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs">Elevvy</button>
-                      <button onClick={() => onCreateQuickAssignment(row, 'focus')} className="px-1.5 py-0.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs">Fokus</button>
-                      <button onClick={() => onCreateQuickAssignment(row, 'warmup')} className="px-1.5 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs">Värm</button>
+                      <button onClick={() => onCreateQuickAssignment(row, 'focus')} className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold">Fokus</button>
+                      <button onClick={() => onCreateQuickAssignment(row, 'warmup')} className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold">Värm</button>
                     </div>
                   </td>
                 </tr>

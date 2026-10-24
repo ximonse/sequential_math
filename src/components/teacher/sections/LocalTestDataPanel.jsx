@@ -79,7 +79,7 @@ export default function LocalTestDataPanel({ classes = [], students = [], onImpo
           {classes.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select>
       </label>
-      <button type="button" disabled={!selected || busy} onClick={exportClass} className="rounded bg-slate-800 px-1.5 py-0.5 text-sm font-semibold text-white disabled:opacity-50">Exportera vald klass som JSON</button>
+      <button type="button" disabled={!selected || busy} onClick={exportClass} className="rounded bg-slate-800 px-3 py-1 text-sm font-semibold text-white disabled:opacity-50">Exportera vald klass som JSON</button>
       </>}
       {mode === 'import' && import.meta.env.DEV && <label className="cursor-pointer rounded bg-amber-300 px-4 py-2 text-sm font-semibold text-slate-900">
         Importera testklass på localhost

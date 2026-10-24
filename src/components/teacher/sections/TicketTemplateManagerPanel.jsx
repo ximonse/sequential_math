@@ -55,7 +55,7 @@ export default function TicketTemplateManagerPanel({
           </select>
           <button
             onClick={onCreateTicketTemplate}
-            className="px-1.5 py-0.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl text-sm font-semibold shadow-sm"
+            className="px-3 py-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl text-sm font-semibold shadow-sm"
           >
             Spara ticket
           </button>
@@ -71,7 +71,7 @@ export default function TicketTemplateManagerPanel({
         />
         <button
           onClick={onImportTicketCsv}
-          className="mt-2 px-1.5 py-0.5 bg-gray-800 hover:bg-black text-white rounded-xl text-sm font-medium"
+          className="mt-2 px-3 py-1 bg-gray-800 hover:bg-black text-white rounded-xl text-sm font-semibold"
         >
           Importera CSV
         </button>
@@ -121,7 +121,7 @@ export default function TicketTemplateManagerPanel({
                 <div className="flex flex-wrap gap-2 mt-2">
                   <button
                     onClick={() => onCreateTicketDispatch(template)}
-                    className="px-1.5 py-0.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
+                    className="px-3 py-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
                   >
                     Skapa länk
                   </button>

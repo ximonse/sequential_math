@@ -137,11 +137,11 @@ export default function AssignmentsPanel({
                 <p className="font-mono text-xs text-gray-400">{assignment.id}</p>
               </div>
               <div className="ml-auto flex items-center gap-1">
-                {canActivate && <button onClick={() => onActivateAssignment(assignment.id)} className="rounded bg-green-600 px-1.5 py-0.5 text-xs text-white hover:bg-green-700">
+                {canActivate && <button onClick={() => onActivateAssignment(assignment.id)} className="rounded bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700 font-semibold">
                   {selectedTargets.length ? 'Aktivera' : 'Aktivera för alla klasser'}</button>}
-                {isActive && <button onClick={() => onDeactivateAssignment(assignment.id)} className="rounded bg-gray-600 px-1.5 py-0.5 text-xs text-white hover:bg-gray-700">
+                {isActive && <button onClick={() => onDeactivateAssignment(assignment.id)} className="rounded bg-gray-600 px-3 py-1 text-xs text-white hover:bg-gray-700 font-semibold">
                   {selectedTargets.length ? 'Avaktivera' : 'Avaktivera överallt'}</button>}
-                <button onClick={() => onCopyAssignmentLink(assignment.id, classLoginToken)} disabled={!canShareAssignment} className="rounded bg-gray-800 px-1.5 py-0.5 text-xs text-white hover:bg-black disabled:cursor-not-allowed disabled:bg-gray-300">{copiedId === assignment.id ? 'Kopierad' : 'Kopiera länk'}</button>
+                <button onClick={() => onCopyAssignmentLink(assignment.id, classLoginToken)} disabled={!canShareAssignment} className="rounded bg-gray-800 px-3 py-1 text-xs text-white hover:bg-black disabled:cursor-not-allowed disabled:bg-gray-300 font-semibold">{copiedId === assignment.id ? 'Kopierad' : 'Kopiera länk'}</button>
                 <button type="button" onClick={() => setQrAssignment(assignment)} disabled={!canShareAssignment} className="inline-flex h-7 w-7 items-center justify-center rounded bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:cursor-not-allowed disabled:text-slate-300" aria-label={`Visa QR-kod för ${assignment.title}`} title="Visa QR-kod">
                   <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-current"><path d="M3 3h7v7H3V3Zm2 2v3h3V5H5Zm9-2h7v7h-7V3Zm2 2v3h3V5h-3ZM3 14h7v7H3v-7Zm2 2v3h3v-3H5Zm7-2h2v2h-2v-2Zm3 0h6v3h-2v-1h-2v2h-2v-4Zm-3 3h3v4h-3v-4Zm5 2h4v2h-4v-2Z" /></svg>
                 </button>

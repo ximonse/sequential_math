@@ -155,13 +155,13 @@ export default function TicketDispatchControlPanel({
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => onCopyTicketLink(dispatch.id)}
-                  className="px-1.5 py-0.5 bg-gray-800 hover:bg-black text-white rounded-lg text-xs font-semibold"
+                  className="px-3 py-1 bg-gray-800 hover:bg-black text-white rounded-lg text-xs font-semibold"
                 >
                   {copiedTicketDispatchId === dispatch.id ? 'Kopierad' : 'Kopiera länk'}
                 </button>
                 <button
                   onClick={() => onPublishTicketToHome(dispatch.id)}
-                  className="px-1.5 py-0.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
+                  className="px-3 py-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
                 >
                   Visa på startsida
                 </button>

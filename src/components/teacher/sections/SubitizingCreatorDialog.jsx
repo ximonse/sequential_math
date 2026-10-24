@@ -89,7 +89,7 @@ export default function SubitizingCreatorDialog({ onCreate, onClose }) {
           </button>
           <button
             onClick={handleCreate}
-            className="flex-1 px-1.5 py-0.5 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
+            className="flex-1 px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold"
           >
             Skapa övning
           </button>

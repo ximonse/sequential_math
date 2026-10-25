@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { teacherLogin } from './lib/teacher.js'
 
 test('Varierad fokusdemo visar 20 testelever, hastighet, fel och tidsmönster', async ({ page, request }, testInfo) => {
-  const demo = await (await request.post('/__robot/attention-demo', { data: {} })).json()
+  const demo = await (await request.post('/__robot/attention-demo', { data: {}, timeout: 60000 })).json()
   expect(demo.ok).toBe(true); expect(demo.count).toBe(1500)
   await teacherLogin(page, { ...demo.teacher, attentionFixtureClassIds: [demo.classId] })
   await page.getByRole('button', { name: /^Fokusövningar/ }).click()

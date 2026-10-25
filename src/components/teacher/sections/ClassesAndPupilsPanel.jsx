@@ -225,7 +225,7 @@ export default function ClassesAndPupilsPanel({
               canArchive={isAdmin && adminById.has(String(openClass.id))} canDelete={isSuperAdmin} canResetAccounts={isSuperAdmin}
               onCredentials={showCredentials} setStatus={setStatus} runAction={runAction}
               onChanged={action => { if (action === 'delete') setOpen(null); void refreshClasses() }} />}
-            {(open.type === 'group' || open.type === 'new-group') && tab === 'members' && <GroupEditor key={open.id || 'new'}
+            {(open.type === 'group' || open.type === 'new-group') && tab === 'members' && <GroupEditor key={open.id || 'new'} classes={classes}
               group={openGroup} students={students} teachers={groupsState.teachers} busy={groupsState.busy}
               onSave={async payload => {
                 const saved = await groupsState.save(openGroup?.id || '', payload)

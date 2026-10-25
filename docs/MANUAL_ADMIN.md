@@ -15,6 +15,16 @@
 
 En lärare kan vara tilldelad flera skolor och klasser men arbetar bara med direkt tilldelade klasser. Skoladministratören ser bara lärare och klasser inom sin egen skoltilldelning.
 
+## Välja elever till en grupp
+
+Under **Klasser och grupper → + Ny grupp** kan du välja en eller flera klasser
+ovanför elevlistan. Listan visar elever som tillhör någon av de valda klasserna;
+utan klassval visas alla tillgängliga elever. Namnsökningen söker inom klassvalet.
+Klassvalet filtrerar bara listan, det väljer inte elever automatiskt. Elever du
+redan kryssat i ligger kvar när du byter filter. Antalet valda elever räknar även
+dolda val, och en text visar när valda elever är dolda. Samma filter finns när
+du redigerar en befintlig grupp.
+
 ## Klass-ID, arkivering och namn
 
 Varje klass har ett permanent klass-ID. Klassnamn måste vara unika inom samma skola. Arkivera en avslutad klass för att frigöra det aktiva namnet utan att bryta elevhistorik eller klasslänk. Arkiverade klasser döljs som standard och kan visas och återställas i administrationsvyn. Endast huvudadministratör kan permanent radera en tom, redan arkiverad klass.

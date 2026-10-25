@@ -1341,6 +1341,33 @@
       "decision": "2026-10-18: Simon godkänner ökande gemensamma rikttider med variation för FOKUS/KONTROLL, dagsform med växling klassens föregående tre veckor/egna tidigare, timindelat veckomönster med små enfärgade prickar och långtidslagring/export av alla insamlade data. Datum/klockslag räcker; inga nya elevfrågor. Nya/ändrade aktiviteter måste ha spårbar version och mätbeskrivning i export. Endast huvudadmin behåller läsrätt. Åldersnormer och matematikjämförelse införs inte.",
       "evidence": "2026-10-18: Byggt lokalt. Riktade modell-/API-tester och 13 fokus-/vyerobotar passerar; bred slutverifiering återstår. Ej pushat/publicerat.\n2026-10-18 lokal slutverifiering: 158 testfiler/760 tester, build, riktad ESLint, arkitektur och projektkarta godkända. Slutlig full robotsvit med oförändrad kod 117/117, 0 regelbrott. Arkiv bevarar 601 försök i test; klient läser 610 utan trunkering. Dagsform klass/egen, timschema, JSON-nedladdning, touch/tangentbord, omladdat ej avslutat försök och oförändrad matematik verifierade. Dator-/768-px surfplattebilder granskade. Första fullkörningen112/117 stördes möjligen av kodredigering/omladdad minnesdatabas; inga fel återkom i slutkörningen. Ingen fysisk elevplatta eller verklig KV-tjänst provad. Befintliga buildvarningar kvar. Lokal leverans; ej pushat/publicerat. Se docs/ATTENTION_ARCHIVE_AND_VIEWS.md.",
       "issue": ""
+    },
+    {
+      "id": "group-class-filter",
+      "area": "Administration",
+      "title": "Välj klasser före elever i grupper",
+      "status": "Lokalt klart",
+      "purpose": "Läraren kan avgränsa elevlistan till en eller flera klasser vid gruppskapande och redigering.",
+      "next": "Publicera via GitHub endast efter uttrycklig begäran.",
+      "acceptance": "En eller flera klasser begränsar listan till deras elever. Sökning kombineras med klassfiltret. Elevval försvinner inte vid filterbyte och dolda val redovisas. Utan klassval visas alla tillgängliga elever.",
+      "decision": "2026-10-25: Simon beställer klassval före elevurval vid gruppskapande. Klassval filtrerar listan och ändrar inte medlemskap automatiskt.",
+      "evidence": "2026-10-25: Lokalt verifierat. 166 testfiler/793 tester godkända i aktuell checkout (inbäddade .claude-worktrees undantagna). Produktionsbuild godkänd med befintliga varningar om chunkstorlek och blandad import. Riktad ESLint och projektkarta godkända. Ny browserrobot verifierar en/flera klasser, kombinerad sökning, tomt resultat och bevarade/dolda elevval; skärmbild granskad. Riktade grupp-/klassrobotar 3/3. Bred robotsvit 134/135; befintligt aktiveringsfall läste tomt uppgiftsobjekt. Isolerad omkörning 1/1 godkänd; orsak inte fastställd, ingen helt grön fullkörning påstås. Alla 135 robotfall har passerat över körningarna. Ingen push eller publicering.",
+      "issue": "",
+      "kind": "funktion",
+      "requires": [],
+      "affects": [],
+      "tasks": [
+        {
+          "id": "build",
+          "text": "Lägg till flervalsfilter för klasser ovanför elevlistan",
+          "done": true
+        },
+        {
+          "id": "verify",
+          "text": "Verifiera klassval, sökning och kvarvarande elevval",
+          "done": true
+        }
+      ]
     }
   ],
   "edges": [

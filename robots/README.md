@@ -50,6 +50,28 @@ Hela sviten tar ungefär 2–3 minuter med sex parallella webbläsare. Den körs
 
 ## Lägga till en robot
 
+### Utforska en varierad fokusdemo
+
+Kör `node robots/attentionDemoServer.mjs` och öppna
+`http://localhost:5294/teacher/focus`. Logga in med `focus-demo-admin` och
+`robot-larare-losen`. Servern använder en isolerad minnesdatabas; ingen data
+skickas till produktion. Stoppa processen när demon inte behövs. En omstart
+skapar samma slags historik kring dagens datum; den lokala databasen är inte
+bestående. Ändra inte serverns app-/API-/robotberoenden medan demon används.
+
+Demon skapar 20 påhittade elever och 1500 simulerade pass: tolv normalt
+presterande, snabb/rätt, snabb/fel, långsam/rätt, långsam/fel, ojämna svar,
+ojämna dagar, tapp efter en minut och eftermiddagsdip. Varje elev har 75 pass
+i FOKUS, KONTROLL och MULTI: tolv tidigare vardagar kl. 09 och 14 samt idag.
+Resultaten genereras med aktiviteternas riktiga modeller och versionerade
+protokoll. Tid och elevsvar simuleras; detta är inte 1500 webbläsarpass eller
+en normgrupp. I FOKUS är fel framför allt för tidiga tryck. Färger och
+placering beräknas av de vanliga vyerna, inte av demogeneratorn.
+
+Med demoservern igång kan `ROBOT_PORT=5294` sättas i miljön och
+`npm run robots -- robots/attention-demo.robot.js` köras för kontroll och
+skärmbilder av matris, de tre fyrfältarna, veckomönster och uthållighet.
+
 Skapa `robots/<namn>.robot.js`. Använd `createPupil`, `login` och `answerTasks`. Beskriv valet i `choice`: `{ mode }`, `{ tables }` eller `{ allowedOperations }`. Då kontrolleras R1, C1 och R3 automatiskt för varje uppgift. Lägg till egna kontroller med `findings.add(regel, meddelande, detaljer)`.
 
 ## Senaste fynd

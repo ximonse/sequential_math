@@ -102,6 +102,10 @@ function emptyPupil(studentId, displayAlias, classId, className = classId) {
 }
 
 export async function handleControl(action, body = {}) {
+  if (action === 'attention-demo') {
+    const { seedAttentionDemo } = await import('./attentionDemoSeed.js')
+    return seedAttentionDemo(handleControl)
+  }
   if (action === 'seed-pupil-lifecycle') {
     const studentId = String(body.studentId)
     const profile = await kv.get(`student:${studentId}`)

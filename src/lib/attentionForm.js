@@ -2,7 +2,9 @@ import { attentionProtocolId } from './attentionProtocols'
 import { isComparableAttentionPass } from './attentionHistory'
 import { median } from './attentionEndurance'
 
-export const focusDate = timestamp => new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Stockholm' }).format(timestamp)
+// Reuse the formatter: a class matrix compares thousands of historical dates.
+const stockholmDate = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Stockholm' })
+export const focusDate = timestamp => stockholmDate.format(timestamp)
 export const FORM_METRICS = { speed: 'Svarshastighet', endurance: 'Uthållighet', control: 'Kontroll', switching: 'Regelväxling' }
 export const ATTENTION_FORM_DEFINITION = {
   id: 'local-form-1', referenceDays: 21, excludeCurrentDay: true, minimumDays: 3, minimumOtherPupils: 8,

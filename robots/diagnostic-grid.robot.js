@@ -1,5 +1,31 @@
 import { test, expect } from '@playwright/test'
 
+test('Notebook keeps decimal commas when the following digits are entered with touch or keyboard', async ({ browser }) => {
+  const { context, page } = await openAsRole(browser, 'super_admin', '/teacher/ncm/diagnostic-grid')
+  const input = (row, column) => page.locator(`input[data-cell="${row}:${column}"]`)
+  const decimal = ['1', '2', ',', '3', '4']
+  await input(0, 0).tap()
+  for (const character of decimal) await page.getByRole('button', { name: `Skriv ${character}`, exact: true }).tap()
+  for (const [column, character] of decimal.entries()) {
+    await expect(input(0, column)).toHaveAttribute('aria-label', new RegExp(`stor siffra ${character}`))
+  }
+  await expect(input(0, 5)).toHaveAttribute('aria-label', /^Markerad ruta/)
+  await input(1, 0).click()
+  await page.keyboard.type('12,34')
+  for (const [column, character] of decimal.entries()) {
+    await expect(input(1, column)).toHaveAttribute('aria-label', new RegExp(`stor siffra ${character}`))
+  }
+  await expect(input(1, 5)).toBeFocused()
+  await page.getByRole('button', { name: 'Visa JSON' }).click()
+  await page.getByRole('button', { name: 'Återläs JSON' }).click()
+  for (const row of [0, 1]) {
+    await expect(input(row, 2)).toHaveAttribute('aria-label', /stor siffra ,/)
+    await expect(input(row, 3)).toHaveAttribute('aria-label', /stor siffra 3/)
+    await expect(input(row, 4)).toHaveAttribute('aria-label', /stor siffra 4/)
+  }
+  await context.close()
+})
+
 test('Notebook digits advance right with touch keypad and keyboard, preserving notes and replay', async ({ browser }) => {
   const { context, page } = await openAsRole(browser, 'super_admin', '/teacher/ncm/diagnostic-grid')
   const input = position => page.locator(`input[data-cell="${position}"]`)

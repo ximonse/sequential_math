@@ -4,7 +4,7 @@ import './notebookTutorial.css'
 
 const STEPS = [
   { id: 'write', title: 'Skriv en siffra',
-    text: 'Tryck på en ruta och skriv siffror med knappsatsen eller tangentbordet. Efter varje siffra markeras nästa ruta åt höger. Vid radens slut stannar markeringen.' },
+    text: 'Tryck på en ruta och skriv siffror med knappsatsen eller tangentbordet. Efter varje siffra eller kommatecken markeras nästa ruta åt höger. Vid radens slut stannar markeringen.' },
   { id: 'line', title: 'Dra ett långt streck',
     text: 'Håll fingret stilla på en tom ruta en kort stund. Dra längs rutlinjen och släpp.' },
   { id: 'note', title: 'Gör en minnessiffra',

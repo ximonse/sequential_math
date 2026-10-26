@@ -29,8 +29,9 @@ utan nästlade klamrar. Det är ett avgränsat stöd för bråknotation, inte en
 fullständig LaTeX-motor. Frågetexten sparas oförändrad; bara visningen ändras.
 Detta ändrar inte vilka slutsvar eller diagnostiska analyser som stöds.
 
-Räknehäftet flyttar markeringen en ruta åt höger efter en skriven stor siffra,
-både med knappsatsen och fysiskt tangentbord. Vid sista kolumnen stannar
+Räknehäftet flyttar markeringen en ruta åt höger efter en skriven stor siffra
+eller ett kommatecken, både med knappsatsen och fysiskt tangentbord. Decimaltal
+som `12,34` bevarar därmed kommat när nästa siffra skrivs. Vid sista kolumnen stannar
 markeringen på samma rad. Välj en tidigare ruta för att korrigera den.
 Minnessiffror stannar i samma ruta (upp till två siffror), liksom räknetecken
 och radering. Skrivning och automatisk markörflytt bevaras tillsammans som

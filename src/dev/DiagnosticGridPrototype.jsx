@@ -334,7 +334,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       if (after.length > 2 || before === after) return null
       const write = { type: 'write', position: { row, column }, layer, before, after }
       // Keep note entry in place so two-digit borrowing notes still work.
-      if (layer !== 'main' || !/^[0-9]$/u.test(character) || column === previous.columns - 1) return write
+      if (layer !== 'main' || !/^[0-9,]$/u.test(character) || column === previous.columns - 1) return write
       return [write, { type: 'move', from: { row, column }, to: { row, column: column + 1 } }]
     })
   }

@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
-import { teacherLogin, openTab, sendScreening } from './lib/teacher.js'
+import { teacherLogin, sendScreening } from './lib/teacher.js'
+import { collectionSelect, openDispatch, openResults, reviewOf } from './lib/screening.js'
 
 test('Authored fraction shortcuts and frac notation agree in preview, pupil and teacher review', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -10,11 +11,9 @@ test('Authored fraction shortcuts and frac notation agree in preview, pupil and 
     id: `fractions-admin-${tag}`, classIds: [classId], role: 'super_admin'
   } })).json()
   await teacherLogin(page, teacher)
-  await openTab(page, 'Screening')
-  const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('xpath=..')
-  await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(classId)
-  await panel.getByRole('combobox', { name: 'Elev', exact: true }).selectOption(pupil.studentId)
+  const panel = await openDispatch(page)
   await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Bråknotation')
+  await panel.getByText('Välj uppgifter en och en', { exact: true }).click()
   for (const choice of await panel.locator('fieldset').first().getByRole('checkbox').all()) await choice.uncheck()
   await panel.getByText('Lägg till egen skrivfråga', { exact: true }).click()
   const source = 'Jämför 6//2 och \\frac{3}{4}. Förklara. Vanlig division: 6/2.'
@@ -51,9 +50,12 @@ test('Authored fraction shortcuts and frac notation agree in preview, pupil and 
   await student.getByRole('button', { name: 'Lämna in', exact: true }).click()
   await expect(student).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
 
-  await panel.getByRole('button', { name: 'Uppdatera försök', exact: true }).click()
-  await panel.getByRole('button', { name: 'Visa underlag', exact: true }).click()
-  const evidence = panel.getByRole('region', { name: 'Diagnostiskt elevunderlag' })
+  const results = await openResults(page, { pupilName: 'Fraction Pupil' })
+  await results.getByText('Sparade försök för en elev', { exact: true }).click()
+  await results.getByRole('combobox', { name: 'Elev', exact: true }).selectOption({ label: 'Fraction Pupil' })
+  await results.getByRole('button', { name: 'Uppdatera försök', exact: true }).click()
+  await results.getByRole('button', { name: 'Visa underlag', exact: true }).click()
+  const evidence = results.getByRole('region', { name: 'Diagnostiskt elevunderlag' })
   await expect(evidence.getByRole('heading').getByRole('math')).toHaveCount(2)
   // Rendering never rewrites the stored task or creates ordinary mastery facts.
   const savedSource = await page.evaluate(async id => {
@@ -64,9 +66,8 @@ test('Authored fraction shortcuts and frac notation agree in preview, pupil and 
     return JSON.stringify(await response.json())
   }, classId)
   expect(savedSource).toContain(JSON.stringify(source).slice(1, -1))
-  await panel.getByRole('button', { name: 'Resultat', exact: true }).click()
-  const review = panel.getByRole('region', { name: 'Klassgenomgång', exact: true })
-  await review.getByRole('combobox', { name: 'Uppdrag att gå igenom', exact: true }).selectOption({ index: 1 })
+  await collectionSelect(results).selectOption({ index: 1 })
+  const review = reviewOf(results)
   await expect(review.locator('thead').getByRole('math')).toHaveCount(2)
   const answer = review.getByRole('button', { name: /Jämför 6\/\/2/ })
   await answer.hover()

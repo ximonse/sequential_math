@@ -226,7 +226,7 @@
         "review"
       ],
       "decision": "",
-      "evidence": "0b1eaa8; 652 tester, build, lint, 81 robotfall.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.\n2026-10-09: Produktionsmatris för enbart testtilldelningen visar 699 rätt, 376 fel utan identifierat mönster, 1/2 rätt och 2/2 inlämnade. Efter sparad lärargranskning visar den 1/2 genomgångna. Full klass och skalmätning återstår.\n2026-10-09: Positivt metodprov i produktion: testuppdraget visar 376M, 0/1 rätt, 1/1 inlämnade och efter granskning 1/1 genomgångna. Endast separat testkonto användes.\n2026-10-26: Lokalt klart och robot-/bildgranskat: fliken Grupp heter Resultat, samlingens namn visas i listan och tomma lägen förklaras. Återanvändning och verifieringsbelägg: reuse-collections. Inte publicerat.\n2026-10-26: Simon begärde produktion för de fyra färdiga ändringarna eec297d, 4e4eb77, 3da05fa och a8a9c2c. GitHub origin/master pushad till a8a9c2cc77decc4bf06429e7a041633e7acf80ff. GitHub Verify 40312593115 success (tester, build, arkitektur och projektkarta). Vercel sekvens dpl_6YviRuYhQEWzkrDGAh9JhWJW64SL production READY, matematik.ximon.se tilldelad utan aliasfel. Publik HTML och huvudpaket samt PracticeNotebook-/DiagnosticGridPrototype-paket HTTP 200; alla tre JS-paket matchar lokalt testat build byte för byte (SHA256). Ny återanvändnings-/bråkkod och siffersvarsplatshållare bekräftade i publika paket. Lärar-API utan inloggning ger 401. Inga error/fatal-loggposter för deploymenten vid kontrollen. Ingen ny autentiserad elevprovning eller fysisk iPad-provning i produktion, inga riktiga elevdata ändrade. Denna verifieringsanteckning sparas separat lokalt efter kodpubliceringen.",
+      "evidence": "0b1eaa8; 652 tester, build, lint, 81 robotfall.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.\n2026-10-09: Produktionsmatris för enbart testtilldelningen visar 699 rätt, 376 fel utan identifierat mönster, 1/2 rätt och 2/2 inlämnade. Efter sparad lärargranskning visar den 1/2 genomgångna. Full klass och skalmätning återstår.\n2026-10-09: Positivt metodprov i produktion: testuppdraget visar 376M, 0/1 rätt, 1/1 inlämnade och efter granskning 1/1 genomgångna. Endast separat testkonto användes.\n2026-10-26: Lokalt klart och robot-/bildgranskat: fliken Grupp heter Resultat, samlingens namn visas i listan och tomma lägen förklaras. Återanvändning och verifieringsbelägg: reuse-collections. Inte publicerat.\n2026-10-26: Simon begärde produktion för de fyra färdiga ändringarna eec297d, 4e4eb77, 3da05fa och a8a9c2c. GitHub origin/master pushad till a8a9c2cc77decc4bf06429e7a041633e7acf80ff. GitHub Verify 40312593115 success (tester, build, arkitektur och projektkarta). Vercel sekvens dpl_6YviRuYhQEWzkrDGAh9JhWJW64SL production READY, matematik.ximon.se tilldelad utan aliasfel. Publik HTML och huvudpaket samt PracticeNotebook-/DiagnosticGridPrototype-paket HTTP 200; alla tre JS-paket matchar lokalt testat build byte för byte (SHA256). Ny återanvändnings-/bråkkod och siffersvarsplatshållare bekräftade i publika paket. Lärar-API utan inloggning ger 401. Inga error/fatal-loggposter för deploymenten vid kontrollen. Ingen ny autentiserad elevprovning eller fysisk iPad-provning i produktion, inga riktiga elevdata ändrade. Denna verifieringsanteckning sparas separat lokalt efter kodpubliceringen.\n2026-10-26: Matrisen nås nu via Screening: resultat och kan slå ihop klasser (se kortet screening-split).",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -1589,6 +1589,43 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "screening-split",
+      "area": "Dela ut",
+      "title": "Dela ut och Resultat som två lägen, gruppresultat samlat",
+      "status": "Lokalt klart",
+      "purpose": "Läraren ska inte blanda ihop att dela ut och att läsa svar. Resultat ska gå att läsa för klass, grupp eller elev, och en grupp över flera klasser ska ses i en tabell.",
+      "next": "Simon provar lägena Screening: dela ut och Screening: resultat i webbläsaren; publicering kräver hans push.",
+      "acceptance": "Två lägen i vänstermenyn med egna mottagarval. Dela ut visar paket, hopfällda uppgifter och Skicka. Resultat väljer mottagare som Dela ut och visar en grupp över flera klasser i en matris med bara gruppens elever. Resultatval påverkar aldrig nästa utdelning.",
+      "decision": "2026-10-26: Simon beställer uppdelningen och att gruppresultat ska ses samlat. Samlingar i olika klasser kopplas ihop på samma namn och frågor skapade inom tio minuter, eftersom servern inte länkar dem.",
+      "evidence": "2026-10-26 lokalt: ScreeningDispatchPanel, ScreeningResultsPanel, ScreeningTaskChoices, ScreeningPupilAttempts, DiagnosticCollectionReview och screeningCollections.js ersätter DiagnosticPilotAssignmentPanel och DiagnosticClassReviewPanel. Elevens sparade försök och Avsluta/Lämna in pågående ligger i Resultat. Obekräftad genomgång varnar även vid byte av arbetsläge. 8 nya enhetstester för sammanslagning, filter och gruppering. Ny robot screening-group-results (grupp över två klasser, en tabell, cell ur andra klassen öppnas, resultatval läcker inte till utdelning). Alla 12 diagnostic-robotar ändrade till nya lägen via robots/lib/screening.js. Hela robotsviten 140/144 vid första körning; tre svarade ECONNRESET/timeout i servern och passerade vid omkörning, en (diagnostic-grid) bröts av att knappnamnet Screening nu är två och rättades. Vitest 799 filer/3771 tester och build godkända; lint ger samma 8 äldre fel som innan. Ingen skärmbildsgranskning, ingen push.",
+      "issue": "",
+      "kind": "funktion",
+      "requires": [
+        "dispatch",
+        "matrix"
+      ],
+      "affects": [
+        "review"
+      ],
+      "tasks": [
+        {
+          "id": "split",
+          "text": "Dela upp i Dela ut och Resultat med egna mottagarval",
+          "done": true
+        },
+        {
+          "id": "group",
+          "text": "Samla gruppresultat över klasser i en matris",
+          "done": true
+        },
+        {
+          "id": "try",
+          "text": "Simon provar i webbläsaren",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [
@@ -2141,6 +2178,21 @@
       "source": "grid-numpad",
       "target": "grid-hold-orange",
       "kind": "kräver"
+    },
+    {
+      "source": "dispatch",
+      "target": "screening-split",
+      "kind": "kräver"
+    },
+    {
+      "source": "matrix",
+      "target": "screening-split",
+      "kind": "kräver"
+    },
+    {
+      "source": "screening-split",
+      "target": "review",
+      "kind": "påverkar"
     }
   ],
   "note": "Planeringssnapshot. Lokalt klart är inte publicerat. Tidigare publicering bygger på denna tråds verifiering; ingen ny livekontroll. Förslag är inte fattade beslut."

@@ -1,4 +1,4 @@
-import { cloneElement, useEffect, useMemo, useState } from 'react'
+import { cloneElement, useEffect, useMemo, useRef, useState } from 'react'
 import AttentionModule from '../attention/AttentionModule'
 import AssignmentsPanel from './AssignmentsPanel'
 import RecipientPicker from './RecipientPicker'
@@ -26,7 +26,8 @@ import TablePracticeOverviewPanel from './TablePracticeOverviewPanel'
 import LocalTestDataPanel from './LocalTestDataPanel'
 import LocalTestDataExportPanel from './LocalTestDataExportPanel'
 import TicketSectionContainer from './TicketSectionContainer'
-import DiagnosticPilotAssignmentPanel from './DiagnosticPilotAssignmentPanel'
+import ScreeningDispatchPanel from './ScreeningDispatchPanel'
+import ScreeningResultsPanel from './ScreeningResultsPanel'
 
 import { ActivityBadge, RiskBadge } from './dashboardStatusBadges'
 import { getOperationLabel } from '../../../lib/operations'
@@ -56,6 +57,7 @@ const PANEL_DEFS = [
   { id: 'password',    title: 'Lösenordsåterställning' },
   { id: 'pausegames',  title: 'Pausspel — Highscore' },
   { id: 'ncm-grid',    title: 'Digitalt räknehäfte', adminOnly: true },
+  { id: 'ncm-results', title: 'Screeningresultat', adminOnly: true },
 ]
 
 const WORKSPACES = [
@@ -63,7 +65,8 @@ const WORKSPACES = [
   { id: 'focus', label: 'Fokusövningar', description: 'Grupp, individ och pass', panels: ['focus'], attentionOnly: true },
   { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'mathresults', 'tickets'] },
   { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality', 'pausegames'] },
-  { id: 'ncm', label: 'Screening', description: 'Screening och analys av elevens uträkning', panels: ['ncm-grid'], adminOnly: true },
+  { id: 'ncm', label: 'Screening: dela ut', description: 'Skicka frågor till klass, grupp eller elev', panels: ['ncm-grid'], adminOnly: true },
+  { id: 'ncm-results', label: 'Screening: resultat', description: 'Elevernas svar och uträkningar', panels: ['ncm-results'], adminOnly: true },
   { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management'] }
 ]
 
@@ -262,6 +265,11 @@ export default function DashboardLayout({
 
   // The class filter is hidden on Screening, so it must not pre-pick classes there.
   const screeningRecipients = recipientsFollowFilter ? [] : recipients
+  // Results have their own picks so a group chosen to read results is never also
+  // the target of the next dispatch.
+  const [resultPicks, setResultPicks] = useState([])
+  const reviewDirtyRef = useRef(false)
+  const isScreening = activeWorkspace === 'ncm' || activeWorkspace === 'ncm-results'
 
   function renderPanelContent(id) {
     if (id === 'focus') return canViewAttention ? <AttentionModule students={tableProgressStudents} allStudents={students} /> : null
@@ -489,8 +497,12 @@ export default function DashboardLayout({
           Öppna räknehäftet
         </button>
       </section>
-      <DiagnosticPilotAssignmentPanel classes={classes} students={students} recipients={screeningRecipients} teacherGroups={teacherGroups} />
+      <ScreeningDispatchPanel classes={classes} students={students} recipients={screeningRecipients} teacherGroups={teacherGroups} />
       </div>
+    )
+    if (id === 'ncm-results') return (
+      <ScreeningResultsPanel classes={classes} students={students} recipients={resultPicks} teacherGroups={teacherGroups}
+        onDirtyChange={value => { reviewDirtyRef.current = value }} />
     )
     return null
   }
@@ -533,6 +545,9 @@ export default function DashboardLayout({
               <nav className="grid gap-1" aria-label="Lärarvy">
                 {WORKSPACES.filter(workspace => (!workspace.adminOnly || teacherIsAdmin) && (!workspace.attentionOnly || canViewAttention)).map(workspace => (
                   <button key={workspace.id} type="button" onClick={() => {
+                    if (workspace.id !== activeWorkspace && reviewDirtyRef.current
+                      && !window.confirm('Genomgången har osparade ändringar. Vill du lämna dem?')) return
+                    if (workspace.id !== activeWorkspace) reviewDirtyRef.current = false
                     setActiveWorkspace(workspace.id)
                     if (workspace.id === 'focus') navigate('/teacher/focus')
                     else if (isFocusView) navigate('/teacher')
@@ -544,7 +559,7 @@ export default function DashboardLayout({
               </nav>
           </aside>
           <div className="min-w-0 flex flex-col gap-3">
-            {activeWorkspace !== 'ncm' && activeWorkspace !== 'admin' && <div className="dashboard-context-grid">
+            {!isScreening && activeWorkspace !== 'admin' && <div className="dashboard-context-grid">
             {activeWorkspace === 'progress' ? renderProgressModule('filter', 'Klassurval', classFilterPanel) : classFilterPanel}
             {activeWorkspace === 'progress'
               ? renderProgressModule('stats', 'Klassstatistik', classStatsPanel)
@@ -563,7 +578,15 @@ export default function DashboardLayout({
               <RecipientActiveOverview recipients={recipients} assignmentTargets={assignmentTargets}
                 assignments={assignments} groups={teacherGroups} students={students} />
             )}
-            {WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
+            {activeWorkspace === 'ncm-results' && (
+              <RecipientPicker classes={classes} groups={teacherGroups} students={students}
+                recipients={resultPicks} onChange={setResultPicks} />
+            )}
+            {isScreening && <>
+              <div hidden={activeWorkspace !== 'ncm'}>{renderPanelContent('ncm-grid')}</div>
+              <div hidden={activeWorkspace !== 'ncm-results'}>{renderPanelContent('ncm-results')}</div>
+            </>}
+            {!isScreening && WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
               .filter(id => visiblePanelDefs.some(panel => panel.id === id))
               .map(id => activeWorkspace === 'progress'
                 ? renderProgressModule(id, PANEL_DEFS.find(panel => panel.id === id)?.title, renderPanelContent(id))

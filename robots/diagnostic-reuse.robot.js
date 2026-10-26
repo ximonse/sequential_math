@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
-import { createTeacher, openTab, teacherLogin } from './lib/teacher.js'
+import { createTeacher, teacherLogin } from './lib/teacher.js'
+import { collectionSelect, openDispatch, openResults } from './lib/screening.js'
 
 async function teacherRequest(page, url, method = 'GET', body) {
   return page.evaluate(async ({ url, method, body }) => {
@@ -37,15 +38,16 @@ test('A stopped collection can be reused for a group, another class and one pupi
   await teacherRequest(page, '/api/teacher-diagnostic-assignments', 'PATCH', {
     classId: sourceClass, assignmentId: source.assignmentId, status: 'stopped'
   })
-  await openTab(page, 'Screening')
-  const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('..')
-  await panel.getByRole('button', { name: 'Resultat', exact: true }).click()
-  await expect(panel.getByText('Välj en klass ovan för att se utdelade samlingar och elevernas svar.', { exact: true })).toBeVisible()
-  await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(targetClass)
-  await expect(panel.getByText(/Det finns inga utdelade samlingar i den här klassen ännu/)).toBeVisible()
-  await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(sourceClass)
-  await expect(panel.getByRole('combobox', { name: 'Uppdrag att gå igenom' }).locator('option')).toContainText(['Välj uppdrag', 'Min samling'])
-  await panel.getByRole('button', { name: 'Dela ut', exact: true }).click()
+  const results = await openResults(page)
+  await expect(results.getByText('Välj mottagare överst för att se resultat.', { exact: true })).toBeVisible()
+  await openResults(page, { className: `Ny klass ${tag}` })
+  await expect(results.getByText(/Det finns inga utdelade samlingar till de valda mottagarna ännu/)).toBeVisible()
+  await openResults(page, { className: `Ny klass ${tag}` })
+  await openResults(page, { className: sourceClass })
+  await expect(collectionSelect(results).locator('option')).toContainText(['Välj samling', 'Min samling'])
+  const panel = await openDispatch(page)
+  await panel.getByText('Återanvänd en tidigare samling', { exact: true }).click()
+  await panel.getByRole('combobox', { name: 'Klass att hämta samlingar från', exact: true }).selectOption(sourceClass)
   await panel.getByRole('combobox', { name: 'Återanvänd samling', exact: true }).selectOption(source.assignmentId)
   await expect(panel.getByRole('region', { name: 'Samling att återanvända' }).locator('li')).toHaveCount(3)
   const picker = page.locator('[data-recipient-picker]')

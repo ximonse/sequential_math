@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
-import { createTeacher, openTab, teacherLogin } from './lib/teacher.js'
+import { createTeacher, teacherLogin } from './lib/teacher.js'
+import { openResults } from './lib/screening.js'
 
 test('A pupil saves symbolic answers with and without a grid and the teacher receives the originals', async ({ page, request, browser }) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -40,10 +41,9 @@ test('A pupil saves symbolic answers with and without a grid and the teacher rec
   await expect(answer).toHaveValue('−25%')
   await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
   await expect(student).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
-  await openTab(page, 'Screening')
-  const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('..')
-  await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(classId)
-  await panel.getByRole('combobox', { name: 'Elev', exact: true }).selectOption(pupil.studentId)
+  const panel = await openResults(page, { className: classId })
+  await panel.getByText('Sparade försök för en elev', { exact: true }).click()
+  await panel.getByRole('combobox', { name: 'Elev', exact: true }).selectOption({ index: 1 })
   const evidence = panel.getByRole('region', { name: 'Diagnostiskt elevunderlag' })
   const buttons = panel.getByRole('button', { name: 'Visa underlag', exact: true })
   await expect(buttons).toHaveCount(2)

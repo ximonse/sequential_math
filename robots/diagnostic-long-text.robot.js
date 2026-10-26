@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
-import { openTab, teacherLogin } from './lib/teacher.js'
+import { teacherLogin } from './lib/teacher.js'
+import { collectionSelect, openResults, reviewOf } from './lib/screening.js'
 
 const prompt = 'Lisa har 248 kulor och ger bort några till sin bror. Sedan köper hon 35 nya kulor och har då 199 kulor. '
   + 'Hur många kulor gav Lisa bort till sin bror? Förklara hur du tänker, steg för steg, och visa gärna med en bild eller en uträkning '
@@ -43,12 +44,9 @@ test('Long written questions and long answers are fully visible to pupil and tea
   expect(await field.evaluate(clipped)).toBe(false)
   await context.close()
 
-  await openTab(page, 'Screening')
-  const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('xpath=..')
-  await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(classId)
-  await panel.getByRole('button', { name: 'Resultat', exact: true }).click()
-  const review = panel.getByRole('region', { name: 'Klassgenomgång', exact: true })
-  await review.getByRole('combobox', { name: 'Uppdrag att gå igenom', exact: true }).selectOption({ index: 1 })
+  const results = await openResults(page, { className: classId })
+  await collectionSelect(results).selectOption({ index: 1 })
+  const review = reviewOf(results)
   const cell = review.locator('tbody button').first()
   await expect(cell).toContainText('…')
   await cell.hover()

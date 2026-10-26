@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
-import { teacherLogin, openTab, sendScreening } from './lib/teacher.js'
+import { teacherLogin, sendScreening } from './lib/teacher.js'
+import { collectionSelect, openDispatch, openResults, reviewOf } from './lib/screening.js'
 
 test('Admin reviews a class with submitted, ongoing and unopened work; notes survive retries and competing edits', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -10,13 +11,11 @@ test('Admin reviews a class with submitted, ongoing and unopened work; notes sur
   for (const name of ['NCM review A', 'NCM review B', 'NCM review C']) pupils.push(await createPupil(request, { name, classId, className }))
   const teacher = await (await request.post('/__robot/teacher', { data: { id: `review-admin-${tag}`, classIds: [classId], role: 'super_admin' } })).json()
   await teacherLogin(page, teacher)
-  await openTab(page, 'Screening')
-  const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('xpath=..')
-  await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(classId)
+  const panel = await openDispatch(page)
   await panel.getByRole('combobox', { name: 'Diagnospaket', exact: true }).selectOption('written-addition')
   await sendScreening(page, { className })
-  await panel.getByRole('button', { name: 'Resultat', exact: true }).click()
-  const assignmentId = await panel.getByRole('combobox', { name: 'Uppdrag att gå igenom', exact: true }).locator('option').nth(1).getAttribute('value')
+  const results = await openResults(page, { className })
+  const assignmentId = await collectionSelect(results).locator('option').nth(1).getAttribute('value')
   const contexts = []
   const studentPages = []
   for (const pupil of pupils.slice(0, 2)) {
@@ -32,8 +31,8 @@ test('Admin reviews a class with submitted, ongoing and unopened work; notes sur
   studentPages[0].once('dialog', dialog => dialog.accept())
   await studentPages[0].getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
   await expect(studentPages[0]).toHaveURL(new RegExp(`/student/${pupils[0].studentId}$`))
-  const review = panel.getByRole('region', { name: 'Klassgenomgång', exact: true })
-  await review.getByRole('combobox', { name: 'Uppdrag att gå igenom', exact: true }).selectOption(assignmentId)
+  await collectionSelect(results).selectOption(assignmentId)
+  const review = reviewOf(results)
   const rows = review.getByRole('row')
   await expect(rows).toHaveCount(5)
   await expect(rows.filter({ hasText: 'NCM review A' })).toContainText('6 / 6')
@@ -59,7 +58,7 @@ test('Admin reviews a class with submitted, ongoing and unopened work; notes sur
   await studentPages[1].locator('input[data-cell="0:0"]').press('7')
   await expect(studentPages[1].getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
   await review.getByRole('button', { name: 'Stäng genomgång', exact: true }).click()
-  await review.getByRole('button', { name: 'Uppdatera klassöversikt', exact: true }).click()
+  await review.getByRole('button', { name: 'Uppdatera översikt', exact: true }).click()
   await expect(rows.filter({ hasText: 'NCM review B' }).getByRole('cell').last()).toHaveText('0 / 6')
   await review.getByRole('button', { name: /NCM review B, Räkna ut 268/ }).click()
   await expect(form.getByText('Eleven har ändrat underlaget sedan föregående genomgång.')).toBeVisible()

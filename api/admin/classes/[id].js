@@ -9,7 +9,10 @@ import { classOperationsAreValid, normalizeClassOperations } from '../../../src/
 import { STANDARD_OPERATIONS } from '../../../src/lib/operations.js'
 
 async function syncTeacherAssignments(classId, beforeIds, afterIds) {
+  // Only teachers whose class membership changes are revalidated; a teacher who
+  // stays on the class (for instance the administrator saving it) keeps their session.
   const affected = [...new Set([...beforeIds, ...afterIds])]
+    .filter(teacherId => beforeIds.includes(teacherId) !== afterIds.includes(teacherId))
   await Promise.all(affected.map(async teacherId => {
     const account = await kv.get(`teacher_account:${teacherId}`)
     if (!account) return

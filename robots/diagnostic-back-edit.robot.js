@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
-import { openTab, teacherLogin } from './lib/teacher.js'
+import { teacherLogin } from './lib/teacher.js'
+import { collectionSelect, openResults } from './lib/screening.js'
 
 async function assignThree(page, request, name) {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -36,9 +37,8 @@ test('Ending a screening hands in every started answer, even without the pupil s
   await student.getByRole('button', { name: 'Skriv 4', exact: true }).click()
   await expect(student.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
 
-  await openTab(page, 'Screening')
-  const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('xpath=..')
-  await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(classId)
+  const panel = await openResults(page, { className: classId })
+  await collectionSelect(panel).selectOption({ index: 1 })
   page.once('dialog', dialog => dialog.accept())
   await panel.getByRole('button', { name: 'Avsluta', exact: true }).click()
   await expect(panel.getByText('2 påbörjade svar lämnades in.')).toBeVisible()

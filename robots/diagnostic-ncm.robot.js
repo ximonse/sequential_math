@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
-import { openTab, sendScreening, teacherLogin } from './lib/teacher.js'
+import { sendScreening, teacherLogin } from './lib/teacher.js'
+import { collectionSelect, openDispatch, openResults, reviewOf } from './lib/screening.js'
 
 test('An NCM Diamant booklet is marked against its facit and shows NCM analysis to the teacher', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -10,10 +11,7 @@ test('An NCM Diamant booklet is marked against its facit and shows NCM analysis 
     id: `ncm-admin-${tag}`, classIds: [classId], role: 'super_admin'
   } })).json()
   await teacherLogin(page, teacher)
-  await openTab(page, 'Screening')
-  const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('xpath=..')
-  await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(classId)
-  await panel.getByRole('combobox', { name: 'Elev', exact: true }).selectOption(pupil.studentId)
+  const panel = await openDispatch(page)
   await panel.getByRole('combobox', { name: 'Diagnospaket', exact: true }).selectOption({ label: 'NCM · + och − · 8 uppgifter' })
   await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('NCM plus minus')
   await expect(panel.getByText(/Uppgifter ur NCM:s Diamant-diagnoser/)).toBeVisible()
@@ -39,9 +37,9 @@ test('An NCM Diamant booklet is marked against its facit and shows NCM analysis 
   await student.screenshot({ path: testInfo.outputPath('ncm-pupil.png'), fullPage: true })
   await context.close()
 
-  await panel.getByRole('button', { name: 'Resultat', exact: true }).click()
-  const review = panel.getByRole('region', { name: 'Klassgenomgång', exact: true })
-  await review.getByRole('combobox', { name: 'Uppdrag att gå igenom', exact: true }).selectOption({ index: 1 })
+  const results = await openResults(page, { pupilName: 'NCM Diamant' })
+  await collectionSelect(results).selectOption({ index: 1 })
+  const review = reviewOf(results)
   const cells = review.locator('tbody button')
   await expect(cells.nth(0)).toHaveAccessibleName(/svar 93, Rätt svar/)
   await expect(cells.nth(1)).toHaveAccessibleName(/svar 65, Fel svar/)

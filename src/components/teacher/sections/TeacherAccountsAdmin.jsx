@@ -3,10 +3,13 @@ import { getTeacherRoleLabel } from '../../../lib/teacherRoles'
 import { isTeacherSuperAdmin } from '../../../lib/teacherAuth'
 import { useSchools } from './SchoolControls'
 import { apiFetch } from './adminApi'
+import {
+  applyClassChanges, assignedClassIds, selectableClassesForTeacher, teacherClassChanges
+} from './teacherClassAssignmentHelpers'
 
 const EMPTY_FORM = { username: '', displayName: '', password: '', role: 'teacher', schoolIds: [] }
 
-export default function TeachersTab({ teachers, onRefresh, setStatus }) {
+export default function TeachersTab({ teachers, classes = [], onRefresh, setStatus }) {
   const directory = useSchools()
   const canManageRoles = isTeacherSuperAdmin()
   const [form, setForm] = useState(EMPTY_FORM)
@@ -81,7 +84,7 @@ export default function TeachersTab({ teachers, onRefresh, setStatus }) {
           <tbody>
             {teachers.length === 0 && <tr><td colSpan={5} className="py-2 text-gray-400">Inga konton att visa.</td></tr>}
             {teachers.map(teacher => (
-              <TeacherRow key={teacher.id} teacher={teacher} schools={directory.schools}
+              <TeacherRow key={teacher.id} teacher={teacher} schools={directory.schools} classes={classes}
                 canManageRoles={canManageRoles} onDelete={handleDelete} onRefresh={onRefresh} setStatus={setStatus} />
             ))}
           </tbody>
@@ -104,17 +107,37 @@ function SchoolAssignments({ schools, selected, onChange }) {
           </label>
         ))}
       </div>
-      <p className="mt-1 text-[10px] text-gray-500">Klassansvar väljs under Klasser.</p>
+      <p className="mt-1 text-[10px] text-gray-500">Klassansvar för en lärare väljs vid redigering av läraren, eller per klass under Klasser.</p>
     </div>
   )
 }
 
-function TeacherRow({ teacher, schools, canManageRoles, onDelete, onRefresh, setStatus }) {
+function ClassAssignments({ classes, selected, onChange }) {
+  return (
+    <div>
+      <p className="text-gray-600">Klassansvar</p>
+      <div className="mt-1 flex flex-wrap gap-2">
+        {classes.map(classRecord => (
+          <label key={classRecord.id} className="flex cursor-pointer items-center gap-1">
+            <input type="checkbox" checked={selected.includes(String(classRecord.id))}
+              onChange={event => onChange(event.target.checked
+                ? [...selected, String(classRecord.id)] : selected.filter(id => id !== String(classRecord.id)))} />
+            {classRecord.name}{classRecord.archived ? ' (arkiverad)' : ''}
+          </label>
+        ))}
+        {classes.length === 0 && <span className="text-gray-400">Inga klasser att välja. Kryssa först i en skola.</span>}
+      </div>
+    </div>
+  )
+}
+
+function TeacherRow({ teacher, schools, classes, canManageRoles, onDelete, onRefresh, setStatus }) {
   const [editing, setEditing] = useState(false)
   const [displayName, setDisplayName] = useState(teacher.displayName || '')
   const [newPassword, setNewPassword] = useState('')
   const [schoolIds, setSchoolIds] = useState(teacher.schoolIds || [])
   const [role, setRole] = useState(teacher.role || 'teacher')
+  const [classIds, setClassIds] = useState(() => assignedClassIds(classes, teacher.id))
   const [busy, setBusy] = useState(false)
   const schoolNames = (teacher.schoolIds || []).map(id => schools.find(school => school.id === id)?.name || id).join(', ') || '—'
 
@@ -123,18 +146,28 @@ function TeacherRow({ teacher, schools, canManageRoles, onDelete, onRefresh, set
     const body = { displayName, schoolIds }
     if (newPassword.length >= 6) body.password = newPassword
     if (canManageRoles) body.role = role
+    // Removals go first and additions last: the account API refuses to drop a
+    // school while its classes are still assigned, and the class API refuses a
+    // teacher who is not yet in the class school.
+    const changes = teacherClassChanges({ classes, teacherId: teacher.id, selectedClassIds: classIds })
+    const failed = await applyClassChanges(changes.filter(change => !change.adds))
     const { ok, data } = await apiFetch('/api/admin/teachers/' + teacher.id, {
       method: 'PUT',
       body: JSON.stringify(body)
     })
+    if (ok) failed.push(...await applyClassChanges(changes.filter(change => change.adds)))
     setBusy(false)
-    if (ok) {
-      setStatus('✓ Konto uppdaterat')
+    if (ok && failed.length === 0) {
+      setStatus('✓ Konto uppdaterat' + (changes.length ? ' och klassansvar sparat (' + changes.length + ' klasser ändrade)' : ''))
       setEditing(false)
       setNewPassword('')
       onRefresh()
+    } else if (ok) {
+      setStatus('Kontot sparades men dessa klasser gick inte: ' + failed.map(item => item.name + ' (' + item.error + ')').join('; '))
+      onRefresh()
     } else {
       setStatus(data?.error || 'Kunde inte uppdatera kontot')
+      if (changes.some(change => !change.adds)) onRefresh()
     }
   }
 
@@ -145,6 +178,8 @@ function TeacherRow({ teacher, schools, canManageRoles, onDelete, onRefresh, set
         <input value={displayName} onChange={event => setDisplayName(event.target.value)}
           className="w-full rounded border px-2 py-1" placeholder="Visningsnamn" />
         <SchoolAssignments schools={schools} selected={schoolIds} onChange={setSchoolIds} />
+        <ClassAssignments classes={selectableClassesForTeacher(classes, { ...teacher, role }, schoolIds)}
+          selected={classIds} onChange={setClassIds} />
         {canManageRoles && (
           <select value={role} onChange={event => setRole(event.target.value)} className="w-full rounded border px-1.5 py-0.5">
             <option value="teacher">Lärare</option><option value="school_admin">Skoladministratör</option>

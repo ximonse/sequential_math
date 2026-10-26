@@ -1433,6 +1433,75 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "teacher-class-bulk",
+      "area": "Administration",
+      "title": "Dela flera klasser till en lärare samtidigt",
+      "status": "Lokalt klart",
+      "purpose": "Huvudadmin ska kunna ge en lärare ansvar för flera klasser i ett steg i stället för att öppna varje klass för sig.",
+      "next": "Provkör som huvudadmin mot riktiga konton; publicering kräver Simons push.",
+      "acceptance": "Redigera lärare visar klassansvar med kryssrutor; en sparning ändrar flera klasser. Andra lärares ansvar och sessioner påverkas inte.",
+      "decision": "2026-10-26: Simon beställer klassval per lärare. Samma dag tas knappen Äldre inloggningar bort och modulen Äldre elevinloggningar färgas adminorange.",
+      "evidence": "2026-10-26: Knappen Äldre inloggningar i lärarheadern borttagen (gjorde inget utanför fliken Klasser och elever). Modulen Äldre elevinloggningar färgad orange. Riktad ESLint på ändrade filer: endast tre äldre oanvända-variabelfel i dashboardClassAndAuthActions.js. Lärarvyns testfiler 150/490 godkända. Ingen browserkontroll, ingen push.\n2026-10-26 klassansvar: Klassval per lärare i Redigera lärare (teacherClassAssignmentHelpers.js, TeacherAccountsAdmin.jsx). Borttagningar sparas före kontot och tillägg efter, eftersom kontot-API:t och klass-API:t kräver motsatt ordning för skolor. Ny robot teacher-class-bulk.robot.js: tre klasser i en sparning, återläsning efter omladdning, en klass avmarkerad. Roboten hittade att klass-API:t höjde sessionVersion för alla lärare på klassen, inklusive adminen som sparade, så andra klassen fick Admin access required; syncTeacherAssignments rör nu bara lärare vars medlemskap ändras. 6 nya enhetstester. Lärarvyn 151 filer/496 tester och klass-/lärarrobotar 5/5 godkända; hela suiten 993/994 filer, felet ligger i inbäddad .claude/worktrees-kopia. Build godkänd. Begränsning: när en admin ger sig själv klasser höjs den egna sessionen vid första klassen och resten kan falla; ej löst. Ingen browserkontroll av utseendet, ingen push.",
+      "issue": "",
+      "kind": "funktion",
+      "requires": [],
+      "affects": [],
+      "tasks": [
+        {
+          "id": "cleanup",
+          "text": "Ta bort Äldre inloggningar-knappen och färga modulen",
+          "done": true
+        },
+        {
+          "id": "bulk",
+          "text": "Klassval per lärare i Redigera lärare",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "screening-split",
+      "area": "Dela ut",
+      "title": "Dela ut och Resultat som två lägen, gruppresultat samlat",
+      "status": "Lokalt klart",
+      "purpose": "Läraren ska inte blanda ihop att dela ut och att läsa svar. Resultat ska gå att läsa för klass, grupp eller elev, och en grupp över flera klasser ska ses i en tabell.",
+      "next": "Publicera den avgränsade releasekandidaten via GitHub och verifiera rätt commit i sekvens och på matematik.ximon.se.",
+      "acceptance": "Två lägen i vänstermenyn med egna mottagarval. Dela ut visar paket, hopfällda uppgifter och Skicka. Resultat väljer mottagare som Dela ut och visar en grupp över flera klasser i en matris med bara gruppens elever. Resultatval påverkar aldrig nästa utdelning.",
+      "decision": "2026-10-26: Simon beställer uppdelningen och att gruppresultat ska ses samlat. Samlingar i olika klasser kopplas ihop på samma namn och frågor skapade inom tio minuter, eftersom servern inte länkar dem.",
+      "evidence": "2026-10-26 lokalt: ScreeningDispatchPanel, ScreeningResultsPanel, ScreeningTaskChoices, ScreeningPupilAttempts, DiagnosticCollectionReview och screeningCollections.js ersätter DiagnosticPilotAssignmentPanel och DiagnosticClassReviewPanel. Elevens sparade försök och Avsluta/Lämna in pågående ligger i Resultat. Obekräftad genomgång varnar även vid byte av arbetsläge. 8 nya enhetstester för sammanslagning, filter och gruppering. Ny robot screening-group-results (grupp över två klasser, en tabell, cell ur andra klassen öppnas, resultatval läcker inte till utdelning). Alla 12 diagnostic-robotar ändrade till nya lägen via robots/lib/screening.js. Hela robotsviten 140/144 vid första körning; tre svarade ECONNRESET/timeout i servern och passerade vid omkörning, en (diagnostic-grid) bröts av att knappnamnet Screening nu är två och rättades. Vitest 799 filer/3771 tester och build godkända; lint ger samma 8 äldre fel som innan. Ingen skärmbildsgranskning, ingen push.\n2026-10-26 browsergranskning och rättning: Två reproducerade fel: öppnad matris följde inte elev/gruppbyte inom samma klass, och nya utdelningar saknades efter återgång till Resultat. Matrisen filtreras nu från hämtade klassunderlag vid varje urvalsändring; samlingslistan hämtas när Resultat aktiveras. Ny robot blir först röd (1 rad i stället för 2) och verifierar elev–grupp–elev samt ny utdelning. Därefter manuellt verifierat i Chrome med syntetisk Stödgrupp demo: Alva och Bruno syns direkt efter gruppval; Kontroll två visas direkt i samlingslistan. 169 testfiler/819 tester och build godkända. Riktad ESLint och arkitekturkontroll godkända. DashboardLayout är nu 600 rader; en explicit active-prop till befintlig resultatpanel är fortsatt shellansvar och motiverar ingen större omstrukturering i detta felrättningssjok. Bred robotsvit pågår. Ingen push ännu.\nSlutkontroll lokalt: bred robotsvit 141/145; tre timeout/ECONNRESET och ett fokus-sparfall föll. Samtliga fyra passerade på ren server vid sekventiell omkörning (4/4). Ingen helt grön bred körning påstås. Alla screening-, klassansvars- och nya regressionsfall passerade i bred körning. Publicering förbereds avgränsat utan tidigare räknehäftsändringar.\nAvgränsad release från origin/master a8a9c2c: bara screening/administration och rättningarna; src/dev, domäner och elevens sessionskod är oförändrade. Releasekandidaten har 169 testfiler/816 godkända tester, godkänt bygge, projektkarta och arkitektur. Browserkontrollerna körs med den befintliga produktionsversionens manuella Startsida-navigering efter inlämning. Tidigare lokala räknehäftsändringar ingår inte i releasen.\nReleasekandidatens riktade browserkontroller: 24 unika fall godkända över körningarna, inklusive utdelning till klass/grupp/elev, grupp över klasser, urvalsbyte, nya utdelningar, återanvändning, sparade anteckningar, elevåterkoppling, klassansvar och befintligt räknehäfte.",
+      "issue": "",
+      "kind": "funktion",
+      "requires": [
+        "dispatch",
+        "matrix"
+      ],
+      "affects": [
+        "review"
+      ],
+      "tasks": [
+        {
+          "id": "split",
+          "text": "Dela upp i Dela ut och Resultat med egna mottagarval",
+          "done": true
+        },
+        {
+          "id": "group",
+          "text": "Samla gruppresultat över klasser i en matris",
+          "done": true
+        },
+        {
+          "id": "try",
+          "text": "Simon provar i webbläsaren",
+          "done": false
+        },
+        {
+          "id": "refresh-results",
+          "text": "Resultat följer elev/gruppbyte och visar nya utdelningar vid återgång",
+          "done": true
+        }
+      ]
     }
   ],
   "edges": [
@@ -1968,6 +2037,21 @@
     },
     {
       "source": "reuse-collections",
+      "target": "review",
+      "kind": "påverkar"
+    },
+    {
+      "source": "dispatch",
+      "target": "screening-split",
+      "kind": "kräver"
+    },
+    {
+      "source": "matrix",
+      "target": "screening-split",
+      "kind": "kräver"
+    },
+    {
+      "source": "screening-split",
       "target": "review",
       "kind": "påverkar"
     }

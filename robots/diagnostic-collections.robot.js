@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
-import { teacherLogin, openTab, sendScreening } from './lib/teacher.js'
+import { teacherLogin, sendScreening } from './lib/teacher.js'
+import { collectionSelect, openDispatch, openResults, reviewOf } from './lib/screening.js'
 
 test('R2/R3: autosave does not freeze; navigation preserves work and submission covers the collection', async ({ page, request }) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -90,11 +91,9 @@ test('Teacher assigns a written answer with saved drawing; eraser and explicit f
     id: `writing-admin-${tag}`, classIds: [classId], role: 'super_admin'
   } })).json()
   await teacherLogin(page, teacher)
-  await openTab(page, 'Screening')
-  const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('xpath=..')
-  await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(classId)
-  await panel.getByRole('combobox', { name: 'Elev', exact: true }).selectOption(pupil.studentId)
+  const panel = await openDispatch(page)
   await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Skriv – förklara')
+  await panel.getByText('Välj uppgifter en och en', { exact: true }).click()
   const choices = panel.locator('fieldset').first().getByRole('checkbox')
   for (const choice of await choices.all()) await choice.uncheck()
   await panel.getByText('Lägg till egen skrivfråga', { exact: true }).click()
@@ -131,12 +130,14 @@ test('Teacher assigns a written answer with saved drawing; eraser and explicit f
   await student.screenshot({ path: testInfo.outputPath('written-drawing-ipad.png'), fullPage: true })
   await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
   await expect(student.getByText('Samlingen är inlämnad.')).toBeVisible()
-  await panel.getByRole('button', { name: 'Uppdatera försök', exact: true }).click()
-  await panel.getByRole('button', { name: 'Visa underlag', exact: true }).click()
-  await expect(panel.getByText(/^Slutsvar: En tia blir tio ental/)).toBeVisible()
-  await panel.getByRole('button', { name: 'Resultat', exact: true }).click()
-  const review = panel.getByRole('region', { name: 'Klassgenomgång', exact: true })
-  await review.getByRole('combobox', { name: 'Uppdrag att gå igenom', exact: true }).selectOption({ index: 1 })
+  const results = await openResults(page, { pupilName: 'Collections B' })
+  await results.getByText('Sparade försök för en elev', { exact: true }).click()
+  await results.getByRole('combobox', { name: 'Elev', exact: true }).selectOption({ label: 'Collections B' })
+  await results.getByRole('button', { name: 'Uppdatera försök', exact: true }).click()
+  await results.getByRole('button', { name: 'Visa underlag', exact: true }).click()
+  await expect(results.getByText(/^Slutsvar: En tia blir tio ental/)).toBeVisible()
+  await collectionSelect(results).selectOption({ index: 1 })
+  const review = reviewOf(results)
   await review.getByRole('button', { name: /Förklara hur du växlar/ }).click()
   const form = review.getByRole('form', { name: 'Lärarens genomgång', exact: true })
   await form.getByRole('textbox', { name: 'Läraranteckning', exact: true }).fill('PRIVATE INTERNAL NOTE')

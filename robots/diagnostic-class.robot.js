@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
 import { teacherLogin, openTab, sendScreening } from './lib/teacher.js'
+import { openDispatch } from './lib/screening.js'
 
 test('An admin assigns one diagnostic to the whole selected class and each pupil receives it', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -13,11 +14,9 @@ test('An admin assigns one diagnostic to the whole selected class and each pupil
     id: `class-admin-${tag}`, classIds: [classId], role: 'super_admin'
   } })).json()
   await teacherLogin(page, teacher)
-  await openTab(page, 'Screening')
-  const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('xpath=..')
-  await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(classId)
-  await expect(panel.getByRole('combobox', { name: 'Elev', exact: true })).toHaveValue('')
+  const panel = await openDispatch(page)
   await panel.getByRole('combobox', { name: 'Diagnospaket', exact: true }).selectOption('written-addition')
+  await panel.getByText('Välj uppgifter en och en', { exact: true }).click()
   await expect(panel.locator('fieldset').first().getByRole('checkbox', { checked: true })).toHaveCount(6)
   await expect(panel.getByText(/Valda uppgifter: 6/)).toBeVisible()
   await sendScreening(page, { className })
@@ -38,6 +37,7 @@ test('An admin assigns one diagnostic to the whole selected class and each pupil
         if (index < 5) await student.getByRole('button', { name: 'Nästa fråga', exact: true }).click()
       }
       await expect(student.getByRole('button', { name: 'Nästa fråga', exact: true })).toBeDisabled()
+      await expect(student.getByRole('button', { name: 'Lämna in svaren', exact: true })).toBeEnabled()
     }
     await context.close()
   }

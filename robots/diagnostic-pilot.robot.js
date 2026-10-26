@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
-import { openTab, sendScreening, teacherLogin } from './lib/teacher.js'
+import { sendScreening, teacherLogin } from './lib/teacher.js'
+import { openDispatch, openResults } from './lib/screening.js'
 import { readFileSync } from 'node:fs'
 const manifest = JSON.parse(readFileSync(new URL('../src/domains/arithmetic/diagnosticTasks.v1.json', import.meta.url), 'utf8'))
 test.describe.configure({ mode: 'serial' })
@@ -84,12 +85,8 @@ test('An isolated test pupil can receive, save and resume a diagnostic grid', as
   } })).json()
 
   await teacherLogin(page, teacher)
-  await openTab(page, 'Screening')
+  await openDispatch(page)
   await expect(page.getByText(/Det sparas separat från vanlig träning/)).toBeVisible()
-  const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('xpath=..')
-  await panel.getByRole('combobox', { name: 'Klass' }).selectOption(classId)
-  await expect(panel.getByRole('combobox', { name: 'Elev' }).locator('option')).toHaveCount(2)
-  await panel.getByRole('combobox', { name: 'Elev' }).selectOption(pupil.studentId)
   // The class also has a pupil outside the test list, so the whole class is refused up front.
   const picker = page.locator('[data-recipient-picker]')
   await picker.getByRole('button', { name: className, exact: true }).click()
@@ -116,10 +113,13 @@ test('An isolated test pupil can receive, save and resume a diagnostic grid', as
   await studentPage.reload()
   await expect(studentPage.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 8/)
 
-  await panel.getByRole('button', { name: 'Uppdatera försök' }).click()
-  await expect(panel.getByRole('button', { name: 'Visa underlag' })).toBeVisible()
-  await panel.getByRole('button', { name: 'Visa underlag' }).click()
-  const evidence = panel.getByRole('region', { name: 'Diagnostiskt elevunderlag' })
+  const results = await openResults(page, { pupilName: 'Robot NCM' })
+  await results.getByText('Sparade försök för en elev', { exact: true }).click()
+  await results.getByRole('combobox', { name: 'Elev', exact: true }).selectOption({ label: 'Robot NCM' })
+  await results.getByRole('button', { name: 'Uppdatera försök' }).click()
+  await expect(results.getByRole('button', { name: 'Visa underlag' })).toBeVisible()
+  await results.getByRole('button', { name: 'Visa underlag' }).click()
+  const evidence = results.getByRole('region', { name: 'Diagnostiskt elevunderlag' })
   // One digit now records both the write and its automatic cursor move.
   await expect(evidence.getByText(/Sparad elevrevision 1 · 2 händelser/)).toBeVisible()
   await expect(evidence.getByRole('gridcell', { name: /rad 1, kolumn 1, 8/ })).toBeVisible()

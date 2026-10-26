@@ -1438,6 +1438,37 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "answer-minus-target",
+      "area": "Elevarbete",
+      "title": "Minustecken ska stanna i vald svarsruta",
+      "status": "Saknas",
+      "purpose": "Göra det möjligt att skriva negativa slutsvar med den synliga minusknappen utan att inmatningen flyttar till rutnätet.",
+      "next": "Återskapa med klickrobot och rätta minusknappens målval inom separat implementationsuppdrag.",
+      "acceptance": "Mitt svar vald: minus följt av 2 och 5 ger −25 i svarsrutan; rutnätet ändras inte och fortsatt inmatning går till svaret. Negativa decimaler, tangentbord och ± fungerar. Minus i uttryckligt valt rutnät fungerar som tidigare.",
+      "requires": [
+        "grid-numpad"
+      ],
+      "affects": [
+        "workspace-answer-types"
+      ],
+      "decision": "2026-10-26: Simon bad om en issue. Endast felrapport och projektkarta i detta sjok; inget implementations- eller publiceringsmandat.",
+      "evidence": "2026-10-26: GitHub issue #14 skapad. Kodgranskning: NotebookTools skickar minus via onSign till writeOperationSign, som väljer inputTarget grid och fokuserar rutan. Svarsformatet tillåter redan negativa tal; keypad har svarshantering för ±. Ingen ny webbläsarreproduktion, rättning, tester eller publicering gjord.",
+      "issue": "https://github.com/ximonse/sequential_math/issues/14",
+      "kind": "deluppgift",
+      "tasks": [
+        {
+          "id": "answer-minus-reproduce",
+          "text": "Reproducera fokus-/målbytet med klickrobot före rättning.",
+          "done": false
+        },
+        {
+          "id": "answer-minus-fix",
+          "text": "Rätta målvalet och verifiera negativa svar samt oförändrat rutnät.",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [
@@ -1974,6 +2005,16 @@
     {
       "source": "reuse-collections",
       "target": "review",
+      "kind": "påverkar"
+    },
+    {
+      "source": "grid-numpad",
+      "target": "answer-minus-target",
+      "kind": "kräver"
+    },
+    {
+      "source": "answer-minus-target",
+      "target": "workspace-answer-types",
       "kind": "påverkar"
     }
   ],

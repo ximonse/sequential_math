@@ -502,6 +502,7 @@ export default function DashboardLayout({
     )
     if (id === 'ncm-results') return (
       <ScreeningResultsPanel classes={classes} students={students} recipients={resultPicks} teacherGroups={teacherGroups}
+        active={activeWorkspace === 'ncm-results'}
         onDirtyChange={value => { reviewDirtyRef.current = value }} />
     )
     return null

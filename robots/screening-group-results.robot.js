@@ -61,3 +61,36 @@ test('A group across two classes is read as one table, and result picks stay out
   for (const context of contexts) await context.close()
   void cleo
 })
+
+test('Result rows follow same-class recipient changes and new dispatches appear on return', async ({ page, request }) => {
+  const tag = Math.random().toString(36).slice(2, 8)
+  const classId = `refresh-${tag}`
+  const className = `Refresh ${tag}`
+  const first = await createPupil(request, { name: 'Filter One', classId, className })
+  const second = await createPupil(request, { name: 'Filter Two', classId, className })
+  const teacher = await createTeacher(request, { classIds: [classId], role: 'super_admin' })
+  const group = (await (await request.post('/__robot/group', { data: {
+    name: `Refresh group ${tag}`, pupilIds: [first.studentId, second.studentId], teacherIds: [teacher.username]
+  } })).json()).group
+  await teacherLogin(page, teacher)
+  const dispatch = await openDispatch(page)
+  await dispatch.getByRole('textbox', { name: 'Samlingens namn' }).fill('First collection')
+  const picker = page.locator('[data-recipient-picker]')
+  await picker.getByRole('button', { name: className, exact: true }).click()
+  await dispatch.getByRole('button', { name: 'Ge till valda mottagare (1 screening)', exact: true }).click()
+  await expect(dispatch.getByText(/^Screening skapad för /)).toBeVisible()
+  const results = await openResults(page, { pupilName: 'Filter One' })
+  await collectionSelect(results).selectOption({ index: 1 })
+  const rows = reviewOf(results).locator('tbody tr')
+  await expect(rows).toHaveCount(1)
+  await picker.getByRole('button', { name: `Grupp: ${group.name}`, exact: true }).click()
+  await expect(rows).toHaveCount(2)
+  await picker.getByRole('button', { name: `Grupp: ${group.name}`, exact: true }).click()
+  await expect(rows).toHaveCount(1)
+  await openDispatch(page)
+  await dispatch.getByRole('textbox', { name: 'Samlingens namn' }).fill('Second collection')
+  await dispatch.getByRole('button', { name: 'Ge till valda mottagare (1 screening)', exact: true }).click()
+  await expect(dispatch.getByRole('button', { name: 'Ge till valda mottagare (1 screening)', exact: true })).toBeEnabled()
+  await openResults(page)
+  await expect(collectionSelect(results).locator('option')).toContainText(['Välj samling', 'Second collection', 'First collection'])
+})

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { diagnosticRequest } from './diagnosticRequest'
 import DiagnosticEvidenceDetails from './DiagnosticEvidenceDetails'
 import DiagnosticScreeningMatrix from './DiagnosticScreeningMatrix'
@@ -8,7 +8,8 @@ import { mergeOverviews } from './screeningCollections'
 // `members` are the assignments to read, `isAllowed(classId, studentId)` keeps
 // only the pupils the picked recipients cover.
 export default function DiagnosticCollectionReview({ members, isAllowed, name, onDirtyChange }) {
-  const [overview, setOverview] = useState(null)
+  const [parts, setParts] = useState([])
+  const overview = useMemo(() => mergeOverviews(parts, isAllowed), [parts, isAllowed])
   const [itemId, setItemId] = useState('')
   const [detail, setDetail] = useState(null)
   const [message, setMessage] = useState('Hämtar status...')
@@ -31,7 +32,7 @@ export default function DiagnosticCollectionReview({ members, isAllowed, name, o
 
   useEffect(() => {
     let active = true
-    setOverview(null)
+    setParts([])
     setMessage('Hämtar status...')
     void Promise.all(members.map(async ({ classId, assignmentId }) => {
       const search = new URLSearchParams({ classId, assignmentId })
@@ -40,15 +41,16 @@ export default function DiagnosticCollectionReview({ members, isAllowed, name, o
       return { classId, assignmentId, overview: result.data }
     })).then(parts => {
       if (!active) return
-      const merged = mergeOverviews(parts, isAllowed)
-      setOverview(merged)
+      const merged = mergeOverviews(parts)
+      setParts(parts)
       setItemId(previous => merged.items.some(item => item.assignmentItemId === previous) ? previous : merged.items[0]?.assignmentItemId || '')
       setMessage(merged.mismatched.length
         ? 'Några klasser har andra frågor och visas inte i tabellen. Öppna dem var för sig.'
         : 'Status från servern. Klicka Uppdatera översikt för att hämta nya inlämningar.')
     }).catch(error => { if (active) setMessage(error.message) })
     return () => { active = false }
-    // memberKey stands for members; isAllowed changes only with the picked recipients.
+    // Fetch only when assignments change; recipient filtering is derived above
+    // from the complete class responses and updates without another request.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [memberKey, refresh])
 

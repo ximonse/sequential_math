@@ -1596,10 +1596,10 @@
       "title": "Dela ut och Resultat som två lägen, gruppresultat samlat",
       "status": "Lokalt klart",
       "purpose": "Läraren ska inte blanda ihop att dela ut och att läsa svar. Resultat ska gå att läsa för klass, grupp eller elev, och en grupp över flera klasser ska ses i en tabell.",
-      "next": "Simon provar lägena Screening: dela ut och Screening: resultat i webbläsaren; publicering kräver hans push.",
+      "next": "Slutför bred robotsvit och publicera via GitHub efter godkända kontroller; verifiera sekvens och produktionsdomänen.",
       "acceptance": "Två lägen i vänstermenyn med egna mottagarval. Dela ut visar paket, hopfällda uppgifter och Skicka. Resultat väljer mottagare som Dela ut och visar en grupp över flera klasser i en matris med bara gruppens elever. Resultatval påverkar aldrig nästa utdelning.",
       "decision": "2026-10-26: Simon beställer uppdelningen och att gruppresultat ska ses samlat. Samlingar i olika klasser kopplas ihop på samma namn och frågor skapade inom tio minuter, eftersom servern inte länkar dem.",
-      "evidence": "2026-10-26 lokalt: ScreeningDispatchPanel, ScreeningResultsPanel, ScreeningTaskChoices, ScreeningPupilAttempts, DiagnosticCollectionReview och screeningCollections.js ersätter DiagnosticPilotAssignmentPanel och DiagnosticClassReviewPanel. Elevens sparade försök och Avsluta/Lämna in pågående ligger i Resultat. Obekräftad genomgång varnar även vid byte av arbetsläge. 8 nya enhetstester för sammanslagning, filter och gruppering. Ny robot screening-group-results (grupp över två klasser, en tabell, cell ur andra klassen öppnas, resultatval läcker inte till utdelning). Alla 12 diagnostic-robotar ändrade till nya lägen via robots/lib/screening.js. Hela robotsviten 140/144 vid första körning; tre svarade ECONNRESET/timeout i servern och passerade vid omkörning, en (diagnostic-grid) bröts av att knappnamnet Screening nu är två och rättades. Vitest 799 filer/3771 tester och build godkända; lint ger samma 8 äldre fel som innan. Ingen skärmbildsgranskning, ingen push.",
+      "evidence": "2026-10-26 lokalt: ScreeningDispatchPanel, ScreeningResultsPanel, ScreeningTaskChoices, ScreeningPupilAttempts, DiagnosticCollectionReview och screeningCollections.js ersätter DiagnosticPilotAssignmentPanel och DiagnosticClassReviewPanel. Elevens sparade försök och Avsluta/Lämna in pågående ligger i Resultat. Obekräftad genomgång varnar även vid byte av arbetsläge. 8 nya enhetstester för sammanslagning, filter och gruppering. Ny robot screening-group-results (grupp över två klasser, en tabell, cell ur andra klassen öppnas, resultatval läcker inte till utdelning). Alla 12 diagnostic-robotar ändrade till nya lägen via robots/lib/screening.js. Hela robotsviten 140/144 vid första körning; tre svarade ECONNRESET/timeout i servern och passerade vid omkörning, en (diagnostic-grid) bröts av att knappnamnet Screening nu är två och rättades. Vitest 799 filer/3771 tester och build godkända; lint ger samma 8 äldre fel som innan. Ingen skärmbildsgranskning, ingen push.\n2026-10-26 browsergranskning och rättning: Två reproducerade fel: öppnad matris följde inte elev/gruppbyte inom samma klass, och nya utdelningar saknades efter återgång till Resultat. Matrisen filtreras nu från hämtade klassunderlag vid varje urvalsändring; samlingslistan hämtas när Resultat aktiveras. Ny robot blir först röd (1 rad i stället för 2) och verifierar elev–grupp–elev samt ny utdelning. Därefter manuellt verifierat i Chrome med syntetisk Stödgrupp demo: Alva och Bruno syns direkt efter gruppval; Kontroll två visas direkt i samlingslistan. 169 testfiler/819 tester och build godkända. Riktad ESLint och arkitekturkontroll godkända. DashboardLayout är nu 600 rader; en explicit active-prop till befintlig resultatpanel är fortsatt shellansvar och motiverar ingen större omstrukturering i detta felrättningssjok. Bred robotsvit pågår. Ingen push ännu.\nSlutkontroll lokalt: bred robotsvit 141/145; tre timeout/ECONNRESET och ett fokus-sparfall föll. Samtliga fyra passerade på ren server vid sekventiell omkörning (4/4). Ingen helt grön bred körning påstås. Alla screening-, klassansvars- och nya regressionsfall passerade i bred körning. Publicering förbereds avgränsat utan tidigare räknehäftsändringar.",
       "issue": "",
       "kind": "funktion",
       "requires": [
@@ -1624,6 +1624,11 @@
           "id": "try",
           "text": "Simon provar i webbläsaren",
           "done": false
+        },
+        {
+          "id": "refresh-results",
+          "text": "Resultat följer elev/gruppbyte och visar nya utdelningar vid återgång",
+          "done": true
         }
       ]
     }

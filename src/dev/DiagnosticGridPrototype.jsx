@@ -520,7 +520,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             {!workspaceOnly && <div className={`diagnostic-answer-row ${task.answerType === 'text' ? 'diagnostic-answer-row--text' : ''}`}>
               {task.answerType === 'text' ? <textarea ref={answerRef} id="diagnostic-answer" aria-label="Mitt svar" placeholder="Skriv ditt svar här"
                 maxLength={2000} value={grid.answer} onChange={event => changeAnswer(event.target.value)} disabled={editingLocked} />
-                : <input id="diagnostic-answer" aria-label="Mitt svar" placeholder="Skriv ditt svar här" type="text" inputMode="none"
+                : <input id="diagnostic-answer" aria-label="Mitt svar" placeholder="Använd siffertangenterna" type="text" inputMode="none"
                   readOnly value={grid.answer} onFocus={() => setInputTarget('answer')}
                   onKeyDown={event => {
                     if (event.ctrlKey || event.metaKey || event.altKey) return

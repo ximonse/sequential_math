@@ -82,7 +82,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       if (isPilot && isDiagnosticAttemptFull(previous.events)) return previous
       const action = typeof actionOrBuilder === 'function' ? actionOrBuilder(previous) : actionOrBuilder
       if (!action) return previous
-      const next = recordDiagnosticGridEvent(previous, action, timestamp)
+      const actions = Array.isArray(action) ? action : [action]
+      const next = actions.reduce((state, item) => recordDiagnosticGridEvent(state, item, timestamp), previous)
       return isPilot && exceedsDiagnosticAttemptQuota(next.events) ? previous : next
     })
   }, [isPilot, submitting])
@@ -329,8 +330,11 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       if (cell?.[layer === 'note' ? 'main' : 'note']) return null
       const before = cell?.[layer] || ''
       const after = layer === 'note' ? `${before}${character}` : character
-      return after.length > 2 || before === after ? null
-        : { type: 'write', position: { row, column }, layer, before, after }
+      if (after.length > 2 || before === after) return null
+      const write = { type: 'write', position: { row, column }, layer, before, after }
+      // Keep note entry in place so two-digit borrowing notes still work.
+      if (layer !== 'main' || !/^[0-9]$/u.test(character) || column === previous.columns - 1) return write
+      return [write, { type: 'move', from: { row, column }, to: { row, column: column + 1 } }]
     })
   }
 

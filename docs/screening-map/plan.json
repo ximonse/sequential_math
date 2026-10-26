@@ -158,23 +158,23 @@
       "id": "cursor",
       "area": "Elevarbete",
       "title": "Nästa ruta efter varje siffra",
-      "status": "Planerat",
+      "status": "Lokalt klart",
       "purpose": "Skriv exempelvis 256 i startuppställningen utan att välja ruta tre gånger.",
-      "next": "Definiera slut på rad, korrigering och skillnad mot uträkning; implementera smalt.",
-      "acceptance": "Varje siffra fyller vald ruta och flyttar markören ett steg i startuppställningen.",
+      "next": "Publicera via GitHub när Simon begär det; fysisk iPad-provning efter publicering.",
+      "acceptance": "Stor siffra flyttar en ruta åt höger med touchknappar och tangentbord; sista kolumnen stannar. Korrigering görs genom att välja rutan. Minnessiffror, tecken och radering stannar. Originalet kan återspelas.",
       "requires": [
         "grid"
       ],
       "affects": [],
-      "decision": "Avgränsa till startuppställningen; pröva tangentbord och touch.",
-      "evidence": "",
+      "decision": "Avgränsa till startuppställningen; pröva tangentbord och touch.\n2026-10-26: Simon ber om automatisk förflyttning när elever skriver siffror i sina räknehäften. Gäller gemensamma räknehäftet i Screening och vanliga uppdrag. Höger en ruta efter stor siffra; ingen automatisk radväxling. Minnessiffror behåller tvåsiffrig inmatning i samma ruta.",
+      "evidence": "2026-10-26: Lokalt byggt, inte pushat/publicerat. Skrivning och flytt registreras atomärt som befintliga händelser, inklusive kvotkontroll. Ny robot visade först överskrivning av samma ruta och är nu grön. Alla sex rutnätsrobotar gröna, inklusive touchknappar, tangentbordsfokus, korrigering, radslut, minnessiffror och återspelning. 166 testfiler/793 tester samt build godkända. Testkommandot avgränsades med --exclude **/.claude/** eftersom en äldre nästlad arbetskopia annars ingick. Full robotsvit: 132/136 gröna; tre ECONNRESET i testserveranrop och en äldre kontroll som förväntade en händelse i stället för skrivning + flytt. Händelsekontrollen uppdaterad; samtliga fyra därefter gröna med ny server och en worker. Alla 136 unika robotkontroller därmed verifierade över körningarna, inte en obruten grön fullkörning. Riktad lint, diffkontroll och projektkarta godkända. Lokal commit i detta sjok, ingen push eller publicering. Fysisk iPad ej provad.",
       "issue": "https://github.com/ximonse/sequential_math/issues/8",
       "kind": "deluppgift",
       "tasks": [
         {
           "id": "next-cursor",
-          "text": "Definiera slut på rad, korrigering och skillnad mot uträkning; implementera smalt.",
-          "done": false
+          "text": "Implementera och verifiera automatisk högerförflyttning, korrigering, radslut och minnessiffror.",
+          "done": true
         }
       ]
     },

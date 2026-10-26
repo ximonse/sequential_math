@@ -6,6 +6,14 @@ Det påverkar inte vanlig träning, mastery eller adaptiv progression.
 
 ## Arbetsflöde
 
+Räknehäftet flyttar markeringen en ruta åt höger efter en skriven stor siffra,
+både med knappsatsen och fysiskt tangentbord. Vid sista kolumnen stannar
+markeringen på samma rad. Välj en tidigare ruta för att korrigera den.
+Minnessiffror stannar i samma ruta (upp till två siffror), liksom räknetecken
+och radering. Skrivning och automatisk markörflytt bevaras tillsammans som
+vanliga skriv-/flytthändelser i originalets återspelning. Samma skrivbeteende
+används i vanliga uppdrags kladdhäfte utan diagnostisk serverlagring.
+
 Under **Screening → Grupp** väljer admin klass och ett befintligt uppdrag i
 **Klassöversikt och genomgång**. Inget uppdrag väljs automatiskt.
 Översikten visar nuvarande behöriga mottagare av just det uppdraget:

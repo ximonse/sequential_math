@@ -94,6 +94,14 @@ Be aldrig Simon testa en funktion innan agenten har verifierat att just den
 funktionens kod, åtkomstväg, kontotyp och publiceringsstatus gör testet möjligt.
 Särskilj alltid lokal kod, lokal webbläsare, pushad gren och produktion.
 
+## Elevdata för analys
+
+Ska du hämta elevernas frågor och svar (t.ex. "kolla klass 6 den här veckan",
+felsvarsanalys, Excel): läs `docs/teacher-data.md` och kör
+`node scripts/teacher-data.mjs`. Skriptet är skrivskyddat och loggar in med
+`MATH_TEACHER_USER`/`MATH_TEACHER_PASS` på Simons dator. Skriv aldrig ut lösenordet,
+lägg inte elevdata i repot och skicka den inte till externa tjänster.
+
 ## Publicering
 
 Publicera alltid via GitHub — aldrig direkt till Vercel.

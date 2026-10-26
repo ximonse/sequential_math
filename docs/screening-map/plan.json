@@ -1631,6 +1631,38 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "teacher-data",
+      "area": "Administration",
+      "title": "Elevdata till analys för Claude Code och Codex",
+      "status": "Lokalt klart",
+      "purpose": "Simon ska kunna be en agent hämta en klass eller elevs frågor och svar för en period, få dem som CSV/JSON och få felsvaren analyserade, utan webbläsarskrapning.",
+      "next": "Simon avgör om skriptet ska användas på Kerstin i klass 6; kräver att kontot har klassen och att privata elevnamn finns, annars sök på klass.",
+      "acceptance": "scripts/teacher-data.mjs loggar in som lärare, är skrivskyddat, och skriver CSV och JSON utanför repot. docs/teacher-data.md och AGENTS.md beskriver det för båda agenterna.",
+      "decision": "2026-10-26: Simon beställer skript och instruktion i stället för MCP. Lärarkonto med miljövariabler MATH_TEACHER_USER/MATH_TEACHER_PASS, inte adminkonto.",
+      "evidence": "2026-10-26 lokalt mot produktions-API (endast läsning): inloggning, klasslista och elevprofiler fungerar; klassen Lärare gav 1184 uppgifter, 81 fel. Hittade och rättade teckenkodningsfel vid läsning av lösenord med å/ä/ö. API:t ger bara pseudonymer; privata elevnamn är per lärarkonto och saknas för detta konto. Ej pushat. Ingen enhetstest.",
+      "issue": "",
+      "kind": "funktion",
+      "requires": [],
+      "affects": [],
+      "tasks": [
+        {
+          "id": "script",
+          "text": "Skript som hämtar och exporterar elevdata",
+          "done": true
+        },
+        {
+          "id": "docs",
+          "text": "Instruktion för Claude Code och Codex",
+          "done": true
+        },
+        {
+          "id": "names",
+          "text": "Sök på riktigt elevnamn (kräver privata etiketter för kontot)",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [

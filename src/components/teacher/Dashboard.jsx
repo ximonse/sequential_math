@@ -244,7 +244,6 @@ function Dashboard() {
   const {
     handleCloudRefreshNow,
     handleLogout,
-    handleJumpToPasswordReset,
     handleAddExistingStudentsToClass,
     handleMoveStudent,
     handleAddStudentsToClass,
@@ -265,7 +264,6 @@ function Dashboard() {
     setIsCloudRefreshBusy,
     navigate,
     isDirectStudentView,
-    passwordResetSectionId: PASSWORD_RESET_SECTION_ID,
     setClassStatus,
     classNameInput,
     rosterInput,
@@ -467,7 +465,7 @@ function Dashboard() {
       initialWorkspace={location.state?.workspace}
       {...{
         isDirectStudentView, detailStudentProfile, cloudSyncStatus, formatTimeAgo,
-        handleJumpToPasswordReset, navigate, handleLogout, dashboardStatus,
+        navigate, handleLogout, dashboardStatus,
         isCloudRefreshBusy, handleCloudRefreshNow, formatSyncTimestamp, getCloudSyncSourceLabel,
         selectedClassIds, students, filteredStudents, classFilterOptions, clearClassFilter,
         handleToggleClassFilter, classStats, dataQualitySummary, usageInsights, formatDuration,

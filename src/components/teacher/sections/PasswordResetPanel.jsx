@@ -11,9 +11,9 @@ export default function PasswordResetPanel({
   formatTimeAgo
 }) {
   return (
-    <div id={sectionId} className="bg-white rounded-lg shadow p-4 mt-8 border-2 border-rose-200">
+    <div id={sectionId} className="bg-orange-50 rounded-lg shadow p-4 mt-8 border-2 border-orange-200">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-        <h2 className="text-lg font-semibold text-rose-800">Äldre elevinloggningar</h2>
+        <h2 className="text-lg font-semibold text-orange-900">Äldre elevinloggningar</h2>
         <p className="text-xs text-gray-500">
           {passwordResetRows.length} elev(er) med äldre inloggning
         </p>

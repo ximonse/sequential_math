@@ -79,7 +79,6 @@ export default function DashboardLayout({
   detailStudentProfile,
   cloudSyncStatus,
   formatTimeAgo,
-  handleJumpToPasswordReset,
   navigate,
   handleLogout,
   dashboardStatus,
@@ -522,10 +521,6 @@ export default function DashboardLayout({
           fillingPupilNames={fillingPupilNames}
           onShowCodeNames={showCodeNames}
           pupilLabelsShown={pupilLabelsShown}
-          onJumpToPasswordReset={() => {
-            setActiveWorkspace('admin')
-            window.setTimeout(handleJumpToPasswordReset, 0)
-          }}
           onGoDashboard={() => navigate('/teacher')}
           onLogout={handleLogout}
         />

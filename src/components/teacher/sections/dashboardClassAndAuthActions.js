@@ -63,7 +63,6 @@ export function buildDashboardClassAndAuthActions({
   setIsCloudRefreshBusy,
   navigate,
   isDirectStudentView,
-  passwordResetSectionId,
   setClassStatus,
   classNameInput,
   rosterInput,
@@ -96,14 +95,6 @@ export function buildDashboardClassAndAuthActions({
   const handleLogout = () => {
     logoutTeacher()
     navigate('/teacher-login')
-  }
-
-  const handleJumpToPasswordReset = () => {
-    if (typeof document === 'undefined') return
-    const section = document.getElementById(passwordResetSectionId)
-    if (section && typeof section.scrollIntoView === 'function') {
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
   }
 
   const handleCreateClass = async (schoolId = '') => {
@@ -293,7 +284,6 @@ export function buildDashboardClassAndAuthActions({
   return {
     handleCloudRefreshNow,
     handleLogout,
-    handleJumpToPasswordReset,
     handleCreateClass,
     handleCreatePilotRoster,
     handleAddExistingStudentsToClass, handleMoveStudent,

@@ -1562,6 +1562,33 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "teacher-class-bulk",
+      "area": "Administration",
+      "title": "Dela flera klasser till en lärare samtidigt",
+      "status": "Lokalt klart",
+      "purpose": "Huvudadmin ska kunna ge en lärare ansvar för flera klasser i ett steg i stället för att öppna varje klass för sig.",
+      "next": "Bygg klassval i lärarens redigeringsvy och verifiera mot lokal data.",
+      "acceptance": "Redigera lärare visar klasser med kryssrutor; en sparning ändrar lärarens klassansvar. Inga andra lärares ansvar påverkas.",
+      "decision": "2026-10-26: Simon beställer klassval per lärare. Samma dag tas knappen Äldre inloggningar bort och modulen Äldre elevinloggningar färgas adminorange.",
+      "evidence": "2026-10-26: Knappen Äldre inloggningar i lärarheadern borttagen (gjorde inget utanför fliken Klasser och elever). Modulen Äldre elevinloggningar färgad orange. Riktad ESLint på ändrade filer: endast tre äldre oanvända-variabelfel i dashboardClassAndAuthActions.js. Lärarvyns testfiler 150/490 godkända. Ingen browserkontroll, ingen push.",
+      "issue": "",
+      "kind": "funktion",
+      "requires": [],
+      "affects": [],
+      "tasks": [
+        {
+          "id": "cleanup",
+          "text": "Ta bort Äldre inloggningar-knappen och färga modulen",
+          "done": true
+        },
+        {
+          "id": "bulk",
+          "text": "Klassval per lärare i Redigera lärare",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [

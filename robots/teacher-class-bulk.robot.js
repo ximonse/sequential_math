@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test'
 import { createPupil } from './lib/app.js'
 import { teacherLogin } from './lib/teacher.js'
 
-test('Administrator assigns several classes to one teacher in one save', async ({ page, request }) => {
+test('Administrator assigns several classes to one teacher in one save', async ({ page, request }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
   const names = [`Bulk A ${tag}`, `Bulk B ${tag}`, `Bulk C ${tag}`]
   const classIds = names.map((_, index) => `bulk-${index}-${tag}`)
@@ -24,6 +24,7 @@ test('Administrator assigns several classes to one teacher in one save', async (
   }
   let editor = await openEditor()
   for (const name of names) await editor.getByLabel(name).check()
+  await page.screenshot({ path: testInfo.outputPath('3-klassansvar.png'), fullPage: true })
   await editor.getByRole('button', { name: 'Spara', exact: true }).click()
   await expect(page.getByText(/Konto uppdaterat och klassansvar sparat \(3 klasser ändrade\)/)).toBeVisible()
 

@@ -7,7 +7,7 @@ import { groupCollections, resultFilter } from './screeningCollections'
 
 const collectionLabel = (collection, classNames) => {
   const where = collection.members.map(member => classNames.get(member.classId) || member.classId).join(', ')
-  return `${collection.titleSv} · ${new Date(collection.createdAt).toLocaleString('sv-SE')} · ${collection.members[0].items.length} uppgifter · ${where}`
+  return `${collection.titleSv} · ${new Date(collection.createdAt).toLocaleString('sv-SE')} · ${collection.members[0].items.length} uppgift${collection.members[0].items.length === 1 ? '' : 'er'} · ${where}`
 }
 
 // Results of screenings for the picked recipients: classes, groups or pupils.

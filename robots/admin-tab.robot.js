@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test'
 import { createPupil } from './lib/app.js'
 import { teacherLogin } from './lib/teacher.js'
 
-test('The old admin link opens the Administration tab and shows classes without a school', async ({ page, request }) => {
+test('The old admin link opens the Administration tab and shows classes without a school', async ({ page, request }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
   const classId = `no-school-${tag}`
   await createPupil(request, { name: `Skollös ${tag}`, classId, className: `Skollös ${tag}` })
@@ -21,4 +21,6 @@ test('The old admin link opens the Administration tab and shows classes without 
   await expect(withoutSchool).toBeVisible()
   await expect(withoutSchool.getByRole('button', { name: new RegExp(`^Skollös ${tag}`) })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Lärarkonton' })).toHaveCount(0)
+  await page.locator('#teacher-password-reset-section').scrollIntoViewIfNeeded()
+  await page.screenshot({ path: testInfo.outputPath('4-aldre-inloggningar.png'), fullPage: true })
 })

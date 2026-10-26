@@ -1,5 +1,6 @@
 import { useId, useRef, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
+import QuestionText from '../../QuestionText'
 import './diagnosticScreening.css'
 
 const labels = { correct: 'Rätt svar', incorrect: 'Fel svar utan identifierat mönster',
@@ -41,7 +42,7 @@ export default function DiagnosticScreeningCell({ item, pupilName, prompt, onOpe
     {position && createPortal(<div id={id} role="tooltip" onMouseEnter={() => clearTimeout(timer.current)} onMouseLeave={hideSoon}
       className="fixed z-[100] w-[280px] rounded border border-slate-300 bg-white p-2 text-sm text-slate-800 shadow-lg"
       style={{ left: position.left, top: position.top, transform: position.above ? 'translateY(-100%)' : undefined }}>
-      <strong className="whitespace-pre-wrap">{prompt}</strong>
+      <strong className="whitespace-pre-wrap"><QuestionText>{prompt}</QuestionText></strong>
       {value.length > 24
         ? <><p className="mt-1 font-medium">Elevens svar</p><p className="max-h-60 overflow-y-auto whitespace-pre-wrap break-words">{value}</p></>
         : <dl className="mt-1 grid grid-cols-2 gap-x-3"><dt>Elevens svar</dt><dd className="text-right font-semibold">{value}</dd>

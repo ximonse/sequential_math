@@ -3,6 +3,7 @@ import { diagnosticCatalog } from '../../../domains/arithmetic/diagnosticCatalog
 import { diagnosticRequest as request } from './diagnosticRequest'
 import DiagnosticClassReviewPanel from './DiagnosticClassReviewPanel'
 import DiagnosticEvidenceDetails from './DiagnosticEvidenceDetails'
+import QuestionText from '../../QuestionText'
 import { applyScreeningLimits, buildScreeningDispatches } from './screeningRecipients'
 import '../../../dev/diagnosticGridPrototype.css'
 
@@ -91,7 +92,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
   const taskCheckbox = task => <label key={task.taskId} className="flex items-center gap-1 text-sm">
     <input type="checkbox" checked={selectedTasks.includes(task.taskId)} onChange={event => setSelectedTasks(previous => event.target.checked
       ? [...previous, task.taskId] : previous.filter(id => id !== task.taskId))} />
-    {task.ncmCode ? `${task.ncmCode} ${task.ncmItem}: ` : ''}{task.promptSv}
+    {task.ncmCode ? `${task.ncmCode} ${task.ncmItem}: ` : ''}<QuestionText>{task.promptSv}</QuestionText>
   </label>
 
   const hasTasks = selectedTasks.length > 0 || Boolean(customPrompt.trim())
@@ -238,7 +239,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
         const change = patch => setItemOptions(previous => ({ ...previous, [id]: { ...previous[id], ...patch } }))
         const task = findTask(id)
         return <div key={id} className="flex flex-wrap items-center gap-x-2 text-sm">
-          <strong>{task?.promptSv}</strong>
+          <strong><QuestionText>{task?.promptSv}</QuestionText></strong>
           {/* NCM answers are marked against the facit, so their answer type is fixed. */}
           {task?.ncmCode ? <span className="text-slate-600">Facit: {task.facitSv}</span>
             : <label>Svarstyp <select value={options.answerType || 'number'} onChange={event => change({ answerType: event.target.value })} className="rounded border px-1 py-0.5">
@@ -252,6 +253,11 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
     <details className="mt-2 text-sm">
       <summary className="font-semibold">Lägg till egen skrivfråga</summary>
       <label className="block">Frågetext<textarea value={customPrompt} maxLength={2000} onChange={event => setCustomPrompt(event.target.value)} className="mt-1 block w-full rounded border p-1" /></label>
+      <p className="mt-1 text-slate-600">{'Bråk: skriv 6//2 eller \\frac{6}{2}.'}</p>
+      {customPrompt.trim() && <div className="mt-2" role="region" aria-label="Förhandsvisning av frågan">
+        <p className="font-semibold">Förhandsvisning</p>
+        <p className="whitespace-pre-wrap break-words"><QuestionText>{customPrompt}</QuestionText></p>
+      </div>}
       <label className="mr-2"><input type="checkbox" checked={customGrid} onChange={event => setCustomGrid(event.target.checked)} /> Räknehäfte till skrivfrågan</label>
       <label><input type="checkbox" checked={customDrawing} onChange={event => setCustomDrawing(event.target.checked)} /> Rityta till skrivfrågan</label>
     </details>
@@ -260,7 +266,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
       <p className="mt-2">Granska uppställningen och fråga eleven. Rätt slutsvar bevisar inte en viss metod. Appens automatiska metodanalys är begränsad.</p>
       <ol className="mt-2 list-decimal space-y-2 pl-5">
         {selectedTasks.map(findTask).filter(Boolean).map(task => <li key={task.taskId}>
-          <strong>{task.promptSv}</strong> {guideFor(task)?.goalSv}. {guideFor(task)?.questionSv}
+          <strong><QuestionText>{task.promptSv}</QuestionText></strong> {guideFor(task)?.goalSv}. {guideFor(task)?.questionSv}
         </li>)}
       </ol>
     </details>

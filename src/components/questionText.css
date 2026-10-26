@@ -1,0 +1,19 @@
+.question-fraction {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  vertical-align: middle;
+  margin-inline: .12em;
+  text-align: center;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.question-fraction__numerator {
+  border-bottom: .06em solid currentColor;
+  padding: 0 .16em .08em;
+}
+
+.question-fraction__denominator {
+  padding: .08em .16em 0;
+}

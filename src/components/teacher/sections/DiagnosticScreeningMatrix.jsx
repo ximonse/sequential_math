@@ -1,4 +1,5 @@
 import DiagnosticScreeningCell from './DiagnosticScreeningCell'
+import QuestionText from '../../QuestionText'
 
 const statuses = { not_started: 'Inte påbörjat', in_progress: 'Påbörjat', submitted: 'Alla inlämnade' }
 export default function DiagnosticScreeningMatrix({ overview, name, onOpen }) {
@@ -15,7 +16,7 @@ export default function DiagnosticScreeningMatrix({ overview, name, onOpen }) {
         {overview.items.map((item, index) => {
           const label = item.promptSv.replace(/^Räkna ut /u, '').replace(/\.$/u, '')
           return <th scope="col" key={item.assignmentItemId} className="p-2" title={item.promptSv}><span>{index + 1}</span>
-            <span className="block whitespace-nowrap font-normal">{label.length > 28 ? `${label.slice(0, 26).trimEnd()}…` : label}</span></th>
+            <span className="block max-w-[28ch] overflow-hidden text-ellipsis whitespace-nowrap font-normal"><QuestionText>{label}</QuestionText></span></th>
         })}
         <th scope="col" className="p-2">Rätt svar</th><th scope="col" className="p-2">Inlämnade</th><th scope="col" className="p-2">Genomgångna</th></tr></thead>
       <tbody>{overview.rows.map(row => <tr key={row.studentId} className="border-t border-slate-200">

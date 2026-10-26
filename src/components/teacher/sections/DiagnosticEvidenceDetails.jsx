@@ -1,6 +1,7 @@
 import { diagnosticCatalog } from '../../../domains/arithmetic/diagnosticCatalog.browser'
 import DiagnosticAttemptHistory from './DiagnosticAttemptHistory'
 import DiagnosticReviewForm from './DiagnosticReviewForm'
+import QuestionText from '../../QuestionText'
 import { buildDiagnosticTeacherSupport } from '../../../domains/arithmetic/diagnosticTeacherSupport.js'
 
 export default function DiagnosticEvidenceDetails({ detail, onSaved, onDirtyChange, reviewable = false }) {
@@ -19,7 +20,7 @@ export default function DiagnosticEvidenceDetails({ detail, onSaved, onDirtyChan
   return (
     <section className="mt-4 rounded border border-orange-300 bg-white p-3" aria-label="Diagnostiskt elevunderlag">
         {reviewable && <DiagnosticReviewForm key={`${detail.record.attemptId}:${detail.record.serverRevision}`} detail={detail} onSaved={onSaved} onDirtyChange={onDirtyChange} />}
-        <h4 className="font-semibold">{detail.task.promptSv}</h4>
+        <h4 className="font-semibold"><QuestionText>{detail.task.promptSv}</QuestionText></h4>
         {guideFor(detail.task) && <div className="mt-2 rounded bg-orange-50 p-2 text-sm">
           <p><strong>{ncm ? 'NCM prövar' : 'Att granska'}:</strong> {guideFor(detail.task).goalSv}.</p>
           {ncm && <p><strong>Facit:</strong> {detail.task.facitSv}</p>}

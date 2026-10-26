@@ -6,6 +6,15 @@ Det påverkar inte vanlig träning, mastery eller adaptiv progression.
 
 ## Arbetsflöde
 
+I frågetexter visas `6//2` och `\frac{6}{2}` som bråk med täljare ovanför
+nämnaren. När läraren skriver en egen fråga visas en förhandsvisning.
+Samma formatering används i elevfrågan, lärarunderlaget och gruppmatrisen.
+Vanlig division `6/2` förblir vanlig text. Snabbformen stöder heltal,
+minustecken och decimaler; `\frac{a + 1}{b}` stöder också enkla uttryck
+utan nästlade klamrar. Det är ett avgränsat stöd för bråknotation, inte en
+fullständig LaTeX-motor. Frågetexten sparas oförändrad; bara visningen ändras.
+Detta ändrar inte vilka slutsvar eller diagnostiska analyser som stöds.
+
 Räknehäftet flyttar markeringen en ruta åt höger efter en skriven stor siffra,
 både med knappsatsen och fysiskt tangentbord. Vid sista kolumnen stannar
 markeringen på samma rad. Välj en tidigare ruta för att korrigera den.

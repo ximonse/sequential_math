@@ -1368,6 +1368,38 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "question-fractions",
+      "area": "Elevarbete",
+      "title": "Bråk i frågetext med snabbnotation",
+      "status": "Lokalt klart",
+      "purpose": "Läraren skriver 6//2 eller \\frac{6}{2}; eleven och läraren ser ett bråk med täljare, nämnare och bråkstreck.",
+      "next": "Publicera via GitHub när Simon begär det; fysisk iPad-provning separat.",
+      "acceptance": "Båda skrivsätten fungerar i förhandsvisning, elevfråga, lärarunderlag och matris. Vanligt 6/2 och datum förblir text. Frågekällan lagras oförändrad; inga ändringar av svarstyper eller analys.",
+      "requires": [
+        "workspace-answer-types"
+      ],
+      "affects": [
+        "matrix",
+        "review"
+      ],
+      "decision": "2026-10-26: Simon godkänner bråkvisning och begär dessutom snabbformen 6//2 vid skapande av frågor. Avgränsat stöd för tal i snabbformen och enkla uttryck utan nästlade klamrar i \\frac. Gemensam textkomponent med HTML/CSS, inget nytt bibliotek eller full LaTeX-motor.",
+      "evidence": "2026-10-26: Lokalt byggt, ej publicerat. Sex nya tester för notation, oförändrad vanlig text, tecken, decimaler, interpunktion och säker textvisning gröna. Ny elev/lärarrobot grön inklusive inmatning, båda notationerna, fysisk bråkgeometri, omladdning, inlämning, lärarunderlag, oförändrad lagrad frågekälla och tom vanlig problemlogg. Full regression pågår.\nSlutkontroll 2026-10-26: 167 testfiler/799 tester och build gröna efter slutlig surfplattekompatibilitetsjustering utan RegExp-lookbehind. Riktad lint, arkitektur, diff och projektkarta gröna. Full robotsvit: 133/137 gröna, två timeout i testserverns verify-anrop. Parallell omkörning delade byggmapp och störde två ytterligare omladdnings-/inloggningskontroller. Slutlig seriell körning med en testserver: alla fyra och utökad bråkrobot gröna (5/5). Alla 137 unika kontroller därmed verifierade över körningarna; inte en obruten grön fullkörning. Förhandsvisning och elevvy i ljust/mörkt tema samt lärarens genomgång visuellt granskade. Ny robot verifierar också matrisrubrik och tooltip med båda bråken. Lokal commit i detta sjok; ej pushat/publicerat. Fysisk iPad ej provad.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "fraction-notation",
+          "text": "Bygg båda skrivsätten och förhandsvisning med gemensam elev/lärarvisning.",
+          "done": true
+        },
+        {
+          "id": "fraction-verification",
+          "text": "Verifiera textbevarande, hela elev/lärarflödet, teman och regression.",
+          "done": true
+        }
+      ]
     }
   ],
   "edges": [
@@ -1870,6 +1902,21 @@
       "source": "attention-durable-export",
       "target": "attention-daily-week",
       "kind": "kräver"
+    },
+    {
+      "source": "workspace-answer-types",
+      "target": "question-fractions",
+      "kind": "kräver"
+    },
+    {
+      "source": "question-fractions",
+      "target": "matrix",
+      "kind": "påverkar"
+    },
+    {
+      "source": "question-fractions",
+      "target": "review",
+      "kind": "påverkar"
     }
   ],
   "note": "Planeringssnapshot. Lokalt klart är inte publicerat. Tidigare publicering bygger på denna tråds verifiering; ingen ny livekontroll. Förslag är inte fattade beslut."

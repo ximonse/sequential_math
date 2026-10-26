@@ -11,6 +11,7 @@ import { lineTouchesPoint } from '../domains/arithmetic/diagnosticLineGeometry'
 import MathScratchpad from '../components/student/MathScratchpad'
 import NotebookTools from './NotebookTools'
 import NotebookTutorial from './NotebookTutorial'
+import QuestionText from '../components/QuestionText'
 import { shouldShowNotebookTutorial } from './notebookTutorialSeen'
 import { MAIN_CHARACTERS, NUMBER_ANSWER } from '../domains/arithmetic/diagnosticGridModel'
 import './diagnosticGridPrototype.css'
@@ -455,7 +456,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
           aria-disabled={Boolean(navigationLocked)}>Startsida</a>}
       </header>}
       {!pilot && <div className="notebook-examples" aria-label="Välj exempeluppgift">
-        {availableTasks.map(item => <button key={item.taskId} type="button" onClick={() => chooseTask(item)}>{item.promptSv}</button>)}
+        {availableTasks.map(item => <button key={item.taskId} type="button" onClick={() => chooseTask(item)}><QuestionText>{item.promptSv}</QuestionText></button>)}
       </div>}
       <section className="notebook-sheet">
         {pilot && !workspaceOnly && task.gridEnabled !== false && <button type="button" className="notebook-fold-toggle"
@@ -467,7 +468,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
         <div className="diagnostic-workspace">
           <div className="notebook-left">
             {!workspaceOnly && <p className="notebook-question-count">Fråga {questionIndex} av {questionCount}</p>}
-            {!workspaceOnly && <h2 className={`notebook-question ${isExpression ? '' : 'notebook-question--text'}`}>{question}</h2>}
+            {!workspaceOnly && <h2 className={`notebook-question ${isExpression ? '' : 'notebook-question--text'}`}><QuestionText>{question}</QuestionText></h2>}
             <div hidden={task.gridEnabled === false || !notebookVisible} className="notebook-grid-scroll">
           <div ref={gridRef} className="diagnostic-grid" role="group" aria-label="Rutat räknehäfte">
             <DiagnosticGridLines lines={grid.lines} preview={linePreview} rows={grid.rows} columns={grid.columns} />

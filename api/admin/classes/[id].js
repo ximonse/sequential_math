@@ -1,5 +1,5 @@
 import { kv } from '@vercel/kv'
-import { assertTeachersBelongToSchool, validateSchoolId } from '../../_schoolStore.js'
+import { assertTeachersBelongToSchool, teachersToCheckForSchool, validateSchoolId } from '../../_schoolStore.js'
 import { archiveClassRecord, deleteClassRecord, mutateClassRecord, restoreClassRecord } from '../../_classStore.js'
 import { getLiveTeacherAuthPayload, withCors } from '../../_helpers.js'
 import { revalidateGroupsForTeacher } from '../../_groupStore.js'
@@ -81,7 +81,10 @@ export default async function handler(req, res) {
     }
     if (typeof req.body?.name === 'string' && req.body.name.trim()) updated.name = req.body.name.trim()
     if (Array.isArray(req.body?.teacherIds)) updated.teacherIds = [...new Set(req.body.teacherIds.map(String).filter(Boolean))]
-    await assertTeachersBelongToSchool(updated.teacherIds || [], updated.schoolId)
+    await assertTeachersBelongToSchool(teachersToCheckForSchool({
+      oldTeacherIds: classRecord.teacherIds || [], newTeacherIds: updated.teacherIds || [],
+      oldSchoolId: classRecord.schoolId, newSchoolId: updated.schoolId
+    }), updated.schoolId)
     if (req.body?.enabledOperations !== undefined) {
       if (!classOperationsAreValid(req.body.enabledOperations)) return res.status(400).json({ error: 'Välj minst ett giltigt räknesätt.' })
       updated.enabledOperations = normalizeClassOperations(req.body.enabledOperations)

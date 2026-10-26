@@ -12,6 +12,7 @@ export default function ClassSettingsForm({ classRecord, teachers, directory, on
   const [enabledOperations, setEnabledOperations] = useState(() => resolveClassOperations(classRecord))
   const [talbildEnabled, setTalbildEnabled] = useState(classRecord.talbildEnabled === true)
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
   const extras = getTogglableExtras()
 
   const handleSave = async () => {
@@ -24,6 +25,7 @@ export default function ClassSettingsForm({ classRecord, teachers, directory, on
       return
     }
     setBusy(true)
+    setError('')
     const { ok, data } = await apiFetch('/api/admin/classes/' + classRecord.id, {
       method: 'PUT',
       body: JSON.stringify({
@@ -35,7 +37,11 @@ export default function ClassSettingsForm({ classRecord, teachers, directory, on
     if (ok) {
       setStatus('✓ Klass uppdaterad')
       onSaved()
-    } else setStatus(data?.error || 'Kunde inte uppdatera klassen')
+    } else {
+      // Also shown beside the Save button: the status line is far from here.
+      setError(data?.error || 'Kunde inte uppdatera klassen')
+      setStatus(data?.error || 'Kunde inte uppdatera klassen')
+    }
   }
 
   return (
@@ -83,6 +89,7 @@ export default function ClassSettingsForm({ classRecord, teachers, directory, on
       </fieldset>
       <button type="button" onClick={handleSave} disabled={busy}
         className="rounded bg-indigo-600 px-3 py-1 font-semibold text-white disabled:opacity-50">{busy ? 'Sparar…' : 'Spara inställningar'}</button>
+      {error && <p role="alert" className="rounded border border-red-300 bg-red-50 px-2 py-1 text-red-800">{error}</p>}
     </div>
   )
 }

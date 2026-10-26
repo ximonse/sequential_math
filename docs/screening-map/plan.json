@@ -1569,10 +1569,10 @@
       "title": "Dela flera klasser till en lärare samtidigt",
       "status": "Lokalt klart",
       "purpose": "Huvudadmin ska kunna ge en lärare ansvar för flera klasser i ett steg i stället för att öppna varje klass för sig.",
-      "next": "Bygg klassval i lärarens redigeringsvy och verifiera mot lokal data.",
-      "acceptance": "Redigera lärare visar klasser med kryssrutor; en sparning ändrar lärarens klassansvar. Inga andra lärares ansvar påverkas.",
+      "next": "Provkör som huvudadmin mot riktiga konton; publicering kräver Simons push.",
+      "acceptance": "Redigera lärare visar klassansvar med kryssrutor; en sparning ändrar flera klasser. Andra lärares ansvar och sessioner påverkas inte.",
       "decision": "2026-10-26: Simon beställer klassval per lärare. Samma dag tas knappen Äldre inloggningar bort och modulen Äldre elevinloggningar färgas adminorange.",
-      "evidence": "2026-10-26: Knappen Äldre inloggningar i lärarheadern borttagen (gjorde inget utanför fliken Klasser och elever). Modulen Äldre elevinloggningar färgad orange. Riktad ESLint på ändrade filer: endast tre äldre oanvända-variabelfel i dashboardClassAndAuthActions.js. Lärarvyns testfiler 150/490 godkända. Ingen browserkontroll, ingen push.",
+      "evidence": "2026-10-26: Knappen Äldre inloggningar i lärarheadern borttagen (gjorde inget utanför fliken Klasser och elever). Modulen Äldre elevinloggningar färgad orange. Riktad ESLint på ändrade filer: endast tre äldre oanvända-variabelfel i dashboardClassAndAuthActions.js. Lärarvyns testfiler 150/490 godkända. Ingen browserkontroll, ingen push.\n2026-10-26 klassansvar: Klassval per lärare i Redigera lärare (teacherClassAssignmentHelpers.js, TeacherAccountsAdmin.jsx). Borttagningar sparas före kontot och tillägg efter, eftersom kontot-API:t och klass-API:t kräver motsatt ordning för skolor. Ny robot teacher-class-bulk.robot.js: tre klasser i en sparning, återläsning efter omladdning, en klass avmarkerad. Roboten hittade att klass-API:t höjde sessionVersion för alla lärare på klassen, inklusive adminen som sparade, så andra klassen fick Admin access required; syncTeacherAssignments rör nu bara lärare vars medlemskap ändras. 6 nya enhetstester. Lärarvyn 151 filer/496 tester och klass-/lärarrobotar 5/5 godkända; hela suiten 993/994 filer, felet ligger i inbäddad .claude/worktrees-kopia. Build godkänd. Begränsning: när en admin ger sig själv klasser höjs den egna sessionen vid första klassen och resten kan falla; ej löst. Ingen browserkontroll av utseendet, ingen push.",
       "issue": "",
       "kind": "funktion",
       "requires": [],
@@ -1586,7 +1586,7 @@
         {
           "id": "bulk",
           "text": "Klassval per lärare i Redigera lärare",
-          "done": false
+          "done": true
         }
       ]
     }

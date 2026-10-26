@@ -23,7 +23,7 @@ export default function AdminDirectorySection({ teachers, classes, directory, ca
         ))}
       </div>
       <div className="mt-3">
-        {activeTab === 'teachers' && <TeacherAccountsAdmin teachers={teachers} onRefresh={onRefresh} setStatus={setStatus} />}
+        {activeTab === 'teachers' && <TeacherAccountsAdmin teachers={teachers} classes={classes} onRefresh={onRefresh} setStatus={setStatus} />}
         {activeTab === 'schools' && <div className="space-y-3">
           {canManageSchools && <NewSchoolForm directory={directory} />}
           <SchoolYearRollover schools={directory.schools} onCompleted={onRefresh} setStatus={setStatus} />

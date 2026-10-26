@@ -18,11 +18,8 @@ test('A teacher reveals private pupil names throughout their menus', async ({ pa
 
   await teacherLogin(page, teacher)
   await selectOnlyClass(page, className)
-  await expect(page.getByRole('button', { name: 'Visa tilltalsnamn' })).toBeVisible()
-  expect(rowFor(await tableUnder(page, 'Klass/gruppvy'), pupil.loginCode)).not.toBeNull()
-
-  await page.getByRole('button', { name: 'Visa tilltalsnamn' }).click()
-  await expect(page.getByText('1 tilltalsnamn visas nu i dina lärarvyer.')).toBeVisible()
+  // Names show on their own: no button has to be pressed first.
+  await expect(page.getByRole('button', { name: 'Byt till kodnamn' })).toBeVisible()
   await expect.poll(async () => Boolean(rowFor(await tableUnder(page, 'Klass/gruppvy'), creationName)))
     .toBe(true)
   const [download] = await Promise.all([

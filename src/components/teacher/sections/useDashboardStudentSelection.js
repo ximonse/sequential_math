@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { loadTeacherProfile } from '../../../lib/storage'
 import { getRecordClassLabel, recordMatchesClassFilter } from './dashboardCoreHelpers'
 
@@ -97,26 +97,38 @@ export function useDashboardStudentSelection({
   )
 
   const [loadedDetail, setLoadedDetail] = useState(null)
+  // The full history is fetched again only when the pupil or the pupil's data
+  // changes, never because the list was refreshed or a name changed. Refetching
+  // on every new list object blanked the panel and made the page jump.
+  const selectedRef = useRef(selectedListProfile)
+  useEffect(() => { selectedRef.current = selectedListProfile })
+  const lastProblem = selectedListProfile?.recentProblems?.[selectedListProfile.recentProblems.length - 1]
+  const detailKey = selectedListProfile
+    ? [selectedListProfile.studentId, selectedListProfile.serverRevision ?? '', selectedListProfile.recentProblems?.length ?? '', lastProblem?.timestamp ?? '',
+      selectedListProfile.teacherListSchemaVersion ? 'list' : 'full'].join(':')
+    : ''
   useEffect(() => {
     let active = true
-    setLoadedDetail(null)
-    if (!selectedListProfile) return
-    if (!selectedListProfile.teacherListSchemaVersion) {
-      setLoadedDetail(selectedListProfile)
-      return
+    const listProfile = selectedRef.current
+    if (!listProfile) { setLoadedDetail(null); return undefined }
+    if (!listProfile.teacherListSchemaVersion) {
+      setLoadedDetail(listProfile)
+      return undefined
     }
-    void loadTeacherProfile(selectedListProfile.studentId).then(profile => {
+    void loadTeacherProfile(listProfile.studentId).then(profile => {
       if (!active) return
-      setLoadedDetail(profile ? {
-        ...profile,
-        name: selectedListProfile.name,
-        teacherPupilLabel: selectedListProfile.teacherPupilLabel
-      } : null)
+      setLoadedDetail(profile)
       if (!profile) setDashboardStatus('Kunde inte hämta elevens fullständiga historik. Försök uppdatera.')
     })
     return () => { active = false }
-  }, [selectedListProfile, setDashboardStatus])
-  const detailStudentProfile = loadedDetail?.studentId === selectedListProfile?.studentId ? loadedDetail : null
+  }, [detailKey, setDashboardStatus])
+  // The name always comes from the current list entry, so a label change shows
+  // at once and a fetched profile can never carry an old name.
+  const detailStudentProfile = useMemo(() => (
+    loadedDetail && selectedListProfile && loadedDetail.studentId === selectedListProfile.studentId
+      ? { ...loadedDetail, name: selectedListProfile.name, teacherPupilLabel: selectedListProfile.teacherPupilLabel }
+      : null
+  ), [loadedDetail, selectedListProfile])
 
   return {
     hasMissingDirectStudent,

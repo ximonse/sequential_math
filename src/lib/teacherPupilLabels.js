@@ -1,17 +1,19 @@
 import { getTeacherApiToken } from './teacherAuth'
 
+// Returns null when the labels could not be read, so a failed request is never
+// mistaken for "this teacher has no labels".
 export async function loadTeacherPupilLabels() {
   const token = getTeacherApiToken()
-  if (!token) return {}
+  if (!token) return null
   try {
     const response = await fetch('/api/teacher-pupil-labels', {
       headers: { 'x-teacher-token': token }, cache: 'no-store'
     })
-    if (!response.ok) return {}
+    if (!response.ok) return null
     const data = await response.json()
     return data?.labels && typeof data.labels === 'object' ? data.labels : {}
   } catch {
-    return {}
+    return null
   }
 }
 

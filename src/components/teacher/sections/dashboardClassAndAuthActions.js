@@ -53,6 +53,7 @@ export async function syncClassesFromServer() {
 
 export function buildDashboardClassAndAuthActions({
   loadStudents,
+  setPupilLabels,
   addToClassId,
   setClasses,
   setAddToClassId,
@@ -181,7 +182,8 @@ export function buildDashboardClassAndAuthActions({
   const handleSetTeacherPupilLabel = async (studentId, label) => {
     const result = await saveTeacherPupilLabel(studentId, label)
     if (!result.ok) { setDashboardStatus(result.error || 'Kunde inte spara tilltalsnamnet.'); return false }
-    await loadStudents(); setDashboardStatus(label.trim() ? 'Ditt tilltalsnamn är sparat.' : 'Ditt tilltalsnamn är borttaget.'); return true
+    if (result.labels) setPupilLabels(result.labels)
+    setDashboardStatus(label.trim() ? 'Ditt tilltalsnamn är sparat.' : 'Ditt tilltalsnamn är borttaget.'); return true
   }
 
   const handleRenameClass = async (id, name, schoolId) => {

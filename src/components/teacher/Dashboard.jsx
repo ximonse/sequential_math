@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import DashboardLayout from './sections/DashboardLayout'
 import {
@@ -63,8 +63,17 @@ function storeCodeNamesPreference(enabled) {
   try { if (enabled) localStorage.setItem(CODE_NAMES_KEY, '1'); else localStorage.removeItem(CODE_NAMES_KEY) } catch { /* Preferences are optional. */ }
 }
 
+// Waits for a slow label request only this long before drawing the list; the
+// names then arrive on their own and never replace names already on screen.
+const LABEL_WAIT_MS = 2500
+
 function Dashboard() {
-  const [students, setStudents] = useState([])
+  const [rawStudents, setStudents] = useState([])
+  const [pupilLabels, setPupilLabels] = useState({})
+  const [labelsLoaded, setLabelsLoaded] = useState(false)
+  const labelsRequest = useRef(null)
+  const loadSequence = useRef(0)
+  const fillAttempted = useRef(new Set())
   const [assignments, setAssignments] = useState([])
   const [viewMode, setViewMode] = useState('daily')
   const [sortBy, setSortBy] = useState('active_today')
@@ -79,6 +88,12 @@ function Dashboard() {
   const [dashboardStatus, setDashboardStatus] = useState('')
   const [fillingPupilNames, setFillingPupilNames] = useState(false)
   const [codeNamesOnly, setCodeNamesOnly] = useState(prefersCodeNames)
+  // The name shown for a pupil is decided here, from the label map and the
+  // teacher's own choice, so no refresh can ever reset it to the code name.
+  const students = useMemo(() => rawStudents.map(profile => {
+    const label = pupilLabels[profile.studentId] || ''
+    return { ...profile, name: (!codeNamesOnly && label) || profile.displayAlias || profile.studentId, teacherPupilLabel: label }
+  }), [rawStudents, pupilLabels, codeNamesOnly])
   const [copiedId, setCopiedId] = useState('')
   const [activeAssignmentId, setActiveAssignmentId] = useState('')
   const [supportSortBy, setSupportSortBy] = useState('risk')
@@ -106,12 +121,24 @@ function Dashboard() {
 
   const [exportRange, setExportRange] = useState({ from: '', to: '' })
 
+  // Fetched once, then only changed by the teacher's own actions. A failed
+  // request keeps the labels already known and is retried on the next load.
+  const ensureLabels = useCallback(() => {
+    if (labelsRequest.current) return labelsRequest.current
+    labelsRequest.current = loadTeacherPupilLabels().then(labels => {
+      if (labels) { setPupilLabels(labels); setLabelsLoaded(true) }
+      return Boolean(labels)
+    }).finally(() => { labelsRequest.current = null })
+    return labelsRequest.current
+  }, [])
+
   const loadStudents = useCallback(async () => {
-    // Labels are fetched after the list renders: a slow or failing label call
-    // must never keep the pupils themselves off the screen.
+    const sequence = ++loadSequence.current
     const [profiles, groupData] = await Promise.all([
       getAllProfilesWithSync(),
-      loadTeacherGroups().catch(() => ({ groups: [] }))
+      loadTeacherGroups().catch(() => ({ groups: [] })),
+      // A slow or failing label call must never keep the pupils off the screen.
+      labelsLoaded ? null : Promise.race([ensureLabels(), new Promise(resolve => setTimeout(resolve, LABEL_WAIT_MS))])
     ])
     const groups = Array.isArray(groupData?.groups) ? groupData.groups : []
     const enrichedProfiles = profiles.map(profile => ({
@@ -125,47 +152,42 @@ function Dashboard() {
       const bLast = b.recentProblems[b.recentProblems.length - 1]?.timestamp || 0
       return bLast - aLast
     })
-    setStudents(enrichedProfiles)
-    setTeacherGroups(groups)
-    setCloudSyncStatus(getCloudProfilesSyncStatus())
-
-    void loadTeacherPupilLabels().then(labels => {
-      if (!labels || Object.keys(labels).length === 0 || prefersCodeNames()) return
-      setStudents(current => current.map(profile => (
-        labels[profile.studentId]
-          ? { ...profile, name: labels[profile.studentId], teacherPupilLabel: labels[profile.studentId] }
-          : profile
-      )))
-    })
+    // An older refresh that finishes after a newer one must not overwrite it.
+    if (sequence === loadSequence.current) {
+      setStudents(enrichedProfiles)
+      setTeacherGroups(groups)
+      setCloudSyncStatus(getCloudProfilesSyncStatus())
+    }
 
     const serverClasses = await syncClassesFromServer()
-    setClasses(serverClasses || [])
+    if (sequence === loadSequence.current) setClasses(serverClasses || [])
     return enrichedProfiles
-  }, [])
+  }, [ensureLabels, labelsLoaded])
 
   const showCodeNames = () => {
     storeCodeNamesPreference(true)
     setCodeNamesOnly(true)
-    setStudents(current => current.map(profile => ({ ...profile, name: profile.displayAlias || profile.studentId })))
     setDashboardStatus('Kodnamnen visas nu i dina lärarvyer.')
   }
+
+  // Copies the names typed when pupils were created into this teacher's own
+  // labels. Only adds missing ones; nothing already saved is replaced.
+  const fillPupilLabels = useCallback(async () => {
+    const result = await fillTeacherPupilLabelsFromCreationNames()
+    if (result.ok) { setPupilLabels(result.labels || {}); setLabelsLoaded(true) }
+    return result
+  }, [])
 
   const showPupilNames = async () => {
     storeCodeNamesPreference(false)
     setCodeNamesOnly(false)
     setFillingPupilNames(true)
     try {
-      const result = await fillTeacherPupilLabelsFromCreationNames()
+      const result = await fillPupilLabels()
       if (!result.ok) {
         setDashboardStatus(result.error || 'Kunde inte hämta tilltalsnamnen.')
         return
       }
-      await loadStudents()
-      setStudents(current => current.map(profile => (
-        result.labels?.[profile.studentId]
-          ? { ...profile, name: result.labels[profile.studentId], teacherPupilLabel: result.labels[profile.studentId] }
-          : profile
-      )))
       setDashboardStatus(result.added > 0
         ? `${result.added} tilltalsnamn visas nu i dina lärarvyer.`
         : 'Tilltalsnamnen visas i dina lärarvyer där de finns sparade.')
@@ -173,6 +195,16 @@ function Dashboard() {
       setFillingPupilNames(false)
     }
   }
+
+  // Names are the default. Pupils that have no label yet get one from their
+  // creation name, once per pupil, unless the teacher chose code names.
+  useEffect(() => {
+    if (codeNamesOnly || !labelsLoaded) return
+    const missing = rawStudents.map(profile => profile.studentId).filter(id => !pupilLabels[id] && !fillAttempted.current.has(id))
+    if (missing.length === 0) return
+    for (const id of missing) fillAttempted.current.add(id)
+    void fillPupilLabels()
+  }, [rawStudents, pupilLabels, labelsLoaded, codeNamesOnly, fillPupilLabels])
 
   useEffect(() => {
     const onGroupsUpdated = () => { void loadStudents() }
@@ -254,6 +286,7 @@ function Dashboard() {
     handleOpenStudentDetail
   } = buildDashboardClassAndAuthActions({
     loadStudents,
+    setPupilLabels,
     addToClassId,
     setClasses,
     setAddToClassId,
@@ -486,7 +519,7 @@ function Dashboard() {
         addToClassId, setAddToClassId,
         classes, onLocalTestDataImported: loadStudents, handleAddExistingStudentsToClass, handleMoveStudent, handleAddStudentsToClass, rosterInput, setRosterInput, classStatus,
         handleSetTeacherPupilLabel, showPupilNames, fillingPupilNames, showCodeNames,
-        pupilLabelsShown: !codeNamesOnly && students.some(profile => profile.teacherPupilLabel),
+        pupilLabelsShown: !codeNamesOnly,
         resultsPanelProps, PASSWORD_RESET_SECTION_ID, passwordResetRows, passwordResetSearch,
         setPasswordResetSearch, passwordResetStatus, handleResetStudentPassword, passwordResetBusyId
       }}

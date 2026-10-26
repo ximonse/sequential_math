@@ -1663,6 +1663,76 @@
           "done": false
         }
       ]
+    },
+    {
+      "id": "screening-image-questions",
+      "area": "Bildfrågor",
+      "title": "Figurbank, eget bildbibliotek och tryckbara bildsvar",
+      "status": "Byggt",
+      "purpose": "Skapa geometriska screeningfrågor med originalfigurer eller privata uppladdningar, samma API för framtida MCP.",
+      "next": "Slutför bred robotregression, bildgranskning och lokal commit.",
+      "acceptance": "Läraren skapar och delar ut bildfrågor. Elevens val bevaras och rättas exakt; läraren ser bilder och faktiska val. Ingen mastery-påverkan eller facitläcka.",
+      "requires": [
+        "workspace-answer-types",
+        "student-collections"
+      ],
+      "affects": [
+        "matrix",
+        "reuse-collections"
+      ],
+      "decision": "2026-10-26 Simon godkände planen: läraren väljer svarssätt per fråga, originalbank och privat återanvändbart bildbibliotek. API förbereds för MCP; MCP-server ingår inte. Ingen push eller produktion utan separat mandat.",
+      "evidence": "2026-10-26 lokalt byggt: 33 versionerade SVG-varianter, fyra geometrifrågor, frågeredigerare med elevförhandsvisning, uppladdning och privat KV-bibliotek, frysta bildreferenser, valhändelser med befintligt revisionsskydd och lärarresultat. 171 testfiler/827 tester godkända; build och riktad lint godkända. Två hela bildrobotflöden godkända med syntetisk minneslagring och emulerad iPad. Elev- och redigerarskärmbilder granskade. Ny lärarbildgranskning och bred robotregression pågår. Inte fysisk iPad, verklig KV eller produktion. Arkitektur: DiagnosticGridPrototype 603 rader; ny bildrendering är separat komponent, integrationen återanvänder befintlig händelse- och navigeringskedja.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "image-bank",
+          "text": "Originalbank och privata uppladdningar med frysta referenser",
+          "done": true
+        },
+        {
+          "id": "image-flow",
+          "text": "Skapa, dela ut, svara, återläsa och granska utan mastery-påverkan",
+          "done": true
+        },
+        {
+          "id": "image-verify",
+          "text": "Bred regression och slutlig visuell kontroll",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "teacher-names-stable",
+      "area": "Lärarvy",
+      "title": "Tilltalsnamn syns alltid och hoppar aldrig tillbaka till kodnamn",
+      "status": "Lokalt klart",
+      "purpose": "Läraren ska se tilltalsnamn överallt som standard och bara se kodnamn när läraren själv trycker på knappen. Sidan ska inte hoppa när namn byter.",
+      "next": "Simon provar i lärarvyn efter nästa push; publicering kräver hans push.",
+      "acceptance": "Namn visas utan knapptryck, en uppdatering visar aldrig kodnamn ens ett ögonblick, ett långsamt eller felande namnanrop tar inte tillbaka kodnamn, och kodnamnsvalet ligger kvar efter omladdning.",
+      "decision": "2026-10-26: Simon beställer att tilltalsnamn alltid ska synas om han inte själv byter. Tilltalsnamn fylls därför i automatiskt från skapandenamn, en gång per elev, om kodnamn inte är valt.",
+      "evidence": "2026-10-26 lokalt: orsaker var att loadStudents satte kodnamn först och tilltalsnamn efter ett separat anrop vid varje uppdatering (start, 2 min kl 8-15, fokus, efter åtgärder), att ett misslyckat namnanrop lämnade kodnamn, och att detaljpanelen tömdes och hämtades om vid varje uppdatering. Namn härleds nu på ett ställe från en egen namnlista; äldre uppdatering kan inte skriva över nyare; detaljpanelen hämtas bara om vid ändrad elev eller elevdata. Tre nya robotar (teacher-names-stable) var röda före och gröna efter; teacher-names uppdaterad. Vitest 4831/4832 (felet i äldre kopia under .claude/worktrees), build ok, robotsviten 143/151 vid första körning med belastning, de åtta fallen passerade vid omkörning. Ej pushat.",
+      "issue": "",
+      "kind": "funktion",
+      "requires": [],
+      "affects": [],
+      "tasks": [
+        {
+          "id": "stable",
+          "text": "Namn härleds på ett ställe; uppdatering återställer aldrig kodnamn",
+          "done": true
+        },
+        {
+          "id": "auto",
+          "text": "Tilltalsnamn fylls i automatiskt som standard",
+          "done": true
+        },
+        {
+          "id": "try",
+          "text": "Simon provar i lärarvyn",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [
@@ -2229,6 +2299,26 @@
     {
       "source": "screening-split",
       "target": "review",
+      "kind": "påverkar"
+    },
+    {
+      "source": "workspace-answer-types",
+      "target": "screening-image-questions",
+      "kind": "kräver"
+    },
+    {
+      "source": "student-collections",
+      "target": "screening-image-questions",
+      "kind": "kräver"
+    },
+    {
+      "source": "screening-image-questions",
+      "target": "matrix",
+      "kind": "påverkar"
+    },
+    {
+      "source": "screening-image-questions",
+      "target": "reuse-collections",
       "kind": "påverkar"
     }
   ],

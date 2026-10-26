@@ -154,9 +154,11 @@
 .notebook-grid-scroll { overflow-x: auto; }
 .diagnostic-answer-row { display: flex; gap: 6px; margin-top: 8px; align-items: start; }
 .diagnostic-answer-row input, .diagnostic-answer-row textarea { width: 100%; min-width: 0; flex: 1; min-height: 38px; padding: 4px 7px; border: 1px solid var(--border, #8295ac); border-radius: 5px; font-size: 18px; color: var(--text-main, #162332); background: var(--surface-strong, #fff); }
+.notebook-answer-field { flex: 1; min-width: 0; }
+.notebook-answer-field[data-active="true"] input, .notebook-answer-field[data-active="true"] textarea { background: #fff; color: #162332; outline: none; }
 .notebook-question--text { display: block; height: auto; min-height: 44px; padding: 8px 10px; font-size: 18px; line-height: 1.45; text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; overflow: visible; }
 .diagnostic-answer-row--text { flex-wrap: wrap; justify-content: flex-end; }
-.diagnostic-answer-row--text textarea { flex-basis: 100%; }
+.diagnostic-answer-row--text .notebook-answer-field { flex-basis: 100%; }
 .diagnostic-answer-row textarea { min-height: 120px; line-height: 1.45; resize: none; overflow-y: hidden; overflow-wrap: anywhere; }
 .diagnostic-prototype .notebook-next { flex: 0 0 126px; display: flex; gap: 6px; align-items: center; justify-content: center; font-size: 13px; }
 .diagnostic-prototype .notebook-next, .diagnostic-prototype .notebook-submit-ready { background: #256343; border-color: #256343; color: #fff; }

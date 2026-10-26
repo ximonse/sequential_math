@@ -1442,33 +1442,93 @@
     {
       "id": "answer-minus-target",
       "area": "Elevarbete",
-      "title": "Minustecken ska stanna i vald svarsruta",
-      "status": "Saknas",
-      "purpose": "Göra det möjligt att skriva negativa slutsvar med den synliga minusknappen utan att inmatningen flyttar till rutnätet.",
-      "next": "Återskapa med klickrobot och rätta minusknappens målval inom separat implementationsuppdrag.",
-      "acceptance": "Mitt svar vald: minus följt av 2 och 5 ger −25 i svarsrutan; rutnätet ändras inte och fortsatt inmatning går till svaret. Negativa decimaler, tangentbord och ± fungerar. Minus i uttryckligt valt rutnät fungerar som tidigare.",
+      "title": "Matematiktecken och aktiv svarsruta",
+      "status": "Lokalt klart",
+      "purpose": "Bevara valt inmatningsmål för alla tecken i räknehäftet och visa aktiv svarsruta med vit skrivbakgrund.",
+      "next": "Invänta uttryckligt publiceringsmandat för denna ändring. Issue #14 hålls öppen tills publiceringen är verifierad.",
+      "acceptance": "Minus, procent, bråkstreck, parenteser och algebratecken hamnar i vald svarsruta. Tecken bevaras genom sparning och omladdning till lärarunderlag. Aktiv svarsruta har vit bakgrund och mörk text utan extra etikett. Val av rutnät återställer gridinmatning; minnessiffror ändras inte av svarsknapparna.",
       "requires": [
         "grid-numpad"
       ],
       "affects": [
         "workspace-answer-types"
       ],
-      "decision": "2026-10-26: Simon bad om en issue. Endast felrapport och projektkarta i detta sjok; inget implementations- eller publiceringsmandat.",
-      "evidence": "2026-10-26: GitHub issue #14 skapad. Kodgranskning: NotebookTools skickar minus via onSign till writeOperationSign, som väljer inputTarget grid och fokuserar rutan. Svarsformatet tillåter redan negativa tal; keypad har svarshantering för ±. Ingen ny webbläsarreproduktion, rättning, tester eller publicering gjord.",
+      "decision": "2026-10-26: Simon bad om en issue. Endast felrapport och projektkarta i detta sjok; inget implementations- eller publiceringsmandat. Senare 2026-10-26: Simon bad att rätta alla relevanta tecken, inklusive %, och visa aktivering. Därefter preciserat till enbart vit skrivbakgrund, utan texten Mitt svar · aktivt. Lokalt implementationsmandat; ingen ny publicering.",
+      "evidence": "2026-10-26: GitHub issue #14 skapad. Kodgranskning: NotebookTools skickar minus via onSign till writeOperationSign, som väljer inputTarget grid och fokuserar rutan. Svarsformatet tillåter redan negativa tal; keypad har svarshantering för ±. Ingen ny webbläsarreproduktion, rättning, tester eller publicering gjord. Lokal rättning: tecken routas efter inputTarget, svarsfältet återfår fokus och siffersvarets validering accepterar matematiktecken/enheter (max 200). Bedömning utvärderar inte uttryck eller strippade symboler. Robot reproducerade minusfelet rött före rättning; två nya robotprov gröna före sista visuella justeringen. 167 filer/805 enhetstester samt build godkända. Full robotsvit pågår. Slutkontroll: 140/141 robotprov godkända i full körning; Dubblor fick timeout i testserverns /__robot/verify och gick sedan igenom separat med en worker. Därmed samtliga 141 unika prov verifierade. Vit bakgrund/mörk text kontrollerad i fem teman; skärmbilder granskade i ljust och mörkt tema. Riktad lint, arkitekturkontroll och projektkarta godkända. Lokal commit; inget pushat eller publicerat.",
       "issue": "https://github.com/ximonse/sequential_math/issues/14",
       "kind": "deluppgift",
       "tasks": [
         {
           "id": "answer-minus-reproduce",
           "text": "Reproducera fokus-/målbytet med klickrobot före rättning.",
-          "done": false
+          "done": true
         },
         {
           "id": "answer-minus-fix",
           "text": "Rätta målvalet och verifiera negativa svar samt oförändrat rutnät.",
-          "done": false
+          "done": true
+        },
+        {
+          "id": "answer-symbols-save",
+          "text": "Verifiera symbolsvar med och utan rutnät genom serverlagring och lärarens underlag.",
+          "done": true
+        },
+        {
+          "id": "answer-active-background",
+          "text": "Visa aktiv svarsruta med vit skrivbakgrund utan extra text; kontrollera teman.",
+          "done": true
         }
       ]
+    },
+    {
+      "id": "grid-hold-orange",
+      "title": "Orange signal när långtryck är redo",
+      "purpose": "Visa med en mjuk orange fadeblinkning att eleven kan börja dra efter långtryck.",
+      "acceptance": "Berörd ruta blinkar mjukt orange när långtrycket aktiveras. Korttryck och scroll ger ingen signal eller ändring; reducerad rörelse respekteras.",
+      "next": "Implementera signalen vid aktiverad långtryckstimer och verifiera touchgester.",
+      "requires": [
+        "grid-numpad"
+      ],
+      "affects": [],
+      "area": "Elevarbete",
+      "status": "Föreslaget",
+      "decision": "2026-10-26: Simon bad att registrera detta som issue. Ingen implementation eller publicering i detta sjok.",
+      "evidence": "Öppen GitHub-issue skapad 2026-10-26; endast registrering och kartuppdatering.",
+      "issue": "https://github.com/ximonse/sequential_math/issues/15",
+      "kind": "deluppgift",
+      "tasks": []
+    },
+    {
+      "id": "screening-last-submit",
+      "title": "Lämna in-knapp på sista frågan",
+      "purpose": "Göra skillnaden mellan nästa fråga och inlämning synlig på sista screeningfrågan.",
+      "acceptance": "Knappen vid svaret visar Nästa fråga före sista frågan och en mörkare Lämna in på sista frågan. Befintlig atomisk inlämning och spar-/varningsskydd behålls.",
+      "next": "Koppla sista frågans knapp till befintlig inlämning och verifiera en- och flerfrågesamlingar.",
+      "requires": [],
+      "affects": [],
+      "area": "Elevarbete",
+      "status": "Föreslaget",
+      "decision": "2026-10-26: Simon bad att registrera detta som issue. Ingen implementation eller publicering i detta sjok.",
+      "evidence": "Öppen GitHub-issue skapad 2026-10-26; endast registrering och kartuppdatering.",
+      "issue": "https://github.com/ximonse/sequential_math/issues/16",
+      "kind": "deluppgift",
+      "tasks": []
+    },
+    {
+      "id": "screening-submit-home",
+      "title": "Till startsidan efter inlämnad screening",
+      "purpose": "Stänga elevens screening när hela inlämningen har bekräftats och återgå till startsidan.",
+      "acceptance": "Serverbekräftad gemensam inlämning leder till elevens startsida med aktuell status. Vid fel stannar eleven med bevarat arbete. Lärarunderlaget finns kvar.",
+      "next": "Återanvänd befintlig hemnavigering först efter verifierad inlämningskvittens.",
+      "requires": [],
+      "affects": [],
+      "area": "Elevarbete",
+      "status": "Föreslaget",
+      "decision": "2026-10-26: Simon bad att registrera detta som issue. Ingen implementation eller publicering i detta sjok.",
+      "evidence": "Öppen GitHub-issue skapad 2026-10-26; endast registrering och kartuppdatering.",
+      "issue": "https://github.com/ximonse/sequential_math/issues/17",
+      "kind": "deluppgift",
+      "tasks": []
     }
   ],
   "edges": [
@@ -2016,6 +2076,11 @@
       "source": "answer-minus-target",
       "target": "workspace-answer-types",
       "kind": "påverkar"
+    },
+    {
+      "source": "grid-numpad",
+      "target": "grid-hold-orange",
+      "kind": "kräver"
     }
   ],
   "note": "Planeringssnapshot. Lokalt klart är inte publicerat. Tidigare publicering bygger på denna tråds verifiering; ingen ny livekontroll. Förslag är inte fattade beslut."

@@ -14,13 +14,13 @@ describe('grid-border lines and saved workspace', () => {
       .toEqual({ x1: 3, y1: 1, x2: 3, y2: 5 })
   })
 
-  it('replays text answers and drawing/eraser strokes exactly, without accepting text in numeric answers', () => {
+  it('replays text answers and drawing/eraser strokes exactly, keeping numeric answers single-line', () => {
     let grid = createDiagnosticGrid({ attemptId: 'A', taskId: 'T', taskVersion: 1, answerType: 'text' })
     grid = recordDiagnosticGridEvent(grid, { type: 'answer_change', before: '', after: 'Jag växlade en tia.' })
     grid = recordDiagnosticGridEvent(grid, { type: 'drawing_stroke', points: [[0.1, 0.2], [0.3, 0.4]], erasing: false })
     grid = recordDiagnosticGridEvent(grid, { type: 'drawing_stroke', points: [[0.2, 0.3]], erasing: true })
     expect(replayDiagnosticGrid(JSON.parse(JSON.stringify(grid)))).toEqual(grid)
     const numeric = createDiagnosticGrid({ attemptId: 'B', taskId: 'T', taskVersion: 1 })
-    expect(() => recordDiagnosticGridEvent(numeric, { type: 'answer_change', before: '', after: 'Text' })).toThrow()
+    expect(() => recordDiagnosticGridEvent(numeric, { type: 'answer_change', before: '', after: 'Text\nnext line' })).toThrow()
   })
 })

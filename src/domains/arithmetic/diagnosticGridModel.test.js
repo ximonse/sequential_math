@@ -10,6 +10,17 @@ function startingGrid() {
 }
 
 describe('diagnostic grid observation', () => {
+  it('preserves mathematical answer notation and legacy numbers through serialized replay', () => {
+    for (const answer of ['−25', '−2,5%', '2/5', 'x = (3+2)²', '147 kr', '−123456789012,123456789012']) {
+      const grid = recordDiagnosticGridEvent(startingGrid(), { type: 'answer_change', before: '', after: answer }, 1001)
+      expect(replayDiagnosticGrid(JSON.parse(JSON.stringify(grid))).answer).toBe(answer)
+      expect(grid.cells).toEqual({})
+    }
+    for (const answer of ['1'.repeat(201), '25\u0000', '25\n']) {
+      expect(() => recordDiagnosticGridEvent(startingGrid(), { type: 'answer_change', before: '', after: answer }, 1001))
+        .toThrow('Answer history')
+    }
+  })
   it('replays insertion, correction, note, movement and interruption without losing the final image', () => {
     let grid = startingGrid()
     grid = recordDiagnosticGridEvent(grid, {

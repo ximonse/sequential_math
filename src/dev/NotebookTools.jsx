@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import NumberKeys from '../components/student/NumberKeys'
 
 export default function NotebookTools({ formats, disabled, lineMode, eraseMode, onLine, onErase, onLoan,
-  canLoan, onKey, onSign, signsDisabled, gridEnabled, status, onGuide = null }) {
+  canLoan, onKey, onSign, signsDisabled, gridEnabled, status, onGuide = null, answerActive = false }) {
   const [helpOpen, setHelpOpen] = useState(false)
   const [helpHovered, setHelpHovered] = useState(false)
   const helpVisible = helpOpen || helpHovered
@@ -43,7 +43,7 @@ export default function NotebookTools({ formats, disabled, lineMode, eraseMode, 
       </div>
     </div>}
     <div className="notebook-keypad" role="group" aria-label="Sifferknappar">
-      {gridEnabled && <>
+      {(gridEnabled || answerActive) && <>
         <div className="notebook-operators" role="group" aria-label="Räknetecken">
           {['−', '×', '/', '+'].map(sign => <button key={sign} type="button" aria-label={`Skriv ${sign}`}
             onClick={() => onSign(sign)} disabled={disabled || signsDisabled}>{sign}</button>)}

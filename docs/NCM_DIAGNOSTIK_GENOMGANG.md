@@ -258,3 +258,22 @@ och faktisk nätavbrottsprovning genom hela driftsatta klient/API-flödet
 Kartan har även fått Nytt kort / idé, verifierat med skyddat API och ett
 isolerat webbläsartest. Kartan körs fortfarande bara lokalt; att verktygets
 källkod ligger på GitHub betyder inte att kartservern är publicerad.
+
+## Svar med matematiktecken – 2026-10-26, lokal ändring
+
+När svarsrutan är vald går även minus, procent, bråkstreck, parenteser och
+algebratecken till svaret. Svarsrutan behåller fokus efter teckenknapparna,
+även när rutnätet är dolt eller dess senast valda ruta har en minnessiffra.
+Den aktiva svarsrutan får vit skrivbakgrund med mörk text; ingen extra
+aktiveringstext visas. Rutnätets markering släcks när svaret väljs.
+Textsvar använder fortsatt ett vanligt textfält med enhetens tangentbord.
+
+Siffersvar kan nu bevara matematikuttryck och enheter på en rad (högst
+200 tecken). Händelsehistorik och servervalidering bevarar svaret, inklusive
+symboler, oförändrat. Uppgiftens bedömning är fortfarande separat: symboler
+strippas inte och uttryck räknas inte automatiskt ut för att ge rätt svar.
+Textsvar behåller sin gräns på 2000 tecken. Inget publiceringsmandat ingår.
+
+Robotprov har följt teckenknappar, tangentbord, oförändrade minnessiffror,
+JSON-återläsning samt elev → sparning → omladdning → lärarunderlag, med och
+utan rutnät. Full slutkontroll dokumenteras i projektkartan.

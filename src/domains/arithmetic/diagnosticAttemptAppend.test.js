@@ -22,6 +22,19 @@ function expectAppendError(action, code, status) {
 }
 
 describe('prepareDiagnosticAppend', () => {
+  it('stores mathematical answer symbols unchanged and acknowledges retries without touching cells', () => {
+    const start = initial()
+    const answers = ['−', '−25', '−25%', '2/5', 'x = (3+2)²', '147 kr']
+    const written = answers.reduce((snapshot, after, index) => recordDiagnosticGridEvent(snapshot,
+      { type: 'answer_change', before: snapshot.answer, after }, 1000 + index), start)
+    const saved = prepareDiagnosticAppend({ snapshot: start, serverRevision: 0, expectedRevision: 0,
+      events: JSON.parse(JSON.stringify(written.events)) })
+    expect(saved.snapshot.answer).toBe('147 kr')
+    expect(saved.snapshot.events.map(item => item.after)).toEqual(answers)
+    expect(saved.snapshot.cells).toEqual({})
+    expect(prepareDiagnosticAppend({ snapshot: saved.snapshot, serverRevision: 1,
+      expectedRevision: 0, events: written.events })).toMatchObject({ kind: 'duplicate', serverRevision: 1 })
+  })
   it('uses the same event and byte ceilings for pupil input and server append', () => {
     const events = Array.from({ length: MAX_DIAGNOSTIC_ATTEMPT_EVENTS }, (_, index) => ({
       type: 'pause', attemptId: 'attempt-a', eventId: `attempt-a:${index + 1}`,

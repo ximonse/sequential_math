@@ -10,6 +10,13 @@ function gridFor(task, actions = []) {
 }
 
 describe('diagnostic observation facts', () => {
+  it('keeps notation as written instead of silently converting an expression or percent to an integer answer', () => {
+    const task = manifest.tasks[0]
+    for (const answer of ['699%', '699/1', 'x=699']) {
+      const grid = gridFor(task, [{ type: 'answer_change', before: '', after: answer }])
+      expect(summarizeDiagnosticObservation(task, grid)).toMatchObject({ explicitAnswer: answer, answerStatus: 'incomplete' })
+    }
+  })
   it('keeps a correct answer distinct from absent working and from submission', () => {
     const task = manifest.tasks[0]
     const grid = gridFor(task, [{ type: 'answer_change', before: '', after: '699' }])

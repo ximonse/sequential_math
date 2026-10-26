@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import taskManifest from '../domains/arithmetic/diagnosticTasks.v1.json'
 import {
   createDiagnosticGrid,
@@ -10,10 +10,11 @@ import DiagnosticGridLines from './DiagnosticGridLines'
 import { lineTouchesPoint } from '../domains/arithmetic/diagnosticLineGeometry'
 import MathScratchpad from '../components/student/MathScratchpad'
 import NotebookTools from './NotebookTools'
+import NotebookAnswerInput from './NotebookAnswerInput'
 import NotebookTutorial from './NotebookTutorial'
 import QuestionText from '../components/QuestionText'
 import { shouldShowNotebookTutorial } from './notebookTutorialSeen'
-import { MAIN_CHARACTERS, NUMBER_ANSWER } from '../domains/arithmetic/diagnosticGridModel'
+import { MAIN_CHARACTERS, MATH_ANSWER } from '../domains/arithmetic/diagnosticGridModel'
 import './diagnosticGridPrototype.css'
 
 const TASKS = taskManifest.tasks
@@ -66,14 +67,6 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const editingLocked = grid.status === 'submitted' || submitting
 
   useEffect(() => { onGridChange?.(grid.events.length, grid) }, [grid, onGridChange])
-
-  // A written answer grows with its text so the whole answer is always visible.
-  useLayoutEffect(() => {
-    const element = answerRef.current
-    if (!element || element.tagName !== 'TEXTAREA') return
-    element.style.height = 'auto'
-    element.style.height = `${element.scrollHeight + 2}px`
-  }, [grid.answer, task.answerType])
 
   const record = useCallback((actionOrBuilder) => {
     if (submitting) return
@@ -309,15 +302,20 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   }
 
   function changeAnswer(after) {
-    if (task.answerType === 'text' ? after.length > 2000 : !NUMBER_ANSWER.test(after)) return
+    if (task.answerType === 'text' ? after.length > 2000 : !MATH_ANSWER.test(after)) return
     record(previous => previous.answer === after ? null : { type: 'answer_change', before: previous.answer, after })
   }
 
   function keypad(character) {
-    if (inputTarget === 'answer') changeAnswer(character === 'backspace' ? grid.answer.slice(0, -1)
+    character = character === '-' ? '−' : character === '*' ? '×' : character
+    if (inputTarget === 'answer') {
+      changeAnswer(character === 'backspace' ? grid.answer.slice(0, -1)
       : character === 'clear' ? '' : character === '±' ? grid.answer.startsWith('−') || grid.answer.startsWith('-') ? grid.answer.slice(1) : `−${grid.answer}`
       : character === ',' && !grid.answer.replace(/^[−-]/u, '') ? `${grid.answer}0,` : `${grid.answer}${character}`)
-    else if (character === 'backspace' || character === 'clear') eraseCell(character === 'clear')
+      answerRef.current?.focus({ preventScroll: true })
+      return
+    }
+    if (character === 'backspace' || character === 'clear') eraseCell(character === 'clear')
     else if (character === '±') writeCell('−')
     else writeCell(character)
   }
@@ -422,7 +420,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const attemptFull = Boolean(pilot && isDiagnosticAttemptFull(grid.events))
 
   function formatButton(layer, label) {
-    const active = grid.cursor.layer === layer
+    const active = inputTarget === 'grid' && grid.cursor.layer === layer
     const cannotConvert = selectedCell && !selectedIsDigit && Boolean(selectedCell.main || selectedCell.note)
     return <button type="button" onClick={() => { setInputTarget('grid'); setLineMode(false); setEraseMode(false); setLayer(layer); setContextMenu(null); focusSelectedCell() }}
       disabled={editingLocked || attemptFull || cannotConvert}
@@ -433,6 +431,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   }
 
   function writeOperationSign(sign) {
+    if (inputTarget === 'answer') { keypad(sign); return }
     if (selectedCell?.note || selectedCell?.struck) return
     setInputTarget('grid')
     setLayer('main')
@@ -474,7 +473,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             <DiagnosticGridLines lines={grid.lines} preview={linePreview} rows={grid.rows} columns={grid.columns} />
             {visibleCells.map(({ row, column }) => {
               const cell = grid.cells[`${row}:${column}`] || { main: '', note: '' }
-              const selected = grid.cursor.row === row && grid.cursor.column === column
+              const atCursor = grid.cursor.row === row && grid.cursor.column === column
+              const selected = atCursor && inputTarget === 'grid'
               const layer = selected ? grid.cursor.layer : cell.note ? 'note' : 'main'
               return (
                 <div key={`${row}:${column}`} className={`diagnostic-cell diagnostic-cell--${layer} ${selected ? 'diagnostic-cell--selected' : ''} ${dragPreview === `${row}:${column}` ? 'diagnostic-cell--drag-preview' : ''}`}>
@@ -489,7 +489,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
                     value=""
                     data-cell={`${row}:${column}`}
                     data-layer={layer}
-                    tabIndex={selected && grid.status !== 'submitted' ? 0 : -1}
+                    tabIndex={atCursor && grid.status !== 'submitted' ? 0 : -1}
                     aria-label={`${selected ? 'Markerad ruta, ' : ''}rad ${row + 1}, kolumn ${column + 1}${cell.main ? `, stor siffra ${cell.main}` : ''}${cell.note ? `, minnessiffra ${cell.note}` : ''}${cell.struck ? ', struken' : ''}${!cell.main && !cell.note ? ', tom' : ''}`}
                     className="diagnostic-cell__input"
                     onPointerDown={event => startGesture(event, row, column)}
@@ -502,7 +502,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
                       selectCell(row, column)
                       setContextMenu({ x: Math.min(event.clientX, window.innerWidth - 190), y: Math.min(event.clientY, window.innerHeight - 145) })
                     }}
-                    onFocus={() => moveCursor({ row, column })}
+                    onFocus={() => { setInputTarget('grid'); moveCursor({ row, column }) }}
                     onChange={event => {
                       const entered = event.target.value
                       if (entered.length < 1 || entered.length > 2) return
@@ -519,15 +519,10 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
           </div>
             </div>
             {!workspaceOnly && <div className={`diagnostic-answer-row ${task.answerType === 'text' ? 'diagnostic-answer-row--text' : ''}`}>
-              {task.answerType === 'text' ? <textarea ref={answerRef} id="diagnostic-answer" aria-label="Mitt svar" placeholder="Skriv ditt svar här"
-                maxLength={2000} value={grid.answer} onChange={event => changeAnswer(event.target.value)} disabled={editingLocked} />
-                : <input id="diagnostic-answer" aria-label="Mitt svar" placeholder="Använd siffertangenterna" type="text" inputMode="none"
-                  readOnly value={grid.answer} onFocus={() => setInputTarget('answer')}
-                  onKeyDown={event => {
-                    if (event.ctrlKey || event.metaKey || event.altKey) return
-                    if (event.key === 'Backspace' || event.key === 'Delete') { event.preventDefault(); changeAnswer(event.key === 'Delete' ? '' : grid.answer.slice(0, -1)) }
-                    else if (/^[0-9−,-]$/u.test(event.key)) { event.preventDefault(); changeAnswer(`${grid.answer}${event.key}`) }
-                  }} disabled={editingLocked} />}
+              <NotebookAnswerInput inputRef={answerRef} answer={grid.answer} answerType={task.answerType}
+                active={inputTarget === 'answer' && !editingLocked} disabled={editingLocked}
+                onActivate={() => { setInputTarget('answer'); setLineMode(false); setEraseMode(false); setContextMenu(null); stopGesture() }}
+                onChange={changeAnswer} onKey={keypad} />
               {pilot && <button type="button" className="notebook-next" onClick={onNext} disabled={!onNext || navigationLocked}>
                 Nästa fråga <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 12h16m-7-7 7 7-7 7" fill="none" stroke="currentColor" strokeWidth="3" /></svg>
               </button>}
@@ -540,7 +535,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             onLine={() => { setInputTarget('grid'); setLineMode(current => !current); setEraseMode(false) }}
             onErase={() => { setInputTarget('grid'); setEraseMode(current => !current); setLineMode(false) }}
             canLoan={selectedIsDigit} onLoan={() => { setInputTarget('grid'); toggleCrossOut(); setLineMode(false); setEraseMode(false); focusSelectedCell() }}
-            onKey={keypad} onSign={writeOperationSign} signsDisabled={Boolean(selectedCell?.note || selectedCell?.struck)}
+            onKey={keypad} onSign={writeOperationSign} answerActive={!workspaceOnly && inputTarget === 'answer'}
+            signsDisabled={inputTarget === 'grid' && Boolean(selectedCell?.note || selectedCell?.struck)}
             status={status} onGuide={() => setGuideOpen(true)} />}
         </div>
         {task.drawingEnabled && <div className="notebook-drawing">

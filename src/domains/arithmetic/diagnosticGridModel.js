@@ -4,6 +4,9 @@ export const GRID_COLUMNS = 12
 
 export const MAIN_CHARACTERS = /^[0-9+−×/÷,─=()%xyabnc²]$/u
 export const NUMBER_ANSWER = /^[−-]?\d{0,12}(,\d{0,12})?$/u
+// Accepted input is broader than a numeric facit: preserve expressions and units
+// verbatim. Task-specific assessment must not strip symbols or evaluate them.
+export const MATH_ANSWER = /^[\p{L}0-9+−\-×*/÷,.=()%²³^:°√<>≤≥± ]{0,200}$/u
 const NOTE_CHARACTERS = /^[0-9]{1,2}$/u
 const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'line_add', 'line_remove', 'answer_change', 'drawing_stroke', 'drawing_clear', 'pause', 'resume', 'focus_lost', 'submit'])
 
@@ -135,7 +138,7 @@ export function applyDiagnosticGridEvent(state, event) {
     next.cursor = { ...state.cursor, layer: event.to }
   } else if (event.type === 'answer_change') {
     if (event.before !== state.answer || typeof event.after !== 'string'
-      || (state.answerType === 'text' ? event.after.length > 2000 : !NUMBER_ANSWER.test(event.after))) throw new Error('Answer history mismatch')
+      || (state.answerType === 'text' ? event.after.length > 2000 : !MATH_ANSWER.test(event.after))) throw new Error('Answer history mismatch')
     next.answer = event.after
   } else if (event.type === 'drawing_stroke') {
     if (!Array.isArray(event.points) || event.points.length < 1 || event.points.length > 200

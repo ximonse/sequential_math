@@ -139,10 +139,12 @@ function TeacherRow({ teacher, schools, classes, canManageRoles, onDelete, onRef
   const [role, setRole] = useState(teacher.role || 'teacher')
   const [classIds, setClassIds] = useState(() => assignedClassIds(classes, teacher.id))
   const [busy, setBusy] = useState(false)
+  const [rowMessage, setRowMessage] = useState('')
   const schoolNames = (teacher.schoolIds || []).map(id => schools.find(school => school.id === id)?.name || id).join(', ') || '—'
 
   const handleSave = async () => {
     setBusy(true)
+    setRowMessage('')
     const body = { displayName, schoolIds }
     if (newPassword.length >= 6) body.password = newPassword
     if (canManageRoles) body.role = role
@@ -163,9 +165,16 @@ function TeacherRow({ teacher, schools, classes, canManageRoles, onDelete, onRef
       setNewPassword('')
       onRefresh()
     } else if (ok) {
-      setStatus('Kontot sparades men dessa klasser gick inte: ' + failed.map(item => item.name + ' (' + item.error + ')').join('; '))
+      // Shown on the row itself and kept open, with the failed classes unticked so
+      // the boxes match what the server saved.
+      const text = 'Kontot sparades, men dessa klasser sparades inte: ' + failed.map(item => item.name + ' (' + item.error + ')').join('; ')
+      setRowMessage(text)
+      setStatus(text)
+      const failedIds = new Set(failed.map(item => String(item.classId)))
+      setClassIds(current => current.filter(id => !failedIds.has(String(id))))
       onRefresh()
     } else {
+      setRowMessage(data?.error || 'Kunde inte uppdatera kontot')
       setStatus(data?.error || 'Kunde inte uppdatera kontot')
       if (changes.some(change => !change.adds)) onRefresh()
     }
@@ -192,6 +201,7 @@ function TeacherRow({ teacher, schools, classes, canManageRoles, onDelete, onRef
           <button onClick={handleSave} disabled={busy} className="rounded bg-indigo-600 px-3 py-1 text-white disabled:opacity-50 font-semibold">{busy ? '...' : 'Spara'}</button>
           <button onClick={() => setEditing(false)} className="rounded bg-gray-200 px-1.5 py-0.5">Avbryt</button>
         </div>
+        {rowMessage && <p role="alert" className="rounded border border-red-300 bg-red-50 px-2 py-1 text-red-800">{rowMessage}</p>}
       </td></tr>
     )
   }

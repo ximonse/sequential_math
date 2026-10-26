@@ -40,7 +40,7 @@ export async function applyClassChanges(changes) {
     const { ok, data } = await apiFetch('/api/admin/classes/' + change.classId, {
       method: 'PUT', body: JSON.stringify({ teacherIds: change.teacherIds })
     })
-    if (!ok) failed.push({ name: change.name || change.classId, error: data?.error || 'Okänt fel' })
+    if (!ok) failed.push({ classId: change.classId, name: change.name || change.classId, error: data?.error || 'Okänt fel' })
   }
   return failed
 }

@@ -82,6 +82,40 @@ async function openAsRole(browser, role, path, viewport = { width: 820, height: 
   return { context, page }
 }
 
+test('Long press signals readiness before dragging, clears on release and ignores scrolling', async ({ browser }, testInfo) => {
+  const { context, page } = await openAsRole(browser, 'school_admin', '/teacher/ncm/diagnostic-grid')
+  const cell = page.locator('input[data-cell="0:0"]')
+  await cell.press('8')
+  const box = await cell.boundingBox()
+  const point = { x: box.x + box.width / 2, y: box.y + box.height / 2, id: 1 }
+  const cdp = await context.newCDPSession(page)
+  const ready = page.locator('.diagnostic-cell--hold-ready')
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point] })
+  await expect(ready).toHaveCount(1)
+  expect(await ready.evaluate(el => getComputedStyle(el, '::before').animationName)).toBe('notebook-hold-ready')
+  await page.screenshot({ path: testInfo.outputPath('hold-orange.png') })
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ ...point, y: point.y + 24 }] })
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  await expect(ready).toHaveCount(0)
+  await cell.tap()
+  await page.waitForTimeout(600)
+  await expect(ready).toHaveCount(0)
+  await expect(cell).toHaveAttribute('aria-label', /minnessiffra 8/)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point] })
+  await expect(ready).toHaveCount(1)
+  expect(await ready.evaluate(el => getComputedStyle(el, '::before').animationName)).toBe('none')
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] })
+  await expect(ready).toHaveCount(0)
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point] })
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ ...point, y: point.y + 30 }] })
+  await page.waitForTimeout(600)
+  await expect(ready).toHaveCount(0)
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  await cdp.detach()
+  await context.close()
+})
+
 async function touchGesture(page, cell, drag = false, dy = 0) {
   const box = await cell.boundingBox()
   const x = box.x + box.width / 2

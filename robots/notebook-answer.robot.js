@@ -39,7 +39,7 @@ test('A pupil saves symbolic answers with and without a grid and the teacher rec
   await student.reload()
   await expect(answer).toHaveValue('−25%')
   await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
-  await expect(student.getByText('Samlingen är inlämnad.')).toBeVisible()
+  await expect(student).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
   await openTab(page, 'Screening')
   const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('..')
   await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(classId)

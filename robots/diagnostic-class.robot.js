@@ -37,7 +37,8 @@ test('An admin assigns one diagnostic to the whole selected class and each pupil
         await expect(student.getByRole('heading', { name: label.replace(/^Räkna ut /u, '').replace(/\.$/u, ''), exact: true })).toBeVisible()
         if (index < 5) await student.getByRole('button', { name: 'Nästa fråga', exact: true }).click()
       }
-      await expect(student.getByRole('button', { name: 'Nästa fråga', exact: true })).toBeDisabled()
+      await expect(student.getByRole('button', { name: 'Nästa fråga', exact: true })).toHaveCount(0)
+      await expect(student.getByRole('button', { name: 'Lämna in', exact: true })).toBeEnabled()
     }
     await context.close()
   }

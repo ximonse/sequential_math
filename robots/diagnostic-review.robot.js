@@ -31,8 +31,7 @@ test('Admin reviews a class with submitted, ongoing and unopened work; notes sur
   }
   studentPages[0].once('dialog', dialog => dialog.accept())
   await studentPages[0].getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
-  await expect(studentPages[0].getByText('Samlingen är inlämnad.')).toBeVisible()
-  await expect(studentPages[0].getByRole('button', { name: 'Nästa fråga', exact: true })).toBeEnabled()
+  await expect(studentPages[0]).toHaveURL(new RegExp(`/student/${pupils[0].studentId}$`))
   const review = panel.getByRole('region', { name: 'Klassgenomgång', exact: true })
   await review.getByRole('combobox', { name: 'Uppdrag att gå igenom', exact: true }).selectOption(assignmentId)
   const rows = review.getByRole('row')

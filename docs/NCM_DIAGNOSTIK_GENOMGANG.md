@@ -277,3 +277,22 @@ Textsvar behåller sin gräns på 2000 tecken. Inget publiceringsmandat ingår.
 Robotprov har följt teckenknappar, tangentbord, oförändrade minnessiffror,
 JSON-återläsning samt elev → sparning → omladdning → lärarunderlag, med och
 utan rutnät. Full slutkontroll dokumenteras i projektkartan.
+
+## Långtryck och avslutad screening – 2026-10-26, lokal ändring
+
+När ett långtryck i rutnätet blir redo efter 500 ms ger den berörda rutan
+en kort orange fadeblinkning. Signalen visas före draget och ändrar inte
+uträkningen. Den tas bort vid släpp eller avbruten gest. Korttryck och
+scrollning före aktiveringen ger ingen signal. Vid reducerad rörelse visas
+en stilla orange markering under det aktiverade långtrycket.
+
+På sista frågan, även i en samling med en enda fråga, byter knappen vid
+svaret från Nästa fråga till en mörkare Lämna in med bock. Den använder
+samma gemensamma inlämningskontroll som knappen i sidfoten: varning för
+obesvarade frågor, sparning, konfliktkontroll och verifierad serverkvittens.
+
+Efter verifierad inlämning går eleven automatiskt till startsidan, där
+samlingen finns under Inlämnade samlingar. Det bevarade originalet kan
+fortfarande öppnas skrivskyddat och lärarunderlaget finns kvar. Avbruten
+bekräftelse, nätfel eller väntande kvittens håller eleven kvar. Den avslutade
+screeningvyn ersätts i webbläsarhistoriken. Detta sjok är inte publicerat.

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
 import { teacherLogin, openTab, sendScreening } from './lib/teacher.js'
 
-test('R2/R3: autosave does not freeze; navigation preserves work and submission covers the collection', async ({ page, request }) => {
+test('R2/R3: autosave does not freeze; navigation preserves work and submission covers the collection', async ({ page, request }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
   const classId = `collection-${tag}`
   const pupil = await createPupil(request, { name: 'Collections A', classId })
@@ -56,8 +56,10 @@ test('R2/R3: autosave does not freeze; navigation preserves work and submission 
   await page.locator('#diagnostic-answer').press('Delete')
   await page.locator('#diagnostic-answer').pressSequentially('575')
   await page.getByRole('button', { name: 'Nästa fråga', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Nästa fråga', exact: true })).toBeDisabled()
-  const submit = page.getByRole('button', { name: 'Lämna in svaren', exact: true })
+  await expect(page.getByRole('button', { name: 'Nästa fråga', exact: true })).toHaveCount(0)
+  const submit = page.getByRole('button', { name: 'Lämna in', exact: true })
+  await expect(submit).toHaveCSS('background-color', 'rgb(22, 61, 42)')
+  await page.screenshot({ path: testInfo.outputPath('last-question-submit.png'), fullPage: true })
   let warning = ''
   page.once('dialog', async dialog => { warning = dialog.message(); await dialog.dismiss() })
   await submit.click()
@@ -71,9 +73,22 @@ test('R2/R3: autosave does not freeze; navigation preserves work and submission 
   await expect(page.getByRole('alert')).toContainText(/inte|Kunde/)
   await expect(page.locator('input[data-cell="0:0"]')).toBeEnabled()
   await page.unroute('**/api/me/diagnostic-attempt')
+  let releaseSubmit
+  let responseReady = false
+  const submitGate = new Promise(resolve => { releaseSubmit = resolve })
+  await page.route('**/api/me/diagnostic-attempt', async route => {
+    if (route.request().postDataJSON()?.action !== 'submit_collection') return route.continue()
+    const response = await route.fetch()
+    responseReady = true
+    await submitGate
+    await route.fulfill({ response })
+  })
   await submit.click()
-  await expect(page.getByText('Samlingen är inlämnad.')).toBeVisible()
-  await page.getByRole('link', { name: 'Startsida', exact: true }).click()
+  await expect.poll(() => responseReady).toBe(true)
+  await expect(page).toHaveURL(/\/diagnostic\?/)
+  await expect(submit).toBeDisabled()
+  releaseSubmit()
+  await expect(page).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
   await expect(page.getByRole('button', { name: 'Screening – växling', exact: true })).toHaveCount(0)
   await page.getByRole('combobox', { name: 'Inlämnade samlingar', exact: true }).selectOption({ label: 'Screening – växling · Inlämnad' })
   await expect(page.locator('#diagnostic-answer')).toHaveValue('575')
@@ -130,7 +145,7 @@ test('Teacher assigns a written answer with saved drawing; eraser and explicit f
   await expect.poll(() => canvas.evaluate(element => element.toDataURL())).toBe(drawn)
   await student.screenshot({ path: testInfo.outputPath('written-drawing-ipad.png'), fullPage: true })
   await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
-  await expect(student.getByText('Samlingen är inlämnad.')).toBeVisible()
+  await expect(student).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
   await panel.getByRole('button', { name: 'Uppdatera försök', exact: true }).click()
   await panel.getByRole('button', { name: 'Visa underlag', exact: true }).click()
   await expect(panel.getByText(/^Slutsvar: En tia blir tio ental/)).toBeVisible()
@@ -143,7 +158,7 @@ test('Teacher assigns a written answer with saved drawing; eraser and explicit f
   await form.getByRole('textbox', { name: 'Återkoppling till eleven', exact: true }).fill('Bra förklaring. Visa även i rutorna.')
   await form.getByRole('button', { name: 'Skicka återkoppling', exact: true }).click()
   await expect(form.getByText('Återkopplingen är skickad till eleven.')).toBeVisible()
-  await student.getByRole('link', { name: 'Startsida', exact: true }).click()
+  await student.reload()
   await student.getByRole('combobox', { name: 'Inlämnade samlingar', exact: true })
     .selectOption({ label: 'Skriv – förklara · Återkoppling finns' })
   await expect(student.getByRole('region', { name: 'Återkoppling från läraren' })).toContainText('Bra förklaring.')

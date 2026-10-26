@@ -1485,50 +1485,83 @@
       "title": "Orange signal när långtryck är redo",
       "purpose": "Visa med en mjuk orange fadeblinkning att eleven kan börja dra efter långtryck.",
       "acceptance": "Berörd ruta blinkar mjukt orange när långtrycket aktiveras. Korttryck och scroll ger ingen signal eller ändring; reducerad rörelse respekteras.",
-      "next": "Implementera signalen vid aktiverad långtryckstimer och verifiera touchgester.",
+      "next": "Invänta uttryckligt publiceringsmandat; håll GitHub-issue öppen tills publicerad funktion verifierats.",
       "requires": [
         "grid-numpad"
       ],
       "affects": [],
       "area": "Elevarbete",
-      "status": "Föreslaget",
-      "decision": "2026-10-26: Simon bad att registrera detta som issue. Ingen implementation eller publicering i detta sjok.",
-      "evidence": "Öppen GitHub-issue skapad 2026-10-26; endast registrering och kartuppdatering.",
+      "status": "Lokalt klart",
+      "decision": "2026-10-26: Simon bad att registrera detta som issue. Ingen implementation eller publicering i detta sjok. Senare 2026-10-26: Simon bad uttryckligen att genomföra alla tre önskemålen. Avgränsad lokal implementation och verifiering; inget nytt publiceringsmandat.",
+      "evidence": "Öppen GitHub-issue skapad 2026-10-26; endast registrering och kartuppdatering. Implementerat lokalt. 25 riktade robotprov godkända, inklusive långtryck före drag, minnessiffra, korttryck, scroll, reducerad rörelse, en- och flerfrågesamlingar, avbruten bekräftelse, nätfel, väntande serverkvittens och inlämnat original hos lärare/elev. Skärmbilder av orange signal och mörkare inlämningsknapp granskade. Full slutkontroll pågår. Inte pushat eller publicerat. Slutkontroll: 167 filer/805 enhetstester, produktionsbuild, riktad lint och arkitekturkontroll godkända. Full robotsvit: 141/142 godkända; Dubblor timeout i /__robot/verify gick därefter igenom separat med en worker, alltså 142 unika prov verifierade. Ljust och mörkt tema visuellt granskade. DiagnosticGridPrototype är 597 rader; ändringarna hör till befintligt gest- och navigeringsansvar, så ingen ytterligare uppdelning behövdes i detta sjok. Lokal commit, ingen push eller produktion.",
       "issue": "https://github.com/ximonse/sequential_math/issues/15",
       "kind": "deluppgift",
-      "tasks": []
+      "tasks": [
+        {
+          "id": "grid-hold-orange-implementation",
+          "text": "Implementera önskemålet inom befintligt gest-/inlämningsflöde.",
+          "done": true
+        },
+        {
+          "id": "grid-hold-orange-verification",
+          "text": "Verifiera berörda elevflöden och genomför slutkontroller.",
+          "done": true
+        }
+      ]
     },
     {
       "id": "screening-last-submit",
       "title": "Lämna in-knapp på sista frågan",
       "purpose": "Göra skillnaden mellan nästa fråga och inlämning synlig på sista screeningfrågan.",
       "acceptance": "Knappen vid svaret visar Nästa fråga före sista frågan och en mörkare Lämna in på sista frågan. Befintlig atomisk inlämning och spar-/varningsskydd behålls.",
-      "next": "Koppla sista frågans knapp till befintlig inlämning och verifiera en- och flerfrågesamlingar.",
+      "next": "Invänta uttryckligt publiceringsmandat; håll GitHub-issue öppen tills publicerad funktion verifierats.",
       "requires": [],
       "affects": [],
       "area": "Elevarbete",
-      "status": "Föreslaget",
-      "decision": "2026-10-26: Simon bad att registrera detta som issue. Ingen implementation eller publicering i detta sjok.",
-      "evidence": "Öppen GitHub-issue skapad 2026-10-26; endast registrering och kartuppdatering.",
+      "status": "Lokalt klart",
+      "decision": "2026-10-26: Simon bad att registrera detta som issue. Ingen implementation eller publicering i detta sjok. Senare 2026-10-26: Simon bad uttryckligen att genomföra alla tre önskemålen. Avgränsad lokal implementation och verifiering; inget nytt publiceringsmandat.",
+      "evidence": "Öppen GitHub-issue skapad 2026-10-26; endast registrering och kartuppdatering. Implementerat lokalt. 25 riktade robotprov godkända, inklusive långtryck före drag, minnessiffra, korttryck, scroll, reducerad rörelse, en- och flerfrågesamlingar, avbruten bekräftelse, nätfel, väntande serverkvittens och inlämnat original hos lärare/elev. Skärmbilder av orange signal och mörkare inlämningsknapp granskade. Full slutkontroll pågår. Inte pushat eller publicerat. Slutkontroll: 167 filer/805 enhetstester, produktionsbuild, riktad lint och arkitekturkontroll godkända. Full robotsvit: 141/142 godkända; Dubblor timeout i /__robot/verify gick därefter igenom separat med en worker, alltså 142 unika prov verifierade. Ljust och mörkt tema visuellt granskade. DiagnosticGridPrototype är 597 rader; ändringarna hör till befintligt gest- och navigeringsansvar, så ingen ytterligare uppdelning behövdes i detta sjok. Lokal commit, ingen push eller produktion.",
       "issue": "https://github.com/ximonse/sequential_math/issues/16",
       "kind": "deluppgift",
-      "tasks": []
+      "tasks": [
+        {
+          "id": "screening-last-submit-implementation",
+          "text": "Implementera önskemålet inom befintligt gest-/inlämningsflöde.",
+          "done": true
+        },
+        {
+          "id": "screening-last-submit-verification",
+          "text": "Verifiera berörda elevflöden och genomför slutkontroller.",
+          "done": true
+        }
+      ]
     },
     {
       "id": "screening-submit-home",
       "title": "Till startsidan efter inlämnad screening",
       "purpose": "Stänga elevens screening när hela inlämningen har bekräftats och återgå till startsidan.",
       "acceptance": "Serverbekräftad gemensam inlämning leder till elevens startsida med aktuell status. Vid fel stannar eleven med bevarat arbete. Lärarunderlaget finns kvar.",
-      "next": "Återanvänd befintlig hemnavigering först efter verifierad inlämningskvittens.",
+      "next": "Invänta uttryckligt publiceringsmandat; håll GitHub-issue öppen tills publicerad funktion verifierats.",
       "requires": [],
       "affects": [],
       "area": "Elevarbete",
-      "status": "Föreslaget",
-      "decision": "2026-10-26: Simon bad att registrera detta som issue. Ingen implementation eller publicering i detta sjok.",
-      "evidence": "Öppen GitHub-issue skapad 2026-10-26; endast registrering och kartuppdatering.",
+      "status": "Lokalt klart",
+      "decision": "2026-10-26: Simon bad att registrera detta som issue. Ingen implementation eller publicering i detta sjok. Senare 2026-10-26: Simon bad uttryckligen att genomföra alla tre önskemålen. Avgränsad lokal implementation och verifiering; inget nytt publiceringsmandat.",
+      "evidence": "Öppen GitHub-issue skapad 2026-10-26; endast registrering och kartuppdatering. Implementerat lokalt. 25 riktade robotprov godkända, inklusive långtryck före drag, minnessiffra, korttryck, scroll, reducerad rörelse, en- och flerfrågesamlingar, avbruten bekräftelse, nätfel, väntande serverkvittens och inlämnat original hos lärare/elev. Skärmbilder av orange signal och mörkare inlämningsknapp granskade. Full slutkontroll pågår. Inte pushat eller publicerat. Slutkontroll: 167 filer/805 enhetstester, produktionsbuild, riktad lint och arkitekturkontroll godkända. Full robotsvit: 141/142 godkända; Dubblor timeout i /__robot/verify gick därefter igenom separat med en worker, alltså 142 unika prov verifierade. Ljust och mörkt tema visuellt granskade. DiagnosticGridPrototype är 597 rader; ändringarna hör till befintligt gest- och navigeringsansvar, så ingen ytterligare uppdelning behövdes i detta sjok. Lokal commit, ingen push eller produktion.",
       "issue": "https://github.com/ximonse/sequential_math/issues/17",
       "kind": "deluppgift",
-      "tasks": []
+      "tasks": [
+        {
+          "id": "screening-submit-home-implementation",
+          "text": "Implementera önskemålet inom befintligt gest-/inlämningsflöde.",
+          "done": true
+        },
+        {
+          "id": "screening-submit-home-verification",
+          "text": "Verifiera berörda elevflöden och genomför slutkontroller.",
+          "done": true
+        }
+      ]
     }
   ],
   "edges": [

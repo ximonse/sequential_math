@@ -53,6 +53,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const gridsRef = useRef(new Map())
   const gestureRef = useRef(null)
   const [dragPreview, setDragPreview] = useState('')
+  const [holdReady, setHoldReady] = useState('')
   const [linePreview, setLinePreview] = useState(null)
   const [lineMode, setLineMode] = useState(false)
   const [eraseMode, setEraseMode] = useState(false)
@@ -169,6 +170,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
     const gesture = gestureRef.current
     if (gesture?.timer) window.clearTimeout(gesture.timer)
     gestureRef.current = null
+    setHoldReady('')
     setDragPreview('')
     setLinePreview(null)
   }
@@ -216,7 +218,10 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       held: lineMode, cancelled: false, dragged: false, timer: null }
     try { event.currentTarget.setPointerCapture?.(event.pointerId) } catch { /* Synthetic pointer events have no active pointer. */ }
     if (!lineMode) gesture.timer = window.setTimeout(() => {
-      if (gestureRef.current === gesture && !gesture.cancelled) gesture.held = true
+      if (gestureRef.current === gesture && !gesture.cancelled) {
+        gesture.held = true
+        setHoldReady(`${row}:${column}`)
+      }
     }, HOLD_MS)
     gestureRef.current = gesture
   }
@@ -477,7 +482,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
               const selected = atCursor && inputTarget === 'grid'
               const layer = selected ? grid.cursor.layer : cell.note ? 'note' : 'main'
               return (
-                <div key={`${row}:${column}`} className={`diagnostic-cell diagnostic-cell--${layer} ${selected ? 'diagnostic-cell--selected' : ''} ${dragPreview === `${row}:${column}` ? 'diagnostic-cell--drag-preview' : ''}`}>
+                <div key={`${row}:${column}`} className={`diagnostic-cell diagnostic-cell--${layer} ${selected ? 'diagnostic-cell--selected' : ''} ${dragPreview === `${row}:${column}` ? 'diagnostic-cell--drag-preview' : ''} ${holdReady === `${row}:${column}` ? 'diagnostic-cell--hold-ready' : ''}`}>
                   <input
                     type="text"
                     inputMode="none"
@@ -523,8 +528,10 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
                 active={inputTarget === 'answer' && !editingLocked} disabled={editingLocked}
                 onActivate={() => { setInputTarget('answer'); setLineMode(false); setEraseMode(false); setContextMenu(null); stopGesture() }}
                 onChange={changeAnswer} onKey={keypad} />
-              {pilot && <button type="button" className="notebook-next" onClick={onNext} disabled={!onNext || navigationLocked}>
-                Nästa fråga <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 12h16m-7-7 7 7-7 7" fill="none" stroke="currentColor" strokeWidth="3" /></svg>
+              {pilot && <button type="button" className={`notebook-next ${!onNext ? 'notebook-submit-ready' : ''}`}
+                onClick={onNext || (() => onSubmitCollection?.(grid))}
+                disabled={navigationLocked || (!onNext && (saveState?.collectionSubmitted || !onSubmitCollection))}>
+                {onNext ? 'Nästa fråga' : 'Lämna in'} <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d={onNext ? 'M4 12h16m-7-7 7 7-7 7' : 'm5 12 4 4L19 6'} fill="none" stroke="currentColor" strokeWidth="3" /></svg>
               </button>}
             </div>}
           </div>

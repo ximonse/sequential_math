@@ -47,8 +47,9 @@ test('Authored fraction shortcuts and frac notation agree in preview, pupil and 
   await expect(student.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
   await student.reload()
   await expect(question.getByRole('math')).toHaveCount(2)
-  await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
-  await expect(student.getByText('Samlingen är inlämnad.')).toBeVisible()
+  await expect(student.getByRole('button', { name: 'Nästa fråga', exact: true })).toHaveCount(0)
+  await student.getByRole('button', { name: 'Lämna in', exact: true }).click()
+  await expect(student).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
 
   await panel.getByRole('button', { name: 'Uppdatera försök', exact: true }).click()
   await panel.getByRole('button', { name: 'Visa underlag', exact: true }).click()

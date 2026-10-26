@@ -31,7 +31,7 @@ test('Screening matrix shows server answers, evidence-backed hover and a touch-a
     }
     await student.getByRole('textbox', { name: 'Mitt svar', exact: true }).pressSequentially(result)
     await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
-    await expect(student.getByText('Samlingen är inlämnad.')).toBeVisible()
+    await expect(student).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
     await context.close()
   }
   await page.reload()

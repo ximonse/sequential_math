@@ -179,6 +179,7 @@ function AssignedDiagnosticAttempt() {
       setOpened(previous => ({ ...previous, snapshot: current.snapshot, frozen: true,
         assignment: { ...previous.assignment, submissionStatus: 'submitted' } }))
       setSaveMessage('Samlingen är inlämnad.')
+      navigate(`/student/${studentId}`, { replace: true })
     } catch (error) { setSaveError(error.message || 'Kunde inte lämna in samlingen. Dina svar finns kvar.') }
     finally { setBusy(false); setSubmitting(false) }
   }

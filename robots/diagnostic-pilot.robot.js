@@ -47,8 +47,6 @@ test('A pupil saves before continuing and submits the whole collection without l
   await expect(page.locator('input[data-cell="0:0"]')).not.toHaveAttribute('aria-label', /stor siffra 8/)
   page.once('dialog', dialog => dialog.accept())
   await page.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
-  await expect(page.getByText('Samlingen är inlämnad.')).toBeVisible()
-  await page.getByRole('link', { name: 'Startsida', exact: true }).click()
   await expect(page).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
   await page.goto(firstUrl)
   await expect(page.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 8/)

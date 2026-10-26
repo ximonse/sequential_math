@@ -39,7 +39,7 @@ test('An NCM Diamant booklet is marked against its facit and shows NCM analysis 
   await student.screenshot({ path: testInfo.outputPath('ncm-pupil.png'), fullPage: true })
   await context.close()
 
-  await panel.getByRole('button', { name: 'Grupp', exact: true }).click()
+  await panel.getByRole('button', { name: 'Resultat', exact: true }).click()
   const review = panel.getByRole('region', { name: 'Klassgenomgång', exact: true })
   await review.getByRole('combobox', { name: 'Uppdrag att gå igenom', exact: true }).selectOption({ index: 1 })
   const cells = review.locator('tbody button')

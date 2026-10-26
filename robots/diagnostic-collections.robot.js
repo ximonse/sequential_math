@@ -134,7 +134,7 @@ test('Teacher assigns a written answer with saved drawing; eraser and explicit f
   await panel.getByRole('button', { name: 'Uppdatera försök', exact: true }).click()
   await panel.getByRole('button', { name: 'Visa underlag', exact: true }).click()
   await expect(panel.getByText(/^Slutsvar: En tia blir tio ental/)).toBeVisible()
-  await panel.getByRole('button', { name: 'Grupp', exact: true }).click()
+  await panel.getByRole('button', { name: 'Resultat', exact: true }).click()
   const review = panel.getByRole('region', { name: 'Klassgenomgång', exact: true })
   await review.getByRole('combobox', { name: 'Uppdrag att gå igenom', exact: true }).selectOption({ index: 1 })
   await review.getByRole('button', { name: /Förklara hur du växlar/ }).click()

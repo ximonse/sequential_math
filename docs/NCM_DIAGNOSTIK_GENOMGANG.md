@@ -6,6 +6,20 @@ Det påverkar inte vanlig träning, mastery eller adaptiv progression.
 
 ## Arbetsflöde
 
+Under **Dela ut → Återanvänd samling** väljer läraren en tidigare utdelning
+från klassen som valts i **Klass**. Samlingens frågor och arbetsytor visas
+innan läraren väljer nya mottagare överst och delar ut. Även avslutade samlingar
+kan återanvändas. Servern kontrollerar åtkomst till både källklass och målklass
+och skapar en ny utdelning med nya uppgifts-ID:n, samma frysta frågeversioner,
+ordning, svarstyper och arbetsytor. Originalets elevsvar, status och genomgångar
+stannar i den gamla utdelningen. Den gamla samlingen öppnas inte igen.
+
+Fliken som tidigare hette **Grupp** heter nu **Resultat**. Välj först klass,
+sedan en utdelad samling i **Uppdrag att gå igenom**. Listan visar samlingens
+namn. Matrisen visar svaren för den utdelningens mottagare i klassen och
+öppnar elevens original och lärarens genomgång. Tomma lägen förklarar vad
+som ska väljas. Mottagarvalet överst styr nya utdelningar, inte resultatfiltret.
+
 I frågetexter visas `6//2` och `\frac{6}{2}` som bråk med täljare ovanför
 nämnaren. När läraren skriver en egen fråga visas en förhandsvisning.
 Samma formatering används i elevfrågan, lärarunderlaget och gruppmatrisen.
@@ -23,7 +37,7 @@ och radering. Skrivning och automatisk markörflytt bevaras tillsammans som
 vanliga skriv-/flytthändelser i originalets återspelning. Samma skrivbeteende
 används i vanliga uppdrags kladdhäfte utan diagnostisk serverlagring.
 
-Under **Screening → Grupp** väljer admin klass och ett befintligt uppdrag i
+Under **Screening → Resultat** väljer admin klass och ett befintligt uppdrag i
 **Klassöversikt och genomgång**. Inget uppdrag väljs automatiskt.
 Översikten visar nuvarande behöriga mottagare av just det uppdraget:
 
@@ -33,7 +47,7 @@ Under **Screening → Grupp** väljer admin klass och ett befintligt uppdrag i
 - Inlämnade och kvar: antal uppgifter, oberoende av svarens korrekthet.
 - Genomgångna: antal försöksrevisioner som läraren uttryckligen markerat.
 
-**Dela ut** och **Grupp** är separata vyer. Valt uppdrag ligger kvar när man
+**Dela ut** och **Resultat** är separata vyer. Valt uppdrag ligger kvar när man
 växlar mellan dem. Gruppmatrisen visar en elev per
 rad och en uppgift per kolumn, med det faktiska inskrivna slutsvaret.
 Rätt svar är gröna; obesvarat eller ofullständigt är grått; fel utan

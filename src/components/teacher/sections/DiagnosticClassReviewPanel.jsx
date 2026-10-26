@@ -77,7 +77,7 @@ export default function DiagnosticClassReviewPanel({ classId, assignments, pupil
       <select value={assignmentId} onChange={event => { if (!resetDetail()) return; setOverview(null); setItemId(''); setAssignmentId(event.target.value) }} className="mt-1 block w-full rounded border border-slate-300 bg-white px-1.5 py-0.5">
         <option value="">Välj uppdrag</option>
         {assignments.map(assignment => <option key={assignment.assignmentId} value={assignment.assignmentId}>
-          {new Date(assignment.createdAt).toLocaleString('sv-SE')} · {assignment.items.length} uppgifter · {assignment.studentIds.length} elever · {assignment.assignmentId.slice(0, 8)}
+          {assignment.titleSv || 'Screening'} · {new Date(assignment.createdAt).toLocaleString('sv-SE')} · {assignment.items.length} uppgifter · {assignment.studentIds.length} elever · {assignment.assignmentId.slice(0, 8)}
         </option>)}
       </select>
     </label>

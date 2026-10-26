@@ -148,6 +148,47 @@ export async function createDiagnosticAssignment({ classId, studentIds, taskIds,
     manifestId: manifest.manifestId, manifestVersion: manifest.manifestVersion,
     language: manifest.language, sourceKind: manifest.sourceKind,
     titleSv: titleSv.trim() || 'Screening', instructionSv: manifest.instructionSv, createdAt: Date.now() }
+  return saveDiagnosticAssignment(assignment, { store })
+}
+
+// The API must authorize both source and destination classes before calling.
+export async function copyDiagnosticAssignment({ classId, studentIds, teacherId,
+  sourceClassId, sourceAssignmentId, titleSv }, { store = kv, makeId = newId } = {}) {
+  if (![classId, teacherId, sourceClassId, sourceAssignmentId].every(validId)
+    || !Array.isArray(studentIds) || !studentIds.length || studentIds.length > 100
+    || !studentIds.every(validId) || new Set(studentIds).size !== studentIds.length
+    || (titleSv !== undefined && (typeof titleSv !== 'string' || titleSv.length > 100))) {
+    fail(400, 'invalid_assignment', 'Invalid diagnostic assignment')
+  }
+  const sourceClass = await store.get(`class:${sourceClassId}`)
+  const source = await store.get(`diagnostic_assignment:${sourceAssignmentId}`)
+  if (!sourceClass || sourceClass.archived || await store.exists(`class_deleted:${sourceClassId}`)
+    || source?.classId !== sourceClassId || source.evidenceClass !== 'diagnostic_only') {
+    fail(404, 'assignment_unavailable', 'Samlingen är inte tillgänglig.')
+  }
+  if (!Array.isArray(source.items) || !source.items.length) fail(409, 'invalid_source', 'Samlingen saknar frågor.')
+  const items = source.items.map(item => {
+    const snapshot = item.taskSnapshot || catalog.findTask(item.taskId)
+    if (!snapshot || snapshot.taskId !== item.taskId || snapshot.taskVersion !== item.taskVersion) {
+      fail(409, 'invalid_source', 'En sparad frågeversion saknas. Samlingen kunde inte återanvändas.')
+    }
+    return { assignmentItemId: makeId(), taskId: item.taskId, taskVersion: item.taskVersion,
+      taskSnapshot: structuredClone(snapshot) }
+  })
+  const assignment = { assignmentId: makeId(), assignmentVersion: 1, classId,
+    studentIds: [...studentIds], items, teacherId, status: 'active', evidenceClass: 'diagnostic_only',
+    titleSv: titleSv?.trim() || source.titleSv || 'Screening', instructionSv: source.instructionSv,
+    manifestId: source.manifestId, manifestVersion: source.manifestVersion,
+    language: source.language, sourceKind: source.sourceKind, createdAt: Date.now() }
+  if (![assignment.assignmentId, ...items.map(item => item.assignmentItemId)].every(validId)
+    || new Set(items.map(item => item.assignmentItemId)).size !== items.length) {
+    fail(500, 'id_generation', 'Could not create diagnostic IDs')
+  }
+  return saveDiagnosticAssignment(assignment, { store })
+}
+
+async function saveDiagnosticAssignment(assignment, { store }) {
+  const { assignmentId, classId, studentIds } = assignment
   const keys = [`diagnostic_assignment:${assignmentId}`, `class_deleted:${classId}`, `class:${classId}`,
     ...studentIds.map(id => `student:${id}`), ...studentIds.map(studentDeletedKey),
     ...studentIds.map(id => `student_deleted:${id}`),

@@ -15,7 +15,7 @@ test('Admin reviews a class with submitted, ongoing and unopened work; notes sur
   await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(classId)
   await panel.getByRole('combobox', { name: 'Diagnospaket', exact: true }).selectOption('written-addition')
   await sendScreening(page, { className })
-  await panel.getByRole('button', { name: 'Grupp', exact: true }).click()
+  await panel.getByRole('button', { name: 'Resultat', exact: true }).click()
   const assignmentId = await panel.getByRole('combobox', { name: 'Uppdrag att gå igenom', exact: true }).locator('option').nth(1).getAttribute('value')
   const contexts = []
   const studentPages = []

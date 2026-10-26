@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { appendDiagnosticAttempt } from './_diagnosticAttemptStore.js'
-import { createDiagnosticAssignment, openDiagnosticAttempt, stopDiagnosticAssignment,
+import { createDiagnosticAssignment, copyDiagnosticAssignment, openDiagnosticAttempt, stopDiagnosticAssignment,
   CREATE_DIAGNOSTIC_ASSIGNMENT_SCRIPT, OPEN_DIAGNOSTIC_ATTEMPT_SCRIPT,
   STOP_DIAGNOSTIC_ASSIGNMENT_SCRIPT } from './_diagnosticAssignmentStore.js'
 import { DIAGNOSTIC_APPEND_CAS_SCRIPT } from './_diagnosticAttemptStore.js'
@@ -121,6 +121,46 @@ const open = (assignment, item = assignment.items[0], studentId = 'PUPIL') => op
 }, { store, makeId: id })
 
 describe('diagnostic assignment and attempt creation', () => {
+  it('reuses frozen questions and settings for a new class without copying answers or reopening the source', async () => {
+    const source = await create({ titleSv: 'Bråk och metod', taskIds: ['add-no-carry-001'],
+      itemOptions: { 'add-no-carry-001': { answerType: 'text', gridEnabled: false, drawingEnabled: true } },
+      customTasks: [{ promptSv: 'Förklara 6//2.', gridEnabled: true }, { promptSv: 'Rita din metod.', drawingEnabled: true }] })
+    const attempt = await open(source)
+    await stopDiagnosticAssignment({ classId: 'CLASS', assignmentId: source.assignmentId, teacherId: 'TEACHER' }, { store })
+    const before = clone(store.data.get(`diagnostic_assignment:${source.assignmentId}`))
+    store.data.set('class:OTHER_CLASS', { id: 'OTHER_CLASS', archived: false })
+    const copied = await copyDiagnosticAssignment({ classId: 'OTHER_CLASS', studentIds: ['OTHER'], teacherId: 'NEW_TEACHER',
+      sourceClassId: 'CLASS', sourceAssignmentId: source.assignmentId }, { store, makeId: id })
+    expect(copied).toMatchObject({ titleSv: source.titleSv, classId: 'OTHER_CLASS', studentIds: ['OTHER'],
+      teacherId: 'NEW_TEACHER', status: 'active', evidenceClass: 'diagnostic_only' })
+    expect(copied.items.map(item => item.taskSnapshot)).toEqual(source.items.map(item => item.taskSnapshot))
+    expect(copied.items.map(item => item.assignmentItemId)).not.toEqual(source.items.map(item => item.assignmentItemId))
+    expect(copied.assignmentId).not.toBe(source.assignmentId)
+    expect(copied).not.toHaveProperty('stoppedAt')
+    expect(store.data.get(`diagnostic_assignment:${source.assignmentId}`)).toEqual(before)
+    expect(store.data.get(`diagnostic_attempts_by_assignment:${source.assignmentId}`)).toEqual([attempt.record.attemptId])
+    expect(store.data.has(`diagnostic_attempts_by_assignment:${copied.assignmentId}`)).toBe(false)
+    const opened = await openDiagnosticAttempt({ assignmentId: copied.assignmentId,
+      assignmentItemId: copied.items[0].assignmentItemId, studentId: 'OTHER' }, { store, makeId: id })
+    expect(opened.snapshot.answer).toBe('')
+    expect(opened.snapshot.events).toEqual([])
+  })
+
+  it('refuses an unavailable source, a missing frozen version or a destination pupil outside its class', async () => {
+    const source = await create()
+    const copy = changes => copyDiagnosticAssignment({ classId: 'CLASS', studentIds: ['PUPIL'], teacherId: 'TEACHER',
+      sourceClassId: 'CLASS', sourceAssignmentId: source.assignmentId, ...changes }, { store, makeId: id })
+    await expect(copy({ sourceClassId: 'WRONG' })).rejects.toMatchObject({ status: 404 })
+    await expect(copy({ studentIds: ['OTHER'] })).rejects.toMatchObject({ status: 409 })
+    const broken = clone(source)
+    delete broken.items[0].taskSnapshot
+    broken.items[0].taskVersion = 999
+    store.data.set(`diagnostic_assignment:${source.assignmentId}`, broken)
+    await expect(copy({})).rejects.toMatchObject({ status: 409, code: 'invalid_source' })
+    store.data.set('class_deleted:CLASS', true)
+    await expect(copy({})).rejects.toMatchObject({ status: 404 })
+  })
+
   it('freezes selected answer types and surfaces, including a custom written question', async () => {
     const assignment = await create({ titleSv: 'Läxa 1', taskIds: ['add-no-carry-001'],
       itemOptions: { 'add-no-carry-001': { answerType: 'text', gridEnabled: false, drawingEnabled: true } },

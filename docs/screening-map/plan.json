@@ -221,7 +221,7 @@
         "review"
       ],
       "decision": "",
-      "evidence": "0b1eaa8; 652 tester, build, lint, 81 robotfall.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.\n2026-10-09: Produktionsmatris för enbart testtilldelningen visar 699 rätt, 376 fel utan identifierat mönster, 1/2 rätt och 2/2 inlämnade. Efter sparad lärargranskning visar den 1/2 genomgångna. Full klass och skalmätning återstår.\n2026-10-09: Positivt metodprov i produktion: testuppdraget visar 376M, 0/1 rätt, 1/1 inlämnade och efter granskning 1/1 genomgångna. Endast separat testkonto användes.",
+      "evidence": "0b1eaa8; 652 tester, build, lint, 81 robotfall.\n2026-10-09: Publicerat via GitHub master till sekvens, commit d725bd5, deployment dpl_GAp5zfMR34m4HraGVLxA6ayW8TSr READY och alias matematik.ximon.se verifierat. GitHub CI grönt; domänen HTTP 200 med samma JS-bygge som lokalt. Ingen inloggad produktionsprovning eller riktig Redis-provning utförd.\n2026-10-09: Produktionsmatris för enbart testtilldelningen visar 699 rätt, 376 fel utan identifierat mönster, 1/2 rätt och 2/2 inlämnade. Efter sparad lärargranskning visar den 1/2 genomgångna. Full klass och skalmätning återstår.\n2026-10-09: Positivt metodprov i produktion: testuppdraget visar 376M, 0/1 rätt, 1/1 inlämnade och efter granskning 1/1 genomgångna. Endast separat testkonto användes.\n2026-10-26: Lokalt klart och robot-/bildgranskat: fliken Grupp heter Resultat, samlingens namn visas i listan och tomma lägen förklaras. Återanvändning och verifieringsbelägg: reuse-collections. Inte publicerat.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -1400,6 +1400,39 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "reuse-collections",
+      "area": "Dela ut",
+      "title": "Återanvänd utdelade samlingar och tydliga resultat",
+      "status": "Lokalt klart",
+      "purpose": "Återutdela samma frågesamling till andra grupper, klasser eller elever och skilj mottagare från resultat.",
+      "next": "Publicera via GitHub när Simon begär det; prova med separat testkonto efter publicering.",
+      "acceptance": "Även avslutade samlingar kan kopieras med exakt frågeordning, frysta versioner, svarstyper och arbetsytor. Nya utdelnings-/uppgifts-ID:n och rena elevsvar; originalet bevaras. Både källklass och målklass behörighetskontrolleras. Resultat visar samlingsnamn och begripliga tomlägen.",
+      "requires": [
+        "student-collections",
+        "dispatch"
+      ],
+      "affects": [
+        "matrix",
+        "review"
+      ],
+      "decision": "2026-10-26: Simon vill återanvända en utdelad samling till andra mottagare och frågar vad Grupp visar. Ny Återanvänd samling-väljare och Återanvänd-knappar i Dela ut; befintliga Mottagare styr ny kopia. Grupp byter namn till Resultat med förklaring och namngivna samlingar. Ingen ändring av originalets status eller elevdata.",
+      "evidence": "2026-10-26: Lokalt byggt. Riktade API-/lagringstester gröna: käll-/målklassbehörighet, medlemskap, saknad fryst version, kopierade inställningar och oberoende original/svar. Ny klickrobot har verifierat återutdelning till grupp, klass och elev samt resultatens tomlägen; sista återläsningskontrollen justerad till lärarunderlaget för en avslutad samling. Slutverifiering pågår. Ej pushat/publicerat.\nSlutkontroll 2026-10-26: 167 testfiler/802 tester och build gröna. Riktad lint, arkitektur, diff och projektkarta godkända. Ny klickrobot grön: avslutad samling med vanliga och flera egna frågor återutdelad till grupp, hel annan klass och en elev; exakt ordning/svarstyp/arbetsytor, frysta original, gamla svar i lärarunderlaget och tomt nytt elevsvar verifierade. Resultat utan vald klass/utan samlingar visar vägledning; samlingsnamn syns i resultatväljaren. Återanvändningsvyn och resultatmatrisen visuellt granskade. Full robotsvit 137/138 gröna; enda fel ECONNRESET i befintlig Dubblor-robots testserver-verifiering. Den grön vid separat omkörning med ny server. Alla 138 unika kontroller verifierade över körningarna, inte en obruten grön fullkörning. Befintligt atomiskt lagringsskript återanvänds utan ändrad Lua; ny riktig Redis-provning ej utförd. Lokal commit i samma sjok; ingen push eller publicering.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "reuse-build",
+          "text": "Bygg ny utdelning från frysta originalfrågor och tydlig resultatvy.",
+          "done": true
+        },
+        {
+          "id": "reuse-verify",
+          "text": "Verifiera grupp/klass/elev, bevarat original, rättigheter och lokal regression.",
+          "done": true
+        }
+      ]
     }
   ],
   "edges": [
@@ -1915,6 +1948,26 @@
     },
     {
       "source": "question-fractions",
+      "target": "review",
+      "kind": "påverkar"
+    },
+    {
+      "source": "student-collections",
+      "target": "reuse-collections",
+      "kind": "kräver"
+    },
+    {
+      "source": "dispatch",
+      "target": "reuse-collections",
+      "kind": "kräver"
+    },
+    {
+      "source": "reuse-collections",
+      "target": "matrix",
+      "kind": "påverkar"
+    },
+    {
+      "source": "reuse-collections",
       "target": "review",
       "kind": "påverkar"
     }

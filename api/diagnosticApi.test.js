@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const mocked = vi.hoisted(() => ({ teacher: vi.fn(), classAccess: vi.fn(), create: vi.fn(),
+const mocked = vi.hoisted(() => ({ teacher: vi.fn(), classAccess: vi.fn(), create: vi.fn(), copy: vi.fn(),
   pupil: vi.fn(), origin: vi.fn(), csrf: vi.fn(), open: vi.fn(), read: vi.fn(),
   append: vi.fn(), pupilAccess: vi.fn(), listClass: vi.fn(), listPupil: vi.fn(), testStudents: vi.fn(), stop: vi.fn(),
   freeze: vi.fn() }))
@@ -10,6 +10,7 @@ vi.mock('./_studentAccess.js', () => ({ canAccessClass: mocked.classAccess }))
 vi.mock('./_studentSession.js', () => ({ getLiveStudentSession: mocked.pupil,
   requestOriginIsTrusted: mocked.origin, hasStudentCsrf: mocked.csrf }))
 vi.mock('./_diagnosticAssignmentStore.js', () => ({ createDiagnosticAssignment: mocked.create,
+  copyDiagnosticAssignment: mocked.copy,
   openDiagnosticAttempt: mocked.open, stopDiagnosticAssignment: mocked.stop }))
 vi.mock('./_diagnosticAttemptStore.js', () => ({ readDiagnosticAttempt: mocked.read,
   appendDiagnosticAttempt: mocked.append }))
@@ -36,6 +37,7 @@ beforeEach(() => {
   mocked.teacher.mockResolvedValue({ teacherId: 'TEACHER', role: 'school_admin' })
   mocked.classAccess.mockResolvedValue(true)
   mocked.create.mockResolvedValue({ assignmentId: 'ASSIGNMENT' })
+  mocked.copy.mockResolvedValue({ assignmentId: 'COPY' })
   mocked.pupil.mockResolvedValue({ profile: { studentId: 'PUPIL', classIds: ['CLASS'] }, session: {} })
   mocked.origin.mockReturnValue(true)
   mocked.csrf.mockReturnValue(true)
@@ -48,6 +50,27 @@ beforeEach(() => {
 })
 
 describe('diagnostic pilot API boundary', () => {
+  it('authorizes both classes before copying a collection and still checks target membership', async () => {
+    process.env.NCM_DIAGNOSTIC_API_ENABLED = 'true'
+    const req = { method: 'POST', headers: {}, body: { classId: 'CLASS', studentIds: ['PUPIL'],
+      sourceClassId: 'SOURCE_CLASS', sourceAssignmentId: 'SOURCE', titleSv: 'Igen' } }
+    mocked.classAccess.mockImplementation(async (_req, id) => id !== 'SOURCE_CLASS')
+    const denied = response()
+    await teacherHandler(req, denied)
+    expect(denied.code).toBe(403)
+    expect(mocked.copy).not.toHaveBeenCalled()
+    mocked.classAccess.mockResolvedValue(true)
+    const allowed = response()
+    await teacherHandler(req, allowed)
+    expect(allowed.code).toBe(201)
+    expect(mocked.copy).toHaveBeenCalledWith({ classId: 'CLASS', studentIds: ['PUPIL'], teacherId: 'TEACHER',
+      sourceClassId: 'SOURCE_CLASS', sourceAssignmentId: 'SOURCE', titleSv: 'Igen' })
+    mocked.copy.mockClear()
+    const foreign = response()
+    await teacherHandler({ ...req, body: { ...req.body, studentIds: ['FOREIGN'] } }, foreign)
+    expect(foreign.code).toBe(403)
+    expect(mocked.copy).not.toHaveBeenCalled()
+  })
   it('uses the current server roster for a whole-class assignment instead of client pupil ids', async () => {
     process.env.NCM_DIAGNOSTIC_API_ENABLED = 'true'
     mocked.testStudents.mockResolvedValue(['PUPIL', 'SECOND'])

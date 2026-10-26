@@ -46,7 +46,7 @@ test('Long written questions and long answers are fully visible to pupil and tea
   await openTab(page, 'Screening')
   const panel = page.getByRole('heading', { name: 'Screening till elev eller klass' }).locator('xpath=..')
   await panel.getByRole('combobox', { name: 'Klass', exact: true }).selectOption(classId)
-  await panel.getByRole('button', { name: 'Grupp', exact: true }).click()
+  await panel.getByRole('button', { name: 'Resultat', exact: true }).click()
   const review = panel.getByRole('region', { name: 'Klassgenomgång', exact: true })
   await review.getByRole('combobox', { name: 'Uppdrag att gå igenom', exact: true }).selectOption({ index: 1 })
   const cell = review.locator('tbody button').first()

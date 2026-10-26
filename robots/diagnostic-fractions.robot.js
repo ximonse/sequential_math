@@ -63,7 +63,7 @@ test('Authored fraction shortcuts and frac notation agree in preview, pupil and 
     return JSON.stringify(await response.json())
   }, classId)
   expect(savedSource).toContain(JSON.stringify(source).slice(1, -1))
-  await panel.getByRole('button', { name: 'Grupp', exact: true }).click()
+  await panel.getByRole('button', { name: 'Resultat', exact: true }).click()
   const review = panel.getByRole('region', { name: 'Klassgenomgång', exact: true })
   await review.getByRole('combobox', { name: 'Uppdrag att gå igenom', exact: true }).selectOption({ index: 1 })
   await expect(review.locator('thead').getByRole('math')).toHaveCount(2)

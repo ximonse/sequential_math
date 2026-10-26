@@ -1,6 +1,6 @@
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
-import { createDiagnosticAssignment, stopDiagnosticAssignment } from './_diagnosticAssignmentStore.js'
+import { createDiagnosticAssignment, copyDiagnosticAssignment, stopDiagnosticAssignment } from './_diagnosticAssignmentStore.js'
 import { freezeStoppedDiagnosticAttempts } from './_diagnosticAssignmentClose.js'
 import { diagnosticApiEnabled, diagnosticAssignablePupilsInClass } from './_diagnosticApiAccess.js'
 import { listClassDiagnosticAssignments } from './_diagnosticAssignmentList.js'
@@ -43,6 +43,15 @@ export default async function handler(req, res) {
     if (!Array.isArray(studentIds) || !studentIds.length
       || !studentIds.every(studentId => assignable.includes(studentId))) {
       return res.status(403).json({ error: 'Only pupils in this class can be assigned' })
+    }
+    if (req.body?.sourceAssignmentId !== undefined) {
+      if (typeof req.body.sourceClassId !== 'string' || !await canAccessClass(req, req.body.sourceClassId)) {
+        return res.status(403).json({ error: 'Not authorized for the source class' })
+      }
+      const assignment = await copyDiagnosticAssignment({ classId, studentIds, teacherId: auth.teacherId,
+        sourceClassId: req.body.sourceClassId, sourceAssignmentId: req.body.sourceAssignmentId,
+        titleSv: req.body.titleSv })
+      return res.status(201).json({ assignment })
     }
     const assignment = await createDiagnosticAssignment({ classId,
       studentIds, taskIds: req.body?.taskIds, teacherId: auth.teacherId,

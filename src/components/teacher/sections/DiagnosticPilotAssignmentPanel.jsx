@@ -26,6 +26,8 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
   const [customDrawing, setCustomDrawing] = useState(false)
   const [testStudentIds, setTestStudentIds] = useState([])
   const [assignments, setAssignments] = useState([])
+  const [assignmentLoadState, setAssignmentLoadState] = useState('idle')
+  const [reuseAssignment, setReuseAssignment] = useState(null)
   const [status, setStatus] = useState('Välj en klass för att se eleverna.')
   const [busy, setBusy] = useState(false)
   const [attempts, setAttempts] = useState([])
@@ -42,11 +44,13 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
     let active = true
     setStudentId('')
     setAssignments([])
+    setAssignmentLoadState('loading')
     setStatus('Hämtar klasslistan...')
     void request(`/api/teacher-diagnostic-assignments?classId=${encodeURIComponent(classId)}`)
       .then(result => {
         if (!active) return
         if (result.status === 404) {
+          setAssignmentLoadState('error')
           setTestStudentIds([])
           setStatus('Diagnostikens testläge är ännu inte aktiverat på servern.')
           return
@@ -54,11 +58,12 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
         if (!result.ok) throw new Error(result.data.error || 'Kunde inte hämta tilldelningar.')
         setTestStudentIds(result.data.testStudentIds || [])
         setAssignments(result.data.assignments || [])
+        setAssignmentLoadState('ready')
         setStatus(result.data.testStudentIds?.length
           ? 'Välj en elev för att se elevens svar.'
           : 'Inga elever kan tilldelas i den här klassen.')
       })
-      .catch(error => { if (active) setStatus(error.message || 'Kunde inte nå servern.') })
+      .catch(error => { if (active) { setAssignmentLoadState('error'); setStatus(error.message || 'Kunde inte nå servern.') } })
     return () => { active = false }
   }, [classId])
 
@@ -95,7 +100,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
     {task.ncmCode ? `${task.ncmCode} ${task.ncmItem}: ` : ''}<QuestionText>{task.promptSv}</QuestionText>
   </label>
 
-  const hasTasks = selectedTasks.length > 0 || Boolean(customPrompt.trim())
+  const hasTasks = reuseAssignment ? reuseAssignment.items.length > 0 : selectedTasks.length > 0 || Boolean(customPrompt.trim())
   const recipientPlan = buildScreeningDispatches(recipients, { classes, groups: teacherGroups, students })
   const limitCheck = applyScreeningLimits(recipientPlan.dispatches, limits)
   const pendingClassIds = limitCheck.pending.map(item => item.classId).join(',')
@@ -118,10 +123,18 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
   }, [pendingClassIds])
 
   function postAssignment(targetClassId, audience) {
+    if (reuseAssignment) return request('/api/teacher-diagnostic-assignments', { method: 'POST',
+      body: JSON.stringify({ classId: targetClassId, ...audience, titleSv,
+        sourceClassId: reuseAssignment.classId, sourceAssignmentId: reuseAssignment.assignmentId }) })
     return request('/api/teacher-diagnostic-assignments', { method: 'POST',
       body: JSON.stringify({ classId: targetClassId, ...audience,
         taskIds: selectedTasks, titleSv, itemOptions: Object.fromEntries(selectedTasks.filter(id => itemOptions[id]).map(id => [id, itemOptions[id]])),
         customTasks: customPrompt.trim() ? [{ promptSv: customPrompt, gridEnabled: customGrid, drawingEnabled: customDrawing }] : [] }) })
+  }
+
+  function reuseCollection(assignment) {
+    setReuseAssignment(assignment)
+    if (assignment) setTitleSv(assignment.titleSv || 'Screening')
   }
 
   async function createForRecipients() {
@@ -184,8 +197,9 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
     <p className="mt-1 text-sm text-slate-800">Välj mottagare i rutan Mottagare överst och välj uppgifter. Klass och elev nedan styr vilka tilldelningar och svar som visas. Det sparas separat från vanlig träning.</p>
     <div className="mt-2 flex gap-1" aria-label="Screeningvyer">
       <button type="button" aria-pressed={view === 'dispatch'} onClick={() => { if (!reviewDirty.current || window.confirm('Genomgången har osparade ändringar. Vill du lämna dem?')) { reviewDirty.current = false; setView('dispatch') } }} className="rounded border border-slate-300 px-1.5 py-0.5 text-sm aria-pressed:bg-indigo-100">Dela ut</button>
-      <button type="button" aria-pressed={view === 'group'} onClick={() => setView('group')} className="rounded border border-slate-300 px-1.5 py-0.5 text-sm aria-pressed:bg-indigo-100">Grupp</button>
+      <button type="button" aria-pressed={view === 'group'} onClick={() => setView('group')} className="rounded border border-slate-300 px-1.5 py-0.5 text-sm aria-pressed:bg-indigo-100">Resultat</button>
     </div>
+    {view === 'group' && <p className="mt-2 text-sm">Här ser du elevernas svar på en utdelad samling. Välj klass och sedan samling. För att dela frågor till en grupp använder du Mottagare överst och Dela ut.</p>}
     <div className="mt-3 grid gap-3 sm:grid-cols-2">
       <label className="text-sm font-medium">Klass
         <select value={classId} onChange={event => {
@@ -205,10 +219,35 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
       </label>
     </div>
     <div hidden={view !== 'dispatch'}>
+    <label className="mt-2 block text-sm font-semibold">Återanvänd samling
+      <select value={reuseAssignment?.assignmentId || ''} disabled={busy || assignmentLoadState === 'loading'}
+        onChange={event => reuseCollection(assignments.find(item => item.assignmentId === event.target.value) || null)}
+        className="mt-1 block w-full rounded border border-slate-300 bg-white px-1.5 py-0.5">
+        <option value="">Skapa en ny samling</option>
+        {reuseAssignment && !assignments.some(item => item.assignmentId === reuseAssignment.assignmentId)
+          && <option value={reuseAssignment.assignmentId}>{reuseAssignment.titleSv || 'Screening'} · vald för återanvändning</option>}
+        {assignments.map(item => <option key={item.assignmentId} value={item.assignmentId}>
+          {item.titleSv || 'Screening'} · {item.items.length} frågor · {new Date(item.createdAt).toLocaleString('sv-SE')}
+        </option>)}
+      </select>
+    </label>
+    <p className="mt-1 text-xs text-slate-600">Välj klassen där samlingen delades ut i Klass ovan. Välj nya mottagare överst för att dela ut en ny kopia.</p>
     <label className="mt-2 block text-sm font-semibold">Samlingens namn
       <input value={titleSv} maxLength={100} onChange={event => setTitleSv(event.target.value)}
         className="ml-2 rounded border border-slate-400 px-2 py-1" placeholder="Exempel: Läxa vecka 42" />
     </label>
+    {reuseAssignment && <section className="mt-3 text-sm" aria-label="Samling att återanvända">
+      <p className="font-semibold">{reuseAssignment.items.length} frågor att dela ut igen</p>
+      <p>Frågornas ordning, svarstyper och arbetsytor följer med. Tidigare elevsvar stannar i den gamla utdelningen.</p>
+      <ol className="mt-2 list-inside list-decimal space-y-1">{reuseAssignment.items.map(item => {
+        const task = item.taskSnapshot || findTask(item.taskId)
+        return <li key={item.assignmentItemId}><QuestionText>{task?.promptSv || item.taskId}</QuestionText>
+          <span className="ml-2 text-slate-600">{task?.answerType === 'text' ? 'Skrivsvar' : 'Siffersvar'}
+            {task?.gridEnabled !== false ? ' · Räknehäfte' : ''}{task?.drawingEnabled ? ' · Rityta' : ''}</span>
+        </li>
+      })}</ol>
+    </section>}
+    <div hidden={Boolean(reuseAssignment)}>
     <label className="mt-3 block text-sm font-medium">Diagnospaket
       <select value={selectedPack?.id || ''} disabled={busy} onChange={event => {
         const pack = diagnosticCatalog.packs.find(item => item.id === event.target.value)
@@ -270,6 +309,7 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
         </li>)}
       </ol>
     </details>
+    </div>
     <div data-screening-recipients className="mt-3 rounded border border-indigo-200 bg-indigo-50 p-2 text-sm">
       <p>{recipientPlan.dispatches.length
         ? `Valda mottagare ger ${recipientPlan.dispatches.length} screening${recipientPlan.dispatches.length === 1 ? '' : 'ar'}, en per klass: ${recipientPlan.dispatches.map(describeDispatch).join(', ')}.`
@@ -291,6 +331,8 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
       <ul className="mt-1 list-inside list-disc">
         {assignments.map(assignment => <li key={assignment.assignmentId}>
           {assignment.titleSv || 'Screening'} · {assignment.items.length} uppgift{assignment.items.length === 1 ? '' : 'er'} · {assignment.status === 'active' ? 'aktiv' : 'avslutad'} · {assignment.assignmentId}
+          <button type="button" onClick={() => reuseCollection(assignment)} disabled={busy}
+            className="ml-2 rounded border border-slate-400 bg-white px-1.5 py-0.5 text-xs text-slate-800 disabled:opacity-50">Återanvänd</button>
           <button type="button" onClick={() => stopAssignment(assignment)} disabled={busy}
             className="ml-2 rounded border border-slate-400 bg-white px-1.5 py-0.5 text-xs text-slate-800 disabled:opacity-50">
             {assignment.status === 'active' ? 'Avsluta' : 'Lämna in pågående'}</button>
@@ -299,6 +341,9 @@ export default function DiagnosticPilotAssignmentPanel({ classes, students, reci
     </div>}
     </div>
     <div hidden={view !== 'group'}>
+      {!classId && <p className="mt-3 text-sm" role="status">Välj en klass ovan för att se utdelade samlingar och elevernas svar.</p>}
+      {classId && assignmentLoadState !== 'ready' && <p className="mt-3 text-sm" role="status">{status}</p>}
+      {classId && assignmentLoadState === 'ready' && !assignments.length && <p className="mt-3 text-sm" role="status">Det finns inga utdelade samlingar i den här klassen ännu. Använd Dela ut för att skapa eller återanvända en samling.</p>}
       {classId && assignments.length > 0 && <DiagnosticClassReviewPanel key={classId} classId={classId} assignments={assignments} pupils={pupils} onDirtyChange={value => { reviewDirty.current = value }} />}
     </div>
     {view === 'dispatch' && studentId && <div className="mt-5 border-t border-slate-300 pt-4">

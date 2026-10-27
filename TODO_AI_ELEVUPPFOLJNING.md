@@ -1,7 +1,8 @@
 # Plan: AI-stödd elevanalys och riktad uppföljning
 
-Datum: 2026-10-27. Status: förslag för avstämning, ingen implementation beställd
-genom denna plan. Projektkort: `ai-pupil-followup` och dess delkort.
+Datum: 2026-10-27. Status: planen avstämd med Simon, kompletterad med krav på
+rättade och kommenterade egna uträkningar. Ingen implementation genomförd.
+Projektkort: `ai-pupil-followup` och dess delkort.
 
 ## Mål och arbetsflöde
 
@@ -159,6 +160,27 @@ Tre materialtyper, med samma mål-/källreferens men olika beteende:
    Första versionen är ett utskrivbart dokument/PDF, inte en ny dokumentinkorg
    för elever. Inga diagnosetiketter eller andra elevers uppgifter i elevtexten.
 
+   **Elevens egen uträkning som rättat exempel** är ett uttryckligt krav från
+   Simon (2026-10-27). När relevant underlag finns ska dokumentet använda
+   elevens eget tal och arbete, exempelvis från det digitala räknehäftet:
+
+   - Visa originalet och en separat, tydligt märkt rättad version i anslutning
+     till varandra. Bevara kolumnplacering, minnessiffror, växlingar och streck
+     så att eleven känner igen sitt arbete. Originalobservationen ändras aldrig.
+   - Markera det konkreta felsteget och kommentera vad som behöver ändras,
+     varför det matematiskt fungerar och hur eleven kan kontrollera svaret.
+     Behåll korrekta steg och visa den fortsatta korrekta uträkningen, inte
+     bara ett utbytt slutsvar. Skillnaden ska vara begriplig även utan färg.
+   - Skilj synligt räknefel från osäker tolkning av elevens metod. Om arbetet
+     inte visar hur eleven tänkte får AI:n inte hitta på mellanled och kalla
+     dem elevens. En kompletterad lösning märks som ett lösningsförslag.
+   - Knyt exemplet till källans uppgifts-/försöksreferens och revision i
+     lärarunderlaget. Läraren granskar både rättning och kommentar före
+     utdelning. Elevtexten är saklig och stödjande.
+   - Följ gärna det rättade exemplet med en liknande uppgift att lösa själv.
+     Saknas användbar egen uträkning används ett tydligt märkt konstruerat
+     exempel eller bara det faktiska slutsvaret; inget fabriceras som elevens arbete.
+
 Kontrollera matematiskt facit med domänens oberoende verifierare där stöd finns.
 Läraren granskar uppgifter utan sådan verifierare; AI:ns egen omräkning räknas
 inte som oberoende kontroll. Bedömningstyp och verifieringsstatus syns i utkastet.
@@ -190,7 +212,10 @@ server, ny lagringstjänst eller AI-leverantör införs utan avstämt behov.
   → elevsvar → omladdning → lärargranskning. Inget får delas ut under analysen.
 - Testa dubbelklick, upprepade anrop, timeout efter lyckad skrivning och
   samtidig utkaständring. Existerande uppdrag får inte ersättas av misstag.
-- Granska elevdokumentets rendering och faktiska uppgifter. Skilj lokal
+- Granska elevdokumentets rendering och faktiska uppgifter. Kontrollera särskilt
+  original mot källrevision, rättade mellanled och facit, kommentaren vid
+  felsteget samt läsbarhet i utskrift. Prova även otydligt/saknat elevarbete så
+  att påhittade mellanled aldrig presenteras som elevens. Skilj lokal
   syntetisk provning, riktig KV, produktionsprov och fysisk iPad.
 - Kör relevanta tester, build, robotar, arkitektur och projektkartans kontroller
   vid implementation. Leverera avgränsade lokala commits; publicering separat.

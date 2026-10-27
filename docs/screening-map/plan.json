@@ -1743,16 +1743,16 @@
       "id": "ai-pupil-followup",
       "area": "AI-uppföljning",
       "title": "AI-stödd elevanalys och riktad uppföljning",
-      "status": "Föreslaget",
+      "status": "Planerat",
       "purpose": "Låt läraren granska en elev över tid, stämma av hypoteser och beställa riktad screening, generatorträning eller elevdokument.",
-      "next": "Stäm av planen; börja därefter med spårbart underlag för en syntetisk elev och ett aritmetikmål.",
+      "next": "Börja med spårbart underlag för en syntetisk elev och ett aritmetikmål enligt den avstämda planen.",
       "acceptance": "Hela kedjan från analys till lärargodkänd screening fungerar med syntetiska data. Ingenting delas ut under analys; befintliga mastery- och behörighetsgränser gäller.",
       "requires": [
         "teacher-data",
         "permissions"
       ],
       "affects": [],
-      "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.",
+      "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.\n2026-10-27: Simon bekräftar att planen ser bra ut och begär att elevdokument innehåller elevens egna felberäkningar, rättade och kommenterade, exempelvis från räknehäftet. Ingen implementation utförd.",
       "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.",
       "issue": "",
       "kind": "funktion",
@@ -1897,14 +1897,14 @@
       "title": "Förklarande elevdokument och senare uppföljning",
       "status": "Föreslaget",
       "purpose": "Ge eleven begriplig förklaring och övning; låt läraren jämföra senare svar med tidigare hypotes.",
-      "next": "Skapa granskad utskrivbar dokumentversion med exempel, egna uppgifter och separat lärarfacit.",
-      "acceptance": "Elevtexten har korrekta exempel utan diagnosetiketter. Uppföljningen skiljer jämförbart innehåll från ändrad svårighet och otillräckligt underlag.",
+      "next": "Planera dokumentets original och separat rättad, kommenterad egen uträkning samt egna övningsuppgifter och lärarfacit.",
+      "acceptance": "Elevtexten har korrekta exempel utan diagnosetiketter. Uppföljningen skiljer jämförbart innehåll från ändrad svårighet och otillräckligt underlag. När användbart underlag finns visas elevens egen uträkning med bevarat original, separat rättad lösning och kommentar vid felsteget. Inga mellanled fabriceras som elevens; källrevision och lärargranskning krävs.",
       "requires": [
         "ai-pupil-material"
       ],
       "affects": [],
-      "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.",
-      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.",
+      "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.\n2026-10-27: Simon kräver elevens egna tal/uträkningar som rättade och kommenterade exempel, exempelvis från räknehäftet. Detta innehållskrav är beslutat; dokumentfunktionen är ännu inte byggd.",
+      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.\n2026-10-27: Detaljplanen kompletterad med original/rättad lösning, bevarade korrekta steg, matematiska kommentarer, källrevision och verifieringsfall för saknat eller otydligt elevarbete.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -1916,6 +1916,11 @@
         {
           "id": "ai-pupil-document-2",
           "text": "Uppföljningsrapport med jämförbarhet och källreferenser",
+          "done": false
+        },
+        {
+          "id": "ai-pupil-document-corrected-work",
+          "text": "Elevens egen uträkning med separat rättning, kommentarer vid felsteget och verifierad källtrohet",
           "done": false
         }
       ]

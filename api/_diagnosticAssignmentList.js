@@ -9,6 +9,8 @@ function safeStudentAssignment(assignment) {
     items: assignment.items.map(item => ({ assignmentItemId: item.assignmentItemId,
       taskId: item.taskId, taskVersion: item.taskVersion,
       promptSv: item.taskSnapshot?.promptSv || '',
+      ...(item.taskSnapshot?.responseMode ? { responseMode: item.taskSnapshot.responseMode,
+        images: item.taskSnapshot.images, options: item.taskSnapshot.options } : {}),
       ...(item.taskSnapshot?.answerType ? { answerType: item.taskSnapshot.answerType } : {}),
       ...(item.taskSnapshot?.gridEnabled !== undefined ? { gridEnabled: item.taskSnapshot.gridEnabled } : {}),
       ...(item.taskSnapshot?.drawingEnabled !== undefined ? { drawingEnabled: item.taskSnapshot.drawingEnabled } : {}) })) }

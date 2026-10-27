@@ -1,3 +1,5 @@
+import ScreeningImageEditor from './ScreeningImageEditor.jsx'
+import ScreeningQuestionPreview from './ScreeningQuestionPreview.jsx'
 import { useEffect, useState } from 'react'
 import { diagnosticCatalog } from '../../../domains/arithmetic/diagnosticCatalog.browser'
 import { diagnosticRequest as request } from './diagnosticRequest'
@@ -18,6 +20,7 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
   const [selectedTasks, setSelectedTasks] = useState([taskIds[0]])
   const [titleSv, setTitleSv] = useState('Screening')
   const [itemOptions, setItemOptions] = useState({})
+  const [imageTasks, setImageTasks] = useState([])
   const [customPrompt, setCustomPrompt] = useState('')
   const [customGrid, setCustomGrid] = useState(false)
   const [customDrawing, setCustomDrawing] = useState(false)
@@ -46,7 +49,7 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
 
   const selectedPack = diagnosticCatalog.packs.find(pack => JSON.stringify(pack.taskIds) === JSON.stringify(selectedTasks))
   const usesNcm = selectedTasks.some(id => findTask(id)?.ncmCode)
-  const hasTasks = reuseAssignment ? reuseAssignment.items.length > 0 : selectedTasks.length > 0 || Boolean(customPrompt.trim())
+  const hasTasks = reuseAssignment ? reuseAssignment.items.length > 0 : selectedTasks.length > 0 || imageTasks.length > 0 || Boolean(customPrompt.trim())
   const recipientPlan = buildScreeningDispatches(recipients, { classes, groups: teacherGroups, students })
   const limitCheck = applyScreeningLimits(recipientPlan.dispatches, limits)
   const pendingClassIds = limitCheck.pending.map(item => item.classId).join(',')
@@ -75,7 +78,7 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
     return request('/api/teacher-diagnostic-assignments', { method: 'POST',
       body: JSON.stringify({ classId: targetClassId, ...audience,
         taskIds: selectedTasks, titleSv, itemOptions: Object.fromEntries(selectedTasks.filter(id => itemOptions[id]).map(id => [id, itemOptions[id]])),
-        customTasks: customPrompt.trim() ? [{ promptSv: customPrompt, gridEnabled: customGrid, drawingEnabled: customDrawing }] : [] }) })
+        customTasks: [...imageTasks, ...(customPrompt.trim() ? [{ promptSv: customPrompt, gridEnabled: customGrid, drawingEnabled: customDrawing }] : [])] }) })
   }
 
   function reuseCollection(assignment) {
@@ -140,10 +143,15 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
       <ol className="mt-2 list-inside list-decimal space-y-1">{reuseAssignment.items.map(item => {
         const task = item.taskSnapshot || findTask(item.taskId)
         return <li key={item.assignmentItemId}><QuestionText>{task?.promptSv || item.taskId}</QuestionText>
-          <span className="ml-2 text-slate-600">{task?.answerType === 'text' ? 'Skrivsvar' : 'Siffersvar'}
+          <span className="ml-2 text-slate-600">{{ single: 'Välj en bild', multiple: 'Välj flera bilder', name: 'Välj namn', text: 'Skrivsvar' }[task?.responseMode] || (task?.answerType === 'text' ? 'Skrivsvar' : 'Siffersvar')}
             {task?.gridEnabled !== false ? ' · Räknehäfte' : ''}{task?.drawingEnabled ? ' · Rityta' : ''}</span>
         </li>
       })}</ol>
+      {reuseAssignment.items.some(item => item.taskSnapshot?.responseMode) && <details className="mt-2">
+        <summary className="cursor-pointer font-semibold">Förhandsvisa samlingens bildfrågor</summary>
+        {reuseAssignment.items.filter(item => item.taskSnapshot?.responseMode).map(item => <ScreeningQuestionPreview key={item.assignmentItemId}
+          task={item.taskSnapshot} context={{ teacher: true, classId: sourceClassId, assignmentId: reuseAssignment.assignmentId }} />)}
+      </details>}
     </section>}
 
     {!reuseAssignment && <>
@@ -152,6 +160,7 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
         itemOptions={itemOptions} onItemOptions={setItemOptions}
         customPrompt={customPrompt} onCustomPrompt={setCustomPrompt} customGrid={customGrid} onCustomGrid={setCustomGrid}
         customDrawing={customDrawing} onCustomDrawing={setCustomDrawing} />
+      <ScreeningImageEditor tasks={imageTasks} onTasks={setImageTasks} disabled={busy} />
     </>}
 
     <h3 className="mt-4 flex items-center font-semibold text-slate-800"><span className={STEP}>{reuseAssignment ? 2 : 3}</span>Skicka</h3>

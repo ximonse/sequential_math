@@ -1,3 +1,5 @@
+import { normalizeImageQuestion, isChoiceTask } from '../src/domains/arithmetic/screeningImageQuestions.js'
+import { authorizeQuestionImages } from './_screeningImages.js'
 import { randomBytes } from 'node:crypto'
 import { createRequire } from 'node:module'
 import { kv } from '@vercel/kv'
@@ -124,12 +126,18 @@ export async function createDiagnosticAssignment({ classId, studentIds, taskIds,
       fail(400, 'invalid_task', 'En egen fråga behöver text, högst 2000 tecken.')
     }
     const taskId = `custom-${makeId()}`
+    let imageQuestion = {}
+    if (custom.responseMode) {
+      try { imageQuestion = normalizeImageQuestion(custom) } catch (error) { fail(400, 'invalid_image_question', error.message) }
+      await authorizeQuestionImages(imageQuestion, teacherId, { store })
+    }
     tasks.push({ taskId, taskVersion: 1, promptSv: custom.promptSv.trim(), operation: 'written_response',
       answerRule: 'teacher_review', answerType: 'text', gridEnabled: custom.gridEnabled ?? false,
-      drawingEnabled: custom.drawingEnabled ?? false })
+      drawingEnabled: custom.drawingEnabled ?? false, ...imageQuestion })
   }
   const items = tasks.map(task => {
     const options = itemOptions[task.taskId] || {}
+    if (task.responseMode && Object.keys(options).length) fail(400, 'invalid_task_options', 'Bildfrågans svarssätt är fast.')
     if (Object.keys(options).some(key => !['answerType', 'gridEnabled', 'drawingEnabled'].includes(key))
       || (options.answerType !== undefined && !['number', 'text'].includes(options.answerType))
       || ['gridEnabled', 'drawingEnabled'].some(key => options[key] !== undefined && typeof options[key] !== 'boolean')
@@ -234,7 +242,9 @@ export async function openDiagnosticAttempt({ assignmentId, assignmentItemId, st
   const attemptId = makeId()
   if (!validId(attemptId)) fail(500, 'id_generation', 'Could not create diagnostic attempt ID')
   const grid = createDiagnosticGrid({ attemptId, taskId: item.taskId, taskVersion: item.taskVersion,
-    answerType: item.taskSnapshot?.answerType || 'number' })
+    answerType: item.taskSnapshot?.answerType || 'number',
+    choiceConfig: isChoiceTask(item.taskSnapshot) ? { optionIds: item.taskSnapshot.options.map(option => option.id),
+      multiple: item.taskSnapshot.responseMode === 'multiple' } : null })
   const record = { attemptId, studentId, assignmentId, assignmentItemId,
     classIdAtAttempt: assignment.classId, taskId: item.taskId, taskVersion: item.taskVersion,
     evidenceClass: 'diagnostic_only', serverRevision: 0, lastSequence: 0,

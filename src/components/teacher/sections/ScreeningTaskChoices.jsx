@@ -1,5 +1,6 @@
 import { diagnosticCatalog } from '../../../domains/arithmetic/diagnosticCatalog.browser'
 import QuestionText from '../../QuestionText'
+import ScreeningQuestionPreview from './ScreeningQuestionPreview.jsx'
 
 const writtenTasks = diagnosticCatalog.tasks.filter(task => !task.ncmCode)
 const ncmPacks = diagnosticCatalog.packs.filter(pack => pack.id.startsWith('ncm-') && pack.id !== 'ncm-overview')
@@ -32,6 +33,10 @@ export default function ScreeningTaskChoices({
       ? 'Uppgifter ur NCM:s Diamant-diagnoser med NCM:s facit och analys. Svaren rättas automatiskt mot facit.'
       : 'Egna uppgifter för diagnostisk provning. Det här är inte ett originalprov från NCM.'} Valda uppgifter: {selectedTasks.length}.</p>
 
+    {selectedTasks.some(id => findTask(id)?.responseMode) && <details className="mt-2 text-sm">
+      <summary className="cursor-pointer font-semibold">Förhandsvisa valda bildfrågor</summary>
+      {selectedTasks.map(findTask).filter(task => task?.responseMode).map(task => <ScreeningQuestionPreview key={task.taskId} task={task} />)}
+    </details>}
     <details className="mt-2 text-sm">
       <summary className="cursor-pointer font-semibold">Välj uppgifter en och en</summary>
       <fieldset className="mt-2" disabled={busy}>
@@ -58,12 +63,12 @@ export default function ScreeningTaskChoices({
           return <div key={id} className="flex flex-wrap items-center gap-x-2">
             <strong><QuestionText>{task?.promptSv}</QuestionText></strong>
             {/* NCM answers are marked against the facit, so their answer type is fixed. */}
-            {task?.ncmCode ? <span className="text-slate-600">Facit: {task.facitSv}</span>
+            {task?.responseMode ? <span>{task.responseMode === 'text' ? 'Skrivsvar' : 'Val av alternativ'}</span> : task?.ncmCode ? <span className="text-slate-600">Facit: {task.facitSv}</span>
               : <label>Svarstyp <select value={options.answerType || 'number'} onChange={event => change({ answerType: event.target.value })} className="rounded border px-1 py-0.5">
                 <option value="number">Siffersvar</option><option value="text">Skrivsvar</option>
               </select></label>}
-            <label><input type="checkbox" checked={options.gridEnabled !== false} onChange={event => change({ gridEnabled: event.target.checked })} /> Räknehäfte</label>
-            <label><input type="checkbox" checked={Boolean(options.drawingEnabled)} onChange={event => change({ drawingEnabled: event.target.checked })} /> Rityta</label>
+            <label><input type="checkbox" disabled={Boolean(task?.responseMode)} checked={task?.responseMode ? false : options.gridEnabled !== false} onChange={event => change({ gridEnabled: event.target.checked })} /> Räknehäfte</label>
+            <label><input type="checkbox" disabled={Boolean(task?.responseMode)} checked={Boolean(options.drawingEnabled)} onChange={event => change({ drawingEnabled: event.target.checked })} /> Rityta</label>
           </div>
         })}
       </fieldset>

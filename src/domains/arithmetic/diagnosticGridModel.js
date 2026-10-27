@@ -8,7 +8,7 @@ export const NUMBER_ANSWER = /^[−-]?\d{0,12}(,\d{0,12})?$/u
 // verbatim. Task-specific assessment must not strip symbols or evaluate them.
 export const MATH_ANSWER = /^[\p{L}0-9+−\-×*/÷,.=()%²³^:°√<>≤≥± ]{0,200}$/u
 const NOTE_CHARACTERS = /^[0-9]{1,2}$/u
-const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'line_add', 'line_remove', 'answer_change', 'drawing_stroke', 'drawing_clear', 'pause', 'resume', 'focus_lost', 'submit'])
+const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'line_add', 'line_remove', 'answer_change', 'selection_change', 'drawing_stroke', 'drawing_clear', 'pause', 'resume', 'focus_lost', 'submit'])
 
 function isValidPosition(value, rows, columns) {
   return Number.isInteger(value?.row) && value.row >= 0 && value.row < rows
@@ -26,7 +26,7 @@ function normalizeCharacter(value, layer) {
   return character
 }
 
-export function createDiagnosticGrid({ attemptId, taskId, taskVersion, rows = GRID_ROWS, columns = GRID_COLUMNS, answerType = 'number' }) {
+export function createDiagnosticGrid({ attemptId, taskId, taskVersion, rows = GRID_ROWS, columns = GRID_COLUMNS, answerType = 'number', choiceConfig = null }) {
   if (!attemptId || !taskId || !Number.isInteger(taskVersion) || taskVersion < 1) {
     throw new Error('A versioned task and attempt ID are required')
   }
@@ -34,7 +34,12 @@ export function createDiagnosticGrid({ attemptId, taskId, taskVersion, rows = GR
     || !Number.isInteger(columns) || columns < 1 || columns > 24) {
     throw new Error('Invalid grid dimensions')
   }
-  if (!['number', 'text'].includes(answerType)) throw new Error('Invalid diagnostic answer type')
+  if (!['number', 'text', 'choice'].includes(answerType)) throw new Error('Invalid diagnostic answer type')
+  if (answerType === 'choice' && (!choiceConfig || !Array.isArray(choiceConfig.optionIds)
+    || choiceConfig.optionIds.length < 2 || choiceConfig.optionIds.length > 12
+    || new Set(choiceConfig.optionIds).size !== choiceConfig.optionIds.length
+    || choiceConfig.optionIds.some(id => typeof id !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/u.test(id))
+    || typeof choiceConfig.multiple !== 'boolean')) throw new Error('Invalid choice configuration')
   return {
     version: DIAGNOSTIC_GRID_VERSION,
     attemptId,
@@ -44,7 +49,8 @@ export function createDiagnosticGrid({ attemptId, taskId, taskVersion, rows = GR
     columns,
     cells: {},
     lines: [],
-    ...(answerType === 'text' ? { answerType } : {}),
+    ...(answerType !== 'number' ? { answerType } : {}),
+    ...(answerType === 'choice' ? { choiceConfig: structuredClone(choiceConfig), selectedOptionIds: [] } : {}),
     drawing: [],
     answer: '',
     cursor: { row: 0, column: 0, layer: 'main' },
@@ -136,7 +142,14 @@ export function applyDiagnosticGridEvent(state, event) {
       throw new Error('Layer history mismatch')
     }
     next.cursor = { ...state.cursor, layer: event.to }
+  } else if (event.type === 'selection_change') {
+    if (state.answerType !== 'choice' || JSON.stringify(event.before) !== JSON.stringify(state.selectedOptionIds)
+      || !Array.isArray(event.after) || new Set(event.after).size !== event.after.length
+      || event.after.some(id => !state.choiceConfig.optionIds.includes(id))
+      || (!state.choiceConfig.multiple && event.after.length > 1)) throw new Error('Invalid selected options')
+    next.selectedOptionIds = [...event.after]
   } else if (event.type === 'answer_change') {
+    if (state.answerType === 'choice') throw new Error('Choice answers require option IDs')
     if (event.before !== state.answer || typeof event.after !== 'string'
       || (state.answerType === 'text' ? event.after.length > 2000 : !MATH_ANSWER.test(event.after))) throw new Error('Answer history mismatch')
     next.answer = event.after
@@ -177,7 +190,7 @@ export function replayDiagnosticGrid(snapshot) {
     taskVersion: snapshot?.taskVersion,
     rows: snapshot?.rows,
     columns: snapshot?.columns,
-    answerType: snapshot?.answerType || 'number'
+    answerType: snapshot?.answerType || 'number', choiceConfig: snapshot?.choiceConfig
   })
   const events = snapshot?.events
   if (!Array.isArray(events)) throw new Error('Missing grid event stream')
@@ -185,6 +198,7 @@ export function replayDiagnosticGrid(snapshot) {
   if (JSON.stringify(replayed.cells) !== JSON.stringify(snapshot.cells)
     || JSON.stringify(replayed.lines) !== JSON.stringify(snapshot.lines ?? [])
     || JSON.stringify(replayed.drawing) !== JSON.stringify(snapshot.drawing ?? [])
+    || JSON.stringify(replayed.selectedOptionIds) !== JSON.stringify(snapshot.selectedOptionIds)
     || replayed.answer !== snapshot.answer
     || JSON.stringify(replayed.cursor) !== JSON.stringify(snapshot.cursor)
     || replayed.status !== snapshot.status) {

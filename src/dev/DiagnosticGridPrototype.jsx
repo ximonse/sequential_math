@@ -1,3 +1,5 @@
+import ScreeningImageQuestion from '../components/student/ScreeningImageQuestion.jsx'
+import { isChoiceTask } from '../domains/arithmetic/screeningImageQuestions.js'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import taskManifest from '../domains/arithmetic/diagnosticTasks.v1.json'
 import {
@@ -36,13 +38,14 @@ function newGrid(task) {
   return createDiagnosticGrid({
     attemptId: `prototype:${crypto.randomUUID()}`,
     taskId: task.taskId,
-    taskVersion: task.taskVersion, answerType: task.answerType || 'number'
+    taskVersion: task.taskVersion, answerType: task.answerType || 'number',
+    choiceConfig: isChoiceTask(task) ? { optionIds: task.options.map(option => option.id), multiple: task.responseMode === 'multiple' } : null
   })
 }
 
 function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = null, saveState = null, workspaceOnly = false,
   onNext = null, onPrevious = null, onHome = null, onSubmitCollection = null, collectionTitle = '', questionIndex = 1, questionCount = 1,
-  guideScope = '' }) {
+  guideScope = '', imageContext = {} }) {
   const availableTasks = pilot ? [pilot.task] : TASKS
   const [task, setTask] = useState(pilot?.task || TASKS[0])
   const [grid, setGrid] = useState(() => pilot?.snapshot || newGrid(pilot?.task || TASKS[0]))
@@ -473,6 +476,9 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
           <div className="notebook-left">
             {!workspaceOnly && <p className="notebook-question-count">Fråga {questionIndex} av {questionCount}</p>}
             {!workspaceOnly && <h2 className={`notebook-question ${isExpression ? '' : 'notebook-question--text'}`}><QuestionText>{question}</QuestionText></h2>}
+            {!workspaceOnly && task.responseMode && <ScreeningImageQuestion task={task} selected={grid.selectedOptionIds || []}
+              disabled={editingLocked || isDiagnosticAttemptFull(grid.events)} context={imageContext} onChange={after => record(previous =>
+                ({ type: 'selection_change', before: previous.selectedOptionIds, after }))} />}
             <div hidden={task.gridEnabled === false || !notebookVisible} className="notebook-grid-scroll">
           <div ref={gridRef} className="diagnostic-grid" role="group" aria-label="Rutat räknehäfte">
             <DiagnosticGridLines lines={grid.lines} preview={linePreview} rows={grid.rows} columns={grid.columns} />
@@ -524,10 +530,10 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
           </div>
             </div>
             {!workspaceOnly && <div className={`diagnostic-answer-row ${task.answerType === 'text' ? 'diagnostic-answer-row--text' : ''}`}>
-              <NotebookAnswerInput inputRef={answerRef} answer={grid.answer} answerType={task.answerType}
+              {!isChoiceTask(task) && <NotebookAnswerInput inputRef={answerRef} answer={grid.answer} answerType={task.answerType}
                 active={inputTarget === 'answer' && !editingLocked} disabled={editingLocked}
                 onActivate={() => { setInputTarget('answer'); setLineMode(false); setEraseMode(false); setContextMenu(null); stopGesture() }}
-                onChange={changeAnswer} onKey={keypad} />
+                onChange={changeAnswer} onKey={keypad} />}
               {pilot && <button type="button" className={`notebook-next ${!onNext ? 'notebook-submit-ready' : ''}`}
                 onClick={onNext || (() => onSubmitCollection?.(grid))}
                 disabled={navigationLocked || (!onNext && (saveState?.collectionSubmitted || !onSubmitCollection))}>
@@ -535,7 +541,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
               </button>}
             </div>}
           </div>
-          {(task.gridEnabled !== false || task.answerType !== 'text') && <NotebookTools
+          {(task.gridEnabled !== false || !['text', 'choice'].includes(task.answerType)) && <NotebookTools
             formats={<>{formatButton('main', 'Stor')}{formatButton('note', 'Liten')}</>}
             disabled={editingLocked || attemptFull} gridEnabled={task.gridEnabled !== false && notebookVisible}
             lineMode={lineMode} eraseMode={eraseMode}

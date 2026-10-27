@@ -1,17 +1,21 @@
+import ScreeningImageQuestion from '../../student/ScreeningImageQuestion.jsx'
 import { useMemo, useState } from 'react'
 import { describeDiagnosticEvent, diagnosticHistoryFrame } from '../../../domains/arithmetic/diagnosticHistory'
 import DiagnosticGridLines from '../../../dev/DiagnosticGridLines'
 import MathScratchpad from '../../student/MathScratchpad'
+import { choiceObservation, isChoiceTask } from '../../../domains/arithmetic/screeningImageQuestions.js'
 
-export default function DiagnosticAttemptHistory({ snapshot }) {
+export default function DiagnosticAttemptHistory({ snapshot, task, imageContext = {} }) {
   const lastStep = snapshot.events.length
   const [step, setStep] = useState(lastStep)
   const frame = useMemo(() => diagnosticHistoryFrame(snapshot, step), [snapshot, step])
   const event = snapshot.events[step - 1]
+  const choice = isChoiceTask(task)
+  const answer = choice ? choiceObservation(task, frame).explicitAnswer || 'inga val' : frame.answer || 'inte skrivet'
 
   return <section className="mt-3" aria-label="Elevens inmatningsförlopp">
-    <h5 className="font-semibold">Så ändrades räknehäftet</h5>
-    <p className="text-sm text-slate-700">Stega genom sparade händelser. Det visar vad eleven skrev och ändrade, inte varför.</p>
+    <h5 className="font-semibold">{task?.responseMode ? 'Så ändrades svaret' : 'Så ändrades räknehäftet'}</h5>
+    <p className="text-sm text-slate-700">Stega genom sparade händelser. Det visar vad eleven valde, skrev och ändrade, inte varför.</p>
     <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
       <button type="button" onClick={() => setStep(0)} disabled={step === 0} className="rounded border px-1.5 py-0.5 disabled:opacity-40">Början</button>
       <button type="button" onClick={() => setStep(value => value - 1)} disabled={step === 0} className="rounded border px-1.5 py-0.5 disabled:opacity-40">Föregående</button>
@@ -22,8 +26,9 @@ export default function DiagnosticAttemptHistory({ snapshot }) {
       <button type="button" onClick={() => setStep(value => value + 1)} disabled={step === lastStep} className="rounded border px-1.5 py-0.5 disabled:opacity-40">Nästa</button>
       <button type="button" onClick={() => setStep(lastStep)} disabled={step === lastStep} className="rounded border px-1.5 py-0.5 disabled:opacity-40">Slutbild</button>
     </div>
-    <p className="mt-2 text-sm" aria-live="polite">{describeDiagnosticEvent(event)} Slutsvar då: {frame.answer || 'inte skrivet'}.</p>
-    <div className="mt-3 overflow-x-auto">
+    <p className="mt-2 text-sm" aria-live="polite">{event?.type === 'selection_change' ? 'Ändrade valda alternativ.' : describeDiagnosticEvent(event)} {choice ? 'Val då' : 'Slutsvar då'}: {answer}.</p>
+    {task?.responseMode && <ScreeningImageQuestion task={task} selected={frame.selectedOptionIds || []} disabled context={imageContext} />}
+    <div hidden={task?.gridEnabled === false} className="mt-3 overflow-x-auto">
       <div className="diagnostic-grid" role="grid" aria-label={`Elevens uppställning efter steg ${step}`}>
         <DiagnosticGridLines lines={frame.lines} rows={frame.rows} columns={frame.columns} />
         {Array.from({ length: frame.rows * frame.columns }, (_, index) => {

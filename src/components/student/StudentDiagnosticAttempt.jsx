@@ -157,7 +157,7 @@ function AssignedDiagnosticAttempt() {
           savedSequence: result.record.lastSequence, revision: result.record.serverRevision, append: appendStudentDiagnosticAttempt })
         entries.push({ attemptId: result.record.attemptId, revision: saved.revision, sequence: saved.sequence, snapshot: recovered.snapshot })
       }
-      const missing = entries.flatMap((entry, index) => !entry.snapshot.answer.trim() ? [index + 1] : [])
+      const missing = entries.flatMap((entry, index) => !(entry.snapshot.answer.trim() || entry.snapshot.selectedOptionIds?.length) ? [index + 1] : [])
       if (missing.length && !window.confirm(`Fråga ${missing.join(', ')} saknar svar. Vill du ändå lämna in hela samlingen?`)) return
       const result = await submitStudentDiagnosticCollection(assignmentId, entries.map(({ attemptId, revision, sequence }) => ({ attemptId, revision, sequence })))
       if (!result.ok || !result.submitted || result.attempts?.length !== entries.length) throw new Error(result.error || 'Servern bekräftade inte hela inlämningen.')
@@ -213,7 +213,7 @@ function AssignedDiagnosticAttempt() {
       questionCount={opened.assignment.items.length} onSubmitCollection={submitCollection}
       onPrevious={opened.previousItem ? () => changeQuestion(opened.previousItem) : null}
       onNext={opened.nextItem ? () => changeQuestion(opened.nextItem) : null}
-      guideScope={studentId} onGridChange={onGridChange} saveState={{ savedSequence, localSequence, busy, conflict, submitting,
+      imageContext={{ assignmentId }} guideScope={studentId} onGridChange={onGridChange} saveState={{ savedSequence, localSequence, busy, conflict, submitting,
         collectionSubmitted: opened.assignment.submissionStatus === 'submitted',
         error: conflict ? 'Arbetet skiljer sig från serverns version. Den lokala arbetskopian finns kvar på enheten. Be läraren om hjälp.'
           : saveError || (unsaved ? localError : ''), message: saveMessage }} />}

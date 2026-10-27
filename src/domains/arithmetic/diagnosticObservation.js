@@ -1,3 +1,4 @@
+import { choiceObservation, isChoiceTask } from './screeningImageQuestions.js'
 import { replayDiagnosticGrid } from './diagnosticGridModel.js'
 import { checkNcmAnswer } from './ncmAnswerCheck.js'
 
@@ -16,7 +17,7 @@ function expectedAnswer(task) {
 }
 
 function observableFacts(task, grid) {
-  const lastAnswerEvent = [...grid.events].reverse().find(event => event.type === 'answer_change')
+  const lastAnswerEvent = [...grid.events].reverse().find(event => ['answer_change', 'selection_change'].includes(event.type))
   return {
     observationVersion: DIAGNOSTIC_OBSERVATION_VERSION,
     attemptId: grid.attemptId,
@@ -44,13 +45,14 @@ export function summarizeDiagnosticObservation(task, snapshot) {
     throw new Error('Diagnostic task and grid version do not match')
   }
   const grid = replayDiagnosticGrid(snapshot)
+  if (isChoiceTask(task)) return { ...observableFacts(task, grid), ...choiceObservation(task, grid) }
   if (task.answerRule === 'ncm_facit') return ncmObservation(task, grid)
   const manual = task.answerType === 'text' || task.answerRule === 'teacher_review'
   const expected = manual ? null : expectedAnswer(task)
   if (!manual && !Number.isSafeInteger(expected)) throw new Error('Diagnostic answer is outside the safe integer range')
   const answer = grid.answer.trim()
   const completeAnswer = /^[−-]?\d+$/u.test(answer)
-  const lastAnswerEvent = [...grid.events].reverse().find(event => event.type === 'answer_change')
+  const lastAnswerEvent = [...grid.events].reverse().find(event => ['answer_change', 'selection_change'].includes(event.type))
   const finalCells = Object.values(grid.cells).filter(cell => cell.main || cell.note)
   return {
     observationVersion: DIAGNOSTIC_OBSERVATION_VERSION,

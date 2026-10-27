@@ -6,7 +6,7 @@ export function diagnosticHistoryFrame(snapshot, step) {
     throw new Error('Invalid diagnostic history step')
   }
   let current = createDiagnosticGrid({ attemptId: snapshot.attemptId, taskId: snapshot.taskId,
-    taskVersion: snapshot.taskVersion, rows: snapshot.rows, columns: snapshot.columns, answerType: snapshot.answerType || 'number' })
+    taskVersion: snapshot.taskVersion, rows: snapshot.rows, columns: snapshot.columns, answerType: snapshot.answerType || 'number', choiceConfig: snapshot.choiceConfig })
   for (const event of snapshot.events.slice(0, step)) {
     current = applyDiagnosticGridEvent(current, event)
   }
@@ -24,6 +24,7 @@ export function describeDiagnosticEvent(event) {
   // Placement is judged visually in the replayed grid, so the wording stays plain.
   if (event.type === 'line_add') return `Ett ${event.axis === 'horizontal' ? 'vågrätt' : 'lodrätt'} streck drogs.`
   if (event.type === 'line_remove') return 'Tog bort ett streck.'
+  if (event.type === 'selection_change') return `Ändrade valda alternativ från ${event.before.join(', ') || 'inga'} till ${event.after.join(', ') || 'inga'}.`
   if (event.type === 'answer_change') return `Ändrade slutsvaret från ${event.before || 'tomt'} till ${event.after || 'tomt'}.`
   if (event.type === 'drawing_stroke') return event.erasing ? 'Suddade i ritytan.' : 'Ritade i ritytan.'
   if (event.type === 'drawing_clear') return 'Rensade ritytan.'

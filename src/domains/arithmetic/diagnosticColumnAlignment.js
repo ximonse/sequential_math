@@ -33,7 +33,7 @@ export function analyzeDiagnosticColumnAlignment(task, snapshot) {
     throw new Error('Diagnostic task and grid version do not match')
   }
   const grid = replayDiagnosticGrid(snapshot)
-  if (task.answerType === 'text' || task.answerRule === 'teacher_review') return {
+  if (task.operation === 'geometry_response' || task.answerType === 'text' || task.answerRule === 'teacher_review') return {
     analysisVersion: COLUMN_ALIGNMENT_ANALYSIS_VERSION, attemptId: grid.attemptId,
     taskId: task.taskId, taskVersion: task.taskVersion, status: 'unknown', reason: 'written_response' }
   if (task.answerRule === 'ncm_facit') return {

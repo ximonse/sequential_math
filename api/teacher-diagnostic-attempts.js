@@ -70,9 +70,10 @@ export default async function handler(req, res) {
     }
     const evidenceRevision = identifyDiagnosticObservationRevision(saved.record, saved.snapshot)
     const observation = summarizeDiagnosticObservation(item.taskSnapshot, saved.snapshot)
-    const columnAlignment = analyzeDiagnosticColumnAlignment(item.taskSnapshot, saved.snapshot)
-    const visibleResult = analyzeDiagnosticVisibleResult(item.taskSnapshot, saved.snapshot)
-    const subtractionPattern = analyzeDiagnosticSubtractionPattern(item.taskSnapshot, saved.snapshot)
+    const geometryAnalysis = item.taskSnapshot.operation === 'geometry_response' ? { status: 'not_applicable', analysisVersion: 1 } : null
+    const columnAlignment = geometryAnalysis || analyzeDiagnosticColumnAlignment(item.taskSnapshot, saved.snapshot)
+    const visibleResult = geometryAnalysis || analyzeDiagnosticVisibleResult(item.taskSnapshot, saved.snapshot)
+    const subtractionPattern = geometryAnalysis || analyzeDiagnosticSubtractionPattern(item.taskSnapshot, saved.snapshot)
     const review = await kv.get(`diagnostic_review:${attemptId}`)
     return res.status(200).json({ record: saved.record, snapshot: saved.snapshot, review,
       task: item.taskSnapshot, evidenceRevision, observation, columnAlignment,

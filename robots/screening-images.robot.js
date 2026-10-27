@@ -1,0 +1,145 @@
+import { test, expect } from '@playwright/test'
+import { createPupil, login, readServerProfile } from './lib/app.js'
+import { teacherLogin, sendScreening } from './lib/teacher.js'
+import { openDispatch, openResults, collectionSelect, reviewOf } from './lib/screening.js'
+import { screeningFigures, screeningFigureSvg } from '../src/domains/arithmetic/screeningFigures.js'
+
+async function teacherRequest(page, url, body, method = 'POST') {
+  return page.evaluate(async ({ url, body, method }) => {
+    const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json',
+      'x-teacher-token': sessionStorage.getItem('mathapp_teacher_api_token') }, ...(body ? { body: JSON.stringify(body) } : {}) })
+    return { status: response.status, data: await response.json() }
+  }, { url, body, method })
+}
+async function fixture(page, request, suffix) {
+  const tag = `${suffix}-${Math.random().toString(36).slice(2, 8)}`
+  const classId = `images-${tag}`
+  const pupil = await createPupil(request, { name: suffix === 'choices' ? 'Geometry Choices' : 'Geometry Upload', classId })
+  const teacher = await (await request.post('/__robot/teacher', { data: { id: `admin-${tag}`, classIds: [classId], role: 'super_admin' } })).json()
+  await teacherLogin(page, teacher)
+  return { classId, pupil, teacher }
+}
+
+test('R1–R4: image selections persist, scroll does not select, exact choices reach teacher without mastery', async ({ page, request }, testInfo) => {
+  const { classId, pupil } = await fixture(page, request, 'choices')
+  const panel = await openDispatch(page)
+  await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Geometri med bilder')
+  await panel.getByRole('combobox', { name: 'Diagnospaket', exact: true }).selectOption('geometry-original')
+  await panel.getByText('Förhandsvisa valda bildfrågor', { exact: true }).click()
+  await expect(panel.getByRole('region', { name: 'Elevförhandsvisning av vald bildfråga' })).toHaveCount(4)
+  await panel.getByRole('region', { name: 'Elevförhandsvisning av vald bildfråga' }).first().getByRole('button', { name: 'Cylinder', exact: true }).click()
+  await sendScreening(page, { pupilName: pupil.loginCode })
+  const listed = await teacherRequest(page, `/api/teacher-diagnostic-assignments?classId=${classId}`, null, 'GET')
+  const assignment = listed.data.assignments.find(item => item.titleSv === 'Geometri med bilder')
+  const headers = { 'x-teacher-token': await page.evaluate(() => sessionStorage.getItem('mathapp_teacher_api_token')) }
+  await login(page, pupil)
+  const publicAssignments = await page.evaluate(async () => (await fetch('/api/me/diagnostic-assignments')).json())
+  expect(JSON.stringify(publicAssignments)).not.toMatch(/correctOptionIds|facitSv|nameSv/u)
+  await page.getByRole('button', { name: 'Geometri med bilder', exact: true }).click()
+  await expect(page.locator('.screening-question-images img')).toBeVisible()
+  await page.getByRole('button', { name: 'Kon', exact: true }).click()
+  await page.getByRole('button', { name: 'Cylinder', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Kon', exact: true })).toHaveAttribute('aria-pressed', 'false')
+  await expect(page.getByRole('button', { name: 'Cylinder', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByRole('button', { name: 'Nästa fråga', exact: true }).click()
+  const first = page.getByRole('button', { name: 'Bild 1', exact: true })
+  await first.dispatchEvent('pointerdown', { pointerId: 1, pointerType: 'touch', clientX: 100, clientY: 100 })
+  await first.dispatchEvent('pointermove', { pointerId: 1, pointerType: 'touch', clientX: 100, clientY: 160 })
+  await first.dispatchEvent('pointercancel', { pointerId: 1, pointerType: 'touch' })
+  await first.dispatchEvent('click', { detail: 1 })
+  await expect(first).toHaveAttribute('aria-pressed', 'false')
+  await first.click(); await first.click()
+  await expect(first).toHaveAttribute('aria-pressed', 'false')
+  await first.click()
+  await page.getByRole('button', { name: 'Bild 3', exact: true }).click()
+  await expect(page.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
+  await page.reload()
+  await expect(first).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: 'Bild 3', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await page.screenshot({ path: testInfo.outputPath('ipad-multiple.png'), fullPage: true })
+  await page.getByRole('button', { name: 'Nästa fråga', exact: true }).click()
+  await page.getByRole('button', { name: 'Bild 2', exact: true }).click()
+  await page.getByRole('button', { name: 'Nästa fråga', exact: true }).click()
+  await page.locator('#diagnostic-answer').fill('8')
+  await page.getByRole('button', { name: 'Lämna in', exact: true }).click()
+  await expect(page).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
+  const query = new URLSearchParams({ classId, assignmentId: assignment.assignmentId })
+  const overview = await (await request.get(`/api/teacher-diagnostic-attempts?${query}`, { headers })).json()
+  expect(overview.rows[0].submitted).toBe(4)
+  expect(overview.rows[0].items.map(item => item.screening.answerStatus)).toEqual(['correct', 'correct', 'correct', 'unassessed'])
+  query.set('studentId', pupil.studentId); query.set('attemptId', overview.rows[0].items[1].attemptId)
+  const detail = await (await request.get(`/api/teacher-diagnostic-attempts?${query}`, { headers })).json()
+  expect(detail.observation.selectedOptionIds).toEqual(['square', 'rhombus'])
+  expect(detail.snapshot.status).toBe('submitted')
+  expect((await readServerProfile(request, pupil.studentId)).problemLog).toEqual([])
+  await page.getByRole('combobox', { name: 'Inlämnade samlingar', exact: true }).selectOption(assignment.assignmentId)
+  await expect(page.getByRole('button', { name: 'Cylinder', exact: true })).toBeDisabled()
+  await page.goto('/teacher')
+  const results = await openResults(page, { className: classId })
+  await collectionSelect(results).selectOption(assignment.assignmentId)
+  const review = reviewOf(results)
+  await review.getByRole('button', { name: /Välj alla figurer som är romber/u }).first().click()
+  const evidence = review.getByRole('region', { name: 'Diagnostiskt elevunderlag' })
+  await expect(evidence.getByRole('button', { name: 'Bild 1', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(evidence.getByRole('button', { name: 'Bild 3', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(evidence.getByText(/Rätt valda: 2/u)).toBeVisible()
+  await evidence.locator('.screening-image-question').scrollIntoViewIfNeeded()
+  await expect.poll(() => evidence.locator('img').first().evaluate(img => img.naturalWidth)).toBeGreaterThan(0)
+  await page.screenshot({ path: testInfo.outputPath('teacher-image-result.png'), fullPage: true })
+})
+
+test('Teacher builds with bank and uploaded library image; hiding preserves assigned content and privacy', async ({ page, request }, testInfo) => {
+  const { classId, pupil } = await fixture(page, request, 'upload')
+  const panel = await openDispatch(page)
+  await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Egen bildfråga')
+  await panel.getByText('Välj uppgifter en och en', { exact: true }).click()
+  await panel.getByRole('checkbox', { name: 'Räkna ut 268 + 431.', exact: true }).uncheck()
+  await panel.getByText('Lägg till bildfrågor', { exact: true }).click()
+  await panel.getByLabel('Bildfrågans text', { exact: true }).fill('Vilken bild visar en triangel?')
+  await panel.getByText('Välj ur figurbanken', { exact: true }).click()
+  await panel.getByRole('button', { name: 'Lägg till Kvadrat', exact: true }).click()
+  await panel.getByText('Mitt bildbibliotek', { exact: true }).click()
+  // Exercise decoding and normalization in the browser with a real PNG.
+  const base64 = await page.evaluate(() => {
+    const canvas = document.createElement('canvas'); canvas.width = 1500; canvas.height = 900
+    const ctx = canvas.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 1500, 900)
+    ctx.strokeStyle = '#172536'; ctx.lineWidth = 12; ctx.beginPath(); ctx.moveTo(200, 750); ctx.lineTo(750, 100); ctx.lineTo(1300, 750); ctx.closePath(); ctx.stroke()
+    return canvas.toDataURL('image/png').split(',')[1]
+  })
+  await panel.getByLabel('Bildens namn', { exact: true }).fill('Privat triangel')
+  await panel.getByLabel('Ladda upp figur', { exact: true }).setInputFiles({ name: 'triangel.png', mimeType: 'image/png', buffer: Buffer.from(base64, 'base64') })
+  await expect(panel.getByText('Bilden är sparad i ditt bibliotek.')).toBeVisible()
+  await panel.getByRole('button', { name: 'Lägg till Privat triangel', exact: true }).click()
+  await panel.getByRole('checkbox', { name: 'Rätt alternativ 2', exact: true }).check()
+  const preview = panel.getByRole('region', { name: 'Elevförhandsvisning av bildfråga' })
+  await expect(preview.getByRole('button', { name: 'Bild 2', exact: true })).toBeVisible()
+  expect(await preview.innerText()).not.toContain('Privat triangel')
+  await page.screenshot({ path: testInfo.outputPath('teacher-image-editor.png'), fullPage: true })
+  await panel.getByRole('button', { name: 'Lägg till bildfrågan i samlingen', exact: true }).click()
+  await sendScreening(page, { pupilName: pupil.loginCode })
+  const listed = await teacherRequest(page, `/api/teacher-diagnostic-assignments?classId=${classId}`, null, 'GET')
+  const assignment = listed.data.assignments.find(item => item.titleSv === 'Egen bildfråga')
+  const imageId = assignment.items[0].taskSnapshot.options[1].image.id
+  await panel.getByRole('button', { name: 'Dölj Privat triangel', exact: true }).click()
+  await expect(panel.getByRole('button', { name: 'Lägg till Privat triangel', exact: true })).toHaveCount(0)
+  await login(page, pupil)
+  const forbidden = await page.evaluate(async id => (await fetch(`/api/me/diagnostic-assignments?imageId=${id}&assignmentId=wrong`)).status, imageId)
+  expect(forbidden).toBe(403)
+  await page.getByRole('button', { name: 'Egen bildfråga', exact: true }).click()
+  const uploaded = page.getByRole('button', { name: 'Bild 2', exact: true }).locator('img')
+  await expect(uploaded).toBeVisible()
+  await expect.poll(() => uploaded.evaluate(img => img.naturalWidth)).toBe(1024)
+  await page.getByRole('button', { name: 'Bild 2', exact: true }).click()
+  await page.getByRole('button', { name: 'Lämna in', exact: true }).click()
+  await expect(page).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
+  await page.goto('/teacher')
+  const copy = await teacherRequest(page, '/api/teacher-diagnostic-assignments', { classId, sourceClassId: classId, sourceAssignmentId: assignment.assignmentId, studentIds: [pupil.studentId] })
+  expect(copy.status).toBe(201)
+  expect(copy.data.assignment.items[0].taskSnapshot).toEqual(assignment.items[0].taskSnapshot)
+})
+
+test('All original figures render with stable geometry in the bank', async ({ page }, testInfo) => {
+  await page.setContent(`<html lang="sv"><body style="font:16px sans-serif;background:white;color:#172536"><h1>Egna screeningfigurer</h1><main style="display:grid;grid-template-columns:repeat(5,180px);gap:12px">${screeningFigures.map(figure => `<figure style="margin:0">${screeningFigureSvg(figure.id)}<figcaption>${figure.nameSv}</figcaption></figure>`).join('')}</main></body></html>`)
+  await expect(page.locator('svg')).toHaveCount(screeningFigures.length)
+  await page.screenshot({ path: testInfo.outputPath('original-figure-bank.png'), fullPage: true })
+})

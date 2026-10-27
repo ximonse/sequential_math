@@ -29,7 +29,7 @@ export default function DiagnosticEvidenceDetails({ detail, onSaved, onDirtyChan
         </div>}
         <p className="text-xs text-slate-700">Sparad elevrevision {detail.evidenceRevision.serverRevision} · {detail.evidenceRevision.lastSequence} {detail.evidenceRevision.lastSequence === 1 ? 'händelse' : 'händelser'}. Analysen beräknas när underlaget öppnas.</p>
         <p className="mt-1 whitespace-pre-wrap text-sm">Slutsvar: {detail.observation.explicitAnswer || 'inte skrivet'} · {answerLabels[detail.observation.answerStatus] || 'okänt'}</p>
-        {detail.task.answerType !== 'text' && !ncm && <><p className="text-sm">Kolumnplacering: {detail.columnAlignment.status === 'observed'
+        {!detail.task.responseMode && detail.task.answerType !== 'text' && !ncm && <><p className="text-sm">Kolumnplacering: {detail.columnAlignment.status === 'observed'
           ? detail.columnAlignment.alignment === 'aligned' ? 'entalen i samma kolumn' : 'entalen i olika kolumner'
           : 'kan inte avgöras säkert'}. Detta beskriver placeringen, inte varför eleven räknade så.</p>
         <p className="text-sm">Synligt resultat och slutsvar: {detail.visibleResult.status === 'observed'
@@ -42,7 +42,8 @@ export default function DiagnosticEvidenceDetails({ detail, onSaved, onDirtyChan
               ? 'Det synliga resultatet följer inte mönstret större minus mindre i varje kolumn.'
               : 'För lite entydigt underlag för att bedöma detta mönster.'}
         </p>}
-        <DiagnosticAttemptHistory key={`${detail.record.attemptId}:${detail.record.serverRevision}`} snapshot={detail.snapshot} />
+        {detail.observation.selectedOptionIds && <p className="text-sm">Rätt valda: {detail.observation.correctSelections.length} · Missade: {detail.observation.missedOptions.map(id => detail.task.options.findIndex(option => option.id === id) + 1).join(', ') || 'inga'} · Felvalda: {detail.observation.incorrectSelections.map(id => detail.task.options.findIndex(option => option.id === id) + 1).join(', ') || 'inga'}. Facit: {detail.observation.expectedAnswer}.</p>}
+        <DiagnosticAttemptHistory key={`${detail.record.attemptId}:${detail.record.serverRevision}`} snapshot={detail.snapshot} task={detail.task} imageContext={{ teacher: true, assignmentId: detail.record.assignmentId, classId: detail.record.classIdAtAttempt }} />
         {teacherSupport.length > 0 && <section aria-label="Lärarstöd utifrån underlaget" className="mt-3 rounded border border-amber-300 bg-amber-50 p-2 text-sm">
           <h5 className="font-semibold">Möjliga frågor till eleven</h5>
           <p className="text-xs">Förslag för lärarens samtal. Underlaget visar ingen säker felorsak.</p>

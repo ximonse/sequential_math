@@ -15,7 +15,8 @@ export function recoverDiagnosticDraft(serverSnapshot, localSnapshot) {
   const local = replayDiagnosticGrid(localSnapshot)
   if (local.attemptId !== server.attemptId || local.taskId !== server.taskId
     || local.taskVersion !== server.taskVersion || local.rows !== server.rows
-    || local.columns !== server.columns) {
+    || local.columns !== server.columns || local.answerType !== server.answerType
+    || JSON.stringify(local.choiceConfig) !== JSON.stringify(server.choiceConfig)) {
     throw new Error('Den lokala arbetskopian hör inte till det här räknehäftet.')
   }
   const prefix = sharedPrefix(server.events, local.events)

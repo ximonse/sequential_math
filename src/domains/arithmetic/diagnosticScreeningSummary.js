@@ -6,6 +6,8 @@ import { analyzeDiagnosticSubtractionPattern } from './diagnosticSubtractionPatt
 // Share the existing versioned rules; the class matrix must not invent diagnoses.
 export function summarizeDiagnosticScreening(task, snapshot) {
   const observation = summarizeDiagnosticObservation(task, snapshot)
+  if (task.operation === 'geometry_response') return { explicitAnswer: observation.explicitAnswer,
+    expectedAnswer: observation.expectedAnswer, answerStatus: observation.answerStatus, signals: [] }
   const column = analyzeDiagnosticColumnAlignment(task, snapshot)
   const visible = analyzeDiagnosticVisibleResult(task, snapshot)
   const subtraction = analyzeDiagnosticSubtractionPattern(task, snapshot)

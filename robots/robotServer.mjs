@@ -101,7 +101,7 @@ export async function startRobotServer({ port = 5288, production = process.env.R
   // class roster", which is what the manual server exercises.
   process.env.NCM_DIAGNOSTIC_API_ENABLED ??= 'true'
   process.env.NCM_DIAGNOSTIC_TEST_STUDENT_IDS ??= [NCM_TEST_PUPIL_ID,
-    ...['Collections A', 'Collections B', 'Robot NCM next', 'NCM class A', 'NCM class B', 'NCM review A', 'NCM review B', 'NCM review C', 'Matrix Correct', 'Matrix Pattern', 'Matrix Waiting', 'Back Edit', 'Back Edit Tablet', 'Close Collect', 'Long Text', 'Guide Pupil', 'NCM Diamant', 'Recipient A', 'Recipient B', 'Fraction Pupil', 'Reuse Source', 'Reuse One', 'Reuse Two', 'Answer Pupil', 'Group Alma', 'Group Bo', 'Group Cleo', 'Filter One', 'Filter Two'].map(name =>
+    ...['Geometry Choices', 'Geometry Upload', 'Collections A', 'Collections B', 'Robot NCM next', 'NCM class A', 'NCM class B', 'NCM review A', 'NCM review B', 'NCM review C', 'Matrix Correct', 'Matrix Pattern', 'Matrix Waiting', 'Back Edit', 'Back Edit Tablet', 'Close Collect', 'Long Text', 'Guide Pupil', 'NCM Diamant', 'Recipient A', 'Recipient B', 'Fraction Pupil', 'Reuse Source', 'Reuse One', 'Reuse Two', 'Answer Pupil', 'Group Alma', 'Group Bo', 'Group Cleo', 'Filter One', 'Filter Two'].map(name =>
       Buffer.from(name).toString('hex').toUpperCase().padEnd(32, '0').slice(0, 32))].join(',')
   if (!production) {
     const server = await createServer({
@@ -113,7 +113,11 @@ export async function startRobotServer({ port = 5288, production = process.env.R
     await server.listen()
     return { url: `http://localhost:${port}`, close: () => server.close() }
   }
-  const outDir = path.join(root, 'robots/.build')
+  // Independent runs must not replace each other's served production assets.
+  const buildName = process.env.ROBOT_BUILD_NAME || '.build'
+  if (!/^\.build(?:-[a-z0-9-]+)?$/u.test(buildName)) throw new Error('Invalid robot build directory')
+  const outDir = path.resolve(root, 'robots', buildName)
+  if (!outDir.startsWith(path.join(root, 'robots') + path.sep)) throw new Error('Robot build directory is outside the workspace')
   await build({ root, configFile: false, logLevel: 'warn', plugins: [react()], build: { outDir, emptyOutDir: true, chunkSizeWarningLimit: 2000 } })
   const ssrServer = await createServer({ root, configFile: false, logLevel: 'warn', resolve: { alias }, server: { middlewareMode: true, hmr: false }, appType: 'custom' })
   const server = await preview({

@@ -16,6 +16,7 @@ const EVENT_FIELDS = {
   line_add: ['axis', 'from', 'to', 'placement'],
   line_remove: ['lineId'],
   answer_change: ['before', 'after'],
+  selection_change: ['before', 'after'],
   drawing_stroke: ['points', 'erasing', 'color'],
   drawing_clear: [],
   pause: [],

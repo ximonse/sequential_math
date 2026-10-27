@@ -1673,9 +1673,9 @@
       "id": "screening-image-questions",
       "area": "Bildfrågor",
       "title": "Figurbank, eget bildbibliotek och tryckbara bildsvar",
-      "status": "Byggt",
+      "status": "Lokalt klart",
       "purpose": "Skapa geometriska screeningfrågor med originalfigurer eller privata uppladdningar, samma API för framtida MCP.",
-      "next": "Slutför bred robotregression, bildgranskning och lokal commit.",
+      "next": "Invänta separat publiceringsmandat. Fysisk iPad och verklig KV-drift verifieras separat.",
       "acceptance": "Läraren skapar och delar ut bildfrågor. Elevens val bevaras och rättas exakt; läraren ser bilder och faktiska val. Ingen mastery-påverkan eller facitläcka.",
       "requires": [
         "workspace-answer-types",
@@ -1686,7 +1686,7 @@
         "reuse-collections"
       ],
       "decision": "2026-10-26 Simon godkände planen: läraren väljer svarssätt per fråga, originalbank och privat återanvändbart bildbibliotek. API förbereds för MCP; MCP-server ingår inte. Ingen push eller produktion utan separat mandat.",
-      "evidence": "2026-10-26 lokalt byggt: 33 versionerade SVG-varianter, fyra geometrifrågor, frågeredigerare med elevförhandsvisning, uppladdning och privat KV-bibliotek, frysta bildreferenser, valhändelser med befintligt revisionsskydd och lärarresultat. 171 testfiler/827 tester godkända; build och riktad lint godkända. Två hela bildrobotflöden godkända med syntetisk minneslagring och emulerad iPad. Elev- och redigerarskärmbilder granskade. Ny lärarbildgranskning och bred robotregression pågår. Inte fysisk iPad, verklig KV eller produktion. Arkitektur: DiagnosticGridPrototype 603 rader; ny bildrendering är separat komponent, integrationen återanvänder befintlig händelse- och navigeringskedja.",
+      "evidence": "2026-10-26 lokalt byggt: 33 versionerade SVG-varianter, fyra geometrifrågor, frågeredigerare med elevförhandsvisning, uppladdning och privat KV-bibliotek, frysta bildreferenser, valhändelser med befintligt revisionsskydd och lärarresultat. 171 testfiler/827 tester godkända; build och riktad lint godkända. Två hela bildrobotflöden godkända med syntetisk minneslagring och emulerad iPad. Elev- och redigerarskärmbilder granskade. Ny lärarbildgranskning och bred robotregression pågår. Inte fysisk iPad, verklig KV eller produktion. Arkitektur: DiagnosticGridPrototype 603 rader; ny bildrendering är separat komponent, integrationen återanvänder befintlig händelse- och navigeringskedja.\n2026-10-27 slutkontroll lokalt: 172 testfiler/832 tester, produktionsbuild, riktad lint och arkitekturkontroll godkända. Bred robotkörning: 143/151 passerade, sju föll och ett hoppades över. Samtliga åtta passerade därefter på isolerad server med en worker. Ny utkastkontroll reproducerade R2-felet rött före rättning: borttagning av en tillagd fråga tömde ett annat pågående utkast. Rättat; fyra bildrobotar gröna efteråt (utkast, hela svarskedjan/lärarresultat, uppladdning/döljning/återanvändning samt samtliga 33 ritade figurer). Totalt 152 unika robotfall verifierade inklusive omkörning; ingen helt grön bred körning påstås. Originalbanken och iPad-layouten visuellt granskade. Lärarhistoriken använder valtext i stället för tomt siffersvar. Även paket och återanvända bildfrågor kan förhandsvisas. Robotport, byggmapp och resultatmapp kan isoleras för parallellt arbete. Dokumentation: docs/SCREENING_IMAGE_QUESTIONS.md. Lokal commit; inget pushat eller publicerat. Fysisk iPad och verklig KV-drift är inte provade.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -1703,7 +1703,7 @@
         {
           "id": "image-verify",
           "text": "Bred regression och slutlig visuell kontroll",
-          "done": false
+          "done": true
         }
       ]
     },

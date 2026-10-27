@@ -1,3 +1,4 @@
+import { teacherImageAction } from './_screeningImages.js'
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
 import { createDiagnosticAssignment, copyDiagnosticAssignment, stopDiagnosticAssignment } from './_diagnosticAssignmentStore.js'
@@ -17,6 +18,13 @@ export default async function handler(req, res) {
     if (!auth) return res.status(401).json({ error: 'Teacher authorization required' })
     if (!isSchoolAdminRole(auth.role, auth.isAdmin)) {
       return res.status(403).json({ error: 'Diagnostic pilot requires admin access' })
+    }
+    const imageAction = ['figures', 'images'].includes(req.query?.resource) || ['upload_image', 'hide_image'].includes(req.body?.action)
+    if (imageAction) {
+      if (req.query?.assignmentId && (typeof req.query.classId !== 'string' || !await canAccessClass(req, req.query.classId))) {
+        return res.status(403).json({ error: 'Not authorized for this class' })
+      }
+      return await teacherImageAction(req, res, auth.teacherId)
     }
     const classId = req.method === 'GET' ? req.query?.classId : req.body?.classId
     if (typeof classId !== 'string' || !await canAccessClass(req, classId)) {

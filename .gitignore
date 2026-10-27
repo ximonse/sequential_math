@@ -18,3 +18,4 @@ test-results/
 robots/test-results/
 robots/report/
 robots/.build/
+robots/.build-*/

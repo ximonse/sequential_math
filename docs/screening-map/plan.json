@@ -1845,7 +1845,7 @@
       ],
       "affects": [],
       "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.",
-      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.\n2026-10-27: Förberedande API för rapportutkast, validerad versionslagring, läraravstämning och behörighetsfiltrerad historik lokalt klart. Se docs/PUPIL_ANALYSIS.md. Ingen MCP-server eller klientanslutning byggd; modellkalibrering ska ingå före verklig analys.",
+      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.\n2026-10-27: Förberedande API för rapportutkast, validerad versionslagring, läraravstämning och behörighetsfiltrerad historik lokalt klart. Se docs/PUPIL_ANALYSIS.md. Ingen MCP-server eller klientanslutning byggd; modellkalibrering ska ingå före verklig analys.\n2026-10-27: Agentens erfarenheter från en hel analysdag (vad som gick, omvägar, vad som inte gick, förslag på verktygsyta) samlas i docs/agent-tooling-notes.md som underlag för API/MCP/skill.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -1926,6 +1926,110 @@
         {
           "id": "ai-pupil-document-corrected-work",
           "text": "Elevens egen uträkning med separat rättning, kommentarer vid felsteget och verifierad källtrohet",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "issue18",
+      "area": "Elevarbete",
+      "title": "Svarsrutan loggas en gång, inte tangent för tangent",
+      "status": "Planerat",
+      "purpose": "Elevens uträkning i rutnätet ska synas steg för steg, men inskrivningen i svarsrutan är inte en del av uträkningen.",
+      "next": "Logga svaret som en händelse när eleven är klar med det (lämnar rutan, uppgiften eller lämnar in).",
+      "acceptance": "Stegvisningen i lärarvyn visar inte svarsinskrivning som räknesteg. Gamla försök med per-tecken-händelser spelas fortfarande upp.",
+      "requires": [
+        "original"
+      ],
+      "affects": [
+        "review"
+      ],
+      "decision": "2026-10-27: Simon: varje tangentslag i svarsrutan räknas som ett steg i uträkningen, det är onödigt. Rutnätet steg för steg är bra och ska vara kvar.",
+      "evidence": "2026-10-27: Issue #18 skapad. Ingen kodändring.",
+      "issue": "https://github.com/ximonse/sequential_math/issues/18",
+      "kind": "issue",
+      "tasks": [
+        {
+          "id": "next-issue18",
+          "text": "Logga svaret som en händelse när eleven är klar med det (lämnar rutan, uppgiften eller lämnar in).",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "issue19",
+      "area": "Elevarbete",
+      "title": "Ritytan sparas som slutbild, inte streck för streck",
+      "status": "Planerat",
+      "purpose": "Ritytans historik behövs inte streck för streck för lärarens analys.",
+      "next": "Sluta logga ritytan per streck; spara eventuellt bara den färdiga ritningen när eleven lämnar uppgiften eller lämnar in.",
+      "acceptance": "Ritytan blåser inte upp händelseloggen. Rutnätet loggas fortfarande steg för steg. Gamla försök spelas fortfarande upp.",
+      "requires": [
+        "original"
+      ],
+      "affects": [
+        "review"
+      ],
+      "decision": "2026-10-27: Simon: ritytan behöver inte registreras streck för streck; det färdiga resultatet kan eventuellt sparas.",
+      "evidence": "2026-10-27: Issue #19 skapad. Ingen kodändring.",
+      "issue": "https://github.com/ximonse/sequential_math/issues/19",
+      "kind": "issue",
+      "tasks": [
+        {
+          "id": "next-issue19",
+          "text": "Sluta logga ritytan per streck; spara eventuellt bara den färdiga ritningen när eleven lämnar uppgiften eller lämnar in.",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "issue20",
+      "area": "Analys",
+      "title": "Automatiska signaler även på NCM-uppgifter och decimaler",
+      "status": "Planerat",
+      "purpose": "P/Ö/M-signalerna körs aldrig på NCM-uppgifterna i screeningen, så läraren får ingen hjälp att hitta t.ex. större minus mindre i decimalsubtraktion.",
+      "next": "Kör kolumnplacering och synligt resultat på NCM-uppgifter som ställs upp i kolumn, inklusive decimaler; generalisera större minus mindre bortom S2; signal när häftet har ett resultat men svarsrutan är tom.",
+      "acceptance": "Signalerna förblir hypoteser för läraren, påverkar inte mastery eller progression, och har motexempel och gränser.",
+      "requires": [
+        "analysis"
+      ],
+      "affects": [
+        "rules",
+        "tips"
+      ],
+      "decision": "2026-10-27: Simon bad om issue efter att dagens screening i åk 6 visade fyra varianter av fel på 6,27 − 5,84 och sju uppgifter uträknade i häftet men med tom svarsruta – utan någon signal.",
+      "evidence": "2026-10-27: Issue #20 skapad. Orsak belagd i kod: answerRule ncm_facit ger not_a_column_task; synligt resultat kräver heltal; subtraktionsmönstret gäller bara S2 (402 − 178). Ingen kodändring.",
+      "issue": "https://github.com/ximonse/sequential_math/issues/20",
+      "kind": "issue",
+      "tasks": [
+        {
+          "id": "next-issue20",
+          "text": "Kör kolumnplacering och synligt resultat på NCM-uppgifter som ställs upp i kolumn, inklusive decimaler; generalisera större minus mindre bortom S2; signal när häftet har ett resultat men svarsrutan är tom.",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "issue21",
+      "area": "Genomgång",
+      "title": "Genomgångspresentation av vanligaste felsvaren",
+      "status": "Planerat",
+      "purpose": "När läraren går igenom screeningsvar ska appen kunna erbjuda en presentation (.pptx) för helklass med de frågor som oftast blev fel.",
+      "next": "Bygg erbjudandet i Resultat av screening utifrån prototypen: fråga med nummer överst, elevens felaktiga uträkning som skärmbild till vänster, tomt räknehäfte med samma rutstorlek till höger, talarnoter med missförståelser.",
+      "acceptance": "Inga elevnamn; läraren väljer vilket elevarbete som visas. Skrivskyddat mot elevdata. Rutstorlek och utseende som i räknehäftet.",
+      "requires": [
+        "matrix",
+        "review"
+      ],
+      "affects": [],
+      "decision": "2026-10-27: Simon beställde en presentation av vanligaste felsvaren och att detta ska kunna erbjudas vid genomgång av svar. Krav: frågenummer, ingen rubrik på tomt rutnät, riktig skärmbild av uträkning beskuren på hela rutor, samma rutstorlek som det tomma rutnätet.",
+      "evidence": "2026-10-27: Issue #21 skapad. Prototyp byggd för hand av agenten lokalt (utanför repot, innehåller elevarbeten). Krav och teknik i docs/agent-tooling-notes.md. Ingen appkod.",
+      "issue": "https://github.com/ximonse/sequential_math/issues/21",
+      "kind": "issue",
+      "tasks": [
+        {
+          "id": "next-issue21",
+          "text": "Bygg erbjudandet i Resultat av screening utifrån prototypen: fråga med nummer överst, elevens felaktiga uträkning som skärmbild till vänster, tomt räknehäfte med samma rutstorlek till höger, talarnoter med missförståelser.",
           "done": false
         }
       ]
@@ -2555,6 +2659,51 @@
     {
       "source": "ai-pupil-material",
       "target": "ai-pupil-document",
+      "kind": "kräver"
+    },
+    {
+      "source": "original",
+      "target": "issue18",
+      "kind": "kräver"
+    },
+    {
+      "source": "issue18",
+      "target": "review",
+      "kind": "påverkar"
+    },
+    {
+      "source": "original",
+      "target": "issue19",
+      "kind": "kräver"
+    },
+    {
+      "source": "issue19",
+      "target": "review",
+      "kind": "påverkar"
+    },
+    {
+      "source": "analysis",
+      "target": "issue20",
+      "kind": "kräver"
+    },
+    {
+      "source": "issue20",
+      "target": "rules",
+      "kind": "påverkar"
+    },
+    {
+      "source": "issue20",
+      "target": "tips",
+      "kind": "påverkar"
+    },
+    {
+      "source": "matrix",
+      "target": "issue21",
+      "kind": "kräver"
+    },
+    {
+      "source": "review",
+      "target": "issue21",
       "kind": "kräver"
     }
   ],

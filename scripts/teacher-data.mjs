@@ -11,6 +11,9 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { defaultEvidenceDays, evidencePeriod } from '../src/lib/evidencePeriod.js'
+import { evidencePage, practiceEvidence } from '../api/_pupilEvidence.js'
+import { fetchPupilEvidence } from './pupil-evidence-client.mjs'
 
 const args = process.argv.slice(2)
 const flag = name => args.includes(`--${name}`)
@@ -49,19 +52,8 @@ async function api(path, { token, body } = {}) {
   return data
 }
 
-const startOfWeek = () => {
-  const date = new Date(); date.setHours(0, 0, 0, 0)
-  date.setDate(date.getDate() - ((date.getDay() + 6) % 7))
-  return date
-}
-const parseDay = (text, endOfDay) => {
-  const date = new Date(`${text}T00:00:00`)
-  if (Number.isNaN(date.getTime())) throw new Error(`Ogiltigt datum: ${text} (använd ÅÅÅÅ-MM-DD)`)
-  if (endOfDay) date.setHours(23, 59, 59, 999)
-  return date
-}
-const from = option('from') ? parseDay(option('from')) : startOfWeek()
-const to = option('to') ? parseDay(option('to'), true) : new Date()
+const defaults = defaultEvidenceDays()
+const period = evidencePeriod(option('from') || defaults.from, option('to') || defaults.to)
 
 const { token } = await api('/api/teacher-login', { body: { username, password } })
 const [{ profiles }, { labels }] = await Promise.all([
@@ -82,36 +74,58 @@ const matches = profiles.filter(profile =>
   (!classQuery || norm(profile.className).includes(classQuery) || norm(profile.classId).includes(classQuery)))
 if (matches.length === 0) { console.error('Ingen elev matchade. Kör med --list för att se vilka som finns.'); process.exit(1) }
 if (!pupilQuery && !classQuery) { console.error('Ange --pupil och/eller --class (eller --list).'); process.exit(1) }
+if (pupilQuery && matches.length > 1) throw new Error('Flera elever matchar. Ange exaktare elevnamn och klass; ingen export utfördes.')
 
-const rows = []
+const out = option('out') || join(homedir(), 'teacher-data-out')
+const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')
+const stem = join(out, `${[pupilQuery, classQuery].filter(Boolean).join('_').replace(/[^\p{L}\p{N}]+/gu, '-') || 'export'}-${stamp}`)
+if (flag('evidence')) {
+  if (flag('wrong-only')) throw new Error('--evidence bevarar både rätta och felaktiga svar; kombinera inte med --wrong-only.')
+  if (matches.length !== 1) throw new Error('Underlagsexport kräver exakt en elev. Ange --pupil och --class.')
+  const match = matches[0]
+  const evidence = await fetchPupilEvidence(path => api(path, { token }), { studentId: match.studentId,
+    classId: match.classId, from: period.from, to: period.to, source: option('source') || 'practice' })
+  mkdirSync(out, { recursive: true })
+  writeFileSync(`${stem}.evidence.json`, JSON.stringify(evidence, null, 2))
+  console.log(`${evidence.total} observationer; historikens fullständighet anges i coverage.\n${stem}.evidence.json`)
+  process.exit(0)
+}
+
+const rows = [], coverage = []
 for (const match of matches) {
   const { profile } = await api(`/api/teacher-students/${encodeURIComponent(match.studentId)}`, { token })
-  const log = Array.isArray(profile.problemLog) && profile.problemLog.length ? profile.problemLog : profile.recentProblems || []
-  for (const problem of log) {
-    const time = Number(problem.timestamp || 0)
-    if (time < from.getTime() || time > to.getTime()) continue
-    if (flag('wrong-only') && problem.correct) continue
+  const retained = practiceEvidence(profile)
+  const evidence = evidencePage({ studentId: match.studentId, classId: match.classId, source: 'practice', period,
+    practice: retained, screening: { entries: [], coverage: { status: 'not_requested' } }, query: { limit: 100 } })
+  // Legacy CSV export may exceed a page; the same projection supplies all retained rows.
+  coverage.push({ studentId: match.studentId, period, snapshotRevision: evidence.snapshotRevision, coverage: evidence.coverage })
+  for (const entry of retained.entries) {
+    const time = entry.timestamp
+    if (time < period.startInclusive || time >= period.endExclusive) continue
+    if (flag('wrong-only') && entry.answer.status !== 'incorrect') continue
+    const { question, answer, context, interpretation, reference } = entry
     rows.push({
       Elev: pupilName(match), ElevID: match.studentId, Klass: match.className || '',
-      Tid: new Date(time).toISOString(), Uppgift: problem.promptText || JSON.stringify(problem.values ?? ''),
-      Problemtyp: problem.problemType || '', Nivå: problem.targetLevel ?? problem.level ?? '',
-      ElevensSvar: problem.studentAnswer ?? '', RättSvar: problem.correctAnswer ?? '',
-      Rätt: problem.correct ? 1 : 0, Felkategori: problem.errorCategory || (problem.correct ? 'none' : 'knowledge'),
-      Felmönster: Array.isArray(problem.errorPatterns) ? problem.errorPatterns.join('|') : '',
-      Feldetalj: problem.errorDetail || '', SvarstidSek: problem.timeSpent ?? ''
+      Tid: new Date(time).toISOString(), Uppgift: question.promptText || JSON.stringify(question.values ?? ''),
+      Problemtyp: question.problemType || '', Nivå: context.targetLevel ?? context.level ?? '',
+      ElevensSvar: answer.studentAnswer ?? '', RättSvar: answer.correctAnswer ?? '',
+      Rätt: answer.status === 'correct' ? 1 : answer.status === 'incorrect' ? 0 : '',
+      Felkategori: interpretation.category, Felmönster: interpretation.patterns.join('|'),
+      Feldetalj: interpretation.detail || '', SvarstidSek: context.timeSpent ?? '',
+      Svarsstatus: answer.status, ObservationsID: reference.observationId || '',
+      Källreferens: JSON.stringify({ ...reference, snapshotRevision: evidence.snapshotRevision })
     })
   }
 }
 rows.sort((a, b) => a.Tid.localeCompare(b.Tid))
 
-const out = option('out') || join(homedir(), 'teacher-data-out')
 mkdirSync(out, { recursive: true })
-const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')
-const stem = join(out, `${[pupilQuery, classQuery].filter(Boolean).join('_').replace(/[^\p{L}\p{N}]+/gu, '-') || 'export'}-${stamp}`)
 const cell = value => `"${String(value).replace(/"/g, '""')}"`
 const header = rows[0] ? Object.keys(rows[0]) : ['Elev']
-writeFileSync(`${stem}.csv`, `﻿${[header.join(';'), ...rows.map(row => header.map(key => cell(row[key])).join(';'))].join('\r\n')}\r\n`)
+writeFileSync(`${stem}.csv`, `\uFEFF${[header.join(';'), ...rows.map(row => header.map(key => cell(row[key])).join(';'))].join('\r\n')}\r\n`)
 writeFileSync(`${stem}.json`, JSON.stringify(rows, null, 2))
-const wrong = rows.filter(row => !row.Rätt).length
-console.log(`${matches.length} elev(er), ${rows.length} uppgifter (${wrong} fel), ${from.toISOString().slice(0, 10)} till ${to.toISOString().slice(0, 10)}`)
+writeFileSync(`${stem}.coverage.json`, JSON.stringify(coverage, null, 2))
+const wrong = rows.filter(row => row.Svarsstatus === 'incorrect').length
+console.log(`${matches.length} elev(er), ${rows.length} uppgifter (${wrong} fel), ${period.from} till ${period.to} (Europe/Stockholm)`)
 console.log(`${stem}.csv\n${stem}.json`)
+console.log(`Historikens fullständighet är okänd. Täckning och källrevision: ${stem}.coverage.json`)

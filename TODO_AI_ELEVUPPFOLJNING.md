@@ -1,7 +1,8 @@
 # Plan: AI-stödd elevanalys och riktad uppföljning
 
 Datum: 2026-10-27. Status: planen avstämd med Simon, kompletterad med krav på
-rättade och kommenterade egna uträkningar. Ingen implementation genomförd.
+rättade och kommenterade egna uträkningar. Etapp 1 är lokalt byggd och testad;
+senare analys-, MCP- och dokumentsteg är inte byggda.
 Projektkort: `ai-pupil-followup` och dess delkort.
 
 ## Mål och arbetsflöde
@@ -26,10 +27,12 @@ skriver inte över elevens svar, lärarens bedömning eller tidigare rapportvers
 
 - `scripts/teacher-data.mjs` och `docs/teacher-data.md`: lärarinloggning,
   elev-/klassfilter, datumfilter och lokal CSV/JSON. Ingen MCP-server.
-- Exporten väljer `problemLog` eller reservlistan `recentProblems`. Det är inte
-  garanti för full historik. Den exporterar inte stabil observationsidentitet,
-  full evidenskontext eller screeningarnas arbetsytor. Saknad felkategori kan
-  dessutom fyllas med `knowledge`; det får inte behandlas som observerad orsak.
+- Den nya träningsprojektionen används av vanlig export och av det nya
+  versionsbundna läs-API:t. `problemLog` eller reservlistan `recentProblems`
+  är inte garanti för full historik. Källrevision, täckningsmetadata och okända
+  felkategorier bevaras nu. `--evidence` läser även Screening vid rätt behörighet
+  och detaljanrop kan återge arbetsytor. Se `docs/PUPIL_EVIDENCE.md` för det
+  lokala kontraktet; detta innebär inte att API:t redan är publicerat.
 - `api/teacher-class-assignment.js`: vanliga uppdrag kan aktiveras för en elev.
   `src/lib/assignments.js` styr befintliga generatorer genom typer, nivåer och
   inställningar. Valfri AI-skriven uppgift är inte ett generellt träningsformat.
@@ -65,6 +68,14 @@ vilka data den får ta emot vara uttryckligen klarlagda; pseudonym räcker inte
 automatiskt som anonymisering. Detta blockerar inte utveckling med testdata.
 
 ## Etapp 1 — tillförlitligt läsunderlag
+
+Lokalt levererat 2026-10-27: [läskontrakt och begränsningar](docs/PUPIL_EVIDENCE.md).
+177 testfiler/852 tester och build godkända. Bred robotkörning 151/154 direkt;
+de tre fallen godkända vid sekventiell omkörning. Båda nya underlagsrobotarna
+godkända, inklusive originaluträkning efter omladdning (155 unika robotfall
+verifierade inklusive omkörningar och det tillagda originalfallet). Ingen helt
+grön bred engångskörning påstås. Endast syntetisk minneslagring, inte riktig
+KV, fysisk iPad eller produktion. Nästa etapp är analysrapport och avstämning.
 
 Bygg en gemensam, testbar lästjänst bakom export och MCP. Hämta bara relevant
 elev och period; undvik att ge AI:n hela profiler eller andra elevers uppgifter.

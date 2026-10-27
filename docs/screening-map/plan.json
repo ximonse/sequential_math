@@ -1643,10 +1643,10 @@
       "title": "Elevdata till analys för Claude Code och Codex",
       "status": "Lokalt klart",
       "purpose": "Simon ska kunna be en agent hämta en klass eller elevs frågor och svar för en period, få dem som CSV/JSON och få felsvaren analyserade, utan webbläsarskrapning.",
-      "next": "Simon avgör om skriptet ska användas på Kerstin i klass 6; kräver att kontot har klassen och att privata elevnamn finns, annars sök på klass.",
+      "next": "Äldre CSV/JSON-export finns kvar. Nya --evidence kan användas mot lokal provserver eller efter separat publicering av läs-API:t; verklig elevanalys kräver uttrycklig beställning och tillåten AI-miljö.",
       "acceptance": "scripts/teacher-data.mjs loggar in som lärare, är skrivskyddat, och skriver CSV och JSON utanför repot. docs/teacher-data.md och AGENTS.md beskriver det för båda agenterna.",
       "decision": "2026-10-26: Simon beställer skript och instruktion i stället för MCP. Lärarkonto med miljövariabler MATH_TEACHER_USER/MATH_TEACHER_PASS, inte adminkonto.\n2026-10-27: Nytt planförslag i TODO_AI_ELEVUPPFOLJNING.md och ai-pupil-followup beskriver både screening och generatorträning efter läraravstämning. Tidigare beslut och deluppgifter bevaras; planen innebär inte att MCP eller uppföljningen är byggd.",
-      "evidence": "2026-10-26 lokalt mot produktions-API (endast läsning): inloggning, klasslista och elevprofiler fungerar; klassen Lärare gav 1184 uppgifter, 81 fel. Hittade och rättade teckenkodningsfel vid läsning av lösenord med å/ä/ö. API:t ger bara pseudonymer; privata elevnamn är per lärarkonto och saknas för detta konto. Ej pushat. Ingen enhetstest.",
+      "evidence": "2026-10-26 lokalt mot produktions-API (endast läsning): inloggning, klasslista och elevprofiler fungerar; klassen Lärare gav 1184 uppgifter, 81 fel. Hittade och rättade teckenkodningsfel vid läsning av lösenord med å/ä/ö. API:t ger bara pseudonymer; privata elevnamn är per lärarkonto och saknas för detta konto. Ej pushat. Ingen enhetstest.\n2026-10-27: Gemensam träningsprojektion och Stockholmsdatum införda. Okänd felkategori förblir unknown; källreferens och täckningsfil tillagda. Ny --evidence använder revisionsbunden paginering, exakt en elev och valbar behörig screeningkälla. 852 tester och robotverifiering enligt ai-pupil-evidence. Lokalt, ej publicerat.",
       "issue": "",
       "kind": "funktion",
       "requires": [],
@@ -1745,7 +1745,7 @@
       "title": "AI-stödd elevanalys och riktad uppföljning",
       "status": "Planerat",
       "purpose": "Låt läraren granska en elev över tid, stämma av hypoteser och beställa riktad screening, generatorträning eller elevdokument.",
-      "next": "Börja med spårbart underlag för en syntetisk elev och ett aritmetikmål enligt den avstämda planen.",
+      "next": "Etapp 1 lokalt klar. Nästa genomförbara delmål är ai-pupil-analysis: analysrapport, källbelägg, motexempel och läraravstämning med syntetiska data.",
       "acceptance": "Hela kedjan från analys till lärargodkänd screening fungerar med syntetiska data. Ingenting delas ut under analys; befintliga mastery- och behörighetsgränser gäller.",
       "requires": [
         "teacher-data",
@@ -1753,7 +1753,7 @@
       ],
       "affects": [],
       "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.\n2026-10-27: Simon bekräftar att planen ser bra ut och begär att elevdokument innehåller elevens egna felberäkningar, rättade och kommenterade, exempelvis från räknehäftet. Ingen implementation utförd.",
-      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.",
+      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.\n2026-10-27 lokalt: GET teacher-students/:id?resource=evidence med gemensam träningsprojektion för API och export, Stockholm-perioder inklusive DST, explicita source-val, frysta screeningfrågor och oförändrat räknehäfte i revisionsbunden detaljläsning. Inga antagna kunskapsfel för äldre data; begränsad historik/okänd fullständighet och dubbletter/ID-konflikter redovisas. Behörighet kontrolleras per läsning och efter långsam läsning; Screening behåller admin/pilotgränsen. Sid- och detaljreferenser är bundna till SHA256-källrevision, ändrat underlag ger 409. CLI --evidence hämtar alla sidor och kräver en entydig elev; vanlig CSV/JSON-export finns kvar med täckningsfil. Dokumentation: docs/PUPIL_EVIDENCE.md och docs/teacher-data.md. Verifiering: 177 testfiler/852 tester, build med befintliga varningar, riktad lint och arkitekturkontroll godkända. Bred robotkörning 151/154; alla tre fall godkända vid sekventiell omkörning. Båda nya underlagsrobotarna godkända separat, inklusive 402−178→376 och originalruta efter omladdning; nytt originalfall lades till efter den breda körningens insamling. Totalt 155 unika robotfall verifierade inklusive omkörningar, ingen helt grön bred engångskörning påstås. Bara syntetiska elever/minneslagring; inga verkliga elevdata hämtade, ingen riktig KV/fysisk iPad/produktionsprovning. Lokal commit, ingen push. Ingen analysrapport, MCP-server eller rättat elevdokument byggt i detta sjok.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -1773,28 +1773,28 @@
       "id": "ai-pupil-evidence",
       "area": "AI-uppföljning",
       "title": "Spårbart elevunderlag för vald period",
-      "status": "Föreslaget",
+      "status": "Lokalt klart",
       "purpose": "Samla filtrerad träning och behörig screening med stabila källreferenser, okända värden och tydlig historiktäckning.",
-      "next": "Specificera gemensamt läskontrakt och syntetiska prov för Stockholmstid, legacydata och begränsad historik.",
+      "next": "Använd läskontraktet i nästa etapp: versionerad analysrapport och läraravstämning med syntetiska stöd- och motexempel.",
       "acceptance": "Rätt elev och period, inga gissade felkategorier, inga dubbletter från osäkra identiteter och aktuell behörighetskontroll på alla detaljanrop.",
       "requires": [
         "ai-pupil-followup"
       ],
       "affects": [],
-      "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.",
-      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.",
+      "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.\n2026-10-27: Simon säger Kör efter förslaget att börja med tillförlitligt elevunderlag. Befintligt elevdetalj-API utökas utan ny lagring, tjänst eller publicering; ofullständig historik får inte framställas som komplett.",
+      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.\n2026-10-27 lokalt: GET teacher-students/:id?resource=evidence med gemensam träningsprojektion för API och export, Stockholm-perioder inklusive DST, explicita source-val, frysta screeningfrågor och oförändrat räknehäfte i revisionsbunden detaljläsning. Inga antagna kunskapsfel för äldre data; begränsad historik/okänd fullständighet och dubbletter/ID-konflikter redovisas. Behörighet kontrolleras per läsning och efter långsam läsning; Screening behåller admin/pilotgränsen. Sid- och detaljreferenser är bundna till SHA256-källrevision, ändrat underlag ger 409. CLI --evidence hämtar alla sidor och kräver en entydig elev; vanlig CSV/JSON-export finns kvar med täckningsfil. Dokumentation: docs/PUPIL_EVIDENCE.md och docs/teacher-data.md. Verifiering: 177 testfiler/852 tester, build med befintliga varningar, riktad lint och arkitekturkontroll godkända. Bred robotkörning 151/154; alla tre fall godkända vid sekventiell omkörning. Båda nya underlagsrobotarna godkända separat, inklusive 402−178→376 och originalruta efter omladdning; nytt originalfall lades till efter den breda körningens insamling. Totalt 155 unika robotfall verifierade inklusive omkörningar, ingen helt grön bred engångskörning påstås. Bara syntetiska elever/minneslagring; inga verkliga elevdata hämtade, ingen riktig KV/fysisk iPad/produktionsprovning. Lokal commit, ingen push. Ingen analysrapport, MCP-server eller rättat elevdokument byggt i detta sjok.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
         {
           "id": "ai-pupil-evidence-1",
           "text": "Läskontrakt och täckningsmetadata",
-          "done": false
+          "done": true
         },
         {
           "id": "ai-pupil-evidence-2",
           "text": "Datum, källidentitet, paginering och åtkomst verifierade",
-          "done": false
+          "done": true
         }
       ]
     },

@@ -13,14 +13,34 @@ node scripts/teacher-data.mjs --pupil Kerstin --class 6 --from 2026-10-19 --to 2
 node scripts/teacher-data.mjs --class 6 --wrong-only                  # bara felsvar
 ```
 
-- `--from`/`--to` är `ÅÅÅÅ-MM-DD`. Utan dem gäller måndag denna vecka till nu.
+- `--from`/`--to` är giltiga `ÅÅÅÅ-MM-DD`. Båda dagarna ingår enligt
+  Europe/Stockholm, oberoende av datorns tidszon. Utan dem gäller måndag denna
+  vecka till och med idag. Ogiltiga datum och omvänt intervall avvisas.
 - `--pupil` matchar delsträng i elevens namn, `--class` delsträng i klassnamnet eller klass-id.
 - `--base <url>` byter server (standard `https://matematik.ximon.se`), `--out <mapp>` byter utmapp.
 - Utdata hamnar i `%USERPROFILE%\teacher-data-out\` (utanför repot). Sista raderna
   skriver ut sökvägarna. CSV är UTF-8 med BOM och semikolon, så Excel öppnar den rätt.
 
 Kolumner: Elev, ElevID, Klass, Tid, Uppgift, Problemtyp, Nivå, ElevensSvar, RättSvar,
-Rätt (1/0), Felkategori (`knowledge`/`inattention`), Felmönster, Feldetalj, SvarstidSek.
+Rätt (1/0; tomt vid partiellt/okänt), Felkategori (`none`/`knowledge`/`inattention`/`unknown`),
+Felmönster, Feldetalj, SvarstidSek, Svarsstatus, ObservationsID och Källreferens.
+Saknad felkategori blir inte ett antaget kunskapsfel. En `.coverage.json` följer
+med och visar källrevision och historikbegränsning; full historik kan inte utlovas.
+
+## Spårbart underlag för en elev (nytt lokalt API)
+
+```
+node scripts/teacher-data.mjs --evidence --pupil Kerstin --class 6 --from 2026-10-19 --to 2026-10-25
+```
+
+Ger en `.evidence.json` med frågor, svar, kontext och versionsbundna referenser,
+utan privata elevetiketter. Kräver det nya API:t; lokal implementation innebär
+inte produktion. `--base` kan ange isolerad provserver. Lägg till `--source all`
+för Screening om kontot har rätt roll/klass/pilotåtkomst. Inga riktiga elevdata
+behövs för utveckling. Detaljer: [PUPIL_EVIDENCE.md](PUPIL_EVIDENCE.md).
+
+`--pupil` måste ge en entydig träff. `--evidence` kräver exakt en elev och kan
+inte kombineras med `--wrong-only`. Klassvis CSV-export finns kvar utan `--evidence`.
 
 ## Inloggning
 
@@ -40,9 +60,10 @@ ber om det, eftersom det är en skrivning.
 
 ## Analys
 
-1. Kör skriptet och läs JSON-filen. Arbeta på felsvaren (`Rätt` = 0).
-2. Skilj kunskapsfel från ouppmärksamhet via `Felkategori`. Använd `Felmönster` och
-   `Feldetalj` för att säga *vad* eleven gjorde fel, inte bara att det blev fel.
+1. Kör skriptet och läs JSON-filen tillsammans med täckningsinformationen.
+   Granska både felsvar och rätta svar som kan ge motexempel.
+2. Behandla `Felkategori`, `Felmönster` och `Feldetalj` som befintliga signaler.
+   Skilj observerat fel från hypotes om orsaken; saknade uppgifter förblir okända.
 3. Gruppera per `Problemtyp` och `Felmönster`. Redovisa vad eleven faktiskt svarade
    mot rätt svar, med några konkreta exempel.
 4. Excel: skriv `.xlsx` från JSON med `openpyxl` eller xlsx-skillen. Skriptet har inget

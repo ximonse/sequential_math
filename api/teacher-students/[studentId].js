@@ -4,6 +4,7 @@ import { assertTeacherStudentAccess } from '../_studentAccess.js'
 import { isCurrentStudentProfile } from '../../src/lib/studentProfileContract.js'
 import { withFreshTeacherSummary } from '../../src/lib/teacherSummary.js'
 import { attentionProfileForViewer } from '../../src/lib/attentionAccess.js'
+import { readPupilEvidence } from '../_pupilEvidenceRead.js'
 
 export default async function handler(req, res) {
   withCors(res, { methods: 'GET,OPTIONS', headers: 'Content-Type,x-teacher-token' }, req)
@@ -16,6 +17,7 @@ export default async function handler(req, res) {
   const studentId = String(req.query?.studentId || '').trim().toUpperCase()
   if (!studentId) return res.status(400).json({ error: 'Missing studentId' })
   try {
+    if (req.query?.resource === 'evidence') return res.status(200).json(await readPupilEvidence(req, teacher, studentId))
     const profile = await kv.get(`student:${studentId}`)
     if (!isCurrentStudentProfile(profile)) return res.status(404).json({ error: 'Student not found' })
     await assertTeacherStudentAccess(req, profile)
@@ -26,6 +28,7 @@ export default async function handler(req, res) {
     }
     return res.status(200).json({ profile: attentionProfileForViewer(safeProfile, teacher) })
   } catch (error) {
-    return res.status(error.status || 500).json({ error: error.status ? error.message : 'Storage backend unavailable' })
+    return res.status(error.status || 500).json({ error: error.status ? error.message : 'Storage backend unavailable',
+      ...(error.code && error.status ? { code: error.code } : {}) })
   }
 }

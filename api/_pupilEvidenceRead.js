@@ -8,7 +8,7 @@ import { evidencePeriod } from '../src/lib/evidencePeriod.js'
 import { evidenceError, evidencePage, practiceEvidence } from './_pupilEvidence.js'
 import { pupilScreeningEvidence } from './_pupilScreeningEvidence.js'
 
-async function assertAccess(req, studentId, classId) {
+export async function assertPupilEvidenceAccess(req, studentId, classId) {
   const profile = await kv.get(`student:${studentId}`)
   const classroom = await kv.get(`class:${classId}`)
   if (!profile || profile.studentId !== studentId || !classroom || classroom.archived
@@ -20,7 +20,15 @@ async function assertAccess(req, studentId, classId) {
   return profile
 }
 
-export async function readPupilEvidence(req, auth, studentId) {
+export function assertEvidenceSourceAccess(auth, studentId, source) {
+  if (!['practice', 'screening', 'all'].includes(source)) throw evidenceError(400, 'invalid_source', 'Ogiltig källa.')
+  if (source !== 'practice' && (!diagnosticApiEnabled() || !isSchoolAdminRole(auth.role, auth.isAdmin)
+    || !diagnosticTestStudentAllowed(studentId))) {
+    throw evidenceError(403, 'screening_access_denied', 'Screening kräver aktiverad åtkomst och aktuell administratörsbehörighet.')
+  }
+}
+
+export async function readPupilEvidence(req, auth, studentId, { unpaged = false } = {}) {
   const query = req.query || {}
   const classId = query.classId
   if (typeof classId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/u.test(classId)) {
@@ -30,16 +38,13 @@ export async function readPupilEvidence(req, auth, studentId) {
   if (!['practice', 'screening', 'all'].includes(source)) throw evidenceError(400, 'invalid_source', 'Ogiltig källa.')
   let period
   try { period = evidencePeriod(query.from, query.to) } catch (error) { throw evidenceError(400, 'invalid_period', error.message) }
-  const profile = await assertAccess(req, studentId, classId)
-  if (source !== 'practice' && (!diagnosticApiEnabled() || !isSchoolAdminRole(auth.role, auth.isAdmin)
-    || !diagnosticTestStudentAllowed(studentId))) {
-    throw evidenceError(403, 'screening_access_denied', 'Screening kräver aktiverad åtkomst och aktuell administratörsbehörighet.')
-  }
+  const profile = await assertPupilEvidenceAccess(req, studentId, classId)
+  assertEvidenceSourceAccess(auth, studentId, source)
   const practice = source === 'screening' ? { entries: [], coverage: { status: 'not_requested' } } : practiceEvidence(profile)
   const screening = source === 'practice' ? { entries: [], coverage: { status: 'not_requested' } }
     : await pupilScreeningEvidence(studentId, classId)
   // Recheck membership and live teacher/class access after potentially slow detail reads.
-  await assertAccess(req, studentId, classId)
+  await assertPupilEvidenceAccess(req, studentId, classId)
   if (source !== 'practice') {
     const liveAuth = await getLiveTeacherAuthPayload(req)
     if (!liveAuth || !isSchoolAdminRole(liveAuth.role, liveAuth.isAdmin)
@@ -47,5 +52,5 @@ export async function readPupilEvidence(req, auth, studentId) {
       throw evidenceError(403, 'screening_access_denied', 'Screeningåtkomsten ändrades under läsningen.')
     }
   }
-  return evidencePage({ studentId, classId, source, period, practice, screening, query })
+  return evidencePage({ studentId, classId, source, period, practice, screening, query, unpaged })
 }

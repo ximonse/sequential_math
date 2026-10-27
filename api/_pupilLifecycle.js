@@ -93,6 +93,8 @@ export async function buildPupilCleanup(id, job, store) {
   const patches = []
   const removals = [{ key: 'students:index', member: id }]
   const sources = []
+  // Interpretive reports and notes are never retained as anonymous statistics.
+  for (const key of await scanPupilKeys(store, `pupil_analysis_reports:${id}:*`)) deletes.add(key)
   const attention = new Map((job.profile.attentionHistory || []).map(pass => [pass.id, pass]))
   for (const key of await scanPupilKeys(store, `attention_pass:${id}:*`)) {
     const stored = await store.get(key)

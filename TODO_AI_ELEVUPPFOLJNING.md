@@ -1,8 +1,9 @@
 # Plan: AI-stödd elevanalys och riktad uppföljning
 
 Datum: 2026-10-27. Status: planen avstämd med Simon, kompletterad med krav på
-rättade och kommenterade egna uträkningar. Etapp 1 är lokalt byggd och testad;
-senare analys-, MCP- och dokumentsteg är inte byggda.
+rättade och kommenterade egna uträkningar. Etapp 1 och rapport-/avstämningsdelen
+i etapp 2 är lokalt byggda och testade. MCP-anslutning, riktat material och
+elevdokument återstår; ingen modell har ännu kopplats in.
 Projektkort: `ai-pupil-followup` och dess delkort.
 
 ## Mål och arbetsflöde
@@ -43,8 +44,11 @@ skriver inte över elevens svar, lärarens bedömning eller tidigare rapportvers
 - `api/teacher-diagnostic-attempts.js`: uppställning, förlopp, bedömning och
   versionsidentifierat underlag kan läsas. Screening kräver admin/skoladmin,
   aktiverat API, aktuell klassåtkomst och eventuellt piloturval.
-- Ingen sammanhängande AI-rapport, godkänd materialversion eller MCP-utdelning
-  har byggts. Denna plan innebär ingen ny produktionsverifiering.
+- Ett versionsbestämt rapportformat, privat rapporthistorik, läraravstämning
+  och projektlokal analys-skill finns lokalt. Lärarvyn kan skapa regelbaserade
+  granskningsunderlag; AI-formulerade rapporter kan valideras och sparas via API.
+  Ingen modell, godkänd materialversion eller MCP-utdelning är ansluten.
+  Se `docs/PUPIL_ANALYSIS.md`. Ingen produktionsverifiering ingår i detta steg.
 
 ## Föreslagen arkitektur
 
@@ -97,6 +101,21 @@ Klart när samma period ger återspelbart underlag med spårbara referenser,
 utan åtkomstläckor, och ofullständig historik syns uttryckligen.
 
 ## Etapp 2 — analysrapport och avstämning
+
+Lokalt levererat 2026-10-27: rapportkontrakt och API, förhandsvisning utan
+skrivning, serverräknade antal och validerade referenser, frysta rapportversioner
+och separata historiska läraravstämningar. Lärarvyn visar stöd, valda motexempel,
+alternativ, källsvar och räknehäftets original; original och progression ändras inte.
+Skill: `.agents/skills/pupil-analysis/SKILL.md`. Regelknappen gör inga nya
+AI-tolkningar. Syntetiska AI-märkta rapporter verifierar formatet och arbetsflödet;
+didaktisk kalibrering med en faktisk ansluten modell återstår inför verklig användning.
+
+Verifierat: 179 testfiler/860 tester, build och riktad lint/arkitekturkontroll.
+Bred robotkörning 151/156; samtliga fem fall godkända vid sekventiell omkörning.
+Båda rapportrobotarna godkända på slutlig kod, inklusive nytillagt originalfall
+efter bredsvitens insamling (157 unika fall inklusive omkörningar). Dator- och
+surfplatteskärmbilder samt räknehäftets rendering granskade. Inte riktig KV,
+fysisk iPad, produktionsprov eller utvärdering av en ansluten språkmodell.
 
 Skapa en skill och ett versionsbestämt rapportformat. Använd både rätta och
 felaktiga svar. Befintliga regelmönster är observationer/ledtrådar, inte facit

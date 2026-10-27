@@ -1745,7 +1745,7 @@
       "title": "AI-stödd elevanalys och riktad uppföljning",
       "status": "Planerat",
       "purpose": "Låt läraren granska en elev över tid, stämma av hypoteser och beställa riktad screening, generatorträning eller elevdokument.",
-      "next": "Etapp 1 lokalt klar. Nästa genomförbara delmål är ai-pupil-analysis: analysrapport, källbelägg, motexempel och läraravstämning med syntetiska data.",
+      "next": "Etapp 1 och rapport-/avstämningsdelen i etapp 2 lokalt klara. Nästa delmål är första MCP-klientanslutningen med syntetisk data; ingen modell eller utdelning är ansluten ännu.",
       "acceptance": "Hela kedjan från analys till lärargodkänd screening fungerar med syntetiska data. Ingenting delas ut under analys; befintliga mastery- och behörighetsgränser gäller.",
       "requires": [
         "teacher-data",
@@ -1753,7 +1753,7 @@
       ],
       "affects": [],
       "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.\n2026-10-27: Simon bekräftar att planen ser bra ut och begär att elevdokument innehåller elevens egna felberäkningar, rättade och kommenterade, exempelvis från räknehäftet. Ingen implementation utförd.",
-      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.\n2026-10-27 lokalt: GET teacher-students/:id?resource=evidence med gemensam träningsprojektion för API och export, Stockholm-perioder inklusive DST, explicita source-val, frysta screeningfrågor och oförändrat räknehäfte i revisionsbunden detaljläsning. Inga antagna kunskapsfel för äldre data; begränsad historik/okänd fullständighet och dubbletter/ID-konflikter redovisas. Behörighet kontrolleras per läsning och efter långsam läsning; Screening behåller admin/pilotgränsen. Sid- och detaljreferenser är bundna till SHA256-källrevision, ändrat underlag ger 409. CLI --evidence hämtar alla sidor och kräver en entydig elev; vanlig CSV/JSON-export finns kvar med täckningsfil. Dokumentation: docs/PUPIL_EVIDENCE.md och docs/teacher-data.md. Verifiering: 177 testfiler/852 tester, build med befintliga varningar, riktad lint och arkitekturkontroll godkända. Bred robotkörning 151/154; alla tre fall godkända vid sekventiell omkörning. Båda nya underlagsrobotarna godkända separat, inklusive 402−178→376 och originalruta efter omladdning; nytt originalfall lades till efter den breda körningens insamling. Totalt 155 unika robotfall verifierade inklusive omkörningar, ingen helt grön bred engångskörning påstås. Bara syntetiska elever/minneslagring; inga verkliga elevdata hämtade, ingen riktig KV/fysisk iPad/produktionsprovning. Lokal commit, ingen push. Ingen analysrapport, MCP-server eller rättat elevdokument byggt i detta sjok.",
+      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.\n2026-10-27 lokalt: GET teacher-students/:id?resource=evidence med gemensam träningsprojektion för API och export, Stockholm-perioder inklusive DST, explicita source-val, frysta screeningfrågor och oförändrat räknehäfte i revisionsbunden detaljläsning. Inga antagna kunskapsfel för äldre data; begränsad historik/okänd fullständighet och dubbletter/ID-konflikter redovisas. Behörighet kontrolleras per läsning och efter långsam läsning; Screening behåller admin/pilotgränsen. Sid- och detaljreferenser är bundna till SHA256-källrevision, ändrat underlag ger 409. CLI --evidence hämtar alla sidor och kräver en entydig elev; vanlig CSV/JSON-export finns kvar med täckningsfil. Dokumentation: docs/PUPIL_EVIDENCE.md och docs/teacher-data.md. Verifiering: 177 testfiler/852 tester, build med befintliga varningar, riktad lint och arkitekturkontroll godkända. Bred robotkörning 151/154; alla tre fall godkända vid sekventiell omkörning. Båda nya underlagsrobotarna godkända separat, inklusive 402−178→376 och originalruta efter omladdning; nytt originalfall lades till efter den breda körningens insamling. Totalt 155 unika robotfall verifierade inklusive omkörningar, ingen helt grön bred engångskörning påstås. Bara syntetiska elever/minneslagring; inga verkliga elevdata hämtade, ingen riktig KV/fysisk iPad/produktionsprovning. Lokal commit, ingen push. Ingen analysrapport, MCP-server eller rättat elevdokument byggt i detta sjok.\n2026-10-27 lokalt: Rapportkontrakt v1, serverräknade antal, styrke-/stöd-/motexempelreferenser, alternativ och nästa undersökningsfråga. Befintlig signal, AI-tolkning och lärartolkning skiljs åt. Regelbaserad förhandsvisning utan skrivning; inga modell-API:er eller MCP-server. Privat KV-historik per lärare/elev/klass med frysta rapportversioner och separata avstämningar (behåll/ändra/avfärda/undersök), CAS och återförsöks-ID. Indragen klass-/screeningåtkomst kontrolleras även för sparade rapporter och i skrivsvaren. Tolkningar raderas vid elevradering/anonymisering och hamnar inte i anonym statistik. Elevprofil/progression/uppdrag förblir oförändrade. Lärarvyn visar konkreta källsvar även utan hypotes, samt revisionsbundet original från räknehäftet. Skill .agents/skills/pupil-analysis/SKILL.md validerad; docs/PUPIL_ANALYSIS.md och docs/PUPIL_EVIDENCE.md uppdaterade. Verifiering: 179 testfiler/860 tester, build med befintliga varningar, riktad lint och arkitektur godkända. Inga ändrade filer över 600 rader. Bred robotkörning 151/156; alla fem fall godkända sekventiellt. Båda nya rapportrobotarna godkända på slutlig kod, inklusive senare tillagt originalfall (157 unika robotfall totalt inklusive omkörningar); ingen helt grön bred engångskörning påstås. R2/R3-fel hittade rött och rättade: dubbla React-nycklar lämnade gammal rapportvy kvar vid versionsbyte, samt IncomingMessage tappade headers vid intern delegationsläsning. Stabil namngivning av formulärfält/väljare och osparad text bevarad efter konflikt/rapportbyte. Dator-/surfplatteskärmbilder och räknehäftets rendering visuellt granskade enligt designgrunden. Bara syntetiska elever/minneslagring; inte riktig KV, fysisk iPad, produktion eller didaktisk kalibrering av en ansluten modell. Lokal commit, ingen push.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -1802,27 +1802,32 @@
       "id": "ai-pupil-analysis",
       "area": "AI-uppföljning",
       "title": "Analysrapport, skill och läraravstämning",
-      "status": "Föreslaget",
+      "status": "Lokalt klart",
       "purpose": "Redovisa styrkor och möjliga felmönster med stöd, motexempel, osäkerhet och granskningsbart nästa mål.",
-      "next": "Definiera rapportformat och skill med spårbarhet till både rätta och felaktiga svar.",
+      "next": "Anslut vald AI-klient i ai-pupil-mcp. Kalibrera därefter rapporternas pedagogiska tolkningar med faktisk modell före verklig elevanalys.",
       "acceptance": "Påståenden och antal kan kontrolleras mot underlaget. Läraren kan ändra/avfärda hypoteser; rapporter ändrar inte elevobservationer.",
       "requires": [
         "ai-pupil-evidence"
       ],
       "affects": [],
-      "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.",
-      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.",
+      "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.\n2026-10-27: Simon säger Kör efter levererat läsunderlag och nästa steg analysrapport/läraravstämning. Rapport och avstämning lagras privat separat från elevprofilen. Förhandsvisning skriver inget; inget delas ut och ingen mastery ändras. Ingen ny modell- eller lagringstjänst i denna etapp.",
+      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.\n2026-10-27 lokalt: Rapportkontrakt v1, serverräknade antal, styrke-/stöd-/motexempelreferenser, alternativ och nästa undersökningsfråga. Befintlig signal, AI-tolkning och lärartolkning skiljs åt. Regelbaserad förhandsvisning utan skrivning; inga modell-API:er eller MCP-server. Privat KV-historik per lärare/elev/klass med frysta rapportversioner och separata avstämningar (behåll/ändra/avfärda/undersök), CAS och återförsöks-ID. Indragen klass-/screeningåtkomst kontrolleras även för sparade rapporter och i skrivsvaren. Tolkningar raderas vid elevradering/anonymisering och hamnar inte i anonym statistik. Elevprofil/progression/uppdrag förblir oförändrade. Lärarvyn visar konkreta källsvar även utan hypotes, samt revisionsbundet original från räknehäftet. Skill .agents/skills/pupil-analysis/SKILL.md validerad; docs/PUPIL_ANALYSIS.md och docs/PUPIL_EVIDENCE.md uppdaterade. Verifiering: 179 testfiler/860 tester, build med befintliga varningar, riktad lint och arkitektur godkända. Inga ändrade filer över 600 rader. Bred robotkörning 151/156; alla fem fall godkända sekventiellt. Båda nya rapportrobotarna godkända på slutlig kod, inklusive senare tillagt originalfall (157 unika robotfall totalt inklusive omkörningar); ingen helt grön bred engångskörning påstås. R2/R3-fel hittade rött och rättade: dubbla React-nycklar lämnade gammal rapportvy kvar vid versionsbyte, samt IncomingMessage tappade headers vid intern delegationsläsning. Stabil namngivning av formulärfält/väljare och osparad text bevarad efter konflikt/rapportbyte. Dator-/surfplatteskärmbilder och räknehäftets rendering visuellt granskade enligt designgrunden. Bara syntetiska elever/minneslagring; inte riktig KV, fysisk iPad, produktion eller didaktisk kalibrering av en ansluten modell. Lokal commit, ingen push.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
         {
           "id": "ai-pupil-analysis-1",
           "text": "Rapportformat och analys-skill",
-          "done": false
+          "done": true
         },
         {
           "id": "ai-pupil-analysis-2",
           "text": "Versionerad avstämning och syntetisk kalibrering",
+          "done": true
+        },
+        {
+          "id": "analysis-model-calibration",
+          "text": "Didaktisk kalibrering med en faktisk ansluten modell inför verklig elevanalys (efter MCP-anslutning)",
           "done": false
         }
       ]
@@ -1840,7 +1845,7 @@
       ],
       "affects": [],
       "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.",
-      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.",
+      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.\n2026-10-27: Förberedande API för rapportutkast, validerad versionslagring, läraravstämning och behörighetsfiltrerad historik lokalt klart. Se docs/PUPIL_ANALYSIS.md. Ingen MCP-server eller klientanslutning byggd; modellkalibrering ska ingå före verklig analys.",
       "issue": "",
       "kind": "funktion",
       "tasks": [

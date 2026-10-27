@@ -37,7 +37,7 @@ export async function pupilScreeningEvidence(studentId, classId, { store = kv, r
       reference: { kind: 'screening_attempt', attemptId: id, assignmentId: record.assignmentId,
         assignmentItemId: record.assignmentItemId, ...revision },
       question: evidencePick(item.taskSnapshot, ['taskId', 'taskVersion', 'promptSv', 'operation', 'operands',
-        'answerType', 'responseMode', 'images', 'options']),
+        'answerType', 'responseMode', 'images', 'options', 'gridEnabled', 'drawingEnabled', 'correctOptionIds']),
       answer: { status: observation.answerStatus, studentAnswer: observation.explicitAnswer,
         correctAnswer: observation.expectedAnswer, submitted: observation.submitted,
         ...evidencePick(observation, ['selectedOptionIds', 'correctSelections', 'missedOptions', 'incorrectSelections']) },

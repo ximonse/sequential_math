@@ -56,7 +56,7 @@ export function practiceEvidence(profile) {
     latestAvailable: timestamps.length ? Math.max(...timestamps) : null, warnings: [...warnings] } }
 }
 
-export function evidencePage({ studentId, classId, period, source, practice, screening, query }) {
+export function evidencePage({ studentId, classId, period, source, practice, screening, query, unpaged = false }) {
   const all = [...practice.entries, ...screening.entries]
     .filter(entry => entry.timestamp >= period.startInclusive && entry.timestamp < period.endExclusive)
     .sort((a, b) => a.timestamp - b.timestamp || JSON.stringify(a.reference).localeCompare(JSON.stringify(b.reference)))
@@ -84,8 +84,8 @@ export function evidencePage({ studentId, classId, period, source, practice, scr
   const limit = query.limit === undefined ? 50 : Number(query.limit)
   if (!Number.isInteger(limit) || limit < 1 || limit > 100) throw evidenceError(400, 'invalid_limit', 'Sidstorlek ska vara 1–100.')
   // Workspaces/events are only returned by an explicit, revision-checked detail read.
-  const page = entries.slice(offset, offset + limit).map(({ detail: _detail, ...entry }) => entry)
+  const page = (unpaged ? entries : entries.slice(offset, offset + limit)).map(({ detail: _detail, ...entry }) => entry)
   return { schemaVersion: 1, studentId, classId, source, period, snapshotRevision: revision,
     coverage: { practice: practice.coverage, screening: screening.coverage }, total: entries.length,
-    entries: page, nextCursor: offset + limit < entries.length ? `${revision}:${offset + limit}` : null }
+    entries: page, nextCursor: !unpaged && offset + limit < entries.length ? `${revision}:${offset + limit}` : null }
 }

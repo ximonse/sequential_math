@@ -103,5 +103,6 @@ versionsbunden sidbläddring/detalj, uppställningsoriginal och behörigheter.
 och kontrollerar lärarens verkliga API-läsning mot syntetisk minneslagring.
 Det är varken verklig KV eller fysisk iPad-provning.
 
-Se [planen](../TODO_AI_ELEVUPPFOLJNING.md) för nästa steg: rapport och avstämning,
+Lokal [rapport och läraravstämning](PUPIL_ANALYSIS.md) använder samma
+underlag och källrevision. Se [planen](../TODO_AI_ELEVUPPFOLJNING.md) för senare
 MCP, godkända uppföljningsutkast och elevdokument med rättat eget arbete.

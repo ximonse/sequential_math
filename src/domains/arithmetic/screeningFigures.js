@@ -30,8 +30,13 @@ const properties = { triangle: { sides: 3, corners: 3 }, square: { sides: 4, cor
   cube: { faces: 6, corners: 8, edges: 12 }, cuboid: { faces: 6, corners: 8, edges: 12 },
   pyramid: { faces: 5, corners: 5, edges: 8 } }
 // Later additions: explicit metadata, appended so existing ids and drawings stay frozen.
-const label = (x, y, text, anchor = 'middle') =>
-  `<text x="${x}" y="${y}" text-anchor="${anchor}" fill="#172536" stroke="none" font-family="sans-serif" font-size="12">${text}</text>`
+const label = (x, y, text, anchor = 'middle', size = 12) =>
+  `<text x="${x}" y="${y}" text-anchor="${anchor}" fill="#172536" stroke="none" font-family="sans-serif" font-size="${size}">${text}</text>`
+const dashed = d => `<path d="${d}" stroke-dasharray="5 4"/>`
+const arrows = (x, y, dir) => `<path d="M${x} ${y}l${-8 * dir}-5M${x} ${y}l${-8 * dir} 5"/>`
+const plain = { variants: ['standard'], dimensions: 2 }
+const irregular = { variants: ['standard', 'rotated'], dimensions: 2 }
+const cuboidFrame = `<path d="M25 65H105V97H25Z M25 65 49 45H129V77L105 97 M105 65 129 45"/>${dashed('M25 97 49 77H129 M49 77V45')}`
 const dot = (x, y) => `<circle cx="${x}" cy="${y}" r="2.5" fill="#172536" stroke="none"/>`
 const triangleTypes = { variants: ['standard', 'rotated'], dimensions: 2, properties: { sides: 3, corners: 3 } }
 const measured = { variants: ['standard'], dimensions: 2 }
@@ -58,8 +63,69 @@ const additions = {
     draw: `${polygon('15,105 135,105 55,25')}<path d="M55 25V105" stroke-dasharray="5 4"/><path d="M55 95H65V105"/>${label(75, 121, '8 cm')}${label(59, 72, '5 cm', 'start')}`,
     tags: ['triangel', 'mått', 'area', 'höjd'], properties: { sides: 3, corners: 3 } },
   'cuboid-measured': { ...measured, dimensions: 3, nameSv: 'Rätblock 5 cm × 3 cm × 2 cm',
-    draw: `<g transform="translate(8 0)"><path d="M25 65H105V97H25Z M25 65 49 45H129V77L105 97 M105 65 129 45"/><path d="M25 97 49 77H129 M49 77V45" stroke-dasharray="5 4"/>${label(65, 112, '5 cm')}${label(21, 85, '2 cm', 'end')}${label(121, 95, '3 cm', 'start')}</g>`,
-    tags: ['rätblock', 'mått', 'volym'], properties: { faces: 6, corners: 8, edges: 12 } }
+    draw: `<g transform="translate(8 0)">${cuboidFrame}${label(65, 112, '5 cm')}${label(21, 85, '2 cm', 'end')}${label(121, 95, '3 cm', 'start')}</g>`,
+    tags: ['rätblock', 'mått', 'volym'], properties: { faces: 6, corners: 8, edges: 12 } },
+  // Geometric objects
+  'line-line': { ...plain, nameSv: 'Linje', draw: `<path d="M15 65H145"/>${arrows(15, 65, -1)}${arrows(145, 65, 1)}`, tags: ['linje'] },
+  'line-ray': { ...plain, nameSv: 'Stråle', draw: `<path d="M20 58V72M20 65H145"/>${arrows(145, 65, 1)}`, tags: ['stråle'] },
+  'line-segment': { ...plain, nameSv: 'Sträcka', draw: '<path d="M20 58V72M140 58V72M20 65H140"/>', tags: ['sträcka'] },
+  'quadrilateral-irregular': { ...irregular, nameSv: 'Fyrhörning · oregelbunden', draw: polygon('20,95 60,20 145,45 120,115'),
+    tags: ['fyrhörning'], properties: { sides: 4, corners: 4 } },
+  'pentagon-irregular': { ...irregular, nameSv: 'Femhörning · oregelbunden', draw: polygon('15,70 55,25 120,15 145,80 70,115'),
+    tags: ['femhörning'], properties: { sides: 5, corners: 5 } },
+  'hexagon-irregular': { ...irregular, nameSv: 'Sexhörning · oregelbunden', draw: polygon('30,30 85,15 140,40 130,100 75,118 20,90'),
+    tags: ['sexhörning'], properties: { sides: 6, corners: 6 } },
+  'pentagon-diagonal': { ...plain, nameSv: 'Femhörning med diagonal', draw: `${polygon('80,10 140,52 118,115 42,115 20,52')}${dashed('M20 52 118 115')}`,
+    tags: ['femhörning', 'diagonal'], properties: { sides: 5, corners: 5 } },
+  'rectangle-right-angles': { ...plain, nameSv: 'Rektangel med räta vinklar',
+    draw: `${polygon('15,35 145,35 145,95 15,95')}<path d="M15 45H25V35M135 35V45H145M145 85H135V95M25 95V85H15"/>`,
+    tags: ['rektangel', 'parallellogram', 'fyrhörning', 'rät vinkel'], properties: { sides: 4, corners: 4 } },
+  'square-right-angles': { ...plain, nameSv: 'Kvadrat med räta vinklar',
+    draw: `${polygon('35,20 125,20 125,110 35,110')}<path d="M35 30H45V20M115 20V30H125M125 100H115V110M45 110V100H35"/>`,
+    tags: ['kvadrat', 'rektangel', 'romb', 'parallellogram', 'fyrhörning', 'rät vinkel'], properties: { sides: 4, corners: 4 } },
+  // Angles and symmetry
+  'angle-acute': { ...plain, nameSv: 'Spetsig vinkel', draw: '<path d="M150 105H25L125 21M55 105A30 30 0 0 0 48 85.7"/>', tags: ['vinkel', 'spetsig vinkel'] },
+  'angle-right': { ...plain, nameSv: 'Rät vinkel', draw: '<path d="M150 105H40V15M40 91H54V105"/>', tags: ['vinkel', 'rät vinkel'] },
+  'angle-obtuse': { ...plain, nameSv: 'Trubbig vinkel', draw: '<path d="M150 105H95L24 34M120 105A25 25 0 0 0 77.3 87.3"/>', tags: ['vinkel', 'trubbig vinkel'] },
+  'angle-straight': { ...plain, nameSv: 'Rak vinkel 180°', draw: `<path d="M10 80H150M105 80A25 25 0 0 0 55 80"/>${dot(80, 80)}${label(80, 45, '180°')}`,
+    tags: ['vinkel', 'rak vinkel', 'halvt varv'] },
+  'angle-full': { ...plain, nameSv: 'Helt varv 360°', draw: `<path d="M80 70H150M104.7 73.9A25 25 0 1 1 104.7 66.1"/>${dot(80, 70)}${label(80, 35, '360°')}`,
+    tags: ['vinkel', 'helt varv'] },
+  'triangle-angle-sum': { ...plain, nameSv: 'Triangel med vinklar v₁, v₂, v₃',
+    draw: `${polygon('15,105 145,105 95,30')}<path d="M33 105A18 18 0 0 0 28.1 92.7M127 105A18 18 0 0 1 135 90M81.9 42.3A18 18 0 0 0 105 45"/>${label(42, 100, 'v₁', 'middle', 11)}${label(120, 100, 'v₂', 'middle', 11)}${label(95, 60, 'v₃', 'middle', 11)}`,
+    tags: ['triangel', 'vinkel', 'vinkelsumma'], properties: { sides: 3, corners: 3 } },
+  'symmetry-letter-m': { ...plain, nameSv: 'Bokstaven M med symmetrilinje', draw: `<path d="M45 105V25L80 75L115 25V105" stroke-width="5"/>${dashed('M80 8V122')}`,
+    tags: ['symmetri', 'symmetrilinje'] },
+  // Perimeter and circle parts
+  'pentagon-perimeter': { ...plain, nameSv: 'Femhörning med mått',
+    draw: `${polygon('30,108 42,45 82,22 120,40 124,108')}${label(34, 80, '3 cm', 'end')}${label(58, 28, '2 cm', 'end')}${label(106, 26, '2 cm', 'start')}${label(127, 78, '3 cm', 'start')}${label(77, 123, '4 cm')}`,
+    tags: ['femhörning', 'mått', 'omkrets'], properties: { sides: 5, corners: 5 } },
+  'circle-parts': { ...plain, nameSv: 'Cirkel med medelpunkt, radie och diameter',
+    draw: `<circle cx="80" cy="65" r="48"/><path d="M32 65H128M80 65 114 31"/>${dot(80, 65)}${label(56, 60, 'diameter', 'middle', 11)}${label(101, 54, 'radie', 'start', 11)}${label(80, 81, 'medelpunkt', 'middle', 11)}`,
+    tags: ['cirkel', 'radie', 'diameter', 'medelpunkt'] },
+  // Area and volume with letters or heights
+  'rectangle-letters': { ...plain, nameSv: 'Rektangel med b och h', draw: `${polygon('20,30 120,30 120,97 20,97')}${label(70, 114, 'b')}${label(127, 68, 'h', 'start')}`,
+    tags: ['rektangel', 'parallellogram', 'fyrhörning', 'area', 'bas', 'höjd'], properties: { sides: 4, corners: 4 } },
+  'square-letters': { ...plain, nameSv: 'Kvadrat med s', draw: `${polygon('30,20 110,20 110,100 30,100')}${label(70, 117, 's')}${label(116, 64, 's', 'start')}`,
+    tags: ['kvadrat', 'rektangel', 'romb', 'parallellogram', 'fyrhörning', 'area'], properties: { sides: 4, corners: 4 } },
+  'triangle-letters': { ...plain, nameSv: 'Triangel med b och h',
+    draw: `${polygon('15,105 135,105 55,25')}${dashed('M55 25V105')}<path d="M55 95H65V105"/>${label(75, 121, 'b')}${label(60, 72, 'h', 'start')}`,
+    tags: ['triangel', 'area', 'bas', 'höjd'], properties: { sides: 3, corners: 3 } },
+  'parallelogram-height': { ...plain, nameSv: 'Parallellogram med höjd',
+    draw: `${polygon('45,25 145,25 115,100 15,100')}${dashed('M45 25V100')}<path d="M45 90H55V100"/>${label(50, 66, 'h', 'start')}${label(65, 116, 'b')}`,
+    tags: ['parallellogram', 'fyrhörning', 'area', 'bas', 'höjd'], properties: { sides: 4, corners: 4 } },
+  'rhombus-height': { ...plain, nameSv: 'Romb med höjd',
+    draw: `${polygon('25,100 95,100 131,40 61,40')}${dashed('M61 40V100')}<path d="M61 90H71V100"/>${label(66, 74, 'h', 'start')}${label(60, 116, 'b')}`,
+    tags: ['romb', 'parallellogram', 'fyrhörning', 'area', 'bas', 'höjd'], properties: { sides: 4, corners: 4 } },
+  'triangle-height-outside': { ...plain, nameSv: 'Trubbvinklig triangel med höjd utanför',
+    draw: `${polygon('55,100 150,100 25,30')}${dashed('M25 30V100H55')}<path d="M25 90H35V100"/>${label(21, 68, 'h', 'end')}${label(102, 116, 'b')}`,
+    tags: ['triangel', 'trubbvinklig triangel', 'area', 'bas', 'höjd'], properties: { sides: 3, corners: 3 } },
+  'triangle-abc-measured': { ...plain, nameSv: 'Rätvinklig triangel ABC 6 cm och 3,5 cm',
+    draw: `${polygon('20,105 135,105 135,30')}<path d="M123 105V93H135"/>${label(14, 112, 'A', 'end')}${label(141, 114, 'B', 'start')}${label(141, 32, 'C', 'start')}${label(78, 121, '6 cm')}${label(131, 72, '3,5 cm', 'end')}`,
+    tags: ['triangel', 'rätvinklig triangel', 'mått', 'area'], properties: { sides: 3, corners: 3 } },
+  'cuboid-words': { ...plain, dimensions: 3, nameSv: 'Rätblock med längd, bredd och höjd',
+    draw: `<g transform="translate(8 0)">${cuboidFrame}${label(65, 112, 'längd', 'middle', 11)}${label(21, 85, 'höjd', 'end', 11)}${label(121, 95, 'bredd', 'start', 11)}</g>`,
+    tags: ['rätblock', 'volym', 'längd', 'bredd', 'höjd'], properties: { faces: 6, corners: 8, edges: 12 } }
 }
 for (const [kind, item] of Object.entries(additions)) drawings[kind] = item.draw
 const variantName = variant => variant === 'rotated' ? ' · vriden' : variant === 'small' ? ' · mindre' : ''

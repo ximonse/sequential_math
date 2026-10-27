@@ -545,7 +545,7 @@
         "followup-policy"
       ],
       "affects": [],
-      "decision": "",
+      "decision": "\n2026-10-27: Nytt planförslag i TODO_AI_ELEVUPPFOLJNING.md och ai-pupil-followup beskriver både screening och generatorträning efter läraravstämning. Tidigare beslut och deluppgifter bevaras; planen innebär inte att MCP eller uppföljningen är byggd.",
       "evidence": "",
       "issue": "",
       "kind": "funktion",
@@ -571,7 +571,7 @@
       "affects": [
         "followup"
       ],
-      "decision": "",
+      "decision": "\n2026-10-27: Nytt planförslag i TODO_AI_ELEVUPPFOLJNING.md och ai-pupil-followup beskriver både screening och generatorträning efter läraravstämning. Tidigare beslut och deluppgifter bevaras; planen innebär inte att MCP eller uppföljningen är byggd.",
       "evidence": "",
       "issue": "",
       "kind": "beslut",
@@ -1645,7 +1645,7 @@
       "purpose": "Simon ska kunna be en agent hämta en klass eller elevs frågor och svar för en period, få dem som CSV/JSON och få felsvaren analyserade, utan webbläsarskrapning.",
       "next": "Simon avgör om skriptet ska användas på Kerstin i klass 6; kräver att kontot har klassen och att privata elevnamn finns, annars sök på klass.",
       "acceptance": "scripts/teacher-data.mjs loggar in som lärare, är skrivskyddat, och skriver CSV och JSON utanför repot. docs/teacher-data.md och AGENTS.md beskriver det för båda agenterna.",
-      "decision": "2026-10-26: Simon beställer skript och instruktion i stället för MCP. Lärarkonto med miljövariabler MATH_TEACHER_USER/MATH_TEACHER_PASS, inte adminkonto.",
+      "decision": "2026-10-26: Simon beställer skript och instruktion i stället för MCP. Lärarkonto med miljövariabler MATH_TEACHER_USER/MATH_TEACHER_PASS, inte adminkonto.\n2026-10-27: Nytt planförslag i TODO_AI_ELEVUPPFOLJNING.md och ai-pupil-followup beskriver både screening och generatorträning efter läraravstämning. Tidigare beslut och deluppgifter bevaras; planen innebär inte att MCP eller uppföljningen är byggd.",
       "evidence": "2026-10-26 lokalt mot produktions-API (endast läsning): inloggning, klasslista och elevprofiler fungerar; klassen Lärare gav 1184 uppgifter, 81 fel. Hittade och rättade teckenkodningsfel vid läsning av lösenord med å/ä/ö. API:t ger bara pseudonymer; privata elevnamn är per lärarkonto och saknas för detta konto. Ej pushat. Ingen enhetstest.",
       "issue": "",
       "kind": "funktion",
@@ -1735,6 +1735,187 @@
         {
           "id": "try",
           "text": "Simon provar i lärarvyn",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "ai-pupil-followup",
+      "area": "AI-uppföljning",
+      "title": "AI-stödd elevanalys och riktad uppföljning",
+      "status": "Föreslaget",
+      "purpose": "Låt läraren granska en elev över tid, stämma av hypoteser och beställa riktad screening, generatorträning eller elevdokument.",
+      "next": "Stäm av planen; börja därefter med spårbart underlag för en syntetisk elev och ett aritmetikmål.",
+      "acceptance": "Hela kedjan från analys till lärargodkänd screening fungerar med syntetiska data. Ingenting delas ut under analys; befintliga mastery- och behörighetsgränser gäller.",
+      "requires": [
+        "teacher-data",
+        "permissions"
+      ],
+      "affects": [],
+      "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.",
+      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "ai-pupil-followup-1",
+          "text": "Plan med nuläge, etapper och verifieringsvillkor",
+          "done": true
+        },
+        {
+          "id": "ai-pupil-followup-2",
+          "text": "Första sammanhängande syntetiska elevflödet",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "ai-pupil-evidence",
+      "area": "AI-uppföljning",
+      "title": "Spårbart elevunderlag för vald period",
+      "status": "Föreslaget",
+      "purpose": "Samla filtrerad träning och behörig screening med stabila källreferenser, okända värden och tydlig historiktäckning.",
+      "next": "Specificera gemensamt läskontrakt och syntetiska prov för Stockholmstid, legacydata och begränsad historik.",
+      "acceptance": "Rätt elev och period, inga gissade felkategorier, inga dubbletter från osäkra identiteter och aktuell behörighetskontroll på alla detaljanrop.",
+      "requires": [
+        "ai-pupil-followup"
+      ],
+      "affects": [],
+      "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.",
+      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "ai-pupil-evidence-1",
+          "text": "Läskontrakt och täckningsmetadata",
+          "done": false
+        },
+        {
+          "id": "ai-pupil-evidence-2",
+          "text": "Datum, källidentitet, paginering och åtkomst verifierade",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "ai-pupil-analysis",
+      "area": "AI-uppföljning",
+      "title": "Analysrapport, skill och läraravstämning",
+      "status": "Föreslaget",
+      "purpose": "Redovisa styrkor och möjliga felmönster med stöd, motexempel, osäkerhet och granskningsbart nästa mål.",
+      "next": "Definiera rapportformat och skill med spårbarhet till både rätta och felaktiga svar.",
+      "acceptance": "Påståenden och antal kan kontrolleras mot underlaget. Läraren kan ändra/avfärda hypoteser; rapporter ändrar inte elevobservationer.",
+      "requires": [
+        "ai-pupil-evidence"
+      ],
+      "affects": [],
+      "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.",
+      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "ai-pupil-analysis-1",
+          "text": "Rapportformat och analys-skill",
+          "done": false
+        },
+        {
+          "id": "ai-pupil-analysis-2",
+          "text": "Versionerad avstämning och syntetisk kalibrering",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "ai-pupil-mcp",
+      "area": "AI-uppföljning",
+      "title": "MCP för elevunderlag och granskade utkast",
+      "status": "Föreslaget",
+      "purpose": "Ge en vald AI-klient kontrollerad läsning och materialutkast via befintligt API.",
+      "next": "Välj och prova första klienten med syntetiska data; håll lokal pilot och framtida fjärranslutning åtskilda.",
+      "acceptance": "Faktisk MCP-klient klarar läsning och utkast. Inga hemligheter i modellkontexten; ingen utdelning utan mänsklig bekräftelse av aktuell version.",
+      "requires": [
+        "ai-pupil-analysis"
+      ],
+      "affects": [],
+      "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.",
+      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "ai-pupil-mcp-1",
+          "text": "Lokal klientanslutning och verktygskontrakt",
+          "done": false
+        },
+        {
+          "id": "ai-pupil-mcp-2",
+          "text": "Läs-/skrivgränser och felåterhämtning verifierade",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "ai-pupil-material",
+      "area": "AI-uppföljning",
+      "title": "Riktad screening och generatorträning",
+      "status": "Föreslaget",
+      "purpose": "Skapa rätt materialtyp för avstämt mål och dela ut exakt granskad version till vald elev.",
+      "next": "Börja med befintliga granskade screeningfrågor; kontrollera vilka generatorfilter som faktiskt kan realisera träningsmålet.",
+      "acceptance": "Fryst screening är diagnostic_only. Träning använder stödda generatorval. Godkännande binds till version/mottagare och återförsök skapar inte dubbletter.",
+      "requires": [
+        "ai-pupil-mcp",
+        "screening-image-questions"
+      ],
+      "affects": [],
+      "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.",
+      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "ai-pupil-material-1",
+          "text": "Screeningutkast med kontrastfrågor och facitstatus",
+          "done": false
+        },
+        {
+          "id": "ai-pupil-material-2",
+          "text": "Mänskligt godkännande, idempotent utdelning och elevrobot",
+          "done": false
+        },
+        {
+          "id": "ai-pupil-material-3",
+          "text": "Generatorträning inom verifierade innehållsgränser",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "ai-pupil-document",
+      "area": "AI-uppföljning",
+      "title": "Förklarande elevdokument och senare uppföljning",
+      "status": "Föreslaget",
+      "purpose": "Ge eleven begriplig förklaring och övning; låt läraren jämföra senare svar med tidigare hypotes.",
+      "next": "Skapa granskad utskrivbar dokumentversion med exempel, egna uppgifter och separat lärarfacit.",
+      "acceptance": "Elevtexten har korrekta exempel utan diagnosetiketter. Uppföljningen skiljer jämförbart innehåll från ändrad svårighet och otillräckligt underlag.",
+      "requires": [
+        "ai-pupil-material"
+      ],
+      "affects": [],
+      "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.",
+      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "ai-pupil-document-1",
+          "text": "Elevdokument med separat facit och renderingskontroll",
+          "done": false
+        },
+        {
+          "id": "ai-pupil-document-2",
+          "text": "Uppföljningsrapport med jämförbarhet och källreferenser",
           "done": false
         }
       ]
@@ -2325,6 +2506,46 @@
       "source": "screening-image-questions",
       "target": "reuse-collections",
       "kind": "påverkar"
+    },
+    {
+      "source": "teacher-data",
+      "target": "ai-pupil-followup",
+      "kind": "kräver"
+    },
+    {
+      "source": "permissions",
+      "target": "ai-pupil-followup",
+      "kind": "kräver"
+    },
+    {
+      "source": "ai-pupil-followup",
+      "target": "ai-pupil-evidence",
+      "kind": "kräver"
+    },
+    {
+      "source": "ai-pupil-evidence",
+      "target": "ai-pupil-analysis",
+      "kind": "kräver"
+    },
+    {
+      "source": "ai-pupil-analysis",
+      "target": "ai-pupil-mcp",
+      "kind": "kräver"
+    },
+    {
+      "source": "ai-pupil-mcp",
+      "target": "ai-pupil-material",
+      "kind": "kräver"
+    },
+    {
+      "source": "screening-image-questions",
+      "target": "ai-pupil-material",
+      "kind": "kräver"
+    },
+    {
+      "source": "ai-pupil-material",
+      "target": "ai-pupil-document",
+      "kind": "kräver"
     }
   ],
   "note": "Planeringssnapshot. Lokalt klart är inte publicerat. Tidigare publicering bygger på denna tråds verifiering; ingen ny livekontroll. Förslag är inte fattade beslut."

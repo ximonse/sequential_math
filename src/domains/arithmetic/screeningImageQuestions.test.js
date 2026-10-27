@@ -18,6 +18,14 @@ describe('original screening geometry', () => {
     expect(findScreeningFigure('square-rotated').tags).toEqual(expect.arrayContaining(['rektangel', 'romb', 'parallellogram']))
     for (const figure of screeningFigures) expect(screeningFigureSvg(figure.id)).toMatch(/^<svg/u)
   })
+  it('keeps original ids and adds triangle types and measured figures', () => {
+    expect(findScreeningFigure('triangle-standard')).toMatchObject({ kind: 'triangle', dimensions: 2 })
+    expect(findScreeningFigure('pyramid-standard')).toMatchObject({ dimensions: 3 })
+    expect(findScreeningFigure('triangle-equilateral').tags).toContain('likbent triangel')
+    expect(findScreeningFigure('triangle-right-rotated')).toMatchObject({ variant: 'rotated', dimensions: 2 })
+    expect(findScreeningFigure('cuboid-measured')).toMatchObject({ dimensions: 3 })
+    expect(screeningFigureSvg('rectangle-measured')).toContain('6 cm')
+  })
   it('validates every bundled question and rejects unknown images, duplicate options and invalid keys', () => {
     for (const item of geometryTasks) expect(normalizeImageQuestion(item).responseMode).toBe(item.responseMode)
     expect(() => normalizeImageQuestion({ ...task, correctOptionIds: ['missing'] })).toThrow()

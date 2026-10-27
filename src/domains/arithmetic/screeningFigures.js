@@ -29,12 +29,48 @@ const properties = { triangle: { sides: 3, corners: 3 }, square: { sides: 4, cor
   pentagon: { sides: 5, corners: 5 }, hexagon: { sides: 6, corners: 6 },
   cube: { faces: 6, corners: 8, edges: 12 }, cuboid: { faces: 6, corners: 8, edges: 12 },
   pyramid: { faces: 5, corners: 5, edges: 8 } }
-export const screeningFigures = Object.keys(drawings).flatMap((kind, index) => {
+// Later additions: explicit metadata, appended so existing ids and drawings stay frozen.
+const label = (x, y, text, anchor = 'middle') =>
+  `<text x="${x}" y="${y}" text-anchor="${anchor}" fill="#172536" stroke="none" font-family="sans-serif" font-size="12">${text}</text>`
+const dot = (x, y) => `<circle cx="${x}" cy="${y}" r="2.5" fill="#172536" stroke="none"/>`
+const triangleTypes = { variants: ['standard', 'rotated'], dimensions: 2, properties: { sides: 3, corners: 3 } }
+const measured = { variants: ['standard'], dimensions: 2 }
+const additions = {
+  'triangle-equilateral': { ...triangleTypes, nameSv: 'Liksidig triangel', draw: polygon('20,110 80,6 140,110'),
+    tags: ['triangel', 'liksidig triangel', 'likbent triangel', 'spetsvinklig triangel'] },
+  'triangle-isosceles': { ...triangleTypes, nameSv: 'Likbent triangel', draw: polygon('45,115 80,10 115,115'),
+    tags: ['triangel', 'likbent triangel', 'spetsvinklig triangel'] },
+  'triangle-right': { ...triangleTypes, nameSv: 'Rätvinklig triangel', draw: `${polygon('25,110 25,20 145,110')}<path d="M25 98H37V110"/>`,
+    tags: ['triangel', 'rätvinklig triangel', 'oliksidig triangel'] },
+  'triangle-obtuse': { ...triangleTypes, nameSv: 'Trubbvinklig triangel', draw: polygon('10,100 100,100 150,40'),
+    tags: ['triangel', 'trubbvinklig triangel', 'oliksidig triangel'] },
+  'triangle-scalene': { ...triangleTypes, nameSv: 'Oliksidig triangel', draw: polygon('15,105 135,105 95,20'),
+    tags: ['triangel', 'oliksidig triangel', 'spetsvinklig triangel'] },
+  'circle-radius': { ...measured, nameSv: 'Cirkel med radie', draw: `<circle cx="80" cy="65" r="48"/>${dot(80, 65)}<path d="M80 65H128"/>${label(104, 59, 'r')}`,
+    tags: ['cirkel', 'radie'] },
+  'circle-diameter': { ...measured, nameSv: 'Cirkel med diameter', draw: `<circle cx="80" cy="65" r="48"/>${dot(80, 65)}<path d="M32 65H128"/>${label(80, 59, 'd')}`,
+    tags: ['cirkel', 'diameter'] },
+  'rectangle-measured': { ...measured, nameSv: 'Rektangel 6 cm × 4 cm', draw: `${polygon('15,30 115,30 115,97 15,97')}${label(65, 115, '6 cm')}${label(121, 68, '4 cm', 'start')}`,
+    tags: ['rektangel', 'parallellogram', 'fyrhörning', 'mått', 'area', 'omkrets'], properties: { sides: 4, corners: 4 } },
+  'square-measured': { ...measured, nameSv: 'Kvadrat 5 cm', draw: `${polygon('30,20 110,20 110,100 30,100')}${label(70, 117, '5 cm')}${label(115, 64, '5 cm', 'start')}`,
+    tags: ['kvadrat', 'rektangel', 'romb', 'parallellogram', 'fyrhörning', 'mått', 'area', 'omkrets'], properties: { sides: 4, corners: 4 } },
+  'triangle-measured': { ...measured, nameSv: 'Triangel bas 8 cm, höjd 5 cm',
+    draw: `${polygon('15,105 135,105 55,25')}<path d="M55 25V105" stroke-dasharray="5 4"/><path d="M55 95H65V105"/>${label(75, 121, '8 cm')}${label(59, 72, '5 cm', 'start')}`,
+    tags: ['triangel', 'mått', 'area', 'höjd'], properties: { sides: 3, corners: 3 } },
+  'cuboid-measured': { ...measured, dimensions: 3, nameSv: 'Rätblock 5 cm × 3 cm × 2 cm',
+    draw: `<g transform="translate(8 0)"><path d="M25 65H105V97H25Z M25 65 49 45H129V77L105 97 M105 65 129 45"/><path d="M25 97 49 77H129 M49 77V45" stroke-dasharray="5 4"/>${label(65, 112, '5 cm')}${label(21, 85, '2 cm', 'end')}${label(121, 95, '3 cm', 'start')}</g>`,
+    tags: ['rätblock', 'mått', 'volym'], properties: { faces: 6, corners: 8, edges: 12 } }
+}
+for (const [kind, item] of Object.entries(additions)) drawings[kind] = item.draw
+const variantName = variant => variant === 'rotated' ? ' · vriden' : variant === 'small' ? ' · mindre' : ''
+export const screeningFigures = Object.keys(drawings).filter(kind => !additions[kind]).flatMap((kind, index) => {
   const variants = index < 9 ? ['standard', 'rotated', 'small'] : ['standard']
   return variants.map(variant => ({ id: `${kind}-${variant}`, version: 1, kind, variant,
-    nameSv: `${names[kind]}${variant === 'rotated' ? ' · vriden' : variant === 'small' ? ' · mindre' : ''}`,
+    nameSv: `${names[kind]}${variantName(variant)}`,
     tags: classes[kind] || [names[kind].toLocaleLowerCase('sv')], properties: properties[kind] || {}, dimensions: index < 9 ? 2 : 3 }))
-})
+}).concat(Object.entries(additions).flatMap(([kind, item]) => item.variants.map(variant => ({
+  id: variant === 'standard' ? kind : `${kind}-${variant}`, version: 1, kind, variant,
+  nameSv: `${item.nameSv}${variantName(variant)}`, tags: item.tags, properties: item.properties || {}, dimensions: item.dimensions }))))
 export const findScreeningFigure = (id, version = 1) => screeningFigures.find(item => item.id === id && item.version === version)
 export const searchScreeningFigures = (query = '') => screeningFigures.filter(item =>
   `${item.nameSv} ${item.tags.join(' ')} ${item.dimensions}d ${item.properties.corners ?? ''} hörn ${item.properties.sides ?? ''} sidor ${item.properties.faces ?? ''} sidoytor ${item.properties.edges ?? ''} kanter`

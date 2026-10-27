@@ -6,8 +6,10 @@ description: Analysera en vald elevs matematiska svar under en period och skapa 
 # Elevanalys inför läraravstämning
 
 Läs projektets docs/PUPIL_EVIDENCE.md och docs/PUPIL_ANALYSIS.md före anrop.
-Använd befintliga lärarverktyg/skript och samma behörighet som lärarvyn. Ingen
-MCP-server finns i denna etapp. Skriv aldrig lösenord eller token i rapporten.
+Använd befintliga lärarverktyg/skript eller lokal MCP enligt docs/PUPIL_MCP.md,
+med samma behörighet som lärarvyn. Börja med math_get_capabilities och välj en
+entydig elev innan underlaget läses. MCP-demot innehåller bara syntetiska elever.
+Skriv aldrig lösenord eller token i rapporten.
 
 Utgå från en entydig elev, en bestämd period och en källrevision. Vid flera
 namnträffar behöver eleven väljas. Historikens fullständighet är okänd om inte

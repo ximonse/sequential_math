@@ -17,6 +17,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm ci --prefix mcp/sequential-math --ignore-scripts
       - run: npx playwright install --with-deps chromium
       - run: npm run check:architecture
       - name: Check project map and change coverage
@@ -24,6 +25,7 @@ jobs:
         env:
           MAP_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
       - run: npm run test
+      - run: npm run mcp:test
       - run: npm run build
 
   documentation:

@@ -1,5 +1,14 @@
 # Arkitektur & Checklista för nya domäner
 
+## Lokal elevanalys via MCP
+
+`mcp/sequential-math/` är en separat stdio-adapter med egen låsfil, utanför
+frontendbygget och Vercel-routingen. Den anropar befintliga behörighetskontrollerade
+lärar-API:er; domänvalidering och rapport-CAS stannar på appservern. Läsläge är
+standard, rapportsparande kräver separat startflagga. Inga utdelningsoperationer
+exponeras. Demoläget startar robotappens minnes-KV i en isolerad barnprocess.
+Se `docs/PUPIL_MCP.md` för kontrakt, konfiguration och verifieringsgränser.
+
 ## Vad är en "domän"?
 
 En domän är ett räknesätt/ämnesområde, t.ex. addition, algebra, bråk.

@@ -1,0 +1,12 @@
+<evaluation>
+  <qa_pair><question>In a fresh read-only demo, is report writing enabled? Read capabilities.</question><answer>false</answer></qa_pair>
+  <qa_pair><question>Can this server publish assignments? Read capabilities.</question><answer>false</answer></qa_pair>
+  <qa_pair><question>How many authorized pupils match MCP Demo?</question><answer>2</answer></qa_pair>
+  <qa_pair><question>How many authorized pupils match MCP Demo Other?</question><answer>0</answer></qa_pair>
+  <qa_pair><question>For MCP Demo One, how many practice answers are in the demo period returned by capabilities?</question><answer>4</answer></qa_pair>
+  <qa_pair><question>For MCP Demo Two, how many practice answers are in the demo period returned by capabilities?</question><answer>6</answer></qa_pair>
+  <qa_pair><question>For MCP Demo One, what is the practice history completeness value?</question><answer>unknown</answer></qa_pair>
+  <qa_pair><question>For MCP Demo One, how many correct answers does the analysis preview count?</question><answer>2</answer></qa_pair>
+  <qa_pair><question>For MCP Demo Two, how many incorrect answers does the analysis preview count?</question><answer>1</answer></qa_pair>
+  <qa_pair><question>In a fresh demo, how many saved analysis reports does MCP Demo One have?</question><answer>0</answer></qa_pair>
+</evaluation>

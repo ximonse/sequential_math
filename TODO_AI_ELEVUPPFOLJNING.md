@@ -2,8 +2,9 @@
 
 Datum: 2026-10-27. Status: planen avstämd med Simon, kompletterad med krav på
 rättade och kommenterade egna uträkningar. Etapp 1 och rapport-/avstämningsdelen
-i etapp 2 är lokalt byggda och testade. MCP-anslutning, riktat material och
-elevdokument återstår; ingen modell har ännu kopplats in.
+i etapp 2 är lokalt byggda och testade. Etapp 3 har nu en lokal stdio-brygga
+med syntetisk demo; se docs/PUPIL_MCP.md. Riktat material och elevdokument
+återstår; ingen faktisk modells didaktiska analys har ännu utvärderats.
 Projektkort: `ai-pupil-followup` och dess delkort.
 
 ## Mål och arbetsflöde
@@ -47,7 +48,8 @@ skriver inte över elevens svar, lärarens bedömning eller tidigare rapportvers
 - Ett versionsbestämt rapportformat, privat rapporthistorik, läraravstämning
   och projektlokal analys-skill finns lokalt. Lärarvyn kan skapa regelbaserade
   granskningsunderlag; AI-formulerade rapporter kan valideras och sparas via API.
-  Ingen modell, godkänd materialversion eller MCP-utdelning är ansluten.
+  Lokal MCP kan läsa underlag och spara AI-rapporter; godkänd materialversion
+  och MCP-utdelning är ännu inte anslutna.
   Se `docs/PUPIL_ANALYSIS.md`. Ingen produktionsverifiering ingår i detta steg.
 
 ## Föreslagen arkitektur
@@ -145,7 +147,15 @@ tolkningen och återuppta samma avstämning utan att originalet ändras.
 
 ## Etapp 3 — MCP för läsning och utkast
 
-Föreslagna verktyg, namnen är arbetsnamn:
+Lokalt byggt: sju läsverktyg, ett separat aktiverat rapportverktyg och
+analys-skillen som MCP-prompt. Isolerad demo startar riktiga app-API:er med
+minneslagring. Officiell SDK-klient verifierar läsning → rapport → återläsning,
+och en äldre protokollklient verifierar anslutning/verktygslista. Ingen utdelning
+eller läraravstämningsskrivning exponeras. Se docs/PUPIL_MCP.md för faktiska
+verktygsnamn, installation och begränsningar. Tabellen nedan är den bredare
+målbilden; material- och publiceringsverktygen hör till etapp 4 och är inte byggda.
+
+Föreslagna verktyg för hela kedjan, namnen är arbetsnamn:
 
 | Verktyg | Ansvar |
 |---|---|
@@ -259,8 +269,8 @@ och klientstöd. Inget fast datum utlovas innan dataprov och klientanslutning ä
 ## Beslut inför respektive steg
 
 - Rekommendation för start: lokal MCP-pilot, befintlig KV och syntetiska elever.
-- Vilken faktisk AI-klient ska vara första stödda klient väljs före etapp 3;
-  underlags- och rapportkontrakt kan byggas oberoende av det valet.
+- Codex är första lokala pilotklient. SDK- och protokollprov är separata från
+  modellens didaktiska kalibrering; fjärrklienter är ännu inte verifierade.
 - Verkliga elevdata kräver klarlagd AI-miljö och tillåten dataöverföring.
   Gemini kan användas för riktad granskning med syntetiska exempel och
   icke-känsliga kontrakt, inte verkliga elevsvar enligt nuvarande regler.

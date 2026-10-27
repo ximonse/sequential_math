@@ -13,6 +13,7 @@
     "check:architecture": "node scripts/check-architecture.mjs",
     "plan:dev": "node scripts/project-map-server.mjs",
     "check:project-map": "node scripts/check-project-map.mjs",
+    "mcp:test": "npm test --prefix mcp/sequential-math",
     "robots": "playwright test -c robots/playwright.config.js",
     "ncm:manual": "node robots/manualServer.mjs"
   },

@@ -44,5 +44,6 @@ export async function diagnosticClassOverview(assignment, studentIds, { store = 
       status: submitted === items.length ? 'submitted' : started ? 'in_progress' : 'not_started' }
   }))
   return { items: assignment.items.map(item => ({ assignmentItemId: item.assignmentItemId, taskId: item.taskId,
-    promptSv: item.taskSnapshot.promptSv, ...(item.taskSnapshot.answerType === 'text' ? { answerType: 'text' } : {}) })), rows }
+    promptSv: item.taskSnapshot.promptSv, ...(item.taskSnapshot.answerType === 'text' ? { answerType: 'text' } : {}),
+    ...(item.taskSnapshot.answerRule === 'custom_facit' ? { automaticallyMarked: true } : {}) })), rows }
 }

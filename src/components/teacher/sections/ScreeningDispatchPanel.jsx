@@ -1,4 +1,5 @@
 import ScreeningImageEditor from './ScreeningImageEditor.jsx'
+import ScreeningWrittenEditor from './ScreeningWrittenEditor.jsx'
 import ScreeningQuestionPreview from './ScreeningQuestionPreview.jsx'
 import { useEffect, useState } from 'react'
 import { diagnosticCatalog } from '../../../domains/arithmetic/diagnosticCatalog.browser'
@@ -21,6 +22,7 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
   const [titleSv, setTitleSv] = useState('Screening')
   const [itemOptions, setItemOptions] = useState({})
   const [imageTasks, setImageTasks] = useState([])
+  const [writtenTasks, setWrittenTasks] = useState([])
   const [customPrompt, setCustomPrompt] = useState('')
   const [customGrid, setCustomGrid] = useState(false)
   const [customDrawing, setCustomDrawing] = useState(false)
@@ -49,7 +51,8 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
 
   const selectedPack = diagnosticCatalog.packs.find(pack => JSON.stringify(pack.taskIds) === JSON.stringify(selectedTasks))
   const usesNcm = selectedTasks.some(id => findTask(id)?.ncmCode)
-  const hasTasks = reuseAssignment ? reuseAssignment.items.length > 0 : selectedTasks.length > 0 || imageTasks.length > 0 || Boolean(customPrompt.trim())
+  const hasTasks = reuseAssignment ? reuseAssignment.items.length > 0 : selectedTasks.length > 0 || imageTasks.length > 0 || writtenTasks.length > 0 || Boolean(customPrompt.trim())
+  const customCount = writtenTasks.length + imageTasks.length + (customPrompt.trim() ? 1 : 0)
   const recipientPlan = buildScreeningDispatches(recipients, { classes, groups: teacherGroups, students })
   const limitCheck = applyScreeningLimits(recipientPlan.dispatches, limits)
   const pendingClassIds = limitCheck.pending.map(item => item.classId).join(',')
@@ -78,7 +81,7 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
     return request('/api/teacher-diagnostic-assignments', { method: 'POST',
       body: JSON.stringify({ classId: targetClassId, ...audience,
         taskIds: selectedTasks, titleSv, itemOptions: Object.fromEntries(selectedTasks.filter(id => itemOptions[id]).map(id => [id, itemOptions[id]])),
-        customTasks: [...imageTasks, ...(customPrompt.trim() ? [{ promptSv: customPrompt, gridEnabled: customGrid, drawingEnabled: customDrawing }] : [])] }) })
+        customTasks: [...writtenTasks, ...imageTasks, ...(customPrompt.trim() ? [{ promptSv: customPrompt, gridEnabled: customGrid, drawingEnabled: customDrawing }] : [])] }) })
   }
 
   function reuseCollection(assignment) {
@@ -87,7 +90,7 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
   }
 
   async function createForRecipients() {
-    if (!limitCheck.ready.length || limitCheck.pending.length || !hasTasks || busy) return
+    if (!limitCheck.ready.length || limitCheck.pending.length || !hasTasks || (!reuseAssignment && customCount > 12) || busy) return
     setBusy(true)
     const done = []
     const failed = []
@@ -143,7 +146,7 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
       <ol className="mt-2 list-inside list-decimal space-y-1">{reuseAssignment.items.map(item => {
         const task = item.taskSnapshot || findTask(item.taskId)
         return <li key={item.assignmentItemId}><QuestionText>{task?.promptSv || item.taskId}</QuestionText>
-          <span className="ml-2 text-slate-600">{{ single: 'Välj en bild', multiple: 'Välj flera bilder', name: 'Välj namn', text: 'Skrivsvar' }[task?.responseMode] || (task?.answerType === 'text' ? 'Skrivsvar' : 'Siffersvar')}
+          <span className="ml-2 text-slate-600">{task?.answerRule === 'custom_facit' ? 'Självrättande skrivsvar' : { single: 'Välj en bild', multiple: 'Välj flera bilder', name: 'Välj namn', text: 'Skrivsvar' }[task?.responseMode] || (task?.answerType === 'text' ? 'Skrivsvar' : 'Siffersvar')}
             {task?.gridEnabled !== false ? ' · Räknehäfte' : ''}{task?.drawingEnabled ? ' · Rityta' : ''}</span>
         </li>
       })}</ol>
@@ -161,6 +164,9 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
         customPrompt={customPrompt} onCustomPrompt={setCustomPrompt} customGrid={customGrid} onCustomGrid={setCustomGrid}
         customDrawing={customDrawing} onCustomDrawing={setCustomDrawing} />
       <ScreeningImageEditor tasks={imageTasks} onTasks={setImageTasks} disabled={busy} />
+      <ScreeningWrittenEditor tasks={writtenTasks} onTasks={setWrittenTasks} disabled={busy}
+        maxQuestions={12 - imageTasks.length - (customPrompt.trim() ? 1 : 0)} />
+      {customCount > 12 && <p role="alert" className="mt-2 text-sm text-amber-900">Samlingen har {customCount} egna frågor. Ta bort frågor så att högst tolv återstår innan du delar ut.</p>}
     </>}
 
     <h3 className="mt-4 flex items-center font-semibold text-slate-800"><span className={STEP}>{reuseAssignment ? 2 : 3}</span>Skicka</h3>
@@ -174,7 +180,7 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
       </p>)}
       {limitCheck.pending.length > 0 && <p className="mt-1 text-slate-600">Kontrollerar vilka elever som kan få screening…</p>}
       {recipientPlan.dispatches.length > 0 && <button type="button" onClick={createForRecipients}
-        disabled={!hasTasks || busy || limitCheck.pending.length > 0 || limitCheck.ready.length === 0}
+        disabled={!hasTasks || (!reuseAssignment && customCount > 12) || busy || limitCheck.pending.length > 0 || limitCheck.ready.length === 0}
         className="mt-2 rounded bg-indigo-600 px-3 py-1 font-semibold text-white disabled:opacity-50">
         {busy ? 'Skapar...' : `Ge till valda mottagare (${limitCheck.ready.length} screening${limitCheck.ready.length === 1 ? '' : 'ar'})`}
       </button>}

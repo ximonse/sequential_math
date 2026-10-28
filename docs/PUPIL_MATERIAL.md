@@ -139,8 +139,9 @@ Ett versionsbestämt utkast ska innehålla:
   mottagarlistan med klasskontext. Listan är granskningsbar.
 - Screening: frysta frågor, facit/bedömningssätt och avsikt per fråga.
   Återanvänd katalogfrågor och stödda egna text-/bildfrågor. Egna textfrågor
-  kräver lärarbedömning; godtyckliga nya numeriska frågor får inte utlovas
-  automatisk rättning utan ett nytt verifierat kontrakt.
+  kräver lärarbedömning om `answerKey` saknas. Egna frågor med validerat och
+  fryst `answerKey` rättas automatiskt enligt det lokala kontraktet i
+  [SCREENING_CUSTOM_ANSWER_KEYS.md](SCREENING_CUSTOM_ANSWER_KEYS.md).
 - Träning: validerad generatorram, exempel, stödda innehållsval/nivåer och
   antal. Ange att exempel inte är en fryst uppgiftsföljd. Ingen tyst
   breddning när generatorn saknar den önskade innehållsprecisionen.

@@ -2186,6 +2186,47 @@
       "evidence": "Lokalt tillagda title-texter i SupportPriorityPanel och ResultsOverviewPanel. Ingen ändrad uppdragslogik. Visuell browserkontroll blockerad av otillgänglig betrodd browser-anslutning; ingen publicering.\nVerifierat: 188 testfiler/900 tester gröna med inbäddade .claude-arbetskopior, MCP och robotfiler exkluderade. Sandlådan blockerade processstarter; omkörning med processrättighet grön. Build och riktad ESLint gröna. Första breda testkörningen tog med främmande arbetskopior och avbröts efter fel. Inga logikändringar; robotkörning behövs inte för tooltip-text. Lokal commit, ej pushat.",
       "issue": "",
       "kind": "funktion"
+    },
+    {
+      "id": "custom-screening-answer-keys",
+      "area": "Dela ut",
+      "title": "Egna självrättande screeningfrågor",
+      "status": "Byggt",
+      "purpose": "Läraren anger fryst facit för egna frågor med samma bevarade räknehäfte och rättningskedja som NCM.",
+      "next": "Avgränsa publiceringen från tidigare ändringar på arbetsgrenen, inhämta publiceringsmandat och granska därefter exakta uppdrag och mottagare före utdelning.",
+      "acceptance": "Tal, decimaler, bråk/procent och exakta svar rättas utan facitläckage eller påverkan på mastery. Gamla skrivfrågor är fortsatt lärarbedömda.",
+      "requires": [
+        "dispatch"
+      ],
+      "affects": [
+        "matrix"
+      ],
+      "decision": "2026-10-28: Simon väljer egna självrättande frågor, åtta varierade frågor per elev. Inget publiceringsmandat för kod har givits.",
+      "evidence": "2026-10-28 lokalt: validerat fryst answerKey, lärarredigerare, facitsekretess, kopiering, strikt bråkform/nämnare och enheter samt resultat via befintlig observationskedja. 189 testfiler/940 tester, build, riktad lint och karta godkända. Ny robot passerar separat och i hela körningen; syntetiska elever, sparande/omladdning, exakt mottagare och orörd mastery. Renderade liggande/stående iPadstorlekar samt lärarvyer granskade. Bred robotkörning: 155 godkända, 6 misslyckade, 4 överhoppade; samtliga sex passerade separat med en arbetare. Ingen helt grön gemensam körning påstås. Se docs/SCREENING_CUSTOM_ANSWER_KEYS.md. Åtta individuella uppdrag med totalt 64 frågor lokalt validerade utanför repot. Ingen push, publicering eller elevutdelning. Arbetsgrenens tidigare ändringar ingår inte i publiceringsmandatet.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "answer-key",
+          "text": "Validera och frysa eget facit; återanvänd NCM-rättning med tydliga formatgränser.",
+          "done": true
+        },
+        {
+          "id": "teacher-editor",
+          "text": "Läraren kan skapa, förhandsvisa och redigera flera egna självrättande frågor.",
+          "done": true
+        },
+        {
+          "id": "verify-flow",
+          "text": "Robot, test och build samt fyllda iPadvyer med syntetiska elever.",
+          "done": true
+        },
+        {
+          "id": "release-dispatch",
+          "text": "Publicera efter mandat och dela därefter ut verifierade individuella uppdrag.",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [
@@ -2888,6 +2929,16 @@
       "source": "ai-pupil-evidence",
       "target": "ai-pupil-exact-scope",
       "kind": "kräver"
+    },
+    {
+      "source": "dispatch",
+      "target": "custom-screening-answer-keys",
+      "kind": "kräver"
+    },
+    {
+      "source": "custom-screening-answer-keys",
+      "target": "matrix",
+      "kind": "påverkar"
     }
   ],
   "note": "Planeringssnapshot. Lokalt klart är inte publicerat. Tidigare publicering bygger på denna tråds verifiering; ingen ny livekontroll. Förslag är inte fattade beslut."

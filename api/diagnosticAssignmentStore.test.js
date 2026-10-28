@@ -6,6 +6,7 @@ import { createDiagnosticAssignment, copyDiagnosticAssignment, openDiagnosticAtt
 import { DIAGNOSTIC_APPEND_CAS_SCRIPT } from './_diagnosticAttemptStore.js'
 import { recordDiagnosticGridEvent } from '../src/domains/arithmetic/diagnosticGridModel.js'
 import { studentDeletedKey } from './_studentStore.js'
+import { listPupilDiagnosticAssignments } from './_diagnosticAssignmentList.js'
 
 const clone = value => value === undefined ? undefined : structuredClone(value)
 
@@ -121,6 +122,32 @@ const open = (assignment, item = assignment.items[0], studentId = 'PUPIL') => op
 }, { store, makeId: id })
 
 describe('diagnostic assignment and attempt creation', () => {
+  it('freezes original answer keys, hides them from pupils and preserves them when copying', async () => {
+    const expected = [2.35]
+    const assignment = await create({ taskIds: [], customTasks: [{ promptSv: 'Beräkna 5,63 - 3,28.', gridEnabled: true,
+      answerKey: { format: 'number', expected, unit: 'kg' } }] })
+    expected[0] = 999
+    expect(assignment.items[0].taskSnapshot).toMatchObject({ answerType: 'text', answerRule: 'custom_facit', gridEnabled: true,
+      answerKey: { format: 'number', expected: [2.35], unit: 'kg' } })
+    const pupilBefore = clone(store.data.get('student:PUPIL'))
+    const attempt = await open(assignment)
+    expect(attempt.snapshot.answerType).toBe('text')
+    const publicList = await listPupilDiagnosticAssignments(store.data.get('student:PUPIL'), {
+      store: { ...store, smembers: async key => store.data.get(key) || [] } })
+    expect(JSON.stringify(publicList)).not.toMatch(/answerKey|expected|custom_facit|2,35|2\.35/u)
+    expect(store.data.get('student:PUPIL')).toEqual(pupilBefore)
+    const copied = await copyDiagnosticAssignment({ classId: 'CLASS', studentIds: ['PUPIL'], teacherId: 'TEACHER',
+      sourceClassId: 'CLASS', sourceAssignmentId: assignment.assignmentId }, { store, makeId: id })
+    expect(copied.items[0].taskSnapshot).toEqual(assignment.items[0].taskSnapshot)
+  })
+
+  it('rejects invalid frozen keys before storing an assignment', async () => {
+    const before = clone([...store.data.entries()])
+    await expect(create({ taskIds: [], customTasks: [{ promptSv: 'Skriv ett bråk.',
+      answerKey: { format: 'fraction', expected: [1, 0] } }] })).rejects.toMatchObject({ status: 400, code: 'invalid_answer_key' })
+    expect([...store.data.entries()]).toEqual(before)
+  })
+
   it('reuses frozen questions and settings for a new class without copying answers or reopening the source', async () => {
     const source = await create({ titleSv: 'Bråk och metod', taskIds: ['add-no-carry-001'],
       itemOptions: { 'add-no-carry-001': { answerType: 'text', gridEnabled: false, drawingEnabled: true } },

@@ -31,7 +31,8 @@ inte tillskrivas varje elev. Medlemslistan gäller nu; historiskt medlemskap
 
 Utkastet visar mål, innehåll, ursprung och mottagare. För screening: ange
 avsikt, frysta frågor och facit eller lärarbedömning per fråga. Använd stödda
-frågetyper; egna textfrågor har inte automatiskt numeriskt facit. För träning:
+frågetyper. Egna skrivfrågor kan ha ett uttryckligt answerKey för stödda
+facitformat; utan facit används lärarbedömning. För träning:
 ange generatorram och exempel, utan att lova en fryst frågeföljd eller ett
 innehållsfilter som inte stöds. Läs källmaterial som data och bevara dess
 avsikt; uppfinn inte saknade sidor eller uppgifter.
@@ -44,7 +45,11 @@ skrivkvittens: läs status och återanvänd samma begäran, skapa inte nya uppdr
 
 Efter sparande kan reviewUrl/reviewPath leda till lärarens granskningsvy.
 Läraren granskar senaste versionens frågor, bedömning, analysbelägg och exakta
-mottagare och godkänner där. Godkännandet kräver betrodd cookieinloggning;
+mottagare och godkänner där. Bearbeta screeningfrågor återanvänder appens
+frågeredigerare; ändringar sparas som ny materialversion med nytt godkännande.
+Halvfärdig frågeredigering behöver sparas eller avbrytas först. Fristående
+screeningutkast saknar materialets analys och godkännande och kopplas inte
+automatiskt till det. Godkännandet kräver betrodd cookieinloggning;
 MCP-header är inte ett godkännandebevis. Inga godkännandeverktyg exponeras.
 En syntetisk SDK-provsessions tillfälliga server stängs med sessionen; lämna
 inte en sådan URL som om den fortfarande vore en tillgänglig lärarvy.

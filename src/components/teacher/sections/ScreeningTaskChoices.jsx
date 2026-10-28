@@ -16,7 +16,7 @@ const originalGroups = [
 // click; single questions, answer types and the teacher guide stay folded away.
 export default function ScreeningTaskChoices({
   busy, selectedTasks, onSelectedTasks, usesNcm, selectedPack, itemOptions, onItemOptions,
-  customPrompt, onCustomPrompt, customGrid, onCustomGrid, customDrawing, onCustomDrawing
+  customPrompt, onCustomPrompt, customGrid, onCustomGrid, customDrawing, onCustomDrawing, showCustomQuestion = true
 }) {
   const taskCheckbox = task => <label key={task.taskId} className="flex items-center gap-1 text-sm">
     <input type="checkbox" checked={selectedTasks.includes(task.taskId)} onChange={event => onSelectedTasks(event.target.checked
@@ -82,7 +82,7 @@ export default function ScreeningTaskChoices({
       </fieldset>
     </details>
 
-    <details className="mt-2 text-sm">
+    {showCustomQuestion && <details className="mt-2 text-sm">
       <summary className="cursor-pointer font-semibold">Lägg till egen skrivfråga</summary>
       <label className="block">Frågetext<textarea value={customPrompt} maxLength={2000} onChange={event => onCustomPrompt(event.target.value)} className="mt-1 block w-full rounded border p-1" /></label>
       <p className="mt-1 text-slate-600">{'Bråk: skriv 6//2 eller \\frac{6}{2}.'}</p>
@@ -92,7 +92,7 @@ export default function ScreeningTaskChoices({
       </div>}
       <label className="mr-2"><input type="checkbox" checked={customGrid} onChange={event => onCustomGrid(event.target.checked)} /> Räknehäfte till skrivfrågan</label>
       <label><input type="checkbox" checked={customDrawing} onChange={event => onCustomDrawing(event.target.checked)} /> Rityta till skrivfrågan</label>
-    </details>
+    </details>}
 
     <details className="mt-2 rounded border border-slate-300 bg-white p-3 text-sm">
       <summary className="cursor-pointer font-semibold">Lärarstöd för valda uppgifter</summary>

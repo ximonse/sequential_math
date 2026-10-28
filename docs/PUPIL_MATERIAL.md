@@ -213,3 +213,32 @@ Versionsregressionen med samma normaliserade innehåll i två versioner är
 också rättad: åtgärds-ID:n i lärarvyn innehåller versionsnumret och servern
 avvisar återanvändning av ett annat versionsgodkännande. Robotprovet var rött
 före rättningen och passerar efteråt. Därefter passerade 188 testfiler/900 tester.
+
+### Integration med publicerad frågeredigering 2026-10-29
+
+Integrationsgrenen utgår nu även från master `177c92d` (PR #26). Den
+publicerade screeningöversikten, dess utkastbibliotek och mottagarflöde
+bevaras. Materialgranskningen återanvänder samma katalogval, facitredigerare
+och bildfrågeredigerare under **Bearbeta screeningfrågor**. Frågornas ordning
+bevaras, även när egna frågor av olika typer ligger blandade.
+
+Sparandet skapar en ny `teacher_material`-version med befintliga analysbelägg,
+källmaterial och mottagarkontext. Ett gammalt godkännande följer inte med.
+Halvfärdig frågeredigering finns kvar vid versionsbyte under den öppna
+sessionen och blockerar förhandsvisning, sparande, godkännande och utdelning
+tills frågan sparas eller redigeringen avbryts. Omladdning varnar om osparat
+arbete; halvfärdiga materialfrågor lagras inte automatiskt på servern.
+
+Fristående `screening_draft` är fortsatt ett separat innehållsutkast utan
+analys eller materialgodkännande. Att öppna eller spara ett sådant utkast
+importerar inte ett materialgodkännande. Det finns ingen automatisk kopiering
+mellan de två lagringarna. MCP kan fortsatt revidera både träningsram och
+screeninginnehåll genom den befintliga versionslagringen.
+
+Lokalt verifierat efter integrationen: 193 testfiler/951 tester, 19 MCP-prov,
+produktionsbuild och tolv berörda webbläsartester. Redigeringsprovet täcker
+blandad frågeordning, ändrat facit med bevarad rityta, bildfrågor, katalogval,
+halvfärdig text över versionsbyte, avbryt och nytt godkännande. Rityteprovet
+var rött före rättningen. Fyllda liggande och stående surfplattevyer har
+granskats visuellt i lokal Chromium-emulering. Ingen fysisk iPad, riktig
+elevdata, Upstash-transport eller produktionspublicering ingår i dessa prov.

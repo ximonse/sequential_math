@@ -22,6 +22,9 @@ Materiallagrens verkliga Lua/CAS-skript har separata isolerade Redis-prov;
 se docs/MATERIAL_REDIS_VERIFICATION.md. De läser inga KV-hemligheter och
 använder inga globala databasrensningar. Godkännandets återförsöks-ID binds
 till innehållsversion även när två versioner har samma innehållsrevision.
+Materialgranskningen återanvänder screeningens katalog-, facit- och
+bildredigerare. Ändringar sparas i materialets versionslager; fristående
+screeningutkast är fortsatt innehållsutkast utan analys eller godkännande.
 
 `mcp/sequential-math/` är en separat stdio-adapter med egen låsfil, utanför
 frontendbygget och Vercel-routingen. Den anropar befintliga behörighetskontrollerade

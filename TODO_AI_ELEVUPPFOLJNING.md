@@ -1,4 +1,54 @@
-# Plan: AI-stödd elevanalys och riktad uppföljning
+# Plan: AI-stödd analys, uppdrag och screening
+
+## Aktivt mål och beslutad omfattning 2026-10-28
+
+Simon ska via MCP/API och samordnade skills kunna analysera underlag samt
+skapa granskade generella eller riktade träningsuppdrag och screeningar för
+specifika elever, grupper och klasser. Två likvärdiga ingångar ska fungera:
+
+- Direkt beställning från Simons mål, valda innehåll eller givet material.
+  Tidigare elevanalys är inget krav för att skapa generellt innehåll.
+- Förslag utifrån en klass, grupp eller elev: tillgängliga svar och arbeten,
+  lärarens avstämning och ett uttryckligt valt undervisningsmål.
+
+Samma material kan användas för flera mottagare; anpassade varianter är ett
+uttryckligt val. Klassens sammanställning får inte behandlas som varje elevs
+kunskapsprofil. Givet material ska ha spårbar källa och bevarad avsikt;
+frågor, facit och rättningssätt måste granskas inom appens stödda format.
+
+Utkast visar innehåll, mål, facit/bedömningssätt, ursprung och exakta mottagare.
+Aktuell version och mottagarlista granskas före utdelning. Ändras innehåll
+eller mottagare krävs ny granskning. Analys och utkast delar inte ut något.
+Screening förblir diagnostic_only; befintliga åtkomst- och pilotgränser gäller.
+
+### Arbetsordning och klart-när
+
+1. Verifiera faktisk MCP-analys i denna Codex-session med syntetiska svar och
+   räknehäftesoriginal. Klart när belägg, motexempel, osäkerheter och original
+   stämmer mot källorna, även vid tomt svar med sparat arbete.
+2. Samordna teacher-data och pupil-analysis samt specificera skapandets skill
+   och API-kontrakt. Klart när direkt beställning och analysbaserat förslag
+   har tydliga indata, formatgränser och exakta elev-/grupp-/klassval.
+3. Bygg granskade utkast för båda innehållstyperna och båda ingångarna.
+   Klart när syntetiska exempel från lärarinstruktion, givet material och
+   elev-/grupp-/klassunderlag ger rätt innehåll och synliga mottagare utan utdelning.
+4. Anslut uttryckligt godkänd utdelning till befintliga uppdragsflöden.
+   Klart när elev, grupp och klass fungerar för både träning och screening,
+   med kvitto per mottagare, inga dubletter vid återförsök, synliga delfel och
+   ingen oavsiktlig ersättning av pågående uppdrag. Gruppmedlemskap och
+   mottagarändringar mellan granskning och utdelning ska provas särskilt.
+5. Verifiera hela syntetiska kedjan från beställning till elevens åtkomst,
+   sparade svar och läraruppföljning. Verkliga elevdata kräver klarlagd
+   AI-miljö; push och produktion kräver separat publiceringsmandat.
+
+Nuvarande API har targetType student/group/class för vanliga uppdrag.
+Screening har klass och explicit studentIds-urval; säker upplösning av
+befintliga grupper till screeningmottagare återstår att specificera.
+MCP exponerar ännu inget materialskapande eller någon utdelning.
+Detta tillägg är ett planeringsbeslut, inte en implementerad funktion.
+
+Tidigare etapper och verifieringsbelägg nedan bevaras som historik. Denna
+beslutade omfattning breddar den tidigare inriktningen på enskild elev.
 
 Datum: 2026-10-27. Status: planen avstämd med Simon, kompletterad med krav på
 rättade och kommenterade egna uträkningar. Etapp 1 och rapport-/avstämningsdelen

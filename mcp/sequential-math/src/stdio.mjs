@@ -4,13 +4,14 @@ import { TeacherApiClient } from './api-client.mjs'
 import { createMathServer } from './server.mjs'
 import { demoDescription, launchDemo } from './demo.mjs'
 
-const demo = process.argv.includes('--demo')
+const screening = process.argv.includes('--demo-screening')
+const demo = process.argv.includes('--demo') || screening
 const allowReportWrites = process.argv.includes('--allow-report-writes') || process.env.MATH_MCP_ALLOW_REPORT_WRITES === 'true'
 let demoApp, apiPromise
 async function getApi() {
   if (!apiPromise) apiPromise = (async () => {
     if (demo) {
-      demoApp ||= launchDemo()
+      demoApp ||= launchDemo({ screening })
       const config = await demoApp.ready
       return new TeacherApiClient({ baseUrl: config.baseUrl, getCredentials: () => ({ username: config.username, password: config.password }) })
     }
@@ -20,7 +21,7 @@ async function getApi() {
   return apiPromise
 }
 const server = createMathServer({ getApi, allowReportWrites, dataMode: demo ? 'synthetic' : process.env.MATH_MCP_DATA_MODE || 'synthetic',
-  demo: demo ? demoDescription() : null })
+  demo: demo ? demoDescription(screening) : null })
 let closed = false
 async function close() {
   if (closed) return

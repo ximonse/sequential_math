@@ -16,6 +16,18 @@ npm run mcp:test
 node mcp/sequential-math/src/stdio.mjs --demo
 ```
 
+För räknehäftesgranskning: starta i stället med `--demo-screening`. Detta är
+ett separat syntetiskt läge med superadmin och två sparade screeningförsök,
+skapade genom ordinarie inloggnings-, uppdrags- och försöks-API:er. Vanlig
+`--demo` behåller lärarrollen och nekad screeningåtkomst. Inga verkliga
+konton eller behörighetsgränser ändras. Capabilities anger läge och demots roll.
+Skoladminbegränsningen i riktig Screening ligger fast.
+
+Screeningdemot innehåller 402 − 178 med sparade rutor men tomt svarsfält,
+och 764 − 231 med svaret 533. Rutnätsinnehåll är inte automatiskt ett
+inlämnat svar. En ny process får nya referenser och revisioner.
+Se [syntetisk modellgranskning](PUPIL_MCP_MODEL_REVIEW.md).
+
 stdio-processen väntar på MCP-meddelanden, inte interaktiv terminaltext.
 Den startar en egen robotapp först vid första dataanropet. Den använder riktiga
 API-hanterare med minnes-KV, slumpad lokal port och en vanlig syntetisk lärare.

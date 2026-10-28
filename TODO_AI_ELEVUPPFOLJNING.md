@@ -28,6 +28,12 @@ Screening förblir diagnostic_only; befintliga åtkomst- och pilotgränser gäll
 
 ### Arbetsordning och klart-när
 
+2026-10-28 första modellprov: registrerad MCP-demo läst i faktisk Codex-session.
+Separat opt-in screeningdemo gav två API-sparade original, granskade som text
+och PNG. Tomt svar med sparat arbete och korrekt kontrast utan växling har
+granskats. Se docs/PUPIL_MCP_MODEL_REVIEW.md. Inte blind/oberoende kalibrering;
+klass-/gruppanalys, varierade fall och lärargranskad bedömningsmall återstår.
+
 1. Verifiera faktisk MCP-analys i denna Codex-session med syntetiska svar och
    räknehäftesoriginal. Klart när belägg, motexempel, osäkerheter och original
    stämmer mot källorna, även vid tomt svar med sparat arbete.

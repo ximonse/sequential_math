@@ -108,6 +108,46 @@ screeningutkast behålls. Tooltips för Fokus och Värm/Värm upp ingår också.
 
 ## Fortsatt harmonisering
 
-Ovan beskriver kod för screening. Överföring till Uppdrag/tickets,
-omstrukturering av bildfrågeredigeraren och gemensam tillgänglig hjälp är
-separata etapper i projektkartan. Denna leverans påstår inte att de är byggda.
+Överföring till Uppdrag/tickets och gemensam tillgänglig hjälp är senare
+etapper i projektkartan. De ingår inte i screeningkorrigeringen nedan.
+
+## Korrigering mot godkänd skiss 2026-10-28
+
+Simon påtalade att den publicerade implementationen inte följde den godkända
+skissen. Den tidigare verifieringen belade fungerande delkedjor men räckte
+inte som belägg för att den överenskomna helheten var levererad.
+Referensen finns nu oförändrad i `docs/ui-reference/screening-approved.html`,
+med konkreta jämförelsepunkter i `docs/ui-reference/README.md` och en hänvisning
+från agentinstruktionerna.
+
+- Screening får skissens systemtypografi, rubrikhierarki, panelmått, indigo
+  huvudhandling, gul aktiv navigation och mjuka valmarkeringar. Det gäller
+  bara screeningarbetsläget; Framsteg och elevens vyer bevaras.
+- Översikten har Utdelat och Materialbibliotek som skilda arbetslägen.
+  Privata versionsutkast öppnas direkt i innehållssteget. Tidigare utdelat
+  innehåll är separat och återanvänds till en ny utdelning utan gamla svar.
+  Detta använder befintliga lagrings-/behörighetsmodeller, ingen ny parallell
+  materialmodell. Misslyckad utkastöppning blockerar vidare utdelning tills
+  avsett innehåll har lästs eller läraren uttryckligen väljer ett nytt utkast.
+- Kompakt Visa för väljer klass/grupp för översikten. Ett avancerat
+  visningsurval kan kombinera eller söka elever. Urvalet ändrar inga
+  utdelningsmottagare. Listans elevantal, mottagarlistor och aktiv/avslutad
+  status avgränsas till urvalet; resultatknappen öppnar samma urval.
+- Verkligt genomförande hämtas via befintligt lärar-API för de synliga
+  utdelningarna: antal inlämnade och namn med ej påbörjad/pågående/inlämnad.
+  Utdelningens aktiv/avslutad är en separat status. Saknat underlag eller
+  läsfel visas uttryckligen. Åtta screeningar visas först, därefter Visa fler;
+  ingen bakgrundspollning införs. Läs om hämtar aktuell status.
+- Uppgiftsbanken grupperar även originaluppgifterna i Addition, Subtraktion
+  och Geometri/bildfrågor, bredvid NCM:s befintliga diagnosindelning.
+- Bildredigeraren har fasta delar för Fråga och Svar. Varje Lägg till-knapp
+  öppnar bildväljaren för just sin bildroll. Byte mellan en/flera bildval
+  behåller alternativ/facit; ett inkompatibelt byte kräver bekräftelse innan
+  innehåll tas bort. Elevförhandsvisning och privat bildbibliotek finns kvar.
+- Arbetsytor, frysta facit, versionskonflikter, navigation, mottagarunion,
+  kontrollsteg och idempotent utdelningskvitto behåller sina tidigare kontrakt.
+
+Arkitektur: DashboardLayout ändras bara för inkoppling, rubrik och överföring
+av visningsurval. Den är fortsatt över 600 rader; ingen ny verksamhetslogik
+läggs där. Materiallistan, genomförandestatus och avgränsning av listdata har
+egna komponenter/funktioner. Slutlig verifiering dokumenteras i projektkartan.

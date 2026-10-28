@@ -81,7 +81,7 @@ test('teacher creates, reloads and revises private drafts including incomplete q
   await drafts(second).getByRole('button', { name: 'Behåll mina ändringar', exact: true }).click()
   await expect(second.getByRole('textbox', { name: 'Samlingens namn', exact: true })).toHaveValue('Min parallella ändring')
   second.once('dialog', dialog => dialog.dismiss())
-  await second.getByRole('button', { name: /^Framsteg Kunskapsområden/ }).click()
+  await second.getByRole('button', { name: /^Framsteg/ }).click()
   await expect(second.getByRole('textbox', { name: 'Samlingens namn', exact: true })).toHaveValue('Min parallella ändring')
   await drafts(page).getByRole('combobox', { name: 'Utkastversion', exact: true }).selectOption('1')
   await expect(panel.getByRole('textbox', { name: 'Samlingens namn', exact: true })).toHaveValue('Decimaler att gå igenom')

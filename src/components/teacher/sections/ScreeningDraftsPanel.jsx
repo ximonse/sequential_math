@@ -5,12 +5,26 @@ import { emptyScreeningDraft } from '../../../domains/arithmetic/screeningDraft.
 const endpoint = '/api/teacher-diagnostic-assignments?resource=drafts'
 const field = 'rounded border border-slate-400 px-2 py-1'
 
-export default function ScreeningDraftsPanel({ content, onLoad, disabled, onBusy, onDirtyChange }) {
+export default function ScreeningDraftsPanel({ content, onLoad, disabled, onBusy, onDirtyChange, initialDraftId }) {
   const [drafts, setDrafts] = useState([]), [draft, setDraft] = useState(null), [version, setVersion] = useState(0)
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [pendingAction, setPendingAction] = useState(null)
   const [baseline, setBaseline] = useState(() => JSON.stringify(content))
   const pendingSave = useRef(null)
   const dirty = JSON.stringify(content) !== baseline
+  useEffect(() => {
+    if (!initialDraftId) return undefined
+    let active = true
+    setBusy(true); onBusy(true)
+    request(`${endpoint}&draftId=${encodeURIComponent(initialDraftId)}`).then(result => {
+      if (!result.ok) throw Error(result.data.error || 'Kunde inte öppna utkastet.')
+      if (!active) return
+      const record = result.data.draft, latest = record.versions.at(-1)
+      onLoad(structuredClone(latest.content)); setBaseline(JSON.stringify(latest.content))
+      setDraft(record); setVersion(latest.version); setMessage('Utkastet är öppnat. Mottagarvalet är oförändrat.')
+    }).catch(error => { if (active) setMessage(error.message) })
+      .finally(() => { if (active) { setBusy(false); onBusy(false) } })
+    return () => { active = false; onBusy(false) }
+  }, [initialDraftId, onLoad, onBusy])
   useEffect(() => {
     let active = true
     request(endpoint).then(result => {

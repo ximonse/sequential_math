@@ -13,7 +13,7 @@ export default function ScreeningImageEditor({ tasks, onTasks, disabled, editorS
   const [draft, setDraft, editing, setEditing] = useQuestionEditorState(editorState, onEditorState, empty)
   const [query, setQuery] = useState('')
   const [library, setLibrary] = useState([])
-  const [target, setTarget] = useState('options')
+  const [target, setTarget] = useState(null)
   const [uploadName, setUploadName] = useState('')
   const [status, setStatus] = useState('')
   const [uploading, setUploading] = useState(false)
@@ -28,13 +28,24 @@ export default function ScreeningImageEditor({ tasks, onTasks, disabled, editorS
     return () => { active = false }
   }, [])
   function addImage(ref) {
-    if (target === 'images' || ['text', 'name'].includes(draft.responseMode)) {
+    if (target === 'images') {
       if (draft.images.length >= 8) return setStatus('Högst åtta frågebilder.')
       patch({ images: [...draft.images, ref] })
     } else {
       if (draft.options.length >= 12) return setStatus('Högst tolv alternativ.')
       patch({ options: [...draft.options, { id: `option-${crypto.randomUUID()}`, image: ref }] })
     }
+  }
+  function changeMode(responseMode) {
+    const compatible = ['single', 'multiple'].includes(draft.responseMode) && ['single', 'multiple'].includes(responseMode)
+    const clearOptions = !compatible && draft.options.length > 0
+    const trimKey = responseMode !== 'multiple' && draft.correctOptionIds.length > 1
+    if ((clearOptions || trimKey) && !window.confirm(clearOptions
+      ? 'Det nya svarssättet använder andra alternativ. Vill du byta och ta bort de nuvarande alternativen och deras facit? Frågebilderna behålls.'
+      : 'Det nya svarssättet tillåter bara ett rätt alternativ. Vill du byta och behålla det första markerade facit?')) return
+    patch({ responseMode, options: clearOptions ? [] : draft.options,
+      correctOptionIds: clearOptions ? [] : trimKey ? draft.correctOptionIds.slice(0, 1) : draft.correctOptionIds })
+    setTarget(null)
   }
   async function upload(file) {
     if (!file) return
@@ -80,10 +91,28 @@ export default function ScreeningImageEditor({ tasks, onTasks, disabled, editorS
         <button type="button" className={field} onClick={() => removeQuestion(index)}>Ta bort bildfråga {index + 1}</button>
       </div>)}
       <label className="block">Bildfrågans text<textarea className={`${field} block w-full`} value={draft.promptSv} maxLength={2000} onChange={event => patch({ promptSv: event.target.value })} /></label>
-      <label className="block">Bildfrågans svarssätt <select className={field} value={draft.responseMode} onChange={event => patch({ responseMode: event.target.value, options: [], correctOptionIds: [] })}>
+      <label className="block">Bildfrågans svarssätt <select className={field} value={draft.responseMode} onChange={event => changeMode(event.target.value)}>
         <option value="single">Välj en bild</option><option value="multiple">Välj flera bilder</option><option value="name">Välj namn</option><option value="text">Skriv svar</option>
       </select></label>
-      {['single', 'multiple'].includes(draft.responseMode) && <label className="block">Lägg bilden som <select className={field} value={target} onChange={event => setTarget(event.target.value)}><option value="options">Svarsalternativ</option><option value="images">Frågebild</option></select></label>}
+      <section className="screening-image-role" aria-label="Frågebild">
+        <h4>Fråga <span className="screening-note">Bilder som eleven tittar på</span></h4>
+        <p className="screening-note">Frågebilder visas ovanför svaret och går inte att välja som svar.</p>
+        <div className="screening-image-items">{draft.images.map((image, index) => <div key={index}><ScreeningImage image={image} context={context} /><button type="button" onClick={() => patch({ images: draft.images.filter((_, i) => i !== index) })}>Ta bort frågebild {index + 1}</button></div>)}</div>
+        <button type="button" className={field} onClick={() => setTarget('images')}>Lägg till frågebild</button>
+      </section>
+      <section className="screening-image-role" aria-label="Svarsalternativ">
+        <h4>Svar <span className="screening-note">{isChoiceTask(draft) ? 'Alternativ som eleven väljer mellan' : 'Eleven skriver sitt svar'}</span></h4>
+        {['single', 'multiple'].includes(draft.responseMode) && <button type="button" className={field} onClick={() => setTarget('options')}>Lägg till bildalternativ</button>}
+        {draft.responseMode === 'name' && <button type="button" className={field} onClick={() => patch({ options: [...draft.options, { id: `option-${crypto.randomUUID()}`, labelSv: '' }] })} disabled={draft.options.length >= 12}>Lägg till namnalternativ</button>}
+        {isChoiceTask(draft) && <fieldset><legend className="font-semibold">Alternativ och facit</legend>{draft.options.map((option, index) => <div key={option.id} className="screening-answer-option">
+          {option.image && <ScreeningImage image={option.image} context={context} />}
+          {draft.responseMode === 'name' ? <input aria-label={`Namn alternativ ${index + 1}`} className={field} value={option.labelSv} maxLength={100} onChange={event => patch({ options: draft.options.map(item => item.id === option.id ? { ...item, labelSv: event.target.value } : item) })} /> : <span>Bild {index + 1}</span>}
+          <label><input type="checkbox" checked={draft.correctOptionIds.includes(option.id)} onChange={event => patch({ correctOptionIds: event.target.checked ? draft.responseMode === 'multiple' ? [...draft.correctOptionIds, option.id] : [option.id] : draft.correctOptionIds.filter(id => id !== option.id) })} /> Rätt alternativ {index + 1}</label>
+          <button type="button" onClick={() => patch({ options: draft.options.filter(item => item.id !== option.id), correctOptionIds: draft.correctOptionIds.filter(id => id !== option.id) })}>Ta bort alternativ {index + 1}</button>
+        </div>)}</fieldset>}
+      </section>
+      {target && <section className="screening-image-picker" role="region" aria-label={target === 'images' ? 'Välj bild till frågan' : 'Välj bild till svarsalternativ'}>
+      <div className="screening-bar"><h4>{target === 'images' ? 'Välj bild till frågan' : 'Välj bild till svarsalternativ'}</h4><button type="button" onClick={() => setTarget(null)}>Klar med bildval</button></div>
       <details><summary className="cursor-pointer font-semibold">Välj ur figurbanken</summary>
         <label>Sök figur <input type="search" className={field} value={query} onChange={event => setQuery(event.target.value)} /></label>
         <div className="screening-library">{searchScreeningFigures(query).map(figure => <button key={figure.id} type="button" aria-label={`Lägg till ${figure.nameSv}`} onClick={() => addImage({ source: 'bank', id: figure.id, version: figure.version })}>
@@ -98,14 +127,7 @@ export default function ScreeningImageEditor({ tasks, onTasks, disabled, editorS
           <button type="button" className="block" onClick={() => hideImage(image.id)}>Dölj {image.nameSv}</button>
         </div>)}</div>
       </details>
-      {draft.images.map((image, index) => <div key={index} className="inline-flex flex-col"><ScreeningImage image={image} context={context} /><button type="button" onClick={() => patch({ images: draft.images.filter((_, i) => i !== index) })}>Ta bort frågebild {index + 1}</button></div>)}
-      {draft.responseMode === 'name' && <button type="button" className={field} onClick={() => patch({ options: [...draft.options, { id: `option-${crypto.randomUUID()}`, labelSv: '' }] })} disabled={draft.options.length >= 12}>Lägg till namnalternativ</button>}
-      {isChoiceTask(draft) && <fieldset><legend className="font-semibold">Alternativ och facit</legend>{draft.options.map((option, index) => <div key={option.id} className="flex flex-wrap items-center gap-2">
-        {option.image && <ScreeningImage image={option.image} context={context} />}
-        {draft.responseMode === 'name' ? <input aria-label={`Namn alternativ ${index + 1}`} className={field} value={option.labelSv} maxLength={100} onChange={event => patch({ options: draft.options.map(item => item.id === option.id ? { ...item, labelSv: event.target.value } : item) })} /> : <span>Bild {index + 1}</span>}
-        <label><input type="checkbox" checked={draft.correctOptionIds.includes(option.id)} onChange={event => patch({ correctOptionIds: event.target.checked ? draft.responseMode === 'multiple' ? [...draft.correctOptionIds, option.id] : [option.id] : draft.correctOptionIds.filter(id => id !== option.id) })} />Rätt alternativ {index + 1}</label>
-        <button type="button" onClick={() => patch({ options: draft.options.filter(item => item.id !== option.id), correctOptionIds: draft.correctOptionIds.filter(id => id !== option.id) })}>Ta bort alternativ {index + 1}</button>
-      </div>)}</fieldset>}
+      </section>}
       <section aria-label="Elevförhandsvisning av bildfråga" className="rounded border border-slate-300 bg-white p-2">
         <p className="font-semibold">Elevförhandsvisning</p><p>{draft.promptSv}</p>
         <ScreeningImageQuestion task={draft} selected={previewSelection} onChange={setPreviewSelection} context={context} />

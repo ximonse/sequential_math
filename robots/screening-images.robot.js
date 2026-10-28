@@ -96,6 +96,7 @@ test('Teacher builds with bank and uploaded library image; hiding preserves assi
   await panel.getByRole('checkbox', { name: 'Räkna ut 268 + 431.', exact: true }).uncheck()
   await panel.getByText('Lägg till bildfrågor', { exact: true }).click()
   await panel.getByLabel('Bildfrågans text', { exact: true }).fill('Vilken bild visar en triangel?')
+  await panel.getByRole('button', { name: 'Lägg till bildalternativ', exact: true }).click()
   await panel.getByText('Välj ur figurbanken', { exact: true }).click()
   await panel.getByRole('button', { name: 'Lägg till Kvadrat', exact: true }).click()
   await panel.getByText('Mitt bildbibliotek', { exact: true }).click()
@@ -122,6 +123,7 @@ test('Teacher builds with bank and uploaded library image; hiding preserves assi
   const imageId = assignment.items[0].taskSnapshot.options[1].image.id
   await openDispatch(page)
   await panel.getByText('Lägg till bildfrågor', { exact: true }).click()
+  await panel.getByRole('button', { name: 'Lägg till bildalternativ', exact: true }).click()
   await panel.getByText('Mitt bildbibliotek', { exact: true }).click()
   await panel.getByRole('button', { name: 'Dölj Privat triangel', exact: true }).click()
   await expect(panel.getByRole('button', { name: 'Lägg till Privat triangel', exact: true })).toHaveCount(0)

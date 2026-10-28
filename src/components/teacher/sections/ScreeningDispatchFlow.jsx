@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { diagnosticCatalog } from '../../../domains/arithmetic/diagnosticCatalog.browser'
 import useScreeningDelivery from './useScreeningDelivery'
 import { applyScreeningLimits } from './screeningRecipients'
@@ -17,10 +17,12 @@ import '../../../dev/diagnosticGridPrototype.css'
 const button = 'rounded border border-slate-400 px-2 py-0.5 text-sm disabled:opacity-50'
 const primary = `${button} border-indigo-600 bg-indigo-600 font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700`
 
-export default function ScreeningDispatchFlow({ context, library, initialSource, onClose, onDirtyChange }) {
+export default function ScreeningDispatchFlow({ context, library, initialSource, initialDraftId, onClose, onDirtyChange }) {
   const { draft, setDraft, busy: draftBusy, setBusy: setDraftBusy, dirty: draftDirty, setDirty: setDraftDirty } = useScreeningDraft()
-  const [step, setStep] = useState(initialSource ? 'content' : 'start')
-  const [mode, setMode] = useState(initialSource ? 'reuse' : null)
+  const [draftLoaded, setDraftLoaded] = useState(!initialDraftId)
+  const loadDraft = useCallback(value => { setDraft(value); setDraftLoaded(true) }, [setDraft])
+  const [step, setStep] = useState(initialSource || initialDraftId ? 'content' : 'start')
+  const [mode, setMode] = useState(initialSource ? 'reuse' : initialDraftId ? 'new' : null)
   const [source, setSource] = useState({ classId: initialSource?.classId || '', assignment: initialSource || null, title: initialSource?.titleSv || '' })
   const [recipients, setRecipients] = useState([])
   const { delivery, busy, send } = useScreeningDelivery(library.reload)
@@ -34,7 +36,7 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
   const customTasks = [...draft.writtenTasks, ...draft.imageTasks, ...(draft.customPrompt.trim() ? [{ promptSv: draft.customPrompt, gridEnabled: draft.customGrid, drawingEnabled: draft.customDrawing }] : [])]
   const tasks = reuse ? (source.assignment?.items || []).map(item => item.taskSnapshot || diagnosticCatalog.findTask(item.taskId))
     : [...draft.selectedTasks.map(id => ({ ...diagnosticCatalog.findTask(id), ...draft.itemOptions[id] })), ...customTasks]
-  const validContent = title.trim().length > 0 && tasks.length > 0 && (reuse ? Boolean(source.assignment) : customTasks.length <= 12)
+  const validContent = draftLoaded && title.trim().length > 0 && tasks.length > 0 && (reuse ? Boolean(source.assignment) : customTasks.length <= 12)
   const recipientIssue = plan.withoutClass.length > 0 || plan.missing > 0 || plan.unavailablePupils > 0
     || limits.blocked.length > 0 || plan.dispatches.some(item => library.loaded[item.classId]?.error)
   const canReview = validContent && plan.pupils.length > 0 && !recipientIssue && !limits.pending.length
@@ -68,7 +70,7 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
   const completed = delivery && delivery.dispatches.every(item => delivery.results[item.classId]?.ok)
   const steps = ['content', 'recipients', 'review']
   const names = ['Innehåll', 'Mottagare och inställningar', 'Kontrollera och dela ut']
-  return <div className="mt-3 text-sm">
+  return <div className="screening-dispatch-editor mt-3 text-sm">
     {step !== 'start' && step !== 'receipt' && <ol aria-label="Utdelningsflöde" className="mb-3 flex flex-wrap gap-x-2 gap-y-1 text-xs text-slate-600">{steps.map((value, index) => <li key={value} aria-current={step === value ? 'step' : undefined} className={`rounded px-1.5 py-0.5 ${step === value ? 'bg-indigo-50 font-semibold text-indigo-700' : ''}`}>{index + 1}. {names[index]}</li>)}</ol>}
     <div hidden={step !== 'start'}>
       <h3 className="font-semibold">Vad vill du dela ut?</h3>
@@ -97,7 +99,7 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
       </div>}
       {/* Keep the editors mounted while navigating so unfinished question drafts survive. */}
       <div hidden={reuse}>
-        <ScreeningDraftsPanel content={draftContent} onLoad={setDraft} disabled={busy || reuse} onBusy={setDraftBusy} onDirtyChange={setDraftDirty} />
+        <ScreeningDraftsPanel initialDraftId={initialDraftId} content={draftContent} onLoad={loadDraft} disabled={busy || reuse} onBusy={setDraftBusy} onDirtyChange={setDraftDirty} />
         <fieldset disabled={busy || draftBusy} className="min-w-0">
         <label className="block">Samlingens namn<input value={draft.titleSv} maxLength={100} onChange={event => patch({ titleSv: event.target.value })} className="ml-2 rounded border border-slate-400 px-1 py-0.5" /></label>
         <ScreeningTaskChoices busy={busy} selectedTasks={draft.selectedTasks} onSelectedTasks={selectedTasks => patch({ selectedTasks })}

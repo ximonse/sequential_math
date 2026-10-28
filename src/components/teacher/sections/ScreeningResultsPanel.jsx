@@ -45,7 +45,11 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
   const waiting = classKey.split(',').filter(Boolean).some(classId => !loaded[classId])
   const collections = useMemo(() => groupCollections(Object.values(loaded).flatMap(item => item.assignments)), [loaded])
   useEffect(() => {
-    if (requestedCollectionId && collections.some(item => item.id === requestedCollectionId)) setCollectionId(requestedCollectionId)
+    if (!requestedCollectionId) return
+    const requestedIds = new Set(requestedCollectionId.split('+'))
+    const match = collections.find(item => item.id === requestedCollectionId
+      || item.members.some(member => requestedIds.has(member.assignmentId)))
+    if (match) setCollectionId(match.id)
   }, [requestedCollectionId, collections])
   const selected = collections.find(item => item.id === collectionId) || null
   const failed = Object.entries(loaded).filter(([, item]) => item.state !== 'ready')

@@ -3,13 +3,18 @@
 ## Aktivt mål och beslutad omfattning 2026-10-28
 
 Simon ska via MCP/API och samordnade skills kunna analysera underlag samt
-skapa granskade generella eller riktade träningsuppdrag och screeningar för
-specifika elever, grupper och klasser. Två likvärdiga ingångar ska fungera:
+skapa granskade generella eller specifika träningsuppdrag och screeningar
+för elever, grupper och klasser. Två likvärdiga ingångar ska fungera:
 
-- Direkt beställning från Simons mål, valda innehåll eller givet material.
+- Generella: direkt beställning från Simons mål, valda innehåll eller givet material.
   Tidigare elevanalys är inget krav för att skapa generellt innehåll.
-- Förslag utifrån en klass, grupp eller elev: tillgängliga svar och arbeten,
-  lärarens avstämning och ett uttryckligt valt undervisningsmål.
+- Specifika: innehållet utformas utifrån analys av just den aktuella klassens,
+  gruppens eller elevens svar och arbeten, lärarens avstämning och valt mål.
+  Utkastet ska visa hur analysens belägg motiverar innehåll och kontraster.
+
+Förtydligat av Simon 2026-10-28: specifik betyder analysbaserad anpassning,
+inte bara att en mottagare har valts. Mottagare är en separat dimension:
+även ett generellt uppdrag kan delas ut till en vald elev, grupp eller klass.
 
 Samma material kan användas för flera mottagare; anpassade varianter är ett
 uttryckligt val. Klassens sammanställning får inte behandlas som varje elevs

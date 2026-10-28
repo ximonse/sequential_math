@@ -6,6 +6,60 @@ const credentials = () => ({ username: 'synthetic-user', password: 'NEVER_OUTPUT
 const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } })
 const marker = { synthetic: true, storage: 'memory', service: 'sequential-math-robots' }
 
+test('account identity is explicit and contains no session or credential fields', async () => {
+  const api = new TeacherApiClient({ baseUrl: 'http://localhost:5391', getCredentials: credentials,
+    fetchImpl: async url => url.endsWith('/mcp-info') ? json(marker) : json({ token: 'NEVER_OUTPUT_TOKEN',
+      teacherId: 'teacher-main', displayName: 'Main Teacher', role: 'super_admin', password: 'NEVER_OUTPUT_PASSWORD', classIds: ['PRIVATE_SCOPE'] }) })
+  assert.deepEqual(await api.getIdentity(), { teacherId: 'teacher-main', displayName: 'Main Teacher', role: 'super_admin' })
+  assert.doesNotMatch(JSON.stringify(await api.getIdentity()), /NEVER_OUTPUT|PRIVATE_SCOPE/u)
+})
+
+test('approved writes require an expected teacher before authentication and reject a different owner before writing', async () => {
+  let logins = 0, writes = 0
+  const fetchImpl = async (url, options) => {
+    if (url.endsWith('/teacher-login')) { logins++; return json({ token: 'NEVER_OUTPUT_TOKEN', teacherId: 'teacher-other' }) }
+    if (options.method === 'POST') writes++
+    return json({ profiles: [] })
+  }
+  const unbound = new TeacherApiClient({ baseUrl: 'https://example.com', mode: 'approved', getCredentials: credentials, fetchImpl })
+  await assert.rejects(unbound.request('/api/teacher-material', { body: { action: 'save' } }), { code: 'teacher_identity_required' })
+  assert.equal(logins, 0)
+  await unbound.request('/api/students')
+  assert.equal(logins, 1)
+  const bound = new TeacherApiClient({ baseUrl: 'https://example.com', mode: 'approved', expectedTeacherId: 'teacher-main', getCredentials: credentials, fetchImpl })
+  await assert.rejects(bound.request('/api/teacher-material', { body: { action: 'save' } }), { code: 'teacher_identity_mismatch' })
+  assert.equal(writes, 0)
+})
+
+test('matching account can save once; reauthentication cannot switch the bound teacher', async () => {
+  let logins = 0, writes = 0
+  const api = new TeacherApiClient({ baseUrl: 'https://example.com', mode: 'approved', expectedTeacherId: 'teacher-main', getCredentials: credentials,
+    fetchImpl: async (url, options) => {
+      if (url.endsWith('/teacher-login')) return json({ token: 'NEVER_OUTPUT_TOKEN', teacherId: ++logins === 1 ? 'teacher-main' : 'teacher-other' })
+      if (options.method === 'POST') { writes++; return json({ savedVersion: 1 }) }
+      return json({}, 401)
+    } })
+  assert.deepEqual(await api.request('/api/teacher-material', { body: { action: 'save' } }), { savedVersion: 1 })
+  assert.equal(writes, 1)
+  await assert.rejects(api.request('/api/students'), { code: 'teacher_identity_mismatch' })
+  assert.equal(logins, 2)
+  assert.equal(writes, 1)
+})
+
+test('unbound preview remains read-only and cannot disguise a save as a preview', async () => {
+  let writes = 0
+  const api = new TeacherApiClient({ baseUrl: 'https://example.com', mode: 'approved', getCredentials: credentials,
+    fetchImpl: async (url, options) => {
+      if (url.endsWith('/teacher-login')) return json({ token: 'NEVER_OUTPUT_TOKEN', teacherId: 'teacher-main' })
+      const body = JSON.parse(options.body)
+      if (body.action !== 'preview') writes++
+      return json({ preview: true })
+    } })
+  assert.deepEqual(await api.request('/api/teacher-material', { body: { action: 'preview' }, readOnly: true }), { preview: true })
+  await assert.rejects(api.request('/api/teacher-material', { body: { action: 'save' }, readOnly: true }), { code: 'teacher_identity_required' })
+  assert.equal(writes, 0)
+})
+
 test('target configuration blocks implicit production, URL credentials, query injection and remote HTTP', () => {
   for (const url of [undefined, 'https://matematik.ximon.se', 'http://localhost:123/a', 'http://user:secret@localhost:123', 'http://localhost:123?token=secret']) {
     assert.throws(() => validateTarget(url), { name: 'Error' })

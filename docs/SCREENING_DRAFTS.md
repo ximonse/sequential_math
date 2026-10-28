@@ -96,3 +96,20 @@ elevuppdrags-ID:n är oförändrade före och efter: inga uppdrag delades ut.
 Kvittens och personanknutet innehåll finns enbart utanför repot. Detta
 verifierar riktig API-/KV-lagring, inte autentiserad visuell produktion eller
 fysisk iPad. Frågorna nås via Screening: dela ut → Utkast för genomgång.
+
+## Återställning till rätt lärarkonto 2026-10-29
+
+Den tidigare importen sparade de åtta utkasten under exportskriptets
+lärarkonto. Den öppna lärarvyn använde ett annat konto och visade därför en
+tom privat lista. Utkasten och alla 64 frågor fanns kvar oförändrade.
+
+Åtta kopior har återställts genom den befintliga inloggade lärarvyn till
+det avsedda kontot; originalen är kvar. Alla frågor, facit, enheter,
+bråkvillkor och räknehäftesval kontrollerades efter serveråterläsning.
+Den redan öppna screeningen sparades separat före återställningen.
+Alla åtta syns under **Screening: dela ut → Materialbibliotek → Privata
+utkast** i det publicerade UI:t från PR #26. Ingen elevutdelning gjordes.
+Personanknutna kvittenser och skärmbild ligger enbart lokalt utanför repot.
+
+Det separata MCP-flödet identifierar nu sitt konto i capabilities och kräver
+uttrycklig kontobindning före sparande mot en godkänd appmiljö; se PUPIL_MCP.md.

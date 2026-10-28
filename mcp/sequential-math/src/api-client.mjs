@@ -25,13 +25,18 @@ const messages = {
 }
 
 export class TeacherApiClient {
-  constructor({ baseUrl, mode = 'synthetic', getCredentials, fetchImpl = fetch, timeoutMs = 15000 }) {
+  constructor({ baseUrl, mode = 'synthetic', expectedTeacherId, getCredentials, fetchImpl = fetch, timeoutMs = 15000 }) {
     this.baseUrl = validateTarget(baseUrl, mode)
     this.mode = mode
+    if (expectedTeacherId !== undefined && (typeof expectedTeacherId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/u.test(expectedTeacherId))) {
+      throw new BridgeError('configuration_required', 'Configure an exact teacher ID locally, without credentials or a display name.')
+    }
+    this.expectedTeacherId = expectedTeacherId
     this.getCredentials = getCredentials
     this.fetch = fetchImpl
     this.timeoutMs = timeoutMs
     this.token = null
+    this.teacherIdentity = null
     this.loginPromise = null
   }
   async raw(path, { body, token, signal } = {}) {
@@ -63,19 +68,38 @@ export class TeacherApiClient {
       if (!login.ok || typeof login.data?.token !== 'string' || !login.data.token) {
         throw new BridgeError('authentication_required', 'The configured teacher account could not be authenticated.')
       }
+      if (this.expectedTeacherId && login.data.teacherId !== this.expectedTeacherId) {
+        throw new BridgeError('teacher_identity_mismatch', 'The authenticated teacher differs from the configured draft owner. No app write was attempted. Check the local account configuration.')
+      }
+      this.teacherIdentity = {
+        teacherId: typeof login.data.teacherId === 'string' ? login.data.teacherId : null,
+        displayName: typeof login.data.displayName === 'string' ? login.data.displayName : '',
+        role: ['teacher', 'school_admin', 'super_admin'].includes(login.data.role) ? login.data.role : null
+      }
       this.token = login.data.token
       return this.token
     })().finally(() => { this.loginPromise = null })
     return this.loginPromise
+  }
+  async getIdentity(signal) {
+    await this.authenticate(signal)
+    if (!this.teacherIdentity?.teacherId) throw new BridgeError('invalid_response', 'The app did not identify the authenticated teacher. No draft owner is confirmed.')
+    return { ...this.teacherIdentity }
   }
   async request(path, { body, readOnly = !body, signal } = {}) {
     // Only fixed app routes built by the adapter are accepted; no arbitrary URL/proxy tool.
     if (!/^\/api\/(?:students(?:\?|$)|teacher-material(?:\?|$)|teacher-pupil-labels$|teacher-students\/[A-Za-z0-9_-]+\?)/u.test(path)) {
       throw new BridgeError('unsupported_route', 'This adapter does not expose that app operation.')
     }
+    const previewOnly = readOnly && (path === '/api/teacher-material' && body?.action === 'preview'
+      || /^\/api\/teacher-students\/[A-Za-z0-9_-]+\?/u.test(path) && body?.action === 'draft')
+    if (body && !previewOnly && this.mode === 'approved' && !this.expectedTeacherId) {
+      throw new BridgeError('teacher_identity_required', 'Set MATH_MCP_EXPECTED_TEACHER_ID to the intended teacher account before saving private drafts. Read the connection identity and compare it with the teacher review account.')
+    }
     let result = await this.raw(path, { body, token: await this.authenticate(signal), signal })
     if (result.status === 401) {
       this.token = null
+      this.teacherIdentity = null
       // Only reads are automatically retried. A report write is never replayed behind the caller's back.
       if (readOnly) result = await this.raw(path, { body, token: await this.authenticate(signal), signal })
     }

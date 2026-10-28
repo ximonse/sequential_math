@@ -7,6 +7,10 @@ description: Skapa generella eller analysspecifika träningsuppdrag och screenin
 
 Läs docs/PUPIL_MATERIAL.md för aktuellt kontrakt och vad API/MCP faktiskt stödjer.
 Kontrollera math_get_capabilities innan du lovar lagring eller utdelning.
+Jämför teacher-kontot med lärarvyn som ska öppna utkastet: privata utkast
+under ett annat export-/administratörskonto syns inte där. I approved-läge
+krävs MATH_MCP_EXPECTED_TEACHER_ID före sparande. Bind bara det avsedda
+kontot; kopiera inte automatiskt den första tillgängliga identiteten.
 Använd math_preview_material när materialPreview stöds. Servern validerar
 förslaget och mottagarlistan utan lagring. MCP stöder sparade
 materialutkast med separat skrivflagga, men saknar godkännande/utdelning.

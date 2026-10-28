@@ -1877,7 +1877,7 @@
       "title": "Generella och analysspecifika uppdrag/screeningar",
       "status": "Byggt",
       "purpose": "Skapa generella uppdrag/screeningar från lärarinstruktion eller givet material, och specifika utifrån analys av just klassen, gruppen eller eleven. Välj mottagare separat.",
-      "next": "Efter Simons uttryckliga publiceringsbeslut: pusha verifierad integration, uppdatera PR #22 och kontrollera CI/preview. Därefter klargör AI-miljö före verkliga elevdata.",
+      "next": "Pusha den verifierade integrationen till PR #22 och kontrollera CI/preview; sammanslagning till produktion kräver separat klartecken.",
       "acceptance": "Båda ingångarna fungerar för träning och screening till elev, grupp och klass. Utkast visar ursprung, mål, innehåll, facit/bedömningssätt och exakta mottagare. Utdelning kräver granskad version, aktuell behörighet och medlemskap; återförsök ger inga dubletter och delfel syns. Eleven kan öppna, svara och återladda; läraren ser uppföljningen. Screening ändrar inte vanlig mastery. Specifika utkast visar vilka analysbelägg som motiverar innehåll och kontraster; en vald mottagare ensam gör inte uppdraget specifikt.",
       "requires": [
         "ai-pupil-mcp",
@@ -2325,14 +2325,14 @@
       "title": "Koppla MCP-material till aktuell screeningredigering",
       "status": "Lokalt klart",
       "purpose": "Sammanföra det versionsgranskade AI-materialet med publicerade fråge- och utkastfunktioner utan parallella utdelningar.",
-      "next": "Efter Simons uttryckliga publiceringsbeslut: pusha verifierad integration, uppdatera PR #22 och kontrollera CI/preview. Därefter klargör AI-miljö före verkliga elevdata.",
+      "next": "Pusha den verifierade integrationen till PR #22 och kontrollera CI/preview; sammanslagning till produktion kräver separat klartecken.",
       "acceptance": "Generellt och analysspecifikt material kan bearbetas, granskas som ny version och delas ut först efter godkännande av exakt innehåll och mottagare. Befintlig screeningredigering och kvittenser fungerar fortsatt.",
       "requires": [
         "ai-pupil-material"
       ],
       "affects": [],
-      "decision": "2026-10-29: Simon återupptar målet efter UI-paus. Aktuellt publicerat UI från PR #26 ska återanvändas. Ingen produktionspublicering ingår i återupptagandet.\n2026-10-29: Befintliga frågeredigerare används direkt i materialgranskningen. Ingen tredje utkastlagring eller automatisk kopiering mellan fristående screeningutkast och analysmaterial införs.",
-      "evidence": "2026-10-29: origin/master 177c92d innehåller screeningutkast, egna facit, frågeredigering, samlat mottagarval och utdelningskvitton. Integrationsgrenen sammanför dessa med materialets versionsgranskning; ännu inte verifierad.\n2026-10-29: Sammanslagen lokal bas: 193 testfiler/951 tester, 19 MCP-tester, produktionsbuild samt tio syntetiska webbläsartester godkända. Ingen push eller produktion.\n2026-10-29: MaterialScreeningEditor återanvänder katalogval, egna facit och bildfrågor. Ny version kräver nytt godkännande. Halvfärdiga frågor bevaras per version under sessionen och blockerar godkännande/utdelning tills sparade eller avbrutna. Ritytan bevaras vid facitändring (rött före rättning). Slutkontroll: 193 testfiler/951 tester, 19 MCP-prov på sammanslagen bas, produktionsbuild och 12 syntetiska webbläsartester godkända. Fylld liggande/stående Chromium-vy visuellt granskad. Skill validerad. Lokal gren codex/material-integration, inget pushat.",
+      "decision": "2026-10-29: Simon återupptar målet efter UI-paus. Aktuellt publicerat UI från PR #26 ska återanvändas. Ingen produktionspublicering ingår i återupptagandet.\n2026-10-29: Befintliga frågeredigerare används direkt i materialgranskningen. Ingen tredje utkastlagring eller automatisk kopiering mellan fristående screeningutkast och analysmaterial införs.\n2026-10-29: Simon beställer återställning av dagens individuella screeningar och fortsatt arbete utan rutinmässiga stopp. Åtta privata utkast återställdes via befintlig inloggad lärarvy till rätt konto; originalen bevarades.",
+      "evidence": "2026-10-29: origin/master 177c92d innehåller screeningutkast, egna facit, frågeredigering, samlat mottagarval och utdelningskvitton. Integrationsgrenen sammanför dessa med materialets versionsgranskning; ännu inte verifierad.\n2026-10-29: Sammanslagen lokal bas: 193 testfiler/951 tester, 19 MCP-tester, produktionsbuild samt tio syntetiska webbläsartester godkända. Ingen push eller produktion.\n2026-10-29: MaterialScreeningEditor återanvänder katalogval, egna facit och bildfrågor. Ny version kräver nytt godkännande. Halvfärdiga frågor bevaras per version under sessionen och blockerar godkännande/utdelning tills sparade eller avbrutna. Ritytan bevaras vid facitändring (rött före rättning). Slutkontroll: 193 testfiler/951 tester, 19 MCP-prov på sammanslagen bas, produktionsbuild och 12 syntetiska webbläsartester godkända. Fylld liggande/stående Chromium-vy visuellt granskad. Skill validerad. Lokal gren codex/material-integration, inget pushat.\n2026-10-29: Orsak till saknade utkast: tidigare import använde ett annat lärarkonto än den öppna lärarvyn. Alla åtta källutkast fanns kvar med exakt innehåll. Åtta kopior med 64 frågor återlästa och verifierade på rätt konto, även enheter, bråkvillkor och räknehäfte. Alla åtta verifierades i produktionslistan. Inga elevutdelningar. Personanknutet innehåll och kvittenser finns enbart utanför repot.\n2026-10-29: MCP visar autentiserad läraridentitet utan session/hemligheter. approved-sparande kräver MATH_MCP_EXPECTED_TEACHER_ID; fel konto avvisas före appskrivning även efter återinloggning. Osparad förhandsvisning kvarstår. Fyra kontoprover och SDK-identitetskontroll, totalt 23 MCP-prov godkända; kontoprover var röda före implementation. Inga verkliga elevdata användes i MCP-proven. Uppdaterad skill validerad.",
       "issue": "",
       "kind": "feature",
       "tasks": [
@@ -2349,6 +2349,11 @@
         {
           "id": "integration-verify",
           "text": "Verifiera ny version, nytt godkännande och oförändrat diagnostikflöde syntetiskt",
+          "done": true
+        },
+        {
+          "id": "teacher-account-binding",
+          "text": "Visa inloggat MCP-konto och kräv uttrycklig kontobindning för sparande mot godkänd appmiljö",
           "done": true
         }
       ]

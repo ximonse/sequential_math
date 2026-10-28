@@ -105,6 +105,21 @@ tillåter bara loopback och kräver robotappens minneslagringsmarkör före
 inloggning. Lärarkonto läses från processens `MATH_TEACHER_USER` och
 `MATH_TEACHER_PASS`; dessa skickas aldrig som verktygsargument eller resultat.
 
+`math_get_capabilities` visar nu `teacher` med kontots `teacherId`, visningsnamn
+och roll från inloggningen. Jämför kontot med den lärarvy där materialet ska
+granskas. Samma klasser eller administratörsroll innebär inte samma privata
+utkastlista. Varken inloggningstoken, lösenord eller klasslista ingår i identiteten.
+
+I läget `approved` kräver rapportsparande och materialsparande dessutom
+`MATH_MCP_EXPECTED_TEACHER_ID` med det avsedda kontots exakta ID. Saknad
+bindning blockerar skrivningen före inloggning; avvikande konto blockerar
+appanropet före sparande, även efter återinloggning. Capabilities visar
+`expectedTeacherId`, `accountBindingRequiredForWrites` och avstängda
+skrivmöjligheter tills bindningen finns. Att sätta skrivflaggan räcker inte.
+Kontobindningen väljer ingen annan ägare och utökar ingen behörighet.
+Osparad material- och analysförhandsvisning fungerar fortsatt utan bindning.
+Syntetiska demoövningar kräver ingen verklig kontokonfiguration.
+
 `MATH_MCP_DATA_MODE=approved` tillåter uttryckligt konfigurerad HTTPS-app eller
 loopback. Det är en operatörsinställning, inte ett verktygsargument eller ett
 bevis på godkänd dataöverföring. Verkliga elevdata kräver separat klarlagd,

@@ -2,6 +2,7 @@
 // It mirrors the Upstash client's behavior (JSON values in, parsed values out)
 // and emulates the few Lua scripts the API runs through kv.eval.
 import { STUDENT_CAS_SCRIPT } from '../api/_studentStore.js'
+import { SCREENING_DRAFT_CAS } from '../api/_screeningDraftStore.js'
 import { emulateAttentionArchive } from '../api/testHelpers/attentionArchiveKv.js'
 import { CREATE_DIAGNOSTIC_ASSIGNMENT_SCRIPT, OPEN_DIAGNOSTIC_ATTEMPT_SCRIPT,
   STOP_DIAGNOSTIC_ASSIGNMENT_SCRIPT } from '../api/_diagnosticAssignmentStore.js'
@@ -38,6 +39,15 @@ export const kv = {
   async sadd(key, ...members) { const set = sets.get(key) || new Set(); sets.set(key, set); let n = 0; for (const m of members.flat()) { if (!set.has(m)) { set.add(m); n++ } } return n },
   async srem(key, ...members) { const set = sets.get(key); if (!set) return 0; let n = 0; for (const m of members.flat()) if (set.delete(m)) n++; return n },
   async eval(script, keys = [], args = []) {
+    if (script === SCREENING_DRAFT_CAS) {
+      const previous = values.get(keys[0])
+      if ((previous?.revision || 0) !== Number(args[0])) return 0
+      if (!previous && (sets.get(keys[1])?.size || 0) >= 100) return -1
+      values.set(keys[0], parse(args[1]))
+      if (!sets.has(keys[1])) sets.set(keys[1], new Set())
+      sets.get(keys[1]).add(args[2])
+      return 1
+    }
     // The production archive uses a Redis set; expose it to the shared Lua emulator.
     if (keys[3]?.startsWith('attention_passes:')) {
       values.set(keys[3], [...(sets.get(keys[3]) || [])])

@@ -1745,7 +1745,7 @@
       "title": "Egna självrättande screeningfrågor",
       "status": "Beslut behövs",
       "purpose": "Läraren anger fryst facit för egna frågor med samma bevarade räknehäfte och rättningskedja som NCM.",
-      "next": "Beslut om att även publicera det separat byggda gransknings- och utdelningsflödet; därefter lärargranska aktuella åtta individuella versioner och dela ut utan att kringgå godkännandet.",
+      "next": "Publicera den separat byggda utkastfunktionen efter mandat; spara de åtta samlingarna för lärarens genomgång och revidering före eventuell utdelning.",
       "acceptance": "Tal, decimaler, bråk/procent och exakta svar rättas utan facitläckage eller påverkan på mastery. Gamla skrivfrågor är fortsatt lärarbedömda.",
       "requires": [
         "dispatch"
@@ -1753,7 +1753,7 @@
       "affects": [
         "matrix"
       ],
-      "decision": "2026-10-28: Simon väljer egna självrättande frågor, åtta varierade frågor per elev. Inget publiceringsmandat för kod har givits. 2026-10-28: Simon ger uttryckligt publiceringsmandat. Separat gren från origin/master; övriga opublicerade ändringar i feature/more-figures ingår inte. Publiceringsmandatet genomfört via separat PR23. Utdelningen har inte utförts: assignment-authoring kräver aktuell innehålls-/mottagargranskning genom serverns godkännandeflöde; det separata materialgranskningsflödet i arbetsgrenen är ännu opublicerat och ingick inte i denna isolerade publicering.",
+      "decision": "2026-10-28: Simon väljer egna självrättande frågor, åtta varierade frågor per elev. Inget publiceringsmandat för kod har givits. 2026-10-28: Simon ger uttryckligt publiceringsmandat. Separat gren från origin/master; övriga opublicerade ändringar i feature/more-figures ingår inte. Publiceringsmandatet genomfört via separat PR23. Utdelningen har inte utförts: assignment-authoring kräver aktuell innehålls-/mottagargranskning genom serverns godkännandeflöde; det separata materialgranskningsflödet i arbetsgrenen är ännu opublicerat och ingick inte i denna isolerade publicering. 2026-10-28: Simon beställer nu först möjligheten till privata utkast för genomkoll och revidering. Den avgränsade funktionen screening-drafts är lokalt byggd; detta sjok omfattar inte elevutdelning eller hela den äldre materialmodulen.",
       "evidence": "2026-10-28 lokalt: validerat fryst answerKey, lärarredigerare, facitsekretess, kopiering, strikt bråkform/nämnare och enheter samt resultat via befintlig observationskedja. 189 testfiler/940 tester, build, riktad lint och karta godkända. Ny robot passerar separat och i hela körningen; syntetiska elever, sparande/omladdning, exakt mottagare och orörd mastery. Renderade liggande/stående iPadstorlekar samt lärarvyer granskade. Bred robotkörning: 155 godkända, 6 misslyckade, 4 överhoppade; samtliga sex passerade separat med en arbetare. Ingen helt grön gemensam körning påstås. Se docs/SCREENING_CUSTOM_ANSWER_KEYS.md. Åtta individuella uppdrag med totalt 64 frågor lokalt validerade utanför repot. Ingen push, publicering eller elevutdelning. Arbetsgrenens tidigare ändringar ingår inte i publiceringsmandatet. Publiceringskandidaten baseras på 05748fb och utelämnar det ännu opublicerade materialförhandsvisnings-API:t och dess dokumentation. Isolerad kandidat från aktuell origin/master: 173 testfiler/872 tester, produktionsbuild, arkitekturkontroll samt 10 riktade robotfall med en arbetare godkända. Robotfallen omfattar egna facit, NCM, tillbaka/redigera, avslut, gruppresultat och bildfrågor. Inga andra arbetsgrensändringar följer med. 2026-10-28 publicerat: PR https://github.com/ximonse/sequential_math/pull/23 sammanslagen till master med SHA16ce82271337628a1b1a3396d9be0ee90f303958 efter gröna GitHub quality/documentation och READY preview. Vercel sekvens prj_EoQGQufPrEgDHwHr6FlnFpd9IwNo, team_bsg7SgXOl9BGH3U8wHz4gpg1, produktionsdeployment dpl_BbXaS6ECwFFnHtA36qJLRwKfPsj2 READY med matematik.ximon.se som alias och exakt samma SHA. Aktiv domän serverar index-Dry9GKK5.js med nya frågeredigeraren. Autentiserad lärarläsning verifierar att de åtta avsedda mottagarna fortfarande är utdelningsbara i rätt klass och grupp, 15 gruppmedlemmar totalt. Inga individuella uppdrag skapade och inga elevsvar ändrade. Ingen autentiserad visuell produktions-QA eller fysisk iPadverifiering påstås.",
       "issue": "",
       "kind": "funktion",
@@ -1781,6 +1781,47 @@
         {
           "id": "release-code",
           "text": "Publicera det avgränsade facitstödet via GitHub och verifiera aktiv produktionsversion.",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "screening-drafts",
+      "area": "Dela ut",
+      "title": "Sparade screeningutkast för genomgång och revidering",
+      "status": "Lokalt klart",
+      "purpose": "Skapa, spara, öppna, förhandsvisa och revidera frågesamlingar privat innan utdelning.",
+      "next": "Publicera separat gren genom GitHub efter grön CI, verifiera aktiv produktion, spara och återläs åtta utkast utan elevutdelning.",
+      "acceptance": "Utkast och äldre versioner kan läsas efter omladdning. Frågor, facit och pågående frågeredigering bevaras. Sparande skapar inga elevuppdrag. Samtidiga ändringar skrivs inte över.",
+      "requires": [
+        "dispatch"
+      ],
+      "affects": [
+        "custom-screening-answer-keys"
+      ],
+      "decision": "2026-10-28: Simon beställer en funktion i appen för att skapa utkast för genomkoll och revidering. Avgränsat till screeningens befintliga frågeredigerare. Publicering är separat. 2026-10-28: Simon ger uttryckligt mandat att publicera utkastfunktionen och lägga in de åtta förberedda samlingarna som privata utkast.",
+      "evidence": "Befintlig opublicerad materialgranskning inspekterad: dess redigerare ändrar rubrik/mål, men saknar frågeredigering. Återanvänd befintliga frågekomponenter och samma CAS/idempotensprincip; ingen parallell bred materialpubliceringsmodul införs. 2026-10-28 lokalt byggt: privata screeningutkast via befintlig adminbegränsad route, atomisk CAS och idempotent kvittens, 20 oföränderliga versioner och 100 utkast per konto. Befintliga frågor/facit/bildfrågor/arbetsytor och ofullständig frågeredigering sparas; läsbar förhandsvisning, versionsval, kopia och osparat-varning. Inget mottagarval eller elevuppdrag sparas. 174 testfiler/877 tester och build godkända; riktad lint, arkitektur och karta godkända. Tio riktade browserfall gröna, därefter utökad fråge-/facitrevidering och arbetslägeskontroll; navigeringens R2-fel reproducerat rött före fix, följt av fyra gröna omkörda fall. Förlorad serverrespons, samtidig ändring, privat läraråtkomst, elevnekad åtkomst och orörda elevdata verifierade. Renderade liggande/stående iPadstorlekar granskade. Ingen fysisk iPad, riktig KV, push eller produktionsverifiering för denna funktion. Åtta stabila privata utkastbegäranden med 64 frågor förberedda utanför repot, inget sparat i appen. Kontrakt: docs/SCREENING_DRAFTS.md.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "store",
+          "text": "Privat versionslagring med konflikt- och återförsöksskydd.",
+          "done": true
+        },
+        {
+          "id": "editor",
+          "text": "Skapa, öppna och revidera frågor, facit och ofullständiga frågeutkast.",
+          "done": true
+        },
+        {
+          "id": "review",
+          "text": "Läsbar förhandsvisning och historiska versioner utan utdelning.",
+          "done": true
+        },
+        {
+          "id": "verify",
+          "text": "API-/lagringstester, browserrobot, renderade lärarvyer och build.",
           "done": true
         }
       ]
@@ -2380,6 +2421,16 @@
     {
       "source": "custom-screening-answer-keys",
       "target": "matrix",
+      "kind": "påverkar"
+    },
+    {
+      "source": "dispatch",
+      "target": "screening-drafts",
+      "kind": "kräver"
+    },
+    {
+      "source": "screening-drafts",
+      "target": "custom-screening-answer-keys",
       "kind": "påverkar"
     }
   ],

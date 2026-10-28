@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useQuestionEditorState } from './useQuestionEditorState.js'
 import { searchScreeningFigures } from '../../../domains/arithmetic/screeningFigures.js'
 import { normalizeImageQuestion, isChoiceTask } from '../../../domains/arithmetic/screeningImageQuestions.js'
 import { normalizeScreeningImage } from '../../../lib/normalizeScreeningImage.js'
@@ -8,9 +9,8 @@ import { diagnosticRequest as request } from './diagnosticRequest.js'
 const context = { teacher: true }
 const empty = () => ({ promptSv: '', responseMode: 'single', images: [], options: [], correctOptionIds: [] })
 const field = 'rounded border border-slate-400 px-1 py-0.5'
-export default function ScreeningImageEditor({ tasks, onTasks, disabled }) {
-  const [draft, setDraft] = useState(empty)
-  const [editing, setEditing] = useState(-1)
+export default function ScreeningImageEditor({ tasks, onTasks, disabled, editorState, onEditorState }) {
+  const [draft, setDraft, editing, setEditing] = useQuestionEditorState(editorState, onEditorState, empty)
   const [query, setQuery] = useState('')
   const [library, setLibrary] = useState([])
   const [target, setTarget] = useState('options')

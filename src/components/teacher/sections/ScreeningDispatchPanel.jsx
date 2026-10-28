@@ -1,5 +1,8 @@
 import ScreeningImageEditor from './ScreeningImageEditor.jsx'
 import ScreeningWrittenEditor from './ScreeningWrittenEditor.jsx'
+import ScreeningDraftsPanel from './ScreeningDraftsPanel.jsx'
+import ScreeningDraftPreview from './ScreeningDraftPreview.jsx'
+import { emptyWrittenEditor, emptyImageEditor } from '../../../domains/arithmetic/screeningDraft.js'
 import ScreeningQuestionPreview from './ScreeningQuestionPreview.jsx'
 import { useEffect, useState } from 'react'
 import { diagnosticCatalog } from '../../../domains/arithmetic/diagnosticCatalog.browser'
@@ -17,12 +20,15 @@ const STEP = 'mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full 
 
 // Sends a collection of questions to the recipients picked above. Results are
 // read in the separate results view.
-export default function ScreeningDispatchPanel({ classes, students, recipients = [], teacherGroups = [] }) {
+export default function ScreeningDispatchPanel({ classes, students, recipients = [], teacherGroups = [], onDirtyChange }) {
   const [selectedTasks, setSelectedTasks] = useState([taskIds[0]])
   const [titleSv, setTitleSv] = useState('Screening')
   const [itemOptions, setItemOptions] = useState({})
   const [imageTasks, setImageTasks] = useState([])
   const [writtenTasks, setWrittenTasks] = useState([])
+  const [writtenEditor, setWrittenEditor] = useState(emptyWrittenEditor)
+  const [imageEditor, setImageEditor] = useState(emptyImageEditor)
+  const [draftBusy, setDraftBusy] = useState(false)
   const [customPrompt, setCustomPrompt] = useState('')
   const [customGrid, setCustomGrid] = useState(false)
   const [customDrawing, setCustomDrawing] = useState(false)
@@ -56,6 +62,14 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
   const recipientPlan = buildScreeningDispatches(recipients, { classes, groups: teacherGroups, students })
   const limitCheck = applyScreeningLimits(recipientPlan.dispatches, limits)
   const pendingClassIds = limitCheck.pending.map(item => item.classId).join(',')
+  const draftContent = { titleSv, selectedTasks, itemOptions: Object.fromEntries(selectedTasks.filter(id => itemOptions[id]).map(id => [id, itemOptions[id]])),
+    writtenTasks, imageTasks, customPrompt, customGrid, customDrawing, writtenEditor, imageEditor }
+  function loadDraft(content) {
+    setTitleSv(content.titleSv); setSelectedTasks(content.selectedTasks); setItemOptions(content.itemOptions)
+    setWrittenTasks(content.writtenTasks); setImageTasks(content.imageTasks)
+    setCustomPrompt(content.customPrompt); setCustomGrid(content.customGrid); setCustomDrawing(content.customDrawing)
+    setWrittenEditor(content.writtenEditor); setImageEditor(content.imageEditor); setReuseAssignment(null); setStatus('')
+  }
 
   // The server may only allow accounts on its test list, so check each picked
   // class before offering to send.
@@ -113,6 +127,8 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
   return <section aria-labelledby="screening-dispatch-title" className="mt-4 rounded-lg border border-slate-300 bg-white p-3 shadow-sm">
     <h2 id="screening-dispatch-title" className="text-lg font-semibold text-slate-800">Dela ut screening</h2>
     <p className="mt-1 text-sm text-slate-800">Välj klasser, grupper eller elever i rutan Mottagare överst. Det sparas separat från vanlig träning. Svaren läser du under Screening: resultat.</p>
+    <ScreeningDraftsPanel content={draftContent} onLoad={loadDraft} disabled={busy || Boolean(reuseAssignment)} onBusy={setDraftBusy} onDirtyChange={onDirtyChange} />
+    <fieldset disabled={busy || draftBusy} className="min-w-0">
 
     <h3 className="mt-4 flex items-center font-semibold text-slate-800"><span className={STEP}>1</span>Samling</h3>
     <label className="mt-2 block text-sm font-semibold">Samlingens namn
@@ -163,9 +179,11 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
         itemOptions={itemOptions} onItemOptions={setItemOptions}
         customPrompt={customPrompt} onCustomPrompt={setCustomPrompt} customGrid={customGrid} onCustomGrid={setCustomGrid}
         customDrawing={customDrawing} onCustomDrawing={setCustomDrawing} />
-      <ScreeningImageEditor tasks={imageTasks} onTasks={setImageTasks} disabled={busy} />
+      <ScreeningImageEditor tasks={imageTasks} onTasks={setImageTasks} disabled={busy} editorState={imageEditor} onEditorState={setImageEditor} />
       <ScreeningWrittenEditor tasks={writtenTasks} onTasks={setWrittenTasks} disabled={busy}
+        editorState={writtenEditor} onEditorState={setWrittenEditor}
         maxQuestions={12 - imageTasks.length - (customPrompt.trim() ? 1 : 0)} />
+      <ScreeningDraftPreview content={draftContent} />
       {customCount > 12 && <p role="alert" className="mt-2 text-sm text-amber-900">Samlingen har {customCount} egna frågor. Ta bort frågor så att högst tolv återstår innan du delar ut.</p>}
     </>}
 
@@ -186,5 +204,6 @@ export default function ScreeningDispatchPanel({ classes, students, recipients =
       </button>}
     </div>
     <p className="mt-2 text-sm" role="status">{status}</p>
+    </fieldset>
   </section>
 }

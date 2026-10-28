@@ -2,6 +2,9 @@
 
 Lokalt byggt 2026-10-28. Publicering och faktisk elevutdelning är separata steg.
 
+För privat sparande, genomgång och revidering före utdelning, se den separat
+byggda funktionen [Screeningutkast](SCREENING_DRAFTS.md).
+
 Läraren kan lägga till flera frågor under **Egna frågor med automatisk rättning**
 i Screening: dela ut. Varje fråga har frågetext, facitformat, facit och ett
 valfritt räknehäfte. Frågorna listas med facit före utdelning och kan redigeras

@@ -1,13 +1,13 @@
 import { useState } from 'react'
+import { useQuestionEditorState } from './useQuestionEditorState.js'
 import { screeningAnswerKeyFromText, screeningAnswerKeyLabel } from '../../../domains/arithmetic/screeningAnswerKey.js'
 
 const field = 'rounded border border-slate-400 px-1 py-0.5'
 const empty = () => ({ prompt: '', format: 'number', keyText: '', unit: '', requireDenominator: false, gridEnabled: true })
 const formats = { number: 'Tal', fraction: 'Bråkform', mixed: 'Blandad form', numbers: 'Flera tal i ordning', text: 'Bestämt textsvar' }
 
-export default function ScreeningWrittenEditor({ tasks, onTasks, disabled, maxQuestions = 12 }) {
-  const [draft, setDraft] = useState(empty)
-  const [editing, setEditing] = useState(-1)
+export default function ScreeningWrittenEditor({ tasks, onTasks, disabled, maxQuestions = 12, editorState, onEditorState }) {
+  const [draft, setDraft, editing, setEditing] = useQuestionEditorState(editorState, onEditorState, empty)
   const [error, setError] = useState('')
   const patch = value => { setDraft(previous => ({ ...previous, ...value })); setError('') }
   function save() {

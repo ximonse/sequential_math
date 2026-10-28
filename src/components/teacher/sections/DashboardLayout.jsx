@@ -269,6 +269,7 @@ export default function DashboardLayout({
   // the target of the next dispatch.
   const [resultPicks, setResultPicks] = useState([])
   const reviewDirtyRef = useRef(false)
+  const draftDirtyRef = useRef(false)
   const isScreening = activeWorkspace === 'ncm' || activeWorkspace === 'ncm-results'
 
   function renderPanelContent(id) {
@@ -497,7 +498,8 @@ export default function DashboardLayout({
           Öppna räknehäftet
         </button>
       </section>
-      <ScreeningDispatchPanel classes={classes} students={students} recipients={screeningRecipients} teacherGroups={teacherGroups} />
+      <ScreeningDispatchPanel classes={classes} students={students} recipients={screeningRecipients} teacherGroups={teacherGroups}
+        onDirtyChange={value => { draftDirtyRef.current = value }} />
       </div>
     )
     if (id === 'ncm-results') return (
@@ -546,6 +548,8 @@ export default function DashboardLayout({
               <nav className="grid gap-1" aria-label="Lärarvy">
                 {WORKSPACES.filter(workspace => (!workspace.adminOnly || teacherIsAdmin) && (!workspace.attentionOnly || canViewAttention)).map(workspace => (
                   <button key={workspace.id} type="button" onClick={() => {
+                    if (isScreening && !['ncm', 'ncm-results'].includes(workspace.id) && draftDirtyRef.current
+                      && !window.confirm('Utkastet har osparade ändringar. Vill du lämna dem?')) return
                     if (workspace.id !== activeWorkspace && reviewDirtyRef.current
                       && !window.confirm('Genomgången har osparade ändringar. Vill du lämna dem?')) return
                     if (workspace.id !== activeWorkspace) reviewDirtyRef.current = false

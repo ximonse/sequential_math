@@ -9,6 +9,13 @@ standard, rapportsparande kräver separat startflagga. Inga utdelningsoperatione
 exponeras. Demoläget startar robotappens minnes-KV i en isolerad barnprocess.
 Se `docs/PUPIL_MCP.md` för kontrakt, konfiguration och verifieringsgränser.
 
+Räknehäftets export bygger på `diagnosticNotebookExport.js` (observerbar
+status/text/koordinater) och `DiagnosticNotebookGrid.js`, samma skrivskyddade
+rutnätskomponent för lärarhistorik och lokal PNG. `format=notebook` använder
+underlags-API:ts befintliga åtkomst och källrevision. PNG renderas enbart lokalt
+med befintlig Playwright i `scripts/render-pupil-notebook.mjs`; ingen browser
+eller ny lagring införs i Vercel. Se `docs/PUPIL_NOTEBOOK_EXPORT.md`.
+
 ## Vad är en "domän"?
 
 En domän är ett räknesätt/ämnesområde, t.ex. addition, algebra, bråk.

@@ -30,7 +30,7 @@ after(async () => { await reader?.close(); await writer?.close() })
 
 test('SDK client discovers bounded read tools, prompt and the closed assignment/check-in boundary', async () => {
   const tools = (await reader.listTools()).tools
-  assert.equal(tools.length, 7)
+  assert.equal(tools.length, 8)
   assert.equal(tools.some(t => /save|publish|assign|delete/u.test(t.name)), false)
   assert.equal(tools.every(t => t.annotations.readOnlyHint), true)
   assert.equal(meta.assignmentPublication, false)
@@ -120,7 +120,7 @@ test('a legacy initialize client can list tools without SDK-v2 metadata and stdo
     assert.equal((await wait(1)).result.protocolVersion, '2025-11-25')
     send({ method: 'notifications/initialized' })
     send({ id: 2, method: 'tools/list', params: {} })
-    assert.equal((await wait(2)).result.tools.length, 7)
+    assert.equal((await wait(2)).result.tools.length, 8)
   } finally { child.stdin.end(); child.kill(); lines.close() }
 })
 

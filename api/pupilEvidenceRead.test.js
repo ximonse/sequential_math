@@ -6,6 +6,7 @@ vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mock.auth, withCors
 vi.mock('./_pupilScreeningEvidence.js', () => ({ pupilScreeningEvidence: mock.screening }))
 vi.mock('./_diagnosticApiAccess.js', () => ({ diagnosticApiEnabled: () => mock.enabled, diagnosticTestStudentAllowed: () => mock.allowed }))
 import handler from './teacher-students/[studentId].js'
+import { createDiagnosticGrid, recordDiagnosticGridEvent } from '../src/domains/arithmetic/diagnosticGridModel.js'
 
 const profile = { studentId: 'PUPIL', classId: 'CLASS', auth: { password: 'SECRET' }, problemLog: [
   { timestamp: Date.parse('2026-10-27T10:00Z'), observationId: 'A', correct: false, studentAnswer: 376 }] }
@@ -28,6 +29,27 @@ beforeEach(() => {
 })
 
 describe('pupil evidence live access boundary', () => {
+  it('exports only a revision-checked notebook, preserves source and rejects stale or unauthorized access', async () => {
+    mock.auth.mockResolvedValue({ role: 'school_admin', teacherId: 'ADMIN' })
+    const snapshot = recordDiagnosticGridEvent(createDiagnosticGrid({ attemptId: 'A', taskId: 'T', taskVersion: 1 }),
+      { type: 'write', layer: 'main', position: { row: 2, column: 3 }, before: '', after: '4' }, Date.parse('2026-10-27T10:00Z'))
+    mock.screening.mockResolvedValue({ entries: [{ source: 'screening', timestamp: Date.parse('2026-10-27T10:00Z'),
+      reference: { attemptId: 'A' }, question: { taskId: 'T', taskVersion: 1, facitSv: 'SECRET_FACIT' },
+      detail: { snapshot } }], coverage: {} })
+    const listed = await call({ source: 'screening' })
+    const args = { source: 'screening', ref: listed.data.entries[0].ref, snapshotRevision: listed.data.snapshotRevision, format: 'notebook' }
+    const exported = await call(args)
+    expect(exported.code).toBe(200)
+    expect(exported.data.notebook.status).toMatchObject({ answerEmpty: true, gridHasContent: true })
+    expect(exported.data.notebook.text).toContain('r3: 4')
+    expect(JSON.stringify(exported.data)).not.toMatch(/SECRET_FACIT|password|events/u)
+    expect((await call({ source: 'screening', format: 'notebook' })).code).toBe(400)
+    expect((await call({ ...args, snapshotRevision: 'stale' })).code).toBe(409)
+    mock.access.mockResolvedValueOnce(false)
+    expect((await call(args)).code).toBe(403)
+    expect((await call({ format: 'notebook', ref: (await call()).data.entries[0].ref,
+      snapshotRevision: (await call()).data.snapshotRevision })).code).toBe(404)
+  })
   it('requires authentication and returns only projected evidence to an ordinary authorized teacher', async () => {
     mock.auth.mockResolvedValueOnce(null)
     expect((await call()).code).toBe(401)

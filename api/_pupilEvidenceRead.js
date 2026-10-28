@@ -7,6 +7,7 @@ import { isSchoolAdminRole } from './_teacherRoles.js'
 import { evidencePeriod } from '../src/lib/evidencePeriod.js'
 import { evidenceError, evidencePage, practiceEvidence } from './_pupilEvidence.js'
 import { pupilScreeningEvidence } from './_pupilScreeningEvidence.js'
+import { diagnosticNotebookExport } from '../src/domains/arithmetic/diagnosticNotebookExport.js'
 
 export async function assertPupilEvidenceAccess(req, studentId, classId) {
   const profile = await kv.get(`student:${studentId}`)
@@ -52,5 +53,14 @@ export async function readPupilEvidence(req, auth, studentId, { unpaged = false 
       throw evidenceError(403, 'screening_access_denied', 'Screeningåtkomsten ändrades under läsningen.')
     }
   }
-  return evidencePage({ studentId, classId, source, period, practice, screening, query, unpaged })
+  const result = evidencePage({ studentId, classId, source, period, practice, screening, query, unpaged })
+  if (query.format !== undefined) {
+    if (query.format !== 'notebook' || !query.ref || !query.snapshotRevision) {
+      throw evidenceError(400, 'invalid_format', 'Notebook-export kräver format=notebook, ref och snapshotRevision.')
+    }
+    if (!result.entry?.detail?.snapshot) throw evidenceError(404, 'notebook_unavailable', 'Denna observation har inget sparat räknehäfte.')
+    return { schemaVersion: 1, studentId, classId, snapshotRevision: result.snapshotRevision, ref: query.ref,
+      reference: result.entry.reference, notebook: diagnosticNotebookExport(result.entry.detail.snapshot, result.entry.question) }
+  }
+  return result
 }

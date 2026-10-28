@@ -51,6 +51,7 @@ resultat; för stora resultat avvisas med råd att begränsa frågan.
 | `math_find_pupils` | Namn-/ID-kandidater, klassfilter, limit/offset. Privata lärarnamn kräver `usePrivateNames: true`. |
 | `math_get_pupil_evidence` | Elev-ID, klass, from/to, source; limit/cursor/snapshotRevision. |
 | `math_get_evidence_detail` | Samma period och revision, exakt ref; answer/workspace/events. |
+| `math_get_notebook` | Revisionsbundet räknehäftesoriginal: text eller PNG-bildblock med cellmått. Se PUPIL_NOTEBOOK_EXPORT.md. |
 | `math_preview_analysis` | Regelbaserat rapportunderlag och aktuell historikrevision, utan lagring. |
 | `math_get_analysis_history` | Paginerade rapportversioner; behåll historyRevision. |
 | `math_get_analysis_report` | En rapport: summary/hypotheses/strengths/evidence/check_ins. |

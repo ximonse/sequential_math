@@ -3,6 +3,7 @@ import { readDiagnosticAttempt } from './_diagnosticAttemptStore.js'
 import { summarizeDiagnosticObservation } from '../src/domains/arithmetic/diagnosticObservation.js'
 import { identifyDiagnosticObservationRevision } from '../src/domains/arithmetic/diagnosticObservationRevision.js'
 import { evidenceError, evidencePick } from './_pupilEvidence.js'
+import { diagnosticNotebookStatus } from '../src/domains/arithmetic/diagnosticNotebookExport.js'
 
 const validId = id => typeof id === 'string' && /^[A-Za-z0-9_-]{1,128}$/u.test(id)
 
@@ -40,6 +41,7 @@ export async function pupilScreeningEvidence(studentId, classId, { store = kv, r
         'answerType', 'responseMode', 'images', 'options', 'gridEnabled', 'drawingEnabled', 'correctOptionIds']),
       answer: { status: observation.answerStatus, studentAnswer: observation.explicitAnswer,
         correctAnswer: observation.expectedAnswer, submitted: observation.submitted,
+        ...diagnosticNotebookStatus(saved.snapshot, item.taskSnapshot),
         ...evidencePick(observation, ['selectedOptionIds', 'correctSelections', 'missedOptions', 'incorrectSelections']) },
       context: { evidenceClass: 'diagnostic_only', classIdAtAttempt: classId, status: current.status,
         createdAt: current.createdAt, timeQuality: times.length ? 'client_reported' : 'server_created' },

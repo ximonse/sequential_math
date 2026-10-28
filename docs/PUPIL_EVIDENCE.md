@@ -4,6 +4,11 @@ Implementerat lokalt 2026-10-27. Detta är ett läskontrakt, inte en färdig
 AI-analys eller MCP-server. Det hämtar inga elevdata utan ett autentiserat
 anrop. Utveckling och verifiering använder syntetiska elever.
 
+Tillägg: revisionsbundet original kan läsas med `format=notebook` på ett
+detaljanrop med `ref` och `snapshotRevision`. Text/status och lokal MCP-PNG
+beskrivs i [PUPIL_NOTEBOOK_EXPORT.md](PUPIL_NOTEBOOK_EXPORT.md). Inga nya
+skrivbehörigheter införs.
+
 ## Anrop
 
 `GET /api/teacher-students/PUPIL_ID?resource=evidence&classId=CLASS_ID&from=2026-10-19&to=2026-10-25`

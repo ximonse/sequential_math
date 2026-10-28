@@ -7,6 +7,13 @@ med syntetisk demo; se docs/PUPIL_MCP.md. Riktat material och elevdokument
 återstår; ingen faktisk modells didaktiska analys har ännu utvärderats.
 Projektkort: `ai-pupil-followup` och dess delkort.
 
+Synkning med den andra agentens dagsanalys: skrivskyddat räknehäftesoriginal
+finns nu som text och lokala MCP-PNG-bilder med hela rutor, ritning och
+källrevision. Tomt svar skiljs från sparat arbete utan att ett resultat
+antas. Se docs/PUPIL_NOTEBOOK_EXPORT.md. Agentens ursprungliga anteckningar,
+teacher-data-skill och issue #18–21 är bevarade; klass-/tidsfilter och
+genomgångspresentation återstår.
+
 ## Mål och arbetsflöde
 
 Simon ska kunna be en ansluten AI granska en elev under en period, diskutera

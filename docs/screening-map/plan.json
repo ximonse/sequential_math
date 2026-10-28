@@ -1791,7 +1791,7 @@
       "title": "Sparade screeningutkast för genomgång och revidering",
       "status": "Lokalt klart",
       "purpose": "Skapa, spara, öppna, förhandsvisa och revidera frågesamlingar privat innan utdelning.",
-      "next": "Efter uttryckligt publiceringsmandat: publicera den avgränsade utkastfunktionen via GitHub och spara/återläs de åtta förberedda individuella samlingarna som privata utkast, utan elevutdelning.",
+      "next": "Publicera separat gren genom GitHub efter grön CI, verifiera aktiv produktion, spara och återläs åtta utkast utan elevutdelning.",
       "acceptance": "Utkast och äldre versioner kan läsas efter omladdning. Frågor, facit och pågående frågeredigering bevaras. Sparande skapar inga elevuppdrag. Samtidiga ändringar skrivs inte över.",
       "requires": [
         "dispatch"
@@ -1799,7 +1799,7 @@
       "affects": [
         "custom-screening-answer-keys"
       ],
-      "decision": "2026-10-28: Simon beställer en funktion i appen för att skapa utkast för genomkoll och revidering. Avgränsat till screeningens befintliga frågeredigerare. Publicering är separat.",
+      "decision": "2026-10-28: Simon beställer en funktion i appen för att skapa utkast för genomkoll och revidering. Avgränsat till screeningens befintliga frågeredigerare. Publicering är separat. 2026-10-28: Simon ger uttryckligt mandat att publicera utkastfunktionen och lägga in de åtta förberedda samlingarna som privata utkast.",
       "evidence": "Befintlig opublicerad materialgranskning inspekterad: dess redigerare ändrar rubrik/mål, men saknar frågeredigering. Återanvänd befintliga frågekomponenter och samma CAS/idempotensprincip; ingen parallell bred materialpubliceringsmodul införs. 2026-10-28 lokalt byggt: privata screeningutkast via befintlig adminbegränsad route, atomisk CAS och idempotent kvittens, 20 oföränderliga versioner och 100 utkast per konto. Befintliga frågor/facit/bildfrågor/arbetsytor och ofullständig frågeredigering sparas; läsbar förhandsvisning, versionsval, kopia och osparat-varning. Inget mottagarval eller elevuppdrag sparas. 174 testfiler/877 tester och build godkända; riktad lint, arkitektur och karta godkända. Tio riktade browserfall gröna, därefter utökad fråge-/facitrevidering och arbetslägeskontroll; navigeringens R2-fel reproducerat rött före fix, följt av fyra gröna omkörda fall. Förlorad serverrespons, samtidig ändring, privat läraråtkomst, elevnekad åtkomst och orörda elevdata verifierade. Renderade liggande/stående iPadstorlekar granskade. Ingen fysisk iPad, riktig KV, push eller produktionsverifiering för denna funktion. Åtta stabila privata utkastbegäranden med 64 frågor förberedda utanför repot, inget sparat i appen. Kontrakt: docs/SCREENING_DRAFTS.md.",
       "issue": "",
       "kind": "funktion",

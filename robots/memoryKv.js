@@ -5,6 +5,7 @@ import { STUDENT_CAS_SCRIPT } from '../api/_studentStore.js'
 import { emulateAttentionArchive } from '../api/testHelpers/attentionArchiveKv.js'
 import { emulatePupilAnalysis } from '../api/testHelpers/pupilAnalysisKv.js'
 import { emulateTeacherMaterial } from '../api/testHelpers/teacherMaterialKv.js'
+import { emulateMaterialDispatch } from '../api/testHelpers/teacherMaterialDispatchKv.js'
 import { CREATE_DIAGNOSTIC_ASSIGNMENT_SCRIPT, OPEN_DIAGNOSTIC_ATTEMPT_SCRIPT,
   STOP_DIAGNOSTIC_ASSIGNMENT_SCRIPT } from '../api/_diagnosticAssignmentStore.js'
 import { FREEZE_DIAGNOSTIC_ATTEMPT_SCRIPT } from '../api/_diagnosticAssignmentClose.js'
@@ -40,6 +41,8 @@ export const kv = {
   async sadd(key, ...members) { const set = sets.get(key) || new Set(); sets.set(key, set); let n = 0; for (const m of members.flat()) { if (!set.has(m)) { set.add(m); n++ } } return n },
   async srem(key, ...members) { const set = sets.get(key); if (!set) return 0; let n = 0; for (const m of members.flat()) if (set.delete(m)) n++; return n },
   async eval(script, keys = [], args = []) {
+    const dispatch = emulateMaterialDispatch(values, script, keys, args)
+    if (dispatch) return dispatch.result
     const material = emulateTeacherMaterial(values, sets, script, keys, args)
     if (material) return material.result
     const analysis = emulatePupilAnalysis(values, script, keys, args)

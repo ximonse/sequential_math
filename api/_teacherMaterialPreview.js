@@ -65,12 +65,24 @@ function practiceContent(input, title) {
     if (['id', 'title', 'createdAt'].includes(key) || !Object.hasOwn(normalized, key)
       || evidenceHash(value) !== evidenceHash(normalized[key])) fail(`Träningsvalet ${key} stöds inte med angivet värde. Ingen tyst anpassning har gjorts.`)
   }
+  if (normalized.kind === 'math_practice') {
+    for (const range of Object.values(normalized.numberRange)) {
+      // The existing generator falls back to unfiltered values for an empty set.
+      // Reject that frame here rather than approving different pupil content.
+      const step = { even: 2, odd: 2, ten: 10, five: 5, all: 1 }[range.filter]
+      const offset = range.filter === 'odd' ? 1 : 0
+      const first = Math.ceil((range.min - offset) / step) * step + offset
+      if (!Number.isSafeInteger(range.min) || !Number.isSafeInteger(range.max) || range.max - range.min > 10000 || first > range.max) {
+        fail('Talintervallet måste innehålla heltal som matchar filtret och omfatta högst 10 001 tal.')
+      }
+    }
+  }
   const { id: _id, createdAt: _createdAt, ...frame } = normalized
   return { frame, sequence: 'generated_not_frozen' }
 }
 
 export async function previewTeacherMaterial(req, auth, input) {
-  object(input, ['schemaVersion', 'kind', 'mode', 'titleSv', 'goalSv', 'instructionSv', 'sourceMaterials', 'audience', 'basis', 'content'])
+  object(input, ['schemaVersion', 'kind', 'mode', 'titleSv', 'goalSv', 'instructionSv', 'sourceMaterials', 'audience', 'basis', 'content', 'classContexts'])
   if (input.schemaVersion !== 1 || !['practice', 'screening'].includes(input.kind)
     || !['general', 'specific'].includes(input.mode)) fail('Ogiltig materialtyp eller version.')
   const titleSv = text(input.titleSv, 100), goalSv = text(input.goalSv), instructionSv = text(input.instructionSv, 2000)
@@ -80,6 +92,16 @@ export async function previewTeacherMaterial(req, auth, input) {
     object(item, ['label', 'excerpt']); return { label: text(item.label, 200), excerpt: text(item.excerpt, 10000) }
   })
   const audience = await fullAudience(req, input.audience)
+  const requestedContexts = input.classContexts ?? {}
+  object(requestedContexts, audience.pupils.map(pupil => pupil.studentId))
+  const classContexts = {}
+  for (const pupil of audience.pupils) {
+    const selected = requestedContexts[pupil.studentId] || (audience.targetType === 'class' ? audience.targetId
+      : pupil.classIds.length === 1 ? pupil.classIds[0] : '')
+    if (selected && (!pupil.classIds.includes(selected) || (audience.targetType === 'class' && selected !== audience.targetId))) fail('Ogiltig klasskontext för en mottagare.')
+    if (!selected && input.kind === 'screening') fail(`Välj uttrycklig klasskontext för eleven ${pupil.codeName}.`)
+    if (selected) classContexts[pupil.studentId] = selected
+  }
   const basis = await analysisBasis(req, auth, input.basis ?? [], audience)
   if ((input.mode === 'specific') !== (basis.length > 0)) fail('Specifikt innehåll kräver analysbelägg; generellt innehåll använder instruktion/material.')
   let content
@@ -107,7 +129,7 @@ export async function previewTeacherMaterial(req, auth, input) {
   if (!live || evidenceHash(live) !== evidenceHash(auth)) throw evidenceError(403, 'access_changed', 'Lärarens åtkomst har ändrats.')
   if (basis.length) await analysisBasis(req, live, input.basis, current)
   const material = { schemaVersion: 1, kind: input.kind, mode: input.mode, titleSv, goalSv, instructionSv,
-    sourceMaterials: sources, audience, basis, content,
+    sourceMaterials: sources, audience, classContexts, basis, content,
     pupilsWithoutAnalysis: audience.pupils.filter(p => !basis.some(item => item.studentId === p.studentId)).map(p => p.studentId) }
   return { material, contentRevision: evidenceHash(material), saved: false, assigned: false, approval: 'not_requested' }
 }

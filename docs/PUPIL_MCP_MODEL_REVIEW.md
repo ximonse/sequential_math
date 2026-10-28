@@ -43,3 +43,21 @@ okänd. Screening är diagnostic_only och får inte påverka vanlig mastery.
   Befintliga protokolltester verifierar formatsparande separat.
 - Generella och analysspecifika materialutkast samt granskad utdelning
   återstår enligt TODO_AI_ELEVUPPFOLJNING.md.
+# Kompletterande klassprov 2026-10-28
+
+Den faktiska Codex-sessionens anslutna MCP läste det exakta klassurvalet
+MCP-demoklass och båda elevernas träningssvar 14–28 oktober. Demo One hade
+2/4 rätt: 7×1=7 och 7×2=14; svaren 22 på 7×3 och 29 på 7×4 var fel.
+Demo Two hade 5/6 rätt, inklusive 7×3=21; 7×6 besvarades 43 i stället för 42.
+Sammanlagt 7/10 beskriver dessa lästa svar, inte varje elevs kunnande.
+Full historik är okänd och ingen synlig uträkning belägger en räknemetod.
+
+Modellen valde kort gemensam träning i tabell 7 med olika uppföljning per
+elev. `math_preview_material` accepterade ett analysspecifikt klassförslag
+med båda elevernas aktuella referenser, separata motiv och korrekta
+motexempel: två mottagare, två analyskällor, ingen utan analysreferens,
+`saved=false`, `assigned=false`. Det specifika består i den belagda
+innehållsmotiveringen; enbart klassmottagaren hade inte varit en analys.
+Ingen rapport sparades och ingen elev fick uppdrag. Anslutningen saknade
+materialskrivflagga, vilket capabilities redovisade. Detta är fortfarande
+syntetisk egenprovning och ingen blind eller lärarkalibrerad bedömning.

@@ -2,8 +2,8 @@
 
 Beslutad riktning 2026-10-28. Urvalsläsning och servervaliderad förhandsvisning
 är byggda lokalt, liksom versionerad utkastlagring och återläsning.
-Lärargranskning och versionsbundet godkännande är också lokalt byggda.
-Utdelning återstår; avsnittet om den specificerar nästa implementation.
+Lärargranskning, versionsbundet godkännande och uttrycklig utdelning är också
+lokalt byggda och syntetiskt provade. Ingen produktionspublicering har gjorts.
 
 ## Två ingångar och separat mottagarval
 
@@ -40,7 +40,7 @@ Gruppval visar nuvarande medlemmars tillgängliga underlag; historiskt
 gruppmedlemskap rekonstrueras inte. Återläs urvalet efter längre analys och
 före utkast/godkännande om medlemskapet kan ha ändrats.
 
-## Kontrakt för kommande utkast
+## Kontrakt för materialutkast
 
 ### Lokal förhandsvisning utan lagring
 
@@ -53,7 +53,10 @@ klienten laddar om servern; en redan ansluten process kan ha äldre verktygslist
 Material v1 har `schemaVersion:1`, `kind:practice|screening`,
 `mode:general|specific`, `titleSv`, `goalSv`, `instructionSv`,
 `sourceMaterials:[{label,excerpt}]`, `audience:{targetType,targetId,rosterRevision}`,
-`basis` och `content`. Okända fält avvisas. Vid specifikt innehåll krävs minst
+`basis`, `content` och valfri `classContexts:{elevId:klassId}`. Okända fält avvisas.
+Klasskontext hämtas från valt klassmål eller elevens enda åtkomliga klass;
+screening för en elev med flera klasser kräver ett uttryckligt val.
+Vid specifikt innehåll krävs minst
 ett basis-objekt med elev-ID, klass-ID, from/to, source, snapshotRevision,
 supportRefs, counterRefs och reasonSv. Referenser/revision, aktuell åtkomst
 och urval kontrolleras; servern bevisar inte rationale-textens pedagogiska
@@ -65,6 +68,9 @@ val som inte överlever befintlig validering avvisas; inga nya generatorfilter
 uppfinns. Screeningcontent har taskIds och/eller customTasks samt itemOptions
 enligt befintligt screeningkontrakt. Samma förberedelsefunktion används av
 verkligt skapande och förhandsvisning, men bara skapandefunktionen skriver.
+Matematikövningens talintervall måste vara säkra heltal, omfatta högst
+10 001 tal vardera och innehålla tal som matchar valt filter. Tomma filter
+avvisas för att förhindra generatorns befintliga återgång till ofiltrerade tal.
 Svaret innehåller fulla frågesnapshots/bedömningsunderlag eller träningsram,
 exakta mottagare, contentRevision, saved=false, assigned=false och
 approval=not_requested. Ingen elev får uppdrag av denna operation.
@@ -91,7 +97,7 @@ historik. CAS för lagringsrevision och tombstone-kontroller stoppar samtidiga
 av en berörd elev tas hela utkasthistoriken bort, inklusive fria formuleringar;
 den förs inte till anonym statistik. Ingen automatisk rensning av äldre versioner.
 
-MCP `math_get_material_draft` läser summary/history/content/audience/basis/input
+MCP `math_get_material_draft` läser summary/history/content/audience/basis/input/publication
 för en vald version; listsektioner har offset/limit. `math_save_material_draft`
 finns bara med separat startflagga `--allow-material-writes` eller
 `MATH_MCP_ALLOW_MATERIAL_WRITES=true`. Rapportskrivflaggan ger inte denna rätt.
@@ -115,7 +121,7 @@ förhandsvisningen, inklusive källrevisioner och medlemslista. Godkännandet
 binds till innehållsversion, contentRevision och rosterRevision; upprepning
 med samma requestId ger samma kvitto. Lagringsrevisionen ökar utan att skapa
 en ny innehållsversion. Högst 100 godkännandeposter; tidigare poster raderas
-inte automatiskt. Godkännandet delar ännu inte ut något.
+inte automatiskt. Godkännandet delar inte ut något; utdelning har en separat knapp.
 
 Lokal webbläsarprovning av cookie-mutationer körs med `ROBOT_DEV=1` eftersom
 HTTP-localhost bara är en betrodd origin i utvecklingsläget. Standardrobotens
@@ -151,13 +157,50 @@ AI:n får inte själv utfärda godkännandebevis. Ändrat innehåll eller urval 
 ny granskning. En MCP-flagga med approved=true räcker inte som bevis.
 
 Vid utdelning omkontrolleras levande läraråtkomst, pilotgränser och medlemskap.
-Träning återanvänder befintliga måltyper student/group/class. Screening får
-behöva separata utdelningar per klass med explicita elevlistor. Ingen elev i
+Träning för elev/grupp/klass lagras som befintliga individuella uppdrag till
+den frysta mottagarlistan. Senare tillkommande klass-/gruppmedlemmar är inte
+granskade mottagare och ärver därför inte utdelningen. Screening skapar
+separata samlingar per vald klass med explicita elevlistor, högst 100 elever
+per samling. Ingen elev i
 en annan klass får tappas eller läggas till tyst. Återförsök får inte skapa
 dubletter; kvitto ska ange mottagare, uppdrags-ID:n och eventuella delfel.
 Pågående uppdrag får inte ersättas genom ett oavsiktligt clear/deactivate.
+
+`POST /api/teacher-material` med `action:publish`, `draftId`, `version`,
+`contentRevision`, `expectedRevision` och `requestId` kräver samma betrodda
+cookieinloggning som godkännandet. MCP erbjuder varken godkännande eller
+utdelning; dess `assignmentPublication=false` beskriver den gränsen.
+Senaste godkända versionen och käll-/mottagarrevisionerna omkontrolleras.
+Högst fem utdelningsenheter behandlas per anrop; lärarens uttryckliga
+knapptryck fortsätter med samma requestId medan `hasMore=true`.
+
+Deterministiska uppdrags-ID:n för utkast/version/klassdel gör återförsök
+idempotenta. Befintlig full lista med 20 aktiva uppdrag ger 409 och bevaras.
+Delvis lyckad utdelning rullas inte tillbaka. Nytt uttryckligt återförsök
+behandlar återstående mottagare och bevarar tidigare bekräftelser.
+
+`teacher_material_dispatch:TEACHER:DRAFT:VERSION` lagrar CAS-skyddade kvitton
+med mottagare, uppdrags-ID, status och senaste försöks-ID. Läsning via samma
+GET som utkastet returnerar `dispatches`. Bekräftat, misslyckat, osäkert och
+ännu obehandlat redovisas separat. En förlorad lyckad respons följs upp genom
+återläsning; den betyder inte att inget delats ut. Kvittona är historiska
+utdelningsbelägg, inte ett löfte att ett senare avslutat uppdrag är aktivt.
+Elevradering/anonymisering raderar berörda utkast och deras kvitton.
 
 Verifiering omfattar båda ingångarna × båda innehållstyperna × elev/grupp/klass,
 inklusive klassöverskridande grupper, tomt underlag, ändrat medlemskap,
 ändrad version, dubbelklick, timeout efter lyckad skrivning och elevens
 faktiska åtkomst/svar/omladdning. Screening förblir diagnostic_only.
+
+### Lokal verifiering 2026-10-28
+
+187 testfiler/896 apptester, 19 MCP/CLI-prov och produktionsbuild passerade.
+Robotfallen `material-publication` provar alla tolv kombinationer och faktisk
+elevåtkomst, svar, omladdning och läraruppföljning. `material-publication-boundaries`
+provar kapacitet, delfel/återförsök, ändrat medlemskap/analysunderlag, förlorad
+lyckad respons och sidvis utdelning till sju elever. `assignment-capacity`
+var röd före rättningen som bevarar alla gamla uppdrag. Fyllda kvittovyer
+har granskats visuellt. Cookieproven kräver `ROBOT_DEV=1` och en testport,
+exempelvis `ROBOT_PORT=5398`, samt `ROBOT_WORKERS=1`.
+Alla elevdata/KV i proven är syntetiska. Verklig Redis-CAS, fysisk iPad,
+HTTPS-produktion och oberoende didaktisk modellkalibrering är inte verifierade.

@@ -25,6 +25,7 @@ async function seed() {
   await kv.set('teacher_material:T:D', { teacherId: 'T', draftId: 'D', versions: [{ material: {
     audience: { pupils: [{ studentId: 'PUPIL' }, { studentId: 'OTHER' }] }, goalSv: 'Private interpretive wording' } }] })
   await kv.sadd('teacher_material_index:T', 'D')
+  await kv.set('teacher_material_dispatch:T:D:1', { studentIds: ['PUPIL', 'OTHER'], receipts: [] })
   await kv.sadd('students:index', 'PUPIL', 'OTHER')
   await kv.sadd('class_students:A', 'PUPIL', 'OTHER')
   await kv.set('teacher_pupil_labels:T', { PUPIL: 'Private Name', OTHER: 'Other Name' })
@@ -68,6 +69,7 @@ describe('pupil lifecycle', () => {
     expect(await kv.smembers('class_students:A')).toEqual(['OTHER'])
     expect(await kv.get('pupil_analysis_reports:PUPIL:A:T')).toBeNull()
     expect(await kv.get('teacher_material:T:D')).toBeNull()
+    expect(await kv.get('teacher_material_dispatch:T:D:1')).toBeNull()
     expect(await kv.smembers('teacher_material_index:T')).toEqual([])
     expect(await kv.get('pupil_analysis_reports:OTHER:A:T')).not.toBeNull()
     expect(await kv.get('teacher_pupil_labels:T')).toEqual({ OTHER: 'Other Name' })

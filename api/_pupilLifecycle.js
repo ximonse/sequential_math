@@ -101,6 +101,7 @@ export async function buildPupilCleanup(id, job, store) {
     if (!draft?.versions?.some(version => version.material?.audience?.pupils?.some(pupil => isPupil(pupil.studentId, id)))) continue
     deletes.add(key)
     removals.push({ key: `teacher_material_index:${draft.teacherId}`, member: draft.draftId })
+    for (const receipt of await scanPupilKeys(store, `teacher_material_dispatch:${draft.teacherId}:${draft.draftId}:*`)) deletes.add(receipt)
   }
   const attention = new Map((job.profile.attentionHistory || []).map(pass => [pass.id, pass]))
   for (const key of await scanPupilKeys(store, `attention_pass:${id}:*`)) {

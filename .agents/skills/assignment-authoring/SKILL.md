@@ -48,3 +48,13 @@ mottagare och godkänner där. Godkännandet kräver betrodd cookieinloggning;
 MCP-header är inte ett godkännandebevis. Inga godkännandeverktyg exponeras.
 En syntetisk SDK-provsessions tillfälliga server stängs med sessionen; lämna
 inte en sådan URL som om den fortfarande vore en tillgänglig lärarvy.
+
+Utdelning är nu lokalt byggd som en separat knapp i den granskade lärarvyn,
+med betrodd cookieinloggning och aktuell godkänd version. MCP delar inte ut.
+Screening kräver classContexts när en mottagare har flera åtkomliga klasser.
+Generella grupp-/klassuppdrag gäller den frysta listan; nya medlemmar är inte
+automatiskt godkända mottagare. Vid full aktiv lista bevaras tidigare uppdrag.
+Läs kvitto per mottagare i lärarvyn eller math_get_material_draft med
+section=publication. Skilj bekräftat, misslyckat, osäkert och obehandlat.
+En förlorad respons betyder inte att inget delats ut; återläs samma utkast.
+Skapa inte nya utkast/uppdrags-ID:n för att kringgå delfel eller timeout.

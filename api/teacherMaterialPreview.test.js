@@ -53,6 +53,14 @@ it('rechecks the roster and live session after source reads', async () => {
   mock.auth.mockResolvedValue({ teacherId: 'OTHER' })
   await expect(previewTeacherMaterial({}, auth, general())).rejects.toMatchObject({ status: 403 })
 })
+it('rejects empty filtered ranges and unbounded generator input without changing the requested content', async () => {
+  for (const first of [{ min: 1, max: 1, filter: 'even' }, { min: 2, max: 2, filter: 'odd' },
+    { min: 1, max: 4, filter: 'five' }, { min: 1, max: 9, filter: 'ten' },
+    { min: 0, max: 1000000000, filter: 'all' }, { min: 0.5, max: 2.5, filter: 'all' }]) {
+    await expect(previewTeacherMaterial({}, auth, { ...general(), content: { kind: 'math_practice', operations: ['addition'],
+      numberRange: { first, second: { min: 2, max: 2, filter: 'all' } }, targetCount: 5 } })).rejects.toMatchObject({ status: 400 })
+  }
+})
 it('preparing a screening writes nothing while the normal create API retains its default KV store', async () => {
   const input = { classId: 'C', studentIds: ['P'], teacherId: 'T', taskIds: ['sub-through-zero-001'] }
   const preview = await prepareDiagnosticAssignment(input)
@@ -61,4 +69,14 @@ it('preparing a screening writes nothing while the normal create API retains its
   const created = await createDiagnosticAssignment(input)
   expect(created.assignmentId).toBeTruthy()
   expect(mock.eval).toHaveBeenCalledOnce()
+})
+it('requires an explicit screening class for a pupil with multiple current memberships', async () => {
+  mock.audience.mockResolvedValue({ targetType: 'group', targetId: 'G', rosterRevision: revision,
+    pupils: [{ studentId: 'P', classIds: ['C', 'D'] }], nextOffset: null })
+  const input = { ...general(), kind: 'screening', audience: { targetType: 'group', targetId: 'G', rosterRevision: revision },
+    content: { taskIds: ['sub-through-zero-001'] } }
+  await expect(previewTeacherMaterial({}, auth, input)).rejects.toMatchObject({ status: 400 })
+  const result = await previewTeacherMaterial({}, auth, { ...input, classContexts: { P: 'D' } })
+  expect(result.material.classContexts).toEqual({ P: 'D' })
+  await expect(previewTeacherMaterial({}, auth, { ...input, classContexts: { P: 'FOREIGN' } })).rejects.toMatchObject({ status: 400 })
 })

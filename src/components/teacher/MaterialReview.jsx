@@ -6,13 +6,14 @@ import ScreeningImageQuestion from '../student/ScreeningImageQuestion.jsx'
 import './materialReview.css'
 import MaterialBasis from './MaterialBasis.jsx'
 import MaterialPracticeSummary from './MaterialPracticeSummary.jsx'
+import MaterialDispatchStatus from './MaterialDispatchStatus.jsx'
 
 const endpoint = '/api/teacher-material'
 async function request(body, human = false) {
   const options = { method: 'POST', body: JSON.stringify(body) }
   const result = human ? await fetch(endpoint, { ...options, credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } })
-    .then(async response => ({ ok: response.ok, data: await response.json() })) : await diagnosticRequest(endpoint, options)
-  if (!result.ok) throw new Error(result.data.error || 'Åtgärden kunde inte genomföras. Din text är kvar.')
+    .then(async response => ({ ok: response.ok, status: response.status, data: await response.json() })) : await diagnosticRequest(endpoint, options)
+  if (!result.ok) throw Object.assign(new Error(result.data.error || 'Åtgärden kunde inte genomföras. Din text är kvar.'), { status: result.status, code: result.data.code })
   return result.data
 }
 
@@ -21,19 +22,24 @@ export default function MaterialReview() {
   const [draft, setDraft] = useState(null), [version, setVersion] = useState(null)
   const [edits, setEdits] = useState({}), [preview, setPreview] = useState(null)
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [checked, setChecked] = useState(false)
+  const [dispatches, setDispatches] = useState([]), [classes, setClasses] = useState([])
   const requestIds = useRef({})
+  const activeScope = useRef(draftId)
   const url = `${endpoint}?${new URLSearchParams({ draftId })}`
   useEffect(() => {
     let active = true
+    activeScope.current = draftId
     diagnosticRequest(url).then(result => {
       if (!active) return
       if (!result.ok) { setMessage(result.data.error || 'Utkastet kunde inte läsas.'); return }
       setDraft(result.data.draft)
+      setDispatches(result.data.dispatches || [])
       const requested = Number(search.get('version'))
       setVersion(result.data.draft.versions.some(item => item.version === requested) ? requested : result.data.draft.versions.at(-1).version)
     }).catch(() => { if (active) setMessage('Utkastet kunde inte hämtas.') })
-    return () => { active = false }
-  }, [url, search])
+    diagnosticRequest('/api/students?resource=classes&limit=100').then(result => { if (active && result.ok) setClasses(result.data.classes) }).catch(() => {})
+    return () => { active = false; if (activeScope.current === draftId) activeScope.current = '' }
+  }, [url, search, draftId])
   const item = draft?.versions.find(value => value.version === version)
   const input = edits[version] || item?.input
   const dirty = item && JSON.stringify(input) !== JSON.stringify(item.input)
@@ -47,6 +53,7 @@ export default function MaterialReview() {
   const material = preview?.material || item?.material
   const latest = item && item.version === draft.versions.at(-1).version
   const approved = item && (draft.approvals || []).some(value => value.version === item.version && value.contentRevision === item.contentRevision)
+  const dispatch = dispatches.find(value => value.version === item?.version)
   function edit(field, value) {
     setEdits(old => ({ ...old, [version]: { ...input, [field]: value } }))
     setPreview(null); setChecked(false); setMessage('')
@@ -58,7 +65,7 @@ export default function MaterialReview() {
   async function refresh(selected = version) {
     const result = await diagnosticRequest(url)
     if (!result.ok) throw new Error(result.data.error || 'Läs senaste status innan du försöker igen.')
-    setDraft(result.data.draft); setVersion(selected); setChecked(false); setPreview(null)
+    setDraft(result.data.draft); setDispatches(result.data.dispatches || []); setVersion(selected); setChecked(false); setPreview(null)
   }
   const keyFor = action => `${action}:${draftId}:${item.contentRevision}:${preview?.contentRevision || ''}`
   function requestId(action) {
@@ -77,8 +84,34 @@ export default function MaterialReview() {
       contentRevision: item.contentRevision, requestId: requestId('approve') }, true)
     await refresh(); setMessage('Innehåll och mottagare är godkända. Inget är utdelat.')
   }
+  async function publish() {
+    const id = requestId('publish')
+    let result
+    try {
+      do {
+        result = await request({ action: 'publish', draftId, expectedRevision: draft.revision, version,
+          contentRevision: item.contentRevision, requestId: id }, true)
+        if (activeScope.current !== draftId) return
+        setDispatches(old => [...old.filter(value => value.version !== version), result.dispatch])
+        setMessage(`${result.dispatch.confirmed} av ${material.audience.total} mottagare är bekräftade.`)
+      } while (result.hasMore && activeScope.current === draftId)
+    } catch (error) {
+      if (error.status && error.status < 500 && !['dispatch_conflict', 'dispatch_unavailable', 'draft_access_denied'].includes(error.code)) throw error
+      try {
+        await refresh()
+        setMessage('Senaste utdelningskvittot är hämtat efter anslutningsfelet. Kontrollera mottagarnas status.')
+        return
+      } catch {
+        if (activeScope.current === draftId) setDispatches(old => old.some(value => value.version === version) ? old
+          : [...old, { version, confirmed: 0, failed: 0, unknown: material.audience.total, pending: 0, status: 'uncertain', receipts: [] }])
+        throw new Error('Utdelningskvittensen är osäker. Läs senaste status innan du följer upp samma utdelning.')
+      }
+    }
+    delete requestIds.current[keyFor('publish')]
+    if (activeScope.current === draftId) await refresh()
+  }
   return <main className="material-review">
-    <header className="material-review-header"><Link to="/teacher">← Lärarvyn</Link><span>Materialutkast · inget utdelat</span>
+    <header className="material-review-header"><Link to="/teacher">← Lärarvyn</Link><span>Materialutkast</span>
       <button disabled={busy || !draft} onClick={() => run(() => refresh())}>Läs senaste status</button></header>
     {message && <p role="status" className="material-message">{message}</p>}
     {!item ? <p>Läser utkast…</p> : <>
@@ -110,8 +143,15 @@ export default function MaterialReview() {
         </section>}
       </div><aside className="material-sidebar"><section className="material-module"><h2>Mottagare</h2>
         <p>{material.audience.name} · {material.audience.total} elever</p>
-        <ul>{material.audience.pupils.map(pupil => <li key={pupil.studentId}>{pupil.codeName}
-          {material.mode === 'specific' && material.pupilsWithoutAnalysis.includes(pupil.studentId) ? ' · analysunderlag saknas' : ''}</li>)}</ul>
+        <ul>{material.audience.pupils.map(pupil => <li key={pupil.studentId}><Link to={`/teacher/student/${encodeURIComponent(pupil.studentId)}`}>{pupil.codeName}</Link>
+          {material.mode === 'specific' && material.pupilsWithoutAnalysis.includes(pupil.studentId) ? ' · analysunderlag saknas' : ''}
+          {material.kind === 'screening' && (pupil.classIds.length > 1 && material.audience.targetType !== 'class'
+            ? <label className="material-class-context">Klass för {pupil.codeName}<select aria-label={`Klass för ${pupil.codeName}`}
+              value={input.classContexts?.[pupil.studentId] || material.classContexts?.[pupil.studentId] || ''}
+              onChange={event => edit('classContexts', { ...input.classContexts, [pupil.studentId]: event.target.value })}>
+              <option value="">Välj klass</option>{pupil.classIds.map(id => <option key={id} value={id}>{classes.find(value => value.classId === id)?.name || id}</option>)}
+            </select></label> : <small>Klass: {classes.find(value => value.classId === material.classContexts?.[pupil.studentId])?.name || material.audience.name}</small>)}
+        </li>)}</ul>
         <button disabled={busy} onClick={() => run(async () => {
           const result = await diagnosticRequest(`/api/students?${new URLSearchParams({ resource: 'audience', targetType: input.audience.targetType, targetId: input.audience.targetId, limit: 1 })}`)
           if (!result.ok) throw new Error(result.data.error || 'Mottagarna kunde inte läsas.')
@@ -119,12 +159,17 @@ export default function MaterialReview() {
           setMessage('Aktuellt urval läst. Förhandsvisa och spara om listan har ändrats.')
         })}>Läs aktuellt urval</button>
       </section><section className="material-module"><h2>Granska och godkänn</h2>
-        <p>{approved ? `Version ${version} är godkänd.` : `Version ${version} väntar på granskning.`} Inget är utdelat.</p>
+        <p>{approved ? `Version ${version} är godkänd.` : `Version ${version} väntar på granskning.`}</p>
         {!latest && <p>En nyare version finns. Godkänn den senaste versionen.</p>}
         {dirty && <p>Du har osparade ändringar i den här versionen.</p>}
         <label className="material-check"><input type="checkbox" checked={checked} disabled={busy || dirty || !latest || approved}
           onChange={event => setChecked(event.target.checked)} />Jag har granskat innehåll, bedömning och mottagare för version {version}.</label>
         <button className="material-primary" disabled={busy || !checked || dirty || !latest || approved} onClick={() => run(approve)}>Godkänn version {version}</button>
+      </section><section className="material-module"><h2>Utdelning</h2>
+        <MaterialDispatchStatus dispatch={dispatch} pupils={material.audience.pupils} />
+        <div className="material-actions"><button className="material-primary" disabled={busy || !approved || dirty || !latest || dispatch?.status === 'complete'} onClick={() => run(publish)}>
+          {dispatch ? 'Följ upp återstående mottagare' : `Dela ut till ${material.audience.total} ${material.audience.total === 1 ? 'elev' : 'elever'}`}
+        </button></div>
       </section></aside></div>
     </>}
   </main>

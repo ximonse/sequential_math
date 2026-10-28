@@ -143,13 +143,18 @@ export function createMathServer({ getApi, allowReportWrites = false, allowMater
   }, async ({ material }, signal) => (await getApi()).request('/api/teacher-material', { body: { action: 'preview', material }, readOnly: true, signal }))
   register('math_get_material_draft', 'Läs sparat materialutkast', 'Read one teacher-private frozen draft version in bounded sections. Current class/pupil/screening access is rechecked, including history. Reading does not approve or assign. Keep contentRevision when editing.', {
     draftId: id, version: z.number().int().min(1).max(20).optional(),
-    section: z.enum(['summary', 'history', 'content', 'audience', 'basis', 'input']).default('summary'),
+    section: z.enum(['summary', 'history', 'content', 'audience', 'basis', 'input', 'publication']).default('summary'),
     offset: z.number().int().min(0).max(10000).default(0), limit: z.number().int().min(1).max(20).default(10)
   }, async ({ draftId, version, section, offset, limit }, signal) => {
-    const { draft } = await (await getApi()).request(`/api/teacher-material?${new URLSearchParams({ draftId })}`, { signal })
+    const { draft, dispatches = [] } = await (await getApi()).request(`/api/teacher-material?${new URLSearchParams({ draftId })}`, { signal })
     const item = version ? draft.versions.find(v => v.version === version) : draft.versions.at(-1)
     if (!item) throw new BridgeError('not_found', 'That material version is unavailable.')
-    const base = { draftId, revision: draft.revision, version: item.version, contentRevision: item.contentRevision, assigned: false }
+    const dispatch = dispatches.find(value => value.version === item.version)
+    const base = { draftId, revision: draft.revision, version: item.version, contentRevision: item.contentRevision,
+      assigned: dispatch?.status === 'complete', assignmentStatus: dispatch?.status || 'not_started' }
+    if (section === 'publication') return { ...base, confirmed: dispatch?.confirmed || 0, failed: dispatch?.failed || 0,
+      unknown: dispatch?.unknown || 0, pending: dispatch?.pending || 0, total: dispatch?.studentIds.length || item.material.audience.total,
+      receipts: (dispatch?.receipts || []).slice(offset, offset + limit), nextOffset: offset + limit < (dispatch?.receipts.length || 0) ? offset + limit : null }
     if (section === 'history') return { ...base, versions: draft.versions.map(v => ({ version: v.version, createdAt: v.createdAt, contentRevision: v.contentRevision, titleSv: v.material.titleSv })) }
     if (section === 'summary') return { ...base, kind: item.material.kind, mode: item.material.mode, titleSv: item.material.titleSv,
       goalSv: item.material.goalSv, instructionSv: item.material.instructionSv, audience: { targetType: item.material.audience.targetType,

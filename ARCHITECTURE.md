@@ -12,8 +12,12 @@ lagras privat per lärare med CAS, idempotens och elevtombstones. Historisk
 åtkomst omkontrolleras och elevradering tar bort hela berörda utkast.
 Separat lazy-laddad lärarvy granskar versioner och källsvar. Godkännande kräver
 betrodd cookie-mutation från lärarvyn, aktuell innehålls-/mottagarrevision och
-ny underlagsvalidering; MCP exponerar inget godkännandeverktyg. Utdelning
-ingår ännu inte. Kontrakt: docs/PUPIL_MATERIAL.md.
+ny underlagsvalidering; MCP exponerar inget godkännandeverktyg. Separat
+cookie-skyddad utdelning återanvänder elevuppdrags-/screeninglagren med
+frysta mottagare och deterministiska ID:n. CAS-skyddade kvitton per version
+skiljer bekräftelser, delfel och osäkra utfall; elevradering tar bort dem.
+Högst fem enheter per anrop och samma försöks-ID under sidvis utdelning.
+Kontrakt och verifieringsgränser: docs/PUPIL_MATERIAL.md.
 
 `mcp/sequential-math/` är en separat stdio-adapter med egen låsfil, utanför
 frontendbygget och Vercel-routingen. Den anropar befintliga behörighetskontrollerade

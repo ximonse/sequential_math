@@ -31,4 +31,7 @@
 .material-frame > div { display: grid; grid-template-columns: minmax(120px, 1fr) 2fr; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--border); }
 .material-frame dt { font-weight: 600; }
 .material-frame dd { overflow-wrap: anywhere; }
+.material-module li > small, .material-class-context { display: block; margin-top: 4px; color: var(--text-muted); font-size: 14px; }
+.material-dispatch ul { list-style: disc; padding-left: 18px; margin-top: 8px; }
+.material-dispatch li { margin-top: 8px; }
 @media (max-width: 860px) { .material-columns { grid-template-columns: minmax(0, 1fr); } .material-review { padding: 16px; } .material-review-header { flex-wrap: wrap; } }

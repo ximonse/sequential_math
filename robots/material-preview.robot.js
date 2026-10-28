@@ -47,9 +47,14 @@ test('Generic and analysis-specific practice/screening previews and saved versio
       }
       if (kind === 'screening' && mode === 'specific') expect(preview.material.content.items[0].task.answerRule).toBe('teacher_review')
       const invented = await request.post('/api/teacher-material', { headers, data: { action: 'publish', material } })
-      expect(invented.status()).toBe(400)
+      expect(invented.status()).toBe(403)
     }
   }
+  const emptyFilter = await request.post('/api/teacher-material', { headers, data: { action: 'preview', material: {
+    ...lastInput, kind: 'practice', mode: 'general', basis: [], content: { kind: 'math_practice', operations: ['addition'],
+      numberRange: { first: { min: 1, max: 1, filter: 'even' }, second: { min: 2, max: 2, filter: 'all' } }, targetCount: 5 }
+  } } })
+  expect(emptyFilter.status(), 'R1: an impossible number filter must not fall back to unfiltered numbers').toBe(400)
   const save = { action: 'save', material: lastInput, expectedRevision: 0, requestId: 'robot-material-save-0001', expectedContentRevision: lastPreview.contentRevision }
   const savedResponse = await request.post('/api/teacher-material', { headers, data: save })
   expect(savedResponse.status(), await savedResponse.text()).toBe(200)

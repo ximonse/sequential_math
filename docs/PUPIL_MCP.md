@@ -68,7 +68,7 @@ resultat; för stora resultat avvisas med råd att begränsa frågan.
 | `math_find_groups` | Behöriga grupp-ID:n/namn, även dubblettnamn som kräver ett exakt val. |
 | `math_get_audience` | Aktuella medlemmar i exakt elev-/grupp-/klassurval, även utan svar; revisionsbunden sidläsning. Historiskt medlemskap är okänt. Se PUPIL_MATERIAL.md. |
 | `math_preview_material` | Servervaliderad generell/analysspecifik tränings- eller screeningförhandsvisning för elev, grupp eller klass. Sparar eller delar inte ut något. Se PUPIL_MATERIAL.md. |
-| `math_get_material_draft` | Lärarprivat fryst version, historik och paginerade innehålls-/mottagar-/analyssektioner. Aktuell åtkomst omkontrolleras. |
+| `math_get_material_draft` | Lärarprivat fryst version, historik och paginerade innehålls-/mottagar-/analyssektioner samt utdelningskvitto (`section:publication`). Aktuell åtkomst omkontrolleras. |
 | `math_save_material_draft` | Separat `--allow-material-writes` krävs. Spara validerad utkastversion med preview-revision, CAS och requestId. Godkänner eller delar inte ut något. |
 | `math_get_pupil_evidence` | Elev-ID, klass, from/to, source; limit/cursor/snapshotRevision. |
 | `math_get_evidence_detail` | Samma period och revision, exakt ref; answer/workspace/events. |
@@ -86,7 +86,17 @@ Händelser pagineras separat. Begränsad historik redovisas som okänd fullstän
 Rapportsparande är avstängt som standard. Aktivera med `--allow-report-writes`
 eller `MATH_MCP_ALLOW_REPORT_WRITES=true`. AI:n får spara bara när uppdraget
 omfattar sparande. Läraravstämning sker i appen, skilt från AI-texten.
-Inga verktyg finns för uppdrag, godkännande, utdelning, radering eller mastery.
+Utkast kan förhandsvisas och sparas med separat materialskrivflagga. Inga
+verktyg finns för godkännande, utdelning, radering eller mastery. Godkännande
+och utdelning är separata cookie-skyddade handlingar i lärarens granskningsvy.
+
+2026-10-28 verifierat i faktisk Codex-session: den anslutna demon exponerar
+grupp-/klassurval, materialförhandsvisning och utkastläsning. Capabilities anger
+`materialDraftWritesEnabled=false`; denna anslutning får inte spara material.
+Separata SDK-processer med materialskrivflagga har verifierat lagring. Ett
+analysspecifikt klassförslag med båda syntetiska elevernas belägg och
+motexempel accepterades utan lagring eller utdelning. Detta verifierar
+verktygsanvändning, inte oberoende didaktisk kalibrering eller riktiga elevdata.
 
 ## Annan appmiljö och återhämtning
 

@@ -65,6 +65,15 @@ Senaste versionen kan godkännas från inloggad lärarvy med cookie och betrodd
 origin; MCP-header räcker inte. Servern omvaliderar källor och medlemslista.
 Godkännande delar inte ut något. Utdelningssteget återstår.
 
+2026-10-28: Uttrycklig utdelning från godkänd senaste version är nu lokalt
+byggd. Frysta elev-/grupp-/klasslistor, screening uppdelad på explicita
+klasskontexter, deterministiska ID:n, CAS-kvitton och sidvis utdelning.
+Fulla aktiva listor bevaras; delfel, osäker kvittens och återförsök syns.
+Alla tolv typ/ingång/mottagarkombinationer har provats syntetiskt, liksom
+elevens faktiska svar/omladdning och lärarens återläsning. 896 apptester,
+19 MCP/CLI-prov och build passerade. Se docs/PUPIL_MATERIAL.md för exakta
+gränser. Ingen push, verklig elevdata eller produktionsverifiering.
+
 1. Verifiera faktisk MCP-analys i denna Codex-session med syntetiska svar och
    räknehäftesoriginal. Klart när belägg, motexempel, osäkerheter och original
    stämmer mot källorna, även vid tomt svar med sparat arbete.
@@ -83,11 +92,11 @@ Godkännande delar inte ut något. Utdelningssteget återstår.
    sparade svar och läraruppföljning. Verkliga elevdata kräver klarlagd
    AI-miljö; push och produktion kräver separat publiceringsmandat.
 
-Nuvarande API har targetType student/group/class för vanliga uppdrag.
-Screening har klass och explicit studentIds-urval; säker upplösning av
-befintliga grupper till screeningmottagare återstår att specificera.
-MCP exponerar ännu inget materialskapande eller någon utdelning.
-Detta tillägg är ett planeringsbeslut, inte en implementerad funktion.
+API/MCP stöder nu förhandsvisning och privat materialutkast; lärarvyn
+stöder granskning, godkännande och utdelning. MCP har separat skrivflagga
+för utkast och inga godkännande-/utdelningsverktyg. Befintliga anslutna
+MCP-processer behöver laddas om för att visa nya verktyg. Oberoende
+didaktisk kalibrering, verklig Redis-CAS och publicering återstår.
 
 Tidigare etapper och verifieringsbelägg nedan bevaras som historik. Denna
 beslutade omfattning breddar den tidigare inriktningen på enskild elev.

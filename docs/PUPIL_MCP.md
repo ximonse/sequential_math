@@ -68,6 +68,8 @@ resultat; för stora resultat avvisas med råd att begränsa frågan.
 | `math_find_groups` | Behöriga grupp-ID:n/namn, även dubblettnamn som kräver ett exakt val. |
 | `math_get_audience` | Aktuella medlemmar i exakt elev-/grupp-/klassurval, även utan svar; revisionsbunden sidläsning. Historiskt medlemskap är okänt. Se PUPIL_MATERIAL.md. |
 | `math_preview_material` | Servervaliderad generell/analysspecifik tränings- eller screeningförhandsvisning för elev, grupp eller klass. Sparar eller delar inte ut något. Se PUPIL_MATERIAL.md. |
+| `math_get_material_draft` | Lärarprivat fryst version, historik och paginerade innehålls-/mottagar-/analyssektioner. Aktuell åtkomst omkontrolleras. |
+| `math_save_material_draft` | Separat `--allow-material-writes` krävs. Spara validerad utkastversion med preview-revision, CAS och requestId. Godkänner eller delar inte ut något. |
 | `math_get_pupil_evidence` | Elev-ID, klass, from/to, source; limit/cursor/snapshotRevision. |
 | `math_get_evidence_detail` | Samma period och revision, exakt ref; answer/workspace/events. |
 | `math_get_notebook` | Revisionsbundet räknehäftesoriginal: text eller PNG-bildblock med cellmått. Se PUPIL_NOTEBOOK_EXPORT.md. |

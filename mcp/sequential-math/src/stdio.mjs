@@ -7,6 +7,7 @@ import { demoDescription, launchDemo } from './demo.mjs'
 const screening = process.argv.includes('--demo-screening')
 const demo = process.argv.includes('--demo') || screening
 const allowReportWrites = process.argv.includes('--allow-report-writes') || process.env.MATH_MCP_ALLOW_REPORT_WRITES === 'true'
+const allowMaterialWrites = process.argv.includes('--allow-material-writes') || process.env.MATH_MCP_ALLOW_MATERIAL_WRITES === 'true'
 let demoApp, apiPromise
 async function getApi() {
   if (!apiPromise) apiPromise = (async () => {
@@ -20,7 +21,7 @@ async function getApi() {
   })().catch(error => { apiPromise = null; throw error })
   return apiPromise
 }
-const server = createMathServer({ getApi, allowReportWrites, dataMode: demo ? 'synthetic' : process.env.MATH_MCP_DATA_MODE || 'synthetic',
+const server = createMathServer({ getApi, allowReportWrites, allowMaterialWrites, dataMode: demo ? 'synthetic' : process.env.MATH_MCP_DATA_MODE || 'synthetic',
   demo: demo ? demoDescription(screening) : null })
 let closed = false
 async function close() {

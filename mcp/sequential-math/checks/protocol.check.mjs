@@ -8,9 +8,9 @@ import { StdioClientTransport } from '@modelcontextprotocol/client/stdio'
 import { launchDemo } from '../src/demo.mjs'
 
 const entry = fileURLToPath(new URL('../src/stdio.mjs', import.meta.url))
-async function connect(writes = false) {
+async function connect(writes = false, materialWrites = false) {
   const client = new Client({ name: 'synthetic-integration-client', version: '1.0.0' })
-  const transport = new StdioClientTransport({ command: process.execPath, args: [entry, '--demo', ...(writes ? ['--allow-report-writes'] : [])], stderr: 'pipe' })
+  const transport = new StdioClientTransport({ command: process.execPath, args: [entry, '--demo', ...(writes ? ['--allow-report-writes'] : []), ...(materialWrites ? ['--allow-material-writes'] : [])], stderr: 'pipe' })
   await client.connect(transport)
   return client
 }
@@ -30,7 +30,7 @@ after(async () => { await reader?.close(); await writer?.close() })
 
 test('SDK client discovers bounded read tools, prompt and the closed assignment/check-in boundary', async () => {
   const tools = (await reader.listTools()).tools
-  assert.equal(tools.length, 12)
+  assert.equal(tools.length, 13)
   assert.equal(tools.some(t => /save|publish|assign|delete/u.test(t.name)), false)
   assert.equal(tools.every(t => t.annotations.readOnlyHint), true)
   assert.equal(meta.assignmentPublication, false)
@@ -142,6 +142,35 @@ test('write-enabled SDK client saves a real API-validated AI draft with idempote
   assert.equal((await call(writer, 'math_get_pupil_evidence', target)).snapshotRevision, evidence.snapshotRevision)
 })
 
+test('separately enabled material saves preserve frozen versions and idempotent receipts without assignment or approval', async () => {
+  const client = await connect(false, true)
+  try {
+    const capability = await call(client, 'math_get_capabilities')
+    assert.equal(capability.materialDraftWritesEnabled, true)
+    assert.equal(capability.reportWritesEnabled, false)
+    const audience = await call(client, 'math_get_audience', { targetType: 'class', targetId: target.classId })
+    const material = { schemaVersion: 1, kind: 'practice', mode: 'general', titleSv: 'Tabell 7', goalSv: 'Träna tabellfakta', instructionSv: 'Räkna.',
+      audience: { targetType: 'class', targetId: target.classId, rosterRevision: audience.rosterRevision }, content: { kind: 'table', tables: [7], targetCount: 10 } }
+    const preview = await call(client, 'math_preview_material', { material })
+    const args = { material, expectedRevision: 0, requestId: 'material-save-0001', expectedContentRevision: preview.contentRevision }
+    const saved = await call(client, 'math_save_material_draft', args)
+    assert.equal(saved.assigned, false); assert.equal(saved.approval, 'not_requested')
+    assert.equal((await call(client, 'math_save_material_draft', args)).draftId, saved.draftId)
+    const summary = await call(client, 'math_get_material_draft', { draftId: saved.draftId })
+    assert.equal(summary.titleSv, 'Tabell 7'); assert.equal(summary.version, 1)
+    const frozen = await call(client, 'math_get_material_draft', { draftId: saved.draftId, section: 'input' })
+    assert.deepEqual(frozen.input, material)
+    const changed = { ...material, titleSv: 'Tabell 7, ny version' }
+    const next = await call(client, 'math_preview_material', { material: changed })
+    await call(client, 'math_save_material_draft', { material: changed, draftId: saved.draftId, expectedRevision: 1,
+      expectedContentRevision: next.contentRevision, requestId: 'material-save-0002' })
+    const history = await call(client, 'math_get_material_draft', { draftId: saved.draftId, section: 'history' })
+    assert.equal(history.versions.length, 2)
+    const original = await call(client, 'math_get_material_draft', { draftId: saved.draftId, version: 1 })
+    assert.equal(original.titleSv, 'Tabell 7')
+  } finally { await client.close() }
+})
+
 test('a legacy initialize client can list tools without SDK-v2 metadata and stdout remains JSON-only', async () => {
   const child = spawn(process.execPath, [entry, '--demo'], { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true })
   const lines = createInterface({ input: child.stdout })
@@ -159,7 +188,7 @@ test('a legacy initialize client can list tools without SDK-v2 metadata and stdo
     assert.equal((await wait(1)).result.protocolVersion, '2025-11-25')
     send({ method: 'notifications/initialized' })
     send({ id: 2, method: 'tools/list', params: {} })
-    assert.equal((await wait(2)).result.tools.length, 12)
+    assert.equal((await wait(2)).result.tools.length, 13)
   } finally { child.stdin.end(); child.kill(); lines.close() }
 })
 

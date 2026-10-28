@@ -51,6 +51,13 @@ analysreferenser och anger vilka elever som saknar analys. Förberedelsen
 återanvänder verklig screeningvalidering och skriver inget; saved/assigned
 är false. Sparade utkast och mänskligt godkännandeflöde återstår.
 
+2026-10-28: Versionerade materialutkast kan nu sparas och återläsas privat
+per lärare via API/MCP, med separat materialskrivflagga, validerad
+förhandsvisningsrevision, CAS och återförsöks-ID. Samtliga historiska
+mottagare/källor åtkomstkontrolleras. Elevradering/anonymisering tar bort
+hela berörda utkasthistoriken. Lärarens granskningsvy, godkännande och
+utdelning återstår; sparande aktiverar inget elevuppdrag.
+
 1. Verifiera faktisk MCP-analys i denna Codex-session med syntetiska svar och
    räknehäftesoriginal. Klart när belägg, motexempel, osäkerheter och original
    stämmer mot källorna, även vid tomt svar med sparat arbete.

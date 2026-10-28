@@ -1,8 +1,8 @@
 # Generella och analysspecifika uppdrag och screeningar
 
 Beslutad riktning 2026-10-28. Urvalsläsning och servervaliderad förhandsvisning
-är byggda lokalt. Materialutkastens lagring, godkännande och MCP-utdelning
-återstår. De senare avsnitten specificerar nästa implementation.
+är byggda lokalt, liksom versionerad utkastlagring och återläsning.
+Lärargodkännande och utdelning återstår. Avsnittet om dessa specificerar nästa implementation.
 
 ## Två ingångar och separat mottagarval
 
@@ -45,8 +45,8 @@ före utkast/godkännande om medlemskapet kan ha ändrats.
 
 `POST /api/teacher-material` med `{action: "preview", material: ...}` eller
 MCP `math_preview_material` validerar ett förslag utan skrivning. Capabilities
-anger `materialPreview=true`, medan `followupDrafts=false` och
-`assignmentPublication=false` ligger kvar. Den nya MCP-ytan kräver att
+anger `materialPreview=true` och `followupDrafts=true`; `assignmentPublication=false`
+ligger kvar. Sparande kräver `materialDraftWritesEnabled=true`. Den nya MCP-ytan kräver att
 klienten laddar om servern; en redan ansluten process kan ha äldre verktygslista.
 
 Material v1 har `schemaVersion:1`, `kind:practice|screening`,
@@ -68,7 +68,35 @@ Svaret innehåller fulla frågesnapshots/bedömningsunderlag eller träningsram,
 exakta mottagare, contentRevision, saved=false, assigned=false och
 approval=not_requested. Ingen elev får uppdrag av denna operation.
 
-### Planerad lagring och granskning
+### Lokal versionerad lagring
+
+Spara med `POST /api/teacher-material` och `action:save`, samma materialindata,
+`requestId` (8–100 tecken), `expectedRevision` och `expectedContentRevision`
+från förhandsvisningen. Ange `draftId` när ett befintligt utkast får en ny
+version. Servern kör valideringen på nytt; ändrad källa eller mottagarlista
+kräver en ny förhandsvisning. Versioner skrivs inte över. Återanvänd samma
+requestId efter osäker kvittens; läs lagrat utkast innan nytt skrivförsök.
+
+`GET /api/teacher-material?draftId=...` återläser lärarens privata historik.
+Aktuell åtkomst till samtliga historiska mottagare, grupper och analyskällor
+kontrolleras även på läsning. Indragen åtkomst kan därför blockera ett helt
+utkast med äldre känslig text. Läsningen påstår inte att gammalt underlag
+eller medlemskap fortfarande är aktuellt för utdelning.
+
+KV-nyckel: `teacher_material:TEACHER:DRAFT`, index
+`teacher_material_index:TEACHER`. Högst 100 utkast, 20 versioner och 2 MiB per
+historik. CAS för lagringsrevision och tombstone-kontroller stoppar samtidiga
+överskrivningar och återupplivning efter elevradering. Vid radering/anonymisering
+av en berörd elev tas hela utkasthistoriken bort, inklusive fria formuleringar;
+den förs inte till anonym statistik. Ingen automatisk rensning av äldre versioner.
+
+MCP `math_get_material_draft` läser summary/history/content/audience/basis/input
+för en vald version; listsektioner har offset/limit. `math_save_material_draft`
+finns bara med separat startflagga `--allow-material-writes` eller
+`MATH_MCP_ALLOW_MATERIAL_WRITES=true`. Rapportskrivflaggan ger inte denna rätt.
+Inget utkast godkänns eller delas ut av sparandet.
+
+### Planerat lärargodkännande
 
 Ett versionsbestämt utkast ska innehålla:
 

@@ -70,7 +70,7 @@ export class TeacherApiClient {
   }
   async request(path, { body, readOnly = !body, signal } = {}) {
     // Only fixed app routes built by the adapter are accepted; no arbitrary URL/proxy tool.
-    if (!/^\/api\/(?:students(?:\?|$)|teacher-material$|teacher-pupil-labels$|teacher-students\/[A-Za-z0-9_-]+\?)/u.test(path)) {
+    if (!/^\/api\/(?:students(?:\?|$)|teacher-material(?:\?|$)|teacher-pupil-labels$|teacher-students\/[A-Za-z0-9_-]+\?)/u.test(path)) {
       throw new BridgeError('unsupported_route', 'This adapter does not expose that app operation.')
     }
     let result = await this.raw(path, { body, token: await this.authenticate(signal), signal })

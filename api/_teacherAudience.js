@@ -65,9 +65,7 @@ async function readAudience(req, type, targetId, teacherId) {
   return { targetType: type, targetId, name: String(target.name || targetId), pupils }
 }
 
-export async function teacherAudience(req, res) {
-  res.setHeader('Cache-Control', 'no-store')
-  try {
+export async function resolveTeacherAudience(req) {
     const { targetType, targetId } = req.query || {}
     const limit = Number(req.query?.limit ?? 50), offset = Number(req.query?.offset ?? 0)
     if (!['class', 'group', 'student'].includes(targetType) || !validId(targetId)
@@ -81,9 +79,15 @@ export async function teacherAudience(req, res) {
     if (hash(initial) !== rosterRevision || (req.query.rosterRevision && req.query.rosterRevision !== rosterRevision)) {
       fail(409, 'Urvalet har ändrats. Börja om sidläsningen med aktuell medlemslista.')
     }
-    return res.status(200).json({ ...current, rosterRevision, pupils: current.pupils.slice(offset, offset + limit),
+    return { ...current, rosterRevision, pupils: current.pupils.slice(offset, offset + limit),
       total: current.pupils.length, nextOffset: offset + limit < current.pupils.length ? offset + limit : null,
-      membershipBasis: 'current', historicalMembership: 'unknown' })
+      membershipBasis: 'current', historicalMembership: 'unknown' }
+}
+
+export async function teacherAudience(req, res) {
+  res.setHeader('Cache-Control', 'no-store')
+  try {
+    return res.status(200).json(await resolveTeacherAudience(req))
   } catch (error) {
     return res.status(error.status || 503).json({ error: error.status ? error.message : 'Urvalet kunde inte läsas.' })
   }

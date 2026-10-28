@@ -2,6 +2,14 @@
 
 ## Lokal elevanalys via MCP
 
+`api/_teacherMaterialPreview.js` validerar generell eller analysspecifik
+förhandsvisning mot exakt aktuellt urval och revisionsbundet analysunderlag.
+Träning använder befintlig payload-validering; screening återanvänder
+`prepareDiagnosticAssignment` från uppdragslagret. Förberedelse skriver inget;
+`createDiagnosticAssignment` använder samma förberedelse och sparar separat.
+MCP är en tunn adapter även för materialförhandsvisning. Lagring/godkännande/
+utdelning ingår ännu inte. Kontrakt: docs/PUPIL_MATERIAL.md.
+
 `mcp/sequential-math/` är en separat stdio-adapter med egen låsfil, utanför
 frontendbygget och Vercel-routingen. Den anropar befintliga behörighetskontrollerade
 lärar-API:er; domänvalidering och rapport-CAS stannar på appservern. Läsläge är

@@ -43,6 +43,14 @@ formatgränser. Analys-skillen har klass-/gruppregler; teacher-data-dokumentet
 hänvisar till samma kontrakt. Den andra agentens ospårade teacher-data-skill
 är bevarad. Materiallagring och godkänd utdelning återstår.
 
+2026-10-28: Servervaliderad materialförhandsvisning finns nu i
+POST /api/teacher-material action=preview och MCP math_preview_material.
+Båda innehållstyperna, båda ingångarna och elev/grupp/klass har syntetiska
+prov, inklusive grupp över två klasser. Specifika utkast kräver aktuella
+analysreferenser och anger vilka elever som saknar analys. Förberedelsen
+återanvänder verklig screeningvalidering och skriver inget; saved/assigned
+är false. Sparade utkast och mänskligt godkännandeflöde återstår.
+
 1. Verifiera faktisk MCP-analys i denna Codex-session med syntetiska svar och
    räknehäftesoriginal. Klart när belägg, motexempel, osäkerheter och original
    stämmer mot källorna, även vid tomt svar med sparat arbete.

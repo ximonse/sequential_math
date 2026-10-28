@@ -29,7 +29,7 @@ export function createMathServer({ getApi, allowReportWrites = false, dataMode =
   }
   register('math_get_capabilities', 'Tillgängliga arbetsflöden', 'Read this first. Describes the actual pilot limits and synthetic demo period. Does not read pupil records.', {}, async () => ({
     dataMode, reportWritesEnabled: allowReportWrites, assignmentPublication: false, followupDrafts: false,
-    teacherCheckInWrites: false, analysisSchemaVersion: 1, transport: 'stdio', ...(demo ? { demo } : {}) }))
+    teacherCheckInWrites: false, materialPreview: true, analysisSchemaVersion: 1, transport: 'stdio', ...(demo ? { demo } : {}) }))
   register('math_find_classes', 'Sök tillgängliga klasser', 'Read-only class candidates, including empty authorized classes. Returns exact IDs and names only. Resolve an ambiguous name before choosing a classId; no login tokens, pupil records or class initialization.', {
     query: z.string().max(100).default(''), limit: z.number().int().min(1).max(50).default(20), offset: z.number().int().min(0).max(10000).default(0)
   }, async (args, signal) => (await getApi()).request(`/api/students?${new URLSearchParams({ resource: 'classes', ...args })}`, { signal }))
@@ -137,6 +137,12 @@ export function createMathServer({ getApi, allowReportWrites = false, dataMode =
   }, false)
   server.registerPrompt('math_pupil_analysis', { title: 'Analys med belägg och motexempel', description: 'Analysis guidance and schema; contains no pupil data or credentials.' }, async () => ({
     messages: [{ role: 'user', content: { type: 'text', text: `${originInstructions}\n\n${await readFile(new URL('../../../.agents/skills/pupil-analysis/SKILL.md', import.meta.url), 'utf8')}` } }]
+  }))
+  register('math_preview_material', 'Förhandsvisa generellt eller analysspecifikt material', 'Validate one practice/screening proposal against current audience, supported content and revision-bound analysis references. Does not save, approve or assign. Specific means based on this class/group/pupil analysis, not merely addressed to them.', {
+    material: z.record(z.string(), z.unknown())
+  }, async ({ material }, signal) => (await getApi()).request('/api/teacher-material', { body: { action: 'preview', material }, readOnly: true, signal }))
+  server.registerPrompt('math_assignment_authoring', { title: 'Generella och analysspecifika uppdrag', description: 'Creation guidance and current capability boundaries; no pupil data.' }, async () => ({
+    messages: [{ role: 'user', content: { type: 'text', text: await readFile(new URL('../../../.agents/skills/assignment-authoring/SKILL.md', import.meta.url), 'utf8') } }]
   }))
   return server
 }

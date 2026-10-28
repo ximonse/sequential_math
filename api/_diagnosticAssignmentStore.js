@@ -107,7 +107,7 @@ const newId = () => randomBytes(16).toString('hex')
 const fail = (status, code, message) => { throw new DiagnosticAppendError(status, code, message) }
 const validId = value => typeof value === 'string' && idPattern.test(value)
 
-export async function createDiagnosticAssignment({ classId, studentIds, taskIds, teacherId,
+export async function prepareDiagnosticAssignment({ classId, studentIds, taskIds, teacherId,
   titleSv = '', itemOptions = {}, customTasks = [] },
   { store = kv, makeId = newId } = {}) {
   if (!validId(classId) || !validId(teacherId)
@@ -156,6 +156,12 @@ export async function createDiagnosticAssignment({ classId, studentIds, taskIds,
     manifestId: manifest.manifestId, manifestVersion: manifest.manifestVersion,
     language: manifest.language, sourceKind: manifest.sourceKind,
     titleSv: titleSv.trim() || 'Screening', instructionSv: manifest.instructionSv, createdAt: Date.now() }
+  return assignment
+}
+
+export async function createDiagnosticAssignment(input, options = {}) {
+  const assignment = await prepareDiagnosticAssignment(input, options)
+  const { store = kv } = options
   return saveDiagnosticAssignment(assignment, { store })
 }
 

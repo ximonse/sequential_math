@@ -30,7 +30,7 @@ after(async () => { await reader?.close(); await writer?.close() })
 
 test('SDK client discovers bounded read tools, prompt and the closed assignment/check-in boundary', async () => {
   const tools = (await reader.listTools()).tools
-  assert.equal(tools.length, 11)
+  assert.equal(tools.length, 12)
   assert.equal(tools.some(t => /save|publish|assign|delete/u.test(t.name)), false)
   assert.equal(tools.every(t => t.annotations.readOnlyHint), true)
   assert.equal(meta.assignmentPublication, false)
@@ -102,6 +102,24 @@ test('preview is read-only, invalid tool arguments and unavailable publication c
   } catch (error) { assert.match(error.message, /not found|unknown|method|tool/iu) }
 })
 
+test('MCP material preview validates generic and specific content without creating reports or assignments', async () => {
+  const audience = await call(reader, 'math_get_audience', { targetType: 'class', targetId: target.classId })
+  const evidence = await call(reader, 'math_get_pupil_evidence', target)
+  const material = { schemaVersion: 1, kind: 'practice', mode: 'general', titleSv: 'Tabell 7', goalSv: 'Undersök tabellfakta',
+    instructionSv: 'Räkna och förklara.', audience: { targetType: 'class', targetId: target.classId, rosterRevision: audience.rosterRevision },
+    content: { kind: 'table', tables: [7], targetCount: 10 } }
+  const generic = await call(reader, 'math_preview_material', { material })
+  assert.equal(generic.saved, false); assert.equal(generic.assigned, false)
+  const specific = await call(reader, 'math_preview_material', { material: { ...material, mode: 'specific', basis: [{ ...target,
+    snapshotRevision: evidence.snapshotRevision, supportRefs: [evidence.entries[2].ref], counterRefs: [], reasonSv: 'Undersök felsvaret utan att tillskriva hela klassen en felorsak.' }] } })
+  assert.equal(specific.material.pupilsWithoutAnalysis.length, 1)
+  const invalid = await reader.callTool({ name: 'math_preview_material', arguments: { material: { ...material, mode: 'specific' } } })
+  assert.equal(invalid.isError, true)
+  assert.equal((await call(reader, 'math_get_analysis_history', { studentId: target.studentId, classId: target.classId })).total, 0)
+  const prompt = await reader.getPrompt({ name: 'math_assignment_authoring' })
+  assert.match(prompt.messages[0].content.text, /Specifikt/u)
+})
+
 test('write-enabled SDK client saves a real API-validated AI draft with idempotent receipt, not an assignment', async () => {
   writer = await connect(true)
   const evidence = await call(writer, 'math_get_pupil_evidence', target)
@@ -141,7 +159,7 @@ test('a legacy initialize client can list tools without SDK-v2 metadata and stdo
     assert.equal((await wait(1)).result.protocolVersion, '2025-11-25')
     send({ method: 'notifications/initialized' })
     send({ id: 2, method: 'tools/list', params: {} })
-    assert.equal((await wait(2)).result.tools.length, 11)
+    assert.equal((await wait(2)).result.tools.length, 12)
   } finally { child.stdin.end(); child.kill(); lines.close() }
 })
 

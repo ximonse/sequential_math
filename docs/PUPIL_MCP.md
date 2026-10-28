@@ -67,6 +67,7 @@ resultat; för stora resultat avvisas med råd att begränsa frågan.
 | `math_find_classes` | Skrivskyddade behöriga klasskandidater, även tomma klasser. Exakta ID:n/namn, limit/offset; inga klassinloggningstoken. |
 | `math_find_groups` | Behöriga grupp-ID:n/namn, även dubblettnamn som kräver ett exakt val. |
 | `math_get_audience` | Aktuella medlemmar i exakt elev-/grupp-/klassurval, även utan svar; revisionsbunden sidläsning. Historiskt medlemskap är okänt. Se PUPIL_MATERIAL.md. |
+| `math_preview_material` | Servervaliderad generell/analysspecifik tränings- eller screeningförhandsvisning för elev, grupp eller klass. Sparar eller delar inte ut något. Se PUPIL_MATERIAL.md. |
 | `math_get_pupil_evidence` | Elev-ID, klass, from/to, source; limit/cursor/snapshotRevision. |
 | `math_get_evidence_detail` | Samma period och revision, exakt ref; answer/workspace/events. |
 | `math_get_notebook` | Revisionsbundet räknehäftesoriginal: text eller PNG-bildblock med cellmått. Se PUPIL_NOTEBOOK_EXPORT.md. |

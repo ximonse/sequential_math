@@ -7,8 +7,9 @@ description: Skapa generella eller analysspecifika träningsuppdrag och screenin
 
 Läs docs/PUPIL_MATERIAL.md för aktuellt kontrakt och vad API/MCP faktiskt stödjer.
 Kontrollera math_get_capabilities innan du lovar lagring eller utdelning.
-Nuvarande MCP saknar materialutkast och utdelning: visa då ett granskningsbart
-innehållsutkast i samtalet och ange att det ännu inte är sparat i appen.
+Använd math_preview_material när materialPreview stöds. Servern validerar
+förslaget och mottagarlistan utan lagring. Nuvarande MCP saknar sparade
+materialutkast och utdelning; ange att förhandsvisningen inte är sparad i appen.
 Gör ingen elevutdelning genom alternativa endpoints under utkaststeget.
 
 Generellt innehåll utgår från Simons instruktioner eller givna material och

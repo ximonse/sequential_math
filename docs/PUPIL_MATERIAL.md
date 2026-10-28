@@ -1,8 +1,8 @@
 # Generella och analysspecifika uppdrag och screeningar
 
-Beslutad riktning 2026-10-28. Urvalsläsningen nedan är byggd lokalt;
-materialutkastens lagring, godkännande och MCP-utdelning återstår att bygga.
-Detta dokument specificerar nästa implementation, inte en färdig API-yta.
+Beslutad riktning 2026-10-28. Urvalsläsning och servervaliderad förhandsvisning
+är byggda lokalt. Materialutkastens lagring, godkännande och MCP-utdelning
+återstår. De senare avsnitten specificerar nästa implementation.
 
 ## Två ingångar och separat mottagarval
 
@@ -40,6 +40,35 @@ gruppmedlemskap rekonstrueras inte. Återläs urvalet efter längre analys och
 före utkast/godkännande om medlemskapet kan ha ändrats.
 
 ## Kontrakt för kommande utkast
+
+### Lokal förhandsvisning utan lagring
+
+`POST /api/teacher-material` med `{action: "preview", material: ...}` eller
+MCP `math_preview_material` validerar ett förslag utan skrivning. Capabilities
+anger `materialPreview=true`, medan `followupDrafts=false` och
+`assignmentPublication=false` ligger kvar. Den nya MCP-ytan kräver att
+klienten laddar om servern; en redan ansluten process kan ha äldre verktygslista.
+
+Material v1 har `schemaVersion:1`, `kind:practice|screening`,
+`mode:general|specific`, `titleSv`, `goalSv`, `instructionSv`,
+`sourceMaterials:[{label,excerpt}]`, `audience:{targetType,targetId,rosterRevision}`,
+`basis` och `content`. Okända fält avvisas. Vid specifikt innehåll krävs minst
+ett basis-objekt med elev-ID, klass-ID, from/to, source, snapshotRevision,
+supportRefs, counterRefs och reasonSv. Referenser/revision, aktuell åtkomst
+och urval kontrolleras; servern bevisar inte rationale-textens pedagogiska
+riktighet. Elever utan analysbelägg listas i pupilsWithoutAnalysis.
+
+Träningscontent är en ram i appens befintliga payload-format utan id/title/
+createdAt, exempelvis `{kind:"table",tables:[7],targetCount:10}`. Specificerade
+val som inte överlever befintlig validering avvisas; inga nya generatorfilter
+uppfinns. Screeningcontent har taskIds och/eller customTasks samt itemOptions
+enligt befintligt screeningkontrakt. Samma förberedelsefunktion används av
+verkligt skapande och förhandsvisning, men bara skapandefunktionen skriver.
+Svaret innehåller fulla frågesnapshots/bedömningsunderlag eller träningsram,
+exakta mottagare, contentRevision, saved=false, assigned=false och
+approval=not_requested. Ingen elev får uppdrag av denna operation.
+
+### Planerad lagring och granskning
 
 Ett versionsbestämt utkast ska innehålla:
 

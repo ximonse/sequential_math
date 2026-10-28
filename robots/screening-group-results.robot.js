@@ -2,7 +2,7 @@
 // in one table. Picking recipients for results never changes the next dispatch.
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
-import { createTeacher, teacherLogin } from './lib/teacher.js'
+import { createTeacher, teacherLogin, sendScreening } from './lib/teacher.js'
 import { collectionSelect, openDispatch, openResults, reviewOf } from './lib/screening.js'
 
 test('A group across two classes is read as one table, and result picks stay out of the dispatch', async ({ page, request, browser }, testInfo) => {
@@ -20,11 +20,7 @@ test('A group across two classes is read as one table, and result picks stay out
   const panel = await openDispatch(page)
   await page.screenshot({ path: testInfo.outputPath('1-dela-ut.png'), fullPage: true })
   await panel.getByRole('textbox', { name: 'Samlingens namn' }).fill('Gruppsamling')
-  await page.locator('[data-recipient-picker]').getByRole('button', { name: `Grupp: ${group.name}`, exact: true }).click()
-  await expect(page.locator('[data-screening-recipients]')).toContainText('2 screeningar, en per klass')
-  await page.locator('[data-screening-recipients]').getByRole('button', { name: 'Ge till valda mottagare (2 screeningar)', exact: true }).click()
-  await expect(panel.getByText(/^Screening skapad för /)).toBeVisible()
-  await page.locator('[data-recipient-picker]').getByRole('button', { name: `Grupp: ${group.name}`, exact: true }).click()
+  await sendScreening(page, { groupName: group.name })
 
   const contexts = []
   for (const pupil of [alma, bo]) {
@@ -58,8 +54,8 @@ test('A group across two classes is read as one table, and result picks stay out
 
   // Results picks are separate: the dispatch still has no recipients, although the group was picked for results.
   await openDispatch(page)
-  await expect(page.locator('[data-screening-recipients]')).toContainText('Välj klasser, grupper eller elever i rutan Mottagare överst.')
-  await expect(page.locator('[data-recipient-picker]').getByRole('button', { name: `Grupp: ${group.name}`, exact: true })).toHaveAttribute('aria-pressed', 'false')
+  await panel.getByRole('button', { name: 'Välj mottagare', exact: true }).click()
+  await expect(panel.getByRole('region', { name: 'Mottagare', exact: true }).locator('[data-recipient-summary]')).toHaveText('Ingen mottagare vald.')
   for (const context of contexts) await context.close()
   void cleo
 })
@@ -77,11 +73,9 @@ test('Result rows follow same-class recipient changes and new dispatches appear 
   await teacherLogin(page, teacher)
   const dispatch = await openDispatch(page)
   await dispatch.getByRole('textbox', { name: 'Samlingens namn' }).fill('First collection')
-  const picker = page.locator('[data-recipient-picker]')
-  await picker.getByRole('button', { name: className, exact: true }).click()
-  await dispatch.getByRole('button', { name: 'Ge till valda mottagare (1 screening)', exact: true }).click()
-  await expect(dispatch.getByText(/^Screening skapad för /)).toBeVisible()
+  await sendScreening(page, { className })
   const results = await openResults(page, { pupilName: 'Filter One' })
+  const picker = page.locator('[data-recipient-picker]')
   await collectionSelect(results).selectOption({ index: 1 })
   const rows = reviewOf(results).locator('tbody tr')
   await expect(rows).toHaveCount(1)
@@ -91,8 +85,7 @@ test('Result rows follow same-class recipient changes and new dispatches appear 
   await expect(rows).toHaveCount(1)
   await openDispatch(page)
   await dispatch.getByRole('textbox', { name: 'Samlingens namn' }).fill('Second collection')
-  await dispatch.getByRole('button', { name: 'Ge till valda mottagare (1 screening)', exact: true }).click()
-  await expect(dispatch.getByRole('button', { name: 'Ge till valda mottagare (1 screening)', exact: true })).toBeEnabled()
+  await sendScreening(page, { className })
   await openResults(page)
   await expect(collectionSelect(results).locator('option')).toContainText(['Välj samling', 'Second collection', 'First collection'])
 })

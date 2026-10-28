@@ -263,13 +263,12 @@ export default function DashboardLayout({
     </div>
   }
 
-  // The class filter is hidden on Screening, so it must not pre-pick classes there.
-  const screeningRecipients = recipientsFollowFilter ? [] : recipients
   // Results have their own picks so a group chosen to read results is never also
   // the target of the next dispatch.
   const [resultPicks, setResultPicks] = useState([])
   const reviewDirtyRef = useRef(false)
-  const draftDirtyRef = useRef(false)
+  const dispatchDirtyRef = useRef(false)
+  const [requestedScreening, setRequestedScreening] = useState('')
   const isScreening = activeWorkspace === 'ncm' || activeWorkspace === 'ncm-results'
 
   function renderPanelContent(id) {
@@ -490,22 +489,27 @@ export default function DashboardLayout({
     )
     if (id === 'ncm-grid') return (
       <div>
-      <section className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 shadow-sm">
+      <details className="mb-2 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm shadow-sm">
+        <summary className="cursor-pointer">Prova det digitala räknehäftet</summary>
         <h2 className="text-sm font-semibold text-slate-800">Digitalt räknehäfte</h2>
         <p className="mr-auto text-xs text-slate-600">Osparad prototyp för att prova räknehäftet.</p>
         <button type="button" onClick={() => navigate('/teacher/ncm/diagnostic-grid')}
           className="rounded-md border border-slate-300 px-1.5 py-0.5 text-sm text-slate-800 hover:bg-slate-50">
           Öppna räknehäftet
         </button>
-      </section>
-      <ScreeningDispatchPanel classes={classes} students={students} recipients={screeningRecipients} teacherGroups={teacherGroups}
-        onDirtyChange={value => { draftDirtyRef.current = value }} />
+      </details>
+      <ScreeningDispatchPanel classes={classes} students={students} teacherGroups={teacherGroups} active={activeWorkspace === 'ncm'}
+        onDirtyChange={value => { dispatchDirtyRef.current = value }} onResults={collection => {
+          setResultPicks(collection.members.map(member => ({ type: 'class', id: member.classId })))
+          setRequestedScreening(collection.id)
+          setActiveWorkspace('ncm-results')
+        }} />
       </div>
     )
     if (id === 'ncm-results') return (
       <ScreeningResultsPanel classes={classes} students={students} recipients={resultPicks} teacherGroups={teacherGroups}
         active={activeWorkspace === 'ncm-results'}
-        onDirtyChange={value => { reviewDirtyRef.current = value }} />
+        requestedCollectionId={requestedScreening} onDirtyChange={value => { reviewDirtyRef.current = value }} />
     )
     return null
   }
@@ -521,7 +525,7 @@ export default function DashboardLayout({
   const classStatsPanel = <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
 
   return (
-    <div className={`teacher-dashboard-surface min-h-screen pb-5 pt-14 sm:pb-6 sm:pt-16 ${surfaceClass}`}>
+    <div data-teacher-workspace={activeWorkspace} className={`teacher-dashboard-surface min-h-screen pb-5 pt-14 sm:pb-6 sm:pt-16 ${surfaceClass}`}>
       <div className="max-w-6xl mx-auto px-3 sm:px-4">
         <DashboardHeaderBar
           isDirectStudentView={isDirectStudentView}
@@ -548,11 +552,10 @@ export default function DashboardLayout({
               <nav className="grid gap-1" aria-label="Lärarvy">
                 {WORKSPACES.filter(workspace => (!workspace.adminOnly || teacherIsAdmin) && (!workspace.attentionOnly || canViewAttention)).map(workspace => (
                   <button key={workspace.id} type="button" onClick={() => {
-                    if (isScreening && !['ncm', 'ncm-results'].includes(workspace.id) && draftDirtyRef.current
-                      && !window.confirm('Utkastet har osparade ändringar. Vill du lämna dem?')) return
-                    if (workspace.id !== activeWorkspace && reviewDirtyRef.current
-                      && !window.confirm('Genomgången har osparade ändringar. Vill du lämna dem?')) return
+                    if (workspace.id !== activeWorkspace && (reviewDirtyRef.current || (dispatchDirtyRef.current && !['ncm', 'ncm-results'].includes(workspace.id)))
+                      && !window.confirm('Du har osparade ändringar. Vill du lämna dem?')) return
                     if (workspace.id !== activeWorkspace) reviewDirtyRef.current = false
+                    if (!['ncm', 'ncm-results'].includes(workspace.id)) dispatchDirtyRef.current = false
                     setActiveWorkspace(workspace.id)
                     if (workspace.id === 'focus') navigate('/teacher/focus')
                     else if (isFocusView) navigate('/teacher')
@@ -574,9 +577,9 @@ export default function DashboardLayout({
             {activeWorkspace === 'progress' && import.meta.env.DEV && renderProgressModule('testdata', 'Lokal testdata', <LocalTestDataPanel mode="import" onImported={onLocalTestDataImported} />)}
 
             {activeWorkspace === 'focus' && !canViewAttention && <p role="status">Fokusresultat är endast tillgängliga för huvudadmin.</p>}
-            {(activeWorkspace === 'teaching' || activeWorkspace === 'ncm') && (
+            {activeWorkspace === 'teaching' && (
               <RecipientPicker classes={classes} groups={teacherGroups} students={students}
-                recipients={activeWorkspace === 'ncm' ? screeningRecipients : recipients} onChange={setDeliveryPicks}
+                recipients={recipients} onChange={setDeliveryPicks}
                 followsFilter={recipientsFollowFilter && activeWorkspace === 'teaching'} />
             )}
             {activeWorkspace === 'teaching' && (

@@ -120,8 +120,12 @@ test('Teacher builds with bank and uploaded library image; hiding preserves assi
   const listed = await teacherRequest(page, `/api/teacher-diagnostic-assignments?classId=${classId}`, null, 'GET')
   const assignment = listed.data.assignments.find(item => item.titleSv === 'Egen bildfråga')
   const imageId = assignment.items[0].taskSnapshot.options[1].image.id
+  await openDispatch(page)
+  await panel.getByText('Lägg till bildfrågor', { exact: true }).click()
+  await panel.getByText('Mitt bildbibliotek', { exact: true }).click()
   await panel.getByRole('button', { name: 'Dölj Privat triangel', exact: true }).click()
   await expect(panel.getByRole('button', { name: 'Lägg till Privat triangel', exact: true })).toHaveCount(0)
+  page.once('dialog', dialog => dialog.accept())
   await login(page, pupil)
   const forbidden = await page.evaluate(async id => (await fetch(`/api/me/diagnostic-assignments?imageId=${id}&assignmentId=wrong`)).status, imageId)
   expect(forbidden).toBe(403)

@@ -42,5 +42,7 @@ await control('seed-table-progress', { students: [
 ] })
 const screening = process.argv.includes('--screening')
 const teacher = await control('teacher', { id: 'mcp-demo-teacher', classIds: ['mcp-demo'], ...(screening ? { role: 'super_admin' } : {}) })
+await control('group', { id: 'mcp-demo-group', name: 'MCP-demogrupp',
+  pupilIds: [seeded.pupils[0].studentId], teacherIds: ['mcp-demo-teacher'] })
 if (screening) await seedScreeningDemo(app.url, teacher, seeded.pupils[0])
 process.send?.({ baseUrl: app.url, username: teacher.username, password: teacher.password })

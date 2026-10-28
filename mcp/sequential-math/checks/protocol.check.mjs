@@ -30,7 +30,7 @@ after(async () => { await reader?.close(); await writer?.close() })
 
 test('SDK client discovers bounded read tools, prompt and the closed assignment/check-in boundary', async () => {
   const tools = (await reader.listTools()).tools
-  assert.equal(tools.length, 9)
+  assert.equal(tools.length, 11)
   assert.equal(tools.some(t => /save|publish|assign|delete/u.test(t.name)), false)
   assert.equal(tools.every(t => t.annotations.readOnlyHint), true)
   assert.equal(meta.assignmentPublication, false)
@@ -69,6 +69,23 @@ test('paged evidence preserves correct answers, unknown history, exact source de
   assert.equal(forbidden.structuredContent.data.error.code, 'access_denied')
   const screen = await reader.callTool({ name: 'math_get_pupil_evidence', arguments: { ...target, source: 'screening' } })
   assert.equal(screen.structuredContent.data.error.code, 'access_denied')
+})
+
+test('audience tools resolve exact current class/group members and reject a stale roster page', async () => {
+  const groups = await call(reader, 'math_find_groups', { query: 'MCP' })
+  assert.deepEqual(groups.groups, [{ groupId: 'mcp-demo-group', name: 'MCP-demogrupp' }])
+  const group = await call(reader, 'math_get_audience', { targetType: 'group', targetId: groups.groups[0].groupId })
+  assert.equal(group.total, 1)
+  assert.equal(group.pupils[0].studentId, target.studentId)
+  const first = await call(reader, 'math_get_audience', { targetType: 'class', targetId: target.classId, limit: 1 })
+  assert.equal(first.total, 2)
+  assert.equal(first.historicalMembership, 'unknown')
+  const second = await call(reader, 'math_get_audience', { targetType: 'class', targetId: target.classId,
+    offset: first.nextOffset, rosterRevision: first.rosterRevision })
+  assert.notEqual(first.pupils[0].studentId, second.pupils[0].studentId)
+  const stale = await reader.callTool({ name: 'math_get_audience', arguments: { targetType: 'class', targetId: target.classId,
+    offset: 1, rosterRevision: '0'.repeat(64) } })
+  assert.equal(stale.structuredContent.data.error.code, 'revision_conflict')
 })
 
 test('preview is read-only, invalid tool arguments and unavailable publication cannot bypass the boundary', async () => {
@@ -124,7 +141,7 @@ test('a legacy initialize client can list tools without SDK-v2 metadata and stdo
     assert.equal((await wait(1)).result.protocolVersion, '2025-11-25')
     send({ method: 'notifications/initialized' })
     send({ id: 2, method: 'tools/list', params: {} })
-    assert.equal((await wait(2)).result.tools.length, 9)
+    assert.equal((await wait(2)).result.tools.length, 11)
   } finally { child.stdin.end(); child.kill(); lines.close() }
 })
 

@@ -33,6 +33,14 @@ export function createMathServer({ getApi, allowReportWrites = false, dataMode =
   register('math_find_classes', 'Sök tillgängliga klasser', 'Read-only class candidates, including empty authorized classes. Returns exact IDs and names only. Resolve an ambiguous name before choosing a classId; no login tokens, pupil records or class initialization.', {
     query: z.string().max(100).default(''), limit: z.number().int().min(1).max(50).default(20), offset: z.number().int().min(0).max(10000).default(0)
   }, async (args, signal) => (await getApi()).request(`/api/students?${new URLSearchParams({ resource: 'classes', ...args })}`, { signal }))
+  register('math_find_groups', 'Sök tillgängliga grupper', 'Return authorized group ID/name candidates only. Duplicate names require explicit ID selection. Does not read pupil answers.', {
+    query: z.string().max(100).default(''), limit: z.number().int().min(1).max(50).default(20), offset: z.number().int().min(0).max(10000).default(0)
+  }, async (args, signal) => (await getApi()).request(`/api/students?${new URLSearchParams({ resource: 'groups', ...args })}`, { signal }))
+  register('math_get_audience', 'Läs exakt elev-, grupp- eller klassurval', 'Read current authorized members including pupils with no answers. Preserve rosterRevision for paging. Historical membership is unknown. Use each pupil exact class ID for evidence; never treat group statistics as every pupil knowledge. Saves nothing.', {
+    targetType: z.enum(['student', 'group', 'class']), targetId: id,
+    limit: z.number().int().min(1).max(50).default(20), offset: z.number().int().min(0).max(10000).default(0),
+    rosterRevision: z.string().regex(/^[a-f0-9]{64}$/u).optional()
+  }, async (args, signal) => (await getApi()).request(`/api/students?${new URLSearchParams({ resource: 'audience', ...args })}`, { signal }))
   register('math_find_pupils', 'Sök elev', 'Find authorized pupils by code name/ID. Return candidates only; never guess among matches. Private teacher labels are read only when usePrivateNames is explicitly true.', {
     query: z.string().min(1).max(100), classId: id.optional(), usePrivateNames: z.boolean().default(false),
     limit: z.number().int().min(1).max(50).default(20), offset: z.number().int().min(0).max(10000).default(0)

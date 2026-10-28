@@ -73,6 +73,13 @@ ber om det, eftersom det är en skrivning.
 
 ## Analys
 
+För spårbar tolkning: följ projektets `pupil-analysis`-skill. För beställda
+generella eller analysspecifika uppdrag/screeningar: `assignment-authoring`
+och [PUPIL_MATERIAL.md](PUPIL_MATERIAL.md). Exportskriptet skapar inte uppdrag.
+Vid MCP-analys av grupp/klass används det exakta aktuella urvalet från
+`math_get_audience`; elever utan svar ska också redovisas. Historiskt
+gruppmedlemskap kan inte utläsas av dagens medlemslista.
+
 1. Kör skriptet och läs JSON-filen tillsammans med täckningsinformationen.
    Granska både felsvar och rätta svar som kan ge motexempel.
 2. Behandla `Felkategori`, `Felmönster` och `Feldetalj` som befintliga signaler.

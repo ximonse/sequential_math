@@ -34,6 +34,15 @@ och PNG. Tomt svar med sparat arbete och korrekt kontrast utan växling har
 granskats. Se docs/PUPIL_MCP_MODEL_REVIEW.md. Inte blind/oberoende kalibrering;
 klass-/gruppanalys, varierade fall och lärargranskad bedömningsmall återstår.
 
+2026-10-28: Skrivskyddat urvals-API och MCP math_find_groups/math_get_audience
+är lokalt byggda och provade med aktuella klass-/gruppmedlemmar, även elever
+utan svar, revisionsbunden sidläsning och ändrad medlemslista. Detta är inte
+bulk-screening eller automatisk gruppanalys. assignment-authoring-skillen
+och docs/PUPIL_MATERIAL.md beskriver båda skapandeingångarna och befintliga
+formatgränser. Analys-skillen har klass-/gruppregler; teacher-data-dokumentet
+hänvisar till samma kontrakt. Den andra agentens ospårade teacher-data-skill
+är bevarad. Materiallagring och godkänd utdelning återstår.
+
 1. Verifiera faktisk MCP-analys i denna Codex-session med syntetiska svar och
    räknehäftesoriginal. Klart när belägg, motexempel, osäkerheter och original
    stämmer mot källorna, även vid tomt svar med sparat arbete.

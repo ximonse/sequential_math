@@ -63,3 +63,21 @@ ett nytt requestId för att kringgå konflikt eller osäker kvittens. Vid timeou
 kontrollera den sparade historiken innan samma begäran återförsöks. Efter ändrat
 källunderlag ska en ny rapport bindas till den nya revisionen; klistra inte in
 gamla referenser i ett nytt underlag. Ingen automatisk extern publicering.
+
+## Klass- och gruppanalys
+
+Sök exakt klass/grupp och läs aktuella medlemmar med math_get_audience enligt
+docs/PUPIL_MATERIAL.md. Behåll rosterRevision vid sidbläddring; ändrad lista
+kräver ny läsning. Även elever utan svar ingår. Historiskt medlemskap är okänt.
+Läs varje elevs relevanta underlag med exakt klasskontext och samma period;
+för grupper över flera klasser får ingen klass väljas godtyckligt.
+
+Redovisa täckning och belägg per elev innan du sammanfattar gruppen. En
+rättandel eller hypotes för gruppen är inte varje elevs kunskapsprofil.
+Gruppera endast jämförbart innehåll och håll okänt, obesvarat och sparat
+arbete utan svar isär. Ingen data betyder inte kunskapsbrist.
+
+Efter analys: följ assignment-authoring för ett beställt innehållsutkast.
+Specifikt betyder utformat från just denna analys; generellt material kan
+skapas från lärarinstruktion eller givet material utan analys. Utkastets
+koppling från belägg till mål och frågor ska vara synlig för läraren.

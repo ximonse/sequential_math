@@ -58,6 +58,13 @@ mottagare/källor åtkomstkontrolleras. Elevradering/anonymisering tar bort
 hela berörda utkasthistoriken. Lärarens granskningsvy, godkännande och
 utdelning återstår; sparande aktiverar inget elevuppdrag.
 
+2026-10-28: Lokal granskningsvy via reviewPath visar frågor/figurer, bedömning,
+träningsram, motiv, källsvar/räknehäfte och exakta mottagare. Mål/beställning
+kan ändras till ny version med osparad text bevarad vid versionsbyte.
+Senaste versionen kan godkännas från inloggad lärarvy med cookie och betrodd
+origin; MCP-header räcker inte. Servern omvaliderar källor och medlemslista.
+Godkännande delar inte ut något. Utdelningssteget återstår.
+
 1. Verifiera faktisk MCP-analys i denna Codex-session med syntetiska svar och
    räknehäftesoriginal. Klart när belägg, motexempel, osäkerheter och original
    stämmer mot källorna, även vid tomt svar med sparat arbete.

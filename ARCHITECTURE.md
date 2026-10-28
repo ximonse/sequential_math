@@ -10,7 +10,10 @@ Träning använder befintlig payload-validering; screening återanvänder
 MCP är en tunn adapter även för materialförhandsvisning. Versionerade utkast
 lagras privat per lärare med CAS, idempotens och elevtombstones. Historisk
 åtkomst omkontrolleras och elevradering tar bort hela berörda utkast.
-Godkännande/utdelning ingår ännu inte. Kontrakt: docs/PUPIL_MATERIAL.md.
+Separat lazy-laddad lärarvy granskar versioner och källsvar. Godkännande kräver
+betrodd cookie-mutation från lärarvyn, aktuell innehålls-/mottagarrevision och
+ny underlagsvalidering; MCP exponerar inget godkännandeverktyg. Utdelning
+ingår ännu inte. Kontrakt: docs/PUPIL_MATERIAL.md.
 
 `mcp/sequential-math/` är en separat stdio-adapter med egen låsfil, utanför
 frontendbygget och Vercel-routingen. Den anropar befintliga behörighetskontrollerade

@@ -1,6 +1,6 @@
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { previewTeacherMaterial } from './_teacherMaterialPreview.js'
-import { readMaterialDraft, saveMaterialDraft } from './_teacherMaterialStore.js'
+import { readMaterialDraft, saveMaterialDraft, approveMaterialDraft } from './_teacherMaterialStore.js'
 import { assertMaterialDraftAccess } from './_teacherMaterialAccess.js'
 
 export default async function handler(req, res) {
@@ -18,10 +18,20 @@ export default async function handler(req, res) {
       return res.status(200).json({ draft: state, assigned: false })
     }
     const action = req.body?.action
-    if (!['preview', 'save'].includes(action) || Object.keys(req.body).some(key => !['action', 'material', 'draftId', 'requestId', 'expectedRevision', 'expectedContentRevision'].includes(key))) {
+    if (!['preview', 'save', 'approve'].includes(action) || Object.keys(req.body).some(key => !['action', 'material', 'draftId', 'requestId', 'expectedRevision', 'expectedContentRevision', 'contentRevision', 'version'].includes(key))) {
       return res.status(400).json({ error: 'Åtgärden stöds inte.' })
     }
     if (Buffer.byteLength(JSON.stringify(req.body)) > 150000) return res.status(413).json({ error: 'Materialet är för stort.' })
+    if (action === 'approve') {
+      if (auth.authSource !== 'cookie') return res.status(403).json({ error: 'Godkännande kräver lärarens inloggade granskningsvy.' })
+      const state = await readMaterialDraft(auth.teacherId, req.body.draftId)
+      if (!state) return res.status(404).json({ error: 'Utkastet finns inte.' })
+      await assertMaterialDraftAccess(req, state)
+      const preview = await previewTeacherMaterial(req, auth, state.versions.at(-1).input)
+      const approved = await approveMaterialDraft(state, req.body, preview)
+      await assertMaterialDraftAccess(req, approved.state)
+      return res.status(200).json({ draftId: state.draftId, revision: approved.state.revision, approval: approved.approval, assigned: false })
+    }
     const preview = await previewTeacherMaterial(req, auth, req.body.material)
     if (action === 'preview') return res.status(200).json(preview)
     if (req.body.draftId) {
@@ -32,7 +42,8 @@ export default async function handler(req, res) {
     const { state, savedVersion } = await saveMaterialDraft(auth.teacherId, req.body, preview)
     await assertMaterialDraftAccess(req, state)
     return res.status(200).json({ draftId: state.draftId, revision: state.revision, savedVersion,
-      contentRevision: preview.contentRevision, saved: true, assigned: false, approval: 'not_requested' })
+      contentRevision: preview.contentRevision, saved: true, assigned: false, approval: 'not_requested',
+      reviewPath: `/teacher/material/${state.draftId}?version=${savedVersion}` })
   } catch (error) {
     return res.status(error.status || 503).json({ error: error.status ? error.message : 'Materialet kunde inte förhandsvisas.' })
   }

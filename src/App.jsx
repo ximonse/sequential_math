@@ -14,6 +14,7 @@ import { initCloudSyncListeners, destroyCloudSyncListeners } from './lib/storage
 
 const DiagnosticGridPrototype = lazy(() => import('./dev/DiagnosticGridPrototype'))
 const StudentDiagnosticAttempt = lazy(() => import('./components/student/StudentDiagnosticAttempt'))
+const MaterialReview = lazy(() => import('./components/teacher/MaterialReview'))
 
 function RequireTeacherAuth({ children }) {
   if (!isTeacherAuthenticated()) {
@@ -61,6 +62,7 @@ function App() {
         <Route path="/teacher-login" element={<TeacherLogin />} />
         {import.meta.env.DEV ? <Route path="/qa/adaptive" element={<AdaptiveQaBootstrap />} /> : null}
         <Route path="/teacher/ncm/diagnostic-grid" element={diagnosticGridRoute} />
+        <Route path="/teacher/material/:draftId" element={<RequireTeacherAuth><Suspense fallback={<p>Öppnar materialutkast…</p>}><MaterialReview /></Suspense></RequireTeacherAuth>} />
         {import.meta.env.DEV ? <Route path="/qa/diagnostic-grid" element={<Navigate to="/teacher/ncm/diagnostic-grid" replace />} /> : null}
         <Route
           path="/teacher"

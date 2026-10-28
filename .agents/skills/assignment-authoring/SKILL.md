@@ -41,3 +41,10 @@ Utdelning kräver lärarens granskning av aktuell innehållsversion och exakta
 mottagare enligt serverns godkännandeflöde. Ändringar kräver ny granskning.
 Rapport, utkast och lärargodkännande ändrar inte mastery. Vid osäker
 skrivkvittens: läs status och återanvänd samma begäran, skapa inte nya uppdrag.
+
+Efter sparande kan reviewUrl/reviewPath leda till lärarens granskningsvy.
+Läraren granskar senaste versionens frågor, bedömning, analysbelägg och exakta
+mottagare och godkänner där. Godkännandet kräver betrodd cookieinloggning;
+MCP-header är inte ett godkännandebevis. Inga godkännandeverktyg exponeras.
+En syntetisk SDK-provsessions tillfälliga server stängs med sessionen; lämna
+inte en sådan URL som om den fortfarande vore en tillgänglig lärarvy.

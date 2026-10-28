@@ -155,6 +155,7 @@ test('separately enabled material saves preserve frozen versions and idempotent 
     const args = { material, expectedRevision: 0, requestId: 'material-save-0001', expectedContentRevision: preview.contentRevision }
     const saved = await call(client, 'math_save_material_draft', args)
     assert.equal(saved.assigned, false); assert.equal(saved.approval, 'not_requested')
+    assert.match(saved.reviewUrl, /^http:\/\/localhost:\d+\/teacher\/material\//u)
     assert.equal((await call(client, 'math_save_material_draft', args)).draftId, saved.draftId)
     const summary = await call(client, 'math_get_material_draft', { draftId: saved.draftId })
     assert.equal(summary.titleSv, 'Tabell 7'); assert.equal(summary.version, 1)

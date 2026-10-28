@@ -154,7 +154,8 @@ export function createMathServer({ getApi, allowReportWrites = false, allowMater
     if (section === 'summary') return { ...base, kind: item.material.kind, mode: item.material.mode, titleSv: item.material.titleSv,
       goalSv: item.material.goalSv, instructionSv: item.material.instructionSv, audience: { targetType: item.material.audience.targetType,
         targetId: item.material.audience.targetId, rosterRevision: item.material.audience.rosterRevision, total: item.material.audience.total },
-      pupilsWithoutAnalysisCount: item.material.pupilsWithoutAnalysis.length, approval: 'not_requested' }
+      pupilsWithoutAnalysisCount: item.material.pupilsWithoutAnalysis.length,
+      approval: (draft.approvals || []).some(value => value.contentRevision === item.contentRevision && value.version === item.version) ? 'approved' : 'not_requested' }
     if (section === 'input') return { ...base, input: item.input }
     if (section === 'content' && item.material.kind === 'practice') return { ...base, content: item.material.content }
     const values = section === 'audience' ? item.material.audience.pupils : section === 'basis' ? item.material.basis : item.material.content.items
@@ -163,7 +164,11 @@ export function createMathServer({ getApi, allowReportWrites = false, allowMater
   if (allowMaterialWrites) register('math_save_material_draft', 'Spara materialutkast utan utdelning', 'Save exactly a requested material draft version, only when asked to save. Requires the matching preview contentRevision, requestId and expectedRevision. Saves no pupil assignment and grants no approval. Read saved versions after an uncertain response; reuse the same requestId.', {
     material: z.record(z.string(), z.unknown()), draftId: id.optional(), requestId: z.string().regex(/^[A-Za-z0-9_-]{8,100}$/u),
     expectedRevision: z.number().int().nonnegative(), expectedContentRevision: z.string().regex(/^[a-f0-9]{64}$/u)
-  }, async (args, signal) => (await getApi()).request('/api/teacher-material', { body: { action: 'save', ...args }, signal }), false)
+  }, async (args, signal) => {
+    const api = await getApi()
+    const result = await api.request('/api/teacher-material', { body: { action: 'save', ...args }, signal })
+    return { ...result, ...(result.reviewPath && api.baseUrl ? { reviewUrl: new URL(result.reviewPath, api.baseUrl).href } : {}) }
+  }, false)
   server.registerPrompt('math_assignment_authoring', { title: 'Generella och analysspecifika uppdrag', description: 'Creation guidance and current capability boundaries; no pupil data.' }, async () => ({
     messages: [{ role: 'user', content: { type: 'text', text: await readFile(new URL('../../../.agents/skills/assignment-authoring/SKILL.md', import.meta.url), 'utf8') } }]
   }))

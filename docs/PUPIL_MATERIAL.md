@@ -2,7 +2,8 @@
 
 Beslutad riktning 2026-10-28. Urvalsläsning och servervaliderad förhandsvisning
 är byggda lokalt, liksom versionerad utkastlagring och återläsning.
-Lärargodkännande och utdelning återstår. Avsnittet om dessa specificerar nästa implementation.
+Lärargranskning och versionsbundet godkännande är också lokalt byggda.
+Utdelning återstår; avsnittet om den specificerar nästa implementation.
 
 ## Två ingångar och separat mottagarval
 
@@ -96,7 +97,30 @@ finns bara med separat startflagga `--allow-material-writes` eller
 `MATH_MCP_ALLOW_MATERIAL_WRITES=true`. Rapportskrivflaggan ger inte denna rätt.
 Inget utkast godkänns eller delas ut av sparandet.
 
-### Planerat lärargodkännande
+### Lokal lärargranskning och godkännande
+
+Kvittot från sparande innehåller `reviewPath`, en relativ väg till
+`/teacher/material/DRAFT?version=N`. Den kräver lärarinloggning. Vyn visar
+frågor, figurer, facit/lärarbedömning, hela träningsramen, analysmotiv och
+exakta mottagare. Stöd-/motexempel kan öppnas från samma källrevision, med
+ursprungligt räknehäfte när det finns. Ändrad källa ger konflikt.
+Rubrik, undervisningsmål och innehållsbeställning kan ändras och förhandsvisas
+innan en ny version sparas. Osparad text bevaras över versionsbyte.
+
+Läraren kryssar att innehåll, bedömning och mottagare är granskade och
+godkänner den senaste sparade versionen. `action:approve` kräver en aktuell
+HttpOnly-lärarcookiesession och betrodd origin, inte x-teacher-token.
+MCP exponerar ingen godkännandeoperation. Servern omkontrollerar hela
+förhandsvisningen, inklusive källrevisioner och medlemslista. Godkännandet
+binds till innehållsversion, contentRevision och rosterRevision; upprepning
+med samma requestId ger samma kvitto. Lagringsrevisionen ökar utan att skapa
+en ny innehållsversion. Högst 100 godkännandeposter; tidigare poster raderas
+inte automatiskt. Godkännandet delar ännu inte ut något.
+
+Lokal webbläsarprovning av cookie-mutationer körs med `ROBOT_DEV=1` eftersom
+HTTP-localhost bara är en betrodd origin i utvecklingsläget. Standardrobotens
+produktionslika API-läge nekar sådan cookie-mutation. Provet ändrar inte
+produktionsreglerna eller verifierar HTTPS-produktionsflödet.
 
 Ett versionsbestämt utkast ska innehålla:
 

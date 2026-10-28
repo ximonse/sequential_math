@@ -43,7 +43,7 @@ export async function saveMaterialDraft(teacherId, command, preview, { store = k
   if (state.revision !== expectedRevision) throw evidenceError(409, 'draft_conflict', 'En annan version är sparad. Behåll din text och jämför.')
   if (state.versions.length >= 20) throw evidenceError(413, 'draft_full', 'Utkastet har 20 versioner; tidigare versioner har bevarats.')
   const next = { ...state, revision: state.revision + 1, versions: [...state.versions, {
-    version: state.revision + 1, requestId, createdAt: now, contentRevision: preview.contentRevision, input, material: preview.material
+    version: state.versions.length + 1, requestId, createdAt: now, contentRevision: preview.contentRevision, input, material: preview.material
   }] }
   if (Buffer.byteLength(JSON.stringify(next)) > 2 * 1024 * 1024) throw evidenceError(413, 'draft_full', 'Utkastets historik är för stor.')
   const pupils = [...new Set(next.versions.flatMap(version => version.material.audience.pupils.map(p => p.studentId)))]
@@ -59,5 +59,35 @@ export async function saveMaterialDraft(teacherId, command, preview, { store = k
     if (same) return { state: current, savedVersion: same.version }
   }
   if (saved !== 1) throw evidenceError(409, 'draft_conflict', 'En annan skrivning hann före. Läs senaste version innan återförsök.')
-  return { state: next, savedVersion: next.revision }
+  return { state: next, savedVersion: next.versions.at(-1).version }
+}
+
+export async function approveMaterialDraft(state, command, preview, { store = kv, now = Date.now() } = {}) {
+  const item = state.versions.at(-1)
+  if (!validId(command.requestId) || command.requestId.length < 8 || command.requestId.length > 100
+    || command.version !== item.version || command.contentRevision !== item.contentRevision
+    || preview.contentRevision !== item.contentRevision) {
+    throw evidenceError(409, 'approval_conflict', 'Innehåll, underlag eller mottagare har ändrats. Granska en aktuell version.')
+  }
+  const previous = (state.approvals || []).find(value => value.requestId === command.requestId)
+  if (previous) {
+    if (previous.contentRevision !== item.contentRevision) throw evidenceError(409, 'request_reused', 'Begäran har redan använts för ett annat godkännande.')
+    return { state, approval: previous }
+  }
+  if (state.revision !== command.expectedRevision) throw evidenceError(409, 'approval_conflict', 'Utkastet har ändrats; läs senaste version.')
+  const approval = { id: `approval_${evidenceHash({ draftId: state.draftId, requestId: command.requestId }).slice(0, 24)}`,
+    version: item.version, contentRevision: item.contentRevision, rosterRevision: item.material.audience.rosterRevision,
+    requestId: command.requestId, createdAt: now }
+  if ((state.approvals || []).length >= 100) throw evidenceError(413, 'approval_full', 'Godkännandehistoriken är full. Äldre poster har bevarats.')
+  const next = { ...state, revision: state.revision + 1, approvals: [...(state.approvals || []), approval] }
+  if (Buffer.byteLength(JSON.stringify(next)) > 2 * 1024 * 1024) throw evidenceError(413, 'draft_full', 'Utkastets historik är för stor.')
+  const pupils = [...new Set(next.versions.flatMap(version => version.material.audience.pupils.map(p => p.studentId)))]
+  const classes = [...new Set(next.versions.flatMap(version => version.material.audience.pupils.flatMap(p => p.classIds)))]
+  const saved = Number(await store.eval(MATERIAL_DRAFT_CAS,
+    [materialKey(state.teacherId, state.draftId), materialIndex(state.teacherId),
+      ...pupils.flatMap(id => [studentDeletedKey(id), `student_deleted:${id}`]), ...classes.map(id => `class_deleted:${id}`)],
+    [state.revision, JSON.stringify(next), state.draftId]))
+  if (saved === -1) throw evidenceError(410, 'draft_unavailable', 'En elev eller klass har tagits bort.')
+  if (saved !== 1) throw evidenceError(409, 'approval_conflict', 'En annan ändring hann före. Läs senaste status innan återförsök.')
+  return { state: next, approval }
 }

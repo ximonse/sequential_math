@@ -1,6 +1,6 @@
 # Screeningutkast för genomgång och revidering
 
-Lokalt byggt 2026-10-28. Publicering är ett separat steg.
+Publicerat 2026-10-28. Sparade utkast är privata; elevutdelning är separat.
 
 Under **Screening: dela ut → Utkast för genomgång** kan läraren skapa ett
 nytt utkast, spara samlingen och öppna sparade utkast. Samlingens namn,
@@ -78,5 +78,21 @@ gruppresultat. Arbetslägesbytet reproducerade därefter dataförlust i ett
 robotprov före rättning. Efter rättning passerade fyra omkörda fall,
 inklusive utkastets samtliga revisions-/nätfels-/kontogränser och den nya
 navigeringskontrollen. Lärarvyn granskades visuellt i två skärmformat.
-De åtta individuella samlingarna med 64 frågor är förberedda och validerade
-som stabila sparbegäranden utanför repot; de är inte sparade i appen.
+De åtta individuella samlingarna med 64 frågor är nu sparade i appen som
+privata utkast, med innehåll och facit återlästa från verklig lagring.
+
+## Produktionsverifiering 2026-10-28
+
+PR24 är sammanslagen efter gröna GitHub-kontroller. Kodversionen är
+`acae69714dfee79dc0072f5a9fb4f86096af9d5b`; sekvens-deployment
+`dpl_2hVYVSa738dzkSQihBRaJMhxHSiD` är READY med
+`matematik.ximon.se` som alias. Aktiv app serverar `index-D8igdzpf.js`.
+
+Åtta avsedda privata utkast sparades som version 1 genom det autentiserade
+lärar-API:t. Alla 64 frågor och facit återlästes och jämfördes med respektive
+sparbegäran. Återförsök med samma requestId för första utkastet gav ingen
+extra version. Alla åtta finns i den privata utkastlistan. Klassens
+elevuppdrags-ID:n är oförändrade före och efter: inga uppdrag delades ut.
+Kvittens och personanknutet innehåll finns enbart utanför repot. Detta
+verifierar riktig API-/KV-lagring, inte autentiserad visuell produktion eller
+fysisk iPad. Frågorna nås via Screening: dela ut → Utkast för genomgång.

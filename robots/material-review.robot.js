@@ -51,6 +51,18 @@ test('Teacher reviews filled material, preserves edits across versions and appro
   expect(state.draft.approvals).toHaveLength(1)
   expect(state.draft.approvals[0].version).toBe(2)
   expect((await (await request.get(`/api/teacher-diagnostic-assignments?classId=${classId}`, { headers })).json()).assignments).toEqual([])
+  // Trimming whitespace preserves canonical content, but a new version still
+  // needs its own explicit approval and must not reuse version two's receipt.
+  await page.getByLabel('Rubrik', { exact: true }).fill(' Reviderad screening ')
+  await page.getByRole('button', { name: 'Förhandsvisa ändring', exact: true }).click()
+  await page.getByRole('button', { name: 'Spara som ny version', exact: true }).click()
+  await expect(page.getByLabel('Utkastversion')).toHaveValue('3')
+  await reviewCheck.check()
+  await page.getByRole('button', { name: 'Godkänn version 3', exact: true }).click()
+  await expect(page.getByText('Version 3 är godkänd.', { exact: true })).toBeVisible()
+  const current = await (await request.get(`/api/teacher-material?draftId=${saved.draftId}`, { headers })).json()
+  expect(current.draft.versions[2].contentRevision).toBe(current.draft.versions[1].contentRevision)
+  expect(current.draft.approvals.map(value => value.version)).toEqual([2, 3])
   await page.reload()
   await page.getByLabel('Utkastversion').selectOption('2')
   await expect(page.getByText('Version 2 är godkänd.', { exact: false })).toBeVisible()

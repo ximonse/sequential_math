@@ -18,6 +18,10 @@ frysta mottagare och deterministiska ID:n. CAS-skyddade kvitton per version
 skiljer bekräftelser, delfel och osäkra utfall; elevradering tar bort dem.
 Högst fem enheter per anrop och samma försöks-ID under sidvis utdelning.
 Kontrakt och verifieringsgränser: docs/PUPIL_MATERIAL.md.
+Materiallagrens verkliga Lua/CAS-skript har separata isolerade Redis-prov;
+se docs/MATERIAL_REDIS_VERIFICATION.md. De läser inga KV-hemligheter och
+använder inga globala databasrensningar. Godkännandets återförsöks-ID binds
+till innehållsversion även när två versioner har samma innehållsrevision.
 
 `mcp/sequential-math/` är en separat stdio-adapter med egen låsfil, utanför
 frontendbygget och Vercel-routingen. Den anropar befintliga behörighetskontrollerade

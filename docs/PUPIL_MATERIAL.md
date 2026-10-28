@@ -202,5 +202,13 @@ lyckad respons och sidvis utdelning till sju elever. `assignment-capacity`
 var röd före rättningen som bevarar alla gamla uppdrag. Fyllda kvittovyer
 har granskats visuellt. Cookieproven kräver `ROBOT_DEV=1` och en testport,
 exempelvis `ROBOT_PORT=5398`, samt `ROBOT_WORKERS=1`.
-Alla elevdata/KV i proven är syntetiska. Verklig Redis-CAS, fysisk iPad,
-HTTPS-produktion och oberoende didaktisk modellkalibrering är inte verifierade.
+Alla elevdata i proven är syntetiska. Materialets Lua/CAS har därefter
+verifierats mot en isolerad riktig Redis: tolv kontroller och verifierad
+städning av 22 nycklar. Se [Redis-provet](MATERIAL_REDIS_VERIFICATION.md).
+Upstashs REST-transport, fysisk iPad, HTTPS-produktion och oberoende didaktisk
+modellkalibrering är inte verifierade.
+
+Versionsregressionen med samma normaliserade innehåll i två versioner är
+också rättad: åtgärds-ID:n i lärarvyn innehåller versionsnumret och servern
+avvisar återanvändning av ett annat versionsgodkännande. Robotprovet var rött
+före rättningen och passerar efteråt. Därefter passerade 188 testfiler/900 tester.

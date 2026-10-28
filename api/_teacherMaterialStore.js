@@ -71,7 +71,7 @@ export async function approveMaterialDraft(state, command, preview, { store = kv
   }
   const previous = (state.approvals || []).find(value => value.requestId === command.requestId)
   if (previous) {
-    if (previous.contentRevision !== item.contentRevision) throw evidenceError(409, 'request_reused', 'Begäran har redan använts för ett annat godkännande.')
+    if (previous.version !== item.version || previous.contentRevision !== item.contentRevision) throw evidenceError(409, 'request_reused', 'Begäran har redan använts för ett annat godkännande.')
     return { state, approval: previous }
   }
   if (state.revision !== command.expectedRevision) throw evidenceError(409, 'approval_conflict', 'Utkastet har ändrats; läs senaste version.')

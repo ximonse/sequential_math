@@ -67,7 +67,7 @@ export default function MaterialReview() {
     if (!result.ok) throw new Error(result.data.error || 'Läs senaste status innan du försöker igen.')
     setDraft(result.data.draft); setDispatches(result.data.dispatches || []); setVersion(selected); setChecked(false); setPreview(null)
   }
-  const keyFor = action => `${action}:${draftId}:${item.contentRevision}:${preview?.contentRevision || ''}`
+  const keyFor = action => `${action}:${draftId}:${item.version}:${item.contentRevision}:${preview?.contentRevision || ''}`
   function requestId(action) {
     const key = keyFor(action)
     return requestIds.current[key] ||= crypto.randomUUID()

@@ -66,3 +66,14 @@ it('binds approval to current content and audience and keeps content version num
   expect(updated.state.revision).toBe(3)
   expect(updated.state.approvals[0].contentRevision).toBe('first')
 })
+it('does not reuse an old approval for a new version with identical canonical content', async () => {
+  const saved = await saveMaterialDraft('T', command(), preview('first'), { store })
+  const approve = { requestId: 'approval-0001', expectedRevision: 1, version: 1, contentRevision: 'first' }
+  const approved = await approveMaterialDraft(saved.state, approve, preview('first'), { store })
+  const updated = await saveMaterialDraft('T', { ...command('save-request-0002'), draftId: saved.state.draftId, expectedRevision: 2 }, preview('first'), { store })
+  await expect(approveMaterialDraft(updated.state, { ...approve, version: 2, expectedRevision: 3 }, preview('first'), { store }))
+    .rejects.toMatchObject({ status: 409, code: 'request_reused' })
+  const next = await approveMaterialDraft(updated.state, { ...approve, requestId: 'approval-0002', version: 2, expectedRevision: 3 }, preview('first'), { store })
+  expect(next.state.approvals.map(value => value.version)).toEqual([1, 2])
+  expect(approved.state.versions[0].contentRevision).toBe(updated.state.versions[1].contentRevision)
+})

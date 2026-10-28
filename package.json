@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "test": "set \"NODE_OPTIONS=--require=./scripts/vitest-node-patch.cjs\" && vitest run --configLoader native --pool threads",
     "verify:redis-cas": "node scripts/verify-real-redis-cas.mjs",
+    "verify:material-redis": "node scripts/verify-material-redis.mjs",
     "check:architecture": "node scripts/check-architecture.mjs",
     "plan:dev": "node scripts/project-map-server.mjs",
     "check:project-map": "node scripts/check-project-map.mjs",

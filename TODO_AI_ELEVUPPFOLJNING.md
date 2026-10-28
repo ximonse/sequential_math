@@ -96,7 +96,11 @@ API/MCP stöder nu förhandsvisning och privat materialutkast; lärarvyn
 stöder granskning, godkännande och utdelning. MCP har separat skrivflagga
 för utkast och inga godkännande-/utdelningsverktyg. Befintliga anslutna
 MCP-processer behöver laddas om för att visa nya verktyg. Oberoende
-didaktisk kalibrering, verklig Redis-CAS och publicering återstår.
+didaktisk kalibrering och publicering återstår. Materiallagrens Lua/CAS är
+nu verifierade mot isolerad riktig Redis: tolv prov, 22 egna nycklar städade
+och instansen stängd. Upstashs REST-transport är inte verifierad av detta prov.
+Versionsbundet godkännande vid identiskt normaliserat innehåll är rättat
+efter rött robotprov; därefter passerar 188 filer/900 tester.
 
 Tidigare etapper och verifieringsbelägg nedan bevaras som historik. Denna
 beslutade omfattning breddar den tidigare inriktningen på enskild elev.

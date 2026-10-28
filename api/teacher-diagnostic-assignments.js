@@ -1,4 +1,5 @@
 import { teacherImageAction } from './_screeningImages.js'
+import { teacherDraftAction } from './_screeningDraftStore.js'
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
 import { createDiagnosticAssignment, copyDiagnosticAssignment, stopDiagnosticAssignment } from './_diagnosticAssignmentStore.js'
@@ -6,6 +7,7 @@ import { freezeStoppedDiagnosticAttempts } from './_diagnosticAssignmentClose.js
 import { diagnosticApiEnabled, diagnosticAssignablePupilsInClass } from './_diagnosticApiAccess.js'
 import { listClassDiagnosticAssignments } from './_diagnosticAssignmentList.js'
 import { isSchoolAdminRole } from './_teacherRoles.js'
+import { diagnosticDispatchOptions } from './_diagnosticDispatchRequest.js'
 
 export default async function handler(req, res) {
   withCors(res, { methods: 'GET,POST,PATCH,OPTIONS', headers: 'Content-Type,x-teacher-token' }, req)
@@ -19,6 +21,7 @@ export default async function handler(req, res) {
     if (!isSchoolAdminRole(auth.role, auth.isAdmin)) {
       return res.status(403).json({ error: 'Diagnostic pilot requires admin access' })
     }
+    if (req.query?.resource === 'drafts' || req.body?.action === 'save_draft') return await teacherDraftAction(req, res, auth.teacherId)
     const imageAction = ['figures', 'images'].includes(req.query?.resource) || ['upload_image', 'hide_image'].includes(req.body?.action)
     if (imageAction) {
       if (req.query?.assignmentId && (typeof req.query.classId !== 'string' || !await canAccessClass(req, req.query.classId))) {
@@ -52,18 +55,19 @@ export default async function handler(req, res) {
       || !studentIds.every(studentId => assignable.includes(studentId))) {
       return res.status(403).json({ error: 'Only pupils in this class can be assigned' })
     }
+    const dispatchOptions = diagnosticDispatchOptions({ ...req.body, studentIds }, auth.teacherId)
     if (req.body?.sourceAssignmentId !== undefined) {
       if (typeof req.body.sourceClassId !== 'string' || !await canAccessClass(req, req.body.sourceClassId)) {
         return res.status(403).json({ error: 'Not authorized for the source class' })
       }
       const assignment = await copyDiagnosticAssignment({ classId, studentIds, teacherId: auth.teacherId,
         sourceClassId: req.body.sourceClassId, sourceAssignmentId: req.body.sourceAssignmentId,
-        titleSv: req.body.titleSv })
+        titleSv: req.body.titleSv }, ...(req.body.requestId === undefined ? [] : [dispatchOptions]))
       return res.status(201).json({ assignment })
     }
     const assignment = await createDiagnosticAssignment({ classId,
       studentIds, taskIds: req.body?.taskIds, teacherId: auth.teacherId,
-      titleSv: req.body?.titleSv, itemOptions: req.body?.itemOptions, customTasks: req.body?.customTasks })
+      titleSv: req.body?.titleSv, itemOptions: req.body?.itemOptions, customTasks: req.body?.customTasks }, ...(req.body.requestId === undefined ? [] : [dispatchOptions]))
     return res.status(201).json({ assignment })
   } catch (error) {
     return res.status(error.status || 503).json({ error: error.status ? error.message : 'Diagnostic storage unavailable', code: error.code })

@@ -84,13 +84,14 @@ test('An isolated test pupil can receive, save and resume a diagnostic grid', as
 
   await teacherLogin(page, teacher)
   await openDispatch(page)
-  await expect(page.getByText(/Det sparas separat från vanlig träning/)).toBeVisible()
   // The class also has a pupil outside the test list, so the whole class is refused up front.
-  const picker = page.locator('[data-recipient-picker]')
-  await picker.getByRole('button', { name: className, exact: true }).click()
-  await expect(page.locator('[data-screening-recipients]')).toContainText(`${className}: testbegränsningen tillåter inte hela klassen`)
-  await expect(page.getByRole('button', { name: 'Ge till valda mottagare (0 screeningar)', exact: true })).toBeDisabled()
-  await picker.getByRole('button', { name: className, exact: true }).click()
+  await page.getByRole('button', { name: 'Välj mottagare', exact: true }).click()
+  const picker = page.locator('[data-screening-picker]')
+  await picker.getByRole('searchbox').fill(className)
+  await picker.getByRole('checkbox', { name: `Klass: ${className}`, exact: true }).check()
+  await expect(page.getByRole('alert').filter({ hasText: 'eleverna finns inte på testlistan' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Kontrollera utdelningen', exact: true })).toBeDisabled()
+  await page.getByRole('button', { name: 'Tillbaka', exact: true }).click()
   await sendScreening(page, { pupilName: 'Robot NCM' })
 
   const context = await browser.newContext()

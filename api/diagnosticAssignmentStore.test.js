@@ -122,6 +122,17 @@ const open = (assignment, item = assignment.items[0], studentId = 'PUPIL') => op
 }, { store, makeId: id })
 
 describe('diagnostic assignment and attempt creation', () => {
+  it('confirms the same frozen dispatch on retry, rejects changed payloads and never revives deleted recipients', async () => {
+    const input = { classId: 'CLASS', studentIds: ['PUPIL'], taskIds: ['add-no-carry-001'], teacherId: 'TEACHER' }
+    const options = { store, makeId: id, assignmentId: 'retry-assignment', dispatchFingerprint: 'same-payload' }
+    const first = await createDiagnosticAssignment(input, options)
+    expect(await createDiagnosticAssignment(input, options)).toEqual(first)
+    expect(store.data.get('diagnostic_assignments_by_class:CLASS')).toHaveLength(1)
+    await expect(createDiagnosticAssignment(input, { ...options, dispatchFingerprint: 'changed-payload' })).rejects.toMatchObject({ status: 409 })
+    store.data.set(studentDeletedKey('PUPIL'), true)
+    await expect(createDiagnosticAssignment(input, options)).rejects.toMatchObject({ status: 410 })
+    expect(store.data.get('student:PUPIL')).toEqual({ studentId: 'PUPIL', classIds: ['CLASS'] })
+  })
   it('freezes original answer keys, hides them from pupils and preserves them when copying', async () => {
     const expected = [2.35]
     const assignment = await create({ taskIds: [], customTasks: [{ promptSv: 'Beräkna 5,63 - 3,28.', gridEnabled: true,

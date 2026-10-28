@@ -2,6 +2,7 @@
 // It mirrors the Upstash client's behavior (JSON values in, parsed values out)
 // and emulates the few Lua scripts the API runs through kv.eval.
 import { STUDENT_CAS_SCRIPT } from '../api/_studentStore.js'
+import { SCREENING_DRAFT_CAS } from '../api/_screeningDraftStore.js'
 import { emulateAttentionArchive } from '../api/testHelpers/attentionArchiveKv.js'
 import { emulatePupilAnalysis } from '../api/testHelpers/pupilAnalysisKv.js'
 import { emulateTeacherMaterial } from '../api/testHelpers/teacherMaterialKv.js'
@@ -47,6 +48,15 @@ export const kv = {
     if (material) return material.result
     const analysis = emulatePupilAnalysis(values, script, keys, args)
     if (analysis) return analysis.result
+    if (script === SCREENING_DRAFT_CAS) {
+      const previous = values.get(keys[0])
+      if ((previous?.revision || 0) !== Number(args[0])) return 0
+      if (!previous && (sets.get(keys[1])?.size || 0) >= 100) return -1
+      values.set(keys[0], parse(args[1]))
+      if (!sets.has(keys[1])) sets.set(keys[1], new Set())
+      sets.get(keys[1]).add(args[2])
+      return 1
+    }
     // The production archive uses a Redis set; expose it to the shared Lua emulator.
     if (keys[3]?.startsWith('attention_passes:')) {
       values.set(keys[3], [...(sets.get(keys[3]) || [])])

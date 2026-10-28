@@ -46,18 +46,30 @@ export async function openClass(page, className, tab) {
 }
 
 // Picks screening recipients in the shared picker and sends the screening.
-export async function sendScreening(page, { className, pupilName, count = 1 }) {
-  const picker = page.locator('[data-recipient-picker]')
-  if (className) await picker.getByRole('button', { name: className, exact: true }).click()
-  if (pupilName) {
-    await picker.getByRole('searchbox', { name: 'Sök elev' }).fill(pupilName)
-    await picker.getByRole('button', { name: `Lägg till ${pupilName}`, exact: true }).click()
+export async function sendScreening(page, { className, pupilName, groupName }) {
+  const panel = page.getByRole('region', { name: 'Dela ut screening', exact: true })
+  await panel.getByRole('button', { name: 'Välj mottagare', exact: true }).click()
+  const picker = panel.getByRole('region', { name: 'Mottagare', exact: true })
+  const search = picker.getByRole('searchbox', { name: 'Sök klass, grupp eller elev' })
+  const clear = picker.getByRole('button', { name: 'Rensa urval', exact: true })
+  if (await clear.isEnabled()) await clear.click()
+  if (className) {
+    await search.fill(className)
+    await picker.getByRole('checkbox', { name: `Klass: ${className}`, exact: true }).check()
   }
-  const send = page.locator('[data-screening-recipients]')
-    .getByRole('button', { name: `Ge till valda mottagare (${count} screening${count === 1 ? '' : 'ar'})`, exact: true })
+  if (groupName) {
+    await search.fill(groupName)
+    await picker.getByRole('checkbox', { name: `Grupp: ${groupName}`, exact: true }).check()
+  }
+  if (pupilName) {
+    await search.fill(pupilName)
+    await picker.getByRole('checkbox', { name: `Elev: ${pupilName}`, exact: true }).check()
+  }
+  await panel.getByRole('button', { name: 'Kontrollera utdelningen', exact: true }).click()
+  const send = panel.getByRole('button', { name: /^Dela ut till \d+ elev(?:er)?$/u })
   await expect(send).toBeEnabled()
   await send.click()
-  await expect(page.getByText(/^Screening skapad för /)).toBeVisible()
+  await expect(panel.getByText(/^(Alla \d+ elever|Eleven) har fått screeningen\.$/u)).toBeVisible()
 }
 
 export async function selectOnlyClass(page, className) {

@@ -1,0 +1,110 @@
+import { test, expect } from '@playwright/test'
+import { createPupil } from './lib/app.js'
+import { createTeacher, teacherLogin } from './lib/teacher.js'
+import { openDispatch } from './lib/screening.js'
+
+test('Screening flow preserves mixed searchable recipients and retries uncertain delivery without duplicates', async ({ page, request }, testInfo) => {
+  const tag = Math.random().toString(36).slice(2, 8)
+  const a = `flow-a-${tag}`, b = `flow-b-${tag}`, c = `flow-c-${tag}`
+  const one = await createPupil(request, { name: 'UI Flow One', classId: a, className: `Flow A ${tag}` })
+  const two = await createPupil(request, { name: 'UI Flow Two', classId: b, className: `Flow B ${tag}` })
+  const three = await createPupil(request, { name: 'UI Flow Three', classId: c, className: `Flow C ${tag}` })
+  const teacher = await createTeacher(request, { classIds: [a, b, c], role: 'super_admin' })
+  const group = (await (await request.post('/__robot/group', { data: {
+    name: `Flow group ${tag}`, pupilIds: [one.studentId, two.studentId], teacherIds: [teacher.username]
+  } })).json()).group
+  await teacherLogin(page, teacher)
+  const panel = await openDispatch(page, { startNew: false })
+  await panel.getByRole('button', { name: 'Dela ut screening', exact: true }).click()
+  await panel.getByRole('button', { name: 'Skapa ny', exact: false }).click()
+  await panel.getByRole('textbox', { name: 'Samlingens namn' }).fill(`Flow screening ${tag}`)
+  await panel.getByRole('button', { name: 'Välj mottagare', exact: true }).click()
+  const picks = panel.getByRole('region', { name: 'Mottagare', exact: true })
+  const search = picks.getByRole('searchbox', { name: 'Sök klass, grupp eller elev' })
+  await search.fill(`Flow A ${tag}`)
+  await picks.getByRole('checkbox', { name: `Klass: Flow A ${tag}`, exact: true }).check()
+  await search.fill(`Flow B ${tag}`)
+  await picks.getByRole('checkbox', { name: `Klass: Flow B ${tag}`, exact: true }).check()
+  await search.fill(group.name)
+  await picks.getByRole('checkbox', { name: `Grupp: ${group.name}`, exact: true }).check()
+  await search.fill('UI Flow Three')
+  await picks.getByRole('checkbox', { name: 'Elev: UI Flow Three', exact: true }).check()
+  await expect(picks.locator('[data-recipient-summary]')).toHaveText('3 unika elever')
+  await search.fill('inga-traffar')
+  await expect(picks.getByText('Inga träffar.')).toBeVisible()
+  await panel.getByRole('button', { name: 'Kontrollera utdelningen' }).click()
+  await expect(panel.getByRole('button', { name: 'Dela ut till 3 elever', exact: true })).toBeEnabled()
+  await panel.getByRole('button', { name: 'Ändra mottagare' }).click()
+  await expect(search).toHaveValue('inga-traffar')
+  await picks.getByRole('button', { name: `Ta bort Flow A ${tag}`, exact: true }).click()
+  await expect(picks.locator('[data-recipient-summary]')).toHaveText('3 unika elever')
+  await search.fill('')
+  await panel.getByRole('button', { name: 'Tillbaka', exact: true }).click()
+  await panel.getByText('Lägg till bildfrågor', { exact: true }).click()
+  await panel.getByRole('textbox', { name: 'Bildfrågans text', exact: true }).fill('Mitt ännu inte tillagda frågeutkast')
+  await panel.getByRole('button', { name: 'Välj mottagare', exact: true }).click()
+  await panel.getByRole('button', { name: 'Tillbaka', exact: true }).click()
+  await expect(panel.getByRole('textbox', { name: 'Bildfrågans text', exact: true })).toHaveValue('Mitt ännu inte tillagda frågeutkast')
+  await panel.getByRole('button', { name: 'Välj mottagare', exact: true }).click()
+  await page.setViewportSize({ width: 1024, height: 768 })
+  await page.screenshot({ path: testInfo.outputPath('recipients-landscape.png'), fullPage: true })
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await page.screenshot({ path: testInfo.outputPath('recipients-portrait.png'), fullPage: true })
+  await page.getByRole('combobox', { name: 'Välj tema', exact: true }).selectOption({ label: 'Mörkt' })
+  await page.screenshot({ path: testInfo.outputPath('recipients-dark-filled.png'), fullPage: true })
+  await page.getByRole('combobox', { name: 'Välj tema', exact: true }).selectOption({ label: 'Ljust' })
+  await panel.getByRole('button', { name: 'Kontrollera utdelningen' }).click()
+  let loseResponse = true
+  await page.route('**/api/teacher-diagnostic-assignments', async route => {
+    if (route.request().method() === 'POST' && route.request().postDataJSON().classId === a && loseResponse) {
+      loseResponse = false
+      await route.fetch()
+      await route.abort('failed')
+    } else await route.continue()
+  })
+  await panel.getByRole('button', { name: 'Dela ut till 3 elever', exact: true }).click()
+  await expect(panel.getByText(/Kvittens saknas/)).toBeVisible()
+  await panel.getByRole('button', { name: 'Försök igen för obekräftade klasser', exact: true }).click()
+  await expect(panel.getByText('Alla 3 elever har fått screeningen.', { exact: true })).toBeVisible()
+  const records = await page.evaluate(async classIds => {
+    return Promise.all(classIds.map(async classId => {
+      const response = await fetch(`/api/teacher-diagnostic-assignments?classId=${classId}`, {
+        headers: { 'x-teacher-token': sessionStorage.getItem('mathapp_teacher_api_token') }
+      })
+      return (await response.json()).assignments
+    }))
+  }, [a, b, c])
+  expect(records.map(items => items.length)).toEqual([1, 1, 1])
+  expect(records.flatMap(items => items.flatMap(item => item.studentIds)).sort()).toEqual([one.studentId, two.studentId, three.studentId].sort())
+  await page.screenshot({ path: testInfo.outputPath('delivery-receipt.png'), fullPage: true })
+  await panel.getByRole('button', { name: 'Till utdelade screeningar' }).click()
+  await expect(panel.getByRole('heading', { name: `Flow screening ${tag}`, exact: true })).toBeVisible()
+  const overviewSearch = panel.getByRole('searchbox', { name: 'Sök screening', exact: true })
+  await overviewSearch.fill('finns-inte')
+  await expect(panel.getByRole('heading', { name: `Flow screening ${tag}`, exact: true })).toHaveCount(0)
+  await overviewSearch.fill(`Flow screening ${tag}`)
+  await panel.getByRole('combobox', { name: 'Status', exact: true }).selectOption('stopped')
+  await expect(panel.getByRole('heading', { name: `Flow screening ${tag}`, exact: true })).toHaveCount(0)
+  await panel.getByRole('combobox', { name: 'Status', exact: true }).selectOption('active')
+  await panel.getByRole('combobox', { name: 'Sortera', exact: true }).selectOption('name')
+  await panel.getByRole('button', { name: 'Resultat och avslut', exact: true }).click()
+  const results = page.getByRole('region', { name: 'Resultat av screening', exact: true })
+  await expect(results.getByRole('combobox', { name: 'Samling att gå igenom', exact: true })).not.toHaveValue('')
+  page.once('dialog', dialog => dialog.accept())
+  await results.getByRole('button', { name: 'Avsluta', exact: true }).click()
+  await expect(results.getByText(`Flow screening ${tag} är avslutad. 0 påbörjade svar lämnades in.`, { exact: true })).toBeVisible()
+  await openDispatch(page, { startNew: false })
+  await panel.getByRole('combobox', { name: 'Status', exact: true }).selectOption('stopped')
+  await expect(panel.getByRole('heading', { name: `Flow screening ${tag}`, exact: true })).toBeVisible()
+  await panel.getByText('Visa mottagare (3 elever)', { exact: true }).click()
+  for (const name of ['UI Flow One', 'UI Flow Two', 'UI Flow Three']) {
+    await expect(panel.getByRole('article', { name: `Flow screening ${tag}`, exact: true }).getByText(name, { exact: true })).toBeVisible()
+  }
+  await panel.getByRole('button', { name: 'Dela ut screening', exact: true }).click()
+  await panel.getByRole('button', { name: 'Återanvänd', exact: false }).click()
+  await panel.getByRole('combobox', { name: 'Klass att hämta samlingar från' }).selectOption(a)
+  await panel.getByRole('combobox', { name: 'Återanvänd samling' }).selectOption(records[0][0].assignmentId)
+  await expect(panel.getByText('1 fråga att dela ut igen', { exact: true })).toBeVisible()
+  await panel.getByRole('button', { name: 'Välj mottagare', exact: true }).click()
+  await expect(picks.locator('[data-recipient-summary]')).toHaveText('Ingen mottagare vald.')
+})

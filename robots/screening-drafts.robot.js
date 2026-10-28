@@ -1,0 +1,105 @@
+import { test, expect } from '@playwright/test'
+import { createPupil, login, readServerProfile } from './lib/app.js'
+import { createTeacher, teacherLogin } from './lib/teacher.js'
+import { openDispatch } from './lib/screening.js'
+
+async function api(page, path) {
+  return page.evaluate(async path => {
+    const response = await fetch(path, { headers: { 'x-teacher-token': sessionStorage.getItem('mathapp_teacher_api_token') } })
+    return { status: response.status, data: await response.json() }
+  }, path)
+}
+const drafts = page => page.getByRole('region', { name: 'Screeningutkast', exact: true })
+
+test('teacher creates, reloads and revises private drafts including incomplete questions; old versions, conflicts and lost responses preserve work without pupil dispatch', async ({ page, browser, request }, testInfo) => {
+  const classId = `drafts-${Math.random().toString(36).slice(2, 9)}`
+  const pupil = await createPupil(request, { name: 'Draft Pupil', classId })
+  const before = await readServerProfile(request, pupil.studentId)
+  const teacher = await createTeacher(request, { classIds: [classId], role: 'super_admin' })
+  expect((await request.get('/api/teacher-diagnostic-assignments?resource=drafts')).status()).toBe(401)
+  await teacherLogin(page, teacher)
+  let panel = await openDispatch(page)
+  await drafts(page).getByRole('button', { name: 'Nytt utkast', exact: true }).click()
+  await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Decimaler att gå igenom')
+  await panel.getByText('Egna frågor med automatisk rättning', { exact: true }).click()
+  await panel.getByRole('textbox', { name: 'Egen fråga', exact: true }).fill('Beräkna 5,63 - 2,48.')
+  await panel.getByRole('textbox', { name: 'Facit', exact: true }).fill('3,15')
+  await panel.getByRole('button', { name: 'Lägg till självrättande fråga', exact: true }).click()
+  await panel.getByRole('textbox', { name: 'Egen fråga', exact: true }).fill('En halvfärdig fråga med x')
+  await panel.getByRole('textbox', { name: 'Facit', exact: true }).fill('inte bestämt')
+  await panel.getByText('Lägg till bildfrågor', { exact: true }).click()
+  await panel.getByRole('textbox', { name: 'Bildfrågans text', exact: true }).fill('En bildfråga under arbete')
+  // Simulate a response lost after the server successfully saved the draft.
+  let lost = false
+  await page.route('**/api/teacher-diagnostic-assignments?resource=drafts', async route => {
+    if (route.request().method() === 'POST' && !lost) { lost = true; await route.fetch(); await route.abort(); return }
+    await route.continue()
+  })
+  await drafts(page).getByRole('button', { name: 'Spara utkast', exact: true }).click()
+  await expect(drafts(page).getByRole('button', { name: 'Försök spara igen', exact: true })).toBeVisible()
+  await drafts(page).getByRole('button', { name: 'Försök spara igen', exact: true }).click()
+  await expect(drafts(page).getByRole('status')).toContainText('version 1')
+  const listed = await api(page, '/api/teacher-diagnostic-assignments?resource=drafts')
+  expect(listed.data.drafts).toHaveLength(1)
+  const id = listed.data.drafts[0].draftId
+  const url = `/api/teacher-diagnostic-assignments?resource=drafts&draftId=${id}`
+  expect((await api(page, url)).data.draft.versions).toHaveLength(1)
+  await page.reload(); panel = await openDispatch(page)
+  await drafts(page).getByRole('combobox', { name: 'Sparade utkast', exact: true }).selectOption(id)
+  await expect(panel.getByRole('textbox', { name: 'Samlingens namn', exact: true })).toHaveValue('Decimaler att gå igenom')
+  await panel.getByText('Egna frågor med automatisk rättning', { exact: true }).click()
+  await expect(panel.getByRole('textbox', { name: 'Egen fråga', exact: true })).toHaveValue('En halvfärdig fråga med x')
+  await expect(panel.getByRole('textbox', { name: 'Facit', exact: true })).toHaveValue('inte bestämt')
+  await panel.getByText('Lägg till bildfrågor', { exact: true }).click()
+  await expect(panel.getByRole('textbox', { name: 'Bildfrågans text', exact: true })).toHaveValue('En bildfråga under arbete')
+  await panel.getByText('Förhandsvisa frågor och facit (1)', { exact: true }).click()
+  await expect(panel.getByRole('region', { name: 'Genomgång av utkast' })).toContainText('Facit: 3,15')
+  await page.screenshot({ path: testInfo.outputPath('draft-review-landscape.png'), fullPage: true })
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await page.screenshot({ path: testInfo.outputPath('draft-review-portrait.png'), fullPage: true })
+  // A second tab opens the same version before the first tab saves a revision.
+  const second = await page.context().newPage()
+  await teacherLogin(second, teacher); await openDispatch(second)
+  await drafts(second).getByRole('combobox', { name: 'Sparade utkast', exact: true }).selectOption(id)
+  await expect(second.getByRole('textbox', { name: 'Samlingens namn', exact: true })).toHaveValue('Decimaler att gå igenom')
+  await panel.getByRole('textbox', { name: 'Egen fråga', exact: true }).fill('Vilket tal är x? x + 3 = 10.')
+  await panel.getByRole('textbox', { name: 'Facit', exact: true }).fill('7')
+  await panel.getByRole('button', { name: 'Lägg till självrättande fråga', exact: true }).click()
+  await panel.getByRole('button', { name: 'Redigera fråga 1', exact: true }).click()
+  await panel.getByRole('textbox', { name: 'Egen fråga', exact: true }).fill('Beräkna 5,63 - 2,38.')
+  await panel.getByRole('textbox', { name: 'Facit', exact: true }).fill('3,25')
+  await panel.getByRole('checkbox', { name: 'Räknehäfte till frågan', exact: true }).uncheck()
+  await panel.getByRole('button', { name: 'Spara ändrad fråga', exact: true }).click()
+  await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Decimaler reviderade')
+  await drafts(page).getByRole('button', { name: 'Spara ny version', exact: true }).click()
+  await expect(drafts(page).getByRole('status')).toContainText('version 2')
+  await second.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Min parallella ändring')
+  await drafts(second).getByRole('button', { name: 'Spara ny version', exact: true }).click()
+  await expect(drafts(second).getByRole('status')).toContainText('nyare version')
+  await expect(second.getByRole('textbox', { name: 'Samlingens namn', exact: true })).toHaveValue('Min parallella ändring')
+  await drafts(second).getByRole('button', { name: 'Läs senaste version', exact: true }).click()
+  await drafts(second).getByRole('button', { name: 'Behåll mina ändringar', exact: true }).click()
+  await expect(second.getByRole('textbox', { name: 'Samlingens namn', exact: true })).toHaveValue('Min parallella ändring')
+  second.once('dialog', dialog => dialog.dismiss())
+  await second.getByRole('button', { name: /^Framsteg/ }).click()
+  await expect(second.getByRole('textbox', { name: 'Samlingens namn', exact: true })).toHaveValue('Min parallella ändring')
+  await drafts(page).getByRole('combobox', { name: 'Utkastversion', exact: true }).selectOption('1')
+  await expect(panel.getByRole('textbox', { name: 'Samlingens namn', exact: true })).toHaveValue('Decimaler att gå igenom')
+  expect((await api(page, url)).data.draft.versions.map(version => version.content.titleSv)).toEqual(['Decimaler att gå igenom', 'Decimaler reviderade'])
+  const versions = (await api(page, url)).data.draft.versions
+  expect(versions[0].content.writtenTasks[0]).toMatchObject({ gridEnabled: true, answerKey: { expected: [3.15] } })
+  expect(versions[1].content.writtenTasks[0]).toMatchObject({ gridEnabled: false, promptSv: 'Beräkna 5,63 - 2,38.', answerKey: { expected: [3.25] } })
+  const otherContext = await browser.newContext(), other = await otherContext.newPage()
+  await teacherLogin(other, await createTeacher(request, { classIds: [classId], role: 'super_admin' }))
+  expect((await api(other, url)).status).toBe(404)
+  expect((await api(other, '/api/teacher-diagnostic-assignments?resource=drafts')).data.drafts).toEqual([])
+  await otherContext.close()
+  const collections = await api(page, `/api/teacher-diagnostic-assignments?classId=${classId}`)
+  expect(collections.data.assignments).toEqual([])
+  expect(await readServerProfile(request, pupil.studentId)).toEqual(before)
+  const studentContext = await browser.newContext(), student = await studentContext.newPage()
+  await login(student, pupil)
+  await expect(student.getByRole('button', { name: /Decimaler/ })).toHaveCount(0)
+  expect(await student.evaluate(async () => (await fetch('/api/teacher-diagnostic-assignments?resource=drafts')).status)).toBe(401)
+  await studentContext.close()
+})

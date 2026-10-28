@@ -12,7 +12,7 @@ const collectionLabel = (collection, classNames) => {
 
 // Results of screenings for the picked recipients: classes, groups or pupils.
 // A group that spans classes is read as one table.
-export default function ScreeningResultsPanel({ classes, students, recipients = [], teacherGroups = [], onDirtyChange, active: isActive = true }) {
+export default function ScreeningResultsPanel({ classes, students, recipients = [], teacherGroups = [], onDirtyChange, active: isActive = true, requestedCollectionId = '' }) {
   const plan = useMemo(() => buildScreeningDispatches(recipients, { classes, groups: teacherGroups, students }),
     [recipients, classes, teacherGroups, students])
   const classKey = plan.dispatches.map(item => item.classId).join(',')
@@ -44,6 +44,13 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
 
   const waiting = classKey.split(',').filter(Boolean).some(classId => !loaded[classId])
   const collections = useMemo(() => groupCollections(Object.values(loaded).flatMap(item => item.assignments)), [loaded])
+  useEffect(() => {
+    if (!requestedCollectionId) return
+    const requestedIds = new Set(requestedCollectionId.split('+'))
+    const match = collections.find(item => item.id === requestedCollectionId
+      || item.members.some(member => requestedIds.has(member.assignmentId)))
+    if (match) setCollectionId(match.id)
+  }, [requestedCollectionId, collections])
   const selected = collections.find(item => item.id === collectionId) || null
   const failed = Object.entries(loaded).filter(([, item]) => item.state !== 'ready')
   const assignmentsFor = classId => loaded[classId]?.assignments || []

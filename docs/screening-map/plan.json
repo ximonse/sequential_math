@@ -1877,7 +1877,7 @@
       "title": "Generella och analysspecifika uppdrag/screeningar",
       "status": "Byggt",
       "purpose": "Skapa generella uppdrag/screeningar från lärarinstruktion eller givet material, och specifika utifrån analys av just klassen, gruppen eller eleven. Välj mottagare separat.",
-      "next": "Granska PR22 och preview före separat mergebeslut. Preview kräver Vercel-inloggning; appens autentiserade elev-/lärarflöde i preview är ännu inte verifierat. Verklig elevdata kräver klarlagd godkänd AI-miljö.",
+      "next": "Fortsätt enligt ai-material-integration: återanvänd publicerad frågeredigering och verifiera mot aktuell produktion innan publiceringsbeslut.",
       "acceptance": "Båda ingångarna fungerar för träning och screening till elev, grupp och klass. Utkast visar ursprung, mål, innehåll, facit/bedömningssätt och exakta mottagare. Utdelning kräver granskad version, aktuell behörighet och medlemskap; återförsök ger inga dubletter och delfel syns. Eleven kan öppna, svara och återladda; läraren ser uppföljningen. Screening ändrar inte vanlig mastery. Specifika utkast visar vilka analysbelägg som motiverar innehåll och kontraster; en vald mottagare ensam gör inte uppdraget specifikt.",
       "requires": [
         "ai-pupil-mcp",
@@ -2191,9 +2191,9 @@
       "id": "custom-screening-answer-keys",
       "area": "Dela ut",
       "title": "Egna självrättande screeningfrågor",
-      "status": "Byggt",
+      "status": "Beslut behövs",
       "purpose": "Läraren anger fryst facit för egna frågor med samma bevarade räknehäfte och rättningskedja som NCM.",
-      "next": "Avgränsa publiceringen från tidigare ändringar på arbetsgrenen, inhämta publiceringsmandat och granska därefter exakta uppdrag och mottagare före utdelning.",
+      "next": "Granska och revidera de åtta nu sparade privata utkasten i appen före beslut om individuell utdelning.",
       "acceptance": "Tal, decimaler, bråk/procent och exakta svar rättas utan facitläckage eller påverkan på mastery. Gamla skrivfrågor är fortsatt lärarbedömda.",
       "requires": [
         "dispatch"
@@ -2201,8 +2201,8 @@
       "affects": [
         "matrix"
       ],
-      "decision": "2026-10-28: Simon väljer egna självrättande frågor, åtta varierade frågor per elev. Inget publiceringsmandat för kod har givits.",
-      "evidence": "2026-10-28 lokalt: validerat fryst answerKey, lärarredigerare, facitsekretess, kopiering, strikt bråkform/nämnare och enheter samt resultat via befintlig observationskedja. 189 testfiler/940 tester, build, riktad lint och karta godkända. Ny robot passerar separat och i hela körningen; syntetiska elever, sparande/omladdning, exakt mottagare och orörd mastery. Renderade liggande/stående iPadstorlekar samt lärarvyer granskade. Bred robotkörning: 155 godkända, 6 misslyckade, 4 överhoppade; samtliga sex passerade separat med en arbetare. Ingen helt grön gemensam körning påstås. Se docs/SCREENING_CUSTOM_ANSWER_KEYS.md. Åtta individuella uppdrag med totalt 64 frågor lokalt validerade utanför repot. Ingen push, publicering eller elevutdelning. Arbetsgrenens tidigare ändringar ingår inte i publiceringsmandatet.",
+      "decision": "2026-10-28: Simon väljer egna självrättande frågor, åtta varierade frågor per elev. Inget publiceringsmandat för kod har givits.\n2026-10-28: Simon väljer egna självrättande frågor, åtta varierade frågor per elev. Inget publiceringsmandat för kod har givits. 2026-10-28: Simon ger uttryckligt publiceringsmandat. Separat gren från origin/master; övriga opublicerade ändringar i feature/more-figures ingår inte. Publiceringsmandatet genomfört via separat PR23. Utdelningen har inte utförts: assignment-authoring kräver aktuell innehålls-/mottagargranskning genom serverns godkännandeflöde; det separata materialgranskningsflödet i arbetsgrenen är ännu opublicerat och ingick inte i denna isolerade publicering. 2026-10-28: Simon beställer nu först möjligheten till privata utkast för genomkoll och revidering. Den avgränsade funktionen screening-drafts är lokalt byggd; detta sjok omfattar inte elevutdelning eller hela den äldre materialmodulen.",
+      "evidence": "2026-10-28 lokalt: validerat fryst answerKey, lärarredigerare, facitsekretess, kopiering, strikt bråkform/nämnare och enheter samt resultat via befintlig observationskedja. 189 testfiler/940 tester, build, riktad lint och karta godkända. Ny robot passerar separat och i hela körningen; syntetiska elever, sparande/omladdning, exakt mottagare och orörd mastery. Renderade liggande/stående iPadstorlekar samt lärarvyer granskade. Bred robotkörning: 155 godkända, 6 misslyckade, 4 överhoppade; samtliga sex passerade separat med en arbetare. Ingen helt grön gemensam körning påstås. Se docs/SCREENING_CUSTOM_ANSWER_KEYS.md. Åtta individuella uppdrag med totalt 64 frågor lokalt validerade utanför repot. Ingen push, publicering eller elevutdelning. Arbetsgrenens tidigare ändringar ingår inte i publiceringsmandatet.\n2026-10-28 lokalt: validerat fryst answerKey, lärarredigerare, facitsekretess, kopiering, strikt bråkform/nämnare och enheter samt resultat via befintlig observationskedja. 189 testfiler/940 tester, build, riktad lint och karta godkända. Ny robot passerar separat och i hela körningen; syntetiska elever, sparande/omladdning, exakt mottagare och orörd mastery. Renderade liggande/stående iPadstorlekar samt lärarvyer granskade. Bred robotkörning: 155 godkända, 6 misslyckade, 4 överhoppade; samtliga sex passerade separat med en arbetare. Ingen helt grön gemensam körning påstås. Se docs/SCREENING_CUSTOM_ANSWER_KEYS.md. Åtta individuella uppdrag med totalt 64 frågor lokalt validerade utanför repot. Ingen push, publicering eller elevutdelning. Arbetsgrenens tidigare ändringar ingår inte i publiceringsmandatet. Publiceringskandidaten baseras på 05748fb och utelämnar det ännu opublicerade materialförhandsvisnings-API:t och dess dokumentation. Isolerad kandidat från aktuell origin/master: 173 testfiler/872 tester, produktionsbuild, arkitekturkontroll samt 10 riktade robotfall med en arbetare godkända. Robotfallen omfattar egna facit, NCM, tillbaka/redigera, avslut, gruppresultat och bildfrågor. Inga andra arbetsgrensändringar följer med. 2026-10-28 publicerat: PR https://github.com/ximonse/sequential_math/pull/23 sammanslagen till master med SHA16ce82271337628a1b1a3396d9be0ee90f303958 efter gröna GitHub quality/documentation och READY preview. Vercel sekvens prj_EoQGQufPrEgDHwHr6FlnFpd9IwNo, team_bsg7SgXOl9BGH3U8wHz4gpg1, produktionsdeployment dpl_BbXaS6ECwFFnHtA36qJLRwKfPsj2 READY med matematik.ximon.se som alias och exakt samma SHA. Aktiv domän serverar index-Dry9GKK5.js med nya frågeredigeraren. Autentiserad lärarläsning verifierar att de åtta avsedda mottagarna fortfarande är utdelningsbara i rätt klass och grupp, 15 gruppmedlemmar totalt. Inga individuella uppdrag skapade och inga elevsvar ändrade. Ingen autentiserad visuell produktions-QA eller fysisk iPadverifiering påstås. 2026-10-28: Den avgränsade utkastfunktionen publicerad genom PR24. Alla åtta individuella samlingar med totalt64 självrättande frågor är nu privata utkast i appen, version1, återlästa från verklig lagring. Inget utdelat. Den bredare äldre materialmodulen behövde inte publiceras för detta utkaststeg.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -2224,6 +2224,131 @@
         {
           "id": "release-dispatch",
           "text": "Publicera efter mandat och dela därefter ut verifierade individuella uppdrag.",
+          "done": false
+        },
+        {
+          "id": "release-code",
+          "text": "Publicera det avgränsade facitstödet via GitHub och verifiera aktiv produktionsversion.",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "screening-drafts",
+      "area": "Dela ut",
+      "title": "Sparade screeningutkast för genomgång och revidering",
+      "status": "Byggt",
+      "purpose": "Skapa, spara, öppna, förhandsvisa och revidera frågesamlingar privat innan utdelning.",
+      "next": "Läraren öppnar Screening: dela ut → Utkast för genomgång → Sparade utkast, granskar och reviderar de åtta individuella samlingarna. Elevutdelning är ett separat steg.",
+      "acceptance": "Utkast och äldre versioner kan läsas efter omladdning. Frågor, facit och pågående frågeredigering bevaras. Sparande skapar inga elevuppdrag. Samtidiga ändringar skrivs inte över.",
+      "requires": [
+        "dispatch"
+      ],
+      "affects": [
+        "custom-screening-answer-keys"
+      ],
+      "decision": "2026-10-28: Simon beställer en funktion i appen för att skapa utkast för genomkoll och revidering. Avgränsat till screeningens befintliga frågeredigerare. Publicering är separat. 2026-10-28: Simon ger uttryckligt mandat att publicera utkastfunktionen och lägga in de åtta förberedda samlingarna som privata utkast.",
+      "evidence": "Befintlig opublicerad materialgranskning inspekterad: dess redigerare ändrar rubrik/mål, men saknar frågeredigering. Återanvänd befintliga frågekomponenter och samma CAS/idempotensprincip; ingen parallell bred materialpubliceringsmodul införs. 2026-10-28 lokalt byggt: privata screeningutkast via befintlig adminbegränsad route, atomisk CAS och idempotent kvittens, 20 oföränderliga versioner och 100 utkast per konto. Befintliga frågor/facit/bildfrågor/arbetsytor och ofullständig frågeredigering sparas; läsbar förhandsvisning, versionsval, kopia och osparat-varning. Inget mottagarval eller elevuppdrag sparas. 174 testfiler/877 tester och build godkända; riktad lint, arkitektur och karta godkända. Tio riktade browserfall gröna, därefter utökad fråge-/facitrevidering och arbetslägeskontroll; navigeringens R2-fel reproducerat rött före fix, följt av fyra gröna omkörda fall. Förlorad serverrespons, samtidig ändring, privat läraråtkomst, elevnekad åtkomst och orörda elevdata verifierade. Renderade liggande/stående iPadstorlekar granskade. Ingen fysisk iPad, riktig KV, push eller produktionsverifiering för denna funktion. Åtta stabila privata utkastbegäranden med 64 frågor förberedda utanför repot, inget sparat i appen. Kontrakt: docs/SCREENING_DRAFTS.md. 2026-10-28 publicerat och verklig lagring verifierad: PR24 https://github.com/ximonse/sequential_math/pull/24 grön i GitHub quality/documentation och sammanslagen till master acae69714dfee79dc0072f5a9fb4f86096af9d5b. Vercel sekvens, prj_EoQGQufPrEgDHwHr6FlnFpd9IwNo, produktionsdeployment dpl_2hVYVSa738dzkSQihBRaJMhxHSiD READY på exakt detta SHA med matematik.ximon.se som alias. Aktiv domän serverar index-D8igdzpf.js med utkastredigeraren. Åtta privata utkast med åtta frågor var, totalt64, sparade som version1 genom autentiserat lärar-API och varje innehåll/facit återläst och jämfört med planerade data. Första sparbegäran återförsökt med samma requestId: ingen extra version. Samtliga åtta återfinns i lärarens privata lista. Klassens elevuppdrags-ID:n är oförändrade före/efter; ingen elevutdelning. Produktionskvittens sparad utanför repot. API-/lagringsverifiering, ingen autentiserad visuell produktions-QA eller fysisk iPad påstås.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "store",
+          "text": "Privat versionslagring med konflikt- och återförsöksskydd.",
+          "done": true
+        },
+        {
+          "id": "editor",
+          "text": "Skapa, öppna och revidera frågor, facit och ofullständiga frågeutkast.",
+          "done": true
+        },
+        {
+          "id": "review",
+          "text": "Läsbar förhandsvisning och historiska versioner utan utdelning.",
+          "done": true
+        },
+        {
+          "id": "verify",
+          "text": "API-/lagringstester, browserrobot, renderade lärarvyer och build.",
+          "done": true
+        },
+        {
+          "id": "publish",
+          "text": "Publicera via GitHub och verifiera rätt version på aktiv produktionsdomän.",
+          "done": true
+        },
+        {
+          "id": "populate",
+          "text": "Spara och återläsa de åtta individuella samlingarna som privata utkast utan elevutdelning.",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "teacher-screening-workflow",
+      "area": "Lärarvy",
+      "title": "Gemensamt screeningflöde: innehåll, mottagare, kontroll och kvitto",
+      "status": "Lokalt klart",
+      "purpose": "Omsätta Simons godkända kompakta skiss med sökbart flerval i appens riktiga screeningflöde.",
+      "next": "Publicera godkänd korrigering3bec274 via GitHub efter gröna kontroller och verifiera commit/alias på sekvens.",
+      "acceptance": "Översikt och utdelning är separata. Återanvänd/skapa ny är tydligt. Val och frågeutkast överlever tillbakagång; mottagare kan kombinera flera klasser/grupper/elever och dedupliceras. Bara uttrycklig utdelning skriver. Kvittens per klass och återförsök utan dubbletter. Befintlig screeningmastery och resultat påverkas inte. Godkänd visuell referens följs och bevaras i repot. Materialbiblioteket öppnar verkliga privata utkast. Frågebild och svarsalternativ har skilda infogningsvägar. Uppgifter har områdesrubriker. Visningsurval styr även elevantal, status, genomförande och resultatöppning utan att byta utdelningsmottagare.",
+      "requires": [],
+      "affects": [
+        "screening-split",
+        "reuse-collections"
+      ],
+      "decision": "2026-10-28: Simon godkände UI-plan och flervalsprototyp, krävde kraftigt minskad vertikal padding och sade kör. Första implementationen är Screening; inga andra vyer byggs om automatiskt och ingen push är beställd.\n2026-10-28: Simon bad om publicering. Isolerad publiceringsgren från master7fede25, med privata versionsutkast bevarade; PR22 ingår inte.\n2026-10-28: Simon underkänner överensstämmelsen med godkänd skiss och beställer rättning av både utseendet och de utlovade underliggande delarna. Ingen ny publiceringsbegäran. Korrigeringen gäller det kompletta screeningflödet; senare föreslagna harmoniseringsetapper är inte automatiskt beslutade.\nSimon godkänner korrigeringens faktiska renderingar och beställer publicering: ser bra ut, publicera.",
+      "evidence": "Lokalt byggt: översikt, innehåll/mottagare/kontroll/kvitto, explicit mottagarlista och serverbunden återförsöksidentitet. Ny robot verifierat röd före implementation. Mottagarflöde, förlorad kvittens och API-deduplicering har passerat fram till robotens gamla strikta textlocator; den rättas till en entydig rubrik. Full regression pågår. Dokumentation: docs/TEACHER_UI_WORKFLOWS.md. Ej pushat.\nSlutkontroll: 191 filer/945 tester, build, riktad lint, arkitektur och karta godkända. Bred produktionslik robotsvit:158 pass/4 fall/4 miljöberoende överhoppade. Två gamla UI-ingångar anpassade och gröna; nivåprovet grönt seriellt. Fokusprov föll i blandade körningar men passerade ensamt i både isolerad oförändrad HEAD0d248f2 och aktuell app. Ingen obruten grön fullsvit påstås. Slutbyggets nya flödes- och navigeringsrobot gröna tillsammans: multi-klass/grupp/elev, överlapp, sök, bevarat otillagt frågeutkast, förlorad lyckad kvittens/ingen dubblett, översiktsfilter/sortering/mottagare, resultat och avslut, återanvändning med tomt urval. Kvarhängande navigeringsvarning reproducerad röd före fix. Efter Simons återkoppling mjukare markeringar, tydliga kategorier och mer sektionsluft med fortsatt kompakta rader; åtta sökträffar/visa fler. Fylld liggande/stående render visuellt granskad. Bara syntetisk minnes-KV, ej verklig Redis-CAS/fysisk iPad/produktion. Lokal commit, ej pushat.\nPubliceringsmandat 2026-10-28: isolerad gren från senaste master7fede25; tar inte med PR22:s analys/MCP/materialarbete. Befintliga privata screeningutkast och kontrollerade halvfärdiga redigerare kopplas in i nya flödet. Slutkontroller för kombinationen pågår.\nPubliceringsgrenen: 176 testfiler/882 tester gröna; tio berörda produktionslika robotfall gröna tillsammans seriellt efter rättad funktionell redigeraruppdatering. Privata utkast: ofärdig text/bild, sparning, omladdning, versionsbyte, konflikt och förlorad kvittens verifierade. Syntetisk minnes-KV; liggande/stående mottagare och utkastgranskning visuellt kontrollerade. Fokus/Värm-tooltips från14f4080 inkluderade. Riktad lint, arkitektur och karta gröna. Produktionspublicering inväntar GitHub-kontroller.\nPublicerat via PR25 (https://github.com/ximonse/sequential_math/pull/25), testad head68e78b1, master3065304c5934aa985ed4eebaf5d3b68cb73bcec0. PR:s kvalitet/dokumentation/Vercelpreview gröna och masters kvalitetskontroll grön. Sekvens prj_EoQGQufPrEgDHwHr6FlnFpd9IwNo, produktion dpl_41LYGgdX8KgVBJ6S7JZSLgV16j87 READY, Git-källa master3065304 och alias matematik.ximon.se verifierade. Offentlig sida HTTP200; /assets/index-3Yil_8wC.js matchar lokalt verifierat bygge exakt. Lärarutkast- och utdelnings-API ger401 utan inloggning. Ingen utdelning till verkliga elever eller autentiserad produktionsgenomgång gjord. Publiceringsbelägg sparas i separat lokal dokumentationscommit.\nKorrigering pågår: revision mot godkänd teacher-workflow.html. Tidigare leverans saknade Materialbibliotek och fasta bildroller; översiktens urval visade hela utdelningens status/antal även för undergrupper. Röda browserbelägg för saknad materialingång. Bygger verklig utkastlista/öppning, separata bildinfogningar, bevarade alternativ och avgränsad status/resultatöppning. Lokal styling följer skissens mått, hierarki och färger i Screening; andra arbetslägen bevaras.\nLokal slutkontroll av korrigeringen: 177 filer/883 enhetstester, slutligt produktionsbygge, riktad ESLint, arkitektur och karta gröna. Alla14 berörda robotfall passerar tillsammans; efter sista visuella kontrastjusteringarna passerar de4 berörda flödesfallen igen (ytterligare1+3 slutomkörningar gröna). Materialöppning/privata versioner, fel vid innehållsläsning spärrar fortsatt utdelning, tangentbordsflikar, gruppstatus/elevantal/resultatöppning, genomförande från lärar-API, fasta bildroller, avböjt raderande svarssättsbyte och bevarade alternativ verifierade. Genomförandesiffror både från riktiga syntetiska elevförsök i regressionsflöden och styrt statusresponsfall. Fyllda översikts-/material-/mottagar-/bildvyer samt stående,390px och mörkt tema granskade som verkliga skärmbilder. Referensen jämförd direkt; konto/synk/temaknappar behålls, inga demodata i appkoden. Skiss bevarad i docs/ui-reference/screening-approved.html; agentinstruktioner länkar jämförelsekontraktet. Syntetisk minnes-KV/emulerad platta; ingen fysisk iPad eller riktig elevdata. Lokal commit; ej pushat eller publicerat. QA utanför repot: visualizations/2026/10/28/01a18377-99cd-7bf3-a1ae-b17726f9d8a9/screening-correction.\nPubliceringsmandat för den lokalt verifierade design- och flödeskorrigeringen mottaget. Baserad på aktuell master3065304; inga nya appändringar sedan visad och testad3bec274. Förbereder avgränsad PR från codex/screening-design-contract.\n2026-10-29 publiceringskontroll: PR26:s preview och dokumentation gröna, men quality föll i två befintliga datumfixturer vid Stockholmsmidnatt (23:00UTC). De satte svarstid till Date.now()-60000 men förväntade alla svar i dagens period. Rättar endast testklockan till ett bestämt middagsklockslag och återställer Date efter varje test. Produktionskod och den godkända designen ändras inte. Ny test- och CI-verifiering krävs före merge.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "flow-build",
+          "text": "Bygg sammanhållet screeningflöde med sök och flerval",
+          "done": true
+        },
+        {
+          "id": "flow-verify",
+          "text": "Verifiera riktiga API-fall och visuella liggande/stående vyer",
+          "done": true
+        },
+        {
+          "id": "approved-visual-contract",
+          "text": "Rätta hela screeningflödet mot godkänd skiss och verifiera bildroller/material/visningsurval med verklig render",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "ai-material-integration",
+      "area": "AI-uppföljning",
+      "title": "Koppla MCP-material till aktuell screeningredigering",
+      "status": "Beslutat",
+      "purpose": "Sammanföra det versionsgranskade AI-materialet med publicerade fråge- och utkastfunktioner utan parallella utdelningar.",
+      "next": "Verifiera sammanslagen bas mot master 177c92d och återanvänd frågeredigeringen i materialgranskningen.",
+      "acceptance": "Generellt och analysspecifikt material kan bearbetas, granskas som ny version och delas ut först efter godkännande av exakt innehåll och mottagare. Befintlig screeningredigering och kvittenser fungerar fortsatt.",
+      "requires": [
+        "ai-pupil-material"
+      ],
+      "affects": [],
+      "decision": "2026-10-29: Simon återupptar målet efter UI-paus. Aktuellt publicerat UI från PR #26 ska återanvändas. Ingen produktionspublicering ingår i återupptagandet.",
+      "evidence": "2026-10-29: origin/master 177c92d innehåller screeningutkast, egna facit, frågeredigering, samlat mottagarval och utdelningskvitton. Integrationsgrenen sammanför dessa med materialets versionsgranskning; ännu inte verifierad.\n2026-10-29: Sammanslagen lokal bas: 193 testfiler/951 tester, 19 MCP-tester, produktionsbuild samt tio syntetiska webbläsartester godkända. Ingen push eller produktion.",
+      "issue": "",
+      "kind": "feature",
+      "tasks": [
+        {
+          "id": "integration-baseline",
+          "text": "Sammanför aktuell master och verifiera båda flödena",
+          "done": true
+        },
+        {
+          "id": "integration-edit",
+          "text": "Återanvänd befintlig frågeredigering i materialgranskningen",
+          "done": false
+        },
+        {
+          "id": "integration-verify",
+          "text": "Verifiera ny version, nytt godkännande och oförändrat diagnostikflöde syntetiskt",
           "done": false
         }
       ]
@@ -2939,6 +3064,31 @@
       "source": "custom-screening-answer-keys",
       "target": "matrix",
       "kind": "påverkar"
+    },
+    {
+      "source": "dispatch",
+      "target": "screening-drafts",
+      "kind": "kräver"
+    },
+    {
+      "source": "screening-drafts",
+      "target": "custom-screening-answer-keys",
+      "kind": "påverkar"
+    },
+    {
+      "source": "teacher-screening-workflow",
+      "target": "screening-split",
+      "kind": "påverkar"
+    },
+    {
+      "source": "teacher-screening-workflow",
+      "target": "reuse-collections",
+      "kind": "påverkar"
+    },
+    {
+      "source": "ai-pupil-material",
+      "target": "ai-material-integration",
+      "kind": "kräver"
     }
   ],
   "note": "Planeringssnapshot. Lokalt klart är inte publicerat. Tidigare publicering bygger på denna tråds verifiering; ingen ny livekontroll. Förslag är inte fattade beslut."

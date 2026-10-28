@@ -499,8 +499,8 @@ export default function DashboardLayout({
         </button>
       </details>
       <ScreeningDispatchPanel classes={classes} students={students} teacherGroups={teacherGroups} active={activeWorkspace === 'ncm'}
-        onDirtyChange={value => { dispatchDirtyRef.current = value }} onResults={collection => {
-          setResultPicks(collection.members.map(member => ({ type: 'class', id: member.classId })))
+          onDirtyChange={value => { dispatchDirtyRef.current = value }} onResults={(collection, picks = []) => {
+            setResultPicks(picks.length ? [...picks] : collection.members.map(member => ({ type: 'class', id: member.classId })))
           setRequestedScreening(collection.id)
           setActiveWorkspace('ncm-results')
         }} />
@@ -528,6 +528,7 @@ export default function DashboardLayout({
     <div data-teacher-workspace={activeWorkspace} className={`teacher-dashboard-surface min-h-screen pb-5 pt-14 sm:pb-6 sm:pt-16 ${surfaceClass}`}>
       <div className="max-w-6xl mx-auto px-3 sm:px-4">
         <DashboardHeaderBar
+          workspaceTitle={activeWorkspace === 'ncm' ? 'Matematik · Lärarvy' : undefined}
           isDirectStudentView={isDirectStudentView}
           detailStudentName={detailStudentProfile?.name || ''}
           teacherName={teacherName}
@@ -544,14 +545,14 @@ export default function DashboardLayout({
           onLogout={handleLogout}
         />
 
-        <div className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
+        <div hidden={activeWorkspace === 'ncm' && !dashboardStatus} className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
 
         <div className="grid gap-3 lg:grid-cols-[13rem_minmax(0,1fr)]">
           <aside className="rounded-lg bg-slate-800 p-2 text-slate-100 lg:sticky lg:top-3 lg:h-fit">
               <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">Arbetsläge</p>
               <nav className="grid gap-1" aria-label="Lärarvy">
                 {WORKSPACES.filter(workspace => (!workspace.adminOnly || teacherIsAdmin) && (!workspace.attentionOnly || canViewAttention)).map(workspace => (
-                  <button key={workspace.id} type="button" onClick={() => {
+                  <button key={workspace.id} aria-current={activeWorkspace === workspace.id ? 'page' : undefined} type="button" onClick={() => {
                     if (workspace.id !== activeWorkspace && (reviewDirtyRef.current || (dispatchDirtyRef.current && !['ncm', 'ncm-results'].includes(workspace.id)))
                       && !window.confirm('Du har osparade ändringar. Vill du lämna dem?')) return
                     if (workspace.id !== activeWorkspace) reviewDirtyRef.current = false

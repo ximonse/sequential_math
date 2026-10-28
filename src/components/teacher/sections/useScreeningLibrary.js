@@ -24,6 +24,6 @@ export default function useScreeningLibrary(classes, active = true) {
     }))
     return () => { current = false }
   }, [classKey, revision, active])
-  return { loaded, reload, assignments: Object.values(loaded).flatMap(item => item.assignments),
+  return { loaded, reload, revision, assignments: Object.values(loaded).flatMap(item => item.assignments),
     loading: classKey.split(',').filter(Boolean).some(id => !loaded[id]) }
 }

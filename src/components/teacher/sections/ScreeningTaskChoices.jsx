@@ -6,6 +6,11 @@ const writtenTasks = diagnosticCatalog.tasks.filter(task => !task.ncmCode)
 const ncmPacks = diagnosticCatalog.packs.filter(pack => pack.id.startsWith('ncm-') && pack.id !== 'ncm-overview')
 const findTask = diagnosticCatalog.findTask
 const guideFor = diagnosticCatalog.guideFor
+const originalGroups = [
+  { label: 'Addition', tasks: writtenTasks.filter(task => task.operation === 'addition') },
+  { label: 'Subtraktion', tasks: writtenTasks.filter(task => task.operation === 'subtraction') },
+  { label: 'Geometri och bildfrågor', tasks: writtenTasks.filter(task => !['addition', 'subtraction'].includes(task.operation)) }
+].filter(group => group.tasks.length)
 
 // Question choice for a new collection. A pack covers the common case in one
 // click; single questions, answer types and the teacher guide stay folded away.
@@ -41,7 +46,10 @@ export default function ScreeningTaskChoices({
       <summary className="cursor-pointer font-semibold">Välj uppgifter en och en</summary>
       <fieldset className="mt-2" disabled={busy}>
         <legend className="font-medium">Uppgifter</legend>
-        <div className="mt-1 flex flex-wrap gap-3">{writtenTasks.map(taskCheckbox)}</div>
+        <div className="screening-task-groups">{originalGroups.map(group => <fieldset key={group.label}>
+          <legend>{group.label} · {group.tasks.length} uppgifter</legend>
+          <div className="screening-task-list">{group.tasks.map(taskCheckbox)}</div>
+        </fieldset>)}</div>
         <details className="mt-2">
           <summary className="cursor-pointer font-semibold">NCM Diamant-uppgifter ({diagnosticCatalog.tasks.length - writtenTasks.length})</summary>
           {ncmPacks.map(pack => <div key={pack.id} className="mt-2">

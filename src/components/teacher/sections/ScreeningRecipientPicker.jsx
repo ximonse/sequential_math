@@ -5,7 +5,7 @@ const PAGE_SIZE = 8
 const TYPE_LABELS = { class: 'Klasser', group: 'Grupper', student: 'Elever' }
 const TYPE_SHORT = { class: 'Klass', group: 'Grupp', student: 'Elev' }
 
-export default function ScreeningRecipientPicker({ classes, groups, students, recipients, onChange, disabled = false, title = 'Mottagare' }) {
+export default function ScreeningRecipientPicker({ classes, groups, students, recipients, onChange, disabled = false, title = 'Mottagare', purpose = 'delivery' }) {
   const id = useId()
   const [query, setQuery] = useState('')
   const [type, setType] = useState('all')
@@ -26,11 +26,11 @@ export default function ScreeningRecipientPicker({ classes, groups, students, re
       <button type="button" disabled={disabled || !recipients.length} className="text-indigo-700 underline disabled:opacity-50" onClick={() => onChange([])}>Rensa urval</button>
     </div>
     <div className="mt-2 flex flex-wrap gap-2">
-      {selection.selected.map(item => <span key={recipientKey(item)} className="inline-flex items-center gap-1.5 rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-indigo-900">
+      {selection.selected.map(item => <span key={recipientKey(item)} className="screening-selection-chip inline-flex items-center gap-1.5 rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-indigo-900">
         <span className="text-xs text-indigo-700">{TYPE_SHORT[item.type]}</span>{item.name}<button type="button" disabled={disabled} onClick={() => toggle(item)} className="screening-remove px-1" aria-label={`Ta bort ${item.name}`}>×</button>
       </span>)}
     </div>
-    <p data-recipient-summary role="status" className="mt-2 font-semibold text-indigo-800">{recipients.length ? selection.pupils.length === 1 ? '1 elev' : `${selection.pupils.length} unika elever` : 'Ingen mottagare vald.'}</p>
+    <p data-recipient-summary role="status" className="mt-2 font-semibold text-indigo-800">{recipients.length ? selection.pupils.length === 1 ? '1 elev' : `${selection.pupils.length} unika elever` : purpose === 'filter' ? 'Visar alla dina klasser. Detta urval styr bara översikten.' : 'Ingen mottagare vald.'}</p>
     {(selection.missing > 0 || selection.unavailablePupils > 0) && <p role="alert" className="text-amber-900">Urvalet innehåller mottagare som inte längre finns i underlaget. Läs om listan och kontrollera urvalet innan utdelning.</p>}
     {selection.pupils.length > 0 && <details className="mt-1"><summary className="cursor-pointer">Visa elever som ingår</summary>
       <ul className="mt-1 grid gap-x-4 sm:grid-cols-2">{selection.pupils.map(student => <li key={student.studentId}>{student.name || student.displayAlias || 'Elev utan namn'}</li>)}</ul>

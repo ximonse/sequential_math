@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
-import { createTeacher, teacherLogin } from './lib/teacher.js'
+import { createTeacher, teacherLogin, sendScreening } from './lib/teacher.js'
 import { collectionSelect, openDispatch, openResults } from './lib/screening.js'
 
 async function teacherRequest(page, url, method = 'GET', body) {
@@ -45,34 +45,27 @@ test('A stopped collection can be reused for a group, another class and one pupi
   await openResults(page, { className: `Ny klass ${tag}` })
   await openResults(page, { className: sourceClass })
   await expect(collectionSelect(results).locator('option')).toContainText(['Välj samling', 'Min samling'])
-  const panel = await openDispatch(page)
-  await panel.getByText('Återanvänd en tidigare samling', { exact: true }).click()
-  await panel.getByRole('combobox', { name: 'Klass att hämta samlingar från', exact: true }).selectOption(sourceClass)
-  await panel.getByRole('combobox', { name: 'Återanvänd samling', exact: true }).selectOption(source.assignmentId)
-  await expect(panel.getByRole('region', { name: 'Samling att återanvända' }).locator('li')).toHaveCount(3)
-  const picker = page.locator('[data-recipient-picker]')
-  const send = panel.getByRole('button', { name: 'Ge till valda mottagare (1 screening)', exact: true })
-  const clearPicks = () => picker.getByRole('button', { name: 'Rensa', exact: true }).click()
-  const deliver = async title => {
+  const panel = await openDispatch(page, { startNew: false })
+  const deliver = async (title, target) => {
+    const close = panel.getByRole('button', { name: 'Till utdelade screeningar', exact: true })
+    if (await close.isVisible()) await close.click()
+    await panel.getByRole('button', { name: 'Dela ut screening', exact: true }).click()
+    await panel.getByRole('button', { name: 'Återanvänd', exact: false }).click()
+    await panel.getByRole('combobox', { name: 'Klass att hämta samlingar från', exact: true }).selectOption(sourceClass)
+    await panel.getByRole('combobox', { name: 'Återanvänd samling', exact: true }).selectOption(source.assignmentId)
+    await panel.getByText('Visa frågor och arbetsytor', { exact: true }).click()
+    await expect(panel.getByText('Visa frågor och arbetsytor', { exact: true }).locator('..').locator('ol > li')).toHaveCount(3)
     await panel.getByRole('textbox', { name: 'Samlingens namn' }).fill(title)
-    await expect(send).toBeEnabled()
-    await send.click()
-    await expect(panel.getByText(/^Screening skapad för /)).toBeVisible()
+    await sendScreening(page, target)
     const assignments = (await teacherRequest(page, `/api/teacher-diagnostic-assignments?classId=${targetClass}`)).assignments
     const copy = assignments.find(item => item.titleSv === title)
     expect(copy.items.map(item => item.taskSnapshot)).toEqual(source.items.map(item => item.taskSnapshot))
     expect(copy.items.map(item => item.assignmentItemId)).not.toEqual(source.items.map(item => item.assignmentItemId))
     return copy
   }
-  await picker.getByRole('button', { name: `Grupp: ${group.name}`, exact: true }).click()
-  expect((await deliver('Till gruppen')).studentIds).toEqual([first.studentId])
-  await clearPicks()
-  await picker.getByRole('button', { name: `Ny klass ${tag}`, exact: true }).click()
-  expect(new Set((await deliver('Till klassen')).studentIds)).toEqual(new Set([first.studentId, second.studentId]))
-  await clearPicks()
-  await picker.getByRole('searchbox', { name: 'Sök elev' }).fill('Reuse Two')
-  await picker.getByRole('button', { name: 'Lägg till Reuse Two', exact: true }).click()
-  expect((await deliver('Till en elev')).studentIds).toEqual([second.studentId])
+  expect((await deliver('Till gruppen', { groupName: group.name })).studentIds).toEqual([first.studentId])
+  expect(new Set((await deliver('Till klassen', { className: `Ny klass ${tag}` })).studentIds)).toEqual(new Set([first.studentId, second.studentId]))
+  expect((await deliver('Till en elev', { pupilName: 'Reuse Two' })).studentIds).toEqual([second.studentId])
   await page.screenshot({ path: testInfo.outputPath('reuse-collection.png'), fullPage: true })
   const stopped = (await teacherRequest(page, `/api/teacher-diagnostic-assignments?classId=${sourceClass}`)).assignments[0]
   expect(stopped.status).toBe('stopped')

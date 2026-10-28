@@ -110,7 +110,7 @@ const validId = value => typeof value === 'string' && idPattern.test(value)
 
 export async function prepareDiagnosticAssignment({ classId, studentIds, taskIds, teacherId,
   titleSv = '', itemOptions = {}, customTasks = [] },
-  { store = kv, makeId = newId } = {}) {
+  { store = kv, makeId = newId, assignmentId: requestedAssignmentId } = {}) {
   if (!validId(classId) || !validId(teacherId)
     || !Array.isArray(studentIds) || studentIds.length < 1 || studentIds.length > 100
     || !studentIds.every(validId) || new Set(studentIds).size !== studentIds.length
@@ -121,7 +121,7 @@ export async function prepareDiagnosticAssignment({ classId, studentIds, taskIds
     || new Set(taskIds).size !== taskIds.length) fail(400, 'invalid_assignment', 'Invalid diagnostic assignment')
   const tasks = taskIds.map(id => catalog.findTask(id))
   if (tasks.some(task => !task)) fail(400, 'invalid_task', 'Unknown diagnostic task')
-  const assignmentId = makeId()
+  const assignmentId = requestedAssignmentId || makeId()
   for (const custom of customTasks) {
     if (typeof custom?.promptSv !== 'string' || !custom.promptSv.trim() || custom.promptSv.length > 2000) {
       fail(400, 'invalid_task', 'En egen fråga behöver text, högst 2000 tecken.')
@@ -168,12 +168,13 @@ export async function prepareDiagnosticAssignment({ classId, studentIds, taskIds
 export async function createDiagnosticAssignment(input, options = {}) {
   const assignment = await prepareDiagnosticAssignment(input, options)
   const { store = kv } = options
+  if (options.dispatchFingerprint) assignment.dispatchFingerprint = options.dispatchFingerprint
   return saveDiagnosticAssignment(assignment, { store })
 }
 
 // The API must authorize both source and destination classes before calling.
 export async function copyDiagnosticAssignment({ classId, studentIds, teacherId,
-  sourceClassId, sourceAssignmentId, titleSv }, { store = kv, makeId = newId } = {}) {
+  sourceClassId, sourceAssignmentId, titleSv }, { store = kv, makeId = newId, assignmentId, dispatchFingerprint } = {}) {
   if (![classId, teacherId, sourceClassId, sourceAssignmentId].every(validId)
     || !Array.isArray(studentIds) || !studentIds.length || studentIds.length > 100
     || !studentIds.every(validId) || new Set(studentIds).size !== studentIds.length
@@ -195,7 +196,7 @@ export async function copyDiagnosticAssignment({ classId, studentIds, teacherId,
     return { assignmentItemId: makeId(), taskId: item.taskId, taskVersion: item.taskVersion,
       taskSnapshot: structuredClone(snapshot) }
   })
-  const assignment = { assignmentId: makeId(), assignmentVersion: 1, classId,
+  const assignment = { assignmentId: assignmentId || makeId(), assignmentVersion: 1, classId,
     studentIds: [...studentIds], items, teacherId, status: 'active', evidenceClass: 'diagnostic_only',
     titleSv: titleSv?.trim() || source.titleSv || 'Screening', instructionSv: source.instructionSv,
     manifestId: source.manifestId, manifestVersion: source.manifestVersion,
@@ -204,6 +205,7 @@ export async function copyDiagnosticAssignment({ classId, studentIds, teacherId,
     || new Set(items.map(item => item.assignmentItemId)).size !== items.length) {
     fail(500, 'id_generation', 'Could not create diagnostic IDs')
   }
+  if (dispatchFingerprint) assignment.dispatchFingerprint = dispatchFingerprint
   return saveDiagnosticAssignment(assignment, { store })
 }
 
@@ -218,6 +220,15 @@ async function saveDiagnosticAssignment(assignment, { store }) {
     [studentIds.length, classId, JSON.stringify(assignment)]))
   if (result === -2) fail(410, 'class_unavailable', 'Diagnostic class is unavailable')
   if (result === -3 || result === -4 || result === -5) fail(409, 'student_unavailable', 'Diagnostic pupil is unavailable in this class')
+  if (result === 0 && assignment.dispatchFingerprint) {
+    const existing = await store.get(`diagnostic_assignment:${assignmentId}`)
+    const removed = await Promise.all([`class_deleted:${classId}`,
+      ...studentIds.flatMap(id => [studentDeletedKey(id), `student_deleted:${id}`])].map(key => store.exists(key)))
+    if (removed.some(Boolean)) fail(410, 'assignment_unavailable', 'Utdelningens underlag har tagits bort.')
+    if (existing?.dispatchFingerprint === assignment.dispatchFingerprint && existing.teacherId === assignment.teacherId
+      && existing.classId === classId && JSON.stringify([...existing.studentIds].sort()) === JSON.stringify([...studentIds].sort())) return existing
+    fail(409, 'assignment_conflict', 'Utdelningsförsöket har redan använts med annat innehåll eller andra mottagare.')
+  }
   if (result !== 1) fail(409, 'assignment_conflict', 'Diagnostic assignment ID already exists')
   return assignment
 }

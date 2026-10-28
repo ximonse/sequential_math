@@ -2171,6 +2171,21 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "quick-assignment-tooltips",
+      "area": "Statistik och stöd",
+      "title": "Förklaringar för Fokus och Värm",
+      "status": "Lokalt klart",
+      "purpose": "Förklara snabbuppdragens innehåll och direkta aktivering utan att ändra knappnamnen.",
+      "next": "Publicering kräver separat mandat; visuell kontroll av native tooltip återstår.",
+      "acceptance": "Fokus och Värm/Värm upp har tooltip med antal uppgifter, nivåspann och direkt aktivering i stöd- och resultatvyn. Befintliga namn och klickåtgärder behålls.",
+      "requires": [],
+      "affects": [],
+      "decision": "2026-10-28: Simon godkände tooltip-beskrivningar med oförändrade knappnamn. Befintligt title-mönster används för muspekare.",
+      "evidence": "Lokalt tillagda title-texter i SupportPriorityPanel och ResultsOverviewPanel. Ingen ändrad uppdragslogik. Visuell browserkontroll blockerad av otillgänglig betrodd browser-anslutning; ingen publicering.\nVerifierat: 188 testfiler/900 tester gröna med inbäddade .claude-arbetskopior, MCP och robotfiler exkluderade. Sandlådan blockerade processstarter; omkörning med processrättighet grön. Build och riktad ESLint gröna. Första breda testkörningen tog med främmande arbetskopior och avbröts efter fel. Inga logikändringar; robotkörning behövs inte för tooltip-text. Lokal commit, ej pushat.",
+      "issue": "",
+      "kind": "funktion"
     }
   ],
   "edges": [

@@ -91,3 +91,18 @@ Det separata, ännu opublicerade materialförhandsvisnings-API:t ingår inte.
 173 testfiler/872 tester, build och arkitekturkontroll passerade. Tio riktade
 robotfall med en arbetare passerade: egna facit, NCM, sparande och redigering,
 avslut, gruppresultat samt bildfrågor. Publicering sker enbart via GitHub.
+
+## Publicering verifierad 2026-10-28
+
+PR23 är sammanslagen till master: `16ce82271337628a1b1a3396d9be0ee90f303958`.
+Vercel-projektet sekvens har produktionsdeployment
+`dpl_BbXaS6ECwFFnHtA36qJLRwKfPsj2` READY på detta SHA med
+`matematik.ximon.se` som alias. Den aktiva domänen serverar
+`index-Dry9GKK5.js` med den nya redigeraren. Autentiserad lärarläsning
+verifierade åtkomst och de avsedda mottagarnas aktuella utdelningsbarhet.
+
+Ingen faktisk elevutdelning gjordes. Den lokala assignment-authoring-skillen
+kräver separat granskning av aktuell innehållsversion och exakta mottagare
+genom serverns godkännandeflöde. Det separat byggda materialgranskningsflödet
+är ännu opublicerat och ingick inte i PR23. Ingen alternativ utdelningsväg
+användes. Nästa beslut gäller publicering av detta separata flöde.

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { deriveTeacherSummary } from '../../../lib/teacherSummary'
 import { buildClassSummaries } from './dashboardAnalyticsHelpers'
 import { buildStudentRow } from './dashboardStudentRowHelpers'
@@ -20,6 +20,13 @@ function problem(index) {
 }
 
 describe('teacher dashboard weekly evidence', () => {
+  beforeEach(() => {
+    // A one-minute-old answer belongs to today regardless of CI wall clock.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-28T12:00:00+01:00'))
+  })
+  afterEach(() => vi.useRealTimers())
+
   it('does not put a pupil without answers in the support queue', () => {
     const row = buildStudentRow({
       studentId: 'NEW01',

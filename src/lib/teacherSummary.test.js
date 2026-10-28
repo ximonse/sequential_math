@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   deriveTeacherSummary,
   getCurrentDayTeacherEvidence,
@@ -22,6 +22,13 @@ function result(index) {
 }
 
 describe('teacher summary', () => {
+  beforeEach(() => {
+    // Relative evidence fixtures must stay within the intended Stockholm day.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-10-28T12:00:00+01:00'))
+  })
+  afterEach(() => vi.useRealTimers())
+
   it('uses the full problem log and reports legacy mastery authority separately', () => {
     const problemLog = Array.from({ length: 300 }, (_, index) => result(index))
     const profile = {

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
-import { teacherLogin, openTab, sendScreening } from './lib/teacher.js'
+import { teacherLogin, sendScreening } from './lib/teacher.js'
 import { openDispatch } from './lib/screening.js'
 
 test('An admin assigns one diagnostic to the whole selected class and each pupil receives it', async ({ page, request, browser }, testInfo) => {
@@ -20,7 +20,7 @@ test('An admin assigns one diagnostic to the whole selected class and each pupil
   await expect(panel.locator('fieldset').first().getByRole('checkbox', { checked: true })).toHaveCount(6)
   await expect(panel.getByText(/Valda uppgifter: 6/)).toBeVisible()
   await sendScreening(page, { className })
-  await expect(panel.getByText(`Screening skapad för ${className} (2 elever).`, { exact: true })).toBeVisible()
+  await expect(panel.getByText('Alla 2 elever har fått screeningen.', { exact: true })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('whole-class-assignment.png'), fullPage: true })
   for (const pupil of [first, second, outsider]) {
     const context = await browser.newContext()
@@ -52,14 +52,8 @@ test('An admin gives a screening to one pupil picked in the shared recipient pic
     id: `pick-admin-${tag}`, classIds: [classId], role: 'super_admin'
   } })).json()
   await teacherLogin(page, teacher)
-  await openTab(page, 'Screening')
-  const picker = page.locator('[data-recipient-picker]')
-  await picker.getByRole('searchbox', { name: 'Sök elev' }).fill('Recipient A')
-  await picker.getByRole('button', { name: 'Lägg till Recipient A', exact: true }).click()
-  const box = page.locator('[data-screening-recipients]')
-  await expect(box).toContainText('1 screening, en per klass')
-  await box.getByRole('button', { name: 'Ge till valda mottagare (1 screening)', exact: true }).click()
-  await expect(page.getByText(/Screening skapad för .* \(1 elev\)\./)).toBeVisible()
+  await openDispatch(page)
+  await sendScreening(page, { pupilName: 'Recipient A' })
   for (const [pupil, sees] of [[picked, true], [other, false]]) {
     const context = await browser.newContext()
     const student = await context.newPage()

@@ -3,10 +3,17 @@
 import { expect } from '@playwright/test'
 import { openTab } from './teacher.js'
 
-export async function openDispatch(page) {
+export async function openDispatch(page, { startNew = true } = {}) {
   await openTab(page, 'Screening: dela ut')
   const panel = page.getByRole('region', { name: 'Dela ut screening', exact: true })
   await expect(panel).toBeVisible()
+  if (startNew && !await panel.getByRole('button', { name: 'Välj mottagare', exact: true }).isVisible()) {
+    const close = panel.getByRole('button', { name: 'Till utdelade screeningar', exact: true })
+    if (await close.isVisible()) await close.click()
+    const start = panel.getByRole('button', { name: 'Dela ut screening', exact: true })
+    if (await start.isVisible()) await start.click()
+    await panel.getByRole('button', { name: 'Skapa ny', exact: false }).click()
+  }
   return panel
 }
 

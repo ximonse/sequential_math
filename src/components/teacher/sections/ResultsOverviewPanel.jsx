@@ -373,12 +373,14 @@ export default function ResultsOverviewPanel({
                       </button>
                       <button
                         onClick={() => onCreateQuickAssignment(row, 'focus')}
+                        title="Skapar och aktiverar direkt ett uppdrag med 14 uppgifter i ett räknesätt eleven behöver öva, ungefär en nivå under till en nivå över elevens beräknade nivå."
                         className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold"
                       >
                         Fokus
                       </button>
                       <button
                         onClick={() => onCreateQuickAssignment(row, 'warmup')}
+                        title="Skapar och aktiverar direkt ett uppvärmningsuppdrag med 10 lättare uppgifter i ett räknesätt eleven behöver öva, ungefär en till två nivåer under elevens beräknade nivå."
                         className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold"
                       >
                         Värm upp

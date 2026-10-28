@@ -52,7 +52,7 @@ export default function ScreeningDraftsPanel({ content, onLoad, disabled, onBusy
       if (!result.ok) throw new Error(result.data.error || 'Kunde inte öppna utkastet.')
       const record = result.data.draft, latest = record.versions.at(-1)
       loadContent(latest.content, latest.version, record)
-      setMessage('Utkastet är öppnat. Mottagarvalet ovan är oförändrat.')
+      setMessage('Utkastet är öppnat. Mottagarvalet är oförändrat.')
     })
   }
   async function save(copy = false) {

@@ -21,6 +21,7 @@ export default function DiagnosticEvidenceDetails({ detail, onSaved, onDirtyChan
     <section className="mt-4 rounded border border-orange-300 bg-white p-3" aria-label="Diagnostiskt elevunderlag">
         {reviewable && <DiagnosticReviewForm key={`${detail.record.attemptId}:${detail.record.serverRevision}`} detail={detail} onSaved={onSaved} onDirtyChange={onDirtyChange} />}
         <h4 className="font-semibold"><QuestionText>{detail.task.promptSv}</QuestionText></h4>
+        {detail.task.answerRule === 'custom_facit' && <p className="text-sm"><strong>Facit:</strong> {detail.observation.expectedAnswer}. Automatisk rättning av slutsvaret; resonemanget granskas separat.</p>}
         {guideFor(detail.task) && <div className="mt-2 rounded bg-orange-50 p-2 text-sm">
           <p><strong>{ncm ? 'NCM prövar' : 'Att granska'}:</strong> {guideFor(detail.task).goalSv}.</p>
           {ncm && <p><strong>Facit:</strong> {detail.task.facitSv}</p>}

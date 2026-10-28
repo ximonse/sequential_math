@@ -1,5 +1,6 @@
 import { normalizeImageQuestion, isChoiceTask } from '../src/domains/arithmetic/screeningImageQuestions.js'
 import { authorizeQuestionImages } from './_screeningImages.js'
+import { normalizeScreeningAnswerKey } from '../src/domains/arithmetic/screeningAnswerKey.js'
 import { randomBytes } from 'node:crypto'
 import { createRequire } from 'node:module'
 import { kv } from '@vercel/kv'
@@ -127,12 +128,17 @@ export async function createDiagnosticAssignment({ classId, studentIds, taskIds,
     }
     const taskId = `custom-${makeId()}`
     let imageQuestion = {}
+    let answerKey
+    if (custom.answerKey !== undefined) {
+      if (custom.responseMode) fail(400, 'invalid_task', 'Bildfrågans facit anges med svarsalternativen.')
+      try { answerKey = normalizeScreeningAnswerKey(custom.answerKey) } catch (error) { fail(400, 'invalid_answer_key', error.message) }
+    }
     if (custom.responseMode) {
       try { imageQuestion = normalizeImageQuestion(custom) } catch (error) { fail(400, 'invalid_image_question', error.message) }
       await authorizeQuestionImages(imageQuestion, teacherId, { store })
     }
     tasks.push({ taskId, taskVersion: 1, promptSv: custom.promptSv.trim(), operation: 'written_response',
-      answerRule: 'teacher_review', answerType: 'text', gridEnabled: custom.gridEnabled ?? false,
+      answerRule: answerKey ? 'custom_facit' : 'teacher_review', answerType: 'text', ...(answerKey ? { answerKey } : {}), gridEnabled: custom.gridEnabled ?? false,
       drawingEnabled: custom.drawingEnabled ?? false, ...imageQuestion })
   }
   const items = tasks.map(task => {

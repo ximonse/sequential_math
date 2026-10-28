@@ -27,11 +27,30 @@ function midnight(day) {
 }
 
 export function evidencePeriod(from, to) {
-  const start = dateNumber(from), end = dateNumber(to)
-  if (end < start) throw new Error('Slutdatum får inte vara före startdatum.')
-  const nextDay = new Date(end + 86400000).toISOString().slice(0, 10)
+  const startInclusive = evidenceBoundary(from), endExclusive = evidenceBoundary(to, true)
+  if (endExclusive <= startInclusive) throw new Error('Slutet måste vara efter början av perioden.')
   return { from, to, timeZone: 'Europe/Stockholm',
-    startInclusive: midnight(from), endExclusive: midnight(nextDay) }
+    startInclusive, endExclusive }
+}
+
+// A date ends after that whole day. An explicit clock time is an exclusive end.
+function evidenceBoundary(value, end = false) {
+  if (typeof value !== 'string') throw new Error('Ange datum eller lokal tid som ÅÅÅÅ-MM-DDTHH:mm.')
+  if (/^\d{4}-\d{2}-\d{2}$/u.test(value)) {
+    const date = dateNumber(value)
+    return midnight(end ? new Date(date + 86400000).toISOString().slice(0, 10) : value)
+  }
+  const match = /^(\d{4}-\d{2}-\d{2})T([01]\d|2[0-3]):([0-5]\d)(\+0[12]:00)?$/u.exec(value)
+  if (!match) throw new Error('Tid ska vara ÅÅÅÅ-MM-DDTHH:mm i Europe/Stockholm, eventuellt med +01:00 eller +02:00.')
+  const wall = dateNumber(match[1]) + Number(match[2]) * 3600000 + Number(match[3]) * 60000
+  const offsets = match[4] ? [Number(match[4].slice(1, 3))] : [1, 2]
+  const candidates = offsets.map(offset => wall - offset * 3600000).filter(time => {
+    const p = Object.fromEntries(formatter.formatToParts(time).map(part => [part.type, part.value]))
+    return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}` === value.slice(0, 16)
+  })
+  if (!candidates.length) throw new Error('Klockslaget finns inte i Europe/Stockholm eller har fel UTC-offset.')
+  if (candidates.length > 1) throw new Error('Klockslaget är tvetydigt vid vintertidsbytet. Ange +02:00 eller +01:00.')
+  return candidates[0]
 }
 
 export function defaultEvidenceDays(now = Date.now()) {

@@ -18,6 +18,12 @@ eller ny lagring införs i Vercel. Se `docs/PUPIL_NOTEBOOK_EXPORT.md`.
 
 ## Vad är en "domän"?
 
+AI/export använder samma periodparser `src/lib/evidencePeriod.js` för hela
+Stockholm-dagar eller precisa klockslagsgränser, inklusive validerat DST-val.
+`GET /api/students?resource=classes` är en separat skrivskyddad projektion av
+aktuellt behöriga klass-ID:n/namn, utan profiler eller klassinloggningsdata.
+Den återanvänds av MCP och exportskriptets exakta klassval.
+
 En domän är ett räknesätt/ämnesområde, t.ex. addition, algebra, bråk.
 Varje domän bor i `src/domains/<namn>/` och registreras i `src/domains/registry.js`.
 

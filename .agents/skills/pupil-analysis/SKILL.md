@@ -11,6 +11,11 @@ med samma behörighet som lärarvyn. Börja med math_get_capabilities och välj 
 entydig elev innan underlaget läses. MCP-demot innehåller bara syntetiska elever.
 Skriv aldrig lösenord eller token i rapporten.
 
+Vid klassnamn: läs math_find_classes och välj exakt classId. Dubblettnamn
+kräver ett val. Datum inkluderar hela slutdagen; ett uttryckligt slutklockslag
+är exklusivt. Använd Stockholm-tid, och välj UTC-offset om vintertiden är
+tvetydig. Samma period/ref/revision ska följa med till original och rapport.
+
 Utgå från en entydig elev, en bestämd period och en källrevision. Vid flera
 namnträffar behöver eleven väljas. Historikens fullständighet är okänd om inte
 källan uttryckligen belägger annat. Använd syntetiska data för utveckling;

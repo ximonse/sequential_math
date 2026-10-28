@@ -11,12 +11,25 @@ node scripts/teacher-data.mjs --list                                  # klasser 
 node scripts/teacher-data.mjs --class Lärare                          # hela klassen, veckan hittills
 node scripts/teacher-data.mjs --pupil Kerstin --class 6 --from 2026-10-19 --to 2026-10-25
 node scripts/teacher-data.mjs --class 6 --wrong-only                  # bara felsvar
+node scripts/teacher-data.mjs --list-classes                         # exakta klass-ID:n och namn
+node scripts/teacher-data.mjs --class-id CLASS_ID --from 2026-10-27T12:00 --to 2026-10-27
+node scripts/teacher-data.mjs --class-exact "6" --from 2026-10-27 --to 2026-10-27
 ```
 
-- `--from`/`--to` är giltiga `ÅÅÅÅ-MM-DD`. Båda dagarna ingår enligt
-  Europe/Stockholm, oberoende av datorns tidszon. Utan dem gäller måndag denna
-  vecka till och med idag. Ogiltiga datum och omvänt intervall avvisas.
-- `--pupil` matchar delsträng i elevens namn, `--class` delsträng i klassnamnet eller klass-id.
+- `--from`/`--to` tar `ÅÅÅÅ-MM-DD` eller `ÅÅÅÅ-MM-DDTHH:mm`, alltid enligt
+  Europe/Stockholm. Datum inkluderar hela slutdagen; ett slut med klockslag är
+  exklusivt. Exemplet ovan betyder från 12:00 till dagens slut. Utan gränser
+  gäller måndag denna vecka till och med idag. Ogiltiga datum/tider och omvänt
+  intervall avvisas. Ett tvetydigt vinterklockslag kräver explicit `+02:00`
+  eller `+01:00`; vårens överhoppade klockslag avvisas.
+- `--pupil` matchar delsträng i elevens namn eller ett exakt elev-ID.
+  Rekommenderat klassval: `--class-id` är exakt och `--class-exact` kräver ett
+  entydigt helt klassnamn. Samma namn i två klasser kräver ID; inga elever väljs
+  automatiskt ur båda. `--class` behåller äldre delsträngsbeteende och kan
+  därför matcha både 6 och 16. Kombinera inte klassvalsflaggorna.
+- De nya exakta klassvalen/`--list-classes` kräver det lokalt byggda API:t
+  `GET /api/students?resource=classes`. Vid gammal server avbryts exporten;
+  inget tyst byte till delsträngssökning. Lokal kod betyder inte produktion.
 - `--base <url>` byter server (standard `https://matematik.ximon.se`), `--out <mapp>` byter utmapp.
 - Utdata hamnar i `%USERPROFILE%\teacher-data-out\` (utanför repot). Sista raderna
   skriver ut sökvägarna. CSV är UTF-8 med BOM och semikolon, så Excel öppnar den rätt.

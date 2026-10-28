@@ -42,6 +42,9 @@ svar och osäkerheter. Spara inget förrän jag ber om det.” Två namnträffar
 ## Verktyg
 
 Alla verktyg returnerar `structuredContent.data` och samma JSON som text.
+Periodgränser tar datum eller Stockholm-klockslag (`YYYY-MM-DDTHH:mm`).
+Start är inklusive; slutdatum inkluderar hela dagen medan ett explicit
+slutklockslag är exklusivt. Tvetydig vintertid kräver `+02:00` eller `+01:00`.
 Fel har `isError: true` och `data.error.code/message`. Högst 32 000 tecken per
 resultat; för stora resultat avvisas med råd att begränsa frågan.
 
@@ -49,6 +52,7 @@ resultat; för stora resultat avvisas med råd att begränsa frågan.
 |---|---|
 | `math_get_capabilities` | Faktiskt dataläge, skrivgräns, demo-klass och period. |
 | `math_find_pupils` | Namn-/ID-kandidater, klassfilter, limit/offset. Privata lärarnamn kräver `usePrivateNames: true`. |
+| `math_find_classes` | Skrivskyddade behöriga klasskandidater, även tomma klasser. Exakta ID:n/namn, limit/offset; inga klassinloggningstoken. |
 | `math_get_pupil_evidence` | Elev-ID, klass, from/to, source; limit/cursor/snapshotRevision. |
 | `math_get_evidence_detail` | Samma period och revision, exakt ref; answer/workspace/events. |
 | `math_get_notebook` | Revisionsbundet räknehäftesoriginal: text eller PNG-bildblock med cellmått. Se PUPIL_NOTEBOOK_EXPORT.md. |

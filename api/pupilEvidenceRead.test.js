@@ -29,6 +29,11 @@ beforeEach(() => {
 })
 
 describe('pupil evidence live access boundary', () => {
+  it('filters the exact local clock window and excludes the explicit end instant', async () => {
+    expect((await call({ from: '2026-10-27T11:00', to: '2026-10-27T11:01' })).data.total).toBe(1)
+    expect((await call({ from: '2026-10-27T11:01', to: '2026-10-27' })).data.total).toBe(0)
+    expect((await call({ from: '2026-10-27T10:59', to: '2026-10-27T11:00' })).data.total).toBe(0)
+  })
   it('exports only a revision-checked notebook, preserves source and rejects stale or unauthorized access', async () => {
     mock.auth.mockResolvedValue({ role: 'school_admin', teacherId: 'ADMIN' })
     const snapshot = recordDiagnosticGridEvent(createDiagnosticGrid({ attemptId: 'A', taskId: 'T', taskVersion: 1 }),

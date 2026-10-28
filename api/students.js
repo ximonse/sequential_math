@@ -9,6 +9,7 @@ import { toTeacherListProfile } from '../src/lib/teacherListProfile.js'
 import { getLiveAuthorizedClassIds } from './_studentAccess.js'
 import { getLiveTeacherAuthPayload } from './_helpers.js'
 import { isSuperAdminRole } from './_teacherRoles.js'
+import { teacherClassChoices } from './_teacherClassChoices.js'
 
 async function batchLoadKvKeys(keys, batchSize = 20) {
   const results = []
@@ -52,6 +53,7 @@ export default async function handler(req, res) {
   }
 
   try {
+    if (req.query?.resource === 'classes') return await teacherClassChoices(req, res)
     const ids = await kv.smembers('students:index')
     if (!Array.isArray(ids) || ids.length === 0) {
       return res.status(200).json({ profiles: [] })

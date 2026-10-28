@@ -18,9 +18,11 @@ lärarsession). Svar har `Cache-Control: no-store`. Ingen skrivning till elev,
 mastery, uppdrag eller analys sker. Befintligt anrop utan `resource=evidence`
 behåller sitt tidigare format.
 
-- `from` och `to` är obligatoriska giltiga kalenderdatum. Båda dagarna ingår,
-  enligt Europe/Stockholm. Internt används inklusive start och exklusivt slut;
-  ett dygn vid tidsomställning kan vara 23 eller 25 timmar.
+- `from` och `to` är obligatoriska datum (`YYYY-MM-DD`) eller Stockholm-tider
+  (`YYYY-MM-DDTHH:mm`). Start är inklusive. Slutdatum inkluderar hela dagen;
+  slut med klockslag är exklusivt. Dagar vid tidsomställning kan vara 23 eller
+  25 timmar. Överhoppade tider avvisas; tvetydig vintertid kräver explicit
+  `+02:00` eller `+01:00`, som måste stämma med Stockholm.
 - `classId` måste vara en aktuell, icke arkiverad klass som eleven tillhör och
   läraren får hantera. Raderad elev/klass och indragen åtkomst avvisas.
 - `source=practice` är standard. `screening` eller `all` kräver också samma

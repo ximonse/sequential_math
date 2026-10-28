@@ -14,6 +14,12 @@ antas. Se docs/PUPIL_NOTEBOOK_EXPORT.md. Agentens ursprungliga anteckningar,
 teacher-data-skill och issue #18–21 är bevarade; klass-/tidsfilter och
 genomgångspresentation återstår.
 
+2026-10-28: Exakt klass-ID/entydigt klassnamn och klockslagsgränser finns nu
+i exportskriptet och MCP/API. Skrivskyddat klassvals-API ger inga inloggningsdata
+och omkontrollerar åtkomst. Periodparsern är gemensam med rapportunderlaget;
+hela datum behåller sin tidigare innebörd. Klassmatris/bulk-screening och
+genomgångspresentation återstår fortfarande.
+
 ## Mål och arbetsflöde
 
 Simon ska kunna be en ansluten AI granska en elev under en period, diskutera

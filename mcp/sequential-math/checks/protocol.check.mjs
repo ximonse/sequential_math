@@ -30,7 +30,7 @@ after(async () => { await reader?.close(); await writer?.close() })
 
 test('SDK client discovers bounded read tools, prompt and the closed assignment/check-in boundary', async () => {
   const tools = (await reader.listTools()).tools
-  assert.equal(tools.length, 8)
+  assert.equal(tools.length, 9)
   assert.equal(tools.some(t => /save|publish|assign|delete/u.test(t.name)), false)
   assert.equal(tools.every(t => t.annotations.readOnlyHint), true)
   assert.equal(meta.assignmentPublication, false)
@@ -42,6 +42,9 @@ test('SDK client discovers bounded read tools, prompt and the closed assignment/
 })
 
 test('search returns candidates rather than guessing, projects minimal metadata, and excludes another class', async () => {
+  const classes = await call(reader, 'math_find_classes', { query: 'mcp' })
+  assert.deepEqual(classes.classes.map(c => c.classId), ['mcp-demo'])
+  assert.doesNotMatch(JSON.stringify(classes), /loginToken|teacherIds|studentIds/u)
   const data = await call(reader, 'math_find_pupils', { query: 'MCP Demo', limit: 1 })
   assert.equal(data.ambiguous, true)
   assert.equal(data.total, 2)
@@ -55,6 +58,7 @@ test('search returns candidates rather than guessing, projects minimal metadata,
 test('paged evidence preserves correct answers, unknown history, exact source detail and revocation errors', async () => {
   const first = await call(reader, 'math_get_pupil_evidence', { ...target, limit: 2 })
   assert.equal(first.total, 4)
+  assert.equal((await call(reader, 'math_get_pupil_evidence', { ...target, from: `${target.from}T00:00`, to: `${target.to}T23:59` })).total, 4)
   assert.equal(first.coverage.practice.completeness, 'unknown')
   const second = await call(reader, 'math_get_pupil_evidence', { ...target, limit: 2, cursor: first.nextCursor, snapshotRevision: first.snapshotRevision })
   assert.equal(second.entries.filter(e => e.answer.status === 'incorrect').length, 2)
@@ -120,7 +124,7 @@ test('a legacy initialize client can list tools without SDK-v2 metadata and stdo
     assert.equal((await wait(1)).result.protocolVersion, '2025-11-25')
     send({ method: 'notifications/initialized' })
     send({ id: 2, method: 'tools/list', params: {} })
-    assert.equal((await wait(2)).result.tools.length, 8)
+    assert.equal((await wait(2)).result.tools.length, 9)
   } finally { child.stdin.end(); child.kill(); lines.close() }
 })
 

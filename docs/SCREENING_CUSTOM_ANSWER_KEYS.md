@@ -83,3 +83,11 @@ analysrapportens sparade räknehäfte. Ingen helt grön gemensam körning påst�
 Det nya facitflödet passerade både separat och i hela robotkörningen.
 De fyra överhoppade fallen gäller det villkorade materialgodkännandeflödet.
 Ingen riktig elevutdelning eller produktionsverifiering har gjorts här.
+
+## Isolerad publiceringskandidat
+
+Kandidaten utgår från produktionens `05748fb`, med bara detta funktionsstöd.
+Det separata, ännu opublicerade materialförhandsvisnings-API:t ingår inte.
+173 testfiler/872 tester, build och arkitekturkontroll passerade. Tio riktade
+robotfall med en arbetare passerade: egna facit, NCM, sparande och redigering,
+avslut, gruppresultat samt bildfrågor. Publicering sker enbart via GitHub.

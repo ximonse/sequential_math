@@ -1745,7 +1745,7 @@
       "title": "Egna självrättande screeningfrågor",
       "status": "Byggt",
       "purpose": "Läraren anger fryst facit för egna frågor med samma bevarade räknehäfte och rättningskedja som NCM.",
-      "next": "Verifiera den isolerade produktionskandidaten, publicera via GitHub och kontrollera aktiv produktion före elevutdelning.",
+      "next": "Pusha separat GitHub-gren, invänta grön CI, slå samman till master och verifiera rätt SHA i sekvens produktion.",
       "acceptance": "Tal, decimaler, bråk/procent och exakta svar rättas utan facitläckage eller påverkan på mastery. Gamla skrivfrågor är fortsatt lärarbedömda.",
       "requires": [
         "dispatch"
@@ -1754,7 +1754,7 @@
         "matrix"
       ],
       "decision": "2026-10-28: Simon väljer egna självrättande frågor, åtta varierade frågor per elev. Inget publiceringsmandat för kod har givits. 2026-10-28: Simon ger uttryckligt publiceringsmandat. Separat gren från origin/master; övriga opublicerade ändringar i feature/more-figures ingår inte.",
-      "evidence": "2026-10-28 lokalt: validerat fryst answerKey, lärarredigerare, facitsekretess, kopiering, strikt bråkform/nämnare och enheter samt resultat via befintlig observationskedja. 189 testfiler/940 tester, build, riktad lint och karta godkända. Ny robot passerar separat och i hela körningen; syntetiska elever, sparande/omladdning, exakt mottagare och orörd mastery. Renderade liggande/stående iPadstorlekar samt lärarvyer granskade. Bred robotkörning: 155 godkända, 6 misslyckade, 4 överhoppade; samtliga sex passerade separat med en arbetare. Ingen helt grön gemensam körning påstås. Se docs/SCREENING_CUSTOM_ANSWER_KEYS.md. Åtta individuella uppdrag med totalt 64 frågor lokalt validerade utanför repot. Ingen push, publicering eller elevutdelning. Arbetsgrenens tidigare ändringar ingår inte i publiceringsmandatet. Publiceringskandidaten baseras på 05748fb och utelämnar det ännu opublicerade materialförhandsvisnings-API:t och dess dokumentation.",
+      "evidence": "2026-10-28 lokalt: validerat fryst answerKey, lärarredigerare, facitsekretess, kopiering, strikt bråkform/nämnare och enheter samt resultat via befintlig observationskedja. 189 testfiler/940 tester, build, riktad lint och karta godkända. Ny robot passerar separat och i hela körningen; syntetiska elever, sparande/omladdning, exakt mottagare och orörd mastery. Renderade liggande/stående iPadstorlekar samt lärarvyer granskade. Bred robotkörning: 155 godkända, 6 misslyckade, 4 överhoppade; samtliga sex passerade separat med en arbetare. Ingen helt grön gemensam körning påstås. Se docs/SCREENING_CUSTOM_ANSWER_KEYS.md. Åtta individuella uppdrag med totalt 64 frågor lokalt validerade utanför repot. Ingen push, publicering eller elevutdelning. Arbetsgrenens tidigare ändringar ingår inte i publiceringsmandatet. Publiceringskandidaten baseras på 05748fb och utelämnar det ännu opublicerade materialförhandsvisnings-API:t och dess dokumentation. Isolerad kandidat från aktuell origin/master: 173 testfiler/872 tester, produktionsbuild, arkitekturkontroll samt 10 riktade robotfall med en arbetare godkända. Robotfallen omfattar egna facit, NCM, tillbaka/redigera, avslut, gruppresultat och bildfrågor. Inga andra arbetsgrensändringar följer med.",
       "issue": "",
       "kind": "funktion",
       "tasks": [

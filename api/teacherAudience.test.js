@@ -5,7 +5,7 @@ vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mock.auth }))
 vi.mock('./_studentAccess.js', () => ({ canAccessClass: mock.access }))
 vi.mock('./_studentStore.js', () => ({ isStudentDeleted: mock.deleted }))
 vi.mock('./_groupStore.js', () => ({ authCanManageGroup: (auth, group) => Boolean(auth && group?.teacherIds.includes(auth.teacherId)) }))
-import { teacherAudience, teacherGroupChoices } from './_teacherAudience.js'
+import { teacherAudience, teacherGroupChoices, assertTeacherAudienceTargetAccess } from './_teacherAudience.js'
 let records
 const response = () => ({ code: 200, setHeader() {}, status(code) { this.code = code; return this }, json(data) { this.data = data; return this } })
 async function call(query = {}) {
@@ -31,6 +31,18 @@ beforeEach(() => {
   mock.auth.mockResolvedValue({ teacherId: 'T', role: 'teacher' })
   mock.access.mockImplementation(async (_req, id) => id === 'C')
   mock.deleted.mockResolvedValue(false)
+})
+it('checks frozen-draft target permissions without loading the current global roster', async () => {
+  mock.smembers.mockRejectedValue(Error('No roster read needed'))
+  mock.eval.mockRejectedValue(Error('No profile scan needed'))
+  await expect(assertTeacherAudienceTargetAccess({}, 'class', 'C', 'T')).resolves.toBeUndefined()
+  await expect(assertTeacherAudienceTargetAccess({}, 'group', 'G', 'T')).resolves.toBeUndefined()
+  await expect(assertTeacherAudienceTargetAccess({}, 'group', 'H', 'T')).rejects.toMatchObject({ status: 403 })
+  await expect(assertTeacherAudienceTargetAccess({}, 'class', 'D', 'T')).rejects.toMatchObject({ status: 403 })
+  await expect(assertTeacherAudienceTargetAccess({}, 'class', 'C', 'OTHER')).rejects.toMatchObject({ status: 401 })
+  await expect(assertTeacherAudienceTargetAccess({}, 'unknown', 'C', 'T')).rejects.toMatchObject({ status: 400 })
+  mock.deleted.mockResolvedValue(true)
+  await expect(assertTeacherAudienceTargetAccess({}, 'student', 'P', 'T')).rejects.toMatchObject({ status: 409 })
 })
 it('returns exact class roster including secondary members with minimal metadata, revision paging and unknown historical membership', async () => {
   const first = await call({ limit: 1 })
@@ -94,6 +106,16 @@ it('preserves the exact roster when the batch command is unavailable or exceeds 
   mock.mget.mockImplementation(async (...keys) => {
     if (keys.length > 1) throw Error('ERR max request size exceeded')
     return [await mock.get(keys[0])]
+  })
+  expect((await call()).data.pupils.map(pupil => pupil.studentId)).toEqual(['P', 'Q'])
+})
+it('recovers exact primary and secondary members from smaller serialized reads after a script time limit', async () => {
+  mock.eval.mockImplementation(async (_script, keys, [classId]) => {
+    if (keys.length > 1) throw Error('ERR Error running script: execution timed out')
+    return keys.map(key => {
+      const profile = records[key]
+      return profile && (profile.classId === classId || profile.classIds?.includes(classId)) ? JSON.stringify(profile) : null
+    })
   })
   expect((await call()).data.pupils.map(pupil => pupil.studentId)).toEqual(['P', 'Q'])
 })

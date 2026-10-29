@@ -16,6 +16,19 @@ async function liveClass(req, classId) {
   return record && !record.archived && await canAccessClass(req, classId) ? record : null
 }
 
+// A saved draft contains a frozen roster. Reading its history needs current
+// target permission and access to every frozen pupil, not a fresh global scan.
+export async function assertTeacherAudienceTargetAccess(req, type, targetId, teacherId) {
+  if (!['class', 'group', 'student'].includes(type) || !validId(targetId)) fail(400, 'Ogiltigt urval.')
+  const auth = await getLiveTeacherAuthPayload(req)
+  if (!auth || auth.teacherId !== teacherId) fail(401, 'Lärarsessionen har ändrats.')
+  if (type === 'class') {
+    if (!await liveClass(req, targetId)) fail(403, 'Klassen är inte tillgänglig.')
+  } else if (type === 'group') {
+    if (!authCanManageGroup(auth, await kv.get(`group:${targetId}`))) fail(403, 'Gruppen är inte tillgänglig.')
+  } else await readAudience(req, type, targetId, teacherId)
+}
+
 async function readAudience(req, type, targetId, teacherId) {
   const auth = await getLiveTeacherAuthPayload(req)
   if (!auth || auth.teacherId !== teacherId) fail(401, 'Lärarsessionen har ändrats.')

@@ -34,11 +34,13 @@ export async function readAudienceProfiles(keys, classId) {
       : typeof profile === 'string' ? JSON.parse(profile) : profile)
   } catch (error) {
     const oversized = /max.*(?:size|length)|(?:size|length).*exceed|too (?:large|big)/iu.test(String(error?.message || ''))
-    console.warn('audience_profile_batch_fallback', oversized ? 'size_limit' : 'command_failed')
-    if (oversized && keys.length > 1) {
+    const executionLimit = /execution timed out|script.*(?:time limit|timeout)/iu.test(String(error?.message || ''))
+    console.warn('audience_profile_batch_fallback', oversized ? 'size_limit' : executionLimit ? 'execution_limit' : 'command_failed')
+    if ((oversized || executionLimit) && keys.length > 1) {
       const middle = Math.ceil(keys.length / 2)
-      // Sequential halves bound response size and outstanding work.
-      return [...await readAudienceProfiles(keys.slice(0, middle), classId), ...await readAudienceProfiles(keys.slice(middle), classId)]
+      // The parent contains at most 100 keys, so recursive reads remain bounded.
+      const halves = await Promise.all([readAudienceProfiles(keys.slice(0, middle), classId), readAudienceProfiles(keys.slice(middle), classId)])
+      return halves.flat()
     }
     profiles = await Promise.all(keys.map(key => kv.get(key)))
   }

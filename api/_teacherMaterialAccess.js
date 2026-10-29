@@ -1,6 +1,6 @@
 import { getLiveTeacherAuthPayload } from './_helpers.js'
 import { assertPupilEvidenceAccess, assertEvidenceSourceAccess } from './_pupilEvidenceRead.js'
-import { resolveTeacherAudience } from './_teacherAudience.js'
+import { assertTeacherAudienceTargetAccess } from './_teacherAudience.js'
 import { evidenceError, evidenceHash } from './_pupilEvidence.js'
 
 async function checkBatch(items, check) {
@@ -15,7 +15,7 @@ export async function assertMaterialDraftAccess(req, state) {
   // Check every historical version: an older rationale can contain pupil-specific wording.
   for (const version of state.versions) {
     const { audience, basis, kind } = version.material
-    await resolveTeacherAudience({ ...req, headers: req.headers, query: { targetType: audience.targetType, targetId: audience.targetId, limit: 1 } })
+    await assertTeacherAudienceTargetAccess(req, audience.targetType, audience.targetId, state.teacherId)
     await checkBatch(audience.pupils, async pupil => {
       let accessible = false
       for (const classId of pupil.classIds) {

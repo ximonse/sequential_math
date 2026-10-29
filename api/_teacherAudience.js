@@ -36,13 +36,18 @@ async function readAudience(req, type, targetId, teacherId) {
   // Bound concurrent reads without serializing a large global index into many
   // network round trips. Each of the two roster snapshots remains independent.
   for (let start = 0; start < members.length; start += 100) {
-    const rows = await Promise.all(members.slice(start, start + 100).map(async studentId => {
+    const batch = members.slice(start, start + 100)
+    for (const studentId of batch) {
       // Class reads scan the global index, which can contain legacy keys from
       // other classes. Inspect their membership before applying the public ID
       // contract. Explicit group/student selections still fail closed.
       if (typeof studentId !== 'string' || !studentId.length || studentId.length > 512
         || (type !== 'class' && !validId(studentId))) fail(409, 'Urvalets medlemslista är ogiltig.')
-      const profile = await kv.get(`student:${studentId}`)
+    }
+    const profiles = await kv.mget(...batch.map(studentId => `student:${studentId}`))
+    if (!Array.isArray(profiles) || profiles.length !== batch.length) throw Error('Incomplete audience profile batch')
+    const rows = await Promise.all(batch.map(async (studentId, index) => {
+      const profile = profiles[index]
       if (!profile || profile.studentId !== studentId) {
         if (type !== 'class') fail(409, 'En medlem är inte längre tillgänglig. Läs om urvalet.')
         return null

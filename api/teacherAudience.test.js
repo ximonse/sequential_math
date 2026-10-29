@@ -1,6 +1,6 @@
 import { beforeEach, expect, it, vi } from 'vitest'
-const mock = vi.hoisted(() => ({ get: vi.fn(), smembers: vi.fn(), auth: vi.fn(), access: vi.fn(), deleted: vi.fn() }))
-vi.mock('@vercel/kv', () => ({ kv: { get: mock.get, smembers: mock.smembers } }))
+const mock = vi.hoisted(() => ({ get: vi.fn(), mget: vi.fn(), smembers: vi.fn(), auth: vi.fn(), access: vi.fn(), deleted: vi.fn() }))
+vi.mock('@vercel/kv', () => ({ kv: { get: mock.get, mget: mock.mget, smembers: mock.smembers } }))
 vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mock.auth }))
 vi.mock('./_studentAccess.js', () => ({ canAccessClass: mock.access }))
 vi.mock('./_studentStore.js', () => ({ isStudentDeleted: mock.deleted }))
@@ -24,6 +24,7 @@ beforeEach(() => {
     'group:H': { id: 'H', name: 'Hemlig', teacherIds: ['OTHER'], pupilIds: ['FOREIGN'] }
   }
   mock.get.mockImplementation(async key => records[key] || null)
+  mock.mget.mockImplementation(async (...keys) => Promise.all(keys.map(key => mock.get(key))))
   mock.smembers.mockImplementation(async key => key === 'students:index' ? ['P', 'Q', 'FOREIGN'] : ['G', 'H'])
   mock.auth.mockResolvedValue({ teacherId: 'T', role: 'teacher' })
   mock.access.mockImplementation(async (_req, id) => id === 'C')
@@ -74,6 +75,12 @@ it('does not inspect unrelated pupil deletion records while resolving a class', 
   expect(selected.code).toBe(200)
   expect(selected.data.pupils.map(pupil => pupil.studentId)).toEqual(['P'])
   expect((await call({ targetType: 'group', targetId: 'G' })).code).toBe(409)
+})
+it('fails closed on a missing or failed profile batch instead of returning a partial roster', async () => {
+  mock.mget.mockResolvedValueOnce([records['student:P']])
+  expect((await call()).code).toBe(503)
+  mock.mget.mockRejectedValueOnce(Error('Storage unavailable'))
+  expect((await call()).code).toBe(503)
 })
 it('rejects session changes, archived classes, invalid selectors and live roster changes', async () => {
   expect((await call({ targetType: 'everyone' })).code).toBe(400)

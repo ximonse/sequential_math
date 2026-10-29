@@ -1,8 +1,10 @@
 # Kort arkitekturplan för väntetider — 2026-10-29
 
-Status: förslag före kodändringar. Beställt: kartläggning och plan.
-Underlag: [prestandakartläggningen](PERFORMANCE_MAP.md). Inga funktions-
-ändringar, datamigreringar eller publiceringar är beställda genom denna plan.
+Status: kartläggning klar; en liten första förbättring beställd 2026-10-29.
+Underlag: [prestandakartläggningen](PERFORMANCE_MAP.md). Simon prioriterar
+nytta framför omfattning: befintlig klass-/grupphämtning körs oberoende av
+historiken, med stabil laddningslivscykel. Större ombyggnad, nya API:er,
+mätinfrastruktur och migreringar avvaktas. Publicering kräver separat mandat.
 
 ## Riktning
 
@@ -61,7 +63,9 @@ serverless fire-and-forget är inte en leveransgaranti.
 | P3 — elevens kontinuitet | Låt samma runtime äga session, arbetskopia och en synkarbetare över routebyten. Föreslå ett litet bootstrap-svar med giltig identitet, ram-/profilrevision och nödvändig aktuell startdata i stället för resume + full profil + separat config. | Varmt aktivitetsbyte väntar inte på ködränering; serverns auth och ändrade uppdrag respekteras; varje svar finns kvar efter omstart och kvitteras en gång |
 | P4 — återstående kostnader | Följ mätningen för resterande beräkningar, privat cache och eventuell uppdelning av start-JS | Förbättringen kan hänföras till ett mätt steg och gäller också iPad; inga breda ombyggnader för antagen vinst |
 
-M0 ska föregå ändrat funktionsbeteende. P1 är en första leverans av denna
+Efter Simons avgränsning används befintliga produktionsmätningar och ett
+rött/grönt robotprov för första lilla P1-delen. Utökad M0-profilering är
+inte ett villkor för denna ändring. P1 är en första leverans av denna
 arkitektur; P2 behövs för att få bort 35 MB-kontraktet. P3 löser samma
 beroendeproblem för eleven. Varje etapp granskas separat, kan återställas
 utan dataförlust och publiceras först med separat mandat.
@@ -106,5 +110,22 @@ behörighet, exakta mottagare och sparade svar, inte bara kortare laddningsindik
   inte motiverat av den nuvarande mätningen. MCP-API:er och skills byggs inte
   vidare inom detta spår.
 
-Nästa konkreta uppgift är M0:s tidslinje för elevbyte och därefter P1 enligt
-klara mätgränser. Ingen implementation eller publicering har startats.
+## Genomfört lokalt i första lilla steget
+
+Dashboarden startar befintliga klass-, grupp- och elevanrop parallellt.
+Klasser och grupper publiceras när deras egna svar kommer. Namnhämtningen
+kan inte längre starta om hela laddningen, och tidigt valda grupper ligger
+kvar när elevdata kommer eller misslyckas. En explicit gruppändring under
+laddning får fortfarande en ny hämtning.
+
+Ett riktat robotprov var rött före rättningen och grönt efteråt för både
+hållen och misslyckad historik. Gruppfiltrets befintliga robot är också grön.
+Aktuell app: 191 testfiler/945 tester, produktionsbygge och riktad ESLint/
+arkitektur godkända. Standardtestet hittade dessutom ett fel i en äldre
+inbäddad `.claude/worktrees`-kopia; den aktuella appen verifierades med
+`npm run test -- --exclude '**/.claude/**'`. Inga tester där ändrades.
+
+Ingen backend eller elevruntime ändras i detta steg. Det stora listsvaret
+finns kvar; förbättringens produktionstid kan mätas först efter publicering.
+Nästa steg är separat publiceringsbeslut för denna avgränsade ändring och
+avstämning av nyttan innan mer arbete tas in.

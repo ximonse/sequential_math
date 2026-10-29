@@ -13,9 +13,13 @@ för 160 profiler, trots att det är listkontraktet utan `problemLog`.
 Enbart fler parallella anrop eller kortare JSON efter databasläsningen
 löser därför inte hela problemet.
 
-Uppdraget omfattar kartläggning och plan före funktionsändring. Ingen app-,
-API-, databas-, konfigurations- eller skillkod har ändrats. MCP-arbetet är
-pausat. Nästa föreslagna arbete finns i [arkitekturplanen](PERFORMANCE_ARCHITECTURE_PLAN.md).
+Kartläggningen nedan beskriver läget före funktionsändring. Efter Simons
+klartecken och avgränsning efter nyttan gjordes en liten lokal rättning:
+klass-/grupplistor väntar inte längre på elevhistoriken, och namnhämtningen
+startar inte om laddningen. Riktade robotar, appens tester och bygge är gröna.
+Ingen backend eller elevruntime ändrades; det stora elevsvaret finns kvar.
+Ändringen är inte publicerad. MCP-arbetet är pausat. Detaljer finns i
+[arkitekturplanen](PERFORMANCE_ARCHITECTURE_PLAN.md).
 
 ## 1. Baslinje och belägg
 

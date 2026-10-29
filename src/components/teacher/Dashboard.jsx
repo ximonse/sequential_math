@@ -63,15 +63,12 @@ function storeCodeNamesPreference(enabled) {
   try { if (enabled) localStorage.setItem(CODE_NAMES_KEY, '1'); else localStorage.removeItem(CODE_NAMES_KEY) } catch { /* Preferences are optional. */ }
 }
 
-// Waits for a slow label request only this long before drawing the list; the
-// names then arrive on their own and never replace names already on screen.
-const LABEL_WAIT_MS = 2500
-
 function Dashboard() {
   const [rawStudents, setStudents] = useState([])
   const [pupilLabels, setPupilLabels] = useState({})
   const [labelsLoaded, setLabelsLoaded] = useState(false)
   const labelsRequest = useRef(null)
+  const labelsReady = useRef(false)
   const loadSequence = useRef(0)
   const fillAttempted = useRef(new Set())
   const [assignments, setAssignments] = useState([])
@@ -80,6 +77,8 @@ function Dashboard() {
   const [sortDir, setSortDir] = useState('desc')
   const [classes, setClasses] = useState([])
   const [teacherGroups, setTeacherGroups] = useState([])
+  const [classesReady, setClassesReady] = useState(false)
+  const [groupsReady, setGroupsReady] = useState(false)
   const [selectedClassIds, setSelectedClassIds] = useState(() => loadSavedTeacherClassFilter())
   const [classNameInput, setClassNameInput] = useState('')
   const [addToClassId, setAddToClassId] = useState('')
@@ -92,8 +91,9 @@ function Dashboard() {
   // teacher's own choice, so no refresh can ever reset it to the code name.
   const students = useMemo(() => rawStudents.map(profile => {
     const label = pupilLabels[profile.studentId] || ''
-    return { ...profile, name: (!codeNamesOnly && label) || profile.displayAlias || profile.studentId, teacherPupilLabel: label }
-  }), [rawStudents, pupilLabels, codeNamesOnly])
+    return { ...profile, name: (!codeNamesOnly && label) || profile.displayAlias || profile.studentId, teacherPupilLabel: label,
+      groupIds: teacherGroups.filter(group => (group.pupilIds || []).includes(profile.studentId)).map(group => group.id) }
+  }), [rawStudents, pupilLabels, codeNamesOnly, teacherGroups])
   const [copiedId, setCopiedId] = useState('')
   const [activeAssignmentId, setActiveAssignmentId] = useState('')
   const [supportSortBy, setSupportSortBy] = useState('risk')
@@ -124,45 +124,49 @@ function Dashboard() {
   // Fetched once, then only changed by the teacher's own actions. A failed
   // request keeps the labels already known and is retried on the next load.
   const ensureLabels = useCallback(() => {
+    if (labelsReady.current) return Promise.resolve(true)
     if (labelsRequest.current) return labelsRequest.current
     labelsRequest.current = loadTeacherPupilLabels().then(labels => {
-      if (labels) { setPupilLabels(labels); setLabelsLoaded(true) }
+      if (labels) { labelsReady.current = true; setPupilLabels(labels); setLabelsLoaded(true) }
       return Boolean(labels)
     }).finally(() => { labelsRequest.current = null })
     return labelsRequest.current
   }, [])
 
   const loadStudents = useCallback(async () => {
+    void ensureLabels()
     const sequence = ++loadSequence.current
-    const [profiles, groupData] = await Promise.all([
+    const [profiles] = await Promise.all([
       getAllProfilesWithSync(),
-      loadTeacherGroups().catch(() => ({ groups: [] })),
-      // A slow or failing label call must never keep the pupils off the screen.
-      labelsLoaded ? null : Promise.race([ensureLabels(), new Promise(resolve => setTimeout(resolve, LABEL_WAIT_MS))])
+      loadTeacherGroups().then(data => {
+        if (sequence === loadSequence.current) {
+          setTeacherGroups(Array.isArray(data?.groups) ? data.groups : [])
+          setGroupsReady(true)
+        }
+      }).catch(() => setDashboardStatus('Grupplistan kunde inte hämtas. Tidigare val är kvar.')),
+      syncClassesFromServer().then(serverClasses => {
+        if (sequence === loadSequence.current && serverClasses) {
+          setClasses(serverClasses)
+          setClassesReady(true)
+        }
+      })
     ])
-    const groups = Array.isArray(groupData?.groups) ? groupData.groups : []
     const enrichedProfiles = profiles.map(profile => ({
       ...profile,
       name: profile.displayAlias || profile.studentId,
-      teacherPupilLabel: '',
-      groupIds: groups.filter(group => (group.pupilIds || []).includes(profile.studentId)).map(group => group.id)
+      teacherPupilLabel: ''
     }))
     enrichedProfiles.sort((a, b) => {
       const aLast = a.recentProblems[a.recentProblems.length - 1]?.timestamp || 0
       const bLast = b.recentProblems[b.recentProblems.length - 1]?.timestamp || 0
       return bLast - aLast
     })
-    // An older refresh that finishes after a newer one must not overwrite it.
     if (sequence === loadSequence.current) {
       setStudents(enrichedProfiles)
-      setTeacherGroups(groups)
       setCloudSyncStatus(getCloudProfilesSyncStatus())
     }
-
-    const serverClasses = await syncClassesFromServer()
-    if (sequence === loadSequence.current) setClasses(serverClasses || [])
     return enrichedProfiles
-  }, [ensureLabels, labelsLoaded])
+  }, [ensureLabels])
 
   const showCodeNames = () => {
     storeCodeNamesPreference(true)
@@ -174,7 +178,7 @@ function Dashboard() {
   // labels. Only adds missing ones; nothing already saved is replaced.
   const fillPupilLabels = useCallback(async () => {
     const result = await fillTeacherPupilLabelsFromCreationNames()
-    if (result.ok) { setPupilLabels(result.labels || {}); setLabelsLoaded(true) }
+    if (result.ok) { labelsReady.current = true; setPupilLabels(result.labels || {}); setLabelsLoaded(true) }
     return result
   }, [])
 
@@ -233,10 +237,10 @@ function Dashboard() {
   useEffect(() => {
     // The class list is empty until it has loaded; clearing then would wipe
     // (and save over) the teacher's saved choice on every reload.
-    if (classFilterOptions.length === 0) return
+    if (!classesReady || !groupsReady || classFilterOptions.length === 0) return
     const valid = new Set(classFilterOptions.map(item => item.id))
     setSelectedClassIds(prev => prev.filter(id => valid.has(id)))
-  }, [classFilterOptions, selectedClassIds.length])
+  }, [classFilterOptions, selectedClassIds.length, classesReady, groupsReady])
 
   useEffect(() => {
     saveTeacherClassFilterSelection(selectedClassIds)

@@ -2265,13 +2265,13 @@
       "status": "Planerat",
       "kind": "plan",
       "purpose": "Ge klass-/gruppval och aktivitetsstart minsta nödvändiga data utan att förlora elevsvar, korrekt uppdragsram eller aktuell behörighet.",
-      "next": "Kartläggning och kort arkitekturplan är klara. Om implementation beställs: slutför M0:s browser-/serverkedja för elevbyten och genomför därefter P1:s oberoende klass-/gruppkatalog. MCP-spåret är pausat.",
+      "next": "Första lilla rättningen är lokalt verifierad. Separat klartecken krävs för publicering. Stäm av faktisk nytta innan fler prestandaingrepp; MCP är pausat.",
       "acceptance": "Mätningarna skiljer API, lagring, kö, CPU och rendering. Katalogen väntar inte på historik. Lätt översikt ersätter stora profiler i listvägen; varm aktivitet återanvänder säker runtime. Alla spar-, behörighets-, urvals- och didaktiska kontrakt bevaras. Föreslagna budgetar verifieras först vid separat beställd implementation.",
       "requires": [],
       "affects": [],
       "issue": "",
-      "decision": "2026-10-29: Simon pausar MCP-arbetet och beställer sammanhängande prestandakartläggning samt kort arkitekturplan före kodändringar. Detta är mandat för underlag, inte för funktionsändring, migrering eller publicering.",
-      "evidence": "docs/PERFORMANCE_MAP.md och docs/PERFORMANCE_ARCHITECTURE_PLAN.md. Läsande kontroll: GitHub master och sekvens production på36f89df7b8c64f46542bb0da211b31a1df3778ce, READY med domänalias. Arbetskopian feature/more-figures pådcac352; använda centrala källfiler identiska med master. Tre sekventiella listprov på adminperson: klassmetadata1.63–1.78s/435byte, grupper0.71–0.81s/6218byte, elevlista10.81–12.54s färdig inklJSON/34972006 uppackade byte/160profiler. recentProblems81.3%, adaptive11.6%. Login0.65s i ett prov. Fältstorlekssummeringens egen CPU exkluderad från dessa svarstider. JSON endast aggregat utan individuella ID, namn, elevsvar, token eller lösenord i docs/evaluations/performance-2026-10-29/. Publika startfiler mätta separat; ingen JS-exekvering eller iPad-mätning. Kodbelagt: Dashboard väntar på elevlista innan klasser, grupper publiceras tillsammans med elever, labelsLoaded kan starta om lastkedjan; elevbootstrap väntar på resume→outbox→profil och klasskonfiguration följer. Elevbytets verkliga waterfall och serverns tidsandelar återstår; tre API-prov ger inte p95. Ingen appkod ändrad och inga elevhändelser, utdelningar, databasändringar eller publiceringar utförda. Befintliga skilländringar i denna checkout bevarade.",
+      "decision": "2026-10-29: Simon pausar MCP-arbetet och beställer sammanhängande prestandakartläggning samt kort arkitekturplan före kodändringar. Detta är mandat för underlag, inte för funktionsändring, migrering eller publicering.\n2026-10-29: Simon säger kör på och avgränsar därefter insatsen efter nyttan (inte NASA). Befintliga mätningar räcker för en liten första rättning av lärarstarten. Ingen ny mätplattform, API, migrering eller elevruntime nu. Större etapper är uppskjutna; publicering kräver eget mandat.",
+      "evidence": "docs/PERFORMANCE_MAP.md och docs/PERFORMANCE_ARCHITECTURE_PLAN.md. Läsande kontroll: GitHub master och sekvens production på36f89df7b8c64f46542bb0da211b31a1df3778ce, READY med domänalias. Arbetskopian feature/more-figures pådcac352; använda centrala källfiler identiska med master. Tre sekventiella listprov på adminperson: klassmetadata1.63–1.78s/435byte, grupper0.71–0.81s/6218byte, elevlista10.81–12.54s färdig inklJSON/34972006 uppackade byte/160profiler. recentProblems81.3%, adaptive11.6%. Login0.65s i ett prov. Fältstorlekssummeringens egen CPU exkluderad från dessa svarstider. JSON endast aggregat utan individuella ID, namn, elevsvar, token eller lösenord i docs/evaluations/performance-2026-10-29/. Publika startfiler mätta separat; ingen JS-exekvering eller iPad-mätning. Kodbelagt: Dashboard väntar på elevlista innan klasser, grupper publiceras tillsammans med elever, labelsLoaded kan starta om lastkedjan; elevbootstrap väntar på resume→outbox→profil och klasskonfiguration följer. Elevbytets verkliga waterfall och serverns tidsandelar återstår; tre API-prov ger inte p95. Ingen appkod ändrad och inga elevhändelser, utdelningar, databasändringar eller publiceringar utförda. Befintliga skilländringar i denna checkout bevarade.\nLokal uppföljning: Dashboard hämtar befintliga klass-/grupplistor oberoende av elevhistoriken. Stabil namnhämtning undviker dubbel start; gruppval bevaras och explicita gruppuppdateringar hämtas även under pågående historikladdning. Ny riktad robot var röd före fix och är grön för långsam respektive misslyckad historik; tillsammans med befintlig gruppfilterrobot 3 gröna prov. Aktuell app: 191 testfiler/945 tester gröna med npm run test -- --exclude **/.claude/**; standardkommandot hittade ett separat fel i en äldre inbäddad worktree. Build, riktad ESLint och arkitekturkontroll godkända. Syntetiska browserbilder granskade i landskap och porträtt. Elevlistans 35 MB kvarstår; ingen förbättrad produktionstid påstås. Ingen push eller publicering.",
       "tasks": [
         {
           "id": "performance-code-map",
@@ -2290,13 +2290,13 @@
         },
         {
           "id": "performance-e2e-baseline",
-          "text": "M0 efter separat mandat: browser/serverprofil för elevbyte, kall/varm start och kö",
+          "text": "Uppskjutet: ytterligare browser/serverprofil för elevbyte endast när nyttan motiverar insatsen",
           "done": false
         },
         {
           "id": "performance-independent-catalog",
-          "text": "P1 föreslagen: oberoende klass-/gruppkatalog och stabil laddningslivscykel",
-          "done": false
+          "text": "P1a lokalt: befintliga klass-/gruppanrop parallellt, stabil laddning och bevarat urval; ej publicerat",
+          "done": true
         },
         {
           "id": "performance-light-overview",

@@ -5,6 +5,7 @@ export async function readAudienceProfiles(keys) {
   let profiles
   try {
     profiles = await kv.mget(...keys)
+    if (!Array.isArray(profiles) || profiles.length !== keys.length) throw Error('Incomplete audience profile batch')
   } catch (error) {
     const oversized = /max.*(?:size|length)|(?:size|length).*exceed|too (?:large|big)/iu.test(String(error?.message || ''))
     console.warn('audience_profile_batch_fallback', oversized ? 'size_limit' : 'command_failed')
@@ -15,6 +16,5 @@ export async function readAudienceProfiles(keys) {
     }
     profiles = await Promise.all(keys.map(key => kv.get(key)))
   }
-  if (!Array.isArray(profiles) || profiles.length !== keys.length) throw Error('Incomplete audience profile batch')
   return profiles
 }

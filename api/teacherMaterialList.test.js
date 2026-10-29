@@ -2,7 +2,7 @@ import { beforeEach, expect, it, vi } from 'vitest'
 const mock = vi.hoisted(() => ({ auth: vi.fn(), pupil: vi.fn(), source: vi.fn(), audience: vi.fn() }))
 vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mock.auth }))
 vi.mock('./_pupilEvidenceRead.js', () => ({ assertPupilEvidenceAccess: mock.pupil, assertEvidenceSourceAccess: mock.source }))
-vi.mock('./_teacherAudience.js', () => ({ resolveTeacherAudience: mock.audience }))
+vi.mock('./_teacherAudience.js', () => ({ assertTeacherAudienceTargetAccess: mock.audience }))
 import { listMaterialDrafts } from './_teacherMaterialList.js'
 
 const auth = { teacherId: 'T', role: 'teacher' }

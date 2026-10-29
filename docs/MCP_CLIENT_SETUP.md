@@ -125,6 +125,20 @@ valda klassens svarshistorik lämnas i lagringen vid denna metadatahämtning.
 Verkligt lokalt Redis-prov bekräftar att både vald och främmande syntetisk
 megabytehistorik uteblir och att ursprungsdata är oförändrade.
 
+Efter PR33 användes fortfarande GET-reserven. En avgränsad direkt,
+skrivskyddad lagringskontroll fastställde det verkliga felet:
+`ERR Error running script: execution timed out`. Båda kommandona fungerar
+mot en obefintlig testnyckel; det är alltså belastningen från riktiga stora
+profiler som utlöser skriptgränsen. Anpassad delning även vid denna gräns
+läste samma klassmetadata med tio medlemmar på 5077 ms före publicering.
+Lagringsuppgifterna användes bara i processen; inga hemligheter skrevs till
+fil/logg och inga lagringsskrivningar gjordes.
+
+Historisk utkaståtkomst kontrollerar nu aktuell målbehörighet och alla
+frysta elevers/analyskällors aktuella åtkomst. Att läsa en sparad version
+behöver inte ladda hela dagens globala urval igen. Förhandsvisning, sparande
+och godkännande behåller fullständiga aktuella roster-/revisionskontroller.
+
 ## Klienternas dokumentation
 
 [Codex MCP](https://learn.chatgpt.com/docs/extend/mcp?surface=cli) beskriver

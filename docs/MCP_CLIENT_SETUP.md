@@ -35,22 +35,46 @@ projektfilerna `assignment-authoring` och `pupil-analysis`. Båda validerade.
 Claude Desktop läser inte dessa lokala Code-skills genom denna registrering;
 serverns analys-prompt och instruktioner är en separat MCP-yta.
 
-## Verkligt konto är ännu inte valt
+## Verkligt konto: adminperson
 
 Befintliga Windows-exportuppgifter gäller **adminperson**. Den tidigare
 autentiserade browserkontrollen och återställningen av privata screeningutkast
 gällde **Adminsimon**. Kontona har separata privata utkast; administratörsroll
 eller åtkomst till samma klasser gör inte deras utkast gemensamma.
 
-Simon påpekade att han trodde att adminperson användes. Kontovalet behöver
-fastställas före kontobindning och en verklig MCP-materialskrivning.
-Ingen produktions-MCP-post, verklig AI-miljö eller ny kontobindning har
-aktiverats. Inga sparade exportuppgifter ändrades eller skrev ut lösenord.
-En webbläsarinloggning är inte en konfiguration av MCP-processens konto.
+Simon valde uttryckligen **adminperson**. `sequential-math` är nu en separat
+kontobunden anslutning i Codex, Claude Code och Claude Desktop. Samtliga
+registrerade kommandon bekräftade samma verkliga teacherId och rollen
+school_admin via capabilities. Både rapport- och materialsparflaggorna är
+aktiva, men inga verktyg för godkännande eller utdelning exponeras.
 
-Nästa steg efter kontovalet: konfigurera endast den avsedda identiteten,
-bekräfta den med capabilities och förhandsvisa/spara neutralt testmaterial
-utan elevutdelning. Verkliga elevunderlag kräver fortsatt klarlagd AI-miljö.
+`src/windows-user.mjs` läser de befintliga Windows-användarvariablerna
+MATH_TEACHER_USER/PASS vid varje start, utan att ändra dem. Den kräver
+uttryckligt förväntat användarnamn och teacherId. Adapterns inloggning måste
+stämma med exakt teacherId innan privata skrivningar kan utföras. Inga
+lösenord eller sessionstoken sparas i klientkonfiguration, kommandorad eller
+kvittot. Anslutningen ändrar inte inloggningen i redan öppna lärarflikar och
+flyttar inte Adminsimons privata utkast.
+
+`approved` är adapterns tekniska målval för den uttryckligt konfigurerade
+HTTPS-appen; det är inget intyg om tillåten behandling av elevdata hos en
+AI-leverantör. Verkliga elevsvar/analysunderlag har inte lästs i detta prov.
+
+### Kvarvarande hinder för materialprovet
+
+Ett neutralt privat materialprov mot den befintliga klassen Test stoppades
+före förhandsvisning/sparande. Mottagar-API:t svarar 409 med att medlemslistan
+är ogiltig. Koden validerar hela students:index före klassavgränsning, så ett
+legacy-ID utanför den valda klassen kan blockera även dess läsning.
+En syntetisk regression reproducerar detta. Den lokala rättningen kontrollerar
+klassmedlemskap före formatkravet för globala legacy-nycklar. Felaktiga ID:n
+som faktiskt hör till vald klass eller explicit grupp avvisas fortfarande.
+Ingen produktionsmedlem eller indexpost raderas eller ändras.
+
+Ingen materialskrivning eller utdelning skedde i produktionsprovet.
+Fortsatt kontroll av materialgranskning kräver att den avgränsade API-rättningen
+publiceras efter separat mandat. Redan startade klienter behöver också läsa
+sin nya konfiguration; de startades inte om under pågående arbete.
 
 ## Klienternas dokumentation
 

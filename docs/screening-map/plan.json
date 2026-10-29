@@ -2377,14 +2377,14 @@
       "id": "admin-screening-style",
       "area": "Lärarvy",
       "title": "Screeningens grafiska stil i admin utom Framsteg",
-      "status": "Lokalt klart",
+      "status": "Byggt",
       "purpose": "Ge admin en sammanhängande läsbar arbetsstil utifrån den godkända screeningreferensen och ui-planering.",
-      "next": "Publicera avgränsad GitHub-PR efter grön CI. Kontrollera sekvens produktionsrevision och matematik.ximon.se; inga elevuppdrag ska ändras.",
+      "next": "Beställd anpassning är publicerad. Ta emot eventuell återkoppling på användningen; ingen ytterligare stiländring eller elevutdelning är beställd.",
       "acceptance": "Fokus, uppdrag/tickets, statistik/stöd, screeningresultat, administration och materialgranskning följer samma typografi, paneler och kontroller. Framsteg och elevsidor påverkas inte. Urval, sparande, varningar och verksamhetsflöden bevaras. Fyllda ljusa/mörka breda/stående vyer granskade.",
       "requires": [],
       "affects": [],
       "decision": "2026-10-29: Simon beställer screeningens grafiska stil i hela admin med uttryckligt undantag för Framsteg. Befintlig godkänd screeningreferens och skills ui-planering/designgrund används. Inget nytt publiceringsmandat.\n2026-10-29: Simon beställer publicering av den visade och lokalt verifierade adminanpassningen. GitHub-PR till master och Vercel-projektet sekvens är den godkända vägen.",
-      "evidence": "Läst docs/TEACHER_UI_WORKFLOWS.md och docs/ui-reference/README.md. Referensen binder systemtypsnitt, 14 px text, 23/17 px rubriker, 14 px panelpadding, indigo huvudhandling, mjuka val och gul aktiv navigation. Nya regler ska vara avgränsade från Framsteg.\n2026-10-29: Gemensam teacherAdmin.css extraherar screeningens visuella grund och aktiveras bara utanför Framsteg. Fokus, uppdrag/tickets, statistik/stöd, resultat, administration och materialgranskning har samma typografi/paneler/kontroller. Objektflikar skiljs från handlingar; tickets har sektionsdelare och indigo huvudhandlingar. Chart-signaler, räknehäfte och alla spar-/urvalskontrakt bevaras. Robotlokatorer använder menyetiketten Administration i stället för dold beskrivning.\nSlutkontroll:194 testfiler/955 tester, produktionsbuild, riktad ESLint och arkitekturkontroll gröna. 18 berörda dev-browserfall gröna; ytterligare7 mot produktionsbygget (adminlänk/fokusbehörighet/diagram/underlag) gröna. Separat vygranskning i både dev och slutbygge:29 skärmbilder, alla7 arbetslägen i1024x768/768x1024, öppnade klassflikar, tangentbordsaktivering av flik, tickets, uppdragsdialog och sparad materialgranskning samt mörka vyer/390px. Ingen sidöverströmning i de granskade vyerna. Framsteg var pixelidentisk före/efter i dev på samma syntetiska underlag1024x4979, även font-/rubrikmått identiska. Produktionsläge saknar dev-testdatamodul och jämförs inte pixelvis mot dev. Slutbyggets representativa bilder visuellt granskade och sparade i docs/ui-reference/admin-style-2026-10-29/. Ingen fysisk iPad eller riktig elevdata. Ej pushat/publicerat.",
+      "evidence": "Läst docs/TEACHER_UI_WORKFLOWS.md och docs/ui-reference/README.md. Referensen binder systemtypsnitt, 14 px text, 23/17 px rubriker, 14 px panelpadding, indigo huvudhandling, mjuka val och gul aktiv navigation. Nya regler ska vara avgränsade från Framsteg.\n2026-10-29: Gemensam teacherAdmin.css extraherar screeningens visuella grund och aktiveras bara utanför Framsteg. Fokus, uppdrag/tickets, statistik/stöd, resultat, administration och materialgranskning har samma typografi/paneler/kontroller. Objektflikar skiljs från handlingar; tickets har sektionsdelare och indigo huvudhandlingar. Chart-signaler, räknehäfte och alla spar-/urvalskontrakt bevaras. Robotlokatorer använder menyetiketten Administration i stället för dold beskrivning.\nSlutkontroll:194 testfiler/955 tester, produktionsbuild, riktad ESLint och arkitekturkontroll gröna. 18 berörda dev-browserfall gröna; ytterligare7 mot produktionsbygget (adminlänk/fokusbehörighet/diagram/underlag) gröna. Separat vygranskning i både dev och slutbygge:29 skärmbilder, alla7 arbetslägen i1024x768/768x1024, öppnade klassflikar, tangentbordsaktivering av flik, tickets, uppdragsdialog och sparad materialgranskning samt mörka vyer/390px. Ingen sidöverströmning i de granskade vyerna. Framsteg var pixelidentisk före/efter i dev på samma syntetiska underlag1024x4979, även font-/rubrikmått identiska. Produktionsläge saknar dev-testdatamodul och jämförs inte pixelvis mot dev. Slutbyggets representativa bilder visuellt granskade och sparade i docs/ui-reference/admin-style-2026-10-29/. Ingen fysisk iPad eller riktig elevdata. Ej pushat/publicerat.\n2026-10-29: Publicerat efter uttryckligt mandat via PR27, head d90894a2a7e6d5ed137ce66e902bd1d856d2d40f. GitHub quality/documentation gröna (run40870490137), preview dpl_FoGqszWnSnz5y7K2RTPRHUZUB2Qb READY. Produktionsmerge56bec85c72dc05fbe247483df3fd4311f48a8002. Vercel-projekt sekvens, dpl_D6yGnQxk1KGEV9n3pcT7EdJmvmk9 READY, target production, alias matematik.ximon.se, samma Git-SHA. Domän HTTP200; index-ovZ-cZgE.js och index-CWjLGKg0.css hämtade från domänen och SHA256-matchade exakt mot lokalt verifierat slutbygge. Båda privata utkast-API:erna nekar oinloggad åtkomst med401. Ingen inloggad visuell produktions-QA, riktig elevdata eller elevutdelning i releasekontrollen. Framsteg ingår inte i stiländringen. Beläggen sparas i lokal dokumentationscommit utan ny produktionspush.",
       "issue": "",
       "kind": "feature",
       "tasks": [
@@ -2401,6 +2401,11 @@
         {
           "id": "admin-style-verify",
           "text": "Granska fyllda breda/stående och mörka vyer samt bevarade arbetsflöden",
+          "done": true
+        },
+        {
+          "id": "admin-style-publish",
+          "text": "Publicera via godkänd GitHub-PR och verifiera rätt produktionsfiler",
           "done": true
         }
       ]

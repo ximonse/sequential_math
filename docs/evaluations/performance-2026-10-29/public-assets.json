@@ -1,0 +1,26 @@
+{
+  "recordedAt": "2026-10-29T17:37:08.467Z",
+  "method": "One unauthenticated fetch per actual public entry asset; no JavaScript execution or rendering",
+  "samples": [
+    {
+      "path": "/assets/index-ovZ-cZgE.js",
+      "status": 200,
+      "headersMs": 126.9,
+      "bodyMs": 355.3,
+      "decodedBytes": 1699002,
+      "contentEncoding": "br",
+      "contentLength": null,
+      "cache": "HIT"
+    },
+    {
+      "path": "/assets/index-CWjLGKg0.css",
+      "status": 200,
+      "headersMs": 42.2,
+      "bodyMs": 29.7,
+      "decodedBytes": 137746,
+      "contentEncoding": "br",
+      "contentLength": null,
+      "cache": "HIT"
+    }
+  ]
+}

@@ -46,7 +46,9 @@ export const kv = {
   async eval(script, keys = [], args = []) {
     if (script === CLASS_AUDIENCE_PROFILES) return keys.map(key => {
       const profile = values.get(key)
-      return profile && (profile.classId === args[0] || profile.classIds?.includes(args[0])) ? clone(profile) : null
+      if (!profile || !(profile.classId === args[0] || profile.classIds?.includes(args[0]))) return null
+      const { studentId, displayAlias, classId, classIds } = profile
+      return clone({ studentId, displayAlias, classId, classIds })
     })
     const dispatch = emulateMaterialDispatch(values, script, keys, args)
     if (dispatch) return dispatch.result

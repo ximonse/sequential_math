@@ -116,6 +116,15 @@ tomma positioner med bevarad ordning. Valda profiler genomgår samma kontroll
 av identitet, radering och klassåtkomst i appen. Ingen rosterindexmigrering,
 persistens eller cache läggs till. Reservläsningen kvarstår vid fel.
 
+PR32 publicerades på merge 90ef80b; audience gav HTTP200 på 16400 ms och
+förhandsvisning lyckades. Första save-anropet fick däremot osäker kvittens
+efter tidsgränsen. Utkast-ID härleds ur samma requestId och läses tillbaka;
+ett nytt ID får inte användas för återförsöket. Redis-svaret begränsas nu
+ytterligare till studentId, displayAlias, classId och classIds. Även den
+valda klassens svarshistorik lämnas i lagringen vid denna metadatahämtning.
+Verkligt lokalt Redis-prov bekräftar att både vald och främmande syntetisk
+megabytehistorik uteblir och att ursprungsdata är oförändrade.
+
 ## Klienternas dokumentation
 
 [Codex MCP](https://learn.chatgpt.com/docs/extend/mcp?surface=cli) beskriver

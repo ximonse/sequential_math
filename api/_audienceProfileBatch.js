@@ -12,7 +12,12 @@ for i, key in ipairs(KEYS) do
       if type(profile.classIds) == 'table' then
         for _, id in pairs(profile.classIds) do if id == ARGV[1] then member = true end end
       end
-      if member then rows[i] = raw end
+      if member then
+        local memberships = profile.classIds
+        if type(memberships) == 'table' and next(memberships) == nil then memberships = nil end
+        rows[i] = cjson.encode({studentId = profile.studentId, displayAlias = profile.displayAlias,
+          classId = profile.classId, classIds = memberships})
+      end
     end
   end
 end

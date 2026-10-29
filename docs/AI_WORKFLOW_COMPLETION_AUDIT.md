@@ -39,7 +39,9 @@ materialgodkännande eller utdelning sparades i provet.
 ## Återstående beslut och verifiering
 
 1. Produktionsmandatet för PR #22 är uppfyllt och publiceringen verifierad.
-   Avgränsad autentiserad kontroll av rätt konto och utkast återstår.
+   Rätt konto och fristående screeningutkasts skapa/hitta/ändra/spara/återöppna
+   samt versionshistorik är autentiserat verifierade i produktion 2026-10-29
+   utan elevutdelning. Det separata teacher_material-/MCP-flödet återstår.
 2. Vid verklig MCP-användning behöver avsedd AI-miljö och rätt lärarkonto vara
    klarlagda. Lokal transport eller pseudonymer är inget sådant godkännande.
 3. Modellens analysförslag behöver lärargranskas. Varierade fall och en

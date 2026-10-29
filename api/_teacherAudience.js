@@ -45,7 +45,7 @@ async function readAudience(req, type, targetId, teacherId) {
       if (typeof studentId !== 'string' || !studentId.length || studentId.length > 512
         || (type !== 'class' && !validId(studentId))) fail(409, 'Urvalets medlemslista är ogiltig.')
     }
-    const profiles = await readAudienceProfiles(batch.map(studentId => `student:${studentId}`))
+    const profiles = await readAudienceProfiles(batch.map(studentId => `student:${studentId}`), type === 'class' ? targetId : undefined)
     const rows = await Promise.all(batch.map(async (studentId, index) => {
       const profile = profiles[index]
       if (!profile || profile.studentId !== studentId) {

@@ -1,6 +1,6 @@
 import { beforeEach, expect, it, vi } from 'vitest'
-const mock = vi.hoisted(() => ({ get: vi.fn(), mget: vi.fn(), smembers: vi.fn(), auth: vi.fn(), access: vi.fn(), deleted: vi.fn() }))
-vi.mock('@vercel/kv', () => ({ kv: { get: mock.get, mget: mock.mget, smembers: mock.smembers } }))
+const mock = vi.hoisted(() => ({ get: vi.fn(), mget: vi.fn(), eval: vi.fn(), smembers: vi.fn(), auth: vi.fn(), access: vi.fn(), deleted: vi.fn() }))
+vi.mock('@vercel/kv', () => ({ kv: { get: mock.get, mget: mock.mget, eval: mock.eval, smembers: mock.smembers } }))
 vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mock.auth }))
 vi.mock('./_studentAccess.js', () => ({ canAccessClass: mock.access }))
 vi.mock('./_studentStore.js', () => ({ isStudentDeleted: mock.deleted }))
@@ -25,6 +25,8 @@ beforeEach(() => {
   }
   mock.get.mockImplementation(async key => records[key] || null)
   mock.mget.mockImplementation(async (...keys) => Promise.all(keys.map(key => mock.get(key))))
+  mock.eval.mockImplementation(async (_script, keys, [classId]) => (await mock.mget(...keys)).map(profile => profile &&
+    (profile.classId === classId || profile.classIds?.includes(classId)) ? profile : null))
   mock.smembers.mockImplementation(async key => key === 'students:index' ? ['P', 'Q', 'FOREIGN'] : ['G', 'H'])
   mock.auth.mockResolvedValue({ teacherId: 'T', role: 'teacher' })
   mock.access.mockImplementation(async (_req, id) => id === 'C')

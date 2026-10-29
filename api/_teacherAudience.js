@@ -4,6 +4,7 @@ import { getLiveTeacherAuthPayload } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
 import { authCanManageGroup } from './_groupStore.js'
 import { isStudentDeleted } from './_studentStore.js'
+import { readAudienceProfiles } from './_audienceProfileBatch.js'
 
 const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/u.test(value)
 const fail = (status, message) => { throw Object.assign(new Error(message), { status }) }
@@ -44,8 +45,7 @@ async function readAudience(req, type, targetId, teacherId) {
       if (typeof studentId !== 'string' || !studentId.length || studentId.length > 512
         || (type !== 'class' && !validId(studentId))) fail(409, 'Urvalets medlemslista är ogiltig.')
     }
-    const profiles = await kv.mget(...batch.map(studentId => `student:${studentId}`))
-    if (!Array.isArray(profiles) || profiles.length !== batch.length) throw Error('Incomplete audience profile batch')
+    const profiles = await readAudienceProfiles(batch.map(studentId => `student:${studentId}`))
     const rows = await Promise.all(batch.map(async (studentId, index) => {
       const profile = profiles[index]
       if (!profile || profile.studentId !== studentId) {

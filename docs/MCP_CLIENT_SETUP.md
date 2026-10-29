@@ -97,6 +97,16 @@ En följdrättning använder därför ett Redis MGET per hundra profiler i
 stället för hundra separata GET. Fel eller ofullständigt batchsvar avvisas;
 separata rosterläsningar och alla valda elevers kontroller behålls.
 
+Produktionsprovet av PR30 gav i stället HTTP503 efter 1430 ms. Exakt
+lagringsorsak är inte belagd; batchkommandot kan därför inte antas fungera
+bara för att ersättningen i robotservern gör det. Ingen save har anropats.
+Följdrättningen delar batchar vid storleksfel och använder fullständig GET
+som reserv vid andra kommandofel. Korta batchsvar avvisas fortfarande.
+Loggning begränsas till fasta felkategorier utan profilnycklar eller innehåll.
+Historiska elevkontroller parallelliseras i grupper om 20 utan att hoppa
+över någon version eller elev. MCP:s anropstidsbudget är 45 sekunder;
+osäker skrivkvittens kräver fortsatt återläsning och samma requestId.
+
 ## Klienternas dokumentation
 
 [Codex MCP](https://learn.chatgpt.com/docs/extend/mcp?surface=cli) beskriver

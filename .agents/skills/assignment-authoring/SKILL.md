@@ -49,6 +49,10 @@ mottagare enligt serverns godkännandeflöde. Ändringar kräver ny granskning.
 Rapport, utkast och lärargodkännande ändrar inte mastery. Vid osäker
 skrivkvittens: läs status och återanvänd samma begäran, skapa inte nya uppdrag.
 
+Hitta tidigare sparade materialutkast med math_list_material_drafts på rätt
+lärarkonto. Verktyget listar metadata och granskningsväg; läs vald version
+med math_get_material_draft. De syns även i Materialbibliotekets Privata utkast.
+
 Efter sparande kan reviewUrl/reviewPath leda till lärarens granskningsvy.
 Läraren granskar senaste versionens frågor, bedömning, analysbelägg och exakta
 mottagare och godkänner där. Bearbeta screeningfrågor återanvänder appens

@@ -103,6 +103,21 @@ historik. CAS för lagringsrevision och tombstone-kontroller stoppar samtidiga
 av en berörd elev tas hela utkasthistoriken bort, inklusive fria formuleringar;
 den förs inte till anonym statistik. Ingen automatisk rensning av äldre versioner.
 
+`GET /api/teacher-material?resource=drafts` listar det inloggade lärarkontots
+materialutkast. `limit` är 1–20, `offset` 0–100; nästa sida använder samma
+`indexRevision`. Ändrat ägarindex avvisas så att läsaren får börja om. Varje
+utkasts hela historiska åtkomst kontrolleras innan titel lämnas ut; borttagen
+åtkomst döljer utkastet och lagringsfel ger fel, inte en tom lista. Svaret
+innehåller bara draftId, revision, version, titleSv, kind, mode, updatedAt,
+approval och reviewPath samt sidmetadata. Frågor, elevlistor och analysunderlag
+ingår inte. Godkänt material är inte ett kvitto på utdelning.
+
+Materialbibliotekets befintliga lista **Privata utkast** visar både dessa
+materialutkast och fristående screeningutkast. De behåller sina separata
+lagringar och redigerare. Öppna granskning går till den listade versionen;
+osparade ändringar skyddas även vid återgång till lärarvyn eller elevprofil.
+
+MCP `math_list_material_drafts` erbjuder samma privata metadatalista.
 MCP `math_get_material_draft` läser summary/history/content/audience/basis/input/publication
 för en vald version; listsektioner har offset/limit. `math_save_material_draft`
 finns bara med separat startflagga `--allow-material-writes` eller

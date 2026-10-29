@@ -14,11 +14,11 @@ och publicering. Aktuell kod ligger i PR #22, inte i produktion.
 | Granska och revidera material utan utdelning | MaterialReview, återanvända frågeredigerare, originalkällor, exakt mottagarlista och oföränderliga versioner | Verifierat i robot och fyllda liggande/stående vyer. Träningsram kan revideras via MCP; vyn visar ramen |
 | Aktuell version och exakta mottagare måste godkännas före utdelning | Cookie-skyddat approve/publish, serverns nya kontroll av källa/roster, regression för samma innehåll i olika versioner | Verifierat syntetiskt. MCP exponerar inget godkännande eller publicering |
 | Tillförlitliga kvitton och återförsök | CAS, deterministiska ID:n, delfel/osäkra utfall, full aktiv lista, sidvis utdelning och isolerat riktigt Redis-prov | Verifierat inom beskrivna prov. Upstash REST-transport återstår |
-| Rätt lärarkonto ska kunna hitta privata utkast | Åtta tidigare utkast återställda till rätt konto och kontrollerade i riktig lärarvy; MCP-identitet och uttrycklig kontobindning vid approved-sparande | Återställningen är genomförd. Den förebyggande MCP-rättningen är i PR #22 |
+| Rätt lärarkonto ska kunna hitta privata utkast | Åtta tidigare utkast återställda till rätt konto och kontrollerade i riktig lärarvy; MCP-identitet och uttrycklig kontobindning vid approved-sparande; privat metadatalista i MCP och befintligt materialbibliotek | Återställningen är genomförd. Återfinning av API-material och skydd för osparad navigering verifierade syntetiskt; rättningarna är i PR #22 |
 | Skills beskriver samma faktiska arbetsflöde | pupil-analysis, assignment-authoring och deras API-/MCP-dokument; skillvalidering | Dokumenterat och syntetiskt provat; instruktionerna garanterar inte att en modell följer dem |
 | Faktisk ansluten AI-klient | Tidigare registrerad Codex-demo och senare SDK-stdio-prov med aktuell kod, inklusive faktisk Antigravity-text genom MCP | Transport och lagring verifierade. En redan startad klient kan fortfarande använda äldre process/verktyg och behöver laddas om |
 | Verklig elevdata endast i klarlagd AI-miljö | Ingen verklig elevdata använd i utvecklings-/modellproven; approved-läge är uttrycklig konfiguration | Villkoret är bevarat. Ingen ny godkänd verklig MCP-miljö eller kontokonfiguration påstås |
-| Publicering kräver separat mandat | PR #22 uppdaterad, gröna kontroller och READY-preview för 80a8efc | Produktionsmerge inväntar Simons uttryckliga klartecken |
+| Publicering kräver separat mandat | PR #22; gröna kontroller och READY-preview verifierade för ea6d9f0 före tillägget för bibliotekets återfinning | Produktionsmerge inväntar Simons uttryckliga klartecken. Senare revisioners kontroller följs i PR |
 
 ## Vad det kompletterande modellprovet ändrade
 

@@ -6,7 +6,7 @@ import ScreeningMaterialLibrary from './ScreeningMaterialLibrary'
 import ScreeningCompletion from './ScreeningCompletion'
 import { scopeScreeningCollections } from './screeningCollectionScope'
 
-export default function ScreeningCollectionList({ context, library, onStart, onReuse, onOpenDraft, onResults, hasDraft, onResume }) {
+export default function ScreeningCollectionList({ context, library, onStart, onReuse, onOpenDraft, onOpenMaterial, onResults, hasDraft, onResume }) {
   const [tab, setTab] = useState('issued')
   const [limit, setLimit] = useState(8)
   const tabId = useId()
@@ -39,7 +39,7 @@ export default function ScreeningCollectionList({ context, library, onStart, onR
         aria-controls={`${tabId}-panel`} aria-selected={tab === value} tabIndex={tab === value ? 0 : -1} onClick={() => setTab(value)}>{label}</button>)}
     </div>
     <div role="tabpanel" id={`${tabId}-panel`} aria-labelledby={`${tabId}-${tab}`}>
-    {tab === 'library' ? <ScreeningMaterialLibrary library={library} onOpenDraft={onOpenDraft} onReuse={onReuse} /> : <>
+    {tab === 'library' ? <ScreeningMaterialLibrary library={library} onOpenDraft={onOpenDraft} onOpenMaterial={onOpenMaterial} onReuse={onReuse} /> : <>
     <div className="screening-view-context screening-bar">
       <label>Visa för <select aria-label="Visa screeningar för" value={filters.picks.length === 1 && filters.picks[0].type !== 'student' ? `${filters.picks[0].type}:${filters.picks[0].id}` : filters.picks.length ? 'custom' : 'all'}
         onChange={event => { const [type, ...id] = event.target.value.split(':'); patch({ picks: type === 'all' ? [] : [{ type, id: id.join(':') }] }) }}>

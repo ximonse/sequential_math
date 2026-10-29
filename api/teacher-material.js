@@ -4,6 +4,7 @@ import { readMaterialDraft, saveMaterialDraft, approveMaterialDraft } from './_t
 import { assertMaterialDraftAccess } from './_teacherMaterialAccess.js'
 import { readMaterialDispatch } from './_teacherMaterialDispatchStore.js'
 import { publishMaterialDraft } from './_teacherMaterialPublish.js'
+import { listMaterialDrafts } from './_teacherMaterialList.js'
 
 export default async function handler(req, res) {
   withCors(res, { methods: 'GET,POST,OPTIONS', headers: 'Content-Type,x-teacher-token' }, req)
@@ -14,6 +15,7 @@ export default async function handler(req, res) {
   if (!auth) return res.status(401).json({ error: 'Teacher authorization required' })
   try {
     if (req.method === 'GET') {
+      if (req.query?.resource === 'drafts') return res.status(200).json(await listMaterialDrafts(req, auth))
       const state = await readMaterialDraft(auth.teacherId, req.query?.draftId)
       if (!state) return res.status(404).json({ error: 'Utkastet finns inte.' })
       await assertMaterialDraftAccess(req, state)

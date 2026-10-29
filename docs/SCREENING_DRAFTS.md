@@ -2,6 +2,12 @@
 
 Publicerat 2026-10-28. Sparade utkast är privata; elevutdelning är separat.
 
+Tillägg i PR #22, ännu inte produktion: **Materialbibliotek → Privata utkast**
+visar även material som sparats via material-API/MCP. **Öppna granskning**
+leder till materialets listade version med analys och godkännandeflöde.
+Fristående screeningutkast öppnas som tidigare med **Öppna utkast**. De två
+lagringarna behålls; öppning skapar ingen kopia och delar inte ut något.
+
 Under **Screening: dela ut → Utkast för genomgång** kan läraren skapa ett
 nytt utkast, spara samlingen och öppna sparade utkast. Samlingens namn,
 valda bankfrågor och arbetsytor, egna facitfrågor, bildfrågor och den

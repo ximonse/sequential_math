@@ -59,6 +59,9 @@ export default function MaterialReview() {
   const latest = item && item.version === draft.versions.at(-1).version
   const approved = item && (draft.approvals || []).some(value => value.version === item.version && value.contentRevision === item.contentRevision)
   const dispatch = dispatches.find(value => value.version === item?.version)
+  function protectNavigation(event) {
+    if (hasUnsaved && !window.confirm('Du har osparade ändringar. Vill du lämna materialgranskningen utan att spara dem?')) event.preventDefault()
+  }
   function edit(field, value) {
     if (field === 'content' && value.customTasks?.length !== input.content.customTasks?.length) {
       setQuestionEditors(old => ({ ...old, [version]: {} }))
@@ -124,7 +127,7 @@ export default function MaterialReview() {
     if (activeScope.current === draftId) await refresh()
   }
   return <main className="material-review">
-    <header className="material-review-header"><Link to="/teacher">← Lärarvyn</Link><span>Materialutkast</span>
+    <header className="material-review-header"><Link to="/teacher" onClick={protectNavigation}>← Lärarvyn</Link><span>Materialutkast</span>
       <button disabled={busy || !draft} onClick={() => run(() => refresh())}>Läs senaste status</button></header>
     {message && <p role="status" className="material-message">{message}</p>}
     {!item ? <p>Läser utkast…</p> : <>
@@ -158,7 +161,7 @@ export default function MaterialReview() {
         </section>}
       </div><aside className="material-sidebar"><section className="material-module"><h2>Mottagare</h2>
         <p>{material.audience.name} · {material.audience.total} elever</p>
-        <ul>{material.audience.pupils.map(pupil => <li key={pupil.studentId}><Link to={`/teacher/student/${encodeURIComponent(pupil.studentId)}`}>{pupil.codeName}</Link>
+        <ul>{material.audience.pupils.map(pupil => <li key={pupil.studentId}><Link to={`/teacher/student/${encodeURIComponent(pupil.studentId)}`} onClick={protectNavigation}>{pupil.codeName}</Link>
           {material.mode === 'specific' && material.pupilsWithoutAnalysis.includes(pupil.studentId) ? ' · analysunderlag saknas' : ''}
           {material.kind === 'screening' && (pupil.classIds.length > 1 && material.audience.targetType !== 'class'
             ? <label className="material-class-context">Klass för {pupil.codeName}<select aria-label={`Klass för ${pupil.codeName}`}

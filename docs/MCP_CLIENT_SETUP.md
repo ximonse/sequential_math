@@ -77,7 +77,7 @@ lyckas ett diagnostiskt läsanrop till Test-klassen med tio medlemmar, men
 tar 32890 ms. Ordinarie MCP avbryter efter 15000 ms och två försök stannade
 därmed före preview/save. Inget kontrollmaterial har skapats eller delats ut.
 
-Nästa lokala prestandarättning gör raderingsuppslag först för klassens egna
+Prestandarättningen i PR29 gör raderingsuppslag först för klassens egna
 medlemmar och läser profiler i begränsade omgångar om 100 i stället för 20.
 Två separata rosterläsningar, revisionsjämförelsen och kontroller av valda
 medlemmar behålls. Produktionsprestandan är ännu inte verifierad för den
@@ -88,6 +88,14 @@ Prestandarättningen granskas i PR29. Lokalt: 194 testfiler/957 tester,
 produktionsbuild, riktad ESLint, arkitektur och projektkarta godkända.
 Tre syntetiska robotfall är gröna, inklusive materialets tolv kombinationer
 av typ, analysläge och mottagartyp. Detta är ingen verklig elevutdelning.
+
+PR29 är publicerad på merge 4c5f3b8, sekvens production
+dpl_2yFstnKjN5XTwHMyZ6mKqiikiP5a READY med domänalias och samma SHA.
+Audience gick därefter på 14795 ms, men hela MCP-provet stannade vid
+förhandsvisningens tidsgräns. Fortfarande inget sparande eller utdelning.
+En följdrättning använder därför ett Redis MGET per hundra profiler i
+stället för hundra separata GET. Fel eller ofullständigt batchsvar avvisas;
+separata rosterläsningar och alla valda elevers kontroller behålls.
 
 ## Klienternas dokumentation
 

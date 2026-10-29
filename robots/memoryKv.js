@@ -24,6 +24,7 @@ const parse = raw => { try { return JSON.parse(raw) } catch { return raw } }
 
 export const kv = {
   async get(key) { return values.has(key) ? clone(values.get(key)) : null },
+  async mget(...keys) { return keys.map(key => values.has(key) ? clone(values.get(key)) : null) },
   async set(key, value, options = {}) {
     if (options?.nx && values.has(key)) return null
     values.set(key, clone(value))

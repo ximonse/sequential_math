@@ -1,5 +1,11 @@
 # Lokal MCP-pilot för elevanalys
 
+Aktuell klientavstämning 2026-10-29:
+[Codex/Claude och ännu olöst kontoval](MCP_CLIENT_SETUP.md).
+API-funktionerna är publicerade genom PR #22; den lokala demoanslutningen
+är syntetisk och innebär ingen verklig kontokoppling. Nedanstående
+daterade pilotbeskrivningar dokumenterar tidigare verifieringssteg.
+
 Status 2026-10-27: lokal implementation med syntetiska elever. Ingen
 produktionstjänst, automatisk utdelning eller faktisk modells didaktiska
 kalibrering. MCP är transporten; analysen följer projektets `pupil-analysis`-skill

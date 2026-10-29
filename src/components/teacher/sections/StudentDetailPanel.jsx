@@ -6,6 +6,7 @@ import StudentDetailHistoryPanel from './StudentDetailHistoryPanel'
 import StudentDetailTrendPanel from './StudentDetailTrendPanel'
 import StudentDetailMasteryPanel from './StudentDetailMasteryPanel'
 import StudentAttentionHistoryPanel from './StudentAttentionHistoryPanel'
+import StudentAnalysisPanel from './StudentAnalysisPanel.jsx'
 
 const OPERATION_BADGES = [
   { label: '+', key: 'addition' },
@@ -178,6 +179,9 @@ export default function StudentDetailPanel({
           />
 
           <StudentDetailTrendPanel trend={detailStudentViewData.dailyTrend} />
+          <StudentAnalysisPanel key={`${detailStudentProfile.studentId}:${detailStudentProfile.classId}`}
+            studentId={detailStudentProfile.studentId} classId={detailStudentProfile.classId || detailStudentProfile.classIds?.[0] || ''}
+            classIds={detailStudentProfile.classIds || []} className={detailStudentProfile.className} />
           {canViewAttentionResults && <StudentAttentionHistoryPanel key={detailStudentProfile.studentId} history={detailStudentProfile.attentionHistory} />}
 
           <StudentDetailHistoryPanel

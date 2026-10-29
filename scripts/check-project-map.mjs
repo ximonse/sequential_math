@@ -15,7 +15,7 @@ const plan = validatePlan(JSON.parse(content))
 if (staged || base) {
   const args = ['diff', '--name-only', '-z', ...(staged ? ['--cached'] : [base, 'HEAD']), '--']
   const paths = git(args).split('\0').filter(Boolean)
-  const code = paths.filter(path => /^(src|api|robots)\/.+\.(js|jsx|ts|tsx|mjs|cjs|css)$/.test(path)
+  const code = paths.filter(path => /^(src|api|robots|mcp)\/.+\.(js|jsx|ts|tsx|mjs|cjs|css)$/.test(path)
     || /^scripts\/(project-map|update-project-map)/.test(path)
     || path === 'docs/screening-map/editor.js' || path === 'docs/screening-map/preview.template.html')
   if (code.length && !paths.includes(mapPath)) {

@@ -1,7 +1,7 @@
 import ScreeningImageQuestion from '../../student/ScreeningImageQuestion.jsx'
 import { useMemo, useState } from 'react'
 import { describeDiagnosticEvent, diagnosticHistoryFrame } from '../../../domains/arithmetic/diagnosticHistory'
-import DiagnosticGridLines from '../../../dev/DiagnosticGridLines'
+import DiagnosticNotebookGrid from './DiagnosticNotebookGrid.js'
 import MathScratchpad from '../../student/MathScratchpad'
 import { choiceObservation, isChoiceTask } from '../../../domains/arithmetic/screeningImageQuestions.js'
 
@@ -29,19 +29,7 @@ export default function DiagnosticAttemptHistory({ snapshot, task, imageContext 
     <p className="mt-2 text-sm" aria-live="polite">{event?.type === 'selection_change' ? 'Ändrade valda alternativ.' : describeDiagnosticEvent(event)} {choice ? 'Val då' : 'Slutsvar då'}: {answer}.</p>
     {task?.responseMode && <ScreeningImageQuestion task={task} selected={frame.selectedOptionIds || []} disabled context={imageContext} />}
     <div hidden={task?.gridEnabled === false} className="mt-3 overflow-x-auto">
-      <div className="diagnostic-grid" role="grid" aria-label={`Elevens uppställning efter steg ${step}`}>
-        <DiagnosticGridLines lines={frame.lines} rows={frame.rows} columns={frame.columns} />
-        {Array.from({ length: frame.rows * frame.columns }, (_, index) => {
-          const row = Math.floor(index / frame.columns)
-          const column = index % frame.columns
-          const cell = frame.cells[`${row}:${column}`] || {}
-          return <div key={`${row}:${column}`} className={`diagnostic-cell ${cell.note ? 'diagnostic-cell--note' : ''}`}
-            role="gridcell" aria-label={`rad ${row + 1}, kolumn ${column + 1}, ${cell.main || cell.note || 'tom'}`}>
-            {cell.main && <span className={`diagnostic-cell__digit diagnostic-cell__digit--main ${cell.main.length > 1 ? 'diagnostic-cell__digit--double' : ''} ${cell.struck ? 'diagnostic-cell__digit--struck' : ''}`}>{cell.main}</span>}
-            {cell.note && <span className={`diagnostic-cell__digit diagnostic-cell__digit--note ${cell.struck ? 'diagnostic-cell__digit--struck' : ''}`}>{cell.note}</span>}
-          </div>
-        })}
-      </div>
+      <DiagnosticNotebookGrid frame={frame} label={`Elevens uppställning efter steg ${step}`} />
     </div>
     {frame.drawing?.length > 0 && <MathScratchpad visible strokes={frame.drawing} readOnly />}
   </section>

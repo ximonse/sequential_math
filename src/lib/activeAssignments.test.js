@@ -31,4 +31,14 @@ describe('active assignments on a class or group', () => {
     record = { ...record, ...withoutActiveAssignment(record, 'asg_a') }
     expect(record).toMatchObject({ activeAssignments: [], activeAssignmentPayload: null })
   })
+  it('preserves all twenty active assignments at capacity while allowing an explicit update of an existing one', () => {
+    let record = {}
+    for (let i = 1; i <= 20; i++) record = { ...record, ...withActiveAssignment(record, payload(`asg_${i}`)) }
+    const before = JSON.stringify(record)
+    expect(() => withActiveAssignment(record, payload('asg_21'))).toThrow(/20 aktiva/u)
+    expect(JSON.stringify(record)).toBe(before)
+    const updated = { ...record, ...withActiveAssignment(record, payload('asg_1', 'Ändrad titel')) }
+    expect(activeAssignmentIds(updated)).toHaveLength(20)
+    expect(activeAssignmentIds(updated)).toContain('asg_2')
+  })
 })

@@ -1,6 +1,52 @@
 # Arkitektur & Checklista för nya domäner
 
+## Lokal elevanalys via MCP
+
+`api/_teacherMaterialPreview.js` validerar generell eller analysspecifik
+förhandsvisning mot exakt aktuellt urval och revisionsbundet analysunderlag.
+Träning använder befintlig payload-validering; screening återanvänder
+`prepareDiagnosticAssignment` från uppdragslagret. Förberedelse skriver inget;
+`createDiagnosticAssignment` använder samma förberedelse och sparar separat.
+MCP är en tunn adapter även för materialförhandsvisning. Versionerade utkast
+lagras privat per lärare med CAS, idempotens och elevtombstones. Historisk
+åtkomst omkontrolleras och elevradering tar bort hela berörda utkast.
+Separat lazy-laddad lärarvy granskar versioner och källsvar. Godkännande kräver
+betrodd cookie-mutation från lärarvyn, aktuell innehålls-/mottagarrevision och
+ny underlagsvalidering; MCP exponerar inget godkännandeverktyg. Separat
+cookie-skyddad utdelning återanvänder elevuppdrags-/screeninglagren med
+frysta mottagare och deterministiska ID:n. CAS-skyddade kvitton per version
+skiljer bekräftelser, delfel och osäkra utfall; elevradering tar bort dem.
+Högst fem enheter per anrop och samma försöks-ID under sidvis utdelning.
+Kontrakt och verifieringsgränser: docs/PUPIL_MATERIAL.md.
+Materiallagrens verkliga Lua/CAS-skript har separata isolerade Redis-prov;
+se docs/MATERIAL_REDIS_VERIFICATION.md. De läser inga KV-hemligheter och
+använder inga globala databasrensningar. Godkännandets återförsöks-ID binds
+till innehållsversion även när två versioner har samma innehållsrevision.
+Materialgranskningen återanvänder screeningens katalog-, facit- och
+bildredigerare. Ändringar sparas i materialets versionslager; fristående
+screeningutkast är fortsatt innehållsutkast utan analys eller godkännande.
+
+`mcp/sequential-math/` är en separat stdio-adapter med egen låsfil, utanför
+frontendbygget och Vercel-routingen. Den anropar befintliga behörighetskontrollerade
+lärar-API:er; domänvalidering och rapport-CAS stannar på appservern. Läsläge är
+standard, rapportsparande kräver separat startflagga. Inga utdelningsoperationer
+exponeras. Demoläget startar robotappens minnes-KV i en isolerad barnprocess.
+Se `docs/PUPIL_MCP.md` för kontrakt, konfiguration och verifieringsgränser.
+
+Räknehäftets export bygger på `diagnosticNotebookExport.js` (observerbar
+status/text/koordinater) och `DiagnosticNotebookGrid.js`, samma skrivskyddade
+rutnätskomponent för lärarhistorik och lokal PNG. `format=notebook` använder
+underlags-API:ts befintliga åtkomst och källrevision. PNG renderas enbart lokalt
+med befintlig Playwright i `scripts/render-pupil-notebook.mjs`; ingen browser
+eller ny lagring införs i Vercel. Se `docs/PUPIL_NOTEBOOK_EXPORT.md`.
+
 ## Vad är en "domän"?
+
+AI/export använder samma periodparser `src/lib/evidencePeriod.js` för hela
+Stockholm-dagar eller precisa klockslagsgränser, inklusive validerat DST-val.
+`GET /api/students?resource=classes` är en separat skrivskyddad projektion av
+aktuellt behöriga klass-ID:n/namn, utan profiler eller klassinloggningsdata.
+Den återanvänds av MCP och exportskriptets exakta klassval.
 
 En domän är ett räknesätt/ämnesområde, t.ex. addition, algebra, bråk.
 Varje domän bor i `src/domains/<namn>/` och registreras i `src/domains/registry.js`.

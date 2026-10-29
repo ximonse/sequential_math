@@ -52,7 +52,7 @@ anges i kortens listor; CLI:t härleder den gemensamma relationslistan.
 
 Kör `npm run check:project-map` för strukturen och
 `npm run check:project-map -- --staged` före commit. CI kör kontrollen mot
-PR-bas/push-bas och stoppar ändringar i app/API/robotkod eller kartverktyg om
+PR-bas/push-bas och stoppar ändringar i app/API/robotkod, MCP-adapter eller kartverktyg om
 planfilen inte ingår. Den verifierar unika ID, giltiga statusar, deluppgifter,
 issue-länkar, relationsreferenser och att krav saknar cykler. Kontrollen kan
 inte avgöra om korttexten semantiskt täcker all kod: det ansvaret ligger på

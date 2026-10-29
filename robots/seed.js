@@ -102,6 +102,7 @@ function emptyPupil(studentId, displayAlias, classId, className = classId) {
 }
 
 export async function handleControl(action, body = {}) {
+  if (action === 'mcp-info') return { ok: true, synthetic: true, storage: 'memory', service: 'sequential-math-robots' }
   if (action === 'attention-demo') {
     const { seedAttentionDemo } = await import('./attentionDemoSeed.js')
     return seedAttentionDemo(handleControl)

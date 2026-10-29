@@ -38,6 +38,9 @@ export function withActiveAssignment(record, payload, { activatedBy = '', now = 
   const assignment = decodeAssignmentPayload(payload)
   if (!assignment) return null
   const rest = readActiveAssignments(record).filter(item => item.assignment.id !== assignment.id)
+  if (rest.length >= MAX_ACTIVE_ASSIGNMENTS) {
+    throw Object.assign(new Error('Det finns redan 20 aktiva uppdrag. Avsluta ett uppdrag innan ett nytt läggs till.'), { status: 409 })
+  }
   return activeAssignmentFields([{ payload, activatedAt: now, ...(activatedBy ? { activatedBy } : {}) }, ...rest])
 }
 

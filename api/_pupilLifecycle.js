@@ -93,6 +93,16 @@ export async function buildPupilCleanup(id, job, store) {
   const patches = []
   const removals = [{ key: 'students:index', member: id }]
   const sources = []
+  // Interpretive reports and notes are never retained as anonymous statistics.
+  for (const key of await scanPupilKeys(store, `pupil_analysis_reports:${id}:*`)) deletes.add(key)
+  // Remove the complete material history: free wording may describe the retired pupil.
+  for (const key of await scanPupilKeys(store, 'teacher_material:*')) {
+    const draft = await store.get(key)
+    if (!draft?.versions?.some(version => version.material?.audience?.pupils?.some(pupil => isPupil(pupil.studentId, id)))) continue
+    deletes.add(key)
+    removals.push({ key: `teacher_material_index:${draft.teacherId}`, member: draft.draftId })
+    for (const receipt of await scanPupilKeys(store, `teacher_material_dispatch:${draft.teacherId}:${draft.draftId}:*`)) deletes.add(receipt)
+  }
   const attention = new Map((job.profile.attentionHistory || []).map(pass => [pass.id, pass]))
   for (const key of await scanPupilKeys(store, `attention_pass:${id}:*`)) {
     const stored = await store.get(key)

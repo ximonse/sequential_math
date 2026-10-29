@@ -124,6 +124,26 @@ test('MCP material preview validates generic and specific content without creati
   assert.match(prompt.messages[0].content.text, /Specifikt/u)
 })
 
+test('partial practice settings are rejected with recovery guidance and explicit settings preserve the requested frame', async () => {
+  const audience = await call(reader, 'math_get_audience', { targetType: 'class', targetId: target.classId })
+  const material = { schemaVersion: 1, kind: 'practice', mode: 'general', titleSv: 'Jämna och udda tal',
+    goalSv: 'Öva addition och subtraktion', instructionSv: 'Visa inte nedräkningen.',
+    audience: { targetType: 'class', targetId: target.classId, rosterRevision: audience.rosterRevision },
+    content: { kind: 'math_practice', operations: ['addition', 'subtraction'], targetCount: 8,
+      numberRange: { first: { min: 10, max: 20, filter: 'even' }, second: { min: 1, max: 9, filter: 'odd' } },
+      settings: { hideCountdown: true } } }
+  const rejected = await reader.callTool({ name: 'math_preview_material', arguments: { material } })
+  assert.equal(rejected.isError, true)
+  assert.equal(rejected.structuredContent.data.error.code, 'invalid_material')
+  assert.match(rejected.structuredContent.data.error.message, /maxTimePerProblem/u)
+  material.content.settings = { maxTimePerProblem: 120, randomizeOrder: false, hideCountdown: true }
+  const preview = await call(reader, 'math_preview_material', { material })
+  assert.deepEqual(preview.material.content.frame.settings, material.content.settings)
+  assert.deepEqual(preview.material.content.frame.numberRange, material.content.numberRange)
+  assert.equal(preview.saved, false)
+  assert.equal(preview.assigned, false)
+})
+
 test('write-enabled SDK client saves a real API-validated AI draft with idempotent receipt, not an assignment', async () => {
   writer = await connect(true)
   const evidence = await call(writer, 'math_get_pupil_evidence', target)

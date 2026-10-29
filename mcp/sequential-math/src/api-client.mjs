@@ -104,7 +104,12 @@ export class TeacherApiClient {
       if (readOnly) result = await this.raw(path, { body, token: await this.authenticate(signal), signal })
     }
     if (!result.ok) {
-      const [code, message] = messages[result.status] || ['app_unavailable', 'The app returned an error. Retry reads later; verify saved history before retrying an uncertain write.']
+      // Recognize only the public error code. Raw API text may contain private
+      // content or credentials and must never be forwarded to the model.
+      const materialValidation = result.status === 400 && result.data?.code === 'invalid_material' && path.split('?')[0] === '/api/teacher-material'
+      const [code, message] = materialValidation
+        ? ['invalid_material', 'The material proposal was rejected. Check the documented format, numeric answer keys, audience/evidence references and complete nested practice settings (maxTimePerProblem, randomizeOrder, hideCountdown). Preview the corrected proposal before saving.']
+        : messages[result.status] || ['app_unavailable', 'The app returned an error. Retry reads later; verify saved history before retrying an uncertain write.']
       throw new BridgeError(code, message)
     }
     if (!result.data || typeof result.data !== 'object') throw new BridgeError('invalid_response', 'The app returned an invalid response. No result is confirmed.')

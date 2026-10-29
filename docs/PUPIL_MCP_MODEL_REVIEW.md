@@ -1,5 +1,12 @@
 # Begränsad syntetisk MCP-granskning 2026-10-28
 
+Komplettering 2026-10-29: [faktiskt modellformulerade rapporter och material
+genom MCP](evaluations/mcp-authoring-pilot-2026-10-29/review.md) har nu sparats,
+återlästs och visats i lärarvyn. Provet innehåller ett avvisat första förslag
+och dokumenterad omarbetning. Det är fortfarande inte blind eller
+lärargodkänd didaktisk kalibrering. Aktuell helhetsstatus finns i
+[målavstämningen](AI_WORKFLOW_COMPLETION_AUDIT.md); äldre belägg nedan är historik.
+
 Genomförd av Codex i aktuell arbetssession. Detta är en första faktisk
 modellgranskning av verktygsresultat och original, inte blind eller oberoende
 didaktisk kalibrering. Samma agent skapade de två screeningfallen och kände

@@ -71,6 +71,12 @@ verkligt skapande och förhandsvisning, men bara skapandefunktionen skriver.
 Matematikövningens talintervall måste vara säkra heltal, omfatta högst
 10 001 tal vardera och innehålla tal som matchar valt filter. Tomma filter
 avvisas för att förhindra generatorns befintliga återgång till ofiltrerade tal.
+Om `settings` anges måste hela objektet innehålla `maxTimePerProblem`,
+`randomizeOrder` och `hideCountdown`; ett partiellt objekt skulle ändras av
+normaliseringen och avvisas därför. `hideCountdown:true` döljer visningen,
+men tar inte bort tidsramen. Ange och granska tidsinställningen uttryckligt.
+MCP återger `invalid_material` med säker formatvägledning; rå feltext eller
+innehåll från API-svaret vidarebefordras inte till modellen.
 Svaret innehåller fulla frågesnapshots/bedömningsunderlag eller träningsram,
 exakta mottagare, contentRevision, saved=false, assigned=false och
 approval=not_requested. Ingen elev får uppdrag av denna operation.

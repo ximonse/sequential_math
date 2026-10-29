@@ -60,6 +60,21 @@ test('unbound preview remains read-only and cannot disguise a save as a preview'
   assert.equal(writes, 0)
 })
 
+test('material validation gives relevant recovery guidance without echoing raw API text', async () => {
+  const api = new TeacherApiClient({ baseUrl: 'http://localhost:5391', getCredentials: credentials,
+    fetchImpl: async url => {
+      if (url.endsWith('/mcp-info')) return json(marker)
+      if (url.endsWith('/teacher-login')) return json({ token: 'NEVER_OUTPUT_TOKEN' })
+      return json({ code: 'invalid_material', error: 'NEVER_OUTPUT_PASSWORD NEVER_OUTPUT_TOKEN synthetic-user' }, 400)
+    } })
+  await assert.rejects(api.request('/api/teacher-material', { body: { action: 'preview' }, readOnly: true }), error => {
+    assert.equal(error.code, 'invalid_material')
+    assert.match(error.message, /settings.*maxTimePerProblem/u)
+    assert.doesNotMatch(error.message, /NEVER_OUTPUT|synthetic-user/u)
+    return true
+  })
+})
+
 test('target configuration blocks implicit production, URL credentials, query injection and remote HTTP', () => {
   for (const url of [undefined, 'https://matematik.ximon.se', 'http://localhost:123/a', 'http://user:secret@localhost:123', 'http://localhost:123?token=secret']) {
     assert.throws(() => validateTarget(url), { name: 'Error' })

@@ -1,0 +1,281 @@
+{
+  "reports": [
+    {
+      "studentId": "4D43502044656D6F204F6E6500000000",
+      "classId": "mcp-demo",
+      "from": "2026-10-15",
+      "to": "2026-10-29",
+      "source": "all",
+      "report": {
+        "schemaVersion": 1,
+        "snapshotRevision": "6c556b0c476df0b9f632ec491f31cb8d9717021ff7b8b0b7090e87a07ce37d59",
+        "scopeSv": "Syntetisk elevanalys för MCP Demo One i klass mcp-demo under 2026-10-15–2026-10-29 (källa: all). Underlaget omfattar tabellträning i 7:ans tabell samt pågående screening i subtraktion med räknehäfte. Lärargranskning krävs innan slutsatser dras.",
+        "provenance": {
+          "kind": "ai",
+          "instructionVersion": "pupil-analysis-v1"
+        },
+        "strengths": [
+          {
+            "id": "str-one-mul-low",
+            "textSv": "Eleven svarade rätt på de inledande uppgifterna i 7:ans tabell i tabellträning: 7 × 1 = 7 och 7 × 2 = 14.",
+            "refs": [
+              "bfc06f485f07adbb42a680126664d8c9b83a985630397c276f2decdc58727e48",
+              "680b37070cf2b003298bd8f8bbc8c84c93ba1e1608981bfbfcb450b012f9f428"
+            ]
+          },
+          {
+            "id": "str-one-sub-no-exchange",
+            "textSv": "I screeninguppgiften 764 − 231 (subtraktion utan växling) har eleven skrivit 533 i svarsfältet och ställt upp r1: · | 7 | 6 | 4, r2: − | 2 | 3 | 1 och r3: · | 5 | 3 | 3 i räknehäftet. Försöket är sparat som pågående (submitted: false).",
+            "refs": [
+              "f3e279eb4491318a9497a2f5c4cebd03bc96596cde55c8a0d8c953cbb6e55bef"
+            ]
+          }
+        ],
+        "hypotheses": [
+          {
+            "id": "hyp-one-mul-table-7",
+            "textSv": "Vid 7 × 3 svarade eleven 22 (rätt svar 21) och vid 7 × 4 svarade eleven 29 (rätt svar 28) i tabellträning. Systemets kategorisering (knowledge) är endast en befintlig signal och inte en fastställd felorsak. En möjlig tolkning är att eleven vid övergången från 7 × 2 = 14 räknade upp med 8 till 22 och därefter lade till 7 till 29, eller att eleven har en osäkerhet på produkterna 7 × 3 och 7 × 4. De rätta svaren på 7 × 1 och 7 × 2 prövar lägre faktorer och används därför som styrkor snarare än motexempel.",
+            "basis": "ai_interpretation",
+            "supportRefs": [
+              "5c9a94b22584ea8095d8e92a43dc531c623f56d0f314aa76a5ca1f786c3f165c",
+              "6f3d65df3fb8acd5ee2f7276e6991d833d40956a1f3f230945ad253027bd9cb5"
+            ],
+            "counterRefs": [],
+            "alternativesSv": [
+              "Tillfälligt tangent- eller slarvfel i en snabb tabellsekvens (timeSpent 3 s).",
+              "Ett enskilt hoppfel (+8 i stället för +7 vid 14 + 7) som sedan följde med vid upprepad addition till nästa uppgift (22 + 7 = 29).",
+              "Osäkerhet på de enskilda tabellfakta 7 × 3 och 7 × 4 oberoende av varandra."
+            ],
+            "nextCheckSv": "Ställ 7 × 3 och 7 × 4 i slumpad ordning (t.ex. 7 × 4 före 7 × 3) utan föregående 7 × 2 för att pröva om 29 berodde på fortsatt uppräkning från 22 eller om svaren återkommer fristående."
+          },
+          {
+            "id": "hyp-one-sub-zero-grid",
+            "textSv": "Uppgiften 402 − 178 är obesvarad (studentAnswer: null, answerEmpty: true, workWithoutAnswer: true, submitted: false, rätt svar 224). I räknehäftet syns r1: · | 4 | 0{note:10}{struck} | 2, r2: − | 1 | 7 | 8 samt raden r3: · | 3 | 7 | 6. I tiotalskolumnen (r1c3) är 0 överstruken med minnessiffran {note:10}, men i hundratalskolumnen (r1c2) står 4 kvar utan synlig minskning och r3c2 visar 3 (vilket stämmer med 4 − 1). I entalskolumnen (c4) står 2 ovanför 8 med 6 i r3c4 (vilket stämmer med 8 − 2), och i tiotalskolumnen (c3) står 7 i r3c3 trots anteckningen {note:10}. Eftersom svarsfältet är tomt och uppgiften inte är inlämnad är det okänt om uträkningen i r3 är en avbruten skiss eller ett försök till färdigt svar; ingen kausal tankegång är bevisad. Uppgiften 764 − 231 saknar växling och utgör därför inte motexempel för växling över nolla.",
+            "basis": "ai_interpretation",
+            "supportRefs": [
+              "91ba449ad428a25f958f0a8015390e24fe0739ecee9f7e2e367618c935a7d0c1"
+            ],
+            "counterRefs": [],
+            "alternativesSv": [
+              "Eleven har påbörjat men avbrutit uträkningen innan växlingen mellan hundratal, tiotal och ental var slutförd, och därför lämnat svarsfältet tomt.",
+              "Eleven har i entals- och tiotalskolumnerna tagit det större talet minus det mindre (8 − 2 = 6 och 7 − 0 = 7) trots {note:10} i r1c3, och sedan tvekat inför att fylla i svarsrutan.",
+              "Osäkerhet kring hur växling över nolla i tiotalet påverkar både hundratalet och entalet i uppställningen."
+            ],
+            "nextCheckSv": "Jämför en subtraktion med endast entalsväxling utan nolla (t.ex. 542 − 128) med en ny subtraktion med växling över nolla (t.ex. 503 − 167) samt låt eleven slutföra och förklara stegen i räknehäftet."
+          }
+        ],
+        "limitationsSv": [
+          "Historikens och uppdragsindexets fullständighet är okänd (history_completeness_unknown, assignment_index_completeness_unknown).",
+          "Underlaget är mycket litet: fyra tabelluppgifter i rad och två ej inlämnade screeningförsök (status: in_progress, submitted: false).",
+          "För 402 − 178 är svarsfältet tomt (answerEmpty: true); räknehäftets kandidatrad r3 (376) är ett sparat rutnätsinnehåll utan angivet svar och bevisar inte i vilken ordning siffrorna skrevs eller varför eleven stannade.",
+          "Svarstid (3 s) och systemets kategorier (knowledge/unknown) fastställer inte felorsak."
+        ]
+      }
+    },
+    {
+      "studentId": "4D43502044656D6F2054776F00000000",
+      "classId": "mcp-demo",
+      "from": "2026-10-15",
+      "to": "2026-10-29",
+      "source": "all",
+      "report": {
+        "schemaVersion": 1,
+        "snapshotRevision": "91aae33323060ecd4a61ecec0dbeb9120c2eb8b629d6073380f7f4c23002190b",
+        "scopeSv": "Syntetisk elevanalys för MCP Demo Two i klass mcp-demo under 2026-10-15–2026-10-29 (källa: all). Underlaget innehåller endast tabellträning i 7:ans tabell; screening- och räknehäftesdata saknas helt för eleven. Lärargranskning krävs.",
+        "provenance": {
+          "kind": "ai",
+          "instructionVersion": "pupil-analysis-v1"
+        },
+        "strengths": [
+          {
+            "id": "str-two-mul-seq",
+            "textSv": "Eleven svarade rätt i tabellträning på 7 × 1 = 7, 7 × 2 = 14, 7 × 3 = 21, 7 × 4 = 28 och 7 × 5 = 35.",
+            "refs": [
+              "da90f3dcaf2960acb8aa2e5530aed180553aa995a169d115bf3dca98f99c96fd",
+              "e6c463854baaca3d877e632000270deca12fa35cf39d4329fb2dff013ea37352",
+              "139d50dee3a61405537e57849c6661e60ba05068d7b7f9171ba65dcc8d9abb13",
+              "79f0c583d6542c35b0840a6c2f4e8a24707501198abb35111fff7ff78e6438f4",
+              "18963538b66af40bb48c90a9dceb5d204d6c88dfda4560393f23500e568bd6f5"
+            ]
+          }
+        ],
+        "hypotheses": [
+          {
+            "id": "hyp-two-mul-7x6",
+            "textSv": "Eleven svarade 43 på 7 × 6 (rätt svar 42) efter rätta svar på 7 × 1 till 7 × 5. Systemkategorin knowledge är inte en bevisad orsak. Eftersom det bara finns ett enda felsvar i underlaget är stödet otillräckligt för att fastställa ett stabilt felmönster; svaret 43 kan bero på ett enstaka slarv-/knappfel, osäkerhet på produkten 7 × 6 eller att eleven räknade 35 + 8 = 43 från föregående uppgift (7 × 5 = 35). De rätta svaren på 7 × 1 till 7 × 5 gäller lägre faktorer och motbevisar inte osäkerhet vid 7 × 6.",
+            "basis": "ai_interpretation",
+            "supportRefs": [
+              "e7aa4508c97bbd181a89154be77b070c5d1275b0458698bd4b1c696ea2d47157"
+            ],
+            "counterRefs": [],
+            "alternativesSv": [
+              "Tillfälligt inmatnings- eller slarvfel vid 7 × 6 (svar 43 nära 42).",
+              "Felaktigt additionssteg (+8 i stället för +7) från föregående svar 35 i sekvensen.",
+              "Enskild kunskapslucka på 7 × 6 utan bredare metodproblem."
+            ],
+            "nextCheckSv": "Pröva 7 × 6 fristående (utan 7 × 5 direkt före) samt 7 × 7 för att se om eleven svarar 42 och 49 eller om ett +1-avvikande svar upprepas."
+          }
+        ],
+        "limitationsSv": [
+          "Historikens och uppdragsindexets fullständighet är okänd (history_completeness_unknown, assignment_index_completeness_unknown).",
+          "Ett enda felsvar (7 × 6 = 43) är otillräckligt underlag för att fastställa metod eller kunskapsbrist.",
+          "Eleven saknar helt screeningförsök och räknehäftesdata i perioden (indexedAttempts: 0). Frånvaro av data i subtraktion betyder att underlag saknas, inte att eleven har eller saknar kunskap i subtraktion."
+        ]
+      }
+    }
+  ],
+  "materials": [
+    {
+      "schemaVersion": 1,
+      "kind": "screening",
+      "mode": "specific",
+      "titleSv": "Uppföljande screening: 7:ans tabell och subtraktion med växling",
+      "goalSv": "Lärarunderlag för att pröva hypoteserna från klassens elevanalyser: (1) om felsvaren i 7:ans tabell (7 × 3, 7 × 4 respektive 7 × 6) berodde på sekventiell uppräkning (+8 i stället för +7) eller osäkerhet på enskilda tabellfakta när uppgifterna ges utanför stigande ordning, samt (2) hur eleverna hanterar tretresiffrig subtraktion med enkel entalsväxling jämfört med växling över nolla i tiotalet och samlar in första subtraktionsunderlag för MCP Demo Two. Kräver lärargranskning.",
+      "instructionSv": "Räkna ut uppgifterna. Använd rutnätet vid subtraktionsuppgifterna så att dina uträkningar syns.",
+      "sourceMaterials": [],
+      "audience": {
+        "targetType": "class",
+        "targetId": "mcp-demo",
+        "rosterRevision": "91072bbf04839f069f926e32671ebe7d3513274c8289f633e60b78f087a3c796"
+      },
+      "basis": [
+        {
+          "studentId": "4D43502044656D6F204F6E6500000000",
+          "classId": "mcp-demo",
+          "from": "2026-10-15",
+          "to": "2026-10-29",
+          "source": "all",
+          "snapshotRevision": "6c556b0c476df0b9f632ec491f31cb8d9717021ff7b8b0b7090e87a07ce37d59",
+          "supportRefs": [
+            "5c9a94b22584ea8095d8e92a43dc531c623f56d0f314aa76a5ca1f786c3f165c",
+            "6f3d65df3fb8acd5ee2f7276e6991d833d40956a1f3f230945ad253027bd9cb5",
+            "91ba449ad428a25f958f0a8015390e24fe0739ecee9f7e2e367618c935a7d0c1"
+          ],
+          "counterRefs": [],
+          "reasonSv": "Motiveras av felsvaren 7 × 3 = 22 och 7 × 4 = 29 i tabellträning (prövas nu i omvänd ordning 7 × 4 före 7 × 3 för att skilja fristående tabellfakta från kedjad uppräkning från 14) samt den ej inlämnade uppgiften 402 − 178 där svarsfältet var tomt och räknehäftet visade r1: · | 4 | 0{note:10}{struck} | 2 och r3: · | 3 | 7 | 6. Begränsning: underlaget är litet och uträkningen för 402 − 178 kan ha varit oavslutad."
+        },
+        {
+          "studentId": "4D43502044656D6F2054776F00000000",
+          "classId": "mcp-demo",
+          "from": "2026-10-15",
+          "to": "2026-10-29",
+          "source": "all",
+          "snapshotRevision": "91aae33323060ecd4a61ecec0dbeb9120c2eb8b629d6073380f7f4c23002190b",
+          "supportRefs": [
+            "e7aa4508c97bbd181a89154be77b070c5d1275b0458698bd4b1c696ea2d47157"
+          ],
+          "counterRefs": [],
+          "reasonSv": "Motiveras av det enskilda felsvaret 7 × 6 = 43 efter 7 × 5 = 35 (prövas nu utan 7 × 5 direkt före samt tillsammans med 7 × 7). Begränsning: ett enda felsvar i tabellträning räcker inte för mönster, och eleven saknar helt tidigare underlag i subtraktion och räknehäfte under perioden."
+        }
+      ],
+      "content": {
+        "taskIds": [],
+        "customTasks": [
+          {
+            "promptSv": "Räkna ut 7 · 4.",
+            "gridEnabled": true,
+            "drawingEnabled": false,
+            "answerKey": {
+              "format": "number",
+              "expected": [
+                28
+              ]
+            }
+          },
+          {
+            "promptSv": "Räkna ut 7 · 3.",
+            "gridEnabled": true,
+            "drawingEnabled": false,
+            "answerKey": {
+              "format": "number",
+              "expected": [
+                21
+              ]
+            }
+          },
+          {
+            "promptSv": "Räkna ut 7 · 6.",
+            "gridEnabled": true,
+            "drawingEnabled": false,
+            "answerKey": {
+              "format": "number",
+              "expected": [
+                42
+              ]
+            }
+          },
+          {
+            "promptSv": "Räkna ut 7 · 7.",
+            "gridEnabled": true,
+            "drawingEnabled": false,
+            "answerKey": {
+              "format": "number",
+              "expected": [
+                49
+              ]
+            }
+          },
+          {
+            "promptSv": "Räkna ut 542 − 128.",
+            "gridEnabled": true,
+            "drawingEnabled": false,
+            "answerKey": {
+              "format": "number",
+              "expected": [
+                414
+              ]
+            }
+          },
+          {
+            "promptSv": "Räkna ut 503 − 167. Visa hela din uppställning och alla växlingar i rutnätet så att läraren kan följa hur du räknade.",
+            "gridEnabled": true,
+            "drawingEnabled": false
+          }
+        ]
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "kind": "practice",
+      "mode": "general",
+      "titleSv": "Träningsuppdrag: addition och subtraktion (jämnt tal 10–20 och udda tal 1–9)",
+      "goalSv": "Öva åtta uppgifter i addition och subtraktion där första talet är jämnt inom 10–20 och andra talet är udda inom 1–9, utan nedräkning.",
+      "instructionSv": "Lös de åtta additions- och subtraktionsuppgifterna i din egen takt.",
+      "sourceMaterials": [
+        {
+          "label": "Syntetisk lärarbeställning",
+          "excerpt": "Öva åtta additions- och subtraktionsuppgifter. Första talet ska vara jämnt inom 10–20, andra talet udda inom 1–9. Visa ingen nedräkning."
+        }
+      ],
+      "audience": {
+        "targetType": "class",
+        "targetId": "mcp-demo",
+        "rosterRevision": "91072bbf04839f069f926e32671ebe7d3513274c8289f633e60b78f087a3c796"
+      },
+      "basis": [],
+      "content": {
+        "kind": "math_practice",
+        "operations": [
+          "addition",
+          "subtraction"
+        ],
+        "targetCount": 8,
+        "numberRange": {
+          "first": {
+            "min": 10,
+            "max": 20,
+            "filter": "even"
+          },
+          "second": {
+            "min": 1,
+            "max": 9,
+            "filter": "odd"
+          }
+        },
+        "settings": {
+          "hideCountdown": true
+        }
+      }
+    }
+  ]
+}

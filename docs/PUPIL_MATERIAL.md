@@ -19,6 +19,12 @@ noll kunskap. Gruppens felandel eller hypotes får inte tillskrivas alla elever.
 
 ## Befintlig läsning av mottagare
 
+Klassurvalets globala elevindex kan innehålla äldre ID-format. Lokalt rättat:
+en sådan post utanför vald klass ska inte blockera klassens mottagarlista.
+En faktisk medlem med ett format som materialkontraktet inte stöder avvisas
+fortfarande; inga mottagare tas tyst bort och inga produktionsposter ändras.
+Publiceringsstatus och reproduktionsbelägg finns i projektkartan.
+
 `GET /api/students?resource=groups&query=...&limit=...&offset=...` ger endast
 behöriga grupp-ID:n och namn. Dubblettnamn behålls och kräver exakt ID-val.
 MCP: `math_find_groups`. Klasser söks med befintliga `math_find_classes`.

@@ -2,11 +2,26 @@
 
 Publicerat 2026-10-28. Sparade utkast är privata; elevutdelning är separat.
 
-Tillägg i PR #22, ännu inte produktion: **Materialbibliotek → Privata utkast**
+Publicerat genom PR #22: **Materialbibliotek → Privata utkast**
 visar även material som sparats via material-API/MCP. **Öppna granskning**
 leder till materialets listade version med analys och godkännandeflöde.
 Fristående screeningutkast öppnas som tidigare med **Öppna utkast**. De två
 lagringarna behålls; öppning skapar ingen kopia och delar inte ut något.
+
+## Autentiserad produktionskontroll 2026-10-29
+
+På avsett primärt administratörskonto skapades ett separat neutralt
+kontrollutkast i den publicerade lärarvyn. Version 1 kunde hittas och öppnas
+från Materialbiblioteket. Ändrad fråga och ändrat facit sparades som version 2.
+Full omladdning och öppning från biblioteket återställde version 2 korrekt;
+version 1 behöll sin ursprungliga fråga och sitt facit. Avbruten navigering
+med osparad testtext bevarade texten. Testtexten återställdes sedan utan en
+ny sparning. Kontrollutkastet ligger kvar privat som version 2.
+
+Ingen mottagare valdes, ingen utdelning utfördes och inga befintliga
+elevutkast ändrades. Kontrollen gäller fristående screeningutkast.
+Material-API/MCP:s separata versions- och granskningsflöde omfattas inte.
+Bildbevis och kontrollkvitto finns utanför repot; inga elevdata sparades här.
 
 Under **Screening: dela ut → Utkast för genomgång** kan läraren skapa ett
 nytt utkast, spara samlingen och öppna sparade utkast. Samlingens namn,

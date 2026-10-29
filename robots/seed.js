@@ -135,6 +135,12 @@ export async function handleControl(action, body = {}) {
       eventsExist: Boolean(await kv.get(`diagnostic_attempt_events:${body.attemptId}`)),
       assignmentExists: Boolean(await kv.get(`diagnostic_assignment:${body.assignmentId}`)) }
   }
+  if (action === 'seed-audience-legacy') {
+    const studentId = 'legacy:audience-fixture'
+    await kv.set(`student:${studentId}`, { studentId, classId: String(body.classId), displayAlias: 'Legacy fixture' })
+    await kv.sadd('students:index', studentId)
+    return { ok: true }
+  }
   if (action === 'reset') { kv._reset(); return { ok: true } }
   if (action === 'seed') {
     const operations = Array.isArray(body.operations) ? body.operations : ALL_OPERATIONS

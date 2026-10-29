@@ -35,7 +35,11 @@ async function readAudience(req, type, targetId, teacherId) {
   const pupils = []
   for (let start = 0; start < members.length; start += 20) {
     const rows = await Promise.all(members.slice(start, start + 20).map(async studentId => {
-      if (!validId(studentId)) fail(409, 'Urvalets medlemslista är ogiltig.')
+      // Class reads scan the global index, which can contain legacy keys from
+      // other classes. Inspect their membership before applying the public ID
+      // contract. Explicit group/student selections still fail closed.
+      if (typeof studentId !== 'string' || !studentId.length || studentId.length > 512
+        || (type !== 'class' && !validId(studentId))) fail(409, 'Urvalets medlemslista är ogiltig.')
       const profile = await kv.get(`student:${studentId}`)
       if (!profile || profile.studentId !== studentId || await isStudentDeleted(studentId)) {
         if (type !== 'class') fail(409, 'En medlem är inte längre tillgänglig. Läs om urvalet.')
@@ -43,6 +47,7 @@ async function readAudience(req, type, targetId, teacherId) {
       }
       const memberships = ids(profile)
       if (type === 'class' && !memberships.includes(targetId)) return null
+      if (!validId(studentId)) fail(409, 'Urvalets medlemslista är ogiltig.')
       const accessible = (await Promise.all(memberships.map(async id => await liveClass(req, id) ? id : null))).filter(Boolean)
       if (!accessible.length) {
         if (type !== 'class') fail(403, 'Åtkomst till en medlem saknas.')

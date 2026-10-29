@@ -45,6 +45,17 @@ it('includes pupils with no answer data and supports an empty class without inve
   records['student:P'].classIds = ['D']; records['student:Q'].classId = 'D'
   expect((await call()).data).toMatchObject({ total: 0, pupils: [], nextOffset: null })
 })
+it('ignores unrelated legacy IDs in the global index but rejects unsupported IDs in the chosen class or group', async () => {
+  records['student:legacy:foreign'] = { studentId: 'legacy:foreign', classId: 'D' }
+  mock.smembers.mockImplementation(async key => key === 'students:index' ? ['P', 'Q', 'legacy:foreign'] : ['G', 'H'])
+  const selected = await call()
+  expect(selected.code).toBe(200)
+  expect(selected.data.pupils.map(pupil => pupil.studentId)).toEqual(['P', 'Q'])
+  records['student:legacy:foreign'].classId = 'C'
+  expect((await call()).code).toBe(409)
+  records['group:G'].pupilIds.push('legacy:foreign')
+  expect((await call({ targetType: 'group', targetId: 'G' })).code).toBe(409)
+})
 it('fails explicitly for inaccessible or deleted group members instead of silently dropping them', async () => {
   expect((await call({ targetType: 'group', targetId: 'G' })).data.total).toBe(2)
   mock.deleted.mockImplementation(async id => id === 'Q')

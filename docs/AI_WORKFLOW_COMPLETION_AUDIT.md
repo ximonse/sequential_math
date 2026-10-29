@@ -18,7 +18,7 @@ och publicering. Aktuell kod ligger i PR #22, inte i produktion.
 | Skills beskriver samma faktiska arbetsflöde | pupil-analysis, assignment-authoring och deras API-/MCP-dokument; skillvalidering | Dokumenterat och syntetiskt provat; instruktionerna garanterar inte att en modell följer dem |
 | Faktisk ansluten AI-klient | Tidigare registrerad Codex-demo och senare SDK-stdio-prov med aktuell kod, inklusive faktisk Antigravity-text genom MCP | Transport och lagring verifierade. En redan startad klient kan fortfarande använda äldre process/verktyg och behöver laddas om |
 | Verklig elevdata endast i klarlagd AI-miljö | Ingen verklig elevdata använd i utvecklings-/modellproven; approved-läge är uttrycklig konfiguration | Villkoret är bevarat. Ingen ny godkänd verklig MCP-miljö eller kontokonfiguration påstås |
-| Publicering kräver separat mandat | PR #22; gröna kontroller och READY-preview verifierade för ea6d9f0 före tillägget för bibliotekets återfinning | Produktionsmerge inväntar Simons uttryckliga klartecken. Senare revisioners kontroller följs i PR |
+| Publicering kräver separat mandat | PR #22; kodrevision 38dd47f har gröna quality/documentation-kontroller (run 40842177273) och READY-preview i sekvens. Ny listväg nekar oinloggad åtkomst även där | Produktionsmerge inväntar Simons uttryckliga klartecken. Ingen autentiserad visuell preview-QA eller utdelning ingick |
 
 ## Vad det kompletterande modellprovet ändrade
 

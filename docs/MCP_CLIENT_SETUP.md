@@ -84,6 +84,11 @@ medlemmar behålls. Produktionsprestandan är ännu inte verifierad för den
 ändringen. Redan startade klienter behöver också läsa sin nya konfiguration;
 de startades inte om under pågående arbete.
 
+Prestandarättningen granskas i PR29. Lokalt: 194 testfiler/957 tester,
+produktionsbuild, riktad ESLint, arkitektur och projektkarta godkända.
+Tre syntetiska robotfall är gröna, inklusive materialets tolv kombinationer
+av typ, analysläge och mottagartyp. Detta är ingen verklig elevutdelning.
+
 ## Klienternas dokumentation
 
 [Codex MCP](https://learn.chatgpt.com/docs/extend/mcp?surface=cli) beskriver

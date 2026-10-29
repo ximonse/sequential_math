@@ -60,7 +60,7 @@ flyttar inte Adminsimons privata utkast.
 HTTPS-appen; det är inget intyg om tillåten behandling av elevdata hos en
 AI-leverantör. Verkliga elevsvar/analysunderlag har inte lästs i detta prov.
 
-### Kvarvarande hinder för materialprovet
+### Materialprov och aktuellt prestandahinder
 
 Ett neutralt privat materialprov mot den befintliga klassen Test stoppades
 före förhandsvisning/sparande. Mottagar-API:t svarar 409 med att medlemslistan
@@ -71,10 +71,23 @@ klassmedlemskap före formatkravet för globala legacy-nycklar. Felaktiga ID:n
 som faktiskt hör till vald klass eller explicit grupp avvisas fortfarande.
 Ingen produktionsmedlem eller indexpost raderas eller ändras.
 
-Ingen materialskrivning eller utdelning skedde i produktionsprovet.
-Fortsatt kontroll av materialgranskning kräver att den avgränsade API-rättningen
-publiceras efter separat mandat. Redan startade klienter behöver också läsa
-sin nya konfiguration; de startades inte om under pågående arbete.
+Rättningen publicerades via PR28 på merge e835cc8 efter Simons mandat.
+sekvens production är READY på samma SHA och domänalias. Efter publicering
+lyckas ett diagnostiskt läsanrop till Test-klassen med tio medlemmar, men
+tar 32890 ms. Ordinarie MCP avbryter efter 15000 ms och två försök stannade
+därmed före preview/save. Inget kontrollmaterial har skapats eller delats ut.
+
+Nästa lokala prestandarättning gör raderingsuppslag först för klassens egna
+medlemmar och läser profiler i begränsade omgångar om 100 i stället för 20.
+Två separata rosterläsningar, revisionsjämförelsen och kontroller av valda
+medlemmar behålls. Produktionsprestandan är ännu inte verifierad för den
+ändringen. Redan startade klienter behöver också läsa sin nya konfiguration;
+de startades inte om under pågående arbete.
+
+Prestandarättningen granskas i PR29. Lokalt: 194 testfiler/957 tester,
+produktionsbuild, riktad ESLint, arkitektur och projektkarta godkända.
+Tre syntetiska robotfall är gröna, inklusive materialets tolv kombinationer
+av typ, analysläge och mottagartyp. Detta är ingen verklig elevutdelning.
 
 ## Klienternas dokumentation
 

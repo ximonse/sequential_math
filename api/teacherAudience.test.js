@@ -65,6 +65,16 @@ it('fails explicitly for inaccessible or deleted group members instead of silent
   expect((await call({ targetType: 'group', targetId: 'G' })).code).toBe(403)
   expect((await call({ targetType: 'group', targetId: 'H' })).code).toBe(403)
 })
+it('does not inspect unrelated pupil deletion records while resolving a class', async () => {
+  mock.deleted.mockImplementation(async id => {
+    if (id === 'FOREIGN') throw Error('Unrelated storage must not delay or block this class')
+    return id === 'Q'
+  })
+  const selected = await call()
+  expect(selected.code).toBe(200)
+  expect(selected.data.pupils.map(pupil => pupil.studentId)).toEqual(['P'])
+  expect((await call({ targetType: 'group', targetId: 'G' })).code).toBe(409)
+})
 it('rejects session changes, archived classes, invalid selectors and live roster changes', async () => {
   expect((await call({ targetType: 'everyone' })).code).toBe(400)
   expect((await call({ limit: 101 })).code).toBe(400)

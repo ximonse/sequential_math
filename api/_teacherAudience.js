@@ -33,20 +33,26 @@ async function readAudience(req, type, targetId, teacherId) {
   }
   if (members.length > 10000) fail(413, 'Urvalet är för stort.')
   const pupils = []
-  for (let start = 0; start < members.length; start += 20) {
-    const rows = await Promise.all(members.slice(start, start + 20).map(async studentId => {
+  // Bound concurrent reads without serializing a large global index into many
+  // network round trips. Each of the two roster snapshots remains independent.
+  for (let start = 0; start < members.length; start += 100) {
+    const rows = await Promise.all(members.slice(start, start + 100).map(async studentId => {
       // Class reads scan the global index, which can contain legacy keys from
       // other classes. Inspect their membership before applying the public ID
       // contract. Explicit group/student selections still fail closed.
       if (typeof studentId !== 'string' || !studentId.length || studentId.length > 512
         || (type !== 'class' && !validId(studentId))) fail(409, 'Urvalets medlemslista är ogiltig.')
       const profile = await kv.get(`student:${studentId}`)
-      if (!profile || profile.studentId !== studentId || await isStudentDeleted(studentId)) {
+      if (!profile || profile.studentId !== studentId) {
         if (type !== 'class') fail(409, 'En medlem är inte längre tillgänglig. Läs om urvalet.')
         return null
       }
       const memberships = ids(profile)
       if (type === 'class' && !memberships.includes(targetId)) return null
+      if (await isStudentDeleted(studentId)) {
+        if (type !== 'class') fail(409, 'En medlem är inte längre tillgänglig. Läs om urvalet.')
+        return null
+      }
       if (!validId(studentId)) fail(409, 'Urvalets medlemslista är ogiltig.')
       const accessible = (await Promise.all(memberships.map(async id => await liveClass(req, id) ? id : null))).filter(Boolean)
       if (!accessible.length) {

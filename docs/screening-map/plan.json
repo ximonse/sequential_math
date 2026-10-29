@@ -2372,6 +2372,38 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "admin-screening-style",
+      "area": "Lärarvy",
+      "title": "Screeningens grafiska stil i admin utom Framsteg",
+      "status": "Lokalt klart",
+      "purpose": "Ge admin en sammanhängande läsbar arbetsstil utifrån den godkända screeningreferensen och ui-planering.",
+      "next": "Visa lokal render för Simon. Push och publicering kräver separat klartecken; efter det avgränsad PR och kontroll av rätt produktionsrevision.",
+      "acceptance": "Fokus, uppdrag/tickets, statistik/stöd, screeningresultat, administration och materialgranskning följer samma typografi, paneler och kontroller. Framsteg och elevsidor påverkas inte. Urval, sparande, varningar och verksamhetsflöden bevaras. Fyllda ljusa/mörka breda/stående vyer granskade.",
+      "requires": [],
+      "affects": [],
+      "decision": "2026-10-29: Simon beställer screeningens grafiska stil i hela admin med uttryckligt undantag för Framsteg. Befintlig godkänd screeningreferens och skills ui-planering/designgrund används. Inget nytt publiceringsmandat.",
+      "evidence": "Läst docs/TEACHER_UI_WORKFLOWS.md och docs/ui-reference/README.md. Referensen binder systemtypsnitt, 14 px text, 23/17 px rubriker, 14 px panelpadding, indigo huvudhandling, mjuka val och gul aktiv navigation. Nya regler ska vara avgränsade från Framsteg.\n2026-10-29: Gemensam teacherAdmin.css extraherar screeningens visuella grund och aktiveras bara utanför Framsteg. Fokus, uppdrag/tickets, statistik/stöd, resultat, administration och materialgranskning har samma typografi/paneler/kontroller. Objektflikar skiljs från handlingar; tickets har sektionsdelare och indigo huvudhandlingar. Chart-signaler, räknehäfte och alla spar-/urvalskontrakt bevaras. Robotlokatorer använder menyetiketten Administration i stället för dold beskrivning.\nSlutkontroll:194 testfiler/955 tester, produktionsbuild, riktad ESLint och arkitekturkontroll gröna. 18 berörda dev-browserfall gröna; ytterligare7 mot produktionsbygget (adminlänk/fokusbehörighet/diagram/underlag) gröna. Separat vygranskning i både dev och slutbygge:29 skärmbilder, alla7 arbetslägen i1024x768/768x1024, öppnade klassflikar, tangentbordsaktivering av flik, tickets, uppdragsdialog och sparad materialgranskning samt mörka vyer/390px. Ingen sidöverströmning i de granskade vyerna. Framsteg var pixelidentisk före/efter i dev på samma syntetiska underlag1024x4979, även font-/rubrikmått identiska. Produktionsläge saknar dev-testdatamodul och jämförs inte pixelvis mot dev. Slutbyggets representativa bilder visuellt granskade och sparade i docs/ui-reference/admin-style-2026-10-29/. Ingen fysisk iPad eller riktig elevdata. Ej pushat/publicerat.",
+      "issue": "",
+      "kind": "feature",
+      "tasks": [
+        {
+          "id": "admin-style-foundation",
+          "text": "Återanvänd godkänd gemensam stil utan att ändra Framsteg",
+          "done": true
+        },
+        {
+          "id": "admin-style-panels",
+          "text": "Anpassa paneler, reglage och kategorier i övriga adminvyer",
+          "done": true
+        },
+        {
+          "id": "admin-style-verify",
+          "text": "Granska fyllda breda/stående och mörka vyer samt bevarade arbetsflöden",
+          "done": true
+        }
+      ]
     }
   ],
   "edges": [

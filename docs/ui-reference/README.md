@@ -27,6 +27,12 @@ temafärger med samma struktur och läsbar hierarki.
 
 ## Före klartbesked
 
+**Utvidgat mandat 2026-10-29:** Simon beställer samma grafiska stil i övriga
+adminlägen med undantag för Framsteg. Referensen och dess innehåll ändras
+inte. Det tidigare avsnittets avgränsning till screening beskriver den
+ursprungliga leveransen. Aktuell omfattning och verifiering finns i
+[adminanpassningen](../ADMIN_STYLE_HARMONISATION.md) och projektkartan.
+
 Jämför fylld översikt, material, mottagare och kontroll/kvitto med referensen.
 Prova även redigering av frågebild och svarsalternativ, privat sparning/
 omladdning/versioner, avböjt destruktivt svarssättsbyte, gruppens status och

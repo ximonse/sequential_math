@@ -16,7 +16,7 @@ test('The old admin link opens the Administration tab and shows classes without 
   await expect(page.getByRole('banner').getByRole('button', { name: 'Administration', exact: true })).toHaveCount(0)
   await page.goto('/teacher/admin')
   await page.waitForURL(/\/teacher$/)
-  await expect(page.getByRole('button', { name: /^Administration Klasser/ })).toHaveClass(/font-semibold/)
+  await expect(page.getByRole('button', { name: /^Administration(?:\s|$)/ })).toHaveClass(/font-semibold/)
   const withoutSchool = page.locator('[data-classes-without-school]')
   await expect(withoutSchool).toBeVisible()
   await expect(withoutSchool.getByRole('button', { name: new RegExp(`^Skollös ${tag}`) })).toBeVisible()

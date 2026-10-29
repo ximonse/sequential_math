@@ -3,7 +3,8 @@
 Simon beställer samma grafiska stil som **Screening: dela ut** i admin,
 med uttryckligt undantag för **Framsteg**. Elevvyer ingår inte.
 Referens: [godkänd screening](ui-reference/README.md), `ui-planering`
-och Simons designgrund. Detta är implementation, inte publiceringsmandat.
+och Simons designgrund. Simon godkände publicering av den visade och
+verifierade ändringen 2026-10-29. Faktisk publiceringsstatus finns i kartan.
 
 Arbetet återanvänder referensens systemtypsnitt, rubrikhierarki, kompakta
 kontroller, vita temaanpassade paneler, indigo huvudhandlingar, mjuka

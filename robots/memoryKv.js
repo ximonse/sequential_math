@@ -2,6 +2,7 @@
 // It mirrors the Upstash client's behavior (JSON values in, parsed values out)
 // and emulates the few Lua scripts the API runs through kv.eval.
 import { STUDENT_CAS_SCRIPT } from '../api/_studentStore.js'
+import { CLASS_AUDIENCE_PROFILES } from '../api/_audienceProfileBatch.js'
 import { SCREENING_DRAFT_CAS } from '../api/_screeningDraftStore.js'
 import { emulateAttentionArchive } from '../api/testHelpers/attentionArchiveKv.js'
 import { emulatePupilAnalysis } from '../api/testHelpers/pupilAnalysisKv.js'
@@ -43,6 +44,10 @@ export const kv = {
   async sadd(key, ...members) { const set = sets.get(key) || new Set(); sets.set(key, set); let n = 0; for (const m of members.flat()) { if (!set.has(m)) { set.add(m); n++ } } return n },
   async srem(key, ...members) { const set = sets.get(key); if (!set) return 0; let n = 0; for (const m of members.flat()) if (set.delete(m)) n++; return n },
   async eval(script, keys = [], args = []) {
+    if (script === CLASS_AUDIENCE_PROFILES) return keys.map(key => {
+      const profile = values.get(key)
+      return profile && (profile.classId === args[0] || profile.classIds?.includes(args[0])) ? clone(profile) : null
+    })
     const dispatch = emulateMaterialDispatch(values, script, keys, args)
     if (dispatch) return dispatch.result
     const material = emulateTeacherMaterial(values, sets, script, keys, args)

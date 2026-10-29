@@ -107,6 +107,15 @@ Historiska elevkontroller parallelliseras i grupper om 20 utan att hoppa
 över någon version eller elev. MCP:s anropstidsbudget är 45 sekunder;
 osäker skrivkvittens kräver fortsatt återläsning och samma requestId.
 
+Efter PR31 återställdes audience till HTTP200 (23190 ms), men preview gjorde
+fyra hela globala profilläsningar och överskred även 45 sekunder. Fortfarande
+ingen material-save. Produktionsloggen bekräftade kategorin `size_limit`.
+En skrivskyddad Redis-Lua-läsning filtrerar därför klassmedlemskap innan
+profiler skickas över REST. Sekundärt medlemskap räknas; övriga profiler blir
+tomma positioner med bevarad ordning. Valda profiler genomgår samma kontroll
+av identitet, radering och klassåtkomst i appen. Ingen rosterindexmigrering,
+persistens eller cache läggs till. Reservläsningen kvarstår vid fel.
+
 ## Klienternas dokumentation
 
 [Codex MCP](https://learn.chatgpt.com/docs/extend/mcp?surface=cli) beskriver

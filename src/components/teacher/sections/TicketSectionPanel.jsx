@@ -11,10 +11,10 @@ export default function TicketSectionPanel({
 }) {
   return (
     <div
-      className="relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border border-amber-200/90 rounded-2xl shadow-[0_16px_42px_-26px_rgba(146,64,14,0.55)] p-4 md:p-5 mb-8"
+      className="teacher-ticket-panel relative overflow-hidden bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 border border-amber-200/90 rounded-2xl shadow-[0_16px_42px_-26px_rgba(146,64,14,0.55)] p-4 md:p-5 mb-8"
       style={{ order: -50 }}
     >
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500" />
+      <div className="teacher-ticket-decoration pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500" />
       <button
         onClick={onToggleTicketSectionOpen}
         className="w-full flex items-center justify-between text-left mb-4 pt-1"

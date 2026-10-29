@@ -3,6 +3,7 @@ import CloudSyncStatusPanel from './CloudSyncStatusPanel'
 function DashboardHeaderBar({
   isDirectStudentView,
   workspaceTitle,
+  workspaceDescription,
   detailStudentName,
   teacherName,
   teacherRole,
@@ -24,7 +25,7 @@ function DashboardHeaderBar({
           {isDirectStudentView ? 'Elevprofil' : workspaceTitle || 'Elevöversikt'}
         </h1>
         <p className="text-sm text-gray-600">
-          {isDirectStudentView ? (detailStudentName || 'Välj en elev') : workspaceTitle ? 'Screening · innehåll, utdelning och uppföljning' : 'Överblick och nästa undervisningssteg'}
+          {isDirectStudentView ? (detailStudentName || 'Välj en elev') : workspaceDescription || (workspaceTitle ? 'Screening · innehåll, utdelning och uppföljning' : 'Överblick och nästa undervisningssteg')}
         </p>
       </div>
 

@@ -1,0 +1,120 @@
+/* Shared approved screening chrome. The attribute is absent on Framsteg and pupil pages. */
+[data-teacher-admin] {
+  font: 14px/1.5 system-ui, sans-serif;
+  padding-top: 40px;
+}
+body.theme-light [data-teacher-admin] {
+  --text-main: #172033; --text-muted: #475569; --border: #cbd5e1;
+  --accent: #4338ca; --surface: #fff; --surface-soft: #eef2ff;
+  background: #f1f5f9 !important;
+}
+[data-teacher-admin] .teacher-dashboard-header {
+  padding-block: 8px; margin-bottom: 14px; border-bottom: 1px solid var(--border);
+}
+[data-teacher-admin] .teacher-dashboard-header h1 { font-size: 18px; font-weight: 650; }
+[data-teacher-admin] .teacher-dashboard-header p { font-size: 12px; }
+[data-teacher-admin] aside:has(nav[aria-label="Lärarvy"]) { background: #1e293b !important; }
+[data-teacher-admin] nav[aria-label="Lärarvy"] button { font: inherit; padding: 6px 8px; }
+[data-teacher-admin] nav[aria-label="Lärarvy"] button span { display: none; }
+body[class*="theme-"] [data-teacher-admin] nav button[aria-current="page"] {
+  background: #fcd34d !important; color: #172033 !important;
+}
+
+@media (min-width: 1024px) {
+  [data-teacher-admin] > div > .grid { grid-template-columns: 165px minmax(0,1fr); gap: 16px; }
+}
+@media (max-width: 1023px) {
+  [data-teacher-admin] nav[aria-label="Lärarvy"] { display: flex; flex-wrap: wrap; gap: 4px; }
+  [data-teacher-admin] nav[aria-label="Lärarvy"] button span { display: none; }
+}
+
+/* Shared workspace vocabulary. Deliberately avoid pupil renderers, notebook
+   cells and graph marks: their geometry and semantic colours carry evidence. */
+[data-teacher-admin] [data-admin-content] { gap: 16px; }
+[data-teacher-admin] [data-admin-panel] { min-width: 0; }
+body[class*="theme-"] [data-teacher-admin] :is(
+  [data-admin-panel] > section,
+  [data-admin-panel] > div > .bg-white.rounded-lg,
+  [data-recipient-picker], [data-recipient-overview], .dashboard-class-filter,
+  .teacher-admin-module, .teacher-ticket-panel, .material-module
+) {
+  background: var(--surface) !important; color: var(--text-main);
+  border: 1px solid var(--border); border-radius: 7px; padding: 14px;
+  box-shadow: 0 2px 5px #0000000c !important;
+}
+[data-teacher-admin] [data-admin-content] h2,
+[data-teacher-admin].material-review h1 { font-size: 23px; line-height: 1.25; font-weight: 650; letter-spacing: normal; }
+[data-teacher-admin] [data-admin-content] h3,
+[data-teacher-admin].material-review h2 { font-size: 17px; line-height: 1.4; font-weight: 650; }
+[data-teacher-admin] [data-admin-content] h4,
+[data-teacher-admin].material-review h3 { font-size: 14px; line-height: 1.5; font-weight: 650; }
+[data-teacher-admin] :is(.dashboard-class-filter h2, [data-recipient-picker] h3, [data-recipient-overview] h3) {
+  font-size: 17px; margin-bottom: 6px;
+}
+[data-teacher-admin] :is(.dashboard-class-filter, [data-recipient-picker], [data-recipient-overview]) { margin-bottom: 0; }
+[data-teacher-admin] :is([data-admin-panel="management"] > div) { gap: 16px; margin-bottom: 0; }
+[data-teacher-admin] .teacher-ticket-decoration { display: none; }
+[data-teacher-admin] .teacher-admin-module { margin-top: 0; }
+body[class*="theme-"] [data-teacher-admin] .teacher-ticket-module {
+  background: transparent !important; border: 0; border-top: 1px solid var(--border);
+  border-radius: 0; padding: 14px 0 0; box-shadow: none !important;
+}
+[data-teacher-admin] .teacher-ticket-panel > button { padding-top: 0; margin-bottom: 12px; }
+[data-teacher-admin] .teacher-ticket-panel > button h2 { color: var(--text-main) !important; }
+[data-teacher-admin] .teacher-ticket-panel > button > span { border-radius: 5px; padding: 4px 9px; box-shadow: none; }
+
+/* Standard form controls share the screening geometry. Fixed-size icon
+   controls and data visualisation buttons retain their own hit areas. */
+body[class*="theme-"] [data-teacher-admin] :is(button.rounded, button.rounded-md, button.rounded-lg, button.rounded-xl, .focus-action, .focus-view-picker button):not(.h-6):not(.w-6):not([role=tab]):not(nav button):not(.teacher-dashboard-header button) {
+  font: inherit; line-height: 1.4; border: 1px solid var(--border);
+  border-radius: 5px; padding: 4px 9px; background: var(--surface); color: var(--text-main);
+}
+body[class*="theme-"] [data-teacher-admin] :is(button.rounded, button.rounded-md, button.rounded-lg, .focus-action):hover:not(:disabled):not(nav button):not(.teacher-dashboard-header button) {
+  background: var(--surface-soft); border-color: var(--accent);
+}
+body[class*="theme-"] [data-teacher-admin] button:is(.bg-indigo-600, .bg-blue-600, .bg-green-600, .bg-emerald-600, .teacher-admin-primary) {
+  color: #fff !important; background: var(--accent) !important; border-color: var(--accent); font-weight: 650;
+}
+body[class*="theme-"] [data-teacher-admin] .dashboard-class-filter button.bg-blue-600 {
+  background: var(--surface-soft) !important; color: var(--text-main) !important; border-color: var(--accent);
+}
+body[class*="theme-"] [data-teacher-admin] button[aria-pressed="true"] {
+  background: var(--surface-soft) !important; color: var(--text-main) !important; border-color: var(--accent);
+}
+body[class*="theme-"] [data-teacher-admin] button[aria-pressed="true"] span { color: inherit !important; }
+body[class*="theme-"] [data-teacher-admin] button:is([class*="bg-red-"], [class*="bg-rose-"]) {
+  color: var(--danger) !important; background: var(--surface) !important; border-color: var(--danger);
+}
+body[class*="theme-"] [data-teacher-admin] :is(input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=range]), select, textarea) {
+  font: inherit; line-height: 1.4; color: var(--text-main); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 5px; padding: 5px 8px; max-width: 100%;
+}
+[data-teacher-admin] :is(input[type=checkbox], input[type=radio]) { accent-color: var(--accent); }
+[data-teacher-admin] :is(button, input, select, textarea, summary, a):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Tabs navigate within an object; they are visually distinct from the main
+   action and from the soft pressed selections. Dangerous tabs remain labelled. */
+body[class*="theme-"] [data-teacher-admin] [role=tablist] { border-bottom: 1px solid var(--border); padding-bottom: 0; gap: 18px; }
+body[class*="theme-"] [data-teacher-admin] [role=tablist] button[role=tab] {
+  border: 0; border-bottom: 3px solid transparent; border-radius: 0;
+  padding: 7px 0; background: transparent !important; color: var(--text-muted); box-shadow: none;
+}
+body[class*="theme-"] [data-teacher-admin] [role=tablist] button[aria-selected=true] {
+  color: var(--accent) !important; border-bottom-color: var(--accent); font-weight: 650;
+}
+
+/* Focus keeps signal colours, chart geometry and the matrix cell controls. */
+[data-teacher-admin] .focus-module { --focus-ink: var(--text-main); --focus-soft: var(--surface-soft); --focus-line: var(--border); --focus-teal: var(--accent); }
+[data-teacher-admin] .focus-module :is(.focus-muted, .focus-eyebrow, .focus-empty, .focus-signal-details p, label) { color: var(--text-muted); }
+[data-teacher-admin] .focus-view-picker { border-radius: 5px; background: var(--surface-soft); }
+[data-teacher-admin] .focus-module .focus-matrix thead th { color: var(--text-muted); background: var(--surface-soft); }
+[data-teacher-admin] .focus-module .focus-matrix tbody tr[aria-selected=true] { background: var(--surface-soft); }
+[data-teacher-admin].material-review { font: 14px/1.5 system-ui, sans-serif; }
+[data-teacher-admin].material-review :is(.material-columns, .material-main, .material-sidebar) { gap: 16px; }
+
+body.theme-dark [data-teacher-admin] button:is(.bg-indigo-600, .bg-blue-600, .bg-green-600, .bg-emerald-600, .teacher-admin-primary) { background: #a5b4fc !important; color: #172033 !important; }
+body.theme-dark-lime [data-teacher-admin] button:is(.bg-indigo-600, .bg-blue-600, .bg-green-600, .bg-emerald-600, .teacher-admin-primary) { background: #bef264 !important; color: #172033 !important; }
+@media (max-width: 767px) {
+  [data-teacher-admin] .dashboard-context-grid { grid-template-columns: minmax(0, 1fr); }
+  [data-teacher-admin] :is(.material-title, .material-review-header) { flex-wrap: wrap; gap: 10px; }
+}

@@ -28,6 +28,7 @@ import LocalTestDataExportPanel from './LocalTestDataExportPanel'
 import TicketSectionContainer from './TicketSectionContainer'
 import ScreeningDispatchPanel from './ScreeningDispatchPanel'
 import ScreeningResultsPanel from './ScreeningResultsPanel'
+import '../teacherAdmin.css'
 
 import { ActivityBadge, RiskBadge } from './dashboardStatusBadges'
 import { getOperationLabel } from '../../../lib/operations'
@@ -525,10 +526,11 @@ export default function DashboardLayout({
   const classStatsPanel = <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
 
   return (
-    <div data-teacher-workspace={activeWorkspace} className={`teacher-dashboard-surface min-h-screen pb-5 pt-14 sm:pb-6 sm:pt-16 ${surfaceClass}`}>
+    <div data-teacher-workspace={activeWorkspace} data-teacher-admin={activeWorkspace !== 'progress' ? '' : undefined} className={`teacher-dashboard-surface min-h-screen pb-5 pt-14 sm:pb-6 sm:pt-16 ${surfaceClass}`}>
       <div className="max-w-6xl mx-auto px-3 sm:px-4">
         <DashboardHeaderBar
-          workspaceTitle={activeWorkspace === 'ncm' ? 'Matematik · Lärarvy' : undefined}
+          workspaceTitle={activeWorkspace !== 'progress' ? 'Matematik · Lärarvy' : undefined}
+          workspaceDescription={activeWorkspace === 'ncm' ? undefined : WORKSPACES.find(workspace => workspace.id === activeWorkspace && workspace.id !== 'progress')?.label}
           isDirectStudentView={isDirectStudentView}
           detailStudentName={detailStudentProfile?.name || ''}
           teacherName={teacherName}
@@ -545,7 +547,7 @@ export default function DashboardLayout({
           onLogout={handleLogout}
         />
 
-        <div hidden={activeWorkspace === 'ncm' && !dashboardStatus} className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
+        <div hidden={activeWorkspace !== 'progress' && !dashboardStatus} className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
 
         <div className="grid gap-3 lg:grid-cols-[13rem_minmax(0,1fr)]">
           <aside className="rounded-lg bg-slate-800 p-2 text-slate-100 lg:sticky lg:top-3 lg:h-fit">
@@ -567,7 +569,7 @@ export default function DashboardLayout({
                 ))}
               </nav>
           </aside>
-          <div className="min-w-0 flex flex-col gap-3">
+          <div data-admin-content className="min-w-0 flex flex-col gap-3">
             {!isScreening && activeWorkspace !== 'admin' && <div className="dashboard-context-grid">
             {activeWorkspace === 'progress' ? renderProgressModule('filter', 'Klassurval', classFilterPanel) : classFilterPanel}
             {activeWorkspace === 'progress'
@@ -593,13 +595,13 @@ export default function DashboardLayout({
             )}
             {isScreening && <>
               <div hidden={activeWorkspace !== 'ncm'}>{renderPanelContent('ncm-grid')}</div>
-              <div hidden={activeWorkspace !== 'ncm-results'}>{renderPanelContent('ncm-results')}</div>
+              <div data-admin-panel="ncm-results" hidden={activeWorkspace !== 'ncm-results'}>{renderPanelContent('ncm-results')}</div>
             </>}
             {!isScreening && WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
               .filter(id => visiblePanelDefs.some(panel => panel.id === id))
               .map(id => activeWorkspace === 'progress'
                 ? renderProgressModule(id, PANEL_DEFS.find(panel => panel.id === id)?.title, renderPanelContent(id))
-                : <div key={id}>{renderPanelContent(id)}</div>)}
+                : <div key={id} data-admin-panel={id}>{renderPanelContent(id)}</div>)}
           </div>
         </div>
       </div>

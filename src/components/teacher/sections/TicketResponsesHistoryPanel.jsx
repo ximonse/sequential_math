@@ -19,7 +19,7 @@ export default function TicketResponsesHistoryPanel({
 }) {
   return (
     <>
-      <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 shadow-sm">
+      <div className="teacher-ticket-module bg-white/95 rounded-2xl border border-amber-200/90 p-4 shadow-sm">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-base font-bold text-gray-800">Svar för valt utskick</h3>
           {ticketSelectedDispatch ? (
@@ -88,7 +88,7 @@ export default function TicketResponsesHistoryPanel({
         )}
       </div>
 
-      <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 mt-4 shadow-sm">
+      <div className="teacher-ticket-module bg-white/95 rounded-2xl border border-amber-200/90 p-4 mt-4 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
           <h3 className="text-base font-bold text-gray-800">Elevhistorik i tickets</h3>
           {ticketHistoryStudent ? (

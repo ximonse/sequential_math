@@ -111,6 +111,27 @@ screeningutkast behålls. Tooltips för Fokus och Värm/Värm upp ingår också.
 Överföring till Uppdrag/tickets och gemensam tillgänglig hjälp är senare
 etapper i projektkartan. De ingår inte i screeningkorrigeringen nedan.
 
+### Utvidgat stilmandat 2026-10-29
+
+Simon beställer nu screeningens grafiska stil i hela admin, **utom Framsteg**.
+Det ersätter ovanstående begränsning för den visuella harmoniseringen, men
+innebär ingen ny uppdrags-/ticketmodell eller ändrade verkställanderegler.
+[Genomförande och avgränsning](ADMIN_STYLE_HARMONISATION.md).
+
+`teacherAdmin.css` återanvänder screeningreferensens typografi, temaanpassade
+paneler, kompakta kontroller och navigation. Den aktiveras med
+`data-teacher-admin` på berörda arbetslägen och materialgranskningen.
+Attributet saknas på Framsteg och elevsidor. Klassadministrationens flikar
+följer samma mönster som Materialbibliotek/Utdelat. Tickets använder tydliga
+sektioner och indigo huvudhandlingar. Fokusdiagrammens signaler och
+räknehäftets geometri behåller sina egna regler. Osparade ändringar,
+mottagare, godkännande och spargränser följer befintliga kontrakt.
+
+DashboardLayout får bara inkoppling och avgränsning; den är fortfarande över
+600 rader. Ingen ny verksamhetslogik placeras där. Menybeskrivningarna döljs
+visuellt enligt screeningreferensen, så robotarnas ingång till Administration
+använder menyetiketten i stället för dess tidigare beskrivning.
+
 ## Korrigering mot godkänd skiss 2026-10-28
 
 Simon påtalade att den publicerade implementationen inte följde den godkända

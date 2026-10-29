@@ -4,6 +4,7 @@ import { diagnosticRequest } from './sections/diagnosticRequest.js'
 import QuestionText from '../QuestionText.jsx'
 import ScreeningImageQuestion from '../student/ScreeningImageQuestion.jsx'
 import './materialReview.css'
+import './teacherAdmin.css'
 import MaterialBasis from './MaterialBasis.jsx'
 import MaterialPracticeSummary from './MaterialPracticeSummary.jsx'
 import MaterialDispatchStatus from './MaterialDispatchStatus.jsx'
@@ -126,7 +127,7 @@ export default function MaterialReview() {
     delete requestIds.current[keyFor('publish')]
     if (activeScope.current === draftId) await refresh()
   }
-  return <main className="material-review">
+  return <main data-teacher-admin className="material-review">
     <header className="material-review-header"><Link to="/teacher" onClick={protectNavigation}>← Lärarvyn</Link><span>Materialutkast</span>
       <button disabled={busy || !draft} onClick={() => run(() => refresh())}>Läs senaste status</button></header>
     {message && <p role="status" className="material-message">{message}</p>}

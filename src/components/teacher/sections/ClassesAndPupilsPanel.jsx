@@ -13,7 +13,7 @@ import { SchoolSelect, useSchools } from './SchoolControls'
 import { useAdminDirectory } from './useAdminDirectory'
 
 // Dense teacher workspace: compact controls, separate modules with a clear shadow.
-const MODULE = 'rounded-md bg-white px-[21px] py-[19px] shadow-[0_8px_13px_-2px_rgba(15,23,42,0.32)]'
+const MODULE = 'teacher-admin-module rounded-md bg-white px-[21px] py-[19px] shadow-[0_8px_13px_-2px_rgba(15,23,42,0.32)]'
 const TAB = 'rounded-md px-1.5 py-0.5 text-sm font-semibold'
 const ITEM = 'rounded-md border px-1.5 py-0.5 text-left text-sm'
 const ITEM_OFF = 'border-gray-200 bg-white text-gray-800 hover:bg-gray-50'

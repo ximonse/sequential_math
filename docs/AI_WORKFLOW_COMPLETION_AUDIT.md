@@ -2,7 +2,8 @@
 
 Målet betraktas inte som färdigt bara för att testerna är gröna. Tabellen
 skiljer verifierad teknik från pedagogisk granskning, faktisk klientdrift
-och publicering. Aktuell kod ligger i PR #22, inte i produktion.
+och publicering. PR #22 är publicerad 2026-10-29 efter Simons uttryckliga
+godkännande. Produktionsrevision: `cf144e642d83a73a2bf907eaf442eb2c802e9f0b`.
 
 | Krav från målet | Aktuellt belägg | Bedömning |
 |---|---|---|
@@ -18,7 +19,7 @@ och publicering. Aktuell kod ligger i PR #22, inte i produktion.
 | Skills beskriver samma faktiska arbetsflöde | pupil-analysis, assignment-authoring och deras API-/MCP-dokument; skillvalidering | Dokumenterat och syntetiskt provat; instruktionerna garanterar inte att en modell följer dem |
 | Faktisk ansluten AI-klient | Tidigare registrerad Codex-demo och senare SDK-stdio-prov med aktuell kod, inklusive faktisk Antigravity-text genom MCP | Transport och lagring verifierade. En redan startad klient kan fortfarande använda äldre process/verktyg och behöver laddas om |
 | Verklig elevdata endast i klarlagd AI-miljö | Ingen verklig elevdata använd i utvecklings-/modellproven; approved-läge är uttrycklig konfiguration | Villkoret är bevarat. Ingen ny godkänd verklig MCP-miljö eller kontokonfiguration påstås |
-| Publicering kräver separat mandat | PR #22; kodrevision 38dd47f har gröna quality/documentation-kontroller (run 40842177273) och READY-preview i sekvens. Ny listväg nekar oinloggad åtkomst även där | Produktionsmerge inväntar Simons uttryckliga klartecken. Ingen autentiserad visuell preview-QA eller utdelning ingick |
+| Publicering kräver separat mandat | Simon godkände produktionsmerge av PR #22. Merge cf144e6 har READY-deployment dpl_k5aFTNJEmG566nof71xeNwkLgo5M i sekvens med alias matematik.ximon.se. HTTP 200 och index-DIDUrTDS.js; nya listvägen svarar 401 utan lärarinloggning | Publicerat. Ingen autentiserad visuell produktions-QA eller elevutdelning ingick i releasekontrollen |
 
 ## Vad det kompletterande modellprovet ändrade
 
@@ -37,8 +38,8 @@ materialgodkännande eller utdelning sparades i provet.
 
 ## Återstående beslut och verifiering
 
-1. Simon behöver ge produktionsmandat för merge av PR #22. Det finns inget
-   tekniskt stöd för att tolka en automatisk målpåminnelse som det mandatet.
+1. Produktionsmandatet för PR #22 är uppfyllt och publiceringen verifierad.
+   Avgränsad autentiserad kontroll av rätt konto och utkast återstår.
 2. Vid verklig MCP-användning behöver avsedd AI-miljö och rätt lärarkonto vara
    klarlagda. Lokal transport eller pseudonymer är inget sådant godkännande.
 3. Modellens analysförslag behöver lärargranskas. Varierade fall och en

@@ -30,3 +30,12 @@ it('rejects another teacher and role/session changes during historical reads', a
   mock.auth.mockResolvedValueOnce({ teacherId: 'T', role: 'school_admin' }).mockResolvedValueOnce({ teacherId: 'T', role: 'teacher' })
   await expect(assertMaterialDraftAccess({}, state())).rejects.toMatchObject({ status: 403 })
 })
+it('rejects a revoked pupil anywhere in a larger frozen recipient list', async () => {
+  const large = state()
+  large.versions[0].material.audience.pupils = Array.from({ length: 31 }, (_, index) => ({ studentId: `P${index}`, classIds: ['C'] }))
+  mock.pupil.mockImplementation(async (_req, id) => {
+    if (id === 'P30') throw Object.assign(Error('Revoked'), { status: 403 })
+    return {}
+  })
+  await expect(assertMaterialDraftAccess({}, large)).rejects.toMatchObject({ status: 403 })
+})

@@ -78,9 +78,22 @@ it('does not inspect unrelated pupil deletion records while resolving a class', 
 })
 it('fails closed on a missing or failed profile batch instead of returning a partial roster', async () => {
   mock.mget.mockResolvedValueOnce([records['student:P']])
+  mock.get.mockRejectedValueOnce(Error('Storage unavailable'))
   expect((await call()).code).toBe(503)
   mock.mget.mockRejectedValueOnce(Error('Storage unavailable'))
+  mock.get.mockRejectedValueOnce(Error('Storage unavailable'))
   expect((await call()).code).toBe(503)
+})
+it('preserves the exact roster when the batch command is unavailable or exceeds the storage response limit', async () => {
+  mock.mget.mockResolvedValueOnce([records['student:P']])
+  expect((await call()).data.pupils.map(pupil => pupil.studentId)).toEqual(['P', 'Q'])
+  mock.mget.mockRejectedValueOnce(Error('Command unavailable'))
+  expect((await call()).data.pupils.map(pupil => pupil.studentId)).toEqual(['P', 'Q'])
+  mock.mget.mockImplementation(async (...keys) => {
+    if (keys.length > 1) throw Error('ERR max request size exceeded')
+    return [await mock.get(keys[0])]
+  })
+  expect((await call()).data.pupils.map(pupil => pupil.studentId)).toEqual(['P', 'Q'])
 })
 it('rejects session changes, archived classes, invalid selectors and live roster changes', async () => {
   expect((await call({ targetType: 'everyone' })).code).toBe(400)

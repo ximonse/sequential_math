@@ -3,6 +3,12 @@ import { assertPupilEvidenceAccess, assertEvidenceSourceAccess } from './_pupilE
 import { resolveTeacherAudience } from './_teacherAudience.js'
 import { evidenceError, evidenceHash } from './_pupilEvidence.js'
 
+async function checkBatch(items, check) {
+  for (let start = 0; start < items.length; start += 20) {
+    await Promise.all(items.slice(start, start + 20).map(check))
+  }
+}
+
 export async function assertMaterialDraftAccess(req, state) {
   const auth = await getLiveTeacherAuthPayload(req)
   if (!auth || auth.teacherId !== state.teacherId) throw evidenceError(403, 'draft_access_denied', 'Utkastet är inte tillgängligt.')
@@ -10,7 +16,7 @@ export async function assertMaterialDraftAccess(req, state) {
   for (const version of state.versions) {
     const { audience, basis, kind } = version.material
     await resolveTeacherAudience({ ...req, headers: req.headers, query: { targetType: audience.targetType, targetId: audience.targetId, limit: 1 } })
-    for (const pupil of audience.pupils) {
+    await checkBatch(audience.pupils, async pupil => {
       let accessible = false
       for (const classId of pupil.classIds) {
         try { await assertPupilEvidenceAccess(req, pupil.studentId, classId); accessible = true; break } catch (error) {
@@ -19,11 +25,11 @@ export async function assertMaterialDraftAccess(req, state) {
       }
       if (!accessible) throw evidenceError(403, 'draft_access_denied', 'Åtkomst till en tidigare mottagare saknas.')
       if (kind === 'screening') assertEvidenceSourceAccess(auth, pupil.studentId, 'screening')
-    }
-    for (const item of basis) {
+    })
+    await checkBatch(basis, async item => {
       await assertPupilEvidenceAccess(req, item.studentId, item.classId)
       assertEvidenceSourceAccess(auth, item.studentId, item.source)
-    }
+    })
   }
   const live = await getLiveTeacherAuthPayload(req)
   if (!live || evidenceHash(live) !== evidenceHash(auth)) throw evidenceError(403, 'draft_access_denied', 'Lärarsessionen har ändrats.')

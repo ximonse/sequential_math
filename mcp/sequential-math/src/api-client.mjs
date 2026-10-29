@@ -25,7 +25,7 @@ const messages = {
 }
 
 export class TeacherApiClient {
-  constructor({ baseUrl, mode = 'synthetic', expectedTeacherId, getCredentials, fetchImpl = fetch, timeoutMs = 15000 }) {
+  constructor({ baseUrl, mode = 'synthetic', expectedTeacherId, getCredentials, fetchImpl = fetch, timeoutMs = 45000 }) {
     this.baseUrl = validateTarget(baseUrl, mode)
     this.mode = mode
     if (expectedTeacherId !== undefined && (typeof expectedTeacherId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/u.test(expectedTeacherId))) {

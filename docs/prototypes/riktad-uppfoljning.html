@@ -1,0 +1,110 @@
+<!doctype html><html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Skiss: riktad uppföljning</title><style>
+#teacher-flow{--tf-bg:light-dark(#f1f5f9,#111827);--tf-panel:light-dark(#fff,#1f2937);--tf-ink:light-dark(#172033,#eef2f7);--tf-muted:light-dark(#475569,#cbd5e1);--tf-line:light-dark(#cbd5e1,#526071);--tf-action:light-dark(#4338ca,#a5b4fc);--tf-on-action:light-dark(#fff,#172033);--tf-soft:light-dark(#eef2ff,#303a5c);color:var(--tf-ink);font:14px/1.5 system-ui,sans-serif;color-scheme:light dark}
+#teacher-flow *{box-sizing:border-box}#teacher-flow [hidden]{display:none!important}#teacher-flow button,#teacher-flow select,#teacher-flow input{font:inherit;color:inherit}#teacher-flow button{cursor:inherit}#teacher-flow button:focus-visible,#teacher-flow select:focus-visible,#teacher-flow input:focus-visible{outline:3px solid var(--tf-action);outline-offset:3px}#teacher-flow h2{font-size:23px;line-height:1.25;margin:0 0 6px;font-weight:650}#teacher-flow h3{font-size:17px;line-height:1.4;margin:0 0 6px;font-weight:650}#teacher-flow p{margin:0 0 6px}#teacher-flow .tf-shell{background:var(--tf-bg);border:1px solid var(--tf-line);border-radius:8px;overflow:clip}#teacher-flow header{padding:7px 12px;background:var(--tf-panel);border-bottom:1px solid var(--tf-line);display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:104px}#teacher-flow .tf-brand{font-size:16px;font-weight:650}#teacher-flow .tf-demo{font-size:12px;color:var(--tf-muted)}#teacher-flow .tf-layout{display:grid;grid-template-columns:165px minmax(0,1fr)}#teacher-flow nav{background:#1e293b;color:#f8fafc;padding:8px 7px}#teacher-flow nav span{display:block;padding:4px 8px;margin:2px 0;border-radius:5px}#teacher-flow nav .tf-active{background:#fcd34d;color:#172033;font-weight:650}#teacher-flow main{min-width:0;padding:12px}#teacher-flow .tf-context{display:flex;align-items:end;gap:12px;margin:8px 0 10px;flex-wrap:wrap}#teacher-flow label{display:block}#teacher-flow select,#teacher-flow input[type=text]{display:block;background:var(--tf-panel);border:1px solid var(--tf-line);border-radius:5px;padding:6px 8px;max-width:100%;width:100%}#teacher-flow .tf-context label{min-width:180px}#teacher-flow .tf-note{color:var(--tf-muted);font-size:13px}#teacher-flow .tf-panel{background:var(--tf-panel);border:1px solid var(--tf-line);border-radius:7px;padding:10px;box-shadow:0 2px 5px #0000000c}#teacher-flow .tf-bar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:8px}#teacher-flow .tf-button{background:var(--tf-panel);border:1px solid var(--tf-line);border-radius:5px;padding:5px 10px;min-height:32px;text-align:center}#teacher-flow .tf-primary{background:var(--tf-action);color:var(--tf-on-action);border-color:var(--tf-action)}#teacher-flow .tf-link{border:0;background:none;padding:5px 0;color:var(--tf-action);text-align:left;text-decoration:underline}#teacher-flow .tf-tabs{display:flex;gap:18px;border-bottom:1px solid var(--tf-line);margin-bottom:8px}#teacher-flow .tf-tabs button{border:0;border-bottom:3px solid transparent;background:none;padding:9px 0}#teacher-flow .tf-tabs button[aria-pressed=true]{border-color:var(--tf-action);font-weight:650}#teacher-flow .tf-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:5px 0;border-top:1px solid var(--tf-line);align-items:center}#teacher-flow .tf-row:first-of-type{border-top:0}#teacher-flow .tf-row strong{display:block;font-weight:650}#teacher-flow .tf-state{font-size:12px;color:var(--tf-muted)}#teacher-flow .tf-steps{display:flex;list-style:none;gap:14px;padding:0;margin:0 0 10px;flex-wrap:wrap;color:var(--tf-muted);font-size:13px}#teacher-flow .tf-steps li[aria-current=step]{color:var(--tf-action);font-weight:650}#teacher-flow .tf-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}#teacher-flow .tf-choice{border:1px solid var(--tf-line);border-radius:6px;padding:10px;background:var(--tf-panel);text-align:left}#teacher-flow .tf-choice b{display:block;margin-bottom:6px}#teacher-flow .tf-fields{display:grid;gap:10px}#teacher-flow .tf-actions{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;border-top:1px solid var(--tf-line);padding-top:8px;margin-top:10px}#teacher-flow .tf-check{display:flex;gap:9px;align-items:center;padding:8px 0}#teacher-flow .tf-check input{accent-color:var(--tf-action)}#teacher-flow .tf-summary{display:grid;grid-template-columns:120px 1fr;gap:0;margin:0}#teacher-flow .tf-summary dt,#teacher-flow .tf-summary dd{padding:5px 0;border-bottom:1px solid var(--tf-line);margin:0}#teacher-flow .tf-summary dt{color:var(--tf-muted)}#teacher-flow .tf-summary dd{overflow-wrap:anywhere}#teacher-flow .tf-receipt{border-left:4px solid var(--tf-action);padding:8px 14px;margin:16px 0;background:var(--tf-soft)}#teacher-flow .tf-bottom{font-size:12px;color:var(--tf-muted);margin:12px 0 0}#teacher-flow .tf-choose-label{display:block;font-weight:650;margin-top:14px}
+@media(max-width:760px){#teacher-flow .tf-layout{grid-template-columns:1fr}#teacher-flow nav{display:flex;flex-wrap:wrap;gap:2px;padding:6px}#teacher-flow nav span{padding:5px 7px;font-size:12px}#teacher-flow main{padding:10px}#teacher-flow header{padding:10px 100px 10px 12px}#teacher-flow .tf-brand{font-size:14px}#teacher-flow .tf-choices{grid-template-columns:1fr}#teacher-flow .tf-panel{padding:8px}#teacher-flow .tf-steps{gap:8px}#teacher-flow .tf-summary{grid-template-columns:95px 1fr}}
+@media(pointer:coarse){#teacher-flow .tf-button,#teacher-flow .tf-link,#teacher-flow .tf-tabs button,#teacher-flow select{min-height:44px}#teacher-flow input{font-size:16px}#teacher-flow .tf-check{min-height:44px}}
+</style><style>
+#teacher-flow .tf-recipient-toolbar{display:grid;grid-template-columns:minmax(0,1fr) 140px;gap:10px;margin:8px 0}#teacher-flow input[type=search]{display:block;width:100%;max-width:100%;padding:7px 9px;border:1px solid var(--tf-line);border-radius:5px;background:var(--tf-panel);color:var(--tf-ink);font:inherit}#teacher-flow .tf-picks{display:flex;flex-wrap:wrap;gap:6px;margin:5px 0 7px}#teacher-flow .tf-pick{display:inline-flex;align-items:center;gap:7px;padding:1px 6px;background:var(--tf-soft);border:1px solid var(--tf-line);border-radius:5px}#teacher-flow .tf-pick button{background:none;border:0;color:var(--tf-action);padding:3px 5px}#teacher-flow .tf-results{border-block:1px solid var(--tf-line);margin:6px 0}#teacher-flow .tf-result{display:flex;align-items:center;gap:8px;padding:3px 2px;border-bottom:1px solid var(--tf-line)}#teacher-flow .tf-result:last-child{border-bottom:0}#teacher-flow .tf-result input{flex:none;accent-color:var(--tf-action);width:17px;height:17px}#teacher-flow .tf-result span{min-width:0;overflow-wrap:anywhere;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}#teacher-flow .tf-result small{display:inline;color:var(--tf-muted);font-size:12px}#teacher-flow .tf-selected-heading{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}#teacher-flow .tf-recipient-count{font-weight:650}#teacher-flow .tf-details-list{columns:2;list-style:none;padding:0;margin:10px 0}#teacher-flow .tf-details-list li{break-inside:avoid;padding:3px 0;font-size:13px}@media(max-width:450px){#teacher-flow .tf-recipient-toolbar{grid-template-columns:1fr}#teacher-flow .tf-details-list{columns:1}}@media(pointer:coarse){#teacher-flow .tf-pick button{min-width:44px;min-height:44px}#teacher-flow .tf-result{min-height:44px}#teacher-flow input[type=search]{font-size:16px;min-height:44px}}
+</style><style>
+#teacher-flow main{padding:16px}#teacher-flow .tf-panel{padding:14px}#teacher-flow h3,#teacher-flow p{margin-bottom:8px}#teacher-flow .tf-steps{margin-bottom:14px}#teacher-flow .tf-recipient-toolbar{margin:12px 0;gap:12px}#teacher-flow .tf-pick{padding:3px 8px}#teacher-flow .tf-result{padding:5px}#teacher-flow .tf-result:has(input:checked){background:var(--tf-soft);border-radius:4px}#teacher-flow .tf-recipient-count{color:var(--tf-action)}#teacher-flow .tf-type-heading{margin:12px 0 4px;color:var(--tf-muted);font-size:12px;font-weight:650;letter-spacing:.06em;text-transform:uppercase}#teacher-flow .tf-steps li[aria-current=step]{background:var(--tf-soft);border-radius:4px;padding:2px 6px}#teacher-flow .tf-primary{box-shadow:0 2px 4px #00000012}#teacher-flow .tf-primary:hover{filter:brightness(1.08)}
+</style><style>
+#teacher-flow .rf-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:12px}
+#teacher-flow table{border-collapse:collapse;width:100%;font-size:13px}
+#teacher-flow th,#teacher-flow td{border-bottom:1px solid var(--tf-line);padding:5px 6px;text-align:left;vertical-align:top}
+#teacher-flow th{color:var(--tf-muted);font-weight:650;font-size:12px}
+#teacher-flow td.num,#teacher-flow th.num{text-align:right;font-variant-numeric:tabular-nums}
+#teacher-flow .rf-hit{background:light-dark(#ffedd5,#5a3a1a);font-weight:650}
+#teacher-flow .rf-same{color:var(--tf-muted);font-style:italic}
+#teacher-flow .rf-tag{display:inline-block;font-size:12px;padding:0 6px;border-radius:4px;border:1px solid var(--tf-line);background:var(--tf-soft)}
+#teacher-flow .rf-ok{border-left:4px solid #16a34a;padding:6px 10px;background:light-dark(#f0fdf4,#14301f);margin:8px 0}
+#teacher-flow .rf-warn{border-left:4px solid #d97706;padding:6px 10px;background:light-dark(#fffbeb,#3a2c12);margin:8px 0}
+#teacher-flow .rf-phase{display:flex;gap:6px;flex-wrap:wrap;list-style:none;padding:0;margin:6px 0 10px}
+#teacher-flow .rf-phase li{font-size:12px;padding:2px 8px;border:1px solid var(--tf-line);border-radius:12px;color:var(--tf-muted)}
+#teacher-flow .rf-phase li.on{background:var(--tf-action);color:var(--tf-on-action);border-color:var(--tf-action)}
+#teacher-flow .rf-phase li.done{color:var(--tf-ink)}
+#teacher-flow .rf-pupil{border:1px dashed var(--tf-line);border-radius:7px;padding:12px;background:var(--tf-panel);font-size:16px}
+#teacher-flow .rf-cells{display:grid;grid-template-columns:repeat(6,28px);gap:2px;margin:8px 0}
+#teacher-flow .rf-cells span{height:28px;border:1px solid var(--tf-line);background:light-dark(#fff,#111827)}
+#teacher-flow .rf-proposal{font-size:12px;color:var(--tf-muted);border-top:1px solid var(--tf-line);margin-top:14px;padding-top:6px}
+#teacher-flow #steps li{cursor:pointer}
+@media(max-width:760px){#teacher-flow .rf-grid{grid-template-columns:1fr}}
+</style></head><body style="margin:0;padding:12px;background:#e2e8f0"><div id="teacher-flow"><div class="tf-shell">
+<header><span class="tf-brand">Riktad uppföljning</span><span class="tf-demo">Skiss med påhittad data – inget är byggt</span></header>
+<div class="tf-layout">
+<nav><span>Framsteg</span><span>Uppdrag &amp; tickets</span><span>Statistik &amp; stöd</span><span>Screening: dela ut</span><span>Screening: resultat</span><span class="tf-active">Elevprofil</span></nav>
+<main>
+<h2>Lila Äng Bok · klass 6</h2>
+<ol class="tf-steps" id="steps">
+<li data-s="1">1 Misstanke</li><li data-s="2">2 Kontrastfrågor</li><li data-s="3">3 Granska och dela ut</li><li data-s="4">4 Resultat</li><li data-s="5">5 Efter undervisning</li></ol>
+
+<section data-step="1" class="tf-panel">
+<h3>Misstanke från analysen</h3>
+<ul class="rf-phase"><li class="on">Pröva misstanke</li><li>Undervisning (du)</li><li>Självständig kontroll</li><li>Senare kontroll</li></ul>
+<p><b>Beräknad felmodell: större minus mindre i varje kolumn</b> <span class="rf-tag">fri träning · subtraktion</span></p>
+<table><thead><tr><th>Uppgift</th><th class="num">Elevens svar</th><th class="num">Facit</th><th class="num">Modellen ger</th></tr></thead><tbody>
+<tr><td>52 − 38</td><td class="num">26</td><td class="num">14</td><td class="num rf-hit">26</td></tr>
+<tr><td>63 − 27</td><td class="num">44</td><td class="num">36</td><td class="num rf-hit">44</td></tr>
+<tr><td>81 − 46</td><td class="num">45</td><td class="num">35</td><td class="num rf-hit">45</td></tr></tbody></table>
+<p class="tf-note">Rätt utan växling: 74 − 31 och 96 − 52. De prövar inte samma sak och räknas inte som motexempel. Snabbhetsträning ingår inte.</p>
+<p><b>Andra förklaringar som slutsvaren inte utesluter</b></p>
+<ul><li>Växlar, men minskar inte tiotalet (ger samma svar på vissa uppgifter).</li><li>Skrev av fel eller svarade i hast.</li></ul>
+<div class="tf-actions"><span class="tf-note">Inget delas ut i detta steg.</span><button class="tf-button tf-primary" data-go="2">Pröva med kontrastfrågor</button></div>
+</section>
+
+<section data-step="2" class="tf-panel" hidden>
+<h3>Kontrastfrågor – valda så att förklaringarna ger olika svar</h3>
+<p class="tf-note">Högst 5 frågor. Facit och modellsvar räknas i appen, utan AI.</p>
+<table><thead><tr><th>Fråga</th><th class="num">Facit</th><th class="num">Större minus mindre</th><th class="num">Tiotal ej minskat</th><th class="num">Ingen växling (0)</th><th>Skiljer åt?</th></tr></thead><tbody>
+<tr><td>47 − 29</td><td class="num">18</td><td class="num">22</td><td class="num">28</td><td class="num">20</td><td>Alla tre</td></tr>
+<tr><td>503 − 267</td><td class="num">236</td><td class="num">364</td><td class="num">336</td><td class="num">300</td><td>Alla tre, genom noll</td></tr>
+<tr><td>642 − 217</td><td class="num">425</td><td class="num">435</td><td class="num">435</td><td class="num">430</td><td class="rf-same">Inte de två första – uträkningen avgör</td></tr></tbody></table>
+<p><label class="tf-check"><input type="checkbox" checked> Eleven visar uträkningen i räknehäftet</label></p>
+<p class="tf-note">Inga tips under prövningen. Inga frågor om hur eleven tänker – de tar du i samtalet.</p>
+<div class="tf-actions"><button class="tf-link" data-go="1">Tillbaka</button><button class="tf-button tf-primary" data-go="3">Skapa utkast</button></div>
+</section>
+
+<section data-step="3" class="tf-panel" hidden>
+<h3>Granska och dela ut</h3>
+<div class="rf-grid"><div>
+<dl class="tf-summary"><dt>Typ</dt><dd>Screening, specifik – riktad uppföljning</dd><dt>Mottagare</dt><dd>Lila Äng Bok (en elev)</dd><dt>Frågor</dt><dd>47 − 29 · 503 − 267 · 642 − 217</dd><dt>Stöd</dt><dd>Inga tips · räknehäfte på</dd><dt>Underlag</dt><dd>3 svar 12–26 okt, bundet till källversion</dd></dl>
+<p class="tf-note">Sparas som privat utkast. Delas ut först när du godkänner just den här versionen.</p></div>
+<div><p><b>Så ser eleven det</b></p><div class="rf-pupil"><p>Räkna ut 47 − 29.</p><p style="font-size:13px">Visa hur du räknar i rutorna.</p><div class="rf-cells"><span></span><span></span><span></span><span></span><span></span><span></span></div><p>Mitt svar: ____</p></div></div></div>
+<div class="tf-actions"><button class="tf-link" data-go="2">Ändra frågor</button><span><button class="tf-button">Spara utkast</button> <button class="tf-button tf-primary" data-go="4">Godkänn och dela ut</button></span></div>
+</section>
+
+<section data-step="4" class="tf-panel" hidden>
+<h3>Resultat</h3>
+<ul class="rf-phase"><li class="done">Pröva misstanke ✓</li><li class="on">Undervisning (du)</li><li>Självständig kontroll</li><li>Senare kontroll</li></ul>
+<table><thead><tr><th>Fråga</th><th class="num">Elevens svar</th><th>Stämmer med</th><th>Räknehäfte</th></tr></thead><tbody>
+<tr><td>47 − 29</td><td class="num">22</td><td><span class="rf-tag">Större minus mindre</span></td><td><button class="tf-link">Visa</button></td></tr>
+<tr><td>503 − 267</td><td class="num">364</td><td><span class="rf-tag">Större minus mindre</span></td><td><button class="tf-link">Visa</button></td></tr>
+<tr><td>642 − 217</td><td class="num">435</td><td class="rf-same">Två förklaringar möjliga</td><td><button class="tf-link">Visa</button></td></tr></tbody></table>
+<div class="rf-ok"><b>Underlaget stödjer misstanken.</b> 2 av 2 särskiljande frågor gav exakt det svar felregeln förutsäger. Ett starkt belägg, inte en diagnos.</div>
+<div class="rf-warn"><b>Inför samtalet med Lila Äng Bok</b><br>Be eleven räkna 47 − 29 högt med dig. Lyssna efter om hen tar 9 − 7 i entalen. Fråga: ”Kan man ta 9 från 7?” Visa sedan växlingen med tiobasmaterial.</div>
+<div class="tf-actions"><span class="tf-note">Undervisningen gör du. Appen sparar ditt ställningstagande.</span><span><button class="tf-button">Avfärda</button> <button class="tf-button tf-primary" data-go="5">Jag har undervisat – planera kontroll</button></span></div>
+</section>
+
+<section data-step="5" class="tf-panel" hidden>
+<h3>Självständig kontroll efter undervisning</h3>
+<ul class="rf-phase"><li class="done">Pröva misstanke ✓</li><li class="done">Undervisning ✓</li><li class="on">Självständig kontroll</li><li>Senare kontroll</li></ul>
+<p>Nya tal, samma kontrast, utan tips: <b>56 − 38</b>, <b>702 − 345</b>, <b>83 − 47</b>.</p>
+<p class="tf-note">Rätt utan stöd på alla tre → senare kontroll om cirka 3 veckor i ett annat sammanhang, till exempel en benämnd uppgift. Fel igen → tillbaka till steg 1 med nytt underlag.</p>
+<div class="tf-actions"><button class="tf-link" data-go="4">Tillbaka</button><button class="tf-button tf-primary" data-go="1">Skapa kontrollutkast</button></div>
+</section>
+
+<p class="rf-proposal">Förslag: bygger på befintliga specifika screeningutkast (granskning, godkännande, utdelning, kvitto). Nytt är kopplingen till hypotesen, modellsvar per fråga och faslistan.</p>
+</main></div></div></div>
+<script>
+function show(s) {
+  document.querySelectorAll('[data-step]').forEach(el => { el.hidden = el.dataset.step !== String(s) })
+  document.querySelectorAll('#steps li').forEach(li => {
+    if (li.dataset.s === String(s)) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current')
+  })
+}
+document.addEventListener('click', e => {
+  const go = e.target.closest('[data-go]'); if (go) show(go.dataset.go)
+  const step = e.target.closest('#steps li'); if (step) show(step.dataset.s)
+})
+show(1)
+</script>
+</body></html>

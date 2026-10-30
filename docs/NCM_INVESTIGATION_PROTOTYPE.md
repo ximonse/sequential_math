@@ -95,7 +95,13 @@ Det gemensamma kontraktet fungerar syntetiskt för båda områdena. Hela
 [NCM-inventeringen](NCM_DIDACTIC_COVERAGE.md) kvarstår; två exempel innebär
 inte att övriga begrepp har implementerats eller källgranskats.
 
-Nästa produktsteg är en lärargranskad ingång via befintlig analys/materialväg:
+Uppdaterad prioritering 2026-10-30: följ
+[beslutet om regelmotor först och AI vid tolkningsbehov](NCM_INVESTIGATION_TEMPLATE.md#beslut-regelmotor-först-ai-vid-tolkningsbehov).
+Granska befintliga regler mot NCM-ryggraden och fyll först luckorna i
+växling genom noll. Bind sedan modellkandidater till befintlig frågeväljare
+utan AI-anrop för kända fall. Detta är planerat arbete, inte ny levererad kod.
+
+Därefter är produktsteget en lärargranskad ingång via befintlig analys/materialväg:
 visa original, föreslagen utredningsfråga, frågor med syfte och kvarstående
 osäkerhet. Då behöver livscykelns gransknings-/undervisnings-/kontrollhändelser
 få ett beslutat lagringskontrakt och åtkomstväg som återanvänder befintlig

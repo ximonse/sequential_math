@@ -185,6 +185,78 @@ Diagnostiska kontroller ändrar inte automatiskt vanlig mastery/progression.
 
 ## Klart-när och nästa byggsteg
 
+### Beslut: regelmotor först, AI vid tolkningsbehov
+
+2026-10-30: Simon beslutar att kända matematiska felmodeller och didaktiska
+beslutsregler ska vara körbar programkod. AI ska inte behöva återupptäcka en
+känd felmetod för varje elevsvar. Flödesschemats rutor anger didaktiska
+handlingar, inte ett AI-anrop per ruta. Detta är en beslutad ansvarsfördelning;
+det innebär inte att alla regler redan är implementerade eller publicerade.
+
+| Ansvar | Körs som vanlig kod | AI/lärare används när det behövs |
+|---|---|---|
+| Observera | Facit, numerisk avvikelse, sparstatus och tillgängliga strukturerade steg | Tolka fri text eller arbete som saknar en säker strukturerad läsning |
+| Matcha felmodeller | Beräkna vad varje tillämplig känd felmodell ger och jämför med svaret | Föreslå förklaring för okända eller motsägande fall, tydligt märkt som tolkning |
+| Välja nästa fråga | Versionsbundna regler väljer bland granskade kontraster/förkunskapsfrågor | Föreslå nytt innehåll när befintligt underlag inte räcker, för granskning |
+| Välja undervisning/träning | Matcha avgränsat behov till granskade mål, mallar och träningssekvenser | Anpassa eller formulera material när färdiga upplägg inte räcker |
+| Följa upp | Nya ohjälpta kontroller, tidigare exponering, tillfällen, budget och stopp | Granska kvarstående osäkerhet och didaktiska undantag |
+| Redovisa | Spårbara standardmotiveringar, originalreferenser och begränsningar | En sammanhängande lärarsammanfattning vid behov |
+
+Vanliga svar och kända modellträffar ska kunna passera denna kedja utan
+AI-token. Ingen AI behövs för att räkna avvikelsen +100 eller återge en
+granskad standardmotivering. Inte heller träning måste nygenereras med AI
+när en lämplig granskad mall finns. AI är ett komplement; den ska inte
+krävas för att en redan känd regel ska fungera. Kostnad eller svarshastighet
+får inte motivera att osäkerhet ersätts med en säker felorsak.
+
+Tre skilda utsagor ska bevaras även när allt görs automatiskt:
+
+1. **Observation:** exempelvis 402 − 178 = 324, alltså +100 från facit.
+2. **Modellträff:** det specifika svaret kan produceras om hundratalet
+   behålls när ett hundratal växlas till tiotal. Det är en beräknad kandidat.
+3. **Belagd metod:** originalarbete eller särskiljande kontroller stödjer
+   att eleven använder metoden. Svaret ensamt bevisar inte detta.
+
+En generell ”+100 betyder glömt hundratal” är därför ingen godkänd regel.
+Kontrollera att uppgiften har den aktuella växlingskedjan och beräkna den
+felmodellens resultat. Om flera modeller ger samma svar ska alla relevanta
+kandidater behållas och en särskiljande fråga eller metodgranskning väljas.
+En träff får inte bli säker felorsak bara för att den låg först i kodens lista.
+Tillgängliga strukturerade rutor/markeringar kan användas av specifika
+kontroller; allmän automatisk handskrifts- eller resonemangstolkning antas inte.
+
+### Genomförandeordning efter detta beslut
+
+1. **Samla och granska befintliga regler mot hela NCM-inventeringen.**
+   Återanvänd analysmotorerna. Varje regel behöver begrepp/källankare,
+   tillämpningsområde, förväntat felsvar, alternativa förklaringar och vad
+   som krävs för ett starkare besked. Skilj NCM-kod från lokal felmodell.
+   Håll övriga områden synliga som befintligt stöd, behöver rättas eller
+   återstår; bygg inte en konkurrerande katalog vid sidan av ryggraden.
+2. **Fyll första konkreta luckan: växling genom noll.** Befintliga regler
+   täcker större-minus-mindre per kolumn respektive noll där växling krävs.
+   Lägg till och kontrollera kandidatmodeller för oförändrat givande
+   hundratal och för tio i stället för nio tiotal efter vidare växling.
+   Börja avgränsat med heltal och en inre nolla; utvidga bara med egna belägg.
+3. **Koppla modellträffar till den befintliga frågeväljaren.** Bär med ref,
+   revision, regelversion, tillämplighet och kvarstående alternativ.
+   Appen väljer granskad följdfråga och standardmotivering utan nytt AI-anrop.
+   Saknad metadata eller okänd metod behålls som osäkerhet. Tränings- och
+   screeningposter får inte ges påhittade gemensamma signaler.
+4. **För in en lärargranskad ingång i befintligt analys-/materialflöde.**
+   Visa vad reglerna observerat, vad som fortfarande är en hypotes och
+   föreslaget nästa steg. Precisera lagring och åtkomst för granskning,
+   undervisning och kontroller. Bevara lärarens avsiktliga start/utdelning
+   och diagnostikens separation från vanlig mastery.
+
+Klart-när för första regeldelen: granskade syntetiska tal skiljer de avsedda
+modellerna åt där det är möjligt, överlapp visas som överlapp, +100 utanför
+modellens område ger inte samma etikett, rätt svar ger ingen felsignal och
+ingen AI-anropare behövs för modellmatchning eller nästa granskade fråga.
+Kontrollera även saknade växlingsmetadata, arbete utan slutsvar och att
+befintliga felmodeller inte försämras. Talexemplen ska omfatta minst
+402 − 178 = 324 respektive 234, plus parallella och negativa fall.
+
 En första körbar tillämpning av kontraktet för subtraktion och bråkjämförelse
 finns nu i [den fristående utredningsprototypen](NCM_INVESTIGATION_PROTOTYPE.md).
 Den prövar även undervisning och uppföljning; det är fortfarande ingen elevväg.
@@ -194,11 +266,9 @@ förklaring, nästa handling och begripligt stoppbesked; särskiljande tal har
 kontrollerat facit och träningsstöd hålls isär från självständiga kontroller.
 Detta dokument uppfyller beskrivningssteget, inte didaktisk elevvalidering.
 
-Nästa byggsteg är en revisionsbunden evidensadapter till den befintliga
-offlineprototypen, med stöd för originalarbete, metodkonflikt, jämförbarhet
-och hjälpta/ohjälpta försök. Representera okänd stödnivå som okänd. Därefter
-kan syntetiska förlopp pröva övergångarna ovan, innan en elevväg kopplas in.
-Testa även ett andra område (bråkjämförelse) mot mallen före bred generalisering.
+Den revisionsbundna evidensadaptern och provningen av ett andra område
+(bråkjämförelse) är genomförda offline. Nästa steg följer ansvarsfördelningen
+och ordningen ovan; adaptern är inte därmed inkopplad i appen.
 
 Inget i denna leverans sparar elevdata, reviderar tidigare elevutkast,
 tilldelar träning eller publicerar appfunktioner.

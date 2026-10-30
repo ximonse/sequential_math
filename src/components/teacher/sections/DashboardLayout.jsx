@@ -1,5 +1,4 @@
 import { cloneElement, useEffect, useMemo, useRef, useState } from 'react'
-import './progressAppearance.css'
 import AttentionModule from '../attention/AttentionModule'
 import AssignmentsPanel from './AssignmentsPanel'
 import RecipientPicker from './RecipientPicker'
@@ -256,7 +255,7 @@ export default function DashboardLayout({
       title={`${collapsed[id] ? 'Visa' : 'Minimera'} ${title}`}>
       <ChevronIcon expanded={!collapsed[id]} />
     </button>
-    return <div key={id} id={`progress-panel-${id}`}>
+    return <div key={id} data-admin-panel={id} id={`progress-panel-${id}`}>
       {collapsed[id]
         ? <section className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2 shadow-sm">
           <h2 className="font-semibold text-slate-800">{title}</h2>{toggle}
@@ -527,7 +526,7 @@ export default function DashboardLayout({
   const classStatsPanel = <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
 
   return (
-    <div data-teacher-workspace={activeWorkspace} data-teacher-admin={activeWorkspace !== 'progress' ? '' : undefined} className={`teacher-dashboard-surface min-h-screen pb-5 pt-14 sm:pb-6 sm:pt-16 ${surfaceClass}`}>
+    <div data-teacher-workspace={activeWorkspace} data-teacher-admin="" className={`teacher-dashboard-surface min-h-screen pb-5 pt-14 sm:pb-6 sm:pt-16 ${surfaceClass}`}>
       <div className="max-w-6xl mx-auto px-3 sm:px-4">
         <DashboardHeaderBar
           workspaceTitle={activeWorkspace !== 'progress' ? 'Matematik · Lärarvy' : undefined}

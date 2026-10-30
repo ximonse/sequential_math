@@ -1,4 +1,4 @@
-/* Shared approved screening chrome. The attribute is absent on Framsteg and pupil pages. */
+/* Shared approved screening chrome for staff workspaces, including Progress. */
 [data-teacher-admin] {
   font: 14px/1.5 system-ui, sans-serif;
   padding-top: 40px;
@@ -65,11 +65,11 @@ body[class*="theme-"] [data-teacher-admin] .teacher-ticket-module {
 
 /* Standard form controls share the screening geometry. Fixed-size icon
    controls and data visualisation buttons retain their own hit areas. */
-body[class*="theme-"] [data-teacher-admin] :is(button.rounded, button.rounded-md, button.rounded-lg, button.rounded-xl, .focus-action, .focus-view-picker button):not(.h-6):not(.w-6):not([role=tab]):not(nav button):not(.teacher-dashboard-header button) {
+body[class*="theme-"] [data-teacher-admin] :is(button.rounded, button.rounded-md, button.rounded-lg, button.rounded-xl, .focus-action, .focus-view-picker button):not(.h-6):not(.w-6):not([role=tab]):not(nav button):not(.teacher-dashboard-header button):not([data-teacher-workspace="progress"] table button) {
   font: inherit; line-height: 1.4; border: 1px solid var(--border);
   border-radius: 5px; padding: 4px 9px; background: var(--surface); color: var(--text-main);
 }
-body[class*="theme-"] [data-teacher-admin] :is(button.rounded, button.rounded-md, button.rounded-lg, .focus-action):hover:not(:disabled):not(nav button):not(.teacher-dashboard-header button) {
+body[class*="theme-"] [data-teacher-admin] :is(button.rounded, button.rounded-md, button.rounded-lg, .focus-action):hover:not(:disabled):not(nav button):not(.teacher-dashboard-header button):not([data-teacher-workspace="progress"] table button) {
   background: var(--surface-soft); border-color: var(--accent);
 }
 body[class*="theme-"] [data-teacher-admin] button:is(.bg-indigo-600, .bg-blue-600, .bg-green-600, .bg-emerald-600, .teacher-admin-primary) {
@@ -78,7 +78,7 @@ body[class*="theme-"] [data-teacher-admin] button:is(.bg-indigo-600, .bg-blue-60
 body[class*="theme-"] [data-teacher-admin] .dashboard-class-filter button.bg-blue-600 {
   background: var(--surface-soft) !important; color: var(--text-main) !important; border-color: var(--accent);
 }
-body[class*="theme-"] [data-teacher-admin] button[aria-pressed="true"] {
+body[class*="theme-"] [data-teacher-admin] button[aria-pressed="true"]:not([data-teacher-workspace="progress"] table button) {
   background: var(--surface-soft) !important; color: var(--text-main) !important; border-color: var(--accent);
 }
 body[class*="theme-"] [data-teacher-admin] button[aria-pressed="true"] span { color: inherit !important; }
@@ -117,4 +117,20 @@ body.theme-dark-lime [data-teacher-admin] button:is(.bg-indigo-600, .bg-blue-600
 @media (max-width: 767px) {
   [data-teacher-admin] .dashboard-context-grid { grid-template-columns: minmax(0, 1fr); }
   [data-teacher-admin] :is(.material-title, .material-review-header) { flex-wrap: wrap; gap: 10px; }
+}
+
+/* Progress retains its module order and result colours, with shared panel chrome. */
+body[class*="theme-"] [data-teacher-admin][data-teacher-workspace="progress"] [data-admin-panel] > :is(section, div).bg-white {
+  background: var(--surface) !important; color: var(--text-main);
+  border: 1px solid var(--border); border-radius: 7px;
+  box-shadow: 0 2px 5px #0000000c !important;
+}
+
+/* Neutral table stripes follow the theme; evidence cells retain their colours. */
+[data-teacher-admin][data-teacher-workspace="progress"] #progress-panel-mastery :is(thead, tfoot) tr,
+[data-teacher-admin][data-teacher-workspace="progress"] #progress-panel-mastery tbody tr:nth-child(even) {
+  background: var(--surface-soft) !important;
+}
+[data-teacher-admin][data-teacher-workspace="progress"] #progress-panel-mastery th {
+  color: var(--text-muted) !important;
 }

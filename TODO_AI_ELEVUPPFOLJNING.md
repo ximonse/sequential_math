@@ -28,6 +28,16 @@ Screening förblir diagnostic_only; befintliga åtkomst- och pilotgränser gäll
 
 ### Arbetsordning och klart-när
 
+Aktuell avstämning 2026-10-29: [krav, belägg och återstående
+beslut](docs/AI_WORKFLOW_COMPLETION_AUDIT.md). Materialkedjan är integrerad
+med publicerat screening-UI och syntetiskt verifierad i PR #22. Två
+faktiskt modellformulerade rapporter och två materialutkast har nu sparats
+och återlästs via MCP samt granskats renderade. Första modellsvaret
+avvisades; omarbetning och en uttrycklig korrigering av provmallens
+träningsinställningar är dokumenterade. Didaktisk kalibrering, verklig
+MCP-miljö och produktionsmandat är inte klara. Daterade etapper nedan
+bevaras som historik och ska inte läsas som aktuella kvarlistor.
+
 2026-10-28 första modellprov: registrerad MCP-demo läst i faktisk Codex-session.
 Separat opt-in screeningdemo gav två API-sparade original, granskade som text
 och PNG. Tomt svar med sparat arbete och korrekt kontrast utan växling har

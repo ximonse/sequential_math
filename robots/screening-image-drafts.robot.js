@@ -12,6 +12,7 @@ test('R2: removing an added image question preserves a different unfinished draf
   const prompt = panel.getByRole('textbox', { name: 'Bildfrågans text', exact: true })
   await prompt.fill('Vad heter figuren?')
   await panel.getByRole('combobox', { name: /^Bildfrågans svarssätt/u }).selectOption('text')
+  await panel.getByRole('button', { name: 'Lägg till frågebild', exact: true }).click()
   await panel.getByText('Välj ur figurbanken', { exact: true }).click()
   await panel.getByRole('button', { name: 'Lägg till Cirkel', exact: true }).click()
   await panel.getByRole('button', { name: 'Lägg till bildfrågan i samlingen', exact: true }).click()

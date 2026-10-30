@@ -2,6 +2,9 @@
 
 Lokalt byggt 2026-10-28. Publicering och faktisk elevutdelning är separata steg.
 
+För privat sparande, genomgång och revidering före utdelning, se den separat
+byggda funktionen [Screeningutkast](SCREENING_DRAFTS.md).
+
 Läraren kan lägga till flera frågor under **Egna frågor med automatisk rättning**
 i Screening: dela ut. Varje fråga har frågetext, facitformat, facit och ett
 valfritt räknehäfte. Frågorna listas med facit före utdelning och kan redigeras
@@ -83,3 +86,26 @@ analysrapportens sparade räknehäfte. Ingen helt grön gemensam körning påst�
 Det nya facitflödet passerade både separat och i hela robotkörningen.
 De fyra överhoppade fallen gäller det villkorade materialgodkännandeflödet.
 Ingen riktig elevutdelning eller produktionsverifiering har gjorts här.
+
+## Isolerad publiceringskandidat
+
+Kandidaten utgår från produktionens `05748fb`, med bara detta funktionsstöd.
+Det separata, ännu opublicerade materialförhandsvisnings-API:t ingår inte.
+173 testfiler/872 tester, build och arkitekturkontroll passerade. Tio riktade
+robotfall med en arbetare passerade: egna facit, NCM, sparande och redigering,
+avslut, gruppresultat samt bildfrågor. Publicering sker enbart via GitHub.
+
+## Publicering verifierad 2026-10-28
+
+PR23 är sammanslagen till master: `16ce82271337628a1b1a3396d9be0ee90f303958`.
+Vercel-projektet sekvens har produktionsdeployment
+`dpl_BbXaS6ECwFFnHtA36qJLRwKfPsj2` READY på detta SHA med
+`matematik.ximon.se` som alias. Den aktiva domänen serverar
+`index-Dry9GKK5.js` med den nya redigeraren. Autentiserad lärarläsning
+verifierade åtkomst och de avsedda mottagarnas aktuella utdelningsbarhet.
+
+Ingen faktisk elevutdelning gjordes. Den lokala assignment-authoring-skillen
+kräver separat granskning av aktuell innehållsversion och exakta mottagare
+genom serverns godkännandeflöde. Det separat byggda materialgranskningsflödet
+är ännu opublicerat och ingick inte i PR23. Ingen alternativ utdelningsväg
+användes. Nästa beslut gäller publicering av detta separata flöde.

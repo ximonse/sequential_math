@@ -1,0 +1,947 @@
+{
+  "synthetic": true,
+  "fixture": "--demo-screening",
+  "audience": {
+    "targetType": "class",
+    "targetId": "mcp-demo",
+    "name": "MCP-demoklass",
+    "pupils": [
+      {
+        "studentId": "4D43502044656D6F204F6E6500000000",
+        "codeName": "MCP Demo One",
+        "classIds": [
+          "mcp-demo"
+        ]
+      },
+      {
+        "studentId": "4D43502044656D6F2054776F00000000",
+        "codeName": "MCP Demo Two",
+        "classIds": [
+          "mcp-demo"
+        ]
+      }
+    ],
+    "rosterRevision": "91072bbf04839f069f926e32671ebe7d3513274c8289f633e60b78f087a3c796",
+    "total": 2,
+    "nextOffset": null,
+    "membershipBasis": "current",
+    "historicalMembership": "unknown"
+  },
+  "pupils": [
+    {
+      "pupil": {
+        "studentId": "4D43502044656D6F204F6E6500000000",
+        "codeName": "MCP Demo One",
+        "classIds": [
+          "mcp-demo"
+        ]
+      },
+      "scope": {
+        "studentId": "4D43502044656D6F204F6E6500000000",
+        "classId": "mcp-demo",
+        "from": "2026-10-15",
+        "to": "2026-10-29",
+        "source": "all"
+      },
+      "evidence": {
+        "schemaVersion": 1,
+        "studentId": "4D43502044656D6F204F6E6500000000",
+        "classId": "mcp-demo",
+        "source": "all",
+        "period": {
+          "from": "2026-10-15",
+          "to": "2026-10-29",
+          "timeZone": "Europe/Stockholm",
+          "startInclusive": 1792015200000,
+          "endExclusive": 1793314800000
+        },
+        "snapshotRevision": "6c556b0c476df0b9f632ec491f31cb8d9717021ff7b8b0b7090e87a07ce37d59",
+        "coverage": {
+          "practice": {
+            "source": "problemLog",
+            "completeness": "unknown",
+            "storedRecords": 4,
+            "duplicateRecords": 0,
+            "invalidTimestamps": 0,
+            "earliestAvailable": 1793059325776,
+            "latestAvailable": 1793059328776,
+            "warnings": [
+              "history_completeness_unknown"
+            ]
+          },
+          "screening": {
+            "completeness": "unknown",
+            "indexedAttempts": 2,
+            "invalidRecords": 0,
+            "periodBasis": "latest_saved_activity_per_attempt",
+            "warnings": [
+              "assignment_index_completeness_unknown"
+            ]
+          }
+        },
+        "total": 6,
+        "entries": [
+          {
+            "source": "practice",
+            "timestamp": 1793059325776,
+            "timeBasis": "answer_timestamp",
+            "reference": {
+              "kind": "observation",
+              "observationId": "robot-table-history-4D43502044656D6F204F6E6500000000-0:1793059325776",
+              "collection": "problemLog",
+              "position": 0,
+              "revision": "b28654269a5f67ef04c29c004186b1389e905574b1e13f04033e4d2c5928e8e0"
+            },
+            "question": {
+              "problemId": "robot-table-history-4D43502044656D6F204F6E6500000000-0",
+              "domain": "arithmetic",
+              "skill": "multiplication",
+              "operation": "multiplication",
+              "problemType": "mul_table_drill",
+              "values": {
+                "a": 7,
+                "b": 1
+              }
+            },
+            "answer": {
+              "status": "correct",
+              "studentAnswer": 7,
+              "correctAnswer": 7,
+              "partialCode": null,
+              "partialDetail": null
+            },
+            "context": {
+              "classIdAtAttempt": "mcp-demo",
+              "level": 4,
+              "contentSkill": "multiplication",
+              "evidenceSkill": "mul_table_7",
+              "evidenceClass": "practice_only",
+              "trainingContext": {
+                "version": 1,
+                "frameId": "robot-table-history-4D43502044656D6F204F6E6500000000",
+                "mode": "table_drill",
+                "source": "student_focus",
+                "assignmentId": "",
+                "assignmentKind": "",
+                "allowedSkills": [
+                  "multiplication"
+                ],
+                "levelRange": null,
+                "tableSet": [
+                  7
+                ],
+                "progressionMode": "challenge"
+              },
+              "trainingMode": "table_drill",
+              "timeSpent": 3,
+              "speedTimeSec": 3
+            },
+            "interpretation": {
+              "category": "none",
+              "patterns": [],
+              "detail": null
+            },
+            "ref": "bfc06f485f07adbb42a680126664d8c9b83a985630397c276f2decdc58727e48"
+          },
+          {
+            "source": "practice",
+            "timestamp": 1793059326776,
+            "timeBasis": "answer_timestamp",
+            "reference": {
+              "kind": "observation",
+              "observationId": "robot-table-history-4D43502044656D6F204F6E6500000000-1:1793059326776",
+              "collection": "problemLog",
+              "position": 1,
+              "revision": "bde27ffc745cc65c244b42efd83efcd48e0c307c25cea3bd52dcca71ec3c29a0"
+            },
+            "question": {
+              "problemId": "robot-table-history-4D43502044656D6F204F6E6500000000-1",
+              "domain": "arithmetic",
+              "skill": "multiplication",
+              "operation": "multiplication",
+              "problemType": "mul_table_drill",
+              "values": {
+                "a": 7,
+                "b": 2
+              }
+            },
+            "answer": {
+              "status": "correct",
+              "studentAnswer": 14,
+              "correctAnswer": 14,
+              "partialCode": null,
+              "partialDetail": null
+            },
+            "context": {
+              "classIdAtAttempt": "mcp-demo",
+              "level": 4,
+              "contentSkill": "multiplication",
+              "evidenceSkill": "mul_table_7",
+              "evidenceClass": "practice_only",
+              "trainingContext": {
+                "version": 1,
+                "frameId": "robot-table-history-4D43502044656D6F204F6E6500000000",
+                "mode": "table_drill",
+                "source": "student_focus",
+                "assignmentId": "",
+                "assignmentKind": "",
+                "allowedSkills": [
+                  "multiplication"
+                ],
+                "levelRange": null,
+                "tableSet": [
+                  7
+                ],
+                "progressionMode": "challenge"
+              },
+              "trainingMode": "table_drill",
+              "timeSpent": 3,
+              "speedTimeSec": 3
+            },
+            "interpretation": {
+              "category": "none",
+              "patterns": [],
+              "detail": null
+            },
+            "ref": "680b37070cf2b003298bd8f8bbc8c84c93ba1e1608981bfbfcb450b012f9f428"
+          },
+          {
+            "source": "practice",
+            "timestamp": 1793059327776,
+            "timeBasis": "answer_timestamp",
+            "reference": {
+              "kind": "observation",
+              "observationId": "robot-table-history-4D43502044656D6F204F6E6500000000-2:1793059327776",
+              "collection": "problemLog",
+              "position": 2,
+              "revision": "1b5bbe3db21557f8b030cf97b050a3bd30b0c1bc96360d7fbff419015204c32f"
+            },
+            "question": {
+              "problemId": "robot-table-history-4D43502044656D6F204F6E6500000000-2",
+              "domain": "arithmetic",
+              "skill": "multiplication",
+              "operation": "multiplication",
+              "problemType": "mul_table_drill",
+              "values": {
+                "a": 7,
+                "b": 3
+              }
+            },
+            "answer": {
+              "status": "incorrect",
+              "studentAnswer": 22,
+              "correctAnswer": 21,
+              "partialCode": null,
+              "partialDetail": null
+            },
+            "context": {
+              "classIdAtAttempt": "mcp-demo",
+              "level": 4,
+              "contentSkill": "multiplication",
+              "evidenceSkill": "mul_table_7",
+              "evidenceClass": "practice_only",
+              "trainingContext": {
+                "version": 1,
+                "frameId": "robot-table-history-4D43502044656D6F204F6E6500000000",
+                "mode": "table_drill",
+                "source": "student_focus",
+                "assignmentId": "",
+                "assignmentKind": "",
+                "allowedSkills": [
+                  "multiplication"
+                ],
+                "levelRange": null,
+                "tableSet": [
+                  7
+                ],
+                "progressionMode": "challenge"
+              },
+              "trainingMode": "table_drill",
+              "timeSpent": 3,
+              "speedTimeSec": 3
+            },
+            "interpretation": {
+              "category": "knowledge",
+              "patterns": [],
+              "detail": null
+            },
+            "ref": "5c9a94b22584ea8095d8e92a43dc531c623f56d0f314aa76a5ca1f786c3f165c"
+          },
+          {
+            "source": "practice",
+            "timestamp": 1793059328776,
+            "timeBasis": "answer_timestamp",
+            "reference": {
+              "kind": "observation",
+              "observationId": "robot-table-history-4D43502044656D6F204F6E6500000000-3:1793059328776",
+              "collection": "problemLog",
+              "position": 3,
+              "revision": "154605e3bbee5c106e3af90d618a210a5d903151ef981a4a9ba07a39007bd884"
+            },
+            "question": {
+              "problemId": "robot-table-history-4D43502044656D6F204F6E6500000000-3",
+              "domain": "arithmetic",
+              "skill": "multiplication",
+              "operation": "multiplication",
+              "problemType": "mul_table_drill",
+              "values": {
+                "a": 7,
+                "b": 4
+              }
+            },
+            "answer": {
+              "status": "incorrect",
+              "studentAnswer": 29,
+              "correctAnswer": 28,
+              "partialCode": null,
+              "partialDetail": null
+            },
+            "context": {
+              "classIdAtAttempt": "mcp-demo",
+              "level": 4,
+              "contentSkill": "multiplication",
+              "evidenceSkill": "mul_table_7",
+              "evidenceClass": "practice_only",
+              "trainingContext": {
+                "version": 1,
+                "frameId": "robot-table-history-4D43502044656D6F204F6E6500000000",
+                "mode": "table_drill",
+                "source": "student_focus",
+                "assignmentId": "",
+                "assignmentKind": "",
+                "allowedSkills": [
+                  "multiplication"
+                ],
+                "levelRange": null,
+                "tableSet": [
+                  7
+                ],
+                "progressionMode": "challenge"
+              },
+              "trainingMode": "table_drill",
+              "timeSpent": 3,
+              "speedTimeSec": 3
+            },
+            "interpretation": {
+              "category": "knowledge",
+              "patterns": [],
+              "detail": null
+            },
+            "ref": "6f3d65df3fb8acd5ee2f7276e6991d833d40956a1f3f230945ad253027bd9cb5"
+          },
+          {
+            "source": "screening",
+            "timestamp": 1793232125962,
+            "timeBasis": "latest_saved_client_event",
+            "reference": {
+              "kind": "screening_attempt",
+              "attemptId": "1193edb8d605ecce7e44a3448966dfed",
+              "assignmentId": "42a2927420c9fa4ba5a0e9652b939ff5",
+              "assignmentItemId": "11824588dcfd8ee38d43953bfa208f9e",
+              "schemeVersion": 1,
+              "observationRevisionId": "1193edb8d605ecce7e44a3448966dfed:r1:s13",
+              "serverRevision": 1,
+              "lastSequence": 13
+            },
+            "question": {
+              "taskId": "sub-through-zero-001",
+              "taskVersion": 1,
+              "promptSv": "Räkna ut 402 − 178.",
+              "operation": "subtraction",
+              "operands": [
+                402,
+                178
+              ]
+            },
+            "answer": {
+              "status": "unanswered",
+              "studentAnswer": null,
+              "correctAnswer": 224,
+              "submitted": false,
+              "answerEmpty": true,
+              "gridHasContent": true,
+              "drawingHasStrokes": false,
+              "workWithoutAnswer": true,
+              "occupiedCells": 10,
+              "resultInterpretation": "not_inferred"
+            },
+            "context": {
+              "evidenceClass": "diagnostic_only",
+              "classIdAtAttempt": "mcp-demo",
+              "status": "in_progress",
+              "createdAt": 1793232125960,
+              "timeQuality": "client_reported"
+            },
+            "interpretation": {
+              "category": "unknown",
+              "patterns": [],
+              "detail": null
+            },
+            "ref": "91ba449ad428a25f958f0a8015390e24fe0739ecee9f7e2e367618c935a7d0c1"
+          },
+          {
+            "source": "screening",
+            "timestamp": 1793232125969,
+            "timeBasis": "latest_saved_client_event",
+            "reference": {
+              "kind": "screening_attempt",
+              "attemptId": "335bc850c4586e8f2ed527148b165dca",
+              "assignmentId": "42a2927420c9fa4ba5a0e9652b939ff5",
+              "assignmentItemId": "e2cb045b5d6e5dda4283a589ed2fb5c0",
+              "schemeVersion": 1,
+              "observationRevisionId": "335bc850c4586e8f2ed527148b165dca:r1:s12",
+              "serverRevision": 1,
+              "lastSequence": 12
+            },
+            "question": {
+              "taskId": "sub-no-exchange-001",
+              "taskVersion": 1,
+              "promptSv": "Räkna ut 764 − 231.",
+              "operation": "subtraction",
+              "operands": [
+                764,
+                231
+              ]
+            },
+            "answer": {
+              "status": "correct",
+              "studentAnswer": "533",
+              "correctAnswer": 533,
+              "submitted": false,
+              "answerEmpty": false,
+              "gridHasContent": true,
+              "drawingHasStrokes": false,
+              "workWithoutAnswer": false,
+              "occupiedCells": 10,
+              "resultInterpretation": "not_inferred"
+            },
+            "context": {
+              "evidenceClass": "diagnostic_only",
+              "classIdAtAttempt": "mcp-demo",
+              "status": "in_progress",
+              "createdAt": 1793232125968,
+              "timeQuality": "client_reported"
+            },
+            "interpretation": {
+              "category": "unknown",
+              "patterns": [],
+              "detail": null
+            },
+            "ref": "f3e279eb4491318a9497a2f5c4cebd03bc96596cde55c8a0d8c953cbb6e55bef"
+          }
+        ],
+        "nextCursor": null
+      },
+      "notebooks": [
+        {
+          "schemaVersion": 1,
+          "studentId": "4D43502044656D6F204F6E6500000000",
+          "classId": "mcp-demo",
+          "snapshotRevision": "6c556b0c476df0b9f632ec491f31cb8d9717021ff7b8b0b7090e87a07ce37d59",
+          "ref": "91ba449ad428a25f958f0a8015390e24fe0739ecee9f7e2e367618c935a7d0c1",
+          "reference": {
+            "kind": "screening_attempt",
+            "attemptId": "1193edb8d605ecce7e44a3448966dfed",
+            "assignmentId": "42a2927420c9fa4ba5a0e9652b939ff5",
+            "assignmentItemId": "11824588dcfd8ee38d43953bfa208f9e",
+            "schemeVersion": 1,
+            "observationRevisionId": "1193edb8d605ecce7e44a3448966dfed:r1:s13",
+            "serverRevision": 1,
+            "lastSequence": 13
+          },
+          "notebook": {
+            "schemaVersion": 1,
+            "status": {
+              "answerEmpty": true,
+              "gridHasContent": true,
+              "drawingHasStrokes": false,
+              "workWithoutAnswer": true,
+              "occupiedCells": 10,
+              "resultInterpretation": "not_inferred"
+            },
+            "gridEnabled": true,
+            "bounds": {
+              "firstRow": 0,
+              "lastRow": 2,
+              "firstColumn": 0,
+              "lastColumn": 3
+            },
+            "rows": 3,
+            "columns": 4,
+            "cellAspectRatio": 1.6,
+            "text": "Columns 1–4. · = empty; {note} = small digit; {struck} = crossed out.\nr1: · | 4 | 0{note:10}{struck} | 2\nr2: − | 1 | 7 | 8\nr3: · | 3 | 7 | 6\nhorizontal r2c1–r2c4 (grid-border)\nDrawing: 0 saved strokes; not transcribed."
+          }
+        },
+        {
+          "schemaVersion": 1,
+          "studentId": "4D43502044656D6F204F6E6500000000",
+          "classId": "mcp-demo",
+          "snapshotRevision": "6c556b0c476df0b9f632ec491f31cb8d9717021ff7b8b0b7090e87a07ce37d59",
+          "ref": "f3e279eb4491318a9497a2f5c4cebd03bc96596cde55c8a0d8c953cbb6e55bef",
+          "reference": {
+            "kind": "screening_attempt",
+            "attemptId": "335bc850c4586e8f2ed527148b165dca",
+            "assignmentId": "42a2927420c9fa4ba5a0e9652b939ff5",
+            "assignmentItemId": "e2cb045b5d6e5dda4283a589ed2fb5c0",
+            "schemeVersion": 1,
+            "observationRevisionId": "335bc850c4586e8f2ed527148b165dca:r1:s12",
+            "serverRevision": 1,
+            "lastSequence": 12
+          },
+          "notebook": {
+            "schemaVersion": 1,
+            "status": {
+              "answerEmpty": false,
+              "gridHasContent": true,
+              "drawingHasStrokes": false,
+              "workWithoutAnswer": false,
+              "occupiedCells": 10,
+              "resultInterpretation": "not_inferred"
+            },
+            "gridEnabled": true,
+            "bounds": {
+              "firstRow": 0,
+              "lastRow": 2,
+              "firstColumn": 0,
+              "lastColumn": 3
+            },
+            "rows": 3,
+            "columns": 4,
+            "cellAspectRatio": 1.6,
+            "text": "Columns 1–4. · = empty; {note} = small digit; {struck} = crossed out.\nr1: · | 7 | 6 | 4\nr2: − | 2 | 3 | 1\nr3: · | 5 | 3 | 3\nhorizontal r2c1–r2c4 (grid-border)\nDrawing: 0 saved strokes; not transcribed."
+          }
+        }
+      ]
+    },
+    {
+      "pupil": {
+        "studentId": "4D43502044656D6F2054776F00000000",
+        "codeName": "MCP Demo Two",
+        "classIds": [
+          "mcp-demo"
+        ]
+      },
+      "scope": {
+        "studentId": "4D43502044656D6F2054776F00000000",
+        "classId": "mcp-demo",
+        "from": "2026-10-15",
+        "to": "2026-10-29",
+        "source": "all"
+      },
+      "evidence": {
+        "schemaVersion": 1,
+        "studentId": "4D43502044656D6F2054776F00000000",
+        "classId": "mcp-demo",
+        "source": "all",
+        "period": {
+          "from": "2026-10-15",
+          "to": "2026-10-29",
+          "timeZone": "Europe/Stockholm",
+          "startInclusive": 1792015200000,
+          "endExclusive": 1793314800000
+        },
+        "snapshotRevision": "91aae33323060ecd4a61ecec0dbeb9120c2eb8b629d6073380f7f4c23002190b",
+        "coverage": {
+          "practice": {
+            "source": "problemLog",
+            "completeness": "unknown",
+            "storedRecords": 6,
+            "duplicateRecords": 0,
+            "invalidTimestamps": 0,
+            "earliestAvailable": 1793059325777,
+            "latestAvailable": 1793059330777,
+            "warnings": [
+              "history_completeness_unknown"
+            ]
+          },
+          "screening": {
+            "completeness": "unknown",
+            "indexedAttempts": 0,
+            "invalidRecords": 0,
+            "periodBasis": "latest_saved_activity_per_attempt",
+            "warnings": [
+              "assignment_index_completeness_unknown"
+            ]
+          }
+        },
+        "total": 6,
+        "entries": [
+          {
+            "source": "practice",
+            "timestamp": 1793059325777,
+            "timeBasis": "answer_timestamp",
+            "reference": {
+              "kind": "observation",
+              "observationId": "robot-table-history-4D43502044656D6F2054776F00000000-0:1793059325777",
+              "collection": "problemLog",
+              "position": 0,
+              "revision": "f23d3426cf2e877d14b90894d110c795070b692c81556be69142ec4bad0463d9"
+            },
+            "question": {
+              "problemId": "robot-table-history-4D43502044656D6F2054776F00000000-0",
+              "domain": "arithmetic",
+              "skill": "multiplication",
+              "operation": "multiplication",
+              "problemType": "mul_table_drill",
+              "values": {
+                "a": 7,
+                "b": 1
+              }
+            },
+            "answer": {
+              "status": "correct",
+              "studentAnswer": 7,
+              "correctAnswer": 7,
+              "partialCode": null,
+              "partialDetail": null
+            },
+            "context": {
+              "classIdAtAttempt": "mcp-demo",
+              "level": 4,
+              "contentSkill": "multiplication",
+              "evidenceSkill": "mul_table_7",
+              "evidenceClass": "practice_only",
+              "trainingContext": {
+                "version": 1,
+                "frameId": "robot-table-history-4D43502044656D6F2054776F00000000",
+                "mode": "table_drill",
+                "source": "student_focus",
+                "assignmentId": "",
+                "assignmentKind": "",
+                "allowedSkills": [
+                  "multiplication"
+                ],
+                "levelRange": null,
+                "tableSet": [
+                  7
+                ],
+                "progressionMode": "challenge"
+              },
+              "trainingMode": "table_drill",
+              "timeSpent": 3,
+              "speedTimeSec": 3
+            },
+            "interpretation": {
+              "category": "none",
+              "patterns": [],
+              "detail": null
+            },
+            "ref": "da90f3dcaf2960acb8aa2e5530aed180553aa995a169d115bf3dca98f99c96fd"
+          },
+          {
+            "source": "practice",
+            "timestamp": 1793059326777,
+            "timeBasis": "answer_timestamp",
+            "reference": {
+              "kind": "observation",
+              "observationId": "robot-table-history-4D43502044656D6F2054776F00000000-1:1793059326777",
+              "collection": "problemLog",
+              "position": 1,
+              "revision": "bf5aeac1cc8f35cd48070e5271e89204743b16c2706d7a8fe6e50e5f3b7345d8"
+            },
+            "question": {
+              "problemId": "robot-table-history-4D43502044656D6F2054776F00000000-1",
+              "domain": "arithmetic",
+              "skill": "multiplication",
+              "operation": "multiplication",
+              "problemType": "mul_table_drill",
+              "values": {
+                "a": 7,
+                "b": 2
+              }
+            },
+            "answer": {
+              "status": "correct",
+              "studentAnswer": 14,
+              "correctAnswer": 14,
+              "partialCode": null,
+              "partialDetail": null
+            },
+            "context": {
+              "classIdAtAttempt": "mcp-demo",
+              "level": 4,
+              "contentSkill": "multiplication",
+              "evidenceSkill": "mul_table_7",
+              "evidenceClass": "practice_only",
+              "trainingContext": {
+                "version": 1,
+                "frameId": "robot-table-history-4D43502044656D6F2054776F00000000",
+                "mode": "table_drill",
+                "source": "student_focus",
+                "assignmentId": "",
+                "assignmentKind": "",
+                "allowedSkills": [
+                  "multiplication"
+                ],
+                "levelRange": null,
+                "tableSet": [
+                  7
+                ],
+                "progressionMode": "challenge"
+              },
+              "trainingMode": "table_drill",
+              "timeSpent": 3,
+              "speedTimeSec": 3
+            },
+            "interpretation": {
+              "category": "none",
+              "patterns": [],
+              "detail": null
+            },
+            "ref": "e6c463854baaca3d877e632000270deca12fa35cf39d4329fb2dff013ea37352"
+          },
+          {
+            "source": "practice",
+            "timestamp": 1793059327777,
+            "timeBasis": "answer_timestamp",
+            "reference": {
+              "kind": "observation",
+              "observationId": "robot-table-history-4D43502044656D6F2054776F00000000-2:1793059327777",
+              "collection": "problemLog",
+              "position": 2,
+              "revision": "df0e578d7beb65550d26251bddc3d1b23639649be82e7bd09f56189e13af5450"
+            },
+            "question": {
+              "problemId": "robot-table-history-4D43502044656D6F2054776F00000000-2",
+              "domain": "arithmetic",
+              "skill": "multiplication",
+              "operation": "multiplication",
+              "problemType": "mul_table_drill",
+              "values": {
+                "a": 7,
+                "b": 3
+              }
+            },
+            "answer": {
+              "status": "correct",
+              "studentAnswer": 21,
+              "correctAnswer": 21,
+              "partialCode": null,
+              "partialDetail": null
+            },
+            "context": {
+              "classIdAtAttempt": "mcp-demo",
+              "level": 4,
+              "contentSkill": "multiplication",
+              "evidenceSkill": "mul_table_7",
+              "evidenceClass": "practice_only",
+              "trainingContext": {
+                "version": 1,
+                "frameId": "robot-table-history-4D43502044656D6F2054776F00000000",
+                "mode": "table_drill",
+                "source": "student_focus",
+                "assignmentId": "",
+                "assignmentKind": "",
+                "allowedSkills": [
+                  "multiplication"
+                ],
+                "levelRange": null,
+                "tableSet": [
+                  7
+                ],
+                "progressionMode": "challenge"
+              },
+              "trainingMode": "table_drill",
+              "timeSpent": 3,
+              "speedTimeSec": 3
+            },
+            "interpretation": {
+              "category": "none",
+              "patterns": [],
+              "detail": null
+            },
+            "ref": "139d50dee3a61405537e57849c6661e60ba05068d7b7f9171ba65dcc8d9abb13"
+          },
+          {
+            "source": "practice",
+            "timestamp": 1793059328777,
+            "timeBasis": "answer_timestamp",
+            "reference": {
+              "kind": "observation",
+              "observationId": "robot-table-history-4D43502044656D6F2054776F00000000-3:1793059328777",
+              "collection": "problemLog",
+              "position": 3,
+              "revision": "f8b931e3d9b2ff999e8fda59d7252b31ebf3d64524fcb94a0f89a880f721cf75"
+            },
+            "question": {
+              "problemId": "robot-table-history-4D43502044656D6F2054776F00000000-3",
+              "domain": "arithmetic",
+              "skill": "multiplication",
+              "operation": "multiplication",
+              "problemType": "mul_table_drill",
+              "values": {
+                "a": 7,
+                "b": 4
+              }
+            },
+            "answer": {
+              "status": "correct",
+              "studentAnswer": 28,
+              "correctAnswer": 28,
+              "partialCode": null,
+              "partialDetail": null
+            },
+            "context": {
+              "classIdAtAttempt": "mcp-demo",
+              "level": 4,
+              "contentSkill": "multiplication",
+              "evidenceSkill": "mul_table_7",
+              "evidenceClass": "practice_only",
+              "trainingContext": {
+                "version": 1,
+                "frameId": "robot-table-history-4D43502044656D6F2054776F00000000",
+                "mode": "table_drill",
+                "source": "student_focus",
+                "assignmentId": "",
+                "assignmentKind": "",
+                "allowedSkills": [
+                  "multiplication"
+                ],
+                "levelRange": null,
+                "tableSet": [
+                  7
+                ],
+                "progressionMode": "challenge"
+              },
+              "trainingMode": "table_drill",
+              "timeSpent": 3,
+              "speedTimeSec": 3
+            },
+            "interpretation": {
+              "category": "none",
+              "patterns": [],
+              "detail": null
+            },
+            "ref": "79f0c583d6542c35b0840a6c2f4e8a24707501198abb35111fff7ff78e6438f4"
+          },
+          {
+            "source": "practice",
+            "timestamp": 1793059329777,
+            "timeBasis": "answer_timestamp",
+            "reference": {
+              "kind": "observation",
+              "observationId": "robot-table-history-4D43502044656D6F2054776F00000000-4:1793059329777",
+              "collection": "problemLog",
+              "position": 4,
+              "revision": "77d9ced830cb9963889732ab588d16cd37ccda47c77749c9486b6a4a396b2d7c"
+            },
+            "question": {
+              "problemId": "robot-table-history-4D43502044656D6F2054776F00000000-4",
+              "domain": "arithmetic",
+              "skill": "multiplication",
+              "operation": "multiplication",
+              "problemType": "mul_table_drill",
+              "values": {
+                "a": 7,
+                "b": 5
+              }
+            },
+            "answer": {
+              "status": "correct",
+              "studentAnswer": 35,
+              "correctAnswer": 35,
+              "partialCode": null,
+              "partialDetail": null
+            },
+            "context": {
+              "classIdAtAttempt": "mcp-demo",
+              "level": 4,
+              "contentSkill": "multiplication",
+              "evidenceSkill": "mul_table_7",
+              "evidenceClass": "practice_only",
+              "trainingContext": {
+                "version": 1,
+                "frameId": "robot-table-history-4D43502044656D6F2054776F00000000",
+                "mode": "table_drill",
+                "source": "student_focus",
+                "assignmentId": "",
+                "assignmentKind": "",
+                "allowedSkills": [
+                  "multiplication"
+                ],
+                "levelRange": null,
+                "tableSet": [
+                  7
+                ],
+                "progressionMode": "challenge"
+              },
+              "trainingMode": "table_drill",
+              "timeSpent": 3,
+              "speedTimeSec": 3
+            },
+            "interpretation": {
+              "category": "none",
+              "patterns": [],
+              "detail": null
+            },
+            "ref": "18963538b66af40bb48c90a9dceb5d204d6c88dfda4560393f23500e568bd6f5"
+          },
+          {
+            "source": "practice",
+            "timestamp": 1793059330777,
+            "timeBasis": "answer_timestamp",
+            "reference": {
+              "kind": "observation",
+              "observationId": "robot-table-history-4D43502044656D6F2054776F00000000-5:1793059330777",
+              "collection": "problemLog",
+              "position": 5,
+              "revision": "207517606cef7963fce327ef927d4e9a79aa5cea871fa111baa0309d5317786a"
+            },
+            "question": {
+              "problemId": "robot-table-history-4D43502044656D6F2054776F00000000-5",
+              "domain": "arithmetic",
+              "skill": "multiplication",
+              "operation": "multiplication",
+              "problemType": "mul_table_drill",
+              "values": {
+                "a": 7,
+                "b": 6
+              }
+            },
+            "answer": {
+              "status": "incorrect",
+              "studentAnswer": 43,
+              "correctAnswer": 42,
+              "partialCode": null,
+              "partialDetail": null
+            },
+            "context": {
+              "classIdAtAttempt": "mcp-demo",
+              "level": 4,
+              "contentSkill": "multiplication",
+              "evidenceSkill": "mul_table_7",
+              "evidenceClass": "practice_only",
+              "trainingContext": {
+                "version": 1,
+                "frameId": "robot-table-history-4D43502044656D6F2054776F00000000",
+                "mode": "table_drill",
+                "source": "student_focus",
+                "assignmentId": "",
+                "assignmentKind": "",
+                "allowedSkills": [
+                  "multiplication"
+                ],
+                "levelRange": null,
+                "tableSet": [
+                  7
+                ],
+                "progressionMode": "challenge"
+              },
+              "trainingMode": "table_drill",
+              "timeSpent": 3,
+              "speedTimeSec": 3
+            },
+            "interpretation": {
+              "category": "knowledge",
+              "patterns": [],
+              "detail": null
+            },
+            "ref": "e7aa4508c97bbd181a89154be77b070c5d1275b0458698bd4b1c696ea2d47157"
+          }
+        ],
+        "nextCursor": null
+      },
+      "notebooks": []
+    }
+  ]
+}

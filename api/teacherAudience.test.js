@@ -1,11 +1,11 @@
 import { beforeEach, expect, it, vi } from 'vitest'
-const mock = vi.hoisted(() => ({ get: vi.fn(), smembers: vi.fn(), auth: vi.fn(), access: vi.fn(), deleted: vi.fn() }))
-vi.mock('@vercel/kv', () => ({ kv: { get: mock.get, smembers: mock.smembers } }))
+const mock = vi.hoisted(() => ({ get: vi.fn(), mget: vi.fn(), eval: vi.fn(), smembers: vi.fn(), auth: vi.fn(), access: vi.fn(), deleted: vi.fn() }))
+vi.mock('@vercel/kv', () => ({ kv: { get: mock.get, mget: mock.mget, eval: mock.eval, smembers: mock.smembers } }))
 vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mock.auth }))
 vi.mock('./_studentAccess.js', () => ({ canAccessClass: mock.access }))
 vi.mock('./_studentStore.js', () => ({ isStudentDeleted: mock.deleted }))
 vi.mock('./_groupStore.js', () => ({ authCanManageGroup: (auth, group) => Boolean(auth && group?.teacherIds.includes(auth.teacherId)) }))
-import { teacherAudience, teacherGroupChoices } from './_teacherAudience.js'
+import { teacherAudience, teacherGroupChoices, assertTeacherAudienceTargetAccess } from './_teacherAudience.js'
 let records
 const response = () => ({ code: 200, setHeader() {}, status(code) { this.code = code; return this }, json(data) { this.data = data; return this } })
 async function call(query = {}) {
@@ -24,10 +24,25 @@ beforeEach(() => {
     'group:H': { id: 'H', name: 'Hemlig', teacherIds: ['OTHER'], pupilIds: ['FOREIGN'] }
   }
   mock.get.mockImplementation(async key => records[key] || null)
+  mock.mget.mockImplementation(async (...keys) => Promise.all(keys.map(key => mock.get(key))))
+  mock.eval.mockImplementation(async (_script, keys, [classId]) => (await mock.mget(...keys)).map(profile => profile &&
+    (profile.classId === classId || profile.classIds?.includes(classId)) ? profile : null))
   mock.smembers.mockImplementation(async key => key === 'students:index' ? ['P', 'Q', 'FOREIGN'] : ['G', 'H'])
   mock.auth.mockResolvedValue({ teacherId: 'T', role: 'teacher' })
   mock.access.mockImplementation(async (_req, id) => id === 'C')
   mock.deleted.mockResolvedValue(false)
+})
+it('checks frozen-draft target permissions without loading the current global roster', async () => {
+  mock.smembers.mockRejectedValue(Error('No roster read needed'))
+  mock.eval.mockRejectedValue(Error('No profile scan needed'))
+  await expect(assertTeacherAudienceTargetAccess({}, 'class', 'C', 'T')).resolves.toBeUndefined()
+  await expect(assertTeacherAudienceTargetAccess({}, 'group', 'G', 'T')).resolves.toBeUndefined()
+  await expect(assertTeacherAudienceTargetAccess({}, 'group', 'H', 'T')).rejects.toMatchObject({ status: 403 })
+  await expect(assertTeacherAudienceTargetAccess({}, 'class', 'D', 'T')).rejects.toMatchObject({ status: 403 })
+  await expect(assertTeacherAudienceTargetAccess({}, 'class', 'C', 'OTHER')).rejects.toMatchObject({ status: 401 })
+  await expect(assertTeacherAudienceTargetAccess({}, 'unknown', 'C', 'T')).rejects.toMatchObject({ status: 400 })
+  mock.deleted.mockResolvedValue(true)
+  await expect(assertTeacherAudienceTargetAccess({}, 'student', 'P', 'T')).rejects.toMatchObject({ status: 409 })
 })
 it('returns exact class roster including secondary members with minimal metadata, revision paging and unknown historical membership', async () => {
   const first = await call({ limit: 1 })
@@ -45,6 +60,17 @@ it('includes pupils with no answer data and supports an empty class without inve
   records['student:P'].classIds = ['D']; records['student:Q'].classId = 'D'
   expect((await call()).data).toMatchObject({ total: 0, pupils: [], nextOffset: null })
 })
+it('ignores unrelated legacy IDs in the global index but rejects unsupported IDs in the chosen class or group', async () => {
+  records['student:legacy:foreign'] = { studentId: 'legacy:foreign', classId: 'D' }
+  mock.smembers.mockImplementation(async key => key === 'students:index' ? ['P', 'Q', 'legacy:foreign'] : ['G', 'H'])
+  const selected = await call()
+  expect(selected.code).toBe(200)
+  expect(selected.data.pupils.map(pupil => pupil.studentId)).toEqual(['P', 'Q'])
+  records['student:legacy:foreign'].classId = 'C'
+  expect((await call()).code).toBe(409)
+  records['group:G'].pupilIds.push('legacy:foreign')
+  expect((await call({ targetType: 'group', targetId: 'G' })).code).toBe(409)
+})
 it('fails explicitly for inaccessible or deleted group members instead of silently dropping them', async () => {
   expect((await call({ targetType: 'group', targetId: 'G' })).data.total).toBe(2)
   mock.deleted.mockImplementation(async id => id === 'Q')
@@ -53,6 +79,45 @@ it('fails explicitly for inaccessible or deleted group members instead of silent
   records['group:G'].pupilIds.push('FOREIGN')
   expect((await call({ targetType: 'group', targetId: 'G' })).code).toBe(403)
   expect((await call({ targetType: 'group', targetId: 'H' })).code).toBe(403)
+})
+it('does not inspect unrelated pupil deletion records while resolving a class', async () => {
+  mock.deleted.mockImplementation(async id => {
+    if (id === 'FOREIGN') throw Error('Unrelated storage must not delay or block this class')
+    return id === 'Q'
+  })
+  const selected = await call()
+  expect(selected.code).toBe(200)
+  expect(selected.data.pupils.map(pupil => pupil.studentId)).toEqual(['P'])
+  expect((await call({ targetType: 'group', targetId: 'G' })).code).toBe(409)
+})
+it('fails closed on a missing or failed profile batch instead of returning a partial roster', async () => {
+  mock.mget.mockResolvedValueOnce([records['student:P']])
+  mock.get.mockRejectedValueOnce(Error('Storage unavailable'))
+  expect((await call()).code).toBe(503)
+  mock.mget.mockRejectedValueOnce(Error('Storage unavailable'))
+  mock.get.mockRejectedValueOnce(Error('Storage unavailable'))
+  expect((await call()).code).toBe(503)
+})
+it('preserves the exact roster when the batch command is unavailable or exceeds the storage response limit', async () => {
+  mock.mget.mockResolvedValueOnce([records['student:P']])
+  expect((await call()).data.pupils.map(pupil => pupil.studentId)).toEqual(['P', 'Q'])
+  mock.mget.mockRejectedValueOnce(Error('Command unavailable'))
+  expect((await call()).data.pupils.map(pupil => pupil.studentId)).toEqual(['P', 'Q'])
+  mock.mget.mockImplementation(async (...keys) => {
+    if (keys.length > 1) throw Error('ERR max request size exceeded')
+    return [await mock.get(keys[0])]
+  })
+  expect((await call()).data.pupils.map(pupil => pupil.studentId)).toEqual(['P', 'Q'])
+})
+it('recovers exact primary and secondary members from smaller serialized reads after a script time limit', async () => {
+  mock.eval.mockImplementation(async (_script, keys, [classId]) => {
+    if (keys.length > 1) throw Error('ERR Error running script: execution timed out')
+    return keys.map(key => {
+      const profile = records[key]
+      return profile && (profile.classId === classId || profile.classIds?.includes(classId)) ? JSON.stringify(profile) : null
+    })
+  })
+  expect((await call()).data.pupils.map(pupil => pupil.studentId)).toEqual(['P', 'Q'])
 })
 it('rejects session changes, archived classes, invalid selectors and live roster changes', async () => {
   expect((await call({ targetType: 'everyone' })).code).toBe(400)

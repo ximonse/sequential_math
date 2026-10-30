@@ -27,15 +27,24 @@ export function createMathServer({ getApi, allowReportWrites = false, allowMater
       }
     })
   }
-  register('math_get_capabilities', 'Tillgängliga arbetsflöden', 'Read this first. Describes the actual pilot limits and synthetic demo period. Does not read pupil records.', {}, async () => ({
-    dataMode, reportWritesEnabled: allowReportWrites, assignmentPublication: false, followupDrafts: true, materialDraftWritesEnabled: allowMaterialWrites,
-    teacherCheckInWrites: false, materialPreview: true, analysisSchemaVersion: 1, transport: 'stdio', ...(demo ? { demo } : {}) }))
+  register('math_get_capabilities', 'Tillgängliga arbetsflöden', 'Read this first. Identifies the authenticated teacher and draft owner binding, actual pilot limits and synthetic demo period. Compare the teacher with the review account before saving. Does not read pupil records.', {}, async (_args, signal) => {
+    const api = await getApi(), teacher = await api.getIdentity(signal)
+    const accountBound = dataMode !== 'approved' || Boolean(api.expectedTeacherId)
+    return { dataMode, teacher, expectedTeacherId: api.expectedTeacherId || null,
+      accountBindingRequiredForWrites: dataMode === 'approved', reportWritesEnabled: allowReportWrites && accountBound,
+      assignmentPublication: false, followupDrafts: true, materialDraftWritesEnabled: allowMaterialWrites && accountBound,
+      teacherCheckInWrites: false, materialPreview: true, analysisSchemaVersion: 1, transport: 'stdio', ...(demo ? { demo } : {}) }
+  })
   register('math_find_classes', 'Sök tillgängliga klasser', 'Read-only class candidates, including empty authorized classes. Returns exact IDs and names only. Resolve an ambiguous name before choosing a classId; no login tokens, pupil records or class initialization.', {
     query: z.string().max(100).default(''), limit: z.number().int().min(1).max(50).default(20), offset: z.number().int().min(0).max(10000).default(0)
   }, async (args, signal) => (await getApi()).request(`/api/students?${new URLSearchParams({ resource: 'classes', ...args })}`, { signal }))
   register('math_find_groups', 'Sök tillgängliga grupper', 'Return authorized group ID/name candidates only. Duplicate names require explicit ID selection. Does not read pupil answers.', {
     query: z.string().max(100).default(''), limit: z.number().int().min(1).max(50).default(20), offset: z.number().int().min(0).max(10000).default(0)
   }, async (args, signal) => (await getApi()).request(`/api/students?${new URLSearchParams({ resource: 'groups', ...args })}`, { signal }))
+  register('math_list_material_drafts', 'Hitta sparade materialutkast', 'List this authenticated teacher private material draft metadata, including the latest version and review path. Rechecks access to every historical audience/source before returning a title. No pupil answers or material bodies. Page by nextOffset and preserve indexRevision; no approval or publication.', {
+    limit: z.number().int().min(1).max(20).default(10), offset: z.number().int().min(0).max(100).default(0),
+    indexRevision: z.string().regex(/^[a-f0-9]{64}$/u).optional()
+  }, async (args, signal) => (await getApi()).request(`/api/teacher-material?${new URLSearchParams({ resource: 'drafts', ...args })}`, { signal }))
   register('math_get_audience', 'Läs exakt elev-, grupp- eller klassurval', 'Read current authorized members including pupils with no answers. Preserve rosterRevision for paging. Historical membership is unknown. Use each pupil exact class ID for evidence; never treat group statistics as every pupil knowledge. Saves nothing.', {
     targetType: z.enum(['student', 'group', 'class']), targetId: id,
     limit: z.number().int().min(1).max(50).default(20), offset: z.number().int().min(0).max(10000).default(0),

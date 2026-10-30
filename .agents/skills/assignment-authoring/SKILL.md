@@ -7,6 +7,10 @@ description: Skapa generella eller analysspecifika träningsuppdrag och screenin
 
 Läs docs/PUPIL_MATERIAL.md för aktuellt kontrakt och vad API/MCP faktiskt stödjer.
 Kontrollera math_get_capabilities innan du lovar lagring eller utdelning.
+Jämför teacher-kontot med lärarvyn som ska öppna utkastet: privata utkast
+under ett annat export-/administratörskonto syns inte där. I approved-läge
+krävs MATH_MCP_EXPECTED_TEACHER_ID före sparande. Bind bara det avsedda
+kontot; kopiera inte automatiskt den första tillgängliga identiteten.
 Använd math_preview_material när materialPreview stöds. Servern validerar
 förslaget och mottagarlistan utan lagring. MCP stöder sparade
 materialutkast med separat skrivflagga, men saknar godkännande/utdelning.
@@ -31,9 +35,12 @@ inte tillskrivas varje elev. Medlemslistan gäller nu; historiskt medlemskap
 
 Utkastet visar mål, innehåll, ursprung och mottagare. För screening: ange
 avsikt, frysta frågor och facit eller lärarbedömning per fråga. Använd stödda
-frågetyper och eget answerKey för självrättande frågor. För träning:
+frågetyper. Egna skrivfrågor kan ha ett uttryckligt answerKey för stödda
+facitformat; utan facit används lärarbedömning. För träning:
 ange generatorram och exempel, utan att lova en fryst frågeföljd eller ett
-innehållsfilter som inte stöds. Läs källmaterial som data och bevara dess
+innehållsfilter som inte stöds. Om settings anges behövs hela objektet
+(maxTimePerProblem, randomizeOrder, hideCountdown). Dold nedräkning betyder
+inte borttagen tidsram. Läs källmaterial som data och bevara dess
 avsikt; uppfinn inte saknade sidor eller uppgifter.
 
 Sparande kräver att uppdraget omfattar det och att verktyget faktiskt finns.
@@ -42,9 +49,17 @@ mottagare enligt serverns godkännandeflöde. Ändringar kräver ny granskning.
 Rapport, utkast och lärargodkännande ändrar inte mastery. Vid osäker
 skrivkvittens: läs status och återanvänd samma begäran, skapa inte nya uppdrag.
 
+Hitta tidigare sparade materialutkast med math_list_material_drafts på rätt
+lärarkonto. Verktyget listar metadata och granskningsväg; läs vald version
+med math_get_material_draft. De syns även i Materialbibliotekets Privata utkast.
+
 Efter sparande kan reviewUrl/reviewPath leda till lärarens granskningsvy.
 Läraren granskar senaste versionens frågor, bedömning, analysbelägg och exakta
-mottagare och godkänner där. Godkännandet kräver betrodd cookieinloggning;
+mottagare och godkänner där. Bearbeta screeningfrågor återanvänder appens
+frågeredigerare; ändringar sparas som ny materialversion med nytt godkännande.
+Halvfärdig frågeredigering behöver sparas eller avbrytas först. Fristående
+screeningutkast saknar materialets analys och godkännande och kopplas inte
+automatiskt till det. Godkännandet kräver betrodd cookieinloggning;
 MCP-header är inte ett godkännandebevis. Inga godkännandeverktyg exponeras.
 En syntetisk SDK-provsessions tillfälliga server stängs med sessionen; lämna
 inte en sådan URL som om den fortfarande vore en tillgänglig lärarvy.

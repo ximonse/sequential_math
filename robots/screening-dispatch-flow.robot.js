@@ -50,6 +50,9 @@ test('Screening flow preserves mixed searchable recipients and retries uncertain
   await page.screenshot({ path: testInfo.outputPath('recipients-landscape.png'), fullPage: true })
   await page.setViewportSize({ width: 768, height: 1024 })
   await page.screenshot({ path: testInfo.outputPath('recipients-portrait.png'), fullPage: true })
+  await page.getByRole('combobox', { name: 'Välj tema', exact: true }).selectOption({ label: 'Mörkt' })
+  await page.screenshot({ path: testInfo.outputPath('recipients-dark-filled.png'), fullPage: true })
+  await page.getByRole('combobox', { name: 'Välj tema', exact: true }).selectOption({ label: 'Ljust' })
   await panel.getByRole('button', { name: 'Kontrollera utdelningen' }).click()
   let loseResponse = true
   await page.route('**/api/teacher-diagnostic-assignments', async route => {

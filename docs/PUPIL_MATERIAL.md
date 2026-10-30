@@ -19,6 +19,12 @@ noll kunskap. Gruppens felandel eller hypotes får inte tillskrivas alla elever.
 
 ## Befintlig läsning av mottagare
 
+Klassurvalets globala elevindex kan innehålla äldre ID-format. Lokalt rättat:
+en sådan post utanför vald klass ska inte blockera klassens mottagarlista.
+En faktisk medlem med ett format som materialkontraktet inte stöder avvisas
+fortfarande; inga mottagare tas tyst bort och inga produktionsposter ändras.
+Publiceringsstatus och reproduktionsbelägg finns i projektkartan.
+
 `GET /api/students?resource=groups&query=...&limit=...&offset=...` ger endast
 behöriga grupp-ID:n och namn. Dubblettnamn behålls och kräver exakt ID-val.
 MCP: `math_find_groups`. Klasser söks med befintliga `math_find_classes`.
@@ -71,6 +77,12 @@ verkligt skapande och förhandsvisning, men bara skapandefunktionen skriver.
 Matematikövningens talintervall måste vara säkra heltal, omfatta högst
 10 001 tal vardera och innehålla tal som matchar valt filter. Tomma filter
 avvisas för att förhindra generatorns befintliga återgång till ofiltrerade tal.
+Om `settings` anges måste hela objektet innehålla `maxTimePerProblem`,
+`randomizeOrder` och `hideCountdown`; ett partiellt objekt skulle ändras av
+normaliseringen och avvisas därför. `hideCountdown:true` döljer visningen,
+men tar inte bort tidsramen. Ange och granska tidsinställningen uttryckligt.
+MCP återger `invalid_material` med säker formatvägledning; rå feltext eller
+innehåll från API-svaret vidarebefordras inte till modellen.
 Svaret innehåller fulla frågesnapshots/bedömningsunderlag eller träningsram,
 exakta mottagare, contentRevision, saved=false, assigned=false och
 approval=not_requested. Ingen elev får uppdrag av denna operation.
@@ -97,6 +109,21 @@ historik. CAS för lagringsrevision och tombstone-kontroller stoppar samtidiga
 av en berörd elev tas hela utkasthistoriken bort, inklusive fria formuleringar;
 den förs inte till anonym statistik. Ingen automatisk rensning av äldre versioner.
 
+`GET /api/teacher-material?resource=drafts` listar det inloggade lärarkontots
+materialutkast. `limit` är 1–20, `offset` 0–100; nästa sida använder samma
+`indexRevision`. Ändrat ägarindex avvisas så att läsaren får börja om. Varje
+utkasts hela historiska åtkomst kontrolleras innan titel lämnas ut; borttagen
+åtkomst döljer utkastet och lagringsfel ger fel, inte en tom lista. Svaret
+innehåller bara draftId, revision, version, titleSv, kind, mode, updatedAt,
+approval och reviewPath samt sidmetadata. Frågor, elevlistor och analysunderlag
+ingår inte. Godkänt material är inte ett kvitto på utdelning.
+
+Materialbibliotekets befintliga lista **Privata utkast** visar både dessa
+materialutkast och fristående screeningutkast. De behåller sina separata
+lagringar och redigerare. Öppna granskning går till den listade versionen;
+osparade ändringar skyddas även vid återgång till lärarvyn eller elevprofil.
+
+MCP `math_list_material_drafts` erbjuder samma privata metadatalista.
 MCP `math_get_material_draft` läser summary/history/content/audience/basis/input/publication
 för en vald version; listsektioner har offset/limit. `math_save_material_draft`
 finns bara med separat startflagga `--allow-material-writes` eller
@@ -213,3 +240,32 @@ Versionsregressionen med samma normaliserade innehåll i två versioner är
 också rättad: åtgärds-ID:n i lärarvyn innehåller versionsnumret och servern
 avvisar återanvändning av ett annat versionsgodkännande. Robotprovet var rött
 före rättningen och passerar efteråt. Därefter passerade 188 testfiler/900 tester.
+
+### Integration med publicerad frågeredigering 2026-10-29
+
+Integrationsgrenen utgår nu även från master `177c92d` (PR #26). Den
+publicerade screeningöversikten, dess utkastbibliotek och mottagarflöde
+bevaras. Materialgranskningen återanvänder samma katalogval, facitredigerare
+och bildfrågeredigerare under **Bearbeta screeningfrågor**. Frågornas ordning
+bevaras, även när egna frågor av olika typer ligger blandade.
+
+Sparandet skapar en ny `teacher_material`-version med befintliga analysbelägg,
+källmaterial och mottagarkontext. Ett gammalt godkännande följer inte med.
+Halvfärdig frågeredigering finns kvar vid versionsbyte under den öppna
+sessionen och blockerar förhandsvisning, sparande, godkännande och utdelning
+tills frågan sparas eller redigeringen avbryts. Omladdning varnar om osparat
+arbete; halvfärdiga materialfrågor lagras inte automatiskt på servern.
+
+Fristående `screening_draft` är fortsatt ett separat innehållsutkast utan
+analys eller materialgodkännande. Att öppna eller spara ett sådant utkast
+importerar inte ett materialgodkännande. Det finns ingen automatisk kopiering
+mellan de två lagringarna. MCP kan fortsatt revidera både träningsram och
+screeninginnehåll genom den befintliga versionslagringen.
+
+Lokalt verifierat efter integrationen: 193 testfiler/951 tester, 19 MCP-prov,
+produktionsbuild och tolv berörda webbläsartester. Redigeringsprovet täcker
+blandad frågeordning, ändrat facit med bevarad rityta, bildfrågor, katalogval,
+halvfärdig text över versionsbyte, avbryt och nytt godkännande. Rityteprovet
+var rött före rättningen. Fyllda liggande och stående surfplattevyer har
+granskats visuellt i lokal Chromium-emulering. Ingen fysisk iPad, riktig
+elevdata, Upstash-transport eller produktionspublicering ingår i dessa prov.

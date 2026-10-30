@@ -1,4 +1,5 @@
 import { teacherImageAction } from './_screeningImages.js'
+import { teacherDraftAction } from './_screeningDraftStore.js'
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
 import { createDiagnosticAssignment, copyDiagnosticAssignment, stopDiagnosticAssignment } from './_diagnosticAssignmentStore.js'
@@ -20,6 +21,7 @@ export default async function handler(req, res) {
     if (!isSchoolAdminRole(auth.role, auth.isAdmin)) {
       return res.status(403).json({ error: 'Diagnostic pilot requires admin access' })
     }
+    if (req.query?.resource === 'drafts' || req.body?.action === 'save_draft') return await teacherDraftAction(req, res, auth.teacherId)
     const imageAction = ['figures', 'images'].includes(req.query?.resource) || ['upload_image', 'hide_image'].includes(req.body?.action)
     if (imageAction) {
       if (req.query?.assignmentId && (typeof req.query.classId !== 'string' || !await canAccessClass(req, req.query.classId))) {

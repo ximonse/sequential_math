@@ -30,12 +30,16 @@ after(async () => { await reader?.close(); await writer?.close() })
 
 test('SDK client discovers bounded read tools, prompt and the closed assignment/check-in boundary', async () => {
   const tools = (await reader.listTools()).tools
-  assert.equal(tools.length, 13)
+  assert.equal(tools.length, 14)
   assert.equal(tools.some(t => /save|publish|assign|delete/u.test(t.name)), false)
   assert.equal(tools.every(t => t.annotations.readOnlyHint), true)
   assert.equal(meta.assignmentPublication, false)
   assert.equal(meta.teacherCheckInWrites, false)
   assert.equal(meta.dataMode, 'synthetic')
+  assert.equal(meta.teacher.teacherId, 'mcp-demo-teacher')
+  assert.equal(meta.teacher.role, 'teacher')
+  assert.equal(meta.accountBindingRequiredForWrites, false)
+  assert.doesNotMatch(JSON.stringify(meta), /robot-larare-losen|token|password/iu)
   const prompt = await reader.getPrompt({ name: 'math_pupil_analysis' })
   assert.match(prompt.messages[0].content.text, /supportRefs/u)
   assert.doesNotMatch(JSON.stringify(prompt), /robot-larare-losen|mathapp_teacher_api_token/u)
@@ -120,6 +124,26 @@ test('MCP material preview validates generic and specific content without creati
   assert.match(prompt.messages[0].content.text, /Specifikt/u)
 })
 
+test('partial practice settings are rejected with recovery guidance and explicit settings preserve the requested frame', async () => {
+  const audience = await call(reader, 'math_get_audience', { targetType: 'class', targetId: target.classId })
+  const material = { schemaVersion: 1, kind: 'practice', mode: 'general', titleSv: 'Jämna och udda tal',
+    goalSv: 'Öva addition och subtraktion', instructionSv: 'Visa inte nedräkningen.',
+    audience: { targetType: 'class', targetId: target.classId, rosterRevision: audience.rosterRevision },
+    content: { kind: 'math_practice', operations: ['addition', 'subtraction'], targetCount: 8,
+      numberRange: { first: { min: 10, max: 20, filter: 'even' }, second: { min: 1, max: 9, filter: 'odd' } },
+      settings: { hideCountdown: true } } }
+  const rejected = await reader.callTool({ name: 'math_preview_material', arguments: { material } })
+  assert.equal(rejected.isError, true)
+  assert.equal(rejected.structuredContent.data.error.code, 'invalid_material')
+  assert.match(rejected.structuredContent.data.error.message, /maxTimePerProblem/u)
+  material.content.settings = { maxTimePerProblem: 120, randomizeOrder: false, hideCountdown: true }
+  const preview = await call(reader, 'math_preview_material', { material })
+  assert.deepEqual(preview.material.content.frame.settings, material.content.settings)
+  assert.deepEqual(preview.material.content.frame.numberRange, material.content.numberRange)
+  assert.equal(preview.saved, false)
+  assert.equal(preview.assigned, false)
+})
+
 test('write-enabled SDK client saves a real API-validated AI draft with idempotent receipt, not an assignment', async () => {
   writer = await connect(true)
   const evidence = await call(writer, 'math_get_pupil_evidence', target)
@@ -172,6 +196,29 @@ test('separately enabled material saves preserve frozen versions and idempotent 
   } finally { await client.close() }
 })
 
+test('saved material is rediscoverable through private metadata without exposing its contents', async () => {
+  const client = await connect(false, true)
+  try {
+    assert.deepEqual((await call(client, 'math_list_material_drafts')).drafts, [])
+    const meta = await call(client, 'math_get_capabilities')
+    const audience = await call(client, 'math_get_audience', { targetType: 'class', targetId: meta.demo.classId })
+    const material = { schemaVersion: 1, kind: 'practice', mode: 'general', titleSv: 'Återfinnbart material',
+      goalSv: 'Öva tabell 7', instructionSv: 'PRIVATE_INSTRUCTION_MUST_NOT_BE_LISTED',
+      audience: { targetType: 'class', targetId: meta.demo.classId, rosterRevision: audience.rosterRevision },
+      content: { kind: 'table', tables: [7], targetCount: 8 } }
+    const preview = await call(client, 'math_preview_material', { material })
+    const saved = await call(client, 'math_save_material_draft', { material, expectedRevision: 0,
+      expectedContentRevision: preview.contentRevision, requestId: 'discoverable-material-save' })
+    const listing = await call(client, 'math_list_material_drafts', { limit: 1 })
+    assert.equal(listing.drafts.length, 1)
+    assert.equal(listing.drafts[0].draftId, saved.draftId)
+    assert.equal(listing.drafts[0].version, 1)
+    assert.match(listing.drafts[0].reviewPath, /\/teacher\/material\//u)
+    assert.doesNotMatch(JSON.stringify(listing), /PRIVATE_INSTRUCTION|studentId|rosterRevision|supportRefs|contentRevision/u)
+    assert.equal(listing.nextOffset, null)
+  } finally { await client.close() }
+})
+
 test('a legacy initialize client can list tools without SDK-v2 metadata and stdout remains JSON-only', async () => {
   const child = spawn(process.execPath, [entry, '--demo'], { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true })
   const lines = createInterface({ input: child.stdout })
@@ -189,7 +236,7 @@ test('a legacy initialize client can list tools without SDK-v2 metadata and stdo
     assert.equal((await wait(1)).result.protocolVersion, '2025-11-25')
     send({ method: 'notifications/initialized' })
     send({ id: 2, method: 'tools/list', params: {} })
-    assert.equal((await wait(2)).result.tools.length, 13)
+    assert.equal((await wait(2)).result.tools.length, 14)
   } finally { child.stdin.end(); child.kill(); lines.close() }
 })
 

@@ -24,7 +24,7 @@ export default function TicketTemplateManagerPanel({
 }) {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
-      <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 shadow-sm">
+      <div className="teacher-ticket-module bg-white/95 rounded-2xl border border-amber-200/90 p-4 shadow-sm">
         <h3 className="text-base font-bold text-gray-800 mb-2">Ny ticket-fråga</h3>
         <textarea
           value={ticketQuestionInput}
@@ -55,7 +55,7 @@ export default function TicketTemplateManagerPanel({
           </select>
           <button
             onClick={onCreateTicketTemplate}
-            className="px-3 py-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl text-sm font-semibold shadow-sm"
+            className="px-3 py-1 teacher-admin-primary bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-xl text-sm font-semibold shadow-sm"
           >
             Spara ticket
           </button>
@@ -77,7 +77,7 @@ export default function TicketTemplateManagerPanel({
         </button>
       </div>
 
-      <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 shadow-sm">
+      <div className="teacher-ticket-module bg-white/95 rounded-2xl border border-amber-200/90 p-4 shadow-sm">
         <div className="flex flex-wrap items-center gap-2 mb-2">
           <input
             value={ticketTemplateFilter}
@@ -121,7 +121,7 @@ export default function TicketTemplateManagerPanel({
                 <div className="flex flex-wrap gap-2 mt-2">
                   <button
                     onClick={() => onCreateTicketDispatch(template)}
-                    className="px-3 py-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
+                    className="px-3 py-1 teacher-admin-primary bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
                   >
                     Skapa länk
                   </button>

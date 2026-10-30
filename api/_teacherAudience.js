@@ -4,6 +4,7 @@ import { getLiveTeacherAuthPayload } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
 import { authCanManageGroup } from './_groupStore.js'
 import { isStudentDeleted } from './_studentStore.js'
+import { readAudienceProfiles } from './_audienceProfileBatch.js'
 
 const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/u.test(value)
 const fail = (status, message) => { throw Object.assign(new Error(message), { status }) }
@@ -13,6 +14,19 @@ const ids = profile => [...new Set([profile.classId, ...(profile.classIds || [])
 async function liveClass(req, classId) {
   const record = await kv.get(`class:${classId}`)
   return record && !record.archived && await canAccessClass(req, classId) ? record : null
+}
+
+// A saved draft contains a frozen roster. Reading its history needs current
+// target permission and access to every frozen pupil, not a fresh global scan.
+export async function assertTeacherAudienceTargetAccess(req, type, targetId, teacherId) {
+  if (!['class', 'group', 'student'].includes(type) || !validId(targetId)) fail(400, 'Ogiltigt urval.')
+  const auth = await getLiveTeacherAuthPayload(req)
+  if (!auth || auth.teacherId !== teacherId) fail(401, 'Lärarsessionen har ändrats.')
+  if (type === 'class') {
+    if (!await liveClass(req, targetId)) fail(403, 'Klassen är inte tillgänglig.')
+  } else if (type === 'group') {
+    if (!authCanManageGroup(auth, await kv.get(`group:${targetId}`))) fail(403, 'Gruppen är inte tillgänglig.')
+  } else await readAudience(req, type, targetId, teacherId)
 }
 
 async function readAudience(req, type, targetId, teacherId) {
@@ -33,16 +47,31 @@ async function readAudience(req, type, targetId, teacherId) {
   }
   if (members.length > 10000) fail(413, 'Urvalet är för stort.')
   const pupils = []
-  for (let start = 0; start < members.length; start += 20) {
-    const rows = await Promise.all(members.slice(start, start + 20).map(async studentId => {
-      if (!validId(studentId)) fail(409, 'Urvalets medlemslista är ogiltig.')
-      const profile = await kv.get(`student:${studentId}`)
-      if (!profile || profile.studentId !== studentId || await isStudentDeleted(studentId)) {
+  // Bound concurrent reads without serializing a large global index into many
+  // network round trips. Each of the two roster snapshots remains independent.
+  for (let start = 0; start < members.length; start += 100) {
+    const batch = members.slice(start, start + 100)
+    for (const studentId of batch) {
+      // Class reads scan the global index, which can contain legacy keys from
+      // other classes. Inspect their membership before applying the public ID
+      // contract. Explicit group/student selections still fail closed.
+      if (typeof studentId !== 'string' || !studentId.length || studentId.length > 512
+        || (type !== 'class' && !validId(studentId))) fail(409, 'Urvalets medlemslista är ogiltig.')
+    }
+    const profiles = await readAudienceProfiles(batch.map(studentId => `student:${studentId}`), type === 'class' ? targetId : undefined)
+    const rows = await Promise.all(batch.map(async (studentId, index) => {
+      const profile = profiles[index]
+      if (!profile || profile.studentId !== studentId) {
         if (type !== 'class') fail(409, 'En medlem är inte längre tillgänglig. Läs om urvalet.')
         return null
       }
       const memberships = ids(profile)
       if (type === 'class' && !memberships.includes(targetId)) return null
+      if (await isStudentDeleted(studentId)) {
+        if (type !== 'class') fail(409, 'En medlem är inte längre tillgänglig. Läs om urvalet.')
+        return null
+      }
+      if (!validId(studentId)) fail(409, 'Urvalets medlemslista är ogiltig.')
       const accessible = (await Promise.all(memberships.map(async id => await liveClass(req, id) ? id : null))).filter(Boolean)
       if (!accessible.length) {
         if (type !== 'class') fail(403, 'Åtkomst till en medlem saknas.')

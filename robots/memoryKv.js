@@ -2,6 +2,8 @@
 // It mirrors the Upstash client's behavior (JSON values in, parsed values out)
 // and emulates the few Lua scripts the API runs through kv.eval.
 import { STUDENT_CAS_SCRIPT } from '../api/_studentStore.js'
+import { CLASS_AUDIENCE_PROFILES } from '../api/_audienceProfileBatch.js'
+import { SCREENING_DRAFT_CAS } from '../api/_screeningDraftStore.js'
 import { emulateAttentionArchive } from '../api/testHelpers/attentionArchiveKv.js'
 import { emulatePupilAnalysis } from '../api/testHelpers/pupilAnalysisKv.js'
 import { emulateTeacherMaterial } from '../api/testHelpers/teacherMaterialKv.js'
@@ -23,6 +25,7 @@ const parse = raw => { try { return JSON.parse(raw) } catch { return raw } }
 
 export const kv = {
   async get(key) { return values.has(key) ? clone(values.get(key)) : null },
+  async mget(...keys) { return keys.map(key => values.has(key) ? clone(values.get(key)) : null) },
   async set(key, value, options = {}) {
     if (options?.nx && values.has(key)) return null
     values.set(key, clone(value))
@@ -41,12 +44,27 @@ export const kv = {
   async sadd(key, ...members) { const set = sets.get(key) || new Set(); sets.set(key, set); let n = 0; for (const m of members.flat()) { if (!set.has(m)) { set.add(m); n++ } } return n },
   async srem(key, ...members) { const set = sets.get(key); if (!set) return 0; let n = 0; for (const m of members.flat()) if (set.delete(m)) n++; return n },
   async eval(script, keys = [], args = []) {
+    if (script === CLASS_AUDIENCE_PROFILES) return keys.map(key => {
+      const profile = values.get(key)
+      if (!profile || !(profile.classId === args[0] || profile.classIds?.includes(args[0]))) return null
+      const { studentId, displayAlias, classId, classIds } = profile
+      return clone({ studentId, displayAlias, classId, classIds })
+    })
     const dispatch = emulateMaterialDispatch(values, script, keys, args)
     if (dispatch) return dispatch.result
     const material = emulateTeacherMaterial(values, sets, script, keys, args)
     if (material) return material.result
     const analysis = emulatePupilAnalysis(values, script, keys, args)
     if (analysis) return analysis.result
+    if (script === SCREENING_DRAFT_CAS) {
+      const previous = values.get(keys[0])
+      if ((previous?.revision || 0) !== Number(args[0])) return 0
+      if (!previous && (sets.get(keys[1])?.size || 0) >= 100) return -1
+      values.set(keys[0], parse(args[1]))
+      if (!sets.has(keys[1])) sets.set(keys[1], new Set())
+      sets.get(keys[1]).add(args[2])
+      return 1
+    }
     // The production archive uses a Redis set; expose it to the shared Lua emulator.
     if (keys[3]?.startsWith('attention_passes:')) {
       values.set(keys[3], [...(sets.get(keys[3]) || [])])

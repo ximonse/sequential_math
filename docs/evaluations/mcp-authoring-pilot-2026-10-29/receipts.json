@@ -1,0 +1,76 @@
+{
+  "reports": [
+    {
+      "reportId": "report_1c9016a7288321a0c4bc66da",
+      "version": 1,
+      "historyRevision": 1,
+      "counts": {
+        "total": 6,
+        "correct": 3,
+        "incorrect": 2,
+        "partial": 0,
+        "unanswered": 1,
+        "unassessed": 0,
+        "unknown": 0
+      },
+      "checkInCount": 0,
+      "assigned": false
+    },
+    {
+      "reportId": "report_8554101d75776e82a5ec1e4b",
+      "version": 1,
+      "historyRevision": 1,
+      "counts": {
+        "total": 6,
+        "correct": 5,
+        "incorrect": 1,
+        "partial": 0,
+        "unanswered": 0,
+        "unassessed": 0,
+        "unknown": 0
+      },
+      "checkInCount": 0,
+      "assigned": false
+    }
+  ],
+  "materials": [
+    {
+      "draftId": "mat_4869426c487e1a2f5d8c7c62",
+      "kind": "screening",
+      "mode": "specific",
+      "version": 1,
+      "revision": 1,
+      "contentRevision": "c615be51767c80160421e9f8835a6dbf250721e1bda629f0741450036aa62fd6",
+      "recipientCount": 2,
+      "approval": "not_requested",
+      "assigned": false
+    },
+    {
+      "draftId": "mat_baf6fa81b19349a25bbd5d74",
+      "kind": "practice",
+      "mode": "general",
+      "version": 1,
+      "revision": 1,
+      "contentRevision": "9938f3c6b304db3bdbe8d9dcf34ebc7516576d9dc380425d5d00c6e658a52404",
+      "recipientCount": 2,
+      "approval": "not_requested",
+      "assigned": false
+    }
+  ],
+  "repeatedRequestResult": "same IDs, version 1 and revision 1",
+  "browserCheck": "1 passed; report, screening, source notebook and practice frame; no material POSTs",
+  "shutdown": "ephemeral app port confirmed closed",
+  "adjustment": {
+    "changedBy": "Codex",
+    "reason": "The pilot prompt supplied an incomplete settings object. Explicitly complete its existing defaults while preserving hideCountdown=true; state the time frame in the review instruction. No report or screening text changed.",
+    "originalSettings": {
+      "hideCountdown": true
+    },
+    "finalSettings": {
+      "maxTimePerProblem": 120,
+      "randomizeOrder": false,
+      "hideCountdown": true
+    },
+    "teacherApproved": false
+  }
+}

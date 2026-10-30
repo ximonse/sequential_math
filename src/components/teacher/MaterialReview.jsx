@@ -4,9 +4,12 @@ import { diagnosticRequest } from './sections/diagnosticRequest.js'
 import QuestionText from '../QuestionText.jsx'
 import ScreeningImageQuestion from '../student/ScreeningImageQuestion.jsx'
 import './materialReview.css'
+import './teacherAdmin.css'
 import MaterialBasis from './MaterialBasis.jsx'
 import MaterialPracticeSummary from './MaterialPracticeSummary.jsx'
 import MaterialDispatchStatus from './MaterialDispatchStatus.jsx'
+import MaterialScreeningEditor from './MaterialScreeningEditor.jsx'
+import { emptyMaterialQuestionEditor, pendingMaterialQuestionEditor } from './materialQuestionEditing.js'
 
 const endpoint = '/api/teacher-material'
 async function request(body, human = false) {
@@ -21,6 +24,7 @@ export default function MaterialReview() {
   const { draftId } = useParams(), [search] = useSearchParams()
   const [draft, setDraft] = useState(null), [version, setVersion] = useState(null)
   const [edits, setEdits] = useState({}), [preview, setPreview] = useState(null)
+  const [questionEditors, setQuestionEditors] = useState({})
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [checked, setChecked] = useState(false)
   const [dispatches, setDispatches] = useState([]), [classes, setClasses] = useState([])
   const requestIds = useRef({})
@@ -43,7 +47,9 @@ export default function MaterialReview() {
   const item = draft?.versions.find(value => value.version === version)
   const input = edits[version] || item?.input
   const dirty = item && JSON.stringify(input) !== JSON.stringify(item.input)
-  const hasUnsaved = draft && Object.entries(edits).some(([key, value]) => JSON.stringify(value) !== JSON.stringify(draft.versions.find(v => v.version === Number(key))?.input))
+  const pendingQuestion = pendingMaterialQuestionEditor(questionEditors[version] || {})
+  const hasUnsaved = Object.values(questionEditors).some(pendingMaterialQuestionEditor)
+    || (draft && Object.entries(edits).some(([key, value]) => JSON.stringify(value) !== JSON.stringify(draft.versions.find(v => v.version === Number(key))?.input)))
   useEffect(() => {
     if (!hasUnsaved) return
     const warn = event => { event.preventDefault(); event.returnValue = '' }
@@ -54,9 +60,20 @@ export default function MaterialReview() {
   const latest = item && item.version === draft.versions.at(-1).version
   const approved = item && (draft.approvals || []).some(value => value.version === item.version && value.contentRevision === item.contentRevision)
   const dispatch = dispatches.find(value => value.version === item?.version)
+  function protectNavigation(event) {
+    if (hasUnsaved && !window.confirm('Du har osparade ändringar. Vill du lämna materialgranskningen utan att spara dem?')) event.preventDefault()
+  }
   function edit(field, value) {
+    if (field === 'content' && value.customTasks?.length !== input.content.customTasks?.length) {
+      setQuestionEditors(old => ({ ...old, [version]: {} }))
+    }
     setEdits(old => ({ ...old, [version]: { ...input, [field]: value } }))
     setPreview(null); setChecked(false); setMessage('')
+  }
+  function editQuestionState(key, value) {
+    setQuestionEditors(old => ({ ...old, [version]: { ...old[version], [key]: typeof value === 'function'
+      ? value(old[version]?.[key] || emptyMaterialQuestionEditor(key)) : value } }))
+    setChecked(false)
   }
   async function run(action) {
     setBusy(true); setMessage('')
@@ -110,8 +127,8 @@ export default function MaterialReview() {
     delete requestIds.current[keyFor('publish')]
     if (activeScope.current === draftId) await refresh()
   }
-  return <main className="material-review">
-    <header className="material-review-header"><Link to="/teacher">← Lärarvyn</Link><span>Materialutkast</span>
+  return <main data-teacher-admin className="material-review">
+    <header className="material-review-header"><Link to="/teacher" onClick={protectNavigation}>← Lärarvyn</Link><span>Materialutkast</span>
       <button disabled={busy || !draft} onClick={() => run(() => refresh())}>Läs senaste status</button></header>
     {message && <p role="status" className="material-message">{message}</p>}
     {!item ? <p>Läser utkast…</p> : <>
@@ -126,10 +143,12 @@ export default function MaterialReview() {
           <div className="material-field"><label htmlFor="material-goal">Undervisningsmål</label><textarea id="material-goal" value={input.goalSv} maxLength={1000} onChange={event => edit('goalSv', event.target.value)} /></div>
           <div className="material-field"><label htmlFor="material-instruction">Beställning till innehållet</label><textarea id="material-instruction" value={input.instructionSv} maxLength={2000} onChange={event => edit('instructionSv', event.target.value)} /></div>
           {material.sourceMaterials.map((source, index) => <details key={index}><summary>{source.label}</summary><p>{source.excerpt}</p></details>)}
-          <div className="material-actions"><button disabled={busy || !dirty} onClick={() => run(async () => setPreview(await request({ action: 'preview', material: input })))}>Förhandsvisa ändring</button>
-            <button disabled={busy || !dirty || !preview} onClick={() => run(save)}>Spara som ny version</button></div>
+          <div className="material-actions"><button disabled={busy || !dirty || Boolean(pendingQuestion)} onClick={() => run(async () => setPreview(await request({ action: 'preview', material: input })))}>Förhandsvisa ändring</button>
+            <button disabled={busy || !dirty || !preview || Boolean(pendingQuestion)} onClick={() => run(save)}>Spara som ny version</button></div>
         </section>
         <section className="material-module"><h2>{material.kind === 'screening' ? 'Frågor och bedömning' : 'Träningsram'}</h2>
+          {material.kind === 'screening' && <MaterialScreeningEditor key={version} content={input.content}
+            onChange={content => edit('content', content)} disabled={busy} states={questionEditors[version] || {}} onState={editQuestionState} />}
           {material.kind === 'screening' ? material.content.items.map(({ task, marking }, index) => <article className="material-question" key={task.taskId}>
             <h3>Fråga {index + 1}</h3><QuestionText>{task.promptSv}</QuestionText>
             {task.responseMode && <ScreeningImageQuestion task={task} disabled context={{ teacher: true }} />}
@@ -143,7 +162,7 @@ export default function MaterialReview() {
         </section>}
       </div><aside className="material-sidebar"><section className="material-module"><h2>Mottagare</h2>
         <p>{material.audience.name} · {material.audience.total} elever</p>
-        <ul>{material.audience.pupils.map(pupil => <li key={pupil.studentId}><Link to={`/teacher/student/${encodeURIComponent(pupil.studentId)}`}>{pupil.codeName}</Link>
+        <ul>{material.audience.pupils.map(pupil => <li key={pupil.studentId}><Link to={`/teacher/student/${encodeURIComponent(pupil.studentId)}`} onClick={protectNavigation}>{pupil.codeName}</Link>
           {material.mode === 'specific' && material.pupilsWithoutAnalysis.includes(pupil.studentId) ? ' · analysunderlag saknas' : ''}
           {material.kind === 'screening' && (pupil.classIds.length > 1 && material.audience.targetType !== 'class'
             ? <label className="material-class-context">Klass för {pupil.codeName}<select aria-label={`Klass för ${pupil.codeName}`}
@@ -162,12 +181,12 @@ export default function MaterialReview() {
         <p>{approved ? `Version ${version} är godkänd.` : `Version ${version} väntar på granskning.`}</p>
         {!latest && <p>En nyare version finns. Godkänn den senaste versionen.</p>}
         {dirty && <p>Du har osparade ändringar i den här versionen.</p>}
-        <label className="material-check"><input type="checkbox" checked={checked} disabled={busy || dirty || !latest || approved}
+        <label className="material-check"><input type="checkbox" checked={checked} disabled={busy || dirty || Boolean(pendingQuestion) || !latest || approved}
           onChange={event => setChecked(event.target.checked)} />Jag har granskat innehåll, bedömning och mottagare för version {version}.</label>
-        <button className="material-primary" disabled={busy || !checked || dirty || !latest || approved} onClick={() => run(approve)}>Godkänn version {version}</button>
+        <button className="material-primary" disabled={busy || !checked || dirty || Boolean(pendingQuestion) || !latest || approved} onClick={() => run(approve)}>Godkänn version {version}</button>
       </section><section className="material-module"><h2>Utdelning</h2>
         <MaterialDispatchStatus dispatch={dispatch} pupils={material.audience.pupils} />
-        <div className="material-actions"><button className="material-primary" disabled={busy || !approved || dirty || !latest || dispatch?.status === 'complete'} onClick={() => run(publish)}>
+        <div className="material-actions"><button className="material-primary" disabled={busy || !approved || dirty || Boolean(pendingQuestion) || !latest || dispatch?.status === 'complete'} onClick={() => run(publish)}>
           {dispatch ? 'Följ upp återstående mottagare' : `Dela ut till ${material.audience.total} ${material.audience.total === 1 ? 'elev' : 'elever'}`}
         </button></div>
       </section></aside></div>

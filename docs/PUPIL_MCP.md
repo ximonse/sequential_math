@@ -1,5 +1,11 @@
 # Lokal MCP-pilot för elevanalys
 
+Aktuell klientavstämning 2026-10-29:
+[Codex/Claude och kontobindning till adminperson](MCP_CLIENT_SETUP.md).
+API-funktionerna är publicerade genom PR #22; den lokala demoanslutningen
+är syntetisk och innebär ingen verklig kontokoppling. Nedanstående
+daterade pilotbeskrivningar dokumenterar tidigare verifieringssteg.
+
 Status 2026-10-27: lokal implementation med syntetiska elever. Ingen
 produktionstjänst, automatisk utdelning eller faktisk modells didaktiska
 kalibrering. MCP är transporten; analysen följer projektets `pupil-analysis`-skill
@@ -68,6 +74,7 @@ resultat; för stora resultat avvisas med råd att begränsa frågan.
 | `math_find_groups` | Behöriga grupp-ID:n/namn, även dubblettnamn som kräver ett exakt val. |
 | `math_get_audience` | Aktuella medlemmar i exakt elev-/grupp-/klassurval, även utan svar; revisionsbunden sidläsning. Historiskt medlemskap är okänt. Se PUPIL_MATERIAL.md. |
 | `math_preview_material` | Servervaliderad generell/analysspecifik tränings- eller screeningförhandsvisning för elev, grupp eller klass. Sparar eller delar inte ut något. Se PUPIL_MATERIAL.md. |
+| `math_list_material_drafts` | Hitta egna sparade materialutkast utan tidigare länk. Endast metadata och granskningsväg; limit/offset/indexRevision. Historisk åtkomst omkontrolleras innan titlar lämnas ut. |
 | `math_get_material_draft` | Lärarprivat fryst version, historik och paginerade innehålls-/mottagar-/analyssektioner samt utdelningskvitto (`section:publication`). Aktuell åtkomst omkontrolleras. |
 | `math_save_material_draft` | Separat `--allow-material-writes` krävs. Spara validerad utkastversion med preview-revision, CAS och requestId. Godkänner eller delar inte ut något. |
 | `math_get_pupil_evidence` | Elev-ID, klass, from/to, source; limit/cursor/snapshotRevision. |
@@ -105,10 +112,26 @@ tillåter bara loopback och kräver robotappens minneslagringsmarkör före
 inloggning. Lärarkonto läses från processens `MATH_TEACHER_USER` och
 `MATH_TEACHER_PASS`; dessa skickas aldrig som verktygsargument eller resultat.
 
+`math_get_capabilities` visar nu `teacher` med kontots `teacherId`, visningsnamn
+och roll från inloggningen. Jämför kontot med den lärarvy där materialet ska
+granskas. Samma klasser eller administratörsroll innebär inte samma privata
+utkastlista. Varken inloggningstoken, lösenord eller klasslista ingår i identiteten.
+
+I läget `approved` kräver rapportsparande och materialsparande dessutom
+`MATH_MCP_EXPECTED_TEACHER_ID` med det avsedda kontots exakta ID. Saknad
+bindning blockerar skrivningen före inloggning; avvikande konto blockerar
+appanropet före sparande, även efter återinloggning. Capabilities visar
+`expectedTeacherId`, `accountBindingRequiredForWrites` och avstängda
+skrivmöjligheter tills bindningen finns. Att sätta skrivflaggan räcker inte.
+Kontobindningen väljer ingen annan ägare och utökar ingen behörighet.
+Osparad material- och analysförhandsvisning fungerar fortsatt utan bindning.
+Syntetiska demoövningar kräver ingen verklig kontokonfiguration.
+
 `MATH_MCP_DATA_MODE=approved` tillåter uttryckligt konfigurerad HTTPS-app eller
 loopback. Det är en operatörsinställning, inte ett verktygsargument eller ett
 bevis på godkänd dataöverföring. Verkliga elevdata kräver separat klarlagd,
-tillåten AI-miljö enligt projektreglerna. Inget sådant mål är konfigurerat här.
+tillåten AI-miljö enligt projektreglerna. Aktuellt lokalt mål och dess
+verifieringsgränser redovisas i MCP_CLIENT_SETUP.md; de är inte repohemligheter.
 Servern omkontrollerar aktuell klass-/rollåtkomst; screeningrollen kringgås inte.
 
 Anrop har 15 sekunders tidsgräns och följer inte omdirigeringar. Fel maskeras.

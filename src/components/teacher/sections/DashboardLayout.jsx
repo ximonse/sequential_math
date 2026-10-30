@@ -1,5 +1,4 @@
 import { cloneElement, useEffect, useMemo, useRef, useState } from 'react'
-import './progressAppearance.css'
 import AttentionModule from '../attention/AttentionModule'
 import AssignmentsPanel from './AssignmentsPanel'
 import RecipientPicker from './RecipientPicker'
@@ -29,6 +28,7 @@ import LocalTestDataExportPanel from './LocalTestDataExportPanel'
 import TicketSectionContainer from './TicketSectionContainer'
 import ScreeningDispatchPanel from './ScreeningDispatchPanel'
 import ScreeningResultsPanel from './ScreeningResultsPanel'
+import '../teacherAdmin.css'
 
 import { ActivityBadge, RiskBadge } from './dashboardStatusBadges'
 import { getOperationLabel } from '../../../lib/operations'
@@ -255,7 +255,7 @@ export default function DashboardLayout({
       title={`${collapsed[id] ? 'Visa' : 'Minimera'} ${title}`}>
       <ChevronIcon expanded={!collapsed[id]} />
     </button>
-    return <div key={id} id={`progress-panel-${id}`}>
+    return <div key={id} data-admin-panel={id} id={`progress-panel-${id}`}>
       {collapsed[id]
         ? <section className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2 shadow-sm">
           <h2 className="font-semibold text-slate-800">{title}</h2>{toggle}
@@ -500,8 +500,8 @@ export default function DashboardLayout({
         </button>
       </details>
       <ScreeningDispatchPanel classes={classes} students={students} teacherGroups={teacherGroups} active={activeWorkspace === 'ncm'}
-        onDirtyChange={value => { dispatchDirtyRef.current = value }} onResults={collection => {
-          setResultPicks(collection.members.map(member => ({ type: 'class', id: member.classId })))
+          onDirtyChange={value => { dispatchDirtyRef.current = value }} onResults={(collection, picks = []) => {
+            setResultPicks(picks.length ? [...picks] : collection.members.map(member => ({ type: 'class', id: member.classId })))
           setRequestedScreening(collection.id)
           setActiveWorkspace('ncm-results')
         }} />
@@ -526,9 +526,11 @@ export default function DashboardLayout({
   const classStatsPanel = <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
 
   return (
-    <div data-teacher-workspace={activeWorkspace} className={`teacher-dashboard-surface min-h-screen pb-5 pt-14 sm:pb-6 sm:pt-16 ${surfaceClass}`}>
+    <div data-teacher-workspace={activeWorkspace} data-teacher-admin="" className={`teacher-dashboard-surface min-h-screen pb-5 pt-14 sm:pb-6 sm:pt-16 ${surfaceClass}`}>
       <div className="max-w-6xl mx-auto px-3 sm:px-4">
         <DashboardHeaderBar
+          workspaceTitle={activeWorkspace !== 'progress' ? 'Matematik · Lärarvy' : undefined}
+          workspaceDescription={activeWorkspace === 'ncm' ? undefined : WORKSPACES.find(workspace => workspace.id === activeWorkspace && workspace.id !== 'progress')?.label}
           isDirectStudentView={isDirectStudentView}
           detailStudentName={detailStudentProfile?.name || ''}
           teacherName={teacherName}
@@ -545,14 +547,14 @@ export default function DashboardLayout({
           onLogout={handleLogout}
         />
 
-        <div className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
+        <div hidden={activeWorkspace !== 'progress' && !dashboardStatus} className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
 
         <div className="grid gap-3 lg:grid-cols-[13rem_minmax(0,1fr)]">
           <aside className="rounded-lg bg-slate-800 p-2 text-slate-100 lg:sticky lg:top-3 lg:h-fit">
               <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">Arbetsläge</p>
               <nav className="grid gap-1" aria-label="Lärarvy">
                 {WORKSPACES.filter(workspace => (!workspace.adminOnly || teacherIsAdmin) && (!workspace.attentionOnly || canViewAttention)).map(workspace => (
-                  <button key={workspace.id} type="button" onClick={() => {
+                  <button key={workspace.id} aria-current={activeWorkspace === workspace.id ? 'page' : undefined} type="button" onClick={() => {
                     if (workspace.id !== activeWorkspace && (reviewDirtyRef.current || (dispatchDirtyRef.current && !['ncm', 'ncm-results'].includes(workspace.id)))
                       && !window.confirm('Du har osparade ändringar. Vill du lämna dem?')) return
                     if (workspace.id !== activeWorkspace) reviewDirtyRef.current = false
@@ -567,7 +569,7 @@ export default function DashboardLayout({
                 ))}
               </nav>
           </aside>
-          <div className="min-w-0 flex flex-col gap-3">
+          <div data-admin-content className="min-w-0 flex flex-col gap-3">
             {!isScreening && activeWorkspace !== 'admin' && <div className="dashboard-context-grid">
             {activeWorkspace === 'progress' ? renderProgressModule('filter', 'Klassurval', classFilterPanel) : classFilterPanel}
             {activeWorkspace === 'progress'
@@ -593,13 +595,13 @@ export default function DashboardLayout({
             )}
             {isScreening && <>
               <div hidden={activeWorkspace !== 'ncm'}>{renderPanelContent('ncm-grid')}</div>
-              <div hidden={activeWorkspace !== 'ncm-results'}>{renderPanelContent('ncm-results')}</div>
+              <div data-admin-panel="ncm-results" hidden={activeWorkspace !== 'ncm-results'}>{renderPanelContent('ncm-results')}</div>
             </>}
             {!isScreening && WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
               .filter(id => visiblePanelDefs.some(panel => panel.id === id))
               .map(id => activeWorkspace === 'progress'
                 ? renderProgressModule(id, PANEL_DEFS.find(panel => panel.id === id)?.title, renderPanelContent(id))
-                : <div key={id}>{renderPanelContent(id)}</div>)}
+                : <div key={id} data-admin-panel={id}>{renderPanelContent(id)}</div>)}
           </div>
         </div>
       </div>

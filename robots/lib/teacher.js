@@ -38,7 +38,7 @@ export async function openTab(page, label) {
 
 // Opens a class under Administration and, optionally, one of its tabs.
 export async function openClass(page, className, tab) {
-  await page.getByRole('button', { name: /^Administration Klasser/ }).click()
+  await page.getByRole('button', { name: /^Administration(?:\s|$)/ }).click()
   await page.getByRole('button', { name: new RegExp(`^${className} `) }).first().click()
   const panel = page.locator('[data-open-item]')
   if (tab) await panel.getByRole('tab', { name: tab, exact: true }).click()

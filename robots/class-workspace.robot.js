@@ -28,7 +28,7 @@ test('A teacher sees pupils and cards per class and builds a group from the clas
   // group is made through the robot API and then opened in the view.
   await request.post('/__robot/group', { data: { name: `Grupp ${tag}`, pupilIds: [pupil.studentId], teacherIds: [teacher.username] } })
   await page.reload()
-  await page.getByRole('button', { name: /^Administration Klasser/ }).click()
+  await page.getByRole('button', { name: /^Administration(?:\s|$)/ }).click()
   const groupButton = page.getByRole('button', { name: new RegExp(`^Grupp ${tag} 1 elever`) })
   await expect(groupButton).toBeVisible()
   await groupButton.click()

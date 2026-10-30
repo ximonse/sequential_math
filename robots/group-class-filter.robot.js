@@ -11,7 +11,7 @@ test('Group members can be chosen across class filters without losing selections
   }
   const teacher = await createTeacher(request, { classIds: classes.map(record => record.id) })
   await teacherLogin(page, teacher)
-  await page.getByRole('button', { name: /^Administration Klasser/ }).click()
+  await page.getByRole('button', { name: /^Administration(?:\s|$)/ }).click()
   await page.getByRole('button', { name: '+ Ny grupp', exact: true }).click()
   const panel = page.locator('[data-open-item]')
   const pupil = index => panel.getByRole('checkbox', { name: names[index], exact: true })

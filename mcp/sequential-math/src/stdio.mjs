@@ -17,6 +17,7 @@ async function getApi() {
       return new TeacherApiClient({ baseUrl: config.baseUrl, getCredentials: () => ({ username: config.username, password: config.password }) })
     }
     return new TeacherApiClient({ baseUrl: process.env.MATH_MCP_BASE_URL, mode: process.env.MATH_MCP_DATA_MODE || 'synthetic',
+      expectedTeacherId: process.env.MATH_MCP_EXPECTED_TEACHER_ID,
       getCredentials: () => ({ username: process.env.MATH_TEACHER_USER, password: process.env.MATH_TEACHER_PASS }) })
   })().catch(error => { apiPromise = null; throw error })
   return apiPromise

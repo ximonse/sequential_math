@@ -1804,14 +1804,14 @@
       "title": "Analysrapport, skill och läraravstämning",
       "status": "Lokalt klart",
       "purpose": "Redovisa styrkor och möjliga felmönster med stöd, motexempel, osäkerhet och granskningsbart nästa mål.",
-      "next": "Använd den syntetiska MCP-demon i en faktisk Codex-session för att kalibrera belägg, motexempel och osäkra hypoteser före verklig elevanalys.",
+      "next": "Lärargranska det dokumenterade syntetiska modellprovet och bedömningsmallen; fler varierade fall behövs före kalibrerad analys.",
       "acceptance": "Påståenden och antal kan kontrolleras mot underlaget. Läraren kan ändra/avfärda hypoteser; rapporter ändrar inte elevobservationer.",
       "requires": [
         "ai-pupil-evidence"
       ],
       "affects": [],
       "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.\n2026-10-27: Simon säger Kör efter levererat läsunderlag och nästa steg analysrapport/läraravstämning. Rapport och avstämning lagras privat separat från elevprofilen. Förhandsvisning skriver inget; inget delas ut och ingen mastery ändras. Ingen ny modell- eller lagringstjänst i denna etapp.",
-      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.\n2026-10-27 lokalt: Rapportkontrakt v1, serverräknade antal, styrke-/stöd-/motexempelreferenser, alternativ och nästa undersökningsfråga. Befintlig signal, AI-tolkning och lärartolkning skiljs åt. Regelbaserad förhandsvisning utan skrivning; inga modell-API:er eller MCP-server. Privat KV-historik per lärare/elev/klass med frysta rapportversioner och separata avstämningar (behåll/ändra/avfärda/undersök), CAS och återförsöks-ID. Indragen klass-/screeningåtkomst kontrolleras även för sparade rapporter och i skrivsvaren. Tolkningar raderas vid elevradering/anonymisering och hamnar inte i anonym statistik. Elevprofil/progression/uppdrag förblir oförändrade. Lärarvyn visar konkreta källsvar även utan hypotes, samt revisionsbundet original från räknehäftet. Skill .agents/skills/pupil-analysis/SKILL.md validerad; docs/PUPIL_ANALYSIS.md och docs/PUPIL_EVIDENCE.md uppdaterade. Verifiering: 179 testfiler/860 tester, build med befintliga varningar, riktad lint och arkitektur godkända. Inga ändrade filer över 600 rader. Bred robotkörning 151/156; alla fem fall godkända sekventiellt. Båda nya rapportrobotarna godkända på slutlig kod, inklusive senare tillagt originalfall (157 unika robotfall totalt inklusive omkörningar); ingen helt grön bred engångskörning påstås. R2/R3-fel hittade rött och rättade: dubbla React-nycklar lämnade gammal rapportvy kvar vid versionsbyte, samt IncomingMessage tappade headers vid intern delegationsläsning. Stabil namngivning av formulärfält/väljare och osparad text bevarad efter konflikt/rapportbyte. Dator-/surfplatteskärmbilder och räknehäftets rendering visuellt granskade enligt designgrunden. Bara syntetiska elever/minneslagring; inte riktig KV, fysisk iPad, produktion eller didaktisk kalibrering av en ansluten modell. Lokal commit, ingen push.",
+      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.\n2026-10-27 lokalt: Rapportkontrakt v1, serverräknade antal, styrke-/stöd-/motexempelreferenser, alternativ och nästa undersökningsfråga. Befintlig signal, AI-tolkning och lärartolkning skiljs åt. Regelbaserad förhandsvisning utan skrivning; inga modell-API:er eller MCP-server. Privat KV-historik per lärare/elev/klass med frysta rapportversioner och separata avstämningar (behåll/ändra/avfärda/undersök), CAS och återförsöks-ID. Indragen klass-/screeningåtkomst kontrolleras även för sparade rapporter och i skrivsvaren. Tolkningar raderas vid elevradering/anonymisering och hamnar inte i anonym statistik. Elevprofil/progression/uppdrag förblir oförändrade. Lärarvyn visar konkreta källsvar även utan hypotes, samt revisionsbundet original från räknehäftet. Skill .agents/skills/pupil-analysis/SKILL.md validerad; docs/PUPIL_ANALYSIS.md och docs/PUPIL_EVIDENCE.md uppdaterade. Verifiering: 179 testfiler/860 tester, build med befintliga varningar, riktad lint och arkitektur godkända. Inga ändrade filer över 600 rader. Bred robotkörning 151/156; alla fem fall godkända sekventiellt. Båda nya rapportrobotarna godkända på slutlig kod, inklusive senare tillagt originalfall (157 unika robotfall totalt inklusive omkörningar); ingen helt grön bred engångskörning påstås. R2/R3-fel hittade rött och rättade: dubbla React-nycklar lämnade gammal rapportvy kvar vid versionsbyte, samt IncomingMessage tappade headers vid intern delegationsläsning. Stabil namngivning av formulärfält/väljare och osparad text bevarad efter konflikt/rapportbyte. Dator-/surfplatteskärmbilder och räknehäftets rendering visuellt granskade enligt designgrunden. Bara syntetiska elever/minneslagring; inte riktig KV, fysisk iPad, produktion eller didaktisk kalibrering av en ansluten modell. Lokal commit, ingen push.\n2026-10-29: Faktiskt Antigravity-formulerade texter från enbart syntetiska MCP-resultat prövade. Första svaret hade ogiltig JSON, facitsträngar och obelagd/oförenlig metodtolkning och sparades inte. Efter dokumenterad återkoppling sparades två AI-rapporter, en analysspecifik klasscreening (6 frågor) och generell träningsram från givet material via MCP. Provmallens partiella settings avvisades; Codex kompletterade uttryckligt befintlig 120-sekundersram och ordningsval samt förtydligade beställningen. Återläsning/återförsök gav samma ID:n, version/revision 1 och inga dubbletter. Ett browserprov verifierade rapport, frågor, originalarbete med tomt svar och träningsram; fyra fyllda skärmbilder visuellt granskade. Inget godkänt/utdelat. Provport stängd. Inte blind eller lärargodkänd kalibrering. Artefakter: docs/evaluations/mcp-authoring-pilot-2026-10-29/review.md; kravavstämning: docs/AI_WORKFLOW_COMPLETION_AUDIT.md.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -1838,14 +1838,14 @@
       "title": "MCP för elevunderlag och granskade utkast",
       "status": "Byggt",
       "purpose": "Ge en vald AI-klient kontrollerad läsning och materialutkast via befintligt API.",
-      "next": "Bygg servervaliderat, återläsbart materialutkast utan utdelning enligt docs/PUPIL_MATERIAL.md; koppla sedan MCP och lärargranskning till befintliga uppdragsflöden.",
+      "next": "Produktionsmerge av PR #22 kräver Simons uttryckliga klartecken. Verklig MCP-användning kräver klarlagd AI-miljö och rätt konto; se målavstämningen.",
       "acceptance": "Faktisk MCP-klient klarar läsning och utkast. Inga hemligheter i modellkontexten; ingen utdelning utan mänsklig bekräftelse av aktuell version.",
       "requires": [
         "ai-pupil-analysis"
       ],
       "affects": [],
       "decision": "2026-10-27: Simon beställer en plan för AI-analys → avstämning → riktat material. Tekniska etapper och lokalt MCP-först är rekommendationer för avstämning. Ingen publicering ingår.\n2026-10-27: Simon säger Kör efter rapportetappen. Codex väljs som första lokal pilotklient med syntetisk demo; rapporter får sparas separat men ingen utdelning exponeras.",
-      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.\n2026-10-27: Förberedande API för rapportutkast, validerad versionslagring, läraravstämning och behörighetsfiltrerad historik lokalt klart. Se docs/PUPIL_ANALYSIS.md. Ingen MCP-server eller klientanslutning byggd; modellkalibrering ska ingå före verklig analys.\n2026-10-27: Agentens erfarenheter från en hel analysdag (vad som gick, omvägar, vad som inte gick, förslag på verktygsyta) samlas i docs/agent-tooling-notes.md som underlag för API/MCP/skill.\n2026-10-27 lokalt: Separat stdio-paket mcp/sequential-math med officiell SDK 2.4.0 och egen låsfil. Sju läsverktyg, separat aktiverat AI-rapportsparande och kanonisk skill som prompt. Ingen utdelning, läraravstämningsskrivning eller mastery-operation. Demo startar isolerad syntetisk robotapp med minnes-KV och stängs med klienten. Explicit mål/datamiljö krävs utanför demo; standard syntetisk loopback kontrolleras före inloggning. Privata namn är opt-in; paginering, källrevision, maskerade fel, timeout och ingen automatisk skrivåterföring. 13 MCP-tester inklusive tio facitfrågor, officiell SDK-klient och äldre 2025-11-25-initialize godkända. 179 app-testfiler/860 tester, build, fyra riktade underlags-/rapportrobotar, lint och arkitektur godkända. Befintliga tre stora appfiler är oförändrade. Codex CLI 0.146.0 registrerar och återläser sequential-math-demo med enbart syntetiska data; nuvarande chatts verktyg har inte laddat anslutningen. Ingen faktisk modellsession eller didaktisk kalibrering verifierad. Ingen riktig KV, verklig elevdata, fjärrklient, fysisk iPad, push eller produktion. docs/PUPIL_MCP.md beskriver installation och gränser. Projektkartans ändringstäckning inkluderar nu mcp/. CI provar adaptern separat.\n2026-10-28 lokalt: Erfarenheterna i docs/agent-tooling-notes.md kopplade till befintligt underlags-API utan att ändra originalanteckningen, andra agentens teacher-data-skill eller issue18–21. GET resource=evidence&format=notebook kräver exakt ref/snapshotRevision och behåller screeningroll, pilot och klassåtkomst. Slutläge som text/koordinater, observerbar answerEmpty/gridHasContent/workWithoutAnswer, ingen antagen resultatidentifiering. Samma DiagnosticNotebookGrid och CSS för lärarhistorik och lokal Playwright-PNG, beskärning på hela rutor, rutmått/pixelmetadata och separat frihandsbild med suddning. MCP math_get_notebook är skrivskyddat; omkontrollerar åtkomst/källrevision efter rendering. Ingen elevdatafil eller nätverksläsning i renderaren. 180 app-testfiler/865 tester, build, 14 MCP-tester, fyra riktade robotfall, riktad lint och arkitektur godkända. Original-/ritnings-PNG visuellt granskade; befintliga tre stora appfiler oförändrade. Bara syntetiska elever/minnes-KV; inte fysisk iPad, riktig KV, faktisk språkmodell eller produktion. Ingen klassöversikt, ny signalanalys, presentation eller rättat elevdokument levererat. Lokal commit, ingen push.\n2026-10-28 lokalt: Gemensam evidencePeriod för kalenderdagar och Stockholm-klockslag, inklusive start/exklusivt explicit klockslagsslut och inkluderande hela slutdatum. Överhoppad vårtid avvisas, tvetydig vintertid kräver korrekt +02:00/+01:00. API-/rapport-/MCP-läsning och export använder samma gränser. Skrivskyddat GET /api/students?resource=classes ger bara behöriga klass-ID:n/namn, även tomma klasser, paginerat med live-åtkomstkontroll; inga tokeninitieringar eller profilsvar. MCP math_find_classes och CLI --list-classes/--class-id/--class-exact återanvänder projektionen. Dubblettnamn kräver ID, sekundärt klassmedlemskap fungerar, äldre --class-delsträng finns kvar explicit. Export-CLI verifierad genom faktiska syntetiska API-hanterare; upptäckt Windows-krasch vid process.exit efter fetch rättad genom naturligt async-avslut. 182 testfiler/872 apptester, slutlig MCP/CLI-svit 15/15, build, fyra riktade robotfall, riktad lint och arkitektur godkända; berörda klassvals-/urvalstester omkörda efter slutlig liten ändring. Inga ändrade filer över 600 rader. Bara syntetisk minneslagring, inga verkliga elevdata, riktig KV, push eller produktion. Andra agentens originalanteckningar, ocommittade teacher-data-skill och issue18–21 bevarade. Ingen klassmatris/bulk-screening, materialutdelning eller presentation byggd i detta sjok.\n2026-10-28 statusinspektion: Tio MCP-verktyg synliga i aktuell Codex-session, inklusive math_find_classes och math_get_notebook. Verktygsnärvaro verifierad; inga MCP-dataanrop, faktisk analys eller rapportsparande genomförda i inspektionen.\n2026-10-28: Faktisk Codex-session läste capabilities, exakt klass/elev, fyra träningssvar och regelunderlag genom registrerad MCP. source=all nekades för vanlig lärare. Separat --demo-screening ger syntetisk superadmin och två original via riktiga uppdrags-/elev-API:er med CSRF, inga verkliga data. SDK-MCP-text/PNG visuellt granskade: 402−178 har rutnätsraden 376 men tomt svarsfält; 764−231→533 är korrekt utan växling och inget direkt motexempel mot växling genom noll. docs/PUPIL_MCP_MODEL_REVIEW.md skiljer observation/hypotes/alternativ. Samma agent skapade fallen: inte blind/oberoende didaktisk kalibrering. Inga rapporter sparade i modellprovet. 182 testfiler/872 apptester, 16 MCP/CLI-tester, build (befintliga varningar), fyra riktade robotfall, riktad lint och arkitektur godkända. Befintliga stora appfiler oförändrade. Ingen push eller produktion.\n2026-10-28 lokalt: GET students resource=groups ger enbart behöriga grupp-ID:n/namn. resource=audience ger exakt elev-/grupp-/klassurval med kodnamn, åtkomliga aktiva klass-ID:n, rosterRevision och sidläsning; även elever utan svar. Nuvarande medlemskap, historiskt okänt. Ändrad lista ger 409, otillgänglig gruppmedlem ger uttryckligt fel, indragen åtkomst/sessionsändring omkontrolleras. MCP math_find_groups/math_get_audience använder samma API. Separat syntetisk gruppfixture. assignment-authoring-skill skapad och validerad; pupil-analysis kompletterad för klass/grupp, teacher-data-dokumentation samordnad utan ändring av annan agents ospårade skill. docs/PUPIL_MATERIAL.md beskriver kontrakt och kvarvarande material-/godkännandesteg. 183 testfiler/878 apptester, build med befintliga varningar, 17 MCP/CLI-prov samt sista protokollsvit 8/8, riktad lint/arkitektur och skillvalidering godkända. Fyra befintliga robotfall godkända; nya urvalsroboten föll först på testets kvarvarande inloggningscookie, rättades och passerade separat. Ingen helt grön gemensam engångskörning påstås. Bara syntetisk minneslagring, ingen riktig KV/produktion/push. Befintliga stora appfiler oförändrade.",
+      "evidence": "2026-10-27: Planering efter Simons begäran. Kod och projektkontrakt lästa; ingen elevdata hämtad, ingen implementation eller ny produktionskontroll. Detaljplan: TODO_AI_ELEVUPPFOLJNING.md. Lokal MCP-pilot och senare fjärranslutning är förslag, inte verifierad klientkompatibilitet.\n2026-10-27: Förberedande API för rapportutkast, validerad versionslagring, läraravstämning och behörighetsfiltrerad historik lokalt klart. Se docs/PUPIL_ANALYSIS.md. Ingen MCP-server eller klientanslutning byggd; modellkalibrering ska ingå före verklig analys.\n2026-10-27: Agentens erfarenheter från en hel analysdag (vad som gick, omvägar, vad som inte gick, förslag på verktygsyta) samlas i docs/agent-tooling-notes.md som underlag för API/MCP/skill.\n2026-10-27 lokalt: Separat stdio-paket mcp/sequential-math med officiell SDK 2.4.0 och egen låsfil. Sju läsverktyg, separat aktiverat AI-rapportsparande och kanonisk skill som prompt. Ingen utdelning, läraravstämningsskrivning eller mastery-operation. Demo startar isolerad syntetisk robotapp med minnes-KV och stängs med klienten. Explicit mål/datamiljö krävs utanför demo; standard syntetisk loopback kontrolleras före inloggning. Privata namn är opt-in; paginering, källrevision, maskerade fel, timeout och ingen automatisk skrivåterföring. 13 MCP-tester inklusive tio facitfrågor, officiell SDK-klient och äldre 2025-11-25-initialize godkända. 179 app-testfiler/860 tester, build, fyra riktade underlags-/rapportrobotar, lint och arkitektur godkända. Befintliga tre stora appfiler är oförändrade. Codex CLI 0.146.0 registrerar och återläser sequential-math-demo med enbart syntetiska data; nuvarande chatts verktyg har inte laddat anslutningen. Ingen faktisk modellsession eller didaktisk kalibrering verifierad. Ingen riktig KV, verklig elevdata, fjärrklient, fysisk iPad, push eller produktion. docs/PUPIL_MCP.md beskriver installation och gränser. Projektkartans ändringstäckning inkluderar nu mcp/. CI provar adaptern separat.\n2026-10-28 lokalt: Erfarenheterna i docs/agent-tooling-notes.md kopplade till befintligt underlags-API utan att ändra originalanteckningen, andra agentens teacher-data-skill eller issue18–21. GET resource=evidence&format=notebook kräver exakt ref/snapshotRevision och behåller screeningroll, pilot och klassåtkomst. Slutläge som text/koordinater, observerbar answerEmpty/gridHasContent/workWithoutAnswer, ingen antagen resultatidentifiering. Samma DiagnosticNotebookGrid och CSS för lärarhistorik och lokal Playwright-PNG, beskärning på hela rutor, rutmått/pixelmetadata och separat frihandsbild med suddning. MCP math_get_notebook är skrivskyddat; omkontrollerar åtkomst/källrevision efter rendering. Ingen elevdatafil eller nätverksläsning i renderaren. 180 app-testfiler/865 tester, build, 14 MCP-tester, fyra riktade robotfall, riktad lint och arkitektur godkända. Original-/ritnings-PNG visuellt granskade; befintliga tre stora appfiler oförändrade. Bara syntetiska elever/minnes-KV; inte fysisk iPad, riktig KV, faktisk språkmodell eller produktion. Ingen klassöversikt, ny signalanalys, presentation eller rättat elevdokument levererat. Lokal commit, ingen push.\n2026-10-28 lokalt: Gemensam evidencePeriod för kalenderdagar och Stockholm-klockslag, inklusive start/exklusivt explicit klockslagsslut och inkluderande hela slutdatum. Överhoppad vårtid avvisas, tvetydig vintertid kräver korrekt +02:00/+01:00. API-/rapport-/MCP-läsning och export använder samma gränser. Skrivskyddat GET /api/students?resource=classes ger bara behöriga klass-ID:n/namn, även tomma klasser, paginerat med live-åtkomstkontroll; inga tokeninitieringar eller profilsvar. MCP math_find_classes och CLI --list-classes/--class-id/--class-exact återanvänder projektionen. Dubblettnamn kräver ID, sekundärt klassmedlemskap fungerar, äldre --class-delsträng finns kvar explicit. Export-CLI verifierad genom faktiska syntetiska API-hanterare; upptäckt Windows-krasch vid process.exit efter fetch rättad genom naturligt async-avslut. 182 testfiler/872 apptester, slutlig MCP/CLI-svit 15/15, build, fyra riktade robotfall, riktad lint och arkitektur godkända; berörda klassvals-/urvalstester omkörda efter slutlig liten ändring. Inga ändrade filer över 600 rader. Bara syntetisk minneslagring, inga verkliga elevdata, riktig KV, push eller produktion. Andra agentens originalanteckningar, ocommittade teacher-data-skill och issue18–21 bevarade. Ingen klassmatris/bulk-screening, materialutdelning eller presentation byggd i detta sjok.\n2026-10-28 statusinspektion: Tio MCP-verktyg synliga i aktuell Codex-session, inklusive math_find_classes och math_get_notebook. Verktygsnärvaro verifierad; inga MCP-dataanrop, faktisk analys eller rapportsparande genomförda i inspektionen.\n2026-10-28: Faktisk Codex-session läste capabilities, exakt klass/elev, fyra träningssvar och regelunderlag genom registrerad MCP. source=all nekades för vanlig lärare. Separat --demo-screening ger syntetisk superadmin och två original via riktiga uppdrags-/elev-API:er med CSRF, inga verkliga data. SDK-MCP-text/PNG visuellt granskade: 402−178 har rutnätsraden 376 men tomt svarsfält; 764−231→533 är korrekt utan växling och inget direkt motexempel mot växling genom noll. docs/PUPIL_MCP_MODEL_REVIEW.md skiljer observation/hypotes/alternativ. Samma agent skapade fallen: inte blind/oberoende didaktisk kalibrering. Inga rapporter sparade i modellprovet. 182 testfiler/872 apptester, 16 MCP/CLI-tester, build (befintliga varningar), fyra riktade robotfall, riktad lint och arkitektur godkända. Befintliga stora appfiler oförändrade. Ingen push eller produktion.\n2026-10-28 lokalt: GET students resource=groups ger enbart behöriga grupp-ID:n/namn. resource=audience ger exakt elev-/grupp-/klassurval med kodnamn, åtkomliga aktiva klass-ID:n, rosterRevision och sidläsning; även elever utan svar. Nuvarande medlemskap, historiskt okänt. Ändrad lista ger 409, otillgänglig gruppmedlem ger uttryckligt fel, indragen åtkomst/sessionsändring omkontrolleras. MCP math_find_groups/math_get_audience använder samma API. Separat syntetisk gruppfixture. assignment-authoring-skill skapad och validerad; pupil-analysis kompletterad för klass/grupp, teacher-data-dokumentation samordnad utan ändring av annan agents ospårade skill. docs/PUPIL_MATERIAL.md beskriver kontrakt och kvarvarande material-/godkännandesteg. 183 testfiler/878 apptester, build med befintliga varningar, 17 MCP/CLI-prov samt sista protokollsvit 8/8, riktad lint/arkitektur och skillvalidering godkända. Fyra befintliga robotfall godkända; nya urvalsroboten föll först på testets kvarvarande inloggningscookie, rättades och passerade separat. Ingen helt grön gemensam engångskörning påstås. Bara syntetisk minneslagring, ingen riktig KV/produktion/push. Befintliga stora appfiler oförändrade.\n2026-10-29: Faktiskt Antigravity-formulerade texter från enbart syntetiska MCP-resultat prövade. Första svaret hade ogiltig JSON, facitsträngar och obelagd/oförenlig metodtolkning och sparades inte. Efter dokumenterad återkoppling sparades två AI-rapporter, en analysspecifik klasscreening (6 frågor) och generell träningsram från givet material via MCP. Provmallens partiella settings avvisades; Codex kompletterade uttryckligt befintlig 120-sekundersram och ordningsval samt förtydligade beställningen. Återläsning/återförsök gav samma ID:n, version/revision 1 och inga dubbletter. Ett browserprov verifierade rapport, frågor, originalarbete med tomt svar och träningsram; fyra fyllda skärmbilder visuellt granskade. Inget godkänt/utdelat. Provport stängd. Inte blind eller lärargodkänd kalibrering. Artefakter: docs/evaluations/mcp-authoring-pilot-2026-10-29/review.md; kravavstämning: docs/AI_WORKFLOW_COMPLETION_AUDIT.md.\n2026-10-29: Säker invalid_material-vägledning, fullständig practice-settings-regression och sekretessmaskning verifierade, totalt 25 MCP-prov.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -1877,7 +1877,7 @@
       "title": "Generella och analysspecifika uppdrag/screeningar",
       "status": "Byggt",
       "purpose": "Skapa generella uppdrag/screeningar från lärarinstruktion eller givet material, och specifika utifrån analys av just klassen, gruppen eller eleven. Välj mottagare separat.",
-      "next": "Granska PR22 och preview före separat mergebeslut. Preview kräver Vercel-inloggning; appens autentiserade elev-/lärarflöde i preview är ännu inte verifierat. Verklig elevdata kräver klarlagd godkänd AI-miljö.",
+      "next": "Uppdatera PR #22 med granskningsunderlag och verifierad felvägledning; invänta Simons uttryckliga produktionsmandat. Lärargranskning av modellprovet och klarlagd verklig AI-miljö återstår.",
       "acceptance": "Båda ingångarna fungerar för träning och screening till elev, grupp och klass. Utkast visar ursprung, mål, innehåll, facit/bedömningssätt och exakta mottagare. Utdelning kräver granskad version, aktuell behörighet och medlemskap; återförsök ger inga dubletter och delfel syns. Eleven kan öppna, svara och återladda; läraren ser uppföljningen. Screening ändrar inte vanlig mastery. Specifika utkast visar vilka analysbelägg som motiverar innehåll och kontraster; en vald mottagare ensam gör inte uppdraget specifikt.",
       "requires": [
         "ai-pupil-mcp",
@@ -2191,9 +2191,9 @@
       "id": "custom-screening-answer-keys",
       "area": "Dela ut",
       "title": "Egna självrättande screeningfrågor",
-      "status": "Byggt",
+      "status": "Beslut behövs",
       "purpose": "Läraren anger fryst facit för egna frågor med samma bevarade räknehäfte och rättningskedja som NCM.",
-      "next": "Avgränsa publiceringen från tidigare ändringar på arbetsgrenen, inhämta publiceringsmandat och granska därefter exakta uppdrag och mottagare före utdelning.",
+      "next": "Granska och revidera de åtta nu sparade privata utkasten i appen före beslut om individuell utdelning.",
       "acceptance": "Tal, decimaler, bråk/procent och exakta svar rättas utan facitläckage eller påverkan på mastery. Gamla skrivfrågor är fortsatt lärarbedömda.",
       "requires": [
         "dispatch"
@@ -2201,8 +2201,8 @@
       "affects": [
         "matrix"
       ],
-      "decision": "2026-10-28: Simon väljer egna självrättande frågor, åtta varierade frågor per elev. Inget publiceringsmandat för kod har givits.",
-      "evidence": "2026-10-28 lokalt: validerat fryst answerKey, lärarredigerare, facitsekretess, kopiering, strikt bråkform/nämnare och enheter samt resultat via befintlig observationskedja. 189 testfiler/940 tester, build, riktad lint och karta godkända. Ny robot passerar separat och i hela körningen; syntetiska elever, sparande/omladdning, exakt mottagare och orörd mastery. Renderade liggande/stående iPadstorlekar samt lärarvyer granskade. Bred robotkörning: 155 godkända, 6 misslyckade, 4 överhoppade; samtliga sex passerade separat med en arbetare. Ingen helt grön gemensam körning påstås. Se docs/SCREENING_CUSTOM_ANSWER_KEYS.md. Åtta individuella uppdrag med totalt 64 frågor lokalt validerade utanför repot. Ingen push, publicering eller elevutdelning. Arbetsgrenens tidigare ändringar ingår inte i publiceringsmandatet.",
+      "decision": "2026-10-28: Simon väljer egna självrättande frågor, åtta varierade frågor per elev. Inget publiceringsmandat för kod har givits.\n2026-10-28: Simon väljer egna självrättande frågor, åtta varierade frågor per elev. Inget publiceringsmandat för kod har givits. 2026-10-28: Simon ger uttryckligt publiceringsmandat. Separat gren från origin/master; övriga opublicerade ändringar i feature/more-figures ingår inte. Publiceringsmandatet genomfört via separat PR23. Utdelningen har inte utförts: assignment-authoring kräver aktuell innehålls-/mottagargranskning genom serverns godkännandeflöde; det separata materialgranskningsflödet i arbetsgrenen är ännu opublicerat och ingick inte i denna isolerade publicering. 2026-10-28: Simon beställer nu först möjligheten till privata utkast för genomkoll och revidering. Den avgränsade funktionen screening-drafts är lokalt byggd; detta sjok omfattar inte elevutdelning eller hela den äldre materialmodulen.",
+      "evidence": "2026-10-28 lokalt: validerat fryst answerKey, lärarredigerare, facitsekretess, kopiering, strikt bråkform/nämnare och enheter samt resultat via befintlig observationskedja. 189 testfiler/940 tester, build, riktad lint och karta godkända. Ny robot passerar separat och i hela körningen; syntetiska elever, sparande/omladdning, exakt mottagare och orörd mastery. Renderade liggande/stående iPadstorlekar samt lärarvyer granskade. Bred robotkörning: 155 godkända, 6 misslyckade, 4 överhoppade; samtliga sex passerade separat med en arbetare. Ingen helt grön gemensam körning påstås. Se docs/SCREENING_CUSTOM_ANSWER_KEYS.md. Åtta individuella uppdrag med totalt 64 frågor lokalt validerade utanför repot. Ingen push, publicering eller elevutdelning. Arbetsgrenens tidigare ändringar ingår inte i publiceringsmandatet.\n2026-10-28 lokalt: validerat fryst answerKey, lärarredigerare, facitsekretess, kopiering, strikt bråkform/nämnare och enheter samt resultat via befintlig observationskedja. 189 testfiler/940 tester, build, riktad lint och karta godkända. Ny robot passerar separat och i hela körningen; syntetiska elever, sparande/omladdning, exakt mottagare och orörd mastery. Renderade liggande/stående iPadstorlekar samt lärarvyer granskade. Bred robotkörning: 155 godkända, 6 misslyckade, 4 överhoppade; samtliga sex passerade separat med en arbetare. Ingen helt grön gemensam körning påstås. Se docs/SCREENING_CUSTOM_ANSWER_KEYS.md. Åtta individuella uppdrag med totalt 64 frågor lokalt validerade utanför repot. Ingen push, publicering eller elevutdelning. Arbetsgrenens tidigare ändringar ingår inte i publiceringsmandatet. Publiceringskandidaten baseras på 05748fb och utelämnar det ännu opublicerade materialförhandsvisnings-API:t och dess dokumentation. Isolerad kandidat från aktuell origin/master: 173 testfiler/872 tester, produktionsbuild, arkitekturkontroll samt 10 riktade robotfall med en arbetare godkända. Robotfallen omfattar egna facit, NCM, tillbaka/redigera, avslut, gruppresultat och bildfrågor. Inga andra arbetsgrensändringar följer med. 2026-10-28 publicerat: PR https://github.com/ximonse/sequential_math/pull/23 sammanslagen till master med SHA16ce82271337628a1b1a3396d9be0ee90f303958 efter gröna GitHub quality/documentation och READY preview. Vercel sekvens prj_EoQGQufPrEgDHwHr6FlnFpd9IwNo, team_bsg7SgXOl9BGH3U8wHz4gpg1, produktionsdeployment dpl_BbXaS6ECwFFnHtA36qJLRwKfPsj2 READY med matematik.ximon.se som alias och exakt samma SHA. Aktiv domän serverar index-Dry9GKK5.js med nya frågeredigeraren. Autentiserad lärarläsning verifierar att de åtta avsedda mottagarna fortfarande är utdelningsbara i rätt klass och grupp, 15 gruppmedlemmar totalt. Inga individuella uppdrag skapade och inga elevsvar ändrade. Ingen autentiserad visuell produktions-QA eller fysisk iPadverifiering påstås. 2026-10-28: Den avgränsade utkastfunktionen publicerad genom PR24. Alla åtta individuella samlingar med totalt64 självrättande frågor är nu privata utkast i appen, version1, återlästa från verklig lagring. Inget utdelat. Den bredare äldre materialmodulen behövde inte publiceras för detta utkaststeg.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -2225,6 +2225,62 @@
           "id": "release-dispatch",
           "text": "Publicera efter mandat och dela därefter ut verifierade individuella uppdrag.",
           "done": false
+        },
+        {
+          "id": "release-code",
+          "text": "Publicera det avgränsade facitstödet via GitHub och verifiera aktiv produktionsversion.",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "screening-drafts",
+      "area": "Dela ut",
+      "title": "Sparade screeningutkast för genomgång och revidering",
+      "status": "Byggt",
+      "purpose": "Skapa, spara, öppna, förhandsvisa och revidera frågesamlingar privat innan utdelning.",
+      "next": "Läraren öppnar Screening: dela ut → Utkast för genomgång → Sparade utkast, granskar och reviderar de åtta individuella samlingarna. Elevutdelning är ett separat steg.",
+      "acceptance": "Utkast och äldre versioner kan läsas efter omladdning. Frågor, facit och pågående frågeredigering bevaras. Sparande skapar inga elevuppdrag. Samtidiga ändringar skrivs inte över.",
+      "requires": [
+        "dispatch"
+      ],
+      "affects": [
+        "custom-screening-answer-keys"
+      ],
+      "decision": "2026-10-28: Simon beställer en funktion i appen för att skapa utkast för genomkoll och revidering. Avgränsat till screeningens befintliga frågeredigerare. Publicering är separat. 2026-10-28: Simon ger uttryckligt mandat att publicera utkastfunktionen och lägga in de åtta förberedda samlingarna som privata utkast.",
+      "evidence": "Befintlig opublicerad materialgranskning inspekterad: dess redigerare ändrar rubrik/mål, men saknar frågeredigering. Återanvänd befintliga frågekomponenter och samma CAS/idempotensprincip; ingen parallell bred materialpubliceringsmodul införs. 2026-10-28 lokalt byggt: privata screeningutkast via befintlig adminbegränsad route, atomisk CAS och idempotent kvittens, 20 oföränderliga versioner och 100 utkast per konto. Befintliga frågor/facit/bildfrågor/arbetsytor och ofullständig frågeredigering sparas; läsbar förhandsvisning, versionsval, kopia och osparat-varning. Inget mottagarval eller elevuppdrag sparas. 174 testfiler/877 tester och build godkända; riktad lint, arkitektur och karta godkända. Tio riktade browserfall gröna, därefter utökad fråge-/facitrevidering och arbetslägeskontroll; navigeringens R2-fel reproducerat rött före fix, följt av fyra gröna omkörda fall. Förlorad serverrespons, samtidig ändring, privat läraråtkomst, elevnekad åtkomst och orörda elevdata verifierade. Renderade liggande/stående iPadstorlekar granskade. Ingen fysisk iPad, riktig KV, push eller produktionsverifiering för denna funktion. Åtta stabila privata utkastbegäranden med 64 frågor förberedda utanför repot, inget sparat i appen. Kontrakt: docs/SCREENING_DRAFTS.md. 2026-10-28 publicerat och verklig lagring verifierad: PR24 https://github.com/ximonse/sequential_math/pull/24 grön i GitHub quality/documentation och sammanslagen till master acae69714dfee79dc0072f5a9fb4f86096af9d5b. Vercel sekvens, prj_EoQGQufPrEgDHwHr6FlnFpd9IwNo, produktionsdeployment dpl_2hVYVSa738dzkSQihBRaJMhxHSiD READY på exakt detta SHA med matematik.ximon.se som alias. Aktiv domän serverar index-D8igdzpf.js med utkastredigeraren. Åtta privata utkast med åtta frågor var, totalt64, sparade som version1 genom autentiserat lärar-API och varje innehåll/facit återläst och jämfört med planerade data. Första sparbegäran återförsökt med samma requestId: ingen extra version. Samtliga åtta återfinns i lärarens privata lista. Klassens elevuppdrags-ID:n är oförändrade före/efter; ingen elevutdelning. Produktionskvittens sparad utanför repot. API-/lagringsverifiering, ingen autentiserad visuell produktions-QA eller fysisk iPad påstås.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "store",
+          "text": "Privat versionslagring med konflikt- och återförsöksskydd.",
+          "done": true
+        },
+        {
+          "id": "editor",
+          "text": "Skapa, öppna och revidera frågor, facit och ofullständiga frågeutkast.",
+          "done": true
+        },
+        {
+          "id": "review",
+          "text": "Läsbar förhandsvisning och historiska versioner utan utdelning.",
+          "done": true
+        },
+        {
+          "id": "verify",
+          "text": "API-/lagringstester, browserrobot, renderade lärarvyer och build.",
+          "done": true
+        },
+        {
+          "id": "publish",
+          "text": "Publicera via GitHub och verifiera rätt version på aktiv produktionsdomän.",
+          "done": true
+        },
+        {
+          "id": "populate",
+          "text": "Spara och återläsa de åtta individuella samlingarna som privata utkast utan elevutdelning.",
+          "done": true
         }
       ]
     },
@@ -2234,15 +2290,15 @@
       "title": "Gemensamt screeningflöde: innehåll, mottagare, kontroll och kvitto",
       "status": "Lokalt klart",
       "purpose": "Omsätta Simons godkända kompakta skiss med sökbart flerval i appens riktiga screeningflöde.",
-      "next": "Publicering via GitHub kräver separat mandat. Övriga harmoniseringsetapper för Uppdrag/tickets och bildredigeraren är separata från denna verifierade screeningomgång.",
-      "acceptance": "Översikt och utdelning är separata. Återanvänd/skapa ny är tydligt. Val och frågeutkast överlever tillbakagång; mottagare kan kombinera flera klasser/grupper/elever och dedupliceras. Bara uttrycklig utdelning skriver. Kvittens per klass och återförsök utan dubbletter. Befintlig screeningmastery och resultat påverkas inte.",
+      "next": "Publicera godkänd korrigering3bec274 via GitHub efter gröna kontroller och verifiera commit/alias på sekvens.",
+      "acceptance": "Översikt och utdelning är separata. Återanvänd/skapa ny är tydligt. Val och frågeutkast överlever tillbakagång; mottagare kan kombinera flera klasser/grupper/elever och dedupliceras. Bara uttrycklig utdelning skriver. Kvittens per klass och återförsök utan dubbletter. Befintlig screeningmastery och resultat påverkas inte. Godkänd visuell referens följs och bevaras i repot. Materialbiblioteket öppnar verkliga privata utkast. Frågebild och svarsalternativ har skilda infogningsvägar. Uppgifter har områdesrubriker. Visningsurval styr även elevantal, status, genomförande och resultatöppning utan att byta utdelningsmottagare.",
       "requires": [],
       "affects": [
         "screening-split",
         "reuse-collections"
       ],
-      "decision": "2026-10-28: Simon godkände UI-plan och flervalsprototyp, krävde kraftigt minskad vertikal padding och sade kör. Första implementationen är Screening; inga andra vyer byggs om automatiskt och ingen push är beställd.",
-      "evidence": "Lokalt byggt: översikt, innehåll/mottagare/kontroll/kvitto, explicit mottagarlista och serverbunden återförsöksidentitet. Ny robot verifierat röd före implementation. Mottagarflöde, förlorad kvittens och API-deduplicering har passerat fram till robotens gamla strikta textlocator; den rättas till en entydig rubrik. Full regression pågår. Dokumentation: docs/TEACHER_UI_WORKFLOWS.md. Ej pushat.\nSlutkontroll: 191 filer/945 tester, build, riktad lint, arkitektur och karta godkända. Bred produktionslik robotsvit:158 pass/4 fall/4 miljöberoende överhoppade. Två gamla UI-ingångar anpassade och gröna; nivåprovet grönt seriellt. Fokusprov föll i blandade körningar men passerade ensamt i både isolerad oförändrad HEAD0d248f2 och aktuell app. Ingen obruten grön fullsvit påstås. Slutbyggets nya flödes- och navigeringsrobot gröna tillsammans: multi-klass/grupp/elev, överlapp, sök, bevarat otillagt frågeutkast, förlorad lyckad kvittens/ingen dubblett, översiktsfilter/sortering/mottagare, resultat och avslut, återanvändning med tomt urval. Kvarhängande navigeringsvarning reproducerad röd före fix. Efter Simons återkoppling mjukare markeringar, tydliga kategorier och mer sektionsluft med fortsatt kompakta rader; åtta sökträffar/visa fler. Fylld liggande/stående render visuellt granskad. Bara syntetisk minnes-KV, ej verklig Redis-CAS/fysisk iPad/produktion. Lokal commit, ej pushat.",
+      "decision": "2026-10-28: Simon godkände UI-plan och flervalsprototyp, krävde kraftigt minskad vertikal padding och sade kör. Första implementationen är Screening; inga andra vyer byggs om automatiskt och ingen push är beställd.\n2026-10-28: Simon bad om publicering. Isolerad publiceringsgren från master7fede25, med privata versionsutkast bevarade; PR22 ingår inte.\n2026-10-28: Simon underkänner överensstämmelsen med godkänd skiss och beställer rättning av både utseendet och de utlovade underliggande delarna. Ingen ny publiceringsbegäran. Korrigeringen gäller det kompletta screeningflödet; senare föreslagna harmoniseringsetapper är inte automatiskt beslutade.\nSimon godkänner korrigeringens faktiska renderingar och beställer publicering: ser bra ut, publicera.",
+      "evidence": "Lokalt byggt: översikt, innehåll/mottagare/kontroll/kvitto, explicit mottagarlista och serverbunden återförsöksidentitet. Ny robot verifierat röd före implementation. Mottagarflöde, förlorad kvittens och API-deduplicering har passerat fram till robotens gamla strikta textlocator; den rättas till en entydig rubrik. Full regression pågår. Dokumentation: docs/TEACHER_UI_WORKFLOWS.md. Ej pushat.\nSlutkontroll: 191 filer/945 tester, build, riktad lint, arkitektur och karta godkända. Bred produktionslik robotsvit:158 pass/4 fall/4 miljöberoende överhoppade. Två gamla UI-ingångar anpassade och gröna; nivåprovet grönt seriellt. Fokusprov föll i blandade körningar men passerade ensamt i både isolerad oförändrad HEAD0d248f2 och aktuell app. Ingen obruten grön fullsvit påstås. Slutbyggets nya flödes- och navigeringsrobot gröna tillsammans: multi-klass/grupp/elev, överlapp, sök, bevarat otillagt frågeutkast, förlorad lyckad kvittens/ingen dubblett, översiktsfilter/sortering/mottagare, resultat och avslut, återanvändning med tomt urval. Kvarhängande navigeringsvarning reproducerad röd före fix. Efter Simons återkoppling mjukare markeringar, tydliga kategorier och mer sektionsluft med fortsatt kompakta rader; åtta sökträffar/visa fler. Fylld liggande/stående render visuellt granskad. Bara syntetisk minnes-KV, ej verklig Redis-CAS/fysisk iPad/produktion. Lokal commit, ej pushat.\nPubliceringsmandat 2026-10-28: isolerad gren från senaste master7fede25; tar inte med PR22:s analys/MCP/materialarbete. Befintliga privata screeningutkast och kontrollerade halvfärdiga redigerare kopplas in i nya flödet. Slutkontroller för kombinationen pågår.\nPubliceringsgrenen: 176 testfiler/882 tester gröna; tio berörda produktionslika robotfall gröna tillsammans seriellt efter rättad funktionell redigeraruppdatering. Privata utkast: ofärdig text/bild, sparning, omladdning, versionsbyte, konflikt och förlorad kvittens verifierade. Syntetisk minnes-KV; liggande/stående mottagare och utkastgranskning visuellt kontrollerade. Fokus/Värm-tooltips från14f4080 inkluderade. Riktad lint, arkitektur och karta gröna. Produktionspublicering inväntar GitHub-kontroller.\nPublicerat via PR25 (https://github.com/ximonse/sequential_math/pull/25), testad head68e78b1, master3065304c5934aa985ed4eebaf5d3b68cb73bcec0. PR:s kvalitet/dokumentation/Vercelpreview gröna och masters kvalitetskontroll grön. Sekvens prj_EoQGQufPrEgDHwHr6FlnFpd9IwNo, produktion dpl_41LYGgdX8KgVBJ6S7JZSLgV16j87 READY, Git-källa master3065304 och alias matematik.ximon.se verifierade. Offentlig sida HTTP200; /assets/index-3Yil_8wC.js matchar lokalt verifierat bygge exakt. Lärarutkast- och utdelnings-API ger401 utan inloggning. Ingen utdelning till verkliga elever eller autentiserad produktionsgenomgång gjord. Publiceringsbelägg sparas i separat lokal dokumentationscommit.\nKorrigering pågår: revision mot godkänd teacher-workflow.html. Tidigare leverans saknade Materialbibliotek och fasta bildroller; översiktens urval visade hela utdelningens status/antal även för undergrupper. Röda browserbelägg för saknad materialingång. Bygger verklig utkastlista/öppning, separata bildinfogningar, bevarade alternativ och avgränsad status/resultatöppning. Lokal styling följer skissens mått, hierarki och färger i Screening; andra arbetslägen bevaras.\nLokal slutkontroll av korrigeringen: 177 filer/883 enhetstester, slutligt produktionsbygge, riktad ESLint, arkitektur och karta gröna. Alla14 berörda robotfall passerar tillsammans; efter sista visuella kontrastjusteringarna passerar de4 berörda flödesfallen igen (ytterligare1+3 slutomkörningar gröna). Materialöppning/privata versioner, fel vid innehållsläsning spärrar fortsatt utdelning, tangentbordsflikar, gruppstatus/elevantal/resultatöppning, genomförande från lärar-API, fasta bildroller, avböjt raderande svarssättsbyte och bevarade alternativ verifierade. Genomförandesiffror både från riktiga syntetiska elevförsök i regressionsflöden och styrt statusresponsfall. Fyllda översikts-/material-/mottagar-/bildvyer samt stående,390px och mörkt tema granskade som verkliga skärmbilder. Referensen jämförd direkt; konto/synk/temaknappar behålls, inga demodata i appkoden. Skiss bevarad i docs/ui-reference/screening-approved.html; agentinstruktioner länkar jämförelsekontraktet. Syntetisk minnes-KV/emulerad platta; ingen fysisk iPad eller riktig elevdata. Lokal commit; ej pushat eller publicerat. QA utanför repot: visualizations/2026/10/28/01a18377-99cd-7bf3-a1ae-b17726f9d8a9/screening-correction.\nPubliceringsmandat för den lokalt verifierade design- och flödeskorrigeringen mottaget. Baserad på aktuell master3065304; inga nya appändringar sedan visad och testad3bec274. Förbereder avgränsad PR från codex/screening-design-contract.\n2026-10-29 publiceringskontroll: PR26:s preview och dokumentation gröna, men quality föll i två befintliga datumfixturer vid Stockholmsmidnatt (23:00UTC). De satte svarstid till Date.now()-60000 men förväntade alla svar i dagens period. Rättar endast testklockan till ett bestämt middagsklockslag och återställer Date efter varje test. Produktionskod och den godkända designen ändras inte. Ny test- och CI-verifiering krävs före merge.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -2254,6 +2310,122 @@
         {
           "id": "flow-verify",
           "text": "Verifiera riktiga API-fall och visuella liggande/stående vyer",
+          "done": true
+        },
+        {
+          "id": "approved-visual-contract",
+          "text": "Rätta hela screeningflödet mot godkänd skiss och verifiera bildroller/material/visningsurval med verklig render",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "ai-material-integration",
+      "area": "AI-uppföljning",
+      "title": "Koppla MCP-material till aktuell screeningredigering",
+      "status": "Byggt",
+      "purpose": "Sammanföra det versionsgranskade AI-materialet med publicerade fråge- och utkastfunktioner utan parallella utdelningar.",
+      "next": "Verifiera och publicera den avgränsade prestandarättningen inom pågående API-prov; mät sedan klassurval och slutför privat materialprov på adminperson utan utdelning.",
+      "acceptance": "Generellt och analysspecifikt material kan bearbetas, granskas som ny version och delas ut först efter godkännande av exakt innehåll och mottagare. Befintlig screeningredigering och kvittenser fungerar fortsatt.",
+      "requires": [
+        "ai-pupil-material"
+      ],
+      "affects": [],
+      "decision": "2026-10-29: Simon återupptar målet efter UI-paus. Aktuellt publicerat UI från PR #26 ska återanvändas. Ingen produktionspublicering ingår i återupptagandet.\n2026-10-29: Befintliga frågeredigerare används direkt i materialgranskningen. Ingen tredje utkastlagring eller automatisk kopiering mellan fristående screeningutkast och analysmaterial införs.\n2026-10-29: Simon beställer återställning av dagens individuella screeningar och fortsatt arbete utan rutinmässiga stopp. Åtta privata utkast återställdes via befintlig inloggad lärarvy till rätt konto; originalen bevarades.\n2026-10-29: Simon godkänner uttryckligen produktionsmerge av PR #22 genom svaret Kör på publiceringsfrågan. Mandatet gäller kodpublicering, inte elevutdelning eller godkännande av verklig AI-miljö.\n2026-10-29: Simon väljer Codex som primär klient och Claude som ytterligare klient; Gemini/Antigravity ska inte ingå. Vid konfigurationskontroll visar befintliga Windows-exportuppgifter adminperson, medan tidigare autentiserad UI-kontroll gällde Adminsimon. Simon trodde att adminperson användes. Kontoval klargörs innan en verklig MCP-koppling binds; inga kontouppgifter byts automatiskt.\n2026-10-29: Simon väljer uttryckligen adminperson för MCP. Befintliga exportuppgifter ska bevaras och användas av den separata lokala anslutningen. Adminsimons privata utkast flyttas inte.\n2026-10-29: Simon godkänner uttryckligen push och publicering av den lokalt verifierade mottagar-API-rättningen samt fortsatt neutralt materialprov på adminperson, utan utdelning.",
+      "evidence": "Fullständig tidigare integrations-, klient- och publiceringshistorik, inklusive bevarade ursprungliga belägg, finns i docs/evaluations/mcp-adminperson-connection-2026-10-29.md. PR22 publicerade materialflödet; PR27 publicerade adminstil. Privat fristående screeningutkast verifierat på Adminsimon, separerat från teacher_material. Tre verkliga klientkommandon verifierade mot uttryckligt valt adminperson, teacherId886806f0c94b72c5, school_admin; ingen omladdad modellsession påstås. Windows-startfil håller lösenord utanför konfiguration/loggar. PR28 rättade främmande legacy-ID; PR29 kortade lästid32.9s till14.8s men MCP-preview tog för lång tid. PR30 MGET-väg gav503 i produktion trots gröna lokala prov. Exakt orsak ännu inte belagd; ingen material-save, godkännande eller verklig elevutdelning har skett i adminperson-provet. Följdrättningen har GET-reservväg, delning vid storleksfel, begränsad parallell historikåtkomst och45s API-tidsbudget. Två rosterläsningar, valda elevers spärrar och idempotens bevaras. Se docs/MCP_CLIENT_SETUP.md för aktuell status och verifieringsgränser.\nPR31 head a7ad9bc quality/documentation gröna. Merge6bba4b83c77b79dcea69735ab3e18d20b40a13b2, sekvens dpl_FpmBD7LW8j5VooV9x5wzbhjriUw2 READY production och domänalias på samma SHA. Live audience200 total10 på23190ms, preview timeout45s före save. Sanitiserad runtime-logg bekräftar size_limit. Klassfiltrering flyttas till read-only Redis-Lua före REST-retur, med sekundärt medlemskap och bibehållna oberoende snapshots. Separat verklig lokal Redis8.2.11, persistensfri socketinstans, verifierar sekundärt medlemskap, tom classIds, utesluten1MB-främmandeprofil, oförändrad källdata och ordnad nullposition. Endast syntetiska nycklar i isolerad instans; SHUTDOWN NOSAVE utfört. Inga produktionsskrivningar.\nPR32 head10742604d0f9d507c968458ac776c64eed8dba13 quality/documentation gröna. Merge90ef80b59cb94dbb67a2f2af8fdc91158b829f8f, sekvens dpl_HYPpqLyiHa4gmA9G3qtaXxmwpYU9 READY production med domänalias. Audience200 total10 på16400ms och MCP-preview lyckades; första save-anropets kvittens är osäker efter timeout, deterministiskt ID återläses innan återförsök. Följdrättning minimerar även valda elevers Redis-retur till4 metadatafält; inga svarshistoriker över REST i denna läsning. Verkligt lokalt isolerat Redis-prov bekräftar utesluten vald och främmande1MB-historik, sekundärt medlemskap, tom classIds och oförändrad källdata. Återläsning av exakt deterministiskt ID mat_14e7c401ada451310754702f bekräftar sparad privat v1/revision1, assignedfalse. Ingen ny begäran eller dubblett skapad. Metadataändringen lokalt:194 filer/960 tester, bygge, riktad ESLint/arkitektur/karta och3 relevanta robotfall gröna. Verkliga lokala Redis-provet grönt; session stängd.\nPR33 head235449f1455690c0ac755aa16decabcb0855ecb0 quality/documentation gröna, merge9697dfb5a6dacc8fefd454c28220158b2f17b643, sekvens dpl_6R7usArqd4wjauT4fqDGxaw6F76v READY production och domänalias. Audience200 på17954ms men logg visar fortsatt command_failed/reservläsning. Samma v1-requestId återförsökt utan dubblett; kvittens fortsatt långsam. Avgränsad direkt read-only KV-kontroll med uppgifter endast i processminnet fastställer execution timed out för verkliga100-nyckelskript; obefintlig testnyckel fungerar. Kandidatens anpassade parallella delning även vid denna tidsgräns ger exakt10 Test-medlemmar på5077ms utan svar i utdata, före publicering. Historikåtkomst verifierar separat aktuell målbehörighet och samtliga frysta elever/källor i stället för globala rosteromläsningar. Fulla aktuella urvalskontroller behålls vid preview/save/approve.",
+      "issue": "",
+      "kind": "feature",
+      "tasks": [
+        {
+          "id": "integration-baseline",
+          "text": "Sammanför aktuell master och verifiera båda flödena",
+          "done": true
+        },
+        {
+          "id": "integration-edit",
+          "text": "Återanvänd befintlig frågeredigering i materialgranskningen",
+          "done": true
+        },
+        {
+          "id": "integration-verify",
+          "text": "Verifiera ny version, nytt godkännande och oförändrat diagnostikflöde syntetiskt",
+          "done": true
+        },
+        {
+          "id": "teacher-account-binding",
+          "text": "Visa inloggat MCP-konto och kräv uttrycklig kontobindning för sparande mot godkänd appmiljö",
+          "done": true
+        },
+        {
+          "id": "actual-authored-pilot",
+          "text": "Spara/återläs faktiskt modellformulerade syntetiska rapporter och material via MCP och granska i lärarvyn",
+          "done": true
+        },
+        {
+          "id": "material-error-recovery",
+          "text": "Ge säker och relevant MCP-vägledning vid avvisad materialvalidering",
+          "done": true
+        },
+        {
+          "id": "discover-material-drafts",
+          "text": "Lista behöriga MCP-materialutkast och öppna dem från befintligt materialbibliotek utan att förlora pågående arbete",
+          "done": true
+        },
+        {
+          "id": "authenticated-screening-draft-check",
+          "text": "Verifiera rätt konto och privat screeningutkasts hela spara/återöppna/versionsflöde i produktion utan elevutdelning",
+          "done": true
+        },
+        {
+          "id": "adminperson-client-binding",
+          "text": "Bind Codex/Claude till uttryckligt valt adminperson och verifiera registrerade klientkommandons identitet utan elevsvar",
+          "done": true
+        },
+        {
+          "id": "audience-legacy-scope",
+          "text": "Rätta och verifiera att främmande legacy-ID inte blockerar vald klass, med bibehållet stopp för felaktig verklig medlem",
+          "done": true
+        },
+        {
+          "id": "adminperson-live-material",
+          "text": "Efter separat publiceringsmandat slutföra neutralt privat MCP-materialprov i produktion och lärargranskning utan utdelning",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "admin-screening-style",
+      "area": "Lärarvy",
+      "title": "Screeningens grafiska stil i admin utom Framsteg",
+      "status": "Byggt",
+      "purpose": "Ge admin en sammanhängande läsbar arbetsstil utifrån den godkända screeningreferensen och ui-planering.",
+      "next": "Beställd anpassning är publicerad. Ta emot eventuell återkoppling på användningen; ingen ytterligare stiländring eller elevutdelning är beställd.",
+      "acceptance": "Fokus, uppdrag/tickets, statistik/stöd, screeningresultat, administration och materialgranskning följer samma typografi, paneler och kontroller. Framsteg och elevsidor påverkas inte. Urval, sparande, varningar och verksamhetsflöden bevaras. Fyllda ljusa/mörka breda/stående vyer granskade.",
+      "requires": [],
+      "affects": [],
+      "decision": "2026-10-29: Simon beställer screeningens grafiska stil i hela admin med uttryckligt undantag för Framsteg. Befintlig godkänd screeningreferens och skills ui-planering/designgrund används. Inget nytt publiceringsmandat.\n2026-10-29: Simon beställer publicering av den visade och lokalt verifierade adminanpassningen. GitHub-PR till master och Vercel-projektet sekvens är den godkända vägen.",
+      "evidence": "Läst docs/TEACHER_UI_WORKFLOWS.md och docs/ui-reference/README.md. Referensen binder systemtypsnitt, 14 px text, 23/17 px rubriker, 14 px panelpadding, indigo huvudhandling, mjuka val och gul aktiv navigation. Nya regler ska vara avgränsade från Framsteg.\n2026-10-29: Gemensam teacherAdmin.css extraherar screeningens visuella grund och aktiveras bara utanför Framsteg. Fokus, uppdrag/tickets, statistik/stöd, resultat, administration och materialgranskning har samma typografi/paneler/kontroller. Objektflikar skiljs från handlingar; tickets har sektionsdelare och indigo huvudhandlingar. Chart-signaler, räknehäfte och alla spar-/urvalskontrakt bevaras. Robotlokatorer använder menyetiketten Administration i stället för dold beskrivning.\nSlutkontroll:194 testfiler/955 tester, produktionsbuild, riktad ESLint och arkitekturkontroll gröna. 18 berörda dev-browserfall gröna; ytterligare7 mot produktionsbygget (adminlänk/fokusbehörighet/diagram/underlag) gröna. Separat vygranskning i både dev och slutbygge:29 skärmbilder, alla7 arbetslägen i1024x768/768x1024, öppnade klassflikar, tangentbordsaktivering av flik, tickets, uppdragsdialog och sparad materialgranskning samt mörka vyer/390px. Ingen sidöverströmning i de granskade vyerna. Framsteg var pixelidentisk före/efter i dev på samma syntetiska underlag1024x4979, även font-/rubrikmått identiska. Produktionsläge saknar dev-testdatamodul och jämförs inte pixelvis mot dev. Slutbyggets representativa bilder visuellt granskade och sparade i docs/ui-reference/admin-style-2026-10-29/. Ingen fysisk iPad eller riktig elevdata. Ej pushat/publicerat.\n2026-10-29: Publicerat efter uttryckligt mandat via PR27, head d90894a2a7e6d5ed137ce66e902bd1d856d2d40f. GitHub quality/documentation gröna (run40870490137), preview dpl_FoGqszWnSnz5y7K2RTPRHUZUB2Qb READY. Produktionsmerge56bec85c72dc05fbe247483df3fd4311f48a8002. Vercel-projekt sekvens, dpl_D6yGnQxk1KGEV9n3pcT7EdJmvmk9 READY, target production, alias matematik.ximon.se, samma Git-SHA. Domän HTTP200; index-ovZ-cZgE.js och index-CWjLGKg0.css hämtade från domänen och SHA256-matchade exakt mot lokalt verifierat slutbygge. Båda privata utkast-API:erna nekar oinloggad åtkomst med401. Ingen inloggad visuell produktions-QA, riktig elevdata eller elevutdelning i releasekontrollen. Framsteg ingår inte i stiländringen. Beläggen sparas i lokal dokumentationscommit utan ny produktionspush.",
+      "issue": "",
+      "kind": "feature",
+      "tasks": [
+        {
+          "id": "admin-style-foundation",
+          "text": "Återanvänd godkänd gemensam stil utan att ändra Framsteg",
+          "done": true
+        },
+        {
+          "id": "admin-style-panels",
+          "text": "Anpassa paneler, reglage och kategorier i övriga adminvyer",
+          "done": true
+        },
+        {
+          "id": "admin-style-verify",
+          "text": "Granska fyllda breda/stående och mörka vyer samt bevarade arbetsflöden",
+          "done": true
+        },
+        {
+          "id": "admin-style-publish",
+          "text": "Publicera via godkänd GitHub-PR och verifiera rätt produktionsfiler",
           "done": true
         }
       ]
@@ -3177,6 +3349,16 @@
       "kind": "påverkar"
     },
     {
+      "source": "dispatch",
+      "target": "screening-drafts",
+      "kind": "kräver"
+    },
+    {
+      "source": "screening-drafts",
+      "target": "custom-screening-answer-keys",
+      "kind": "påverkar"
+    },
+    {
       "source": "teacher-screening-workflow",
       "target": "screening-split",
       "kind": "påverkar"
@@ -3185,6 +3367,11 @@
       "source": "teacher-screening-workflow",
       "target": "reuse-collections",
       "kind": "påverkar"
+    },
+    {
+      "source": "ai-pupil-material",
+      "target": "ai-material-integration",
+      "kind": "kräver"
     }
   ],
   "note": "Planeringssnapshot. Lokalt klart är inte publicerat. Tidigare publicering bygger på denna tråds verifiering; ingen ny livekontroll. Förslag är inte fattade beslut."

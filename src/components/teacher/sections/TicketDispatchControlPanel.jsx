@@ -29,7 +29,7 @@ export default function TicketDispatchControlPanel({
   onDeleteTicketDispatch
 }) {
   return (
-    <div className="bg-white/95 rounded-2xl border border-amber-200/90 p-4 mb-4 shadow-sm">
+    <div className="teacher-ticket-module bg-white/95 rounded-2xl border border-amber-200/90 p-4 mb-4 shadow-sm">
       <div className="flex flex-wrap items-center gap-2 mb-2">
         <label className="text-xs text-gray-600 font-medium">Utskick</label>
         <select
@@ -161,7 +161,7 @@ export default function TicketDispatchControlPanel({
                 </button>
                 <button
                   onClick={() => onPublishTicketToHome(dispatch.id)}
-                  className="px-3 py-1 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
+                  className="px-3 py-1 teacher-admin-primary bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white rounded-lg text-xs font-semibold"
                 >
                   Visa på startsida
                 </button>

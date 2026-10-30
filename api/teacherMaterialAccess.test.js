@@ -2,7 +2,7 @@ import { beforeEach, expect, it, vi } from 'vitest'
 const mock = vi.hoisted(() => ({ auth: vi.fn(), pupil: vi.fn(), source: vi.fn(), audience: vi.fn() }))
 vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mock.auth }))
 vi.mock('./_pupilEvidenceRead.js', () => ({ assertPupilEvidenceAccess: mock.pupil, assertEvidenceSourceAccess: mock.source }))
-vi.mock('./_teacherAudience.js', () => ({ resolveTeacherAudience: mock.audience }))
+vi.mock('./_teacherAudience.js', () => ({ assertTeacherAudienceTargetAccess: mock.audience }))
 import { assertMaterialDraftAccess } from './_teacherMaterialAccess.js'
 const state = () => ({ teacherId: 'T', versions: [{ material: { kind: 'practice', basis: [], audience: {
   targetType: 'group', targetId: 'G', pupils: [{ studentId: 'P', classIds: ['C'] }] } } },
@@ -29,4 +29,13 @@ it('rejects another teacher and role/session changes during historical reads', a
   await expect(assertMaterialDraftAccess({}, state())).rejects.toMatchObject({ status: 403 })
   mock.auth.mockResolvedValueOnce({ teacherId: 'T', role: 'school_admin' }).mockResolvedValueOnce({ teacherId: 'T', role: 'teacher' })
   await expect(assertMaterialDraftAccess({}, state())).rejects.toMatchObject({ status: 403 })
+})
+it('rejects a revoked pupil anywhere in a larger frozen recipient list', async () => {
+  const large = state()
+  large.versions[0].material.audience.pupils = Array.from({ length: 31 }, (_, index) => ({ studentId: `P${index}`, classIds: ['C'] }))
+  mock.pupil.mockImplementation(async (_req, id) => {
+    if (id === 'P30') throw Object.assign(Error('Revoked'), { status: 403 })
+    return {}
+  })
+  await expect(assertMaterialDraftAccess({}, large)).rejects.toMatchObject({ status: 403 })
 })

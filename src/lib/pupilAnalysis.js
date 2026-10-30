@@ -1,4 +1,5 @@
 import { OPERATION_LABELS } from './operations.js'
+import { buildRuleHypotheses, comparableRuleCounter } from './pupilRuleHypotheses.js'
 export const PUPIL_ANALYSIS_VERSION = 1
 const fail = message => { throw Object.assign(new Error(message), { status: 400, code: 'invalid_analysis' }) }
 const text = (value, max = 1000) => {
@@ -51,18 +52,27 @@ export function validatePupilAnalysis(input, evidence) {
     return { id: identify(item.id), textSv: text(item.textSv), refs }
   })
   const hypotheses = list(input.hypotheses, 8).map(item => {
-    keys(item, ['id', 'textSv', 'basis', 'signalCode', 'supportRefs', 'counterRefs', 'alternativesSv', 'nextCheckSv'])
+    keys(item, ['id', 'textSv', 'basis', 'signalCode', 'ruleVersion', 'supportRefs', 'counterRefs', 'alternativesSv', 'nextCheckSv'])
     const supportRefs = references(item.supportRefs), counterRefs = references(item.counterRefs)
-    if (!['existing_signal', 'ai_interpretation', 'teacher_interpretation'].includes(item.basis)
+    if (!['existing_signal', 'rule_candidate', 'ai_interpretation', 'teacher_interpretation'].includes(item.basis)
       || counterRefs.some(ref => supportRefs.includes(ref))) fail('Skilj signal, tolkning, stöd och motexempel åt.')
     const signalCode = item.signalCode ? text(item.signalCode, 120) : null
+    if (item.ruleVersion !== undefined && item.basis !== 'rule_candidate') fail('Regelversion gäller bara en beräknad regelkandidat.')
     if (item.basis === 'existing_signal' && (!signalCode || !supportRefs.length
       || supportRefs.some(ref => !byRef.get(ref).interpretation.patterns.includes(signalCode)))) {
       fail('Den befintliga signalen måste finnas i varje stödsvar.')
     }
+    if (item.basis === 'rule_candidate' && (!signalCode || !supportRefs.length || supportRefs.some(ref => {
+      const entry = byRef.get(ref), result = entry.interpretation.predictable
+      return entry.answer.status !== 'incorrect' || result?.status !== 'matched'
+        || !item.ruleVersion || result.ruleVersion !== item.ruleVersion || !result.matches.some(match => match.modelId === signalCode)
+    }) || counterRefs.some(ref => !comparableRuleCounter(byRef.get(ref), supportRefs.map(r => byRef.get(r)), signalCode)))) {
+      fail('Regelkandidaten måste vara beräknad i varje stödsvar; motexempel ska pröva jämförbart särskiljande innehåll.')
+    }
     const supportCount = new Set(supportRefs.map(ref => unit(byRef.get(ref)))).size
     if (!item.alternativesSv?.length) fail('Beskriv minst en alternativ förklaring eller vad som ännu är okänt.')
     return { id: identify(item.id), textSv: text(item.textSv), basis: item.basis, signalCode,
+      ...(item.basis === 'rule_candidate' ? { ruleVersion: text(item.ruleVersion, 80) } : {}),
       supportRefs, counterRefs, supportCount,
       counterCount: new Set(counterRefs.map(ref => unit(byRef.get(ref)))).size,
       evidenceStatus: supportCount < 2 ? 'insufficient' : 'requires_teacher_review',
@@ -88,16 +98,18 @@ export function buildPupilAnalysisDraft(evidence) {
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key).push(entry)
   }
-  const strengths = [], hypotheses = []
+  const ruleHypotheses = buildRuleHypotheses(evidence.entries)
+  const strengths = [], hypotheses = ruleHypotheses.slice(0, 8).map((item, i) => ({ id: `hypothesis-${i + 1}`, ...item }))
   for (const [area, entries] of groups) {
     const areaLabel = OPERATION_LABELS[area] || 'det granskade området'
     const correct = entries.filter(entry => entry.answer.status === 'correct')
     if (correct.length && strengths.length < 8) strengths.push({ id: `strength-${strengths.length + 1}`,
       textSv: `Rätta svar finns inom ${areaLabel}. Granska exemplens innehåll och svårighet.`, refs: correct.slice(0, 5).map(entry => entry.ref) })
-    const patterns = [...new Set(entries.flatMap(entry => entry.interpretation.patterns))].filter(code => typeof code === 'string' && code.length <= 120)
+    const fallback = entries.filter(entry => entry.interpretation.predictable?.status !== 'matched')
+    const patterns = [...new Set(fallback.flatMap(entry => entry.interpretation.patterns))].filter(code => typeof code === 'string' && code.length <= 120)
     for (const code of patterns) {
       if (hypotheses.length >= 8) break
-      const support = entries.filter(entry => entry.interpretation.patterns.includes(code)).slice(0, 20)
+      const support = fallback.filter(entry => entry.interpretation.patterns.includes(code)).slice(0, 20)
       const detail = support.find(entry => entry.interpretation.detail)?.interpretation.detail
       hypotheses.push({ id: `hypothesis-${hypotheses.length + 1}`, basis: 'existing_signal', signalCode: code,
         textSv: `En tidigare felanalys har markerat ett mönster inom ${areaLabel}.${detail ? ` ${String(detail).slice(0, 600)}` : ''} Det är en signal att undersöka, inte en fastställd felorsak.`,
@@ -107,10 +119,12 @@ export function buildPupilAnalysisDraft(evidence) {
     }
   }
   return { schemaVersion: 1, snapshotRevision: evidence.snapshotRevision, scopeSv: 'Granskning av tillgängliga svar i vald period',
-    provenance: { kind: 'rule', instructionVersion: 'existing-signals-v1' }, strengths, hypotheses,
+    provenance: { kind: 'rule', instructionVersion: ruleHypotheses.length ? 'predictable-candidates-v1' : 'existing-signals-v1' }, strengths, hypotheses,
     limitationsSv: ['Historikens fullständighet är okänd. Antal svar beskriver urvalet, inte elevens samlade kunnande.',
       'Rätta svar är inte automatiskt motexempel: kontrollera att de prövar samma innehåll.',
-      'Metoden kan inte fastställas från ett slutsvar. Inga nya AI-tolkningar har gjorts i detta regelunderlag.'] }
+      'Metoden kan inte fastställas från ett slutsvar. Inga nya AI-tolkningar har gjorts i detta regelunderlag.',
+      ...(ruleHypotheses.length ? ['Rätta slutsvar väljs som möjliga motexempel bara vid samma kända innehåll/nivå och en särskiljande modell. Stödnivå och metod behöver granskas.',
+        ...(ruleHypotheses.length > 8 ? [`Högst åtta modellgrupper visas; ${ruleHypotheses.length - 8} ytterligare grupper finns i underlaget.`] : [])] : [])] }
 }
 
 export function validateAnalysisCheckIn(input, report) {

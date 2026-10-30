@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { addPredictableEvidence } from '../src/lib/evidencePredictableAnalysis.js'
 
 export const evidenceError = (status, code, message) => Object.assign(new Error(message), { status, code })
 export const evidenceHash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex')
@@ -66,7 +67,9 @@ export function evidencePage({ studentId, classId, period, source, practice, scr
     throw evidenceError(409, 'evidence_changed', 'Underlaget har ändrats. Börja om från första sidan.')
   }
   // A legacy position is only meaningful within this exact snapshot.
-  const entries = all.map(entry => ({ ...entry, ref: evidenceHash({ revision, reference: entry.reference }) }))
+  // A new rule version must not invalidate unchanged original-source references;
+  // rule candidates carry their own version and are validated separately.
+  const entries = addPredictableEvidence(all.map(entry => ({ ...entry, ref: evidenceHash({ revision, reference: entry.reference }) })))
   if (query.ref) {
     if (!query.snapshotRevision) throw evidenceError(400, 'snapshot_required', 'Detaljläsning kräver snapshotRevision.')
     const entry = entries.find(item => item.ref === query.ref)

@@ -90,7 +90,7 @@ export function createMathServer({ getApi, allowReportWrites = false, allowMater
     return { data: { ...result, notebook, ...(rendered ? { layout: rendered.layout,
       images: rendered.images.map(({ data: _data, ...meta }) => meta) } : {}) }, images: rendered?.images || [] }
   }, true, true)
-  register('math_preview_analysis', 'Förhandsvisa analysunderlag', 'Build a read-only rule-based starting draft, not an AI diagnosis. Inspect its references and use the analysis prompt before formulating an AI report. Saves nothing.', period,
+  register('math_preview_analysis', 'Förhandsvisa analysunderlag', 'Build a read-only rule-based draft with computed model candidates and proposed discriminating questions when supported by the server. Start here before paging raw answers: known models need no new AI calculation. Inspect referenced originals for unresolved methods. Saves and assigns nothing.', period,
     async ({ from, to, source, ...target }, signal) => {
       const data = await (await getApi()).request(analysisUrl(target), { body: { action: 'draft', from, to, source }, readOnly: true, signal })
       return { draft: data.draft, historyRevision: data.revision, counts: data.preview.counts, coverage: data.preview.coverage }

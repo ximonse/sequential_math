@@ -23,6 +23,14 @@ Projektets skill är `.agents/skills/pupil-analysis/SKILL.md`.
 - `existing_signal` kräver att den angivna signalkoden finns i varje stödsvar.
   `ai_interpretation` och `teacher_interpretation` är uttryckliga tolkningar.
   Varken befintliga feletiketter eller en giltig referens bevisar en felorsak.
+- `rule_candidate` (”Beräknad felmodell” i lärarvyn) kräver att servern själv
+  har räknat fram samma modell som träff i varje stödsvar, med samma
+  `ruleVersion`. Motexempel måste vara rätta svar på jämförbart innehåll och
+  samma kända nivå där modellen hade gett ett annat svar. Regelkandidaterna
+  läggs ovanpå underlaget; källsnapshot och referenser beräknas på originalsvaren,
+  så en ny regelversion ogiltigförklarar inte oförändrade källreferenser men
+  stoppar en sparad hypotes med föråldrad regelversion. Se
+  [regelmotorn](NCM_RULE_READINESS.md).
 - Antalet stödenheter räknas med verklig observations-/försöksidentitet där
   den finns. Två motstridiga versioner av samma observations-ID blir inte två
   oberoende belägg. Legacypositioner behåller sin källbegränsning.

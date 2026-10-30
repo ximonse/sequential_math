@@ -81,6 +81,36 @@ undervisningsförslag, nya ohjälpta kontroller och senare överföring till ett
 annat sammanhang. Se [körningen](evaluations/ncm-didactic-2026-10-30/investigation-prototype.md).
 Alla metodbedömningar och undervisningstillfällen är simulerade där.
 
+## Andra genomförande: beräknade felmodeller i alla sex domäner
+
+`src/domains/predictableErrors/` ger ett gemensamt kandidatkontrakt per domän
+(`predictable-errors-v1`): applicerbarhet, rätt svar räknat i kod, alla
+förutsagda felsvar, alla träffar och NCM-ankare. Ingen träff väljs som säker
+orsak; överlapp visas.
+
+| Domän | Exempel på beräknade modeller |
+|---|---|
+| Aritmetik | byte av räknesätt, minnessiffra glömd, större minus mindre, växling glömd, växling genom noll, delare/täljare som svar, platsvärdesskalning; decimaladdition/-subtraktion i platsjusterade kolumner (M26) |
+| Bråk | täljare och nämnare var för sig, första nämnaren behålls, addition i stället för multiplikation, heltal i nämnaren |
+| Procent | procenttalet som belopp, del/helhet omvänd, bara förändringen, omvänd förändring, kvot ej omräknad, division med procenttalet |
+| Algebra | ej lika termer slås ihop, koefficient tappad/adderad, konstant/variabel tappad, kvadrat som dubbling |
+| Räkneordning | uttryck utvärderade med felprioriteringar; ett godtyckligt fel blir inte en räkneordningsetikett |
+| Talpar/dubblor | summa i stället för saknad term, känd term/mål returnerat, dubbel i stället för halv, tabellgranne |
+
+Modellerna går nu hela vägen i elevunderlaget: `addPredictableEvidence` lägger
+en projektion på varje fullständigt bedömt svar utan att ändra källetiketter,
+rättning eller elevprofil. Konflikt mellan beräknat och lagrat facit, eller
+mellan modellens och källans rättning, ger ingen kandidat. Regelrapporten
+skapar `rule_candidate`-hypoteser med stöd, jämförbara motexempel och en
+granskad, ej utdelad särskiljande följdfråga. Lärarvyn märker dem
+”Beräknad felmodell”. MCP-verktyget `math_preview_analysis` beskriver att
+kända modeller inte behöver räknas om av AI.
+
+Verifierat lokalt 2026-10-30: 197 testfiler/1051 tester, produktionsbuild,
+MCP-kontrollerna (19), robotarna för elevunderlag, analysrapport och vanliga
+räknesätt. Analysroboten väntar sig nu att 600 − 376 med svaret 376 ger en
+beräknad modell med otillräckligt underlag (ett svar).
+
 ## Gräns för denna leverans och nästa steg
 
 Verifierat lokalt: 195 testfiler/1019 tester passerar, inklusive 13
@@ -96,10 +126,11 @@ vanliga felanalys får ännu inte de nya modellnamnen och progression/mastery
 ändras inte. Refaktoreringen av den återanvända gamla beräkningen ändrar inte
 dess avsedda beteende. Det är ingen publicering eller verklig elevprovning.
 
-Den domängemensamma granskningen är klar som inventering, inte som komplett
-implementation. Följande delmål är att pröva snävt strukturerade modeller
-för bråk/procent/räkneordning mot granskade negativa fall och frågekontraster,
-samt rätta de för breda tillämpningarna i befintliga modeller före automatisk
-diagnostisk användning. Samma kandidatkontrakt ska återanvändas: domän,
+Den domängemensamma granskningen är klar som inventering och modellerna är
+nu kopplade till lärarens granskningsunderlag. Kvar: pröva modellerna mot
+granskade negativa fall och verkliga felsvar (kräver klarlagd AI-miljö för
+elevdata), rätta de för breda tillämpningarna i de äldre modellerna, och låta
+elevappens vanliga felanalys och den adaptiva screeningen använda samma
+kandidatkontrakt före automatisk diagnostisk användning. Samma kandidatkontrakt ska återanvändas: domän,
 appliceringsvillkor, förväntat felsvar, alla träffar, källankare och nästa fråga.
 AI behövs inte för själva kandidatberäkningen eller det granskade grenvalet.

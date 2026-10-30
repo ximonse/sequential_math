@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { answerText, createPupil, fillAnswer, login, next, openOtherTraining, readServerProfile, submit, waitForTask } from './lib/app.js'
-import { createTeacher } from './lib/teacher.js'
+import { createTeacher, teacherLogin } from './lib/teacher.js'
 import { stockholmDay } from '../src/lib/evidencePeriod.js'
 
 test('A teacher reads one pupil’s real saved answers with stable evidence pages and guarded detail', async ({ page, request }) => {
@@ -48,7 +48,7 @@ test('A teacher reads one pupil’s real saved answers with stable evidence page
   expect((await request.get(`${url}?${params}`, { headers: { 'x-teacher-token': other.token } })).status()).toBe(403)
 })
 
-test('Screening evidence exposes the frozen subtraction and unchanged notebook original only on detail read', async ({ page, request }) => {
+test('Screening evidence exposes the frozen subtraction and unchanged notebook original only on detail read', async ({ page, request }, testInfo) => {
   const classId = `evidence-work-${Math.random().toString(36).slice(2, 8)}`
   const pupil = await createPupil(request, { classId, name: 'Evidence Work' })
   const teacher = await createTeacher(request, { classIds: [classId], role: 'super_admin' })
@@ -71,6 +71,9 @@ test('Screening evidence exposes the frozen subtraction and unchanged notebook o
   const listed = await (await request.get(`${url}?${params}`, { headers })).json()
   expect(listed.total).toBe(1)
   expect(listed.entries[0].answer).toMatchObject({ studentAnswer: '376', correctAnswer: 224, status: 'incorrect' })
+  expect(listed.entries[0].interpretation.patterns).toEqual([])
+  expect(listed.entries[0].interpretation.predictable).toMatchObject({ status: 'matched',
+    matches: [expect.objectContaining({ modelId: 'smaller_minus_larger' })], nextProbe: { status: 'proposed', requiresTeacherReview: true } })
   expect(listed.entries[0]).not.toHaveProperty('detail')
   params.set('ref', listed.entries[0].ref)
   params.set('snapshotRevision', listed.snapshotRevision)
@@ -92,4 +95,22 @@ test('Screening evidence exposes the frozen subtraction and unchanged notebook o
   expect(JSON.stringify(original)).not.toMatch(/correctAnswer|facit|events|password/u)
   params.delete('format')
   expect((await (await request.get(`${url}?${params}`, { headers })).json()).entry.detail.snapshot).toEqual(entry.detail.snapshot)
+  const profileBeforeAnalysis = await readServerProfile(request, pupil.studentId)
+  await teacherLogin(page, teacher)
+  await page.goto(`/teacher/student/${pupil.studentId}`)
+  const panel = page.getByRole('region', { name: 'Analys och avstämning', exact: true })
+  await panel.getByRole('button', { name: /^Analys och avstämning/ }).click()
+  await expect(panel.getByRole('status')).toContainText('inlästa')
+  await panel.getByLabel('Analys från').fill(day)
+  await panel.getByLabel('Analys till').fill(day)
+  await panel.getByLabel('Underlag', { exact: true }).selectOption('screening')
+  await panel.getByRole('button', { name: 'Skapa granskningsunderlag', exact: true }).click()
+  const reportView = panel.getByRole('region', { name: 'Analysrapport', exact: true })
+  await expect(reportView).toContainText('Beräknad felmodell')
+  await expect(reportView).toContainText('Förslag, inte utdelat')
+  await expect(reportView).toContainText('inte en fastställd elevmetod')
+  await expect(panel.getByRole('status')).toContainText('Inget har sparats eller delats ut')
+  await reportView.scrollIntoViewIfNeeded()
+  await page.screenshot({ path: testInfo.outputPath('rule-report-landscape.png'), fullPage: true })
+  expect((await readServerProfile(request, pupil.studentId)).masteryFacts).toEqual(profileBeforeAnalysis.masteryFacts)
 })

@@ -95,7 +95,7 @@ test('Analysis keeps source answers, versions and teacher corrections through co
   await panel.getByRole('button', { name: 'Återgå till senast sparade', exact: true }).click()
 })
 
-test('A report without a method hypothesis still shows the pupil answer and the version-bound notebook original', async ({ page, request }, testInfo) => {
+test('A single computed model stays insufficient and the report still shows the pupil answer and the version-bound notebook original', async ({ page, request }, testInfo) => {
   const classId = `analysis-work-${Math.random().toString(36).slice(2, 8)}`
   const pupil = await createPupil(request, { classId, name: 'Analysis Notebook' })
   const teacher = await createTeacher(request, { classIds: [classId], role: 'super_admin' })
@@ -115,7 +115,8 @@ test('A report without a method hypothesis still shows the pupil answer and the 
   await expect(panel.getByRole('status')).toContainText('inlästa')
   await panel.getByLabel('Underlag', { exact: true }).selectOption('screening')
   await panel.getByRole('button', { name: 'Skapa granskningsunderlag', exact: true }).click()
-  await expect(panel).toContainText('Otillräckligt underlag för en felhypotes')
+  // 600 − 376 = 376 matches the computed smaller-minus-larger model once; one answer is not enough evidence.
+  await expect(panel).toContainText('Beräknad felmodell · Otillräckligt underlag')
   await panel.getByRole('button', { name: 'Spara rapportversion', exact: true }).click()
   await panel.getByText('Svar från periodens början, högst 20 (1)', { exact: true }).click()
   await panel.getByRole('button', { name: /^Visa svar 1:/ }).click()

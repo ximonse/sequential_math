@@ -30,7 +30,7 @@ export default function PupilAnalysisReportView({ report, baseUrl }) {
     <h5 className="mt-3 font-semibold">Möjliga felmönster att undersöka</h5>
     {!report.hypotheses.length && <p className="text-sm">Otillräckligt underlag för en felhypotes i detta granskningsunderlag.</p>}
     {report.hypotheses.map(item => <div key={item.id} className="mt-3 border-l-2 border-amber-400 pl-3">
-      <p className="text-sm font-semibold">{item.basis === 'existing_signal' ? 'Befintlig analyssignal' : 'Tolkning'} · {item.evidenceStatus === 'insufficient' ? 'Otillräckligt underlag' : 'Behöver lärargranskning'}</p>
+      <p className="text-sm font-semibold">{item.basis === 'rule_candidate' ? 'Beräknad felmodell' : item.basis === 'existing_signal' ? 'Befintlig analyssignal' : 'Tolkning'} · {item.evidenceStatus === 'insufficient' ? 'Otillräckligt underlag' : 'Behöver lärargranskning'}</p>
       <p>{item.textSv}</p>{references(item.supportRefs, 'Stödsvar')}{references(item.counterRefs, 'Valda motexempel')}
       {!item.counterRefs.length && <p className="text-sm mt-1">Inga motexempel valda; det innebär inte att motexempel saknas.</p>}
       <p className="mt-2 text-sm font-semibold">Alternativa förklaringar</p><ul className="list-disc pl-5 text-sm">{item.alternativesSv.map((value, i) => <li key={i}>{value}</li>)}</ul>

@@ -13,7 +13,8 @@ export const report = z.strictObject({ schemaVersion: z.literal(1), snapshotRevi
   scopeSv: text.max(300), provenance: z.strictObject({ kind: z.literal('ai'), instructionVersion: text.max(80), model: text.max(100).optional() }),
   strengths: z.array(z.strictObject({ id: id.max(80), textSv: text, refs })).max(8),
   hypotheses: z.array(z.strictObject({ id: id.max(80), textSv: text,
-    basis: z.enum(['existing_signal', 'ai_interpretation']), signalCode: text.max(120).optional(),
+    basis: z.enum(['existing_signal', 'rule_candidate', 'ai_interpretation']), signalCode: text.max(120).optional(),
+    ruleVersion: text.max(80).optional(),
     supportRefs: refs, counterRefs: refs, alternativesSv: z.array(text.max(500)).min(1).max(5), nextCheckSv: text })).max(8),
   limitationsSv: z.array(text).max(8) })
 export const output = z.object({ data: z.record(z.string(), z.unknown()) })

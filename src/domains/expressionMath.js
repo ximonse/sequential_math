@@ -1,4 +1,4 @@
-function tokenize(raw) {
+export function tokenize(raw) {
   const normalized = String(raw || '')
     .replace(/×/g, '*')
     .replace(/÷/g, '/')

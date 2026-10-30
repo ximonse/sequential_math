@@ -1,0 +1,2006 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-30",
+  "kind": "coverage-audit-not-runtime-diagnostic-catalog",
+  "source": {
+    "path": "docs/SCREENING_SELECTION_PRINCIPLES.md",
+    "gitCommit": "08a0101",
+    "sha256": "326f01d398fc82cd679403e29738db3f18552dcd451e55b1c3dc6c9e021ad121"
+  },
+  "statusMeaning": {
+    "pilot": "vald för föreslagen pilot, inte implementerad",
+    "partial": "begränsat kodstöd, metod/tillskrivning behöver belägg",
+    "needs-context": "kod finns eller nämns men räcker inte för den föreslagna slutsatsen",
+    "pending": "inventerad och bevarad, inte implementerad"
+  },
+  "sections": [
+    {
+      "id": "0",
+      "heading": "0. Grundregel: standardprincip med öppen ventil",
+      "line": 15,
+      "status": "inventoried",
+      "application": "Se täckningsdokumentets principtabell; inga sektionsdelar utelämnas."
+    },
+    {
+      "id": "1",
+      "heading": "1. Två kvalitetsnivåer — vad som är låst vs. vägledande",
+      "line": 26,
+      "status": "inventoried",
+      "application": "Se täckningsdokumentets principtabell; inga sektionsdelar utelämnas."
+    },
+    {
+      "id": "2",
+      "heading": "2. Källviktning — hur tidigare screening, fri träning och uppdrag vägs",
+      "line": 64,
+      "status": "inventoried",
+      "application": "Se täckningsdokumentets principtabell; inga sektionsdelar utelämnas."
+    },
+    {
+      "id": "3",
+      "heading": "3. Omfattning och sekvens",
+      "line": 81,
+      "status": "inventoried",
+      "application": "Se täckningsdokumentets principtabell; inga sektionsdelar utelämnas."
+    },
+    {
+      "id": "4",
+      "heading": "4. Minimal kontrast — mekaniskt kontrollerbart, inte bara AI-omdöme",
+      "line": 94,
+      "status": "inventoried",
+      "application": "Se täckningsdokumentets principtabell; inga sektionsdelar utelämnas."
+    },
+    {
+      "id": "5",
+      "heading": "5. Felkod-katalog: appens `patterns` ↔ NCM-koder",
+      "line": 106,
+      "status": "inventoried",
+      "application": "Se täckningsdokumentets principtabell; inga sektionsdelar utelämnas."
+    },
+    {
+      "id": "5b",
+      "heading": "5b. Kompletterande forskningsgrund: \"Förstå och använda tal\" (McIntosh/NCM)",
+      "line": 203,
+      "status": "inventoried",
+      "application": "Se täckningsdokumentets principtabell; inga sektionsdelar utelämnas."
+    },
+    {
+      "id": "6",
+      "heading": "6. Bakåtkedjning vid låsning",
+      "line": 302,
+      "status": "inventoried",
+      "application": "Se täckningsdokumentets principtabell; inga sektionsdelar utelämnas."
+    },
+    {
+      "id": "7",
+      "heading": "7. Val av frågekälla och arbetsyta",
+      "line": 311,
+      "status": "inventoried",
+      "application": "Se täckningsdokumentets principtabell; inga sektionsdelar utelämnas."
+    },
+    {
+      "id": "8",
+      "heading": "8. Öppna frågor innan nivå B byggs",
+      "line": 323,
+      "status": "inventoried",
+      "application": "Se täckningsdokumentets principtabell; inga sektionsdelar utelämnas."
+    },
+    {
+      "id": "9",
+      "heading": "9. Nästa steg (efter granskning av detta utkast)",
+      "line": 345,
+      "status": "inventoried",
+      "application": "Se täckningsdokumentets principtabell; inga sektionsdelar utelämnas."
+    }
+  ],
+  "mappings": [
+    {
+      "id": "M01",
+      "sourceLine": 119,
+      "patternContext": "`carry_forget`, `carry_double`, `ones_digit_only`",
+      "ncmContext": "AS1",
+      "prerequisites": "**AG3** (verifierat — ej AG4)",
+      "sourceRationale": "AS1-facit: \"bygger på AG3\". Fel ±1 → grundläggande addition (AG3); fel ±10/±100 → tiotalsövergång ej förstådd, procedur utan positionsförståelse.",
+      "status": "partial",
+      "codeReview": "Addition: matchning av felsvar finns; carryCount krävs. carry_double använder +10 per övergång, inte full positionsmodell.",
+      "ncmCodes": [
+        "AS1"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M02",
+      "sourceLine": 120,
+      "patternContext": "`smaller_minus_larger`, `borrow_forget`",
+      "ncmContext": "AS2",
+      "prerequisites": "**AG3** (verifierat)",
+      "sourceRationale": "AS2-facit, identisk struktur som AS1 men för subtraktion. \"Störst minus minst\" är NCM:s egen beskrivna missuppfattning.",
+      "status": "pilot",
+      "codeReview": "Två åtskilda svarshypoteser finns. borrow_forget betyder specifikt noll i omöjlig kolumn. Screeningens rutnätsregel är separat och uppgiftsspecifik.",
+      "ncmCodes": [
+        "AS2"
+      ],
+      "sourceVerification": "local-AS2-AG3-PDF-checked"
+    },
+    {
+      "id": "M03",
+      "sourceLine": 126,
+      "patternContext": "`table_off_by_one`, `ones_digits_only`",
+      "ncmContext": "AG6",
+      "prerequisites": "—",
+      "sourceRationale": "AG6-facit/strategisteg (se nedan).",
+      "status": "partial",
+      "codeReview": "Tabellgranne och endast entalsprodukt finns; det senare är inte i sig belägg för AG6-brist.",
+      "ncmCodes": [
+        "AG6"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M04",
+      "sourceLine": 127,
+      "patternContext": "(multiplikationsfel i skriftlig uppställning)",
+      "ncmContext": "AS4",
+      "prerequisites": "**AG6 + AG7** (verifierat)",
+      "sourceRationale": "AS4-facit: fel ±1/en faktor för mycket-lite → AG6; fel ±10/±100 → tiotalsövergång.",
+      "status": "partial",
+      "codeReview": "Slutsvarsmotor finns; generell tolkning av delprodukter i skriftlig metod saknas.",
+      "ncmCodes": [
+        "AS4"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M05",
+      "sourceLine": 128,
+      "patternContext": "`quotient_off_by_one`, `reversed_operands`, `divisor_as_answer`, `dividend_as_answer`",
+      "ncmContext": "AG8",
+      "prerequisites": "**AG6 + AG7** (verifierat)",
+      "sourceRationale": "AG8-facit: fel på 1a/1b/2a/2b → öva multiplikationstabellen (AG6); 3a/3b (rest) kräver ännu säkrare tabellkunskap, avgörande för lång/kort division och blandad bråkform.",
+      "status": "partial",
+      "codeReview": "Fyra svarsmatchningar finns. Tabellbrist/rollförväxling kräver kontrast; en kvot ±1 fastställer inte mekanism.",
+      "ncmCodes": [
+        "AG8"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M06",
+      "sourceLine": 129,
+      "patternContext": "(skriftlig division)",
+      "ncmContext": "AS5",
+      "prerequisites": "**AG8, indirekt AG6+AG7** (verifierat)",
+      "sourceRationale": "AS5-facit: \"fel beror ofta på att eleven inte har flyt i AG6, AG7, AG8\".",
+      "status": "pending",
+      "codeReview": "Ingen generell analys av skriftlig divisionsmetod.",
+      "ncmCodes": [
+        "AS5"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M07",
+      "sourceLine": 141,
+      "patternContext": "`place_value_error` (decimalkontext)",
+      "ncmContext": "RD1",
+      "prerequisites": "**RB4** (verifierat — RD1-facit hänvisar uttryckligen till RB4)",
+      "sourceRationale": "\"Uppgifterna är av ett liknande slag som i RB4 ... jämför med RB4\". Läsfel `0,10` som \"noll komma tio\" → tror 0,10 > 0,9.",
+      "status": "needs-context",
+      "codeReview": "Skalningssignal är inte en ordnings-/storleksjämförelse. Kan inte härleda längre-decimal-är-större från signalen.",
+      "ncmCodes": [
+        "RD1"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M08",
+      "sourceLine": 142,
+      "patternContext": "`place_value_error` (decimal +/−)",
+      "ncmContext": "RD2",
+      "prerequisites": "**AG2 + AG3 + AG4** (verifierat)",
+      "sourceRationale": "RD2-facit: samma tiotalsövergång-logik som AS1/AS2, fast för tiondelar.",
+      "status": "needs-context",
+      "codeReview": "Bred skalningssignal; ingen säker uppdelning mellan decimalplacering, räknefel och begreppsbrist.",
+      "ncmCodes": [
+        "RD2"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M09",
+      "sourceLine": 143,
+      "patternContext": "`place_value_error` (decimal ×/÷)",
+      "ncmContext": "RD3",
+      "prerequisites": "**AG6 + AG7 + AG8** (verifierat)",
+      "sourceRationale": "RD3-facit: innehållsdivision med decimaltal kräver samma tabellflyt.",
+      "status": "needs-context",
+      "codeReview": "Samma breda signal kan överlappa med fel nollantal eller decimalregel.",
+      "ncmCodes": [
+        "RD3"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M10",
+      "sourceLine": 144,
+      "patternContext": "`place_value_error` (heltal, ×10/÷10-skalning)",
+      "ncmContext": "AS1/AS2 (add/sub-kontext) eller AS4 (mult-kontext)",
+      "prerequisites": "AG3 / AG6+AG7",
+      "sourceRationale": "Kräver uppgiftskontext för rätt kod — se öppen fråga nedan.",
+      "status": "needs-context",
+      "codeReview": "Uppgiftens räknesätt, representation och platsvärde måste finnas; signalnamnet räcker inte.",
+      "ncmCodes": [
+        "AS1",
+        "AS2",
+        "AS4"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M11",
+      "sourceLine": 150,
+      "patternContext": "`wrong_denominator` (nämnarens innebörd)",
+      "ncmContext": "RB1",
+      "prerequisites": "— (grundläggande)",
+      "sourceRationale": "Stambråk, \"en del av en helhet\".",
+      "status": "needs-context",
+      "codeReview": "wrong_denominator jämför nämnaren med facit, prövar inte nämnarens begreppsliga innebörd.",
+      "ncmCodes": [
+        "RB1"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M12",
+      "sourceLine": 151,
+      "patternContext": "`wrong_denominator` (täljarens innebörd)",
+      "ncmContext": "RB2",
+      "prerequisites": "**RB1** (verifierat)",
+      "sourceRationale": "Täljare/nämnare har olika funktion.",
+      "status": "needs-context",
+      "codeReview": "Samma signal kan inte särskilja täljarens funktion från nämnarfel.",
+      "ncmCodes": [
+        "RB2"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M13",
+      "sourceLine": 152,
+      "patternContext": "— (del av antal)",
+      "ncmContext": "RB3",
+      "prerequisites": "**RB2** (verifierat)",
+      "sourceRationale": "Förkunskap till proportionalitet (RP1).",
+      "status": "pending",
+      "codeReview": "Kräver uppgiftskontext/kontrast; ingen egen signal i referensen.",
+      "ncmCodes": [
+        "RB3"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M14",
+      "sourceLine": 153,
+      "patternContext": "`wrong_denominator` (storleksordning/likvärdiga bråk)",
+      "ncmContext": "RB4",
+      "prerequisites": "**RB2** (verifierat)",
+      "sourceRationale": "Tallinje + gemensam nämnare.",
+      "status": "needs-context",
+      "codeReview": "Nämnaravvikelse räcker inte för storleksjämförelse eller likvärdighet.",
+      "ncmCodes": [
+        "RB4"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M15",
+      "sourceLine": 154,
+      "patternContext": "— (räkna med bråk)",
+      "ncmContext": "RB5",
+      "prerequisites": "**RB4** (verifierat)",
+      "sourceRationale": "Addition/subtraktion/multiplikation/division med bråk som taluppfattning.",
+      "status": "pending",
+      "codeReview": "Bråkmotor finns men ingen separat mekanismsignal för räkna täljare/nämnare var för sig.",
+      "ncmCodes": [
+        "RB5"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M16",
+      "sourceLine": 155,
+      "patternContext": "`wrong_percentage` (proportionalitet)",
+      "ncmContext": "RP1",
+      "prerequisites": "**RB3** (verifierat)",
+      "sourceRationale": "\"Tolka text, välj modell, teckna, beräkna del av antal.\"",
+      "status": "needs-context",
+      "codeReview": "wrong_percentage ges för alla felaktiga procentsvar; ingen proportionalitetsmekanism verifieras.",
+      "ncmCodes": [
+        "RP1"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M17",
+      "sourceLine": 156,
+      "patternContext": "`wrong_percentage` (grundläggande procent)",
+      "ncmContext": "RP3",
+      "prerequisites": "**RB3 + RD1** (verifierat)",
+      "sourceRationale": "Bråkform → procentform kräver båda.",
+      "status": "needs-context",
+      "codeReview": "Samma generiska signal; kräver bråk-/decimal-/procentkontraster.",
+      "ncmCodes": [
+        "RP3"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M18",
+      "sourceLine": 157,
+      "patternContext": "`wrong_percentage` (procenträkning)",
+      "ncmContext": "RP4",
+      "prerequisites": "**RP3** (verifierat)",
+      "sourceRationale": "",
+      "status": "needs-context",
+      "codeReview": "Samma generiska signal; kräver preciserad procentsituation.",
+      "ncmCodes": [
+        "RP4"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M19",
+      "sourceLine": 163,
+      "patternContext": "`forgot_coefficient`, `added_instead_of_multiplied`, `square_as_double`",
+      "ncmContext": "**TAu2** (uttrycks värde — beräkna ett uttryck för givet x)",
+      "prerequisites": "**TAu1** (verifierat)",
+      "sourceRationale": "TAu1 handlar specifikt om area-/omkretsuttryck för geometriska figurer (kvadrat, rektangel, parallellogram, triangel) — inte generella variabeluttryck.",
+      "status": "partial",
+      "codeReview": "Tre algebrasignaler finns, men added_instead_of_multiplied testar nivåstyrt 2+n/3+n; uttryckets faktiska koefficient måste kontrolleras.",
+      "ncmCodes": [
+        "TAu2"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M20",
+      "sourceLine": 164,
+      "patternContext": "`did_not_simplify`/`not_simplified`, `forgot_constant`, `combined_unlike_terms`, `simplify_error`",
+      "ncmContext": "**TAu3** (förenkling av uttryck)",
+      "prerequisites": "**TAu1** (verifierat)",
+      "sourceRationale": "Linjära uttryck, polynom, enkla rationella uttryck.",
+      "status": "needs-context",
+      "codeReview": "did_not_simplify/forgot_constant/combined_unlike_terms/simplify_error finns i algebra. not_simplified kommer från bråk och är inte en algebraalias.",
+      "ncmCodes": [
+        "TAu3"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M21",
+      "sourceLine": 165,
+      "patternContext": "`wrong_order_of_operations`",
+      "ncmContext": "— (ingen exakt NCM-kod)",
+      "prerequisites": "AG6 (prioritetsregler)",
+      "sourceRationale": "Flaggas utan NCM-kod; beskriv fritt enligt öppna ventilen (§0).",
+      "status": "needs-context",
+      "codeReview": "wrong_order_of_operations ges för alla fel i uttrycksdomänen; inte verifierad felprioritering. Ingen exakt NCM-kod tvingas fram.",
+      "ncmCodes": [],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M22",
+      "sourceLine": 166,
+      "patternContext": "(ekvationslösning, prövning)",
+      "ncmContext": "TAe1",
+      "prerequisites": "**AG1 + delar av AG6** (verifierat — INTE TAu1)",
+      "sourceRationale": "TAe1-facit explicit: \"problem med AG1 och delar av AG6\", inte uttryckskedjan. Viktig rättelse: algebra har två separata förkunskapsspår — uttryck (TAu1→TAu2/TAu3) och ekvationer (AG1/AG6→TAe1→TAe2) — som inte automatiskt hänger ihop.",
+      "status": "pending",
+      "codeReview": "Ingen separat ekvationsfelsmotor i lästa domäner; referensens ekvationskedja hålls skild från uttryck.",
+      "ncmCodes": [
+        "TAe1"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M23",
+      "sourceLine": 167,
+      "patternContext": "(ekvationslösning, formell metod)",
+      "ncmContext": "TAe2",
+      "prerequisites": "TAe1 (rimligt, ej explicit uttalat i facit)",
+      "sourceRationale": "Gissa/pröva-elever (TAe1-nivå) får problem med TAe2:s formella annullering.",
+      "status": "pending",
+      "codeReview": "Samma; TAe1→TAe2 är i referensen en rimlig, inte explicit belagd, förkunskapslänk.",
+      "ncmCodes": [
+        "TAe2"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M24",
+      "sourceLine": 188,
+      "patternContext": "textuppgift, addition/subtraktion",
+      "ncmContext": "AS3",
+      "prerequisites": "**AS1 + AS2** (verifierat)",
+      "sourceRationale": "AS3-facit: \"bygger på AS1, AS2\".",
+      "status": "needs-context",
+      "codeReview": "Texttolkning, räknesättsval och skriftlig beräkning måste skiljas. operation_swap ensam bevisar inget av dem.",
+      "ncmCodes": [
+        "AS3"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M25",
+      "sourceLine": 189,
+      "patternContext": "textuppgift, multiplikation/division",
+      "ncmContext": "AS6",
+      "prerequisites": "**AS4 + AS5** (verifierat)",
+      "sourceRationale": "AS6-facit: samma struktur.",
+      "status": "needs-context",
+      "codeReview": "Samma skillnad för multiplikation/division.",
+      "ncmCodes": [
+        "AS6"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M26",
+      "sourceLine": 190,
+      "patternContext": "decimaltal, addition/subtraktion",
+      "ncmContext": "AS9",
+      "prerequisites": "**AS1 + AS2 + RD2 + RD4** (verifierat)",
+      "sourceRationale": "AS9-facit: räknefel → AG3/AS1/AS2; decimalfel → RD2/RD4.",
+      "status": "partial",
+      "codeReview": "Svarsrättning och skalningssignal finns, men inte full metodanalys för decimaluppställning.",
+      "ncmCodes": [
+        "AS9"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M27",
+      "sourceLine": 191,
+      "patternContext": "flersiffrig multiplikation",
+      "ncmContext": "AS7",
+      "prerequisites": "**AG6 + AG7 + AS4** (verifierat)",
+      "sourceRationale": "Utanför ncmScreeningTasks.v1.json idag — åk 7–9-nivå.",
+      "status": "pending",
+      "codeReview": "Generell delproduktanalys saknas; inte automatiskt diagnostiserbar från slutsvar.",
+      "ncmCodes": [
+        "AS7"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M28",
+      "sourceLine": 192,
+      "patternContext": "tvåsiffrig divisor",
+      "ncmContext": "AS8",
+      "prerequisites": "**AS5 + AG6–8** (verifierat)",
+      "sourceRationale": "Samma — ej i nuvarande häften.",
+      "status": "pending",
+      "codeReview": "Tvåsiffrig divisor kräver särskilt innehåll/metodunderlag.",
+      "ncmCodes": [
+        "AS8"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M29",
+      "sourceLine": 193,
+      "patternContext": "decimaltal, multiplikation",
+      "ncmContext": "AS10",
+      "prerequisites": "**AS4 + AS7 + RD3 + RD5** (verifierat)",
+      "sourceRationale": "Samma.",
+      "status": "pending",
+      "codeReview": "Saknar generell delprodukt- och decimalmetodanalys.",
+      "ncmCodes": [
+        "AS10"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    },
+    {
+      "id": "M30",
+      "sourceLine": 194,
+      "patternContext": "decimaltal, division",
+      "ncmContext": "AS11",
+      "prerequisites": "**AS5 + AS8 + RD3 + RD5** (verifierat)",
+      "sourceRationale": "Samma.",
+      "status": "pending",
+      "codeReview": "Saknar generell divisions- och decimalmetodanalys.",
+      "ncmCodes": [
+        "AS11"
+      ],
+      "sourceVerification": "Claude-reference-claim-not-independently-revalidated"
+    }
+  ],
+  "gaps": [
+    {
+      "id": "G1",
+      "sourceSection": "5b, numrerade luckor",
+      "title": "Kolumnsummor sammanfogas utan växling",
+      "status": "pending",
+      "codeReview": "Ingen egen signal; skilj från carry_forget.",
+      "sourceVerification": "Claude-McIntosh-summary; original chapter/page not revalidated"
+    },
+    {
+      "id": "G2",
+      "sourceSection": "5b, numrerade luckor",
+      "title": "Distributiva lagen: tiotal adderas i delprodukt",
+      "status": "pending",
+      "codeReview": "Ingen egen generell signal; behöver synliga delprodukter.",
+      "sourceVerification": "Claude-McIntosh-summary; original chapter/page not revalidated"
+    },
+    {
+      "id": "G3",
+      "sourceSection": "5b, numrerade luckor",
+      "title": "Multiplicerar endast siffror i samma kolumn",
+      "status": "pending",
+      "codeReview": "ones_digits_only täcker entalsprodukt, inte hela denna metod.",
+      "sourceVerification": "Claude-McIntosh-summary; original chapter/page not revalidated"
+    },
+    {
+      "id": "G4",
+      "sourceSection": "5b, numrerade luckor",
+      "title": "Bråk: räkna täljare och nämnare separat",
+      "status": "pending",
+      "codeReview": "wrong_denominator kan träffa svaret utan att pröva mekanismen.",
+      "sourceVerification": "Claude-McIntosh-summary; original chapter/page not revalidated"
+    },
+    {
+      "id": "G5",
+      "sourceSection": "5b, numrerade luckor",
+      "title": "Felaktig decimalantalsregel vid ×/÷",
+      "status": "pending",
+      "codeReview": "place_value_error skiljer inte ut denna regel.",
+      "sourceVerification": "Claude-McIntosh-summary; original chapter/page not revalidated"
+    },
+    {
+      "id": "G6",
+      "sourceSection": "5b, numrerade luckor",
+      "title": "Ta bort/sätt tillbaka nollor utan förståelse",
+      "status": "pending",
+      "codeReview": "Kan överlappa place_value_error; nollor och positionsförståelse måste kontrasteras.",
+      "sourceVerification": "Claude-McIntosh-summary; original chapter/page not revalidated"
+    },
+    {
+      "id": "G7",
+      "sourceSection": "5b, numrerade luckor",
+      "title": "Skutträkning/närliggande multipel",
+      "status": "pending",
+      "codeReview": "Delvis redan table_off_by_one; ingen separat mekanism fastställd.",
+      "sourceVerification": "Claude-McIntosh-summary; original chapter/page not revalidated"
+    },
+    {
+      "id": "G8",
+      "sourceSection": "5b, numrerade luckor",
+      "title": "Multiplikation alltid större/division alltid mindre",
+      "status": "pending",
+      "codeReview": "Ingen egen signal. Kan döljas av operation_swap, reversed_operands eller generiska fel.",
+      "sourceVerification": "Claude-McIntosh-summary; original chapter/page not revalidated"
+    },
+    {
+      "id": "G9",
+      "sourceSection": "5b, numrerade luckor",
+      "title": "Talspråk ger omvänd operandordning",
+      "status": "partial",
+      "codeReview": "reversed_operands finns, men språklig orsak kan inte utläsas ur slutsvar.",
+      "sourceVerification": "Claude-McIntosh-summary; original chapter/page not revalidated"
+    }
+  ],
+  "concepts": [
+    {
+      "id": "B1",
+      "title": "Större nämnare → större bråk",
+      "ncmCodes": [
+        "RB1",
+        "RB4"
+      ],
+      "status": "pending",
+      "reason": "Behöver särskiljande frågor; befintliga generiska felsignaler bevisar inte begreppet. Inte principiellt omöjligt att implementera.",
+      "sourceSection": "5b, begreppsliga missuppfattningar"
+    },
+    {
+      "id": "B2",
+      "title": "Fler eller färre decimaler → större tal",
+      "ncmCodes": [
+        "RD1"
+      ],
+      "status": "pending",
+      "reason": "Behöver särskiljande frågor; befintliga generiska felsignaler bevisar inte begreppet. Inte principiellt omöjligt att implementera.",
+      "sourceSection": "5b, begreppsliga missuppfattningar"
+    },
+    {
+      "id": "B3",
+      "title": "0,5 kontra 0,50 och tal mellan 0,5 och 0,6",
+      "ncmCodes": [
+        "RD1"
+      ],
+      "status": "pending",
+      "reason": "Behöver särskiljande frågor; befintliga generiska felsignaler bevisar inte begreppet. Inte principiellt omöjligt att implementera.",
+      "sourceSection": "5b, begreppsliga missuppfattningar"
+    },
+    {
+      "id": "B4",
+      "title": "Procentenheter kontra relativ procentförändring",
+      "ncmCodes": [
+        "RP4"
+      ],
+      "status": "pending",
+      "reason": "Behöver särskiljande frågor; befintliga generiska felsignaler bevisar inte begreppet. Inte principiellt omöjligt att implementera.",
+      "sourceSection": "5b, begreppsliga missuppfattningar"
+    },
+    {
+      "id": "B5",
+      "title": "+X % följt av −X % återställer ursprunget",
+      "ncmCodes": [
+        "RP4"
+      ],
+      "status": "pending",
+      "reason": "Behöver särskiljande frågor; befintliga generiska felsignaler bevisar inte begreppet. Inte principiellt omöjligt att implementera.",
+      "sourceSection": "5b, begreppsliga missuppfattningar"
+    },
+    {
+      "id": "B6",
+      "title": "10 % av två delar blir 20 % av helheten",
+      "ncmCodes": [
+        "RP1",
+        "RP3"
+      ],
+      "status": "pending",
+      "reason": "Behöver särskiljande frågor; befintliga generiska felsignaler bevisar inte begreppet. Inte principiellt omöjligt att implementera.",
+      "sourceSection": "5b, begreppsliga missuppfattningar"
+    },
+    {
+      "id": "B7",
+      "title": "Bråkaddition/subtraktion var för sig",
+      "ncmCodes": [
+        "RB5"
+      ],
+      "status": "pending",
+      "reason": "Behöver särskiljande frågor; befintliga generiska felsignaler bevisar inte begreppet. Inte principiellt omöjligt att implementera.",
+      "sourceSection": "5b, begreppsliga missuppfattningar",
+      "sameMechanismAs": "G4"
+    }
+  ],
+  "nuances": [
+    {
+      "id": "N1",
+      "title": "Sifferomkastning är inte automatiskt slarv",
+      "status": "needs-context"
+    },
+    {
+      "id": "N2",
+      "title": "Störst minus minst per kolumn",
+      "status": "pilot",
+      "mapping": "M02"
+    },
+    {
+      "id": "N3",
+      "title": "Arbetsminnesbelastning kan felaktigt kallas slarv",
+      "status": "needs-context"
+    }
+  ],
+  "ag6StrategySteps": [
+    {
+      "id": "T1",
+      "title": "1a ×2",
+      "status": "pending",
+      "reason": "Sparad progression från referensen; separat uppgiftsmappning krävs."
+    },
+    {
+      "id": "T2",
+      "title": "1b ×4 som dubbelt-dubbelt",
+      "status": "pending",
+      "reason": "Sparad progression från referensen; separat uppgiftsmappning krävs."
+    },
+    {
+      "id": "T3",
+      "title": "2a ×3",
+      "status": "pending",
+      "reason": "Sparad progression från referensen; separat uppgiftsmappning krävs."
+    },
+    {
+      "id": "T4",
+      "title": "2b ×6 som dubbelt av ×3",
+      "status": "pending",
+      "reason": "Sparad progression från referensen; separat uppgiftsmappning krävs."
+    },
+    {
+      "id": "T5",
+      "title": "3a ×5",
+      "status": "pending",
+      "reason": "Sparad progression från referensen; separat uppgiftsmappning krävs."
+    },
+    {
+      "id": "T6",
+      "title": "3b faktorer 7,8,9",
+      "status": "pending",
+      "reason": "Sparad progression från referensen; separat uppgiftsmappning krävs."
+    }
+  ],
+  "unmappedSignals": [
+    {
+      "code": "digit_reversal",
+      "status": "needs-context",
+      "reason": "Ingen automatisk NCM-kod. Orsak får inte härledas ur etiketten."
+    },
+    {
+      "code": "calculation_error",
+      "status": "needs-context",
+      "reason": "Ingen automatisk NCM-kod. Orsak får inte härledas ur etiketten."
+    },
+    {
+      "code": "wrong_answer",
+      "status": "needs-context",
+      "reason": "Ingen automatisk NCM-kod. Orsak får inte härledas ur etiketten."
+    },
+    {
+      "code": "no_answer",
+      "status": "needs-context",
+      "reason": "Ingen automatisk NCM-kod. Orsak får inte härledas ur etiketten."
+    },
+    {
+      "code": "invalid_input",
+      "status": "needs-context",
+      "reason": "Ingen automatisk NCM-kod. Orsak får inte härledas ur etiketten."
+    },
+    {
+      "code": "operation_swap",
+      "status": "needs-context",
+      "reason": "Textuppgift kan motivera AG5/AG9/AS3/AS6; ren beräkning ger ingen automatisk NCM-kod."
+    }
+  ],
+  "outsideEngine": [
+    {
+      "family": "AF",
+      "status": "pending",
+      "reason": "Muntlig observation, saknas i läst CSV; inte en felsvarssignal."
+    },
+    {
+      "family": "AUn1–4",
+      "status": "pending",
+      "reason": "Negativa tal; ingen separat felsmotor i lästa domäner."
+    },
+    {
+      "family": "AUp1–5",
+      "status": "pending",
+      "reason": "Potenser/rötter; ingen sådan generell felsmotor. square_as_double i algebra är smalt överlapp."
+    }
+  ],
+  "sourceBoundaries": {
+    "notRevalidated": [
+      "Alla övriga facitpåståenden utöver pilot AS2→AG3",
+      "McIntosh-kapitlens exakta sidor och prevalenssiffror",
+      "Referensens 127 facit och antalsuppgifter; CSV har 126 rader, olika urval kan föreligga",
+      "STI/STl-frågan kräver rätt katalogversion och kontroll av gemener",
+      "McIntosh kap 7,22, aktiviteter, intervjuer/tester enligt referensens egna läsluckor"
+    ],
+    "policy": "Ofullständigt källkontrollerat material kan inventeras, men inte markeras som oberoende verifierat eller driftsatt."
+  },
+  "catalogueCodes": [
+    {
+      "code": "AG1",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "AG2",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "AG3",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "AG4",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "AG5",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "AG6",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "AG7",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "AG8",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "AG9",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "AS1",
+      "domain": "arithmetic",
+      "operation": "addition",
+      "mappingConfidence": "high",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "AS10",
+      "domain": "arithmetic",
+      "operation": "multiplication",
+      "mappingConfidence": "high",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "AS11",
+      "domain": "arithmetic",
+      "operation": "division",
+      "mappingConfidence": "medium",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "AS2",
+      "domain": "arithmetic",
+      "operation": "subtraction",
+      "mappingConfidence": "high",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "AS3",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "high",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "AS4",
+      "domain": "arithmetic",
+      "operation": "multiplication",
+      "mappingConfidence": "high",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "AS5",
+      "domain": "arithmetic",
+      "operation": "division",
+      "mappingConfidence": "medium",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "AS6",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "high",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "AS7",
+      "domain": "arithmetic",
+      "operation": "multiplication",
+      "mappingConfidence": "high",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "AS8",
+      "domain": "arithmetic",
+      "operation": "division",
+      "mappingConfidence": "medium",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "AS9",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "high",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "AUN1",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "AUN2",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "AUN3",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "AUN4",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "AUP1",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "AUP2",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "AUP3",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "AUP4",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "AUP5",
+      "domain": "arithmetic",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "GFO1",
+      "domain": "geometry",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "GFO2",
+      "domain": "geometry",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "GFO3",
+      "domain": "geometry",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "GFO4",
+      "domain": "geometry",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "GFO5",
+      "domain": "geometry",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "GFO6",
+      "domain": "geometry",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "GFO7",
+      "domain": "geometry",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "GFO8",
+      "domain": "geometry",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "GSK1",
+      "domain": "geometry",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "GSK2",
+      "domain": "geometry",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "GSK3",
+      "domain": "geometry",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "GSK4",
+      "domain": "geometry",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "GVI1",
+      "domain": "geometry",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "GVI2",
+      "domain": "geometry",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "GVI3",
+      "domain": "geometry",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MAR1",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MAR2",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MAR3",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MAR4",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MAR5",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MAR6",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MAR7",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MGF",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MLA41",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MLA42",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MLA43",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MLA44",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MMA1",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MMA2",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MTI1",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MTI2",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MTI3",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MTI4",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MTI5",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MVO1",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MVO2",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MVO3",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MVO4",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MVO5",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MVO6",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "MVO7",
+      "domain": "measurement",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "RB1",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "RB2",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "RB3",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "RB4",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "RB5",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "RB6",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "RB7",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "RD1",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "RD2",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "RD3",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "RD4",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "RD5",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "RD6",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "RP1",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "RP2",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "RP3",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "RP4",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "referenced-in-30-mappings",
+      "reason": "Se motsvarande M-rad; närvaro är inte en säker diagnos."
+    },
+    {
+      "code": "RP5",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "RP6",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "RP7",
+      "domain": "rational_numbers",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "SA1",
+      "domain": "statistics_probability",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "SA2",
+      "domain": "statistics_probability",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "SA3",
+      "domain": "statistics_probability",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "SA4",
+      "domain": "statistics_probability",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "SA5",
+      "domain": "statistics_probability",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "SAF",
+      "domain": "statistics_probability",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "STD1",
+      "domain": "statistics_probability",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "STD2",
+      "domain": "statistics_probability",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "STD3",
+      "domain": "statistics_probability",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "STD4",
+      "domain": "statistics_probability",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "STD5",
+      "domain": "statistics_probability",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "STD6",
+      "domain": "statistics_probability",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "STF",
+      "domain": "statistics_probability",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "STI1",
+      "domain": "statistics_probability",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "STI2",
+      "domain": "statistics_probability",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAE1",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAE2",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAE3",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAE4",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAE5",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAE6",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAE7",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAG1",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAG2",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAG3",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAG4",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAT1",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAT2",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAT3",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAT4",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAT5",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAU1",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAU2",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAU3",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAU4",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    },
+    {
+      "code": "TAU5",
+      "domain": "number_sense",
+      "operation": "mixed",
+      "mappingConfidence": "heuristic",
+      "status": "not-in-30-mappings",
+      "reason": "Inte bortvalt: kompletterande katalogområde/förkunskap; behöver egen didaktisk prövning före användning. CSV-prefixmappning är inte facitvalidering."
+    }
+  ],
+  "codeSignals": [
+    {
+      "signal": "place_value_error",
+      "file": "src/domains/arithmetic/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "calculation_error",
+      "file": "src/domains/arithmetic/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "operation_swap",
+      "file": "src/domains/arithmetic/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "digit_reversal",
+      "file": "src/domains/arithmetic/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "carry_forget",
+      "file": "src/domains/arithmetic/errorHypotheses/additionHypotheses.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "carry_double",
+      "file": "src/domains/arithmetic/errorHypotheses/additionHypotheses.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "ones_digit_only",
+      "file": "src/domains/arithmetic/errorHypotheses/additionHypotheses.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "smaller_minus_larger",
+      "file": "src/domains/arithmetic/errorHypotheses/subtractionHypotheses.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "borrow_forget",
+      "file": "src/domains/arithmetic/errorHypotheses/subtractionHypotheses.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "table_off_by_one",
+      "file": "src/domains/arithmetic/errorHypotheses/multiplicationHypotheses.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "ones_digits_only",
+      "file": "src/domains/arithmetic/errorHypotheses/multiplicationHypotheses.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "quotient_off_by_one",
+      "file": "src/domains/arithmetic/errorHypotheses/divisionHypotheses.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "reversed_operands",
+      "file": "src/domains/arithmetic/errorHypotheses/divisionHypotheses.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "divisor_as_answer",
+      "file": "src/domains/arithmetic/errorHypotheses/divisionHypotheses.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "dividend_as_answer",
+      "file": "src/domains/arithmetic/errorHypotheses/divisionHypotheses.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "not_simplified",
+      "file": "src/domains/fractions/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "invalid_input",
+      "file": "src/domains/fractions/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "wrong_denominator",
+      "file": "src/domains/fractions/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "wrong_answer",
+      "file": "src/domains/fractions/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "wrong_percentage",
+      "file": "src/domains/percentage/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "no_answer",
+      "file": "src/domains/algebra/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "forgot_coefficient",
+      "file": "src/domains/algebra/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "added_instead_of_multiplied",
+      "file": "src/domains/algebra/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "square_as_double",
+      "file": "src/domains/algebra/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "calculation_error",
+      "file": "src/domains/algebra/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "did_not_simplify",
+      "file": "src/domains/algebra/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "forgot_constant",
+      "file": "src/domains/algebra/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "combined_unlike_terms",
+      "file": "src/domains/algebra/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "simplify_error",
+      "file": "src/domains/algebra/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "invalid_input",
+      "file": "src/domains/arithmetic_expressions/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "wrong_order_of_operations",
+      "file": "src/domains/arithmetic_expressions/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "number_bond_not_recalled",
+      "file": "src/domains/number_fluency/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    },
+    {
+      "signal": "double_not_recalled",
+      "file": "src/domains/number_fluency/analyzeError.js",
+      "status": "source-inspected",
+      "limitation": "Syntaktisk existens, inte bevis för precision eller didaktisk giltighet."
+    }
+  ],
+  "additionalCodeGaps": [
+    {
+      "signals": [
+        "number_bond_not_recalled",
+        "double_not_recalled"
+      ],
+      "reason": "Fanns i kod men saknas i Claudes mappning; behöver egen didaktisk/NCM-källkontroll. Ingen automatisk kodkoppling hittas på."
+    },
+    {
+      "signals": [
+        "larger_digit_minus_smaller_per_column"
+      ],
+      "reason": "Rutnätsregel för exakt 402−178; inte alias till träningsmotorns mindre-specifika slutsvarssignal och inte generellt screeningstöd."
+    }
+  ]
+}

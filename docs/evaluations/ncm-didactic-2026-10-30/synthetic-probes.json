@@ -1,0 +1,210 @@
+{
+  "date": "2026-10-30",
+  "kind": "synthetic-read-only-function-probes",
+  "source": "src/domains/arithmetic/analyzeError.js and errorHypotheses/*.js",
+  "cases": [
+    {
+      "a": 764,
+      "b": 231,
+      "borrowCount": 0,
+      "candidateAnswers": {
+        "correct": 533,
+        "largerDigitMinusSmaller": 533,
+        "zeroWhenBorrowNeeded": 533
+      },
+      "separatesModels": false,
+      "actual": [
+        {
+          "model": "correct",
+          "answer": 533,
+          "signal": []
+        },
+        {
+          "model": "largerDigitMinusSmaller",
+          "answer": 533,
+          "signal": []
+        },
+        {
+          "model": "zeroWhenBorrowNeeded",
+          "answer": 533,
+          "signal": []
+        }
+      ]
+    },
+    {
+      "a": 986,
+      "b": 452,
+      "borrowCount": 0,
+      "candidateAnswers": {
+        "correct": 534,
+        "largerDigitMinusSmaller": 534,
+        "zeroWhenBorrowNeeded": 534
+      },
+      "separatesModels": false,
+      "actual": [
+        {
+          "model": "correct",
+          "answer": 534,
+          "signal": []
+        },
+        {
+          "model": "largerDigitMinusSmaller",
+          "answer": 534,
+          "signal": []
+        },
+        {
+          "model": "zeroWhenBorrowNeeded",
+          "answer": 534,
+          "signal": []
+        }
+      ]
+    },
+    {
+      "a": 642,
+      "b": 217,
+      "borrowCount": 1,
+      "candidateAnswers": {
+        "correct": 425,
+        "largerDigitMinusSmaller": 435,
+        "zeroWhenBorrowNeeded": 430
+      },
+      "separatesModels": true,
+      "actual": [
+        {
+          "model": "correct",
+          "answer": 425,
+          "signal": []
+        },
+        {
+          "model": "largerDigitMinusSmaller",
+          "answer": 435,
+          "signal": [
+            "smaller_minus_larger"
+          ]
+        },
+        {
+          "model": "zeroWhenBorrowNeeded",
+          "answer": 430,
+          "signal": [
+            "borrow_forget"
+          ]
+        }
+      ]
+    },
+    {
+      "a": 753,
+      "b": 428,
+      "borrowCount": 1,
+      "candidateAnswers": {
+        "correct": 325,
+        "largerDigitMinusSmaller": 335,
+        "zeroWhenBorrowNeeded": 330
+      },
+      "separatesModels": true,
+      "actual": [
+        {
+          "model": "correct",
+          "answer": 325,
+          "signal": []
+        },
+        {
+          "model": "largerDigitMinusSmaller",
+          "answer": 335,
+          "signal": [
+            "smaller_minus_larger"
+          ]
+        },
+        {
+          "model": "zeroWhenBorrowNeeded",
+          "answer": 330,
+          "signal": [
+            "borrow_forget"
+          ]
+        }
+      ]
+    },
+    {
+      "a": 402,
+      "b": 178,
+      "borrowCount": 2,
+      "candidateAnswers": {
+        "correct": 224,
+        "largerDigitMinusSmaller": 376,
+        "zeroWhenBorrowNeeded": 300
+      },
+      "separatesModels": true,
+      "actual": [
+        {
+          "model": "correct",
+          "answer": 224,
+          "signal": []
+        },
+        {
+          "model": "largerDigitMinusSmaller",
+          "answer": 376,
+          "signal": [
+            "smaller_minus_larger"
+          ]
+        },
+        {
+          "model": "zeroWhenBorrowNeeded",
+          "answer": 300,
+          "signal": [
+            "borrow_forget"
+          ]
+        }
+      ]
+    },
+    {
+      "a": 503,
+      "b": 267,
+      "borrowCount": 2,
+      "candidateAnswers": {
+        "correct": 236,
+        "largerDigitMinusSmaller": 364,
+        "zeroWhenBorrowNeeded": 300
+      },
+      "separatesModels": true,
+      "actual": [
+        {
+          "model": "correct",
+          "answer": 236,
+          "signal": []
+        },
+        {
+          "model": "largerDigitMinusSmaller",
+          "answer": 364,
+          "signal": [
+            "smaller_minus_larger"
+          ]
+        },
+        {
+          "model": "zeroWhenBorrowNeeded",
+          "answer": 300,
+          "signal": [
+            "borrow_forget"
+          ]
+        }
+      ]
+    }
+  ],
+  "knownLimitation": {
+    "a": 13,
+    "b": 8,
+    "answer": 2,
+    "correct": 5,
+    "actual": {
+      "category": "misconception",
+      "patterns": [
+        "place_value_error"
+      ],
+      "detail": "Svaret är korrekt storlek men skalat med faktor 10 eller 100 — troligt talvärdesproblem."
+    },
+    "assessment": "False causal specificity: 2 is not 5 scaled by 10/100. Existing ratio tolerance matches 0.4; do not use this signal as a diagnostic stopping or branching rule."
+  },
+  "limitations": [
+    "No real pupil data",
+    "No browser, API, learning-effect or automated screening-flow verification",
+    "Correct answers do not rule out a wrong method; baseline without borrowing cannot separate these two models"
+  ]
+}

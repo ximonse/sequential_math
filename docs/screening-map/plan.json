@@ -2349,13 +2349,13 @@
       "status": "Beslutat",
       "kind": "plan",
       "purpose": "Elevhistorik ska leda till didaktiskt motiverade hypoteser och material. Claudes samlade NCM-/McIntosh-underlag är gemensam grund för analys, material och adaptiv diagnostisk kartläggning, inte en lista att plocka enstaka exempel ur.",
-      "next": "Läs och inventera hela referensen i en spårbar täckningslista innan pilotens frågor eller beslutsregler utformas. Varje mappning, förkunskapsrelation, begreppslig missuppfattning och identifierad lucka får status och motivering.",
+      "next": "Bygg en liten syntetisk beslutsprototyp för pilotens gren- och stoppregler, med granskbara beslut per fall. Rätta/avgränsa alltför specifika felmodellträffar innan de används för automatisk diagnostik. Verkligt elevfall väljs uttryckligt före dataläsning.",
       "acceptance": "Inga tysta bortval. Samtliga delar i referensen redovisas som används i pilot, återstår, behöver källkontroll eller utanför aktuellt område med motivering. Pilotens begränsning gäller implementationen, inte hur mycket av kunskapsgrunden som beaktas. Skilj NCM-diagnoskod, appens observerade felmönster och tolkad missuppfattning. Ingen kod tillskrivs eleven utan belägg; ingen data betyder okänt, inte oförmåga. Fri träning och screening kan båda ge belägg. Stopp- och följdfrågeregler ska knytas till begrepp, förkunskaper och kontraster, och dokumentera även alternativa förklaringar. Pedagogiska källpåståenden verifieras där de används; hela katalogens upptäckt och inventering är inte samma sak som att allt är källgranskat eller implementerat.",
       "requires": [],
       "affects": [],
       "issue": "",
       "decision": "2026-10-30: Simon accepterar riktningen med adaptiv diagnostisk screening och kräver uttryckligen hela Claudes NCM-underlag som ryggrad/hörnsten. En smal pilot får inte innebära att resten av underlaget ignoreras. Inget publiceringsmandat i detta beslut.",
-      "evidence": "Claudes fullständiga referens från commit 08a0101 kopierad utan innehållsändring till docs/SCREENING_SELECTION_PRINCIPLES.md. SHA256 326f01d398fc82cd679403e29738db3f18552dcd451e55b1c3dc6c9e021ad121. Omfattar felmönster/NCM-koder, förkunskaper, McIntosh-nyanser, kända luckor, begreppsliga missuppfattningar, urvalsprinciper och databeläggskrav. Detta bevarar hela underlaget; täckningsinventering, ny källgranskning, maskinläsbar katalog och adaptiv screening är ännu inte genomförda.",
+      "evidence": "Claudes fullständiga referens från commit 08a0101 kopierad utan innehållsändring till docs/SCREENING_SELECTION_PRINCIPLES.md. SHA256 326f01d398fc82cd679403e29738db3f18552dcd451e55b1c3dc6c9e021ad121. Omfattar felmönster/NCM-koder, förkunskaper, McIntosh-nyanser, kända luckor, begreppsliga missuppfattningar, urvalsprinciper och databeläggskrav. Detta bevarar hela underlaget; täckningsinventering, ny källgranskning, maskinläsbar katalog och adaptiv screening är ännu inte genomförda.\n2026-10-30: Full täckningsinventering i docs/NCM_DIDACTIC_COVERAGE.md/.json: 11 huvudavsnitt, alla 30 mappningsrader med originalformulering/förkunskaper/källmotivering, 9 luckor, 7 begreppspunkter, 3 nyanser, 6 AG6-steg och alla 126 CSV-koder. Samtliga sex domäners felanalys och aritmetikens hypotesfiler lästa; 33 filbundna signalposter inventerade. Referensens SHA och alla 30 rader maskinellt jämförda med originalet; alla innehållsgrupper och unika ID kontrollerade. Pilotförslag AS2/AG3 i docs/NCM_ADAPTIVE_SCREENING_PILOT.md, högst fem nya frågor, stopp för prövat delmoment och kvarstående osäkerhet. AS2→AG3 själv kontrollerad i lokala facit; övriga källpåståenden tydligt märkta som Claudes referens, ej nygranskade. Syntetiskt funktionsprov i docs/evaluations/ncm-didactic-2026-10-30/synthetic-probes.json: fyra kontraster skiljer två felmodeller; två baslinjer gör det inte. Konkret falsk specificitet 13−8=2→place_value_error dokumenterad, ingen appkod rättad. Screeningens patterns är tomma och dess separata rutnätsregel gäller exakt 402−178; ingen generell signalkoppling påstås. Ingen verklig elevdata, API-skrivning, elevprovning, ny funktion eller publicering. Appens test/build körs inte för denna dokument-/inventeringsleverans.",
       "tasks": [
         {
           "id": "ncm-backbone-preserve",
@@ -2365,16 +2365,21 @@
         {
           "id": "ncm-backbone-coverage",
           "text": "Inventera hela underlaget med status, källnivå och motivering per del",
-          "done": false
+          "done": true
         },
         {
           "id": "ncm-backbone-pilot",
           "text": "Utforma ett avgränsat pilotflöde med belagda stopp-, kontrast- och förkunskapsregler",
-          "done": false
+          "done": true
         },
         {
           "id": "ncm-backbone-review",
           "text": "Granska verkliga analys- och materialexempel didaktiskt före bredare implementation",
+          "done": false
+        },
+        {
+          "id": "ncm-backbone-decision-prototype",
+          "text": "Syntetisk prototyp: historikstyrda frågor, budget, motexempel och stopp utan nya kausala diagnosbesked",
           "done": false
         }
       ]

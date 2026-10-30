@@ -5,7 +5,7 @@ export const RULE_VERSION = 'synthetic-as2-v1'
 const original = JSON.parse(readFileSync(new URL('../../src/domains/arithmetic/diagnosticTasks.v1.json', import.meta.url)))
 const roles = { aligned_columns_without_exchange: 'baseline', single_exchange: 'single_exchange', exchange_through_zero: 'through_zero' }
 export const tasks = original.tasks.filter(task => task.operation === 'subtraction').map(task => ({
-  id: task.taskId, role: roles[task.intentCode], prompt: task.promptSv,
+  id: task.taskId, role: roles[task.intentCode], prompt: task.promptSv, operands: task.operands,
   answer: task.operands[0] - task.operands[1], coverageId: 'M02', grid: true, source: 'original_catalog'
 })).concat([
   { id: 'pilot-ag3-a', role: 'prerequisite', prompt: '13 − 8', answer: 5, coverageId: 'M02', grid: false, source: 'proposed_original' },

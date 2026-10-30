@@ -1,0 +1,1619 @@
+{
+  "ruleVersion": "synthetic-investigation-v1",
+  "limitations": [
+    "Simulated reviewer and teaching notes",
+    "No automatic handwriting or method interpretation",
+    "No validated question counts, follow-up interval or pedagogical effect",
+    "No app/API integration or pupil writes"
+  ],
+  "results": [
+    {
+      "scope": "single_exchange",
+      "synthetic": true,
+      "trace": [
+        {
+          "input": {
+            "scope": "single_exchange",
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "sub-exchange-001",
+                "answer": 435,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "sub-exchange-002",
+                "answer": 335,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v1",
+            "scope": "single_exchange",
+            "coverageIds": [
+              "M02",
+              "N2"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "investigate",
+            "action": "ask",
+            "reasonCode": "check_prerequisite",
+            "reasonSv": "Ett fel säger inte varför. Pröva relevant AG3-förkunskap innan fler skriftliga frågor.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1"
+            ],
+            "diagnosticDecision": {
+              "ruleVersion": "synthetic-as2-v1",
+              "scope": "single_exchange",
+              "coverageIds": [
+                "M02",
+                "N2"
+              ],
+              "evidenceClass": "diagnostic_only",
+              "usedNewQuestions": 2,
+              "maxNewQuestions": 5,
+              "evidenceIds": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "supportIds": [],
+              "ignored": [],
+              "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+              "action": "ask",
+              "task": {
+                "id": "pilot-ag3-a",
+                "role": "prerequisite",
+                "prompt": "13 − 8",
+                "answer": 5,
+                "coverageId": "M02",
+                "grid": false,
+                "source": "proposed_original"
+              },
+              "reasonCode": "check_prerequisite",
+              "reasonSv": "Ett fel säger inte varför. Pröva relevant AG3-förkunskap innan fler skriftliga frågor."
+            },
+            "task": {
+              "id": "pilot-ag3-a",
+              "role": "prerequisite",
+              "prompt": "13 − 8",
+              "answer": 5,
+              "coverageId": "M02",
+              "grid": false,
+              "source": "proposed_original"
+            },
+            "purposeSv": "Ett fel säger inte varför. Pröva relevant AG3-förkunskap innan fler skriftliga frågor."
+          }
+        },
+        {
+          "input": {
+            "scope": "single_exchange",
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "sub-exchange-001",
+                "answer": 435,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "sub-exchange-002",
+                "answer": 335,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              }
+            ],
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "column_difference",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            }
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v1",
+            "scope": "single_exchange",
+            "coverageIds": [
+              "M02",
+              "N2"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "teaching",
+            "action": "propose_teaching",
+            "reasonCode": "reviewed_learning_need",
+            "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1"
+            ],
+            "goalSv": "Omgruppera ett tiotal till tio ental med oförändrat talvärde och förklara båda positionernas förändring.",
+            "instructionSv": "Knyt 32 = 30 + 2 = 20 + 12 till 32 − 17 = 15. Låt eleven förklara och minska stödet successivt.",
+            "reviewId": "synthetic-review"
+          }
+        },
+        {
+          "input": {
+            "scope": "single_exchange",
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "column_difference",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            },
+            "teaching": {
+              "id": "synthetic-teaching",
+              "reviewId": "synthetic-review",
+              "sessionId": "lesson-a",
+              "completedAt": 100,
+              "goalSv": "Omgruppera ett tiotal till tio ental med oförändrat talvärde och förklara båda positionernas förändring.",
+              "usedTaskIds": [
+                "synthetic-teaching-example"
+              ],
+              "saved": true
+            },
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "sub-exchange-001",
+                "answer": 435,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "sub-exchange-002",
+                "answer": 335,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v1",
+            "scope": "single_exchange",
+            "coverageIds": [
+              "M02",
+              "N2"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "independent",
+            "action": "ask",
+            "reasonCode": "check_without_help",
+            "reasonSv": "Pröva samma delmoment med nya tal utan hjälp; träningsframgång räcker inte.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1"
+            ],
+            "task": {
+              "id": "check-sub-a",
+              "phase": "independent",
+              "prompt": "831 − 416",
+              "operands": [
+                831,
+                416
+              ],
+              "answer": 415,
+              "context": "calculation",
+              "discriminates": [
+                "column_difference",
+                "unreduced_tens"
+              ]
+            },
+            "purposeSv": "Pröva samma delmoment med nya tal utan hjälp; träningsframgång räcker inte."
+          }
+        },
+        {
+          "input": {
+            "scope": "single_exchange",
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "column_difference",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            },
+            "teaching": {
+              "id": "synthetic-teaching",
+              "reviewId": "synthetic-review",
+              "sessionId": "lesson-a",
+              "completedAt": 100,
+              "goalSv": "Omgruppera ett tiotal till tio ental med oförändrat talvärde och förklara båda positionernas förändring.",
+              "usedTaskIds": [
+                "synthetic-teaching-example"
+              ],
+              "saved": true
+            },
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "sub-exchange-001",
+                "answer": 435,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "sub-exchange-002",
+                "answer": 335,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-control-0",
+                "taskId": "check-sub-a",
+                "phase": "independent",
+                "answer": 415,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-0",
+                  "snapshotRevision": "synthetic-control-revision-0"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 110
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v1",
+            "scope": "single_exchange",
+            "coverageIds": [
+              "M02",
+              "N2"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "independent",
+            "action": "ask",
+            "reasonCode": "check_without_help",
+            "reasonSv": "Pröva samma delmoment med nya tal utan hjälp; träningsframgång räcker inte.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1",
+              "synthetic-control-0"
+            ],
+            "task": {
+              "id": "check-sub-b",
+              "phase": "independent",
+              "prompt": "972 − 548",
+              "operands": [
+                972,
+                548
+              ],
+              "answer": 424,
+              "context": "calculation",
+              "discriminates": [
+                "column_difference",
+                "unreduced_tens"
+              ]
+            },
+            "purposeSv": "Pröva samma delmoment med nya tal utan hjälp; träningsframgång räcker inte."
+          }
+        },
+        {
+          "input": {
+            "scope": "single_exchange",
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "column_difference",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            },
+            "teaching": {
+              "id": "synthetic-teaching",
+              "reviewId": "synthetic-review",
+              "sessionId": "lesson-a",
+              "completedAt": 100,
+              "goalSv": "Omgruppera ett tiotal till tio ental med oförändrat talvärde och förklara båda positionernas förändring.",
+              "usedTaskIds": [
+                "synthetic-teaching-example"
+              ],
+              "saved": true
+            },
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "sub-exchange-001",
+                "answer": 435,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "sub-exchange-002",
+                "answer": 335,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-control-0",
+                "taskId": "check-sub-a",
+                "phase": "independent",
+                "answer": 415,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-0",
+                  "snapshotRevision": "synthetic-control-revision-0"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 110
+              },
+              {
+                "id": "synthetic-control-1",
+                "taskId": "check-sub-b",
+                "phase": "independent",
+                "answer": 424,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-1",
+                  "snapshotRevision": "synthetic-control-revision-1"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 111
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v1",
+            "scope": "single_exchange",
+            "coverageIds": [
+              "M02",
+              "N2"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "followup",
+            "action": "ask",
+            "reasonCode": "followup_required",
+            "reasonSv": "Det fungerar självständigt nu. Pröva senare och i förändrat sammanhang innan aktiv utredning avslutas.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1",
+              "synthetic-control-0",
+              "synthetic-control-1"
+            ],
+            "task": {
+              "id": "later-sub-a",
+              "phase": "followup",
+              "prompt": "752 − 436",
+              "operands": [
+                752,
+                436
+              ],
+              "answer": 316,
+              "context": "calculation",
+              "discriminates": [
+                "column_difference",
+                "unreduced_tens"
+              ]
+            },
+            "purposeSv": "Det fungerar självständigt nu. Pröva senare och i förändrat sammanhang innan aktiv utredning avslutas."
+          }
+        },
+        {
+          "input": {
+            "scope": "single_exchange",
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "column_difference",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            },
+            "teaching": {
+              "id": "synthetic-teaching",
+              "reviewId": "synthetic-review",
+              "sessionId": "lesson-a",
+              "completedAt": 100,
+              "goalSv": "Omgruppera ett tiotal till tio ental med oförändrat talvärde och förklara båda positionernas förändring.",
+              "usedTaskIds": [
+                "synthetic-teaching-example"
+              ],
+              "saved": true
+            },
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "sub-exchange-001",
+                "answer": 435,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "sub-exchange-002",
+                "answer": 335,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-control-0",
+                "taskId": "check-sub-a",
+                "phase": "independent",
+                "answer": 415,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-0",
+                  "snapshotRevision": "synthetic-control-revision-0"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 110
+              },
+              {
+                "id": "synthetic-control-1",
+                "taskId": "check-sub-b",
+                "phase": "independent",
+                "answer": 424,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-1",
+                  "snapshotRevision": "synthetic-control-revision-1"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 111
+              },
+              {
+                "id": "synthetic-control-2",
+                "taskId": "later-sub-a",
+                "phase": "followup",
+                "answer": 316,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-2",
+                  "snapshotRevision": "synthetic-control-revision-2"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-b",
+                "observedAt": 202
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v1",
+            "scope": "single_exchange",
+            "coverageIds": [
+              "M02",
+              "N2"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "followup",
+            "action": "ask",
+            "reasonCode": "followup_required",
+            "reasonSv": "Det fungerar självständigt nu. Pröva senare och i förändrat sammanhang innan aktiv utredning avslutas.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1",
+              "synthetic-control-0",
+              "synthetic-control-1",
+              "synthetic-control-2"
+            ],
+            "task": {
+              "id": "later-sub-transfer",
+              "phase": "followup",
+              "prompt": "Du har 83 kr och betalar 46 kr. Hur mycket har du kvar?",
+              "operands": [
+                83,
+                46
+              ],
+              "answer": 37,
+              "context": "transfer",
+              "discriminates": [
+                "column_difference",
+                "unreduced_tens"
+              ]
+            },
+            "purposeSv": "Det fungerar självständigt nu. Pröva senare och i förändrat sammanhang innan aktiv utredning avslutas."
+          }
+        },
+        {
+          "input": {
+            "scope": "single_exchange",
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "column_difference",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            },
+            "teaching": {
+              "id": "synthetic-teaching",
+              "reviewId": "synthetic-review",
+              "sessionId": "lesson-a",
+              "completedAt": 100,
+              "goalSv": "Omgruppera ett tiotal till tio ental med oförändrat talvärde och förklara båda positionernas förändring.",
+              "usedTaskIds": [
+                "synthetic-teaching-example"
+              ],
+              "saved": true
+            },
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "sub-exchange-001",
+                "answer": 435,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "sub-exchange-002",
+                "answer": 335,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-control-0",
+                "taskId": "check-sub-a",
+                "phase": "independent",
+                "answer": 415,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-0",
+                  "snapshotRevision": "synthetic-control-revision-0"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 110
+              },
+              {
+                "id": "synthetic-control-1",
+                "taskId": "check-sub-b",
+                "phase": "independent",
+                "answer": 424,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-1",
+                  "snapshotRevision": "synthetic-control-revision-1"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 111
+              },
+              {
+                "id": "synthetic-control-2",
+                "taskId": "later-sub-a",
+                "phase": "followup",
+                "answer": 316,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-2",
+                  "snapshotRevision": "synthetic-control-revision-2"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-b",
+                "observedAt": 202
+              },
+              {
+                "id": "synthetic-control-3",
+                "taskId": "later-sub-transfer",
+                "phase": "followup",
+                "answer": 37,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-3",
+                  "snapshotRevision": "synthetic-control-revision-3"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-b",
+                "observedAt": 203
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v1",
+            "scope": "single_exchange",
+            "coverageIds": [
+              "M02",
+              "N2"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "closed",
+            "action": "stop",
+            "reasonCode": "supported_in_tested_scope",
+            "reasonSv": "Stabil självständig förståelse i prövade situationer, även vid senare uppföljning. Inget besked om oprövade delmoment eller permanent borttagen felförståelse.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1",
+              "synthetic-control-0",
+              "synthetic-control-1",
+              "synthetic-control-2",
+              "synthetic-control-3"
+            ],
+            "reviewId": "synthetic-review",
+            "teachingId": "synthetic-teaching",
+            "controlIds": [
+              "synthetic-control-0",
+              "synthetic-control-1",
+              "synthetic-control-2",
+              "synthetic-control-3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "scope": "fraction_comparison",
+      "synthetic": true,
+      "trace": [
+        {
+          "input": {
+            "scope": "fraction_comparison",
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "fraction-gap-a",
+                "answer": "left",
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "fraction-gap-b",
+                "answer": "right",
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v1",
+            "scope": "fraction_comparison",
+            "coverageIds": [
+              "M14"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "investigate",
+            "action": "ask",
+            "reasonCode": "separate_fraction_rules",
+            "reasonSv": "Skilj bråkens storlek från antalet saknade delar och från nämnarens storlek; granska förklaringen innan slutsats.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1"
+            ],
+            "task": {
+              "id": "fraction-baseline",
+              "phase": "investigate",
+              "prompt": "Vilket är störst: 4/7 eller 4/9?",
+              "fractions": [
+                [
+                  4,
+                  7
+                ],
+                [
+                  4,
+                  9
+                ]
+              ],
+              "context": "calculation",
+              "discriminates": [
+                "larger_denominator"
+              ],
+              "answer": "left"
+            },
+            "purposeSv": "Skilj bråkens storlek från antalet saknade delar och från nämnarens storlek; granska förklaringen innan slutsats."
+          }
+        },
+        {
+          "input": {
+            "scope": "fraction_comparison",
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "fraction-gap-a",
+                "answer": "left",
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "fraction-gap-b",
+                "answer": "right",
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              }
+            ],
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "missing_parts_count",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            }
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v1",
+            "scope": "fraction_comparison",
+            "coverageIds": [
+              "M14"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "teaching",
+            "action": "propose_teaching",
+            "reasonCode": "reviewed_learning_need",
+            "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1"
+            ],
+            "goalSv": "Jämföra bråk av samma helhet utifrån delarnas storlek, inte bara antalet delar som saknas.",
+            "instructionSv": "Jämför 3/4 och 7/9 av samma helhet: 27/36 och 28/36. Förklara varför en saknad fjärdedel är mer än två saknade niondelar.",
+            "reviewId": "synthetic-review"
+          }
+        },
+        {
+          "input": {
+            "scope": "fraction_comparison",
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "missing_parts_count",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            },
+            "teaching": {
+              "id": "synthetic-teaching",
+              "reviewId": "synthetic-review",
+              "sessionId": "lesson-a",
+              "completedAt": 100,
+              "goalSv": "Jämföra bråk av samma helhet utifrån delarnas storlek, inte bara antalet delar som saknas.",
+              "usedTaskIds": [
+                "synthetic-teaching-example"
+              ],
+              "saved": true
+            },
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "fraction-gap-a",
+                "answer": "left",
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "fraction-gap-b",
+                "answer": "right",
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v1",
+            "scope": "fraction_comparison",
+            "coverageIds": [
+              "M14"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "independent",
+            "action": "ask",
+            "reasonCode": "check_without_help",
+            "reasonSv": "Pröva samma delmoment med nya tal utan hjälp; träningsframgång räcker inte.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1"
+            ],
+            "task": {
+              "id": "check-fraction-a",
+              "phase": "independent",
+              "prompt": "Vilket är störst: 5/6 eller 11/13?",
+              "fractions": [
+                [
+                  5,
+                  6
+                ],
+                [
+                  11,
+                  13
+                ]
+              ],
+              "context": "calculation",
+              "discriminates": [
+                "missing_parts_count"
+              ],
+              "answer": "right"
+            },
+            "purposeSv": "Pröva samma delmoment med nya tal utan hjälp; träningsframgång räcker inte."
+          }
+        },
+        {
+          "input": {
+            "scope": "fraction_comparison",
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "missing_parts_count",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            },
+            "teaching": {
+              "id": "synthetic-teaching",
+              "reviewId": "synthetic-review",
+              "sessionId": "lesson-a",
+              "completedAt": 100,
+              "goalSv": "Jämföra bråk av samma helhet utifrån delarnas storlek, inte bara antalet delar som saknas.",
+              "usedTaskIds": [
+                "synthetic-teaching-example"
+              ],
+              "saved": true
+            },
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "fraction-gap-a",
+                "answer": "left",
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "fraction-gap-b",
+                "answer": "right",
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-control-0",
+                "taskId": "check-fraction-a",
+                "phase": "independent",
+                "answer": "right",
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-0",
+                  "snapshotRevision": "synthetic-control-revision-0"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 110
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v1",
+            "scope": "fraction_comparison",
+            "coverageIds": [
+              "M14"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "independent",
+            "action": "ask",
+            "reasonCode": "check_without_help",
+            "reasonSv": "Pröva samma delmoment med nya tal utan hjälp; träningsframgång räcker inte.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1",
+              "synthetic-control-0"
+            ],
+            "task": {
+              "id": "check-fraction-b",
+              "phase": "independent",
+              "prompt": "Vilket är störst: 13/15 eller 6/7?",
+              "fractions": [
+                [
+                  13,
+                  15
+                ],
+                [
+                  6,
+                  7
+                ]
+              ],
+              "context": "calculation",
+              "discriminates": [
+                "missing_parts_count"
+              ],
+              "answer": "left"
+            },
+            "purposeSv": "Pröva samma delmoment med nya tal utan hjälp; träningsframgång räcker inte."
+          }
+        },
+        {
+          "input": {
+            "scope": "fraction_comparison",
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "missing_parts_count",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            },
+            "teaching": {
+              "id": "synthetic-teaching",
+              "reviewId": "synthetic-review",
+              "sessionId": "lesson-a",
+              "completedAt": 100,
+              "goalSv": "Jämföra bråk av samma helhet utifrån delarnas storlek, inte bara antalet delar som saknas.",
+              "usedTaskIds": [
+                "synthetic-teaching-example"
+              ],
+              "saved": true
+            },
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "fraction-gap-a",
+                "answer": "left",
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "fraction-gap-b",
+                "answer": "right",
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-control-0",
+                "taskId": "check-fraction-a",
+                "phase": "independent",
+                "answer": "right",
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-0",
+                  "snapshotRevision": "synthetic-control-revision-0"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 110
+              },
+              {
+                "id": "synthetic-control-1",
+                "taskId": "check-fraction-b",
+                "phase": "independent",
+                "answer": "left",
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-1",
+                  "snapshotRevision": "synthetic-control-revision-1"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 111
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v1",
+            "scope": "fraction_comparison",
+            "coverageIds": [
+              "M14"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "followup",
+            "action": "ask",
+            "reasonCode": "followup_required",
+            "reasonSv": "Det fungerar självständigt nu. Pröva senare och i förändrat sammanhang innan aktiv utredning avslutas.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1",
+              "synthetic-control-0",
+              "synthetic-control-1"
+            ],
+            "task": {
+              "id": "later-fraction-a",
+              "phase": "followup",
+              "prompt": "Vilket är störst: 8/9 eller 17/19?",
+              "fractions": [
+                [
+                  8,
+                  9
+                ],
+                [
+                  17,
+                  19
+                ]
+              ],
+              "context": "calculation",
+              "discriminates": [
+                "missing_parts_count"
+              ],
+              "answer": "right"
+            },
+            "purposeSv": "Det fungerar självständigt nu. Pröva senare och i förändrat sammanhang innan aktiv utredning avslutas."
+          }
+        },
+        {
+          "input": {
+            "scope": "fraction_comparison",
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "missing_parts_count",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            },
+            "teaching": {
+              "id": "synthetic-teaching",
+              "reviewId": "synthetic-review",
+              "sessionId": "lesson-a",
+              "completedAt": 100,
+              "goalSv": "Jämföra bråk av samma helhet utifrån delarnas storlek, inte bara antalet delar som saknas.",
+              "usedTaskIds": [
+                "synthetic-teaching-example"
+              ],
+              "saved": true
+            },
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "fraction-gap-a",
+                "answer": "left",
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "fraction-gap-b",
+                "answer": "right",
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-control-0",
+                "taskId": "check-fraction-a",
+                "phase": "independent",
+                "answer": "right",
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-0",
+                  "snapshotRevision": "synthetic-control-revision-0"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 110
+              },
+              {
+                "id": "synthetic-control-1",
+                "taskId": "check-fraction-b",
+                "phase": "independent",
+                "answer": "left",
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-1",
+                  "snapshotRevision": "synthetic-control-revision-1"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 111
+              },
+              {
+                "id": "synthetic-control-2",
+                "taskId": "later-fraction-a",
+                "phase": "followup",
+                "answer": "right",
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-2",
+                  "snapshotRevision": "synthetic-control-revision-2"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-b",
+                "observedAt": 202
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v1",
+            "scope": "fraction_comparison",
+            "coverageIds": [
+              "M14"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "followup",
+            "action": "ask",
+            "reasonCode": "followup_required",
+            "reasonSv": "Det fungerar självständigt nu. Pröva senare och i förändrat sammanhang innan aktiv utredning avslutas.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1",
+              "synthetic-control-0",
+              "synthetic-control-1",
+              "synthetic-control-2"
+            ],
+            "task": {
+              "id": "later-fraction-transfer",
+              "phase": "followup",
+              "prompt": "Två lika stora flaskor är fyllda till 19/21 respektive 9/10. Vilken innehåller mest?",
+              "fractions": [
+                [
+                  19,
+                  21
+                ],
+                [
+                  9,
+                  10
+                ]
+              ],
+              "context": "transfer",
+              "discriminates": [
+                "missing_parts_count"
+              ],
+              "answer": "left"
+            },
+            "purposeSv": "Det fungerar självständigt nu. Pröva senare och i förändrat sammanhang innan aktiv utredning avslutas."
+          }
+        },
+        {
+          "input": {
+            "scope": "fraction_comparison",
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "missing_parts_count",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            },
+            "teaching": {
+              "id": "synthetic-teaching",
+              "reviewId": "synthetic-review",
+              "sessionId": "lesson-a",
+              "completedAt": 100,
+              "goalSv": "Jämföra bråk av samma helhet utifrån delarnas storlek, inte bara antalet delar som saknas.",
+              "usedTaskIds": [
+                "synthetic-teaching-example"
+              ],
+              "saved": true
+            },
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "fraction-gap-a",
+                "answer": "left",
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "fraction-gap-b",
+                "answer": "right",
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-control-0",
+                "taskId": "check-fraction-a",
+                "phase": "independent",
+                "answer": "right",
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-0",
+                  "snapshotRevision": "synthetic-control-revision-0"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 110
+              },
+              {
+                "id": "synthetic-control-1",
+                "taskId": "check-fraction-b",
+                "phase": "independent",
+                "answer": "left",
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-1",
+                  "snapshotRevision": "synthetic-control-revision-1"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 111
+              },
+              {
+                "id": "synthetic-control-2",
+                "taskId": "later-fraction-a",
+                "phase": "followup",
+                "answer": "right",
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-2",
+                  "snapshotRevision": "synthetic-control-revision-2"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-b",
+                "observedAt": 202
+              },
+              {
+                "id": "synthetic-control-3",
+                "taskId": "later-fraction-transfer",
+                "phase": "followup",
+                "answer": "left",
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-3",
+                  "snapshotRevision": "synthetic-control-revision-3"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-b",
+                "observedAt": 203
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v1",
+            "scope": "fraction_comparison",
+            "coverageIds": [
+              "M14"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "closed",
+            "action": "stop",
+            "reasonCode": "supported_in_tested_scope",
+            "reasonSv": "Stabil självständig förståelse i prövade situationer, även vid senare uppföljning. Inget besked om oprövade delmoment eller permanent borttagen felförståelse.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1",
+              "synthetic-control-0",
+              "synthetic-control-1",
+              "synthetic-control-2",
+              "synthetic-control-3"
+            ],
+            "reviewId": "synthetic-review",
+            "teachingId": "synthetic-teaching",
+            "controlIds": [
+              "synthetic-control-0",
+              "synthetic-control-1",
+              "synthetic-control-2",
+              "synthetic-control-3"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -185,6 +185,10 @@ Diagnostiska kontroller ändrar inte automatiskt vanlig mastery/progression.
 
 ## Klart-när och nästa byggsteg
 
+En första körbar tillämpning av kontraktet för subtraktion och bråkjämförelse
+finns nu i [den fristående utredningsprototypen](NCM_INVESTIGATION_PROTOTYPE.md).
+Den prövar även undervisning och uppföljning; det är fortfarande ingen elevväg.
+
 Den första mallen är beskriven när varje övergång har observation, alternativ
 förklaring, nästa handling och begripligt stoppbesked; särskiljande tal har
 kontrollerat facit och träningsstöd hålls isär från självständiga kontroller.

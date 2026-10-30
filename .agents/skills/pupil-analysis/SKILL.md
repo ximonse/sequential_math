@@ -33,6 +33,11 @@ Lokal MCP eller pseudonym betyder inte att data får skickas till valfri modell.
   och nästa fråga/kontrast som kan skilja förklaringarna åt. Använd enbart
   referenser från det aktuella underlaget och gör inte ett rätt svar till
   motexempel utan att förklara varför det prövar samma mekanism.
+- Börja med math_preview_analysis: kända felmodeller är redan beräknade i
+  koden och behöver inte räknas om. En `rule_candidate` får bara komma därifrån:
+  för över signalCode och ruleVersion oförändrade, uppfinn aldrig en egen
+  regelkandidat och välj bara motexempel som rätta svar på jämförbart innehåll
+  och samma nivå. En modellträff är en kandidat, inte elevens fastställda metod.
 - Saknas stöd: säg otillräckligt underlag. Tom counterRefs innebär att inga
   motexempel valts, inte att eleven saknar sådana svar. Enstaka fel och
   svarstid ensamma fastställer inte metod, slarv eller kunskapsbrist.

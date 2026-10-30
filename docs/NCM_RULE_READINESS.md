@@ -108,8 +108,11 @@ kända modeller inte behöver räknas om av AI.
 
 Verifierat lokalt 2026-10-30: 197 testfiler/1051 tester, produktionsbuild,
 MCP-kontrollerna (19), robotarna för elevunderlag, analysrapport och vanliga
-räknesätt. Analysroboten väntar sig nu att 600 − 376 med svaret 376 ger en
-beräknad modell med otillräckligt underlag (ett svar).
+räknesätt. Analysroboten prövar både tomläget (402 − 178 besvarat 213, ingen
+modell) och att 376 på samma uppgift ger ”större minus mindre” som beräknad
+modell med otillräckligt underlag (ett svar), inte som elevens metod.
+Modellerna är byggda och syntetiskt testade, inte granskade mot verkliga
+elevsvar eller godkända för automatisk diagnostik.
 
 ## Gräns för denna leverans och nästa steg
 

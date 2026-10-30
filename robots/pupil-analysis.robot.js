@@ -95,7 +95,7 @@ test('Analysis keeps source answers, versions and teacher corrections through co
   await panel.getByRole('button', { name: 'Återgå till senast sparade', exact: true }).click()
 })
 
-test('A single computed model stays insufficient and the report still shows the pupil answer and the version-bound notebook original', async ({ page, request }, testInfo) => {
+test('A report without a method hypothesis still shows the pupil answer and the version-bound notebook original', async ({ page, request }, testInfo) => {
   const classId = `analysis-work-${Math.random().toString(36).slice(2, 8)}`
   const pupil = await createPupil(request, { classId, name: 'Analysis Notebook' })
   const teacher = await createTeacher(request, { classIds: [classId], role: 'super_admin' })
@@ -107,6 +107,40 @@ test('A single computed model stays insufficient and the report still shows the 
   await page.getByRole('button', { name: 'Original till analys', exact: true }).click()
   await page.locator('input[data-cell="0:0"]').press('4')
   await page.getByRole('textbox', { name: 'Mitt svar', exact: true }).tap()
+  // 402 − 178 = 224; 213 matches no computed error model, so the report has no hypothesis.
+  for (const digit of '213') await page.getByRole('button', { name: `Skriv ${digit}`, exact: true }).tap()
+  await expect(page.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
+  await page.goto(`/teacher/student/${pupil.studentId}`)
+  const panel = page.getByRole('region', { name: 'Analys och avstämning', exact: true })
+  await panel.getByRole('button', { name: /^Analys och avstämning/ }).click()
+  await expect(panel.getByRole('status')).toContainText('inlästa')
+  await panel.getByLabel('Underlag', { exact: true }).selectOption('screening')
+  await panel.getByRole('button', { name: 'Skapa granskningsunderlag', exact: true }).click()
+  await expect(panel).toContainText('Otillräckligt underlag för en felhypotes')
+  await panel.getByRole('button', { name: 'Spara rapportversion', exact: true }).click()
+  await panel.getByText('Svar från periodens början, högst 20 (1)', { exact: true }).click()
+  await panel.getByRole('button', { name: /^Visa svar 1:/ }).click()
+  await expect(panel.getByRole('region', { name: 'Rapportens källsvar', exact: true })).toContainText('Elevens svar: 213 · Facit: 224')
+  await panel.getByRole('button', { name: 'Visa sparat räknehäfte', exact: true }).click()
+  const original = panel.getByRole('region', { name: 'Elevens inmatningsförlopp', exact: true })
+  await expect(original).toBeVisible()
+  expect(await original.locator('.diagnostic-grid').evaluate(grid => getComputedStyle(grid).display)).toBe('grid')
+  await expect(original.locator('.diagnostic-cell').first()).toContainText('4')
+  await panel.screenshot({ path: testInfo.outputPath('analysis-notebook-original.png') })
+})
+
+test('A single computed error model is shown as insufficient evidence, not as a pupil method', async ({ page, request }) => {
+  const classId = `analysis-model-${Math.random().toString(36).slice(2, 8)}`
+  const pupil = await createPupil(request, { classId, name: 'Analysis Model' })
+  const teacher = await createTeacher(request, { classIds: [classId], role: 'super_admin' })
+  await teacherLogin(page, teacher)
+  const created = await teacherRequest(page, '/api/teacher-diagnostic-assignments', {
+    classId, studentIds: [pupil.studentId], taskIds: ['sub-through-zero-001'], titleSv: 'Beräknad modell' })
+  expect(created.status).toBe(201)
+  await login(page, pupil)
+  await page.getByRole('button', { name: 'Beräknad modell', exact: true }).click()
+  await page.getByRole('textbox', { name: 'Mitt svar', exact: true }).tap()
+  // 402 − 178 answered 376 matches larger-minus-smaller per column, once.
   for (const digit of '376') await page.getByRole('button', { name: `Skriv ${digit}`, exact: true }).tap()
   await expect(page.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
   await page.goto(`/teacher/student/${pupil.studentId}`)
@@ -115,16 +149,6 @@ test('A single computed model stays insufficient and the report still shows the 
   await expect(panel.getByRole('status')).toContainText('inlästa')
   await panel.getByLabel('Underlag', { exact: true }).selectOption('screening')
   await panel.getByRole('button', { name: 'Skapa granskningsunderlag', exact: true }).click()
-  // 600 − 376 = 376 matches the computed smaller-minus-larger model once; one answer is not enough evidence.
   await expect(panel).toContainText('Beräknad felmodell · Otillräckligt underlag')
-  await panel.getByRole('button', { name: 'Spara rapportversion', exact: true }).click()
-  await panel.getByText('Svar från periodens början, högst 20 (1)', { exact: true }).click()
-  await panel.getByRole('button', { name: /^Visa svar 1:/ }).click()
-  await expect(panel.getByRole('region', { name: 'Rapportens källsvar', exact: true })).toContainText('Elevens svar: 376 · Facit: 224')
-  await panel.getByRole('button', { name: 'Visa sparat räknehäfte', exact: true }).click()
-  const original = panel.getByRole('region', { name: 'Elevens inmatningsförlopp', exact: true })
-  await expect(original).toBeVisible()
-  expect(await original.locator('.diagnostic-grid').evaluate(grid => getComputedStyle(grid).display)).toBe('grid')
-  await expect(original.locator('.diagnostic-cell').first()).toContainText('4')
-  await panel.screenshot({ path: testInfo.outputPath('analysis-notebook-original.png') })
+  await expect(panel).not.toContainText('Otillräckligt underlag för en felhypotes')
 })

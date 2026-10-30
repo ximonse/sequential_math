@@ -1,13 +1,27 @@
 /**
  * Gemensamma feltesther som kan träffa vilket räknesätt som helst.
  * Varje funktion testar om ett specifikt felmönster förklarar elevens svar.
- * Jämförelsetröskel 0.5 täcker heltalssvar med avrundning.
+ * Jämförelsen är exakt. Undantag: ett heltal mot ett icke-heltal godtas inom
+ * 0.5, så att ett avrundat heltalssvar fortfarande kan matcha.
  */
 
-const SNAP = 0.5
+const ROUNDING_SNAP = 0.5
+
+export function nearExact(value, target) {
+  return Math.abs(value - target) <= 1e-9 * Math.max(1, Math.abs(target))
+}
 
 export function near(value, target) {
-  return Math.abs(value - target) < SNAP
+  if (Number.isInteger(value) && !Number.isInteger(target)) return Math.abs(value - target) < ROUNDING_SNAP
+  return nearExact(value, target)
+}
+
+export const PLACE_VALUE_FACTORS = [10, 100, 0.1, 0.01]
+
+// Exact scaling only: 850 for 85 is a place-value shift, 830 is not.
+export function isPlaceValueScaling(correct, answer) {
+  if (correct === 0 || answer === 0) return false
+  return PLACE_VALUE_FACTORS.some(factor => nearExact(answer, correct * factor))
 }
 
 /**
@@ -26,9 +40,7 @@ export function testDigitReversal(correct, answer) {
  * Signal: eleven behöver tiopotenser och talvärde.
  */
 export function testPlaceValueShift(correct, answer) {
-  if (correct === 0 || answer === 0) return false
-  const ratio = answer / correct
-  return near(ratio, 10) || near(ratio, 0.1) || near(ratio, 100) || near(ratio, 0.01)
+  return isPlaceValueScaling(correct, answer)
 }
 
 /**

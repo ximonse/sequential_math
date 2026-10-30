@@ -42,6 +42,7 @@ export function testCarryDouble(correct, carryCount, answer) {
  * Ex: 38+47=85, eleven svarar 5 (85%10=5).
  */
 export function testOnesDigitOnly(correct, answer) {
+  if (!Number.isInteger(correct) || correct < 10) return null
   const wrong = correct % 10
   if (wrong === correct || !near(answer, wrong)) return null
   return {

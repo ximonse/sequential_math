@@ -114,6 +114,35 @@ modell med otillräckligt underlag (ett svar), inte som elevens metod.
 Modellerna är byggda och syntetiskt testade, inte granskade mot verkliga
 elevsvar eller godkända för automatisk diagnostik.
 
+## Tredje genomförande: skärpt befintlig felanalys i elevappen
+
+Simon beslutade 2026-10-30 att elevappens befintliga felanalys
+(`src/domains/arithmetic/analyzeError.js`) ska bli mer träffsäker. Ändringen
+gäller nya svar; sparade etiketter skrivs inte om. Kategorin ouppmärksamhet
+påverkar mastery och svårighet, så heltalsbeteendet är oförändrat.
+
+- Platsvärdesfel kräver exakt skalning (×10, ×100, ×0,1, ×0,01), inte en
+  kvot mellan 9,5 och 10,5.
+- Decimaluppgifter jämförs exakt. Avrundningsmarginalen 0,5 gäller bara
+  heltalsuppgifter med icke-heltaligt facit, till exempel division.
+- Kolumnmodeller (minnessiffra, växling, större minus mindre) körs på
+  platsjusterade decimalkolumner och aldrig på negativa kolumnfall.
+- Behov av minne/växling räknas ur talen; saknad metadata hoppar inte längre
+  över modellen. Heltalsmodeller (tabellgranne, bara ental) gäller bara heltal.
+
+| Uppgift och svar | Före | Efter |
+|---|---|---|
+| 52 − 38, svar 26, utan metadata | beräkningsfel | större minus mindre |
+| 47 + 35, svar 72, utan metadata | beräkningsfel | minnessiffra glömd |
+| 40 + 45, svar 830 | platsvärdesfel | beräkningsfel |
+| 3 × 4, svar 118 | platsvärdesfel | beräkningsfel |
+| 6,27 − 5,84, svar 12 | fel räknesätt (ouppmärksamhet) | beräkningsfel |
+| 3,48 + 2,67, svar 5,05 | beräkningsfel | minnessiffra glömd |
+| 6,42 − 2,17, svar 4,35 | beräkningsfel | större minus mindre |
+| 7 × 8, svar 63 / 24 ÷ 6, svar 6 | tabellgranne / delaren | oförändrat |
+
+Kvar: analysen väljer fortfarande första träff och visar inte överlapp.
+
 ## Gräns för denna leverans och nästa steg
 
 Verifierat lokalt: 195 testfiler/1019 tester passerar, inklusive 13

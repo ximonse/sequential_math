@@ -10,9 +10,11 @@
  */
 
 import { evaluateArithmeticProblem } from './evaluate'
+import { countBorrows, countCarries } from '../../lib/problemGeneratorMathHelpers'
 import {
   getSwapAnswer,
   near,
+  nearExact,
   testDigitReversal,
   testPlaceValueShift
 } from './errorHypotheses/commonHypotheses'
@@ -48,11 +50,34 @@ function extractValues(problem) {
   }
 }
 
-function analyzeAddition(a, b, correct, answer, carryCount) {
+function decimalPlaces(value) {
+  const text = String(value)
+  if (/e/i.test(text)) return Infinity
+  return text.split('.')[1]?.length ?? 0
+}
+
+// Column models work on place-aligned, non-negative digits. Decimals are scaled
+// to whole columns (3,48 + 2,67 → 348 + 267) and the prediction scaled back.
+function columnFrame(type, a, b, correct, answer, carryCount, borrowCount) {
+  if (a < 0 || b < 0 || (type === 'subtraction' && a < b)) return null
+  const places = Math.max(decimalPlaces(a), decimalPlaces(b))
+  if (places > 3) return null
+  const scale = 10 ** places
+  return {
+    scale,
+    a: Math.round(a * scale), b: Math.round(b * scale),
+    correct: Math.round(correct * scale), answer: answer * scale,
+    // Count from the operands instead of relying on optional problem metadata.
+    carryCount: type === 'addition' ? countCarries(a, b) : carryCount,
+    borrowCount: type === 'subtraction' ? countBorrows(a, b) : borrowCount
+  }
+}
+
+function analyzeAddition(a, b, correct, answer, carryCount, scale) {
   return (
     testCarryForget(a, b, correct, carryCount, answer) ||
     testCarryDouble(correct, carryCount, answer) ||
-    testOnesDigitOnly(correct, answer)
+    (scale === 1 ? testOnesDigitOnly(correct, answer) : null)
   )
 }
 
@@ -100,8 +125,10 @@ export function analyzeArithmeticError(problem, studentAnswer) {
   }
 
   // 1. Fel räknesätt tillämpat (ouppmärksamhet)
+  // Rounding tolerance is for integer tasks with a non-integer quotient, not decimal operands.
+  const matches = Number.isInteger(a) && Number.isInteger(b) ? near : nearExact
   const swapAnswer = getSwapAnswer(type, a, b)
-  if (swapAnswer !== null && !near(swapAnswer, correct) && near(answer, swapAnswer)) {
+  if (swapAnswer !== null && !matches(swapAnswer, correct) && matches(answer, swapAnswer)) {
     return {
       category: 'inattention',
       patterns: ['operation_swap'],
@@ -128,9 +155,12 @@ export function analyzeArithmeticError(problem, studentAnswer) {
   }
 
   // 4. Räknesättsspecifik analys
+  const column = ['addition', 'subtraction'].includes(type)
+    ? columnFrame(type, a, b, correct, answer, carryCount, borrowCount)
+    : null
   const operationResult =
-    type === 'addition'       ? analyzeAddition(a, b, correct, answer, carryCount) :
-    type === 'subtraction'    ? analyzeSubtraction(a, b, correct, answer, borrowCount) :
+    type === 'addition'       ? column && analyzeAddition(column.a, column.b, column.correct, column.answer, column.carryCount, column.scale) :
+    type === 'subtraction'    ? column && analyzeSubtraction(column.a, column.b, column.correct, column.answer, column.borrowCount) :
     type === 'multiplication' ? analyzeMultiplication(a, b, correct, answer) :
     type === 'division'       ? analyzeDivision(a, b, correct, answer) :
     null

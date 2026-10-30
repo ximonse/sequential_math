@@ -16,56 +16,56 @@
     {
       "id": "arithmetic",
       "state": "partial-models",
-      "nextSv": "Återanvänd kandidatberäkningar; pröva tillämpningsområde, skalningstolerans, minnessiffrors position och överlapp.",
-      "limitsSv": "Första träff väljs i befintlig analys. borrowCount/carryCount kan saknas; platsvärdets kvottolerans är för bred för kausal tolkning.",
+      "nextSv": "Pröva mot granskade verkliga felsvar; redovisa överlapp i stället för första träff och pröva minnessiffrors position.",
+      "limitsSv": "Första träff väljs i befintlig analys. Skärpt 2026-10-30: exakt platsvärdesskalning, exakt jämförelse för decimaluppgifter, kolumnmodeller i platsjusterade decimalkolumner och växling/minne räknat ur talen.",
       "signals": [
         {
           "file": "src/domains/arithmetic/analyzeError.js",
           "signal": "place_value_error",
           "kind": "candidate",
-          "sourceSha256": "966b491375696a05dca14d71fb502e151c0c83fdf447f98ceb38047603ca16d8",
+          "sourceSha256": "c2079cf46cd672076b6e0b4e50b7dda01153cab715f73e697cb68cd236d30650",
           "readiness": "needs-scope-and-precision-tests"
         },
         {
           "file": "src/domains/arithmetic/analyzeError.js",
           "signal": "calculation_error",
           "kind": "generic",
-          "sourceSha256": "966b491375696a05dca14d71fb502e151c0c83fdf447f98ceb38047603ca16d8",
+          "sourceSha256": "c2079cf46cd672076b6e0b4e50b7dda01153cab715f73e697cb68cd236d30650",
           "readiness": "not-a-specific-method-detector"
         },
         {
           "file": "src/domains/arithmetic/analyzeError.js",
           "signal": "operation_swap",
           "kind": "candidate",
-          "sourceSha256": "966b491375696a05dca14d71fb502e151c0c83fdf447f98ceb38047603ca16d8",
+          "sourceSha256": "c2079cf46cd672076b6e0b4e50b7dda01153cab715f73e697cb68cd236d30650",
           "readiness": "needs-scope-and-precision-tests"
         },
         {
           "file": "src/domains/arithmetic/analyzeError.js",
           "signal": "digit_reversal",
           "kind": "candidate",
-          "sourceSha256": "966b491375696a05dca14d71fb502e151c0c83fdf447f98ceb38047603ca16d8",
+          "sourceSha256": "c2079cf46cd672076b6e0b4e50b7dda01153cab715f73e697cb68cd236d30650",
           "readiness": "needs-scope-and-precision-tests"
         },
         {
           "file": "src/domains/arithmetic/errorHypotheses/additionHypotheses.js",
           "signal": "carry_forget",
           "kind": "candidate",
-          "sourceSha256": "f21a636e0216ba69a54cb2e01a6a54489d18a7ac0670dc9cd18380310f3b0fdc",
+          "sourceSha256": "fbf018731bac14db31aae9f7ec04ed80a855600c9999a194d53aea403e929987",
           "readiness": "needs-scope-and-precision-tests"
         },
         {
           "file": "src/domains/arithmetic/errorHypotheses/additionHypotheses.js",
           "signal": "carry_double",
           "kind": "candidate",
-          "sourceSha256": "f21a636e0216ba69a54cb2e01a6a54489d18a7ac0670dc9cd18380310f3b0fdc",
+          "sourceSha256": "fbf018731bac14db31aae9f7ec04ed80a855600c9999a194d53aea403e929987",
           "readiness": "needs-scope-and-precision-tests"
         },
         {
           "file": "src/domains/arithmetic/errorHypotheses/additionHypotheses.js",
           "signal": "ones_digit_only",
           "kind": "candidate",
-          "sourceSha256": "f21a636e0216ba69a54cb2e01a6a54489d18a7ac0670dc9cd18380310f3b0fdc",
+          "sourceSha256": "fbf018731bac14db31aae9f7ec04ed80a855600c9999a194d53aea403e929987",
           "readiness": "needs-scope-and-precision-tests"
         },
         {
@@ -86,14 +86,14 @@
           "file": "src/domains/arithmetic/errorHypotheses/multiplicationHypotheses.js",
           "signal": "table_off_by_one",
           "kind": "candidate",
-          "sourceSha256": "980f10ab18e945472f88da93bf38884b7ef3b000457e922a7738005c31a477be",
+          "sourceSha256": "6e6d3c159826765d645c0a9dddcb96b0fd25fd95c3bce679b317246ed7e2e9a6",
           "readiness": "needs-scope-and-precision-tests"
         },
         {
           "file": "src/domains/arithmetic/errorHypotheses/multiplicationHypotheses.js",
           "signal": "ones_digits_only",
           "kind": "candidate",
-          "sourceSha256": "980f10ab18e945472f88da93bf38884b7ef3b000457e922a7738005c31a477be",
+          "sourceSha256": "6e6d3c159826765d645c0a9dddcb96b0fd25fd95c3bce679b317246ed7e2e9a6",
           "readiness": "needs-scope-and-precision-tests"
         },
         {

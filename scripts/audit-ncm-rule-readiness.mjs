@@ -17,8 +17,8 @@ const classes = {
     'simplify_error', 'number_bond_not_recalled', 'double_not_recalled'],
 }
 const domains = [
-  { id: 'arithmetic', state: 'partial-models', nextSv: 'Återanvänd kandidatberäkningar; pröva tillämpningsområde, skalningstolerans, minnessiffrors position och överlapp.',
-    limitsSv: 'Första träff väljs i befintlig analys. borrowCount/carryCount kan saknas; platsvärdets kvottolerans är för bred för kausal tolkning.' },
+  { id: 'arithmetic', state: 'partial-models', nextSv: 'Pröva mot granskade verkliga felsvar; redovisa överlapp i stället för första träff och pröva minnessiffrors position.',
+    limitsSv: 'Första träff väljs i befintlig analys. Skärpt 2026-10-30: exakt platsvärdesskalning, exakt jämförelse för decimaluppgifter, kolumnmodeller i platsjusterade decimalkolumner och växling/minne räknat ur talen.' },
   { id: 'fractions', state: 'property-checks-only', nextSv: 'Bygg särskiljande modeller för bråkkomponenter, storleksjämförelse och likvärdighet mot G4/B1/B7 och RB-områdena.',
     limitsSv: 'wrong_denominator är nämnaravvikelse, inte belägg för en specifik bråkuppfattning. Offlinejämförelsen är ännu separat.' },
   { id: 'percentage', state: 'generic-label-only', nextSv: 'Specificera modellberäkningar för andel/helhet, procentenheter och successiva ändringar enligt B4–B6; pröva strukturerade uppgifter.',

@@ -3,7 +3,7 @@
  * Returnerar ett ErrorAnalysis-objekt vid träff, annars null.
  */
 
-import { near } from './commonHypotheses'
+import { isPlaceValueScaling, near } from './commonHypotheses'
 
 /**
  * Eleven svarar på ett angränsande tabellvärde: a×(b±1) eller (a±1)×b.
@@ -11,6 +11,7 @@ import { near } from './commonHypotheses'
  * Signal: tabellkunskap finns men är inexakt — specifik faktadrillning hjälper.
  */
 export function testTableOffByOne(a, b, correct, answer) {
+  if (!Number.isInteger(a) || !Number.isInteger(b)) return null
   const neighbors = [
     a * (b - 1),
     a * (b + 1),
@@ -34,6 +35,7 @@ export function testTableOffByOne(a, b, correct, answer) {
  * Ex: 23×4: eleven räknar 3×4=12 och svarar 12 istf 92.
  */
 export function testOnesDigitsOnly(a, b, correct, answer) {
+  if (!Number.isInteger(a) || !Number.isInteger(b)) return null
   const wrong = (Math.round(a) % 10) * (Math.round(b) % 10)
   if (near(wrong, correct) || !near(answer, wrong)) return null
   return {
@@ -50,12 +52,5 @@ export function testOnesDigitsOnly(a, b, correct, answer) {
  * Testas via place_value_error i commonHypotheses — signaleras här som misconception.
  */
 export function testPlaceValueMisconception(correct, answer) {
-  if (correct === 0 || answer === 0) return false
-  const ratio = answer / correct
-  return (
-    Math.abs(ratio - 10) < 0.5 ||
-    Math.abs(ratio - 0.1) < 0.005 ||
-    Math.abs(ratio - 100) < 0.5 ||
-    Math.abs(ratio - 0.01) < 0.00005
-  )
+  return isPlaceValueScaling(correct, answer)
 }

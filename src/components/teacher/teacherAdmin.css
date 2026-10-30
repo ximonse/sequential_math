@@ -64,12 +64,13 @@ body[class*="theme-"] [data-teacher-admin] .teacher-ticket-module {
 [data-teacher-admin] .teacher-ticket-panel > button > span { border-radius: 5px; padding: 4px 9px; box-shadow: none; }
 
 /* Standard form controls share the screening geometry. Fixed-size icon
-   controls and data visualisation buttons retain their own hit areas. */
-body[class*="theme-"] [data-teacher-admin] :is(button.rounded, button.rounded-md, button.rounded-lg, button.rounded-xl, .focus-action, .focus-view-picker button):not(.h-6):not(.w-6):not([role=tab]):not(nav button):not(.teacher-dashboard-header button):not([data-teacher-workspace="progress"] table button) {
+   controls and data visualisation buttons (Progress tables, screening answer
+   cells) retain their own hit areas and evidence colours. */
+body[class*="theme-"] [data-teacher-admin] :is(button.rounded, button.rounded-md, button.rounded-lg, button.rounded-xl, .focus-action, .focus-view-picker button):not(.h-6):not(.w-6):not([role=tab]):not(nav button):not(.teacher-dashboard-header button):not([data-teacher-workspace="progress"] table button):not([class*="screening-answer--"]) {
   font: inherit; line-height: 1.4; border: 1px solid var(--border);
   border-radius: 5px; padding: 4px 9px; background: var(--surface); color: var(--text-main);
 }
-body[class*="theme-"] [data-teacher-admin] :is(button.rounded, button.rounded-md, button.rounded-lg, .focus-action):hover:not(:disabled):not(nav button):not(.teacher-dashboard-header button):not([data-teacher-workspace="progress"] table button) {
+body[class*="theme-"] [data-teacher-admin] :is(button.rounded, button.rounded-md, button.rounded-lg, .focus-action):hover:not(:disabled):not(nav button):not(.teacher-dashboard-header button):not([data-teacher-workspace="progress"] table button):not([class*="screening-answer--"]) {
   background: var(--surface-soft); border-color: var(--accent);
 }
 body[class*="theme-"] [data-teacher-admin] button:is(.bg-indigo-600, .bg-blue-600, .bg-green-600, .bg-emerald-600, .teacher-admin-primary) {

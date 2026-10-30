@@ -1,5 +1,5 @@
 {
-  "ruleVersion": "synthetic-investigation-v1",
+  "ruleVersion": "synthetic-investigation-v2",
   "limitations": [
     "Simulated reviewer and teaching notes",
     "No automatic handwriting or method interpretation",
@@ -46,7 +46,7 @@
             ]
           },
           "decision": {
-            "ruleVersion": "synthetic-investigation-v1",
+            "ruleVersion": "synthetic-investigation-v2",
             "scope": "single_exchange",
             "coverageIds": [
               "M02",
@@ -63,7 +63,7 @@
               "synthetic-source-1"
             ],
             "diagnosticDecision": {
-              "ruleVersion": "synthetic-as2-v1",
+              "ruleVersion": "synthetic-as2-v2",
               "scope": "single_exchange",
               "coverageIds": [
                 "M02",
@@ -78,6 +78,84 @@
               ],
               "supportIds": [],
               "ignored": [],
+              "modelEvidence": [
+                {
+                  "evidenceId": "synthetic-source-0",
+                  "taskId": "sub-exchange-001",
+                  "sourceRef": "synthetic-source-0",
+                  "snapshotRevision": null,
+                  "ruleVersion": "subtraction-candidates-v1",
+                  "coverageIds": [
+                    "M02"
+                  ],
+                  "ncmArea": "AS2",
+                  "limitation": "answer_model_match_not_proof_of_method",
+                  "predictions": [
+                    {
+                      "modelId": "smaller_minus_larger",
+                      "predictedAnswer": 435,
+                      "reasonSv": "Svaret kan produceras av större siffra minus mindre i varje kolumn.",
+                      "representation": null
+                    },
+                    {
+                      "modelId": "borrow_forget",
+                      "predictedAnswer": 430,
+                      "reasonSv": "Svaret kan produceras genom noll i kolumner där växling behövs.",
+                      "representation": null
+                    }
+                  ],
+                  "matches": [
+                    {
+                      "modelId": "smaller_minus_larger",
+                      "predictedAnswer": 435,
+                      "reasonSv": "Svaret kan produceras av större siffra minus mindre i varje kolumn.",
+                      "representation": null
+                    }
+                  ],
+                  "correct": 425,
+                  "answer": 435,
+                  "delta": 10,
+                  "status": "matched"
+                },
+                {
+                  "evidenceId": "synthetic-source-1",
+                  "taskId": "sub-exchange-002",
+                  "sourceRef": "synthetic-source-1",
+                  "snapshotRevision": null,
+                  "ruleVersion": "subtraction-candidates-v1",
+                  "coverageIds": [
+                    "M02"
+                  ],
+                  "ncmArea": "AS2",
+                  "limitation": "answer_model_match_not_proof_of_method",
+                  "predictions": [
+                    {
+                      "modelId": "smaller_minus_larger",
+                      "predictedAnswer": 335,
+                      "reasonSv": "Svaret kan produceras av större siffra minus mindre i varje kolumn.",
+                      "representation": null
+                    },
+                    {
+                      "modelId": "borrow_forget",
+                      "predictedAnswer": 330,
+                      "reasonSv": "Svaret kan produceras genom noll i kolumner där växling behövs.",
+                      "representation": null
+                    }
+                  ],
+                  "matches": [
+                    {
+                      "modelId": "smaller_minus_larger",
+                      "predictedAnswer": 335,
+                      "reasonSv": "Svaret kan produceras av större siffra minus mindre i varje kolumn.",
+                      "representation": null
+                    }
+                  ],
+                  "correct": 325,
+                  "answer": 335,
+                  "delta": 10,
+                  "status": "matched"
+                }
+              ],
               "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
               "action": "ask",
               "task": {
@@ -154,7 +232,7 @@
             }
           },
           "decision": {
-            "ruleVersion": "synthetic-investigation-v1",
+            "ruleVersion": "synthetic-investigation-v2",
             "scope": "single_exchange",
             "coverageIds": [
               "M02",
@@ -236,7 +314,7 @@
             ]
           },
           "decision": {
-            "ruleVersion": "synthetic-investigation-v1",
+            "ruleVersion": "synthetic-investigation-v2",
             "scope": "single_exchange",
             "coverageIds": [
               "M02",
@@ -347,7 +425,7 @@
             ]
           },
           "decision": {
-            "ruleVersion": "synthetic-investigation-v1",
+            "ruleVersion": "synthetic-investigation-v2",
             "scope": "single_exchange",
             "coverageIds": [
               "M02",
@@ -475,7 +553,7 @@
             ]
           },
           "decision": {
-            "ruleVersion": "synthetic-investigation-v1",
+            "ruleVersion": "synthetic-investigation-v2",
             "scope": "single_exchange",
             "coverageIds": [
               "M02",
@@ -620,7 +698,7 @@
             ]
           },
           "decision": {
-            "ruleVersion": "synthetic-investigation-v1",
+            "ruleVersion": "synthetic-investigation-v2",
             "scope": "single_exchange",
             "coverageIds": [
               "M02",
@@ -782,11 +860,919 @@
             ]
           },
           "decision": {
-            "ruleVersion": "synthetic-investigation-v1",
+            "ruleVersion": "synthetic-investigation-v2",
             "scope": "single_exchange",
             "coverageIds": [
               "M02",
               "N2"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "closed",
+            "action": "stop",
+            "reasonCode": "supported_in_tested_scope",
+            "reasonSv": "Stabil självständig förståelse i prövade situationer, även vid senare uppföljning. Inget besked om oprövade delmoment eller permanent borttagen felförståelse.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1",
+              "synthetic-control-0",
+              "synthetic-control-1",
+              "synthetic-control-2",
+              "synthetic-control-3"
+            ],
+            "reviewId": "synthetic-review",
+            "teachingId": "synthetic-teaching",
+            "controlIds": [
+              "synthetic-control-0",
+              "synthetic-control-1",
+              "synthetic-control-2",
+              "synthetic-control-3"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "scope": "through_zero",
+      "synthetic": true,
+      "trace": [
+        {
+          "input": {
+            "scope": "through_zero",
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "sub-through-zero-001",
+                "answer": 324,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "sub-through-zero-002",
+                "answer": 336,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v2",
+            "scope": "through_zero",
+            "coverageIds": [
+              "M02"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "review",
+            "action": "stop",
+            "reasonCode": "zero_exchange_model_review",
+            "reasonSv": "Två olika frågor ger matchande växlingskandidater. Granska originalstegen och alternativa förklaringar före undervisningsbeslut.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1"
+            ],
+            "diagnosticDecision": {
+              "ruleVersion": "synthetic-as2-v2",
+              "scope": "through_zero",
+              "coverageIds": [
+                "M02",
+                "N2"
+              ],
+              "evidenceClass": "diagnostic_only",
+              "usedNewQuestions": 2,
+              "maxNewQuestions": 5,
+              "evidenceIds": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "supportIds": [],
+              "ignored": [],
+              "modelEvidence": [
+                {
+                  "evidenceId": "synthetic-source-0",
+                  "taskId": "sub-through-zero-001",
+                  "sourceRef": "synthetic-source-0",
+                  "snapshotRevision": null,
+                  "ruleVersion": "subtraction-candidates-v1",
+                  "coverageIds": [
+                    "M02"
+                  ],
+                  "ncmArea": "AS2",
+                  "limitation": "answer_model_match_not_proof_of_method",
+                  "predictions": [
+                    {
+                      "modelId": "smaller_minus_larger",
+                      "predictedAnswer": 376,
+                      "reasonSv": "Svaret kan produceras av större siffra minus mindre i varje kolumn.",
+                      "representation": null
+                    },
+                    {
+                      "modelId": "borrow_forget",
+                      "predictedAnswer": 300,
+                      "reasonSv": "Svaret kan produceras genom noll i kolumner där växling behövs.",
+                      "representation": null
+                    },
+                    {
+                      "modelId": "zero_donor_not_decremented",
+                      "predictedAnswer": 324,
+                      "reasonSv": "Svaret matchar en växlingskedja där det givande hundratalet inte minskas.",
+                      "representation": {
+                        "hundreds": 4,
+                        "tens": 9,
+                        "units": 12
+                      }
+                    },
+                    {
+                      "modelId": "zero_intermediate_ten",
+                      "predictedAnswer": 234,
+                      "reasonSv": "Svaret matchar att tio tiotal behålls efter att ett har växlats till ental.",
+                      "representation": {
+                        "hundreds": 3,
+                        "tens": 10,
+                        "units": 12
+                      }
+                    }
+                  ],
+                  "matches": [
+                    {
+                      "modelId": "zero_donor_not_decremented",
+                      "predictedAnswer": 324,
+                      "reasonSv": "Svaret matchar en växlingskedja där det givande hundratalet inte minskas.",
+                      "representation": {
+                        "hundreds": 4,
+                        "tens": 9,
+                        "units": 12
+                      }
+                    }
+                  ],
+                  "correct": 224,
+                  "answer": 324,
+                  "delta": 100,
+                  "status": "matched"
+                },
+                {
+                  "evidenceId": "synthetic-source-1",
+                  "taskId": "sub-through-zero-002",
+                  "sourceRef": "synthetic-source-1",
+                  "snapshotRevision": null,
+                  "ruleVersion": "subtraction-candidates-v1",
+                  "coverageIds": [
+                    "M02"
+                  ],
+                  "ncmArea": "AS2",
+                  "limitation": "answer_model_match_not_proof_of_method",
+                  "predictions": [
+                    {
+                      "modelId": "smaller_minus_larger",
+                      "predictedAnswer": 364,
+                      "reasonSv": "Svaret kan produceras av större siffra minus mindre i varje kolumn.",
+                      "representation": null
+                    },
+                    {
+                      "modelId": "borrow_forget",
+                      "predictedAnswer": 300,
+                      "reasonSv": "Svaret kan produceras genom noll i kolumner där växling behövs.",
+                      "representation": null
+                    },
+                    {
+                      "modelId": "zero_donor_not_decremented",
+                      "predictedAnswer": 336,
+                      "reasonSv": "Svaret matchar en växlingskedja där det givande hundratalet inte minskas.",
+                      "representation": {
+                        "hundreds": 5,
+                        "tens": 9,
+                        "units": 13
+                      }
+                    },
+                    {
+                      "modelId": "zero_intermediate_ten",
+                      "predictedAnswer": 246,
+                      "reasonSv": "Svaret matchar att tio tiotal behålls efter att ett har växlats till ental.",
+                      "representation": {
+                        "hundreds": 4,
+                        "tens": 10,
+                        "units": 13
+                      }
+                    }
+                  ],
+                  "matches": [
+                    {
+                      "modelId": "zero_donor_not_decremented",
+                      "predictedAnswer": 336,
+                      "reasonSv": "Svaret matchar en växlingskedja där det givande hundratalet inte minskas.",
+                      "representation": {
+                        "hundreds": 5,
+                        "tens": 9,
+                        "units": 13
+                      }
+                    }
+                  ],
+                  "correct": 236,
+                  "answer": 336,
+                  "delta": 100,
+                  "status": "matched"
+                }
+              ],
+              "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+              "action": "stop",
+              "outcome": "needs_review",
+              "reasonCode": "zero_exchange_model_review",
+              "reasonSv": "Två olika frågor ger matchande växlingskandidater. Granska originalstegen och alternativa förklaringar före undervisningsbeslut."
+            }
+          }
+        },
+        {
+          "input": {
+            "scope": "through_zero",
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "sub-through-zero-001",
+                "answer": 324,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "sub-through-zero-002",
+                "answer": 336,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              }
+            ],
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "zero_donor_not_decremented",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            }
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v2",
+            "scope": "through_zero",
+            "coverageIds": [
+              "M02"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "teaching",
+            "action": "propose_teaching",
+            "reasonCode": "reviewed_learning_need",
+            "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1"
+            ],
+            "goalSv": "Bevara talvärdet genom hela växlingen från hundratal via tiotal till ental.",
+            "instructionSv": "Knyt 402 = 300 + 100 + 2 = 300 + 90 + 12 till uppställningen. Eleven förklarar var tiotal och ental kommer ifrån.",
+            "reviewId": "synthetic-review"
+          }
+        },
+        {
+          "input": {
+            "scope": "through_zero",
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "zero_donor_not_decremented",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            },
+            "teaching": {
+              "id": "synthetic-teaching",
+              "reviewId": "synthetic-review",
+              "sessionId": "lesson-a",
+              "completedAt": 100,
+              "goalSv": "Bevara talvärdet genom hela växlingen från hundratal via tiotal till ental.",
+              "usedTaskIds": [
+                "synthetic-teaching-example"
+              ],
+              "saved": true
+            },
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "sub-through-zero-001",
+                "answer": 324,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "sub-through-zero-002",
+                "answer": 336,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v2",
+            "scope": "through_zero",
+            "coverageIds": [
+              "M02"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "independent",
+            "action": "ask",
+            "reasonCode": "check_without_help",
+            "reasonSv": "Pröva samma delmoment med nya tal utan hjälp; träningsframgång räcker inte.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1"
+            ],
+            "task": {
+              "id": "check-zero-a",
+              "phase": "independent",
+              "prompt": "804 − 376",
+              "operands": [
+                804,
+                376
+              ],
+              "answer": 428,
+              "context": "calculation",
+              "discriminates": [
+                "zero_donor_not_decremented",
+                "zero_intermediate_ten"
+              ]
+            },
+            "purposeSv": "Pröva samma delmoment med nya tal utan hjälp; träningsframgång räcker inte."
+          }
+        },
+        {
+          "input": {
+            "scope": "through_zero",
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "zero_donor_not_decremented",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            },
+            "teaching": {
+              "id": "synthetic-teaching",
+              "reviewId": "synthetic-review",
+              "sessionId": "lesson-a",
+              "completedAt": 100,
+              "goalSv": "Bevara talvärdet genom hela växlingen från hundratal via tiotal till ental.",
+              "usedTaskIds": [
+                "synthetic-teaching-example"
+              ],
+              "saved": true
+            },
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "sub-through-zero-001",
+                "answer": 324,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "sub-through-zero-002",
+                "answer": 336,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-control-0",
+                "taskId": "check-zero-a",
+                "phase": "independent",
+                "answer": 428,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-0",
+                  "snapshotRevision": "synthetic-control-revision-0"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 110
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v2",
+            "scope": "through_zero",
+            "coverageIds": [
+              "M02"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "independent",
+            "action": "ask",
+            "reasonCode": "check_without_help",
+            "reasonSv": "Pröva samma delmoment med nya tal utan hjälp; träningsframgång räcker inte.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1",
+              "synthetic-control-0"
+            ],
+            "task": {
+              "id": "check-zero-b",
+              "phase": "independent",
+              "prompt": "906 − 458",
+              "operands": [
+                906,
+                458
+              ],
+              "answer": 448,
+              "context": "calculation",
+              "discriminates": [
+                "zero_donor_not_decremented",
+                "zero_intermediate_ten"
+              ]
+            },
+            "purposeSv": "Pröva samma delmoment med nya tal utan hjälp; träningsframgång räcker inte."
+          }
+        },
+        {
+          "input": {
+            "scope": "through_zero",
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "zero_donor_not_decremented",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            },
+            "teaching": {
+              "id": "synthetic-teaching",
+              "reviewId": "synthetic-review",
+              "sessionId": "lesson-a",
+              "completedAt": 100,
+              "goalSv": "Bevara talvärdet genom hela växlingen från hundratal via tiotal till ental.",
+              "usedTaskIds": [
+                "synthetic-teaching-example"
+              ],
+              "saved": true
+            },
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "sub-through-zero-001",
+                "answer": 324,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "sub-through-zero-002",
+                "answer": 336,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-control-0",
+                "taskId": "check-zero-a",
+                "phase": "independent",
+                "answer": 428,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-0",
+                  "snapshotRevision": "synthetic-control-revision-0"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 110
+              },
+              {
+                "id": "synthetic-control-1",
+                "taskId": "check-zero-b",
+                "phase": "independent",
+                "answer": 448,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-1",
+                  "snapshotRevision": "synthetic-control-revision-1"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 111
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v2",
+            "scope": "through_zero",
+            "coverageIds": [
+              "M02"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "followup",
+            "action": "ask",
+            "reasonCode": "followup_required",
+            "reasonSv": "Det fungerar självständigt nu. Pröva senare och i förändrat sammanhang innan aktiv utredning avslutas.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1",
+              "synthetic-control-0",
+              "synthetic-control-1"
+            ],
+            "task": {
+              "id": "later-zero-a",
+              "phase": "followup",
+              "prompt": "702 − 385",
+              "operands": [
+                702,
+                385
+              ],
+              "answer": 317,
+              "context": "calculation",
+              "discriminates": [
+                "zero_donor_not_decremented",
+                "zero_intermediate_ten"
+              ]
+            },
+            "purposeSv": "Det fungerar självständigt nu. Pröva senare och i förändrat sammanhang innan aktiv utredning avslutas."
+          }
+        },
+        {
+          "input": {
+            "scope": "through_zero",
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "zero_donor_not_decremented",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            },
+            "teaching": {
+              "id": "synthetic-teaching",
+              "reviewId": "synthetic-review",
+              "sessionId": "lesson-a",
+              "completedAt": 100,
+              "goalSv": "Bevara talvärdet genom hela växlingen från hundratal via tiotal till ental.",
+              "usedTaskIds": [
+                "synthetic-teaching-example"
+              ],
+              "saved": true
+            },
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "sub-through-zero-001",
+                "answer": 324,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "sub-through-zero-002",
+                "answer": 336,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-control-0",
+                "taskId": "check-zero-a",
+                "phase": "independent",
+                "answer": 428,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-0",
+                  "snapshotRevision": "synthetic-control-revision-0"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 110
+              },
+              {
+                "id": "synthetic-control-1",
+                "taskId": "check-zero-b",
+                "phase": "independent",
+                "answer": 448,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-1",
+                  "snapshotRevision": "synthetic-control-revision-1"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 111
+              },
+              {
+                "id": "synthetic-control-2",
+                "taskId": "later-zero-a",
+                "phase": "followup",
+                "answer": 317,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-2",
+                  "snapshotRevision": "synthetic-control-revision-2"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-b",
+                "observedAt": 202
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v2",
+            "scope": "through_zero",
+            "coverageIds": [
+              "M02"
+            ],
+            "evidenceClass": "diagnostic_only",
+            "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
+            "phase": "followup",
+            "action": "ask",
+            "reasonCode": "followup_required",
+            "reasonSv": "Det fungerar självständigt nu. Pröva senare och i förändrat sammanhang innan aktiv utredning avslutas.",
+            "evidenceIds": [
+              "synthetic-source-0",
+              "synthetic-source-1",
+              "synthetic-control-0",
+              "synthetic-control-1",
+              "synthetic-control-2"
+            ],
+            "task": {
+              "id": "later-zero-transfer",
+              "phase": "followup",
+              "prompt": "Du har 602 kr och betalar 275 kr. Hur mycket har du kvar?",
+              "operands": [
+                602,
+                275
+              ],
+              "answer": 327,
+              "context": "transfer",
+              "discriminates": [
+                "zero_donor_not_decremented",
+                "zero_intermediate_ten"
+              ]
+            },
+            "purposeSv": "Det fungerar självständigt nu. Pröva senare och i förändrat sammanhang innan aktiv utredning avslutas."
+          }
+        },
+        {
+          "input": {
+            "scope": "through_zero",
+            "review": {
+              "id": "synthetic-review",
+              "hypothesisId": "zero_donor_not_decremented",
+              "verdict": "supported",
+              "basedOn": [
+                "synthetic-source-0",
+                "synthetic-source-1"
+              ],
+              "reasonSv": "Konstruerad granskning: två felkontraster och förenligt synligt resonemang.",
+              "sourceRevisions": {
+                "synthetic-source-0": "synthetic-revision",
+                "synthetic-source-1": "synthetic-revision"
+              },
+              "alternativesSv": "Andra förklaringar behöver prövas vid motsägande arbete; inga slutsvar ger säker felorsak."
+            },
+            "teaching": {
+              "id": "synthetic-teaching",
+              "reviewId": "synthetic-review",
+              "sessionId": "lesson-a",
+              "completedAt": 100,
+              "goalSv": "Bevara talvärdet genom hela växlingen från hundratal via tiotal till ental.",
+              "usedTaskIds": [
+                "synthetic-teaching-example"
+              ],
+              "saved": true
+            },
+            "observations": [
+              {
+                "id": "synthetic-source-0",
+                "taskId": "sub-through-zero-001",
+                "answer": 324,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-0",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-source-1",
+                "taskId": "sub-through-zero-002",
+                "answer": 336,
+                "status": "answered",
+                "phase": "investigate",
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "source": {
+                  "ref": "synthetic-source-1",
+                  "snapshotRevision": "synthetic-revision"
+                }
+              },
+              {
+                "id": "synthetic-control-0",
+                "taskId": "check-zero-a",
+                "phase": "independent",
+                "answer": 428,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-0",
+                  "snapshotRevision": "synthetic-control-revision-0"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 110
+              },
+              {
+                "id": "synthetic-control-1",
+                "taskId": "check-zero-b",
+                "phase": "independent",
+                "answer": 448,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-1",
+                  "snapshotRevision": "synthetic-control-revision-1"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-a",
+                "observedAt": 111
+              },
+              {
+                "id": "synthetic-control-2",
+                "taskId": "later-zero-a",
+                "phase": "followup",
+                "answer": 317,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-2",
+                  "snapshotRevision": "synthetic-control-revision-2"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-b",
+                "observedAt": 202
+              },
+              {
+                "id": "synthetic-control-3",
+                "taskId": "later-zero-transfer",
+                "phase": "followup",
+                "answer": 327,
+                "status": "answered",
+                "source": {
+                  "ref": "synthetic-control-3",
+                  "snapshotRevision": "synthetic-control-revision-3"
+                },
+                "method": "consistent",
+                "assistance": "none",
+                "saved": true,
+                "sessionId": "lesson-b",
+                "observedAt": 203
+              }
+            ]
+          },
+          "decision": {
+            "ruleVersion": "synthetic-investigation-v2",
+            "scope": "through_zero",
+            "coverageIds": [
+              "M02"
             ],
             "evidenceClass": "diagnostic_only",
             "limitation": "Offline design rules; no validated diagnosis, app writes or permanent mastery claim.",
@@ -853,7 +1839,7 @@
             ]
           },
           "decision": {
-            "ruleVersion": "synthetic-investigation-v1",
+            "ruleVersion": "synthetic-investigation-v2",
             "scope": "fraction_comparison",
             "coverageIds": [
               "M14"
@@ -941,7 +1927,7 @@
             }
           },
           "decision": {
-            "ruleVersion": "synthetic-investigation-v1",
+            "ruleVersion": "synthetic-investigation-v2",
             "scope": "fraction_comparison",
             "coverageIds": [
               "M14"
@@ -1022,7 +2008,7 @@
             ]
           },
           "decision": {
-            "ruleVersion": "synthetic-investigation-v1",
+            "ruleVersion": "synthetic-investigation-v2",
             "scope": "fraction_comparison",
             "coverageIds": [
               "M14"
@@ -1137,7 +2123,7 @@
             ]
           },
           "decision": {
-            "ruleVersion": "synthetic-investigation-v1",
+            "ruleVersion": "synthetic-investigation-v2",
             "scope": "fraction_comparison",
             "coverageIds": [
               "M14"
@@ -1269,7 +2255,7 @@
             ]
           },
           "decision": {
-            "ruleVersion": "synthetic-investigation-v1",
+            "ruleVersion": "synthetic-investigation-v2",
             "scope": "fraction_comparison",
             "coverageIds": [
               "M14"
@@ -1418,7 +2404,7 @@
             ]
           },
           "decision": {
-            "ruleVersion": "synthetic-investigation-v1",
+            "ruleVersion": "synthetic-investigation-v2",
             "scope": "fraction_comparison",
             "coverageIds": [
               "M14"
@@ -1584,7 +2570,7 @@
             ]
           },
           "decision": {
-            "ruleVersion": "synthetic-investigation-v1",
+            "ruleVersion": "synthetic-investigation-v2",
             "scope": "fraction_comparison",
             "coverageIds": [
               "M14"

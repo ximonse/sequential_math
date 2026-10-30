@@ -21,10 +21,10 @@ function exportFixture() {
 }
 
 describe('offline didactic investigation contract', () => {
-  for (const scope of ['single_exchange', 'fraction_comparison']) {
+  for (const scope of ['single_exchange', 'through_zero', 'fraction_comparison']) {
     it(`${scope}: separates diagnosis, teaching, independent work and later transfer`, () => {
       const trace = investigationTrace(scope).map(decideInvestigation)
-      expect(trace.map(d => d.phase)).toEqual(['investigate', 'teaching', 'independent', 'independent', 'followup', 'followup', 'closed'])
+      expect(trace.map(d => d.phase)).toEqual([scope === 'through_zero' ? 'review' : 'investigate', 'teaching', 'independent', 'independent', 'followup', 'followup', 'closed'])
       expect(trace.at(-1).controlIds).toHaveLength(4)
       expect(trace.slice(0, -1).every(d => d.reasonCode !== 'supported_in_tested_scope')).toBe(true)
       for (const step of trace) {
@@ -40,7 +40,7 @@ describe('offline didactic investigation contract', () => {
       }
     })
     it(`${scope}: a wrong transfer answer reopens a question without asserting relapse`, () => {
-      const input = full(scope); input.observations.at(-1).answer = scope === 'single_exchange' ? 43 : 'right'
+      const input = full(scope); input.observations.at(-1).answer = scope === 'single_exchange' ? 43 : scope === 'through_zero' ? 427 : 'right'
       expect(decideInvestigation(input)).toMatchObject({ phase: 'review', reasonCode: 'reopen_question', requiresNewReview: true })
     })
     it(`${scope}: keeps the caller's observations and old source history unchanged`, () => {
@@ -50,7 +50,7 @@ describe('offline didactic investigation contract', () => {
     })
   }
   it('uses the existing subtraction selector rather than a second diagnostic engine', () => {
-    expect(decideInvestigation()).toMatchObject({ action: 'ask', task: { id: 'sub-no-exchange-001' }, diagnosticDecision: { ruleVersion: 'synthetic-as2-v1' } })
+    expect(decideInvestigation()).toMatchObject({ action: 'ask', task: { id: 'sub-no-exchange-001' }, diagnosticDecision: { ruleVersion: 'synthetic-as2-v2' } })
   })
   it('keeps reviewed history separate from the new-question budget and uses a new confirmation', () => {
     const item = investigationFixture().observations[0]

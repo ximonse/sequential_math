@@ -3,7 +3,7 @@
  * Returnerar ett ErrorAnalysis-objekt vid träff, annars null.
  */
 
-import { digitByDigitAbsDiff, near } from './commonHypotheses'
+import { digitByDigitAbsDiff, near } from './commonHypotheses.js'
 
 /**
  * MISSUPPFATTNING: eleven subtraherar alltid det mindre talet från det större,
@@ -31,6 +31,17 @@ export function testSmallerMinusLarger(a, b, correct, borrowCount, answer) {
  */
 export function testBorrowForget(a, b, correct, borrowCount, answer) {
   if (borrowCount === 0) return null
+  const wrong = predictNoBorrowAnswer(a, b)
+  if (near(wrong, correct) || !near(answer, wrong)) return null
+  return {
+    category: 'knowledge',
+    patterns: ['borrow_forget'],
+    detail: 'Skriver 0 när övre siffran är mindre — låning tillämpas inte.'
+  }
+}
+
+// Shared calculation; preserve the legacy detector's behaviour.
+export function predictNoBorrowAnswer(a, b) {
   let wrong = 0
   let pow = 1
   let ta = Math.round(a)
@@ -43,10 +54,5 @@ export function testBorrowForget(a, b, correct, borrowCount, answer) {
     tb = Math.floor(tb / 10)
     pow *= 10
   }
-  if (near(wrong, correct) || !near(answer, wrong)) return null
-  return {
-    category: 'knowledge',
-    patterns: ['borrow_forget'],
-    detail: 'Skriver 0 när övre siffran är mindre — låning tillämpas inte.'
-  }
+  return wrong
 }

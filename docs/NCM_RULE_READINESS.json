@@ -1,0 +1,1338 @@
+{
+  "schemaVersion": 1,
+  "kind": "rule-readiness-audit-not-runtime-catalogue",
+  "date": "2026-10-30",
+  "source": {
+    "path": "docs/NCM_DIDACTIC_COVERAGE.json",
+    "sha256": "1a693762db6611272607d7ea97eb2b51a2a0963d3d90a0f6faec5485ab824db7",
+    "ncmReference": {
+      "path": "docs/SCREENING_SELECTION_PRINCIPLES.md",
+      "gitCommit": "08a0101",
+      "sha256": "326f01d398fc82cd679403e29738db3f18552dcd451e55b1c3dc6c9e021ad121"
+    }
+  },
+  "interpretation": "A label or candidate is not a confirmed pupil method. No new source validation or app integration is asserted.",
+  "domains": [
+    {
+      "id": "arithmetic",
+      "state": "partial-models",
+      "nextSv": "Återanvänd kandidatberäkningar; pröva tillämpningsområde, skalningstolerans, minnessiffrors position och överlapp.",
+      "limitsSv": "Första träff väljs i befintlig analys. borrowCount/carryCount kan saknas; platsvärdets kvottolerans är för bred för kausal tolkning.",
+      "signals": [
+        {
+          "file": "src/domains/arithmetic/analyzeError.js",
+          "signal": "place_value_error",
+          "kind": "candidate",
+          "sourceSha256": "966b491375696a05dca14d71fb502e151c0c83fdf447f98ceb38047603ca16d8",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/arithmetic/analyzeError.js",
+          "signal": "calculation_error",
+          "kind": "generic",
+          "sourceSha256": "966b491375696a05dca14d71fb502e151c0c83fdf447f98ceb38047603ca16d8",
+          "readiness": "not-a-specific-method-detector"
+        },
+        {
+          "file": "src/domains/arithmetic/analyzeError.js",
+          "signal": "operation_swap",
+          "kind": "candidate",
+          "sourceSha256": "966b491375696a05dca14d71fb502e151c0c83fdf447f98ceb38047603ca16d8",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/arithmetic/analyzeError.js",
+          "signal": "digit_reversal",
+          "kind": "candidate",
+          "sourceSha256": "966b491375696a05dca14d71fb502e151c0c83fdf447f98ceb38047603ca16d8",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/arithmetic/errorHypotheses/additionHypotheses.js",
+          "signal": "carry_forget",
+          "kind": "candidate",
+          "sourceSha256": "f21a636e0216ba69a54cb2e01a6a54489d18a7ac0670dc9cd18380310f3b0fdc",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/arithmetic/errorHypotheses/additionHypotheses.js",
+          "signal": "carry_double",
+          "kind": "candidate",
+          "sourceSha256": "f21a636e0216ba69a54cb2e01a6a54489d18a7ac0670dc9cd18380310f3b0fdc",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/arithmetic/errorHypotheses/additionHypotheses.js",
+          "signal": "ones_digit_only",
+          "kind": "candidate",
+          "sourceSha256": "f21a636e0216ba69a54cb2e01a6a54489d18a7ac0670dc9cd18380310f3b0fdc",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/arithmetic/errorHypotheses/subtractionHypotheses.js",
+          "signal": "smaller_minus_larger",
+          "kind": "candidate",
+          "sourceSha256": "9042156fe860de5b690e04f2565eb83e66351ffd7e1b28f7791418dfe8cf12b9",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/arithmetic/errorHypotheses/subtractionHypotheses.js",
+          "signal": "borrow_forget",
+          "kind": "candidate",
+          "sourceSha256": "9042156fe860de5b690e04f2565eb83e66351ffd7e1b28f7791418dfe8cf12b9",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/arithmetic/errorHypotheses/multiplicationHypotheses.js",
+          "signal": "table_off_by_one",
+          "kind": "candidate",
+          "sourceSha256": "980f10ab18e945472f88da93bf38884b7ef3b000457e922a7738005c31a477be",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/arithmetic/errorHypotheses/multiplicationHypotheses.js",
+          "signal": "ones_digits_only",
+          "kind": "candidate",
+          "sourceSha256": "980f10ab18e945472f88da93bf38884b7ef3b000457e922a7738005c31a477be",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/arithmetic/errorHypotheses/divisionHypotheses.js",
+          "signal": "quotient_off_by_one",
+          "kind": "candidate",
+          "sourceSha256": "8228cce24b7ede215e4dfe80ac4930da17feefe428d86a74893bb2bea97de488",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/arithmetic/errorHypotheses/divisionHypotheses.js",
+          "signal": "reversed_operands",
+          "kind": "candidate",
+          "sourceSha256": "8228cce24b7ede215e4dfe80ac4930da17feefe428d86a74893bb2bea97de488",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/arithmetic/errorHypotheses/divisionHypotheses.js",
+          "signal": "divisor_as_answer",
+          "kind": "candidate",
+          "sourceSha256": "8228cce24b7ede215e4dfe80ac4930da17feefe428d86a74893bb2bea97de488",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/arithmetic/errorHypotheses/divisionHypotheses.js",
+          "signal": "dividend_as_answer",
+          "kind": "candidate",
+          "sourceSha256": "8228cce24b7ede215e4dfe80ac4930da17feefe428d86a74893bb2bea97de488",
+          "readiness": "needs-scope-and-precision-tests"
+        }
+      ]
+    },
+    {
+      "id": "fractions",
+      "state": "property-checks-only",
+      "nextSv": "Bygg särskiljande modeller för bråkkomponenter, storleksjämförelse och likvärdighet mot G4/B1/B7 och RB-områdena.",
+      "limitsSv": "wrong_denominator är nämnaravvikelse, inte belägg för en specifik bråkuppfattning. Offlinejämförelsen är ännu separat.",
+      "signals": [
+        {
+          "file": "src/domains/fractions/analyzeError.js",
+          "signal": "not_simplified",
+          "kind": "property",
+          "sourceSha256": "8a341e68b784a92d8c815a08b8c375b1578777ab4708b9d4e3042668a7800cdc",
+          "readiness": "not-a-specific-method-detector"
+        },
+        {
+          "file": "src/domains/fractions/analyzeError.js",
+          "signal": "invalid_input",
+          "kind": "input",
+          "sourceSha256": "8a341e68b784a92d8c815a08b8c375b1578777ab4708b9d4e3042668a7800cdc",
+          "readiness": "not-a-specific-method-detector"
+        },
+        {
+          "file": "src/domains/fractions/analyzeError.js",
+          "signal": "wrong_denominator",
+          "kind": "property",
+          "sourceSha256": "8a341e68b784a92d8c815a08b8c375b1578777ab4708b9d4e3042668a7800cdc",
+          "readiness": "not-a-specific-method-detector"
+        },
+        {
+          "file": "src/domains/fractions/analyzeError.js",
+          "signal": "wrong_answer",
+          "kind": "generic",
+          "sourceSha256": "8a341e68b784a92d8c815a08b8c375b1578777ab4708b9d4e3042668a7800cdc",
+          "readiness": "not-a-specific-method-detector"
+        }
+      ]
+    },
+    {
+      "id": "percentage",
+      "state": "generic-label-only",
+      "nextSv": "Specificera modellberäkningar för andel/helhet, procentenheter och successiva ändringar enligt B4–B6; pröva strukturerade uppgifter.",
+      "limitsSv": "Alla fel får wrong_percentage. Etiketten skiljer inga strategier åt.",
+      "signals": [
+        {
+          "file": "src/domains/percentage/analyzeError.js",
+          "signal": "wrong_percentage",
+          "kind": "generic",
+          "sourceSha256": "8b10d292b19347d4f5959e32fea7d07166975d456ef3185a796a5b31b81f31c8",
+          "readiness": "not-a-specific-method-detector"
+        }
+      ]
+    },
+    {
+      "id": "algebra",
+      "state": "partial-models-and-heuristics",
+      "nextSv": "Bind koefficient-/kvadratmodeller till faktisk uttrycksstruktur och pröva förenklingshypoteser mot exakta feluttryck.",
+      "limitsSv": "Koefficient 2/3 gissas delvis från nivå; konstant-/olikatermsregler bygger på svarstextens form. Kräver snävare tillämpning.",
+      "signals": [
+        {
+          "file": "src/domains/algebra/analyzeError.js",
+          "signal": "no_answer",
+          "kind": "input",
+          "sourceSha256": "9f91aca0f399bf0e193cb6aedb3f36710de4d94ecb1cb5bbcc0f0032bd3ea63f",
+          "readiness": "not-a-specific-method-detector"
+        },
+        {
+          "file": "src/domains/algebra/analyzeError.js",
+          "signal": "forgot_coefficient",
+          "kind": "candidate",
+          "sourceSha256": "9f91aca0f399bf0e193cb6aedb3f36710de4d94ecb1cb5bbcc0f0032bd3ea63f",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/algebra/analyzeError.js",
+          "signal": "added_instead_of_multiplied",
+          "kind": "candidate",
+          "sourceSha256": "9f91aca0f399bf0e193cb6aedb3f36710de4d94ecb1cb5bbcc0f0032bd3ea63f",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/algebra/analyzeError.js",
+          "signal": "square_as_double",
+          "kind": "candidate",
+          "sourceSha256": "9f91aca0f399bf0e193cb6aedb3f36710de4d94ecb1cb5bbcc0f0032bd3ea63f",
+          "readiness": "needs-scope-and-precision-tests"
+        },
+        {
+          "file": "src/domains/algebra/analyzeError.js",
+          "signal": "calculation_error",
+          "kind": "generic",
+          "sourceSha256": "9f91aca0f399bf0e193cb6aedb3f36710de4d94ecb1cb5bbcc0f0032bd3ea63f",
+          "readiness": "not-a-specific-method-detector"
+        },
+        {
+          "file": "src/domains/algebra/analyzeError.js",
+          "signal": "did_not_simplify",
+          "kind": "property",
+          "sourceSha256": "9f91aca0f399bf0e193cb6aedb3f36710de4d94ecb1cb5bbcc0f0032bd3ea63f",
+          "readiness": "not-a-specific-method-detector"
+        },
+        {
+          "file": "src/domains/algebra/analyzeError.js",
+          "signal": "forgot_constant",
+          "kind": "heuristic",
+          "sourceSha256": "9f91aca0f399bf0e193cb6aedb3f36710de4d94ecb1cb5bbcc0f0032bd3ea63f",
+          "readiness": "not-a-specific-method-detector"
+        },
+        {
+          "file": "src/domains/algebra/analyzeError.js",
+          "signal": "combined_unlike_terms",
+          "kind": "heuristic",
+          "sourceSha256": "9f91aca0f399bf0e193cb6aedb3f36710de4d94ecb1cb5bbcc0f0032bd3ea63f",
+          "readiness": "not-a-specific-method-detector"
+        },
+        {
+          "file": "src/domains/algebra/analyzeError.js",
+          "signal": "simplify_error",
+          "kind": "generic",
+          "sourceSha256": "9f91aca0f399bf0e193cb6aedb3f36710de4d94ecb1cb5bbcc0f0032bd3ea63f",
+          "readiness": "not-a-specific-method-detector"
+        }
+      ]
+    },
+    {
+      "id": "arithmetic_expressions",
+      "state": "generic-label-only",
+      "nextSv": "Beräkna särskilda felutvärderingar, exempelvis vänster-till-höger, utifrån uttrycksstrukturen; skilj från enstaka beräkningsfel.",
+      "limitsSv": "Alla numeriska fel kallas wrong_order_of_operations utan att en felprioritering räknas fram.",
+      "signals": [
+        {
+          "file": "src/domains/arithmetic_expressions/analyzeError.js",
+          "signal": "invalid_input",
+          "kind": "input",
+          "sourceSha256": "8ec20fe787331f07df5e26391687dca3fb8c821fb15ac9fd3086cb9b391c5152",
+          "readiness": "not-a-specific-method-detector"
+        },
+        {
+          "file": "src/domains/arithmetic_expressions/analyzeError.js",
+          "signal": "wrong_order_of_operations",
+          "kind": "generic",
+          "sourceSha256": "8ec20fe787331f07df5e26391687dca3fb8c821fb15ac9fd3086cb9b391c5152",
+          "readiness": "not-a-specific-method-detector"
+        }
+      ]
+    },
+    {
+      "id": "number_fluency",
+      "state": "generic-label-only",
+      "nextSv": "Separera fel på talpar/dubbla från eventuella förutsägbara svar; behåll osäker metod när en felmodell saknas.",
+      "limitsSv": "Fel svar visar inte att eleven saknar återkallning. Dessa signaler saknar ännu verifierad NCM-kodkoppling.",
+      "signals": [
+        {
+          "file": "src/domains/number_fluency/analyzeError.js",
+          "signal": "number_bond_not_recalled",
+          "kind": "generic",
+          "sourceSha256": "8a434365d58836204fe2604f7149940ea60be12b2f84b475ad738b4d84759d80",
+          "readiness": "not-a-specific-method-detector"
+        },
+        {
+          "file": "src/domains/number_fluency/analyzeError.js",
+          "signal": "double_not_recalled",
+          "kind": "generic",
+          "sourceSha256": "8a434365d58836204fe2604f7149940ea60be12b2f84b475ad738b4d84759d80",
+          "readiness": "not-a-specific-method-detector"
+        }
+      ]
+    }
+  ],
+  "inventory": {
+    "sections": [
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/sections/0",
+        "id": "0",
+        "status": "inventoried"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/sections/1",
+        "id": "1",
+        "status": "inventoried"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/sections/2",
+        "id": "2",
+        "status": "inventoried"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/sections/3",
+        "id": "3",
+        "status": "inventoried"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/sections/4",
+        "id": "4",
+        "status": "inventoried"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/sections/5",
+        "id": "5",
+        "status": "inventoried"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/sections/6",
+        "id": "5b",
+        "status": "inventoried"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/sections/7",
+        "id": "6",
+        "status": "inventoried"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/sections/8",
+        "id": "7",
+        "status": "inventoried"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/sections/9",
+        "id": "8",
+        "status": "inventoried"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/sections/10",
+        "id": "9",
+        "status": "inventoried"
+      }
+    ],
+    "mappings": [
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/0",
+        "id": "M01",
+        "status": "partial"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/1",
+        "id": "M02",
+        "status": "offline-candidates-and-routing; production-unchanged"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/2",
+        "id": "M03",
+        "status": "partial"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/3",
+        "id": "M04",
+        "status": "partial"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/4",
+        "id": "M05",
+        "status": "partial"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/5",
+        "id": "M06",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/6",
+        "id": "M07",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/7",
+        "id": "M08",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/8",
+        "id": "M09",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/9",
+        "id": "M10",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/10",
+        "id": "M11",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/11",
+        "id": "M12",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/12",
+        "id": "M13",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/13",
+        "id": "M14",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/14",
+        "id": "M15",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/15",
+        "id": "M16",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/16",
+        "id": "M17",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/17",
+        "id": "M18",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/18",
+        "id": "M19",
+        "status": "partial"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/19",
+        "id": "M20",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/20",
+        "id": "M21",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/21",
+        "id": "M22",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/22",
+        "id": "M23",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/23",
+        "id": "M24",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/24",
+        "id": "M25",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/25",
+        "id": "M26",
+        "status": "partial"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/26",
+        "id": "M27",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/27",
+        "id": "M28",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/28",
+        "id": "M29",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/mappings/29",
+        "id": "M30",
+        "status": "pending"
+      }
+    ],
+    "gaps": [
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/gaps/0",
+        "id": "G1",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/gaps/1",
+        "id": "G2",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/gaps/2",
+        "id": "G3",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/gaps/3",
+        "id": "G4",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/gaps/4",
+        "id": "G5",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/gaps/5",
+        "id": "G6",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/gaps/6",
+        "id": "G7",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/gaps/7",
+        "id": "G8",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/gaps/8",
+        "id": "G9",
+        "status": "partial"
+      }
+    ],
+    "concepts": [
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/concepts/0",
+        "id": "B1",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/concepts/1",
+        "id": "B2",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/concepts/2",
+        "id": "B3",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/concepts/3",
+        "id": "B4",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/concepts/4",
+        "id": "B5",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/concepts/5",
+        "id": "B6",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/concepts/6",
+        "id": "B7",
+        "status": "pending"
+      }
+    ],
+    "nuances": [
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/nuances/0",
+        "id": "N1",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/nuances/1",
+        "id": "N2",
+        "status": "pilot"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/nuances/2",
+        "id": "N3",
+        "status": "needs-context"
+      }
+    ],
+    "ag6StrategySteps": [
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/ag6StrategySteps/0",
+        "id": "T1",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/ag6StrategySteps/1",
+        "id": "T2",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/ag6StrategySteps/2",
+        "id": "T3",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/ag6StrategySteps/3",
+        "id": "T4",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/ag6StrategySteps/4",
+        "id": "T5",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/ag6StrategySteps/5",
+        "id": "T6",
+        "status": "pending"
+      }
+    ],
+    "unmappedSignals": [
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/unmappedSignals/0",
+        "id": "digit_reversal",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/unmappedSignals/1",
+        "id": "calculation_error",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/unmappedSignals/2",
+        "id": "wrong_answer",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/unmappedSignals/3",
+        "id": "no_answer",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/unmappedSignals/4",
+        "id": "invalid_input",
+        "status": "needs-context"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/unmappedSignals/5",
+        "id": "operation_swap",
+        "status": "needs-context"
+      }
+    ],
+    "outsideEngine": [
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/outsideEngine/0",
+        "id": "AF",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/outsideEngine/1",
+        "id": "AUn1–4",
+        "status": "pending"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/outsideEngine/2",
+        "id": "AUp1–5",
+        "status": "pending"
+      }
+    ],
+    "catalogueCodes": [
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/0",
+        "id": "AG1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/1",
+        "id": "AG2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/2",
+        "id": "AG3",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/3",
+        "id": "AG4",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/4",
+        "id": "AG5",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/5",
+        "id": "AG6",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/6",
+        "id": "AG7",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/7",
+        "id": "AG8",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/8",
+        "id": "AG9",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/9",
+        "id": "AS1",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/10",
+        "id": "AS10",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/11",
+        "id": "AS11",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/12",
+        "id": "AS2",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/13",
+        "id": "AS3",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/14",
+        "id": "AS4",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/15",
+        "id": "AS5",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/16",
+        "id": "AS6",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/17",
+        "id": "AS7",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/18",
+        "id": "AS8",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/19",
+        "id": "AS9",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/20",
+        "id": "AUN1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/21",
+        "id": "AUN2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/22",
+        "id": "AUN3",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/23",
+        "id": "AUN4",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/24",
+        "id": "AUP1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/25",
+        "id": "AUP2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/26",
+        "id": "AUP3",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/27",
+        "id": "AUP4",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/28",
+        "id": "AUP5",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/29",
+        "id": "GFO1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/30",
+        "id": "GFO2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/31",
+        "id": "GFO3",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/32",
+        "id": "GFO4",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/33",
+        "id": "GFO5",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/34",
+        "id": "GFO6",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/35",
+        "id": "GFO7",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/36",
+        "id": "GFO8",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/37",
+        "id": "GSK1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/38",
+        "id": "GSK2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/39",
+        "id": "GSK3",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/40",
+        "id": "GSK4",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/41",
+        "id": "GVI1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/42",
+        "id": "GVI2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/43",
+        "id": "GVI3",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/44",
+        "id": "MAR1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/45",
+        "id": "MAR2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/46",
+        "id": "MAR3",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/47",
+        "id": "MAR4",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/48",
+        "id": "MAR5",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/49",
+        "id": "MAR6",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/50",
+        "id": "MAR7",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/51",
+        "id": "MGF",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/52",
+        "id": "MLA41",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/53",
+        "id": "MLA42",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/54",
+        "id": "MLA43",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/55",
+        "id": "MLA44",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/56",
+        "id": "MMA1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/57",
+        "id": "MMA2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/58",
+        "id": "MTI1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/59",
+        "id": "MTI2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/60",
+        "id": "MTI3",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/61",
+        "id": "MTI4",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/62",
+        "id": "MTI5",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/63",
+        "id": "MVO1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/64",
+        "id": "MVO2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/65",
+        "id": "MVO3",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/66",
+        "id": "MVO4",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/67",
+        "id": "MVO5",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/68",
+        "id": "MVO6",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/69",
+        "id": "MVO7",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/70",
+        "id": "RB1",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/71",
+        "id": "RB2",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/72",
+        "id": "RB3",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/73",
+        "id": "RB4",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/74",
+        "id": "RB5",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/75",
+        "id": "RB6",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/76",
+        "id": "RB7",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/77",
+        "id": "RD1",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/78",
+        "id": "RD2",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/79",
+        "id": "RD3",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/80",
+        "id": "RD4",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/81",
+        "id": "RD5",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/82",
+        "id": "RD6",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/83",
+        "id": "RP1",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/84",
+        "id": "RP2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/85",
+        "id": "RP3",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/86",
+        "id": "RP4",
+        "status": "referenced-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/87",
+        "id": "RP5",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/88",
+        "id": "RP6",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/89",
+        "id": "RP7",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/90",
+        "id": "SA1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/91",
+        "id": "SA2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/92",
+        "id": "SA3",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/93",
+        "id": "SA4",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/94",
+        "id": "SA5",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/95",
+        "id": "SAF",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/96",
+        "id": "STD1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/97",
+        "id": "STD2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/98",
+        "id": "STD3",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/99",
+        "id": "STD4",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/100",
+        "id": "STD5",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/101",
+        "id": "STD6",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/102",
+        "id": "STF",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/103",
+        "id": "STI1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/104",
+        "id": "STI2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/105",
+        "id": "TAE1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/106",
+        "id": "TAE2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/107",
+        "id": "TAE3",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/108",
+        "id": "TAE4",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/109",
+        "id": "TAE5",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/110",
+        "id": "TAE6",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/111",
+        "id": "TAE7",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/112",
+        "id": "TAG1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/113",
+        "id": "TAG2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/114",
+        "id": "TAG3",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/115",
+        "id": "TAG4",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/116",
+        "id": "TAT1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/117",
+        "id": "TAT2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/118",
+        "id": "TAT3",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/119",
+        "id": "TAT4",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/120",
+        "id": "TAT5",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/121",
+        "id": "TAU1",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/122",
+        "id": "TAU2",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/123",
+        "id": "TAU3",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/124",
+        "id": "TAU4",
+        "status": "not-in-30-mappings"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/catalogueCodes/125",
+        "id": "TAU5",
+        "status": "not-in-30-mappings"
+      }
+    ],
+    "additionalCodeGaps": [
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/additionalCodeGaps/0",
+        "id": "number_bond_not_recalled+double_not_recalled",
+        "status": "retained-needs-separate-rule-review"
+      },
+      {
+        "ref": "docs/NCM_DIDACTIC_COVERAGE.json#/additionalCodeGaps/1",
+        "id": "larger_digit_minus_smaller_per_column",
+        "status": "retained-needs-separate-rule-review"
+      }
+    ]
+  },
+  "offlineAdditions": [
+    "zero_donor_not_decremented",
+    "zero_intermediate_ten"
+  ],
+  "untouchedProduction": true
+}

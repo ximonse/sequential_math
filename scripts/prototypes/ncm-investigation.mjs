@@ -2,7 +2,7 @@
 import { decidePilot } from './ncm-screening-pilot.mjs'
 import { getInvestigationProfile, evaluateInvestigationAnswer } from './ncm-investigation-content.mjs'
 
-export const INVESTIGATION_RULE_VERSION = 'synthetic-investigation-v1'
+export const INVESTIGATION_RULE_VERSION = 'synthetic-investigation-v2'
 
 export function decideInvestigation({ scope = 'single_exchange', observations = [], review = null, teaching = null } = {}) {
   const profile = getInvestigationProfile(scope), bank = new Map(profile.tasks.map(t => [t.id, t]))
@@ -34,12 +34,12 @@ export function decideInvestigation({ scope = 'single_exchange', observations = 
     if (teaching || evidence.some(e => e.phase !== 'investigate')) throw Error('Later stages require an explicit hypothesis review')
     if (diagnostic.some(e => e.origin !== 'history' && e.assistance !== 'none')) return decide('review', 'stop', 'diagnostic_support_unknown',
       'Hjälpta försök eller okänd stödnivå kan inte räknas som självständiga diagnostiska belägg.')
-    if (scope === 'single_exchange') {
-      const result = decidePilot({ history: diagnostic.filter(e => e.origin === 'history').map(e => ({ ...e,
+    if (['single_exchange', 'through_zero'].includes(scope)) {
+      const result = decidePilot({ scope, history: diagnostic.filter(e => e.origin === 'history').map(e => ({ ...e,
         // History may start an inquiry without becoming independent confirmation.
         method: e.assistance === 'none' ? e.method : e.method === 'contradictory' ? 'contradictory' : 'unreviewed' })),
         responses: diagnostic.filter(e => e.origin !== 'history') })
-      return decide(result.outcome === 'supported' ? 'no_current_concern' : 'investigate', result.action,
+      return decide(result.outcome === 'supported' ? 'no_current_concern' : result.action === 'stop' ? 'review' : 'investigate', result.action,
         result.reasonCode, result.reasonSv, { diagnosticDecision: result, ...(result.task ? { task: result.task, purposeSv: result.reasonSv } : {}) })
     }
     if (diagnostic.some(e => e.status !== 'answered')) return decide('review', 'stop', 'incomplete_response', 'Obesvarat eller avbrutet fastställer ingen kunskapsbrist.')

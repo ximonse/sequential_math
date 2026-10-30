@@ -12,6 +12,19 @@ const fraction = (id, phase, left, right, discriminates, context = 'calculation'
   answer: left[0] * right[1] > right[0] * left[1] ? 'left' : 'right' })
 
 export const investigationProfiles = {
+  through_zero: {
+    coverageIds: ['M02'], diagnosticReference: 'AS2', prerequisiteReference: 'AG3',
+    hypothesisIds: ['zero_donor_not_decremented', 'zero_intermediate_ten'],
+    goalSv: 'Bevara talvärdet genom hela växlingen från hundratal via tiotal till ental.',
+    instructionSv: 'Knyt 402 = 300 + 100 + 2 = 300 + 90 + 12 till uppställningen. Eleven förklarar var tiotal och ental kommer ifrån.',
+    tasks: [
+      ...tasks.filter(t => ['baseline', 'through_zero', 'prerequisite'].includes(t.role)).map(t => ({ ...t,
+        phase: 'investigate', context: 'calculation', discriminates: t.role === 'through_zero'
+          ? ['zero_donor_not_decremented', 'zero_intermediate_ten'] : [] })),
+      subtract('check-zero-a', 'independent', 804, 376), subtract('check-zero-b', 'independent', 906, 458),
+      subtract('later-zero-a', 'followup', 702, 385), subtract('later-zero-transfer', 'followup', 602, 275, 'transfer'),
+    ].map(t => t.phase === 'investigate' ? t : { ...t, discriminates: ['zero_donor_not_decremented', 'zero_intermediate_ten'] }),
+  },
   single_exchange: {
     coverageIds: ['M02', 'N2'], diagnosticReference: 'AS2', prerequisiteReference: 'AG3',
     hypothesisIds: ['column_difference', 'unreduced_tens'],

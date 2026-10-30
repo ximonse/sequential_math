@@ -1,7 +1,8 @@
 // Offline decision experiment. Not imported by the pupil app or MCP adapter.
 import { readFileSync } from 'node:fs'
+import { subtractionCandidates, ZERO_EXCHANGE_MODELS } from '../../src/domains/arithmetic/subtractionCandidates.js'
 
-export const RULE_VERSION = 'synthetic-as2-v1'
+export const RULE_VERSION = 'synthetic-as2-v2'
 const original = JSON.parse(readFileSync(new URL('../../src/domains/arithmetic/diagnosticTasks.v1.json', import.meta.url)))
 const roles = { aligned_columns_without_exchange: 'baseline', single_exchange: 'single_exchange', exchange_through_zero: 'through_zero' }
 export const tasks = original.tasks.filter(task => task.operation === 'subtraction').map(task => ({
@@ -55,9 +56,14 @@ export function decidePilot({ scope = 'single_exchange', history = [], responses
   const errors = evidence.filter(item => item.status === 'answered' && !item.correct)
   const support = contrast.filter(item => item.correct && item.method === 'consistent')
   const independentSupport = [...new Map(support.map(item => [item.taskId, item])).values()]
+  const modelEvidence = contrast.filter(item => item.status === 'answered' && item.task.operands).map(item => ({
+    evidenceId: item.id, taskId: item.taskId, sourceRef: item.source?.ref ?? item.id,
+    snapshotRevision: item.snapshotRevision ?? item.source?.snapshotRevision ?? null,
+    ...subtractionCandidates({ a: item.task.operands[0], b: item.task.operands[1], studentAnswer: item.answer })
+  }))
   const base = { ruleVersion: RULE_VERSION, scope, coverageIds: ['M02', 'N2'],
     evidenceClass: 'diagnostic_only', usedNewQuestions: current.length, maxNewQuestions: 5,
-    evidenceIds: evidence.map(item => item.id), supportIds: independentSupport.map(item => item.id), ignored,
+    evidenceIds: evidence.map(item => item.id), supportIds: independentSupport.map(item => item.id), ignored, modelEvidence,
     limitation: 'Synthetic rule, not a validated diagnosis or mastery decision.' }
   const stop = (outcome, reasonCode, reasonSv) => ({ ...base, action: 'stop', outcome, reasonCode, reasonSv })
   const latest = current.at(-1)
@@ -85,6 +91,13 @@ export function decidePilot({ scope = 'single_exchange', history = [], responses
   }
   // Existing pattern labels are deliberately not used as causal routing rules.
   if (errors.length) {
+    const zeroMatches = modelEvidence.filter(item => item.matches.some(match => ZERO_EXCHANGE_MODELS.includes(match.modelId)))
+    if (scope === 'through_zero' && zeroMatches.length) {
+      if (new Set(zeroMatches.map(item => item.taskId)).size < 2) return ask(scope, 'contrast_zero_exchange_model',
+        'Pröva en ny uppgift genom noll: beräknade modellkandidater behöver en oberoende kontrast, inte en säker orsaksdiagnos.')
+      return stop('needs_review', 'zero_exchange_model_review',
+        'Två olika frågor ger matchande växlingskandidater. Granska originalstegen och alternativa förklaringar före undervisningsbeslut.')
+    }
     if (!prerequisite.length) return ask('prerequisite', 'check_prerequisite',
       'Ett fel säger inte varför. Pröva relevant AG3-förkunskap innan fler skriftliga frågor.')
     if (prerequisite.some(item => !item.correct)) {

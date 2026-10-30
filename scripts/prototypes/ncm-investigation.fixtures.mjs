@@ -3,8 +3,9 @@ import { getInvestigationProfile } from './ncm-investigation-content.mjs'
 
 export function investigationFixture(scope = 'single_exchange') {
   const profile = getInvestigationProfile(scope)
-  const taskIds = scope === 'single_exchange' ? ['sub-exchange-001', 'sub-exchange-002'] : ['fraction-gap-a', 'fraction-gap-b']
-  const answers = scope === 'single_exchange' ? [435, 335] : ['left', 'right']
+  const taskIds = scope === 'single_exchange' ? ['sub-exchange-001', 'sub-exchange-002']
+    : scope === 'through_zero' ? ['sub-through-zero-001', 'sub-through-zero-002'] : ['fraction-gap-a', 'fraction-gap-b']
+  const answers = scope === 'single_exchange' ? [435, 335] : scope === 'through_zero' ? [324, 336] : ['left', 'right']
   const diagnostic = taskIds.map((taskId, i) => ({
     id: `synthetic-source-${i}`, taskId, answer: answers[i], status: 'answered',
     phase: 'investigate', method: 'consistent', assistance: 'none', saved: true,

@@ -1,6 +1,6 @@
 # Syntetisk körning: hela utredningskedjan
 
-Regelversion: `synthetic-investigation-v1`. Konstruerade observationer och simulerad granskning; ingen elevapp, datalagring eller didaktisk effekt verifierad.
+Regelversion: `synthetic-investigation-v2`. Konstruerade observationer och simulerad granskning; ingen elevapp, datalagring eller didaktisk effekt verifierad. Subtraktionens väljare använder synthetic-as2-v2 med beräknade modellkandidater.
 
 ## single_exchange
 
@@ -12,6 +12,18 @@ Regelversion: `synthetic-investigation-v1`. Konstruerade observationer och simul
 | 4 | independent | ask | check_without_help | 972 − 548 |
 | 5 | followup | ask | followup_required | 752 − 436 |
 | 6 | followup | ask | followup_required | Du har 83 kr och betalar 46 kr. Hur mycket har du kvar? |
+| 7 | closed | stop | supported_in_tested_scope | Stabil självständig förståelse i prövade situationer, även vid senare uppföljning. Inget besked om oprövade delmoment eller permanent borttagen felförståelse. |
+
+## through_zero
+
+| Steg | Fas | Handling | Regel | Fråga / motivering |
+|---|---|---|---|---|
+| 1 | review | stop | zero_exchange_model_review | Två olika frågor ger matchande växlingskandidater. Granska originalstegen och alternativa förklaringar före undervisningsbeslut. |
+| 2 | teaching | propose_teaching | reviewed_learning_need | Konstruerad granskning: två felkontraster och förenligt synligt resonemang. |
+| 3 | independent | ask | check_without_help | 804 − 376 |
+| 4 | independent | ask | check_without_help | 906 − 458 |
+| 5 | followup | ask | followup_required | 702 − 385 |
+| 6 | followup | ask | followup_required | Du har 602 kr och betalar 275 kr. Hur mycket har du kvar? |
 | 7 | closed | stop | supported_in_tested_scope | Stabil självständig förståelse i prövade situationer, även vid senare uppföljning. Inget besked om oprövade delmoment eller permanent borttagen felförståelse. |
 
 ## fraction_comparison

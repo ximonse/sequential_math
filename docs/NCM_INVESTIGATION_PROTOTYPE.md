@@ -83,6 +83,13 @@ utrednings-/undervisningsspår.
 
 ## Nästa avgränsade steg
 
+Senare tillägg 2026-10-30: [regelgenomgången för alla domäner](NCM_RULE_READINESS.md)
+och de två nya genom-noll-modellerna är klara offline. `synthetic-as2-v2`
+förmedlar alla kandidatträffar och väljer en parallell fråga utan AI-anrop.
+`synthetic-investigation-v2` omfattar även hela genom-noll-kedjan.
+Den länkade körningen visar nu tre områdesförlopp. Verifieringen nedan gäller
+föregående leverans; aktuella resultat dokumenteras i regelgenomgången.
+
 Lokalt verifierat: 193 testfiler och 1000 tester passerar, inklusive 32 nya
 kontrakts-/adapterprov och befintliga 23 subtraktionsprov. Körningen är
 `npm run test -- --exclude '.claude/**'` för att inte blanda in andra

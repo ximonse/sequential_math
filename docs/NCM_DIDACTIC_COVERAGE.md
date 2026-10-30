@@ -4,6 +4,11 @@ Datum: 2026-10-30. **Lokalt planeringsunderlag, ingen ändrad analys eller elevp
 
 ## Vad som faktiskt är täckt
 
+Senare tillägg samma dag: [domängemensam regelgenomgång](NCM_RULE_READINESS.md)
+klassificerar alla sex domäners 33 befintliga signalposter och visar de nya
+offlinekandidaterna för växling genom noll. Kodjämförelsen nedan beskriver
+den ursprungliga inventeringen, inte ett påstående att senare kod är oförändrad.
+
 Hela [Claudes referens](SCREENING_SELECTION_PRINCIPLES.md), commit 08a0101, är inventerad: 11 huvudavsnitt, 30 mappningsrader, nio numrerade luckor (åtta nya kandidater och en nyans), sju begreppspunkter (den sista överlappar G4), tre nyanser och sex AG6-strategisteg. Inget av detta är ett påstående om full täckning av all matematik eller att samtliga NCM-facit lästs.
 
 [Maskinläsbar täckningslista](NCM_DIDACTIC_COVERAGE.json) bevarar varje mappningsrads formulering, förkunskaper, källmotivering, radnummer, status och kodgranskningskommentar. Referensens SHA256 är lagrad. Även samtliga 126 rader i denna checkouts NCM-CSV är upptagna; de som inte ingår i de 30 mappningarna är uttryckligen kvar som kompletterande innehåll/förkunskaper att pröva, inte tyst bortvalda. JSON-filen är en inventering, **inte en färdig runtime-katalog att validera diagnoser mot**.

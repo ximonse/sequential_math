@@ -2486,6 +2486,33 @@
           "done": false
         }
       ]
+    },
+    {
+      "id": "progress-workspace-appearance",
+      "area": "Lärarvy",
+      "title": "Framsteg följer adminvyns visuella stil",
+      "status": "Lokalt klart",
+      "kind": "plan",
+      "purpose": "Samma typsnitt, rubrikstil och temastyrda panelytor som övriga lärar-/adminvyer, med befintlig struktur kvar.",
+      "next": "Publicera via GitHub och verifiera sekvens production READY med rätt commit och domänalias.",
+      "acceptance": "Framsteg använder samma font, färgvariabler, navigation, rubriker, kontroller och panelramar som övriga admin. Modulordning, urval, kollapsfunktioner och resultatcellernas färger/geometri bevaras.",
+      "requires": [],
+      "affects": [],
+      "issue": "",
+      "decision": "2026-10-30: Simon beställer att Framsteg ska följa övriga sidors färg och font. Avgränsad visuell anpassning, ingen omstrukturering eller publicering.\n2026-10-30: Simon beställer produktion. Release ovanpå aktuell master återanvänder teacherAdmin.css via data-teacher-admin även för Framsteg; den preliminära separata CSS-filen ersätts av den befintliga gemensamma stilen.",
+      "evidence": "progressAppearance.css importeras i DashboardLayout.jsx och begränsas till data-teacher-workspace=progress och dess paneler. Gemensamma tema-/fontvariabler återanvänds. Lokal webbläsargranskning mot syntetisk fylld testklass i normal vy och 768x1024 samt mörkt tema; minimera/visa Klassstatistik fungerade. Referensen Screening: dela ut jämfördes före ändringen. Bild: visualizations/2026/10/28/01a1822e-c6c8-7b32-bdd0-cbb5b56d8e2a/progress-appearance.png. 191 testfiler/945 tester, build och riktad ESLint godkända. Endast visuell ändring; inga nya tester eller robotkörningar. Ej pushad eller publicerad.\nReleaseunderlag på origin/master 763e86a: DashboardLayout aktiverar gemensam adminstil och märker progressmoduler med data-admin-panel. teacherAdmin.css undantar resultattabellernas knappar från generisk kontrollform och gör nivåtabellens neutrala ränder temastyrda. 194 testfiler/962 tester, riktad ESLint och build gröna. Syntetisk testklass visuellt granskad med aktuell master-stil, stående 768x1024 och mörkt tema. Inga API-/dataändringar.",
+      "tasks": [
+        {
+          "id": "progress-appearance-local",
+          "text": "Anpassa panelramar, rubriker och typsnitt lokalt och granska i webbläsaren",
+          "done": true
+        },
+        {
+          "id": "progress-appearance-publish",
+          "text": "Publicera efter separat mandat",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [

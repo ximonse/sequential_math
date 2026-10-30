@@ -2341,6 +2341,43 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "ncm-didactic-backbone",
+      "area": "Analys och screening",
+      "title": "Hela NCM-underlaget som didaktisk ryggrad",
+      "status": "Beslutat",
+      "kind": "plan",
+      "purpose": "Elevhistorik ska leda till didaktiskt motiverade hypoteser och material. Claudes samlade NCM-/McIntosh-underlag är gemensam grund för analys, material och adaptiv diagnostisk kartläggning, inte en lista att plocka enstaka exempel ur.",
+      "next": "Läs och inventera hela referensen i en spårbar täckningslista innan pilotens frågor eller beslutsregler utformas. Varje mappning, förkunskapsrelation, begreppslig missuppfattning och identifierad lucka får status och motivering.",
+      "acceptance": "Inga tysta bortval. Samtliga delar i referensen redovisas som används i pilot, återstår, behöver källkontroll eller utanför aktuellt område med motivering. Pilotens begränsning gäller implementationen, inte hur mycket av kunskapsgrunden som beaktas. Skilj NCM-diagnoskod, appens observerade felmönster och tolkad missuppfattning. Ingen kod tillskrivs eleven utan belägg; ingen data betyder okänt, inte oförmåga. Fri träning och screening kan båda ge belägg. Stopp- och följdfrågeregler ska knytas till begrepp, förkunskaper och kontraster, och dokumentera även alternativa förklaringar. Pedagogiska källpåståenden verifieras där de används; hela katalogens upptäckt och inventering är inte samma sak som att allt är källgranskat eller implementerat.",
+      "requires": [],
+      "affects": [],
+      "issue": "",
+      "decision": "2026-10-30: Simon accepterar riktningen med adaptiv diagnostisk screening och kräver uttryckligen hela Claudes NCM-underlag som ryggrad/hörnsten. En smal pilot får inte innebära att resten av underlaget ignoreras. Inget publiceringsmandat i detta beslut.",
+      "evidence": "Claudes fullständiga referens från commit 08a0101 kopierad utan innehållsändring till docs/SCREENING_SELECTION_PRINCIPLES.md. SHA256 326f01d398fc82cd679403e29738db3f18552dcd451e55b1c3dc6c9e021ad121. Omfattar felmönster/NCM-koder, förkunskaper, McIntosh-nyanser, kända luckor, begreppsliga missuppfattningar, urvalsprinciper och databeläggskrav. Detta bevarar hela underlaget; täckningsinventering, ny källgranskning, maskinläsbar katalog och adaptiv screening är ännu inte genomförda.",
+      "tasks": [
+        {
+          "id": "ncm-backbone-preserve",
+          "text": "Bevara hela Claudes referens och besluta om full spårbar täckning",
+          "done": true
+        },
+        {
+          "id": "ncm-backbone-coverage",
+          "text": "Inventera hela underlaget med status, källnivå och motivering per del",
+          "done": false
+        },
+        {
+          "id": "ncm-backbone-pilot",
+          "text": "Utforma ett avgränsat pilotflöde med belagda stopp-, kontrast- och förkunskapsregler",
+          "done": false
+        },
+        {
+          "id": "ncm-backbone-review",
+          "text": "Granska verkliga analys- och materialexempel didaktiskt före bredare implementation",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [

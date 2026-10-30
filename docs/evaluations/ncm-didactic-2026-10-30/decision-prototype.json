@@ -1,0 +1,1310 @@
+{
+  "ruleVersion": "synthetic-as2-v1",
+  "coverage": "M02/N2 within the full NCM backbone",
+  "limitations": [
+    "Synthetic only; not integrated in the app",
+    "Method flags and history eligibility are simulated reviewer judgements",
+    "Two examples and five questions are pilot rules, not validated diagnostic thresholds",
+    "No inference about untested subskills, no mastery writes, no autonomous dispatch"
+  ],
+  "results": [
+    {
+      "id": "new-pupil",
+      "title": "Ingen historik: baslinje, två kontraster, sedan stopp",
+      "synthetic": true,
+      "history": [],
+      "responses": [
+        {
+          "id": "synthetic-sub-no-exchange-001",
+          "taskId": "sub-no-exchange-001",
+          "answer": 533,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        },
+        {
+          "id": "synthetic-sub-exchange-001",
+          "taskId": "sub-exchange-001",
+          "answer": 425,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        },
+        {
+          "id": "synthetic-sub-exchange-002",
+          "taskId": "sub-exchange-002",
+          "answer": 325,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        }
+      ],
+      "trace": [
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 0,
+          "maxNewQuestions": 5,
+          "evidenceIds": [],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-no-exchange-001",
+            "role": "baseline",
+            "prompt": "Räkna ut 764 − 231.",
+            "answer": 533,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "establish_baseline",
+          "reasonSv": "Jämförbart historiskt underlag saknas. Börja med kolumnplacering utan växling; rätt svar här bevisar inte växling."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 1,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-exchange-001",
+            "role": "single_exchange",
+            "prompt": "Räkna ut 642 − 217.",
+            "answer": 425,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "discriminating_contrast",
+          "reasonSv": "Välj en fråga där de två felmodellerna ger andra svar än facit."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 2,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001",
+            "synthetic-sub-exchange-001"
+          ],
+          "supportIds": [
+            "synthetic-sub-exchange-001"
+          ],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-exchange-002",
+            "role": "single_exchange",
+            "prompt": "Räkna ut 753 − 428.",
+            "answer": 325,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "discriminating_contrast",
+          "reasonSv": "Välj en fråga där de två felmodellerna ger andra svar än facit."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 3,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001",
+            "synthetic-sub-exchange-001",
+            "synthetic-sub-exchange-002"
+          ],
+          "supportIds": [
+            "synthetic-sub-exchange-001",
+            "synthetic-sub-exchange-002"
+          ],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "stop",
+          "outcome": "supported",
+          "reasonCode": "subskill_supported",
+          "reasonSv": "Två olika särskiljande frågor ger förenligt stöd för just detta delmoment. Avsluta här."
+        }
+      ]
+    },
+    {
+      "id": "history-confirmation",
+      "title": "Relevant tidigare arbete: en ny bekräftelse räcker",
+      "synthetic": true,
+      "history": [
+        {
+          "id": "synthetic-history-sub-exchange-001",
+          "taskId": "sub-exchange-001",
+          "answer": 425,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true,
+          "selectedForScope": true,
+          "selectionReason": "Synthetic reviewer selected a comparable current example.",
+          "snapshotRevision": "synthetic-snapshot-1"
+        }
+      ],
+      "responses": [
+        {
+          "id": "synthetic-sub-exchange-002",
+          "taskId": "sub-exchange-002",
+          "answer": 325,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        }
+      ],
+      "trace": [
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 0,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-history-sub-exchange-001"
+          ],
+          "supportIds": [
+            "synthetic-history-sub-exchange-001"
+          ],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-exchange-002",
+            "role": "single_exchange",
+            "prompt": "Räkna ut 753 − 428.",
+            "answer": 325,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "discriminating_contrast",
+          "reasonSv": "Relevant historik finns; välj en ny särskiljande bekräftelse."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 1,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-history-sub-exchange-001",
+            "synthetic-sub-exchange-002"
+          ],
+          "supportIds": [
+            "synthetic-history-sub-exchange-001",
+            "synthetic-sub-exchange-002"
+          ],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "stop",
+          "outcome": "supported",
+          "reasonCode": "subskill_supported",
+          "reasonSv": "Två olika särskiljande frågor ger förenligt stöd för just detta delmoment. Avsluta här."
+        }
+      ]
+    },
+    {
+      "id": "column-error",
+      "title": "Modellförenligt felsvar: AG3-kontroll och annan skriftlig kontrast",
+      "synthetic": true,
+      "history": [],
+      "responses": [
+        {
+          "id": "synthetic-sub-no-exchange-001",
+          "taskId": "sub-no-exchange-001",
+          "answer": 533,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        },
+        {
+          "id": "synthetic-sub-exchange-001",
+          "taskId": "sub-exchange-001",
+          "answer": 435,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        },
+        {
+          "id": "synthetic-pilot-ag3-a",
+          "taskId": "pilot-ag3-a",
+          "answer": 5,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        },
+        {
+          "id": "synthetic-sub-exchange-002",
+          "taskId": "sub-exchange-002",
+          "answer": 335,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        }
+      ],
+      "trace": [
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 0,
+          "maxNewQuestions": 5,
+          "evidenceIds": [],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-no-exchange-001",
+            "role": "baseline",
+            "prompt": "Räkna ut 764 − 231.",
+            "answer": 533,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "establish_baseline",
+          "reasonSv": "Jämförbart historiskt underlag saknas. Börja med kolumnplacering utan växling; rätt svar här bevisar inte växling."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 1,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-exchange-001",
+            "role": "single_exchange",
+            "prompt": "Räkna ut 642 − 217.",
+            "answer": 425,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "discriminating_contrast",
+          "reasonSv": "Välj en fråga där de två felmodellerna ger andra svar än facit."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 2,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001",
+            "synthetic-sub-exchange-001"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "pilot-ag3-a",
+            "role": "prerequisite",
+            "prompt": "13 − 8",
+            "answer": 5,
+            "coverageId": "M02",
+            "grid": false,
+            "source": "proposed_original"
+          },
+          "reasonCode": "check_prerequisite",
+          "reasonSv": "Ett fel säger inte varför. Pröva relevant AG3-förkunskap innan fler skriftliga frågor."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 3,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001",
+            "synthetic-sub-exchange-001",
+            "synthetic-pilot-ag3-a"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-exchange-002",
+            "role": "single_exchange",
+            "prompt": "Räkna ut 753 − 428.",
+            "answer": 325,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "contrast_written_method",
+          "reasonSv": "AG3-kontrollen fungerar. Pröva en annan skriftlig kontrast för att skilja representation från beräkning."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 4,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001",
+            "synthetic-sub-exchange-001",
+            "synthetic-pilot-ag3-a",
+            "synthetic-sub-exchange-002"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "stop",
+          "outcome": "needs_review",
+          "reasonCode": "written_prerequisite_difference",
+          "reasonSv": "Förkunskapskontroll och skriftligt resultat skiljer sig. Följ upp växling/metod; fastställ ingen missuppfattning automatiskt."
+        }
+      ]
+    },
+    {
+      "id": "zero-column-error",
+      "title": "Noll i omöjlig kolumn: ingen automatisk orsaksdiagnos",
+      "synthetic": true,
+      "history": [],
+      "responses": [
+        {
+          "id": "synthetic-sub-no-exchange-001",
+          "taskId": "sub-no-exchange-001",
+          "answer": 533,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        },
+        {
+          "id": "synthetic-sub-exchange-001",
+          "taskId": "sub-exchange-001",
+          "answer": 430,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        },
+        {
+          "id": "synthetic-pilot-ag3-a",
+          "taskId": "pilot-ag3-a",
+          "answer": 5,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        },
+        {
+          "id": "synthetic-sub-exchange-002",
+          "taskId": "sub-exchange-002",
+          "answer": 330,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        }
+      ],
+      "trace": [
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 0,
+          "maxNewQuestions": 5,
+          "evidenceIds": [],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-no-exchange-001",
+            "role": "baseline",
+            "prompt": "Räkna ut 764 − 231.",
+            "answer": 533,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "establish_baseline",
+          "reasonSv": "Jämförbart historiskt underlag saknas. Börja med kolumnplacering utan växling; rätt svar här bevisar inte växling."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 1,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-exchange-001",
+            "role": "single_exchange",
+            "prompt": "Räkna ut 642 − 217.",
+            "answer": 425,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "discriminating_contrast",
+          "reasonSv": "Välj en fråga där de två felmodellerna ger andra svar än facit."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 2,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001",
+            "synthetic-sub-exchange-001"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "pilot-ag3-a",
+            "role": "prerequisite",
+            "prompt": "13 − 8",
+            "answer": 5,
+            "coverageId": "M02",
+            "grid": false,
+            "source": "proposed_original"
+          },
+          "reasonCode": "check_prerequisite",
+          "reasonSv": "Ett fel säger inte varför. Pröva relevant AG3-förkunskap innan fler skriftliga frågor."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 3,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001",
+            "synthetic-sub-exchange-001",
+            "synthetic-pilot-ag3-a"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-exchange-002",
+            "role": "single_exchange",
+            "prompt": "Räkna ut 753 − 428.",
+            "answer": 325,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "contrast_written_method",
+          "reasonSv": "AG3-kontrollen fungerar. Pröva en annan skriftlig kontrast för att skilja representation från beräkning."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 4,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001",
+            "synthetic-sub-exchange-001",
+            "synthetic-pilot-ag3-a",
+            "synthetic-sub-exchange-002"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "stop",
+          "outcome": "needs_review",
+          "reasonCode": "written_prerequisite_difference",
+          "reasonSv": "Förkunskapskontroll och skriftligt resultat skiljer sig. Följ upp växling/metod; fastställ ingen missuppfattning automatiskt."
+        }
+      ]
+    },
+    {
+      "id": "weak-prerequisite",
+      "title": "Osäker AG3: pröva förkunskap utan att följa place_value_error",
+      "synthetic": true,
+      "history": [],
+      "responses": [
+        {
+          "id": "synthetic-sub-no-exchange-001",
+          "taskId": "sub-no-exchange-001",
+          "answer": 533,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        },
+        {
+          "id": "synthetic-sub-exchange-001",
+          "taskId": "sub-exchange-001",
+          "answer": 435,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        },
+        {
+          "id": "synthetic-pilot-ag3-a",
+          "taskId": "pilot-ag3-a",
+          "answer": 2,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true,
+          "patterns": [
+            "place_value_error"
+          ]
+        },
+        {
+          "id": "synthetic-pilot-ag3-b",
+          "taskId": "pilot-ag3-b",
+          "answer": 3,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        }
+      ],
+      "trace": [
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 0,
+          "maxNewQuestions": 5,
+          "evidenceIds": [],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-no-exchange-001",
+            "role": "baseline",
+            "prompt": "Räkna ut 764 − 231.",
+            "answer": 533,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "establish_baseline",
+          "reasonSv": "Jämförbart historiskt underlag saknas. Börja med kolumnplacering utan växling; rätt svar här bevisar inte växling."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 1,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-exchange-001",
+            "role": "single_exchange",
+            "prompt": "Räkna ut 642 − 217.",
+            "answer": 425,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "discriminating_contrast",
+          "reasonSv": "Välj en fråga där de två felmodellerna ger andra svar än facit."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 2,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001",
+            "synthetic-sub-exchange-001"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "pilot-ag3-a",
+            "role": "prerequisite",
+            "prompt": "13 − 8",
+            "answer": 5,
+            "coverageId": "M02",
+            "grid": false,
+            "source": "proposed_original"
+          },
+          "reasonCode": "check_prerequisite",
+          "reasonSv": "Ett fel säger inte varför. Pröva relevant AG3-förkunskap innan fler skriftliga frågor."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 3,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001",
+            "synthetic-sub-exchange-001",
+            "synthetic-pilot-ag3-a"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "pilot-ag3-b",
+            "role": "prerequisite",
+            "prompt": "14 − 6",
+            "answer": 8,
+            "coverageId": "M02",
+            "grid": false,
+            "source": "proposed_original"
+          },
+          "reasonCode": "contrast_prerequisite",
+          "reasonSv": "Förkunskapen är osäker; välj en annan kontroll utan att fastställa felorsak."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 4,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001",
+            "synthetic-sub-exchange-001",
+            "synthetic-pilot-ag3-a",
+            "synthetic-pilot-ag3-b"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "stop",
+          "outcome": "needs_review",
+          "reasonCode": "prerequisite_uncertain",
+          "reasonSv": "Även förkunskapskontrollen är osäker. Lämna frågor och svar till läraren, utan orsaksdiagnos."
+        }
+      ]
+    },
+    {
+      "id": "contradictory-method",
+      "title": "Rätt slutsvar men felaktigt granskat resonemang",
+      "synthetic": true,
+      "history": [
+        {
+          "id": "synthetic-history-sub-exchange-001",
+          "taskId": "sub-exchange-001",
+          "answer": 425,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true,
+          "selectedForScope": true,
+          "selectionReason": "Synthetic reviewer selected a comparable current example.",
+          "snapshotRevision": "synthetic-snapshot-1"
+        }
+      ],
+      "responses": [
+        {
+          "id": "synthetic-sub-exchange-002",
+          "taskId": "sub-exchange-002",
+          "answer": 325,
+          "status": "answered",
+          "method": "contradictory",
+          "saved": true
+        }
+      ],
+      "trace": [
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 0,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-history-sub-exchange-001"
+          ],
+          "supportIds": [
+            "synthetic-history-sub-exchange-001"
+          ],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-exchange-002",
+            "role": "single_exchange",
+            "prompt": "Räkna ut 753 − 428.",
+            "answer": 325,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "discriminating_contrast",
+          "reasonSv": "Relevant historik finns; välj en ny särskiljande bekräftelse."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 1,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-history-sub-exchange-001",
+            "synthetic-sub-exchange-002"
+          ],
+          "supportIds": [
+            "synthetic-history-sub-exchange-001"
+          ],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "stop",
+          "outcome": "needs_review",
+          "reasonCode": "method_conflict",
+          "reasonSv": "Slutsvar och granskat arbete motsäger varandra; lärargranskning behövs."
+        }
+      ]
+    },
+    {
+      "id": "blank-work",
+      "title": "Sparat arbete utan slutsvar ger inget kunskapsbesked",
+      "synthetic": true,
+      "history": [],
+      "responses": [
+        {
+          "id": "synthetic-sub-no-exchange-001",
+          "taskId": "sub-no-exchange-001",
+          "answer": "",
+          "status": "blank",
+          "method": "consistent",
+          "saved": true,
+          "hasWork": true
+        }
+      ],
+      "trace": [
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 0,
+          "maxNewQuestions": 5,
+          "evidenceIds": [],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-no-exchange-001",
+            "role": "baseline",
+            "prompt": "Räkna ut 764 − 231.",
+            "answer": 533,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "establish_baseline",
+          "reasonSv": "Jämförbart historiskt underlag saknas. Börja med kolumnplacering utan växling; rätt svar här bevisar inte växling."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 1,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "stop",
+          "outcome": "insufficient",
+          "reasonCode": "incomplete_response",
+          "reasonSv": "Obesvarat eller avbrutet är inte en kunskapsbrist. Bevara arbetet för uppföljning."
+        }
+      ]
+    },
+    {
+      "id": "interruption",
+      "title": "Avbrott: inget nästa diagnostiskt steg",
+      "synthetic": true,
+      "history": [],
+      "responses": [
+        {
+          "id": "synthetic-sub-no-exchange-001",
+          "taskId": "sub-no-exchange-001",
+          "answer": "",
+          "status": "interrupted",
+          "method": "consistent",
+          "saved": true
+        }
+      ],
+      "trace": [
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 0,
+          "maxNewQuestions": 5,
+          "evidenceIds": [],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-no-exchange-001",
+            "role": "baseline",
+            "prompt": "Räkna ut 764 − 231.",
+            "answer": 533,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "establish_baseline",
+          "reasonSv": "Jämförbart historiskt underlag saknas. Börja med kolumnplacering utan växling; rätt svar här bevisar inte växling."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 1,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "stop",
+          "outcome": "insufficient",
+          "reasonCode": "incomplete_response",
+          "reasonSv": "Obesvarat eller avbrutet är inte en kunskapsbrist. Bevara arbetet för uppföljning."
+        }
+      ]
+    },
+    {
+      "id": "unsaved-answer",
+      "title": "Sparbekräftelse saknas: håll kvar frågan",
+      "synthetic": true,
+      "history": [],
+      "responses": [
+        {
+          "id": "synthetic-sub-no-exchange-001",
+          "taskId": "sub-no-exchange-001",
+          "answer": 533,
+          "status": "answered",
+          "method": "consistent",
+          "saved": false
+        }
+      ],
+      "trace": [
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 0,
+          "maxNewQuestions": 5,
+          "evidenceIds": [],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-no-exchange-001",
+            "role": "baseline",
+            "prompt": "Räkna ut 764 − 231.",
+            "answer": 533,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "establish_baseline",
+          "reasonSv": "Jämförbart historiskt underlag saknas. Börja med kolumnplacering utan växling; rätt svar här bevisar inte växling."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 1,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "wait",
+          "reasonCode": "save_pending",
+          "reasonSv": "Invänta sparbekräftelse; bevara arbetet och samma fråga."
+        }
+      ]
+    },
+    {
+      "id": "unreviewed-method",
+      "title": "Två rätta kontraster utan metodgranskning är inte säker förståelse",
+      "synthetic": true,
+      "history": [],
+      "responses": [
+        {
+          "id": "synthetic-sub-no-exchange-001",
+          "taskId": "sub-no-exchange-001",
+          "answer": 533,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        },
+        {
+          "id": "synthetic-sub-exchange-001",
+          "taskId": "sub-exchange-001",
+          "answer": 425,
+          "status": "answered",
+          "method": "unreviewed",
+          "saved": true
+        },
+        {
+          "id": "synthetic-sub-exchange-002",
+          "taskId": "sub-exchange-002",
+          "answer": 325,
+          "status": "answered",
+          "method": "unreviewed",
+          "saved": true
+        }
+      ],
+      "trace": [
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 0,
+          "maxNewQuestions": 5,
+          "evidenceIds": [],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-no-exchange-001",
+            "role": "baseline",
+            "prompt": "Räkna ut 764 − 231.",
+            "answer": 533,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "establish_baseline",
+          "reasonSv": "Jämförbart historiskt underlag saknas. Börja med kolumnplacering utan växling; rätt svar här bevisar inte växling."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 1,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-exchange-001",
+            "role": "single_exchange",
+            "prompt": "Räkna ut 642 − 217.",
+            "answer": 425,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "discriminating_contrast",
+          "reasonSv": "Välj en fråga där de två felmodellerna ger andra svar än facit."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 2,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001",
+            "synthetic-sub-exchange-001"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-exchange-002",
+            "role": "single_exchange",
+            "prompt": "Räkna ut 753 − 428.",
+            "answer": 325,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "discriminating_contrast",
+          "reasonSv": "Välj en fråga där de två felmodellerna ger andra svar än facit."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "single_exchange",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 3,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-sub-no-exchange-001",
+            "synthetic-sub-exchange-001",
+            "synthetic-sub-exchange-002"
+          ],
+          "supportIds": [],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "stop",
+          "outcome": "needs_review",
+          "reasonCode": "method_not_reviewed",
+          "reasonSv": "Slutsvaren räcker inte för metodbedömning. Granska arbetet i stället för att ge fler likadana frågor."
+        }
+      ]
+    },
+    {
+      "id": "through-zero",
+      "title": "Genom noll har eget delmoment och egen bekräftelse",
+      "synthetic": true,
+      "history": [
+        {
+          "id": "synthetic-history-sub-through-zero-001",
+          "taskId": "sub-through-zero-001",
+          "answer": 224,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true,
+          "selectedForScope": true,
+          "selectionReason": "Synthetic reviewer selected a comparable current example.",
+          "snapshotRevision": "synthetic-snapshot-1"
+        }
+      ],
+      "responses": [
+        {
+          "id": "synthetic-sub-through-zero-002",
+          "taskId": "sub-through-zero-002",
+          "answer": 236,
+          "status": "answered",
+          "method": "consistent",
+          "saved": true
+        }
+      ],
+      "trace": [
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "through_zero",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 0,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-history-sub-through-zero-001"
+          ],
+          "supportIds": [
+            "synthetic-history-sub-through-zero-001"
+          ],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "ask",
+          "task": {
+            "id": "sub-through-zero-002",
+            "role": "through_zero",
+            "prompt": "Räkna ut 503 − 267.",
+            "answer": 236,
+            "coverageId": "M02",
+            "grid": true,
+            "source": "original_catalog"
+          },
+          "reasonCode": "discriminating_contrast",
+          "reasonSv": "Relevant historik finns; välj en ny särskiljande bekräftelse."
+        },
+        {
+          "ruleVersion": "synthetic-as2-v1",
+          "scope": "through_zero",
+          "coverageIds": [
+            "M02",
+            "N2"
+          ],
+          "evidenceClass": "diagnostic_only",
+          "usedNewQuestions": 1,
+          "maxNewQuestions": 5,
+          "evidenceIds": [
+            "synthetic-history-sub-through-zero-001",
+            "synthetic-sub-through-zero-002"
+          ],
+          "supportIds": [
+            "synthetic-history-sub-through-zero-001",
+            "synthetic-sub-through-zero-002"
+          ],
+          "ignored": [],
+          "limitation": "Synthetic rule, not a validated diagnosis or mastery decision.",
+          "action": "stop",
+          "outcome": "supported",
+          "reasonCode": "subskill_supported",
+          "reasonSv": "Två olika särskiljande frågor ger förenligt stöd för just detta delmoment. Avsluta här."
+        }
+      ]
+    }
+  ]
+}

@@ -99,4 +99,4 @@ Kodjämförelsen omfattar alla sex domäners analyzeError, aritmetikens fem hypo
 
 [Förslag till första pilot](NCM_ADAPTIVE_SCREENING_PILOT.md): skriftlig subtraktion, AS2 med AG3 som förkunskapskontroll. Valt för att sparat arbete och befintliga kontrastuppgifter finns, inte för att resten av katalogen väljs bort.
 
-Nästa genomförande är en **syntetisk beslutsprototyp** för pilotens gren-/stoppregler och genomgång av några lärargranskningsbara fall. Därefter ett uttryckligt valt verkligt elevunderlag och didaktisk avstämning före bredare automation. Ingen elevdata har lästs, inget material delats ut och inget publicerats i denna inventering.
+En **fristående syntetisk beslutsprototyp** för pilotens gren-/stoppregler finns nu i `scripts/prototypes/`, med [redovisade körningar](evaluations/ncm-didactic-2026-10-30/decision-prototype.md). Nästa steg är ett uttryckligt valt verkligt elevunderlag och didaktisk avstämning före bredare automation. Ingen verklig elevdata har lästs, inget material delats ut och inget publicerats i inventeringen eller prototypen.

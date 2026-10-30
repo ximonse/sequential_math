@@ -1,7 +1,8 @@
 # Förslag: kort adaptiv kartläggning av skriftlig subtraktion
 
-Datum: 2026-10-30. **Designförslag efter inventering, inte implementerat eller
-didaktiskt kalibrerat med elever.** Ingen elevprofil ändras av dokumentet.
+Datum: 2026-10-30. **Designförslag med fristående syntetisk beslutsprototyp.
+Inte inkopplat i elevappen eller didaktiskt kalibrerat med elever.** Ingen
+elevprofil ändras av dokumentet eller prototypen.
 
 ## Ryggrad och avgränsning
 
@@ -122,10 +123,37 @@ observation att undersöka; det bevisar inte att eleven följde modellen.
 | Sparat arbete men tomt svar, eller nätavbrott | Separera arbete från inlämnat svar. Spara/bevara; ingen automatisk kunskapsbrist. |
 | Högst fem frågor, fortfarande motsägelsefullt | Avsluta med kvarstående osäkerhet och lärarfråga. |
 
+## Genomförd syntetisk beslutsprototyp
+
+`scripts/prototypes/ncm-screening-pilot.mjs` är en fristående beslutsfunktion.
+Den läser befintliga originalfrågor, men importeras inte av appen eller MCP.
+`node scripts/prototypes/run-ncm-screening-pilot.mjs` skriver enbart en
+syntetisk rapport till stdout, utan nätverksanrop eller databas-/appskrivning.
+
+[Spårbar körning med elva fall](evaluations/ncm-didactic-2026-10-30/decision-prototype.json)
+visar varje frågeval, beslutsversion, beläggs-ID, motivering, frågebudget och
+slutbesked. [Läsbar redovisning](evaluations/ncm-didactic-2026-10-30/decision-prototype.md)
+beskriver utfall och begränsningar. Riktade tester prövar också dubbletter,
+motstridiga observationer, felkodsetiketternas oberoende, olika delmoment,
+saknad historikmotivering, frågebudget, förbrukad frågebank och sparväntan.
+
+Metodflaggorna `consistent`/`contradictory`/`unreviewed` och urvalet av aktuell
+jämförbar historik är **uttryckliga simulerade granskarbedömningar**. Ingen
+metod läses automatiskt ur bilden eller slutsvaret. Utan metodgranskning kan
+två rätta slutsvar därför leda till lärargranskning i stället för klartecken.
+
+Prototypen väljer inte fler frågor efter ett avbrott eller en obesvarad
+inmatning. Oförenliga kopior av samma observation stoppar urvalet; samma
+fråga ger inte två oberoende styrkebelägg. Finns ingen oanvänd granskad
+kontrast avbryts automatiken med en förklaring. Åldersgräns för historik,
+språkliga anpassningar och eventuell läraravstämning efter ett tillfälligt fel
+är ännu inte kalibrerade produktregler.
+
 ## Vad som återstår före automatisk elevprocess
 
-- Gör en liten syntetisk beslutsprototyp som kontrollerar fallen ovan och
-  att frågebudget, motexempel och snabba stopp respekteras.
+- Stäm av prototypens urval och stopp mot ett uttryckligt valt verkligt
+  elevunderlag, utan automatisk utdelning. De syntetiska fallen kontrollerar
+  regelbeteendet men bevisar inte didaktisk träffsäkerhet.
 - Rätta och verifiera felmodellernas alltför specifika träffar innan sådana
   signaler får fatta automatiska diagnostiska beslut. Befintliga signaler
   förblir observationer med källursprung; äldre analyser skrivs inte om.

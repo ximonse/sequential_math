@@ -3,7 +3,7 @@
  * Returnerar ett ErrorAnalysis-objekt vid träff, annars null.
  */
 
-import { isPlaceValueScaling, near } from './commonHypotheses'
+import { isPlaceValueScaling, near } from './commonHypotheses.js'
 
 /**
  * Eleven svarar på ett angränsande tabellvärde: a×(b±1) eller (a±1)×b.
@@ -42,6 +42,29 @@ export function testOnesDigitsOnly(a, b, correct, answer) {
     category: 'knowledge',
     patterns: ['ones_digits_only'],
     detail: 'Multiplicerade enbart entalen, ignorerade tiotal och hundratal.'
+  }
+}
+
+/**
+ * MISSUPPFATTNING: heltal och decimaldel multipliceras var för sig och skrivs ihop.
+ * Ex: 7 × 6,7 → 7·6 = 42 och 7·7 = 49 → svar 42,49 (korrekt 46,9).
+ * Gäller ett heltal gånger ett tal med en decimal.
+ */
+export function predictDecimalPartsSeparately(a, b) {
+  const [whole, dec] = Number.isInteger(a) ? [a, b] : [b, a]
+  if (!Number.isInteger(whole) || whole < 0) return null
+  const parts = String(dec).split('.')
+  if (parts.length !== 2 || parts[1].length !== 1 || Number(parts[0]) < 0) return null
+  return Number(`${whole * Number(parts[0])}.${whole * Number(parts[1])}`)
+}
+
+export function testDecimalPartsSeparately(a, b, correct, answer) {
+  const wrong = predictDecimalPartsSeparately(a, b)
+  if (wrong === null || near(wrong, correct) || Math.abs(answer - wrong) > 1e-9) return null
+  return {
+    category: 'misconception',
+    patterns: ['decimal_parts_multiplied_separately'],
+    detail: 'Heltal och decimaldel verkar ha multiplicerats var för sig och skrivits ihop.'
   }
 }
 

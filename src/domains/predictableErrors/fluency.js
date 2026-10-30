@@ -1,5 +1,5 @@
 import { digitByDigitSum } from '../arithmetic/errorHypotheses/commonHypotheses.js'
-import { candidateResult, prediction, unavailable } from './core.js'
+import { candidateResult, entryAndNearMissPredictions, prediction, unavailable } from './core.js'
 
 export function fluencyCandidates(problem, answer) {
   const v = problem?.values ?? {}, skill = problem?.skill ?? problem?.type
@@ -9,6 +9,7 @@ export function fluencyCandidates(problem, answer) {
       prediction('bond_sum_instead_of_missing', v.target + v.knownTerm, 'Svaret matchar summan av måltal och känd term.'),
       prediction('bond_known_term_returned', v.knownTerm, 'Den kända termen kan ha skrivits i svarsfältet.'),
       prediction('bond_target_returned', v.target, 'Måltalet kan ha skrivits i stället för den saknade termen.'),
+      ...entryAndNearMissPredictions(v.target - v.knownTerm, { offByOne: true }),
     ] })
   }
   if (skill !== 'doubles' || !small(v.value) || v.doubled !== 2 * v.value) return unavailable('number_fluency')
@@ -19,5 +20,6 @@ export function fluencyCandidates(problem, answer) {
   return candidateResult({ domain: 'number_fluency', scope: 'forward_double', correct: v.doubled, answer, predictions: [
     prediction('double_no_carry', digitByDigitSum(v.value, v.value), 'Svaret matchar dubblering utan överförd minnessiffra; räknemetoden behöver belägg.'),
     prediction('double_original_returned', v.value, 'Det ursprungliga talet kan ha lämnats utan dubblering.'),
+    ...entryAndNearMissPredictions(v.doubled, { offByOne: true }),
   ] })
 }

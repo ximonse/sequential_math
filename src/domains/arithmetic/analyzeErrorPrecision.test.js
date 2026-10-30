@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { analyzeArithmeticError } from './analyzeError'
+import { analyzeNumberFluencyError } from '../number_fluency/analyzeError.js'
 
 const problem = (type, a, b, correct, metadata) =>
   ({ type, values: { a, b }, result: correct, answer: { type: 'number', correct }, ...(metadata ? { metadata } : {}) })
@@ -43,5 +44,21 @@ describe('arithmetic error analysis precision', () => {
   it('does not apply integer-only models to decimals or negative column cases', () => {
     expect(patterns(problem('multiplication', 2.5, 4, 10), 7.5)).toEqual(['calculation_error'])
     expect(patterns(problem('subtraction', 38, 52, -14), 26)).toEqual(['calculation_error'])
+  })
+
+  it('treats only the leading digit of a multi-digit answer as interrupted entry, not knowledge', () => {
+    expect(analyzeArithmeticError(problem('multiplication', 3, 4, 12), 1)).toMatchObject({ category: 'inattention', patterns: ['partial_answer_entry'] })
+    expect(patterns(problem('multiplication', 7, 2, 14), 4)).toEqual(['calculation_error'])
+    expect(patterns(problem('multiplication', 2, 3, 6), 5)).not.toContain('partial_answer_entry')
+    const double = { skill: 'doubles', values: { value: 9, doubled: 18 }, answer: { correct: 18 } }
+    expect(analyzeNumberFluencyError(double, 1)).toMatchObject({ category: 'inattention', patterns: ['partial_answer_entry'] })
+    expect(analyzeNumberFluencyError(double, 17).patterns).toEqual(['double_not_recalled'])
+  })
+
+  it('recognises decimal parts multiplied separately', () => {
+    expect(patterns(problem('multiplication', 7, 6.7, 46.9), 42.49)).toEqual(['decimal_parts_multiplied_separately'])
+    expect(patterns(problem('multiplication', 6, 2.8, 16.8), 12.48)).toEqual(['decimal_parts_multiplied_separately'])
+    // 2 × 3,1 gives the right answer with this method; nothing to recognise.
+    expect(patterns(problem('multiplication', 2, 3.1, 6.2), 6.1)).toEqual(['calculation_error'])
   })
 })

@@ -13,8 +13,10 @@ import { evaluateArithmeticProblem } from './evaluate'
 import { countBorrows, countCarries } from '../../lib/problemGeneratorMathHelpers'
 import {
   getSwapAnswer,
+  isLeadingDigitOnly,
   near,
   nearExact,
+  PARTIAL_ENTRY_ANALYSIS,
   testDigitReversal,
   testPlaceValueShift
 } from './errorHypotheses/commonHypotheses'
@@ -28,6 +30,7 @@ import {
   testSmallerMinusLarger
 } from './errorHypotheses/subtractionHypotheses'
 import {
+  testDecimalPartsSeparately,
   testOnesDigitsOnly,
   testPlaceValueMisconception,
   testTableOffByOne
@@ -97,6 +100,7 @@ function analyzeMultiplication(a, b, correct, answer) {
     }
   }
   return (
+    testDecimalPartsSeparately(a, b, correct, answer) ||
     testTableOffByOne(a, b, correct, answer) ||
     testOnesDigitsOnly(a, b, correct, answer)
   )
@@ -144,6 +148,9 @@ export function analyzeArithmeticError(problem, studentAnswer) {
       detail: 'Siffrorna i svaret verkar skrivna i omvänd ordning.'
     }
   }
+
+  // 2b. Bara första siffran av facit (avbruten inmatning)
+  if (isLeadingDigitOnly(correct, answer)) return { ...PARTIAL_ENTRY_ANALYSIS }
 
   // 3. Talvärdesförskjutning ×10 / ÷10 (missuppfattning, gemensam för alla räknesätt)
   if (type !== 'multiplication' && testPlaceValueShift(correct, answer)) {

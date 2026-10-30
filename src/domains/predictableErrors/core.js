@@ -1,4 +1,4 @@
-export const PREDICTABLE_RULE_VERSION = 'predictable-errors-v1'
+export const PREDICTABLE_RULE_VERSION = 'predictable-errors-v2'
 export const LIMIT = 1e9
 
 export function numeric(value) {
@@ -24,3 +24,14 @@ export const unavailable = (domain, reason = 'unsupported_structure') => ({ rule
   domain: domain ?? 'unknown', status: 'not_applicable', reason, matches: [], predictions: [],
   nonDiscriminatingModelIds: [], limitation: 'no_inference_from_missing_structure' })
 export const prediction = (modelId, predictedAnswer, reasonSv) => ({ modelId, predictedAnswer, reasonSv })
+
+// Shared observations for whole-number answers. Neither is a method diagnosis.
+export function entryAndNearMissPredictions(correct, { offByOne = false } = {}) {
+  if (!Number.isInteger(correct) || correct < 0) return []
+  const list = []
+  if (correct >= 10) list.push(prediction('partial_answer_entry', Number(String(correct)[0]),
+    'Svaret är bara första siffran i facit; troligen avbruten inmatning, inte ett räknefel.'))
+  if (offByOne) for (const wrong of [correct - 1, correct + 1]) if (wrong >= 0) list.push(prediction('answer_off_by_one', wrong,
+    'Svaret är ett ifrån facit; kan vara uppräkning ett steg fel eller en gissning. Kräver en särskiljande fråga.'))
+  return list
+}

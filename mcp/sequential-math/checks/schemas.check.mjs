@@ -8,7 +8,7 @@ const hypothesis = { id: 'h1', textSv: 'Beräknad kandidat', basis: 'rule_candid
   supportRefs: ['r1'], counterRefs: [], alternativesSv: ['Annan förklaring'], nextCheckSv: 'Särskiljande fråga' }
 
 test('MCP report schema keeps a rule candidate ruleVersion for server validation', () => {
-  const parsed = report.parse({ ...base, hypotheses: [{ ...hypothesis, ruleVersion: 'predictable-errors-v1' }] })
-  assert.equal(parsed.hypotheses[0].ruleVersion, 'predictable-errors-v1')
+  const parsed = report.parse({ ...base, hypotheses: [{ ...hypothesis, ruleVersion: 'predictable-errors-v2' }] })
+  assert.equal(parsed.hypotheses[0].ruleVersion, 'predictable-errors-v2')
   assert.throws(() => report.parse({ ...base, hypotheses: [{ ...hypothesis, ruleVersion: '' }] }))
 })

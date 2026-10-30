@@ -1,8 +1,13 @@
 import { evaluateNumberFluencyProblem } from './evaluate.js'
+import { isLeadingDigitOnly, PARTIAL_ENTRY_ANALYSIS } from '../arithmetic/errorHypotheses/commonHypotheses.js'
 
 export function analyzeNumberFluencyError(problem, studentAnswer) {
-  if (evaluateNumberFluencyProblem(problem, studentAnswer).correct) {
+  const evaluation = evaluateNumberFluencyProblem(problem, studentAnswer)
+  if (evaluation.correct) {
     return { category: 'none', patterns: [], detail: '' }
+  }
+  if (isLeadingDigitOnly(evaluation.correctAnswer, Number(String(studentAnswer).replace(',', '.')))) {
+    return { ...PARTIAL_ENTRY_ANALYSIS }
   }
   const pattern = problem?.skill === 'number_bonds' ? 'number_bond_not_recalled' : 'double_not_recalled'
   return {

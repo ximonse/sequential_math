@@ -44,6 +44,22 @@ export function testPlaceValueShift(correct, answer) {
 }
 
 /**
+ * Svaret är bara första siffran i ett flersiffrigt facit (9 + 9 → 1).
+ * Eleven skriver vänster till höger, så ett avbrutet svar blir första siffran.
+ * Det är en inmatningssignal, inte ett räknefel.
+ */
+export function isLeadingDigitOnly(correct, answer) {
+  return Number.isInteger(correct) && correct >= 10 && Number.isInteger(answer)
+    && answer === Number(String(correct)[0])
+}
+
+export const PARTIAL_ENTRY_ANALYSIS = {
+  category: 'inattention',
+  patterns: ['partial_answer_entry'],
+  detail: 'Svaret är bara första siffran i facit — troligen avbruten inmatning, inte ett räknefel.'
+}
+
+/**
  * Returnerar vad eleven borde ha fått om de tillämpat fel räknesätt.
  * Används för operation_swap-diagnos.
  */

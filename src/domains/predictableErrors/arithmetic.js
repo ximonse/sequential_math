@@ -1,7 +1,8 @@
 import { digitByDigitSum, digitByDigitAbsDiff, getSwapAnswer } from '../arithmetic/errorHypotheses/commonHypotheses.js'
 import { predictNoBorrowAnswer } from '../arithmetic/errorHypotheses/subtractionHypotheses.js'
+import { predictDecimalPartsSeparately } from '../arithmetic/errorHypotheses/multiplicationHypotheses.js'
 import { subtractionCandidates } from '../arithmetic/subtractionCandidates.js'
-import { candidateResult, prediction, unavailable, numeric } from './core.js'
+import { candidateResult, entryAndNearMissPredictions, prediction, unavailable, numeric } from './core.js'
 
 export function arithmeticCandidates(problem, answer) {
   const { a: rawA, b: rawB } = problem?.values ?? {}, a = numeric(rawA), b = numeric(rawB)
@@ -36,6 +37,14 @@ export function arithmeticCandidates(problem, answer) {
       if (wrong >= 0) predictions.push(prediction('table_off_by_one', wrong, 'Svaret matchar en angränsande produkt, inte en bevisad minnesorsak.'))
     }
   }
+  if (op === 'multiplication' && decimals) {
+    const wrong = predictDecimalPartsSeparately(a, b)
+    if (wrong !== null) predictions.push(prediction('decimal_parts_multiplied_separately', wrong,
+      'Svaret matchar heltal och decimaldel multiplicerade var för sig och skrivna ihop.'))
+  }
+  // Off-by-one only for single-digit table facts, where counting a step wrong is plausible.
+  const tableFact = op === 'multiplication' && [a, b].every(n => Number.isInteger(n) && n >= 0 && n <= 10)
+  predictions.push(...entryAndNearMissPredictions(correct, { offByOne: tableFact }))
   if (op === 'division') {
     if (a !== 0) predictions.push(prediction('reversed_operands', b / a, 'Svaret matchar division i omvänd ordning.'))
     predictions.push(prediction('divisor_as_answer', b, 'Svaret är divisorn.'), prediction('dividend_as_answer', a, 'Svaret är dividenden.'))

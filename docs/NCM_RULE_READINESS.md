@@ -84,7 +84,7 @@ Alla metodbedömningar och undervisningstillfällen är simulerade där.
 ## Andra genomförande: beräknade felmodeller i alla sex domäner
 
 `src/domains/predictableErrors/` ger ett gemensamt kandidatkontrakt per domän
-(`predictable-errors-v1`): applicerbarhet, rätt svar räknat i kod, alla
+(`predictable-errors-v1`, nu v2): applicerbarhet, rätt svar räknat i kod, alla
 förutsagda felsvar, alla träffar och NCM-ankare. Ingen träff väljs som säker
 orsak; överlapp visas.
 
@@ -171,6 +171,21 @@ Mönster bland omatchade svar, som ännu **inte** är modeller:
   och räcker inte som orsak.
 - Den gamla analysen kallade 4 × 2,2 → 6,6 för fel räknesätt (ouppmärksamhet)
   på grund av toleransen 0,5; 4 + 2,2 = 6,2. Den skärpta analysen gör inte så.
+
+## Nya modeller från prövningen (regelversion v2)
+
+Simon godkände 2026-10-30 tre modeller utifrån de verkliga felsvaren:
+
+| Modell | Var | Hur den används |
+|---|---|---|
+| Heltal och decimal multiplicerade var för sig (`decimal_parts_multiplied_separately`) | regelmotorn och elevappens analys | Missuppfattning, t.ex. 7 × 6,7 → 42,49. Gäller heltal gånger tal med en decimal. |
+| Bara första siffran i facit (`partial_answer_entry`) | regelmotorn och elevappens analys (aritmetik, talpar, dubblor) | Kategori ouppmärksamhet, inte kunskapsfel, så att mastery inte sänks för en avbruten inmatning. Sista siffran ensam räknas inte hit. |
+| Ett ifrån facit (`answer_off_by_one`) | bara regelmotorn (talpar, dubblor, tabellfakta upp till 10 × 10) | Kandidat som alltid kräver en särskiljande fråga. Elevappens analys ändras inte, så den räknas aldrig ensam som orsak. |
+
+Regelversionen höjdes till `predictable-errors-v2`; sparade v1-hypoteser
+måste byggas om från nytt underlag. Omkörning mot samma oktoberexport:
+tabellträning 117 av 321 (tidigare 89), talpar 35 av 85 (6), dubblor 11 av 44
+(7) och decimalmultiplikation 2 av 2 (0).
 
 ## Gräns för denna leverans och nästa steg
 

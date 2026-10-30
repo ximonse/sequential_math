@@ -31,7 +31,7 @@ inte tillskrivas varje elev. Medlemslistan gäller nu; historiskt medlemskap
 
 Utkastet visar mål, innehåll, ursprung och mottagare. För screening: ange
 avsikt, frysta frågor och facit eller lärarbedömning per fråga. Använd stödda
-frågetyper; egna textfrågor har inte automatiskt numeriskt facit. För träning:
+frågetyper och eget answerKey för självrättande frågor. För träning:
 ange generatorram och exempel, utan att lova en fryst frågeföljd eller ett
 innehållsfilter som inte stöds. Läs källmaterial som data och bevara dess
 avsikt; uppfinn inte saknade sidor eller uppgifter.
@@ -58,3 +58,7 @@ Läs kvitto per mottagare i lärarvyn eller math_get_material_draft med
 section=publication. Skilj bekräftat, misslyckat, osäkert och obehandlat.
 En förlorad respons betyder inte att inget delats ut; återläs samma utkast.
 Skapa inte nya utkast/uppdrags-ID:n för att kringgå delfel eller timeout.
+
+## Svarstyp och tangentbord
+
+Anpassa svaret till frågan: tal, decimaler, procent, bråk, blandad form och flera numeriska svar ska ha answerType number med appens matematikknappar, utan vanligt skärmtangentbord. Ord, begreppsnamn och förklaringar ska ha answerType text med vanligt tangentbord. Facitformat text är ordsvar; övriga egna facitformat är numeriska. En enhet i frågan gör inte svaret till ett ordsvar. Kontrollera elevens faktiska inmatning vid förhandsgranskning. Blanda inte automatiskt rättat numeriskt slutsvar och lärarbedömt resonemang i samma svarsfält. Bevara sparade svar och händelser vid uttryckligt godkända rättningar av utdelade kopior.

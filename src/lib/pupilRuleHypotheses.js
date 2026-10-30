@@ -1,3 +1,5 @@
+import { isSpeedTrainingEntry, SPEED_SLIP_MODELS } from './practiceModes.js'
+
 const current = entry => entry?.interpretation?.predictable
 const level = entry => entry.context?.contentLevel ?? entry.context?.level
 
@@ -18,6 +20,8 @@ export function buildRuleHypotheses(entries) {
     const result = current(entry)
     if (entry.answer.status !== 'incorrect' || result?.status !== 'matched') continue
     for (const modelId of new Set(result.matches.map(m => m.modelId))) {
+      // Single slips under time pressure are summarised, not treated as hypotheses.
+      if (SPEED_SLIP_MODELS.has(modelId) && isSpeedTrainingEntry(entry)) continue
       const key = JSON.stringify([result.domain, result.scope, modelId])
       if (!groups.has(key)) groups.set(key, { modelId, supports: [] })
       groups.get(key).supports.push(entry)
@@ -37,6 +41,8 @@ export function buildRuleHypotheses(entries) {
       alternativesSv: ['Andra felmodeller kan ge samma svar. Kontrollera originalarbete och en särskiljande fråga.',
         'Hjälp, avbrott eller en felinmatning kan påverka svaren. Rätta slutsvar visar inte i sig självständig metodförståelse.'],
       nextCheckSv: probe ? `Förslag, inte utdelat: ${probe.question.display.text}. ${probe.purposeSv}`
-        : 'Granska metoden och välj en ny särskiljande fråga. Den granskade frågebanken saknar en oanvänd kontrast för alla aktuella kandidater.' }
+        : support.every(isSpeedTrainingEntry)
+          ? 'Mönstret kommer från snabbhetsträning, där målet är att bli snabb. Ingen följdfråga där; upprepas mönstret kan screening av begreppet utan tidspress föreslås.'
+          : 'Granska metoden och välj en ny särskiljande fråga. Den granskade frågebanken saknar en oanvänd kontrast för alla aktuella kandidater.' }
   })
 }

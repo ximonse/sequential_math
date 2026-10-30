@@ -1,5 +1,6 @@
 import { OPERATION_LABELS } from './operations.js'
 import { buildRuleHypotheses, comparableRuleCounter } from './pupilRuleHypotheses.js'
+import { speedSlipSummary } from './practiceModes.js'
 export const PUPIL_ANALYSIS_VERSION = 1
 const fail = message => { throw Object.assign(new Error(message), { status: 400, code: 'invalid_analysis' }) }
 const text = (value, max = 1000) => {
@@ -99,6 +100,7 @@ export function buildPupilAnalysisDraft(evidence) {
     groups.get(key).push(entry)
   }
   const ruleHypotheses = buildRuleHypotheses(evidence.entries)
+  const slips = speedSlipSummary(evidence.entries)
   const strengths = [], hypotheses = ruleHypotheses.slice(0, 8).map((item, i) => ({ id: `hypothesis-${i + 1}`, ...item }))
   for (const [area, entries] of groups) {
     const areaLabel = OPERATION_LABELS[area] || 'det granskade området'
@@ -123,6 +125,7 @@ export function buildPupilAnalysisDraft(evidence) {
     limitationsSv: ['Historikens fullständighet är okänd. Antal svar beskriver urvalet, inte elevens samlade kunnande.',
       'Rätta svar är inte automatiskt motexempel: kontrollera att de prövar samma innehåll.',
       'Metoden kan inte fastställas från ett slutsvar. Inga nya AI-tolkningar har gjorts i detta regelunderlag.',
+      ...(slips.total ? [`Snabbhetsfel i färdighetsträning: ${slips.total} svar (ett ifrån facit ${slips.counts.answer_off_by_one}, bara första siffran ${slips.counts.partial_answer_entry}). De visas inte som felhypoteser; målet där är snabbhet.`] : []),
       ...(ruleHypotheses.length ? ['Rätta slutsvar väljs som möjliga motexempel bara vid samma kända innehåll/nivå och en särskiljande modell. Stödnivå och metod behöver granskas.',
         ...(ruleHypotheses.length > 8 ? [`Högst åtta modellgrupper visas; ${ruleHypotheses.length - 8} ytterligare grupper finns i underlaget.`] : [])] : [])] }
 }

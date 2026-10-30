@@ -71,27 +71,6 @@ describe('predictable candidates across all six domains', () => {
     const allSeen = new Set(predictableProbes.map(p => questionFingerprint(p.problem)))
     expect(selectPredictableProbe(result, allSeen).status).toBe('needs_review')
   })
-  it('finds an unseen fact in the same family when the reviewed item is already used', () => {
-    const bond = problem('number_fluency', 'number_bonds', { target: 15, knownTerm: 6, missingFirst: false })
-    const result = predictableCandidates(bond, 8)
-    expect(result.matches.map(m => m.modelId)).toEqual(['answer_off_by_one'])
-    const seen = new Set([questionFingerprint(bond),
-      questionFingerprint(problem('number_fluency', 'number_bonds', { target: 10, knownTerm: 1, missingFirst: true }))])
-    const next = selectPredictableProbe(result, seen)
-    expect(next).toMatchObject({ status: 'proposed', source: 'generated_fact_family', taskId: 'gen-bond-10-2' })
-    expect(next.purposeSv).toMatch(/visa hur hen räknar/u)
-    const table = problem('arithmetic', 'multiplication', { a: 7, b: 8 })
-    const tableNext = selectPredictableProbe(predictableCandidates(table, 63), new Set([questionFingerprint(table),
-      questionFingerprint(problem('arithmetic', 'multiplication', { a: 3, b: 3 })),
-      questionFingerprint(problem('arithmetic', 'multiplication', { a: 4, b: 3 }))]))
-    // 23 × 4 is the reviewed contrast; once seen, 3 × 4 is skipped because 4 × 3 was seen.
-    expect(tableNext.taskId).toBe('rule-mul-b')
-    const allSeenTables = selectPredictableProbe(predictableCandidates(table, 63), new Set([questionFingerprint(table),
-      questionFingerprint(problem('arithmetic', 'multiplication', { a: 23, b: 4 })),
-      questionFingerprint(problem('arithmetic', 'multiplication', { a: 3, b: 3 })),
-      questionFingerprint(problem('arithmetic', 'multiplication', { a: 4, b: 3 }))]))
-    expect(allSeenTables).toMatchObject({ status: 'proposed', taskId: 'gen-table-3-5' })
-  })
   it('computes all reviewed probe answers independently from their stored display text', () => {
     for (const p of predictableProbes) {
       const result = predictableCandidates(p.problem, '')

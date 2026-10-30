@@ -1,4 +1,5 @@
 import { cloneElement, useEffect, useMemo, useRef, useState } from 'react'
+import './progressAppearance.css'
 import AttentionModule from '../attention/AttentionModule'
 import AssignmentsPanel from './AssignmentsPanel'
 import RecipientPicker from './RecipientPicker'

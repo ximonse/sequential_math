@@ -151,6 +151,12 @@ språkliga anpassningar och eventuell läraravstämning efter ett tillfälligt f
 
 ## Vad som återstår före automatisk elevprocess
 
+Hela kedjan efter utredningen — undervisning, självständig kontroll och
+senare uppföljning — konkretiseras i
+[utredningsmallen för subtraktion med en växling](NCM_INVESTIGATION_TEMPLATE.md).
+Den är ett designfall med egna konstruerade exempel, inte en levererad
+elevprocess eller en validerad regel om att en felförståelse är borta.
+
 - Stäm av prototypens urval och stopp mot ett uttryckligt valt verkligt
   elevunderlag, utan automatisk utdelning. De syntetiska fallen kontrollerar
   regelbeteendet men bevisar inte didaktisk träffsäkerhet.

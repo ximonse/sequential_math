@@ -143,6 +143,35 @@ påverkar mastery och svårighet, så heltalsbeteendet är oförändrat.
 
 Kvar: analysen väljer fortfarande första träff och visar inte överlapp.
 
+## Första prövning mot verkliga felsvar (2026-10-30)
+
+Simon godkände prövning med elev-ID/pseudonym utan personnamn. Underlag:
+alla 471 felsvar i två åk 6-klasser 1–30 oktober (skrivskyddad export, lagrad
+utanför repot). Regelmotorn kördes lokalt utan AI. Här redovisas bara summor.
+Uppgiftstexten tolkades till operander; facit stämde i alla tolkade fall.
+
+| Problemtyp | Felsvar | Beräknad modell | Vanligaste modell |
+|---|---:|---:|---|
+| Tabellträning | 321 | 89 | tabellgranne 81, platsvärdesskalning 8, fel räknesätt 3 (överlapp 3) |
+| Talpar | 85 | 6 | summa, måltal, känd term (2 vardera) |
+| Dubblor | 44 | 7 | minnessiffra glömd 4, talet oförändrat 3 |
+| Procent | 5 | 3 | procenttalet som belopp |
+| Övrigt (decimal-, uttrycks-, bråk-, algebrauppgifter) | 16 | 1 | algebra tolkades inte ur exporttexten |
+
+Mönster bland omatchade svar, som ännu **inte** är modeller:
+
+- **Ett ifrån facit:** talpar 26, tabeller 22, dubblor 6. Kan vara uppräkning
+  ett steg fel, men också gissning; särskiljande fråga behövs.
+- **Bara en siffra av facit** (t.ex. 9 + 9 → 1, 3 × 4 → 1): första siffran 13,
+  sista siffran 10. Tyder på avbruten inmatning snarare än räknefel; svarstid
+  och inmatningslogg behövs innan det tolkas som kunskap.
+- **Heltal och decimal multiplicerade var för sig** (7 × 6,7 → 42,49;
+  6 × 2,8 → 12,48): 2 av 2 i den uppgiftstypen. Tydlig, förutsägbar modell.
+- **Annan produkt i samma tabell** (87 tabellsvar) är vanligt även av en slump
+  och räcker inte som orsak.
+- Den gamla analysen kallade 4 × 2,2 → 6,6 för fel räknesätt (ouppmärksamhet)
+  på grund av toleransen 0,5; 4 + 2,2 = 6,2. Den skärpta analysen gör inte så.
+
 ## Gräns för denna leverans och nästa steg
 
 Verifierat lokalt: 195 testfiler/1019 tester passerar, inklusive 13

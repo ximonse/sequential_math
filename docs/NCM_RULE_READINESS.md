@@ -187,6 +187,18 @@ måste byggas om från nytt underlag. Omkörning mot samma oktoberexport:
 tabellträning 117 av 321 (tidigare 89), talpar 35 av 85 (6), dubblor 11 av 44
 (7) och decimalmultiplikation 2 av 2 (0).
 
+## Följdfrågor från faktafamiljer
+
+Den granskade banken har bara en fråga per typ för talpar, dubblor och
+tabeller, och en elev som tränat typen har oftast redan sett just den.
+Efter banken provar väljaren nu deterministiska faktafamiljer: talpar till
+10, 15 och 20, dubblor och halveringar 6–49 samt tabellerna 3–9. Facit
+räknas i kod. Ett faktum räknas som sett även i omvänd form (? + 6 = 15 och
+6 + ? = 15, 4 × 3 och 3 × 4). Förslaget märks `generated_fact_family`,
+delas inte ut och kräver lärargranskning. För ”ett ifrån facit” säger
+förslaget uttryckligen att ett nytt ±1-svar inte skiljer uppräkningsfel från
+gissning; eleven behöver visa hur hen räknar.
+
 ## Gräns för denna leverans och nästa steg
 
 Verifierat lokalt: 195 testfiler/1019 tester passerar, inklusive 13

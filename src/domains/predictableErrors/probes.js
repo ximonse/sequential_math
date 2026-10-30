@@ -34,6 +34,30 @@ export const predictableProbes = [
   probe('rule-half-a', 'number_fluency', 'doubles', { value: 14, doubled: 28, form: 'double_halving_transfer' }, '28 ÷ 2'),
 ]
 
+// Deterministic fact families behind the reviewed bank. They only cover plain
+// facts where the answer is computed in code; a pupil who has practised the
+// family has usually seen the single reviewed item already.
+function* generatedProbes(domain, scope) {
+  if (domain === 'number_fluency' && scope === 'number_bonds') {
+    for (const target of [10, 15, 20]) for (let k = 1; k < target; k++) {
+      const item = probe(`gen-bond-${target}-${k}`, domain, 'number_bonds', { target, knownTerm: k, missingFirst: false }, `${k} + ? = ${target}`)
+      yield { ...item, aliases: [{ ...item.problem, values: { target, knownTerm: k, missingFirst: true } }] }
+    }
+  }
+  if (domain === 'number_fluency' && scope === 'forward_double') {
+    for (let v = 6; v <= 49; v++) yield probe(`gen-double-${v}`, domain, 'doubles', { value: v, doubled: 2 * v, form: 'double_addition' }, `${v} + ${v}`)
+  }
+  if (domain === 'number_fluency' && scope === 'inverse_double') {
+    for (let v = 6; v <= 49; v++) yield probe(`gen-half-${2 * v}`, domain, 'doubles', { value: v, doubled: 2 * v, form: 'double_halving_transfer' }, `${2 * v} ÷ 2`)
+  }
+  if (domain === 'arithmetic' && scope === 'multiplication') {
+    for (let a = 3; a <= 9; a++) for (let b = 3; b <= 9; b++) {
+      const item = probe(`gen-table-${a}-${b}`, domain, 'multiplication', { a, b }, `${a} × ${b}`)
+      yield { ...item, aliases: [{ ...item.problem, values: { a: b, b: a } }] }
+    }
+  }
+}
+
 export function questionFingerprint(problem) {
   const values = problem?.values ?? {}, domain = problem?.domain
   const keys = domain === 'arithmetic' ? ['a', 'b'] : domain === 'percentage'
@@ -49,8 +73,9 @@ export function questionFingerprint(problem) {
 export function selectPredictableProbe(analysis, seenQuestions = new Set()) {
   const ids = [...new Set(analysis.matches.map(m => m.modelId))]
   if (!ids.length) return { status: 'not_needed' }
-  for (const task of predictableProbes) {
-    if (task.problem.domain !== analysis.domain || seenQuestions.has(questionFingerprint(task.problem))) continue
+  for (const task of [...predictableProbes, ...generatedProbes(analysis.domain, analysis.scope)]) {
+    if (task.problem.domain !== analysis.domain
+      || [task.problem, ...(task.aliases ?? [])].some(p => seenQuestions.has(questionFingerprint(p)))) continue
     const result = predictableCandidates(task.problem, '')
     if (result.scope !== analysis.scope) continue
     const groups = ids.map(id => result.predictions.filter(p => p.modelId === id))
@@ -59,8 +84,10 @@ export function selectPredictableProbe(analysis, seenQuestions = new Set()) {
       matchesComputedCorrect({ ...result, computedCorrect: a.predictedAnswer }, b.predictedAnswer)))))
     if (overlaps) continue
     return { status: 'proposed', taskId: task.id, question: structuredClone(task.problem), expectedAnswer: result.computedCorrect,
-      distinguishesModelIds: ids, requiresTeacherReview: true,
-      purposeSv: 'Ny kontroll där aktuella felmodeller ger andra svar än facit och från varandra. Elevens metod behöver fortfarande belägg.' }
+      distinguishesModelIds: ids, requiresTeacherReview: true, source: task.id.startsWith('gen-') ? 'generated_fact_family' : 'reviewed_bank',
+      purposeSv: ids.includes('answer_off_by_one')
+        ? 'Ny kontroll där aktuella felmodeller ger andra svar än facit. Ett nytt svar ett ifrån facit skiljer inte uppräkningsfel från gissning: be eleven visa hur hen räknar.'
+        : 'Ny kontroll där aktuella felmodeller ger andra svar än facit och från varandra. Elevens metod behöver fortfarande belägg.' }
   }
   return { status: 'needs_review', reason: 'no_unseen_discriminating_probe',
     purposeSv: 'Ingen oanvänd granskad kontrast skiljer alla aktuella kandidater. Föreslå inte en säker orsak eller repetera samma fråga.' }

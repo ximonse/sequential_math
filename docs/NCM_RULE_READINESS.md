@@ -227,7 +227,8 @@ bundet till rapportens källsvar. Elevens titel är neutral (”Uppföljning:
 subtraktion”); misstanken står bara i lärarfälten. Granskning, godkännande och
 utdelning sker i den befintliga materialgranskningen. Inget delas ut här.
 Kvar: resultatvyn (steg 4) och kontroll efter undervisning (steg 5).
-Upprepning kontrolleras bara mot rapportens egna svar.
+Uppgifter som eleven redan mött i rapporten eller i någon screening föreslås inte; panelen läser
+elevens screeninghistorik först och föreslår inget om den kontrollen misslyckas.
 
 ## Gräns för denna leverans och nästa steg
 

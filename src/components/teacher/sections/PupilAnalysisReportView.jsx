@@ -37,7 +37,7 @@ export default function PupilAnalysisReportView({ report, baseUrl, studentId, cl
       {!item.counterRefs.length && <p className="text-sm mt-1">Inga motexempel valda; det innebär inte att motexempel saknas.</p>}
       <p className="mt-2 text-sm font-semibold">Alternativa förklaringar</p><ul className="list-disc pl-5 text-sm">{item.alternativesSv.map((value, i) => <li key={i}>{value}</li>)}</ul>
       <p className="mt-2 text-sm"><strong>Att undersöka:</strong> {item.nextCheckSv}</p>
-      {studentId && contrastFollowUpEligible(item, report) && <ContrastFollowUp item={item} report={report} studentId={studentId} classId={classId} />}
+      {studentId && contrastFollowUpEligible(item, report) && <ContrastFollowUp item={item} report={report} studentId={studentId} classId={classId} baseUrl={baseUrl} />}
     </div>)}
     <details className="mt-3 text-sm"><summary>Begränsningar och källrevision</summary>
       {report.limitationsSv.map((value, i) => <p key={i} className="mt-1">{value}</p>)}

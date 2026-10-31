@@ -5,6 +5,7 @@ import { questionFingerprint } from '../../../domains/predictableErrors/probes.j
 import { evidenceProblem } from '../../../lib/evidencePredictableAnalysis.js'
 import { isSpeedTrainingEntry } from '../../../lib/practiceModes.js'
 import { OPERATION_LABELS } from '../../../lib/operations.js'
+import { stockholmDay } from '../../../lib/evidencePeriod.js'
 import { diagnosticRequest } from './diagnosticRequest.js'
 
 // Directed follow-up (practice-modes, mode 4): contrast questions for one
@@ -13,22 +14,47 @@ import { diagnosticRequest } from './diagnosticRequest.js'
 
 const label = model => CONTRAST_LABELS_SV[model] || model
 
+// Every screening the pupil has answered counts as seen, not only the report's
+// own answers; a contrast task must be new to the pupil.
+async function screeningHistory(baseUrl) {
+  const keys = new Set()
+  let cursor = null
+  for (let page = 0; page < 20; page++) {
+    const params = new URLSearchParams({ resource: 'evidence', source: 'screening', from: '2024-01-01', to: stockholmDay(), limit: '100', ...(cursor ? { cursor } : {}) })
+    const data = await call(`${baseUrl}&${params}`)
+    data.entries.forEach(entry => keys.add(questionFingerprint(evidenceProblem(entry))))
+    if (!data.nextCursor) return keys
+    cursor = data.nextCursor
+  }
+  throw new Error('Elevens screeninghistorik är för lång för att kontrolleras här.')
+}
+
 async function call(url, body) {
   const result = await diagnosticRequest(url, body ? { method: 'POST', body: JSON.stringify(body) } : {})
   if (!result.ok) throw new Error(result.data.error || 'Åtgärden kunde inte bekräftas. Inget har delats ut.')
   return result.data
 }
 
-export default function ContrastFollowUp({ item, report, studentId, classId }) {
+export default function ContrastFollowUp({ item, report, studentId, classId, baseUrl }) {
   const [open, setOpen] = useState(false)
   const [grid, setGrid] = useState(true)
   const [state, setState] = useState({ busy: false, message: '', receipt: null })
+  const [history, setHistory] = useState({ status: 'idle', keys: null, message: '' })
   const requestId = useRef(crypto.randomUUID())
   const supports = useMemo(() => item.supportRefs.map(ref => report.evidence.find(e => e.ref === ref))
     .filter(entry => entry && !isSpeedTrainingEntry(entry)), [item, report])
-  const set = useMemo(() => buildContrastSet({ modelId: item.signalCode, supportProblems: supports.map(evidenceProblem),
-    bankTasks: manifest.tasks, seenFingerprints: new Set(report.evidence.map(e => questionFingerprint(evidenceProblem(e)))) }), [item, report, supports])
-  const [, ...rivals] = set.models
+  const set = useMemo(() => history.keys && buildContrastSet({ modelId: item.signalCode, supportProblems: supports.map(evidenceProblem),
+    bankTasks: manifest.tasks, seenFingerprints: new Set([...history.keys, ...report.evidence.map(e => questionFingerprint(evidenceProblem(e)))]) }),
+  [item, report, supports, history.keys])
+
+  async function openPanel() {
+    setOpen(true)
+    if (history.keys) return
+    setHistory({ status: 'loading', keys: null, message: 'Kontrollerar elevens tidigare screeningar…' })
+    try { setHistory({ status: 'ready', keys: await screeningHistory(baseUrl), message: '' }) }
+    catch (error) { setHistory({ status: 'error', keys: null, message: `${error.message} Inga kontrastfrågor föreslås utan den kontrollen.` }) }
+  }
+  const [, ...rivals] = set?.models ?? []
   const operation = supports[0]?.question.operation
 
   async function createDraft() {
@@ -56,7 +82,11 @@ export default function ContrastFollowUp({ item, report, studentId, classId }) {
     }
   }
 
-  if (!open) return <button type="button" className="mt-2 rounded border px-2 py-1 text-sm" onClick={() => setOpen(true)}>Pröva med kontrastfrågor</button>
+  if (!open) return <button type="button" className="mt-2 rounded border px-2 py-1 text-sm" onClick={openPanel}>Pröva med kontrastfrågor</button>
+  if (!set) return <section aria-label="Kontrastfrågor" className="mt-2 rounded border border-slate-300 p-2 text-sm">
+    <p role="status">{history.message}</p>
+    <button type="button" className="mt-2 rounded border px-2 py-1" onClick={() => setOpen(false)}>Stäng</button>
+  </section>
   return <section aria-label="Kontrastfrågor" className="mt-2 rounded border border-slate-300 p-2 text-sm">
     <p className="font-semibold">Kontrastfrågor – valda så att förklaringarna ger olika svar</p>
     {set.status !== 'proposed' ? <p className="mt-1">{set.reasonSv}</p> : <>
@@ -70,7 +100,7 @@ export default function ContrastFollowUp({ item, report, studentId, classId }) {
       </table></div>
       {set.unresolved.length > 0 && <p className="mt-1">Banken skiljer inte alla förklaringar åt: {set.unresolved.map(pair => pair.map(p => p === 'correct' ? 'rätt svar' : label(p)).join(' / ')).join('; ')}. Elevens uträkning behövs där.</p>}
       <label className="mt-2 flex items-center gap-2"><input type="checkbox" checked={grid} onChange={event => setGrid(event.target.checked)} /> Eleven visar uträkningen i räknehäftet</label>
-      <p className="mt-1 text-slate-600">Bara rapportens egna svar kontrolleras mot upprepning.</p>
+      <p className="mt-1 text-slate-600">Uppgifter som eleven redan mött i rapporten eller i en screening föreslås inte.</p>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <button type="button" disabled={state.busy || Boolean(state.receipt)} className="rounded border px-2 py-1" onClick={createDraft}>Skapa utkast</button>
         <button type="button" disabled={state.busy} className="rounded border px-2 py-1" onClick={() => setOpen(false)}>Stäng</button>

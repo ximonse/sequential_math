@@ -2648,10 +2648,10 @@
       "status": "Beslutat",
       "kind": "plan",
       "purpose": "Varje läge har ett eget syfte för eleven, och därmed egna regler för tips, följdfrågor och hur datan får tolkas.",
-      "next": "Simon granskar skissen för riktad uppföljning. Efter godkännande: bygg steg 1–3 (misstanke till granskat specifikt screeningutkast med modellsvar per fråga) och därefter resultatvyn. Tips i fri träning: utgå från grenen claude/tips-repeated-mistakes-091bf4 men anpassa till lägesbeslutet.",
-      "acceptance": "1 Snabbhetsträning (tabeller, dubblor, talpar, talbild): elevens mål är snabbhet; inga tips; data samlas, enstaka snabbhetsfel blir inga felhypoteser och inga följdfrågor; mönster över tid kan bli träningsmål. 2 Fri träning i de fyra räknesätten: generella tips via i-ikon när det blir trögt på högre nivåer; svar efter tips räknas som med stöd. 3 Screening: kartläggning utan tips eller inblandning. 4 Riktad uppföljning skapad ur data från 1–3: kontrastfrågor som säkrar felförståelsemisstankar, utan tips under prövningen; eleven kan visa uträkning i räknehäftet. Frågor om hur eleven tänker ställs av läraren personligen; appen förbereder samtalet. Följdfrågor väljs bara för läge 4, aldrig ur snabbhetsträningens faktafamiljer.",
-      "decision": "2026-10-30: Simon beslutar uppdelningen: Screening för riktad utforskning och analys, Framsteg för färdighetsträning och datainsamling. Snabbhetsträning är till för att bli snabb. Fri träning får generella tips via i-ikon när det blir trögt. Screening har inga tips. Ett fjärde läge byggs ur all data och ställer kontrastfrågor; tänkfrågor är lärarens. Simon godkänner Claudes förslag att läraren först sköter undervisningssteget och appen prövningen före och efter.",
-      "evidence": "2026-10-30 (lokalt, ej pushat): src/lib/practiceModes.js känner igen snabbhetsträning (number_bonds, doubles, subitizing, mul_table_drill i fri träning-källan practice). Där föreslås ingen följdfråga (not_in_speed_training); ett ifrån facit och bara första siffran blir en sammanfattande rad i rapportens begränsningar, inte hypoteser. Faktafamiljer för följdfrågor (5a83132) återtagna eftersom de gick emot beslutet. 202 testfiler, build, MCP (28) och robotar för underlag/analys/talpar gröna.\n2026-10-30 produktion: master 23af0f7 (färgrättning screeningmatris + lägesregel), sekvens READY på samma commit.\n2026-10-30 förslag, ej godkänt: klickbar skiss docs/prototypes/riktad-uppfoljning.html (misstanke → kontrastfrågor → granska/dela ut → resultat med samtalsstöd → självständig kontroll), byggd på befintliga specifika screeningutkast. Tidigare tipsarbete finns på grenen claude/tips-repeated-mistakes-091bf4 (1–2 okt, tips vid upprepade fel, aldrig i master).",
+      "next": "Justera skissen enligt besluten (signal/råd i stället för slutsats, felbeskrivning i stället för samtalsmanus) och låt Simon granska. Därefter: bygga riktad uppföljning steg 1–3, signal för upprepat identiskt tabellfel, och statistik över vanligaste felsvar per uppgift som grund för tipsbanken.",
+      "acceptance": "1 Snabbhetsträning (tabeller, dubblor, talpar, talbild): elevens mål är snabbhet; inga tips; data samlas, enstaka snabbhetsfel blir inga felhypoteser och inga följdfrågor; mönster över tid kan bli träningsmål. 2 Fri träning i de fyra räknesätten: specifika tips för kända typiska fel via i-ikon, ur en tipsbank som byggs från statistik; svar efter tips räknas som med stöd. 3 Screening: kartläggning utan tips eller inblandning. 4 Riktad uppföljning skapad ur data från 1–3: kontrastfrågor som säkrar felförståelsemisstankar, utan tips under prövningen; eleven kan visa uträkning i räknehäftet. Frågor om hur eleven tänker ställs av läraren personligen. Appen ger signaler och råd, inte order eller samtalsmanus: den visar felen, vad kontrasterna prövat och en beskrivning av tankefelet. Följdfrågor väljs bara för läge 4, aldrig ur snabbhetsträningens faktafamiljer.",
+      "decision": "2026-10-30: Simon beslutar uppdelningen: Screening för riktad utforskning och analys, Framsteg för färdighetsträning och datainsamling. Snabbhetsträning är till för att bli snabb. Fri träning får generella tips via i-ikon när det blir trögt. Screening har inga tips. Ett fjärde läge byggs ur all data och ställer kontrastfrågor; tänkfrågor är lärarens. Simon godkänner Claudes förslag att läraren först sköter undervisningssteget och appen prövningen före och efter.\n2026-10-31: Simon svarar på de didaktiska frågorna. (1) Kontrastfrågorna i skissen är värda att prova. (2) Ingen fast gräns: appen ger läraren en signal och råd, aldrig order; läraren avgör när det är dags att undervisa. (3) Inga samtalsmanus: läraren är professionell. Visa felen, vad kontrasterna prövat och en beskrivning av tankefelet med stöd i NCM-facit och boken ”Förstå och använda tal”. (4) Tabellfel är sällan förståelsefel (ihopblandning, felräkning eller felmemorerat). Signal till läraren när exakt samma felsvar på samma faktum återkommer 3–4 gånger i rad. Felbesvarat tal läggs i dag sist i kön och återkommer i omgången. (5) Inga generella tips. Bygg en tipsbank efterhand med specifika tips för typiska fel som syns i insamlad statistik.",
+      "evidence": "2026-10-30 (lokalt, ej pushat): src/lib/practiceModes.js känner igen snabbhetsträning (number_bonds, doubles, subitizing, mul_table_drill i fri träning-källan practice). Där föreslås ingen följdfråga (not_in_speed_training); ett ifrån facit och bara första siffran blir en sammanfattande rad i rapportens begränsningar, inte hypoteser. Faktafamiljer för följdfrågor (5a83132) återtagna eftersom de gick emot beslutet. 202 testfiler, build, MCP (28) och robotar för underlag/analys/talpar gröna.\n2026-10-30 produktion: master 23af0f7 (färgrättning screeningmatris + lägesregel), sekvens READY på samma commit.\n2026-10-30 förslag, ej godkänt: klickbar skiss docs/prototypes/riktad-uppfoljning.html (misstanke → kontrastfrågor → granska/dela ut → resultat med samtalsstöd → självständig kontroll), byggd på befintliga specifika screeningutkast. Tidigare tipsarbete finns på grenen claude/tips-repeated-mistakes-091bf4 (1–2 okt, tips vid upprepade fel, aldrig i master).\n2026-10-31: skissen justerad efter besluten: resultatet är en signal där läraren avgör, och samtalsmanuset är ersatt av en beskrivning av tankefelet (NCM AS2 ”störst minus minst”, AG3, Förstå och använda tal kap. 20). Källstöd för tabellsignalen: boken anger att det vanligaste tabellfelet är ett svar en multipel ifrån det rätta (skutträkning som slutar fel, t.ex. 6·7 → 36/48/49), vilket motsvarar modellen table_off_by_one. Felbesvarat tabelltal läggs i dag sist i kön och återkommer i samma omgång (usePracticeCoreActions).",
       "issue": "",
       "requires": [],
       "affects": [
@@ -2670,7 +2670,7 @@
         },
         {
           "id": "modes-tips-marking",
-          "text": "Tips via i-ikon i fri träning med markering av svar efter tips",
+          "text": "Specifika tips ur tipsbanken i fri träning, med markering av svar efter tips",
           "done": false
         },
         {
@@ -2680,7 +2680,17 @@
         },
         {
           "id": "modes-teacher-conversation",
-          "text": "Förbered lärarens samtalsfrågor (se codex/ncm-teacher-tips)",
+          "text": "Felbeskrivning för läraren (NCM-facit, Förstå och använda tal) i stället för samtalsmanus",
+          "done": false
+        },
+        {
+          "id": "modes-repeated-table-error",
+          "text": "Signal till läraren vid samma felsvar på samma tabellfaktum 3–4 gånger i rad",
+          "done": false
+        },
+        {
+          "id": "modes-tip-bank",
+          "text": "Statistik över typiska felsvar som grund för en tipsbank med specifika tips",
           "done": false
         }
       ]

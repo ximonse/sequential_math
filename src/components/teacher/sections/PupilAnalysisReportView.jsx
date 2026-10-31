@@ -1,12 +1,14 @@
 import { useRef, useState } from 'react'
 import QuestionText from '../../QuestionText.jsx'
 import DiagnosticAttemptHistory from './DiagnosticAttemptHistory.jsx'
+import ContrastFollowUp from './ContrastFollowUp.jsx'
+import { contrastFollowUpEligible } from '../../../lib/practiceModes.js'
 import { diagnosticRequest } from './diagnosticRequest.js'
 import { OPERATION_LABELS } from '../../../lib/operations.js'
 import '../../../dev/diagnosticGridPrototype.css'
 
 const originLabels = { rule: 'Regelbaserat granskningsunderlag', ai: 'AI-formulerad tolkning – behöver lärargranskning', teacher: 'Lärarformulerad tolkning' }
-export default function PupilAnalysisReportView({ report, baseUrl }) {
+export default function PupilAnalysisReportView({ report, baseUrl, studentId, classId }) {
   const [selected, setSelected] = useState(null)
   const [original, setOriginal] = useState(null)
   const [message, setMessage] = useState('')
@@ -35,6 +37,7 @@ export default function PupilAnalysisReportView({ report, baseUrl }) {
       {!item.counterRefs.length && <p className="text-sm mt-1">Inga motexempel valda; det innebär inte att motexempel saknas.</p>}
       <p className="mt-2 text-sm font-semibold">Alternativa förklaringar</p><ul className="list-disc pl-5 text-sm">{item.alternativesSv.map((value, i) => <li key={i}>{value}</li>)}</ul>
       <p className="mt-2 text-sm"><strong>Att undersöka:</strong> {item.nextCheckSv}</p>
+      {studentId && contrastFollowUpEligible(item, report) && <ContrastFollowUp item={item} report={report} studentId={studentId} classId={classId} />}
     </div>)}
     <details className="mt-3 text-sm"><summary>Begränsningar och källrevision</summary>
       {report.limitationsSv.map((value, i) => <p key={i} className="mt-1">{value}</p>)}

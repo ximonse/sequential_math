@@ -44,7 +44,7 @@ describe('rule candidates through the actual evidence and report path', () => {
   it('versions derived models without invalidating unchanged source references', () => {
     const { profile, evidence } = source(), result = evidence.entries[0].interpretation.predictable
     expect(result).not.toHaveProperty('predictions')
-    expect(result).toMatchObject({ ruleVersion: 'predictable-errors-v2', status: 'matched', nextProbe: { requiresTeacherReview: true } })
+    expect(result).toMatchObject({ ruleVersion: 'predictable-errors-v3', status: 'matched', nextProbe: { requiresTeacherReview: true } })
     const { evidence: same } = source()
     expect(same.snapshotRevision).toBe(evidence.snapshotRevision)
     expect(same.entries[0].ref).toBe(evidence.entries[0].ref)

@@ -203,6 +203,32 @@ föreslå screening utan tidspress om mönstret upprepas. En första version som
 föreslog nya fakta ur talpars-, dubbel- och tabellfamiljer byggdes och
 återtogs samma dag eftersom den gick emot beslutet.
 
+## Riktad uppföljning, steg 1–3 (regelversion v3)
+
+Under en beräknad felmodell i lärarens analysrapport finns **Pröva med
+kontrastfrågor** (inte för snabbhetsträning). `src/domains/predictableErrors/contrast.js`
+väljer uppgifter ur den granskade diagnosbanken så att misstanken, dess
+rivaler och rätt svar ger olika svar. Rivaler är modeller som gav samma svar
+som misstanken på något av elevens egna fel, samt växlingsfamiljen
+(större minus mindre, växlar utan att minska, skriver 0). Varje vald uppgift
+ska skilja ett ännu oskilt par; samma struktur som elevens fel går först
+(växling genom noll bara om felen hade det); minst 2 och högst 5 uppgifter.
+Finns ingen banuppgift visas det öppet. Facit och modellsvar räknas i koden.
+
+Ny modell i regelmotorn (inte i elevappens etiketter): `exchange_not_decremented`,
+växling utan att kolumnen till vänster minskas. Den ger samma siffra som
+”större minus mindre” när entalen skiljer sig med exakt 5, därför skiljer
+642 − 217 och 753 − 428 inte dessa åt. Banken (version 3) har fått två
+granskade uppgifter med enkel växling i entalen och annat avstånd:
+652 − 128 och 371 − 145.
+
+**Skapa utkast** sparar ett privat specifikt screeningutkast för eleven,
+bundet till rapportens källsvar. Elevens titel är neutral (”Uppföljning:
+subtraktion”); misstanken står bara i lärarfälten. Granskning, godkännande och
+utdelning sker i den befintliga materialgranskningen. Inget delas ut här.
+Kvar: resultatvyn (steg 4) och kontroll efter undervisning (steg 5).
+Upprepning kontrolleras bara mot rapportens egna svar.
+
 ## Gräns för denna leverans och nästa steg
 
 Verifierat lokalt: 195 testfiler/1019 tester passerar, inklusive 13

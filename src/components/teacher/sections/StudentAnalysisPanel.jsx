@@ -66,14 +66,14 @@ function AnalysisWorkspace({ studentId, classId }) {
         </select>
       </label>}
       {state.history?.restrictedReports > 0 && <p className="text-sm mt-2">Vissa screeningrapporter kräver utökad behörighet.</p>}
-      {state.preview && <><PupilAnalysisReportView key={state.requestId} report={state.preview} baseUrl={baseUrl} />
+      {state.preview && <><PupilAnalysisReportView key={state.requestId} report={state.preview} baseUrl={baseUrl} studentId={studentId} classId={classId} />
         <button type="button" disabled={state.busy} className="mt-3 rounded bg-teal-700 px-2 py-1 text-sm text-white" onClick={() => run(async () => {
           const history = await request({ action: 'create_report', report: state.draft, requestId: state.requestId,
             expectedRevision: state.history.revision, source: state.preview.source, from: state.preview.period.from, to: state.preview.period.to })
           update({ history, selectedId: history.affectedReportId, preview: null, draft: null, message: 'Rapportversionen är sparad. Stäm av tolkningen nedan.' })
         })}>Spara rapportversion</button>
       </>}
-      {selected && <><PupilAnalysisReportView key={`report-${selected.id}`} report={selected.report} baseUrl={baseUrl} />
+      {selected && <><PupilAnalysisReportView key={`report-${selected.id}`} report={selected.report} baseUrl={baseUrl} studentId={studentId} classId={classId} />
         <AnalysisCheckInForm key={`check-${selected.id}`} item={selected} scope={`${studentId}:${classId}`} busy={state.busy} onSave={async (checkIn, requestId) => {
           let saved = false
           await run(async () => {

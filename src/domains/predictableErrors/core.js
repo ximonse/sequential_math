@@ -1,4 +1,4 @@
-export const PREDICTABLE_RULE_VERSION = 'predictable-errors-v2'
+export const PREDICTABLE_RULE_VERSION = 'predictable-errors-v3'
 export const LIMIT = 1e9
 
 export function numeric(value) {

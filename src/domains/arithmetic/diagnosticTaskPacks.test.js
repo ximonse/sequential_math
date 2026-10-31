@@ -11,18 +11,19 @@ const answers = {
   'add-chain-carry-001': 625, 'add-chain-carry-002': 833,
   'sub-no-exchange-001': 533, 'sub-no-exchange-002': 534,
   'sub-exchange-001': 425, 'sub-exchange-002': 325,
-  'sub-through-zero-001': 224, 'sub-through-zero-002': 236
+  'sub-through-zero-001': 224, 'sub-through-zero-002': 236,
+  'sub-exchange-003': 524, 'sub-exchange-004': 226
 }
 
 describe('written arithmetic diagnostic content', () => {
   it('keeps the original four task identities and versions while extending the manifest', () => {
-    expect(manifest.manifestVersion).toBe(2)
+    expect(manifest.manifestVersion).toBe(3)
     expect(manifest.tasks.slice(0, 4).map(task => [task.taskId, task.taskVersion, task.operands])).toEqual([
       ['add-no-carry-001', 1, [268, 431]], ['add-carry-001', 1, [248, 327]],
       ['sub-no-exchange-001', 1, [764, 231]], ['sub-through-zero-001', 1, [402, 178]]
     ])
-    expect(manifest.tasks).toHaveLength(12)
-    expect(new Set(manifest.tasks.map(task => task.taskId)).size).toBe(12)
+    expect(manifest.tasks).toHaveLength(14)
+    expect(new Set(manifest.tasks.map(task => task.taskId)).size).toBe(14)
   })
   it('checks every independent answer key through the actual observation path', () => {
     for (const task of manifest.tasks) {

@@ -1,5 +1,5 @@
 import { digitByDigitSum, digitByDigitAbsDiff, getSwapAnswer } from '../arithmetic/errorHypotheses/commonHypotheses.js'
-import { predictNoBorrowAnswer } from '../arithmetic/errorHypotheses/subtractionHypotheses.js'
+import { predictExchangeNotDecremented, predictNoBorrowAnswer } from '../arithmetic/errorHypotheses/subtractionHypotheses.js'
 import { predictDecimalPartsSeparately } from '../arithmetic/errorHypotheses/multiplicationHypotheses.js'
 import { subtractionCandidates } from '../arithmetic/subtractionCandidates.js'
 import { candidateResult, entryAndNearMissPredictions, prediction, unavailable, numeric } from './core.js'
@@ -13,7 +13,11 @@ export function arithmeticCandidates(problem, answer) {
   const correct = op === 'addition' ? a + b : op === 'subtraction' ? a - b : op === 'multiplication' ? a * b : a / b
   const predictions = [prediction('operation_swap', getSwapAnswer(op, a, b), 'Svaret matchar det alternativa räknesättets beräkning; orsaken är inte fastställd.')]
   const decimals = !Number.isInteger(a) || !Number.isInteger(b)
-  if (op === 'subtraction' && !decimals) predictions.push(...subtractionCandidates({ a, b, studentAnswer: answer }).predictions)
+  if (op === 'subtraction' && !decimals) {
+    predictions.push(...subtractionCandidates({ a, b, studentAnswer: answer }).predictions,
+      prediction('exchange_not_decremented', predictExchangeNotDecremented(a, b),
+        'Svaret matchar växling i kolumnen utan att kolumnen till vänster minskas.'))
+  }
   if (decimals && ['addition', 'subtraction'].includes(op) && a >= 0 && b >= 0) {
     const places = Math.max(...[a, b].map(n => String(n).split('.')[1]?.length ?? 0))
     if (places <= 3) {

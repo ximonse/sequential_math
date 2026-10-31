@@ -40,6 +40,25 @@ export function testBorrowForget(a, b, correct, borrowCount, answer) {
   }
 }
 
+// Rule engine only (not the pupil app labels): the pupil exchanges in a column
+// (top + 10 − bottom) but never decreases the column it exchanged from.
+// Gives the same digit as smaller-minus-larger when the units differ by 5.
+export function predictExchangeNotDecremented(a, b) {
+  let wrong = 0
+  let pow = 1
+  let ta = Math.round(a)
+  let tb = Math.round(b)
+  while (ta > 0 || tb > 0) {
+    const da = ta % 10
+    const db = tb % 10
+    wrong += (da >= db ? da - db : da + 10 - db) * pow
+    ta = Math.floor(ta / 10)
+    tb = Math.floor(tb / 10)
+    pow *= 10
+  }
+  return wrong
+}
+
 // Shared calculation; preserve the legacy detector's behaviour.
 export function predictNoBorrowAnswer(a, b) {
   let wrong = 0

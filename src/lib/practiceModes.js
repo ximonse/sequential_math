@@ -27,3 +27,10 @@ export function speedSlipSummary(entries) {
   }
   return { total, counts }
 }
+
+// Directed follow-up is offered for computed models outside speed training.
+export function contrastFollowUpEligible(item, report) {
+  if (item?.basis !== 'rule_candidate' || !item.signalCode) return false
+  const supports = item.supportRefs.map(ref => report.evidence.find(e => e.ref === ref)).filter(Boolean)
+  return supports.length > 0 && !supports.every(isSpeedTrainingEntry)
+}

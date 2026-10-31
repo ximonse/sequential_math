@@ -84,7 +84,8 @@ describe('offline NCM decision pilot', () => {
   })
 
   it('stops rather than generating an unreviewed replacement when the contrast pool is exhausted', () => {
-    const result = decidePilot({ history: [reviewedHistory('sub-exchange-001', 425), reviewedHistory('sub-exchange-002', 325)] })
+    const result = decidePilot({ history: [reviewedHistory('sub-exchange-001', 425), reviewedHistory('sub-exchange-002', 325),
+      reviewedHistory('sub-exchange-003', 524), reviewedHistory('sub-exchange-004', 226)] })
     expect(result).toMatchObject({ action: 'stop', outcome: 'insufficient', reasonCode: 'no_unseen_contrast' })
   })
 

@@ -151,4 +151,14 @@ test('A single computed error model is shown as insufficient evidence, not as a 
   await panel.getByRole('button', { name: 'Skapa granskningsunderlag', exact: true }).click()
   await expect(panel).toContainText('Beräknad felmodell · Otillräckligt underlag')
   await expect(panel).not.toContainText('Otillräckligt underlag för en felhypotes')
+  // R3/R4: contrast questions become a private draft; nothing reaches the pupil.
+  await panel.getByRole('button', { name: 'Pröva med kontrastfrågor', exact: true }).click()
+  const contrast = panel.getByRole('region', { name: 'Kontrastfrågor', exact: true })
+  // An exchange-through-zero suspicion is followed up on the same structure first.
+  await expect(contrast.locator('tbody tr').first()).toContainText('503 − 267')
+  await contrast.getByRole('button', { name: 'Skapa utkast', exact: true }).click()
+  await expect(contrast.getByRole('status')).toHaveText('Privat utkast sparat. Inget har delats ut.')
+  await expect(contrast.getByRole('link', { name: 'Öppna granskning', exact: true })).toHaveAttribute('href', /^\/teacher\/material\/mat_/)
+  const assignments = (await teacherRequest(page, `/api/teacher-diagnostic-assignments?classId=${classId}`)).data.assignments
+  expect(assignments.map(item => item.titleSv)).toEqual(['Beräknad modell'])
 })

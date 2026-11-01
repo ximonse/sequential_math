@@ -2709,6 +2709,81 @@
           "done": false
         }
       ]
+    },
+    {
+      "id": "validation-plan",
+      "area": "Analys och screening",
+      "title": "Valideringsplan: område för område med blindtest",
+      "status": "Beslutat",
+      "kind": "plan",
+      "purpose": "Hålla en fast ordning för att bygga och blindtesta felanalysen per område, så att inget område tas godtyckligt eller halvvägs.",
+      "next": "Steg 0: publicera v4 efter Simons beslut. Därefter steg 1, dolda decimaluppgifter. Klart när varje steg i docs/VALIDATION_PLAN.md är avbockat eller uttryckligen flyttat.",
+      "acceptance": "Varje område går igenom inventering, bankförslag som Simon godkänner, modeller, blindtest via Antigravity med låst blind bedömning, jämförelse och rättningar. Snabbhetsträning blindtestas inte. Avvikelser från ordningen beslutas av Simon och skrivs in i planen.",
+      "decision": "2026-11-01: Simon ber om en plan för vilka områden som körs i vilken ordning och att den ska följas. Gemini ska användas så mycket som möjligt; Claudes session får dock inte skicka repots innehåll till Gemini (behörighetsspärr), så Gemini startas av Simon för inventering och bankutkast.",
+      "evidence": "docs/VALIDATION_PLAN.md. Blindtest 1 (2026-11-01) är förlagan för arbetsgången.",
+      "issue": "",
+      "requires": [],
+      "affects": [
+        "ncm-didactic-backbone",
+        "practice-modes"
+      ],
+      "tasks": [
+        {
+          "id": "vp-publish-v4",
+          "text": "0 Publicera regelversion v4",
+          "done": false
+        },
+        {
+          "id": "vp-hidden-decimals",
+          "text": "1 Utred dolda decimaluppgifter i fri träning Subtraktion",
+          "done": false
+        },
+        {
+          "id": "vp-written-add-sub",
+          "text": "2 Skriftlig addition/subtraktion: 9 bankuppgifter + blindtest 2",
+          "done": false
+        },
+        {
+          "id": "vp-followup-step4",
+          "text": "3 Riktad uppföljning steg 4: resultatvy",
+          "done": false
+        },
+        {
+          "id": "vp-mul-div",
+          "text": "4 Skriftlig multiplikation och division: bank + blindtest",
+          "done": false
+        },
+        {
+          "id": "vp-decimals",
+          "text": "5 Decimaltal: bank + blindtest",
+          "done": false
+        },
+        {
+          "id": "vp-fractions",
+          "text": "6 Bråk: bank med struktur + blindtest",
+          "done": false
+        },
+        {
+          "id": "vp-percentage",
+          "text": "7 Procent: bank + blindtest",
+          "done": false
+        },
+        {
+          "id": "vp-order-algebra",
+          "text": "8 Räkneordning och algebra: bank + blindtest",
+          "done": false
+        },
+        {
+          "id": "vp-speed-signal",
+          "text": "9 Snabbhetsträning: signal vid 3–4 identiska fel i rad",
+          "done": false
+        },
+        {
+          "id": "vp-tip-bank",
+          "text": "10 Statistik över vanligaste felsvar som grund för tipsbank",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [
@@ -3450,6 +3525,16 @@
     {
       "source": "practice-modes",
       "target": "ncm-didactic-backbone",
+      "kind": "påverkar"
+    },
+    {
+      "source": "validation-plan",
+      "target": "ncm-didactic-backbone",
+      "kind": "påverkar"
+    },
+    {
+      "source": "validation-plan",
+      "target": "practice-modes",
       "kind": "påverkar"
     }
   ],

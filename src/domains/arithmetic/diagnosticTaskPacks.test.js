@@ -12,18 +12,21 @@ const answers = {
   'sub-no-exchange-001': 533, 'sub-no-exchange-002': 534,
   'sub-exchange-001': 425, 'sub-exchange-002': 325,
   'sub-through-zero-001': 224, 'sub-through-zero-002': 236,
-  'sub-exchange-003': 524, 'sub-exchange-004': 226
+  'sub-exchange-003': 524, 'sub-exchange-004': 226,
+  'sub-exchange-005': 336, 'sub-exchange-006': 436, 'sub-exchange-007': 326, 'sub-exchange-008': 327,
+  'sub-tens-exchange-001': 374, 'sub-tens-exchange-002': 333,
+  'sub-double-exchange-001': 274, 'sub-double-exchange-002': 237, 'sub-through-zero-003': 366
 }
 
 describe('written arithmetic diagnostic content', () => {
   it('keeps the original four task identities and versions while extending the manifest', () => {
-    expect(manifest.manifestVersion).toBe(3)
+    expect(manifest.manifestVersion).toBe(4)
     expect(manifest.tasks.slice(0, 4).map(task => [task.taskId, task.taskVersion, task.operands])).toEqual([
       ['add-no-carry-001', 1, [268, 431]], ['add-carry-001', 1, [248, 327]],
       ['sub-no-exchange-001', 1, [764, 231]], ['sub-through-zero-001', 1, [402, 178]]
     ])
-    expect(manifest.tasks).toHaveLength(14)
-    expect(new Set(manifest.tasks.map(task => task.taskId)).size).toBe(14)
+    expect(manifest.tasks).toHaveLength(23)
+    expect(new Set(manifest.tasks.map(task => task.taskId)).size).toBe(23)
   })
   it('checks every independent answer key through the actual observation path', () => {
     for (const task of manifest.tasks) {
@@ -48,5 +51,14 @@ describe('written arithmetic diagnostic content', () => {
     const task = manifest.tasks.find(task => task.taskId === 'sub-through-zero-002')
     const snapshot = createDiagnosticGrid({ attemptId: 'NEW', taskId: task.taskId, taskVersion: task.taskVersion })
     expect(analyzeDiagnosticSubtractionPattern(task, snapshot).status).toBe('not_applicable')
+  })
+  it('keeps every contrast subtraction task able to separate the exchange explanations', async () => {
+    const { predictableCandidates } = await import('../predictableErrors/index.js')
+    for (const task of manifest.tasks.filter(t => t.taskId.startsWith('sub-') && !t.taskId.startsWith('sub-no-exchange') && !['sub-exchange-001', 'sub-exchange-002', 'sub-through-zero-001', 'sub-through-zero-002'].includes(t.taskId))) {
+      const r = predictableCandidates({ domain: 'arithmetic', type: 'subtraction', skill: 'subtraction', values: { a: task.operands[0], b: task.operands[1] } }, '')
+      const get = id => r.predictions.find(p => p.modelId === id)?.predictedAnswer ?? r.computedCorrect
+      const values = [r.computedCorrect, get('smaller_minus_larger'), get('exchange_not_decremented'), get('borrow_forget')]
+      expect(new Set(values).size, task.taskId).toBe(4)
+    }
   })
 })

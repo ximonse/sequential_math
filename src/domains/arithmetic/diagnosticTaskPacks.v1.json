@@ -13,6 +13,8 @@
     "consecutive_carries": { "goalSv": "Minnessiffror i två kolumner i följd", "questionSv": "Be eleven förklara hur varje minnessiffra används en gång i nästa kolumn." },
     "aligned_columns_without_exchange": { "goalSv": "Kolumnplacering och subtraktion utan växling", "questionSv": "Be eleven visa vilket tal som minskas och vilka siffror som jämförs i varje kolumn." },
     "single_exchange": { "goalSv": "En växling från tiotal till ental", "questionSv": "Fråga vad som förändras i både tiotals- och entalskolumnen när ett tiotal växlas." },
+    "tens_exchange": { "goalSv": "En växling från hundratal till tiotal", "questionSv": "Fråga vad som händer i hundratals- och tiotalskolumnen när ett hundratal växlas till tio tiotal." },
+    "consecutive_exchanges": { "goalSv": "Två växlingar i följd", "questionSv": "Be eleven förklara varje växling och vilken kolumn som minskas varje gång." },
     "exchange_through_zero": { "goalSv": "Växling genom noll i tiotalskolumnen", "questionSv": "Be eleven visa hur ett hundratal blir tiotal och hur ett av dessa tiotal blir ental." }
   }
 }

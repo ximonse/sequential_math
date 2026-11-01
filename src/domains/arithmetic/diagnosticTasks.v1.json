@@ -1,6 +1,6 @@
 {
   "manifestId": "written-integer-add-sub",
-  "manifestVersion": 3,
+  "manifestVersion": 4,
   "language": "sv-SE",
   "status": "contract_draft",
   "evidenceClass": "diagnostic_only",
@@ -56,6 +56,15 @@
     { "taskId": "sub-exchange-002", "taskVersion": 1, "operation": "subtraction", "operands": [753, 428], "promptSv": "Räkna ut 753 − 428.", "answerRule": "integer_subtraction", "intentCode": "single_exchange", "analysisCaseId": "S3" },
     { "taskId": "sub-through-zero-002", "taskVersion": 1, "operation": "subtraction", "operands": [503, 267], "promptSv": "Räkna ut 503 − 267.", "answerRule": "integer_subtraction", "intentCode": "exchange_through_zero", "analysisCaseId": "S2" },
     { "taskId": "sub-exchange-003", "taskVersion": 1, "operation": "subtraction", "operands": [652, 128], "promptSv": "Räkna ut 652 − 128.", "answerRule": "integer_subtraction", "intentCode": "single_exchange", "analysisCaseId": "S3" },
-    { "taskId": "sub-exchange-004", "taskVersion": 1, "operation": "subtraction", "operands": [371, 145], "promptSv": "Räkna ut 371 − 145.", "answerRule": "integer_subtraction", "intentCode": "single_exchange", "analysisCaseId": "S3" }
+    { "taskId": "sub-exchange-004", "taskVersion": 1, "operation": "subtraction", "operands": [371, 145], "promptSv": "Räkna ut 371 − 145.", "answerRule": "integer_subtraction", "intentCode": "single_exchange", "analysisCaseId": "S3" },
+    { "taskId": "sub-exchange-005", "taskVersion": 1, "operation": "subtraction", "operands": [574, 238], "promptSv": "Räkna ut 574 − 238.", "answerRule": "integer_subtraction", "intentCode": "single_exchange", "analysisCaseId": "S3" },
+    { "taskId": "sub-exchange-006", "taskVersion": 1, "operation": "subtraction", "operands": [863, 427], "promptSv": "Räkna ut 863 − 427.", "answerRule": "integer_subtraction", "intentCode": "single_exchange", "analysisCaseId": "S3" },
+    { "taskId": "sub-exchange-007", "taskVersion": 1, "operation": "subtraction", "operands": [945, 619], "promptSv": "Räkna ut 945 − 619.", "answerRule": "integer_subtraction", "intentCode": "single_exchange", "analysisCaseId": "S3" },
+    { "taskId": "sub-exchange-008", "taskVersion": 1, "operation": "subtraction", "operands": [681, 354], "promptSv": "Räkna ut 681 − 354.", "answerRule": "integer_subtraction", "intentCode": "single_exchange", "analysisCaseId": "S3" },
+    { "taskId": "sub-tens-exchange-001", "taskVersion": 1, "operation": "subtraction", "operands": [728, 354], "promptSv": "Räkna ut 728 − 354.", "answerRule": "integer_subtraction", "intentCode": "tens_exchange", "analysisCaseId": "S3" },
+    { "taskId": "sub-tens-exchange-002", "taskVersion": 1, "operation": "subtraction", "operands": [916, 583], "promptSv": "Räkna ut 916 − 583.", "answerRule": "integer_subtraction", "intentCode": "tens_exchange", "analysisCaseId": "S3" },
+    { "taskId": "sub-double-exchange-001", "taskVersion": 1, "operation": "subtraction", "operands": [732, 458], "promptSv": "Räkna ut 732 − 458.", "answerRule": "integer_subtraction", "intentCode": "consecutive_exchanges", "analysisCaseId": "S3" },
+    { "taskId": "sub-double-exchange-002", "taskVersion": 1, "operation": "subtraction", "operands": [621, 384], "promptSv": "Räkna ut 621 − 384.", "answerRule": "integer_subtraction", "intentCode": "consecutive_exchanges", "analysisCaseId": "S3" },
+    { "taskId": "sub-through-zero-003", "taskVersion": 1, "operation": "subtraction", "operands": [604, 238], "promptSv": "Räkna ut 604 − 238.", "answerRule": "integer_subtraction", "intentCode": "exchange_through_zero", "analysisCaseId": "S2" }
   ]
 }

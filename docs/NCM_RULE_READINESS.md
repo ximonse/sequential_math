@@ -230,6 +230,31 @@ Kvar: resultatvyn (steg 4) och kontroll efter undervisning (steg 5).
 Uppgifter som eleven redan mött i rapporten eller i någon screening föreslås inte; panelen läser
 elevens screeninghistorik först och föreslår inget om den kontrollen misslyckas.
 
+## Blindtest och nya modeller (regelversion v4)
+
+2026-11-01 valde Antigravity felprofiler för 12 påhittade elever i en egen
+testklass; facit hölls dolt tills Claudes bedömning låsts med kontrollsumma.
+Regelanalysen hittade 9 profiler helt, 2 delvis och missade 1; kontrollfallen
+(slarv, nästan alltid rätt) fick inga falska hypoteser. Tre modeller saknades och
+är nu tillagda i regelmotorn (inte i elevappens etiketter):
+
+| Modell | Exempel | Tolkning |
+|---|---|---|
+| `unnecessary_exchange` | 82 − 2 = 70 | Tiotalet minskas trots att ingen växling behövs. Kan också vara slarv med tio. |
+| `one_carry_forgotten` | 357 + 268 = 525 | En av flera minnessiffror glöms. |
+| `last_two_digits_swapped` | 283 + 462 = 754 | Inmatnings- eller avskrivningsmiss. |
+| `notebook_answer_mismatch` (screening) | räknehäftet visar 524, svaret 542 | Uppställningen ger rätt resultat men annat svar skrevs in. |
+
+Räknehäftets resultat läses med `analyzeDiagnosticVisibleResult(..., { allowExchangeMarks: true })`,
+som godtar en rad växlingsmarkeringar ovanför talen; standardläget är oförändrat.
+Inmatningssignaler får ingen knapp för kontrastfrågor och omkastade siffror räknas
+som snabbhetsfel i snabbhetsträning. Omkörning på blindtestets felsvar förklarar nu
+alla tolv profilernas systematiska fel; kontrolleleverna får inga nya förklaringar.
+
+Testartefakt att känna till: testskriptet svarade 0 på dolda decimaluppgifter i fri
+träning. Att fri träning i Subtraktion gav ungefär en fjärdedel sådana uppgifter
+för elever som svarade fel på dem behöver utredas separat.
+
 ## Gräns för denna leverans och nästa steg
 
 Verifierat lokalt: 195 testfiler/1019 tester passerar, inklusive 13

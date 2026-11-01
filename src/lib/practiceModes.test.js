@@ -29,6 +29,6 @@ describe('speed training versus directed follow-up', () => {
     expect(ids).toContain('table_off_by_one')
     expect(hypotheses.find(h => h.signalCode === 'table_off_by_one').nextCheckSv).toMatch(/snabbhetsträning/u)
     expect(ids).toContain('smaller_minus_larger')
-    expect(speedSlipSummary(entries)).toEqual({ total: 3, counts: { answer_off_by_one: 2, partial_answer_entry: 1 } })
+    expect(speedSlipSummary(entries)).toEqual({ total: 3, counts: { answer_off_by_one: 2, partial_answer_entry: 1, last_two_digits_swapped: 0 } })
   })
 })

@@ -4,6 +4,24 @@ import { predictDecimalPartsSeparately } from '../arithmetic/errorHypotheses/mul
 import { subtractionCandidates } from '../arithmetic/subtractionCandidates.js'
 import { candidateResult, entryAndNearMissPredictions, prediction, unavailable, numeric } from './core.js'
 
+// Columns (0 = ones) that receive a carry in a whole-number addition.
+function carryColumns(a, b) {
+  const columns = []
+  let carry = 0
+  for (let column = 0, x = a, y = b; x > 0 || y > 0 || carry; column++, x = Math.floor(x / 10), y = Math.floor(y / 10)) {
+    if (carry) columns.push(column)
+    carry = (x % 10) + (y % 10) + carry >= 10 ? 1 : 0
+  }
+  return columns
+}
+
+// The last two digits written in the wrong order (74 − 3 = 17, 283 + 462 = 754).
+export function swapLastTwoDigits(value) {
+  if (!Number.isSafeInteger(value) || value < 10) return null
+  const text = String(value)
+  return Number(`${text.slice(0, -2)}${text.at(-1)}${text.at(-2)}`)
+}
+
 export function arithmeticCandidates(problem, answer) {
   const { a: rawA, b: rawB } = problem?.values ?? {}, a = numeric(rawA), b = numeric(rawB)
   const op = problem?.type ?? problem?.skill
@@ -34,6 +52,20 @@ export function arithmeticCandidates(problem, answer) {
     const width = Math.max(String(a).length, String(b).length), right = String(b).padStart(width, '0')
     const concatenated = String(a).padStart(width, '0').split('').map((digit, i) => String(Number(digit) + Number(right[i]))).join('')
     predictions.push(prediction('column_sums_concatenated', Number(concatenated), 'Svaret matchar kolumnsummor som skrivits efter varandra.'))
+    // Only one of several carries is forgotten (357 + 268 = 525: the carry into the hundreds).
+    const carries = carryColumns(a, b)
+    if (carries.length >= 2) for (const column of carries) predictions.push(prediction('one_carry_forgotten', a + b - 10 ** column,
+      `Svaret matchar att en av flera minnessiffror glömts (den till ${['entalen', 'tiotalen', 'hundratalen', 'tusentalen'][column] ?? 'en högre kolumn'}).`))
+  }
+  if (op === 'subtraction' && !decimals && a >= 10 && a % 10 >= b % 10 && a - b >= 10) {
+    // The tens are decreased although the ones need no exchange (82 − 2 = 70).
+    predictions.push(prediction('unnecessary_exchange', a - b - 10,
+      'Svaret matchar att tiotalet minskats trots att entalen inte behövde växlas. Kan också vara slarv med tio.'))
+  }
+  if ([a, b].every(Number.isSafeInteger) && Number.isSafeInteger(correct)) {
+    const swapped = swapLastTwoDigits(correct)
+    if (swapped !== null && swapped !== correct) predictions.push(prediction('last_two_digits_swapped', swapped,
+      'Svaret har facits två sista siffror i omvänd ordning; troligen en inmatnings- eller avskrivningsmiss, inte ett räknefel.'))
   }
   if (op === 'multiplication' && [a, b].every(n => Number.isSafeInteger(n) && n >= 0)) {
     predictions.push(prediction('ones_digits_only', (a % 10) * (b % 10), 'Svaret matchar multiplikation av enbart entalssiffrorna.'))

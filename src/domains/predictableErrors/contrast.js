@@ -12,7 +12,7 @@ export const CONTRAST_MIN_ITEMS = 2
 // Explanations that compete for the same column-subtraction answers.
 const FAMILIES = [['smaller_minus_larger', 'exchange_not_decremented', 'borrow_forget']]
 // Observations that are not method explanations.
-const NOT_RIVALS = new Set(['operation_swap', 'place_value_scaling', 'partial_answer_entry', 'answer_off_by_one'])
+const NOT_RIVALS = new Set(['operation_swap', 'place_value_scaling', 'partial_answer_entry', 'answer_off_by_one', 'last_two_digits_swapped', 'notebook_answer_mismatch'])
 
 export const CONTRAST_LABELS_SV = {
   smaller_minus_larger: 'Större minus mindre i varje kolumn',
@@ -22,6 +22,8 @@ export const CONTRAST_LABELS_SV = {
   zero_intermediate_ten: 'Växling genom noll: tio tiotal behålls',
   carry_forget: 'Minnessiffran glöms',
   column_sums_concatenated: 'Kolumnsummor skrivs efter varandra',
+  one_carry_forgotten: 'En av flera minnessiffror glöms',
+  unnecessary_exchange: 'Minskar tiotalet trots att ingen växling behövs',
 }
 
 const bankProblem = task => ({ domain: 'arithmetic', type: task.operation, skill: task.operation,

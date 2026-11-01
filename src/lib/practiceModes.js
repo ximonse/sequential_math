@@ -6,7 +6,7 @@ const SPEED_SKILLS = new Set(['number_bonds', 'doubles', 'subitizing'])
 const SPEED_PROBLEM_TYPES = new Set(['mul_table_drill'])
 
 // Single slips that are expected under time pressure.
-export const SPEED_SLIP_MODELS = new Set(['answer_off_by_one', 'partial_answer_entry'])
+export const SPEED_SLIP_MODELS = new Set(['answer_off_by_one', 'partial_answer_entry', 'last_two_digits_swapped'])
 
 export function isSpeedTrainingEntry(entry) {
   const q = entry?.question ?? {}
@@ -29,8 +29,11 @@ export function speedSlipSummary(entries) {
 }
 
 // Directed follow-up is offered for computed models outside speed training.
+// Input or copying slips have no method to contrast.
+export const INPUT_SIGNAL_MODELS = new Set(['partial_answer_entry', 'last_two_digits_swapped', 'notebook_answer_mismatch'])
+
 export function contrastFollowUpEligible(item, report) {
-  if (item?.basis !== 'rule_candidate' || !item.signalCode) return false
+  if (item?.basis !== 'rule_candidate' || !item.signalCode || INPUT_SIGNAL_MODELS.has(item.signalCode)) return false
   const supports = item.supportRefs.map(ref => report.evidence.find(e => e.ref === ref)).filter(Boolean)
   return supports.length > 0 && !supports.every(isSpeedTrainingEntry)
 }

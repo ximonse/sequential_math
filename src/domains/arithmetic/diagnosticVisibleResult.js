@@ -5,7 +5,9 @@ export const VISIBLE_RESULT_ANALYSIS_VERSION = 2
 
 // Only a conventional, four-row calculation with an explicit answer line is
 // interpreted. Other valid ways of calculating remain unknown to this rule.
-export function analyzeDiagnosticVisibleResult(task, snapshot) {
+// allowExchangeMarks: also accept a row of single digits directly above the
+// first number (exchange or carry marks). Default off keeps earlier summaries.
+export function analyzeDiagnosticVisibleResult(task, snapshot, { allowExchangeMarks = false } = {}) {
   const alignment = analyzeDiagnosticColumnAlignment(task, snapshot)
   const grid = replayDiagnosticGrid(snapshot)
   const base = { analysisVersion: VISIBLE_RESULT_ANALYSIS_VERSION,
@@ -47,6 +49,10 @@ export function analyzeDiagnosticVisibleResult(task, snapshot) {
     return unknown('no_unambiguous_result')
   }
   const setupRows = new Set([upper.row, lower.row, lineRow, resultRow])
+  if (allowExchangeMarks && upper.row > 0
+    && mainCells.every(cell => cell.row !== upper.row - 1 || (/^[0-9]$/u.test(cell.value) && !cell.struck))) {
+    setupRows.add(upper.row - 1)
+  }
   if (mainCells.some(cell => !setupRows.has(cell.row))) {
     return unknown('other_visible_work')
   }

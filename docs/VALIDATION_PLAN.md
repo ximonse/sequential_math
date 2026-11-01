@@ -21,7 +21,7 @@ det vi redan vet.
 
 | Uppgift | Vem | Skäl |
 |---|---|---|
-| Inventering, bankförslag, utkast till tester | Gemini, startad av Simon i repot | Spar Claude; Claudes session får inte skicka repots innehåll till Gemini |
+| Inventering, utredning, bankförslag, utkast till tester | Antigravity i skrivskyddat läge (`agy --print … --mode plan`), startad av Claude | Spar Claude. Gemini CLI är nedlagd för privatkonton (2026-11-01) |
 | Låtsaselever och dolt facit | Antigravity (startskript i `teacher-data-out/blindtest`) | Neutralitet |
 | Kodändringar i regelmotor och appen, kontroll av siffror, robotar, karta | Claude | Kräver repots helhet och verifiering |
 | Godkännande av bankuppgifter, publicering, didaktiska avvägningar | Simon | Beslut |

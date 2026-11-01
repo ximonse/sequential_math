@@ -305,9 +305,11 @@ export function generateByDifficultyWithOptions(level, options = {}) {
     ? allTemplates.filter(t => allowedTypes.includes(t.type))
     : allTemplates
   const candidates = byTypeCandidates.length > 0 ? byTypeCandidates : allTemplates
+  // Hidden decimal tasks come only when hiddenDecimalPolicy asks for them;
+  // the ordinary rotation must not add more (Simon 2026-11-01).
   const evidenceCandidates = evidenceSkill
     ? candidates.filter(template => getDecimalEvidence(template).evidenceSkill === evidenceSkill)
-    : candidates
+    : candidates.filter(template => !getDecimalEvidence(template).evidenceSkill)
   const scopedCandidates = evidenceCandidates.length > 0 ? evidenceCandidates : candidates
 
   const levelCandidates = scopedCandidates.filter(

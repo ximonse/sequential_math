@@ -63,6 +63,12 @@ Decimaler blir först ett dolt delområde under positionssystem. De får egen in
 
 ## Utfört: dold decimal-evidens
 
+**Rättat 2026-11-01:** den vanliga mallrotationen i `generateByDifficultyWithOptions`
+valde också decimalmallar på nivå 4, 5, 7, 8, 10 och 12, så andelen blev 62–75 % i
+stället för policyns 25 % (50 % om eleven ligger efter). Nu kommer dolda
+decimaluppgifter bara när `hiddenDecimalPolicy` begär dem (Simons beslut, alternativ 1).
+Test: `src/lib/hiddenDecimalLeak.test.js`.
+
 - Decimalmallar får den interna evidensnyckeln positions_decimal. Den används i historik och mastery, men visar inget nytt elevval.
 - Heltalsräkning och decimalräkning får därmed separata progressionsspår; nästa arbete är en explicit nivåmatris och lärarpresentation för det dolda spåret.
 

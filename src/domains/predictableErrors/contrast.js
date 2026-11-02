@@ -10,8 +10,8 @@ export const CONTRAST_MAX_ITEMS = 5
 export const CONTRAST_MIN_ITEMS = 2
 
 // Explanations that compete for the same column-subtraction answers.
-const FAMILIES = [['smaller_minus_larger', 'exchange_not_decremented', 'borrow_forget', 'second_exchange_inverted'],
-  ['mul_carry_forgotten', 'mul_carry_added_before', 'mul_partials_concatenated', 'mul_columnwise', 'mul_no_row_shift', 'ones_digits_only'],
+const FAMILIES = [['smaller_minus_larger', 'exchange_not_decremented', 'borrow_forget', 'second_exchange_inverted', 'sub_left_to_right'],
+  ['mul_carry_forgotten', 'mul_carry_added_before', 'mul_carry_always_one', 'mul_partials_concatenated', 'mul_columnwise', 'mul_no_row_shift', 'ones_digits_only'],
   ['div_remainder_ignored', 'div_remainder_as_ones', 'div_zero_dropped', 'quotient_off_by_one']]
 // Observations that are not method explanations.
 const NOT_RIVALS = new Set(['operation_swap', 'place_value_scaling', 'partial_answer_entry', 'answer_off_by_one', 'last_two_digits_swapped', 'notebook_answer_mismatch'])
@@ -31,6 +31,9 @@ export const CONTRAST_LABELS_SV = {
   ones_digits_only: 'Bara entalen multipliceras',
   mul_carry_forgotten: 'Minnessiffran glöms i multiplikationen',
   mul_carry_added_before: 'Minnessiffran läggs till före multiplikationen',
+  mul_carry_always_one: 'Minnessiffran blir alltid 1',
+  add_left_to_right: 'Räknar från vänster, minnessiffran åt höger',
+  sub_left_to_right: 'Räknar från vänster, växlar från höger',
   mul_partials_concatenated: 'Delprodukterna skrivs efter varandra',
   mul_columnwise: 'Multiplicerar kolumnvis som vid addition',
   mul_no_row_shift: 'Andra delprodukten flyttas inte',

@@ -10,13 +10,15 @@ function rowOne(m, k, rule) {
     const last = i === ds.length - 1
     const product = rule === 'carry_added_before' ? (ds[i] + carry) * k : ds[i] * k + (rule === 'carry_forgotten' ? 0 : carry)
     out += (last ? product : product % 10) * 10 ** i
-    carry = Math.floor(product / 10)
+    // carry_always_one: any carry is written as 1 (46 × 7 = 292, blind test 3).
+    carry = rule === 'carry_always_one' ? (product >= 10 ? 1 : 0) : Math.floor(product / 10)
   }
   return out
 }
 
 export function mulCarryForgotten(m, k) { return rowOne(m, k, 'carry_forgotten') }
 export function mulCarryAddedBefore(m, k) { return rowOne(m, k, 'carry_added_before') }
+export function mulCarryAlwaysOne(m, k) { return rowOne(m, k, 'carry_always_one') }
 export function mulPartialsConcatenated(m, k) { return Number(digits(m).map(d => d * k).join('')) }
 
 // Only digits in the same column are multiplied, as in addition; the carry from the
@@ -35,7 +37,8 @@ export function mulColumnwise(a, b) {
 
 // Two-digit (or longer) times two-digit: rows per digit of the second factor.
 export function mulRows(a, b, rule) {
-  const rows = digits(b).reverse().map((d, i) => ({ value: rule ? rowOne(a, d, rule) : a * d, shift: i }))
+  const row = d => rule === 'partials_concatenated' ? mulPartialsConcatenated(a, d) : rule && rule !== 'no_row_shift' ? rowOne(a, d, rule) : a * d
+  const rows = digits(b).reverse().map((d, i) => ({ value: row(d), shift: i }))
   return rule === 'no_row_shift' ? rows.reduce((sum, row) => sum + a * digits(b).reverse()[row.shift], 0)
     : rows.reduce((sum, row) => sum + row.value * 10 ** row.shift, 0)
 }
@@ -55,7 +58,10 @@ function shortDivision(a, b, rule) {
 
 export function divRemainderIgnored(a, b) { return shortDivision(a, b, 'remainder_ignored') }
 export function divRemainderAsOnes(a, b) { return shortDivision(a, b, 'remainder_as_ones') }
+// Zeros in the quotient fall away: inside (108 -> 18) or last (80 -> 8, blind test 3).
 export function divZeroDropped(quotient) {
   const text = String(quotient)
-  return /\d0+\d/u.test(text) ? Number(text[0] + text.slice(1, -1).replace(/0/gu, '') + text.at(-1)) : null
+  const variants = [/\d0+\d/u.test(text) ? text[0] + text.slice(1, -1).replace(/0/gu, '') + text.at(-1) : null,
+    text.length > 1 ? text[0] + text.slice(1).replace(/0/gu, '') : null]
+  return [...new Set(variants.filter(v => v && v !== text).map(Number))]
 }

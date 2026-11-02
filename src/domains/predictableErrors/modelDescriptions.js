@@ -74,6 +74,21 @@ export const MODEL_DESCRIPTIONS = {
     sourceSv: MUL,
     openersSv: ['Be eleven säga högt i vilken ordning hen multiplicerar och lägger till.', 'Jämför (4 + 4) · 7 med 4 · 7 + 4.'],
   },
+  mul_carry_always_one: {
+    thinkingSv: 'Eleven för vidare en minnessiffra men skriver den alltid som 1, även när produkten är 20 eller mer. Minnessiffran uppfattas som en markering, inte som antalet tiotal.',
+    sourceSv: MUL,
+    openersSv: ['Fråga hur många tiotal det finns i 42 och vad minnessiffran ska visa.', 'Jämför 6 · 7 = 42 med 6 · 2 = 12: blir minnessiffran densamma?'],
+  },
+  add_left_to_right: {
+    thinkingSv: 'Eleven räknar kolumnerna från vänster, som när man läser, och för minnessiffran till kolumnen till höger. Den sista minnessiffran får ingen plats.',
+    sourceSv: WRITTEN_ADD,
+    openersSv: ['Be eleven visa i vilken kolumn hen börjar och varför.', 'Fråga vart tiotalet från entalens summa ska ta vägen.'],
+  },
+  sub_left_to_right: {
+    thinkingSv: 'Eleven räknar kolumnerna från vänster och växlar genom att låna från kolumnen till höger i stället för till vänster.',
+    sourceSv: WRITTEN_SUB,
+    openersSv: ['Be eleven visa varifrån tiotalet kommer när entalen inte räcker.', 'Låt eleven växla med tiobasmaterial: går det att få tio från entalen?'],
+  },
   mul_partials_concatenated: {
     thinkingSv: 'Eleven skriver varje siffras produkt efter varandra utan att ta hänsyn till positionerna. Placeringen styr mer än talens värde.',
     sourceSv: MUL,

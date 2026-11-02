@@ -51,9 +51,21 @@ Appen: 8 rätt, 2 delvis, 1 missad, 1 svagt missvisande; kontrollerna utan falsk
 - Svagt missvisande: en slarvig elevs slumpvisa −1 i division blev regelkandidat (quotient_off_by_one).
 - Liten lucka: sammanskrivna delprodukter i 2×2 (34·23 = 1592).
 
-Förslag till v7: båda faktorordningarna för radförskjutning, slutnolla i kvoten, ny modell
-"minnessiffran alltid 1", sammanskrivning i 2×2, och quotient_off_by_one som slarvsignal
-tills riktningen upprepas mot motexempel.
+Regelversion v7 (Simon godkände 2026-11-02, "kör som du föreslår"):
+
+- Radförskjutning och övriga radmodeller prövas med båda faktorerna överst.
+- Nollan i kvoten upptäcks även sist (80 → 8).
+- Ny modell mul_carry_always_one (minnessiffran blir alltid 1).
+- Sammanskrivna delprodukter även i 2×2.
+- quotient_off_by_one blir regelkandidat först vid minst tre träffar och fler träffar än jämförbara rätta svar.
+- Generiska observationer (skalning, ofullständig inmatning, omkastade siffror, annat räknesätt)
+  visas inte när en specifik regel förklarar samma svar.
+- Vänster till höger (från blindtest 2): add_left_to_right och sub_left_to_right, bara där svaret skiljer
+  sig från glömd minnessiffra respektive växling utan minskning; med två siffror sammanfaller de alltid.
+
+Lokal omkörning på sparade felsvar från blindtest 1–3: Silver Äng Bro Björn får mul_carry_always_one (7),
+Lila Måne Bro Varg mul_no_row_shift 8 i stället för 3, vänster till höger bara hos eleven som räknade så,
+inga nya hypoteser hos kontrolleleverna.
 
 ## Snabbhetsträning (tabeller, dubblor, talpar, talbild)
 

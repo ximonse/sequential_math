@@ -47,7 +47,7 @@ export async function openClass(page, className, tab) {
 
 // Picks screening recipients in the shared picker and sends the screening.
 export async function sendScreening(page, { className, pupilName, groupName }) {
-  const panel = page.getByRole('region', { name: 'Dela ut screening', exact: true })
+  const panel = page.getByRole('region', { name: 'Screening', exact: true })
   await panel.getByRole('button', { name: 'Välj mottagare', exact: true }).click()
   const picker = panel.getByRole('region', { name: 'Mottagare', exact: true })
   const search = picker.getByRole('searchbox', { name: 'Sök klass, grupp eller elev' })

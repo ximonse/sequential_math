@@ -66,7 +66,7 @@ const WORKSPACES = [
   { id: 'focus', label: 'Fokusövningar', description: 'Grupp, individ och pass', panels: ['focus'], attentionOnly: true },
   { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'mathresults', 'tickets'] },
   { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality', 'pausegames'] },
-  { id: 'ncm', label: 'Screening: dela ut', description: 'Skicka frågor till klass, grupp eller elev', panels: ['ncm-grid'], adminOnly: true },
+  { id: 'ncm', label: 'Screening: skapa', description: 'Skapa, dela ut och återanvänd frågor', panels: ['ncm-grid'], adminOnly: true },
   { id: 'ncm-results', label: 'Screening: resultat', description: 'Elevernas svar och uträkningar', panels: ['ncm-results'], adminOnly: true },
   { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management'] }
 ]

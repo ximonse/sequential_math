@@ -100,7 +100,7 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
     {waiting && <p role="status" className="mt-3 text-sm">Hämtar samlingar...</p>}
     {failed.map(([classId, item]) => <p key={classId} role="status" className="mt-2 text-sm text-amber-900">
       {classNames.get(classId) || classId}: {item.state === 'unavailable' ? 'screening är inte aktiverat på servern' : item.error || 'kunde inte hämta samlingar'}.</p>)}
-    {!waiting && classKey && collections.length === 0 && failed.length === 0 && <p role="status" className="mt-3 text-sm">Det finns inga utdelade samlingar till de valda mottagarna ännu. Använd Dela ut för att skapa eller återanvända en samling.</p>}
+    {!waiting && classKey && collections.length === 0 && failed.length === 0 && <p role="status" className="mt-3 text-sm">Det finns inga utdelade samlingar till de valda mottagarna ännu. Använd Screening: skapa för att skapa eller återanvända en samling.</p>}
     {collections.length > 0 && <label className="mt-3 block text-sm font-medium">Samling att gå igenom
       <select value={selected ? collectionId : ''} onChange={event => {
         if (dirty.current && !window.confirm('Genomgången har osparade ändringar. Vill du lämna dem?')) return

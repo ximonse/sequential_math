@@ -22,8 +22,8 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
   const { draft, setDraft, busy: draftBusy, setBusy: setDraftBusy, dirty: draftDirty, setDirty: setDraftDirty } = useScreeningDraft()
   const [draftLoaded, setDraftLoaded] = useState(!initialDraftId)
   const loadDraft = useCallback(value => { setDraft(value); setDraftLoaded(true) }, [setDraft])
-  const [step, setStep] = useState(initialSource || initialDraftId ? 'content' : 'start')
-  const [mode, setMode] = useState(initialSource ? 'reuse' : initialDraftId ? 'new' : null)
+  const [step, setStep] = useState('content')
+  const [mode, setMode] = useState(initialSource ? 'reuse' : 'new')
   const [source, setSource] = useState({ classId: initialSource?.classId || '', assignment: initialSource || null, title: initialSource?.titleSv || '' })
   const [recipients, setRecipients] = useState([])
   const { delivery, busy, send } = useScreeningDelivery(library.reload)
@@ -74,12 +74,12 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
   return <div className="screening-dispatch-editor mt-3 text-sm">
     {step !== 'start' && step !== 'receipt' && <ol aria-label="Utdelningsflöde" className="mb-3 flex flex-wrap gap-x-2 gap-y-1 text-xs text-slate-600">{steps.map((value, index) => <li key={value} aria-current={step === value ? 'step' : undefined} className={`rounded px-1.5 py-0.5 ${step === value ? 'bg-indigo-50 font-semibold text-indigo-700' : ''}`}>{index + 1}. {names[index]}</li>)}</ol>}
     <div hidden={step !== 'start'}>
-      <h3 className="font-semibold">Vad vill du dela ut?</h3>
+      <h3 className="font-semibold">Vad ska screeningen innehålla?</h3>
       <div className="my-2 grid gap-2 sm:grid-cols-2">
         <button type="button" className={`${button} bg-white p-2 text-left`} onClick={() => { setMode('reuse'); setStep('content') }}><strong className="block">Återanvänd</strong><span>Välj tidigare innehåll till en ny utdelning.</span></button>
         <button type="button" className={`${button} bg-white p-2 text-left`} onClick={() => { setMode('new'); setStep('content') }}><strong className="block">Skapa ny</strong><span>Välj uppgifter och lägg till egna frågor.</span></button>
       </div>
-      <button type="button" className={button} onClick={onClose}>Till utdelade screeningar</button>
+      <button type="button" className={button} onClick={() => onClose()}>Till utdelade screeningar</button>
     </div>
 
     <div hidden={step !== 'content'}>
@@ -158,7 +158,7 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
         <strong>{item.className}</strong>: {delivery.results[item.classId]?.ok ? `Bekräftat · ${delivery.results[item.classId].count} ${delivery.results[item.classId].count === 1 ? 'elev' : 'elever'}` : delivery.results[item.classId]?.message || 'Väntar på kvittens…'}
       </li>)}</ul>
       <div className="flex flex-wrap gap-2">{!completed && <button type="button" disabled={busy} className={primary} onClick={() => send(delivery)}>Försök igen för obekräftade klasser</button>}
-        <button type="button" disabled={busy} className={button} onClick={onClose}>Till utdelade screeningar</button></div>
+        <button type="button" disabled={busy} className={button} onClick={() => onClose({ finished: true })}>Till utdelade screeningar</button></div>
     </div>}
   </div>
 }

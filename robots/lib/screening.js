@@ -1,18 +1,22 @@
-// Screening has two workspaces: handing questions out and reading the results.
+// Screening has two workspaces: creating (and handing out) and reading the results.
 // These helpers open each one and return its panel.
 import { expect } from '@playwright/test'
 import { openTab } from './teacher.js'
 
 export async function openDispatch(page, { startNew = true } = {}) {
-  await openTab(page, 'Screening: dela ut')
-  const panel = page.getByRole('region', { name: 'Dela ut screening', exact: true })
+  await openTab(page, 'Screening: skapa')
+  const panel = page.getByRole('region', { name: 'Screening', exact: true })
   await expect(panel).toBeVisible()
-  if (startNew && !await panel.getByRole('button', { name: 'Välj mottagare', exact: true }).isVisible()) {
-    const close = panel.getByRole('button', { name: 'Till utdelade screeningar', exact: true })
-    if (await close.isVisible()) await close.click()
-    const start = panel.getByRole('button', { name: 'Dela ut screening', exact: true })
-    if (await start.isVisible()) await start.click()
-    await panel.getByRole('button', { name: 'Skapa ny', exact: false }).click()
+  if (startNew) {
+    const tab = panel.getByRole('tab', { name: 'Skapa ny', exact: true })
+    await tab.click()
+    if (!await panel.getByRole('button', { name: 'Välj mottagare', exact: true }).isVisible()) {
+      // A handed-out screening shows its receipt; leaving it starts a new one.
+      const close = panel.getByRole('button', { name: 'Till utdelade screeningar', exact: true })
+      if (await close.isVisible()) { await close.click(); await tab.click() }
+      const fresh = panel.getByRole('button', { name: /^Skapa ny/ })
+      if (await fresh.isVisible()) await fresh.click()
+    }
   }
   return panel
 }

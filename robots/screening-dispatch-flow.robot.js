@@ -15,8 +15,7 @@ test('Screening flow preserves mixed searchable recipients and retries uncertain
   } })).json()).group
   await teacherLogin(page, teacher)
   const panel = await openDispatch(page, { startNew: false })
-  await panel.getByRole('button', { name: 'Dela ut screening', exact: true }).click()
-  await panel.getByRole('button', { name: 'Skapa ny', exact: false }).click()
+  await panel.getByRole('tab', { name: 'Skapa ny', exact: true }).click()
   await panel.getByRole('textbox', { name: 'Samlingens namn' }).fill(`Flow screening ${tag}`)
   await panel.getByRole('button', { name: 'Välj mottagare', exact: true }).click()
   const picks = panel.getByRole('region', { name: 'Mottagare', exact: true })
@@ -100,7 +99,8 @@ test('Screening flow preserves mixed searchable recipients and retries uncertain
   for (const name of ['UI Flow One', 'UI Flow Two', 'UI Flow Three']) {
     await expect(panel.getByRole('article', { name: `Flow screening ${tag}`, exact: true }).getByText(name, { exact: true })).toBeVisible()
   }
-  await panel.getByRole('button', { name: 'Dela ut screening', exact: true }).click()
+  await panel.getByRole('tab', { name: 'Skapa ny', exact: true }).click()
+  await panel.getByRole('button', { name: 'Tillbaka', exact: true }).click()
   await panel.getByRole('button', { name: 'Återanvänd', exact: false }).click()
   await panel.getByRole('combobox', { name: 'Klass att hämta samlingar från' }).selectOption(a)
   await panel.getByRole('combobox', { name: 'Återanvänd samling' }).selectOption(records[0][0].assignmentId)

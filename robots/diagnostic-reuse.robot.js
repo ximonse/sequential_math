@@ -49,7 +49,8 @@ test('A stopped collection can be reused for a group, another class and one pupi
   const deliver = async (title, target) => {
     const close = panel.getByRole('button', { name: 'Till utdelade screeningar', exact: true })
     if (await close.isVisible()) await close.click()
-    await panel.getByRole('button', { name: 'Dela ut screening', exact: true }).click()
+    await panel.getByRole('tab', { name: 'Skapa ny', exact: true }).click()
+    await panel.getByRole('button', { name: 'Tillbaka', exact: true }).click()
     await panel.getByRole('button', { name: 'Återanvänd', exact: false }).click()
     await panel.getByRole('combobox', { name: 'Klass att hämta samlingar från', exact: true }).selectOption(sourceClass)
     await panel.getByRole('combobox', { name: 'Återanvänd samling', exact: true }).selectOption(source.assignmentId)

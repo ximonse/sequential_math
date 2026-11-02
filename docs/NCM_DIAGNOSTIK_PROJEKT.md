@@ -132,6 +132,16 @@ med orange bakgrund för att skilja den från ordinarie träningsvyer.
 Rutnätet ska vara en egen generell komponent. Uppgiften bestämmer vilka
 tecken, markeringar och semantiska roller som är tillåtna.
 
+**Kort division (2026-11-02).** När uppgiften lyder "Räkna ut a / b." med
+ensiffrig nämnare skriver appen talen på det vanliga rutnätet: täljarens
+siffror, bråkstreck, nämnare, likhetstecken och en tunn svarslinje. Mallen
+räknas fram ur frågetexten och är aldrig elevens rutor. Eleven trycker på
+linjen mellan två siffror i täljaren och skriver en rest, som blir en liten
+siffra på linjen (händelsen `line_note`). Därefter går skrivandet till svaret;
+svarslinjen och svarsrutan är samma svar. Resten av rutnätet är fritt för egna
+uppställningar. Äldre försök som redan har arbete där mallen skulle ligga visas
+utan mall. Analysen läser ännu inte resterna.
+
 ## 6. Vad som behöver bevaras
 
 Fältnamnen nedan är begrepp, inte en fastslagen databasmodell.

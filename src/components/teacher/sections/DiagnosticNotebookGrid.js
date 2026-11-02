@@ -1,14 +1,19 @@
 import { createElement as h } from 'react'
 import { diagnosticLineCoordinates } from '../../../domains/arithmetic/diagnosticLineGeometry.js'
+import { shortDivisionTemplateFor } from '../../../domains/arithmetic/shortDivisionTemplate.js'
+import ShortDivisionLayer from '../../../dev/ShortDivisionLayer.js'
 
 // Shared by teacher history and the local PNG renderer. No controls or writes.
-export default function DiagnosticNotebookGrid({ frame, label = 'Elevens sparade uppställning' }) {
+export default function DiagnosticNotebookGrid({ frame, task = null, label = 'Elevens sparade uppställning' }) {
+  // The printed short division comes from the task, or from an export that already resolved it.
+  const template = frame.template ?? (task ? shortDivisionTemplateFor(task, frame) : null)
   return h('div', { className: 'diagnostic-grid', role: 'grid', 'aria-label': label,
     style: { gridTemplateColumns: `repeat(${frame.columns}, var(--diagnostic-cell-width))` } },
   h('svg', { className: 'diagnostic-grid__lines', viewBox: `0 0 ${frame.columns} ${frame.rows}`,
     preserveAspectRatio: 'none', 'aria-hidden': true },
   (frame.lines || []).map(line => h('line', { key: line.id, 'data-line-id': line.id,
     ...diagnosticLineCoordinates(line), className: 'diagnostic-grid__line' }))),
+  h(ShortDivisionLayer, { template, lineNotes: frame.lineNotes, answer: frame.answer }),
   Array.from({ length: frame.rows * frame.columns }, (_, index) => {
     const row = Math.floor(index / frame.columns), column = index % frame.columns
     const cell = frame.cells[`${row}:${column}`] || {}

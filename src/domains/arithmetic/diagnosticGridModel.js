@@ -8,7 +8,7 @@ export const NUMBER_ANSWER = /^[−-]?\d{0,12}(,\d{0,12})?$/u
 // verbatim. Task-specific assessment must not strip symbols or evaluate them.
 export const MATH_ANSWER = /^[\p{L}0-9+−\-×*/÷,.;=()%²³^:°√<>≤≥± ]{0,200}$/u
 const NOTE_CHARACTERS = /^[0-9]{1,2}$/u
-const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'line_add', 'line_remove', 'answer_change', 'selection_change', 'drawing_stroke', 'drawing_clear', 'pause', 'resume', 'focus_lost', 'submit'])
+const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'line_add', 'line_remove', 'line_note', 'answer_change', 'selection_change', 'drawing_stroke', 'drawing_clear', 'pause', 'resume', 'focus_lost', 'submit'])
 
 function isValidPosition(value, rows, columns) {
   return Number.isInteger(value?.row) && value.row >= 0 && value.row < rows
@@ -125,6 +125,20 @@ export function applyDiagnosticGridEvent(state, event) {
     next.lines = [...(state.lines || []), { id: event.eventId, axis: event.axis,
       ...(event.placement ? { placement: event.placement } : {}),
       from: event.from, to: event.to }]
+  } else if (event.type === 'line_note') {
+    // A small digit written on the vertical line left of `position.column`
+    // (short division). Only digit notes; an empty value removes the note.
+    if (!isValidPosition(event.position, state.rows, state.columns) || event.position.column < 1
+      || typeof event.after !== 'string' || !(event.after === '' || NOTE_CHARACTERS.test(event.after))) {
+      throw new Error('Invalid line note')
+    }
+    const key = cellKey(event.position)
+    const notes = state.lineNotes || {}
+    if (event.before !== (notes[key] || '') || event.before === event.after) throw new Error('Line note history mismatch')
+    const changed = { ...notes }
+    if (event.after) changed[key] = event.after
+    else delete changed[key]
+    next.lineNotes = changed
   } else if (event.type === 'line_remove') {
     const lines = state.lines || []
     if (typeof event.lineId !== 'string' || !lines.some(line => line.id === event.lineId)) {
@@ -198,6 +212,7 @@ export function replayDiagnosticGrid(snapshot) {
   if (JSON.stringify(replayed.cells) !== JSON.stringify(snapshot.cells)
     || JSON.stringify(replayed.lines) !== JSON.stringify(snapshot.lines ?? [])
     || JSON.stringify(replayed.drawing) !== JSON.stringify(snapshot.drawing ?? [])
+    || JSON.stringify(replayed.lineNotes ?? {}) !== JSON.stringify(snapshot.lineNotes ?? {})
     || JSON.stringify(replayed.selectedOptionIds) !== JSON.stringify(snapshot.selectedOptionIds)
     || replayed.answer !== snapshot.answer
     || JSON.stringify(replayed.cursor) !== JSON.stringify(snapshot.cursor)

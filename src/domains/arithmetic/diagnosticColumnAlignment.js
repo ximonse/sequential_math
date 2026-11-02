@@ -39,6 +39,11 @@ export function analyzeDiagnosticColumnAlignment(task, snapshot) {
   if (task.answerRule === 'ncm_facit') return {
     analysisVersion: COLUMN_ALIGNMENT_ANALYSIS_VERSION, attemptId: grid.attemptId,
     taskId: task.taskId, taskVersion: task.taskVersion, status: 'unknown', reason: 'not_a_column_task' }
+  // Multiplication and division bank tasks (bank v5) have no column model yet; the
+  // teacher detail must still open (it returned 503 before 2026-11-02).
+  if (['multiplication', 'division'].includes(task.operation)) return {
+    analysisVersion: COLUMN_ALIGNMENT_ANALYSIS_VERSION, attemptId: grid.attemptId,
+    taskId: task.taskId, taskVersion: task.taskVersion, status: 'unknown', reason: 'not_a_column_task' }
   if (!['addition', 'subtraction'].includes(task.operation)
     || !Array.isArray(task.operands) || task.operands.length !== 2
     || !task.operands.every(value => Number.isSafeInteger(value) && value >= 0)) {

@@ -217,3 +217,78 @@
   border: 1px solid var(--border, #7c8da8);
   border-radius: 5px;
 }
+
+/* Short division printed on the normal grid (Simon 2026-11-02). */
+.short-division {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.short-division__given,
+.short-division__answer {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--diagnostic-cell-width);
+  height: var(--diagnostic-cell-height);
+  font-size: 2.375rem;
+  line-height: 1;
+  color: #334155;
+  font-variant-numeric: tabular-nums;
+}
+
+.short-division__bar {
+  position: absolute;
+  height: 2.5px;
+  margin-top: -1px;
+  background: #0f172a;
+}
+
+.short-division .short-division__answer {
+  min-height: 0;
+  border-radius: 0;
+  font-size: 2.375rem;
+  justify-content: flex-start;
+  padding: 0 0.25rem;
+  border: 0;
+  border-bottom: 2px solid #cbd5e1;
+  background: transparent;
+  color: #0f172a;
+  pointer-events: auto;
+}
+
+.short-division .short-division__answer--active {
+  border-bottom-color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.short-division .short-division__gap {
+  position: absolute;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  pointer-events: auto;
+}
+
+.short-division .short-division__gap--selected {
+  outline: 2px solid #1d4ed8;
+  outline-offset: -2px;
+  background: rgb(239 246 255 / 0.6);
+}
+
+.short-division__note {
+  position: absolute;
+  top: 0.15rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.25rem;
+  line-height: 1;
+  color: #7c2d12;
+}
+
+.short-division button:disabled { opacity: 1; }

@@ -1,6 +1,6 @@
 import ScreeningImageQuestion from '../components/student/ScreeningImageQuestion.jsx'
 import { isChoiceTask } from '../domains/arithmetic/screeningImageQuestions.js'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import taskManifest from '../domains/arithmetic/diagnosticTasks.v1.json'
 import {
   createDiagnosticGrid,
@@ -9,6 +9,8 @@ import {
 } from '../domains/arithmetic/diagnosticGridModel'
 import { exceedsDiagnosticAttemptQuota, isDiagnosticAttemptFull } from '../domains/arithmetic/diagnosticAttemptAppend'
 import DiagnosticGridLines from './DiagnosticGridLines'
+import ShortDivisionLayer from './ShortDivisionLayer.js'
+import { shortDivisionTemplateFor, templateCovers } from '../domains/arithmetic/shortDivisionTemplate.js'
 import { lineTouchesPoint } from '../domains/arithmetic/diagnosticLineGeometry'
 import MathScratchpad from '../components/student/MathScratchpad'
 import NotebookTools from './NotebookTools'
@@ -62,6 +64,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const [eraseMode, setEraseMode] = useState(false)
   const [inputTarget, setInputTarget] = useState(pilot?.task.gridEnabled === false ? 'answer' : 'grid')
   const [contextMenu, setContextMenu] = useState(null)
+  const [selectedGap, setSelectedGap] = useState(null)
   const [drawingVisible, setDrawingVisible] = useState(false)
   const [notebookVisible, setNotebookVisible] = useState(true)
   // The first notebook a pupil opens on a device starts with the gesture guide.
@@ -69,6 +72,9 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const isPilot = Boolean(pilot)
   const submitting = Boolean(saveState?.submitting)
   const editingLocked = grid.status === 'submitted' || submitting
+  // Printed short division; null for other tasks and for older attempts with work there.
+  const cells = grid.cells, columns = grid.columns, rows = grid.rows
+  const template = useMemo(() => shortDivisionTemplateFor(task, { cells, columns, rows }), [task, cells, columns, rows])
 
   useEffect(() => { onGridChange?.(grid.events.length, grid) }, [grid, onGridChange])
 
@@ -314,8 +320,42 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
     record(previous => previous.answer === after ? null : { type: 'answer_change', before: previous.answer, after })
   }
 
+  function writeGap(character, gap = selectedGap) {
+    if (!gap) return
+    const key = `${gap.row}:${gap.column}`
+    if (character === 'backspace' || character === 'clear') {
+      record(previous => previous.lineNotes?.[key] ? { type: 'line_note', position: gap, before: previous.lineNotes[key], after: '' } : null)
+      return
+    }
+    if (!/^[0-9]$/u.test(character)) return
+    record(previous => (previous.lineNotes?.[key] || '') === character ? null
+      : { type: 'line_note', position: gap, before: previous.lineNotes?.[key] || '', after: character })
+    activateAnswer()
+  }
+
+  function chooseGap(gap) {
+    setContextMenu(null)
+    stopGesture()
+    if (eraseMode) { writeGap('clear', gap); return }
+    setLineMode(false)
+    setSelectedGap(gap)
+    setInputTarget('gap')
+  }
+
+  function activateAnswer() {
+    setInputTarget('answer'); setSelectedGap(null); setLineMode(false); setEraseMode(false); setContextMenu(null); stopGesture()
+    answerRef.current?.focus({ preventScroll: true })
+  }
+
+  function gapKey(event, gap) {
+    const key = event.key
+    if (key === 'Backspace' || key === 'Delete') { event.preventDefault(); writeGap('clear', gap); return }
+    if (/^[0-9]$/u.test(key) && !event.ctrlKey && !event.metaKey && !event.altKey) { event.preventDefault(); writeGap(key, gap) }
+  }
+
   function keypad(character) {
     character = character === '-' ? '−' : character === '*' ? '×' : character
+    if (inputTarget === 'gap') { writeGap(character); return }
     if (inputTarget === 'answer') {
       changeAnswer(character === 'backspace' ? grid.answer.slice(0, -1)
       : character === 'clear' ? '' : character === '±' ? grid.answer.startsWith('−') || grid.answer.startsWith('-') ? grid.answer.slice(1) : `−${grid.answer}`
@@ -331,6 +371,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   function writeCell(character) {
     record(previous => {
       const { row, column, layer } = previous.cursor
+      if (templateCovers(template, row, column)) return null
       const allowedNow = layer === 'note' ? /^[0-9]{1,2}$/u : MAIN_CHARACTERS
       if (!allowedNow.test(character)) return null
       const cell = previous.cells[`${row}:${column}`]
@@ -482,6 +523,10 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             <div hidden={task.gridEnabled === false || !notebookVisible} className="notebook-grid-scroll">
           <div ref={gridRef} className="diagnostic-grid" role="group" aria-label="Rutat räknehäfte">
             <DiagnosticGridLines lines={grid.lines} preview={linePreview} rows={grid.rows} columns={grid.columns} />
+            <ShortDivisionLayer template={template} lineNotes={grid.lineNotes} answer={grid.answer}
+              selectedGap={inputTarget === 'gap' ? selectedGap : null} answerActive={inputTarget === 'answer' && !editingLocked}
+              disabled={editingLocked || attemptFull} onGap={chooseGap} onGapKey={gapKey}
+              onAnswer={workspaceOnly ? null : activateAnswer} />
             {visibleCells.map(({ row, column }) => {
               const cell = grid.cells[`${row}:${column}`] || { main: '', note: '' }
               const atCursor = grid.cursor.row === row && grid.cursor.column === column
@@ -520,7 +565,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
                       writeCell(entered === '-' ? '−' : entered === '*' ? '×' : entered === '=' ? '─' : entered)
                     }}
                     onKeyDown={handleKeyDown}
-                    disabled={editingLocked}
+                    disabled={editingLocked || templateCovers(template, row, column)}
                   />
                   {cell.main && <span className={`diagnostic-cell__digit diagnostic-cell__digit--main ${cell.main.length > 1 ? 'diagnostic-cell__digit--double' : ''} ${cell.struck ? 'diagnostic-cell__digit--struck' : ''}`}>{cell.main}</span>}
                   {cell.note && <span className={`diagnostic-cell__digit diagnostic-cell__digit--note ${cell.struck ? 'diagnostic-cell__digit--struck' : ''}`}>{cell.note}</span>}
@@ -532,7 +577,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             {!workspaceOnly && <div className={`diagnostic-answer-row ${task.answerType === 'text' ? 'diagnostic-answer-row--text' : ''}`}>
               {!isChoiceTask(task) && <NotebookAnswerInput inputRef={answerRef} answer={grid.answer} answerType={task.answerType}
                 active={inputTarget === 'answer' && !editingLocked} disabled={editingLocked}
-                onActivate={() => { setInputTarget('answer'); setLineMode(false); setEraseMode(false); setContextMenu(null); stopGesture() }}
+                onActivate={() => { setInputTarget('answer'); setSelectedGap(null); setLineMode(false); setEraseMode(false); setContextMenu(null); stopGesture() }}
                 onChange={changeAnswer} onKey={keypad} />}
               {pilot && <button type="button" className={`notebook-next ${!onNext ? 'notebook-submit-ready' : ''}`}
                 onClick={onNext || (() => onSubmitCollection?.(grid))}

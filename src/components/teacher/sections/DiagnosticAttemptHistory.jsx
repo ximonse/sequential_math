@@ -29,7 +29,7 @@ export default function DiagnosticAttemptHistory({ snapshot, task, imageContext 
     <p className="mt-2 text-sm" aria-live="polite">{event?.type === 'selection_change' ? 'Ändrade valda alternativ.' : describeDiagnosticEvent(event)} {choice ? 'Val då' : 'Slutsvar då'}: {answer}.</p>
     {task?.responseMode && <ScreeningImageQuestion task={task} selected={frame.selectedOptionIds || []} disabled context={imageContext} />}
     <div hidden={task?.gridEnabled === false} className="mt-3 overflow-x-auto">
-      <DiagnosticNotebookGrid frame={frame} label={`Elevens uppställning efter steg ${step}`} />
+      <DiagnosticNotebookGrid frame={frame} task={task} label={`Elevens uppställning efter steg ${step}`} />
     </div>
     {frame.drawing?.length > 0 && <MathScratchpad visible strokes={frame.drawing} readOnly />}
   </section>

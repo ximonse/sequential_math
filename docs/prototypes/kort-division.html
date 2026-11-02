@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="sv">
+<meta charset="utf-8">
+<title>Skiss: kort division i räknehäftet</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 24px; color: #1f2933; background: #f7f7f4; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p.note { margin: 0 0 20px; color: #52606d; max-width: 640px; }
+  .row { display: flex; gap: 40px; flex-wrap: wrap; }
+  .card { background: #fff; border: 1px solid #d9dcd6; border-radius: 6px; padding: 16px 20px; }
+  .card h2 { font-size: 14px; margin: 0 0 12px; color: #52606d; font-weight: 600; }
+  .div { display: grid; grid-template-columns: auto auto auto; align-items: center; column-gap: 14px; }
+  .frac { display: flex; flex-direction: column; align-items: center; }
+  .top { display: flex; align-items: flex-end; }
+  .cell { width: 40px; height: 44px; border: 1px solid #c8d0d9; display: flex; align-items: center; justify-content: center;
+    font-size: 26px; background: repeating-linear-gradient(#fff, #fff); }
+  .gap { width: 22px; height: 44px; position: relative; cursor: pointer; }
+  .gap::after { content: ''; position: absolute; left: 10px; top: 6px; bottom: 6px; border-left: 1px dashed #c8d0d9; }
+  .gap.filled::after { display: none; }
+  .gap span { position: absolute; top: -2px; left: 4px; font-size: 16px; color: #b44d12; font-weight: 600; }
+  .gap.focus { outline: 2px solid #2f6fdf; border-radius: 4px; }
+  .bar { height: 2px; background: #1f2933; align-self: stretch; margin: 4px 0; }
+  .bottom { font-size: 26px; height: 44px; display: flex; align-items: center; }
+  .eq { font-size: 26px; }
+  .answer { min-width: 90px; height: 44px; border-bottom: 2px solid #aab4be; font-size: 26px; display: flex; align-items: flex-end;
+    padding: 0 4px 2px; }
+  .answer.focus { border-bottom-color: #2f6fdf; }
+  ol { margin: 20px 0 0; padding-left: 20px; max-width: 640px; line-height: 1.5; }
+</style>
+<h1>Skiss: kort division i räknehäftet</h1>
+<p class="note">Statisk skiss för att stämma av utformningen, inte byggd i appen. Talen från frågan står i rutor; resten skrivs i mellanrummet före nästa siffra; svaret skrivs på en tunn linje.</p>
+<div class="row">
+  <div class="card">
+    <h2>1. Uppgiften öppnas</h2>
+    <div class="div">
+      <div class="frac">
+        <div class="top"><div class="cell">7</div><div class="gap"></div><div class="cell">8</div></div>
+        <div class="bar"></div>
+        <div class="bottom">3</div>
+      </div>
+      <div class="eq">=</div>
+      <div class="answer focus"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>2. Eleven trycker i mellanrummet och skriver resten 1</h2>
+    <div class="div">
+      <div class="frac">
+        <div class="top"><div class="cell">7</div><div class="gap filled focus"><span>1</span></div><div class="cell">8</div></div>
+        <div class="bar"></div>
+        <div class="bottom">3</div>
+      </div>
+      <div class="eq">=</div>
+      <div class="answer">2</div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>3. Klart: 78/3 = 26</h2>
+    <div class="div">
+      <div class="frac">
+        <div class="top"><div class="cell">7</div><div class="gap filled"><span>1</span></div><div class="cell">8</div></div>
+        <div class="bar"></div>
+        <div class="bottom">3</div>
+      </div>
+      <div class="eq">=</div>
+      <div class="answer">26</div>
+    </div>
+  </div>
+</div>
+<ol>
+  <li>Siffrorna man skriver hamnar på svarslinjen, en i taget från vänster. Svarslinjen är också svarsrutan, så eleven skriver inte svaret två gånger.</li>
+  <li>Trycker eleven i ett mellanrum blir nästa siffra en liten rest där, och sedan går skrivandet tillbaka till svarslinjen.</li>
+  <li>Mellanrummet är en stor tryckyta (hela höjden mellan två siffror), inte en tunn linje.</li>
+  <li>Resten kan raderas eller ändras genom att trycka på den igen.</li>
+</ol>
+</html>

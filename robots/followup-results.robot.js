@@ -1,0 +1,78 @@
+// Directed follow-up end to end: suspicion → contrast draft → approval and
+// dispatch → pupil answers → results with a signal (advice, not a conclusion).
+import { test, expect } from '@playwright/test'
+import { createPupil, login } from './lib/app.js'
+import { createTeacher, teacherLogin } from './lib/teacher.js'
+
+async function teacherRequest(page, url, body) {
+  return page.evaluate(async ({ url, body }) => {
+    const response = await fetch(url, { ...(body ? { method: 'POST', body: JSON.stringify(body) } : {}),
+      headers: { 'Content-Type': 'application/json', 'x-teacher-token': sessionStorage.getItem('mathapp_teacher_api_token') } })
+    return { status: response.status, data: await response.json() }
+  }, { url, body })
+}
+
+// Larger digit minus smaller digit in every column.
+const smallerFromLarger = (a, b) => Number(String(a).split('').map((d, i) => Math.abs(Number(d) - Number(String(b).padStart(String(a).length, '0')[i]))).join(''))
+
+test('A dispatched follow-up shows which explanation each answer matches and a signal for the teacher', async ({ page, request, browser }, testInfo) => {
+  test.skip(process.env.ROBOT_DEV !== '1', 'Cookie approval requires the local development origin policy; run with ROBOT_DEV=1.')
+  const classId = `followup-${Math.random().toString(36).slice(2, 8)}`
+  const pupil = await createPupil(request, { classId, name: 'Followup Pupil' })
+  const teacher = await createTeacher(request, { classIds: [classId], role: 'super_admin' })
+  await teacherLogin(page, teacher)
+  const created = await teacherRequest(page, '/api/teacher-diagnostic-assignments', {
+    classId, studentIds: [pupil.studentId], taskIds: ['sub-through-zero-001'], titleSv: 'Första screeningen' })
+  expect(created.status).toBe(201)
+
+  const pupilContext = await browser.newContext()
+  const student = await pupilContext.newPage()
+  await login(student, pupil)
+  await student.getByRole('button', { name: 'Första screeningen', exact: true }).click()
+  await student.getByRole('textbox', { name: 'Mitt svar', exact: true }).pressSequentially('376')
+  await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
+
+  await page.goto(`/teacher/student/${pupil.studentId}`)
+  const panel = page.getByRole('region', { name: 'Analys och avstämning', exact: true })
+  await panel.getByRole('button', { name: /^Analys och avstämning/ }).click()
+  await expect(panel.getByRole('status')).toContainText('inlästa')
+  await panel.getByLabel('Underlag', { exact: true }).selectOption('screening')
+  await panel.getByRole('button', { name: 'Skapa granskningsunderlag', exact: true }).click()
+  await panel.getByRole('button', { name: 'Pröva med kontrastfrågor', exact: true }).click()
+  const contrast = panel.getByRole('region', { name: 'Kontrastfrågor', exact: true })
+  await contrast.getByRole('button', { name: 'Skapa utkast', exact: true }).click()
+  await contrast.getByRole('link', { name: 'Öppna granskning', exact: true }).click()
+
+  await page.getByRole('checkbox', { name: /Jag har granskat/ }).check()
+  await page.getByRole('button', { name: 'Godkänn version 1', exact: true }).click()
+  await expect(page.getByText('Version 1 är godkänd.', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: /^Dela ut till 1 elev/ }).click()
+  await expect(page.getByText(/1 av 1 mottagare är bekräftade/)).toBeVisible()
+  // Before the pupil answers, nothing is interpreted.
+  await expect(page.getByRole('region', { name: 'Resultat av uppföljningen', exact: true })).toContainText('inte lämnat svar')
+
+  await student.goto(`/student/${pupil.studentId}`)
+  await student.getByRole('button', { name: 'Uppföljning: subtraktion', exact: true }).click()
+  const heading = student.getByRole('heading', { name: /^\d+ − \d+$/u })
+  for (;;) {
+    await expect(heading).toBeVisible()
+    const shown = await heading.innerText()
+    const [a, b] = shown.split('−').map(s => Number(s.trim()))
+    await student.getByRole('textbox', { name: 'Mitt svar', exact: true }).pressSequentially(String(smallerFromLarger(a, b)))
+    const next = student.getByRole('button', { name: 'Nästa fråga', exact: true })
+    if (await next.count() === 0) break
+    await next.click()
+    await expect(heading).not.toHaveText(shown)
+  }
+  await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
+  await expect(student).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
+  await pupilContext.close()
+
+  await page.reload()
+  const results = page.getByRole('region', { name: 'Resultat av uppföljningen', exact: true })
+  await expect(results).toContainText('Signal:')
+  await expect(results).toContainText('Större minus mindre i varje kolumn')
+  await expect(results).toContainText('Du avgör')
+  await expect(results.getByText('Möjliga samtalsingångar')).toBeVisible()
+  await results.screenshot({ path: testInfo.outputPath('followup-results.png') })
+})

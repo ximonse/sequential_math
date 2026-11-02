@@ -8,6 +8,7 @@ import './teacherAdmin.css'
 import MaterialBasis from './MaterialBasis.jsx'
 import MaterialPracticeSummary from './MaterialPracticeSummary.jsx'
 import MaterialDispatchStatus from './MaterialDispatchStatus.jsx'
+import FollowUpResults from './FollowUpResults.jsx'
 import MaterialScreeningEditor from './MaterialScreeningEditor.jsx'
 import { emptyMaterialQuestionEditor, pendingMaterialQuestionEditor } from './materialQuestionEditing.js'
 
@@ -189,7 +190,9 @@ export default function MaterialReview() {
         <div className="material-actions"><button className="material-primary" disabled={busy || !approved || dirty || Boolean(pendingQuestion) || !latest || dispatch?.status === 'complete'} onClick={() => run(publish)}>
           {dispatch ? 'Följ upp återstående mottagare' : `Dela ut till ${material.audience.total} ${material.audience.total === 1 ? 'elev' : 'elever'}`}
         </button></div>
-      </section></aside></div>
+      </section>
+      {material.kind === 'screening' && material.mode === 'specific' && dispatch && <FollowUpResults material={material} dispatch={dispatch} />}
+      </aside></div>
     </>}
   </main>
 }

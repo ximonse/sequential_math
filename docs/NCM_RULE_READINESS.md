@@ -226,7 +226,11 @@ granskade uppgifter med enkel växling i entalen och annat avstånd:
 bundet till rapportens källsvar. Elevens titel är neutral (”Uppföljning:
 subtraktion”); misstanken står bara i lärarfälten. Granskning, godkännande och
 utdelning sker i den befintliga materialgranskningen. Inget delas ut här.
-Kvar: resultatvyn (steg 4) och kontroll efter undervisning (steg 5).
+Steg 4, resultatvyn, finns i materialgranskningen för utdelade specifika screeningutkast:
+vilken förklaring varje svar stämmer med, en signal (samma förklaring på minst två svar
+talar för misstanken; alla rätt talar emot), beskrivning av tankefelet med källa
+(`modelDescriptions.js`) och hopfällda samtalsingångar. Läraren avgör. Kvar: steg 5,
+kontroll efter undervisning.
 Uppgifter som eleven redan mött i rapporten eller i någon screening föreslås inte; panelen läser
 elevens screeninghistorik först och föreslår inget om den kontrollen misslyckas.
 

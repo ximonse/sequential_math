@@ -1,5 +1,5 @@
 import { digitByDigitSum, digitByDigitAbsDiff, getSwapAnswer } from '../arithmetic/errorHypotheses/commonHypotheses.js'
-import { predictExchangeNotDecremented, predictNoBorrowAnswer } from '../arithmetic/errorHypotheses/subtractionHypotheses.js'
+import { predictExchangeNotDecremented, predictNoBorrowAnswer, predictSecondExchangeInverted } from '../arithmetic/errorHypotheses/subtractionHypotheses.js'
 import { predictDecimalPartsSeparately } from '../arithmetic/errorHypotheses/multiplicationHypotheses.js'
 import { subtractionCandidates } from '../arithmetic/subtractionCandidates.js'
 import { candidateResult, entryAndNearMissPredictions, prediction, unavailable, numeric } from './core.js'
@@ -35,6 +35,9 @@ export function arithmeticCandidates(problem, answer) {
     predictions.push(...subtractionCandidates({ a, b, studentAnswer: answer }).predictions,
       prediction('exchange_not_decremented', predictExchangeNotDecremented(a, b),
         'Svaret matchar växling i kolumnen utan att kolumnen till vänster minskas.'))
+    const inverted = predictSecondExchangeInverted(a, b)
+    if (inverted !== null) predictions.push(prediction('second_exchange_inverted', inverted,
+      'Svaret matchar att första växlingen görs rätt men att nästa kolumn som behöver växlas, eller en nolla, räknas som större minus mindre (0 − x = x).'))
   }
   if (decimals && ['addition', 'subtraction'].includes(op) && a >= 0 && b >= 0) {
     const places = Math.max(...[a, b].map(n => String(n).split('.')[1]?.length ?? 0))
@@ -61,6 +64,17 @@ export function arithmeticCandidates(problem, answer) {
     // The tens are decreased although the ones need no exchange (82 − 2 = 70).
     predictions.push(prediction('unnecessary_exchange', a - b - 10,
       'Svaret matchar att tiotalet minskats trots att entalen inte behövde växlas. Kan också vara slarv med tio.'))
+  }
+  if (op === 'subtraction' && !decimals && a >= 100 && a % 10 < b % 10
+    && Math.floor(a / 10) % 10 - 1 >= Math.floor(b / 10) % 10 && a - b >= 100) {
+    // After an exchange in the ones the hundreds are decreased too (371 − 145 = 126).
+    predictions.push(prediction('unnecessary_exchange', a - b - 100,
+      'Svaret matchar att hundratalet också minskats fast tiotalet inte behövde växlas. Kan också vara slarv med hundra.'))
+  }
+  if (op === 'addition' && [a, b].every(n => Number.isSafeInteger(n) && n >= 0) && (a % 10) + (b % 10) < 10 && a + b >= 10) {
+    // A carry is added although the ones need none (41 + 6 = 57).
+    predictions.push(prediction('phantom_carry', a + b + 10,
+      'Svaret matchar en minnessiffra i tiotalen fast entalen inte gav någon. Kan också vara slarv med tio.'))
   }
   if ([a, b].every(Number.isSafeInteger) && Number.isSafeInteger(correct)) {
     const swapped = swapLastTwoDigits(correct)

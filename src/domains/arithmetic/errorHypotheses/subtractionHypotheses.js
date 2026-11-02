@@ -59,6 +59,29 @@ export function predictExchangeNotDecremented(a, b) {
   return wrong
 }
 
+// Rule engine only (blind test 2): the first exchange is done correctly, borrowing
+// past zeros from the next non-zero column (zeros stay 0); every later column that
+// needs an exchange is inverted, |top − bottom| (402 − 178 = 274, 621 − 384 = 377).
+export function predictSecondExchangeInverted(a, b) {
+  const top = String(Math.round(a)).split('').reverse().map(Number)
+  const bottom = String(Math.round(b)).split('').reverse().map(Number)
+  let exchanged = false
+  let out = 0
+  for (let i = 0; i < top.length; i++) {
+    const t = top[i], d = bottom[i] ?? 0
+    if (t >= d) { out += (t - d) * 10 ** i; continue }
+    if (!exchanged) {
+      let j = i + 1
+      while (j < top.length && top[j] === 0) j++
+      if (j >= top.length) return null
+      top[j] -= 1
+      exchanged = true
+      out += (t + 10 - d) * 10 ** i
+    } else out += (d - t) * 10 ** i
+  }
+  return out
+}
+
 // Shared calculation; preserve the legacy detector's behaviour.
 export function predictNoBorrowAnswer(a, b) {
   let wrong = 0

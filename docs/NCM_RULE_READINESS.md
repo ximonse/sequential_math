@@ -255,6 +255,24 @@ Testartefakt att känna till: testskriptet svarade 0 på dolda decimaluppgifter 
 träning. Att fri träning i Subtraktion gav ungefär en fjärdedel sådana uppgifter
 för elever som svarade fel på dem behöver utredas separat.
 
+## Blindtest 2 och regelversion v5
+
+Blindtest 2 (bank v4, 12 nya profiler av Antigravity, bedömning låst innan facit):
+regelanalysen 8 rätt, 2 delvis, 1 missad, 1 missvisande (räkning från vänster till
+höger tolkades som H2/glömd minnessiffra; en modellträff är därför alltid en kandidat).
+Nya modeller i regelmotorn:
+
+| Modell | Exempel |
+|---|---|
+| `second_exchange_inverted` | 402 − 178 = 274, 621 − 384 = 377: första växlingen rätt, nästa kolumn eller nolla som större minus mindre (0 − x = x) |
+| `unnecessary_exchange` (utökad) | 371 − 145 = 126: även hundratalet minskas |
+| `phantom_carry` | 41 + 6 = 57: minnessiffra fast entalen inte gav någon |
+
+En modell i växlingsfamiljen blir rival vid kontrastfrågor bara om den ger ett felsvar
+på något av elevens egna stödsvar. Omkörning: de berörda blindtestprofilerna förklaras,
+kontrolleleverna i båda blindtesten får inga nya träffar. Räkning från vänster till
+höger väntar (ovanligare, svårare att avgränsa).
+
 ## Gräns för denna leverans och nästa steg
 
 Verifierat lokalt: 195 testfiler/1019 tester passerar, inklusive 13

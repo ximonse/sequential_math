@@ -10,7 +10,7 @@ export const CONTRAST_MAX_ITEMS = 5
 export const CONTRAST_MIN_ITEMS = 2
 
 // Explanations that compete for the same column-subtraction answers.
-const FAMILIES = [['smaller_minus_larger', 'exchange_not_decremented', 'borrow_forget']]
+const FAMILIES = [['smaller_minus_larger', 'exchange_not_decremented', 'borrow_forget', 'second_exchange_inverted']]
 // Observations that are not method explanations.
 const NOT_RIVALS = new Set(['operation_swap', 'place_value_scaling', 'partial_answer_entry', 'answer_off_by_one', 'last_two_digits_swapped', 'notebook_answer_mismatch'])
 
@@ -23,7 +23,9 @@ export const CONTRAST_LABELS_SV = {
   carry_forget: 'Minnessiffran glöms',
   column_sums_concatenated: 'Kolumnsummor skrivs efter varandra',
   one_carry_forgotten: 'En av flera minnessiffror glöms',
-  unnecessary_exchange: 'Minskar tiotalet trots att ingen växling behövs',
+  unnecessary_exchange: 'Minskar en kolumn trots att ingen växling behövs',
+  second_exchange_inverted: 'Klarar första växlingen men vänder nästa (0 − x = x)',
+  phantom_carry: 'Lägger till minnessiffra som inte behövs',
 }
 
 const bankProblem = task => ({ domain: 'arithmetic', type: task.operation, skill: task.operation,
@@ -60,7 +62,10 @@ export function rivalModels(modelId, supportProblems) {
       if (p.modelId !== modelId && !NOT_RIVALS.has(p.modelId) && same(result, p.predictedAnswer, own.predictedAnswer)) rivals.add(p.modelId)
     }
   }
-  for (const family of FAMILIES) if (family.includes(modelId)) family.forEach(m => m !== modelId && rivals.add(m))
+  // A family member is a rival only if it predicts a wrong answer on at least one of
+  // the pupil's own tasks; a rule that gives the right answer there cannot explain the errors.
+  const wrongSomewhere = m => supportProblems.some(problem => predictableCandidates(problem, '').predictions?.some(p => p.modelId === m))
+  for (const family of FAMILIES) if (family.includes(modelId)) family.forEach(m => m !== modelId && wrongSomewhere(m) && rivals.add(m))
   return [...rivals]
 }
 

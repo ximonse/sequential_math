@@ -8,6 +8,7 @@ import ScreeningTaskChoices from './ScreeningTaskChoices'
 import ScreeningImageEditor from './ScreeningImageEditor'
 import ScreeningWrittenEditor from './ScreeningWrittenEditor'
 import ScreeningWholeOptions from './ScreeningWholeOptions.jsx'
+import ScreeningCustomQuestion from './ScreeningCustomQuestion.jsx'
 import ScreeningDraftsPanel from './ScreeningDraftsPanel'
 import ScreeningDraftPreview from './ScreeningDraftPreview'
 import useScreeningDraft from './useScreeningDraft'
@@ -100,22 +101,28 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
       </div>}
       {/* Keep the editors mounted while navigating so unfinished question drafts survive. */}
       <div hidden={reuse}>
-        <ScreeningDraftsPanel initialDraftId={initialDraftId} content={draftContent} onLoad={loadDraft} disabled={busy || reuse} onBusy={setDraftBusy} onDirtyChange={setDraftDirty} />
         <fieldset disabled={busy || draftBusy} className="min-w-0">
         <label className="block">Samlingens namn<input value={draft.titleSv} maxLength={100} onChange={event => patch({ titleSv: event.target.value })} className="ml-2 rounded border border-slate-400 px-1 py-0.5" /></label>
-        <ScreeningTaskChoices busy={busy} selectedTasks={draft.selectedTasks} onSelectedTasks={selectedTasks => patch({ selectedTasks })}
-          usesNcm={draft.selectedTasks.some(id => diagnosticCatalog.findTask(id)?.ncmCode)} selectedPack={selectedPack}
-          itemOptions={draft.itemOptions} onItemOptions={itemOptions => patch({ itemOptions })}
-          customPrompt={draft.customPrompt} onCustomPrompt={customPrompt => patch({ customPrompt })} customGrid={draft.customGrid} onCustomGrid={customGrid => patch({ customGrid })}
+        {/* Simon 2026-11-02: the teacher's own questions come first, suggestions after. */}
+        <ScreeningWrittenEditor alwaysOpen tasks={draft.writtenTasks} onTasks={writtenTasks => patch({ writtenTasks })} disabled={busy} maxQuestions={12 - draft.imageTasks.length - (draft.customPrompt.trim() ? 1 : 0)}
+          editorState={draft.writtenEditor} onEditorState={updateEditor('writtenEditor')} />
+        <ScreeningCustomQuestion customPrompt={draft.customPrompt} onCustomPrompt={customPrompt => patch({ customPrompt })} customGrid={draft.customGrid} onCustomGrid={customGrid => patch({ customGrid })}
           customDrawing={draft.customDrawing} onCustomDrawing={customDrawing => patch({ customDrawing })} />
-        <ScreeningWholeOptions draft={draft} patch={patch} disabled={busy} />
         <ScreeningImageEditor tasks={draft.imageTasks} onTasks={imageTasks => patch({ imageTasks })} disabled={busy}
           editorState={draft.imageEditor} onEditorState={updateEditor('imageEditor')} />
-        <ScreeningWrittenEditor tasks={draft.writtenTasks} onTasks={writtenTasks => patch({ writtenTasks })} disabled={busy} maxQuestions={12 - draft.imageTasks.length - (draft.customPrompt.trim() ? 1 : 0)}
-          editorState={draft.writtenEditor} onEditorState={updateEditor('writtenEditor')} />
+        <details className="mt-3 text-sm" data-question-bank>
+          <summary className="cursor-pointer font-semibold">Förslag från frågebanken och NCM</summary>
+          <ScreeningTaskChoices busy={busy} selectedTasks={draft.selectedTasks} onSelectedTasks={selectedTasks => patch({ selectedTasks })}
+            usesNcm={draft.selectedTasks.some(id => diagnosticCatalog.findTask(id)?.ncmCode)} selectedPack={selectedPack}
+            itemOptions={draft.itemOptions} onItemOptions={itemOptions => patch({ itemOptions })} showCustomQuestion={false}
+            customPrompt={draft.customPrompt} onCustomPrompt={customPrompt => patch({ customPrompt })} customGrid={draft.customGrid} onCustomGrid={customGrid => patch({ customGrid })}
+            customDrawing={draft.customDrawing} onCustomDrawing={customDrawing => patch({ customDrawing })} />
+        </details>
+        <ScreeningWholeOptions draft={draft} patch={patch} disabled={busy} />
         <ScreeningDraftPreview content={draftContent} />
         {customTasks.length > 12 && <p role="alert" className="mt-1 text-amber-900">Högst tolv egna frågor sammanlagt. Ta bort frågor innan utdelning.</p>}
         </fieldset>
+        <ScreeningDraftsPanel initialDraftId={initialDraftId} content={draftContent} onLoad={loadDraft} disabled={busy || reuse} onBusy={setDraftBusy} onDirtyChange={setDraftDirty} />
       </div>
       <div className="mt-2 flex flex-wrap justify-between gap-2 border-t border-slate-200 pt-2">
         <button type="button" className={button} onClick={() => setStep('start')}>Tillbaka</button>

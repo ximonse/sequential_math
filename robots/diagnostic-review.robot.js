@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
 import { teacherLogin, sendScreening } from './lib/teacher.js'
-import { collectionSelect, openDispatch, openResults, reviewOf } from './lib/screening.js'
+import { collectionSelect, openDispatch, openResults, reviewOf, openQuestionBank } from './lib/screening.js'
 
 test('Admin reviews a class with submitted, ongoing and unopened work; notes survive retries and competing edits', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -12,6 +12,7 @@ test('Admin reviews a class with submitted, ongoing and unopened work; notes sur
   const teacher = await (await request.post('/__robot/teacher', { data: { id: `review-admin-${tag}`, classIds: [classId], role: 'super_admin' } })).json()
   await teacherLogin(page, teacher)
   const panel = await openDispatch(page)
+  await openQuestionBank(panel)
   await panel.getByRole('combobox', { name: 'Diagnospaket', exact: true }).selectOption('written-addition')
   await sendScreening(page, { className })
   const results = await openResults(page, { className })

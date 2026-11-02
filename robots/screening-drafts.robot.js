@@ -18,10 +18,9 @@ test('teacher creates, reloads and revises private drafts including incomplete q
   const teacher = await createTeacher(request, { classIds: [classId], role: 'super_admin' })
   expect((await request.get('/api/teacher-diagnostic-assignments?resource=drafts')).status()).toBe(401)
   await teacherLogin(page, teacher)
-  let panel = await openDispatch(page)
+  let panel = await openDispatch(page, { withDefaultTask: false })
   await drafts(page).getByRole('button', { name: 'Nytt utkast', exact: true }).click()
   await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Decimaler att gå igenom')
-  await panel.getByText('Egna frågor med automatisk rättning', { exact: true }).click()
   await panel.getByRole('textbox', { name: 'Egen fråga', exact: true }).fill('Beräkna 5,63 - 2,48.')
   await panel.getByRole('textbox', { name: 'Facit', exact: true }).fill('3,15')
   await panel.getByRole('button', { name: 'Lägg till självrättande fråga', exact: true }).click()
@@ -44,10 +43,9 @@ test('teacher creates, reloads and revises private drafts including incomplete q
   const id = listed.data.drafts[0].draftId
   const url = `/api/teacher-diagnostic-assignments?resource=drafts&draftId=${id}`
   expect((await api(page, url)).data.draft.versions).toHaveLength(1)
-  await page.reload(); panel = await openDispatch(page)
+  await page.reload(); panel = await openDispatch(page, { withDefaultTask: false })
   await drafts(page).getByRole('combobox', { name: 'Sparade utkast', exact: true }).selectOption(id)
   await expect(panel.getByRole('textbox', { name: 'Samlingens namn', exact: true })).toHaveValue('Decimaler att gå igenom')
-  await panel.getByText('Egna frågor med automatisk rättning', { exact: true }).click()
   await expect(panel.getByRole('textbox', { name: 'Egen fråga', exact: true })).toHaveValue('En halvfärdig fråga med x')
   await expect(panel.getByRole('textbox', { name: 'Facit', exact: true })).toHaveValue('inte bestämt')
   await panel.getByText('Lägg till bildfrågor', { exact: true }).click()
@@ -59,7 +57,7 @@ test('teacher creates, reloads and revises private drafts including incomplete q
   await page.screenshot({ path: testInfo.outputPath('draft-review-portrait.png'), fullPage: true })
   // A second tab opens the same version before the first tab saves a revision.
   const second = await page.context().newPage()
-  await teacherLogin(second, teacher); await openDispatch(second)
+  await teacherLogin(second, teacher); await openDispatch(second, { withDefaultTask: false })
   await drafts(second).getByRole('combobox', { name: 'Sparade utkast', exact: true }).selectOption(id)
   await expect(second.getByRole('textbox', { name: 'Samlingens namn', exact: true })).toHaveValue('Decimaler att gå igenom')
   await panel.getByRole('textbox', { name: 'Egen fråga', exact: true }).fill('Vilket tal är x? x + 3 = 10.')

@@ -17,11 +17,8 @@ test('original frozen keys survive assignment, pupil work, reload and automatic 
   const excluded = await createPupil(request, { name: 'Other Pupil', classId })
   const teacher = await createTeacher(request, { classIds: [classId], role: 'super_admin' })
   await teacherLogin(page, teacher)
-  const panel = await openDispatch(page)
+  const panel = await openDispatch(page, { withDefaultTask: false })
   await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill(title)
-  await panel.getByText('Välj uppgifter en och en', { exact: true }).click()
-  await panel.getByRole('checkbox', { name: 'Räkna ut 268 + 431.', exact: true }).uncheck()
-  await panel.getByText('Egna frågor med automatisk rättning', { exact: true }).click()
   const questions = [
     ['Tal', '2,35', 'kg', 'Beräkna 5,63 - 3,28. Svara i kg.', '2.35 kg', 'correct'],
     ['Bråkform', '3/8', '', 'Skriv 0,375 i bråkform.', '6/16', 'correct'],

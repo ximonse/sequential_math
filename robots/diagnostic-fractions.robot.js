@@ -11,11 +11,9 @@ test('Authored fraction shortcuts and frac notation agree in preview, pupil and 
     id: `fractions-admin-${tag}`, classIds: [classId], role: 'super_admin'
   } })).json()
   await teacherLogin(page, teacher)
-  const panel = await openDispatch(page)
+  const panel = await openDispatch(page, { withDefaultTask: false })
   await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Bråknotation')
-  await panel.getByText('Välj uppgifter en och en', { exact: true }).click()
-  for (const choice of await panel.locator('fieldset').first().getByRole('checkbox').all()) await choice.uncheck()
-  await panel.getByText('Lägg till egen skrivfråga', { exact: true }).click()
+  await panel.getByText('Fråga med textsvar som du bedömer', { exact: true }).click()
   const source = 'Jämför 6//2 och \\frac{3}{4}. Förklara. Vanlig division: 6/2.'
   await panel.getByRole('textbox', { name: 'Frågetext', exact: true }).fill(source)
   const preview = panel.getByRole('region', { name: 'Förhandsvisning av frågan' })

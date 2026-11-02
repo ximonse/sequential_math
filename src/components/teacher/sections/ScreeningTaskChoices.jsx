@@ -48,10 +48,10 @@ export default function ScreeningTaskChoices({
       <summary className="cursor-pointer font-semibold">Välj uppgifter en och en</summary>
       <fieldset className="mt-2" disabled={busy}>
         <legend className="font-medium">Uppgifter</legend>
-        <div className="screening-task-groups">{originalGroups.map(group => <fieldset key={group.label}>
-          <legend>{group.label} · {group.tasks.length} uppgifter</legend>
+        <div className="screening-task-groups">{originalGroups.map(group => <details key={group.label} className="mt-1">
+          <summary className="cursor-pointer">{group.label} · {group.tasks.length} uppgifter</summary>
           <div className="screening-task-list">{group.tasks.map(taskCheckbox)}</div>
-        </fieldset>)}</div>
+        </details>)}</div>
         <details className="mt-2">
           <summary className="cursor-pointer font-semibold">NCM Diamant-uppgifter ({diagnosticCatalog.tasks.length - writtenTasks.length})</summary>
           {ncmPacks.map(pack => <div key={pack.id} className="mt-2">

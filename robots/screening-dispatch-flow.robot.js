@@ -14,8 +14,7 @@ test('Screening flow preserves mixed searchable recipients and retries uncertain
     name: `Flow group ${tag}`, pupilIds: [one.studentId, two.studentId], teacherIds: [teacher.username]
   } })).json()).group
   await teacherLogin(page, teacher)
-  const panel = await openDispatch(page, { startNew: false })
-  await panel.getByRole('tab', { name: 'Skapa ny', exact: true }).click()
+  const panel = await openDispatch(page)
   await panel.getByRole('textbox', { name: 'Samlingens namn' }).fill(`Flow screening ${tag}`)
   await panel.getByRole('button', { name: 'Välj mottagare', exact: true }).click()
   const picks = panel.getByRole('region', { name: 'Mottagare', exact: true })

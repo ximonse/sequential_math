@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
 import { teacherLogin, sendScreening } from './lib/teacher.js'
-import { openDispatch, openResults, collectionSelect, reviewOf } from './lib/screening.js'
+import { openDispatch, openResults, collectionSelect, reviewOf, openQuestionBank } from './lib/screening.js'
 import { screeningFigures, screeningFigureSvg } from '../src/domains/arithmetic/screeningFigures.js'
 
 async function teacherRequest(page, url, body, method = 'POST') {
@@ -24,6 +24,7 @@ test('R1–R4: image selections persist, scroll does not select, exact choices r
   const { classId, pupil } = await fixture(page, request, 'choices')
   const panel = await openDispatch(page)
   await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Geometri med bilder')
+  await openQuestionBank(panel)
   await panel.getByRole('combobox', { name: 'Diagnospaket', exact: true }).selectOption('geometry-original')
   await panel.getByText('Förhandsvisa valda bildfrågor', { exact: true }).click()
   await expect(panel.getByRole('region', { name: 'Elevförhandsvisning av vald bildfråga' })).toHaveCount(4)
@@ -90,10 +91,8 @@ test('R1–R4: image selections persist, scroll does not select, exact choices r
 
 test('Teacher builds with bank and uploaded library image; hiding preserves assigned content and privacy', async ({ page, request }, testInfo) => {
   const { classId, pupil } = await fixture(page, request, 'upload')
-  const panel = await openDispatch(page)
+  const panel = await openDispatch(page, { withDefaultTask: false })
   await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Egen bildfråga')
-  await panel.getByText('Välj uppgifter en och en', { exact: true }).click()
-  await panel.getByRole('checkbox', { name: 'Räkna ut 268 + 431.', exact: true }).uncheck()
   await panel.getByText('Lägg till bildfrågor', { exact: true }).click()
   await panel.getByLabel('Bildfrågans text', { exact: true }).fill('Vilken bild visar en triangel?')
   await panel.getByRole('button', { name: 'Lägg till bildalternativ', exact: true }).click()

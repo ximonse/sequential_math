@@ -6,7 +6,7 @@ const field = 'rounded border border-slate-400 px-1 py-0.5'
 const empty = () => ({ prompt: '', format: 'number', keyText: '', unit: '', requireDenominator: false, gridEnabled: true })
 const formats = { number: 'Tal', fraction: 'Bråkform', mixed: 'Blandad form', numbers: 'Flera tal i ordning', text: 'Bestämt textsvar' }
 
-export default function ScreeningWrittenEditor({ tasks, onTasks, disabled, maxQuestions = 12, editorState, onEditorState }) {
+export default function ScreeningWrittenEditor({ tasks, onTasks, disabled, maxQuestions = 12, editorState, onEditorState, alwaysOpen = false }) {
   const [draft, setDraft, editing, setEditing] = useQuestionEditorState(editorState, onEditorState, empty)
   const [error, setError] = useState('')
   const patch = value => { setDraft(previous => ({ ...previous, ...value })); setError('') }
@@ -28,8 +28,7 @@ export default function ScreeningWrittenEditor({ tasks, onTasks, disabled, maxQu
       unit, requireDenominator: task.answerKey.denominator !== undefined, gridEnabled: task.gridEnabled })
     setEditing(index); setError('')
   }
-  return <details className="mt-3 text-sm">
-    <summary className="cursor-pointer font-semibold">Egna frågor med automatisk rättning</summary>
+  const body = <>
     <fieldset disabled={disabled} className="mt-2 space-y-2">
       <legend className="sr-only">Egna självrättande frågor</legend>
       <ol className="list-decimal space-y-2 pl-5">{tasks.map((task, index) => <li key={index}>
@@ -57,5 +56,15 @@ export default function ScreeningWrittenEditor({ tasks, onTasks, disabled, maxQu
       {editing >= 0 && <button type="button" className={field} onClick={() => { setDraft(empty()); setEditing(-1); setError('') }}>Avbryt redigering</button>}
       <p role="status">{error || `${tasks.length} självrättande frågor tillagda.`}</p>
     </fieldset>
-  </details>
+  </>
+  return alwaysOpen
+    ? <section className="mt-3 text-sm" aria-label="Egna frågor">
+      <h4 className="font-semibold">Egna frågor med facit</h4>
+      <p className="text-slate-600">Skriv frågan och facit. Svaren rättas automatiskt.</p>
+      {body}
+    </section>
+    : <details className="mt-3 text-sm">
+      <summary className="cursor-pointer font-semibold">Egna frågor med automatisk rättning</summary>
+      {body}
+    </details>
 }

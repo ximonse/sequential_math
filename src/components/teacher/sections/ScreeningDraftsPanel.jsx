@@ -90,14 +90,14 @@ export default function ScreeningDraftsPanel({ content, onLoad, disabled, onBusy
     })
   }
   return <section aria-label="Screeningutkast" className="my-3 rounded border border-slate-300 bg-slate-50 p-3 text-sm">
-    <h3 className="font-semibold">Utkast för genomgång</h3>
-    <p>Spara frågorna för att gå igenom och ändra dem senare. Utkastet är privat och delas inte ut.</p>
+    <h3 className="font-semibold">Spara som utkast (valfritt)</h3>
+    <p>Spara om du vill fortsätta senare. Utkastet är privat och delas inte ut.</p>
     <div className="mt-2 flex flex-wrap items-center gap-2">
+      <button type="button" className={field} disabled={busy || disabled} onClick={() => replace(() => loadContent(emptyScreeningDraft(), 0, null))}>Nytt utkast</button>
       <label>Sparade utkast <select className={field} disabled={busy || disabled} value={draft?.draftId || ''}
         onChange={event => { const id = event.target.value; if (id) replace(() => open(id)) }}>
         <option value="">Välj utkast</option>{drafts.map(value => <option key={value.draftId} value={value.draftId}>{value.titleSv} · version {value.revision}</option>)}
       </select></label>
-      <button type="button" className={field} disabled={busy || disabled} onClick={() => replace(() => loadContent(emptyScreeningDraft(), 0, null))}>Nytt utkast</button>
       <button type="button" className={field} disabled={busy || disabled || (!dirty && Boolean(draft) && !pendingSave.current)} onClick={() => { void save() }}>
         {busy ? 'Arbetar…' : pendingSave.current ? 'Försök spara igen' : draft ? 'Spara ny version' : 'Spara utkast'}
       </button>

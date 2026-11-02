@@ -3,7 +3,20 @@
 import { expect } from '@playwright/test'
 import { openTab } from './teacher.js'
 
-export async function openDispatch(page, { startNew = true } = {}) {
+// The question bank is folded under the teacher's own questions (2026-11-02).
+export async function openQuestionBank(panel, group = '') {
+  const bank = panel.locator('details[data-question-bank]')
+  if (!await bank.evaluate(element => element.open)) await bank.locator('> summary').click()
+  if (!group) return
+  const pick = bank.getByText('Välj uppgifter en och en', { exact: true })
+  if (!await pick.locator('xpath=..').evaluate(element => element.open)) await pick.click()
+  const area = bank.locator('summary', { hasText: new RegExp(`^${group} · `) })
+  if (!await area.locator('xpath=..').evaluate(element => element.open)) await area.click()
+}
+
+// Nothing is chosen in advance any more; most robots used to rely on the first
+// bank task, so they still get it unless they ask for an empty screening.
+export async function openDispatch(page, { startNew = true, withDefaultTask = true } = {}) {
   await openTab(page, 'Screening: skapa')
   const panel = page.getByRole('region', { name: 'Screening', exact: true })
   await expect(panel).toBeVisible()
@@ -16,6 +29,10 @@ export async function openDispatch(page, { startNew = true } = {}) {
       if (await close.isVisible()) { await close.click(); await tab.click() }
       const fresh = panel.getByRole('button', { name: /^Skapa ny/ })
       if (await fresh.isVisible()) await fresh.click()
+    }
+    if (withDefaultTask) {
+      await openQuestionBank(panel, 'Addition')
+      await panel.getByRole('checkbox', { name: 'Räkna ut 268 + 431.', exact: true }).check()
     }
   }
   return panel

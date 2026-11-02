@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
 import { teacherLogin, sendScreening } from './lib/teacher.js'
-import { openDispatch } from './lib/screening.js'
+import { openDispatch, openQuestionBank } from './lib/screening.js'
 
 test('An admin assigns one diagnostic to the whole selected class and each pupil receives it', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -15,9 +15,10 @@ test('An admin assigns one diagnostic to the whole selected class and each pupil
   } })).json()
   await teacherLogin(page, teacher)
   const panel = await openDispatch(page)
+  await openQuestionBank(panel)
   await panel.getByRole('combobox', { name: 'Diagnospaket', exact: true }).selectOption('written-addition')
-  await panel.getByText('Välj uppgifter en och en', { exact: true }).click()
-  await expect(panel.locator('fieldset').first().getByRole('checkbox', { checked: true })).toHaveCount(6)
+  await openQuestionBank(panel, 'Addition')
+  await expect(panel.locator('details[data-question-bank]').getByRole('checkbox', { checked: true })).toHaveCount(6)
   await expect(panel.getByText(/Valda uppgifter: 6/)).toBeVisible()
   await sendScreening(page, { className })
   await expect(panel.getByText('Alla 2 elever har fått screeningen.', { exact: true })).toBeVisible()

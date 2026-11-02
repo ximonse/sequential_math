@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
 import { sendScreening, teacherLogin } from './lib/teacher.js'
-import { collectionSelect, openDispatch, openResults, reviewOf } from './lib/screening.js'
+import { collectionSelect, openDispatch, openResults, reviewOf, openQuestionBank } from './lib/screening.js'
 
 test('An NCM Diamant booklet is marked against its facit and shows NCM analysis to the teacher', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -12,6 +12,7 @@ test('An NCM Diamant booklet is marked against its facit and shows NCM analysis 
   } })).json()
   await teacherLogin(page, teacher)
   const panel = await openDispatch(page)
+  await openQuestionBank(panel)
   await panel.getByRole('combobox', { name: 'Diagnospaket', exact: true }).selectOption({ label: 'NCM · + och − · 8 uppgifter' })
   await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('NCM plus minus')
   await expect(panel.getByText(/Uppgifter ur NCM:s Diamant-diagnoser/)).toBeVisible()

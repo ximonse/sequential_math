@@ -8,7 +8,7 @@ export const NUMBER_ANSWER = /^[−-]?\d{0,12}(,\d{0,12})?$/u
 // verbatim. Task-specific assessment must not strip symbols or evaluate them.
 export const MATH_ANSWER = /^[\p{L}0-9+−\-×*/÷,.;=()%²³^:°√<>≤≥± ]{0,200}$/u
 const NOTE_CHARACTERS = /^[0-9]{1,2}$/u
-const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'line_add', 'line_remove', 'line_note', 'answer_change', 'selection_change', 'drawing_stroke', 'drawing_clear', 'pause', 'resume', 'focus_lost', 'submit'])
+const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'line_add', 'line_remove', 'line_note', 'answer_line_change', 'answer_change', 'selection_change', 'drawing_stroke', 'drawing_clear', 'pause', 'resume', 'focus_lost', 'submit'])
 
 function isValidPosition(value, rows, columns) {
   return Number.isInteger(value?.row) && value.row >= 0 && value.row < rows
@@ -17,6 +17,10 @@ function isValidPosition(value, rows, columns) {
 
 function cellKey(position) {
   return `${position.row}:${position.column}`
+}
+
+export function lineNoteKey(position, place) {
+  return `${position.row}:${position.column}${place === 'bottom' ? ':bottom' : ''}`
 }
 
 function normalizeCharacter(value, layer) {
@@ -126,19 +130,28 @@ export function applyDiagnosticGridEvent(state, event) {
       ...(event.placement ? { placement: event.placement } : {}),
       from: event.from, to: event.to }]
   } else if (event.type === 'line_note') {
-    // A small digit written on the vertical line left of `position.column`
-    // (short division). Only digit notes; an empty value removes the note.
+    // On the vertical line left of `position.column`: up to two small digits at the
+    // top crossing (remainders, carries) or a decimal comma at the bottom crossing.
+    // An empty value removes it.
+    const bottom = event.place === 'bottom'
     if (!isValidPosition(event.position, state.rows, state.columns) || event.position.column < 1
-      || typeof event.after !== 'string' || !(event.after === '' || NOTE_CHARACTERS.test(event.after))) {
+      || (event.place !== undefined && event.place !== 'bottom')
+      || typeof event.after !== 'string'
+      || !(event.after === '' || (bottom ? event.after === ',' : NOTE_CHARACTERS.test(event.after)))) {
       throw new Error('Invalid line note')
     }
-    const key = cellKey(event.position)
+    const key = lineNoteKey(event.position, event.place)
     const notes = state.lineNotes || {}
     if (event.before !== (notes[key] || '') || event.before === event.after) throw new Error('Line note history mismatch')
     const changed = { ...notes }
     if (event.after) changed[key] = event.after
     else delete changed[key]
     next.lineNotes = changed
+  } else if (event.type === 'answer_line_change') {
+    // The answer line of a printed short division is pupil work, not the answer.
+    if (typeof event.after !== 'string' || !/^[0-9,]{0,12}$/u.test(event.after)
+      || event.before !== (state.answerLine || '') || event.before === event.after) throw new Error('Invalid answer line')
+    next.answerLine = event.after
   } else if (event.type === 'line_remove') {
     const lines = state.lines || []
     if (typeof event.lineId !== 'string' || !lines.some(line => line.id === event.lineId)) {
@@ -213,6 +226,7 @@ export function replayDiagnosticGrid(snapshot) {
     || JSON.stringify(replayed.lines) !== JSON.stringify(snapshot.lines ?? [])
     || JSON.stringify(replayed.drawing) !== JSON.stringify(snapshot.drawing ?? [])
     || JSON.stringify(replayed.lineNotes ?? {}) !== JSON.stringify(snapshot.lineNotes ?? {})
+    || (replayed.answerLine ?? '') !== (snapshot.answerLine ?? '')
     || JSON.stringify(replayed.selectedOptionIds) !== JSON.stringify(snapshot.selectedOptionIds)
     || replayed.answer !== snapshot.answer
     || JSON.stringify(replayed.cursor) !== JSON.stringify(snapshot.cursor)

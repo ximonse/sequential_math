@@ -21,20 +21,22 @@ export default function NotebookTools({ formats, disabled, lineMode, eraseMode, 
   return <aside className="notebook-tools">
     <div className="notebook-status-row">
       <div className="notebook-save-status" role="status">{status}</div>
-      {gridEnabled && onLineNotes && <button type="button" className="notebook-line-notes-button" aria-label="Skriv på linjerna"
-        title="Skriv små siffror på linjerna mellan rutorna" aria-pressed={lineNoteMode} onClick={onLineNotes} disabled={disabled}>
-        <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 2v16" stroke="currentColor" strokeWidth="1.5" /><text x="11.5" y="8" fontSize="8" fill="currentColor">1</text></svg>
-      </button>}
       {gridEnabled && onGuide && <button type="button" className="notebook-guide-button" aria-label="Visa hur räknehäftet fungerar"
         title="Visa hur räknehäftet fungerar" onClick={onGuide}>?</button>}
     </div>
     {gridEnabled && <div className="notebook-tool-row">
       {formats}
-      <button type="button" aria-label="Streckläge" aria-pressed={lineMode} onClick={onLine} disabled={disabled}>━</button>
+      <button type="button" aria-label="Streckläge" aria-pressed={lineMode} onClick={onLine} disabled={disabled}>
+        <svg viewBox="0 0 28 20" width="28" height="20" aria-hidden="true"><path d="M2 16h24" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" /></svg>
+      </button>
+      {onLineNotes && <button type="button" aria-label="Skriv på linjerna" title="Kort division: skriv små siffror på linjerna mellan rutorna"
+        aria-pressed={lineNoteMode} onClick={onLineNotes} disabled={disabled}>
+        <svg viewBox="0 0 28 20" width="28" height="20" aria-hidden="true"><path d="M2 10h12M18 7h8M18 13h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+      </button>}
       <button type="button" aria-label="Suddverktyg" aria-pressed={eraseMode} onClick={onErase} disabled={disabled}>
         <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="m3 14 10-10 8 8-9 9H8zM8 9l8 8M12 21h10" fill="none" stroke="currentColor" strokeWidth="2" /></svg>
       </button>
-      <button type="button" onClick={onLoan} disabled={disabled || !canLoan}>Låna</button>
+      <button type="button" onClick={onLoan} disabled={disabled || !canLoan} aria-label="Stryk"><s>Stryk</s></button>
       <div className="notebook-help" ref={helpRef} onPointerEnter={event => { if (event.pointerType === 'mouse') setHelpHovered(true) }} onPointerLeave={() => setHelpHovered(false)}>
         <button type="button" className="notebook-info" aria-label="Touchgenvägar" aria-expanded={helpVisible}
           aria-controls="notebook-touch-help" onClick={() => setHelpOpen(value => !value)}>ⓘ</button>

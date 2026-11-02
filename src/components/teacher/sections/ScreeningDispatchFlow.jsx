@@ -7,6 +7,7 @@ import ScreeningRecipientPicker from './ScreeningRecipientPicker'
 import ScreeningTaskChoices from './ScreeningTaskChoices'
 import ScreeningImageEditor from './ScreeningImageEditor'
 import ScreeningWrittenEditor from './ScreeningWrittenEditor'
+import ScreeningWholeOptions from './ScreeningWholeOptions.jsx'
 import ScreeningDraftsPanel from './ScreeningDraftsPanel'
 import ScreeningDraftPreview from './ScreeningDraftPreview'
 import useScreeningDraft from './useScreeningDraft'
@@ -107,6 +108,7 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
           itemOptions={draft.itemOptions} onItemOptions={itemOptions => patch({ itemOptions })}
           customPrompt={draft.customPrompt} onCustomPrompt={customPrompt => patch({ customPrompt })} customGrid={draft.customGrid} onCustomGrid={customGrid => patch({ customGrid })}
           customDrawing={draft.customDrawing} onCustomDrawing={customDrawing => patch({ customDrawing })} />
+        <ScreeningWholeOptions draft={draft} patch={patch} disabled={busy} />
         <ScreeningImageEditor tasks={draft.imageTasks} onTasks={imageTasks => patch({ imageTasks })} disabled={busy}
           editorState={draft.imageEditor} onEditorState={updateEditor('imageEditor')} />
         <ScreeningWrittenEditor tasks={draft.writtenTasks} onTasks={writtenTasks => patch({ writtenTasks })} disabled={busy} maxQuestions={12 - draft.imageTasks.length - (draft.customPrompt.trim() ? 1 : 0)}

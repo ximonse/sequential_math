@@ -14,7 +14,7 @@ export default function DiagnosticNotebookGrid({ frame, task = null, template: g
     preserveAspectRatio: 'none', 'aria-hidden': true },
   (frame.lines || []).map(line => h('line', { key: line.id, 'data-line-id': line.id,
     ...diagnosticLineCoordinates(line), className: 'diagnostic-grid__line' }))),
-  h(ShortDivisionLayer, { template, lineNotes: frame.lineNotes, answer: frame.answer }),
+  h(ShortDivisionLayer, { template, lineNotes: frame.lineNotes, answerLine: frame.answerLine }),
   Array.from({ length: frame.rows * frame.columns }, (_, index) => {
     const row = Math.floor(index / frame.columns), column = index % frame.columns
     const cell = frame.cells[`${row}:${column}`] || {}

@@ -68,7 +68,7 @@ test('teacher creates, reloads and revises private drafts including incomplete q
   await panel.getByRole('button', { name: 'Redigera fråga 1', exact: true }).click()
   await panel.getByRole('textbox', { name: 'Egen fråga', exact: true }).fill('Beräkna 5,63 - 2,38.')
   await panel.getByRole('textbox', { name: 'Facit', exact: true }).fill('3,25')
-  await panel.getByRole('checkbox', { name: 'Räknehäfte till frågan', exact: true }).uncheck()
+  await panel.getByRole('checkbox', { name: 'Huvudräkning', exact: true }).check()
   await panel.getByRole('button', { name: 'Spara ändrad fråga', exact: true }).click()
   await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Decimaler reviderade')
   await drafts(page).getByRole('button', { name: 'Spara ny version', exact: true }).click()

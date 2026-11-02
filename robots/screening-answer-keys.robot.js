@@ -43,7 +43,7 @@ test('original frozen keys survive assignment, pupil work, reload and automatic 
   // Editing must retain both the key and the workspace selection.
   await panel.getByRole('button', { name: 'Redigera fråga 2', exact: true }).click()
   await expect(panel.getByRole('textbox', { name: 'Facit', exact: true })).toHaveValue('3/8')
-  await expect(panel.getByRole('checkbox', { name: 'Räknehäfte till frågan', exact: true })).toBeChecked()
+  await expect(panel.getByRole('checkbox', { name: 'Huvudräkning', exact: true })).not.toBeChecked()
   await panel.getByRole('button', { name: 'Spara ändrad fråga', exact: true }).click()
   await page.screenshot({ path: testInfo.outputPath('teacher-frozen-keys.png'), fullPage: true })
   await sendScreening(page, { pupilName: pupil.loginCode })

@@ -1,28 +1,26 @@
 import { test, expect } from '@playwright/test'
 
-test('Notebook keeps decimal commas when the following digits are entered with touch or keyboard', async ({ browser }) => {
+test('Notebook puts a decimal comma on the crossing between digits with touch or keyboard', async ({ browser }) => {
   const { context, page } = await openAsRole(browser, 'super_admin', '/teacher/ncm/diagnostic-grid')
   const input = (row, column) => page.locator(`input[data-cell="${row}:${column}"]`)
-  const decimal = ['1', '2', ',', '3', '4']
-  await input(0, 0).tap()
-  for (const character of decimal) await page.getByRole('button', { name: `Skriv ${character}`, exact: true }).tap()
-  for (const [column, character] of decimal.entries()) {
-    await expect(input(0, column)).toHaveAttribute('aria-label', new RegExp(`stor siffra ${character}`))
+  // Simon 2026-11-02: the comma sits on the line between 2 and 3, like on paper.
+  const expectRow = async row => {
+    for (const [column, digit] of ['1', '2', '3', '4'].entries()) {
+      await expect(input(row, column)).toHaveAttribute('aria-label', new RegExp(`stor siffra ${digit}`))
+    }
+    await expect(page.locator(`[data-line-note="${row}:2:bottom"]`)).toHaveText(',')
   }
-  await expect(input(0, 5)).toHaveAttribute('aria-label', /^Markerad ruta/)
+  await input(0, 0).tap()
+  for (const character of ['1', '2', ',', '3', '4']) await page.getByRole('button', { name: `Skriv ${character}`, exact: true }).tap()
+  await expectRow(0)
+  await expect(input(0, 4)).toHaveAttribute('aria-label', /^Markerad ruta/)
   await input(1, 0).click()
   await page.keyboard.type('12,34')
-  for (const [column, character] of decimal.entries()) {
-    await expect(input(1, column)).toHaveAttribute('aria-label', new RegExp(`stor siffra ${character}`))
-  }
-  await expect(input(1, 5)).toBeFocused()
+  await expectRow(1)
+  await expect(input(1, 4)).toBeFocused()
   await page.getByRole('button', { name: 'Visa JSON' }).click()
   await page.getByRole('button', { name: 'Återläs JSON' }).click()
-  for (const row of [0, 1]) {
-    await expect(input(row, 2)).toHaveAttribute('aria-label', /stor siffra ,/)
-    await expect(input(row, 3)).toHaveAttribute('aria-label', /stor siffra 3/)
-    await expect(input(row, 4)).toHaveAttribute('aria-label', /stor siffra 4/)
-  }
+  for (const row of [0, 1]) await expectRow(row)
   await context.close()
 })
 
@@ -177,7 +175,7 @@ test('NCM grid is admin-only and reversible with buttons, touch and right click'
     await page.getByRole('button', { name: 'Stor', exact: true }).click()
     await expect(cell.locator('.diagnostic-cell__digit--main')).toHaveText('82')
     await expect(input).toHaveAttribute('inputmode', 'none')
-    await page.getByRole('button', { name: 'Låna', exact: true }).click()
+    await page.getByRole('button', { name: 'Stryk', exact: true }).click()
     await expect(input).not.toHaveAttribute('aria-label', /struken/)
     await input.click({ button: 'right' })
     await expect(page.getByRole('group', { name: 'Ändra markerad siffra' })).toBeVisible()
@@ -217,7 +215,7 @@ test('Notebook touch draws from empty cells; symbols and every theme keep the ge
   await cell(0).click()
   await page.getByRole('button', { name: 'Skriv 8', exact: true }).click()
   await cell(0).click()
-  await page.getByRole('button', { name: 'Låna', exact: true }).click()
+  await page.getByRole('button', { name: 'Stryk', exact: true }).click()
   await expect(cell(0)).toHaveAttribute('aria-label', /struken/)
   await expect(page.getByRole('button', { name: 'Streckläge' })).toHaveAttribute('aria-pressed', 'false')
   await cell(1).click()
@@ -231,7 +229,7 @@ test('Notebook touch draws from empty cells; symbols and every theme keep the ge
   await cell(2).press('8')
   await cell(2).click()
   await page.getByRole('button', { name: 'Liten', exact: true }).click()
-  await page.getByRole('button', { name: 'Låna', exact: true }).click()
+  await page.getByRole('button', { name: 'Stryk', exact: true }).click()
   await expect(cell(2)).toHaveAttribute('aria-label', /minnessiffra 8, struken/)
   for (const theme of ['light', 'dark', 'dark-lime', 'psychedelic', 'real-psycadelic']) {
     await page.getByRole('combobox', { name: 'Välj tema' }).selectOption(theme)
@@ -294,6 +292,9 @@ test('NCM lines cross empty cells in both directions and keep cells writable', a
   await page.getByRole('button', { name: 'Suddverktyg', exact: true }).click()
   await dragBetweenCells(page, cell(5, 0), cell(5, 2))
   for (const column of [0, 1, 2]) await expect(cell(5, column)).not.toHaveAttribute('aria-label', /stor siffra 8/)
+  // The eraser switches itself off after each use (Simon 2026-11-02).
+  await expect(page.getByRole('button', { name: 'Suddverktyg', exact: true })).toHaveAttribute('aria-pressed', 'false')
+  await page.getByRole('button', { name: 'Suddverktyg', exact: true }).click()
   const vertical = await cell(1, 5).boundingBox()
   await cell(1, 5).tap({ position: { x: vertical.width - 1, y: vertical.height / 2 } })
   await expect(page.locator('.diagnostic-grid__line')).toHaveCount(1)

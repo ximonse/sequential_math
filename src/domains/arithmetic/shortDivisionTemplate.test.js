@@ -92,11 +92,14 @@ describe('small digits on grid lines', () => {
 
   it('appear in the teacher export with the printed template marked as printed', () => {
     let state = note(grid(), 2, '1')
-    state = recordDiagnosticGridEvent(state, { type: 'answer_change', before: '', after: '26' }, 1000)
+    state = recordDiagnosticGridEvent(state, { type: 'answer_line_change', before: '', after: '26' }, 1000)
     const exported = diagnosticNotebookExport(state, task)
     expect(exported.text).toContain('Printed by the app, not written by the pupil: 78')
+    expect(exported.text).toContain('Pupil wrote on the answer line: 26')
     expect(exported.text).toContain('small digit 1 on the line between c2 and c3, r2')
-    expect(exported.workspace).toMatchObject({ lineNotes: { '1:2': '1' }, answer: '26', template: { divisor: '3' } })
+    expect(exported.workspace).toMatchObject({ lineNotes: { '1:2': '1' }, answerLine: '26', template: { divisor: '3' } })
+    // The answer line is pupil work; the final answer stays empty until written.
+    expect(state.answer).toBe('')
   })
 })
 
@@ -107,5 +110,31 @@ describe('teacher detail for multiplication and division bank tasks', () => {
       const state = createDiagnosticGrid({ attemptId: 'A9', taskId: id, taskVersion: bankTask.taskVersion })
       expect(analyzeDiagnosticVisibleResult(bankTask, state)).toMatchObject({ status: 'unknown' })
     }
+  })
+})
+
+describe('marks on grid crossings (2026-11-02 changes)', () => {
+  it('take two digits at the top crossing, like an ordinary carry', () => {
+    let state = note(grid(), 2, '2')
+    state = note(state, 2, '20')
+    expect(state.lineNotes).toEqual({ '1:2': '20' })
+    expect(() => note(state, 2, '201')).toThrow()
+  })
+
+  it('keep a decimal comma at the bottom crossing apart from a digit above it', () => {
+    let state = note(grid(), 2, '3')
+    state = recordDiagnosticGridEvent(state, { type: 'line_note', position: { row: 1, column: 2 }, place: 'bottom', before: '', after: ',' }, 1000)
+    expect(state.lineNotes).toEqual({ '1:2': '3', '1:2:bottom': ',' })
+    expect(replayDiagnosticGrid(state).lineNotes).toEqual(state.lineNotes)
+    expect(() => recordDiagnosticGridEvent(grid(), { type: 'line_note', position: { row: 1, column: 2 }, place: 'bottom', before: '', after: '5' }, 1)).toThrow()
+    expect(diagnosticNotebookExport(state, task).text).toContain('decimal comma on the line between c2 and c3, r2')
+  })
+
+  it('save the answer line of a short division through events', () => {
+    let state = recordDiagnosticGridEvent(grid(), { type: 'answer_line_change', before: '', after: '2' }, 1000)
+    state = recordDiagnosticGridEvent(state, { type: 'answer_line_change', before: '2', after: '26' }, 1000)
+    expect(replayDiagnosticGrid(state).answerLine).toBe('26')
+    expect(() => replayDiagnosticGrid({ ...state, answerLine: '27' })).toThrow()
+    expect(() => recordDiagnosticGridEvent(grid(), { type: 'answer_line_change', before: '', after: 'x' }, 1)).toThrow()
   })
 })

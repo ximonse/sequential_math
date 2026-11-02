@@ -24,7 +24,9 @@ export function describeDiagnosticEvent(event) {
   // Placement is judged visually in the replayed grid, so the wording stays plain.
   if (event.type === 'line_add') return `Ett ${event.axis === 'horizontal' ? 'vågrätt' : 'lodrätt'} streck drogs.`
   if (event.type === 'line_remove') return 'Tog bort ett streck.'
+  if (event.type === 'line_note' && event.place === 'bottom') return `${place}, på linjen till vänster: ${event.after ? 'skrev decimaltecken' : 'raderade decimaltecken'}.`
   if (event.type === 'line_note') return `${place}, på linjen till vänster: ${event.after ? `skrev liten siffra ${event.after}` : `raderade liten siffra ${event.before}`}.`
+  if (event.type === 'answer_line_change') return `Svarslinjen i uppställningen: ${event.after || 'tom'}.`
   if (event.type === 'selection_change') return `Ändrade valda alternativ från ${event.before.join(', ') || 'inga'} till ${event.after.join(', ') || 'inga'}.`
   if (event.type === 'answer_change') return `Ändrade slutsvaret från ${event.before || 'tomt'} till ${event.after || 'tomt'}.`
   if (event.type === 'drawing_stroke') return event.erasing ? 'Suddade i ritytan.' : 'Ritade i ritytan.'

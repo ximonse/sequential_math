@@ -136,15 +136,20 @@ tecken, markeringar och semantiska roller som är tillåtna.
 ensiffrig nämnare skriver appen talen på det vanliga rutnätet: täljarens
 siffror, bråkstreck, nämnare, likhetstecken och en tunn svarslinje. Mallen
 räknas fram ur frågetexten och är aldrig elevens rutor. Eleven trycker på
-linjen mellan två siffror i täljaren och skriver en rest, som blir en liten
-siffra på linjen (händelsen `line_note`). Därefter går skrivandet till svaret;
-svarslinjen och svarsrutan är samma svar. Resten av rutnätet är fritt för egna
-uppställningar. Äldre försök som redan har arbete där mallen skulle ligga visas
-utan mall. Analysen läser ännu inte resterna.
+linjen mellan två siffror och skriver en rest; den blir en liten siffra (upp
+till två) i krysset ovanför täljaren (händelsen `line_note`). Ett tryck till
+höger om likhetstecknet aktiverar svarslinjen med blinkande markör. Svarslinjen
+är elevens uträkning (`answer_line_change`) och fyller inte i svaret; slutsvaret
+skrivs i svarsrutan som i andra uppgifter. Resten av rutnätet är fritt. Äldre
+försök med arbete där mallen skulle ligga visas utan mall. Analysen läser ännu
+inte resterna.
 
-En liten knapp bredvid frågetecknet i räknehäftet, "Skriv på linjerna", slår på
-samma sorts små siffror på alla lodräta linjer i alla uppgifter. När knappen är
-av fungerar rutorna som vanligt.
+Knappen med bråkstreck och likhetstecken i verktygsraden slår på samma sorts små
+siffror på alla lodräta linjer i alla uppgifter. Ett decimaltecken som skrivs i
+rutnätet hamnar i krysset mellan siffrorna (0,75), inte i en egen ruta. Suddet
+stängs av när fingret lyfts. I screening syns räknehäftet alltid; läraren kan
+välja Huvudräkning (inget rutnät) och Rityta per fråga eller för hela
+screeningen.
 
 ## 6. Vad som behöver bevaras
 

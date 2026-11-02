@@ -51,7 +51,7 @@ export default function ScreeningWrittenEditor({ tasks, onTasks, disabled, maxQu
       {draft.format === 'fraction' && <label className="block"><input type="checkbox" checked={draft.requireDenominator} onChange={event => patch({ requireDenominator: event.target.checked })} /> Svaret ska ha samma nämnare som facit</label>}
       {draft.format === 'numbers' && <p>Separera talen med semikolon, till exempel 0,45; 45. Eleven svarar i samma ordning.</p>}
       {draft.format === 'text' && <p>Rättar bara bestämda svar, inte resonemang. Separera likvärdiga textsvar med semikolon.</p>}
-      <label className="block"><input type="checkbox" checked={draft.gridEnabled} onChange={event => patch({ gridEnabled: event.target.checked })} /> Räknehäfte till frågan</label>
+      <label className="block"><input type="checkbox" checked={!draft.gridEnabled} onChange={event => patch({ gridEnabled: !event.target.checked })} /> Huvudräkning</label>
       <p>Frågan och facit fryses när samlingen delas ut. Eleven får se frågan, inte facit. Förklaringen i räknehäftet behöver fortfarande granskas av läraren.</p>
       <button type="button" className={field} onClick={save}>{editing < 0 ? 'Lägg till självrättande fråga' : 'Spara ändrad fråga'}</button>
       {editing >= 0 && <button type="button" className={field} onClick={() => { setDraft(empty()); setEditing(-1); setError('') }}>Avbryt redigering</button>}

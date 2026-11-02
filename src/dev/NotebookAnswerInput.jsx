@@ -13,7 +13,10 @@ export default function NotebookAnswerInput({ answer, answerType, active, disabl
 
   const shared = { id: 'diagnostic-answer', ref: inputRef, 'aria-label': 'Mitt svar',
     value: answer, disabled, onFocus: onActivate, onPointerDown: onActivate }
+  // The input is read-only (own keypad), so the browser shows no caret; draw one.
   return <div className="notebook-answer-field" data-active={active}>
+    {!isText && active && !disabled && <span className="notebook-answer-caret" aria-hidden="true">
+      <span className="notebook-answer-mirror">{answer}</span><span className="notebook-caret" /></span>}
     {isText ? <textarea {...shared} placeholder="Skriv ditt svar här" maxLength={2000}
       onChange={event => onChange(event.target.value)} />
       : <input {...shared} placeholder="Använd siffertangenterna" type="text" inputMode="none" readOnly

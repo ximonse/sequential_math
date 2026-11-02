@@ -158,8 +158,11 @@
 .notebook-grid-scroll { overflow-x: auto; }
 .diagnostic-answer-row { display: flex; gap: 6px; margin-top: 8px; align-items: start; }
 .diagnostic-answer-row input, .diagnostic-answer-row textarea { width: 100%; min-width: 0; flex: 1; min-height: 38px; padding: 4px 7px; border: 1px solid var(--border, #8295ac); border-radius: 5px; font-size: 18px; color: var(--text-main, #162332); background: var(--surface-strong, #fff); }
-.notebook-answer-field { flex: 1; min-width: 0; }
-.notebook-answer-field[data-active="true"] input, .notebook-answer-field[data-active="true"] textarea { background: #fff; color: #162332; outline: none; }
+.notebook-answer-field { position: relative; flex: 1; min-width: 0; }
+.notebook-answer-field[data-active="true"] input, .notebook-answer-field[data-active="true"] textarea { background: #fff; color: #162332; outline: none;
+  border-color: #1d4ed8; box-shadow: 0 0 0 1px #1d4ed8; }
+.notebook-answer-caret { position: absolute; left: 8px; top: 0; height: 38px; display: flex; align-items: center; font-size: 18px; pointer-events: none; }
+.notebook-answer-mirror { visibility: hidden; white-space: pre; }
 .notebook-question--text { display: block; height: auto; min-height: 44px; padding: 8px 10px; font-size: 18px; line-height: 1.45; text-align: left; white-space: pre-wrap; overflow-wrap: anywhere; overflow: visible; }
 .diagnostic-answer-row--text { flex-wrap: wrap; justify-content: flex-end; }
 .diagnostic-answer-row--text .notebook-answer-field { flex-basis: 100%; }
@@ -178,7 +181,7 @@
   width: 28px; height: 24px; min-height: 0; padding: 0; border: 1px solid #94a3b8; border-radius: 6px; background: #fff; color: #33475b; }
 .diagnostic-prototype .notebook-line-notes-button[aria-pressed='true'] { border-color: #1d4ed8; background: #eff6ff; color: #1d4ed8; }
 .diagnostic-prototype .notebook-line-notes-button::before { position: absolute; inset: -1px -8px; content: ''; }
-.notebook-tool-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) 44px; gap: 4px; margin-bottom: 8px; }
+.notebook-tool-row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)) 44px; gap: 4px; margin-bottom: 8px; }
 .notebook-tool-row button { width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; padding: 2px; }
 .notebook-tool-row button[aria-pressed="true"] { background: #e8f0ff; border-color: #215aff; color: #133fbb; }
 .notebook-help, .notebook-symbols { position: relative; }
@@ -291,21 +294,55 @@
 }
 
 .short-division .short-division__gap--selected {
-  outline: 2px solid #1d4ed8;
-  outline-offset: -2px;
-  background: rgb(239 246 255 / 0.6);
+  /* Only the blinking caret in the crossing shows the chosen line (Simon 2026-11-02). */
+  outline: none;
+  background: transparent;
 }
 
 .short-division__note {
   position: absolute;
   z-index: 1;
   pointer-events: none;
-  top: 0.15rem;
-  left: 50%;
-  transform: translateX(-50%);
+  /* Centred on the grid crossing above the row. */
+  transform: translate(-50%, -50%);
+  padding: 0 1px;
+  background: #fff;
   font-size: 1.25rem;
   line-height: 1;
   color: #7c2d12;
 }
 
+.short-division__note--comma {
+  /* The comma sits on the crossing below the digits, like on paper. */
+  transform: translate(-50%, -88%);
+  background: transparent;
+  font-size: 2rem;
+  color: #0f172a;
+}
+
+/* A blinking caret shows where typing goes. */
+.notebook-caret {
+  display: inline-block;
+  width: 2px;
+  height: 0.9em;
+  margin-left: 2px;
+  vertical-align: -0.1em;
+  background: #1d4ed8;
+  animation: notebook-caret-blink 1s steps(1) infinite;
+}
+@keyframes notebook-caret-blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .notebook-caret { animation: none; } }
+
+.short-division__gap-caret {
+  position: absolute;
+  z-index: 2;
+  top: -0.55rem;
+  left: calc(50% - 1px);
+  height: 1.1rem;
+  margin: 0;
+}
+
 .short-division button:disabled { opacity: 1; }
+
+/* With a digit already on the crossing, the caret waits right after it. */
+.short-division .short-division__gap-caret--after { left: calc(50% + 0.55rem); }

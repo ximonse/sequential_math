@@ -36,7 +36,7 @@ export default function MaterialScreeningEditor({ content, onChange, disabled, s
             </>
             : <>
               <label>Frågetext<textarea maxLength={2000} value={task.promptSv} onChange={event => replace(index, [{ ...task, promptSv: event.target.value }])} /></label>
-              <label><input type="checkbox" checked={Boolean(task.gridEnabled)} onChange={event => replace(index, [{ ...task, gridEnabled: event.target.checked }])} /> Räknehäfte</label>{' '}
+              <label><input type="checkbox" checked={task.gridEnabled === false} onChange={event => replace(index, [{ ...task, gridEnabled: !event.target.checked }])} /> Huvudräkning</label>{' '}
               <label><input type="checkbox" checked={Boolean(task.drawingEnabled)} onChange={event => replace(index, [{ ...task, drawingEnabled: event.target.checked }])} /> Rityta</label>
               <p>Lärarbedömning av elevens svar.</p><button type="button" onClick={() => replace(index, [])}>Ta bort frågan</button>
             </>}

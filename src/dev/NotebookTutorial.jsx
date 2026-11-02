@@ -10,7 +10,7 @@ const STEPS = [
   { id: 'note', title: 'Gör en minnessiffra',
     text: 'Håll fingret på siffran och dra nedåt. Då blir den liten. Dra uppåt för att göra den stor igen.' },
   { id: 'strike', title: 'Stryk över när du lånar',
-    text: 'Håll fingret på siffran och dra åt sidan. Då stryks den över. Knappen Låna gör samma sak på den markerade rutan.' }
+    text: 'Håll fingret på siffran och dra åt sidan. Då stryks den över. Knappen Stryk gör samma sak på den markerade rutan.' }
 ]
 
 function Demo({ step }) {

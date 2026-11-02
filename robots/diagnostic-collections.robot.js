@@ -113,7 +113,7 @@ test('Teacher assigns a written answer with saved drawing; eraser and explicit f
   for (const choice of await choices.all()) await choice.uncheck()
   await panel.getByText('Lägg till egen skrivfråga', { exact: true }).click()
   await panel.getByRole('textbox', { name: 'Frågetext', exact: true }).fill('Förklara hur du växlar en tia.')
-  await panel.getByRole('checkbox', { name: 'Räknehäfte till skrivfrågan', exact: true }).check()
+  await panel.getByRole('checkbox', { name: 'Huvudräkning för skrivfrågan', exact: true }).uncheck()
   await panel.getByRole('checkbox', { name: 'Rityta till skrivfrågan', exact: true }).check()
   await sendScreening(page, { pupilName: 'Collections B' })
   const context = await browser.newContext({ viewport: { width: 820, height: 1180 }, hasTouch: true })

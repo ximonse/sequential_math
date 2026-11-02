@@ -77,7 +77,7 @@ export default function ScreeningTaskChoices({
               : <label>Svarstyp <select value={options.answerType || 'number'} onChange={event => change({ answerType: event.target.value })} className="rounded border px-1 py-0.5">
                 <option value="number">Siffersvar</option><option value="text">Skrivsvar</option>
               </select></label>}
-            <label><input type="checkbox" disabled={Boolean(task?.responseMode)} checked={task?.responseMode ? false : options.gridEnabled !== false} onChange={event => change({ gridEnabled: event.target.checked })} /> Räknehäfte</label>
+            <label><input type="checkbox" disabled={Boolean(task?.responseMode)} checked={!task?.responseMode && options.gridEnabled === false} onChange={event => change({ gridEnabled: !event.target.checked })} /> Huvudräkning</label>
             <label><input type="checkbox" disabled={Boolean(task?.responseMode)} checked={Boolean(options.drawingEnabled)} onChange={event => change({ drawingEnabled: event.target.checked })} /> Rityta</label>
           </div>
         })}
@@ -92,7 +92,7 @@ export default function ScreeningTaskChoices({
         <p className="font-semibold">Förhandsvisning</p>
         <p className="whitespace-pre-wrap break-words"><QuestionText>{customPrompt}</QuestionText></p>
       </div>}
-      <label className="mr-2"><input type="checkbox" checked={customGrid} onChange={event => onCustomGrid(event.target.checked)} /> Räknehäfte till skrivfrågan</label>
+      <label className="mr-2"><input type="checkbox" checked={!customGrid} onChange={event => onCustomGrid(!event.target.checked)} /> Huvudräkning för skrivfrågan</label>
       <label><input type="checkbox" checked={customDrawing} onChange={event => onCustomDrawing(event.target.checked)} /> Rityta till skrivfrågan</label>
     </details>}
 

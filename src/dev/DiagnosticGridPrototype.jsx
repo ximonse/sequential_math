@@ -10,7 +10,7 @@ import {
 import { exceedsDiagnosticAttemptQuota, isDiagnosticAttemptFull } from '../domains/arithmetic/diagnosticAttemptAppend'
 import DiagnosticGridLines from './DiagnosticGridLines'
 import ShortDivisionLayer from './ShortDivisionLayer.js'
-import { isTemplateGap, shortDivisionTemplateFor, templateCovers } from '../domains/arithmetic/shortDivisionTemplate.js'
+import { shortDivisionTemplateFor, templateCovers } from '../domains/arithmetic/shortDivisionTemplate.js'
 import { lineTouchesPoint } from '../domains/arithmetic/diagnosticLineGeometry'
 import MathScratchpad from '../components/student/MathScratchpad'
 import NotebookTools from './NotebookTools'
@@ -68,7 +68,6 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   // Small digits on every vertical line, in any task (Simon 2026-11-02).
   const [lineNoteMode, setLineNoteMode] = useState(false)
   const [drawingVisible, setDrawingVisible] = useState(false)
-  const [notebookVisible, setNotebookVisible] = useState(true)
   // The first notebook a pupil opens on a device starts with the gesture guide.
   const [guideOpen, setGuideOpen] = useState(() => (pilot?.task || TASKS[0]).gridEnabled !== false && shouldShowNotebookTutorial(guideScope))
   const isPilot = Boolean(pilot)
@@ -277,7 +276,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   function finishGesture(event) {
     const gesture = gestureRef.current
     if (!gesture || event.pointerId !== gesture.pointerId) return
-    if (gesture.erasing) { eraseAtPoint(event.clientX, event.clientY); stopGesture(); return }
+    if (gesture.erasing) { eraseAtPoint(event.clientX, event.clientY); stopGesture(); setEraseMode(false); return }
     const position = { row: gesture.row, column: gesture.column }
     const held = gesture.held && !gesture.cancelled
     const dragged = gesture.dragged
@@ -297,6 +296,10 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
     record(previous => {
       const { row, column, layer } = previous.cursor
       const before = previous.cells[`${row}:${column}`]?.[layer] || ''
+      // Backspace in an empty cell takes away a comma on the line before it.
+      if (!before && previous.lineNotes?.[`${row}:${column}:bottom`]) {
+        return { type: 'line_note', position: { row, column }, place: 'bottom', before: ',', after: '' }
+      }
       const after = layer === 'note' && !clear ? before.slice(0, -1) : ''
       return before ? { type: 'erase', position: { row, column }, layer, before, after } : null
     })
@@ -309,6 +312,15 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       column: (x - bounds.left) / (bounds.width / grid.columns) }
     const position = cellAtPoint(x, y)
     record(previous => {
+      // Marks on grid crossings are erased when the eraser passes close to them.
+      for (const [key, value] of Object.entries(previous.lineNotes || {})) {
+        const [row, column, place] = key.split(':')
+        const crossRow = Number(row) + (place === 'bottom' ? 1 : 0)
+        if (Math.abs(point.column - Number(column)) < 0.35 && Math.abs(point.row - crossRow) < 0.3) {
+          return { type: 'line_note', position: { row: Number(row), column: Number(column) },
+            ...(place === 'bottom' ? { place: 'bottom' } : {}), before: value, after: '' }
+        }
+      }
       const line = previous.lines?.find(item => lineTouchesPoint(item, point))
       if (line) return { type: 'line_remove', lineId: line.id }
       const cell = previous.cells[`${position.row}:${position.column}`]
@@ -326,14 +338,32 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
     if (!gap) return
     const key = `${gap.row}:${gap.column}`
     if (character === 'backspace' || character === 'clear') {
-      record(previous => previous.lineNotes?.[key] ? { type: 'line_note', position: gap, before: previous.lineNotes[key], after: '' } : null)
+      record(previous => {
+        const before = previous.lineNotes?.[key] || ''
+        return before ? { type: 'line_note', position: gap, before, after: character === 'clear' ? '' : before.slice(0, -1) } : null
+      })
       return
     }
     if (!/^[0-9]$/u.test(character)) return
-    record(previous => (previous.lineNotes?.[key] || '') === character ? null
-      : { type: 'line_note', position: gap, before: previous.lineNotes?.[key] || '', after: character })
-    // In the printed short division the answer comes next; elsewhere the line stays chosen.
-    if (isTemplateGap(template, gap) && !lineNoteMode && !workspaceOnly) activateAnswer()
+    // Up to two digits, like an ordinary carry. The line stays chosen until the
+    // pupil taps somewhere else (Simon 2026-11-02).
+    record(previous => {
+      const before = previous.lineNotes?.[key] || ''
+      return before.length >= 2 ? null : { type: 'line_note', position: gap, before, after: `${before}${character}` }
+    })
+  }
+
+  function writeAnswerLine(character) {
+    record(previous => {
+      const before = previous.answerLine || ''
+      const after = character === 'backspace' ? before.slice(0, -1) : character === 'clear' ? ''
+        : /^[0-9,]$/u.test(character) ? `${before}${character}` : before
+      return after === before || after.length > 12 ? null : { type: 'answer_line_change', before, after }
+    })
+  }
+
+  function activateAnswerLine() {
+    setInputTarget('answerLine'); setSelectedGap(null); setLineMode(false); setEraseMode(false); setContextMenu(null); stopGesture()
   }
 
   const allLineGaps = useMemo(() => lineNoteMode
@@ -349,26 +379,24 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   function chooseGap(gap) {
     setContextMenu(null)
     stopGesture()
-    if (eraseMode) { writeGap('clear', gap); return }
+    if (eraseMode) { writeGap('clear', gap); setEraseMode(false); return }
     setLineMode(false)
     setSelectedGap(gap)
     setInputTarget('gap')
   }
 
-  function activateAnswer() {
-    setInputTarget('answer'); setSelectedGap(null); setLineMode(false); setEraseMode(false); setContextMenu(null); stopGesture()
-    answerRef.current?.focus({ preventScroll: true })
-  }
+
 
   function gapKey(event, gap) {
     const key = event.key
-    if (key === 'Backspace' || key === 'Delete') { event.preventDefault(); writeGap('clear', gap); return }
+    if (key === 'Backspace' || key === 'Delete') { event.preventDefault(); writeGap(key === 'Delete' ? 'clear' : 'backspace', gap); return }
     if (/^[0-9]$/u.test(key) && !event.ctrlKey && !event.metaKey && !event.altKey) { event.preventDefault(); writeGap(key, gap) }
   }
 
   function keypad(character) {
     character = character === '-' ? '−' : character === '*' ? '×' : character
     if (inputTarget === 'gap') { writeGap(character); return }
+    if (inputTarget === 'answerLine') { writeAnswerLine(character); return }
     if (inputTarget === 'answer') {
       changeAnswer(character === 'backspace' ? grid.answer.slice(0, -1)
       : character === 'clear' ? '' : character === '±' ? grid.answer.startsWith('−') || grid.answer.startsWith('-') ? grid.answer.slice(1) : `−${grid.answer}`
@@ -385,6 +413,11 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
     record(previous => {
       const { row, column, layer } = previous.cursor
       if (templateCovers(template, row, column)) return null
+      // A decimal comma sits on the crossing between two digits (0,75), not in a cell.
+      if (character === ',' && layer === 'main' && column >= 1) {
+        const key = `${row}:${column}:bottom`
+        return previous.lineNotes?.[key] ? null : { type: 'line_note', position: { row, column }, place: 'bottom', before: '', after: ',' }
+      }
       const allowedNow = layer === 'note' ? /^[0-9]{1,2}$/u : MAIN_CHARACTERS
       if (!allowedNow.test(character)) return null
       const cell = previous.cells[`${row}:${column}`]
@@ -520,12 +553,6 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
         {availableTasks.map(item => <button key={item.taskId} type="button" onClick={() => chooseTask(item)}><QuestionText>{item.promptSv}</QuestionText></button>)}
       </div>}
       <section className="notebook-sheet">
-        {pilot && !workspaceOnly && task.gridEnabled !== false && <button type="button" className="notebook-fold-toggle"
-          aria-expanded={notebookVisible} onClick={() => {
-            setNotebookVisible(value => !value)
-            setInputTarget(notebookVisible ? 'answer' : 'grid')
-            setContextMenu(null)
-          }}>{notebookVisible ? 'Dölj räknehäfte' : 'Visa räknehäfte'}</button>}
         <div className="diagnostic-workspace">
           <div className="notebook-left">
             {!workspaceOnly && <p className="notebook-question-count">Fråga {questionIndex} av {questionCount}</p>}
@@ -533,14 +560,14 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             {!workspaceOnly && task.responseMode && <ScreeningImageQuestion task={task} selected={grid.selectedOptionIds || []}
               disabled={editingLocked || isDiagnosticAttemptFull(grid.events)} context={imageContext} onChange={after => record(previous =>
                 ({ type: 'selection_change', before: previous.selectedOptionIds, after }))} />}
-            <div hidden={task.gridEnabled === false || !notebookVisible} className="notebook-grid-scroll">
+            <div hidden={task.gridEnabled === false} className="notebook-grid-scroll">
           <div ref={gridRef} className="diagnostic-grid" role="group" aria-label="Rutat räknehäfte">
             <DiagnosticGridLines lines={grid.lines} preview={linePreview} rows={grid.rows} columns={grid.columns} />
-            <ShortDivisionLayer template={template} lineNotes={grid.lineNotes} answer={grid.answer}
-              selectedGap={inputTarget === 'gap' ? selectedGap : null} answerActive={inputTarget === 'answer' && !editingLocked}
+            <ShortDivisionLayer template={template} lineNotes={grid.lineNotes} answerLine={grid.answerLine}
+              selectedGap={inputTarget === 'gap' ? selectedGap : null} answerActive={inputTarget === 'answerLine' && !editingLocked}
               extraGaps={allLineGaps}
               disabled={editingLocked || attemptFull} onGap={chooseGap} onGapKey={gapKey}
-              onAnswer={workspaceOnly ? null : activateAnswer} />
+              onAnswer={activateAnswerLine} />
             {visibleCells.map(({ row, column }) => {
               const cell = grid.cells[`${row}:${column}`] || { main: '', note: '' }
               const atCursor = grid.cursor.row === row && grid.cursor.column === column
@@ -602,7 +629,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
           </div>
           {(task.gridEnabled !== false || !['text', 'choice'].includes(task.answerType)) && <NotebookTools
             formats={<>{formatButton('main', 'Stor')}{formatButton('note', 'Liten')}</>}
-            disabled={editingLocked || attemptFull} gridEnabled={task.gridEnabled !== false && notebookVisible}
+            disabled={editingLocked || attemptFull} gridEnabled={task.gridEnabled !== false}
             lineMode={lineMode} eraseMode={eraseMode}
             onLine={() => { setInputTarget('grid'); setLineMode(current => !current); setEraseMode(false); setLineNoteMode(false) }}
             lineNoteMode={lineNoteMode} onLineNotes={toggleLineNoteMode}

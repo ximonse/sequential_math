@@ -34,11 +34,26 @@ det vi redan vet.
 | 1 | Dolda decimaluppgifter i fri träning | Fynd från blindtestet | Utred varför Subtraktion gav ca 25 % decimaluppgifter; rätta om det bryter R1 |
 | 2 | Skriftlig addition och subtraktion | Modeller finns, bank v3 | Lägg in de 9 bankförslagen (Simon godkänner) → blindtest 2 med räknehäften |
 | 3 | Riktad uppföljning steg 4 | Steg 1–3 i produktion | Resultatvy: vilken förklaring varje svar stämmer med, signal, tankefel, hopfällda samtalsingångar |
-| 4 | Multiplikation och division (skriftligt, ej tabeller) | Modeller finns delvis, ingen bank | Bankuppgifter med tal → blindtest |
+| 4 | Multiplikation och division (skriftligt, ej tabeller) | Bank v5 och regelversion v6 i produktion; blindtest 3 klart | Modeller v7 efter Simons beslut (se nedan) |
 | 5 | Decimaltal (addition, subtraktion, multiplikation) | Modeller finns delvis | Efter steg 1; bank → blindtest |
 | 6 | Bråk | Modeller finns, bara enstaka granskade frågor | Bankuppgifter med struktur → blindtest |
 | 7 | Procent | Modeller finns, bara enstaka granskade frågor | Som bråk |
 | 8 | Räkneordning och algebra | Modeller finns delvis | Som bråk |
+
+## Blindtest 3 (multiplikation och division, 2026-11-02)
+
+Regelversion v6, bank v5, 12 profiler. Blind bedömning låst före facit (sha256 09996d40…).
+Appen: 8 rätt, 2 delvis, 1 missad, 1 svagt missvisande; kontrollerna utan falska hypoteser.
+
+- Delvis: ingen radförskjutning missas när eleven tar faktorerna i omvänd ordning (11·90 = 180);
+  nolla i kvoten missas när den står sist (320/4 = 8, 60/3 = 2).
+- Missad: minnessiffran blir alltid 1 (46·7 = 292). Modell saknas.
+- Svagt missvisande: en slarvig elevs slumpvisa −1 i division blev regelkandidat (quotient_off_by_one).
+- Liten lucka: sammanskrivna delprodukter i 2×2 (34·23 = 1592).
+
+Förslag till v7: båda faktorordningarna för radförskjutning, slutnolla i kvoten, ny modell
+"minnessiffran alltid 1", sammanskrivning i 2×2, och quotient_off_by_one som slarvsignal
+tills riktningen upprepas mot motexempel.
 
 ## Snabbhetsträning (tabeller, dubblor, talpar, talbild)
 

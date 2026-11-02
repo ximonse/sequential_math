@@ -70,3 +70,49 @@ test('A pupil writes a remainder on the line and the answer after "=" in short d
   await teacherLayer.locator('xpath=..').screenshot({ path: testInfo.outputPath('3-teacher.png') })
   await context.close()
 })
+
+test('With "Skriv på linjerna" a pupil writes a small digit on any vertical line in any task', async ({ page, request, browser }, testInfo) => {
+  const tag = Math.random().toString(36).slice(2, 8)
+  const classId = `linenotes-${tag}`
+  const pupil = await createPupil(request, { name: 'Line Pupil', classId })
+  const teacher = await createTeacher(request, { classIds: [classId], role: 'super_admin' })
+  await teacherLogin(page, teacher)
+  await page.evaluate(async data => {
+    const response = await fetch('/api/teacher-diagnostic-assignments', { method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-teacher-token': sessionStorage.getItem('mathapp_teacher_api_token') },
+      body: JSON.stringify(data) })
+    if (!response.ok) throw new Error(`Could not create screening: ${response.status}`)
+  }, { classId, studentIds: [pupil.studentId], titleSv: 'Linjer', taskIds: ['add-carry-001'] })
+
+  const context = await browser.newContext({ viewport: { width: 820, height: 1180 }, hasTouch: true })
+  const student = await context.newPage()
+  await login(student, pupil)
+  await student.getByRole('button', { name: 'Linjer', exact: true }).click()
+  await expect(student.locator('[data-gap]')).toHaveCount(0)
+  const toggle = student.getByRole('button', { name: 'Skriv på linjerna', exact: true })
+  await toggle.tap()
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true')
+  await expect(student.locator('[data-gap]')).toHaveCount(8 * 11)
+  await student.locator('[data-gap="3:4"]').tap()
+  await student.getByRole('button', { name: 'Skriv 1', exact: true }).tap()
+  await expect(student.locator('[data-line-note="3:4"]')).toHaveText('1')
+  await student.screenshot({ path: testInfo.outputPath('4-line-mode.png') })
+  await toggle.tap()
+  await expect(student.locator('[data-gap]')).toHaveCount(0)
+  // Ordinary cells work again when the mode is off.
+  await student.locator('input[data-cell="3:5"]').tap()
+  await student.getByRole('button', { name: 'Skriv 7', exact: true }).tap()
+  await expect(student.locator('input[data-cell="3:5"]')).toHaveAttribute('aria-label', /stor siffra 7/)
+  await expect(student.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
+  await student.reload()
+  await expect(student.locator('[data-line-note="3:4"]')).toHaveText('1')
+  await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
+  await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).waitFor({ state: 'detached' }).catch(() => {})
+
+  const panel = await openResults(page, { className: classId })
+  await panel.getByText('Sparade försök för en elev', { exact: true }).click()
+  await panel.getByRole('combobox', { name: 'Elev', exact: true }).selectOption({ index: 1 })
+  await panel.getByRole('button', { name: 'Visa underlag', exact: true }).click()
+  await expect(panel.locator('[data-line-note="3:4"]')).toHaveText('1')
+  await context.close()
+})

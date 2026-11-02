@@ -10,7 +10,7 @@ import {
 import { exceedsDiagnosticAttemptQuota, isDiagnosticAttemptFull } from '../domains/arithmetic/diagnosticAttemptAppend'
 import DiagnosticGridLines from './DiagnosticGridLines'
 import ShortDivisionLayer from './ShortDivisionLayer.js'
-import { shortDivisionTemplateFor, templateCovers } from '../domains/arithmetic/shortDivisionTemplate.js'
+import { isTemplateGap, shortDivisionTemplateFor, templateCovers } from '../domains/arithmetic/shortDivisionTemplate.js'
 import { lineTouchesPoint } from '../domains/arithmetic/diagnosticLineGeometry'
 import MathScratchpad from '../components/student/MathScratchpad'
 import NotebookTools from './NotebookTools'
@@ -65,6 +65,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const [inputTarget, setInputTarget] = useState(pilot?.task.gridEnabled === false ? 'answer' : 'grid')
   const [contextMenu, setContextMenu] = useState(null)
   const [selectedGap, setSelectedGap] = useState(null)
+  // Small digits on every vertical line, in any task (Simon 2026-11-02).
+  const [lineNoteMode, setLineNoteMode] = useState(false)
   const [drawingVisible, setDrawingVisible] = useState(false)
   const [notebookVisible, setNotebookVisible] = useState(true)
   // The first notebook a pupil opens on a device starts with the gesture guide.
@@ -330,7 +332,18 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
     if (!/^[0-9]$/u.test(character)) return
     record(previous => (previous.lineNotes?.[key] || '') === character ? null
       : { type: 'line_note', position: gap, before: previous.lineNotes?.[key] || '', after: character })
-    activateAnswer()
+    // In the printed short division the answer comes next; elsewhere the line stays chosen.
+    if (isTemplateGap(template, gap) && !lineNoteMode && !workspaceOnly) activateAnswer()
+  }
+
+  const allLineGaps = useMemo(() => lineNoteMode
+    ? Array.from({ length: rows * (columns - 1) }, (_, i) => ({ row: Math.floor(i / (columns - 1)), column: i % (columns - 1) + 1 }))
+    : [], [lineNoteMode, rows, columns])
+
+  function toggleLineNoteMode() {
+    setLineNoteMode(current => !current)
+    setSelectedGap(null); setLineMode(false); setEraseMode(false); setContextMenu(null); stopGesture()
+    setInputTarget('grid')
   }
 
   function chooseGap(gap) {
@@ -525,6 +538,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             <DiagnosticGridLines lines={grid.lines} preview={linePreview} rows={grid.rows} columns={grid.columns} />
             <ShortDivisionLayer template={template} lineNotes={grid.lineNotes} answer={grid.answer}
               selectedGap={inputTarget === 'gap' ? selectedGap : null} answerActive={inputTarget === 'answer' && !editingLocked}
+              extraGaps={allLineGaps}
               disabled={editingLocked || attemptFull} onGap={chooseGap} onGapKey={gapKey}
               onAnswer={workspaceOnly ? null : activateAnswer} />
             {visibleCells.map(({ row, column }) => {
@@ -590,7 +604,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             formats={<>{formatButton('main', 'Stor')}{formatButton('note', 'Liten')}</>}
             disabled={editingLocked || attemptFull} gridEnabled={task.gridEnabled !== false && notebookVisible}
             lineMode={lineMode} eraseMode={eraseMode}
-            onLine={() => { setInputTarget('grid'); setLineMode(current => !current); setEraseMode(false) }}
+            onLine={() => { setInputTarget('grid'); setLineMode(current => !current); setEraseMode(false); setLineNoteMode(false) }}
+            lineNoteMode={lineNoteMode} onLineNotes={toggleLineNoteMode}
             onErase={() => { setInputTarget('grid'); setEraseMode(current => !current); setLineMode(false) }}
             canLoan={selectedIsDigit} onLoan={() => { setInputTarget('grid'); toggleCrossOut(); setLineMode(false); setEraseMode(false); focusSelectedCell() }}
             onKey={keypad} onSign={writeOperationSign} answerActive={!workspaceOnly && inputTarget === 'answer'}

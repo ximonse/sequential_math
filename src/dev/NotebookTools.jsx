@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import NumberKeys from '../components/student/NumberKeys'
 
 export default function NotebookTools({ formats, disabled, lineMode, eraseMode, onLine, onErase, onLoan,
-  canLoan, onKey, onSign, signsDisabled, gridEnabled, status, onGuide = null, answerActive = false }) {
+  canLoan, onKey, onSign, signsDisabled, gridEnabled, status, onGuide = null, answerActive = false,
+  lineNoteMode = false, onLineNotes = null }) {
   const [helpOpen, setHelpOpen] = useState(false)
   const [helpHovered, setHelpHovered] = useState(false)
   const helpVisible = helpOpen || helpHovered
@@ -20,6 +21,10 @@ export default function NotebookTools({ formats, disabled, lineMode, eraseMode, 
   return <aside className="notebook-tools">
     <div className="notebook-status-row">
       <div className="notebook-save-status" role="status">{status}</div>
+      {gridEnabled && onLineNotes && <button type="button" className="notebook-line-notes-button" aria-label="Skriv på linjerna"
+        title="Skriv små siffror på linjerna mellan rutorna" aria-pressed={lineNoteMode} onClick={onLineNotes} disabled={disabled}>
+        <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 2v16" stroke="currentColor" strokeWidth="1.5" /><text x="11.5" y="8" fontSize="8" fill="currentColor">1</text></svg>
+      </button>}
       {gridEnabled && onGuide && <button type="button" className="notebook-guide-button" aria-label="Visa hur räknehäftet fungerar"
         title="Visa hur räknehäftet fungerar" onClick={onGuide}>?</button>}
     </div>

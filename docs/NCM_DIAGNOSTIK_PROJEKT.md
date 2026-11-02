@@ -142,6 +142,10 @@ svarslinjen och svarsrutan är samma svar. Resten av rutnätet är fritt för eg
 uppställningar. Äldre försök som redan har arbete där mallen skulle ligga visas
 utan mall. Analysen läser ännu inte resterna.
 
+En liten knapp bredvid frågetecknet i räknehäftet, "Skriv på linjerna", slår på
+samma sorts små siffror på alla lodräta linjer i alla uppgifter. När knappen är
+av fungerar rutorna som vanligt.
+
 ## 6. Vad som behöver bevaras
 
 Fältnamnen nedan är begrepp, inte en fastslagen databasmodell.

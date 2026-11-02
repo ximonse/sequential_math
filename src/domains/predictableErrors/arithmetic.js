@@ -2,6 +2,7 @@ import { digitByDigitSum, digitByDigitAbsDiff, getSwapAnswer } from '../arithmet
 import { predictExchangeNotDecremented, predictNoBorrowAnswer, predictSecondExchangeInverted } from '../arithmetic/errorHypotheses/subtractionHypotheses.js'
 import { predictDecimalPartsSeparately } from '../arithmetic/errorHypotheses/multiplicationHypotheses.js'
 import { subtractionCandidates } from '../arithmetic/subtractionCandidates.js'
+import { divRemainderAsOnes, divRemainderIgnored, divZeroDropped, mulCarryAddedBefore, mulCarryForgotten, mulColumnwise, mulPartialsConcatenated, mulRows } from './writtenMulDiv.js'
 import { candidateResult, entryAndNearMissPredictions, prediction, unavailable, numeric } from './core.js'
 
 // Columns (0 = ones) that receive a carry in a whole-number addition.
@@ -95,6 +96,28 @@ export function arithmeticCandidates(problem, answer) {
   // Off-by-one only for single-digit table facts, where counting a step wrong is plausible.
   const tableFact = op === 'multiplication' && [a, b].every(n => Number.isInteger(n) && n >= 0 && n <= 10)
   predictions.push(...entryAndNearMissPredictions(correct, { offByOne: tableFact }))
+  if (op === 'multiplication' && [a, b].every(n => Number.isSafeInteger(n) && n >= 0)) {
+    const [big, small] = a >= b ? [a, b] : [b, a]
+    if (big >= 10 && small >= 2 && small <= 9) {
+      predictions.push(prediction('mul_carry_forgotten', mulCarryForgotten(big, small), 'Svaret matchar att minnessiffran inte förs vidare i multiplikationen.'),
+        prediction('mul_carry_added_before', mulCarryAddedBefore(big, small), 'Svaret matchar att minnessiffran läggs till siffran före multiplikationen i stället för efter.'),
+        prediction('mul_partials_concatenated', mulPartialsConcatenated(big, small), 'Svaret matchar att varje siffras produkt skrivs efter varandra.'),
+        prediction('mul_columnwise', mulColumnwise(big, small), 'Svaret matchar att bara siffror i samma kolumn multipliceras, som vid addition.'))
+    }
+    if (a >= 10 && b >= 10 && b <= 99) {
+      predictions.push(prediction('mul_carry_forgotten', mulRows(a, b, 'carry_forgotten'), 'Svaret matchar att minnessiffrorna inte förs vidare i delprodukterna.'),
+        prediction('mul_carry_added_before', mulRows(a, b, 'carry_added_before'), 'Svaret matchar att minnessiffran läggs till siffran före multiplikationen.'),
+        prediction('mul_no_row_shift', mulRows(a, b, 'no_row_shift'), 'Svaret matchar att den andra delprodukten inte flyttas ett steg åt vänster.'),
+        prediction('mul_columnwise', mulColumnwise(a, b), 'Svaret matchar att bara siffror i samma kolumn multipliceras, som vid addition.'))
+    }
+  }
+  if (op === 'division' && Number.isSafeInteger(a) && Number.isSafeInteger(b) && a >= 10 && b >= 2 && b <= 9 && a % b === 0) {
+    predictions.push(prediction('div_remainder_ignored', divRemainderIgnored(a, b), 'Svaret matchar kort division där resten inte förs vidare till nästa siffra.'),
+      prediction('div_remainder_as_ones', divRemainderAsOnes(a, b), 'Svaret matchar att resten läggs till som ental i stället för som tiotal.'))
+    const dropped = divZeroDropped(a / b)
+    if (dropped !== null) predictions.push(prediction('div_zero_dropped', dropped, 'Svaret matchar att nollan i kvoten har fallit bort.'))
+    for (const wrong of [a / b - 1, a / b + 1]) predictions.push(prediction('quotient_off_by_one', wrong, 'Kvoten är ett ifrån; kan vara osäker tabellkunskap eller felräkning.'))
+  }
   if (op === 'division') {
     if (a !== 0) predictions.push(prediction('reversed_operands', b / a, 'Svaret matchar division i omvänd ordning.'))
     predictions.push(prediction('divisor_as_answer', b, 'Svaret är divisorn.'), prediction('dividend_as_answer', a, 'Svaret är dividenden.'))

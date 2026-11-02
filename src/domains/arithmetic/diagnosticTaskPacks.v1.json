@@ -15,6 +15,10 @@
     "single_exchange": { "goalSv": "En växling från tiotal till ental", "questionSv": "Fråga vad som förändras i både tiotals- och entalskolumnen när ett tiotal växlas." },
     "tens_exchange": { "goalSv": "En växling från hundratal till tiotal", "questionSv": "Fråga vad som händer i hundratals- och tiotalskolumnen när ett hundratal växlas till tio tiotal." },
     "consecutive_exchanges": { "goalSv": "Två växlingar i följd", "questionSv": "Be eleven förklara varje växling och vilken kolumn som minskas varje gång." },
+    "multiply_carry": { "goalSv": "Minnessiffra i skriftlig multiplikation", "questionSv": "Fråga var tiotalet från en delprodukt tar vägen och när det läggs till." },
+    "multiply_two_digit": { "goalSv": "Tvåsiffrigt gånger tvåsiffrigt", "questionSv": "Fråga vad tiotalssiffran i den andra faktorn betyder och var dess delprodukt placeras." },
+    "short_division": { "goalSv": "Kort division med rest", "questionSv": "Fråga vad som händer med resten när den förs vidare till nästa siffra." },
+    "quotient_zero": { "goalSv": "Nolla i kvoten", "questionSv": "Fråga ungefär hur stort svaret borde vara och var nollan i kvoten kommer ifrån." },
     "exchange_through_zero": { "goalSv": "Växling genom noll i tiotalskolumnen", "questionSv": "Be eleven visa hur ett hundratal blir tiotal och hur ett av dessa tiotal blir ental." }
   }
 }

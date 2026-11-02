@@ -277,6 +277,29 @@ på något av elevens egna stödsvar. Omkörning: de berörda blindtestprofilern
 kontrolleleverna i båda blindtesten får inga nya träffar. Räkning från vänster till
 höger väntar (ovanligare, svårare att avgränsa).
 
+## Steg 4: skriftlig multiplikation och division (regelversion v6, bank v5)
+
+Inventering och bankförslag gjordes av Antigravity i skrivskyddat läge; Claude
+kontrollerade varje värde; Simon godkände uppgifterna och att två-gånger-tvåsiffrigt ingår.
+Regler i `writtenMulDiv.js`, kopplade i regelmotorn (inte i elevappens etiketter):
+
+| Modell | Exempel |
+|---|---|
+| `mul_carry_forgotten` | 46 · 7 = 282 |
+| `mul_carry_added_before` | 46 · 7 = 562 |
+| `mul_partials_concatenated` | 46 · 7 = 2842 |
+| `mul_columnwise` | 46 · 7 = 82, 34 · 23 = 72 |
+| `mul_no_row_shift` | 34 · 23 = 170 |
+| `div_remainder_ignored` | 168 / 6 = 21 |
+| `div_remainder_as_ones` | 168 / 6 = 22 |
+| `div_zero_dropped` | 648 / 6 = 18 |
+| `quotient_off_by_one` (regelmotor) | 168 / 6 = 27 |
+
+Banken har fått 11 uppgifter (23 · 4, 46 · 7, 125 · 3, 146 · 4, 34 · 23, 46 · 23, 78 / 3,
+84 / 6, 168 / 6, 648 / 6, 936 / 9) med rättning `integer_multiplication` och
+`integer_division` (bara jämn division) och egna grupper i lärarens frågeväljare.
+Räknehäftets resultatläsning gäller fortfarande bara addition och subtraktion.
+
 ## Gräns för denna leverans och nästa steg
 
 Verifierat lokalt: 195 testfiler/1019 tester passerar, inklusive 13

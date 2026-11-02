@@ -3,6 +3,9 @@
 // contrasts tested; conversation openers are optional and collapsed).
 // Only claims that are anchored are attributed to NCM.
 const WRITTEN_SUB = 'NCM-område AS2 (skriftlig subtraktion), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20.'
+const MUL = 'NCM-område AS4 (skriftlig multiplikation), förkunskap AG6–AG7 (tabeller, positioner).'
+const MUL_TWO = 'NCM-område AS7 (flersiffrig multiplikation, åk 7–9), förkunskap AS4.'
+const DIV = 'NCM-område AS5 (kort division), förkunskap AG8.'
 const WRITTEN_ADD = 'NCM-område AS1 (skriftlig addition), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20.'
 
 export const MODEL_DESCRIPTIONS = {
@@ -60,5 +63,45 @@ export const MODEL_DESCRIPTIONS = {
     thinkingSv: 'Eleven lägger till en minnessiffra fast entalen inte gav någon, som en inövad rutin. Kan också vara slarv med tio.',
     sourceSv: WRITTEN_ADD,
     openersSv: ['Fråga när det uppstår en minnessiffra och när det inte gör det.'],
+  },
+  mul_carry_forgotten: {
+    thinkingSv: 'Eleven multiplicerar siffra för siffra men för inte vidare tiotalet från produkten till nästa siffra.',
+    sourceSv: MUL,
+    openersSv: ['Fråga var tiotalet från 6 · 7 = 42 tar vägen.', 'Låt eleven dela upp 46 · 7 som 40 · 7 + 6 · 7 och jämföra.'],
+  },
+  mul_carry_added_before: {
+    thinkingSv: 'Eleven lägger till minnessiffran till nästa siffra innan den multipliceras, i stället för till produkten.',
+    sourceSv: MUL,
+    openersSv: ['Be eleven säga högt i vilken ordning hen multiplicerar och lägger till.', 'Jämför (4 + 4) · 7 med 4 · 7 + 4.'],
+  },
+  mul_partials_concatenated: {
+    thinkingSv: 'Eleven skriver varje siffras produkt efter varandra utan att ta hänsyn till positionerna. Placeringen styr mer än talens värde.',
+    sourceSv: MUL,
+    openersSv: ['Fråga om svaret är rimligt: ungefär hur mycket är 46 · 7?'],
+  },
+  mul_columnwise: {
+    thinkingSv: 'Eleven multiplicerar bara siffror som står i samma kolumn, som vid addition. Uppställningen styr i stället för innebörden.',
+    sourceSv: MUL,
+    openersSv: ['Fråga hur många omgångar av 46 det blir och låt eleven räkna med det.'],
+  },
+  mul_no_row_shift: {
+    thinkingSv: 'Eleven flyttar inte den andra delprodukten ett steg åt vänster och behandlar tiotalssiffran i den andra faktorn som ental.',
+    sourceSv: MUL_TWO,
+    openersSv: ['Fråga vad tvåan i 23 betyder och vad 34 · 20 blir.'],
+  },
+  div_remainder_ignored: {
+    thinkingSv: 'Eleven delar siffra för siffra men låter resten försvinna i stället för att föra den vidare som tiotal till nästa siffra.',
+    sourceSv: DIV,
+    openersSv: ['Fråga vad som händer med det som blir över när 16 delas med 6.', 'Låt eleven dela 168 kronor i sex lika delar med pengar.'],
+  },
+  div_remainder_as_ones: {
+    thinkingSv: 'Eleven för vidare resten men lägger den till som ental i stället för som tiotal (4 + 8 i stället för 48).',
+    sourceSv: DIV,
+    openersSv: ['Fråga hur mycket resten 4 är värd när den flyttas till entalen.'],
+  },
+  div_zero_dropped: {
+    thinkingSv: 'Eleven hoppar över nollan i kvoten när en siffra är mindre än nämnaren, så att svaret blir för litet.',
+    sourceSv: DIV,
+    openersSv: ['Fråga ungefär hur stort svaret borde vara: 648 delat med 6 är mer än 100.'],
   },
 }

@@ -14,6 +14,13 @@ function expectedAnswer(task) {
   if (task.operation === 'subtraction' && task.answerRule === 'integer_subtraction') {
     return task.operands[0] - task.operands[1]
   }
+  if (task.operation === 'multiplication' && task.answerRule === 'integer_multiplication') {
+    return task.operands[0] * task.operands[1]
+  }
+  if (task.operation === 'division' && task.answerRule === 'integer_division'
+    && task.operands[1] !== 0 && task.operands[0] % task.operands[1] === 0) {
+    return task.operands[0] / task.operands[1]
+  }
   throw new Error('Unsupported diagnostic answer rule')
 }
 

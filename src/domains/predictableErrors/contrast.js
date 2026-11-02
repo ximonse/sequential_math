@@ -10,7 +10,9 @@ export const CONTRAST_MAX_ITEMS = 5
 export const CONTRAST_MIN_ITEMS = 2
 
 // Explanations that compete for the same column-subtraction answers.
-const FAMILIES = [['smaller_minus_larger', 'exchange_not_decremented', 'borrow_forget', 'second_exchange_inverted']]
+const FAMILIES = [['smaller_minus_larger', 'exchange_not_decremented', 'borrow_forget', 'second_exchange_inverted'],
+  ['mul_carry_forgotten', 'mul_carry_added_before', 'mul_partials_concatenated', 'mul_columnwise', 'mul_no_row_shift', 'ones_digits_only'],
+  ['div_remainder_ignored', 'div_remainder_as_ones', 'div_zero_dropped', 'quotient_off_by_one']]
 // Observations that are not method explanations.
 const NOT_RIVALS = new Set(['operation_swap', 'place_value_scaling', 'partial_answer_entry', 'answer_off_by_one', 'last_two_digits_swapped', 'notebook_answer_mismatch'])
 
@@ -26,6 +28,16 @@ export const CONTRAST_LABELS_SV = {
   unnecessary_exchange: 'Minskar en kolumn trots att ingen växling behövs',
   second_exchange_inverted: 'Klarar första växlingen men vänder nästa (0 − x = x)',
   phantom_carry: 'Lägger till minnessiffra som inte behövs',
+  ones_digits_only: 'Bara entalen multipliceras',
+  mul_carry_forgotten: 'Minnessiffran glöms i multiplikationen',
+  mul_carry_added_before: 'Minnessiffran läggs till före multiplikationen',
+  mul_partials_concatenated: 'Delprodukterna skrivs efter varandra',
+  mul_columnwise: 'Multiplicerar kolumnvis som vid addition',
+  mul_no_row_shift: 'Andra delprodukten flyttas inte',
+  div_remainder_ignored: 'Resten förs inte vidare',
+  div_remainder_as_ones: 'Resten läggs till som ental',
+  div_zero_dropped: 'Nollan i kvoten tappas',
+  quotient_off_by_one: 'Kvoten blir ett fel',
 }
 
 const bankProblem = task => ({ domain: 'arithmetic', type: task.operation, skill: task.operation,

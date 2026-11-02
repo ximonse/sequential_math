@@ -9,7 +9,9 @@ const guideFor = diagnosticCatalog.guideFor
 const originalGroups = [
   { label: 'Addition', tasks: writtenTasks.filter(task => task.operation === 'addition') },
   { label: 'Subtraktion', tasks: writtenTasks.filter(task => task.operation === 'subtraction') },
-  { label: 'Geometri och bildfrågor', tasks: writtenTasks.filter(task => !['addition', 'subtraction'].includes(task.operation)) }
+  { label: 'Multiplikation', tasks: writtenTasks.filter(task => task.operation === 'multiplication') },
+  { label: 'Division', tasks: writtenTasks.filter(task => task.operation === 'division') },
+  { label: 'Geometri och bildfrågor', tasks: writtenTasks.filter(task => !['addition', 'subtraction', 'multiplication', 'division'].includes(task.operation)) }
 ].filter(group => group.tasks.length)
 
 // Question choice for a new collection. A pack covers the common case in one

@@ -1,6 +1,6 @@
 {
   "manifestId": "written-integer-add-sub",
-  "manifestVersion": 4,
+  "manifestVersion": 5,
   "language": "sv-SE",
   "status": "contract_draft",
   "evidenceClass": "diagnostic_only",
@@ -65,6 +65,17 @@
     { "taskId": "sub-tens-exchange-002", "taskVersion": 1, "operation": "subtraction", "operands": [916, 583], "promptSv": "Räkna ut 916 − 583.", "answerRule": "integer_subtraction", "intentCode": "tens_exchange", "analysisCaseId": "S3" },
     { "taskId": "sub-double-exchange-001", "taskVersion": 1, "operation": "subtraction", "operands": [732, 458], "promptSv": "Räkna ut 732 − 458.", "answerRule": "integer_subtraction", "intentCode": "consecutive_exchanges", "analysisCaseId": "S3" },
     { "taskId": "sub-double-exchange-002", "taskVersion": 1, "operation": "subtraction", "operands": [621, 384], "promptSv": "Räkna ut 621 − 384.", "answerRule": "integer_subtraction", "intentCode": "consecutive_exchanges", "analysisCaseId": "S3" },
-    { "taskId": "sub-through-zero-003", "taskVersion": 1, "operation": "subtraction", "operands": [604, 238], "promptSv": "Räkna ut 604 − 238.", "answerRule": "integer_subtraction", "intentCode": "exchange_through_zero", "analysisCaseId": "S2" }
+    { "taskId": "sub-through-zero-003", "taskVersion": 1, "operation": "subtraction", "operands": [604, 238], "promptSv": "Räkna ut 604 − 238.", "answerRule": "integer_subtraction", "intentCode": "exchange_through_zero", "analysisCaseId": "S2" },
+    { "taskId": "mul-carry-001", "taskVersion": 1, "operation": "multiplication", "operands": [23, 4], "promptSv": "Räkna ut 23 · 4.", "answerRule": "integer_multiplication", "intentCode": "multiply_carry", "analysisCaseId": "AS4" },
+    { "taskId": "mul-carry-002", "taskVersion": 1, "operation": "multiplication", "operands": [46, 7], "promptSv": "Räkna ut 46 · 7.", "answerRule": "integer_multiplication", "intentCode": "multiply_carry", "analysisCaseId": "AS4" },
+    { "taskId": "mul-carry-003", "taskVersion": 1, "operation": "multiplication", "operands": [125, 3], "promptSv": "Räkna ut 125 · 3.", "answerRule": "integer_multiplication", "intentCode": "multiply_carry", "analysisCaseId": "AS4" },
+    { "taskId": "mul-carry-004", "taskVersion": 1, "operation": "multiplication", "operands": [146, 4], "promptSv": "Räkna ut 146 · 4.", "answerRule": "integer_multiplication", "intentCode": "multiply_carry", "analysisCaseId": "AS4" },
+    { "taskId": "mul-two-digit-001", "taskVersion": 1, "operation": "multiplication", "operands": [34, 23], "promptSv": "Räkna ut 34 · 23.", "answerRule": "integer_multiplication", "intentCode": "multiply_two_digit", "analysisCaseId": "AS7" },
+    { "taskId": "mul-two-digit-002", "taskVersion": 1, "operation": "multiplication", "operands": [46, 23], "promptSv": "Räkna ut 46 · 23.", "answerRule": "integer_multiplication", "intentCode": "multiply_two_digit", "analysisCaseId": "AS7" },
+    { "taskId": "div-short-001", "taskVersion": 1, "operation": "division", "operands": [78, 3], "promptSv": "Räkna ut 78 / 3.", "answerRule": "integer_division", "intentCode": "short_division", "analysisCaseId": "AS5" },
+    { "taskId": "div-short-002", "taskVersion": 1, "operation": "division", "operands": [84, 6], "promptSv": "Räkna ut 84 / 6.", "answerRule": "integer_division", "intentCode": "short_division", "analysisCaseId": "AS5" },
+    { "taskId": "div-short-003", "taskVersion": 1, "operation": "division", "operands": [168, 6], "promptSv": "Räkna ut 168 / 6.", "answerRule": "integer_division", "intentCode": "short_division", "analysisCaseId": "AS5" },
+    { "taskId": "div-zero-001", "taskVersion": 1, "operation": "division", "operands": [648, 6], "promptSv": "Räkna ut 648 / 6.", "answerRule": "integer_division", "intentCode": "quotient_zero", "analysisCaseId": "AS5" },
+    { "taskId": "div-zero-002", "taskVersion": 1, "operation": "division", "operands": [936, 9], "promptSv": "Räkna ut 936 / 9.", "answerRule": "integer_division", "intentCode": "quotient_zero", "analysisCaseId": "AS5" }
   ]
 }

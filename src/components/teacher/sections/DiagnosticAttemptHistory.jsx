@@ -2,6 +2,7 @@ import ScreeningImageQuestion from '../../student/ScreeningImageQuestion.jsx'
 import { useMemo, useState } from 'react'
 import { describeDiagnosticEvent, diagnosticHistoryFrame } from '../../../domains/arithmetic/diagnosticHistory'
 import DiagnosticNotebookGrid from './DiagnosticNotebookGrid.js'
+import { shortDivisionTemplateFor } from '../../../domains/arithmetic/shortDivisionTemplate.js'
 import MathScratchpad from '../../student/MathScratchpad'
 import { choiceObservation, isChoiceTask } from '../../../domains/arithmetic/screeningImageQuestions.js'
 
@@ -9,6 +10,7 @@ export default function DiagnosticAttemptHistory({ snapshot, task, imageContext 
   const lastStep = snapshot.events.length
   const [step, setStep] = useState(lastStep)
   const frame = useMemo(() => diagnosticHistoryFrame(snapshot, step), [snapshot, step])
+  const template = useMemo(() => shortDivisionTemplateFor(task, snapshot), [task, snapshot])
   const event = snapshot.events[step - 1]
   const choice = isChoiceTask(task)
   const answer = choice ? choiceObservation(task, frame).explicitAnswer || 'inga val' : frame.answer || 'inte skrivet'
@@ -29,7 +31,7 @@ export default function DiagnosticAttemptHistory({ snapshot, task, imageContext 
     <p className="mt-2 text-sm" aria-live="polite">{event?.type === 'selection_change' ? 'Ändrade valda alternativ.' : describeDiagnosticEvent(event)} {choice ? 'Val då' : 'Slutsvar då'}: {answer}.</p>
     {task?.responseMode && <ScreeningImageQuestion task={task} selected={frame.selectedOptionIds || []} disabled context={imageContext} />}
     <div hidden={task?.gridEnabled === false} className="mt-3 overflow-x-auto">
-      <DiagnosticNotebookGrid frame={frame} task={task} label={`Elevens uppställning efter steg ${step}`} />
+      <DiagnosticNotebookGrid frame={frame} template={template} label={`Elevens uppställning efter steg ${step}`} />
     </div>
     {frame.drawing?.length > 0 && <MathScratchpad visible strokes={frame.drawing} readOnly />}
   </section>

@@ -18,9 +18,12 @@ export default function ShortDivisionLayer({ template, lineNotes = {}, answer = 
     h('span', { className: 'short-division__given', style: at(first + (n - 1) / 2, row + 1) }, template.divisor),
     h('span', { className: 'short-division__given', style: at(template.equalsColumn, row + 0.5) }, '='),
     interactive
-      ? h('button', { type: 'button', className: `short-division__answer ${answerActive ? 'short-division__answer--active' : ''}`,
-        style: at(template.answerFirst, row + 0.5, { width: `calc(var(--diagnostic-cell-width) * ${template.answerColumns})` }),
-        'data-short-division-answer': true, disabled, 'aria-label': `Svar${answer ? `: ${answer}` : ', tomt'}`, onClick: onAnswer }, answer)
+      // The whole area right of "=" (both rows) leads to the answer; the visible line stays thin.
+      ? h('button', { type: 'button', className: 'short-division__answer-area',
+        style: at(template.answerFirst, row, { width: `calc(var(--diagnostic-cell-width) * ${template.answerColumns})` }),
+        'data-short-division-answer': true, disabled, 'aria-label': `Svar${answer ? `: ${answer}` : ', tomt'}`, onClick: onAnswer },
+      h('span', { className: `short-division__answer ${answerActive ? 'short-division__answer--active' : ''}`,
+        style: { left: 0, top: 'calc(var(--diagnostic-cell-height) * 0.5)', width: '100%' } }, answer))
       : h('span', { className: 'short-division__answer', 'aria-label': `Svar: ${answer || 'tomt'}`,
         style: at(template.answerFirst, row + 0.5, { width: `calc(var(--diagnostic-cell-width) * ${template.answerColumns})` }) }, answer),
     template.gaps.map(gap => {

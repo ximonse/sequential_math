@@ -4,6 +4,7 @@ import { prepareDiagnosticAppend } from './diagnosticAttemptAppend.js'
 import { diagnosticNotebookExport } from './diagnosticNotebookExport.js'
 import { analyzeDiagnosticVisibleResult } from './diagnosticVisibleResult.js'
 import manifest from './diagnosticTasks.v1.json'
+import { diagnosticHistoryFrame } from './diagnosticHistory.js'
 import { isTemplateGap, shortDivisionTemplate, shortDivisionTemplateFor, templateCovers } from './shortDivisionTemplate.js'
 
 const task = { taskId: 'div-short-001', taskVersion: 1, promptSv: 'Räkna ut 78 / 3.' }
@@ -33,6 +34,14 @@ describe('short division template', () => {
     expect(shortDivisionTemplateFor(task, state)).not.toBeNull()
     state = recordDiagnosticGridEvent(state, { type: 'write', position: { row: 1, column: 1 }, layer: 'main', before: '', after: '7' }, 1000)
     expect(shortDivisionTemplateFor(task, state)).toBeNull()
+  })
+
+  it('stays away from every history step of an attempt that once wrote there', () => {
+    let state = recordDiagnosticGridEvent(grid(), { type: 'write', position: { row: 1, column: 1 }, layer: 'main', before: '', after: '7' }, 1000)
+    state = recordDiagnosticGridEvent(state, { type: 'erase', position: { row: 1, column: 1 }, layer: 'main', before: '7', after: '' }, 1000)
+    expect(state.cells).toEqual({})
+    expect(shortDivisionTemplateFor(task, state)).toBeNull()
+    expect(diagnosticHistoryFrame(state, 0).events).toEqual([])
   })
 
   it('is never part of the pupil cells or lines', () => {

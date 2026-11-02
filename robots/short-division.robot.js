@@ -33,6 +33,10 @@ test('A pupil writes a remainder on the line and the answer after "=" in short d
   const gap = student.locator('[data-gap="1:2"]')
   await gap.tap()
   await expect(gap).toHaveAttribute('aria-pressed', 'true')
+  // Tapping high up right of "=" also reaches the answer line.
+  await student.locator('[data-short-division-answer]').tap({ position: { x: 20, y: 8 } })
+  await expect(student.locator('.short-division__answer--active')).toHaveCount(1)
+  await gap.tap()
   await student.getByRole('button', { name: 'Skriv 1', exact: true }).tap()
   await expect(gap).toHaveAttribute('aria-label', /: 1$/)
   // After the small digit, typing goes on in the answer.
@@ -41,6 +45,7 @@ test('A pupil writes a remainder on the line and the answer after "=" in short d
   await student.getByRole('button', { name: 'Skriv 6', exact: true }).tap()
   await expect(answer).toHaveValue('26')
   await expect(student.locator('[data-short-division-answer]')).toHaveText('26')
+  await expect(student.locator('.short-division__answer--active')).toHaveCount(1)
   await student.screenshot({ path: testInfo.outputPath('2-written.png') })
 
   // A free cell outside the template still works as before.

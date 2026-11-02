@@ -4,9 +4,10 @@ import { shortDivisionTemplateFor } from '../../../domains/arithmetic/shortDivis
 import ShortDivisionLayer from '../../../dev/ShortDivisionLayer.js'
 
 // Shared by teacher history and the local PNG renderer. No controls or writes.
-export default function DiagnosticNotebookGrid({ frame, task = null, label = 'Elevens sparade uppställning' }) {
-  // The printed short division comes from the task, or from an export that already resolved it.
-  const template = frame.template ?? (task ? shortDivisionTemplateFor(task, frame) : null)
+export default function DiagnosticNotebookGrid({ frame, task = null, template: given, label = 'Elevens sparade uppställning' }) {
+  // The printed short division is decided for the whole attempt (history passes it in),
+  // or comes from an export that already resolved it.
+  const template = given !== undefined ? given : frame.template ?? (task ? shortDivisionTemplateFor(task, frame) : null)
   return h('div', { className: 'diagnostic-grid', role: 'grid', 'aria-label': label,
     style: { gridTemplateColumns: `repeat(${frame.columns}, var(--diagnostic-cell-width))` } },
   h('svg', { className: 'diagnostic-grid__lines', viewBox: `0 0 ${frame.columns} ${frame.rows}`,

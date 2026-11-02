@@ -260,6 +260,17 @@
   pointer-events: auto;
 }
 
+.short-division .short-division__answer-area {
+  position: absolute;
+  height: calc(var(--diagnostic-cell-height) * 2);
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  pointer-events: auto;
+}
+
 .short-division .short-division__answer--active {
   border-bottom-color: #1d4ed8;
   background: #eff6ff;

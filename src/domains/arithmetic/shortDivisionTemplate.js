@@ -30,15 +30,16 @@ export function templateCovers(template, row, column) {
     && column >= template.first && column <= template.lastColumn
 }
 
-// Older attempts that already have work where the template would go keep their
-// plain grid, so nothing the pupil wrote is hidden.
+// Decided once per attempt from the whole event stream: older attempts where the
+// pupil ever wrote where the template would go keep their plain grid, at every
+// history step, so the teacher never sees a template the pupil did not see.
 export function shortDivisionTemplateFor(task, grid) {
   const template = shortDivisionTemplate(task)
   if (!template || !grid || template.lastColumn >= grid.columns || template.row + 1 >= grid.rows) return null
-  const blocked = Object.entries(grid.cells || {}).some(([key, cell]) => {
-    const [row, column] = key.split(':').map(Number)
-    return (cell.main || cell.note) && templateCovers(template, row, column)
-  })
+  const covered = key => { const [row, column] = key.split(':').map(Number); return templateCovers(template, row, column) }
+  const blocked = Object.entries(grid.cells || {}).some(([key, cell]) => (cell.main || cell.note) && covered(key))
+    || (grid.events || []).some(event => ['write', 'reclassify'].includes(event.type) && event.position
+      && templateCovers(template, event.position.row, event.position.column))
   return blocked ? null : template
 }
 

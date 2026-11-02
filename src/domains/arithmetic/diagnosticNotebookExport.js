@@ -18,7 +18,7 @@ export function diagnosticNotebookExport(snapshot, task = {}) {
     .map(([key]) => { const [row, column] = key.split(':').map(Number); return { row, column } })
   for (const line of grid.lines) points.push(line.from, line.to)
   const template = shortDivisionTemplateFor(task, grid), lineNotes = grid.lineNotes || {}
-  if (template) points.push({ row: template.row, column: template.first }, { row: template.row + 1, column: template.lastColumn - 1 })
+  if (template) points.push({ row: template.row, column: template.first }, { row: template.row + 1, column: template.lastColumn })
   for (const key of Object.keys(lineNotes)) { const [row, column] = key.split(':').map(Number); points.push({ row, column }) }
   const bounds = points.length ? { firstRow: Math.min(...points.map(p => p.row)), lastRow: Math.max(...points.map(p => p.row)),
     firstColumn: Math.min(...points.map(p => p.column)), lastColumn: Math.max(...points.map(p => p.column)) }
@@ -34,7 +34,7 @@ export function diagnosticNotebookExport(snapshot, task = {}) {
     textRows.push(`r${row + 1}: ${cells.join(' | ')}`)
   }
   const lines = grid.lines.map(line => `${line.axis} r${line.from.row + 1}c${line.from.column + 1}–r${line.to.row + 1}c${line.to.column + 1} (${line.placement || 'legacy-inset'})`)
-  if (template) lines.push(`Printed by the app, not written by the pupil: ${template.digits.join('')} over a fraction bar, ${template.divisor} below, "=" and an answer line (r${template.row + 1}c${template.first + 1}–c${template.lastColumn}). The answer line shows the final answer.`)
+  if (template) lines.push(`Printed by the app, not written by the pupil: ${template.digits.join('')} over a fraction bar, ${template.divisor} below, "=" and an answer line (r${template.row + 1}–r${template.row + 2}, c${template.first + 1}–c${template.lastColumn + 1}). The answer line shows the final answer.`)
   for (const [key, value] of Object.entries(lineNotes)) {
     const [row, column] = key.split(':').map(Number)
     lines.push(`small digit ${value} on the line between c${column} and c${column + 1}, r${row + 1}`)

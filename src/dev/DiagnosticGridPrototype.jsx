@@ -73,8 +73,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const submitting = Boolean(saveState?.submitting)
   const editingLocked = grid.status === 'submitted' || submitting
   // Printed short division; null for other tasks and for older attempts with work there.
-  const cells = grid.cells, columns = grid.columns, rows = grid.rows
-  const template = useMemo(() => shortDivisionTemplateFor(task, { cells, columns, rows }), [task, cells, columns, rows])
+  const cells = grid.cells, columns = grid.columns, rows = grid.rows, events = grid.events
+  const template = useMemo(() => shortDivisionTemplateFor(task, { cells, columns, rows, events }), [task, cells, columns, rows, events])
 
   useEffect(() => { onGridChange?.(grid.events.length, grid) }, [grid, onGridChange])
 

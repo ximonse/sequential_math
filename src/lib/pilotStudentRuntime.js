@@ -217,7 +217,16 @@ export function createPilotStudentRuntime({
     if (olderIds.length > 0) await store.supersedeRejectedEvents(olderIds)
   }
 
-  async function syncPending({ recoverRejected = false } = {}) {
+  // One sync at a time: a sync that starts while another runs waits for it and
+  // then sends whatever is still pending (answers given in the meantime).
+  let syncTail = Promise.resolve()
+  function syncPending(options = {}) {
+    const run = syncTail.then(() => syncPendingNow(options), () => syncPendingNow(options))
+    syncTail = run.catch(() => {})
+    return run
+  }
+
+  async function syncPendingNow({ recoverRejected = false, keepalive = false } = {}) {
     if (!store) {
       updateSyncStatus({ state: 'error', lastErrorAt: Date.now(), lastError: 'Pilotlagringen är inte startad.' })
       return { ok: false, error: 'Pilotlagringen är inte startad.' }
@@ -237,7 +246,7 @@ export function createPilotStudentRuntime({
     for (const batch of batches) {
       let result
       try {
-        result = await postEvents(batch)
+        result = await postEvents(batch, keepalive ? { keepalive: true } : undefined)
       } catch (error) {
         const message = String(error?.message || 'Kunde inte kontakta servern.')
         updateSyncStatus({ state: 'pending', pendingCount: pending.length - sent, lastErrorAt: Date.now(), lastError: message })
@@ -276,6 +285,14 @@ export function createPilotStudentRuntime({
 
     if (recoverRejected) await recoverRejectedEvents()
     return reportCompletedSync()
+  }
+
+  // Last chance when the pupil leaves: send pending answers with keepalive so a
+  // closed tab does not leave them only on this device (found in the blind test).
+  if (typeof document !== 'undefined' && typeof window !== 'undefined') {
+    const flush = () => { if (store) void syncPending({ keepalive: true }).catch(() => {}) }
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush() })
+    window.addEventListener('pagehide', flush)
   }
 
   return {

@@ -162,7 +162,8 @@ export default function MaterialReview() {
           <p>Beläggen behöver lärargranskas. Giltiga referenser bevisar inte slutsatsen.</p>
         </section>}
       </div><aside className="material-sidebar"><section className="material-module"><h2>Mottagare</h2>
-        <p>{material.audience.name} · {material.audience.total} elever</p>
+        {/* A single pupil's audience name is the technical id; the pupil is listed below. */}
+        <p>{material.audience.targetType === 'student' ? '' : `${material.audience.name} · `}{material.audience.total} {material.audience.total === 1 ? 'elev' : 'elever'}</p>
         <ul>{material.audience.pupils.map(pupil => <li key={pupil.studentId}><Link to={`/teacher/student/${encodeURIComponent(pupil.studentId)}`} onClick={protectNavigation}>{pupil.codeName}</Link>
           {material.mode === 'specific' && material.pupilsWithoutAnalysis.includes(pupil.studentId) ? ' · analysunderlag saknas' : ''}
           {material.kind === 'screening' && (pupil.classIds.length > 1 && material.audience.targetType !== 'class'

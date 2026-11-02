@@ -103,12 +103,15 @@ export async function fetchStudentSessionProfile() {
   return { ok: true, profile: result.data.profile }
 }
 
-export async function postStudentSessionEvents(entries) {
+export async function postStudentSessionEvents(entries, { keepalive = false } = {}) {
   if (!csrfToken) return { ok: false, error: SESSION_EXPIRED_ERROR }
+  const body = JSON.stringify({ entries })
   const result = await requestSession('/api/me/events', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrfToken },
-    body: JSON.stringify({ entries })
+    body,
+    // The browser may only keep small requests alive after the page closes.
+    ...(keepalive && body.length < 60000 ? { keepalive: true } : {})
   }, 'Kunde inte spara svaren.')
   if (!result.ok) return result
   if (result.data?.ok !== true) return { ok: false, error: 'Svaren gav ett ogiltigt spar-svar.' }

@@ -46,7 +46,7 @@ export function practiceEvidence(profile) {
         'evidenceSkill', 'evidenceLevel', 'evidenceClass', 'evidenceRuleVersion', 'trainingContext',
         'trainingMode', 'trainingPurpose', 'timeSpent', 'speedTimeSec', 'excludedFromSpeed',
         'speedExclusionReason', 'interruptionSuspected']),
-      interpretation: { category: ['none', 'knowledge', 'inattention'].includes(value.errorCategory) ? value.errorCategory : 'unknown',
+      interpretation: { category: ['none', 'knowledge', 'inattention', 'misconception', 'input'].includes(value.errorCategory) ? value.errorCategory : 'unknown',
         patterns: Array.isArray(value.errorPatterns) ? value.errorPatterns : Array.isArray(value.patterns) ? value.patterns : [],
         detail: value.errorDetail ?? null } })
   }

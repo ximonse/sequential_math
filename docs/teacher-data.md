@@ -35,7 +35,7 @@ node scripts/teacher-data.mjs --class-exact "6" --from 2026-10-27 --to 2026-10-2
   skriver ut sökvägarna. CSV är UTF-8 med BOM och semikolon, så Excel öppnar den rätt.
 
 Kolumner: Elev, ElevID, Klass, Tid, Uppgift, Problemtyp, Nivå, ElevensSvar, RättSvar,
-Rätt (1/0; tomt vid partiellt/okänt), Felkategori (`none`/`knowledge`/`inattention`/`unknown`),
+Rätt (1/0; tomt vid partiellt/okänt), Felkategori (`none`/`knowledge`/`inattention`/`misconception`/`input`/`unknown`),
 Felmönster, Feldetalj, SvarstidSek, Svarsstatus, ObservationsID och Källreferens.
 Saknad felkategori blir inte ett antaget kunskapsfel. En `.coverage.json` följer
 med och visar källrevision och historikbegränsning; full historik kan inte utlovas.

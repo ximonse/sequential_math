@@ -320,6 +320,9 @@ export function createPilotStudentRuntime({
       }
       const shouldRecover = !recoveryAttempted
       recoveryAttempted = true
+      // Remove day-old server-confirmed events before reading the vault; a failure
+      // here only leaves them in place.
+      await store.pruneAcknowledgedEvents?.().catch(() => {})
       const synced = await syncPending({ recoverRejected: shouldRecover })
       if (!synced.ok && !String(synced.error || '').includes('anslutningen')) return synced
       const loaded = await fetchProfile()

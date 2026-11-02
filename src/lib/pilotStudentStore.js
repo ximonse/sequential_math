@@ -119,6 +119,18 @@ function transactionAsPromise(transaction) {
   });
 }
 
+// Server-confirmed events are kept a day and then removed. Every sync reads the
+// whole vault, and checkpoints carry large profile parts, so a device that kept
+// them forever became very slow to log in (Chrome, 2026-11-02). Attention results
+// stay: their acknowledged state prevents a duplicate result.
+export const ACKNOWLEDGED_EVENT_RETENTION_MS = 24 * 60 * 60 * 1000;
+
+export function isPrunableEvent(item, studentId, olderThan) {
+  return item?.type === 'event' && item.schema === VAULT_SCHEMA && item.studentId === studentId
+    && Number.isFinite(item.acknowledgedAt) && item.acknowledgedAt < olderThan
+    && !String(item.eventId || '').startsWith('attention_');
+}
+
 function openDatabase(indexedDb, dbName) {
   if (!indexedDb?.open) {
     throw new PilotStudentVaultError('INDEXEDDB_UNAVAILABLE', 'Offline-lagring stöds inte av den här enheten.');
@@ -327,6 +339,29 @@ export async function createPilotStudentStore({
     async readSnapshot() {
       const stored = await readRecord(SNAPSHOT_RECORD_ID, 'snapshot');
       return stored ? decryptVaultValue({ cryptoApi: crypto, key, studentId, recordType: 'snapshot', encrypted: stored }) : null;
+    },
+
+    async pruneAcknowledgedEvents({ olderThan = Date.now() - ACKNOWLEDGED_EVENT_RETENTION_MS } = {}) {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const objectStore = transaction.objectStore(STORE_NAME);
+      let removed = 0;
+      await new Promise((resolve, reject) => {
+        // A cursor visits one record at a time instead of loading the whole vault.
+        const request = objectStore.openCursor();
+        request.onsuccess = () => {
+          const cursor = request.result;
+          if (!cursor) { resolve(); return; }
+          if (isPrunableEvent(cursor.value, studentId, olderThan)) { cursor.delete(); removed++; }
+          cursor.continue();
+        };
+        request.onerror = () => reject(request.error);
+      });
+      try {
+        await transactionAsPromise(transaction);
+      } catch (error) {
+        throw new PilotStudentVaultError('VAULT_WRITE_FAILED', 'Gamla bekräftade händelser kunde inte rensas.', error);
+      }
+      return removed;
     },
 
     async readEventState(eventId) {

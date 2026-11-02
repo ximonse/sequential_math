@@ -14,6 +14,7 @@ function vault(pending) {
     countRejectedEvents: vi.fn(async () => 0), listRejectedEvents: vi.fn(async () => []),
     rejectEvents: vi.fn(async () => {}), supersedeRejectedEvents: vi.fn(async () => {}),
     acknowledgeEvents: vi.fn(async ids => { for (const id of ids) pending.splice(pending.findIndex(e => e.id === id), 1) }),
+    pruneAcknowledgedEvents: vi.fn(async () => 0),
     close: vi.fn()
   }
 }
@@ -53,5 +54,16 @@ describe('pilot runtime sync', () => {
     page.visibilityState = 'hidden'
     page.dispatchEvent(new Event('visibilitychange'))
     await vi.waitFor(() => expect(postEvents).toHaveBeenCalledWith([expect.objectContaining({ id: 'last' })], { keepalive: true }))
+  })
+
+  it('removes old confirmed events before the login sync reads the vault', async () => {
+    const pending = [], order = []
+    const store = vault(pending)
+    store.pruneAcknowledgedEvents.mockImplementation(async () => { order.push('prune'); return 3 })
+    store.listPendingEvents.mockImplementation(async () => { order.push('list'); return [] })
+    const runtime = createPilotStudentRuntime({ createStore: async () => store, resumeSession: async () => ({ ok: true, student: { studentId } }),
+      fetchProfile: async () => ({ ok: true, profile }), postEvents: vi.fn() })
+    await runtime.bootstrap(studentId)
+    expect(order.slice(0, 2)).toEqual(['prune', 'list'])
   })
 })

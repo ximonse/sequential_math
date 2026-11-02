@@ -51,3 +51,18 @@ describe('pilot student vault crypto contract', () => {
     expect(() => createVaultAad({ studentId, recordType: 'diagnostic:../other' })).toThrow(PilotStudentVaultError);
   });
 });
+
+describe('pruning server-confirmed events', async () => {
+  const { isPrunableEvent } = await import('./pilotStudentStore.js');
+  const base = { type: 'event', schema: 'pilot-student-v1', studentId, eventId: 'event-12345678' };
+  it('removes day-old acknowledged events but keeps pending, rejected, recent and attention events', () => {
+    const cutoff = 1_000_000;
+    expect(isPrunableEvent({ ...base, acknowledgedAt: cutoff - 1 }, studentId, cutoff)).toBe(true);
+    expect(isPrunableEvent({ ...base, acknowledgedAt: cutoff + 1 }, studentId, cutoff)).toBe(false);
+    expect(isPrunableEvent({ ...base }, studentId, cutoff)).toBe(false);
+    expect(isPrunableEvent({ ...base, rejectedAt: 5 }, studentId, cutoff)).toBe(false);
+    expect(isPrunableEvent({ ...base, eventId: 'attention_abc', acknowledgedAt: 1 }, studentId, cutoff)).toBe(false);
+    expect(isPrunableEvent({ ...base, acknowledgedAt: 1 }, 'b'.repeat(32), cutoff)).toBe(false);
+    expect(isPrunableEvent({ ...base, type: 'snapshot', acknowledgedAt: 1 }, studentId, cutoff)).toBe(false);
+  });
+});

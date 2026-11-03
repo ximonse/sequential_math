@@ -122,6 +122,14 @@ const open = (assignment, item = assignment.items[0], studentId = 'PUPIL') => op
 }, { store, makeId: id })
 
 describe('diagnostic assignment and attempt creation', () => {
+  it('stores the questions in the order the teacher chose', async () => {
+    const assignment = await createDiagnosticAssignment({ classId: 'CLASS', studentIds: ['PUPIL'], teacherId: 'TEACHER',
+      taskIds: ['add-no-carry-001'], customTasks: [{ promptSv: 'Förklara.' }], order: [1, 0] }, { store, makeId: id })
+    expect(assignment.items.map(item => item.taskSnapshot.promptSv)).toEqual(['Förklara.', expect.stringMatching(/\+/u)])
+    await expect(createDiagnosticAssignment({ classId: 'CLASS', studentIds: ['PUPIL'], teacherId: 'TEACHER',
+      taskIds: ['add-no-carry-001'], customTasks: [{ promptSv: 'Förklara.' }], order: [0, 0] }, { store, makeId: id })).rejects.toMatchObject({ status: 400 })
+  })
+
   it('confirms the same frozen dispatch on retry, rejects changed payloads and never revives deleted recipients', async () => {
     const input = { classId: 'CLASS', studentIds: ['PUPIL'], taskIds: ['add-no-carry-001'], teacherId: 'TEACHER' }
     const options = { store, makeId: id, assignmentId: 'retry-assignment', dispatchFingerprint: 'same-payload' }

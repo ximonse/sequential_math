@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { newQuestionUid } from '../../../domains/arithmetic/screeningQuestionOrder.js'
 import { useQuestionEditorState } from './useQuestionEditorState.js'
 import { searchScreeningFigures } from '../../../domains/arithmetic/screeningFigures.js'
 import { normalizeImageQuestion, isChoiceTask } from '../../../domains/arithmetic/screeningImageQuestions.js'
@@ -70,7 +71,7 @@ export default function ScreeningImageEditor({ tasks, onTasks, disabled, editorS
     try {
       if (!draft.promptSv.trim()) throw new Error('Skriv en frågetext.')
       if (tasks.length >= 12 && editing < 0) throw new Error('Högst tolv egna bildfrågor per samling.')
-      const question = { promptSv: draft.promptSv.trim(), ...normalizeImageQuestion(draft) }
+      const question = { promptSv: draft.promptSv.trim(), ...normalizeImageQuestion(draft), uid: (editing >= 0 && tasks[editing]?.uid) || newQuestionUid() }
       onTasks(editing < 0 ? [...tasks, question] : tasks.map((task, index) => index === editing ? question : task))
       setDraft(empty()); setEditing(-1); setPreviewSelection([]); setStatus('Frågan är tillagd i samlingen.')
     } catch (error) { setStatus(error.message) }

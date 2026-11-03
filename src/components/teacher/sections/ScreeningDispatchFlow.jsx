@@ -13,6 +13,8 @@ import ScreeningDraftsPanel from './ScreeningDraftsPanel'
 import ScreeningDraftPreview from './ScreeningDraftPreview'
 import useScreeningDraft from './useScreeningDraft'
 import { screeningDraftFromAssignment } from '../../../domains/arithmetic/screeningDraft.js'
+import { dispatchOrder, screeningQuestions } from '../../../domains/arithmetic/screeningQuestionOrder.js'
+import ScreeningQuestionOrder from './ScreeningQuestionOrder.jsx'
 import ScreeningQuestionPreview from './ScreeningQuestionPreview'
 import QuestionText from '../../QuestionText'
 import '../../../dev/diagnosticGridPrototype.css'
@@ -36,7 +38,10 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
   const plan = resolveScreeningRecipients(recipients, context)
   const limits = applyScreeningLimits(plan.dispatches, library.loaded)
   const customTasks = [...draft.writtenTasks, ...draft.imageTasks, ...(draft.textTasks || []), ...(draft.customPrompt.trim() ? [{ promptSv: draft.customPrompt, gridEnabled: draft.customGrid, drawingEnabled: draft.customDrawing }] : [])]
-  const tasks = [...draft.selectedTasks.map(id => ({ ...diagnosticCatalog.findTask(id), ...draft.itemOptions[id] })), ...customTasks]
+    .map(({ uid: _uid, ...task }) => task)
+  const questions = screeningQuestions(draft, diagnosticCatalog.findTask)
+  const sendTasks = [...draft.selectedTasks.map(id => ({ ...diagnosticCatalog.findTask(id), ...draft.itemOptions[id] })), ...customTasks]
+  const tasks = questions.map(item => sendTasks[item.sendIndex])
   const validContent = draftLoaded && title.trim().length > 0 && tasks.length > 0 && customTasks.length <= 12
   const recipientIssue = plan.withoutClass.length > 0 || plan.missing > 0 || plan.unavailablePupils > 0
     || limits.blocked.length > 0 || plan.dispatches.some(item => library.loaded[item.classId]?.error)
@@ -44,7 +49,7 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
   const selectedPack = diagnosticCatalog.packs.find(pack => JSON.stringify(pack.taskIds) === JSON.stringify(draft.selectedTasks))
   const draftContent = { titleSv: draft.titleSv, selectedTasks: draft.selectedTasks,
     itemOptions: Object.fromEntries(draft.selectedTasks.filter(id => draft.itemOptions[id]).map(id => [id, draft.itemOptions[id]])),
-    writtenTasks: draft.writtenTasks, imageTasks: draft.imageTasks, textTasks: draft.textTasks || [], customPrompt: draft.customPrompt,
+    writtenTasks: draft.writtenTasks, imageTasks: draft.imageTasks, textTasks: draft.textTasks || [], order: draft.order || [], customPrompt: draft.customPrompt,
     customGrid: draft.customGrid, customDrawing: draft.customDrawing, writtenEditor: draft.writtenEditor, imageEditor: draft.imageEditor }
 
   const unresolvedDelivery = Boolean(delivery && delivery.dispatches.some(item => !delivery.results[item.classId]?.ok))
@@ -62,7 +67,7 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
     if (!canReview || busy) return
     const snapshot = { requestId: crypto.randomUUID(), title, recipients: plan.selected.map(item => item.name),
       dispatches: structuredClone(plan.dispatches), total: plan.pupils.length, results: {},
-      payload: { titleSv: title, taskIds: [...draft.selectedTasks], itemOptions: structuredClone(draft.itemOptions), customTasks: structuredClone(customTasks) } }
+      payload: { titleSv: title, taskIds: [...draft.selectedTasks], itemOptions: structuredClone(draft.itemOptions), customTasks: structuredClone(customTasks), order: dispatchOrder(questions) } }
     setStep('receipt')
     void send(snapshot)
   }
@@ -95,6 +100,7 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
             customPrompt={draft.customPrompt} onCustomPrompt={customPrompt => patch({ customPrompt })} customGrid={draft.customGrid} onCustomGrid={customGrid => patch({ customGrid })}
             customDrawing={draft.customDrawing} onCustomDrawing={customDrawing => patch({ customDrawing })} />
         </details>
+        <ScreeningQuestionOrder questions={questions} onOrder={order => patch({ order })} disabled={busy} />
         <ScreeningWholeOptions draft={draft} patch={patch} disabled={busy} />
         <ScreeningDraftPreview content={draftContent} />
         {customTasks.length > 12 && <p role="alert" className="mt-1 text-amber-900">Högst tolv egna frågor sammanlagt. Ta bort frågor innan utdelning.</p>}

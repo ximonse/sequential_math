@@ -16,7 +16,7 @@ export function diagnosticDispatchOptions(body, teacherId) {
     assignmentId: digest(['screening-dispatch-v1', teacherId, body.classId, body.requestId]),
     dispatchFingerprint: digest(canonical({ teacherId, classId: body.classId,
       studentIds: [...body.studentIds].sort(), titleSv: body.titleSv || '',
-      taskIds: body.taskIds || [], itemOptions: body.itemOptions || {}, customTasks: body.customTasks || [],
+      taskIds: body.taskIds || [], itemOptions: body.itemOptions || {}, customTasks: body.customTasks || [], order: body.order || [],
       sourceClassId: body.sourceClassId || '', sourceAssignmentId: body.sourceAssignmentId || '' }))
   }
 }

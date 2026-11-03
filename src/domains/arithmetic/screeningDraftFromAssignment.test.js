@@ -17,9 +17,12 @@ describe('reusing a handed-out screening as an editable copy', () => {
     expect(draft.selectedTasks).toEqual(['add-no-carry-001'])
     expect(draft.itemOptions['add-no-carry-001']).toEqual({ answerType: 'text', gridEnabled: false, drawingEnabled: true })
     expect(draft.writtenTasks).toHaveLength(1)
-    expect(draft.textTasks).toEqual([
+    expect(draft.textTasks).toMatchObject([
       { promptSv: 'Förklara 6//2.', gridEnabled: true, drawingEnabled: false },
       { promptSv: 'Rita din metod.', gridEnabled: false, drawingEnabled: true }])
+    // The copy keeps the handed-out order.
+    expect(draft.order).toEqual(['bank:add-no-carry-001', `written:${draft.writtenTasks[0].uid}`,
+      `text:${draft.textTasks[0].uid}`, `text:${draft.textTasks[1].uid}`])
     // The copy is a valid draft that can be saved.
     expect(() => normalizeScreeningDraft(draft)).not.toThrow()
   })

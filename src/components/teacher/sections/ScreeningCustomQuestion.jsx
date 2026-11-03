@@ -1,24 +1,39 @@
+import { useState } from 'react'
 import QuestionText from '../../QuestionText'
+import { newQuestionUid } from '../../../domains/arithmetic/screeningQuestionOrder.js'
 
 const field = 'rounded border border-slate-400 px-1 py-0.5'
 
 // Questions the teacher assesses by reading the pupil's text (no answer key).
-// Several can be added; text still in the box is also part of the screening, so
-// nothing written is lost if the teacher goes on without pressing "Lägg till".
+// Several can be added and edited; text still in the box is also part of the
+// screening, so nothing written is lost if the teacher goes on without saving it.
 export default function ScreeningCustomQuestion({ tasks = [], onTasks, disabled, customPrompt, onCustomPrompt, customGrid, onCustomGrid, customDrawing, onCustomDrawing }) {
-  const add = () => {
-    if (!customPrompt.trim() || tasks.length >= 12) return
-    onTasks([...tasks, { promptSv: customPrompt.trim(), gridEnabled: customGrid, drawingEnabled: customDrawing }])
-    onCustomPrompt('')
+  const [editing, setEditing] = useState(-1)
+  const save = () => {
+    if (!customPrompt.trim() || (editing < 0 && tasks.length >= 12)) return
+    const task = { promptSv: customPrompt.trim(), gridEnabled: customGrid, drawingEnabled: customDrawing,
+      uid: (editing >= 0 && tasks[editing]?.uid) || newQuestionUid() }
+    onTasks(editing < 0 ? [...tasks, task] : tasks.map((previous, index) => index === editing ? task : previous))
+    onCustomPrompt(''); onCustomGrid(true); onCustomDrawing(false); setEditing(-1)
   }
+  const edit = index => {
+    const task = tasks[index]
+    onCustomPrompt(task.promptSv); onCustomGrid(task.gridEnabled !== false); onCustomDrawing(Boolean(task.drawingEnabled)); setEditing(index)
+  }
+  const cancel = () => { onCustomPrompt(''); onCustomGrid(true); onCustomDrawing(false); setEditing(-1) }
   return <details className="mt-3 text-sm" open={tasks.length > 0 || undefined}>
     <summary className="cursor-pointer font-semibold">Frågor med textsvar som du bedömer{tasks.length ? ` (${tasks.length})` : ''}</summary>
     <fieldset disabled={disabled} className="mt-2 space-y-2">
       <legend className="sr-only">Frågor med textsvar</legend>
-      {tasks.length > 0 && <ol className="list-decimal space-y-1 pl-5">{tasks.map((task, index) => <li key={index}>
+      {tasks.length > 0 && <ol className="list-decimal space-y-1 pl-5">{tasks.map((task, index) => <li key={task.uid || index}>
         <p className="whitespace-pre-wrap"><QuestionText>{task.promptSv}</QuestionText></p>
         <p className="text-slate-600">{task.gridEnabled === false ? 'Huvudräkning' : 'Räknehäfte'}{task.drawingEnabled ? ' · Rityta' : ''}</p>
-        <button type="button" className={field} onClick={() => onTasks(tasks.filter((_, i) => i !== index))}>Ta bort textfråga {index + 1}</button>
+        <button type="button" className={field} onClick={() => edit(index)}>Redigera textfråga {index + 1}</button>{' '}
+        <button type="button" className={field} onClick={() => {
+          onTasks(tasks.filter((_, i) => i !== index))
+          if (editing === index) cancel()
+          else if (editing > index) setEditing(editing - 1)
+        }}>Ta bort textfråga {index + 1}</button>
       </li>)}</ol>}
       <label className="block">Frågetext<textarea value={customPrompt} maxLength={2000} onChange={event => onCustomPrompt(event.target.value)} className="mt-1 block w-full rounded border p-1" /></label>
       <p className="text-slate-600">{'Bråk: skriv 6//2 eller \\frac{6}{2}.'}</p>
@@ -28,7 +43,10 @@ export default function ScreeningCustomQuestion({ tasks = [], onTasks, disabled,
       </div>}
       <label className="mr-2"><input type="checkbox" checked={!customGrid} onChange={event => onCustomGrid(!event.target.checked)} /> Huvudräkning för skrivfrågan</label>
       <label><input type="checkbox" checked={customDrawing} onChange={event => onCustomDrawing(event.target.checked)} /> Rityta till skrivfrågan</label>
-      <div><button type="button" className={field} onClick={add} disabled={!customPrompt.trim() || tasks.length >= 12}>Lägg till textfråga</button></div>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" className={field} onClick={save} disabled={!customPrompt.trim() || (editing < 0 && tasks.length >= 12)}>{editing < 0 ? 'Lägg till textfråga' : 'Spara ändrad textfråga'}</button>
+        {editing >= 0 && <button type="button" className={field} onClick={cancel}>Avbryt redigering</button>}
+      </div>
     </fieldset>
   </details>
 }

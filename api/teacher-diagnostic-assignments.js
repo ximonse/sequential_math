@@ -67,7 +67,7 @@ export default async function handler(req, res) {
     }
     const assignment = await createDiagnosticAssignment({ classId,
       studentIds, taskIds: req.body?.taskIds, teacherId: auth.teacherId,
-      titleSv: req.body?.titleSv, itemOptions: req.body?.itemOptions, customTasks: req.body?.customTasks }, ...(req.body.requestId === undefined ? [] : [dispatchOptions]))
+      titleSv: req.body?.titleSv, itemOptions: req.body?.itemOptions, customTasks: req.body?.customTasks, order: req.body?.order }, ...(req.body.requestId === undefined ? [] : [dispatchOptions]))
     return res.status(201).json({ assignment })
   } catch (error) {
     return res.status(error.status || 503).json({ error: error.status ? error.message : 'Diagnostic storage unavailable', code: error.code })

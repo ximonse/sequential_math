@@ -109,7 +109,7 @@ const fail = (status, code, message) => { throw new DiagnosticAppendError(status
 const validId = value => typeof value === 'string' && idPattern.test(value)
 
 export async function prepareDiagnosticAssignment({ classId, studentIds, taskIds, teacherId,
-  titleSv = '', itemOptions = {}, customTasks = [] },
+  titleSv = '', itemOptions = {}, customTasks = [], order },
   { store = kv, makeId = newId, assignmentId: requestedAssignmentId } = {}) {
   if (!validId(classId) || !validId(teacherId)
     || !Array.isArray(studentIds) || studentIds.length < 1 || studentIds.length > 100
@@ -141,7 +141,12 @@ export async function prepareDiagnosticAssignment({ classId, studentIds, taskIds
       answerRule: answerKey ? 'custom_facit' : 'teacher_review', answerType: 'text', ...(answerKey ? { answerKey } : {}), gridEnabled: custom.gridEnabled ?? false,
       drawingEnabled: custom.drawingEnabled ?? false, ...imageQuestion })
   }
-  const items = tasks.map(task => {
+  // The teacher's chosen order: positions in [...taskIds, ...customTasks].
+  if (order !== undefined && (!Array.isArray(order) || order.length !== tasks.length
+    || !order.every(index => Number.isInteger(index) && index >= 0 && index < tasks.length)
+    || new Set(order).size !== order.length)) fail(400, 'invalid_order', 'Ogiltig ordning på frågorna.')
+  const ordered = order === undefined ? tasks : order.map(index => tasks[index])
+  const items = ordered.map(task => {
     const options = itemOptions[task.taskId] || {}
     if (task.responseMode && Object.keys(options).length) fail(400, 'invalid_task_options', 'Bildfrågans svarssätt är fast.')
     if (Object.keys(options).some(key => !['answerType', 'gridEnabled', 'drawingEnabled'].includes(key))

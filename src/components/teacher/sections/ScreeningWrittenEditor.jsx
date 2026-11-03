@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useQuestionEditorState } from './useQuestionEditorState.js'
 import { screeningAnswerKeyFromText, screeningAnswerKeyLabel } from '../../../domains/arithmetic/screeningAnswerKey.js'
+import { newQuestionUid } from '../../../domains/arithmetic/screeningQuestionOrder.js'
 
 const field = 'rounded border border-slate-400 px-1 py-0.5'
 const empty = () => ({ prompt: '', format: 'number', keyText: '', unit: '', requireDenominator: false, gridEnabled: true })
@@ -15,7 +16,8 @@ export default function ScreeningWrittenEditor({ tasks, onTasks, disabled, maxQu
       if (!draft.prompt.trim()) throw new Error('Skriv frågan först.')
       if (editing < 0 && tasks.length >= maxQuestions) throw new Error('Högst tolv egna frågor sammanlagt per samling.')
       const answerKey = screeningAnswerKeyFromText(draft.format, draft.keyText, draft.unit, draft.requireDenominator)
-      const task = { promptSv: draft.prompt.trim(), answerKey, gridEnabled: draft.gridEnabled, drawingEnabled: false }
+      const task = { promptSv: draft.prompt.trim(), answerKey, gridEnabled: draft.gridEnabled, drawingEnabled: false,
+        uid: (editing >= 0 && tasks[editing]?.uid) || newQuestionUid() }
       onTasks(editing < 0 ? [...tasks, task] : tasks.map((previous, index) => index === editing ? task : previous))
       setDraft(empty()); setEditing(-1); setError('')
     } catch (failure) { setError(failure.message) }

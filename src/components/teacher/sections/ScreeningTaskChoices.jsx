@@ -18,7 +18,7 @@ const originalGroups = [
 // click; single questions, answer types and the teacher guide stay folded away.
 export default function ScreeningTaskChoices({
   busy, selectedTasks, onSelectedTasks, usesNcm, selectedPack, itemOptions, onItemOptions,
-  customPrompt, onCustomPrompt, customGrid, onCustomGrid, customDrawing, onCustomDrawing, showCustomQuestion = true
+  customPrompt, onCustomPrompt, customGrid, onCustomGrid, customDrawing, onCustomDrawing, showCustomQuestion = true, showTeacherSupport = true
 }) {
   const taskCheckbox = task => <label key={task.taskId} className="flex items-center gap-1 text-sm">
     <input type="checkbox" checked={selectedTasks.includes(task.taskId)} onChange={event => onSelectedTasks(event.target.checked
@@ -63,9 +63,10 @@ export default function ScreeningTaskChoices({
     </details>
 
     <details className="mt-2 text-sm">
-      <summary className="cursor-pointer font-semibold">Svarstyp och arbetsytor per fråga</summary>
+      <summary className="cursor-pointer font-semibold">Inställningar för valda bankfrågor{selectedTasks.length ? ` (${selectedTasks.length})` : ''}</summary>
       <fieldset className="mt-2 space-y-1" disabled={busy}>
-        <legend className="sr-only">Svarstyp och arbetsytor per fråga</legend>
+        <legend className="sr-only">Inställningar för valda bankfrågor</legend>
+        <p className="screening-note">Svarstyp, huvudräkning och rityta för varje vald fråga ur banken.</p>
         {selectedTasks.map(id => {
           const options = itemOptions[id] || {}
           const change = patch => onItemOptions({ ...itemOptions, [id]: { ...itemOptions[id], ...patch } })
@@ -96,14 +97,19 @@ export default function ScreeningTaskChoices({
       <label><input type="checkbox" checked={customDrawing} onChange={event => onCustomDrawing(event.target.checked)} /> Rityta till skrivfrågan</label>
     </details>}
 
-    <details className="mt-2 rounded border border-slate-300 bg-white p-3 text-sm">
-      <summary className="cursor-pointer font-semibold">Lärarstöd för valda uppgifter</summary>
-      <p className="mt-2">Granska uppställningen och fråga eleven. Rätt slutsvar bevisar inte en viss metod. Appens automatiska metodanalys är begränsad.</p>
-      <ol className="mt-2 list-decimal space-y-2 pl-5">
-        {selectedTasks.map(findTask).filter(Boolean).map(task => <li key={task.taskId}>
-          <strong><QuestionText>{task.promptSv}</QuestionText></strong> {guideFor(task)?.goalSv}. {guideFor(task)?.questionSv}
-        </li>)}
-      </ol>
-    </details>
+    {showTeacherSupport && <ScreeningTeacherSupport selectedTasks={selectedTasks} />}
   </>
+}
+
+// What to look for and ask about, for the chosen bank questions.
+export function ScreeningTeacherSupport({ selectedTasks }) {
+  return <details className="mt-2 text-sm">
+    <summary className="cursor-pointer font-semibold">Lärarstöd för valda bankfrågor</summary>
+    <p className="mt-2">Granska uppställningen och fråga eleven. Rätt slutsvar bevisar inte en viss metod. Appens automatiska metodanalys är begränsad.</p>
+    {selectedTasks.length ? <ol className="mt-2 list-decimal space-y-2 pl-5">
+      {selectedTasks.map(findTask).filter(Boolean).map(task => <li key={task.taskId}>
+        <strong><QuestionText>{task.promptSv}</QuestionText></strong> {guideFor(task)?.goalSv}. {guideFor(task)?.questionSv}
+      </li>)}
+    </ol> : <p className="mt-1 screening-note">Välj frågor ur frågebanken för att få stöd till dem.</p>}
+  </details>
 }

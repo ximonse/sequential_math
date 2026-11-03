@@ -2,7 +2,7 @@ import { normalizeScreeningAnswerKey } from './screeningAnswerKey.js'
 import { normalizeImageQuestion, validateImageReference } from './screeningImageQuestions.js'
 import { newQuestionUid } from './screeningQuestionOrder.js'
 
-export const emptyWrittenEditor = () => ({ draft: { prompt: '', format: 'number', keyText: '', unit: '', requireDenominator: false, gridEnabled: true }, editing: -1 })
+export const emptyWrittenEditor = () => ({ draft: { prompt: '', format: 'number', keyText: '', unit: '', requireDenominator: false, gridEnabled: true, drawingEnabled: false }, editing: -1 })
 export const emptyImageEditor = () => ({ draft: { promptSv: '', responseMode: 'single', images: [], options: [], correctOptionIds: [] }, editing: -1 })
 export const emptyScreeningDraft = () => ({ titleSv: 'Screening', selectedTasks: [], itemOptions: {}, writtenTasks: [], imageTasks: [], textTasks: [], order: [], customPrompt: '', customGrid: true, customDrawing: false, writtenEditor: emptyWrittenEditor(), imageEditor: emptyImageEditor() })
 const fail = () => { throw new Error('Utkastet har ett ogiltigt innehåll.') }
@@ -44,7 +44,8 @@ export function normalizeScreeningDraft(input) {
     if (!Number.isInteger(state.editing) || state.editing < -1 || state.editing >= tasks.length) fail()
   }
   const written = writtenEditor.draft
-  keys(written, ['prompt', 'format', 'keyText', 'unit', 'requireDenominator', 'gridEnabled'])
+  keys(written, ['prompt', 'format', 'keyText', 'unit', 'requireDenominator', 'gridEnabled', 'drawingEnabled'])
+  if (written.drawingEnabled !== undefined) bool(written.drawingEnabled)
   string(written.prompt, 2000); string(written.keyText, 200); string(written.unit, 20)
   if (!['number', 'fraction', 'mixed', 'numbers', 'text'].includes(written.format)) fail()
   bool(written.requireDenominator); bool(written.gridEnabled)

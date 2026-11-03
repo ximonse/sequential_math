@@ -14,6 +14,7 @@ import ScreeningDraftPreview from './ScreeningDraftPreview'
 import useScreeningDraft from './useScreeningDraft'
 import { screeningDraftFromAssignment } from '../../../domains/arithmetic/screeningDraft.js'
 import { dispatchOrder, screeningQuestions } from '../../../domains/arithmetic/screeningQuestionOrder.js'
+import { ScreeningTeacherSupport } from './ScreeningTaskChoices'
 import ScreeningQuestionOrder from './ScreeningQuestionOrder.jsx'
 import ScreeningQuestionPreview from './ScreeningQuestionPreview'
 import QuestionText from '../../QuestionText'
@@ -84,7 +85,9 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
       <div>
         <fieldset disabled={busy || draftBusy} className="min-w-0">
         <label className="block">Samlingens namn<input value={draft.titleSv} maxLength={100} onChange={event => patch({ titleSv: event.target.value })} className="ml-2 rounded border border-slate-400 px-1 py-0.5" /></label>
-        {/* Simon 2026-11-02: the teacher's own questions come first, suggestions after. */}
+        {/* Simon 2026-11-02/03: own questions first, suggestions after; each module shows what belongs together. */}
+        <section className="screening-group screening-group--own" aria-labelledby="screening-own-title">
+        <h4 id="screening-own-title" className="screening-group__title">Skriv egna frågor</h4>
         <ScreeningWrittenEditor alwaysOpen tasks={draft.writtenTasks} onTasks={writtenTasks => patch({ writtenTasks })} disabled={busy} maxQuestions={12 - draft.imageTasks.length - (draft.textTasks || []).length - (draft.customPrompt.trim() ? 1 : 0)}
           editorState={draft.writtenEditor} onEditorState={updateEditor('writtenEditor')} />
         <ScreeningCustomQuestion tasks={draft.textTasks || []} onTasks={textTasks => patch({ textTasks })} disabled={busy}
@@ -92,17 +95,22 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
           customDrawing={draft.customDrawing} onCustomDrawing={customDrawing => patch({ customDrawing })} />
         <ScreeningImageEditor tasks={draft.imageTasks} onTasks={imageTasks => patch({ imageTasks })} disabled={busy}
           editorState={draft.imageEditor} onEditorState={updateEditor('imageEditor')} />
-        <details className="mt-3 text-sm" data-question-bank>
-          <summary className="cursor-pointer font-semibold">Förslag från frågebanken och NCM</summary>
+        </section>
+        <details className="screening-group screening-group--bank text-sm" data-question-bank>
+          <summary className="cursor-pointer screening-group__title">Förslag från frågebanken och NCM{draft.selectedTasks.length ? ` (${draft.selectedTasks.length} valda)` : ''}</summary>
           <ScreeningTaskChoices busy={busy} selectedTasks={draft.selectedTasks} onSelectedTasks={selectedTasks => patch({ selectedTasks })}
             usesNcm={draft.selectedTasks.some(id => diagnosticCatalog.findTask(id)?.ncmCode)} selectedPack={selectedPack}
             itemOptions={draft.itemOptions} onItemOptions={itemOptions => patch({ itemOptions })} showCustomQuestion={false}
             customPrompt={draft.customPrompt} onCustomPrompt={customPrompt => patch({ customPrompt })} customGrid={draft.customGrid} onCustomGrid={customGrid => patch({ customGrid })}
-            customDrawing={draft.customDrawing} onCustomDrawing={customDrawing => patch({ customDrawing })} />
+            customDrawing={draft.customDrawing} onCustomDrawing={customDrawing => patch({ customDrawing })} showTeacherSupport={false} />
         </details>
-        <ScreeningQuestionOrder questions={questions} onOrder={order => patch({ order })} disabled={busy} />
+        <section className="screening-group screening-group--whole" aria-labelledby="screening-whole-title">
+        <h4 id="screening-whole-title" className="screening-group__title">Hela screeningen{questions.length ? ` · ${questions.length} ${questions.length === 1 ? 'fråga' : 'frågor'}` : ''}</h4>
         <ScreeningWholeOptions draft={draft} patch={patch} disabled={busy} />
+        <ScreeningQuestionOrder questions={questions} onOrder={order => patch({ order })} disabled={busy} />
         <ScreeningDraftPreview content={draftContent} />
+        <ScreeningTeacherSupport selectedTasks={draft.selectedTasks} />
+        </section>
         {customTasks.length > 12 && <p role="alert" className="mt-1 text-amber-900">Högst tolv egna frågor sammanlagt. Ta bort frågor innan utdelning.</p>}
         </fieldset>
         <ScreeningDraftsPanel initialDraftId={initialDraftId} content={draftContent} onLoad={loadDraft} disabled={busy} onBusy={setDraftBusy} onDirtyChange={setDraftDirty} />

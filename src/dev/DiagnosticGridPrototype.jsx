@@ -11,6 +11,7 @@ import { exceedsDiagnosticAttemptQuota, isDiagnosticAttemptFull } from '../domai
 import DiagnosticGridLines from './DiagnosticGridLines'
 import ShortDivisionLayer from './ShortDivisionLayer.js'
 import { shortDivisionTemplateFor, templateCovers } from '../domains/arithmetic/shortDivisionTemplate.js'
+import { barAlignedCells } from '../domains/arithmetic/barAlignment.js'
 import { lineTouchesPoint } from '../domains/arithmetic/diagnosticLineGeometry'
 import MathScratchpad from '../components/student/MathScratchpad'
 import NotebookTools from './NotebookTools'
@@ -76,6 +77,9 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   // Printed short division; null for other tasks and for older attempts with work there.
   const cells = grid.cells, columns = grid.columns, rows = grid.rows, events = grid.events
   const template = useMemo(() => shortDivisionTemplateFor(task, { cells, columns, rows, events }), [task, cells, columns, rows, events])
+  // "=" and the answer right of the pupil's own fraction bar sit on the bar.
+  const lines = grid.lines, cursor = grid.cursor
+  const barAligned = useMemo(() => barAlignedCells({ cells, lines, rows, columns }, cursor), [cells, lines, rows, columns, cursor])
 
   useEffect(() => { onGridChange?.(grid.events.length, grid) }, [grid, onGridChange])
 
@@ -427,7 +431,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       if (after.length > 2 || before === after) return null
       const write = { type: 'write', position: { row, column }, layer, before, after }
       // Keep note entry in place so two-digit borrowing notes still work.
-      if (layer !== 'main' || !/^[0-9,]$/u.test(character) || column === previous.columns - 1) return write
+      // After "=" the answer follows to the right, like after a digit.
+      if (layer !== 'main' || !/^[0-9,=]$/u.test(character) || column === previous.columns - 1) return write
       return [write, { type: 'move', from: { row, column }, to: { row, column: column + 1 } }]
     })
   }
@@ -531,7 +536,9 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
     setInputTarget('grid')
     setLayer('main')
     writeCell(sign)
-    focusSelectedCell()
+    // Focus the cell the cursor is on after the write; focusing the old cell would
+    // move the cursor back (and the next digit would replace "=").
+    requestAnimationFrame(() => gridRef.current?.querySelector('.diagnostic-cell--selected input')?.focus({ preventScroll: true }))
   }
 
   const pending = grid.events.length > (saveState?.savedSequence || 0)
@@ -574,7 +581,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
               const selected = atCursor && inputTarget === 'grid'
               const layer = selected ? grid.cursor.layer : cell.note ? 'note' : 'main'
               return (
-                <div key={`${row}:${column}`} className={`diagnostic-cell diagnostic-cell--${layer} ${selected ? 'diagnostic-cell--selected' : ''} ${dragPreview === `${row}:${column}` ? 'diagnostic-cell--drag-preview' : ''} ${holdReady === `${row}:${column}` ? 'diagnostic-cell--hold-ready' : ''}`}>
+                <div key={`${row}:${column}`} className={`diagnostic-cell diagnostic-cell--${layer} ${barAligned.has(`${row}:${column}`) ? `diagnostic-cell--bar-${barAligned.get(`${row}:${column}`)}` : ''} ${selected ? 'diagnostic-cell--selected' : ''} ${dragPreview === `${row}:${column}` ? 'diagnostic-cell--drag-preview' : ''} ${holdReady === `${row}:${column}` ? 'diagnostic-cell--hold-ready' : ''}`}>
                   <input
                     type="text"
                     inputMode="none"

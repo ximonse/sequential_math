@@ -1,5 +1,6 @@
 import { replayDiagnosticGrid } from './diagnosticGridModel.js'
 import { shortDivisionTemplateFor } from './shortDivisionTemplate.js'
+import { barAlignedCells } from './barAlignment.js'
 
 // Observable content only. A nonempty grid is not proof that a result exists.
 export function diagnosticNotebookStatus(snapshot, task = {}) {
@@ -36,6 +37,8 @@ export function diagnosticNotebookExport(snapshot, task = {}) {
   }
   const lines = grid.lines.map(line => `${line.axis} r${line.from.row + 1}c${line.from.column + 1}–r${line.to.row + 1}c${line.to.column + 1} (${line.placement || 'legacy-inset'})`)
   if (template) lines.push(`Printed by the app, not written by the pupil: ${template.digits.join('')} over a fraction bar, ${template.divisor} below, "=" and an answer line (r${template.row + 1}–r${template.row + 2}, c${template.first + 1}–c${template.lastColumn + 1}). Pupil wrote on the answer line: ${answerLine || '(nothing)'}. The final answer is separate.`)
+  const aligned = [...barAlignedCells(grid).keys()]
+  if (aligned.length) lines.push(`Shown centred on a fraction bar (pupil's own "=" and answer): ${aligned.map(key => { const [r, c] = key.split(':').map(Number); return `r${r + 1}c${c + 1}` }).join(', ')}`)
   for (const [key, value] of Object.entries(lineNotes)) {
     const [row, column, place] = key.split(':')
     lines.push(place === 'bottom'

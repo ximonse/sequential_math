@@ -348,3 +348,18 @@
 
 /* With a digit already on the crossing, the caret waits right after it. */
 .short-division .short-division__gap-caret--after { left: calc(50% + 0.55rem); }
+
+/* The pupil's own short division: "=" and the answer sit on the fraction bar. */
+.diagnostic-cell--bar-down .diagnostic-cell__digit { transform: translateY(50%); }
+.diagnostic-cell--bar-up .diagnostic-cell__digit { transform: translateY(-50%); }
+.diagnostic-cell--bar-down, .diagnostic-cell--bar-up { z-index: 3; }
+.diagnostic-cell--bar-down.diagnostic-cell--selected,
+.diagnostic-cell--bar-up.diagnostic-cell--selected { outline: none; background: #fff; }
+/* The selection box moves with the answer so the pupil sees where the next digit goes. */
+.diagnostic-cell--bar-down.diagnostic-cell--selected::after,
+.diagnostic-cell--bar-up.diagnostic-cell--selected::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  outline: 2px solid #1d4ed8; outline-offset: -2px; background: rgb(239 246 255 / 0.7);
+}
+.diagnostic-cell--bar-down.diagnostic-cell--selected::after { transform: translateY(50%); }
+.diagnostic-cell--bar-up.diagnostic-cell--selected::after { transform: translateY(-50%); }

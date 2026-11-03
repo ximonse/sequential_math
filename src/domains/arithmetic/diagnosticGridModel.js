@@ -8,7 +8,7 @@ export const NUMBER_ANSWER = /^[−-]?\d{0,12}(,\d{0,12})?$/u
 // verbatim. Task-specific assessment must not strip symbols or evaluate them.
 export const MATH_ANSWER = /^[\p{L}0-9+−\-×*/÷,.;=()%²³^:°√<>≤≥± ]{0,200}$/u
 const NOTE_CHARACTERS = /^[0-9]{1,2}$/u
-const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'line_add', 'line_remove', 'line_note', 'answer_line_change', 'answer_change', 'selection_change', 'drawing_stroke', 'drawing_clear', 'pause', 'resume', 'focus_lost', 'submit'])
+const EVENT_TYPES = new Set(['write', 'erase', 'move', 'layer', 'reclassify', 'cross_out', 'line_add', 'line_remove', 'line_note', 'answer_line_change', 'division_add', 'division_remove', 'answer_change', 'selection_change', 'drawing_stroke', 'drawing_clear', 'pause', 'resume', 'focus_lost', 'submit'])
 
 function isValidPosition(value, rows, columns) {
   return Number.isInteger(value?.row) && value.row >= 0 && value.row < rows
@@ -148,10 +148,37 @@ export function applyDiagnosticGridEvent(state, event) {
     else delete changed[key]
     next.lineNotes = changed
   } else if (event.type === 'answer_line_change') {
-    // The answer line of a printed short division is pupil work, not the answer.
-    if (typeof event.after !== 'string' || !/^[0-9,]{0,12}$/u.test(event.after)
-      || event.before !== (state.answerLine || '') || event.before === event.after) throw new Error('Invalid answer line')
-    next.answerLine = event.after
+    // The answer line of a short division is pupil work, not the answer. Without a
+    // divisionId it belongs to the printed division of the task.
+    if (typeof event.after !== 'string' || !/^[0-9,]{0,12}$/u.test(event.after)) throw new Error('Invalid answer line')
+    if (event.divisionId !== undefined) {
+      if (!(state.divisions || []).some(item => item.id === event.divisionId)) throw new Error('Unknown division')
+      const lines = state.answerLines || {}
+      if (event.before !== (lines[event.divisionId] || '') || event.before === event.after) throw new Error('Invalid answer line')
+      const changed = { ...lines }
+      if (event.after) changed[event.divisionId] = event.after
+      else delete changed[event.divisionId]
+      next.answerLines = changed
+    } else {
+      if (event.before !== (state.answerLine || '') || event.before === event.after) throw new Error('Invalid answer line')
+      next.answerLine = event.after
+    }
+  } else if (event.type === 'division_add') {
+    // A short division the pupil places with the division button: a fraction bar
+    // under the numerator row starting at `position` (Simon 2026-11-03).
+    if (!isValidPosition(event.position, state.rows, state.columns) || event.position.row >= state.rows - 1
+      || event.position.column > state.columns - 3
+      || (state.divisions || []).some(item => item.row === event.position.row && item.column === event.position.column)) {
+      throw new Error('Invalid division')
+    }
+    next.divisions = [...(state.divisions || []), { id: event.eventId, row: event.position.row, column: event.position.column }]
+  } else if (event.type === 'division_remove') {
+    if (!(state.divisions || []).some(item => item.id === event.divisionId)) throw new Error('Invalid division removal')
+    next.divisions = state.divisions.filter(item => item.id !== event.divisionId)
+    if (state.answerLines?.[event.divisionId] !== undefined) {
+      next.answerLines = { ...state.answerLines }
+      delete next.answerLines[event.divisionId]
+    }
   } else if (event.type === 'line_remove') {
     const lines = state.lines || []
     if (typeof event.lineId !== 'string' || !lines.some(line => line.id === event.lineId)) {
@@ -227,6 +254,8 @@ export function replayDiagnosticGrid(snapshot) {
     || JSON.stringify(replayed.drawing) !== JSON.stringify(snapshot.drawing ?? [])
     || JSON.stringify(replayed.lineNotes ?? {}) !== JSON.stringify(snapshot.lineNotes ?? {})
     || (replayed.answerLine ?? '') !== (snapshot.answerLine ?? '')
+    || JSON.stringify(replayed.divisions ?? []) !== JSON.stringify(snapshot.divisions ?? [])
+    || JSON.stringify(replayed.answerLines ?? {}) !== JSON.stringify(snapshot.answerLines ?? {})
     || JSON.stringify(replayed.selectedOptionIds) !== JSON.stringify(snapshot.selectedOptionIds)
     || replayed.answer !== snapshot.answer
     || JSON.stringify(replayed.cursor) !== JSON.stringify(snapshot.cursor)

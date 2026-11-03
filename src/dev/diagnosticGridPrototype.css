@@ -194,8 +194,10 @@
 .notebook-numbers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .notebook-numbers button { min-height: 48px; font-size: 25px; font-weight: 500; border: 0; }
 .diagnostic-prototype .notebook-symbols > button { min-height: 34px; border: 0; background: transparent; font-size: 12px; padding-left: 0; }
-.notebook-symbol-grid { display: grid; grid-template-columns: repeat(4, 1fr); width: 100%; }
+.notebook-symbol-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; margin-top: 4px; }
+.notebook-symbol-grid button { min-height: 44px; font-size: 22px; border: 0; }
 .notebook-delete { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 6px; }
+.notebook-keypad .notebook-symbols { margin-top: 6px; }
 .notebook-drawing-toggle { margin-top: 10px; }
 .diagnostic-prototype .notebook-drawing-toggle { color: var(--accent, #215aff); border: 0; background: transparent; padding: 2px; }
 .notebook-scratchpad { width: 100%; margin-top: 8px; padding: 8px; border: 1px solid var(--border, #8295ac); border-radius: 6px; }
@@ -363,3 +365,14 @@
 }
 .diagnostic-cell--bar-down.diagnostic-cell--selected::after { transform: translateY(50%); }
 .diagnostic-cell--bar-up.diagnostic-cell--selected::after { transform: translateY(-50%); }
+
+/* Divisor of the pupil's own short division, centred under the bar. */
+.diagnostic-cell--shifted .diagnostic-cell__digit { transform: translateX(calc(var(--shift-x) * var(--diagnostic-cell-width))); }
+/* Above the neighbouring cells, which would otherwise paint over the moved digit. */
+.diagnostic-cell--shifted { z-index: 3; }
+/* Remainder tap areas are half cells in the row above the numerator; the caret
+   shows the crossing where the digit goes. */
+.short-division .short-division__gap--left .short-division__gap-caret { top: calc(100% - 0.55rem); left: -1px; }
+.short-division .short-division__gap--right .short-division__gap-caret { top: calc(100% - 0.55rem); left: auto; right: -1px; }
+.short-division .short-division__gap--left .short-division__gap-caret--after { left: 0.55rem; }
+.short-division .short-division__gap--right .short-division__gap-caret--after { right: -0.6rem; }

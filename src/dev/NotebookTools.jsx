@@ -3,7 +3,7 @@ import NumberKeys from '../components/student/NumberKeys'
 
 export default function NotebookTools({ formats, disabled, lineMode, eraseMode, onLine, onErase, onLoan,
   canLoan, onKey, onSign, signsDisabled, gridEnabled, status, onGuide = null, answerActive = false,
-  lineNoteMode = false, onLineNotes = null }) {
+  divisionArmed = false, onDivision = null }) {
   const [helpOpen, setHelpOpen] = useState(false)
   const [helpHovered, setHelpHovered] = useState(false)
   const helpVisible = helpOpen || helpHovered
@@ -29,8 +29,8 @@ export default function NotebookTools({ formats, disabled, lineMode, eraseMode, 
       <button type="button" aria-label="Streckläge" aria-pressed={lineMode} onClick={onLine} disabled={disabled}>
         <svg viewBox="0 0 28 20" width="28" height="20" aria-hidden="true"><path d="M2 16h24" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" /></svg>
       </button>
-      {onLineNotes && <button type="button" aria-label="Skriv på linjerna" title="Kort division: skriv små siffror på linjerna mellan rutorna"
-        aria-pressed={lineNoteMode} onClick={onLineNotes} disabled={disabled}>
+      {onDivision && <button type="button" aria-label="Kort division" title="Kort division: markera en ruta och tryck, eller tryck och välj ruta"
+        aria-pressed={divisionArmed} onClick={onDivision} disabled={disabled}>
         <svg viewBox="0 0 28 20" width="28" height="20" aria-hidden="true"><path d="M2 10h12M18 7h8M18 13h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
       </button>}
       <button type="button" aria-label="Suddverktyg" aria-pressed={eraseMode} onClick={onErase} disabled={disabled}>
@@ -55,19 +55,20 @@ export default function NotebookTools({ formats, disabled, lineMode, eraseMode, 
           {['−', '×', '/', '+'].map(sign => <button key={sign} type="button" aria-label={`Skriv ${sign}`}
             onClick={() => onSign(sign)} disabled={disabled || signsDisabled}>{sign}</button>)}
         </div>
-        <div className="notebook-symbols">
-          <button type="button" aria-expanded={symbolsOpen} onClick={() => setSymbolsOpen(value => !value)}>▸ Fler tecken · procent & algebra</button>
-          {symbolsOpen && <div className="notebook-popover notebook-symbol-grid">
-            {['x', 'y', 'a', 'b', '=', '²', '%', '÷', '(', ')', 'n', 'c'].map(sign => <button key={sign} type="button"
-              aria-label={`Skriv ${sign}`} disabled={disabled || signsDisabled} onClick={() => onSign(sign)}>{sign}</button>)}
-          </div>}
-        </div>
       </>}
       <div className="notebook-numbers"><NumberKeys onKey={onKey} disabled={disabled} labelPrefix="Skriv" /></div>
       <div className="notebook-delete">
         <button type="button" aria-label="Radera siffra" disabled={disabled} onClick={() => onKey('backspace')}>Radera</button>
         <button type="button" disabled={disabled} title="Töm bara den markerade rutan eller svarsrutan" onClick={() => onKey('clear')}>Rensa</button>
       </div>
+      {/* Simon 2026-11-03: the extra signs open below Radera/Rensa as ordinary keys. */}
+      {(gridEnabled || answerActive) && <div className="notebook-symbols">
+        <button type="button" aria-expanded={symbolsOpen} onClick={() => setSymbolsOpen(value => !value)}>{symbolsOpen ? '▾' : '▸'} Fler tecken · procent & algebra</button>
+        {symbolsOpen && <div className="notebook-symbol-grid">
+          {['x', 'y', 'a', 'b', '=', '²', '%', '÷', '(', ')', 'n', 'c'].map(sign => <button key={sign} type="button"
+            aria-label={`Skriv ${sign}`} disabled={disabled || signsDisabled} onClick={() => onSign(sign)}>{sign}</button>)}
+        </div>}
+      </div>}
     </div>
   </aside>
 }

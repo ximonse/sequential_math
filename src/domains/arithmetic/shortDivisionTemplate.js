@@ -3,9 +3,12 @@
 // Small digits are written on the vertical lines between the dividend digits, and
 // the answer line right of "=" is the attempt's ordinary answer. The template is
 // derived from the task text and is never part of the pupil's cells or lines.
-const PROMPT = /^(?:(?:Räkna ut|Beräkna)\s+)?(\d{2,4})\s*[/÷:]\s*([2-9])\s*[.=?]?$/u
-const ROW = 1
-const FIRST = 1
+// 55/5, 55//5, 55:5 and 55 ÷ 5 all work alike (Simon 2026-11-03).
+const PROMPT = /^(?:(?:Räkna ut|Beräkna)\s+)?(\d{2,4})\s*(?:\/\/|[/÷:])\s*([2-9])\s*[.=?]?$/u
+// Centred and a little above the middle of the normal 8 x 12 grid; the row above
+// the numerator is free for remainders.
+const ROW = 2
+const COLUMNS = 12
 const ANSWER_COLUMNS = 4
 
 export function shortDivisionTemplate(task) {
@@ -13,14 +16,15 @@ export function shortDivisionTemplate(task) {
   if (!match || task?.gridEnabled === false || task?.responseMode) return null
   const digits = match[1].split('')
   const n = digits.length
+  const first = Math.floor((COLUMNS - (n + 1 + ANSWER_COLUMNS)) / 2)
   return {
-    row: ROW, first: FIRST, digits, divisor: match[2],
-    divisorColumn: FIRST + Math.floor((n - 1) / 2),
-    equalsColumn: FIRST + n,
-    answerFirst: FIRST + n + 1, answerColumns: ANSWER_COLUMNS,
+    row: ROW, first, digits, divisor: match[2],
+    divisorColumn: first + Math.floor((n - 1) / 2),
+    equalsColumn: first + n,
+    answerFirst: first + n + 1, answerColumns: ANSWER_COLUMNS,
     // Borders between two dividend digits, named by the column to their right.
-    gaps: digits.slice(1).map((_, i) => ({ row: ROW, column: FIRST + i + 1 })),
-    lastColumn: FIRST + n + ANSWER_COLUMNS
+    gaps: digits.slice(1).map((_, i) => ({ row: ROW, column: first + i + 1 })),
+    lastColumn: first + n + ANSWER_COLUMNS
   }
 }
 

@@ -12,6 +12,7 @@ import DiagnosticGridLines from './DiagnosticGridLines'
 import ShortDivisionLayer from './ShortDivisionLayer.js'
 import { shortDivisionTemplateFor, templateCovers } from '../domains/arithmetic/shortDivisionTemplate.js'
 import { barAlignedCells } from '../domains/arithmetic/barAlignment.js'
+import { divisionLayouts, divisorShifts, remainderTargets } from '../domains/arithmetic/divisionLayout.js'
 import { lineTouchesPoint } from '../domains/arithmetic/diagnosticLineGeometry'
 import MathScratchpad from '../components/student/MathScratchpad'
 import NotebookTools from './NotebookTools'
@@ -66,8 +67,10 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const [inputTarget, setInputTarget] = useState(pilot?.task.gridEnabled === false ? 'answer' : 'grid')
   const [contextMenu, setContextMenu] = useState(null)
   const [selectedGap, setSelectedGap] = useState(null)
-  // Small digits on every vertical line, in any task (Simon 2026-11-02).
-  const [lineNoteMode, setLineNoteMode] = useState(false)
+  // The division button places a short division in the chosen cell (Simon 2026-11-03).
+  const [divisionArmed, setDivisionArmed] = useState(false)
+  const [cellChosen, setCellChosen] = useState(false)
+  const [answerLineId, setAnswerLineId] = useState(null)
   const [drawingVisible, setDrawingVisible] = useState(false)
   // The first notebook a pupil opens on a device starts with the gesture guide.
   const [guideOpen, setGuideOpen] = useState(() => (pilot?.task || TASKS[0]).gridEnabled !== false && shouldShowNotebookTutorial(guideScope))
@@ -80,6 +83,11 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   // "=" and the answer right of the pupil's own fraction bar sit on the bar.
   const lines = grid.lines, cursor = grid.cursor
   const barAligned = useMemo(() => barAlignedCells({ cells, lines, rows, columns }, cursor), [cells, lines, rows, columns, cursor])
+  const divisions = grid.divisions, answerLines = grid.answerLines, answerLine = grid.answerLine
+  const layouts = useMemo(() => divisionLayouts({ cells, rows, columns, divisions, answerLines, answerLine }, template),
+    [cells, rows, columns, divisions, answerLines, answerLine, template])
+  const targets = useMemo(() => remainderTargets({ cells, columns }, layouts), [cells, columns, layouts])
+  const shifts = useMemo(() => divisorShifts({ cells }, layouts), [cells, layouts])
 
   useEffect(() => { onGridChange?.(grid.events.length, grid) }, [grid, onGridChange])
 
@@ -211,6 +219,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   function startGesture(event, row, column) {
     setContextMenu(null)
     setInputTarget('grid')
+    setCellChosen(true)
+    if (divisionArmed && !eraseMode) { event.preventDefault(); selectCell(row, column); placeDivision({ row, column }); return }
     if (eraseMode) {
       event.preventDefault()
       stopGesture()
@@ -316,6 +326,12 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       column: (x - bounds.left) / (bounds.width / grid.columns) }
     const position = cellAtPoint(x, y)
     record(previous => {
+      // A placed short division goes when the eraser passes over its bar.
+      for (const layout of divisionLayouts(previous, null)) {
+        if (Math.abs(point.row - (layout.row + 1)) < 0.3 && point.column >= layout.first - 0.2 && point.column <= layout.first + layout.width + 0.2) {
+          return { type: 'division_remove', divisionId: layout.id }
+        }
+      }
       // Marks on grid crossings are erased when the eraser passes close to them.
       for (const [key, value] of Object.entries(previous.lineNotes || {})) {
         const [row, column, place] = key.split(':')
@@ -358,43 +374,54 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   }
 
   function writeAnswerLine(character) {
+    const id = answerLineId
     record(previous => {
-      const before = previous.answerLine || ''
+      const before = (id === 'printed' ? previous.answerLine : previous.answerLines?.[id]) || ''
       const after = character === 'backspace' ? before.slice(0, -1) : character === 'clear' ? ''
         : /^[0-9,]$/u.test(character) ? `${before}${character}` : before
-      return after === before || after.length > 12 ? null : { type: 'answer_line_change', before, after }
+      return after === before || after.length > 12 ? null
+        : { type: 'answer_line_change', ...(id === 'printed' ? {} : { divisionId: id }), before, after }
     })
   }
 
-  function activateAnswerLine() {
+  function activateAnswerLine(id) {
+    setAnswerLineId(id)
     setInputTarget('answerLine'); setSelectedGap(null); setLineMode(false); setEraseMode(false); setContextMenu(null); stopGesture()
   }
 
-  const allLineGaps = useMemo(() => lineNoteMode
-    ? Array.from({ length: rows * (columns - 1) }, (_, i) => ({ row: Math.floor(i / (columns - 1)), column: i % (columns - 1) + 1 }))
-    : [], [lineNoteMode, rows, columns])
+  // Places a short division with its numerator starting in the cell.
+  function placeDivision(position) {
+    setDivisionArmed(false)
+    if (templateCovers(template, position.row, position.column)) return
+    record(previous => position.row >= previous.rows - 1 || position.column > previous.columns - 3
+      || (previous.divisions || []).some(item => item.row === position.row && item.column === position.column)
+      ? null : { type: 'division_add', position: { row: position.row, column: position.column } })
+  }
 
-  function toggleLineNoteMode() {
-    setLineNoteMode(current => !current)
-    setSelectedGap(null); setLineMode(false); setEraseMode(false); setContextMenu(null); stopGesture()
+  // Marked cell first, or the button first and then a cell.
+  function pressDivision() {
+    setLineMode(false); setEraseMode(false); setContextMenu(null); stopGesture()
+    if (divisionArmed) { setDivisionArmed(false); return }
+    if (cellChosen && inputTarget === 'grid') { placeDivision(grid.cursor); focusSelectedCell(); return }
+    setDivisionArmed(true)
     setInputTarget('grid')
   }
 
-  function chooseGap(gap) {
+  function chooseGap(target) {
     setContextMenu(null)
     stopGesture()
-    if (eraseMode) { writeGap('clear', gap); setEraseMode(false); return }
+    if (eraseMode) { writeGap('clear', target.note); setEraseMode(false); return }
     setLineMode(false)
-    setSelectedGap(gap)
+    setSelectedGap(target.note)
     setInputTarget('gap')
   }
 
 
 
-  function gapKey(event, gap) {
+  function gapKey(event, target) {
     const key = event.key
-    if (key === 'Backspace' || key === 'Delete') { event.preventDefault(); writeGap(key === 'Delete' ? 'clear' : 'backspace', gap); return }
-    if (/^[0-9]$/u.test(key) && !event.ctrlKey && !event.metaKey && !event.altKey) { event.preventDefault(); writeGap(key, gap) }
+    if (key === 'Backspace' || key === 'Delete') { event.preventDefault(); writeGap(key === 'Delete' ? 'clear' : 'backspace', target.note); return }
+    if (/^[0-9]$/u.test(key) && !event.ctrlKey && !event.metaKey && !event.altKey) { event.preventDefault(); writeGap(key, target.note) }
   }
 
   function keypad(character) {
@@ -570,18 +597,17 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             <div hidden={task.gridEnabled === false} className="notebook-grid-scroll">
           <div ref={gridRef} className="diagnostic-grid" role="group" aria-label="Rutat räknehäfte">
             <DiagnosticGridLines lines={grid.lines} preview={linePreview} rows={grid.rows} columns={grid.columns} />
-            <ShortDivisionLayer template={template} lineNotes={grid.lineNotes} answerLine={grid.answerLine}
-              selectedGap={inputTarget === 'gap' ? selectedGap : null} answerActive={inputTarget === 'answerLine' && !editingLocked}
-              extraGaps={allLineGaps}
-              disabled={editingLocked || attemptFull} onGap={chooseGap} onGapKey={gapKey}
-              onAnswer={activateAnswerLine} />
+            <ShortDivisionLayer layouts={layouts} lineNotes={grid.lineNotes} targets={targets}
+              selectedNote={inputTarget === 'gap' ? selectedGap : null} activeAnswer={inputTarget === 'answerLine' && !editingLocked ? answerLineId : null}
+              disabled={editingLocked || attemptFull} onTarget={chooseGap} onTargetKey={gapKey} onAnswer={activateAnswerLine} />
             {visibleCells.map(({ row, column }) => {
               const cell = grid.cells[`${row}:${column}`] || { main: '', note: '' }
               const atCursor = grid.cursor.row === row && grid.cursor.column === column
               const selected = atCursor && inputTarget === 'grid'
               const layer = selected ? grid.cursor.layer : cell.note ? 'note' : 'main'
               return (
-                <div key={`${row}:${column}`} className={`diagnostic-cell diagnostic-cell--${layer} ${barAligned.has(`${row}:${column}`) ? `diagnostic-cell--bar-${barAligned.get(`${row}:${column}`)}` : ''} ${selected ? 'diagnostic-cell--selected' : ''} ${dragPreview === `${row}:${column}` ? 'diagnostic-cell--drag-preview' : ''} ${holdReady === `${row}:${column}` ? 'diagnostic-cell--hold-ready' : ''}`}>
+                <div key={`${row}:${column}`} style={shifts.has(`${row}:${column}`) ? { '--shift-x': shifts.get(`${row}:${column}`) } : undefined}
+                  className={`diagnostic-cell diagnostic-cell--${layer} ${shifts.has(`${row}:${column}`) ? 'diagnostic-cell--shifted' : ''} ${barAligned.has(`${row}:${column}`) ? `diagnostic-cell--bar-${barAligned.get(`${row}:${column}`)}` : ''} ${selected ? 'diagnostic-cell--selected' : ''} ${dragPreview === `${row}:${column}` ? 'diagnostic-cell--drag-preview' : ''} ${holdReady === `${row}:${column}` ? 'diagnostic-cell--hold-ready' : ''}`}>
                   <input
                     type="text"
                     inputMode="none"
@@ -638,8 +664,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
             formats={<>{formatButton('main', 'Stor')}{formatButton('note', 'Liten')}</>}
             disabled={editingLocked || attemptFull} gridEnabled={task.gridEnabled !== false}
             lineMode={lineMode} eraseMode={eraseMode}
-            onLine={() => { setInputTarget('grid'); setLineMode(current => !current); setEraseMode(false); setLineNoteMode(false) }}
-            lineNoteMode={lineNoteMode} onLineNotes={toggleLineNoteMode}
+            onLine={() => { setInputTarget('grid'); setLineMode(current => !current); setEraseMode(false); setDivisionArmed(false) }}
+            divisionArmed={divisionArmed} onDivision={pressDivision}
             onErase={() => { setInputTarget('grid'); setEraseMode(current => !current); setLineMode(false) }}
             canLoan={selectedIsDigit} onLoan={() => { setInputTarget('grid'); toggleCrossOut(); setLineMode(false); setEraseMode(false); focusSelectedCell() }}
             onKey={keypad} onSign={writeOperationSign} answerActive={!workspaceOnly && inputTarget === 'answer'}

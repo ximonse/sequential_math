@@ -16,7 +16,9 @@ const EVENT_FIELDS = {
   line_add: ['axis', 'from', 'to', 'placement'],
   line_remove: ['lineId'],
   line_note: ['position', 'before', 'after', 'place'],
-  answer_line_change: ['before', 'after'],
+  answer_line_change: ['before', 'after', 'divisionId'],
+  division_add: ['position'],
+  division_remove: ['divisionId'],
   answer_change: ['before', 'after'],
   selection_change: ['before', 'after'],
   drawing_stroke: ['points', 'erasing', 'color'],
@@ -51,7 +53,7 @@ function hasOnlyCoordinates(value) {
 }
 
 function hasValidPositionShape(event) {
-  if (['write', 'erase', 'reclassify', 'cross_out', 'line_note'].includes(event.type)) {
+  if (['write', 'erase', 'reclassify', 'cross_out', 'line_note', 'division_add'].includes(event.type)) {
     return hasOnlyCoordinates(event.position)
   }
   if (event.type === 'move' || event.type === 'line_add') {

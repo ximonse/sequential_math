@@ -27,6 +27,8 @@ export function describeDiagnosticEvent(event) {
   if (event.type === 'line_note' && event.place === 'bottom') return `${place}, på linjen till vänster: ${event.after ? 'skrev decimaltecken' : 'raderade decimaltecken'}.`
   if (event.type === 'line_note') return `${place}, på linjen till vänster: ${event.after ? `skrev liten siffra ${event.after}` : `raderade liten siffra ${event.before}`}.`
   if (event.type === 'answer_line_change') return `Svarslinjen i uppställningen: ${event.after || 'tom'}.`
+  if (event.type === 'division_add') return `${place}: lade till en kort division.`
+  if (event.type === 'division_remove') return 'Tog bort en kort division.'
   if (event.type === 'selection_change') return `Ändrade valda alternativ från ${event.before.join(', ') || 'inga'} till ${event.after.join(', ') || 'inga'}.`
   if (event.type === 'answer_change') return `Ändrade slutsvaret från ${event.before || 'tomt'} till ${event.after || 'tomt'}.`
   if (event.type === 'drawing_stroke') return event.erasing ? 'Suddade i ritytan.' : 'Ritade i ritytan.'

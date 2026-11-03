@@ -12,9 +12,15 @@ const grid = () => createDiagnosticGrid({ attemptId: 'A1', taskId: task.taskId, 
 const note = (state, column, after) => recordDiagnosticGridEvent(state,
   { type: 'line_note', position: { row: 1, column }, before: state.lineNotes?.[`1:${column}`] || '', after }, 1000)
 
+// Printed in the middle, a little above the centre (row 3 of 8), from 2026-11-03.
+const T = shortDivisionTemplate(task)
+const inTemplate = { row: T.row, column: T.first }
+
 describe('short division template', () => {
-  it('is derived from the task text for one-digit divisors only', () => {
-    expect(shortDivisionTemplate(task)).toMatchObject({ digits: ['7', '8'], divisor: '3', gaps: [{ row: 1, column: 2 }] })
+  it('is derived from the task text for one-digit divisors only, centred above the middle', () => {
+    expect(T).toMatchObject({ digits: ['7', '8'], divisor: '3', row: 2 })
+    // 2 digits + "=" + 4 answer columns = 7 of 12 columns, centred.
+    expect(T.first).toBe(2)
     expect(shortDivisionTemplate({ promptSv: 'Räkna ut 648 / 6.' }).gaps).toHaveLength(2)
     expect(shortDivisionTemplate({ promptSv: 'Räkna ut 360 / 12.' })).toBeNull()
     expect(shortDivisionTemplate({ promptSv: 'Räkna ut 46 · 7.' })).toBeNull()
@@ -23,22 +29,23 @@ describe('short division template', () => {
 
   it('leaves most of the normal grid free', () => {
     const t = shortDivisionTemplate({ promptSv: 'Räkna ut 936 / 9.' })
-    expect(templateCovers(t, 1, 1)).toBe(true)
-    expect(templateCovers(t, 3, 1)).toBe(false)
-    expect(templateCovers(t, 1, t.lastColumn + 1)).toBe(false)
-    expect(t.lastColumn).toBeLessThan(11)
+    expect(templateCovers(t, t.row, t.first)).toBe(true)
+    expect(templateCovers(t, t.row - 1, t.first)).toBe(false)
+    expect(templateCovers(t, t.row + 2, t.first)).toBe(false)
+    expect(templateCovers(t, t.row, t.lastColumn + 1)).toBe(false)
+    expect(t.lastColumn).toBeLessThan(12)
   })
 
   it('stays away from older attempts that already have work where it would go', () => {
     let state = grid()
     expect(shortDivisionTemplateFor(task, state)).not.toBeNull()
-    state = recordDiagnosticGridEvent(state, { type: 'write', position: { row: 1, column: 1 }, layer: 'main', before: '', after: '7' }, 1000)
+    state = recordDiagnosticGridEvent(state, { type: 'write', position: inTemplate, layer: 'main', before: '', after: '7' }, 1000)
     expect(shortDivisionTemplateFor(task, state)).toBeNull()
   })
 
   it('stays away from every history step of an attempt that once wrote there', () => {
-    let state = recordDiagnosticGridEvent(grid(), { type: 'write', position: { row: 1, column: 1 }, layer: 'main', before: '', after: '7' }, 1000)
-    state = recordDiagnosticGridEvent(state, { type: 'erase', position: { row: 1, column: 1 }, layer: 'main', before: '7', after: '' }, 1000)
+    let state = recordDiagnosticGridEvent(grid(), { type: 'write', position: inTemplate, layer: 'main', before: '', after: '7' }, 1000)
+    state = recordDiagnosticGridEvent(state, { type: 'erase', position: inTemplate, layer: 'main', before: '7', after: '' }, 1000)
     expect(state.cells).toEqual({})
     expect(shortDivisionTemplateFor(task, state)).toBeNull()
     expect(diagnosticHistoryFrame(state, 0).events).toEqual([])
@@ -48,7 +55,7 @@ describe('short division template', () => {
     const state = note(grid(), 2, '1')
     expect(state.cells).toEqual({})
     expect(state.lines).toEqual([])
-    expect(isTemplateGap(shortDivisionTemplate(task), { row: 1, column: 2 })).toBe(true)
+    expect(isTemplateGap(T, { row: T.row, column: T.first + 1 })).toBe(true)
   })
 })
 

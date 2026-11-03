@@ -10,6 +10,7 @@ export default function ScreeningDraftPreview({ content }) {
     const task = diagnosticCatalog.findTask(id)
     return task ? { ...task, ...content.itemOptions[id] } : { taskId: id, promptSv: 'Frågan finns inte längre i banken.', answerRule: 'teacher_review', answerType: 'text' }
   }), ...content.writtenTasks.map(task => ({ ...task, answerRule: 'custom_facit', answerType: 'text' })), ...content.imageTasks,
+  ...(content.textTasks || []).map(task => ({ ...task, answerType: 'text', answerRule: 'teacher_review' })),
   ...(content.customPrompt.trim() ? [{ promptSv: content.customPrompt, answerType: 'text', answerRule: 'teacher_review', gridEnabled: content.customGrid, drawingEnabled: content.customDrawing }] : [])]
     .map((task, index) => ({ ...task, taskId: task.taskId || `draft-${index}`, taskVersion: task.taskVersion || 1 }))
   return <details className="mt-3 text-sm">

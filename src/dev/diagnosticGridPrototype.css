@@ -293,6 +293,8 @@
   pointer-events: auto;
 }
 
+.short-division .short-division__gap:focus-visible { outline: none; }
+
 .short-division .short-division__gap--selected {
   /* Only the blinking caret in the crossing shows the chosen line (Simon 2026-11-02). */
   outline: none;

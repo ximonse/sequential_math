@@ -138,3 +138,12 @@ describe('marks on grid crossings (2026-11-02 changes)', () => {
     expect(() => recordDiagnosticGridEvent(grid(), { type: 'answer_line_change', before: '', after: 'x' }, 1)).toThrow()
   })
 })
+
+describe('printed short division from other ways of writing the task', () => {
+  it('accepts Beräkna, a bare division and the ÷ or : signs', () => {
+    for (const promptSv of ['Beräkna 176/4.', '176 / 4', '176 ÷ 4 =', 'Räkna ut 176 : 4.']) {
+      expect(shortDivisionTemplate({ promptSv })?.digits.join(''), promptSv).toBe('176')
+    }
+    expect(shortDivisionTemplate({ promptSv: 'Förklara 176 / 4.' })).toBeNull()
+  })
+})

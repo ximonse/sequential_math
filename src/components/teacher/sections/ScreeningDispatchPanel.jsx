@@ -49,7 +49,9 @@ function ScreeningTabs({ tab, onTab }) {
   return <div className="screening-tabs" role="tablist" aria-label="Screening" onKeyDown={event => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
     event.preventDefault()
-    const index = TABS.findIndex(([value]) => value === tab)
+    // Arrow keys move from the focused tab, which need not be the open one.
+    const focused = event.target.closest?.('[data-screening-tab]')?.dataset.screeningTab ?? tab
+    const index = TABS.findIndex(([value]) => value === focused)
     const next = event.key === 'Home' ? 0 : event.key === 'End' ? TABS.length - 1
       : (index + (event.key === 'ArrowRight' ? 1 : TABS.length - 1)) % TABS.length
     onTab(TABS[next][0])

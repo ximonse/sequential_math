@@ -13,7 +13,7 @@ test('Authored fraction shortcuts and frac notation agree in preview, pupil and 
   await teacherLogin(page, teacher)
   const panel = await openDispatch(page, { withDefaultTask: false })
   await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Bråknotation')
-  await panel.getByText('Fråga med textsvar som du bedömer', { exact: true }).click()
+  await panel.getByText('Frågor med textsvar som du bedömer', { exact: true }).click()
   const source = 'Jämför 6//2 och \\frac{3}{4}. Förklara. Vanlig division: 6/2.'
   await panel.getByRole('textbox', { name: 'Frågetext', exact: true }).fill(source)
   const preview = panel.getByRole('region', { name: 'Förhandsvisning av frågan' })

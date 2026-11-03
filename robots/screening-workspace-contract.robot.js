@@ -58,8 +58,6 @@ test('Saved content has its own library and opens without inheriting delivery re
   await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Material att återkomma till')
   await panel.getByRole('button', { name: 'Spara utkast', exact: true }).click()
   await expect(panel.getByRole('region', { name: 'Screeningutkast' }).getByRole('status')).toContainText('version 1')
-  await panel.getByRole('button', { name: 'Tillbaka', exact: true }).click()
-  await panel.getByRole('button', { name: 'Till utdelade screeningar', exact: true }).click()
   await panel.getByRole('tab', { name: 'Utdelade', exact: true }).focus()
   await panel.getByRole('tab', { name: 'Utdelade', exact: true }).press('ArrowRight')
   await expect(panel.getByRole('tab', { name: 'Utkast', exact: true })).toBeFocused()

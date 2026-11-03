@@ -27,8 +27,6 @@ export async function openDispatch(page, { startNew = true, withDefaultTask = tr
       // A handed-out screening shows its receipt; leaving it starts a new one.
       const close = panel.getByRole('button', { name: 'Till utdelade screeningar', exact: true })
       if (await close.isVisible()) { await close.click(); await tab.click() }
-      const fresh = panel.getByRole('button', { name: /^Skapa ny/ })
-      if (await fresh.isVisible()) await fresh.click()
     }
     if (withDefaultTask) {
       await openQuestionBank(panel, 'Addition')

@@ -12,6 +12,7 @@ import ScreeningCustomQuestion from './ScreeningCustomQuestion.jsx'
 import ScreeningDraftsPanel from './ScreeningDraftsPanel'
 import ScreeningDraftPreview from './ScreeningDraftPreview'
 import useScreeningDraft from './useScreeningDraft'
+import { screeningDraftFromAssignment } from '../../../domains/arithmetic/screeningDraft.js'
 import ScreeningQuestionPreview from './ScreeningQuestionPreview'
 import QuestionText from '../../QuestionText'
 import '../../../dev/diagnosticGridPrototype.css'
@@ -20,37 +21,35 @@ const button = 'rounded border border-slate-400 px-2 py-0.5 text-sm disabled:opa
 const primary = `${button} border-indigo-600 bg-indigo-600 font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700`
 
 export default function ScreeningDispatchFlow({ context, library, initialSource, initialDraftId, onClose, onDirtyChange }) {
-  const { draft, setDraft, busy: draftBusy, setBusy: setDraftBusy, dirty: draftDirty, setDirty: setDraftDirty } = useScreeningDraft()
+  // A reused screening becomes an editable copy; the old hand-out stays as it was.
+  const [copied] = useState(() => initialSource ? screeningDraftFromAssignment(initialSource, diagnosticCatalog.findTask) : null)
+  const { draft, setDraft, busy: draftBusy, setBusy: setDraftBusy, dirty: draftDirty, setDirty: setDraftDirty } = useScreeningDraft(copied?.draft)
   const [draftLoaded, setDraftLoaded] = useState(!initialDraftId)
   const loadDraft = useCallback(value => { setDraft(value); setDraftLoaded(true) }, [setDraft])
   const [step, setStep] = useState('content')
-  const [mode, setMode] = useState(initialSource ? 'reuse' : 'new')
-  const [source, setSource] = useState({ classId: initialSource?.classId || '', assignment: initialSource || null, title: initialSource?.titleSv || '' })
   const [recipients, setRecipients] = useState([])
   const { delivery, busy, send } = useScreeningDelivery(library.reload)
   const patch = value => setDraft(previous => ({ ...previous, ...value }))
   const updateEditor = field => value => setDraft(previous => ({ ...previous,
     [field]: typeof value === 'function' ? value(previous[field]) : value }))
-  const reuse = mode === 'reuse'
-  const title = reuse ? source.title : draft.titleSv
+  const title = draft.titleSv
   const plan = resolveScreeningRecipients(recipients, context)
   const limits = applyScreeningLimits(plan.dispatches, library.loaded)
-  const customTasks = [...draft.writtenTasks, ...draft.imageTasks, ...(draft.customPrompt.trim() ? [{ promptSv: draft.customPrompt, gridEnabled: draft.customGrid, drawingEnabled: draft.customDrawing }] : [])]
-  const tasks = reuse ? (source.assignment?.items || []).map(item => item.taskSnapshot || diagnosticCatalog.findTask(item.taskId))
-    : [...draft.selectedTasks.map(id => ({ ...diagnosticCatalog.findTask(id), ...draft.itemOptions[id] })), ...customTasks]
-  const validContent = draftLoaded && title.trim().length > 0 && tasks.length > 0 && (reuse ? Boolean(source.assignment) : customTasks.length <= 12)
+  const customTasks = [...draft.writtenTasks, ...draft.imageTasks, ...(draft.textTasks || []), ...(draft.customPrompt.trim() ? [{ promptSv: draft.customPrompt, gridEnabled: draft.customGrid, drawingEnabled: draft.customDrawing }] : [])]
+  const tasks = [...draft.selectedTasks.map(id => ({ ...diagnosticCatalog.findTask(id), ...draft.itemOptions[id] })), ...customTasks]
+  const validContent = draftLoaded && title.trim().length > 0 && tasks.length > 0 && customTasks.length <= 12
   const recipientIssue = plan.withoutClass.length > 0 || plan.missing > 0 || plan.unavailablePupils > 0
     || limits.blocked.length > 0 || plan.dispatches.some(item => library.loaded[item.classId]?.error)
   const canReview = validContent && plan.pupils.length > 0 && !recipientIssue && !limits.pending.length
   const selectedPack = diagnosticCatalog.packs.find(pack => JSON.stringify(pack.taskIds) === JSON.stringify(draft.selectedTasks))
   const draftContent = { titleSv: draft.titleSv, selectedTasks: draft.selectedTasks,
     itemOptions: Object.fromEntries(draft.selectedTasks.filter(id => draft.itemOptions[id]).map(id => [id, draft.itemOptions[id]])),
-    writtenTasks: draft.writtenTasks, imageTasks: draft.imageTasks, customPrompt: draft.customPrompt,
+    writtenTasks: draft.writtenTasks, imageTasks: draft.imageTasks, textTasks: draft.textTasks || [], customPrompt: draft.customPrompt,
     customGrid: draft.customGrid, customDrawing: draft.customDrawing, writtenEditor: draft.writtenEditor, imageEditor: draft.imageEditor }
 
   const unresolvedDelivery = Boolean(delivery && delivery.dispatches.some(item => !delivery.results[item.classId]?.ok))
   const unsaved = busy || draftBusy || unresolvedDelivery || (step !== 'receipt'
-    && (recipients.length > 0 || (reuse ? Boolean(source.assignment) : draftDirty)))
+    && (recipients.length > 0 || draftDirty || Boolean(copied)))
   useEffect(() => { onDirtyChange(unsaved) }, [unsaved, onDirtyChange])
   useEffect(() => {
     if (!unsaved) return undefined
@@ -63,8 +62,7 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
     if (!canReview || busy) return
     const snapshot = { requestId: crypto.randomUUID(), title, recipients: plan.selected.map(item => item.name),
       dispatches: structuredClone(plan.dispatches), total: plan.pupils.length, results: {},
-      payload: reuse ? { sourceClassId: source.classId, sourceAssignmentId: source.assignment.assignmentId, titleSv: title }
-        : { titleSv: title, taskIds: [...draft.selectedTasks], itemOptions: structuredClone(draft.itemOptions), customTasks: structuredClone(customTasks) } }
+      payload: { titleSv: title, taskIds: [...draft.selectedTasks], itemOptions: structuredClone(draft.itemOptions), customTasks: structuredClone(customTasks) } }
     setStep('receipt')
     void send(snapshot)
   }
@@ -73,40 +71,19 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
   const steps = ['content', 'recipients', 'review']
   const names = ['Innehåll', 'Mottagare och inställningar', 'Kontrollera och dela ut']
   return <div className="screening-dispatch-editor mt-3 text-sm">
-    {step !== 'start' && step !== 'receipt' && <ol aria-label="Utdelningsflöde" className="mb-3 flex flex-wrap gap-x-2 gap-y-1 text-xs text-slate-600">{steps.map((value, index) => <li key={value} aria-current={step === value ? 'step' : undefined} className={`rounded px-1.5 py-0.5 ${step === value ? 'bg-indigo-50 font-semibold text-indigo-700' : ''}`}>{index + 1}. {names[index]}</li>)}</ol>}
-    <div hidden={step !== 'start'}>
-      <h3 className="font-semibold">Vad ska screeningen innehålla?</h3>
-      <div className="my-2 grid gap-2 sm:grid-cols-2">
-        <button type="button" className={`${button} bg-white p-2 text-left`} onClick={() => { setMode('reuse'); setStep('content') }}><strong className="block">Återanvänd</strong><span>Välj tidigare innehåll till en ny utdelning.</span></button>
-        <button type="button" className={`${button} bg-white p-2 text-left`} onClick={() => { setMode('new'); setStep('content') }}><strong className="block">Skapa ny</strong><span>Välj uppgifter och lägg till egna frågor.</span></button>
-      </div>
-      <button type="button" className={button} onClick={() => onClose()}>Till utdelade screeningar</button>
-    </div>
-
+    {step !== 'receipt' && <ol aria-label="Utdelningsflöde" className="mb-3 flex flex-wrap gap-x-2 gap-y-1 text-xs text-slate-600">{steps.map((value, index) => <li key={value} aria-current={step === value ? 'step' : undefined} className={`rounded px-1.5 py-0.5 ${step === value ? 'bg-indigo-50 font-semibold text-indigo-700' : ''}`}>{index + 1}. {names[index]}</li>)}</ol>}
     <div hidden={step !== 'content'}>
-      <h3 className="mb-1 font-semibold">{reuse ? 'Återanvänd en tidigare screening' : 'Skapa en ny screening'}</h3>
-      {reuse && <div className="space-y-2">
-        <label className="block">Klass att hämta samlingar från<select value={source.classId} onChange={event => setSource({ classId: event.target.value, assignment: null, title: '' })} className="block w-full rounded border border-slate-400 px-1 py-0.5">
-          <option value="">Välj klass</option>{context.classes.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
-        </select></label>
-        <label className="block">Återanvänd samling<select value={source.assignment?.assignmentId || ''} disabled={!source.classId || !library.loaded[source.classId]}
-          onChange={event => { const assignment = library.loaded[source.classId]?.assignments.find(item => item.assignmentId === event.target.value); setSource(previous => ({ ...previous, assignment: assignment || null, title: assignment?.titleSv || '' })) }}
-          className="block w-full rounded border border-slate-400 px-1 py-0.5">
-          <option value="">Välj samling</option>{(library.loaded[source.classId]?.assignments || []).map(item => <option key={item.assignmentId} value={item.assignmentId}>{item.titleSv} · {item.items.length} frågor · {new Date(item.createdAt).toLocaleDateString('sv-SE')}</option>)}
-        </select></label>
-        {source.classId && library.loaded[source.classId]?.error && <p role="alert">{library.loaded[source.classId].error} <button type="button" className="underline" onClick={library.reload}>Läs om</button></p>}
-        {source.assignment && <><label className="block">Samlingens namn<input value={source.title} maxLength={100} onChange={event => setSource(previous => ({ ...previous, title: event.target.value }))} className="ml-2 rounded border border-slate-400 px-1 py-0.5" /></label>
-          <p>{tasks.length} {tasks.length === 1 ? 'fråga' : 'frågor'} att dela ut igen</p><p>Frågor, ordning och arbetsytor kopieras. Tidigare elevsvar stannar i den gamla utdelningen.</p>
-          <details><summary className="cursor-pointer">Visa frågor och arbetsytor</summary><QuestionList tasks={tasks} context={{ teacher: true, classId: source.classId, assignmentId: source.assignment.assignmentId }} /></details></>}
-      </div>}
+      <h3 className="mb-1 font-semibold">{copied ? 'Ändra en kopia av en utdelad screening' : 'Skapa en ny screening'}</h3>
+      {copied && <p className="mb-2 text-slate-700">Ändra frågorna fritt och dela ut kopian. Den tidigare utdelningen och elevernas svar ändras inte.{copied.skipped ? ` ${copied.skipped} ${copied.skipped === 1 ? 'fråga' : 'frågor'} kunde inte kopieras.` : ''}</p>}
       {/* Keep the editors mounted while navigating so unfinished question drafts survive. */}
-      <div hidden={reuse}>
+      <div>
         <fieldset disabled={busy || draftBusy} className="min-w-0">
         <label className="block">Samlingens namn<input value={draft.titleSv} maxLength={100} onChange={event => patch({ titleSv: event.target.value })} className="ml-2 rounded border border-slate-400 px-1 py-0.5" /></label>
         {/* Simon 2026-11-02: the teacher's own questions come first, suggestions after. */}
-        <ScreeningWrittenEditor alwaysOpen tasks={draft.writtenTasks} onTasks={writtenTasks => patch({ writtenTasks })} disabled={busy} maxQuestions={12 - draft.imageTasks.length - (draft.customPrompt.trim() ? 1 : 0)}
+        <ScreeningWrittenEditor alwaysOpen tasks={draft.writtenTasks} onTasks={writtenTasks => patch({ writtenTasks })} disabled={busy} maxQuestions={12 - draft.imageTasks.length - (draft.textTasks || []).length - (draft.customPrompt.trim() ? 1 : 0)}
           editorState={draft.writtenEditor} onEditorState={updateEditor('writtenEditor')} />
-        <ScreeningCustomQuestion customPrompt={draft.customPrompt} onCustomPrompt={customPrompt => patch({ customPrompt })} customGrid={draft.customGrid} onCustomGrid={customGrid => patch({ customGrid })}
+        <ScreeningCustomQuestion tasks={draft.textTasks || []} onTasks={textTasks => patch({ textTasks })} disabled={busy}
+          customPrompt={draft.customPrompt} onCustomPrompt={customPrompt => patch({ customPrompt })} customGrid={draft.customGrid} onCustomGrid={customGrid => patch({ customGrid })}
           customDrawing={draft.customDrawing} onCustomDrawing={customDrawing => patch({ customDrawing })} />
         <ScreeningImageEditor tasks={draft.imageTasks} onTasks={imageTasks => patch({ imageTasks })} disabled={busy}
           editorState={draft.imageEditor} onEditorState={updateEditor('imageEditor')} />
@@ -122,10 +99,9 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
         <ScreeningDraftPreview content={draftContent} />
         {customTasks.length > 12 && <p role="alert" className="mt-1 text-amber-900">Högst tolv egna frågor sammanlagt. Ta bort frågor innan utdelning.</p>}
         </fieldset>
-        <ScreeningDraftsPanel initialDraftId={initialDraftId} content={draftContent} onLoad={loadDraft} disabled={busy || reuse} onBusy={setDraftBusy} onDirtyChange={setDraftDirty} />
+        <ScreeningDraftsPanel initialDraftId={initialDraftId} content={draftContent} onLoad={loadDraft} disabled={busy} onBusy={setDraftBusy} onDirtyChange={setDraftDirty} />
       </div>
-      <div className="mt-2 flex flex-wrap justify-between gap-2 border-t border-slate-200 pt-2">
-        <button type="button" className={button} onClick={() => setStep('start')}>Tillbaka</button>
+      <div className="mt-2 flex flex-wrap justify-end gap-2 border-t border-slate-200 pt-2">
         <button type="button" className={primary} disabled={!validContent || draftBusy} onClick={() => setStep('recipients')}>Välj mottagare</button>
       </div>
     </div>
@@ -145,7 +121,7 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
     {step === 'review' && <div>
       <h3 className="font-semibold">Kontrollera innan du delar ut</h3>
       <dl className="my-1 divide-y divide-slate-200">
-        <div className="grid gap-x-2 py-1 sm:grid-cols-[7rem_1fr]"><dt>Innehåll</dt><dd>{title} · {tasks.length} frågor <button type="button" className="ml-2 text-indigo-700 underline" onClick={() => setStep('content')}>Ändra innehåll</button><details><summary className="cursor-pointer">Visa alla frågor</summary><QuestionList tasks={tasks} context={reuse ? { teacher: true, classId: source.classId, assignmentId: source.assignment.assignmentId } : undefined} /></details></dd></div>
+        <div className="grid gap-x-2 py-1 sm:grid-cols-[7rem_1fr]"><dt>Innehåll</dt><dd>{title} · {tasks.length} frågor <button type="button" className="ml-2 text-indigo-700 underline" onClick={() => setStep('content')}>Ändra innehåll</button><details><summary className="cursor-pointer">Visa alla frågor</summary><QuestionList tasks={tasks} /></details></dd></div>
         <div className="grid gap-x-2 py-1 sm:grid-cols-[7rem_1fr]"><dt>Mottagare</dt><dd>{plan.selected.map(item => item.name).join(', ')}<p className="font-semibold">{plan.pupils.length} unika elever</p>
           <details><summary className="cursor-pointer">Visa elever och klasser</summary>{plan.dispatches.map(item => <p key={item.classId}>{item.className}: {item.studentIds.map(id => context.students.find(student => student.studentId === id)?.name || 'Elev utan namn').join(', ')}</p>)}</details>
           <button type="button" className="text-indigo-700 underline" onClick={() => setStep('recipients')}>Ändra mottagare</button></dd></div>

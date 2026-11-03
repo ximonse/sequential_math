@@ -15,8 +15,9 @@ export default function ShortDivisionLayer({ template = null, lineNotes = {}, an
   const gaps = new Map()
   if (interactive) for (const gap of [...(template?.gaps || []), ...extraGaps]) gaps.set(keyOf(gap), gap)
   if (!template && !notes.length && !gaps.size) return null
+  const printedGap = gap => Boolean(template?.gaps.some(item => keyOf(item) === keyOf(gap)))
   const label = gap => {
-    if (template?.gaps.some(item => keyOf(item) === keyOf(gap))) {
+    if (printedGap(gap)) {
       return `Liten siffra mellan ${template.digits[gap.column - template.first - 1]} och ${template.digits[gap.column - template.first]}`
     }
     return `Liten siffra på linjen före rad ${gap.row + 1}, kolumn ${gap.column + 1}`
@@ -51,7 +52,11 @@ export default function ShortDivisionLayer({ template = null, lineNotes = {}, an
       return h('button', { key: `g${keyOf(gap)}`, type: 'button', 'data-gap': keyOf(gap), disabled,
         'aria-label': `${label(gap)}${note ? `: ${note}` : ', tom'}`, 'aria-pressed': Boolean(selected),
         className: `short-division__gap ${selected ? 'short-division__gap--selected' : ''}`,
-        style: at(gap.column - 0.5, gap.row, { width: 'var(--diagnostic-cell-width)', height: 'var(--diagnostic-cell-height)' }),
+        // Over printed digits the whole width can be used; elsewhere only the band around
+        // the line, so the middle of every cell still takes ordinary digits and "=".
+        style: printedGap(gap)
+          ? at(gap.column - 0.5, gap.row, { width: 'var(--diagnostic-cell-width)', height: 'var(--diagnostic-cell-height)' })
+          : at(gap.column - 0.22, gap.row, { width: 'calc(var(--diagnostic-cell-width) * 0.44)', height: 'var(--diagnostic-cell-height)' }),
         onClick: () => onGap(gap), onKeyDown: event => onGapKey?.(event, gap) },
       selected && h('span', { className: `notebook-caret short-division__gap-caret ${note ? 'short-division__gap-caret--after' : ''}`, 'aria-hidden': true }))
     }))

@@ -54,7 +54,7 @@ export default function ScreeningWrittenEditor({ tasks, onTasks, disabled, maxQu
       <p>Frågan och facit fryses när samlingen delas ut. Eleven får se frågan, inte facit. Förklaringen i räknehäftet behöver fortfarande granskas av läraren.</p>
       <button type="button" className={field} onClick={save}>{editing < 0 ? 'Lägg till självrättande fråga' : 'Spara ändrad fråga'}</button>
       {editing >= 0 && <button type="button" className={field} onClick={() => { setDraft(empty()); setEditing(-1); setError('') }}>Avbryt redigering</button>}
-      <p role="status">{error || `${tasks.length} självrättande frågor tillagda.`}</p>
+      <p role="status">{error || (tasks.length === 1 ? '1 självrättande fråga tillagd.' : `${tasks.length} självrättande frågor tillagda.`)}</p>
     </fieldset>
   </>
   return alwaysOpen

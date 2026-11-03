@@ -6,15 +6,17 @@ import { diagnosticCatalog } from '../../../domains/arithmetic/diagnosticCatalog
 export default function ScreeningWholeOptions({ draft, patch, disabled }) {
   const bank = draft.selectedTasks.filter(id => !diagnosticCatalog.findTask(id)?.responseMode)
   const custom = draft.customPrompt.trim() ? 1 : 0
-  const total = bank.length + draft.writtenTasks.length + custom
+  const texts = draft.textTasks || []
+  const total = bank.length + draft.writtenTasks.length + texts.length + custom
   const all = (bankValue, writtenValue, customValue) => total > 0
     && bank.every(id => bankValue(draft.itemOptions[id] || {}))
-    && draft.writtenTasks.every(writtenValue) && (!custom || customValue)
+    && draft.writtenTasks.every(writtenValue) && texts.every(writtenValue) && (!custom || customValue)
   const mental = all(o => o.gridEnabled === false, t => t.gridEnabled === false, draft.customGrid === false)
   const drawing = all(o => Boolean(o.drawingEnabled), t => Boolean(t.drawingEnabled), Boolean(draft.customDrawing))
   const setAll = (key, value) => patch({
     itemOptions: { ...draft.itemOptions, ...Object.fromEntries(bank.map(id => [id, { ...draft.itemOptions[id], [key]: value }])) },
     writtenTasks: draft.writtenTasks.map(task => ({ ...task, [key]: value })),
+    textTasks: texts.map(task => ({ ...task, [key]: value })),
     ...(key === 'gridEnabled' ? { customGrid: value } : { customDrawing: value })
   })
   return <fieldset className="mt-2 flex flex-wrap items-center gap-x-3 text-sm" disabled={disabled || total === 0}>

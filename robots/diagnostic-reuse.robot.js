@@ -49,18 +49,18 @@ test('A stopped collection can be reused for a group, another class and one pupi
   const deliver = async (title, target) => {
     const close = panel.getByRole('button', { name: 'Till utdelade screeningar', exact: true })
     if (await close.isVisible()) await close.click()
-    await panel.getByRole('tab', { name: 'Skapa ny', exact: true }).click()
-    await panel.getByRole('button', { name: 'Tillbaka', exact: true }).click()
-    await panel.getByRole('button', { name: 'Återanvänd', exact: false }).click()
-    await panel.getByRole('combobox', { name: 'Klass att hämta samlingar från', exact: true }).selectOption(sourceClass)
-    await panel.getByRole('combobox', { name: 'Återanvänd samling', exact: true }).selectOption(source.assignmentId)
-    await panel.getByText('Visa frågor och arbetsytor', { exact: true }).click()
-    await expect(panel.getByText('Visa frågor och arbetsytor', { exact: true }).locator('..').locator('ol > li')).toHaveCount(3)
+    // "Återanvänd" opens an editable copy of the handed-out screening (2026-11-02).
+    await panel.getByRole('tab', { name: 'Utdelade', exact: true }).click()
+    await panel.getByRole('article', { name: 'Min samling', exact: true }).getByRole('button', { name: 'Återanvänd', exact: true }).click()
+    await expect(panel.getByRole('heading', { name: 'Ändra en kopia av en utdelad screening', exact: true })).toBeVisible()
+    await expect(panel.getByText('Förhandsvisa frågor och facit (3)', { exact: true })).toBeVisible()
     await panel.getByRole('textbox', { name: 'Samlingens namn' }).fill(title)
     await sendScreening(page, target)
     const assignments = (await teacherRequest(page, `/api/teacher-diagnostic-assignments?classId=${targetClass}`)).assignments
     const copy = assignments.find(item => item.titleSv === title)
-    expect(copy.items.map(item => item.taskSnapshot)).toEqual(source.items.map(item => item.taskSnapshot))
+    // Same questions, options and workspaces; own questions get new ids in the copy.
+    const comparable = item => { const { taskId, ...rest } = item.taskSnapshot; return taskId.startsWith('custom-') ? rest : item.taskSnapshot }
+    expect(copy.items.map(comparable)).toEqual(source.items.map(comparable))
     expect(copy.items.map(item => item.assignmentItemId)).not.toEqual(source.items.map(item => item.assignmentItemId))
     return copy
   }

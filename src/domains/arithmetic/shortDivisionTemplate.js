@@ -3,7 +3,7 @@
 // Small digits are written on the vertical lines between the dividend digits, and
 // the answer line right of "=" is the attempt's ordinary answer. The template is
 // derived from the task text and is never part of the pupil's cells or lines.
-const PROMPT = /^Räkna ut (\d{2,4}) ?[/÷] ?([2-9])\.?$/u
+const PROMPT = /^(?:(?:Räkna ut|Beräkna)\s+)?(\d{2,4})\s*[/÷:]\s*([2-9])\s*[.=?]?$/u
 const ROW = 1
 const FIRST = 1
 const ANSWER_COLUMNS = 4

@@ -98,12 +98,10 @@ test('Screening flow preserves mixed searchable recipients and retries uncertain
   for (const name of ['UI Flow One', 'UI Flow Two', 'UI Flow Three']) {
     await expect(panel.getByRole('article', { name: `Flow screening ${tag}`, exact: true }).getByText(name, { exact: true })).toBeVisible()
   }
-  await panel.getByRole('tab', { name: 'Skapa ny', exact: true }).click()
-  await panel.getByRole('button', { name: 'Tillbaka', exact: true }).click()
-  await panel.getByRole('button', { name: 'Återanvänd', exact: false }).click()
-  await panel.getByRole('combobox', { name: 'Klass att hämta samlingar från' }).selectOption(a)
-  await panel.getByRole('combobox', { name: 'Återanvänd samling' }).selectOption(records[0][0].assignmentId)
-  await expect(panel.getByText('1 fråga att dela ut igen', { exact: true })).toBeVisible()
+  await panel.getByRole('tab', { name: 'Utdelade', exact: true }).click()
+  await panel.getByRole('article', { name: `Flow screening ${tag}`, exact: true }).getByRole('button', { name: 'Återanvänd', exact: true }).click()
+  await expect(panel.getByRole('heading', { name: 'Ändra en kopia av en utdelad screening', exact: true })).toBeVisible()
+  await expect(panel.getByText('Förhandsvisa frågor och facit (1)', { exact: true })).toBeVisible()
   await panel.getByRole('button', { name: 'Välj mottagare', exact: true }).click()
   await expect(picks.locator('[data-recipient-summary]')).toHaveText('Ingen mottagare vald.')
 })

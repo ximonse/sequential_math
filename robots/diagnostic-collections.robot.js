@@ -108,7 +108,7 @@ test('Teacher assigns a written answer with saved drawing; eraser and explicit f
   await teacherLogin(page, teacher)
   const panel = await openDispatch(page, { withDefaultTask: false })
   await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Skriv – förklara')
-  await panel.getByText('Fråga med textsvar som du bedömer', { exact: true }).click()
+  await panel.getByText('Frågor med textsvar som du bedömer', { exact: true }).click()
   await panel.getByRole('textbox', { name: 'Frågetext', exact: true }).fill('Förklara hur du växlar en tia.')
   await panel.getByRole('checkbox', { name: 'Huvudräkning för skrivfrågan', exact: true }).uncheck()
   await panel.getByRole('checkbox', { name: 'Rityta till skrivfrågan', exact: true }).check()

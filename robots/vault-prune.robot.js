@@ -61,6 +61,9 @@ test('Login removes day-old confirmed events from the device and keeps unsent on
   await page.goto('/')
   await ageAcknowledged(page, name, keep)
   await page.goto(`/student/${pupil.studentId}`)
-  // The unsent event is sent at login and only fresh confirmations remain.
-  await expect.poll(async () => (await eventRecords(page, name)).map(e => e.id)).toEqual([keep])
+  // The aged confirmations are gone; the unsent event is kept (and sent). New events
+  // the start page records are fresh and stay.
+  const aged = before.map(e => e.id).filter(id => id !== keep)
+  await expect.poll(async () => (await eventRecords(page, name)).map(e => e.id).filter(id => aged.includes(id))).toEqual([])
+  expect((await eventRecords(page, name)).map(e => e.id)).toContain(keep)
 })

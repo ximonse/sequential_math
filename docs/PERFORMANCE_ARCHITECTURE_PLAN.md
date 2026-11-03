@@ -129,3 +129,17 @@ Ingen backend eller elevruntime ändras i detta steg. Det stora listsvaret
 finns kvar; förbättringens produktionstid kan mätas först efter publicering.
 Nästa steg är separat publiceringsbeslut för denna avgränsade ändring och
 avstämning av nyttan innan mer arbete tas in.
+
+## P3, första steget (2026-11-03)
+
+Simon: det var segt att bläddra mellan screeningfrågor och byta aktivitet.
+Ett sidbyte inom en minut från en full start återanvänder den: ingen ny
+sessionskontroll och ingen ny hämtning av hela profilen. Profilen läses från
+enhetens krypterade kopia (varje svar sparas där först) och väntande svar
+skickas i bakgrunden. Utloggning, annan elev eller en minut gammal start ger
+full start som förut. Vid frågebyte i en screening återanvänds samlingslistan
+i en minut (glöms vid inlämning och när eleven lämnar screeningen); varje
+fråga öppnas fortfarande från servern, eftersom läraren kan ha avslutat
+screeningen. Frågan man lämnar sparas på servern innan bytet. Robot `screening-speed` räknar
+anropen vid frågebyte. Kvar ur P3: ett litet bootstrap-svar på servern och
+`class-config`/uppdragslistor på startsidan.

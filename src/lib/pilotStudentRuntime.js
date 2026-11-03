@@ -101,11 +101,16 @@ export function createPilotStudentRuntime({
   postEvents = postStudentSessionEvents,
   checkRetired = isStudentRetired,
   deleteStore = deletePilotStudentStore,
-  makeEventId = randomEventId
+  makeEventId = randomEventId,
+  now = Date.now,
+  bootstrapReuseMs = 60 * 1000
 } = {}) {
   let studentId = ''
   let store = null
   let recoveryAttempted = false
+  // A page change shortly after a full start reuses it instead of checking the
+  // session, syncing and downloading the whole profile again (Simon 2026-11-03).
+  let lastBootstrap = null
   let diagnosticWriteTail = Promise.resolve()
   let attentionWriteTail = Promise.resolve()
   const listeners = new Set()
@@ -130,6 +135,7 @@ export function createPilotStudentRuntime({
     if (!id || !await checkRetired(id)) return false
     await diagnosticWriteTail
     await attentionWriteTail
+    lastBootstrap = null
     if (studentId === id && store) {
       await store.close()
       store = null
@@ -299,6 +305,16 @@ export function createPilotStudentRuntime({
     async bootstrap(expectedStudentId) {
       const expected = normalizePilotStudentId(expectedStudentId)
       if (!expected) return { ok: false, error: 'Ogiltig elevlänk.' }
+      if (store && studentId === expected && lastBootstrap?.studentId === expected && now() - lastBootstrap.at < bootstrapReuseMs) {
+        const profile = await store.readSnapshot?.().catch(() => null)
+        if (normalizePilotStudentId(profile?.studentId) === expected) {
+          // The device copy is current: every answer is saved there first. Pending
+          // answers are still sent, in the background.
+          void syncPending().catch(() => {})
+          return { ok: true, profile, pendingSync: syncStatus.pendingCount > 0, rejectedCount: syncStatus.rejectedCount, reused: true }
+        }
+      }
+      lastBootstrap = null
       const resumed = await resumeSession()
       if (!resumed?.ok) {
         if (resumed?.status === 401 || resumed?.status === 410) await clearRetiredPupil(expected)
@@ -330,6 +346,7 @@ export function createPilotStudentRuntime({
         return loaded?.ok ? { ok: false, error: 'Profilen stämmer inte med elevsessionen.' } : loaded
       }
       await store.saveSnapshot(loaded.profile)
+      lastBootstrap = { studentId: expected, at: now() }
       return { ok: true, profile: loaded.profile, pendingSync: !synced.ok, rejectedCount: syncStatus.rejectedCount }
     },
 
@@ -447,6 +464,7 @@ export function createPilotStudentRuntime({
       store = null
       studentId = ''
       recoveryAttempted = false
+      lastBootstrap = null
       diagnosticWriteTail = Promise.resolve()
       attentionWriteTail = Promise.resolve()
       updateSyncStatus({ state: 'idle', pendingCount: 0, rejectedCount: 0, lastAttemptAt: 0, lastSuccessAt: 0, lastErrorAt: 0, lastError: '' })

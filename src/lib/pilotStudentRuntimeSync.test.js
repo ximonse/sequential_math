@@ -15,6 +15,7 @@ function vault(pending) {
     rejectEvents: vi.fn(async () => {}), supersedeRejectedEvents: vi.fn(async () => {}),
     acknowledgeEvents: vi.fn(async ids => { for (const id of ids) pending.splice(pending.findIndex(e => e.id === id), 1) }),
     pruneAcknowledgedEvents: vi.fn(async () => 0),
+    readSnapshot: vi.fn(async () => profile),
     close: vi.fn()
   }
 }
@@ -65,5 +66,25 @@ describe('pilot runtime sync', () => {
       fetchProfile: async () => ({ ok: true, profile }), postEvents: vi.fn() })
     await runtime.bootstrap(studentId)
     expect(order.slice(0, 2)).toEqual(['prune', 'list'])
+  })
+
+  it('reuses a start from the last minute instead of loading everything again', async () => {
+    let clock = 1000
+    const resumeSession = vi.fn(async () => ({ ok: true, student: { studentId } }))
+    const fetchProfile = vi.fn(async () => ({ ok: true, profile }))
+    const runtime = createPilotStudentRuntime({ createStore: async () => vault([]), resumeSession, fetchProfile,
+      postEvents: vi.fn(async () => ({ ok: true, ack: [] })), now: () => clock })
+    await runtime.bootstrap(studentId)
+    clock += 30000
+    expect(await runtime.bootstrap(studentId)).toMatchObject({ ok: true, reused: true, profile })
+    expect(resumeSession).toHaveBeenCalledTimes(1)
+    expect(fetchProfile).toHaveBeenCalledTimes(1)
+    clock += 61000
+    await runtime.bootstrap(studentId)
+    expect(fetchProfile).toHaveBeenCalledTimes(2)
+    // Logging out ends the reuse.
+    await runtime.close()
+    await runtime.bootstrap(studentId)
+    expect(resumeSession).toHaveBeenCalledTimes(3)
   })
 })

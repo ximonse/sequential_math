@@ -7,6 +7,8 @@ import { appendStudentDiagnosticAttempt, fetchStudentDiagnosticAssignments,
 import { savePendingDiagnosticEvents } from '../../lib/diagnosticStudentSave'
 import { recoverDiagnosticDraft } from '../../lib/diagnosticDraftRecovery'
 
+const sharedAttemptCache = { assignment: { current: null } }
+
 export default function StudentDiagnosticAttempt() {
   const { studentId } = useParams()
   const [params] = useSearchParams()
@@ -34,6 +36,9 @@ function AssignedDiagnosticAttempt() {
   const savedSequenceRef = useRef(0)
   const savePromiseRef = useRef(null)
   const latestGridRef = useRef(null)
+  // Changing question reuses the collection list for a minute instead of loading it
+  // again (Simon 2026-11-03). Kept outside the component, which is mounted anew for
+  // each question; forgotten on hand-in and on leaving the screening.
   const unsaved = eventCount > savedSequence
 
   useEffect(() => {
@@ -42,12 +47,19 @@ function AssignedDiagnosticAttempt() {
       const session = await getPilotStudentRuntime().bootstrap(studentId)
       if (!active) return
       if (!session.ok || session.profile.studentId !== studentId) { navigate('/', { replace: true }); return }
-      const listed = await fetchStudentDiagnosticAssignments()
-      if (!active) return
-      if (!listed.ok) throw new Error(listed.error || 'Kunde inte hämta testuppgiften.')
-      const assignment = listed.assignments.find(item => item.assignmentId === assignmentId)
+      const cached = sharedAttemptCache.assignment.current
+      let assignment = cached?.studentId === studentId && cached.assignment.assignmentId === assignmentId
+        && Date.now() - cached.at < 60000 ? cached.assignment : null
+      if (!assignment) {
+        const listed = await fetchStudentDiagnosticAssignments()
+        if (!active) return
+        if (!listed.ok) throw new Error(listed.error || 'Kunde inte hämta testuppgiften.')
+        assignment = listed.assignments.find(item => item.assignmentId === assignmentId)
+        sharedAttemptCache.assignment.current = assignment ? { studentId, assignment, at: Date.now() } : null
+      }
       const task = assignment?.items.find(item => item.assignmentItemId === itemId)
       if (!task) throw new Error('Testuppgiften finns inte för det här kontot.')
+      // Each question is opened fresh: the teacher may have ended the screening.
       const result = await openStudentDiagnosticAttempt(assignmentId, itemId)
       if (!active) return
       if (!result.ok) throw new Error(result.error || 'Kunde inte öppna räknehäftet.')
@@ -178,6 +190,7 @@ function AssignedDiagnosticAttempt() {
       setEventCount(current.snapshot.events.length)
       setOpened(previous => ({ ...previous, snapshot: current.snapshot, frozen: true,
         assignment: { ...previous.assignment, submissionStatus: 'submitted' } }))
+      sharedAttemptCache.assignment.current = null
       setSaveMessage('Samlingen är inlämnad.')
       navigate(`/student/${studentId}`, { replace: true })
     } catch (error) { setSaveError(error.message || 'Kunde inte lämna in samlingen. Dina svar finns kvar.') }
@@ -194,6 +207,7 @@ function AssignedDiagnosticAttempt() {
 
   const goBack = async () => {
     if (opened && !await saveLatestBeforeLeaving()) return
+    sharedAttemptCache.assignment.current = null
     navigate(`/student/${studentId}`)
   }
 

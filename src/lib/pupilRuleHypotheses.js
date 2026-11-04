@@ -1,3 +1,4 @@
+import { pupilFollowUpSelection, followUpRecommendation } from './pupilFollowUpSelection.js'
 import { isSpeedTrainingEntry, SPEED_SLIP_MODELS } from './practiceModes.js'
 
 const current = entry => entry?.interpretation?.predictable
@@ -42,7 +43,7 @@ export function buildRuleHypotheses(entries) {
   })
   return ordered.flatMap(({ modelId, supports }) => {
     const support = supports.slice(0, 20), first = current(support[0]), match = first.matches.find(m => m.modelId === modelId)
-    const probe = support.map(e => current(e).nextProbe).find(p => p?.status === 'proposed')
+    const plan = pupilFollowUpSelection({ modelId, supports: support, entries })
     const allCounters = entries.filter(e => comparableRuleCounter(e, support, modelId)), counters = allCounters.slice(0, 5)
     if (SLIP_UNTIL_REPEATED.has(modelId) && (supports.length < 3 || supports.length <= allCounters.length)) return []
     return [{ basis: 'rule_candidate', signalCode: modelId, ruleVersion: first.ruleVersion,
@@ -50,9 +51,9 @@ export function buildRuleHypotheses(entries) {
       supportRefs: support.map(e => e.ref), counterRefs: counters.map(e => e.ref),
       alternativesSv: ['Andra felmodeller kan ge samma svar. Kontrollera originalarbete och en särskiljande fråga.',
         'Hjälp, avbrott eller en felinmatning kan påverka svaren. Rätta slutsvar visar inte i sig självständig metodförståelse.'],
-      nextCheckSv: probe ? `Förslag, inte utdelat: ${probe.question.display.text}. ${probe.purposeSv}`
-        : support.every(isSpeedTrainingEntry)
+      nextCheckSv: followUpRecommendation(plan) ?? (
+        support.every(isSpeedTrainingEntry)
           ? 'Mönstret kommer från snabbhetsträning, där målet är att bli snabb. Ingen följdfråga där; upprepas mönstret kan screening av begreppet utan tidspress föreslås.'
-          : 'Granska metoden och välj en ny särskiljande fråga. Den granskade frågebanken saknar en oanvänd kontrast för alla aktuella kandidater.' }]
+          : 'Granska metoden och välj en ny särskiljande fråga. Den granskade frågebanken saknar en oanvänd kontrast för alla aktuella kandidater.') }]
   })
 }

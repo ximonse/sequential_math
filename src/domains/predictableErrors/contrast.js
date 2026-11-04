@@ -1,5 +1,5 @@
 import { predictableCandidates, matchesComputedCorrect } from './index.js'
-import { questionFingerprint } from './probes.js'
+import { questionFingerprint } from './questionFingerprint.js'
 
 // Directed follow-up (practice-modes, mode 4): choose reviewed bank tasks on
 // which the suspected error rule and its rivals give different answers.
@@ -102,16 +102,16 @@ export function rivalModels(modelId, supportProblems) {
   return [...rivals]
 }
 
-export function buildContrastSet({ modelId, supportProblems, bankTasks, seenFingerprints = new Set(), maxItems = CONTRAST_MAX_ITEMS }) {
-  const supportAnalysis = predictableCandidates(supportProblems[0], '')
-  const models = [modelId, ...rivalModels(modelId, supportProblems)]
+export function buildContrastSet({ modelId, supportProblems, bankTasks, seenFingerprints = new Set(), maxItems = CONTRAST_MAX_ITEMS, models: selectedModels, analysis }) {
+  const supportAnalysis = analysis ?? predictableCandidates(supportProblems[0], '')
+  const models = selectedModels ?? [modelId, ...rivalModels(modelId, supportProblems)]
   const labels = ['correct', ...models]
   const pairs = labels.flatMap((x, i) => labels.slice(i + 1).map(y => [x, y]))
   const supportKeys = new Set(supportProblems.map(questionFingerprint))
   const supportZero = supportProblems.some(hasInnerZero)
   const candidates = []
   for (const task of bankTasks) {
-    const problem = bankProblem(task)
+    const problem = task.problem ?? bankProblem(task)
     const key = questionFingerprint(problem)
     if (seenFingerprints.has(key) || supportKeys.has(key)) continue
     const computed = predictionMap(problem, models)
@@ -150,7 +150,7 @@ export function buildContrastSet({ modelId, supportProblems, bankTasks, seenFing
   if (!chosen.length) return { status: 'unavailable', models, items: [], unresolved: pairs,
     reasonSv: 'Ingen granskad kontrastfråga i banken skiljer den här felmodellen från rätt svar.' }
   return { status: 'proposed', models, items: chosen.map(c => ({ taskId: c.task.taskId, taskVersion: c.task.taskVersion,
-    promptSv: c.task.promptSv, text: c.problem.display.text, correct: c.values.correct,
+    promptSv: c.task.promptSv, text: c.problem.display.text, problem: c.problem, correct: c.values.correct,
     predictions: Object.fromEntries(models.map(m => [m, c.values[m]])) })),
     unresolved: pairs.filter(p => open.has(p.join('|'))) }
 }

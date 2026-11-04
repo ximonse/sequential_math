@@ -21,4 +21,6 @@ export const output = z.object({ data: z.record(z.string(), z.unknown()) })
 // Other material fields retain the existing server-owned validation. The optional
 // investigation names a target only; clients cannot supply derived predictions.
 export const materialInput = z.object({ investigation: z.strictObject({ schemaVersion: z.literal(1),
-  modelId: text.max(120), ruleVersion: text.max(80) }).optional() }).catchall(z.unknown())
+  modelId: text.max(120), ruleVersion: text.max(80),
+  reportReview: z.strictObject({ studentId: id, reportId: id, hypothesisId: id,
+    checkInRevision: z.number().int().nonnegative(), reopen: z.boolean() }).optional() }).optional() }).catchall(z.unknown())

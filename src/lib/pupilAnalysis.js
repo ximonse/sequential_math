@@ -1,3 +1,4 @@
+import { pupilFollowUpSelection, followUpRecommendation } from './pupilFollowUpSelection.js'
 import { OPERATION_LABELS } from './operations.js'
 import { buildRuleHypotheses, comparableRuleCounter } from './pupilRuleHypotheses.js'
 import { speedSlipSummary } from './practiceModes.js'
@@ -70,6 +71,8 @@ export function validatePupilAnalysis(input, evidence) {
     }) || counterRefs.some(ref => !comparableRuleCounter(byRef.get(ref), supportRefs.map(r => byRef.get(r)), signalCode)))) {
       fail('Regelkandidaten måste vara beräknad i varje stödsvar; motexempel ska pröva jämförbart särskiljande innehåll.')
     }
+    const followUp = item.basis === 'rule_candidate' ? pupilFollowUpSelection({ modelId: signalCode,
+      supports: supportRefs.map(ref => byRef.get(ref)), entries: evidence.entries }) : null
     const supportCount = new Set(supportRefs.map(ref => unit(byRef.get(ref)))).size
     if (!item.alternativesSv?.length) fail('Beskriv minst en alternativ förklaring eller vad som ännu är okänt.')
     return { id: identify(item.id), textSv: text(item.textSv), basis: item.basis, signalCode,
@@ -77,7 +80,8 @@ export function validatePupilAnalysis(input, evidence) {
       supportRefs, counterRefs, supportCount,
       counterCount: new Set(counterRefs.map(ref => unit(byRef.get(ref)))).size,
       evidenceStatus: supportCount < 2 ? 'insufficient' : 'requires_teacher_review',
-      alternativesSv: list(item.alternativesSv, 5).map(value => text(value, 500)), nextCheckSv: text(item.nextCheckSv) }
+      alternativesSv: list(item.alternativesSv, 5).map(value => text(value, 500)), nextCheckSv: followUpRecommendation(followUp) ?? text(item.nextCheckSv),
+      ...(followUp ? { followUp } : {}) }
   })
   const exampleRefs = evidence.entries.slice(0, 20).map(entry => entry.ref)
   const refs = new Set([...exampleRefs, ...strengths.flatMap(item => item.refs), ...hypotheses.flatMap(item => [...item.supportRefs, ...item.counterRefs])])

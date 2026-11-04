@@ -310,3 +310,12 @@ halvfärdig text över versionsbyte, avbryt och nytt godkännande. Rityteprovet
 var rött före rättningen. Fyllda liggande och stående surfplattevyer har
 granskats visuellt i lokal Chromium-emulering. Ingen fysisk iPad, riktig
 elevdata, Upstash-transport eller produktionspublicering ingår i dessa prov.
+## Rapportreferens i prövningsavsikt
+
+Valfria `investigation.reportReview` innehåller `studentId`, `reportId`,
+`hypothesisId`, `checkInRevision` och `reopen`. Servern kontrollerar den inloggade
+lärarens egen sparade rapport, källurval och senaste avstämning. Beslut, tolkning,
+mål och anteckning härleds på servern och fryses per elev i materialversionens
+prövningsavsikt; klienten får inte ange ett lärarbeslut. Ändrad eller avfärdad
+hypotes kräver `reopen: true`. En senare avstämning kräver ny förhandsvisning och
+granskning före utdelning. Befintliga material utan rapportreferens behålls.

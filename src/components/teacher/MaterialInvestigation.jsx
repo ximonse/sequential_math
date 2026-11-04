@@ -1,4 +1,5 @@
 import { CONTRAST_LABELS_SV } from '../../domains/predictableErrors/contrast.js'
+import ReportReviewNote from './ReportReviewNote.jsx'
 
 const label = id => id === 'correct' ? 'rätt svar' : CONTRAST_LABELS_SV[id] || id
 
@@ -10,6 +11,7 @@ export default function MaterialInvestigation({ material }) {
     <p className="followup-note">En misstanke att undersöka, inte en fastställd felförståelse. Innehåll och mottagare granskas tillsammans.</p>
     {plan.pupils.map(pupil => <div key={pupil.studentId}>
       <p>{material.audience.pupils.find(item => item.studentId === pupil.studentId)?.codeName || pupil.studentId}: {pupil.questions.length} frågor.</p>
+      <ReportReviewNote review={pupil.reportReview} />
       <p>Alternativ: {pupil.rivalModelIds.map(label).join(', ') || 'jämförelse med rätt svar'}.</p>
       {pupil.unresolvedPairs.length > 0 && <p>Frågorna skiljer inte alla förklaringar åt: {pupil.unresolvedPairs.map(pair => pair.map(label).join(' / ')).join('; ')}.</p>}
       <details><summary>Frågornas facit och modellsvar</summary>

@@ -58,6 +58,7 @@ function FollowUpAnswers({ material, receipt }) {
       {investigation && !plan && <p role="status">Prövningsavsikten stämmer inte med utdelningskvittot eller elevens klass. Granska underlaget innan resultatet tolkas.</p>}
       {outcome && !outcome.compatible && <p role="status">Svaren eller facit stämmer inte med den granskade prövningen. Endast källsvaren visas.</p>}
       {plan && <p><strong>Prövar: {label(investigation.modelId)}</strong></p>}
+      {plan && <ReportReviewNote review={plan.reportReview} />}
       {state.entries.length > 0 && <>
         <table className="followup-results">
           <thead><tr><th>Fråga</th><th>Elevens svar</th><th>Facit</th><th>Stämmer med</th></tr></thead>
@@ -92,3 +93,4 @@ function FollowUpAnswers({ material, receipt }) {
     </>}
   </>
 }
+import ReportReviewNote from './ReportReviewNote.jsx'

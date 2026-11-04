@@ -38,11 +38,25 @@ test('A dispatched follow-up keeps partial answers and competing models as obser
   await expect(panel.getByRole('status')).toContainText('inlästa')
   await panel.getByLabel('Underlag', { exact: true }).selectOption('screening')
   await panel.getByRole('button', { name: 'Skapa granskningsunderlag', exact: true }).click()
+  const recommendation = await panel.locator('p').filter({ hasText: 'Förslag, inte utdelat:' }).innerText()
+  const recommendedQuestion = recommendation.split('Förslag, inte utdelat: ')[1].split('. ')[0]
+  await panel.getByRole('button', { name: 'Spara rapportversion', exact: true }).click()
+  await panel.getByRole('combobox', { name: /Ställningstagande/ }).selectOption('revised')
+  await panel.getByRole('textbox', { name: /Din tolkning/ }).fill('Pröva avskrivning innan en metod antas.')
+  await panel.getByLabel('Nästa mål', { exact: true }).fill('Kontrollera originalet och låt eleven förklara.')
+  await panel.getByRole('button', { name: 'Spara avstämning', exact: true }).click()
+  await expect(panel.getByRole('status')).toContainText('sparad på servern')
+  await expect(panel.getByLabel('Rapportens avstämning')).toContainText('Ändrad tolkning')
   await panel.getByRole('button', { name: 'Pröva med kontrastfrågor', exact: true }).click()
   const contrast = panel.getByRole('region', { name: 'Kontrastfrågor', exact: true })
+  await expect(contrast.getByRole('table')).toContainText(recommendedQuestion)
+  await expect(contrast.getByRole('button', { name: 'Skapa utkast', exact: true })).toBeDisabled()
+  await contrast.getByRole('checkbox', { name: /pröva den ursprungliga modellen igen/ }).check()
+  await contrast.screenshot({ path: testInfo.outputPath('shared-selection-review.png') })
   await contrast.getByRole('button', { name: 'Skapa utkast', exact: true }).click()
   await contrast.getByRole('link', { name: 'Öppna granskning', exact: true }).click()
   await expect(page.getByRole('region', { name: 'Prövningsavsikt', exact: true })).toContainText('Större minus mindre i varje kolumn')
+  await expect(page.getByLabel('Rapportens avstämning')).toContainText('Pröva avskrivning innan en metod antas.')
   const intent = page.getByRole('region', { name: 'Prövningsavsikt', exact: true })
   await intent.getByText('Frågornas facit och modellsvar', { exact: true }).click()
   await intent.screenshot({ path: testInfo.outputPath('investigation-review-landscape.png') })
@@ -59,6 +73,7 @@ test('A dispatched follow-up keeps partial answers and competing models as obser
   const saved = (await teacherRequest(page, `/api/teacher-material?draftId=${draftId}`)).data
   const savedPlan = saved.draft.versions[0].material.investigation
   expect(savedPlan.modelId).toBe('smaller_minus_larger')
+  expect(savedPlan.pupils[0].reportReview).toMatchObject({ decision: 'revised', reopen: true, checkInRevision: 1 })
   expect(saved.dispatches[0].receipts[0].investigationRevision).toBe(savedPlan.revision)
   // Before the pupil answers, nothing is interpreted.
   await expect(page.getByRole('region', { name: 'Resultat av uppföljningen', exact: true })).toContainText('inte lämnat svar')
@@ -102,6 +117,7 @@ test('A dispatched follow-up keeps partial answers and competing models as obser
   await expect(results).not.toContainText('talar för misstanken')
   await expect(results).not.toContainText('talar emot misstanken')
   await expect(results).toContainText('Prövar: Större minus mindre i varje kolumn')
+  await expect(results.getByLabel('Rapportens avstämning')).toContainText('Pröva avskrivning innan en metod antas.')
   await expect(results.getByText('Möjliga samtalsingångar')).toBeVisible()
   await results.screenshot({ path: testInfo.outputPath('followup-results.png') })
   // An incomplete history read cannot leave an old result on screen. Retry is

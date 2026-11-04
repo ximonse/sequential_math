@@ -8,6 +8,8 @@ import { summarizeDiagnosticObservation } from '../src/domains/arithmetic/diagno
 import { createDiagnosticGrid } from '../src/domains/arithmetic/diagnosticGridModel.js'
 import { isChoiceTask } from '../src/domains/arithmetic/screeningImageQuestions.js'
 import { buildMaterialInvestigation } from '../src/lib/materialInvestigation.js'
+import { materialReportReview } from '../src/lib/materialReportReview.js'
+import { readPupilAnalysisState } from './_pupilAnalysisStore.js'
 
 const fail = message => { throw evidenceError(400, 'invalid_material', message) }
 function text(value, max = 1000) {
@@ -131,8 +133,15 @@ export async function previewTeacherMaterial(req, auth, input) {
   if (!live || evidenceHash(live) !== evidenceHash(auth)) throw evidenceError(403, 'access_changed', 'Lärarens åtkomst har ändrats.')
   const records = []
   if (basis.length) await analysisBasis(req, live, input.basis, current, (basis, evidence) => records.push({ basis, evidence }))
+  let reportReview
+  if (input.investigation?.reportReview) {
+    const reference = input.investigation.reportReview
+    if (!audience.pupils.some(pupil => pupil.studentId === reference.studentId)) fail('Rapportens elev måste vara mottagare.')
+    const state = await readPupilAnalysisState(reference.studentId, classContexts[reference.studentId], live.teacherId)
+    reportReview = materialReportReview(reference, state, records, input.investigation.modelId)
+  }
   const investigation = input.investigation === undefined ? undefined : buildMaterialInvestigation(input.investigation,
-    { kind: input.kind, mode: input.mode, audience, classContexts, records, items: content.items })
+    { kind: input.kind, mode: input.mode, audience, classContexts, records, items: content.items, reportReview })
   const material = { schemaVersion: 1, kind: input.kind, mode: input.mode, titleSv, goalSv, instructionSv,
     sourceMaterials: sources, audience, classContexts, basis, content,
     pupilsWithoutAnalysis: audience.pupils.filter(p => !basis.some(item => item.studentId === p.studentId)).map(p => p.studentId),

@@ -5,6 +5,44 @@ Inspekterad kod i ursprungsinventeringen: `82ab3325f8d475885381fe5db85c019834faf
 Målen är preciserade av Simon i samtalet och införda i [produktkontraktet](PRODUCT_CONTRACT.md).
 Arkitekturförslagen nedan är rekommendationer, inte redan byggda funktioner.
 
+### Pågående genomförande: E3, gemensamt frågeurval och rapportöverlämning
+
+`followUpSelection` använder nu samma rena urval för evidensens probeprojektion,
+rapportens rekommendation och kontrastpanelen. Aritmetik använder granskade
+bankversioner. Övriga domäners befintliga prober är uttryckligen lärarråd utan
+utdelningsbar bankversion. Alla svarsalternativ räknas, med olösta modellpar synliga.
+Rapporten sparar sitt urval och exkluderade frågefingeravtryck, även när alla
+källsvar inte ingår i rapportens exempel. Kontrastpanelen kontrollerar dessutom
+screeningar från 2024 till idag med fixerad period, revision och loopskydd. Ett
+ändrat urval förklaras. Träningshistorik utanför källperioden är fortsatt okänd.
+
+En sparad rapport överlämnar rapport-/hypotesreferens och senaste avstämningsrevision.
+Servern läser lärarens egen rapport, kontrollerar källurval, modell och referenser
+och fryser lärarens tolkning i materialversionen. Ändrad/avfärdad hypotes kräver
+ett uttryckligt nytt lärarval för att pröva originalmodellen. Tolkning och mål
+visas i rapport, materialgranskning och resultat. En ändrad avstämning gör en
+gammal överlämning inaktuell; inget tolkas tyst som godkänt. Osparade rapporter
+kan fortfarande ge privata prövningsutkast utan uppfunnen avstämning.
+
+Verifierat lokalt: roboten visade först att rapportens 62−27 inte följde med
+till utkastet. Efter rättning passerar fem berörda browserprov, inklusive
+reviderad tolkning och uttryckligt återöppnande genom hela materialkedjan.
+222 testfiler/1 191 tester passerar. Renderad kontrastpanel har granskats.
+E3 är **inte färdig**: gemensamma metodsignaler, strukturella screeningmotexempel
+och aktuell kandidatprojektion i klassvy/CSV återstår. Ingen push eller produktion.
+
+```mermaid
+flowchart LR
+  E[Revisionsbundet källurval] --> U[Gemensamt frågeurval]
+  U --> R[Rapportens sparade förslag]
+  R --> H[Kontroll av äldre screeningar]
+  H --> K[Kontrastpanel med förklarade ändringar]
+  A[Lärarens senaste avstämning] --> K
+  K --> V[Servervaliderat privat material]
+  V --> G[Granskning och uttrycklig utdelning]
+  G --> O[Observationer med bevarad avstämning]
+```
+
 ### Senare genomförande samma dag: E1
 
 Simon gav därefter mandat att gå vidare. E1 rättar operatorn i kontrastvisningen,

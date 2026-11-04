@@ -10,11 +10,12 @@ const same = (question, left, right) => matchesComputedCorrect({ ...question, co
 
 // Called only with access-checked, revision-bound evidence and prepared tasks.
 // Clients name the target; every rival, prediction and unresolved pair is derived.
-export function buildMaterialInvestigation(input, { kind, mode, audience, classContexts, records, items }) {
+export function buildMaterialInvestigation(input, { kind, mode, audience, classContexts, records, items, reportReview }) {
   if (!input || typeof input !== 'object' || Array.isArray(input)
-    || Object.keys(input).some(key => !['schemaVersion', 'modelId', 'ruleVersion'].includes(key))
+    || Object.keys(input).some(key => !['schemaVersion', 'modelId', 'ruleVersion', 'reportReview'].includes(key))
     || input.schemaVersion !== 1 || typeof input.modelId !== 'string' || INPUT_SIGNAL_MODELS.has(input.modelId)) fail('Ogiltig prövningsavsikt.')
   if (input.ruleVersion !== PREDICTABLE_RULE_VERSION) fail('Prövningens regelversion har ändrats. Skapa ett nytt granskningsunderlag.')
+  if (input.reportReview && (!reportReview || reportReview.studentId !== input.reportReview.studentId)) fail('Rapportreferensen behöver kontrolleras på servern.')
   if (kind !== 'screening' || mode !== 'specific') fail('Prövningsavsikt stöds bara för analysspecifik screening.')
   if (!Array.isArray(items) || !items.length || items.length > CONTRAST_MAX_ITEMS) fail('Prövningen behöver en till fem granskade frågor.')
   const pupils = audience.pupils.map(pupil => {
@@ -50,6 +51,7 @@ export function buildMaterialInvestigation(input, { kind, mode, audience, classC
     return { studentId: pupil.studentId, classId: classContexts[pupil.studentId],
       sources: sources.map(({ basis }) => ({ snapshotRevision: basis.snapshotRevision, source: basis.source || 'practice',
         from: basis.from, to: basis.to, supportRefs: basis.supportRefs, counterRefs: basis.counterRefs || [] })),
+      ...(reportReview?.studentId === pupil.studentId ? { reportReview } : {}),
       rivalModelIds: rivals, questions, unresolvedPairs }
   })
   return { schemaVersion: 1, ruleVersion: input.ruleVersion, modelId: input.modelId, pupils }

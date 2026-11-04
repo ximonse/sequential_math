@@ -7,6 +7,10 @@ fullständighet/påståenden. Kandidat-ID:n och bankinnehåll i tabellen är of�
 De länkade maskinbeläggen är den frysta ursprungsinventeringen; se syntesens
 genomförandestatus för skillnaden mellan historiskt fynd och rättat beteende.
 
+E2 bevarar därefter alla möjliga modellsvar och deras överlapp i urval och
+sparad prövningsavsikt. Kandidat-ID:n är fortfarande samma, men tabellens
+frysta bankexempel är inte en ny körning av den förbättrade väljaren.
+
 ## Läs tabellen rätt
 
 - Varje rad är ett explicit kandidat-ID inom en domän, inte en fastställd felförståelse eller NCM-diagnos. Samma ID kan förekomma i flera domäner.

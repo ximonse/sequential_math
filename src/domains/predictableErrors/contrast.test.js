@@ -24,6 +24,11 @@ describe('directed follow-up contrast questions', () => {
     expect(rivalModels('smaller_minus_larger', supports)).toEqual(['exchange_not_decremented', 'borrow_forget'])
   })
 
+  it('finds a rival that overlaps a later variant of the same model', () => {
+    expect(rivalModels('one_carry_forgotten', [{ domain: 'arithmetic', type: 'addition', skill: 'addition', values: { a: 107, b: 903 } }]))
+      .toContain('add_left_to_right')
+  })
+
   it('separates every explanation with same-structure bank tasks and repeats the observation', () => {
     const set = buildContrastSet({ modelId: 'smaller_minus_larger', supportProblems: supports, bankTasks: manifest.tasks })
     expect(set.status).toBe('proposed')

@@ -70,6 +70,37 @@ Utan strukturerad prövningsavsikt visas samtliga modellträffar som observation
 inte som stöd för eller emot en viss misstanke. Screeningens avsaknad av apptips
 bevisar inte att eleven saknade annan hjälp. Se E1 i
 [systemsyntesen](LEARNING_SYSTEM_SYNTHESIS.md).
+
+### Versionsbunden prövningsavsikt (E2, 2026-11-04)
+
+Analysspecifik screening kan ha valfri input
+`investigation:{schemaVersion:1,modelId,ruleVersion}`. Servern kräver aktuellt,
+revisionsbundet stöd för målmodellen hos varje mottagare i den valda klasskontexten.
+Generellt material, träning, inmatningssignaler och automatisk uppföljning från
+enbart snabbhetsträning kan inte använda detta kontrastkontrakt.
+
+Servern beräknar rivaler, varje frågas facit och **alla** möjliga modellsvar,
+inklusive alternativ som kan ge samma svar. Frågor måste pröva samma avgränsade
+innehåll och skilja målmodellen från facit. Olösta par sparas öppet. Klienten
+får inte skicka egna rivaler eller prediktioner som om de vore granskade fakta.
+Normaliserad `material.investigation` innehåller `schemaVersion`, `modelId`,
+`ruleVersion`, `revision` samt per elev/klass: källrevisioner, stöd/motexempel,
+fråge-ID/version, facit, modellsvar som listor och olösta par.
+
+Prövningen ingår i `contentRevision` och sparas oförändrad per materialversion.
+Granskningsvyn visar målmodell, rivaler och samtliga modellsvar före godkännande.
+Bekräftade utdelningskvitton bär `investigationRevision`. Resultatet läser den
+sparade materialversionen och matchande kvitto, och jämför med frysta modellsvar
+även om aktuell analys senare har en annan regelversion. Nyare modellträffar
+visas separat från ursprunglig prövning. Oförenligt facit, bedömning, elev/klass
+eller kvitto ger granskningsbehov, inte ett nytt kausalt besked.
+
+Äldre material saknar fältet och behåller sitt befintliga format och sina
+ursprungliga revisioner; ingen hypotes fylls i bakåt. Regelversionen måste vara
+aktuell vid ny preview/godkännande/utdelning; redan sparade resultat omtolkas
+inte tyst. Ingen automatisk diagnos, masteryändring eller undervisningsorder
+införs. Lärarens rapportavstämning kopplas vidare i E3, inte genom en dold
+godkännandeåtgärd i denna etapp.
 Klasskontext hämtas från valt klassmål eller elevens enda åtkomliga klass;
 screening för en elev med flera klasser kräver ett uttryckligt val.
 Vid specifikt innehåll krävs minst

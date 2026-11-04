@@ -7,6 +7,7 @@ import { encodeAssignmentPayload, decodeAssignmentPayload } from '../src/lib/ass
 import { summarizeDiagnosticObservation } from '../src/domains/arithmetic/diagnosticObservation.js'
 import { createDiagnosticGrid } from '../src/domains/arithmetic/diagnosticGridModel.js'
 import { isChoiceTask } from '../src/domains/arithmetic/screeningImageQuestions.js'
+import { buildMaterialInvestigation } from '../src/lib/materialInvestigation.js'
 
 const fail = message => { throw evidenceError(400, 'invalid_material', message) }
 function text(value, max = 1000) {
@@ -32,7 +33,7 @@ async function fullAudience(req, selection) {
   return { ...first, pupils, nextOffset: null }
 }
 
-async function analysisBasis(req, auth, basis, audience) {
+async function analysisBasis(req, auth, basis, audience, onEvidence) {
   if (!Array.isArray(basis) || basis.length > 100) fail('Ogiltigt analysunderlag, högst 100 källurval.')
   const result = []
   for (const item of basis) {
@@ -49,6 +50,7 @@ async function analysisBasis(req, auth, basis, audience) {
     } }, auth, item.studentId, { unpaged: true })
     const known = new Set(evidence.entries.map(entry => entry.ref))
     if ([...item.supportRefs, ...item.counterRefs].some(ref => !known.has(ref))) fail('Analysreferens saknas i aktuellt underlag.')
+    onEvidence?.(item, evidence)
     result.push({ ...item, source: evidence.source, reasonSv: text(item.reasonSv), coverage: evidence.coverage })
   }
   return result
@@ -82,7 +84,7 @@ function practiceContent(input, title) {
 }
 
 export async function previewTeacherMaterial(req, auth, input) {
-  object(input, ['schemaVersion', 'kind', 'mode', 'titleSv', 'goalSv', 'instructionSv', 'sourceMaterials', 'audience', 'basis', 'content', 'classContexts'])
+  object(input, ['schemaVersion', 'kind', 'mode', 'titleSv', 'goalSv', 'instructionSv', 'sourceMaterials', 'audience', 'basis', 'content', 'classContexts', 'investigation'])
   if (input.schemaVersion !== 1 || !['practice', 'screening'].includes(input.kind)
     || !['general', 'specific'].includes(input.mode)) fail('Ogiltig materialtyp eller version.')
   const titleSv = text(input.titleSv, 100), goalSv = text(input.goalSv), instructionSv = text(input.instructionSv, 2000)
@@ -127,9 +129,13 @@ export async function previewTeacherMaterial(req, auth, input) {
   if (current.rosterRevision !== audience.rosterRevision) throw evidenceError(409, 'audience_changed', 'Urvalet har ändrats.')
   const live = await getLiveTeacherAuthPayload(req)
   if (!live || evidenceHash(live) !== evidenceHash(auth)) throw evidenceError(403, 'access_changed', 'Lärarens åtkomst har ändrats.')
-  if (basis.length) await analysisBasis(req, live, input.basis, current)
+  const records = []
+  if (basis.length) await analysisBasis(req, live, input.basis, current, (basis, evidence) => records.push({ basis, evidence }))
+  const investigation = input.investigation === undefined ? undefined : buildMaterialInvestigation(input.investigation,
+    { kind: input.kind, mode: input.mode, audience, classContexts, records, items: content.items })
   const material = { schemaVersion: 1, kind: input.kind, mode: input.mode, titleSv, goalSv, instructionSv,
     sourceMaterials: sources, audience, classContexts, basis, content,
-    pupilsWithoutAnalysis: audience.pupils.filter(p => !basis.some(item => item.studentId === p.studentId)).map(p => p.studentId) }
+    pupilsWithoutAnalysis: audience.pupils.filter(p => !basis.some(item => item.studentId === p.studentId)).map(p => p.studentId),
+    ...(investigation ? { investigation: { ...investigation, revision: evidenceHash(investigation) } } : {}) }
   return { material, contentRevision: evidenceHash(material), saved: false, assigned: false, approval: 'not_requested' }
 }

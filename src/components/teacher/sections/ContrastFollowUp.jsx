@@ -62,6 +62,7 @@ export default function ContrastFollowUp({ item, report, studentId, classId, bas
     try {
       const audience = await call(`/api/students?${new URLSearchParams({ resource: 'audience', targetType: 'student', targetId: studentId, limit: 1 })}`)
       const material = { schemaVersion: 1, kind: 'screening', mode: 'specific',
+        investigation: { schemaVersion: 1, modelId: item.signalCode, ruleVersion: item.ruleVersion },
         // The title reaches the pupil; the suspicion stays in teacher-only fields.
         titleSv: `Uppföljning: ${(OPERATION_LABELS[operation] || 'räkning').toLowerCase()}`,
         goalSv: `Pröva om felen följer felmodellen ”${label(item.signalCode)}” eller en annan förklaring. Råd till läraren, inte en fastställd orsak.`,
@@ -96,7 +97,7 @@ export default function ContrastFollowUp({ item, report, studentId, classId, bas
           {set.models.map(m => <th key={m} className="text-right">{label(m)}</th>)}</tr></thead>
         <tbody>{set.items.map(q => <tr key={q.taskId} className="border-t">
           <td>{q.text}</td><td className="text-right tabular-nums">{q.correct}</td>
-          {set.models.map(m => <td key={m} className="text-right tabular-nums">{q.predictions[m] ?? '–'}</td>)}</tr>)}</tbody>
+          {set.models.map(m => <td key={m} className="text-right tabular-nums">{Array.isArray(q.predictions[m]) ? q.predictions[m].join(' eller ') : q.predictions[m] ?? '–'}</td>)}</tr>)}</tbody>
       </table></div>
       {set.unresolved.length > 0 && <p className="mt-1">Banken skiljer inte alla förklaringar åt: {set.unresolved.map(pair => pair.map(p => p === 'correct' ? 'rätt svar' : label(p)).join(' / ')).join('; ')}. Elevens uträkning behövs där.</p>}
       <label className="mt-2 flex items-center gap-2"><input type="checkbox" checked={grid} onChange={event => setGrid(event.target.checked)} /> Eleven visar uträkningen i räknehäftet</label>

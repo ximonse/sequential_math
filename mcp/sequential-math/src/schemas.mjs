@@ -18,3 +18,7 @@ export const report = z.strictObject({ schemaVersion: z.literal(1), snapshotRevi
     supportRefs: refs, counterRefs: refs, alternativesSv: z.array(text.max(500)).min(1).max(5), nextCheckSv: text })).max(8),
   limitationsSv: z.array(text).max(8) })
 export const output = z.object({ data: z.record(z.string(), z.unknown()) })
+// Other material fields retain the existing server-owned validation. The optional
+// investigation names a target only; clients cannot supply derived predictions.
+export const materialInput = z.object({ investigation: z.strictObject({ schemaVersion: z.literal(1),
+  modelId: text.max(120), ruleVersion: text.max(80) }).optional() }).catchall(z.unknown())

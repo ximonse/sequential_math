@@ -6,6 +6,8 @@ vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mock.auth }))
 vi.mock('./_pupilEvidenceRead.js', () => ({ readPupilEvidence: mock.evidence, assertEvidenceSourceAccess: vi.fn() }))
 import { previewTeacherMaterial } from './_teacherMaterialPreview.js'
 import { createDiagnosticAssignment, prepareDiagnosticAssignment } from './_diagnosticAssignmentStore.js'
+import { addPredictableEvidence } from '../src/lib/evidencePredictableAnalysis.js'
+import { PREDICTABLE_RULE_VERSION } from '../src/domains/predictableErrors/core.js'
 const auth = { teacherId: 'T' }, revision = 'a'.repeat(64), ref = 'b'.repeat(64)
 const general = () => ({ schemaVersion: 1, kind: 'practice', mode: 'general', titleSv: 'Tabell', goalSv: 'Tabell 7',
   instructionSv: 'Räkna.', audience: { targetType: 'student', targetId: 'P', rosterRevision: revision },
@@ -79,4 +81,22 @@ it('requires an explicit screening class for a pupil with multiple current membe
   const result = await previewTeacherMaterial({}, auth, { ...input, classContexts: { P: 'D' } })
   expect(result.material.classContexts).toEqual({ P: 'D' })
   await expect(previewTeacherMaterial({}, auth, { ...input, classContexts: { P: 'FOREIGN' } })).rejects.toMatchObject({ status: 400 })
+})
+
+it('derives a frozen investigation from live source evidence, refuses client predictions and preserves legacy previews', async () => {
+  mock.evidence.mockResolvedValue({ source: 'practice', coverage: {}, entries: addPredictableEvidence([{ ref, source: 'practice',
+    question: { domain: 'arithmetic', operation: 'subtraction', values: { a: 47, b: 29 } },
+    answer: { status: 'incorrect', studentAnswer: 22, correctAnswer: 18 } }]) })
+  const input = { ...specific(), kind: 'screening', content: { taskIds: ['sub-exchange-003', 'sub-exchange-004'] },
+    investigation: { schemaVersion: 1, modelId: 'smaller_minus_larger', ruleVersion: PREDICTABLE_RULE_VERSION } }
+  const preview = await previewTeacherMaterial({}, auth, input)
+  expect(preview.material.investigation).toMatchObject({ modelId: 'smaller_minus_larger', revision: expect.stringMatching(/^[a-f0-9]{64}$/u),
+    pupils: [{ studentId: 'P', classId: 'C', questions: expect.any(Array) }] })
+  expect(preview.material.investigation.pupils[0].questions[0].predictions.smaller_minus_larger).toEqual([536])
+  await expect(previewTeacherMaterial({}, auth, { ...input, investigation: { ...input.investigation, predictions: {} } })).rejects.toMatchObject({ status: 400 })
+  await expect(previewTeacherMaterial({}, auth, { ...input, investigation: { ...input.investigation, ruleVersion: 'old' } })).rejects.toMatchObject({ status: 400 })
+  const { investigation: _plan, ...legacy } = input
+  const oldPreview = await previewTeacherMaterial({}, auth, legacy)
+  expect(oldPreview.material).not.toHaveProperty('investigation')
+  expect(oldPreview.contentRevision).not.toBe(preview.contentRevision)
 })

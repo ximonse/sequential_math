@@ -42,12 +42,24 @@ test('A dispatched follow-up keeps partial answers and competing models as obser
   const contrast = panel.getByRole('region', { name: 'Kontrastfrågor', exact: true })
   await contrast.getByRole('button', { name: 'Skapa utkast', exact: true }).click()
   await contrast.getByRole('link', { name: 'Öppna granskning', exact: true }).click()
+  await expect(page.getByRole('region', { name: 'Prövningsavsikt', exact: true })).toContainText('Större minus mindre i varje kolumn')
+  const intent = page.getByRole('region', { name: 'Prövningsavsikt', exact: true })
+  await intent.getByText('Frågornas facit och modellsvar', { exact: true }).click()
+  await intent.screenshot({ path: testInfo.outputPath('investigation-review-landscape.png') })
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await intent.screenshot({ path: testInfo.outputPath('investigation-review-portrait.png') })
+  await page.setViewportSize({ width: 1024, height: 768 })
 
   await page.getByRole('checkbox', { name: /Jag har granskat/ }).check()
   await page.getByRole('button', { name: 'Godkänn version 1', exact: true }).click()
   await expect(page.getByText('Version 1 är godkänd.', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: /^Dela ut till 1 elev/ }).click()
   await expect(page.getByText(/1 av 1 mottagare är bekräftade/)).toBeVisible()
+  const draftId = new URL(page.url()).pathname.split('/').at(-1)
+  const saved = (await teacherRequest(page, `/api/teacher-material?draftId=${draftId}`)).data
+  const savedPlan = saved.draft.versions[0].material.investigation
+  expect(savedPlan.modelId).toBe('smaller_minus_larger')
+  expect(saved.dispatches[0].receipts[0].investigationRevision).toBe(savedPlan.revision)
   // Before the pupil answers, nothing is interpreted.
   await expect(page.getByRole('region', { name: 'Resultat av uppföljningen', exact: true })).toContainText('inte lämnat svar')
 
@@ -89,7 +101,7 @@ test('A dispatched follow-up keeps partial answers and competing models as obser
   await expect(results).toContainText('Större minus mindre i varje kolumn')
   await expect(results).not.toContainText('talar för misstanken')
   await expect(results).not.toContainText('talar emot misstanken')
-  await expect(results).toContainText('Prövningsavsikt saknas')
+  await expect(results).toContainText('Prövar: Större minus mindre i varje kolumn')
   await expect(results.getByText('Möjliga samtalsingångar')).toBeVisible()
   await results.screenshot({ path: testInfo.outputPath('followup-results.png') })
   // An incomplete history read cannot leave an old result on screen. Retry is
@@ -107,6 +119,23 @@ test('A dispatched follow-up keeps partial answers and competing models as obser
   await page.unroute(evidenceRoute)
   await results.getByRole('button', { name: 'Hämta svar igen', exact: true }).click()
   await expect(results).toContainText('Inlämnade svar')
+  await expect(results).toContainText('Observationer:')
+  await page.route(evidenceRoute, async route => {
+    if (new URL(route.request().url()).searchParams.get('resource') !== 'evidence') return route.continue()
+    const response = await route.fetch()
+    const data = await response.json()
+    for (const entry of data.entries) if (entry.reference?.assignmentId === saved.dispatches[0].receipts[0].assignmentId) {
+      entry.answer.correctAnswer = 999
+      entry.interpretation.predictable.matches = [{ modelId: 'carry_forget' }]
+    }
+    await route.fulfill({ response, json: data })
+  })
+  await results.getByRole('button', { name: 'Hämta svar igen', exact: true }).click()
+  await expect(results.getByRole('status')).toContainText('facit stämmer inte')
+  await expect(results).not.toContainText('Observationer:')
+  await expect(results).not.toContainText('Andra träffar i aktuell analys')
+  await page.unroute(evidenceRoute)
+  await results.getByRole('button', { name: 'Hämta svar igen', exact: true }).click()
   await expect(results).toContainText('Observationer:')
 })
 

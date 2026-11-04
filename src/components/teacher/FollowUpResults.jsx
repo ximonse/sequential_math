@@ -4,6 +4,7 @@ import { MODEL_DESCRIPTIONS } from '../../domains/predictableErrors/modelDescrip
 import { followUpSignal } from '../../lib/followUpSignal.js'
 import { followUpProgress, readFollowUpAnswers } from '../../lib/followUpResults.js'
 import { diagnosticRequest } from './sections/diagnosticRequest.js'
+import { investigationObservations } from '../../lib/materialInvestigation.js'
 
 const label = id => CONTRAST_LABELS_SV[id] || id
 
@@ -39,8 +40,12 @@ function FollowUpAnswers({ material, receipt }) {
   if (!classId || !assignmentId) return <p role="status">Utdelningens klass eller uppdragsreferens saknas. Svaren kan inte kontrolleras.</p>
   const loading = state.refresh !== refresh
   const progress = followUpProgress(state.entries, material.content?.items)
-  const observations = followUpSignal(state.entries)
-  const descriptions = observations.models.filter(model => model.count >= 2 && MODEL_DESCRIPTIONS[model.modelId])
+  const investigation = material.investigation
+  const plan = investigation?.revision === receipt.investigationRevision
+    ? investigation?.pupils.find(pupil => pupil.studentId === studentId && pupil.classId === classId) : null
+  const outcome = plan && investigationObservations(plan, state.entries)
+  const observations = investigation && (!plan || !outcome.compatible) ? null : outcome?.observations || followUpSignal(state.entries)
+  const descriptions = (observations?.models || []).filter(model => model.count >= 2 && MODEL_DESCRIPTIONS[model.modelId])
   return <>
     <div className="material-actions"><button disabled={loading} onClick={() => setRefresh(value => value + 1)}>Hämta svar igen</button></div>
     {loading ? <p role="status">Hämtar elevens svar…</p> : state.status === 'error' ? <p role="status">{state.message}</p> : <>
@@ -50,22 +55,30 @@ function FollowUpAnswers({ material, receipt }) {
         : `${progress.assessed} av ${progress.expected} frågor har bedömda svar. ${progress.pending} återstår att besvara eller bedöma.`}
         {' '}{progress.submitted ? 'De hämtade försöken är inlämnade.' : 'Alla försök är inte inlämnade.'}</p>
       {!progress.consistent && state.entries.length > 0 && <p className="followup-note">Svaren kunde inte matchas fullständigt mot materialversionens frågor. Underlaget är inte en avslutad prövning.</p>}
+      {investigation && !plan && <p role="status">Prövningsavsikten stämmer inte med utdelningskvittot eller elevens klass. Granska underlaget innan resultatet tolkas.</p>}
+      {outcome && !outcome.compatible && <p role="status">Svaren eller facit stämmer inte med den granskade prövningen. Endast källsvaren visas.</p>}
+      {plan && <p><strong>Prövar: {label(investigation.modelId)}</strong></p>}
       {state.entries.length > 0 && <>
         <table className="followup-results">
           <thead><tr><th>Fråga</th><th>Elevens svar</th><th>Facit</th><th>Stämmer med</th></tr></thead>
           <tbody>{state.entries.map(entry => {
-            const matches = [...new Set((entry.interpretation?.predictable?.matches ?? []).map(m => m.modelId))]
+            const matches = plan ? outcome.matchesByRef.get(entry.ref) || [] : [...new Set((entry.interpretation?.predictable?.matches ?? []).map(m => m.modelId))]
             const assessed = ['correct', 'incorrect'].includes(entry.answer.status)
             return <tr key={entry.ref}>
               <td>{String(entry.question.promptSv || entry.question.promptText || '').replace(/^Räkna ut\s*/u, '').replace(/\.$/u, '')}</td>
               <td>{String(entry.answer.studentAnswer ?? '–')}</td><td>{String(entry.answer.correctAnswer ?? '–')}</td>
-              <td>{!assessed ? 'Saknar bedömt svar' : entry.answer.status === 'correct' ? 'Rätt' : matches.length ? matches.map(label).join(' eller ') : 'Ingen känd förklaring'}</td>
+              <td>{!observations ? 'Behöver granskas' : !assessed ? 'Saknar bedömt svar' : entry.answer.status === 'correct' ? 'Rätt' : matches.length ? matches.map(label).join(' eller ') : 'Ingen känd förklaring'}</td>
             </tr>
           })}</tbody>
         </table>
-        <p className="followup-signal"><strong>Observationer:</strong> {observations.correct} av {observations.total} bedömda svar är rätt.</p>
-        {observations.models.length > 0 && <ul>{observations.models.map(model => <li key={model.modelId}>{label(model.modelId)}: {model.count} svar.</li>)}</ul>}
-        <p className="followup-note">Prövningsavsikt saknas som strukturerat underlag i denna materialversion. Modellträffarna är observationer; samma svar kan passa flera förklaringar. Granska uträkningarna. Inga tips ges i appens screening; eventuell annan hjälp är inte fastställd.</p>
+        {observations && <p className="followup-signal"><strong>Observationer:</strong> {observations.correct} av {observations.total} bedömda svar är rätt.</p>}
+        {observations?.models.length > 0 && <ul>{observations.models.map(model => <li key={model.modelId}>{label(model.modelId)}: {model.count} svar{plan && model.modelId !== investigation.modelId ? ' · alternativ förklaring' : ''}.</li>)}</ul>}
+        {plan ? <>
+          {plan.unresolvedPairs.length > 0 && <p className="followup-note">Prövningen skiljer inte alla förklaringar åt: {plan.unresolvedPairs.map(pair => pair.map(id => id === 'correct' ? 'rätt svar' : label(id)).join(' / ')).join('; ')}.</p>}
+          {outcome.compatible && outcome.newModels.length > 0 && <p className="followup-note">Andra träffar i aktuell analys, utanför den ursprungliga prövningen: {outcome.newModels.map(model => `${label(model.modelId)} (${model.count})`).join(', ')}.</p>}
+          <p className="followup-note">Svaren jämförs med de förklaringar och modellsvar som granskades före utdelningen. Samma svar kan passa flera förklaringar. Granska uträkningarna och eventuell hjälp innan du värderar misstanken.</p>
+        </> : <p className="followup-note">Prövningsavsikt saknas för resultatet. Modellträffarna är observationer; samma svar kan passa flera förklaringar. Granska uträkningarna.</p>}
+        <p className="followup-note">Inga tips ges i appens screening; eventuell annan hjälp är inte fastställd.</p>
         {descriptions.map(model => {
           const description = MODEL_DESCRIPTIONS[model.modelId]
           return <div className="followup-thinking" key={model.modelId}>

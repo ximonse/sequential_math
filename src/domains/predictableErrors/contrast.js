@@ -17,6 +17,17 @@ const FAMILIES = [['smaller_minus_larger', 'exchange_not_decremented', 'borrow_f
 const NOT_RIVALS = new Set(['operation_swap', 'place_value_scaling', 'partial_answer_entry', 'answer_off_by_one', 'last_two_digits_swapped', 'notebook_answer_mismatch'])
 
 export const CONTRAST_LABELS_SV = {
+  operation_swap: 'Annat räknesätt',
+  place_value_scaling: 'Svaret är skalat med en tiopotens',
+  partial_answer_entry: 'Bara första siffran inskriven',
+  last_two_digits_swapped: 'Facits två sista siffror omkastade',
+  notebook_answer_mismatch: 'Olika svar i räknehäftet och svarsfältet',
+  answer_off_by_one: 'Ett ifrån facit',
+  dividend_as_answer: 'Täljaren lämnas som svar',
+  divisor_as_answer: 'Nämnaren lämnas som svar',
+  reversed_operands: 'Divisionens tal har bytt plats',
+  table_off_by_one: 'Angränsande produkt',
+  decimal_parts_multiplied_separately: 'Heltal och decimaldel multipliceras var för sig',
   smaller_minus_larger: 'Större minus mindre i varje kolumn',
   exchange_not_decremented: 'Växlar men minskar inte kolumnen till vänster',
   borrow_forget: 'Skriver 0 där växling behövs',
@@ -47,19 +58,25 @@ const symbols = { addition: '+', subtraction: '−', multiplication: '×', divis
 const bankProblem = task => ({ domain: 'arithmetic', type: task.operation, skill: task.operation,
   values: { a: task.operands?.[0], b: task.operands?.[1] }, display: { text: `${task.operands?.[0]} ${symbols[task.operation] ?? '?'} ${task.operands?.[1]}` } })
 
+export function modelPredictions(result, modelId) {
+  const values = result.predictions.filter(prediction => prediction.modelId === modelId).map(prediction => prediction.predictedAnswer)
+  if (result.nonDiscriminatingModelIds.includes(modelId)) values.push(result.computedCorrect)
+  return values.filter((value, index) => !values.slice(0, index).some(previous => matchesComputedCorrect({ ...result, computedCorrect: previous }, value)))
+}
+
 function predictionMap(problem, models) {
   const result = predictableCandidates(problem, '')
   if (result.status === 'not_applicable') return null
   const values = { correct: result.computedCorrect }
   for (const model of models) {
-    const hit = result.predictions.find(p => p.modelId === model)
-    // A rule that gives the right answer here cannot be told apart from it.
-    values[model] = hit ? hit.predictedAnswer : result.nonDiscriminatingModelIds.includes(model) ? result.computedCorrect : undefined
+    const variants = modelPredictions(result, model)
+    values[model] = variants.length > 1 ? variants : variants[0]
   }
   return { result, values }
 }
 
-const same = (result, x, y) => matchesComputedCorrect({ ...result, computedCorrect: x }, y)
+const same = (result, x, y) => (Array.isArray(x) ? x : [x]).some(left =>
+  (Array.isArray(y) ? y : [y]).some(right => matchesComputedCorrect({ ...result, computedCorrect: left }, right)))
 
 // Inner zeros add their own difficulty (exchange through zero). Keep the
 // follow-up on the structure the pupil actually met unless nothing else exists.
@@ -72,10 +89,10 @@ export function rivalModels(modelId, supportProblems) {
   const rivals = new Set()
   for (const problem of supportProblems) {
     const result = predictableCandidates(problem, '')
-    const own = result.predictions?.find(p => p.modelId === modelId)
-    if (!own) continue
+    const own = result.predictions?.filter(p => p.modelId === modelId) || []
+    if (!own.length) continue
     for (const p of result.predictions) {
-      if (p.modelId !== modelId && !NOT_RIVALS.has(p.modelId) && same(result, p.predictedAnswer, own.predictedAnswer)) rivals.add(p.modelId)
+      if (p.modelId !== modelId && !NOT_RIVALS.has(p.modelId) && own.some(candidate => same(result, p.predictedAnswer, candidate.predictedAnswer))) rivals.add(p.modelId)
     }
   }
   // A family member is a rival only if it predicts a wrong answer on at least one of
@@ -86,6 +103,7 @@ export function rivalModels(modelId, supportProblems) {
 }
 
 export function buildContrastSet({ modelId, supportProblems, bankTasks, seenFingerprints = new Set(), maxItems = CONTRAST_MAX_ITEMS }) {
+  const supportAnalysis = predictableCandidates(supportProblems[0], '')
   const models = [modelId, ...rivalModels(modelId, supportProblems)]
   const labels = ['correct', ...models]
   const pairs = labels.flatMap((x, i) => labels.slice(i + 1).map(y => [x, y]))
@@ -99,6 +117,7 @@ export function buildContrastSet({ modelId, supportProblems, bankTasks, seenFing
     const computed = predictionMap(problem, models)
     if (!computed) continue
     const { result, values } = computed
+    if (result.domain !== supportAnalysis.domain || result.scope !== supportAnalysis.scope) continue
     if (values[modelId] === undefined || same(result, values[modelId], values.correct)) continue
     const separates = pairs.filter(([x, y]) => values[x] !== undefined && values[y] !== undefined && !same(result, values[x], values[y]))
     // How many rival explanations this task tells apart from the suspected rule.

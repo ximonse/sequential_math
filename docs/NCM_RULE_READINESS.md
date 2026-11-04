@@ -15,6 +15,11 @@ inte ett för/emot-besked utan känd prövningsavsikt. Ofullständig historiklä
 stoppas och kan återförsökas. Operatorvisningen i multiplikations-/divisionskontraster
 är rättad. [Syntesen](LEARNING_SYSTEM_SYNTHESIS.md) beskriver verifiering och gränser.
 
+E2 binder nu nya kontrastutkast till målmodell, rivaler, samtliga modellsvar,
+frågeversioner och elevens analysgrund. Resultatet läser den sparade prövningen
+och dess utdelningskvitto; äldre material fylls inte i bakåt. Variantmängder
+används också för rivalöverlapp, så första modellsvaret inte ensamt styr urvalet.
+
 2026-10-30. Principen **regelmotor först, AI vid tolkningsbehov** gäller alla
 domäner. Den här genomgången skiljer körbara svarskandidater från breda
 feletiketter. Den ersätter inte [hela NCM-inventeringen](NCM_DIDACTIC_COVERAGE.md).

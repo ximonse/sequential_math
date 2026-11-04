@@ -9,6 +9,7 @@ import MaterialBasis from './MaterialBasis.jsx'
 import MaterialPracticeSummary from './MaterialPracticeSummary.jsx'
 import MaterialDispatchStatus from './MaterialDispatchStatus.jsx'
 import FollowUpResults from './FollowUpResults.jsx'
+import MaterialInvestigation from './MaterialInvestigation.jsx'
 import MaterialScreeningEditor from './MaterialScreeningEditor.jsx'
 import { emptyMaterialQuestionEditor, pendingMaterialQuestionEditor } from './materialQuestionEditing.js'
 
@@ -147,6 +148,7 @@ export default function MaterialReview() {
           <div className="material-actions"><button disabled={busy || !dirty || Boolean(pendingQuestion)} onClick={() => run(async () => setPreview(await request({ action: 'preview', material: input })))}>Förhandsvisa ändring</button>
             <button disabled={busy || !dirty || !preview || Boolean(pendingQuestion)} onClick={() => run(save)}>Spara som ny version</button></div>
         </section>
+        <MaterialInvestigation material={material} />
         <section className="material-module"><h2>{material.kind === 'screening' ? 'Frågor och bedömning' : 'Träningsram'}</h2>
           {material.kind === 'screening' && <MaterialScreeningEditor key={version} content={input.content}
             onChange={content => edit('content', content)} disabled={busy} states={questionEditors[version] || {}} onState={editQuestionState} />}

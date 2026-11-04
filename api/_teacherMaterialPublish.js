@@ -113,7 +113,8 @@ export async function publishMaterialDraft(req, auth, state, command) {
       const assignmentId = item.material.kind === 'practice' ? await practice(req, auth, state, item, unit, approval.createdAt)
         : await screening(auth, state, item, unit)
       rows = unit.pupils.map(pupil => ({ studentId: pupil.studentId, classId: unit.classId || null,
-        assignmentId, status: 'confirmed', confirmedAt: Date.now(), lastAttemptId: command.requestId }))
+        assignmentId, status: 'confirmed', confirmedAt: Date.now(), lastAttemptId: command.requestId,
+        ...(item.material.investigation ? { investigationRevision: item.material.investigation.revision } : {}) }))
     } catch (error) {
       rows = unit.pupils.map(pupil => ({ studentId: pupil.studentId, classId: unit.classId || null, status: error.status ? 'failed' : 'unknown',
         message: error.status ? error.message : 'Kvittensen är osäker. Läs status och återförsök samma utdelning.', lastAttemptId: command.requestId }))

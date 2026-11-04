@@ -2,7 +2,7 @@ import { McpServer } from '@modelcontextprotocol/server'
 import * as z from 'zod/v4'
 import { readFile } from 'node:fs/promises'
 import { BridgeError } from './api-client.mjs'
-import { id, output, period, report, scope } from './schemas.mjs'
+import { id, output, period, report, scope, materialInput } from './schemas.mjs'
 import { renderPupilNotebook } from '../../../scripts/render-pupil-notebook.mjs'
 
 const analysisUrl = ({ studentId, classId }) => `/api/teacher-students/${encodeURIComponent(studentId)}?${new URLSearchParams({ resource: 'analysis', classId })}`
@@ -148,11 +148,11 @@ export function createMathServer({ getApi, allowReportWrites = false, allowMater
     messages: [{ role: 'user', content: { type: 'text', text: `${originInstructions}\n\n${await readFile(new URL('../../../.agents/skills/pupil-analysis/SKILL.md', import.meta.url), 'utf8')}` } }]
   }))
   register('math_preview_material', 'Förhandsvisa generellt eller analysspecifikt material', 'Validate one practice/screening proposal against current audience, supported content and revision-bound analysis references. Does not save, approve or assign. Specific means based on this class/group/pupil analysis, not merely addressed to them.', {
-    material: z.record(z.string(), z.unknown())
+    material: materialInput
   }, async ({ material }, signal) => (await getApi()).request('/api/teacher-material', { body: { action: 'preview', material }, readOnly: true, signal }))
   register('math_get_material_draft', 'Läs sparat materialutkast', 'Read one teacher-private frozen draft version in bounded sections. Current class/pupil/screening access is rechecked, including history. Reading does not approve or assign. Keep contentRevision when editing.', {
     draftId: id, version: z.number().int().min(1).max(20).optional(),
-    section: z.enum(['summary', 'history', 'content', 'audience', 'basis', 'input', 'publication']).default('summary'),
+    section: z.enum(['summary', 'history', 'content', 'audience', 'basis', 'input', 'publication', 'investigation']).default('summary'),
     offset: z.number().int().min(0).max(10000).default(0), limit: z.number().int().min(1).max(20).default(10)
   }, async ({ draftId, version, section, offset, limit }, signal) => {
     const { draft, dispatches = [] } = await (await getApi()).request(`/api/teacher-material?${new URLSearchParams({ draftId })}`, { signal })
@@ -165,6 +165,13 @@ export function createMathServer({ getApi, allowReportWrites = false, allowMater
       unknown: dispatch?.unknown || 0, pending: dispatch?.pending || 0, total: dispatch?.studentIds.length || item.material.audience.total,
       receipts: (dispatch?.receipts || []).slice(offset, offset + limit), nextOffset: offset + limit < (dispatch?.receipts.length || 0) ? offset + limit : null }
     if (section === 'history') return { ...base, versions: draft.versions.map(v => ({ version: v.version, createdAt: v.createdAt, contentRevision: v.contentRevision, titleSv: v.material.titleSv })) }
+    if (section === 'investigation') {
+      const plan = item.material.investigation
+      if (!plan) return { ...base, investigation: null }
+      return { ...base, schemaVersion: plan.schemaVersion, modelId: plan.modelId, ruleVersion: plan.ruleVersion,
+        investigationRevision: plan.revision, pupils: plan.pupils.slice(offset, offset + limit), total: plan.pupils.length,
+        nextOffset: offset + limit < plan.pupils.length ? offset + limit : null }
+    }
     if (section === 'summary') return { ...base, kind: item.material.kind, mode: item.material.mode, titleSv: item.material.titleSv,
       goalSv: item.material.goalSv, instructionSv: item.material.instructionSv, audience: { targetType: item.material.audience.targetType,
         targetId: item.material.audience.targetId, rosterRevision: item.material.audience.rosterRevision, total: item.material.audience.total },
@@ -176,7 +183,7 @@ export function createMathServer({ getApi, allowReportWrites = false, allowMater
     return { ...base, items: values.slice(offset, offset + limit), total: values.length, nextOffset: offset + limit < values.length ? offset + limit : null }
   })
   if (allowMaterialWrites) register('math_save_material_draft', 'Spara materialutkast utan utdelning', 'Save exactly a requested material draft version, only when asked to save. Requires the matching preview contentRevision, requestId and expectedRevision. Saves no pupil assignment and grants no approval. Read saved versions after an uncertain response; reuse the same requestId.', {
-    material: z.record(z.string(), z.unknown()), draftId: id.optional(), requestId: z.string().regex(/^[A-Za-z0-9_-]{8,100}$/u),
+    material: materialInput, draftId: id.optional(), requestId: z.string().regex(/^[A-Za-z0-9_-]{8,100}$/u),
     expectedRevision: z.number().int().nonnegative(), expectedContentRevision: z.string().regex(/^[a-f0-9]{64}$/u)
   }, async (args, signal) => {
     const api = await getApi()

@@ -35,6 +35,44 @@ vara utanför urvalet. Ett uttryckligt byte till annan klass rensar fortfarande
 valet efter färdig hämtning. Befintlig tabellrobot var röd även seriellt före
 rättningen. Ändringen bevarar spår A och inför ingen ny matematisk policy.
 
+### Senare genomförande: E2
+
+Prövningsavsikten följer nu nya kontrastutkast genom servervaliderad preview,
+sparad version, synlig granskning, godkännande och utdelningskvitto till resultat.
+Varje mottagare har egen revisionsbunden analysgrund. Resultatet skiljer avsedd
+modell och rivaler från andra träffar i aktuell analys och läser frysta modellsvar.
+Äldre material förblir observationer utan påhittad prövningsavsikt.
+
+Vid implementationen upptäcktes att en modell kan ha flera svar, exempelvis
+615 eller 525 för 357+268 när olika minnessiffror glöms. Bankurvalet och den nya
+prövningsplanen använder nu en gemensam variantberäkning i stället för första
+träffen. Rivalen vänster-till-höger för 107+903=10 hittas även när den överlappar
+en senare variant av glömd minnessiffra. Bankkontraster räknas som särskiljande bara
+när svarsmängderna inte överlappar. E3:s två separata frågeväljare och övriga
+överföringar är fortfarande kvar att samordna.
+
+Kontrakt och bakåtkompatibilitet: [materialkontraktet](PUPIL_MATERIAL.md).
+E2 innebär ingen produktion, verklig elevprovning, ändrad åtkomst eller mastery.
+
+Verifierat för E2: full svit 220 filer/1 185 tester, 29 MCP-prov, åtta berörda
+browserprov mot isolerad minnesdatabas, build, riktad lint och arkitektur.
+Därefter passerar 16 riktade modell-/kontrastprov inklusive ett nytt positivt
+fler-elevfall med olika källor och rivaler. Slutligt browserprov täcker även
+motstridigt facit, dolt sammanfattningsbesked och återförsök. Prövningsavsikten
+har granskats i stående och liggande render. Den första E2-browserkörningen
+stannade i seed-timeout före appflödet; den efterföljande åttafallskörningen
+passerade. E1:s breda robotkörning är fortsatt inte en obruten grön fullkörning.
+
+```mermaid
+flowchart LR
+    A["Elevens revisionsbundna stödsvar"] --> B["Servern beräknar målmodell, rivaler och alla modellsvar"]
+    B --> C["Prövningsavsikt sparas i privat materialversion"]
+    C --> D["Läraren granskar och godkänner versionen"]
+    D --> E["Explicit utdelning med prövningsrevision i kvittot"]
+    E --> F["Resultat jämförs med den sparade prövningen"]
+    C --> F
+```
+
 ## 1. Målet som varje ändring ska återvända till
 
 **A: mängdträning och förtrogenhet.** Eleven befäster kunnande, säkerhet och flyt genom praktisk övning. Tabeller, talpar och dubblor är centrala exempel. Bevara deras fungerande elevflöden.
@@ -197,7 +235,7 @@ Stödlistans råd kan vara att först granska felsvar. Samma rad erbjuder Fokus/
 | Äldre regel-/bankstatus och duplicerade normativa texter | **Avveckla som aktuella sanningar** | Historik bevaras och märks; en auktoritativ definition per beslut. |
 | Gamla runtime-funktioner som kan bli överflödiga | **Radera först efter konsumentinventering och ersättningsbevis** | Ingen säker kodraderingslista ännu; de två väljarnas olika ansvar måste först täckas. |
 
-### Nuläge — separata beslut och faktiska överlämningar
+### Nuläge vid ursprungsinventeringen — kodrevision 82ab332
 
 ```mermaid
 flowchart TD
@@ -244,7 +282,7 @@ flowchart TD
 
 ## 5. Genomförandeordning efter denna dokumentleverans
 
-Rapporten byggde ursprungligen ingen av etapperna. E1 har därefter genomförts
+Rapporten byggde ursprungligen ingen av etapperna. E1 och E2 har därefter genomförts
 lokalt enligt statusen ovan. Fortsätt i ordning; nya bankfrågor får inte gå
 före en tillförlitlig prövningskedja.
 

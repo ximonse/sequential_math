@@ -134,8 +134,9 @@ export async function previewTeacherMaterial(req, auth, input) {
   const records = []
   if (basis.length) await analysisBasis(req, live, input.basis, current, (basis, evidence) => records.push({ basis, evidence }))
   let reportReview
-  if (input.investigation?.reportReview) {
+  if (input.investigation && input.investigation.reportReview !== undefined) {
     const reference = input.investigation.reportReview
+    object(reference, ['studentId', 'reportId', 'hypothesisId', 'checkInRevision', 'reopen'])
     if (!audience.pupils.some(pupil => pupil.studentId === reference.studentId)) fail('Rapportens elev måste vara mottagare.')
     const state = await readPupilAnalysisState(reference.studentId, classContexts[reference.studentId], live.teacherId)
     reportReview = materialReportReview(reference, state, records, input.investigation.modelId)

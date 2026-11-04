@@ -125,12 +125,12 @@ export function buildPupilAnalysisDraft(evidence) {
     }
   }
   return { schemaVersion: 1, snapshotRevision: evidence.snapshotRevision, scopeSv: 'Granskning av tillgängliga svar i vald period',
-    provenance: { kind: 'rule', instructionVersion: ruleHypotheses.length ? 'predictable-candidates-v1' : 'existing-signals-v1' }, strengths, hypotheses,
+    provenance: { kind: 'rule', instructionVersion: ruleHypotheses.length ? 'predictable-candidates-v2' : 'existing-signals-v1' }, strengths, hypotheses,
     limitationsSv: ['Historikens fullständighet är okänd. Antal svar beskriver urvalet, inte elevens samlade kunnande.',
       'Rätta svar är inte automatiskt motexempel: kontrollera att de prövar samma innehåll.',
       'Metoden kan inte fastställas från ett slutsvar. Inga nya AI-tolkningar har gjorts i detta regelunderlag.',
       ...(slips.total ? [`Snabbhetsfel i färdighetsträning: ${slips.total} svar (ett ifrån facit ${slips.counts.answer_off_by_one}, bara första siffran ${slips.counts.partial_answer_entry}, omkastade siffror ${slips.counts.last_two_digits_swapped}). De visas inte som felhypoteser; målet där är snabbhet.`] : []),
-      ...(ruleHypotheses.length ? ['Rätta slutsvar väljs som möjliga motexempel bara vid samma kända innehåll/nivå och en särskiljande modell. Stödnivå och metod behöver granskas.',
+      ...(ruleHypotheses.length ? ['Rätta slutsvar väljs som möjliga motexempel vid samma kända innehåll/nivå, eller för screening vid jämförbar känd heltalsstruktur, och bara när modellen hade gett fel. Stödnivå och metod behöver granskas.',
         ...(ruleHypotheses.length > 8 ? [`Högst åtta modellgrupper visas; ${ruleHypotheses.length - 8} ytterligare grupper finns i underlaget.`] : [])] : [])] }
 }
 

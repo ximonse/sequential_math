@@ -3,6 +3,7 @@ import QuestionText from '../../QuestionText.jsx'
 import DiagnosticAttemptHistory from './DiagnosticAttemptHistory.jsx'
 import ContrastFollowUp from './ContrastFollowUp.jsx'
 import ReportReviewNote from '../ReportReviewNote.jsx'
+import WorkEvidenceNote from '../WorkEvidenceNote.jsx'
 import { contrastFollowUpEligible } from '../../../lib/practiceModes.js'
 import { diagnosticRequest } from './diagnosticRequest.js'
 import { OPERATION_LABELS } from '../../../lib/operations.js'
@@ -57,6 +58,7 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
       <QuestionText>{selected.question.promptText || selected.question.promptSv || 'Frågetext saknas i den sparade historiken.'}</QuestionText>
       {!selected.question.promptText && !selected.question.promptSv && <p className="text-sm">Område: {OPERATION_LABELS[selected.question.operation] || 'okänt'}. Sparade tal i underlaget: {Object.values(selected.question.values || {}).filter(value => typeof value === 'number').join(', ') || 'saknas'}.</p>}
       <p>Elevens svar: {String(selected.answer.studentAnswer ?? 'saknas')} · Facit: {String(selected.answer.correctAnswer ?? 'manuell bedömning')}</p>
+      <WorkEvidenceNote work={selected.interpretation.work} review={selected.teacherReview} />
       <p className="text-sm">{new Date(selected.timestamp).toLocaleString('sv-SE')} · {selected.source === 'practice' ? 'Träning' : 'Screening'} · {selected.interpretation.detail || 'Ingen säker felorsak fastställd.'}</p>
       {selected.source === 'screening' && <button type="button" className="mt-2 rounded border px-2 py-1 text-sm" onClick={async () => {
         setMessage('Hämtar originalet…')

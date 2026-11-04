@@ -6,9 +6,7 @@ import { diagnosticApiEnabled, diagnosticAssignablePupilsInClass } from './_diag
 import { listClassDiagnosticAssignments } from './_diagnosticAssignmentList.js'
 import { readDiagnosticAttempt } from './_diagnosticAttemptStore.js'
 import { summarizeDiagnosticObservation } from '../src/domains/arithmetic/diagnosticObservation.js'
-import { analyzeDiagnosticColumnAlignment } from '../src/domains/arithmetic/diagnosticColumnAlignment.js'
-import { analyzeDiagnosticVisibleResult } from '../src/domains/arithmetic/diagnosticVisibleResult.js'
-import { analyzeDiagnosticSubtractionPattern } from '../src/domains/arithmetic/diagnosticSubtractionPattern.js'
+import { diagnosticWorkAnalysis } from '../src/domains/arithmetic/diagnosticWorkAnalysis.js'
 import { identifyDiagnosticObservationRevision } from '../src/domains/arithmetic/diagnosticObservationRevision.js'
 import { diagnosticClassOverview, listDiagnosticAssignmentAttempts } from './_diagnosticClassOverview.js'
 import { saveDiagnosticReview } from './_diagnosticReviewStore.js'
@@ -70,14 +68,10 @@ export default async function handler(req, res) {
     }
     const evidenceRevision = identifyDiagnosticObservationRevision(saved.record, saved.snapshot)
     const observation = summarizeDiagnosticObservation(item.taskSnapshot, saved.snapshot)
-    const geometryAnalysis = item.taskSnapshot.operation === 'geometry_response' ? { status: 'not_applicable', analysisVersion: 1 } : null
-    const columnAlignment = geometryAnalysis || analyzeDiagnosticColumnAlignment(item.taskSnapshot, saved.snapshot)
-    const visibleResult = geometryAnalysis || analyzeDiagnosticVisibleResult(item.taskSnapshot, saved.snapshot)
-    const subtractionPattern = geometryAnalysis || analyzeDiagnosticSubtractionPattern(item.taskSnapshot, saved.snapshot)
+    const work = diagnosticWorkAnalysis(item.taskSnapshot, saved.snapshot)
     const review = await kv.get(`diagnostic_review:${attemptId}`)
     return res.status(200).json({ record: saved.record, snapshot: saved.snapshot, review,
-      task: item.taskSnapshot, evidenceRevision, observation, columnAlignment,
-      visibleResult, subtractionPattern })
+      task: item.taskSnapshot, evidenceRevision, observation, ...work })
   } catch (error) {
     return res.status(error.status || 503).json({ error: error.status ? error.message : 'Diagnostic storage unavailable', code: error.code })
   }

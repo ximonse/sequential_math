@@ -26,7 +26,15 @@ Projektets skill är `.agents/skills/pupil-analysis/SKILL.md`.
 - `rule_candidate` (”Beräknad felmodell” i lärarvyn) kräver att servern själv
   har räknat fram samma modell som träff i varje stödsvar, med samma
   `ruleVersion`. Motexempel måste vara rätta svar på jämförbart innehåll och
-  samma kända nivå där modellen hade gett ett annat svar. Regelkandidaterna
+  samma kända nivå där modellen hade gett ett annat svar. När screening saknar
+  träningsnivå kan samma kända heltalsstruktur jämföras: operation, talbredder,
+  växlings-/minnesstruktur, genom-noll-struktur och divisionsstruktur enligt
+  `arithmeticContentSignature`. Två motstridiga kända nivåer jämställs aldrig.
+  Okända, negativa eller decimala strukturer får ingen sådan reservjämförelse;
+  hjälp och metod behöver fortfarande granskas. Ett rätt slutsvar med observerat
+  motsägande häftesresultat väljs inte som motexempel; båda observationerna finns
+  kvar i underlaget. Nya regelrapporter märks `predictable-candidates-v2`;
+  tidigare rapportversioner bevaras. Regelkandidaterna
   läggs ovanpå underlaget; källsnapshot och referenser beräknas på originalsvaren,
   så en ny regelversion ogiltigförklarar inte oförändrade källreferenser men
   stoppar en sparad hypotes med föråldrad regelversion. Se

@@ -10,6 +10,7 @@ export default function SupportPriorityPanel({
         <h2 className="text-lg font-semibold text-gray-800">Behöver stöd nu</h2>
         <span className="text-xs text-gray-500">Signal · varför · underlag · nästa steg</span>
       </div>
+      <p className="mb-3 text-xs text-gray-600">Signalen anger prioritet för stöd. Undersök möjliga felförståelser i elevvyn. Fokus och Värm aktiverar träningsuppdrag direkt.</p>
       {supportRows.length === 0 ? (
         <p className="text-sm text-gray-500">Inga elever uppfyller de tydliga stödreglerna just nu.</p>
       ) : (

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { getOperationLabel } from '../../../lib/operations'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
+import { CONTRAST_LABELS_SV } from '../../../domains/predictableErrors/contrast.js'
 import {
   buildHeatmapData,
   LEVELS,
@@ -156,7 +157,7 @@ function CellTooltip({ cell, studentName }) {
         </p>
       )}
       {cell.misconceptionCount > 0 && (
-        <p className="text-[10px] text-red-600 font-semibold mt-0.5">⚠ {cell.misconceptionCount} missuppfattning(ar)</p>
+        <p className="text-[10px] text-red-600 font-semibold mt-0.5">⚠ {cell.misconceptionCount} historiska kategorimarkeringar</p>
       )}
       {misconceptionType && (
         <p className="text-[10px] text-orange-700 mt-0.5 font-mono">Typ: {misconceptionType}</p>
@@ -217,13 +218,22 @@ function CellDetailModal({ cell, studentName, onClose }) {
 
         {cell.misconceptionCount > 0 && (
           <div className="mb-3 rounded bg-red-50 border border-red-200 px-3 py-2">
-            <p className="text-xs font-semibold text-red-700">⚠ {cell.misconceptionCount} missuppfattning(ar)</p>
+            <p className="text-xs font-semibold text-red-700">⚠ {cell.misconceptionCount} historiska kategorimarkeringar</p>
           </div>
         )}
 
+        {cell.currentCandidates.length > 0 && <section className="mb-3" aria-label="Aktuella modellkandidater">
+          <p className="text-xs font-semibold">Aktuella modellkandidater i detta träningsurval</p>
+          <p className="text-xs">Beräknade förklaringar att undersöka. Samma svar kan passa flera modeller; det visar ingen fastställd elevmetod.</p>
+          {cell.currentCandidates.map(([id, count]) => <p key={id} className="text-xs">{CONTRAST_LABELS_SV[id] || id}: {count} svar</p>)}
+          <details className="text-xs mt-1"><summary>Källsvar och regelversion</summary>
+            {cell.candidateExamples.map((example, index) => <p key={`${example.observationId || example.timestamp}-${index}`}>{example.question} → {String(example.studentAnswer)} · {example.ruleVersion} · {example.observationId ? `Observation: ${example.observationId}` : 'Äldre svar utan observations-id'}</p>)}
+          </details>
+        </section>}
+
         {cell.topPatterns.length > 0 && (
           <div className="mb-3">
-            <p className="text-[11px] font-semibold text-gray-600 mb-1">Felmönster</p>
+            <p className="text-[11px] font-semibold text-gray-600 mb-1">Historiska felmarkeringar</p>
             <div className="flex flex-wrap gap-1">
               {cell.topPatterns.map(pattern => (
                 <span key={pattern} className="inline-block bg-orange-50 border border-orange-200 text-orange-700 rounded px-2 py-0.5 text-[10px] font-mono">{pattern}</span>
@@ -252,7 +262,7 @@ function CellDetailModal({ cell, studentName, onClose }) {
                     <span className="text-gray-400 text-[10px]">ratt:</span>
                     <span className="text-green-700 font-semibold">{example.correctAnswer ?? '?'}</span>
                     <span className={`ml-auto text-[9px] rounded px-1 shrink-0 ${isMisconception ? 'bg-red-100 text-red-600' : 'bg-gray-200 text-gray-600'}`}>
-                      {isMisconception ? 'missuppfattning' : 'kunskapsfel'}
+                      {isMisconception ? 'historisk kategorimarkering' : 'historiskt kunskapsfel'}
                     </span>
                   </div>
                   <div className="text-[10px] text-orange-700 font-mono">{errorTypeLabel}</div>
@@ -323,7 +333,7 @@ function OperationGrid({ operation, rows, onOpenStudentDetail }) {
                   const variant = getCellVariant(cell.successRate, cell.attempts)
                   const key = `${row.studentId}-${cell.level}`
                   const isHovered = hoveredKey === key
-                  const isClickable = cell.knowledgeWrong > 0
+                  const isClickable = cell.knowledgeWrong > 0 || cell.candidateExamples.length > 0
                   return (
                     <td key={cell.level} className="px-0.5 py-0.5 align-middle">
                       <div
@@ -331,12 +341,12 @@ function OperationGrid({ operation, rows, onOpenStudentDetail }) {
                         onMouseEnter={() => setHoveredKey(key)}
                         onMouseLeave={() => setHoveredKey(null)}
                       >
-                        <div
+                        <button type="button" disabled={!isClickable} aria-label={`${row.name}, nivå ${cell.level}, visa felunderlag`}
                           className={`h-7 w-7 flex items-center justify-center rounded border text-[9px] font-semibold leading-none transition-colors ${CELL_CLASSES[variant]} ${cell.attempts > 0 && cell.attempts < 3 ? 'opacity-40' : ''} ${isClickable ? 'cursor-pointer' : 'cursor-default'}`}
                           onClick={isClickable ? () => setActiveCell({ cell, studentName: row.name }) : undefined}
                         >
                           {cell.attempts > 0 ? `${Math.round(cell.successRate * 100)}` : ''}
-                        </div>
+                        </button>
                         {isHovered && cell.attempts > 0 && (
                           <CellTooltip cell={cell} studentName={row.name} />
                         )}
@@ -468,17 +478,17 @@ export default function ClassMisconceptionHeatmap({ filteredStudents, onOpenStud
   const hasAnyData = OPERATIONS.some(op => heatmapData[op].length > 0)
 
   const cloudStatusLine = cloudStatus.loading
-    ? 'Synkar full historik från molnet för missuppfattningar...'
+    ? 'Hämtar tillgänglig träningshistorik för felunderlaget...'
     : cloudStatus.total === 0
       ? 'Ingen elev vald.'
       : cloudStatus.failedCount > 0
         ? `Molndata saknas för ${cloudStatus.failedCount} elev(er). Lokal kopia visas för dem.`
-        : `Full historik synkad (${cloudStatus.total} elever)${cloudStatus.lastSyncAt ? `, ${new Date(cloudStatus.lastSyncAt).toLocaleTimeString('sv-SE')}` : ''}.`
+        : `Tillgänglig molnhistorik hämtad (${cloudStatus.total} elever)${cloudStatus.lastSyncAt ? `, ${new Date(cloudStatus.lastSyncAt).toLocaleTimeString('sv-SE')}` : ''}. Historikens fullständighet är okänd.`
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 mb-8">
       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
-        <h2 className="text-sm font-semibold text-gray-800">Missuppfattningar – klassöversikt</h2>
+        <h2 className="text-sm font-semibold text-gray-800">Felunderlag – klassöversikt</h2>
         <span className="text-[11px] text-gray-400">Håll muspekaren över en cell för detaljer · klicka på en cell med kunskapsfel för hela fellistan på nivån</span>
       </div>
 

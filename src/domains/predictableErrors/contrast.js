@@ -147,10 +147,11 @@ export function buildContrastSet({ modelId, supportProblems, bankTasks, seenFing
     if (chosen.length >= Math.min(CONTRAST_MIN_ITEMS, maxItems)) break
     if (!chosen.includes(c)) chosen.push(c)
   }
-  if (!chosen.length) return { status: 'unavailable', models, items: [], unresolved: pairs,
+  if (!chosen.length) return { status: 'unavailable', models, items: [], discriminated: [], unresolved: pairs,
     reasonSv: 'Ingen granskad kontrastfråga i banken skiljer den här felmodellen från rätt svar.' }
   return { status: 'proposed', models, items: chosen.map(c => ({ taskId: c.task.taskId, taskVersion: c.task.taskVersion,
     promptSv: c.task.promptSv, text: c.problem.display.text, problem: c.problem, correct: c.values.correct,
     predictions: Object.fromEntries(models.map(m => [m, c.values[m]])) })),
+    discriminated: pairs.filter(p => !open.has(p.join('|'))),
     unresolved: pairs.filter(p => open.has(p.join('|'))) }
 }

@@ -1,5 +1,6 @@
 import { CONTRAST_LABELS_SV } from '../../domains/predictableErrors/contrast.js'
 import ReportReviewNote from './ReportReviewNote.jsx'
+import WorkEvidenceNote from './WorkEvidenceNote.jsx'
 
 const label = id => id === 'correct' ? 'rätt svar' : CONTRAST_LABELS_SV[id] || id
 
@@ -12,6 +13,9 @@ export default function MaterialInvestigation({ material }) {
     {plan.pupils.map(pupil => <div key={pupil.studentId}>
       <p>{material.audience.pupils.find(item => item.studentId === pupil.studentId)?.codeName || pupil.studentId}: {pupil.questions.length} frågor.</p>
       <ReportReviewNote review={pupil.reportReview} />
+      {pupil.workEvidence?.some(entry => entry.teacherReview || entry.work?.signals.length || entry.work?.visibleResultWithExchangeMarks?.consistency === 'different') && <details><summary>Metodsignaler och försöksgranskning</summary>
+        {pupil.workEvidence.map(entry => <div key={entry.ref}><p>Försök: {entry.reference.attemptId}</p><WorkEvidenceNote work={entry.work} review={entry.teacherReview} /></div>)}
+      </details>}
       <p>Alternativ: {pupil.rivalModelIds.map(label).join(', ') || 'jämförelse med rätt svar'}.</p>
       {pupil.unresolvedPairs.length > 0 && <p>Frågorna skiljer inte alla förklaringar åt: {pupil.unresolvedPairs.map(pair => pair.map(label).join(' / ')).join('; ')}.</p>}
       <details><summary>Frågornas facit och modellsvar</summary>

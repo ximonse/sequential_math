@@ -46,7 +46,7 @@ Varje post skiljer på:
 - `question`: visad fråga, struktur och källans uppgiftsidentitet;
 - `answer`: faktiskt elevsvar, lagrat/regelberäknat facit och bedömningsstatus;
 - `context`: innehåll/nivå, evidensklass, träningsram, tidskvalitet där känt;
-- `interpretation`: befintlig felkategori och mönster, utan nya AI-slutsatser;
+- `interpretation`: historisk felkategori/mönster, separat aktuell kandidatprojektion och källbundna metodsignaler, utan nya AI-slutsatser;
 - `reference`: riktig observationsidentitet eller tydligt märkt legacyposition;
 - `ref`: detaljreferens som är bunden till hela källsnapshoten.
 
@@ -71,8 +71,14 @@ en eventuell senare rättad lösning ska vara separat.
 
 `coverage` är en redovisning av tillgängliga data, inte ett löfte om full historik.
 
-- Träning väljer `problemLog`, eller tydligt märkt reservkälla
-  `recentProblems` om loggen saknas/är tom. Befintliga loggar är begränsade.
+- Träning, klassens felunderlag och detaljerad CSV använder samma
+  `teacherPracticeHistory`: samlingen med senaste giltiga tidsstämpel väljs;
+  vid lika tid väljs den större samlingen, därefter `problemLog`. `recentProblems`
+  märks som reservkälla när den väljs. Samlingarna sammanfogas inte och befintliga
+  loggar är begränsade. `teacherPracticeRows` tillämpar samma filter och
+  dubblett-/konflikthantering i evidens, klassens felunderlag och CSV: ogiltiga
+  tider utelämnas, identiska identifierade observationer räknas en gång och
+  motstridiga/identifieringslösa versioner bevaras. Detta ändrar bara lärarens läsning, inte elevens progression.
   `completeness` är därför `unknown`, även om äldsta/senaste tid täcker perioden.
   Antal lagrade poster, kända dubbletter och ogiltiga tidsstämplar redovisas.
 - Screening läser bara elevens indexerade försök i den begärda klassen.
@@ -113,3 +119,28 @@ Det är varken verklig KV eller fysisk iPad-provning.
 Lokal [rapport och läraravstämning](PUPIL_ANALYSIS.md) använder samma
 underlag och källrevision. Se [planen](../TODO_AI_ELEVUPPFOLJNING.md) för senare
 MCP, godkända uppföljningsutkast och elevdokument med rättat eget arbete.
+
+## Separata aktuella lärarprojektioner (E3)
+
+`interpretation.predictable` räknas med samma källa och adapter som klassens
+felunderlag och CSV:s `AktuellaModellkandidater`/`AktuellRegelversion`. De äldre
+CSV-fälten behålls för kompatibilitet, med nya uttryckliga
+`HistoriskFelkategori`/`HistoriskaFelmönster`. `ObserveradSvarsstatus` skiljer
+ut faktiskt bedömda, partiella och okända original. En modellträff är en kompatibel
+förklaring, inte en fastställd elevmetod. Rapportens arbetshypoteser kan gruppera
+och filtrera dessa träffar enligt sina uttryckliga evidensregler.
+
+`interpretation.work` använder samma `diagnosticWorkAnalysis` som försöksdetalj
+och screeningmatris. Strikt resultatläsning och utökad läsning med
+växlingsmarkeringar är olika namngivna fält. Inkomplett äldre format ger okänd
+metodläsning och bevarat original, inte ett läsfel eller en påhittad metod.
+
+`teacherReview` är en separat projektion av den gemensamma försöksgranskningen:
+`reviewRevision`, `evidenceRevision`, `evidenceSequence`, `matchesEvidence`,
+`reviewed`, `noteSv` och `updatedAt`. Den går via samma screeningåtkomst.
+Ändrad elevrevision ger en uttryckligt äldre granskning. Ändrad läraranteckning
+ändrar inte originalsvarets `snapshotRevision`/`ref`; granskningen bär sin egen
+revision. Rapporter behåller sina kopior, medan nya prövningsmaterial fryser
+serverns aktuella metod-/granskningslager under respektive stödsvars referens.
+En ändring av detta lager ändrar materialets innehållsrevision och kräver ny
+granskning före utdelning.

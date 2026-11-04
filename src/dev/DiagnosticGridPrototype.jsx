@@ -1,7 +1,7 @@
 import ScreeningImageQuestion from '../components/student/ScreeningImageQuestion.jsx'
 import { isChoiceTask } from '../domains/arithmetic/screeningImageQuestions.js'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import taskManifest from '../domains/arithmetic/diagnosticTasks.v1.json'
+import taskManifest from '../domains/arithmetic/diagnosticTasks.v1.json' with { type: 'json' }
 import {
   createDiagnosticGrid,
   recordDiagnosticGridEvent,

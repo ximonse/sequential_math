@@ -1,3 +1,5 @@
+import ReportReviewNote from './ReportReviewNote.jsx'
+import WorkEvidenceNote from './WorkEvidenceNote.jsx'
 import { useEffect, useState } from 'react'
 import { CONTRAST_LABELS_SV } from '../../domains/predictableErrors/contrast.js'
 import { MODEL_DESCRIPTIONS } from '../../domains/predictableErrors/modelDescriptions.js'
@@ -59,6 +61,9 @@ function FollowUpAnswers({ material, receipt }) {
       {outcome && !outcome.compatible && <p role="status">Svaren eller facit stämmer inte med den granskade prövningen. Endast källsvaren visas.</p>}
       {plan && <p><strong>Prövar: {label(investigation.modelId)}</strong></p>}
       {plan && <ReportReviewNote review={plan.reportReview} />}
+      {plan?.workEvidence?.some(entry => entry.teacherReview || entry.work?.signals.length || entry.work?.visibleResultWithExchangeMarks?.consistency === 'different') && <details><summary>Ursprungliga metodsignaler och försöksgranskning</summary>
+        {plan.workEvidence.map(entry => <div key={entry.ref}><p>Försök: {entry.reference.attemptId}</p><WorkEvidenceNote work={entry.work} review={entry.teacherReview} /></div>)}
+      </details>}
       {state.entries.length > 0 && <>
         <table className="followup-results">
           <thead><tr><th>Fråga</th><th>Elevens svar</th><th>Facit</th><th>Stämmer med</th></tr></thead>
@@ -93,4 +98,3 @@ function FollowUpAnswers({ material, receipt }) {
     </>}
   </>
 }
-import ReportReviewNote from './ReportReviewNote.jsx'

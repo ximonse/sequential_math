@@ -1,0 +1,16 @@
+{
+  "id": "decimal-component-multiplication-pilot",
+  "version": 1,
+  "status": "teacher_review_required",
+  "modelId": "decimal_parts_multiplied_separately",
+  "scope": "Nonnegative whole number times a number with exactly one decimal digit; no inferred pupil method.",
+  "tasks": [
+    { "taskId": "draft-decimal-mul-source", "phase": "source_example", "a": 7, "b": 6.7, "correct": 46.9, "componentAnswer": 42.49 },
+    { "taskId": "draft-decimal-mul-contrast-a", "phase": "contrast", "a": 3, "b": 2.4, "correct": 7.2, "componentAnswer": 6.12 },
+    { "taskId": "draft-decimal-mul-contrast-b", "phase": "contrast", "a": 5, "b": 3.6, "correct": 18, "componentAnswer": 15.3 },
+    { "taskId": "draft-decimal-mul-teaching", "phase": "teaching", "a": 4, "b": 2.5, "correct": 10, "componentAnswer": 8.2 },
+    { "taskId": "draft-decimal-mul-immediate", "phase": "independent_check", "a": 6, "b": 4.7, "correct": 28.2, "componentAnswer": 24.42 },
+    { "taskId": "draft-decimal-mul-delayed", "phase": "later_check", "a": 8, "b": 3.6, "correct": 28.8, "componentAnswer": 24.48 },
+    { "taskId": "draft-decimal-mul-nondiscriminating", "phase": "negative_control", "a": 2, "b": 3.4, "correct": 6.8, "componentAnswer": 6.8 }
+  ]
+}

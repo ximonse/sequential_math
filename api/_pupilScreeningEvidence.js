@@ -33,6 +33,11 @@ export async function pupilScreeningEvidence(studentId, classId, { store = kv, r
     const times = saved.snapshot.events.map(event => event.timestamp).filter(time => Number.isFinite(time) && time > 0)
     const timestamp = times.length ? Math.max(...times) : current.createdAt
     if (!Number.isFinite(timestamp) || timestamp <= 0) { invalidRecords++; continue }
+    const review = await store.get(`diagnostic_review:${id}`)
+    const teacherReview = review?.studentId === studentId ? {
+      reviewRevision: review.reviewRevision, evidenceRevision: review.evidenceRevision, evidenceSequence: review.evidenceSequence,
+      matchesEvidence: review.evidenceRevision === current.serverRevision && review.evidenceSequence === current.lastSequence,
+      reviewed: review.reviewed === true, noteSv: review.note || '', updatedAt: review.updatedAt } : null
     entries.push({ source: 'screening', timestamp,
       timeBasis: times.length ? 'latest_saved_client_event' : 'attempt_created_at',
       reference: { kind: 'screening_attempt', attemptId: id, assignmentId: record.assignmentId,
@@ -46,6 +51,7 @@ export async function pupilScreeningEvidence(studentId, classId, { store = kv, r
       context: { evidenceClass: 'diagnostic_only', classIdAtAttempt: classId, status: current.status,
         createdAt: current.createdAt, timeQuality: times.length ? 'client_reported' : 'server_created' },
       interpretation: { category: 'unknown', patterns: [], detail: null },
+      ...(teacherReview ? { teacherReview } : {}),
       detail: { snapshot: saved.snapshot, observation } })
   }
   if (invalidRecords) warnings.add('missing_or_inconsistent_records')

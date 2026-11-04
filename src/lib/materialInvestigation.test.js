@@ -26,6 +26,7 @@ describe('frozen material investigation', () => {
   })
   it('refuses forged predictions, stale rules, absent pupil analysis and a different class', () => {
     expect(() => buildMaterialInvestigation({ ...input(), predictions: {} }, options())).toThrow()
+    expect(() => buildMaterialInvestigation({ ...input(), reportReview: null }, options())).toThrow(/Rapportreferensen/)
     expect(() => buildMaterialInvestigation({ ...input(), ruleVersion: 'old' }, options())).toThrow(/regelversion/)
     expect(() => buildMaterialInvestigation(input(), { ...options(), audience: { pupils: [{ studentId: 'P' }, { studentId: 'Q' }] } })).toThrow(/underlag/)
     expect(() => buildMaterialInvestigation(input(), { ...options(), classContexts: { P: 'OTHER' } })).toThrow(/klass/)

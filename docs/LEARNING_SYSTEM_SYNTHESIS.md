@@ -5,7 +5,7 @@ Inspekterad kod i ursprungsinventeringen: `82ab3325f8d475885381fe5db85c019834faf
 Målen är preciserade av Simon i samtalet och införda i [produktkontraktet](PRODUCT_CONTRACT.md).
 Arkitekturförslagen nedan är rekommendationer, inte redan byggda funktioner.
 
-### Pågående genomförande: E3, gemensamt frågeurval och rapportöverlämning
+### Lokalt byggt och verifierat: E3
 
 `followUpSelection` använder nu samma rena urval för evidensens probeprojektion,
 rapportens rekommendation och kontrastpanelen. Aritmetik använder granskade
@@ -28,8 +28,46 @@ Verifierat lokalt: roboten visade först att rapportens 62−27 inte följde med
 till utkastet. Efter rättning passerar fem berörda browserprov, inklusive
 reviderad tolkning och uttryckligt återöppnande genom hela materialkedjan.
 222 testfiler/1 191 tester passerar. Renderad kontrastpanel har granskats.
-E3 är **inte färdig**: gemensamma metodsignaler, strukturella screeningmotexempel
-och aktuell kandidatprojektion i klassvy/CSV återstår. Ingen push eller produktion.
+Därefter byggdes E3:s gemensamma metodsignaler och försöksgranskning, separat
+versionsbundna från originalsvaret och bevarade till material/resultat.
+Strikt och utökad häftesläsning hålls isär. Äldre okänt arbetsformat förblir
+okänt och originalet läsbart. Strukturellt jämförbara heltalsscreeningar kan nu
+ge möjliga motexempel utan uppfunna träningsnivåer. Decimaler/negativa tal får
+ingen sådan reservjämförelse. Kända olika nivåer jämställs inte.
+
+Klassens felunderlag, rapport/evidens och CSV använder samma aktuella
+kandidatberäkning, träningskällval och kanoniska observationsläsning. Identiska
+versioner med samma observations-id räknas en gång; konflikter och legacyrader
+utan säkert id bevaras. En robot visade först två kandidatsvar i klassvyn mot
+ett i evidens-API:t och passerar efter samordningen. Historiska etiketter, slutsvarsbedömning
+och original bevaras; klassvyn skiljer aktuella kandidater från historiska
+markeringar och visar observations-id. Stödlistans prioritet och direkt
+aktiverade Fokus/Värm skiljs från elevvyns undersökning. Träningens adaptiva
+policy, elevens sparande och behörigheterna ändras inte.
+
+E3:s slutliga fulla enhetssvit: 224 filer/1 200 tester gröna. Nya likhetsprov för
+klass/rapport/CSV och källreferensstabilitet passerar, liksom webbläsarprovet för
+klassdetaljen och hela överlämningen med försöksanteckning, ändrad tolkning och
+explicit återöppnande. Historikloop stoppar urval och erbjuder återförsök.
+Build och riktad lint/arkitektur passerar. JSON-importerna har samma explicita
+typ i Node och webbläsaren; ESLint läser ES2025-syntaxen. Slutliga 29 MCP-prov passerar även efter dubbletträttningen.
+
+Den breda produktionslika robotkörningen gav 176 godkända, sju fallerade och
+sex överhoppade prov. Exakt de sju fallen passerade seriellt (bland annat
+API-tidsgränser och en återställd seedanslutning). Detta är ingen obrutet grön
+helsvit. Efter sista rättningen passerar även sex berörda dev-browserprov för
+rapport, klassdetalj och hela överlämningen, inklusive ursprunglig
+försöksgranskning, historikloop och återförsök. Testets försöksgranskning väntar
+nu på elevens bekräftade inlämning, så en pågående slutskrivning inte orsakar
+en korrekt revisionskonflikt i provet. Faktisk render i stående och liggande
+har granskats. Ingen push, produktion, verklig elev eller fysisk iPad-provning.
+
+E4:s första konkreta innehållsförslag finns i
+[E4_DECIMAL_MULTIPLICATION_REVIEW.md](E4_DECIMAL_MULTIPLICATION_REVIEW.md).
+Sju föreslagna uppgifter är oberoende aritmetiskt kontrollerade och prövade
+mot v7, med rätta svar, skalningsalternativ, partiella/obesvarade svar och
+en icke-särskiljande negativ kontroll. Detta är inte ett blindtest eller en
+aktiverad bankfunktion. Didaktisk lärargranskning återstår enligt E4-planen.
 
 ```mermaid
 flowchart LR

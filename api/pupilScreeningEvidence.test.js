@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { pupilScreeningEvidence } from './_pupilScreeningEvidence.js'
+import { evidencePage } from './_pupilEvidence.js'
 import { createDiagnosticGrid, recordDiagnosticGridEvent } from '../src/domains/arithmetic/diagnosticGridModel.js'
 
 function fixture() {
@@ -23,6 +24,24 @@ function fixture() {
 }
 
 describe('screening evidence preserves original work and version identity', () => {
+  it('carries a separately versioned teacher review without changing original source references', async () => {
+    const f = fixture()
+    const page = screening => evidencePage({ studentId: 'PUPIL', classId: 'CLASS', source: 'screening',
+      period: { from: '2026-10-27', to: '2026-10-27', startInclusive: 1, endExclusive: f.time + 1 },
+      screening, practice: { entries: [], coverage: {} }, query: {} })
+    const original = page(await pupilScreeningEvidence('PUPIL', 'CLASS', f))
+    f.data.set('diagnostic_review:ATTEMPT', { studentId: 'PUPIL', reviewRevision: 2,
+      evidenceRevision: 1, evidenceSequence: 1, reviewed: true, note: 'Ask about exchange', updatedAt: f.time })
+    const reviewed = page(await pupilScreeningEvidence('PUPIL', 'CLASS', f))
+    expect(reviewed.snapshotRevision).toBe(original.snapshotRevision)
+    expect(reviewed.entries[0].ref).toBe(original.entries[0].ref)
+    expect(reviewed.entries[0].teacherReview).toMatchObject({ matchesEvidence: true, noteSv: 'Ask about exchange' })
+    expect(reviewed.entries[0].interpretation.work.reference).toEqual(reviewed.entries[0].reference)
+    f.data.get('diagnostic_review:ATTEMPT').evidenceSequence = 0
+    const stale = page(await pupilScreeningEvidence('PUPIL', 'CLASS', f))
+    expect(stale.entries[0].teacherReview.matchesEvidence).toBe(false)
+    expect(stale.entries[0].ref).toBe(original.entries[0].ref)
+  })
   it('returns only the selected pupil and frozen item with its actual answer and saved original', async () => {
     const f = fixture()
     const result = await pupilScreeningEvidence('PUPIL', 'CLASS', f)

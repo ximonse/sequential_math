@@ -1,4 +1,6 @@
 import { pupilFollowUpSelection, followUpRecommendation } from './pupilFollowUpSelection.js'
+import { arithmeticContentSignature } from './arithmeticContentSignature.js'
+import { evidenceProblem } from './evidenceProblem.js'
 import { isSpeedTrainingEntry, SPEED_SLIP_MODELS } from './practiceModes.js'
 
 const current = entry => entry?.interpretation?.predictable
@@ -13,11 +15,17 @@ const level = entry => entry.context?.contentLevel ?? entry.context?.level
 export function comparableRuleCounter(entry, supports, modelId) {
   const value = current(entry)
   if (entry.answer.status !== 'correct' || value?.status !== 'correct' || !value.testedModelIds?.includes(modelId)) return false
+  const work = entry.interpretation?.work
+  if ([work?.visibleResult, work?.visibleResultWithExchangeMarks].some(result => result?.status === 'observed' && result.consistency === 'different')) return false
   return supports.some(support => {
     const other = current(support), left = level(entry), right = level(support)
-    return value.domain === other?.domain && value.scope === other?.scope
-      && typeof left === 'number' && left >= 1 && left === right
-      && entry.context?.contentSkill && entry.context.contentSkill === support.context?.contentSkill
+    if (value.domain !== other?.domain || value.scope !== other?.scope) return false
+    const knownLeft = typeof left === 'number' && left >= 1, knownRight = typeof right === 'number' && right >= 1
+    if (knownLeft && knownRight) return left === right && Boolean(entry.context?.contentSkill)
+      && entry.context.contentSkill === support.context?.contentSkill
+    if (entry.source !== 'screening' && support.source !== 'screening') return false
+    const signature = arithmeticContentSignature(evidenceProblem(entry))
+    return signature !== null && signature === arithmeticContentSignature(evidenceProblem(support))
   })
 }
 

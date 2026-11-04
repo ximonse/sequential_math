@@ -11,6 +11,12 @@ E2 bevarar därefter alla möjliga modellsvar och deras överlapp i urval och
 sparad prövningsavsikt. Kandidat-ID:n är fortfarande samma, men tabellens
 frysta bankexempel är inte en ny körning av den förbättrade väljaren.
 
+E3 samlar därefter urvalet för rapport och panel. Icke-aritmetiska prober kan
+visas som uttryckliga lärarråd, utan utdelningsbar bankversion. Tabellens
+bank-/probeexempel förblir den historiska inventeringen; inga nya modell-ID:n
+eller bankfrågor införs av E3. E4:s första föreslagna tillägg finns i
+[decimalmultiplikationens granskningspaket](E4_DECIMAL_MULTIPLICATION_REVIEW.md).
+
 ## Läs tabellen rätt
 
 - Varje rad är ett explicit kandidat-ID inom en domän, inte en fastställd felförståelse eller NCM-diagnos. Samma ID kan förekomma i flera domäner.

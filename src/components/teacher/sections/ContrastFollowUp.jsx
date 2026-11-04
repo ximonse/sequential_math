@@ -22,6 +22,7 @@ async function screeningHistory(baseUrl) {
   for (let page = 0; page < 20; page++) {
     const params = new URLSearchParams({ resource: 'evidence', source: 'screening', from: '2024-01-01', to, limit: '100', ...(cursor ? { cursor, snapshotRevision: revision } : {}) })
     const data = await call(`${baseUrl}&${params}`)
+    if (data.coverage?.screening?.invalidRecords > 0) throw new Error('Delar av den indexerade screeninghistoriken saknas eller är inkonsekventa.')
     if (!Array.isArray(data.entries) || typeof data.snapshotRevision !== 'string') throw new Error('Screeninghistoriken kunde inte kontrolleras.')
     if (revision && revision !== data.snapshotRevision) throw new Error('Screeninghistoriken ändrades under hämtningen.')
     revision = data.snapshotRevision
@@ -52,7 +53,7 @@ export default function ContrastFollowUp({ item, report, reportReview, studentId
     .filter(entry => entry && !isSpeedTrainingEntry(entry)), [item, report])
   const set = useMemo(() => history.keys && pupilFollowUpSelection({ modelId: item.signalCode, supports, entries: report.evidence,
     historyKeys: [...history.keys, ...(item.followUp?.history.excludedFingerprints ?? [])],
-    history: { scope: 'source_period_and_screening_since_2024', completeness: 'screening_window_complete_practice_unknown' } }),
+    history: { scope: 'source_period_and_screening_since_2024', completeness: 'indexed_screening_window_read_practice_unknown' } }),
   [item, report, supports, history.keys])
 
   async function openPanel() {
@@ -115,7 +116,7 @@ export default function ContrastFollowUp({ item, report, reportReview, studentId
       {set.unresolved.length > 0 && <p className="mt-1">Banken skiljer inte alla förklaringar åt: {set.unresolved.map(pair => pair.map(p => p === 'correct' ? 'rätt svar' : label(p)).join(' / ')).join('; ')}. Elevens uträkning behövs där.</p>}
       <label className="mt-2 flex items-center gap-2"><input type="checkbox" checked={grid} onChange={event => setGrid(event.target.checked)} /> Eleven visar uträkningen i räknehäftet</label>
       {needsReopen && <label className="mt-2 flex items-center gap-2"><input type="checkbox" checked={reopen} onChange={event => setReopen(event.target.checked)} /> Jag väljer att pröva den ursprungliga modellen igen; min sparade tolkning följer med.</label>}
-      <p className="mt-1 text-slate-600">Rapportens källurval och screeningar från 2024 till idag är kontrollerade. Äldre screeningar och träning utanför källurvalet kan innehålla samma frågor.</p>
+      <p className="mt-1 text-slate-600">Rapportens källurval och tillgängliga screeningar från 2024 till idag är kontrollerade. Historikens fullständighet är okänd. Äldre screeningar och träning utanför källurvalet kan innehålla samma frågor.</p>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {set.delivery === 'reviewed_bank' && <button type="button" disabled={state.busy || Boolean(state.receipt) || (needsReopen && !reopen)} className="rounded border px-2 py-1" onClick={createDraft}>Skapa utkast</button>}
         <button type="button" disabled={state.busy} className="rounded border px-2 py-1" onClick={() => setOpen(false)}>Stäng</button>

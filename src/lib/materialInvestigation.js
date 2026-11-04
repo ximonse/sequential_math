@@ -15,7 +15,7 @@ export function buildMaterialInvestigation(input, { kind, mode, audience, classC
     || Object.keys(input).some(key => !['schemaVersion', 'modelId', 'ruleVersion', 'reportReview'].includes(key))
     || input.schemaVersion !== 1 || typeof input.modelId !== 'string' || INPUT_SIGNAL_MODELS.has(input.modelId)) fail('Ogiltig prövningsavsikt.')
   if (input.ruleVersion !== PREDICTABLE_RULE_VERSION) fail('Prövningens regelversion har ändrats. Skapa ett nytt granskningsunderlag.')
-  if (input.reportReview && (!reportReview || reportReview.studentId !== input.reportReview.studentId)) fail('Rapportreferensen behöver kontrolleras på servern.')
+  if (input.reportReview !== undefined && (!input.reportReview || !reportReview || reportReview.studentId !== input.reportReview.studentId)) fail('Rapportreferensen behöver kontrolleras på servern.')
   if (kind !== 'screening' || mode !== 'specific') fail('Prövningsavsikt stöds bara för analysspecifik screening.')
   if (!Array.isArray(items) || !items.length || items.length > CONTRAST_MAX_ITEMS) fail('Prövningen behöver en till fem granskade frågor.')
   const pupils = audience.pupils.map(pupil => {
@@ -52,6 +52,10 @@ export function buildMaterialInvestigation(input, { kind, mode, audience, classC
       sources: sources.map(({ basis }) => ({ snapshotRevision: basis.snapshotRevision, source: basis.source || 'practice',
         from: basis.from, to: basis.to, supportRefs: basis.supportRefs, counterRefs: basis.counterRefs || [] })),
       ...(reportReview?.studentId === pupil.studentId ? { reportReview } : {}),
+      workEvidence: supports.filter(entry => entry.interpretation?.work || entry.teacherReview).map(entry => ({
+        ref: entry.ref, reference: entry.reference,
+        ...(entry.interpretation.work ? { work: entry.interpretation.work } : {}),
+        ...(entry.teacherReview ? { teacherReview: entry.teacherReview } : {}) })),
       rivalModelIds: rivals, questions, unresolvedPairs }
   })
   return { schemaVersion: 1, ruleVersion: input.ruleVersion, modelId: input.modelId, pupils }

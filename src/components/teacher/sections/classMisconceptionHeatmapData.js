@@ -1,6 +1,7 @@
 import { resolveProblemOperation } from '../../../lib/mathUtils'
-import { getPreferredProblemSource } from '../../../lib/masteryCalculation'
+import { teacherPracticeRows } from '../../../lib/teacherPracticeRows.js'
 import { ALL_OPERATIONS, LEVELS } from './dashboardConstants'
+import { currentPracticeCandidates } from '../../../lib/practiceObservation.js'
 
 export { LEVELS }
 export const OPERATIONS = ALL_OPERATIONS
@@ -36,6 +37,8 @@ function createLevelBucket() {
     knowledgeWrong: 0,
     misconceptionCount: 0,
     patternCounts: {},
+    candidateCounts: {},
+    candidateExamples: [],
     wrongAnswers: [],
     featureTotals: {},
     featureWrong: {}
@@ -169,6 +172,8 @@ function buildRowCells(entry) {
         knowledgeWrong: 0,
         misconceptionCount: 0,
         topPatterns: [],
+        currentCandidates: [],
+        candidateExamples: [],
         wrongAnswers: [],
         newLevelSignals: [],
         challengeSignals: []
@@ -196,6 +201,8 @@ function buildRowCells(entry) {
       knowledgeWrong: bucket.knowledgeWrong,
       misconceptionCount: bucket.misconceptionCount,
       topPatterns,
+      currentCandidates: Object.entries(bucket.candidateCounts).sort(([left, a], [right, b]) => b - a || left.localeCompare(right)),
+      candidateExamples: bucket.candidateExamples,
       wrongAnswers: bucket.wrongAnswers,
       newLevelSignals,
       challengeSignals
@@ -209,7 +216,7 @@ export function buildHeatmapData(students) {
   const byOperation = Object.fromEntries(OPERATIONS.map(op => [op, new Map()]))
 
   for (const student of students) {
-    const problems = getPreferredProblemSource(student)
+    const problems = teacherPracticeRows(student).entries.map(entry => entry.raw)
     for (const problem of problems) {
       const op = resolveProblemOperation(problem, {
         fallback: '',
@@ -235,6 +242,15 @@ export function buildHeatmapData(students) {
       const bucket = entry.levelData[level]
       bucket.attempts += 1
       if (problem.correct) bucket.correct += 1
+      const current = currentPracticeCandidates(problem)
+      if (current.status === 'matched') {
+        const modelIds = [...new Set(current.matches.map(match => match.modelId))]
+        for (const modelId of modelIds) increaseCount(bucket.candidateCounts, modelId)
+        bucket.candidateExamples = keepLatestWrongAnswers([...bucket.candidateExamples, {
+          observationId: problem.observationId || null, timestamp: problem.timestamp,
+          question: problem.promptText || problem.values?.text || `${problem.values?.a ?? '?'} ${OPERATION_SYMBOLS[op] || '?'} ${problem.values?.b ?? '?'}`,
+          studentAnswer: problem.studentAnswer, ruleVersion: current.ruleVersion, modelIds }])
+      }
 
       const featureTags = parseFeatureTags(problem, op)
       for (const tag of featureTags) {

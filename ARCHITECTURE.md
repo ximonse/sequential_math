@@ -7,7 +7,9 @@ och lärarens utforskning/bemötande av felförståelser. Normativ definition fi
 i `docs/PRODUCT_CONTRACT.md`; aktuell kodinventering, överlämningar, motsägelser
 och föreslagen ansvarsfördelning i `docs/LEARNING_SYSTEM_SYNTHESIS.md`.
 `docs/LEARNING_SYSTEM_COVERAGE.md` skiljer kandidatberäkning, frågeförslag och
-faktisk bank-/lärarväg. Detta är dokumentgranskning, ingen ny appintegration.
+faktisk bank-/lärarväg. Ursprungsinventeringen är dokumentgranskning. E1–E3 är
+därefter lokalt byggda; syntesens genomförandestatus skiljer detta från push och
+produktion.
 
 ## Lokal elevanalys via MCP
 

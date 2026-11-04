@@ -2,6 +2,13 @@
 
 Datum: 2026-10-30. **Lokalt planeringsunderlag, ingen ändrad analys eller elevprocess.**
 
+> Avstämning 2026-11-04: tabellerna nedan är den daterade innehålls- och
+> källinventeringen, inte aktuell leveransstatus. Senare kod innehåller bland
+> annat komponentmodeller för bråk och specifika procent-/uttryckskandidater.
+> [Aktuell kodtäckning](LEARNING_SYSTEM_COVERAGE.md) och
+> [systemsyntes](LEARNING_SYSTEM_SYNTHESIS.md) beskriver deras faktiska
+> kopplingar och återstående luckor. Källinventering är inte full runtime-täckning.
+
 ## Vad som faktiskt är täckt
 
 Senare tillägg samma dag: [domängemensam regelgenomgång](NCM_RULE_READINESS.md)

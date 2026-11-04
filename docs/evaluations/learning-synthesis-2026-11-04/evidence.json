@@ -1,0 +1,2847 @@
+{
+  "date": "2026-11-04",
+  "inspectedCommit": "82ab3325f8d475885381fe5db85c019834faf5c5",
+  "ruleVersion": "predictable-errors-v7",
+  "bankVersion": 5,
+  "sampleProblems": 8500,
+  "inventoryCount": 62,
+  "sourceHashes": {
+    "src/domains/predictableErrors/arithmetic.js": "9261665841afb4ae5f47db809d6b6d1eca6e161a0bff2b7f4c5c8f126aa68142",
+    "src/domains/arithmetic/subtractionCandidates.js": "273462290e1ead404c4565b436a276f590460c43095db8fe9b3c42d3e34fe6c6",
+    "src/domains/predictableErrors/core.js": "78ce0ebcb92b40430b40dda24eeefa4797ef28058d97a7708b0906464f7b15b4",
+    "src/domains/predictableErrors/fractions.js": "22c56333150d8a2d824d74bc37287240225f01602681436a448b49a8246e65e2",
+    "src/domains/predictableErrors/percentage.js": "3ec8dda52a0ee456790a2e807a92ad84c42ece672eee8e3defb8748ec7fc7c90",
+    "src/domains/predictableErrors/algebra.js": "cebc39d4f96200e8947b5f97d00bcaf1e80ec9db90855df0b05b9574df7f0c15",
+    "src/domains/predictableErrors/expressions.js": "e8bba93a31babb9661fcf99e9f39563ceae156ddcf2d47cf605a1f07ffe8abdf",
+    "src/domains/predictableErrors/fluency.js": "67939aaef0a4a86dadb44768c1cff1d98956c2aed8670959a09bd57bd8cd1bef",
+    "src/domains/predictableErrors/contrast.js": "bdbcfe16571f378d2f3a73d66caedc1f923f7e5b8220b52017760dba9a56f1d8",
+    "src/domains/predictableErrors/probes.js": "fc57ec196d19031052cab82b2ec082935629024874d80438b9a1df57c39015f0",
+    "src/lib/followUpSignal.js": "b1b20d36b675c5cdde9f3d65961289af27cdbf1aa2258f4803777ed551d2ebf7",
+    "src/lib/pupilRuleHypotheses.js": "a3dbd02bacd4a166e476f5ff900709ecc12e2932a25fb93a5d458a0742bfb3ec",
+    "src/lib/evidencePredictableAnalysis.js": "e63eb7a32cf10751eb523fb766e73a81d199c17c4755cedc3c7ce5974ae51168",
+    "api/_pupilScreeningEvidence.js": "109fa3306cda18c46db7a35471b74341327dd154a39d50fb36067a58afa96969",
+    "api/_teacherMaterialPreview.js": "73124d891dbef7944bd5e504bcebed608a9fe112596bff77d199cee41e12d53f",
+    "src/components/teacher/FollowUpResults.jsx": "e790872d96e35752fda1d9c9dba1a1b62164cf7c330ecedd4622b286f165b20b",
+    "src/components/teacher/sections/ContrastFollowUp.jsx": "3cabc3ed5290e615f98ea76edfd7408e98b9e0fa5e7ab0ab3ee4f890e293ff78",
+    "src/domains/arithmetic/diagnosticTasks.v1.json": "574d814dc9d90c122c720c2eb43d42907f17f4f4a8a2eafc7819a357c2c8090a",
+    "src/components/teacher/sections/SupportPriorityPanel.jsx": "1a8bf2d572539327af2084022398a4e31432efaed839e17b8d3bdd1b825260f4",
+    "src/components/teacher/sections/dashboardAssignmentActions.js": "d7d52431b8b7568b0de71489ccabba64d996f527f14e2daa8f89a2c7c8e604c3",
+    "src/components/teacher/sections/dashboardAssignmentRiskHelpers.js": "5c8d265763ce781fe87673c6c71cd6b68397c13a3db18bae1cc3e88a9663b029"
+  },
+  "legacySignals": [
+    {
+      "domain": "arithmetic",
+      "signal": "place_value_error",
+      "kind": "candidate",
+      "file": "src/domains/arithmetic/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": false
+    },
+    {
+      "domain": "arithmetic",
+      "signal": "calculation_error",
+      "kind": "generic",
+      "file": "src/domains/arithmetic/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": false
+    },
+    {
+      "domain": "arithmetic",
+      "signal": "operation_swap",
+      "kind": "candidate",
+      "file": "src/domains/arithmetic/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": false
+    },
+    {
+      "domain": "arithmetic",
+      "signal": "digit_reversal",
+      "kind": "candidate",
+      "file": "src/domains/arithmetic/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": false
+    },
+    {
+      "domain": "arithmetic",
+      "signal": "carry_forget",
+      "kind": "candidate",
+      "file": "src/domains/arithmetic/errorHypotheses/additionHypotheses.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "arithmetic",
+      "signal": "carry_double",
+      "kind": "candidate",
+      "file": "src/domains/arithmetic/errorHypotheses/additionHypotheses.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "arithmetic",
+      "signal": "ones_digit_only",
+      "kind": "candidate",
+      "file": "src/domains/arithmetic/errorHypotheses/additionHypotheses.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "arithmetic",
+      "signal": "smaller_minus_larger",
+      "kind": "candidate",
+      "file": "src/domains/arithmetic/errorHypotheses/subtractionHypotheses.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": false
+    },
+    {
+      "domain": "arithmetic",
+      "signal": "borrow_forget",
+      "kind": "candidate",
+      "file": "src/domains/arithmetic/errorHypotheses/subtractionHypotheses.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": false
+    },
+    {
+      "domain": "arithmetic",
+      "signal": "table_off_by_one",
+      "kind": "candidate",
+      "file": "src/domains/arithmetic/errorHypotheses/multiplicationHypotheses.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": false
+    },
+    {
+      "domain": "arithmetic",
+      "signal": "ones_digits_only",
+      "kind": "candidate",
+      "file": "src/domains/arithmetic/errorHypotheses/multiplicationHypotheses.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": false
+    },
+    {
+      "domain": "arithmetic",
+      "signal": "quotient_off_by_one",
+      "kind": "candidate",
+      "file": "src/domains/arithmetic/errorHypotheses/divisionHypotheses.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "arithmetic",
+      "signal": "reversed_operands",
+      "kind": "candidate",
+      "file": "src/domains/arithmetic/errorHypotheses/divisionHypotheses.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "arithmetic",
+      "signal": "divisor_as_answer",
+      "kind": "candidate",
+      "file": "src/domains/arithmetic/errorHypotheses/divisionHypotheses.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "arithmetic",
+      "signal": "dividend_as_answer",
+      "kind": "candidate",
+      "file": "src/domains/arithmetic/errorHypotheses/divisionHypotheses.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "fractions",
+      "signal": "not_simplified",
+      "kind": "property",
+      "file": "src/domains/fractions/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "fractions",
+      "signal": "invalid_input",
+      "kind": "input",
+      "file": "src/domains/fractions/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "fractions",
+      "signal": "wrong_denominator",
+      "kind": "property",
+      "file": "src/domains/fractions/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "fractions",
+      "signal": "wrong_answer",
+      "kind": "generic",
+      "file": "src/domains/fractions/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "percentage",
+      "signal": "wrong_percentage",
+      "kind": "generic",
+      "file": "src/domains/percentage/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "algebra",
+      "signal": "no_answer",
+      "kind": "input",
+      "file": "src/domains/algebra/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "algebra",
+      "signal": "forgot_coefficient",
+      "kind": "candidate",
+      "file": "src/domains/algebra/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "algebra",
+      "signal": "added_instead_of_multiplied",
+      "kind": "candidate",
+      "file": "src/domains/algebra/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "algebra",
+      "signal": "square_as_double",
+      "kind": "candidate",
+      "file": "src/domains/algebra/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "algebra",
+      "signal": "calculation_error",
+      "kind": "generic",
+      "file": "src/domains/algebra/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "algebra",
+      "signal": "did_not_simplify",
+      "kind": "property",
+      "file": "src/domains/algebra/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "algebra",
+      "signal": "forgot_constant",
+      "kind": "heuristic",
+      "file": "src/domains/algebra/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "algebra",
+      "signal": "combined_unlike_terms",
+      "kind": "heuristic",
+      "file": "src/domains/algebra/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "algebra",
+      "signal": "simplify_error",
+      "kind": "generic",
+      "file": "src/domains/algebra/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "arithmetic_expressions",
+      "signal": "invalid_input",
+      "kind": "input",
+      "file": "src/domains/arithmetic_expressions/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "arithmetic_expressions",
+      "signal": "wrong_order_of_operations",
+      "kind": "generic",
+      "file": "src/domains/arithmetic_expressions/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": true
+    },
+    {
+      "domain": "number_fluency",
+      "signal": "number_bond_not_recalled",
+      "kind": "generic",
+      "file": "src/domains/number_fluency/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": false
+    },
+    {
+      "domain": "number_fluency",
+      "signal": "double_not_recalled",
+      "kind": "generic",
+      "file": "src/domains/number_fluency/analyzeError.js",
+      "literalStillPresent": true,
+      "hashMatchesHistoricalInventory": false
+    }
+  ],
+  "inventory": [
+    {
+      "domain": "arithmetic",
+      "modelId": "add_left_to_right",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "addition"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "addition",
+          "type": "addition",
+          "values": {
+            "a": 57,
+            "b": 68
+          },
+          "display": {
+            "text": "57 + 68"
+          }
+        },
+        "modelAnswer": 16,
+        "correct": 125
+      },
+      "singletonProbeExample": "rule-add-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "add-tens-carry-001",
+          "add-chain-carry-001"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "add-tens-carry-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 283 + 462.",
+          "text": "283 + 462",
+          "correct": 745,
+          "predictions": {
+            "add_left_to_right": 646
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "answer_off_by_one",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "multiplication"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "multiplication",
+          "type": "multiplication",
+          "values": {
+            "a": 7,
+            "b": 8
+          },
+          "display": {
+            "text": "7 × 8"
+          }
+        },
+        "modelAnswer": 55,
+        "correct": 56
+      },
+      "singletonProbeExample": "rule-mul-a",
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "borrow_forget",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "decimal_subtraction",
+        "subtraction"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "subtraction",
+          "type": "subtraction",
+          "values": {
+            "a": 6.42,
+            "b": 2.17
+          },
+          "display": {
+            "text": "6,42 − 2,17"
+          }
+        },
+        "modelAnswer": 4.3,
+        "correct": 4.25
+      },
+      "singletonProbeExample": "rule-zero-a",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "sub-exchange-001",
+          "sub-exchange-002"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "sub-exchange-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 642 − 217.",
+          "text": "642 − 217",
+          "correct": 425,
+          "predictions": {
+            "borrow_forget": 430,
+            "smaller_minus_larger": 435
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "carry_forget",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "addition",
+        "decimal_addition"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "addition",
+          "type": "addition",
+          "values": {
+            "a": 38,
+            "b": 47
+          },
+          "display": {
+            "text": "38 + 47"
+          }
+        },
+        "modelAnswer": 75,
+        "correct": 85
+      },
+      "singletonProbeExample": "rule-add-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "add-carry-001",
+          "add-tens-carry-001"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "add-carry-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 248 + 327.",
+          "text": "248 + 327",
+          "correct": 575,
+          "predictions": {
+            "carry_forget": 565
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "column_sums_concatenated",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "addition"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "addition",
+          "type": "addition",
+          "values": {
+            "a": 38,
+            "b": 47
+          },
+          "display": {
+            "text": "38 + 47"
+          }
+        },
+        "modelAnswer": 715,
+        "correct": 85
+      },
+      "singletonProbeExample": "rule-add-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "add-carry-001",
+          "add-tens-carry-001"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "add-carry-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 248 + 327.",
+          "text": "248 + 327",
+          "correct": 575,
+          "predictions": {
+            "column_sums_concatenated": 5615
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "decimal_parts_multiplied_separately",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "multiplication"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "multiplication",
+          "type": "multiplication",
+          "values": {
+            "a": 7,
+            "b": 6.7
+          }
+        },
+        "modelAnswer": 42.49,
+        "correct": 46.9
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "div_remainder_as_ones",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "division"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "division",
+          "type": "division",
+          "values": {
+            "a": 34,
+            "b": 2
+          }
+        },
+        "modelAnswer": 12,
+        "correct": 17
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "div-short-001",
+          "div-short-002"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "div-short-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 78 / 3.",
+          "text": "78 + 3",
+          "correct": 26,
+          "predictions": {
+            "div_remainder_as_ones": 23,
+            "div_remainder_ignored": 22,
+            "quotient_off_by_one": 25
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "div_remainder_ignored",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "division"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "division",
+          "type": "division",
+          "values": {
+            "a": 34,
+            "b": 2
+          }
+        },
+        "modelAnswer": 12,
+        "correct": 17
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "div-short-001",
+          "div-short-002"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "div-short-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 78 / 3.",
+          "text": "78 + 3",
+          "correct": 26,
+          "predictions": {
+            "div_remainder_ignored": 22,
+            "div_remainder_as_ones": 23,
+            "quotient_off_by_one": 25
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "div_zero_dropped",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "division"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "division",
+          "type": "division",
+          "values": {
+            "a": 90,
+            "b": 3
+          }
+        },
+        "modelAnswer": 3,
+        "correct": 30
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "div-zero-001",
+          "div-zero-002"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "div-zero-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 648 / 6.",
+          "text": "648 + 6",
+          "correct": 108,
+          "predictions": {
+            "div_zero_dropped": 18,
+            "divisor_as_answer": 6,
+            "quotient_off_by_one": 107
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "dividend_as_answer",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "division"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "division",
+          "type": "division",
+          "values": {
+            "a": 42,
+            "b": 6
+          },
+          "display": {
+            "text": "42 ÷ 6"
+          }
+        },
+        "modelAnswer": 42,
+        "correct": 7
+      },
+      "singletonProbeExample": "rule-div-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "div-short-001",
+          "div-short-002"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "div-short-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 78 / 3.",
+          "text": "78 + 3",
+          "correct": 26,
+          "predictions": {
+            "dividend_as_answer": 78
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "divisor_as_answer",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "division"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "division",
+          "type": "division",
+          "values": {
+            "a": 42,
+            "b": 6
+          },
+          "display": {
+            "text": "42 ÷ 6"
+          }
+        },
+        "modelAnswer": 6,
+        "correct": 7
+      },
+      "singletonProbeExample": "rule-div-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "div-short-001",
+          "div-short-002"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "div-short-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 78 / 3.",
+          "text": "78 + 3",
+          "correct": 26,
+          "predictions": {
+            "divisor_as_answer": 3,
+            "quotient_off_by_one": 25
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "exchange_not_decremented",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "subtraction"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "subtraction",
+          "type": "subtraction",
+          "values": {
+            "a": 62,
+            "b": 27
+          },
+          "display": {
+            "text": "62 − 27"
+          }
+        },
+        "modelAnswer": 45,
+        "correct": 35
+      },
+      "singletonProbeExample": "rule-zero-a",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "sub-exchange-003",
+          "sub-exchange-004"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "sub-exchange-003",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 652 − 128.",
+          "text": "652 − 128",
+          "correct": 524,
+          "predictions": {
+            "exchange_not_decremented": 534,
+            "smaller_minus_larger": 536,
+            "borrow_forget": 530
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "last_two_digits_swapped",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "addition",
+        "division",
+        "multiplication",
+        "subtraction"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "addition",
+          "type": "addition",
+          "values": {
+            "a": 38,
+            "b": 47
+          },
+          "display": {
+            "text": "38 + 47"
+          }
+        },
+        "modelAnswer": 58,
+        "correct": 85
+      },
+      "singletonProbeExample": "rule-add-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "add-carry-001",
+          "add-no-carry-002"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "add-carry-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 248 + 327.",
+          "text": "248 + 327",
+          "correct": 575,
+          "predictions": {
+            "last_two_digits_swapped": 557
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "mul_carry_added_before",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "multiplication"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "multiplication",
+          "type": "multiplication",
+          "values": {
+            "a": 23,
+            "b": 4
+          },
+          "display": {
+            "text": "23 × 4"
+          }
+        },
+        "modelAnswer": 122,
+        "correct": 92
+      },
+      "singletonProbeExample": "rule-mul-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "mul-carry-002",
+          "mul-carry-003"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "mul-carry-002",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 46 · 7.",
+          "text": "46 + 7",
+          "correct": 322,
+          "predictions": {
+            "mul_carry_added_before": 562,
+            "mul_carry_forgotten": 282,
+            "mul_partials_concatenated": 2842,
+            "mul_columnwise": 82,
+            "ones_digits_only": 42
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "mul_carry_always_one",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "multiplication"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "multiplication",
+          "type": "multiplication",
+          "values": {
+            "a": 3,
+            "b": 28
+          }
+        },
+        "modelAnswer": 74,
+        "correct": 84
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "mul-carry-002",
+          "mul-carry-004"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "mul-carry-002",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 46 · 7.",
+          "text": "46 + 7",
+          "correct": 322,
+          "predictions": {
+            "mul_carry_always_one": 292,
+            "mul_carry_forgotten": 282,
+            "mul_carry_added_before": 562,
+            "mul_partials_concatenated": 2842,
+            "mul_columnwise": 82,
+            "ones_digits_only": 42
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "mul_carry_forgotten",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "multiplication"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "multiplication",
+          "type": "multiplication",
+          "values": {
+            "a": 23,
+            "b": 4
+          },
+          "display": {
+            "text": "23 × 4"
+          }
+        },
+        "modelAnswer": 82,
+        "correct": 92
+      },
+      "singletonProbeExample": "rule-mul-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "mul-carry-002",
+          "mul-carry-003"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "mul-carry-002",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 46 · 7.",
+          "text": "46 + 7",
+          "correct": 322,
+          "predictions": {
+            "mul_carry_forgotten": 282,
+            "mul_carry_added_before": 562,
+            "mul_partials_concatenated": 2842,
+            "mul_columnwise": 82,
+            "ones_digits_only": 42
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "mul_columnwise",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "multiplication"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "multiplication",
+          "type": "multiplication",
+          "values": {
+            "a": 23,
+            "b": 4
+          },
+          "display": {
+            "text": "23 × 4"
+          }
+        },
+        "modelAnswer": 32,
+        "correct": 92
+      },
+      "singletonProbeExample": "rule-mul-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "mul-carry-002",
+          "mul-carry-003"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "mul-carry-002",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 46 · 7.",
+          "text": "46 + 7",
+          "correct": 322,
+          "predictions": {
+            "mul_columnwise": 82,
+            "mul_carry_forgotten": 282,
+            "mul_carry_added_before": 562,
+            "mul_partials_concatenated": 2842,
+            "ones_digits_only": 42
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "mul_no_row_shift",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "multiplication"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "multiplication",
+          "type": "multiplication",
+          "values": {
+            "a": 11,
+            "b": 11
+          }
+        },
+        "modelAnswer": 22,
+        "correct": 121
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "mul-two-digit-001",
+          "mul-two-digit-002"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "mul-two-digit-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 34 · 23.",
+          "text": "34 + 23",
+          "correct": 782,
+          "predictions": {
+            "mul_no_row_shift": 170,
+            "mul_columnwise": 72,
+            "ones_digits_only": 12
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "mul_partials_concatenated",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "multiplication"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "multiplication",
+          "type": "multiplication",
+          "values": {
+            "a": 23,
+            "b": 4
+          },
+          "display": {
+            "text": "23 × 4"
+          }
+        },
+        "modelAnswer": 812,
+        "correct": 92
+      },
+      "singletonProbeExample": "rule-mul-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "mul-carry-002",
+          "mul-carry-003"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "mul-carry-002",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 46 · 7.",
+          "text": "46 + 7",
+          "correct": 322,
+          "predictions": {
+            "mul_partials_concatenated": 2842,
+            "mul_carry_forgotten": 282,
+            "mul_carry_added_before": 562,
+            "mul_columnwise": 82,
+            "ones_digits_only": 42
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "one_carry_forgotten",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "addition"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "addition",
+          "type": "addition",
+          "values": {
+            "a": 57,
+            "b": 68
+          },
+          "display": {
+            "text": "57 + 68"
+          }
+        },
+        "modelAnswer": 115,
+        "correct": 125
+      },
+      "singletonProbeExample": "rule-add-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "add-chain-carry-001",
+          "add-chain-carry-002"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "add-chain-carry-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 357 + 268.",
+          "text": "357 + 268",
+          "correct": 625,
+          "predictions": {
+            "one_carry_forgotten": 615
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "ones_digits_only",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "multiplication"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "multiplication",
+          "type": "multiplication",
+          "values": {
+            "a": 23,
+            "b": 4
+          },
+          "display": {
+            "text": "23 × 4"
+          }
+        },
+        "modelAnswer": 12,
+        "correct": 92
+      },
+      "singletonProbeExample": "rule-mul-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "mul-carry-002",
+          "mul-carry-003"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "mul-carry-002",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 46 · 7.",
+          "text": "46 + 7",
+          "correct": 322,
+          "predictions": {
+            "ones_digits_only": 42,
+            "mul_carry_forgotten": 282,
+            "mul_carry_added_before": 562,
+            "mul_partials_concatenated": 2842,
+            "mul_columnwise": 82
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "operation_swap",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "addition",
+        "decimal_addition",
+        "decimal_subtraction",
+        "division",
+        "multiplication",
+        "subtraction"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "addition",
+          "type": "addition",
+          "values": {
+            "a": 38,
+            "b": 47
+          },
+          "display": {
+            "text": "38 + 47"
+          }
+        },
+        "modelAnswer": 9,
+        "correct": 85
+      },
+      "singletonProbeExample": "rule-add-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "add-no-carry-001",
+          "add-carry-001"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "add-no-carry-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 268 + 431.",
+          "text": "268 + 431",
+          "correct": 699,
+          "predictions": {
+            "operation_swap": 163
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "partial_answer_entry",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "addition",
+        "division",
+        "multiplication",
+        "subtraction"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "addition",
+          "type": "addition",
+          "values": {
+            "a": 38,
+            "b": 47
+          },
+          "display": {
+            "text": "38 + 47"
+          }
+        },
+        "modelAnswer": 8,
+        "correct": 85
+      },
+      "singletonProbeExample": "rule-add-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "add-no-carry-001",
+          "add-carry-001"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "add-no-carry-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 268 + 431.",
+          "text": "268 + 431",
+          "correct": 699,
+          "predictions": {
+            "partial_answer_entry": 6
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "phantom_carry",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "addition"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "addition",
+          "type": "addition",
+          "values": {
+            "a": 0,
+            "b": 11
+          }
+        },
+        "modelAnswer": 21,
+        "correct": 11
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "add-no-carry-001",
+          "add-no-carry-002"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "add-no-carry-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 268 + 431.",
+          "text": "268 + 431",
+          "correct": 699,
+          "predictions": {
+            "phantom_carry": 709
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "place_value_scaling",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "addition",
+        "decimal_addition",
+        "decimal_subtraction",
+        "division",
+        "multiplication",
+        "subtraction"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "addition",
+          "type": "addition",
+          "values": {
+            "a": 38,
+            "b": 47
+          },
+          "display": {
+            "text": "38 + 47"
+          }
+        },
+        "modelAnswer": 850,
+        "correct": 85
+      },
+      "singletonProbeExample": "rule-add-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "add-no-carry-001",
+          "add-carry-001"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "add-no-carry-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 268 + 431.",
+          "text": "268 + 431",
+          "correct": 699,
+          "predictions": {
+            "place_value_scaling": 6990
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "quotient_off_by_one",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "division"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "division",
+          "type": "division",
+          "values": {
+            "a": 42,
+            "b": 6
+          },
+          "display": {
+            "text": "42 ÷ 6"
+          }
+        },
+        "modelAnswer": 6,
+        "correct": 7
+      },
+      "singletonProbeExample": "rule-div-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "div-short-001",
+          "div-short-002"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "div-short-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 78 / 3.",
+          "text": "78 + 3",
+          "correct": 26,
+          "predictions": {
+            "quotient_off_by_one": 25,
+            "divisor_as_answer": 3
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "reversed_operands",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "division"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "division",
+          "type": "division",
+          "values": {
+            "a": 42,
+            "b": 6
+          },
+          "display": {
+            "text": "42 ÷ 6"
+          }
+        },
+        "modelAnswer": 0.14285714285714285,
+        "correct": 7
+      },
+      "singletonProbeExample": "rule-div-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "div-short-001",
+          "div-short-002"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "div-short-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 78 / 3.",
+          "text": "78 + 3",
+          "correct": 26,
+          "predictions": {
+            "reversed_operands": 0.038461538461538464
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "second_exchange_inverted",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "subtraction"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "subtraction",
+          "type": "subtraction",
+          "values": {
+            "a": 503,
+            "b": 267
+          },
+          "display": {
+            "text": "503 − 267"
+          }
+        },
+        "modelAnswer": 266,
+        "correct": 236
+      },
+      "singletonProbeExample": "rule-zero-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "sub-through-zero-001",
+          "sub-through-zero-003"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "sub-through-zero-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 402 − 178.",
+          "text": "402 − 178",
+          "correct": 224,
+          "predictions": {
+            "second_exchange_inverted": 274,
+            "smaller_minus_larger": 376,
+            "exchange_not_decremented": 334,
+            "borrow_forget": 300,
+            "sub_left_to_right": 333
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "smaller_minus_larger",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "decimal_subtraction",
+        "subtraction"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "subtraction",
+          "type": "subtraction",
+          "values": {
+            "a": 6.42,
+            "b": 2.17
+          },
+          "display": {
+            "text": "6,42 − 2,17"
+          }
+        },
+        "modelAnswer": 4.35,
+        "correct": 4.25
+      },
+      "singletonProbeExample": "rule-zero-a",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "sub-exchange-001",
+          "sub-exchange-002"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "sub-exchange-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 642 − 217.",
+          "text": "642 − 217",
+          "correct": 425,
+          "predictions": {
+            "smaller_minus_larger": 435,
+            "borrow_forget": 430
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "sub_left_to_right",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "subtraction"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "subtraction",
+          "type": "subtraction",
+          "values": {
+            "a": 503,
+            "b": 267
+          },
+          "display": {
+            "text": "503 − 267"
+          }
+        },
+        "modelAnswer": 345,
+        "correct": 236
+      },
+      "singletonProbeExample": "rule-zero-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "sub-through-zero-001",
+          "sub-through-zero-003"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "sub-through-zero-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 402 − 178.",
+          "text": "402 − 178",
+          "correct": 224,
+          "predictions": {
+            "sub_left_to_right": 333,
+            "smaller_minus_larger": 376,
+            "exchange_not_decremented": 334,
+            "borrow_forget": 300,
+            "second_exchange_inverted": 274
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "table_off_by_one",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "multiplication"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "multiplication",
+          "type": "multiplication",
+          "values": {
+            "a": 7,
+            "b": 8
+          },
+          "display": {
+            "text": "7 × 8"
+          }
+        },
+        "modelAnswer": 49,
+        "correct": 56
+      },
+      "singletonProbeExample": "rule-mul-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "mul-carry-001",
+          "mul-carry-002"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "mul-carry-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 23 · 4.",
+          "text": "23 + 4",
+          "correct": 92,
+          "predictions": {
+            "table_off_by_one": 69
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "unnecessary_exchange",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "subtraction"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "subtraction",
+          "type": "subtraction",
+          "values": {
+            "a": 11,
+            "b": 0
+          }
+        },
+        "modelAnswer": 1,
+        "correct": 11
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "sub-no-exchange-001",
+          "sub-no-exchange-002"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "sub-no-exchange-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 764 − 231.",
+          "text": "764 − 231",
+          "correct": 533,
+          "predictions": {
+            "unnecessary_exchange": 523
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "zero_donor_not_decremented",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "subtraction"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "subtraction",
+          "type": "subtraction",
+          "values": {
+            "a": 503,
+            "b": 267
+          },
+          "display": {
+            "text": "503 − 267"
+          }
+        },
+        "modelAnswer": 336,
+        "correct": 236
+      },
+      "singletonProbeExample": "rule-zero-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "sub-through-zero-001",
+          "sub-through-zero-003"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "sub-through-zero-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 402 − 178.",
+          "text": "402 − 178",
+          "correct": 224,
+          "predictions": {
+            "zero_donor_not_decremented": 324
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic",
+      "modelId": "zero_intermediate_ten",
+      "sourcePaths": [
+        "src/domains/predictableErrors/arithmetic.js",
+        "src/domains/arithmetic/subtractionCandidates.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "subtraction"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic",
+          "skill": "subtraction",
+          "type": "subtraction",
+          "values": {
+            "a": 503,
+            "b": 267
+          },
+          "display": {
+            "text": "503 − 267"
+          }
+        },
+        "modelAnswer": 246,
+        "correct": 236
+      },
+      "singletonProbeExample": "rule-zero-b",
+      "reviewedArithmeticBankExample": {
+        "taskIds": [
+          "sub-through-zero-001",
+          "sub-through-zero-003"
+        ],
+        "unresolved": [],
+        "displayExample": {
+          "taskId": "sub-through-zero-001",
+          "taskVersion": 1,
+          "promptSv": "Räkna ut 402 − 178.",
+          "text": "402 − 178",
+          "correct": 224,
+          "predictions": {
+            "zero_intermediate_ten": 234
+          }
+        }
+      },
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "fractions",
+      "modelId": "fraction_add_instead_of_multiply",
+      "sourcePaths": [
+        "src/domains/predictableErrors/fractions.js"
+      ],
+      "observedScopes": [
+        "multiplication"
+      ],
+      "example": {
+        "problem": {
+          "domain": "fractions",
+          "skill": "fractions",
+          "type": "fractions",
+          "values": {
+            "text": "2/3 × 3/5"
+          },
+          "display": {
+            "text": "2/3 × 3/5"
+          }
+        },
+        "modelAnswer": "19/15",
+        "correct": "2/5"
+      },
+      "singletonProbeExample": "rule-frac-int-a",
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "fractions",
+      "modelId": "fraction_components_separately",
+      "sourcePaths": [
+        "src/domains/predictableErrors/fractions.js"
+      ],
+      "observedScopes": [
+        "addition",
+        "subtraction"
+      ],
+      "example": {
+        "problem": {
+          "domain": "fractions",
+          "skill": "fractions",
+          "type": "fractions",
+          "values": {
+            "text": "2/5 + 1/3"
+          },
+          "display": {
+            "text": "2/5 + 1/3"
+          }
+        },
+        "modelAnswer": "3/8",
+        "correct": "11/15"
+      },
+      "singletonProbeExample": "rule-frac-add-b",
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "fractions",
+      "modelId": "fraction_integer_in_denominator",
+      "sourcePaths": [
+        "src/domains/predictableErrors/fractions.js"
+      ],
+      "observedScopes": [
+        "multiplication"
+      ],
+      "example": {
+        "problem": {
+          "domain": "fractions",
+          "skill": "fractions",
+          "type": "fractions",
+          "values": {
+            "text": "3/7 × 4"
+          },
+          "display": {
+            "text": "3/7 × 4"
+          }
+        },
+        "modelAnswer": "3/28",
+        "correct": "12/7"
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "fractions",
+      "modelId": "fraction_keep_first_denominator",
+      "sourcePaths": [
+        "src/domains/predictableErrors/fractions.js"
+      ],
+      "observedScopes": [
+        "addition",
+        "multiplication",
+        "subtraction"
+      ],
+      "example": {
+        "problem": {
+          "domain": "fractions",
+          "skill": "fractions",
+          "type": "fractions",
+          "values": {
+            "text": "2/5 + 1/3"
+          },
+          "display": {
+            "text": "2/5 + 1/3"
+          }
+        },
+        "modelAnswer": "3/5",
+        "correct": "11/15"
+      },
+      "singletonProbeExample": "rule-frac-add-b",
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "percentage",
+      "modelId": "percentage_change_amount_only",
+      "sourcePaths": [
+        "src/domains/predictableErrors/percentage.js"
+      ],
+      "observedScopes": [
+        "discount",
+        "increase"
+      ],
+      "example": {
+        "problem": {
+          "domain": "percentage",
+          "skill": "percentage",
+          "type": "percentage",
+          "values": {
+            "kind": "discount",
+            "percentage": 20,
+            "base": 250
+          },
+          "display": {
+            "text": "Vad kostar 250 kr efter 20% rabatt?"
+          }
+        },
+        "modelAnswer": 50,
+        "correct": 200
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "percentage",
+      "modelId": "percentage_change_reversed",
+      "sourcePaths": [
+        "src/domains/predictableErrors/percentage.js"
+      ],
+      "observedScopes": [
+        "discount",
+        "increase"
+      ],
+      "example": {
+        "problem": {
+          "domain": "percentage",
+          "skill": "percentage",
+          "type": "percentage",
+          "values": {
+            "kind": "discount",
+            "percentage": 20,
+            "base": 250
+          },
+          "display": {
+            "text": "Vad kostar 250 kr efter 20% rabatt?"
+          }
+        },
+        "modelAnswer": 300,
+        "correct": 200
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "percentage",
+      "modelId": "percentage_divide_by_percent_number",
+      "sourcePaths": [
+        "src/domains/predictableErrors/percentage.js"
+      ],
+      "observedScopes": [
+        "percent_of"
+      ],
+      "example": {
+        "problem": {
+          "domain": "percentage",
+          "skill": "percentage",
+          "type": "percentage",
+          "values": {
+            "kind": "percent_of",
+            "percentage": 12,
+            "base": 250
+          },
+          "display": {
+            "text": "Vad är 12% av 250?"
+          }
+        },
+        "modelAnswer": 20.833333333333332,
+        "correct": 30
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "percentage",
+      "modelId": "percentage_number_as_amount",
+      "sourcePaths": [
+        "src/domains/predictableErrors/percentage.js"
+      ],
+      "observedScopes": [
+        "discount",
+        "increase",
+        "percent_of"
+      ],
+      "example": {
+        "problem": {
+          "domain": "percentage",
+          "skill": "percentage",
+          "type": "percentage",
+          "values": {
+            "kind": "percent_of",
+            "percentage": 12,
+            "base": 250
+          },
+          "display": {
+            "text": "Vad är 12% av 250?"
+          }
+        },
+        "modelAnswer": 12,
+        "correct": 30
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "percentage",
+      "modelId": "percentage_part_whole_reversed",
+      "sourcePaths": [
+        "src/domains/predictableErrors/percentage.js"
+      ],
+      "observedScopes": [
+        "share"
+      ],
+      "example": {
+        "problem": {
+          "domain": "percentage",
+          "skill": "percentage",
+          "type": "percentage",
+          "values": {
+            "kind": "share",
+            "part": 18,
+            "total": 60
+          },
+          "display": {
+            "text": "Hur många procent är 18 av 60?"
+          }
+        },
+        "modelAnswer": 333.33333333333337,
+        "correct": 30
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "percentage",
+      "modelId": "percentage_ratio_not_converted",
+      "sourcePaths": [
+        "src/domains/predictableErrors/percentage.js"
+      ],
+      "observedScopes": [
+        "share"
+      ],
+      "example": {
+        "problem": {
+          "domain": "percentage",
+          "skill": "percentage",
+          "type": "percentage",
+          "values": {
+            "kind": "share",
+            "part": 18,
+            "total": 60
+          },
+          "display": {
+            "text": "Hur många procent är 18 av 60?"
+          }
+        },
+        "modelAnswer": 0.3,
+        "correct": 30
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "algebra",
+      "modelId": "algebra_coefficient_added",
+      "sourcePaths": [
+        "src/domains/predictableErrors/algebra.js"
+      ],
+      "observedScopes": [
+        "algebra_evaluate"
+      ],
+      "example": {
+        "problem": {
+          "domain": "algebra",
+          "skill": "algebra_evaluate",
+          "type": "algebra_evaluate",
+          "values": {
+            "expression": "4x + 3",
+            "variables": {
+              "x": 5
+            }
+          },
+          "display": {
+            "text": "Beräkna 4x + 3 när x = 5."
+          }
+        },
+        "modelAnswer": 12,
+        "correct": 23
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "algebra",
+      "modelId": "algebra_coefficient_dropped",
+      "sourcePaths": [
+        "src/domains/predictableErrors/algebra.js"
+      ],
+      "observedScopes": [
+        "algebra_evaluate"
+      ],
+      "example": {
+        "problem": {
+          "domain": "algebra",
+          "skill": "algebra_evaluate",
+          "type": "algebra_evaluate",
+          "values": {
+            "expression": "4x + 3",
+            "variables": {
+              "x": 5
+            }
+          },
+          "display": {
+            "text": "Beräkna 4x + 3 när x = 5."
+          }
+        },
+        "modelAnswer": 8,
+        "correct": 23
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "algebra",
+      "modelId": "algebra_constant_dropped",
+      "sourcePaths": [
+        "src/domains/predictableErrors/algebra.js"
+      ],
+      "observedScopes": [
+        "algebra_simplify"
+      ],
+      "example": {
+        "problem": {
+          "domain": "algebra",
+          "skill": "algebra_simplify",
+          "type": "algebra_simplify",
+          "values": {
+            "expression": "2x + 3x + 4"
+          },
+          "display": {
+            "text": "Förenkla 2x + 3x + 4."
+          }
+        },
+        "modelAnswer": "5x",
+        "correct": "5x+4"
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "algebra",
+      "modelId": "algebra_square_as_double",
+      "sourcePaths": [
+        "src/domains/predictableErrors/algebra.js"
+      ],
+      "observedScopes": [
+        "algebra_evaluate"
+      ],
+      "example": {
+        "problem": {
+          "domain": "algebra",
+          "skill": "algebra_evaluate",
+          "type": "algebra_evaluate",
+          "values": {
+            "expression": "x × x",
+            "variables": {
+              "x": 6
+            }
+          },
+          "display": {
+            "text": "Beräkna x × x när x = 6."
+          }
+        },
+        "modelAnswer": 12,
+        "correct": 36
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "algebra",
+      "modelId": "algebra_unlike_terms_combined",
+      "sourcePaths": [
+        "src/domains/predictableErrors/algebra.js"
+      ],
+      "observedScopes": [
+        "algebra_simplify"
+      ],
+      "example": {
+        "problem": {
+          "domain": "algebra",
+          "skill": "algebra_simplify",
+          "type": "algebra_simplify",
+          "values": {
+            "expression": "2x + 3x + 4"
+          },
+          "display": {
+            "text": "Förenkla 2x + 3x + 4."
+          }
+        },
+        "modelAnswer": "9x",
+        "correct": "5x+4"
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "algebra",
+      "modelId": "algebra_variable_dropped",
+      "sourcePaths": [
+        "src/domains/predictableErrors/algebra.js"
+      ],
+      "observedScopes": [
+        "algebra_simplify"
+      ],
+      "example": {
+        "problem": {
+          "domain": "algebra",
+          "skill": "algebra_simplify",
+          "type": "algebra_simplify",
+          "values": {
+            "expression": "2x + 3x + 4"
+          },
+          "display": {
+            "text": "Förenkla 2x + 3x + 4."
+          }
+        },
+        "modelAnswer": "9",
+        "correct": "5x+4"
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic_expressions",
+      "modelId": "expression_left_to_right",
+      "sourcePaths": [
+        "src/domains/predictableErrors/expressions.js"
+      ],
+      "observedScopes": [
+        "numeric_expression"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic_expressions",
+          "skill": "arithmetic_expressions",
+          "type": "arithmetic_expressions",
+          "values": {
+            "text": "4 + 3 × 5"
+          },
+          "display": {
+            "text": "4 + 3 × 5"
+          }
+        },
+        "modelAnswer": 35,
+        "correct": 19
+      },
+      "singletonProbeExample": "rule-expr-b",
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic_expressions",
+      "modelId": "expression_left_to_right_no_parentheses",
+      "sourcePaths": [
+        "src/domains/predictableErrors/expressions.js"
+      ],
+      "observedScopes": [
+        "numeric_expression"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic_expressions",
+          "skill": "arithmetic_expressions",
+          "type": "arithmetic_expressions",
+          "values": {
+            "text": "4 + 3 × 5"
+          },
+          "display": {
+            "text": "4 + 3 × 5"
+          }
+        },
+        "modelAnswer": 35,
+        "correct": 19
+      },
+      "singletonProbeExample": "rule-expr-b",
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "arithmetic_expressions",
+      "modelId": "expression_parentheses_ignored",
+      "sourcePaths": [
+        "src/domains/predictableErrors/expressions.js"
+      ],
+      "observedScopes": [
+        "numeric_expression"
+      ],
+      "example": {
+        "problem": {
+          "domain": "arithmetic_expressions",
+          "skill": "arithmetic_expressions",
+          "type": "arithmetic_expressions",
+          "values": {
+            "text": "4 × (3 + 5) + 2 × 6"
+          },
+          "display": {
+            "text": "4 × (3 + 5) + 2 × 6"
+          }
+        },
+        "modelAnswer": 29,
+        "correct": 44
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "number_fluency",
+      "modelId": "answer_off_by_one",
+      "sourcePaths": [
+        "src/domains/predictableErrors/fluency.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "forward_double",
+        "number_bonds"
+      ],
+      "example": {
+        "problem": {
+          "domain": "number_fluency",
+          "skill": "number_bonds",
+          "type": "number_bonds",
+          "values": {
+            "target": 15,
+            "knownTerm": 6,
+            "missingFirst": false
+          },
+          "display": {
+            "text": "6 + ? = 15"
+          }
+        },
+        "modelAnswer": 8,
+        "correct": 9
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "number_fluency",
+      "modelId": "bond_known_term_returned",
+      "sourcePaths": [
+        "src/domains/predictableErrors/fluency.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "number_bonds"
+      ],
+      "example": {
+        "problem": {
+          "domain": "number_fluency",
+          "skill": "number_bonds",
+          "type": "number_bonds",
+          "values": {
+            "target": 15,
+            "knownTerm": 6,
+            "missingFirst": false
+          },
+          "display": {
+            "text": "6 + ? = 15"
+          }
+        },
+        "modelAnswer": 6,
+        "correct": 9
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "number_fluency",
+      "modelId": "bond_sum_instead_of_missing",
+      "sourcePaths": [
+        "src/domains/predictableErrors/fluency.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "number_bonds"
+      ],
+      "example": {
+        "problem": {
+          "domain": "number_fluency",
+          "skill": "number_bonds",
+          "type": "number_bonds",
+          "values": {
+            "target": 15,
+            "knownTerm": 6,
+            "missingFirst": false
+          },
+          "display": {
+            "text": "6 + ? = 15"
+          }
+        },
+        "modelAnswer": 21,
+        "correct": 9
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "number_fluency",
+      "modelId": "bond_target_returned",
+      "sourcePaths": [
+        "src/domains/predictableErrors/fluency.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "number_bonds"
+      ],
+      "example": {
+        "problem": {
+          "domain": "number_fluency",
+          "skill": "number_bonds",
+          "type": "number_bonds",
+          "values": {
+            "target": 15,
+            "knownTerm": 6,
+            "missingFirst": false
+          },
+          "display": {
+            "text": "6 + ? = 15"
+          }
+        },
+        "modelAnswer": 15,
+        "correct": 9
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "number_fluency",
+      "modelId": "double_instead_of_half",
+      "sourcePaths": [
+        "src/domains/predictableErrors/fluency.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "inverse_double"
+      ],
+      "example": {
+        "problem": {
+          "domain": "number_fluency",
+          "skill": "doubles",
+          "type": "doubles",
+          "values": {
+            "value": 14,
+            "doubled": 28,
+            "form": "double_halving_transfer"
+          },
+          "display": {
+            "text": "28 ÷ 2"
+          }
+        },
+        "modelAnswer": 56,
+        "correct": 14
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "number_fluency",
+      "modelId": "double_known_product_returned",
+      "sourcePaths": [
+        "src/domains/predictableErrors/fluency.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "inverse_double"
+      ],
+      "example": {
+        "problem": {
+          "domain": "number_fluency",
+          "skill": "doubles",
+          "type": "doubles",
+          "values": {
+            "value": 14,
+            "doubled": 28,
+            "form": "double_halving_transfer"
+          },
+          "display": {
+            "text": "28 ÷ 2"
+          }
+        },
+        "modelAnswer": 28,
+        "correct": 14
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "number_fluency",
+      "modelId": "double_no_carry",
+      "sourcePaths": [
+        "src/domains/predictableErrors/fluency.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "forward_double"
+      ],
+      "example": {
+        "problem": {
+          "domain": "number_fluency",
+          "skill": "doubles",
+          "type": "doubles",
+          "values": {
+            "value": 28,
+            "doubled": 56,
+            "form": "double_addition"
+          },
+          "display": {
+            "text": "28 + 28"
+          }
+        },
+        "modelAnswer": 46,
+        "correct": 56
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "number_fluency",
+      "modelId": "double_original_returned",
+      "sourcePaths": [
+        "src/domains/predictableErrors/fluency.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "forward_double"
+      ],
+      "example": {
+        "problem": {
+          "domain": "number_fluency",
+          "skill": "doubles",
+          "type": "doubles",
+          "values": {
+            "value": 28,
+            "doubled": 56,
+            "form": "double_addition"
+          },
+          "display": {
+            "text": "28 + 28"
+          }
+        },
+        "modelAnswer": 28,
+        "correct": 56
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    },
+    {
+      "domain": "number_fluency",
+      "modelId": "partial_answer_entry",
+      "sourcePaths": [
+        "src/domains/predictableErrors/fluency.js",
+        "src/domains/predictableErrors/core.js"
+      ],
+      "observedScopes": [
+        "forward_double"
+      ],
+      "example": {
+        "problem": {
+          "domain": "number_fluency",
+          "skill": "doubles",
+          "type": "doubles",
+          "values": {
+            "value": 28,
+            "doubled": 56,
+            "form": "double_addition"
+          },
+          "display": {
+            "text": "28 + 28"
+          }
+        },
+        "modelAnswer": 5,
+        "correct": 56
+      },
+      "singletonProbeExample": null,
+      "reviewedArithmeticBankExample": null,
+      "limitation": "Finite constructed search; does not establish coverage of all scopes, rival sets, unseen history, or teacher access."
+    }
+  ],
+  "examples": {
+    "partialBatchAgainst": {
+      "input": [
+        {
+          "ref": "answered",
+          "status": "correct"
+        },
+        {
+          "ref": "waiting",
+          "status": "unanswered"
+        }
+      ],
+      "actual": {
+        "kind": "against",
+        "total": 1
+      }
+    },
+    "tiedRivals": {
+      "inputModelIds": [
+        [
+          "smaller_minus_larger",
+          "exchange_not_decremented"
+        ],
+        [
+          "smaller_minus_larger",
+          "exchange_not_decremented"
+        ]
+      ],
+      "actual": {
+        "kind": "supports",
+        "modelId": "smaller_minus_larger",
+        "count": 2,
+        "total": 2
+      }
+    },
+    "unrelatedModel": {
+      "intendedModelNotPassedToFunction": "exchange_not_decremented",
+      "actual": {
+        "kind": "supports",
+        "modelId": "carry_forget",
+        "count": 2,
+        "total": 2
+      }
+    },
+    "screeningCounter": {
+      "context": {
+        "evidenceClass": "diagnostic_only"
+      },
+      "modelTested": true,
+      "actualComparable": false,
+      "practiceWithKnownContentComparable": true
+    },
+    "multiplicationDisplay": {
+      "status": "proposed",
+      "first": {
+        "taskId": "mul-carry-004",
+        "taskVersion": 1,
+        "promptSv": "Räkna ut 146 · 4.",
+        "text": "146 + 4",
+        "correct": 584,
+        "predictions": {
+          "mul_carry_forgotten": 464,
+          "mul_carry_added_before": 1244,
+          "mul_carry_always_one": 574,
+          "mul_partials_concatenated": 41624,
+          "mul_columnwise": 164,
+          "ones_digits_only": 24
+        }
+      }
+    },
+    "fractionsBank": {
+      "status": "unavailable",
+      "reason": "Ingen granskad kontrastfråga i banken skiljer den här felmodellen från rätt svar."
+    },
+    "reportProbe": {
+      "nextProbe": {
+        "status": "proposed",
+        "taskId": "rule-sub-a",
+        "question": {
+          "domain": "arithmetic",
+          "skill": "subtraction",
+          "type": "subtraction",
+          "values": {
+            "a": 62,
+            "b": 27
+          },
+          "display": {
+            "text": "62 − 27"
+          }
+        },
+        "expectedAnswer": 35,
+        "distinguishesModelIds": [
+          "smaller_minus_larger"
+        ],
+        "requiresTeacherReview": true,
+        "purposeSv": "Ny kontroll där aktuella felmodeller ger andra svar än facit och från varandra. Elevens metod behöver fortfarande belägg."
+      },
+      "reportNextCheck": "Förslag, inte utdelat: 62 − 27. Ny kontroll där aktuella felmodeller ger andra svar än facit och från varandra. Elevens metod behöver fortfarande belägg."
+    }
+  }
+}

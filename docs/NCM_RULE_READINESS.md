@@ -1,5 +1,14 @@
 # Regelmotor: gemensam genomgång för alla domäner
 
+> **Nulägesavstämning 2026-11-04:** detta dokument innehåller flera daterade
+> etapper. Inledande tabell och slutavsnittets offlinebeskrivning avser den
+> ursprungliga genomgången, inte hela dagens implementation. Aktuell kod har
+> `predictable-errors-v7`, aritmetikbank v5 och en integrerad resultatvy för
+> uppföljning. Alla sex domäner har kandidatberäkningar men saknar fullständig
+> gemensam kontrastkedja. Läs [aktuell täckning](LEARNING_SYSTEM_COVERAGE.md)
+> och [kod-/dokumentsyntesen](LEARNING_SYSTEM_SYNTHESIS.md) före slutsatser om
+> vad som återstår. Historiken och dess ursprungliga verifieringsgränser bevaras.
+
 2026-10-30. Principen **regelmotor först, AI vid tolkningsbehov** gäller alla
 domäner. Den här genomgången skiljer körbara svarskandidater från breda
 feletiketter. Den ersätter inte [hela NCM-inventeringen](NCM_DIDACTIC_COVERAGE.md).

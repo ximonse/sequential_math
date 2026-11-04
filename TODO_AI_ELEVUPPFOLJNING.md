@@ -1,5 +1,10 @@
 # Plan: AI-stödd analys, uppdrag och screening
 
+> Samordning 2026-11-04: denna plan beskriver AI-/MCP-ingången, inte en
+> separat pedagogisk målbild. [Systemsyntesen](docs/LEARNING_SYSTEM_SYNTHESIS.md)
+> jämför den med regelanalys, screening, läraravstämning och kontrastutkast.
+> Materialkedjan ska återanvändas; datum och verifieringsgränser nedan bevaras.
+
 ## Aktivt mål och beslutad omfattning 2026-10-28
 
 Simon ska via MCP/API och samordnade skills kunna analysera underlag samt

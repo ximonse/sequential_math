@@ -1,5 +1,14 @@
 # Arkitektur & Checklista för nya domäner
 
+## Två samverkande mål och aktuell kodavstämning
+
+Produktens riktning preciserades av Simon 2026-11-04: mängdträning/förtrogenhet
+och lärarens utforskning/bemötande av felförståelser. Normativ definition finns
+i `docs/PRODUCT_CONTRACT.md`; aktuell kodinventering, överlämningar, motsägelser
+och föreslagen ansvarsfördelning i `docs/LEARNING_SYSTEM_SYNTHESIS.md`.
+`docs/LEARNING_SYSTEM_COVERAGE.md` skiljer kandidatberäkning, frågeförslag och
+faktisk bank-/lärarväg. Detta är dokumentgranskning, ingen ny appintegration.
+
 ## Lokal elevanalys via MCP
 
 `api/_teacherMaterialPreview.js` validerar generell eller analysspecifik

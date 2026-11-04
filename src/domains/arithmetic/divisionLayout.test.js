@@ -31,6 +31,19 @@ describe("the pupil's own short division (division button)", () => {
     expect(removed.answerLines).toEqual({})
   })
 
+  it('matches the printed bar and divisor position for the same two-digit numerator', () => {
+    let state = start()
+    state = write(write(state, 3, 2, '7'), 3, 3, '8')
+    state = write(state, 4, 2, '3')
+    const own = divisionLayouts(state)[0]
+    const printed = divisionLayouts(state, shortDivisionTemplate({ promptSv: '78/3' }))[0]
+    expect(own.width).toBe(printed.width)
+    expect(own.equalsColumn - own.first).toBe(printed.equalsColumn - printed.first)
+    expect(divisorShifts(state, [own]).get('4:2')).toBe(0.5)
+    state = record(state, { type: 'erase', position: { row: 3, column: 3 }, layer: 'main', before: '8', after: '' })
+    expect(divisionLayouts(state)[0].width).toBe(1)
+  })
+
   it('centres the divisor under the bar', () => {
     let state = write(start(), 4, 2, '4')
     expect([...divisorShifts(state, divisionLayouts(state))]).toEqual([['4:2', 1]])

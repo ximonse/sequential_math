@@ -21,8 +21,9 @@ export function divisionLayouts(grid, template = null) {
       if (!isDigit(value)) break
       numerator.push({ column, value })
     }
-    // Three columns to start with; the bar grows with a longer numerator.
-    const width = Math.min(Math.max(3, numerator.length), grid.columns - division.column)
+    // An empty division offers three columns. Once written, use the same width
+    // as the printed template: exactly one column per numerator digit.
+    const width = Math.min(numerator.length || 3, grid.columns - division.column)
     const equalsColumn = division.column + width
     layouts.push({ id: division.id, printed: false, row: division.row, first: division.column, width, numerator,
       equalsColumn, answerFirst: equalsColumn + 1,

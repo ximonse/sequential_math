@@ -281,6 +281,14 @@ export async function getAllProfilesWithSync() {
   return getCloudSyncApi().getAllProfilesWithSync()
 }
 
+export async function fetchTeacherCatalog() {
+  return getCloudSyncApi().fetchTeacherCatalog()
+}
+
+export async function fetchTeacherScopedProfiles(scope) {
+  return getCloudSyncApi().fetchTeacherScopedProfiles(scope)
+}
+
 export async function deleteProfile(studentId) {
   const normalizedId = normalizeStudentId(studentId)
   if (!normalizedId) return { ok: false, error: 'Kunde inte lasa elev-ID.' }

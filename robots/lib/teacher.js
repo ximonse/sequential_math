@@ -20,6 +20,8 @@ export async function teacherLogin(page, teacher) {
       const data = await response.json()
       if (Array.isArray(data.profiles)) data.profiles = data.profiles.filter(profile =>
         [profile.classId, ...(profile.classIds || [])].some(id => teacher.attentionFixtureClassIds.includes(id)))
+      if (Array.isArray(data.pupils)) data.pupils = data.pupils.filter(pupil =>
+        [pupil.classId, ...(pupil.classIds || [])].some(id => teacher.attentionFixtureClassIds.includes(id)))
       await route.fulfill({ response, json: data })
     })
   }
@@ -74,7 +76,8 @@ export async function sendScreening(page, { className, pupilName, groupName }) {
 
 export async function selectOnlyClass(page, className) {
   const panel = page.locator('section.dashboard-class-filter')
-  await panel.getByRole('button', { name: 'Alla klasser', exact: true }).click()
+  const clear = panel.getByRole('button', { name: 'Rensa klassurval', exact: true })
+  if (await clear.isVisible()) await clear.click()
   await panel.getByRole('button', { name: className, exact: true }).click()
   await page.waitForTimeout(500)
 }

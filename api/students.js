@@ -11,6 +11,7 @@ import { getLiveTeacherAuthPayload } from './_helpers.js'
 import { isSuperAdminRole } from './_teacherRoles.js'
 import { teacherClassChoices } from './_teacherClassChoices.js'
 import { teacherAudience, teacherGroupChoices } from './_teacherAudience.js'
+import { scopedStudentIds, teacherCatalog } from './_teacherCatalog.js'
 
 async function batchLoadKvKeys(keys, batchSize = 20) {
   const results = []
@@ -57,7 +58,18 @@ export default async function handler(req, res) {
     if (req.query?.resource === 'classes') return await teacherClassChoices(req, res)
     if (req.query?.resource === 'groups') return await teacherGroupChoices(req, res)
     if (req.query?.resource === 'audience') return await teacherAudience(req, res)
-    const ids = await kv.smembers('students:index')
+    if (req.query?.resource === 'catalog') return await teacherCatalog(req, res)
+    // Only the classes and pupils asked for (comma separated); without these the
+    // full list is returned as before, for export and older callers.
+    const listParam = value => {
+      const ids = String(value || '').split(',').map(item => item.trim()).filter(Boolean)
+      if (ids.length > 200) throw Object.assign(Error('För stort elevurval. Hämta högst 200 id åt gången.'), { status: 400 })
+      return ids
+    }
+    const scoped = req.query?.classIds !== undefined || req.query?.studentIds !== undefined
+    const ids = scoped
+      ? await scopedStudentIds(req, { classIds: listParam(req.query.classIds), studentIds: listParam(req.query.studentIds) })
+      : await kv.smembers('students:index')
     if (!Array.isArray(ids) || ids.length === 0) {
       return res.status(200).json({ profiles: [] })
     }
@@ -98,7 +110,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ profiles: sanitized })
   } catch (error) {
-    return res.status(500).json({
+    return res.status(error.status || 500).json({
       error: 'Storage backend unavailable',
       details: error?.message || 'unknown'
     })

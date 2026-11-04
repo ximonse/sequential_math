@@ -272,6 +272,47 @@ export function createCloudSyncApi(deps) {
   }
 
 
+  // Teacher view (Simon 2026-11-03): a light catalog of all pupils at start, full
+  // list profiles only for what the teacher opens. getAllProfilesWithSync stays for
+  // export and older callers.
+  async function teacherListRequest(query) {
+    const teacherApiToken = getTeacherApiToken()
+    const headers = {}
+    if (teacherApiToken) applyTeacherAuthHeader(headers, teacherApiToken)
+    const response = await fetch(`/api/students?${query}`, { cache: 'no-store', headers })
+    if (!response.ok) throw new Error(response.status === 401 ? 'Obehörig mot servern (401).' : `Serverfel vid elevhämtning (${response.status}).`)
+    const data = await response.json()
+    if (teacherApiToken !== getTeacherApiToken()) throw new Error('Inloggningen ändrades under hämtningen.')
+    return data
+  }
+
+  async function fetchTeacherCatalog() {
+    const data = await teacherListRequest('resource=catalog')
+    if (!Array.isArray(data?.pupils)) throw new Error('Elevkatalogen kunde inte läsas.')
+    setCloudProfilesSyncStatus({ lastSuccessAt: Date.now(), lastError: '', lastSource: 'teacher_catalog', cloudCount: data.pupils.length, mergedCount: data.pupils.length })
+    return data.pupils.map(pupil => {
+      const studentId = normalizeStudentId(pupil.studentId)
+      return studentId ? { ...pupil, studentId, recentProblems: [], stats: {},
+        masteryFacts: { facts: [], revokedIds: [] }, catalogOnly: true } : null
+    }).filter(Boolean)
+  }
+
+  async function fetchTeacherScopedProfiles({ classIds = [], studentIds = [] } = {}) {
+    if (!classIds.length && !studentIds.length) return []
+    const profiles = new Map()
+    for (let offset = 0; offset < Math.max(classIds.length, studentIds.length); offset += 200) {
+      const query = new URLSearchParams({ classIds: classIds.slice(offset, offset + 200).join(','), studentIds: studentIds.slice(offset, offset + 200).join(',') })
+      const data = await teacherListRequest(query.toString())
+      if (!Array.isArray(data?.profiles)) throw new Error('Elevresultaten kunde inte läsas.')
+      for (const raw of data.profiles) {
+        const profile = normalizeTeacherListProfile(raw, normalizeStudentId)
+        if (!profile) throw new Error('Invalid teacher list contract')
+        profiles.set(profile.studentId, profile)
+      }
+    }
+    return [...profiles.values()]
+  }
+
   async function getAllProfilesWithSync() {
     const local = getAllProfiles()
     setCloudProfilesSyncStatus({
@@ -551,6 +592,8 @@ export function createCloudSyncApi(deps) {
     deleteProfileFromCloud,
     getCloudProfilesSyncStatus,
     getAllProfilesWithSync,
+    fetchTeacherCatalog,
+    fetchTeacherScopedProfiles,
     loadProfileFromCloud,
     requestCloudSync,
     syncProfileToCloud,

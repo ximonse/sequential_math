@@ -58,7 +58,9 @@ export function useDashboardViewData({
   const weekGoal = activeAssignment?.targetCount || defaultWeeklyGoal
 
   const allRows = useMemo(
-    () => students.map(student => buildStudentRow(student, activeAssignment, classNameById)),
+    () => students.filter(student => !student.catalogOnly).map(student => ({
+      ...buildStudentRow(student, activeAssignment, classNameById), groupIds: student.groupIds || []
+    })),
     [students, activeAssignment, classNameById]
   )
 
@@ -69,7 +71,7 @@ export function useDashboardViewData({
         : [])
       : selectedClassIds.length > 0
         ? allRows.filter(row => recordMatchesClassFilter(row, selectedClassIds))
-        : allRows
+        : []
   ), [isDirectStudentView, detailStudentId, allRows, selectedClassIds])
   const classStats = {
     totalStudents: filteredRows.length,
@@ -112,7 +114,7 @@ export function useDashboardViewData({
 
   const classBenchmarks = useMemo(
     () => buildClassOperationBenchmarks(
-      detailStudentId ? detailStudentSource.filter(student => student.studentId !== detailStudentId) : detailStudentSource
+      detailStudentSource.filter(student => !student.catalogOnly && student.studentId !== detailStudentId)
     ),
     [detailStudentSource, detailStudentId]
   )
@@ -164,7 +166,8 @@ export function useDashboardViewData({
   )
 
   const inactivityBuckets = buildInactivityBuckets(tableRows)
-  const classSummaries = buildClassSummaries(classes, students, selectedClassIds, weekGoal)
+  const classSummaries = selectedClassIds.length
+    ? buildClassSummaries(classes, students.filter(student => !student.catalogOnly), selectedClassIds, weekGoal) : []
 
   const classOverviewMeta = useMemo(() => {
     const selectedClassNames = selectedClassIds
@@ -179,7 +182,7 @@ export function useDashboardViewData({
   }, [selectedClassIds, classNameById, filteredRows])
 
   const ncmOverview = useMemo(
-    () => buildNcmOverview(filteredStudents, classNameById),
+    () => buildNcmOverview(filteredStudents.filter(student => !student.catalogOnly), classNameById),
     [filteredStudents, classNameById]
   )
 
@@ -275,7 +278,7 @@ export function useDashboardViewData({
   )
 
   const usageInsights = useMemo(
-    () => buildUsageInsights(filteredRows, filteredStudents),
+    () => buildUsageInsights(filteredRows, filteredStudents.filter(student => !student.catalogOnly)),
     [filteredRows, filteredStudents]
   )
 

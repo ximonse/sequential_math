@@ -82,6 +82,8 @@ export default function DashboardLayout({
   isDirectStudentView,
   detailStudentProfile,
   cloudSyncStatus,
+  formatSyncTimestamp,
+  getCloudSyncSourceLabel,
   formatTimeAgo,
   navigate,
   handleLogout,
@@ -93,6 +95,9 @@ export default function DashboardLayout({
   filteredStudents,
   classFilterOptions,
   clearClassFilter,
+  selectAllClasses,
+  historyState,
+  onRetryHistory,
   handleToggleClassFilter,
   classStats,
   dataQualitySummary,
@@ -190,9 +195,10 @@ export default function DashboardLayout({
         days: Number(saved.days) === 14 ? 14 : 7, studentId: String(saved.studentId || '') }
     } catch { return { table: 7, days: 7, studentId: '' } }
   })
-  const tableProgressStudents = useMemo(() => selectedClassIds.length > 0
-    ? students.filter(student => recordMatchesClassFilter(student, selectedClassIds)) : students,
-  [students, selectedClassIds, recordMatchesClassFilter])
+  const tableProgressStudents = useMemo(() => activeWorkspace === 'focus'
+    ? selectedClassIds.length > 0 ? students.filter(student => recordMatchesClassFilter(student, selectedClassIds)) : students
+    : filteredStudents.filter(student => !student.catalogOnly),
+  [activeWorkspace, students, filteredStudents, selectedClassIds, recordMatchesClassFilter])
   useEffect(() => {
     try { localStorage.setItem('mathapp_table_progress_selection', JSON.stringify(tableSelection)) } catch { /* Preferences are optional. */ }
   }, [tableSelection])
@@ -248,6 +254,7 @@ export default function DashboardLayout({
   }, [isDirectStudentView, detailStudentId])
 
   function renderProgressModule(id, title, content) {
+    if (!content) return null
     const toggle = <button type="button" aria-label={`${collapsed[id] ? 'Visa' : 'Minimera'} ${title}`}
       aria-expanded={!collapsed[id]} aria-controls={`progress-panel-${id}`}
       onClick={() => setCollapsed(previous => ({ ...previous, [id]: !previous[id] }))}
@@ -273,6 +280,10 @@ export default function DashboardLayout({
   const isScreening = activeWorkspace === 'ncm' || activeWorkspace === 'ncm-results'
 
   function renderPanelContent(id) {
+    if (historyState && historyState.status !== 'ready'
+      && ['overview', 'mastery', 'tableoverview', 'heatmap', 'detail', 'results', 'difficulty-analysis', 'training-priority', 'inactivity', 'tabledev', 'support', 'dataquality'].includes(id)) {
+      return null
+    }
     if (id === 'focus') return canViewAttention ? <AttentionModule students={tableProgressStudents} allStudents={students} /> : null
     if (id === 'overview') return (
       <ClassOverviewPanel
@@ -521,9 +532,15 @@ export default function DashboardLayout({
     filteredStudentsCount={filteredStudents.length}
     classFilterOptions={classFilterOptions}
     onClearClassFilter={clearClassFilter}
+    onSelectAllClasses={() => selectAllClasses?.(classFilterOptions.filter(item => item.kind !== 'group').map(item => item.id))}
     onToggleClassFilter={handleToggleClassFilter}
+    students={students}
+    classNameById={classNameById}
+    onPickPupil={pupil => handleOpenStudentDetail(pupil.studentId)}
   />
-  const classStatsPanel = <ClassStatsCards classStats={classStats} supportCount={supportRows.length} />
+  const classStatsPanel = <ClassStatsCards classStats={historyState && historyState.status !== 'ready'
+    ? { totalStudents: '–', activeToday: '–', activeThisWeek: '–' } : classStats}
+    supportCount={historyState && historyState.status !== 'ready' ? '–' : supportRows.length} />
 
   return (
     <div data-teacher-workspace={activeWorkspace} data-teacher-admin="" className={`teacher-dashboard-surface min-h-screen pb-5 pt-14 sm:pb-6 sm:pt-16 ${surfaceClass}`}>
@@ -537,6 +554,8 @@ export default function DashboardLayout({
           teacherRole={teacherRole}
           isAdmin={teacherIsAdmin}
           cloudSyncStatus={cloudSyncStatus}
+          formatSyncTimestamp={formatSyncTimestamp}
+          getCloudSyncSourceLabel={getCloudSyncSourceLabel}
           isCloudRefreshBusy={isCloudRefreshBusy}
           onRefreshNow={() => { void handleCloudRefreshNow() }}
           onShowPupilNames={showPupilNames}
@@ -570,6 +589,13 @@ export default function DashboardLayout({
               </nav>
           </aside>
           <div data-admin-content className="min-w-0 flex flex-col gap-3">
+            {!isScreening && !['admin', 'focus'].includes(activeWorkspace) && <div data-history-state={historyState?.status || 'ready'}
+              hidden={!historyState || historyState.status === 'ready'} role="status" className="text-sm text-gray-700">
+              {historyState?.status === 'idle' ? 'Välj klass, grupp eller sök en elev för att se resultat.'
+                : historyState?.status === 'error' ? historyState.error : 'Hämtar elevresultat…'}
+              {historyState?.status === 'error' && <button type="button" onClick={onRetryHistory}
+                className="ml-2 rounded border border-gray-300 px-1.5 py-0.5 text-sm">Försök hämta resultaten igen</button>}
+            </div>}
             {!isScreening && activeWorkspace !== 'admin' && <div className="dashboard-context-grid">
             {activeWorkspace === 'progress' ? renderProgressModule('filter', 'Klassurval', classFilterPanel) : classFilterPanel}
             {activeWorkspace === 'progress'

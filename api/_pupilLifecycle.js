@@ -88,7 +88,7 @@ function trainingStatistics(profile) {
 }
 
 export async function buildPupilCleanup(id, job, store) {
-  const deletes = new Set([`student_highscore_keys:${id}`, `diagnostic_assignments_by_student:${id}`,
+  const deletes = new Set([`student_catalog:${id}`, `student_highscore_keys:${id}`, `diagnostic_assignments_by_student:${id}`,
     `diagnostic_attempts_by_student:${id}`])
   const patches = []
   const removals = [{ key: 'students:index', member: id }]

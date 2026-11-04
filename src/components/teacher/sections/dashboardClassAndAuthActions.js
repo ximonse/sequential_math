@@ -77,7 +77,7 @@ export function buildDashboardClassAndAuthActions({
   const handleCloudRefreshNow = async () => {
     setIsCloudRefreshBusy(true)
     try {
-      await loadStudents()
+      if (await loadStudents() === null) return
       // Restore classes from server if localStorage is missing any
       await syncClassesFromServer()
       const latestSyncStatus = getCloudProfilesSyncStatus()
@@ -236,6 +236,10 @@ export function buildDashboardClassAndAuthActions({
     setSelectedClassIds([])
   }
 
+  const selectAllClasses = classIds => {
+    setSelectedClassIds([...new Set(classIds.map(String))])
+  }
+
   const handleResetStudentPassword = async (studentId, code) => {
     const normalizedStudentId = normalizeStudentId(studentId)
     const loginCode = String(code || '').trim()
@@ -295,6 +299,7 @@ export function buildDashboardClassAndAuthActions({
       handleRenameClass,
     handleToggleClassFilter,
     clearClassFilter,
+    selectAllClasses,
     handleResetStudentPassword,
     handleOpenStudentDetail,
     handleSaveClassExtras

@@ -6,6 +6,45 @@ nytta framför omfattning: befintlig klass-/grupphämtning körs oberoende av
 historiken, med stabil laddningslivscykel. Större ombyggnad, nya API:er,
 mätinfrastruktur och migreringar avvaktas. Publicering kräver separat mandat.
 
+## Avgränsad lärarkatalog — 2026-11-04
+
+Simon har gett Codex mandat att färdigställa Claudes lokala katalog- och
+sökarbete. Lärarstarten hämtar namn/kodnamn och behöriga medlemskap via
+`/api/students?resource=catalog`. Resultatlistan hämtas först för uttryckligt
+klass-/gruppurval eller vald elev; ”Alla klasser” väljer klassernas ID:n,
+medan tomt urval visar en uppmaning att välja. Elevsökning fungerar även före
+resultathämtning och kan öppna elevprofil eller elevens klass i administrationen.
+
+`teacherPupilLoader.js` äger ett aktuellt urval med generationsskydd. Byte av
+urval eller omladdad katalog gör äldre svar verkningslösa; lika samtidiga
+urval delar hämtning. Omladdning läser aktuellt urval, inte alla tidigare
+öppnade klasser. Katalogposter har `catalogOnly` och används aldrig som
+resultatunderlag. Panelerna skiljer tomt urval, hämtning, fel och komplett
+hämtning; ett fel har ett uttryckligt återförsök. Saknade profiler för kända
+mottagare ger ett läsfel i stället för ett delvis korrekt resultat.
+
+Katalogens små metadataobjekt innehåller kodnamn, årskurs, skapandetid och
+inloggningsfamilj/senaste lagrade inloggning. Privata tilltalsnamn kommer
+fortsatt från lärarens privata namnlista. Metadata har versionskontroll och
+60 sekunders TTL; profilskrivning ogiltigförklarar posten när dessa fält
+ändras. Skrivningen använder befintligt tombstone-skydd och elevradering
+städar posten. Varje läsning använder aktuell klassbehörighet och borttagna
+elever filtreras även om ett äldre medlemsindex finns kvar.
+
+Detta färdigställer en avgränsad del av P2: en varm katalog läser små poster,
+men en kall katalog behöver läsa originalprofiler för att bygga dem. Valda
+klassers resultat använder fortfarande det befintliga listkontraktet med
+`recentProblems`; komplett elevhistorik läses separat vid elevdetalj.
+Ingen färdig liten statistikprojektion, ändrad matematikmodell eller uppmätt
+produktionsvinst påstås. Export/MCP behåller det äldre oskopade API-kontraktet.
+
+Arkitekturbedömning: Dashboard samordnar fortsatt vyerna, medan asynkron
+urvalshantering ligger i en separat modul med kontraktstester. DashboardLayout
+är fortsatt över 600 rader och får endast inkoppling av status/sökning.
+storageCloudSync är också över 600 rader men behåller sitt befintliga ansvar
+för API-adaptrar; en generell uppdelning ingår inte i denna avgränsning.
+Verifieringsutfall och publiceringsstatus dokumenteras i projektkartan.
+
 ## Riktning
 
 **Vyernas första användbara tillstånd ska bero på minsta giltiga data.**

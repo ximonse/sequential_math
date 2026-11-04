@@ -87,7 +87,7 @@ export default function ClassPupilsTab({
         <h4 id="class-pupils-title" className="font-semibold text-gray-800">Elever i klassen ({classStudents.length})</h4>
         {classStudents.length === 0 ? <p className="mt-1 text-xs text-gray-500">Inga elever ännu.</p> : (
           <ul className="mt-1 divide-y divide-gray-100 rounded border border-gray-200">
-            {classStudents.map(student => <li key={student.studentId} data-class-pupil className="flex items-center justify-between gap-2 px-2 py-1.5 text-xs">
+            {classStudents.map(student => <li key={student.studentId} data-class-pupil={student.studentId} className="flex items-center justify-between gap-2 px-2 py-1.5 text-xs">
               <span className="truncate font-medium">{student.name || student.displayAlias}</span>
               <span className="flex shrink-0 items-center gap-2">
                 <span className="text-gray-500">{student.auth?.lastLoginAt ? 'Har loggat in' : 'Inte inloggad än'}</span>

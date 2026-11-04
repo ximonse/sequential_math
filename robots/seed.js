@@ -156,6 +156,7 @@ export async function handleControl(action, body = {}) {
       const className = (await kv.get(`class:${classId}`))?.name || classId
       const profile = emptyPupil(studentId, loginCode, classId, className)
       if (body.creationNames?.[index]) profile.name = String(body.creationNames[index])
+      if (Number(body.lastLoginAt) > 0) profile.auth.lastLoginAt = Number(body.lastLoginAt)
       await createStudentRecord(studentId, profile)
       await kv.sadd(`class_students:${classId}`, studentId)
       pupils.push({ studentId, loginCode, pin: ROBOT_PIN, classId })

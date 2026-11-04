@@ -15,6 +15,8 @@ function DashboardHeaderBar({
   fillingPupilNames,
   onShowCodeNames,
   pupilLabelsShown = false,
+  formatSyncTimestamp,
+  getCloudSyncSourceLabel,
   onGoDashboard,
   onLogout
 }) {
@@ -30,7 +32,8 @@ function DashboardHeaderBar({
       </div>
 
       <div className="flex flex-wrap items-center justify-end gap-1.5">
-        <CloudSyncStatusPanel cloudSyncStatus={cloudSyncStatus} isCloudRefreshBusy={isCloudRefreshBusy} onRefreshNow={onRefreshNow} />
+        <CloudSyncStatusPanel cloudSyncStatus={cloudSyncStatus} isCloudRefreshBusy={isCloudRefreshBusy} onRefreshNow={onRefreshNow}
+          formatSyncTimestamp={formatSyncTimestamp} getCloudSyncSourceLabel={getCloudSyncSourceLabel} />
         <button type="button" onClick={pupilLabelsShown ? onShowCodeNames : onShowPupilNames} disabled={fillingPupilNames}
           className="rounded-md bg-violet-100 px-1.5 py-0.5 text-xs font-semibold text-violet-800 hover:bg-violet-200 disabled:opacity-50">
           {fillingPupilNames ? 'Hämtar namn…' : pupilLabelsShown ? 'Byt till kodnamn' : 'Visa tilltalsnamn'}

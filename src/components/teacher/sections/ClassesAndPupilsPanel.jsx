@@ -8,6 +8,7 @@ import ClassPupilsTab from './ClassPupilsTab'
 import ClassSettingsForm from './ClassSettingsForm'
 import StudentCredentialCards from './StudentCredentialCards'
 import GroupEditor from './GroupEditor'
+import PupilSearch from './PupilSearch.jsx'
 import { useTeacherGroups } from './useTeacherGroups'
 import { SchoolSelect, useSchools } from './SchoolControls'
 import { useAdminDirectory } from './useAdminDirectory'
@@ -143,7 +144,14 @@ export default function ClassesAndPupilsPanel({
 
       {area === 'classes' && <>
       <section aria-labelledby="class-list-heading" className={MODULE}>
-      <h2 id="class-list-heading" className="text-lg font-semibold text-gray-800">Klasser och grupper</h2>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 id="class-list-heading" className="text-lg font-semibold text-gray-800">Klasser och grupper</h2>
+        <PupilSearch students={students} classNameById={new Map(classes.map(item => [String(item.id), item.name]))} onPick={pupil => {
+          select('class', pupil.classId)
+          setStatus(`${pupil.name || pupil.displayAlias} går i ${pupil.className || 'klassen'}.`)
+          window.setTimeout(() => document.querySelector(`[data-class-pupil="${pupil.studentId}"]`)?.scrollIntoView({ block: 'center' }), 50)
+        }} />
+      </div>
 
       {withoutSchool.length > 0 && (
         <section data-classes-without-school aria-labelledby="classes-without-school" className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3">

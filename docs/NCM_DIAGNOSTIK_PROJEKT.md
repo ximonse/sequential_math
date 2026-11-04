@@ -144,8 +144,12 @@ skrivs i svarsrutan som i andra uppgifter. Resten av rutnätet är fritt. Äldre
 försök med arbete där mallen skulle ligga visas utan mall. Analysen läser ännu
 inte resterna.
 
-Knappen med bråkstreck och likhetstecken i verktygsraden slår på samma sorts små
-siffror på alla lodräta linjer i alla uppgifter. Ett decimaltecken som skrivs i
+Knappen med bråkstreck och likhetstecken i verktygsraden placerar en egen kort
+division i vald ruta. Ett tomt streck är tre rutor brett; när täljaren skrivits
+följer strecket antalet siffror, precis som i den givna mallen. Nämnaren centreras
+under strecket, och likhetstecknet och svarslinjen följer dess högra kant.
+Små restsiffror skrivs i raden ovanför täljaren.
+Ett decimaltecken som skrivs i
 rutnätet hamnar i krysset mellan siffrorna (0,75), inte i en egen ruta. Suddet
 stängs av när fingret lyfts. I screening syns räknehäftet alltid; läraren kan
 välja Huvudräkning (inget rutnät) och Rityta per fråga eller för hela

@@ -69,6 +69,23 @@ test('A pupil writes remainders above the printed division and the answer after 
   await expect(answer).toHaveValue('26')
   await student.screenshot({ path: testInfo.outputPath('2-written.png') })
 
+  // The same division placed by the pupil has the printed template's geometry.
+  await student.getByRole('button', { name: 'Kort division', exact: true }).tap()
+  await student.locator('input[data-cell="5:2"]').tap()
+  await key(7).tap()
+  await key(8).tap()
+  await student.locator('input[data-cell="6:2"]').tap()
+  await key(3).tap()
+  const printedBar = student.locator('[data-short-division="78/3"] .short-division__bar')
+  const ownBar = student.locator('[data-short-division^="own:"] .short-division__bar')
+  const printedBox = await printedBar.boundingBox()
+  const ownBox = await ownBar.boundingBox()
+  expect(ownBox.width, 'The same numerator needs the same fraction bar').toBeCloseTo(printedBox.width, 1)
+  expect(ownBox.height).toBeCloseTo(printedBox.height, 1)
+  await student.screenshot({ path: testInfo.outputPath('matching-bars-portrait.png') })
+  await student.setViewportSize({ width: 1180, height: 820 })
+  await student.screenshot({ path: testInfo.outputPath('matching-bars-landscape.png') })
+
   await expect(student.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
   await student.reload()
   await expect(student.locator('[data-line-note="2:3"]')).toHaveText('1')

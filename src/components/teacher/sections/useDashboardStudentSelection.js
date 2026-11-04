@@ -46,7 +46,7 @@ export function useDashboardStudentSelection({
         : [])
       : selectedClassIds.length > 0
         ? students.filter(student => recordMatchesClassFilter(student, selectedClassIds))
-        : students
+        : []
   ), [isDirectStudentView, detailStudentId, selectedClassIds, students])
 
   useEffect(() => {
@@ -63,6 +63,7 @@ export function useDashboardStudentSelection({
   )
 
   useEffect(() => {
+    if (isDirectStudentView && routeStudentId) return
     if (detailStudentSource.length === 0) {
       if (detailStudentId !== '') setDetailStudentId('')
       return
@@ -74,7 +75,7 @@ export function useDashboardStudentSelection({
     if (!detailStudentId || !detailStudentSource.some(item => item.studentId === detailStudentId)) {
       setDetailStudentId(detailStudentSource[0].studentId)
     }
-  }, [detailStudentSource, detailStudentId, hasMissingDirectStudent, setDetailStudentId])
+  }, [detailStudentSource, detailStudentId, hasMissingDirectStudent, setDetailStudentId, isDirectStudentView, routeStudentId])
 
   const detailStudentOptions = useMemo(
     () => detailStudentSource
@@ -105,12 +106,12 @@ export function useDashboardStudentSelection({
   const lastProblem = selectedListProfile?.recentProblems?.[selectedListProfile.recentProblems.length - 1]
   const detailKey = selectedListProfile
     ? [selectedListProfile.studentId, selectedListProfile.serverRevision ?? '', selectedListProfile.recentProblems?.length ?? '', lastProblem?.timestamp ?? '',
-      selectedListProfile.teacherListSchemaVersion ? 'list' : 'full'].join(':')
+      selectedListProfile.catalogOnly ? 'catalog' : selectedListProfile.teacherListSchemaVersion ? 'list' : 'full'].join(':')
     : ''
   useEffect(() => {
     let active = true
     const listProfile = selectedRef.current
-    if (!listProfile) { setLoadedDetail(null); return undefined }
+    if (!listProfile || listProfile.catalogOnly) { setLoadedDetail(null); return undefined }
     if (!listProfile.teacherListSchemaVersion) {
       setLoadedDetail(listProfile)
       return undefined

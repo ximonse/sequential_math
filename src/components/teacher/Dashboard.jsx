@@ -43,7 +43,8 @@ import {
   getCompactMasteryColorClass,
 } from './sections/dashboardTableStatusUtils'
 import {
-  getAllProfilesWithSync,
+  fetchTeacherCatalog,
+  fetchTeacherScopedProfiles,
   getCloudProfilesSyncStatus,
   getClasses,
 } from '../../lib/storage'
@@ -54,6 +55,7 @@ import { hydrateTicketsFromServer } from '../../lib/tickets'
 import { loadTeacherWorkspace } from '../../lib/teacherWorkspaceSync'
 import { fillTeacherPupilLabelsFromCreationNames, loadTeacherPupilLabels } from '../../lib/teacherPupilLabels'
 import { loadTeacherGroups } from './sections/teacherGroupsApi'
+import { createTeacherPupilLoader, normalizePupilScope, pupilScopeKey } from './sections/teacherPupilLoader'
 // The teacher's choice to see code names instead of private labels, per device.
 const CODE_NAMES_KEY = 'mathapp_teacher_code_names_only'
 function prefersCodeNames() {
@@ -65,6 +67,11 @@ function storeCodeNamesPreference(enabled) {
 
 function Dashboard() {
   const [rawStudents, setStudents] = useState([])
+  const [historyState, setHistoryState] = useState({ status: 'idle', key: pupilScopeKey(), error: '' })
+  const pupilLoader = useMemo(() => createTeacherPupilLoader({
+    loadProfiles: fetchTeacherScopedProfiles, publish: setStudents, onState: setHistoryState
+  }), [])
+  useEffect(() => () => { loadSequence.current++; pupilLoader.cancel() }, [pupilLoader])
   const [pupilLabels, setPupilLabels] = useState({})
   const [labelsLoaded, setLabelsLoaded] = useState(false)
   const labelsRequest = useRef(null)
@@ -133,11 +140,20 @@ function Dashboard() {
     return labelsRequest.current
   }, [])
 
+  // Simon 2026-11-03: no pupil history at start. A light catalog of all pupils
+  // (names, classes) feeds pickers and search; full profiles are loaded only for
+  // the classes, groups or pupil the teacher opens.
   const loadStudents = useCallback(async () => {
     void ensureLabels()
     const sequence = ++loadSequence.current
     const [profiles] = await Promise.all([
-      getAllProfilesWithSync(),
+      fetchTeacherCatalog().catch(error => {
+        if (sequence === loadSequence.current) {
+          pupilLoader.failCatalog(error)
+          setDashboardStatus(error?.message || 'Elevlistan kunde inte hämtas.')
+        }
+        return null
+      }),
       loadTeacherGroups().then(data => {
         if (sequence === loadSequence.current) {
           setTeacherGroups(Array.isArray(data?.groups) ? data.groups : [])
@@ -151,22 +167,11 @@ function Dashboard() {
         }
       })
     ])
-    const enrichedProfiles = profiles.map(profile => ({
-      ...profile,
-      name: profile.displayAlias || profile.studentId,
-      teacherPupilLabel: ''
-    }))
-    enrichedProfiles.sort((a, b) => {
-      const aLast = a.recentProblems[a.recentProblems.length - 1]?.timestamp || 0
-      const bLast = b.recentProblems[b.recentProblems.length - 1]?.timestamp || 0
-      return bLast - aLast
-    })
-    if (sequence === loadSequence.current) {
-      setStudents(enrichedProfiles)
-      setCloudSyncStatus(getCloudProfilesSyncStatus())
-    }
-    return enrichedProfiles
-  }, [ensureLabels])
+    if (!profiles || sequence !== loadSequence.current) return null
+    const ok = await pupilLoader.replaceCatalog(profiles)
+    setCloudSyncStatus(getCloudProfilesSyncStatus())
+    return ok ? profiles : null
+  }, [ensureLabels, pupilLoader])
 
   const showCodeNames = () => {
     storeCodeNamesPreference(true)
@@ -247,6 +252,7 @@ function Dashboard() {
   }, [selectedClassIds])
 
 
+
   useEffect(() => {
     const runAutoRefreshIfAllowed = () => {
       if (!shouldTeacherAutoRefreshNow()) return
@@ -286,6 +292,7 @@ function Dashboard() {
     handleSetTeacherPupilLabel,
     handleToggleClassFilter,
     clearClassFilter,
+    selectAllClasses,
     handleResetStudentPassword,
     handleOpenStudentDetail
   } = buildDashboardClassAndAuthActions({
@@ -331,6 +338,36 @@ function Dashboard() {
   const recipients = useMemo(() => deliveryPicks ?? selectedClassIds.map(id => ({
     type: teacherGroups.some(group => String(group.id) === String(id)) ? 'group' : 'class', id: String(id)
   })), [deliveryPicks, selectedClassIds, teacherGroups])
+
+  const historyScope = useMemo(() => {
+    const groupById = new Map(teacherGroups.map(group => [String(group.id), group]))
+    const classIds = [], studentIds = []
+    const add = (type, id) => {
+      if (type === 'group' || groupById.has(String(id))) studentIds.push(...(groupById.get(String(id))?.pupilIds || []).map(String))
+      else if (type === 'student') studentIds.push(String(id))
+      else classIds.push(String(id))
+    }
+    if (isDirectStudentView) {
+      if (routeStudentId || detailStudentId) studentIds.push(routeStudentId || detailStudentId)
+    } else {
+      for (const id of selectedClassIds) add('', id)
+      for (const pick of deliveryPicks || []) add(pick.type, pick.id)
+    }
+    return normalizePupilScope({ classIds, studentIds })
+  }, [selectedClassIds, deliveryPicks, routeStudentId, detailStudentId, teacherGroups, isDirectStudentView])
+  const historyKey = pupilScopeKey(historyScope)
+  const currentHistoryState = historyState.key === historyKey ? historyState
+    : { key: historyKey, status: historyScope.classIds.length || historyScope.studentIds.length ? 'loading' : 'idle', error: '' }
+  const resultHistoryState = !isDirectStudentView && !selectedClassIds.length && currentHistoryState.status !== 'error'
+    ? { ...currentHistoryState, status: 'idle' } : currentHistoryState
+  useEffect(() => { void pupilLoader.select(historyScope) }, [pupilLoader, historyKey, historyScope])
+  useEffect(() => {
+    if (historyState.key !== historyKey) return
+    if (historyState.status === 'ready') setCloudSyncStatus(previous => ({ ...previous,
+      lastSuccessAt: Date.now(), lastError: '', lastSource: 'teacher_scope', cloudCount: historyState.count, mergedCount: historyState.count }))
+    if (historyState.status === 'error') setCloudSyncStatus(previous => ({ ...previous,
+      lastError: historyState.error, lastSource: 'cloud_fetch_error' }))
+  }, [historyState, historyKey])
 
   const {
     hasMissingDirectStudent,
@@ -504,7 +541,8 @@ function Dashboard() {
         isDirectStudentView, detailStudentProfile, cloudSyncStatus, formatTimeAgo,
         navigate, handleLogout, dashboardStatus,
         isCloudRefreshBusy, handleCloudRefreshNow, formatSyncTimestamp, getCloudSyncSourceLabel,
-        selectedClassIds, students, filteredStudents, classFilterOptions, clearClassFilter,
+        selectedClassIds, students, filteredStudents, classFilterOptions, clearClassFilter, selectAllClasses,
+        historyState: resultHistoryState, onRetryHistory: () => { void loadStudents() },
         handleToggleClassFilter, classStats, dataQualitySummary, usageInsights, formatDuration,
         toPercent, assignments, copiedId,
         formatAssignmentSummaryLine, handleCreatePreset, handleCreateMathPractice, handleDeactivateAssignment, handleClearAllAssignments,

@@ -1,5 +1,6 @@
 import { kv } from '@vercel/kv'
 import { createHash } from 'node:crypto'
+import { catalogCard, invalidateStudentCatalog } from './_studentCatalogCard.js'
 
 // Every student writer uses this compare-and-set boundary. Transforms rerun
 // on conflicts and must validate authorization against the latest record.
@@ -73,12 +74,16 @@ export async function mutateStoredRecord(kind, id, transform, { store = kv } = {
   throw studentStoreError(409, 'Concurrent update; retry the request')
 }
 
-export function mutateStudentRecord(studentId, transform, options) {
+export async function mutateStudentRecord(studentId, transform, options) {
   const id = String(studentId || '').trim().toUpperCase()
-  return mutateStoredRecord('student', id, async current => {
+  let metadataChanged = false
+  const saved = await mutateStoredRecord('student', id, async current => {
     const next = await transform(current)
+    metadataChanged = next !== undefined && JSON.stringify(catalogCard(current)) !== JSON.stringify(catalogCard(next))
     return next ? { ...next, studentId: id } : next
   }, options)
+  if (metadataChanged) await invalidateStudentCatalog(id, options?.store)
+  return saved
 }
 
 export async function createStudentRecord(studentId, profile, options) {

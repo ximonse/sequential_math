@@ -6,6 +6,10 @@ export function formatSyncTimestamp(value) {
 
 export function getCloudSyncSourceLabel(source) {
   switch (String(source || '').trim()) {
+    case 'teacher_catalog':
+      return 'Aktuell elevkatalog från servern; resultat hämtas för valt urval'
+    case 'teacher_scope':
+      return 'Aktuella elevresultat för valt urval från servern'
     case 'cloud_disabled':
       return 'Cloud-sync avstängd'
     case 'cloud_merged':

@@ -2,6 +2,11 @@
 
 Datum: 2026-11-04. Kodbas `82ab332`; regelversion v7, aritmetikbank v5. Se [syntesen](LEARNING_SYSTEM_SYNTHESIS.md) för ansvar, motsägelser och genomförandeordning.
 
+Senare samma dag rättar E1 kontrastens operatorvisning och uppföljningsresultatets
+fullständighet/påståenden. Kandidat-ID:n och bankinnehåll i tabellen är oförändrade.
+De länkade maskinbeläggen är den frysta ursprungsinventeringen; se syntesens
+genomförandestatus för skillnaden mellan historiskt fynd och rättat beteende.
+
 ## Läs tabellen rätt
 
 - Varje rad är ett explicit kandidat-ID inom en domän, inte en fastställd felförståelse eller NCM-diagnos. Samma ID kan förekomma i flera domäner.

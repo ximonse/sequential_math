@@ -192,7 +192,8 @@ export default function MaterialReview() {
           {dispatch ? 'Följ upp återstående mottagare' : `Dela ut till ${material.audience.total} ${material.audience.total === 1 ? 'elev' : 'elever'}`}
         </button></div>
       </section>
-      {material.kind === 'screening' && material.mode === 'specific' && dispatch && <FollowUpResults material={material} dispatch={dispatch} />}
+      {item?.material.kind === 'screening' && item.material.mode === 'specific' && dispatch &&
+        <FollowUpResults key={`${draftId}:${item.version}`} material={item.material} dispatch={dispatch} />}
       </aside></div>
     </>}
   </main>

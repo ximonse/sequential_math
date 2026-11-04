@@ -56,4 +56,19 @@ describe('directed follow-up contrast questions', () => {
     const set = buildContrastSet({ modelId: 'smaller_minus_larger', supportProblems: supports, bankTasks: manifest.tasks, maxItems: 1 })
     expect(set.items).toHaveLength(1)
   })
+
+  it('keeps multiplication and division labels consistent with the selected task operation', () => {
+    for (const [operation, modelId, a, b, symbol] of [
+      ['multiplication', 'mul_carry_forgotten', 46, 7, '×'],
+      ['division', 'div_remainder_ignored', 168, 6, '÷'],
+    ]) {
+      const set = buildContrastSet({ modelId, supportProblems: [{ domain: 'arithmetic', type: operation, skill: operation, values: { a, b } }], bankTasks: manifest.tasks })
+      expect(set.status).toBe('proposed')
+      for (const item of set.items) {
+        const task = manifest.tasks.find(task => task.taskId === item.taskId)
+        expect(task.operation).toBe(operation)
+        expect(item.text).toBe(`${task.operands[0]} ${symbol} ${task.operands[1]}`)
+      }
+    }
+  })
 })

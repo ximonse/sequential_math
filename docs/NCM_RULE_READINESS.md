@@ -9,6 +9,12 @@
 > och [kod-/dokumentsyntesen](LEARNING_SYSTEM_SYNTHESIS.md) före slutsatser om
 > vad som återstår. Historiken och dess ursprungliga verifieringsgränser bevaras.
 
+Senare samma dag, E1: resultatdelen visar bedömda svar, väntande frågor och
+inlämningsstatus från sparad materialversion. Modellträffar är observationer,
+inte ett för/emot-besked utan känd prövningsavsikt. Ofullständig historikläsning
+stoppas och kan återförsökas. Operatorvisningen i multiplikations-/divisionskontraster
+är rättad. [Syntesen](LEARNING_SYSTEM_SYNTHESIS.md) beskriver verifiering och gränser.
+
 2026-10-30. Principen **regelmotor först, AI vid tolkningsbehov** gäller alla
 domäner. Den här genomgången skiljer körbara svarskandidater från breda
 feletiketter. Den ersätter inte [hela NCM-inventeringen](NCM_DIDACTIC_COVERAGE.md).

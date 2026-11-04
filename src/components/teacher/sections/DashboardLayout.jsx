@@ -203,10 +203,11 @@ export default function DashboardLayout({
     try { localStorage.setItem('mathapp_table_progress_selection', JSON.stringify(tableSelection)) } catch { /* Preferences are optional. */ }
   }, [tableSelection])
   useEffect(() => {
+    if (historyState && historyState.status !== 'ready') return
     if (students.length > 0 && tableSelection.studentId && !tableProgressStudents.some(student => student.studentId === tableSelection.studentId)) {
       setTableSelection(previous => ({ ...previous, studentId: '' }))
     }
-  }, [students, tableProgressStudents, tableSelection.studentId])
+  }, [students, tableProgressStudents, tableSelection.studentId, historyState])
   const openTableProgress = (table, studentId) => {
     setTableSelection(previous => ({ ...previous,
       table: Number.isInteger(table) ? table : previous.table,

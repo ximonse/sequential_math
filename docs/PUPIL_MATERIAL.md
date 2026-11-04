@@ -60,6 +60,16 @@ Material v1 har `schemaVersion:1`, `kind:practice|screening`,
 `mode:general|specific`, `titleSv`, `goalSv`, `instructionSv`,
 `sourceMaterials:[{label,excerpt}]`, `audience:{targetType,targetId,rosterRevision}`,
 `basis`, `content` och valfri `classContexts:{elevId:klassId}`. Okända fält avvisas.
+
+Resultatdelen för specifik screening skiljer sedan 2026-11-04 mellan bedömda
+svar, materialversionens förväntade frågor och inlämning. Den använder sparat
+material även när läraren visar en ändrad förhandsvisning. Vid flera bekräftade
+mottagare väljs elev uttryckligen. En ofullständig eller revisionsändrad
+historikläsning ger fel och återförsök i stället för ett delvis summerat resultat.
+Utan strukturerad prövningsavsikt visas samtliga modellträffar som observationer,
+inte som stöd för eller emot en viss misstanke. Screeningens avsaknad av apptips
+bevisar inte att eleven saknade annan hjälp. Se E1 i
+[systemsyntesen](LEARNING_SYSTEM_SYNTHESIS.md).
 Klasskontext hämtas från valt klassmål eller elevens enda åtkomliga klass;
 screening för en elev med flera klasser kräver ett uttryckligt val.
 Vid specifikt innehåll krävs minst

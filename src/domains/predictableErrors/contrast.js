@@ -43,8 +43,9 @@ export const CONTRAST_LABELS_SV = {
   quotient_off_by_one: 'Kvoten blir ett fel',
 }
 
+const symbols = { addition: '+', subtraction: '−', multiplication: '×', division: '÷' }
 const bankProblem = task => ({ domain: 'arithmetic', type: task.operation, skill: task.operation,
-  values: { a: task.operands?.[0], b: task.operands?.[1] }, display: { text: `${task.operands?.[0]} ${task.operation === 'subtraction' ? '−' : '+'} ${task.operands?.[1]}` } })
+  values: { a: task.operands?.[0], b: task.operands?.[1] }, display: { text: `${task.operands?.[0]} ${symbols[task.operation] ?? '?'} ${task.operands?.[1]}` } })
 
 function predictionMap(problem, models) {
   const result = predictableCandidates(problem, '')

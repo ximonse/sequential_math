@@ -15,7 +15,7 @@ async function teacherRequest(page, url, body) {
 // Larger digit minus smaller digit in every column.
 const smallerFromLarger = (a, b) => Number(String(a).split('').map((d, i) => Math.abs(Number(d) - Number(String(b).padStart(String(a).length, '0')[i]))).join(''))
 
-test('A dispatched follow-up shows which explanation each answer matches and a signal for the teacher', async ({ page, request, browser }, testInfo) => {
+test('A dispatched follow-up keeps partial answers and competing models as observations', async ({ page, request, browser }, testInfo) => {
   test.skip(process.env.ROBOT_DEV !== '1', 'Cookie approval requires the local development origin policy; run with ROBOT_DEV=1.')
   const classId = `followup-${Math.random().toString(36).slice(2, 8)}`
   const pupil = await createPupil(request, { classId, name: 'Followup Pupil' })
@@ -54,10 +54,25 @@ test('A dispatched follow-up shows which explanation each answer matches and a s
   await student.goto(`/student/${pupil.studentId}`)
   await student.getByRole('button', { name: 'Uppföljning: subtraktion', exact: true }).click()
   const heading = student.getByRole('heading', { name: /^\d+ − \d+$/u })
+  let first = true
   for (;;) {
     await expect(heading).toBeVisible()
     const shown = await heading.innerText()
     const [a, b] = shown.split('−').map(s => Number(s.trim()))
+    if (first) {
+      await student.getByRole('textbox', { name: 'Mitt svar', exact: true }).pressSequentially(String(a - b))
+      await expect(student.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
+      await page.reload()
+      const partial = page.getByRole('region', { name: 'Resultat av uppföljningen', exact: true })
+      await expect(partial).toContainText('Delresultat')
+      await expect(partial).not.toContainText('talar emot misstanken')
+      await expect(partial).not.toContainText('utan tips')
+      await partial.screenshot({ path: testInfo.outputPath('followup-partial.png') })
+      for (let index = 0; index < String(a - b).length; index++) {
+        await student.getByRole('textbox', { name: 'Mitt svar', exact: true }).press('Backspace')
+      }
+      first = false
+    }
     await student.getByRole('textbox', { name: 'Mitt svar', exact: true }).pressSequentially(String(smallerFromLarger(a, b)))
     const next = student.getByRole('button', { name: 'Nästa fråga', exact: true })
     if (await next.count() === 0) break
@@ -70,9 +85,53 @@ test('A dispatched follow-up shows which explanation each answer matches and a s
 
   await page.reload()
   const results = page.getByRole('region', { name: 'Resultat av uppföljningen', exact: true })
-  await expect(results).toContainText('Signal:')
+  await expect(results).toContainText('Observationer')
   await expect(results).toContainText('Större minus mindre i varje kolumn')
-  await expect(results).toContainText('Du avgör')
+  await expect(results).not.toContainText('talar för misstanken')
+  await expect(results).not.toContainText('talar emot misstanken')
+  await expect(results).toContainText('Prövningsavsikt saknas')
   await expect(results.getByText('Möjliga samtalsingångar')).toBeVisible()
   await results.screenshot({ path: testInfo.outputPath('followup-results.png') })
+  // An incomplete history read cannot leave an old result on screen. Retry is
+  // an explicit action and succeeds after the simulated paging failure clears.
+  const evidenceRoute = '**/api/teacher-students/*'
+  await page.route(evidenceRoute, async route => {
+    if (new URL(route.request().url()).searchParams.get('resource') !== 'evidence') return route.continue()
+    const response = await route.fetch()
+    const data = await response.json()
+    await route.fulfill({ response, json: { ...data, nextCursor: data.nextCursor || `${data.snapshotRevision}:0` } })
+  })
+  await results.getByRole('button', { name: 'Hämta svar igen', exact: true }).click()
+  await expect(results.getByRole('status')).toContainText('fullständigt')
+  await expect(results).not.toContainText('Observationer:')
+  await page.unroute(evidenceRoute)
+  await results.getByRole('button', { name: 'Hämta svar igen', exact: true }).click()
+  await expect(results).toContainText('Inlämnade svar')
+  await expect(results).toContainText('Observationer:')
+})
+
+test('Multiplication contrasts display the same operation as their reviewed bank questions', async ({ page, request, browser }) => {
+  const classId = `followup-mul-${Math.random().toString(36).slice(2, 8)}`
+  const pupil = await createPupil(request, { classId, name: 'Followup Multiplication' })
+  const teacher = await createTeacher(request, { classIds: [classId], role: 'super_admin' })
+  await teacherLogin(page, teacher)
+  const created = await teacherRequest(page, '/api/teacher-diagnostic-assignments', {
+    classId, studentIds: [pupil.studentId], taskIds: ['mul-carry-002'], titleSv: 'Multiplikation först' })
+  expect(created.status).toBe(201)
+  const pupilContext = await browser.newContext()
+  const student = await pupilContext.newPage()
+  await login(student, pupil)
+  await student.getByRole('button', { name: 'Multiplikation först', exact: true }).click()
+  await student.getByRole('textbox', { name: 'Mitt svar', exact: true }).pressSequentially('282')
+  await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
+  await page.goto(`/teacher/student/${pupil.studentId}`)
+  const panel = page.getByRole('region', { name: 'Analys och avstämning', exact: true })
+  await panel.getByRole('button', { name: /^Analys och avstämning/ }).click()
+  await expect(panel.getByRole('status')).toContainText('inlästa')
+  await panel.getByLabel('Underlag', { exact: true }).selectOption('screening')
+  await panel.getByRole('button', { name: 'Skapa granskningsunderlag', exact: true }).click()
+  await panel.getByRole('button', { name: 'Pröva med kontrastfrågor', exact: true }).first().click()
+  const contrast = panel.getByRole('region', { name: 'Kontrastfrågor', exact: true })
+  await expect(contrast.locator('tbody tr').first().locator('td').first()).toHaveText(/^\d+ × \d+$/u)
+  await pupilContext.close()
 })

@@ -1,9 +1,39 @@
 # Två mål, en sammanhängande app
 
 Datum: 2026-11-04. **Genomförd kod- och dokumentgranskning; föreslagen genomförandeordning.**
-Inspekterad kod: `82ab3325f8d475885381fe5db85c019834faf5c5`. Ingen appfunktion ändras av denna leverans.
+Inspekterad kod i ursprungsinventeringen: `82ab3325f8d475885381fe5db85c019834faf5c5`. Själva inventeringen ändrade ingen appfunktion.
 Målen är preciserade av Simon i samtalet och införda i [produktkontraktet](PRODUCT_CONTRACT.md).
 Arkitekturförslagen nedan är rekommendationer, inte redan byggda funktioner.
+
+### Senare genomförande samma dag: E1
+
+Simon gav därefter mandat att gå vidare. E1 rättar operatorn i kontrastvisningen,
+skiljer bedömda svar från inlämning och hela materialversionens frågeantal,
+stoppar ofullständig historikläsning och erbjuder uttrycklig omläsning/återförsök.
+Resultatvyn använder den sparade materialversionen även när en ny förhandsvisning
+visas. Flera mottagare kan läsas var för sig. Alla konkurrerande modellträffar
+redovisas som observationer; ingen ”för/emot misstanken”-summering görs utan
+strukturerad prövningsavsikt. Screening utan apptips likställs inte med känd
+självständighet. Befintlig materialgranskning och elevens svar bevaras.
+
+Fynden F03–F08 nedan beskriver ursprungsbaslinjen. E1 rättar F08 och resultatdelen
+av F04, samt undviker den ogrundade slutsatsen i F03. E2 behövs fortfarande för
+att faktiskt binda resultatet till avsedd hypotes och rivaler. F01/F02/F05/F06/F07
+är inte lösta av E1. Ingen push, produktion eller verklig elevprovning ingår.
+
+Två robotprov visade först produktfelen röda: ett sparat rätt svar gav ”talar
+emot misstanken”, och multiplikationskontrasten visade `146 + 4`. Efter rättning
+passerar sju berörda browserprov inklusive ofullständig sidläsning och explicit
+återförsök. 219 testfiler/1 177 tester, produktionsbuild, riktad lint och
+arkitekturkontroll passerar. Renderade delresultat och inlämnade svar har granskats.
+Den breda robotkörningens slutstatus dokumenteras i projektkartan.
+
+Den breda körningen hittade även en reproducerbar R2-avvikelse i tabellvyn:
+sparad jämförelseelev rensades under katalog-/resultathämtningen vid omladdning.
+`DashboardLayout` väntar nu på färdig resultatläsning innan ett val förklaras
+vara utanför urvalet. Ett uttryckligt byte till annan klass rensar fortfarande
+valet efter färdig hämtning. Befintlig tabellrobot var röd även seriellt före
+rättningen. Ändringen bevarar spår A och inför ingen ny matematisk policy.
 
 ## 1. Målet som varje ändring ska återvända till
 
@@ -28,6 +58,12 @@ node docs/evaluations/learning-synthesis-2026-11-04/reproduce.mjs
 ```
 
 Sökningen omfattar 8 500 konstruerade problem och 62 domän/modell-par. Den visar att ett exempel finns eller inte hittades i just denna sökning; den bevisar inte didaktisk giltighet, fullständig domän-/situations-/rival-/historiktäckning eller faktisk användaråtkomst. Räknehäftessignalen `notebook_answer_mismatch` ligger utanför dessa 62 och redovisas separat.
+
+Efter E1 är körskriptet ett historiskt baslinjeprov: dess assertions stoppar
+avsiktligt när de gamla felbeteendena inte längre finns. Frysta `evidence.json`
+är belägg från inventeringens kodrevision, inte en ny körning på rättad kod.
+Nya beteenden verifieras av appens enhets- och robotprov; skriv inte över de
+historiska felen med nya resultat och kalla dem samma inventering.
 
 Inga verkliga elevdata, produktionsanrop, behörighetsändringar eller utdelningar ingår. Kodens administratörs-/pilotgränser har lästs; deras aktuella produktionskonfiguration har inte hämtats. Publiceringskvitton från tidigare arbete är historiska belägg, inte ny verifiering av allt i denna rapport. Ingen långsiktig lärandeeffekt eller fysisk iPad-verifiering påstås.
 
@@ -208,7 +244,9 @@ flowchart TD
 
 ## 5. Genomförandeordning efter denna dokumentleverans
 
-Ingen av etapperna nedan är genomförd av rapporten. Genomför dem i ordning; nya bankfrågor får inte gå före en tillförlitlig prövningskedja.
+Rapporten byggde ursprungligen ingen av etapperna. E1 har därefter genomförts
+lokalt enligt statusen ovan. Fortsätt i ordning; nya bankfrågor får inte gå
+före en tillförlitlig prövningskedja.
 
 ### E1 — sanningsenliga delresultat och korrekt frågevisning
 

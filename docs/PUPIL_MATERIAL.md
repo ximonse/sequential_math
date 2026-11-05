@@ -7,6 +7,9 @@ Servern validerar källstruktur och paket-/noteringsversion; olika paket får
 inte blandas. V8 inför en avgränsad decimalrival. Äldre utdelade material
 behåller frysta modellsvar; nya utkast kräver aktuell regelversion.
 Se `E4_DECIMAL_SUBTRACTION_REVIEW.md` för omfattning och verifiering.
+Paketet är därefter publicerat via PR #40. Inloggad skrivfri produktionspreview
+och facit är verifierade; elevutdelning ingick inte. Exakta belägg och gränser:
+`releases/2026-11-05-decimal-subtraction.md`.
 
 Beslutad riktning 2026-10-28. Urvalsläsning och servervaliderad förhandsvisning
 är byggda lokalt, liksom versionerad utkastlagring och återläsning.

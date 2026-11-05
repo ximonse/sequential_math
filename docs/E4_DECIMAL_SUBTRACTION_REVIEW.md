@@ -1,6 +1,10 @@
 # E4: decimalsubtraktion med en växling — godkänt paket
 
-Status 2026-11-05: **innehåll, arbetsgång och avgränsad rivalutökning godkända av Simon genom ”Ja, kör”. Lokalt implementerat och verifierat enligt nedan. Inte publicerat.**
+Status 2026-11-05: **innehåll, arbetsgång och avgränsad rivalutökning godkända av Simon genom ”Ja, kör”. Lokalt verifierat och därefter publicerat via PR #40, master `4012ac4`.**
+Det [daterade publiceringskvittot](releases/2026-11-05-decimal-subtraction.md)
+redovisar integrerad regression med parallelltrådens arbete, exakt Vercel-bygge
+och inloggad skrivfri förhandsvisning. Lokala prov nedan är skilda från dessa
+produktionskontroller; ingen verklig elevutdelning eller fysisk iPad verifierad.
 Paketet återanvänder rapportavstämning, materialgranskning och utdelningskvitto
 från decimalmultiplikationspiloten. Ingen ny lagring, diagnostisk tröskel,
 ändrad elevprogression eller verklig elevutdelning införs.

@@ -33,7 +33,10 @@ av `smaller_minus_larger`, `borrow_forget` och `exchange_not_decremented`.
 De tre modellerna finns också bland rättsvarsalternativen på negativkontrollen
 utan växling, så den kan inte avfärda dem. Ursprungstabellen är fortsatt
 den frysta V7-inventeringen. Inga nya modell-ID:n eller generellt decimalstöd
-införs. Decimalsubtraktionen är ännu inte publicerad. E1–E3 och den
+införs. Decimalsubtraktionen är därefter publicerad via PR #40, master `4012ac4`;
+inloggad skrivfri förhandsvisning och samtliga sju facit är verifierade enligt
+[kvittot](releases/2026-11-05-decimal-subtraction.md). Komplett produktionspilot
+återstår. E1–E3 och den
 godkända decimalmultiplikationspiloten är publicerade enligt
 [kvittot](releases/2026-11-05-teacher-evidence-decimal-pilot.md).
 

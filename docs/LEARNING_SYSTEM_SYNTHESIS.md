@@ -20,8 +20,11 @@ två fyrvägskontraster. V8 kompletterar den tidigare saknade decimalrivalen;
 källöverlapp och alla tre alternativa svar bevaras. Gemensamt paketregister,
 servervaliderad avgränsning och samma rapport-/materialkedja används för båda
 paketen. Ny undervisning och nya kontroller lagras fortsatt som befintliga
-rapportavstämningar och privata materialutkast. Detta tillägg är inte i PR #39
-eller produktion. Ingen generell E4-/domänfullständighet påstås.
+rapportavstämningar och privata materialutkast. Tillägget publicerades därefter
+via PR #40, master `4012ac4`, med parallelltrådens senaste produktion bevarad.
+[Kvittot](releases/2026-11-05-decimal-subtraction.md) redovisar exakt bygge och
+inloggad skrivfri förhandsvisning. Komplett produktionspilot och fysisk iPad
+återstår. Ingen generell E4-/domänfullständighet påstås.
 
 ### E4-pilot godkänd och lokalt implementerad 2026-11-05
 

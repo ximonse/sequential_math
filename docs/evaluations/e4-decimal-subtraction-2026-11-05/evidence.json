@@ -4,7 +4,7 @@
   "method": "synthetic_deterministic_not_blind",
   "teacherApproval": "approved_2026-11-05",
   "applicationIntegration": true,
-  "productionIntegration": false,
+  "productionVerification": "not_performed_by_this_script",
   "assertions": {
     "independentIntegerHundredthsTasks": 7,
     "correctAnswerControls": 7,

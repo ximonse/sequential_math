@@ -26,7 +26,15 @@ Projektets skill är `.agents/skills/pupil-analysis/SKILL.md`.
 - `rule_candidate` (”Beräknad felmodell” i lärarvyn) kräver att servern själv
   har räknat fram samma modell som träff i varje stödsvar, med samma
   `ruleVersion`. Motexempel måste vara rätta svar på jämförbart innehåll och
-  samma kända nivå där modellen hade gett ett annat svar. Regelkandidaterna
+  samma kända nivå där modellen hade gett ett annat svar. När screening saknar
+  träningsnivå kan samma kända heltalsstruktur jämföras: operation, talbredder,
+  växlings-/minnesstruktur, genom-noll-struktur och divisionsstruktur enligt
+  `arithmeticContentSignature`. Två motstridiga kända nivåer jämställs aldrig.
+  Okända, negativa eller decimala strukturer får ingen sådan reservjämförelse;
+  hjälp och metod behöver fortfarande granskas. Ett rätt slutsvar med observerat
+  motsägande häftesresultat väljs inte som motexempel; båda observationerna finns
+  kvar i underlaget. Nya regelrapporter märks `predictable-candidates-v2`;
+  tidigare rapportversioner bevaras. Regelkandidaterna
   läggs ovanpå underlaget; källsnapshot och referenser beräknas på originalsvaren,
   så en ny regelversion ogiltigförklarar inte oförändrade källreferenser men
   stoppar en sparad hypotes med föråldrad regelversion. Se
@@ -150,3 +158,24 @@ AI-märkt syntetisk rapport, avfärdande/ändring, konflikt, bevarad text,
 omladdning och oförändrad elevprofil. Skärmbilder granskas i desktop- och
 surfplatteformat. Det är inte verklig KV, fysisk iPad eller en kalibrering av
 en ansluten språkmodells pedagogiska träffsäkerhet.
+
+## Undervisning och kontrollobservationer i samma avstämningshistorik (E4)
+
+Godkänt pilotpaket 2026-11-05: `decimal-component-multiplication-pilot`, version 1.
+Ett `check_in` kan nu även ha `teaching`: `kind` (`teaching` eller
+`control_observation`), `hypothesisId`, `packageId`, `packageVersion`, `draftId`,
+`materialVersion`, `taughtOn` (lärarens datum), `help` (`unknown`, `given`,
+`none_reported`) och `noteSv`. Serverns `createdAt` är när noteringen sparades,
+inte ett intyg om när undervisningen eller kontrollen skedde.
+
+Servern kontrollerar lärarägt material, rätt fryst version, elev/rapport/hypotes,
+paket/steg och bekräftat utdelningskvitto. Samma CAS och begärandeidentitet som
+övriga avstämningar används. Alla hypotesbeslut och nästa mål bevaras i den nya
+avstämningen. Konflikt sparar inte över en annan flik; texten finns kvar och
+läraren läser senaste version före nytt försök. Osparad text ligger bara i den
+autentiserade flikens minne; omladdning varnar och inget autosparas till server.
+
+Noteringar visas både vid materialets resultat och i rapportens gemensamma
+avstämningshistorik. Att en lärare antecknar ingen hjälp är en läraruppgift,
+ingen automatisk mätning av självständighet. Följande material fryser exakt
+undervisningsnotering/avstämningsrevision och tidigare kontrollobservationer.

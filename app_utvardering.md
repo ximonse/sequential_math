@@ -1,5 +1,10 @@
 # Utvärdering av Matematik.ximon.se
 
+> Läsanvisning 2026-11-04: kvalitativa omdömen och tidigare kodverifieringar
+> nedan är daterade underlag, inte en ny helhetsverifiering. Appens två
+> samverkande mål preciseras i `docs/PRODUCT_CONTRACT.md`. Aktuell avstämning
+> mellan dokument, analysflöden och kod finns i `docs/LEARNING_SYSTEM_SYNTHESIS.md`.
+
 ## Talbild
 
 Talbild visar 1–5 på en tärning och 6–10 på två tärningar med högst fem prickar per tärning, även när prickarna sprids eller får olika storlek. Två tärningar hålls på samma rad på smala skärmar. Ett nytt tal skiljer sig alltid från det närmast föregående talet i samma övning.

@@ -3,16 +3,22 @@ import { followUpSignal } from './followUpSignal.js'
 
 const entry = (status, ...models) => ({ answer: { status }, interpretation: { predictable: { matches: models.map(modelId => ({ modelId })) } } })
 
-describe('directed follow-up signal', () => {
-  it('supports the suspicion when the same explanation fits at least two answers', () => {
-    expect(followUpSignal([entry('incorrect', 'smaller_minus_larger'), entry('incorrect', 'smaller_minus_larger', 'exchange_not_decremented'), entry('correct')]))
-      .toEqual({ kind: 'supports', modelId: 'smaller_minus_larger', count: 2, total: 3 })
+describe('follow-up observations without a frozen investigation plan', () => {
+  it('retains both rivals instead of selecting the first as the suspected cause', () => {
+    const value = followUpSignal([entry('incorrect', 'smaller_minus_larger', 'exchange_not_decremented'),
+      entry('incorrect', 'smaller_minus_larger', 'exchange_not_decremented')])
+    expect(value.kind).toBe('observations')
+    expect(value.models).toEqual([{ modelId: 'exchange_not_decremented', count: 2 }, { modelId: 'smaller_minus_larger', count: 2 }])
   })
-  it('speaks against the suspicion when every answer is correct', () => {
-    expect(followUpSignal([entry('correct'), entry('correct')])).toEqual({ kind: 'against', total: 2 })
+  it('does not reject a suspicion from one correct and one unanswered question', () => {
+    expect(followUpSignal([entry('correct'), entry('unanswered')])).toMatchObject({ kind: 'observations', total: 1, correct: 1, models: [] })
   })
-  it('stays unclear for one match or input slips only', () => {
-    expect(followUpSignal([entry('incorrect', 'smaller_minus_larger'), entry('incorrect')]).kind).toBe('unclear')
-    expect(followUpSignal([entry('incorrect', 'notebook_answer_mismatch'), entry('incorrect', 'notebook_answer_mismatch')]).kind).toBe('unclear')
+  it('does not claim independent understanding from completed correct answers', () => {
+    expect(followUpSignal([entry('correct'), entry('correct')])).toMatchObject({ kind: 'observations', total: 2, correct: 2, models: [] })
+  })
+  it('deduplicates a model per answer and excludes input slips and unassessed work', () => {
+    const value = followUpSignal([entry('incorrect', 'carry_forget', 'carry_forget', 'notebook_answer_mismatch'), entry('unassessed', 'carry_forget')])
+    expect(value.models).toEqual([{ modelId: 'carry_forget', count: 1 }])
+    expect(value.total).toBe(1)
   })
 })

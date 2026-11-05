@@ -5,6 +5,8 @@ import {
   resolveProblemOperation
 } from './mathUtils'
 import { getNcmSkillMappingFromProblem } from './ncmSkillMap'
+import { currentPracticeCandidates, practiceObservation } from './practiceObservation.js'
+import { teacherPracticeRows } from './teacherPracticeRows.js'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -27,6 +29,7 @@ export function buildDetailedProblemExportRows(snapshot) {
   const tableBenchmarks = snapshot?.tableBenchmarks || {}
 
   return rows.map(item => {
+    const candidates = currentPracticeCandidates(item.source || {})
     const templateLevelKey = getTemplateLevelKey(item.problemType, item.level)
     const templateBenchmark = templateBenchmarks[templateLevelKey]
     const tableBenchmark = item.table ? tableBenchmarks[item.table] : null
@@ -75,6 +78,12 @@ export function buildDetailedProblemExportRows(snapshot) {
       Felkategori: item.errorCategory,
       Felmönster: Array.isArray(source.errorPatterns) ? source.errorPatterns.join('|') : '',
       Feldetalj: String(source.errorDetail || ''),
+      HistoriskFelkategori: item.errorCategory,
+      HistoriskaFelmönster: Array.isArray(source.errorPatterns) ? source.errorPatterns.join('|') : '',
+      ObserveradSvarsstatus: practiceObservation(source).answer.status,
+      AktuellAnalysstatus: candidates.status,
+      AktuellRegelversion: candidates.ruleVersion || '',
+      AktuellaModellkandidater: [...new Set((candidates.matches || []).map(match => match.modelId))].join('|'),
       Kunskapsfel: item.isKnowledgeError ? 1 : 0,
       Ouppmärksamhetsfel: item.isInattentionError ? 1 : 0,
       RimligtSvar: item.isReasonable ? 1 : 0,
@@ -289,7 +298,7 @@ function describeProblem(problem) {
 function flattenProblems(profiles) {
   const rows = []
   for (const profile of profiles) {
-    const problems = getProblemsForAnalytics(profile)
+    const problems = teacherPracticeRows(profile).entries.map(entry => entry.raw)
     for (const problem of problems) {
       const operation = resolveProblemOperation(problem, {
         fallback: 'unknown',
@@ -343,18 +352,6 @@ function flattenProblems(profiles) {
   return rows
 }
 
-function getProblemsForAnalytics(profile) {
-  const log = Array.isArray(profile?.problemLog) ? profile.problemLog : []
-  const recent = Array.isArray(profile?.recentProblems) ? profile.recentProblems : []
-  if (log.length === 0) return recent
-  if (recent.length === 0) return log
-
-  const logLatest = getLatestTimestamp(log)
-  const recentLatest = getLatestTimestamp(recent)
-  if (recentLatest > logLatest) return recent
-  if (logLatest > recentLatest) return log
-  return log.length >= recent.length ? log : recent
-}
 
 function buildTemplateLevelBenchmarks(rows) {
   const grouped = new Map()
@@ -418,15 +415,6 @@ function getTemplateLevelKey(problemType, level) {
   return `${String(problemType || '')}|${Number(level || 1)}`
 }
 
-function getLatestTimestamp(list) {
-  if (!Array.isArray(list) || list.length === 0) return 0
-  let maxTs = 0
-  for (const item of list) {
-    const ts = Number(item?.timestamp || 0)
-    if (Number.isFinite(ts) && ts > maxTs) maxTs = ts
-  }
-  return maxTs
-}
 
 function formatTimestamp(timestamp) {
   if (!timestamp) return ''

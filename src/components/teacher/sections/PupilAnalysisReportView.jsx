@@ -2,17 +2,26 @@ import { useRef, useState } from 'react'
 import QuestionText from '../../QuestionText.jsx'
 import DiagnosticAttemptHistory from './DiagnosticAttemptHistory.jsx'
 import ContrastFollowUp from './ContrastFollowUp.jsx'
+import ReportReviewNote from '../ReportReviewNote.jsx'
+import WorkEvidenceNote from '../WorkEvidenceNote.jsx'
 import { contrastFollowUpEligible } from '../../../lib/practiceModes.js'
 import { diagnosticRequest } from './diagnosticRequest.js'
 import { OPERATION_LABELS } from '../../../lib/operations.js'
 import '../../../dev/diagnosticGridPrototype.css'
 
 const originLabels = { rule: 'Regelbaserat granskningsunderlag', ai: 'AI-formulerad tolkning – behöver lärargranskning', teacher: 'Lärarformulerad tolkning' }
-export default function PupilAnalysisReportView({ report, baseUrl, studentId, classId }) {
+export default function PupilAnalysisReportView({ report, savedItem, baseUrl, studentId, classId }) {
   const [selected, setSelected] = useState(null)
   const [original, setOriginal] = useState(null)
   const [message, setMessage] = useState('')
   const activeRef = useRef(null)
+  const reviewFor = item => {
+    if (!savedItem) return null
+    const check = savedItem.checkIns.at(-1), decision = check?.decisions.find(value => value.hypothesisId === item.id)
+    return { studentId, reportId: savedItem.id, reportVersion: savedItem.version, hypothesisId: item.id,
+      checkInRevision: check?.revision ?? 0, decision: decision?.decision ?? 'undecided',
+      interpretationSv: decision?.interpretationSv ?? '', goalSv: check?.goalSv ?? '' }
+  }
   const references = (refs, label) => <details className="mt-2 text-sm"><summary>{label} ({refs.length})</summary>
     {refs.map((ref, index) => {
       const entry = report.evidence.find(e => e.ref === ref)
@@ -34,10 +43,11 @@ export default function PupilAnalysisReportView({ report, baseUrl, studentId, cl
     {report.hypotheses.map(item => <div key={item.id} className="mt-3 border-l-2 border-amber-400 pl-3">
       <p className="text-sm font-semibold">{item.basis === 'rule_candidate' ? 'Beräknad felmodell' : item.basis === 'existing_signal' ? 'Befintlig analyssignal' : 'Tolkning'} · {item.evidenceStatus === 'insufficient' ? 'Otillräckligt underlag' : 'Behöver lärargranskning'}</p>
       <p>{item.textSv}</p>{references(item.supportRefs, 'Stödsvar')}{references(item.counterRefs, 'Valda motexempel')}
+      <ReportReviewNote review={reviewFor(item)} />
       {!item.counterRefs.length && <p className="text-sm mt-1">Inga motexempel valda; det innebär inte att motexempel saknas.</p>}
       <p className="mt-2 text-sm font-semibold">Alternativa förklaringar</p><ul className="list-disc pl-5 text-sm">{item.alternativesSv.map((value, i) => <li key={i}>{value}</li>)}</ul>
       <p className="mt-2 text-sm"><strong>Att undersöka:</strong> {item.nextCheckSv}</p>
-      {studentId && contrastFollowUpEligible(item, report) && <ContrastFollowUp item={item} report={report} studentId={studentId} classId={classId} baseUrl={baseUrl} />}
+      {studentId && contrastFollowUpEligible(item, report) && <ContrastFollowUp key={`${item.id}:${savedItem?.checkIns.at(-1)?.revision ?? 0}`} item={item} report={report} reportReview={reviewFor(item)} studentId={studentId} classId={classId} baseUrl={baseUrl} />}
     </div>)}
     <details className="mt-3 text-sm"><summary>Begränsningar och källrevision</summary>
       {report.limitationsSv.map((value, i) => <p key={i} className="mt-1">{value}</p>)}
@@ -48,6 +58,7 @@ export default function PupilAnalysisReportView({ report, baseUrl, studentId, cl
       <QuestionText>{selected.question.promptText || selected.question.promptSv || 'Frågetext saknas i den sparade historiken.'}</QuestionText>
       {!selected.question.promptText && !selected.question.promptSv && <p className="text-sm">Område: {OPERATION_LABELS[selected.question.operation] || 'okänt'}. Sparade tal i underlaget: {Object.values(selected.question.values || {}).filter(value => typeof value === 'number').join(', ') || 'saknas'}.</p>}
       <p>Elevens svar: {String(selected.answer.studentAnswer ?? 'saknas')} · Facit: {String(selected.answer.correctAnswer ?? 'manuell bedömning')}</p>
+      <WorkEvidenceNote work={selected.interpretation.work} review={selected.teacherReview} />
       <p className="text-sm">{new Date(selected.timestamp).toLocaleString('sv-SE')} · {selected.source === 'practice' ? 'Träning' : 'Screening'} · {selected.interpretation.detail || 'Ingen säker felorsak fastställd.'}</p>
       {selected.source === 'screening' && <button type="button" className="mt-2 rounded border px-2 py-1 text-sm" onClick={async () => {
         setMessage('Hämtar originalet…')

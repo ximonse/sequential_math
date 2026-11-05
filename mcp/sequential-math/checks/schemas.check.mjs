@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { report } from '../src/schemas.mjs'
+import { report, materialInput } from '../src/schemas.mjs'
 
 const base = { schemaVersion: 1, snapshotRevision: 'a'.repeat(64), scopeSv: 'Syntetisk period',
   provenance: { kind: 'ai', instructionVersion: 'synthetic-check-v1' }, strengths: [], limitationsSv: [] }
@@ -11,4 +11,18 @@ test('MCP report schema keeps a rule candidate ruleVersion for server validation
   const parsed = report.parse({ ...base, hypotheses: [{ ...hypothesis, ruleVersion: 'predictable-errors-v7' }] })
   assert.equal(parsed.hypotheses[0].ruleVersion, 'predictable-errors-v7')
   assert.throws(() => report.parse({ ...base, hypotheses: [{ ...hypothesis, ruleVersion: '' }] }))
+})
+
+test('MCP material accepts legacy input and a target without permitting forged predictions', () => {
+  const material = { schemaVersion: 1, kind: 'screening', mode: 'specific', content: {} }
+  assert.deepEqual(materialInput.parse(material), material)
+  const investigation = { schemaVersion: 1, modelId: 'smaller_minus_larger', ruleVersion: 'predictable-errors-v7' }
+  assert.deepEqual(materialInput.parse({ ...material, investigation }).investigation, investigation)
+  const didactic = { packageId: 'decimal-component-multiplication-pilot', packageVersion: 1, phase: 'independent_check', teachingRevision: 2 }
+  assert.deepEqual(materialInput.parse({ ...material, investigation: { ...investigation, modelId: 'decimal_parts_multiplied_separately', didactic } }).investigation.didactic, didactic)
+  assert.throws(() => materialInput.parse({ ...material, investigation: { ...investigation, didactic: { ...didactic, diagnosis: true } } }))
+  const reportReview = { studentId: 'P', reportId: 'R', hypothesisId: 'H', checkInRevision: 1, reopen: true }
+  assert.deepEqual(materialInput.parse({ ...material, investigation: { ...investigation, reportReview } }).investigation.reportReview, reportReview)
+  assert.throws(() => materialInput.parse({ ...material, investigation: { ...investigation, reportReview: { ...reportReview, decision: 'accepted' } } }))
+  assert.throws(() => materialInput.parse({ ...material, investigation: { ...investigation, predictions: {} } }))
 })

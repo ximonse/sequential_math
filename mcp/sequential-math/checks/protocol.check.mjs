@@ -183,6 +183,8 @@ test('separately enabled material saves preserve frozen versions and idempotent 
     assert.equal((await call(client, 'math_save_material_draft', args)).draftId, saved.draftId)
     const summary = await call(client, 'math_get_material_draft', { draftId: saved.draftId })
     assert.equal(summary.titleSv, 'Tabell 7'); assert.equal(summary.version, 1)
+    const legacyPlan = await call(client, 'math_get_material_draft', { draftId: saved.draftId, section: 'investigation' })
+    assert.equal(legacyPlan.investigation, null)
     const frozen = await call(client, 'math_get_material_draft', { draftId: saved.draftId, section: 'input' })
     assert.deepEqual(frozen.input, material)
     const changed = { ...material, titleSv: 'Tabell 7, ny version' }

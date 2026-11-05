@@ -1,5 +1,21 @@
 # Arkitektur & Checklista för nya domäner
 
+## Två samverkande mål och aktuell kodavstämning
+
+Produktens riktning preciserades av Simon 2026-11-04: mängdträning/förtrogenhet
+och lärarens utforskning/bemötande av felförståelser. Normativ definition finns
+i `docs/PRODUCT_CONTRACT.md`; aktuell kodinventering, överlämningar, motsägelser
+och föreslagen ansvarsfördelning i `docs/LEARNING_SYSTEM_SYNTHESIS.md`.
+`docs/LEARNING_SYSTEM_COVERAGE.md` skiljer kandidatberäkning, frågeförslag och
+faktisk bank-/lärarväg. Ursprungsinventeringen är dokumentgranskning. E1–E3 är
+därefter lokalt byggda; syntesens genomförandestatus skiljer detta från push och
+produktion.
+
+E4:s godkända decimalpilot tillkommer lokalt 2026-11-05: bankens decimalrättning,
+undervisningsnoteringar i befintliga rapportavstämningar och nya kontrollutkast
+i samma materialkedja. Ingen parallell uppdragslagring eller elevprogression
+införs; andra domänpaket återstår.
+
 ## Lokal elevanalys via MCP
 
 `api/_teacherMaterialPreview.js` validerar generell eller analysspecifik

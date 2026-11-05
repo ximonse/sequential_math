@@ -1,4 +1,6 @@
+import { pupilFollowUpSelection, followUpRecommendation } from './pupilFollowUpSelection.js'
 import { OPERATION_LABELS } from './operations.js'
+import { validateTeachingRecord } from './didacticFollowUp.js'
 import { buildRuleHypotheses, comparableRuleCounter } from './pupilRuleHypotheses.js'
 import { speedSlipSummary } from './practiceModes.js'
 export const PUPIL_ANALYSIS_VERSION = 1
@@ -70,6 +72,8 @@ export function validatePupilAnalysis(input, evidence) {
     }) || counterRefs.some(ref => !comparableRuleCounter(byRef.get(ref), supportRefs.map(r => byRef.get(r)), signalCode)))) {
       fail('Regelkandidaten måste vara beräknad i varje stödsvar; motexempel ska pröva jämförbart särskiljande innehåll.')
     }
+    const followUp = item.basis === 'rule_candidate' ? pupilFollowUpSelection({ modelId: signalCode,
+      supports: supportRefs.map(ref => byRef.get(ref)), entries: evidence.entries }) : null
     const supportCount = new Set(supportRefs.map(ref => unit(byRef.get(ref)))).size
     if (!item.alternativesSv?.length) fail('Beskriv minst en alternativ förklaring eller vad som ännu är okänt.')
     return { id: identify(item.id), textSv: text(item.textSv), basis: item.basis, signalCode,
@@ -77,7 +81,8 @@ export function validatePupilAnalysis(input, evidence) {
       supportRefs, counterRefs, supportCount,
       counterCount: new Set(counterRefs.map(ref => unit(byRef.get(ref)))).size,
       evidenceStatus: supportCount < 2 ? 'insufficient' : 'requires_teacher_review',
-      alternativesSv: list(item.alternativesSv, 5).map(value => text(value, 500)), nextCheckSv: text(item.nextCheckSv) }
+      alternativesSv: list(item.alternativesSv, 5).map(value => text(value, 500)), nextCheckSv: followUpRecommendation(followUp) ?? text(item.nextCheckSv),
+      ...(followUp ? { followUp } : {}) }
   })
   const exampleRefs = evidence.entries.slice(0, 20).map(entry => entry.ref)
   const refs = new Set([...exampleRefs, ...strengths.flatMap(item => item.refs), ...hypotheses.flatMap(item => [...item.supportRefs, ...item.counterRefs])])
@@ -121,20 +126,21 @@ export function buildPupilAnalysisDraft(evidence) {
     }
   }
   return { schemaVersion: 1, snapshotRevision: evidence.snapshotRevision, scopeSv: 'Granskning av tillgängliga svar i vald period',
-    provenance: { kind: 'rule', instructionVersion: ruleHypotheses.length ? 'predictable-candidates-v1' : 'existing-signals-v1' }, strengths, hypotheses,
+    provenance: { kind: 'rule', instructionVersion: ruleHypotheses.length ? 'predictable-candidates-v2' : 'existing-signals-v1' }, strengths, hypotheses,
     limitationsSv: ['Historikens fullständighet är okänd. Antal svar beskriver urvalet, inte elevens samlade kunnande.',
       'Rätta svar är inte automatiskt motexempel: kontrollera att de prövar samma innehåll.',
       'Metoden kan inte fastställas från ett slutsvar. Inga nya AI-tolkningar har gjorts i detta regelunderlag.',
       ...(slips.total ? [`Snabbhetsfel i färdighetsträning: ${slips.total} svar (ett ifrån facit ${slips.counts.answer_off_by_one}, bara första siffran ${slips.counts.partial_answer_entry}, omkastade siffror ${slips.counts.last_two_digits_swapped}). De visas inte som felhypoteser; målet där är snabbhet.`] : []),
-      ...(ruleHypotheses.length ? ['Rätta slutsvar väljs som möjliga motexempel bara vid samma kända innehåll/nivå och en särskiljande modell. Stödnivå och metod behöver granskas.',
+      ...(ruleHypotheses.length ? ['Rätta slutsvar väljs som möjliga motexempel vid samma kända innehåll/nivå, eller för screening vid jämförbar känd heltalsstruktur, och bara när modellen hade gett fel. Stödnivå och metod behöver granskas.',
         ...(ruleHypotheses.length > 8 ? [`Högst åtta modellgrupper visas; ${ruleHypotheses.length - 8} ytterligare grupper finns i underlaget.`] : [])] : [])] }
 }
 
 export function validateAnalysisCheckIn(input, report) {
-  keys(input, ['decisions', 'goalSv', 'noteSv'])
+  keys(input, ['decisions', 'goalSv', 'noteSv', 'teaching'])
   const decisions = list(input.decisions, 8)
   if (decisions.length !== report.hypotheses.length || new Set(decisions.map(item => item.hypothesisId)).size !== decisions.length) fail('Stäm av varje hypotes exakt en gång.')
   return { goalSv: text(input.goalSv, 1000), noteSv: typeof input.noteSv === 'string' && !input.noteSv.trim() ? '' : text(input.noteSv, 1500),
+    ...(input.teaching === undefined ? {} : { teaching: validateTeachingRecord(input.teaching, report) }),
     decisions: decisions.map(item => {
       keys(item, ['hypothesisId', 'decision', 'interpretationSv'])
       if (!report.hypotheses.some(hypothesis => hypothesis.id === item.hypothesisId)

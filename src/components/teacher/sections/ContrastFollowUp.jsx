@@ -1,12 +1,13 @@
 import { useMemo, useRef, useState } from 'react'
-import manifest from '../../../domains/arithmetic/diagnosticTasks.v1.json'
-import { buildContrastSet, CONTRAST_LABELS_SV } from '../../../domains/predictableErrors/contrast.js'
+import { CONTRAST_LABELS_SV } from '../../../domains/predictableErrors/contrast.js'
+import { pupilFollowUpSelection } from '../../../lib/pupilFollowUpSelection.js'
 import { questionFingerprint } from '../../../domains/predictableErrors/probes.js'
 import { evidenceProblem } from '../../../lib/evidencePredictableAnalysis.js'
 import { isSpeedTrainingEntry } from '../../../lib/practiceModes.js'
 import { OPERATION_LABELS } from '../../../lib/operations.js'
 import { stockholmDay } from '../../../lib/evidencePeriod.js'
 import { diagnosticRequest } from './diagnosticRequest.js'
+import { didacticPackage } from '../../../lib/didacticFollowUp.js'
 
 // Directed follow-up (practice-modes, mode 4): contrast questions for one
 // computed error model. Creates a private draft only; review, approval and
@@ -17,13 +18,19 @@ const label = model => CONTRAST_LABELS_SV[model] || model
 // Every screening the pupil has answered counts as seen, not only the report's
 // own answers; a contrast task must be new to the pupil.
 async function screeningHistory(baseUrl) {
-  const keys = new Set()
-  let cursor = null
+  const keys = new Set(), cursors = new Set(), to = stockholmDay()
+  let cursor = null, revision = null
   for (let page = 0; page < 20; page++) {
-    const params = new URLSearchParams({ resource: 'evidence', source: 'screening', from: '2024-01-01', to: stockholmDay(), limit: '100', ...(cursor ? { cursor } : {}) })
+    const params = new URLSearchParams({ resource: 'evidence', source: 'screening', from: '2024-01-01', to, limit: '100', ...(cursor ? { cursor, snapshotRevision: revision } : {}) })
     const data = await call(`${baseUrl}&${params}`)
+    if (data.coverage?.screening?.invalidRecords > 0) throw new Error('Delar av den indexerade screeninghistoriken saknas eller är inkonsekventa.')
+    if (!Array.isArray(data.entries) || typeof data.snapshotRevision !== 'string') throw new Error('Screeninghistoriken kunde inte kontrolleras.')
+    if (revision && revision !== data.snapshotRevision) throw new Error('Screeninghistoriken ändrades under hämtningen.')
+    revision = data.snapshotRevision
     data.entries.forEach(entry => keys.add(questionFingerprint(evidenceProblem(entry))))
-    if (!data.nextCursor) return keys
+    if (data.nextCursor === null) return keys
+    if (typeof data.nextCursor !== 'string' || !data.nextCursor || cursors.has(data.nextCursor)) break
+    cursors.add(data.nextCursor)
     cursor = data.nextCursor
   }
   throw new Error('Elevens screeninghistorik är för lång för att kontrolleras här.')
@@ -35,17 +42,22 @@ async function call(url, body) {
   return result.data
 }
 
-export default function ContrastFollowUp({ item, report, studentId, classId, baseUrl }) {
+export default function ContrastFollowUp({ item, report, reportReview, studentId, classId, baseUrl }) {
   const [open, setOpen] = useState(false)
   const [grid, setGrid] = useState(true)
+  const [reopen, setReopen] = useState(false)
+  const needsReopen = ['revised', 'rejected'].includes(reportReview?.decision)
+  const teachingPackage = didacticPackage(item.signalCode)
   const [state, setState] = useState({ busy: false, message: '', receipt: null })
   const [history, setHistory] = useState({ status: 'idle', keys: null, message: '' })
   const requestId = useRef(crypto.randomUUID())
   const supports = useMemo(() => item.supportRefs.map(ref => report.evidence.find(e => e.ref === ref))
     .filter(entry => entry && !isSpeedTrainingEntry(entry)), [item, report])
-  const set = useMemo(() => history.keys && buildContrastSet({ modelId: item.signalCode, supportProblems: supports.map(evidenceProblem),
-    bankTasks: manifest.tasks, seenFingerprints: new Set([...history.keys, ...report.evidence.map(e => questionFingerprint(evidenceProblem(e)))]) }),
+  const set = useMemo(() => history.keys && pupilFollowUpSelection({ modelId: item.signalCode, supports, entries: report.evidence,
+    historyKeys: [...history.keys, ...(item.followUp?.history.excludedFingerprints ?? [])],
+    history: { scope: 'source_period_and_screening_since_2024', completeness: 'indexed_screening_window_read_practice_unknown' } }),
   [item, report, supports, history.keys])
+  const packageReady = !teachingPackage || (reportReview && set?.items.length === 2)
 
   async function openPanel() {
     setOpen(true)
@@ -58,10 +70,14 @@ export default function ContrastFollowUp({ item, report, studentId, classId, bas
   const operation = supports[0]?.question.operation
 
   async function createDraft() {
+    if ((needsReopen && !reopen) || !packageReady) return
     setState({ busy: true, message: 'Skapar privat utkast…', receipt: null })
     try {
       const audience = await call(`/api/students?${new URLSearchParams({ resource: 'audience', targetType: 'student', targetId: studentId, limit: 1 })}`)
       const material = { schemaVersion: 1, kind: 'screening', mode: 'specific',
+        investigation: { schemaVersion: 1, modelId: item.signalCode, ruleVersion: item.ruleVersion,
+          ...(reportReview ? { reportReview: { studentId, reportId: reportReview.reportId, hypothesisId: item.id,
+            checkInRevision: reportReview.checkInRevision, reopen } } : {}) },
         // The title reaches the pupil; the suspicion stays in teacher-only fields.
         titleSv: `Uppföljning: ${(OPERATION_LABELS[operation] || 'räkning').toLowerCase()}`,
         goalSv: `Pröva om felen följer felmodellen ”${label(item.signalCode)}” eller en annan förklaring. Råd till läraren, inte en fastställd orsak.`,
@@ -85,24 +101,29 @@ export default function ContrastFollowUp({ item, report, studentId, classId, bas
   if (!open) return <button type="button" className="mt-2 rounded border px-2 py-1 text-sm" onClick={openPanel}>Pröva med kontrastfrågor</button>
   if (!set) return <section aria-label="Kontrastfrågor" className="mt-2 rounded border border-slate-300 p-2 text-sm">
     <p role="status">{history.message}</p>
+    {history.status === 'error' && <button type="button" className="mt-2 rounded border px-2 py-1" onClick={openPanel}>Försök igen</button>}
     <button type="button" className="mt-2 rounded border px-2 py-1" onClick={() => setOpen(false)}>Stäng</button>
   </section>
   return <section aria-label="Kontrastfrågor" className="mt-2 rounded border border-slate-300 p-2 text-sm">
     <p className="font-semibold">Kontrastfrågor – valda så att förklaringarna ger olika svar</p>
+    {item.followUp && JSON.stringify(item.followUp.items.map(q => q.taskId)) !== JSON.stringify(set.items.map(q => q.taskId)) && <p className="mt-1">Förslaget har ändrats efter kontroll av äldre screeningar. Rapportens ursprungliga förslag är kvar ovan.</p>}
     {set.status !== 'proposed' ? <p className="mt-1">{set.reasonSv}</p> : <>
-      <p className="mt-1">Högst 5 frågor ur den granskade frågebanken. Facit och modellsvar räknas i appen, utan AI. Inga tips under prövningen.</p>
+      <p className="mt-1">{set.delivery === 'reviewed_bank' ? 'Högst 5 frågor ur den granskade frågebanken.' : 'Råd till läraren. Frågorna saknar ännu utdelningsbar bankversion.'} Facit och modellsvar räknas i appen, utan AI. Inga tips under prövningen.</p>
       <div className="mt-1 overflow-x-auto"><table className="min-w-full">
         <thead><tr><th className="text-left">Fråga</th><th className="text-right">Facit</th>
           {set.models.map(m => <th key={m} className="text-right">{label(m)}</th>)}</tr></thead>
         <tbody>{set.items.map(q => <tr key={q.taskId} className="border-t">
           <td>{q.text}</td><td className="text-right tabular-nums">{q.correct}</td>
-          {set.models.map(m => <td key={m} className="text-right tabular-nums">{q.predictions[m] ?? '–'}</td>)}</tr>)}</tbody>
+          {set.models.map(m => <td key={m} className="text-right tabular-nums">{Array.isArray(q.predictions[m]) ? q.predictions[m].join(' eller ') : q.predictions[m] ?? '–'}</td>)}</tr>)}</tbody>
       </table></div>
       {set.unresolved.length > 0 && <p className="mt-1">Banken skiljer inte alla förklaringar åt: {set.unresolved.map(pair => pair.map(p => p === 'correct' ? 'rätt svar' : label(p)).join(' / ')).join('; ')}. Elevens uträkning behövs där.</p>}
       <label className="mt-2 flex items-center gap-2"><input type="checkbox" checked={grid} onChange={event => setGrid(event.target.checked)} /> Eleven visar uträkningen i räknehäftet</label>
-      <p className="mt-1 text-slate-600">Uppgifter som eleven redan mött i rapporten eller i en screening föreslås inte.</p>
+      {needsReopen && <label className="mt-2 flex items-center gap-2"><input type="checkbox" checked={reopen} onChange={event => setReopen(event.target.checked)} /> Jag väljer att pröva den ursprungliga modellen igen; min sparade tolkning följer med.</label>}
+      <p className="mt-1 text-slate-600">Rapportens källurval och tillgängliga screeningar från 2024 till idag är kontrollerade. Historikens fullständighet är okänd. Äldre screeningar och träning utanför källurvalet kan innehålla samma frågor.</p>
+      {teachingPackage && !reportReview && <p className="mt-1">Spara rapportversionen först, så kan undervisningsnotering och nya kontroller knytas till samma rapport.</p>}
+      {teachingPackage && set.items.length !== 2 && <p className="mt-1">Pilotpaketet behöver två nya prövningsfrågor. Alla paketets frågor är inte tillgängliga som nya kontroller.</p>}
       <div className="mt-2 flex flex-wrap items-center gap-2">
-        <button type="button" disabled={state.busy || Boolean(state.receipt)} className="rounded border px-2 py-1" onClick={createDraft}>Skapa utkast</button>
+        {set.delivery === 'reviewed_bank' && <button type="button" disabled={state.busy || Boolean(state.receipt) || (needsReopen && !reopen) || !packageReady} className="rounded border px-2 py-1" onClick={createDraft}>Skapa utkast</button>}
         <button type="button" disabled={state.busy} className="rounded border px-2 py-1" onClick={() => setOpen(false)}>Stäng</button>
         {state.receipt && <a className="underline" href={state.receipt.reviewPath}>Öppna granskning</a>}
       </div></>}

@@ -2,10 +2,22 @@
 
 Status: **antagen projektriktning 2026-09-29; isolerad interaktionsprototyp pågår**.
 
+> Historisk startstatus ovan. Kodavstämning 2026-11-04: screening-, material-
+> och uppföljningsdelar är senare byggda i appen, medan den kompletta
+> undervisnings-/kontrollkedjan fortfarande är offlineprototyp. Detta dokuments
+> första etapper ska inte läsas som aktuell leveranslista. Se
+> [systemsyntesen](LEARNING_SYSTEM_SYNTHESIS.md) för nuläge och kvarstående
+> kopplingar samt [produktkontraktet](PRODUCT_CONTRACT.md) för Simons tvådelade mål.
+
 Detta är ett design- och planeringsdokument. Det beskriver avsedd riktning,
 inte nuvarande appbeteende. Vid konflikt gäller
 [`PRODUCT_CONTRACT.md`](PRODUCT_CONTRACT.md) och
 [`FUNCTION_CONTRACTS.md`](FUNCTION_CONTRACTS.md) före detta dokument.
+
+Tillägg 2026-11-05: E4:s godkända decimalpilot har nu en lokalt implementerad
+kedja för undervisningsnotering och nya kontrollutkast i befintliga rapport-/
+materiallager. Det innebär inte att hela offlineprototypen eller alla domäner
+är integrerade. Se systemsyntesens senaste status.
 
 ## 1. Syfte
 

@@ -60,6 +60,47 @@ Material v1 har `schemaVersion:1`, `kind:practice|screening`,
 `mode:general|specific`, `titleSv`, `goalSv`, `instructionSv`,
 `sourceMaterials:[{label,excerpt}]`, `audience:{targetType,targetId,rosterRevision}`,
 `basis`, `content` och valfri `classContexts:{elevId:klassId}`. Okända fält avvisas.
+
+Resultatdelen för specifik screening skiljer sedan 2026-11-04 mellan bedömda
+svar, materialversionens förväntade frågor och inlämning. Den använder sparat
+material även när läraren visar en ändrad förhandsvisning. Vid flera bekräftade
+mottagare väljs elev uttryckligen. En ofullständig eller revisionsändrad
+historikläsning ger fel och återförsök i stället för ett delvis summerat resultat.
+Utan strukturerad prövningsavsikt visas samtliga modellträffar som observationer,
+inte som stöd för eller emot en viss misstanke. Screeningens avsaknad av apptips
+bevisar inte att eleven saknade annan hjälp. Se E1 i
+[systemsyntesen](LEARNING_SYSTEM_SYNTHESIS.md).
+
+### Versionsbunden prövningsavsikt (E2, 2026-11-04)
+
+Analysspecifik screening kan ha valfri input
+`investigation:{schemaVersion:1,modelId,ruleVersion}`. Servern kräver aktuellt,
+revisionsbundet stöd för målmodellen hos varje mottagare i den valda klasskontexten.
+Generellt material, träning, inmatningssignaler och automatisk uppföljning från
+enbart snabbhetsträning kan inte använda detta kontrastkontrakt.
+
+Servern beräknar rivaler, varje frågas facit och **alla** möjliga modellsvar,
+inklusive alternativ som kan ge samma svar. Frågor måste pröva samma avgränsade
+innehåll och skilja målmodellen från facit. Olösta par sparas öppet. Klienten
+får inte skicka egna rivaler eller prediktioner som om de vore granskade fakta.
+Normaliserad `material.investigation` innehåller `schemaVersion`, `modelId`,
+`ruleVersion`, `revision` samt per elev/klass: källrevisioner, stöd/motexempel,
+fråge-ID/version, facit, modellsvar som listor och olösta par.
+
+Prövningen ingår i `contentRevision` och sparas oförändrad per materialversion.
+Granskningsvyn visar målmodell, rivaler och samtliga modellsvar före godkännande.
+Bekräftade utdelningskvitton bär `investigationRevision`. Resultatet läser den
+sparade materialversionen och matchande kvitto, och jämför med frysta modellsvar
+även om aktuell analys senare har en annan regelversion. Nyare modellträffar
+visas separat från ursprunglig prövning. Oförenligt facit, bedömning, elev/klass
+eller kvitto ger granskningsbehov, inte ett nytt kausalt besked.
+
+Äldre material saknar fältet och behåller sitt befintliga format och sina
+ursprungliga revisioner; ingen hypotes fylls i bakåt. Regelversionen måste vara
+aktuell vid ny preview/godkännande/utdelning; redan sparade resultat omtolkas
+inte tyst. Ingen automatisk diagnos, masteryändring eller undervisningsorder
+införs. Lärarens rapportavstämning kopplas vidare i E3, inte genom en dold
+godkännandeåtgärd i denna etapp.
 Klasskontext hämtas från valt klassmål eller elevens enda åtkomliga klass;
 screening för en elev med flera klasser kräver ett uttryckligt val.
 Vid specifikt innehåll krävs minst
@@ -269,3 +310,46 @@ halvfärdig text över versionsbyte, avbryt och nytt godkännande. Rityteprovet
 var rött före rättningen. Fyllda liggande och stående surfplattevyer har
 granskats visuellt i lokal Chromium-emulering. Ingen fysisk iPad, riktig
 elevdata, Upstash-transport eller produktionspublicering ingår i dessa prov.
+## Rapportreferens i prövningsavsikt
+
+Valfria `investigation.reportReview` innehåller `studentId`, `reportId`,
+`hypothesisId`, `checkInRevision` och `reopen`. Servern kontrollerar den inloggade
+lärarens egen sparade rapport, källurval och senaste avstämning. Beslut, tolkning,
+mål och anteckning härleds på servern och fryses per elev i materialversionens
+prövningsavsikt; klienten får inte ange ett lärarbeslut. Ändrad eller avfärdad
+hypotes kräver `reopen: true`. En senare avstämning kräver ny förhandsvisning och
+granskning före utdelning. Befintliga material utan rapportreferens behålls.
+
+## E4: godkänt decimalpaket och stegvis uppföljning
+
+Det lokalt implementerade pilotpaketet gäller heltal gånger ett tal med en
+decimal. `investigation.didactic` kan ange `packageId`, `packageVersion: 1`,
+`phase` (`contrast`, `independent_check`, `later_check`) och `teachingRevision`.
+Servern accepterar bara paketets egna uppgifts-ID:n/versioner och rätt roller:
+två kontrastfrågor eller en kontrollfråga. En sparad rapport och en elev per
+material krävs. Undervisningsexemplet och den icke-särskiljande negativa
+kontrollen väljs inte som nya kontrollfrågor.
+
+Ny/senare kontroll kräver en sparad undervisningsnotering i rätt rapport.
+Noteringen hämtas på servern från den angivna avstämningsrevisionen och fryses
+i materialet tillsammans med tidigare kontrollobservationer. Läraren väljer
+tillfälle för utdelning; knappen skapar ett privat utkast, aldrig en automatisk
+utdelning eller kalenderbokning. Vanlig materialgranskning, godkännande och
+utdelning återanvänds. MCP kan skapa privata utkast men får ingen ny behörighet
+att godkänna, dela ut eller skriva lärarens avstämning.
+
+Nya förhandsvisningar, sparanden och godkännanden kontrollerar att uppgifterna
+inte finns i tillgängliga träningssamlingar (`problemLog` och `recentProblems`,
+även när en annan samling är nyare eller en tidsstämpel saknas), eller den
+valda klassens indexerade screeninghistorik från 2024. Detta är exponerings-
+kontroll, inte en ändrad regel för att räkna bedömda observationer. Full historik
+är inte bevisad. Inkonsekvent index eller avbruten läsning stoppar ett nytt
+kontrollförslag. Publiceringsåterförsök använder sin befintliga frysta
+uppdragsidentitet/kvitto och gör ingen ny uppgiftsselektion.
+
+När nya svar förändrat källsnapshoten kan didaktiksteget binda om precis samma
+ursprungliga observationsrevision till en aktuell `ref`. Originalrapporten
+ändras inte; `sourceReportSnapshotRevision` och `sourceBindings` sparar båda
+referenserna. Ändrad ursprungsuträkning, fel elev/klass eller annan uppsättning
+stöd/motexempel avvisas. En reviderad eller avfärdad hypotes kräver fortsatt
+lärarens uttryckliga återöppnande. Inga nya diagnos- eller masterytrösklar införs.

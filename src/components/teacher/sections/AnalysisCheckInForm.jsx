@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { getTeacherApiToken } from '../../../lib/teacherAuth.js'
+import TeachingRecordNote from '../TeachingRecordNote.jsx'
 
 // Unsaved text survives SPA navigation within this authenticated tab, but is not persisted or sent.
 const drafts = new Map()
@@ -58,7 +59,7 @@ export default function AnalysisCheckInForm({ item, scope, busy, onSave }) {
     </div>
     {item.checkIns.length > 0 && <details className="text-sm"><summary>Avstämningshistorik ({item.checkIns.length})</summary>
       {item.checkIns.map(check => <div key={check.revision} className="mt-2 border-l-2 pl-3"><p>Avstämning {check.revision} · {new Date(check.createdAt).toLocaleString('sv-SE')}</p>
-        <p>{check.goalSv}</p><p>{check.noteSv}</p>{check.decisions.map(d => <p key={d.hypothesisId}>{decisionLabels[d.decision]}: {d.interpretationSv}</p>)}</div>)}
+        <p>{check.goalSv}</p><p>{check.noteSv}</p><TeachingRecordNote record={check.teaching} />{check.decisions.map(d => <p key={d.hypothesisId}>{decisionLabels[d.decision]}: {d.interpretationSv}</p>)}</div>)}
     </details>}
   </form>
 }

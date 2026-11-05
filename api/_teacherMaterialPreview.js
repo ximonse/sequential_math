@@ -1,12 +1,19 @@
 import { resolveTeacherAudience } from './_teacherAudience.js'
 import { getLiveTeacherAuthPayload } from './_helpers.js'
-import { readPupilEvidence, assertEvidenceSourceAccess } from './_pupilEvidenceRead.js'
+import { readPupilEvidence, assertEvidenceSourceAccess, assertPupilEvidenceAccess } from './_pupilEvidenceRead.js'
 import { prepareDiagnosticAssignment } from './_diagnosticAssignmentStore.js'
 import { evidenceError, evidenceHash } from './_pupilEvidence.js'
 import { encodeAssignmentPayload, decodeAssignmentPayload } from '../src/lib/assignments.js'
 import { summarizeDiagnosticObservation } from '../src/domains/arithmetic/diagnosticObservation.js'
 import { createDiagnosticGrid } from '../src/domains/arithmetic/diagnosticGridModel.js'
 import { isChoiceTask } from '../src/domains/arithmetic/screeningImageQuestions.js'
+import { buildMaterialInvestigation } from '../src/lib/materialInvestigation.js'
+import { materialReportReview } from '../src/lib/materialReportReview.js'
+import { readPupilAnalysisState } from './_pupilAnalysisStore.js'
+import { stockholmDay } from '../src/lib/evidencePeriod.js'
+import { questionFingerprint } from '../src/domains/predictableErrors/questionFingerprint.js'
+import { evidenceProblem } from '../src/lib/evidenceProblem.js'
+import { practiceExposureKeys } from '../src/lib/practiceExposureKeys.js'
 
 const fail = message => { throw evidenceError(400, 'invalid_material', message) }
 function text(value, max = 1000) {
@@ -32,7 +39,7 @@ async function fullAudience(req, selection) {
   return { ...first, pupils, nextOffset: null }
 }
 
-async function analysisBasis(req, auth, basis, audience) {
+async function analysisBasis(req, auth, basis, audience, onEvidence) {
   if (!Array.isArray(basis) || basis.length > 100) fail('Ogiltigt analysunderlag, högst 100 källurval.')
   const result = []
   for (const item of basis) {
@@ -49,6 +56,7 @@ async function analysisBasis(req, auth, basis, audience) {
     } }, auth, item.studentId, { unpaged: true })
     const known = new Set(evidence.entries.map(entry => entry.ref))
     if ([...item.supportRefs, ...item.counterRefs].some(ref => !known.has(ref))) fail('Analysreferens saknas i aktuellt underlag.')
+    onEvidence?.(item, evidence)
     result.push({ ...item, source: evidence.source, reasonSv: text(item.reasonSv), coverage: evidence.coverage })
   }
   return result
@@ -82,7 +90,7 @@ function practiceContent(input, title) {
 }
 
 export async function previewTeacherMaterial(req, auth, input) {
-  object(input, ['schemaVersion', 'kind', 'mode', 'titleSv', 'goalSv', 'instructionSv', 'sourceMaterials', 'audience', 'basis', 'content', 'classContexts'])
+  object(input, ['schemaVersion', 'kind', 'mode', 'titleSv', 'goalSv', 'instructionSv', 'sourceMaterials', 'audience', 'basis', 'content', 'classContexts', 'investigation'])
   if (input.schemaVersion !== 1 || !['practice', 'screening'].includes(input.kind)
     || !['general', 'specific'].includes(input.mode)) fail('Ogiltig materialtyp eller version.')
   const titleSv = text(input.titleSv, 100), goalSv = text(input.goalSv), instructionSv = text(input.instructionSv, 2000)
@@ -127,9 +135,34 @@ export async function previewTeacherMaterial(req, auth, input) {
   if (current.rosterRevision !== audience.rosterRevision) throw evidenceError(409, 'audience_changed', 'Urvalet har ändrats.')
   const live = await getLiveTeacherAuthPayload(req)
   if (!live || evidenceHash(live) !== evidenceHash(auth)) throw evidenceError(403, 'access_changed', 'Lärarens åtkomst har ändrats.')
-  if (basis.length) await analysisBasis(req, live, input.basis, current)
+  const records = []
+  if (basis.length) await analysisBasis(req, live, input.basis, current, (basis, evidence) => records.push({ basis, evidence }))
+  let reportReview, reportState
+  if (input.investigation && input.investigation.reportReview !== undefined) {
+    const reference = input.investigation.reportReview
+    object(reference, ['studentId', 'reportId', 'hypothesisId', 'checkInRevision', 'reopen'])
+    if (!audience.pupils.some(pupil => pupil.studentId === reference.studentId)) fail('Rapportens elev måste vara mottagare.')
+    reportState = await readPupilAnalysisState(reference.studentId, classContexts[reference.studentId], live.teacherId)
+    reportReview = materialReportReview(reference, reportState, records, input.investigation.modelId,
+      { rebase: Boolean(input.investigation.didactic) })
+  }
+  const investigation = input.investigation === undefined ? undefined : buildMaterialInvestigation(input.investigation,
+    { kind: input.kind, mode: input.mode, audience, classContexts, records, items: content.items, reportReview, reportState })
+  // Publication retries reuse their frozen assignment identities. Fresh draft
+  // and approval reads check novelty; do not block receipt repair after answers.
+  if (investigation?.didactic && req.body?.action !== 'publish') {
+    const selected = new Set(content.items.map(item => questionFingerprint(evidenceProblem({ question: item.task }))))
+    for (const pupil of audience.pupils) {
+      const history = await readPupilEvidence({ ...req, headers: req.headers, query: {
+        classId: classContexts[pupil.studentId], source: 'all', from: '2024-01-01', to: stockholmDay() } }, live, pupil.studentId, { unpaged: true })
+      if (history.coverage?.screening?.invalidRecords > 0) fail('Historiken behöver granskas innan en ny kontroll kan föreslås.')
+      const exposures = practiceExposureKeys(await assertPupilEvidenceAccess(req, pupil.studentId, classContexts[pupil.studentId]))
+      if ([...selected].some(key => exposures.has(key)) || history.entries.some(entry => selected.has(questionFingerprint(evidenceProblem(entry))))) fail('Eleven har redan mött en vald kontrollfråga. Upprepa den inte som en ny kontroll.')
+    }
+  }
   const material = { schemaVersion: 1, kind: input.kind, mode: input.mode, titleSv, goalSv, instructionSv,
     sourceMaterials: sources, audience, classContexts, basis, content,
-    pupilsWithoutAnalysis: audience.pupils.filter(p => !basis.some(item => item.studentId === p.studentId)).map(p => p.studentId) }
+    pupilsWithoutAnalysis: audience.pupils.filter(p => !basis.some(item => item.studentId === p.studentId)).map(p => p.studentId),
+    ...(investigation ? { investigation: { ...investigation, revision: evidenceHash(investigation) } } : {}) }
   return { material, contentRevision: evidenceHash(material), saved: false, assigned: false, approval: 'not_requested' }
 }

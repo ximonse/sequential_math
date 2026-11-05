@@ -97,6 +97,15 @@ Utkast kan förhandsvisas och sparas med separat materialskrivflagga. Inga
 verktyg finns för godkännande, utdelning, radering eller mastery. Godkännande
 och utdelning är separata cookie-skyddade handlingar i lärarens granskningsvy.
 
+2026-11-04, E2: materialinput kan ange
+`investigation:{schemaVersion:1,modelId,ruleVersion}` för analysspecifik screening.
+Servern räknar och validerar rivaler/modellsvar; klientprediktioner avvisas.
+`math_get_material_draft` med `section=investigation` läser den sparade
+prövningsversionen och paginerar elevbundna källor/frågor. Äldre material ger
+`investigation:null`. `section=publication` visar bekräftade kvittons
+`investigationRevision`. Skrivflaggor, behörigheter och avsaknad av MCP-verktyg
+för godkännande/utdelning är oförändrade. Se [materialkontraktet](PUPIL_MATERIAL.md).
+
 2026-10-28 verifierat i faktisk Codex-session: den anslutna demon exponerar
 grupp-/klassurval, materialförhandsvisning och utkastläsning. Capabilities anger
 `materialDraftWritesEnabled=false`; denna anslutning får inte spara material.

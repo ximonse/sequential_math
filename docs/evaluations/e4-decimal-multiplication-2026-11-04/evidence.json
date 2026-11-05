@@ -1,0 +1,117 @@
+{
+  "packageId": "decimal-component-multiplication-pilot",
+  "ruleVersion": "predictable-errors-v7",
+  "method": "synthetic_deterministic_not_blind",
+  "teacherApproval": "pending",
+  "productionIntegration": false,
+  "assertions": {
+    "independentlyCheckedTasks": 7,
+    "correctAnswerControls": 7,
+    "nonMathematicalStatusControls": 14,
+    "scalingControls": 7
+  },
+  "rows": [
+    {
+      "taskId": "draft-decimal-mul-source",
+      "phase": "source_example",
+      "correct": 46.9,
+      "componentAnswer": 42.49,
+      "discriminating": true,
+      "matchedModelIds": [
+        "decimal_parts_multiplied_separately"
+      ],
+      "correctStatus": "correct",
+      "scalingMatchedModelIds": [
+        "place_value_scaling"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-mul-contrast-a",
+      "phase": "contrast",
+      "correct": 7.2,
+      "componentAnswer": 6.12,
+      "discriminating": true,
+      "matchedModelIds": [
+        "decimal_parts_multiplied_separately"
+      ],
+      "correctStatus": "correct",
+      "scalingMatchedModelIds": [
+        "place_value_scaling"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-mul-contrast-b",
+      "phase": "contrast",
+      "correct": 18,
+      "componentAnswer": 15.3,
+      "discriminating": true,
+      "matchedModelIds": [
+        "decimal_parts_multiplied_separately"
+      ],
+      "correctStatus": "correct",
+      "scalingMatchedModelIds": [
+        "place_value_scaling"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-mul-teaching",
+      "phase": "teaching",
+      "correct": 10,
+      "componentAnswer": 8.2,
+      "discriminating": true,
+      "matchedModelIds": [
+        "decimal_parts_multiplied_separately"
+      ],
+      "correctStatus": "correct",
+      "scalingMatchedModelIds": [
+        "place_value_scaling"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-mul-immediate",
+      "phase": "independent_check",
+      "correct": 28.2,
+      "componentAnswer": 24.42,
+      "discriminating": true,
+      "matchedModelIds": [
+        "decimal_parts_multiplied_separately"
+      ],
+      "correctStatus": "correct",
+      "scalingMatchedModelIds": [
+        "place_value_scaling"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-mul-delayed",
+      "phase": "later_check",
+      "correct": 28.8,
+      "componentAnswer": 24.48,
+      "discriminating": true,
+      "matchedModelIds": [
+        "decimal_parts_multiplied_separately"
+      ],
+      "correctStatus": "correct",
+      "scalingMatchedModelIds": [
+        "place_value_scaling"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-mul-nondiscriminating",
+      "phase": "negative_control",
+      "correct": 6.8,
+      "componentAnswer": 6.8,
+      "discriminating": false,
+      "matchedModelIds": [],
+      "correctStatus": "correct",
+      "scalingMatchedModelIds": [
+        "place_value_scaling"
+      ]
+    }
+  ],
+  "draftContrastTaskIds": [
+    "draft-decimal-mul-contrast-a",
+    "draft-decimal-mul-contrast-b"
+  ],
+  "unresolvedPairs": [],
+  "exhaustedBankStatus": "unavailable"
+}

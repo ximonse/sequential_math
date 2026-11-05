@@ -1,5 +1,16 @@
 # Kort arkitekturplan för väntetider — 2026-10-29
 
+## Komplettering 2026-11-04: bevara tabelljämförelsen under hämtning
+
+En bred robotkörning och seriell reproduktion visade att sparad jämförelseelev
+rensades när katalogen fanns men valt resultaturval ännu laddades. Layoutens
+befintliga urvalsvalidering väntar nu på `historyState.status === 'ready'`.
+Ett färdigt annat klassurval rensar fortfarande en elev som inte ingår.
+Tabellroboten och fem katalog-/urvalsrobotar passerar mot produktionsbygget.
+Arkitekturbedömning: den befintliga filen över 600 rader får en avgränsad
+laddningsgrind; ingen analys-, tränings- eller statistikregel flyttas dit.
+Övrig arkitekturuppdelning är fortsatt separat arbete enligt planen nedan.
+
 Status: kartläggning klar; en liten första förbättring beställd 2026-10-29.
 Underlag: [prestandakartläggningen](PERFORMANCE_MAP.md). Simon prioriterar
 nytta framför omfattning: befintlig klass-/grupphämtning körs oberoende av

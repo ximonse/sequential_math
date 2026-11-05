@@ -6,7 +6,7 @@ import { createStudentRecord } from '../api/_studentStore.js'
 import { hashTeacherPassword } from '../api/_helpers.js'
 import { ALL_OPERATIONS } from '../src/lib/operations.js'
 import { createDiagnosticGrid, recordDiagnosticGridEvent } from '../src/domains/arithmetic/diagnosticGridModel.js'
-import diagnosticManifest from '../src/domains/arithmetic/diagnosticTasks.v1.json'
+import diagnosticManifest from '../src/domains/arithmetic/diagnosticTasks.v1.json' with { type: 'json' }
 
 export const ROBOT_CLASS_ID = 'robot-klass'
 export const ROBOT_PIN = '2468'
@@ -200,6 +200,20 @@ export async function handleControl(action, body = {}) {
       seeded.push({ studentId, problemLogCount: rows.length, recentProblemsCount: Math.min(rows.length, 250) })
     }
     return { ok: true, students: seeded }
+  }
+  if (action === 'seed-evidence-history') {
+    const studentId = String(body.studentId || '').trim().toUpperCase()
+    const profile = await kv.get(`student:${studentId}`)
+    if (!profile) return { ok: false }
+    const row = { observationId: `evidence-${studentId}`, timestamp: Date.now() - 60000,
+      classIdAtAttempt: profile.classId, operation: 'subtraction', domain: 'arithmetic',
+      skill: 'subtraction', contentSkill: 'subtraction', contentLevel: 4,
+      problemType: 'subtraction_A', targetLevel: 4, difficulty: { conceptual_level: 4 },
+      values: { a: 402, b: 178 }, promptText: '402 − 178', studentAnswer: 376,
+      correctAnswer: 224, correct: false, errorCategory: 'misconception', errorPatterns: ['historic_first_match'] }
+    // An identical repeated observation must be one teacher evidence unit.
+    await kv.set(`student:${studentId}`, { ...profile, problemLog: [row, { ...row }], recentProblems: [row, { ...row }] })
+    return { ok: true, observationId: row.observationId }
   }
   if (action === 'verify') {
     const registry = await import('../src/domains/registry.js')

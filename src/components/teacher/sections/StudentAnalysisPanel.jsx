@@ -73,7 +73,7 @@ function AnalysisWorkspace({ studentId, classId }) {
           update({ history, selectedId: history.affectedReportId, preview: null, draft: null, message: 'Rapportversionen är sparad. Stäm av tolkningen nedan.' })
         })}>Spara rapportversion</button>
       </>}
-      {selected && <><PupilAnalysisReportView key={`report-${selected.id}`} report={selected.report} baseUrl={baseUrl} studentId={studentId} classId={classId} />
+      {selected && <><PupilAnalysisReportView key={`report-${selected.id}`} report={selected.report} savedItem={selected} baseUrl={baseUrl} studentId={studentId} classId={classId} />
         <AnalysisCheckInForm key={`check-${selected.id}`} item={selected} scope={`${studentId}:${classId}`} busy={state.busy} onSave={async (checkIn, requestId) => {
           let saved = false
           await run(async () => {

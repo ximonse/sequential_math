@@ -12,6 +12,17 @@ Beslut och bakgrund: [granskningsunderlag](PRODUCT_CONTRACT_REVIEW.md). Observer
 
 M1 och M2 är två delar av samma uppdrag. Insamling får inte göra vardagsträningen till ett omärkligt prov; enkel elevnavigation får inte göra lärarunderlaget missvisande. Appen stödjer undervisning och professionell bedömning, men är inte ensam grund för diagnos, betyg eller påståenden om allmän matematikförmåga.
 
+### Preciserad riktning — Simon 2026-11-04
+
+Appens riktning är tvådelad och samverkande:
+
+- **Mängdträning och förtrogenhet:** eleven övar för att befästa kunnande och utveckla säkerhet och flyt, exempelvis med tabellträning, talpar och dubblor. Fungerande praktiska elevflöden ska bevaras.
+- **Utforska och bemöta felförståelser:** appen ska göra det enkelt för läraren att upptäcka en misstanke, undersöka och kartlägga elevens tänkande, välja undervisning som bemöter felförståelsen och följa upp förståelsen med nya självständiga uppgifter.
+
+Träningen kan ge underlag för undersökningen. Undersökningen kan ge riktning åt undervisning och fortsatt träning. En återkommande felrespons eller beräknad modellträff är en misstanke att pröva, inte en fastställd felförståelse. Diagnostiskt underlag får inte tyst ändra vanlig mastery. De två spåren anger syften; de innebär inte en ny menystruktur eller att andra befintliga träningsområden tas bort.
+
+Varje betydande ändring ska återvända till dessa mål: vilket konkret hinder undanröjs, hur bidrar ändringen till elevens övande eller lärarens undersökning och hur lämnas underlag vidare? Antal funktioner eller felkoder är inget eget mål. Aktuell kodavstämning och föreslagen samordning finns i [syntesen](LEARNING_SYSTEM_SYNTHESIS.md); den ändrar inte i sig appens beteende.
+
 Framgång bedöms genom meningsfulla elevförlopp och användbara lärarbeslut. Antal svar, sviter, hög rättprocent, stigande nivånummer och gröna tester är indikatorer eller kontrollresultat, inte tillräckliga bevis för lärande. Ett enskilt klasspass kan ge stöd eller motexempel för ett beteende, inte bevisa långsiktig lärandeeffekt.
 
 ## 2. Principer som styr underordnade beslut

@@ -1,3 +1,5 @@
+import { practiceObservation } from '../src/lib/practiceObservation.js'
+import { teacherPracticeRows } from '../src/lib/teacherPracticeRows.js'
 import { createHash } from 'node:crypto'
 import { addPredictableEvidence } from '../src/lib/evidencePredictableAnalysis.js'
 
@@ -6,52 +8,18 @@ export const evidenceHash = value => createHash('sha256').update(JSON.stringify(
 export const evidencePick = (value, keys) => Object.fromEntries(keys.filter(key => value?.[key] !== undefined)
   .map(key => [key, value[key]]))
 
-const fields = ['observationId', 'problemId', 'classIdAtAttempt', 'domain', 'skill', 'operation',
-  'contentSkill', 'contentLevel', 'evidenceSkill', 'evidenceLevel', 'evidenceClass', 'evidenceRuleVersion',
-  'problemType', 'promptText', 'values', 'studentAnswer', 'correctAnswer', 'correct', 'isPartial',
-  'partialCode', 'partialDetail', 'level', 'targetLevel', 'timestamp', 'errorCategory', 'errorPatterns',
-  'patterns', 'errorDetail', 'timeSpent', 'speedTimeSec', 'excludedFromSpeed', 'speedExclusionReason',
-  'interruptionSuspected', 'trainingMode', 'trainingPurpose']
-const contextFields = ['version', 'frameId', 'mode', 'source', 'assignmentId', 'assignmentKind',
-  'allowedSkills', 'levelRange', 'tableSet', 'progressionMode']
-
 export function practiceEvidence(profile) {
-  const source = profile.problemLog?.length ? 'problemLog' : 'recentProblems'
-  const log = Array.isArray(profile[source]) ? profile[source] : []
-  const warnings = new Set(['history_completeness_unknown'])
-  if (source === 'recentProblems') warnings.add('recent_problems_fallback')
-  const seen = new Map(), entries = []
-  let duplicates = 0, invalidTimestamps = 0
-  for (const [position, raw] of log.entries()) {
-    if (!raw || typeof raw !== 'object') { invalidTimestamps++; continue }
-    const value = evidencePick(raw, fields)
-    if (raw.trainingContext) value.trainingContext = evidencePick(raw.trainingContext, contextFields)
-    if (!Number.isFinite(value.timestamp) || value.timestamp <= 0) { invalidTimestamps++; continue }
-    const id = typeof value.observationId === 'string' && value.observationId.trim() ? value.observationId : null
+  const { source, entries: rows, storedRecords, duplicates, invalidTimestamps, warnings } = teacherPracticeRows(profile)
+  const entries = []
+  for (const { value, id, position } of rows) {
     const digest = evidenceHash(value)
-    if (id && seen.has(id)) {
-      if (seen.get(id).has(digest)) { duplicates++; continue }
-      warnings.add('conflicting_observation_ids')
-      seen.get(id).add(digest)
-    } else if (id) seen.set(id, new Set([digest]))
-    const status = value.isPartial === true ? 'partial' : value.correct === true ? 'correct'
-      : value.correct === false ? 'incorrect' : 'unknown'
     entries.push({ source: 'practice', timestamp: value.timestamp, timeBasis: 'answer_timestamp',
       reference: { kind: id ? 'observation' : 'legacy_position', observationId: id,
         collection: source, position, revision: digest },
-      question: evidencePick(value, ['problemId', 'domain', 'skill', 'operation', 'problemType', 'promptText', 'values']),
-      answer: { status, studentAnswer: value.studentAnswer ?? null, correctAnswer: value.correctAnswer ?? null,
-        partialCode: value.partialCode ?? null, partialDetail: value.partialDetail ?? null },
-      context: evidencePick(value, ['classIdAtAttempt', 'level', 'targetLevel', 'contentSkill', 'contentLevel',
-        'evidenceSkill', 'evidenceLevel', 'evidenceClass', 'evidenceRuleVersion', 'trainingContext',
-        'trainingMode', 'trainingPurpose', 'timeSpent', 'speedTimeSec', 'excludedFromSpeed',
-        'speedExclusionReason', 'interruptionSuspected']),
-      interpretation: { category: ['none', 'knowledge', 'inattention', 'misconception', 'input'].includes(value.errorCategory) ? value.errorCategory : 'unknown',
-        patterns: Array.isArray(value.errorPatterns) ? value.errorPatterns : Array.isArray(value.patterns) ? value.patterns : [],
-        detail: value.errorDetail ?? null } })
+      ...practiceObservation(value) })
   }
   const timestamps = entries.map(entry => entry.timestamp)
-  return { entries, coverage: { source, completeness: 'unknown', storedRecords: log.length,
+  return { entries, coverage: { source, completeness: 'unknown', storedRecords,
     duplicateRecords: duplicates, invalidTimestamps,
     earliestAvailable: timestamps.length ? Math.min(...timestamps) : null,
     latestAvailable: timestamps.length ? Math.max(...timestamps) : null, warnings: [...warnings] } }
@@ -61,7 +29,10 @@ export function evidencePage({ studentId, classId, period, source, practice, scr
   const all = [...practice.entries, ...screening.entries]
     .filter(entry => entry.timestamp >= period.startInclusive && entry.timestamp < period.endExclusive)
     .sort((a, b) => a.timestamp - b.timestamp || JSON.stringify(a.reference).localeCompare(JSON.stringify(b.reference)))
-  const revision = evidenceHash({ studentId, classId, period, source, all,
+  // Teacher review metadata is a separate versioned layer, not an edit to the
+  // original answer. Changing a review must not invalidate its source refs.
+  const sourceEntries = all.map(({ teacherReview: _review, ...entry }) => entry)
+  const revision = evidenceHash({ studentId, classId, period, source, all: sourceEntries,
     coverage: { practice: practice.coverage, screening: screening.coverage } })
   if (query.snapshotRevision && query.snapshotRevision !== revision) {
     throw evidenceError(409, 'evidence_changed', 'Underlaget har ändrats. Börja om från första sidan.')

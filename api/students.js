@@ -1,3 +1,4 @@
+import { summarizeBreakGames } from '../src/lib/breakGameResults.js'
 import { kv } from '@vercel/kv'
 import {
   isLiveTeacherApiAuthorized,
@@ -55,6 +56,22 @@ export default async function handler(req, res) {
   }
 
   try {
+    if (req.query?.resource === 'break-games') {
+      const classId = String(req.query.classId || '')
+      if (!/^[A-Za-z0-9_-]{1,128}$/.test(classId)) return res.status(400).json({ error: 'Exact classId required' })
+      const allowed = await getLiveAuthorizedClassIds(req)
+      if (allowed !== null && !allowed.includes(classId)) return res.status(403).json({ error: 'Forbidden' })
+      const to = req.query.to === undefined ? Date.now() + 1 : Number(req.query.to)
+      const from = req.query.from === undefined ? to - 7 * 86400000 : Number(req.query.from)
+      if (!Number.isFinite(from) || !Number.isFinite(to) || from < 0 || from >= to || to - from > 30 * 86400000) {
+        return res.status(400).json({ error: 'Use a finite period of at most 30 days' })
+      }
+      const ids = await scopedStudentIds(req, { classIds: [classId] })
+      const profiles = (await batchLoadKvKeys(ids.map(id => `student:${id}`))).filter(isCurrentStudentProfile)
+      res.setHeader('Cache-Control', 'no-store')
+      return res.status(200).json({ version: 1, classId, capturedAt: Date.now(),
+        ...summarizeBreakGames(profiles, { from, to, classId }) })
+    }
     if (req.query?.resource === 'classes') return await teacherClassChoices(req, res)
     if (req.query?.resource === 'groups') return await teacherGroupChoices(req, res)
     if (req.query?.resource === 'audience') return await teacherAudience(req, res)

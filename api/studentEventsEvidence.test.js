@@ -192,3 +192,18 @@ describe('student event evidence persistence', () => {
     expect(profile.adaptive.currentNeeds.addition).toEqual(entry.payload)
   })
 })
+
+
+it('accepts game events separately, attributes the class on the server and deduplicates rounds', () => {
+  const payload = { id: 'snake-round', version: 1, game: 'snake', gameVersion: 'snake-90s-v1',
+    startedAt: 1000, finishedAt: 5000, durationMs: 4000, score: 1, playerScore: null, computerScore: null,
+    reason: 'collision', classIdAtAttempt: 'unauthorized-class' }
+  const event = { id: 'game-event', type: 'break_game_result', payload }
+  expect(validEntry(event, 'PUPIL')).toBe(true)
+  const profile = { classId: 'real-class', problemLog: [], stats: { totalProblems: 8 } }
+  expect(applyWalEntry(profile, event)).toBe(true)
+  expect(applyWalEntry(profile, event)).toBe(false)
+  expect(profile.breakGameResults[0].classIdAtAttempt).toBe('real-class')
+  expect(profile.problemLog).toEqual([])
+  expect(profile.stats.totalProblems).toBe(8)
+})

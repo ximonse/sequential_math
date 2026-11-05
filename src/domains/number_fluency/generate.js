@@ -1,3 +1,4 @@
+import { numberBondTargets } from '../../lib/coverageFluency.js'
 import { getFluencyTargetSec } from '../../lib/operations.js'
 import { pickFromRotation } from '../../lib/rotationPicker.js'
 
@@ -36,9 +37,7 @@ function makeProblem({ skill, level, text, answer, values, template }) {
 }
 
 function generateNumberBond(level) {
-  const target = level >= 10
-    ? rotateNumber(`number_bonds:l${level}:mixed:target`, [10, 15, 20])
-    : level <= 3 ? 10 : level <= 6 ? 15 : 20
+  const target = rotateNumber(`number_bonds:l${level}:target`, numberBondTargets(level))
   const term = rotateNumber(`number_bonds:l${level}:target${target}:term`, integers(0, target))
   const missingFirst = rotateNumber(`number_bonds:l${level}:position`, [0, 1]) === 0
   const complement = target - term

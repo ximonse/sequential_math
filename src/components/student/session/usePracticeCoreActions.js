@@ -198,6 +198,8 @@ export function usePracticeCoreActions({
     for (let attempt = 0; attempt < NEXT_PROBLEM_MAX_ATTEMPTS; attempt++) {
       const candidate = safeSelectProblem(profile, rules)
       if (!candidate) continue
+      // The shuffled fluency rotation must reach every pair; novelty retries would discard required items.
+      if (candidate.skill === 'number_bonds' && fluency?.lapRef.current) { nextProblem = candidate; break }
 
       const noveltyScore = scoreCandidateNovelty(candidate, recentHistory, {
         historyWindow: NOVELTY_HISTORY_WINDOW
@@ -480,7 +482,7 @@ export function usePracticeCoreActions({
       const answered = fluency.countRef.current + 1
       fluency.countRef.current = answered
       fluency.setAnswered(answered)
-      fluency.lapRef.current = advanceFluencyLap(fluency.lapRef.current, correct && !isPartial, fluency.assignment, currentProblem)
+      fluency.lapRef.current = advanceFluencyLap(fluency.lapRef.current, correct && !isPartial, fluency.assignment, currentProblem, result?.excludedFromSpeed || result?.interruptionSuspected ? null : result.speedTimeSec)
       const step = getFluencyStep(answered, getFluencyTarget(fluency.assignment))
       if (!fluency.topPromptedRef.current && isFluencyTopLevelFinish(currentProblem, correct && !isPartial, fluency.assignment, fluency.lapRef.current)) {
         // The choice offers its own pause games, so it replaces this answer's break or praise.

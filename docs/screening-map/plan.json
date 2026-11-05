@@ -2943,12 +2943,12 @@
       "title": "Talpar från grunden, blandnivå och generöst flyt i Talbild",
       "status": "Lokalt klart",
       "purpose": "Varje Talpar-omgång börjar från grunden och avslutas med ett avsiktligt omstartsval. Talbild kräver både rätt och rimlig snabbhet.",
-      "next": "Korrigeringen är lokalt klar på separat gren. Integration och publicering inväntar Simons mandat.",
-      "acceptance": "Talpar startar från grunden vid nytt besök. Nivå 1–3: 10-kompisar; 4–6: 15-kompisar; 7–9: 20-kompisar; 10–12: blandat. Tre rätt i följd för nivåbyte, på blandnivåerna även ett rätt per måltal. Omstart erbjuds efter högsta nivån. Talbild: fem rätt i följd inom fyra sekunder per svar.",
+      "next": "Lokal kod verifierad på fixgrenen. Invänta Simons mandat för integration och GitHub-publicering.",
+      "acceptance": "Talpar: nivå 1–6 endast 10-kompisar, medeltid strikt under 10/8/6/4/3/2 sekunder. Nivå 7–8: 15-kompisar, 9–10: 20-kompisar, 11–12: blandat, medeltid under 5/2 sekunder per grupp. Varje nivå kräver en komplett korrekt omgång med alla talpar. Talbild: sex nivåer med vanliga tärningar och samma tidssteg för alla tal 1–10, sedan två nivåer vardera med ojämn fördelning, spridda prickar och olika prickstorlek, under 5/2 sekunder. Fri träning erbjuder omstart efter hela vägen; lärarens uppgiftstak behålls.",
       "requires": [],
       "affects": [],
-      "decision": "2026-11-05: Simon beställer separat liten fix; tallar betyder Talpar och talboks betyder Talbild. Fyra sekunder per Talbild-svar är agentens generösa implementation. Ingen publicering beställd.\n2026-11-05 korrigering från Simon: fördela allt på tolv nivåer, ingen nivå 13. Agentens fördelning är fyra trestegsgrupper. Talpars omgångsregel behålls; separata mastery-tidsmål omfördelas till 10/4/2 sekunder inom varje grupp. Simon frågar hur nivåökningen fungerar; skillnaden mellan omgångsprogression och mastery redovisas.",
-      "evidence": "2026-11-05: Isolerad arbetskopia från 55850df, gren fix/talpar-start-blandning. docs/FLUENCY_LAPS.md beskriver beteendet. Regression bekräftad utan startfixen: tidigare klarad elev börjar på nivå 11. Sparregression bekräftad före API-fixen: nivå 13 saknas på servern. Slutligt verifierat: 227 testfiler/1215 tester, npm run build och 18 berörda klickrobotar gröna (0 regelbrott). Robot verifierar hel klättring, tre blandade måltal, omstart, nytt besök och nivå 13 i serverns sparade problemlogg. Renderade skärmbilder granskade; sparvarningen är borta. Kartkontroll körs före commit. Lokal kod, ej integrerad i huvudbygget, ej pushad eller publicerad.\n2026-11-05 uppföljning: tidigare commit c60fb6a med nivå 13 ersätts innehållsmässigt av fördelningen på tolv nivåer. Specialstödet för nivå 13 i domänkontrakt, API och evidens tas bort. docs/FLUENCY_LAPS.md beskriver nuvarande fördelning och faktiska nivåvillkor. Slutverifiering av korrigeringen pågår.\n2026-11-05 korrigeringen verifierad: 227 testfiler/1218 tester, npm run build och 18 berörda klickrobotar gröna. Robot följer samtliga tolv nivåer, kontrollerar täckning av måltal på blandnivåerna, omstartsval, nytt besök och ett nytt blandnivåsvar i serverns problemlogg. Avslutsskärmens render granskad. Nivå 13 och dess specialstöd borttagna. Lokal korrigering efter c60fb6a; ej integrerad, pushad eller publicerad.",
+      "decision": "2026-11-05: Simon beställer separat liten fix; tallar betyder Talpar och talboks betyder Talbild. Fyra sekunder per Talbild-svar är agentens generösa implementation. Ingen publicering beställd.\n2026-11-05 korrigering från Simon: fördela allt på tolv nivåer, ingen nivå 13. Agentens fördelning är fyra trestegsgrupper. Talpars omgångsregel behålls; separata mastery-tidsmål omfördelas till 10/4/2 sekunder inom varje grupp. Simon frågar hur nivåökningen fungerar; skillnaden mellan omgångsprogression och mastery redovisas.\n2026-11-05 nytt beslut: Simon vill ha fler rätt och sex grundnivåer med 10-kompisar, komplett täckning och medeltid under två sekunder före övergång. Godkänner agentens konkreta förslag 10/8/6/4/3/2 sekunder och hel korrekt omgång. Talbild ska följa samma princip med vanliga tärningar de första sex nivåerna. Tidigare tre-svarsregel och fyra-sekundersregel ersätts för dessa övningar.",
+      "evidence": "2026-11-05: Isolerad arbetskopia från 55850df, gren fix/talpar-start-blandning. docs/FLUENCY_LAPS.md beskriver beteendet. Regression bekräftad utan startfixen: tidigare klarad elev börjar på nivå 11. Sparregression bekräftad före API-fixen: nivå 13 saknas på servern. Slutligt verifierat: 227 testfiler/1215 tester, npm run build och 18 berörda klickrobotar gröna (0 regelbrott). Robot verifierar hel klättring, tre blandade måltal, omstart, nytt besök och nivå 13 i serverns sparade problemlogg. Renderade skärmbilder granskade; sparvarningen är borta. Kartkontroll körs före commit. Lokal kod, ej integrerad i huvudbygget, ej pushad eller publicerad.\n2026-11-05 uppföljning: tidigare commit c60fb6a med nivå 13 ersätts innehållsmässigt av fördelningen på tolv nivåer. Specialstödet för nivå 13 i domänkontrakt, API och evidens tas bort. docs/FLUENCY_LAPS.md beskriver nuvarande fördelning och faktiska nivåvillkor. Slutverifiering av korrigeringen pågår.\n2026-11-05 korrigeringen verifierad: 227 testfiler/1218 tester, npm run build och 18 berörda klickrobotar gröna. Robot följer samtliga tolv nivåer, kontrollerar täckning av måltal på blandnivåerna, omstartsval, nytt besök och ett nytt blandnivåsvar i serverns problemlogg. Avslutsskärmens render granskad. Nivå 13 och dess specialstöd borttagna. Lokal korrigering efter c60fb6a; ej integrerad, pushad eller publicerad.\n2026-11-05 lokal implementation: delad täcknings-/medeltidsregel, 11/16/21/48 talpar per familj, tolv Talbild-nivåer med täckning av 1–10. Avbrottsmärkta Talpar-svar ger inga hastighetsbelägg. 229 testfiler/1232 tester och build gröna. 25 berörda robotar gröna, separat spelstatistikrobot verifieras fortfarande. Nivåflödena för Talpar och Talbild körda hela vägen, med omstart. Ingen integration, push eller publicering.\n2026-11-05 slutlig verifiering av hela varv: 229 testfiler/1232 tester och build gröna; fulla Talpar-/Talbild-varv, omstart, lärarlänkar och pausåtergång gröna. Ny robot kontrollerar synlig 0/11→1/11-rad och tidsmål. Talpar-render samt Talbild på mobil/iPad/dator visuellt granskade. Övningslägena har sammanlagt minst 236 rätt per fullt Talpar-varv. Lärarens uttryckliga tak behålls och kan stoppa tidigare. Ingen integration eller publicering.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -2966,6 +2966,48 @@
           "id": "verify-fluency",
           "text": "Test, build och berörda klickrobotar samt visuell kontroll",
           "done": true
+        }
+      ]
+    },
+    {
+      "id": "pause-game-statistics",
+      "area": "Pausspel",
+      "title": "Följ Pong och Snake under fem skoldagar",
+      "status": "Byggt",
+      "purpose": "Bedöm spelens svårighet från registrerade omgångar, inte enbart topprekord.",
+      "next": "Lokalt verifierad insamling och läsning. Invänta separat mandat för integration och GitHub-publicering; automationen väntar därefter in fem skoldagar.",
+      "acceptance": "Pong: båda sidornas poäng, tid och vinst/oavgjort/förlust. Snake: poäng, tid och överlevnad/kollision. Avbrutna omgångar särredovisas. Separat från matte/mastery, krypterad lokal kö, idempotent återförsök, lärarbehöriga aggregat utan elevrader. Fem skoldagar observeras först efter publicering.",
+      "requires": [],
+      "affects": [],
+      "decision": "2026-11-05: Simon ber att börja följa Pong/Snake-statistik. Godkänner daglig uppföljning under en skolvecka efter publicering. Spelsvårigheten ändras inte i detta steg.",
+      "evidence": "Lokal kod: break_game_result i befintlig krypterad elevkö och elevprofil; max 1000 omgångar/30 dagar. GET students resource=break-games ger klassbehöriga aggregat. scripts/pause-game-stats.mjs skriver endast aggregat. Enhetstester täcker kollision, förlust, avbrott, isolering från matte, klassattribuering och offlineåterförsök. Klickrobot verifierar komplett Pong-match, avbrutet Snake-spel och statistikskript. Automation f-lj-pong-och-snake-i-fem-skoldagar skapad och aktiv, vardagar kl.16; väntar tills funktionen är publicerad. Ingen faktisk elevstatistik hämtad i denna implementation. Detaljer i docs/PAUSE_GAME_STATISTICS.md.\n2026-11-05 slutligt lokalt verifierat: en verkligt körd 90-sekunders Pong-match och ett avbrutet Snake-spel finns på serverprofilen, matematikhistoriken innehåller exakt sina 30 svar, rätt klass får endast aggregat, anonym läsning avvisas och annan klass ger 403. Läs-CLI testat mot samma lokala API. Separat robot grön efter att testets cookie- och pausantaganden rättats. 25 övriga robotar gröna plus ny visuell Talpar-kontroll: 27 relevanta robotfall verifierade. Insamlingen är inte publicerad och inga riktiga elevresultat har hämtats. Automation aktiv vardagar kl.16 och räknar inte dagar före publicering.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "game-event",
+          "text": "Separat omgångslogg med säker lokal kö och servervalidering",
+          "done": true
+        },
+        {
+          "id": "aggregate-reader",
+          "text": "Behöriga aggregat och skrivskyddat lässkript",
+          "done": true
+        },
+        {
+          "id": "monitor",
+          "text": "Schemalagd uppföljning som väntar på publicering",
+          "done": true
+        },
+        {
+          "id": "verify-games",
+          "text": "Verifiera hel Pong-match, Snake-avbrott, lagring och läsbehörighet",
+          "done": true
+        },
+        {
+          "id": "observe-games",
+          "text": "Efter separat publicering: följ fem skoldagar och bedöm svårigheten",
+          "done": false
         }
       ]
     }

@@ -33,6 +33,7 @@ import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { generateMathPracticeProblem } from '../../lib/mathPracticeGenerator'
 import { recordMathPracticeResult } from '../../lib/mathPracticeResults'
 import { addMathPracticeSessionResult } from '../../lib/studentProfile'
+import { numberBondCoverageKeys, fluencyLevelTargetSec } from '../../lib/coverageFluency'
 import { getFluencyPractice, getFluencyLevelRange, getFluencyTarget, isFluencyAssignment, startFluencyLap } from '../../lib/fluencySession'
 import { recordTelemetryEvent } from '../../lib/telemetry'
 import { assignmentLaunchPath, getAssignmentTarget, markAssignmentCompleted } from '../../lib/assignmentQueue'
@@ -505,6 +506,8 @@ function StudentSession() {
       masteredThisWeek={masteredThisWeek}
       syncStatus={syncStatus}
       remainingCount={isFluencyAssignment(sessionAssignment) ? Math.max(0, getFluencyTarget(sessionAssignment) - fluencyAnswered) : null}
+      fluencyProgress={fluencyLapRef.current && currentProblem?.skill === 'number_bonds'
+        ? `Nivå ${fluencyLapRef.current.level} · ${Object.keys(fluencyLapRef.current.samples || {}).length}/${numberBondCoverageKeys(fluencyLapRef.current.level).length} talpar · mål under ${fluencyLevelTargetSec(fluencyLapRef.current.level)} s i snitt` : ''}
       praise={fluencyPraise}
     />
   )

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createTalbildLayout, nextTalbildLevel, nextTalbildValue, DIE_SIZE } from './talbildLayout'
+import { talbildLayoutStage, createTalbildLayout, nextTalbildLevel, nextTalbildValue, DIE_SIZE } from './talbildLayout'
 
 const total = layout => layout.reduce((sum, die) => sum + die.length, 0)
 
@@ -73,31 +73,24 @@ describe('createTalbildLayout', () => {
 })
 
 describe('nextTalbildLevel', () => {
-  const fast = Array.from({ length: 5 }, () => ({ isCorrect: true, timeMs: 1500 }))
-  const slow = Array.from({ length: 5 }, () => ({ isCorrect: true, timeMs: 7000 }))
-
-  it('waits for a full window', () => {
-    expect(nextTalbildLevel(0, fast.slice(0, 4))).toEqual({ level: 0, resetWindow: false })
+  const round = timeMs => Array.from({ length: 10 }, (_, i) => ({ correctAnswer: i + 1, isCorrect: true, timeMs }))
+  it('keeps conventional dice for six levels and requires every value', () => {
+    for (let level = 0; level < 6; level++) {
+      expect(talbildLayoutStage(level)).toBe(0)
+      expect(nextTalbildLevel(level, round(1000).slice(0, 9)).level).toBe(level)
+      expect(nextTalbildLevel(level, round(1000)).level).toBe(level + 1)
+    }
+    expect([6,7,8,9,10,11].map(talbildLayoutStage)).toEqual([1,1,2,2,3,3])
   })
-
-  it('climbs on five fast correct answers, capped at the top level', () => {
-    expect(nextTalbildLevel(0, fast)).toEqual({ level: 1, resetWindow: true })
-    expect(nextTalbildLevel(3, fast)).toEqual({ level: 3, resetWindow: false })
+  it('uses a strict mean below two seconds to leave conventional dice', () => {
+    expect(nextTalbildLevel(5, round(2000)).level).toBe(5)
+    const mixedTimes = round(1000); mixedTimes[0].timeMs = 3000
+    expect(nextTalbildLevel(5, mixedTimes).level).toBe(6)
   })
-
-  it('steps back after a slow window, but not below zero', () => {
-    expect(nextTalbildLevel(2, slow)).toEqual({ level: 1, resetWindow: true })
-    expect(nextTalbildLevel(0, slow)).toEqual({ level: 0, resetWindow: false })
+  it('restarts a failed round without lowering the level and finishes after all twelve', () => {
+    const answers = round(1000); answers[5].isCorrect = false
+    expect(nextTalbildLevel(5, answers).level).toBe(5)
+    expect(nextTalbildLevel(5, round(12000)).level).toBe(5)
+    expect(nextTalbildLevel(11, round(1000))).toEqual({ level: 11, resetWindow: true, complete: true })
   })
-})
-
-
-it('requires every Talbild answer to be correct and within four generous seconds', () => {
-  const answers = Array.from({ length: 5 }, () => ({ isCorrect: true, timeMs: 4000 }))
-  expect(nextTalbildLevel(0, answers).level).toBe(1)
-  for (const bad of [{ isCorrect: true, timeMs: 4001 }, { isCorrect: false, timeMs: 500 }, { isCorrect: true, timeMs: 0 }, { isCorrect: true, timeMs: NaN }]) {
-    expect(nextTalbildLevel(0, [...answers.slice(0, 4), bad]).level).toBe(0)
-  }
-  const mostlyFast = [...answers.slice(0, 4).map(a => ({ ...a, timeMs: 500 })), { isCorrect: true, timeMs: 4500 }]
-  expect(nextTalbildLevel(0, mostlyFast).level).toBe(0)
 })

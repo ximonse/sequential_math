@@ -1,3 +1,5 @@
+import { recordCoverageSample, numberBondCoverageKeys, fluencyLevelTargetSec } from './coverageFluency.js'
+
 const FLUENCY_SKILLS = ['number_bonds', 'doubles']
 
 export const FLUENCY_DEFAULT_TARGET = 20
@@ -38,29 +40,28 @@ export function getFluencyLevelRange(assignment) {
   return [min, Math.max(min, clampLevel(assignment?.maxLevel, maximum, maximum))]
 }
 
-// Finish only after completing the top level's streak, including on every restarted lap.
+// Number bonds finish after a complete timed round; doubles retain their streak rule.
 export function isFluencyTopLevelFinish(problem, correct, assignment, lap) {
+  if (problem?.skill === 'number_bonds') return Boolean(correct && lap?.complete)
   return Boolean(correct) && Number(problem?.level) >= getFluencyLevelRange(assignment)[1]
     && (!lap || Number(lap.streak) >= FLUENCY_LAP_STREAK)
-    && (!(problem?.skill === 'number_bonds' && Number(problem?.level) >= 10) || lap?.targets?.length === 3)
 }
 
-// A restarted lap climbs from the bottom again: one level up per streak of correct answers.
+// Each lap starts at the bottom; number bonds require complete timed coverage.
 export function startFluencyLap(assignment) {
   return { level: getFluencyLevelRange(assignment)[0], streak: 0 }
 }
 
-export function advanceFluencyLap(lap, correct, assignment, problem = null) {
+export function advanceFluencyLap(lap, correct, assignment, problem = null, seconds = null) {
   if (!lap) return lap
-  if (!correct) return { ...lap, streak: 0 }
-  if (problem?.skill === 'number_bonds' && lap.level >= 10) {
-    const targets = [...new Set([...(lap.targets || []), Number(problem?.values?.target)])].filter(value => [10, 15, 20].includes(value))
-    const streak = lap.streak + 1
-    if (streak >= FLUENCY_LAP_STREAK && targets.length === 3 && lap.level < getFluencyLevelRange(assignment)[1]) {
-      return { level: lap.level + 1, streak: 0 }
-    }
-    return { ...lap, streak, targets }
+  if (problem?.skill === 'number_bonds') {
+    const key = `${problem.values.target}:${problem.values.knownTerm}`
+    const round = recordCoverageSample(lap.samples || {}, key, seconds, correct,
+      numberBondCoverageKeys(lap.level), fluencyLevelTargetSec(lap.level))
+    if (round.complete && lap.level < getFluencyLevelRange(assignment)[1]) return { level: lap.level + 1, streak: 0 }
+    return { ...lap, streak: correct ? lap.streak + 1 : 0, ...round }
   }
+  if (!correct) return { ...lap, streak: 0 }
   const streak = lap.streak + 1
   if (streak < FLUENCY_LAP_STREAK || lap.level >= getFluencyLevelRange(assignment)[1]) return { ...lap, streak }
   return { level: lap.level + 1, streak: 0 }

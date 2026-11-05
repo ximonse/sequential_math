@@ -2,6 +2,7 @@
  * Central lista för räknesätt i elevvyer.
  * Om nya räknesätt tillkommer: lägg till id + label här.
  */
+import { fluencyLevelTargetSec } from './coverageFluency.js'
 import { inferOperationFromProblemType } from './mathUtils.js'
 
 export const STANDARD_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
@@ -32,12 +33,10 @@ export const OPERATION_LABELS = {
   doubles: 'Dubblor'
 }
 
-const NUMBER_BOND_FLUENCY_TARGETS = [10, 4, 2]
-
 export function getFluencyTargetSec(operation, level) {
   if (operation !== 'number_bonds') return null
   const normalizedLevel = Math.max(1, Math.min(12, Math.round(Number(level) || 1)))
-  return NUMBER_BOND_FLUENCY_TARGETS[(normalizedLevel - 1) % 3]
+  return fluencyLevelTargetSec(normalizedLevel)
 }
 
 /**

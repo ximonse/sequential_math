@@ -1,53 +1,61 @@
 # Talpar och Talbild
 
-## Talpar
+## Talpar: hela korrekta omgångar med ett medeltidskrav
 
-Vanlig fokuserad Talpar-träning börjar varje gång på nivå 1, även om eleven
-tidigare klarat alla nivåer. Sparade resultat och tidigare kunskapsbelägg
-behålls. Ett uttryckligt nivåval respektive lärarens nivåintervall respekteras.
-Lärarens antal uppgifter är fortfarande ett tak; det förlängs inte automatiskt.
+Fokuserad Talpar-träning börjar varje gång på nivå 1, även om eleven redan
+har äldre kunskapsbelägg. Resultaten sparas. Uttryckliga nivåval och lärarens
+nivåintervall och uppgiftstak respekteras; ett kort uppdrag förlängs inte.
+Fri träning löper till högsta nivån och erbjuder därefter omstart eller avslut.
 
-Omgången stiger en nivå efter tre rätt i följd. Ett fel nollställer följden,
-men sänker inte omgångsnivån. Själva omgångens nivåbyte har inget tidskrav.
+| Nivå | Innehåll | Medeltid, strikt under |
+| --- | --- | --- |
+| 1–6 | 10-kompisar | 10, 8, 6, 4, 3, 2 sekunder |
+| 7–8 | 15-kompisar | 5, 2 sekunder |
+| 9–10 | 20-kompisar | 5, 2 sekunder |
+| 11–12 | Blandade 10-, 15- och 20-kompisar | 5, 2 sekunder |
 
-| Nivåer | Innehåll |
-| --- | --- |
-| 1–3 | 10-kompisar |
-| 4–6 | 15-kompisar |
-| 7–9 | 20-kompisar |
-| 10–12 | Blandade 10-, 15- och 20-kompisar |
+Varje nivå kräver en hel korrekt omgång: samtliga givna termer 0–10, 0–15
+respektive 0–20. Det blir minst 11, 16 eller 21 rätt. Blandnivåerna kräver
+alla 48 kombinationer av måltal och given term. Talparen och den saknade
+termens sida blandas med slumpade rotationer. Omgångens urval går inte genom
+den allmänna variationsväljaren, eftersom den annars skulle kassera talpar
+som måste vara med för full täckning.
 
-Blandnivåerna använder slumpade rotationer för måltal, talpar och den
-saknade termens position. För att gå vidare från en blandnivå behövs både
-tre rätt i följd och minst ett korrekt svar för vart och ett av måltalen
-under nivån. Inom varje grupp har uppgifterna samma innehåll; ingen ytterligare
-svårighetsökning styr omgången mellan gruppens tre nivåer.
+Varje talpar väger lika i medeltiden. Ett fel eller en ogiltig/avbruten
+svarstidsmätning börjar om den korrekta omgången på samma nivå. Om alla är
+rätt men medeltiden är för hög börjar en ny omgång på samma nivå. Ingen
+automatisk nedflyttning sker. Enstaka svar får ta längre tid än gränsen så
+länge hela omgångens medeltid ligger under den. Exakt två sekunder räcker
+inte på en nivå med gränsen två sekunder.
 
-Den separata kunskapsbedömningen kräver minst fem korrekta giltiga tidsprov
-och en median på högst 10, 4 respektive 2 sekunder inom varje trestegsgrupp.
-Dessa tidsmål styr mastery, inte omgångens tre-svarsregel.
+Omgångens nivåbyte är en separat sessionsregel. Den vanliga historiska
+mastery-beräkningen finns kvar med sina befintliga belägg och medianregler;
+den får samma tidsmål men ska inte förväxlas med ett klarat helt varv.
+Dubblors tre-svarsregel ändras inte.
 
-Efter den högsta nivån erbjuds eleven att börja om eller sluta.
-Omstart börjar samma omgång från dess lägsta nivå. Fri Talpar-träning
-saknar uppgiftstak; pauserna finns kvar. Alla kompetenser har högst tolv
-nivåer. Dubblors första omgång ändras inte. Vanliga blandade träningspass
-får ingen omgångsreset.
+## Talbild: sex grundnivåer före andra layouter
 
-## Talbild
+Talbild har tolv sessionsnivåer. Nivå 1–6 använder vanliga tärningsbilder,
+med en tärning för 1–5 och två tärningar som 5 + resten för 6–10. Kravet är
+alla tio tal, rätt i en komplett omgång, med medeltid under 10, 8, 6, 4, 3
+respektive 2 sekunder. Nivå 7–8 har ojämn fördelning, 9–10 spridda prickar
+och 11–12 varierande prickstorlek. Dessa grupper har gränserna 5 och 2
+sekunder och kräver också täckning av samtliga tio tal.
 
-En svårare bildlayout kräver fem korrekta svar i följd, där varje svar
-har en giltig svarstid på högst fyra sekunder. Ett långsammare svar kan
-inte vägas upp av fyra mycket snabba svar. Tidigare krävdes högst
-2,6 sekunder i genomsnitt. Befintlig nedväxling vid långsamma eller
-felpräglade svarsfönster och lärarens uppgiftstak behålls.
+Talen går i slumpade rotationer och samma tal visas inte två gånger direkt
+efter varandra. Ett fel eller en för lång medeltid kräver en ny korrekt
+omgång på samma nivå. Nivåbyte rensar omgången. De slumpade positionerna
+har oändligt många möjliga layouter; täckningskravet där gäller talen 1–10,
+inte alla tänkbara prickplaceringar.
 
-## Lokal verifiering
+Fri Talbild-träning har inget uppgiftstak som kan stoppa grundnivåerna innan
+de klarats; efter nivå 12 kan eleven börja om eller gå hem. Lärarens
+uttryckliga uppgiftstak och de vanliga pauserna behålls. Resultat sparas via
+Talbilds befintliga resultatväg, med sessionsnivå och layoutsteg per svar.
 
-`robots/fluency-lap.robot.js` använder en syntetisk elev med belägg för
-alla tolv tidigare nivåer, kontrollerar start på nivå 1, hela klättringen,
-blandnivåns tre måltal, omstartsvalet och startnivån vid ett nytt besök.
-`robots/fluency.robot.js` kontrollerar befintliga länkuppdrag och Talbild.
-Enhetstester täcker fyrasekundersgränsen, felaktiga tider, blandgeneratorn,
-omgångsprogression och att länkar håller sig inom tolv nivåer.
+## Verifiering och publicering
 
-Detta dokument beskriver lokal kod. Publicering kräver separat mandat.
+Enhetstester kontrollerar full täckning, olika familjer, strikt tidsgräns,
+medelvärde, fel och avbrutna mätningar. Klickrobotarna följer båda övningarna
+hela vägen genom tolv nivåer, omstart, äldre klarade elevprofiler, lärarlänkar
+och sparade svar. Verkliga renders granskas. Lokal kod är inte publicering.

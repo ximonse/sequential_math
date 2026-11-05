@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import GameOverScreen from './GameOverScreen'
+import { useBreakGameResult } from './useBreakGameResult'
 
 const PADDLE_HEIGHT = 88
 const PADDLE_WIDTH = 12
@@ -37,6 +38,7 @@ function PongGame({ onClose, studentId, studentName, classId }) {
   const [timeLeft, setTimeLeft] = useState(MAX_TIME)
   const [gameOver, setGameOver] = useState(false)
   const gameOverRef = useRef(false)
+  const reportRound = useBreakGameResult({ game: 'pong', studentId, classId, gameOver, timeLeft, score: MAX_TIME - timeLeft, playerScore: score.player, computerScore: score.computer })
   const touchYRef = useRef(null)
 
   const initGame = useCallback(() => ({
@@ -239,6 +241,7 @@ function PongGame({ onClose, studentId, studentName, classId }) {
   }
 
   const handleClosePong = () => {
+    reportRound('aborted')
     setGameOver(true)
     onClose()
   }

@@ -8,7 +8,8 @@ import SubitizingDice from './session/SubitizingDice'
 import { getCurrentStreak, addSubitizingSessionResult } from '../../lib/studentProfile'
 import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { recordSubitizingResult } from '../../lib/subitizingResults'
-import { createTalbildLayout, nextTalbildLevel, nextTalbildValue } from '../../lib/talbildLayout'
+import { createTalbildLayout, nextTalbildLevel, nextTalbildRoundValue, talbildLayoutStage } from '../../lib/talbildLayout'
+import { fluencyLevelTargetSec } from '../../lib/coverageFluency'
 import { decodeAssignmentPayload } from '../../lib/assignments'
 import { assignmentLaunchPath, markAssignmentCompleted } from '../../lib/assignmentQueue'
 import NcmCompletionOverlay from './NcmCompletionOverlay'
@@ -92,18 +93,18 @@ function SubitizingSession() {
     loadSession()
   }, [studentId, assignmentId, assignmentPayload, navigate])
 
-  const targetCount = Number(sessionAssignment?.targetCount) > 0
+  const targetCount = sessionAssignment?.id === 'talbild_free' ? Infinity : Number(sessionAssignment?.targetCount) > 0
     ? Number(sessionAssignment.targetCount)
     : DEFAULT_TARGET_COUNT
 
   const startNewProblem = useCallback(() => {
-    const value = nextTalbildValue(lastDiceValueRef.current)
+    const value = nextTalbildRoundValue(lastDiceValueRef.current, levelRef.current)
     lastDiceValueRef.current = value
     answerLockRef.current = false
     problemCountRef.current += 1
     setProblemNumber(problemCountRef.current)
     setCurrentDiceValue(value)
-    setLayout(createTalbildLayout(value, levelRef.current))
+    setLayout(createTalbildLayout(value, talbildLayoutStage(levelRef.current)))
   }, [])
 
   const handleEndSession = useCallback(async ({ completed = false } = {}) => {
@@ -135,7 +136,7 @@ function SubitizingSession() {
     setProfile(updatedProfile)
     await persistProfile(updatedProfile, completed && isAssignment ? { forceSync: true } : undefined)
 
-    if (completed && isAssignment) setAssignmentDone(true)
+    if (completed) setAssignmentDone(true)
     else navigate(`/student/${studentId}`)
   }, [profile, sessionAssignment, studentId, navigate, persistProfile])
 
@@ -147,7 +148,9 @@ function SubitizingSession() {
       correctAnswer: currentDiceValue,
       studentAnswer: selectedNumber,
       isCorrect,
-      timeMs: Math.max(0, timeMs)
+      timeMs: Math.max(0, timeMs),
+      level: levelRef.current + 1,
+      layoutStage: talbildLayoutStage(levelRef.current)
     }
     problemsRef.current.push(entry)
     setAnsweredCount(problemsRef.current.length)
@@ -159,7 +162,7 @@ function SubitizingSession() {
     if (next.resetWindow) levelWindowRef.current = []
 
     const answered = problemsRef.current.length
-    if (answered >= targetCount) {
+    if (answered >= targetCount || next.complete) {
       setSessionActive(false)
       setTimeout(() => handleEndSession({ completed: true }), 300)
       return
@@ -209,8 +212,19 @@ function SubitizingSession() {
     return (
       <NcmCompletionOverlay
         solved={answeredCount}
-        total={targetCount}
+        total={Number.isFinite(targetCount) ? targetCount : answeredCount}
         title={`${sessionAssignment.title} är klar!`}
+        onRestart={sessionAssignment.id === 'talbild_free' ? () => {
+          levelRef.current = 0
+          levelWindowRef.current = []
+          problemsRef.current = []
+          problemCountRef.current = 0
+          setAnsweredCount(0)
+          setCorrectCount(0)
+          setAssignmentDone(false)
+          setSessionActive(true)
+          startNewProblem()
+        } : undefined}
         onGoHome={() => navigate(`/student/${studentId}`)}
         nextAssignment={nextAssignment}
         onNextAssignment={() => navigate(assignmentLaunchPath(studentId, nextAssignment))}
@@ -267,14 +281,15 @@ function SubitizingSession() {
               {sessionAssignment.title}
             </h1>
             <p className="text-sm text-gray-600">
-              Rätt: {correctCount} / {answeredCount} · {remaining} kvar
+              Rätt: {correctCount} / {answeredCount}{Number.isFinite(targetCount) ? ` · ${remaining} kvar` : ''}
+              {` · Nivå ${levelRef.current + 1} · mål under ${fluencyLevelTargetSec(levelRef.current + 1)} s i snitt`}
             </p>
-            <div className="mt-2 h-2 rounded-full bg-gray-200 overflow-hidden">
+            {Number.isFinite(targetCount) && <div className="mt-2 h-2 rounded-full bg-gray-200 overflow-hidden">
               <div
                 className="h-full bg-blue-500 transition-all"
                 style={{ width: `${Math.min(100, (answeredCount / targetCount) * 100)}%` }}
               />
-            </div>
+            </div>}
           </div>
 
           {praise && (

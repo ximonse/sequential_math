@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 import { createPupil, login, readState, readServerProfile, answerText, fillAnswer, submit, next, waitForTask } from './lib/app.js'
 
 test('Talpar: mastered pupil starts at the bottom, finishes mixed level and chooses restart', async ({ page, request }, testInfo) => {
-  test.setTimeout(180000)
+  test.setTimeout(300000)
   const pupil = await createPupil(request, { operations: ['number_bonds'] })
   expect((await request.post('/__robot/fluency-history', { data: { studentId: pupil.studentId } })).ok()).toBe(true)
   await login(page, pupil)
@@ -10,32 +10,32 @@ test('Talpar: mastered pupil starts at the bottom, finishes mixed level and choo
   let current = await waitForTask(page)
   expect(current.state.problem.level).toBe(1)
   const levels = []
-  const mixedTargets = new Set()
   const mixedProblemIds = []
-  let expectedLevel = 1
-  let levelAnswers = 0
-  for (let i = 0; i < 90; i++) {
+  let previousLevel = 1
+  let covered = new Set()
+  const requiredCount = level => level <= 6 ? 11 : level <= 8 ? 16 : level <= 10 ? 21 : 48
+  for (let i = 0; i < 650; i++) {
     current = await waitForTask(page)
     expect(current.timedOut).not.toBe(true)
     const problem = current.state.problem
     expect(problem.skill).toBe('number_bonds')
-    expect(problem.level).toBe(expectedLevel)
+    expect([previousLevel, previousLevel + 1]).toContain(problem.level)
+    if (problem.level !== previousLevel) {
+      expect(covered.size).toBe(requiredCount(previousLevel))
+      covered = new Set()
+      previousLevel = problem.level
+    }
     levels.push(problem.level)
-    levelAnswers++
-    if (problem.level >= 10) mixedTargets.add(problem.values.target)
+    covered.add(`${problem.values.target}:${problem.values.knownTerm}`)
     if (problem.level === 12) mixedProblemIds.push(problem.id)
     await fillAnswer(page, answerText(problem))
     await submit(page)
-    if (levelAnswers >= 3 && (expectedLevel < 10 || mixedTargets.size === 3)) {
-      if (expectedLevel === 12) break
-      expectedLevel++
-      levelAnswers = 0
-      mixedTargets.clear()
-    }
+    await next(page)
+    if (await page.getByText('Du klarade högsta nivån!').isVisible().catch(() => false)) break
   }
   await next(page)
   await expect(page.getByText('Du klarade högsta nivån!')).toBeVisible()
-  expect([...mixedTargets].sort()).toEqual([10, 15, 20])
+  expect(covered.size).toBe(48)
   await page.screenshot({ path: testInfo.outputPath('talpar-complete.png') })
   await page.getByRole('button', { name: 'Börja om från nivå 1', exact: true }).click()
   expect((await waitForTask(page)).state.problem.level).toBe(1)
@@ -49,6 +49,20 @@ test('Talpar: mastered pupil starts at the bottom, finishes mixed level and choo
   await expect(page.getByText(/Ett eller flera svar avvisades/)).toHaveCount(0)
   await page.goto(`/student/${pupil.studentId}/practice?mode=number_bonds`)
   expect((await waitForTask(page)).state.problem.level).toBe(1)
-  expect(levels.length).toBeGreaterThanOrEqual(36)
+  expect(levels.length).toBeGreaterThanOrEqual(236)
   expect((await readState(page)).phase).toBe('answering')
+})
+
+
+test('Talpar: visar hela omgångens täckning och tidsmål', async ({ page, request }, testInfo) => {
+  const pupil = await createPupil(request, { operations: ['number_bonds'] })
+  await login(page, pupil)
+  await page.goto(`/student/${pupil.studentId}/practice?mode=number_bonds`)
+  const current = await waitForTask(page)
+  await expect(page.getByText('Nivå 1 · 0/11 talpar · mål under 10 s i snitt')).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('talpar-foundation.png') })
+  await fillAnswer(page, answerText(current.state.problem))
+  await submit(page)
+  await next(page)
+  await expect(page.getByText('Nivå 1 · 1/11 talpar · mål under 10 s i snitt')).toBeVisible()
 })

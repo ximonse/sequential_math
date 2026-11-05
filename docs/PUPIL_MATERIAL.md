@@ -1,5 +1,12 @@
 # Generella och analysspecifika uppdrag och screeningar
 
+Tillägg 2026-11-05: även det lärargodkända additionspaketet är lokalt integrerat.
+V9 fryser båda modellsvaren för en tappad minnessiffra. Endast källor med två
+oberoende minnessiffror får paketets bankväg; beroende kedjors överlapp får inte
+döljas. Materialets rapport-/paketbindning, godkännande och historikskydd är
+samma som tidigare. Äldre material behåller frysta jämförelser, nya material
+kräver aktuell regelversion. Se `E4_DECIMAL_ADDITION_REVIEW.md`.
+
 Tillägg 2026-11-05: godkänt decimalsubtraktionspaket är lokalt integrerat med
 decimalmultiplikationspilotens befintliga rapport-/materialkedja. Samma
 paketregister används av katalog, urval och undervisnings-/kontrollvy.

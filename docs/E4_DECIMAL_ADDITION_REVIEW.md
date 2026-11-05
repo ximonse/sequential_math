@@ -1,23 +1,25 @@
-# E4: decimaladdition med två minnessiffror — granskningsförslag
+# E4: decimaladdition med två minnessiffror — godkänt paket
 
-Status 2026-11-05: **konkret förslag för lärargranskning; inte godkänt eller
-aktiverat i appen**. Nästa paket inom befintlig aritmetik efter de två
-publicerade decimalpaketen. Ingen ändring av bank, elevträning eller mastery.
+Status 2026-11-05: **innehåll, avgränsning och undervisningsgång godkända av Simon
+genom ”Ja”. Paket och avgränsad regelutökning är lokalt byggda och verifierade; verifiering
+redovisas nedan. Inte publicerat.** Befintlig rapport-/materialkedja används;
+elevträning, mastery och åtkomstpolicy är oförändrade.
 
 ## Luckan och rekommendationen
 
-V8 kan beräkna `carry_forget` för decimaladdition, men saknar en granskad
-decimalbankväg. `one_carry_forgotten` finns för heltal med flera minnessiffror,
-med **flera möjliga modellsvar**, men saknas i decimalgrenen. Att det nuvarande
-urvalet inte räknar med denna rival får inte uppfattas som att rivalen har
-uteslutits. Kodbelägg: [kandidatmotorn](../src/domains/predictableErrors/arithmetic.js),
+V8 kunde beräkna `carry_forget` för decimaladdition, men saknade en granskad
+decimalbankväg. `one_carry_forgotten` fanns för heltal med flera minnessiffror,
+med **flera möjliga modellsvar**, men saknades i decimalgrenen. V9 kompletterar
+den avgränsade decimalvarianten och bevarar båda positionernas svar. Rivalen
+följer med i båda modellernas urval. Heltalsfamiljernas tidigare urval ändras
+inte. Kodbelägg: [kandidatmotorn](../src/domains/predictableErrors/arithmetic.js),
 [urvalet](../src/domains/predictableErrors/followUpSelection.js) och
 [täckningsmatrisen](LEARNING_SYSTEM_COVERAGE.md).
 
-**Rekommendation för beslut:** godkänn nedanstående innehåll och arbetsgång.
-Utöka den befintliga identiteten `one_carry_forgotten` till detta avgränsade
-decimalfall före aktivering. Bevara båda möjliga svaren genom urval, granskning
-och resultat. Samma befintliga rapport-/materialkedja ska användas.
+**Beslut:** Simon godkände innehåll, avgränsning och undervisning om de två
+minnesettornas värde efter granskningsförslaget. Befintliga modellidentiteten
+`one_carry_forgotten` används i V9; inget nytt modell-ID eller uppdragslager
+införs. Alla modeller, varianter och frysta jämförelser följer befintlig kedja.
 
 ## Varför två minnessiffror inte räcker som urvalsvillkor
 
@@ -61,7 +63,7 @@ Den sista raden utesluter ingen felregel. Rätt svar kan produceras utan att
 hantera en enda minnessiffra. Den ska inte användas som ensam kontrast eller
 som belägg för att problemet med minnessiffror har försvunnit.
 
-## Arbetsgång för lärargranskning
+## Godkänd arbetsgång
 
 1. **Undersök originalet.** Be eleven visa hur hen räknade och vad siffrorna
    betyder. Källsvaret är ett underlag, ingen konstaterad metod. Håll hjälp,
@@ -103,6 +105,8 @@ flowchart TD
 [Paketdata](evaluations/e4-decimal-addition-2026-11-05/package.json),
 [utvärdering](evaluations/e4-decimal-addition-2026-11-05/evaluate.mjs) och
 [maskinbelägg](evaluations/e4-decimal-addition-2026-11-05/evidence.json).
+Det ursprungliga V8-förslaget och dess olösta rivalpar bevaras i
+[förslagsbelägget](evaluations/e4-decimal-addition-2026-11-05/proposal-evidence-v8.json).
 
 ```text
 node docs/evaluations/e4-decimal-addition-2026-11-05/evaluate.mjs
@@ -115,10 +119,11 @@ node docs/evaluations/e4-decimal-addition-2026-11-05/evaluate.mjs
   särskiljande frågor. Totalt 111 375 fall kontrolleras, även med noll hela
   i en eller båda positiva operanderna.
 - Fyra konkreta gränsfall, sju rättsvar och 14 partiellt/tomt-statusfall ingår.
-- Appens aktuella urval saknar decimalbankväg. En tillfällig föreslagen bank
-  ger två frågor för befintlig modell men kan inte beräkna decimalrivalen;
-  när rivalen begärs uttryckligen lämnas modellpar olösta. Redan sedda frågor
-  ger ingen tyst upprepning som ”ny prövning”.
+- V9:s faktiska urval ger paketets två kontraster med båda modellernas svar
+  och inga olösta par inom pilotramen. Utvärderingen jämför bankuppgifterna
+  med det godkända originalunderlaget. Beroende kedjor bevarar sitt överlapp
+  i analysen men får ingen automatisk bankväg i detta paket. Redan sedda
+  frågor ger ingen tyst upprepning som ”ny prövning”.
 
 Detta är **syntetiska kontroller med öppet facit**, inte ett blindtest eller
 en elevstudie. Gemini fick ett separat, enbart fiktivt blindtestuppdrag i
@@ -128,16 +133,65 @@ kontot). [Försöksstatusen](evaluations/e4-decimal-addition-2026-11-05/external
 innehåller inga elevdata eller hemligheter. Inget nytt AI-blindtestresultat
 eller oberoende modellgranskning påstås.
 
-## Nästa genomförande efter innehållsbeslut
+## Lokal integration och versionsgräns
 
-Återanvänd `didacticPackages`, den befintliga decimalrättningen och samma
-rapport-/materialkedja. Versionsmärk den avgränsade decimalutökningen av
-`one_carry_forgotten`; dess båda svar måste följa med i frysta jämförelser.
-Lägg till egna versionsbundna bankuppgifter och reservroller för undervisning
-och nya kontroller. Kontrollera källstruktur på servern och behåll
-undervisningsnoteringens paket-/versionsbindning och historikskyddet.
+Paketregistret `didacticPackages` innehåller nu även additionspaketet. Sju egna
+versionerade bankuppgifter har decimalrättning med heltalshundradelar, bevarad
+råtext, decimaltecken och ofullständiga svar. Bara två kontraster väljs
+automatiskt; undervisning, negativkontroll och senare kontroller har egna
+roller. Källstrukturen kontrolleras både i urvalet och på servern, och samma
+rapport-/hypotes-/paketbindning och historikskydd används som tidigare.
 
-Kräv prov som först visar saknad bank/rival, sedan hela kedjan med båda
-varianterna, den beroende kedjans överlapp, negativa kontroller, versions-
-konflikt och redan mötta frågor. Befintliga paket och träningens progression
-ska behållas. Publicering och eventuell elevutdelning är separata steg.
+V9:s avgränsade analys omfattar två decimaler, positiva operander med ensiffrig
+heltalsdel och facit under tio. Båda två-carry-strukturerna analyseras för att
+överlappen ska synas; endast de oberoende får användas som paketets källstöd.
+Ingen minnessiffra innebär ingen möjlighet att pröva ”en av flera tappas”.
+En enda minnessiffra, olika decimalantal och större resultat får inget nytt
+`one_carry_forgotten`-stöd här. Facit och varianter inom ramen räknas exakt i
+hundradelar. Heltalsregler och elevappens äldre felkategorier ändras inte.
+
+Äldre utdelade material jämförs fortsatt med sina frysta modellsvar; nya
+regelträffar hålls separata. Nya material och godkännande kräver aktuell
+regelversion och aktuell källrevision. Ett äldre utkast blir alltså inte
+tyst uppgraderat; vid inaktuellt regelunderlag krävs en ny granskning.
+
+Det nya robotprovet var först rött på den saknade bankuppgiften. Det provar
+sedan båda varianterna genom hela kedjan, sparad undervisning, nya kontroller,
+avstämningskonflikt och redan mötta frågor. Publicering och eventuell verklig
+elevutdelning är separata steg.
+
+## Lokal verifiering 2026-11-05
+
+- 231 testfiler / 1 244 tester, produktionsbuild och 29 MCP-prov gröna.
+- Elva relevanta browserfall gröna tillsammans med en worker och `ROBOT_DEV=1`,
+  noll rapporterade regelbrott: alla tre decimalpaket och gemensam rapport-,
+  materialgransknings-, resultat- och utdelningskedja.
+- Det nya provet väljer den ena varianten på första kontrasten och den andra
+  på nästa. Frysta material och resultat behåller båda varianterna och rivalen.
+  Sju facit, undervisningens hjälpstatus, konflikt utan förlorad text/annan
+  fliks mål, omladdning, nya/senare kontrollutkast och serveravvisning av en
+  redan mött fråga är verifierade. Träningshistorik/mastery är oförändrade.
+- Separata negativa prov bevarar beroende kedjors överlapp, avvisar sådant
+  källstöd på servern och blandade paket. Äldre frysta jämförelser skiljs
+  från nya V9-träffar; befintliga heltalsfamiljer är oförändrade.
+- Det öppna utvärderingsskriptet kontrollerar alla 111 375 fall även mot V9:s
+  båda verkliga modellvarianter. V8-förslagsbelägget bevaras separat.
+- Påverkade API-entrymoduler importerade direkt utan fel; riktad lint och
+  arkitekturkontroll gröna. Faktisk render granskad stående/liggande i Chromium.
+
+Inget nytt externt blindtest, ingen ny bred robotkörning för hela appen,
+ingen fysisk iPad, ingen verklig elevutdelning och ingen produktion är
+verifierad för detta nya paket. De tidigare två paketens publicering är
+separata, daterade belägg.
+
+```text
+npm run test -- --exclude '**/.claude/**' --exclude '**/.codex/**'
+npm run build
+npm run mcp:test
+node docs/evaluations/e4-decimal-addition-2026-11-05/evaluate.mjs
+```
+
+Browserurval: `didactic-addition.robot.js`, `didactic-decimal.robot.js`,
+`didactic-subtraction.robot.js`, `followup-results.robot.js`,
+`pupil-analysis.robot.js`, `material-review.robot.js` och
+`material-publication.robot.js`. Lokal minnesdatabas och syntetiska elever.

@@ -23,6 +23,13 @@ const DECIMAL_SUB = {
   },
 }
 export function modelDescription(modelId, scope) {
+  if (scope === 'decimal_addition' && ['carry_forget', 'one_carry_forgotten'].includes(modelId)) return {
+    thinkingSv: modelId === 'one_carry_forgotten'
+      ? 'Svaret kan räknas fram med en av de två minnessiffrorna tappad. Båda positionerna ger möjliga svar; svaren visar inte vilken metod eleven använde.'
+      : 'Svaret kan räknas fram utan överförda minnessiffror i decimalkolumnerna. I beroende kedjor kan samma svar passa en enda tappad minnessiffra.',
+    openersSv: ['Be eleven förklara vad varje minnesetta är värd: en tiondel eller en hel. Hur bevaras värdet vid växlingen?'],
+    sourceSv: 'Avgränsat decimalpaket och didaktiskt förslag granskat av Simon 2026-11-05. Modellträff är inte bevis på elevens metod.',
+  }
   return scope === 'decimal_subtraction' && DECIMAL_SUB[modelId]
     ? { ...DECIMAL_SUB[modelId], sourceSv: 'Avgränsat decimalpaket och didaktiskt förslag granskat av Simon 2026-11-05. Modellträff är inte bevis på elevens metod.' }
     : MODEL_DESCRIPTIONS[modelId]

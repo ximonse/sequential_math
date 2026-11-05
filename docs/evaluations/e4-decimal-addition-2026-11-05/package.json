@@ -1,23 +1,133 @@
 {
   "id": "decimal-two-carry-addition-proposal",
   "version": 1,
-  "status": "teacher_review_required",
-  "modelIds": ["carry_forget", "one_carry_forgotten"],
-  "missingDecimalModelIds": ["one_carry_forgotten"],
+  "status": "teacher_approved",
+  "modelIds": [
+    "carry_forget",
+    "one_carry_forgotten"
+  ],
   "scope": "Positive operands with one whole-number digit and exactly two decimal digits; both raw decimal-column sums at least ten, so both carries arise independently; total below ten.",
   "tasks": [
-    { "taskId": "draft-decimal-add-source", "phase": "source_example", "a": "3.48", "b": "2.67", "correct": "6.15", "allCarriesOmitted": "5.05", "oneCarryOmitted": ["6.05", "5.15"] },
-    { "taskId": "draft-decimal-add-contrast-a", "phase": "contrast", "a": "1.76", "b": "2.58", "correct": "4.34", "allCarriesOmitted": "3.24", "oneCarryOmitted": ["4.24", "3.34"] },
-    { "taskId": "draft-decimal-add-contrast-b", "phase": "contrast", "a": "4.67", "b": "1.85", "correct": "6.52", "allCarriesOmitted": "5.42", "oneCarryOmitted": ["6.42", "5.52"] },
-    { "taskId": "draft-decimal-add-teaching", "phase": "teaching", "a": "2.68", "b": "1.57", "correct": "4.25", "allCarriesOmitted": "3.15", "oneCarryOmitted": ["4.15", "3.25"] },
-    { "taskId": "draft-decimal-add-immediate", "phase": "independent_check", "a": "3.86", "b": "2.47", "correct": "6.33", "allCarriesOmitted": "5.23", "oneCarryOmitted": ["6.23", "5.33"] },
-    { "taskId": "draft-decimal-add-delayed", "phase": "later_check", "a": "1.78", "b": "3.66", "correct": "5.44", "allCarriesOmitted": "4.34", "oneCarryOmitted": ["5.34", "4.44"] },
-    { "taskId": "draft-decimal-add-negative", "phase": "negative_control", "a": "2.13", "b": "3.24", "correct": "5.37", "allCarriesOmitted": "5.37", "oneCarryOmitted": [] }
+    {
+      "taskId": "draft-decimal-add-source",
+      "phase": "source_example",
+      "a": "3.48",
+      "b": "2.67",
+      "correct": "6.15",
+      "allCarriesOmitted": "5.05",
+      "oneCarryOmitted": [
+        "6.05",
+        "5.15"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-add-contrast-a",
+      "phase": "contrast",
+      "a": "1.76",
+      "b": "2.58",
+      "correct": "4.34",
+      "allCarriesOmitted": "3.24",
+      "oneCarryOmitted": [
+        "4.24",
+        "3.34"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-add-contrast-b",
+      "phase": "contrast",
+      "a": "4.67",
+      "b": "1.85",
+      "correct": "6.52",
+      "allCarriesOmitted": "5.42",
+      "oneCarryOmitted": [
+        "6.42",
+        "5.52"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-add-teaching",
+      "phase": "teaching",
+      "a": "2.68",
+      "b": "1.57",
+      "correct": "4.25",
+      "allCarriesOmitted": "3.15",
+      "oneCarryOmitted": [
+        "4.15",
+        "3.25"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-add-immediate",
+      "phase": "independent_check",
+      "a": "3.86",
+      "b": "2.47",
+      "correct": "6.33",
+      "allCarriesOmitted": "5.23",
+      "oneCarryOmitted": [
+        "6.23",
+        "5.33"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-add-delayed",
+      "phase": "later_check",
+      "a": "1.78",
+      "b": "3.66",
+      "correct": "5.44",
+      "allCarriesOmitted": "4.34",
+      "oneCarryOmitted": [
+        "5.34",
+        "4.44"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-add-negative",
+      "phase": "negative_control",
+      "a": "2.13",
+      "b": "3.24",
+      "correct": "5.37",
+      "allCarriesOmitted": "5.37",
+      "oneCarryOmitted": []
+    }
   ],
   "boundaryCases": [
-    { "id": "dependent_second_carry", "a": "3.48", "b": "2.57", "correct": "6.05", "allCarriesOmitted": "5.95", "oneCarryOmitted": ["5.95", "5.05"], "outsidePilotReason": "The carry from hundredths creates the second carry. Omitting all carries overlaps omitting the first; not four-way discriminating." },
-    { "id": "only_one_carry", "a": "3.48", "b": "2.37", "correct": "5.85", "allCarriesOmitted": "5.75", "outsidePilotReason": "Only one carry; cannot test losing one of several carries." },
-    { "id": "different_decimal_widths", "a": "3.4", "b": "2.67", "correct": "6.07", "outsidePilotReason": "Unequal decimal widths; alignment adds a different content demand." },
-    { "id": "result_above_ten", "a": "7.68", "b": "3.57", "correct": "11.25", "outsidePilotReason": "Result has two whole-number digits." }
+    {
+      "id": "dependent_second_carry",
+      "a": "3.48",
+      "b": "2.57",
+      "correct": "6.05",
+      "allCarriesOmitted": "5.95",
+      "oneCarryOmitted": [
+        "5.95",
+        "5.05"
+      ],
+      "outsidePilotReason": "The carry from hundredths creates the second carry. Omitting all carries overlaps omitting the first; not four-way discriminating."
+    },
+    {
+      "id": "only_one_carry",
+      "a": "3.48",
+      "b": "2.37",
+      "correct": "5.85",
+      "allCarriesOmitted": "5.75",
+      "outsidePilotReason": "Only one carry; cannot test losing one of several carries."
+    },
+    {
+      "id": "different_decimal_widths",
+      "a": "3.4",
+      "b": "2.67",
+      "correct": "6.07",
+      "outsidePilotReason": "Unequal decimal widths; alignment adds a different content demand."
+    },
+    {
+      "id": "result_above_ten",
+      "a": "7.68",
+      "b": "3.57",
+      "correct": "11.25",
+      "outsidePilotReason": "Result has two whole-number digits."
+    }
+  ],
+  "approvedOn": "2026-11-05",
+  "implementedDecimalModelIds": [
+    "one_carry_forgotten"
   ]
 }

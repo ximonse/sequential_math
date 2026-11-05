@@ -99,6 +99,12 @@ export function rivalModels(modelId, supportProblems) {
   // the pupil's own tasks; a rule that gives the right answer there cannot explain the errors.
   const wrongSomewhere = m => supportProblems.some(problem => predictableCandidates(problem, '').predictions?.some(p => p.modelId === m))
   for (const family of FAMILIES) if (family.includes(modelId)) family.forEach(m => m !== modelId && wrongSomewhere(m) && rivals.add(m))
+  // The approved decimal package compares all omitted carries with either
+  // omitted position. Preserve the integer families' previous routing.
+  const decimalCarryFamily = ['carry_forget', 'one_carry_forgotten']
+  if (decimalCarryFamily.includes(modelId) && supportProblems.some(problem => predictableCandidates(problem, '').scope === 'decimal_addition')) {
+    decimalCarryFamily.forEach(m => m !== modelId && wrongSomewhere(m) && rivals.add(m))
+  }
   return [...rivals]
 }
 

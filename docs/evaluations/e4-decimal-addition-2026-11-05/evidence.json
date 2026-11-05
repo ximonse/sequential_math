@@ -1,9 +1,10 @@
 {
   "packageId": "decimal-two-carry-addition-proposal",
-  "ruleVersion": "predictable-errors-v8",
+  "ruleVersion": "predictable-errors-v9",
+  "applicationPackageId": "decimal-two-carry-addition-pilot",
   "method": "synthetic_deterministic_open_key_not_blind",
-  "teacherApproval": "pending",
-  "applicationIntegration": false,
+  "teacherApproval": "approved_2026-11-05",
+  "applicationIntegration": true,
   "productionVerification": "not_performed_by_this_script",
   "assertions": {
     "independentlyCheckedTasks": 7,
@@ -14,24 +15,15 @@
     "exhaustivelyCheckedDependentCarryCases": 20250,
     "exhaustivelyCheckedTotalCases": 111375
   },
-  "currentBankStatus": "unavailable",
+  "currentBankStatus": "proposed",
   "proposedTaskIds": [
     "draft-decimal-add-contrast-a",
     "draft-decimal-add-contrast-b"
   ],
-  "missingDecimalModelIds": [
+  "implementedDecimalModelIds": [
     "one_carry_forgotten"
   ],
-  "unresolvedWithExplicitRival": [
-    [
-      "correct",
-      "one_carry_forgotten"
-    ],
-    [
-      "carry_forget",
-      "one_carry_forgotten"
-    ]
-  ],
+  "unresolvedWithExplicitRival": [],
   "rows": [
     {
       "taskId": "draft-decimal-add-source",
@@ -51,11 +43,15 @@
       "oneCarryAnswersInCurrentEngine": [
         {
           "answer": "6.05",
-          "modelIds": []
+          "modelIds": [
+            "one_carry_forgotten"
+          ]
         },
         {
           "answer": "5.15",
-          "modelIds": []
+          "modelIds": [
+            "one_carry_forgotten"
+          ]
         }
       ]
     },
@@ -77,11 +73,15 @@
       "oneCarryAnswersInCurrentEngine": [
         {
           "answer": "4.24",
-          "modelIds": []
+          "modelIds": [
+            "one_carry_forgotten"
+          ]
         },
         {
           "answer": "3.34",
-          "modelIds": []
+          "modelIds": [
+            "one_carry_forgotten"
+          ]
         }
       ]
     },
@@ -103,11 +103,15 @@
       "oneCarryAnswersInCurrentEngine": [
         {
           "answer": "6.42",
-          "modelIds": []
+          "modelIds": [
+            "one_carry_forgotten"
+          ]
         },
         {
           "answer": "5.52",
-          "modelIds": []
+          "modelIds": [
+            "one_carry_forgotten"
+          ]
         }
       ]
     },
@@ -129,11 +133,15 @@
       "oneCarryAnswersInCurrentEngine": [
         {
           "answer": "4.15",
-          "modelIds": []
+          "modelIds": [
+            "one_carry_forgotten"
+          ]
         },
         {
           "answer": "3.25",
-          "modelIds": []
+          "modelIds": [
+            "one_carry_forgotten"
+          ]
         }
       ]
     },
@@ -155,11 +163,15 @@
       "oneCarryAnswersInCurrentEngine": [
         {
           "answer": "6.23",
-          "modelIds": []
+          "modelIds": [
+            "one_carry_forgotten"
+          ]
         },
         {
           "answer": "5.33",
-          "modelIds": []
+          "modelIds": [
+            "one_carry_forgotten"
+          ]
         }
       ]
     },
@@ -181,11 +193,15 @@
       "oneCarryAnswersInCurrentEngine": [
         {
           "answer": "5.34",
-          "modelIds": []
+          "modelIds": [
+            "one_carry_forgotten"
+          ]
         },
         {
           "answer": "4.44",
-          "modelIds": []
+          "modelIds": [
+            "one_carry_forgotten"
+          ]
         }
       ]
     },

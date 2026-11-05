@@ -43,12 +43,14 @@ godkända decimalmultiplikationspiloten är publicerade enligt
 ## Läs tabellen rätt
 
 E4-fortsättning 2026-11-05: [decimaladditionens granskningsförslag](E4_DECIMAL_ADDITION_REVIEW.md)
-är framtaget lokalt, utan aktivering. `carry_forget` finns för decimaler,
-medan `one_carry_forgotten` bara finns för heltal. Förslaget bevarar båda
-varianterna av en tappad minnessiffra. Kontroll av 91 125 fall inom den
+är därefter lärargodkänt och lokalt integrerat. V9 kompletterar den tidigare
+saknade decimalvarianten av `one_carry_forgotten`, med båda positionernas
+modellsvar och `carry_forget` som rival. Kontroll av 91 125 fall inom den
 föreslagna ramen ger fyra skilda svar; 20 250 angränsande kedjefall ger
-överlapp och hålls utanför den första särskiljande banken. Detta är en
-öppen, deterministisk kontroll, inte lärargodkännande eller blindtest.
+överlapp och hålls utanför den första särskiljande banken. Dessa kontroller
+är öppna och deterministiska, inte blindtester; lärargodkännandet kommer
+från Simons separata beslut. Paketet är inte publicerat. Tabellen nedan
+är fortsatt den daterade V7-inventeringen, inte en ny full inventering.
 
 - Varje rad är ett explicit kandidat-ID inom en domän, inte en fastställd felförståelse eller NCM-diagnos. Samma ID kan förekomma i flera domäner.
 - 62 domän/modell-par har inventerats statiskt och fått minst ett beräknat exempel i en ändlig sökning med 8 500 konstruerade problem. Räknehäftets avvikelsesignal tillkommer separat.

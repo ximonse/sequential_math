@@ -3,9 +3,11 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { predictableCandidates, candidatesForEvidence } from '../../../src/domains/predictableErrors/index.js'
 import { buildContrastSet } from '../../../src/domains/predictableErrors/contrast.js'
 import { planFollowUp } from '../../../src/domains/predictableErrors/followUpSelection.js'
+import { decimalAdditionTasks, decimalAdditionStructure } from '../../../src/domains/arithmetic/decimalAdditionPackage.js'
 import { questionFingerprint } from '../../../src/domains/predictableErrors/questionFingerprint.js'
 
-// Open-key mathematics checks. No pupil records, blind results or approvals.
+// Open-key mathematics checks. No pupil records, blind results or teacher
+// decisions are produced by this script; approval is recorded separately.
 const pack = JSON.parse(await readFile(new URL('./package.json', import.meta.url)))
 const cents = text => {
   assert.match(text, /^\d+\.\d{1,2}$/u)
@@ -35,7 +37,7 @@ for (const task of pack.tasks) {
   const opportunities = expected.carryHundredths + expected.carryTenths
   assert.equal(result.matches.some(m => m.modelId === 'carry_forget'), opportunities > 0)
   assert.equal(predictableCandidates(problem(task), task.correct.replace('.', ',')).status, 'correct')
-  assert.equal(result.predictions.some(m => m.modelId === 'one_carry_forgotten'), false)
+  assert.deepEqual(result.predictions.filter(m => m.modelId === 'one_carry_forgotten').map(m => Math.round(m.predictedAnswer * 100)), expected.one)
   if (opportunities === 2) assert.equal(new Set([expected.correct, expected.omitted, ...expected.one]).size, 4)
   for (const status of ['partial', 'unanswered']) {
     assert.equal(candidatesForEvidence({ question: { domain: 'arithmetic', operation: 'addition', values: problem(task).values },
@@ -49,6 +51,8 @@ for (const task of pack.boundaryCases) {
   assert.equal(cents(task.a) + cents(task.b), cents(task.correct))
   if (task.allCarriesOmitted) assert.equal(oracle(cents(task.a), cents(task.b)).omitted, cents(task.allCarriesOmitted))
   if (task.oneCarryOmitted) {
+    assert.equal(decimalAdditionStructure(problem(task).values), 'dependent_carries')
+    assert.deepEqual(predictableCandidates(problem(task), task.allCarriesOmitted).matches.map(m => m.modelId), ['carry_forget', 'one_carry_forgotten'])
     assert.deepEqual(oracle(cents(task.a), cents(task.b)).one, task.oneCarryOmitted.map(cents))
     assert.ok(task.oneCarryOmitted.includes(task.allCarriesOmitted))
   }
@@ -76,6 +80,8 @@ for (let aw = 0; aw <= 8; aw++) for (let bw = 0; bw <= 8 - aw; bw++) {
       }
       assert.ok(predictableCandidates({ domain: 'arithmetic', type: 'addition', values: { a: a / 100, b: b / 100 } }, o.omitted / 100)
         .matches.some(m => m.modelId === 'carry_forget'))
+      const result = predictableCandidates({ domain: 'arithmetic', type: 'addition', values: { a: a / 100, b: b / 100 } }, '')
+      assert.deepEqual(result.predictions.filter(m => m.modelId === 'one_carry_forgotten').map(m => Math.round(m.predictedAnswer * 100)), o.one)
       checked++
     }
   }
@@ -86,20 +92,25 @@ assert.equal(dependentCarryCases, 20250)
 const source = pack.tasks[0], contrasts = pack.tasks.filter(task => task.phase === 'contrast')
 const bankTasks = contrasts.map(task => ({ taskId: task.taskId, taskVersion: 1, operation: 'addition', operands: [Number(task.a), Number(task.b)] }))
 const ordinary = planFollowUp({ modelId: 'carry_forget', supportProblems: [problem(source)] })
-assert.equal(ordinary.status, 'unavailable')
+assert.equal(ordinary.status, 'proposed')
+assert.equal(ordinary.items.length, 2)
+assert.deepEqual(ordinary.unresolved, [])
+assert.equal(decimalAdditionTasks.length, pack.tasks.length)
+for(const [index, task] of decimalAdditionTasks.entries()) assert.deepEqual(task.operands, [Number(pack.tasks[index].a),Number(pack.tasks[index].b)])
 const proposed = buildContrastSet({ modelId: 'carry_forget', supportProblems: [problem(source)], bankTasks, models: pack.modelIds })
 assert.equal(proposed.items.length, 2)
-assert.ok(proposed.unresolved.some(pair => pair.includes('one_carry_forgotten')))
+assert.deepEqual(proposed.unresolved, [])
 const seen = new Set(contrasts.map(task => questionFingerprint(problem(task))))
 assert.equal(buildContrastSet({ modelId: 'carry_forget', supportProblems: [problem(source)], bankTasks, seenFingerprints: seen }).status, 'unavailable')
 await writeFile(new URL('./evidence.json', import.meta.url), JSON.stringify({
   packageId: pack.id, ruleVersion: predictableCandidates(problem(source), '').ruleVersion,
-  method: 'synthetic_deterministic_open_key_not_blind', teacherApproval: 'pending', applicationIntegration: false,
+  applicationPackageId: decimalAdditionTasks[0].didacticPackageId,
+  method: 'synthetic_deterministic_open_key_not_blind', teacherApproval: 'approved_2026-11-05', applicationIntegration: true,
   productionVerification: 'not_performed_by_this_script',
   assertions: { independentlyCheckedTasks: rows.length, correctControls: rows.length, unfinishedStatusControls: rows.length * 2,
     boundaryCases: pack.boundaryCases.length, exhaustivelyCheckedPilotCases: pilotCases,
     exhaustivelyCheckedDependentCarryCases: dependentCarryCases, exhaustivelyCheckedTotalCases: checked },
   currentBankStatus: ordinary.status, proposedTaskIds: proposed.items.map(t => t.taskId),
-  missingDecimalModelIds: pack.missingDecimalModelIds, unresolvedWithExplicitRival: proposed.unresolved, rows,
+  implementedDecimalModelIds: pack.implementedDecimalModelIds, unresolvedWithExplicitRival: proposed.unresolved, rows,
 }, null, 2) + '\n')
-console.log(`Checked ${rows.length} proposed tasks, ${pilotCases} pilot cases and ${dependentCarryCases} adjacent overlap cases. Decimal rival missing; teacher review pending; no application or pupil records changed.`)
+console.log(`Checked ${rows.length} approved tasks, ${pilotCases} pilot cases and ${dependentCarryCases} adjacent overlap cases. Both decimal variants verified against the runtime catalog; no production or pupil records changed.`)

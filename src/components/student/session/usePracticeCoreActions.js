@@ -120,7 +120,7 @@ export function usePracticeCoreActions({
       return
     }
 
-    if (fluency && isFluencyAssignment(sessionAssignment)) {
+    if (fluency && isFluencyAssignment(fluency?.assignment)) {
       fluency.setPraise('')
       if (fluency.topChoicePendingRef.current) {
         fluency.topChoicePendingRef.current = false
@@ -130,7 +130,7 @@ export function usePracticeCoreActions({
         setAnswer('')
         return
       }
-      if (fluency.countRef.current >= getFluencyTarget(sessionAssignment)) {
+      if (fluency.countRef.current >= getFluencyTarget(fluency.assignment)) {
         assignmentRun?.finish()
         fluency.setCompleted(true)
         setCurrentProblem(null)
@@ -180,7 +180,7 @@ export function usePracticeCoreActions({
       profile,
       sessionTelemetryRef.current?.sessionId
     )
-    if (fluency?.lapRef.current && isFluencyAssignment(sessionAssignment)) {
+    if (fluency?.lapRef.current && isFluencyAssignment(fluency?.assignment)) {
       rules.forcedLevel = fluency.lapRef.current.level
     }
 
@@ -331,7 +331,7 @@ export function usePracticeCoreActions({
       : null
     if (progressionDecision) {
       // Talpar/Dubblor have their own countdown and praise; a full-screen level celebration would break the rhythm.
-      if (!(fluency && isFluencyAssignment(sessionAssignment))) {
+      if (!(fluency && isFluencyAssignment(fluency?.assignment))) {
         setProgressionMilestone({
           ...progressionDecision,
           attempts: Number(masteryEvent?.window?.attempts || 0),
@@ -476,13 +476,13 @@ export function usePracticeCoreActions({
           })
         }
       }
-    } else if (fluency && isFluencyAssignment(sessionAssignment)) {
+    } else if (fluency && isFluencyAssignment(fluency?.assignment)) {
       const answered = fluency.countRef.current + 1
       fluency.countRef.current = answered
       fluency.setAnswered(answered)
-      fluency.lapRef.current = advanceFluencyLap(fluency.lapRef.current, correct, sessionAssignment)
-      const step = getFluencyStep(answered, getFluencyTarget(sessionAssignment))
-      if (!fluency.topPromptedRef.current && isFluencyTopLevelFinish(currentProblem, correct && !isPartial, sessionAssignment)) {
+      fluency.lapRef.current = advanceFluencyLap(fluency.lapRef.current, correct && !isPartial, fluency.assignment, currentProblem)
+      const step = getFluencyStep(answered, getFluencyTarget(fluency.assignment))
+      if (!fluency.topPromptedRef.current && isFluencyTopLevelFinish(currentProblem, correct && !isPartial, fluency.assignment, fluency.lapRef.current)) {
         // The choice offers its own pause games, so it replaces this answer's break or praise.
         fluency.topPromptedRef.current = true
         fluency.topChoicePendingRef.current = true

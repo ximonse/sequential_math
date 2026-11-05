@@ -2936,6 +2936,38 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "fluency-fresh-laps",
+      "area": "Snabbhetsträning",
+      "title": "Talpar från grunden, blandnivå och generöst flyt i Talbild",
+      "status": "Lokalt klart",
+      "purpose": "Varje Talpar-omgång börjar från grunden och avslutas med ett avsiktligt omstartsval. Talbild kräver både rätt och rimlig snabbhet.",
+      "next": "Fixen är klar på separat gren; invänta Simons mandat för integration och publicering.",
+      "acceptance": "Talpar startar på nivå 1 vid nytt besök trots tidigare belägg; uttryckliga nivåval och lärarens gränser respekteras. Nivå 13 blandar slumpade 10-, 15- och 20-kompisar. Efter hela vägen erbjuds omstart. Talbild går upp efter fem rätt i följd inom fyra sekunder per svar.",
+      "requires": [],
+      "affects": [],
+      "decision": "2026-11-05: Simon beställer separat liten fix; tallar betyder Talpar och talboks betyder Talbild. Fyra sekunder per Talbild-svar är agentens generösa implementation. Ingen publicering beställd.",
+      "evidence": "2026-11-05: Isolerad arbetskopia från 55850df, gren fix/talpar-start-blandning. docs/FLUENCY_LAPS.md beskriver beteendet. Regression bekräftad utan startfixen: tidigare klarad elev börjar på nivå 11. Sparregression bekräftad före API-fixen: nivå 13 saknas på servern. Slutligt verifierat: 227 testfiler/1215 tester, npm run build och 18 berörda klickrobotar gröna (0 regelbrott). Robot verifierar hel klättring, tre blandade måltal, omstart, nytt besök och nivå 13 i serverns sparade problemlogg. Renderade skärmbilder granskade; sparvarningen är borta. Kartkontroll körs före commit. Lokal kod, ej integrerad i huvudbygget, ej pushad eller publicerad.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "fresh-laps",
+          "text": "Start från grunden, blandnivå och omstartsval",
+          "done": true
+        },
+        {
+          "id": "talbild-speed",
+          "text": "Fem rätt inom fyra sekunder per svar",
+          "done": true
+        },
+        {
+          "id": "verify-fluency",
+          "text": "Test, build och berörda klickrobotar samt visuell kontroll",
+          "done": true
+        }
+      ]
     }
   ],
   "edges": [

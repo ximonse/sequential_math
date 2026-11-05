@@ -81,16 +81,16 @@ export function createTalbildLayout(value, level = 0, rng = Math.random) {
 }
 
 const WINDOW_SIZE = 5
-const FAST_MS = 2600
+export const TALBILD_ADVANCE_MAX_MS = 4000
 const SLOW_MS = 5500
 
-// Level climbs after five fast, correct answers in a row and drops after a slow or wrong-heavy window.
+// Level climbs after five correct answers, each within a generous four seconds.
 export function nextTalbildLevel(level, recent) {
   if (recent.length < WINDOW_SIZE) return { level, resetWindow: false }
   const window = recent.slice(-WINDOW_SIZE)
   const correct = window.filter(item => item.isCorrect)
   const avgMs = correct.length ? correct.reduce((sum, item) => sum + item.timeMs, 0) / correct.length : Infinity
-  if (correct.length === WINDOW_SIZE && avgMs <= FAST_MS && level < MAX_TALBILD_LEVEL) {
+  if (window.every(item => item.isCorrect && Number.isFinite(item.timeMs) && item.timeMs > 0 && item.timeMs <= TALBILD_ADVANCE_MAX_MS) && level < MAX_TALBILD_LEVEL) {
     return { level: level + 1, resetWindow: true }
   }
   if ((correct.length <= 2 || avgMs >= SLOW_MS) && level > 0) {

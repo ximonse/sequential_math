@@ -27,3 +27,20 @@ describe('number fluency domain', () => {
     }
   })
 })
+
+
+it('mixes all three targets and shuffles their pairs on level thirteen', () => {
+  const targets = []
+  const terms = new Map([10, 15, 20].map(n => [n, new Set()]))
+  for (let i = 0; i < 66; i++) {
+    const problem = numberFluencyDomain.generate('number_bonds', 13)
+    expect(problem.level).toBe(13)
+    const { target, knownTerm } = problem.values
+    targets.push(target)
+    terms.get(target).add(knownTerm)
+    expect(knownTerm + problem.answer.correct).toBe(target)
+    expect(numberFluencyDomain.verifyContent(problem).valid).toBe(true)
+  }
+  expect(new Set(targets)).toEqual(new Set([10, 15, 20]))
+  for (const target of [10, 15, 20]) expect(terms.get(target).size).toBe(target + 1)
+})

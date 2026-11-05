@@ -1,8 +1,8 @@
 import { getFluencyTargetSec } from '../../lib/operations.js'
 import { pickFromRotation } from '../../lib/rotationPicker.js'
 
-function clampLevel(level) {
-  return Math.max(1, Math.min(12, Math.round(Number(level) || 1)))
+function clampLevel(level, skill) {
+  return Math.max(1, Math.min(skill === 'number_bonds' ? 13 : 12, Math.round(Number(level) || 1)))
 }
 
 function rotateNumber(key, values) {
@@ -36,8 +36,10 @@ function makeProblem({ skill, level, text, answer, values, template }) {
 }
 
 function generateNumberBond(level) {
-  const target = level <= 4 ? 10 : level <= 8 ? 15 : 20
-  const term = rotateNumber(`number_bonds:l${level}:term`, integers(0, target))
+  const target = level === 13
+    ? rotateNumber('number_bonds:mixed:target', [10, 15, 20])
+    : level <= 4 ? 10 : level <= 8 ? 15 : 20
+  const term = rotateNumber(`number_bonds:l${level}:target${target}:term`, integers(0, target))
   const missingFirst = rotateNumber(`number_bonds:l${level}:position`, [0, 1]) === 0
   const complement = target - term
   const text = missingFirst ? `? + ${term} = ${target}` : `${term} + ? = ${target}`
@@ -102,7 +104,7 @@ function generateDouble(level) {
 }
 
 export function generateNumberFluencyProblem(skill, level) {
-  const normalizedLevel = clampLevel(level)
+  const normalizedLevel = clampLevel(level, skill)
   if (skill === 'number_bonds') return generateNumberBond(normalizedLevel)
   if (skill === 'doubles') return generateDouble(normalizedLevel)
   throw new Error(`Unknown number fluency skill: ${skill}`)

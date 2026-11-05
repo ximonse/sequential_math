@@ -1,3 +1,4 @@
+import { getSkillMaxLevel } from './skillLevels.js'
 import { TRAINING_MODES } from './trainingContext.js'
 
 export const ADAPTATION_DECISION_RULE_VERSION = 1
@@ -24,20 +25,20 @@ export function buildMasteryProgressionDecision({ mastery, trainingContext } = {
   const operation = String(mastery?.operation || '').trim()
   const fromLevel = Number(mastery?.level)
   const decidedAt = Number(mastery?.achievedAt)
-  if (!operation || !Number.isInteger(fromLevel) || fromLevel < 1 || fromLevel > 12) return null
+  if (!operation || !Number.isInteger(fromLevel) || fromLevel < 1 || fromLevel > getSkillMaxLevel(operation)) return null
   if (!Number.isFinite(decidedAt) || decidedAt <= 0) return null
 
   const trainingMode = String(trainingContext?.mode || '')
   const frameMax = Array.isArray(trainingContext?.levelRange)
     ? Number(trainingContext.levelRange[1])
-    : 12
-  const nextLevel = fromLevel < 12 ? fromLevel + 1 : null
+    : getSkillMaxLevel(operation)
+  const nextLevel = fromLevel < getSkillMaxLevel(operation) ? fromLevel + 1 : null
 
   let action = ADAPTATION_ACTIONS.ADVANCE
   let purpose = 'challenge'
   let reasonCodes = ['mastery_achieved', 'next_level_available']
 
-  if (fromLevel >= 12) {
+  if (fromLevel >= getSkillMaxLevel(operation)) {
     action = ADAPTATION_ACTIONS.COMPLETE_DOMAIN
     purpose = 'consolidate'
     reasonCodes = ['mastery_achieved', 'domain_ceiling_reached']
@@ -76,9 +77,9 @@ export function isValidAdaptationDecision(value) {
   if (!Array.isArray(value.reasonCodes) || value.reasonCodes.length === 0 || value.reasonCodes.length > 10) return false
   if (value.reasonCodes.some(code => typeof code !== 'string' || !code || code.length > 100)) return false
   if (typeof value.operation !== 'string' || !value.operation || value.operation.length > 100) return false
-  if (!Number.isInteger(Number(value.fromLevel)) || Number(value.fromLevel) < 1 || Number(value.fromLevel) > 12) return false
+  if (!Number.isInteger(Number(value.fromLevel)) || Number(value.fromLevel) < 1 || Number(value.fromLevel) > getSkillMaxLevel(value.operation)) return false
   if (value.nextLevel !== null && (!Number.isInteger(Number(value.nextLevel))
-    || Number(value.nextLevel) < 1 || Number(value.nextLevel) > 12)) return false
+    || Number(value.nextLevel) < 1 || Number(value.nextLevel) > getSkillMaxLevel(value.operation))) return false
   if (value.action === ADAPTATION_ACTIONS.ADVANCE && Number(value.nextLevel) !== Number(value.fromLevel) + 1) return false
   if (value.action !== ADAPTATION_ACTIONS.ADVANCE && value.nextLevel !== null) return false
   if (typeof value.frameId !== 'string' || value.frameId.length > 200) return false

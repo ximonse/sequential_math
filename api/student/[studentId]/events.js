@@ -1,3 +1,4 @@
+import { getSkillMaxLevel } from '../../../src/lib/skillLevels.js'
 import { mutateStudentRecord, studentStoreError } from '../../_studentStore.js'
 import { assertTeacherStudentAccess } from '../../_studentAccess.js'
 import { verifyStudentCredential } from '../../_studentPassword.js'
@@ -225,7 +226,7 @@ export function validEntry(entry, studentId) {
     && (payload.evidenceSkill == null || (typeof payload.evidenceSkill === 'string'
       && payload.evidenceSkill.length > 0 && payload.evidenceSkill.length <= 100))
     && (payload.evidenceLevel == null || (Number.isInteger(Number(payload.evidenceLevel))
-      && Number(payload.evidenceLevel) >= 1 && Number(payload.evidenceLevel) <= 12))
+      && Number(payload.evidenceLevel) >= 1 && Number(payload.evidenceLevel) <= getSkillMaxLevel(payload.evidenceSkill)))
     && (payload.evidenceClass == null || EVIDENCE_CLASSES.has(payload.evidenceClass))
     && (payload.evidenceRuleVersion == null || (Number.isInteger(Number(payload.evidenceRuleVersion))
       && Number(payload.evidenceRuleVersion) >= 1))
@@ -245,7 +246,7 @@ export function validEntry(entry, studentId) {
     && Number.isFinite(Number(payload.timestamp || entry.timestamp))
     && Number(payload.timestamp || entry.timestamp) > 0
   if (entry.type === 'mastery_achieved') return typeof payload.operation === 'string'
-    && Boolean(payload.operation) && Number.isInteger(payload.level) && payload.level >= 1 && payload.level <= 12
+    && Boolean(payload.operation) && Number.isInteger(payload.level) && payload.level >= 1 && payload.level <= getSkillMaxLevel(payload.operation)
     && (payload.achievedAt == null || (Number.isFinite(Number(payload.achievedAt)) && Number(payload.achievedAt) > 0))
     && (payload.ruleVersion == null || (Number.isInteger(Number(payload.ruleVersion)) && Number(payload.ruleVersion) >= 1))
     && (payload.evidenceObservationIds == null || (Array.isArray(payload.evidenceObservationIds)

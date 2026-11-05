@@ -7,7 +7,7 @@ const numberFluencyDomain = {
   id: 'number_fluency',
   label: 'Talautomatisering',
   skills: [
-    { id: 'number_bonds', label: 'Talpar', levels: [1, 12] },
+    { id: 'number_bonds', label: 'Talpar', levels: [1, 13] },
     { id: 'doubles', label: 'Dubblor', levels: [1, 12] }
   ],
   generate(skill, level) {

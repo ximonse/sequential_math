@@ -1,3 +1,4 @@
+import { getSkillMaxLevel } from '../lib/skillLevels.js'
 import { EVIDENCE_CLASSES, readEvidenceClaim } from '../lib/evidenceContract'
 
 export const ERROR_CATEGORIES = new Set([
@@ -12,8 +13,8 @@ function invariant(condition, message) {
   if (!condition) throw new Error(`Domain contract violation: ${message}`)
 }
 
-function isLevel(value) {
-  return Number.isInteger(Number(value)) && Number(value) >= 1 && Number(value) <= 12
+function isLevel(value, skill) {
+  return Number.isInteger(Number(value)) && Number(value) >= 1 && Number(value) <= getSkillMaxLevel(skill)
 }
 
 export function assertDomainContract(domain) {
@@ -32,7 +33,7 @@ export function assertDomainContract(domain) {
     invariant(id, `${domain.id} has a skill without id`)
     invariant(!ids.has(id), `${domain.id} has duplicate skill ${id}`)
     invariant(String(skill?.label || '').trim(), `${domain.id}.${id}.label is required`)
-    invariant(isLevel(skill?.levels?.[0]) && isLevel(skill?.levels?.[1]), `${domain.id}.${id}.levels is invalid`)
+    invariant(isLevel(skill?.levels?.[0], id) && isLevel(skill?.levels?.[1], id), `${domain.id}.${id}.levels is invalid`)
     invariant(Number(skill.levels[0]) <= Number(skill.levels[1]), `${domain.id}.${id}.levels is reversed`)
     ids.add(id)
   }
@@ -45,8 +46,8 @@ export function assertProblemContract(problem, expected = {}) {
   const skill = String(problem.skill || problem.metadata?.skillTag || '').trim()
   invariant(domain, 'problem.domain is required')
   invariant(skill, 'problem skill is required')
-  invariant(isLevel(problem.level), 'problem.level must be 1-12')
-  invariant(isLevel(problem.difficulty?.conceptual_level), 'problem.difficulty.conceptual_level must be 1-12')
+  invariant(isLevel(problem.level, skill), 'problem.level is outside skill bounds')
+  invariant(isLevel(problem.difficulty?.conceptual_level, skill), 'problem.difficulty.conceptual_level is outside skill bounds')
   invariant(Number(problem.level) === Number(problem.difficulty.conceptual_level), 'problem level fields must agree')
   invariant(problem.answer && typeof problem.answer === 'object', 'problem.answer is required')
   invariant(String(problem.answer.type || '').trim(), 'problem.answer.type is required')

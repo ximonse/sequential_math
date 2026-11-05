@@ -37,7 +37,7 @@ const NUMBER_BOND_FLUENCY_TARGETS = [10, 7, 4, 2]
 export function getFluencyTargetSec(operation, level) {
   if (operation !== 'number_bonds') return null
   const normalizedLevel = Math.max(1, Math.min(12, Math.round(Number(level) || 1)))
-  return NUMBER_BOND_FLUENCY_TARGETS[(normalizedLevel - 1) % 4]
+  return Number(level) >= 13 ? 4 : NUMBER_BOND_FLUENCY_TARGETS[(normalizedLevel - 1) % 4]
 }
 
 /**

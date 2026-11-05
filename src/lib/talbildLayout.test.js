@@ -90,3 +90,14 @@ describe('nextTalbildLevel', () => {
     expect(nextTalbildLevel(0, slow)).toEqual({ level: 0, resetWindow: false })
   })
 })
+
+
+it('requires every Talbild answer to be correct and within four generous seconds', () => {
+  const answers = Array.from({ length: 5 }, () => ({ isCorrect: true, timeMs: 4000 }))
+  expect(nextTalbildLevel(0, answers).level).toBe(1)
+  for (const bad of [{ isCorrect: true, timeMs: 4001 }, { isCorrect: false, timeMs: 500 }, { isCorrect: true, timeMs: 0 }, { isCorrect: true, timeMs: NaN }]) {
+    expect(nextTalbildLevel(0, [...answers.slice(0, 4), bad]).level).toBe(0)
+  }
+  const mostlyFast = [...answers.slice(0, 4).map(a => ({ ...a, timeMs: 500 })), { isCorrect: true, timeMs: 4500 }]
+  expect(nextTalbildLevel(0, mostlyFast).level).toBe(0)
+})

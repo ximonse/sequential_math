@@ -1,3 +1,4 @@
+import { getSkillMaxLevel } from './skillLevels.js'
 import { isMasteryEligible, readEvidenceClaim } from './evidenceContract.js'
 
 export const CURRENT_NEED_RULE_VERSION = 1
@@ -45,7 +46,7 @@ export function buildCurrentNeed({ profile, observation, trainingContext, master
     needHistory,
     item => item?.purpose === 'recover' || item?.purpose === 'support'
   )
-  const levelRange = trainingContext?.levelRange
+  const levelRange = trainingContext?.levelRange || [1, getSkillMaxLevel(operation)]
 
   let purpose = 'consolidate'
   let targetLevel = clampLevel(masteryFloor || observedLevel, levelRange)
@@ -106,7 +107,7 @@ export function isValidCurrentNeed(value) {
     && Number.isInteger(Number(value.ruleVersion)) && Number(value.ruleVersion) >= 1
     && typeof value.operation === 'string' && value.operation.length > 0 && value.operation.length <= 100
     && PURPOSES.has(value.purpose)
-    && Number.isInteger(Number(value.targetLevel)) && Number(value.targetLevel) >= 1 && Number(value.targetLevel) <= 12
+    && Number.isInteger(Number(value.targetLevel)) && Number(value.targetLevel) >= 1 && Number(value.targetLevel) <= getSkillMaxLevel(value.operation)
     && Array.isArray(value.reasonCodes) && value.reasonCodes.length > 0 && value.reasonCodes.length <= 10
     && Number.isFinite(Number(value.decidedAt)) && Number(value.decidedAt) > 0)
 }

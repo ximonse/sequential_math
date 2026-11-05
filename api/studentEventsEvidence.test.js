@@ -192,3 +192,22 @@ describe('student event evidence persistence', () => {
     expect(profile.adaptive.currentNeeds.addition).toEqual(entry.payload)
   })
 })
+
+
+it('persists mixed number-bond evidence at thirteen without widening other skills', () => {
+  const event = { id: 'mixed-13', type: 'problem_result', payload: {
+    problemId: 'mixed-13', timestamp: 1000, correct: true,
+    operation: 'number_bonds', level: 13, evidenceSkill: 'number_bonds', evidenceLevel: 13,
+    evidenceClass: 'mastery_eligible', evidenceRuleVersion: 1
+  } }
+  expect(validEntry(event, 'ELEV1')).toBe(true)
+  const profile = { problemLog: [], recentProblems: [] }
+  expect(applyWalEntry(profile, event)).toBe(true)
+  expect(profile.problemLog[0]).toMatchObject({ level: 13, evidenceLevel: 13 })
+  expect(validEntry({ ...event, payload: { ...event.payload, evidenceSkill: 'addition' } }, 'ELEV1')).toBe(false)
+  const mastery = { id: 'mixed-mastery', type: 'mastery_achieved', payload: {
+    operation: 'number_bonds', level: 13, achievedAt: 1000, ruleVersion: 1, evidenceObservationIds: ['mixed-13']
+  } }
+  expect(validEntry(mastery, 'ELEV1')).toBe(true)
+  expect(validEntry({ ...mastery, payload: { ...mastery.payload, operation: 'doubles' } }, 'ELEV1')).toBe(false)
+})

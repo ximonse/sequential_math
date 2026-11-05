@@ -33,7 +33,7 @@ import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { generateMathPracticeProblem } from '../../lib/mathPracticeGenerator'
 import { recordMathPracticeResult } from '../../lib/mathPracticeResults'
 import { addMathPracticeSessionResult } from '../../lib/studentProfile'
-import { getFluencyLevelRange, getFluencyTarget, isFluencyAssignment, startFluencyLap } from '../../lib/fluencySession'
+import { getFluencyPractice, getFluencyLevelRange, getFluencyTarget, isFluencyAssignment, startFluencyLap } from '../../lib/fluencySession'
 import { recordTelemetryEvent } from '../../lib/telemetry'
 import { assignmentLaunchPath, getAssignmentTarget, markAssignmentCompleted } from '../../lib/assignmentQueue'
 import { useNextAssignment } from './useNextAssignment'
@@ -102,7 +102,9 @@ function StudentSession() {
   const fluencyLapRef = useRef(null)
   const fluencyTopPromptedRef = useRef(false)
   const fluencyTopChoicePendingRef = useRef(false)
+  const fluencyPractice = useMemo(() => getFluencyPractice(sessionAssignment, searchParams.get('mode'), searchParams.get('level')), [sessionAssignment, searchParams])
   const fluency = useMemo(() => ({
+    assignment: fluencyPractice,
     countRef: fluencyCountRef,
     lapRef: fluencyLapRef,
     topPromptedRef: fluencyTopPromptedRef,
@@ -111,7 +113,7 @@ function StudentSession() {
     setCompleted: setFluencyCompleted,
     setPraise: setFluencyPraise,
     setTopChoice: setFluencyTopChoice
-  }), [])
+  }), [fluencyPractice])
   const mathPracticeSessionStartRef = useRef(Date.now())
   // An assigned exercise is done after its number of tasks (or its own end, e.g. NCM or tables).
   const [assignmentDone, setAssignmentDone] = useState(false)
@@ -241,6 +243,13 @@ function StudentSession() {
         }
         nextRules = frame.rules
       }
+      if (fluencyPractice && (fluencyPractice.problemTypes.every(type => type === 'number_bonds') || fluencyLapRef.current)) {
+        fluencyLapRef.current ??= startFluencyLap(fluencyPractice)
+        nextRules.forcedLevel = fluencyLapRef.current.level
+        nextRules.levelRange = getFluencyLevelRange(fluencyPractice)
+        delete nextRules.startAtLowestUnmastered
+        delete nextRules.lockToMasteryFloor
+      }
       setSessionError('')
       if (sessionAssignment?.kind === 'ncm') {
         const preferredSkillTag = peekNextNcmSkillTag(ncmQueueRef.current)
@@ -254,7 +263,7 @@ function StudentSession() {
       setSessionError('Kunde inte ladda nästa uppgift. Försök igen.')
       return null
     }
-  }, [sessionAssignment, isTableDrill, classAllowedOperations, freeOps, allowedFreeOps])
+  }, [sessionAssignment, isTableDrill, classAllowedOperations, freeOps, allowedFreeOps, fluencyPractice])
 
   usePracticeSetupEffects({
     studentId,
@@ -389,7 +398,7 @@ function StudentSession() {
     recordTelemetryEvent(profile, 'fluency_lap_restarted', {
       sessionId: sessionTelemetryRef.current?.sessionId || ''
     })
-    fluencyLapRef.current = startFluencyLap(sessionAssignment)
+    fluencyLapRef.current = startFluencyLap(fluencyPractice)
     fluencyTopPromptedRef.current = false
     fluencyCountRef.current = 0
     setFluencyAnswered(0)
@@ -410,7 +419,7 @@ function StudentSession() {
     fluencyCompleted,
     fluencyTotal: fluencyAnswered,
     fluencyTopChoice,
-    fluencyStartLevel: getFluencyLevelRange(sessionAssignment)[0],
+    fluencyStartLevel: getFluencyLevelRange(fluencyPractice)[0],
     onRestartFluencyLap: restartFluencyLap,
     onQuitAfterFluencyTop: quitAfterFluencyTop,
     assignmentDone,

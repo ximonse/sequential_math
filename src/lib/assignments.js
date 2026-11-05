@@ -1,3 +1,4 @@
+import { getSkillMaxLevel } from './skillLevels.js'
 import { mergeWorkspaceItems, saveTeacherWorkspacePatch } from './teacherWorkspaceSync.js'
 const ASSIGNMENTS_KEY = 'mathapp_assignments'
 const ASSIGNMENT_PAYLOAD_VERSION = 1
@@ -239,8 +240,9 @@ function normalizeAssignmentCore(input, options = {}) {
   }
 
   const problemTypes = normalizeProblemTypes(input.problemTypes)
-  const minLevel = clampLevel(Number(input.minLevel || 1))
-  const maxLevel = Math.max(minLevel, clampLevel(Number(input.maxLevel || 12)))
+  const upper = problemTypes.length === 1 ? getSkillMaxLevel(problemTypes[0]) : 12
+  const minLevel = Math.max(1, Math.min(upper, Number(input.minLevel) || 1))
+  const maxLevel = Math.max(minLevel, Math.min(upper, Number(input.maxLevel) || upper))
 
   return {
     id,
@@ -379,9 +381,6 @@ function normalizePositiveInt(value, fallback) {
   return Math.max(1, Math.round(numeric))
 }
 
-function clampLevel(level) {
-  return Math.max(1, Math.min(12, Number(level) || 1))
-}
 
 function toBase64Url(text) {
   const bytes = new TextEncoder().encode(text)

@@ -3,6 +3,7 @@
  * ALLA vyer (elev, lärare, adaptiv motor) använder dessa funktioner.
  * Ändra HÄR — inte i enskilda vyer.
  */
+import { getSkillMaxLevel } from './skillLevels.js'
 import { getSpeedTime } from './mathUtils.js'
 import { applyFluencyMasteryRequirement } from './fluencyMastery.js'
 import {
@@ -111,7 +112,7 @@ export function groupProblemsByOperationLevel(problems) {
     const operation = readEvidenceClaim(problem).skill
     const level = getRecordedProblemLevel(problem)
     if (!Number.isFinite(level) || level < 1) continue
-    if (level > 12) continue
+    if (level > getSkillMaxLevel(operation)) continue
 
     const key = `${operation}:${level}`
     if (!buckets.has(key)) {
@@ -271,7 +272,7 @@ export function computeOperationMasteryBoards(problems, operationKeys, levelRang
     const operation = readEvidenceClaim(problem).skill
     if (!lists[operation]) continue
     const level = getRecordedProblemLevel(problem)
-    if (!Number.isInteger(level) || level < 1 || level > 12) continue
+    if (!Number.isInteger(level) || !lists[operation][level]) continue
 
     lists[operation][level].all.push(problem)
 

@@ -28,6 +28,13 @@ inloggad skrivfri förhandsvisning. Komplett produktionspilot och fysisk iPad
 
 ### E4-pilot godkänd och lokalt implementerad 2026-11-05
 
+Senaste E4-fortsättningen är ett [granskningsförslag för decimaladdition](E4_DECIMAL_ADDITION_REVIEW.md).
+Två minnessiffror behöver inte innebära två oberoende felmöjligheter. Förslaget
+skiljer därför en särskiljande ram från beroende kedjor där modellerna ger
+samma felsvar. Den befintliga heltalsmodellen för en tappad minnessiffra har
+flera svar som måste bevaras vid en eventuell decimalutökning. Inget nytt
+innehåll eller ny regel aktiveras före lärargranskning.
+
 Simon godkände innehåll och arbetsgång i
 [E4_DECIMAL_MULTIPLICATION_REVIEW.md](E4_DECIMAL_MULTIPLICATION_REVIEW.md).
 Paketet har nu sju egna bankuppgifter och en särskild decimalrättning med

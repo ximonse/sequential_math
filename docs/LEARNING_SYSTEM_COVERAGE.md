@@ -42,6 +42,14 @@ godkända decimalmultiplikationspiloten är publicerade enligt
 
 ## Läs tabellen rätt
 
+E4-fortsättning 2026-11-05: [decimaladditionens granskningsförslag](E4_DECIMAL_ADDITION_REVIEW.md)
+är framtaget lokalt, utan aktivering. `carry_forget` finns för decimaler,
+medan `one_carry_forgotten` bara finns för heltal. Förslaget bevarar båda
+varianterna av en tappad minnessiffra. Kontroll av 91 125 fall inom den
+föreslagna ramen ger fyra skilda svar; 20 250 angränsande kedjefall ger
+överlapp och hålls utanför den första särskiljande banken. Detta är en
+öppen, deterministisk kontroll, inte lärargodkännande eller blindtest.
+
 - Varje rad är ett explicit kandidat-ID inom en domän, inte en fastställd felförståelse eller NCM-diagnos. Samma ID kan förekomma i flera domäner.
 - 62 domän/modell-par har inventerats statiskt och fått minst ett beräknat exempel i en ändlig sökning med 8 500 konstruerade problem. Räknehäftets avvikelsesignal tillkommer separat.
 - **Probe** betyder att ett oanvänt exempel hittades i den lilla probelistan när bara en modell prövades. Det bevisar inte separation av samtidiga rivaler.

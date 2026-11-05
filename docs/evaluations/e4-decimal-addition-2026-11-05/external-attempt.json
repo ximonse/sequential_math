@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-05",
+  "provider": "Gemini CLI",
+  "purpose": "Synthetic blinded replay of four fictional subtraction profiles; public cases and a separate concealed key requested.",
+  "data": "Only fictional arithmetic operands and mathematical rules. No pupil records, source code or secrets in the task prompt.",
+  "isolation": "Separate temporary directory, plan mode, no extensions or MCP servers, admin policy denies every tool.",
+  "status": "authentication_failed_before_model_output",
+  "errorClass": "IneligibleTierError",
+  "reason": "The installed client is no longer eligible for Gemini Code Assist for individuals.",
+  "modelOutputReceived": false,
+  "blindTestPerformed": false,
+  "fallback": "Continue locally as previously instructed. Deterministic open-key mathematics checks are reported separately and never labelled a blind test."
+}

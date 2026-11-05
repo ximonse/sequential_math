@@ -1,9 +1,12 @@
 # E4: decimaladdition med två minnessiffror — godkänt paket
 
 Status 2026-11-05: **innehåll, avgränsning och undervisningsgång godkända av Simon
-genom ”Ja”. Paket och avgränsad regelutökning är lokalt byggda och verifierade; verifiering
-redovisas nedan. Inte publicerat.** Befintlig rapport-/materialkedja används;
+genom ”Ja”. Paket och avgränsad regelutökning är lokalt verifierade och därefter
+publicerade via PR #41, master `3a77fce`.** Befintlig rapport-/materialkedja används;
 elevträning, mastery och åtkomstpolicy är oförändrade.
+Se [publiceringskvittot](releases/2026-11-05-decimal-addition.md) för exakt
+Vercel-bygge, integrerad regression och inloggad skrivfri produktionspreview.
+De lokala verifieringsanteckningarna nedan beskriver läget före publiceringen.
 
 ## Luckan och rekommendationen
 

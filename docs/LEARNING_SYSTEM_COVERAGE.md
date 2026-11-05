@@ -49,7 +49,9 @@ modellsvar och `carry_forget` som rival. Kontroll av 91 125 fall inom den
 föreslagna ramen ger fyra skilda svar; 20 250 angränsande kedjefall ger
 överlapp och hålls utanför den första särskiljande banken. Dessa kontroller
 är öppna och deterministiska, inte blindtester; lärargodkännandet kommer
-från Simons separata beslut. Paketet är inte publicerat. Tabellen nedan
+från Simons separata beslut. Paketet är därefter publicerat via PR #41,
+master `3a77fce`; samtliga sju facit verifierade i inloggad skrivfri preview.
+Se [publiceringskvittot](releases/2026-11-05-decimal-addition.md). Tabellen nedan
 är fortsatt den daterade V7-inventeringen, inte en ny full inventering.
 
 - Varje rad är ett explicit kandidat-ID inom en domän, inte en fastställd felförståelse eller NCM-diagnos. Samma ID kan förekomma i flera domäner.

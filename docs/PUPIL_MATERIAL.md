@@ -6,6 +6,9 @@ oberoende minnessiffror får paketets bankväg; beroende kedjors överlapp får 
 döljas. Materialets rapport-/paketbindning, godkännande och historikskydd är
 samma som tidigare. Äldre material behåller frysta jämförelser, nya material
 kräver aktuell regelversion. Se `E4_DECIMAL_ADDITION_REVIEW.md`.
+Additionspaketet är därefter publicerat via PR #41; exakt produktion och
+skrivfri inloggad preview av sju facit är verifierade enligt
+`releases/2026-11-05-decimal-addition.md`. Ingen elevutdelning ingick i provet.
 
 Tillägg 2026-11-05: godkänt decimalsubtraktionspaket är lokalt integrerat med
 decimalmultiplikationspilotens befintliga rapport-/materialkedja. Samma

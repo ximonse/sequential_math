@@ -36,7 +36,10 @@ flera svar som nu bevaras i V9:s avgränsade decimalutökning. Simon har godkän
 paketet och undervisningsgången. Samma register, rapportavstämning och
 materialkedja används; inga nya uppdragslager eller tysta masteryändringar.
 Endast oberoende minnessiffror ger paketets bankväg; beroende kedjor bevaras
-som överlapp. Paketet är lokalt byggt, inte publicerat. E4 som helhet återstår.
+som överlapp. Paketet är därefter publicerat via PR #41, master `3a77fce`.
+[Kvittot](releases/2026-11-05-decimal-addition.md) redovisar integrerad regression,
+Vercels fördröjda systemkö, exakt produktionsbygge och skrivfri inloggad preview.
+Komplett produktionselevpilot/iPad och E4 som helhet återstår.
 
 Simon godkände innehåll och arbetsgång i
 [E4_DECIMAL_MULTIPLICATION_REVIEW.md](E4_DECIMAL_MULTIPLICATION_REVIEW.md).

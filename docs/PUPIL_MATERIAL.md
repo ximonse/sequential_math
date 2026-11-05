@@ -1,5 +1,13 @@
 # Generella och analysspecifika uppdrag och screeningar
 
+Tillägg 2026-11-05: godkänt decimalsubtraktionspaket är lokalt integrerat med
+decimalmultiplikationspilotens befintliga rapport-/materialkedja. Samma
+paketregister används av katalog, urval och undervisnings-/kontrollvy.
+Servern validerar källstruktur och paket-/noteringsversion; olika paket får
+inte blandas. V8 inför en avgränsad decimalrival. Äldre utdelade material
+behåller frysta modellsvar; nya utkast kräver aktuell regelversion.
+Se `E4_DECIMAL_SUBTRACTION_REVIEW.md` för omfattning och verifiering.
+
 Beslutad riktning 2026-10-28. Urvalsläsning och servervaliderad förhandsvisning
 är byggda lokalt, liksom versionerad utkastlagring och återläsning.
 Lärargranskning, versionsbundet godkännande och uttrycklig utdelning är också

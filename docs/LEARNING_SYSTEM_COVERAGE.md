@@ -24,6 +24,19 @@ och två åtskilda kontrollsteg. Den fyller luckan för
 Inga nya modell-ID:n eller generell domänfullständighet påstås. Tabellen nedan
 är fortfarande den frysta inventeringen från `82ab332`, inte en omkörning.
 
+Nästa paket 2026-11-05: [decimalsubtraktion med en växling](E4_DECIMAL_SUBTRACTION_REVIEW.md)
+har därefter godkänts av Simon och implementerats lokalt. V8 kompletterar
+`exchange_not_decremented` för två decimaler, ensiffriga heltalsdelar och en
+växling från tiondelar till hundradelar; ingen nollkedja eller växling över
+heltalsgränsen. Den nya bankvägen har två särskiljande frågor för var och en
+av `smaller_minus_larger`, `borrow_forget` och `exchange_not_decremented`.
+De tre modellerna finns också bland rättsvarsalternativen på negativkontrollen
+utan växling, så den kan inte avfärda dem. Ursprungstabellen är fortsatt
+den frysta V7-inventeringen. Inga nya modell-ID:n eller generellt decimalstöd
+införs. Decimalsubtraktionen är ännu inte publicerad. E1–E3 och den
+godkända decimalmultiplikationspiloten är publicerade enligt
+[kvittot](releases/2026-11-05-teacher-evidence-decimal-pilot.md).
+
 ## Läs tabellen rätt
 
 - Varje rad är ett explicit kandidat-ID inom en domän, inte en fastställd felförståelse eller NCM-diagnos. Samma ID kan förekomma i flera domäner.

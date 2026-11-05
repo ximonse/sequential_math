@@ -1,6 +1,9 @@
 # E4: första innehållspaketet att granska
 
-**Innehåll och arbetsgång godkända av Simon 2026-11-05 (”Kör på det”). Appintegration byggd och verifierad lokalt. Ingen produktion eller verklig elevutdelning.**
+**Innehåll och arbetsgång godkända av Simon 2026-11-05 (”Kör på det”). Appintegration byggd och verifierad lokalt; därefter publicerad via PR #39. Ingen verklig elevutdelning verifierad.**
+Se [publiceringskvittot](releases/2026-11-05-teacher-evidence-decimal-pilot.md)
+för exakt commit och gränserna för produktionskontrollen. Nedanstående lokala
+verifieringsanteckningar bevarar läget före publiceringen.
 Ordningen följer systemsyntesen: täpp en konkret lucka inom aritmetik före nya
 domäner. Befintlig v7 kan beräkna `decimal_parts_multiplied_separately`, men
 saknar granskade bankfrågor. Ingen ny modell eller diagnostisk tröskel föreslås.

@@ -1,9 +1,11 @@
 export const decimalMultiplicationPackage = {
   id: 'decimal-component-multiplication-pilot', version: 1,
   modelId: 'decimal_parts_multiplied_separately', approvedOn: '2026-11-05',
+  scope: 'multiplication', operationSv: 'decimalmultiplikation',
   labelSv: 'Heltal gånger decimaltal',
   teachingSv: 'Samtala om heltal och tiondelar. Exempel: 4 × 2,5 = 4 × (2 + 0,5) = 8 + 2. Be eleven förklara vad delarna betyder.',
   alternativesSv: 'Undersök också decimalförskjutning, annat räknesätt, avskrivning, hjälp och avbrott. Ett matchande slutsvar fastställer inte metoden.',
+  negativeControlSv: '2 × 3,4 = 6,8 skiljer inte komponentmodellen från rätt svar. Använd det inte som bevis för att misstanken är avfärdad.',
 }
 
 const definitions = [

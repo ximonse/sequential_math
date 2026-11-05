@@ -47,12 +47,12 @@ export default function ContrastFollowUp({ item, report, reportReview, studentId
   const [grid, setGrid] = useState(true)
   const [reopen, setReopen] = useState(false)
   const needsReopen = ['revised', 'rejected'].includes(reportReview?.decision)
-  const teachingPackage = didacticPackage(item.signalCode)
   const [state, setState] = useState({ busy: false, message: '', receipt: null })
   const [history, setHistory] = useState({ status: 'idle', keys: null, message: '' })
   const requestId = useRef(crypto.randomUUID())
   const supports = useMemo(() => item.supportRefs.map(ref => report.evidence.find(e => e.ref === ref))
     .filter(entry => entry && !isSpeedTrainingEntry(entry)), [item, report])
+  const teachingPackage = didacticPackage(item.signalCode, supports[0]?.interpretation?.predictable?.scope)
   const set = useMemo(() => history.keys && pupilFollowUpSelection({ modelId: item.signalCode, supports, entries: report.evidence,
     historyKeys: [...history.keys, ...(item.followUp?.history.excludedFingerprints ?? [])],
     history: { scope: 'source_period_and_screening_since_2024', completeness: 'indexed_screening_window_read_practice_unknown' } }),

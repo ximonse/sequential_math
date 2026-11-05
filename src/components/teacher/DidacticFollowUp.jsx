@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { decimalMultiplicationPackage as pack, decimalMultiplicationTasks } from '../../domains/arithmetic/decimalMultiplicationPackage.js'
+import { didacticDefinition } from '../../domains/arithmetic/didacticPackages.js'
 import { diagnosticRequest } from './sections/diagnosticRequest.js'
 import { stockholmDay } from '../../lib/evidencePeriod.js'
 import { readEvidenceWindow } from '../../lib/readEvidenceWindow.js'
@@ -14,7 +14,13 @@ async function call(url, body) {
 }
 const phaseLabel = { contrast: 'Prövning före undervisning', independent_check: 'Ny kontroll efter undervisning', later_check: 'Senare kontroll' }
 
-export default function DidacticFollowUp({ material, receipt, draftId, version, complete }) {
+export default function DidacticFollowUp(props) {
+  const definition = didacticDefinition(props.material.investigation.didactic.packageId)
+  if (!definition || definition.pack.version !== props.material.investigation.didactic.packageVersion) return <p>Detta didaktikpaket behöver granskas i rätt version innan nya kontroller kan skapas.</p>
+  return <DidacticPackageFlow key={`${definition.pack.id}:${definition.pack.version}`} {...props} pack={definition.pack} tasks={definition.tasks} />
+}
+
+function DidacticPackageFlow({ material, receipt, draftId, version, complete, pack, tasks }) {
   const intent = material.investigation, pupil = intent.pupils.find(pupil => pupil.studentId === receipt.studentId)
   const review = pupil?.reportReview
   const cacheKey = `${getTeacherApiToken()}:${draftId}:${version}:${receipt.studentId}`
@@ -34,7 +40,7 @@ export default function DidacticFollowUp({ material, receipt, draftId, version, 
   const base = `/api/teacher-students/${encodeURIComponent(receipt.studentId)}?classId=${encodeURIComponent(receipt.classId)}`
   const selected = history?.reports.find(report => report.id === review?.reportId)
   const latest = selected?.checkIns.at(-1)
-  const teachingCheck = selected?.checkIns.findLast(check => check.teaching?.kind === 'teaching' && check.teaching.hypothesisId === review?.hypothesisId && check.teaching.packageId === pack.id)
+  const teachingCheck = selected?.checkIns.findLast(check => check.teaching?.kind === 'teaching' && check.teaching.hypothesisId === review?.hypothesisId && check.teaching.packageId === pack.id && check.teaching.packageVersion === pack.version)
   const decision = latest?.decisions.find(decision => decision.hypothesisId === review?.hypothesisId)
   const needsReopen = ['revised', 'rejected'].includes(decision?.decision)
   const nextPhase = intent.didactic.phase === 'contrast' ? 'independent_check' : intent.didactic.phase === 'independent_check' ? 'later_check' : null
@@ -56,7 +62,7 @@ export default function DidacticFollowUp({ material, receipt, draftId, version, 
     try {
       pendingNote.current ||= { action: 'check_in', reportId: selected.id, expectedRevision: history.revision, requestId: crypto.randomUUID(),
         checkIn: { decisions: latest?.decisions || selected.report.hypotheses.map(h => ({ hypothesisId: h.id, decision: 'undecided', interpretationSv: '' })),
-          goalSv: latest?.goalSv || 'Följ upp decimalmultiplikation med nya frågor.', noteSv: latest?.noteSv || '',
+          goalSv: latest?.goalSv || `Följ upp ${pack.operationSv} med nya frågor.`, noteSv: latest?.noteSv || '',
           teaching: { hypothesisId: review.hypothesisId, packageId: pack.id, packageVersion: pack.version, draftId, materialVersion: version,
             taughtOn, help, noteSv: note, kind: intent.didactic.phase === 'contrast' ? 'teaching' : 'control_observation' } } }
       drafts.set(cacheKey, { note, help, taughtOn, pending: pendingNote.current })
@@ -80,8 +86,8 @@ export default function DidacticFollowUp({ material, receipt, draftId, version, 
           return fresh.ref
         })
         const audience = await call(`/api/students?${new URLSearchParams({ resource: 'audience', targetType: 'student', targetId: receipt.studentId, limit: '1' })}`)
-        const taskIds = decimalMultiplicationTasks.filter(task => task.didacticRole === nextPhase).map(task => task.taskId)
-        const input = { schemaVersion: 1, kind: 'screening', mode: 'specific', titleSv: nextPhase === 'independent_check' ? 'Ny kontroll: decimalmultiplikation' : 'Senare kontroll: decimalmultiplikation',
+        const taskIds = tasks.filter(task => task.didacticRole === nextPhase).map(task => task.taskId)
+        const input = { schemaVersion: 1, kind: 'screening', mode: 'specific', titleSv: `${nextPhase === 'independent_check' ? 'Ny kontroll' : 'Senare kontroll'}: ${pack.operationSv}`,
           goalSv: 'Undersök elevens sätt att räkna med en annan uppgift. Inga slutsatser om självständig förståelse dras automatiskt.',
           instructionSv: 'Räkna uppgiften. Visa hur du räknar i rutorna.', sourceMaterials: [],
           audience: { targetType: 'student', targetId: receipt.studentId, rosterRevision: audience.rosterRevision },
@@ -104,11 +110,11 @@ export default function DidacticFollowUp({ material, receipt, draftId, version, 
     <h4>{phaseLabel[intent.didactic.phase]}</h4>
     <p>{pack.alternativesSv}</p>
     <p>Rätta slutsvar visar inte i sig självständig förståelse. Samma fel bevisar inte återfall.</p>
-    <details><summary>Lärargranskat förslag till bemötande</summary><p>{pack.teachingSv}</p><p>2 × 3,4 = 6,8 skiljer inte komponentmodellen från rätt svar. Använd det inte som bevis för att misstanken är avfärdad.</p></details>
+    <details><summary>Lärargranskat förslag till bemötande</summary><p>{pack.teachingSv}</p><p>{pack.negativeControlSv}</p>{pack.scopeSv && <p>{pack.scopeSv}</p>}</details>
     {!review ? <p>En sparad rapport behövs för versionsbundna undervisningsnoteringar.</p> : <>
       <button type="button" disabled={busy} onClick={load}>Läs senaste avstämning</button>
       {selected && <>
-        {selected.checkIns.filter(check => check.teaching?.hypothesisId === review.hypothesisId).map(check => <p key={check.revision}>Avstämning {check.revision} · {check.teaching.kind === 'teaching' ? 'undervisning' : 'kontrollobservation'} {check.teaching.taughtOn} · {({ unknown: 'Hjälp okänd', given: 'Hjälp gavs', none_reported: 'Ingen hjälp enligt läraren' })[check.teaching.help]}: {check.teaching.noteSv}</p>)}
+        {selected.checkIns.filter(check => check.teaching?.hypothesisId === review.hypothesisId && check.teaching.packageId === pack.id && check.teaching.packageVersion === pack.version).map(check => <p key={check.revision}>Avstämning {check.revision} · {check.teaching.kind === 'teaching' ? 'undervisning' : 'kontrollobservation'} {check.teaching.taughtOn} · {({ unknown: 'Hjälp okänd', given: 'Hjälp gavs', none_reported: 'Ingen hjälp enligt läraren' })[check.teaching.help]}: {check.teaching.noteSv}</p>)}
         {intent.didactic.teaching && <p>Till denna kontroll hör undervisningsnotering {intent.didactic.teaching.checkInRevision}: {intent.didactic.teaching.noteSv}</p>}
         {!complete && <p>Prövningen är ännu inte fullständigt inlämnad och bedömd. Granska delresultaten innan nästa steg.</p>}
         <form aria-label="Undervisningsnotering" onSubmit={saveNote}>

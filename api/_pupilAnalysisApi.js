@@ -50,7 +50,8 @@ export async function pupilAnalysisAction(req, auth, studentId) {
       const material = draft.versions.find(item => item.version === note.materialVersion)?.material
       const pupil = material?.investigation?.pupils.find(pupil => pupil.studentId === studentId)
       const receipt = await readMaterialDispatch(draft, note.materialVersion)
-      if (material?.investigation?.didactic?.packageId !== note.packageId || !pupil
+      if (material?.investigation?.didactic?.packageId !== note.packageId
+        || material.investigation.didactic.packageVersion !== note.packageVersion || !pupil
         || note.kind !== (material.investigation.didactic.phase === 'contrast' ? 'teaching' : 'control_observation')
         || pupil.reportReview?.reportId !== target.id || pupil.reportReview?.hypothesisId !== note.hypothesisId
         || !receipt?.receipts.some(row => row.studentId === studentId && row.status === 'confirmed')) {

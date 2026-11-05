@@ -14,10 +14,14 @@ skiljer lokal verifiering, gröna CI-kontroller och publik produktionskontroll
 från ännu oprövad autentiserad användning och fysisk iPad. Lokala statusar
 nedan beskriver verifieringen före denna publicering.
 
-Nästa [granskningspaket för decimalsubtraktion](E4_DECIMAL_SUBTRACTION_REVIEW.md)
-är framtaget lokalt med sju kontrollerade exempel och två fyrvägskontraster.
-Ett källfelsvar överlappar en decimalrival som ännu saknas i kodmodellerna.
-Paket och föreslagen rivalutökning kräver lärargranskning före aktivering.
+[Decimalsubtraktionspaketet](E4_DECIMAL_SUBTRACTION_REVIEW.md) är därefter
+godkänt av Simon och lokalt implementerat med sju kontrollerade exempel och
+två fyrvägskontraster. V8 kompletterar den tidigare saknade decimalrivalen;
+källöverlapp och alla tre alternativa svar bevaras. Gemensamt paketregister,
+servervaliderad avgränsning och samma rapport-/materialkedja används för båda
+paketen. Ny undervisning och nya kontroller lagras fortsatt som befintliga
+rapportavstämningar och privata materialutkast. Detta tillägg är inte i PR #39
+eller produktion. Ingen generell E4-/domänfullständighet påstås.
 
 ### E4-pilot godkänd och lokalt implementerad 2026-11-05
 

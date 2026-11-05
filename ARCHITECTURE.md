@@ -16,6 +16,12 @@ undervisningsnoteringar i befintliga rapportavstämningar och nya kontrollutkast
 i samma materialkedja. Ingen parallell uppdragslagring eller elevprogression
 införs; andra domänpaket återstår.
 
+E4:s andra godkända paket, decimalsubtraktion med en växling, tillkommer lokalt
+2026-11-05. `didacticPackages.js` är gemensam katalog för de två paketen; samma
+rapport-/materialkedja används. V8 kompletterar en avgränsad decimalrival.
+Källstruktur, paket och noteringsversion valideras på servern; äldre utdelade
+material behåller frysta modellsvar. Se `docs/E4_DECIMAL_SUBTRACTION_REVIEW.md`.
+
 ## Lokal elevanalys via MCP
 
 `api/_teacherMaterialPreview.js` validerar generell eller analysspecifik

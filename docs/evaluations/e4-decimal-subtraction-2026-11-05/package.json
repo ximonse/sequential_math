@@ -1,17 +1,85 @@
 {
   "id": "decimal-single-exchange-subtraction-proposal",
   "version": 1,
-  "status": "teacher_review_required",
-  "modelIds": ["smaller_minus_larger", "borrow_forget"],
-  "manualRival": "exchange_not_decremented",
+  "status": "teacher_approved",
+  "modelIds": [
+    "smaller_minus_larger",
+    "borrow_forget",
+    "exchange_not_decremented"
+  ],
   "scope": "Two decimal places, nonnegative operands, exactly one exchange from tenths to hundredths; no exchange through zero or across the whole-number boundary.",
   "tasks": [
-    { "taskId": "draft-decimal-sub-source", "phase": "source_example", "a": "6.42", "b": "2.17", "correct": "4.25", "absoluteColumns": "4.35", "zeroColumn": "4.30", "undecrementedDonor": "4.35" },
-    { "taskId": "draft-decimal-sub-contrast-a", "phase": "contrast", "a": "7.53", "b": "2.19", "correct": "5.34", "absoluteColumns": "5.46", "zeroColumn": "5.40", "undecrementedDonor": "5.44" },
-    { "taskId": "draft-decimal-sub-contrast-b", "phase": "contrast", "a": "8.41", "b": "3.24", "correct": "5.17", "absoluteColumns": "5.23", "zeroColumn": "5.20", "undecrementedDonor": "5.27" },
-    { "taskId": "draft-decimal-sub-teaching", "phase": "teaching", "a": "5.32", "b": "1.18", "correct": "4.14", "absoluteColumns": "4.26", "zeroColumn": "4.20", "undecrementedDonor": "4.24" },
-    { "taskId": "draft-decimal-sub-immediate", "phase": "independent_check", "a": "9.54", "b": "4.28", "correct": "5.26", "absoluteColumns": "5.34", "zeroColumn": "5.30", "undecrementedDonor": "5.36" },
-    { "taskId": "draft-decimal-sub-delayed", "phase": "later_check", "a": "6.83", "b": "2.47", "correct": "4.36", "absoluteColumns": "4.44", "zeroColumn": "4.40", "undecrementedDonor": "4.46" },
-    { "taskId": "draft-decimal-sub-nondiscriminating", "phase": "negative_control", "a": "8.64", "b": "3.21", "correct": "5.43", "absoluteColumns": "5.43", "zeroColumn": "5.43", "undecrementedDonor": "5.43" }
-  ]
+    {
+      "taskId": "draft-decimal-sub-source",
+      "phase": "source_example",
+      "a": "6.42",
+      "b": "2.17",
+      "correct": "4.25",
+      "absoluteColumns": "4.35",
+      "zeroColumn": "4.30",
+      "undecrementedDonor": "4.35"
+    },
+    {
+      "taskId": "draft-decimal-sub-contrast-a",
+      "phase": "contrast",
+      "a": "7.53",
+      "b": "2.19",
+      "correct": "5.34",
+      "absoluteColumns": "5.46",
+      "zeroColumn": "5.40",
+      "undecrementedDonor": "5.44"
+    },
+    {
+      "taskId": "draft-decimal-sub-contrast-b",
+      "phase": "contrast",
+      "a": "8.41",
+      "b": "3.24",
+      "correct": "5.17",
+      "absoluteColumns": "5.23",
+      "zeroColumn": "5.20",
+      "undecrementedDonor": "5.27"
+    },
+    {
+      "taskId": "draft-decimal-sub-teaching",
+      "phase": "teaching",
+      "a": "5.32",
+      "b": "1.18",
+      "correct": "4.14",
+      "absoluteColumns": "4.26",
+      "zeroColumn": "4.20",
+      "undecrementedDonor": "4.24"
+    },
+    {
+      "taskId": "draft-decimal-sub-immediate",
+      "phase": "independent_check",
+      "a": "9.54",
+      "b": "4.28",
+      "correct": "5.26",
+      "absoluteColumns": "5.34",
+      "zeroColumn": "5.30",
+      "undecrementedDonor": "5.36"
+    },
+    {
+      "taskId": "draft-decimal-sub-delayed",
+      "phase": "later_check",
+      "a": "6.83",
+      "b": "2.47",
+      "correct": "4.36",
+      "absoluteColumns": "4.44",
+      "zeroColumn": "4.40",
+      "undecrementedDonor": "4.46"
+    },
+    {
+      "taskId": "draft-decimal-sub-nondiscriminating",
+      "phase": "negative_control",
+      "a": "8.64",
+      "b": "3.21",
+      "correct": "5.43",
+      "absoluteColumns": "5.43",
+      "zeroColumn": "5.43",
+      "undecrementedDonor": "5.43"
+    }
+  ],
+  "approvedOn": "2026-11-05",
+  "implementedRival": "exchange_not_decremented"
 }

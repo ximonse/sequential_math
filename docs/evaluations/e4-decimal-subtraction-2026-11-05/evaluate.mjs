@@ -1,6 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import assert from 'node:assert/strict'
 import { predictableCandidates, candidatesForEvidence } from '../../../src/domains/predictableErrors/index.js'
+import { decimalSubtractionPackage, decimalSubtractionTasks } from '../../../src/domains/arithmetic/decimalSubtractionPackage.js'
 import { buildContrastSet } from '../../../src/domains/predictableErrors/contrast.js'
 
 // Open-key synthetic mathematics checks, not a blind test or teacher approval.
@@ -29,22 +30,27 @@ for (const task of pack.tasks) {
   for (const key of ['correct', 'absoluteColumns', 'zeroColumn', 'undecrementedDonor']) assert.equal(cents(task[key]), expected[key])
   const right = predictableCandidates(problem(task), task.correct.replace('.', ','))
   assert.equal(right.status, 'correct')
-  const known = [['absoluteColumns', 'smaller_minus_larger'], ['zeroColumn', 'borrow_forget']]
+  const known = [['absoluteColumns', 'smaller_minus_larger'], ['zeroColumn', 'borrow_forget'], ['undecrementedDonor', 'exchange_not_decremented']]
   for (const [key, modelId] of known) {
     const result = predictableCandidates(problem(task), task[key])
     assert.equal(result.matches.some(match => match.modelId === modelId), expected.exchange)
     if (!expected.exchange) assert.ok(result.nonDiscriminatingModelIds.includes(modelId))
   }
-  // This plausible rival is implemented for integer subtraction, not decimals.
+  // The approved v8 decimal rival must now be calculated alongside the old rules.
   const rival = predictableCandidates(problem(task), task.undecrementedDonor)
-  assert.equal(rival.predictions.some(p => p.modelId === pack.manualRival), false)
+  assert.equal(rival.matches.some(p => p.modelId === pack.implementedRival), expected.exchange)
   for (const status of ['partial', 'unanswered']) {
     assert.equal(candidatesForEvidence({ question: { domain: 'arithmetic', operation: 'subtraction', values: problem(task).values },
       answer: { status, studentAnswer: task.absoluteColumns, correctAnswer: task.correct } }).status, 'not_applicable')
   }
   rows.push({ taskId: task.taskId, phase: task.phase, ...expected,
     sourceRivalOverlap: expected.exchange && expected.absoluteColumns === expected.undecrementedDonor,
-    manualRivalMatchedModelIds: rival.matches.map(match => match.modelId) })
+    implementedRivalMatchedModelIds: rival.matches.map(match => match.modelId) })
+}
+assert.equal(decimalSubtractionTasks.length, pack.tasks.length)
+for (const [index, task] of decimalSubtractionTasks.entries()) {
+  assert.deepEqual(task.operands, [Number(pack.tasks[index].a), Number(pack.tasks[index].b)])
+  assert.equal(task.didacticPackageId, decimalSubtractionPackage.id)
 }
 const source = pack.tasks.find(task => task.phase === 'source_example')
 assert.equal(oracle(source).absoluteColumns, oracle(source).undecrementedDonor)
@@ -63,9 +69,9 @@ const selections = pack.modelIds.map(modelId => {
 })
 await writeFile(new URL('./evidence.json', import.meta.url), JSON.stringify({
   packageId: pack.id, ruleVersion: predictableCandidates(problem(source), source.absoluteColumns).ruleVersion,
-  method: 'synthetic_deterministic_not_blind', teacherApproval: 'pending', productionIntegration: false,
+  method: 'synthetic_deterministic_not_blind', teacherApproval: 'approved_2026-11-05', applicationIntegration: true, productionIntegration: false,
   assertions: { independentIntegerHundredthsTasks: rows.length, correctAnswerControls: rows.length,
     nonMathematicalStatusControls: rows.length * 2, fourWayDistinctContrasts: contrasts.length },
-  answerUnits: 'integer_hundredths', missingDecimalRival: pack.manualRival, rows, selections,
+  answerUnits: 'integer_hundredths', implementedDecimalRival: pack.implementedRival, rows, selections,
 }, null, 2) + '\n')
-console.log(`Checked ${rows.length} proposed tasks, two four-way contrasts and the missing decimal rival. Teacher review pending; application bank unchanged.`)
+console.log(`Checked ${rows.length} approved tasks, two four-way contrasts and the implemented decimal rival. Application catalog matches; no production or pupil records changed.`)

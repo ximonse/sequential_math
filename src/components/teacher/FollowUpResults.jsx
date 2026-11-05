@@ -2,7 +2,7 @@ import ReportReviewNote from './ReportReviewNote.jsx'
 import WorkEvidenceNote from './WorkEvidenceNote.jsx'
 import { useEffect, useState } from 'react'
 import { CONTRAST_LABELS_SV } from '../../domains/predictableErrors/contrast.js'
-import { MODEL_DESCRIPTIONS } from '../../domains/predictableErrors/modelDescriptions.js'
+import { modelDescription } from '../../domains/predictableErrors/modelDescriptions.js'
 import { followUpSignal } from '../../lib/followUpSignal.js'
 import { followUpProgress, readFollowUpAnswers } from '../../lib/followUpResults.js'
 import { diagnosticRequest } from './sections/diagnosticRequest.js'
@@ -48,7 +48,8 @@ function FollowUpAnswers({ material, receipt, draftId, version }) {
     ? investigation?.pupils.find(pupil => pupil.studentId === studentId && pupil.classId === classId) : null
   const outcome = plan && investigationObservations(plan, state.entries)
   const observations = investigation && (!plan || !outcome.compatible) ? null : outcome?.observations || followUpSignal(state.entries)
-  const descriptions = (observations?.models || []).filter(model => model.count >= 2 && MODEL_DESCRIPTIONS[model.modelId])
+  const scope = state.entries[0]?.interpretation?.predictable?.scope
+  const descriptions = (observations?.models || []).filter(model => model.count >= 2 && modelDescription(model.modelId, scope))
   return <>
     <div className="material-actions"><button disabled={loading} onClick={() => setRefresh(value => value + 1)}>Hämta svar igen</button></div>
     {loading ? <p role="status">Hämtar elevens svar…</p> : state.status === 'error' ? <p role="status">{state.message}</p> : <>
@@ -87,7 +88,7 @@ function FollowUpAnswers({ material, receipt, draftId, version }) {
         </> : <p className="followup-note">Prövningsavsikt saknas för resultatet. Modellträffarna är observationer; samma svar kan passa flera förklaringar. Granska uträkningarna.</p>}
         <p className="followup-note">Inga tips ges i appens screening; eventuell annan hjälp är inte fastställd.</p>
         {descriptions.map(model => {
-          const description = MODEL_DESCRIPTIONS[model.modelId]
+          const description = modelDescription(model.modelId, scope)
           return <div className="followup-thinking" key={model.modelId}>
             <p><strong>Om den möjliga förklaringen: {label(model.modelId)}</strong></p><p>{description.thinkingSv}</p><p className="followup-note">{description.sourceSv}</p>
             <details><summary>Möjliga samtalsingångar</summary><ul>{description.openersSv.map(text => <li key={text}>{text}</li>)}</ul>

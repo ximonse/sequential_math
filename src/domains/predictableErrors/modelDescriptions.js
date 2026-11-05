@@ -8,6 +8,26 @@ const MUL_TWO = 'NCM-område AS7 (flersiffrig multiplikation, åk 7–9), förku
 const DIV = 'NCM-område AS5 (kort division), förkunskap AG8.'
 const WRITTEN_ADD = 'NCM-område AS1 (skriftlig addition), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20.'
 
+const DECIMAL_SUB = {
+  smaller_minus_larger: {
+    thinkingSv: 'Svaret kan räknas fram som större minus mindre i varje decimalkolumn. På källexemplet kan samma svar också komma från växling utan minskad tiondel.',
+    openersSv: ['Be eleven förklara vad tiondelarna och hundradelarna betyder och visa sin uträkning.'],
+  },
+  borrow_forget: {
+    thinkingSv: 'Svaret kan räknas fram genom att skriva noll i hundradelskolumnen när växling behövs och subtrahera övriga kolumner utan växling.',
+    openersSv: ['Be eleven förklara varför det blev noll och undersök om en tiondel kan bytas mot tio hundradelar.'],
+  },
+  exchange_not_decremented: {
+    thinkingSv: 'Svaret kan räknas fram genom att växla till tio extra hundradelar utan att minska tiondelen. Samma källfelsvar kan passa större minus mindre.',
+    openersSv: ['Fråga hur många tiondelar som är kvar när en tiondel har bytts mot tio hundradelar.'],
+  },
+}
+export function modelDescription(modelId, scope) {
+  return scope === 'decimal_subtraction' && DECIMAL_SUB[modelId]
+    ? { ...DECIMAL_SUB[modelId], sourceSv: 'Avgränsat decimalpaket och didaktiskt förslag granskat av Simon 2026-11-05. Modellträff är inte bevis på elevens metod.' }
+    : MODEL_DESCRIPTIONS[modelId]
+}
+
 export const MODEL_DESCRIPTIONS = {
   smaller_minus_larger: {
     thinkingSv: 'Eleven behandlar kolumnerna var för sig och tar den större siffran minus den mindre, ”störst minus minst” enligt NCM:s diagnos AS2. Växlingen saknas och svaret prövas inte mot talens värde.',

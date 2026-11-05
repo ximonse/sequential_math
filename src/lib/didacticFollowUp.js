@@ -1,12 +1,14 @@
-import { decimalMultiplicationPackage as pack, decimalMultiplicationTasks as tasks } from '../domains/arithmetic/decimalMultiplicationPackage.js'
+import { didacticDefinition, didacticForModel } from '../domains/arithmetic/didacticPackages.js'
 const fail = message => { throw Object.assign(new Error(message), { status: 400, code: 'invalid_didactic_followup' }) }
-export const didacticPackage = modelId => modelId === pack.modelId ? pack : null
+export const didacticPackage = (modelId, scope) => didacticForModel(modelId, scope)?.pack ?? null
+const supportsModel = (pack, modelId) => (pack.modelIds ?? [pack.modelId]).includes(modelId)
 
 export function validateTeachingRecord(input, report) {
+  const pack = didacticDefinition(input?.packageId)?.pack
   if (!input || Array.isArray(input) || Object.keys(input).some(key => !['hypothesisId', 'packageId', 'packageVersion', 'draftId', 'materialVersion', 'taughtOn', 'help', 'noteSv', 'kind'].includes(key))
     || !['teaching', 'control_observation'].includes(input.kind)
-    || input.packageId !== pack.id || input.packageVersion !== pack.version
-    || !report.hypotheses.some(h => h.id === input.hypothesisId && h.signalCode === pack.modelId)
+    || !pack || input.packageVersion !== pack.version
+    || !report.hypotheses.some(h => h.id === input.hypothesisId && supportsModel(pack, h.signalCode))
     || !/^[A-Za-z0-9_-]{1,128}$/u.test(input.draftId || '') || !Number.isSafeInteger(input.materialVersion) || input.materialVersion < 1
     || !/^\d{4}-\d{2}-\d{2}$/u.test(input.taughtOn || '') || !Number.isFinite(Date.parse(`${input.taughtOn}T12:00:00Z`))
     || new Date(`${input.taughtOn}T12:00:00Z`).toISOString().slice(0, 10) !== input.taughtOn
@@ -17,9 +19,13 @@ export function validateTeachingRecord(input, report) {
 
 export function resolveDidacticPlan(input, { reportState, reportReview, items, modelId }) {
   if (input !== undefined && (!input || typeof input !== 'object' || Array.isArray(input))) fail('Ogiltig didaktisk prövningsavsikt.')
-  const selected = items.filter(item => item.task?.didacticPackageId === pack.id)
+  const selected = items.filter(item => item.task?.didacticPackageId)
   if (!input && !selected.length) return null
-  if (modelId !== pack.modelId || !reportReview || selected.length !== items.length) fail('Paketets prövning behöver en sparad rapport och rätt modell.')
+  const definition = didacticDefinition(input?.packageId ?? selected[0]?.task.didacticPackageId)
+  if (!definition) fail('Okänt didaktikpaket.')
+  const { pack, tasks } = definition
+  if (!supportsModel(pack, modelId) || !reportReview || selected.length !== items.length
+    || selected.some(item => item.task.didacticPackageId !== pack.id)) fail('Paketets prövning behöver en sparad rapport och rätt modell.')
   const phase = input?.phase ?? 'contrast'
   if (input && (Object.keys(input).some(key => !['packageId', 'packageVersion', 'phase', 'teachingRevision'].includes(key))
     || input.packageId !== pack.id || input.packageVersion !== pack.version)) fail('Okänt didaktikpaket.')
@@ -31,11 +37,13 @@ export function resolveDidacticPlan(input, { reportState, reportReview, items, m
     const report = reportState?.reports.find(report => report.id === reportReview.reportId)
     const check = report?.checkIns.find(check => check.revision === input.teachingRevision)
     teaching = check?.teaching
-    if (!teaching || teaching.kind !== 'teaching' || teaching.hypothesisId !== reportReview.hypothesisId || teaching.packageId !== pack.id) fail('Spara en undervisningsnotering för denna hypotes före en ny kontroll.')
+    if (!teaching || teaching.kind !== 'teaching' || teaching.hypothesisId !== reportReview.hypothesisId
+      || teaching.packageId !== pack.id || teaching.packageVersion !== pack.version) fail('Spara en undervisningsnotering för denna hypotes före en ny kontroll.')
     teaching = { ...teaching, checkInRevision: check.revision, recordedAt: check.createdAt }
   }
   const controls = reportState?.reports.find(report => report.id === reportReview.reportId)?.checkIns
-    .filter(check => check.teaching?.kind === 'control_observation' && check.teaching.hypothesisId === reportReview.hypothesisId)
+    .filter(check => check.teaching?.kind === 'control_observation' && check.teaching.hypothesisId === reportReview.hypothesisId
+      && check.teaching.packageId === pack.id && check.teaching.packageVersion === pack.version)
     .map(check => ({ ...check.teaching, checkInRevision: check.revision })) || []
   return { packageId: pack.id, packageVersion: pack.version, phase, ...(teaching ? { teaching } : {}), controlObservations: controls }
 }

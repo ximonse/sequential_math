@@ -1,0 +1,134 @@
+{
+  "packageId": "decimal-single-exchange-subtraction-proposal",
+  "ruleVersion": "predictable-errors-v8",
+  "method": "synthetic_deterministic_not_blind",
+  "teacherApproval": "approved_2026-11-05",
+  "applicationIntegration": true,
+  "productionIntegration": false,
+  "assertions": {
+    "independentIntegerHundredthsTasks": 7,
+    "correctAnswerControls": 7,
+    "nonMathematicalStatusControls": 14,
+    "fourWayDistinctContrasts": 2
+  },
+  "answerUnits": "integer_hundredths",
+  "implementedDecimalRival": "exchange_not_decremented",
+  "rows": [
+    {
+      "taskId": "draft-decimal-sub-source",
+      "phase": "source_example",
+      "correct": 425,
+      "absoluteColumns": 435,
+      "zeroColumn": 430,
+      "undecrementedDonor": 435,
+      "exchange": true,
+      "sourceRivalOverlap": true,
+      "implementedRivalMatchedModelIds": [
+        "smaller_minus_larger",
+        "exchange_not_decremented"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-sub-contrast-a",
+      "phase": "contrast",
+      "correct": 534,
+      "absoluteColumns": 546,
+      "zeroColumn": 540,
+      "undecrementedDonor": 544,
+      "exchange": true,
+      "sourceRivalOverlap": false,
+      "implementedRivalMatchedModelIds": [
+        "exchange_not_decremented"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-sub-contrast-b",
+      "phase": "contrast",
+      "correct": 517,
+      "absoluteColumns": 523,
+      "zeroColumn": 520,
+      "undecrementedDonor": 527,
+      "exchange": true,
+      "sourceRivalOverlap": false,
+      "implementedRivalMatchedModelIds": [
+        "exchange_not_decremented"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-sub-teaching",
+      "phase": "teaching",
+      "correct": 414,
+      "absoluteColumns": 426,
+      "zeroColumn": 420,
+      "undecrementedDonor": 424,
+      "exchange": true,
+      "sourceRivalOverlap": false,
+      "implementedRivalMatchedModelIds": [
+        "exchange_not_decremented"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-sub-immediate",
+      "phase": "independent_check",
+      "correct": 526,
+      "absoluteColumns": 534,
+      "zeroColumn": 530,
+      "undecrementedDonor": 536,
+      "exchange": true,
+      "sourceRivalOverlap": false,
+      "implementedRivalMatchedModelIds": [
+        "exchange_not_decremented"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-sub-delayed",
+      "phase": "later_check",
+      "correct": 436,
+      "absoluteColumns": 444,
+      "zeroColumn": 440,
+      "undecrementedDonor": 446,
+      "exchange": true,
+      "sourceRivalOverlap": false,
+      "implementedRivalMatchedModelIds": [
+        "exchange_not_decremented"
+      ]
+    },
+    {
+      "taskId": "draft-decimal-sub-nondiscriminating",
+      "phase": "negative_control",
+      "correct": 543,
+      "absoluteColumns": 543,
+      "zeroColumn": 543,
+      "undecrementedDonor": 543,
+      "exchange": false,
+      "sourceRivalOverlap": false,
+      "implementedRivalMatchedModelIds": []
+    }
+  ],
+  "selections": [
+    {
+      "modelId": "smaller_minus_larger",
+      "taskIds": [
+        "draft-decimal-sub-contrast-a",
+        "draft-decimal-sub-contrast-b"
+      ],
+      "unresolved": []
+    },
+    {
+      "modelId": "borrow_forget",
+      "taskIds": [
+        "draft-decimal-sub-contrast-a",
+        "draft-decimal-sub-contrast-b"
+      ],
+      "unresolved": []
+    },
+    {
+      "modelId": "exchange_not_decremented",
+      "taskIds": [
+        "draft-decimal-sub-contrast-a",
+        "draft-decimal-sub-contrast-b"
+      ],
+      "unresolved": []
+    }
+  ]
+}

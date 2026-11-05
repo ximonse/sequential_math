@@ -5,6 +5,7 @@ import { subtractionCandidates } from '../arithmetic/subtractionCandidates.js'
 import { divRemainderAsOnes, divRemainderIgnored, divZeroDropped, mulCarryAddedBefore, mulCarryAlwaysOne, mulCarryForgotten, mulColumnwise, mulPartialsConcatenated, mulRows } from './writtenMulDiv.js'
 import { addLeftToRight, subLeftToRight } from './leftToRight.js'
 import { candidateResult, entryAndNearMissPredictions, prediction, unavailable, numeric } from './core.js'
+import { decimalSubtractionStructure } from '../arithmetic/decimalSubtractionPackage.js'
 
 // Columns (0 = ones) that receive a carry in a whole-number addition.
 function carryColumns(a, b) {
@@ -30,7 +31,7 @@ export function arithmeticCandidates(problem, answer) {
   if (a === null || b === null || Math.abs(a) > 10000 || Math.abs(b) > 10000) return unavailable('arithmetic')
   if (!['addition', 'subtraction', 'multiplication', 'division'].includes(op) || (op === 'division' && b === 0)
     || (op === 'subtraction' && (a < 0 || b < 0 || a < b))) return unavailable('arithmetic')
-  const correct = op === 'addition' ? a + b : op === 'subtraction' ? a - b : op === 'multiplication' ? a * b : a / b
+  let correct = op === 'addition' ? a + b : op === 'subtraction' ? a - b : op === 'multiplication' ? a * b : a / b
   const predictions = [prediction('operation_swap', getSwapAnswer(op, a, b), 'Svaret matchar det alternativa räknesättets beräkning; orsaken är inte fastställd.')]
   const decimals = !Number.isInteger(a) || !Number.isInteger(b)
   if (op === 'subtraction' && !decimals) {
@@ -47,9 +48,18 @@ export function arithmeticCandidates(problem, answer) {
       const scale = 10 ** places, aa = Math.round(a * scale), bb = Math.round(b * scale)
       if (op === 'addition') predictions.push(prediction('carry_forget', digitByDigitSum(aa, bb) / scale,
         'Svaret matchar platsjusterade decimalkolumner utan överförd minnessiffra.'))
-      else predictions.push(prediction('smaller_minus_larger', digitByDigitAbsDiff(aa, bb) / scale,
+      else {
+        predictions.push(prediction('smaller_minus_larger', digitByDigitAbsDiff(aa, bb) / scale,
         'Svaret matchar större minus mindre i platsjusterade decimalkolumner.'),
-      prediction('borrow_forget', predictNoBorrowAnswer(aa, bb) / scale, 'Svaret matchar noll där växling krävs i platsjusterade decimalkolumner.'))
+        prediction('borrow_forget', predictNoBorrowAnswer(aa, bb) / scale, 'Svaret matchar noll där växling krävs i platsjusterade decimalkolumner.'))
+        // Approved decimal pilot: two places, at most one exchange from tenths
+        // to hundredths; no zero chain or exchange across the whole boundary.
+        if (decimalSubtractionStructure({ a, b })) {
+          correct = (aa - bb) / scale
+          predictions.push(prediction('exchange_not_decremented', predictExchangeNotDecremented(aa, bb) / scale,
+            'Svaret matchar en växling från tiondelar till hundradelar utan att tiondelen minskas.'))
+        }
+      }
     }
   }
   if (op === 'addition' && [a, b].every(n => Number.isSafeInteger(n) && n >= 0)) {

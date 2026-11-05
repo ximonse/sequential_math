@@ -5,6 +5,7 @@ import { evidenceProblem } from './evidencePredictableAnalysis.js'
 import { INPUT_SIGNAL_MODELS, isSpeedTrainingEntry } from './practiceModes.js'
 import { followUpSignal } from './followUpSignal.js'
 import { resolveDidacticPlan } from './didacticFollowUp.js'
+import { didacticSupportsProblem } from '../domains/arithmetic/didacticPackages.js'
 
 const fail = message => { throw Object.assign(new Error(message), { status: 400, code: 'invalid_investigation' }) }
 const same = (question, left, right) => matchesComputedCorrect({ ...question, computedCorrect: left }, right)
@@ -31,6 +32,7 @@ export function buildMaterialInvestigation(input, { kind, mode, audience, classC
       || !entry.interpretation.predictable.matches.some(model => model.modelId === input.modelId))) fail('Målmodellen måste vara beräknad i varje stödsvar.')
     if (supports.every(isSpeedTrainingEntry)) fail('Snabbhetsträning ger inte automatiskt kontrastfrågor. Granska underlaget och välj screening separat.')
     const problems = supports.map(evidenceProblem)
+    if (didactic && problems.some(problem => !didacticSupportsProblem(didactic.packageId, problem))) fail('Källuppgifterna ligger utanför didaktikpaketets granskade avgränsning.')
     const scope = supports[0].interpretation.predictable
     if (supports.some(entry => entry.interpretation.predictable.domain !== scope.domain
       || entry.interpretation.predictable.scope !== scope.scope)) fail('Stödsvaren måste pröva samma avgränsade innehåll.')

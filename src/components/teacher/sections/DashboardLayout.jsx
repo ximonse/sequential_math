@@ -281,7 +281,7 @@ export default function DashboardLayout({
   const isScreening = activeWorkspace === 'ncm' || activeWorkspace === 'ncm-results'
 
   function renderPanelContent(id) {
-    if (historyState && historyState.status !== 'ready'
+    if (historyState && historyState.status !== 'ready' && !historyState.hasData
       && ['overview', 'mastery', 'tableoverview', 'heatmap', 'detail', 'results', 'difficulty-analysis', 'training-priority', 'inactivity', 'tabledev', 'support', 'dataquality'].includes(id)) {
       return null
     }
@@ -539,9 +539,9 @@ export default function DashboardLayout({
     classNameById={classNameById}
     onPickPupil={pupil => handleOpenStudentDetail(pupil.studentId)}
   />
-  const classStatsPanel = <ClassStatsCards classStats={historyState && historyState.status !== 'ready'
+  const classStatsPanel = <ClassStatsCards classStats={historyState && historyState.status !== 'ready' && !historyState.hasData
     ? { totalStudents: '–', activeToday: '–', activeThisWeek: '–' } : classStats}
-    supportCount={historyState && historyState.status !== 'ready' ? '–' : supportRows.length} />
+    supportCount={historyState && historyState.status !== 'ready' && !historyState.hasData ? '–' : supportRows.length} />
 
   return (
     <div data-teacher-workspace={activeWorkspace} data-teacher-admin="" className={`teacher-dashboard-surface min-h-screen pb-5 pt-14 sm:pb-6 sm:pt-16 ${surfaceClass}`}>
@@ -593,7 +593,8 @@ export default function DashboardLayout({
             {!isScreening && !['admin', 'focus'].includes(activeWorkspace) && <div data-history-state={historyState?.status || 'ready'}
               hidden={!historyState || historyState.status === 'ready'} role="status" className="text-sm text-gray-700">
               {historyState?.status === 'idle' ? 'Välj klass, grupp eller sök en elev för att se resultat.'
-                : historyState?.status === 'error' ? historyState.error : 'Hämtar elevresultat…'}
+                : historyState?.status === 'error' ? `${historyState.error}${historyState.hasData ? ' Tidigare hämtade resultat visas.' : ''}`
+                  : historyState?.hasData ? 'Uppdaterar elevresultat… Tidigare hämtade resultat visas.' : 'Hämtar elevresultat…'}
               {historyState?.status === 'error' && <button type="button" onClick={onRetryHistory}
                 className="ml-2 rounded border border-gray-300 px-1.5 py-0.5 text-sm">Försök hämta resultaten igen</button>}
             </div>}

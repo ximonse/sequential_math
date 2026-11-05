@@ -2,6 +2,77 @@ import { test, expect } from '@playwright/test'
 import { createPupil } from './lib/app.js'
 import { createTeacher, teacherLogin, openTab, selectOnlyClass } from './lib/teacher.js'
 
+test('Framsteg behåller elever och sortering under långsam bakgrundsuppdatering', async ({ page, request }) => {
+  const tag = Math.random().toString(36).slice(2, 7)
+  const klass = { id: `refresh-${tag}`, name: `Uppdatering ${tag}` }
+  const pupil = await createPupil(request, { name: `Anna ${tag}`, classId: klass.id, className: klass.name })
+  const teacher = await createTeacher(request, { classIds: [klass.id] })
+  await page.clock.install({ time: new Date('2026-11-05T10:00:00+01:00') })
+  await teacherLogin(page, teacher)
+  await selectOnlyClass(page, klass.name)
+  await openTab(page, 'Framsteg')
+  const panel = page.locator('#progress-panel-mastery')
+  await expect(panel.getByRole('button', { name: pupil.loginCode, exact: true })).toBeVisible()
+  await panel.getByRole('button', { name: /^Elev:/ }).click()
+  let release
+  const blocked = new Promise(resolve => { release = resolve })
+  let started
+  const requested = new Promise(resolve => { started = resolve })
+  await page.route('**/api/students?*', async route => {
+    if (new URL(route.request().url()).searchParams.has('classIds')) {
+      started()
+      await blocked
+    }
+    await route.continue()
+  })
+  try {
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')))
+    await requested
+    await expect(panel.getByRole('button', { name: pupil.loginCode, exact: true })).toBeVisible()
+    await expect(panel.getByRole('button', { name: /^Elev: övat mest/ })).toBeVisible()
+    await expect(page.locator('[data-history-state]')).toContainText('Uppdaterar')
+  } finally { release() }
+  await expect(page.locator('[data-history-state]')).toHaveAttribute('data-history-state', 'ready')
+  await expect(panel.getByRole('button', { name: pupil.loginCode, exact: true })).toBeVisible()
+})
+
+test('Nivåöversikt växlar Elev mellan namn, övning, snitt och total och behåller områdessortering', async ({ page, request }, testInfo) => {
+  const tag = Math.random().toString(36).slice(2, 7)
+  const klass = { id: `level-sort-${tag}`, name: `Nivåsortering ${tag}` }
+  const pupils = []
+  for (const name of ['Anna', 'Bertil', 'Cecilia', 'Dani']) pupils.push(await createPupil(request, { name: `${name} ${tag}`, classId: klass.id, className: klass.name }))
+  const levels = value => Object.fromEntries(['addition', 'subtraction', 'multiplication', 'division'].map(op => [op, value]))
+  const evidence = [levels(2), levels(8), { ...levels(6), number_bonds: 12, doubles: 12 }, {}]
+  await page.route('**/api/students?*', async route => {
+    const response = await route.fetch()
+    const data = await response.json()
+    if (Array.isArray(data.profiles)) data.profiles = data.profiles.map(profile => {
+      const index = pupils.findIndex(pupil => pupil.studentId === profile.studentId)
+      return index < 0 ? profile : { ...profile, stats: { ...profile.stats, lifetimeProblems: [1000,30,40,0][index] },
+        teacherSummary: { ...profile.teacherSummary, effectiveLevels: evidence[index] } }
+    })
+    await route.fulfill({ response, json: data })
+  })
+  const teacher = await createTeacher(request, { classIds: [klass.id] })
+  await teacherLogin(page, teacher)
+  await selectOnlyClass(page, klass.name)
+  await openTab(page, 'Framsteg')
+  const panel = page.locator('#progress-panel-mastery')
+  const names = () => panel.locator('tbody tr td:first-child button').allTextContents()
+  const expected = indices => indices.map(index => pupils[index].loginCode)
+  await expect.poll(names).toEqual(expected([0,1,2,3]))
+  for (const [label, order] of [['övat mest',[0,2,1,3]], ['bäst snitt',[1,2,0,3]], ['mest totalt',[2,1,0,3]], ['namn',[0,1,2,3]]]) {
+    await panel.getByRole('button', { name: /^Elev:/ }).click()
+    await expect(panel.getByRole('button', { name: new RegExp(`^Elev: ${label}`) })).toBeVisible()
+    await expect.poll(names).toEqual(expected(order))
+    if (label === 'mest totalt') await panel.screenshot({ path: testInfo.outputPath('mastery-total-sort.png') })
+  }
+  await panel.getByRole('button', { name: '+', exact: true }).click()
+  await expect.poll(names).toEqual(expected([1,2,0,3]))
+  await panel.getByRole('button', { name: /^Elev:/ }).click()
+  await expect.poll(names).toEqual(expected([0,1,2,3]))
+})
+
 test('Klassurval: valda klasser är tydligt gröna och behålls när Framsteg öppnas', async ({ page, request }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 7)
   const classes = ['A', 'B'].map(letter => ({ id: `sort-${tag}-${letter}`, name: `Sortklass ${letter} ${tag}` }))

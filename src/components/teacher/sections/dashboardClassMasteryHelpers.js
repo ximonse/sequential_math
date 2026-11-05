@@ -30,10 +30,35 @@ export function buildClassMasteryRows(filteredStudents) {
       className: student.className || '',
       levels,
       average,
+      practiced: student.catalogOnly ? null : Math.max(0, Number(student.stats?.lifetimeProblems) || 0, Number(student.stats?.totalProblems) || 0, getPreferredProblemSource(student).length),
+      total: knownValues.length ? knownValues.reduce((sum, level) => sum + level, 0) : null,
       lowest,
       knownCount: coreKnownCount,
       totalCount: STANDARD_OPERATIONS.length
     }
+  })
+}
+
+export const CLASS_MASTERY_SORTS = [
+  { key: 'name', label: 'namn' },
+  { key: 'practiced', label: 'övat mest' },
+  { key: 'average', label: 'bäst snitt' },
+  { key: 'total', label: 'mest totalt' }
+]
+
+export function nextClassMasterySort(current) {
+  return CLASS_MASTERY_SORTS[(CLASS_MASTERY_SORTS.findIndex(item => item.key === current) + 1) % CLASS_MASTERY_SORTS.length]
+}
+
+export function sortClassMasteryRows(rows, sortBy, sortDir) {
+  return [...rows].sort((a, b) => {
+    const byName = String(a.name || '').localeCompare(String(b.name || ''), 'sv')
+      || String(a.studentId).localeCompare(String(b.studentId), 'sv')
+    if (sortBy === 'name') return sortDir === 'asc' ? byName : -byName
+    const aVal = a[sortBy] ?? a.levels[sortBy], bVal = b[sortBy] ?? b.levels[sortBy]
+    if (!Number.isFinite(aVal)) return Number.isFinite(bVal) ? 1 : byName
+    if (!Number.isFinite(bVal)) return -1
+    return (sortDir === 'asc' ? aVal - bVal : bVal - aVal) || byName
   })
 }
 

@@ -5,6 +5,9 @@ import {
   buildClassMasteryAverages,
   buildClassMasteryExportRows,
   buildClassMasteryRows,
+  CLASS_MASTERY_SORTS,
+  nextClassMasterySort,
+  sortClassMasteryRows,
   getLevelDotStyle,
   getAverageBadgeStyle
 } from './dashboardClassMasteryHelpers'
@@ -40,8 +43,8 @@ export default function ClassMasteryLevelPanel({
   onOpenStudentDetail,
   collapseControl
 }) {
-  const [sortBy, setSortBy] = useState('average')
-  const [sortDir, setSortDir] = useState('desc')
+  const [sortBy, setSortBy] = useState('name')
+  const [sortDir, setSortDir] = useState('asc')
 
   const rows = useMemo(
     () => buildClassMasteryRows(filteredStudents),
@@ -52,22 +55,13 @@ export default function ClassMasteryLevelPanel({
     return buildClassMasteryAverages(rows)
   }, [rows])
 
-  const sortedRows = useMemo(() => {
-    const sorted = [...rows].sort((a, b) => {
-      if (sortBy === 'name') {
-        const cmp = String(a.name || '').localeCompare(String(b.name || ''), 'sv')
-        return sortDir === 'asc' ? cmp : -cmp
-      }
-      let aVal, bVal
-      if (sortBy === 'average') { aVal = a.average; bVal = b.average }
-      else if (sortBy === 'lowest') { aVal = a.lowest; bVal = b.lowest }
-      else { aVal = a.levels[sortBy]; bVal = b.levels[sortBy] }
-      if (!Number.isFinite(aVal)) return Number.isFinite(bVal) ? 1 : 0
-      if (!Number.isFinite(bVal)) return -1
-      return sortDir === 'asc' ? aVal - bVal : bVal - aVal
-    })
-    return sorted
-  }, [rows, sortBy, sortDir])
+  const sortedRows = useMemo(() => sortClassMasteryRows(rows, sortBy, sortDir), [rows, sortBy, sortDir])
+  const studentSort = CLASS_MASTERY_SORTS.find(item => item.key === sortBy)
+  const nextStudentSort = nextClassMasterySort(sortBy)
+  const cycleStudentSort = () => {
+    setSortBy(nextStudentSort.key)
+    setSortDir(nextStudentSort.key === 'name' ? 'asc' : 'desc')
+  }
 
   const handleSort = (column) => {
     if (sortBy === column) {
@@ -138,11 +132,14 @@ export default function ClassMasteryLevelPanel({
           <thead>
             <tr className="border-b-2 border-gray-200 bg-gray-50/80">
               <HeaderCell
-                label="Elev"
+                label={`Elev${studentSort ? ` · ${studentSort.label}` : ''}`}
                 column="name"
-                active={sortBy === 'name'}
-                arrow={sortArrow('name')}
-                onClick={handleSort}
+                active={Boolean(studentSort)}
+                arrow={studentSort ? sortArrow(sortBy) : null}
+                onClick={cycleStudentSort}
+                ariaLabel={`Elev: ${studentSort?.label || 'områdessortering'}. Nästa: ${nextStudentSort.label}`}
+                ariaSort={studentSort ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+                title="Växla namn → övat mest (antal svar) → bäst snitt (+*/) → mest totalt (summa belagda nivåer)"
                 className="text-left min-w-36 pl-3"
               />
               {ALL_OPERATIONS.map(op => (
@@ -191,6 +188,11 @@ export default function ClassMasteryLevelPanel({
                   >
                     {row.name}
                   </button>
+                  {studentSort && sortBy !== 'name' && <span className="text-[10px] text-gray-500">
+                    {sortBy === 'practiced' ? `${row.practiced ?? '–'} svar`
+                      : sortBy === 'total' ? `${row.total ?? '–'} nivåer totalt`
+                        : `Snitt ${row.average === null ? '–' : row.average.toFixed(1)}`}
+                  </span>}
                 </td>
                 {ALL_OPERATIONS.map(op => {
                   const level = row.levels[op]
@@ -275,14 +277,14 @@ function BadgeDot({ value, decimal = false, tooltip = '' }) {
   )
 }
 
-function HeaderCell({ label, column, active, arrow, onClick, className = '', title = '' }) {
+function HeaderCell({ label, column, active, arrow, onClick, className = '', title = '', ariaLabel, ariaSort }) {
   return (
     <th
       className={`py-2 px-1 text-[11px] font-semibold cursor-pointer select-none whitespace-nowrap border-b-2 transition-colors ${className} ${active ? 'border-gray-800 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
-      onClick={() => onClick(column)}
+      aria-sort={ariaSort}
       title={title || label}
     >
-      {label}{arrow}
+      <button type="button" aria-label={ariaLabel} className="whitespace-nowrap text-inherit" onClick={() => onClick(column)}>{label}{arrow}</button>
     </th>
   )
 }

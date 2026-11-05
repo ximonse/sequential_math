@@ -1,5 +1,24 @@
 import { describe, expect, it } from 'vitest'
-import { buildClassMasteryAverages, buildClassMasteryExportRows, buildClassMasteryRows } from './dashboardClassMasteryHelpers'
+import { buildClassMasteryAverages, buildClassMasteryExportRows, buildClassMasteryRows, nextClassMasterySort, sortClassMasteryRows } from './dashboardClassMasteryHelpers'
+
+it('cycles name, lifetime practice, basic-operation mean and total attained levels, with unknowns last', () => {
+  const levels = value => Object.fromEntries(['addition', 'subtraction', 'multiplication', 'division'].map(op => [op, value]))
+  const rows = buildClassMasteryRows([
+    { studentId: 'A', name: 'Anna', stats: { lifetimeProblems: 1000, totalProblems: 250 }, teacherSummary: { effectiveLevels: levels(2) } },
+    { studentId: 'B', name: 'Bertil', stats: { lifetimeProblems: 30 }, teacherSummary: { effectiveLevels: levels(8) } },
+    { studentId: 'C', name: 'Cecilia', stats: { lifetimeProblems: 40 }, teacherSummary: { effectiveLevels: { ...levels(6), number_bonds: 12, doubles: 12 } } },
+    { studentId: 'D', name: 'Dani', teacherSummary: { effectiveLevels: {} } }
+  ])
+  const order = (key, direction = 'desc') => sortClassMasteryRows(rows, key, direction).map(row => row.studentId)
+  expect(order('name', 'asc')).toEqual(['A', 'B', 'C', 'D'])
+  expect(order('practiced')).toEqual(['A', 'C', 'B', 'D'])
+  expect(order('average')).toEqual(['B', 'C', 'A', 'D'])
+  expect(order('total')).toEqual(['C', 'B', 'A', 'D'])
+  expect(rows[0].practiced).toBe(1000)
+  expect(rows[3].average).toBeNull()
+  expect(rows[3].total).toBeNull()
+  expect(['name', 'practiced', 'average', 'total', 'multiplication'].map(key => nextClassMasterySort(key).key)).toEqual(['practiced', 'average', 'total', 'name', 'name'])
+})
 
 describe('class mastery meaning', () => {
   it('requires all four basic operations before showing their average', () => {

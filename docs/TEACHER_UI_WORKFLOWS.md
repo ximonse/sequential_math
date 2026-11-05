@@ -194,3 +194,23 @@ Klass-/gruppurvalets valda knappar har grön bakgrund, mörkgrön text och en
 bock i alla teman, även hög kontrast. `aria-pressed` anger valt tillstånd.
 Urvalslogiken och sparade klassval ändras inte. Det generella knappskalets
 neutrala färger omfattar inte längre dessa valmarkeringar.
+
+## Framsteg: nivåöversikt och uppdatering
+
+I Nivåöversikt – hela klassen växlar Elev mellan namn, övat mest, bäst snitt
+och mest totalt. Namn sorteras alfabetiskt, övriga mått högst först. Övat
+mest betyder antal besvarade uppgifter i profilens registrerade historik
+(livstidsräknaren när den finns). Bäst snitt använder det befintliga
+genomsnittet för de fyra grundräknesätten och kräver belagd nivå i alla fyra.
+Mest totalt summerar belagda nivåer i samtliga områden som översikten visar.
+Saknat nivåunderlag sorteras sist och visas som streck. Aktuellt mått och
+värde syns vid namnkolumnen; enskilda områdens sortering och elevdetaljer
+behåller sin funktion. Klick på Elev efter områdessortering börjar med namn.
+
+Vid bakgrundsuppdatering behålls redan hämtade resultat och panelernas
+sortering för exakt samma klass-/grupp-/elevurval. En statusrad visar att
+uppdatering pågår. Ett övergående resultatfel visar tidigare hämtat underlag
+med tydlig feltext och möjlighet till återförsök. Byte av urval visar aldrig
+föregående urvals resultat. En ny elevkatalog styr aktuella medlemskap;
+katalog-/behörighetsfel tömmer fortfarande data, och sena svar från äldre
+hämtningar ignoreras. Detta är visningsbeteende och ändrar inga elevresultat.

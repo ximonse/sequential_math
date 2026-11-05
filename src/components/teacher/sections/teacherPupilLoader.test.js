@@ -3,6 +3,30 @@ import { createTeacherPupilLoader } from './teacherPupilLoader'
 
 const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no }); return { promise, resolve, reject } }
 const catalog = ['A', 'B'].map(id => ({ studentId: id, classId: id, catalogOnly: true }))
+it('retains results for a successfully loaded scope during refresh and a transient history error, but never for another scope', async () => {
+  const slow = deferred()
+  const request = vi.fn().mockResolvedValueOnce([{ studentId: 'A', classId: 'A', stats: { totalProblems: 25 }, teacherSummary: { effectiveLevels: { addition: 3 } } }])
+    .mockReturnValueOnce(slow.promise).mockRejectedValueOnce(Error('Network'))
+  const { loader, publish, onState } = fixture(request)
+  await loader.replaceCatalog(catalog)
+  await loader.select({ classIds: ['A'] })
+  const refresh = loader.replaceCatalog(catalog)
+  expect(onState.mock.lastCall[0]).toMatchObject({ status: 'loading', hasData: true })
+  expect(publish.mock.lastCall[0][0]).toMatchObject({ catalogOnly: false, stats: { totalProblems: 25 }, teacherSummary: { effectiveLevels: { addition: 3 } } })
+  slow.reject(Error('Offline')); await refresh
+  expect(onState.mock.lastCall[0]).toMatchObject({ status: 'error', hasData: true })
+  await loader.select({ classIds: ['B'] })
+  expect(onState.mock.lastCall[0]).toMatchObject({ status: 'error', hasData: false })
+  expect(publish.mock.lastCall[0].every(profile => profile.catalogOnly)).toBe(true)
+})
+
+it('does not retain results for members removed from a refreshed catalog', async () => {
+  const { loader, publish } = fixture(vi.fn().mockResolvedValueOnce([{ studentId: 'A', classId: 'A', recentProblems: ['A'] }]).mockResolvedValueOnce([]))
+  await loader.replaceCatalog(catalog)
+  await loader.select({ classIds: ['A'] })
+  await loader.replaceCatalog([catalog[1]])
+  expect(publish.mock.calls.slice(-2).every(([profiles]) => !profiles.some(profile => profile.studentId === 'A' && profile.recentProblems))).toBe(true)
+})
 function fixture(loadProfiles = vi.fn(async scope => scope.classIds.map(id => ({ studentId: id, classId: id, recentProblems: [id] })))) {
   const publish = vi.fn(), onState = vi.fn()
   return { loader: createTeacherPupilLoader({ loadProfiles, publish, onState }), loadProfiles, publish, onState }

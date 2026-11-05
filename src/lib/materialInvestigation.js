@@ -4,20 +4,23 @@ import { rivalModels, modelPredictions, CONTRAST_MAX_ITEMS } from '../domains/pr
 import { evidenceProblem } from './evidencePredictableAnalysis.js'
 import { INPUT_SIGNAL_MODELS, isSpeedTrainingEntry } from './practiceModes.js'
 import { followUpSignal } from './followUpSignal.js'
+import { resolveDidacticPlan } from './didacticFollowUp.js'
 
 const fail = message => { throw Object.assign(new Error(message), { status: 400, code: 'invalid_investigation' }) }
 const same = (question, left, right) => matchesComputedCorrect({ ...question, computedCorrect: left }, right)
 
 // Called only with access-checked, revision-bound evidence and prepared tasks.
 // Clients name the target; every rival, prediction and unresolved pair is derived.
-export function buildMaterialInvestigation(input, { kind, mode, audience, classContexts, records, items, reportReview }) {
+export function buildMaterialInvestigation(input, { kind, mode, audience, classContexts, records, items, reportReview, reportState }) {
   if (!input || typeof input !== 'object' || Array.isArray(input)
-    || Object.keys(input).some(key => !['schemaVersion', 'modelId', 'ruleVersion', 'reportReview'].includes(key))
+    || Object.keys(input).some(key => !['schemaVersion', 'modelId', 'ruleVersion', 'reportReview', 'didactic'].includes(key))
     || input.schemaVersion !== 1 || typeof input.modelId !== 'string' || INPUT_SIGNAL_MODELS.has(input.modelId)) fail('Ogiltig prövningsavsikt.')
   if (input.ruleVersion !== PREDICTABLE_RULE_VERSION) fail('Prövningens regelversion har ändrats. Skapa ett nytt granskningsunderlag.')
   if (input.reportReview !== undefined && (!input.reportReview || !reportReview || reportReview.studentId !== input.reportReview.studentId)) fail('Rapportreferensen behöver kontrolleras på servern.')
   if (kind !== 'screening' || mode !== 'specific') fail('Prövningsavsikt stöds bara för analysspecifik screening.')
   if (!Array.isArray(items) || !items.length || items.length > CONTRAST_MAX_ITEMS) fail('Prövningen behöver en till fem granskade frågor.')
+  const didactic = resolveDidacticPlan(input.didactic, { reportState, reportReview, items, modelId: input.modelId })
+  if (didactic && audience.pupils.length !== 1) fail('Didaktikpiloten följer en elev och en rapport åt gången.')
   const pupils = audience.pupils.map(pupil => {
     const sources = records.filter(record => record.basis.studentId === pupil.studentId)
     if (!sources.length) fail('Varje mottagare behöver eget analysunderlag för prövningen.')
@@ -58,7 +61,7 @@ export function buildMaterialInvestigation(input, { kind, mode, audience, classC
         ...(entry.teacherReview ? { teacherReview: entry.teacherReview } : {}) })),
       rivalModelIds: rivals, questions, unresolvedPairs }
   })
-  return { schemaVersion: 1, ruleVersion: input.ruleVersion, modelId: input.modelId, pupils }
+  return { schemaVersion: 1, ruleVersion: input.ruleVersion, modelId: input.modelId, ...(didactic ? { didactic } : {}), pupils }
 }
 
 // Result reads use the saved predictions, even if today's rule engine changes.

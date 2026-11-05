@@ -5,6 +5,39 @@ Inspekterad kod i ursprungsinventeringen: `82ab3325f8d475885381fe5db85c019834faf
 Målen är preciserade av Simon i samtalet och införda i [produktkontraktet](PRODUCT_CONTRACT.md).
 Arkitekturförslagen nedan är rekommendationer, inte redan byggda funktioner.
 
+### E4-pilot godkänd och lokalt implementerad 2026-11-05
+
+Simon godkände innehåll och arbetsgång i
+[E4_DECIMAL_MULTIPLICATION_REVIEW.md](E4_DECIMAL_MULTIPLICATION_REVIEW.md).
+Paketet har nu sju egna bankuppgifter och en särskild decimalrättning med
+bevarad råtext, decimaltecken och ofullständiga svar. V7:s matematiska modell
+är oförändrad. Bara två kontrastfrågor ingår i det automatiska första urvalet;
+paketets undervisnings-, kontroll- och negativa exempel hålls åtskilda.
+
+Den befintliga rapportavstämningen lagrar versionsbundna undervisningsnoteringar
+och kontrollobservationer med lärarens hjälpstatus. Ny kontroll och senare
+kontroll blir privata materialutkast, med samma granskning och explicita
+utdelning som tidigare. En elev/rapport åt gången. Samma ursprungliga stöd kan
+bindas om till aktuella källreferenser efter tillkommande svar, men ändrat
+originalarbete kräver en ny rapport. Exponeringskontrollen inkluderar båda
+tillgängliga träningssamlingarna samt den valda klassens indexerade screeningar
+sedan 2024. Det är en annan läsfråga än vilka bedömda observationer som räknas
+i en rapportperiod. Historikens fullständighet förblir okänd.
+
+Inga nya uppdragslager, automatiska diagnoser, tysta masteryändringar eller
+MCP-behörigheter införs. Tidpunkt för senare utdelning väljs av läraren.
+Undervisningsnoteringar kan läsas från rapportens avstämningshistorik och
+material/resultat, så att de kompletterande lagren behåller sina referenser.
+
+Hela pilotkedjan är provad i lokal webbläsare, inklusive verklig versionskonflikt
+mellan lärarflikar, återläsning efter omladdning, två nya kontroller, negativa
+API-provet för redan mött uppgift och bevarad träningshistorik/mastery.
+Full svit/build, regressionsstatus och exakta antal redovisas i projektkartan.
+Faktisk render har granskats stående/liggande i Chromium-emulering.
+Gemini gav inget svar inom tidsgränsen 2026-11-05; inga nya externa blindtest-
+eller granskningsresultat påstås. E4:s övriga domänpaket, verklig klassrums-/
+fysisk iPad-provning och produktionspublicering återstår.
+
 ### Lokalt byggt och verifierat: E3
 
 `followUpSelection` använder nu samma rena urval för evidensens probeprojektion,
@@ -67,7 +100,9 @@ E4:s första konkreta innehållsförslag finns i
 Sju föreslagna uppgifter är oberoende aritmetiskt kontrollerade och prövade
 mot v7, med rätta svar, skalningsalternativ, partiella/obesvarade svar och
 en icke-särskiljande negativ kontroll. Detta är inte ett blindtest eller en
-aktiverad bankfunktion. Didaktisk lärargranskning återstår enligt E4-planen.
+aktiverad bankfunktion vid inventeringstillfället 2026-11-04. Senare godkännande
+och lokal integration 2026-11-05 redovisas överst; de historiska maskinbeläggen
+har inte skrivits om till nya leveranspåståenden.
 
 ```mermaid
 flowchart LR

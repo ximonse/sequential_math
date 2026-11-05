@@ -319,3 +319,37 @@ mål och anteckning härleds på servern och fryses per elev i materialversionen
 prövningsavsikt; klienten får inte ange ett lärarbeslut. Ändrad eller avfärdad
 hypotes kräver `reopen: true`. En senare avstämning kräver ny förhandsvisning och
 granskning före utdelning. Befintliga material utan rapportreferens behålls.
+
+## E4: godkänt decimalpaket och stegvis uppföljning
+
+Det lokalt implementerade pilotpaketet gäller heltal gånger ett tal med en
+decimal. `investigation.didactic` kan ange `packageId`, `packageVersion: 1`,
+`phase` (`contrast`, `independent_check`, `later_check`) och `teachingRevision`.
+Servern accepterar bara paketets egna uppgifts-ID:n/versioner och rätt roller:
+två kontrastfrågor eller en kontrollfråga. En sparad rapport och en elev per
+material krävs. Undervisningsexemplet och den icke-särskiljande negativa
+kontrollen väljs inte som nya kontrollfrågor.
+
+Ny/senare kontroll kräver en sparad undervisningsnotering i rätt rapport.
+Noteringen hämtas på servern från den angivna avstämningsrevisionen och fryses
+i materialet tillsammans med tidigare kontrollobservationer. Läraren väljer
+tillfälle för utdelning; knappen skapar ett privat utkast, aldrig en automatisk
+utdelning eller kalenderbokning. Vanlig materialgranskning, godkännande och
+utdelning återanvänds. MCP kan skapa privata utkast men får ingen ny behörighet
+att godkänna, dela ut eller skriva lärarens avstämning.
+
+Nya förhandsvisningar, sparanden och godkännanden kontrollerar att uppgifterna
+inte finns i tillgängliga träningssamlingar (`problemLog` och `recentProblems`,
+även när en annan samling är nyare eller en tidsstämpel saknas), eller den
+valda klassens indexerade screeninghistorik från 2024. Detta är exponerings-
+kontroll, inte en ändrad regel för att räkna bedömda observationer. Full historik
+är inte bevisad. Inkonsekvent index eller avbruten läsning stoppar ett nytt
+kontrollförslag. Publiceringsåterförsök använder sin befintliga frysta
+uppdragsidentitet/kvitto och gör ingen ny uppgiftsselektion.
+
+När nya svar förändrat källsnapshoten kan didaktiksteget binda om precis samma
+ursprungliga observationsrevision till en aktuell `ref`. Originalrapporten
+ändras inte; `sourceReportSnapshotRevision` och `sourceBindings` sparar båda
+referenserna. Ändrad ursprungsuträkning, fel elev/klass eller annan uppsättning
+stöd/motexempel avvisas. En reviderad eller avfärdad hypotes kräver fortsatt
+lärarens uttryckliga återöppnande. Inga nya diagnos- eller masterytrösklar införs.

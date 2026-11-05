@@ -1,5 +1,6 @@
 import { pupilFollowUpSelection, followUpRecommendation } from './pupilFollowUpSelection.js'
 import { OPERATION_LABELS } from './operations.js'
+import { validateTeachingRecord } from './didacticFollowUp.js'
 import { buildRuleHypotheses, comparableRuleCounter } from './pupilRuleHypotheses.js'
 import { speedSlipSummary } from './practiceModes.js'
 export const PUPIL_ANALYSIS_VERSION = 1
@@ -135,10 +136,11 @@ export function buildPupilAnalysisDraft(evidence) {
 }
 
 export function validateAnalysisCheckIn(input, report) {
-  keys(input, ['decisions', 'goalSv', 'noteSv'])
+  keys(input, ['decisions', 'goalSv', 'noteSv', 'teaching'])
   const decisions = list(input.decisions, 8)
   if (decisions.length !== report.hypotheses.length || new Set(decisions.map(item => item.hypothesisId)).size !== decisions.length) fail('Stäm av varje hypotes exakt en gång.')
   return { goalSv: text(input.goalSv, 1000), noteSv: typeof input.noteSv === 'string' && !input.noteSv.trim() ? '' : text(input.noteSv, 1500),
+    ...(input.teaching === undefined ? {} : { teaching: validateTeachingRecord(input.teaching, report) }),
     decisions: decisions.map(item => {
       keys(item, ['hypothesisId', 'decision', 'interpretationSv'])
       if (!report.hypotheses.some(hypothesis => hypothesis.id === item.hypothesisId)

@@ -1,6 +1,7 @@
 import { CONTRAST_LABELS_SV } from '../../domains/predictableErrors/contrast.js'
 import ReportReviewNote from './ReportReviewNote.jsx'
 import WorkEvidenceNote from './WorkEvidenceNote.jsx'
+import TeachingRecordNote from './TeachingRecordNote.jsx'
 
 const label = id => id === 'correct' ? 'rätt svar' : CONTRAST_LABELS_SV[id] || id
 
@@ -10,6 +11,8 @@ export default function MaterialInvestigation({ material }) {
   return <section className="material-module" aria-label="Prövningsavsikt">
     <h2>Prövningsavsikt</h2><p><strong>Prövar:</strong> {label(plan.modelId)}</p>
     <p className="followup-note">En misstanke att undersöka, inte en fastställd felförståelse. Innehåll och mottagare granskas tillsammans.</p>
+    {plan.didactic && <><p>Steg: {({ contrast: 'Prövning före undervisning', independent_check: 'Ny kontroll efter undervisning', later_check: 'Senare kontroll vid lärarvalt tillfälle' })[plan.didactic.phase]}.</p>
+      <TeachingRecordNote record={plan.didactic.teaching} />{plan.didactic.controlObservations.map((record, index) => <TeachingRecordNote key={index} record={record} />)}</>}
     {plan.pupils.map(pupil => <div key={pupil.studentId}>
       <p>{material.audience.pupils.find(item => item.studentId === pupil.studentId)?.codeName || pupil.studentId}: {pupil.questions.length} frågor.</p>
       <ReportReviewNote review={pupil.reportReview} />

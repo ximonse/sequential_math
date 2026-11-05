@@ -1,15 +1,15 @@
 # E4: första innehållspaketet att granska
 
-**Förslag för lärargranskning. Inte aktiverat i appens bank, inte utdelat.**
+**Innehåll och arbetsgång godkända av Simon 2026-11-05 (”Kör på det”). Appintegration byggd och verifierad lokalt. Ingen produktion eller verklig elevutdelning.**
 Ordningen följer systemsyntesen: täpp en konkret lucka inom aritmetik före nya
 domäner. Befintlig v7 kan beräkna `decimal_parts_multiplied_separately`, men
 saknar granskade bankfrågor. Ingen ny modell eller diagnostisk tröskel föreslås.
 
-## Det konkreta beslutet
+## Beslut 2026-11-05
 
-Är följande innehåll och lärararbetsgång ett rimligt första pilotpaket för att
-undersöka komponentvis multiplikation av heltal och decimaldel? Godkännande av
-innehållet innebär fortsatt varken automatisk elevdiagnos eller elevutdelning.
+Simon godkände följande innehåll och arbetsgång för det första pilotpaketet.
+Innehållsgodkännandet innebär fortsatt varken automatisk elevdiagnos eller
+utdelning till verkliga elever.
 
 | Roll | Uppgift | Facit | Svar som komponentmodellen kan ge |
 |---|---|---|---|
@@ -31,7 +31,7 @@ innehållet innebär fortsatt varken automatisk elevdiagnos eller elevutdelning.
    vilken metod eleven använde. Avskrivning, hjälp och avbrott måste hållas öppna.
 3. **Bemöt vid belagd behovsbild:** föreslå ett samtal om heltal och tiondelar.
    Exempel: 4 × 2,5 = 4 × (2 + 0,5) = 8 + 2. Undervisningsförslaget är agentens
-   didaktiska förslag och behöver lärargranskas; det är ingen automatiskt vald
+   didaktiska förslag, nu lärargranskat för piloten; det är ingen automatiskt vald
    intervention eller påstådd forskningsrekommendation.
 4. **Kontrollera på nytt:** använd en annan uppgift efter undervisningen, senare
    ytterligare en vid nytt tillfälle. Anteckna vilken hjälp som faktiskt gavs.
@@ -61,10 +61,31 @@ node docs/evaluations/e4-decimal-multiplication-2026-11-04/evaluate.mjs
 ```
 
 Detta är en deterministisk syntetisk kontroll med öppet facit, **inte ett
-blindtest**. Gemini gav inget provresultat på grund av förbrukad kvot.
-Appens bankadapter, versionshanterade undervisningsnotering och senare
-kontrollkedja är ännu inte implementerade för detta paket. Därför ska detta
-inte presenteras som en färdig ny elevfunktion.
+blindtest**. Det tidigare Gemini-försöket saknade resultat på grund av kvot.
+Ett nytt anrop 2026-11-05 gav inget svar inom tidsgränsen; inga externa
+blindtestresultat påstås. De länkade provfilerna bevarar ursprungsprovets
+daterade granskningsstatus från 2026-11-04.
+Appens bankadapter och decimalrättning är nu lokalt implementerade.
+Undervisningsnoteringar och kontrollobservationer lagras som nya, CAS-skyddade
+avstämningar i den befintliga rapporten. Nya kontrollutkast går genom befintlig
+materialgranskning och manuell utdelning. En elev/rapport åt gången.
+
+Prövningsfrågorna har egna uppgifts-ID:n och versioner; undervisningsexemplet
+och den negativa kontrollen väljs inte automatiskt som nya prövningar. Förhandsvisning, sparande och
+godkännande av nya material läser tillgänglig historik från 2024 och avvisar redan mötta
+frågor. Historikens fullständighet är fortsatt okänd. Publiceringsåterförsök
+behåller sina frysta uppdragsidentiteter och gör ingen ny tilldelning av frågor
+som redan har ett kvitto.
+
+Nästa materialversion får koppla samma ursprungliga observation till en ny
+källsnapshot när tillkommande svar ändrat snapshoten. Bindningen mellan gammal
+och aktuell referens sparas. Ett ändrat ursprungligt elevarbete avvisas och
+kräver en ny granskad rapport. Hjälpstatus är alltid en uttrycklig läraruppgift
+med okänt som förval; ett rätt slutsvar ger ingen automatisk självständighets-
+eller återfallsbedömning. Läraren väljer när ett senare kontrollutkast delas ut.
+
+Övriga domänpaket och verklig klassrums-/iPad-verifiering återstår. Detta är
+ingen produktions- eller generell E4-klarmarkering.
 
 ```mermaid
 flowchart LR
@@ -75,3 +96,31 @@ flowchart LR
   U --> N[Annan ny kontroll]
   N --> T[Senare kontroll och ny avstämning]
 ```
+
+## Lokal verifiering 2026-11-05
+
+- Full svit: 227 testfiler, 1 208 tester. Produktionsbuild och riktad lint/arkitektur gröna.
+- 29 MCP-prov gröna; strikt validerat didaktikfält ger inga nya godkännande-/utdelningsbehörigheter.
+- Nio berörda dev-browserprov gröna tillsammans, inklusive pilotens hela kedja och tidigare material-/rapportflöden.
+- Slutligt pilotprov efter kontrollen av båda träningssamlingarna grönt.
+- Verklig avstämningskonflikt, bevarad text och annan fliks mål, återläsning efter omladdning, två nya kontrollsteg och API-avvisning av redan mött fråga verifierade.
+- Både vanlig träningshistorik och mastery är oförändrade i robotprovet.
+- Faktisk render granskad stående/liggande i lokal Chromium-emulering. Ingen fysisk iPad, verklig elevutdelning eller produktion verifierad.
+
+Första gemensamma körningen hade en kolliderande syntetisk elevidentitet mellan
+två robotar. Piloten fick en egen lokal testidentitet; produktionsåtkomsten
+ändrades inte. Därefter passerade samtliga nio prov tillsammans. Någon ny full
+bred robotkörning påstås inte för detta avgränsade sjok.
+
+Reproducerbar kärna:
+
+```text
+npm run test -- --exclude '**/.claude/**' --exclude '**/.codex/**'
+npm run build
+npm run mcp:test
+```
+
+Browserproven körs med `ROBOT_DEV=1`, en worker, och
+`robots/didactic-decimal.robot.js`, `robots/followup-results.robot.js`,
+`robots/pupil-analysis.robot.js`, `robots/material-review.robot.js` och
+`robots/material-publication.robot.js`. Lokal minnesdatabas och syntetiska elever.

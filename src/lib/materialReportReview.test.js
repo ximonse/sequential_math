@@ -10,6 +10,18 @@ const state = { studentId: 'P', classId: 'C', reports: [{ id: 'R', version: 1,
     decisions: [{ hypothesisId: 'H', decision: 'revised', interpretationSv: 'Could be copying' }] }] }] }
 
 describe('reviewed report handoff', () => {
+  it('rebinds unchanged original observations after new answers change the source snapshot, but rejects edited work', () => {
+    const next = structuredClone(state)
+    const hypothesis = next.reports[0].report.hypotheses[0]
+    hypothesis.counterRefs = []
+    next.reports[0].report.evidence = [{ ref: 'answer', reference: { attemptId: 'A', serverRevision: 1 } }]
+    const current = [{ basis: { ...basis, snapshotRevision: 'new-snapshot', supportRefs: ['new-answer'], counterRefs: [] },
+      evidence: { entries: [{ ref: 'new-answer', reference: { attemptId: 'A', serverRevision: 1 } }] } }]
+    expect(materialReportReview(reference, next, current, 'carry_forget', { rebase: true }).sourceBindings).toEqual([{ reportRef: 'answer', currentRef: 'new-answer' }])
+    expect(() => materialReportReview(reference, next, current, 'carry_forget')).toThrow()
+    current[0].evidence.entries[0].reference.serverRevision = 2
+    expect(() => materialReportReview(reference, next, current, 'carry_forget', { rebase: true })).toThrow(/ändrats/)
+  })
   it('preserves the latest teacher interpretation and explicit reopening', () => {
     expect(materialReportReview(reference, state, [{ basis }], 'carry_forget')).toMatchObject({
       reportId: 'R', checkInRevision: 2, decision: 'revised', interpretationSv: 'Could be copying', reopen: true })

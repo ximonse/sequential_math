@@ -3,6 +3,9 @@ import { assertPupilEvidenceAccess, assertEvidenceSourceAccess, readPupilEvidenc
 import { buildPupilAnalysisDraft, validateAnalysisCheckIn, validatePupilAnalysis } from '../src/lib/pupilAnalysis.js'
 import { appendPupilAnalysis, readPupilAnalysisState } from './_pupilAnalysisStore.js'
 import { evidenceError } from './_pupilEvidence.js'
+import { readMaterialDraft } from './_teacherMaterialStore.js'
+import { assertMaterialDraftAccess } from './_teacherMaterialAccess.js'
+import { readMaterialDispatch } from './_teacherMaterialDispatchStore.js'
 
 function visibleState(state, auth, studentId) {
   const reports = state.reports.filter(item => {
@@ -39,6 +42,21 @@ export async function pupilAnalysisAction(req, auth, studentId) {
     if (!target) throw evidenceError(404, 'analysis_not_found', 'Rapportversionen finns inte.')
     assertEvidenceSourceAccess(auth, studentId, target.report.source)
     content = validateAnalysisCheckIn(body.checkIn, target.report)
+    if (content.teaching) {
+      const note = content.teaching
+      const draft = await readMaterialDraft(auth.teacherId, note.draftId)
+      if (!draft) throw evidenceError(404, 'material_not_found', 'Undervisningens ursprungsmaterial saknas.')
+      await assertMaterialDraftAccess(req, draft)
+      const material = draft.versions.find(item => item.version === note.materialVersion)?.material
+      const pupil = material?.investigation?.pupils.find(pupil => pupil.studentId === studentId)
+      const receipt = await readMaterialDispatch(draft, note.materialVersion)
+      if (material?.investigation?.didactic?.packageId !== note.packageId || !pupil
+        || note.kind !== (material.investigation.didactic.phase === 'contrast' ? 'teaching' : 'control_observation')
+        || pupil.reportReview?.reportId !== target.id || pupil.reportReview?.hypothesisId !== note.hypothesisId
+        || !receipt?.receipts.some(row => row.studentId === studentId && row.status === 'confirmed')) {
+        throw evidenceError(400, 'invalid_teaching_source', 'Undervisningsnoteringen måste knytas till elevens utdelade prövning och rätt rapport.')
+      }
+    }
   } else throw evidenceError(400, 'invalid_analysis_command', 'Okänd rapportåtgärd.')
   const liveAuth = await getLiveTeacherAuthPayload(req)
   if (!liveAuth || liveAuth.teacherId !== auth.teacherId) throw evidenceError(403, 'analysis_access_denied', 'Lärarsessionen har ändrats.')

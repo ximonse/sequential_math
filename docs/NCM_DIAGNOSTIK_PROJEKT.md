@@ -14,6 +14,11 @@ inte nuvarande appbeteende. Vid konflikt gäller
 [`PRODUCT_CONTRACT.md`](PRODUCT_CONTRACT.md) och
 [`FUNCTION_CONTRACTS.md`](FUNCTION_CONTRACTS.md) före detta dokument.
 
+Tillägg 2026-11-05: E4:s godkända decimalpilot har nu en lokalt implementerad
+kedja för undervisningsnotering och nya kontrollutkast i befintliga rapport-/
+materiallager. Det innebär inte att hela offlineprototypen eller alla domäner
+är integrerade. Se systemsyntesens senaste status.
+
 ## 1. Syfte
 
 Projektet ska ge läraren ett bättre underlag för att förstå **hur** en elev

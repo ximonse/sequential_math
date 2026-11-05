@@ -11,6 +11,11 @@ faktisk bank-/lärarväg. Ursprungsinventeringen är dokumentgranskning. E1–E3
 därefter lokalt byggda; syntesens genomförandestatus skiljer detta från push och
 produktion.
 
+E4:s godkända decimalpilot tillkommer lokalt 2026-11-05: bankens decimalrättning,
+undervisningsnoteringar i befintliga rapportavstämningar och nya kontrollutkast
+i samma materialkedja. Ingen parallell uppdragslagring eller elevprogression
+införs; andra domänpaket återstår.
+
 ## Lokal elevanalys via MCP
 
 `api/_teacherMaterialPreview.js` validerar generell eller analysspecifik

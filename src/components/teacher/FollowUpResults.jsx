@@ -7,10 +7,11 @@ import { followUpSignal } from '../../lib/followUpSignal.js'
 import { followUpProgress, readFollowUpAnswers } from '../../lib/followUpResults.js'
 import { diagnosticRequest } from './sections/diagnosticRequest.js'
 import { investigationObservations } from '../../lib/materialInvestigation.js'
+import DidacticFollowUp from './DidacticFollowUp.jsx'
 
 const label = id => CONTRAST_LABELS_SV[id] || id
 
-export default function FollowUpResults({ material, dispatch }) {
+export default function FollowUpResults({ material, dispatch, draftId, version }) {
   const [selectedId, setSelectedId] = useState('')
   const receipts = dispatch?.receipts?.filter(row => row.status === 'confirmed') || []
   const receipt = receipts.find(row => row.studentId === selectedId) || receipts[0]
@@ -21,11 +22,11 @@ export default function FollowUpResults({ material, dispatch }) {
     {receipts.length > 1 ? <label>Svar för <select aria-label="Resultat för elev" value={receipt.studentId} onChange={event => setSelectedId(event.target.value)}>
       {receipts.map(row => <option key={row.studentId} value={row.studentId}>{pupilName(row.studentId)}</option>)}
     </select></label> : <p>Svar för {pupilName(receipt.studentId)}</p>}
-    <FollowUpAnswers key={`${receipt.studentId}:${receipt.assignmentId}`} material={material} receipt={receipt} />
+    <FollowUpAnswers key={`${receipt.studentId}:${receipt.assignmentId}`} material={material} receipt={receipt} draftId={draftId} version={version} />
   </section>
 }
 
-function FollowUpAnswers({ material, receipt }) {
+function FollowUpAnswers({ material, receipt, draftId, version }) {
   const [refresh, setRefresh] = useState(0)
   const [state, setState] = useState({ refresh: -1, entries: [], message: '', status: 'loading' })
   const studentId = receipt.studentId, assignmentId = receipt.assignmentId
@@ -95,6 +96,7 @@ function FollowUpAnswers({ material, receipt }) {
         })}
       </>}
       <p className="followup-note">Räknehäftet för varje svar finns i elevprofilen under Analys och avstämning.</p>
+      {plan && outcome?.compatible && investigation.didactic && <DidacticFollowUp material={material} receipt={receipt} draftId={draftId} version={version} complete={progress.complete} />}
     </>}
   </>
 }

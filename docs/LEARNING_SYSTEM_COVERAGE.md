@@ -17,6 +17,13 @@ bank-/probeexempel förblir den historiska inventeringen; inga nya modell-ID:n
 eller bankfrågor införs av E3. E4:s första föreslagna tillägg finns i
 [decimalmultiplikationens granskningspaket](E4_DECIMAL_MULTIPLICATION_REVIEW.md).
 
+E4-tillägg 2026-11-05: den lärargranskade decimalpiloten är lokalt integrerad
+med egen decimalrättning, två inledande bankkontraster, undervisningsnotering
+och två åtskilda kontrollsteg. Den fyller luckan för
+`decimal_parts_multiplied_separately` inom det godkända paketets avgränsning.
+Inga nya modell-ID:n eller generell domänfullständighet påstås. Tabellen nedan
+är fortfarande den frysta inventeringen från `82ab332`, inte en omkörning.
+
 ## Läs tabellen rätt
 
 - Varje rad är ett explicit kandidat-ID inom en domän, inte en fastställd felförståelse eller NCM-diagnos. Samma ID kan förekomma i flera domäner.

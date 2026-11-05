@@ -195,7 +195,7 @@ export default function MaterialReview() {
         </button></div>
       </section>
       {item?.material.kind === 'screening' && item.material.mode === 'specific' && dispatch &&
-        <FollowUpResults key={`${draftId}:${item.version}`} material={item.material} dispatch={dispatch} />}
+        <FollowUpResults key={`${draftId}:${item.version}`} material={item.material} dispatch={dispatch} draftId={draftId} version={item.version} />}
       </aside></div>
     </>}
   </main>

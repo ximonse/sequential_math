@@ -18,6 +18,9 @@ test('MCP material accepts legacy input and a target without permitting forged p
   assert.deepEqual(materialInput.parse(material), material)
   const investigation = { schemaVersion: 1, modelId: 'smaller_minus_larger', ruleVersion: 'predictable-errors-v7' }
   assert.deepEqual(materialInput.parse({ ...material, investigation }).investigation, investigation)
+  const didactic = { packageId: 'decimal-component-multiplication-pilot', packageVersion: 1, phase: 'independent_check', teachingRevision: 2 }
+  assert.deepEqual(materialInput.parse({ ...material, investigation: { ...investigation, modelId: 'decimal_parts_multiplied_separately', didactic } }).investigation.didactic, didactic)
+  assert.throws(() => materialInput.parse({ ...material, investigation: { ...investigation, didactic: { ...didactic, diagnosis: true } } }))
   const reportReview = { studentId: 'P', reportId: 'R', hypothesisId: 'H', checkInRevision: 1, reopen: true }
   assert.deepEqual(materialInput.parse({ ...material, investigation: { ...investigation, reportReview } }).investigation.reportReview, reportReview)
   assert.throws(() => materialInput.parse({ ...material, investigation: { ...investigation, reportReview: { ...reportReview, decision: 'accepted' } } }))

@@ -2,6 +2,7 @@ import { choiceObservation, isChoiceTask } from './screeningImageQuestions.js'
 import { replayDiagnosticGrid } from './diagnosticGridModel.js'
 import { checkNcmAnswer } from './ncmAnswerCheck.js'
 import { checkScreeningAnswerKey, screeningAnswerKeyLabel } from './screeningAnswerKey.js'
+import { decimalMultiplicationAnswer } from './decimalMultiplicationPackage.js'
 
 export const DIAGNOSTIC_OBSERVATION_VERSION = 1
 
@@ -54,6 +55,13 @@ export function summarizeDiagnosticObservation(task, snapshot) {
   }
   const grid = replayDiagnosticGrid(snapshot)
   if (isChoiceTask(task)) return { ...observableFacts(task, grid), ...choiceObservation(task, grid) }
+  if (task.answerRule === 'decimal_multiplication') {
+    const expected = decimalMultiplicationAnswer(task)
+    const answer = grid.answer.trim(), complete = /^[+−-]?\d+(?:[.,]\d+)?$/u.test(answer)
+    return { ...observableFacts(task, grid), explicitAnswer: answer || null,
+      expectedAnswer: expected, answerStatus: !answer ? 'unanswered' : !complete ? 'incomplete'
+        : checkScreeningAnswerKey({ format: 'number', expected: [expected] }, answer) }
+  }
   if (task.answerRule === 'ncm_facit') return ncmObservation(task, grid)
   if (task.answerRule === 'custom_facit') return { ...observableFacts(task, grid), explicitAnswer: grid.answer.trim() || null,
     expectedAnswer: screeningAnswerKeyLabel(task.answerKey), answerStatus: checkScreeningAnswerKey(task.answerKey, grid.answer) }

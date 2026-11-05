@@ -7,6 +7,7 @@ import { isSpeedTrainingEntry } from '../../../lib/practiceModes.js'
 import { OPERATION_LABELS } from '../../../lib/operations.js'
 import { stockholmDay } from '../../../lib/evidencePeriod.js'
 import { diagnosticRequest } from './diagnosticRequest.js'
+import { didacticPackage } from '../../../lib/didacticFollowUp.js'
 
 // Directed follow-up (practice-modes, mode 4): contrast questions for one
 // computed error model. Creates a private draft only; review, approval and
@@ -46,6 +47,7 @@ export default function ContrastFollowUp({ item, report, reportReview, studentId
   const [grid, setGrid] = useState(true)
   const [reopen, setReopen] = useState(false)
   const needsReopen = ['revised', 'rejected'].includes(reportReview?.decision)
+  const teachingPackage = didacticPackage(item.signalCode)
   const [state, setState] = useState({ busy: false, message: '', receipt: null })
   const [history, setHistory] = useState({ status: 'idle', keys: null, message: '' })
   const requestId = useRef(crypto.randomUUID())
@@ -55,6 +57,7 @@ export default function ContrastFollowUp({ item, report, reportReview, studentId
     historyKeys: [...history.keys, ...(item.followUp?.history.excludedFingerprints ?? [])],
     history: { scope: 'source_period_and_screening_since_2024', completeness: 'indexed_screening_window_read_practice_unknown' } }),
   [item, report, supports, history.keys])
+  const packageReady = !teachingPackage || (reportReview && set?.items.length === 2)
 
   async function openPanel() {
     setOpen(true)
@@ -67,7 +70,7 @@ export default function ContrastFollowUp({ item, report, reportReview, studentId
   const operation = supports[0]?.question.operation
 
   async function createDraft() {
-    if (needsReopen && !reopen) return
+    if ((needsReopen && !reopen) || !packageReady) return
     setState({ busy: true, message: 'Skapar privat utkast…', receipt: null })
     try {
       const audience = await call(`/api/students?${new URLSearchParams({ resource: 'audience', targetType: 'student', targetId: studentId, limit: 1 })}`)
@@ -117,8 +120,10 @@ export default function ContrastFollowUp({ item, report, reportReview, studentId
       <label className="mt-2 flex items-center gap-2"><input type="checkbox" checked={grid} onChange={event => setGrid(event.target.checked)} /> Eleven visar uträkningen i räknehäftet</label>
       {needsReopen && <label className="mt-2 flex items-center gap-2"><input type="checkbox" checked={reopen} onChange={event => setReopen(event.target.checked)} /> Jag väljer att pröva den ursprungliga modellen igen; min sparade tolkning följer med.</label>}
       <p className="mt-1 text-slate-600">Rapportens källurval och tillgängliga screeningar från 2024 till idag är kontrollerade. Historikens fullständighet är okänd. Äldre screeningar och träning utanför källurvalet kan innehålla samma frågor.</p>
+      {teachingPackage && !reportReview && <p className="mt-1">Spara rapportversionen först, så kan undervisningsnotering och nya kontroller knytas till samma rapport.</p>}
+      {teachingPackage && set.items.length !== 2 && <p className="mt-1">Pilotpaketet behöver två nya prövningsfrågor. Alla paketets frågor är inte tillgängliga som nya kontroller.</p>}
       <div className="mt-2 flex flex-wrap items-center gap-2">
-        {set.delivery === 'reviewed_bank' && <button type="button" disabled={state.busy || Boolean(state.receipt) || (needsReopen && !reopen)} className="rounded border px-2 py-1" onClick={createDraft}>Skapa utkast</button>}
+        {set.delivery === 'reviewed_bank' && <button type="button" disabled={state.busy || Boolean(state.receipt) || (needsReopen && !reopen) || !packageReady} className="rounded border px-2 py-1" onClick={createDraft}>Skapa utkast</button>}
         <button type="button" disabled={state.busy} className="rounded border px-2 py-1" onClick={() => setOpen(false)}>Stäng</button>
         {state.receipt && <a className="underline" href={state.receipt.reviewPath}>Öppna granskning</a>}
       </div></>}

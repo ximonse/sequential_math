@@ -1,9 +1,11 @@
 # E4: avgränsad produktionspilot
 
 Förberedd 2026-11-05 efter Simons ”Kör”. Simon godkände genomförandet genom
-”godkänt”. Åtkomstprov påbörjat; körningen hindras för närvarande av
-webbläsarstyrning och skild kontoidentitet enligt status nedan. Inga material,
-rapporter, elevsvar eller avstämningar har sparats. Ingen utdelning har skett.
+”godkänt”. Det tekniska produktionsprovet är genomfört: källa, rapport,
+kontraster, simulerad undervisningsnotering, ny kontroll, kontrollobservation
+och senare kontroll är sparade, inlämnade och återlästa. Alla skrivningar
+gäller den enda godkända testprofilen. Kontrollerna kördes samma kväll;
+fördröjd retention och fysisk iPad ingår inte i klartbeskedet.
 
 ## Syfte och mottagare
 
@@ -72,7 +74,7 @@ inte verifierade under denna förberedelse. MCP stöder inte godkännande,
 utdelning eller läraravstämningar; dessa steg ska ske genom betrodd inloggning
 och befintligt granskningsflöde. Ingen alternativ endpoint ska kringgå det.
 
-## Genomförandestatus efter godkännandet
+## Första åtkomstförsöket efter godkännandet — historik
 
 - Aktuella MCP-capabilities bekräftar fortsatt pilotägaren adminperson och
   samma uttryckliga kontobindning. Godkännandet av testupplägget behöver inte
@@ -94,6 +96,72 @@ och befintligt granskningsflöde. Ingen alternativ endpoint ska kringgå det.
 - Nästa åtgärd: återställ fungerande, isolerad webbläsaråtkomst på rätt
   lärarkonto och fortsätt från steg 1. Ingen alternativ endpoint, ändrad
   säkerhetspolicy eller ny utdelning har använts för att kringgå hindret.
+
+## Återupptaget produktionsprov 2026-11-05
+
+Kontot adminperson/Skoladministratör verifierades i Simons separata fönster.
+Vanlig flikstyrning gav fortfarande timeoutMs-fel och native klick saknade
+koordinatgeometri; den särskilda Chrome DevTools-anslutningen fungerade.
+Läraren loggades in normalt där, och eleven i en separat isolerad session
+med testklassens befintliga lokalt sparade elevkort. Inga autentiseringsuppgifter
+ändrades och inga nya behörigheter tilldelades.
+
+- Produktionsdomänen laddar `index-B11X6ayv.js`, samma ingång som i
+  additionspaketets publiceringskvitto.
+- Startmaterial v1 sparat, öppnat i rätt lärarvy, granskat, godkänt och utdelat.
+  Kvittot bekräftar exakt en av en mottagare. Endast källfrågan ingår.
+- Källsvaret 6,05 inmatat med appens numeriska knappar, sparat och inlämnat.
+  Rapportversion 1 för screening 2–5 november visar en felobservation och
+  kandidaten en av två minnessiffror tappad, med otillräckligt underlag.
+- Rapport sparad och kontrastmaterial skapat genom dess ordinarie överlämning.
+  Granskat/godkänt material v1 kvitterat till en av en mottagare. Inlämnade
+  svar 4,24 och 5,52 visas i lärarresultatet som förenliga med samma kandidat.
+  Serverns sparade prövningsavsikt återläst skrivfritt: V9,
+  `one_carry_forgotten`, rival `carry_forget`, inga olösta par, exakta arrayer
+  [4,24; 3,34]/[3,24] och [6,42; 5,52]/[5,42].
+- Bemötandet, negativa fallet och beroende kedjans överlapp granskade i verklig
+  render. Undervisningsavstämning 1 sparad och återläst, märkt SIMULERAD
+  TESTNOTERING, med hjälpstatus given och datum 2026-11-05.
+- Ny kontroll passerar serverns historikkontroll och binder rätt källa,
+  rapport och undervisningsavstämning 1. Den granskas/godkänns och kvitteras
+  till en av en mottagare. 6,330 inmatat med tangentbord, sparat och inlämnat;
+  lärarresultatet visar rätt, facit 6,33, utan automatisk förståelsediagnos.
+- Kontrollavstämning 2 sparad och återläst, separat SIMULERAD TESTNOTERING,
+  hjälp none_reported. Ursprunglig undervisningsnotering bevarad.
+- Profilens masteryFacts och problemLog jämförda med SHA256 före första
+  testsvar, efter källa, efter kontraster och efter första kontrollen.
+  Båda hashvärdena identiska genom alla dessa steg; träningsloggen har 35 poster.
+- Inmatningsverktygets fill av anteckningsfältet gav först tom text i
+  sparandet. Riktig tangentbordsinmatning och återläsning före sparande fungerade.
+  Detta är inte ett belagt fel vid vanlig elev-/lärarinmatning.
+- Serverstegen är långsamma. Browser Performance API visar ett avslutat
+  `/api/teacher-material`-anrop på 50 484 ms. Kontrastskapandet stod också länge
+  i vänteläge men slutfördes utan omförsök. Ingen timeout eller dubblering
+  kringgicks. Väntetidernas orsak är ännu inte profilerad.
+
+Senare kontroll passerade därefter historik-/nyhetskontrollen. Den sparade
+versionen bevarar undervisningsavstämning 1 och kontrollavstämning 2,
+respektive datum och hjälpstatus. Aktuellt innehåll och exakt en mottagare
+granskades och godkändes i ordinarie vy; utdelningen kvitterades 1 av 1.
+Svaret 4,44 på 1,78 + 3,66 sparades, lämnades in och återlästes i lärarresultatet
+mot facit 5,44. Resultatet visar modellträff och Behöver undersökas, utan
+automatiskt återfallsbesked. Båda tidigare avstämningarna finns kvar efter
+omladdning och uttrycklig läsning av senaste avstämning.
+
+Slutlig SHA256-jämförelse efter samtliga fem inlämnade testsvar visar exakt
+samma masteryFacts och problemLog som före första testsvar. Träningsloggen
+har fortfarande 35 poster. Fyra material v1 har kvitterats till exakt en
+mottagare vardera; ingen vanlig träning eller uppgift till annan profil ingick.
+
+Detta slutför **det tekniska produktionsprovet**. Steget senare kontroll
+provades som ett nytt material och testtillfälle samma kväll. En verkligt
+fördröjd uppföljning, elevmetod, undervisningseffekt och fysisk iPad är fortsatt
+oprövade. Ingen appkod, säkerhetspolicy eller produktionsdeploy ändrades.
+
+Rekommenderad uppföljning är att profilera de långa serverstegen innan fler
+innehållspaket läggs till. Väntetider är observerade; flaskhalsens orsak och
+en lösning är ännu inte verifierade. Ingen prestandaändring ingår i detta prov.
+Privata material-/rapport-ID:n, hashkvitto och lokala bilder hålls utanför Git.
 
 ```mermaid
 flowchart TD

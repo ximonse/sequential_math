@@ -3,7 +3,21 @@
 Datum: 2026-11-04. **Genomförd kod- och dokumentgranskning; föreslagen genomförandeordning.**
 Inspekterad kod i ursprungsinventeringen: `82ab3325f8d475885381fe5db85c019834faf5c5`. Själva inventeringen ändrade ingen appfunktion.
 Målen är preciserade av Simon i samtalet och införda i [produktkontraktet](PRODUCT_CONTRACT.md).
-Arkitekturförslagen nedan är rekommendationer, inte redan byggda funktioner.
+Arkitekturförslagen nedan är rekommendationer; genomförda etapper anges separat.
+
+### Produktionsstatus 2026-11-05
+
+E1–E3 och den godkända E4-decimalmultiplikationspiloten är publicerade via
+PR #39, merge `c26de2c`, på Vercel **sekvens** / `matematik.ximon.se`.
+[Publiceringskvittot](releases/2026-11-05-teacher-evidence-decimal-pilot.md)
+skiljer lokal verifiering, gröna CI-kontroller och publik produktionskontroll
+från ännu oprövad autentiserad användning och fysisk iPad. Lokala statusar
+nedan beskriver verifieringen före denna publicering.
+
+Nästa [granskningspaket för decimalsubtraktion](E4_DECIMAL_SUBTRACTION_REVIEW.md)
+är framtaget lokalt med sju kontrollerade exempel och två fyrvägskontraster.
+Ett källfelsvar överlappar en decimalrival som ännu saknas i kodmodellerna.
+Paket och föreslagen rivalutökning kräver lärargranskning före aktivering.
 
 ### E4-pilot godkänd och lokalt implementerad 2026-11-05
 
@@ -36,7 +50,8 @@ Full svit/build, regressionsstatus och exakta antal redovisas i projektkartan.
 Faktisk render har granskats stående/liggande i Chromium-emulering.
 Gemini gav inget svar inom tidsgränsen 2026-11-05; inga nya externa blindtest-
 eller granskningsresultat påstås. E4:s övriga domänpaket, verklig klassrums-/
-fysisk iPad-provning och produktionspublicering återstår.
+fysisk iPad-provning återstår. Produktionspubliceringen är därefter verifierad
+enligt kvittot ovan.
 
 ### Lokalt byggt och verifierat: E3
 

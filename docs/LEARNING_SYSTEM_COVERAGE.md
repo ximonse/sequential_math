@@ -24,6 +24,15 @@ och två åtskilda kontrollsteg. Den fyller luckan för
 Inga nya modell-ID:n eller generell domänfullständighet påstås. Tabellen nedan
 är fortfarande den frysta inventeringen från `82ab332`, inte en omkörning.
 
+Nästa paketförslag 2026-11-05: [decimalsubtraktion med en växling](E4_DECIMAL_SUBTRACTION_REVIEW.md).
+`smaller_minus_larger` och `borrow_forget` finns för decimaler men saknar här
+egen aktiverad bankväg. `exchange_not_decremented` kan ge samma källfelsvar
+som den första modellen, men finns endast för heltal i aktuell kod. De två
+föreslagna decimalprövningarna skiljer samtliga tre beräknade alternativ från
+facit; ingen modellutökning eller bankaktivering ingår ännu. E1–E3 och den
+godkända decimalmultiplikationspiloten är publicerade enligt
+[kvittot](releases/2026-11-05-teacher-evidence-decimal-pilot.md).
+
 ## Läs tabellen rätt
 
 - Varje rad är ett explicit kandidat-ID inom en domän, inte en fastställd felförståelse eller NCM-diagnos. Samma ID kan förekomma i flera domäner.

@@ -55,18 +55,29 @@ describe('fluencySession', () => {
 describe('fresh focused number-bond laps', () => {
   it('starts free practice at one and includes the mixed level without a task cap', () => {
     const practice = getFluencyPractice(null, 'number_bonds', null)
-    expect(getFluencyLevelRange(practice)).toEqual([1, 13])
+    expect(getFluencyLevelRange(practice)).toEqual([1, 12])
     expect(startFluencyLap(practice)).toEqual({ level: 1, streak: 0 })
     expect(getFluencyTarget(practice)).toBe(Infinity)
     expect(getFluencyPractice(null, 'doubles', null)).toBe(null)
     expect(getFluencyPractice(null, 'number_bonds', 5)).toBe(null)
   })
   it('keeps explicit teacher bounds and waits for the whole top streak', () => {
-    const assignment = { problemTypes: ['number_bonds'], minLevel: 3, maxLevel: 13, targetCount: 12 }
+    const assignment = { problemTypes: ['number_bonds'], minLevel: 3, maxLevel: 12, targetCount: 12 }
     expect(getFluencyPractice(assignment, '', null)).toBe(assignment)
     expect(startFluencyLap(assignment).level).toBe(3)
     expect(getFluencyTarget(assignment)).toBe(12)
-    expect(isFluencyTopLevelFinish({ level: 13 }, true, assignment, { streak: 2 })).toBe(false)
-    expect(isFluencyTopLevelFinish({ level: 13 }, true, assignment, { streak: 3, targets: [10, 15, 20] })).toBe(true)
+    expect(isFluencyTopLevelFinish({ skill: 'number_bonds', level: 12 }, true, assignment, { streak: 2 })).toBe(false)
+    expect(isFluencyTopLevelFinish({ skill: 'number_bonds', level: 12 }, true, assignment, { streak: 3, targets: [10, 15, 20] })).toBe(true)
   })
+})
+
+
+it.each([10, 11])('requires all three targets before advancing from mixed level %s', level => {
+  const assignment = { problemTypes: ['number_bonds'], minLevel: 1, maxLevel: 12 }
+  const problem = target => ({ skill: 'number_bonds', level, values: { target } })
+  let lap = { level, streak: 0 }
+  for (const target of [10, 15, 10]) lap = advanceFluencyLap(lap, true, assignment, problem(target))
+  expect(lap.level).toBe(level)
+  lap = advanceFluencyLap(lap, true, assignment, problem(20))
+  expect(lap).toEqual({ level: level + 1, streak: 0 })
 })

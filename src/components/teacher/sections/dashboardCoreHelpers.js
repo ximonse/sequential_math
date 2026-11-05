@@ -205,7 +205,7 @@ export function getPresetConfig(presetKey) {
     return { title: 'Procent nivå 1-8', problemTypes: ['percentage'], minLevel: 1, maxLevel: 8, targetCount: 15 }
   }
   if (presetKey === 'number_bonds') {
-    return { title: 'Talpar nivå 1-13', problemTypes: ['number_bonds'], minLevel: 1, maxLevel: 13, targetCount: 20 }
+    return { title: 'Talpar nivå 1-12', problemTypes: ['number_bonds'], minLevel: 1, maxLevel: 12, targetCount: 20 }
   }
   if (presetKey === 'doubles') {
     return { title: 'Dubblor nivå 1-12', problemTypes: ['doubles'], minLevel: 1, maxLevel: 12, targetCount: 20 }

@@ -1,4 +1,3 @@
-import { getSkillMaxLevel } from '../lib/skillLevels.js'
 import { selectNextProblem } from '../lib/difficultyAdapter'
 import { resolveProblemOperation } from '../lib/mathUtils'
 import { getDefaultDomainId, getDomain, normalizeProblemWithDomain } from '../domains/registry'
@@ -25,11 +24,11 @@ function inferSkillFromProblem(problem) {
 function inferLevelFromProblem(problem) {
   const explicitLevel = Number(problem?.level)
   if (Number.isFinite(explicitLevel) && explicitLevel > 0) {
-    return Math.max(1, Math.min(getSkillMaxLevel(problem?.skill), Math.round(explicitLevel)))
+    return Math.max(1, Math.min(12, Math.round(explicitLevel)))
   }
   const conceptualLevel = Number(problem?.difficulty?.conceptual_level)
   if (Number.isFinite(conceptualLevel) && conceptualLevel > 0) {
-    return Math.max(1, Math.min(getSkillMaxLevel(problem?.skill), Math.round(conceptualLevel)))
+    return Math.max(1, Math.min(12, Math.round(conceptualLevel)))
   }
   return 1
 }

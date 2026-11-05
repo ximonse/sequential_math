@@ -1,5 +1,3 @@
-import { getSkillMaxLevel } from './skillLevels.js'
-
 export const TRAINING_CONTEXT_VERSION = 1
 
 export const TRAINING_MODES = Object.freeze({
@@ -33,15 +31,15 @@ function cleanSkills(values) {
     .slice(0, 20)
 }
 
-function cleanLevel(value, maximum = 12) {
+function cleanLevel(value) {
   const numeric = Number(value)
-  if (!Number.isInteger(numeric) || numeric < 1 || numeric > maximum) return null
+  if (!Number.isInteger(numeric) || numeric < 1 || numeric > 12) return null
   return numeric
 }
 
-function cleanLevelRange(minLevel, maxLevel, maximum = 12) {
-  const min = cleanLevel(minLevel, maximum)
-  const max = cleanLevel(maxLevel, maximum)
+function cleanLevelRange(minLevel, maxLevel) {
+  const min = cleanLevel(minLevel)
+  const max = cleanLevel(maxLevel)
   if (min === null || max === null || min > max) return null
   return [min, max]
 }
@@ -107,8 +105,7 @@ export function buildTrainingContext({
   }
 
   if (assignmentKind === 'standard') {
-    const levelRange = cleanLevelRange(assignment?.minLevel, assignment?.maxLevel,
-      assignment?.problemTypes?.length === 1 ? getSkillMaxLevel(assignment.problemTypes[0]) : 12)
+    const levelRange = cleanLevelRange(assignment?.minLevel, assignment?.maxLevel)
     return {
       ...base,
       mode: levelRange && levelRange[0] === levelRange[1]
@@ -155,7 +152,7 @@ export function isValidTrainingContext(value) {
     || value.allowedSkills.some(skill => typeof skill !== 'string' || !skill || skill.length > 100)) return false
   if (value.levelRange !== null && (!Array.isArray(value.levelRange)
     || value.levelRange.length !== 2
-    || value.levelRange.some(level => !Number.isInteger(Number(level)) || Number(level) < 1 || Number(level) > (value.allowedSkills.length === 1 ? getSkillMaxLevel(value.allowedSkills[0]) : 12))
+    || value.levelRange.some(level => !Number.isInteger(Number(level)) || Number(level) < 1 || Number(level) > 12)
     || Number(value.levelRange[0]) > Number(value.levelRange[1]))) return false
   if (!Array.isArray(value.tableSet) || value.tableSet.length > 11
     || value.tableSet.some(table => !Number.isInteger(Number(table)) || Number(table) < 2 || Number(table) > 12)) return false

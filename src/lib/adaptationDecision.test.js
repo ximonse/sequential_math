@@ -85,15 +85,3 @@ describe('mastery progression decision', () => {
     expect(profile.adaptive.lastDecision).toEqual(decision)
   })
 })
-
-
-it('uses thirteen as the number-bond ceiling while other domains still end at twelve', () => {
-  const source = { operation: 'number_bonds', level: 12, achievedAt: 1000, evidenceObservationIds: ['observed'] }
-  const next = buildMasteryProgressionDecision({ mastery: source })
-  expect(next.nextLevel).toBe(13)
-  expect(isValidAdaptationDecision(next)).toBe(true)
-  const complete = buildMasteryProgressionDecision({ mastery: { ...source, level: 13 } })
-  expect(complete.action).toBe('complete_domain')
-  expect(isValidAdaptationDecision(complete)).toBe(true)
-  expect(buildMasteryProgressionDecision({ mastery: { ...source, operation: 'addition' } }).action).toBe('complete_domain')
-})

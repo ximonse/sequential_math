@@ -11,17 +11,27 @@ test('Talpar: mastered pupil starts at the bottom, finishes mixed level and choo
   expect(current.state.problem.level).toBe(1)
   const levels = []
   const mixedTargets = new Set()
-  for (let i = 0; i < 60; i++) {
+  const mixedProblemIds = []
+  let expectedLevel = 1
+  let levelAnswers = 0
+  for (let i = 0; i < 90; i++) {
     current = await waitForTask(page)
     expect(current.timedOut).not.toBe(true)
     const problem = current.state.problem
     expect(problem.skill).toBe('number_bonds')
-    expect(problem.level).toBe(Math.min(13, Math.floor(i / 3) + 1))
+    expect(problem.level).toBe(expectedLevel)
     levels.push(problem.level)
-    if (problem.level === 13) mixedTargets.add(problem.values.target)
+    levelAnswers++
+    if (problem.level >= 10) mixedTargets.add(problem.values.target)
+    if (problem.level === 12) mixedProblemIds.push(problem.id)
     await fillAnswer(page, answerText(problem))
     await submit(page)
-    if (problem.level === 13 && mixedTargets.size === 3 && i >= 38) break
+    if (levelAnswers >= 3 && (expectedLevel < 10 || mixedTargets.size === 3)) {
+      if (expectedLevel === 12) break
+      expectedLevel++
+      levelAnswers = 0
+      mixedTargets.clear()
+    }
   }
   await next(page)
   await expect(page.getByText('Du klarade högsta nivån!')).toBeVisible()
@@ -34,11 +44,11 @@ test('Talpar: mastered pupil starts at the bottom, finishes mixed level and choo
   await page.waitForURL(/\/student\/[^/]+$/)
   await expect.poll(async () => {
     const profile = await readServerProfile(request, pupil.studentId)
-    return (profile?.problemLog || []).some(row => row.operation === 'number_bonds' && row.level === 13)
+    return (profile?.problemLog || []).some(row => row.operation === 'number_bonds' && row.level === 12 && mixedProblemIds.includes(row.problemId))
   }, { timeout: 10000 }).toBe(true)
   await expect(page.getByText(/Ett eller flera svar avvisades/)).toHaveCount(0)
   await page.goto(`/student/${pupil.studentId}/practice?mode=number_bonds`)
   expect((await waitForTask(page)).state.problem.level).toBe(1)
-  expect(levels.length).toBeGreaterThanOrEqual(39)
+  expect(levels.length).toBeGreaterThanOrEqual(36)
   expect((await readState(page)).phase).toBe('answering')
 })

@@ -1,4 +1,3 @@
-import { getSkillMaxLevel } from './skillLevels.js'
 import { resolveProblemOperation, resolveProblemParentSkill } from './mathUtils.js'
 
 export const EVIDENCE_RULE_VERSION = 1
@@ -12,10 +11,10 @@ export const EVIDENCE_CLASSES = Object.freeze({
 
 const KNOWN_EVIDENCE_CLASSES = new Set(Object.values(EVIDENCE_CLASSES))
 
-function positiveLevel(value, fallback = null, skill = null) {
+function positiveLevel(value, fallback = null) {
   const numeric = Number(value)
   if (!Number.isFinite(numeric) || numeric < 1) return fallback
-  return Math.max(1, Math.min(getSkillMaxLevel(skill), Math.round(numeric)))
+  return Math.max(1, Math.min(12, Math.round(numeric)))
 }
 
 export function isTableDrillEvidence(problem) {
@@ -44,8 +43,7 @@ export function readEvidenceClaim(problem) {
     stored.contentLevel
     ?? problem?.contentLevel
     ?? problem?.level
-    ?? problem?.difficulty?.conceptual_level,
-    null, contentSkill
+    ?? problem?.difficulty?.conceptual_level
   )
 
   // Stored result.operation is the legacy persisted evidence identity. Reading
@@ -62,7 +60,7 @@ export function readEvidenceClaim(problem) {
     stored.level
     ?? problem?.evidenceLevel
     ?? problem?.metadata?.evidenceLevel,
-    contentLevel, evidenceSkill
+    contentLevel
   )
 
   const explicitClass = String(
@@ -105,8 +103,8 @@ export function attachEvidenceClaim(problem, overrides = {}) {
     version: Math.max(1, Math.round(Number(overrides.version ?? base.version) || EVIDENCE_RULE_VERSION)),
     contentSkill: String((overrides.contentSkill ?? base.contentSkill) || '').trim(),
     skill: String((overrides.skill ?? base.skill) || '').trim(),
-    contentLevel: positiveLevel(overrides.contentLevel, base.contentLevel, overrides.contentSkill ?? base.contentSkill),
-    level: positiveLevel(overrides.level, base.level, overrides.skill ?? base.skill)
+    contentLevel: positiveLevel(overrides.contentLevel, base.contentLevel),
+    level: positiveLevel(overrides.level, base.level)
   }
   next.class = KNOWN_EVIDENCE_CLASSES.has(String(next.class || '').trim())
     ? String(next.class).trim()

@@ -196,15 +196,15 @@ describe('mastery evidence policy', () => {
     const problems = Array.from({ length: 5 }, (_, index) => result(index, {
       operation: 'number_bonds',
       skill: 'number_bonds',
-      level: 4,
+      level: 3,
       evidenceSkill: 'number_bonds',
-      evidenceLevel: 4,
+      evidenceLevel: 3,
       evidenceClass: 'mastery_eligible',
       speedTimeSec: 1,
       excludedFromSpeed: index > 0
     }))
 
-    expect(computeOperationLevelMasteryStatus(problems, 'number_bonds', 4)).toMatchObject({
+    expect(computeOperationLevelMasteryStatus(problems, 'number_bonds', 3)).toMatchObject({
       isMastered: false,
       fluency: { targetSec: 2, samples: 1, isMastered: false }
     })

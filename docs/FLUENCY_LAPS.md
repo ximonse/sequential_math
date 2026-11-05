@@ -7,21 +7,31 @@ tidigare klarat alla nivåer. Sparade resultat och tidigare kunskapsbelägg
 behålls. Ett uttryckligt nivåval respektive lärarens nivåintervall respekteras.
 Lärarens antal uppgifter är fortfarande ett tak; det förlängs inte automatiskt.
 
-Omgången stiger en nivå efter tre rätt i följd. Nivå 1–4 gäller
-10-kompisar, 5–8 gäller 15-kompisar och 9–12 gäller 20-kompisar.
-Nya nivå 13 blandar dessa tre måltal i slumpade rotationer och väljer
-talparet och den saknade termens position genom slumpade rotationer.
-För att slutföra blandnivån behövs tre rätt i följd och minst ett korrekt
-svar för vart och ett av de tre måltalen under nivån.
+Omgången stiger en nivå efter tre rätt i följd. Ett fel nollställer följden,
+men sänker inte omgångsnivån. Själva omgångens nivåbyte har inget tidskrav.
+
+| Nivåer | Innehåll |
+| --- | --- |
+| 1–3 | 10-kompisar |
+| 4–6 | 15-kompisar |
+| 7–9 | 20-kompisar |
+| 10–12 | Blandade 10-, 15- och 20-kompisar |
+
+Blandnivåerna använder slumpade rotationer för måltal, talpar och den
+saknade termens position. För att gå vidare från en blandnivå behövs både
+tre rätt i följd och minst ett korrekt svar för vart och ett av måltalen
+under nivån. Inom varje grupp har uppgifterna samma innehåll; ingen ytterligare
+svårighetsökning styr omgången mellan gruppens tre nivåer.
+
+Den separata kunskapsbedömningen kräver minst fem korrekta giltiga tidsprov
+och en median på högst 10, 4 respektive 2 sekunder inom varje trestegsgrupp.
+Dessa tidsmål styr mastery, inte omgångens tre-svarsregel.
 
 Efter den högsta nivån erbjuds eleven att börja om eller sluta.
 Omstart börjar samma omgång från dess lägsta nivå. Fri Talpar-träning
-saknar uppgiftstak; pauserna finns kvar. Lärarens nya Talpar-förval
-omfattar nivå 1–13. Äldre uttryckliga nivåintervall ändras inte.
-
-Nivå 13 tillhör bara Talpar. Andra kompetensers nivågränser är oförändrade.
-Dubblors första omgång ändras inte. Vanliga blandade träningspass får ingen
-omgångsreset.
+saknar uppgiftstak; pauserna finns kvar. Alla kompetenser har högst tolv
+nivåer. Dubblors första omgång ändras inte. Vanliga blandade träningspass
+får ingen omgångsreset.
 
 ## Talbild
 
@@ -38,6 +48,6 @@ alla tolv tidigare nivåer, kontrollerar start på nivå 1, hela klättringen,
 blandnivåns tre måltal, omstartsvalet och startnivån vid ett nytt besök.
 `robots/fluency.robot.js` kontrollerar befintliga länkuppdrag och Talbild.
 Enhetstester täcker fyrasekundersgränsen, felaktiga tider, blandgeneratorn,
-omgångsprogression och länkkodning av nivå 13.
+omgångsprogression och att länkar håller sig inom tolv nivåer.
 
 Detta dokument beskriver lokal kod. Publicering kräver separat mandat.

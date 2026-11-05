@@ -4,10 +4,10 @@ import { getFluencyTargetSec } from '../../lib/operations.js'
 
 describe('number fluency domain', () => {
   it('progresses number bonds through 10, 15 and 20 with reset fluency targets', () => {
-    const expectedTargets = [10, 7, 4, 2, 10, 7, 4, 2, 10, 7, 4, 2]
+    const expectedTargets = [10, 4, 2, 10, 4, 2, 10, 4, 2, 10, 4, 2]
     for (let level = 1; level <= 12; level += 1) {
       const problem = numberFluencyDomain.generate('number_bonds', level)
-      const expectedSum = level <= 4 ? 10 : level <= 8 ? 15 : 20
+      const expectedSum = level >= 10 ? problem.values.target : level <= 3 ? 10 : level <= 6 ? 15 : 20
       expect(problem.values.knownTerm + problem.answer.correct).toBe(expectedSum)
       expect(problem.metadata.fluencyTargetSec).toBe(expectedTargets[level - 1])
       expect(numberFluencyDomain.verifyContent(problem).valid).toBe(true)
@@ -29,12 +29,12 @@ describe('number fluency domain', () => {
 })
 
 
-it('mixes all three targets and shuffles their pairs on level thirteen', () => {
+it.each([10, 11, 12])('mixes all three targets and shuffles their pairs on level %s', level => {
   const targets = []
   const terms = new Map([10, 15, 20].map(n => [n, new Set()]))
-  for (let i = 0; i < 66; i++) {
-    const problem = numberFluencyDomain.generate('number_bonds', 13)
-    expect(problem.level).toBe(13)
+  for (let i = 0; i < 126; i++) {
+    const problem = numberFluencyDomain.generate('number_bonds', level)
+    expect(problem.level).toBe(level)
     const { target, knownTerm } = problem.values
     targets.push(target)
     terms.get(target).add(knownTerm)
@@ -43,4 +43,12 @@ it('mixes all three targets and shuffles their pairs on level thirteen', () => {
   }
   expect(new Set(targets)).toEqual(new Set([10, 15, 20]))
   for (const target of [10, 15, 20]) expect(terms.get(target).size).toBe(target + 1)
+})
+
+
+it('distributes single-target number bonds across three levels per family', () => {
+  for (let level = 1; level <= 9; level++) {
+    const expected = level <= 3 ? 10 : level <= 6 ? 15 : 20
+    expect(numberFluencyDomain.generate('number_bonds', level).values.target).toBe(expected)
+  }
 })

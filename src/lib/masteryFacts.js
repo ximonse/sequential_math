@@ -1,5 +1,3 @@
-import { getSkillMaxLevel } from './skillLevels.js'
-
 export function isContractMasteryFact(fact) {
   const id = String(fact?.id || '').trim()
   const operation = String(fact?.operation || '').trim()
@@ -14,7 +12,7 @@ export function isContractMasteryFact(fact) {
     && Boolean(operation)
     && Number.isInteger(level)
     && level >= 1
-    && level <= getSkillMaxLevel(operation)
+    && level <= 12
     && Number.isFinite(achievedAt)
     && achievedAt > 0
     && Number.isInteger(ruleVersion)

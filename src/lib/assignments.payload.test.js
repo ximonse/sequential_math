@@ -99,9 +99,9 @@ describe('assignments payload encoding', () => {
 })
 
 
-it('round-trips the mixed level only for number-bond-only assignments', () => {
+it('keeps all assignments within twelve levels', () => {
   for (const skill of ['number_bonds', 'doubles', 'addition']) {
     const assignment = decodeAssignmentPayload(encodeAssignmentPayload({ id: 'mixed', problemTypes: [skill], minLevel: 1, maxLevel: 13 }))
-    expect(assignment.maxLevel).toBe(skill === 'number_bonds' ? 13 : 12)
+    expect(assignment.maxLevel).toBe(12)
   }
 })

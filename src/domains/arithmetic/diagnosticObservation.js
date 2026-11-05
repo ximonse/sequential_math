@@ -4,6 +4,7 @@ import { checkNcmAnswer } from './ncmAnswerCheck.js'
 import { checkScreeningAnswerKey, screeningAnswerKeyLabel } from './screeningAnswerKey.js'
 import { decimalMultiplicationAnswer } from './decimalMultiplicationPackage.js'
 import { decimalSubtractionAnswer } from './decimalSubtractionPackage.js'
+import { decimalAdditionAnswer } from './decimalAdditionPackage.js'
 
 export const DIAGNOSTIC_OBSERVATION_VERSION = 1
 
@@ -56,8 +57,9 @@ export function summarizeDiagnosticObservation(task, snapshot) {
   }
   const grid = replayDiagnosticGrid(snapshot)
   if (isChoiceTask(task)) return { ...observableFacts(task, grid), ...choiceObservation(task, grid) }
-  if (['decimal_multiplication', 'decimal_subtraction'].includes(task.answerRule)) {
-    const expected = task.answerRule === 'decimal_subtraction' ? decimalSubtractionAnswer(task) : decimalMultiplicationAnswer(task)
+  if (['decimal_multiplication', 'decimal_subtraction', 'decimal_addition'].includes(task.answerRule)) {
+    const expected = task.answerRule === 'decimal_addition' ? decimalAdditionAnswer(task)
+      : task.answerRule === 'decimal_subtraction' ? decimalSubtractionAnswer(task) : decimalMultiplicationAnswer(task)
     const answer = grid.answer.trim(), complete = /^[+−-]?\d+(?:[.,]\d+)?$/u.test(answer)
     return { ...observableFacts(task, grid), explicitAnswer: answer || null,
       expectedAnswer: expected, answerStatus: !answer ? 'unanswered' : !complete ? 'incomplete'

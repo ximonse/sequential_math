@@ -6,6 +6,7 @@ import { divRemainderAsOnes, divRemainderIgnored, divZeroDropped, mulCarryAddedB
 import { addLeftToRight, subLeftToRight } from './leftToRight.js'
 import { candidateResult, entryAndNearMissPredictions, prediction, unavailable, numeric } from './core.js'
 import { decimalSubtractionStructure } from '../arithmetic/decimalSubtractionPackage.js'
+import { decimalAdditionStructure } from '../arithmetic/decimalAdditionPackage.js'
 
 // Columns (0 = ones) that receive a carry in a whole-number addition.
 function carryColumns(a, b) {
@@ -46,8 +47,20 @@ export function arithmeticCandidates(problem, answer) {
     const places = Math.max(...[a, b].map(n => String(n).split('.')[1]?.length ?? 0))
     if (places <= 3) {
       const scale = 10 ** places, aa = Math.round(a * scale), bb = Math.round(b * scale)
-      if (op === 'addition') predictions.push(prediction('carry_forget', digitByDigitSum(aa, bb) / scale,
-        'Svaret matchar platsjusterade decimalkolumner utan överförd minnessiffra.'))
+      if (op === 'addition') {
+        predictions.push(prediction('carry_forget', digitByDigitSum(aa, bb) / scale,
+          'Svaret matchar platsjusterade decimalkolumner utan överförd minnessiffra.'))
+        const structure = decimalAdditionStructure({ a, b })
+        if (structure) correct = (aa + bb) / scale
+        // Keep every omitted-position variant. Dependent carries are analyzed
+        // as an overlap control, but are not eligible pilot source questions.
+        if (['independent_carries', 'dependent_carries'].includes(structure)) {
+          for (const [amount, position] of [[10, 'tiondelen'], [100, 'hela talet']]) {
+            predictions.push(prediction('one_carry_forgotten', (aa + bb - amount) / scale,
+              `Svaret matchar en av de två minnessiffrorna tappad, den till ${position}. Andra förklaringar kan överlappa.`))
+          }
+        }
+      }
       else {
         predictions.push(prediction('smaller_minus_larger', digitByDigitAbsDiff(aa, bb) / scale,
         'Svaret matchar större minus mindre i platsjusterade decimalkolumner.'),

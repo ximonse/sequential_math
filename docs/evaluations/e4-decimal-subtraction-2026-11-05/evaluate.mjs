@@ -69,7 +69,7 @@ const selections = pack.modelIds.map(modelId => {
 })
 await writeFile(new URL('./evidence.json', import.meta.url), JSON.stringify({
   packageId: pack.id, ruleVersion: predictableCandidates(problem(source), source.absoluteColumns).ruleVersion,
-  method: 'synthetic_deterministic_not_blind', teacherApproval: 'approved_2026-11-05', applicationIntegration: true, productionIntegration: false,
+  method: 'synthetic_deterministic_not_blind', teacherApproval: 'approved_2026-11-05', applicationIntegration: true, productionVerification: 'not_performed_by_this_script',
   assertions: { independentIntegerHundredthsTasks: rows.length, correctAnswerControls: rows.length,
     nonMathematicalStatusControls: rows.length * 2, fourWayDistinctContrasts: contrasts.length },
   answerUnits: 'integer_hundredths', implementedDecimalRival: pack.implementedRival, rows, selections,

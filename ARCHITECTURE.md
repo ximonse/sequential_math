@@ -22,6 +22,12 @@ rapport-/materialkedja används. V8 kompletterar en avgränsad decimalrival.
 Källstruktur, paket och noteringsversion valideras på servern; äldre utdelade
 material behåller frysta modellsvar. Se `docs/E4_DECIMAL_SUBTRACTION_REVIEW.md`.
 
+E4:s tredje godkända paket, decimaladdition, är lokalt integrerat i samma
+register och rapport-/materialkedja. V9 bevarar båda positionernas modellsvar
+för en tappad minnessiffra. Beroende kedjor analyseras med synligt överlapp,
+men endast två oberoende minnessiffror ger paketets bankväg. Se
+`docs/E4_DECIMAL_ADDITION_REVIEW.md`; ingen ny progression eller behörighet.
+
 ## Lokal elevanalys via MCP
 
 `api/_teacherMaterialPreview.js` validerar generell eller analysspecifik

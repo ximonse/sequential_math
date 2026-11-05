@@ -20,10 +20,23 @@ två fyrvägskontraster. V8 kompletterar den tidigare saknade decimalrivalen;
 källöverlapp och alla tre alternativa svar bevaras. Gemensamt paketregister,
 servervaliderad avgränsning och samma rapport-/materialkedja används för båda
 paketen. Ny undervisning och nya kontroller lagras fortsatt som befintliga
-rapportavstämningar och privata materialutkast. Detta tillägg är inte i PR #39
-eller produktion. Ingen generell E4-/domänfullständighet påstås.
+rapportavstämningar och privata materialutkast. Tillägget publicerades därefter
+via PR #40, master `4012ac4`, med parallelltrådens senaste produktion bevarad.
+[Kvittot](releases/2026-11-05-decimal-subtraction.md) redovisar exakt bygge och
+inloggad skrivfri förhandsvisning. Komplett produktionspilot och fysisk iPad
+återstår. Ingen generell E4-/domänfullständighet påstås.
 
 ### E4-pilot godkänd och lokalt implementerad 2026-11-05
+
+Senaste E4-fortsättningen är ett [godkänt additionspaket](E4_DECIMAL_ADDITION_REVIEW.md).
+Två minnessiffror behöver inte innebära två oberoende felmöjligheter. Förslaget
+skiljer därför en särskiljande ram från beroende kedjor där modellerna ger
+samma felsvar. Den befintliga heltalsmodellen för en tappad minnessiffra har
+flera svar som nu bevaras i V9:s avgränsade decimalutökning. Simon har godkänt
+paketet och undervisningsgången. Samma register, rapportavstämning och
+materialkedja används; inga nya uppdragslager eller tysta masteryändringar.
+Endast oberoende minnessiffror ger paketets bankväg; beroende kedjor bevaras
+som överlapp. Paketet är lokalt byggt, inte publicerat. E4 som helhet återstår.
 
 Simon godkände innehåll och arbetsgång i
 [E4_DECIMAL_MULTIPLICATION_REVIEW.md](E4_DECIMAL_MULTIPLICATION_REVIEW.md).

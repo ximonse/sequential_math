@@ -1,5 +1,12 @@
 # Generella och analysspecifika uppdrag och screeningar
 
+Tillägg 2026-11-05: även det lärargodkända additionspaketet är lokalt integrerat.
+V9 fryser båda modellsvaren för en tappad minnessiffra. Endast källor med två
+oberoende minnessiffror får paketets bankväg; beroende kedjors överlapp får inte
+döljas. Materialets rapport-/paketbindning, godkännande och historikskydd är
+samma som tidigare. Äldre material behåller frysta jämförelser, nya material
+kräver aktuell regelversion. Se `E4_DECIMAL_ADDITION_REVIEW.md`.
+
 Tillägg 2026-11-05: godkänt decimalsubtraktionspaket är lokalt integrerat med
 decimalmultiplikationspilotens befintliga rapport-/materialkedja. Samma
 paketregister används av katalog, urval och undervisnings-/kontrollvy.
@@ -7,6 +14,9 @@ Servern validerar källstruktur och paket-/noteringsversion; olika paket får
 inte blandas. V8 inför en avgränsad decimalrival. Äldre utdelade material
 behåller frysta modellsvar; nya utkast kräver aktuell regelversion.
 Se `E4_DECIMAL_SUBTRACTION_REVIEW.md` för omfattning och verifiering.
+Paketet är därefter publicerat via PR #40. Inloggad skrivfri produktionspreview
+och facit är verifierade; elevutdelning ingick inte. Exakta belägg och gränser:
+`releases/2026-11-05-decimal-subtraction.md`.
 
 Beslutad riktning 2026-10-28. Urvalsläsning och servervaliderad förhandsvisning
 är byggda lokalt, liksom versionerad utkastlagring och återläsning.

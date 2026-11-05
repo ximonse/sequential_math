@@ -1,8 +1,9 @@
 # E4: avgränsad produktionspilot
 
-Förberedd 2026-11-05 efter Simons ”Kör”. Nästa beslut gäller genomförandet
-nedan. Inga material, rapporter, elevsvar eller avstämningar har sparats under
-förberedelsen. Ingen utdelning har skett.
+Förberedd 2026-11-05 efter Simons ”Kör”. Simon godkände genomförandet genom
+”godkänt”. Åtkomstprov påbörjat; körningen hindras för närvarande av
+webbläsarstyrning och skild kontoidentitet enligt status nedan. Inga material,
+rapporter, elevsvar eller avstämningar har sparats. Ingen utdelning har skett.
 
 ## Syfte och mottagare
 
@@ -70,6 +71,29 @@ Produktionens lärar-/elevinloggning i webbläsare och hela skrivkedjan är änn
 inte verifierade under denna förberedelse. MCP stöder inte godkännande,
 utdelning eller läraravstämningar; dessa steg ska ske genom betrodd inloggning
 och befintligt granskningsflöde. Ingen alternativ endpoint ska kringgå det.
+
+## Genomförandestatus efter godkännandet
+
+- Aktuella MCP-capabilities bekräftar fortsatt pilotägaren adminperson och
+  samma uttryckliga kontobindning. Godkännandet av testupplägget behöver inte
+  begäras igen.
+- In-app-anslutningen nekas med saknad betrodd native bridge. Chromes
+  flikanslutning kan skapa tomma flikar men navigation/åtkomst misslyckas med
+  ett internt timeoutMs-fel. Native styrning når en separat matteflik, men
+  elementklick misslyckas med saknad koordinatgeometri.
+- Tillgänglighetsinformationen visar lärarvyn inloggad som **Adminsimon**,
+  huvudadmin, medan MCP uppger **adminperson**, school_admin. Samma ägare är
+  därmed inte verifierad. Inga privata pilotutkast skapas under fel konto.
+- Helbild av Chrome avvisades av automatisk säkerhetsgranskning eftersom
+  andra privata flik-/kontouppgifter kan exponeras. Ingen bild togs; fortsatta
+  observationer använde tillgänglighetsinformation.
+- Skrivfri läsning av just testprofilens screeninghistorik för 2026-11-05 gav
+  noll poster i perioden, tolv indexerade försök och okänd indexfullständighet.
+  Detta bevisar inte att kontrollfrågorna är omötta. Bredare läsning begränsades
+  av svarsstorlek; nyhetskontrollen är ännu inte passerad.
+- Nästa åtgärd: återställ fungerande, isolerad webbläsaråtkomst på rätt
+  lärarkonto och fortsätt från steg 1. Ingen alternativ endpoint, ändrad
+  säkerhetspolicy eller ny utdelning har använts för att kringgå hindret.
 
 ```mermaid
 flowchart TD

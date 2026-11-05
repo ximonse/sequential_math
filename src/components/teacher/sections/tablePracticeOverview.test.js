@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { buildTablePracticeHistory } from '../../../lib/tablePracticeProgress'
-import { buildTablePracticeOverview, sortTablePracticeOverviewRows } from './tablePracticeOverview'
+import { buildTablePracticeOverview, sortTablePracticeOverviewRows, nextOverviewStudentSort } from './tablePracticeOverview'
 import TablePracticeOverviewPanel from './TablePracticeOverviewPanel'
 
 const now = Date.parse('2026-09-28T12:00:00Z')
@@ -26,6 +26,28 @@ function pupil(studentId, answers, tableDrill) {
 }
 
 describe('class table practice overview', () => {
+  it('cycles name, observed table count and breadth of strong results without rewarding one fast answer', () => {
+    const complete = (table, speedTimeSec) => Array.from({ length: 10 }, (_, i) => ({ table, factor: i + 1, correct: true, speedTimeSec }))
+    const overview = buildTablePracticeOverview([
+      pupil('Anna', [{ table: 4, factor: 1, correct: true, speedTimeSec: 0.2 }]),
+      pupil('Bertil', [...complete(4, 2), ...complete(5, 4)]),
+      pupil('Cecilia', [4,5,6].flatMap(table => complete(table, 2.8))),
+      pupil('Dani', [4,5,6,7].map(table => ({ table, factor: 1, correct: true, speedTimeSec: 0.3 }))),
+      pupil('Empty', [])
+    ], 14, now)
+    expect(sortTablePracticeOverviewRows(overview.rows, 'tested', 'desc').map(row => row.name))
+      .toEqual(['Dani', 'Cecilia', 'Bertil', 'Anna', 'Empty'])
+    expect(sortTablePracticeOverviewRows(overview.rows, 'performance', 'desc').map(row => row.name))
+      .toEqual(['Cecilia', 'Bertil', 'Dani', 'Anna', 'Empty'])
+    expect(overview.rows.find(row => row.name === 'Cecilia').ranking).toMatchObject({ tested: 3, complete: 3, strong: 3 })
+    expect(overview.rows.find(row => row.name === 'Anna').ranking).toMatchObject({ tested: 1, complete: 0, strong: 0 })
+    expect(nextOverviewStudentSort('name').key).toBe('tested')
+    expect(nextOverviewStudentSort('tested').key).toBe('performance')
+    expect(nextOverviewStudentSort('performance').key).toBe('name')
+    expect(nextOverviewStudentSort(7).key).toBe('name')
+    const missing = { studentId: 'Missing', name: 'A Missing', tables: {} }
+    expect(sortTablePracticeOverviewRows([missing, ...overview.rows], 'tested', 'desc').at(-1).studentId).toBe('Missing')
+  })
   it('uses the same per-table answers as the detail view and sorts speed in both directions', () => {
     const pupils = [
       pupil('Alma', Array.from({ length: 8 }, () => ({ table: 7, correct: true, speedTimeSec: 6 }))),

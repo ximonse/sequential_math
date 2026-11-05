@@ -97,3 +97,11 @@ describe('assignments payload encoding', () => {
     expect(decodeAssignmentPayload(url.searchParams.get('assignment_payload'))?.title).toBe('Addition')
   })
 })
+
+
+it('keeps all assignments within twelve levels', () => {
+  for (const skill of ['number_bonds', 'doubles', 'addition']) {
+    const assignment = decodeAssignmentPayload(encodeAssignmentPayload({ id: 'mixed', problemTypes: [skill], minLevel: 1, maxLevel: 13 }))
+    expect(assignment.maxLevel).toBe(12)
+  }
+})

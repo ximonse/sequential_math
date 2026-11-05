@@ -4,10 +4,10 @@ import { getFluencyTargetSec } from '../../lib/operations.js'
 
 describe('number fluency domain', () => {
   it('progresses number bonds through 10, 15 and 20 with reset fluency targets', () => {
-    const expectedTargets = [10, 7, 4, 2, 10, 7, 4, 2, 10, 7, 4, 2]
+    const expectedTargets = [10, 8, 6, 4, 3, 2, 5, 2, 5, 2, 5, 2]
     for (let level = 1; level <= 12; level += 1) {
       const problem = numberFluencyDomain.generate('number_bonds', level)
-      const expectedSum = level <= 4 ? 10 : level <= 8 ? 15 : 20
+      const expectedSum = level >= 11 ? problem.values.target : level <= 6 ? 10 : level <= 8 ? 15 : 20
       expect(problem.values.knownTerm + problem.answer.correct).toBe(expectedSum)
       expect(problem.metadata.fluencyTargetSec).toBe(expectedTargets[level - 1])
       expect(numberFluencyDomain.verifyContent(problem).valid).toBe(true)
@@ -26,4 +26,29 @@ describe('number fluency domain', () => {
       expect(getFluencyTargetSec('doubles', level)).toBeNull()
     }
   })
+})
+
+
+it.each([11, 12])('mixes all three targets and shuffles their pairs on level %s', level => {
+  const targets = []
+  const terms = new Map([10, 15, 20].map(n => [n, new Set()]))
+  for (let i = 0; i < 126; i++) {
+    const problem = numberFluencyDomain.generate('number_bonds', level)
+    expect(problem.level).toBe(level)
+    const { target, knownTerm } = problem.values
+    targets.push(target)
+    terms.get(target).add(knownTerm)
+    expect(knownTerm + problem.answer.correct).toBe(target)
+    expect(numberFluencyDomain.verifyContent(problem).valid).toBe(true)
+  }
+  expect(new Set(targets)).toEqual(new Set([10, 15, 20]))
+  for (const target of [10, 15, 20]) expect(terms.get(target).size).toBe(target + 1)
+})
+
+
+it('distributes single-target number bonds across six foundation levels and two levels per transfer family', () => {
+  for (let level = 1; level <= 10; level++) {
+    const expected = level <= 6 ? 10 : level <= 8 ? 15 : 20
+    expect(numberFluencyDomain.generate('number_bonds', level).values.target).toBe(expected)
+  }
 })

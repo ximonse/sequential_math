@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import GameOverScreen from './GameOverScreen'
+import { useBreakGameResult } from './useBreakGameResult'
 
 const GRID_COLS = 20
 const GRID_ROWS = 14
@@ -18,6 +19,7 @@ function SnakeGame({ onClose, studentId, studentName, classId }) {
   const [score, setScore] = useState(0)
   const [timeLeft, setTimeLeft] = useState(MAX_TIME)
   const [gameOver, setGameOver] = useState(false)
+  const reportRound = useBreakGameResult({ game: 'snake', studentId, classId, gameOver, timeLeft, score })
 
   useEffect(() => {
     gameOverRef.current = gameOver
@@ -172,6 +174,7 @@ function SnakeGame({ onClose, studentId, studentName, classId }) {
       const bodyToCheck = willGrow ? game.snake : game.snake.slice(0, -1)
       const hitSelf = bodyToCheck.some((part) => part.x === nextHead.x && part.y === nextHead.y)
       if (hitSelf) {
+        gameOverRef.current = true
         setGameOver(true)
         return
       }
@@ -225,6 +228,7 @@ function SnakeGame({ onClose, studentId, studentName, classId }) {
   }
 
   const handleClose = () => {
+    reportRound('aborted')
     setGameOver(true)
     onClose()
   }

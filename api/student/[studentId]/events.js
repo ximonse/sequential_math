@@ -1,3 +1,4 @@
+import { isValidBreakGameResult, recordBreakGameResult } from '../../../src/lib/breakGameResults.js'
 import { mutateStudentRecord, studentStoreError } from '../../_studentStore.js'
 import { assertTeacherStudentAccess } from '../../_studentAccess.js'
 import { verifyStudentCredential } from '../../_studentPassword.js'
@@ -213,6 +214,7 @@ export function validEntry(entry, studentId) {
   if (typeof entry?.id !== 'string' || !entry.id || entry.id.length > 100 || !entry.payload || jsonBytes(entry) > MAX_EVENT_BYTES) return false
   if (entry.studentId && String(entry.studentId).toUpperCase() !== studentId) return false
   const payload = entry.payload
+  if (entry.type === 'break_game_result') return isValidBreakGameResult(payload)
   if (entry.type === 'attention_result') return payload?.completionReason !== 'unfinished' && isValidAttentionResult(payload)
   if (entry.type === 'attention_checkpoint') return isRecord(payload) && Object.keys(payload).length === 2
     && Object.hasOwn(payload, 'revision') && Object.hasOwn(payload, 'result') && Number.isInteger(payload.revision) && payload.revision > 0 && payload.revision <= 5000
@@ -267,6 +269,8 @@ export function applyWalEntry(profile, entry) {
   if (!entry?.type || !entry?.payload) return false
 
   switch (entry.type) {
+    case 'break_game_result':
+      return recordBreakGameResult(profile, { ...entry.payload, classIdAtAttempt: resolveClassIdAtAttempt(profile, entry.payload) })
     case 'attention_result':
       return recordAttentionResult(profile, entry.payload)
     case 'problem_result':

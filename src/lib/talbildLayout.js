@@ -1,3 +1,6 @@
+import { pickFromRotation } from './rotationPicker.js'
+import { recordCoverageSample, fluencyLevelTargetSec } from './coverageFluency.js'
+
 export const DIE_SIZE = 240
 export const BASE_DOT_SIZE = 22
 export const MAX_TALBILD_LEVEL = 3
@@ -80,21 +83,31 @@ export function createTalbildLayout(value, level = 0, rng = Math.random) {
   return counts.map(count => arrangeDie(count, level, rng))
 }
 
-const WINDOW_SIZE = 5
-const FAST_MS = 2600
-const SLOW_MS = 5500
+export const TALBILD_LEVEL_COUNT = 12
+export const TALBILD_ADVANCE_MAX_MS = 2000
 
-// Level climbs after five fast, correct answers in a row and drops after a slow or wrong-heavy window.
+// Internal progress levels are 0–11; layout stages remain 0–3.
+export function talbildLayoutStage(level) {
+  return level < 6 ? 0 : level < 8 ? 1 : level < 10 ? 2 : 3
+}
+
 export function nextTalbildLevel(level, recent) {
-  if (recent.length < WINDOW_SIZE) return { level, resetWindow: false }
-  const window = recent.slice(-WINDOW_SIZE)
-  const correct = window.filter(item => item.isCorrect)
-  const avgMs = correct.length ? correct.reduce((sum, item) => sum + item.timeMs, 0) / correct.length : Infinity
-  if (correct.length === WINDOW_SIZE && avgMs <= FAST_MS && level < MAX_TALBILD_LEVEL) {
-    return { level: level + 1, resetWindow: true }
-  }
-  if ((correct.length <= 2 || avgMs >= SLOW_MS) && level > 0) {
-    return { level: level - 1, resetWindow: true }
+  let samples = {}
+  const required = Array.from({ length: 10 }, (_, i) => String(i + 1))
+  const targetSec = fluencyLevelTargetSec(level + 1)
+  for (const entry of recent) {
+    const round = recordCoverageSample(samples, String(entry.correctAnswer), entry.timeMs / 1000,
+      entry.isCorrect, required, targetSec)
+    samples = round.samples
+    if (round.complete) return { level: Math.min(11, level + 1), resetWindow: true, complete: level === 11 }
   }
   return { level, resetWindow: false }
+}
+
+
+export function nextTalbildRoundValue(previous, level) {
+  const values = Array.from({ length: 10 }, (_, i) => i + 1)
+  const key = `talbild:level${level}`
+  const first = Number(pickFromRotation(key, values))
+  return first === previous ? Number(pickFromRotation(key, values)) : first
 }

@@ -36,6 +36,7 @@ function SessionPage({
   masteredThisWeek,
   syncStatus,
   remainingCount = null,
+  fluencyProgress = '',
   praise = ''
 }) {
   const [notebookVisible, setNotebookVisible] = useState(false)
@@ -79,6 +80,7 @@ function SessionPage({
             </div>
           )}
 
+          {fluencyProgress && <p className="mb-3 text-sm text-gray-600">{fluencyProgress}</p>}
           {praise && (
             <div role="status" className="mb-4 rounded-lg bg-emerald-100 px-4 py-3 text-center text-2xl font-bold text-emerald-800 shadow">
               {praise}

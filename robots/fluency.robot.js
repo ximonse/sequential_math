@@ -2,7 +2,7 @@
 // pupil works them: cap set by the teacher, countdown, breaks, praise, the
 // finish screen, and Talbild's speed-based harder layouts.
 import { test, expect } from '@playwright/test'
-import { createPupil, next, readState } from './lib/app.js'
+import { createPupil, login, next, readState } from './lib/app.js'
 import { createFindings } from './lib/findings.js'
 import { answerTasks } from './lib/session.js'
 import { createTeacher, openTab, selectOnlyClass, teacherLogin } from './lib/teacher.js'
@@ -306,55 +306,38 @@ test('Talbild: tak, nedräkning, paus, uppmuntran och avslut', async ({ browser,
   expect.soft(findings.items.map(f => `${f.rule}: ${f.message}`)).toEqual([])
 })
 
-test('Talbild: snabb elev får svårare bilder, långsam eller felande får lättare', async ({ browser, request }, testInfo) => {
+test('Talbild: all ten values and the first six levels use conventional dice', async ({ page, request }, testInfo) => {
   test.setTimeout(5 * 60 * 1000)
-  const findings = createFindings(testInfo)
-  const { klass, pupils, teacher } = await setupClass(request)
-  const link = await talbildLink(browser, teacher, klass, 120)
-  const { context, page } = await openAsPupil(browser, link, pupils[1])
-  const observed = { level1: false, level2: false, level3: false, back: false }
-  let eligibleLevel1 = false
-  await page.waitForTimeout(3200) // a slow start must not count against the pupil's speed
-  let sizesVary = false
-  const record = async n => {
+  const pupil = await createPupil(request)
+  await login(page, pupil)
+  await page.goto(`/student/${pupil.studentId}/subitizing`)
+  const stages = new Set()
+  let previousLevel = 1
+  let covered = new Set()
+  for (let n = 0; n < 300; n++) {
+    await dismissTalbildBreak(page)
+    if (await page.getByText('Talbild är klar!').isVisible().catch(() => false)) break
     const seen = await waitForDice(page)
-    if (!seen) { findings.add('R3', 'Ingen ny tärning kom fram', { efter: n }); return null }
-    checkDice(findings, seen.dice, { svar: n })
-    return seen
-  }
-  const classic = dice => {
-    const counts = dice.map(die => die.dots.length)
-    const total = counts.reduce((a, b) => a + b, 0)
-    const expected = total <= 5 ? [total] : [5, total - 5]
-    return JSON.stringify(counts) === JSON.stringify(expected) && dice.every(die => die.dots.every(dot => /^(\d+(\.0+)?)%$/.test(dot.x)))
-  }
-  let n = 0
-  const play = async (count, strategy, tag) => {
-    for (let i = 0; i < count; i++) {
-      // Answers 1–5 are level 0, 6–10 level 1, 11–15 level 2, 16–20 level 3.
-      if (i > 0 && (i + 1) % 15 === 1 && n % 15 === 0) await dismissTalbildBreak(page)
-      const seen = await record(++n)
-      if (!seen) return
-      const total = seen.dice.reduce((s, die) => s + die.dots.length, 0)
-      if (tag === 'up' && n > 5 && n <= 10 && total >= 6 && total <= 9) eligibleLevel1 = true
-      if (tag === 'up' && n > 5 && n <= 10 && total >= 6 && total <= 9 && seen.dice.length === 2 && seen.dice[0].dots.length !== 5) observed.level1 = true
-      if (tag === 'up' && n > 10 && n <= 15 && seen.dice.some(die => die.dots.some(dot => /\.\d/.test(dot.x)))) observed.level2 = true
-      if (tag === 'up' && n > 15 && new Set(seen.dice.flatMap(die => die.dots.map(dot => Math.round(dot.d)))).size > 1) { observed.level3 = true; sizesVary = true }
-      if (tag === 'down' && classic(seen.dice)) observed.back = true
-      await talbildAnswer(page, findings, { strategy })
-      if (n % 15 === 0) { await page.waitForTimeout(500); await dismissTalbildBreak(page) }
+    expect(seen).toBeTruthy()
+    const level = Number((await bodyText(page)).match(/Nivå (\d+)/)?.[1])
+    if (level !== previousLevel) {
+      expect(level).toBe(previousLevel + 1)
+      expect(covered.size).toBe(10)
+      covered = new Set()
+      previousLevel = level
     }
+    const value = seen.dice.reduce((sum, die) => sum + die.dots.length, 0)
+    covered.add(value)
+    if (level <= 6 && value >= 6) expect(seen.dice.map(die => die.dots.length)).toEqual([5, value - 5])
+    stages.add(level <= 6 ? 0 : level <= 8 ? 1 : level <= 10 ? 2 : 3)
+    await page.getByRole('button', { name: String(value), exact: true }).click()
+    await page.waitForTimeout(330)
   }
-  await play(20, 'correct', 'up')
-  findings.stat('svårare bilder', JSON.stringify(observed))
-  if (eligibleLevel1 && !observed.level1) findings.add('R3', 'Ingen ojämn fördelning när talet 6–9 visades efter fem snabba rätt')
-  if (!observed.level2) findings.add('R3', 'Inga slumpade prickar efter tio snabba rätt')
-  if (!observed.level3 || !sizesVary) findings.add('R3', 'Inga olika prickstorlekar efter femton snabba rätt')
-  await play(18, 'wrong', 'down')
-  if (!observed.back) findings.add('R3', 'Bilderna blev inte lättare efter en följd av fel svar')
-  await context.close()
-  await findings.attach()
-  expect.soft(findings.items.map(f => `${f.rule}: ${f.message}`)).toEqual([])
+  await expect(page.getByText('Talbild är klar!')).toBeVisible()
+  expect([...stages].sort()).toEqual([0,1,2,3])
+  await page.screenshot({ path: testInfo.outputPath('talbild-twelve-complete.png') })
+  await page.getByRole('button', { name: 'Börja om', exact: true }).click()
+  await expect(page.getByText(/Nivå 1 · mål/)).toBeVisible()
 })
 
 test('Talbild: knapparna ligger 5 och 5 i två rader och inget scrollar i sidled', async ({ browser, request }, testInfo) => {
@@ -374,6 +357,7 @@ test('Talbild: knapparna ligger 5 och 5 i två rader och inget scrollar i sidled
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
     if (overflow > 1) findings.add('T1', `Talbild scrollar i sidled på ${device}`, { px: overflow })
     checkDice(findings, await readDice(page), { enhet: device })
+    await page.screenshot({ path: testInfo.outputPath(`talbild-${device}.png`), fullPage: true })
     await context.close()
   }
   await findings.attach()

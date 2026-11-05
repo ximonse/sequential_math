@@ -172,3 +172,25 @@ Arkitektur: DashboardLayout ändras bara för inkoppling, rubrik och överförin
 av visningsurval. Den är fortsatt över 600 rader; ingen ny verksamhetslogik
 läggs där. Materiallistan, genomförandestatus och avgränsning av listdata har
 egna komponenter/funktioner. Slutlig verifiering dokumenteras i projektkartan.
+
+
+## Framsteg: sortering i tabellöversikten
+
+Klick på rubriken Elev växlar mellan namn (alfabetiskt), antal olika testade
+tabeller (flest först) och samlat resultat. Vid antals-/resultatsortering visas under varje elev de antal som
+sorteringen bygger på. Klick på ett faktiskt elevnamn öppnar fortfarande
+elevens detaljvy. Enskilda tabellrubriker behåller snabbast/långsammast.
+
+Testad tabell betyder minst ett registrerat tabellsvar i vald period.
+Samlat resultat prioriterar flest tabeller med alla tio olika tal rätt och
+median under tre sekunder, med minst fem ostörda rätta tidsprov. Därefter
+avgör fler hela tabeller, lägre medel av tabellernas medianer, högre andel
+rätt och slutligen bredden av testade tabeller. Denna gräns följer översiktens
+befintliga gröna tidsstreck. Ett enstaka snabbt svar vinner inte över brett
+komplett underlag. Saknat underlag sorteras efter tillgängliga resultat och
+visas inte som noll. Begränsad historik är fortsatt uttryckligt markerad.
+
+Klass-/gruppurvalets valda knappar har grön bakgrund, mörkgrön text och en
+bock i alla teman, även hög kontrast. `aria-pressed` anger valt tillstånd.
+Urvalslogiken och sparade klassval ändras inte. Det generella knappskalets
+neutrala färger omfattar inte längre dessa valmarkeringar.

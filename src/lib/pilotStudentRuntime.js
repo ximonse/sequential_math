@@ -1,3 +1,4 @@
+import { isValidBreakGameResult } from './breakGameResults.js'
 import {
   fetchStudentSessionProfile,
   postStudentSessionEvents,
@@ -431,6 +432,24 @@ export function createPilotStudentRuntime({
       if (store !== activeStore) return
       updateSyncStatus({ state: 'pending', pendingCount: syncStatus.pendingCount + 1 })
       void syncPending().catch(error => updateSyncStatus({ state: 'pending', lastErrorAt: Date.now(), lastError: String(error?.message || 'Fokusförsöket väntar på synkning.') }))
+    },
+
+    async persistBreakGameResult(expectedStudentId, payload) {
+      if (!store || normalizePilotStudentId(expectedStudentId) !== studentId || !isValidBreakGameResult(payload)) {
+        return { ok: false, locallySaved: false }
+      }
+      const activeStore = store
+      const id = `break_game_${payload.id}`
+      const operation = attentionWriteTail.then(async () => {
+        const existing = await activeStore.readEventState(id)
+        if (!existing) await activeStore.appendEvent({ id, type: 'break_game_result', timestamp: payload.finishedAt, payload })
+      })
+      attentionWriteTail = operation.catch(() => {})
+      await operation
+      if (store !== activeStore) return { ok: false, locallySaved: true }
+      updateSyncStatus({ state: 'pending', pendingCount: syncStatus.pendingCount + 1 })
+      const result = await syncPending()
+      return { ...result, locallySaved: true }
     },
 
     async persistAttentionResult(expectedStudentId, payload, { onLocalSaved } = {}) {

@@ -179,10 +179,46 @@ export async function handleControl(action, body = {}) {
     }
     return { ok: true, username: id, password: ROBOT_TEACHER_PASSWORD, classIds }
   }
+  if (action === 'fluency-history') {
+    const studentId = String(body.studentId || '').toUpperCase()
+    const profile = await kv.get(`student:${studentId}`)
+    if (!profile) return { ok: false }
+    const rows = Array.from({ length: 60 }, (_, i) => ({
+      observationId: `robot-fluency-${studentId}-${i}`, timestamp: Date.now() - 120000 + i * 1000,
+      operation: 'number_bonds', skill: 'number_bonds', domain: 'number_fluency',
+      level: Math.floor(i / 5) + 1, correct: true, timeSpent: 1, speedTimeSec: 1
+    }))
+    const facts = Array.from({ length: 12 }, (_, i) => ({
+      id: `robot-fluency-mastery-${studentId}-${i}`, operation: 'number_bonds', level: i + 1,
+      achievedAt: Date.now() - 1000, ruleVersion: 1,
+      evidenceObservationIds: rows.slice(i * 5, i * 5 + 5).map(row => row.observationId)
+    }))
+    await kv.set(`student:${studentId}`, { ...profile, problemLog: rows, recentProblems: rows,
+      masteryFacts: { version: 1, facts, revokedIds: [] } })
+    return { ok: true }
+  }
   if (action === 'student') {
     const profile = await kv.get(`student:${String(body.studentId || '').toUpperCase()}`)
     if (profile) delete profile.auth
     return { ok: Boolean(profile), profile }
+  }
+  if (action === 'seed-table-overview') {
+    for (const fixture of body.students || []) {
+      const studentId = String(fixture.studentId).toUpperCase()
+      const profile = await kv.get(`student:${studentId}`)
+      if (!profile) return { ok: false }
+      const rows = (fixture.tables || []).flatMap(item => Array.from({ length: item.factors }, (_, i) => ({
+        observationId: `overview-${studentId}-${item.table}-${i}`, problemId: `overview-${studentId}-${item.table}-${i}`,
+        timestamp: Date.now() - 60000, operation: 'multiplication', skill: 'multiplication', domain: 'arithmetic',
+        problemType: 'mul_table_drill', skillTag: `mul_table_${item.table}`, level: 1,
+        correct: true, values: { a: item.table, b: i + 1 }, speedTimeSec: item.seconds, timeSpent: item.seconds
+      })))
+      await kv.set(`student:${studentId}`, { ...profile, problemLog: rows, recentProblems: rows,
+        stats: { ...profile.stats, lifetimeProblems: rows.length },
+        tableDrill: { completions: (fixture.tables || []).filter(item => item.factors === 10)
+          .map(item => ({ table: item.table, timestamp: Date.now() - 60000 })) } })
+    }
+    return { ok: true }
   }
   if (action === 'seed-table-progress') {
     const seeded = []

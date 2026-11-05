@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { advanceFluencyLap, getFluencyLevelRange, getFluencyStep, getFluencyTarget,
+import { getFluencyPractice, advanceFluencyLap, getFluencyLevelRange, getFluencyStep, getFluencyTarget,
   isFluencyAssignment, isFluencyTopLevelFinish, startFluencyLap } from './fluencySession'
 
 describe('fluencySession', () => {
@@ -30,8 +30,8 @@ describe('fluencySession', () => {
   it('treats the assignment top level, or 12, as the top', () => {
     expect(getFluencyLevelRange({ minLevel: 3, maxLevel: 6 })).toEqual([3, 6])
     expect(getFluencyLevelRange({})).toEqual([1, 12])
-    expect(isFluencyTopLevelFinish({ level: 6 }, true, { minLevel: 1, maxLevel: 6 })).toBe(true)
-    expect(isFluencyTopLevelFinish({ level: 12 }, true, {})).toBe(true)
+    expect(isFluencyTopLevelFinish({ level: 6 }, true, { minLevel: 1, maxLevel: 6 }, { streak: 3 })).toBe(true)
+    expect(isFluencyTopLevelFinish({ level: 12 }, true, {}, { streak: 3 })).toBe(true)
     expect(isFluencyTopLevelFinish({ level: 11 }, true, {})).toBe(false)
     expect(isFluencyTopLevelFinish({ level: 12 }, false, {})).toBe(false)
   })
@@ -48,5 +48,24 @@ describe('fluencySession', () => {
     for (let i = 0; i < 3; i++) lap = advanceFluencyLap(lap, true, assignment)
     expect(lap.level).toBe(2)
     expect(advanceFluencyLap(null, true, assignment)).toBe(null)
+  })
+})
+
+
+describe('fresh focused number-bond laps', () => {
+  it('starts free practice at one and includes the mixed level without a task cap', () => {
+    const practice = getFluencyPractice(null, 'number_bonds', null)
+    expect(getFluencyLevelRange(practice)).toEqual([1, 12])
+    expect(startFluencyLap(practice)).toEqual({ level: 1, streak: 0 })
+    expect(getFluencyTarget(practice)).toBe(Infinity)
+    expect(getFluencyPractice(null, 'doubles', null)).toBe(null)
+    expect(getFluencyPractice(null, 'number_bonds', 5)).toBe(null)
+  })
+  it('keeps explicit teacher bounds and waits for complete timed coverage at the top', () => {
+    const assignment = { problemTypes: ['number_bonds'], minLevel: 3, maxLevel: 12, targetCount: 12 }
+    expect(startFluencyLap(assignment).level).toBe(3)
+    expect(getFluencyTarget(assignment)).toBe(12)
+    expect(isFluencyTopLevelFinish({ skill: 'number_bonds', level: 12 }, true, assignment, { complete: false })).toBe(false)
+    expect(isFluencyTopLevelFinish({ skill: 'number_bonds', level: 12 }, true, assignment, { complete: true })).toBe(true)
   })
 })

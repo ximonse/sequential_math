@@ -162,3 +162,32 @@ describe('pilot student runtime', () => {
     expect(store.clearDiagnosticDraftIfConfirmed).toHaveBeenCalledWith('attempt-a', snapshot)
   })
 })
+
+
+it('queues game results offline without replacing mathematics and retries the same id', async () => {
+  const store = vault()
+  let saved = null, acknowledged = false, online = true
+  store.readEventState = vi.fn(async () => saved ? { acknowledged } : null)
+  store.appendEvent = vi.fn(async event => { saved = event })
+  store.listPendingEvents = vi.fn(async () => saved && !acknowledged ? [{ event: saved }] : [])
+  store.acknowledgeEvents = vi.fn(async () => { acknowledged = true })
+  const runtime = createPilotStudentRuntime({ createStore: async () => store,
+    resumeSession: async () => ({ ok: true, student: { studentId } }),
+    fetchProfile: async () => ({ ok: true, profile }),
+    postEvents: async events => online ? { ok: true, ack: events.map(event => event.id) } : { ok: false, error: 'offline' } })
+  await runtime.bootstrap(studentId)
+  online = false
+  const result = { id: 'round-1', version: 1, game: 'pong', gameVersion: 'pong-90s-v1',
+    startedAt: 1000, finishedAt: 2000, durationMs: 1000, score: 1, playerScore: 0, computerScore: 1, reason: 'aborted' }
+  await expect(runtime.persistBreakGameResult('OTHER', result)).resolves.toMatchObject({ ok: false, locallySaved: false })
+  await expect(runtime.persistBreakGameResult(studentId, result)).resolves.toMatchObject({ ok: false, locallySaved: true })
+  await runtime.persistBreakGameResult(studentId, result)
+  expect(store.appendEvent).toHaveBeenCalledTimes(1)
+  expect(store.saveSnapshotAndAppendEvent).not.toHaveBeenCalled()
+  expect(saved.type).toBe('break_game_result')
+  online = true
+  await expect(runtime.persistBreakGameResult(studentId, result)).resolves.toMatchObject({ ok: true, locallySaved: true })
+  expect(acknowledged).toBe(true)
+  expect(store.appendEvent).toHaveBeenCalledTimes(1)
+  await runtime.close()
+})

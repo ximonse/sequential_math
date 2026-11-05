@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { buildTablePracticeOverview, sortTablePracticeOverviewRows, TABLE_NUMBERS } from './tablePracticeOverview'
+import { buildTablePracticeOverview, sortTablePracticeOverviewRows, TABLE_NUMBERS, OVERVIEW_STUDENT_SORTS, nextOverviewStudentSort } from './tablePracticeOverview'
 
 const percentage = value => Number.isFinite(value) ? `${Math.round(value * 100)}%` : '–'
 const seconds = value => Number.isFinite(value) ? value.toFixed(1).replace('.', ',') : '–'
@@ -55,6 +55,9 @@ export default function TablePracticeOverviewPanel({ students = [], days = 14, o
     if (sortBy === key) setSortDir(previous => previous === 'asc' ? 'desc' : 'asc')
     else { setSortBy(key); setSortDir('asc') }
   }
+  const studentSort = OVERVIEW_STUDENT_SORTS.find(item => item.key === sortBy)
+  const nextStudentSort = nextOverviewStudentSort(sortBy)
+  const cycleStudentSort = () => { setSortBy(nextStudentSort.key); setSortDir(nextStudentSort.direction) }
   const limitedHistory = overview.rows.some(row => TABLE_NUMBERS.some(table => !row.tables[table]?.historyComplete))
 
   return <section aria-label="Tabellöversikt – hela klassen" className="rounded-lg border border-slate-300 bg-white p-3 shadow-sm sm:p-4">
@@ -85,8 +88,8 @@ export default function TablePracticeOverviewPanel({ students = [], days = 14, o
       <div className="overflow-x-auto rounded border border-slate-200">
         <table aria-label="Tabellträning per elev och tabell" className="w-full border-collapse text-sm">
           <thead><tr className="border-b border-slate-200 bg-slate-50 text-slate-700">
-            <th scope="col" aria-sort={sortBy === 'name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="sticky left-0 z-10 w-28 min-w-28 bg-slate-50 px-2 py-2 text-left">
-              <button type="button" onClick={() => sort('name')} className="font-semibold hover:text-teal-800 hover:underline">Elev <span aria-hidden="true">{sortBy === 'name' ? (sortDir === 'asc' ? '▲' : '▼') : '↕'}</span></button>
+            <th scope="col" aria-sort={studentSort ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="sticky left-0 z-10 w-28 min-w-28 bg-slate-50 px-2 py-2 text-left">
+              <button type="button" onClick={cycleStudentSort} title={`Växla till ${nextStudentSort.label}`} aria-label={`Elev: ${studentSort?.label || 'tabelltid'}. Byt till ${nextStudentSort.label}.`} className="whitespace-nowrap font-semibold hover:text-teal-800 hover:underline">Elev · {studentSort?.label || 'namn'} <span aria-hidden="true">{studentSort ? (sortDir === 'asc' ? '▲' : '▼') : '↕'}</span></button>
             </th>
             {TABLE_NUMBERS.map(table => <th key={table} scope="col" aria-sort={sortBy === table ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'} className="min-w-[51px] whitespace-nowrap px-0.5 py-2 text-center">
               <button type="button" onClick={() => sort(table)} title={`Sortera ${table}:ans tabell efter mediansekunder`} className="font-semibold hover:text-teal-800 hover:underline">
@@ -97,6 +100,8 @@ export default function TablePracticeOverviewPanel({ students = [], days = 14, o
           <tbody>{rows.map((row, index) => <tr key={row.studentId} className={`border-b border-slate-100 ${index % 2 ? 'bg-slate-50/50' : 'bg-white'}`}>
             <th scope="row" className={`sticky left-0 z-10 w-28 min-w-28 px-2 py-1.5 text-left font-medium ${index % 2 ? 'bg-slate-50' : 'bg-white'}`}>
               <button type="button" onClick={() => onOpenStudentDetail?.(row.studentId)} className="block max-w-24 truncate text-left text-slate-800 hover:text-teal-800 hover:underline" title={row.name}>{row.name}</button>
+              {sortBy === 'tested' && <small className="block text-xs font-normal text-slate-600">{row.ranking.tested === null ? 'Underlag saknas' : `${row.ranking.tested} testade`}</small>}
+              {sortBy === 'performance' && <small className="block text-xs font-normal text-slate-600">{row.ranking.strong === null ? 'Underlag saknas' : `${row.ranking.strong} snabba · ${row.ranking.complete} hela`}</small>}
             </th>
             {TABLE_NUMBERS.map(table => <TableCell key={table} item={row.tables[table]} table={table}
               onOpenTableProgress={() => onOpenTableProgress?.(table, row.studentId)} />)}
@@ -108,7 +113,8 @@ export default function TablePracticeOverviewPanel({ students = [], days = 14, o
           </tr></tfoot>
         </table>
       </div>
-      <p className="mt-2 text-xs text-slate-600">Under cirkeln: olika tal rätt av 10 i vald period, sedan andel rätt · antal svar. För hela urvalet visas i stället antal elever med belagd hel tabell. Tidsstreck: grönt &lt;3 s, gult 3–5 s, rött &gt;5 s; färg kräver minst 5 ostörda korrekta tider. Välj en tabellrubrik för snabbast/långsammast. Tiden är medianen av korrekta svar utan registrerade avbrott.</p>
+      <p className="mt-2 text-xs text-slate-600">Under cirkeln: olika tal rätt av 10 i vald period, sedan andel rätt · antal svar. För hela urvalet visas i stället antal elever med belagd hel tabell. Tidsstreck: grönt &lt;3 s, gult 3–5 s, rött &gt;5 s; färg kräver minst 5 ostörda korrekta tider. Klicka på Elev för namn, antal testade tabeller eller samlat resultat. Välj en tabellrubrik för snabbast/långsammast. Tiden är medianen av korrekta svar utan registrerade avbrott.</p>
+      {sortBy === 'performance' && <p className="mt-1 text-xs text-slate-600">Resultat: flest tabeller med 10/10 olika tal rätt och median under 3 s först (minst 5 ostörda rätta tider). Vid lika: fler hela tabeller, sedan lägre medeltid och högre andel rätt.</p>}
       {limitedHistory && <p role="status" className="mt-2 rounded border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-900">Begränsad historik eller underlag saknas för minst en elev. En tom markör betyder inte att eleven inte tränat.</p>}
     </>}
   </section>

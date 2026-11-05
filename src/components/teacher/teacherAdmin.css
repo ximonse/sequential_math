@@ -76,13 +76,16 @@ body[class*="theme-"] [data-teacher-admin] :is(button.rounded, button.rounded-md
 body[class*="theme-"] [data-teacher-admin] button:is(.bg-indigo-600, .bg-blue-600, .bg-green-600, .bg-emerald-600, .teacher-admin-primary) {
   color: #fff !important; background: var(--accent) !important; border-color: var(--accent); font-weight: 650;
 }
-body[class*="theme-"] [data-teacher-admin] .dashboard-class-filter button.bg-blue-600 {
-  background: var(--surface-soft) !important; color: var(--text-main) !important; border-color: var(--accent);
-}
-body[class*="theme-"] [data-teacher-admin] button[aria-pressed="true"]:not([data-teacher-workspace="progress"] table button) {
+body[class*="theme-"] [data-teacher-admin] button[aria-pressed="true"]:not([data-teacher-workspace="progress"] table button):not(.dashboard-class-filter button) {
   background: var(--surface-soft) !important; color: var(--text-main) !important; border-color: var(--accent);
 }
 body[class*="theme-"] [data-teacher-admin] button[aria-pressed="true"] span { color: inherit !important; }
+/* Class selection is a persistent green state, independent of generic button chrome. */
+body[class*="theme-"] [data-teacher-admin] .dashboard-class-filter button[aria-pressed="true"] {
+  background: #dcfce7 !important; color: #14532d !important; border-color: #15803d !important;
+  font-weight: 650;
+}
+
 body[class*="theme-"] [data-teacher-admin] button:is([class*="bg-red-"], [class*="bg-rose-"]) {
   color: var(--danger) !important; background: var(--surface) !important; border-color: var(--danger);
 }

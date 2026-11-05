@@ -41,7 +41,7 @@ export default function ClassFilterPanel({
             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
         >
-          Alla klasser
+          {allClassesSelected && <span aria-hidden="true">✓ </span>}Alla klasser
         </button>
         {selectedClassIds.length > 0 && <button type="button" onClick={onClearClassFilter}
           className="rounded-md px-1.5 py-0.5 text-xs text-gray-600 hover:bg-gray-100">Rensa klassurval</button>}
@@ -61,7 +61,7 @@ export default function ClassFilterPanel({
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
           >
-            {item.name}
+            {selectedClassIds.includes(item.id) && <span aria-hidden="true">✓ </span>}{item.name}
           </button>
         ))}
       </div>

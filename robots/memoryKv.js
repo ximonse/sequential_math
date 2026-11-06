@@ -284,4 +284,15 @@ export const kv = {
   _dump() { return { values: Object.fromEntries(values), sets: Object.fromEntries([...sets].map(([k, v]) => [k, [...v]])) } }
 }
 
+// Optional network-like read latency for the explicit transition matrix only.
+// The real handlers and all their checks still execute; no production store is used.
+const readDelayMs = Math.min(250, Math.max(0, Number(process.env.ROBOT_KV_READ_DELAY_MS) || 0))
+if (readDelayMs) for (const name of ['get', 'mget', 'exists', 'smembers', 'lrange']) {
+  const read = kv[name]
+  kv[name] = async (...args) => {
+    await new Promise(resolve => setTimeout(resolve, readDelayMs))
+    return read(...args)
+  }
+}
+
 export default { kv }

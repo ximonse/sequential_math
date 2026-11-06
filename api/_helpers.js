@@ -1,5 +1,6 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import { kv } from '@vercel/kv'
+import { beginRequestTiming, measureRequestStep } from './_requestTiming.js'
 import { isSchoolAdminRole, isSuperAdminRole, normalizeTeacherRole } from './_teacherRoles.js'
 
 const TEACHER_SESSION_TTL_MS = 12 * 60 * 60 * 1000
@@ -24,6 +25,7 @@ function isAllowedOrigin(origin) {
 }
 
 export function withCors(res, options = {}, req = null) {
+  beginRequestTiming(req, res)
   const methods = String(options?.methods || 'GET,POST,OPTIONS')
   const headers = String(options?.headers || 'Content-Type')
   const requestOrigin = String(req?.headers?.origin || options?.requestOrigin || '')
@@ -250,6 +252,10 @@ function isPrimaryAdminAccount(account) {
  * still exist in KV.
  */
 export async function getLiveTeacherAuthPayload(req, { store = kv } = {}) {
+  return measureRequestStep(req, 'teacher-auth', () => readLiveTeacherAuth(req, store))
+}
+
+async function readLiveTeacherAuth(req, store) {
   const tokenAuth = getTeacherAuthPayload(req)
   if (!tokenAuth) return null
 

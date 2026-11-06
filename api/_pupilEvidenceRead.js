@@ -1,4 +1,5 @@
 import { kv } from '@vercel/kv'
+import { measureRequestStep } from './_requestTiming.js'
 import { getLiveTeacherAuthPayload } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
 import { studentDeletedKey } from './_studentStore.js'
@@ -10,10 +11,12 @@ import { pupilScreeningEvidence } from './_pupilScreeningEvidence.js'
 import { diagnosticNotebookExport } from '../src/domains/arithmetic/diagnosticNotebookExport.js'
 
 export async function assertPupilEvidenceAccess(req, studentId, classId) {
-  const profile = await kv.get(`student:${studentId}`)
-  const classroom = await kv.get(`class:${classId}`)
+  const [profile, classroom, deleted, legacyDeleted] = await Promise.all([
+    kv.get(`student:${studentId}`), kv.get(`class:${classId}`),
+    kv.exists(studentDeletedKey(studentId)), kv.exists(`student_deleted:${studentId}`)
+  ])
   if (!profile || profile.studentId !== studentId || !classroom || classroom.archived
-    || await kv.exists(studentDeletedKey(studentId)) || await kv.exists(`student_deleted:${studentId}`)
+    || deleted || legacyDeleted
     || ![profile.classId, ...(profile.classIds || [])].includes(classId)
     || !await canAccessClass(req, classId)) {
     throw evidenceError(403, 'evidence_access_denied', 'Ingen aktuell åtkomst till eleven i denna klass.')
@@ -43,7 +46,7 @@ export async function readPupilEvidence(req, auth, studentId, { unpaged = false 
   assertEvidenceSourceAccess(auth, studentId, source)
   const practice = source === 'screening' ? { entries: [], coverage: { status: 'not_requested' } } : practiceEvidence(profile)
   const screening = source === 'practice' ? { entries: [], coverage: { status: 'not_requested' } }
-    : await pupilScreeningEvidence(studentId, classId)
+    : await measureRequestStep(req, 'screening-history', () => pupilScreeningEvidence(studentId, classId))
   // Recheck membership and live teacher/class access after potentially slow detail reads.
   await assertPupilEvidenceAccess(req, studentId, classId)
   if (source !== 'practice') {

@@ -26,6 +26,34 @@ function vault() {
 }
 
 describe('pilot student runtime', () => {
+  it('avoids duplicate session reads for a bound pupil, but flushes before the fresh authorized profile read', async () => {
+    const store = vault(), steps = []
+    let pending = true
+    store.listPendingEvents.mockImplementation(async () => pending ? [{ event: {
+      id: 'answer-1', type: 'problem_result', payload: { problemId: 'p1', timestamp: 1, correct: true }
+    } }] : [])
+    store.acknowledgeEvents.mockImplementation(async () => { steps.push('ack'); pending = false })
+    const resumeSession = vi.fn(), checkRetired = vi.fn(async () => false)
+    const fetchProfile = vi.fn(async () => { steps.push('profile'); return { ok: true, profile } })
+    const runtime = createPilotStudentRuntime({ createStore: async () => store, hasBoundSession: id => id === studentId,
+      resumeSession, fetchProfile, checkRetired, bootstrapReuseMs: 0,
+      postEvents: async entries => { steps.push('write'); return { ok: true, ack: entries.map(e => e.id) } } })
+    await expect(runtime.bootstrap(studentId)).resolves.toMatchObject({ ok: true })
+    expect(steps).toEqual(['write', 'ack', 'profile'])
+    expect(resumeSession).not.toHaveBeenCalled()
+    // The identity hint never substitutes for current server authorization.
+    fetchProfile.mockResolvedValueOnce({ ok: false, status: 401, error: 'Expired' })
+    await expect(runtime.bootstrap(studentId)).resolves.toMatchObject({ ok: false, status: 401 })
+    expect(fetchProfile).toHaveBeenCalledTimes(2)
+    expect(checkRetired).toHaveBeenCalledWith(studentId)
+  })
+  it('does not use a bound identity to accept another pupil profile', async () => {
+    const store = vault()
+    const runtime = createPilotStudentRuntime({ createStore: async () => store, hasBoundSession: () => true,
+      fetchProfile: async () => ({ ok: true, profile: { ...profile, studentId: 'B'.repeat(32) } }) })
+    await expect(runtime.bootstrap(studentId)).resolves.toMatchObject({ ok: false, error: expect.stringContaining('stämmer inte') })
+    expect(store.saveSnapshot).not.toHaveBeenCalled()
+  })
   it('appends focus checkpoints without replacing a mathematics snapshot and waits for the encrypted write before closing', async () => {
     const store = vault()
     let release, started

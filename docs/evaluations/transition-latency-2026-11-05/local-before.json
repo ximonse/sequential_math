@@ -1,0 +1,1150 @@
+{
+  "measuredOn": "2026-11-06",
+  "codeState": "6fdbe83 with measurement harness only",
+  "method": "Playwright action to verified usable DOM; includes readiness polling. One worker. Not a production measurement.",
+  "environment": "isolated-memory-storage",
+  "readDelayMs": 50,
+  "samples": [
+    {
+      "name": "teacher-login-to-class-picker",
+      "ms": 1379,
+      "withinBudget": null
+    },
+    {
+      "name": "pupil-login-to-home",
+      "ms": 1451,
+      "withinBudget": null
+    },
+    {
+      "name": "warm-home-to-practice",
+      "ms": 139,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "practice-answer-to-feedback",
+      "ms": 62,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "practice-next-question",
+      "ms": 40,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-practice-to-home",
+      "ms": 155,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-home-to-practice",
+      "ms": 133,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-practice-to-home",
+      "ms": 153,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-home-to-practice",
+      "ms": 167,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-practice-to-home",
+      "ms": 134,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-home-to-practice",
+      "ms": 148,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-practice-to-home",
+      "ms": 156,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-home-to-practice",
+      "ms": 163,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-practice-to-home",
+      "ms": 142,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-home-to-practice",
+      "ms": 163,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-practice-to-home",
+      "ms": 201,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-home-to-practice",
+      "ms": 147,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-practice-to-home",
+      "ms": 158,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-home-to-practice",
+      "ms": 144,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-practice-to-home",
+      "ms": 199,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-home-to-practice",
+      "ms": 131,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-practice-to-home",
+      "ms": 155,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-home-to-practice",
+      "ms": 164,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "warm-practice-to-home",
+      "ms": 154,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "revalidated-home-to-practice",
+      "ms": 2954,
+      "withinBudget": null
+    },
+    {
+      "name": "home-to-table-practice",
+      "ms": 153,
+      "budgetMs": 1000,
+      "withinBudget": true
+    },
+    {
+      "name": "screening-open",
+      "ms": 4780,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-next-including-save",
+      "ms": 2963,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-previous",
+      "ms": 1927,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-next-including-save",
+      "ms": 1925,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-previous",
+      "ms": 1927,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-next-including-save",
+      "ms": 1909,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-previous",
+      "ms": 1932,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-next-including-save",
+      "ms": 1926,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-previous",
+      "ms": 1930,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-next-including-save",
+      "ms": 1949,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-previous",
+      "ms": 1936,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-next-including-save",
+      "ms": 1933,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-previous",
+      "ms": 1910,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-next-including-save",
+      "ms": 1915,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-previous",
+      "ms": 1945,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-next-including-save",
+      "ms": 1929,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-previous",
+      "ms": 1928,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-next-including-save",
+      "ms": 1943,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-previous",
+      "ms": 1906,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-next-including-save",
+      "ms": 1937,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-previous",
+      "ms": 1930,
+      "withinBudget": null
+    },
+    {
+      "name": "screening-submit-collection",
+      "ms": 3920,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-class-change-to-results",
+      "ms": 932,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-class-change-to-results",
+      "ms": 930,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-class-change-to-results",
+      "ms": 939,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-class-change-to-results",
+      "ms": 935,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-class-change-to-results",
+      "ms": 914,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-class-change-to-results",
+      "ms": 921,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-class-change-to-results",
+      "ms": 916,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-class-change-to-results",
+      "ms": 932,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-class-change-to-results",
+      "ms": 920,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-class-change-to-results",
+      "ms": 908,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-workspace-Screening: skapa",
+      "ms": 50,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-workspace-Screening: resultat",
+      "ms": 44,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-workspace-Framsteg",
+      "ms": 82,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-open-pupil-detail",
+      "ms": 1982,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-open-analysis-history",
+      "ms": 1950,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-read-screening-evidence",
+      "ms": 3990,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-open-pupil-detail",
+      "ms": 1953,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-open-analysis-history",
+      "ms": 1927,
+      "withinBudget": null
+    },
+    {
+      "name": "teacher-read-screening-evidence",
+      "ms": 1980,
+      "withinBudget": null
+    }
+  ],
+  "requests": [
+    {
+      "path": "/api/teacher-login",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-workspace",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-pupil-labels",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-workspace",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-workspace",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-groups",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-classes",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/students",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-pupil-labels",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-diagnostic-assignments",
+      "status": 201,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/student-session",
+      "status": 201,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/student-session",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/profile",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/events",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/events",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/events",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/events",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/events",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/events",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/student-session",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/events",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/events",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/events",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/profile",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/events",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/events",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/events",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/events",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-attempt",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/class-config",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/events",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/students",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/students",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/students",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/students",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/students",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/students",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/students",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/students",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/students",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/students",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-diagnostic-assignments",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-pupil-labels",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-workspace",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-groups",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-classes",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-workspace",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-workspace",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/students",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-pupil-labels",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/students",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-pupil-labels",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-workspace",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-groups",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-classes",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-workspace",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-workspace",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/students",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-pupil-labels",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/students",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    },
+    {
+      "path": "/api/teacher-students/:pupil",
+      "status": 200,
+      "serverTiming": null
+    }
+  ],
+  "remainingOverBudget": []
+}

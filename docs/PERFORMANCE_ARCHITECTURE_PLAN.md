@@ -1,5 +1,8 @@
 # Kort arkitekturplan för väntetider — 2026-10-29
 
+Aktiv uppföljning 2026-11-06: [hela övergångskedjan](PERFORMANCE_TRANSITIONS.md).
+Tidigare delrättningar nedan innebär inte att appens väntetider är lösta.
+
 ## Komplettering 2026-11-04: bevara tabelljämförelsen under hämtning
 
 En bred robotkörning och seriell reproduktion visade att sparad jämförelseelev

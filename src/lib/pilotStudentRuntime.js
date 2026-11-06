@@ -3,7 +3,8 @@ import {
   fetchStudentSessionProfile,
   postStudentSessionEvents,
   resumeStudentSession,
-  isStudentRetired
+  isStudentRetired,
+  hasBoundStudentSession
 } from './studentSessionClient'
 import { createPilotStudentStore, deletePilotStudentStore } from './pilotStudentStore'
 import { EVENT_OWNED_ADAPTIVE_FIELDS } from './pilotCheckpointContract.js'
@@ -98,6 +99,7 @@ function prepareEvent(event) {
 export function createPilotStudentRuntime({
   createStore = createPilotStudentStore,
   resumeSession = resumeStudentSession,
+  hasBoundSession = hasBoundStudentSession,
   fetchProfile = fetchStudentSessionProfile,
   postEvents = postStudentSessionEvents,
   checkRetired = isStudentRetired,
@@ -316,7 +318,13 @@ export function createPilotStudentRuntime({
         }
       }
       lastBootstrap = null
-      const resumed = await resumeSession()
+      // Login/resume already bound the CSRF token to this pupil. Do not fetch
+      // the same full server profile twice on every expired bootstrap window.
+      // Pending writes still require live cookie+CSRF validation, and the final
+      // profile GET remains a fresh server check after those writes complete.
+      const resumed = hasBoundSession(expected)
+        ? { ok: true, student: { studentId: expected } }
+        : await resumeSession()
       if (!resumed?.ok) {
         if (resumed?.status === 401 || resumed?.status === 410) await clearRetiredPupil(expected)
         return resumed
@@ -344,6 +352,7 @@ export function createPilotStudentRuntime({
       if (!synced.ok && !String(synced.error || '').includes('anslutningen')) return synced
       const loaded = await fetchProfile()
       if (!loaded?.ok || normalizePilotStudentId(loaded.profile?.studentId) !== expected) {
+        if (loaded?.status === 401 || loaded?.status === 410) await clearRetiredPupil(expected)
         return loaded?.ok ? { ok: false, error: 'Profilen stämmer inte med elevsessionen.' } : loaded
       }
       await store.saveSnapshot(loaded.profile)

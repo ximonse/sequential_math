@@ -1,4 +1,4 @@
-import { beforeEach, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 const mock = vi.hoisted(() => ({ allowed: vi.fn(), records: new Map(), sets: new Map() }))
 vi.mock('./_studentAccess.js', () => ({ getLiveAuthorizedClassIds: mock.allowed }))
 vi.mock('@vercel/kv', () => ({ kv: {
@@ -24,6 +24,7 @@ const profile = id => ({ profileSchemaVersion: 1, studentId: id, displayAlias: `
   classId: 'C', grade: 6, recentProblems: [], problemLog: ['PRIVATE ANSWER'], stats: {}, masteryFacts: { facts: [], revokedIds: [] },
   auth: { scheme: 'qr-pin-v1', lastLoginAt: 100, pinHash: 'PRIVATE HASH' } })
 const response = () => ({ status() { return this }, json(value) { this.data = value; return this } })
+afterEach(() => vi.useRealTimers())
 beforeEach(() => {
   vi.clearAllMocks(); mock.records.clear(); mock.sets.clear(); mock.allowed.mockResolvedValue(['C'])
   mock.sets.set('classes:index', ['C', 'D', 'X'])
@@ -31,6 +32,27 @@ beforeEach(() => {
   mock.records.set('class:X', { id: 'X', name: 'Arkiv', archived: true })
   mock.sets.set('class_students:C', ['P']); mock.sets.set('class_students:D', ['OTHER'])
   mock.records.set('student:P', profile('P')); mock.records.set('student:OTHER', profile('OTHER'))
+})
+it('bounds cold catalog writes without one serialized round trip per pupil', async () => {
+  vi.useFakeTimers()
+  const ids = Array.from({ length: 24 }, (_, i) => `P${i}`)
+  mock.sets.set('class_students:C', ids)
+  for (const id of ids) mock.records.set(`student:${id}`, profile(id))
+  const original = kv.eval.getMockImplementation()
+  let active = 0, peak = 0
+  kv.eval.mockImplementation(async (...args) => {
+    active++; peak = Math.max(peak, active)
+    await new Promise(resolve => setTimeout(resolve, 100))
+    try { return await original(...args) } finally { active-- }
+  })
+  try {
+    const res = response(), start = Date.now(), pending = teacherCatalog({}, res)
+    await vi.runAllTimersAsync(); await pending
+    expect(res.data.pupils.map(p => p.studentId)).toEqual(ids)
+    expect(peak).toBeLessThanOrEqual(8)
+    expect(Date.now() - start).toBeLessThanOrEqual(400)
+    expect(JSON.stringify(res.data)).not.toContain('PRIVATE')
+  } finally { kv.eval.mockImplementation(original) }
 })
 it('returns only authorised metadata, then uses warm cards without reading full profiles', async () => {
   const res = response(); await teacherCatalog({}, res)

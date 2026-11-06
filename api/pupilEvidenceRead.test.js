@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 const mock = vi.hoisted(() => ({ get: vi.fn(), exists: vi.fn(), access: vi.fn(), auth: vi.fn(), screening: vi.fn(), enabled: true, allowed: true }))
 vi.mock('@vercel/kv', () => ({ kv: { get: mock.get, exists: mock.exists } }))
 vi.mock('./_studentAccess.js', () => ({ canAccessClass: mock.access, assertTeacherStudentAccess: vi.fn() }))
@@ -6,6 +6,7 @@ vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mock.auth, withCors
 vi.mock('./_pupilScreeningEvidence.js', () => ({ pupilScreeningEvidence: mock.screening }))
 vi.mock('./_diagnosticApiAccess.js', () => ({ diagnosticApiEnabled: () => mock.enabled, diagnosticTestStudentAllowed: () => mock.allowed }))
 import handler from './teacher-students/[studentId].js'
+import { assertPupilEvidenceAccess } from './_pupilEvidenceRead.js'
 import { createDiagnosticGrid, recordDiagnosticGridEvent } from '../src/domains/arithmetic/diagnosticGridModel.js'
 
 const profile = { studentId: 'PUPIL', classId: 'CLASS', auth: { password: 'SECRET' }, problemLog: [
@@ -29,6 +30,23 @@ beforeEach(() => {
 })
 
 describe('pupil evidence live access boundary', () => {
+  afterEach(() => vi.useRealTimers())
+  it('overlaps independent source reads and still checks live class access afterwards', async () => {
+    vi.useFakeTimers()
+    const delayed = async value => { await new Promise(resolve => setTimeout(resolve, 100)); return value }
+    mock.get.mockImplementation(key => delayed(key === 'student:PUPIL' ? profile : {}))
+    mock.exists.mockImplementation(() => delayed(false))
+    const started = Date.now()
+    mock.access.mockImplementation(async () => {
+      expect(mock.get).toHaveResolvedTimes(2)
+      expect(mock.exists).toHaveResolvedTimes(2)
+      return true
+    })
+    const pending = assertPupilEvidenceAccess({}, 'PUPIL', 'CLASS')
+    await vi.runAllTimersAsync()
+    expect(await pending).toEqual(profile)
+    expect(Date.now() - started).toBeLessThanOrEqual(100)
+  })
   it('filters the exact local clock window and excludes the explicit end instant', async () => {
     expect((await call({ from: '2026-10-27T11:00', to: '2026-10-27T11:01' })).data.total).toBe(1)
     expect((await call({ from: '2026-10-27T11:01', to: '2026-10-27' })).data.total).toBe(0)

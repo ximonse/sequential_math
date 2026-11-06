@@ -80,9 +80,9 @@ export async function readDiagnosticAttempt(attemptId, { store = kv } = {}) {
   checkIdentity(attemptId, 'server')
   const record = await store.get(`diagnostic_attempt:${attemptId}`)
   if (!record) return null
-  if (await store.exists(studentDeletedKey(record.studentId))
-    || await store.exists(`student_deleted:${record.studentId}`)
-    || await store.exists(`class_deleted:${record.classIdAtAttempt}`)) {
+  const removed = await Promise.all([store.exists(studentDeletedKey(record.studentId)),
+    store.exists(`student_deleted:${record.studentId}`), store.exists(`class_deleted:${record.classIdAtAttempt}`)])
+  if (removed.some(Boolean)) {
     throw new DiagnosticAppendError(410, 'attempt_unavailable', 'Diagnostic attempt is no longer available')
   }
   const events = await store.lrange(`diagnostic_attempt_events:${attemptId}`, 0, -1)

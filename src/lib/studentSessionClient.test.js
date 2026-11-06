@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fetchStudentSessionProfile, hasStudentSessionCsrfToken, loginStudentSession, logoutStudentSession, postStudentSessionEvents, postStudentSessionHighscore, resumeStudentSession } from './studentSessionClient'
+import { fetchStudentSessionProfile, hasBoundStudentSession, hasStudentSessionCsrfToken, loginStudentSession, logoutStudentSession, postStudentSessionEvents, postStudentSessionHighscore, resumeStudentSession } from './studentSessionClient'
 
 const student = { studentId: 'A'.repeat(32), displayAlias: 'Blå Komet' }
 const sessionPayload = { ok: true, student, csrfToken: 'csrf-test-token' }
@@ -11,7 +11,7 @@ function jsonResponse(body, status = 200) {
 afterEach(() => vi.unstubAllGlobals())
 
 describe('student session client', () => {
-  it('sends QR credentials only to the login endpoint and remembers only CSRF in module memory', async () => {
+  it('sends QR credentials only to login and remembers only CSRF and its pupil binding in module memory', async () => {
     const fetchMock = vi.fn(async () => jsonResponse(sessionPayload, 201))
     vi.stubGlobal('fetch', fetchMock)
 
@@ -20,6 +20,8 @@ describe('student session client', () => {
       method: 'POST', credentials: 'include', body: JSON.stringify({ studentId: 'A'.repeat(32), qrSecret: 'qr-secret', pin: '1234' })
     }))
     expect(hasStudentSessionCsrfToken()).toBe(true)
+    expect(hasBoundStudentSession(student.studentId)).toBe(true)
+    expect(hasBoundStudentSession('B'.repeat(32))).toBe(false)
   })
 
   it('sends a code name and PIN without QR material when requested', async () => {
@@ -69,6 +71,7 @@ describe('student session client', () => {
 
     await expect(fetchStudentSessionProfile()).resolves.toMatchObject({ ok: false, error: expect.stringContaining('gått ut'), status: 401 })
     expect(hasStudentSessionCsrfToken()).toBe(false)
+    expect(hasBoundStudentSession(student.studentId)).toBe(false)
     await expect(postStudentSessionEvents([])).resolves.toEqual({ ok: false, error: 'Din session har gått ut. Logga in igen.' })
   })
 

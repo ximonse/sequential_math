@@ -1,0 +1,182 @@
+{
+  "measuredOn": "2026-11-05",
+  "environment": "production",
+  "entryAsset": "index-B11X6ayv.js",
+  "method": "Browser click event to usable DOM; tool transport time excluded. No pupil answers submitted.",
+  "limitations": [
+    "One synthetic test profile and one desktop browser; not an iPad or class-load claim.",
+    "Six home-to-practice and five practice-to-home observations; not a p95 estimate.",
+    "An earlier invalid empty-answer readiness criterion was discarded."
+  ],
+  "samples": [
+    {
+      "name": "home-to-practice",
+      "ms": 4030,
+      "timedOut": false,
+      "resources": [
+        {
+          "path": "/api/student-session",
+          "ms": 863
+        },
+        {
+          "path": "/api/me/events",
+          "ms": 1695
+        },
+        {
+          "path": "/api/me/profile",
+          "ms": 1036
+        },
+        {
+          "path": "/api/class-config",
+          "ms": 303
+        }
+      ]
+    },
+    {
+      "name": "practice-to-home",
+      "ms": 324,
+      "timedOut": false,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 292
+        }
+      ]
+    },
+    {
+      "name": "home-to-practice",
+      "ms": 4025,
+      "timedOut": false,
+      "resources": [
+        {
+          "path": "/api/student-session",
+          "ms": 898
+        },
+        {
+          "path": "/api/me/events",
+          "ms": 1641
+        },
+        {
+          "path": "/api/me/profile",
+          "ms": 985
+        },
+        {
+          "path": "/api/class-config",
+          "ms": 365
+        }
+      ]
+    },
+    {
+      "name": "practice-to-home",
+      "ms": 328,
+      "timedOut": false,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 288
+        }
+      ]
+    },
+    {
+      "name": "home-to-practice",
+      "ms": 311,
+      "timedOut": false,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 276
+        }
+      ]
+    },
+    {
+      "name": "practice-to-home",
+      "ms": 327,
+      "timedOut": false,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 301
+        }
+      ]
+    },
+    {
+      "name": "home-to-practice",
+      "ms": 4005,
+      "timedOut": false,
+      "resources": [
+        {
+          "path": "/api/student-session",
+          "ms": 782
+        },
+        {
+          "path": "/api/me/events",
+          "ms": 1900
+        },
+        {
+          "path": "/api/me/profile",
+          "ms": 906
+        },
+        {
+          "path": "/api/class-config",
+          "ms": 296
+        }
+      ]
+    },
+    {
+      "name": "practice-to-home",
+      "ms": 380,
+      "timedOut": false,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 350
+        }
+      ]
+    },
+    {
+      "name": "home-to-practice",
+      "ms": 327,
+      "timedOut": false,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 294
+        }
+      ]
+    },
+    {
+      "name": "practice-to-home",
+      "ms": 697,
+      "timedOut": false,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 661
+        }
+      ]
+    },
+    {
+      "name": "home-to-practice",
+      "ms": 4246,
+      "timedOut": false,
+      "resources": [
+        {
+          "path": "/api/student-session",
+          "ms": 912
+        },
+        {
+          "path": "/api/me/events",
+          "ms": 1638
+        },
+        {
+          "path": "/api/me/profile",
+          "ms": 1177
+        },
+        {
+          "path": "/api/class-config",
+          "ms": 359
+        }
+      ]
+    }
+  ]
+}

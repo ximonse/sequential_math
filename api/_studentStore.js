@@ -45,7 +45,8 @@ export function studentDeletedKey(studentId) {
 export async function isStudentDeleted(studentId, { store = kv } = {}) {
   const normalized = String(studentId || '').trim().toUpperCase()
   if (!normalized) return false
-  return Boolean(await store.exists(studentDeletedKey(normalized)) || await store.exists(`student_deleted:${normalized}`))
+  const removed = await Promise.all([store.exists(studentDeletedKey(normalized)), store.exists(`student_deleted:${normalized}`)])
+  return removed.some(Boolean)
 }
 
 export async function mutateStoredRecord(kind, id, transform, { store = kv } = {}) {

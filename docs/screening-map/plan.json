@@ -3209,6 +3209,56 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "app-transition-latency",
+      "area": "Helhet och riktning",
+      "title": "Hela appens väntetider: elev-, screening- och lärarövergångar",
+      "status": "Byggt",
+      "purpose": "Minska faktisk klick-till-användbar-vy och sparväntan över hela appen, inte bara ett långsamt anrop.",
+      "next": "Publicera det verifierade första ändringssjoket efter uttryckligt mandat och mät samma vägar i produktion. Fortsätt med oförändrade klass-/elevbyten, kall katalog/stora profiler och materialflödet. Klart när hela matrisen har jämförbara produktionsserier och kvarvarande väntan har följts upp.",
+      "acceptance": "Jämförbara före/efter-serier för hem/övning, övningsbyte, svar/nästa, screening öppna/nästa/inlämning, lärarstart/sidbyte/klassbyte/elevbyte och materialflöde. Oförklarad väntan och kvarvarande långsamma vägar redovisas. Första start och upprepade varma byten hålls isär. Serverns kvittenser, original, medlemskap, sessionversioner och CAS skyddas. Lokal vinst är inte produktionsvinst; separat publiceringsmandat krävs för slutlig livejämförelse.",
+      "requires": [],
+      "affects": [
+        "learning-system-synthesis",
+        "scale"
+      ],
+      "decision": "2026-11-05: Simon påpekar att alla övergångar är sega och ger Kör för bred kartläggning och implementation. En synlig delrättning är inte klart. Tidigare bootstrap/katalogrättningar är historik, inte belägg för lösta väntetider.",
+      "evidence": "Arbetet startar från ren 6fdbe83. Tidigare pilot bekräftar komplett kedja men ett materialanrop 50 484 ms. Äldre PERFORMANCE_MAP/ARCHITECTURE_PLAN beskriver partiella ändringar och saknad uppmätt vinst. Ny läsning finner seriell screeninghistorik per försök och upprepad konto-/klassläsning; deras tidsandel är ännu inte fastställd. Browserproben mäter klickhändelsen till faktisk DOM-beredskap, inte verktygens transporttid. Ett inledande felaktigt kriterium som krävde aktiv Svara vid tom ruta förkastades. 2026-11-06: Se docs/PERFORMANCE_TRANSITIONS.md och avidentifierade JSON-serier. Produktion före: sex hem/övning 311–4246 ms, fem återgångar 324–697 ms. Lokalt byggt: oberoende sessions-/raderingsläsningar parallellt, screeninghistorik högst åtta samtidiga försök, katalogskrivningar högst åtta, identitetsbunden transportinformation undviker extra session/profil och underlagskontrollen överlappar fyra läsningar. Färska serverkontroller och kontroll efter historikläsning kvarstår. Kontrollerade virtuella tider: session 600 till 300 ms, 20 försök 8000 till 1200 ms, 24 katalogskrivningar 2400 till 300 ms, underlagskontroll 400 till 100 ms. Full enhetssvit 233 filer/1253 tester passerade före sista underlagsrättningen; därefter 24 riktade tester gröna. Lokal mätrobot passerade före sista rättningen; slutkörning pågår. Ingen push eller produktionsvinst påstås. Kall katalog/fullprofil, ytterligare övningar, material och verklig moln-/klasslast är fortsatt öppna. Slututfall 2026-11-06: separat temporär 6fdbe83-kopia mot samma mätrobot, en worker och 50 ms per läsoperation. Före till slutlig efter: förnyad övningsstart 2954 till 1926 ms; screening öppna 4780 till 2752 ms; nästa med sparande medel 2033 till 1013 ms (max efter 1917); förra 1927 till 907 ms; inlämning 3920 till 2928 ms; analyshistorik 1938 till 947 ms. Klassbyte cirka 0,94 s och elevdetalj cirka 1,98 s är fortsatt oförändrade. Playwright-åtgärd till beredskap inkluderar grov pollning; inte produktionsklicktider. Slutlig fullsvit 233 filer/1254 tester, build, 19 riktade regressionsrobotar, mätrobot, riktad lint och arkitekturkontroll passerar. JSON-serier local-before/local-after/local-after-final bevarar båda förbättringsstegen. Ingen push/publicering. Hela lokal-/livematrisen förblir öppen eftersom material, fler övningstyper och verklig nät-/skrivlast inte täcks av provet.",
+      "kind": "funktion",
+      "issue": "",
+      "tasks": [
+        {
+          "id": "latency-baseline",
+          "text": "Mät elev-, screening- och lärarövergångar före ändring med korrekt DOM-beredskap och aktuella API-tider",
+          "done": false
+        },
+        {
+          "id": "latency-roots",
+          "text": "Belägg flera separata orsaker; fortsatt inventering av återstående väntvägar dokumenterad",
+          "done": true
+        },
+        {
+          "id": "latency-fix",
+          "text": "Rätta första belagda orsaker med bevarade auth-, historik- och spargarantier",
+          "done": true
+        },
+        {
+          "id": "latency-local-verify",
+          "text": "Verifiera hela matrisen lokalt med realistisk nät/databasfördröjning och regressionsrobotar",
+          "done": false
+        },
+        {
+          "id": "latency-live-verify",
+          "text": "Efter separat publiceringsmandat: samma hela mätmatris i produktion; kvarvarande långsamma vägar öppna",
+          "done": false
+        },
+        {
+          "id": "latency-fixture-verify",
+          "text": "Jämför den avgränsade elev/screening/lärararbetsgången före/efter med fördröjda läsningar; kör full enhetssvit/build och riktade regressionsrobotar",
+          "done": true
+        }
+      ]
     }
   ],
   "edges": [
@@ -4001,6 +4051,16 @@
       "source": "e4-decimal-addition",
       "target": "e4-production-pilot",
       "kind": "kräver"
+    },
+    {
+      "source": "app-transition-latency",
+      "target": "learning-system-synthesis",
+      "kind": "påverkar"
+    },
+    {
+      "source": "app-transition-latency",
+      "target": "scale",
+      "kind": "påverkar"
     }
   ],
   "note": "Planeringssnapshot. Lokalt klart är inte publicerat. Tidigare publicering bygger på denna tråds verifiering; ingen ny livekontroll. Förslag är inte fattade beslut."

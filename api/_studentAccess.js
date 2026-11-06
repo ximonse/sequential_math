@@ -6,9 +6,8 @@ import { studentStoreError } from './_studentStore.js'
 export async function canAccessClass(req, classId) {
   const auth = await getLiveTeacherAuthPayload(req)
   if (!auth || !classId) return false
-  if (await kv.exists(`class_deleted:${classId}`)) return false
-  const record = await kv.get(`class:${classId}`)
-  if (!record) return false
+  const [removed, record] = await Promise.all([kv.exists(`class_deleted:${classId}`), kv.get(`class:${classId}`)])
+  if (removed || !record) return false
   return canManageClass(auth, record)
 }
 

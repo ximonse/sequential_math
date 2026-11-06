@@ -56,11 +56,13 @@ export async function teacherCatalog(req, res, store = kv) {
     // Cold-cache recovery reads large profiles in smaller batches; warm reads
     // only transfer metadata cards. This is not a full history projection.
     const profiles = await getMany(missing.map(id => `student:${id}`), store, 5)
-    for (const [i, profile] of profiles.entries()) {
-      if (!isCurrentStudentProfile(profile)) continue
-      const card = catalogCard(profile)
-      const alive = await guardPupilKey(catalogKey(missing[i]), missing[i], card, { ttl: 60, live: true, store })
-      cards[ids.indexOf(missing[i])] = alive ? card : null
+    for (let start = 0; start < profiles.length; start += 8) {
+      await Promise.all(profiles.slice(start, start + 8).map(async (profile, offset) => {
+        if (!isCurrentStudentProfile(profile)) return
+        const id = missing[start + offset], card = catalogCard(profile)
+        const alive = await guardPupilKey(catalogKey(id), id, card, { ttl: 60, live: true, store })
+        cards[ids.indexOf(id)] = alive ? card : null
+      }))
     }
   }
   const pupils = ids.flatMap((studentId, i) => {

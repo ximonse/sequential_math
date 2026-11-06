@@ -1,5 +1,6 @@
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import { kv } from '@vercel/kv'
+import { measureRequestStep } from './_requestTiming.js'
 import { isCurrentStudentProfile } from '../src/lib/studentProfileContract.js'
 import { normalizeStudentId } from '../src/lib/storageStudentId.js'
 import { isStudentDeleted } from './_studentStore.js'
@@ -136,18 +137,26 @@ export async function createStudentSession(profile, { store = kv } = {}) {
   return { id, csrfToken }
 }
 export async function getLiveStudentSession(req, { store = kv } = {}) {
+  return measureRequestStep(req, 'student-auth', () => readLiveStudentSession(req, store))
+}
+
+async function readLiveStudentSession(req, store) {
   const sessionId = readCookie(req, '__Host-student-session')
   if (!sessionId || sessionId.length > 200) return null
   const session = await store.get(`student_session:${sessionId}`)
   if (!session?.studentId) return null
-  if (await isStudentDeleted(session.studentId, { store })) return null
-  const profile = await store.get(`student:${session.studentId}`)
+  const [deleted, profile] = await Promise.all([
+    isStudentDeleted(session.studentId, { store }), store.get(`student:${session.studentId}`)
+  ])
+  if (deleted) return null
   if (!isCurrentStudentProfile(profile) || profile?.auth?.scheme !== 'qr-pin-v1' || profile.auth.disabled || Number(profile.auth.credentialVersion || 1) !== Number(session.credentialVersion)) return null
   if (profile.studentId !== session.studentId) return null
-  for (const classId of [...new Set([profile.classId, ...(profile.classIds || [])].filter(Boolean))]) {
-    if (await store.exists(`class_deleted:${classId}`)) return null
-    if (!await store.get(`class:${classId}`)) return null
-  }
+  const classIds = [...new Set([profile.classId, ...(profile.classIds || [])].filter(Boolean))]
+  const classes = await Promise.all(classIds.map(async classId => {
+    const [removed, classroom] = await Promise.all([store.exists(`class_deleted:${classId}`), store.get(`class:${classId}`)])
+    return !removed && Boolean(classroom)
+  }))
+  if (classes.some(live => !live)) return null
   return { sessionId, session, profile }
 }
 export async function revokeStudentSession(req, { store = kv } = {}) { const id = readCookie(req, '__Host-student-session'); if (id) await store.del(`student_session:${id}`) }

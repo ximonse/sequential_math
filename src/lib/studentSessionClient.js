@@ -1,4 +1,5 @@
 let csrfToken = null
+let sessionStudentId = ''
 
 const SESSION_EXPIRED_ERROR = 'Din session har gått ut. Logga in igen.'
 const INVALID_LOGIN_ERROR = 'Kodnamnet eller QR-koden och PIN-koden stämmer inte.'
@@ -12,6 +13,7 @@ export async function isStudentRetired(studentId) {
 
 function clearCsrfToken() {
   csrfToken = null
+  sessionStudentId = ''
 }
 
 async function readJson(response) {
@@ -55,7 +57,14 @@ function rememberSession(data) {
     return { ok: false, error: 'Inloggningen gav ett ogiltigt svar. Försök igen.' }
   }
   csrfToken = data.csrfToken
+  sessionStudentId = data.student.studentId
   return { ok: true, student: data.student }
+}
+
+// This is only a transport identity hint. Every profile/event request still
+// validates the live cookie on the server; it is never an authorization cache.
+export function hasBoundStudentSession(studentId) {
+  return Boolean(csrfToken && sessionStudentId === studentId)
 }
 
 export function acceptStudentSessionPayload(data) {

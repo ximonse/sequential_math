@@ -12,17 +12,17 @@ export async function pupilScreeningEvidence(studentId, classId, { store = kv, r
   if (ids.length > 1000) throw evidenceError(413, 'screening_read_limit', 'För många screeningförsök för denna läsning.')
   const entries = [], warnings = new Set(['assignment_index_completeness_unknown'])
   let invalidRecords = 0
-  for (const id of [...new Set(ids)]) {
-    if (!validId(id)) { invalidRecords++; continue }
+  async function readEntry(id) {
+    if (!validId(id)) { invalidRecords++; return null }
     const record = await store.get(`diagnostic_attempt:${id}`)
-    if (!record) { invalidRecords++; continue }
-    if (record.studentId !== studentId || record.classIdAtAttempt !== classId) continue
-    if (record.evidenceClass !== 'diagnostic_only' || !validId(record.assignmentId)) { invalidRecords++; continue }
+    if (!record) { invalidRecords++; return null }
+    if (record.studentId !== studentId || record.classIdAtAttempt !== classId) return null
+    if (record.evidenceClass !== 'diagnostic_only' || !validId(record.assignmentId)) { invalidRecords++; return null }
     const assignment = await store.get(`diagnostic_assignment:${record.assignmentId}`)
     const item = assignment?.items?.find(candidate => candidate.assignmentItemId === record.assignmentItemId
       && candidate.taskId === record.taskId && candidate.taskVersion === record.taskVersion)
     if (!item || assignment.classId !== classId || assignment.evidenceClass !== 'diagnostic_only'
-      || !assignment.studentIds?.includes(studentId)) { invalidRecords++; continue }
+      || !assignment.studentIds?.includes(studentId)) { invalidRecords++; return null }
     const saved = await read(id, { store })
     const current = saved?.record
     if (!current || ['studentId', 'classIdAtAttempt', 'assignmentId', 'assignmentItemId', 'taskId', 'taskVersion', 'evidenceClass']
@@ -32,13 +32,13 @@ export async function pupilScreeningEvidence(studentId, classId, { store = kv, r
     // Saved client times describe activity, not trusted server acceptance times.
     const times = saved.snapshot.events.map(event => event.timestamp).filter(time => Number.isFinite(time) && time > 0)
     const timestamp = times.length ? Math.max(...times) : current.createdAt
-    if (!Number.isFinite(timestamp) || timestamp <= 0) { invalidRecords++; continue }
+    if (!Number.isFinite(timestamp) || timestamp <= 0) { invalidRecords++; return null }
     const review = await store.get(`diagnostic_review:${id}`)
     const teacherReview = review?.studentId === studentId ? {
       reviewRevision: review.reviewRevision, evidenceRevision: review.evidenceRevision, evidenceSequence: review.evidenceSequence,
       matchesEvidence: review.evidenceRevision === current.serverRevision && review.evidenceSequence === current.lastSequence,
       reviewed: review.reviewed === true, noteSv: review.note || '', updatedAt: review.updatedAt } : null
-    entries.push({ source: 'screening', timestamp,
+    return { source: 'screening', timestamp,
       timeBasis: times.length ? 'latest_saved_client_event' : 'attempt_created_at',
       reference: { kind: 'screening_attempt', attemptId: id, assignmentId: record.assignmentId,
         assignmentItemId: record.assignmentItemId, ...revision },
@@ -52,7 +52,13 @@ export async function pupilScreeningEvidence(studentId, classId, { store = kv, r
         createdAt: current.createdAt, timeQuality: times.length ? 'client_reported' : 'server_created' },
       interpretation: { category: 'unknown', patterns: [], detail: null },
       ...(teacherReview ? { teacherReview } : {}),
-      detail: { snapshot: saved.snapshot, observation } })
+      detail: { snapshot: saved.snapshot, observation } }
+  }
+  // Keep every original-work/revision check. Independent attempts do not need
+  // to wait for one another's network round trips; bound load and preserve order.
+  const uniqueIds = [...new Set(ids)]
+  for (let start = 0; start < uniqueIds.length; start += 8) {
+    entries.push(...(await Promise.all(uniqueIds.slice(start, start + 8).map(readEntry))).filter(Boolean))
   }
   if (invalidRecords) warnings.add('missing_or_inconsistent_records')
   return { entries, coverage: { completeness: 'unknown', indexedAttempts: ids.length,

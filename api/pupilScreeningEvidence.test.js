@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { pupilScreeningEvidence } from './_pupilScreeningEvidence.js'
 import { evidencePage } from './_pupilEvidence.js'
 import { createDiagnosticGrid, recordDiagnosticGridEvent } from '../src/domains/arithmetic/diagnosticGridModel.js'
@@ -24,6 +24,33 @@ function fixture() {
 }
 
 describe('screening evidence preserves original work and version identity', () => {
+  afterEach(() => vi.useRealTimers())
+  it('reads a long history in bounded waves without dropping or reordering attempts', async () => {
+    vi.useFakeTimers()
+    const f = fixture(), ids = Array.from({ length: 20 }, (_, i) => `A${i}`)
+    let active = 0, peak = 0, calls = 0
+    const delayed = async value => {
+      calls++; active++; peak = Math.max(peak, active)
+      await new Promise(resolve => setTimeout(resolve, 100))
+      active--; return structuredClone(value)
+    }
+    const records = new Map(ids.map(id => [id, { ...f.record, attemptId: id }]))
+    const store = {
+      smembers: async () => ids,
+      get: key => delayed(key.startsWith('diagnostic_attempt:') ? records.get(key.split(':')[1]) : f.data.get(key))
+    }
+    const read = id => delayed({ record: records.get(id), snapshot: { ...f.snapshot, attemptId: id,
+      events: f.snapshot.events.map(event => ({ ...event, attemptId: id, eventId: `${id}:${event.sequence}` })) } })
+    const started = Date.now()
+    const pending = pupilScreeningEvidence('PUPIL', 'CLASS', { store, read })
+    await vi.runAllTimersAsync()
+    const result = await pending
+    expect(result.entries.map(entry => entry.reference.attemptId)).toEqual(ids)
+    expect(result.coverage.invalidRecords).toBe(0)
+    expect(calls).toBe(80) // All four reads per attempt still take place.
+    expect(peak).toBeLessThanOrEqual(8)
+    expect(Date.now() - started).toBeLessThanOrEqual(1500)
+  })
   it('carries a separately versioned teacher review without changing original source references', async () => {
     const f = fixture()
     const page = screening => evidencePage({ studentId: 'PUPIL', classId: 'CLASS', source: 'screening',

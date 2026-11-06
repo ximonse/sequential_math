@@ -4,6 +4,7 @@ import { assertTeacherStudentAccess, canAccessClass } from './_studentAccess.js'
 import { writePupilReferences } from './_pupilReferenceWrite.js'
 import { isSuperAdminRole } from './_teacherRoles.js'
 import { readAudienceProfiles } from './_audienceProfileBatch.js'
+import { measureRequestStep } from './_requestTiming.js'
 
 const MAX_LABELS = 500
 const MAX_LABEL_LENGTH = 80
@@ -48,10 +49,23 @@ function scopeVersion(auth) {
     [...new Set(auth.classIds || [])].sort(), [...new Set(auth.schoolIds || [])].sort()])
 }
 
+async function readLabelMemberships(keys) {
+  const profiles = []
+  for (let start = 0; start < keys.length; start += 40) {
+    const parts = []
+    for (let offset = 0; offset < 40 && start + offset < keys.length; offset += 10) {
+      parts.push(keys.slice(start + offset, start + offset + 10))
+    }
+    const rows = await Promise.all(parts.map(part => readAudienceProfiles(part, undefined, { metadataOnly: true })))
+    profiles.push(...rows.flat())
+  }
+  return profiles
+}
+
 // Read current membership from profiles, then current class authorization once
 // for the collection. Do not read the teacher account again for every label.
 async function readableLabels(req, teacherId) {
-  const labels = normalizeLabels(await kv.get(studentLabelsKey(teacherId)))
+  const labels = normalizeLabels(await measureRequestStep(req, 'label-store', () => kv.get(studentLabelsKey(teacherId))))
   // Super admins already pass every per-pupil scope check. Revalidate the
   // live account after reading its private labels, without fetching hundreds
   // of unused pupil histories or re-reading that account once per label.
@@ -60,21 +74,20 @@ async function readableLabels(req, teacherId) {
   if (isSuperAdminRole(live.role, live.isAdmin)) return labels
   const entries = Object.entries(labels)
   const studentKeys = entries.map(([studentId]) => `student:${studentId}`)
-  const profiles = []
-  for (let start = 0; start < studentKeys.length; start += 100) {
-    profiles.push(...await readAudienceProfiles(studentKeys.slice(start, start + 100), undefined, { metadataOnly: true }))
-  }
+  const profiles = await measureRequestStep(req, 'label-memberships', () => readLabelMemberships(studentKeys))
 
   const classIds = [...new Set(profiles.flatMap(profile =>
     [profile?.classId, ...(profile?.classIds || [])].filter(Boolean).map(String)))]
   const classes = new Set()
   // Check the actual profile classes, including legacy classes missing from
   // a catalog index. Reuse only within this read, at most eight at a time.
-  for (let start = 0; start < classIds.length; start += 8) {
-    await Promise.all(classIds.slice(start, start + 8).map(async id => {
-      if (await canAccessClass(req, id)) classes.add(id)
-    }))
-  }
+  await measureRequestStep(req, 'label-class-scope', async () => {
+    for (let start = 0; start < classIds.length; start += 8) {
+      await Promise.all(classIds.slice(start, start + 8).map(async id => {
+        if (await canAccessClass(req, id)) classes.add(id)
+      }))
+    }
+  })
   const current = await getLiveTeacherAuthPayload(req)
   if (!current || current.teacherId !== teacherId) return {}
   if (isSuperAdminRole(current.role, current.isAdmin)) return labels

@@ -146,7 +146,7 @@ describe('teacher pupil labels', () => {
     for (const id of ids) records.set(`student:${id}`, { classId: 'CLASS-A', problemLog: ['PRIVATE ANSWER'], auth: { pin: 'PRIVATE PIN' } })
     const result = await call('GET', { teacherId: 'teacher-a', role: 'teacher' })
     expect(result.data.labels).toEqual(labels)
-    expect(kv.eval).toHaveBeenCalledTimes(1)
+    expect(kv.eval).toHaveBeenCalledTimes(4)
     expect(kv.eval.mock.calls[0][0]).toBe(CLASS_AUDIENCE_PROFILES)
     expect(kv.eval.mock.calls[0][2]).toEqual([''])
     expect(kv.mget).not.toHaveBeenCalled()
@@ -154,7 +154,32 @@ describe('teacher pupil labels', () => {
     kv.eval.mockRejectedValueOnce(Error('Synthetic response size exceeded'))
     expect((await call('GET', { teacherId: 'teacher-a', role: 'teacher' })).data.labels).toEqual(labels)
     expect(kv.get.mock.calls.map(([key]) => key)).toEqual(['teacher_pupil_labels:teacher-a', 'teacher_pupil_labels:teacher-a'])
-    expect(kv.eval.mock.calls.every(([, keys, args]) => keys.length <= 100 && args[0] === '')).toBe(true)
+    expect(kv.eval.mock.calls.every(([, keys, args]) => keys.length <= 10 && args[0] === '')).toBe(true)
+  })
+
+  it('avoids repeatedly crossing the observed storage script budget before splitting', async () => {
+    const ids = Array.from({ length: 40 }, (_, i) => `PUPIL-${i}`)
+    const labels = Object.fromEntries(ids.map(id => [id, `Private ${id}`]))
+    records.set('teacher_pupil_labels:teacher-a', labels)
+    for (const id of ids) records.set(`student:${id}`, { classId: 'CLASS-A' })
+    const original = kv.eval.getMockImplementation()
+    let overBudget = 0, active = 0, peak = 0
+    kv.eval.mockImplementation(async (script, keys, args) => {
+      if (script === CLASS_AUDIENCE_PROFILES && keys.length > 10) {
+        overBudget++; throw Error('script execution timed out')
+      }
+      active++; peak = Math.max(peak, active)
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1))
+        return await original(script, keys, args)
+      } finally { active-- }
+    })
+    try {
+      expect((await call('GET', { teacherId: 'teacher-a', role: 'teacher' })).data.labels).toEqual(labels)
+      expect(overBudget).toBe(0)
+      expect(peak).toBeGreaterThan(1)
+      expect(peak).toBeLessThanOrEqual(4)
+    } finally { kv.eval.mockImplementation(original) }
   })
 
   it('denies a result if school scope changes while the class authorization is read', async () => {

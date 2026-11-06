@@ -244,6 +244,42 @@ Efter publicering ska exakt innehåll/antal jämföras, utöver tid och antal
 auth-anrop. En separat lokal Redis fanns inte tillgänglig; emuleringen och
 enhetstesterna är därför inte ett påstående om live-Lua-verifiering.
 
+### Medlemskapsprojektion: innehåll bevarat, omkörningar kvar
+
+`68011b6` publicerades på sekvens `dpl_8ADwX8CxMKxGaVKQ1kMVRrnYD9LH`
+med READY, rätt SHA och produktionsalias. Det privata hashkvittot matchade
+exakt: 340 tillåtna namn före och efter för `school_admin`.
+
+Namnlistan tog ändå 8092, 8273 och 17371 ms i den fullföljda serien.
+Ingen tydlig tidsvinst påstås. Kall katalog tog 27128 ms och första klassval
+19629 ms. En separat paritetsläsning pågick samtidigt med början av denna
+serie; första kalltiderna är därför inte en ren jämförelse med tidigare
+ensamma körning. Varma klassval låg på 2341 och 2612 ms. Träningsoriginalen
+var oförändrade och inga API-fel uppstod.
+
+[Serie med stora projektionsbatcher](evaluations/transition-latency-2026-11-05/production-labels-projected-large-batches.json).
+Filtrerade Vercel-loggar för denna deployment visade **41**
+`audience_profile_batch_fallback execution_limit`, samtliga grupperade till
+`/api/teacher-pupil-labels`, och inga träffar för command_failed/size_limit.
+Detta belägger att för stora skriptläsningar gav omkörningar även om den
+överförda datan blivit mindre. Antal auth-anrop eller lyckad paritet räckte
+inte för att förklara svarstiden.
+
+Namnlistans startgräns ändras därför från 100 medlemskap i serie till högst
+fyra initiala kommandon med tio medlemskap vardera. Varje våg omfattar högst
+40 källnycklar. Den skyddade fallbacken kan dela dessa vidare; ingen namnpost
+tas bort för att uppfylla tidsbudgeten. Övriga mottagarläsare behåller sitt
+standardbeteende. Faserna `label-store`, `label-memberships` och
+`label-class-scope` tidsmäts separat, utan identiteter eller namnvärden.
+
+Ett kontrollerat lagringstest som avvisar mer än tio profiler per skript
+gav först tre övertramp/omkörningar; efter ändringen noll, samma kompletta
+namnlista och högst fyra samtidiga initiala kommandon. Slutkontroller:
+233 testfiler/1260 tester, build, tio namn-/katalog-/mottagarrobotar samt lint
+passerar. Nästa livekontroll ska jämföra samma namnkvittot igen, deltidernas
+andelar och om tidsgränsvarningarna försvinner. Detta är fortfarande samma
+godkända namnlistesuppdrag, inte en färdig lösning av hela appens väntetider.
+
 ## Fortsatt öppet
 
 - Samma kompletta produktionsmatris före/efter publicering, inklusive material.

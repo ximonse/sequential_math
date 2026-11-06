@@ -23,6 +23,8 @@ const defaultAccess = vi.hoisted(() => (async (req, profile) => {
 }))
 
 import handler from './teacher-pupil-labels.js'
+import { kv } from '@vercel/kv'
+import { getLiveTeacherAuthPayload } from './_helpers.js'
 
 async function call(method, auth, body = {}) {
   const res = { code: 200, status(code) { this.code = code; return this }, json(data) { this.data = data; return this }, end() { return this } }
@@ -32,10 +34,38 @@ async function call(method, auth, body = {}) {
 
 describe('teacher pupil labels', () => {
   beforeEach(() => {
+    vi.clearAllMocks()
+    getLiveTeacherAuthPayload.mockReset().mockImplementation(async req => req.auth || null)
     accessMock.mockReset()
     accessMock.mockImplementation(defaultAccess)
     records.clear()
     records.set('student:PUPIL-1', { allowedTeacherIds: ['teacher-a'] })
+  })
+
+  it('reads the super admin own labels without fetching every pupil profile or checking auth per label', async () => {
+    const labels = Object.fromEntries(Array.from({ length: 680 }, (_, i) => [`PUPIL-${i}`, `Private ${i}`]))
+    records.set('teacher_pupil_labels:teacher-a', labels)
+    for (const id of Object.keys(labels)) records.set(`student:${id}`, { allowedTeacherIds: ['teacher-a'] })
+    const result = await call('GET', { teacherId: 'teacher-a', role: 'super_admin' })
+    expect(result.data.labels).toEqual(labels)
+    expect(kv.get.mock.calls.map(([key]) => key)).toEqual(['teacher_pupil_labels:teacher-a'])
+    expect(accessMock).not.toHaveBeenCalled()
+    expect(getLiveTeacherAuthPayload).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not return labels when the live teacher identity is revoked after initial authorization', async () => {
+    records.set('teacher_pupil_labels:teacher-a', { 'PUPIL-1': 'Private' })
+    getLiveTeacherAuthPayload.mockResolvedValueOnce({ teacherId: 'teacher-a', role: 'super_admin' }).mockResolvedValueOnce(null)
+    expect((await call('GET', { teacherId: 'teacher-a', role: 'super_admin' })).data.labels).toEqual({})
+  })
+
+  it('falls back to pupil scope checks when the live super admin role has been removed', async () => {
+    records.set('teacher_pupil_labels:teacher-a', { 'PUPIL-1': 'Mine', 'PUPIL-2': 'Other' })
+    records.set('student:PUPIL-2', { allowedTeacherIds: ['teacher-b'] })
+    getLiveTeacherAuthPayload.mockResolvedValueOnce({ teacherId: 'teacher-a', role: 'super_admin' })
+      .mockResolvedValueOnce({ teacherId: 'teacher-a', role: 'teacher' })
+    expect((await call('GET', { teacherId: 'teacher-a', role: 'super_admin' })).data.labels).toEqual({ 'PUPIL-1': 'Mine' })
+    expect(accessMock).toHaveBeenCalledTimes(2)
   })
 
   it('stores a label privately per teacher after checking pupil access', async () => {

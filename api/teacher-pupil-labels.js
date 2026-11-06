@@ -2,6 +2,7 @@ import { kv } from '@vercel/kv'
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { assertTeacherStudentAccess } from './_studentAccess.js'
 import { writePupilReferences } from './_pupilReferenceWrite.js'
+import { isSuperAdminRole } from './_teacherRoles.js'
 
 const MAX_LABELS = 500
 const MAX_LABEL_LENGTH = 80
@@ -34,6 +35,12 @@ function normalizeLabels(value) {
 // in parallel with no batching runs into KV connection limits and slows other requests.
 async function readableLabels(req, teacherId) {
   const labels = normalizeLabels(await kv.get(studentLabelsKey(teacherId)))
+  // Super admins already pass every per-pupil scope check. Revalidate the
+  // live account after reading its private labels, without fetching hundreds
+  // of unused pupil histories or re-reading that account once per label.
+  const live = await getLiveTeacherAuthPayload(req)
+  if (!live || live.teacherId !== teacherId) return {}
+  if (isSuperAdminRole(live.role, live.isAdmin)) return labels
   const entries = Object.entries(labels)
   const studentKeys = entries.map(([studentId]) => `student:${studentId}`)
   const profiles = await batchLoadKvKeys(studentKeys)

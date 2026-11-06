@@ -1,7 +1,8 @@
 # Väntetider över hela appen — aktiv granskning 2026-11-06
 
 Målet är snabbare användbara övergångar för elev och lärare, med bevarade
-original, serverkvittenser och aktuell åtkomst. Arbetet är lokalt. En snabb
+original, serverkvittenser och aktuell åtkomst. Första ändringssjoket är
+publicerat 2026-11-06; nästa namnlistelösning är lokalt verifierad. En snabb
 intern funktion eller en godkänd robot avslutar inte hela uppdraget.
 
 ## Belagd startpunkt
@@ -109,7 +110,71 @@ Vanliga varma övningsbyten har en lokal kontrollgräns på 1000 ms. Övriga
 Slutkontroller 2026-11-06: 233 testfiler/1254 tester, produktionsbuild,
 19 riktade regressionsrobotar och den separata mätroboten passerar.
 Lint för berörda JavaScript-filer, arkitekturkontroll och projektkartans
-struktur passerar. Detta är lokalt verifierat, inte pushat eller publicerat.
+struktur passerar. Dessa kontroller föregick publiceringen nedan.
+
+## Produktion 2026-11-06 och nästa belagda orsak
+
+Simon godkände publicering och fortsatt produktionsmätning. GitHub/master
+uppdaterades utan force från `3a77fce` till `c4a0b65` (runtimeändringen
+`592fb69` och dokumenterat godkännande). Vercel-projekt `sekvens`, deployment
+`dpl_B6T9z3yFhumPaKEfSJem5u7hxjPt`, blev READY med samma fulla commit-SHA
+och alias `matematik.ximon.se`. Den faktiska webbläsaren laddade
+`index-v5jkbivQ.js`. Den parallella talpar-arbetsytan ändrades inte.
+
+Två separata sessioner med befintliga lokala inloggningar användes. Enbart
+den tidigare syntetiska testprofilens träningsoriginal lästes; inga nya
+elevsvar, rapporter, utdelningar eller inlämningar skapades. Normal navigering
+kan ge vanliga sessions-/checkpoint-händelser. Slutlig hashjämförelse av
+masteryFacts och problemLog visade oförändrat innehåll.
+
+Den fullföljda avgränsade serien gav 24 observationer och inga API-fel:
+
+| Övergång | Produktion efter första sjoket |
+|---|---|
+| Första hem → övning efter login | 321 ms |
+| Fem varma hem → övning | 295–331 ms |
+| Sex återgångar övning → hem | 297–547 ms |
+| Övningsstart efter verkligt utgången 60-sekundersperiod | 2673 ms |
+| Tre klassval till användbara resultat | 12967, 2655, 2724 ms |
+| Lärarens tre arbetslägesbyten | 14–39 ms |
+| Elevdetalj via full sidnavigering, separat övre observation | 5595 ms |
+| Öppna analyshistorik | 1427 ms |
+
+Vid utgången återanvändningsperiod lästes färsk profil utan extra GET av
+student-session. Detta verifierar vägen i produktion, men är en enda
+observation. Första seriens varma starter låg 295–466 ms och dess klassval
+12534, 2614, 3876 ms. Den serien avbröts vid ett felaktigt mätkriterium för
+Screening: skapa, vilket rättades inför den fullföljda körningen. Den ska
+inte redovisas som en komplett godkänd matris.
+
+[Avidentifierad fullföljd serie](evaluations/transition-latency-2026-11-05/pupil-teacher-production-after.json).
+Lokal robot och produktion har olika fördröjning och beredskapsmätning och
+får inte jämföras som samma miljö. Produktionsserien är ingen p95, iPad- eller
+klasslastmätning. Profilen hade ingen tillgänglig inlämnad screeningsamling
+för läsande frågenavigering; screeningens spar-/inlämningsväg och material
+är därför fortsatt oprövade i denna produktionsserie.
+
+**Nytt belagt problem:** `/api/teacher-pupil-labels` gjorde 681 lärarauth-anrop
+per begäran. Den fullföljda körningen visade totalt 9,16–18,43 sekunder för
+sådana anrop; den första serien hade också 25,72 sekunder. Auth-faserna
+överlappade och deras summerade tidsvärde får inte tolkas som väggtid.
+Koden läste dessutom 680 hela profiler trots att huvudadminens befintliga
+åtkomstregel redan godkände varje profil. Samtidigt tog ett `/api/students`
+17,84 sekunder med 26 auth-anrop. Därför är varken hela lärarväntan eller
+hela appens väntetider lösta av första publiceringen.
+
+Nästa lokala rättning behåller namnen i lärarens eget privata namnobjekt,
+läser färsk kontoidentitet och roll efter objektläsningen och returnerar
+huvudadminens namn utan onödiga elevprofiler. Återkallad/ändrad identitet ger
+inga namn, nedgraderad roll går genom de befintliga elevscope-kontrollerna.
+Ingen cache mellan begäranden införs. Det kontrollerade 680-namnstestet
+kräver en namnläsning och två auth-anrop totalt i stället för ett per namn.
+
+Den rättningen är **lokal, inte publicerad**: 233 testfiler/1257 tester,
+produktionsbuild, nio namn-/katalogrobotar och riktad lint passerar. Ingen
+produktionsvinst för denna andra rättning påstås. Nästa steg kräver ett nytt
+publiceringsmandat för det nu färdigställda namnlistesjoket, följt av samma
+klass-/elevmätning. Kostnaden i `/api/students` är fortsatt öppen.
 
 ## Fortsatt öppet
 
@@ -121,6 +186,7 @@ struktur passerar. Detta är lokalt verifierat, inte pushat eller publicerat.
   1,8 MB minifierad JavaScript (538 kB gzip). Storleken är belagd; dess andel
   av de rapporterade väntetiderna är ännu inte uppmätt.
 
-Publicering går via GitHub/master → Vercel `sekvens`. Separat mandat krävs.
+Publicering går via GitHub/master → Vercel `sekvens`. Första sjokets mandat
+är verkställt; nästa lokala namnlistesjok inväntar publiceringsmandat.
 Appen får inte beskrivas som snabb eller färdigoptimerad innan kvarvarande
 vägar har uppmätta resultat och oförklarade väntetider har följts upp.

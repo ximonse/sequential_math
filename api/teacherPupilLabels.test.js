@@ -5,7 +5,15 @@ const records = vi.hoisted(() => new Map())
 vi.mock('@vercel/kv', () => ({ kv: {
   get: vi.fn(async key => structuredClone(records.get(key) ?? null)),
   mget: vi.fn(async (...keys) => keys.map(key => structuredClone(records.get(key) ?? null))),
-  eval: vi.fn(async (script, keys, args) => emulatePupilLifecycle(records, script, keys, args)?.result),
+  eval: vi.fn(async (script, keys, args) => {
+    if (script === CLASS_AUDIENCE_PROFILES) return keys.map(key => {
+      const profile = records.get(key)
+      if (!profile || !(args[0] === '' || profile.classId === args[0] || profile.classIds?.includes(args[0]))) return null
+      const { studentId, displayAlias, classId, classIds } = profile
+      return JSON.stringify({ studentId, displayAlias, classId, classIds })
+    })
+    return emulatePupilLifecycle(records, script, keys, args)?.result
+  }),
   set: vi.fn(async (key, value) => records.set(key, structuredClone(value))),
   smembers: vi.fn(async key => structuredClone(records.get(key) ?? []))
 } }))
@@ -28,6 +36,7 @@ const defaultAccess = vi.hoisted(() => (async (req, profile) => {
 import handler from './teacher-pupil-labels.js'
 import { kv } from '@vercel/kv'
 import { getLiveTeacherAuthPayload } from './_helpers.js'
+import { CLASS_AUDIENCE_PROFILES } from './_audienceProfileBatch.js'
 
 async function call(method, auth, body = {}) {
   const res = { code: 200, status(code) { this.code = code; return this }, json(data) { this.data = data; return this }, end() { return this } }
@@ -130,19 +139,22 @@ describe('teacher pupil labels', () => {
     expect(getLiveTeacherAuthPayload).toHaveBeenCalledTimes(3)
   })
 
-  it('batches normal teacher profile reads and retains exact order and scope when a batch fails', async () => {
+  it('projects only memberships for normal teachers and retains exact labels when a batch splits', async () => {
     const ids = Array.from({ length: 40 }, (_, i) => `PUPIL-${i}`)
     const labels = Object.fromEntries(ids.map(id => [id, `Private ${id}`]))
     records.set('teacher_pupil_labels:teacher-a', labels)
-    for (const id of ids) records.set(`student:${id}`, { classId: 'CLASS-A' })
+    for (const id of ids) records.set(`student:${id}`, { classId: 'CLASS-A', problemLog: ['PRIVATE ANSWER'], auth: { pin: 'PRIVATE PIN' } })
     const result = await call('GET', { teacherId: 'teacher-a', role: 'teacher' })
     expect(result.data.labels).toEqual(labels)
-    expect(kv.mget).toHaveBeenCalledTimes(8)
-    expect(kv.mget.mock.calls.every(keys => keys.length <= 5)).toBe(true)
+    expect(kv.eval).toHaveBeenCalledTimes(1)
+    expect(kv.eval.mock.calls[0][0]).toBe(CLASS_AUDIENCE_PROFILES)
+    expect(kv.eval.mock.calls[0][2]).toEqual([''])
+    expect(kv.mget).not.toHaveBeenCalled()
     expect(kv.get.mock.calls.map(([key]) => key)).toEqual(['teacher_pupil_labels:teacher-a'])
-    kv.mget.mockRejectedValueOnce(Error('Synthetic response limit'))
+    kv.eval.mockRejectedValueOnce(Error('Synthetic response size exceeded'))
     expect((await call('GET', { teacherId: 'teacher-a', role: 'teacher' })).data.labels).toEqual(labels)
-    expect(kv.get.mock.calls.slice(2).map(([key]) => key)).toEqual(ids.slice(0, 5).map(id => `student:${id}`))
+    expect(kv.get.mock.calls.map(([key]) => key)).toEqual(['teacher_pupil_labels:teacher-a', 'teacher_pupil_labels:teacher-a'])
+    expect(kv.eval.mock.calls.every(([, keys, args]) => keys.length <= 100 && args[0] === '')).toBe(true)
   })
 
   it('denies a result if school scope changes while the class authorization is read', async () => {

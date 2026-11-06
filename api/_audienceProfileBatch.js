@@ -8,7 +8,7 @@ for i, key in ipairs(KEYS) do
   if raw then
     local ok, profile = pcall(cjson.decode, raw)
     if ok and type(profile) == 'table' then
-      local member = profile.classId == ARGV[1]
+      local member = ARGV[1] == '' or profile.classId == ARGV[1]
       if type(profile.classIds) == 'table' then
         for _, id in pairs(profile.classIds) do if id == ARGV[1] then member = true end end
       end
@@ -25,12 +25,13 @@ return rows
 `
 
 // Keep exact key order. A storage error must never become a partial roster.
-export async function readAudienceProfiles(keys, classId) {
+export async function readAudienceProfiles(keys, classId, { metadataOnly = false } = {}) {
   let profiles
+  const projected = Boolean(classId) || metadataOnly
   try {
-    profiles = classId ? await kv.eval(CLASS_AUDIENCE_PROFILES, keys, [classId]) : await kv.mget(...keys)
+    profiles = projected ? await kv.eval(CLASS_AUDIENCE_PROFILES, keys, [classId || '']) : await kv.mget(...keys)
     if (!Array.isArray(profiles) || profiles.length !== keys.length) throw Error('Incomplete audience profile batch')
-    if (classId) profiles = profiles.map(profile => profile === false || profile === null ? null
+    if (projected) profiles = profiles.map(profile => profile === false || profile === null ? null
       : typeof profile === 'string' ? JSON.parse(profile) : profile)
   } catch (error) {
     const oversized = /max.*(?:size|length)|(?:size|length).*exceed|too (?:large|big)/iu.test(String(error?.message || ''))
@@ -39,7 +40,7 @@ export async function readAudienceProfiles(keys, classId) {
     if ((oversized || executionLimit) && keys.length > 1) {
       const middle = Math.ceil(keys.length / 2)
       // The parent contains at most 100 keys, so recursive reads remain bounded.
-      const halves = await Promise.all([readAudienceProfiles(keys.slice(0, middle), classId), readAudienceProfiles(keys.slice(middle), classId)])
+      const halves = await Promise.all([readAudienceProfiles(keys.slice(0, middle), classId, { metadataOnly }), readAudienceProfiles(keys.slice(middle), classId, { metadataOnly })])
       return halves.flat()
     }
     profiles = await Promise.all(keys.map(key => kv.get(key)))

@@ -3,6 +3,7 @@ import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { assertTeacherStudentAccess, canAccessClass } from './_studentAccess.js'
 import { writePupilReferences } from './_pupilReferenceWrite.js'
 import { isSuperAdminRole } from './_teacherRoles.js'
+import { readAudienceProfiles } from './_audienceProfileBatch.js'
 
 const MAX_LABELS = 500
 const MAX_LABEL_LENGTH = 80
@@ -59,7 +60,10 @@ async function readableLabels(req, teacherId) {
   if (isSuperAdminRole(live.role, live.isAdmin)) return labels
   const entries = Object.entries(labels)
   const studentKeys = entries.map(([studentId]) => `student:${studentId}`)
-  const profiles = await batchLoadKvKeys(studentKeys)
+  const profiles = []
+  for (let start = 0; start < studentKeys.length; start += 100) {
+    profiles.push(...await readAudienceProfiles(studentKeys.slice(start, start + 100), undefined, { metadataOnly: true }))
+  }
 
   const classIds = [...new Set(profiles.flatMap(profile =>
     [profile?.classId, ...(profile?.classIds || [])].filter(Boolean).map(String)))]

@@ -210,6 +210,40 @@ MGET-kommandon, ingen individuell profilläsning i normalfallet, exakt samma
 ordning/scope och komplett återfall vid storleksfel. Ändrat skolscope under
 läsningen avvisas uttryckligen.
 
+### Delad klasskontroll: korrekt åtkomst, fortfarande långsam
+
+Kompletteringen `f71c22e` publicerades inom namnlistesuppdraget. Sekvens
+`dpl_9HnE79rcbTEfAHyuLfq5S85Sr1yS` blev READY med samma SHA och rätt
+domän. Testkontots verkliga roll registrerades som `school_admin`.
+Auth-anropen sjönk till **25 per namnlista**, men svarstiderna var fortfarande
+9921, 15244 och 23424 ms. Ingen tidsvinst påstås. Klassvalen tog 14164,
+2641 och 2683 ms; kall katalog 20521 ms, varm katalog 1355 ms och skopade
+resultat 1824–2175 ms. Elevens utgångna bootstrap tog 2251 ms. Serien
+slutfördes utan API-fel och med oförändrade träningsoriginal.
+
+[Serie efter delad klasskontroll](evaluations/transition-latency-2026-11-05/production-labels-shared-scope.json).
+Den bevisar den minskade upprepningen av auth, inte löst användarväntan.
+
+Nästa komplettering återanvänder `_audienceProfileBatch.js`, som redan
+används för mottagarurval. Namnlistan begär endast färska medlemskapsfält
+ur lagringen: elev-ID, kodnamn och klass-ID:n. Klassfiltrerat mottagarurval
+behåller sitt tidigare standardbeteende. Det nya interna `metadataOnly`
+används för namnlistan och bevaras även när ett stort kommando delas.
+Inga original, svar, stats eller inloggningshemligheter ingår i den normala
+projicerade lagringsresponsen. Samma efterföljande klass-/rollkontroll gäller.
+
+Namnlistan läser högst 100 medlemskap per kommando. Befintligt återfall för
+storleks-/tidsgräns, saknat kommando och individuell fullprofilläsning finns
+kvar för komplett resultat vid lagringsproblem. Normalvägen hämtar inte
+hundratals fulla profiler bara för att filtrera den privata namnlistan.
+
+Lokalt passerar 233 testfiler/1259 tester, build, tio namn-/katalog-/mottagarrobotar,
+riktad lint och arkitekturkontroll. Före publicering har ett privat hashkvitto
+av det verkliga skoladminkontots filtrerade namnlista sparats utanför Git.
+Efter publicering ska exakt innehåll/antal jämföras, utöver tid och antal
+auth-anrop. En separat lokal Redis fanns inte tillgänglig; emuleringen och
+enhetstesterna är därför inte ett påstående om live-Lua-verifiering.
+
 ## Fortsatt öppet
 
 - Samma kompletta produktionsmatris före/efter publicering, inklusive material.

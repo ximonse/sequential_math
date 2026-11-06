@@ -46,7 +46,7 @@ export const kv = {
   async eval(script, keys = [], args = []) {
     if (script === CLASS_AUDIENCE_PROFILES) return keys.map(key => {
       const profile = values.get(key)
-      if (!profile || !(profile.classId === args[0] || profile.classIds?.includes(args[0]))) return null
+      if (!profile || !(args[0] === '' || profile.classId === args[0] || profile.classIds?.includes(args[0]))) return null
       const { studentId, displayAlias, classId, classIds } = profile
       return clone({ studentId, displayAlias, classId, classIds })
     })

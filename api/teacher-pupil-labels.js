@@ -1,6 +1,6 @@
 import { kv } from '@vercel/kv'
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
-import { assertTeacherStudentAccess } from './_studentAccess.js'
+import { assertTeacherStudentAccess, canAccessClass } from './_studentAccess.js'
 import { writePupilReferences } from './_pupilReferenceWrite.js'
 import { isSuperAdminRole } from './_teacherRoles.js'
 
@@ -12,8 +12,19 @@ async function batchLoadKvKeys(keys, batchSize = 20) {
   const results = []
   for (let i = 0; i < keys.length; i += batchSize) {
     const batch = keys.slice(i, i + batchSize)
-    const batchResults = await Promise.all(batch.map(key => kv.get(key)))
-    results.push(...batchResults)
+    const groups = []
+    for (let offset = 0; offset < batch.length; offset += 5) groups.push(batch.slice(offset, offset + 5))
+    const batchResults = await Promise.all(groups.map(async group => {
+      try {
+        const values = await kv.mget(...group)
+        if (!Array.isArray(values) || values.length !== group.length) throw Error('Incomplete label profile batch')
+        return values
+      } catch {
+        // Large/legacy records or unavailable MGET must not drop valid names.
+        return Promise.all(group.map(key => kv.get(key)))
+      }
+    }))
+    results.push(...batchResults.flat())
   }
   return results
 }
@@ -31,8 +42,13 @@ function normalizeLabels(value) {
   return labels
 }
 
-// Checked per pupil, batched to avoid connection saturation: a whole class
-// in parallel with no batching runs into KV connection limits and slows other requests.
+function scopeVersion(auth) {
+  return JSON.stringify([auth.teacherId, auth.sessionVersion, auth.role, auth.isAdmin,
+    [...new Set(auth.classIds || [])].sort(), [...new Set(auth.schoolIds || [])].sort()])
+}
+
+// Read current membership from profiles, then current class authorization once
+// for the collection. Do not read the teacher account again for every label.
 async function readableLabels(req, teacherId) {
   const labels = normalizeLabels(await kv.get(studentLabelsKey(teacherId)))
   // Super admins already pass every per-pupil scope check. Revalidate the
@@ -45,15 +61,26 @@ async function readableLabels(req, teacherId) {
   const studentKeys = entries.map(([studentId]) => `student:${studentId}`)
   const profiles = await batchLoadKvKeys(studentKeys)
 
-  const checked = await Promise.all(entries.map(async ([studentId, label], index) => {
-    try {
-      await assertTeacherStudentAccess(req, profiles[index])
-      return [studentId, label]
-    } catch {
-      // A former teacher must not receive labels for pupils outside their live scope.
-      return null
-    }
-  }))
+  const classIds = [...new Set(profiles.flatMap(profile =>
+    [profile?.classId, ...(profile?.classIds || [])].filter(Boolean).map(String)))]
+  const classes = new Set()
+  // Check the actual profile classes, including legacy classes missing from
+  // a catalog index. Reuse only within this read, at most eight at a time.
+  for (let start = 0; start < classIds.length; start += 8) {
+    await Promise.all(classIds.slice(start, start + 8).map(async id => {
+      if (await canAccessClass(req, id)) classes.add(id)
+    }))
+  }
+  const current = await getLiveTeacherAuthPayload(req)
+  if (!current || current.teacherId !== teacherId) return {}
+  if (isSuperAdminRole(current.role, current.isAdmin)) return labels
+  // A role/school/session change during the read invalidates this result.
+  if (scopeVersion(live) !== scopeVersion(current)) return {}
+  const checked = entries.map(([studentId, label], index) => {
+    const profile = profiles[index]
+    return [profile?.classId, ...(profile?.classIds || [])].filter(Boolean).some(id => classes.has(String(id)))
+      ? [studentId, label] : null
+  })
   return Object.fromEntries(checked.filter(Boolean))
 }
 

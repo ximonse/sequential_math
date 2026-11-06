@@ -2,7 +2,8 @@
 
 Målet är snabbare användbara övergångar för elev och lärare, med bevarade
 original, serverkvittenser och aktuell åtkomst. Första ändringssjoket är
-publicerat 2026-11-06; nästa namnlistelösning är lokalt verifierad. En snabb
+publicerat 2026-11-06; namnlistans första publicering följdes av en underkänd
+produktionskontroll och en komplettering för övriga lärarroller. En snabb
 intern funktion eller en godkänd robot avslutar inte hela uppdraget.
 
 ## Belagd startpunkt
@@ -170,11 +171,44 @@ inga namn, nedgraderad roll går genom de befintliga elevscope-kontrollerna.
 Ingen cache mellan begäranden införs. Det kontrollerade 680-namnstestet
 kräver en namnläsning och två auth-anrop totalt i stället för ett per namn.
 
-Den rättningen är **lokal, inte publicerad**: 233 testfiler/1257 tester,
-produktionsbuild, nio namn-/katalogrobotar och riktad lint passerar. Ingen
-produktionsvinst för denna andra rättning påstås. Nästa steg kräver ett nytt
-publiceringsmandat för det nu färdigställda namnlistesjoket, följt av samma
-klass-/elevmätning. Kostnaden i `/api/students` är fortsatt öppen.
+Den första namnlistesrättningen verifierades lokalt med 233 testfiler/1257 tester,
+produktionsbuild, nio namn-/katalogrobotar och riktad lint. Den godkändes
+därefter för publicering. Kostnaden i `/api/students` är fortsatt öppen.
+
+### Namnlistans första publicering: livekontrollen underkänd
+
+`f2d0be6` publicerades med godkännandet `b34108e` via GitHub. Sekvens
+deployment `dpl_33T3XCzxJR3oExcA2rYhoPVSfZDf` blev READY med rätt commit
+och produktionsalias. Samma läsande arbetsgång gav 24 observationer utan
+API-fel och oförändrad träningsevidens, men den avslutande invarianten
+underkändes: namnlistan gjorde **682 auth-anrop**, inte två. Testkontot gick
+inte genom huvudadminens snabbväg. Detta visar varför en lyckad deploy och
+en lokal huvudadmin-fixture inte bevisar att Simons väntan är löst.
+
+Namnlistans tre svar tog 8381, 8303 och 17945 ms. Klassvalen tog 14841,
+2682 och 2650 ms. Instrumenteringen skiljer nu säkra resursnamn från
+query-parametrarnas identiteter: `students?resource=catalog` tog 20678 ms
+vid första laddningen och 1355 ms vid nästa. Skopade resultatläsningar låg
+1831–2241 ms. Kall katalog är därmed en separat belagd väntväg.
+
+[Underkänd serie med bevarade observationer](evaluations/transition-latency-2026-11-05/production-labels-first-attempt.json).
+Den får inte redovisas som en godkänd kontroll av namnlistesfixen.
+
+Kompletteringen inom samma godkända namnlistesarbete kontrollerar varje
+faktisk profilklass en gång med befintlig `canAccessClass`, högst åtta
+klasser samtidigt. Äldre profilklasser kräver ingen komplett katalogindexpost.
+Efter profilläsning och klasskontroll återläses kontot; ändrad session, roll,
+klass-/skolscope eller identitet stoppar resultatet. Profilernas faktiska
+medlemskap filtrerar namnen, och huvudadminens tidigare snabbväg behålls.
+Allt tillstånd gäller enbart den aktuella begäran.
+
+Profilläsningarna använder MGET med högst fem profiler per kommando och
+högst fyra kommandon samtidigt. Ett misslyckat eller ofullständigt batchsvar
+faller tillbaka till originalets enskilda läsningar; inga namn tappas för
+att ett större lagringssvar inte stöds. Ett 40-profilsprov kräver åtta
+MGET-kommandon, ingen individuell profilläsning i normalfallet, exakt samma
+ordning/scope och komplett återfall vid storleksfel. Ändrat skolscope under
+läsningen avvisas uttryckligen.
 
 ## Fortsatt öppet
 
@@ -186,7 +220,7 @@ klass-/elevmätning. Kostnaden i `/api/students` är fortsatt öppen.
   1,8 MB minifierad JavaScript (538 kB gzip). Storleken är belagd; dess andel
   av de rapporterade väntetiderna är ännu inte uppmätt.
 
-Publicering går via GitHub/master → Vercel `sekvens`. Första sjokets mandat
-är verkställt; nästa lokala namnlistesjok inväntar publiceringsmandat.
+Publicering går via GitHub/master → Vercel `sekvens`. Båda publiceringarna
+har mandat; namnlistans komplettering följer samma godkända uppdrag.
 Appen får inte beskrivas som snabb eller färdigoptimerad innan kvarvarande
 vägar har uppmätta resultat och oförklarade väntetider har följts upp.

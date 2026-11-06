@@ -4,6 +4,7 @@ import { emulatePupilLifecycle } from './testHelpers/pupilLifecycleKv.js'
 const records = vi.hoisted(() => new Map())
 vi.mock('@vercel/kv', () => ({ kv: {
   get: vi.fn(async key => structuredClone(records.get(key) ?? null)),
+  mget: vi.fn(async (...keys) => keys.map(key => structuredClone(records.get(key) ?? null))),
   eval: vi.fn(async (script, keys, args) => emulatePupilLifecycle(records, script, keys, args)?.result),
   set: vi.fn(async (key, value) => records.set(key, structuredClone(value))),
   smembers: vi.fn(async key => structuredClone(records.get(key) ?? []))
@@ -13,8 +14,10 @@ vi.mock('./_helpers.js', () => ({
   withCors: vi.fn()
 }))
 const accessMock = vi.hoisted(() => vi.fn())
+const classAccessMock = vi.hoisted(() => vi.fn())
 vi.mock('./_studentAccess.js', () => ({
-  assertTeacherStudentAccess: accessMock
+  assertTeacherStudentAccess: accessMock,
+  canAccessClass: classAccessMock
 }))
 const defaultAccess = vi.hoisted(() => (async (req, profile) => {
   if (!profile || !profile.allowedTeacherIds?.includes(req.auth?.teacherId)) {
@@ -38,8 +41,9 @@ describe('teacher pupil labels', () => {
     getLiveTeacherAuthPayload.mockReset().mockImplementation(async req => req.auth || null)
     accessMock.mockReset()
     accessMock.mockImplementation(defaultAccess)
+    classAccessMock.mockReset().mockImplementation(async (req, id) => id === (req.auth?.teacherId === 'teacher-a' ? 'CLASS-A' : 'CLASS-B'))
     records.clear()
-    records.set('student:PUPIL-1', { allowedTeacherIds: ['teacher-a'] })
+    records.set('student:PUPIL-1', { classId: 'CLASS-A', allowedTeacherIds: ['teacher-a'] })
   })
 
   it('reads the super admin own labels without fetching every pupil profile or checking auth per label', async () => {
@@ -61,11 +65,11 @@ describe('teacher pupil labels', () => {
 
   it('falls back to pupil scope checks when the live super admin role has been removed', async () => {
     records.set('teacher_pupil_labels:teacher-a', { 'PUPIL-1': 'Mine', 'PUPIL-2': 'Other' })
-    records.set('student:PUPIL-2', { allowedTeacherIds: ['teacher-b'] })
+    records.set('student:PUPIL-2', { classId: 'CLASS-B', allowedTeacherIds: ['teacher-b'] })
     getLiveTeacherAuthPayload.mockResolvedValueOnce({ teacherId: 'teacher-a', role: 'super_admin' })
-      .mockResolvedValueOnce({ teacherId: 'teacher-a', role: 'teacher' })
+      .mockResolvedValue({ teacherId: 'teacher-a', role: 'teacher' })
     expect((await call('GET', { teacherId: 'teacher-a', role: 'super_admin' })).data.labels).toEqual({ 'PUPIL-1': 'Mine' })
-    expect(accessMock).toHaveBeenCalledTimes(2)
+    expect(classAccessMock).toHaveBeenCalledTimes(2)
   })
 
   it('stores a label privately per teacher after checking pupil access', async () => {
@@ -80,8 +84,8 @@ describe('teacher pupil labels', () => {
 
   it('fyller tomma etiketter från skapandenamnen inom lärarens räckvidd', async () => {
     records.set('students:index', ['PUPIL-1', 'PUPIL-2'])
-    records.set('student:PUPIL-1', { allowedTeacherIds: ['teacher-a'], preferredName: 'Alva', displayAlias: 'Blå Räv' })
-    records.set('student:PUPIL-2', { allowedTeacherIds: ['teacher-b'], preferredName: 'Bo', displayAlias: 'Gul Fyr' })
+    records.set('student:PUPIL-1', { classId: 'CLASS-A', allowedTeacherIds: ['teacher-a'], preferredName: 'Alva', displayAlias: 'Blå Räv' })
+    records.set('student:PUPIL-2', { classId: 'CLASS-B', allowedTeacherIds: ['teacher-b'], preferredName: 'Bo', displayAlias: 'Gul Fyr' })
 
     const filled = await call('POST', { teacherId: 'teacher-a' }, { action: 'fill_from_creation_names' })
 
@@ -91,7 +95,7 @@ describe('teacher pupil labels', () => {
 
   it('skriver inte över ett tilltalsnamn läraren redan valt', async () => {
     records.set('students:index', ['PUPIL-1'])
-    records.set('student:PUPIL-1', { allowedTeacherIds: ['teacher-a'], preferredName: 'Alva', displayAlias: 'Blå Räv' })
+    records.set('student:PUPIL-1', { classId: 'CLASS-A', allowedTeacherIds: ['teacher-a'], preferredName: 'Alva', displayAlias: 'Blå Räv' })
     await call('PUT', { teacherId: 'teacher-a' }, { studentId: 'PUPIL-1', label: 'Alva S' })
 
     const filled = await call('POST', { teacherId: 'teacher-a' }, { action: 'fill_from_creation_names' })
@@ -103,36 +107,49 @@ describe('teacher pupil labels', () => {
     expect((await call('POST', { teacherId: 'teacher-a' }, { action: 'annat' })).code).toBe(400)
   })
 
-  it('läser en hel klass etiketter parallellt och behåller behörighetskontrollen', async () => {
+  it('filters a whole label list using current pupil membership and shared live class authorization', async () => {
     const mine = Array.from({ length: 30 }, (_, index) => `PUPIL-MINE-${index}`)
     const theirs = Array.from({ length: 30 }, (_, index) => `PUPIL-OTHER-${index}`)
     const labels = {}
     for (const id of mine) {
-      records.set(`student:${id}`, { allowedTeacherIds: ['teacher-a'] })
+      records.set(`student:${id}`, { classId: 'CLASS-A', allowedTeacherIds: ['teacher-a'] })
       labels[id] = `Namn ${id}`
     }
     for (const id of theirs) {
-      records.set(`student:${id}`, { allowedTeacherIds: ['teacher-b'] })
+      records.set(`student:${id}`, { classId: 'CLASS-B', allowedTeacherIds: ['teacher-b'] })
       labels[id] = `Namn ${id}`
     }
     records.set('teacher_pupil_labels:teacher-a', labels)
-
-    let concurrent = 0
-    let peakConcurrent = 0
-    accessMock.mockImplementation(async (req, profile) => {
-      concurrent += 1
-      peakConcurrent = Math.max(peakConcurrent, concurrent)
-      await new Promise(resolve => setTimeout(resolve, 1))
-      concurrent -= 1
-      if (!profile?.allowedTeacherIds?.includes(req.auth?.teacherId)) {
-        throw Object.assign(new Error('Not authorized for this student'), { status: 403 })
-      }
-    })
 
     const read = await call('GET', { teacherId: 'teacher-a' })
 
     expect(Object.keys(read.data.labels)).toHaveLength(30)
     expect(read.data.labels['PUPIL-OTHER-0']).toBeUndefined()
-    expect(peakConcurrent).toBeGreaterThan(1)
+    expect(classAccessMock).toHaveBeenCalledTimes(2)
+    expect(accessMock).not.toHaveBeenCalled()
+    expect(getLiveTeacherAuthPayload).toHaveBeenCalledTimes(3)
+  })
+
+  it('batches normal teacher profile reads and retains exact order and scope when a batch fails', async () => {
+    const ids = Array.from({ length: 40 }, (_, i) => `PUPIL-${i}`)
+    const labels = Object.fromEntries(ids.map(id => [id, `Private ${id}`]))
+    records.set('teacher_pupil_labels:teacher-a', labels)
+    for (const id of ids) records.set(`student:${id}`, { classId: 'CLASS-A' })
+    const result = await call('GET', { teacherId: 'teacher-a', role: 'teacher' })
+    expect(result.data.labels).toEqual(labels)
+    expect(kv.mget).toHaveBeenCalledTimes(8)
+    expect(kv.mget.mock.calls.every(keys => keys.length <= 5)).toBe(true)
+    expect(kv.get.mock.calls.map(([key]) => key)).toEqual(['teacher_pupil_labels:teacher-a'])
+    kv.mget.mockRejectedValueOnce(Error('Synthetic response limit'))
+    expect((await call('GET', { teacherId: 'teacher-a', role: 'teacher' })).data.labels).toEqual(labels)
+    expect(kv.get.mock.calls.slice(2).map(([key]) => key)).toEqual(ids.slice(0, 5).map(id => `student:${id}`))
+  })
+
+  it('denies a result if school scope changes while the class authorization is read', async () => {
+    records.set('teacher_pupil_labels:teacher-a', { 'PUPIL-1': 'Private' })
+    getLiveTeacherAuthPayload.mockResolvedValueOnce({ teacherId: 'teacher-a', role: 'school_admin', schoolIds: ['SCHOOL'] })
+      .mockResolvedValueOnce({ teacherId: 'teacher-a', role: 'school_admin', schoolIds: ['SCHOOL'] })
+      .mockResolvedValueOnce({ teacherId: 'teacher-a', role: 'school_admin', schoolIds: [] })
+    expect((await call('GET', { teacherId: 'teacher-a', role: 'school_admin' })).data.labels).toEqual({})
   })
 })

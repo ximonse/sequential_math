@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
 import { teacherLogin, sendScreening } from './lib/teacher.js'
-import { collectionSelect, openDispatch, openResults, reviewOf, openQuestionBank } from './lib/screening.js'
+import { openDispatch, openResults, reviewOf, openQuestionBank, chooseCollection, collectionRows } from './lib/screening.js'
 
 test('Admin reviews a class with submitted, ongoing and unopened work; notes survive retries and competing edits', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -16,7 +16,7 @@ test('Admin reviews a class with submitted, ongoing and unopened work; notes sur
   await panel.getByRole('combobox', { name: 'Diagnospaket', exact: true }).selectOption('written-addition')
   await sendScreening(page, { className })
   const results = await openResults(page, { className })
-  const assignmentId = await collectionSelect(results).locator('option').nth(1).getAttribute('value')
+  const assignmentId = await collectionRows(results).first().getAttribute('data-collection-id')
   const contexts = []
   const studentPages = []
   for (const pupil of pupils.slice(0, 2)) {
@@ -32,7 +32,7 @@ test('Admin reviews a class with submitted, ongoing and unopened work; notes sur
   studentPages[0].once('dialog', dialog => dialog.accept())
   await studentPages[0].getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
   await expect(studentPages[0]).toHaveURL(new RegExp(`/student/${pupils[0].studentId}$`))
-  await collectionSelect(results).selectOption(assignmentId)
+  await chooseCollection(results, assignmentId)
   const review = reviewOf(results)
   const rows = review.getByRole('row')
   await expect(rows).toHaveCount(5)

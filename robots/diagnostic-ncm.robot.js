@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
 import { sendScreening, teacherLogin } from './lib/teacher.js'
-import { collectionSelect, openDispatch, openResults, reviewOf, openQuestionBank } from './lib/screening.js'
+import { openDispatch, openResults, reviewOf, openQuestionBank, chooseCollection } from './lib/screening.js'
 
 test('An NCM Diamant booklet is marked against its facit and shows NCM analysis to the teacher', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -39,7 +39,7 @@ test('An NCM Diamant booklet is marked against its facit and shows NCM analysis 
   await context.close()
 
   const results = await openResults(page, { pupilName: 'NCM Diamant' })
-  await collectionSelect(results).selectOption({ index: 1 })
+  await chooseCollection(results, 0)
   const review = reviewOf(results)
   const cells = review.locator('tbody button')
   await expect(cells.nth(0)).toHaveAccessibleName(/svar 93, Rätt svar/)

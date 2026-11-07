@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
 import { teacherLogin, sendScreening } from './lib/teacher.js'
-import { collectionSelect, openDispatch, openResults, reviewOf } from './lib/screening.js'
+import { openDispatch, openResults, reviewOf, chooseCollection } from './lib/screening.js'
 
 test('Authored fraction shortcuts and frac notation agree in preview, pupil and teacher review', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -64,7 +64,7 @@ test('Authored fraction shortcuts and frac notation agree in preview, pupil and 
     return JSON.stringify(await response.json())
   }, classId)
   expect(savedSource).toContain(JSON.stringify(source).slice(1, -1))
-  await collectionSelect(results).selectOption({ index: 1 })
+  await chooseCollection(results, 0)
   const review = reviewOf(results)
   await expect(review.locator('thead').getByRole('math')).toHaveCount(2)
   const answer = review.getByRole('button', { name: /Jämför 6\/\/2/ })

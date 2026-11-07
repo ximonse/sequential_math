@@ -3342,13 +3342,13 @@
     {
       "id": "screening-results-tab",
       "area": "Lärarvy",
-      "title": "Screeningresultat som fjärde flik i Screening",
+      "title": "Screeningresultat som fjärde flik i Screening, med synlig lista",
       "status": "Lokalt klart",
       "purpose": "Skapa, dela ut och läsa resultat är ett och samma arbetsflöde. Ett menyval, Screening, med flikarna Skapa ny, Utdelade, Utkast och Resultat gör det tydligare än två sidor.",
       "next": "Simon granskar fliken i webbläsaren och avgör om grenen ska publiceras.",
-      "acceptance": "Vänstermenyn har ett val, Screening. Fliken Resultat har egen mottagarväljare och samma panel som tidigare sida. Resultat och avslut i Utdelade öppnar Resultat med samlingen vald. Sökning och filter i Utdelade ligger kvar efter besök i Resultat, och listan läses om. Osparad genomgång varnar vid byte av flik och av arbetsläge. Resultatval påverkar aldrig nästa utdelning. Resultatfliken behåller sitt tidigare utseende.",
-      "decision": "2026-11-07: Simon föreslår att Screeningresultat ska vara fjärde fliken i Screening skapa och att menyvalet ska heta Screening. Flikordningen Skapa ny, Utdelade, Utkast, Resultat följer Simons formulering. Agentens förslag att lägga Utkast före Utdelade är inte beslutat. Ersätter tvålägesdelen av screening-split.",
-      "evidence": "2026-11-07 lokalt på gren claude/screening-results-tab från master c8fe318, i egen worktree för att inte krocka med pågående Codex-arbete: DashboardLayout tar bort arbetsläget ncm-results och renderar mottagarväljare och ScreeningResultsPanel via ScreeningDispatchPanel. Resultatfliken undantas från screeningFlow.css generella knapp-, fält- och rubrikregler. Robotar anpassade: lib/screening.js, diagnostic-grid, screening-dispatch-flow, screening-workspace-contract och transition-latency (mätnamnen Screening: skapa/resultat behålls för jämförbarhet). Vitest 1263 godkända; 2 fel i audit-ncm-rule-readiness beror på radslut i ny worktree och passerar i huvudmappen. Build godkänd. Diagnostic- och screening-robotar: 185 pass, 7 fall under belastning som alla passerade vid omkörning (36/36). transition-latency hoppades över (kräver ROBOT_MEASURE_TRANSITIONS=1); dess anpassning är ej körd. Flikvarningen för osparad genomgång är inte robotprovad: genomgången är en modal dialog som stänger ute flikarna, och osparat läge nollställs när den stängs. Varningen är ett extra skydd, som vid byte av arbetsläge. Docs: TEACHER_UI_WORKFLOWS och ADMIN_STYLE_HARMONISATION uppdaterade. Ingen skärmbildsgranskning, ej pushat.",
+      "acceptance": "Vänstermenyn har ett val, Screening, med flikarna Skapa ny, Utkast, Utdelade och Resultat. Fliken Resultat har egen mottagarväljare och samma panel som tidigare sida. Resultat och avslut i Utdelade öppnar Resultat med samlingen vald. Sökning och filter i Utdelade ligger kvar efter besök i Resultat, och listan läses om. Osparad genomgång varnar vid byte av flik och av arbetsläge. Resultatval påverkar aldrig nästa utdelning. Resultatfliken behåller sitt tidigare utseende. Resultat listar screeningarna för valda mottagare direkt med namn, status, datum, uppgifter, elever och klasser, utan rullgardinsmeny; valda elever ser bara screeningar som nådde någon av dem.",
+      "decision": "2026-11-07: Simon föreslår att Screeningresultat ska vara fjärde fliken i Screening skapa och att menyvalet ska heta Screening. Simon godkänner agentens förslag om flikordningen Skapa ny, Utkast, Utdelade, Resultat. Ersätter tvålägesdelen av screening-split.\n2026-11-07: Simon vill se screeningarna med namn med mera direkt på resultatsidan utifrån valda klasser/elever, inte bara i en rullgardinsmeny.",
+      "evidence": "2026-11-07 lokalt på gren claude/screening-results-tab från master c8fe318, i egen worktree för att inte krocka med pågående Codex-arbete: DashboardLayout tar bort arbetsläget ncm-results och renderar mottagarväljare och ScreeningResultsPanel via ScreeningDispatchPanel. Resultatfliken undantas från screeningFlow.css generella knapp-, fält- och rubrikregler. Robotar anpassade: lib/screening.js, diagnostic-grid, screening-dispatch-flow, screening-workspace-contract och transition-latency (mätnamnen Screening: skapa/resultat behålls för jämförbarhet). Vitest 1263 godkända; 2 fel i audit-ncm-rule-readiness beror på radslut i ny worktree och passerar i huvudmappen. Build godkänd. Diagnostic- och screening-robotar: 185 pass, 7 fall under belastning som alla passerade vid omkörning (36/36). transition-latency hoppades över (kräver ROBOT_MEASURE_TRANSITIONS=1); dess anpassning är ej körd. Flikvarningen för osparad genomgång är inte robotprovad: genomgången är en modal dialog som stänger ute flikarna, och osparat läge nollställs när den stängs. Varningen är ett extra skydd, som vid byte av arbetsläge. Docs: TEACHER_UI_WORKFLOWS och ADMIN_STYLE_HARMONISATION uppdaterade. Ingen skärmbildsgranskning, ej pushat.\n2026-11-07 lista: ScreeningResultsCollections ersätter rullgardinsmenyn; filtrering på mottagarnas studentIds i ScreeningResultsPanel. Flikordning ändrad. Robothjälpare chooseCollection/collectionRows/selectedCollection ersätter collectionSelect i 13 robotar; ny R1-robot (två elever i samma klass, valt barn ser bara sin screening) och två testelevnamn i robotServer. Vitest 1263 godkända (samma 2 radslutsfel), build godkänd, 192 robotar gröna i bred körning plus nya R1-roboten. Ingen skärmbildsgranskning, ej pushat.",
       "issue": "",
       "kind": "funktion",
       "requires": [],
@@ -3371,6 +3371,11 @@
           "id": "results-tab-try",
           "text": "Simon provar fliken i webbläsaren",
           "done": false
+        },
+        {
+          "id": "results-tab-list",
+          "text": "Synlig lista över screeningar för valda mottagare i Resultat",
+          "done": true
         }
       ]
     }

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
 import { teacherLogin, sendScreening } from './lib/teacher.js'
-import { openDispatch, openResults, collectionSelect, reviewOf, openQuestionBank } from './lib/screening.js'
+import { openDispatch, openResults, reviewOf, openQuestionBank, chooseCollection } from './lib/screening.js'
 import { screeningFigures, screeningFigureSvg } from '../src/domains/arithmetic/screeningFigures.js'
 
 async function teacherRequest(page, url, body, method = 'POST') {
@@ -77,7 +77,7 @@ test('R1–R4: image selections persist, scroll does not select, exact choices r
   await expect(page.getByRole('button', { name: 'Cylinder', exact: true })).toBeDisabled()
   await page.goto('/teacher')
   const results = await openResults(page, { className: classId })
-  await collectionSelect(results).selectOption(assignment.assignmentId)
+  await chooseCollection(results, assignment.assignmentId)
   const review = reviewOf(results)
   await review.getByRole('button', { name: /Välj alla figurer som är romber/u }).first().click()
   const evidence = review.getByRole('region', { name: 'Diagnostiskt elevunderlag' })

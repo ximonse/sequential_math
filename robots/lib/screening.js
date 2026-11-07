@@ -52,5 +52,14 @@ export async function openResults(page, { className, pupilName, groupName } = {}
   return panel
 }
 
-export const collectionSelect = panel => panel.getByRole('combobox', { name: 'Samling att gå igenom', exact: true })
+// Results list the screenings for the picked recipients (2026-11-07); choose by id or by position.
+export const collectionList = panel => panel.getByRole('region', { name: 'Screeningar för valda mottagare', exact: true })
+export const collectionRows = panel => collectionList(panel).locator('button[data-collection-id]')
+export const selectedCollection = panel => collectionList(panel).locator('button[data-collection-id][aria-pressed="true"]')
+export async function chooseCollection(panel, idOrIndex = 0) {
+  const row = typeof idOrIndex === 'number' ? collectionRows(panel).nth(idOrIndex)
+    : collectionList(panel).locator(`button[data-collection-id="${idOrIndex}"]`)
+  await row.click()
+  await expect(row).toHaveAttribute('aria-pressed', 'true')
+}
 export const reviewOf = panel => panel.getByRole('region', { name: 'Genomgång av samling', exact: true })

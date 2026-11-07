@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil } from './lib/app.js'
 import { createTeacher, teacherLogin } from './lib/teacher.js'
-import { openDispatch } from './lib/screening.js'
+import { openDispatch, selectedCollection } from './lib/screening.js'
 
 test('Screening flow preserves mixed searchable recipients and retries uncertain delivery without duplicates', async ({ page, request }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -87,7 +87,7 @@ test('Screening flow preserves mixed searchable recipients and retries uncertain
   await panel.getByRole('combobox', { name: 'Sortera', exact: true }).selectOption('name')
   await panel.getByRole('button', { name: 'Resultat och avslut', exact: true }).click()
   const results = page.getByRole('region', { name: 'Resultat av screening', exact: true })
-  await expect(results.getByRole('combobox', { name: 'Samling att gå igenom', exact: true })).not.toHaveValue('')
+  await expect(selectedCollection(results)).toHaveCount(1)
   page.once('dialog', dialog => dialog.accept())
   await results.getByRole('button', { name: 'Avsluta', exact: true }).click()
   await expect(results.getByText(`Flow screening ${tag} är avslutad. 0 påbörjade svar lämnades in.`, { exact: true })).toBeVisible()

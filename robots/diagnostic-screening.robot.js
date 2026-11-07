@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
 import { teacherLogin } from './lib/teacher.js'
-import { collectionSelect, openDispatch, openResults, reviewOf } from './lib/screening.js'
+import { openDispatch, openResults, reviewOf, chooseCollection, selectedCollection } from './lib/screening.js'
 import { readFileSync } from 'node:fs'
 const manifest = JSON.parse(readFileSync(new URL('../src/domains/arithmetic/diagnosticTasks.v1.json', import.meta.url), 'utf8'))
 
@@ -37,11 +37,11 @@ test('Screening matrix shows server answers, evidence-backed hover and a touch-a
   }
   await page.reload()
   const results = await openResults(page, { className: classId })
-  await collectionSelect(results).selectOption(assignment.assignmentId)
+  await chooseCollection(results, assignment.assignmentId)
   const review = reviewOf(results)
   await openDispatch(page)
   await openResults(page)
-  await expect(collectionSelect(results)).toHaveValue(assignment.assignmentId)
+  await expect(selectedCollection(results)).toHaveAttribute('data-collection-id', assignment.assignmentId)
   const correct = review.getByRole('button', { name: /Matrix Correct,.*svar 224/ })
   const pattern = review.getByRole('button', { name: /Matrix Pattern,.*svar 376/ })
   await expect(correct).toHaveText('224')

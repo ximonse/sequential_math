@@ -3,7 +3,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
 import { createTeacher, teacherLogin, sendScreening } from './lib/teacher.js'
-import { collectionSelect, openDispatch, openResults, reviewOf } from './lib/screening.js'
+import { openDispatch, openResults, reviewOf, chooseCollection, collectionRows } from './lib/screening.js'
 
 test('A group across two classes is read as one table, and result picks stay out of the dispatch', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -34,9 +34,9 @@ test('A group across two classes is read as one table, and result picks stay out
   }
 
   const results = await openResults(page, { groupName: group.name })
-  await expect(collectionSelect(results).locator('option')).toHaveCount(2)
-  await expect(collectionSelect(results).locator('option').nth(1)).toContainText(`Gruppklass A ${tag}, Gruppklass B ${tag}`)
-  await collectionSelect(results).selectOption({ index: 1 })
+  await expect(collectionRows(results)).toHaveCount(1)
+  await expect(collectionRows(results).first()).toContainText(`Gruppklass A ${tag}, Gruppklass B ${tag}`)
+  await chooseCollection(results, 0)
   const review = reviewOf(results)
   await page.screenshot({ path: testInfo.outputPath('2-resultat-grupp.png'), fullPage: true })
   const rows = review.getByRole('row')
@@ -76,7 +76,7 @@ test('Result rows follow same-class recipient changes and new dispatches appear 
   await sendScreening(page, { className })
   const results = await openResults(page, { pupilName: 'Filter One' })
   const picker = page.locator('[data-recipient-picker]')
-  await collectionSelect(results).selectOption({ index: 1 })
+  await chooseCollection(results, 0)
   const rows = reviewOf(results).locator('tbody tr')
   await expect(rows).toHaveCount(1)
   await picker.getByRole('button', { name: `Grupp: ${group.name}`, exact: true }).click()
@@ -87,5 +87,5 @@ test('Result rows follow same-class recipient changes and new dispatches appear 
   await dispatch.getByRole('textbox', { name: 'Samlingens namn' }).fill('Second collection')
   await sendScreening(page, { className })
   await openResults(page)
-  await expect(collectionSelect(results).locator('option')).toContainText(['Välj samling', 'Second collection', 'First collection'])
+  await expect(collectionRows(results)).toContainText(['Second collection', 'First collection'])
 })

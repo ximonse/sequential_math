@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
 import { teacherLogin, sendScreening } from './lib/teacher.js'
-import { collectionSelect, openDispatch, openResults, reviewOf } from './lib/screening.js'
+import { openDispatch, openResults, reviewOf, chooseCollection } from './lib/screening.js'
 
 test('R2/R3: autosave does not freeze; navigation preserves work and submission covers the collection', async ({ page, request }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -148,7 +148,7 @@ test('Teacher assigns a written answer with saved drawing; eraser and explicit f
   await results.getByRole('button', { name: 'Uppdatera försök', exact: true }).click()
   await results.getByRole('button', { name: 'Visa underlag', exact: true }).click()
   await expect(results.getByText(/^Slutsvar: En tia blir tio ental/)).toBeVisible()
-  await collectionSelect(results).selectOption({ index: 1 })
+  await chooseCollection(results, 0)
   const review = reviewOf(results)
   await review.getByRole('button', { name: /Förklara hur du växlar/ }).click()
   const form = review.getByRole('form', { name: 'Lärarens genomgång', exact: true })

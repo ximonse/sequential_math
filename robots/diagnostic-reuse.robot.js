@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
 import { createTeacher, teacherLogin, sendScreening } from './lib/teacher.js'
-import { collectionSelect, openDispatch, openResults } from './lib/screening.js'
+import { openDispatch, openResults, collectionRows } from './lib/screening.js'
 
 async function teacherRequest(page, url, method = 'GET', body) {
   return page.evaluate(async ({ url, method, body }) => {
@@ -44,7 +44,7 @@ test('A stopped collection can be reused for a group, another class and one pupi
   await expect(results.getByText(/Det finns inga utdelade samlingar till de valda mottagarna ännu/)).toBeVisible()
   await openResults(page, { className: `Ny klass ${tag}` })
   await openResults(page, { className: sourceClass })
-  await expect(collectionSelect(results).locator('option')).toContainText(['Välj samling', 'Min samling'])
+  await expect(collectionRows(results)).toContainText(['Min samling'])
   const panel = await openDispatch(page, { startNew: false })
   const deliver = async (title, target) => {
     const close = panel.getByRole('button', { name: 'Till utdelade screeningar', exact: true })

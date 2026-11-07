@@ -21,8 +21,12 @@ komponenter/hookar; ingen ny verksamhetslogik läggs i dashboardskalet.
 ## Screening: dela ut
 
 Sedan 2026-11-07 är Screening ett enda arbetsläge med flikarna Skapa ny,
-Utdelade, Utkast och Resultat. Resultatfliken har egen mottagarväljare och
-samma panel som det tidigare arbetsläget Screening: resultat. Resultat och
+Utkast, Utdelade och Resultat. Resultatfliken har egen mottagarväljare och
+samma panel som det tidigare arbetsläget Screening: resultat. I stället för en
+rullgardinsmeny listas screeningarna som nådde de valda mottagarna med namn,
+status, datum, antal uppgifter, antal elever och klasser; ett val öppnar
+genomgången under listan. Valda elever i en klass ser bara screeningar som
+nådde någon av dem. Resultat och
 avslut i Utdelade öppnar fliken med samlingen vald. Utdelade behåller sök och
 filter efter besök i Resultat och läses om. Byte av flik med osparad
 genomgång frågar först.

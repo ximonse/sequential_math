@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
 import { teacherLogin } from './lib/teacher.js'
-import { collectionSelect, openResults } from './lib/screening.js'
+import { openResults, chooseCollection } from './lib/screening.js'
 
 async function assignThree(page, request, name) {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -38,7 +38,7 @@ test('Ending a screening hands in every started answer, even without the pupil s
   await expect(student.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
 
   const panel = await openResults(page, { className: classId })
-  await collectionSelect(panel).selectOption({ index: 1 })
+  await chooseCollection(panel, 0)
   page.once('dialog', dialog => dialog.accept())
   await panel.getByRole('button', { name: 'Avsluta', exact: true }).click()
   await expect(panel.getByText('2 påbörjade svar lämnades in.')).toBeVisible()

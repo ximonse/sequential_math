@@ -2,13 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { diagnosticRequest as request } from './diagnosticRequest'
 import DiagnosticCollectionReview from './DiagnosticCollectionReview'
 import ScreeningPupilAttempts from './ScreeningPupilAttempts'
+import ScreeningResultsCollections from './ScreeningResultsCollections'
 import { buildScreeningDispatches } from './screeningRecipients'
 import { groupCollections, resultFilter } from './screeningCollections'
-
-const collectionLabel = (collection, classNames) => {
-  const where = collection.members.map(member => classNames.get(member.classId) || member.classId).join(', ')
-  return `${collection.titleSv} · ${new Date(collection.createdAt).toLocaleString('sv-SE')} · ${collection.members[0].items.length} uppgift${collection.members[0].items.length === 1 ? '' : 'er'} · ${where}`
-}
 
 // Results of screenings for the picked recipients: classes, groups or pupils.
 // A group that spans classes is read as one table.
@@ -43,7 +39,11 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
   }, [classKey, isActive])
 
   const waiting = classKey.split(',').filter(Boolean).some(classId => !loaded[classId])
-  const collections = useMemo(() => groupCollections(Object.values(loaded).flatMap(item => item.assignments)), [loaded])
+  // Picked pupils within a class only see screenings that reached at least one of them.
+  const reached = useMemo(() => collection => collection.members.flatMap(member => member.studentIds
+    ? member.studentIds.filter(id => isAllowed(member.classId, id)) : []), [isAllowed])
+  const collections = useMemo(() => groupCollections(Object.values(loaded).flatMap(item => item.assignments))
+    .filter(collection => collection.members.some(member => !member.studentIds) || reached(collection).length > 0), [loaded, reached])
   useEffect(() => {
     if (!requestedCollectionId) return
     const requestedIds = new Set(requestedCollectionId.split('+'))
@@ -101,16 +101,14 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
     {failed.map(([classId, item]) => <p key={classId} role="status" className="mt-2 text-sm text-amber-900">
       {classNames.get(classId) || classId}: {item.state === 'unavailable' ? 'screening är inte aktiverat på servern' : item.error || 'kunde inte hämta samlingar'}.</p>)}
     {!waiting && classKey && collections.length === 0 && failed.length === 0 && <p role="status" className="mt-3 text-sm">Det finns inga utdelade samlingar till de valda mottagarna ännu. Använd fliken Skapa ny eller Utdelade för att skapa eller återanvända en samling.</p>}
-    {collections.length > 0 && <label className="mt-3 block text-sm font-medium">Samling att gå igenom
-      <select value={selected ? collectionId : ''} onChange={event => {
+    {collections.length > 0 && <ScreeningResultsCollections collections={collections} selectedId={selected ? collectionId : ''} classNames={classNames}
+      pupilCount={collection => collection.members.every(member => member.studentIds) ? new Set(reached(collection)).size : null}
+      onSelect={id => {
+        if (id === collectionId) return
         if (dirty.current && !window.confirm('Genomgången har osparade ändringar. Vill du lämna dem?')) return
         markDirty(false)
-        setCollectionId(event.target.value)
-      }} className="mt-1 block w-full rounded border border-slate-300 bg-white px-1.5 py-0.5">
-        <option value="">Välj samling</option>
-        {collections.map(collection => <option key={collection.id} value={collection.id}>{collectionLabel(collection, classNames)}</option>)}
-      </select>
-    </label>}
+        setCollectionId(id)
+      }} />}
     {selected && <>
       <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
         <span>{selected.members.map(member => `${classNames.get(member.classId) || member.classId}: ${member.status === 'active' ? 'aktiv' : 'avslutad'}`).join(' · ')}</span>

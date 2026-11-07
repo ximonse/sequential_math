@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test'
 import { createPupil } from './lib/app.js'
 import { createTeacher, teacherLogin } from './lib/teacher.js'
-import { openDispatch } from './lib/screening.js'
+import { openDispatch, openResults, selectedCollection, collectionRows } from './lib/screening.js'
 
 async function teacherApi(page, method, body) {
   return page.evaluate(async ({ method, body }) => {
     const response = await fetch('/api/teacher-diagnostic-assignments', { method,
       headers: { 'Content-Type': 'application/json', 'x-teacher-token': sessionStorage.getItem('mathapp_teacher_api_token') }, body: JSON.stringify(body) })
-    if (!response.ok) throw Error(`Fixture request failed: ${response.status}`)
+    if (!response.ok) throw Error(`Fixture request failed: ${response.status} ${await response.text()}`)
     return response.json()
   }, { method, body })
 }
@@ -46,7 +46,7 @@ test('The overview filters status and recipients within a group, and results ope
   await page.screenshot({ path: info.outputPath('overview-portrait.png'), fullPage: true })
   await row.getByRole('button', { name: 'Resultat och avslut', exact: true }).click()
   const results = page.getByRole('region', { name: 'Resultat av screening', exact: true })
-  await expect(results.getByRole('combobox', { name: 'Samling att gå igenom', exact: true })).toHaveValue(second.assignmentId)
+  await expect(selectedCollection(results)).toHaveAttribute('data-collection-id', second.assignmentId)
   expect(first.assignmentId).not.toBe(second.assignmentId)
 })
 
@@ -58,8 +58,8 @@ test('Saved content has its own library and opens without inheriting delivery re
   await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Material att återkomma till')
   await panel.getByRole('button', { name: 'Spara utkast', exact: true }).click()
   await expect(panel.getByRole('region', { name: 'Screeningutkast' }).getByRole('status')).toContainText('version 1')
-  await panel.getByRole('tab', { name: 'Utdelade', exact: true }).focus()
-  await panel.getByRole('tab', { name: 'Utdelade', exact: true }).press('ArrowRight')
+  await panel.getByRole('tab', { name: 'Skapa ny', exact: true }).focus()
+  await panel.getByRole('tab', { name: 'Skapa ny', exact: true }).press('ArrowRight')
   await expect(panel.getByRole('tab', { name: 'Utkast', exact: true })).toBeFocused()
   await expect(panel.getByRole('article', { name: 'Material att återkomma till', exact: true })).toBeVisible()
   await page.screenshot({ path: info.outputPath('material-library.png'), fullPage: true })
@@ -114,4 +114,21 @@ test('Question images and answer images use separate explicit insertion paths; a
   await page.screenshot({ path: info.outputPath('image-roles-landscape.png'), fullPage: true })
   await page.setViewportSize({ width: 768, height: 1024 })
   await page.screenshot({ path: info.outputPath('image-roles-portrait.png'), fullPage: true })
+})
+
+test('R1: results list the screenings that reached the picked pupils, not the whole class', async ({ page, request }) => {
+  const tag = Math.random().toString(36).slice(2, 8), classId = `list-${tag}`, className = `Listklass ${tag}`
+  const one = await createPupil(request, { name: 'UI List One', classId, className })
+  const two = await createPupil(request, { name: 'UI List Two', classId, className })
+  await teacherLogin(page, await createTeacher(request, { classIds: [classId], role: 'super_admin' }))
+  for (const [pupil, titleSv] of [[one, 'Bara ettan'], [two, 'Bara tvåan']]) {
+    await teacherApi(page, 'POST', { classId, studentIds: [pupil.studentId], titleSv, taskIds: ['add-no-carry-001'] })
+  }
+  const results = await openResults(page, { className })
+  await expect(collectionRows(results)).toHaveCount(2)
+  await page.locator('[data-recipient-picker]').getByRole('button', { name: className, exact: true }).click()
+  await openResults(page, { pupilName: 'UI List One' })
+  await expect(collectionRows(results)).toHaveCount(1)
+  await expect(collectionRows(results).first()).toContainText('Bara ettan')
+  await expect(collectionRows(results).first()).toContainText('1 elev')
 })

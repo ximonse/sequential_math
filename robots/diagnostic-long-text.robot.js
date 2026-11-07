@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
 import { teacherLogin } from './lib/teacher.js'
-import { collectionSelect, openResults, reviewOf } from './lib/screening.js'
+import { openResults, reviewOf, chooseCollection } from './lib/screening.js'
 
 const prompt = 'Lisa har 248 kulor och ger bort några till sin bror. Sedan köper hon 35 nya kulor och har då 199 kulor. '
   + 'Hur många kulor gav Lisa bort till sin bror? Förklara hur du tänker, steg för steg, och visa gärna med en bild eller en uträkning '
@@ -45,7 +45,7 @@ test('Long written questions and long answers are fully visible to pupil and tea
   await context.close()
 
   const results = await openResults(page, { className: classId })
-  await collectionSelect(results).selectOption({ index: 1 })
+  await chooseCollection(results, 0)
   const review = reviewOf(results)
   const cell = review.locator('tbody button').first()
   await expect(cell).toContainText('…')

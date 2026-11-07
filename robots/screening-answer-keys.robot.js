@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
 import { createTeacher, teacherLogin, sendScreening } from './lib/teacher.js'
-import { openDispatch, openResults, collectionSelect } from './lib/screening.js'
+import { openDispatch, openResults, chooseCollection } from './lib/screening.js'
 
 async function teacherGet(page, path) {
   return page.evaluate(async path => {
@@ -80,7 +80,7 @@ test('original frozen keys survive assignment, pupil work, reload and automatic 
   for (const key of ['adaptive', 'mastery', 'problemLog', 'recentProblems', 'totalProblems']) expect(after[key]).toEqual(before[key])
   await openResults(page, { className: classId })
   const results = page.getByRole('region', { name: 'Resultat av screening', exact: true })
-  await collectionSelect(results).selectOption(assignment.assignmentId)
+  await chooseCollection(results, assignment.assignmentId)
   await expect(results.getByText('5 / 8', { exact: true })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('teacher-automatic-results.png'), fullPage: true })
   await student.goto('/'); await login(student, excluded)

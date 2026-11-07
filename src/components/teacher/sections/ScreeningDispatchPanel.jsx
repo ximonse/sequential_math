@@ -6,9 +6,9 @@ import ScreeningMaterialLibrary from './ScreeningMaterialLibrary'
 import useScreeningLibrary from './useScreeningLibrary'
 import './screeningFlow.css'
 
-// Tabs (Simon 2026-11-02): create a screening, see the issued ones and open saved
-// drafts. Creating comes first; handing out is the last step of creating.
-// Results became the fourth tab instead of a page of its own (Simon 2026-11-07).
+// Tabs (Simon 2026-11-02): create a screening, open saved drafts and see the issued
+// ones. Creating comes first; handing out is the last step of creating.
+// Results became the fourth tab, and the tabs follow the work order (Simon 2026-11-07).
 export default function ScreeningDispatchPanel({ classes, students, teacherGroups = [], active = true, onDirtyChange, onResults,
   renderResults, isResultsDirty, onLeaveResults }) {
   const navigate = useNavigate()
@@ -60,7 +60,7 @@ export default function ScreeningDispatchPanel({ classes, students, teacherGroup
   </section>
 }
 
-const TABS = [['create', 'Skapa ny'], ['issued', 'Utdelade'], ['drafts', 'Utkast'], ['results', 'Resultat']]
+const TABS = [['create', 'Skapa ny'], ['drafts', 'Utkast'], ['issued', 'Utdelade'], ['results', 'Resultat']]
 
 function ScreeningTabs({ tab, onTab }) {
   return <div className="screening-tabs" role="tablist" aria-label="Screening" onKeyDown={event => {

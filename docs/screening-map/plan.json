@@ -3545,6 +3545,22 @@
       "issue": "",
       "kind": "funktion",
       "tasks": []
+    },
+    {
+      "id": "pupil-numpad",
+      "area": "Elevens vyer",
+      "title": "Datorns numpad fungerar alltid för svar",
+      "status": "Lokalt klart",
+      "purpose": "Elever vid dator ska kunna svara med numpad i alla aktiviteter.",
+      "next": "Push efter Simons godkännande.",
+      "acceptance": "Talbild: 1–9 svarar direkt, 10 som 1 följt av 0 inom en halv sekund eller en ensam 0; tiden räknas från första tangenten. Vanlig träning, Talpar och Dubblor: siffror och symboler hamnar i svarsfältet även när fokus ligger utanför, även med NumLock av.",
+      "requires": [],
+      "affects": [],
+      "decision": "2026-11-07 Simon: en dators numpad ska alltid fungera för att trycka in siffror och symboler; fungerar inte i Talbild nu.",
+      "evidence": "2026-11-07 Claude, lokalt: tangentlyssnare i SubitizingDice och reservfokus med insertText i usePracticeUiEffects. Ny robot keyboard-answers: vanlig träning röd före (tangenten nådde inte svarsfältet), båda testerna gröna efter. 59 tangentbords-/träningsrobotar och testsviten gröna (utom 2 NCM-audit-fel orsakade av CRLF i Windows-checkout). Ej pushat.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": []
     }
   ],
   "edges": [

@@ -87,6 +87,29 @@ export function usePracticeUiEffects({
     }
   }, [currentProblem, feedback, coarsePointer, inputRef])
 
+  // A computer keyboard or numpad always reaches the answer (Simon 2026-11-07): when
+  // focus is elsewhere, an answer key moves focus to the answer field and types there.
+  // Numpad digits also work with NumLock off.
+  useEffect(() => {
+    if (!currentProblem || feedback) return undefined
+    const NUMPAD = { NumpadDecimal: ',', NumpadAdd: '+', NumpadSubtract: '-', NumpadMultiply: '*', NumpadDivide: '/' }
+    const onKeyDown = event => {
+      if (event.ctrlKey || event.metaKey || event.altKey) return
+      const character = /^[0-9,.+\-*/x=()]$/u.test(event.key) ? event.key
+        : /^Numpad[0-9]$/u.test(event.code) ? event.code.slice(-1) : NUMPAD[event.code]
+      if (!character) return
+      const active = document.activeElement
+      if (active && (active.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName))) return
+      const input = inputRef.current
+      if (!input) return
+      event.preventDefault()
+      input.focus()
+      document.execCommand('insertText', false, character)
+    }
+    window.addEventListener('keydown', onKeyDown, true)
+    return () => window.removeEventListener('keydown', onKeyDown, true)
+  }, [currentProblem, feedback, inputRef])
+
   useEffect(() => {
     const tracker = attentionRef.current
 

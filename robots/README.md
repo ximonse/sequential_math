@@ -63,6 +63,7 @@ att hela appens väntetider är lösta.
 | `screening-bulk.robot.js` | Läraren markerar flera utdelade screeningar och arkiverar, återställer och raderar dem samt raderar flera utkast. Varje åtgärd frågar först och ger kvitto; arkivering behåller elevsvaren, radering tar bort dem. |
 | `theme-contrast.robot.js` | Mäter verklig kontrast mot bakgrunden för all text på startsidan med Framsteg, träning, infotext om klarad nivå, Grattis och Tabell klar i alla fem teman. Kräver WCAG AA (4,5:1, stor text 3:1). |
 | `stable-keys.robot.js` | Beröm i Talbild och Talpar och en misslyckad sparning i vanlig träning får inte flytta sifferknapparna (R3). |
+| `keyboard-answers.robot.js` | Datorns numpad svarar i Talbild (1–9 direkt, 10 som 1 och 0) och i vanlig träning även när eleven klickat utanför svarsfältet. |
 
 ## Lägga till en robot
 

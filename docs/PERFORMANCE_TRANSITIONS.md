@@ -513,6 +513,13 @@ Originalfilen återställdes och slutliga sex robotar passerade igen. Alla
 och dess faktiska ändringsfilter har verifierats lokalt mot kod-, dokument-
 och initiala Git-baser; faktisk GitHub-körning återstår efter publicering.
 
+Första CI-skyddet är därefter publicerat med Simons godkännande som c8fe318.
+Verify 42367111311 är success med 1265 tester och sex faktiskt körda och
+godkända robotar; rapportuppladdningen lyckades också. Rätt sekvens-SHA och
+produktionsalias verifierade. Se genomförandeplanens publiceringskvitto.
+Inget nytt krav på grönt CI före Vercel-driftsättning infördes här: en
+verifierad releasegrind återstår, liksom själva väntetidsrättningarna.
+
 - Samma kompletta produktionsmatris före/efter publicering, inklusive material.
 - Fler övningstyper, större klasser/profiler och längre screeninghistorik i webbläsare.
 - Kall katalog, stora valda resultatprofiler och upprepade lärarauth-läsningar.

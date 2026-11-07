@@ -110,6 +110,20 @@ alla matrisens öppna rader eller deras latensbudgetar. Fulla slutkontroller:
 233 testfiler/1265 tester, build, sex robotar, lint och arkitektur passerar.
 Byggets befintliga varningar om chunkstorlek, import och Browserslist kvarstår.
 
+Publicerat 2026-11-07 efter Simons godkännande: c8fe318 till origin/master.
+[GitHub Verify 42367111311](https://github.com/ximonse/sequential_math/actions/runs/42367111311)
+är success; loggen bekräftar 1265 tester och alla sex robotar (9,6 s),
+inklusive nya elevprovet (1,5 s). Robotsteget och rapportuppladdningen kördes
+och passerade, de var inte överhoppade. Sekvens
+dpl_98ZyUDDy62xDjJTJ2hxph8vcqBjz är READY med exakt release-SHA och
+matematik.ximon.se-alias. Detta aktiverar det första automatiska paketet.
+
+CI-körning är inte automatiskt en produktionsspärr. Denna leverans ändrar
+ingen branch protection eller Vercel-koppling som kräver grönt CI före
+driftsättning. En förebyggande releasegrind återstår att utreda och införa
+med verifierat beteende; nuvarande paket upptäcker dessa återfall men får
+inte beskrivas som en garanti att de inte kan nå produktion.
+
 Föreslagna p95-budgetar på specificerad referensenhet/nät: varm övning eller
 nästa fråga 1 s, screeningfråga med säker lokal lagring 1 s, klassval efter
 lyckat login 2 s, klassöversikt för 30 elever 3 s, förnyad elevstart 3 s och

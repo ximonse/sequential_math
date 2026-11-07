@@ -16,7 +16,7 @@ valmarkeringar och gul aktiv navigation. Ingen ny meny eller lagring införs.
 | Uppdrag & tickets | Visningsurval, tydliga mottagare, uppdrag och tickets |
 | Statistik & stöd | Klassurval, sammanfattning och separata analysmoduler |
 | Screening: dela ut | Befintlig godkänd referens, översikt och redigeringsflöde |
-| Screening: resultat | Mottagare, samling och genomgång av konkreta svar |
+| Screening: resultat | Mottagare, samling och genomgång av konkreta svar (sedan 2026-11-07 fliken Resultat i Screening) |
 | Administration | Klasser/grupper, objektets flikar och separat farlig hantering |
 | Materialgranskning | Versionsval, innehåll, underlag, mottagare och godkännande |
 

@@ -20,6 +20,13 @@ komponenter/hookar; ingen ny verksamhetslogik läggs i dashboardskalet.
 
 ## Screening: dela ut
 
+Sedan 2026-11-07 är Screening ett enda arbetsläge med flikarna Skapa ny,
+Utdelade, Utkast och Resultat. Resultatfliken har egen mottagarväljare och
+samma panel som det tidigare arbetsläget Screening: resultat. Resultat och
+avslut i Utdelade öppnar fliken med samlingen vald. Utdelade behåller sök och
+filter efter besök i Resultat och läses om. Byte av flik med osparad
+genomgång frågar först.
+
 `ScreeningDispatchPanel` skiljer nu mellan översikt och utdelningsflöde.
 Översikten läser tillgängliga klassers screeningar, grupperar befintliga
 utdelningar med `groupCollections` och visar status, antal, mottagare och

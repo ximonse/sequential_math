@@ -32,7 +32,7 @@ export default function StudentSyncStatus({ status }) {
 
   return (
     <div
-      className={`mb-3 flex items-start gap-2 rounded-lg border px-3 py-2 text-xs ${presentation.className}`}
+      className={`flex items-start gap-2 rounded-lg border px-3 py-2 text-xs shadow ${presentation.className}`}
       role={status?.state === 'error' || status?.state === 'rejected' ? 'alert' : 'status'}
       aria-live="polite"
     >

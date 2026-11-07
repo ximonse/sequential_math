@@ -6,6 +6,7 @@ import MathScratchpad from '../MathScratchpad'
 import FeedbackOverlay from '../FeedbackOverlay'
 import CurrentOperationMastery from './CurrentOperationMastery'
 import StudentSyncStatus from './StudentSyncStatus'
+import FloatingNotices from './FloatingNotices'
 const PracticeNotebook = lazy(() => import('../PracticeNotebook'))
 
 function SessionPage({
@@ -56,7 +57,19 @@ function SessionPage({
           remainingCount={remainingCount}
           onExit={onExit}
         />
-        <StudentSyncStatus status={syncStatus} />
+        <FloatingNotices>
+          <StudentSyncStatus status={syncStatus} />
+          {sessionError && (
+            <div role="alert" className="rounded-lg bg-red-50 text-red-700 border border-red-200 px-3 py-2 text-sm shadow">
+              {sessionError}
+            </div>
+          )}
+          {praise && (
+            <div role="status" className="rounded-lg bg-emerald-100 px-4 py-3 text-center text-2xl font-bold text-emerald-800 shadow">
+              {praise}
+            </div>
+          )}
+        </FloatingNotices>
 
         <div className="py-4 sm:py-8">
           <SessionModeBanner
@@ -74,18 +87,8 @@ function SessionPage({
               </button>
             </div>
           )}
-          {sessionError && (
-            <div className="mb-4 rounded-lg bg-red-50 text-red-700 border border-red-200 px-3 py-2 text-sm">
-              {sessionError}
-            </div>
-          )}
 
           {fluencyProgress && <p className="mb-3 text-sm text-gray-600">{fluencyProgress}</p>}
-          {praise && (
-            <div role="status" className="mb-4 rounded-lg bg-emerald-100 px-4 py-3 text-center text-2xl font-bold text-emerald-800 shadow">
-              {praise}
-            </div>
-          )}
 
           <ProblemView
             problem={currentProblem}

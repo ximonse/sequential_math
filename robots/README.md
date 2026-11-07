@@ -60,6 +60,9 @@ att hela appens väntetider är lösta.
 | `fluency.robot.js` | Talpar, Dubblor och Talbild via lärarens länk: eget tak (5, 15, 16, 32, tomt = 20), nedräkning, paus var 15:e, uppmuntran efter 8, avslutsskärm, fel svar räknas mot taket, textstorlek på dator/mobil, pausförslag i vanliga länkuppdrag. Talbild: snabba rätt ger ojämn fördelning, slumpade prickar och olika storlekar (utan överlapp och innanför tärningen), fel svar ger lättare bilder, knappar 5+5 på mobil/iPad/dator. |
 | `teacher.robot.js` | Fyra elever tränar på kända sätt (rätt, bara fel, inget, tabell 7) och en femte i en annan klass. Läraren loggar in och kontrollerar klassval, antal och rätt/fel per elev, okänt ≠ 0, tabellträning, Behöver stöd nu med elevens riktiga felsvar, datakvalitet, exporten och att klassvalet ligger kvar. Dessutom en textgranskning av elevens sidor. |
 | `diagnostic-pilot.robot.js` | Admin tilldelar en uppgift till ett uttryckligen tillåtet syntetiskt testkonto. Testeleven skriver, sparar och återupptar rutnätet via riktiga API-handlare och isolerad minnesdatabas. Ett annat elevkonto får ingen uppgift och den vanliga problemloggen förblir tom. |
+| `screening-bulk.robot.js` | Läraren markerar flera utdelade screeningar och arkiverar, återställer och raderar dem samt raderar flera utkast. Varje åtgärd frågar först och ger kvitto; arkivering behåller elevsvaren, radering tar bort dem. |
+| `theme-contrast.robot.js` | Mäter verklig kontrast mot bakgrunden för all text på startsidan med Framsteg, träning, infotext om klarad nivå, Grattis och Tabell klar i alla fem teman. Kräver WCAG AA (4,5:1, stor text 3:1). |
+| `stable-keys.robot.js` | Beröm i Talbild och Talpar och en misslyckad sparning i vanlig träning får inte flytta sifferknapparna (R3). |
 
 ## Lägga till en robot
 

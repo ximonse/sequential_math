@@ -3529,6 +3529,22 @@
       "issue": "",
       "kind": "funktion",
       "tasks": []
+    },
+    {
+      "id": "pupil-stable-keys",
+      "area": "Elevens vyer",
+      "title": "Notiser flyttar aldrig sifferknappar eller andra knappar",
+      "status": "Lokalt klart",
+      "purpose": "Eleven ska inte trycka fel för att ett meddelande dyker upp och knuffar knapparna.",
+      "next": "Push efter Simons godkännande.",
+      "acceptance": "Beröm, sparstatus och felmeddelanden under pågående uppgift i vanlig träning, Talpar/Dubblor och Talbild, samt sparstatus på startsidan, visas ovanpå sidan utan att ta plats och utan att fånga tryck. Sifferknapparnas position är oförändrad.",
+      "requires": [],
+      "affects": [],
+      "decision": "2026-11-07 Simon: små meddelanden i till exempel Talbild får sifferknapparna att byta plats precis när man trycker. Notiser om sparningar eller annat där frågan och knapparna syns får inte ändra sifferknappar eller andra knappar.",
+      "evidence": "2026-11-07 Claude, lokalt: FloatingNotices (fast position överst, pointer-events none) för StudentSyncStatus, sessionsfel och beröm i SessionPage, beröm i Talbild och sparstatus på startsidan. Ny robot stable-keys mäter knapp 1:s position: röd före (flytt 72–80 px), grön efter. Räknehäftets sparstatus ligger redan under alla knappar. 50 elevrobotar, testsviten 1282/1284 (2 NCM-audit-fel orsakade av CRLF i Windows-checkout) och build gröna. Ej pushat.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": []
     }
   ],
   "edges": [

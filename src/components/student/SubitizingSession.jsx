@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import SessionLoadingView from './SessionLoadingView'
 import SessionHeader from './SessionHeader'
+import FloatingNotices from './session/FloatingNotices'
 import BreakPrompt from './BreakPrompt'
 import BreakGameOverlay from './BreakGameOverlay'
 import SubitizingDice from './session/SubitizingDice'
@@ -292,11 +293,13 @@ function SubitizingSession() {
             </div>}
           </div>
 
-          {praise && (
-            <div role="status" className="mb-6 rounded-lg bg-emerald-100 px-4 py-3 text-center text-2xl font-bold text-emerald-800 shadow">
-              {praise}
-            </div>
-          )}
+          <FloatingNotices>
+            {praise && (
+              <div role="status" className="rounded-lg bg-emerald-100 px-4 py-3 text-center text-2xl font-bold text-emerald-800 shadow">
+                {praise}
+              </div>
+            )}
+          </FloatingNotices>
 
           {currentDiceValue !== null && sessionActive && (
             <div className="bg-white rounded-lg shadow p-3 sm:p-8 mb-6">

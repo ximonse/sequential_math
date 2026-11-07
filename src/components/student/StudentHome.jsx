@@ -15,6 +15,7 @@ import StudentHomeAssignments from './StudentHomeAssignments'
 import StudentDiagnosticCollections from './StudentDiagnosticCollections'
 import { useStudentSyncStatus } from './session/useStudentSyncStatus'
 import StudentSyncStatus from './session/StudentSyncStatus'
+import FloatingNotices from './session/FloatingNotices'
 import StudentHomeProgressCard from './StudentHomeProgressCard'
 import StudentHomeTableDrillCard from './StudentHomeTableDrillCard'
 import StudentHomeTicketCard from './StudentHomeTicketCard'
@@ -400,7 +401,7 @@ function StudentHome() {
             </button>
           </div>
         </div>
-        <StudentSyncStatus status={syncStatus} />
+        <FloatingNotices><StudentSyncStatus status={syncStatus} /></FloatingNotices>
         <button onClick={() => setFocusOpen(true)} className="mb-4 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-left font-semibold text-gray-800 focus-visible:outline-2 focus-visible:outline-gray-800">Fokuspunkten – 2 min<span className="mt-1 block text-sm font-normal text-gray-500">Frivillig fokusuppvärmning</span></button>
 
         {diagnosticAssignments.length > 0 && <StudentDiagnosticCollections assignments={diagnosticAssignments} studentId={studentId} />}

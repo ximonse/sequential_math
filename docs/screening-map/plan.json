@@ -3449,6 +3449,22 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "reward-videos-once-per-day",
+      "area": "Elevens träning",
+      "title": "Belöningsvideor högst en gång per dag",
+      "status": "Föreslaget",
+      "purpose": "Eleven ska få varje belöningsvideo (tabell-boss, alla tabeller, daglig nivåsvit) högst en gång per dag.",
+      "next": "Hitta flödet där en video upprepas samma dag och lägg först till en röd robotkontroll.",
+      "acceptance": "Varje video visas högst en gång per elev och kalenderdag, även efter omladdning eller enhetsbyte och när fler milstolpar klaras samma dag.",
+      "requires": [],
+      "affects": [],
+      "decision": "2026-11-07 Simon: videorna ska bara komma en gång per dag, även om eleven klarar en eller flera till samma dag. Issue skapad på begäran.",
+      "evidence": "2026-11-07 issue #42 skapad. Ingen kod ändrad. tableBossOnce.test.js täcker redan tabellvideorna lokalt; nivåsvitsvideon verkar sakna dagsmarkering (ej verifierat).",
+      "issue": "https://github.com/ximonse/sequential_math/issues/42",
+      "kind": "funktion",
+      "tasks": []
     }
   ],
   "edges": [

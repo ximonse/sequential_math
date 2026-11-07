@@ -99,15 +99,24 @@ export function evaluateAlgebraProblem(problem, studentAnswer) {
       }
     }
 
-    const isUnitCoefficientVariant = hasExplicitUnitCoefficient(studentExpression) && (
-      expressionEquals(normalizeImplicitUnitCoefficients(correct), normalizeImplicitUnitCoefficients(studentExpression))
-      || alternatives.some(alt => expressionEquals(
-        normalizeImplicitUnitCoefficients(alt),
-        normalizeImplicitUnitCoefficients(studentExpression)
-      ))
-    )
+    const unitEquals = key => expressionEquals(normalizeImplicitUnitCoefficients(key), normalizeImplicitUnitCoefficients(studentExpression))
+    const matchesWithoutUnit = unitEquals(correct) || alternatives.some(unitEquals)
 
-    if (isUnitCoefficientVariant) {
+    // x and 1x are the same; only a written 1 from the pupil is a notation remark.
+    // A key that says 1x must not fail a pupil who writes x (Simon 2026-11-07).
+    if (matchesWithoutUnit && !hasExplicitUnitCoefficient(studentExpression)) {
+      return {
+        correct: true,
+        correctAnswer: correct,
+        studentAnswer: studentExpression,
+        isReasonable: true,
+        isPartial: false,
+        absError: null,
+        relativeError: null
+      }
+    }
+
+    if (matchesWithoutUnit) {
       return {
         correct: true,
         correctAnswer: correct,

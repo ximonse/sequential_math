@@ -331,7 +331,8 @@ const SIMPLIFY_LEVEL_VARIANTS = [
       const v = pickVar()
       const c = rand(4, 9)
       const d = rand(1, c - 1)
-      return makeSimplify(`${c}${v} − ${d}${v}`, `${c - d}${v}`, 'simp_l3_sub_like_terms')
+      // A coefficient of 1 is written as the bare variable: 5x − 4x = x.
+      return makeSimplify(`${c}${v} − ${d}${v}`, `${c - d === 1 ? '' : c - d}${v}`, 'simp_l3_sub_like_terms')
     }
   ],
   [

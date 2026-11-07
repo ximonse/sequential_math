@@ -3378,6 +3378,35 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "algebra-unit-coefficient",
+      "area": "Elevträning",
+      "title": "Algebra: x och 1x räknas som samma svar",
+      "status": "Lokalt klart",
+      "purpose": "En elev som skriver x ska inte få fel när facit är 1x. Matematiskt är de samma, och x är den vanliga skrivformen.",
+      "next": "Simon avgör om rättningen ska publiceras.",
+      "acceptance": "Svaret x godkänns helt när facit skriver 1x, även med fler termer och i annan ordning. Ett skrivet 1 från eleven ger som tidigare rätt med påminnelse. Generatorn skriver aldrig 1 framför en variabel i facit. Annan koefficient räknas fortfarande som fel.",
+      "decision": "2026-11-07: Simon påpekar att x blev fel när svaret var 1x i fri träning algebra och frågar om de inte är samma sak. Agenten rättar både rättningen och facit.",
+      "evidence": "2026-11-07 lokalt på gren claude/algebra-unit-coefficient från master acfc5e8: orsaken är simp_l3_sub_like_terms (cx − dx med d = c − 1 gav facit 1x) och att evaluate.js bara godtog ett skrivet 1 hos eleven, inte i facit. Nya tester röda före rättning; därefter Vitest 1266 godkända (samma 2 radslutsfel i ny worktree), build godkänd, robotarna operations och training 18/18. Ingen skärmbildsgranskning, ej pushat. Frågetexten kan fortfarande visa 1x, t.ex. 5x − 1x; den är oförändrad.",
+      "issue": "",
+      "kind": "funktion",
+      "requires": [],
+      "affects": [
+        "practice-modes"
+      ],
+      "tasks": [
+        {
+          "id": "unit-key",
+          "text": "Godkänn x när facit är 1x",
+          "done": true
+        },
+        {
+          "id": "unit-generator",
+          "text": "Facit skriver x i stället för 1x",
+          "done": true
+        }
+      ]
     }
   ],
   "edges": [
@@ -4194,6 +4223,11 @@
     {
       "source": "screening-results-tab",
       "target": "teacher-screening-workflow",
+      "kind": "påverkar"
+    },
+    {
+      "source": "algebra-unit-coefficient",
+      "target": "practice-modes",
       "kind": "påverkar"
     }
   ],

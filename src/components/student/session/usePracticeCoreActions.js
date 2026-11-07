@@ -27,7 +27,9 @@ import {
   shouldTriggerAllTablesBoss,
   shouldTriggerDailyBoss,
   markAllTablesBossShown,
-  markDailyBossShown
+  markDailyBossShown,
+  markLevelStreakVideoShown,
+  shouldTriggerLevelStreakVideo
 } from './sessionUtils'
 import {
   advanceFluencyLap,
@@ -439,7 +441,8 @@ export function usePracticeCoreActions({
         successRate: Number(levelMasteredNow.successRate.toFixed(3))
       }, answerTs)
       const levelsToday = incrementTelemetryDailyMetric(profile, 'level_focus_mastered', 1, answerTs)
-      if (levelsToday === 5) {
+      if (shouldTriggerLevelStreakVideo(profile, levelsToday)) {
+        markLevelStreakVideoShown(profile)
         setDailyLevelStreakMilestone({ count: levelsToday })
       }
     }

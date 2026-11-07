@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { mergeTableDrill } from '../../../../api/student/_profileMergeEntries.js'
 import {
   markAllTablesBossShown,
   markDailyBossShown,
+  markLevelStreakVideoShown,
+  shouldTriggerLevelStreakVideo,
   recordTableCompletion,
   shouldTriggerAllTablesBoss,
   shouldTriggerDailyBoss
@@ -55,5 +58,37 @@ describe('table boss videos are shown once per day', () => {
     delete profile.tableDrill.dailyAllTablesBossShownDate
     completeTables(profile, [5, 12])
     expect(shouldTriggerAllTablesBoss(profile)).toBe(false)
+  })
+
+  it('keeps every shown date when an older profile without it is merged in', () => {
+    stubStorage()
+    const profile = { studentId: 'S1', tableDrill: { completions: [] } }
+    markDailyBossShown(profile)
+    markAllTablesBossShown(profile)
+    markLevelStreakVideoShown(profile)
+    const today = profile.tableDrill.dailyBossShownDate
+    for (const older of [{ completions: [] }, { completions: [], dailyAllTablesBossShownDate: '2026-01-01', dailyLevelStreakShownDate: '2026-01-01' }]) {
+      expect(mergeTableDrill(profile.tableDrill, older)).toMatchObject({
+        dailyBossShownDate: today, dailyAllTablesBossShownDate: today, dailyLevelStreakShownDate: today
+      })
+      expect(mergeTableDrill(older, profile.tableDrill)).toMatchObject({
+        dailyBossShownDate: today, dailyAllTablesBossShownDate: today, dailyLevelStreakShownDate: today
+      })
+    }
+  })
+})
+
+describe('the level streak video is shown once per day', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('triggers from five levels, then not again the same day even after a lost counter or flag', () => {
+    stubStorage()
+    const profile = { studentId: 'S1', tableDrill: { completions: [] } }
+    expect(shouldTriggerLevelStreakVideo(profile, 4)).toBe(false)
+    expect(shouldTriggerLevelStreakVideo(profile, 6)).toBe(true)
+    markLevelStreakVideoShown(profile)
+    expect(shouldTriggerLevelStreakVideo(profile, 7)).toBe(false)
+    delete profile.tableDrill.dailyLevelStreakShownDate
+    expect(shouldTriggerLevelStreakVideo(profile, 5)).toBe(false)
   })
 })

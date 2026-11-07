@@ -112,9 +112,8 @@ export function mergeTableDrill(existingTableDrill, incomingTableDrill) {
     ? completions.slice(-MAX_TABLE_COMPLETIONS)
     : completions
 
-  const existingBossDate = String(existing.dailyBossShownDate || '').trim()
-  const incomingBossDate = String(incoming.dailyBossShownDate || '').trim()
-  const dailyBossShownDate = [existingBossDate, incomingBossDate]
+  // Reward-video dates keep the latest day, so an older copy cannot replay a video.
+  const latestDate = key => [String(existing[key] || '').trim(), String(incoming[key] || '').trim()]
     .filter(Boolean)
     .sort()
     .slice(-1)[0] || null
@@ -124,7 +123,9 @@ export function mergeTableDrill(existingTableDrill, incomingTableDrill) {
     ...incoming,
     completions: trimmedCompletions,
     completedTablesEver: [...new Set([...completedTablesEver(existing), ...completedTablesEver(incoming)])].sort((a, b) => a - b),
-    dailyBossShownDate
+    dailyBossShownDate: latestDate('dailyBossShownDate'),
+    dailyAllTablesBossShownDate: latestDate('dailyAllTablesBossShownDate'),
+    dailyLevelStreakShownDate: latestDate('dailyLevelStreakShownDate')
   }
 }
 

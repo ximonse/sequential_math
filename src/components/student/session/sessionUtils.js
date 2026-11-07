@@ -307,6 +307,22 @@ export function markAllTablesBossShown(profile) {
   writeBossMirror(profile, 'all')
 }
 
+const LEVEL_STREAK_VIDEO_LEVELS = 5
+
+// The level streak video shares the table drill's daily reward-video dates.
+export function shouldTriggerLevelStreakVideo(profile, levelsToday) {
+  if (!(Number(levelsToday) >= LEVEL_STREAK_VIDEO_LEVELS)) return false
+  return profile?.tableDrill?.dailyLevelStreakShownDate !== getTodayKey() && !readBossMirror(profile, 'level-streak')
+}
+
+export function markLevelStreakVideoShown(profile) {
+  if (!profile.tableDrill || typeof profile.tableDrill !== 'object') {
+    profile.tableDrill = { completions: [] }
+  }
+  profile.tableDrill.dailyLevelStreakShownDate = getTodayKey()
+  writeBossMirror(profile, 'level-streak')
+}
+
 function getTodayKey() {
   const now = new Date()
   const y = now.getFullYear()

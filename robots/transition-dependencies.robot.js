@@ -23,7 +23,7 @@ test('Warm activity changes remain usable while background sync is held, then sa
   test.setTimeout(30000)
   const pupil = await createPupil(request, { name: 'Transition Pupil' })
   await login(page, pupil)
-  const start = page.getByRole('button', { name: 'Fortsätt träna', exact: true })
+  const start = page.getByRole('region', { name: 'Fri träning', exact: true }).getByRole('button', { name: 'Fri träning', exact: true })
   await expect(start).toBeEnabled()
   const before = await readServerProfile(request, pupil.studentId)
   let release, heldCount = 0, confirmed = 0, profileReads = 0

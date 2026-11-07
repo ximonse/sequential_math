@@ -40,9 +40,9 @@ test('Transition matrix measures usable views and preserves screening work with 
   watch(student)
   try {
     await measure(student, 'pupil-login-to-home', () => login(student, pupil),
-      () => expect(student.getByRole('button', { name: 'Fortsätt träna', exact: true })).toBeEnabled())
+      () => expect(student.getByRole('region', { name: 'Fri träning', exact: true }).getByRole('button', { name: 'Fri träning', exact: true })).toBeEnabled())
     const home = student.getByRole('button', { name: 'Startsida', exact: true })
-    const practice = student.getByRole('button', { name: 'Fortsätt träna', exact: true })
+    const practice = student.getByRole('region', { name: 'Fri träning', exact: true }).getByRole('button', { name: 'Fri träning', exact: true })
     const answer = student.locator('input[placeholder="?"]')
     for (let i = 0; i < 10; i++) {
       await measure(student, 'warm-home-to-practice', () => practice.click(), () => expect(answer).toBeEditable(), 1000)

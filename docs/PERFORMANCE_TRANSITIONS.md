@@ -1,4 +1,4 @@
-# Väntetider över hela appen — aktiv granskning 2026-11-06
+# Väntetider över hela appen — aktiv granskning 2026-11-07
 
 Målet är snabbare användbara övergångar för elev och lärare, med bevarade
 original, serverkvittenser och aktuell åtkomst. Första ändringssjoket är
@@ -279,6 +279,59 @@ namnlista och högst fyra samtidiga initiala kommandon. Slutkontroller:
 passerar. Nästa livekontroll ska jämföra samma namnkvittot igen, deltidernas
 andelar och om tidsgränsvarningarna försvinner. Detta är fortfarande samma
 godkända namnlistesuppdrag, inte en färdig lösning av hela appens väntetider.
+
+### Budgeträttning publicerad; nästa glapp var automatisk POST
+
+`2f76a98` blev READY på sekvens `dpl_BJH7dhvoKw7GhTN7439Sfxphbg4j`,
+med rätt SHA och produktionsalias. Privat namnparitet matchade åter exakt
+340 namn. Det separata kontrollanropet tog 4033 ms, varav medlemskapsläsning
+2938 ms, klasskontroll 576 ms och lagrad namnlista 110 ms. Den efterföljande
+ensamma flödesmätningen fullföljdes med 24 observationer, utan API-fel och med
+oförändrade träningsoriginal. Varma övningsstarter låg på 295–335 ms och
+verkligt utgången återanvändningsperiod gav 2224 ms. Klassvalen tog 11656,
+2643 och 2870 ms. Filtrerade Vercel-loggar för deploymenten visade inga
+matchande fallback-varningar i mätfönstret.
+
+Namnlistans tre observerade anrop hade totaltider 3913, 4871 och 16730 ms.
+De uppmätta läsfaserna i det sista anropet förklarade bara cirka fyra
+sekunder. Katalogen tog 17358 ms kall och 1517 ms varm; skopade resultat
+2129–2352 ms. Hela lärarväntan är fortsatt olöst.
+
+[Budgeterad serie](evaluations/transition-latency-2026-11-05/production-labels-budgeted.json).
+**Rättelse av tidigare mätbeskrivning:** webbläsaren navigerades utan
+avsiktliga elevsvar/rapporter/utdelningar, men Dashboard kan själv skicka
+POST `fill_from_creation_names`. De äldre serierna sparade inte HTTP-metod
+och blandar därför GET och automatisk namnkomplettering under samma sökväg.
+De ska inte redovisas som enbart läsande GET-anrop eller tilldelas en metod
+i efterhand. Den privata namnpariteten är fortfarande korrekt.
+
+2026-11-07 reproducerades glappet i kod och robot: automatiken skickade inget
+elevurval. Servern läste hela `students:index` och profiler före kontrollen
+av redan sparade namn och gränsen 500 namn. Därför kunde en komplettering
+utan någon ändring läsa alla elevhistoriker på nytt vid nästa Dashboard-mount.
+
+Kompletteringen skickar nu uttryckligen de saknade katalogeleverna. API:t
+validerar urvalet, behandlar tom lista som inget arbete, filtrerar bort
+redan namngivna elever före profilläsning och stannar före nästa batch när
+namngränsen nåtts. När den lagrade namnlistan redan är full läses inga
+skapandeprofiler eller globalt elevindex för kompletteringen. Resultatets
+privata namnlista passerar fortsatt samma färska scope-kontroll. Äldre
+uttryckliga anrop utan urval behåller sitt beteende; befintliga namn skrivs
+inte över och namn visas fortfarande automatiskt som standard.
+
+Robotens krav på enbart saknade katalog-ID:n blev först rött och därefter
+grönt. API-proven för full namnlista och explicit urval blev också röda före
+rättningen. Slutkontroller: 233 testfiler/1263 tester, build, elva namn-,
+katalog- och mottagarrobotar, riktad lint och arkitekturkontroll passerar.
+En första full parallellkörning gav timeout i kartverktygets UI-test;
+det passerade separat och därefter hela sviten med två workers, utan ändrad
+timeout eller andra lättade krav.
+
+Nästa produktionsserie registrerar HTTP-metod, om automatisk komplettering
+har explicit urval, antal i urvalet och antal faktiskt tillagda namn. Inga
+elev-ID:n eller namn från POST-kroppen sparas i mätartefakten. Ett nytt privat
+före-hashkvitto har tagits för dagens skoladminkonto utanför Git. Kall katalog
+och skopade resultathämtningar förblir separata öppna väntvägar.
 
 ## Fortsatt öppet
 

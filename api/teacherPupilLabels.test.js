@@ -116,6 +116,37 @@ describe('teacher pupil labels', () => {
     expect((await call('POST', { teacherId: 'teacher-a' }, { action: 'annat' })).code).toBe(400)
   })
 
+  it('skips global profile reads when the stored label list has already reached its limit', async () => {
+    const labels = Object.fromEntries(Array.from({ length: 500 }, (_, i) => [`PUPIL-${i}`, `Private ${i}`]))
+    records.set('teacher_pupil_labels:teacher-a', labels)
+    records.set('students:index', ['UNNEEDED'])
+    const result = await call('POST', { teacherId: 'teacher-a', role: 'super_admin' }, { action: 'fill_from_creation_names' })
+    expect(result.data).toMatchObject({ ok: true, added: 0, labels })
+    expect(kv.smembers).not.toHaveBeenCalled()
+    expect(kv.mget).not.toHaveBeenCalled()
+    expect(kv.get.mock.calls.every(([key]) => key === 'teacher_pupil_labels:teacher-a')).toBe(true)
+  })
+
+  it('reads only explicitly requested missing pupils and preserves existing labels', async () => {
+    records.set('students:index', ['PUPIL-1', 'PUPIL-2', 'UNRELATED'])
+    records.set('teacher_pupil_labels:teacher-a', { 'PUPIL-1': 'Chosen name' })
+    records.set('student:PUPIL-2', { classId: 'CLASS-A', allowedTeacherIds: ['teacher-a'], preferredName: 'New name' })
+    const result = await call('POST', { teacherId: 'teacher-a' }, { action: 'fill_from_creation_names', studentIds: ['PUPIL-1', 'PUPIL-2'] })
+    expect(result.data).toMatchObject({ added: 1, labels: { 'PUPIL-1': 'Chosen name', 'PUPIL-2': 'New name' } })
+    expect(kv.smembers).not.toHaveBeenCalled()
+    expect(kv.mget.mock.calls.flat()).toEqual(['student:PUPIL-2'])
+  })
+
+  it('treats an empty explicit selection as no work and rejects malformed selections', async () => {
+    const result = await call('POST', { teacherId: 'teacher-a' }, { action: 'fill_from_creation_names', studentIds: [] })
+    expect(result.data).toMatchObject({ added: 0, labels: {} })
+    for (const studentIds of [null, 'PUPIL-1', [123], ['bad!']]) {
+      expect((await call('POST', { teacherId: 'teacher-a' }, { action: 'fill_from_creation_names', studentIds })).code).toBe(400)
+    }
+    expect(kv.smembers).not.toHaveBeenCalled()
+    expect(kv.mget).not.toHaveBeenCalled()
+  })
+
   it('filters a whole label list using current pupil membership and shared live class authorization', async () => {
     const mine = Array.from({ length: 30 }, (_, index) => `PUPIL-MINE-${index}`)
     const theirs = Array.from({ length: 30 }, (_, index) => `PUPIL-OTHER-${index}`)

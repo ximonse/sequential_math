@@ -104,34 +104,34 @@ async function readableLabels(req, teacherId) {
 // The name a teacher typed when creating the pupil stays on the pupil record
 // and is never sent to a dashboard. Copying it into this teacher's own labels
 // keeps the name private to them while saving a manual pass over the class.
-async function fillFromCreationNames(req, teacherId) {
+async function fillFromCreationNames(req, teacherId, requestedIds) {
   const labels = normalizeLabels(await kv.get(studentLabelsKey(teacherId)))
-  const ids = await kv.smembers('students:index')
-  if (!Array.isArray(ids) || ids.length === 0) {
-    return { added: 0, labels }
+  let count = Object.keys(labels).length
+  if (count >= MAX_LABELS) {
+    return { added: 0, labels: await readableLabels(req, teacherId) }
   }
-
+  const ids = requestedIds ?? await kv.smembers('students:index')
   // The index id is the record key; older profiles may lack a studentId field.
-  const studentIds = ids.map(id => String(id || '').trim().toUpperCase())
-  const profiles = await batchLoadKvKeys(studentIds.map(id => `student:${id}`))
-
+  const studentIds = [...new Set((Array.isArray(ids) ? ids : []).map(id => String(id || '').trim().toUpperCase()))]
+    .filter(id => id && !labels[id])
   let added = 0
-  for (let i = 0; i < profiles.length; i++) {
-    const profile = profiles[i]
-    const studentId = studentIds[i]
-    if (!profile || !studentId) continue
-    if (labels[studentId]) continue
-    if (Object.keys(labels).length + 1 > MAX_LABELS) break
-    const creationName = String(profile.preferredName || profile.name || '').trim()
-    if (!creationName || creationName.length > MAX_LABEL_LENGTH) continue
-    if (creationName === String(profile.displayAlias || '').trim()) continue
-    try {
-      await assertTeacherStudentAccess(req, profile)
-    } catch {
-      continue
+  for (let start = 0; start < studentIds.length && count < MAX_LABELS; start += 20) {
+    const batch = studentIds.slice(start, start + 20)
+    const profiles = await measureRequestStep(req, 'label-fill-profiles', () => batchLoadKvKeys(batch.map(id => `student:${id}`)))
+    for (let i = 0; i < profiles.length && count < MAX_LABELS; i++) {
+      const profile = profiles[i], studentId = batch[i]
+      if (!profile) continue
+      const creationName = String(profile.preferredName || profile.name || '').trim()
+      if (!creationName || creationName.length > MAX_LABEL_LENGTH) continue
+      if (creationName === String(profile.displayAlias || '').trim()) continue
+      try {
+        await assertTeacherStudentAccess(req, profile)
+      } catch {
+        continue
+      }
+      labels[studentId] = creationName
+      added++; count++
     }
-    labels[studentId] = creationName
-    added += 1
   }
   if (added > 0) await writePupilReferences(studentLabelsKey(teacherId), labels, { labels: true })
   return { added, labels: await readableLabels(req, teacherId) }
@@ -150,7 +150,12 @@ export default async function handler(req, res) {
     if (String(req.body?.action || '') !== 'fill_from_creation_names') {
       return res.status(400).json({ error: 'Unknown label action' })
     }
-    const filled = await fillFromCreationNames(req, auth.teacherId)
+    const studentIds = req.body?.studentIds
+    if (studentIds !== undefined && (!Array.isArray(studentIds) || studentIds.length > 10000
+      || studentIds.some(id => typeof id !== 'string' || !/^[A-Z0-9ÅÄÖ_-]{3,100}$/iu.test(id)))) {
+      return res.status(400).json({ error: 'Invalid pupil selection' })
+    }
+    const filled = await fillFromCreationNames(req, auth.teacherId, studentIds)
     return res.status(200).json({ ok: true, ...filled })
   }
   if (req.method !== 'PUT') return res.status(405).json({ error: 'Method not allowed' })

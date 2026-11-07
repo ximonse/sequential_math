@@ -181,8 +181,8 @@ function Dashboard() {
 
   // Copies the names typed when pupils were created into this teacher's own
   // labels. Only adds missing ones; nothing already saved is replaced.
-  const fillPupilLabels = useCallback(async () => {
-    const result = await fillTeacherPupilLabelsFromCreationNames()
+  const fillPupilLabels = useCallback(async (studentIds) => {
+    const result = await fillTeacherPupilLabelsFromCreationNames(studentIds)
     if (result.ok) { labelsReady.current = true; setPupilLabels(result.labels || {}); setLabelsLoaded(true) }
     return result
   }, [])
@@ -212,7 +212,7 @@ function Dashboard() {
     const missing = rawStudents.map(profile => profile.studentId).filter(id => !pupilLabels[id] && !fillAttempted.current.has(id))
     if (missing.length === 0) return
     for (const id of missing) fillAttempted.current.add(id)
-    void fillPupilLabels()
+    void fillPupilLabels(missing)
   }, [rawStudents, pupilLabels, labelsLoaded, codeNamesOnly, fillPupilLabels])
 
   useEffect(() => {

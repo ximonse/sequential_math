@@ -74,3 +74,20 @@ test('Pupil names show on their own, and the button switches to code names and b
   await page.getByRole('button', { name: 'Visa tilltalsnamn' }).click()
   await expect.poll(async () => Boolean(rowFor(await tableUnder(page, 'Klass/gruppvy'), creationName))).toBe(true)
 })
+
+test('Automatic name completion requests only missing catalog pupils', async ({ page, request }) => {
+  const tag = Math.random().toString(36).slice(2, 7)
+  const classId = `name-scope-${tag}`, className = `Namnurval ${tag}`
+  const pupil = await createPupil(request, { name: `Blå Tall Bok ${tag}`, creationName: `Ada ${tag}`, classId, className })
+  await createPupil(request, { name: `Annan ${tag}`, creationName: `Other ${tag}`, classId: `${classId}-other` })
+  const teacher = await createTeacher(request, { classIds: [classId] })
+  const fills = []
+  page.on('request', req => {
+    if (new URL(req.url()).pathname === '/api/teacher-pupil-labels' && req.method() === 'POST') fills.push(req.postDataJSON())
+  })
+  await teacherLogin(page, teacher)
+  await selectOnlyClass(page, className)
+  await expect.poll(async () => Boolean(rowFor(await tableUnder(page, 'Klass/gruppvy'), `Ada ${tag}`))).toBe(true)
+  expect(fills.length).toBeGreaterThan(0)
+  expect(fills.every(body => Array.isArray(body.studentIds) && body.studentIds.length === 1 && body.studentIds[0] === pupil.studentId)).toBe(true)
+})

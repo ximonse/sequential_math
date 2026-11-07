@@ -208,7 +208,7 @@ describe('student persistence boundary', () => {
         classId: first.data.class.id, classIds: [first.data.class.id], auth: { scheme: 'qr-pin-v1' } })
       expect(Object.hasOwn(stored, 'name')).toBe(false)
       expect(JSON.stringify(stored)).not.toContain(row.qrSecret)
-      expect(JSON.stringify(stored)).not.toContain(`\"${row.pin}\"`)
+      expect(JSON.stringify(stored)).not.toContain(`"${row.pin}"`)
     }
     expect(new Set(memory.get(`class_students:${first.data.class.id}`))).toEqual(new Set(first.data.results.map(row => row.studentId)))
   })
@@ -415,6 +415,37 @@ describe('student persistence boundary', () => {
     expect((await call(eventsHandler, 'POST', { entries: [{ id: 'right-finish', type: 'ticket_finished', timestamp: 4001,
       payload: { dispatchId: 'ticket-1', finishedAt: 4001 } }] })).data.appliedCount).toBe(1)
     expect(memory.get('student:PUPIL').ticketInbox.activePayload).toBeNull()
+  })
+
+  it('orders presence independently so late mathematics is preserved and older full checkpoints cannot overwrite newer presence', async () => {
+    const send = async (type, capturedAt, payload) => call(eventsHandler, 'POST', { entries: [{
+      id: `${type}-${capturedAt}`, type, timestamp: capturedAt, payload: { capturedAt, ...payload }
+    }] })
+    const activity = { page: 'home', lastPresenceAt: 3000 }
+    const telemetry = { events: [], daily: { '2026-11-07': { interactions: 3 } } }
+    expect((await send('presence_checkpoint', 3000, { activity, telemetry })).code).toBe(200)
+    expect(memory.get('student:PUPIL').pilotCheckpointAt).toBeUndefined()
+    await send('profile_checkpoint', 2000, { currentDifficulty: 5, stats: { totalProblems: 12 },
+      activity: { page: 'practice', lastPresenceAt: 2000 }, telemetry: { daily: {} } })
+    expect(memory.get('student:PUPIL')).toMatchObject({ currentDifficulty: 5, stats: { totalProblems: 12 }, activity, telemetry, pilotCheckpointAt: 2000 })
+    expect((await send('presence_checkpoint', 2500, { activity: { page: 'old' }, telemetry: {} })).data.appliedCount).toBe(0)
+    await send('profile_checkpoint', 4000, { activity: { page: 'practice', lastPresenceAt: 4000 } })
+    // An independently newer telemetry update must not roll back newer activity.
+    await send('presence_checkpoint', 3500, { activity: { page: 'old' }, telemetry: { daily: { kept: 1 } } })
+    expect(memory.get('student:PUPIL')).toMatchObject({ currentDifficulty: 5,
+      activity: { page: 'practice', lastPresenceAt: 4000 }, telemetry: { daily: { kept: 1 } } })
+    expect((await send('presence_checkpoint', 5000, { activity, telemetry, currentDifficulty: 1 })).code).toBe(400)
+  })
+
+  it('does not let a mathematics-only checkpoint advance omitted presence field clocks on a legacy profile', async () => {
+    memory.get('student:PUPIL').pilotCheckpointAt = 1000
+    const send = (type, capturedAt, fields) => call(eventsHandler, 'POST', { entries: [{
+      id: `${type}-${capturedAt}`, type, timestamp: capturedAt, payload: { capturedAt, ...fields }
+    }] })
+    await send('profile_checkpoint', 4000, { stats: { totalProblems: 9 } })
+    await send('presence_checkpoint', 3000, { activity: { lastPresenceAt: 3000 }, telemetry: { daily: {} } })
+    expect(memory.get('student:PUPIL')).toMatchObject({ pilotCheckpointAt: 4000,
+      stats: { totalProblems: 9 }, activity: { lastPresenceAt: 3000 } })
   })
 
   it('rejects oversized or identity-bearing checkpoint fields', async () => {

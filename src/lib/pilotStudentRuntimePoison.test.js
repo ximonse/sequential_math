@@ -198,6 +198,30 @@ describe('batchstorlek', () => {
     expect(store.acknowledged).toEqual([])
   })
 
+  it('recovers rejected presence separately without superseding mathematics checkpoints', async () => {
+    const events = [
+      { id: 'math', type: 'profile_checkpoint', timestamp: 1, payload: { capturedAt: 1, currentDifficulty: 5 } },
+      { id: 'presence-old', type: 'presence_checkpoint', timestamp: 2, payload: { capturedAt: 2, activity: { page: 'old' } } },
+      { id: 'presence-new', type: 'presence_checkpoint', timestamp: 3, payload: { capturedAt: 3, activity: { page: 'home' } } }
+    ]
+    const store = makeStore(events, events.map(event => event.id))
+    const postEvents = vi.fn(async entries => ({ ok: true, ack: entries.map(entry => entry.id) }))
+    expect(await runSync(store, postEvents)).toMatchObject({ ok: true, rejectedCount: 0 })
+    expect(store.acknowledged).toEqual(['math', 'presence-new'])
+    expect(store.superseded).toEqual(['presence-old'])
+  })
+
+  it('bounds presence event history with the existing compaction policy and preserves daily totals and local input', () => {
+    const event = { id: 'presence-large', type: 'presence_checkpoint', timestamp: 1, payload: { capturedAt: 1,
+      activity: { page: 'home' }, telemetry: { events: Array.from({ length: 1200 }, (_, ts) => ({ ts, type: 'navigation', payload: { source: 'home' } })),
+        daily: { '2026-11-07': { focus_ms: 3000, interactions: 10 } } } } }
+    expect(validEntry(event, 'PUPIL')).toBe(false)
+    const compacted = compactCheckpointEvent(event)
+    expect(validEntry(compacted, 'PUPIL')).toBe(true)
+    expect(compacted.payload.telemetry.daily).toEqual(event.payload.telemetry.daily)
+    expect(event.payload.telemetry.events).toHaveLength(1200)
+  })
+
   it('delar på byte-gränsen, inte bara på antal', () => {
     const big = { id: 'x', type: 'profile_checkpoint', payload: { blob: 'a'.repeat(100 * 1024) } }
     const batches = buildBatches([big, { ...big, id: 'y' }, { ...big, id: 'z' }])

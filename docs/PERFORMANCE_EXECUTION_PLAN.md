@@ -131,6 +131,49 @@ materiallista 3 s. Serverinlämning och lokal kvittens mäts separat. Minst
 30 observationer per centralt fall är en första fördelning, inte garanti
 för sällsynta långsvansar. Skips eller saknade livefall är öppna krav.
 
+## Nästa avgränsade rättning: lokal närvarotransport 2026-11-07
+
+Efter Simons Kör är en separat `presence_checkpoint` byggd för startsidans
+närvaro, fokus/oskärpa, heartbeat och stängningsuppdatering. Den överför
+activity och befintlig telemetry, utan matematikens adaptive, stats,
+förmågor eller uppdragsprogress. Start av en övning och andra verkliga
+profiländringar använder fortsatt fulla matematikcheckpoints. Detta ändrar
+inte bootstrapens väntan på synk; den kvarstår som separat arbete.
+
+Storlekskontroll av den syntetiska produktionsprofilen gav adaptive35114 byte,
+telemetry3171, activity149 och stats795. Inga profilvärden sparades. Detta
+identifierar onödig matematikdata i närvarovägen, men är ingen uppmätt
+före/efter-serie för det nya protokollet. Telemetri kan fortfarande växa
+inom sina befintliga gränser; lösningen lovar inte konstant storlek oavsett
+telemetrihistorik. Befintlig kompaktering och dagsvärden bevaras.
+
+En naiv liten checkpoint skulle flytta den gemensamma matematikstämpeln.
+I stället får activity/telemetry separata fältklockor. Serverprov täcker ny
+närvaro före äldre matematik, äldre full checkpoint efter ny närvaro,
+oberoende activity-/telemetry-ordning och migration från äldre profil utan
+fältklockor. Den sista situationen blev röd i första implementationen och
+rättades före slutkontrollerna. Närvaro kan inte bära matematik-/identitetsfält.
+Lokalt snapshot behåller full matematikdata; ett 100000-byte-syntetiskt
+matematikfält ändrar inte den lilla närvarohändelsen. Avvisade matematik-
+och närvarocheckpoints återhämtas i separata grupper. Serverns aktuella
+åtkomst, CAS och kvittenser är kvar.
+
+Den nya roboten kräver faktisk presence-trafik genom elevvyn, tillåtna fält
+och högst2048 byte för dess lilla syntetiska profil. Detta är en uttrycklig
+fixturebudget, ingen generell produktionsgräns. Den följer automatiskt med
+det redan publicerade CI-paketet när denna rättning publiceras. Protokollet
+och den nya klienten behöver släppas tillsammans; en återställd gammal server
+känner inte den nya typen. Original i lokal kö får inte raderas vid ett sådant
+avslag, och ny server kan återhämta dem när stödet finns igen.
+
+Slutkontroller lokalt:233 filer/1270 tester, build, lint och arkitektur.
+Nio produktionsrobotar täcker närvarotransport, synkblockering, katalog och
+screeningens sparande/inlämning/återupptagning. Två ytterligare övningsrobotar
+för addition och talpar passerar med ROBOT_TASKS=12; det verifierar tolv svar
+per övning, inte alla nivåer trots robotarnas generella testnamn.
+Byggets befintliga varningar kvarstår. Ingen push eller produktionsvinst
+påstås för denna ändring.
+
 Avslut kräver komplett berörd matris, oförändrade data-/åtkomstkontrakt,
 automatiskt återfallsskydd och verifierad produktion. Projektminnet ska då
 innehålla rotorsak, bevis, lösning, begränsning, misslyckade angreppssätt och

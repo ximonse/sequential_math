@@ -14,6 +14,7 @@ import { isValidAdaptationDecision, recordAdaptationDecision } from '../../../sr
 import { isValidCurrentNeed, recordCurrentNeed } from '../../../src/lib/currentNeed.js'
 import { isContractMasteryFact } from '../../../src/lib/masteryFacts.js'
 import { EVENT_OWNED_ADAPTIVE_FIELDS } from '../../../src/lib/pilotCheckpointContract.js'
+import { PRESENCE_CHECKPOINT_FIELDS, validPresenceCheckpoint, applyPresenceCheckpoint } from '../../../src/lib/pilotPresenceCheckpoint.js'
 import { markTableCompleted } from '../../../src/lib/tableDrillCompletion.js'
 import { isValidAttentionResult, recordAttentionResult } from '../../../src/lib/attentionHistory.js'
 import { archiveAttentionEvents } from '../../_attentionArchive.js'
@@ -198,6 +199,7 @@ function applyProfileCheckpoint(profile, payload) {
   if (Number(payload.capturedAt) <= Number(profile.pilotCheckpointAt || 0)) return false
   for (const field of CHECKPOINT_FIELDS) {
     if (payload[field] === undefined) continue
+    if (PRESENCE_CHECKPOINT_FIELDS.includes(field)) continue
     if (field === 'adaptive') {
       const incoming = structuredClone(payload.adaptive)
       // Result events own this evidence. Even an older client's full checkpoint
@@ -206,6 +208,7 @@ function applyProfileCheckpoint(profile, payload) {
       profile.adaptive = { ...profile.adaptive, ...incoming }
     } else profile[field] = structuredClone(payload[field])
   }
+  applyPresenceCheckpoint(profile, payload)
   profile.pilotCheckpointAt = Number(payload.capturedAt)
   return true
 }
@@ -214,6 +217,7 @@ export function validEntry(entry, studentId) {
   if (typeof entry?.id !== 'string' || !entry.id || entry.id.length > 100 || !entry.payload || jsonBytes(entry) > MAX_EVENT_BYTES) return false
   if (entry.studentId && String(entry.studentId).toUpperCase() !== studentId) return false
   const payload = entry.payload
+  if (entry.type === 'presence_checkpoint') return validPresenceCheckpoint(payload)
   if (entry.type === 'break_game_result') return isValidBreakGameResult(payload)
   if (entry.type === 'attention_result') return payload?.completionReason !== 'unfinished' && isValidAttentionResult(payload)
   if (entry.type === 'attention_checkpoint') return isRecord(payload) && Object.keys(payload).length === 2
@@ -285,6 +289,8 @@ export function applyWalEntry(profile, entry) {
       return applyTableCompleted(profile, entry.payload, entry)
     case 'profile_checkpoint':
       return applyProfileCheckpoint(profile, entry.payload)
+    case 'presence_checkpoint':
+      return applyPresenceCheckpoint(profile, entry.payload)
     case 'ticket_response':
       return applyTicketResponse(profile, entry.payload, entry)
     case 'ticket_finished':

@@ -26,6 +26,21 @@ function vault() {
 }
 
 describe('pilot student runtime', () => {
+  it('persists a full local snapshot but sends presence independently of mathematics history size', async () => {
+    const store = vault()
+    const rich = { ...profile, adaptive: { skillStates: {}, largeHistory: 'x'.repeat(100000) },
+      activity: { page: 'home', lastPresenceAt: 1000 }, telemetry: { events: [], daily: { today: { interactions: 1 } } } }
+    const runtime = createPilotStudentRuntime({ createStore: async () => store,
+      resumeSession: async () => ({ ok: true, student: { studentId } }), fetchProfile: async () => ({ ok: true, profile: rich }) })
+    await runtime.bootstrap(studentId)
+    await runtime.persistCheckpoint(rich, { presenceOnly: true })
+    const saved = store.saveSnapshotAndAppendEvent.mock.calls[0][0]
+    expect(saved.snapshot).toEqual(rich)
+    expect(saved.event.type).toBe('presence_checkpoint')
+    expect(Object.keys(saved.event.payload).sort()).toEqual(['activity', 'capturedAt', 'telemetry'])
+    expect(new TextEncoder().encode(JSON.stringify(saved.event)).length).toBeLessThan(1024)
+    expect(rich.adaptive.largeHistory).toHaveLength(100000)
+  })
   it('avoids duplicate session reads for a bound pupil, but flushes before the fresh authorized profile read', async () => {
     const store = vault(), steps = []
     let pending = true

@@ -1,5 +1,20 @@
 # Arkitektur & Checklista för nya domäner
 
+## Närvarotransport och checkpoint-ordning
+
+Lokal ändring 2026-11-07: startsidans närvaro använder `presence_checkpoint`
+med enbart `capturedAt`, `activity` och `telemetry`. Full krypterad arbetskopia
+och händelse lagras fortfarande atomärt. Matematikens vanliga
+`profile_checkpoint` behåller sitt innehåll och sin `pilotCheckpointAt`.
+`pilotPresenceCheckpoint.js` äger validering och separata fältklockor för
+activity/telemetry. En ny närvarohändelse får inte få äldre matematik att
+förkastas; äldre fulla checkpoints får inte backa nyare närvarofält.
+Äldre profiler startar fältklockorna från sin befintliga checkpoint-tid innan
+en ny matematiktid skrivs. Avvisad närvaro återhämtas separat från avvisad
+matematik, med samma befintliga kompakteringspolicy och bevarade dagsvärden.
+Publicering och verklig produktionsvinst återstår; se
+[genomförandeplanen](docs/PERFORMANCE_EXECUTION_PLAN.md).
+
 ## Två samverkande mål och aktuell kodavstämning
 
 Produktens riktning preciserades av Simon 2026-11-04: mängdträning/förtrogenhet

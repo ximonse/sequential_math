@@ -1,6 +1,24 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
 
+test('Home presence sends only activity and telemetry within a small transport budget', async ({ page, request }) => {
+  const pupil = await createPupil(request, { name: 'Presence Transport Pupil' })
+  const presence = [], failures = []
+  page.on('request', entry => {
+    if (new URL(entry.url()).pathname !== '/api/me/events' || entry.method() !== 'POST') return
+    const body = entry.postDataJSON()
+    for (const event of body.entries || []) if (event.type === 'presence_checkpoint') {
+      presence.push(event)
+      if (new TextEncoder().encode(JSON.stringify(event)).length > 2048) failures.push('Presence exceeds synthetic-profile budget')
+      if (Object.keys(event.payload).some(field => !['capturedAt', 'activity', 'telemetry'].includes(field))) failures.push('Presence includes mathematics fields')
+    }
+  })
+  await login(page, pupil)
+  await expect.poll(() => presence.length).toBeGreaterThan(0)
+  expect(failures).toEqual([])
+  await expect.poll(async () => (await readServerProfile(request, pupil.studentId)).activity?.page).toBe('home')
+})
+
 test('Warm activity changes remain usable while background sync is held, then safely acknowledge it', async ({ page, request }) => {
   test.setTimeout(30000)
   const pupil = await createPupil(request, { name: 'Transition Pupil' })

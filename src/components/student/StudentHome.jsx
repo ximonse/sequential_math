@@ -52,8 +52,8 @@ function StudentHome() {
   const ticketId = searchParams.get('ticket')
   const ticketPayload = searchParams.get('ticket_payload')
 
-  const persistProfile = useCallback(nextProfile => {
-    return getPilotStudentRuntime().persistCheckpoint(nextProfile)
+  const persistProfile = useCallback((nextProfile, options) => {
+    return getPilotStudentRuntime().persistCheckpoint(nextProfile, options)
   }, [])
 
   useEffect(() => {
@@ -184,9 +184,9 @@ function StudentHome() {
     if (!force && (now - presenceSyncRef.current.lastSavedAt) < PRESENCE_SAVE_THROTTLE_MS) {
       return
     }
-    void persistProfile(profile)
+    void persistProfile(profile, { presenceOnly: true })
     presenceSyncRef.current.lastSavedAt = now
-  }, [profile])
+  }, [profile, persistProfile])
 
   useEffect(() => {
     if (!profile) return undefined
@@ -296,7 +296,7 @@ function StudentHome() {
       mode: operation,
       level
     }))
-  }, [profile, navigate, studentId])
+  }, [profile, navigate, studentId, persistProfile])
 
   const startFreePractice = () => {
     if (operationKeys.length === 0) return

@@ -8,6 +8,7 @@ import {
 } from './studentSessionClient'
 import { createPilotStudentStore, deletePilotStudentStore } from './pilotStudentStore'
 import { EVENT_OWNED_ADAPTIVE_FIELDS } from './pilotCheckpointContract.js'
+import { PRESENCE_CHECKPOINT_FIELDS } from './pilotPresenceCheckpoint.js'
 import { isValidAttentionResult, recordAttentionResult } from './attentionHistory.js'
 
 const CHECKPOINT_FIELDS = ['currentDifficulty', 'highestDifficulty', 'adaptive', 'operationAbilities', 'assignmentProgress', 'stats', 'telemetry', 'activity']
@@ -54,9 +55,9 @@ export function buildBatches(events, maxEvents = MAX_BATCH_EVENTS, maxBytes = MA
   return batches
 }
 
-function checkpointPayload(profile, capturedAt) {
+function checkpointPayload(profile, capturedAt, fields = CHECKPOINT_FIELDS) {
   const payload = { capturedAt }
-  for (const field of CHECKPOINT_FIELDS) {
+  for (const field of fields) {
     if (profile?.[field] !== undefined) payload[field] = structuredClone(profile[field])
   }
   return payload
@@ -65,7 +66,7 @@ function checkpointPayload(profile, capturedAt) {
 // Diagnostic histories can exceed the per-event limit independently of each
 // other. Keep ability state, results and daily aggregates intact.
 export function compactCheckpointEvent(event) {
-  if (event?.type !== 'profile_checkpoint') return event
+  if (!['profile_checkpoint', 'presence_checkpoint'].includes(event?.type)) return event
   const compacted = structuredClone(event)
   for (const field of EVENT_OWNED_ADAPTIVE_FIELDS) {
     if (compacted.payload?.adaptive) delete compacted.payload.adaptive[field]
@@ -212,7 +213,12 @@ export function createPilotStudentRuntime({
         if (!(await sendApart(batch)).ok) return
       } else return
     }
-    const checkpoints = rejected.filter(item => item.event?.type === 'profile_checkpoint')
+    await recoverCheckpointKind(rejected, 'profile_checkpoint')
+    await recoverCheckpointKind(rejected, 'presence_checkpoint')
+  }
+
+  async function recoverCheckpointKind(rejected, type) {
+    const checkpoints = rejected.filter(item => item.event?.type === type)
     if (checkpoints.length === 0) return
     const latest = checkpoints.reduce((best, item) =>
       !best || Number(item.event.payload?.capturedAt || 0) > Number(best.event.payload?.capturedAt || 0) ? item : best, null)
@@ -415,11 +421,11 @@ export function createPilotStudentRuntime({
       return () => listeners.delete(listener)
     },
 
-    async persistCheckpoint(profile) {
+    async persistCheckpoint(profile, { presenceOnly = false } = {}) {
       const capturedAt = Date.now()
       return this.persistEvent(profile, compactCheckpointEvent({
-        id: makeEventId(), type: 'profile_checkpoint', timestamp: capturedAt,
-        payload: checkpointPayload(profile, capturedAt)
+        id: makeEventId(), type: presenceOnly ? 'presence_checkpoint' : 'profile_checkpoint', timestamp: capturedAt,
+        payload: checkpointPayload(profile, capturedAt, presenceOnly ? PRESENCE_CHECKPOINT_FIELDS : CHECKPOINT_FIELDS)
       }))
     },
 

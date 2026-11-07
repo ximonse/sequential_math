@@ -1,10 +1,8 @@
 export default function StudentHomeTrainingOptionsCard({
-  onStartFreePractice,
   operationKeys,
   onStartOperationPractice,
   getOperationLabel,
   operationProgress,
-  operationsReady = true,
   talbildEnabled = false,
   onStartTalbild
 }) {
@@ -12,13 +10,6 @@ export default function StudentHomeTrainingOptionsCard({
     <div className="bg-white border border-gray-200 rounded-xl p-4 mb-6">
       <h2 className="text-base font-semibold text-gray-800 mb-3">Välj träning</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <button
-          onClick={onStartFreePractice}
-          disabled={!operationsReady}
-          className="px-4 py-2 rounded-lg text-white text-sm font-semibold bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300"
-        >
-          Fri träning
-        </button>
         {talbildEnabled && (
           <button
             onClick={onStartTalbild}

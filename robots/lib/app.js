@@ -26,11 +26,11 @@ export async function login(page, pupil) {
 }
 
 export async function openOtherTraining(page) {
-  const list = page.getByRole('button', { name: 'Fri träning', exact: true })
-  const toggle = page.getByText('Välj annan träning')
-  await expect(list.or(toggle).first()).toBeVisible()
-  if (!(await list.isVisible())) await toggle.click()
-  await expect(list).toBeVisible()
+  // Free practice has its own card, so the details element itself tells whether the list is open.
+  const details = page.locator('details', { has: page.getByText('Välj annan träning', { exact: true }) })
+  await expect(details).toBeVisible()
+  if (!(await details.evaluate(el => el.open))) await details.getByText('Välj annan träning', { exact: true }).click()
+  await expect(details).toHaveJSProperty('open', true)
 }
 
 // Reads the props of the component that renders the task, walking React's

@@ -14,8 +14,13 @@ for (const operations of CLASS_SETS) {
     const pupil = await createPupil(request, { operations })
     // Seeding a class again resets its operations for all its pupils; give each test its own class.
     await login(page, pupil)
-    await openOtherTraining(page)
-    await page.getByRole('button', { name: 'Fri träning', exact: true }).click()
+    const freeCard = page.getByRole('region', { name: 'Fri träning', exact: true })
+    await expect(freeCard).toBeVisible()
+    const freeBox = await freeCard.boundingBox()
+    const tableBox = await page.getByRole('region', { name: 'Tabellträning', exact: true }).boundingBox()
+    expect(freeBox.y + freeBox.height).toBeLessThanOrEqual(tableBox.y)
+    if (operations[0] === 'addition') await page.screenshot({ path: testInfo.outputPath('home-free-practice.png'), fullPage: true })
+    await freeCard.getByRole('button', { name: 'Fri träning', exact: true }).click()
     await page.waitForURL(/\/practice/)
     const log = await answerTasks(page, findings, { count: 60, choice: { allowedOperations: operations, label: 'Fri träning' }, strategy: i => i % 4 !== 3 })
     const seen = [...new Set(log.map(e => e.op))]
@@ -28,16 +33,11 @@ for (const operations of CLASS_SETS) {
   })
 }
 
-test('Fortsätt träna på startsidan', async ({ page, request }, testInfo) => {
-  const findings = createFindings(testInfo)
-  const operations = ['addition', 'fractions']
-  await login(page, await createPupil(request, { operations }))
-  await page.getByRole('button', { name: 'Fortsätt träna', exact: true }).click()
-  await page.waitForURL(/\/practice/)
-  const log = await answerTasks(page, findings, { count: 30, choice: { allowedOperations: operations, label: 'Fortsätt träna' } })
-  findings.stat('räknesätt', [...new Set(log.map(e => e.op))].join(','))
-  await findings.attach()
-  expect.soft(findings.items.map(f => `${f.rule}: ${f.message}`)).toEqual([])
+test('Fri träning finns en gång på startsidan utan dubblettknapp', async ({ page, request }) => {
+  await login(page, await createPupil(request, { operations: ['addition', 'fractions'] }))
+  await expect(page.getByRole('region', { name: 'Fri träning', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Fri träning', exact: true })).toHaveCount(1)
+  await expect(page.getByRole('button', { name: 'Fortsätt träna', exact: true })).toHaveCount(0)
 })
 
 for (const [label, mode] of [['Subtraktion', 'subtraction'], ['Bråk', 'fractions'], ['Algebra (räkna ut)', 'algebra_evaluate']]) {

@@ -254,30 +254,28 @@ test('Fokus: tangentbord fungerar och tabbfokus stannar i aktiviteten', async ({
   await expect(page.locator('dl > div').filter({ hasText: 'För tidiga tryck' }).locator('dd')).toHaveText('2')
 })
 
-test('Fokus: inväntar klassvillkor, respekterar uppdrag och håller stängt vid laddningsfel', async ({ page, request }) => {
+test('Fokus: finns alltid, även med uppdrag utan pauser, under laddning och vid laddningsfel', async ({ page, request }) => {
   const pupil = await createPupil(request)
   let release
   const gate = new Promise(resolve => { release = resolve })
+  const focusButton = () => page.getByRole('button', { name: new RegExp(`^${FOCUS}`) })
   // Active assignments come from every class and group through /api/me/assignments.
-  const assignments = breakGames => ({ assignments: [{ payload: payload({ breakGames }), activatedAt: 1, source: { type: 'class', id: 'x' } }] })
   await page.route('**/api/me/assignments', async route => {
     await gate
-    await route.fulfill({ json: assignments(false) })
+    await route.fulfill({ json: { assignments: [{ payload: payload({ breakGames: false }), activatedAt: 1, source: { type: 'class', id: 'x' } }] } })
   })
   await login(page, pupil)
-  await expect(page.getByRole('button', { name: new RegExp(`^${FOCUS}`) })).toHaveCount(0)
+  await expect(focusButton()).toBeVisible()
   release()
   await expect(page.getByRole('button', { name: 'Starta nästa: Focus robot assignment', exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: new RegExp(`^${FOCUS}`) })).toHaveCount(0)
-  await page.unroute('**/api/me/assignments')
-  await page.route('**/api/me/assignments', route => route.fulfill({ json: assignments(true) }))
-  await page.reload()
-  await expect(page.getByRole('button', { name: new RegExp(`^${FOCUS}`) })).toBeVisible()
+  await expect(focusButton()).toBeVisible()
+  await focusButton().click()
+  await expect(surface(page)).toBeVisible()
   await page.unroute('**/api/me/assignments')
   await page.route('**/api/class-config?*', route => route.fulfill({ status: 503, body: '{}' }))
   await page.reload()
   await expect(page.getByRole('alert')).toContainText('Kunde inte läsa klassens räknesätt')
-  await expect(page.getByRole('button', { name: new RegExp(`^${FOCUS}`) })).toHaveCount(0)
+  await expect(focusButton()).toBeVisible()
 })
 
 test('Fokus: vanlig paus behåller uppdrag och räknesätt utan nya matematiksvar', async ({ page, request }, testInfo) => {

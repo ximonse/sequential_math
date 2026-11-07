@@ -1,12 +1,10 @@
 import { useState } from 'react'
-import StudentHomeAssignmentLaunchCard from './StudentHomeAssignmentLaunchCard'
 
 // Assigned work: start the oldest undone item directly, or open the list to choose.
-export default function StudentHomeAssignments({ todo, done, onStart, onFreePractice, freeDisabled }) {
+// Free practice has its own home card, so this section only shows assignments.
+export default function StudentHomeAssignments({ todo, done, onStart }) {
   const [open, setOpen] = useState(false)
-  if (todo.length === 0 && done.length === 0) {
-    return <StudentHomeAssignmentLaunchCard assignment={null} onStart={onFreePractice} disabled={freeDisabled} />
-  }
+  if (todo.length === 0 && done.length === 0) return null
   const next = todo[0]
   return (
     <section aria-labelledby="my-assignments-title" className="bg-white border-2 border-blue-200 rounded-xl p-5 mb-6 shadow-sm">
@@ -15,11 +13,8 @@ export default function StudentHomeAssignments({ todo, done, onStart, onFreePrac
         {next ? `${todo.length} att göra${done.length ? ` · ${done.length} klara` : ''}` : 'Alla uppdrag är klara ✓'}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
-        {next
-          ? <button type="button" data-assignment-start-next onClick={() => onStart(next)}
-            className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg">Starta nästa: {next.title}</button>
-          : <button type="button" onClick={onFreePractice} disabled={freeDisabled}
-            className="px-5 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white font-semibold rounded-lg">Fortsätt träna</button>}
+        {next && <button type="button" data-assignment-start-next onClick={() => onStart(next)}
+          className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg">Starta nästa: {next.title}</button>}
         <button type="button" aria-expanded={open} aria-controls="my-assignments-list" onClick={() => setOpen(value => !value)}
           className="px-4 py-2 border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 font-semibold rounded-lg">
           {open ? 'Dölj mina uppdrag' : `Visa mina uppdrag (${todo.length + done.length})`}

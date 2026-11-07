@@ -3417,6 +3417,38 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "home-free-practice-card",
+      "area": "Elevens startsida",
+      "title": "Fri träning i egen ruta och fokus alltid tillgängligt",
+      "status": "Lokalt klart",
+      "purpose": "Gör det enkelt att starta fri träning och fokusuppvärmning direkt på elevens startsida.",
+      "next": "Push och produktionskontroll av startsidan.",
+      "acceptance": "Fri träning visas en gång, i en egen ruta direkt ovanför Tabellträning, med samma startfunktion och klassens räknesätt. Ingen dubblettknapp (Ditt nästa steg/Fortsätt träna). Mina uppdrag visas bara när eleven har uppdrag. Fokuspunkten finns alltid på startsidan, även med tilldelade uppdrag utan pauser, under laddning och vid laddningsfel. Pauser inne i uppdragspass styrs fortfarande av breakGames.",
+      "requires": [],
+      "affects": [],
+      "decision": "2026-11-07 Simon beställer egen ruta för Fri träning ovanför Tabellträning. Ingen ändring av inloggningen eller träningslogiken.\n2026-11-07 Simon: Fri träning ska bara finnas en gång (den tidigare Ditt nästa steg/Fortsätt träna var en dubblett). Fokusövningar ska alltid finnas att köra, även om eleven har tilldelade uppdrag. Ersätter tidigare villkor att startsidans fokus döljs när uppdrag inte tillåter pausaktiviteter.\n2026-11-07 Simon begär publicering utan konflikt med pågående arbete.",
+      "evidence": "2026-11-07 Codex (lokal commit 1297319 i worktree talpar-start-blandning): egen Fri träning-ruta, flyttad från Välj annan träning. Codex stoppades av användningsgräns innan dubblett och fokus rättades.\n2026-11-07 Claude: Codex commit överförd till aktuell origin/master. StudentHomeAssignments renderar inget utan uppdrag och saknar Fortsätt träna-knapp; oanvänd StudentHomeAssignmentLaunchCard borttagen. Startsidans fokusvillkor (focusAllowed) borttaget. Robotar uppdaterade: training (Fri träning en gång, ingen Fortsätt träna) och focus (synlig under laddning, med uppdrag utan pauser, öppnar och vid laddningsfel). docs/FOCUS_ACTIVITY.md uppdaterad. Lint 0 fel, 1266/1268 tester (2 NCM-audit-fel orsakade av CRLF i Windows-checkout), build grön.\nRobothjälpen openOtherTraining använde Fri träning-knappen som tecken på öppen lista och öppnade därför aldrig Välj annan träning (3 röda training-robotar); rättad att läsa details.open. 13 berörda robotfiler: 67/68 gröna, Talpar-roboten röd under belastning och grön vid omkörning.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "direct-free-practice",
+          "text": "Egen ruta, direktstart, verifiering och render",
+          "done": true
+        },
+        {
+          "id": "single-free-practice",
+          "text": "Ta bort dubblett för Fri träning",
+          "done": true
+        },
+        {
+          "id": "focus-always",
+          "text": "Fokuspunkten alltid tillgänglig på startsidan",
+          "done": true
+        }
+      ]
     }
   ],
   "edges": [

@@ -56,8 +56,9 @@ beteende.
   på observerbar inaktivitet eller återkommande felsvar.
 - Elevens startsida visar ett primärt nästa steg. Övrig träning, framsteg och
   konto är sekundära, nedfällda val.
-- Tabellträning ligger som ett eget kort direkt under första modulen på elevens
-  startsida; tabellval och startfunktion är oförändrade.
+- Fri träning har från 2026-11-07 en egen ruta direkt ovanför Tabellträning
+  på elevens startsida. Den startar befintlig blandad träning direkt och
+  följer klassens aktiverade räknesätt. Tabellval och startfunktion är oförändrade.
 - Klassadministrationen kan välja räknesätt för vanlig träning. Äldre klasser
   behåller de fyra grundräknesätten och sina aktiverade extra räknesätt; uppdrag
   och tabellträning har egna träningsramar.

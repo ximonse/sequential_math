@@ -9,9 +9,10 @@ inte en rörelsepaus.
 ## Åtkomst och återgång
 
 Aktiviteten öppnas från elevens startsida och från aktivitetspauser i vanlig
-träning och talbild. Ett aktivt läraruppdrag måste tillåta pausaktiviteter
-(`breakGames: true`). Startsidan inväntar klasskonfiguration och upplöst
-uppdrag; laddningsfel eller olöst uttryckligt uppdrag öppnar inte aktiviteten.
+träning och talbild. Från 2026-11-07 finns den alltid på startsidan, även när
+eleven har tilldelade uppdrag och under laddning eller laddningsfel. Under ett
+pågående uppdragspass styr uppdragets `breakGames: true` fortfarande om
+pausaktiviteter erbjuds.
 Från startsidan återgår eleven dit. Från paus fortsätter samma matematikpass
 inom befintlig träningsram. Pong och Snake behåller sina befintliga flöden.
 

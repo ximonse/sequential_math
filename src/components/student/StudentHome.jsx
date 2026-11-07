@@ -32,7 +32,6 @@ function StudentHome() {
   const [assignment, setAssignment] = useState(null)
   // Active assignments from every class and group; null until the server answers.
   const [targetAssignments, setTargetAssignments] = useState(null)
-  const [assignmentResolutionKey, setAssignmentResolutionKey] = useState('')
   const [focusOpen, setFocusOpen] = useState(false)
   // An assigned focus exercise opens here; focusDone offers the next assignment afterwards.
   const [focusAssignment, setFocusAssignment] = useState(null)
@@ -135,9 +134,8 @@ function StudentHome() {
     return () => { active = false }
   }, [diagnosticProfileId])
 
-  const assignmentSourceKey = JSON.stringify([classId, assignmentId, assignmentPayload, classConfig.classId, classConfig.ready, classConfig.assignmentPayload])
   useEffect(() => {
-    const resolve = value => { setAssignment(value); setAssignmentResolutionKey(assignmentSourceKey) }
+    const resolve = setAssignment
     const fromPayload = decodeAssignmentPayload(assignmentPayload)
     if (assignmentId) {
       if (fromPayload && String(fromPayload.id) === String(assignmentId)) {
@@ -154,21 +152,13 @@ function StudentHome() {
     // "Aktivera för alla" is stored on the pupil's class on the server.
     const classAssignment = classConfig.classId === classId ? decodeAssignmentPayload(classConfig.assignmentPayload) : null
     resolve(classAssignment || getActiveAssignment())
-  }, [assignmentId, assignmentPayload, classConfig, classId, assignmentSourceKey])
+  }, [assignmentId, assignmentPayload, classConfig, classId])
 
   const homeItems = useMemo(() => (Array.isArray(targetAssignments) ? targetAssignments
     : assignment ? [{ payload: encodeAssignmentPayload(assignment), activatedAt: 0 }] : []), [targetAssignments, assignment])
   // progressVersion re-reads completions written into the profile object.
   const { todo: todoAssignments, done: doneAssignments } = useMemo(
     () => splitAssignments(profile, homeItems), [profile, homeItems, progressVersion]) // eslint-disable-line react-hooks/exhaustive-deps
-  const homeAssignments = [...todoAssignments, ...doneAssignments]
-  // Assigned focus exercises do not count as practice that forbids the voluntary warm-up.
-  const focusAllowed = classConfig.classId === classId && classConfig.ready === true
-    && targetAssignments !== null
-    && assignmentResolutionKey === assignmentSourceKey
-    && (!(assignmentId || assignmentPayload || classConfig.assignmentPayload) || !!assignment)
-    && homeAssignments.filter(item => item.kind !== 'focus').every(item => item.breakGames === true)
-  useEffect(() => { if (!focusAllowed) setFocusOpen(false) }, [focusAllowed])
 
   const updateHomePresence = useCallback((options = {}) => {
     if (!profile) return
@@ -391,8 +381,8 @@ function StudentHome() {
       {focusAssignment
         ? <FocusActivity key={focusAssignment.id} studentId={studentId} initialMode={focusAssignment.focusMode}
           onCompleted={finishFocusAssignment} onClose={() => setFocusAssignment(null)} />
-        : focusOpen && focusAllowed && <FocusActivity studentId={studentId} onClose={() => setFocusOpen(false)} />}
-      <div inert={focusAssignment || (focusOpen && focusAllowed) ? true : undefined} className="max-w-3xl mx-auto px-4">
+        : focusOpen && <FocusActivity studentId={studentId} onClose={() => setFocusOpen(false)} />}
+      <div inert={focusAssignment || focusOpen ? true : undefined} className="max-w-3xl mx-auto px-4">
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Hej {profile.displayAlias || 'elev'}</h1>
@@ -411,7 +401,7 @@ function StudentHome() {
           </div>
         </div>
         <StudentSyncStatus status={syncStatus} />
-        {focusAllowed && <button onClick={() => setFocusOpen(true)} className="mb-4 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-left font-semibold text-gray-800 focus-visible:outline-2 focus-visible:outline-gray-800">Fokuspunkten – 2 min<span className="mt-1 block text-sm font-normal text-gray-500">Frivillig fokusuppvärmning</span></button>}
+        <button onClick={() => setFocusOpen(true)} className="mb-4 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-left font-semibold text-gray-800 focus-visible:outline-2 focus-visible:outline-gray-800">Fokuspunkten – 2 min<span className="mt-1 block text-sm font-normal text-gray-500">Frivillig fokusuppvärmning</span></button>
 
         {diagnosticAssignments.length > 0 && <StudentDiagnosticCollections assignments={diagnosticAssignments} studentId={studentId} />}
 
@@ -437,8 +427,6 @@ function StudentHome() {
           todo={todoAssignments}
           done={doneAssignments}
           onStart={item => handleStartAssignmentOrFree(item)}
-          onFreePractice={() => handleStartAssignmentOrFree(null)}
-          freeDisabled={operationKeys.length === 0}
         />}
 
         {enabledOperations?.length === 0 && (
@@ -446,6 +434,19 @@ function StudentHome() {
             Kunde inte läsa klassens räknesätt. Uppdatera sidan och försök igen.
           </p>
         )}
+
+        <section aria-labelledby="free-practice-title" className="bg-white border-2 border-blue-200 rounded-xl p-4 sm:p-5 mb-6 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 id="free-practice-title" className="text-lg font-semibold text-gray-800">Fri träning</h2>
+              <p className="text-sm text-gray-600 mt-1">Blandad träning på din nivå.</p>
+            </div>
+            <button type="button" onClick={startFreePractice} disabled={operationKeys.length === 0}
+              className="px-4 py-2 rounded-lg text-white text-sm font-semibold bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300">
+              Fri träning
+            </button>
+          </div>
+        </section>
 
         <StudentHomeTableDrillCard
           tables={TABLES}
@@ -460,12 +461,10 @@ function StudentHome() {
           <summary className="cursor-pointer select-none px-4 py-3 font-semibold text-gray-700">Välj annan träning</summary>
           <div className="px-4 pb-4">
             <StudentHomeTrainingOptionsCard
-              onStartFreePractice={startFreePractice}
               operationKeys={operationKeys}
               onStartOperationPractice={startOperationPractice}
               getOperationLabel={getOperationLabel}
               operationProgress={operationProgress}
-              operationsReady={operationKeys.length > 0}
               talbildEnabled={classId !== '' && classConfig.classId === classId && classConfig.talbildEnabled === true}
               onStartTalbild={startTalbild}
             />

@@ -17,17 +17,18 @@ function getPongDifficulty(elapsedSeconds) {
     const p = t * 6
     return { aiSpeed: 0.30, ballSpeed: 3.0 + p * 0.3, maxSpeedX: 5.5 + p * 0.5, maxSpeedY: 4.5 + p * 0.5 }
   }
+  // Same start as before; from 15 s the ball speeds up a little more each phase (Simon 2026-11-07).
   if (t < 0.5) {          // 15-45s: gradual
     const p = (t - 1 / 6) * 3
-    return { aiSpeed: 0.30 + p * 0.20, ballSpeed: 3.3 + p * 1.2, maxSpeedX: 6.0 + p * 1.5, maxSpeedY: 5.0 + p * 1.0 }
+    return { aiSpeed: 0.30 + p * 0.20, ballSpeed: 3.3 + p * 1.7, maxSpeedX: 6.0 + p * 2.0, maxSpeedY: 5.0 + p * 1.2 }
   }
   if (t < 5 / 6) {        // 45-75s: challenging
     const p = (t - 0.5) * 3
-    return { aiSpeed: 0.50 + p * 0.15, ballSpeed: 4.5 + p * 1.0, maxSpeedX: 7.5 + p * 1.5, maxSpeedY: 6.0 + p * 1.0 }
+    return { aiSpeed: 0.50 + p * 0.15, ballSpeed: 5.0 + p * 1.8, maxSpeedX: 8.0 + p * 2.5, maxSpeedY: 6.2 + p * 1.3 }
   }
   // 75-90s: hard
   const p = (t - 5 / 6) * 6
-  return { aiSpeed: 0.65 + p * 0.10, ballSpeed: 5.5 + p * 1.0, maxSpeedX: 9.0 + p * 1.0, maxSpeedY: 7.0 + p * 0.5 }
+  return { aiSpeed: 0.65 + p * 0.10, ballSpeed: 6.8 + p * 1.4, maxSpeedX: 10.5 + p * 2.0, maxSpeedY: 7.5 + p * 1.0 }
 }
 
 function PongGame({ onClose, studentId, studentName, classId }) {

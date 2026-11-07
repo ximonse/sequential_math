@@ -92,13 +92,15 @@ test('Transition matrix measures usable views and preserves screening work with 
       await measure(page, 'teacher-class-change-to-results', () => panel.getByRole('button', { name, exact: true }).click(),
         () => expect(page.locator('[data-history-state="ready"]')).toBeAttached())
     }
-    for (const label of ['Screening: skapa', 'Screening: resultat', 'Framsteg']) {
-      await measure(page, `teacher-workspace-${label}`, () => page.getByRole('button', { name: label, exact: true }).click(), async () => {
-        if (label === 'Screening: skapa') await expect(page.getByRole('region', { name: 'Screening', exact: true })).toBeVisible()
-        else if (label === 'Screening: resultat') await expect(page.getByRole('region', { name: 'Resultat av screening', exact: true })).toBeVisible()
-        else await expect(page.locator('[data-admin-panel="overview"]')).toBeVisible()
-      })
-    }
+    // Screening results became a tab inside Screening (2026-11-07); the old
+    // measurement names are kept so earlier evidence stays comparable.
+    const screening = page.getByRole('region', { name: 'Screening', exact: true })
+    for (const [label, open, ready] of [
+      ['Screening: skapa', () => page.getByRole('navigation', { name: 'Lärarvy' }).getByRole('button', { name: /^Screening/ }).click(), () => expect(screening).toBeVisible()],
+      ['Screening: resultat', () => screening.getByRole('tab', { name: 'Resultat', exact: true }).click(),
+        () => expect(page.getByRole('region', { name: 'Resultat av screening', exact: true })).toBeVisible()],
+      ['Framsteg', () => page.getByRole('button', { name: 'Framsteg', exact: true }).click(), () => expect(page.locator('[data-admin-panel="overview"]')).toBeVisible()],
+    ]) await measure(page, `teacher-workspace-${label}`, open, ready)
     // Catalog may be present before detailed pupil history is usable.
     for (const selected of [pupil, other]) {
       await measure(page, 'teacher-open-pupil-detail', () => page.goto(`/teacher/student/${selected.studentId}`),

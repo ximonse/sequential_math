@@ -3338,6 +3338,41 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "screening-results-tab",
+      "area": "Lärarvy",
+      "title": "Screeningresultat som fjärde flik i Screening",
+      "status": "Lokalt klart",
+      "purpose": "Skapa, dela ut och läsa resultat är ett och samma arbetsflöde. Ett menyval, Screening, med flikarna Skapa ny, Utdelade, Utkast och Resultat gör det tydligare än två sidor.",
+      "next": "Simon granskar fliken i webbläsaren och avgör om grenen ska publiceras.",
+      "acceptance": "Vänstermenyn har ett val, Screening. Fliken Resultat har egen mottagarväljare och samma panel som tidigare sida. Resultat och avslut i Utdelade öppnar Resultat med samlingen vald. Sökning och filter i Utdelade ligger kvar efter besök i Resultat, och listan läses om. Osparad genomgång varnar vid byte av flik och av arbetsläge. Resultatval påverkar aldrig nästa utdelning. Resultatfliken behåller sitt tidigare utseende.",
+      "decision": "2026-11-07: Simon föreslår att Screeningresultat ska vara fjärde fliken i Screening skapa och att menyvalet ska heta Screening. Flikordningen Skapa ny, Utdelade, Utkast, Resultat följer Simons formulering. Agentens förslag att lägga Utkast före Utdelade är inte beslutat. Ersätter tvålägesdelen av screening-split.",
+      "evidence": "2026-11-07 lokalt på gren claude/screening-results-tab från master c8fe318, i egen worktree för att inte krocka med pågående Codex-arbete: DashboardLayout tar bort arbetsläget ncm-results och renderar mottagarväljare och ScreeningResultsPanel via ScreeningDispatchPanel. Resultatfliken undantas från screeningFlow.css generella knapp-, fält- och rubrikregler. Robotar anpassade: lib/screening.js, diagnostic-grid, screening-dispatch-flow, screening-workspace-contract och transition-latency (mätnamnen Screening: skapa/resultat behålls för jämförbarhet). Vitest 1263 godkända; 2 fel i audit-ncm-rule-readiness beror på radslut i ny worktree och passerar i huvudmappen. Build godkänd. Diagnostic-, screening- och transition-robotar: 185 pass, 7 fall under belastning som alla passerade vid omkörning (36/36). Ingen skärmbildsgranskning, ej pushat.",
+      "issue": "",
+      "kind": "funktion",
+      "requires": [],
+      "affects": [
+        "screening-split",
+        "teacher-screening-workflow"
+      ],
+      "tasks": [
+        {
+          "id": "results-tab",
+          "text": "Flytta Resultat till fjärde fliken och döp menyvalet till Screening",
+          "done": true
+        },
+        {
+          "id": "results-tab-guard",
+          "text": "Varning för osparad genomgång vid flikbyte och kvarliggande filter i Utdelade",
+          "done": true
+        },
+        {
+          "id": "results-tab-try",
+          "text": "Simon provar fliken i webbläsaren",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [
@@ -4145,6 +4180,16 @@
       "source": "app-transition-latency",
       "target": "latency-measurement-and-regression",
       "kind": "kräver"
+    },
+    {
+      "source": "screening-results-tab",
+      "target": "screening-split",
+      "kind": "påverkar"
+    },
+    {
+      "source": "screening-results-tab",
+      "target": "teacher-screening-workflow",
+      "kind": "påverkar"
     }
   ],
   "note": "Planeringssnapshot. Lokalt klart är inte publicerat. Tidigare publicering bygger på denna tråds verifiering; ingen ny livekontroll. Förslag är inte fattade beslut."

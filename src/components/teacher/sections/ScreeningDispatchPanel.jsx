@@ -6,16 +6,29 @@ import ScreeningMaterialLibrary from './ScreeningMaterialLibrary'
 import useScreeningLibrary from './useScreeningLibrary'
 import './screeningFlow.css'
 
-// Three tabs (Simon 2026-11-02): create a screening, see the issued ones and open
-// saved drafts. Creating comes first; handing out is the last step of creating.
-export default function ScreeningDispatchPanel({ classes, students, teacherGroups = [], active = true, onDirtyChange, onResults }) {
+// Tabs (Simon 2026-11-02): create a screening, see the issued ones and open saved
+// drafts. Creating comes first; handing out is the last step of creating.
+// Results became the fourth tab instead of a page of its own (Simon 2026-11-07).
+export default function ScreeningDispatchPanel({ classes, students, teacherGroups = [], active = true, onDirtyChange, onResults,
+  renderResults, isResultsDirty, onLeaveResults }) {
   const navigate = useNavigate()
   const context = useMemo(() => ({ classes, students, groups: teacherGroups }), [classes, students, teacherGroups])
   const library = useScreeningLibrary(classes, active)
   const [flow, setFlow] = useState(() => ({ id: crypto.randomUUID(), source: null, draftId: '' }))
   const [tab, setTab] = useState('create')
+  // Once opened, the issued list stays mounted so its search and filters survive a
+  // visit to the results tab, as they did when results were a page of their own.
+  const [issuedSeen, setIssuedSeen] = useState(false)
   const [dirty, setDirty] = useState(false)
   useEffect(() => { onDirtyChange?.(dirty) }, [dirty, onDirtyChange])
+  function openTab(next) {
+    if (next === tab) return
+    if (tab === 'results' && isResultsDirty?.() && !window.confirm('Genomgången har osparade ändringar. Vill du lämna dem?')) return
+    // Results can stop a screening, so the issued list is read again afterwards.
+    if (tab === 'results') { onLeaveResults?.(); library.reload() }
+    if (next === 'issued') setIssuedSeen(true)
+    setTab(next)
+  }
   function start(source = null, draftId = '') {
     if (dirty && !window.confirm('Du har en screening som inte är klar. Vill du börja om och lämna den?')) return
     setFlow({ id: crypto.randomUUID(), source, draftId })
@@ -28,22 +41,26 @@ export default function ScreeningDispatchPanel({ classes, students, teacherGroup
   }
   return <section data-screening-flow aria-label="Screening" className="rounded-lg border border-slate-300 bg-white p-3 text-slate-800 shadow-sm">
     <h2 id="screening-dispatch-title" className="screening-page-title">Screening</h2>
-    <ScreeningTabs tab={tab} onTab={setTab} />
+    <ScreeningTabs tab={tab} onTab={openTab} />
     <div role="tabpanel" id="screening-tab-panel" aria-labelledby={`screening-tab-${tab}`}>
       <div hidden={tab !== 'create'}>
         <ScreeningDispatchFlow key={flow.id} context={context} library={library} initialSource={flow.source} initialDraftId={flow.draftId}
           onClose={({ finished = false } = {}) => {
             if (finished) { setDirty(false); setFlow({ id: crypto.randomUUID(), source: null, draftId: '' }) }
-            setTab('issued'); library.reload() }}
+            setIssuedSeen(true); setTab('issued'); library.reload() }}
           onDirtyChange={setDirty} />
       </div>
-      {tab === 'issued' && <ScreeningCollectionList context={context} library={library} onReuse={start} onResults={onResults} />}
+      {(tab === 'issued' || issuedSeen) && <div hidden={tab !== 'issued'}>
+        <ScreeningCollectionList context={context} library={library} onReuse={start}
+          onResults={(collection, picks) => { onResults?.(collection, picks); openTab('results') }} />
+      </div>}
       {tab === 'drafts' && <ScreeningMaterialLibrary library={library} onOpenDraft={id => start(null, id)} onOpenMaterial={openMaterial} />}
+      <div data-screening-results hidden={tab !== 'results'}>{renderResults?.(active && tab === 'results')}</div>
     </div>
   </section>
 }
 
-const TABS = [['create', 'Skapa ny'], ['issued', 'Utdelade'], ['drafts', 'Utkast']]
+const TABS = [['create', 'Skapa ny'], ['issued', 'Utdelade'], ['drafts', 'Utkast'], ['results', 'Resultat']]
 
 function ScreeningTabs({ tab, onTab }) {
   return <div className="screening-tabs" role="tablist" aria-label="Screening" onKeyDown={event => {

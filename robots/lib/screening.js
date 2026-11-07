@@ -1,5 +1,5 @@
-// Screening has two workspaces: creating (and handing out) and reading the results.
-// These helpers open each one and return its panel.
+// Screening is one workspace; reading the results is its fourth tab (2026-11-07).
+// These helpers open the creating flow or the results tab and return its panel.
 import { expect } from '@playwright/test'
 import { openTab } from './teacher.js'
 
@@ -17,7 +17,7 @@ export async function openQuestionBank(panel, group = '') {
 // Nothing is chosen in advance any more; most robots used to rely on the first
 // bank task, so they still get it unless they ask for an empty screening.
 export async function openDispatch(page, { startNew = true, withDefaultTask = true } = {}) {
-  await openTab(page, 'Screening: skapa')
+  await openTab(page, 'Screening')
   const panel = page.getByRole('region', { name: 'Screening', exact: true })
   await expect(panel).toBeVisible()
   if (startNew) {
@@ -38,7 +38,8 @@ export async function openDispatch(page, { startNew = true, withDefaultTask = tr
 
 // Picks who to read results for in the results picker: a class, a pupil, or both.
 export async function openResults(page, { className, pupilName, groupName } = {}) {
-  await openTab(page, 'Screening: resultat')
+  await openTab(page, 'Screening')
+  await page.getByRole('region', { name: 'Screening', exact: true }).getByRole('tab', { name: 'Resultat', exact: true }).click()
   const picker = page.locator('[data-recipient-picker]')
   if (className) await picker.getByRole('button', { name: className, exact: true }).click()
   if (groupName) await picker.getByRole('button', { name: `Grupp: ${groupName}`, exact: true }).click()

@@ -72,7 +72,7 @@ test('Saved content has its own library and opens without inheriting delivery re
   await panel.getByRole('combobox', { name: 'Sparade utkast', exact: true }).selectOption({ label: 'Material att återkomma till · version 1' })
   await expect(panel.getByRole('textbox', { name: 'Samlingens namn', exact: true })).toHaveValue('Material att återkomma till')
   await panel.getByRole('button', { name: 'Välj mottagare', exact: true }).click()
-  await expect(panel.locator('[data-recipient-summary]')).toHaveText('Ingen mottagare vald.')
+  await expect(panel.getByRole('region', { name: 'Mottagare', exact: true }).locator('[data-recipient-summary]')).toHaveText('Ingen mottagare vald.')
   await page.screenshot({ path: info.outputPath('recipients-empty.png'), fullPage: true })
   await page.getByRole('combobox', { name: 'Välj tema', exact: true }).selectOption({ label: 'Mörkt' })
   await page.setViewportSize({ width: 768, height: 1024 })

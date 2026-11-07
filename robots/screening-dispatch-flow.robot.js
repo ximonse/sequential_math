@@ -92,6 +92,7 @@ test('Screening flow preserves mixed searchable recipients and retries uncertain
   await results.getByRole('button', { name: 'Avsluta', exact: true }).click()
   await expect(results.getByText(`Flow screening ${tag} är avslutad. 0 påbörjade svar lämnades in.`, { exact: true })).toBeVisible()
   await openDispatch(page, { startNew: false })
+  await panel.getByRole('tab', { name: 'Utdelade', exact: true }).click()
   await panel.getByRole('combobox', { name: 'Status', exact: true }).selectOption('stopped')
   await expect(panel.getByRole('heading', { name: `Flow screening ${tag}`, exact: true })).toBeVisible()
   await panel.getByText('Visa mottagare (3 elever)', { exact: true }).click()

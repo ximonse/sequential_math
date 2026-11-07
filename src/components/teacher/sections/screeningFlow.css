@@ -9,27 +9,28 @@ body[class*="theme-"] [data-screening-flow] {
   box-shadow: 0 2px 5px #0000000c !important;
 }
 [data-screening-flow] .screening-page-title { font-size: 23px; line-height: 1.25; font-weight: 650; margin-bottom: 12px; }
-[data-screening-flow] h3 { font-size: 17px; line-height: 1.4; font-weight: 650; }
-[data-screening-flow] h4 { font-weight: 650; }
-body[class*="theme-"] [data-screening-flow] button {
+/* The results tab (Simon 2026-11-07) keeps the admin style it had as its own page. */
+[data-screening-flow] h3:not(:where([data-screening-results] *)) { font-size: 17px; line-height: 1.4; font-weight: 650; }
+[data-screening-flow] h4:not(:where([data-screening-results] *)) { font-weight: 650; }
+body[class*="theme-"] [data-screening-flow] button:not(:where([data-screening-results] *)) {
   font: inherit; line-height: 1.4; color: var(--text-main); background: var(--surface);
   border: 1px solid var(--border); border-radius: 5px; padding: 4px 9px;
 }
-body[class*="theme-"] [data-screening-flow] button:hover:not(:disabled) { border-color: var(--accent); background: var(--surface-soft); }
-body[class*="theme-"] [data-screening-flow] button.bg-indigo-600 {
+body[class*="theme-"] [data-screening-flow] button:not(:where([data-screening-results] *)):hover:not(:disabled) { border-color: var(--accent); background: var(--surface-soft); }
+body[class*="theme-"] [data-screening-flow] button.bg-indigo-600:not(:where([data-screening-results] *)) {
   background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important;
   box-shadow: 0 2px 4px #00000012;
 }
-body.theme-dark [data-screening-flow] button.bg-indigo-600 { background: #a5b4fc !important; color: #172033 !important; }
-body.theme-dark-lime [data-screening-flow] button.bg-indigo-600 { background: #bef264 !important; color: #172033 !important; }
+body.theme-dark [data-screening-flow] button.bg-indigo-600:not(:where([data-screening-results] *)) { background: #a5b4fc !important; color: #172033 !important; }
+body.theme-dark-lime [data-screening-flow] button.bg-indigo-600:not(:where([data-screening-results] *)) { background: #bef264 !important; color: #172033 !important; }
 body[class*="theme-"] [data-screening-flow] .screening-selection-chip {
   color: var(--text-main) !important; background: var(--surface-soft) !important; border-color: var(--border) !important;
 }
-body[class*="theme-"] [data-screening-flow] :is(input:not([type=checkbox]):not([type=file]), select, textarea) {
+body[class*="theme-"] [data-screening-flow] :is(input:not([type=checkbox]):not([type=file]), select, textarea):not(:where([data-screening-results] *)) {
   font: inherit; color: var(--text-main); background: var(--surface); border: 1px solid var(--border);
   border-radius: 5px; padding: 5px 8px; max-width: 100%;
 }
-[data-screening-flow] input[type=checkbox] { accent-color: var(--accent); width: 17px; height: 17px; flex-shrink: 0; }
+[data-screening-flow] input[type=checkbox]:not(:where([data-screening-results] *)) { accent-color: var(--accent); width: 17px; height: 17px; flex-shrink: 0; }
 [data-screening-flow] summary { cursor: pointer; }
 [data-screening-flow] .screening-note { color: var(--text-muted); font-size: 13px; }
 [data-screening-flow] .screening-tabs { display: flex; gap: 18px; border-bottom: 1px solid var(--border); margin: 10px 0 12px; }
@@ -49,7 +50,7 @@ body[class*="theme-"] [data-screening-flow] .screening-tabs button[aria-selected
 [data-screening-flow] .screening-target-row { padding: 5px; }
 body[class*="theme-"] [data-screening-flow] .screening-target-row { border-color: var(--border) !important; }
 body[class*="theme-"] [data-screening-flow] .screening-target-row:has(input:checked) { background: var(--surface-soft) !important; }
-body[class*="theme-"] [data-screening-flow] button:is(.screening-remove, .underline) {
+body[class*="theme-"] [data-screening-flow] button:is(.screening-remove, .underline):not(:where([data-screening-results] *)) {
   background: transparent !important; border: 0; color: var(--accent); padding: 3px 5px;
 }
 [data-screening-flow] .screening-dispatch-editor > ol { margin-bottom: 14px; gap: 14px; }

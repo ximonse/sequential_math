@@ -58,7 +58,6 @@ const PANEL_DEFS = [
   { id: 'password',    title: 'Lösenordsåterställning' },
   { id: 'pausegames',  title: 'Pausspel — Highscore' },
   { id: 'ncm-grid',    title: 'Digitalt räknehäfte', adminOnly: true },
-  { id: 'ncm-results', title: 'Screeningresultat', adminOnly: true },
 ]
 
 const WORKSPACES = [
@@ -66,8 +65,7 @@ const WORKSPACES = [
   { id: 'focus', label: 'Fokusövningar', description: 'Grupp, individ och pass', panels: ['focus'], attentionOnly: true },
   { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'mathresults', 'tickets'] },
   { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality', 'pausegames'] },
-  { id: 'ncm', label: 'Screening: skapa', description: 'Skapa, dela ut och återanvänd frågor', panels: ['ncm-grid'], adminOnly: true },
-  { id: 'ncm-results', label: 'Screening: resultat', description: 'Elevernas svar och uträkningar', panels: ['ncm-results'], adminOnly: true },
+  { id: 'ncm', label: 'Screening', description: 'Skapa, dela ut och se resultat', panels: ['ncm-grid'], adminOnly: true },
   { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management'] }
 ]
 
@@ -278,7 +276,7 @@ export default function DashboardLayout({
   const reviewDirtyRef = useRef(false)
   const dispatchDirtyRef = useRef(false)
   const [requestedScreening, setRequestedScreening] = useState('')
-  const isScreening = activeWorkspace === 'ncm' || activeWorkspace === 'ncm-results'
+  const isScreening = activeWorkspace === 'ncm'
 
   function renderPanelContent(id) {
     if (historyState && historyState.status !== 'ready' && !historyState.hasData
@@ -515,14 +513,16 @@ export default function DashboardLayout({
           onDirtyChange={value => { dispatchDirtyRef.current = value }} onResults={(collection, picks = []) => {
             setResultPicks(picks.length ? [...picks] : collection.members.map(member => ({ type: 'class', id: member.classId })))
           setRequestedScreening(collection.id)
-          setActiveWorkspace('ncm-results')
-        }} />
+        }}
+          isResultsDirty={() => reviewDirtyRef.current} onLeaveResults={() => { reviewDirtyRef.current = false }}
+          renderResults={resultsActive => <div data-admin-panel="ncm-results">
+            <RecipientPicker classes={classes} groups={teacherGroups} students={students}
+              recipients={resultPicks} onChange={setResultPicks} />
+            <ScreeningResultsPanel classes={classes} students={students} recipients={resultPicks} teacherGroups={teacherGroups}
+              active={resultsActive}
+              requestedCollectionId={requestedScreening} onDirtyChange={value => { reviewDirtyRef.current = value }} />
+          </div>} />
       </div>
-    )
-    if (id === 'ncm-results') return (
-      <ScreeningResultsPanel classes={classes} students={students} recipients={resultPicks} teacherGroups={teacherGroups}
-        active={activeWorkspace === 'ncm-results'}
-        requestedCollectionId={requestedScreening} onDirtyChange={value => { reviewDirtyRef.current = value }} />
     )
     return null
   }
@@ -575,10 +575,10 @@ export default function DashboardLayout({
               <nav className="grid gap-1" aria-label="Lärarvy">
                 {WORKSPACES.filter(workspace => (!workspace.adminOnly || teacherIsAdmin) && (!workspace.attentionOnly || canViewAttention)).map(workspace => (
                   <button key={workspace.id} aria-current={activeWorkspace === workspace.id ? 'page' : undefined} type="button" onClick={() => {
-                    if (workspace.id !== activeWorkspace && (reviewDirtyRef.current || (dispatchDirtyRef.current && !['ncm', 'ncm-results'].includes(workspace.id)))
+                    if (workspace.id !== activeWorkspace && (reviewDirtyRef.current || dispatchDirtyRef.current)
                       && !window.confirm('Du har osparade ändringar. Vill du lämna dem?')) return
                     if (workspace.id !== activeWorkspace) reviewDirtyRef.current = false
-                    if (!['ncm', 'ncm-results'].includes(workspace.id)) dispatchDirtyRef.current = false
+                    if (workspace.id !== 'ncm') dispatchDirtyRef.current = false
                     setActiveWorkspace(workspace.id)
                     if (workspace.id === 'focus') navigate('/teacher/focus')
                     else if (isFocusView) navigate('/teacher')
@@ -617,14 +617,7 @@ export default function DashboardLayout({
               <RecipientActiveOverview recipients={recipients} assignmentTargets={assignmentTargets}
                 assignments={assignments} groups={teacherGroups} students={students} />
             )}
-            {activeWorkspace === 'ncm-results' && (
-              <RecipientPicker classes={classes} groups={teacherGroups} students={students}
-                recipients={resultPicks} onChange={setResultPicks} />
-            )}
-            {isScreening && <>
-              <div hidden={activeWorkspace !== 'ncm'}>{renderPanelContent('ncm-grid')}</div>
-              <div data-admin-panel="ncm-results" hidden={activeWorkspace !== 'ncm-results'}>{renderPanelContent('ncm-results')}</div>
-            </>}
+            {isScreening && <div>{renderPanelContent('ncm-grid')}</div>}
             {!isScreening && WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
               .filter(id => visiblePanelDefs.some(panel => panel.id === id))
               .map(id => activeWorkspace === 'progress'

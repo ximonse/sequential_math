@@ -6,6 +6,11 @@ publicerat 2026-11-06; namnlistans första publicering följdes av en underkänd
 produktionskontroll och en komplettering för övriga lärarroller. En snabb
 intern funktion eller en godkänd robot avslutar inte hela uppdraget.
 
+Aktuellt: namnkompletteringen är publicerad som `0600eb4` och verifierad
+med faktisk skoladminroll, oförändrade 340 namn och uttryckligt urval om åtta
+saknade elever. Kall katalog tar fortfarande omkring 22 sekunder. Nästa
+katalogändring är lokalt verifierad och inväntar separat publiceringsmandat.
+
 ## Belagd startpunkt
 
 Produktionsmätning 2026-11-05, en syntetisk elev i Chrome på dator:
@@ -159,8 +164,10 @@ för läsande frågenavigering; screeningens spar-/inlämningsväg och material
 per begäran. Den fullföljda körningen visade totalt 9,16–18,43 sekunder för
 sådana anrop; den första serien hade också 25,72 sekunder. Auth-faserna
 överlappade och deras summerade tidsvärde får inte tolkas som väggtid.
-Koden läste dessutom 680 hela profiler trots att huvudadminens befintliga
-åtkomstregel redan godkände varje profil. Samtidigt tog ett `/api/students`
+Den första förklaringen antog huvudadmin och likställde 681 auth-anrop med
+680 profiler. Livekontrollen nedan underkände rollantagandet; antalet
+auth-anrop är inte antalet lästa profiler. Koden läste profiler för
+namnposterna och upprepade kontokontroller. Samtidigt tog ett `/api/students`
 17,84 sekunder med 26 auth-anrop. Därför är varken hela lärarväntan eller
 hela appens väntetider lösta av första publiceringen.
 
@@ -332,6 +339,55 @@ har explicit urval, antal i urvalet och antal faktiskt tillagda namn. Inga
 elev-ID:n eller namn från POST-kroppen sparas i mätartefakten. Ett nytt privat
 före-hashkvitto har tagits för dagens skoladminkonto utanför Git. Kall katalog
 och skopade resultathämtningar förblir separata öppna väntvägar.
+
+### 2026-11-07: avgränsad automatisk komplettering verifierad i produktion
+
+`0600eb4` är publicerad via GitHub/master. Sekvens deployment
+`dpl_2L88VvpK2CViSBXtdhfoLn9xXg18` blev READY med rätt full SHA och alias
+`matematik.ximon.se`; den verkliga webbläsaren laddade `index-BL4NiGOX.js`.
+Privat före/efter-hash matchar exakt 340 tillåtna namn, även efter hela
+webbläsarkörningen. Rollen är `school_admin`.
+
+Den metodmedvetna serien fullföljdes med 24 observationer, inga API-fel och
+oförändrade masteryFacts/problemLog. De två vanliga namnläsningarna var
+GET på 3932 och 3853 ms. De två automatiska POST-anropen tog 4450 och
+4053 ms, båda med explicit urval om åtta elever och `added: 0`.
+`label-fill-profiles` tog 495 respektive 132 ms: skapandeprofiler lästes
+bara för de berörda eleverna. Dessa faktiska anrop gick inte genom grenen
+för en redan full namnlista; den grenen är separat verifierad lokalt.
+Inga matchande fallback-varningar hittades i deploymentens loggfönster.
+
+[Metod- och urvalsmedveten produktionsserie](evaluations/transition-latency-2026-11-05/production-labels-scoped-20261107.json).
+Värden från äldre omärkta GET/POST-serier får inte användas som en ren
+före/efter-jämförelse för just POST. Det belagda resultatet är avgränsat
+arbete, oförändrade namn och nu separat mätt tid för kompletteringen.
+
+Första klassvalet tog fortfarande 16571 ms, nästa 2675 och 2607 ms.
+Katalogens API-anrop tog 21958 ms kallt och 2271 ms varmt; skopade resultat
+1894–2655 ms. Varma övningsstarter låg på 294–440 ms och verkligt utgången
+återanvändningsperiod gav 2639 ms. Dessa kvarvarande väntetider är öppna.
+
+### Nästa separata katalogsjok — lokalt verifierat, inte publicerat
+
+Kall katalog läser fem hela profiler per MGET-svar i en serie av små
+kommandon. Den lokala ändringen behåller fem profiler per svar men tillåter
+högst fyra svar samtidigt, alltså högst 20 profiler under pågående hämtning.
+Övriga metadataläsningar behåller sin befintliga samtidighet. Ordning och
+kopplingen mellan elev-ID och kodnamn måste vara exakt; ofullständiga svar
+avvisas och samtliga befintliga versions-, scope- och tombstone-skydd behålls.
+Cachetid, historik, matematikregler och API-innehåll ändras inte.
+
+Kontrollerat prov: 40 elever, åtta läsningar med 100 ms fördröjning vardera.
+Den tidigare seriella vägen kräver 800 ms; två vågor med fyra läsningar
+klarar 200 ms. Provet kräver fortfarande åtta läsningar, rätt elev/kodnamn,
+alla elever och frånvaro av privata fält. Det blev rött för seriell
+hämtning före rättningen och grönt efter. Detta är mekanismbevis, ingen
+uppmätt produktionsvinst.
+
+Slutkontroller för katalogsjoket: 233 testfiler/1264 tester, build, elva
+namn-, katalog- och mottagarrobotar samt riktad lint/arkitektur passerar.
+Katalogsjoket är separat lokalt arbete och inväntar publiceringsmandat för
+att kunna jämföras i produktion. Hela appens övergångsmatris är inte klar.
 
 ## Fortsatt öppet
 

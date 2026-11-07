@@ -54,6 +54,34 @@ it('bounds cold catalog writes without one serialized round trip per pupil', asy
     expect(JSON.stringify(res.data)).not.toContain('PRIVATE')
   } finally { kv.eval.mockImplementation(original) }
 })
+it('reads cold profiles in bounded waves without losing pupils or changing their order', async () => {
+  vi.useFakeTimers()
+  const ids = Array.from({ length: 40 }, (_, i) => `P${i}`)
+  mock.sets.set('class_students:C', ids)
+  for (const id of ids) mock.records.set(`student:${id}`, profile(id))
+  const original = kv.mget.getMockImplementation()
+  let active = 0, peak = 0, batches = 0
+  kv.mget.mockImplementation(async (...keys) => {
+    if (!keys.every(key => key.startsWith('student:'))) return original(...keys)
+    batches++; active++; peak = Math.max(peak, active)
+    try {
+      expect(keys.length).toBeLessThanOrEqual(5)
+      await new Promise(resolve => setTimeout(resolve, 100))
+      return await original(...keys)
+    } finally { active-- }
+  })
+  try {
+    const res = response(), start = Date.now(), pending = teacherCatalog({}, res)
+    await vi.runAllTimersAsync(); await pending
+    expect(res.data.pupils.map(p => p.studentId)).toEqual(ids)
+    expect(batches).toBe(8)
+    expect(res.data.pupils.map(p => [p.studentId, p.displayAlias])).toEqual(ids.map(id => [id, `Kod ${id}`]))
+    expect(peak).toBeGreaterThan(1)
+    expect(peak).toBeLessThanOrEqual(4)
+    expect(Date.now() - start).toBeLessThanOrEqual(200)
+    expect(JSON.stringify(res.data)).not.toMatch(/PRIVATE|problemLog|pinHash/)
+  } finally { kv.mget.mockImplementation(original) }
+})
 it('returns only authorised metadata, then uses warm cards without reading full profiles', async () => {
   const res = response(); await teacherCatalog({}, res)
   expect(res.data.pupils).toMatchObject([{ studentId: 'P', classIds: ['C'], auth: { lastLoginAt: 100, scheme: 'qr-pin-v1' }, catalogOnly: true }])

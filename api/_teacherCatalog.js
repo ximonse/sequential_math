@@ -11,14 +11,19 @@ import { guardPupilKey } from './_pupilReferenceWrite.js'
 // 2026-11-03). Class membership comes from the class index `class_students:{id}`,
 // which matched the full list for every class when measured.
 
-async function getMany(keys, store, batchSize = 50) {
+async function getMany(keys, store, batchSize = 50, concurrency = 1) {
   const out = []
-  for (let i = 0; i < keys.length; i += batchSize) {
-    const part = keys.slice(i, i + batchSize)
-    if (!part.length) continue
-    const values = await store.mget(...part)
-    if (!Array.isArray(values) || values.length !== part.length) throw Error('Ofullständig elevkatalog från lagringen.')
-    out.push(...values)
+  for (let i = 0; i < keys.length; i += batchSize * concurrency) {
+    const parts = []
+    for (let offset = 0; offset < batchSize * concurrency && i + offset < keys.length; offset += batchSize) {
+      parts.push(keys.slice(i + offset, i + offset + batchSize))
+    }
+    const values = await Promise.all(parts.map(async part => {
+      const result = await store.mget(...part)
+      if (!Array.isArray(result) || result.length !== part.length) throw Error('Ofullständig elevkatalog från lagringen.')
+      return result
+    }))
+    out.push(...values.flat())
   }
   return out
 }
@@ -54,8 +59,9 @@ export async function teacherCatalog(req, res, store = kv) {
   const missing = ids.filter((_, i) => !deleted[i] && cards[i]?.version !== CATALOG_VERSION)
   if (missing.length) {
     // Cold-cache recovery reads large profiles in smaller batches; warm reads
-    // only transfer metadata cards. This is not a full history projection.
-    const profiles = await getMany(missing.map(id => `student:${id}`), store, 5)
+    // only transfer metadata cards. Keep five profiles per response, at most
+    // four responses in flight. This is not a full history projection.
+    const profiles = await getMany(missing.map(id => `student:${id}`), store, 5, 4)
     for (let start = 0; start < profiles.length; start += 8) {
       await Promise.all(profiles.slice(start, start + 8).map(async (profile, offset) => {
         if (!isCurrentStudentProfile(profile)) return

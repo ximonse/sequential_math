@@ -4,6 +4,7 @@ import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
 import { createDiagnosticAssignment, copyDiagnosticAssignment, stopDiagnosticAssignment } from './_diagnosticAssignmentStore.js'
 import { freezeStoppedDiagnosticAttempts } from './_diagnosticAssignmentClose.js'
+import { archiveDiagnosticAssignment, deleteDiagnosticAssignment } from './_diagnosticAssignmentRemoval.js'
 import { diagnosticApiEnabled, diagnosticAssignablePupilsInClass } from './_diagnosticApiAccess.js'
 import { listClassDiagnosticAssignments } from './_diagnosticAssignmentList.js'
 import { isSchoolAdminRole } from './_teacherRoles.js'
@@ -21,7 +22,7 @@ export default async function handler(req, res) {
     if (!isSchoolAdminRole(auth.role, auth.isAdmin)) {
       return res.status(403).json({ error: 'Diagnostic pilot requires admin access' })
     }
-    if (req.query?.resource === 'drafts' || req.body?.action === 'save_draft') return await teacherDraftAction(req, res, auth.teacherId)
+    if (req.query?.resource === 'drafts' || ['save_draft', 'delete_draft'].includes(req.body?.action)) return await teacherDraftAction(req, res, auth.teacherId)
     const imageAction = ['figures', 'images'].includes(req.query?.resource) || ['upload_image', 'hide_image'].includes(req.body?.action)
     if (imageAction) {
       if (req.query?.assignmentId && (typeof req.query.classId !== 'string' || !await canAccessClass(req, req.query.classId))) {
@@ -41,7 +42,12 @@ export default async function handler(req, res) {
         classStudentCount: roster.length, wholeClassAvailable: roster.length > 0 && roster.every(id => allowed.includes(id)) })
     }
     if (req.method === 'PATCH') {
-      if (req.body?.status !== 'stopped') return res.status(400).json({ error: 'Only stopping is supported' })
+      const target = { classId, assignmentId: req.body?.assignmentId, teacherId: auth.teacherId }
+      if (req.body?.action === 'archive' || req.body?.action === 'unarchive') {
+        return res.status(200).json({ assignment: await archiveDiagnosticAssignment({ ...target, archived: req.body.action === 'archive' }) })
+      }
+      if (req.body?.action === 'delete') return res.status(200).json(await deleteDiagnosticAssignment(target))
+      if (req.body?.status !== 'stopped') return res.status(400).json({ error: 'Only stopping, archiving and deleting are supported' })
       const assignment = await stopDiagnosticAssignment({ classId,
         assignmentId: req.body?.assignmentId, teacherId: auth.teacherId })
       // Repeating the call retries any answer that could not be handed in.

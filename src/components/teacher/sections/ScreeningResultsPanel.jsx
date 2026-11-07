@@ -6,6 +6,7 @@ import ScreeningResultsCollections from './ScreeningResultsCollections'
 import { buildScreeningDispatches } from './screeningRecipients'
 import { groupCollections, resultFilter } from './screeningCollections'
 import { describeRecipients } from './screeningRecipientNames'
+import { isArchivedCollection } from './screeningBulkActions'
 
 // Results of screenings for the picked recipients: classes, groups or pupils.
 // A group that spans classes is read as one table.
@@ -44,7 +45,10 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
   const reached = useMemo(() => collection => collection.members.flatMap(member => member.studentIds
     ? member.studentIds.filter(id => isAllowed(member.classId, id)) : []), [isAllowed])
   const collections = useMemo(() => groupCollections(Object.values(loaded).flatMap(item => item.assignments))
-    .filter(collection => collection.members.some(member => !member.studentIds) || reached(collection).length > 0), [loaded, reached])
+    .filter(collection => collection.members.some(member => !member.studentIds) || reached(collection).length > 0)
+    // Archived screenings stay out of the list unless the teacher opened one from Utdelade.
+    .filter(collection => !isArchivedCollection(collection) || collection.members.some(member => requestedCollectionId.split('+').includes(member.assignmentId))),
+  [loaded, reached, requestedCollectionId])
   useEffect(() => {
     if (!requestedCollectionId) return
     const requestedIds = new Set(requestedCollectionId.split('+'))
@@ -94,8 +98,8 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
 
   const everyoneStopped = selected && selected.members.every(member => member.status !== 'active')
   return <section aria-labelledby="screening-results-title" className="mt-4 rounded-lg border border-slate-300 bg-white p-3 shadow-sm">
-    <h2 id="screening-results-title" className="text-lg font-semibold text-slate-800">Resultat av screening</h2>
-    <p className="mt-1 text-sm text-slate-800">Välj klass, grupp eller elev i rutan Mottagare överst. Här ser du svaren på samlingar som delats ut till dem. En grupp som går över flera klasser visas i en tabell.</p>
+    <h2 id="screening-results-title" className="text-base font-semibold text-slate-800"
+      title="En grupp som går över flera klasser visas i en tabell.">Resultat av screening</h2>
     {recipients.length === 0 && <p role="status" className="mt-3 text-sm">Välj mottagare överst för att se resultat.</p>}
     {plan.withoutClass.length > 0 && <p className="mt-2 text-sm">Utan klass, inga resultat: {plan.withoutClass.join(', ')}.</p>}
     {waiting && <p role="status" className="mt-3 text-sm">Hämtar samlingar...</p>}
@@ -104,6 +108,10 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
     {!waiting && classKey && collections.length === 0 && failed.length === 0 && <p role="status" className="mt-3 text-sm">Det finns inga utdelade samlingar till de valda mottagarna ännu. Använd fliken Skapa ny eller Utdelade för att skapa eller återanvända en samling.</p>}
     {collections.length > 0 && <ScreeningResultsCollections collections={collections} selectedId={selected ? collectionId : ''}
       recipientsOf={collection => describeRecipients(collection, { students, classNames })}
+      selectedAction={selected && <button type="button" onClick={() => stopCollection(selected)} disabled={busy}
+        title={everyoneStopped ? 'Lämnar in elevsvar som fortfarande är påbörjade.' : 'Eleverna kan inte fortsätta. Påbörjade svar lämnas in som de är.'}
+        className="shrink-0 rounded border border-slate-400 bg-white px-1.5 py-0.5 text-xs text-slate-800 disabled:opacity-50">
+        {everyoneStopped ? 'Lämna in pågående' : 'Avsluta'}</button>}
       onSelect={id => {
         if (id === collectionId) return
         if (dirty.current && !window.confirm('Genomgången har osparade ändringar. Vill du lämna dem?')) return
@@ -111,13 +119,7 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
         setCollectionId(id)
       }} />}
     {selected && <>
-      <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-        <span>{selected.members.map(member => `${classNames.get(member.classId) || member.classId}: ${member.status === 'active' ? 'aktiv' : 'avslutad'}`).join(' · ')}</span>
-        <button type="button" onClick={() => stopCollection(selected)} disabled={busy}
-          title={everyoneStopped ? 'Lämnar in elevsvar som fortfarande är påbörjade.' : 'Eleverna kan inte fortsätta. Påbörjade svar lämnas in som de är.'}
-          className="rounded border border-slate-400 bg-white px-1.5 py-0.5 text-xs text-slate-800 disabled:opacity-50">
-          {everyoneStopped ? 'Lämna in pågående' : 'Avsluta'}</button>
-      </div>
+      {selected.members.length > 1 && <p className="mt-2 text-sm">{selected.members.map(member => `${classNames.get(member.classId) || member.classId}: ${member.status === 'active' ? 'aktiv' : 'avslutad'}`).join(' · ')}</p>}
       <DiagnosticCollectionReview key={selected.id} members={selected.members} isAllowed={isAllowed} name={name} onDirtyChange={markDirty} />
     </>}
     {status && <p className="mt-2 text-sm" role="status">{status}</p>}

@@ -31,6 +31,20 @@ avslut i Utdelade öppnar fliken med samlingen vald. Utdelade behåller sök och
 filter efter besök i Resultat och läses om. Byte av flik med osparad
 genomgång frågar först.
 
+Mottagare skrivs med namn, högst tre och sedan "+N till", eller "Hela
+<klass>" när alla elever på klassens nuvarande lista fick screeningen
+(servern sparar bara elev-ID). Hela listan och utdelningstiden visas som
+tooltip. Utdelade och Utkast har flerval med en grå åtgärdsrad:
+- Utdelade: Avsluta, Arkivera och Radera. Arkivera och Radera avslutar
+  först en aktiv screening, så påbörjade svar lämnas in. Arkiverade döljs i
+  listorna och i Resultat, behåller alla elevsvar och visas under Status:
+  Arkiverade, där de kan återställas. Radera tar bort screeningen, alla
+  försök, händelser och genomgångar för gott.
+- Utkast: Radera för privata screeningutkast. Material för granskning
+  raderas inte här.
+Varje åtgärd frågar med konsekvensen först, körs rad för rad och ger ett
+kvitto; misslyckade rader förblir markerade.
+
 `ScreeningDispatchPanel` skiljer nu mellan översikt och utdelningsflöde.
 Översikten läser tillgängliga klassers screeningar, grupperar befintliga
 utdelningar med `groupCollections` och visar status, antal, mottagare och

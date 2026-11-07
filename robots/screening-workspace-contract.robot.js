@@ -39,7 +39,7 @@ test('The overview filters status and recipients within a group, and results ope
   await panel.getByRole('combobox', { name: 'Status', exact: true }).selectOption('active')
   await expect(row).toHaveCount(0)
   await panel.getByRole('combobox', { name: 'Status', exact: true }).selectOption('stopped')
-  await row.getByText('Visa mottagare (1 elev)', { exact: true }).click()
+  await row.getByText(/av 1 inlämnade/u).click()
   await expect(row).toContainText('UI Scope Two')
   await expect(row).not.toContainText('UI Scope One')
   await page.setViewportSize({ width: 768, height: 1024 })

@@ -3481,14 +3481,14 @@
       "id": "screening-tabs-review",
       "area": "Screening",
       "title": "Utkast, Utdelade och Resultat: namn, tooltips, flerval och tätare menyer",
-      "status": "Beslut behövs",
+      "status": "Lokalt klart",
       "purpose": "Göra Screeningflikarna lättare att överblicka och låta läraren hantera flera utkast och utdelade screeningar samtidigt.",
-      "next": "Simon väljer vad radera betyder för utdelade (arkivera med elevsvar kvar eller permanent radering) och tar ställning till skissen. Därefter byggs flerval och menyändringar.",
+      "next": "Push efter Simons godkännande och produktionskontroll. Radering av material för granskning är inte byggd.",
       "acceptance": "Mottagare visas med namn eller \"Hela <klass>\" i Utdelade och Resultat. Förklarande tooltips på flikar, rader och knappar. Flerval med bekräftelse och kvitto per rad i Utkast och Utdelade. Inga elevsvar försvinner utan uttryckligt beslut.",
       "requires": [],
       "affects": [],
-      "decision": "2026-11-07 Simon: kunna markera flera i Utkast och Utdelade och göra saker med dem, till exempel radera. Gå igenom menyerna, de ser suboptimerade ut. Tooltip vid hovring. Namn i stället för \"1 elev\" i Resultat när specifika elever fått screeningen.",
-      "evidence": "2026-11-07 Claude, lokal commit på feature/screening-menus: describeRecipients visar namn (högst tre, sedan +N till) eller \"Hela <klass>\" när hela klasslistan fått screeningen; fullständig lista och utdelningstid i tooltip. Används i Utdelade och Resultat. \"1 frågor\" rättat. Tooltips på flikar, Läs om, Återanvänd, Resultat och avslut, Öppna utkast, Öppna granskning, Avsluta. Enhetstester, sektionstester och 21 screeningrobotar gröna efter att två robotar fått nya förväntade texter. Granskat i lokal demo med syntetiska data. Fynd: servern saknar radering för både utkast och utdelade; utdelade kan bara avslutas. Klickbar skiss: C:/Users/ximon/Kodprojekt/screening-shots/skiss-screening-flikar.html. Ej pushat.",
+      "decision": "2026-11-07 Simon: kunna markera flera i Utkast och Utdelade och göra saker med dem, till exempel radera. Gå igenom menyerna, de ser suboptimerade ut. Tooltip vid hovring. Namn i stället för \"1 elev\" i Resultat när specifika elever fått screeningen.\n2026-11-07 Simon: lägg till både arkivera och radera. Skissen godkänd, men flervalsraden ska vara grå och mjukare i stället för svart.",
+      "evidence": "2026-11-07 Claude, lokal commit på feature/screening-menus: describeRecipients visar namn (högst tre, sedan +N till) eller \"Hela <klass>\" när hela klasslistan fått screeningen; fullständig lista och utdelningstid i tooltip. Används i Utdelade och Resultat. \"1 frågor\" rättat. Tooltips på flikar, Läs om, Återanvänd, Resultat och avslut, Öppna utkast, Öppna granskning, Avsluta. Enhetstester, sektionstester och 21 screeningrobotar gröna efter att två robotar fått nya förväntade texter. Granskat i lokal demo med syntetiska data. Fynd: servern saknar radering för både utkast och utdelade; utdelade kan bara avslutas. Klickbar skiss: C:/Users/ximon/Kodprojekt/screening-shots/skiss-screening-flikar.html. Ej pushat.\n2026-11-07 lokalt byggt: PATCH action archive/unarchive/delete i teacher-diagnostic-assignments (bara avslutade screeningar; radering tar bort försök, händelser, genomgångar, aktiv-pekare och alla index, och screeningposten sist så att ett avbrott kan upprepas). POST delete_draft för privata screeningutkast. Utdelade: flerval, grå åtgärdsrad, Avsluta/Arkivera/Radera, Status: Arkiverade med Återställ, en samlad filterrad, en utfällning per rad. Utkast: en gemensam lista med datum och sortering, flerval och Radera (material raderas inte här). Resultat: arkiverade dolda, mindre rubrik utan stycke, Avsluta i vald rad, mottagarvalet heter Visa resultat för. Bekräftelse med konsekvens och kvitto per rad. Servertester (5), ny robot screening-bulk och 51 screening-/diagnostikrobotar gröna. Hela testsviten 1282/1284 (2 NCM-audit-fel orsakade av CRLF i Windows-checkout), build. Ej pushat.",
       "issue": "",
       "kind": "funktion",
       "tasks": [
@@ -3505,12 +3505,12 @@
         {
           "id": "bulk",
           "text": "Flerval och gruppåtgärder",
-          "done": false
+          "done": true
         },
         {
           "id": "menus",
           "text": "Tätare filter och menyer enligt skiss",
-          "done": false
+          "done": true
         }
       ]
     }

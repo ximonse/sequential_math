@@ -517,7 +517,7 @@ export default function DashboardLayout({
           isResultsDirty={() => reviewDirtyRef.current} onLeaveResults={() => { reviewDirtyRef.current = false }}
           renderResults={resultsActive => <div data-admin-panel="ncm-results">
             <RecipientPicker classes={classes} groups={teacherGroups} students={students}
-              recipients={resultPicks} onChange={setResultPicks} />
+              recipients={resultPicks} onChange={setResultPicks} heading="Visa resultat för" />
             <ScreeningResultsPanel classes={classes} students={students} recipients={resultPicks} teacherGroups={teacherGroups}
               active={resultsActive}
               requestedCollectionId={requestedScreening} onDirtyChange={value => { reviewDirtyRef.current = value }} />

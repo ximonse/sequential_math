@@ -64,11 +64,23 @@ export async function saveScreeningDraft(teacherId, command, { store = kv, now =
   return next
 }
 
+// A draft is private and has no pupil answers, so deleting it removes only the
+// teacher's own saved versions. Deleting an already removed draft succeeds.
+export async function deleteScreeningDraft(teacherId, draftId, { store = kv } = {}) {
+  if (!validId(draftId)) fail(400, 'Ogiltigt utkast-ID.')
+  const draft = await store.get(key(teacherId, draftId))
+  if (draft && draft.teacherId !== teacherId) fail(404, 'Utkastet finns inte.')
+  await store.del(key(teacherId, draftId))
+  await store.srem(index(teacherId), draftId)
+  return { deleted: Boolean(draft) }
+}
+
 // This private resource has no assignment/publication writes or pupil indexes.
 export async function teacherDraftAction(req, res, teacherId, options) {
   if (req.method === 'GET') return res.status(200).json(req.query?.draftId
     ? { draft: await readScreeningDraft(teacherId, req.query.draftId, options) }
     : { drafts: await listScreeningDrafts(teacherId, options) })
+  if (req.method === 'POST' && req.body?.action === 'delete_draft') return res.status(200).json(await deleteScreeningDraft(teacherId, req.body.draftId, options))
   if (req.method === 'POST') return res.status(200).json({ draft: await saveScreeningDraft(teacherId, req.body, options) })
   return res.status(405).json({ error: 'Method not allowed' })
 }

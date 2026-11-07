@@ -95,9 +95,9 @@ test('Screening flow preserves mixed searchable recipients and retries uncertain
   await panel.getByRole('tab', { name: 'Utdelade', exact: true }).click()
   await panel.getByRole('combobox', { name: 'Status', exact: true }).selectOption('stopped')
   await expect(panel.getByRole('heading', { name: `Flow screening ${tag}`, exact: true })).toBeVisible()
-  await panel.getByText('Visa mottagare (3 elever)', { exact: true }).click()
+  await panel.getByRole('article', { name: `Flow screening ${tag}`, exact: true }).getByText(/av 3 inlämnade/u).click()
   for (const name of ['UI Flow One', 'UI Flow Two', 'UI Flow Three']) {
-    await expect(panel.getByRole('article', { name: `Flow screening ${tag}`, exact: true }).getByText(name, { exact: true })).toBeVisible()
+    await expect(panel.getByRole('article', { name: `Flow screening ${tag}`, exact: true }).getByText(new RegExp(`^${name} ·`, 'u'))).toBeVisible()
   }
   await panel.getByRole('tab', { name: 'Utdelade', exact: true }).click()
   await panel.getByRole('article', { name: `Flow screening ${tag}`, exact: true }).getByRole('button', { name: 'Återanvänd', exact: true }).click()

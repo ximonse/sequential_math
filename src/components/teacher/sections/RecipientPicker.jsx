@@ -45,6 +45,7 @@ export default function RecipientPicker({
   recipients = [],
   onChange,
   followsFilter = false,
+  heading = 'Mottagare',
 }) {
   const [query, setQuery] = useState('')
 
@@ -87,7 +88,7 @@ export default function RecipientPicker({
       className="bg-white rounded-lg shadow p-3 mb-3"
     >
       <h3 id="recipient-picker-title" className="text-sm font-semibold text-slate-800">
-        Mottagare
+        {heading}
       </h3>
       {followsFilter ? (
         <p className="text-xs text-slate-500 mt-0.5">

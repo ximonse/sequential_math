@@ -1,9 +1,9 @@
 // Choices after a finished round or level sit at the top of the screen, away from
 // the answer keys, so a pupil still tapping answers does not pick one by accident.
-function CompletionChoices({ choices }) {
+function CompletionChoices({ choices, labelClassName = 'text-gray-900' }) {
   return (
     <nav aria-label="Vad vill du göra nu?" className="w-full max-w-lg pt-4 pb-6">
-      <p className="mb-2 text-center text-sm font-semibold text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.45)]">
+      <p className={`mb-2 text-center text-sm font-semibold ${labelClassName}`}>
         Vad vill du göra nu?
       </p>
       <div className="flex flex-wrap justify-center gap-2">

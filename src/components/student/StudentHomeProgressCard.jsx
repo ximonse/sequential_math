@@ -27,7 +27,7 @@ export default function StudentHomeProgressCard({
         <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-blue-200 bg-blue-50 text-blue-700">
           Pågående
         </span>
-        <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-gray-200 bg-gray-50 text-gray-400 opacity-60">
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-dashed border-gray-400 bg-gray-50 text-gray-500">
           Ej startad
         </span>
       </div>

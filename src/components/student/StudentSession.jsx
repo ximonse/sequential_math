@@ -454,7 +454,8 @@ function StudentSession() {
     allTablesBossUrl: ALL_TABLES_BOSS_URL
   })
   if (overlayProps) {
-    return <SessionOverlayRouter {...overlayProps} />
+    // Overlays replace the session page, so they carry the pupil surface for theme colours.
+    return <div className="student-role-surface contents"><SessionOverlayRouter {...overlayProps} /></div>
   }
 
   const streak = getCurrentStreak(profile)

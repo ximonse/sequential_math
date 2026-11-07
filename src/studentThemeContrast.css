@@ -1,0 +1,127 @@
+/* Readable pupil views in every theme (Simon 2026-11-07).
+   Standard: WCAG 2.1 AA, 4.5:1 for normal text and 3:1 for large text, checked by
+   robots/theme-contrast.robot.js. Only text and border colours change here; the
+   themes keep their backgrounds. Each theme names text colours that are readable on
+   its own surfaces, and the pupil views map every colour family onto them. */
+
+.theme-light {
+  --text-success: #166534;
+  --text-info: #1d4ed8;
+  --text-danger: #b91c1c;
+  --text-warning: #92400e;
+  --on-accent: #ffffff;
+  --on-accent-2: #052e16;
+  --on-light: #1f2937;
+}
+
+.theme-dark {
+  --text-success: #6ee7b7;
+  --text-info: #93c5fd;
+  --text-danger: #fca5a5;
+  --text-warning: #fcd34d;
+  --on-accent: #0b1220;
+  --on-accent-2: #062016;
+  --on-light: #111827;
+}
+
+.theme-dark-lime {
+  --text-success: #d9f99d;
+  --text-info: #a5f3fc;
+  --text-danger: #fda4af;
+  --text-warning: #fde68a;
+  --on-accent: #0b130c;
+  --on-accent-2: #0b130c;
+  --on-light: #111827;
+}
+
+.theme-psychedelic {
+  --text-success: #86efac;
+  --text-info: #a5f3fc;
+  --text-danger: #fda4af;
+  --text-warning: #fde68a;
+  --on-accent: #1a0010;
+  --on-accent-2: #00262b;
+  --on-light: #111827;
+}
+
+.theme-real-psycadelic {
+  --text-success: #00230b;
+  --text-info: #1e0047;
+  --text-danger: #4a0010;
+  --text-warning: #2e1a00;
+  --on-accent: #1a0033;
+  --on-accent-2: #03230f;
+  --on-light: #1a0033;
+}
+
+/* Neutral text: dark shades are the theme's main text, light shades its muted text. */
+body[class*="theme-"] .student-role-surface :is(.text-gray-900, .text-gray-950, .text-black, .text-slate-950, .text-orange-950, .text-stone-900) {
+  color: var(--text-main) !important;
+}
+
+body[class*="theme-"] .student-role-surface :is(.text-gray-500, .text-gray-400, .text-gray-300, .text-slate-500, .text-slate-400) {
+  color: var(--text-muted) !important;
+}
+
+/* Status colours keep their meaning with a readable shade per theme. */
+body[class*="theme-"] .student-role-surface :is(
+  .text-green-300, .text-green-400, .text-green-500, .text-green-600, .text-green-700, .text-green-800, .text-green-900,
+  .text-emerald-600, .text-emerald-700, .text-emerald-800, .text-emerald-900, .text-emerald-950,
+  .text-lime-700, .text-lime-800, .text-lime-900) {
+  color: var(--text-success) !important;
+}
+
+body[class*="theme-"] .student-role-surface :is(
+  .text-blue-600, .text-blue-700, .text-blue-800, .text-blue-900, .text-indigo-600, .text-indigo-700, .text-indigo-800,
+  .text-indigo-900, .text-sky-700, .text-sky-800, .text-cyan-700, .text-cyan-800, .text-teal-700, .text-teal-800,
+  .text-purple-600, .text-purple-700, .text-violet-700, .text-violet-800, .text-violet-900) {
+  color: var(--text-info) !important;
+}
+
+body[class*="theme-"] .student-role-surface :is(
+  .text-red-400, .text-red-500, .text-red-600, .text-red-700, .text-red-800, .text-red-900, .text-rose-700, .text-rose-800) {
+  color: var(--text-danger) !important;
+}
+
+body[class*="theme-"] .student-role-surface :is(
+  .text-amber-700, .text-amber-800, .text-amber-900, .text-yellow-700, .text-yellow-800, .text-orange-700, .text-orange-800, .text-orange-900) {
+  color: var(--text-warning) !important;
+}
+
+/* Text on the theme's accent buttons follows that accent, so it is dark on light accents. */
+body[class*="theme-"] .student-role-surface :is(.bg-blue-500, .bg-blue-600, .bg-indigo-600, .bg-cyan-600, .bg-purple-600, .bg-sky-600, .bg-teal-500, .bg-violet-600) {
+  color: var(--on-accent) !important;
+}
+
+body[class*="theme-"] .student-role-surface :is(.bg-green-500, .bg-green-600, .bg-emerald-600, .bg-lime-600) {
+  color: var(--on-accent-2) !important;
+}
+
+/* Light surfaces the themes leave unchanged keep dark text. */
+body[class*="theme-"] .student-role-surface :is(.bg-white\/80, .bg-white\/90, .bg-blue-100, .bg-green-100, .bg-green-200,
+  .bg-orange-50, .bg-rose-100, .bg-teal-100, .bg-violet-50) {
+  color: var(--on-light) !important;
+}
+
+/* Borders follow the same status colours. */
+body[class*="theme-"] .student-role-surface :is(.border-green-300, .border-green-500, .border-emerald-300, .border-emerald-500) {
+  border-color: var(--text-success) !important;
+}
+
+body[class*="theme-"] .student-role-surface :is(.border-blue-200, .border-blue-500, .border-blue-700, .border-indigo-300) {
+  border-color: var(--text-info) !important;
+}
+
+body[class*="theme-"] .student-role-surface :is(.border-red-300, .border-red-700) {
+  border-color: var(--text-danger) !important;
+}
+
+body[class*="theme-"] .student-role-surface :is(.border-gray-400, .border-gray-700, .border-slate-400) {
+  border-color: var(--text-muted) !important;
+}
+
+/* The closed theme menu uses the theme's text; its open list is the browser's white
+   field, so the options keep dark text. */
+.theme-switcher option {
+  color: #1f2937;
+}

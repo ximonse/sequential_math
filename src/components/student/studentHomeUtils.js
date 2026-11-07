@@ -60,7 +60,7 @@ export function getMasteryLevelClassName(status) {
   if (status === 'started') {
     return 'bg-blue-50 text-blue-700 border border-blue-200'
   }
-  return 'bg-gray-50 text-gray-400 border border-gray-200 opacity-45'
+  return 'bg-gray-50 text-gray-500 border border-dashed border-gray-400'
 }
 
 export function buildTableStatus(profile) {

@@ -48,7 +48,7 @@ export default function StudentHomeTrainingOptionsCard({
               <span className="relative flex items-center justify-center gap-1.5">
                 {getOperationLabel(operation)}
                 {progressPercent > 0 && (
-                  <span className="text-[10px] opacity-60">{progressPercent}%</span>
+                  <span className="text-[10px] opacity-80">{progressPercent}%</span>
                 )}
               </span>
             </button>

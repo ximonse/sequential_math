@@ -14,7 +14,7 @@ function ProgressionMilestoneOverlay({ milestone, onContinue, onGoHome }) {
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gradient-to-br from-emerald-400 to-green-600 px-4">
-      <CompletionChoices choices={[
+      <CompletionChoices labelClassName="text-[#022c22]" choices={[
         { label: 'Fortsätt', onClick: onContinue, primary: true },
         ...(onGoHome ? [{ label: 'Till startsidan', onClick: onGoHome }] : [])
       ]} />

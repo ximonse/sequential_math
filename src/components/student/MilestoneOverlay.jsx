@@ -64,7 +64,7 @@ function MilestoneOverlay({
         >
           {getMilestoneTitle(milestone)}
         </h2>
-        <p className="text-xl text-white mb-6 drop-shadow-[0_3px_8px_rgba(0,0,0,0.55)]">
+        <p className="text-xl text-gray-900 mb-6">
           {getMilestoneText(milestone)}
         </p>
         {(milestone.masteredAllTablesToday || milestone.masteredTwoToNineToday) && (

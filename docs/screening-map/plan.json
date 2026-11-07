@@ -3513,6 +3513,22 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "pupil-theme-contrast",
+      "area": "Elevens vyer",
+      "title": "Läsbar text i alla teman i elevvyerna",
+      "status": "Lokalt klart",
+      "purpose": "Eleven ska kunna läsa all text i alla fem teman.",
+      "next": "Push efter Simons godkännande. Andra elevvyer (diagnostik, fokus, pausspel, talbild) mäts ännu inte av roboten.",
+      "acceptance": "Startsida med Framsteg, träning, infotext om klarad nivå, Grattis efter nivå och Tabell klar klarar WCAG 2.1 AA (4,5:1, stor text 3:1) i Ljust, Mörkt, Mörkt gulgrön, Psykadelisk och Real psycadelic. Bara text- och kantfärger ändras, inga bakgrunder.",
+      "requires": [],
+      "affects": [],
+      "decision": "2026-11-07 Simon: temafärgerna är inte genomkollade; gå över elevvyerna med en standard och ändra bara text- och kantfärger, inte bakgrunder. Infotexten om klarad nivå ska synas i alla teman.",
+      "evidence": "2026-11-07 Claude, lokalt: src/studentThemeContrast.css ger varje tema läsbara statusfärger (lyckat, info, fel, varning), text på accentknappar och mörk text på ljusa ytor som temat lämnar orörda; reglerna gäller .student-role-surface, som nu också omsluter överlagringarna. Ej startade nivårutor har streckad kant i stället för 45 % opacitet. Temaväljarens alternativ har mörk text i webbläsarens vita lista (själva listan syns inte i skärmbilder). Ny robot theme-contrast mäter faktisk kontrast mot bakgrunden: 109 fall under AA före, 0 efter. 61 elevrobotar, testsviten 1282/1284 (2 NCM-audit-fel orsakade av CRLF i Windows-checkout) och build gröna. Ej pushat.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": []
     }
   ],
   "edges": [

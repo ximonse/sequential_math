@@ -5,6 +5,7 @@ import ScreeningPupilAttempts from './ScreeningPupilAttempts'
 import ScreeningResultsCollections from './ScreeningResultsCollections'
 import { buildScreeningDispatches } from './screeningRecipients'
 import { groupCollections, resultFilter } from './screeningCollections'
+import { describeRecipients } from './screeningRecipientNames'
 
 // Results of screenings for the picked recipients: classes, groups or pupils.
 // A group that spans classes is read as one table.
@@ -101,8 +102,8 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
     {failed.map(([classId, item]) => <p key={classId} role="status" className="mt-2 text-sm text-amber-900">
       {classNames.get(classId) || classId}: {item.state === 'unavailable' ? 'screening är inte aktiverat på servern' : item.error || 'kunde inte hämta samlingar'}.</p>)}
     {!waiting && classKey && collections.length === 0 && failed.length === 0 && <p role="status" className="mt-3 text-sm">Det finns inga utdelade samlingar till de valda mottagarna ännu. Använd fliken Skapa ny eller Utdelade för att skapa eller återanvända en samling.</p>}
-    {collections.length > 0 && <ScreeningResultsCollections collections={collections} selectedId={selected ? collectionId : ''} classNames={classNames}
-      pupilCount={collection => collection.members.every(member => member.studentIds) ? new Set(reached(collection)).size : null}
+    {collections.length > 0 && <ScreeningResultsCollections collections={collections} selectedId={selected ? collectionId : ''}
+      recipientsOf={collection => describeRecipients(collection, { students, classNames })}
       onSelect={id => {
         if (id === collectionId) return
         if (dirty.current && !window.confirm('Genomgången har osparade ändringar. Vill du lämna dem?')) return
@@ -113,6 +114,7 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
       <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
         <span>{selected.members.map(member => `${classNames.get(member.classId) || member.classId}: ${member.status === 'active' ? 'aktiv' : 'avslutad'}`).join(' · ')}</span>
         <button type="button" onClick={() => stopCollection(selected)} disabled={busy}
+          title={everyoneStopped ? 'Lämnar in elevsvar som fortfarande är påbörjade.' : 'Eleverna kan inte fortsätta. Påbörjade svar lämnas in som de är.'}
           className="rounded border border-slate-400 bg-white px-1.5 py-0.5 text-xs text-slate-800 disabled:opacity-50">
           {everyoneStopped ? 'Lämna in pågående' : 'Avsluta'}</button>
       </div>

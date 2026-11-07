@@ -26,7 +26,7 @@ export default function ScreeningMaterialLibrary({ library, onOpenDraft, onOpenM
     <p className="screening-note">Sparade screeningar som inte är utdelade. Att öppna ett utkast delar inte ut något.</p>
     <div className="screening-toolbar">
       <label>Sök utkast<input type="search" value={query} onChange={event => setQuery(event.target.value)} /></label>
-      <button type="button" onClick={() => { setRevision(value => value + 1); library.reload() }}>Läs om utkast</button>
+      <button type="button" title="Hämta utkasten från servern igen." onClick={() => { setRevision(value => value + 1); library.reload() }}>Läs om utkast</button>
     </div>
     {(loading || material.loading) && <p role="status">Hämtar privata utkast…</p>}
     {error && <p role="alert">{error} Dina utkast har inte ändrats.</p>}
@@ -35,11 +35,11 @@ export default function ScreeningMaterialLibrary({ library, onOpenDraft, onOpenM
     <p className="screening-note">Sparat innehåll med versionshistorik. Sparandet aktiverar ingen utdelning.</p>
     {drafts.filter(item => matches(item.titleSv)).map(draft => <article key={draft.draftId} aria-label={draft.titleSv} className="screening-material-row">
       <div><h4>{draft.titleSv}</h4><p className="screening-note">Privat utkast · version {draft.revision}</p></div>
-      <button type="button" onClick={() => onOpenDraft(draft.draftId)}>Öppna utkast</button>
+      <button type="button" title="Öppnar utkastet under Skapa ny. Inget delas ut." onClick={() => onOpenDraft(draft.draftId)}>Öppna utkast</button>
     </article>)}
     {material.drafts.filter(item => matches(item.titleSv)).map(draft => <article key={`material:${draft.draftId}`} aria-label={draft.titleSv} className="screening-material-row">
       <div><h4>{draft.titleSv}</h4><p className="screening-note">{draft.kind === 'practice' ? 'Träningsuppdrag' : 'Screening'} · {draft.mode === 'specific' ? 'Utifrån analys' : 'Generellt innehåll'} · version {draft.version} · {draft.approval === 'approved' ? 'Godkänt material' : 'För granskning'}</p></div>
-      <button type="button" onClick={() => onOpenMaterial(draft.reviewPath)}>Öppna granskning</button>
+      <button type="button" title="Öppnar materialet i granskningsvyn." onClick={() => onOpenMaterial(draft.reviewPath)}>Öppna granskning</button>
     </article>)}
     {!loading && !material.loading && !error && !material.error && ![...drafts, ...material.drafts].some(item => matches(item.titleSv)) && <p>Inga utkast matchar sökningen. Skapa en ny screening och spara den som utkast.</p>}
   </section>

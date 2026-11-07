@@ -3454,14 +3454,14 @@
       "id": "reward-videos-once-per-day",
       "area": "Elevens träning",
       "title": "Belöningsvideor högst en gång per dag",
-      "status": "Lokalt klart",
+      "status": "Byggt",
       "purpose": "Eleven ska få varje belöningsvideo (tabell-boss, alla tabeller, daglig nivåsvit) högst en gång per dag.",
-      "next": "Push efter Simons godkännande, därefter produktionskontroll.",
+      "next": "Klart och publicerat. Följ upp om Simon ser en video igen samma dag.",
       "acceptance": "Varje video visas högst en gång per elev och kalenderdag, även efter omladdning eller enhetsbyte och när fler milstolpar klaras samma dag.",
       "requires": [],
       "affects": [],
       "decision": "2026-11-07 Simon: videorna ska bara komma en gång per dag, även om eleven klarar en eller flera till samma dag. Issue skapad på begäran.\n2026-11-07 Simon: fixa issuen.",
-      "evidence": "2026-11-07 issue #42 skapad. Ingen kod ändrad. tableBossOnce.test.js täcker redan tabellvideorna lokalt; nivåsvitsvideon verkar sakna dagsmarkering (ej verifierat).\n2026-11-07 orsaker: (1) mergeTableDrill behöll senaste datum bara för 2–9-videon; dailyAllTablesBossShownDate kunde skrivas över av en äldre kopia, så alla-tabeller-videon kunde visas igen. (2) Nivåsvitsvideon saknade visad-datum och utlöstes när dagens räknare var exakt 5. Rättning (lokal commit): alla tre datum slås ihop som senaste dag. Nivåsvitsvideon får dailyLevelStreakShownDate och en lokal spegel per enhet, och utlöses från 5 nivåer högst en gång per dag. Röda enhetstester först, därefter gröna. 1273/1275 tester (2 NCM-audit-fel orsakade av CRLF i Windows-checkout), build, robotarna training/operations/transition-dependencies gröna (Talpar röd under belastning, grön ensam). Ingen robotkontroll för själva videorna: att klara 5 nivåer eller alla tabeller i robot är tungt, logiken täcks av enhetstester. Ej pushat.",
+      "evidence": "2026-11-07 issue #42 skapad. Ingen kod ändrad. tableBossOnce.test.js täcker redan tabellvideorna lokalt; nivåsvitsvideon verkar sakna dagsmarkering (ej verifierat).\n2026-11-07 orsaker: (1) mergeTableDrill behöll senaste datum bara för 2–9-videon; dailyAllTablesBossShownDate kunde skrivas över av en äldre kopia, så alla-tabeller-videon kunde visas igen. (2) Nivåsvitsvideon saknade visad-datum och utlöstes när dagens räknare var exakt 5. Rättning (lokal commit): alla tre datum slås ihop som senaste dag. Nivåsvitsvideon får dailyLevelStreakShownDate och en lokal spegel per enhet, och utlöses från 5 nivåer högst en gång per dag. Röda enhetstester först, därefter gröna. 1273/1275 tester (2 NCM-audit-fel orsakade av CRLF i Windows-checkout), build, robotarna training/operations/transition-dependencies gröna (Talpar röd under belastning, grön ensam). Ingen robotkontroll för själva videorna: att klara 5 nivåer eller alla tabeller i robot är tungt, logiken täcks av enhetstester. Ej pushat.\n2026-11-07 publicerat via GitHub efter Simons godkännande: origin/master 5628e12, GitHub Verify grön, Vercel sekvens dpl_AS3Gx5ieyxJKNb6Bfuf9W77YJKvr READY på samma SHA. Issue #42 stängd av committen.",
       "issue": "https://github.com/ximonse/sequential_math/issues/42",
       "kind": "funktion",
       "tasks": [
@@ -3474,6 +3474,43 @@
           "id": "level-streak-once",
           "text": "Nivåsvitsvideon högst en gång per dag",
           "done": true
+        }
+      ]
+    },
+    {
+      "id": "screening-tabs-review",
+      "area": "Screening",
+      "title": "Utkast, Utdelade och Resultat: namn, tooltips, flerval och tätare menyer",
+      "status": "Beslut behövs",
+      "purpose": "Göra Screeningflikarna lättare att överblicka och låta läraren hantera flera utkast och utdelade screeningar samtidigt.",
+      "next": "Simon väljer vad radera betyder för utdelade (arkivera med elevsvar kvar eller permanent radering) och tar ställning till skissen. Därefter byggs flerval och menyändringar.",
+      "acceptance": "Mottagare visas med namn eller \"Hela <klass>\" i Utdelade och Resultat. Förklarande tooltips på flikar, rader och knappar. Flerval med bekräftelse och kvitto per rad i Utkast och Utdelade. Inga elevsvar försvinner utan uttryckligt beslut.",
+      "requires": [],
+      "affects": [],
+      "decision": "2026-11-07 Simon: kunna markera flera i Utkast och Utdelade och göra saker med dem, till exempel radera. Gå igenom menyerna, de ser suboptimerade ut. Tooltip vid hovring. Namn i stället för \"1 elev\" i Resultat när specifika elever fått screeningen.",
+      "evidence": "2026-11-07 Claude, lokal commit på feature/screening-menus: describeRecipients visar namn (högst tre, sedan +N till) eller \"Hela <klass>\" när hela klasslistan fått screeningen; fullständig lista och utdelningstid i tooltip. Används i Utdelade och Resultat. \"1 frågor\" rättat. Tooltips på flikar, Läs om, Återanvänd, Resultat och avslut, Öppna utkast, Öppna granskning, Avsluta. Enhetstester, sektionstester och 21 screeningrobotar gröna efter att två robotar fått nya förväntade texter. Granskat i lokal demo med syntetiska data. Fynd: servern saknar radering för både utkast och utdelade; utdelade kan bara avslutas. Klickbar skiss: C:/Users/ximon/Kodprojekt/screening-shots/skiss-screening-flikar.html. Ej pushat.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "names",
+          "text": "Namn i stället för antal elever",
+          "done": true
+        },
+        {
+          "id": "tooltips",
+          "text": "Tooltips på flikar, rader och knappar",
+          "done": true
+        },
+        {
+          "id": "bulk",
+          "text": "Flerval och gruppåtgärder",
+          "done": false
+        },
+        {
+          "id": "menus",
+          "text": "Tätare filter och menyer enligt skiss",
+          "done": false
         }
       ]
     }

@@ -35,7 +35,8 @@ test('A group across two classes is read as one table, and result picks stay out
 
   const results = await openResults(page, { groupName: group.name })
   await expect(collectionRows(results)).toHaveCount(1)
-  await expect(collectionRows(results).first()).toContainText(`Gruppklass A ${tag}, Gruppklass B ${tag}`)
+  await expect(collectionRows(results).first()).toContainText(`Group Alma (Gruppklass A ${tag})`)
+  await expect(collectionRows(results).first()).toContainText(`Gruppklass B ${tag}`)
   await chooseCollection(results, 0)
   const review = reviewOf(results)
   await page.screenshot({ path: testInfo.outputPath('2-resultat-grupp.png'), fullPage: true })

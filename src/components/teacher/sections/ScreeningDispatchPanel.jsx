@@ -60,7 +60,8 @@ export default function ScreeningDispatchPanel({ classes, students, teacherGroup
   </section>
 }
 
-const TABS = [['create', 'Skapa ny'], ['drafts', 'Utkast'], ['issued', 'Utdelade'], ['results', 'Resultat']]
+const TABS = [['create', 'Skapa ny', 'Skapa en screening och dela ut den'], ['drafts', 'Utkast', 'Sparade screeningar som inte är utdelade'],
+  ['issued', 'Utdelade', 'Screeningar som eleverna har fått'], ['results', 'Resultat', 'Elevernas svar och avslut']]
 
 function ScreeningTabs({ tab, onTab }) {
   return <div className="screening-tabs" role="tablist" aria-label="Screening" onKeyDown={event => {
@@ -74,7 +75,7 @@ function ScreeningTabs({ tab, onTab }) {
     onTab(TABS[next][0])
     event.currentTarget.querySelector(`[data-screening-tab="${TABS[next][0]}"]`).focus()
   }}>
-    {TABS.map(([value, label]) => <button key={value} type="button" role="tab" id={`screening-tab-${value}`} data-screening-tab={value}
+    {TABS.map(([value, label, hint]) => <button key={value} type="button" role="tab" title={hint} id={`screening-tab-${value}`} data-screening-tab={value}
       aria-controls="screening-tab-panel" aria-selected={tab === value} tabIndex={tab === value ? 0 : -1} onClick={() => onTab(value)}>{label}</button>)}
   </div>
 }

@@ -4,6 +4,7 @@ import { resolveRecipientSelection } from './recipientSelection'
 import ScreeningRecipientPicker from './ScreeningRecipientPicker'
 import ScreeningCompletion from './ScreeningCompletion'
 import { scopeScreeningCollections } from './screeningCollectionScope'
+import { describeRecipients } from './screeningRecipientNames'
 
 export default function ScreeningCollectionList({ context, library, onReuse, onResults }) {
   const [limit, setLimit] = useState(8)
@@ -40,7 +41,7 @@ export default function ScreeningCollectionList({ context, library, onReuse, onR
       <label>Sortera<select value={filters.sort} onChange={event => patch({ sort: event.target.value })} className="block rounded border border-slate-400 px-1 py-0.5">
         <option value="newest">Nyast först</option><option value="oldest">Äldst först</option><option value="name">Namn</option>
       </select></label>
-      <button type="button" onClick={library.reload} className="rounded border border-slate-400 px-2 py-0.5">Läs om</button>
+      <button type="button" onClick={library.reload} title="Hämta listan från servern igen, till exempel efter en ny utdelning." className="rounded border border-slate-400 px-2 py-0.5">Läs om</button>
     </div>
     {library.loading && <p role="status">Hämtar screeningar…</p>}
     {Object.entries(library.loaded).filter(([, item]) => item.error).map(([id, item]) => <p key={id} role="status" className="text-amber-900">{classNames.get(id)}: {item.error}</p>)}
@@ -48,14 +49,17 @@ export default function ScreeningCollectionList({ context, library, onReuse, onR
     <div className="divide-y divide-slate-200">{visible.slice(0, limit).map(collection => {
       const ids = [...new Set(collection.members.flatMap(member => member.studentIds))]
       const activeCount = collection.members.filter(member => member.status === 'active').length
+      const recipients = describeRecipients(collection, { students: context.students, classNames })
+      const questions = collection.members[0].items.length
       return <article key={collection.id} className="py-1" aria-label={collection.titleSv}>
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
           <div><h4 className="font-semibold">{collection.titleSv}</h4>
-            <p className="text-xs text-slate-600">{activeCount === collection.members.length ? 'Aktiv' : activeCount ? 'Delvis avslutad' : 'Avslutad'} · {ids.length} {ids.length === 1 ? 'elev' : 'elever'} · {collection.members[0].items.length} frågor · {new Date(collection.createdAt).toLocaleDateString('sv-SE')}</p>
+            <p className="text-xs text-slate-600" title={`${recipients.full}
+Utdelad ${new Date(collection.createdAt).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' })}`}>{activeCount === collection.members.length ? 'Aktiv' : activeCount ? 'Delvis avslutad' : 'Avslutad'} · {recipients.short} · {questions} {questions === 1 ? 'fråga' : 'frågor'} · {new Date(collection.createdAt).toLocaleDateString('sv-SE')}</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => onReuse(collection.members[0])} className="rounded border border-slate-400 px-2 py-0.5">Återanvänd</button>
-            <button type="button" onClick={() => onResults(collection, filters.picks)} className="rounded border border-slate-400 px-2 py-0.5">Resultat och avslut</button>
+            <button type="button" onClick={() => onReuse(collection.members[0])} title="Skapa en ny screening med samma frågor. Den utdelade ändras inte." className="rounded border border-slate-400 px-2 py-0.5">Återanvänd</button>
+            <button type="button" onClick={() => onResults(collection, filters.picks)} title="Öppna svaren under Resultat. Där kan du också avsluta screeningen." className="rounded border border-slate-400 px-2 py-0.5">Resultat och avslut</button>
           </div>
         </div>
         <ScreeningCompletion members={collection.members} revision={library.revision} names={pupils} />

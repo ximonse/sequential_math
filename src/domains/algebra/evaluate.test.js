@@ -44,11 +44,12 @@ describe('unit coefficient in the answer key', () => {
     expect(evaluateAlgebraProblem({ answer: { type: 'expression', correct: '1x' } }, '2x').correct).toBe(false)
   })
 
-  it('never generates an answer key with a written 1 in front of a variable', () => {
+  it('never writes 1 in front of a variable or bracket in the task or the key', () => {
     for (let level = 1; level <= 12; level++) {
       for (let i = 0; i < 200; i++) {
         const problem = generateAlgebraProblem('algebra_simplify', level)
         expect(problem.answer.correct).not.toMatch(/(^|[+\-−]\s*)1[a-z]/)
+        expect(problem.values.expression).not.toMatch(/(^|[+\-−]\s*)1[a-z(]/)
       }
     }
   })

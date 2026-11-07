@@ -299,6 +299,10 @@ function makeSimplify(expr, correct, templateId, alternatives = []) {
   return { expr, correct, alternatives, templateId }
 }
 
+// A coefficient of 1 is written as the bare variable, in the task as in the key:
+// x and (x + 3), not 1x and 1(x + 3) (Simon 2026-11-07).
+const unitCoef = n => (n === 1 ? '' : n)
+
 const SIMPLIFY_LEVEL_VARIANTS = [
   [
     () => {
@@ -325,14 +329,13 @@ const SIMPLIFY_LEVEL_VARIANTS = [
       const v = pickVar()
       const c = rand(2, 8)
       const d = rand(2, 7)
-      return makeSimplify(`${c}${v} + ${d}${v}`, `${c + d}${v}`, 'simp_l3_add_like_terms')
+      return makeSimplify(`${c}${v} + ${unitCoef(d)}${v}`, `${c + d}${v}`, 'simp_l3_add_like_terms')
     },
     () => {
       const v = pickVar()
       const c = rand(4, 9)
       const d = rand(1, c - 1)
-      // A coefficient of 1 is written as the bare variable: 5x − 4x = x.
-      return makeSimplify(`${c}${v} − ${d}${v}`, `${c - d === 1 ? '' : c - d}${v}`, 'simp_l3_sub_like_terms')
+      return makeSimplify(`${c}${v} − ${unitCoef(d)}${v}`, `${unitCoef(c - d)}${v}`, 'simp_l3_sub_like_terms')
     }
   ],
   [
@@ -353,14 +356,14 @@ const SIMPLIFY_LEVEL_VARIANTS = [
       const c = rand(2, 6)
       const d = rand(1, 5)
       const k = rand(1, 11)
-      return makeSimplify(`${c}${v} + ${k} + ${d}${v}`, `${c + d}${v} + ${k}`, 'simp_l5_two_like_plus_const')
+      return makeSimplify(`${c}${v} + ${k} + ${unitCoef(d)}${v}`, `${c + d}${v} + ${k}`, 'simp_l5_two_like_plus_const')
     },
     () => {
       const v = pickVar()
       const c = rand(2, 6)
       const d = rand(1, 5)
       const k = rand(1, 11)
-      return makeSimplify(`${k} + ${c}${v} + ${d}${v}`, `${c + d}${v} + ${k}`, 'simp_l5_const_then_like_terms')
+      return makeSimplify(`${k} + ${c}${v} + ${unitCoef(d)}${v}`, `${c + d}${v} + ${k}`, 'simp_l5_const_then_like_terms')
     }
   ],
   [
@@ -371,7 +374,7 @@ const SIMPLIFY_LEVEL_VARIANTS = [
       const k = rand(2, 10)
       const m = rand(1, 9)
       return makeSimplify(
-        `${c}${v} + ${k} + ${d}${v} + ${m}`,
+        `${c}${v} + ${k} + ${unitCoef(d)}${v} + ${m}`,
         `${c + d}${v} + ${k + m}`,
         'simp_l6_two_constants'
       )
@@ -383,7 +386,7 @@ const SIMPLIFY_LEVEL_VARIANTS = [
       const k = rand(2, 10)
       const m = rand(1, 9)
       return makeSimplify(
-        `${k} + ${c}${v} + ${m} + ${d}${v}`,
+        `${k} + ${c}${v} + ${m} + ${unitCoef(d)}${v}`,
         `${c + d}${v} + ${k + m}`,
         'simp_l6_shuffled_terms'
       )
@@ -396,7 +399,7 @@ const SIMPLIFY_LEVEL_VARIANTS = [
       const b = rand(2, 5)
       const c = rand(1, 5)
       return makeSimplify(
-        `${a}${v1} + ${b}${v2} + ${c}${v1}`,
+        `${a}${v1} + ${b}${v2} + ${unitCoef(c)}${v1}`,
         `${a + c}${v1} + ${b}${v2}`,
         'simp_l7_two_vars_merge_one'
       )
@@ -407,7 +410,7 @@ const SIMPLIFY_LEVEL_VARIANTS = [
       const b = rand(2, 5)
       const c = rand(1, 5)
       return makeSimplify(
-        `${b}${v2} + ${a}${v1} + ${c}${v1}`,
+        `${b}${v2} + ${a}${v1} + ${unitCoef(c)}${v1}`,
         `${a + c}${v1} + ${b}${v2}`,
         'simp_l7_shuffled_two_vars'
       )
@@ -421,7 +424,7 @@ const SIMPLIFY_LEVEL_VARIANTS = [
       const c = rand(1, 4)
       const d = rand(1, 4)
       return makeSimplify(
-        `${a}${v1} + ${b}${v2} + ${c}${v1} + ${d}${v2}`,
+        `${a}${v1} + ${b}${v2} + ${unitCoef(c)}${v1} + ${unitCoef(d)}${v2}`,
         `${a + c}${v1} + ${b + d}${v2}`,
         'simp_l8_merge_both_vars'
       )
@@ -433,7 +436,7 @@ const SIMPLIFY_LEVEL_VARIANTS = [
       const c = rand(1, 4)
       const d = rand(1, 4)
       return makeSimplify(
-        `${b}${v2} + ${a}${v1} + ${d}${v2} + ${c}${v1}`,
+        `${b}${v2} + ${a}${v1} + ${unitCoef(d)}${v2} + ${unitCoef(c)}${v1}`,
         `${a + c}${v1} + ${b + d}${v2}`,
         'simp_l8_shuffled_merge_both'
       )
@@ -480,7 +483,7 @@ const SIMPLIFY_LEVEL_VARIANTS = [
       const offset = rand(2, 6)
       const extra = rand(1, 5)
       return makeSimplify(
-        `${coef}(${v} + ${offset}) + ${extra}${v}`,
+        `${coef}(${v} + ${offset}) + ${unitCoef(extra)}${v}`,
         `${coef + extra}${v} + ${coef * offset}`,
         'simp_l11_distribute_plus_like_term'
       )
@@ -491,7 +494,7 @@ const SIMPLIFY_LEVEL_VARIANTS = [
       const offset = rand(2, 6)
       const extra = rand(1, 5)
       return makeSimplify(
-        `${extra}${v} + ${coef}(${v} + ${offset})`,
+        `${unitCoef(extra)}${v} + ${coef}(${v} + ${offset})`,
         `${coef + extra}${v} + ${coef * offset}`,
         'simp_l11_shuffled_distribution'
       )
@@ -505,7 +508,7 @@ const SIMPLIFY_LEVEL_VARIANTS = [
       const r = rand(1, 4)
       const s = rand(1, 5)
       return makeSimplify(
-        `${p}(${v} + ${q}) + ${r}(${v} + ${s})`,
+        `${p}(${v} + ${q}) + ${unitCoef(r)}(${v} + ${s})`,
         `${p + r}${v} + ${p * q + r * s}`,
         'simp_l12_two_distributions'
       )
@@ -517,7 +520,7 @@ const SIMPLIFY_LEVEL_VARIANTS = [
       const r = rand(1, 4)
       const s = rand(1, 5)
       return makeSimplify(
-        `${r}(${v} + ${s}) + ${p}(${v} + ${q})`,
+        `${unitCoef(r)}(${v} + ${s}) + ${p}(${v} + ${q})`,
         `${p + r}${v} + ${p * q + r * s}`,
         'simp_l12_swapped_distributions'
       )

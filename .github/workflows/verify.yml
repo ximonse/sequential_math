@@ -12,6 +12,20 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Identify transition-sensitive changes
+        id: transition_changes
+        env:
+          MAP_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { execFileSync } from 'node:child_process'
+          import { appendFileSync } from 'node:fs'
+          const base = process.env.MAP_BASE
+          const args = base && !/^0+$/.test(base) ? ['diff', '--name-only', base, 'HEAD'] : ['ls-files']
+          const paths = execFileSync('git', args, { encoding: 'utf8' }).split('\n')
+          const relevant = paths.some(path => /^(src\/|api\/|robots\/|scripts\/browser-transition-probe\.js$|package(?:-lock)?\.json$|vite\.config\.|\.github\/workflows\/verify\.yml$)/.test(path))
+          appendFileSync(process.env.GITHUB_OUTPUT, `run=${relevant}\n`)
+          NODE
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -27,6 +41,20 @@ jobs:
       - run: npm run test
       - run: npm run mcp:test
       - run: npm run build
+      - name: Verify navigation dependencies with delayed and failed services
+        if: steps.transition_changes.outputs.run == 'true'
+        run: npm run robots -- transition-dependencies.robot.js catalog-loading.robot.js --workers=2
+        env:
+          ROBOT_PORT: 5299
+          ROBOT_BUILD_NAME: .build-transition-ci
+          ROBOT_WORKERS: 2
+      - name: Upload transition regression report
+        if: always() && steps.transition_changes.outputs.run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: transition-regression-report
+          path: robots/report/
+          if-no-files-found: ignore
 
   documentation:
     if: github.event_name == 'pull_request'

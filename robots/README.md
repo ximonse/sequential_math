@@ -26,7 +26,20 @@ ROBOT_TASKS=300 npm run robots -- operations   # fler uppgifter per område
 
 Resultatet hamnar i `robots/report/latest.md`: varje regelbrott med några konkreta exempel. En robot som hittar ett regelbrott blir röd.
 
-Hela sviten tar ungefär 2–3 minuter med sex parallella webbläsare. Den körs inte automatiskt: starta den lokalt eller på GitHub under Actions → Robots → Run workflow.
+Hela sviten startas lokalt eller på GitHub under Actions → Robots → Run workflow.
+Verify-workflow har dessutom ett begränsat skyddspaket för ändringar i app,
+API, robotar, paket, Vite eller själva Verify-workflow. Det kör
+`transition-dependencies.robot.js` och `catalog-loading.robot.js` mot
+produktionsbygget med två workers. Dokumentationsändringar ensamma startar
+inte paketet. CI-inkopplingen gäller när ändringen finns på den granskade
+grenen; lokal verifiering är inte ett redan aktivt skydd på GitHub/master.
+
+Paketet håller bakgrundssynk och historik avsiktligt långsamma eller felande.
+Det kontrollerar användbar navigation, rätt urval, bevarade original och
+återförsök. Det är ett beroendekontrakt, inte ett p95-prov: verkligt nätverk,
+kalla starter och övriga övergångar mäts separat enligt
+`docs/PERFORMANCE_EXECUTION_PLAN.md`. En grön körning av paketet betyder inte
+att hela appens väntetider är lösta.
 
 ## Hur det fungerar
 

@@ -6,10 +6,13 @@ publicerat 2026-11-06; namnlistans första publicering följdes av en underkänd
 produktionskontroll och en komplettering för övriga lärarroller. En snabb
 intern funktion eller en godkänd robot avslutar inte hela uppdraget.
 
-Aktuellt: namnkompletteringen är publicerad som `0600eb4` och verifierad
-med faktisk skoladminroll, oförändrade 340 namn och uttryckligt urval om åtta
-saknade elever. Kall katalog tar fortfarande omkring 22 sekunder. Nästa
-katalogändring är lokalt verifierad och inväntar separat publiceringsmandat.
+Aktuellt: katalogsteget `a49c0d1` och materialsteget `c48613b` är publicerade
+och verifierade. Kall katalog tog cirka 10,8 s och materiallista 6,8 s i
+respektive senaste serie. Tillåtna namn och träningsoriginal är bevarade.
+En elevstart på 8,4 s är fortfarande oförklarad. Den återupptagna arbetsplanen
+med full inventering och återfallsskydd finns i
+[genomförandeplanen](PERFORMANCE_EXECUTION_PLAN.md). Detaljerade serier och
+deras begränsningar redovisas nedan; ingen helhetslösning påstås.
 
 ## Belagd startpunkt
 
@@ -462,6 +465,53 @@ uppmätt handlerarbete måste spåras vidare; kö, transport eller serverstart
 är ännu inte åtskilda. Ingen orsak tillskrivs materialändringen utan belägg.
 
 ## Fortsatt öppet
+
+### Återupptagen mätning 2026-11-07: elev isolerad från lärarvyn
+
+Simon återupptog efter paus och förtydligade att ingen aktiv parallell
+felsökning pågick. Tidigare arbetet i Random issues math lästes som
+kompletterande kontext; dess Framstegs-refresh är en separat rättning.
+Produktionens alias står kvar på materialrelease c48613b.
+
+[Isolerad nätverksserie](evaluations/transition-latency-2026-11-05/production-isolated-network-20261107.json):
+två verkligt utgångna elevstarter tog 3947 och 3779 ms utan samtidig
+lärarvy. Eventanropen på dessa startvägar tog 2043/1693 ms, följda av
+profil 1179/1199 ms och klasskonfiguration 610/798 ms. Eventhandlern
+rapporterade 783/781 ms. Därmed finns både en seriell kedja i appen och
+fortsatt oförklarad tid före första svarsbyte. Den tidigare 8,4-sekunders-
+extremen reproducerades inte av dessa två prov; ingen generell fördelning
+eller p95 kan härledas. En återgång till hem tog dessutom 2079 ms.
+
+Serien gav nio navigeringsobservationer utan matematiksvar men 13
+me/events-POST med totalt 975922 byte och som mest 178759 byte per anrop.
+Ingen request-/response-kropp sparades. Kodläsning visar att startsidans
+närvaro och navigeringshändelser använder profilcheckpoints, och att
+periodisk närvaro sker var 30:e sekund. Payloadens exakta fältfördelning
+är inte uppmätt; alla 976 kB får inte tillskrivas ett visst profilfält.
+Träningsoriginal var oförändrade, inga mätfel eller API-fel observerades.
+
+[Kontrollanrop](evaluations/transition-latency-2026-11-05/production-network-control-20261107.json):
+fem sekventiella skrivskyddade class-config-GET från Node tog 678–1339 ms,
+fem från webbläsare 265–1004 ms. Handlern rapporterade cirka 95–103 ms.
+Webbläsarens h2-mått placerar väntan före första byte; bodyhämtningen tog
+cirka 1–2 ms. Även det lilla läsanropet har varierande extern väntan, så
+en förklaring enbart i elevsynkens payload eller Chrome är otillräcklig.
+Kontrollserierna är sekventiella, inte samtidiga identiska nätförhållanden.
+Kallstart, uppladdning, routing och transport är ännu inte skilda orsaker.
+
+Ett nytt lokalt skyddsprov håller bakgrundssynken kvar medan eleven byter
+övning och återgår tre gånger. Vyerna måste vara användbara innan synken
+släpps, inget nytt profil-GET får göras på den varma vägen, och kvittering
+ska fungera när synken åter släpps. Fem befintliga katalogrobotar ingår i
+samma begränsade paket. Verify-workflow har en lokal inkoppling vid
+relevanta kodändringar; den är ännu inte pushad eller aktiv på master.
+
+Återfallsskyddet prövades med avsiktlig tillfällig bootstrapReuseMs=0.
+Elevroboten blev då röd eftersom övningen väntade på den hållna synken.
+Originalfilen återställdes och slutliga sex robotar passerade igen. Alla
+233 testfiler/1265 tester, build, lint och arkitektur passerar. Workflow-YAML
+och dess faktiska ändringsfilter har verifierats lokalt mot kod-, dokument-
+och initiala Git-baser; faktisk GitHub-körning återstår efter publicering.
 
 - Samma kompletta produktionsmatris före/efter publicering, inklusive material.
 - Fler övningstyper, större klasser/profiler och längre screeninghistorik i webbläsare.

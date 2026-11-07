@@ -1,0 +1,112 @@
+{
+  "measuredOn": "2026-11-07",
+  "environment": "production",
+  "method": "Sequential read-only class-config GET, five Node and five fresh browser samples, no response content stored.",
+  "samples": [
+    {
+      "client": "node",
+      "status": 200,
+      "headersMs": 1337,
+      "totalMs": 1339,
+      "serverTiming": "total;dur=103.4"
+    },
+    {
+      "client": "node",
+      "status": 200,
+      "headersMs": 1295,
+      "totalMs": 1296,
+      "serverTiming": "total;dur=95.4"
+    },
+    {
+      "client": "node",
+      "status": 200,
+      "headersMs": 677,
+      "totalMs": 678,
+      "serverTiming": "total;dur=95.1"
+    },
+    {
+      "client": "node",
+      "status": 200,
+      "headersMs": 709,
+      "totalMs": 710,
+      "serverTiming": "total;dur=94.9"
+    },
+    {
+      "client": "node",
+      "status": 200,
+      "headersMs": 785,
+      "totalMs": 785,
+      "serverTiming": "total;dur=95.7"
+    },
+    {
+      "client": "browser",
+      "status": 200,
+      "headersMs": 680,
+      "totalMs": 682,
+      "serverTiming": "total;dur=103.0",
+      "transport": {
+        "dnsMs": 0,
+        "connectionMs": 0,
+        "waitMs": 677.5,
+        "downloadMs": 1,
+        "protocol": "h2"
+      }
+    },
+    {
+      "client": "browser",
+      "status": 200,
+      "headersMs": 1003,
+      "totalMs": 1004,
+      "serverTiming": "total;dur=96.6",
+      "transport": {
+        "dnsMs": 0,
+        "connectionMs": 0,
+        "waitMs": 1001.3000001907349,
+        "downloadMs": 0.6999998092651367,
+        "protocol": "h2"
+      }
+    },
+    {
+      "client": "browser",
+      "status": 200,
+      "headersMs": 620,
+      "totalMs": 620,
+      "serverTiming": "total;dur=95.0",
+      "transport": {
+        "dnsMs": 0,
+        "connectionMs": 0,
+        "waitMs": 617.5999999046326,
+        "downloadMs": 1.2999999523162842,
+        "protocol": "h2"
+      }
+    },
+    {
+      "client": "browser",
+      "status": 200,
+      "headersMs": 263,
+      "totalMs": 265,
+      "serverTiming": "total;dur=95.3",
+      "transport": {
+        "dnsMs": 0,
+        "connectionMs": 0,
+        "waitMs": 261.59999990463257,
+        "downloadMs": 1.5,
+        "protocol": "h2"
+      }
+    },
+    {
+      "client": "browser",
+      "status": 200,
+      "headersMs": 692,
+      "totalMs": 693,
+      "serverTiming": "total;dur=95.1",
+      "transport": {
+        "dnsMs": 0,
+        "connectionMs": 0,
+        "waitMs": 688.5999999046326,
+        "downloadMs": 2.4000000953674316,
+        "protocol": "h2"
+      }
+    }
+  ]
+}

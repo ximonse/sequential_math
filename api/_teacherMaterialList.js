@@ -26,23 +26,29 @@ export async function listMaterialDrafts(req, auth, { store = kv } = {}) {
     throw evidenceError(409, 'draft_list_changed', 'Utkastlistan har ändrats. Läs listan från början.')
   }
   const drafts = []
-  for (const draftId of ids.slice(offset, offset + limit)) {
-    const state = await readMaterialDraft(auth.teacherId, draftId, { store })
-    if (!state) continue
-    try { await assertMaterialDraftAccess(req, state) }
-    catch (error) {
-      if ([403, 404, 410].includes(error.status)) continue
-      throw error
-    }
-    const latest = state.versions.at(-1), material = latest?.material
-    if (!Number.isSafeInteger(latest?.version) || latest.version < 1 || typeof material?.titleSv !== 'string'
-      || !['practice', 'screening'].includes(material.kind) || !['general', 'specific'].includes(material.mode)) {
-      throw evidenceError(409, 'draft_inconsistent', 'Utkastlagringen behöver granskas.')
-    }
-    drafts.push({ draftId, revision: state.revision, version: latest.version, titleSv: material.titleSv,
-      kind: material.kind, mode: material.mode, updatedAt: latest.createdAt,
-      approval: (state.approvals || []).some(item => item.version === latest.version && item.contentRevision === latest.contentRevision) ? 'approved' : 'not_requested',
-      reviewPath: `/teacher/material/${draftId}?version=${latest.version}` })
+  // Bound overlapping history checks; each draft retains all of its checks and
+  // Promise.all preserves the stable index order even when reads finish early.
+  const pageIds = ids.slice(offset, offset + limit)
+  for (let start = 0; start < pageIds.length; start += 4) {
+    const batch = await Promise.all(pageIds.slice(start, start + 4).map(async draftId => {
+      const state = await readMaterialDraft(auth.teacherId, draftId, { store })
+      if (!state) return null
+      try { await assertMaterialDraftAccess(req, state) }
+      catch (error) {
+        if ([403, 404, 410].includes(error.status)) return null
+        throw error
+      }
+      const latest = state.versions.at(-1), material = latest?.material
+      if (!Number.isSafeInteger(latest?.version) || latest.version < 1 || typeof material?.titleSv !== 'string'
+        || !['practice', 'screening'].includes(material.kind) || !['general', 'specific'].includes(material.mode)) {
+        throw evidenceError(409, 'draft_inconsistent', 'Utkastlagringen behöver granskas.')
+      }
+      return { draftId, revision: state.revision, version: latest.version, titleSv: material.titleSv,
+        kind: material.kind, mode: material.mode, updatedAt: latest.createdAt,
+        approval: (state.approvals || []).some(item => item.version === latest.version && item.contentRevision === latest.contentRevision) ? 'approved' : 'not_requested',
+        reviewPath: `/teacher/material/${draftId}?version=${latest.version}` }
+    }))
+    drafts.push(...batch.filter(Boolean))
   }
   const live = await getLiveTeacherAuthPayload(req)
   if (!live || evidenceHash(live) !== evidenceHash(auth)) throw evidenceError(403, 'draft_access_denied', 'Lärarsessionen har ändrats.')

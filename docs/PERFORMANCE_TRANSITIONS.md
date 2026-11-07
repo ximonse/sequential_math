@@ -367,7 +367,7 @@ Katalogens API-anrop tog 21958 ms kallt och 2271 ms varmt; skopade resultat
 1894–2655 ms. Varma övningsstarter låg på 294–440 ms och verkligt utgången
 återanvändningsperiod gav 2639 ms. Dessa kvarvarande väntetider är öppna.
 
-### Nästa separata katalogsjok — lokalt verifierat, inte publicerat
+### Katalogsjok — lokal verifiering före publicering
 
 Kall katalog läser fem hela profiler per MGET-svar i en serie av små
 kommandon. Den lokala ändringen behåller fem profiler per svar men tillåter
@@ -388,6 +388,54 @@ Slutkontroller för katalogsjoket: 233 testfiler/1264 tester, build, elva
 namn-, katalog- och mottagarrobotar samt riktad lint/arkitektur passerar.
 Katalogsjoket är separat lokalt arbete och inväntar publiceringsmandat för
 att kunna jämföras i produktion. Hela appens övergångsmatris är inte klar.
+
+### 2026-11-07: katalog publicerad och fler väntvägar mätta
+
+Simon godkände publicering med ”Kör”. `a49c0d1` pushades utan konflikt till
+GitHub/master. Sekvens `dpl_4gXjuGbau8cr3dsDdam7teFXG1HM` blev READY med
+exakt SHA och produktionsalias `matematik.ximon.se`. Klientbygget är fortsatt
+`index-BL4NiGOX.js`, eftersom ändringen endast rör API-kod. Vercels
+GitHub-status är success. Det parallella talpar-arbetet berördes inte.
+
+[Samma produktionsserie efter katalogändringen](evaluations/transition-latency-2026-11-05/production-catalog-20261107.json)
+fullföljdes med 24 observationer, inga API-fel och oförändrade masteryFacts/
+problemLog. Privat hashjämförelse bekräftar exakt samma 340 tillåtna namn.
+Kall katalog tog 10803 ms mot 21958 ms i föregående ensamma serie; varm
+katalog 1847 ms mot 2271 ms. Första klassvalet tog 4640 ms mot 16571 ms;
+varma klassval 2766/2454 ms. Detta är två enskilda jämförbara körningar,
+ingen statistiskt bestämd generell latensgaranti. Katalogstarten är fortfarande
+för långsam. Skopade resultat tog 1986–2333 ms, namnläsning 4064/4157 ms
+och automatisk komplettering 4746/4684 ms. Kompletteringarna hade explicit
+urval om åtta och added=0. Varma övningsstarter tog 290–364 ms och verkligt
+utgången bootstrap 2854 ms. Ingen helhetslösning påstås.
+
+[Utökad separat produktionsserie](evaluations/transition-latency-2026-11-05/production-expanded-20261107.json)
+ger 32 observationer och ytterligare material-/tabellvägar. Tabell 7 öppnades
+på 46/47/47 ms med rätt tables=7; återgång till användbar startsida tog
+547/481/796 ms. Materialets utkastlista tog 13547 ms, med 13303 ms på
+teacher-material och 79 auth-kontroller. Ett befintligt material öppnades på
+2518 ms; material-API:t tog 2004 ms. Ingen version ändrades, godkändes eller
+delades ut. Träningsunderlaget var oförändrat och inga API-fel uppstod.
+De fyra räknesättens knappar hittades inte av denna mätprob; dessa byten är
+inte verifierade av serien. Inlämnad screening saknas fortfarande i profilen.
+
+Materiallistans kod läser och behörighetskontrollerar varje utkast seriellt.
+En separat lokal ändring överlappar högst fyra utkast, bevarar indexordningen,
+kontrollerar alla historiska mottagare och källor samt gör samma avslutande
+färska sessionskontroll. Nekad åtkomst döljer fortsatt hela utkastet; lagringsfel
+avbryter hela svaret. Ett kontrollerat prov med åtta utkast och 75–100 ms per
+läsning blev rött för tidigare samtidighet=1 och grönt med högst fyra och
+högst 200 ms. Alla 16 historiska elevkontroller och privata metadatafilter
+verifieras. Detta är en lokal mekanismvinst; produktionsvinst återstår att mäta
+efter separat publiceringsmandat.
+
+Materialsjokets slutkontroller: 233 testfiler/1265 tester, produktionsbuild,
+riktad lint och arkitekturkontroll passerar. Materialbibliotekets robot
+passerar mot produktionsbygget. Tre gransknings-/publiceringsgränsrobotar
+kräver ROBOT_DEV=1 för localhost-cookiepolicyn och passerar där; de tre
+överhoppade proven i den första produktionsrobotkörningen räknas inte som
+godkända. Byggets befintliga varningar om Browserslist, chunkstorlek och
+blandad dynamisk/statisk import kvarstår. Materialkoden är lokal och opushad.
 
 ## Fortsatt öppet
 

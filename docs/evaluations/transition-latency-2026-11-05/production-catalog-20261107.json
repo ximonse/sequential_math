@@ -1,0 +1,912 @@
+{
+  "measuredOn": "2026-11-07",
+  "environment": "production",
+  "entry": "index-BL4NiGOX.js",
+  "phase": "complete",
+  "viewerRole": "school_admin",
+  "method": "DOM click to readiness, requestAnimationFrame; hard-navigation separately labelled.",
+  "unchangedPracticeEvidence": true,
+  "samples": [
+    {
+      "name": "teacher-login-to-class-picker",
+      "ms": 768,
+      "resources": [
+        {
+          "path": "/api/teacher-login",
+          "ms": 719,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 523.2,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pupil-login-to-home",
+      "ms": 2629,
+      "resources": [
+        {
+          "path": "/api/student-session",
+          "ms": 1236,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 1031.9,
+              "description": ""
+            }
+          ]
+        },
+        {
+          "path": "/api/me/profile",
+          "ms": 848,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 551.6,
+              "description": ""
+            },
+            {
+              "name": "student-auth",
+              "duration": 541.1,
+              "description": "1 calls"
+            }
+          ]
+        },
+        {
+          "path": "/api/class-config",
+          "ms": 402,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 202.8,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "first-home-to-practice",
+      "ms": 331,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 267,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 97,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "practice-to-home",
+      "ms": 329,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 286,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 97,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "warm-home-to-practice",
+      "ms": 314,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 279,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 96.1,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "practice-to-home",
+      "ms": 296,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 257,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 96.1,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "warm-home-to-practice",
+      "ms": 312,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 269,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 96.7,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "practice-to-home",
+      "ms": 298,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 262,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 96.5,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "warm-home-to-practice",
+      "ms": 312,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 268,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 95.9,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "practice-to-home",
+      "ms": 345,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 301,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 97.4,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "warm-home-to-practice",
+      "ms": 364,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 335,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 96.2,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "practice-to-home",
+      "ms": 313,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 272,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 95.8,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "warm-home-to-practice",
+      "ms": 290,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 260,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 95.6,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "practice-to-home",
+      "ms": 313,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 279,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 95.2,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "teacher-class-change-to-results",
+      "ms": 4640,
+      "resources": [
+        {
+          "path": "/api/students",
+          "ms": 2776,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 2333.3,
+              "description": ""
+            },
+            {
+              "name": "teacher-auth",
+              "duration": 5027.6,
+              "description": "52 calls"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "teacher-class-change-to-results",
+      "ms": 2766,
+      "resources": [
+        {
+          "path": "/api/students",
+          "ms": 2714,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 2299,
+              "description": ""
+            },
+            {
+              "name": "teacher-auth",
+              "duration": 4998.4,
+              "description": "52 calls"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "teacher-class-change-to-results",
+      "ms": 2454,
+      "resources": [
+        {
+          "path": "/api/students",
+          "ms": 2402,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 1986.1,
+              "description": ""
+            },
+            {
+              "name": "teacher-auth",
+              "duration": 4991.7,
+              "description": "52 calls"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "teacher-workspace-Screening: skapa",
+      "ms": 48,
+      "resources": []
+    },
+    {
+      "name": "teacher-workspace-Screening: resultat",
+      "ms": 15,
+      "resources": []
+    },
+    {
+      "name": "teacher-workspace-Framsteg",
+      "ms": 42,
+      "resources": []
+    },
+    {
+      "name": "teacher-pupil-detail-hard-navigation-upper-bound",
+      "ms": 6072,
+      "resources": []
+    },
+    {
+      "name": "teacher-open-analysis-history",
+      "ms": 1594,
+      "resources": [
+        {
+          "path": "/api/teacher-students/:id",
+          "ms": 1581,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 1398.7,
+              "description": ""
+            },
+            {
+              "name": "teacher-auth",
+              "duration": 469.9,
+              "description": "4 calls"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "expired-home-to-practice",
+      "ms": 2854,
+      "resources": [
+        {
+          "path": "/api/me/events",
+          "ms": 1536,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 920.9,
+              "description": ""
+            },
+            {
+              "name": "student-auth",
+              "duration": 401.1,
+              "description": "1 calls"
+            }
+          ]
+        },
+        {
+          "path": "/api/me/profile",
+          "ms": 744,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 414.5,
+              "description": ""
+            },
+            {
+              "name": "student-auth",
+              "duration": 408.2,
+              "description": "1 calls"
+            }
+          ]
+        },
+        {
+          "path": "/api/class-config",
+          "ms": 386,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 105.6,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "expired-practice-to-home",
+      "ms": 294,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 262,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 95.5,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "skipped": [
+    "No submitted screening available for read-only navigation."
+  ],
+  "networkFailures": [],
+  "requests": [
+    {
+      "path": "/api/teacher-login",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=523.2"
+    },
+    {
+      "path": "/api/teacher-workspace",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=312.1, teacher-auth;dur=205.5;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/teacher-classes",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=826.6, teacher-auth;dur=2679.9;desc=\"26 calls\""
+    },
+    {
+      "path": "/api/teacher-groups",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=683.0, teacher-auth;dur=215.6;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/teacher-workspace",
+      "method": "PUT",
+      "status": 200,
+      "serverTiming": "total;dur=357.1, teacher-auth;dur=97.7;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/teacher-students/:id",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=790.3, teacher-auth;dur=397.4;desc=\"3 calls\""
+    },
+    {
+      "path": "/api/teacher-workspace",
+      "method": "PUT",
+      "status": 200,
+      "serverTiming": "total;dur=449.6, teacher-auth;dur=215.1;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/student-session",
+      "method": "POST",
+      "status": 201,
+      "serverTiming": "total;dur=1031.9"
+    },
+    {
+      "path": "/api/teacher-pupil-labels",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=4064.1, teacher-auth;dur=2533.0;desc=\"25 calls\", label-store;dur=108.7;desc=\"1 calls\", label-memberships;dur=2972.6;desc=\"1 calls\", label-class-scope;dur=581.1;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/profile",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=551.6, student-auth;dur=541.1;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=202.8"
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=97.0"
+    },
+    {
+      "path": "/api/me/assignments",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=893.1, student-auth;dur=506.2;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=97.0"
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=864.5, student-auth;dur=539.6;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=1219.0, student-auth;dur=541.7;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=96.1"
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=96.1"
+    },
+    {
+      "path": "/api/me/assignments",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=768.7, student-auth;dur=385.0;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=96.7"
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=96.5"
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=956.6, student-auth;dur=291.7;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=723.5, student-auth;dur=304.0;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=95.9"
+    },
+    {
+      "path": "/api/me/assignments",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=766.6, student-auth;dur=381.9;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=97.4"
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=96.2"
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=962.0, student-auth;dur=293.3;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/assignments",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=770.4, student-auth;dur=386.0;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=95.8"
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=706.1, student-auth;dur=383.5;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=95.6"
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=95.2"
+    },
+    {
+      "path": "/api/me/assignments",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=763.2, student-auth;dur=380.8;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=1048.7, student-auth;dur=383.1;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/assignments",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=768.9, student-auth;dur=385.1;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=996.9, student-auth;dur=386.2;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=1050.4, student-auth;dur=381.9;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/students",
+      "resource": "catalog",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=10802.7, teacher-auth;dur=2694.4;desc=\"26 calls\""
+    },
+    {
+      "path": "/api/me/assignments",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=766.5, student-auth;dur=383.8;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=1146.4, student-auth;dur=475.5;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=1044.2, student-auth;dur=479.3;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/students",
+      "resource": "scoped-results",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=2333.3, teacher-auth;dur=5027.6;desc=\"52 calls\""
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=1470.4, student-auth;dur=290.5;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=812.2, student-auth;dur=423.0;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/teacher-students/:id",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=695.7, teacher-auth;dur=299.8;desc=\"3 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=885.6, student-auth;dur=381.3;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/teacher-pupil-labels",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=4745.5, teacher-auth;dur=2431.1;desc=\"25 calls\", label-fill-profiles;dur=501.6;desc=\"1 calls\", label-store;dur=97.4;desc=\"1 calls\", label-memberships;dur=3157.7;desc=\"1 calls\", label-class-scope;dur=581.4;desc=\"1 calls\"",
+      "selectionKind": "explicit",
+      "selectionCount": 8,
+      "added": 0
+    },
+    {
+      "path": "/api/students",
+      "resource": "scoped-results",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=2299.0, teacher-auth;dur=4998.4;desc=\"52 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=747.4, student-auth;dur=425.3;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/teacher-students/:id",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=674.0, teacher-auth;dur=287.8;desc=\"3 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=917.3, student-auth;dur=380.1;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/students",
+      "resource": "scoped-results",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=1986.1, teacher-auth;dur=4991.7;desc=\"52 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=886.2, student-auth;dur=383.6;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/teacher-workspace",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=209.3, teacher-auth;dur=104.6;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/teacher-groups",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=622.7, teacher-auth;dur=107.3;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/teacher-classes",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=824.1, teacher-auth;dur=2531.0;desc=\"26 calls\""
+    },
+    {
+      "path": "/api/teacher-workspace",
+      "method": "PUT",
+      "status": 200,
+      "serverTiming": "total;dur=467.2, teacher-auth;dur=107.5;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/teacher-workspace",
+      "method": "PUT",
+      "status": 200,
+      "serverTiming": "total;dur=539.9, teacher-auth;dur=195.6;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/students",
+      "resource": "catalog",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=1847.0, teacher-auth;dur=2516.0;desc=\"26 calls\""
+    },
+    {
+      "path": "/api/teacher-pupil-labels",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=4156.8, teacher-auth;dur=2416.1;desc=\"25 calls\", label-store;dur=108.1;desc=\"1 calls\", label-memberships;dur=3179.4;desc=\"1 calls\", label-class-scope;dur=579.3;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/students",
+      "resource": "scoped-results",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=2178.4, teacher-auth;dur=5119.9;desc=\"52 calls\""
+    },
+    {
+      "path": "/api/teacher-students/:id",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=821.3, teacher-auth;dur=298.6;desc=\"3 calls\""
+    },
+    {
+      "path": "/api/teacher-students/:id",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=1398.7, teacher-auth;dur=469.9;desc=\"4 calls\""
+    },
+    {
+      "path": "/api/teacher-students/:id",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=634.7, teacher-auth;dur=343.6;desc=\"3 calls\""
+    },
+    {
+      "path": "/api/teacher-pupil-labels",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=4683.6, teacher-auth;dur=2402.1;desc=\"25 calls\", label-fill-profiles;dur=493.9;desc=\"1 calls\", label-store;dur=97.0;desc=\"1 calls\", label-memberships;dur=3129.9;desc=\"1 calls\", label-class-scope;dur=576.2;desc=\"1 calls\"",
+      "selectionKind": "explicit",
+      "selectionCount": 8,
+      "added": 0
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=840.1, student-auth;dur=396.9;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=920.9, student-auth;dur=401.1;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/profile",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=414.5, student-auth;dur=408.2;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=105.6"
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=95.5"
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "serverTiming": "total;dur=820.8, student-auth;dur=380.7;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/assignments",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=783.5, student-auth;dur=399.8;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/teacher-students/:id",
+      "method": "GET",
+      "status": 200,
+      "serverTiming": "total;dur=595.7, teacher-auth;dur=295.9;desc=\"3 calls\""
+    }
+  ]
+}

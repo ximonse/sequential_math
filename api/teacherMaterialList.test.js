@@ -57,3 +57,27 @@ it('rejects a session or permission change before returning any metadata', async
   mock.auth.mockResolvedValueOnce(auth).mockResolvedValueOnce(auth).mockResolvedValueOnce({ ...auth, role: 'school_admin' })
   await expect(listMaterialDrafts(req(), auth, { store })).rejects.toMatchObject({ status: 403 })
 })
+
+it('overlaps at most four draft reads while preserving order and every historical access check', async () => {
+  vi.useFakeTimers()
+  try {
+    for (let i = 0; i < 8; i++) draft(`draft-${i}`, [version(`Old ${i}`, `OLD-${i}`), version(`Latest ${i}`, `NEW-${i}`, 2)])
+    let active = 0, peak = 0
+    store.get = async key => {
+      active++; peak = Math.max(peak, active)
+      await new Promise(resolve => setTimeout(resolve, key.endsWith('0') ? 100 : 75))
+      active--
+      return structuredClone(records.get(key) || null)
+    }
+    const started = Date.now()
+    const pending = listMaterialDrafts(req(), auth, { store })
+    await vi.runAllTimersAsync()
+    const result = await pending
+    expect(peak).toBeGreaterThan(1)
+    expect(peak).toBeLessThanOrEqual(4)
+    expect(Date.now() - started).toBeLessThanOrEqual(200)
+    expect(result.drafts.map(item => item.draftId)).toEqual(Array.from({ length: 8 }, (_, i) => `draft-${i}`))
+    expect(mock.pupil.mock.calls.map(([, id]) => id).sort()).toEqual(Array.from({ length: 8 }, (_, i) => [`OLD-${i}`, `NEW-${i}`]).flat().sort())
+    expect(JSON.stringify(result)).not.toMatch(/PRIVATE_INSTRUCTION|studentId|classIds|basis|contentRevision/u)
+  } finally { vi.useRealTimers() }
+})

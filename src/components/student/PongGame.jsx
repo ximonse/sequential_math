@@ -8,26 +8,26 @@ const BALL_SIZE = 14
 const PADDLE_SPEED = 8
 const MAX_TIME = 90 // 1,5 minut
 
-// 4-phase difficulty over MAX_TIME: warmup → gradual → hard → nearly impossible.
+// 4-phase difficulty over MAX_TIME: warmup → gradual → challenging → hard.
 // ballSpeed is also a floor during rallies, so the ball speeds up without a goal.
 // maxSpeedX stays below the 26 px paddle hit window so the ball cannot tunnel.
 function getPongDifficulty(elapsedSeconds) {
   const t = Math.min(elapsedSeconds / MAX_TIME, 1)
   if (t < 1 / 6) {        // 0-15s: warmup
     const p = t * 6
-    return { aiSpeed: 0.35, ballSpeed: 3.0 + p * 0.5, maxSpeedX: 6.0 + p * 1.0, maxSpeedY: 5.0 + p * 0.5 }
+    return { aiSpeed: 0.30, ballSpeed: 3.0 + p * 0.3, maxSpeedX: 5.5 + p * 0.5, maxSpeedY: 4.5 + p * 0.5 }
   }
-  if (t < 0.5) {          // 15-45s: gradual, hard by half time
+  if (t < 0.5) {          // 15-45s: gradual
     const p = (t - 1 / 6) * 3
-    return { aiSpeed: 0.35 + p * 0.35, ballSpeed: 3.5 + p * 3.0, maxSpeedX: 7.0 + p * 2.5, maxSpeedY: 5.5 + p * 2.0 }
+    return { aiSpeed: 0.30 + p * 0.20, ballSpeed: 3.3 + p * 1.2, maxSpeedX: 6.0 + p * 1.5, maxSpeedY: 5.0 + p * 1.0 }
   }
-  if (t < 5 / 6) {        // 45-75s: hard
+  if (t < 5 / 6) {        // 45-75s: challenging
     const p = (t - 0.5) * 3
-    return { aiSpeed: 0.70 + p * 0.25, ballSpeed: 6.5 + p * 2.5, maxSpeedX: 9.5 + p * 3.5, maxSpeedY: 7.5 + p * 2.0 }
+    return { aiSpeed: 0.50 + p * 0.15, ballSpeed: 4.5 + p * 1.0, maxSpeedX: 7.5 + p * 1.5, maxSpeedY: 6.0 + p * 1.0 }
   }
-  // 75-90s: nearly impossible
+  // 75-90s: hard
   const p = (t - 5 / 6) * 6
-  return { aiSpeed: 0.95 + p * 0.05, ballSpeed: 9.0 + p * 2.0, maxSpeedX: 13.0 + p * 3.0, maxSpeedY: 9.5 + p * 1.5 }
+  return { aiSpeed: 0.65 + p * 0.10, ballSpeed: 5.5 + p * 1.0, maxSpeedX: 9.0 + p * 1.0, maxSpeedY: 7.0 + p * 0.5 }
 }
 
 function PongGame({ onClose, studentId, studentName, classId }) {
@@ -92,23 +92,42 @@ function PongGame({ onClose, studentId, studentName, classId }) {
       if (e.key === 'ArrowDown' || e.key === 's') game.keys.down = false
     }
 
-    // Touch handlers (för iPad)
-    const handleTouchMove = (e) => {
-      e.preventDefault()
-      const touch = e.touches[0]
+    // Touch handlers: steer from anywhere on the screen except buttons/links,
+    // so Android phones work even when the finger starts outside the canvas.
+    const isControlTarget = (target) => Boolean(target?.closest?.('button, a, input, select, textarea, [role="button"]'))
+    let steering = false
+
+    const steerTo = (touch) => {
       const rect = canvas.getBoundingClientRect()
-      const y = touch.clientY - rect.top
+      const y = (touch.clientY - rect.top) * (canvas.height / (rect.height || canvas.height))
       touchYRef.current = Math.max(0, Math.min(canvas.height - PADDLE_HEIGHT, y - PADDLE_HEIGHT / 2))
     }
 
-    const handleTouchEnd = () => {
+    const handleTouchStart = (e) => {
+      if (gameOverRef.current || isControlTarget(e.target)) return
+      steering = true
+      e.preventDefault()
+      steerTo(e.touches[0])
+    }
+
+    const handleTouchMove = (e) => {
+      if (!steering || gameOverRef.current) return
+      if (e.cancelable) e.preventDefault()
+      steerTo(e.touches[0])
+    }
+
+    const handleTouchEnd = (e) => {
+      if (e.touches.length > 0) return
+      steering = false
       touchYRef.current = null
     }
 
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
-    canvas.addEventListener('touchmove', handleTouchMove, { passive: false })
-    canvas.addEventListener('touchend', handleTouchEnd)
+    document.addEventListener('touchstart', handleTouchStart, { passive: false })
+    document.addEventListener('touchmove', handleTouchMove, { passive: false })
+    document.addEventListener('touchend', handleTouchEnd)
+    document.addEventListener('touchcancel', handleTouchEnd)
 
     let animationId
 
@@ -157,7 +176,7 @@ function PongGame({ onClose, studentId, studentName, classId }) {
         game.ball.y <= game.player.y + PADDLE_HEIGHT + 8 &&
         game.ball.dx < 0
       ) {
-        game.ball.dx = Math.abs(game.ball.dx) * 1.04
+        game.ball.dx = Math.abs(game.ball.dx) * 1.02
         game.ball.dy += (Math.random() - 0.5) * 1.4
       }
 
@@ -169,7 +188,7 @@ function PongGame({ onClose, studentId, studentName, classId }) {
         game.ball.y <= game.computer.y + PADDLE_HEIGHT &&
         game.ball.dx > 0
       ) {
-        game.ball.dx = -Math.abs(game.ball.dx) * 1.04
+        game.ball.dx = -Math.abs(game.ball.dx) * 1.02
         game.ball.dy += (Math.random() - 0.5) * 1.4
       }
 
@@ -228,8 +247,10 @@ function PongGame({ onClose, studentId, studentName, classId }) {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
-      canvas.removeEventListener('touchmove', handleTouchMove)
-      canvas.removeEventListener('touchend', handleTouchEnd)
+      document.removeEventListener('touchstart', handleTouchStart)
+      document.removeEventListener('touchmove', handleTouchMove)
+      document.removeEventListener('touchend', handleTouchEnd)
+      document.removeEventListener('touchcancel', handleTouchEnd)
       cancelAnimationFrame(animationId)
     }
   }, [initGame])
@@ -266,7 +287,7 @@ function PongGame({ onClose, studentId, studentName, classId }) {
 
       {/* Instruktioner */}
       <p className="text-gray-300 text-sm mt-3">
-        Dra fingret upp/ner för att styra 🏓
+        Dra fingret upp/ner var som helst för att styra 🏓
       </p>
 
       {/* Game over overlay */}

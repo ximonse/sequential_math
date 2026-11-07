@@ -437,6 +437,30 @@ kräver ROBOT_DEV=1 för localhost-cookiepolicyn och passerar där; de tre
 godkända. Byggets befintliga varningar om Browserslist, chunkstorlek och
 blandad dynamisk/statisk import kvarstår. Materialkoden är lokal och opushad.
 
+### 2026-11-07: materiallistan publicerad
+
+Simon gav publiceringsmandat med ”Push”. `c48613b` pushades utan konflikt
+till GitHub/master. Sekvens `dpl_9bKw1vJcbobEWKcXttMDwVtE89N6` blev READY
+med exakt SHA `c48613bd2f8f4ac5d11e84b0171245d82aee7d6d`, rätt
+produktionsalias och Vercel-status success på GitHub. Det tidigare lokala
+materialsjoket är därmed publicerat; klientkoden ändrades inte.
+
+[Samma utökade produktionsserie efter publicering](evaluations/transition-latency-2026-11-05/production-material-after-20261107.json)
+fullföljdes med 32 observationer, inga API-fel, oförändrade masteryFacts/
+problemLog och fortsatt exakt privat hashparitet för 340 namn. Utkastlistan
+tog 6755 ms mot 13547 ms före ändringen. Material-API:t tog 6172 ms mot
+13303 ms och gjorde fortfarande 79 auth-kontroller. Ett befintligt material
+öppnades på 3316 ms (API 2093 ms). Listan är förbättrad i de två körningarna
+men fortfarande långsam; en generell latensgaranti eller helhetsvinst följer
+inte av provet.
+
+Serien fångade också en utgången elevbootstrap på 8357 ms mot 2457 ms i
+föregående serie. me/events tog 6614 ms i webbläsaren men rapporterade
+710 ms i serverns handler; följande profil tog 961 ms med 416 ms handler.
+Inget extra student-session-GET gjordes. Skillnaden mellan total väntan och
+uppmätt handlerarbete måste spåras vidare; kö, transport eller serverstart
+är ännu inte åtskilda. Ingen orsak tillskrivs materialändringen utan belägg.
+
 ## Fortsatt öppet
 
 - Samma kompletta produktionsmatris före/efter publicering, inklusive material.

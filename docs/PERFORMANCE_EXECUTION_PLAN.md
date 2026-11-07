@@ -174,6 +174,29 @@ per övning, inte alla nivåer trots robotarnas generella testnamn.
 Byggets befintliga varningar kvarstår. Ingen push eller produktionsvinst
 påstås för denna ändring.
 
+### Publicerad och mätt i produktion 2026-11-07
+
+Publicerad som origin/master eb6f9d0 (GitHub Verify grön, Vercel sekvens
+dpl_HxFyxT714cnj7YK4CNMK52E7FtSF READY). Samma isolerade serie som före
+(trace-isolated.mjs, testklassens elev, oförändrade träningsoriginal
+verifierade) gav, i millisekunder från klick till användbar vy:
+
+| Övergång | Före | Efter |
+|---|---|---|
+| Inloggning till startsida | 3269 | 1995 |
+| Varm start av träning | 712, 663 | 317, 297 |
+| Varm återgång till startsidan | 663, 646 | 346, 329 |
+| Start av träning efter 63 s väntan | 3947, 3779 | 2361, 2843 |
+| Återgång efter väntan | 712, 2079 | 380, 311 |
+
+Synkdata genom /api/me/events sjönk från 958 kB till 663 kB på 13 anrop.
+Närvaroanrop är nu 3–4 kB i stället för 28–29 kB. Kvar finns fulla
+checkpoints på 33–177 kB, och även anrop på 4 kB tar 1,1–1,3 s i produktion.
+Start efter väntan är därför fortfarande 2,4–2,8 s. Nästa avgränsade steg är
+att reda ut den fasta väntan per events-anrop och bootstrapens beroende av
+synkkön. Mätfil: docs/evaluations/transition-latency-2026-11-05/
+production-isolated-after-presence-20261107.json.
+
 Avslut kräver komplett berörd matris, oförändrade data-/åtkomstkontrakt,
 automatiskt återfallsskydd och verifierad produktion. Projektminnet ska då
 innehålla rotorsak, bevis, lösning, begränsning, misslyckade angreppssätt och

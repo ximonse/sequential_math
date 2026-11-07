@@ -1,0 +1,1121 @@
+{
+  "measuredOn": "2026-11-07",
+  "environment": "production",
+  "method": "Isolated pupil browser, actual click to usable DOM; Playwright transport timings and sizes, no request or response bodies stored.",
+  "phase": "complete",
+  "entry": "index-BKsHIrlO.js",
+  "unchangedPracticeEvidence": true,
+  "samples": [
+    {
+      "name": "isolated-pupil-login",
+      "ms": 1995,
+      "resources": [
+        {
+          "path": "/api/student-session",
+          "ms": 1036,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 820.6,
+              "description": ""
+            }
+          ]
+        },
+        {
+          "path": "/api/me/profile",
+          "ms": 628,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 406.3,
+              "description": ""
+            },
+            {
+              "name": "student-auth",
+              "duration": 402.4,
+              "description": "1 calls"
+            }
+          ]
+        },
+        {
+          "path": "/api/class-config",
+          "ms": 292,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 111,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "isolated-warm-practice",
+      "ms": 317,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 278,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 95.6,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "isolated-return-home",
+      "ms": 346,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 305,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 133.1,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "isolated-expired-practice",
+      "ms": 2361,
+      "resources": [
+        {
+          "path": "/api/me/events",
+          "ms": 1364,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 1056.6,
+              "description": ""
+            },
+            {
+              "name": "student-auth",
+              "duration": 470.1,
+              "description": "1 calls"
+            }
+          ]
+        },
+        {
+          "path": "/api/me/profile",
+          "ms": 671,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 493.1,
+              "description": ""
+            },
+            {
+              "name": "student-auth",
+              "duration": 490,
+              "description": "1 calls"
+            }
+          ]
+        },
+        {
+          "path": "/api/class-config",
+          "ms": 272,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 105.2,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "isolated-expired-return",
+      "ms": 380,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 341,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 95.8,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "isolated-warm-practice",
+      "ms": 297,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 259,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 96,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "isolated-return-home",
+      "ms": 329,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 289,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 95.2,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "isolated-expired-practice",
+      "ms": 2843,
+      "resources": [
+        {
+          "path": "/api/me/events",
+          "ms": 1663,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 1316.8,
+              "description": ""
+            },
+            {
+              "name": "student-auth",
+              "duration": 554.3,
+              "description": "1 calls"
+            }
+          ]
+        },
+        {
+          "path": "/api/me/profile",
+          "ms": 820,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 507.8,
+              "description": ""
+            },
+            {
+              "name": "student-auth",
+              "duration": 504.9,
+              "description": "1 calls"
+            }
+          ]
+        },
+        {
+          "path": "/api/class-config",
+          "ms": 293,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 107.6,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "isolated-expired-return",
+      "ms": 311,
+      "resources": [
+        {
+          "path": "/api/class-config",
+          "ms": 272,
+          "serverTiming": [
+            {
+              "name": "total",
+              "duration": 95.4,
+              "description": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "requests": [
+    {
+      "path": "/api/student-session",
+      "method": "POST",
+      "status": 201,
+      "startedMs": 3726,
+      "timing": {
+        "startTime": 1794083009071.8438,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 1.137,
+        "responseStart": 1031.395,
+        "responseEnd": 1037.888
+      },
+      "sizes": {
+        "requestBodySize": 79,
+        "requestHeadersSize": 631,
+        "responseBodySize": 673,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=820.6"
+    },
+    {
+      "path": "/api/me/profile",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 4765,
+      "timing": {
+        "startTime": 1794083010111.279,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.333,
+        "responseStart": 621.252,
+        "responseEnd": 628.11
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 607,
+        "responseBodySize": 7422,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=406.3, student-auth;dur=402.4;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 5418,
+      "timing": {
+        "startTime": 1794083010764.251,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 1.283,
+        "responseStart": 289.813,
+        "responseEnd": 292.465
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 646,
+        "responseBodySize": 278,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=111.0"
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 5780,
+      "timing": {
+        "startTime": 1794083011126.3162,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.648,
+        "responseStart": 277.276,
+        "responseEnd": 277.869
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 646,
+        "responseBodySize": 274,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=95.6"
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 6134,
+      "timing": {
+        "startTime": 1794083011479.502,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.675,
+        "responseStart": 300.983,
+        "responseEnd": 305.011
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 646,
+        "responseBodySize": 245,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=133.1"
+    },
+    {
+      "path": "/api/me/assignments",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 5418,
+      "timing": {
+        "startTime": 1794083010764.378,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 1.829,
+        "responseStart": 1027.626,
+        "responseEnd": 1029.358
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 615,
+        "responseBodySize": 178,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=829.6, student-auth;dur=446.6;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 5418,
+      "timing": {
+        "startTime": 1794083010764.119,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 1.06,
+        "responseStart": 1113.612,
+        "responseEnd": 1115.403
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 637,
+        "responseBodySize": 547,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=921.5, student-auth;dur=401.8;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "startedMs": 5430,
+      "timing": {
+        "startTime": 1794083010775.965,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.407,
+        "responseStart": 1321.853,
+        "responseEnd": 1322.69
+      },
+      "sizes": {
+        "requestBodySize": 3504,
+        "requestHeadersSize": 756,
+        "responseBodySize": 297,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=1041.3, student-auth;dur=522.7;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/assignments",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 6134,
+      "timing": {
+        "startTime": 1794083011479.8123,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 313.041,
+        "responseStart": 1356.659,
+        "responseEnd": 1360.65
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 615,
+        "responseBodySize": 169,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=764.7, student-auth;dur=382.0;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 6133,
+      "timing": {
+        "startTime": 1794083011479.1948,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 398.943,
+        "responseStart": 1442.345,
+        "responseEnd": 1445.815
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 637,
+        "responseBodySize": 184,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=763.9, student-auth;dur=379.9;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "startedMs": 6767,
+      "timing": {
+        "startTime": 1794083012112.695,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.51,
+        "responseStart": 1799.078,
+        "responseEnd": 1803.685
+      },
+      "sizes": {
+        "requestBodySize": 181275,
+        "requestHeadersSize": 758,
+        "responseBodySize": 629,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=923.0, student-auth;dur=423.8;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "startedMs": 8576,
+      "timing": {
+        "startTime": 1794083013922.068,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.443,
+        "responseStart": 1174.479,
+        "responseEnd": 1175.474
+      },
+      "sizes": {
+        "requestBodySize": 3600,
+        "requestHeadersSize": 756,
+        "responseBodySize": 282,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=1009.5, student-auth;dur=468.4;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "startedMs": 36151,
+      "timing": {
+        "startTime": 1794083041497.063,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.705,
+        "responseStart": 1186.486,
+        "responseEnd": 1187.341
+      },
+      "sizes": {
+        "requestBodySize": 3809,
+        "requestHeadersSize": 756,
+        "responseBodySize": 281,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=981.8, student-auth;dur=491.7;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "startedMs": 66149,
+      "timing": {
+        "startTime": 1794083071494.943,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.958,
+        "responseStart": 1190.695,
+        "responseEnd": 1193.758
+      },
+      "sizes": {
+        "requestBodySize": 3809,
+        "requestHeadersSize": 756,
+        "responseBodySize": 288,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=1013.9, student-auth;dur=491.1;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "startedMs": 69543,
+      "timing": {
+        "startTime": 1794083074888.5723,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.898,
+        "responseStart": 1360.518,
+        "responseEnd": 1363.749
+      },
+      "sizes": {
+        "requestBodySize": 33631,
+        "requestHeadersSize": 757,
+        "responseBodySize": 332,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=1056.6, student-auth;dur=470.1;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/profile",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 70916,
+      "timing": {
+        "startTime": 1794083076262.4111,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 2.384,
+        "responseStart": 663.616,
+        "responseEnd": 670.955
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 607,
+        "responseBodySize": 7886,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=493.1, student-auth;dur=490.0;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 71598,
+      "timing": {
+        "startTime": 1794083076944.104,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.439,
+        "responseStart": 269.893,
+        "responseEnd": 272.255
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 646,
+        "responseBodySize": 278,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=105.2"
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 71944,
+      "timing": {
+        "startTime": 1794083077289.8892,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.333,
+        "responseStart": 338.168,
+        "responseEnd": 340.885
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 646,
+        "responseBodySize": 268,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=95.8"
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 72353,
+      "timing": {
+        "startTime": 1794083077699.183,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.426,
+        "responseStart": 258.318,
+        "responseEnd": 259.126
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 646,
+        "responseBodySize": 303,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=96.0"
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 71943,
+      "timing": {
+        "startTime": 1794083077289.4412,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.747,
+        "responseStart": 859.643,
+        "responseEnd": 861.036
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 637,
+        "responseBodySize": 178,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=695.4, student-auth;dur=313.0;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/assignments",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 71944,
+      "timing": {
+        "startTime": 1794083077290.0261,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.341,
+        "responseStart": 951.964,
+        "responseEnd": 953.507
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 615,
+        "responseBodySize": 218,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=784.6, student-auth;dur=400.2;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 72701,
+      "timing": {
+        "startTime": 1794083078047.172,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 1.808,
+        "responseStart": 286.933,
+        "responseEnd": 289.299
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 646,
+        "responseBodySize": 268,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=95.2"
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "startedMs": 71619,
+      "timing": {
+        "startTime": 1794083076964.698,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.43,
+        "responseStart": 1650.229,
+        "responseEnd": 1653.042
+      },
+      "sizes": {
+        "requestBodySize": 59890,
+        "requestHeadersSize": 757,
+        "responseBodySize": 340,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=1206.3, student-auth;dur=594.4;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 72700,
+      "timing": {
+        "startTime": 1794083078046.0762,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 103.52,
+        "responseStart": 1139.952,
+        "responseEnd": 1143.144
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 637,
+        "responseBodySize": 146,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=852.1, student-auth;dur=470.6;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/assignments",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 72701,
+      "timing": {
+        "startTime": 1794083078047.355,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 195.035,
+        "responseStart": 1241.027,
+        "responseEnd": 1242.479
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 615,
+        "responseBodySize": 153,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=862.3, student-auth;dur=479.6;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "startedMs": 73295,
+      "timing": {
+        "startTime": 1794083078640.528,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.46,
+        "responseStart": 2341.042,
+        "responseEnd": 2343.594
+      },
+      "sizes": {
+        "requestBodySize": 164423,
+        "requestHeadersSize": 758,
+        "responseBodySize": 602,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=1246.7, student-auth;dur=615.4;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "startedMs": 75644,
+      "timing": {
+        "startTime": 1794083080990.339,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.504,
+        "responseStart": 1563.149,
+        "responseEnd": 1572.065
+      },
+      "sizes": {
+        "requestBodySize": 119247,
+        "requestHeadersSize": 758,
+        "responseBodySize": 421,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=1030.6, student-auth;dur=472.4;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "startedMs": 102731,
+      "timing": {
+        "startTime": 1794083108076.627,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.803,
+        "responseStart": 1161.177,
+        "responseEnd": 1163.456
+      },
+      "sizes": {
+        "requestBodySize": 4419,
+        "requestHeadersSize": 756,
+        "responseBodySize": 689,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=959.7, student-auth;dur=468.8;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "startedMs": 132737,
+      "timing": {
+        "startTime": 1794083138082.761,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.73,
+        "responseStart": 1081.776,
+        "responseEnd": 1083.631
+      },
+      "sizes": {
+        "requestBodySize": 4419,
+        "requestHeadersSize": 756,
+        "responseBodySize": 280,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=923.1, student-auth;dur=518.2;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "startedMs": 136082,
+      "timing": {
+        "startTime": 1794083141428.213,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 4.383,
+        "responseStart": 1654.351,
+        "responseEnd": 1663.07
+      },
+      "sizes": {
+        "requestBodySize": 33434,
+        "requestHeadersSize": 757,
+        "responseBodySize": 359,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=1316.8, student-auth;dur=554.3;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/profile",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 137764,
+      "timing": {
+        "startTime": 1794083143110.3252,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.741,
+        "responseStart": 701.469,
+        "responseEnd": 820.442
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 607,
+        "responseBodySize": 7601,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=507.8, student-auth;dur=504.9;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 138592,
+      "timing": {
+        "startTime": 1794083143938.06,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.572,
+        "responseStart": 290.42,
+        "responseEnd": 292.761
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 646,
+        "responseBodySize": 278,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=107.6"
+    },
+    {
+      "path": "/api/class-config",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 138957,
+      "timing": {
+        "startTime": 1794083144303.031,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.479,
+        "responseStart": 268.371,
+        "responseEnd": 271.696
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 646,
+        "responseBodySize": 268,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=95.4"
+    },
+    {
+      "path": "/api/me/events",
+      "method": "POST",
+      "status": 200,
+      "startedMs": 138615,
+      "timing": {
+        "startTime": 1794083143961.231,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.444,
+        "responseStart": 1400.751,
+        "responseEnd": 1407.064
+      },
+      "sizes": {
+        "requestBodySize": 58276,
+        "requestHeadersSize": 757,
+        "responseBodySize": 369,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=967.6, student-auth;dur=478.7;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/diagnostic-assignments",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 138957,
+      "timing": {
+        "startTime": 1794083144302.851,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.536,
+        "responseStart": 1124.52,
+        "responseEnd": 1128.229
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 637,
+        "responseBodySize": 177,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=931.8, student-auth;dur=550.0;desc=\"1 calls\""
+    },
+    {
+      "path": "/api/me/assignments",
+      "method": "GET",
+      "status": 200,
+      "startedMs": 138957,
+      "timing": {
+        "startTime": 1794083144303.3142,
+        "domainLookupStart": -1,
+        "domainLookupEnd": -1,
+        "connectStart": -1,
+        "secureConnectionStart": -1,
+        "connectEnd": -1,
+        "requestStart": 0.324,
+        "responseStart": 1128.09,
+        "responseEnd": 1141.543
+      },
+      "sizes": {
+        "requestBodySize": 0,
+        "requestHeadersSize": 615,
+        "responseBodySize": 146,
+        "responseHeadersSize": 0
+      },
+      "serverTiming": "total;dur=944.3, student-auth;dur=562.1;desc=\"1 calls\""
+    }
+  ],
+  "errors": []
+}

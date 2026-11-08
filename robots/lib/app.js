@@ -19,7 +19,7 @@ export async function readServerProfile(request, studentId) {
 export async function login(page, pupil) {
   await page.goto('/')
   await page.getByPlaceholder(/Gul Fyr Katt/).fill(pupil.loginCode)
-  await page.locator('input').nth(2).fill(pupil.pin)
+  await page.locator('#pilotPin').fill(pupil.pin)
   await page.getByRole('button', { name: 'Logga in', exact: true }).click()
   await page.waitForURL(/\/student\/[^/]+$/)
   await expect(page.getByText(`Hej ${pupil.loginCode}`)).toBeVisible()
@@ -164,4 +164,10 @@ export async function waitForTask(page, { timeout = 8000, breakChoice } = {}) {
     await page.waitForTimeout(100)
   }
   return { state: await readState(page), interruptions, timedOut: true, text: (await page.locator('body').innerText()).slice(0, 400) }
+}
+
+// The theme menu folds out from a small corner button (Simon 2026-11-08).
+export async function openThemeControls(page) {
+  const toggle = page.getByRole('button', { name: 'Tema och kontrast', exact: true })
+  if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click()
 }

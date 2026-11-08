@@ -30,7 +30,7 @@ test('Talbild answers from the numpad, including 10', async ({ browser, request 
   const page = await browser.newPage()
   await page.goto(`${link.pathname}${link.search}`)
   await page.getByPlaceholder(/Gul Fyr Katt/).fill(pupil.loginCode)
-  await page.locator('input').nth(2).fill(pupil.pin)
+  await page.locator('#pilotPin').fill(pupil.pin)
   await page.getByRole('button', { name: 'Logga in', exact: true }).click()
   await page.waitForURL(/\/student\//)
   const progress = () => page.getByText(/^Rätt: \d+ \/ \d+/u).innerText()

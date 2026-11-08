@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { openThemeControls } from './lib/app.js'
 
 test('Notebook puts a decimal comma on the crossing between digits with touch or keyboard', async ({ browser }) => {
   const { context, page } = await openAsRole(browser, 'super_admin', '/teacher/ncm/diagnostic-grid')
@@ -232,6 +233,7 @@ test('Notebook touch draws from empty cells; symbols and every theme keep the ge
   await page.getByRole('button', { name: 'Stryk', exact: true }).click()
   await expect(cell(2)).toHaveAttribute('aria-label', /minnessiffra 8, struken/)
   for (const theme of ['light', 'dark', 'dark-lime', 'psychedelic', 'real-psycadelic']) {
+    await openThemeControls(page)
     await page.getByRole('combobox', { name: 'Välj tema' }).selectOption(theme)
     await expect(page.locator('body')).toHaveClass(new RegExp(`theme-${theme}`))
     await expect(page.locator('.diagnostic-cell__digit--main').first()).toHaveCSS('font-weight', '400')

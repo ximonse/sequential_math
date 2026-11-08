@@ -100,3 +100,22 @@
   .practice-notebook-sheet .notebook-numbers button { min-height: 30px; font-size: 18px; }
   .practice-notebook-sheet .notebook-delete button { min-height: 30px; }
 }
+
+/* Phones: less air between header, question, answer and keypad (Simon 2026-11-08).
+   The status line stays reserved, only lower, so the keypad still never moves. */
+@media (max-width: 767px) {
+  .practice-layout { gap: 0.25rem; }
+  .practice-status { height: 2.75rem; }
+  .practice-status p:first-child { font-size: 1.125rem; }
+  .practice-status p + p { font-size: 0.75rem; }
+
+  /* In the notebook sheet nothing below the status line can move, so it takes
+     no room until there is feedback; the close button and the help mark shrink in. */
+  .practice-notebook-sheet { padding-top: 0.25rem; }
+  .practice-notebook-close { margin-bottom: 0.25rem; }
+  .practice-notebook-close button { min-height: 2.25rem; padding-top: 0; padding-bottom: 0; }
+  .practice-notebook-sheet .practice-status:empty { height: 0; }
+  .practice-notebook-sheet .notebook-tools { position: relative; }
+  .practice-notebook-sheet .notebook-status-row { position: fixed; left: 0.5rem; top: 0.375rem; margin: 0; z-index: 51; }
+  .practice-notebook-sheet .notebook-save-status { display: none; }
+}

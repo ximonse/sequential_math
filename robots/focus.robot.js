@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { createPupil, login, readServerProfile, readState, next } from './lib/app.js'
+import { createPupil, login, readServerProfile, readState, next, openThemeControls } from './lib/app.js'
 import { createFindings } from './lib/findings.js'
 import { answerTasks, waitForServerAnswers } from './lib/session.js'
 import { createAttentionAdmin, teacherLogin } from './lib/teacher.js'
@@ -131,6 +131,7 @@ test('Fokus: svart yta, vit punkt och läsbar text behålls i alla teman', async
   await page.clock.install()
   await login(page, await createPupil(request))
   for (const label of ['Ljust', 'Mörkt', 'Mörkt gulgrön', 'Psykadelisk', 'Real psycadelic']) {
+    await openThemeControls(page)
     await page.getByRole('combobox', { name: 'Välj tema' }).selectOption({ label })
     await page.getByRole('button', { name: new RegExp(`^${FOCUS}`) }).click()
     const text = page.getByText('En stund att vänta, upptäcka och välja.', { exact: true })

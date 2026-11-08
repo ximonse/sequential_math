@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { createPupil, login, readServerProfile, readState, next } from './lib/app.js'
+import { createPupil, login, readServerProfile, readState, next, openThemeControls } from './lib/app.js'
 import { answerTasks, waitForServerAnswers } from './lib/session.js'
 import { createFindings } from './lib/findings.js'
 
@@ -95,6 +95,7 @@ test('MULTI: mjuka fasta färger och former i samtliga sidteman', async ({ page,
   await page.setViewportSize({ width: 390, height: 844 })
   await login(page, await createPupil(request))
   for (const label of ['Ljust', 'Mörkt', 'Mörkt gulgrön', 'Psykadelisk', 'Real psycadelic']) {
+    await openThemeControls(page)
     await page.getByRole('combobox', { name: 'Välj tema' }).selectOption({ label })
     await openMulti(page)
     await expect(page.getByRole('dialog', { name: 'MULTI', exact: true })).toHaveCSS('background-color', 'rgb(16, 21, 22)')

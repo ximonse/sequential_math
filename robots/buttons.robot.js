@@ -1,7 +1,7 @@
 // Robot 4: presses every button a pupil can reach and checks that it does
 // exactly what it says: keys, delete, clear, keyboard, theme, log out.
 import { test, expect } from '@playwright/test'
-import { createPupil, goHomeFromPractice, login, openOtherTraining, readState, themeOf, waitForTask } from './lib/app.js'
+import { createPupil, goHomeFromPractice, login, openOtherTraining, readState, themeOf, waitForTask, openThemeControls } from './lib/app.js'
 import { createFindings } from './lib/findings.js'
 import { answerTasks } from './lib/session.js'
 
@@ -84,10 +84,12 @@ test('Tema: valt tema ligger kvar överallt', async ({ page, request }, testInfo
   const findings = createFindings(testInfo)
   const pupil = await createPupil(request)
   await page.goto('/')
+  await openThemeControls(page)
   const picker = page.getByLabel('Välj tema')
   const options = await picker.locator('option').evaluateAll(list => list.map(o => o.value))
   const pick = options.at(-1)
   await picker.selectOption(pick)
+  await openThemeControls(page)
   await page.getByLabel('Aktivera hög kontrast').check()
   const expected = await themeOf(page)
   const checkpoint = async where => {
@@ -105,6 +107,7 @@ test('Tema: valt tema ligger kvar överallt', async ({ page, request }, testInfo
   await page.goto('/teacher-login'); await page.waitForTimeout(300)
   await page.goto(`/student/${pupil.studentId}`); await page.waitForTimeout(800); await checkpoint('efter en tur till lärarinloggningen')
   // Change the theme inside the app and make sure the new choice sticks.
+  await openThemeControls(page)
   await page.getByLabel('Välj tema').selectOption(options[1])
   expected.theme = (await themeOf(page)).theme
   await page.reload(); await page.waitForTimeout(800); await checkpoint('efter byte på startsidan och omladdning')

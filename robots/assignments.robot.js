@@ -50,7 +50,7 @@ async function openAsPupil(browser, link, pupil) {
   const url = new URL(link)
   await page.goto(`${url.pathname}${url.search}`)
   await page.getByPlaceholder(/Gul Fyr Katt/).fill(pupil.loginCode)
-  await page.locator('input').nth(2).fill(pupil.pin)
+  await page.locator('#pilotPin').fill(pupil.pin)
   await page.getByRole('button', { name: 'Logga in', exact: true }).click()
   await page.waitForURL(/\/student\//)
   return { context, page }

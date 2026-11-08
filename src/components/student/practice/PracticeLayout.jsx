@@ -52,7 +52,7 @@ export default function PracticeLayout({ question, answer, status, keypad, prima
   return <NotebookAnswerTarget.Provider value={answerTarget}><div role={notebookOpen ? 'dialog' : undefined} aria-modal={notebookOpen ? 'true' : undefined}
     aria-label={notebookOpen ? 'Räknehäfte' : undefined} className={notebookOpen ? 'practice-notebook-sheet bg-white' : 'w-full'}>
     <div className={notebookOpen ? 'mx-auto max-w-5xl' : ''}>
-      {notebookOpen && <div className="mb-2 flex justify-end">
+      {notebookOpen && <div className="practice-notebook-close mb-2 flex justify-end">
         <button type="button" onClick={closeSheet}
           className="min-h-11 rounded-lg border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700">Dölj räknehäfte</button>
       </div>}
@@ -93,7 +93,7 @@ export function PracticeStatus({ feedback, studentAnswer }) {
   const hint = !feedback ? '' : partial ? (feedback.partialDetail || 'Skriv svaret i förenklad matematisk form.')
     : feedback.correct && feedback.hint ? feedback.hint
       : feedback.correct ? 'Enter, knappsatsknappen eller vänta...' : 'Tryck Enter eller knappsatsknappen när du är redo'
-  return <div className="flex h-14 flex-col items-center justify-center text-center" aria-live="polite">
+  return <div className="practice-status flex h-14 flex-col items-center justify-center text-center" aria-live="polite">
     {feedback && <p className="text-xl font-bold leading-tight">
       <span className={tone}>{heading}</span>
       {!feedback.correct && <span className="ml-2 font-semibold text-red-600 line-through">Du svarade: {studentAnswer}</span>}

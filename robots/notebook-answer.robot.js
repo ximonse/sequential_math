@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { createPupil, login, readServerProfile } from './lib/app.js'
+import { createPupil, login, readServerProfile, openThemeControls } from './lib/app.js'
 import { createTeacher, teacherLogin } from './lib/teacher.js'
 import { openResults } from './lib/screening.js'
 
@@ -109,6 +109,7 @@ test('All notebook math keys stay in the active answer and leave grid notes unto
   await expect(answer).toHaveValue('−2,5%')
   await expect(gridInput).toHaveAttribute('aria-label', /minnessiffra 1/)
   for (const theme of ['light', 'dark', 'dark-lime', 'psychedelic', 'real-psycadelic']) {
+    await openThemeControls(page)
     await page.getByRole('combobox', { name: 'Välj tema' }).selectOption(theme)
     await expect(answer).toHaveCSS('background-color', 'rgb(255, 255, 255)')
     await expect(answer).toHaveCSS('color', 'rgb(22, 35, 50)')

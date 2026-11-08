@@ -3,7 +3,7 @@
 // against the background the text actually sits on. Gradients count as their
 // average colour, and transparency and opacity are composited over the page.
 import { test, expect } from '@playwright/test'
-import { answerText, createPupil, fillAnswer, login, next, readState, submit } from './lib/app.js'
+import { answerText, createPupil, fillAnswer, login, next, readState, submit, openThemeControls } from './lib/app.js'
 import { THEMES } from '../src/lib/theme.js'
 
 async function audit(page, view) {
@@ -76,6 +76,7 @@ test('Pupil views keep every text readable in every theme', async ({ page, reque
   let level = 1
   for (const theme of THEMES) {
     await page.goto(`/student/${pupil.studentId}`)
+    await openThemeControls(page)
     await page.getByRole('combobox', { name: 'Välj tema' }).selectOption(theme.id)
     await page.getByText('Se mina framsteg').click()
     await page.waitForTimeout(300)

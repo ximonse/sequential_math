@@ -28,7 +28,7 @@ describe('student session page', () => {
       />
     )
 
-    expect(html).toContain('<h2 class="mb-5 text-lg sm:text-xl font-semibold text-gray-700">Blandad träning</h2>')
+    expect(html).toContain('<h2 class="mb-1 text-sm font-semibold text-gray-700 sm:mb-4 sm:text-base">Blandad träning</h2>')
     expect(html).not.toContain('Success rate')
     expect(html).not.toContain('bg-green-500')
   })

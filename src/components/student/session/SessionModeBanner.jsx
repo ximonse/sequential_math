@@ -18,7 +18,7 @@ function SessionModeBanner({ assignment, mode, tableSet, fixedLevel = null }) {
     ].filter(Boolean).join(' · ')
   }
 
-  return <h2 className="mb-5 text-lg sm:text-xl font-semibold text-gray-700">{title}</h2>
+  return <h2 className="mb-1 text-sm font-semibold text-gray-700 sm:mb-4 sm:text-base">{title}</h2>
 }
 
 export default SessionModeBanner

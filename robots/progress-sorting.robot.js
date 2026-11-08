@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { createPupil } from './lib/app.js'
+import { createPupil, openThemeControls } from './lib/app.js'
 import { createTeacher, teacherLogin, openTab, selectOnlyClass } from './lib/teacher.js'
 
 test('Framsteg behåller elever och sortering under långsam bakgrundsuppdatering', async ({ page, request }) => {
@@ -92,14 +92,18 @@ test('Klassurval: valda klasser är tydligt gröna och behålls när Framsteg ö
   await expect(first).toHaveAttribute('aria-pressed', 'true')
   await expect(second).toHaveAttribute('aria-pressed', 'true')
   for (const theme of ['light', 'dark', 'dark-lime', 'psychedelic', 'real-psycadelic']) {
+    await openThemeControls(page)
     await page.getByLabel('Välj tema', { exact: true }).selectOption(theme)
     await expect(first).toHaveCSS('background-color', 'rgb(220, 252, 231)')
     await expect(first).toHaveCSS('color', 'rgb(20, 83, 45)')
     await panel.screenshot({ path: testInfo.outputPath(`selected-classes-${theme}.png`) })
   }
+  await openThemeControls(page)
   await page.getByLabel('Aktivera hög kontrast', { exact: true }).check()
   await expect(first).toHaveCSS('background-color', 'rgb(220, 252, 231)')
+  await openThemeControls(page)
   await page.getByLabel('Aktivera hög kontrast', { exact: true }).uncheck()
+  await openThemeControls(page)
   await page.getByLabel('Välj tema', { exact: true }).selectOption('light')
   await first.click()
   await expect(first).toHaveAttribute('aria-pressed', 'false')

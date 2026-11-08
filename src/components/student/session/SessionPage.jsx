@@ -50,7 +50,7 @@ function SessionPage({
   const showScratchpadControl = Boolean(currentProblem)
 
   return (
-    <div className="min-h-[100dvh] overflow-x-hidden student-role-surface py-4 sm:py-8">
+    <div className="min-h-[100dvh] overflow-x-hidden student-role-surface py-1 sm:py-8">
       <div className="max-w-5xl mx-auto px-3 sm:px-4">
         <SessionHeader
           profileName={profileName}
@@ -73,7 +73,7 @@ function SessionPage({
           )}
         </FloatingNotices>
 
-        <div className="py-4 sm:py-8">
+        <div className="pt-1 pb-4 sm:py-8">
           <SessionModeBanner
             assignment={sessionAssignment}
             mode={mode}

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { createPupil, login, readServerProfile } from './lib/app.js'
+import { createPupil, login, readServerProfile, openThemeControls } from './lib/app.js'
 import { teacherLogin, sendScreening } from './lib/teacher.js'
 import { openDispatch, openResults, reviewOf, chooseCollection } from './lib/screening.js'
 
@@ -37,6 +37,7 @@ test('Authored fraction shortcuts and frac notation agree in preview, pupil and 
   await expect(numerator).toHaveCSS('border-bottom-style', 'solid')
   await expect(question).toContainText('Vanlig division: 6/2.')
   for (const theme of ['light', 'dark']) {
+    await openThemeControls(student)
     await student.getByRole('combobox', { name: 'Välj tema' }).selectOption(theme)
     await student.screenshot({ path: testInfo.outputPath(`fraction-pupil-${theme}.png`), fullPage: true })
   }

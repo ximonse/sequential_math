@@ -44,8 +44,11 @@ färdigt område. Ett blindtest efter bygget enligt planen återstår.
 | E12 | Komponentvis vid olika nämnare | `fraction_components_separately` (8 av 9) | Rätt |
 
 **Sammanfattning:** av tio felprofiler hittades 2 helt, 3 delvis, 1 missvisande
-och 4 missades. Båda kontrollerna fick inga falska hypoteser. Som jämförelse gav
-aritmetikens blindtest 1–3 8–9 rätt av 12.
+och 4 missades. Båda kontrollerna fick inga falska hypoteser. Räknat som
+tidigare blindtest (kontrollerna ingår bland 12): 4 rätt, 3 delvis, 1 missvisande,
+4 missade, jämfört med 8–9 rätt av 12 i aritmetikens blindtest 1–3.
+
+Kontrollsummorna gäller de committade filerna med LF-radslut.
 
 ## Fynd till bråkpaketet
 

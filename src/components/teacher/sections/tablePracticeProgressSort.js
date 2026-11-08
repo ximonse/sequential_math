@@ -1,7 +1,7 @@
 export const TABLE_STUDENT_COLUMNS = [
   ['name', 'Elev'], ['attempts', 'Svar'], ['correct', 'Rätt'],
   ['accuracy', 'Andel rätt'], ['previous', 'Tidigare'],
-  ['median', 'Median rätt'], ['factors', 'Faktorer'],
+  ['median', 'Median rätt'], ['best', 'Bästa'], ['factors', 'Faktorer'],
   ['completions', 'Rundor'], ['evidence', 'Underlag']
 ]
 
@@ -18,6 +18,7 @@ function valueFor(item, key) {
   if (!item.available) return null
   if (key === 'previous') return item.previous.accuracy
   if (key === 'median') return item.current.medianTimeSec
+  if (key === 'best') return item.current.bestMedianSec
   if (key === 'accuracy') return item.current.accuracy
   if (key === 'factors') return item.current.factorsCovered
   if (key === 'completions') return item.current.completions

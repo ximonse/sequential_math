@@ -143,7 +143,7 @@ test('Framsteg: Elev togglar namn, testade tabeller och starka resultat över m�
   await table.getByRole('button', { name: /^Elev:/ }).click()
   await expect.poll(names).toEqual([2,1,3,0].map(i => pupils[i].loginCode))
   await expect(table.locator('tbody tr').first()).toContainText('3 snabba · 3 hela')
-  await panel.getByLabel('Period för tabellöversikt', { exact: true }).selectOption('14')
+  await panel.getByLabel('Period för tabellöversikt', { exact: true }).selectOption('14d')
   await expect(table.getByRole('button', { name: /^Elev: resultat/ })).toBeVisible()
   await expect.poll(names).toEqual([2,1,3,0].map(i => pupils[i].loginCode))
   await panel.screenshot({ path: testInfo.outputPath('overview-performance-sort.png') })

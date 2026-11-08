@@ -3641,6 +3641,43 @@
       "issue": "https://github.com/ximonse/sequential_math/issues/45",
       "kind": "funktion",
       "tasks": []
+    },
+    {
+      "id": "table-practice-long-periods",
+      "area": "Framsteg",
+      "title": "Tabellträning: 30 dagar, terminer och totalt",
+      "status": "Lokalt klart",
+      "purpose": "Låt läraren följa bästa tider, median och förbättring över längre tid i Tabellöversikt och Tabellträning – utveckling.",
+      "next": "Simon granskar perioderna lokalt och beslutar om permanent arkiv bortom elevloggens 5 000 svar behövs.",
+      "acceptance": "Periodval 7 och 14 dagar, senaste 30 dagarna, denna termin, förra terminen och totalt i båda panelerna; valet ligger kvar efter omladdning. HT = aug–dec, VT = jan–jun, juli bara i totalt. Bästa = lägsta dags-/veckomedian med minst fem ostörda rätta svar; förändring jämför medianen med föregående period. Begränsad historik markeras när loggen är kapad.",
+      "requires": [],
+      "affects": [],
+      "decision": "2026-11-08: Simon beställer 1 månad, denna termin, förra terminen och totalt i tabellöversikten och även i Tabellträning – utveckling. Simon bekräftar HT aug–dec och VT jan–jun. Viktigast: bästa tider, genomsnitt och förbättring över tid, inte varje sekund på varje tal. Agentens tolkning (ej Simons beslut): bästa = lägsta veckomedian/dagsmedian med minst 5 tider; totalt har ingen jämförelse; juli räknas som VT för \"denna termin\" men bara i totalt för data.",
+      "evidence": "2026-11-08 lokalt på branch fix/small-tweaks: kompakta aggregat (0,1 s-histogram, veckopunkter) räknas vid läsning ur elevloggen i tablePracticeLongHistory.js; inget nytt sparas i profilen. Enhetstester för terminsgränser, kapad logg, histogrammedian och klassmedian. src-tester gröna utom förexisterande scripts/audit-ncm-rule-readiness (NCM-referensens hash, orelaterad). Build grön. Hela robotsviten kördes; tabellrobotar uppdaterade för ny kolumn/periodvärden och ny kontroll av Totalt + kvarliggande val, omkörda gröna tillsammans med tidigare instabila robotar. Robotens skärmbild granskad. Inte pushat.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "periods-build",
+          "text": "Periodval och aggregat i båda tabellpanelerna",
+          "done": true
+        },
+        {
+          "id": "periods-verify",
+          "text": "Tester, build, robotar och skärmbild",
+          "done": true
+        },
+        {
+          "id": "periods-archive",
+          "text": "Beslut: permanent arkiv bortom 5 000 svar",
+          "done": false
+        },
+        {
+          "id": "periods-publish",
+          "text": "Publicera via GitHub när Simon ber om det",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [

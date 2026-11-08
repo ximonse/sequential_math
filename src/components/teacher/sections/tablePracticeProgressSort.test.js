@@ -17,7 +17,7 @@ const students = [
 describe('table student column sorting', () => {
   it('defines a sort for every visible column', () => {
     expect(TABLE_STUDENT_COLUMNS.map(([key]) => key)).toEqual([
-      'name', 'attempts', 'correct', 'accuracy', 'previous', 'median', 'factors', 'completions', 'evidence'
+      'name', 'attempts', 'correct', 'accuracy', 'previous', 'median', 'best', 'factors', 'completions', 'evidence'
     ])
   })
 

@@ -1,10 +1,10 @@
-import { buildTablePracticeProgress } from '../../../lib/tablePracticeProgress'
+import { buildTablePracticeProgressForPeriod } from '../../../lib/tablePracticeLongProgress'
 import { tableCompletionStatus } from '../../../lib/tableDrillCompletion'
 
 export const TABLE_NUMBERS = Array.from({ length: 11 }, (_, index) => index + 2)
 
-export function buildTablePracticeOverview(students, days, now = Date.now()) {
-  const byTable = TABLE_NUMBERS.map(table => buildTablePracticeProgress(students, { table, days, now }))
+export function buildTablePracticeOverview(students, period, now = Date.now()) {
+  const byTable = TABLE_NUMBERS.map(table => buildTablePracticeProgressForPeriod(students, { table, period, now }))
   const sourceById = new Map((Array.isArray(students) ? students : []).map(student => [String(student.studentId || ''), student]))
   const rows = byTable[0].students.map(student => {
     const row = {
@@ -25,7 +25,7 @@ export function buildTablePracticeOverview(students, days, now = Date.now()) {
       completedPupils: rows.filter(row => row.tables[progress.table].completionStatus.knownEver).length,
       totalPupils: rows.length
     }])),
-    period: { start: byTable[0].currentStart, end: byTable[0].endDate }
+    period: { start: byTable[0].currentStart, end: byTable[0].endDate, label: byTable[0].periodLabel }
   }
 }
 

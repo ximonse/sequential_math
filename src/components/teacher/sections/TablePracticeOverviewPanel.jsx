@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { TABLE_PERIODS, normalizeTablePeriod } from '../../../lib/tablePracticeLongProgress'
 import { buildTablePracticeOverview, sortTablePracticeOverviewRows, TABLE_NUMBERS, OVERVIEW_STUDENT_SORTS, nextOverviewStudentSort } from './tablePracticeOverview'
 
 const percentage = value => Number.isFinite(value) ? `${Math.round(value * 100)}%` : '–'
@@ -46,10 +47,11 @@ function TableCell({ item, table, onOpenTableProgress, cohort = false }) {
   </td>
 }
 
-export default function TablePracticeOverviewPanel({ students = [], days = 14, onDaysChange, onOpenStudentDetail, onOpenTableProgress, collapseControl }) {
+export default function TablePracticeOverviewPanel({ students = [], period: requestedPeriod = '14d', onPeriodChange, onOpenStudentDetail, onOpenTableProgress, collapseControl }) {
   const [sortBy, setSortBy] = useState('name')
   const [sortDir, setSortDir] = useState('asc')
-  const overview = useMemo(() => buildTablePracticeOverview(students, days), [students, days])
+  const period = normalizeTablePeriod(requestedPeriod)
+  const overview = useMemo(() => buildTablePracticeOverview(students, period), [students, period])
   const rows = useMemo(() => sortTablePracticeOverviewRows(overview.rows, sortBy, sortDir), [overview.rows, sortBy, sortDir])
   const sort = key => {
     if (sortBy === key) setSortDir(previous => previous === 'asc' ? 'desc' : 'asc')
@@ -68,16 +70,16 @@ export default function TablePracticeOverviewPanel({ students = [], days = 14, o
       </div>
       <div className="flex items-center gap-2">
         <label className="text-sm font-medium text-slate-700">Period
-          <select aria-label="Period för tabellöversikt" value={days} onChange={event => onDaysChange?.(Number(event.target.value))}
+          <select aria-label="Period för tabellöversikt" value={period} onChange={event => onPeriodChange?.(event.target.value)}
             className="ml-2 rounded border border-slate-300 bg-white px-1.5 py-0.5 text-sm">
-            <option value={7}>7 dagar</option><option value={14}>14 dagar</option>
+            {TABLE_PERIODS.map(item => <option key={item.key} value={item.key}>{item.label}</option>)}
           </select>
         </label>
         {collapseControl}
       </div>
     </div>
     <div className="my-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600">
-      <span>{overview.period.start}–{overview.period.end}</span>
+      <span>{overview.period.label !== TABLE_PERIODS.find(item => item.key === period)?.label ? `${overview.period.label} · ` : ''}{overview.period.start}–{overview.period.end}</span>
       <span><span className="font-semibold text-emerald-800">Grön kant</span> hel runda tidigare</span>
       <span><span className="font-semibold text-emerald-800">Ljusgrön</span> senaste 7 dagarna</span>
       <span><span className="font-semibold text-emerald-800">Grön</span> idag</span>

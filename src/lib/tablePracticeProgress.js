@@ -17,7 +17,7 @@ function emptyBucket() {
   }
 }
 
-function isTableDrill(problem) {
+export function isTableDrill(problem) {
   const template = String(problem?.template || '').trim()
   const problemType = String(problem?.problemType || '').trim()
   const selectionReason = String(problem?.selectionReason || problem?.metadata?.selectionReason || '').trim()
@@ -110,7 +110,7 @@ function addTableCompletions(profile, dayMap, exclusions, completeness) {
   }
 }
 
-function getLogCompleteness(profile, source, sourceName, problemLog, recentProblems) {
+export function getLogCompleteness(profile, source, sourceName, problemLog, recentProblems) {
   const lifetime = Number(profile?.stats?.lifetimeProblems ?? profile?.stats?.totalProblems)
   const hasLifetime = Number.isFinite(lifetime) && lifetime >= 0
   const logAtCap = problemLog.length >= MAX_STORED_PROBLEM_LOG

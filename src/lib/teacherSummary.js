@@ -1,10 +1,12 @@
 import { computeTeacherSummary } from './masteryCalculation.js'
 import { ALL_LEVELS, ALL_OPERATIONS } from './operations.js'
 import { buildTablePracticeHistory } from './tablePracticeProgress.js'
+import { buildTablePracticeLongHistory } from './tablePracticeLongHistory.js'
 
 export function deriveTeacherSummary(profile) {
   const summary = computeTeacherSummary(profile, ALL_OPERATIONS, ALL_LEVELS)
-  return { ...summary, tablePractice: buildTablePracticeHistory(profile, summary.updatedAt) }
+  return { ...summary, tablePractice: buildTablePracticeHistory(profile, summary.updatedAt),
+    tablePracticeLong: buildTablePracticeLongHistory(profile, summary.updatedAt) }
 }
 
 export function refreshTeacherSummary(profile) {

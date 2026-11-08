@@ -23,6 +23,7 @@ import StudentDetailTrainingPriorityPanel from './StudentDetailTrainingPriorityP
 import SupportPriorityPanel from './SupportPriorityPanel'
 import TablePracticeProgressPanel from './TablePracticeProgressPanel'
 import TablePracticeOverviewPanel from './TablePracticeOverviewPanel'
+import { normalizeTablePeriod } from '../../../lib/tablePracticeLongProgress'
 import LocalTestDataPanel from './LocalTestDataPanel'
 import LocalTestDataExportPanel from './LocalTestDataExportPanel'
 import TicketSectionContainer from './TicketSectionContainer'
@@ -190,8 +191,8 @@ export default function DashboardLayout({
     try {
       const saved = JSON.parse(localStorage.getItem('mathapp_table_progress_selection') || '{}')
       return { table: Number.isInteger(Number(saved.table)) && Number(saved.table) >= 2 && Number(saved.table) <= 12 ? Number(saved.table) : 7,
-        days: Number(saved.days) === 14 ? 14 : 7, studentId: String(saved.studentId || '') }
-    } catch { return { table: 7, days: 7, studentId: '' } }
+        period: normalizeTablePeriod(saved.period ?? saved.days), studentId: String(saved.studentId || '') }
+    } catch { return { table: 7, period: '7d', studentId: '' } }
   })
   const tableProgressStudents = useMemo(() => activeWorkspace === 'focus'
     ? selectedClassIds.length > 0 ? students.filter(student => recordMatchesClassFilter(student, selectedClassIds)) : students
@@ -305,8 +306,8 @@ export default function DashboardLayout({
     if (id === 'tableoverview') return (
       <TablePracticeOverviewPanel
         students={tableProgressStudents}
-        days={tableSelection.days}
-        onDaysChange={days => setTableSelection(previous => ({ ...previous, days }))}
+        period={tableSelection.period}
+        onPeriodChange={period => setTableSelection(previous => ({ ...previous, period }))}
         onOpenStudentDetail={handleOpenStudentDetail}
         onOpenTableProgress={openTableProgress}
       />

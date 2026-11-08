@@ -1,24 +1,37 @@
-import { cloneElement, useEffect } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { NotebookAnswerTarget } from './notebookAnswerTarget'
 import './practiceLayout.css'
 
 // Shared frame for every kind of practice question, so arithmetic, fractions,
 // algebra and word problems look alike and nothing moves after answering.
 export default function PracticeLayout({ question, answer, status, keypad, primary = null, tools = null, scratchpad = null, notebook = null,
   notebookOpen = false, onCloseNotebook }) {
+  // In the notebook sheet the notebook's own keypad writes the answer once the pupil
+  // taps the answer box, so no on-screen keyboard is needed for number answers.
+  const [answerChosen, setAnswerChosen] = useState(false)
+  const answerActive = notebookOpen && answerChosen
+  const onKey = keypad?.props?.onKey
+  const answerTarget = useMemo(() => ({
+    active: answerActive,
+    onKey: character => onKey?.(character === '-' ? '−' : character),
+    onLeave: () => setAnswerChosen(false)
+  }), [answerActive, onKey])
+  const closeSheet = useCallback(() => { setAnswerChosen(false); onCloseNotebook?.() }, [onCloseNotebook])
+
   useEffect(() => {
     if (!notebookOpen) return undefined
-    const onKeyDown = event => { if (event.key === 'Escape') onCloseNotebook?.() }
+    const onKeyDown = event => { if (event.key === 'Escape') closeSheet() }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [notebookOpen, onCloseNotebook])
+  }, [notebookOpen, closeSheet])
 
   const layout = <div className={`practice-layout ${notebookOpen ? 'practice-layout--notebook' : ''}`}>
     <div className="practice-layout__question flex flex-col items-stretch gap-2 md:flex-row md:items-center">
       <div className="min-w-0 flex-1">{question}</div>
       <div className="flex shrink-0 items-center justify-center gap-2 text-3xl font-bold text-gray-800">
         <span aria-hidden="true">=</span>
-        {/* With the keypad set aside the device keyboard writes the answer. */}
-        {notebookOpen && answer?.props?.inputMode === 'none' ? cloneElement(answer, { inputMode: 'text' }) : answer}
+        <div onPointerDown={() => { if (notebookOpen) setAnswerChosen(true) }}
+          className={answerActive ? 'rounded ring-4 ring-blue-400' : ''}>{answer}</div>
         {notebookOpen && primary && <button type="button" onClick={primary.onClick} disabled={primary.disabled}
           className={`h-14 rounded-xl px-4 text-xl font-bold text-white disabled:bg-gray-300 ${primary.isAnswering ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'}`}>
           {primary.isAnswering ? 'Svara' : 'Nästa'}</button>}
@@ -36,16 +49,16 @@ export default function PracticeLayout({ question, answer, status, keypad, prima
 
   // The same elements either way: opening the sheet only changes classes, so the
   // notebook, the answer and the keypad keep their state.
-  return <div role={notebookOpen ? 'dialog' : undefined} aria-modal={notebookOpen ? 'true' : undefined}
+  return <NotebookAnswerTarget.Provider value={answerTarget}><div role={notebookOpen ? 'dialog' : undefined} aria-modal={notebookOpen ? 'true' : undefined}
     aria-label={notebookOpen ? 'Räknehäfte' : undefined} className={notebookOpen ? 'practice-notebook-sheet bg-white' : 'w-full'}>
     <div className={notebookOpen ? 'mx-auto max-w-5xl' : ''}>
       {notebookOpen && <div className="mb-2 flex justify-end">
-        <button type="button" onClick={onCloseNotebook}
+        <button type="button" onClick={closeSheet}
           className="min-h-11 rounded-lg border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700">Dölj räknehäfte</button>
       </div>}
       {layout}
     </div>
-  </div>
+  </div></NotebookAnswerTarget.Provider>
 }
 
 // The question itself: same box, size and colours for every kind of task. Talpar

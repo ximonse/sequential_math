@@ -49,7 +49,7 @@ function newGrid(task) {
 
 function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = null, saveState = null, workspaceOnly = false,
   onNext = null, onPrevious = null, onHome = null, onSubmitCollection = null, collectionTitle = '', questionIndex = 1, questionCount = 1,
-  guideScope = '', imageContext = {} }) {
+  guideScope = '', imageContext = {}, answerTarget = null }) {
   const availableTasks = pilot ? [pilot.task] : TASKS
   const [task, setTask] = useState(pilot?.task || TASKS[0])
   const [grid, setGrid] = useState(() => pilot?.snapshot || newGrid(pilot?.task || TASKS[0]))
@@ -64,7 +64,10 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   const [linePreview, setLinePreview] = useState(null)
   const [lineMode, setLineMode] = useState(false)
   const [eraseMode, setEraseMode] = useState(false)
-  const [inputTarget, setInputTarget] = useState(pilot?.task.gridEnabled === false ? 'answer' : 'grid')
+  const [inputTarget, setTarget] = useState(pilot?.task.gridEnabled === false ? 'answer' : 'grid')
+  // In practice the notebook keypad can write the practice answer (answerTarget);
+  // choosing anything in the notebook hands the keypad back to the notebook.
+  const setInputTarget = target => { setTarget(target); if (target !== 'answer') answerTarget?.onLeave?.() }
   const [contextMenu, setContextMenu] = useState(null)
   const [selectedGap, setSelectedGap] = useState(null)
   // The division button places a short division in the chosen cell (Simon 2026-11-03).
@@ -425,6 +428,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   }
 
   function keypad(character) {
+    if (answerTarget?.active) { answerTarget.onKey(character); return }
     character = character === '-' ? '−' : character === '*' ? '×' : character
     if (inputTarget === 'gap') { writeGap(character); return }
     if (inputTarget === 'answerLine') { writeAnswerLine(character); return }
@@ -558,6 +562,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   }
 
   function writeOperationSign(sign) {
+    if (answerTarget?.active) { answerTarget.onKey(sign); return }
     if (inputTarget === 'answer') { keypad(sign); return }
     if (selectedCell?.note || selectedCell?.struck) return
     setInputTarget('grid')

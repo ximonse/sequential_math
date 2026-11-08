@@ -18,7 +18,7 @@ const measure = page => page.evaluate(() => {
   const primary = [...document.querySelectorAll('.practice-layout__keypad button')].find(button => /^(Svara|Nästa)$/u.test(button.textContent.trim()))
   const status = document.querySelector('.practice-layout__status')
   const rect = element => element?.getBoundingClientRect()
-  return { input: rect(input)?.toJSON(), card: rect(card)?.toJSON(), keyTop: Math.round(rect(key).top + scrollY),
+  return { inputMode: input?.getAttribute('inputmode'), input: rect(input)?.toJSON(), card: rect(card)?.toJSON(), keyTop: Math.round(rect(key).top + scrollY),
     primaryBottom: Math.round(rect(primary).bottom + scrollY), statusBottom: Math.round(rect(status).bottom + scrollY), viewport: innerHeight }
 })
 
@@ -36,6 +36,8 @@ for (const device of DEVICES) {
       const state = await readState(page)
       const before = await measure(page)
       if (before.primaryBottom > before.viewport) problems.push(`${mode}: Svara ligger ${before.primaryBottom - before.viewport} px under skärmen`)
+      // Touch screens use the app's own keys; the device keyboard must not cover them.
+      if (before.inputMode !== 'none') problems.push(`${mode}: skärmtangentbordet kan komma fram (inputmode ${before.inputMode})`)
       const beside = before.input.left >= before.card.right - 1
       if (beside !== answerBeside) problems.push(`${mode}: svaret ligger ${beside ? 'bredvid' : 'under'} frågan`)
       await page.screenshot({ path: info.outputPath(`${name}-${mode}.png`) })

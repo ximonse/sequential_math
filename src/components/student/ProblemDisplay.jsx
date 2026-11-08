@@ -38,7 +38,7 @@ function ProblemDisplay({
     question={question}
     answer={<AnswerBox isAnswering={isAnswering} inputRef={inputRef} value={inputValue} onSubmit={onSubmit}
       onChange={raw => onInputChange(normalizeAnswerInput(raw))}
-      inputMode={suppressSoftKeyboard ? 'none' : 'numeric'} result={formatNumber(result)} />}
+      inputMode={suppressSoftKeyboard ? 'none' : 'numeric'} textAnswer={problem?.answer?.type === 'text'} result={formatNumber(result)} />}
     status={<PracticeStatus feedback={feedback} studentAnswer={formatNumber(feedback?.studentAnswer)} />}
     keypad={<PracticeKeypad specials={[',', '±']} isAnswering={isAnswering}
       onKey={key => { if (isAnswering) onInputChange(applyKeypadInput(inputValue, key)) }}

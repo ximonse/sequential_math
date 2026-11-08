@@ -59,3 +59,44 @@
   .practice-layout__status > div { height: 3rem; }
   .practice-layout__question .rounded-2xl { padding-top: 0.375rem; padding-bottom: 0.375rem; }
 }
+
+/* The notebook sheet on phones: speed does not matter while working in the notebook,
+   so the grid and its keys shrink until the question, the answer, the grid and the
+   notebook keypad fit on one screen (Simon 2026-11-08). The screening notebook is
+   not affected. */
+@media (max-width: 767px) {
+  .practice-notebook-sheet { padding: 0.5rem; }
+  .practice-notebook-sheet .practice-layout { gap: 0.25rem; }
+  .practice-notebook-sheet .practice-layout__question .rounded-2xl { padding: 0.25rem 0.75rem; }
+  .practice-notebook-sheet .practice-layout__question .rounded-2xl > div { font-size: 1.5rem; line-height: 2rem; }
+  .practice-notebook-sheet .practice-layout__status > div { height: 2.5rem; }
+  /* Question and answer share one row in the sheet to leave room for the grid. */
+  .practice-notebook-sheet .practice-layout__question { flex-direction: row; align-items: center; }
+  .practice-notebook-sheet .practice-layout__question > div:last-child { gap: 0.25rem; }
+  .practice-notebook-sheet .practice-layout__question .w-40 { width: 6rem; }
+  .practice-notebook-sheet .practice-layout__question input { font-size: 1.5rem; }
+  .practice-notebook-sheet .practice-layout__question button { padding-left: 0.75rem; padding-right: 0.75rem; font-size: 1.125rem; }
+  .practice-notebook-sheet .diagnostic-grid {
+    --diagnostic-cell-width: calc((100vw - 3.5rem) / 12);
+    --diagnostic-cell-height: 2.25rem;
+  }
+  .practice-notebook-sheet .diagnostic-workspace { gap: 6px; }
+  .practice-notebook-sheet .notebook-save-status { visibility: hidden; }
+  .practice-notebook-sheet .notebook-status-row { margin-bottom: 2px; }
+  .practice-notebook-sheet .notebook-tool-row { margin-bottom: 4px; }
+  .practice-notebook-sheet .notebook-tool-row button { height: 36px; }
+  .practice-notebook-sheet .notebook-keypad { padding: 6px; }
+  .practice-notebook-sheet .notebook-operators button { min-height: 30px; }
+  .practice-notebook-sheet .notebook-numbers { gap: 4px; }
+  .practice-notebook-sheet .notebook-numbers button { min-height: 34px; font-size: 20px; }
+  .practice-notebook-sheet .notebook-delete { margin-top: 4px; gap: 4px; }
+  .practice-notebook-sheet .notebook-delete button { min-height: 34px; }
+  .practice-notebook-sheet .notebook-symbol-grid button { min-height: 34px; font-size: 18px; }
+}
+
+@media (max-width: 767px) and (max-height: 720px) {
+  .practice-notebook-sheet .diagnostic-grid { --diagnostic-cell-height: 1.75rem; }
+  .practice-notebook-sheet .practice-layout__status > div { height: 2rem; }
+  .practice-notebook-sheet .notebook-numbers button { min-height: 30px; font-size: 18px; }
+  .practice-notebook-sheet .notebook-delete button { min-height: 30px; }
+}

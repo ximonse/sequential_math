@@ -73,9 +73,11 @@ export function QuestionCard({ label = '', children, align = 'center', size = 'l
 }
 
 // The answer slot keeps one size whether it holds the input or the correct answer.
-export function AnswerBox({ isAnswering, inputRef, value, onChange, onSubmit, inputMode, result }) {
+// Number answers use the app's keys, so touch screens get no device keyboard; a
+// written answer (for example an explanation) needs the device keyboard (Simon 2026-11-08).
+export function AnswerBox({ isAnswering, inputRef, value, onChange, onSubmit, inputMode, result, textAnswer = false }) {
   return <div className="flex h-14 w-40 items-center justify-center md:w-44">
-    {isAnswering ? <input ref={inputRef} type="text" inputMode={inputMode} value={value} autoComplete="off" placeholder="?"
+    {isAnswering ? <input ref={inputRef} type="text" inputMode={textAnswer ? 'text' : inputMode} value={value} autoComplete="off" placeholder="?"
       onChange={event => onChange(event.target.value)}
       onKeyDown={event => { if (event.key === 'Enter' && value.trim() !== '') onSubmit() }}
       className="h-14 w-full rounded border-b-4 border-gray-400 bg-gray-100 text-center text-3xl focus:border-blue-500 focus:outline-none md:text-4xl" />

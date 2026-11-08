@@ -7,14 +7,39 @@ import WorkEvidenceNote from '../WorkEvidenceNote.jsx'
 import { contrastFollowUpEligible } from '../../../lib/practiceModes.js'
 import { diagnosticRequest } from './diagnosticRequest.js'
 import { OPERATION_LABELS } from '../../../lib/operations.js'
+import { CONTRAST_LABELS_SV, NOT_RIVALS } from '../../../domains/predictableErrors/contrast.js'
+import { modelDescription } from '../../../domains/predictableErrors/modelDescriptions.js'
 import '../../../dev/diagnosticGridPrototype.css'
 
-const originLabels = { rule: 'Regelbaserat granskningsunderlag', ai: 'AI-formulerad tolkning – behöver lärargranskning', teacher: 'Lärarformulerad tolkning' }
+const originLabels = { rule: 'Regelbaserad analys', ai: 'AI-formulerad tolkning – behöver lärargranskning', teacher: 'Lärarformulerad tolkning' }
+const SYMBOLS = { addition: '+', subtraction: '−', multiplication: '·', division: '/' }
+// Plain titles for models without a contrast label.
+const EXTRA_TITLES = {
+  fraction_components_separately: 'Räknar täljare och nämnare var för sig',
+  fraction_keep_first_denominator: 'Behåller första nämnaren',
+  fraction_integer_in_denominator: 'Multiplicerar in heltalet i nämnaren',
+  fraction_add_instead_of_multiply: 'Adderar i stället för att multiplicera'
+}
+
+const questionText = entry => entry?.question.promptText || entry?.question.promptSv || (() => {
+  const { a, b } = entry?.question.values || {}
+  const symbol = SYMBOLS[entry?.question.operation]
+  return symbol && a !== undefined && b !== undefined ? `${a} ${symbol} ${b}` : OPERATION_LABELS[entry?.question.operation] || 'uppgift'
+})()
+const titleFor = item => (item.signalCode && (CONTRAST_LABELS_SV[item.signalCode] || EXTRA_TITLES[item.signalCode]))
+  || (item.basis === 'existing_signal' ? 'Tidigare felmarkering' : String(item.textSv).split('. ')[0])
+const SCOPE_LABELS = { addition: 'addition', subtraction: 'subtraktion', multiplication: 'multiplikation', division: 'division',
+  decimal_addition: 'decimaladdition', decimal_subtraction: 'decimalsubtraktion' }
+// The caveat stands once at the top of the report, not in every card.
+const withoutCaveat = text => String(text).replace(/\s*Det är en beräknad kandidat, inte en fastställd elevmetod\.?/u, '').trim()
+const shortDate = timestamp => timestamp ? new Date(timestamp).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' }) : ''
+
 export default function PupilAnalysisReportView({ report, savedItem, baseUrl, studentId, classId }) {
   const [selected, setSelected] = useState(null)
   const [original, setOriginal] = useState(null)
   const [message, setMessage] = useState('')
   const activeRef = useRef(null)
+  const byRef = new Map(report.evidence.map(entry => [entry.ref, entry]))
   const reviewFor = item => {
     if (!savedItem) return null
     const check = savedItem.checkIns.at(-1), decision = check?.decisions.find(value => value.hypothesisId === item.id)
@@ -22,58 +47,119 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
       checkInRevision: check?.revision ?? 0, decision: decision?.decision ?? 'undecided',
       interpretationSv: decision?.interpretationSv ?? '', goalSv: check?.goalSv ?? '' }
   }
-  const references = (refs, label) => <details className="mt-2 text-sm"><summary>{label} ({refs.length})</summary>
+  const slip = item => NOT_RIVALS.has(item.signalCode)
+  const suspicions = report.hypotheses.filter(item => !slip(item))
+  const slips = report.hypotheses.filter(slip)
+
+  const detail = entry => selected?.ref === entry.ref && <section className="mt-1 mb-2 rounded border border-slate-300 p-3" aria-label="Rapportens källsvar">
+    <QuestionText>{questionText(entry)}</QuestionText>
+    <p>Elevens svar: {String(entry.answer.studentAnswer ?? 'saknas')} · Facit: {String(entry.answer.correctAnswer ?? 'manuell bedömning')}</p>
+    <WorkEvidenceNote work={entry.interpretation.work} review={entry.teacherReview} />
+    <p className="text-sm">{new Date(entry.timestamp).toLocaleString('sv-SE')} · {entry.source === 'practice' ? 'Träning' : 'Screening'}</p>
+    {entry.source === 'screening' && <button type="button" className="mt-2 rounded border px-2 py-0.5 text-sm" onClick={async () => {
+      setMessage('Hämtar originalet…')
+      try {
+        const params = new URLSearchParams({ resource: 'evidence', source: report.source, from: report.period.from, to: report.period.to,
+          ref: entry.ref, snapshotRevision: report.snapshotRevision })
+        const response = await diagnosticRequest(`${baseUrl}&${params}`)
+        if (activeRef.current !== entry.ref) return
+        if (!response.ok) throw new Error(response.status === 409 ? 'Källan har ändrats sedan rapporten sparades. Rapportens sparade svar är kvar; hämta ett nytt underlag för aktuellt räknehäfte.' : response.data.error)
+        setOriginal(response.data.entry); setMessage('Originalet är hämtat utan ändringar.')
+      } catch (error) { if (activeRef.current === entry.ref) setMessage(error.message || 'Originalet kunde inte hämtas.') }
+    }}>Visa sparat räknehäfte</button>}
+    {message && <p role="status" className="text-sm mt-2">{message}</p>}
+    {original?.ref === entry.ref && original.detail && <DiagnosticAttemptHistory snapshot={original.detail.snapshot} task={original.question}
+      imageContext={{ teacher: true, assignmentId: original.reference.assignmentId, classId: original.context.classIdAtAttempt }} />}
+  </section>
+
+  // One row per answer: task, the pupil's answer, the key, date and source. No click needed to read it.
+  const rows = (refs, { wrong = true, note } = {}) => <ul className="mt-1 mb-1 space-y-0.5 tabular-nums">
     {refs.map((ref, index) => {
-      const entry = report.evidence.find(e => e.ref === ref)
-      return <button key={ref} type="button" className="mr-3 mt-1 rounded border px-2 py-1 underline" onClick={() => { activeRef.current = ref; setSelected(entry); setOriginal(null); setMessage('') }}>
-        Visa svar {index + 1}: {entry?.question.promptText || entry?.question.promptSv || OPERATION_LABELS[entry?.question.operation] || 'uppgift'}
-      </button>
+      const entry = byRef.get(ref)
+      if (!entry) return null
+      const text = questionText(entry)
+      return <li key={ref}>
+        <div className={`flex flex-wrap items-baseline gap-x-3 rounded px-2 py-0.5 ${wrong ? 'bg-blue-50' : 'bg-green-50'}`}>
+          <span className="min-w-28">{/^[\d\s+−\-·×*/:.,]+$/u.test(text) ? `${text} =` : text}</span>
+          <span className={`font-semibold ${wrong ? 'text-red-700' : 'text-green-700'}`}>{String(entry.answer.studentAnswer ?? '–')}</span>
+          {wrong && <span className="text-sm">rätt {String(entry.answer.correctAnswer ?? '?')}</span>}
+          {note?.(entry) && <span className="text-xs text-slate-600">{note(entry)}</span>}
+          <span className="ml-auto text-xs text-slate-600">{entry.source === 'practice' ? 'träning' : 'screening'} {shortDate(entry.timestamp)}</span>
+          <button type="button" className="text-xs underline text-slate-700" aria-expanded={selected?.ref === ref}
+            aria-label={`Visa svar ${index + 1}: ${text}`} onClick={() => {
+              const next = selected?.ref === ref ? null : entry
+              activeRef.current = next?.ref ?? null; setSelected(next); setOriginal(null); setMessage('')
+            }}>{selected?.ref === ref ? 'Dölj' : 'Detaljer'}</button>
+        </div>
+        {detail(entry)}
+      </li>
     })}
-  </details>
+  </ul>
+
   return <section aria-label="Analysrapport" className="mt-3 text-slate-900">
-    <p className="text-sm font-semibold">{originLabels[report.provenance.kind]}</p>
-    <h4 className="mt-1 font-semibold">{report.scopeSv}</h4>
-    <p className="text-sm">{report.period.from}–{report.period.to} · {report.source === 'practice' ? 'Träning' : report.source === 'screening' ? 'Screening' : 'Träning och screening'} · {report.counts.total} svar: {report.counts.correct} rätt, {report.counts.incorrect} fel. Övriga: {report.counts.total - report.counts.correct - report.counts.incorrect}.</p>
-    <p className="mt-2 text-sm">Underlaget är ett urval. Historikens fullständighet är okänd. Antal och referenser är kontrollerade; tolkningens rimlighet behöver granskas.</p>
-    {references(report.exampleRefs || [], 'Svar från periodens början, högst 20')}
-    <h5 className="mt-3 font-semibold">Det som fungerar i urvalet</h5>
-    {report.strengths.length ? report.strengths.map(item => <div key={item.id} className="mt-2"><p>{item.textSv}</p>{references(item.refs, 'Rätta svar')}</div>) : <p className="text-sm">Inga sådana exempel valda. Det betyder inte att eleven saknar kunnande.</p>}
-    <h5 className="mt-3 font-semibold">Möjliga felmönster att undersöka</h5>
-    {!report.hypotheses.length && <p className="text-sm">Otillräckligt underlag för en felhypotes i detta granskningsunderlag.</p>}
-    {report.hypotheses.map(item => <div key={item.id} className="mt-3 border-l-2 border-amber-400 pl-3">
-      <p className="text-sm font-semibold">{item.basis === 'rule_candidate' ? 'Beräknad felmodell' : item.basis === 'existing_signal' ? 'Befintlig analyssignal' : 'Tolkning'} · {item.evidenceStatus === 'insufficient' ? 'Otillräckligt underlag' : 'Behöver lärargranskning'}</p>
-      <p>{item.textSv}</p>{references(item.supportRefs, 'Stödsvar')}{references(item.counterRefs, 'Valda motexempel')}
-      <ReportReviewNote review={reviewFor(item)} />
-      {!item.counterRefs.length && <p className="text-sm mt-1">Inga motexempel valda; det innebär inte att motexempel saknas.</p>}
-      <p className="mt-2 text-sm font-semibold">Alternativa förklaringar</p><ul className="list-disc pl-5 text-sm">{item.alternativesSv.map((value, i) => <li key={i}>{value}</li>)}</ul>
-      <p className="mt-2 text-sm"><strong>Att undersöka:</strong> {item.nextCheckSv}</p>
-      {studentId && contrastFollowUpEligible(item, report) && <ContrastFollowUp key={`${item.id}:${savedItem?.checkIns.at(-1)?.revision ?? 0}`} item={item} report={report} reportReview={reviewFor(item)} studentId={studentId} classId={classId} baseUrl={baseUrl} />}
-    </div>)}
+    <p className="text-sm text-slate-600">{originLabels[report.provenance.kind]} · {report.period.from}–{report.period.to} · {report.source === 'practice' ? 'Träning' : report.source === 'screening' ? 'Screening' : 'Träning och screening'} · {report.counts.total} svar: {report.counts.correct} rätt, {report.counts.incorrect} fel{(() => { const other = report.counts.total - report.counts.correct - report.counts.incorrect; return other ? `, övriga ${other}` : '' })()}.</p>
+    <p className="mt-2 border-l-4 border-slate-300 pl-2 text-sm text-slate-700">Misstankarna är uträknade ur elevens svar: appen räknar fram vad en elev med felförståelsen skulle svara och jämför. De är inte diagnoser. Pröva dem med kontrastfrågor eller samtal.</p>
+
+    <h5 className="mt-4 text-base font-semibold">Misstänkta felförståelser</h5>
+    {!suspicions.length && <p className="text-sm">Inga felsvar i perioden passar en känd felförståelse.</p>}
+    {suspicions.map(item => {
+      const first = byRef.get(item.supportRefs[0])
+      const description = item.signalCode ? modelDescription(item.signalCode, first?.interpretation.predictable?.scope) : null
+      const weak = item.evidenceStatus === 'insufficient'
+      return <div key={item.id} data-hypothesis={item.signalCode || item.id}
+        className={`mt-3 border border-slate-200 border-l-4 ${weak ? 'border-l-slate-300' : 'border-l-amber-500'} px-3 py-2`}>
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h6 className="text-base font-semibold">{titleFor(item)}{suspicions.filter(other => other.signalCode && other.signalCode === item.signalCode).length > 1
+            && SCOPE_LABELS[first?.interpretation.predictable?.scope] ? ` · ${SCOPE_LABELS[first.interpretation.predictable.scope]}` : ''}</h6>
+          <span className={`rounded px-1.5 text-xs font-semibold ${weak ? 'bg-slate-100 text-slate-600' : 'bg-amber-100 text-amber-900'}`}>{weak ? 'Enstaka svar' : 'Misstanke'}</span>
+        </div>
+        <p className="mt-1 text-sm"><strong>{item.supportCount} felsvar stämmer</strong>
+          {item.counterCount ? ` · ${item.counterCount} rätt på jämförbara uppgifter där felet kunde ha synts` : ''}</p>
+        <p className="mt-1 text-sm">{description?.thinkingSv || withoutCaveat(item.textSv)}</p>
+        {rows(item.supportRefs)}
+        {item.counterRefs.length > 0 && <>
+          <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-slate-600">Rätt trots att felet kunde synas</p>
+          {rows(item.counterRefs, { wrong: false })}
+        </>}
+        <p className="mt-2 text-sm"><strong>Nästa steg:</strong> {item.nextCheckSv}</p>
+        <ReportReviewNote review={reviewFor(item)} />
+        {studentId && contrastFollowUpEligible(item, report) && <ContrastFollowUp key={`${item.id}:${savedItem?.checkIns.at(-1)?.revision ?? 0}`} item={item} report={report} reportReview={reviewFor(item)} studentId={studentId} classId={classId} baseUrl={baseUrl} />}
+        {description?.openersSv?.length > 0 && <details className="mt-2 text-sm"><summary>Samtalsingångar</summary>
+          <ul className="list-disc pl-5">{description.openersSv.map((value, i) => <li key={i}>{value}</li>)}</ul>
+          {description.sourceSv && <p className="mt-1 text-xs text-slate-600">{description.sourceSv}</p>}
+        </details>}
+      </div>
+    })}
+
+    {(() => {
+      const explained = new Set(report.hypotheses.flatMap(item => item.supportRefs))
+      const unexplained = (report.exampleRefs || []).filter(ref => byRef.get(ref)?.answer.status === 'incorrect' && !explained.has(ref))
+      return unexplained.length > 0 && <>
+        <h5 className="mt-4 text-base font-semibold">Fel som appen inte kan förklara</h5>
+        <p className="text-sm text-slate-600">Bland periodens första 20 svar. Här behövs ditt eget öga eller ett samtal med eleven.</p>
+        {rows(unexplained)}
+      </>
+    })()}
+
+    {slips.length > 0 && <details className="mt-4"><summary className="font-semibold">Troligen slarv eller inmatning ({slips.reduce((sum, item) => sum + item.supportCount, 0)} svar)</summary>
+      <p className="mt-1 text-sm text-slate-600">Hålls isär från felförståelser. Upprepas samma mönster kan det ändå vara värt att fråga eleven.</p>
+      {slips.map(item => <div key={item.id} className="mt-2">
+        <p className="text-sm font-semibold">{titleFor(item)}</p>
+        {rows(item.supportRefs)}
+      </div>)}
+    </details>}
+
+    {report.strengths.length > 0 && <details className="mt-3"><summary className="font-semibold">Det som fungerar ({report.strengths.length} områden)</summary>
+      {report.strengths.map(item => <div key={item.id} className="mt-2">
+        <p className="text-sm font-semibold">{OPERATION_LABELS[byRef.get(item.refs[0])?.question.operation] || 'Område'}</p>
+        {rows(item.refs, { wrong: false })}
+      </div>)}
+    </details>}
+
     <details className="mt-3 text-sm"><summary>Begränsningar och källrevision</summary>
       {report.limitationsSv.map((value, i) => <p key={i} className="mt-1">{value}</p>)}
       <p className="break-all mt-2">Källrevision: {report.snapshotRevision}</p>
       <p>Instruktionsversion: {report.provenance.instructionVersion}{report.provenance.model ? ` · Modell: ${report.provenance.model}` : ''}</p>
     </details>
-    {selected && <section className="mt-3 rounded border border-slate-300 p-3" aria-label="Rapportens källsvar">
-      <QuestionText>{selected.question.promptText || selected.question.promptSv || 'Frågetext saknas i den sparade historiken.'}</QuestionText>
-      {!selected.question.promptText && !selected.question.promptSv && <p className="text-sm">Område: {OPERATION_LABELS[selected.question.operation] || 'okänt'}. Sparade tal i underlaget: {Object.values(selected.question.values || {}).filter(value => typeof value === 'number').join(', ') || 'saknas'}.</p>}
-      <p>Elevens svar: {String(selected.answer.studentAnswer ?? 'saknas')} · Facit: {String(selected.answer.correctAnswer ?? 'manuell bedömning')}</p>
-      <WorkEvidenceNote work={selected.interpretation.work} review={selected.teacherReview} />
-      <p className="text-sm">{new Date(selected.timestamp).toLocaleString('sv-SE')} · {selected.source === 'practice' ? 'Träning' : 'Screening'} · {selected.interpretation.detail || 'Ingen säker felorsak fastställd.'}</p>
-      {selected.source === 'screening' && <button type="button" className="mt-2 rounded border px-2 py-1 text-sm" onClick={async () => {
-        setMessage('Hämtar originalet…')
-        try {
-          const params = new URLSearchParams({ resource: 'evidence', source: report.source, from: report.period.from, to: report.period.to,
-            ref: selected.ref, snapshotRevision: report.snapshotRevision })
-          const response = await diagnosticRequest(`${baseUrl}&${params}`)
-          if (activeRef.current !== selected.ref) return
-          if (!response.ok) throw new Error(response.status === 409 ? 'Källan har ändrats sedan rapporten sparades. Rapportens sparade svar är kvar; hämta ett nytt underlag för aktuellt räknehäfte.' : response.data.error)
-          setOriginal(response.data.entry); setMessage('Originalet är hämtat utan ändringar.')
-        } catch (error) { if (activeRef.current === selected.ref) setMessage(error.message || 'Originalet kunde inte hämtas.') }
-      }}>Visa sparat räknehäfte</button>}
-      {message && <p role="status" className="text-sm mt-2">{message}</p>}
-      {original?.ref === selected.ref && original.detail && <DiagnosticAttemptHistory snapshot={original.detail.snapshot} task={original.question}
-        imageContext={{ teacher: true, assignmentId: original.reference.assignmentId, classId: original.context.classIdAtAttempt }} />}
-    </section>}
   </section>
 }

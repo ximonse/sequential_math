@@ -106,8 +106,9 @@ test('Transition matrix measures usable views and preserves screening work with 
       await measure(page, 'teacher-open-pupil-detail', () => page.goto(`/teacher/student/${selected.studentId}`),
         () => expect(page.getByRole('region', { name: 'Analys och avstämning', exact: true })).toBeVisible())
       const analysis = page.getByRole('region', { name: 'Analys och avstämning', exact: true })
-      await measure(page, 'teacher-open-analysis-history', () => analysis.getByRole('button', { name: /^Analys och avstämning/ }).click(),
-        () => expect(analysis.getByText('Senaste sparade rapporter är inlästa.', { exact: true })).toBeVisible())
+      // The analysis opens by itself; measure until its first answer is in view.
+      await measure(page, 'teacher-open-analysis-history', async () => {},
+        () => expect(analysis.getByRole('status')).toContainText(/inlästa|Förhandsvisning/))
       await analysis.getByLabel('Underlag', { exact: true }).selectOption('screening')
       await measure(page, 'teacher-read-screening-evidence', () => analysis.getByRole('button', { name: 'Skapa granskningsunderlag', exact: true }).click(),
         () => expect(analysis.getByRole('region', { name: 'Analysrapport', exact: true })).toBeVisible())

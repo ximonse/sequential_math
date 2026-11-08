@@ -6,6 +6,19 @@ Förhandsvisning skriver ingenting. **Spara rapportversion** sparar rapporten;
 **Spara avstämning** lägger till lärarens ställningstagande och nästa mål.
 Inget av dessa steg delar ut uppgifter eller ändrar elevens progression.
 
+**Visning sedan 2026-11-08 (Simons önskemål, lokalt):** elevprofilen öppnas under
+Statistik & stöd med Analys och avstämning överst och öppen. Finns en sparad
+rapport visas den senaste med avstämningen; annars skapas en förhandsvisning
+direkt (träning och screening för administratörer, annars träning, och
+träning om screening inte är tillgänglig). Varje misstanke är ett kort med
+klartextrubrik, antal felsvar som stämmer och jämförbara rätta svar, och
+elevens svar på egna rader (uppgift, svar, facit, källa, datum) utan klick.
+Generiska observationer (`NOT_RIVALS` i `contrast.js`) visas hopfällda som
+troligt slarv eller inmatning. Felsvar bland periodens första 20 som ingen
+misstanke förklarar visas för sig. Reservationen om att misstankar inte är
+diagnoser står en gång överst; varje kort behåller etiketten Misstanke eller
+Enstaka svar. Rapportens data och validering är oförändrade.
+
 Ingen modell-API eller MCP-server ingår. Knappen skapar ett **regelbaserat**
 underlag från redan lagrade signaler. AI-formulerade rapporter kan lämnas via
 samma API/kontrakt, med tydlig ursprungsmärkning och källreferenser.

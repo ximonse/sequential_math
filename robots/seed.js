@@ -237,6 +237,21 @@ export async function handleControl(action, body = {}) {
     }
     return { ok: true, students: seeded }
   }
+  // Practice answers for the local analysis demo: [prompt, answer, key, extra] rows per pupil.
+  if (action === 'seed-practice-log') {
+    const studentId = String(body.studentId || '').trim().toUpperCase()
+    const profile = await kv.get(`student:${studentId}`)
+    if (!profile) return { ok: false }
+    const now = Date.now()
+    const rows = (body.rows || []).map((item, i) => ({ observationId: `practice-${studentId}-${i}`,
+      timestamp: now - (body.rows.length - i) * 3600000, classIdAtAttempt: profile.classId,
+      trainingMode: 'free', difficulty: { conceptual_level: item.level }, targetLevel: item.level,
+      contentSkill: item.skill, contentLevel: item.level, skill: item.skill, ...item,
+      correct: String(item.studentAnswer) === String(item.correctAnswer) }))
+    await kv.set(`student:${studentId}`, { ...profile, problemLog: rows, recentProblems: rows,
+      stats: { ...profile.stats, lifetimeProblems: rows.length } })
+    return { ok: true, count: rows.length }
+  }
   if (action === 'seed-evidence-history') {
     const studentId = String(body.studentId || '').trim().toUpperCase()
     const profile = await kv.get(`student:${studentId}`)

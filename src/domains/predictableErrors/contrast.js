@@ -14,7 +14,7 @@ const FAMILIES = [['smaller_minus_larger', 'exchange_not_decremented', 'borrow_f
   ['mul_carry_forgotten', 'mul_carry_added_before', 'mul_carry_always_one', 'mul_partials_concatenated', 'mul_columnwise', 'mul_no_row_shift', 'ones_digits_only'],
   ['div_remainder_ignored', 'div_remainder_as_ones', 'div_zero_dropped', 'quotient_off_by_one']]
 // Observations that are not method explanations.
-const NOT_RIVALS = new Set(['operation_swap', 'place_value_scaling', 'partial_answer_entry', 'answer_off_by_one', 'last_two_digits_swapped', 'notebook_answer_mismatch'])
+export const NOT_RIVALS = new Set(['operation_swap', 'place_value_scaling', 'partial_answer_entry', 'answer_off_by_one', 'last_two_digits_swapped', 'notebook_answer_mismatch'])
 
 export const CONTRAST_LABELS_SV = {
   operation_swap: 'Annat räknesätt',

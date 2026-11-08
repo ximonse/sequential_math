@@ -159,6 +159,9 @@ export default function StudentDetailPanel({
         <p className="text-sm text-gray-500">Välj en elev för att se tabeller, nivåstatus och nyckeldata.</p>
       ) : (
         <>
+          <StudentAnalysisPanel key={`${detailStudentProfile.studentId}:${detailStudentProfile.classId}`}
+            studentId={detailStudentProfile.studentId} classId={detailStudentProfile.classId || detailStudentProfile.classIds?.[0] || ''}
+            classIds={detailStudentProfile.classIds || []} className={detailStudentProfile.className} />
           <SummaryCards
             detailStudentProfile={detailStudentProfile}
             detailStudentRow={detailStudentRow}
@@ -179,9 +182,6 @@ export default function StudentDetailPanel({
           />
 
           <StudentDetailTrendPanel trend={detailStudentViewData.dailyTrend} />
-          <StudentAnalysisPanel key={`${detailStudentProfile.studentId}:${detailStudentProfile.classId}`}
-            studentId={detailStudentProfile.studentId} classId={detailStudentProfile.classId || detailStudentProfile.classIds?.[0] || ''}
-            classIds={detailStudentProfile.classIds || []} className={detailStudentProfile.className} />
           {canViewAttentionResults && <StudentAttentionHistoryPanel key={detailStudentProfile.studentId} history={detailStudentProfile.attentionHistory} />}
 
           <StudentDetailHistoryPanel

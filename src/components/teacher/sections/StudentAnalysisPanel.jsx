@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { defaultEvidenceDays } from '../../../lib/evidencePeriod.js'
 import { diagnosticRequest } from './diagnosticRequest.js'
 import { isTeacherAdmin } from '../../../lib/teacherAuth.js'
@@ -19,9 +19,10 @@ export default function StudentAnalysisPanel({ studentId, classId, classIds = []
 }
 
 function AnalysisWorkspace({ studentId, classId }) {
-  const [open, setOpen] = useState(false)
+  // The analysis is the first thing in the pupil profile: open, with a fresh preview.
+  const [open, setOpen] = useState(true)
   const [state, setState] = useState(() => ({ history: null, busy: false, message: '', draft: null, preview: null,
-    selectedId: '', ...defaultEvidenceDays(), source: 'practice', requestId: '' }))
+    selectedId: '', ...defaultEvidenceDays(), source: isTeacherAdmin() ? 'all' : 'practice', requestId: '' }))
   const baseUrl = `/api/teacher-students/${encodeURIComponent(studentId)}?classId=${encodeURIComponent(classId)}`
   const endpoint = `${baseUrl}&resource=analysis`
   const update = patch => setState(value => ({ ...value, ...patch }))
@@ -39,12 +40,31 @@ function AnalysisWorkspace({ studentId, classId }) {
   async function load() {
     const history = await request()
     update({ history, message: 'Senaste sparade rapporter är inlästa.', selectedId: state.selectedId || history.reports.at(-1)?.id || '' })
+    return history
   }
-  return <section className="mt-4 rounded border border-teal-200 bg-white p-3 text-slate-900 shadow" aria-label="Analys och avstämning">
-    <button type="button" aria-expanded={open} className="font-semibold text-teal-900" onClick={() => {
-      setOpen(!open)
-      if (!open && !state.history) run(load)
-    }}>Analys och avstämning {open ? '▾' : '▸'}</button>
+  async function createDraft(source = state.source) {
+    const data = await request({ action: 'draft', source, from: state.from, to: state.to })
+    setState(value => ({ ...value, draft: data.draft, preview: data.preview, requestId: crypto.randomUUID(), selectedId: '',
+      message: 'Förhandsvisning. Inget har sparats eller delats ut.',
+      history: { ...(value.history || { reports: [] }), revision: data.revision } }))
+  }
+  const started = useRef(false)
+  useEffect(() => {
+    if (started.current) return
+    started.current = true
+    run(async () => {
+      // A saved report keeps the teacher's check-in in view; otherwise show a fresh preview.
+      if ((await load()).reports.length) return
+      // Without screening access the automatic analysis uses practice answers only.
+      try { await createDraft() } catch (error) {
+        if (state.source === 'practice') throw error
+        update({ source: 'practice' }); await createDraft('practice')
+      }
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  return <section className="mt-3 rounded border border-teal-300 bg-white p-3 text-slate-900 shadow" aria-label="Analys och avstämning">
+    <button type="button" aria-expanded={open} className="text-lg font-semibold text-teal-900" onClick={() => setOpen(!open)}>
+      Analys och avstämning {open ? '▾' : '▸'}</button>
     {open && <div>
       <p className="mt-2 text-sm">Granska svar och pröva möjliga förklaringar. Din avstämning delar inte ut uppgifter och ändrar inte elevens nivå.</p>
       <div className="mt-3 flex flex-wrap items-end gap-3">
@@ -53,11 +73,7 @@ function AnalysisWorkspace({ studentId, classId }) {
         <label className="text-sm">Underlag<select aria-label="Underlag" disabled={state.busy} className="block rounded border px-1.5 py-0.5" value={state.source} onChange={event => update({ source: event.target.value })}>
           <option value="practice">Träningssvar</option>{isTeacherAdmin() && <><option value="screening">Screening</option><option value="all">Träning och screening</option></>}
         </select></label>
-        <button type="button" disabled={state.busy} className="rounded border border-teal-700 px-2 py-1 text-sm" onClick={() => run(async () => {
-          const data = await request({ action: 'draft', source: state.source, from: state.from, to: state.to })
-          update({ draft: data.draft, preview: data.preview, requestId: crypto.randomUUID(), selectedId: '', message: 'Förhandsvisning. Inget har sparats eller delats ut.',
-            history: { ...(state.history || { reports: [] }), revision: data.revision } })
-        })}>Skapa granskningsunderlag</button>
+        <button type="button" disabled={state.busy} className="rounded border border-teal-700 px-2 py-1 text-sm" onClick={() => run(() => createDraft())}>Skapa granskningsunderlag</button>
         <button type="button" disabled={state.busy} className="rounded border px-2 py-1 text-sm" onClick={() => run(load)}>Läs senaste sparade</button>
       </div>
       {state.history?.reports.length > 0 && <label className="mt-3 block text-sm">Sparad rapportversion

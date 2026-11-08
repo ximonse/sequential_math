@@ -248,7 +248,8 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (isDirectStudentView) {
-      setActiveWorkspace('progress')
+      // The pupil profile, with its analysis first, belongs to Statistik & stöd.
+      setActiveWorkspace('support')
       setCollapsed(prev => ({ ...prev, detail: false }))
     }
   }, [isDirectStudentView, detailStudentId])
@@ -582,7 +583,7 @@ export default function DashboardLayout({
                     if (workspace.id !== 'ncm') dispatchDirtyRef.current = false
                     setActiveWorkspace(workspace.id)
                     if (workspace.id === 'focus') navigate('/teacher/focus')
-                    else if (isFocusView) navigate('/teacher')
+                    else if (isFocusView || isDirectStudentView) navigate('/teacher', { state: { workspace: workspace.id } })
                   }}
                     className={`rounded px-1.5 py-0.5 text-left text-sm transition-colors ${activeWorkspace === workspace.id ? 'bg-amber-300 font-semibold text-slate-900' : 'text-slate-100 hover:bg-slate-700'}`}>
                     {workspace.label}<span className="mt-0.5 block text-[11px] font-normal opacity-75">{workspace.description}</span>
@@ -619,7 +620,8 @@ export default function DashboardLayout({
                 assignments={assignments} groups={teacherGroups} students={students} />
             )}
             {isScreening && <div>{renderPanelContent('ncm-grid')}</div>}
-            {!isScreening && WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels
+            {!isScreening && (activeWorkspace === 'support' && isDirectStudentView ? ['detail']
+              : WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels ?? [])
               .filter(id => visiblePanelDefs.some(panel => panel.id === id))
               .map(id => activeWorkspace === 'progress'
                 ? renderProgressModule(id, PANEL_DEFS.find(panel => panel.id === id)?.title, renderPanelContent(id))

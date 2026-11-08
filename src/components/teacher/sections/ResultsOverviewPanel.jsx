@@ -373,7 +373,7 @@ export default function ResultsOverviewPanel({
                       </button>
                       <button
                         onClick={() => onCreateQuickAssignment(row, 'focus')}
-                        title="Lägger direkt ett uppdrag på elevens startsida: 14 uppgifter i ett räknesätt eleven behöver öva, ungefär en nivå under till en nivå över elevens beräknade nivå. Ersätter elevens förra Fokus."
+                        title="Lägger direkt ett uppdrag på elevens startsida: 14 uppgifter i ett räknesätt eleven behöver öva, ungefär en nivå under till en nivå över elevens beräknade nivå. Ersätter bara elevens förra Fokus i samma räknesätt."
                         className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold"
                       >
                         Fokus

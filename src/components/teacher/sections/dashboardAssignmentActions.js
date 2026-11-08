@@ -160,15 +160,18 @@ export function buildDashboardAssignmentActions({
     setDashboardStatus('Alla uppdrag rensade.')
   }
 
-  // A quick assignment goes straight onto that pupil's start page. It replaces
-  // the pupil's previous quick assignment of the same kind (title prefix).
+  // A quick assignment goes straight onto that pupil's start page. It replaces only
+  // the pupil's previous quick assignment of the same kind in the same operations;
+  // a focus on subtraction stays when a focus on addition is added.
   const activateForPupil = async (row, assignment) => {
     const target = { type: 'student', id: String(row.studentId), name: row.name || String(row.studentId) }
     const active = await putTarget(target, { action: 'activate', assignmentPayload: encodeAssignmentPayload(assignment) })
     if (!active) return false
     const prefix = `${String(assignment.title).split('|')[0].trim()} |`
+    const operations = item => [...(item.problemTypes || [])].sort().join(',')
     const older = active.map(item => decodeAssignmentPayload(item.payload))
-      .filter(item => item && item.id !== assignment.id && String(item.title).startsWith(prefix))
+      .filter(item => item && item.id !== assignment.id && String(item.title).startsWith(prefix)
+        && operations(item) === operations(assignment))
     for (const item of older) await putTarget(target, { action: 'deactivate', assignmentId: item.id })
     return true
   }

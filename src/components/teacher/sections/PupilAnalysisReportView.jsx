@@ -30,6 +30,19 @@ const titleFor = item => (item.signalCode && (CONTRAST_LABELS_SV[item.signalCode
   || (item.basis === 'existing_signal' ? 'Tidigare felmarkering' : String(item.textSv).split('. ')[0])
 const SCOPE_LABELS = { addition: 'addition', subtraction: 'subtraktion', multiplication: 'multiplikation', division: 'division',
   decimal_addition: 'decimaladdition', decimal_subtraction: 'decimalsubtraktion' }
+// One edge colour per area, with the area name beside the title for those who cannot rely on colour.
+const AREAS = {
+  addition: ['Addition', '#1d4ed8'], subtraction: ['Subtraktion', '#be185d'], multiplication: ['Multiplikation', '#6d28d9'],
+  division: ['Division', '#0f766e'], fractions: ['Bråk', '#c2410c'], percentage: ['Procent', '#a16207'],
+  algebra: ['Algebra', '#15803d'], arithmetic_expressions: ['Uttryck', '#475569'], number_fluency: ['Talflyt', '#0e7490']
+}
+function areaOf(entry) {
+  const result = entry?.interpretation.predictable, scope = String(result?.scope || '')
+  const key = result?.domain && result.domain !== 'arithmetic' ? result.domain
+    : scope.replace(/^decimal_/u, '') || entry?.question.operation
+  const [label, color] = AREAS[key] || ['Övrigt', '#64748b']
+  return { label: scope.startsWith('decimal_') ? `${label} med decimaltal` : label, color }
+}
 // The caveat stands once at the top of the report, not in every card.
 const withoutCaveat = text => String(text).replace(/\s*Det är en beräknad kandidat, inte en fastställd elevmetod\.?/u, '').trim()
 const shortDate = timestamp => timestamp ? new Date(timestamp).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' }) : ''
@@ -106,10 +119,14 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
       const first = byRef.get(item.supportRefs[0])
       const description = item.signalCode ? modelDescription(item.signalCode, first?.interpretation.predictable?.scope) : null
       const weak = item.evidenceStatus === 'insufficient'
-      return <div key={item.id} data-hypothesis={item.signalCode || item.id}
-        className={`mt-3 border border-slate-200 border-l-4 ${weak ? 'border-l-slate-300' : 'border-l-amber-500'} px-3 py-2`}>
+      // The area colour is an inset shadow, since the teacher themes override border colours.
+      const area = areaOf(first)
+      return <div key={item.id} data-hypothesis={item.signalCode || item.id} data-area={area.label}
+        className="mt-3 border border-slate-200 py-2 pl-5 pr-3" style={{ boxShadow: `inset 7px 0 0 ${area.color}` }}>
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h6 className="text-base font-semibold">{titleFor(item)}{suspicions.filter(other => other.signalCode && other.signalCode === item.signalCode).length > 1
+          <h6 className="text-base font-semibold">
+            <span className="mr-2 text-xs font-bold uppercase tracking-wide" style={{ color: area.color }}>{area.label}</span>
+            {titleFor(item)}{suspicions.filter(other => other.signalCode && other.signalCode === item.signalCode).length > 1
             && SCOPE_LABELS[first?.interpretation.predictable?.scope] ? ` · ${SCOPE_LABELS[first.interpretation.predictable.scope]}` : ''}</h6>
           <span className={`rounded px-1.5 text-xs font-semibold ${weak ? 'bg-slate-100 text-slate-600' : 'bg-amber-100 text-amber-900'}`}>{weak ? 'Enstaka svar' : 'Misstanke'}</span>
         </div>

@@ -62,7 +62,7 @@ export default function SupportPriorityPanel({
                     <p className="mb-2 max-w-72 text-xs text-gray-700">{row.nextAction}</p>
                     <div className="flex flex-wrap gap-1">
                       <button onClick={() => onOpenStudentDetail(row.studentId)} className="px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs">Elevvy</button>
-                      <button title="Lägger direkt ett uppdrag på elevens startsida: 14 uppgifter i ett räknesätt eleven behöver öva, ungefär en nivå under till en nivå över elevens beräknade nivå. Ersätter elevens förra Fokus." onClick={() => onCreateQuickAssignment(row, 'focus')} className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold">Fokus</button>
+                      <button title="Lägger direkt ett uppdrag på elevens startsida: 14 uppgifter i ett räknesätt eleven behöver öva, ungefär en nivå under till en nivå över elevens beräknade nivå. Ersätter bara elevens förra Fokus i samma räknesätt." onClick={() => onCreateQuickAssignment(row, 'focus')} className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold">Fokus</button>
                     </div>
                   </td>
                 </tr>

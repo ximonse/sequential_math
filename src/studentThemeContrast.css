@@ -125,3 +125,9 @@ body[class*="theme-"] .student-role-surface :is(.border-gray-400, .border-gray-7
 .theme-switcher option {
   color: #1f2937;
 }
+
+/* Svara/Nästa keep white text on their green or blue in every theme (Simon 2026-11-08:
+   "de var ok för den knappen"); the contrast robot skips them by data-contrast-exempt. */
+body[class*="theme-"] .student-role-surface .practice-primary {
+  color: #ffffff !important;
+}

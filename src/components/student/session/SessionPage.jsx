@@ -118,7 +118,8 @@ function SessionPage({
               scratchpad: showScratchpadControl && drawingAllowed ? <MathScratchpad visible={showScratchpad && showInlineScratchpad} /> : null,
               // The notebook opens over the page with the question and the same answer box above the grid.
               notebook: notebookAllowed && notebookOpened
-                ? <Suspense fallback={<p>Öppnar räknehäftet…</p>}><PracticeNotebook /></Suspense> : null,
+                // A new question starts with an empty notebook (Simon 2026-11-08).
+                ? <Suspense fallback={<p>Öppnar räknehäftet…</p>}><PracticeNotebook key={currentProblem?.id || ''} /></Suspense> : null,
               notebookOpen,
               onCloseNotebook: closeNotebook
             }}

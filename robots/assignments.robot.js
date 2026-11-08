@@ -118,6 +118,12 @@ test('Teacher workspace choices reach the pupil and folding preserves notebook w
   expect(diagnosticWrites).toEqual([])
   await sheet.getByRole('button', { name: 'Dölj räknehäfte', exact: true }).click()
   await expect(page.locator('input[placeholder="?"]')).toHaveValue('42')
+  // The next question starts with an empty notebook.
+  await page.getByRole('button', { name: 'Svara', exact: true }).click()
+  await page.getByRole('button', { name: 'Nästa', exact: true }).click()
+  await page.getByRole('button', { name: 'Visa räknehäfte', exact: true }).click()
+  await expect(notebook.locator('.diagnostic-cell__digit--main')).toHaveCount(0)
+  await expect(notebook.locator('.diagnostic-grid .diagnostic-cell')).toHaveCount(72)
   await student.context.close()
   await side.row.getByRole('button', { name: 'Aktivera', exact: true }).click()
   const classContext = await browser.newContext()

@@ -169,5 +169,7 @@ export async function waitForTask(page, { timeout = 8000, breakChoice } = {}) {
 // The theme menu folds out from a small corner button (Simon 2026-11-08).
 export async function openThemeControls(page) {
   const toggle = page.getByRole('button', { name: 'Tema och kontrast', exact: true })
+  // Teacher pages keep the open picker and have no fold-out button.
+  if (!await toggle.count()) return
   if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click()
 }

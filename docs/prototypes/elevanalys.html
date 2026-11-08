@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="sv">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skiss: elevanalys och felförståelser i klassen</title>
+<style>
+  :root { --ink: #1f2933; --muted: #52606d; --line: #d9dcd6; --bg: #eef0ec; --wrong: #c0392b; --right: #1e7b45;
+    --shadow: 0 8px 13px -2px rgba(31, 41, 51, .18); --accent: #2f5fb3; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; color: var(--ink); background: var(--bg); line-height: 1.4; }
+  .wrap { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 17px; margin: 0 0 10px; }
+  h3 { font-size: 15px; margin: 0; }
+  p { margin: 0 0 8px; }
+  .note { color: var(--muted); font-size: 14px; }
+  .module { background: #fff; padding: 16px 18px; margin: 0 0 20px; box-shadow: var(--shadow); }
+  .legend { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-size: 13px; margin: 8px 0 0; }
+  /* Honesty markers: what exists today, what needs new logic, what awaits Simon's decision */
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 0 5px 1px; border-radius: 4px; vertical-align: middle; white-space: nowrap; }
+  .t-ok { background: #dff3e6; color: #1e6b3d; }
+  .t-new { background: #fde9cf; color: #8a4b08; }
+  .t-dec { background: #ece3fb; color: #5b2ea6; }
+  body.hide-tags .tag { display: none; }
+  /* Navigation sketch */
+  .nav { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 10px; }
+  .nav span { padding: 1px 8px 2px; border-radius: 6px; background: #e4e7e2; font-size: 14px; }
+  .nav span.on { background: #1f2933; color: #fff; }
+  .tabs { display: flex; gap: 2px; border-bottom: 2px solid var(--line); margin: 10px 0 12px; flex-wrap: wrap; }
+  .tabs span { padding: 2px 10px 3px; font-size: 14px; color: var(--muted); }
+  .tabs span.on { color: var(--ink); font-weight: 600; border-bottom: 2px solid var(--ink); margin-bottom: -2px; }
+  /* Pupil header */
+  .head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; font-size: 13px; }
+  .chips span { border: 1px solid var(--line); border-radius: 6px; padding: 0 6px 1px; }
+  .chips span.on { border-color: var(--ink); font-weight: 600; }
+  .caveat { font-size: 13px; color: var(--muted); border-left: 3px solid var(--line); padding-left: 8px; margin: 10px 0 14px; }
+  /* Suspicion cards */
+  .card { border: 1px solid var(--line); border-left: 4px solid #d98b1f; padding: 10px 12px; margin: 0 0 12px; }
+  .card.weak { border-left-color: #c9ccc5; }
+  .card-top { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+  .status { font-size: 12px; font-weight: 600; padding: 0 6px 1px; border-radius: 4px; background: #fff1dc; color: #8a4b08; }
+  .card.weak .status { background: #eef0ec; color: var(--muted); }
+  .strength { font-size: 14px; margin: 4px 0 8px; }
+  .meter { display: inline-flex; gap: 2px; vertical-align: middle; margin-right: 6px; }
+  .meter i { width: 9px; height: 9px; border-radius: 2px; background: #e4e7e2; }
+  .meter i.h { background: #d98b1f; }
+  .meter i.c { background: #7fbf97; }
+  .thinking { font-size: 14px; margin: 0 0 8px; }
+  .rows { margin: 0 0 8px; padding: 0; list-style: none; font-variant-numeric: tabular-nums; }
+  .rows li { display: flex; gap: 10px; flex-wrap: wrap; padding: 3px 8px; background: #f4f6fb; margin: 0 0 2px; font-size: 15px; align-items: baseline; }
+  .rows li .q { min-width: 120px; }
+  .rows li .a { color: var(--wrong); font-weight: 600; }
+  .rows li .ok { color: var(--right); font-weight: 600; }
+  .rows li .meta { margin-left: auto; font-size: 12px; color: var(--muted); }
+  .rows.counter li { background: #f1f7f3; }
+  .label { font-size: 12px; font-weight: 600; color: var(--muted); margin: 6px 0 2px; text-transform: uppercase; letter-spacing: .03em; }
+  .rival { font-size: 14px; margin: 0 0 8px; }
+  .actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+  button { font: inherit; font-size: 14px; padding: 1px 10px 2px; border-radius: 6px; border: 1px solid #9aa1a8; background: #fff; color: var(--ink); cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+  .why-off { font-size: 12px; color: var(--muted); }
+  .ncm { font-size: 12px; color: var(--muted); }
+  details { margin: 0 0 12px; }
+  details > summary { cursor: pointer; font-weight: 600; font-size: 15px; padding: 4px 0; }
+  .section-title { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; margin: 16px 0 8px; }
+  /* Class view */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .pupil { display: inline-block; margin: 0 6px 4px 0; padding: 0 6px 1px; border-radius: 6px; border: 1px solid var(--line); white-space: nowrap; }
+  .pupil b { color: #8a4b08; }
+  .changes li { margin: 0 0 6px; }
+  @media (max-width: 520px) { body { padding: 8px; } .module { padding: 12px; } .rows li .q { min-width: 0; } }
+</style>
+<body>
+<div class="wrap">
+
+<div class="module">
+  <h1>Skiss: elevanalys och felförståelser i klassen</h1>
+  <p class="note">Statisk skiss, inte byggd. Alla elever och svar är konstruerade testexempel. Märkningen visar vad som går att bygga på det som redan finns och vad som kräver mer.</p>
+  <div class="legend">
+    <span class="tag t-ok">Finns i dag</span> data och logik finns, bara visningen ändras
+    <span class="tag t-new">Ny logik</span> kräver nytt bygge
+    <span class="tag t-dec">Ditt beslut</span> väntar på Simon
+    <label><input type="checkbox" onchange="document.body.classList.toggle('hide-tags', this.checked)"> Dölj märkning</label>
+  </div>
+</div>
+
+<!-- 1. Placement -->
+<div class="module">
+  <h2>1. Var analysen ligger <span class="tag t-dec">Ditt beslut</span></h2>
+  <div class="nav"><span>Framsteg</span><span>Uppdrag &amp; tickets</span><span class="on">Statistik &amp; stöd</span><span>Administration</span></div>
+  <div class="tabs"><span class="on">Felförståelser i klassen</span><span>Behöver stöd nu</span><span>Resultat</span><span>Svårighetsanalys</span></div>
+  <p>Statistik &amp; stöd öppnar på <b>Felförståelser i klassen</b> (avsnitt 3). Klick på en elev öppnar elevprofilen, där <b>Analys</b> är första fliken:</p>
+  <div class="tabs"><span class="on">Analys</span><span>Framsteg</span><span>Träning</span><span>Inställningar (QR, PIN, namn)</span></div>
+  <p class="note">I dag ligger Analys och avstämning som en hopfälld panel längre ner i elevprofilen under Framsteg. Felunderlag, tekniska ID:n och datakvalitet flyttas bort från lärarens analysflöde.</p>
+</div>
+
+<!-- 2. Pupil analysis -->
+<div class="module">
+  <div class="head">
+    <h2>2. Testelev A · 6B</h2>
+    <div class="chips"><span>2 veckor</span><span class="on">4 veckor</span><span>Termin</span><span class="on">Träning + screening</span></div>
+  </div>
+  <div class="tabs"><span class="on">Analys</span><span>Framsteg</span><span>Träning</span><span>Inställningar</span></div>
+  <p class="note">132 svar · 114 rätt · 18 fel, varav 11 förklaras av en misstanke nedan. <span class="tag t-ok">Finns i dag</span></p>
+  <p class="caveat">Misstankarna är uträknade ur elevens svar: appen räknar fram vad en elev med felförståelsen skulle svara och jämför. De är inte diagnoser. Pröva dem med kontrastfrågor eller samtal.</p>
+
+  <div class="section-title"><h3>Misstänkta felförståelser</h3><span class="note">starkast först</span> <span class="tag t-new">Ny logik: rangordning</span></div>
+
+  <!-- Card 1: arithmetic, contrast available -->
+  <div class="card">
+    <div class="card-top">
+      <h3>Glömmer minnessiffran vid addition</h3>
+      <span class="status">Misstanke</span>
+    </div>
+    <p class="strength"><span class="meter"><i class="h"></i><i class="h"></i><i class="h"></i><i class="h"></i><i class="h"></i><i class="h"></i><i class="h"></i><i class="c"></i><i class="c"></i></span>
+      Stämmer på <b>7 av 9</b> uppgifter där felet kunde synas <span class="tag t-new">Ny logik: X av Y</span></p>
+    <p class="thinking">Eleven adderar kolumnerna var för sig och för inte vidare tiotalet från entalens summa. <span class="tag t-ok">Finns i dag</span></p>
+    <ul class="rows">
+      <li><span class="q">4 + 88 =</span><span class="a">82</span><span>rätt 92</span><span class="meta">träning 6 nov</span></li>
+      <li><span class="q">9 + 69 =</span><span class="a">68</span><span>rätt 78</span><span class="meta">träning 6 nov</span></li>
+      <li><span class="q">3 + 58 =</span><span class="a">51</span><span>rätt 61</span><span class="meta">träning 5 nov</span></li>
+      <li><span class="q">45 + 6 =</span><span class="a">41</span><span>rätt 51</span><span class="meta">screening 4 nov</span></li>
+      <li><span class="q">9 + 54 =</span><span class="a">53</span><span>rätt 63</span><span class="meta">träning 4 nov</span></li>
+      <li><span class="q">6 + 89 =</span><span class="a">85</span><span>rätt 95</span><span class="meta">träning 3 nov</span></li>
+      <li><span class="q">69 + 8 =</span><span class="a">67</span><span>rätt 77</span><span class="meta">träning 3 nov</span></li>
+    </ul>
+    <p class="label">Rätt trots att felet kunde synas</p>
+    <ul class="rows counter">
+      <li><span class="q">27 + 35 =</span><span class="ok">62</span><span class="meta">träning 5 nov</span></li>
+      <li><span class="q">48 + 7 =</span><span class="ok">55</span><span class="meta">träning 2 nov</span></li>
+    </ul>
+    <p class="rival"><b>Kan också vara:</b> räknar från vänster. Med tvåsiffriga tal ger båda samma svar; kontrastfrågorna använder tresiffriga tal som skiljer dem. <span class="tag t-ok">Finns i dag</span></p>
+    <p class="ncm">NCM AS1 skriftlig addition, förkunskap AG3 tiotalsövergång <span class="tag t-dec">Ditt beslut: NCM-kod som grund?</span></p>
+    <div class="actions">
+      <button class="primary">Pröva med kontrastfrågor</button>
+      <button>Stämmer</button><button>Stämmer inte</button><button>Osäker</button>
+      <span class="tag t-ok">Finns i dag</span>
+    </div>
+    <details style="margin:8px 0 0"><summary style="font-weight:400;font-size:14px">Samtalsingångar</summary>
+      <p class="thinking">Fråga var tiotalet från entalens summa tar vägen. Låt eleven lägga talen med tiobasmaterial och växla tio ental till ett tiotal.</p>
+    </details>
+  </div>
+
+  <!-- Card 2: fractions, no contrast bank -->
+  <div class="card">
+    <div class="card-top">
+      <h3>Räknar täljare och nämnare var för sig</h3>
+      <span class="status">Misstanke</span>
+    </div>
+    <p class="strength"><span class="meter"><i class="h"></i><i class="h"></i><i class="h"></i><i class="c"></i></span>
+      Stämmer på <b>3 av 4</b> uppgifter där felet kunde synas</p>
+    <p class="thinking">Eleven adderar eller subtraherar täljarna för sig och nämnarna för sig.</p>
+    <ul class="rows">
+      <li><span class="q">1/3 + 1/4 =</span><span class="a">2/7</span><span>rätt 7/12</span><span class="meta">träning 6 nov</span></li>
+      <li><span class="q">2/5 + 1/3 =</span><span class="a">3/8</span><span>rätt 11/15</span><span class="meta">träning 6 nov</span></li>
+      <li><span class="q">3/4 − 1/3 =</span><span class="a">2/1</span><span>rätt 5/12</span><span class="meta">träning 5 nov</span></li>
+    </ul>
+    <p class="label">Rätt trots att felet kunde synas</p>
+    <ul class="rows counter"><li><span class="q">2/7 + 3/7 =</span><span class="ok">5/7</span><span class="meta">träning 5 nov</span></li></ul>
+    <p class="ncm">NCM G4, B7</p>
+    <div class="actions">
+      <button class="primary" disabled>Pröva med kontrastfrågor</button>
+      <span class="why-off">Bråk saknar kontrastfrågor än. <span class="tag t-new">Ny logik: bråkpaket</span></span>
+      <button>Stämmer</button><button>Stämmer inte</button><button>Osäker</button>
+    </div>
+  </div>
+
+  <!-- Card 3: weak -->
+  <div class="card weak">
+    <div class="card-top">
+      <h3>Tappar en av två minnessiffror</h3>
+      <span class="status">Enstaka svar</span>
+    </div>
+    <p class="strength"><span class="meter"><i class="h"></i><i class="c"></i><i class="c"></i></span>
+      Stämmer på <b>1 av 3</b>. För lite för en misstanke; visas så att du ser den.</p>
+    <ul class="rows"><li><span class="q">357 + 268 =</span><span class="a">525</span><span>rätt 625</span><span class="meta">screening 4 nov</span></li></ul>
+  </div>
+
+  <div class="section-title"><h3>Pågående uppföljning</h3> <span class="tag t-ok">Finns i dag</span></div>
+  <div class="card" style="border-left-color: var(--accent)">
+    <p><b>Kontrastfrågor: minnessiffran vid addition</b> · utdelade 7 nov · 1 av 2 besvarade</p>
+    <ul class="rows">
+      <li><span class="q">147 + 275 =</span><span class="a">312</span><span>rätt 422</span><span class="meta">stämmer med misstanken, inte med räkna från vänster</span></li>
+      <li><span class="q">386 + 457 =</span><span class="note">ej besvarad</span></li>
+    </ul>
+  </div>
+
+  <div class="section-title"><h3>Fel som appen inte kan förklara</h3> <span class="tag t-ok">Finns i dag</span></div>
+  <ul class="rows">
+    <li><span class="q">2/3 × 6 =</span><span class="a">12/18</span><span>rätt 4</span><span class="meta">träning 6 nov</span></li>
+    <li><span class="q">15/5 =</span><span class="a">1/3</span><span>rätt 3</span><span class="meta">uppgiftstypen kan inte analyseras än</span></li>
+    <li><span class="q">72 − 38 =</span><span class="a">24</span><span>rätt 34</span><span class="meta">träning 2 nov</span></li>
+  </ul>
+  <div class="actions"><button disabled>Låt AI analysera de oförklarade felen</button> <span class="tag t-new">Ny logik</span></div>
+
+  <details style="margin-top:14px"><summary>Troligen slarv eller inmatning (4 svar)</summary>
+    <ul class="rows">
+      <li><span class="q">43 + 21 =</span><span class="a">6</span><span>rätt 64</span><span class="meta">bara första siffran inskriven</span></li>
+      <li><span class="q">22 + 17 =</span><span class="a">3</span><span>rätt 39</span><span class="meta">bara första siffran inskriven</span></li>
+      <li><span class="q">27 + 58 =</span><span class="a">58</span><span>rätt 85</span><span class="meta">siffrorna omkastade</span></li>
+      <li><span class="q">7 × 8 =</span><span class="a">48</span><span>rätt 56</span><span class="meta">angränsande produkt</span></li>
+    </ul>
+    <p class="note">Hålls isär från felförståelser. Upprepas samma mönster lyfts det upp. <span class="tag t-ok">Finns i dag: kategorierna</span></p>
+  </details>
+
+  <details><summary>Det som fungerar (5 områden)</summary>
+    <p>Addition utan tiotalsövergång, multiplikationstabellerna 2–5, subtraktion med lika nämnare i bråk …</p>
+  </details>
+</div>
+
+<!-- 3. Class view -->
+<div class="module">
+  <h2>3. Felförståelser i klassen · 6B</h2>
+  <p class="note">En rad per misstanke. Siffran visar hur många av elevens möjliga tillfällen som stämmer. Klick på en elev öppnar elevens Analys. <span class="tag t-new">Ny logik: gruppering per misstanke</span></p>
+  <table>
+    <thead><tr><th>Misstanke</th><th>Elever</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><b>Glömmer minnessiffran vid addition</b><br><span class="ncm">Aritmetik</span></td>
+        <td><span class="pupil">Testelev A <b>7/9</b></span><span class="pupil">Testelev D <b>4/6</b></span><span class="pupil">Testelev F <b>2/5</b></span></td>
+        <td><button>Pröva med 3 elever</button> <span class="tag t-new">Ny logik</span></td></tr>
+      <tr><td><b>Räknar täljare och nämnare var för sig</b><br><span class="ncm">Bråk</span></td>
+        <td><span class="pupil">Testelev A <b>3/4</b></span><span class="pupil">Testelev C <b>5/6</b></span></td>
+        <td><button disabled>Pröva</button><br><span class="why-off">kontrastfrågor saknas</span></td></tr>
+      <tr><td><b>Större minus mindre i varje kolumn</b><br><span class="ncm">Aritmetik</span></td>
+        <td><span class="pupil">Testelev B <b>5/7</b></span></td>
+        <td><button>Pröva</button></td></tr>
+      <tr><td><b>Ingen förlängning av täljaren</b><br><span class="ncm">Bråk</span></td>
+        <td><span class="note">Kan inte upptäckas än: modell saknas (blindtest 8 nov)</span></td>
+        <td><span class="tag t-new">Ny logik</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 4. What changes -->
+<div class="module">
+  <h2>Vad skissen ändrar mot i dag</h2>
+  <ul class="changes">
+    <li><b>Placering:</b> analysen är första fliken i elevprofilen och nås från Statistik &amp; stöd, inte en hopfälld panel under Framsteg.</li>
+    <li><b>Svaren syns direkt:</b> uppgift, elevens svar, rätt svar, datum och källa på samma rad. Inga ”Visa svar 1”-knappar.</li>
+    <li><b>Styrka i klartext:</b> ”7 av 9 uppgifter där felet kunde synas”, med svaren där eleven gjorde rätt bredvid.</li>
+    <li><b>En reservation överst</b> i stället för varningstext på varje kort. Varje kort har kvar etiketten ”Misstanke”.</li>
+    <li><b>Slarv och inmatning för sig</b>, hopfällt, så de inte blandas med felförståelser.</li>
+    <li><b>Nästa steg vid varje misstanke:</b> kontrastfrågor där de finns, annars en synlig förklaring varför inte.</li>
+    <li><b>Inga tekniska namn:</b> inga modell-ID:n, hashar eller understreck.</li>
+  </ul>
+</div>
+
+</div>
+</body>
+</html>

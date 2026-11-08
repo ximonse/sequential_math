@@ -1,0 +1,1207 @@
+{
+ "ruleEngine": "predictable-errors fractions (src/domains/predictableErrors/fractions.js)",
+ "assessments": [
+  {
+   "id": "E01",
+   "verdict": "fel_utan_förklaring",
+   "hypotheses": [],
+   "weak": [],
+   "wrongInterpretable": 4,
+   "unmatched": [
+    "T09",
+    "T10",
+    "T11",
+    "T12"
+   ],
+   "notApplicable": [
+    "T03",
+    "T04",
+    "T17",
+    "T18"
+   ],
+   "perTask": {
+    "T01": {
+     "status": "correct",
+     "matches": []
+    },
+    "T02": {
+     "status": "correct",
+     "matches": []
+    },
+    "T03": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T04": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T05": {
+     "status": "correct",
+     "matches": []
+    },
+    "T06": {
+     "status": "correct",
+     "matches": []
+    },
+    "T07": {
+     "status": "correct",
+     "matches": []
+    },
+    "T08": {
+     "status": "correct",
+     "matches": []
+    },
+    "T09": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T10": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T11": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T12": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T13": {
+     "status": "correct",
+     "matches": []
+    },
+    "T14": {
+     "status": "correct",
+     "matches": []
+    },
+    "T15": {
+     "status": "correct",
+     "matches": []
+    },
+    "T16": {
+     "status": "correct",
+     "matches": []
+    },
+    "T17": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T18": {
+     "status": "not_applicable",
+     "matches": []
+    }
+   }
+  },
+  {
+   "id": "E02",
+   "verdict": "hypotes",
+   "hypotheses": [
+    {
+     "model": "fraction_keep_first_denominator",
+     "tasks": [
+      "T07",
+      "T08"
+     ],
+     "of": 10
+    }
+   ],
+   "weak": [],
+   "wrongInterpretable": 8,
+   "unmatched": [
+    "T05",
+    "T06",
+    "T09",
+    "T10",
+    "T11",
+    "T12"
+   ],
+   "notApplicable": [
+    "T03",
+    "T04",
+    "T17",
+    "T18"
+   ],
+   "perTask": {
+    "T01": {
+     "status": "correct",
+     "matches": []
+    },
+    "T02": {
+     "status": "correct",
+     "matches": []
+    },
+    "T03": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T04": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T05": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T06": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T07": {
+     "status": "matched",
+     "matches": [
+      "fraction_keep_first_denominator"
+     ]
+    },
+    "T08": {
+     "status": "matched",
+     "matches": [
+      "fraction_keep_first_denominator"
+     ]
+    },
+    "T09": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T10": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T11": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T12": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T13": {
+     "status": "correct",
+     "matches": []
+    },
+    "T14": {
+     "status": "correct",
+     "matches": []
+    },
+    "T15": {
+     "status": "correct",
+     "matches": []
+    },
+    "T16": {
+     "status": "correct",
+     "matches": []
+    },
+    "T17": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T18": {
+     "status": "not_applicable",
+     "matches": []
+    }
+   }
+  },
+  {
+   "id": "E03",
+   "verdict": "hypotes",
+   "hypotheses": [
+    {
+     "model": "fraction_integer_in_denominator",
+     "tasks": [
+      "T13",
+      "T14"
+     ],
+     "of": 2
+    }
+   ],
+   "weak": [],
+   "wrongInterpretable": 4,
+   "unmatched": [
+    "T15",
+    "T16"
+   ],
+   "notApplicable": [
+    "T03",
+    "T04",
+    "T17",
+    "T18"
+   ],
+   "perTask": {
+    "T01": {
+     "status": "correct",
+     "matches": []
+    },
+    "T02": {
+     "status": "correct",
+     "matches": []
+    },
+    "T03": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T04": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T05": {
+     "status": "correct",
+     "matches": []
+    },
+    "T06": {
+     "status": "correct",
+     "matches": []
+    },
+    "T07": {
+     "status": "correct",
+     "matches": []
+    },
+    "T08": {
+     "status": "correct",
+     "matches": []
+    },
+    "T09": {
+     "status": "correct",
+     "matches": []
+    },
+    "T10": {
+     "status": "correct",
+     "matches": []
+    },
+    "T11": {
+     "status": "correct",
+     "matches": []
+    },
+    "T12": {
+     "status": "correct",
+     "matches": []
+    },
+    "T13": {
+     "status": "matched",
+     "matches": [
+      "fraction_integer_in_denominator"
+     ]
+    },
+    "T14": {
+     "status": "matched",
+     "matches": [
+      "fraction_integer_in_denominator"
+     ]
+    },
+    "T15": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T16": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T17": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T18": {
+     "status": "not_applicable",
+     "matches": []
+    }
+   }
+  },
+  {
+   "id": "E04",
+   "verdict": "fel_utan_förklaring",
+   "hypotheses": [],
+   "weak": [],
+   "wrongInterpretable": 3,
+   "unmatched": [
+    "T02",
+    "T10",
+    "T16"
+   ],
+   "notApplicable": [
+    "T03",
+    "T04",
+    "T17",
+    "T18"
+   ],
+   "perTask": {
+    "T01": {
+     "status": "correct",
+     "matches": []
+    },
+    "T02": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T03": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T04": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T05": {
+     "status": "correct",
+     "matches": []
+    },
+    "T06": {
+     "status": "correct",
+     "matches": []
+    },
+    "T07": {
+     "status": "correct",
+     "matches": []
+    },
+    "T08": {
+     "status": "correct",
+     "matches": []
+    },
+    "T09": {
+     "status": "correct",
+     "matches": []
+    },
+    "T10": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T11": {
+     "status": "correct",
+     "matches": []
+    },
+    "T12": {
+     "status": "correct",
+     "matches": []
+    },
+    "T13": {
+     "status": "correct",
+     "matches": []
+    },
+    "T14": {
+     "status": "correct",
+     "matches": []
+    },
+    "T15": {
+     "status": "correct",
+     "matches": []
+    },
+    "T16": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T17": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T18": {
+     "status": "not_applicable",
+     "matches": []
+    }
+   }
+  },
+  {
+   "id": "E05",
+   "verdict": "hypotes",
+   "hypotheses": [
+    {
+     "model": "fraction_components_separately",
+     "tasks": [
+      "T09",
+      "T10",
+      "T11",
+      "T12"
+     ],
+     "of": 9
+    }
+   ],
+   "weak": [],
+   "wrongInterpretable": 4,
+   "unmatched": [],
+   "notApplicable": [
+    "T03",
+    "T04",
+    "T17",
+    "T18"
+   ],
+   "perTask": {
+    "T01": {
+     "status": "correct",
+     "matches": []
+    },
+    "T02": {
+     "status": "correct",
+     "matches": []
+    },
+    "T03": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T04": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T05": {
+     "status": "correct",
+     "matches": []
+    },
+    "T06": {
+     "status": "correct",
+     "matches": []
+    },
+    "T07": {
+     "status": "correct",
+     "matches": []
+    },
+    "T08": {
+     "status": "correct",
+     "matches": []
+    },
+    "T09": {
+     "status": "matched",
+     "matches": [
+      "fraction_components_separately"
+     ]
+    },
+    "T10": {
+     "status": "matched",
+     "matches": [
+      "fraction_components_separately"
+     ]
+    },
+    "T11": {
+     "status": "matched",
+     "matches": [
+      "fraction_components_separately"
+     ]
+    },
+    "T12": {
+     "status": "matched",
+     "matches": [
+      "fraction_components_separately"
+     ]
+    },
+    "T13": {
+     "status": "correct",
+     "matches": []
+    },
+    "T14": {
+     "status": "correct",
+     "matches": []
+    },
+    "T15": {
+     "status": "correct",
+     "matches": []
+    },
+    "T16": {
+     "status": "correct",
+     "matches": []
+    },
+    "T17": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T18": {
+     "status": "not_applicable",
+     "matches": []
+    }
+   }
+  },
+  {
+   "id": "E06",
+   "verdict": "svag_signal",
+   "hypotheses": [],
+   "weak": [
+    {
+     "model": "fraction_components_separately",
+     "tasks": [
+      "T01"
+     ],
+     "of": 9
+    }
+   ],
+   "wrongInterpretable": 5,
+   "unmatched": [
+    "T05",
+    "T06",
+    "T09",
+    "T10"
+   ],
+   "notApplicable": [
+    "T03",
+    "T04",
+    "T17",
+    "T18"
+   ],
+   "perTask": {
+    "T01": {
+     "status": "matched",
+     "matches": [
+      "fraction_components_separately"
+     ]
+    },
+    "T02": {
+     "status": "correct",
+     "matches": []
+    },
+    "T03": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T04": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T05": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T06": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T07": {
+     "status": "correct",
+     "matches": []
+    },
+    "T08": {
+     "status": "correct",
+     "matches": []
+    },
+    "T09": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T10": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T11": {
+     "status": "correct",
+     "matches": []
+    },
+    "T12": {
+     "status": "correct",
+     "matches": []
+    },
+    "T13": {
+     "status": "correct",
+     "matches": []
+    },
+    "T14": {
+     "status": "correct",
+     "matches": []
+    },
+    "T15": {
+     "status": "correct",
+     "matches": []
+    },
+    "T16": {
+     "status": "correct",
+     "matches": []
+    },
+    "T17": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T18": {
+     "status": "not_applicable",
+     "matches": []
+    }
+   }
+  },
+  {
+   "id": "E07",
+   "verdict": "hypotes",
+   "hypotheses": [
+    {
+     "model": "fraction_keep_first_denominator",
+     "tasks": [
+      "T05",
+      "T06"
+     ],
+     "of": 10
+    }
+   ],
+   "weak": [],
+   "wrongInterpretable": 8,
+   "unmatched": [
+    "T07",
+    "T08",
+    "T09",
+    "T10",
+    "T11",
+    "T12"
+   ],
+   "notApplicable": [
+    "T03",
+    "T04",
+    "T17",
+    "T18"
+   ],
+   "perTask": {
+    "T01": {
+     "status": "correct",
+     "matches": []
+    },
+    "T02": {
+     "status": "correct",
+     "matches": []
+    },
+    "T03": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T04": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T05": {
+     "status": "matched",
+     "matches": [
+      "fraction_keep_first_denominator"
+     ]
+    },
+    "T06": {
+     "status": "matched",
+     "matches": [
+      "fraction_keep_first_denominator"
+     ]
+    },
+    "T07": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T08": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T09": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T10": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T11": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T12": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T13": {
+     "status": "correct",
+     "matches": []
+    },
+    "T14": {
+     "status": "correct",
+     "matches": []
+    },
+    "T15": {
+     "status": "correct",
+     "matches": []
+    },
+    "T16": {
+     "status": "correct",
+     "matches": []
+    },
+    "T17": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T18": {
+     "status": "not_applicable",
+     "matches": []
+    }
+   }
+  },
+  {
+   "id": "E08",
+   "verdict": "fel_utan_förklaring",
+   "hypotheses": [],
+   "weak": [],
+   "wrongInterpretable": 4,
+   "unmatched": [
+    "T06",
+    "T10",
+    "T11",
+    "T12"
+   ],
+   "notApplicable": [
+    "T03",
+    "T04",
+    "T17",
+    "T18"
+   ],
+   "perTask": {
+    "T01": {
+     "status": "correct",
+     "matches": []
+    },
+    "T02": {
+     "status": "correct",
+     "matches": []
+    },
+    "T03": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T04": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T05": {
+     "status": "correct",
+     "matches": []
+    },
+    "T06": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T07": {
+     "status": "correct",
+     "matches": []
+    },
+    "T08": {
+     "status": "correct",
+     "matches": []
+    },
+    "T09": {
+     "status": "correct",
+     "matches": []
+    },
+    "T10": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T11": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T12": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T13": {
+     "status": "correct",
+     "matches": []
+    },
+    "T14": {
+     "status": "correct",
+     "matches": []
+    },
+    "T15": {
+     "status": "correct",
+     "matches": []
+    },
+    "T16": {
+     "status": "correct",
+     "matches": []
+    },
+    "T17": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T18": {
+     "status": "not_applicable",
+     "matches": []
+    }
+   }
+  },
+  {
+   "id": "E09",
+   "verdict": "fel_utan_förklaring",
+   "hypotheses": [],
+   "weak": [],
+   "wrongInterpretable": 4,
+   "unmatched": [
+    "T13",
+    "T14",
+    "T15",
+    "T16"
+   ],
+   "notApplicable": [
+    "T03",
+    "T04",
+    "T17",
+    "T18"
+   ],
+   "perTask": {
+    "T01": {
+     "status": "correct",
+     "matches": []
+    },
+    "T02": {
+     "status": "correct",
+     "matches": []
+    },
+    "T03": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T04": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T05": {
+     "status": "correct",
+     "matches": []
+    },
+    "T06": {
+     "status": "correct",
+     "matches": []
+    },
+    "T07": {
+     "status": "correct",
+     "matches": []
+    },
+    "T08": {
+     "status": "correct",
+     "matches": []
+    },
+    "T09": {
+     "status": "correct",
+     "matches": []
+    },
+    "T10": {
+     "status": "correct",
+     "matches": []
+    },
+    "T11": {
+     "status": "correct",
+     "matches": []
+    },
+    "T12": {
+     "status": "correct",
+     "matches": []
+    },
+    "T13": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T14": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T15": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T16": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T17": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T18": {
+     "status": "not_applicable",
+     "matches": []
+    }
+   }
+  },
+  {
+   "id": "E10",
+   "verdict": "inga_fel_i_tolkbara_uppgifter",
+   "hypotheses": [],
+   "weak": [],
+   "wrongInterpretable": 0,
+   "unmatched": [],
+   "notApplicable": [
+    "T03",
+    "T04",
+    "T17",
+    "T18"
+   ],
+   "perTask": {
+    "T01": {
+     "status": "correct",
+     "matches": []
+    },
+    "T02": {
+     "status": "correct",
+     "matches": []
+    },
+    "T03": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T04": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T05": {
+     "status": "correct",
+     "matches": []
+    },
+    "T06": {
+     "status": "correct",
+     "matches": []
+    },
+    "T07": {
+     "status": "correct",
+     "matches": []
+    },
+    "T08": {
+     "status": "correct",
+     "matches": []
+    },
+    "T09": {
+     "status": "correct",
+     "matches": []
+    },
+    "T10": {
+     "status": "correct",
+     "matches": []
+    },
+    "T11": {
+     "status": "correct",
+     "matches": []
+    },
+    "T12": {
+     "status": "correct",
+     "matches": []
+    },
+    "T13": {
+     "status": "correct",
+     "matches": []
+    },
+    "T14": {
+     "status": "correct",
+     "matches": []
+    },
+    "T15": {
+     "status": "correct",
+     "matches": []
+    },
+    "T16": {
+     "status": "correct",
+     "matches": []
+    },
+    "T17": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T18": {
+     "status": "not_applicable",
+     "matches": []
+    }
+   }
+  },
+  {
+   "id": "E11",
+   "verdict": "fel_utan_förklaring",
+   "hypotheses": [],
+   "weak": [],
+   "wrongInterpretable": 5,
+   "unmatched": [
+    "T06",
+    "T08",
+    "T10",
+    "T11",
+    "T12"
+   ],
+   "notApplicable": [
+    "T03",
+    "T04",
+    "T17",
+    "T18"
+   ],
+   "perTask": {
+    "T01": {
+     "status": "correct",
+     "matches": []
+    },
+    "T02": {
+     "status": "correct",
+     "matches": []
+    },
+    "T03": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T04": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T05": {
+     "status": "correct",
+     "matches": []
+    },
+    "T06": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T07": {
+     "status": "correct",
+     "matches": []
+    },
+    "T08": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T09": {
+     "status": "correct",
+     "matches": []
+    },
+    "T10": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T11": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T12": {
+     "status": "unmatched",
+     "matches": []
+    },
+    "T13": {
+     "status": "correct",
+     "matches": []
+    },
+    "T14": {
+     "status": "correct",
+     "matches": []
+    },
+    "T15": {
+     "status": "correct",
+     "matches": []
+    },
+    "T16": {
+     "status": "correct",
+     "matches": []
+    },
+    "T17": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T18": {
+     "status": "not_applicable",
+     "matches": []
+    }
+   }
+  },
+  {
+   "id": "E12",
+   "verdict": "hypotes",
+   "hypotheses": [
+    {
+     "model": "fraction_components_separately",
+     "tasks": [
+      "T05",
+      "T06",
+      "T07",
+      "T08",
+      "T09",
+      "T10",
+      "T11",
+      "T12"
+     ],
+     "of": 9
+    }
+   ],
+   "weak": [],
+   "wrongInterpretable": 8,
+   "unmatched": [],
+   "notApplicable": [
+    "T03",
+    "T04",
+    "T17",
+    "T18"
+   ],
+   "perTask": {
+    "T01": {
+     "status": "correct",
+     "matches": []
+    },
+    "T02": {
+     "status": "correct",
+     "matches": []
+    },
+    "T03": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T04": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T05": {
+     "status": "matched",
+     "matches": [
+      "fraction_components_separately"
+     ]
+    },
+    "T06": {
+     "status": "matched",
+     "matches": [
+      "fraction_components_separately"
+     ]
+    },
+    "T07": {
+     "status": "matched",
+     "matches": [
+      "fraction_components_separately"
+     ]
+    },
+    "T08": {
+     "status": "matched",
+     "matches": [
+      "fraction_components_separately"
+     ]
+    },
+    "T09": {
+     "status": "matched",
+     "matches": [
+      "fraction_components_separately"
+     ]
+    },
+    "T10": {
+     "status": "matched",
+     "matches": [
+      "fraction_components_separately"
+     ]
+    },
+    "T11": {
+     "status": "matched",
+     "matches": [
+      "fraction_components_separately"
+     ]
+    },
+    "T12": {
+     "status": "matched",
+     "matches": [
+      "fraction_components_separately"
+     ]
+    },
+    "T13": {
+     "status": "correct",
+     "matches": []
+    },
+    "T14": {
+     "status": "correct",
+     "matches": []
+    },
+    "T15": {
+     "status": "correct",
+     "matches": []
+    },
+    "T16": {
+     "status": "correct",
+     "matches": []
+    },
+    "T17": {
+     "status": "not_applicable",
+     "matches": []
+    },
+    "T18": {
+     "status": "not_applicable",
+     "matches": []
+    }
+   }
+  }
+ ]
+}

@@ -67,6 +67,19 @@ Lokal omkörning på sparade felsvar från blindtest 1–3: Silver Äng Bro Bjö
 Lila Måne Bro Varg mul_no_row_shift 8 i stället för 3, vänster till höger bara hos eleven som räknade så,
 inga nya hypoteser hos kontrolleleverna.
 
+## Bråk: blindtest 0 före bygget (2026-11-08)
+
+Avvikelse från arbetsgången, godkänd av Simon 2026-11-08: bråk blindtestades
+*före* bank och modeller, som inventering. Antigravity (Gemini 4 Argon) fick bara
+18 bråkuppgifter, inga repofiler. Offline mot regelversion v9, låst bedömning
+sha256 d14faa24…: 2 rätt, 3 delvis, 1 missvisande, 4 missade av tio profiler;
+kontrollerna utan falska hypoteser. Huvudluckor: förlängning (fem profiler),
+otolkbara former (förenkla, oäkta bråk, tre termer) och sammanfall för
+`fraction_keep_first_denominator`. Detaljer i
+[evaluations/fractions-blind-0-2026-11-08](evaluations/fractions-blind-0-2026-11-08/README.md).
+Nästa steg enligt planen: bankförslag med struktur som Simon godkänner, därefter
+modeller och ett ordinarie blindtest.
+
 ## Snabbhetsträning (tabeller, dubblor, talpar, talbild)
 
 Blindtestas inte på detta sätt; målet där är snabbhet. I stället, i denna ordning när

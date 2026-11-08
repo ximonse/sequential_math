@@ -1,0 +1,160 @@
+[
+ {
+  "id": "E01",
+  "profile": "Dubblerings- och halveringsstrategi",
+  "description": "Eleven tror att förlängning alltid innebär att dubblera täljaren i bråken med mindre nämnare och använda den största nämnaren som redan står i uppgiften som gemensam nämnare (vilket ger rätt på T05–T08 men fel på T09–T12 och T17–T18). Vid förenkling i T03 halverar eleven bara en gång till 6/9 och stannar när talen inte längre är jämna.",
+  "affectedTasks": [
+   "T03",
+   "T09",
+   "T10",
+   "T11",
+   "T12",
+   "T17",
+   "T18"
+  ]
+ },
+ {
+  "id": "E02",
+  "profile": "Glömmer att förlänga täljaren vid liknämnighet",
+  "description": "Eleven hittar rätt minsta gemensamma nämnare vid addition och subtraktion av oliknämniga bråk, men ändrar bara nämnaren och räknar med de ursprungliga täljarna oförändrade.",
+  "affectedTasks": [
+   "T05",
+   "T06",
+   "T07",
+   "T08",
+   "T09",
+   "T10",
+   "T11",
+   "T12",
+   "T17",
+   "T18"
+  ]
+ },
+ {
+  "id": "E03",
+  "profile": "Korsmultiplicerar vid multiplikation och inverterar oäkta bråk",
+  "description": "Eleven tolkar multiplikationstecknet som diagonal korsmultiplikation där första täljaren multipliceras med andra nämnaren och första nämnaren med andra täljaren (med heltal n skrivna som n/1). I T04 tänker eleven att ett bråk måste vara mindre än 1 och inverterar divisionen 15/5 till 1/3.",
+  "affectedTasks": [
+   "T04",
+   "T13",
+   "T14",
+   "T15",
+   "T16"
+  ]
+ },
+ {
+  "id": "E04",
+  "profile": "kontroll",
+  "description": "Kontrollelev som behärskar alla bråkoperationer men gör tre enstaka aritmetiska slarvfel i huvudräkningen (7−4=4 i T02, 6+5=12 i T10 och 4×9=32 i T16).",
+  "affectedTasks": [
+   "T02",
+   "T10",
+   "T16"
+  ]
+ },
+ {
+  "id": "E05",
+  "profile": "Komponentvis addition/subtraktion när ingen nämnare delar de övriga",
+  "description": "Eleven klarar att förlänga när den största nämnaren i uppgiften är en multipel av de andra nämnarna (T05–T08 samt T17). När ingen befintlig nämnare i uppgiften fungerar som gemensam nämnare (T09–T12 samt T18) vet eleven inte hur en ny gemensam nämnare skapas utan adderar/subtraherar täljare för sig och nämnare för sig.",
+  "affectedTasks": [
+   "T09",
+   "T10",
+   "T11",
+   "T12",
+   "T18"
+  ]
+ },
+ {
+  "id": "E06",
+  "profile": "Adderar även nämnarna vid addition efter förlängning",
+  "description": "Eleven förlänger först bråken korrekt till minsta gemensamma nämnare, men vid addition adderas sedan både täljarna och de lika nämnarna. Vid subtraktion behåller eleven den gemensamma nämnaren eftersom nämnaren annars skulle bli 0 (i T18 ger additionen först nämnare 24 som sedan behålls vid subtraktionen).",
+  "affectedTasks": [
+   "T01",
+   "T05",
+   "T06",
+   "T09",
+   "T10",
+   "T17",
+   "T18"
+  ]
+ },
+ {
+  "id": "E07",
+  "profile": "Additiv förlängning och förenkling (konstant differens)",
+  "description": "Eleven tänker additivt istället för multiplikativt vid likvärdiga bråk: när nämnaren ökas till MGN lägger eleven till samma tal i täljaren så att differensen mellan nämnare och täljare bevaras. På samma sätt förenklas 12/18 i T03 genom att dra bort 11 från både täljare och nämnare till 1/7.",
+  "affectedTasks": [
+   "T03",
+   "T05",
+   "T06",
+   "T07",
+   "T08",
+   "T09",
+   "T10",
+   "T11",
+   "T12",
+   "T17",
+   "T18"
+  ]
+ },
+ {
+  "id": "E08",
+  "profile": "Stamsbråksförlängning (förlängningsfaktorn blir ny täljare)",
+  "description": "När ett bråk förlängs till MGN sätter eleven förlängningsfaktorn direkt som ny täljare utan att multiplicera den med den ursprungliga täljaren. Detta ger rätt svar i alla uppgifter där endast stamsbråk med täljare 1 förlängs (T05, T07, T08, T09, T17), men ger fel när bråk med täljare större än 1 förlängs (i T11 och T12 vänder eleven dessutom på subtraktionen för att undvika negativ täljare).",
+  "affectedTasks": [
+   "T06",
+   "T10",
+   "T11",
+   "T12",
+   "T18"
+  ]
+ },
+ {
+  "id": "E09",
+  "profile": "Övergeneraliserar förlängning och liknämnighet till multiplikation",
+  "description": "Eleven kan addition och subtraktion men blandar ihop multiplikation med förlängning och liknämnighet. Vid bråk gånger heltal (T13–T14) multipliceras både täljare och nämnare med heltalet, och vid bråk gånger bråk (T15–T16) görs bråken liknämniga varpå de nya täljarna multipliceras medan nämnaren behålls.",
+  "affectedTasks": [
+   "T13",
+   "T14",
+   "T15",
+   "T16"
+  ]
+ },
+ {
+  "id": "E10",
+  "profile": "kontroll",
+  "description": "Kontrollelev som är mycket säker på bråkräkning och svarar rätt på nästan alla uppgifter, med endast ett litet räkneslarv i sista flerstegsuppgiften T18 (6+8−3 blir 10 istället för 11).",
+  "affectedTasks": [
+   "T18"
+  ]
+ },
+ {
+  "id": "E11",
+  "profile": "Multiplicerar täljaren med bråkets egen nämnare vid förlängning",
+  "description": "När ett bråk ska förlängas till MGN multiplicerar eleven täljaren med bråkets egen nämnare istället för med förlängningsfaktorn. Felförståelsen döljs i T05 och T07 (där 1/2 blir 2/4) samt i T09 och T17 (där 3/12+4/12 blir lika med 4/12+3/12), men ger felsvar i T06, T08, T10, T11, T12 och T18.",
+  "affectedTasks": [
+   "T06",
+   "T08",
+   "T10",
+   "T11",
+   "T12",
+   "T18"
+  ]
+ },
+ {
+  "id": "E12",
+  "profile": "Komponentvis addition och subtraktion vid olika nämnare",
+  "description": "Eleven behåller nämnaren när nämnarna redan är lika (T01–T02), men vid alla oliknämniga additioner och subtraktioner (T05–T12, T17–T18) adderar respektive subtraherar eleven täljare för sig och nämnare för sig.",
+  "affectedTasks": [
+   "T05",
+   "T06",
+   "T07",
+   "T08",
+   "T09",
+   "T10",
+   "T11",
+   "T12",
+   "T17",
+   "T18"
+  ]
+ }
+]

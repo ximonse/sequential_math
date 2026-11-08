@@ -1,16 +1,7 @@
-/**
- * Displaykomponent för algebrauppgifter.
- * Visar uttrycket tydligt och lägger till x/y/n-knappar i tangentbordet
- * för algebra_simplify-typen.
- */
+import PracticeLayout, { AnswerBox, PracticeStatus, QuestionCard } from '../../components/student/practice/PracticeLayout'
+import PracticeKeypad from '../../components/student/practice/PracticeKeypad'
 
-const NUM_KEYPAD = [
-  ['7', '8', '9'],
-  ['4', '5', '6'],
-  ['1', '2', '3'],
-  ['0', '±', '⌫']
-]
-
+// Algebra questions in the shared practice frame; simplifying adds letter keys.
 function AlgebraDisplay({
   problem,
   feedback,
@@ -20,7 +11,7 @@ function AlgebraDisplay({
   onNext,
   inputRef,
   suppressSoftKeyboard = false,
-  leftPanel = null
+  workspace = {}
 }) {
   if (!problem) return null
 
@@ -32,168 +23,23 @@ function AlgebraDisplay({
     ? String(problem?.answer?.correct || '')
     : String(problem?.result ?? problem?.answer?.correct ?? '')
 
-  const handleKeypadKey = (key) => {
-    if (!isAnswering) return
-    const next = applyAlgebraKeypadInput(inputValue, key)
-    onInputChange(next)
-  }
+  const question = <QuestionCard label={isSimplify ? 'Förenkla uttrycket' : 'Beräkna värdet'}>
+    {expression}
+    {!isSimplify && varDisplay && <span className="mt-2 flex flex-wrap justify-center gap-2 text-base font-semibold">
+      {varDisplay.split(',').map(value => <span key={value} className="rounded-lg border border-blue-200 bg-white px-3 py-0.5 text-gray-800">{value.trim()}</span>)}
+    </span>}
+  </QuestionCard>
 
-  const handleRawInput = (e) => {
-    const raw = e.target.value
-    onInputChange(normalizeAlgebraInput(raw, isSimplify))
-  }
-
-  return (
-    <div className="w-full">
-      <div className="grid gap-4 sm:gap-5 md:gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
-        <div className="flex flex-col items-center gap-4">
-
-          {/* Uttryck och svar på samma rad; bryter till stapel när uttrycket är långt */}
-          <div className="flex w-full max-w-xl flex-wrap items-center justify-center gap-x-3 gap-y-3">
-          <div className="min-w-0 flex-1 basis-56 rounded-2xl border-2 border-purple-200 bg-purple-50 px-4 py-3 text-center sm:px-6 sm:py-4">
-            {isSimplify ? (
-              <>
-                <p className="text-xs font-semibold text-purple-500 uppercase tracking-widest mb-2">Förenkla uttrycket</p>
-                <p className="break-words text-2xl sm:text-3xl md:text-4xl font-bold text-purple-900 font-mono">{expression}</p>
-              </>
-            ) : (
-              <>
-                <p className="text-xs font-semibold text-purple-500 uppercase tracking-widest mb-2">Beräkna värdet</p>
-                <p className="break-words text-xl sm:text-2xl md:text-3xl font-bold text-purple-900 font-mono mb-3">{expression}</p>
-                <div className="flex justify-center gap-3 flex-wrap">
-                  {varDisplay.split(',').map(v => (
-                    <span key={v} className="inline-block rounded-lg bg-purple-100 border border-purple-300 px-3 py-1 text-base font-semibold text-purple-800 font-mono">
-                      {v.trim()}
-                    </span>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Input-fält */}
-          <div className="flex shrink-0 items-center gap-2">
-            <span className="text-2xl font-bold text-gray-500">=</span>
-            {isAnswering ? (
-              <input
-                ref={inputRef}
-                type="text"
-                inputMode={suppressSoftKeyboard ? 'none' : isSimplify ? 'text' : 'numeric'}
-                value={inputValue}
-                onChange={handleRawInput}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && inputValue.trim() !== '') onSubmit()
-                }}
-                placeholder="?"
-                className="w-28 sm:w-36 md:w-48 h-14 text-3xl text-center bg-gray-100 border-b-4 border-gray-400 focus:border-purple-500 focus:outline-none rounded font-mono"
-                autoComplete="off"
-              />
-            ) : (
-              <span className="text-3xl font-bold text-green-600 font-mono">{correctAnswer}</span>
-            )}
-          </div>
-          </div>
-
-          {/* Fel-feedback */}
-          {feedback && !feedback.correct && (
-            <span className="break-words text-center text-xl font-semibold text-red-600 line-through font-mono">
-              Du svarade: {String(feedback.studentAnswer)}
-            </span>
-          )}
-
-          {leftPanel && <div className="w-full mt-2">{leftPanel}</div>}
-        </div>
-
-        {/* Tangentbord */}
-        <AlgebraKeypad
-          onKey={handleKeypadKey}
-          onPrimaryAction={isAnswering ? onSubmit : onNext}
-          canSubmit={isAnswering ? inputValue.trim() !== '' : true}
-          actionLabel={isAnswering ? 'Svara' : 'Nästa'}
-          actionIsNext={!isAnswering}
-          showLetters={isSimplify}
-        />
-      </div>
-    </div>
-  )
-}
-
-function AlgebraKeypad({ onKey, onPrimaryAction, canSubmit, actionLabel, actionIsNext, showLetters }) {
-  return (
-    <div className="w-full max-w-md mx-auto rounded-xl border border-gray-200 bg-white p-3 shadow-sm select-none sm:p-4 md:max-w-none md:p-5">
-      {/* Reserved slot: one row, so the number keys sit in the same place
-          whether or not the extra keys are needed. */}
-      <div className="mb-3 h-12" aria-hidden={!showLetters}>
-        {showLetters && (
-          <div className="grid h-12 grid-cols-7 gap-1.5">
-            {['x', 'y', 'a', 'b'].map(letter => (
-              <button
-                key={letter}
-                type="button"
-                onClick={() => onKey(letter)}
-                className="rounded-lg bg-purple-100 hover:bg-purple-200 active:bg-purple-300 text-lg font-bold text-purple-800 font-mono"
-              >
-                {letter}
-              </button>
-            ))}
-            {['+', '−', '²'].map(sym => (
-              <button
-                key={sym}
-                type="button"
-                onClick={() => onKey(sym)}
-                className="rounded-lg bg-gray-200 hover:bg-gray-300 active:bg-gray-400 text-lg font-semibold text-gray-700"
-              >
-                {sym}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        {NUM_KEYPAD.flat().map(key => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onKey(key)}
-            className="h-12 sm:h-14 md:h-16 rounded-xl bg-gray-100 text-xl font-semibold text-gray-800 hover:bg-gray-200 active:bg-gray-300 sm:text-2xl"
-          >
-            {key}
-          </button>
-        ))}
-      </div>
-
-      <button
-        type="button"
-        onClick={onPrimaryAction}
-        disabled={!canSubmit}
-        className={`mt-2 w-full h-16 rounded-xl text-2xl font-bold text-white disabled:bg-gray-300 sm:mt-3 sm:h-20 sm:text-3xl md:h-24 ${
-          actionIsNext
-            ? 'bg-blue-500 hover:bg-blue-600'
-            : 'bg-green-500 hover:bg-green-600'
-        }`}
-      >
-        {actionLabel}
-      </button>
-
-      <div className="grid grid-cols-2 gap-2 mt-2 sm:mt-3 sm:gap-3">
-        <button
-          type="button"
-          onClick={() => onKey('backspace')}
-          className="h-11 rounded-xl bg-amber-100 text-sm font-semibold text-amber-900 hover:bg-amber-200 sm:h-12 sm:text-base"
-        >
-          Radera
-        </button>
-        <button
-          type="button"
-          onClick={() => onKey('clear')}
-          className="h-11 rounded-xl bg-red-100 text-sm font-semibold text-red-900 hover:bg-red-200 sm:h-12 sm:text-base"
-        >
-          Rensa
-        </button>
-      </div>
-    </div>
-  )
+  return <PracticeLayout {...workspace}
+    primary={{ isAnswering, onClick: isAnswering ? onSubmit : onNext, disabled: isAnswering && inputValue.trim() === '' }}
+    question={question}
+    answer={<AnswerBox isAnswering={isAnswering} inputRef={inputRef} value={inputValue} onSubmit={onSubmit}
+      onChange={raw => onInputChange(normalizeAlgebraInput(raw, isSimplify))}
+      inputMode={suppressSoftKeyboard ? 'none' : isSimplify ? 'text' : 'numeric'} result={correctAnswer} />}
+    status={<PracticeStatus feedback={feedback} studentAnswer={String(feedback?.studentAnswer ?? '')} />}
+    keypad={<PracticeKeypad specials={['±']} extraKeys={isSimplify ? ['x', 'y', 'a', 'b', '+', '−', '²'] : []} isAnswering={isAnswering}
+      onKey={key => { if (isAnswering) onInputChange(applyAlgebraKeypadInput(inputValue, key)) }}
+      onPrimaryAction={isAnswering ? onSubmit : onNext} canSubmit={isAnswering ? inputValue.trim() !== '' : true} />} />
 }
 
 function normalizeAlgebraInput(raw, isSimplify) {

@@ -1,4 +1,12 @@
-import NumberKeys from './NumberKeys'
+import PracticeLayout, { AnswerBox, PracticeStatus, QuestionCard } from './practice/PracticeLayout'
+import PracticeKeypad from './practice/PracticeKeypad'
+
+const OPERATORS = { addition: '+', subtraction: '−', multiplication: '×', division: '÷' }
+
+function formatNumber(value) {
+  if (!Number.isFinite(value)) return value
+  return Number(value.toFixed(6)).toString().replace('.', ',')
+}
 
 function ProblemDisplay({
   problem,
@@ -9,7 +17,7 @@ function ProblemDisplay({
   onNext,
   inputRef,
   suppressSoftKeyboard = false,
-  leftPanel = null
+  workspace = {}
 }) {
   if (!problem) return null
 
@@ -17,174 +25,24 @@ function ProblemDisplay({
   const { a, b } = values
   const isAnswering = !feedback
   const promptText = String(problem?.metadata?.promptText || '').trim()
-  const hasPromptText = promptText.length > 0
   const isFluencyPrompt = problem?.skill === 'number_bonds' || problem?.skill === 'doubles'
 
-  const formatNumber = (value) => {
-    if (!Number.isFinite(value)) return value
-    return Number(value.toFixed(6)).toString().replace('.', ',')
-  }
+  const question = promptText
+    ? <QuestionCard align={isFluencyPrompt ? 'center' : 'left'} size={isFluencyPrompt ? 'prompt' : 'text'} preWrap>{promptText}</QuestionCard>
+    : <QuestionCard>
+      {formatNumber(a)}<span className="mx-2 text-blue-600">{OPERATORS[type]}</span>{formatNumber(b)}
+    </QuestionCard>
 
-  const operators = {
-    addition: '+',
-    subtraction: '−',
-    multiplication: '×',
-    division: '÷'
-  }
-
-  const handleInputChange = (raw) => {
-    onInputChange(normalizeAnswerInput(raw))
-  }
-
-  const handleKeypadKey = (key) => {
-    if (!isAnswering) return
-    const next = applyKeypadInput(inputValue, key)
-    onInputChange(next)
-  }
-
-  return (
-    <div className="w-full">
-      <div className="grid gap-4 sm:gap-5 md:gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
-        <div className="flex flex-col items-center">
-          {hasPromptText ? (
-            <div className="w-full max-w-2xl space-y-4">
-              <div className={`rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-gray-800 whitespace-pre-wrap ${
-                isFluencyPrompt
-                  ? 'text-lg md:text-5xl md:py-5 font-bold md:text-center leading-tight'
-                  : 'text-lg md:text-xl font-medium leading-relaxed'
-              }`}>
-                {promptText}
-              </div>
-              <div className="max-w-full text-3xl sm:text-4xl md:text-5xl font-bold text-gray-800 flex items-center justify-center flex-wrap gap-y-2">
-                <span className="mx-1 sm:mx-3">=</span>
-                <div className="w-36 h-16 flex items-center justify-center">
-                  {!feedback ? (
-                    <input
-                      ref={inputRef}
-                      type="text"
-                      inputMode={suppressSoftKeyboard ? 'none' : 'numeric'}
-                      value={inputValue}
-                      onChange={(e) => handleInputChange(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && inputValue.trim() !== '') {
-                          onSubmit()
-                        }
-                      }}
-                      placeholder="?"
-                      className="w-32 h-14 text-4xl md:text-5xl text-center bg-gray-100 border-b-4 border-gray-400 focus:border-blue-500 focus:outline-none rounded"
-                      autoComplete="off"
-                    />
-                  ) : (
-                    <span className="text-green-500">{formatNumber(result)}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="max-w-full text-3xl sm:text-4xl md:text-5xl font-bold text-gray-800 flex items-center justify-center flex-wrap gap-y-2">
-              <span>{formatNumber(a)}</span>
-              <span className="mx-1 sm:mx-3 text-blue-600">{operators[type]}</span>
-              <span>{formatNumber(b)}</span>
-              <span className="mx-1 sm:mx-3">=</span>
-              <div className="w-36 h-16 flex items-center justify-center">
-                {!feedback ? (
-                  <input
-                    ref={inputRef}
-                    type="text"
-                    inputMode={suppressSoftKeyboard ? 'none' : 'numeric'}
-                    value={inputValue}
-                    onChange={(e) => handleInputChange(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && inputValue.trim() !== '') {
-                        onSubmit()
-                      }
-                    }}
-                    placeholder="?"
-                    className="w-32 h-14 text-4xl md:text-5xl text-center bg-gray-100 border-b-4 border-gray-400 focus:border-blue-500 focus:outline-none rounded"
-                    autoComplete="off"
-                  />
-                ) : (
-                  <span className="text-green-500">{formatNumber(result)}</span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Fel-info under */}
-          <div className="h-8 mt-2">
-            {feedback && !feedback.correct && (
-              <span className="text-2xl font-semibold text-red-600 line-through">
-                Du svarade: {formatNumber(feedback.studentAnswer)}
-              </span>
-            )}
-          </div>
-
-          {leftPanel && (
-            <div className="w-full mt-2">
-              {leftPanel}
-            </div>
-          )}
-        </div>
-
-        <AnswerKeypad
-          visible
-          onKey={handleKeypadKey}
-          onPrimaryAction={isAnswering ? onSubmit : onNext}
-          canSubmit={isAnswering ? inputValue.trim() !== '' : true}
-          actionLabel={isAnswering ? 'Svara' : 'Nästa'}
-          actionIsNext={!isAnswering}
-        />
-      </div>
-    </div>
-  )
-}
-
-function AnswerKeypad({
-  visible,
-  onKey,
-  onPrimaryAction,
-  canSubmit,
-  actionLabel = 'Svara',
-  actionIsNext = false
-}) {
-  if (!visible) return null
-
-  return (
-    <div className="w-full max-w-md mx-auto md:max-w-none rounded-xl border border-gray-200 bg-white shadow-sm p-3 sm:p-4 md:p-5 select-none">
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        <NumberKeys onKey={onKey}
-          buttonClassName="h-12 sm:h-14 md:h-16 rounded-xl bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-xl sm:text-2xl font-semibold text-gray-800" />
-      </div>
-      <button
-        type="button"
-        onClick={onPrimaryAction}
-        disabled={!canSubmit}
-        className={`mt-2 sm:mt-3 w-full h-16 sm:h-20 md:h-24 rounded-xl disabled:bg-gray-300 text-white text-2xl sm:text-3xl font-bold ${
-          actionIsNext
-            ? 'bg-blue-500 hover:bg-blue-600'
-            : 'bg-green-500 hover:bg-green-600'
-        }`}
-      >
-        {actionLabel}
-      </button>
-      <div className="grid grid-cols-2 gap-2 sm:gap-3 mt-2 sm:mt-3">
-        <button
-          type="button"
-          onClick={() => onKey('backspace')}
-          className="h-11 sm:h-12 rounded-xl bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-sm sm:text-base font-semibold text-amber-900"
-        >
-          Radera
-        </button>
-        <button
-          type="button"
-          onClick={() => onKey('clear')}
-          className="h-11 sm:h-12 rounded-xl bg-red-100 hover:bg-red-200 active:bg-red-300 text-sm sm:text-base font-semibold text-red-900"
-        >
-          Rensa
-        </button>
-      </div>
-    </div>
-  )
+  return <PracticeLayout {...workspace}
+    primary={{ isAnswering, onClick: isAnswering ? onSubmit : onNext, disabled: isAnswering && inputValue.trim() === '' }}
+    question={question}
+    answer={<AnswerBox isAnswering={isAnswering} inputRef={inputRef} value={inputValue} onSubmit={onSubmit}
+      onChange={raw => onInputChange(normalizeAnswerInput(raw))}
+      inputMode={suppressSoftKeyboard ? 'none' : 'numeric'} result={formatNumber(result)} />}
+    status={<PracticeStatus feedback={feedback} studentAnswer={formatNumber(feedback?.studentAnswer)} />}
+    keypad={<PracticeKeypad specials={[',', '±']} isAnswering={isAnswering}
+      onKey={key => { if (isAnswering) onInputChange(applyKeypadInput(inputValue, key)) }}
+      onPrimaryAction={isAnswering ? onSubmit : onNext} canSubmit={isAnswering ? inputValue.trim() !== '' : true} />} />
 }
 
 function normalizeAnswerInput(raw) {

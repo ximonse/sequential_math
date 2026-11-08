@@ -82,6 +82,12 @@ test('Teacher workspace choices reach the pupil and folding preserves notebook w
   page.on('request', request => { if (request.url().includes('diagnostic') && request.method() !== 'GET') diagnosticWrites.push(request.url()) })
   await expect(page.getByRole('button', { name: 'Visa rityta', exact: true })).toHaveCount(0)
   await page.getByRole('button', { name: 'Visa räknehäfte', exact: true }).click()
+  // The notebook opens over the page with the question and the same answer box above the grid.
+  const sheet = page.getByRole('dialog', { name: 'Räknehäfte', exact: true })
+  await expect(sheet.locator('.practice-layout__question')).toBeVisible()
+  await expect(sheet.locator('input[placeholder="?"]')).toBeVisible()
+  await expect(sheet.getByRole('button', { name: 'Svara', exact: true })).toBeVisible()
+  await expect(sheet.locator('.practice-layout__keypad')).toBeHidden()
   const notebook = page.locator('.diagnostic-prototype')
   const input = notebook.locator('[data-cell="0:0"]')
   await input.click()

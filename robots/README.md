@@ -64,6 +64,7 @@ att hela appens väntetider är lösta.
 | `theme-contrast.robot.js` | Mäter verklig kontrast mot bakgrunden för all text på startsidan med Framsteg, träning, infotext om klarad nivå, Grattis och Tabell klar i alla fem teman. Kräver WCAG AA (4,5:1, stor text 3:1). |
 | `stable-keys.robot.js` | Beröm i Talbild och Talpar och en misslyckad sparning i vanlig träning får inte flytta sifferknapparna (R3). |
 | `keyboard-answers.robot.js` | Datorns numpad svarar i Talbild (1–9 direkt, 10 som 1 och 0) och i vanlig träning även när eleven klickat utanför svarsfältet. |
+| `practice-layout.robot.js` | Nio frågetyper på mobil, liten mobil och iPad: svaret ligger bredvid frågan på iPad och under på mobil, Svara nås utan att skrolla och knappsatsen flyttar sig inte efter svaret. |
 
 ## Lägga till en robot
 

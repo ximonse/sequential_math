@@ -1,9 +1,8 @@
-import { lazy, Suspense, useState } from 'react'
+import { lazy, Suspense, useCallback, useState } from 'react'
 import SessionHeader from '../SessionHeader'
 import SessionModeBanner from './SessionModeBanner'
 import ProblemView from '../ProblemView'
 import MathScratchpad from '../MathScratchpad'
-import FeedbackOverlay from '../FeedbackOverlay'
 import CurrentOperationMastery from './CurrentOperationMastery'
 import StudentSyncStatus from './StudentSyncStatus'
 import FloatingNotices from './FloatingNotices'
@@ -40,7 +39,10 @@ function SessionPage({
   fluencyProgress = '',
   praise = ''
 }) {
-  const [notebookVisible, setNotebookVisible] = useState(false)
+  // Open for one question at a time: a new question closes the notebook sheet.
+  const [notebookFor, setNotebookFor] = useState(null)
+  const notebookOpen = Boolean(currentProblem) && notebookFor === currentProblem
+  const closeNotebook = useCallback(() => setNotebookFor(null), [])
   const [notebookOpened, setNotebookOpened] = useState(false)
   const notebookAllowed = sessionAssignment?.workspaces?.notebook === true
   const drawingAllowed = !sessionAssignment?.workspaces || sessionAssignment.workspaces.drawing === true
@@ -99,39 +101,28 @@ function SessionPage({
             onNext={onNext}
             inputRef={inputRef}
             suppressSoftKeyboard={coarsePointer}
-            leftPanel={showScratchpadControl && drawingAllowed ? (
-              <div className="w-full flex flex-col items-center">
-                <div className="mt-2 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={onToggleScratchpad}
-                    disabled={!showInlineScratchpad}
-                    className={`px-2 py-1 min-h-11 rounded-lg text-sm font-medium disabled:cursor-default disabled:opacity-60 ${
-                      showScratchpad && showInlineScratchpad
-                        ? 'bg-indigo-100 text-indigo-700'
-                        : 'bg-white text-gray-700 border border-gray-300'
-                    }`}
-                  >
-                    {showScratchpad && showInlineScratchpad ? 'Dölj rityta' : 'Visa rityta'}
-                  </button>
-                </div>
-                <MathScratchpad visible={showScratchpad && showInlineScratchpad} />
-              </div>
-            ) : null}
+            workspace={{
+              // Drawing and notebook sit side by side: under the question on iPad, under the keypad on phones.
+              tools: (showScratchpadControl && drawingAllowed) || (notebookAllowed && currentProblem) ? <>
+                {showScratchpadControl && drawingAllowed && <button type="button" onClick={onToggleScratchpad} disabled={!showInlineScratchpad}
+                  aria-pressed={showScratchpad && showInlineScratchpad}
+                  className={`min-h-11 rounded-lg border px-3 py-1 text-sm font-medium disabled:cursor-default disabled:opacity-60 ${showScratchpad && showInlineScratchpad ? 'border-indigo-300 bg-indigo-100 text-indigo-700' : 'border-gray-300 bg-white text-gray-700'}`}>
+                  {showScratchpad && showInlineScratchpad ? 'Dölj rityta' : 'Visa rityta'}
+                </button>}
+                {notebookAllowed && currentProblem && <button type="button" aria-expanded={notebookOpen}
+                  className="min-h-11 rounded-lg border px-3 py-1 text-sm font-medium disabled:cursor-default disabled:opacity-60 border-gray-300 bg-white text-gray-700"
+                  onClick={() => { setNotebookOpened(true); setNotebookFor(currentProblem) }}>
+                  Visa räknehäfte
+                </button>}
+              </> : null,
+              scratchpad: showScratchpadControl && drawingAllowed ? <MathScratchpad visible={showScratchpad && showInlineScratchpad} /> : null,
+              // The notebook opens over the page with the question and the same answer box above the grid.
+              notebook: notebookAllowed && notebookOpened
+                ? <Suspense fallback={<p>Öppnar räknehäftet…</p>}><PracticeNotebook /></Suspense> : null,
+              notebookOpen,
+              onCloseNotebook: closeNotebook
+            }}
           />
-
-          {notebookAllowed && currentProblem && <section className="mt-2" aria-label="Arbetsyta för uppdraget">
-            <button type="button" aria-expanded={notebookVisible} disabled={!showInlineScratchpad}
-              className="rounded border border-slate-400 bg-white px-2 py-1 min-h-11 text-sm text-slate-900"
-              onClick={() => { setNotebookOpened(true); setNotebookVisible(value => !value) }}>
-              {notebookVisible ? 'Dölj räknehäfte' : 'Visa räknehäfte'}
-            </button>
-            <div hidden={!notebookVisible || !showInlineScratchpad}>
-              {notebookOpened && <Suspense fallback={<p>Öppnar räknehäftet…</p>}><PracticeNotebook /></Suspense>}
-            </div>
-          </section>}
-
-          <FeedbackOverlay feedback={feedback} />
         </div>
 
         <CurrentOperationMastery

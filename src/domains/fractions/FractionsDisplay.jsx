@@ -1,10 +1,7 @@
-const NUM_KEYPAD = [
-  ['7', '8', '9'],
-  ['4', '5', '6'],
-  ['1', '2', '3'],
-  ['0', '/', '⌫']
-]
+import PracticeLayout, { AnswerBox, PracticeStatus, QuestionCard } from '../../components/student/practice/PracticeLayout'
+import PracticeKeypad from '../../components/student/practice/PracticeKeypad'
 
+// Fraction questions in the shared practice frame.
 function FractionsDisplay({
   problem,
   feedback,
@@ -13,8 +10,7 @@ function FractionsDisplay({
   onSubmit,
   onNext,
   inputRef,
-  suppressSoftKeyboard = false,
-  leftPanel = null
+  workspace = {}
 }) {
   if (!problem) return null
 
@@ -23,118 +19,15 @@ function FractionsDisplay({
   const correctAnswer = String(problem?.answer?.value ?? '')
   const isSimplify = text.startsWith('Förenkla')
 
-  const handleKeypadKey = (key) => {
-    if (!isAnswering) return
-    onInputChange(applyFractionKeypadInput(inputValue, key))
-  }
-
-  const handleRawInput = (e) => {
-    onInputChange(normalizeFractionInput(e.target.value))
-  }
-
-  return (
-    <div className="w-full">
-      <div className="grid gap-4 sm:gap-5 md:gap-6 md:grid-cols-[minmax(0,1fr)_260px] md:items-start">
-        <div className="flex flex-col items-center gap-4">
-
-          {/* Uppgiftsvisning */}
-          <div className="w-full max-w-xl rounded-2xl border-2 border-amber-200 bg-amber-50 px-4 py-4 text-center sm:px-6 sm:py-5">
-            <p className="text-xs font-semibold text-amber-600 uppercase tracking-widest mb-2">
-              {isSimplify ? 'Förenkla bråket' : 'Beräkna'}
-            </p>
-            <p className="break-words text-2xl sm:text-3xl md:text-4xl font-bold text-amber-900 font-mono">
-              {isSimplify ? text.replace('Förenkla: ', '') : text}
-            </p>
-          </div>
-
-          {/* Input-fält */}
-          <div className="flex items-center gap-3">
-            <span className="text-2xl font-bold text-gray-500">=</span>
-            {isAnswering ? (
-              <input
-                ref={inputRef}
-                type="text"
-                inputMode={suppressSoftKeyboard ? 'none' : 'none'}
-                value={inputValue}
-                onChange={handleRawInput}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && inputValue.trim() !== '') onSubmit()
-                }}
-                placeholder="?"
-                className="w-40 md:w-48 h-14 text-3xl text-center bg-gray-100 border-b-4 border-gray-400 focus:border-amber-500 focus:outline-none rounded font-mono"
-                autoComplete="off"
-              />
-            ) : (
-              <span className="text-3xl font-bold text-green-600 font-mono">{correctAnswer}</span>
-            )}
-          </div>
-
-          {feedback && !feedback.correct && (
-            <span className="break-words text-center text-xl font-semibold text-red-600 line-through font-mono">
-              {String(feedback.studentAnswer)}
-            </span>
-          )}
-
-          {leftPanel && <div className="w-full mt-2">{leftPanel}</div>}
-        </div>
-
-        {/* Tangentbord */}
-        <FractionsKeypad
-          onKey={handleKeypadKey}
-          onPrimaryAction={isAnswering ? onSubmit : onNext}
-          canSubmit={isAnswering ? inputValue.trim() !== '' : true}
-          actionLabel={isAnswering ? 'Svara' : 'Nästa'}
-          actionIsNext={!isAnswering}
-        />
-      </div>
-    </div>
-  )
-}
-
-function FractionsKeypad({ onKey, onPrimaryAction, canSubmit, actionLabel, actionIsNext }) {
-  return (
-    <div className="w-full max-w-md mx-auto rounded-xl border border-gray-200 bg-white p-3 shadow-sm select-none sm:p-4 md:max-w-none md:p-5">
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        {NUM_KEYPAD.flat().map(key => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onKey(key)}
-            className={`h-12 sm:h-14 md:h-16 rounded-xl text-xl sm:text-2xl font-semibold ${
-              key === '/'
-                ? 'bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-amber-800 font-bold'
-                : key === '⌫'
-                  ? 'bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-amber-800'
-                  : 'bg-gray-100 hover:bg-gray-200 active:bg-gray-300 text-gray-800'
-            }`}
-          >
-            {key}
-          </button>
-        ))}
-      </div>
-
-      <button
-        type="button"
-        onClick={onPrimaryAction}
-        disabled={!canSubmit}
-        className={`mt-2 w-full h-16 rounded-xl text-2xl font-bold text-white disabled:bg-gray-300 sm:mt-3 sm:h-20 sm:text-3xl md:h-24 ${
-          actionIsNext
-            ? 'bg-blue-500 hover:bg-blue-600'
-            : 'bg-green-500 hover:bg-green-600'
-        }`}
-      >
-        {actionLabel}
-      </button>
-
-      <button
-        type="button"
-        onClick={() => onKey('clear')}
-        className="mt-2 w-full h-11 rounded-xl bg-red-100 text-sm font-semibold text-red-900 hover:bg-red-200 sm:mt-3 sm:h-12 sm:text-base"
-      >
-        Rensa
-      </button>
-    </div>
-  )
+  return <PracticeLayout {...workspace}
+    primary={{ isAnswering, onClick: isAnswering ? onSubmit : onNext, disabled: isAnswering && inputValue.trim() === '' }}
+    question={<QuestionCard label={isSimplify ? 'Förenkla bråket' : 'Beräkna'}>{isSimplify ? text.replace('Förenkla: ', '') : text}</QuestionCard>}
+    answer={<AnswerBox isAnswering={isAnswering} inputRef={inputRef} value={inputValue} onSubmit={onSubmit}
+      onChange={raw => onInputChange(normalizeFractionInput(raw))} inputMode="none" result={correctAnswer} />}
+    status={<PracticeStatus feedback={feedback} studentAnswer={String(feedback?.studentAnswer ?? '')} />}
+    keypad={<PracticeKeypad specials={['/']} isAnswering={isAnswering}
+      onKey={key => { if (isAnswering) onInputChange(applyFractionKeypadInput(inputValue, key)) }}
+      onPrimaryAction={isAnswering ? onSubmit : onNext} canSubmit={isAnswering ? inputValue.trim() !== '' : true} />} />
 }
 
 function normalizeFractionInput(raw) {
@@ -145,7 +38,7 @@ function normalizeFractionInput(raw) {
 function applyFractionKeypadInput(currentValue, key) {
   const current = String(currentValue || '')
   if (key === 'clear') return ''
-  if (key === '⌫') return current.slice(0, -1)
+  if (key === '⌫' || key === 'backspace') return current.slice(0, -1)
   // Only allow one slash
   if (key === '/') {
     if (current.includes('/') || current === '') return current

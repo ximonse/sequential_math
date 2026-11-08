@@ -1,0 +1,61 @@
+/* One layout for every practice question (Simon 2026-11-07). Phones stack the
+   question, the answer, the status line, the keypad and then the tools; from iPad
+   width the answer sits right of the question, the tools below it, and the keypad
+   in its own column. Every area keeps its size so nothing moves while answering. */
+.practice-layout {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-areas: "question" "status" "keypad" "tools";
+}
+
+.practice-layout__question { grid-area: question; min-width: 0; }
+.practice-layout__status { grid-area: status; }
+.practice-layout__keypad { grid-area: keypad; }
+.practice-layout__tools { grid-area: tools; min-width: 0; }
+.practice-layout__notebook { grid-area: notebook; min-width: 0; }
+
+/* The notebook opens over the page with the question and answer above the grid.
+   The grid gets the full width; its own keypad writes in the grid, so the practice
+   keypad is set aside and a small Svara button sits by the answer instead. */
+.practice-layout--notebook {
+  grid-template-areas: "question" "status" "notebook";
+}
+
+@media (min-width: 768px) {
+  .practice-layout {
+    column-gap: 1.5rem;
+    row-gap: 0.5rem;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas: "question keypad" "status keypad" "tools keypad";
+    align-items: start;
+  }
+
+  .practice-layout--notebook {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas: "question" "status" "notebook";
+  }
+}
+
+.practice-notebook-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow-y: auto;
+  padding: 0.75rem;
+}
+
+/* Short phones (iPhone SE and similar): slightly lower keys, so the pupil reaches
+   Svara without scrolling. Larger phones and iPads keep the normal size. */
+@media (max-width: 767px) and (max-height: 720px) {
+  .practice-layout { gap: 0.375rem; }
+  .practice-layout__keypad > div { padding: 0.5rem; }
+  .practice-layout__keypad > div > .grid > button { height: 2.5rem; }
+  .practice-layout__keypad > div > .grid.h-12 { height: 2.5rem; margin-bottom: 0.375rem; }
+  .practice-layout__keypad > div > .grid { gap: 0.375rem; }
+  .practice-layout__keypad > div > button { height: 3rem; margin-top: 0.375rem; }
+  .practice-layout__keypad > div > .grid:last-child { margin-top: 0.375rem; }
+  .practice-layout__status > div { height: 3rem; }
+  .practice-layout__question .rounded-2xl { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+}

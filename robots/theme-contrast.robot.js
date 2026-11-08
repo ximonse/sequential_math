@@ -42,8 +42,6 @@ async function audit(page, view) {
       if (!text) continue
       const style = getComputedStyle(element)
       if (style.visibility === 'hidden' || element.closest('[aria-hidden="true"]')) continue
-      // Svara/Nästa keep white text by Simon's decision (2026-11-08).
-      if (element.closest('[data-contrast-exempt]')) continue
       const chain = []
       let opacity = 1
       for (let node = element; node && node !== document.documentElement; node = node.parentElement) { chain.unshift(node); opacity *= Number(getComputedStyle(node).opacity) }

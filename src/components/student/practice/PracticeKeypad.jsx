@@ -15,7 +15,7 @@ export default function PracticeKeypad({ onKey, specials = [], extraKeys = [], o
         ? <button key={specials[index]} type="button" onClick={() => onKey(specials[index])} className={key}>{specials[index]}</button>
         : <span key={`empty-${index}`} aria-hidden="true" />)}
     </div>
-    <button type="button" onClick={onPrimaryAction} disabled={!canSubmit} data-contrast-exempt
+    <button type="button" onClick={onPrimaryAction} disabled={!canSubmit}
       className={`practice-primary mt-2 h-14 w-full rounded-xl text-2xl font-bold text-white disabled:bg-gray-300 sm:mt-3 sm:h-20 sm:text-3xl md:h-24 ${
         isAnswering ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'}`}>
       {isAnswering ? 'Svara' : 'Nästa'}

@@ -32,7 +32,7 @@ export default function PracticeLayout({ question, answer, status, keypad, prima
         <span aria-hidden="true">=</span>
         <div onPointerDown={() => { if (notebookOpen) setAnswerChosen(true) }}
           className={answerActive ? 'rounded ring-4 ring-blue-400' : ''}>{answer}</div>
-        {notebookOpen && primary && <button type="button" onClick={primary.onClick} disabled={primary.disabled} data-contrast-exempt
+        {notebookOpen && primary && <button type="button" onClick={primary.onClick} disabled={primary.disabled}
           className={`practice-primary h-14 rounded-xl px-4 text-xl font-bold text-white disabled:bg-gray-300 ${primary.isAnswering ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'}`}>
           {primary.isAnswering ? 'Svara' : 'Nästa'}</button>}
       </div>

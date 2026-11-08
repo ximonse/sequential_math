@@ -38,8 +38,14 @@ function lineBetween(from, to, horizontalOnly = false) {
     to: { row: Math.max(from.row, to.row), column: from.column } }
 }
 
-function newGrid(task) {
+// Practice starts with six rows and adds more on demand (Simon 2026-11-08). The
+// practice notebook is never saved, so added rows need no event in the log.
+const PRACTICE_ROWS = 6
+const MAX_ROWS = 24
+
+function newGrid(task, rows) {
   return createDiagnosticGrid({
+    ...(rows ? { rows } : {}),
     attemptId: `prototype:${crypto.randomUUID()}`,
     taskId: task.taskId,
     taskVersion: task.taskVersion, answerType: task.answerType || 'number',
@@ -52,7 +58,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
   guideScope = '', imageContext = {}, answerTarget = null }) {
   const availableTasks = pilot ? [pilot.task] : TASKS
   const [task, setTask] = useState(pilot?.task || TASKS[0])
-  const [grid, setGrid] = useState(() => pilot?.snapshot || newGrid(pilot?.task || TASKS[0]))
+  const [grid, setGrid] = useState(() => pilot?.snapshot || newGrid(pilot?.task || TASKS[0], workspaceOnly ? PRACTICE_ROWS : undefined))
   const [snapshotText, setSnapshotText] = useState('')
   const [message, setMessage] = useState('')
   const gridRef = useRef(null)
@@ -652,6 +658,8 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
               )
             })}
           </div>
+          {workspaceOnly && grid.rows < MAX_ROWS && <button type="button" className="notebook-add-row" aria-label="Lägg till en rad"
+            title="Lägg till en rad" onClick={() => setGrid(previous => ({ ...previous, rows: Math.min(MAX_ROWS, previous.rows + 1) }))}>+</button>}
             </div>
             {!workspaceOnly && <div className={`diagnostic-answer-row ${task.answerType === 'text' ? 'diagnostic-answer-row--text' : ''}`}>
               {!isChoiceTask(task) && <NotebookAnswerInput inputRef={answerRef} answer={grid.answer} answerType={task.answerType}

@@ -89,6 +89,10 @@ test('Teacher workspace choices reach the pupil and folding preserves notebook w
   await expect(sheet.getByRole('button', { name: 'Svara', exact: true })).toBeVisible()
   await expect(sheet.locator('.practice-layout__keypad')).toBeHidden()
   const notebook = page.locator('.diagnostic-prototype')
+  // Practice starts with six rows; the plus under the grid adds one more.
+  await expect(notebook.locator('.diagnostic-grid .diagnostic-cell')).toHaveCount(72)
+  await notebook.getByRole('button', { name: 'Lägg till en rad', exact: true }).click()
+  await expect(notebook.locator('.diagnostic-grid .diagnostic-cell')).toHaveCount(84)
   const input = notebook.locator('[data-cell="0:0"]')
   await input.click()
   await notebook.getByRole('button', { name: 'Skriv 8', exact: true }).click()

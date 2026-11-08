@@ -376,3 +376,18 @@
 .short-division .short-division__gap--right .short-division__gap-caret { top: calc(100% - 0.55rem); left: auto; right: -1px; }
 .short-division .short-division__gap--left .short-division__gap-caret--after { left: 0.55rem; }
 .short-division .short-division__gap--right .short-division__gap-caret--after { right: -0.6rem; }
+
+/* Practice notebook: a discreet plus under the grid's right edge adds a row. */
+.notebook-add-row {
+  display: block;
+  width: 28px;
+  height: 22px;
+  margin: 3px 0 0 auto;
+  border: 1px solid var(--border, #94a3b8);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  font-size: 16px;
+  line-height: 1;
+}
+.notebook-keypad .notebook-operators { margin-bottom: 6px; }

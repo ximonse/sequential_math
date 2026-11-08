@@ -28,6 +28,9 @@ test('A pupil saves before continuing and submits the whole collection without l
   await page.locator('input[data-cell="0:0"]').press('8')
   // The notebook is always shown in a screening (Simon 2026-11-02): no hide button.
   await expect(page.getByRole('button', { name: 'Dölj räknehäfte', exact: true })).toHaveCount(0)
+  // Screening keeps its fixed eight rows: saved attempts are replayed at that size.
+  await expect(page.getByRole('button', { name: 'Lägg till en rad', exact: true })).toHaveCount(0)
+  await expect(page.locator('.diagnostic-grid .diagnostic-cell')).toHaveCount(96)
   await expect(page.getByRole('textbox', { name: 'Mitt svar', exact: true })).toBeVisible()
   await expect(page.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 8/)
   await page.route('**/api/me/diagnostic-attempt', route => {

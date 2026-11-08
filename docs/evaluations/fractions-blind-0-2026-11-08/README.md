@@ -1,7 +1,7 @@
 # Bråk: blindtest 0 (inventering före bygget), 2026-11-08
 
-**Avvikelse från [valideringsplanen](../../VALIDATION_PLAN.md), godkänd av Simon
-2026-11-08 ("Kör").** Planen blindtestar ett område först när bank och modeller
+**Avvikelse från [valideringsplanen](../../VALIDATION_PLAN.md).** Claude föreslog
+testet före bygget utan att säga att planen anger efter; Simon sa ja till förslaget. Planen blindtestar ett område först när bank och modeller
 finns. Detta test körs i stället *före* bråkpaketet för att se vilka
 bråkfelförståelser regelmotorn redan känner igen och vilka som saknas. Resultatet
 är underlag för steg 1–2 (inventering och bankförslag), inte ett betyg på ett

@@ -69,7 +69,8 @@ inga nya hypoteser hos kontrolleleverna.
 
 ## Bråk: blindtest 0 före bygget (2026-11-08)
 
-Avvikelse från arbetsgången, godkänd av Simon 2026-11-08: bråk blindtestades
+Avvikelse från arbetsgången 2026-11-08 (Claude föreslog den utan att nämna
+planens ordning; Simon sa ja till förslaget): bråk blindtestades
 *före* bank och modeller, som inventering. Antigravity (begärd modell gemini-4-argon-high) fick bara
 18 bråkuppgifter, inga repofiler. Offline mot regelversion v9, låst bedömning
 sha256 d14faa24…: 2 rätt, 3 delvis, 1 missvisande, 4 missade av tio profiler;

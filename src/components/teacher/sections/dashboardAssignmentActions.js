@@ -5,6 +5,7 @@ import {
   buildAssignmentLink,
   clearAllAssignments,
   createAssignment,
+  decodeAssignmentPayload,
   deleteAssignment,
   encodeAssignmentPayload,
   getActiveAssignment,
@@ -51,21 +52,24 @@ export function buildDashboardAssignmentActions({
 }) {
   // Active assignments are stored on each class or group on the server, where
   // pupils' own devices read them. Targets are { type, id, name }.
+  // Returns the target's active assignments after the change, or null on failure.
+  const putTarget = async (target, change) => {
+    try {
+      const response = await fetch('/api/teacher-class-assignment', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() },
+        body: JSON.stringify({ targetType: target.type, targetId: target.id, ...change })
+      })
+      if (!response.ok) return null
+      const activeAssignments = (await response.json()).activeAssignments || []
+      onTargetActiveChange(target, activeAssignments)
+      return activeAssignments
+    } catch {
+      return null
+    }
+  }
   const saveTargets = async (targets, change) => {
-    const results = await Promise.all(targets.map(async target => {
-      try {
-        const response = await fetch('/api/teacher-class-assignment', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', 'x-teacher-token': getTeacherApiToken() },
-          body: JSON.stringify({ targetType: target.type, targetId: target.id, ...change })
-        })
-        if (!response.ok) return false
-        onTargetActiveChange(target, (await response.json()).activeAssignments || [])
-        return true
-      } catch {
-        return false
-      }
-    }))
+    const results = await Promise.all(targets.map(async target => Boolean(await putTarget(target, change))))
     const saved = targets.filter((_, index) => results[index]).map(target => target.name || target.id)
     return { saved, failed: targets.length - saved.length }
   }
@@ -156,6 +160,19 @@ export function buildDashboardAssignmentActions({
     setDashboardStatus('Alla uppdrag rensade.')
   }
 
+  // A quick assignment goes straight onto that pupil's start page. It replaces
+  // the pupil's previous quick assignment of the same kind (title prefix).
+  const activateForPupil = async (row, assignment) => {
+    const target = { type: 'student', id: String(row.studentId), name: row.name || String(row.studentId) }
+    const active = await putTarget(target, { action: 'activate', assignmentPayload: encodeAssignmentPayload(assignment) })
+    if (!active) return false
+    const prefix = `${String(assignment.title).split('|')[0].trim()} |`
+    const older = active.map(item => decodeAssignmentPayload(item.payload))
+      .filter(item => item && item.id !== assignment.id && String(item.title).startsWith(prefix))
+    for (const item of older) await putTarget(target, { action: 'deactivate', assignmentId: item.id })
+    return true
+  }
+
   const handleCreateQuickAssignment = async (row, variant) => {
     const preset = buildQuickAssignmentPreset(row, variant)
     const assignment = createAssignment(preset)
@@ -167,6 +184,13 @@ export function buildDashboardAssignmentActions({
     setAssignments(getAssignments())
     setActiveAssignment(assignment.id)
     setActiveAssignmentId(assignment.id)
+
+    if (row?.studentId) {
+      setDashboardStatus(await activateForPupil(row, assignment)
+        ? `${assignment.title} ligger nu på ${row.name || 'elevens'} startsida.`
+        : `${assignment.title} skapades men kunde inte läggas på elevens startsida. Försök igen.`)
+      return
+    }
 
     const link = buildAssignmentLink(assignment.id, assignment, getSelectedClassLoginToken())
     if (!link) {
@@ -182,7 +206,6 @@ export function buildDashboardAssignmentActions({
       setDashboardStatus(`Nytt uppdrag skapat och aktiverat: ${assignment.title}.`)
     }
   }
-
   return {
     handleCreatePreset,
     handleCreateMathPractice,

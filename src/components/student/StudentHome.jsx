@@ -157,6 +157,9 @@ function StudentHome() {
 
   const homeItems = useMemo(() => (Array.isArray(targetAssignments) ? targetAssignments
     : assignment ? [{ payload: encodeAssignmentPayload(assignment), activatedAt: 0 }] : []), [targetAssignments, assignment])
+  const personalAssignmentIds = useMemo(() => new Set(homeItems
+    .filter(item => item?.source?.type === 'student')
+    .map(item => decodeAssignmentPayload(item.payload)?.id).filter(Boolean)), [homeItems])
   // progressVersion re-reads completions written into the profile object.
   const { todo: todoAssignments, done: doneAssignments } = useMemo(
     () => splitAssignments(profile, homeItems), [profile, homeItems, progressVersion]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -426,6 +429,7 @@ function StudentHome() {
 
         {(!activeTicketPayload || activeTicketResponse) && <StudentHomeAssignments
           todo={todoAssignments}
+          personalIds={personalAssignmentIds}
           done={doneAssignments}
           onStart={item => handleStartAssignmentOrFree(item)}
         />}

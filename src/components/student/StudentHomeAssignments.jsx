@@ -2,15 +2,35 @@ import { useState } from 'react'
 
 // Assigned work: start the oldest undone item directly, or open the list to choose.
 // Free practice has its own home card, so this section only shows assignments.
-export default function StudentHomeAssignments({ todo, done, onStart }) {
+// "Fokus Kim | Addition nivå 2-4" -> "Fokus: Addition nivå 2-4"; the pupil's own name is left out.
+function personalTitle(title) {
+  const [head, rest] = String(title || '').split('|')
+  return rest ? `${head.trim().split(' ')[0]}: ${rest.trim()}` : String(title || '')
+}
+
+export default function StudentHomeAssignments({ todo: allTodo, done, onStart, personalIds = new Set() }) {
   const [open, setOpen] = useState(false)
-  if (todo.length === 0 && done.length === 0) return null
-  const next = todo[0]
+  if (allTodo.length === 0 && done.length === 0) return null
+  // Work the teacher put on this pupil alone comes first and stands out.
+  const personal = allTodo.filter(item => personalIds.has(item.id))
+  const shared = allTodo.filter(item => !personalIds.has(item.id))
+  const todo = [...personal, ...shared]
+  // The personal block has its own start button; "next" covers the rest.
+  const next = shared[0]
   return (
     <section aria-labelledby="my-assignments-title" className="bg-white border-2 border-blue-200 rounded-xl p-5 mb-6 shadow-sm">
+      {personal.map(item => <div key={item.id} data-personal-assignment
+        className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-amber-400 bg-amber-50 px-4 py-3">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wide text-amber-800">Från din lärare</p>
+          <p className="text-lg font-semibold text-gray-900">{personalTitle(item.title)}</p>
+        </div>
+        <button type="button" onClick={() => onStart(item)} aria-label={`Starta uppdraget från din lärare: ${personalTitle(item.title)}`}
+          className="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg">Starta</button>
+      </div>)}
       <h2 id="my-assignments-title" className="text-lg font-semibold text-gray-800">Mina uppdrag</h2>
       <p className="text-sm text-gray-600 mt-1">
-        {next ? `${todo.length} att göra${done.length ? ` · ${done.length} klara` : ''}` : 'Alla uppdrag är klara ✓'}
+        {todo.length ? `${todo.length} att göra${done.length ? ` · ${done.length} klara` : ''}` : 'Alla uppdrag är klara ✓'}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         {next && <button type="button" data-assignment-start-next onClick={() => onStart(next)}

@@ -10,7 +10,7 @@ export default function SupportPriorityPanel({
         <h2 className="text-lg font-semibold text-gray-800">Behöver stöd nu</h2>
         <span className="text-xs text-gray-500">Signal · varför · underlag · nästa steg</span>
       </div>
-      <p className="mb-3 text-xs text-gray-600">Signalen anger prioritet för stöd. Undersök möjliga felförståelser i elevvyn. Fokus och Värm aktiverar träningsuppdrag direkt.</p>
+      <p className="mb-3 text-xs text-gray-600">Signalen anger prioritet för stöd. Undersök möjliga felförståelser i elevvyn. Fokus skapar ett träningsuppdrag och kopierar länken.</p>
       {supportRows.length === 0 ? (
         <p className="text-sm text-gray-500">Inga elever uppfyller de tydliga stödreglerna just nu.</p>
       ) : (
@@ -63,7 +63,6 @@ export default function SupportPriorityPanel({
                     <div className="flex flex-wrap gap-1">
                       <button onClick={() => onOpenStudentDetail(row.studentId)} className="px-1.5 py-0.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-xs">Elevvy</button>
                       <button title="Skapar och aktiverar direkt ett uppdrag med 14 uppgifter i ett räknesätt eleven behöver öva, ungefär en nivå under till en nivå över elevens beräknade nivå." onClick={() => onCreateQuickAssignment(row, 'focus')} className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold">Fokus</button>
-                      <button title="Skapar och aktiverar direkt ett uppvärmningsuppdrag med 10 lättare uppgifter i ett räknesätt eleven behöver öva, ungefär en till två nivåer under elevens beräknade nivå." onClick={() => onCreateQuickAssignment(row, 'warmup')} className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold">Värm</button>
                     </div>
                   </td>
                 </tr>

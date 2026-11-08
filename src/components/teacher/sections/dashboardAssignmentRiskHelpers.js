@@ -169,18 +169,6 @@ export function buildQuickAssignmentPreset(row, variant) {
   const operationLabel = getOperationLabel(operation)
   const level = pickFocusLevel(row, operation)
 
-  if (variant === 'warmup') {
-    const minLevel = clampLevel(level - 2)
-    const maxLevel = clampLevel(Math.max(minLevel, level - 1))
-    return {
-      title: `Värm upp ${row.name} | ${operationLabel} nivå ${minLevel}-${maxLevel}`,
-      problemTypes: [operation],
-      minLevel,
-      maxLevel,
-      targetCount: 10
-    }
-  }
-
   if (variant === 'challenge') {
     const minLevel = clampLevel(level)
     const maxLevel = clampLevel(level + 2)

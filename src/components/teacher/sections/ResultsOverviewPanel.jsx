@@ -379,13 +379,6 @@ export default function ResultsOverviewPanel({
                         Fokus
                       </button>
                       <button
-                        onClick={() => onCreateQuickAssignment(row, 'warmup')}
-                        title="Skapar och aktiverar direkt ett uppvärmningsuppdrag med 10 lättare uppgifter i ett räknesätt eleven behöver öva, ungefär en till två nivåer under elevens beräknade nivå."
-                        className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold"
-                      >
-                        Värm upp
-                      </button>
-                      <button
                         onClick={() => onCreateQuickAssignment(row, 'challenge')}
                         className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-semibold"
                       >

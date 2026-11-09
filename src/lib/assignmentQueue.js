@@ -64,3 +64,14 @@ export function assignmentLaunchPath(studentId, assignment) {
   }
   return `/student/${studentId}/practice?${params}`
 }
+
+// Simon 2026-11-09: a link assignment with a level range goes from the easiest
+// level to the hardest, spread evenly over the questions, instead of adapting.
+export function assignmentStaircaseLevel(assignment, solvedCount) {
+  const min = Number(assignment?.minLevel), max = Number(assignment?.maxLevel)
+  // Number bonds and doubles keep their own lap levels.
+  const types = Array.isArray(assignment?.problemTypes) ? assignment.problemTypes : []
+  if (!Number.isInteger(min) || !Number.isInteger(max) || max <= min || types.some(type => FLUENCY_TYPES.includes(type))) return null
+  const span = max - min + 1, solved = Math.max(0, Math.floor(Number(solvedCount) || 0))
+  return min + Math.min(span - 1, Math.floor(solved * span / getAssignmentTarget(assignment)))
+}

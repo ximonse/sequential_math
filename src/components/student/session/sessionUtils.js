@@ -8,6 +8,7 @@ import { markTableCompleted } from '../../../lib/tableDrillCompletion'
 import { EVIDENCE_CLASSES, attachEvidenceClaim } from '../../../lib/evidenceContract'
 import { getFocusedSessionStartDecision } from '../../../lib/sessionStartDecision'
 import { getCurrentNeed } from '../../../lib/currentNeed'
+import { assignmentStaircaseLevel } from '../../../lib/assignmentQueue'
 
 export const DEFAULT_BREAK_MINUTES = 1
 export const SINGLE_DIGIT_BREAK_MINUTES = 2
@@ -41,6 +42,13 @@ export function getSessionRules(
     }
     rules.allowedTypes = assignment.problemTypes
     rules.levelRange = [assignment.minLevel, assignment.maxLevel]
+    // Easiest first, then harder and harder through the assignment.
+    const staircase = (assignment.kind ?? 'standard') === 'standard' ? assignmentStaircaseLevel(assignment, solvedCount) : null
+    if (staircase !== null) {
+      rules.forcedLevel = staircase
+      rules.forceReason = 'assignment_staircase'
+      rules.forceBucket = 'core'
+    }
     return rules
   }
 

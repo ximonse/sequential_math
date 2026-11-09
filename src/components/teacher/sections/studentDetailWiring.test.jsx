@@ -28,7 +28,7 @@ describe('student detail wiring', () => {
     />)
     expect(html).toContain('Student detail is visible')
     expect(html).toContain('Arbetsläge')
-    expect(html).toContain('lg:grid-cols-[13rem_minmax(0,1fr)]')
+    expect(html).toContain('min-[1400px]:grid-cols-[13rem_minmax(0,1fr)]')
   })
 
   it('shows the active teacher account and role in the header', () => {

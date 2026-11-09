@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { defaultEvidenceDays, evidencePeriod } from './evidencePeriod.js'
+import { defaultEvidenceDays, evidencePeriod, recentEvidenceDays } from './evidencePeriod.js'
 
 describe('Stockholm evidence periods', () => {
   it('supports afternoon windows with inclusive starts and exclusive clock ends in winter and summer', () => {
@@ -39,5 +39,11 @@ describe('Stockholm evidence periods', () => {
   it('defaults to the current Stockholm week even on a different UTC day', () => {
     expect(defaultEvidenceDays(Date.parse('2026-10-25T23:30:00Z')))
       .toEqual({ from: '2026-10-26', to: '2026-10-26' })
+  })
+})
+
+describe('recent evidence days', () => {
+  it('covers four weeks including today, also on a Monday', () => {
+    expect(recentEvidenceDays(28, Date.parse('2026-11-09T06:00:00Z'))).toEqual({ from: '2026-10-13', to: '2026-11-09' })
   })
 })

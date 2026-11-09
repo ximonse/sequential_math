@@ -50,3 +50,11 @@ export function followUpProgress(entries, items) {
   return { expected, assessed, pending: known ? Math.max(0, expected - assessed) : null, consistent,
     submitted, complete: Boolean(consistent && entries.length === expected && assessed === expected && submitted) }
 }
+
+// With several suspicions each one is judged only on the answers to its own questions.
+export function resultTargets(material, receipt, entries) {
+  if (Array.isArray(material.investigations)) return material.investigations.map(investigation => ({ investigation,
+    revisionOk: material.investigationsRevision === receipt.investigationRevision,
+    entries: entries.filter(entry => investigation.taskIds.includes(entry.question.taskId)) }))
+  return [{ investigation: material.investigation, revisionOk: material.investigation?.revision === receipt.investigationRevision, entries }]
+}

@@ -166,6 +166,12 @@ export function createMathServer({ getApi, allowReportWrites = false, allowMater
       receipts: (dispatch?.receipts || []).slice(offset, offset + limit), nextOffset: offset + limit < (dispatch?.receipts.length || 0) ? offset + limit : null }
     if (section === 'history') return { ...base, versions: draft.versions.map(v => ({ version: v.version, createdAt: v.createdAt, contentRevision: v.contentRevision, titleSv: v.material.titleSv })) }
     if (section === 'investigation') {
+      const plans = item.material.investigations
+      // Several suspicions in one screening: each plan with its own questions.
+      if (Array.isArray(plans)) return { ...base, investigationRevision: item.material.investigationsRevision,
+        investigations: plans.map(plan => ({ schemaVersion: plan.schemaVersion, modelId: plan.modelId, ruleVersion: plan.ruleVersion,
+          taskIds: plan.taskIds, investigationRevision: plan.revision, pupils: plan.pupils.slice(offset, offset + limit), total: plan.pupils.length })),
+        nextOffset: plans.some(plan => offset + limit < plan.pupils.length) ? offset + limit : null }
       const plan = item.material.investigation
       if (!plan) return { ...base, investigation: null }
       return { ...base, schemaVersion: plan.schemaVersion, modelId: plan.modelId, ruleVersion: plan.ruleVersion,

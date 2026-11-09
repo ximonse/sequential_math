@@ -2,6 +2,8 @@ import { useRef, useState } from 'react'
 import QuestionText from '../../QuestionText.jsx'
 import DiagnosticAttemptHistory from './DiagnosticAttemptHistory.jsx'
 import ContrastFollowUp from './ContrastFollowUp.jsx'
+import MultiContrastFollowUp from './MultiContrastFollowUp.jsx'
+import { didacticPackage } from '../../../lib/didacticFollowUp.js'
 import ReportReviewNote from '../ReportReviewNote.jsx'
 import WorkEvidenceNote from '../WorkEvidenceNote.jsx'
 import { contrastFollowUpEligible } from '../../../lib/practiceModes.js'
@@ -51,6 +53,7 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
   const [selected, setSelected] = useState(null)
   const [original, setOriginal] = useState(null)
   const [message, setMessage] = useState('')
+  const [chosen, setChosen] = useState(() => new Set())
   const activeRef = useRef(null)
   const byRef = new Map(report.evidence.map(entry => [entry.ref, entry]))
   const reviewFor = item => {
@@ -62,6 +65,13 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
   }
   const slip = item => NOT_RIVALS.has(item.signalCode)
   const suspicions = report.hypotheses.filter(item => !slip(item))
+  // Suspicions that can share one screening: computed, outside the didactic
+  // packages, and not revised or rejected by the teacher.
+  const combinable = item => Boolean(studentId) && contrastFollowUpEligible(item, report)
+    && !didacticPackage(item.signalCode, byRef.get(item.supportRefs[0])?.interpretation.predictable?.scope)
+    && !['revised', 'rejected'].includes(reviewFor(item)?.decision)
+  const chosenItems = suspicions.filter(item => chosen.has(item.id) && combinable(item))
+  const toggle = id => setChosen(value => { const next = new Set(value); if (next.has(id)) next.delete(id); else next.add(id); return next })
   const slips = report.hypotheses.filter(slip)
 
   const detail = entry => selected?.ref === entry.ref && <section className="mt-1 mb-2 rounded border border-slate-300 p-3" aria-label="Rapportens källsvar">
@@ -128,7 +138,11 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
             <span className="mr-2 text-xs font-bold uppercase tracking-wide" style={{ color: area.color }}>{area.label}</span>
             {titleFor(item)}{suspicions.filter(other => other.signalCode && other.signalCode === item.signalCode).length > 1
             && SCOPE_LABELS[first?.interpretation.predictable?.scope] ? ` · ${SCOPE_LABELS[first.interpretation.predictable.scope]}` : ''}</h6>
-          <span className={`rounded px-1.5 text-xs font-semibold ${weak ? 'bg-slate-100 text-slate-600' : 'bg-amber-100 text-amber-900'}`}>{weak ? 'Enstaka svar' : 'Misstanke'}</span>
+          <span className="flex items-center gap-2">
+            {combinable(item) && <label className="flex items-center gap-1 text-xs">
+              <input type="checkbox" checked={chosen.has(item.id)} onChange={() => toggle(item.id)} /> Pröva tillsammans</label>}
+            <span className={`rounded px-1.5 text-xs font-semibold ${weak ? 'bg-slate-100 text-slate-600' : 'bg-amber-100 text-amber-900'}`}>{weak ? 'Enstaka svar' : 'Misstanke'}</span>
+          </span>
         </div>
         <p className="mt-1 text-sm"><strong>{item.supportCount} felsvar stämmer</strong>
           {item.counterCount ? ` · ${item.counterCount} rätt på jämförbara uppgifter där felet kunde ha synts` : ''}</p>
@@ -147,6 +161,10 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
         </details>}
       </div>
     })}
+
+    {chosenItems.length === 1 && <p className="mt-3 text-sm">Välj minst en misstanke till för att pröva dem i samma screening.</p>}
+    {chosenItems.length >= 2 && <MultiContrastFollowUp key={chosenItems.map(item => item.id).join('|')} items={chosenItems} report={report}
+      reviewFor={reviewFor} studentId={studentId} classId={classId} baseUrl={baseUrl} />}
 
     {(() => {
       const explained = new Set(report.hypotheses.flatMap(item => item.supportRefs))

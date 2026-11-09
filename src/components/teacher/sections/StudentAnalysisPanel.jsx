@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { defaultEvidenceDays } from '../../../lib/evidencePeriod.js'
+import { recentEvidenceDays } from '../../../lib/evidencePeriod.js'
 import { diagnosticRequest } from './diagnosticRequest.js'
 import { isTeacherAdmin } from '../../../lib/teacherAuth.js'
 import AnalysisCheckInForm from './AnalysisCheckInForm.jsx'
@@ -22,7 +22,7 @@ function AnalysisWorkspace({ studentId, classId }) {
   // The analysis is the first thing in the pupil profile: open, with a fresh preview.
   const [open, setOpen] = useState(true)
   const [state, setState] = useState(() => ({ history: null, busy: false, message: '', draft: null, preview: null,
-    selectedId: '', ...defaultEvidenceDays(), source: isTeacherAdmin() ? 'all' : 'practice', requestId: '' }))
+    selectedId: '', ...recentEvidenceDays(28), source: isTeacherAdmin() ? 'all' : 'practice', requestId: '' }))
   const baseUrl = `/api/teacher-students/${encodeURIComponent(studentId)}?classId=${encodeURIComponent(classId)}`
   const endpoint = `${baseUrl}&resource=analysis`
   const update = patch => setState(value => ({ ...value, ...patch }))

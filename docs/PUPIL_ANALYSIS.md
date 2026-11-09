@@ -19,6 +19,21 @@ misstanke förklarar visas för sig. Reservationen om att misstankar inte är
 diagnoser står en gång överst; varje kort behåller etiketten Misstanke eller
 Enstaka svar. Rapportens data och validering är oförändrade.
 
+**Flera misstankar i samma screening (2026-11-09, Simons önskemål):** kort som
+kan prövas med granskade kontrastfrågor har kryssrutan *Pröva tillsammans*.
+Med minst två valda skapar *Skapa gemensamt utkast* ett privat utkast med
+`investigations` (högst 4 misstankar, högst 12 frågor): varje misstanke får sin
+egen frysta prövning med egna frågor (`taskIds`) och eget analysunderlag
+(`basisIndexes`). En fråga eller ett underlag hör till exakt en misstanke;
+misstankar som kan ge samma svar avvisas eftersom de redan prövas mot varandra
+i en och samma prövning. Didaktikpaket och misstankar som läraren ändrat eller
+avfärdat prövas var för sig. Eleven ser en screening som heter Uppföljning;
+resultatet redovisas per misstanke, bara på dess egna frågor. Ett material har
+antingen `investigation` eller `investigations`, aldrig båda.
+
+**Period:** analysen öppnar med de senaste 28 dagarna, så att en måndag inte
+bara visar dagens svar.
+
 Ingen modell-API eller MCP-server ingår. Knappen skapar ett **regelbaserat**
 underlag från redan lagrade signaler. AI-formulerade rapporter kan lämnas via
 samma API/kontrakt, med tydlig ursprungsmärkning och källreferenser.

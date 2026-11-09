@@ -7,7 +7,7 @@ import { encodeAssignmentPayload, decodeAssignmentPayload } from '../src/lib/ass
 import { summarizeDiagnosticObservation } from '../src/domains/arithmetic/diagnosticObservation.js'
 import { createDiagnosticGrid } from '../src/domains/arithmetic/diagnosticGridModel.js'
 import { isChoiceTask } from '../src/domains/arithmetic/screeningImageQuestions.js'
-import { buildMaterialInvestigation } from '../src/lib/materialInvestigation.js'
+import { buildMaterialInvestigation, buildMaterialInvestigations } from '../src/lib/materialInvestigation.js'
 import { materialReportReview } from '../src/lib/materialReportReview.js'
 import { readPupilAnalysisState } from './_pupilAnalysisStore.js'
 import { stockholmDay } from '../src/lib/evidencePeriod.js'
@@ -90,7 +90,8 @@ function practiceContent(input, title) {
 }
 
 export async function previewTeacherMaterial(req, auth, input) {
-  object(input, ['schemaVersion', 'kind', 'mode', 'titleSv', 'goalSv', 'instructionSv', 'sourceMaterials', 'audience', 'basis', 'content', 'classContexts', 'investigation'])
+  object(input, ['schemaVersion', 'kind', 'mode', 'titleSv', 'goalSv', 'instructionSv', 'sourceMaterials', 'audience', 'basis', 'content', 'classContexts', 'investigation', 'investigations'])
+  if (input.investigation !== undefined && input.investigations !== undefined) fail('Ange en prövningsavsikt eller flera, inte båda.')
   if (input.schemaVersion !== 1 || !['practice', 'screening'].includes(input.kind)
     || !['general', 'specific'].includes(input.mode)) fail('Ogiltig materialtyp eller version.')
   const titleSv = text(input.titleSv, 100), goalSv = text(input.goalSv), instructionSv = text(input.instructionSv, 2000)
@@ -148,6 +149,24 @@ export async function previewTeacherMaterial(req, auth, input) {
   }
   const investigation = input.investigation === undefined ? undefined : buildMaterialInvestigation(input.investigation,
     { kind: input.kind, mode: input.mode, audience, classContexts, records, items: content.items, reportReview, reportState })
+  // Several suspicions: each target keeps its own report hypothesis and support answers.
+  let investigations
+  if (input.investigations !== undefined) {
+    if (!Array.isArray(input.investigations)) fail('Ogiltig prövningsavsikt.')
+    const states = new Map(), reportReviews = []
+    for (const target of input.investigations) {
+      const reference = target?.reportReview
+      if (reference === undefined) { reportReviews.push(undefined); continue }
+      object(reference, ['studentId', 'reportId', 'hypothesisId', 'checkInRevision', 'reopen'])
+      if (!audience.pupils.some(pupil => pupil.studentId === reference.studentId)) fail('Rapportens elev måste vara mottagare.')
+      if (!states.has(reference.studentId)) states.set(reference.studentId,
+        await readPupilAnalysisState(reference.studentId, classContexts[reference.studentId], live.teacherId))
+      const targetRecords = (Array.isArray(target.basisIndexes) ? target.basisIndexes : []).map(index => records[index]).filter(Boolean)
+      reportReviews.push(materialReportReview(reference, states.get(reference.studentId), targetRecords, target.modelId))
+    }
+    investigations = buildMaterialInvestigations(input.investigations, { kind: input.kind, mode: input.mode, audience, classContexts,
+      records, items: content.items, reportReviews }).map(plan => ({ ...plan, revision: evidenceHash(plan) }))
+  }
   // Publication retries reuse their frozen assignment identities. Fresh draft
   // and approval reads check novelty; do not block receipt repair after answers.
   if (investigation?.didactic && req.body?.action !== 'publish') {
@@ -163,6 +182,7 @@ export async function previewTeacherMaterial(req, auth, input) {
   const material = { schemaVersion: 1, kind: input.kind, mode: input.mode, titleSv, goalSv, instructionSv,
     sourceMaterials: sources, audience, classContexts, basis, content,
     pupilsWithoutAnalysis: audience.pupils.filter(p => !basis.some(item => item.studentId === p.studentId)).map(p => p.studentId),
-    ...(investigation ? { investigation: { ...investigation, revision: evidenceHash(investigation) } } : {}) }
+    ...(investigation ? { investigation: { ...investigation, revision: evidenceHash(investigation) } } : {}),
+    ...(investigations ? { investigations, investigationsRevision: evidenceHash(investigations.map(plan => plan.revision)) } : {}) }
   return { material, contentRevision: evidenceHash(material), saved: false, assigned: false, approval: 'not_requested' }
 }

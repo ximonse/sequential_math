@@ -88,3 +88,46 @@ export function investigationObservations(plan, entries) {
   return { compatible, matchesByRef, observations: compatible ? followUpSignal(projected) : null,
     newModels: followUpSignal(entries).models.filter(model => !models.has(model.modelId)) }
 }
+
+// Several suspicions in one screening: one frozen plan per suspicion, each built by
+// buildMaterialInvestigation from its own questions and its own support answers.
+// Rival suspicions are already tested against each other inside one plan, so they
+// cannot be split; didactic packages follow one suspicion at a time.
+export const MULTI_MAX_TARGETS = 4
+export const MULTI_MAX_ITEMS = 12
+export function buildMaterialInvestigations(inputs, context) {
+  if (!Array.isArray(inputs) || inputs.length < 2) fail('Välj minst två misstankar för en gemensam prövning.')
+  if (inputs.length > MULTI_MAX_TARGETS) fail(`Pröva högst ${MULTI_MAX_TARGETS} misstankar i samma screening.`)
+  const items = context.items || [], records = context.records || []
+  if (items.length > MULTI_MAX_ITEMS) fail(`En gemensam prövning får ha högst ${MULTI_MAX_ITEMS} frågor.`)
+  const taskOwner = new Map(), basisOwner = new Map(), modelIds = new Set()
+  for (const [index, input] of inputs.entries()) {
+    if (!input || typeof input !== 'object' || Array.isArray(input)
+      || Object.keys(input).some(key => !['schemaVersion', 'modelId', 'ruleVersion', 'reportReview', 'taskIds', 'basisIndexes'].includes(key))
+      || !Array.isArray(input.taskIds) || !input.taskIds.length || !Array.isArray(input.basisIndexes) || !input.basisIndexes.length) fail('Ogiltig prövningsavsikt.')
+    if (modelIds.has(input.modelId)) fail('Samma misstanke är vald två gånger.')
+    modelIds.add(input.modelId)
+    for (const taskId of input.taskIds) {
+      if (taskOwner.has(taskId) || !items.some(item => item.task.taskId === taskId)) fail('Varje fråga ska höra till exakt en misstanke.')
+      taskOwner.set(taskId, index)
+    }
+    for (const basisIndex of input.basisIndexes) {
+      if (!Number.isInteger(basisIndex) || !records[basisIndex] || basisOwner.has(basisIndex)) fail('Varje analysunderlag ska höra till exakt en misstanke.')
+      basisOwner.set(basisIndex, index)
+    }
+  }
+  if (items.some(item => !taskOwner.has(item.task.taskId))) fail('Varje fråga ska höra till exakt en misstanke.')
+  if (records.some((_, index) => !basisOwner.has(index))) fail('Varje analysunderlag ska höra till exakt en misstanke.')
+  const plans = inputs.map(({ taskIds, basisIndexes, ...input }, index) => ({ ...buildMaterialInvestigation(input, { ...context,
+    items: items.filter(item => taskIds.includes(item.task.taskId)),
+    records: basisIndexes.map(basisIndex => records[basisIndex]),
+    reportReview: context.reportReviews?.[index] }), taskIds }))
+  for (const plan of plans) {
+    for (const other of plans) {
+      if (other !== plan && plan.pupils.some(pupil => pupil.rivalModelIds.includes(other.modelId))) {
+        fail('Två valda misstankar kan ge samma svar. De prövas redan mot varandra; välj en av dem.')
+      }
+    }
+  }
+  return plans
+}

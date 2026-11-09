@@ -59,3 +59,12 @@ export function defaultEvidenceDays(now = Date.now()) {
   date.setUTCDate(date.getUTCDate() - (date.getUTCDay() + 6) % 7)
   return { from: date.toISOString().slice(0, 10), to }
 }
+
+// The last `days` Stockholm days including today. The pupil analysis uses four
+// weeks so that a Monday does not leave it with only today's answers.
+export function recentEvidenceDays(days = 28, now = Date.now()) {
+  const to = stockholmDay(now)
+  const date = new Date(`${to}T00:00:00Z`)
+  date.setUTCDate(date.getUTCDate() - (days - 1))
+  return { from: date.toISOString().slice(0, 10), to }
+}

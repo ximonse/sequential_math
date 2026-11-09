@@ -1,12 +1,9 @@
 import { useMemo, useRef, useState } from 'react'
 import { CONTRAST_LABELS_SV } from '../../../domains/predictableErrors/contrast.js'
 import { pupilFollowUpSelection } from '../../../lib/pupilFollowUpSelection.js'
-import { questionFingerprint } from '../../../domains/predictableErrors/probes.js'
-import { evidenceProblem } from '../../../lib/evidencePredictableAnalysis.js'
 import { isSpeedTrainingEntry } from '../../../lib/practiceModes.js'
 import { OPERATION_LABELS } from '../../../lib/operations.js'
-import { stockholmDay } from '../../../lib/evidencePeriod.js'
-import { diagnosticRequest } from './diagnosticRequest.js'
+import { call, screeningHistory } from './contrastHistory.js'
 import { didacticPackage } from '../../../lib/didacticFollowUp.js'
 
 // Directed follow-up (practice-modes, mode 4): contrast questions for one
@@ -14,33 +11,6 @@ import { didacticPackage } from '../../../lib/didacticFollowUp.js'
 // dispatch stay in the existing material review.
 
 const label = model => CONTRAST_LABELS_SV[model] || model
-
-// Every screening the pupil has answered counts as seen, not only the report's
-// own answers; a contrast task must be new to the pupil.
-async function screeningHistory(baseUrl) {
-  const keys = new Set(), cursors = new Set(), to = stockholmDay()
-  let cursor = null, revision = null
-  for (let page = 0; page < 20; page++) {
-    const params = new URLSearchParams({ resource: 'evidence', source: 'screening', from: '2024-01-01', to, limit: '100', ...(cursor ? { cursor, snapshotRevision: revision } : {}) })
-    const data = await call(`${baseUrl}&${params}`)
-    if (data.coverage?.screening?.invalidRecords > 0) throw new Error('Delar av den indexerade screeninghistoriken saknas eller är inkonsekventa.')
-    if (!Array.isArray(data.entries) || typeof data.snapshotRevision !== 'string') throw new Error('Screeninghistoriken kunde inte kontrolleras.')
-    if (revision && revision !== data.snapshotRevision) throw new Error('Screeninghistoriken ändrades under hämtningen.')
-    revision = data.snapshotRevision
-    data.entries.forEach(entry => keys.add(questionFingerprint(evidenceProblem(entry))))
-    if (data.nextCursor === null) return keys
-    if (typeof data.nextCursor !== 'string' || !data.nextCursor || cursors.has(data.nextCursor)) break
-    cursors.add(data.nextCursor)
-    cursor = data.nextCursor
-  }
-  throw new Error('Elevens screeninghistorik är för lång för att kontrolleras här.')
-}
-
-async function call(url, body) {
-  const result = await diagnosticRequest(url, body ? { method: 'POST', body: JSON.stringify(body) } : {})
-  if (!result.ok) throw new Error(result.data.error || 'Åtgärden kunde inte bekräftas. Inget har delats ut.')
-  return result.data
-}
 
 export default function ContrastFollowUp({ item, report, reportReview, studentId, classId, baseUrl }) {
   const [open, setOpen] = useState(false)

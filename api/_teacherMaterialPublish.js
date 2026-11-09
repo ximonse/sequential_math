@@ -114,7 +114,8 @@ export async function publishMaterialDraft(req, auth, state, command) {
         : await screening(auth, state, item, unit)
       rows = unit.pupils.map(pupil => ({ studentId: pupil.studentId, classId: unit.classId || null,
         assignmentId, status: 'confirmed', confirmedAt: Date.now(), lastAttemptId: command.requestId,
-        ...(item.material.investigation ? { investigationRevision: item.material.investigation.revision } : {}) }))
+        ...(item.material.investigation ? { investigationRevision: item.material.investigation.revision } : {}),
+        ...(item.material.investigations ? { investigationRevision: item.material.investigationsRevision } : {}) }))
     } catch (error) {
       rows = unit.pupils.map(pupil => ({ studentId: pupil.studentId, classId: unit.classId || null, status: error.status ? 'failed' : 'unknown',
         message: error.status ? error.message : 'Kvittensen är osäker. Läs status och återförsök samma utdelning.', lastAttemptId: command.requestId }))

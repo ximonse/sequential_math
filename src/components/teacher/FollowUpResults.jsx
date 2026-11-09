@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { CONTRAST_LABELS_SV } from '../../domains/predictableErrors/contrast.js'
 import { modelDescription } from '../../domains/predictableErrors/modelDescriptions.js'
 import { followUpSignal } from '../../lib/followUpSignal.js'
-import { followUpProgress, readFollowUpAnswers } from '../../lib/followUpResults.js'
+import { followUpProgress, readFollowUpAnswers, resultTargets } from '../../lib/followUpResults.js'
 import { diagnosticRequest } from './sections/diagnosticRequest.js'
 import { investigationObservations } from '../../lib/materialInvestigation.js'
 import DidacticFollowUp from './DidacticFollowUp.jsx'
@@ -43,13 +43,10 @@ function FollowUpAnswers({ material, receipt, draftId, version }) {
   if (!classId || !assignmentId) return <p role="status">Utdelningens klass eller uppdragsreferens saknas. Svaren kan inte kontrolleras.</p>
   const loading = state.refresh !== refresh
   const progress = followUpProgress(state.entries, material.content?.items)
-  const investigation = material.investigation
-  const plan = investigation?.revision === receipt.investigationRevision
-    ? investigation?.pupils.find(pupil => pupil.studentId === studentId && pupil.classId === classId) : null
-  const outcome = plan && investigationObservations(plan, state.entries)
-  const observations = investigation && (!plan || !outcome.compatible) ? null : outcome?.observations || followUpSignal(state.entries)
-  const scope = state.entries[0]?.interpretation?.predictable?.scope
-  const descriptions = (observations?.models || []).filter(model => model.count >= 2 && modelDescription(model.modelId, scope))
+  const multi = Array.isArray(material.investigations) ? material.investigations : null
+  const targets = resultTargets(material, receipt, state.entries)
+  const single = !multi && targets[0]
+  const singlePlan = single && single.revisionOk ? single.investigation?.pupils.find(pupil => pupil.studentId === studentId && pupil.classId === classId) : null
   return <>
     <div className="material-actions"><button disabled={loading} onClick={() => setRefresh(value => value + 1)}>Hämta svar igen</button></div>
     {loading ? <p role="status">Hämtar elevens svar…</p> : state.status === 'error' ? <p role="status">{state.message}</p> : <>
@@ -59,6 +56,23 @@ function FollowUpAnswers({ material, receipt, draftId, version }) {
         : `${progress.assessed} av ${progress.expected} frågor har bedömda svar. ${progress.pending} återstår att besvara eller bedöma.`}
         {' '}{progress.submitted ? 'De hämtade försöken är inlämnade.' : 'Alla försök är inte inlämnade.'}</p>
       {!progress.consistent && state.entries.length > 0 && <p className="followup-note">Svaren kunde inte matchas fullständigt mot materialversionens frågor. Underlaget är inte en avslutad prövning.</p>}
+      {targets.map((target, index) => <TargetResult key={target.investigation?.modelId || 'single'} {...target} studentId={studentId} classId={classId}
+        heading={multi ? <h4 className="mt-3">Misstanke {index + 1} av {targets.length}: {label(target.investigation.modelId)}</h4> : null} />)}
+      <p className="followup-note">Räknehäftet för varje svar finns i elevprofilen under Analys och avstämning.</p>
+      {singlePlan && single.investigation.didactic && investigationObservations(singlePlan, state.entries).compatible
+        && <DidacticFollowUp material={material} receipt={receipt} draftId={draftId} version={version} complete={progress.complete} />}
+    </>}
+  </>
+}
+
+function TargetResult({ investigation, revisionOk, entries, studentId, classId, heading }) {
+  const plan = revisionOk ? investigation?.pupils.find(pupil => pupil.studentId === studentId && pupil.classId === classId) : null
+  const outcome = plan && investigationObservations(plan, entries)
+  const observations = investigation && (!plan || !outcome.compatible) ? null : outcome?.observations || followUpSignal(entries)
+  const scope = entries[0]?.interpretation?.predictable?.scope
+  const descriptions = (observations?.models || []).filter(model => model.count >= 2 && modelDescription(model.modelId, scope))
+  return <>
+    {heading}
       {investigation && !plan && <p role="status">Prövningsavsikten stämmer inte med utdelningskvittot eller elevens klass. Granska underlaget innan resultatet tolkas.</p>}
       {outcome && !outcome.compatible && <p role="status">Svaren eller facit stämmer inte med den granskade prövningen. Endast källsvaren visas.</p>}
       {plan && <p><strong>Prövar: {label(investigation.modelId)}</strong></p>}
@@ -66,10 +80,10 @@ function FollowUpAnswers({ material, receipt, draftId, version }) {
       {plan?.workEvidence?.some(entry => entry.teacherReview || entry.work?.signals.length || entry.work?.visibleResultWithExchangeMarks?.consistency === 'different') && <details><summary>Ursprungliga metodsignaler och försöksgranskning</summary>
         {plan.workEvidence.map(entry => <div key={entry.ref}><p>Försök: {entry.reference.attemptId}</p><WorkEvidenceNote work={entry.work} review={entry.teacherReview} /></div>)}
       </details>}
-      {state.entries.length > 0 && <>
+      {entries.length > 0 && <>
         <table className="followup-results">
           <thead><tr><th>Fråga</th><th>Elevens svar</th><th>Facit</th><th>Stämmer med</th></tr></thead>
-          <tbody>{state.entries.map(entry => {
+          <tbody>{entries.map(entry => {
             const matches = plan ? outcome.matchesByRef.get(entry.ref) || [] : [...new Set((entry.interpretation?.predictable?.matches ?? []).map(m => m.modelId))]
             const assessed = ['correct', 'incorrect'].includes(entry.answer.status)
             return <tr key={entry.ref}>
@@ -96,8 +110,5 @@ function FollowUpAnswers({ material, receipt, draftId, version }) {
           </div>
         })}
       </>}
-      <p className="followup-note">Räknehäftet för varje svar finns i elevprofilen under Analys och avstämning.</p>
-      {plan && outcome?.compatible && investigation.didactic && <DidacticFollowUp material={material} receipt={receipt} draftId={draftId} version={version} complete={progress.complete} />}
-    </>}
   </>
 }

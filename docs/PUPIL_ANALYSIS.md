@@ -49,6 +49,14 @@ skilt från elevprofilen (`slip_exclusions:<elev>`); elevens svar, mastery och
 träningslogg ändras inte. Svar som räknas är oförändrade, så sparade rapporters
 källrevision gäller tills något döljs.
 
+**Behörighet (2026-11-09, Simons beslut):** alla lärare med åtkomst till
+elevens klass får läsa screeningsvar i analysen, också via MCP; analysen öppnar
+med träning och screening. Att skapa och dela ut screeningar (kontrastfrågor,
+Fråga igen, gemensam prövning) kräver fortfarande skoladministratör, och de
+knapparna visas bara för administratörer. Funktionsflaggan och pilotens
+elevlista gäller som tidigare. Fokusaktiviteter ingår inte i analysunderlaget
+och deras behörighet är oförändrad.
+
 **Period:** analysen öppnar med de senaste 28 dagarna, så att en måndag inte
 bara visar dagens svar.
 

@@ -120,7 +120,7 @@ export async function previewTeacherMaterial(req, auth, input) {
     object(input.content, ['taskIds', 'customTasks', 'itemOptions'])
     if (input.content.customTasks !== undefined && !Array.isArray(input.content.customTasks)) fail('Ogiltig frågelista.')
     for (const custom of input.content.customTasks || []) object(custom, ['promptSv', 'gridEnabled', 'drawingEnabled', 'responseMode', 'images', 'options', 'correctOptionIds', 'answerKey'])
-    for (const pupil of audience.pupils) assertEvidenceSourceAccess(auth, pupil.studentId, 'screening')
+    for (const pupil of audience.pupils) assertEvidenceSourceAccess(auth, pupil.studentId, 'screening', { write: true })
     let sequence = 0
     const prepared = await prepareDiagnosticAssignment({ ...input.content, taskIds: input.content.taskIds ?? [],
       teacherId: auth.teacherId, classId: audience.pupils[0].classIds[0], studentIds: [audience.pupils[0].studentId], titleSv },

@@ -51,7 +51,7 @@ function areaOf(entry) {
 const withoutCaveat = text => String(text).replace(/\s*Det är en beräknad kandidat, inte en fastställd elevmetod\.?/u, '').trim()
 const shortDate = timestamp => timestamp ? new Date(timestamp).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' }) : ''
 
-export default function PupilAnalysisReportView({ report, savedItem, baseUrl, studentId, classId, onHideSlip }) {
+export default function PupilAnalysisReportView({ report, savedItem, baseUrl, studentId, classId, onHideSlip, canCreateScreening = true }) {
   const [selected, setSelected] = useState(null)
   const [original, setOriginal] = useState(null)
   const [message, setMessage] = useState('')
@@ -72,7 +72,9 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
   const [askAgain, setAskAgain] = useState('')
   // Simple facts (tables, small sums) are asked again; other suspicions need reviewed contrast questions.
   const simple = item => isSimpleFactItem(item, report)
-  const combinable = item => Boolean(studentId) && contrastFollowUpEligible(item, report)
+  // Creating screenings (contrast, Fråga igen) needs a school administrator; every teacher can read.
+  const creatable = item => Boolean(studentId) && canCreateScreening && contrastFollowUpEligible(item, report)
+  const combinable = item => creatable(item)
     && (simple(item) || item.followUp?.delivery === 'reviewed_bank')
     && !didacticPackage(item.signalCode, byRef.get(item.supportRefs[0])?.interpretation.predictable?.scope)
     && !['revised', 'rejected'].includes(reviewFor(item)?.decision)
@@ -162,10 +164,10 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
         </>}
         <p className="mt-2 text-sm"><strong>Nästa steg:</strong> {item.nextCheckSv}</p>
         <ReportReviewNote review={reviewFor(item)} />
-        {studentId && simple(item) && contrastFollowUpEligible(item, report) && (askAgain === item.id
+        {creatable(item) && simple(item) && (askAgain === item.id
           ? <MultiContrastFollowUp items={[item]} report={report} reviewFor={reviewFor} studentId={studentId} classId={classId} baseUrl={baseUrl} />
           : <button type="button" className="mt-2 rounded border px-2 py-1 text-sm" onClick={() => setAskAgain(item.id)}>Fråga igen</button>)}
-        {studentId && !simple(item) && contrastFollowUpEligible(item, report) && <ContrastFollowUp key={`${item.id}:${savedItem?.checkIns.at(-1)?.revision ?? 0}`} item={item} report={report} reportReview={reviewFor(item)} studentId={studentId} classId={classId} baseUrl={baseUrl} />}
+        {creatable(item) && !simple(item) && <ContrastFollowUp key={`${item.id}:${savedItem?.checkIns.at(-1)?.revision ?? 0}`} item={item} report={report} reportReview={reviewFor(item)} studentId={studentId} classId={classId} baseUrl={baseUrl} />}
         {description?.openersSv?.length > 0 && <details className="mt-2 text-sm"><summary>Samtalsingångar</summary>
           <ul className="list-disc pl-5">{description.openersSv.map((value, i) => <li key={i}>{value}</li>)}</ul>
           {description.sourceSv && <p className="mt-1 text-xs text-slate-600">{description.sourceSv}</p>}

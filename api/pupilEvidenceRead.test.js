@@ -6,7 +6,7 @@ vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mock.auth, withCors
 vi.mock('./_pupilScreeningEvidence.js', () => ({ pupilScreeningEvidence: mock.screening }))
 vi.mock('./_diagnosticApiAccess.js', () => ({ diagnosticApiEnabled: () => mock.enabled, diagnosticTestStudentAllowed: () => mock.allowed }))
 import handler from './teacher-students/[studentId].js'
-import { assertPupilEvidenceAccess } from './_pupilEvidenceRead.js'
+import { assertEvidenceSourceAccess, assertPupilEvidenceAccess } from './_pupilEvidenceRead.js'
 import { createDiagnosticGrid, recordDiagnosticGridEvent } from '../src/domains/arithmetic/diagnosticGridModel.js'
 
 const profile = { studentId: 'PUPIL', classId: 'CLASS', auth: { password: 'SECRET' }, problemLog: [
@@ -96,18 +96,16 @@ describe('pupil evidence live access boundary', () => {
     mock.get.mockImplementation(async key => key === 'student:PUPIL' ? profile : { archived: true })
     expect((await call()).code).toBe(403)
   })
-  it('retains the screening admin boundary without blocking ordinary practice reads', async () => {
-    expect((await call({ source: 'all' })).code).toBe(403)
-    expect(mock.screening).not.toHaveBeenCalled()
-    mock.auth.mockResolvedValue({ role: 'school_admin', teacherId: 'ADMIN' })
+  it('lets every teacher with class access read screening answers, but only admins create screenings', async () => {
     expect((await call({ source: 'all' })).code).toBe(200)
     expect(mock.screening).toHaveBeenCalledWith('PUPIL', 'CLASS')
+    expect(() => assertEvidenceSourceAccess({ role: 'teacher' }, 'PUPIL', 'screening', { write: true })).toThrow(/administratörsbehörighet/)
+    expect(() => assertEvidenceSourceAccess({ role: 'school_admin' }, 'PUPIL', 'screening', { write: true })).not.toThrow()
   })
-  it('rechecks role and membership after slow screening reads', async () => {
-    mock.auth.mockResolvedValueOnce({ role: 'school_admin', teacherId: 'ADMIN' })
-      .mockResolvedValueOnce({ role: 'teacher', teacherId: 'ADMIN' })
+  it('rechecks the live session and membership after slow screening reads', async () => {
+    mock.auth.mockResolvedValueOnce({ role: 'teacher', teacherId: 'ADMIN' }).mockResolvedValueOnce(null)
     expect((await call({ source: 'screening' })).code).toBe(403)
-    mock.auth.mockResolvedValue({ role: 'school_admin', teacherId: 'ADMIN' })
+    mock.auth.mockResolvedValue({ role: 'teacher', teacherId: 'ADMIN' })
     let reads = 0
     mock.get.mockImplementation(async key => key === 'student:PUPIL'
       ? { ...profile, classId: ++reads === 1 ? 'CLASS' : 'OTHER' } : {})

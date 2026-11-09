@@ -40,7 +40,7 @@ async function assertUnitAccess(req, auth, state, item, unit) {
   }
   for (const pupil of unit.pupils) {
     if (unit.classId) await assertPupilEvidenceAccess(req, pupil.studentId, unit.classId)
-    if (item.material.kind === 'screening') assertEvidenceSourceAccess(live, pupil.studentId, 'screening')
+    if (item.material.kind === 'screening') assertEvidenceSourceAccess(live, pupil.studentId, 'screening', { write: true })
   }
 }
 

@@ -81,7 +81,7 @@ export function AnswerBox({ isAnswering, inputRef, value, onChange, onSubmit, in
       onChange={event => onChange(event.target.value)}
       onKeyDown={event => { if (event.key === 'Enter' && value.trim() !== '') onSubmit() }}
       className="h-14 w-full rounded border-b-4 border-gray-400 bg-gray-100 text-center text-3xl focus:border-blue-500 focus:outline-none md:text-4xl" />
-      : <span className="truncate text-3xl font-bold text-green-600 md:text-4xl">{result}</span>}
+      : <span className="practice-result truncate text-3xl font-bold text-green-600 md:text-4xl">{result}</span>}
   </div>
 }
 
@@ -95,7 +95,7 @@ export function PracticeStatus({ feedback, studentAnswer }) {
       : feedback.correct ? 'Enter, knappsatsknappen eller vänta...' : 'Tryck Enter eller knappsatsknappen när du är redo'
   return <div className="practice-status flex h-14 flex-col items-center justify-center text-center" aria-live="polite">
     {feedback && <p className="text-xl font-bold leading-tight">
-      <span className={tone}>{heading}</span>
+      <span className={`practice-heading ${tone}`}>{heading}</span>
       {!feedback.correct && <span className="ml-2 font-semibold text-red-600 line-through">Du svarade: {studentAnswer}</span>}
     </p>}
     {feedback && <p className="truncate text-sm text-gray-500">{hint}</p>}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { resultTargets } from './followUpResults.js'
+import { followUpProgress, resultTargets } from './followUpResults.js'
 
 const entry = (taskId, answer) => ({ ref: `${taskId}:${answer}`, question: { taskId, taskVersion: 1 }, answer: { status: 'incorrect', studentAnswer: answer } })
 
@@ -20,5 +20,12 @@ describe('follow-up results with several suspicions', () => {
     const [target] = resultTargets(material, { investigationRevision: 'x' }, [entry('a', 1), entry('b', 2)])
     expect(target.entries).toHaveLength(2)
     expect(target.revisionOk).toBe(true)
+  })
+
+  it('counts teacher-written questions by their text, since dispatch gives them new ids', () => {
+    const items = [{ task: { taskId: 'custom-preview-1', taskVersion: 1, promptSv: '7 · 8' } }]
+    const answer = { question: { taskId: 'custom-abc', taskVersion: 1, promptSv: '7 · 8' }, reference: { assignmentItemId: 'i1' },
+      answer: { status: 'incorrect', submitted: true } }
+    expect(followUpProgress([answer], items)).toMatchObject({ assessed: 1, consistent: true, complete: true })
   })
 })

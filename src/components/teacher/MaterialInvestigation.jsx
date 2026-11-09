@@ -6,6 +6,22 @@ import TeachingRecordNote from './TeachingRecordNote.jsx'
 const label = id => id === 'correct' ? 'rätt svar' : CONTRAST_LABELS_SV[id] || id
 
 export default function MaterialInvestigation({ material }) {
+  return <>
+    {material.repeatCheck && <RepeatPlan plan={material.repeatCheck} />}
+    <ContrastPlans material={material} />
+  </>
+}
+
+function RepeatPlan({ plan }) {
+  return <section className="material-module" aria-label="Fråga igen">
+    <h2>Fråga igen</h2>
+    <p className="followup-note">Samma enkla fakta som eleven svarade fel på, utan tidspress. Svarar eleven rätt nu var det troligen slarv; samma fel igen talar för ett inlärt fel faktum.</p>
+    <ul>{plan.facts.map(fact => <li key={fact.prompt}>{fact.prompt} = {fact.correct} · tidigare svar {String(fact.previousAnswer)}</li>)}</ul>
+    {plan.fillers.length > 0 && <p>Blandas med fakta eleven svarat rätt på: {plan.fillers.map(filler => filler.prompt).join(', ')}.</p>}
+  </section>
+}
+
+function ContrastPlans({ material }) {
   if (Array.isArray(material.investigations)) return <section className="material-module" aria-label="Prövningsavsikt">
     <h2>Prövningsavsikt: {material.investigations.length} misstankar i samma screening</h2>
     <p className="followup-note">Varje misstanke prövas bara med sina egna frågor. Misstankar att undersöka, inte fastställda felförståelser.</p>

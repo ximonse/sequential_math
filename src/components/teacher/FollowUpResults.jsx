@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { CONTRAST_LABELS_SV } from '../../domains/predictableErrors/contrast.js'
 import { modelDescription } from '../../domains/predictableErrors/modelDescriptions.js'
 import { followUpSignal } from '../../lib/followUpSignal.js'
-import { followUpProgress, readFollowUpAnswers, resultTargets } from '../../lib/followUpResults.js'
+import { followUpProgress, readFollowUpAnswers, repeatResults, resultTargets } from '../../lib/followUpResults.js'
 import { diagnosticRequest } from './sections/diagnosticRequest.js'
 import { investigationObservations } from '../../lib/materialInvestigation.js'
 import DidacticFollowUp from './DidacticFollowUp.jsx'
@@ -56,6 +56,7 @@ function FollowUpAnswers({ material, receipt, draftId, version }) {
         : `${progress.assessed} av ${progress.expected} frågor har bedömda svar. ${progress.pending} återstår att besvara eller bedöma.`}
         {' '}{progress.submitted ? 'De hämtade försöken är inlämnade.' : 'Alla försök är inte inlämnade.'}</p>
       {!progress.consistent && state.entries.length > 0 && <p className="followup-note">Svaren kunde inte matchas fullständigt mot materialversionens frågor. Underlaget är inte en avslutad prövning.</p>}
+      {material.repeatCheck && <RepeatResult result={repeatResults(material, state.entries)} />}
       {targets.map((target, index) => <TargetResult key={target.investigation?.modelId || 'single'} {...target} studentId={studentId} classId={classId}
         heading={multi ? <h4 className="mt-3">Misstanke {index + 1} av {targets.length}: {label(target.investigation.modelId)}</h4> : null} />)}
       <p className="followup-note">Räknehäftet för varje svar finns i elevprofilen under Analys och avstämning.</p>
@@ -111,4 +112,24 @@ function TargetResult({ investigation, revisionOk, entries, studentId, classId, 
         })}
       </>}
   </>
+}
+
+const REPEAT_LABELS = { correct: 'Rätt nu – troligen slarv eller stress', same_wrong: 'Samma fel igen – troligen inlärt fel faktum',
+  other_wrong: 'Annat fel – osäker, kanske gissning', unanswered: 'Inte besvarad än' }
+
+function RepeatResult({ result }) {
+  const answered = [...result.facts, ...result.fillers].filter(item => item.outcome !== 'unanswered')
+  return <div className="followup-repeat">
+    <h4 className="mt-3">Fråga igen</h4>
+    <table className="followup-results">
+      <thead><tr><th>Faktum</th><th>Tidigare svar</th><th>Nytt svar</th><th>Tolkning</th></tr></thead>
+      <tbody>{result.facts.map(fact => <tr key={fact.prompt}>
+        <td>{fact.prompt} = {fact.correct}</td><td>{String(fact.previousAnswer ?? '–')}</td>
+        <td>{String(fact.entry?.answer.studentAnswer ?? '–')}</td><td>{REPEAT_LABELS[fact.outcome]}</td>
+      </tr>)}</tbody>
+    </table>
+    {result.fillers.length > 0 && <p className="followup-note">Blandat med {result.fillers.length} fakta eleven tidigare svarat rätt på:
+      {' '}{result.fillers.filter(item => item.outcome === 'correct').length} rätt nu.</p>}
+    {answered.length > 0 && <p className="followup-note">Ett svar är en observation. Samma fel två gånger talar för ett inlärt fel faktum, men fråga gärna eleven hur hen tänkte.</p>}
+  </div>
 }

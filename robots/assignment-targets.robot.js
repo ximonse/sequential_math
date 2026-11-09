@@ -27,7 +27,7 @@ async function pupilCards(browser, pupil) {
   const page = await context.newPage()
   await login(page, pupil)
   await page.waitForTimeout(800)
-  const list = page.getByRole('button', { name: /^Visa mina uppdrag/ })
+  const list = page.getByRole('button', { name: /^Visa klara/ })
   if (await list.isVisible().catch(() => false)) await list.click()
   const text = await page.locator('[data-assignment-launch]').allInnerTexts()
   await context.close()

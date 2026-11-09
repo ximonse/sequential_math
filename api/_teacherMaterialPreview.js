@@ -9,6 +9,7 @@ import { createDiagnosticGrid } from '../src/domains/arithmetic/diagnosticGridMo
 import { isChoiceTask } from '../src/domains/arithmetic/screeningImageQuestions.js'
 import { buildMaterialInvestigation, buildMaterialInvestigations } from '../src/lib/materialInvestigation.js'
 import { materialReportReview } from '../src/lib/materialReportReview.js'
+import { buildRepeatCheck } from '../src/lib/repeatCheck.js'
 import { readPupilAnalysisState } from './_pupilAnalysisStore.js'
 import { stockholmDay } from '../src/lib/evidencePeriod.js'
 import { questionFingerprint } from '../src/domains/predictableErrors/questionFingerprint.js'
@@ -90,7 +91,7 @@ function practiceContent(input, title) {
 }
 
 export async function previewTeacherMaterial(req, auth, input) {
-  object(input, ['schemaVersion', 'kind', 'mode', 'titleSv', 'goalSv', 'instructionSv', 'sourceMaterials', 'audience', 'basis', 'content', 'classContexts', 'investigation', 'investigations'])
+  object(input, ['schemaVersion', 'kind', 'mode', 'titleSv', 'goalSv', 'instructionSv', 'sourceMaterials', 'audience', 'basis', 'content', 'classContexts', 'investigation', 'investigations', 'repeatCheck'])
   if (input.investigation !== undefined && input.investigations !== undefined) fail('Ange en prövningsavsikt eller flera, inte båda.')
   if (input.schemaVersion !== 1 || !['practice', 'screening'].includes(input.kind)
     || !['general', 'specific'].includes(input.mode)) fail('Ogiltig materialtyp eller version.')
@@ -147,8 +148,19 @@ export async function previewTeacherMaterial(req, auth, input) {
     reportReview = materialReportReview(reference, reportState, records, input.investigation.modelId,
       { rebase: Boolean(input.investigation.didactic) })
   }
+  // With "Fråga igen" the teacher-key questions belong to the repeat check; contrast plans use the bank questions.
+  const planItems = input.repeatCheck === undefined ? content.items
+    : content.items.filter(item => !String(item.task.taskId).startsWith('custom-'))
+  const repeatBasis = new Set([...(input.repeatCheck?.facts || []), ...(input.repeatCheck?.fillers || [])].map(item => item?.basisIndex))
+  const planRecords = records.filter((_, index) => !repeatBasis.has(index))
   const investigation = input.investigation === undefined ? undefined : buildMaterialInvestigation(input.investigation,
-    { kind: input.kind, mode: input.mode, audience, classContexts, records, items: content.items, reportReview, reportState })
+    { kind: input.kind, mode: input.mode, audience, classContexts, records: planRecords, items: planItems, reportReview, reportState })
+  let repeatCheck
+  if (input.repeatCheck !== undefined) {
+    if (input.kind !== 'screening' || input.mode !== 'specific' || audience.pupils.length !== 1) fail('Fråga igen gäller en elevs analysspecifika screening.')
+    repeatCheck = buildRepeatCheck(input.repeatCheck, { records, customTasks: input.content.customTasks })
+    if (content.items.length - planItems.length !== repeatCheck.facts.length + repeatCheck.fillers.length) fail('Varje egen fråga ska höra till fråga igen.')
+  }
   // Several suspicions: each target keeps its own report hypothesis and support answers.
   let investigations
   if (input.investigations !== undefined) {
@@ -165,7 +177,7 @@ export async function previewTeacherMaterial(req, auth, input) {
       reportReviews.push(materialReportReview(reference, states.get(reference.studentId), targetRecords, target.modelId))
     }
     investigations = buildMaterialInvestigations(input.investigations, { kind: input.kind, mode: input.mode, audience, classContexts,
-      records, items: content.items, reportReviews }).map(plan => ({ ...plan, revision: evidenceHash(plan) }))
+      records, items: planItems, reportReviews, reservedBasisIndexes: repeatBasis }).map(plan => ({ ...plan, revision: evidenceHash(plan) }))
   }
   // Publication retries reuse their frozen assignment identities. Fresh draft
   // and approval reads check novelty; do not block receipt repair after answers.
@@ -183,6 +195,7 @@ export async function previewTeacherMaterial(req, auth, input) {
     sourceMaterials: sources, audience, classContexts, basis, content,
     pupilsWithoutAnalysis: audience.pupils.filter(p => !basis.some(item => item.studentId === p.studentId)).map(p => p.studentId),
     ...(investigation ? { investigation: { ...investigation, revision: evidenceHash(investigation) } } : {}),
-    ...(investigations ? { investigations, investigationsRevision: evidenceHash(investigations.map(plan => plan.revision)) } : {}) }
+    ...(investigations ? { investigations, investigationsRevision: evidenceHash(investigations.map(plan => plan.revision)) } : {}),
+    ...(repeatCheck ? { repeatCheck: { ...repeatCheck, revision: evidenceHash(repeatCheck) } } : {}) }
   return { material, contentRevision: evidenceHash(material), saved: false, assigned: false, approval: 'not_requested' }
 }

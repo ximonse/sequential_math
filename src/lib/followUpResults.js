@@ -1,3 +1,4 @@
+import { repeatOutcome } from './repeatCheck.js'
 import { stockholmDay } from './evidencePeriod.js'
 
 // Read the entire fixed evidence window. Never silently interpret a truncated
@@ -24,8 +25,10 @@ export async function readFollowUpAnswers({ request, studentId, classId, assignm
   throw new Error('Historiken kunde inte läsas fullständigt. Inget sammanfattande resultat visas. Försök hämta svaren igen.')
 }
 
+// Teacher-written questions get a new id when the material is dispatched, so
+// they are recognised by their frozen text instead.
 const identity = task => task && typeof task.taskId === 'string' && Number.isInteger(task.taskVersion)
-  ? JSON.stringify([task.taskId, task.taskVersion]) : null
+  ? JSON.stringify(task.taskId.startsWith('custom-') ? ['custom', task.promptSv, task.taskVersion] : [task.taskId, task.taskVersion]) : null
 
 // Expected tasks come from the stored material version, never an edited preview.
 export function followUpProgress(entries, items) {
@@ -52,9 +55,22 @@ export function followUpProgress(entries, items) {
 }
 
 // With several suspicions each one is judged only on the answers to its own questions.
-export function resultTargets(material, receipt, entries) {
+export function resultTargets(material, receipt, allEntries) {
+  // "Fråga igen" questions are judged by the repeat check, never by a contrast plan.
+  const entries = material.repeatCheck ? allEntries.filter(entry => !String(entry.question?.taskId).startsWith('custom-')) : allEntries
+  if (material.repeatCheck && !material.investigation && !Array.isArray(material.investigations)) return []
   if (Array.isArray(material.investigations)) return material.investigations.map(investigation => ({ investigation,
     revisionOk: material.investigationsRevision === receipt.investigationRevision,
     entries: entries.filter(entry => investigation.taskIds.includes(entry.question.taskId)) }))
   return [{ investigation: material.investigation, revisionOk: material.investigation?.revision === receipt.investigationRevision, entries }]
+}
+
+// One row per repeated fact: the earlier wrong answer, the new answer and what it suggests.
+export function repeatResults(material, entries) {
+  const plan = material.repeatCheck
+  if (!plan) return null
+  const custom = entries.filter(entry => String(entry.question?.taskId).startsWith('custom-'))
+  const find = prompt => custom.find(entry => entry.question?.promptSv === prompt)
+  return { facts: plan.facts.map(fact => ({ ...fact, entry: find(fact.prompt), outcome: repeatOutcome(fact, find(fact.prompt)) })),
+    fillers: plan.fillers.map(filler => ({ ...filler, entry: find(filler.prompt), outcome: repeatOutcome(filler, find(filler.prompt)) })) }
 }

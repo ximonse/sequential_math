@@ -112,12 +112,14 @@ export function buildMaterialInvestigations(inputs, context) {
       taskOwner.set(taskId, index)
     }
     for (const basisIndex of input.basisIndexes) {
-      if (!Number.isInteger(basisIndex) || !records[basisIndex] || basisOwner.has(basisIndex)) fail('Varje analysunderlag ska höra till exakt en misstanke.')
+      if (!Number.isInteger(basisIndex) || !records[basisIndex] || basisOwner.has(basisIndex)
+        || context.reservedBasisIndexes?.has(basisIndex)) fail('Varje analysunderlag ska höra till exakt en misstanke.')
       basisOwner.set(basisIndex, index)
     }
   }
   if (items.some(item => !taskOwner.has(item.task.taskId))) fail('Varje fråga ska höra till exakt en misstanke.')
-  if (records.some((_, index) => !basisOwner.has(index))) fail('Varje analysunderlag ska höra till exakt en misstanke.')
+  // Basis reserved for "Fråga igen" belongs to that check, not to a contrast plan.
+  if (records.some((_, index) => !basisOwner.has(index) && !context.reservedBasisIndexes?.has(index))) fail('Varje analysunderlag ska höra till exakt en misstanke.')
   const plans = inputs.map(({ taskIds, basisIndexes, ...input }, index) => ({ ...buildMaterialInvestigation(input, { ...context,
     items: items.filter(item => taskIds.includes(item.task.taskId)),
     records: basisIndexes.map(basisIndex => records[basisIndex]),

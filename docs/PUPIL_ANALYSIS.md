@@ -31,6 +31,24 @@ avfärdat prövas var för sig. Eleven ser en screening som heter Uppföljning;
 resultatet redovisas per misstanke, bara på dess egna frågor. Ett material har
 antingen `investigation` eller `investigations`, aldrig båda.
 
+**Fråga igen (2026-11-09):** misstankar där alla stödsvar är enkla fakta
+(tabeller upp till 10 · 10, addition och subtraktion inom 20) prövas inte med
+kontrastfrågor ur den skriftliga banken. Kortet erbjuder *Fråga igen*: samma
+fakta (högst 6) som lärarfrågor med facit, blandade med högst 3 fakta eleven
+svarat rätt på, utan tidspress. Servern kontrollerar att varje fråga är elevens
+eget fel- respektive rättsvar och att facit stämmer (`material.repeatCheck`).
+Resultatet visar per faktum *rätt nu* (troligen slarv), *samma fel igen*
+(troligen inlärt fel faktum) eller *annat fel*. Upprepningen är avsiktlig och
+skiljer sig från kontraster och nya kontroller, som inte får vara mötta frågor.
+Fråga igen kan kryssas ihop med andra misstankar i samma screening.
+
+**Dölj som slarv (2026-11-09):** läraren kan dölja ett felsvar som rent slarv.
+Det lämnar analysunderlaget (misstankar, antal, kontrastunderlag) och listas
+under *Dolda som slarv* med *Räkna med igen*. Dolda nycklar lagras per elev
+skilt från elevprofilen (`slip_exclusions:<elev>`); elevens svar, mastery och
+träningslogg ändras inte. Svar som räknas är oförändrade, så sparade rapporters
+källrevision gäller tills något döljs.
+
 **Period:** analysen öppnar med de senaste 28 dagarna, så att en måndag inte
 bara visar dagens svar.
 

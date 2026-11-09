@@ -57,7 +57,7 @@ test('Assigned exercises run oldest first, offer the next one when done and show
 
   await expect(module).toContainText('1 att göra · 2 klara')
   await expect(module.getByRole('button', { name: 'Starta nästa: Fokusövning: KONTROLL', exact: true })).toBeVisible()
-  await module.getByRole('button', { name: /^Visa mina uppdrag/ }).click()
+  await module.getByRole('button', { name: /^Visa klara/ }).click()
   await expect(module.getByRole('button', { name: 'Gör igen: Robot A', exact: true })).toBeVisible()
   await expect(module.getByRole('button', { name: 'Gör igen: Robot B', exact: true })).toBeVisible()
   await student.screenshot({ path: testInfo.outputPath('pupil-assignments.png'), fullPage: true })

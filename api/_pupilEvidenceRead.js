@@ -8,6 +8,7 @@ import { isSchoolAdminRole } from './_teacherRoles.js'
 import { evidencePeriod } from '../src/lib/evidencePeriod.js'
 import { evidenceError, evidencePage, practiceEvidence } from './_pupilEvidence.js'
 import { pupilScreeningEvidence } from './_pupilScreeningEvidence.js'
+import { applySlipExclusions, readSlipExclusions } from './_slipExclusions.js'
 import { diagnosticNotebookExport } from '../src/domains/arithmetic/diagnosticNotebookExport.js'
 
 export async function assertPupilEvidenceAccess(req, studentId, classId) {
@@ -56,7 +57,15 @@ export async function readPupilEvidence(req, auth, studentId, { unpaged = false 
       throw evidenceError(403, 'screening_access_denied', 'Screeningåtkomsten ändrades under läsningen.')
     }
   }
-  const result = evidencePage({ studentId, classId, source, period, practice, screening, query, unpaged })
+  // Answers the teacher hid as slips do not count; they are listed separately so they can be restored.
+  const exclusions = await readSlipExclusions(studentId)
+  const practiceSplit = applySlipExclusions(practice.entries, exclusions), screeningSplit = applySlipExclusions(screening.entries, exclusions)
+  const result = evidencePage({ studentId, classId, source, period, query, unpaged,
+    practice: { ...practice, entries: practiceSplit.kept }, screening: { ...screening, entries: screeningSplit.kept } })
+  if (!query.ref) result.hiddenSlips = [...practiceSplit.hidden, ...screeningSplit.hidden]
+    .filter(entry => entry.timestamp >= period.startInclusive && entry.timestamp < period.endExclusive)
+    .map(entry => ({ exclusionKey: entry.exclusionKey, excludedAt: entry.excludedAt, source: entry.source, timestamp: entry.timestamp,
+      question: entry.question, answer: { studentAnswer: entry.answer.studentAnswer, correctAnswer: entry.answer.correctAnswer } }))
   if (query.format !== undefined) {
     if (query.format !== 'notebook' || !query.ref || !query.snapshotRevision) {
       throw evidenceError(400, 'invalid_format', 'Notebook-export kräver format=notebook, ref och snapshotRevision.')

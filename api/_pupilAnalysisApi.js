@@ -3,6 +3,7 @@ import { assertPupilEvidenceAccess, assertEvidenceSourceAccess, readPupilEvidenc
 import { buildPupilAnalysisDraft, validateAnalysisCheckIn, validatePupilAnalysis } from '../src/lib/pupilAnalysis.js'
 import { appendPupilAnalysis, readPupilAnalysisState } from './_pupilAnalysisStore.js'
 import { evidenceError } from './_pupilEvidence.js'
+import { setSlipExclusion } from './_slipExclusions.js'
 import { readMaterialDraft } from './_teacherMaterialStore.js'
 import { assertMaterialDraftAccess } from './_teacherMaterialAccess.js'
 import { readMaterialDispatch } from './_teacherMaterialDispatchStore.js'
@@ -26,6 +27,12 @@ export async function pupilAnalysisAction(req, auth, studentId) {
     return visibleState(state, liveAuth, studentId)
   }
   const body = req.body || {}
+  if (body.action === 'set_slip_exclusion') {
+    const liveAuth = await getLiveTeacherAuthPayload(req)
+    if (!liveAuth || liveAuth.teacherId !== auth.teacherId) throw evidenceError(403, 'analysis_access_denied', 'Lärarsessionen har ändrats.')
+    await assertPupilEvidenceAccess(req, studentId, classId)
+    return { hiddenCount: await setSlipExclusion(studentId, body.key, body.excluded === true, auth.teacherId) }
+  }
   let content
   if (body.action === 'draft' || body.action === 'create_report') {
     const query = { classId, source: body.source || 'practice', from: body.from, to: body.to,
@@ -34,7 +41,7 @@ export async function pupilAnalysisAction(req, auth, studentId) {
     const evidence = await readPupilEvidence({ ...req, headers: req.headers, method: req.method, query }, auth, studentId, { unpaged: true })
     if (body.action === 'draft') {
       const proposal = buildPupilAnalysisDraft(evidence)
-      return { draft: proposal, preview: validatePupilAnalysis(proposal, evidence), revision: state.revision }
+      return { draft: proposal, preview: validatePupilAnalysis(proposal, evidence), revision: state.revision, hiddenSlips: evidence.hiddenSlips || [] }
     }
     content = validatePupilAnalysis(body.report, evidence)
   } else if (body.action === 'check_in') {

@@ -547,7 +547,8 @@ export default function DashboardLayout({
 
   return (
     <div data-teacher-workspace={activeWorkspace} data-teacher-admin="" className={`teacher-dashboard-surface min-h-screen pb-5 pt-14 sm:pb-6 sm:pt-16 ${surfaceClass}`}>
-      <div className="max-w-6xl mx-auto px-3 sm:px-4">
+      {/* Below 1400 px (iPad) the content uses the full window and the menu is a bar on top. */}
+      <div className="mx-auto px-3 sm:px-4 min-[1400px]:max-w-6xl">
         <DashboardHeaderBar
           workspaceTitle={activeWorkspace !== 'progress' ? 'Matematik · Lärarvy' : undefined}
           workspaceDescription={activeWorkspace === 'ncm' ? undefined : WORKSPACES.find(workspace => workspace.id === activeWorkspace && workspace.id !== 'progress')?.label}
@@ -571,10 +572,10 @@ export default function DashboardLayout({
 
         <div hidden={activeWorkspace !== 'progress' && !dashboardStatus} className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
 
-        <div className="grid gap-3 lg:grid-cols-[13rem_minmax(0,1fr)]">
-          <aside className="rounded-lg bg-slate-800 p-2 text-slate-100 lg:sticky lg:top-3 lg:h-fit">
-              <p className="px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-300">Arbetsläge</p>
-              <nav className="grid gap-1" aria-label="Lärarvy">
+        <div className="grid gap-3 min-[1400px]:grid-cols-[13rem_minmax(0,1fr)]">
+          <aside className="sticky top-10 z-40 rounded-lg bg-slate-800 p-1.5 text-slate-100 shadow-lg min-[1400px]:top-3 min-[1400px]:h-fit min-[1400px]:p-2 min-[1400px]:shadow-none">
+              <p className="hidden px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-300 min-[1400px]:block">Arbetsläge</p>
+              <nav className="flex flex-wrap gap-1 min-[1400px]:grid" aria-label="Lärarvy">
                 {WORKSPACES.filter(workspace => (!workspace.adminOnly || teacherIsAdmin) && (!workspace.attentionOnly || canViewAttention)).map(workspace => (
                   <button key={workspace.id} aria-current={activeWorkspace === workspace.id ? 'page' : undefined} type="button" onClick={() => {
                     if (workspace.id !== activeWorkspace && (reviewDirtyRef.current || dispatchDirtyRef.current)
@@ -586,7 +587,7 @@ export default function DashboardLayout({
                     else if (isFocusView || isDirectStudentView) navigate('/teacher', { state: { workspace: workspace.id } })
                   }}
                     className={`rounded px-1.5 py-0.5 text-left text-sm transition-colors ${activeWorkspace === workspace.id ? 'bg-amber-300 font-semibold text-slate-900' : 'text-slate-100 hover:bg-slate-700'}`}>
-                    {workspace.label}<span className="mt-0.5 block text-[11px] font-normal opacity-75">{workspace.description}</span>
+                    {workspace.label}<span className="mt-0.5 hidden text-[11px] font-normal opacity-75 min-[1400px]:block">{workspace.description}</span>
                   </button>
                 ))}
               </nav>

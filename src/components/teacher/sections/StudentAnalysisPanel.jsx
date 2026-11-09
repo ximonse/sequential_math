@@ -45,8 +45,16 @@ function AnalysisWorkspace({ studentId, classId }) {
   async function createDraft(source = state.source) {
     const data = await request({ action: 'draft', source, from: state.from, to: state.to })
     setState(value => ({ ...value, draft: data.draft, preview: data.preview, requestId: crypto.randomUUID(), selectedId: '',
-      message: 'Förhandsvisning. Inget har sparats eller delats ut.',
+      hiddenSlips: data.hiddenSlips || [], message: 'Förhandsvisning. Inget har sparats eller delats ut.',
       history: { ...(value.history || { reports: [] }), revision: data.revision } }))
+  }
+  // Hiding a slip changes what counts, so a fresh preview follows. The source answer is kept.
+  async function setSlip(key, excluded) {
+    await run(async () => {
+      await request({ action: 'set_slip_exclusion', key, excluded })
+      await createDraft(state.source)
+      update({ message: excluded ? 'Svaret är dolt som slarv och räknas inte med. Analysen är uppdaterad.' : 'Svaret räknas med igen. Analysen är uppdaterad.' })
+    })
   }
   const started = useRef(false)
   useEffect(() => {
@@ -82,7 +90,16 @@ function AnalysisWorkspace({ studentId, classId }) {
         </select>
       </label>}
       {state.history?.restrictedReports > 0 && <p className="text-sm mt-2">Vissa screeningrapporter kräver utökad behörighet.</p>}
-      {state.preview && <><PupilAnalysisReportView key={state.requestId} report={state.preview} baseUrl={baseUrl} studentId={studentId} classId={classId} />
+      {state.preview && <><PupilAnalysisReportView key={state.requestId} report={state.preview} baseUrl={baseUrl} studentId={studentId} classId={classId}
+        onHideSlip={state.busy ? undefined : key => setSlip(key, true)} />
+        {state.hiddenSlips?.length > 0 && <details className="mt-3 text-sm"><summary className="font-semibold">Dolda som slarv ({state.hiddenSlips.length})</summary>
+          <p className="mt-1 text-slate-600">Räknas inte med i analysen. Elevens svar och träningsnivå är oförändrade.</p>
+          <ul className="mt-1 space-y-0.5">{state.hiddenSlips.map(item => <li key={item.exclusionKey} className="flex flex-wrap items-baseline gap-3 rounded bg-slate-50 px-2 py-0.5">
+            <span>{item.question?.promptText || item.question?.promptSv || 'Uppgift'} = <strong>{String(item.answer.studentAnswer ?? '–')}</strong> (rätt {String(item.answer.correctAnswer ?? '?')})</span>
+            <span className="text-xs text-slate-600">{item.source === 'practice' ? 'träning' : 'screening'} {new Date(item.timestamp).toLocaleDateString('sv-SE')}</span>
+            <button type="button" disabled={state.busy} className="ml-auto text-xs underline" onClick={() => setSlip(item.exclusionKey, false)}>Räkna med igen</button>
+          </li>)}</ul>
+        </details>}
         <button type="button" disabled={state.busy} className="mt-3 rounded bg-teal-700 px-2 py-1 text-sm text-white" onClick={() => run(async () => {
           const history = await request({ action: 'create_report', report: state.draft, requestId: state.requestId,
             expectedRevision: state.history.revision, source: state.preview.source, from: state.preview.period.from, to: state.preview.period.to })

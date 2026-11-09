@@ -4,6 +4,7 @@ import DiagnosticAttemptHistory from './DiagnosticAttemptHistory.jsx'
 import ContrastFollowUp from './ContrastFollowUp.jsx'
 import MultiContrastFollowUp from './MultiContrastFollowUp.jsx'
 import { didacticPackage } from '../../../lib/didacticFollowUp.js'
+import { slipExclusionKey } from '../../../lib/slipExclusionKey.js'
 import ReportReviewNote from '../ReportReviewNote.jsx'
 import WorkEvidenceNote from '../WorkEvidenceNote.jsx'
 import { contrastFollowUpEligible } from '../../../lib/practiceModes.js'
@@ -49,7 +50,7 @@ function areaOf(entry) {
 const withoutCaveat = text => String(text).replace(/\s*Det är en beräknad kandidat, inte en fastställd elevmetod\.?/u, '').trim()
 const shortDate = timestamp => timestamp ? new Date(timestamp).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' }) : ''
 
-export default function PupilAnalysisReportView({ report, savedItem, baseUrl, studentId, classId }) {
+export default function PupilAnalysisReportView({ report, savedItem, baseUrl, studentId, classId, onHideSlip }) {
   const [selected, setSelected] = useState(null)
   const [original, setOriginal] = useState(null)
   const [message, setMessage] = useState('')
@@ -67,7 +68,7 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
   const suspicions = report.hypotheses.filter(item => !slip(item))
   // Suspicions that can share one screening: computed, outside the didactic
   // packages, and not revised or rejected by the teacher.
-  const combinable = item => Boolean(studentId) && contrastFollowUpEligible(item, report)
+  const combinable = item => Boolean(studentId) && contrastFollowUpEligible(item, report) && item.followUp?.delivery === 'reviewed_bank'
     && !didacticPackage(item.signalCode, byRef.get(item.supportRefs[0])?.interpretation.predictable?.scope)
     && !['revised', 'rejected'].includes(reviewFor(item)?.decision)
   const chosenItems = suspicions.filter(item => chosen.has(item.id) && combinable(item))
@@ -108,6 +109,8 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
           {wrong && <span className="text-sm">rätt {String(entry.answer.correctAnswer ?? '?')}</span>}
           {note?.(entry) && <span className="text-xs text-slate-600">{note(entry)}</span>}
           <span className="ml-auto text-xs text-slate-600">{entry.source === 'practice' ? 'träning' : 'screening'} {shortDate(entry.timestamp)}</span>
+          {wrong && onHideSlip && slipExclusionKey(entry) && <button type="button" className="text-xs underline text-slate-700"
+            aria-label={`Dölj som slarv: ${text}`} onClick={() => onHideSlip(slipExclusionKey(entry))}>Dölj som slarv</button>}
           <button type="button" className="text-xs underline text-slate-700" aria-expanded={selected?.ref === ref}
             aria-label={`Visa svar ${index + 1}: ${text}`} onClick={() => {
               const next = selected?.ref === ref ? null : entry

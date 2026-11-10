@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { getMathPracticeResults } from '../../../lib/mathPracticeResults'
 import { getAssignments } from '../../../lib/assignments'
 
-export default function MathPracticeResultsPanel({ students, filteredStudents }) {
+export default function MathPracticeResultsPanel({ students, filteredStudents, collapseControl }) {
   const [sortBy, setSortBy] = useState('timestamp')
   const [sortDir, setSortDir] = useState('desc')
   const [filterAssignmentId, setFilterAssignmentId] = useState('')
@@ -78,16 +78,22 @@ export default function MathPracticeResultsPanel({ students, filteredStudents })
 
   if (results.length === 0) {
     return (
-      <section className="bg-white rounded-lg shadow p-4" style={{ order: -45 }}>
-        <h2 className="mb-3 text-lg font-semibold text-gray-800">Matematikövningar — Resultat</h2>
+      <section className="bg-white rounded-lg shadow p-4">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h2 className="text-lg font-semibold text-gray-800">Matematikövningar — Resultat</h2>
+          {collapseControl}
+        </div>
         <p className="text-sm text-gray-500">Inga resultat från matematikövningar än.</p>
       </section>
     )
   }
 
   return (
-    <section className="bg-white rounded-lg shadow p-4" style={{ order: -45 }}>
-      <h2 className="mb-4 text-lg font-semibold text-gray-800">Matematikövningar — Resultat</h2>
+    <section className="bg-white rounded-lg shadow p-4">
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold text-gray-800">Matematikövningar — Resultat</h2>
+        {collapseControl}
+      </div>
 
       <div className="mb-4 flex flex-wrap gap-3">
         <div>

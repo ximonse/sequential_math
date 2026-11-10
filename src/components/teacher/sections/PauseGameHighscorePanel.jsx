@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 const API_BASE = import.meta.env.VITE_API_URL || ''
 
-export default function PauseGameHighscorePanel({ selectedClassIds }) {
+export default function PauseGameHighscorePanel({ selectedClassIds, collapseControl }) {
   const [pongScores, setPongScores] = useState([])
   const [snakeScores, setSnakeScores] = useState([])
   const [loading, setLoading] = useState(false)
@@ -33,14 +33,6 @@ export default function PauseGameHighscorePanel({ selectedClassIds }) {
     return () => { cancelled = true }
   }, [classId])
 
-  if (!classId) {
-    return <p className="text-sm text-gray-500">Välj en enskild klass för att se highscore.</p>
-  }
-
-  if (loading) {
-    return <p className="text-sm text-gray-400">Laddar highscore...</p>
-  }
-
   const renderList = (scores, unit) => {
     if (scores.length === 0) return <p className="text-gray-400 text-sm">Inga resultat ännu</p>
     return (
@@ -56,15 +48,30 @@ export default function PauseGameHighscorePanel({ selectedClassIds }) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <div>
-        <h4 className="font-semibold text-sm mb-2">Pong (tid)</h4>
-        {renderList(pongScores, 's')}
+    <section className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800">Pausspel — Highscore</h2>
+          <p className="text-xs text-gray-500">Topplista i Pong och Snake för vald klass.</p>
+        </div>
+        {collapseControl}
       </div>
-      <div>
-        <h4 className="font-semibold text-sm mb-2">Snake (poäng)</h4>
-        {renderList(snakeScores, '')}
-      </div>
-    </div>
+      {!classId ? (
+        <p className="text-sm text-gray-500">Välj en enskild klass för att se highscore.</p>
+      ) : loading ? (
+        <p className="text-sm text-gray-400">Laddar highscore...</p>
+      ) : (
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <h4 className="font-semibold text-sm mb-2">Pong (tid)</h4>
+            {renderList(pongScores, 's')}
+          </div>
+          <div>
+            <h4 className="font-semibold text-sm mb-2">Snake (poäng)</h4>
+            {renderList(snakeScores, '')}
+          </div>
+        </div>
+      )}
+    </section>
   )
 }

@@ -70,6 +70,28 @@ const WORKSPACES = [
   { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management'] }
 ]
 
+const WORKSPACE_SUBTABS = {
+  progress: [
+    { id: 'class', label: '1. Nivåer & Snabbstatus', panels: ['mastery', 'overview'] },
+    { id: 'tables', label: '2. Tabellträning (2–12)', panels: ['tableoverview', 'tabledev'] },
+    { id: 'student', label: '3. Elevprofil & Analys', panels: ['detail', 'difficulty-analysis', 'training-priority'] },
+    { id: 'all', label: 'Visa alla (5)', panels: ['mastery', 'tableoverview', 'detail', 'overview', 'tabledev'] }
+  ],
+  teaching: [
+    { id: 'assignments', label: '1. Skapa & hantera uppdrag', panels: ['assignments'] },
+    { id: 'mathresults', label: '2. Resultat på matematikövningar', panels: ['mathresults'] },
+    { id: 'tickets', label: '3. Tickets (Start / Exit)', panels: ['tickets'] },
+    { id: 'all', label: 'Visa alla (3)', panels: ['assignments', 'mathresults', 'tickets'] }
+  ],
+  support: [
+    { id: 'urgent', label: '1. Behöver stöd & Resultat', panels: ['support', 'results'] },
+    { id: 'patterns', label: '2. Felmönster i klassen (Heatmap)', panels: ['heatmap'] },
+    { id: 'individual', label: '3. Individanalys (Svårigheter & Prioritet)', panels: ['difficulty-analysis', 'training-priority'] },
+    { id: 'ops', label: '4. Aktivitet, Datakvalitet & Pausspel', panels: ['inactivity', 'dataquality', 'pausegames'] },
+    { id: 'all', label: 'Visa alla (8)', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality', 'pausegames'] }
+  ]
+}
+
 const DEFAULT_COLLAPSED = Object.fromEntries(
   PANEL_DEFS.map(({ id }) => [id, false])
 )
@@ -78,6 +100,7 @@ const LS_COLLAPSED_KEY = 'mathapp_dashboard_panel_collapsed_v2'
 export default function DashboardLayout({
   isFocusView = false,
   initialWorkspace,
+  initialSubTab,
   isDirectStudentView,
   detailStudentProfile,
   cloudSyncStatus,
@@ -182,6 +205,7 @@ export default function DashboardLayout({
   const teacherName = String(teacherIdentity.displayName || 'Lärare').trim() || 'Lärare'
   const teacherRole = getTeacherRoleLabel(teacherIdentity.role)
   const [activeWorkspace, setActiveWorkspace] = useState(() => isFocusView ? 'focus'
+    : isDirectStudentView ? 'support'
     : WORKSPACES.some(workspace => workspace.id === initialWorkspace) ? initialWorkspace : 'progress')
   useEffect(() => {
     if (isFocusView) setActiveWorkspace('focus')
@@ -213,6 +237,7 @@ export default function DashboardLayout({
       studentId: studentId === undefined ? detailStudentId : studentId
     }))
     setCollapsed(previous => ({ ...previous, tabledev: false }))
+    setSubTabByWorkspace(previous => ({ ...previous, progress: 'tables' }))
     setActiveWorkspace('progress')
     window.setTimeout(() => document.getElementById('table-practice-progress')?.scrollIntoView({ behavior: 'smooth' }), 0)
   }
@@ -223,12 +248,18 @@ export default function DashboardLayout({
        ? 'teacher-dashboard-surface--admin'
        : 'teacher-dashboard-surface--teacher'
 
+  const [subTabByWorkspace, setSubTabByWorkspace] = useState(() => ({
+    progress: initialSubTab || 'class',
+    teaching: initialSubTab || 'assignments',
+    support: initialSubTab || 'urgent'
+  }))
+
   const [collapsed, setCollapsed] = useState(() => {
     const defaults = {
       ...DEFAULT_COLLAPSED,
       filter: false,
       stats: false,
-      testdata: false,
+      testdata: true,
       ...(isDirectStudentView ? { detail: false, support: true, overview: true } : {})
     }
     try {
@@ -353,11 +384,45 @@ export default function DashboardLayout({
       />
     )
     if (id === 'difficulty-analysis') {
-      if (!detailStudentProfile) {
-        return <p className="text-sm text-gray-500">Välj en elev i Elevdetalj för att se svårighetsanalys.</p>
-      }
+      const studentSelectorBar = !isDirectStudentView && (
+        <div className="mb-3 rounded-lg border border-indigo-200 bg-indigo-50/70 px-3.5 py-2.5 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-indigo-900">
+                Individanalys för elev:
+              </span>
+              <select
+                aria-label="Välj elev för svårighetsanalys och träningsprioritet"
+                value={detailStudentId}
+                onChange={event => setDetailStudentId(String(event.target.value || '').trim())}
+                className="rounded border border-indigo-300 bg-white px-2 py-1 text-sm font-medium text-slate-900 min-w-56"
+              >
+                {detailStudentOptions.length === 0 ? (
+                  <option value="">Inga elever i urvalet</option>
+                ) : (
+                  detailStudentOptions.map(item => (
+                    <option key={`support-student-${item.studentId}`} value={item.studentId}>
+                      {item.name} {item.className ? `(${item.className})` : ''}
+                    </option>
+                  ))
+                )}
+              </select>
+            </div>
+            {detailStudentProfile && (
+              <button
+                type="button"
+                onClick={() => handleOpenStudentDetail(detailStudentProfile.studentId)}
+                className="rounded border border-indigo-300 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-100"
+              >
+                Öppna full Elevprofil →
+              </button>
+            )}
+          </div>
+        </div>
+      )
       return (
         <DifficultyAnalysisPanel
+          headerPrefix={studentSelectorBar}
           detailStudentProfile={detailStudentProfile}
           detailLevelErrorMinAttempts={DETAIL_LEVEL_ERROR_MIN_ATTEMPTS}
           studentOperationStats7d={studentOperationStats7d}
@@ -376,9 +441,6 @@ export default function DashboardLayout({
       )
     }
     if (id === 'training-priority') {
-      if (!detailStudentProfile) {
-        return <p className="text-sm text-gray-500">Välj en elev i Elevdetalj för att se träningsprioritet.</p>
-      }
       return (
         <StudentDetailTrainingPriorityPanel
           trainingPriorityList={trainingPriorityList}
@@ -404,15 +466,13 @@ export default function DashboardLayout({
       />
     )
     if (id === 'support') return (
-      <div className="mb-8">
-        <SupportPriorityPanel
-          supportRows={supportRows}
-          RiskBadgeComponent={RiskBadge}
-          toPercent={toPercent}
-          onOpenStudentDetail={handleOpenStudentDetail}
-          onCreateQuickAssignment={handleCreateQuickAssignment}
-        />
-      </div>
+      <SupportPriorityPanel
+        supportRows={supportRows}
+        RiskBadgeComponent={RiskBadge}
+        toPercent={toPercent}
+        onOpenStudentDetail={handleOpenStudentDetail}
+        onCreateQuickAssignment={handleCreateQuickAssignment}
+      />
     )
     if (id === 'dataquality') return (
       <DataQualityUsagePanel
@@ -608,9 +668,78 @@ export default function DashboardLayout({
               : activeWorkspace === 'focus' ? null : classStatsPanel}
             </div>}
 
-            {activeWorkspace === 'progress' && import.meta.env.DEV && renderProgressModule('testdata', 'Lokal testdata', <LocalTestDataPanel mode="import" onImported={onLocalTestDataImported} />)}
-
             {activeWorkspace === 'focus' && !canViewAttention && <p role="status">Fokusresultat är endast tillgängliga för huvudadmin.</p>}
+            {!isScreening && !(activeWorkspace === 'support' && isDirectStudentView) && WORKSPACE_SUBTABS[activeWorkspace] && (
+              <div className="workspace-subtabs">
+                <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Delvyer">
+                  {WORKSPACE_SUBTABS[activeWorkspace].map(tab => {
+                    const currentSubTab = subTabByWorkspace[activeWorkspace] || WORKSPACE_SUBTABS[activeWorkspace][0].id
+                    const isActive = currentSubTab === tab.id
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        aria-pressed={isActive}
+                        onClick={() => {
+                          setSubTabByWorkspace(prev => ({ ...prev, [activeWorkspace]: tab.id }))
+                          setCollapsed(prev => ({
+                            ...prev,
+                            ...Object.fromEntries(tab.panels.map(panelId => [panelId, false]))
+                          }))
+                        }}
+                        className="workspace-subtab-btn"
+                      >
+                        {tab.label}
+                        {tab.id === 'urgent' && supportRows.length > 0 ? (
+                          <span className="ml-1.5 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                            {supportRows.length}
+                          </span>
+                        ) : null}
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const panels = WORKSPACES.find(w => w.id === activeWorkspace)?.panels ?? []
+                      setCollapsed(prev => ({ ...prev, ...Object.fromEntries(panels.map(id => [id, false])) }))
+                    }}
+                    className="workspace-subtab-action"
+                  >
+                    Fäll ut alla
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const panels = WORKSPACES.find(w => w.id === activeWorkspace)?.panels ?? []
+                      setCollapsed(prev => ({ ...prev, ...Object.fromEntries(panels.map(id => [id, true])) }))
+                    }}
+                    className="workspace-subtab-action"
+                  >
+                    Fäll ihop alla
+                  </button>
+                </div>
+              </div>
+            )}
+            {activeWorkspace === 'support' && isDirectStudentView && (
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm shadow-sm">
+                <span className="font-semibold text-indigo-950">
+                  Direkt elevvy: {detailStudentProfile?.name || detailStudentId}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveWorkspace('progress')
+                    navigate('/teacher')
+                  }}
+                  className="rounded border border-indigo-300 bg-white px-2.5 py-1 text-xs font-semibold text-indigo-800 hover:bg-indigo-100"
+                >
+                  ← Tillbaka till klassöversikten
+                </button>
+              </div>
+            )}
             {activeWorkspace === 'teaching' && (
               <RecipientPicker classes={classes} groups={teacherGroups} students={students}
                 recipients={recipients} onChange={setDeliveryPicks}
@@ -621,12 +750,22 @@ export default function DashboardLayout({
                 assignments={assignments} groups={teacherGroups} students={students} />
             )}
             {isScreening && <div>{renderPanelContent('ncm-grid')}</div>}
-            {!isScreening && (activeWorkspace === 'support' && isDirectStudentView ? ['detail']
-              : WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels ?? [])
+            {!isScreening && (activeWorkspace === 'support' && isDirectStudentView
+              ? ['detail', 'difficulty-analysis', 'training-priority']
+              : (WORKSPACE_SUBTABS[activeWorkspace]?.find(t => t.id === (subTabByWorkspace[activeWorkspace] || WORKSPACE_SUBTABS[activeWorkspace][0].id))?.panels
+                ?? WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.panels ?? []))
               .filter(id => visiblePanelDefs.some(panel => panel.id === id))
-              .map(id => activeWorkspace === 'progress'
+              .map(id => (['progress', 'support', 'teaching'].includes(activeWorkspace) && id !== 'tickets')
                 ? renderProgressModule(id, PANEL_DEFS.find(panel => panel.id === id)?.title, renderPanelContent(id))
                 : <div key={id} data-admin-panel={id}>{renderPanelContent(id)}</div>)}
+            {activeWorkspace === 'progress' && import.meta.env.DEV && (
+              <details className="mt-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 shadow-xs">
+                <summary className="cursor-pointer font-medium text-slate-500">Utvecklarverktyg: Importera lokal testdata</summary>
+                <div className="mt-2">
+                  <LocalTestDataPanel mode="import" onImported={onLocalTestDataImported} />
+                </div>
+              </details>
+            )}
           </div>
         </div>
       </div>

@@ -107,7 +107,15 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
         <section className="screening-group screening-group--whole" aria-labelledby="screening-whole-title">
         <h4 id="screening-whole-title" className="screening-group__title">Hela screeningen{questions.length ? ` · ${questions.length} ${questions.length === 1 ? 'fråga' : 'frågor'}` : ''}</h4>
         <ScreeningWholeOptions draft={draft} patch={patch} disabled={busy} />
-        <ScreeningQuestionOrder questions={questions} onOrder={order => patch({ order })} disabled={busy} />
+        <ScreeningQuestionOrder
+          questions={questions}
+          onOrder={order => patch({ order })}
+          disabled={busy}
+          itemOptions={draft.itemOptions}
+          onItemOptions={itemOptions => patch({ itemOptions })}
+          selectedTasks={draft.selectedTasks}
+          onSelectedTasks={selectedTasks => patch({ selectedTasks })}
+        />
         <ScreeningDraftPreview content={draftContent} />
         <ScreeningTeacherSupport selectedTasks={draft.selectedTasks} />
         </section>

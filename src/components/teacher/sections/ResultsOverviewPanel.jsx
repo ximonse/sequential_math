@@ -24,12 +24,17 @@ export default function ResultsOverviewPanel({
   onCreateQuickAssignment,
   onResetStudentPassword,
   passwordResetBusyId,
-  RiskBadgeComponent
+  RiskBadgeComponent,
+  collapseControl
 }) {
   return (
-    <div style={{ order: -10 }}>
+    <div className="mb-6">
       {students.length === 0 ? (
         <div className="bg-white rounded-lg p-8 shadow text-center">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold text-gray-800">Resultat och export</h2>
+            {collapseControl}
+          </div>
           <p className="text-gray-500 text-lg">Inga elever ännu</p>
           <p className="text-gray-400 mt-2">
             Lägg till elever via klasslistan ovan så kan de logga in.
@@ -37,6 +42,13 @@ export default function ResultsOverviewPanel({
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-x-auto p-4">
+          <div className="flex items-center justify-between gap-2 mb-3 border-b border-gray-100 pb-2">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">Resultat och export</h2>
+              <p className="text-xs text-gray-500">Dagsvy, veckovy och CSV-export för valda klasser och grupper.</p>
+            </div>
+            {collapseControl}
+          </div>
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs uppercase tracking-wide text-gray-500">Resultatvy</span>

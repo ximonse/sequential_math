@@ -54,7 +54,8 @@ export default function AssignmentsPanel({
   onCopyAssignmentLink,
   classes,
   selectedClassIds,
-  onCreateMathPractice
+  onCreateMathPractice,
+  collapseControl
 }) {
   const [qrAssignment, setQrAssignment] = useState(null)
   const [showMathPracticeCreator, setShowMathPracticeCreator] = useState(false)
@@ -70,10 +71,13 @@ export default function AssignmentsPanel({
   const selectedTargets = assignmentTargets.filter(item => recipients.some(pick => pick.type === item.type && pick.id === item.id))
 
   return (
-    <section className="bg-white rounded-lg shadow p-3" style={{ order: -60 }}>
+    <section className="bg-white rounded-lg shadow p-3">
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="text-lg font-semibold text-gray-800">Uppdrag via länk</h2>
-        <button onClick={() => setShowMathPracticeCreator(true)} className={`${BUTTON_BASE} ${TONES.custom}`}>Skapa egna</button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowMathPracticeCreator(true)} className={`${BUTTON_BASE} ${TONES.custom}`}>Skapa egna</button>
+          {collapseControl}
+        </div>
       </div>
       <AssignmentWorkspaceOptions value={workspaces} onChange={setWorkspaces} />
       <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1.5">

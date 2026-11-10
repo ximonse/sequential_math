@@ -44,17 +44,17 @@ describe('student detail wiring', () => {
   it('preserves the collapsed preference in the ordinary dashboard', () => {
     vi.stubGlobal('localStorage', { getItem: () => JSON.stringify({ detail: true, overview: true, support: true }) })
     const html = renderToStaticMarkup(<DashboardLayout
-      isDirectStudentView={false} students={[]} filteredStudents={[]}
+      isDirectStudentView={false} initialSubTab="all" students={[]} filteredStudents={[]}
       selectedClassIds={[]} supportRows={[]} classStats={{}} classFilterOptions={[]}
     />)
     expect(html).not.toContain('Student detail is visible')
     expect(html).toContain('Visa Elevprofil')
   })
 
-  it('places the level overview first and table progress last, with a toggle for each module', () => {
+  it('places the level overview first and table progress last when showing all modules, with a toggle for each module', () => {
     vi.stubGlobal('localStorage', { getItem: () => null })
     const html = renderToStaticMarkup(<DashboardLayout
-      isDirectStudentView={false} students={[]} filteredStudents={[]}
+      isDirectStudentView={false} initialSubTab="all" students={[]} filteredStudents={[]}
       selectedClassIds={[]} supportRows={[]} classStats={{}} classFilterOptions={[]} filteredRows={[]}
     />)
     expect(html.indexOf('Mastery panel is visible')).toBeLessThan(html.indexOf('Student detail is visible'))
@@ -65,6 +65,18 @@ describe('student detail wiring', () => {
     for (const title of ['Klassurval', 'Klassstatistik', 'Nivåöversikt – hela klassen', 'Klass/gruppvy – snabbstatus', 'Elevprofil', 'Tabellträning – utveckling']) {
       expect(html).toContain(`Minimera ${title}`)
     }
+  })
+
+  it('defaults Framsteg to the focused class overview sub-tab without dumping individual pupil detail or table progress onto the first view', () => {
+    vi.stubGlobal('localStorage', { getItem: () => null })
+    const html = renderToStaticMarkup(<DashboardLayout
+      isDirectStudentView={false} students={[]} filteredStudents={[]}
+      selectedClassIds={[]} supportRows={[]} classStats={{}} classFilterOptions={[]} filteredRows={[]}
+    />)
+    expect(html).toContain('1. Nivåer &amp; Snabbstatus')
+    expect(html).toContain('Mastery panel is visible')
+    expect(html).not.toContain('Student detail is visible')
+    expect(html).not.toContain('Table progress is visible')
   })
 
   it('uses the loaded full profile for the detail row and trend, leaving list rows separate', () => {

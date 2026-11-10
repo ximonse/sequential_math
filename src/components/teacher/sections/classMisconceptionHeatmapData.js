@@ -230,7 +230,7 @@ export function buildHeatmapData(students) {
       if (!byOperation[op].has(student.studentId)) {
         byOperation[op].set(student.studentId, {
           studentId: student.studentId,
-          name: student.name,
+          name: student.name || student.displayAlias || student.studentId || '',
           levelData: {}
         })
       }
@@ -287,7 +287,7 @@ export function buildHeatmapData(students) {
         cells: buildRowCells(entry)
       }))
       .filter(row => row.cells.some(cell => cell.attempts > 0))
-      .sort((a, b) => a.name.localeCompare(b.name, 'sv'))
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'sv'))
 
     return [op, rows]
   }))

@@ -2,11 +2,12 @@ export default function InactivityAndClassLevelPanel({
   inactivityBuckets,
   classSummaries,
   weekGoal,
-  toPercent
+  toPercent,
+  collapseControl
 }) {
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-8">
-      <div className="bg-white rounded-lg shadow p-4">
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-6">
+      <section className="bg-white rounded-lg shadow p-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-gray-800">Inaktivitet</h2>
           <span className="text-xs text-gray-500">Snabb uppföljning</span>
@@ -29,12 +30,15 @@ export default function InactivityAndClassLevelPanel({
             <span className="font-semibold text-blue-700">{inactivityBuckets.neverStarted}</span>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="bg-white rounded-lg shadow p-4 xl:col-span-2">
+      <section className="bg-white rounded-lg shadow p-4 xl:col-span-2">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-gray-800">Klassnivå</h2>
-          <span className="text-xs text-gray-500">Veckomål {weekGoal} uppgifter/elev</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500">Veckomål {weekGoal} uppgifter/elev</span>
+            {collapseControl}
+          </div>
         </div>
         {classSummaries.length === 0 ? (
           <p className="text-sm text-gray-500">Inga klasser i aktuellt urval.</p>
@@ -69,7 +73,7 @@ export default function InactivityAndClassLevelPanel({
             </table>
           </div>
         )}
-      </div>
+      </section>
     </div>
   )
 }

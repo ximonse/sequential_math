@@ -49,10 +49,40 @@ body[class*="theme-"] [data-teacher-admin] :is(
 [data-teacher-admin].material-review h2 { font-size: 17px; line-height: 1.4; font-weight: 650; }
 [data-teacher-admin] [data-admin-content] h4,
 [data-teacher-admin].material-review h3 { font-size: 14px; line-height: 1.5; font-weight: 650; }
-[data-teacher-admin] :is(.dashboard-class-filter h2, [data-recipient-picker] h3, [data-recipient-overview] h3) {
-  font-size: 17px; margin-bottom: 6px;
+[data-teacher-admin] :is(.dashboard-class-filter h2, .dashboard-class-stats h2, [data-recipient-picker] h3, [data-recipient-overview] h3) {
+  font-size: 15px; margin-bottom: 4px;
 }
-[data-teacher-admin] :is(.dashboard-class-filter, [data-recipient-picker], [data-recipient-overview]) { margin-bottom: 0; }
+[data-teacher-admin] :is(.dashboard-class-filter, .dashboard-class-stats, [data-recipient-picker], [data-recipient-overview]) { margin-bottom: 0; padding: 10px 12px !important; }
+
+/* Prominent segmented sub-workspace navigation bar */
+body[class*="theme-"] [data-teacher-admin] .workspace-subtabs {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  background: #1e293b !important; color: #f8fafc !important;
+  border: 1px solid #0f172a; border-radius: 8px; padding: 6px 8px;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.14) !important;
+}
+body[class*="theme-"] [data-teacher-admin] .workspace-subtabs button.workspace-subtab-btn {
+  background: rgba(255, 255, 255, 0.08) !important; color: #e2e8f0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important; border-radius: 6px;
+  padding: 6px 12px !important; font-size: 13px; font-weight: 600;
+  transition: all 0.15s ease;
+}
+body[class*="theme-"] [data-teacher-admin] .workspace-subtabs button.workspace-subtab-btn:hover {
+  background: rgba(255, 255, 255, 0.18) !important; color: #fff !important;
+}
+body[class*="theme-"] [data-teacher-admin] .workspace-subtabs button.workspace-subtab-btn[aria-pressed="true"] {
+  background: #fcd34d !important; color: #0f172a !important;
+  border-color: #fbbf24 !important; font-weight: 700;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25) !important;
+}
+body[class*="theme-"] [data-teacher-admin] .workspace-subtabs button.workspace-subtab-action {
+  background: transparent !important; color: #cbd5e1 !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important; border-radius: 5px;
+  padding: 4px 8px !important; font-size: 11px;
+}
+body[class*="theme-"] [data-teacher-admin] .workspace-subtabs button.workspace-subtab-action:hover {
+  background: rgba(255, 255, 255, 0.12) !important; color: #fff !important;
+}
 [data-teacher-admin] :is([data-admin-panel="management"] > div) { gap: 16px; margin-bottom: 0; }
 [data-teacher-admin] .teacher-ticket-decoration { display: none; }
 [data-teacher-admin] .teacher-admin-module { margin-top: 0; }

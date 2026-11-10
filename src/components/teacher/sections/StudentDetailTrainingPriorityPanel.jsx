@@ -1,24 +1,36 @@
 const MIN_ATTEMPTS_FOR_CONCLUSION = 5
 
-export default function StudentDetailTrainingPriorityPanel({ trainingPriorityList, toPercent }) {
-  const notPracticed = trainingPriorityList.filter(item => item.reason === 'not_practiced')
-  const struggled = trainingPriorityList.filter(
+export default function StudentDetailTrainingPriorityPanel({ trainingPriorityList = [], toPercent, collapseControl }) {
+  const list = Array.isArray(trainingPriorityList) ? trainingPriorityList : []
+  const notPracticed = list.filter(item => item.reason === 'not_practiced')
+  const struggled = list.filter(
     item => item.reason !== 'not_practiced' && item.reason !== 'low_data'
   )
 
-  if (trainingPriorityList.length === 0) {
+  if (list.length === 0) {
     return (
-      <div className="rounded border border-gray-200 bg-gray-50/30 p-3 mb-4">
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">Vad behöver tränas?</h3>
+      <div className="rounded-lg border border-gray-200 bg-white shadow p-4 mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-base font-semibold text-gray-800">Träningsprioritet – vad behöver tränas?</h3>
+          {collapseControl}
+        </div>
         <p className="text-xs text-gray-500">Ingen träningsprioritet ännu — eleven behöver träna mer!</p>
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 mb-4">
+    <div className="rounded-lg border border-gray-200 bg-white shadow p-4 mb-6">
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h3 className="text-base font-semibold text-gray-800">Träningsprioritet – vad behöver tränas?</h3>
+          <p className="text-xs text-gray-500">Uppdelat mellan nivåer eleven har kämpat med och nivåer som ännu inte påbörjats.</p>
+        </div>
+        {collapseControl}
+      </div>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
       <div className="rounded border border-amber-200 bg-amber-50/30 p-3">
-        <h3 className="text-sm font-semibold text-amber-900 mb-1">Har tränat — behöver stärkas</h3>
+        <h3 className="text-sm font-semibold text-amber-900 mb-1">Har tränat — behöver stärkas ({struggled.length})</h3>
         <p className="text-[10px] text-amber-700 mb-2">
           Nivåer med låg träff (minst {MIN_ATTEMPTS_FOR_CONCLUSION} försök krävs).
         </p>
@@ -29,13 +41,14 @@ export default function StudentDetailTrainingPriorityPanel({ trainingPriorityLis
         )}
       </div>
       <div className="rounded border border-gray-200 bg-gray-50/30 p-3">
-        <h3 className="text-sm font-semibold text-gray-700 mb-1">Har inte tränat ännu</h3>
+        <h3 className="text-sm font-semibold text-gray-700 mb-1">Har inte tränat ännu ({notPracticed.length})</h3>
         <p className="text-[10px] text-gray-500 mb-2">Nivåer eleven inte har påbörjat ännu.</p>
         {notPracticed.length === 0 ? (
           <p className="text-xs text-gray-500">Inga luckor — eleven har testat alla relevanta nivåer!</p>
         ) : (
           <PriorityTable rows={notPracticed} toPercent={toPercent} neutral />
         )}
+      </div>
       </div>
     </div>
   )

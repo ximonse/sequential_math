@@ -2,13 +2,17 @@ export default function SupportPriorityPanel({
   supportRows,
   RiskBadgeComponent,
   onOpenStudentDetail,
-  onCreateQuickAssignment
+  onCreateQuickAssignment,
+  collapseControl
 }) {
   return (
-    <div className="bg-white rounded-lg shadow p-4">
+    <section className="bg-white rounded-lg shadow p-4 mb-6">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <h2 className="text-lg font-semibold text-gray-800">Behöver stöd nu</h2>
-        <span className="text-xs text-gray-500">Signal · varför · underlag · nästa steg</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-gray-500">Signal · varför · underlag · nästa steg</span>
+          {collapseControl}
+        </div>
       </div>
       <p className="mb-3 text-xs text-gray-600">Signalen anger prioritet för stöd. Undersök möjliga felförståelser i elevvyn. Fokus lägger ett träningsuppdrag direkt på elevens startsida.</p>
       {supportRows.length === 0 ? (
@@ -71,6 +75,6 @@ export default function SupportPriorityPanel({
           </table>
         </div>
       )}
-    </div>
+    </section>
   )
 }

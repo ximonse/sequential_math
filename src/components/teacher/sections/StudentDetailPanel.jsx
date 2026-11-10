@@ -108,10 +108,18 @@ export default function StudentDetailPanel({
   )
 
   return (
-    <div id={sectionId} className="bg-white rounded-lg shadow p-4 mb-8" style={{ order: -20 }}>
+    <div id={sectionId} className="bg-white rounded-lg shadow p-4 mb-6">
       <div className="mb-3">
-        <div className="flex items-center justify-between gap-2">
-          <h2 className="text-lg font-semibold text-gray-800">Elevprofil (allt om en elev)</h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-lg font-semibold text-gray-800">Elevprofil (allt om en elev)</h2>
+            {detailStudentProfile && (
+              <span className="inline-flex items-center rounded-full bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 text-xs font-semibold text-indigo-800">
+                {detailStudentProfile.name}
+                {detailStudentProfile.className ? ` · ${detailStudentProfile.className}` : ''}
+              </span>
+            )}
+          </div>
           {collapseControl}
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -210,8 +218,19 @@ function SummaryCards({
   ActivityBadgeComponent,
   trainingPriorityList
 }) {
+  const struggledPriorities = (trainingPriorityList || []).filter(
+    item => item.reason !== 'not_practiced' && item.reason !== 'low_data'
+  )
+  const notPracticedCount = (trainingPriorityList || []).filter(
+    item => item.reason === 'not_practiced'
+  ).length
+  const highCount = struggledPriorities.filter(item => item.priority === 'high').length
+  const mediumCount = struggledPriorities.filter(item => item.priority === 'medium').length
+  const lowCount = struggledPriorities.filter(item => item.priority === 'low').length
+  const hasStruggle = highCount > 0 || mediumCount > 0 || lowCount > 0
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-2 mb-4 text-xs">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9 gap-2 mb-4 text-xs">
       <MetricCard
         label="Totalt lösta"
         value={detailStudentProfile?.stats?.totalProblems || detailStudentRow.attempts}
@@ -248,7 +267,7 @@ function SummaryCards({
       />
       <div className="rounded border border-purple-200 bg-purple-50 px-2.5 py-2">
         <p className="text-purple-700">Belagd nivå / tränar nu</p>
-        <div className="flex gap-1.5 mt-0.5">
+        <div className="flex flex-wrap gap-1.5 mt-0.5">
           {OPERATION_BADGES.map(op => {
             const attained = detailStudentRow.attainmentLevels?.[op.key]
             const need = detailStudentRow.currentNeeds?.[op.key]
@@ -270,13 +289,17 @@ function SummaryCards({
       </div>
       <MetricCard
         label="Träningsprioritet"
-        className="border-red-200 bg-red-50"
-        textClassName="text-red-700"
-        value={(
-          <div className="flex gap-1 mt-0.5 text-xs font-semibold">
-            <span className="text-red-600">Hög: {trainingPriorityList.filter(item => item.priority === 'high').length}</span>
-            <span className="text-orange-600">Medel: {trainingPriorityList.filter(item => item.priority === 'medium').length}</span>
-            <span className="text-yellow-700">Låg: {trainingPriorityList.filter(item => item.priority === 'low').length}</span>
+        className={hasStruggle ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-slate-50'}
+        textClassName={hasStruggle ? 'text-red-700' : 'text-slate-600'}
+        value={hasStruggle ? (
+          <div className="flex flex-wrap gap-1 mt-0.5 text-xs font-semibold">
+            <span className="text-red-600">Hög: {highCount}</span>
+            <span className="text-orange-600">Medel: {mediumCount}</span>
+            <span className="text-yellow-700">Låg: {lowCount}</span>
+          </div>
+        ) : (
+          <div className="mt-0.5 text-xs font-semibold text-slate-700">
+            Inga larm{notPracticedCount > 0 ? ` · ${notPracticedCount} ej startade` : ''}
           </div>
         )}
       />

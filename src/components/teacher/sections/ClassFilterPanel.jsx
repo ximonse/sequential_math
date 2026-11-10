@@ -18,18 +18,20 @@ export default function ClassFilterPanel({
   const classOptionIds = classFilterOptions.filter(item => item.kind !== 'group').map(item => item.id)
   const allClassesSelected = classOptionIds.length > 0 && classOptionIds.every(id => selectedClassIds.includes(id))
   return (
-    <section className="dashboard-class-filter bg-white rounded-lg shadow p-3">
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-2">
-        <h2 className="text-sm font-semibold text-gray-800">Välj din klass eller grupp</h2>
-        <div className="flex items-center gap-2"><p className="text-xs text-gray-500">
-          {selectedClassIds.length === 0
-            ? `Välj en klass eller grupp för att se elevernas resultat (${studentsCount} elever totalt)`
-            : `${selectedClassIds.length} klass/grupp(er) valda (${filteredStudentsCount} elever)`}
-        </p>{collapseControl}</div>
-      </div>
-      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[11px] text-gray-500">Valda klasser/grupper sparas som förval till nästa gång.</p>
-        {onPickPupil && <PupilSearch students={students} classNameById={classNameById} onPick={onPickPupil} />}
+    <section className="dashboard-class-filter bg-white rounded-lg shadow p-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 mb-2">
+        <div className="flex flex-wrap items-baseline gap-2">
+          <h2 className="text-sm font-semibold text-gray-800">Välj din klass eller grupp</h2>
+          <span className="text-xs text-gray-500">
+            {selectedClassIds.length === 0
+              ? `(${studentsCount} elever totalt – val sparas som förval)`
+              : `${selectedClassIds.length} valda (${filteredStudentsCount} elever)`}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {onPickPupil && <PupilSearch students={students} classNameById={classNameById} onPick={onPickPupil} />}
+          {collapseControl}
+        </div>
       </div>
       <div className="flex flex-wrap items-center gap-1.5">
         <button

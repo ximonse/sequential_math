@@ -399,7 +399,7 @@ function OperationGrid({ operation, rows, onOpenStudentDetail }) {
   )
 }
 
-export default function ClassMisconceptionHeatmap({ filteredStudents, onOpenStudentDetail }) {
+export default function ClassMisconceptionHeatmap({ filteredStudents, onOpenStudentDetail, collapseControl }) {
   const normalizedStudents = useMemo(() => (
     (Array.isArray(filteredStudents) ? filteredStudents : [])
       .filter(student => normalizeStudentId(student?.studentId))
@@ -515,9 +515,12 @@ export default function ClassMisconceptionHeatmap({ filteredStudents, onOpenStud
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 mb-8">
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
-        <h2 className="text-sm font-semibold text-gray-800">Felunderlag – klassöversikt</h2>
-        <span className="text-[11px] text-gray-400">Håll muspekaren över en cell för detaljer · klicka på en cell med kunskapsfel för hela fellistan på nivån</span>
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 mb-3">
+        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h2 className="text-lg font-semibold text-gray-800">Felunderlag – klassöversikt</h2>
+          <span className="text-[11px] text-gray-400">Håll muspekaren över en cell för detaljer · klicka på en cell med kunskapsfel för hela fellistan på nivån</span>
+        </div>
+        {collapseControl}
       </div>
 
       <p className={`text-[11px] mb-3 ${cloudStatus.failedCount > 0 ? 'text-amber-700' : 'text-gray-500'}`}>

@@ -2,11 +2,12 @@ export default function DataQualityUsagePanel({
   dataQualitySummary,
   usageInsights,
   formatDuration,
-  toPercent
+  toPercent,
+  collapseControl
 }) {
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-8">
-      <div className="bg-white rounded-lg shadow p-4">
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6">
+      <section className="bg-white rounded-lg shadow p-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-gray-800">Datakvalitet</h2>
           <span className={`px-2 py-0.5 rounded text-xs font-semibold ${dataQualitySummary.overallQuality >= 0.8
@@ -59,12 +60,15 @@ export default function DataQualityUsagePanel({
             ? dataQualitySummary.needsFollowUpNames.join(', ')
             : 'Ingen just nu'}
         </p>
-      </div>
+      </section>
 
-      <div className="bg-white rounded-lg shadow p-4">
+      <section className="bg-white rounded-lg shadow p-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold text-gray-800">Insikter från användning (7d)</h2>
-          <span className="text-xs text-gray-500">För förbättring av appen</span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500">För förbättring av appen</span>
+            {collapseControl}
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-2 text-sm mb-3">
           <div className="rounded border border-blue-200 bg-blue-50 px-3 py-2">
@@ -98,7 +102,7 @@ export default function DataQualityUsagePanel({
             ? usageInsights.topErrorCategories.map(item => `${item.label} (${item.count})`).join(', ')
             : 'Ingen data ännu'}
         </p>
-      </div>
+      </section>
     </div>
   )
 }

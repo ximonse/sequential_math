@@ -15,9 +15,9 @@ const originalGroups = [
 ].filter(group => group.tasks.length)
 
 // Question choice for a new collection. A pack covers the common case in one
-// click; single questions, answer types and the teacher guide stay folded away.
+// click; single questions and the teacher guide stay folded away.
 export default function ScreeningTaskChoices({
-  busy, selectedTasks, onSelectedTasks, usesNcm, selectedPack, itemOptions, onItemOptions,
+  busy, selectedTasks, onSelectedTasks, usesNcm, selectedPack,
   customPrompt, onCustomPrompt, customGrid, onCustomGrid, customDrawing, onCustomDrawing, showCustomQuestion = true, showTeacherSupport = true
 }) {
   const taskCheckbox = task => <label key={task.taskId} className="flex items-center gap-1 text-sm">
@@ -61,29 +61,6 @@ export default function ScreeningTaskChoices({
             </details>)}
           </div>
         </details>
-      </fieldset>
-    </details>
-
-    <details className="mt-2 text-sm">
-      <summary className="cursor-pointer font-semibold">Inställningar för valda bankfrågor{selectedTasks.length ? ` (${selectedTasks.length})` : ''}</summary>
-      <fieldset className="mt-2 space-y-1" disabled={busy}>
-        <legend className="sr-only">Inställningar för valda bankfrågor</legend>
-        <p className="screening-note">Svarstyp, huvudräkning och rityta för varje vald fråga ur banken.</p>
-        {selectedTasks.map(id => {
-          const options = itemOptions[id] || {}
-          const change = patch => onItemOptions({ ...itemOptions, [id]: { ...itemOptions[id], ...patch } })
-          const task = findTask(id)
-          return <div key={id} className="flex flex-wrap items-center gap-x-2">
-            <strong><QuestionText>{task?.promptSv}</QuestionText></strong>
-            {/* NCM answers are marked against the facit, so their answer type is fixed. */}
-            {task?.responseMode ? <span>{task.responseMode === 'text' ? 'Skrivsvar' : 'Val av alternativ'}</span> : task?.ncmCode ? <span className="text-slate-600">Facit: {task.facitSv}</span>
-              : <label>Svarstyp <select value={options.answerType || 'number'} onChange={event => change({ answerType: event.target.value })} className="rounded border px-1 py-0.5">
-                <option value="number">Siffersvar</option><option value="text">Skrivsvar</option>
-              </select></label>}
-            <label><input type="checkbox" disabled={Boolean(task?.responseMode)} checked={!task?.responseMode && options.gridEnabled === false} onChange={event => change({ gridEnabled: !event.target.checked })} /> Huvudräkning</label>
-            <label><input type="checkbox" disabled={Boolean(task?.responseMode)} checked={Boolean(options.drawingEnabled)} onChange={event => change({ drawingEnabled: event.target.checked })} /> Rityta</label>
-          </div>
-        })}
       </fieldset>
     </details>
 

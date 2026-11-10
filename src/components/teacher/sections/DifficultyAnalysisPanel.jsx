@@ -28,10 +28,21 @@ export default function DifficultyAnalysisPanel({
   detailLevelErrorSortDir,
   onDetailLevelErrorSortByChange,
   onDetailLevelErrorSortDirChange,
-  toPercent
+  toPercent,
+  headerPrefix,
+  collapseControl
 }) {
   if (!detailStudentProfile) {
-    return <p className="text-sm text-gray-500">Välj en elev i Elevdetalj för att se svårighetsanalys.</p>
+    return (
+      <div className="bg-white rounded-lg shadow p-4 mb-4">
+        {headerPrefix}
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold text-gray-800">Svårighetsanalys</h3>
+          {collapseControl}
+        </div>
+        <p className="mt-1 text-sm text-gray-500">Välj en elev i elevväljaren ovan för att se svårighetsanalys.</p>
+      </div>
+    )
   }
 
   const isTextSort = detailLevelErrorSortBy === 'operation'
@@ -39,16 +50,20 @@ export default function DifficultyAnalysisPanel({
   const descLabel = isTextSort ? 'Ö-A' : 'Störst först'
 
   return (
-    <div>
+    <div className="bg-white rounded-lg shadow p-4 mb-4">
+      {headerPrefix}
       <div className="flex items-center justify-between mb-2 gap-2">
-        <h3 className="text-sm font-semibold text-gray-800">
-          Svårighetsanalys (≥{detailLevelErrorMinAttempts} försök)
-        </h3>
-        {studentOperationStats7d ? (
-          <p className="text-[11px] text-gray-500">
-            Inkl. klassjämförelse ({Math.max(...operationKeys.map(op => classBenchmarks[op]?.studentCount || 0))} elever)
-          </p>
-        ) : null}
+        <div className="flex flex-wrap items-baseline gap-2">
+          <h3 className="text-base font-semibold text-gray-800">
+            Svårighetsanalys (≥{detailLevelErrorMinAttempts} försök)
+          </h3>
+          {studentOperationStats7d ? (
+            <p className="text-[11px] text-gray-500">
+              Inkl. klassjämförelse ({Math.max(...operationKeys.map(op => classBenchmarks[op]?.studentCount || 0))} elever)
+            </p>
+          ) : null}
+        </div>
+        {collapseControl}
       </div>
       <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px]">
         <label className="inline-flex items-center gap-1 text-gray-600">

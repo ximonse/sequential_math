@@ -9,6 +9,7 @@ import { diagnosticApiEnabled, diagnosticAssignablePupilsInClass } from './_diag
 import { listClassDiagnosticAssignments } from './_diagnosticAssignmentList.js'
 import { isSchoolAdminRole } from './_teacherRoles.js'
 import { diagnosticDispatchOptions } from './_diagnosticDispatchRequest.js'
+import { logUnexpectedDiagnosticError, UNEXPECTED_DIAGNOSTIC_ERROR } from './_diagnosticErrorLog.js'
 
 export default async function handler(req, res) {
   withCors(res, { methods: 'GET,POST,PATCH,OPTIONS', headers: 'Content-Type,x-teacher-token' }, req)
@@ -76,6 +77,7 @@ export default async function handler(req, res) {
       titleSv: req.body?.titleSv, itemOptions: req.body?.itemOptions, customTasks: req.body?.customTasks, order: req.body?.order }, ...(req.body.requestId === undefined ? [] : [dispatchOptions]))
     return res.status(201).json({ assignment })
   } catch (error) {
-    return res.status(error.status || 503).json({ error: error.status ? error.message : 'Diagnostic storage unavailable', code: error.code })
+    logUnexpectedDiagnosticError('teacher-diagnostic-assignments', req, error, { pupils: Array.isArray(req.body?.studentIds) ? req.body.studentIds.length : req.body?.audience === 'class' ? 'class' : undefined })
+    return res.status(error.status || 503).json({ error: error.status ? error.message : UNEXPECTED_DIAGNOSTIC_ERROR, code: error.code })
   }
 }

@@ -4,6 +4,7 @@ import { openDiagnosticAttempt } from '../_diagnosticAssignmentStore.js'
 import { appendDiagnosticAttempt, readDiagnosticAttempt } from '../_diagnosticAttemptStore.js'
 import { assertDiagnosticPupilAccess, diagnosticApiEnabled, diagnosticTestStudentAllowed } from '../_diagnosticApiAccess.js'
 import { submitDiagnosticCollection } from '../_diagnosticCollectionStore.js'
+import { logUnexpectedDiagnosticError, UNEXPECTED_DIAGNOSTIC_ERROR } from '../_diagnosticErrorLog.js'
 
 export default async function handler(req, res) {
   withCors(res, { methods: 'GET,POST,OPTIONS', headers: 'Content-Type,x-csrf-token' }, req)
@@ -45,6 +46,7 @@ export default async function handler(req, res) {
       expectedRevision: req.body?.expectedRevision, events: req.body?.events })
     return res.status(200).json({ ...result, saveStatus: 'server_confirmed' })
   } catch (error) {
-    return res.status(error.status || 503).json({ error: error.status ? error.message : 'Diagnostic storage unavailable', code: error.code })
+    logUnexpectedDiagnosticError('me/diagnostic-attempt', req, error)
+    return res.status(error.status || 503).json({ error: error.status ? error.message : UNEXPECTED_DIAGNOSTIC_ERROR, code: error.code })
   }
 }

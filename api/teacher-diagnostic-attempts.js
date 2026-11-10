@@ -10,6 +10,7 @@ import { diagnosticWorkAnalysis } from '../src/domains/arithmetic/diagnosticWork
 import { identifyDiagnosticObservationRevision } from '../src/domains/arithmetic/diagnosticObservationRevision.js'
 import { diagnosticClassOverview, listDiagnosticAssignmentAttempts } from './_diagnosticClassOverview.js'
 import { saveDiagnosticReview } from './_diagnosticReviewStore.js'
+import { logUnexpectedDiagnosticError, UNEXPECTED_DIAGNOSTIC_ERROR } from './_diagnosticErrorLog.js'
 
 const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/u.test(value)
 
@@ -73,6 +74,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ record: saved.record, snapshot: saved.snapshot, review,
       task: item.taskSnapshot, evidenceRevision, observation, ...work })
   } catch (error) {
-    return res.status(error.status || 503).json({ error: error.status ? error.message : 'Diagnostic storage unavailable', code: error.code })
+    logUnexpectedDiagnosticError('teacher-diagnostic-attempts', req, error)
+    return res.status(error.status || 503).json({ error: error.status ? error.message : UNEXPECTED_DIAGNOSTIC_ERROR, code: error.code })
   }
 }

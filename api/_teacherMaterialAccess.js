@@ -24,7 +24,7 @@ export async function assertMaterialDraftAccess(req, state) {
         }
       }
       if (!accessible) throw evidenceError(403, 'draft_access_denied', 'Åtkomst till en tidigare mottagare saknas.')
-      if (kind === 'screening') assertEvidenceSourceAccess(auth, pupil.studentId, 'screening')
+      if (kind === 'screening') assertEvidenceSourceAccess(auth, pupil.studentId, 'screening', { write: true })
     })
     await checkBatch(basis, async item => {
       await assertPupilEvidenceAccess(req, item.studentId, item.classId)

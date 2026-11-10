@@ -71,8 +71,9 @@ test('paged evidence preserves correct answers, unknown history, exact source de
   const forbidden = await reader.callTool({ name: 'math_get_pupil_evidence', arguments: { ...target, classId: 'mcp-other' } })
   assert.equal(forbidden.isError, true)
   assert.equal(forbidden.structuredContent.data.error.code, 'access_denied')
+  // Every teacher with class access may read screening answers (Simon 2026-11-09).
   const screen = await reader.callTool({ name: 'math_get_pupil_evidence', arguments: { ...target, source: 'screening' } })
-  assert.equal(screen.structuredContent.data.error.code, 'access_denied')
+  assert.notEqual(screen.isError, true)
 })
 
 test('audience tools resolve exact current class/group members and reject a stale roster page', async () => {

@@ -44,11 +44,14 @@ export function analyzeDiagnosticColumnAlignment(task, snapshot) {
   if (['multiplication', 'division'].includes(task.operation)) return {
     analysisVersion: COLUMN_ALIGNMENT_ANALYSIS_VERSION, attemptId: grid.attemptId,
     taskId: task.taskId, taskVersion: task.taskVersion, status: 'unknown', reason: 'not_a_column_task' }
+  // Other tasks (decimals, fractions and further operations) have no column model
+  // either. Report that instead of throwing, so the teacher's results still open
+  // (they returned 503 with "Unsupported diagnostic column task" before 2026-11-10).
   if (!['addition', 'subtraction'].includes(task.operation)
     || !Array.isArray(task.operands) || task.operands.length !== 2
-    || !task.operands.every(value => Number.isSafeInteger(value) && value >= 0)) {
-    throw new Error('Unsupported diagnostic column task')
-  }
+    || !task.operands.every(value => Number.isSafeInteger(value) && value >= 0)) return {
+    analysisVersion: COLUMN_ALIGNMENT_ANALYSIS_VERSION, attemptId: grid.attemptId,
+    taskId: task.taskId, taskVersion: task.taskVersion, status: 'unknown', reason: 'not_a_column_task' }
   const symbol = task.operation === 'addition' ? '+' : '−'
   const uppers = []
   const lowers = []

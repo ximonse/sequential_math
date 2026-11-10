@@ -55,4 +55,10 @@ describe('conservative column alignment recognition', () => {
     expect(() => analyzeDiagnosticColumnAlignment({ ...task, taskVersion: 2 }, grid)).toThrow()
     expect(() => analyzeDiagnosticColumnAlignment(task, { ...grid, cells: {} })).toThrow()
   })
+
+  it('reports decimal and other non-column tasks as unknown instead of failing the results', () => {
+    const task = { ...manifest.tasks[0], operands: [3.48, 2.67] }
+    const grid = work(task, [{ 5: '3', 6: ',', 7: '4', 8: '8' }])
+    expect(analyzeDiagnosticColumnAlignment(task, grid)).toMatchObject({ status: 'unknown', reason: 'not_a_column_task' })
+  })
 })

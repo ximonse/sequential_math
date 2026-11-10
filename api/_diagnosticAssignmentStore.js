@@ -29,11 +29,14 @@ for i = 1, n do
     or redis.call('EXISTS', KEYS[3 + 2*n + i]) == 1 then return -3 end
   local raw = redis.call('GET', KEYS[3 + i])
   if not raw then return -4 end
-  local pupil = cjson.decode(raw)
-  local member = pupil.classId == ARGV[2]
-  if pupil.classIds then
-    for _, id in ipairs(pupil.classIds) do
-      if id == ARGV[2] then member = true end
+  -- Find the class in the stored JSON text instead of decoding the whole
+  -- profile: decoding 28 long training histories timed out (2026-11-10).
+  local member = string.find(raw, '"classId":"' .. ARGV[2] .. '"', 1, true) ~= nil
+  if not member then
+    local _, listStart = string.find(raw, '"classIds":[', 1, true)
+    if listStart then
+      local listEnd = string.find(raw, ']', listStart, true)
+      member = listEnd ~= nil and string.find(string.sub(raw, listStart, listEnd), '"' .. ARGV[2] .. '"', 1, true) ~= nil
     end
   end
   if not member then return -5 end

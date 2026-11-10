@@ -127,6 +127,7 @@ export function encodeAssignmentPayload(assignment) {
 
   if (normalized.breakGames) payload.breakGames = true
   if (normalized.workspaces) payload.workspaces = normalized.workspaces
+  if (normalized.levelMode) payload.levelMode = normalized.levelMode
 
   if (normalized.kind === 'math_practice') {
     payload.operations = normalized.operations
@@ -161,7 +162,10 @@ function normalizeAssignment(input, options = {}) {
   const workspaces = input.workspaces && typeof input.workspaces === 'object'
     ? { notebook: input.workspaces.notebook === true, drawing: input.workspaces.drawing === true }
     : undefined
-  return { ...normalized, breakGames: input.breakGames === true, ...(workspaces ? { workspaces } : {}) }
+  // Standard assignments adapt to each pupil within the range unless the teacher
+  // chose "från lätt till svår" (staircase).
+  const levelMode = normalized.kind === 'standard' && input.levelMode === 'staircase' ? 'staircase' : undefined
+  return { ...normalized, breakGames: input.breakGames === true, ...(workspaces ? { workspaces } : {}), ...(levelMode ? { levelMode } : {}) }
 }
 
 function normalizeAssignmentCore(input, options = {}) {

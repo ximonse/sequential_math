@@ -22,7 +22,7 @@ function AnalysisWorkspace({ studentId, classId }) {
   // The analysis is the first thing in the pupil profile: open, with a fresh preview.
   const [open, setOpen] = useState(true)
   const [state, setState] = useState(() => ({ history: null, busy: false, message: '', draft: null, preview: null,
-    selectedId: '', ...recentEvidenceDays(28), source: isTeacherAdmin() ? 'all' : 'practice', requestId: '' }))
+    selectedId: '', ...recentEvidenceDays(28), source: 'all', requestId: '' }))
   const baseUrl = `/api/teacher-students/${encodeURIComponent(studentId)}?classId=${encodeURIComponent(classId)}`
   const endpoint = `${baseUrl}&resource=analysis`
   const update = patch => setState(value => ({ ...value, ...patch }))
@@ -79,7 +79,7 @@ function AnalysisWorkspace({ studentId, classId }) {
         <label className="text-sm">Från<input disabled={state.busy} type="date" aria-label="Analys från" className="block rounded border px-1.5 py-0.5" value={state.from} onChange={event => update({ from: event.target.value })} /></label>
         <label className="text-sm">Till<input disabled={state.busy} type="date" aria-label="Analys till" className="block rounded border px-1.5 py-0.5" value={state.to} onChange={event => update({ to: event.target.value })} /></label>
         <label className="text-sm">Underlag<select aria-label="Underlag" disabled={state.busy} className="block rounded border px-1.5 py-0.5" value={state.source} onChange={event => update({ source: event.target.value })}>
-          <option value="practice">Träningssvar</option>{isTeacherAdmin() && <><option value="screening">Screening</option><option value="all">Träning och screening</option></>}
+          <option value="practice">Träningssvar</option><option value="screening">Screening</option><option value="all">Träning och screening</option>
         </select></label>
         <button type="button" disabled={state.busy} className="rounded border border-teal-700 px-2 py-1 text-sm" onClick={() => run(() => createDraft())}>Skapa granskningsunderlag</button>
         <button type="button" disabled={state.busy} className="rounded border px-2 py-1 text-sm" onClick={() => run(load)}>Läs senaste sparade</button>
@@ -90,7 +90,7 @@ function AnalysisWorkspace({ studentId, classId }) {
         </select>
       </label>}
       {state.history?.restrictedReports > 0 && <p className="text-sm mt-2">Vissa screeningrapporter kräver utökad behörighet.</p>}
-      {state.preview && <><PupilAnalysisReportView key={state.requestId} report={state.preview} baseUrl={baseUrl} studentId={studentId} classId={classId}
+      {state.preview && <><PupilAnalysisReportView key={state.requestId} report={state.preview} baseUrl={baseUrl} studentId={studentId} classId={classId} canCreateScreening={isTeacherAdmin()}
         onHideSlip={state.busy ? undefined : key => setSlip(key, true)} />
         {state.hiddenSlips?.length > 0 && <details className="mt-3 text-sm"><summary className="font-semibold">Dolda som slarv ({state.hiddenSlips.length})</summary>
           <p className="mt-1 text-slate-600">Räknas inte med i analysen. Elevens svar och träningsnivå är oförändrade.</p>
@@ -106,7 +106,7 @@ function AnalysisWorkspace({ studentId, classId }) {
           update({ history, selectedId: history.affectedReportId, preview: null, draft: null, message: 'Rapportversionen är sparad. Stäm av tolkningen nedan.' })
         })}>Spara rapportversion</button>
       </>}
-      {selected && <><PupilAnalysisReportView key={`report-${selected.id}`} report={selected.report} savedItem={selected} baseUrl={baseUrl} studentId={studentId} classId={classId} />
+      {selected && <><PupilAnalysisReportView key={`report-${selected.id}`} report={selected.report} savedItem={selected} baseUrl={baseUrl} studentId={studentId} classId={classId} canCreateScreening={isTeacherAdmin()} />
         <AnalysisCheckInForm key={`check-${selected.id}`} item={selected} scope={`${studentId}:${classId}`} busy={state.busy} onSave={async (checkIn, requestId) => {
           let saved = false
           await run(async () => {

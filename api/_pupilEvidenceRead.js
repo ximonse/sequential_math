@@ -25,11 +25,17 @@ export async function assertPupilEvidenceAccess(req, studentId, classId) {
   return profile
 }
 
-export function assertEvidenceSourceAccess(auth, studentId, source) {
+// Simon 2026-11-09: every teacher with access to the pupil's class may read
+// screening answers in the analysis. Creating and dispatching screenings
+// (write: true) still needs a school administrator. Focus activities are a
+// separate record and never part of this evidence.
+export function assertEvidenceSourceAccess(auth, studentId, source, { write = false } = {}) {
   if (!['practice', 'screening', 'all'].includes(source)) throw evidenceError(400, 'invalid_source', 'Ogiltig källa.')
-  if (source !== 'practice' && (!diagnosticApiEnabled() || !isSchoolAdminRole(auth.role, auth.isAdmin)
-    || !diagnosticTestStudentAllowed(studentId))) {
-    throw evidenceError(403, 'screening_access_denied', 'Screening kräver aktiverad åtkomst och aktuell administratörsbehörighet.')
+  if (source !== 'practice' && (!diagnosticApiEnabled() || !diagnosticTestStudentAllowed(studentId)
+    || (write && !isSchoolAdminRole(auth.role, auth.isAdmin)))) {
+    throw evidenceError(403, 'screening_access_denied', write
+      ? 'Att skapa och dela ut screening kräver aktiverad åtkomst och administratörsbehörighet.'
+      : 'Screeningsvar är inte tillgängliga för den här eleven.')
   }
 }
 
@@ -52,8 +58,7 @@ export async function readPupilEvidence(req, auth, studentId, { unpaged = false 
   await assertPupilEvidenceAccess(req, studentId, classId)
   if (source !== 'practice') {
     const liveAuth = await getLiveTeacherAuthPayload(req)
-    if (!liveAuth || !isSchoolAdminRole(liveAuth.role, liveAuth.isAdmin)
-      || !diagnosticApiEnabled() || !diagnosticTestStudentAllowed(studentId)) {
+    if (!liveAuth || !diagnosticApiEnabled() || !diagnosticTestStudentAllowed(studentId)) {
       throw evidenceError(403, 'screening_access_denied', 'Screeningåtkomsten ändrades under läsningen.')
     }
   }

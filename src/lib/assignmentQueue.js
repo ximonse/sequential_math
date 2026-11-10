@@ -65,9 +65,11 @@ export function assignmentLaunchPath(studentId, assignment) {
   return `/student/${studentId}/practice?${params}`
 }
 
-// Simon 2026-11-09: a link assignment with a level range goes from the easiest
-// level to the hardest, spread evenly over the questions, instead of adapting.
+// Simon 2026-11-09: a link assignment the teacher set to "från lätt till svår"
+// goes from the easiest level to the hardest, spread evenly over the questions.
+// Without that choice the assignment adapts to each pupil within its range.
 export function assignmentStaircaseLevel(assignment, solvedCount) {
+  if (assignment?.levelMode !== 'staircase') return null
   const min = Number(assignment?.minLevel), max = Number(assignment?.maxLevel)
   // Number bonds and doubles keep their own lap levels.
   const types = Array.isArray(assignment?.problemTypes) ? assignment.problemTypes : []

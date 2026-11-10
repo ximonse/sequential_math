@@ -3683,9 +3683,9 @@
       "id": "teacher-ux-ui-bang-for-the-buck",
       "area": "Lärarvy & Screening",
       "title": "UX/UI-lyft i lärarvyerna: läsbara tabeller, svenska etiketter och screeningdetaljer",
-      "status": "Lokalt klart",
+      "status": "Publicerat",
       "purpose": "Åtgärda de mest värdeskapande UX/UI-bristerna från genomgången av alla fem lärarvyer utan att bryta befintliga flöden eller robotkontrakt.",
-      "next": "Granska lokalt i worktree gemini-ux-ui-review och besluta om merge/publicering.",
+      "next": "Kvarvarande från granskningen: Hämtar elever-läge i Steg 2 under katalogladdning, klockslag på dubblettrader i Utdelade, flikar för de tre egna frågetyperna, samlad inloggningshantering under Administration samt alfabetisk elevlista i Ny grupp.",
       "acceptance": "Resultattabeller klipps inte av 32-teckens hex-ID; å/ä/ö och svenska visningsnamn för felmönster och positions_decimal används i Analys & åtgärd och Pausspel; sidhuvud och klassfilter hoppar inte mellan flikar; Förslag från frågebanken och NCM har synlig utfällningspil och kapslade NCM-grupper; Sparade försök visar uppgiftens frågetext; räknehäftets testvy har tydlig tillbakalänk till Lärarvy.",
       "requires": [
         "progress-workspace-appearance",
@@ -3693,7 +3693,7 @@
       ],
       "affects": [],
       "decision": "2026-11-10: Simon bad om plan och åtgärd av de högst prioriterade UX/UI-fynden i ett separat worktree (gemini/ux-ui-review).",
-      "evidence": "2026-11-10 lokalt i worktree .claude/worktrees/gemini-ux-ui-review (branch gemini/ux-ui-review): byggt och verifierat med vite build, alla 183 enhetstestfiler under src/ (951 tester) samt Playwright-robotarna screening-workspace-contract, assignments, diagnostic-grid, diagnostic-ncm och teacher (25 robottester, 0 regelbrott). Ej pushat.",
+      "evidence": "2026-11-10 lokalt i worktree .claude/worktrees/gemini-ux-ui-review (branch gemini/ux-ui-review): byggt och verifierat med vite build, alla 183 enhetstestfiler under src/ (951 tester) samt Playwright-robotarna screening-workspace-contract, assignments, diagnostic-grid, diagnostic-ncm och teacher (25 robottester, 0 regelbrott). Ej pushat.\n2026-11-11: Claude-granskning av hela diffen, merge med master och push till produktion (commit dc046ca, Vercel READY på matematik.ximon.se). Full vitest-svit 1322/1324 (2 röda är förexisterande NCM-hash-audit som failar även på master lokalt). Regression åtgärdad: materialredigerarens per-frågeinställningar (svarstyp/huvudräkning/rityta) återställda bakom showItemSettings; Fäll ut/ihop alla täcker nu även undertabbarnas paneler.",
       "issue": "",
       "kind": "funktion",
       "tasks": [

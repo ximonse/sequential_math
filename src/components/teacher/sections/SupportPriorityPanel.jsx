@@ -37,7 +37,7 @@ export default function SupportPriorityPanel({
                       {row.name}
                     </button>
                     <div className="text-xs text-gray-500">
-                      {row.classNameLabel || row.className || 'Ingen klass'} · {row.studentId}
+                      <span title={`Elev-ID: ${row.studentId}`}>{row.classNameLabel || row.className || 'Ingen klass'}</span>
                     </div>
                   </td>
                   <td className="py-3 pr-3"><RiskBadgeComponent level={row.riskLevel} /></td>

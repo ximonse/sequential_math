@@ -4,16 +4,19 @@
 const SHOWN_NAMES = 3
 
 export function describeRecipients(collection, { students = [], classNames = new Map() } = {}) {
+  const catalogPending = students.length === 0
   const parts = collection.members.map(member => {
     const classId = String(member.classId)
     const className = classNames.get(classId) || 'Klass'
     const ids = member.studentIds || []
     const roster = students.filter(student => [student.classId, ...(student.classIds || [])].map(String).includes(classId))
     const whole = !member.studentIds || (roster.length > 0 && roster.every(student => ids.includes(student.studentId)))
-    const names = ids.map(id => {
-      const pupil = students.find(student => student.studentId === id)
-      return pupil?.name || pupil?.displayAlias || 'Elev som inte längre finns'
-    })
+    const names = catalogPending
+      ? (ids.length > 0 ? [`${ids.length} ${ids.length === 1 ? 'elev' : 'elever'}`] : [])
+      : ids.map(id => {
+        const pupil = students.find(student => student.studentId === id)
+        return pupil?.name || pupil?.displayAlias || 'Elev som inte längre finns'
+      })
     return { className, whole, names }
   })
   const short = parts.map(({ className, whole, names }) => {

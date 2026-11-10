@@ -30,4 +30,8 @@ describe('describeRecipients', () => {
   it('names pupils who have left the roster', () => {
     expect(describeRecipients(collection(['c6a', ['gone']]), { students, classNames }).short).toBe('Elev som inte längre finns (Klass 6A)')
   })
+
+  it('does not claim pupils are gone while the student catalog is still empty', () => {
+    expect(describeRecipients(collection(['c6a', ['a', 'b']]), { students: [], classNames }).short).toBe('2 elever (Klass 6A)')
+  })
 })

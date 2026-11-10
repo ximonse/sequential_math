@@ -38,11 +38,11 @@ export default function ResultsOverviewPanel({
       ) : (
         <div className="bg-white rounded-lg shadow overflow-x-auto p-4">
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs uppercase tracking-wide text-gray-500">Resultatvy</span>
               <button
                 onClick={() => onSetViewMode('daily')}
-                className={`px-1.5 py-0.5 rounded text-sm ${viewMode === 'daily'
+                className={`px-2 py-0.5 rounded text-sm ${viewMode === 'daily'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
@@ -51,7 +51,7 @@ export default function ResultsOverviewPanel({
               </button>
               <button
                 onClick={() => onSetViewMode('all')}
-                className={`px-1.5 py-0.5 rounded text-sm ${viewMode === 'all'
+                className={`px-2 py-0.5 rounded text-sm ${viewMode === 'all'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
@@ -60,16 +60,14 @@ export default function ResultsOverviewPanel({
               </button>
               <button
                 onClick={() => onSetViewMode('weekly')}
-                className={`px-1.5 py-0.5 rounded text-sm ${viewMode === 'weekly'
+                className={`px-2 py-0.5 rounded text-sm ${viewMode === 'weekly'
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
               >
                 Veckovy
               </button>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
+              <span className="mx-1 text-gray-300">|</span>
               <label className="text-xs text-gray-500">Sortera</label>
               <select
                 value={sortBy}
@@ -77,7 +75,6 @@ export default function ResultsOverviewPanel({
                 className="px-1.5 py-0.5 border rounded text-sm"
               >
                 <option value="name">Namn</option>
-                <option value="student_id">ID</option>
                 <option value="class">Klass</option>
                 <option value="active_today">Aktiv idag</option>
                 <option value="today_attempts">Dagens mängd</option>
@@ -110,19 +107,23 @@ export default function ResultsOverviewPanel({
               >
                 {sortDir === 'desc' ? 'Fallande' : 'Stigande'}
               </button>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5 rounded border border-gray-200 bg-gray-50/70 px-2.5 py-1.5">
+              <span className="text-xs font-medium text-gray-500 mr-1">CSV-export:</span>
               <button
                 onClick={onExportSnapshotCsv}
-                className="px-1.5 py-0.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded text-sm"
+                className="px-2 py-0.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded text-xs font-medium"
               >
                 Export översikt
               </button>
-              <label className="flex items-center gap-1 text-xs text-gray-600">
+              <label className="flex items-center gap-1 text-xs text-gray-600 ml-1">
                 Från
                 <input
                   type="date"
                   value={exportRange.from}
                   onChange={event => onExportRangeChange({ ...exportRange, from: event.target.value })}
-                  className="rounded border border-gray-300 px-1.5 py-1 text-xs"
+                  className="rounded border border-gray-300 bg-white px-1.5 py-0.5 text-xs"
                 />
               </label>
               <label className="flex items-center gap-1 text-xs text-gray-600">
@@ -131,25 +132,25 @@ export default function ResultsOverviewPanel({
                   type="date"
                   value={exportRange.to}
                   onChange={event => onExportRangeChange({ ...exportRange, to: event.target.value })}
-                  className="rounded border border-gray-300 px-1.5 py-1 text-xs"
+                  className="rounded border border-gray-300 bg-white px-1.5 py-0.5 text-xs"
                 />
               </label>
               <button
                 onClick={onExportDetailedProblemCsv}
                 title="Rådata med en rad per uppgift. Tom datumruta betyder ingen gräns."
-                className="px-1.5 py-0.5 bg-cyan-100 hover:bg-cyan-200 text-cyan-700 rounded text-sm"
+                className="px-2 py-0.5 bg-cyan-100 hover:bg-cyan-200 text-cyan-800 rounded text-xs font-medium"
               >
                 Export rådata
               </button>
               <button
                 onClick={onExportSkillComparisonCsv}
-                className="px-1.5 py-0.5 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded text-sm"
+                className="px-2 py-0.5 bg-violet-100 hover:bg-violet-200 text-violet-800 rounded text-xs font-medium"
               >
                 Export skill
               </button>
               <button
                 onClick={onExportActivityCsv}
-                className="px-1.5 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-sm"
+                className="px-2 py-0.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded text-xs font-medium"
               >
                 Export aktivitet
               </button>
@@ -171,7 +172,6 @@ export default function ResultsOverviewPanel({
             <thead className="bg-gray-50 border-b">
               <tr className="text-left text-gray-600">
                 {renderResultSortHeader('Namn', 'name')}
-                {renderResultSortHeader('ID', 'student_id')}
                 {renderResultSortHeader('Klass', 'class')}
                 {viewMode === 'daily' ? (
                   <>
@@ -181,7 +181,7 @@ export default function ResultsOverviewPanel({
                     {renderResultSortHeader('Kämpar med idag', 'today_struggle', { helpText: resultHeaderHelp.today_struggle })}
                     {renderResultSortHeader('Svarslängd idag', 'today_answer_length', { helpText: resultHeaderHelp.today_answer_length })}
                     {renderResultSortHeader('Senast aktiv', 'last_active')}
-                    <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
+                    <th className="px-2.5 py-2 font-semibold text-right">Åtgärd</th>
                   </>
                 ) : viewMode === 'weekly' ? (
                   <>
@@ -192,7 +192,7 @@ export default function ResultsOverviewPanel({
                     {renderResultSortHeader('Kämpar med vecka', 'week_struggle', { helpText: resultHeaderHelp.week_struggle })}
                     {renderResultSortHeader('Svarslängd vecka', 'week_answer_length', { helpText: resultHeaderHelp.week_answer_length })}
                     {renderResultSortHeader('Senast aktiv', 'last_active')}
-                    <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
+                    <th className="px-2.5 py-2 font-semibold text-right">Åtgärd</th>
                   </>
                 ) : (
                   <>
@@ -202,7 +202,7 @@ export default function ResultsOverviewPanel({
                     {renderResultSortHeader('Medelavvikelse', 'avg_relative_error', { helpText: resultHeaderHelp.avg_relative_error })}
                     {renderResultSortHeader('Trend', 'trend', { helpText: resultHeaderHelp.trend })}
                     {renderResultSortHeader('Senast aktiv', 'last_active')}
-                    <th className="px-4 py-0 font-semibold text-right">Åtgärd</th>
+                    <th className="px-2.5 py-2 font-semibold text-right">Åtgärd</th>
                   </>
                 )}
               </tr>
@@ -210,57 +210,51 @@ export default function ResultsOverviewPanel({
             <tbody>
               {visibleRows.map(row => (
                 <tr key={row.studentId} className="border-b last:border-b-0 hover:bg-gray-50">
-                  <td className={`px-4 py-0 font-semibold ${row.hasLoggedIn ? 'text-green-700' : 'text-gray-800'}`}>
-                    <div>
+                  <td className={`px-2.5 py-2 font-semibold ${row.hasLoggedIn ? 'text-green-700' : 'text-gray-800'}`}>
+                    <div className="flex flex-wrap items-center gap-1.5">
                       <button
                         type="button"
                         onClick={() => onOpenStudentDetail(row.studentId)}
+                        title={`Elev-ID: ${row.studentId}`}
                         className="text-left hover:underline text-indigo-700"
                       >
                         {row.name}
                       </button>
-                    </div>
-                    <div className="mt-1">
                       <RiskBadgeComponent level={row.riskLevel} />
                       {row.inactive && (
-                        <span className="ml-1 inline-flex items-center rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800" title={row.inactivityReason}>
+                        <span className="inline-flex items-center rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[11px] font-medium text-amber-800" title={row.inactivityReason}>
                           Inaktiv
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-0 text-xs text-gray-400 font-mono">
-                    {row.studentId}
-                  </td>
-                  <td className="px-4 py-0 text-gray-700">
+                  <td className="px-2.5 py-2 text-gray-700 whitespace-nowrap">
                     {row.classNameLabel || row.className || '-'}
                   </td>
                   {viewMode === 'daily' ? (
                     <>
-                      <td className="px-4 py-0 text-gray-700">
+                      <td className="px-2.5 py-2 text-gray-700">
                         {row.todayAttempts}
-                        <div className="text-xs text-gray-500 mt-1">{row.todayOperationSummary}</div>
+                        {row.todayOperationSummary ? <div className="text-xs text-gray-500 mt-0.5">{row.todayOperationSummary}</div> : null}
                       </td>
-                      <td className="px-4 py-0">
+                      <td className="px-2.5 py-2">
                         {row.todayAttempts > 0 ? (
                           <span className={getSuccessColorClass(row.todaySuccessRate)}>
                             {toPercent(row.todaySuccessRate)} ({row.todayCorrectCount}/{row.todayAttempts})
                           </span>
                         ) : <span className="text-gray-400">Inga svar</span>}
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-gray-500 mt-0.5">
                           Rimliga fel{row.todayDetailedAttempts < row.todayAttempts ? ' i detaljurval' : ''}: {row.todayWrongCount > 0 ? `${row.todayReasonableWrongCount}/${row.todayWrongCount}` : '-'}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          Uppdrag: {row.todayAssignmentAdherenceRate === null ? '-' : toPercent(row.todayAssignmentAdherenceRate)}
+                          {row.todayAssignmentAdherenceRate !== null ? ` · Uppdrag: ${toPercent(row.todayAssignmentAdherenceRate)}` : ''}
                         </div>
                       </td>
-                      <td className="px-4 py-0 text-gray-700">
+                      <td className="px-2.5 py-2 text-gray-700">
                         {formatDuration(row.todayEngagedMinutes * 60)}
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-gray-500 mt-0.5">
                           {row.todayPresenceInteractions} interaktioner
                         </div>
                       </td>
-                      <td className="px-4 py-0 text-gray-700">
+                      <td className="px-2.5 py-2 text-gray-700">
                         {row.todayStruggle
                           ? (
                             <>
@@ -272,45 +266,43 @@ export default function ResultsOverviewPanel({
                           )
                           : <span className="text-gray-400">-</span>}
                       </td>
-                      <td className="px-4 py-0 text-gray-700">
+                      <td className="px-2.5 py-2 text-gray-700 whitespace-nowrap">
                         {row.todayAvgAnswerLength === null
                           ? '-'
                           : `${row.todayAvgAnswerLength.toFixed(1)} tecken`}
                       </td>
-                      <td className="px-4 py-0 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
+                      <td className="px-2.5 py-2 text-gray-600 whitespace-nowrap">{formatTimeAgo(row.lastActive)}</td>
                     </>
                   ) : viewMode === 'weekly' ? (
                     <>
-                      <td className="px-4 py-0 text-gray-700">
+                      <td className="px-2.5 py-2 text-gray-700">
                         {row.weekAttempts}
-                        <div className="text-xs text-gray-500 mt-1">{row.weekOperationSummary}</div>
+                        {row.weekOperationSummary ? <div className="text-xs text-gray-500 mt-0.5">{row.weekOperationSummary}</div> : null}
                       </td>
-                      <td className="px-4 py-0 text-gray-700">
+                      <td className="px-2.5 py-2 text-gray-700">
                         {formatDuration(row.weekActiveTimeSec)}
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-gray-500 mt-0.5">
                           snitt {row.weekAvgTimePerProblemSec > 0 ? `${Math.round(row.weekAvgTimePerProblemSec)}s/problem` : '-'}
                         </div>
                       </td>
-                      <td className="px-4 py-0 text-gray-700">
+                      <td className="px-2.5 py-2 text-gray-700">
                         {formatDuration(row.weekEngagedMinutes * 60)}
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-gray-500 mt-0.5">
                           {row.weekPresenceInteractions} interaktioner
                         </div>
                       </td>
-                      <td className="px-4 py-0">
+                      <td className="px-2.5 py-2">
                         {row.weekAttempts > 0 ? (
                           <span className={getSuccessColorClass(row.weekSuccessRate)}>
                             {toPercent(row.weekSuccessRate)} ({row.weekCorrectCount}/{row.weekAttempts})
                           </span>
                         ) : <span className="text-gray-400">Inga svar</span>}
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-gray-500 mt-0.5">
                           Rimliga fel{row.weekDetailedAttempts < row.weekAttempts ? ' i detaljurval' : ''}: {row.weekWrongCount > 0 ? `${row.weekReasonableWrongCount}/${row.weekWrongCount}` : '-'}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          Uppdrag: {row.weekAssignmentAdherenceRate === null ? '-' : toPercent(row.weekAssignmentAdherenceRate)}
+                          {row.weekAssignmentAdherenceRate !== null ? ` · Uppdrag: ${toPercent(row.weekAssignmentAdherenceRate)}` : ''}
                         </div>
                       </td>
-                      <td className="px-4 py-0 text-gray-700">
+                      <td className="px-2.5 py-2 text-gray-700">
                         {row.weekStruggle
                           ? (
                             <>
@@ -322,36 +314,36 @@ export default function ResultsOverviewPanel({
                           )
                           : <span className="text-gray-400">-</span>}
                       </td>
-                      <td className="px-4 py-0 text-gray-700">
+                      <td className="px-2.5 py-2 text-gray-700 whitespace-nowrap">
                         {row.weekAvgAnswerLength === null
                           ? '-'
                           : `${row.weekAvgAnswerLength.toFixed(1)} tecken`}
                       </td>
-                      <td className="px-4 py-0 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
+                      <td className="px-2.5 py-2 text-gray-600 whitespace-nowrap">{formatTimeAgo(row.lastActive)}</td>
                     </>
                   ) : (
                     <>
-                      <td className="px-4 py-0 text-gray-700">{row.attempts}</td>
-                      <td className="px-4 py-0">
+                      <td className="px-2.5 py-2 text-gray-700">{row.attempts}</td>
+                      <td className="px-2.5 py-2">
                         <span className={getSuccessColorClass(row.successRate)}>
                           {toPercent(row.successRate)}
                         </span>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {row.correctCount}/{row.attempts} rätt
-                        </div>
+                        <span className="text-xs text-gray-500 ml-1">
+                          ({row.correctCount}/{row.attempts})
+                        </span>
                       </td>
-                      <td className="px-4 py-0">
+                      <td className="px-2.5 py-2">
                         <span className={getReasonableColorClass(row.reasonableRate)}>
                           {toPercent(row.reasonableRate)}
                         </span>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {row.reasonableCount}/{row.attempts} rimliga
-                        </div>
+                        <span className="text-xs text-gray-500 ml-1">
+                          ({row.reasonableCount}/{row.attempts})
+                        </span>
                       </td>
-                      <td className="px-4 py-0 text-gray-700">
+                      <td className="px-2.5 py-2 text-gray-700">
                         {row.avgRelativeError === null ? '-' : `${Math.round(row.avgRelativeError * 100)}%`}
                       </td>
-                      <td className="px-4 py-0">
+                      <td className="px-2.5 py-2 whitespace-nowrap">
                         {row.trend === null ? (
                           <span className="text-gray-400">-</span>
                         ) : (
@@ -360,10 +352,10 @@ export default function ResultsOverviewPanel({
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-0 text-gray-600">{formatTimeAgo(row.lastActive)}</td>
+                      <td className="px-2.5 py-2 text-gray-600 whitespace-nowrap">{formatTimeAgo(row.lastActive)}</td>
                     </>
                   )}
-                  <td className="px-4 py-0 text-right">
+                  <td className="px-2.5 py-2 text-right whitespace-nowrap">
                     <div className="inline-flex flex-wrap justify-end gap-1">
                       <button
                         onClick={() => onOpenStudentDetail(row.studentId)}
@@ -374,14 +366,14 @@ export default function ResultsOverviewPanel({
                       <button
                         onClick={() => onCreateQuickAssignment(row, 'focus')}
                         title="Lägger direkt ett uppdrag på elevens startsida: 14 uppgifter i ett räknesätt eleven behöver öva, ungefär en nivå under till en nivå över elevens beräknade nivå. Ersätter bara elevens förra Fokus i samma räknesätt."
-                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold"
+                        className="px-2.5 py-0.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold"
                       >
                         Fokus
                       </button>
                       <button
                         onClick={() => onCreateQuickAssignment(row, 'challenge')}
                         title="Lägger direkt ett blandat uppdrag på elevens startsida: 16 uppgifter i alla räknesätt, från elevens nivå och två nivåer upp. Ersätter elevens förra Mix."
-                        className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-semibold"
+                        className="px-2.5 py-0.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs font-semibold"
                       >
                         Mix
                       </button>

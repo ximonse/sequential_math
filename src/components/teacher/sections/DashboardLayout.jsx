@@ -550,8 +550,8 @@ export default function DashboardLayout({
       {/* Below 1400 px (iPad) the content uses the full window and the menu is a bar on top. */}
       <div className="mx-auto px-3 sm:px-4 min-[1400px]:max-w-6xl">
         <DashboardHeaderBar
-          workspaceTitle={activeWorkspace !== 'progress' ? 'Matematik · Lärarvy' : undefined}
-          workspaceDescription={activeWorkspace === 'ncm' ? undefined : WORKSPACES.find(workspace => workspace.id === activeWorkspace && workspace.id !== 'progress')?.label}
+          workspaceTitle={!isDirectStudentView ? 'Matematik · Lärarvy' : undefined}
+          workspaceDescription={activeWorkspace === 'ncm' ? undefined : WORKSPACES.find(workspace => workspace.id === activeWorkspace)?.label}
           isDirectStudentView={isDirectStudentView}
           detailStudentName={detailStudentProfile?.name || ''}
           teacherName={teacherName}
@@ -570,7 +570,7 @@ export default function DashboardLayout({
           onLogout={handleLogout}
         />
 
-        <div hidden={activeWorkspace !== 'progress' && !dashboardStatus} className="mb-4 min-h-6 text-sm text-gray-600">{dashboardStatus || ' '}</div>
+        <div hidden={!dashboardStatus} className="mb-3 text-sm text-gray-600">{dashboardStatus}</div>
 
         <div className="grid gap-3 min-[1400px]:grid-cols-[13rem_minmax(0,1fr)]">
           <aside className="sticky top-10 z-40 rounded-lg bg-slate-800 p-1.5 text-slate-100 shadow-lg min-[1400px]:top-3 min-[1400px]:h-fit min-[1400px]:p-2 min-[1400px]:shadow-none">

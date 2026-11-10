@@ -82,7 +82,7 @@ export default function ClassOverviewPanel({
             <tbody>
               {sortedRows.map(row => (
                 <tr key={`overview-row-${row.studentId}`} className="border-b last:border-b-0">
-                  <td className="py-1 pr-2 text-gray-700 font-medium">
+                  <td className="py-1 pr-2 text-gray-700 font-medium" title={`Elev-ID: ${row.studentId}`}>
                     <button
                       type="button"
                       onClick={() => onOpenStudentDetail(row.studentId)}
@@ -90,7 +90,6 @@ export default function ClassOverviewPanel({
                     >
                       {row.name}
                     </button>
-                    <span className="ml-1 text-xs text-gray-400">{row.studentId}</span>
                   </td>
                   <td className="py-1 pr-2">
                     <ActivityBadgeComponent code={row.activityStatus} compact />

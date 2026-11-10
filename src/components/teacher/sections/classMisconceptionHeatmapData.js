@@ -16,7 +16,7 @@ const FEATURE_LABELS = {
   parentheses: 'Parenteser',
   mixed_operations: 'Blandade räknesätt',
   fractions_notation: 'Bråknotation',
-  different_denominators: 'Olika namnare',
+  different_denominators: 'Olika nämnare',
   percentage_context: 'Procentsammanhang',
   algebra_variable: 'Variabler',
   algebra_coefficient: 'Koefficienter',

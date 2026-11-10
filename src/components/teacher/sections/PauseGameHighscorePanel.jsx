@@ -42,7 +42,7 @@ export default function PauseGameHighscorePanel({ selectedClassIds }) {
   }
 
   const renderList = (scores, unit) => {
-    if (scores.length === 0) return <p className="text-gray-400 text-sm">Inga resultat annu</p>
+    if (scores.length === 0) return <p className="text-gray-400 text-sm">Inga resultat ännu</p>
     return (
       <ol className="space-y-1">
         {scores.map((entry, i) => (
@@ -62,7 +62,7 @@ export default function PauseGameHighscorePanel({ selectedClassIds }) {
         {renderList(pongScores, 's')}
       </div>
       <div>
-        <h4 className="font-semibold text-sm mb-2">Snake (poang)</h4>
+        <h4 className="font-semibold text-sm mb-2">Snake (poäng)</h4>
         {renderList(snakeScores, '')}
       </div>
     </div>

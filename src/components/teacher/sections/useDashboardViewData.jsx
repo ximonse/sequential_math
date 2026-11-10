@@ -252,7 +252,7 @@ export function useDashboardViewData({
 
   const renderResultSortHeader = (label, sortKey, options = {}) => {
     const {
-      className = 'px-4 py-0 font-semibold',
+      className = 'px-2.5 py-2 font-semibold',
       helpText = ''
     } = options
     return (

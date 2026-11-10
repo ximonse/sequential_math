@@ -36,15 +36,13 @@ export default function ClassFilterPanel({
           type="button"
           onClick={onSelectAllClasses || onClearClassFilter}
           aria-pressed={allClassesSelected}
-          className={`rounded-md px-1.5 py-0.5 text-xs ${allClassesSelected
+          className={`rounded-md px-2 py-0.5 text-xs font-medium ${allClassesSelected
             ? 'bg-blue-600 text-white'
             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
         >
           {allClassesSelected && <span aria-hidden="true">✓ </span>}Alla klasser
         </button>
-        {selectedClassIds.length > 0 && <button type="button" onClick={onClearClassFilter}
-          className="rounded-md px-1.5 py-0.5 text-xs text-gray-600 hover:bg-gray-100">Rensa klassurval</button>}
         {classFilterOptions.length === 0 ? (
           <span className="text-xs text-gray-400">
             Inga klass-/grupptaggar hittades ännu.
@@ -56,14 +54,23 @@ export default function ClassFilterPanel({
             key={`top-filter-${item.id}`}
             onClick={() => onToggleClassFilter(item.id)}
             aria-pressed={selectedClassIds.includes(item.id)}
-            className={`rounded-md px-1.5 py-0.5 text-xs ${selectedClassIds.includes(item.id)
-              ? 'bg-blue-600 text-white'
+            className={`rounded-md px-2 py-0.5 text-xs ${selectedClassIds.includes(item.id)
+              ? 'bg-blue-600 text-white font-medium'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
           >
             {selectedClassIds.includes(item.id) && <span aria-hidden="true">✓ </span>}{item.name}
           </button>
         ))}
+        {selectedClassIds.length > 0 && (
+          <button
+            type="button"
+            onClick={onClearClassFilter}
+            className="ml-auto rounded-md border border-gray-300 bg-white px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-100"
+          >
+            Rensa klassurval
+          </button>
+        )}
       </div>
     </section>
   )

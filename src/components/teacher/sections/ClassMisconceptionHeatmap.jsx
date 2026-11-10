@@ -31,6 +31,34 @@ const CELL_CLASSES = {
 const HEATMAP_CLOUD_CACHE_TTL_MS = 5 * 60 * 1000
 const HEATMAP_CLOUD_FETCH_CONCURRENCY = 6
 
+const LEGACY_PATTERN_LABELS_SV = {
+  calculation_error: 'Räknefel',
+  place_value_error: 'Positionsfel',
+  digit_reversal: 'Omkastade siffror',
+  carry_double: 'Dubbel minnessiffra',
+  ones_digit_only: 'Bara entalssiffran',
+  wrong_order_of_operations: 'Prioriteringsfel',
+  not_simplified: 'Ej förkortat',
+  wrong_denominator: 'Fel nämnare',
+  wrong_answer: 'Fel svar',
+  wrong_percentage: 'Fel procentberäkning',
+  forgot_coefficient: 'Glömd koefficient',
+  added_instead_of_multiplied: 'Adderat i stället för multiplicerat',
+  square_as_double: 'Kvadrering som fördubbling',
+  did_not_simplify: 'Ej förenklat',
+  forgot_constant: 'Glömd konstant',
+  combined_unlike_terms: 'Slagit ihop olika termer',
+  simplify_error: 'Förenklingsfel',
+  no_answer: 'Inget svar',
+  invalid_input: 'Ogiltig inmatning'
+}
+
+function formatPatternLabel(pattern) {
+  const key = String(pattern || '').trim()
+  if (!key) return ''
+  return CONTRAST_LABELS_SV[key] || LEGACY_PATTERN_LABELS_SV[key] || key.replace(/_/g, ' ')
+}
+
 function getCellVariant(successRate, attempts) {
   if (!attempts || successRate === null) return 'empty'
   if (successRate >= 0.85) return 'mastered'
@@ -147,7 +175,7 @@ function CellTooltip({ cell, studentName }) {
   const misconceptionType = cell.topPatterns[0] || null
   return (
     <div className="pointer-events-none absolute z-20 bottom-full left-1/2 mb-1.5 -translate-x-1/2 w-max max-w-72 rounded border border-gray-200 bg-white shadow-lg px-2.5 py-1.5 text-left">
-      <p className="text-[11px] font-semibold text-gray-800 leading-snug">{studentName} · Niva {cell.level}</p>
+      <p className="text-[11px] font-semibold text-gray-800 leading-snug">{studentName} · Nivå {cell.level}</p>
       <p className="text-[10px] text-gray-500 mt-0.5">
         {pct}% rätt · {cell.attempts} försök · {cell.knowledgeWrong} kunskapsfel
       </p>
@@ -160,13 +188,13 @@ function CellTooltip({ cell, studentName }) {
         <p className="text-[10px] text-red-600 font-semibold mt-0.5">⚠ {cell.misconceptionCount} historiska kategorimarkeringar</p>
       )}
       {misconceptionType && (
-        <p className="text-[10px] text-orange-700 mt-0.5 font-mono">Typ: {misconceptionType}</p>
+        <p className="text-[10px] text-orange-700 mt-0.5">Typ: {formatPatternLabel(misconceptionType)}</p>
       )}
       {exampleWrong && (
         <p className="text-[10px] text-gray-600 mt-0.5">
           Ex: <span className="font-mono font-semibold">{exampleWrong.question}</span>
           {' '}→ svar <span className="text-red-600 font-semibold">{exampleWrong.studentAnswer}</span>
-          {' '}(ratt: <span className="text-green-700 font-semibold">{exampleWrong.correctAnswer}</span>)
+          {' '}(rätt: <span className="text-green-700 font-semibold">{exampleWrong.correctAnswer}</span>)
         </p>
       )}
       {cell.knowledgeWrong > 0 && (
@@ -193,7 +221,7 @@ function CellDetailModal({ cell, studentName, onClose }) {
       >
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="text-sm font-semibold text-gray-900">{studentName} - Niva {cell.level}</p>
+            <p className="text-sm font-semibold text-gray-900">{studentName} - Nivå {cell.level}</p>
             <p className="text-xs text-gray-500 mt-0.5">
               {pct}% rätt · {cell.attempts} försök · {cell.correct} rätt / {cell.attempts - cell.correct} fel
             </p>
@@ -207,7 +235,7 @@ function CellDetailModal({ cell, studentName, onClose }) {
         />
         {cell.newLevelSignals.length === 0 && (
           <p className="text-[11px] text-gray-500 mb-3">
-            Inget tydligt nytt moment hittades pa denna niva jamfort med lagre nivaer.
+            Inget tydligt nytt moment hittades på denna nivå jämfört med lägre nivåer.
           </p>
         )}
 
@@ -236,7 +264,7 @@ function CellDetailModal({ cell, studentName, onClose }) {
             <p className="text-[11px] font-semibold text-gray-600 mb-1">Historiska felmarkeringar</p>
             <div className="flex flex-wrap gap-1">
               {cell.topPatterns.map(pattern => (
-                <span key={pattern} className="inline-block bg-orange-50 border border-orange-200 text-orange-700 rounded px-2 py-0.5 text-[10px] font-mono">{pattern}</span>
+                <span key={pattern} className="inline-block bg-orange-50 border border-orange-200 text-orange-700 rounded px-2 py-0.5 text-[10px]">{formatPatternLabel(pattern)}</span>
               ))}
             </div>
           </div>
@@ -244,12 +272,12 @@ function CellDetailModal({ cell, studentName, onClose }) {
 
         <div>
           <p className="text-[11px] font-semibold text-gray-600 mb-1">
-            Senaste {visibleWrongAnswers.length} av {cell.knowledgeWrong} kunskapsfel pa niva {cell.level}
+            Senaste {visibleWrongAnswers.length} av {cell.knowledgeWrong} kunskapsfel på nivå {cell.level}
           </p>
           <div className="space-y-1 max-h-80 overflow-y-auto pr-1">
             {visibleWrongAnswers.map((example, index) => {
               const errorTypeLabel = example.patterns.length > 0
-                ? example.patterns.join(', ')
+                ? example.patterns.map(formatPatternLabel).join(', ')
                 : example.errorDetail || (example.errorCategory === 'misconception' ? 'Missuppfattning' : 'Kunskapsfel')
               const isMisconception = example.errorCategory === 'misconception'
               return (
@@ -259,7 +287,7 @@ function CellDetailModal({ cell, studentName, onClose }) {
                       <span className="font-mono font-semibold text-gray-700">{example.question} =</span>
                     )}
                     <span className="text-red-600 font-semibold">{example.studentAnswer ?? '?'}</span>
-                    <span className="text-gray-400 text-[10px]">ratt:</span>
+                    <span className="text-gray-400 text-[10px]">rätt:</span>
                     <span className="text-green-700 font-semibold">{example.correctAnswer ?? '?'}</span>
                     <span className={`ml-auto text-[9px] rounded px-1 shrink-0 ${isMisconception ? 'bg-red-100 text-red-600' : 'bg-gray-200 text-gray-600'}`}>
                       {isMisconception ? 'historisk kategorimarkering' : 'historiskt kunskapsfel'}

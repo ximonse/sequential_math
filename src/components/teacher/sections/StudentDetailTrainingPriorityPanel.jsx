@@ -17,15 +17,6 @@ export default function StudentDetailTrainingPriorityPanel({ trainingPriorityLis
 
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 mb-4">
-      <div className="rounded border border-gray-200 bg-gray-50/30 p-3">
-        <h3 className="text-sm font-semibold text-gray-700 mb-1">Har inte tränat</h3>
-        <p className="text-[10px] text-gray-500 mb-2">Nivåer eleven inte övat på ännu.</p>
-        {notPracticed.length === 0 ? (
-          <p className="text-xs text-gray-500">Inga luckor — eleven har testat alla relevanta nivåer!</p>
-        ) : (
-          <PriorityTable rows={notPracticed} toPercent={toPercent} neutral />
-        )}
-      </div>
       <div className="rounded border border-amber-200 bg-amber-50/30 p-3">
         <h3 className="text-sm font-semibold text-amber-900 mb-1">Har tränat — behöver stärkas</h3>
         <p className="text-[10px] text-amber-700 mb-2">
@@ -35,6 +26,15 @@ export default function StudentDetailTrainingPriorityPanel({ trainingPriorityLis
           <p className="text-xs text-amber-800">Inga svårigheter identifierade!</p>
         ) : (
           <PriorityTable rows={struggled} toPercent={toPercent} />
+        )}
+      </div>
+      <div className="rounded border border-gray-200 bg-gray-50/30 p-3">
+        <h3 className="text-sm font-semibold text-gray-700 mb-1">Har inte tränat ännu</h3>
+        <p className="text-[10px] text-gray-500 mb-2">Nivåer eleven inte har påbörjat ännu.</p>
+        {notPracticed.length === 0 ? (
+          <p className="text-xs text-gray-500">Inga luckor — eleven har testat alla relevanta nivåer!</p>
+        ) : (
+          <PriorityTable rows={notPracticed} toPercent={toPercent} neutral />
         )}
       </div>
     </div>
@@ -55,7 +55,7 @@ function PriorityTable({ rows, toPercent, neutral = false }) {
             <th className="py-1 pr-2">Försök</th>
             <th className="py-1 pr-2">Träff</th>
             <th className="py-1 pr-2">Snittid</th>
-            <th className="py-1">Prioritet</th>
+            <th className="py-1">{neutral ? 'Status' : 'Prioritet'}</th>
           </tr>
         </thead>
         <tbody>
@@ -74,20 +74,18 @@ function PriorityTable({ rows, toPercent, neutral = false }) {
 }
 
 function PriorityRow({ item, toPercent, neutral }) {
-  const label = item.priority === 'high' ? 'Hög' : item.priority === 'medium' ? 'Medel' : 'Låg'
+  const label = neutral
+    ? (item.priority === 'high' ? 'Nästa steg' : 'Senare nivå')
+    : (item.priority === 'high' ? 'Hög' : item.priority === 'medium' ? 'Medel' : 'Låg')
 
   let accentCls, badgeCls, textCls, rowBorderCls
   if (neutral) {
     accentCls = item.priority === 'high'
-      ? 'border-l-4 border-l-blue-400'
-      : item.priority === 'medium'
-        ? 'border-l-4 border-l-gray-400'
-        : 'border-l-4 border-l-gray-300'
+      ? 'border-l-4 border-l-slate-300'
+      : 'border-l-4 border-l-gray-200'
     badgeCls = item.priority === 'high'
-      ? 'bg-blue-400 text-white'
-      : item.priority === 'medium'
-        ? 'bg-gray-400 text-white'
-        : 'bg-gray-200 text-gray-700'
+      ? 'border border-slate-300 bg-slate-100 text-slate-700'
+      : 'border border-gray-200 bg-gray-50 text-gray-600'
     textCls = 'text-gray-700'
     rowBorderCls = 'border-gray-100'
   } else {
@@ -97,10 +95,10 @@ function PriorityRow({ item, toPercent, neutral }) {
         ? 'border-l-4 border-l-orange-400'
         : 'border-l-4 border-l-yellow-400'
     badgeCls = item.priority === 'high'
-      ? 'bg-red-500 text-white'
+      ? 'border border-red-200 bg-red-50 text-red-800'
       : item.priority === 'medium'
-        ? 'bg-orange-400 text-white'
-        : 'bg-yellow-400 text-yellow-900'
+        ? 'border border-orange-200 bg-orange-50 text-orange-800'
+        : 'border border-yellow-300 bg-yellow-50 text-yellow-900'
     textCls = 'text-amber-900'
     rowBorderCls = 'border-amber-100'
   }
@@ -119,7 +117,7 @@ function PriorityRow({ item, toPercent, neutral }) {
         {Number.isFinite(item.medianSpeed) ? `${item.medianSpeed.toFixed(1)}s` : '-'}
       </td>
       <td className="py-1">
-        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold ${badgeCls}`}>
+        <span className={`inline-block select-none px-2 py-0.5 rounded text-[10px] font-medium ${badgeCls}`}>
           {label}
         </span>
       </td>

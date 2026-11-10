@@ -38,7 +38,7 @@ function ByAssignment({ children }) {
 }
 
 const diagnosticGridRoute = <RequireNcmAdmin>
-  <Suspense fallback={<p>Öppnar räknehäftet...</p>}><DiagnosticGridPrototype /></Suspense>
+  <Suspense fallback={<p>Öppnar räknehäftet...</p>}><DiagnosticGridPrototype onHome={() => window.location.assign('/teacher')} /></Suspense>
 </RequireNcmAdmin>
 
 function App() {

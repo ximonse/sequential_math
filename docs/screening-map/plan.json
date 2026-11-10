@@ -3678,6 +3678,46 @@
           "done": false
         }
       ]
+    },
+    {
+      "id": "teacher-ux-ui-bang-for-the-buck",
+      "area": "Lärarvy & Screening",
+      "title": "UX/UI-lyft i lärarvyerna: läsbara tabeller, svenska etiketter och screeningdetaljer",
+      "status": "Lokalt klart",
+      "purpose": "Åtgärda de mest värdeskapande UX/UI-bristerna från genomgången av alla fem lärarvyer utan att bryta befintliga flöden eller robotkontrakt.",
+      "next": "Granska lokalt i worktree gemini-ux-ui-review och besluta om merge/publicering.",
+      "acceptance": "Resultattabeller klipps inte av 32-teckens hex-ID; å/ä/ö och svenska visningsnamn för felmönster och positions_decimal används i Analys & åtgärd och Pausspel; sidhuvud och klassfilter hoppar inte mellan flikar; Förslag från frågebanken och NCM har synlig utfällningspil och kapslade NCM-grupper; Sparade försök visar uppgiftens frågetext; räknehäftets testvy har tydlig tillbakalänk till Lärarvy.",
+      "requires": [
+        "progress-workspace-appearance",
+        "screening-tabs-review"
+      ],
+      "affects": [],
+      "decision": "2026-11-10: Simon bad om plan och åtgärd av de högst prioriterade UX/UI-fynden i ett separat worktree (gemini/ux-ui-review).",
+      "evidence": "2026-11-10 lokalt i worktree .claude/worktrees/gemini-ux-ui-review (branch gemini/ux-ui-review): byggt och verifierat med vite build, alla 183 enhetstestfiler under src/ (951 tester) samt Playwright-robotarna screening-workspace-contract, assignments, diagnostic-grid, diagnostic-ncm och teacher (25 robottester, 0 regelbrott). Ej pushat.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "ux-tables-labels",
+          "text": "Komprimera Resultatvy/Snabbstatus (dölj råa 32-teckens hex-ID i tabellceller, behåll i tooltip) och rätta å/ä/ö samt svenska etiketter för felmönster och positions_decimal",
+          "done": true
+        },
+        {
+          "id": "ux-header-filter",
+          "text": "Enhetlig sidtopp utan höjdhopp mellan Framsteg och övriga flikar samt separerad Rensa klassurval-knapp",
+          "done": true
+        },
+        {
+          "id": "ux-screening-details",
+          "text": "Synlig utfällningspil på Förslag från frågebanken och NCM, nerfällbara NCM-delpaket, frågetext i Sparade försök, inget falskt Elev som inte längre finns under katalogladdning samt tillbakalänk i räknehäftet",
+          "done": true
+        },
+        {
+          "id": "ux-assignments-admin",
+          "text": "Tona ner tekniska asg_-ID:n i Uppdrag & tickets och ersätt databastermen sparas atomiskt i Nytt läsår",
+          "done": true
+        }
+      ]
     }
   ],
   "edges": [
@@ -4500,6 +4540,16 @@
       "source": "algebra-unit-coefficient",
       "target": "practice-modes",
       "kind": "påverkar"
+    },
+    {
+      "source": "progress-workspace-appearance",
+      "target": "teacher-ux-ui-bang-for-the-buck",
+      "kind": "kräver"
+    },
+    {
+      "source": "screening-tabs-review",
+      "target": "teacher-ux-ui-bang-for-the-buck",
+      "kind": "kräver"
     }
   ],
   "note": "Planeringssnapshot. Lokalt klart är inte publicerat. Tidigare publicering bygger på denna tråds verifiering; ingen ny livekontroll. Förslag är inte fattade beslut."

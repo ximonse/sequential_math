@@ -52,6 +52,7 @@ export function getOperationMinLevel(operation) {
 
 export function getOperationLabel(operation) {
   if (OPERATION_LABELS[operation]) return OPERATION_LABELS[operation]
+  if (operation === 'positions_decimal') return 'Positionssystemet (decimaltal)'
   if (!operation) return 'Okänd'
   return operation.charAt(0).toUpperCase() + operation.slice(1)
 }

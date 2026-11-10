@@ -84,7 +84,7 @@ body[class*="theme-"] [data-screening-flow] button:is(.screening-remove, .underl
 [data-screening-flow] .screening-group--bank { border-left-color: #0d9488; }
 [data-screening-flow] .screening-group--whole { border-left-color: #d97706; }
 [data-screening-flow] .screening-group__title { display: block; font-size: 16px; font-weight: 650; margin-bottom: 4px; }
-[data-screening-flow] details.screening-group > summary.screening-group__title { margin-bottom: 0; }
+[data-screening-flow] details.screening-group > summary.screening-group__title { display: list-item; list-style-position: inside; cursor: pointer; margin-bottom: 0; }
 [data-screening-flow] details.screening-group[open] > summary.screening-group__title { margin-bottom: 6px; }
 /* Sub-parts inside a module are separated by a thin line. */
 [data-screening-flow] .screening-group > section + details,

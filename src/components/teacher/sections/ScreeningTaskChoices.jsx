@@ -54,10 +54,12 @@ export default function ScreeningTaskChoices({
         </details>)}</div>
         <details className="mt-2">
           <summary className="cursor-pointer font-semibold">NCM Diamant-uppgifter ({diagnosticCatalog.tasks.length - writtenTasks.length})</summary>
-          {ncmPacks.map(pack => <div key={pack.id} className="mt-2">
-            <p className="font-medium">{pack.labelSv.replace(/^NCM · /u, '')}</p>
-            <div className="mt-1 flex flex-col gap-1">{pack.taskIds.map(id => taskCheckbox(findTask(id)))}</div>
-          </div>)}
+          <div className="screening-task-groups mt-1">
+            {ncmPacks.map(pack => <details key={pack.id} className="mt-1">
+              <summary className="cursor-pointer font-medium">{pack.labelSv.replace(/^NCM · /u, '')} · {pack.taskIds.length} uppgifter</summary>
+              <div className="screening-task-list mt-1 flex flex-col gap-1">{pack.taskIds.map(id => taskCheckbox(findTask(id)))}</div>
+            </details>)}
+          </div>
         </details>
       </fieldset>
     </details>

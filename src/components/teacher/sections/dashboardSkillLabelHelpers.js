@@ -6,7 +6,8 @@ import {
 } from '../../../lib/ncmSkillMap'
 
 const SKILL_TYPE_LABEL_OVERRIDES = {
-  mul_table_drill: 'Tabellträning'
+  mul_table_drill: 'Tabellträning',
+  positions_decimal: 'Positionssystemet (decimaltal)'
 }
 
 const SKILL_OPERATION_SYMBOLS = {

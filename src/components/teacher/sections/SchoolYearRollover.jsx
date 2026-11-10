@@ -58,7 +58,7 @@ export default function SchoolYearRollover({ schools, onCompleted, setStatus }) 
     <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs">
       <h3 className="font-semibold text-amber-950">Nytt läsår</h3>
       <p className="mt-1 text-amber-900">
-        Förslaget höjer årskurser och arkiverar avgångsklassen. Du kan ändra varje rad innan allt sparas atomiskt.
+        Förslaget höjer årskurser och arkiverar avgångsklassen. Du kan ändra varje rad innan alla ändringar sparas samtidigt.
       </p>
       <div className="mt-2 grid gap-2 sm:grid-cols-3">
         <label className="text-gray-700">Skola

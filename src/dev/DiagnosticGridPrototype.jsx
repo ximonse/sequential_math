@@ -592,7 +592,7 @@ function DiagnosticGridPrototype({ pilot = null, onSave = null, onGridChange = n
       {!workspaceOnly && <header className="notebook-header">
         <div><strong>Screening</strong><span>{collectionTitle || 'Räknehäfte'}</span></div>
         {onHome && <a href="#" onClick={event => { event.preventDefault(); if (!navigationLocked) onHome() }}
-          aria-disabled={Boolean(navigationLocked)}>Startsida</a>}
+          aria-disabled={Boolean(navigationLocked)}>{pilot ? 'Startsida' : '← Tillbaka till Lärarvy'}</a>}
       </header>}
       {!pilot && <div className="notebook-examples" aria-label="Välj exempeluppgift">
         {availableTasks.map(item => <button key={item.taskId} type="button" onClick={() => chooseTask(item)}><QuestionText>{item.promptSv}</QuestionText></button>)}

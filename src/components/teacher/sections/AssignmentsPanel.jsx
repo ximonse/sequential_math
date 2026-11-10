@@ -134,7 +134,7 @@ export default function AssignmentsPanel({
                 {assignment.workspaces && <p className="text-xs text-gray-600">Arbetsytor: {
                   [assignment.workspaces.notebook && 'räknehäfte', assignment.workspaces.drawing && 'rityta'].filter(Boolean).join(', ') || 'inga'
                 }</p>}
-                <p className="font-mono text-xs text-gray-400">{assignment.id}</p>
+                <p className="sr-only" title={`Uppdrags-ID: ${assignment.id}`}>{assignment.id}</p>
               </div>
               <div className="ml-auto flex items-center gap-1">
                 {canActivate && <button onClick={() => onActivateAssignment(assignment.id)} className="rounded bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700 font-semibold">

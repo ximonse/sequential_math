@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { diagnosticCatalog } from '../../../domains/arithmetic/diagnosticCatalog.browser'
 import { diagnosticRequest as request } from './diagnosticRequest'
 import DiagnosticEvidenceDetails from './DiagnosticEvidenceDetails'
 
@@ -67,10 +68,14 @@ export default function ScreeningPupilAttempts({ pupils, assignmentsFor }) {
       className="mt-2 rounded border border-orange-700 bg-white px-1.5 py-0.5 text-slate-800">Uppdatera försök</button>}
     {status && <p role="status" className="mt-1">{status}</p>}
     {attempts.length > 0 && <ul className="mt-2 space-y-2">
-      {attempts.map(attempt => <li key={attempt.attemptId} className="flex flex-wrap items-center gap-2">
-        <span>{attempt.taskId} · {attempt.createdAt ? new Date(attempt.createdAt).toLocaleString('sv-SE') : 'äldre försök'} · {attempt.status === 'submitted' ? 'fryst' : 'pågående'} · {attempt.lastSequence} händelser</span>
-        <button type="button" onClick={() => openEvidence(attempt)} className="rounded border border-orange-700 bg-white px-1.5 py-0.5 text-slate-800">Visa underlag</button>
-      </li>)}
+      {attempts.map(attempt => {
+        const promptSv = diagnosticCatalog.findTask(attempt.taskId)?.promptSv
+        const taskLabel = promptSv ? `${promptSv} (${attempt.taskId})` : attempt.taskId
+        return <li key={attempt.attemptId} className="flex flex-wrap items-center gap-2">
+          <span>{taskLabel} · {attempt.createdAt ? new Date(attempt.createdAt).toLocaleString('sv-SE') : 'äldre försök'} · {attempt.status === 'submitted' ? 'fryst' : 'pågående'} · {attempt.lastSequence} händelser</span>
+          <button type="button" onClick={() => openEvidence(attempt)} className="rounded border border-orange-700 bg-white px-1.5 py-0.5 text-slate-800">Visa underlag</button>
+        </li>
+      })}
     </ul>}
     {detail && <DiagnosticEvidenceDetails detail={detail} />}
   </details>

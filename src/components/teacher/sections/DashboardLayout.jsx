@@ -703,7 +703,7 @@ export default function DashboardLayout({
                   <button
                     type="button"
                     onClick={() => {
-                      const panels = WORKSPACES.find(w => w.id === activeWorkspace)?.panels ?? []
+                      const panels = WORKSPACE_SUBTABS[activeWorkspace].flatMap(tab => tab.panels)
                       setCollapsed(prev => ({ ...prev, ...Object.fromEntries(panels.map(id => [id, false])) }))
                     }}
                     className="workspace-subtab-action"
@@ -713,7 +713,7 @@ export default function DashboardLayout({
                   <button
                     type="button"
                     onClick={() => {
-                      const panels = WORKSPACES.find(w => w.id === activeWorkspace)?.panels ?? []
+                      const panels = WORKSPACE_SUBTABS[activeWorkspace].flatMap(tab => tab.panels)
                       setCollapsed(prev => ({ ...prev, ...Object.fromEntries(panels.map(id => [id, true])) }))
                     }}
                     className="workspace-subtab-action"

@@ -100,7 +100,7 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
           <summary className="cursor-pointer screening-group__title">Förslag från frågebanken och NCM{draft.selectedTasks.length ? ` (${draft.selectedTasks.length} valda)` : ''}</summary>
           <ScreeningTaskChoices busy={busy} selectedTasks={draft.selectedTasks} onSelectedTasks={selectedTasks => patch({ selectedTasks })}
             usesNcm={draft.selectedTasks.some(id => diagnosticCatalog.findTask(id)?.ncmCode)} selectedPack={selectedPack}
-            itemOptions={draft.itemOptions} onItemOptions={itemOptions => patch({ itemOptions })} showCustomQuestion={false}
+            showCustomQuestion={false}
             customPrompt={draft.customPrompt} onCustomPrompt={customPrompt => patch({ customPrompt })} customGrid={draft.customGrid} onCustomGrid={customGrid => patch({ customGrid })}
             customDrawing={draft.customDrawing} onCustomDrawing={customDrawing => patch({ customDrawing })} showTeacherSupport={false} />
         </details>

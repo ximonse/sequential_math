@@ -22,7 +22,7 @@ export default function MaterialScreeningEditor({ content, onChange, disabled, s
     <ScreeningTaskChoices busy={disabled || Boolean(pending)} selectedTasks={selected}
       onSelectedTasks={taskIds => change({ taskIds, itemOptions: Object.fromEntries(taskIds.filter(id => content.itemOptions?.[id]).map(id => [id, content.itemOptions[id]])) })}
       usesNcm={selected.some(id => diagnosticCatalog.findTask(id)?.ncmCode)} selectedPack={pack}
-      itemOptions={content.itemOptions || {}} onItemOptions={itemOptions => change({ itemOptions })} showCustomQuestion={false} />
+      itemOptions={content.itemOptions || {}} onItemOptions={itemOptions => change({ itemOptions })} showItemSettings showCustomQuestion={false} />
     {tasks.map((task, index) => {
       const key = `${task.responseMode ? 'image' : 'written'}-${index}`
       return <fieldset key={index} aria-label={`Egen fråga ${index + 1}`} disabled={blocked(key)} className="material-question">

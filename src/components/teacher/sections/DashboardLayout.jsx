@@ -58,7 +58,7 @@ const PANEL_DEFS = [
   { id: 'management',  title: 'Klasshantering' },
   { id: 'password',    title: 'Lösenordsåterställning' },
   { id: 'pausegames',  title: 'Pausspel — Highscore' },
-  { id: 'ncm-grid',    title: 'Digitalt räknehäfte', adminOnly: true },
+  { id: 'ncm-grid',    title: 'Digitalt räknehäfte' },
 ]
 
 const WORKSPACES = [
@@ -66,7 +66,8 @@ const WORKSPACES = [
   { id: 'focus', label: 'Fokusövningar', description: 'Grupp, individ och pass', panels: ['focus'], attentionOnly: true },
   { id: 'teaching', label: 'Uppdrag & tickets', description: 'Planera och följ upp', panels: ['assignments', 'mathresults', 'tickets'] },
   { id: 'support', label: 'Statistik & stöd', description: 'Felmönster och hjälpbehov', panels: ['support', 'results', 'heatmap', 'difficulty-analysis', 'training-priority', 'inactivity', 'dataquality', 'pausegames'] },
-  { id: 'ncm', label: 'Screening', description: 'Skapa, dela ut och se resultat', panels: ['ncm-grid'], adminOnly: true },
+  // Simon 2026-11-11: screening is ordinary teacher work, so class access decides it.
+  { id: 'ncm', label: 'Screening', description: 'Skapa, dela ut och se resultat', panels: ['ncm-grid'] },
   { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management'] }
 ]
 
@@ -562,7 +563,7 @@ export default function DashboardLayout({
     )
     if (id === 'ncm-grid') return (
       <div>
-      <details className="mb-2 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm shadow-sm">
+      {teacherIsAdmin && <details className="mb-2 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm shadow-sm">
         <summary className="cursor-pointer">Prova det digitala räknehäftet</summary>
         <h2 className="text-sm font-semibold text-slate-800">Digitalt räknehäfte</h2>
         <p className="mr-auto text-xs text-slate-600">Osparad prototyp för att prova räknehäftet.</p>
@@ -570,7 +571,7 @@ export default function DashboardLayout({
           className="rounded-md border border-slate-300 px-1.5 py-0.5 text-sm text-slate-800 hover:bg-slate-50">
           Öppna räknehäftet
         </button>
-      </details>
+      </details>}
       <ScreeningDispatchPanel classes={classes} students={students} teacherGroups={teacherGroups} active={activeWorkspace === 'ncm'}
           onDirtyChange={value => { dispatchDirtyRef.current = value }} onResults={(collection, picks = []) => {
             setResultPicks(picks.length ? [...picks] : collection.members.map(member => ({ type: 'class', id: member.classId })))

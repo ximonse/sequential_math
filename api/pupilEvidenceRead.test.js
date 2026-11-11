@@ -96,10 +96,10 @@ describe('pupil evidence live access boundary', () => {
     mock.get.mockImplementation(async key => key === 'student:PUPIL' ? profile : { archived: true })
     expect((await call()).code).toBe(403)
   })
-  it('lets every teacher with class access read screening answers, but only admins create screenings', async () => {
+  it('lets every teacher with class access read screening answers and create screenings', async () => {
     expect((await call({ source: 'all' })).code).toBe(200)
     expect(mock.screening).toHaveBeenCalledWith('PUPIL', 'CLASS')
-    expect(() => assertEvidenceSourceAccess({ role: 'teacher' }, 'PUPIL', 'screening', { write: true })).toThrow(/administratörsbehörighet/)
+    expect(() => assertEvidenceSourceAccess({ role: 'teacher' }, 'PUPIL', 'screening', { write: true })).not.toThrow()
     expect(() => assertEvidenceSourceAccess({ role: 'school_admin' }, 'PUPIL', 'screening', { write: true })).not.toThrow()
   })
   it('rechecks the live session and membership after slow screening reads', async () => {

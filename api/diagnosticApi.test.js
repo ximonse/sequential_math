@@ -141,16 +141,35 @@ describe('diagnostic pilot API boundary', () => {
       taskIds: ['add-no-carry-001'], teacherId: 'TEACHER' })
   })
 
-  it('does not let a regular teacher call the hidden NCM pilot API', async () => {
+  // Simon 2026-11-11: screening is ordinary teacher work. Class access decides it,
+  // so a regular teacher reaches the same API; the class boundary is tested below.
+  it('lets a regular teacher with class access list and create screenings', async () => {
     process.env.NCM_DIAGNOSTIC_API_ENABLED = 'true'
     mocked.teacher.mockResolvedValue({ teacherId: 'TEACHER', role: 'teacher' })
     const listed = response(), created = response()
     await teacherHandler({ method: 'GET', headers: {}, query: { classId: 'CLASS' } }, listed)
     await teacherHandler({ method: 'POST', headers: {}, body: { classId: 'CLASS',
       studentIds: ['PUPIL'], taskIds: ['add-no-carry-001'] } }, created)
-    expect([listed.code, created.code]).toEqual([403, 403])
-    expect(mocked.listClass).not.toHaveBeenCalled()
-    expect(mocked.create).not.toHaveBeenCalled()
+    expect([listed.code, created.code]).toEqual([200, 201])
+    expect(mocked.listClass).toHaveBeenCalled()
+    expect(mocked.create).toHaveBeenCalledWith({ classId: 'CLASS', studentIds: ['PUPIL'],
+      taskIds: ['add-no-carry-001'], teacherId: 'TEACHER' })
+  })
+
+  it('lets only the author stop, archive or delete a dispatched screening', async () => {
+    process.env.NCM_DIAGNOSTIC_API_ENABLED = 'true'
+    mocked.teacher.mockResolvedValue({ teacherId: 'OTHER', role: 'teacher' })
+    mocked.listClass.mockResolvedValue([{ assignmentId: 'ASSIGN', classId: 'CLASS', teacherId: 'TEACHER' }])
+    const denied = response()
+    await teacherHandler({ method: 'PATCH', headers: {},
+      body: { classId: 'CLASS', assignmentId: 'ASSIGN', status: 'stopped' } }, denied)
+    expect(denied.code).toBe(403)
+    expect(mocked.stop).not.toHaveBeenCalled()
+    mocked.teacher.mockResolvedValue({ teacherId: 'TEACHER', role: 'teacher' })
+    const allowed = response()
+    await teacherHandler({ method: 'PATCH', headers: {},
+      body: { classId: 'CLASS', assignmentId: 'ASSIGN', status: 'stopped' } }, allowed)
+    expect(mocked.stop).toHaveBeenCalled()
   })
 
   it('lists only within the live teacher class and live pupil session', async () => {

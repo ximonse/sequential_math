@@ -4,7 +4,6 @@ import { getLiveTeacherAuthPayload } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
 import { studentDeletedKey } from './_studentStore.js'
 import { diagnosticApiEnabled, diagnosticTestStudentAllowed } from './_diagnosticApiAccess.js'
-import { isSchoolAdminRole } from './_teacherRoles.js'
 import { evidencePeriod } from '../src/lib/evidencePeriod.js'
 import { evidenceError, evidencePage, practiceEvidence } from './_pupilEvidence.js'
 import { pupilScreeningEvidence } from './_pupilScreeningEvidence.js'
@@ -26,15 +25,16 @@ export async function assertPupilEvidenceAccess(req, studentId, classId) {
 }
 
 // Simon 2026-11-09: every teacher with access to the pupil's class may read
-// screening answers in the analysis. Creating and dispatching screenings
-// (write: true) still needs a school administrator. Focus activities are a
-// separate record and never part of this evidence.
+// screening answers in the analysis. Focus activities are a separate record and
+// never part of this evidence.
+// Simon 2026-11-11: creating and dispatching screenings is a teacher's own work,
+// so class access decides it too. Changing or removing someone else's screening
+// still belongs to its author, which the assignment routes check separately.
 export function assertEvidenceSourceAccess(auth, studentId, source, { write = false } = {}) {
   if (!['practice', 'screening', 'all'].includes(source)) throw evidenceError(400, 'invalid_source', 'Ogiltig källa.')
-  if (source !== 'practice' && (!diagnosticApiEnabled() || !diagnosticTestStudentAllowed(studentId)
-    || (write && !isSchoolAdminRole(auth.role, auth.isAdmin)))) {
+  if (source !== 'practice' && (!diagnosticApiEnabled() || !diagnosticTestStudentAllowed(studentId))) {
     throw evidenceError(403, 'screening_access_denied', write
-      ? 'Att skapa och dela ut screening kräver aktiverad åtkomst och administratörsbehörighet.'
+      ? 'Att skapa och dela ut screening kräver aktiverad screeningåtkomst för eleven.'
       : 'Screeningsvar är inte tillgängliga för den här eleven.')
   }
 }

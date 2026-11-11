@@ -11,6 +11,14 @@ import { isSchoolAdminRole } from './_teacherRoles.js'
 import { diagnosticDispatchOptions } from './_diagnosticDispatchRequest.js'
 import { logUnexpectedDiagnosticError, UNEXPECTED_DIAGNOSTIC_ERROR } from './_diagnosticErrorLog.js'
 
+// The author may always change their own screening; a school administrator keeps
+// the reach needed to clean up after someone who has left.
+async function mayChangeAssignment(classId, assignmentId, auth) {
+  if (isSchoolAdminRole(auth.role, auth.isAdmin)) return true
+  const assignment = (await listClassDiagnosticAssignments(classId)).find(item => item.assignmentId === assignmentId)
+  return Boolean(assignment) && assignment.teacherId === auth.teacherId
+}
+
 export default async function handler(req, res) {
   withCors(res, { methods: 'GET,POST,PATCH,OPTIONS', headers: 'Content-Type,x-teacher-token' }, req)
   res.setHeader('Cache-Control', 'no-store')
@@ -20,9 +28,6 @@ export default async function handler(req, res) {
   try {
     const auth = await getLiveTeacherAuthPayload(req)
     if (!auth) return res.status(401).json({ error: 'Teacher authorization required' })
-    if (!isSchoolAdminRole(auth.role, auth.isAdmin)) {
-      return res.status(403).json({ error: 'Diagnostic pilot requires admin access' })
-    }
     if (req.query?.resource === 'drafts' || ['save_draft', 'delete_draft'].includes(req.body?.action)) return await teacherDraftAction(req, res, auth.teacherId)
     const imageAction = ['figures', 'images'].includes(req.query?.resource) || ['upload_image', 'hide_image'].includes(req.body?.action)
     if (imageAction) {
@@ -44,6 +49,11 @@ export default async function handler(req, res) {
     }
     if (req.method === 'PATCH') {
       const target = { classId, assignmentId: req.body?.assignmentId, teacherId: auth.teacherId }
+      // Simon 2026-11-11: class access lets a teacher read and reuse a colleague's
+      // screening, but stopping, archiving or deleting one belongs to its author.
+      if (!await mayChangeAssignment(classId, req.body?.assignmentId, auth)) {
+        return res.status(403).json({ error: 'Bara den som delade ut screeningen kan stoppa, arkivera eller radera den.' })
+      }
       if (req.body?.action === 'archive' || req.body?.action === 'unarchive') {
         return res.status(200).json({ assignment: await archiveDiagnosticAssignment({ ...target, archived: req.body.action === 'archive' }) })
       }

@@ -13,6 +13,9 @@ export default function ScreeningRecipientPicker({ classes, groups, students, re
   const context = useMemo(() => ({ classes, groups, students }), [classes, groups, students])
   const choices = useMemo(() => recipientChoices(context), [context])
   const selection = useMemo(() => resolveRecipientSelection(recipients, context), [recipients, context])
+  // Same convention as describeRecipients: an empty pupil catalog next to known
+  // classes or groups means the catalog is still loading, not that pupils are gone.
+  const catalogPending = students.length === 0 && (classes.length > 0 || groups.length > 0)
   const picked = new Set(recipients.map(recipientKey))
   const matches = choices.filter(item => (type === 'all' || item.type === type)
     && normalizeRecipientSearch(`${item.name} ${item.detail}`).includes(normalizeRecipientSearch(query)))
@@ -30,8 +33,8 @@ export default function ScreeningRecipientPicker({ classes, groups, students, re
         <span className="text-xs text-indigo-700">{TYPE_SHORT[item.type]}</span>{item.name}<button type="button" disabled={disabled} onClick={() => toggle(item)} className="screening-remove px-1" aria-label={`Ta bort ${item.name}`}>×</button>
       </span>)}
     </div>
-    <p data-recipient-summary role="status" className="mt-2 font-semibold text-indigo-800">{recipients.length ? selection.pupils.length === 1 ? '1 elev' : `${selection.pupils.length} unika elever` : purpose === 'filter' ? 'Visar alla dina klasser. Detta urval styr bara översikten.' : 'Ingen mottagare vald.'}</p>
-    {(selection.missing > 0 || selection.unavailablePupils > 0) && <p role="alert" className="text-amber-900">Urvalet innehåller mottagare som inte längre finns i underlaget. Läs om listan och kontrollera urvalet innan utdelning.</p>}
+    <p data-recipient-summary role="status" className="mt-2 font-semibold text-indigo-800">{recipients.length ? catalogPending ? 'Hämtar elever…' : selection.pupils.length === 1 ? '1 elev' : `${selection.pupils.length} unika elever` : purpose === 'filter' ? 'Visar alla dina klasser. Detta urval styr bara översikten.' : 'Ingen mottagare vald.'}</p>
+    {!catalogPending && (selection.missing > 0 || selection.unavailablePupils > 0) && <p role="alert" className="text-amber-900">Urvalet innehåller mottagare som inte längre finns i underlaget. Läs om listan och kontrollera urvalet innan utdelning.</p>}
     {selection.pupils.length > 0 && <details className="mt-1"><summary className="cursor-pointer">Visa elever som ingår</summary>
       <ul className="mt-1 grid gap-x-4 sm:grid-cols-2">{selection.pupils.map(student => <li key={student.studentId}>{student.name || student.displayAlias || 'Elev utan namn'}</li>)}</ul>
     </details>}

@@ -105,7 +105,7 @@ export default function ScreeningCollectionList({ context, library, onReuse, onR
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
             <div><h4 className="font-semibold">{collection.titleSv}</h4>
               <p className="text-xs text-slate-600" title={`${recipients.full}\nUtdelad ${new Date(collection.createdAt).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' })}`}>
-                {status} · {recipients.short} · {questions} {questions === 1 ? 'fråga' : 'frågor'} · {new Date(collection.createdAt).toLocaleDateString('sv-SE')}</p>
+                {status} · {recipients.short} · {questions} {questions === 1 ? 'fråga' : 'frågor'} · {new Date(collection.createdAt).toLocaleString('sv-SE', { dateStyle: 'short', timeStyle: 'short' })}</p>
             </div>
             <div className="flex flex-wrap gap-2">
               <button type="button" onClick={() => onReuse(collection.members[0])} title="Skapa en ny screening med samma frågor. Den utdelade ändras inte." className="rounded border border-slate-400 px-2 py-0.5">Återanvänd</button>

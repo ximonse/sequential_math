@@ -3683,7 +3683,7 @@
       "id": "teacher-ux-ui-bang-for-the-buck",
       "area": "Lärarvy & Screening",
       "title": "UX/UI-lyft i lärarvyerna: läsbara tabeller, svenska etiketter och screeningdetaljer",
-      "status": "Publicerat",
+      "status": "Byggt",
       "purpose": "Åtgärda de mest värdeskapande UX/UI-bristerna från genomgången av alla fem lärarvyer utan att bryta befintliga flöden eller robotkontrakt.",
       "next": "Kvarvarande från granskningen: Hämtar elever-läge i Steg 2 under katalogladdning, klockslag på dubblettrader i Utdelade, flikar för de tre egna frågetyperna, samlad inloggningshantering under Administration samt alfabetisk elevlista i Ny grupp.",
       "acceptance": "Resultattabeller klipps inte av 32-teckens hex-ID; å/ä/ö och svenska visningsnamn för felmönster och positions_decimal används i Analys & åtgärd och Pausspel; sidhuvud och klassfilter hoppar inte mellan flikar; Förslag från frågebanken och NCM har synlig utfällningspil och kapslade NCM-grupper; Sparade försök visar uppgiftens frågetext; räknehäftets testvy har tydlig tillbakalänk till Lärarvy.",

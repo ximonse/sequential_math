@@ -11,11 +11,13 @@ export default function GroupEditor({ group, classes, students, teachers, busy, 
     previous.includes(id) ? previous.filter(value => value !== id) : [...previous, id]
   ))
   const query = search.trim().toLowerCase()
+  const classNameOf = student => classes.find(record => String(record.id) === String(student.classId))?.name || ''
   const shown = students.filter(student => (
     (classIds.length === 0 || [student.classId, ...(student.classIds || [])]
       .some(id => classIds.includes(String(id)))) &&
     (!query || String(student.name || student.displayAlias || '').toLowerCase().includes(query))
-  ))
+  )).sort((a, b) => classNameOf(a).localeCompare(classNameOf(b), 'sv')
+    || String(a.name || a.displayAlias || '').localeCompare(String(b.name || b.displayAlias || ''), 'sv'))
   const hiddenSelectedCount = pupilIds.filter(id => !shown.some(student => studentIdOf(student) === id)).length
 
   const submit = event => {
@@ -56,7 +58,7 @@ export default function GroupEditor({ group, classes, students, teachers, busy, 
             return (
               <label key={id} className="flex items-center gap-2 text-xs">
                 <input type="checkbox" checked={pupilIds.includes(id)} onChange={() => toggle(setPupilIds, id)} />
-                <span>{student.name || student.displayAlias}</span>
+                <span>{student.name || student.displayAlias}{classNameOf(student) ? <span className="text-gray-500"> · {classNameOf(student)}</span> : null}</span>
               </label>
             )
           })}

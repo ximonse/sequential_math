@@ -6,9 +6,11 @@ export const pupilClassIds = student => [...new Set([student.classId, ...(studen
 export function recipientChoices({ classes = [], groups = [], students = [] }) {
   const names = new Map(classes.map(item => [key(item.id), item.name]))
   const classMembers = id => students.filter(student => pupilClassIds(student).includes(key(id))).map(student => student.studentId)
+  // An empty pupil catalog next to known classes means it is still loading.
+  const classDetail = members => students.length === 0 ? 'hämtar elever…' : `${members.length} ${members.length === 1 ? 'elev' : 'elever'}`
   return [
     ...classes.map(item => ({ type: 'class', id: key(item.id), name: item.name,
-      label: `Klass: ${item.name}`, members: classMembers(item.id), detail: `${classMembers(item.id).length} ${classMembers(item.id).length === 1 ? 'elev' : 'elever'}` })),
+      label: `Klass: ${item.name}`, members: classMembers(item.id), detail: classDetail(classMembers(item.id)) })),
     ...groups.map(item => ({ type: 'group', id: key(item.id), name: item.name,
       label: `Grupp: ${item.name}`, members: item.pupilIds || [], detail: `${item.pupilIds?.length || 0} elever` })),
     ...students.map(student => ({ type: 'student', id: key(student.studentId), name: student.name || student.displayAlias || 'Elev utan namn',

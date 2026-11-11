@@ -3680,6 +3680,27 @@
       ]
     },
     {
+      "id": "fraction-contrast-bank",
+      "area": "Analys & uppföljning",
+      "title": "Utdelningsbara kontrastfrågor för bråk ur den granskade banken",
+      "status": "Byggt",
+      "purpose": "Låta läraren säkra bråkfelmodeller (täljare+nämnare var för sig, ingen gemensam nämnare, heltal i nämnaren, addition i stället för multiplikation) med utdelningsbara kontrastfrågor, inte bara rådgivning.",
+      "next": "Prova flödet skarpt: hypotes från fri träning → Pröva med kontrastfrågor → utkast → granskning → utdelning → svar i Resultat. Procent och algebra kan följa samma mall när bråk är beprövat.",
+      "acceptance": "Åtta bråkfrågor (frac-add-001–003, frac-sub-001–002, frac-mul-001–003) i manifestet v6 med custom_facit-bråkfacit; likvärdiga ekvivalenta svar rättas som rätt (22/30 = 11/15) enligt Simons policy 2026-11-11; planFollowUp ger reviewed_bank för bråk; screening-evidens bär domain/values så bråkförsök når felmodellmotorn; egen Bråk-grupp i frågebanken och fast facitvisning i frågelistan.",
+      "requires": [],
+      "affects": [],
+      "decision": "2026-11-11: Simon godkände frågeurvalet och rättningspolicyn: förkortning krävs bara om uppgiften uttryckligen begär enklaste form; annars räknas likvärdiga svar som rätt.",
+      "evidence": "2026-11-11: Förutsagda modellsvar beräknade med appens motor per fråga; planFollowUp verifierad att ge reviewed_bank med alla modellpar särskiljda; vitest 1324/1326 (2 kvarvarande är förexisterande NCM-hash-audit), mcp-checks 29/29, vite build grönt.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        { "id": "frac-bank-tasks", "text": "Åtta granskade bråkfrågor med bråkfacit i manifestet (v6) och lärarstödsguider per intentCode", "done": true },
+        { "id": "frac-bank-routing", "text": "planFollowUp öppnar banken för bråk; bankproblem-mappning och svenska modelletiketter i kontrastvyn", "done": true },
+        { "id": "frac-evidence", "text": "Screening-evidensen tar med domain och values så bråkförsök analyseras av felmodellmotorn", "done": true },
+        { "id": "frac-live-test", "text": "Skarp prövning av hela loopen med en elev", "done": false }
+      ]
+    },
+    {
       "id": "teacher-ux-ui-bang-for-the-buck",
       "area": "Lärarvy & Screening",
       "title": "UX/UI-lyft i lärarvyerna: läsbara tabeller, svenska etiketter och screeningdetaljer",

@@ -62,6 +62,10 @@ export default function ScreeningQuestionOrder({
                     <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-indigo-800">
                       Facit: {item.task.facitSv}
                     </span>
+                  ) : item.task?.answerKey ? (
+                    <span className="rounded bg-indigo-50 px-1.5 py-0.5 text-indigo-800">
+                      Facit: {item.task.answerKey.format === 'fraction' ? item.task.answerKey.expected.join('/') : item.task.answerKey.expected.join('; ')}
+                    </span>
                   ) : (
                     <label className="inline-flex items-center gap-1">
                       <span>Svarstyp</span>

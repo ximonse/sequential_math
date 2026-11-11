@@ -11,7 +11,8 @@ const originalGroups = [
   { label: 'Subtraktion', tasks: writtenTasks.filter(task => task.operation === 'subtraction') },
   { label: 'Multiplikation', tasks: writtenTasks.filter(task => task.operation === 'multiplication') },
   { label: 'Division', tasks: writtenTasks.filter(task => task.operation === 'division') },
-  { label: 'Geometri och bildfrågor', tasks: writtenTasks.filter(task => !['addition', 'subtraction', 'multiplication', 'division'].includes(task.operation)) }
+  { label: 'Bråk', tasks: writtenTasks.filter(task => task.operation === 'fractions') },
+  { label: 'Geometri och bildfrågor', tasks: writtenTasks.filter(task => !['addition', 'subtraction', 'multiplication', 'division', 'fractions'].includes(task.operation)) }
 ].filter(group => group.tasks.length)
 
 // Question choice for a new collection. A pack covers the common case in one
@@ -80,9 +81,10 @@ export default function ScreeningTaskChoices({
             <strong><QuestionText>{task?.promptSv}</QuestionText></strong>
             {/* NCM answers are marked against the facit, so their answer type is fixed. */}
             {task?.responseMode ? <span>{task.responseMode === 'text' ? 'Skrivsvar' : 'Val av alternativ'}</span> : task?.ncmCode ? <span className="text-slate-600">Facit: {task.facitSv}</span>
-              : <label>Svarstyp <select value={options.answerType || 'number'} onChange={event => change({ answerType: event.target.value })} className="rounded border px-1 py-0.5">
-                <option value="number">Siffersvar</option><option value="text">Skrivsvar</option>
-              </select></label>}
+              : task?.answerKey ? <span className="text-slate-600">Facit: {task.answerKey.format === 'fraction' ? task.answerKey.expected.join('/') : task.answerKey.expected.join('; ')}</span>
+                : <label>Svarstyp <select value={options.answerType || 'number'} onChange={event => change({ answerType: event.target.value })} className="rounded border px-1 py-0.5">
+                  <option value="number">Siffersvar</option><option value="text">Skrivsvar</option>
+                </select></label>}
             <label><input type="checkbox" disabled={Boolean(task?.responseMode)} checked={!task?.responseMode && options.gridEnabled === false} onChange={event => change({ gridEnabled: !event.target.checked })} /> Huvudräkning</label>
             <label><input type="checkbox" disabled={Boolean(task?.responseMode)} checked={Boolean(options.drawingEnabled)} onChange={event => change({ drawingEnabled: event.target.checked })} /> Rityta</label>
           </div>

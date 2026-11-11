@@ -9,7 +9,8 @@ import { didacticForModel, didacticSupportsProblem } from '../arithmetic/didacti
 export function planFollowUp({ modelId, supportProblems = [], seenFingerprints = new Set(),
   history = { scope: 'source_period', completeness: 'unknown' }, analysis, models }) {
   const current = analysis ?? predictableCandidates(supportProblems[0], '')
-  const bank = current.domain === 'arithmetic'
+  // Domains with reviewed, dispatchable contrast questions in the screening bank.
+  const bank = ['arithmetic', 'fractions'].includes(current.domain)
   const definition = didacticForModel(modelId, current.scope)
   const packageEligible = definition && supportProblems.length > 0 && supportProblems.every(problem => didacticSupportsProblem(definition.pack.id, problem))
   const tasks = bank ? [...manifest.tasks, ...(packageEligible ? definition.tasks.filter(task => task.didacticRole === 'contrast') : [])]

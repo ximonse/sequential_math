@@ -67,7 +67,8 @@ describe('predictable candidates across all six domains', () => {
     expect(probe.distinguishesModelIds).toHaveLength(2)
   })
   it('never repeats an already used probe or silently changes domain', () => {
-    const result = predictableCandidates(cases[0][0], cases[0][1])
+    // Expressions still rely on advisory probes; fractions now draw from the reviewed bank.
+    const result = predictableCandidates(cases[3][0], cases[3][1])
     const allSeen = new Set(predictableProbes.map(p => questionFingerprint(p.problem)))
     expect(selectPredictableProbe(result, allSeen).status).toBe('needs_review')
   })

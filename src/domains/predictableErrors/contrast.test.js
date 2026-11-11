@@ -52,9 +52,17 @@ describe('directed follow-up contrast questions', () => {
   })
 
   it('says honestly when the reviewed bank has nothing for a domain', () => {
+    const set = buildContrastSet({ modelId: 'percentage_number_as_amount', bankTasks: manifest.tasks,
+      supportProblems: [{ domain: 'percentage', type: 'percentage', skill: 'percentage', values: { kind: 'percent_of', base: 300, percentage: 15 } }] })
+    expect(set).toMatchObject({ status: 'unavailable', items: [] })
+  })
+  it('proposes reviewed fraction bank questions in the pupil task scope', () => {
     const set = buildContrastSet({ modelId: 'fraction_components_separately', bankTasks: manifest.tasks,
       supportProblems: [{ domain: 'fractions', type: 'fractions', skill: 'fractions', values: { text: '2/5 + 1/3' } }] })
-    expect(set).toMatchObject({ status: 'unavailable', items: [] })
+    expect(set.status).toBe('proposed')
+    expect(set.items.length).toBeGreaterThanOrEqual(2)
+    expect(set.items.every(item => item.taskId.startsWith('frac-add-'))).toBe(true)
+    expect(set.items.some(item => item.taskId === 'frac-add-001')).toBe(false)
   })
 
   it('stays within the question budget', () => {

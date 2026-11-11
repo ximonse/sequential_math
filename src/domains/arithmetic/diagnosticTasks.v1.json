@@ -1,6 +1,6 @@
 {
   "manifestId": "written-integer-add-sub",
-  "manifestVersion": 5,
+  "manifestVersion": 6,
   "language": "sv-SE",
   "status": "contract_draft",
   "evidenceClass": "diagnostic_only",
@@ -76,6 +76,14 @@
     { "taskId": "div-short-002", "taskVersion": 1, "operation": "division", "operands": [84, 6], "promptSv": "Räkna ut 84 / 6.", "answerRule": "integer_division", "intentCode": "short_division", "analysisCaseId": "AS5" },
     { "taskId": "div-short-003", "taskVersion": 1, "operation": "division", "operands": [168, 6], "promptSv": "Räkna ut 168 / 6.", "answerRule": "integer_division", "intentCode": "short_division", "analysisCaseId": "AS5" },
     { "taskId": "div-zero-001", "taskVersion": 1, "operation": "division", "operands": [648, 6], "promptSv": "Räkna ut 648 / 6.", "answerRule": "integer_division", "intentCode": "quotient_zero", "analysisCaseId": "AS5" },
-    { "taskId": "div-zero-002", "taskVersion": 1, "operation": "division", "operands": [936, 9], "promptSv": "Räkna ut 936 / 9.", "answerRule": "integer_division", "intentCode": "quotient_zero", "analysisCaseId": "AS5" }
+    { "taskId": "div-zero-002", "taskVersion": 1, "operation": "division", "operands": [936, 9], "promptSv": "Räkna ut 936 / 9.", "answerRule": "integer_division", "intentCode": "quotient_zero", "analysisCaseId": "AS5" },
+    { "taskId": "frac-add-001", "taskVersion": 1, "operation": "fractions", "domain": "fractions", "values": { "text": "2/5 + 1/3" }, "promptSv": "Räkna ut 2/5 + 1/3. Svara i bråkform.", "answerRule": "custom_facit", "answerType": "text", "answerKey": { "format": "fraction", "expected": [11, 15] }, "intentCode": "fraction_contrast_addition" },
+    { "taskId": "frac-add-002", "taskVersion": 1, "operation": "fractions", "domain": "fractions", "values": { "text": "1/4 + 2/3" }, "promptSv": "Räkna ut 1/4 + 2/3. Svara i bråkform.", "answerRule": "custom_facit", "answerType": "text", "answerKey": { "format": "fraction", "expected": [11, 12] }, "intentCode": "fraction_contrast_addition" },
+    { "taskId": "frac-add-003", "taskVersion": 1, "operation": "fractions", "domain": "fractions", "values": { "text": "3/8 + 1/4" }, "promptSv": "Räkna ut 3/8 + 1/4. Svara i bråkform.", "answerRule": "custom_facit", "answerType": "text", "answerKey": { "format": "fraction", "expected": [5, 8] }, "intentCode": "fraction_contrast_addition" },
+    { "taskId": "frac-sub-001", "taskVersion": 1, "operation": "fractions", "domain": "fractions", "values": { "text": "3/4 − 1/3" }, "promptSv": "Räkna ut 3/4 − 1/3. Svara i bråkform.", "answerRule": "custom_facit", "answerType": "text", "answerKey": { "format": "fraction", "expected": [5, 12] }, "intentCode": "fraction_contrast_subtraction" },
+    { "taskId": "frac-sub-002", "taskVersion": 1, "operation": "fractions", "domain": "fractions", "values": { "text": "5/6 − 1/4" }, "promptSv": "Räkna ut 5/6 − 1/4. Svara i bråkform.", "answerRule": "custom_facit", "answerType": "text", "answerKey": { "format": "fraction", "expected": [7, 12] }, "intentCode": "fraction_contrast_subtraction" },
+    { "taskId": "frac-mul-001", "taskVersion": 1, "operation": "fractions", "domain": "fractions", "values": { "text": "2/3 × 3/5" }, "promptSv": "Räkna ut 2/3 × 3/5. Svara i bråkform.", "answerRule": "custom_facit", "answerType": "text", "answerKey": { "format": "fraction", "expected": [2, 5] }, "intentCode": "fraction_contrast_multiplication" },
+    { "taskId": "frac-mul-002", "taskVersion": 1, "operation": "fractions", "domain": "fractions", "values": { "text": "3/7 × 4" }, "promptSv": "Räkna ut 3/7 × 4. Svara i bråkform.", "answerRule": "custom_facit", "answerType": "text", "answerKey": { "format": "fraction", "expected": [12, 7] }, "intentCode": "fraction_contrast_multiplication" },
+    { "taskId": "frac-mul-003", "taskVersion": 1, "operation": "fractions", "domain": "fractions", "values": { "text": "2/5 × 3" }, "promptSv": "Räkna ut 2/5 × 3. Svara i bråkform.", "answerRule": "custom_facit", "answerType": "text", "answerKey": { "format": "fraction", "expected": [6, 5] }, "intentCode": "fraction_contrast_multiplication" }
   ]
 }

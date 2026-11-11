@@ -30,7 +30,8 @@ describe('approved decimal multiplication pilot', () => {
     expect(selected.unresolved).toEqual([])
   })
   it('does not offer the reserved pilot tasks for a different target model when its old bank is exhausted', () => {
-    const seen = new Set(manifest.tasks.map(task => questionFingerprint({ domain: 'arithmetic', type: task.operation, values: { a: task.operands[0], b: task.operands[1] } })))
+    const seen = new Set(manifest.tasks.filter(task => Array.isArray(task.operands))
+      .map(task => questionFingerprint({ domain: 'arithmetic', type: task.operation, values: { a: task.operands[0], b: task.operands[1] } })))
     const selected = planFollowUp({ modelId: 'place_value_scaling', seenFingerprints: seen,
       supportProblems: [{ domain: 'arithmetic', type: 'multiplication', values: { a: 7, b: 8 } }] })
     expect(selected.status).toBe('unavailable')

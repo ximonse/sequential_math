@@ -20,16 +20,22 @@ describe('shared teacher follow-up selection', () => {
     expect(restored.items).toEqual(plan.items)
     expect(plan.delivery).toBe('reviewed_bank')
   })
-  it('keeps non-arithmetic questions advisory and never selects a target variant that equals correct', () => {
+  it('selects reviewed fraction bank questions and never a target variant that equals correct', () => {
     const support = { source: 'practice', question: { domain: 'fractions', skill: 'fractions', values: { text: '2/5+1/3' } } }
     const plan = pupilFollowUpSelection({ modelId: 'fraction_components_separately', supports: [support], entries: [support] })
     expect(plan.status).toBe('proposed')
-    expect(plan.delivery).toBe('teacher_advisory')
+    expect(plan.delivery).toBe('reviewed_bank')
     for (const item of plan.items) {
       const result = predictableCandidates(item.problem, item.correct)
       expect(result.matches).toEqual([])
     }
     expect(questionFingerprint(evidenceProblem(support))).toBeTruthy()
+  })
+  it('keeps domains without reviewed bank questions advisory', () => {
+    const support = { source: 'practice', question: { domain: 'percentage', skill: 'percentage', values: { kind: 'percent_of', base: 300, percentage: 15 } } }
+    const plan = pupilFollowUpSelection({ modelId: 'percentage_number_as_amount', supports: [support], entries: [support] })
+    expect(plan.status).toBe('proposed')
+    expect(plan.delivery).toBe('teacher_advisory')
   })
   it('does not turn input signals or speed practice into automatic probes', () => {
     expect(pupilFollowUpSelection({ modelId: 'notebook_answer_mismatch', supports: [entry(402, 178)], entries: [] })).toBeNull()

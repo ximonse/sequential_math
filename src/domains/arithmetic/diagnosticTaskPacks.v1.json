@@ -19,6 +19,9 @@
     "multiply_two_digit": { "goalSv": "Tvåsiffrigt gånger tvåsiffrigt", "questionSv": "Fråga vad tiotalssiffran i den andra faktorn betyder och var dess delprodukt placeras." },
     "short_division": { "goalSv": "Kort division med rest", "questionSv": "Fråga vad som händer med resten när den förs vidare till nästa siffra." },
     "quotient_zero": { "goalSv": "Nolla i kvoten", "questionSv": "Fråga ungefär hur stort svaret borde vara och var nollan i kvoten kommer ifrån." },
-    "exchange_through_zero": { "goalSv": "Växling genom noll i tiotalskolumnen", "questionSv": "Be eleven visa hur ett hundratal blir tiotal och hur ett av dessa tiotal blir ental." }
+    "exchange_through_zero": { "goalSv": "Växling genom noll i tiotalskolumnen", "questionSv": "Be eleven visa hur ett hundratal blir tiotal och hur ett av dessa tiotal blir ental." },
+    "fraction_contrast_addition": { "goalSv": "Bråkaddition med olika nämnare", "questionSv": "Be eleven rita eller förklara varför nämnarna inte kan adderas och hur bråken görs liknämniga." },
+    "fraction_contrast_subtraction": { "goalSv": "Bråksubtraktion med olika nämnare", "questionSv": "Be eleven visa hur bråken görs liknämniga innan täljarna subtraheras." },
+    "fraction_contrast_multiplication": { "goalSv": "Multiplikation av bråk och bråk gånger heltal", "questionSv": "Fråga vad som händer med täljare och nämnare vid multiplikation, och varför ett heltal bara påverkar täljaren." }
   }
 }

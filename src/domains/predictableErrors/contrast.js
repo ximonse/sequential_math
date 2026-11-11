@@ -52,11 +52,18 @@ export const CONTRAST_LABELS_SV = {
   div_remainder_as_ones: 'Resten läggs till som ental',
   div_zero_dropped: 'Nollan i kvoten tappas',
   quotient_off_by_one: 'Kvoten blir ett fel',
+  fraction_components_separately: 'Täljare och nämnare räknas var för sig',
+  fraction_keep_first_denominator: 'Ingen gemensam nämnare; första nämnaren behålls',
+  fraction_integer_in_denominator: 'Heltalet multipliceras in i nämnaren',
+  fraction_add_instead_of_multiply: 'Adderar i stället för att multiplicera',
 }
 
 const symbols = { addition: '+', subtraction: '−', multiplication: '×', division: '÷' }
-const bankProblem = task => ({ domain: 'arithmetic', type: task.operation, skill: task.operation,
-  values: { a: task.operands?.[0], b: task.operands?.[1] }, display: { text: `${task.operands?.[0]} ${symbols[task.operation] ?? '?'} ${task.operands?.[1]}` } })
+const bankProblem = task => task.domain === 'fractions'
+  ? { domain: 'fractions', type: 'fractions', skill: 'fractions',
+    values: task.values, display: { text: task.values?.text } }
+  : { domain: 'arithmetic', type: task.operation, skill: task.operation,
+    values: { a: task.operands?.[0], b: task.operands?.[1] }, display: { text: `${task.operands?.[0]} ${symbols[task.operation] ?? '?'} ${task.operands?.[1]}` } }
 
 export function modelPredictions(result, modelId) {
   const values = result.predictions.filter(prediction => prediction.modelId === modelId).map(prediction => prediction.predictedAnswer)

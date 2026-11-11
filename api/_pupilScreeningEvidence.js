@@ -42,7 +42,7 @@ export async function pupilScreeningEvidence(studentId, classId, { store = kv, r
       timeBasis: times.length ? 'latest_saved_client_event' : 'attempt_created_at',
       reference: { kind: 'screening_attempt', attemptId: id, assignmentId: record.assignmentId,
         assignmentItemId: record.assignmentItemId, ...revision },
-      question: evidencePick(item.taskSnapshot, ['taskId', 'taskVersion', 'promptSv', 'operation', 'operands',
+      question: evidencePick(item.taskSnapshot, ['taskId', 'taskVersion', 'promptSv', 'operation', 'operands', 'domain', 'values',
         'answerType', 'responseMode', 'images', 'options', 'gridEnabled', 'drawingEnabled', 'correctOptionIds']),
       answer: { status: observation.answerStatus, studentAnswer: observation.explicitAnswer,
         correctAnswer: observation.expectedAnswer, submitted: observation.submitted,

@@ -1,5 +1,5 @@
 import { Fragment, lazy, Suspense, useEffect } from 'react'
-import { Routes, Route, Navigate, useSearchParams } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import PracticeSession from './components/student/PracticeSession'
 import SubitizingSession from './components/student/SubitizingSession'
 import StudentHome from './components/student/StudentHome'
@@ -16,16 +16,20 @@ const DiagnosticGridPrototype = lazy(() => import('./dev/DiagnosticGridPrototype
 const StudentDiagnosticAttempt = lazy(() => import('./components/student/StudentDiagnosticAttempt'))
 const MaterialReview = lazy(() => import('./components/teacher/MaterialReview'))
 
+// A teacher link opened in a new tab starts without the per-tab session, so the
+// wanted page is carried to the login and reopened after it (Simon 2026-11-11).
 function RequireTeacherAuth({ children }) {
+  const location = useLocation()
   if (!isTeacherAuthenticated()) {
-    return <Navigate to="/teacher-login" replace />
+    return <Navigate to="/teacher-login" state={{ from: location }} replace />
   }
 
   return children
 }
 
 function RequireNcmAdmin({ children }) {
-  if (!isTeacherAuthenticated()) return <Navigate to="/teacher-login" replace />
+  const location = useLocation()
+  if (!isTeacherAuthenticated()) return <Navigate to="/teacher-login" state={{ from: location }} replace />
   if (!isTeacherAdmin()) return <Navigate to="/teacher" replace />
   return children
 }

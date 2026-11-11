@@ -1,9 +1,17 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   isTeacherAuthenticated,
   loginTeacher
 } from '../../lib/teacherAuth'
+
+// The guard passes the page the teacher actually asked for, so a deep link to a
+// material review survives the login instead of ending on the start page.
+function targetFrom(state) {
+  const from = state?.from
+  if (!from?.pathname) return '/teacher'
+  return `${from.pathname}${from.search || ''}${from.hash || ''}`
+}
 
 function TeacherLogin() {
   const [username, setUsername] = useState('')
@@ -11,12 +19,14 @@ function TeacherLogin() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
+  const target = targetFrom(location.state)
 
   useEffect(() => {
     if (isTeacherAuthenticated()) {
-      navigate('/teacher', { replace: true })
+      navigate(target, { replace: true })
     }
-  }, [navigate])
+  }, [navigate, target])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -46,7 +56,7 @@ function TeacherLogin() {
       return
     }
 
-    navigate('/teacher', { replace: true })
+    navigate(target, { replace: true })
   }
 
   return (

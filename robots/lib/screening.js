@@ -63,3 +63,10 @@ export async function chooseCollection(panel, idOrIndex = 0) {
   await expect(row).toHaveAttribute('aria-pressed', 'true')
 }
 export const reviewOf = panel => panel.getByRole('region', { name: 'Genomgång av samling', exact: true })
+
+// Hand-in warns in the page about questions without an answer (2026-11-11). Like
+// page.once('dialog'), this answers "Lämna in ändå" if the warning appears.
+export function handInAnywayOnce(page) {
+  const button = page.getByRole('dialog', { name: /saknar svar/i }).getByRole('button', { name: 'Lämna in ändå', exact: true })
+  void button.click({ timeout: 30 * 1000 }).catch(() => {})
+}

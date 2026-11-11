@@ -51,11 +51,14 @@ function ncmObservation(task, grid) {
 
 // Records directly observable facts. Method hypotheses belong to a separate,
 // versioned analysis and must never be inferred from the final answer alone.
-export function summarizeDiagnosticObservation(task, snapshot) {
+// `answerOverride` assesses another answer string (a teacher's entry) with the
+// same rules; the pupil's events are still replayed and never changed.
+export function summarizeDiagnosticObservation(task, snapshot, { answerOverride } = {}) {
   if (task?.taskId !== snapshot?.taskId || task?.taskVersion !== snapshot?.taskVersion) {
     throw new Error('Diagnostic task and grid version do not match')
   }
-  const grid = replayDiagnosticGrid(snapshot)
+  const replayed = replayDiagnosticGrid(snapshot)
+  const grid = typeof answerOverride === 'string' ? { ...replayed, answer: answerOverride } : replayed
   if (isChoiceTask(task)) return { ...observableFacts(task, grid), ...choiceObservation(task, grid) }
   if (['decimal_multiplication', 'decimal_subtraction', 'decimal_addition'].includes(task.answerRule)) {
     const expected = task.answerRule === 'decimal_addition' ? decimalAdditionAnswer(task)

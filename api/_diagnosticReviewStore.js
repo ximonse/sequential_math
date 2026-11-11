@@ -1,6 +1,7 @@
 import { kv } from '@vercel/kv'
 import { studentDeletedKey } from './_studentStore.js'
 import { DiagnosticAppendError } from '../src/domains/arithmetic/diagnosticAttemptAppend.js'
+import { teacherAssessmentFields, TEACHER_ANSWER_MAX, TEACHER_MISCONCEPTION_MAX } from '../src/domains/arithmetic/diagnosticTeacherAssessment.js'
 
 // Review metadata never changes the pupil record/events. Both the evidence
 // revision and the shared review revision must still match at commit time.
@@ -58,11 +59,15 @@ export async function saveDiagnosticReview(record, input, teacherId, { store = k
     throw new DiagnosticAppendError(400, 'invalid_review', 'Anteckningen får vara högst 1000 tecken och måste avse en sparad revision.')
   }
   const previous = await store.get(`diagnostic_review:${record.attemptId}`)
+  const assessment = teacherAssessmentFields(input, previous)
+  if (!assessment) {
+    throw new DiagnosticAppendError(400, 'invalid_assessment', `Lärarens svar får vara högst ${TEACHER_ANSWER_MAX} tecken och felförståelsen högst ${TEACHER_MISCONCEPTION_MAX} tecken.`)
+  }
   const feedback = input.publishFeedback ? { text: input.feedbackText.trim(), publishedAt: now,
     evidenceRevision: input.evidenceRevision, evidenceSequence: input.evidenceSequence } : previous?.feedback
   const review = { studentId: record.studentId, reviewRevision: input.expectedReviewRevision + 1,
     evidenceRevision: input.evidenceRevision, evidenceSequence: input.evidenceSequence,
-    reviewed: input.reviewed, note: input.note, updatedAt: now, updatedBy: teacherId,
+    reviewed: input.reviewed, note: input.note, ...assessment, updatedAt: now, updatedBy: teacherId,
     ...(feedback ? { feedback } : {}) }
   const result = Number(await store.eval(DIAGNOSTIC_REVIEW_CAS_SCRIPT,
     [`diagnostic_attempt:${record.attemptId}`, `diagnostic_review:${record.attemptId}`,

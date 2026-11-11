@@ -90,4 +90,31 @@ describe('revision-bound diagnostic teacher reviews', () => {
     await kv.set('diagnostic_attempt:TRY', { ...record, serverRevision: 3 })
     expect((await diagnosticClassOverview(assignment, ['PUPIL'], { store: kv })).rows[0].reviewed).toBe(0)
   })
+  it('keeps the teacher assessment beside the pupil answer and counts it only for the current revision', async () => {
+    const wrong = work('TRY', 'TASK', '6')
+    const wrongRecord = { ...record, grid: { ...wrong, events: undefined } }
+    await kv.set('diagnostic_attempt:TRY', wrongRecord)
+    await kv.set('diagnostic_attempt_events:TRY', wrong.events)
+    const review = await saveDiagnosticReview(wrongRecord, { ...input, markedCorrect: true, misconception: ' Räknar 2 + 3 som 2 · 3. ' }, 'ADMIN', { store: kv })
+    expect(review).toMatchObject({ markedCorrect: true, teacherAnswer: '', misconception: 'Räknar 2 + 3 som 2 · 3.' })
+    let item = (await diagnosticClassOverview(assignment, ['PUPIL'], { store: kv })).rows[0].items[0]
+    expect(item.screening).toMatchObject({ explicitAnswer: '6', answerStatus: 'incorrect' })
+    expect(item.teacherAssessment).toMatchObject({ markedCorrect: true, answerStatus: 'correct', misconception: 'Räknar 2 + 3 som 2 · 3.' })
+    expect(await kv.get('diagnostic_attempt_events:TRY')).toEqual(wrong.events)
+    // A later save that omits the fields (e.g. publishing feedback) keeps them.
+    const next = await saveDiagnosticReview(wrongRecord, { ...input, expectedReviewRevision: 1 }, 'ADMIN', { store: kv })
+    expect(next).toMatchObject({ markedCorrect: true, misconception: 'Räknar 2 + 3 som 2 · 3.' })
+    await kv.set('diagnostic_attempt:TRY', { ...wrongRecord, serverRevision: 3 })
+    item = (await diagnosticClassOverview(assignment, ['PUPIL'], { store: kv })).rows[0].items[0]
+    expect(item.teacherAssessment).toBeUndefined()
+  })
+  it('marks a teacher-typed answer with the task rules and rejects invalid assessments', async () => {
+    const review = await saveDiagnosticReview(record, { ...input, teacherAnswer: '5' }, 'ADMIN', { store: kv })
+    expect(review.teacherAnswer).toBe('5')
+    const item = (await diagnosticClassOverview(assignment, ['PUPIL'], { store: kv })).rows[0].items[0]
+    expect(item.teacherAssessment).toMatchObject({ teacherAnswer: '5', teacherAnswerStatus: 'correct', answerStatus: 'correct' })
+    for (const patch of [{ markedCorrect: 'yes' }, { teacherAnswer: 'x'.repeat(201) }, { teacherAnswer: '5{' }, { misconception: 'x'.repeat(501) }]) {
+      await expect(saveDiagnosticReview(record, { ...input, expectedReviewRevision: 1, ...patch }, 'ADMIN', { store: kv })).rejects.toMatchObject({ status: 400 })
+    }
+  })
 })

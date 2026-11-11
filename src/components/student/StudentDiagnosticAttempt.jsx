@@ -6,6 +6,7 @@ import { appendStudentDiagnosticAttempt, fetchStudentDiagnosticAssignments,
   openStudentDiagnosticAttempt, submitStudentDiagnosticCollection } from '../../lib/studentSessionClient'
 import { savePendingDiagnosticEvents } from '../../lib/diagnosticStudentSave'
 import { recoverDiagnosticDraft } from '../../lib/diagnosticDraftRecovery'
+import MissingAnswersDialog from './MissingAnswersDialog'
 
 const sharedAttemptCache = { assignment: { current: null } }
 
@@ -32,6 +33,7 @@ function AssignedDiagnosticAttempt() {
   const [localSequence, setLocalSequence] = useState(0)
   const [localError, setLocalError] = useState('')
   const [conflict, setConflict] = useState(false)
+  const [missingPrompt, setMissingPrompt] = useState(null)
   const revisionRef = useRef(0)
   const savedSequenceRef = useRef(0)
   const savePromiseRef = useRef(null)
@@ -153,6 +155,7 @@ function AssignedDiagnosticAttempt() {
 
   async function submitCollection(grid) {
     if (conflict || busy) return
+    let goTo = null
     setSubmitting(true)
     if (!await save(grid)) { setSubmitting(false); return }
     setBusy(true)
@@ -170,7 +173,11 @@ function AssignedDiagnosticAttempt() {
         entries.push({ attemptId: result.record.attemptId, revision: saved.revision, sequence: saved.sequence, snapshot: recovered.snapshot })
       }
       const missing = entries.flatMap((entry, index) => !(entry.snapshot.answer.trim() || entry.snapshot.selectedOptionIds?.length) ? [index + 1] : [])
-      if (missing.length && !window.confirm(`Fråga ${missing.join(', ')} saknar svar. Vill du ändå lämna in hela samlingen?`)) return
+      if (missing.length) {
+        const choice = await new Promise(resolve => setMissingPrompt({ numbers: missing, resolve }))
+        setMissingPrompt(null)
+        if (choice !== 'submit') { if (typeof choice === 'number') goTo = opened.assignment.items[choice - 1]; return }
+      }
       const result = await submitStudentDiagnosticCollection(assignmentId, entries.map(({ attemptId, revision, sequence }) => ({ attemptId, revision, sequence })))
       if (!result.ok || !result.submitted || result.attempts?.length !== entries.length) throw new Error(result.error || 'Servern bekräftade inte hela inlämningen.')
       for (const entry of entries) {
@@ -195,6 +202,8 @@ function AssignedDiagnosticAttempt() {
       navigate(`/student/${studentId}`, { replace: true })
     } catch (error) { setSaveError(error.message || 'Kunde inte lämna in samlingen. Dina svar finns kvar.') }
     finally { setBusy(false); setSubmitting(false) }
+    // Every question was saved above; changeQuestion saves the open one again before leaving.
+    if (goTo && goTo.assignmentItemId !== itemId) void changeQuestion(goTo)
   }
 
   useEffect(() => {
@@ -231,5 +240,6 @@ function AssignedDiagnosticAttempt() {
         collectionSubmitted: opened.assignment.submissionStatus === 'submitted',
         error: conflict ? 'Arbetet skiljer sig från serverns version. Den lokala arbetskopian finns kvar på enheten. Be läraren om hjälp.'
           : saveError || (unsaved ? localError : ''), message: saveMessage }} />}
+    {missingPrompt && <MissingAnswersDialog numbers={missingPrompt.numbers} onChoose={missingPrompt.resolve} />}
   </div>
 }

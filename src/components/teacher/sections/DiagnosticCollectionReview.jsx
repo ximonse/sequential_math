@@ -88,11 +88,15 @@ export default function DiagnosticCollectionReview({ members, isAllowed, name, o
     {overview && (overview.rows.length > 0
       ? <DiagnosticScreeningMatrix overview={overview} name={name} onOpen={open} />
       : <p className="text-sm">Ingen av de valda eleverna fick den här samlingen.</p>)}
-    <dialog ref={dialog} aria-label="Elevgenomgång" onCancel={event => { event.preventDefault(); resetDetail() }} className="max-h-[90dvh] w-[min(960px,95vw)] rounded-lg border border-slate-300 bg-white p-3 text-slate-800 shadow-xl backdrop:bg-slate-900/50">
+    {/* Tailwind's preflight removes the dialog's default auto margin; m-auto centres it again. */}
+    <dialog ref={dialog} aria-label="Elevgenomgång" onCancel={event => { event.preventDefault(); resetDetail() }} className="m-auto max-h-[90dvh] w-[min(960px,95vw)] overflow-y-auto rounded-lg border border-slate-300 bg-white p-3 pt-0 text-slate-800 shadow-xl backdrop:bg-slate-900/50">
       {detail && <>
-        <p role="status" className="text-sm">{message}</p>
-        <div className="mt-3 flex flex-wrap items-center gap-2"><strong className="mr-auto">{name(detail.record.studentId)}</strong>
-          <button type="button" onClick={resetDetail} className="rounded border border-slate-300 px-1.5 py-0.5 text-sm">Stäng genomgång</button>
+        <div className="sticky top-0 z-10 -mx-3 flex items-start gap-2 bg-white px-3 pt-2">
+          <p role="status" className="mr-auto text-sm">{message}</p>
+          <button type="button" onClick={resetDetail} aria-label="Stäng genomgång" title="Stäng genomgång"
+            className="-mr-1 flex h-8 w-8 shrink-0 items-center justify-center rounded text-2xl leading-none text-slate-600 hover:bg-slate-100 hover:text-slate-900">×</button>
+        </div>
+        <div className="mt-1 flex flex-wrap items-center gap-2"><strong className="mr-auto">{name(detail.record.studentId)}</strong>
           <button type="button" disabled={current <= 0} onClick={() => open(queue[current - 1])} className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-sm disabled:opacity-50">Föregående elev</button>
           <button type="button" disabled={current < 0 || current >= queue.length - 1} onClick={() => open(queue[current + 1])} className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-sm disabled:opacity-50">Nästa elev</button>
           <button type="button" onClick={() => open({ studentId: detail.record.studentId, attemptId: detail.record.attemptId })} className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-sm">Öppna senaste underlag</button>

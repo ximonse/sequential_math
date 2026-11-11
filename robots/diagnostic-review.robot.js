@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
 import { teacherLogin, sendScreening } from './lib/teacher.js'
-import { openDispatch, openResults, reviewOf, openQuestionBank, chooseCollection, collectionRows } from './lib/screening.js'
+import { openDispatch, openResults, reviewOf, openQuestionBank, chooseCollection, collectionRows, handInAnywayOnce } from './lib/screening.js'
 
 test('Admin reviews a class with submitted, ongoing and unopened work; notes survive retries and competing edits', async ({ page, request, browser }, testInfo) => {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -29,7 +29,7 @@ test('Admin reviews a class with submitted, ongoing and unopened work; notes sur
     await student.locator('input[data-cell="0:0"]').press('8')
     await expect(student.getByText('Alla skickade ändringar är sparade på servern.')).toBeVisible()
   }
-  studentPages[0].once('dialog', dialog => dialog.accept())
+  handInAnywayOnce(studentPages[0])
   await studentPages[0].getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
   await expect(studentPages[0]).toHaveURL(new RegExp(`/student/${pupils[0].studentId}$`))
   await chooseCollection(results, assignmentId)
@@ -42,7 +42,7 @@ test('Admin reviews a class with submitted, ongoing and unopened work; notes sur
   await review.getByRole('button', { name: /NCM review A, Räkna ut 268/ }).click()
   const form = review.getByRole('form', { name: 'Lärarens genomgång', exact: true })
   await form.getByRole('textbox', { name: 'Läraranteckning', exact: true }).fill('Be eleven förklara växlingen.')
-  await form.getByRole('checkbox').check()
+  await form.getByRole('checkbox', { name: 'Den här elevrevisionen är genomgången', exact: true }).check()
   await page.route('**/api/teacher-diagnostic-attempts', route => route.request().method() === 'POST' ? route.abort('failed') : route.continue())
   await form.getByRole('button', { name: 'Spara genomgång', exact: true }).click()
   await expect(form.getByText(/Din text finns kvar här/)).toBeVisible()
@@ -53,7 +53,7 @@ test('Admin reviews a class with submitted, ongoing and unopened work; notes sur
   await expect(rows.filter({ hasText: 'NCM review A' }).getByRole('cell').last()).toHaveText('1 / 6')
   await review.getByRole('button', { name: 'Nästa elev', exact: true }).click()
   await expect(review.getByRole('gridcell', { name: /rad 1, kolumn 1, 8/ })).toBeVisible()
-  await form.getByRole('checkbox').check()
+  await form.getByRole('checkbox', { name: 'Den här elevrevisionen är genomgången', exact: true }).check()
   await form.getByRole('button', { name: 'Spara genomgång', exact: true }).click()
   await expect(form.getByText('Genomgången är sparad på servern.')).toBeVisible()
   await studentPages[1].locator('input[data-cell="0:0"]').press('7')
@@ -63,7 +63,7 @@ test('Admin reviews a class with submitted, ongoing and unopened work; notes sur
   await expect(rows.filter({ hasText: 'NCM review B' }).getByRole('cell').last()).toHaveText('0 / 6')
   await review.getByRole('button', { name: /NCM review B, Räkna ut 268/ }).click()
   await expect(form.getByText('Eleven har ändrat underlaget sedan föregående genomgång.')).toBeVisible()
-  await expect(form.getByRole('checkbox')).not.toBeChecked()
+  await expect(form.getByRole('checkbox', { name: 'Den här elevrevisionen är genomgången', exact: true })).not.toBeChecked()
   await review.getByRole('button', { name: 'Föregående elev', exact: true }).click()
   await expect(form.getByRole('textbox', { name: 'Läraranteckning', exact: true })).toHaveValue('Be eleven förklara växlingen.')
   // A second teacher tab changes the shared note. The first tab must preserve

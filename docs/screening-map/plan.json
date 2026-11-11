@@ -3694,10 +3694,26 @@
       "issue": "",
       "kind": "funktion",
       "tasks": [
-        { "id": "frac-bank-tasks", "text": "Åtta granskade bråkfrågor med bråkfacit i manifestet (v6) och lärarstödsguider per intentCode", "done": true },
-        { "id": "frac-bank-routing", "text": "planFollowUp öppnar banken för bråk; bankproblem-mappning och svenska modelletiketter i kontrastvyn", "done": true },
-        { "id": "frac-evidence", "text": "Screening-evidensen tar med domain och values så bråkförsök analyseras av felmodellmotorn", "done": true },
-        { "id": "frac-live-test", "text": "Skarp prövning av hela loopen med en elev", "done": false }
+        {
+          "id": "frac-bank-tasks",
+          "text": "Åtta granskade bråkfrågor med bråkfacit i manifestet (v6) och lärarstödsguider per intentCode",
+          "done": true
+        },
+        {
+          "id": "frac-bank-routing",
+          "text": "planFollowUp öppnar banken för bråk; bankproblem-mappning och svenska modelletiketter i kontrastvyn",
+          "done": true
+        },
+        {
+          "id": "frac-evidence",
+          "text": "Screening-evidensen tar med domain och values så bråkförsök analyseras av felmodellmotorn",
+          "done": true
+        },
+        {
+          "id": "frac-live-test",
+          "text": "Skarp prövning av hela loopen med en elev",
+          "done": false
+        }
       ]
     },
     {
@@ -3737,6 +3753,104 @@
           "id": "ux-assignments-admin",
           "text": "Tona ner tekniska asg_-ID:n i Uppdrag & tickets och ersätt databastermen sparas atomiskt i Nytt läsår",
           "done": true
+        }
+      ]
+    },
+    {
+      "id": "synthetic-notebook-cohort",
+      "area": "Analysunderlag",
+      "title": "Syntetisk sexpersonsklass med sex räknehäftesscreeningar",
+      "status": "Byggt",
+      "purpose": "Ge Simon spårbara original med varierande elevkunskaper och realistiska felprocedurer för analys av räknehäftet.",
+      "next": "Underlaget är klart i vanliga matteappen. Nästa separata arbete kan vara att analysera original utan facit och därefter jämföra utfallet med ground-truth.json.",
+      "acceptance": "Sex fejkpersoner i tydligt syntetisk klass på Simons verifierade lärarkonto. Sex screeningar med tolv frågor, två räknesätt och sex frågor per räknesätt. Alla original och inlämningar återlästa, separat facit, ingen vanlig träning eller mastery. Minst en standarduppställning verifierat analyserbar; sparade layoutvarianter bevaras som jämförelse.",
+      "requires": [
+        "original"
+      ],
+      "affects": [
+        "analysis"
+      ],
+      "decision": "2026-11-11 Simon beställer sex påhittade elever, minst fem screeningar med minst tolv frågor och två räknesätt per screening, realistiska blandade fel och varierande kunskaper. Godkänner förslag om sex screeningar och separat facit. Väljer vanliga matteappen och sitt lärarkonto. Testskola väljs bland kontots tillgängliga skolor; approved MCP-kontobindning verifierad mot samma lärar-ID som API-inloggningen.",
+      "evidence": "2026-11-11 lokalt: robots/notebookCohortFixture.mjs och scripts/seed-notebook-cohort.mjs. Sex profiler, alla räknesättspar, återkommande jämförelsefrågor. Riktiga API-handlare med minneslagring: 432 inlämningar och återlästa original gröna. Alla 72 facit och säkra procedurer oberoende BigInt-kontrollerade; sju handräknade felprocedurer. Visuell autentiserad livekontroll visar första screeningen och Cleos original. Layoutbegränsning upptäckt: extra avstånd före operator och tom rad efter svarsstreck känns inte igen av smal metodanalys. Original från screening 1–4 bevaras. Screening 5–6 får standardlayout; lokalt krav på observerad placering/synligt resultat samt träff för Cleos 402−178 grönt. Liveinläggning pågår i klass class_d1b08cbbdcb989b51b08, inga verkliga elever. Appkod oförändrad. Build grön. Root-svit 1331 gröna, två befintliga CRLF-betingade källhashfel (normaliserad LF-hash stämmer exakt). Första breda körning avbruten eftersom den även omfattade inbäddade andra arbetskopior. Ingen grön fullsvit, lokal commit, push eller deploy påstås. Se docs/SYNTHETIC_NOTEBOOK_COHORT.md och gitignorerade robots/report/notebook-cohort/live/ för kvitto och facit.\n2026-11-11 20:03 svensk tid: sex screeningar, samtliga 432 original återlästa och kontrollerade i produktion. Normala underlags-API:t hittar exakt 72 screeningobservationer per person, inga träningssvar. Alla sex profiler har tomma mastery-fakta, tom progression och noll vanliga träningsproblem. 284 rätta slutsvar, 143 felaktiga, tre påbörjade utan slutsvar och två helt tomma. Autentiserad visuell slutkontroll av screening 6 visar original och faktisk större-minus-mindre-signal. Separat facit med kodnamn/profiler och försöksreferenser klart i gitignorerad live-mapp; final-check.json sparar kanoniska källrevisioner. Riktad ESLint och syntaxkontroll gröna, projektkartan strukturellt grön. Verktyg/dokumentation inte committade eftersom två befintliga CRLF-betingade hashkontroller faller; inget pushat eller deployat. Ingen ändring i appkod eller riktiga elevdata.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "synthetic-profiles",
+          "text": "Skapa sex genomtänkta profiler och separat facit med spårbara felprocedurer.",
+          "done": true
+        },
+        {
+          "id": "synthetic-local",
+          "text": "Verifiera alla 432 original lokalt och standardlayoutens faktiska analyssignaler.",
+          "done": true
+        },
+        {
+          "id": "synthetic-live",
+          "text": "Lämna in och återläs alla 432 lösningar i vanliga matteappen; verifiera analysåtkomst och oförändrad träning/mastery.",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "screening-teacher-assessment",
+      "area": "Lärarvy",
+      "title": "Lärarbedömning i screeningresultat, inlämningsvarning och fast meny",
+      "status": "Lokalt klart",
+      "purpose": "Läraren ska kunna rätta det appen inte ser: räkna ett svar som rätt när eleven inte följt instruktionen exakt, skriva in ett svar som eleven räknat fram men glömt i svarsrutan, och markera felförståelser. Eleven ska varnas tydligt vid inlämning om svar saknas. Genomgångsöverlägget ska vara centrerat med stängningskryss, och lärarvyns meny ska inte följa med vid skroll.",
+      "next": "Simon provar lokalt: genomgång av en inlämnad screening (rätt-markering, inskrivet svar, felförståelse), elevens inlämning med obesvarad fråga, överlägget och menyn. Beslut: ska uppföljningar och automatiska analyser använda lärarbedömningen?",
+      "acceptance": "Lärarbedömningen sparas i diagnostic_review med samma revisionsskydd, ändrar aldrig elevens händelser eller observerade svarsstatus och syns aldrig för eleven. Tabellen räknar och färgar efter bedömningen och märker L (lärarbedömt) och F (felförståelse, röd ram); tooltip visar elevens eget svar. Inskrivet svar rättas med uppgiftens regler. Bedömningen gäller bara den elevrevision den sparades för. Inlämning med obesvarade frågor visar en varning i sidan med Gå till fråga N, Tillbaka och Lämna in ändå. Genomgångsdialogen är centrerad med × uppe till höger. Lärarvyns meny ligger fast överst.",
+      "decision": "2026-11-11: Simon ber om rätt-markering trots felsvar, markering av felförståelser (kommentarsfält eller i resultatet), inskrivning av glömt svar, tydlig inlämningsvarning med direktlänk som går att klicka förbi, centrerat överlägg med stängningskryss och icke-följande meny i admin/lärarvy.\nAgentens val inom uppdraget: felförståelsen blir ett eget fält i genomgången som visas som F i tabellen; den privata läraranteckningen är oförändrad. Automatiska analyser, uppföljningar och kontrastval läser fortfarande elevens observerade svar; lärarbedömningen följer med i teacherReview men styr dem inte. Beslut om det ska ändras återstår.",
+      "evidence": "2026-11-11 lokalt på master från 78448e2, ej pushat. Byggt: diagnosticTeacherAssessment.js (markedCorrect, teacherAnswer rättat via summarizeDiagnosticObservation answerOverride, misconception; gäller bara aktuell elevrevision), sparas i diagnostic_review av saveDiagnosticReview som behåller tidigare fält när de utelämnas; klassöversikt och detaljläsning ger teacherAssessment bredvid elevens screening; _pupilScreeningEvidence ger fälten i teacherReview; WorkEvidenceNote visar dem. DiagnosticReviewForm har tre nya fält; DiagnosticScreeningMatrix/Cell räknar efter bedömningen med L/F. MissingAnswersDialog ersätter window.confirm vid inlämning. Genomgångsdialogen m-auto (Tailwind-preflight nollade marginalen) med ×. DashboardLayout-menyn inte längre sticky. Docs: NCM_DIAGNOSTIK_GENOMGANG. Vitest: nya och berörda tester gröna; enda fel i repot är audit-ncm-rule-readiness (extern NCM-referens ändrad, orelaterat). Lint ren på ändrade filer, build godkänd. Robotar: ny screening-teacher-assessment grön; diagnostic-collections, -review, -pilot, short-division och transition-latency anpassade till varningen i sidan. Hela sviten 189 pass, 16 fel; vid omkörning med 2 arbetare 8 kvar (assignment-targets, diagnostic-grid x2, group-class-filter, progress-sorting, table-progress, teacher-evidence-consistency, teacher), och exakt samma 8 faller på rent 78448e2, alltså befintliga fel. Port 5288 hölls av en annan agents gamla robotserver; robotarna kördes på egna portar. Ingen skärmbildsgranskning.",
+      "issue": "",
+      "kind": "funktion",
+      "requires": [],
+      "affects": [
+        "review",
+        "matrix",
+        "student-collections",
+        "screening-results-tab"
+      ],
+      "tasks": [
+        {
+          "id": "assess-correct",
+          "text": "Räkna svaret som rätt trots facit",
+          "done": true
+        },
+        {
+          "id": "assess-answer",
+          "text": "Skriv in svar som eleven glömt i svarsrutan, rättat med uppgiftens regler",
+          "done": true
+        },
+        {
+          "id": "assess-misconception",
+          "text": "Felförståelse som appen inte ser, märkt F i tabellen",
+          "done": true
+        },
+        {
+          "id": "submit-warning",
+          "text": "Inlämningsvarning med Gå till fråga N och Lämna in ändå",
+          "done": true
+        },
+        {
+          "id": "review-dialog",
+          "text": "Centrerat genomgångsöverlägg med × uppe till höger",
+          "done": true
+        },
+        {
+          "id": "menu-static",
+          "text": "Lärarvyns meny följer inte med vid skroll",
+          "done": true
+        },
+        {
+          "id": "assess-try",
+          "text": "Simon provar i webbläsaren",
+          "done": false
+        },
+        {
+          "id": "assess-policy",
+          "text": "Beslut: ska uppföljningar och analyser använda lärarbedömningen?",
+          "done": false
         }
       ]
     }
@@ -4571,6 +4685,36 @@
       "source": "screening-tabs-review",
       "target": "teacher-ux-ui-bang-for-the-buck",
       "kind": "kräver"
+    },
+    {
+      "source": "original",
+      "target": "synthetic-notebook-cohort",
+      "kind": "kräver"
+    },
+    {
+      "source": "synthetic-notebook-cohort",
+      "target": "analysis",
+      "kind": "påverkar"
+    },
+    {
+      "source": "screening-teacher-assessment",
+      "target": "review",
+      "kind": "påverkar"
+    },
+    {
+      "source": "screening-teacher-assessment",
+      "target": "matrix",
+      "kind": "påverkar"
+    },
+    {
+      "source": "screening-teacher-assessment",
+      "target": "student-collections",
+      "kind": "påverkar"
+    },
+    {
+      "source": "screening-teacher-assessment",
+      "target": "screening-results-tab",
+      "kind": "påverkar"
     }
   ],
   "note": "Planeringssnapshot. Lokalt klart är inte publicerat. Tidigare publicering bygger på denna tråds verifiering; ingen ny livekontroll. Förslag är inte fattade beslut."

@@ -634,7 +634,8 @@ export default function DashboardLayout({
         <div hidden={!dashboardStatus} className="mb-3 text-sm text-gray-600">{dashboardStatus}</div>
 
         <div className="grid gap-3 min-[1400px]:grid-cols-[13rem_minmax(0,1fr)]">
-          <aside className="sticky top-10 z-40 rounded-lg bg-slate-800 p-1.5 text-slate-100 shadow-lg min-[1400px]:top-3 min-[1400px]:h-fit min-[1400px]:p-2 min-[1400px]:shadow-none">
+          {/* Not sticky: a menu that follows the scroll covers the content (Simon 2026-11-11). */}
+          <aside className="rounded-lg bg-slate-800 p-1.5 text-slate-100 shadow-lg min-[1400px]:h-fit min-[1400px]:p-2 min-[1400px]:shadow-none">
               <p className="hidden px-2 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-300 min-[1400px]:block">Arbetsläge</p>
               <nav className="flex flex-wrap gap-1 min-[1400px]:grid" aria-label="Lärarvy">
                 {WORKSPACES.filter(workspace => (!workspace.adminOnly || teacherIsAdmin) && (!workspace.attentionOnly || canViewAttention)).map(workspace => (

@@ -113,6 +113,30 @@ En samtidig lärarändring eller elevändring ger konflikt utan att skriva över
 den andra ändringen; den egna texten ligger kvar i formuläret. Vid nätfel
 ligger den också kvar och kan skickas igen. Den sparas inte i en lokal kö.
 
+### Lärarens bedömning (2026-11-11)
+
+Genomgången har tre valfria fält för lärarens egen bedömning, sparade i samma
+`diagnostic_review`-post och med samma revisionsskydd:
+
+- **Räkna svaret som rätt** (`markedCorrect`), t.ex. när eleven tänkt rätt men
+  inte följt instruktionen exakt. Visas när elevens svar inte redan är rätt.
+- **Svar som eleven glömt skriva i svarsrutan** (`teacherAnswer`, högst 200
+  tecken, samma teckenregler som elevens svar). Rättas med uppgiftens egna
+  regler; för flervals- och skrivsvar finns fältet inte.
+- **Felförståelse som appen inte ser** (`misconception`, högst 500 tecken).
+
+Elevens händelser och observerade svarsstatus ändras aldrig. Resultattabellen
+räknar och färgar efter lärarens bedömning, märkt **L** (lärarbedömt) och **F**
+(felförståelse, röd ram); verktygstipset visar elevens eget svar. Bedömningen
+gäller bara den elevrevision den sparades för. Analysunderlaget (`teacherReview`)
+får fälten bredvid den observerade statusen. Automatiska analyser, uppföljningar
+och kontrastval använder fortfarande elevens observerade svar. Eleven ser inget
+av detta; bara uttryckligt skickad återkoppling når eleven.
+
+Vid inlämning av en samling visar elevvyn en tydlig varning i sidan när frågor
+saknar svar i svarsrutan, med **Gå till fråga N** för varje sådan fråga samt
+**Tillbaka** och **Lämna in ändå**.
+
 Byte av elev, uppgift, uppdrag eller klass i genomgångsvyn varnar när text
 är osparad; omladdning/stängning använder webbläsarens beforeunload-varning.
 Att lämna hela lärarsektionen via appens andra flikar skyddas inte av denna

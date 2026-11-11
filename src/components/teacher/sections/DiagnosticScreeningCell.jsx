@@ -15,12 +15,20 @@ export default function DiagnosticScreeningCell({ item, pupilName, prompt, onOpe
   const timer = useRef(null)
   const button = useRef(null)
   const summary = item.screening
-  const status = summary?.answerStatus || 'unanswered'
+  const teacher = item.teacherAssessment
+  const status = teacher?.answerStatus || summary?.answerStatus || 'unanswered'
   const signals = summary?.signals || []
-  const value = summary?.explicitAnswer ?? '—'
+  // Teacher marks sit beside the app's signals: L for a teacher's verdict or typed answer, F for a noted misconception.
+  const marks = [teacher && (teacher.markedCorrect || teacher.teacherAnswer) && { code: 'L', label: 'Lärarbedömt',
+    message: [teacher.markedCorrect && 'Läraren räknar svaret som rätt.', teacher.teacherAnswer
+      && `Lärarens inskrivna svar: ${teacher.teacherAnswer} (${labels[teacher.teacherAnswerStatus]?.toLowerCase() || 'okänt'}).`].filter(Boolean).join(' ') },
+  teacher?.misconception && { code: 'F', label: 'Felförståelse', message: `Felförståelse: ${teacher.misconception}` }].filter(Boolean)
+  const pupilValue = summary?.explicitAnswer ?? null
+  const value = pupilValue ?? teacher?.teacherAnswer ?? '—'
   // Written answers can be long; the cell shows a start and the tooltip and review show all of it.
   const shortValue = value.length > 24 ? `${value.slice(0, 22).trimEnd()}…` : value
-  const label = status === 'incorrect' && signals.length ? 'Fel svar' : labels[status]
+  const label = teacher && teacher.answerStatus !== summary?.answerStatus ? `${labels[status]} enligt läraren`
+    : status === 'incorrect' && signals.length ? 'Fel svar' : labels[status]
   useEffect(() => () => clearTimeout(timer.current), [])
   function show() {
     clearTimeout(timer.current)
@@ -35,9 +43,9 @@ export default function DiagnosticScreeningCell({ item, pupilName, prompt, onOpe
       onMouseEnter={show} onMouseLeave={hideSoon} onFocus={show} onBlur={() => setPosition(null)}
       onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); setPosition(null) } }}
       aria-describedby={position ? id : undefined}
-      aria-label={`${pupilName}, ${prompt}, svar ${value}, ${label}${signals.length ? `, ${signals.map(signal => signal.label).join(', ')}` : ''}`}
-      className={`w-full min-w-16 rounded px-1.5 py-0.5 font-semibold tabular-nums outline-offset-2 focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:cursor-default ${status === 'correct' ? colors.correct : colors[signals[0]?.code] || colors[status]}`}>
-      {shortValue}{signals.map(signal => <span key={signal.code} className="ml-1 text-[10px] font-medium">{signal.code}</span>)}
+      aria-label={`${pupilName}, ${prompt}, svar ${value}, ${label}${[...signals, ...marks].length ? `, ${[...signals, ...marks].map(signal => signal.label).join(', ')}` : ''}`}
+      className={`w-full min-w-16 rounded px-1.5 py-0.5 font-semibold tabular-nums outline-offset-2 focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:cursor-default ${status === 'correct' ? colors.correct : colors[signals[0]?.code] || colors[status]}${teacher?.misconception ? ' screening-answer--flagged' : ''}`}>
+      {shortValue}{[...signals, ...marks].map(signal => <span key={signal.code} className="ml-1 text-[10px] font-medium">{signal.code}</span>)}
     </button>
     {position && createPortal(<div id={id} role="tooltip" onMouseEnter={() => clearTimeout(timer.current)} onMouseLeave={hideSoon}
       className="fixed z-[100] w-[280px] rounded border border-slate-300 bg-white p-2 text-sm text-slate-800 shadow-lg"
@@ -45,9 +53,9 @@ export default function DiagnosticScreeningCell({ item, pupilName, prompt, onOpe
       <strong className="whitespace-pre-wrap"><QuestionText>{prompt}</QuestionText></strong>
       {value.length > 24
         ? <><p className="mt-1 font-medium">Elevens svar</p><p className="max-h-60 overflow-y-auto whitespace-pre-wrap break-words">{value}</p></>
-        : <dl className="mt-1 grid grid-cols-2 gap-x-3"><dt>Elevens svar</dt><dd className="text-right font-semibold">{value}</dd>
+        : <dl className="mt-1 grid grid-cols-2 gap-x-3"><dt>Elevens svar</dt><dd className="text-right font-semibold">{pupilValue ?? '—'}</dd>
           <dt>Rätt svar</dt><dd className="text-right font-semibold">{summary?.expectedAnswer ?? '—'}</dd></dl>}
-      {signals.map(signal => <p key={signal.code} className="mt-1 border-t border-slate-200 pt-1">{signal.message}</p>)}
+      {[...signals, ...marks].map(signal => <p key={signal.code} className="mt-1 border-t border-slate-200 pt-1">{signal.message}</p>)}
       <p className="mt-1 text-xs text-slate-600">{label} · {item.status === 'submitted' ? 'Inlämnat' : 'Pågående'}</p>
     </div>, document.body)}
   </>

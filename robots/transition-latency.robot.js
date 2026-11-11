@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test'
 import { writeFile } from 'node:fs/promises'
 import { createPupil, login, readServerProfile } from './lib/app.js'
 import { createTeacher, teacherLogin } from './lib/teacher.js'
+import { handInAnywayOnce } from './lib/screening.js'
 
 test('Transition matrix measures usable views and preserves screening work with delayed storage', async ({ page, request, browser }, info) => {
   test.skip(process.env.ROBOT_MEASURE_TRANSITIONS !== '1', 'Explicit isolated performance run; do not mix load with the normal suite.')
@@ -78,7 +79,7 @@ test('Transition matrix measures usable views and preserves screening work with 
       await measure(student, 'screening-previous', () => student.getByRole('button', { name: '← Förra frågan', exact: true }).click(),
         () => expect(student.locator('input[data-cell="0:0"]')).toHaveAttribute('aria-label', /stor siffra 5/))
     }
-    student.once('dialog', dialog => dialog.accept())
+    handInAnywayOnce(student)
     await measure(student, 'screening-submit-collection', () => student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click(),
       () => expect(student).toHaveURL(new RegExp(`/student/${pupil.studentId}$`)))
     const afterDiagnostic = await readServerProfile(request, pupil.studentId)

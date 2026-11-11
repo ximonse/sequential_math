@@ -7,5 +7,8 @@ export default function WorkEvidenceNote({ work, review }) {
     {work?.signals.map(signal => <p key={signal.code}><strong>{signal.label}:</strong> {signal.message}</p>)}
     {expandedOnly && <p>Utökad läsning med växlingsmarkeringar: {expanded.visibleResult} i häftet och {expanded.explicitAnswer} i svarsfältet. Den strikta läsningen är okänd. Orsaken behöver granskas.</p>}
     {review && <p><strong>Försöksgranskning {review.reviewRevision}:</strong> {review.matchesEvidence ? review.reviewed ? 'Markerad granskad för denna evidensrevision.' : 'Inte markerad granskad.' : 'Äldre granskning; elevunderlaget har ändrats.'} {review.noteSv}</p>}
+    {review && (review.markedCorrect || review.teacherAnswer || review.misconceptionSv) && <p><strong>Lärarens bedömning:</strong>{' '}
+      {[review.markedCorrect && 'bedömt som rätt trots facit', review.teacherAnswer && `lärarens inskrivna svar ${review.teacherAnswer}`,
+        review.misconceptionSv && `felförståelse: ${review.misconceptionSv}`].filter(Boolean).join(' · ')}.</p>}
   </div>
 }

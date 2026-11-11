@@ -3,13 +3,16 @@ import QuestionText from '../../QuestionText'
 
 const statuses = { not_started: 'Inte påbörjat', in_progress: 'Påbörjat', submitted: 'Alla inlämnade' }
 export default function DiagnosticScreeningMatrix({ overview, name, onOpen }) {
-  const correct = item => item.screening?.answerStatus === 'correct'
-  const answered = item => ['correct', 'incorrect'].includes(item.screening?.answerStatus)
+  // The teacher's judgement, when saved for the current revision, is what the table counts.
+  const status = item => item.teacherAssessment?.answerStatus || item.screening?.answerStatus
+  const correct = item => status(item) === 'correct'
+  const answered = item => ['correct', 'incorrect'].includes(status(item))
   const automatic = item => item.answerType !== 'text' || item.automaticallyMarked === true
   return <>
     <div className="my-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-700" aria-label="Svarsfärger">
       <span>🟩 Rätt svar</span><span>⬜ Ej svar / ofullständigt</span><span>🟥 Fel svar</span>
       <span>M · Möjligt metodfel</span><span>P · Kolumnförskjutning</span><span>Ö · Olika svar</span>
+      <span>L · Lärarbedömt</span><span>F · Felförståelse markerad av lärare</span>
     </div>
     <div className="overflow-x-auto"><table className="w-full text-center text-sm tabular-nums">
       <caption className="sr-only">Screening: elevens svar per uppgift</caption>
@@ -34,6 +37,6 @@ export default function DiagnosticScreeningMatrix({ overview, name, onOpen }) {
           : `${column.filter(correct).length} / ${column.filter(answered).length}`}</td>
       })}<td colSpan={3} /></tr></tfoot>
     </table></div>
-    <p className="mt-2 text-xs text-slate-600">Peka på ett svar för facit och analyssignaler. Klicka för uträkningen. Rätt svar betyder inte att metoden är granskad. Pågående svar kan ändras.</p>
+    <p className="mt-2 text-xs text-slate-600">Peka på ett svar för facit och analyssignaler. Klicka för uträkningen. Rätt svar betyder inte att metoden är granskad. Pågående svar kan ändras. Lärarbedömningar sätts i elevgenomgången.</p>
   </>
 }

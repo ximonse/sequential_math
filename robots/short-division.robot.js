@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
 import { createTeacher, teacherLogin } from './lib/teacher.js'
-import { openResults } from './lib/screening.js'
+import { openResults, handInAnywayOnce } from './lib/screening.js'
 
 async function screening(page, request, { name, title, taskIds }) {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -150,7 +150,7 @@ test('The division button places an own short division in the chosen cell; comma
   await expect(student.locator('[data-line-note="3:2"]')).toHaveText('1')
   await expect(student.locator('[data-short-division-answer]')).toHaveText('44')
   // "Mitt svar" is empty on purpose; the pupil confirms handing in anyway.
-  student.once('dialog', dialog => dialog.accept())
+  handInAnywayOnce(student)
   await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
   await expect(student).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
 

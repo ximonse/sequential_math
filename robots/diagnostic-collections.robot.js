@@ -61,10 +61,14 @@ test('R2/R3: autosave does not freeze; navigation preserves work and submission 
   const submit = page.getByRole('button', { name: 'Lämna in', exact: true })
   await expect(submit).toHaveCSS('background-color', 'rgb(22, 61, 42)')
   await page.screenshot({ path: testInfo.outputPath('last-question-submit.png'), fullPage: true })
-  let warning = ''
-  page.once('dialog', async dialog => { warning = dialog.message(); await dialog.dismiss() })
   await submit.click()
-  await expect.poll(() => warning).toMatch(/obesvarad|saknar svar/i)
+  const warning = page.getByRole('dialog', { name: /saknar svar/i })
+  await expect(warning).toBeVisible()
+  await expect(warning.getByRole('button', { name: 'Lämna in ändå', exact: true })).toBeVisible()
+  // The direct link opens the unanswered question; nothing is handed in.
+  await warning.getByRole('button', { name: 'Gå till fråga 2', exact: true }).click()
+  await expect(warning).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: '402 − 178' })).toBeVisible()
   await expect(page.locator('input[data-cell="0:0"]')).toBeEnabled()
   await page.locator('#diagnostic-answer').click()
   await page.locator('#diagnostic-answer').pressSequentially('224')

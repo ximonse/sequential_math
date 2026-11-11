@@ -37,7 +37,10 @@ export async function pupilScreeningEvidence(studentId, classId, { store = kv, r
     const teacherReview = review?.studentId === studentId ? {
       reviewRevision: review.reviewRevision, evidenceRevision: review.evidenceRevision, evidenceSequence: review.evidenceSequence,
       matchesEvidence: review.evidenceRevision === current.serverRevision && review.evidenceSequence === current.lastSequence,
-      reviewed: review.reviewed === true, noteSv: review.note || '', updatedAt: review.updatedAt } : null
+      reviewed: review.reviewed === true, noteSv: review.note || '', updatedAt: review.updatedAt,
+      // The teacher's judgement sits beside the observed answer status; it does not replace it.
+      markedCorrect: review.markedCorrect === true, teacherAnswer: review.teacherAnswer || null,
+      misconceptionSv: review.misconception || '' } : null
     return { source: 'screening', timestamp,
       timeBasis: times.length ? 'latest_saved_client_event' : 'attempt_created_at',
       reference: { kind: 'screening_attempt', attemptId: id, assignmentId: record.assignmentId,

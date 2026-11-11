@@ -2,6 +2,7 @@ import { kv } from '@vercel/kv'
 import { isCurrentDiagnosticReview } from './_diagnosticReviewStore.js'
 import { readDiagnosticAttempt } from './_diagnosticAttemptStore.js'
 import { summarizeDiagnosticScreening } from '../src/domains/arithmetic/diagnosticScreeningSummary.js'
+import { assessWithTeacher, currentTeacherAssessment } from '../src/domains/arithmetic/diagnosticTeacherAssessment.js'
 
 export async function listDiagnosticAssignmentAttempts(assignment, studentIds, { store = kv } = {}) {
   const ids = await store.smembers(`diagnostic_attempts_by_assignment:${assignment.assignmentId}`) || []
@@ -32,10 +33,13 @@ export async function diagnosticClassOverview(assignment, studentIds, { store = 
         || record.taskId !== item.taskId || record.taskVersion !== item.taskVersion || record.evidenceClass !== 'diagnostic_only') {
         throw new Error('Diagnostic attempt changed during class read')
       }
+      const screening = summarizeDiagnosticScreening(item.taskSnapshot, saved.snapshot)
+      const teacherAssessment = assessWithTeacher(item.taskSnapshot, saved.snapshot, screening.answerStatus,
+        review?.studentId === studentId ? currentTeacherAssessment(review, record) : null)
       return { ...base, attemptId: record.attemptId, status: record.status,
         serverRevision: record.serverRevision, lastSequence: record.lastSequence,
-        reviewed: isCurrentDiagnosticReview(review, record),
-        screening: summarizeDiagnosticScreening(item.taskSnapshot, saved.snapshot) }
+        reviewed: isCurrentDiagnosticReview(review, record), screening,
+        ...(teacherAssessment ? { teacherAssessment } : {}) }
     }))
     const submitted = items.filter(item => item.status === 'submitted').length
     const started = items.filter(item => item.status !== 'not_started').length

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login, readServerProfile } from './lib/app.js'
 import { sendScreening, teacherLogin } from './lib/teacher.js'
-import { openDispatch, openResults } from './lib/screening.js'
+import { openDispatch, openResults, handInAnywayOnce } from './lib/screening.js'
 import { readFileSync } from 'node:fs'
 const manifest = JSON.parse(readFileSync(new URL('../src/domains/arithmetic/diagnosticTasks.v1.json', import.meta.url), 'utf8'))
 test.describe.configure({ mode: 'serial' })
@@ -48,7 +48,7 @@ test('A pupil saves before continuing and submits the whole collection without l
   await expect(page.getByRole('heading', { name: manifest.tasks[1].promptSv.replace(/^Räkna ut /u, '').replace(/\.$/u, '') })).toBeVisible()
   await expect(page.locator('input[data-cell="0:0"]')).toBeEnabled()
   await expect(page.locator('input[data-cell="0:0"]')).not.toHaveAttribute('aria-label', /stor siffra 8/)
-  page.once('dialog', dialog => dialog.accept())
+  handInAnywayOnce(page)
   await page.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
   await expect(page).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
   await page.goto(firstUrl)

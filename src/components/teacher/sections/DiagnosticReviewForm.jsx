@@ -1,9 +1,23 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { diagnosticRequest } from './diagnosticRequest'
+import { summarizeDiagnosticObservation } from '../../../domains/arithmetic/diagnosticObservation.js'
+import { acceptsTeacherAnswer, TEACHER_ANSWER_MAX, TEACHER_MISCONCEPTION_MAX } from '../../../domains/arithmetic/diagnosticTeacherAssessment.js'
+
+const answerStatusLabels = { correct: 'rätt', incorrect: 'fel', incomplete: 'ofullständigt', unanswered: 'inget svar', unassessed: 'bedöms av läraren' }
 
 export default function DiagnosticReviewForm({ detail, onSaved, onDirtyChange }) {
   const [review, setReview] = useState(detail.review)
   const [note, setNote] = useState(detail.review?.note || '')
+  const [markedCorrect, setMarkedCorrect] = useState(detail.review?.markedCorrect === true)
+  const [teacherAnswer, setTeacherAnswer] = useState(detail.review?.teacherAnswer || '')
+  const [misconception, setMisconception] = useState(detail.review?.misconception || '')
+  const answerField = acceptsTeacherAnswer(detail.task)
+  // The typed answer is marked with the task's own rules, live, without saving.
+  const teacherAnswerStatus = useMemo(() => {
+    if (!answerField || !teacherAnswer.trim()) return null
+    try { return summarizeDiagnosticObservation(detail.task, detail.snapshot, { answerOverride: teacherAnswer.trim() }).answerStatus } catch { return null }
+  }, [answerField, teacherAnswer, detail.task, detail.snapshot])
+  const pupilCorrect = detail.observation?.answerStatus === 'correct'
   const [feedbackText, setFeedbackText] = useState(detail.review?.feedback?.text || '')
   const [reviewed, setReviewed] = useState(Boolean(detail.review?.reviewed
     && detail.review.evidenceRevision === detail.record.serverRevision
@@ -28,6 +42,7 @@ export default function DiagnosticReviewForm({ detail, onSaved, onDirtyChange })
         assignmentId: detail.record.assignmentId, attemptId: detail.record.attemptId,
         expectedReviewRevision: review?.reviewRevision || 0,
         evidenceRevision: detail.record.serverRevision, evidenceSequence: detail.record.lastSequence, reviewed, note,
+        markedCorrect, teacherAnswer: answerField ? teacherAnswer : '', misconception,
         ...(publishFeedback ? { publishFeedback: true, feedbackText } : {})
       }) })
       if (!result.ok) throw new Error(result.data.error || 'Kunde inte spara genomgången.')
@@ -49,6 +64,26 @@ export default function DiagnosticReviewForm({ detail, onSaved, onDirtyChange })
         onChange={event => { setNote(event.target.value); updateState({ busy: false, message: '', dirty: true }) }}
         className="mt-1 block w-full rounded border border-orange-300 bg-white p-2" />
     </label>
+    <fieldset className="mt-2 border-t border-orange-300 pt-2 text-sm" aria-label="Lärarens bedömning">
+      <legend className="font-semibold">Lärarens bedömning</legend>
+      <p className="text-xs">Räknas i resultattabellen och märks med L. Elevens eget svar sparas orört. Visas inte för eleven.</p>
+      {(!pupilCorrect || markedCorrect) && <label className="mt-1 flex items-center gap-2"><input type="checkbox" checked={markedCorrect} disabled={state.busy}
+        onChange={event => { setMarkedCorrect(event.target.checked); updateState({ busy: false, message: '', dirty: true }) }} />
+        Räkna svaret som rätt, t.ex. när eleven inte följt instruktionen exakt</label>}
+      {answerField && <label className="mt-2 block">Svar som eleven glömt skriva i svarsrutan
+        <span className="mt-1 flex flex-wrap items-center gap-2">
+          <input type="text" value={teacherAnswer} maxLength={TEACHER_ANSWER_MAX} disabled={state.busy} placeholder="Lärarens inskrivna svar"
+            onChange={event => { setTeacherAnswer(event.target.value); updateState({ busy: false, message: '', dirty: true }) }}
+            className="w-40 rounded border border-orange-300 bg-white px-1.5 py-0.5" />
+          {teacherAnswerStatus && <span>Bedöms som {answerStatusLabels[teacherAnswerStatus] || teacherAnswerStatus} mot facit.</span>}
+        </span>
+      </label>}
+      <label className="mt-2 block">Felförståelse som appen inte ser
+        <textarea value={misconception} maxLength={TEACHER_MISCONCEPTION_MAX} rows={2} disabled={state.busy}
+          onChange={event => { setMisconception(event.target.value); updateState({ busy: false, message: '', dirty: true }) }}
+          className="mt-1 block w-full rounded border border-orange-300 bg-white p-2" />
+      </label>
+    </fieldset>
     <button type="submit" disabled={state.busy || !state.dirty} className="mt-2 rounded bg-orange-700 px-3 py-1 text-sm font-semibold text-white disabled:opacity-50">Spara genomgång</button>
     {detail.record.status === 'submitted' && <div className="mt-2 border-t border-orange-300 pt-2">
       <label className="block text-sm font-semibold">Återkoppling till eleven

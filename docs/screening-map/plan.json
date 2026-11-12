@@ -3853,6 +3853,68 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "misconception-governance",
+      "area": "Helhet och riktning",
+      "title": "Styrning: felförståelser tydliga för läraren (screening först)",
+      "status": "Beslutat",
+      "purpose": "En lärare som öppnar en screening ska utan eget detektivarbete se vilka felförståelser som finns, hos vilka elever och med vilka svar som belägg. En fast struktur och rutin för felmodeller, så att nya områden inte byggs på olika sätt och luckor inte passerar tyst.",
+      "next": "Steg 1: flytta de 52 befintliga felmodellerna till en katalog med alla fält, utan att ändra vad de räknar, och inför testet som kräver fullständighet.",
+      "acceptance": "Steg 1–4 i docs/STYRNING_FELFORSTAELSER.md är klara med sina spärrar i test/CI, och Simon kan i en riktig screening säga vilka elever som har vilken felförståelse utan att öppna enskilda elever.",
+      "requires": [],
+      "affects": [
+        "analysis",
+        "rules",
+        "matrix",
+        "ncm-didactic-backbone"
+      ],
+      "decision": "2026-11-11 Simon antar docs/STYRNING_FELFORSTAELSER.md som styrande över övriga docs utom produktkontraktet och bekräftar frysningen av kontrastfrågor, materialkedja, avstämning, didaktikpaket, nya träningslägen, nya vyer och visuell harmonisering tills steg 1–4 är klara. Fokus är screeningar. Öppna beslut: tröskel för slumprisk, och om upprepat fel räknesätt ska räknas som felförståelse.",
+      "evidence": "2026-11-11 genomgång av kod, dokument och 17 884 riktiga elevsvar i fyra klasser (skrivskyddad läsning). Baslinje: åk 5 har 1 900 fel varav 260 med beräknad förklaring; 20 av 52 modeller saknar rubrik och 32 saknar beskrivning; 0 av 48 NCM-screeninguppgifter har strukturerat innehåll; 5 av 54 screeningfel fick modellträff; Kumlaby 52 av 155 screeningsvar obesvarade, 35 med uträkning. 2026-11-12 lokalt: styrdokument och arbetsregel i AGENTS.md. Inga spärrar är byggda än; ingen appkod ändrad.",
+      "issue": "",
+      "kind": "plan",
+      "tasks": [
+        {
+          "id": "gov-step-1",
+          "text": "Steg 1: modellkatalog som enda källa, med test som kräver alla fält",
+          "done": false
+        },
+        {
+          "id": "gov-step-2",
+          "text": "Steg 2: täckningsrapport och spärr mot fel som försvinner",
+          "done": false
+        },
+        {
+          "id": "gov-step-3",
+          "text": "Steg 3: strukturerat innehåll och felsvarsnyckel på alla screeninguppgifter",
+          "done": false
+        },
+        {
+          "id": "gov-step-4",
+          "text": "Steg 4: screeningresultat per felförståelse för elev, grupp och klass",
+          "done": false
+        },
+        {
+          "id": "gov-step-5",
+          "text": "Steg 5: fyll luckor efter täckningsrapporten med den fasta rutinen",
+          "done": false
+        },
+        {
+          "id": "gov-step-6",
+          "text": "Steg 6: samma struktur för träningssvaren",
+          "done": false
+        },
+        {
+          "id": "gov-decision-risk",
+          "text": "Beslut: tröskel för slumprisk",
+          "done": false
+        },
+        {
+          "id": "gov-decision-swap",
+          "text": "Beslut: upprepat fel räknesätt som felförståelse",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [
@@ -4714,6 +4776,26 @@
     {
       "source": "screening-teacher-assessment",
       "target": "screening-results-tab",
+      "kind": "påverkar"
+    },
+    {
+      "source": "misconception-governance",
+      "target": "analysis",
+      "kind": "påverkar"
+    },
+    {
+      "source": "misconception-governance",
+      "target": "rules",
+      "kind": "påverkar"
+    },
+    {
+      "source": "misconception-governance",
+      "target": "matrix",
+      "kind": "påverkar"
+    },
+    {
+      "source": "misconception-governance",
+      "target": "ncm-didactic-backbone",
       "kind": "påverkar"
     }
   ],

@@ -18,6 +18,25 @@ Om något är oklart: fråga människan. Gissa inte.
 Notis: I vissa miljöer kan motsvarande dokument refereras under `src/`.
 Om de inte finns där, använd filerna i projektroten.
 
+## Styrande arbetsmål: felförståelser tydliga för läraren
+
+Antaget av Simon 2026-11-11. Läs `docs/STYRNING_FELFORSTAELSER.md` före varje
+uppdrag i detta repo. Det gäller över övriga filer i `docs/` utom
+produktkontraktet. Fokus är screeningar.
+
+- Ange före arbetet vilket steg i dokumentets avsnitt 8 uppdraget hör till.
+  Hör det inte till något steg: säg det och fråga Simon innan arbetet börjar.
+- Det frysta i avsnitt 4 (kontrastfrågor, materialkedja, avstämning,
+  didaktikpaket, nya träningslägen, nya vyer, visuell harmonisering) byggs
+  inte ut utan Simons uttryckliga besked i samma samtal. Fel som stoppar
+  elever eller lärare rättas.
+- Ingen ny felmodell, screeninguppgift eller domän läggs in utanför rutinen i
+  avsnitt 9.
+- Varje leverans redovisar täckningen före och efter, så snart
+  täckningsrapporten finns.
+- Gröna tester är inte belägg för att läraren ser felförståelsen. Belägget är
+  en riktig screening läst av Simon.
+
 ## Aktiv projektriktning: NCM-diagnostik
 
 Vid arbete med NCM, diagnostiska uppdrag, uppställningar eller analys av

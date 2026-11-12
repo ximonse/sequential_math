@@ -98,7 +98,8 @@ test('A table fact answered wrong is asked again and the same wrong answer is sh
   const classId = `repeat-${Math.random().toString(36).slice(2, 8)}`
   const pupil = await createPupil(request, { classId, name: 'Repeat Pupil', operations: ['multiplication'] })
   expect((await (await request.post('/__robot/seed-practice-log', { data: { studentId: pupil.studentId,
-    rows: [mul(7, 8, 48), mul(6, 9, 48), mul(6, 7, 42)] } })).json()).ok).toBe(true)
+    // Three different facts one table step off form a pattern (Simon 2026-11-12); two do not.
+    rows: [mul(7, 8, 48), mul(6, 9, 48), mul(8, 8, 72), mul(6, 7, 42)] } })).json()).ok).toBe(true)
   const teacher = await createTeacher(request, { classIds: [classId], role: 'super_admin' })
   await teacherLogin(page, teacher)
   await page.goto(`/teacher/student/${pupil.studentId}`)

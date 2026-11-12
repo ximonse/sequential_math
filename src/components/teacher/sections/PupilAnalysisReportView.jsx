@@ -12,7 +12,9 @@ import WorkEvidenceNote from '../WorkEvidenceNote.jsx'
 import { contrastFollowUpEligible } from '../../../lib/practiceModes.js'
 import { diagnosticRequest } from './diagnosticRequest.js'
 import { OPERATION_LABELS } from '../../../lib/operations.js'
-import { CONTRAST_LABELS_SV, NOT_RIVALS } from '../../../domains/predictableErrors/contrast.js'
+import { CONTRAST_LABELS_SV } from '../../../domains/predictableErrors/contrast.js'
+import { NOT_METHOD_MODELS } from '../../../domains/predictableErrors/catalog.js'
+import { meetsPattern } from '../../../lib/modelPattern.js'
 import { modelDescription } from '../../../domains/predictableErrors/modelDescriptions.js'
 import '../../../dev/diagnosticGridPrototype.css'
 
@@ -59,7 +61,9 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
       checkInRevision: check?.revision ?? 0, decision: decision?.decision ?? 'undecided',
       interpretationSv: decision?.interpretationSv ?? '', goalSv: check?.goalSv ?? '' }
   }
-  const slip = item => NOT_RIVALS.has(item.signalCode)
+  // Slips, input and answers that do not yet form a pattern across different tasks.
+  const slip = item => NOT_METHOD_MODELS.has(item.signalCode)
+    || !meetsPattern(item.signalCode, item.supportRefs.map(ref => byRef.get(ref)).filter(Boolean))
   const suspicions = report.hypotheses.filter(item => !slip(item))
   // Suspicions that can share one screening: computed, outside the didactic
   // packages, and not revised or rejected by the teacher.

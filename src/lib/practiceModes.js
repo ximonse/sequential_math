@@ -2,7 +2,7 @@
 // images) is for fluency. Its answers are data for us, not a reason to ask
 // follow-up questions; directed follow-up belongs to screening without time
 // pressure.
-import { INPUT_MODELS, SPEED_SLIP_MODEL_IDS } from '../domains/predictableErrors/catalog.js'
+import { INPUT_MODELS, NO_FOLLOW_UP_MODELS, SPEED_SLIP_MODEL_IDS } from '../domains/predictableErrors/catalog.js'
 
 const SPEED_SKILLS = new Set(['number_bonds', 'doubles', 'subitizing'])
 const SPEED_PROBLEM_TYPES = new Set(['mul_table_drill'])
@@ -35,7 +35,7 @@ export function speedSlipSummary(entries) {
 export const INPUT_SIGNAL_MODELS = INPUT_MODELS
 
 export function contrastFollowUpEligible(item, report) {
-  if (item?.basis !== 'rule_candidate' || !item.signalCode || INPUT_SIGNAL_MODELS.has(item.signalCode)) return false
+  if (item?.basis !== 'rule_candidate' || !item.signalCode || INPUT_SIGNAL_MODELS.has(item.signalCode) || NO_FOLLOW_UP_MODELS.has(item.signalCode)) return false
   const supports = item.supportRefs.map(ref => report.evidence.find(e => e.ref === ref)).filter(Boolean)
   return supports.length > 0 && !supports.every(isSpeedTrainingEntry)
 }

@@ -1,6 +1,6 @@
 import { predictableCandidates, matchesComputedCorrect } from './index.js'
 import { questionFingerprint } from './questionFingerprint.js'
-import { DECIMAL_ADDITION_CARRY_FAMILY, MODEL_FAMILIES, MODEL_TITLES_SV, NOT_METHOD_MODELS } from './catalog.js'
+import { DECIMAL_ADDITION_CARRY_FAMILY, MODEL_FAMILIES, MODEL_TITLES_SV, NOT_RIVAL_MODELS } from './catalog.js'
 
 // Directed follow-up (practice-modes, mode 4): choose reviewed bank tasks on
 // which the suspected error rule and its rivals give different answers.
@@ -13,7 +13,7 @@ export const CONTRAST_MIN_ITEMS = 2
 // Rival families, the models that are not method explanations and the plain
 // titles all come from the model catalogue.
 const FAMILIES = MODEL_FAMILIES
-export const NOT_RIVALS = NOT_METHOD_MODELS
+export const NOT_RIVALS = NOT_RIVAL_MODELS
 export const CONTRAST_LABELS_SV = MODEL_TITLES_SV
 
 const symbols = { addition: '+', subtraction: '−', multiplication: '×', division: '÷' }

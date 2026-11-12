@@ -61,3 +61,27 @@ describe('error coverage', () => {
     expect(syntheticSnapshot()).toEqual(JSON.parse(readFileSync(SNAPSHOT, 'utf8')))
   })
 })
+
+describe('a pattern across different tasks (decision 3)', () => {
+  const table = (a, b, answer) => ({ source: 'practice', ref: `t-${a}-${b}-${answer}-${Math.random()}`, reference: { kind: 'observation' },
+    question: { domain: 'arithmetic', operation: 'multiplication', skill: 'multiplication', values: { a, b }, promptText: `${a} · ${b}` },
+    answer: { status: 'incorrect', studentAnswer: answer, correctAnswer: a * b }, context: {}, interpretation: { category: 'knowledge', patterns: [] } })
+
+  it('counts a neighbouring product as a misconception on three different facts', () => {
+    const summary = errorCoverage({ entries: [table(6, 6, 42), table(8, 8, 72), table(5, 6, 25)] })
+    expect(summary.wrong.misconception).toBe(3)
+  })
+
+  it('counts the same fact answered wrongly three times as observations, not a pattern', () => {
+    const summary = errorCoverage({ entries: [table(6, 7, 36), table(6, 7, 36), table(6, 7, 36)] })
+    expect(summary.wrong.misconception).toBe(0)
+    expect(summary.wrong.observation).toBe(3)
+  })
+
+  it('treats another operation as a misconception once it shows on three different tasks', () => {
+    const add = (a, b) => ({ ...table(a, b, a * b), question: { domain: 'arithmetic', operation: 'subtraction', skill: 'subtraction', values: { a, b }, promptText: `${a} − ${b}` },
+      answer: { status: 'incorrect', studentAnswer: a + b, correctAnswer: a - b } })
+    expect(errorCoverage({ entries: [add(9, 4), add(8, 3), add(7, 2)] }).wrong.misconception).toBe(3)
+    expect(errorCoverage({ entries: [add(9, 4)] }).wrong.misconception).toBe(0)
+  })
+})

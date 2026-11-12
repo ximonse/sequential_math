@@ -1,6 +1,7 @@
 import { addPredictableEvidence } from './evidencePredictableAnalysis.js'
 import { isSpeedTrainingEntry } from './practiceModes.js'
 import { ERROR_MODELS } from '../domains/predictableErrors/catalog.js'
+import { meetsPattern } from './modelPattern.js'
 
 // Coverage of pupils' wrong answers (docs/STYRNING_FELFORSTAELSER.md, rules
 // R-C and R-D). Every answer is counted once, by the pupil's own status.
@@ -21,10 +22,31 @@ export function pupilOwnEntry(entry) {
   return { ...entry, answer: { ...answer, status: answer.observed?.status, studentAnswer: answer.observed?.studentAnswer } }
 }
 
-export function wrongAnswerBucket(entry) {
-  const ids = [...new Set((entry?.interpretation?.predictable?.matches ?? []).map(match => match.modelId))]
+// One model within one domain and scope, the unit a report card shows.
+const groupKey = (result, modelId) => JSON.stringify([result?.domain ?? null, result?.scope ?? null, modelId])
+
+// Model groups whose answers do not yet form a pattern across different tasks.
+// The answers are one pupil's, as in the report; they then count as observations.
+export function groupsBelowPattern(entries) {
+  const groups = new Map()
+  for (const entry of entries) {
+    const result = entry?.interpretation?.predictable
+    if (entry?.answer?.status !== 'incorrect') continue
+    for (const id of new Set((result?.matches ?? []).map(match => match.modelId))) {
+      if (!ERROR_MODELS[id]?.minDistinctTasks) continue
+      const key = groupKey(result, id)
+      if (!groups.has(key)) groups.set(key, [])
+      groups.get(key).push(entry)
+    }
+  }
+  return new Set([...groups].filter(([key, list]) => !meetsPattern(JSON.parse(key)[2], list)).map(([key]) => key))
+}
+
+export function wrongAnswerBucket(entry, belowPattern = new Set()) {
+  const result = entry?.interpretation?.predictable
+  const ids = [...new Set((result?.matches ?? []).map(match => match.modelId))]
   for (const id of ids) if (!ERROR_MODELS[id]) throw Error(`Model outside the catalogue: ${id}`)
-  const kinds = new Set(ids.map(id => ERROR_MODELS[id].kind))
+  const kinds = new Set(ids.map(id => belowPattern.has(groupKey(result, id)) ? 'observation' : ERROR_MODELS[id].kind))
   return KIND_ORDER.find(kind => kinds.has(kind)) ?? 'unexplained'
 }
 
@@ -74,8 +96,8 @@ function assertSums(summary) {
   if (problems.length) throw Error(`Error coverage sums failed: ${problems.join('; ')}`)
 }
 
-// `entries` are evidence entries as served by the evidence API, with or
-// without computed candidates. `hiddenSlips` are answers the teacher hid as
+// `entries` are one pupil's evidence entries as served by the evidence API,
+// with or without computed candidates; a pattern is judged per pupil. `hiddenSlips` are answers the teacher hid as
 // slips; they are outside `entries` and counted on their own line.
 export function errorCoverage({ entries = [], hiddenSlips = [] } = {}) {
   const own = entries.map(pupilOwnEntry)
@@ -86,6 +108,7 @@ export function errorCoverage({ entries = [], hiddenSlips = [] } = {}) {
     .map(entry => ({ ...entry, interpretation: { ...entry.interpretation, predictable: undefined } })))
   let next = 0
   const analysed = own.map((entry, index) => needsAnalysis[index] ? fresh[next++] : entry)
+  const below = groupsBelowPattern(analysed)
 
   const summary = { total: analysed.length, statuses: { ...Object.fromEntries(STATUSES.map(s => [s, 0])), other: 0 },
     unansweredWithWork: 0, teacherAssessed: 0, teacherChangedStatus: 0, hiddenSlips: hiddenSlips.length,
@@ -99,7 +122,7 @@ export function errorCoverage({ entries = [], hiddenSlips = [] } = {}) {
       if (entries[index].answer.status !== status) summary.teacherChangedStatus++
     }
     if (status !== 'incorrect') return
-    const bucket = wrongAnswerBucket(entry), area = coverageArea(entry)
+    const bucket = wrongAnswerBucket(entry, below), area = coverageArea(entry)
     addWrong(summary.wrong, bucket, entry)
     addWrong(summary.areas[area] ??= emptyWrong(), bucket, entry)
     const ids = [...new Set(entry.interpretation.predictable.matches?.map(match => match.modelId) ?? [])]

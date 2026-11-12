@@ -13,12 +13,19 @@ import { MODEL_DESCRIPTIONS } from './modelDescriptions.js'
 // yieldsToSpecific: hidden when a more specific model explains the same answer.
 // speedSlip: a single occurrence in speed training is summarised, not shown.
 // needsRepetition: shown only when it repeats and outnumbers comparable right answers.
+// minDistinctTasks: a suspicion only when the same kind of error shows on this
+//   many different tasks (Simon 2026-11-12: a pattern across facts, not one fact
+//   repeated). Below that the answers count as observations.
+// notRival: never used as a rival in contrast questions.
+// noFollowUp: the card offers no contrast questions or Fråga igen.
 const model = (titleSv, domains, options = {}) => ({ titleSv, domains, kind: 'misconception', ...options })
 const A = ['arithmetic'], F = ['fractions'], P = ['percentage'], G = ['algebra'], E = ['arithmetic_expressions'], N = ['number_fluency']
 
 export const ERROR_MODELS = {
   // Answer observations and input slips
-  operation_swap: model('Annat räknesätt', A, { kind: 'observation', yieldsToSpecific: true }),
+  // Simon 2026-11-12: a misunderstanding of when to use which operation, not a slip.
+  // Kept out of the contrast questions until that follow-up is designed.
+  operation_swap: model('Annat räknesätt', A, { yieldsToSpecific: true, minDistinctTasks: 3, notRival: true, noFollowUp: true }),
   place_value_scaling: model('Svaret är skalat med en tiopotens', A, { kind: 'observation', yieldsToSpecific: true }),
   answer_off_by_one: model('Ett ifrån facit', [...A, ...N], { kind: 'observation', speedSlip: true }),
   partial_answer_entry: model('Bara första siffran inskriven', [...A, ...N], { kind: 'input', yieldsToSpecific: true, speedSlip: true }),
@@ -50,7 +57,7 @@ export const ERROR_MODELS = {
   mul_columnwise: model('Multiplicerar kolumnvis som vid addition', A, { family: 'written_multiplication' }),
   mul_no_row_shift: model('Andra delprodukten flyttas inte', A, { family: 'written_multiplication' }),
   ones_digits_only: model('Bara entalen multipliceras', A, { family: 'written_multiplication' }),
-  table_off_by_one: model('Angränsande produkt', A),
+  table_off_by_one: model('Angränsande produkt', A, { minDistinctTasks: 3 }),
   decimal_parts_multiplied_separately: model('Heltal och decimaldel multipliceras var för sig', A),
 
   // Division
@@ -132,6 +139,8 @@ const where = test => new Set(ids.filter(id => test(ERROR_MODELS[id])))
 export const MODEL_TITLES_SV = Object.fromEntries(ids.map(id => [id, ERROR_MODELS[id].titleSv]))
 // Observations and input slips are not method explanations.
 export const NOT_METHOD_MODELS = where(m => m.kind !== 'misconception')
+export const NOT_RIVAL_MODELS = where(m => m.kind !== 'misconception' || m.notRival)
+export const NO_FOLLOW_UP_MODELS = where(m => m.noFollowUp)
 export const INPUT_MODELS = where(m => m.kind === 'input')
 export const YIELDS_TO_SPECIFIC_MODELS = where(m => m.yieldsToSpecific)
 export const SPEED_SLIP_MODEL_IDS = where(m => m.speedSlip)

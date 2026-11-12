@@ -2,7 +2,7 @@
 
 Status: **ANTAGET av Simon 2026-11-11** som styrande över övriga filer i `docs/`
 utom produktkontraktet. Frysningen i avsnitt 4 gäller som den står. Beslut 3
-och 4 i avsnitt 10 är öppna. Arbetsregeln i avsnitt 11 ska föras in i
+och 4 i avsnitt 10 togs 2026-11-12. Arbetsregeln i avsnitt 11 ska föras in i
 `AGENTS.md`; spärrarna i avsnitt 5 finns ännu inte och införs med steg 1–4.
 
 Bakgrund och belägg: genomgången 2026-11-11 av kod, dokument och 17 884 riktiga
@@ -253,10 +253,27 @@ modeller i katalogen och en rad i täckningsrapporten.
    1–2 svar. Förslag: över två svar per uppgift kräver minst tre träffar och
    fler träffar än jämförbara rätta svar, samma regel som redan gäller
    *kvoten blir ett fel*.
+   **Beslut, Simon 2026-11-12:** leta efter ett mönster över olika uppgifter,
+   inte efter samma faktum fel flera gånger (exempel: 6 · 6 = 42, 8 · 8 = 72,
+   5 · 6 = 25). Genomfört: katalogfältet `minDistinctTasks: 3`; under tre olika
+   uppgifter räknas svaren som observation och kortet ligger bland slarv.
+   Villkoret om fler träffar än rätta svar togs inte med. Elever med misstanken
+   i de fyra klasserna: 50 före, 21 efter. Följd: *Fråga igen* erbjuds för
+   tabellfel först vid tre olika uppgifter. Känd lucka: MCP-förhandsvisningen
+   listar fortfarande kortet, eftersom rapportschemat inte kan bära flaggan.
 4. Ska upprepat fel räknesätt räknas som felförståelse i stället för slarv?
    Förslag: ja, från tre träffar. Underlag: 75 svar hos 31 elever, ett
    förutsagt svar per uppgift, 3 % av felen där den gäller. Modellen prövar i
    dag bara addition mot subtraktion, så 4 + 3 = 12 fångas inte.
+   **Beslut, Simon 2026-11-12:** behandla som felförståelse och pröva.
+   Genomfört: art felförståelse, med samma krav på tre olika uppgifter. Den är
+   inte rival och ger inga kontrastfrågor, så det frysta påverkas inte. Elever
+   med misstanken: 0 före, 4 efter. I blindtest 1 får eleven vars facit säger
+   "ibland fel räknesätt" misstanken; kontrolleleverna får inga nya. Fångas
+   inte än: multiplikation i stället för addition (4 + 3 = 12), och vid a + a
+   ger modellen svaret 0, som är vanligt även av andra skäl. Simons fråga för
+   senare, inte nu: är det tecknet, uppmärksamheten eller när man adderar
+   respektive subtraherar? Kan prövas med textuppgifter utan tecken.
 
 ## 11. Arbetsregel för agenter
 

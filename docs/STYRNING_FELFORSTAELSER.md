@@ -34,7 +34,7 @@ kunde välja egen riktning. Därför är varje regel nedan kopplad till en
 | --- | --- |
 | Felförståelser saknas i rutinen för ny domän | Checklistan i `ARCHITECTURE.md` har sju steg, inget om felmodeller |
 | Två felanalyser per domän utan koppling | `analyzeError` (krav, får vara tom etikett) och `predictableErrors` (frivilligt register) |
-| En felmodell är utspridd i lösa listor | 20 av 52 modeller saknar rubrik, 32 saknar beskrivning; inget test kräver dem |
+| En felmodell är utspridd i lösa listor | 23 av 62 modeller saknade rubrik, 40 saknar beskrivning; inget test krävde dem (räknat 2026-11-12; första räkningen 52 missade tio modeller) |
 | Modeller har inga krav på träff och icke-träff | "Angränsande produkt" ger slumpträffar; fel räknesätt sorteras som slarv |
 | Luckor passerar tyst | Åk 5: 1 900 fel, 260 (14 %) med beräknad förklaring; appen mäter inte detta |
 | Screeninguppgifter kan inte analyseras | 0 av 48 NCM-uppgifter har strukturerat innehåll; 5 av 54 screeningfel fick modellträff |
@@ -129,10 +129,18 @@ svarsfält med ifylld uträkning ska inte kunna lämnas in utan fråga.
 Varje steg har ett klart-när som går att kontrollera. Nästa steg påbörjas inte
 förrän det föregående är klart.
 
-1. **Katalogen.** Flytta de 52 befintliga modellerna till katalogformen utan att
+1. **Katalogen.** Flytta de 62 befintliga modellerna till katalogformen utan att
    ändra vad de räknar. Fyll i saknade rubriker och beskrivningar. Inför spärr R-A.
    *Klart när:* testet är grönt och analysen ger samma träffar som före flytten
    på sparat underlag.
+   *Läge 2026-11-12, lokalt:* katalogen finns i
+   `src/domains/predictableErrors/catalog.js` med alla 62 modeller. Rubriker,
+   sortering som slarv eller inmatning, rivalfamiljer och snabbhetsundantag
+   härleds ur den. `catalog.test.js` är spärr R-A. Varje modell har tre svar
+   den ska fånga och tre den inte får fånga i `catalogExamples.json`; de är
+   maskinvalda ur nuvarande beteende och inte didaktiskt granskade. Öppen skuld
+   som testet håller synlig: 40 modeller saknar beskrivning av tankefelet och
+   23 nya rubriker väntar på Simons läsning.
 2. **Täckningsrapport.** Bygg måttstocken och kör den på befintligt underlag.
    Inför spärr R-C och R-D.
    *Klart när:* rapporten återger baslinjen i avsnitt 3 och summorna stämmer.

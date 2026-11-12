@@ -1,5 +1,6 @@
 import { predictableCandidates, matchesComputedCorrect } from './index.js'
 import { questionFingerprint } from './questionFingerprint.js'
+import { DECIMAL_ADDITION_CARRY_FAMILY, MODEL_FAMILIES, MODEL_TITLES_SV, NOT_METHOD_MODELS } from './catalog.js'
 
 // Directed follow-up (practice-modes, mode 4): choose reviewed bank tasks on
 // which the suspected error rule and its rivals give different answers.
@@ -9,54 +10,11 @@ export const CONTRAST_MAX_ITEMS = 5
 // A single matching answer is weak; ask for a repeated observation.
 export const CONTRAST_MIN_ITEMS = 2
 
-// Explanations that compete for the same column-subtraction answers.
-const FAMILIES = [['smaller_minus_larger', 'exchange_not_decremented', 'borrow_forget', 'second_exchange_inverted', 'sub_left_to_right'],
-  ['mul_carry_forgotten', 'mul_carry_added_before', 'mul_carry_always_one', 'mul_partials_concatenated', 'mul_columnwise', 'mul_no_row_shift', 'ones_digits_only'],
-  ['div_remainder_ignored', 'div_remainder_as_ones', 'div_zero_dropped', 'quotient_off_by_one']]
-// Observations that are not method explanations.
-export const NOT_RIVALS = new Set(['operation_swap', 'place_value_scaling', 'partial_answer_entry', 'answer_off_by_one', 'last_two_digits_swapped', 'notebook_answer_mismatch'])
-
-export const CONTRAST_LABELS_SV = {
-  operation_swap: 'Annat räknesätt',
-  place_value_scaling: 'Svaret är skalat med en tiopotens',
-  partial_answer_entry: 'Bara första siffran inskriven',
-  last_two_digits_swapped: 'Facits två sista siffror omkastade',
-  notebook_answer_mismatch: 'Olika svar i räknehäftet och svarsfältet',
-  answer_off_by_one: 'Ett ifrån facit',
-  dividend_as_answer: 'Täljaren lämnas som svar',
-  divisor_as_answer: 'Nämnaren lämnas som svar',
-  reversed_operands: 'Divisionens tal har bytt plats',
-  table_off_by_one: 'Angränsande produkt',
-  decimal_parts_multiplied_separately: 'Heltal och decimaldel multipliceras var för sig',
-  smaller_minus_larger: 'Större minus mindre i varje kolumn',
-  exchange_not_decremented: 'Växlar men minskar inte kolumnen till vänster',
-  borrow_forget: 'Skriver 0 där växling behövs',
-  zero_donor_not_decremented: 'Växling genom noll: hundratalet minskas inte',
-  zero_intermediate_ten: 'Växling genom noll: tio tiotal behålls',
-  carry_forget: 'Minnessiffran glöms',
-  column_sums_concatenated: 'Kolumnsummor skrivs efter varandra',
-  one_carry_forgotten: 'En av flera minnessiffror glöms',
-  unnecessary_exchange: 'Minskar en kolumn trots att ingen växling behövs',
-  second_exchange_inverted: 'Klarar första växlingen men vänder nästa (0 − x = x)',
-  phantom_carry: 'Lägger till minnessiffra som inte behövs',
-  ones_digits_only: 'Bara entalen multipliceras',
-  mul_carry_forgotten: 'Minnessiffran glöms i multiplikationen',
-  mul_carry_added_before: 'Minnessiffran läggs till före multiplikationen',
-  mul_carry_always_one: 'Minnessiffran blir alltid 1',
-  add_left_to_right: 'Räknar från vänster, minnessiffran åt höger',
-  sub_left_to_right: 'Räknar från vänster, växlar från höger',
-  mul_partials_concatenated: 'Delprodukterna skrivs efter varandra',
-  mul_columnwise: 'Multiplicerar kolumnvis som vid addition',
-  mul_no_row_shift: 'Andra delprodukten flyttas inte',
-  div_remainder_ignored: 'Resten förs inte vidare',
-  div_remainder_as_ones: 'Resten läggs till som ental',
-  div_zero_dropped: 'Nollan i kvoten tappas',
-  quotient_off_by_one: 'Kvoten blir ett fel',
-  fraction_components_separately: 'Täljare och nämnare räknas var för sig',
-  fraction_keep_first_denominator: 'Ingen gemensam nämnare; första nämnaren behålls',
-  fraction_integer_in_denominator: 'Heltalet multipliceras in i nämnaren',
-  fraction_add_instead_of_multiply: 'Adderar i stället för att multiplicera',
-}
+// Rival families, the models that are not method explanations and the plain
+// titles all come from the model catalogue.
+const FAMILIES = MODEL_FAMILIES
+export const NOT_RIVALS = NOT_METHOD_MODELS
+export const CONTRAST_LABELS_SV = MODEL_TITLES_SV
 
 const symbols = { addition: '+', subtraction: '−', multiplication: '×', division: '÷' }
 const bankProblem = task => task.domain === 'fractions'
@@ -108,9 +66,8 @@ export function rivalModels(modelId, supportProblems) {
   for (const family of FAMILIES) if (family.includes(modelId)) family.forEach(m => m !== modelId && wrongSomewhere(m) && rivals.add(m))
   // The approved decimal package compares all omitted carries with either
   // omitted position. Preserve the integer families' previous routing.
-  const decimalCarryFamily = ['carry_forget', 'one_carry_forgotten']
-  if (decimalCarryFamily.includes(modelId) && supportProblems.some(problem => predictableCandidates(problem, '').scope === 'decimal_addition')) {
-    decimalCarryFamily.forEach(m => m !== modelId && wrongSomewhere(m) && rivals.add(m))
+  if (DECIMAL_ADDITION_CARRY_FAMILY.includes(modelId) && supportProblems.some(problem => predictableCandidates(problem, '').scope === 'decimal_addition')) {
+    DECIMAL_ADDITION_CARRY_FAMILY.forEach(m => m !== modelId && wrongSomewhere(m) && rivals.add(m))
   }
   return [...rivals]
 }

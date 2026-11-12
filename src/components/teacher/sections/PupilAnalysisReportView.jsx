@@ -18,20 +18,13 @@ import '../../../dev/diagnosticGridPrototype.css'
 
 const originLabels = { rule: 'Regelbaserad analys', ai: 'AI-formulerad tolkning – behöver lärargranskning', teacher: 'Lärarformulerad tolkning' }
 const SYMBOLS = { addition: '+', subtraction: '−', multiplication: '·', division: '/' }
-// Plain titles for models without a contrast label.
-const EXTRA_TITLES = {
-  fraction_components_separately: 'Räknar täljare och nämnare var för sig',
-  fraction_keep_first_denominator: 'Behåller första nämnaren',
-  fraction_integer_in_denominator: 'Multiplicerar in heltalet i nämnaren',
-  fraction_add_instead_of_multiply: 'Adderar i stället för att multiplicera'
-}
 
 const questionText = entry => entry?.question.promptText || entry?.question.promptSv || (() => {
   const { a, b } = entry?.question.values || {}
   const symbol = SYMBOLS[entry?.question.operation]
   return symbol && a !== undefined && b !== undefined ? `${a} ${symbol} ${b}` : OPERATION_LABELS[entry?.question.operation] || 'uppgift'
 })()
-const titleFor = item => (item.signalCode && (CONTRAST_LABELS_SV[item.signalCode] || EXTRA_TITLES[item.signalCode]))
+const titleFor = item => (item.signalCode && CONTRAST_LABELS_SV[item.signalCode])
   || (item.basis === 'existing_signal' ? 'Tidigare felmarkering' : String(item.textSv).split('. ')[0])
 const SCOPE_LABELS = { addition: 'addition', subtraction: 'subtraktion', multiplication: 'multiplikation', division: 'division',
   decimal_addition: 'decimaladdition', decimal_subtraction: 'decimalsubtraktion' }

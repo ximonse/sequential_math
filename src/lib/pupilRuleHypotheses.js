@@ -2,14 +2,15 @@ import { pupilFollowUpSelection, followUpRecommendation } from './pupilFollowUpS
 import { arithmeticContentSignature } from './arithmeticContentSignature.js'
 import { evidenceProblem } from './evidenceProblem.js'
 import { isSpeedTrainingEntry, SPEED_SLIP_MODELS } from './practiceModes.js'
+import { NEEDS_REPETITION_MODELS, YIELDS_TO_SPECIFIC_MODELS } from '../domains/predictableErrors/catalog.js'
 
 const current = entry => entry?.interpretation?.predictable
 // A quotient one off is usually a slip (blind test 3); it becomes a candidate only when
 // it repeats at least three times and more often than comparable correct answers.
-export const SLIP_UNTIL_REPEATED = new Set(['quotient_off_by_one'])
+export const SLIP_UNTIL_REPEATED = NEEDS_REPETITION_MODELS
 // Generic observations that also fit many specific rules (320 / 4 = 8 is both a dropped
 // quotient zero and a scaling). When a specific rule explains the answer, they are not shown.
-const GENERIC_MODELS = new Set(['place_value_scaling', 'partial_answer_entry', 'last_two_digits_swapped', 'operation_swap'])
+const GENERIC_MODELS = YIELDS_TO_SPECIFIC_MODELS
 const level = entry => entry.context?.contentLevel ?? entry.context?.level
 
 export function comparableRuleCounter(entry, supports, modelId) {

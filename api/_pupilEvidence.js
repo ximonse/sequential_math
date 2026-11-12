@@ -2,6 +2,7 @@ import { practiceObservation } from '../src/lib/practiceObservation.js'
 import { teacherPracticeRows } from '../src/lib/teacherPracticeRows.js'
 import { createHash } from 'node:crypto'
 import { addPredictableEvidence } from '../src/lib/evidencePredictableAnalysis.js'
+import { withTeacherAssessment } from '../src/lib/evidenceTeacherAssessment.js'
 
 export const evidenceError = (status, code, message) => Object.assign(new Error(message), { status, code })
 export const evidenceHash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex')
@@ -40,7 +41,7 @@ export function evidencePage({ studentId, classId, period, source, practice, scr
   // A legacy position is only meaningful within this exact snapshot.
   // A new rule version must not invalidate unchanged original-source references;
   // rule candidates carry their own version and are validated separately.
-  const entries = addPredictableEvidence(all.map(entry => ({ ...entry, ref: evidenceHash({ revision, reference: entry.reference }) })))
+  const entries = addPredictableEvidence(all.map(entry => withTeacherAssessment({ ...entry, ref: evidenceHash({ revision, reference: entry.reference }) })))
   if (query.ref) {
     if (!query.snapshotRevision) throw evidenceError(400, 'snapshot_required', 'Detaljläsning kräver snapshotRevision.')
     const entry = entries.find(item => item.ref === query.ref)

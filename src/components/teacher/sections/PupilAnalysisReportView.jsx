@@ -6,6 +6,7 @@ import MultiContrastFollowUp from './MultiContrastFollowUp.jsx'
 import { isSimpleFactItem } from '../../../lib/repeatCheck.js'
 import { didacticPackage } from '../../../lib/didacticFollowUp.js'
 import { slipExclusionKey } from '../../../lib/slipExclusionKey.js'
+import { teacherAssessedNote } from '../../../lib/evidenceTeacherAssessment.js'
 import ReportReviewNote from '../ReportReviewNote.jsx'
 import WorkEvidenceNote from '../WorkEvidenceNote.jsx'
 import { contrastFollowUpEligible } from '../../../lib/practiceModes.js'
@@ -84,7 +85,8 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
 
   const detail = entry => selected?.ref === entry.ref && <section className="mt-1 mb-2 rounded border border-slate-300 p-3" aria-label="Rapportens källsvar">
     <QuestionText>{questionText(entry)}</QuestionText>
-    <p>Elevens svar: {String(entry.answer.studentAnswer ?? 'saknas')} · Facit: {String(entry.answer.correctAnswer ?? 'manuell bedömning')}</p>
+    <p>Elevens svar: {String(entry.answer.studentAnswer ?? 'saknas')} · Facit: {String(entry.answer.correctAnswer ?? 'manuell bedömning')}
+      {entry.answer.teacherAssessed && <span className="text-sm"> · {teacherAssessedNote(entry.answer)}</span>}</p>
     <WorkEvidenceNote work={entry.interpretation.work} review={entry.teacherReview} />
     <p className="text-sm">{new Date(entry.timestamp).toLocaleString('sv-SE')} · {entry.source === 'practice' ? 'Träning' : 'Screening'}</p>
     {entry.source === 'screening' && <button type="button" className="mt-2 rounded border px-2 py-0.5 text-sm" onClick={async () => {
@@ -112,7 +114,8 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
       return <li key={ref}>
         <div className={`flex flex-wrap items-baseline gap-x-3 rounded px-2 py-0.5 ${wrong ? 'bg-blue-50' : 'bg-green-50'}`}>
           <span className="min-w-28">{/^[\d\s+−\-·×*/:.,]+$/u.test(text) ? `${text} =` : text}</span>
-          <span className={`font-semibold ${wrong ? 'text-red-700' : 'text-green-700'}`}>{String(entry.answer.studentAnswer ?? '–')}</span>
+          <span className={`font-semibold ${wrong ? 'text-red-700' : 'text-green-700'}`}>{String(entry.answer.studentAnswer ?? '–')}
+            {entry.answer.teacherAssessed && <span className="ml-1 text-[10px] font-medium" title={teacherAssessedNote(entry.answer)}>L</span>}</span>
           {wrong && <span className="text-sm">rätt {String(entry.answer.correctAnswer ?? '?')}</span>}
           {note?.(entry) && <span className="text-xs text-slate-600">{note(entry)}</span>}
           <span className="ml-auto text-xs text-slate-600">{entry.source === 'practice' ? 'träning' : 'screening'} {shortDate(entry.timestamp)}</span>

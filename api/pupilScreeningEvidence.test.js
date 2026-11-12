@@ -69,6 +69,31 @@ describe('screening evidence preserves original work and version identity', () =
     expect(stale.entries[0].teacherReview.matchesEvidence).toBe(false)
     expect(stale.entries[0].ref).toBe(original.entries[0].ref)
   })
+  it('lets analysis read the teacher judgement while the pupil answer and source references stay', async () => {
+    const f = fixture()
+    const page = screening => evidencePage({ studentId: 'PUPIL', classId: 'CLASS', source: 'screening',
+      period: { from: '2026-10-27', to: '2026-10-27', startInclusive: 1, endExclusive: f.time + 1 },
+      screening, practice: { entries: [], coverage: {} }, query: {} })
+    const original = page(await pupilScreeningEvidence('PUPIL', 'CLASS', f))
+    expect(original.entries[0].answer).toMatchObject({ status: 'incorrect', studentAnswer: '376' })
+    expect(original.entries[0].interpretation.predictable.matches.length).toBeGreaterThan(0)
+    const review = { studentId: 'PUPIL', reviewRevision: 1, evidenceRevision: 1, evidenceSequence: 1, reviewed: true, note: '',
+      markedCorrect: true, teacherAnswer: '', misconception: 'Tar större minus mindre.', updatedAt: f.time }
+    f.data.set('diagnostic_review:ATTEMPT', review)
+    const judged = page(await pupilScreeningEvidence('PUPIL', 'CLASS', f))
+    expect(judged.snapshotRevision).toBe(original.snapshotRevision)
+    expect(judged.entries[0].ref).toBe(original.entries[0].ref)
+    expect(judged.entries[0].answer).toMatchObject({ status: 'correct', studentAnswer: '376', teacherAssessed: true,
+      observed: { status: 'incorrect', studentAnswer: '376' }, teacherMisconceptionSv: 'Tar större minus mindre.' })
+    // A wrong answer the teacher counts as right no longer drives an error-model follow-up.
+    expect(judged.entries[0].interpretation.predictable.matches ?? []).toHaveLength(0)
+    f.data.set('diagnostic_review:ATTEMPT', { ...review, markedCorrect: false, teacherAnswer: '224', misconception: '' })
+    expect(page(await pupilScreeningEvidence('PUPIL', 'CLASS', f)).entries[0].answer)
+      .toMatchObject({ status: 'correct', studentAnswer: '224', observed: { studentAnswer: '376' } })
+    f.data.set('diagnostic_review:ATTEMPT', { ...review, evidenceSequence: 0 })
+    expect(page(await pupilScreeningEvidence('PUPIL', 'CLASS', f)).entries[0].answer)
+      .toMatchObject({ status: 'incorrect', studentAnswer: '376' })
+  })
   it('returns only the selected pupil and frozen item with its actual answer and saved original', async () => {
     const f = fixture()
     const result = await pupilScreeningEvidence('PUPIL', 'CLASS', f)

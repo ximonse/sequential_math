@@ -4,6 +4,7 @@ import { summarizeDiagnosticObservation } from '../src/domains/arithmetic/diagno
 import { identifyDiagnosticObservationRevision } from '../src/domains/arithmetic/diagnosticObservationRevision.js'
 import { evidenceError, evidencePick } from './_pupilEvidence.js'
 import { diagnosticNotebookStatus } from '../src/domains/arithmetic/diagnosticNotebookExport.js'
+import { assessWithTeacher, currentTeacherAssessment } from '../src/domains/arithmetic/diagnosticTeacherAssessment.js'
 
 const validId = id => typeof id === 'string' && /^[A-Za-z0-9_-]{1,128}$/u.test(id)
 
@@ -34,13 +35,17 @@ export async function pupilScreeningEvidence(studentId, classId, { store = kv, r
     const timestamp = times.length ? Math.max(...times) : current.createdAt
     if (!Number.isFinite(timestamp) || timestamp <= 0) { invalidRecords++; return null }
     const review = await store.get(`diagnostic_review:${id}`)
+    // The teacher's verdict for the current revision, marked with the full task
+    // rules here; evidencePage applies it to the answer that analysis reads.
+    const assessment = review?.studentId === studentId
+      ? assessWithTeacher(item.taskSnapshot, saved.snapshot, observation.answerStatus, currentTeacherAssessment(review, current)) : null
     const teacherReview = review?.studentId === studentId ? {
       reviewRevision: review.reviewRevision, evidenceRevision: review.evidenceRevision, evidenceSequence: review.evidenceSequence,
       matchesEvidence: review.evidenceRevision === current.serverRevision && review.evidenceSequence === current.lastSequence,
       reviewed: review.reviewed === true, noteSv: review.note || '', updatedAt: review.updatedAt,
       // The teacher's judgement sits beside the observed answer status; it does not replace it.
       markedCorrect: review.markedCorrect === true, teacherAnswer: review.teacherAnswer || null,
-      misconceptionSv: review.misconception || '' } : null
+      misconceptionSv: review.misconception || '', ...(assessment ? { assessment } : {}) } : null
     return { source: 'screening', timestamp,
       timeBasis: times.length ? 'latest_saved_client_event' : 'attempt_created_at',
       reference: { kind: 'screening_attempt', attemptId: id, assignmentId: record.assignmentId,

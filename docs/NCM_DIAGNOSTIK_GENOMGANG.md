@@ -128,10 +128,20 @@ Genomgången har tre valfria fält för lärarens egen bedömning, sparade i sam
 Elevens händelser och observerade svarsstatus ändras aldrig. Resultattabellen
 räknar och färgar efter lärarens bedömning, märkt **L** (lärarbedömt) och **F**
 (felförståelse, röd ram); verktygstipset visar elevens eget svar. Bedömningen
-gäller bara den elevrevision den sparades för. Analysunderlaget (`teacherReview`)
-får fälten bredvid den observerade statusen. Automatiska analyser, uppföljningar
-och kontrastval använder fortfarande elevens observerade svar. Eleven ser inget
-av detta; bara uttryckligt skickad återkoppling når eleven.
+gäller bara den elevrevision den sparades för.
+
+Analyser, uppföljningar, kontrastval och MCP använder lärarbedömningen
+(Simon 2026-11-12). `pupilScreeningEvidence` räknar fram den i
+`teacherReview.assessment` med uppgiftens fullständiga regler, och
+`evidencePage` lägger den på `answer` efter att underlagets revision räknats:
+`status` och `studentAnswer` blir lärarens, `observed` behåller elevens egna och
+`teacherAssessed`/`teacherMisconceptionSv` markerar det. Revision och
+källreferenser ändras därför inte när bedömningen ändras. Ett felsvar som
+räknas som rätt ger inga felmodellträffar och därmed inget uppföljningsförslag;
+ett lärarinskrivet svar analyseras som elevens svar. En markerad felförståelse
+ändrar inte svarsstatusen men följer med som text. Analysrapport och
+uppföljningsresultat märker sådana svar med L. Eleven ser inget av detta; bara
+uttryckligt skickad återkoppling når eleven.
 
 Vid inlämning av en samling visar elevvyn en tydlig varning i sidan när frågor
 saknar svar i svarsrutan, med **Gå till fråga N** för varje sådan fråga samt

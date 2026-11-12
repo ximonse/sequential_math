@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { CONTRAST_LABELS_SV } from '../../domains/predictableErrors/contrast.js'
 import { modelDescription } from '../../domains/predictableErrors/modelDescriptions.js'
 import { followUpSignal } from '../../lib/followUpSignal.js'
+import { teacherAssessedNote } from '../../lib/evidenceTeacherAssessment.js'
 import { followUpProgress, readFollowUpAnswers, repeatResults, resultTargets } from '../../lib/followUpResults.js'
 import { diagnosticRequest } from './sections/diagnosticRequest.js'
 import { investigationObservations } from '../../lib/materialInvestigation.js'
@@ -89,7 +90,7 @@ function TargetResult({ investigation, revisionOk, entries, studentId, classId, 
             const assessed = ['correct', 'incorrect'].includes(entry.answer.status)
             return <tr key={entry.ref}>
               <td>{String(entry.question.promptSv || entry.question.promptText || '').replace(/^Räkna ut\s*/u, '').replace(/\.$/u, '')}</td>
-              <td>{String(entry.answer.studentAnswer ?? '–')}</td><td>{String(entry.answer.correctAnswer ?? '–')}</td>
+              <td title={teacherAssessedNote(entry.answer) || undefined}>{String(entry.answer.studentAnswer ?? '–')}{entry.answer.teacherAssessed ? ' (L)' : ''}</td><td>{String(entry.answer.correctAnswer ?? '–')}</td>
               <td>{!observations ? 'Behöver granskas' : !assessed ? 'Saknar bedömt svar' : entry.answer.status === 'correct' ? 'Rätt' : matches.length ? matches.map(label).join(' eller ') : 'Ingen känd förklaring'}</td>
             </tr>
           })}</tbody>

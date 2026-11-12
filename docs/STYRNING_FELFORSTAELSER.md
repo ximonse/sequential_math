@@ -36,12 +36,34 @@ kunde välja egen riktning. Därför är varje regel nedan kopplad till en
 | Två felanalyser per domän utan koppling | `analyzeError` (krav, får vara tom etikett) och `predictableErrors` (frivilligt register) |
 | En felmodell är utspridd i lösa listor | 23 av 62 modeller saknade rubrik, 40 saknar beskrivning; inget test krävde dem (räknat 2026-11-12; första räkningen 52 missade tio modeller) |
 | Modeller har inga krav på träff och icke-träff | "Angränsande produkt" ger slumpträffar; fel räknesätt sorteras som slarv |
-| Luckor passerar tyst | Åk 5: 1 900 fel, 260 (14 %) med beräknad förklaring; appen mäter inte detta |
+| Luckor passerar tyst | Se baslinjen per elevsvar nedan; appen mätte inte detta |
 | Screeninguppgifter kan inte analyseras | 0 av 48 NCM-uppgifter har strukturerat innehåll; 5 av 54 screeningfel fick modellträff |
 | Svar går förlorade i screening | Kumlaby: 52 av 155 obesvarade, 35 med uträkning i räknehäftet |
 | Klassnivå är en annan konstruktion än elevnivå | Ingen vy visar "denna felförståelse, dessa elever" |
 
 Siffrorna är baslinjen. Framsteg mäts mot dem.
+
+### Baslinje per elevsvar, 2026-11-12
+
+Mätt med `scripts/error-coverage.mjs` på 17 884 svar från 73 elever i fyra
+klasser, 15 aug–11 nov. Varje fel räknas en gång, efter elevens eget svar.
+*Syns i elevrapporten* är en separat siffra: fel som dagens rapport visar på
+något kort eller bland periodens första 20 svar. (Den tidigare siffran 260 av
+1 900 för åk 5 räknade kortens stödsvar, inte svar, och ersätts av denna.)
+
+| Klass | Fel | Felförståelse | Observation | Inmatning | Oförklarat | Syns i rapporten |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Kumlaby åk 6 | 223 | 29 | 28 | 6 | 160 (72 %) | 173 (78 %) |
+| Åk 5 | 1 900 | 225 | 109 | 71 | 1 495 (79 %) | 553 (29 %) |
+| Åk 4 | 412 | 80 | 60 | 26 | 246 (60 %) | 316 (77 %) |
+| Åk 6 | 354 | 82 | 34 | 11 | 227 (64 %) | 144 (41 %) |
+| Totalt | 2 889 | 416 | 231 | 114 | 2 128 (74 %) | 1 186 (41 %) |
+
+Av de 2 128 oförklarade ger ingen modell svaret för 1 735, och 393 nådde aldrig
+modellerna. Av dessa 393 är 342 decimaluppgifter i träning: de sparas med
+operationen `positions_decimal`, som analysens inläsning inte känner igen.
+1 550 av alla fel kommer från snabbhetsträning. 93 screeningsvar är obesvarade,
+46 av dem med uträkning i räknehäftet.
 
 ## 4. Det som ligger still
 
@@ -70,17 +92,27 @@ som "utan felanalys" i resultatet.
 *Spärr:* bankens test faller om en uppgift saknar nyckel.
 
 **R-C. Inget fel får försvinna.**
-Varje felsvar hamnar i exakt en av: *förklarat av modell*, *slarv eller
-inmatning*, *oförklarat*. Varje obesvarad uppgift redovisas som obesvarad, med
-uppgift om det finns uträkning. Summan ska alltid stämma med antalet svar.
-*Spärr:* ett test på rapporten och klassvyn som jämför summan med underlaget.
-Inga tak som döljer svar; långa listor fälls ihop, de kapas inte.
+Varje felsvar hamnar i exakt en av fyra: *felförståelse*, *observation*,
+*inmatning* eller *oförklarat*. Ett svar som flera modeller förklarar tar den
+första arten i den ordningen. Ett oförklarat svar anger varför: ingen modell
+ger svaret, eller svaret nådde aldrig modellerna. Varje obesvarad uppgift
+redovisas som obesvarad, med uppgift om det finns uträkning. Räkningen utgår
+från elevens eget svar; lärarbedömda svar och svar dolda som slarv redovisas
+på egna rader. Summan ska alltid stämma med antalet svar.
+*Spärr:* `errorCoverage` i `src/lib/errorCoverage.js` kontrollerar summorna
+och kastar fel i stället för att lämna en rapport som tappar svar.
+Rapportens och klassvyns egna tak (8 kort, 20 svar per kort) ligger i ett
+schema som delas med den frysta avstämningen. Testet att de vyerna visar allt
+och att summorna stämmer flyttas därför till steg 4, när vyerna byggs om.
 
 **R-D. Täckningen syns alltid.**
 För varje screening och varje område visas hur många fel som är förklarade,
 slarv och oförklarade, och de vanligaste oförklarade svaren.
-*Spärr:* täckningsrapporten körs i CI och sparas per version, så att en
-försämring syns i ändringen som orsakade den.
+*Spärr:* täckningen på ett syntetiskt underlag ur katalogens exempel sparas i
+`docs/coverage/synthetic.json` och jämförs i testerna. En ändring i felmodellerna
+syns som en ändrad fil i samma commit. Riktiga elevsvar körs bara lokalt, med
+`node scripts/error-coverage.mjs --evidence FIL` och resultat utanför repot.
+Elevsvar committas aldrig, inte heller för att låta CI se dem.
 
 **R-E. Elev, grupp och klass visar samma sak.**
 Klassvyn är elevernas resultat lagda bredvid varandra, inte en egen beräkning.
@@ -140,10 +172,16 @@ förrän det föregående är klart.
    den ska fånga och tre den inte får fånga i `catalogExamples.json`; de är
    maskinvalda ur nuvarande beteende och inte didaktiskt granskade. Öppen skuld
    som testet håller synlig: 40 modeller saknar beskrivning av tankefelet och
-   23 nya rubriker väntar på Simons läsning.
+   23 nya rubriker väntar på Simons läsning. Fälten *källa* och *slumprisk* i
+   avsnitt 6 finns ännu inte i katalogen, och *gäller när* finns bara i
+   beräkningskoden.
 2. **Täckningsrapport.** Bygg måttstocken och kör den på befintligt underlag.
    Inför spärr R-C och R-D.
    *Klart när:* rapporten återger baslinjen i avsnitt 3 och summorna stämmer.
+   *Läge 2026-11-12, lokalt:* `errorCoverage` och `scripts/error-coverage.mjs`
+   finns, baslinjen ovan är mätt med dem och summorna stämmer. Avgränsning:
+   detta är en läsande beräkning och ett lokalt verktyg. Rapporten och klassvyn
+   är oförändrade; deras summatest hör till steg 4.
 3. **Screeninguppgifternas nyckel.** Ge de 48 NCM-uppgifterna och bankens 42
    uppgifter strukturerat innehåll och felsvarsnyckel. Inför spärr R-B. Lös
    tomt svarsfält.

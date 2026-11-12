@@ -1,0 +1,468 @@
+{
+ "noteSv": "Täckning på syntetiskt underlag ur katalogens exempel. Uppdateras med --write när en ändring i felmodellerna är avsiktlig; diffen visar vad som ändrades.",
+ "total": 431,
+ "statuses": {
+  "correct": 61,
+  "incorrect": 369,
+  "unanswered": 1,
+  "partial": 0,
+  "other": 0
+ },
+ "wrong": {
+  "incorrect": 369,
+  "misconception": 242,
+  "observation": 108,
+  "input": 6,
+  "unexplained": 13,
+  "unexplainedNoModel": 12,
+  "unexplainedNotAnalysed": 1,
+  "speedTraining": 42,
+  "reasons": {
+   "no_model": 12,
+   "unsupported_structure": 1
+  }
+ },
+ "areas": {
+  "algebra:algebra_evaluate": {
+   "incorrect": 18,
+   "misconception": 15,
+   "observation": 0,
+   "input": 0,
+   "unexplained": 3,
+   "unexplainedNoModel": 3,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {
+    "no_model": 3
+   }
+  },
+  "algebra:algebra_simplify": {
+   "incorrect": 18,
+   "misconception": 18,
+   "observation": 0,
+   "input": 0,
+   "unexplained": 0,
+   "unexplainedNoModel": 0,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {}
+  },
+  "arithmetic_expressions:numeric_expression": {
+   "incorrect": 18,
+   "misconception": 10,
+   "observation": 0,
+   "input": 0,
+   "unexplained": 8,
+   "unexplainedNoModel": 8,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {
+    "no_model": 8
+   }
+  },
+  "arithmetic:addition": {
+   "incorrect": 42,
+   "misconception": 16,
+   "observation": 25,
+   "input": 0,
+   "unexplained": 1,
+   "unexplainedNoModel": 1,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {
+    "no_model": 1
+   }
+  },
+  "arithmetic:division": {
+   "incorrect": 42,
+   "misconception": 21,
+   "observation": 21,
+   "input": 0,
+   "unexplained": 0,
+   "unexplainedNoModel": 0,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {}
+  },
+  "arithmetic:multiplication": {
+   "incorrect": 74,
+   "misconception": 30,
+   "observation": 38,
+   "input": 6,
+   "unexplained": 0,
+   "unexplainedNoModel": 0,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {}
+  },
+  "arithmetic:subtraction": {
+   "incorrect": 48,
+   "misconception": 24,
+   "observation": 24,
+   "input": 0,
+   "unexplained": 0,
+   "unexplainedNoModel": 0,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {}
+  },
+  "fractions:addition": {
+   "incorrect": 8,
+   "misconception": 8,
+   "observation": 0,
+   "input": 0,
+   "unexplained": 0,
+   "unexplainedNoModel": 0,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {}
+  },
+  "fractions:multiplication": {
+   "incorrect": 12,
+   "misconception": 12,
+   "observation": 0,
+   "input": 0,
+   "unexplained": 0,
+   "unexplainedNoModel": 0,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {}
+  },
+  "fractions:subtraction": {
+   "incorrect": 4,
+   "misconception": 4,
+   "observation": 0,
+   "input": 0,
+   "unexplained": 0,
+   "unexplainedNoModel": 0,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {}
+  },
+  "number_fluency:forward_double": {
+   "incorrect": 12,
+   "misconception": 12,
+   "observation": 0,
+   "input": 0,
+   "unexplained": 0,
+   "unexplainedNoModel": 0,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 12,
+   "reasons": {}
+  },
+  "number_fluency:inverse_double": {
+   "incorrect": 12,
+   "misconception": 12,
+   "observation": 0,
+   "input": 0,
+   "unexplained": 0,
+   "unexplainedNoModel": 0,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 12,
+   "reasons": {}
+  },
+  "number_fluency:number_bonds": {
+   "incorrect": 18,
+   "misconception": 18,
+   "observation": 0,
+   "input": 0,
+   "unexplained": 0,
+   "unexplainedNoModel": 0,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 18,
+   "reasons": {}
+  },
+  "percentage:discount": {
+   "incorrect": 12,
+   "misconception": 12,
+   "observation": 0,
+   "input": 0,
+   "unexplained": 0,
+   "unexplainedNoModel": 0,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {}
+  },
+  "percentage:percent_of": {
+   "incorrect": 18,
+   "misconception": 18,
+   "observation": 0,
+   "input": 0,
+   "unexplained": 0,
+   "unexplainedNoModel": 0,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {}
+  },
+  "percentage:share": {
+   "incorrect": 12,
+   "misconception": 12,
+   "observation": 0,
+   "input": 0,
+   "unexplained": 0,
+   "unexplainedNoModel": 0,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {}
+  },
+  "screening_without_structure": {
+   "incorrect": 1,
+   "misconception": 0,
+   "observation": 0,
+   "input": 0,
+   "unexplained": 1,
+   "unexplainedNoModel": 0,
+   "unexplainedNotAnalysed": 1,
+   "speedTraining": 0,
+   "reasons": {
+    "unsupported_structure": 1
+   }
+  }
+ },
+ "models": {
+  "add_left_to_right": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "algebra_coefficient_added": {
+   "answers": 6,
+   "onlyModel": 6
+  },
+  "algebra_coefficient_dropped": {
+   "answers": 6,
+   "onlyModel": 6
+  },
+  "algebra_constant_dropped": {
+   "answers": 9,
+   "onlyModel": 9
+  },
+  "algebra_square_as_double": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "algebra_unlike_terms_combined": {
+   "answers": 6,
+   "onlyModel": 6
+  },
+  "algebra_variable_dropped": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "answer_off_by_one": {
+   "answers": 5,
+   "onlyModel": 4
+  },
+  "bond_known_term_returned": {
+   "answers": 6,
+   "onlyModel": 5
+  },
+  "bond_sum_instead_of_missing": {
+   "answers": 9,
+   "onlyModel": 9
+  },
+  "bond_target_returned": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "borrow_forget": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "carry_forget": {
+   "answers": 4,
+   "onlyModel": 4
+  },
+  "column_sums_concatenated": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "decimal_parts_multiplied_separately": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "div_remainder_as_ones": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "div_remainder_ignored": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "div_zero_dropped": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "dividend_as_answer": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "divisor_as_answer": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "double_instead_of_half": {
+   "answers": 6,
+   "onlyModel": 6
+  },
+  "double_known_product_returned": {
+   "answers": 6,
+   "onlyModel": 6
+  },
+  "double_no_carry": {
+   "answers": 6,
+   "onlyModel": 6
+  },
+  "double_original_returned": {
+   "answers": 6,
+   "onlyModel": 6
+  },
+  "exchange_not_decremented": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "expression_left_to_right": {
+   "answers": 3,
+   "onlyModel": 1
+  },
+  "expression_left_to_right_no_parentheses": {
+   "answers": 6,
+   "onlyModel": 4
+  },
+  "expression_parentheses_ignored": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "fraction_add_instead_of_multiply": {
+   "answers": 6,
+   "onlyModel": 6
+  },
+  "fraction_components_separately": {
+   "answers": 6,
+   "onlyModel": 6
+  },
+  "fraction_integer_in_denominator": {
+   "answers": 6,
+   "onlyModel": 6
+  },
+  "fraction_keep_first_denominator": {
+   "answers": 6,
+   "onlyModel": 6
+  },
+  "last_two_digits_swapped": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "mul_carry_added_before": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "mul_carry_always_one": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "mul_carry_forgotten": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "mul_columnwise": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "mul_no_row_shift": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "mul_partials_concatenated": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "one_carry_forgotten": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "ones_digits_only": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "operation_swap": {
+   "answers": 101,
+   "onlyModel": 99
+  },
+  "partial_answer_entry": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "percentage_change_amount_only": {
+   "answers": 6,
+   "onlyModel": 6
+  },
+  "percentage_change_reversed": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "percentage_divide_by_percent_number": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "percentage_missing_division_100": {
+   "answers": 6,
+   "onlyModel": 6
+  },
+  "percentage_number_as_amount": {
+   "answers": 12,
+   "onlyModel": 12
+  },
+  "percentage_part_whole_reversed": {
+   "answers": 6,
+   "onlyModel": 6
+  },
+  "percentage_ratio_not_converted": {
+   "answers": 6,
+   "onlyModel": 6
+  },
+  "phantom_carry": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "place_value_scaling": {
+   "answers": 5,
+   "onlyModel": 5
+  },
+  "quotient_off_by_one": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "reversed_operands": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "second_exchange_inverted": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "smaller_minus_larger": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "sub_left_to_right": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "table_off_by_one": {
+   "answers": 6,
+   "onlyModel": 4
+  },
+  "unnecessary_exchange": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "zero_donor_not_decremented": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "zero_intermediate_ten": {
+   "answers": 3,
+   "onlyModel": 3
+  }
+ }
+}

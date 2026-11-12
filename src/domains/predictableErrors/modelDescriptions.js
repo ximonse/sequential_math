@@ -8,6 +8,8 @@ const MUL_TWO = 'NCM-område AS7 (flersiffrig multiplikation, åk 7–9), förku
 const DIV = 'NCM-område AS5 (kort division), förkunskap AG8.'
 const WRITTEN_ADD = 'NCM-område AS1 (skriftlig addition), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20.'
 
+const SIMON_2026_11_12 = 'Simons iakttagelse i riktiga elevsvar 2026-11-12.'
+
 const DECIMAL_SUB = {
   smaller_minus_larger: {
     thinkingSv: 'Svaret kan räknas fram som större minus mindre i varje decimalkolumn. På källexemplet kan samma svar också komma från växling utan minskad tiondel.',
@@ -145,5 +147,45 @@ export const MODEL_DESCRIPTIONS = {
     thinkingSv: 'Eleven hoppar över nollan i kvoten när en siffra är mindre än nämnaren, så att svaret blir för litet.',
     sourceSv: DIV,
     openersSv: ['Fråga ungefär hur stort svaret borde vara: 648 delat med 6 är mer än 100.'],
+  },
+  add_multiplied: {
+    thinkingSv: 'Eleven multiplicerar talen fast uppgiften är addition, till exempel 4 + 5 = 20 eller 3 + 3 = 9. Det kan vara tecknet som förväxlas, att eleven inte läser tecknet eller att eleven inte vet när man adderar.',
+    sourceSv: SIMON_2026_11_12,
+    openersSv: ['Be eleven läsa uppgiften högt: vad betyder tecknet?', 'Ge en textuppgift utan tecken, till exempel "Ali har 4 äpplen och får 5 till", och se vilket räknesätt eleven väljer.'],
+  },
+  decimal_tenths_as_hundredths: {
+    thinkingSv: 'Eleven adderar tiondelarna men skriver summan som hundradelar: 4,5 + 6,6 blir 10,11 i stället för 11,1. Tio tiondelar blir inte en hel.',
+    sourceSv: SIMON_2026_11_12,
+    openersSv: ['Fråga hur många tiondelar 5 + 6 tiondelar är, och vad tio tiondelar är tillsammans.'],
+  },
+  decimal_only_fraction_added: {
+    thinkingSv: 'Eleven lägger bara till decimaldelen av det ena talet och tappar heltalsdelen: 2,7 + 1,1 blir 2,8.',
+    sourceSv: SIMON_2026_11_12,
+    openersSv: ['Be eleven uppskatta svaret först: ungefär hur mycket är 3 + 1?'],
+  },
+  decimal_whole_under_last_decimal: {
+    thinkingSv: 'Eleven ställer heltalet under den sista decimalen i stället för under heltalen: 6,4 − 2 blir 6,2 och 1 − 0,75 blir 0,74. Positionerna följer inte decimaltecknet.',
+    sourceSv: SIMON_2026_11_12,
+    openersSv: ['Låt eleven skriva talen under varandra och fråga var tvåan i 6,4 − 2 ska stå.'],
+  },
+  bond_ten_friend: {
+    thinkingSv: 'Eleven använder 10-kompisen till den kända termen fast måltalet är ett annat: ? + 8 = 15 blir 2. Kanske tror eleven att det fortfarande gäller tiokamrater.',
+    sourceSv: SIMON_2026_11_12,
+    openersSv: ['Be eleven läsa måltalet högt och kontrollera svaret: blir 2 + 8 femton?'],
+  },
+  double_ten_too_many: {
+    thinkingSv: 'Dubbeln blir tio för mycket, till exempel 24 + 24 = 58 eller 14 + 14 = 38. Eleven kan lägga till ett tiotal för mycket när entalen dubblas.',
+    sourceSv: SIMON_2026_11_12,
+    openersSv: ['Be eleven dubbla tiotalen och entalen var för sig och berätta hur hen tänker.'],
+  },
+  fraction_numerators_only: {
+    thinkingSv: 'Eleven adderar bara täljarna och lämnar nämnaren: 2/10 + 6/10 blir 8. Bråket uppfattas som två separata tal.',
+    sourceSv: SIMON_2026_11_12,
+    openersSv: ['Fråga vad 2/10 betyder och hur stor delen är.'],
+  },
+  fraction_inverted: {
+    thinkingSv: 'Eleven får rätt delar men byter plats på täljare och nämnare: 2/4 + 1/4 blir 4/3. Det kan vara osäkerhet om vad som är täljare och nämnare.',
+    sourceSv: SIMON_2026_11_12,
+    openersSv: ['Fråga vilket tal som visar hur många delar helheten har.'],
   },
 }

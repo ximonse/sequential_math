@@ -49,7 +49,7 @@ test('Decimal subtraction separates overlapping rules and preserves teaching thr
   await approve(page)
   const contrastDraftId = new URL(page.url()).pathname.split('/').at(-1)
   const contrastPlan = (await api(page, `/api/teacher-material?draftId=${contrastDraftId}`)).data.draft.versions[0].material.investigation
-  expect(contrastPlan).toMatchObject({ modelId: 'exchange_not_decremented', ruleVersion: 'predictable-errors-v9',
+  expect(contrastPlan).toMatchObject({ modelId: 'exchange_not_decremented', ruleVersion: 'predictable-errors-v10',
     didactic: { packageId: 'decimal-single-exchange-subtraction-pilot', phase: 'contrast' } })
   expect(contrastPlan.pupils[0].rivalModelIds).toEqual(['borrow_forget', 'smaller_minus_larger'])
   expect(contrastPlan.pupils[0].unresolvedPairs).toEqual([])

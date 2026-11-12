@@ -4,7 +4,7 @@ import { predictDecimalPartsSeparately } from '../arithmetic/errorHypotheses/mul
 import { subtractionCandidates } from '../arithmetic/subtractionCandidates.js'
 import { divRemainderAsOnes, divRemainderIgnored, divZeroDropped, mulCarryAddedBefore, mulCarryAlwaysOne, mulCarryForgotten, mulColumnwise, mulPartialsConcatenated, mulRows } from './writtenMulDiv.js'
 import { addLeftToRight, subLeftToRight } from './leftToRight.js'
-import { candidateResult, entryAndNearMissPredictions, prediction, unavailable, numeric } from './core.js'
+import { candidateResult, decimalPlaces, entryAndNearMissPredictions, givingUpPredictions, prediction, unavailable, numeric } from './core.js'
 import { decimalSubtractionStructure } from '../arithmetic/decimalSubtractionPackage.js'
 import { decimalAdditionStructure } from '../arithmetic/decimalAdditionPackage.js'
 
@@ -47,6 +47,24 @@ export function arithmeticCandidates(problem, answer) {
     const places = Math.max(...[a, b].map(n => String(n).split('.')[1]?.length ?? 0))
     if (places <= 3) {
       const scale = 10 ** places, aa = Math.round(a * scale), bb = Math.round(b * scale)
+      const round = value => Math.round(value * scale) / scale
+      // Models from Simon's reading of real answers, 2026-11-12.
+      if (op === 'addition') {
+        for (const [x, y] of [[a, b], [b, a]]) {
+          // Tenths only: with two decimals the answer coincides with the approved package's forgotten carry.
+          if (places === 1 && !Number.isInteger(y)) predictions.push(prediction('decimal_only_fraction_added', round(x + y - Math.trunc(y)),
+            'Svaret matchar att bara decimaldelen av det ena talet läggs till det andra (2,7 + 1,1 = 2,8).'))
+        }
+        const tenths = Math.round((a - Math.trunc(a)) * 10) + Math.round((b - Math.trunc(b)) * 10)
+        if (decimalPlaces(a) === 1 && decimalPlaces(b) === 1 && tenths >= 10) predictions.push(prediction('decimal_tenths_as_hundredths',
+          Math.round((Math.trunc(a) + Math.trunc(b) + tenths / 100) * 100) / 100, 'Svaret matchar att tiondelarnas summa skrivs som hundradelar (4,5 + 6,6 = 10,11).'))
+      }
+      // A whole number written under the last decimal (6,4 − 2 = 6,2; 1 − 0,75 = 0,74).
+      if ([a, b].filter(Number.isInteger).length === 1) {
+        const [x, y] = Number.isInteger(a) ? [a / scale, b] : [a, b / scale]
+        predictions.push(prediction('decimal_whole_under_last_decimal', round(op === 'addition' ? x + y : Math.abs(x - y)),
+          'Svaret matchar att heltalet ställs under den sista decimalen i stället för under heltalen.'))
+      }
       if (op === 'addition') {
         predictions.push(prediction('carry_forget', digitByDigitSum(aa, bb) / scale,
           'Svaret matchar platsjusterade decimalkolumner utan överförd minnessiffra.'))
@@ -77,6 +95,7 @@ export function arithmeticCandidates(problem, answer) {
   }
   if (op === 'addition' && [a, b].every(n => Number.isSafeInteger(n) && n >= 0)) {
     predictions.push(prediction('carry_forget', digitByDigitSum(a, b), 'Svaret matchar kolumnsummor utan överförd minnessiffra.'))
+    if (a * b !== a + b) predictions.push(prediction('add_multiplied', a * b, 'Svaret matchar att talen multipliceras i stället för att adderas.'))
     const width = Math.max(String(a).length, String(b).length), right = String(b).padStart(width, '0')
     const concatenated = String(a).padStart(width, '0').split('').map((digit, i) => String(Number(digit) + Number(right[i]))).join('')
     predictions.push(prediction('column_sums_concatenated', Number(concatenated), 'Svaret matchar kolumnsummor som skrivits efter varandra.'))
@@ -131,7 +150,7 @@ export function arithmeticCandidates(problem, answer) {
   }
   // Off-by-one only for single-digit table facts, where counting a step wrong is plausible.
   const tableFact = op === 'multiplication' && [a, b].every(n => Number.isInteger(n) && n >= 0 && n <= 10)
-  predictions.push(...entryAndNearMissPredictions(correct, { offByOne: tableFact }))
+  predictions.push(...entryAndNearMissPredictions(correct, { offByOne: tableFact }), ...givingUpPredictions(correct))
   if (op === 'multiplication' && [a, b].every(n => Number.isSafeInteger(n) && n >= 0)) {
     const [big, small] = a >= b ? [a, b] : [b, a]
     if (big >= 10 && small >= 2 && small <= 9) {

@@ -13,7 +13,7 @@ import { contrastFollowUpEligible } from '../../../lib/practiceModes.js'
 import { diagnosticRequest } from './diagnosticRequest.js'
 import { OPERATION_LABELS } from '../../../lib/operations.js'
 import { CONTRAST_LABELS_SV } from '../../../domains/predictableErrors/contrast.js'
-import { NOT_METHOD_MODELS } from '../../../domains/predictableErrors/catalog.js'
+import { GAVE_UP_MODELS, NOT_METHOD_MODELS } from '../../../domains/predictableErrors/catalog.js'
 import { meetsPattern } from '../../../lib/modelPattern.js'
 import { modelDescription } from '../../../domains/predictableErrors/modelDescriptions.js'
 import '../../../dev/diagnosticGridPrototype.css'
@@ -61,10 +61,13 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
       checkInRevision: check?.revision ?? 0, decision: decision?.decision ?? 'undecided',
       interpretationSv: decision?.interpretationSv ?? '', goalSv: check?.goalSv ?? '' }
   }
+  const pattern = item => meetsPattern(item.signalCode, item.supportRefs.map(ref => byRef.get(ref)).filter(Boolean))
+  // Giving up or clicking past, on at least three different tasks: its own signal.
+  const gaveUp = item => GAVE_UP_MODELS.has(item.signalCode) && pattern(item)
   // Slips, input and answers that do not yet form a pattern across different tasks.
-  const slip = item => NOT_METHOD_MODELS.has(item.signalCode)
-    || !meetsPattern(item.signalCode, item.supportRefs.map(ref => byRef.get(ref)).filter(Boolean))
-  const suspicions = report.hypotheses.filter(item => !slip(item))
+  const slip = item => !gaveUp(item) && (NOT_METHOD_MODELS.has(item.signalCode) || !pattern(item))
+  const suspicions = report.hypotheses.filter(item => !slip(item) && !gaveUp(item))
+  const gaveUpItems = report.hypotheses.filter(gaveUp)
   // Suspicions that can share one screening: computed, outside the didactic
   // packages, and not revised or rejected by the teacher.
   const [askAgain, setAskAgain] = useState('')
@@ -188,6 +191,15 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
         {rows(unexplained)}
       </>
     })()}
+
+    {gaveUpItems.length > 0 && <section className="mt-4" aria-label="Ger upp eller klickar förbi">
+      <h5 className="text-base font-semibold">Ger upp eller klickar förbi</h5>
+      <p className="text-sm text-slate-600">Samma svar på minst tre olika uppgifter. Det är inget räknefel. Prata med eleven om varför.</p>
+      {gaveUpItems.map(item => <div key={item.id} className="mt-2">
+        <p className="text-sm font-semibold">{titleFor(item)} · {item.supportCount} svar</p>
+        {rows(item.supportRefs)}
+      </div>)}
+    </section>}
 
     {slips.length > 0 && <details className="mt-4"><summary className="font-semibold">Troligen slarv eller inmatning ({slips.reduce((sum, item) => sum + item.supportCount, 0)} svar)</summary>
       <p className="mt-1 text-sm text-slate-600">Hålls isär från felförståelser. Upprepas samma mönster kan det ändå vara värt att fråga eleven.</p>

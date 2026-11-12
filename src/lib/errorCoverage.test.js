@@ -47,10 +47,14 @@ describe('error coverage', () => {
   })
 
   it('gives a group the same totals as its pupils added together', () => {
+    // Patterns are judged per pupil, so a group is its pupils' summaries added, not one pooled count.
     const half = Math.floor(fixture.length / 2)
-    const merged = mergeCoverage([errorCoverage({ entries: strip(fixture.slice(0, half)) }), errorCoverage({ entries: strip(fixture.slice(half)) })])
-    const whole = errorCoverage({ entries: strip(fixture) })
-    for (const key of ['total', 'statuses', 'wrong', 'areas', 'models', 'unansweredWithWork', 'teacherAssessed']) expect(merged[key], key).toEqual(whole[key])
+    const pupils = [errorCoverage({ entries: strip(fixture.slice(0, half)) }), errorCoverage({ entries: strip(fixture.slice(half)) })]
+    const merged = mergeCoverage(pupils)
+    expect(merged.total).toBe(pupils[0].total + pupils[1].total)
+    for (const key of ['incorrect', ...WRONG_BUCKETS]) expect(merged.wrong[key], key).toBe(pupils[0].wrong[key] + pupils[1].wrong[key])
+    for (const area of Object.keys(merged.areas)) expect(merged.areas[area].incorrect, area)
+      .toBe((pupils[0].areas[area]?.incorrect ?? 0) + (pupils[1].areas[area]?.incorrect ?? 0))
   })
 
   it('refuses a model that is not in the catalogue', () => {

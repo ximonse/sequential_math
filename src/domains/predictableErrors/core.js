@@ -1,4 +1,4 @@
-export const PREDICTABLE_RULE_VERSION = 'predictable-errors-v9'
+export const PREDICTABLE_RULE_VERSION = 'predictable-errors-v10'
 
 export const ARITHMETIC_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
 // The arithmetic operation the pupil met. Decimal tasks in ordinary practice are
@@ -32,6 +32,18 @@ export const unavailable = (domain, reason = 'unsupported_structure') => ({ rule
   domain: domain ?? 'unknown', status: 'not_applicable', reason, matches: [], predictions: [],
   nonDiscriminatingModelIds: [], limitation: 'no_inference_from_missing_structure' })
 export const prediction = (modelId, predictedAnswer, reasonSv) => ({ modelId, predictedAnswer, reasonSv })
+
+// Answers that show no attempt at the task: 0, or 55 pressed in the middle of
+// the keypad (Simon 2026-11-12, real answers). Not a calculation error.
+export function givingUpPredictions(correct) {
+  const list = []
+  if (correct !== 0) list.push(prediction('answer_zero', 0, 'Svaret är 0 fast facit inte är 0. Eleven kan ha gett upp eller klickat förbi.'))
+  if (correct !== 55) list.push(prediction('answer_55', 55, 'Svaret är 55, ett tryck mitt på sifferbordet. Eleven kan ha gett upp eller klickat förbi.'))
+  return list
+}
+
+// Number of decimals as written (2.75 has two).
+export const decimalPlaces = n => (String(n).split('.')[1] ?? '').length
 
 // Shared observations for whole-number answers. Neither is a method diagnosis.
 export function entryAndNearMissPredictions(correct, { offByOne = false } = {}) {

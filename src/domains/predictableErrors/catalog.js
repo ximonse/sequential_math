@@ -7,7 +7,8 @@ import { MODEL_DESCRIPTIONS } from './modelDescriptions.js'
 // description of the thinking lives in modelDescriptions.js under the same id.
 //
 // kind: 'misconception' is a way of thinking, 'observation' describes the
-// answer without claiming a method, 'input' is a typing or copying slip.
+// answer without claiming a method, 'input' is a typing or copying slip and
+// 'gave_up' an answer that shows no attempt at the task.
 // family: models that compete for the same answers and are tested against
 // each other. Order within a family is the order of the entries below.
 // yieldsToSpecific: hidden when a more specific model explains the same answer.
@@ -32,6 +33,10 @@ export const ERROR_MODELS = {
   last_two_digits_swapped: model('Facits två sista siffror omkastade', A, { kind: 'input', yieldsToSpecific: true, speedSlip: true }),
   notebook_answer_mismatch: model('Olika svar i räknehäftet och svarsfältet', A, { kind: 'input' }),
 
+  // Giving up or clicking past (Simon 2026-11-12): a signal to the teacher, not a calculation error.
+  answer_zero: model('Svarar 0', [...A, ...N], { kind: 'gave_up', minDistinctTasks: 3, noFollowUp: true }),
+  answer_55: model('Svarar 55', [...A, ...N], { kind: 'gave_up', minDistinctTasks: 3, noFollowUp: true }),
+
   // Written subtraction
   smaller_minus_larger: model('Större minus mindre i varje kolumn', A, { family: 'column_subtraction' }),
   exchange_not_decremented: model('Växlar men minskar inte kolumnen till vänster', A, { family: 'column_subtraction' }),
@@ -48,6 +53,12 @@ export const ERROR_MODELS = {
   one_carry_forgotten: model('En av flera minnessiffror glöms', A),
   phantom_carry: model('Lägger till minnessiffra som inte behövs', A),
   add_left_to_right: model('Räknar från vänster, minnessiffran åt höger', A),
+  add_multiplied: model('Multiplicerar i stället för att addera', [...A, ...N], { minDistinctTasks: 3, notRival: true, noFollowUp: true }),
+
+  // Decimals (Simon 2026-11-12)
+  decimal_tenths_as_hundredths: model('Tiondelar blir hundradelar', A),
+  decimal_only_fraction_added: model('Lägger bara till decimaldelen av ena talet', A),
+  decimal_whole_under_last_decimal: model('Heltalet ställs under sista decimalen', A),
 
   // Multiplication
   mul_carry_forgotten: model('Minnessiffran glöms i multiplikationen', A, { family: 'written_multiplication' }),
@@ -74,6 +85,8 @@ export const ERROR_MODELS = {
   fraction_keep_first_denominator: model('Ingen gemensam nämnare; första nämnaren behålls', F),
   fraction_integer_in_denominator: model('Heltalet multipliceras in i nämnaren', F),
   fraction_add_instead_of_multiply: model('Adderar i stället för att multiplicera', F),
+  fraction_numerators_only: model('Adderar bara täljarna', F),
+  fraction_inverted: model('Täljare och nämnare byter plats', F),
 
   // Percentage
   percentage_number_as_amount: model('Använder procenttalet som ett belopp', P),
@@ -101,7 +114,9 @@ export const ERROR_MODELS = {
   bond_sum_instead_of_missing: model('Adderar i stället för att söka saknad term', N),
   bond_known_term_returned: model('Svarar med den kända termen', N),
   bond_target_returned: model('Svarar med måltalet', N),
+  bond_ten_friend: model('Använder 10-kompisen fast måltalet är ett annat', N),
   double_no_carry: model('Dubblar utan minnessiffra', N),
+  double_ten_too_many: model('Tio för mycket i dubbeln', N),
   double_original_returned: model('Svarar med talet utan att dubbla', N),
   double_known_product_returned: model('Svarar med det givna talet i stället för hälften', N),
   double_instead_of_half: model('Dubblar i stället för att halvera', N),
@@ -120,7 +135,7 @@ export const TITLES_AWAITING_REVIEW = ['percentage_number_as_amount', 'percentag
 // Models that still lack a teacher-facing description of the thinking. The
 // list is open debt: a description is added through the routine in section 9
 // of the governance document, and the id leaves this list in the same change.
-export const DESCRIPTIONS_PENDING = ['operation_swap', 'place_value_scaling', 'answer_off_by_one', 'partial_answer_entry',
+export const DESCRIPTIONS_PENDING = ['answer_zero', 'answer_55', 'operation_swap', 'place_value_scaling', 'answer_off_by_one', 'partial_answer_entry',
   'last_two_digits_swapped', 'notebook_answer_mismatch', 'ones_digits_only', 'table_off_by_one',
   'decimal_parts_multiplied_separately', 'quotient_off_by_one', 'dividend_as_answer', 'divisor_as_answer', 'reversed_operands',
   'fraction_components_separately', 'fraction_keep_first_denominator', 'fraction_integer_in_denominator',
@@ -141,6 +156,7 @@ export const MODEL_TITLES_SV = Object.fromEntries(ids.map(id => [id, ERROR_MODEL
 export const NOT_METHOD_MODELS = where(m => m.kind !== 'misconception')
 export const NOT_RIVAL_MODELS = where(m => m.kind !== 'misconception' || m.notRival)
 export const NO_FOLLOW_UP_MODELS = where(m => m.noFollowUp)
+export const GAVE_UP_MODELS = where(m => m.kind === 'gave_up')
 export const INPUT_MODELS = where(m => m.kind === 'input')
 export const YIELDS_TO_SPECIFIC_MODELS = where(m => m.yieldsToSpecific)
 export const SPEED_SLIP_MODEL_IDS = where(m => m.speedSlip)

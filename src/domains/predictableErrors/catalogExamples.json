@@ -550,6 +550,96 @@
     {"problem":{"domain":"number_fluency","skill":"doubles","type":"doubles","values":{"value":7,"doubled":14,"form":"double_halving_transfer"}},"answer":14},
     {"problem":{"domain":"number_fluency","skill":"doubles","type":"doubles","values":{"value":16,"doubled":32,"form":"double_halving_transfer"}},"answer":32},
     {"problem":{"domain":"number_fluency","skill":"doubles","type":"doubles","values":{"value":25,"doubled":50,"form":"double_halving_transfer"}},"answer":50}
+  ] },
+  "add_multiplied": { "hit": [
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":4,"b":5}},"answer":20},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":2,"b":3}},"answer":6},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":6,"b":2}},"answer":12}
+  ], "miss": [
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":4,"b":5}},"answer":12},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":2,"b":3}},"answer":8},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":6,"b":2}},"answer":11}
+  ] },
+  "decimal_tenths_as_hundredths": { "hit": [
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":4.5,"b":6.6}},"answer":10.11},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":1.9,"b":8.4}},"answer":9.13},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":6.7,"b":1.8}},"answer":7.15}
+  ], "miss": [
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":4.5,"b":6.6}},"answer":14.1},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":1.9,"b":8.4}},"answer":13.3},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":6.7,"b":1.8}},"answer":11.5}
+  ] },
+  "decimal_only_fraction_added": { "hit": [
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":2.7,"b":1.1}},"answer":2.8},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":4.3,"b":4.3}},"answer":4.6},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":2.5,"b":2.4}},"answer":2.9}
+  ], "miss": [
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":2.7,"b":1.1}},"answer":6.800000000000001},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":4.3,"b":4.3}},"answer":11.6},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":2.5,"b":2.4}},"answer":7.9}
+  ] },
+  "decimal_whole_under_last_decimal": { "hit": [
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":6.4,"b":2}},"answer":6.2},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":1,"b":0.75}},"answer":0.74},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":4.5,"b":7}},"answer":5.2}
+  ], "miss": [
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":6.4,"b":2}},"answer":7.4},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":1,"b":0.75}},"answer":3.25},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":4.5,"b":7}},"answer":14.5}
+  ] },
+  "bond_ten_friend": { "hit": [
+    {"problem":{"domain":"number_fluency","skill":"number_bonds","type":"number_bonds","values":{"skill":"number_bonds","target":15,"knownTerm":8}},"answer":2},
+    {"problem":{"domain":"number_fluency","skill":"number_bonds","type":"number_bonds","values":{"skill":"number_bonds","target":20,"knownTerm":3}},"answer":7},
+    {"problem":{"domain":"number_fluency","skill":"number_bonds","type":"number_bonds","values":{"skill":"number_bonds","target":20,"knownTerm":6}},"answer":4}
+  ], "miss": [
+    {"problem":{"domain":"number_fluency","skill":"number_bonds","type":"number_bonds","values":{"skill":"number_bonds","target":15,"knownTerm":8}},"answer":10},
+    {"problem":{"domain":"number_fluency","skill":"number_bonds","type":"number_bonds","values":{"skill":"number_bonds","target":20,"knownTerm":3}},"answer":20},
+    {"problem":{"domain":"number_fluency","skill":"number_bonds","type":"number_bonds","values":{"skill":"number_bonds","target":20,"knownTerm":6}},"answer":17}
+  ] },
+  "double_ten_too_many": { "hit": [
+    {"problem":{"domain":"number_fluency","skill":"doubles","type":"doubles","values":{"value":24,"doubled":48,"form":"double_addition"}},"answer":58},
+    {"problem":{"domain":"number_fluency","skill":"doubles","type":"doubles","values":{"value":19,"doubled":38,"form":"double_addition"}},"answer":48},
+    {"problem":{"domain":"number_fluency","skill":"doubles","type":"doubles","values":{"value":14,"doubled":28,"form":"double_addition"}},"answer":38}
+  ], "miss": [
+    {"problem":{"domain":"number_fluency","skill":"doubles","type":"doubles","values":{"value":24,"doubled":48,"form":"double_addition"}},"answer":51},
+    {"problem":{"domain":"number_fluency","skill":"doubles","type":"doubles","values":{"value":19,"doubled":38,"form":"double_addition"}},"answer":41},
+    {"problem":{"domain":"number_fluency","skill":"doubles","type":"doubles","values":{"value":14,"doubled":28,"form":"double_addition"}},"answer":31}
+  ] },
+  "fraction_numerators_only": { "hit": [
+    {"problem":{"domain":"fractions","type":"fractions","skill":"fractions","values":{"text":"2/10 + 6/10"}},"answer":"8"},
+    {"problem":{"domain":"fractions","type":"fractions","skill":"fractions","values":{"text":"1/3 + 1/4"}},"answer":"2"},
+    {"problem":{"domain":"fractions","type":"fractions","skill":"fractions","values":{"text":"3/8 + 1/4"}},"answer":"4"}
+  ], "miss": [
+    {"problem":{"domain":"fractions","type":"fractions","skill":"fractions","values":{"text":"2/10 + 6/10"}},"answer":"7/13"},
+    {"problem":{"domain":"fractions","type":"fractions","skill":"fractions","values":{"text":"1/3 + 1/4"}},"answer":"7/13"},
+    {"problem":{"domain":"fractions","type":"fractions","skill":"fractions","values":{"text":"3/8 + 1/4"}},"answer":"7/13"}
+  ] },
+  "fraction_inverted": { "hit": [
+    {"problem":{"domain":"fractions","type":"fractions","skill":"fractions","values":{"text":"2/4 + 1/4"}},"answer":"4/3"},
+    {"problem":{"domain":"fractions","type":"fractions","skill":"fractions","values":{"text":"1/3 + 1/3"}},"answer":"3/2"},
+    {"problem":{"domain":"fractions","type":"fractions","skill":"fractions","values":{"text":"2/5 + 1/3"}},"answer":"15/11"}
+  ], "miss": [
+    {"problem":{"domain":"fractions","type":"fractions","skill":"fractions","values":{"text":"2/4 + 1/4"}},"answer":"7/13"},
+    {"problem":{"domain":"fractions","type":"fractions","skill":"fractions","values":{"text":"1/3 + 1/3"}},"answer":"7/13"},
+    {"problem":{"domain":"fractions","type":"fractions","skill":"fractions","values":{"text":"2/5 + 1/3"}},"answer":"7/13"}
+  ] },
+  "answer_zero": { "hit": [
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":3,"b":6}},"answer":0},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":5,"b":8}},"answer":0},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":9,"b":4}},"answer":0}
+  ], "miss": [
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":3,"b":6}},"answer":12},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":5,"b":8}},"answer":43},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":9,"b":4}},"answer":8}
+  ] },
+  "answer_55": { "hit": [
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":8,"b":3}},"answer":55},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":7,"b":3}},"answer":55},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":22,"b":2}},"answer":55}
+  ], "miss": [
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":8,"b":3}},"answer":27},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":7,"b":3}},"answer":24},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":22,"b":2}},"answer":27}
   ] }
  }
 }

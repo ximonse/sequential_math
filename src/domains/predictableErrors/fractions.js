@@ -23,12 +23,14 @@ export function fractionCandidates(problem, answer) {
     const sign = op === '+' ? 1 : -1
     push('fraction_components_separately', n1 + sign * n2, d1 + sign * d2, 'Svaret kan produceras genom att räkna täljare och nämnare var för sig.')
     if (d1 !== d2) push('fraction_keep_first_denominator', n1 + sign * n2, d1, 'Svaret kan produceras genom att ändra täljarna utan gemensam nämnare.')
+    if (n1 + sign * n2 >= 0) push('fraction_numerators_only', n1 + sign * n2, 1, 'Svaret är bara täljarna adderade eller subtraherade, utan nämnare.')
   } else {
     push('fraction_keep_first_denominator', n1 * n2, d1, 'Svaret kan produceras genom att bara multiplicera täljarna och behålla första nämnaren.')
     if (d2 === 1 && n2 > 0) push('fraction_integer_in_denominator', n1, d1 * n2, 'Heltalsfaktorn kan ha multiplicerats in i nämnaren.')
     const sum = add(n1, d1, n2, d2)
     push('fraction_add_instead_of_multiply', sum.num, sum.den, 'Svaret kan produceras genom addition i stället för multiplikation.')
   }
+  if (correct.num !== 0 && correct.num !== correct.den) push('fraction_inverted', correct.den, correct.num, 'Svaret är rätt svar med täljare och nämnare på omvända platser.')
   return candidateResult({ domain: 'fractions', correct: formatFraction(correct.num, correct.den), answer,
     scope: op === '+' ? 'addition' : ['−', '-'].includes(op) ? 'subtraction' : 'multiplication',
     predictions: predictions.map(p => p.modelId === 'fraction_components_separately' ? { ...p, coverageIds: ['G4', 'B7'] } : p),

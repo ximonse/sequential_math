@@ -116,9 +116,10 @@ som "utan felanalys" i resultatet.
 *Spärr:* bankens test faller om en uppgift saknar nyckel.
 
 **R-C. Inget fel får försvinna.**
-Varje felsvar hamnar i exakt en av fyra: *felförståelse*, *observation*,
-*inmatning* eller *oförklarat*. Ett svar som flera modeller förklarar tar den
-första arten i den ordningen. Ett oförklarat svar anger varför: ingen modell
+Varje felsvar hamnar i exakt en av fem: *felförståelse*, *observation*,
+*inmatning*, *ger upp* eller *oförklarat*. Ett svar som flera modeller
+förklarar tar den första arten i den ordningen. En modell med krav på mönster
+(`minDistinctTasks`) räknas som observation hos en elev som inte når kravet. Ett oförklarat svar anger varför: ingen modell
 ger svaret, eller svaret nådde aldrig modellerna. Varje obesvarad uppgift
 redovisas som obesvarad, med uppgift om det finns uträkning. Räkningen utgår
 från elevens eget svar; lärarbedömda svar och svar dolda som slarv redovisas
@@ -224,6 +225,24 @@ förrän det föregående är klart.
    har vilken felförståelse utan att öppna enskilda elever.
 5. **Fyll luckorna efter måttstocken.** Ta de vanligaste oförklarade svaren ur
    täckningsrapporten, i tur och ordning, med rutinen i avsnitt 9.
+   *Första omgången 2026-11-12, före steg 3 på Simons uttryckliga besked:*
+   Simon kommenterade de oförklarade svaren
+   (`Hermes Vault/Skola och lektioner/Matematik/Mistake-types-for-review-2026-11-12.md`).
+   Nio felmodeller och en signal byggdes ur hans tolkningar, med hans
+   kommentarer som källa: multiplicerar i stället för att addera (även
+   3 + 3 = 9), tiondelar blir hundradelar, bara decimaldelen av ena talet
+   läggs till (bara tal med en decimal, för att inte överlappa det godkända
+   decimalpaketet), heltalet ställs under sista decimalen, 10-kompisen fast
+   måltalet är ett annat, tio för mycket i dubbeln, bara täljarna adderas,
+   täljare och nämnare byter plats, samt signalen *ger upp eller klickar
+   förbi* (svarar 0 eller 55 på minst tre olika uppgifter) som visas i en egen
+   ruta i elevrapporten. Regelversion v10. Mätt på samma 17 884 svar:
+   oförklarade 2 104 → 1 717, felförståelse 407 → 471, ger upp 264, syns i
+   elevrapporten 1 163 → 1 208. Blindtesten: inga nya felförståelser hos
+   kontrolleleverna; blindtest 1:s skript svarade 0 på alla dolda
+   decimaluppgifter och får signalen *svarar 0*, vilket stämmer med den kända
+   bristen i testet. 51 misstankar får inte plats bland rapportens åtta kort;
+   taket hör till steg 4.
 6. **Samma struktur för träningssvaren.** Först därefter.
 
 ## 9. Rutin för nytt område eller ny felmodell

@@ -1,5 +1,5 @@
 import { digitByDigitSum } from '../arithmetic/errorHypotheses/commonHypotheses.js'
-import { candidateResult, entryAndNearMissPredictions, prediction, unavailable } from './core.js'
+import { candidateResult, entryAndNearMissPredictions, givingUpPredictions, prediction, unavailable } from './core.js'
 
 export function fluencyCandidates(problem, answer) {
   const v = problem?.values ?? {}, skill = problem?.skill ?? problem?.type
@@ -9,17 +9,21 @@ export function fluencyCandidates(problem, answer) {
       prediction('bond_sum_instead_of_missing', v.target + v.knownTerm, 'Svaret matchar summan av måltal och känd term.'),
       prediction('bond_known_term_returned', v.knownTerm, 'Den kända termen kan ha skrivits i svarsfältet.'),
       prediction('bond_target_returned', v.target, 'Måltalet kan ha skrivits i stället för den saknade termen.'),
-      ...entryAndNearMissPredictions(v.target - v.knownTerm, { offByOne: true }),
+      ...(v.target !== 10 && v.knownTerm < 10 ? [prediction('bond_ten_friend', 10 - v.knownTerm, 'Svaret är 10-kompisen till den kända termen fast måltalet är ett annat.')] : []),
+      ...entryAndNearMissPredictions(v.target - v.knownTerm, { offByOne: true }), ...givingUpPredictions(v.target - v.knownTerm),
     ] })
   }
   if (skill !== 'doubles' || !small(v.value) || v.doubled !== 2 * v.value) return unavailable('number_fluency')
   if (['double_missing_factor', 'double_halving_transfer'].includes(v.form)) return candidateResult({ domain: 'number_fluency',
     scope: 'inverse_double', correct: v.value, answer, predictions: [prediction('double_known_product_returned', v.doubled, 'Produkten kan ha lämnats i stället för saknad faktor eller hälft.'),
-      prediction('double_instead_of_half', 2 * v.doubled, 'Svaret matchar dubblering av det visade produktvärdet.') ] })
+      prediction('double_instead_of_half', 2 * v.doubled, 'Svaret matchar dubblering av det visade produktvärdet.'), ...givingUpPredictions(v.value) ] })
   if (!['double_addition', 'double_two_times', 'double_times_two', 'double_mixed_multiplication', 'double_mixed_addition'].includes(v.form)) return unavailable('number_fluency')
   return candidateResult({ domain: 'number_fluency', scope: 'forward_double', correct: v.doubled, answer, predictions: [
     prediction('double_no_carry', digitByDigitSum(v.value, v.value), 'Svaret matchar dubblering utan överförd minnessiffra; räknemetoden behöver belägg.'),
     prediction('double_original_returned', v.value, 'Det ursprungliga talet kan ha lämnats utan dubblering.'),
-    ...entryAndNearMissPredictions(v.doubled, { offByOne: true }),
+    prediction('double_ten_too_many', v.doubled + 10, 'Svaret är tio för mycket.'),
+    ...(['double_addition', 'double_mixed_addition'].includes(v.form) && v.value * v.value !== v.doubled
+      ? [prediction('add_multiplied', v.value * v.value, 'Svaret matchar att talet multipliceras med sig självt i stället för att adderas.')] : []),
+    ...entryAndNearMissPredictions(v.doubled, { offByOne: true }), ...givingUpPredictions(v.doubled),
   ] })
 }

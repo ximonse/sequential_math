@@ -59,7 +59,7 @@ describe('error model catalogue', () => {
     for (const id of ids) {
       const model = ERROR_MODELS[id]
       expect(model.titleSv?.trim(), id).toBeTruthy()
-      expect(['misconception', 'observation', 'input'], id).toContain(model.kind)
+      expect(['misconception', 'observation', 'input', 'gave_up'], id).toContain(model.kind)
       expect(model.domains.length, id).toBeGreaterThan(0)
       for (const domain of model.domains) expect(getDomain(domain), `${id}: ${domain}`).toBeTruthy()
       if (model.family) expect(model.kind, id).toBe('misconception')

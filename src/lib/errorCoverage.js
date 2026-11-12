@@ -10,9 +10,9 @@ import { meetsPattern } from './modelPattern.js'
 //
 // A wrong answer matched by several models takes the first kind in this
 // order. A misconception explains more than an observation of the answer,
-// and an observation more than an input slip.
-export const WRONG_BUCKETS = ['misconception', 'observation', 'input', 'unexplained']
-const KIND_ORDER = ['misconception', 'observation', 'input']
+// an observation more than an input slip, and a slip more than giving up.
+export const WRONG_BUCKETS = ['misconception', 'observation', 'input', 'gave_up', 'unexplained']
+const KIND_ORDER = ['misconception', 'observation', 'input', 'gave_up']
 const STATUSES = ['correct', 'incorrect', 'unanswered', 'partial']
 
 // The pupil's own answer. A teacher's judgement sits beside it and is counted separately.

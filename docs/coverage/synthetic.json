@@ -1,24 +1,25 @@
 {
  "noteSv": "Täckning på syntetiskt underlag ur katalogens exempel. Uppdateras med --write när en ändring i felmodellerna är avsiktlig; diffen visar vad som ändrades.",
- "total": 431,
+ "total": 501,
  "statuses": {
-  "correct": 61,
-  "incorrect": 369,
+  "correct": 71,
+  "incorrect": 429,
   "unanswered": 1,
   "partial": 0,
   "other": 0
  },
  "wrong": {
-  "incorrect": 369,
-  "misconception": 341,
-  "observation": 9,
+  "incorrect": 429,
+  "misconception": 368,
+  "observation": 14,
   "input": 6,
-  "unexplained": 13,
-  "unexplainedNoModel": 12,
+  "gave_up": 1,
+  "unexplained": 40,
+  "unexplainedNoModel": 39,
   "unexplainedNotAnalysed": 1,
-  "speedTraining": 42,
+  "speedTraining": 54,
   "reasons": {
-   "no_model": 12,
+   "no_model": 39,
    "unsupported_structure": 1
   }
  },
@@ -28,6 +29,7 @@
    "misconception": 15,
    "observation": 0,
    "input": 0,
+   "gave_up": 0,
    "unexplained": 3,
    "unexplainedNoModel": 3,
    "unexplainedNotAnalysed": 0,
@@ -41,6 +43,7 @@
    "misconception": 18,
    "observation": 0,
    "input": 0,
+   "gave_up": 0,
    "unexplained": 0,
    "unexplainedNoModel": 0,
    "unexplainedNotAnalysed": 0,
@@ -52,6 +55,7 @@
    "misconception": 10,
    "observation": 0,
    "input": 0,
+   "gave_up": 0,
    "unexplained": 8,
    "unexplainedNoModel": 8,
    "unexplainedNotAnalysed": 0,
@@ -61,10 +65,65 @@
    }
   },
   "arithmetic:addition": {
-   "incorrect": 42,
-   "misconception": 37,
-   "observation": 4,
+   "incorrect": 52,
+   "misconception": 40,
+   "observation": 5,
    "input": 0,
+   "gave_up": 1,
+   "unexplained": 6,
+   "unexplainedNoModel": 6,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {
+    "no_model": 6
+   }
+  },
+  "arithmetic:decimal_addition": {
+   "incorrect": 14,
+   "misconception": 7,
+   "observation": 0,
+   "input": 0,
+   "gave_up": 0,
+   "unexplained": 7,
+   "unexplainedNoModel": 7,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {
+    "no_model": 7
+   }
+  },
+  "arithmetic:decimal_subtraction": {
+   "incorrect": 4,
+   "misconception": 2,
+   "observation": 0,
+   "input": 0,
+   "gave_up": 0,
+   "unexplained": 2,
+   "unexplainedNoModel": 2,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {
+    "no_model": 2
+   }
+  },
+  "arithmetic:division": {
+   "incorrect": 42,
+   "misconception": 42,
+   "observation": 0,
+   "input": 0,
+   "gave_up": 0,
+   "unexplained": 0,
+   "unexplainedNoModel": 0,
+   "unexplainedNotAnalysed": 0,
+   "speedTraining": 0,
+   "reasons": {}
+  },
+  "arithmetic:multiplication": {
+   "incorrect": 80,
+   "misconception": 65,
+   "observation": 8,
+   "input": 6,
+   "gave_up": 0,
    "unexplained": 1,
    "unexplainedNoModel": 1,
    "unexplainedNotAnalysed": 0,
@@ -73,55 +132,40 @@
     "no_model": 1
    }
   },
-  "arithmetic:division": {
-   "incorrect": 42,
-   "misconception": 42,
-   "observation": 0,
-   "input": 0,
-   "unexplained": 0,
-   "unexplainedNoModel": 0,
-   "unexplainedNotAnalysed": 0,
-   "speedTraining": 0,
-   "reasons": {}
-  },
-  "arithmetic:multiplication": {
-   "incorrect": 74,
-   "misconception": 63,
-   "observation": 5,
-   "input": 6,
-   "unexplained": 0,
-   "unexplainedNoModel": 0,
-   "unexplainedNotAnalysed": 0,
-   "speedTraining": 0,
-   "reasons": {}
-  },
   "arithmetic:subtraction": {
-   "incorrect": 48,
+   "incorrect": 50,
    "misconception": 48,
-   "observation": 0,
+   "observation": 1,
    "input": 0,
-   "unexplained": 0,
-   "unexplainedNoModel": 0,
+   "gave_up": 0,
+   "unexplained": 1,
+   "unexplainedNoModel": 1,
    "unexplainedNotAnalysed": 0,
    "speedTraining": 0,
-   "reasons": {}
+   "reasons": {
+    "no_model": 1
+   }
   },
   "fractions:addition": {
-   "incorrect": 8,
-   "misconception": 8,
+   "incorrect": 20,
+   "misconception": 14,
    "observation": 0,
    "input": 0,
-   "unexplained": 0,
-   "unexplainedNoModel": 0,
+   "gave_up": 0,
+   "unexplained": 6,
+   "unexplainedNoModel": 6,
    "unexplainedNotAnalysed": 0,
    "speedTraining": 0,
-   "reasons": {}
+   "reasons": {
+    "no_model": 6
+   }
   },
   "fractions:multiplication": {
    "incorrect": 12,
    "misconception": 12,
    "observation": 0,
    "input": 0,
+   "gave_up": 0,
    "unexplained": 0,
    "unexplainedNoModel": 0,
    "unexplainedNotAnalysed": 0,
@@ -133,6 +177,7 @@
    "misconception": 4,
    "observation": 0,
    "input": 0,
+   "gave_up": 0,
    "unexplained": 0,
    "unexplainedNoModel": 0,
    "unexplainedNotAnalysed": 0,
@@ -140,21 +185,25 @@
    "reasons": {}
   },
   "number_fluency:forward_double": {
-   "incorrect": 12,
-   "misconception": 12,
+   "incorrect": 18,
+   "misconception": 15,
    "observation": 0,
    "input": 0,
-   "unexplained": 0,
-   "unexplainedNoModel": 0,
+   "gave_up": 0,
+   "unexplained": 3,
+   "unexplainedNoModel": 3,
    "unexplainedNotAnalysed": 0,
-   "speedTraining": 12,
-   "reasons": {}
+   "speedTraining": 18,
+   "reasons": {
+    "no_model": 3
+   }
   },
   "number_fluency:inverse_double": {
    "incorrect": 12,
    "misconception": 12,
    "observation": 0,
    "input": 0,
+   "gave_up": 0,
    "unexplained": 0,
    "unexplainedNoModel": 0,
    "unexplainedNotAnalysed": 0,
@@ -162,21 +211,25 @@
    "reasons": {}
   },
   "number_fluency:number_bonds": {
-   "incorrect": 18,
-   "misconception": 18,
+   "incorrect": 24,
+   "misconception": 22,
    "observation": 0,
    "input": 0,
-   "unexplained": 0,
-   "unexplainedNoModel": 0,
+   "gave_up": 0,
+   "unexplained": 2,
+   "unexplainedNoModel": 2,
    "unexplainedNotAnalysed": 0,
-   "speedTraining": 18,
-   "reasons": {}
+   "speedTraining": 24,
+   "reasons": {
+    "no_model": 2
+   }
   },
   "percentage:discount": {
    "incorrect": 12,
    "misconception": 12,
    "observation": 0,
    "input": 0,
+   "gave_up": 0,
    "unexplained": 0,
    "unexplainedNoModel": 0,
    "unexplainedNotAnalysed": 0,
@@ -188,6 +241,7 @@
    "misconception": 18,
    "observation": 0,
    "input": 0,
+   "gave_up": 0,
    "unexplained": 0,
    "unexplainedNoModel": 0,
    "unexplainedNotAnalysed": 0,
@@ -199,6 +253,7 @@
    "misconception": 12,
    "observation": 0,
    "input": 0,
+   "gave_up": 0,
    "unexplained": 0,
    "unexplainedNoModel": 0,
    "unexplainedNotAnalysed": 0,
@@ -210,6 +265,7 @@
    "misconception": 0,
    "observation": 0,
    "input": 0,
+   "gave_up": 0,
    "unexplained": 1,
    "unexplainedNoModel": 0,
    "unexplainedNotAnalysed": 1,
@@ -221,6 +277,10 @@
  },
  "models": {
   "add_left_to_right": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "add_multiplied": {
    "answers": 3,
    "onlyModel": 3
   },
@@ -248,9 +308,17 @@
    "answers": 3,
    "onlyModel": 3
   },
+  "answer_55": {
+   "answers": 3,
+   "onlyModel": 3
+  },
   "answer_off_by_one": {
    "answers": 5,
    "onlyModel": 4
+  },
+  "answer_zero": {
+   "answers": 7,
+   "onlyModel": 3
   },
   "bond_known_term_returned": {
    "answers": 6,
@@ -261,6 +329,10 @@
    "onlyModel": 9
   },
   "bond_target_returned": {
+   "answers": 4,
+   "onlyModel": 4
+  },
+  "bond_ten_friend": {
    "answers": 3,
    "onlyModel": 3
   },
@@ -270,13 +342,25 @@
   },
   "carry_forget": {
    "answers": 4,
-   "onlyModel": 4
+   "onlyModel": 3
   },
   "column_sums_concatenated": {
    "answers": 3,
    "onlyModel": 3
   },
+  "decimal_only_fraction_added": {
+   "answers": 3,
+   "onlyModel": 3
+  },
   "decimal_parts_multiplied_separately": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "decimal_tenths_as_hundredths": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "decimal_whole_under_last_decimal": {
    "answers": 3,
    "onlyModel": 3
   },
@@ -316,6 +400,10 @@
    "answers": 6,
    "onlyModel": 6
   },
+  "double_ten_too_many": {
+   "answers": 3,
+   "onlyModel": 3
+  },
   "exchange_not_decremented": {
    "answers": 3,
    "onlyModel": 3
@@ -338,15 +426,23 @@
   },
   "fraction_components_separately": {
    "answers": 6,
-   "onlyModel": 6
+   "onlyModel": 4
   },
   "fraction_integer_in_denominator": {
    "answers": 6,
    "onlyModel": 6
   },
+  "fraction_inverted": {
+   "answers": 3,
+   "onlyModel": 3
+  },
   "fraction_keep_first_denominator": {
    "answers": 6,
    "onlyModel": 6
+  },
+  "fraction_numerators_only": {
+   "answers": 5,
+   "onlyModel": 3
   },
   "last_two_digits_swapped": {
    "answers": 3,
@@ -386,7 +482,7 @@
   },
   "operation_swap": {
    "answers": 101,
-   "onlyModel": 99
+   "onlyModel": 97
   },
   "partial_answer_entry": {
    "answers": 3,
@@ -449,12 +545,12 @@
    "onlyModel": 3
   },
   "table_off_by_one": {
-   "answers": 6,
-   "onlyModel": 4
+   "answers": 8,
+   "onlyModel": 6
   },
   "unnecessary_exchange": {
    "answers": 3,
-   "onlyModel": 3
+   "onlyModel": 2
   },
   "zero_donor_not_decremented": {
    "answers": 3,

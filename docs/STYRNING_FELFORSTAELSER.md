@@ -65,6 +65,24 @@ operationen `positions_decimal`, som analysens inläsning inte känner igen.
 1 550 av alla fel kommer från snabbhetsträning. 93 screeningsvar är obesvarade,
 46 av dem med uträkning i räknehäftet.
 
+**Rättat lokalt 2026-11-12:** analysens inläsning läser nu räknesättet ur
+`skill` när `operation` är `positions_decimal`. Mätt med
+`--reanalyse` på samma svar:
+
+| Mått | Före | Efter |
+| --- | ---: | ---: |
+| Når aldrig modellerna | 393 | 51 |
+| Felförståelse | 416 | 423 |
+| Observation | 231 | 247 |
+| Inmatning | 114 | 115 |
+| Ingen modell ger svaret | 1 735 | 2 053 |
+| Syns i elevrapporten | 1 186 | 1 163 |
+
+Decimalfelen når nu modellerna men saknar nästan alla en modell som förklarar
+dem; det är nästa lucka att fylla i steg 5. Att färre fel syns i rapporten
+beror på att fler misstankar konkurrerar om rapportens åtta platser, ett tak
+som hör till steg 4.
+
 ## 4. Det som ligger still
 
 Tills steg 1–4 i avsnitt 8 är klara byggs **inget** nytt i:

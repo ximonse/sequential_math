@@ -2,12 +2,15 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { errorCoverage, mergeCoverage, WRONG_BUCKETS } from '../src/lib/errorCoverage.js'
 import { syntheticCoverageEntries } from '../src/lib/errorCoverageFixture.js'
 import { buildPupilAnalysisDraft, validatePupilAnalysis } from '../src/lib/pupilAnalysis.js'
+import { addPredictableEvidence } from '../src/lib/evidencePredictableAnalysis.js'
 
 // Coverage of pupils' wrong answers (docs/STYRNING_FELFORSTAELSER.md, R-D).
 //
 //   node scripts/error-coverage.mjs --synthetic           print the synthetic report
 //   node scripts/error-coverage.mjs --synthetic --write   update docs/coverage/synthetic.json
 //   node scripts/error-coverage.mjs --evidence FILE       report on exported real answers
+//   ... --evidence FILE --reanalyse                       analyse again with this checkout's code,
+//                                                         to measure a change before it is published
 //
 // FILE is a JSON array of { group, id, entries, hiddenSlips } read from the
 // evidence API. Real answers stay outside the repo; never commit them or the
@@ -57,10 +60,13 @@ if (process.argv[1]?.endsWith('error-coverage.mjs')) {
       console.log(`Skrev ${SNAPSHOT}`)
     } else print('Syntetiskt underlag', errorCoverage({ entries: syntheticCoverageEntries() }))
   } else if (argument('evidence')) {
-    const pupils = JSON.parse(readFileSync(argument('evidence'), 'utf8'))
+    const reanalyse = process.argv.includes('--reanalyse')
+    const pupils = JSON.parse(readFileSync(argument('evidence'), 'utf8')).map(pupil => reanalyse ? { ...pupil,
+      entries: pupil.entries.map(entry => ({ ...entry, interpretation: { ...entry.interpretation, predictable: undefined } })) } : pupil)
     const groups = new Map()
     for (const pupil of pupils) {
-      const summary = { ...errorCoverage({ entries: pupil.entries, hiddenSlips: pupil.hiddenSlips ?? [] }), visibleInReport: visibleInReport(pupil.entries) }
+      const entries = reanalyse ? addPredictableEvidence(pupil.entries) : pupil.entries
+      const summary = { ...errorCoverage({ entries, hiddenSlips: pupil.hiddenSlips ?? [] }), visibleInReport: visibleInReport(entries) }
       const group = pupil.group ?? pupil.classId ?? 'okänd grupp'
       if (!groups.has(group)) groups.set(group, [])
       groups.get(group).push(summary)

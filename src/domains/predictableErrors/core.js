@@ -1,4 +1,12 @@
 export const PREDICTABLE_RULE_VERSION = 'predictable-errors-v9'
+
+export const ARITHMETIC_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
+// The arithmetic operation the pupil met. Decimal tasks in ordinary practice are
+// saved with operation positions_decimal and the operation in skill.
+export function questionOperation(question) {
+  const q = question ?? {}
+  return [q.operation, q.skill].find(value => ARITHMETIC_OPERATIONS.includes(value)) ?? q.operation ?? q.skill
+}
 export const LIMIT = 1e9
 
 export function numeric(value) {

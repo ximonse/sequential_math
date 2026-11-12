@@ -4,7 +4,7 @@ import { expressionCandidates } from './expressions.js'
 import { percentageCandidates } from './percentage.js'
 import { algebraCandidates, linearForm, sameLinear } from './algebra.js'
 import { fluencyCandidates } from './fluency.js'
-import { numeric, sameNumber, unavailable } from './core.js'
+import { ARITHMETIC_OPERATIONS, numeric, questionOperation, sameNumber, unavailable } from './core.js'
 
 const domains = { arithmetic: arithmeticCandidates, fractions: fractionCandidates,
   arithmetic_expressions: expressionCandidates, percentage: percentageCandidates,
@@ -25,8 +25,8 @@ export function matchesComputedCorrect(result, value) {
 export function candidatesForEvidence(entry) {
   const q = entry?.question ?? {}, status = entry?.answer?.status
   if (!['correct', 'incorrect'].includes(status)) return unavailable(q.domain, 'source_not_fully_assessed')
-  const operation = q.operation ?? q.skill
-  const domain = q.domain ?? (['addition', 'subtraction', 'multiplication', 'division'].includes(operation) ? 'arithmetic' : null)
+  const operation = questionOperation(q)
+  const domain = q.domain ?? (ARITHMETIC_OPERATIONS.includes(operation) ? 'arithmetic' : null)
   const values = q.values ?? (Array.isArray(q.operands) && q.operands.length === 2 ? { a: q.operands[0], b: q.operands[1] } : {})
   const result = predictableCandidates({ domain, skill: q.skill ?? operation, type: operation,
     values, display: { text: q.promptSv ?? q.promptText } }, entry.answer.studentAnswer)

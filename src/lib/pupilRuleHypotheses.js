@@ -2,7 +2,8 @@ import { pupilFollowUpSelection, followUpRecommendation } from './pupilFollowUpS
 import { arithmeticContentSignature } from './arithmeticContentSignature.js'
 import { evidenceProblem } from './evidenceProblem.js'
 import { isSpeedTrainingEntry, SPEED_SLIP_MODELS } from './practiceModes.js'
-import { NEEDS_REPETITION_MODELS, YIELDS_TO_SPECIFIC_MODELS } from '../domains/predictableErrors/catalog.js'
+import { ERROR_MODELS, NEEDS_REPETITION_MODELS, YIELDS_TO_SPECIFIC_MODELS } from '../domains/predictableErrors/catalog.js'
+import { questionFingerprint } from '../domains/predictableErrors/questionFingerprint.js'
 
 const current = entry => entry?.interpretation?.predictable
 // A quotient one off is usually a slip (blind test 3); it becomes a candidate only when
@@ -12,6 +13,19 @@ export const SLIP_UNTIL_REPEATED = NEEDS_REPETITION_MODELS
 // quotient zero and a scaling). When a specific rule explains the answer, they are not shown.
 const GENERIC_MODELS = YIELDS_TO_SPECIFIC_MODELS
 const level = entry => entry.context?.contentLevel ?? entry.context?.level
+
+// A model judged as a pattern across different tasks shows one answer per task
+// first, so a fact repeated many times cannot crowd the others out of the card.
+function supportsForCard(modelId, supports) {
+  if (!ERROR_MODELS[modelId]?.minDistinctTasks) return supports.slice(0, 20)
+  const seen = new Set(), first = [], repeats = []
+  for (const entry of supports) {
+    const key = questionFingerprint(evidenceProblem(entry))
+    if (seen.has(key)) repeats.push(entry)
+    else { seen.add(key); first.push(entry) }
+  }
+  return [...first, ...repeats].slice(0, 20)
+}
 
 export function comparableRuleCounter(entry, supports, modelId) {
   const value = current(entry)
@@ -51,7 +65,7 @@ export function buildRuleHypotheses(entries) {
     return units(b) - units(a) || a.modelId.localeCompare(b.modelId)
   })
   return ordered.flatMap(({ modelId, supports }) => {
-    const support = supports.slice(0, 20), first = current(support[0]), match = first.matches.find(m => m.modelId === modelId)
+    const support = supportsForCard(modelId, supports), first = current(support[0]), match = first.matches.find(m => m.modelId === modelId)
     const plan = pupilFollowUpSelection({ modelId, supports: support, entries })
     const allCounters = entries.filter(e => comparableRuleCounter(e, support, modelId)), counters = allCounters.slice(0, 5)
     if (SLIP_UNTIL_REPEATED.has(modelId) && (supports.length < 3 || supports.length <= allCounters.length)) return []

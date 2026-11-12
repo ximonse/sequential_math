@@ -243,6 +243,16 @@ förrän det föregående är klart.
    decimaluppgifter och får signalen *svarar 0*, vilket stämmer med den kända
    bristen i testet. 51 misstankar får inte plats bland rapportens åtta kort;
    taket hör till steg 4.
+   Den frysta kedjan: alla nya modeller är varken rivaler eller ger
+   kontrastfrågor. Jämfört på riktiga svar och blindtest är 309 av 312
+   befintliga kort oförändrade, med samma frågor och rivaler; de tre andra var
+   *annat räknesätt* för svaret 0 på a + a, som nu räknas som *svarar 0*.
+   Ett kort för en modell med krav på mönster fylls med olika uppgifter först,
+   så att rapporten och täckningsräkningen bedömer mönstret lika.
+   **Följd vid publicering:** godkännande och utdelning bygger om materialet
+   och stoppar en äldre regelversion. Uppföljningsmaterial som är godkänt men
+   inte utdelat under v9 måste göras om efter publicering, som vid tidigare
+   versionsbyten.
 6. **Samma struktur för träningssvaren.** Först därefter.
 
 ## 9. Rutin för nytt område eller ny felmodell

@@ -89,3 +89,21 @@ describe('a pattern across different tasks (decision 3)', () => {
     expect(errorCoverage({ entries: [add(9, 4)] }).wrong.misconception).toBe(0)
   })
 })
+
+describe('the report card and the coverage judge a pattern alike', () => {
+  it('keeps three different facts on the card when one fact repeats twenty times', async () => {
+    const { buildPupilAnalysisDraft, validatePupilAnalysis } = await import('./pupilAnalysis.js')
+    const { meetsPattern } = await import('./modelPattern.js')
+    const table = (a, b, answer, i) => ({ source: 'practice', timestamp: 1_700_000_000_000 + i, ref: `r-${i}`, reference: { kind: 'observation', observationId: `o-${i}` },
+      question: { domain: 'arithmetic', operation: 'multiplication', skill: 'multiplication', values: { a, b }, promptText: `${a} · ${b}` },
+      answer: { status: 'incorrect', studentAnswer: answer, correctAnswer: a * b }, context: {}, interpretation: { category: 'knowledge', patterns: [] } })
+    const raw = [...Array.from({ length: 20 }, (_, i) => table(6, 7, 36, i)), table(8, 8, 72, 20), table(5, 6, 25, 21)]
+    const entries = addPredictableEvidence(raw)
+    const evidence = { entries, snapshotRevision: 'r', period: {}, source: 'practice', coverage: {} }
+    const report = validatePupilAnalysis(buildPupilAnalysisDraft(evidence), evidence)
+    const card = report.hypotheses.find(item => item.signalCode === 'table_off_by_one')
+    const byRef = new Map(entries.map(entry => [entry.ref, entry]))
+    expect(meetsPattern('table_off_by_one', card.supportRefs.map(ref => byRef.get(ref)))).toBe(true)
+    expect(errorCoverage({ entries: raw }).wrong.misconception).toBe(22)
+  })
+})

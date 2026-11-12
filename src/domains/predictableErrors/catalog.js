@@ -20,6 +20,9 @@ import { MODEL_DESCRIPTIONS } from './modelDescriptions.js'
 // notRival: never used as a rival in contrast questions.
 // noFollowUp: the card offers no contrast questions or Fråga igen.
 const model = (titleSv, domains, options = {}) => ({ titleSv, domains, kind: 'misconception', ...options })
+// Models added while the follow-up chain is frozen (docs/STYRNING_FELFORSTAELSER.md,
+// section 4) stay out of contrast questions until it is unfrozen.
+const OUTSIDE_FROZEN_CHAIN = { notRival: true, noFollowUp: true }
 const A = ['arithmetic'], F = ['fractions'], P = ['percentage'], G = ['algebra'], E = ['arithmetic_expressions'], N = ['number_fluency']
 
 export const ERROR_MODELS = {
@@ -56,9 +59,9 @@ export const ERROR_MODELS = {
   add_multiplied: model('Multiplicerar i stället för att addera', [...A, ...N], { minDistinctTasks: 3, notRival: true, noFollowUp: true }),
 
   // Decimals (Simon 2026-11-12)
-  decimal_tenths_as_hundredths: model('Tiondelar blir hundradelar', A),
-  decimal_only_fraction_added: model('Lägger bara till decimaldelen av ena talet', A),
-  decimal_whole_under_last_decimal: model('Heltalet ställs under sista decimalen', A),
+  decimal_tenths_as_hundredths: model('Tiondelar blir hundradelar', A, OUTSIDE_FROZEN_CHAIN),
+  decimal_only_fraction_added: model('Lägger bara till decimaldelen av ena talet', A, OUTSIDE_FROZEN_CHAIN),
+  decimal_whole_under_last_decimal: model('Heltalet ställs under sista decimalen', A, OUTSIDE_FROZEN_CHAIN),
 
   // Multiplication
   mul_carry_forgotten: model('Minnessiffran glöms i multiplikationen', A, { family: 'written_multiplication' }),
@@ -85,8 +88,8 @@ export const ERROR_MODELS = {
   fraction_keep_first_denominator: model('Ingen gemensam nämnare; första nämnaren behålls', F),
   fraction_integer_in_denominator: model('Heltalet multipliceras in i nämnaren', F),
   fraction_add_instead_of_multiply: model('Adderar i stället för att multiplicera', F),
-  fraction_numerators_only: model('Adderar bara täljarna', F),
-  fraction_inverted: model('Täljare och nämnare byter plats', F),
+  fraction_numerators_only: model('Adderar bara täljarna', F, OUTSIDE_FROZEN_CHAIN),
+  fraction_inverted: model('Täljare och nämnare byter plats', F, OUTSIDE_FROZEN_CHAIN),
 
   // Percentage
   percentage_number_as_amount: model('Använder procenttalet som ett belopp', P),
@@ -114,9 +117,9 @@ export const ERROR_MODELS = {
   bond_sum_instead_of_missing: model('Adderar i stället för att söka saknad term', N),
   bond_known_term_returned: model('Svarar med den kända termen', N),
   bond_target_returned: model('Svarar med måltalet', N),
-  bond_ten_friend: model('Använder 10-kompisen fast måltalet är ett annat', N),
+  bond_ten_friend: model('Använder 10-kompisen fast måltalet är ett annat', N, OUTSIDE_FROZEN_CHAIN),
   double_no_carry: model('Dubblar utan minnessiffra', N),
-  double_ten_too_many: model('Tio för mycket i dubbeln', N),
+  double_ten_too_many: model('Tio för mycket i dubbeln', N, OUTSIDE_FROZEN_CHAIN),
   double_original_returned: model('Svarar med talet utan att dubbla', N),
   double_known_product_returned: model('Svarar med det givna talet i stället för hälften', N),
   double_instead_of_half: model('Dubblar i stället för att halvera', N),

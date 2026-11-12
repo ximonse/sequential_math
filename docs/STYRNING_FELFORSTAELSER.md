@@ -83,6 +83,12 @@ dem; det är nästa lucka att fylla i steg 5. Att färre fel syns i rapporten
 beror på att fler misstankar konkurrerar om rapportens åtta platser, ett tak
 som hör till steg 4.
 
+Regelversionen `predictable-errors-v9` höjs inte. Felmodellerna är oförändrade;
+bara svar som tidigare saknade all analys påverkas. De kan därför inte finnas
+som stödsvar eller motexempel i en sparad rapport. Sparade uteslutna frågor
+läggs ihop med nyberäknade, så uteslutningen av redan mötta frågor kan bara
+bli större. Kontrollen av redan mötta frågor räknar båda sidor med samma kod.
+
 ## 4. Det som ligger still
 
 Tills steg 1–4 i avsnitt 8 är klara byggs **inget** nytt i:
@@ -192,7 +198,8 @@ förrän det föregående är klart.
    som testet håller synlig: 40 modeller saknar beskrivning av tankefelet och
    23 nya rubriker väntar på Simons läsning. Fälten *källa* och *slumprisk* i
    avsnitt 6 finns ännu inte i katalogen, och *gäller när* finns bara i
-   beräkningskoden.
+   beräkningskoden. Spärr R-A är därför bara delvis införd; steg 1 är inte
+   klart förrän testet också kräver källa och slumprisk.
 2. **Täckningsrapport.** Bygg måttstocken och kör den på befintligt underlag.
    Inför spärr R-C och R-D.
    *Klart när:* rapporten återger baslinjen i avsnitt 3 och summorna stämmer.
@@ -240,8 +247,16 @@ modeller i katalogen och en rad i täckningsrapporten.
 2. Gäller frysningen i avsnitt 4 som den står? **Ja, Simon 2026-11-11.**
 3. Tröskel för slumprisk: hur många olika svar får en modell förutsäga per
    uppgift innan den kräver minst tre träffar för att visas som misstanke?
+   Underlag 2026-11-12, 17 884 riktiga svar: *angränsande produkt* förutsäger
+   3,8 svar per uppgift och träffar 18 % av felen där den gäller (268 svar,
+   50 elever, 251 utan annan förklaring). Övriga felförståelser förutsäger
+   1–2 svar. Förslag: över två svar per uppgift kräver minst tre träffar och
+   fler träffar än jämförbara rätta svar, samma regel som redan gäller
+   *kvoten blir ett fel*.
 4. Ska upprepat fel räknesätt räknas som felförståelse i stället för slarv?
-   Förslag: ja, från tre träffar.
+   Förslag: ja, från tre träffar. Underlag: 75 svar hos 31 elever, ett
+   förutsagt svar per uppgift, 3 % av felen där den gäller. Modellen prövar i
+   dag bara addition mot subtraktion, så 4 + 3 = 12 fångas inte.
 
 ## 11. Arbetsregel för agenter
 

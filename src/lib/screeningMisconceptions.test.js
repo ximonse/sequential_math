@@ -34,6 +34,14 @@ describe('screening misconception view', () => {
     }
   })
 
+  it('lists a misconception answer that no approved card takes', () => {
+    const answer = pupils.flatMap(pupil => pupil.answers).find(a => a.bucket === 'misconception')
+    const view = screeningMisconceptionView([{ studentId: 'x', answers: [{ ...answer, misconceptionIds: ['not_in_catalogue'] }] }])
+    expect(view.counts.misconception).toBe(1)
+    expect(view.cards).toHaveLength(0)
+    expect(view.other.without_link.map(row => row.key)).toEqual(['x:' + answer.position])
+  })
+
   it('leaves out a wrong answer the teacher judged right, as the results table does', () => {
     const answer = pupils.flatMap(pupil => pupil.answers).find(a => a.status === 'incorrect')
     const before = screeningMisconceptionView([{ studentId: 'x', answers: [answer] }])

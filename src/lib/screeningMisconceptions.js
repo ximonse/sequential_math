@@ -39,15 +39,14 @@ export function screeningMisconceptionView(pupils) {
       if ((answer.teacherStatus ?? 'incorrect') !== 'incorrect') { counts.teacherMarkedNotWrong++; continue }
       counts.wrong++
       counts[answer.bucket]++
-      if (answer.bucket === 'misconception' && answer.misconceptionIds.length) {
-        for (const id of answer.misconceptionIds) {
-          const m = approvedMisconception(id)
-          if (!m) continue
-          if (!cards.has(id)) cards.set(id, { id, titleSv: m.titleSv, areaSv: m.areaSv, logicSv: m.logicSv, criticalAspectSv: m.criticalAspectSv, answers: [] })
-          cards.get(id).answers.push(row)
-        }
-      } else if (answer.bucket === 'misconception') other.without_link.push(row)
-      else other[answer.bucket].push(row)
+      if (answer.bucket !== 'misconception') { other[answer.bucket].push(row); continue }
+      // An answer no approved card takes is still listed (rule R-C).
+      const approved = (answer.misconceptionIds ?? []).map(approvedMisconception).filter(Boolean)
+      if (!approved.length) other.without_link.push(row)
+      for (const m of approved) {
+        if (!cards.has(m.id)) cards.set(m.id, { id: m.id, titleSv: m.titleSv, areaSv: m.areaSv, logicSv: m.logicSv, criticalAspectSv: m.criticalAspectSv, answers: [] })
+        cards.get(m.id).answers.push(row)
+      }
     }
   }
   const pupilCount = card => new Set(card.answers.map(answer => answer.studentId)).size

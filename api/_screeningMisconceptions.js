@@ -18,14 +18,16 @@ export async function screeningMisconceptionPupils(assignment, studentIds, { sto
       if (record) latest.add(record.attemptId)
     }
   }
-  const pupils = []
-  for (const studentId of roster) {
+  // The position lets the client match answers across classes, as the results table does.
+  const position = id => assignment.items.findIndex(item => item.assignmentItemId === id)
+  async function read(studentId) {
     const { entries } = await pupilScreeningEvidence(studentId, assignment.classId, { store })
     const own = entries.filter(entry => entry.reference?.assignmentId === assignment.assignmentId && latest.has(entry.reference.attemptId))
-    // The position lets the client match answers across classes, as the results table does.
-    const position = id => assignment.items.findIndex(item => item.assignmentItemId === id)
-    pupils.push({ studentId, answers: screeningPupilAnswers(own.map(withTeacherAssessment))
-      .map(answer => ({ ...answer, position: position(answer.assignmentItemId) })) })
+    return { studentId, answers: screeningPupilAnswers(own.map(withTeacherAssessment))
+      .map(answer => ({ ...answer, position: position(answer.assignmentItemId) })) }
   }
+  // A few pupils at a time keeps a whole class quick without flooding the store.
+  const pupils = []
+  for (let start = 0; start < roster.length; start += 5) pupils.push(...await Promise.all(roster.slice(start, start + 5).map(read)))
   return { pupils }
 }

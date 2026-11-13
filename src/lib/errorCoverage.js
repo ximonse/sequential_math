@@ -2,6 +2,7 @@ import { addPredictableEvidence } from './evidencePredictableAnalysis.js'
 import { isSpeedTrainingEntry } from './practiceModes.js'
 import { ERROR_MODELS } from '../domains/predictableErrors/catalog.js'
 import { meetsPattern } from './modelPattern.js'
+import { repeatedlyWrongTasks } from './repeatedTasks.js'
 
 // Coverage of pupils' wrong answers (docs/STYRNING_FELFORSTAELSER.md, rules
 // R-C and R-D). Every answer is counted once, by the pupil's own status.
@@ -11,7 +12,9 @@ import { meetsPattern } from './modelPattern.js'
 // A wrong answer matched by several models takes the first kind in this
 // order. A misconception explains more than an observation of the answer,
 // an observation more than an input slip, and a slip more than giving up.
-export const WRONG_BUCKETS = ['misconception', 'observation', 'input', 'gave_up', 'unexplained']
+// A wrong answer on a task the pupil got wrong at least three times counts as
+// repeated_task unless a misconception explains it, whatever the answer was.
+export const WRONG_BUCKETS = ['misconception', 'repeated_task', 'observation', 'input', 'gave_up', 'unexplained']
 const KIND_ORDER = ['misconception', 'observation', 'input', 'gave_up']
 const STATUSES = ['correct', 'incorrect', 'unanswered', 'partial']
 
@@ -109,9 +112,10 @@ export function errorCoverage({ entries = [], hiddenSlips = [] } = {}) {
   let next = 0
   const analysed = own.map((entry, index) => needsAnalysis[index] ? fresh[next++] : entry)
   const below = groupsBelowPattern(analysed)
+  const repeated = new Set(repeatedlyWrongTasks(analysed).flatMap(task => task.wrong))
 
   const summary = { total: analysed.length, statuses: { ...Object.fromEntries(STATUSES.map(s => [s, 0])), other: 0 },
-    unansweredWithWork: 0, teacherAssessed: 0, teacherChangedStatus: 0, hiddenSlips: hiddenSlips.length,
+    unansweredWithWork: 0, teacherAssessed: 0, teacherChangedStatus: 0, hiddenSlips: hiddenSlips.length, repeatedTasks: 0,
     wrong: emptyWrong(), areas: {}, models: {}, unexplained: {} }
   analysed.forEach((entry, index) => {
     const status = entry.answer?.status
@@ -122,7 +126,8 @@ export function errorCoverage({ entries = [], hiddenSlips = [] } = {}) {
       if (entries[index].answer.status !== status) summary.teacherChangedStatus++
     }
     if (status !== 'incorrect') return
-    const bucket = wrongAnswerBucket(entry, below), area = coverageArea(entry)
+    const modelBucket = wrongAnswerBucket(entry, below), area = coverageArea(entry)
+    const bucket = modelBucket !== 'misconception' && repeated.has(entry) ? 'repeated_task' : modelBucket
     addWrong(summary.wrong, bucket, entry)
     addWrong(summary.areas[area] ??= emptyWrong(), bucket, entry)
     const ids = [...new Set(entry.interpretation.predictable.matches?.map(match => match.modelId) ?? [])]
@@ -139,6 +144,7 @@ export function errorCoverage({ entries = [], hiddenSlips = [] } = {}) {
       row.count++
     }
   })
+  summary.repeatedTasks = repeatedlyWrongTasks(analysed).length
   summary.unexplained = Object.values(summary.unexplained).sort((a, b) => b.count - a.count || a.area.localeCompare(b.area))
   assertSums(summary)
   return summary
@@ -147,7 +153,7 @@ export function errorCoverage({ entries = [], hiddenSlips = [] } = {}) {
 // Adds several pupils' summaries into one, for a group or a class.
 export function mergeCoverage(summaries) {
   const total = { total: 0, statuses: { ...Object.fromEntries(STATUSES.map(s => [s, 0])), other: 0 }, unansweredWithWork: 0,
-    teacherAssessed: 0, teacherChangedStatus: 0, hiddenSlips: 0, wrong: emptyWrong(), areas: {}, models: {}, unexplained: [] }
+    teacherAssessed: 0, teacherChangedStatus: 0, hiddenSlips: 0, repeatedTasks: 0, wrong: emptyWrong(), areas: {}, models: {}, unexplained: [] }
   const addCounts = (target, source) => {
     for (const [key, value] of Object.entries(source)) {
       if (value && typeof value === 'object') addCounts(target[key] ??= {}, value)
@@ -156,7 +162,7 @@ export function mergeCoverage(summaries) {
   }
   const rows = new Map()
   for (const summary of summaries) {
-    for (const key of ['total', 'unansweredWithWork', 'teacherAssessed', 'teacherChangedStatus', 'hiddenSlips']) total[key] += summary[key]
+    for (const key of ['total', 'unansweredWithWork', 'teacherAssessed', 'teacherChangedStatus', 'hiddenSlips', 'repeatedTasks']) total[key] += summary[key]
     addCounts(total.statuses, summary.statuses)
     addCounts(total.wrong, summary.wrong)
     for (const [area, counts] of Object.entries(summary.areas)) addCounts(total.areas[area] ??= emptyWrong(), counts)

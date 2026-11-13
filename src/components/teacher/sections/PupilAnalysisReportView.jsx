@@ -183,7 +183,7 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
       reviewFor={reviewFor} studentId={studentId} classId={classId} baseUrl={baseUrl} />}
 
     {(() => {
-      const explained = new Set(report.hypotheses.flatMap(item => item.supportRefs))
+      const explained = new Set([...report.hypotheses.flatMap(item => item.supportRefs), ...(report.repeatedTasks ?? []).flatMap(task => task.wrongRefs)])
       const unexplained = (report.exampleRefs || []).filter(ref => byRef.get(ref)?.answer.status === 'incorrect' && !explained.has(ref))
       return unexplained.length > 0 && <>
         <h5 className="mt-4 text-base font-semibold">Fel som appen inte kan förklara</h5>
@@ -191,6 +191,15 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
         {rows(unexplained)}
       </>
     })()}
+
+    {report.repeatedTasks?.length > 0 && <section className="mt-4" aria-label="Fel på samma uppgift flera gånger">
+      <h5 className="text-base font-semibold">Fel på samma uppgift flera gånger</h5>
+      <p className="text-sm text-slate-600">Uppgifter eleven svarat fel på minst tre gånger, oavsett vilket svar. Faktumet sitter inte ännu.</p>
+      {report.repeatedTasks.map(task => <details key={task.wrongRefs[0]} className="mt-1">
+        <summary className="text-sm"><strong>{questionText(byRef.get(task.wrongRefs[0]))}</strong>: fel {task.wrongCount} gånger{task.correctCount ? `, rätt ${task.correctCount}` : ''}</summary>
+        {rows(task.wrongRefs)}
+      </details>)}
+    </section>}
 
     {gaveUpItems.length > 0 && <section className="mt-4" aria-label="Ger upp eller klickar förbi">
       <h5 className="text-base font-semibold">Ger upp eller klickar förbi</h5>

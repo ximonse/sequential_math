@@ -76,10 +76,14 @@ describe('a pattern across different tasks (decision 3)', () => {
     expect(summary.wrong.misconception).toBe(3)
   })
 
-  it('counts the same fact answered wrongly three times as observations, not a pattern', () => {
-    const summary = errorCoverage({ entries: [table(6, 7, 36), table(6, 7, 36), table(6, 7, 36)] })
-    expect(summary.wrong.misconception).toBe(0)
-    expect(summary.wrong.observation).toBe(3)
+  it('catches the same fact answered wrongly three times as a repeated task, not a pattern', () => {
+    const same = errorCoverage({ entries: [table(6, 7, 36), table(6, 7, 36), table(6, 7, 36)] })
+    expect(same.wrong.misconception).toBe(0)
+    expect(same.wrong.repeated_task).toBe(3)
+    expect(same.repeatedTasks).toBe(1)
+    // Whatever the wrong answers are (Simon 2026-11-13).
+    expect(errorCoverage({ entries: [table(6, 7, 36), table(6, 7, 40), table(6, 7, 47)] }).wrong.repeated_task).toBe(3)
+    expect(errorCoverage({ entries: [table(6, 7, 36), table(6, 7, 40)] }).wrong.repeated_task).toBe(0)
   })
 
   it('treats another operation as a misconception once it shows on three different tasks', () => {

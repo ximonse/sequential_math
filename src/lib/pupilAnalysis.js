@@ -3,6 +3,7 @@ import { OPERATION_LABELS } from './operations.js'
 import { validateTeachingRecord } from './didacticFollowUp.js'
 import { buildRuleHypotheses, comparableRuleCounter } from './pupilRuleHypotheses.js'
 import { speedSlipSummary } from './practiceModes.js'
+import { repeatedlyWrongTasks } from './repeatedTasks.js'
 export const PUPIL_ANALYSIS_VERSION = 1
 const fail = message => { throw Object.assign(new Error(message), { status: 400, code: 'invalid_analysis' }) }
 const text = (value, max = 1000) => {
@@ -85,14 +86,19 @@ export function validatePupilAnalysis(input, evidence) {
       ...(followUp ? { followUp } : {}) }
   })
   const exampleRefs = evidence.entries.slice(0, 20).map(entry => entry.ref)
-  const refs = new Set([...exampleRefs, ...strengths.flatMap(item => item.refs), ...hypotheses.flatMap(item => [...item.supportRefs, ...item.counterRefs])])
+  // Filled by the server from all answers in the period; not part of the submitted report.
+  const repeatedTasks = repeatedlyWrongTasks(evidence.entries).map(task => ({
+    wrongRefs: task.wrong.slice(0, 20).map(entry => entry.ref), wrongCount: task.wrong.length,
+    correctRefs: task.correct.slice(0, 5).map(entry => entry.ref), correctCount: task.correct.length }))
+  const refs = new Set([...exampleRefs, ...strengths.flatMap(item => item.refs), ...hypotheses.flatMap(item => [...item.supportRefs, ...item.counterRefs]),
+    ...repeatedTasks.flatMap(task => [...task.wrongRefs, ...task.correctRefs])])
   return { schemaVersion: PUPIL_ANALYSIS_VERSION, scopeSv: text(input.scopeSv, 300),
     provenance: { kind: input.provenance.kind,
       ...(input.provenance.model ? { model: text(input.provenance.model, 100) } : {}),
       instructionVersion: text(input.provenance.instructionVersion, 80) },
     snapshotRevision: evidence.snapshotRevision, period: evidence.period, source: evidence.source,
     counts: analysisCounts(evidence.entries), coverage: evidence.coverage,
-    strengths, hypotheses, exampleRefs, limitationsSv: list(input.limitationsSv, 8).map(value => text(value)),
+    strengths, hypotheses, repeatedTasks, exampleRefs, limitationsSv: list(input.limitationsSv, 8).map(value => text(value)),
     evidence: evidence.entries.filter(entry => refs.has(entry.ref)) }
 }
 

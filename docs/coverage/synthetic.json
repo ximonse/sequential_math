@@ -11,15 +11,16 @@
  "wrong": {
   "incorrect": 429,
   "misconception": 368,
-  "observation": 14,
-  "input": 6,
+  "repeated_task": 20,
+  "observation": 5,
+  "input": 2,
   "gave_up": 1,
-  "unexplained": 40,
-  "unexplainedNoModel": 39,
+  "unexplained": 33,
+  "unexplainedNoModel": 32,
   "unexplainedNotAnalysed": 1,
   "speedTraining": 54,
   "reasons": {
-   "no_model": 39,
+   "no_model": 32,
    "unsupported_structure": 1
   }
  },
@@ -27,6 +28,7 @@
   "algebra:algebra_evaluate": {
    "incorrect": 18,
    "misconception": 15,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
@@ -41,6 +43,7 @@
   "algebra:algebra_simplify": {
    "incorrect": 18,
    "misconception": 18,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
@@ -53,21 +56,23 @@
   "arithmetic_expressions:numeric_expression": {
    "incorrect": 18,
    "misconception": 10,
+   "repeated_task": 4,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
-   "unexplained": 8,
-   "unexplainedNoModel": 8,
+   "unexplained": 4,
+   "unexplainedNoModel": 4,
    "unexplainedNotAnalysed": 0,
    "speedTraining": 0,
    "reasons": {
-    "no_model": 8
+    "no_model": 4
    }
   },
   "arithmetic:addition": {
    "incorrect": 52,
    "misconception": 40,
-   "observation": 5,
+   "repeated_task": 4,
+   "observation": 1,
    "input": 0,
    "gave_up": 1,
    "unexplained": 6,
@@ -81,6 +86,7 @@
   "arithmetic:decimal_addition": {
    "incorrect": 14,
    "misconception": 7,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
@@ -95,6 +101,7 @@
   "arithmetic:decimal_subtraction": {
    "incorrect": 4,
    "misconception": 2,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
@@ -109,6 +116,7 @@
   "arithmetic:division": {
    "incorrect": 42,
    "misconception": 42,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
@@ -121,8 +129,9 @@
   "arithmetic:multiplication": {
    "incorrect": 80,
    "misconception": 65,
-   "observation": 8,
-   "input": 6,
+   "repeated_task": 9,
+   "observation": 3,
+   "input": 2,
    "gave_up": 0,
    "unexplained": 1,
    "unexplainedNoModel": 1,
@@ -135,6 +144,7 @@
   "arithmetic:subtraction": {
    "incorrect": 50,
    "misconception": 48,
+   "repeated_task": 0,
    "observation": 1,
    "input": 0,
    "gave_up": 0,
@@ -149,20 +159,22 @@
   "fractions:addition": {
    "incorrect": 20,
    "misconception": 14,
+   "repeated_task": 2,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
-   "unexplained": 6,
-   "unexplainedNoModel": 6,
+   "unexplained": 4,
+   "unexplainedNoModel": 4,
    "unexplainedNotAnalysed": 0,
    "speedTraining": 0,
    "reasons": {
-    "no_model": 6
+    "no_model": 4
    }
   },
   "fractions:multiplication": {
    "incorrect": 12,
    "misconception": 12,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
@@ -175,6 +187,7 @@
   "fractions:subtraction": {
    "incorrect": 4,
    "misconception": 4,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
@@ -187,6 +200,7 @@
   "number_fluency:forward_double": {
    "incorrect": 18,
    "misconception": 15,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
@@ -201,6 +215,7 @@
   "number_fluency:inverse_double": {
    "incorrect": 12,
    "misconception": 12,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
@@ -213,20 +228,22 @@
   "number_fluency:number_bonds": {
    "incorrect": 24,
    "misconception": 22,
+   "repeated_task": 1,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
-   "unexplained": 2,
-   "unexplainedNoModel": 2,
+   "unexplained": 1,
+   "unexplainedNoModel": 1,
    "unexplainedNotAnalysed": 0,
    "speedTraining": 24,
    "reasons": {
-    "no_model": 2
+    "no_model": 1
    }
   },
   "percentage:discount": {
    "incorrect": 12,
    "misconception": 12,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
@@ -239,6 +256,7 @@
   "percentage:percent_of": {
    "incorrect": 18,
    "misconception": 18,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
@@ -251,6 +269,7 @@
   "percentage:share": {
    "incorrect": 12,
    "misconception": 12,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
@@ -263,6 +282,7 @@
   "screening_without_structure": {
    "incorrect": 1,
    "misconception": 0,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,

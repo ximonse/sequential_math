@@ -116,9 +116,12 @@ som "utan felanalys" i resultatet.
 *Spärr:* bankens test faller om en uppgift saknar nyckel.
 
 **R-C. Inget fel får försvinna.**
-Varje felsvar hamnar i exakt en av fem: *felförståelse*, *observation*,
-*inmatning*, *ger upp* eller *oförklarat*. Ett svar som flera modeller
-förklarar tar den första arten i den ordningen. En modell med krav på mönster
+Varje felsvar hamnar i exakt en av sex: *felförståelse*, *samma uppgift fel
+flera gånger*, *observation*, *inmatning*, *ger upp* eller *oförklarat*. Ett
+svar som flera modeller förklarar tar den första arten i den ordningen. Ett
+felsvar på en uppgift som eleven svarat fel på minst tre gånger räknas som
+*samma uppgift fel flera gånger*, oavsett vilka felsvaren är, om ingen
+felförståelse förklarar det (Simon 2026-11-13). En modell med krav på mönster
 (`minDistinctTasks`) räknas som observation hos en elev som inte når kravet. Ett oförklarat svar anger varför: ingen modell
 ger svaret, eller svaret nådde aldrig modellerna. Varje obesvarad uppgift
 redovisas som obesvarad, med uppgift om det finns uträkning. Räkningen utgår
@@ -253,6 +256,14 @@ förrän det föregående är klart.
    och stoppar en äldre regelversion. Uppföljningsmaterial som är godkänt men
    inte utdelat under v9 måste göras om efter publicering, som vid tidigare
    versionsbyten.
+   *Samma uppgift fel flera gånger (Simon 2026-11-13):* en uppgift som eleven
+   svarat fel på minst tre gånger, med samma eller olika felsvar, visas i en
+   egen ruta i elevrapporten, en rad per uppgift med svaren hopfällda. Servern
+   räknar fram listan ur alla svar i perioden, bredvid misstankarna; lärarens
+   avstämning påverkas inte. Mätt på de riktiga svaren: 22 av 73 elever,
+   166 uppgifter; oförklarade fel 1 717 → 1 247. Ett svar som både är *ger upp*
+   och tillhör en sådan uppgift räknas i täckningen som samma uppgift, men
+   visas i båda rutorna i rapporten.
 6. **Samma struktur för träningssvaren.** Först därefter.
 
 ## 9. Rutin för nytt område eller ny felmodell

@@ -62,6 +62,7 @@ export const ERROR_MODELS = {
   decimal_tenths_as_hundredths: model('Tiondelar blir hundradelar', A, OUTSIDE_FROZEN_CHAIN),
   decimal_only_fraction_added: model('Lägger bara till decimaldelen av ena talet', A, OUTSIDE_FROZEN_CHAIN),
   decimal_whole_under_last_decimal: model('Heltalet ställs under sista decimalen', A, OUTSIDE_FROZEN_CHAIN),
+  decimal_point_missing_with_error: model('Tappar växlingen och decimaltecknet', A, OUTSIDE_FROZEN_CHAIN),
 
   // Multiplication
   mul_carry_forgotten: model('Minnessiffran glöms i multiplikationen', A, { family: 'written_multiplication' }),

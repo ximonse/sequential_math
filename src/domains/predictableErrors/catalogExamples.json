@@ -640,6 +640,15 @@
     {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":8,"b":3}},"answer":27},
     {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":7,"b":3}},"answer":24},
     {"problem":{"domain":"arithmetic","type":"addition","values":{"a":22,"b":2}},"answer":27}
+  ] },
+  "decimal_point_missing_with_error": { "hit": [
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":1.76,"b":2.58}},"answer":324},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":3.48,"b":2.67}},"answer":505},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":6.42,"b":2.17}},"answer":435}
+  ], "miss": [
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":1.76,"b":2.58}},"answer":7.34},
+    {"problem":{"domain":"arithmetic","type":"addition","values":{"a":3.48,"b":2.67}},"answer":9.15},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":6.42,"b":2.17}},"answer":7.25}
   ] }
  }
 }

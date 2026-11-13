@@ -49,7 +49,7 @@ test('Decimal addition preserves both omitted-carry variants through teaching an
   await approve(page)
   const contrastDraftId = new URL(page.url()).pathname.split('/').at(-1)
   const contrastPlan = (await api(page, `/api/teacher-material?draftId=${contrastDraftId}`)).data.draft.versions[0].material.investigation
-  expect(contrastPlan).toMatchObject({ modelId: 'one_carry_forgotten', ruleVersion: 'predictable-errors-v10',
+  expect(contrastPlan).toMatchObject({ modelId: 'one_carry_forgotten', ruleVersion: 'predictable-errors-v11',
     didactic: { packageId: 'decimal-two-carry-addition-pilot', phase: 'contrast' } })
   expect(contrastPlan.pupils[0].rivalModelIds).toEqual(['carry_forget'])
   expect(contrastPlan.pupils[0].unresolvedPairs).toEqual([])

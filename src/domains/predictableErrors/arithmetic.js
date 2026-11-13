@@ -8,6 +8,8 @@ import { candidateResult, decimalPlaces, entryAndNearMissPredictions, givingUpPr
 import { decimalSubtractionStructure } from '../arithmetic/decimalSubtractionPackage.js'
 import { decimalAdditionStructure } from '../arithmetic/decimalAdditionPackage.js'
 
+const DECIMAL_POINT_ERRORS = new Set(['carry_forget', 'one_carry_forgotten', 'smaller_minus_larger', 'borrow_forget', 'exchange_not_decremented'])
+
 // Columns (0 = ones) that receive a carry in a whole-number addition.
 function carryColumns(a, b) {
   const columns = []
@@ -91,6 +93,10 @@ export function arithmeticCandidates(problem, answer) {
             'Svaret matchar en växling från tiondelar till hundradelar utan att tiondelen minskas.'))
         }
       }
+      // A carry or exchange error written without the decimal point (Simon 2026-11-13: 1,76 + 2,58 = 334).
+      // Only where dropping the point changes the answer (0 stays 0).
+      for (const p of predictions.filter(p => DECIMAL_POINT_ERRORS.has(p.modelId) && Math.round(p.predictedAnswer * scale) !== p.predictedAnswer)) predictions.push(prediction('decimal_point_missing_with_error',
+        Math.round(p.predictedAnswer * scale), `${p.reasonSv} Decimaltecknet saknas i svaret.`))
     }
   }
   if (op === 'addition' && [a, b].every(n => Number.isSafeInteger(n) && n >= 0)) {

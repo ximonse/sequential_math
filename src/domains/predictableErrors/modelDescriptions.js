@@ -183,6 +183,11 @@ export const MODEL_DESCRIPTIONS = {
     sourceSv: SIMON_2026_11_12,
     openersSv: ['Fråga vad 2/10 betyder och hur stor delen är.'],
   },
+  decimal_point_missing_with_error: {
+    thinkingSv: 'Eleven räknar decimalerna som heltal, tappar en växling och skriver svaret utan decimaltecken: 1,76 + 2,58 blir 334.',
+    sourceSv: SIMON_2026_11_12,
+    openersSv: ['Be eleven uppskatta svaret först: är 1,76 + 2,58 ungefär 4 eller ungefär 300?', 'Låt eleven ställa upp talen med decimaltecknen under varandra och följa växlingen.'],
+  },
   fraction_inverted: {
     thinkingSv: 'Eleven får rätt delar men byter plats på täljare och nämnare: 2/4 + 1/4 blir 4/3. Det kan vara osäkerhet om vad som är täljare och nämnare.',
     sourceSv: SIMON_2026_11_12,

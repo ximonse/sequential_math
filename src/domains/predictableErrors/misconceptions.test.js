@@ -26,7 +26,7 @@ describe('misconceptions behind the error models', () => {
   it('names only existing models and says whether a source or the agent made the link', () => {
     for (const id of ids) for (const link of MISCONCEPTIONS[id].errorModels) {
       expect(ERROR_MODELS[link.id], `${id}: ${link.id}`).toBeTruthy()
-      expect(['source', 'agent'], `${id}: ${link.id}`).toContain(link.basis)
+      expect(['source', 'agent', 'simon_observation'], `${id}: ${link.id}`).toContain(link.basis)
       expect(link.noteSv?.trim(), `${id}: ${link.id}`).toBeTruthy()
     }
   })

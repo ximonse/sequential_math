@@ -365,7 +365,8 @@ export const MISCONCEPTIONS = {
       { id: 'add_left_to_right', basis: 'agent', noteSv: 'Växlingen förs åt fel håll.' },
       { id: 'sub_left_to_right', basis: 'agent', noteSv: 'Växlingen lånas åt fel håll.' },
       { id: 'double_no_carry', basis: 'agent', noteSv: 'Dubbeln utan växling.' },
-      { id: 'double_ten_too_many', basis: 'agent', noteSv: 'Ett tiotal för mycket när entalen dubblas.' }
+      { id: 'double_ten_too_many', basis: 'agent', noteSv: 'Ett tiotal för mycket när entalen dubblas.' },
+      { id: 'decimal_point_missing_with_error', basis: 'simon_observation', noteSv: 'Simon 2026-11-13: 1,76 + 2,58 = 334, "glömt växling och decimaltecken".' }
     ],
   },
   regroup_across_zero: {

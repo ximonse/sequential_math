@@ -9,7 +9,7 @@ import { checkNcmAnswer } from './ncmAnswerCheck.js'
 // A structure lets the error models compute the wrong answers (the computed key).
 // A task without structure says why. Manual keys name wrong answers the models
 // cannot compute, each pointing to a misconception or a reason from the fixed
-// set in misconceptions.js. They are didactic content and wait for Simon.
+// set in misconceptions.js. They are didactic content; Simon approved them on 2026-11-13.
 
 const A = (type, a, b) => ({ domain: 'arithmetic', type, skill: type, values: { a, b } })
 const T = (domain, type, values) => ({ domain, type, skill: type, values })
@@ -43,7 +43,7 @@ export const NCM_WITHOUT_STRUCTURE = {
 }
 
 // Manual keys: format and expected as in the bank's answer check.
-const K = (format, expected, target, basis, noteSv) => ({ format, expected, ...target, basis, noteSv, status: 'awaiting_review' })
+const K = (format, expected, target, basis, noteSv) => ({ format, expected, ...target, basis, noteSv, status: 'approved' })
 const M = id => ({ misconception: id }), R = reason => ({ reason })
 export const MANUAL_KEYS = {
   'ncm-AG4-1b': [K('number', [140], M('equal_sign_add_all'), 'agent', 'Adderar talen som syns: 90 + 50.'),

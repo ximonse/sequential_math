@@ -1,26 +1,26 @@
 {
  "noteSv": "Täckning på syntetiskt underlag ur katalogens exempel. Uppdateras med --write när en ändring i felmodellerna är avsiktlig; diffen visar vad som ändrades.",
- "total": 501,
+ "total": 508,
  "statuses": {
-  "correct": 71,
-  "incorrect": 429,
+  "correct": 72,
+  "incorrect": 435,
   "unanswered": 1,
   "partial": 0,
   "other": 0
  },
  "wrong": {
-  "incorrect": 429,
-  "misconception": 368,
+  "incorrect": 435,
+  "misconception": 371,
   "repeated_task": 20,
   "observation": 5,
   "input": 2,
   "gave_up": 1,
-  "unexplained": 33,
-  "unexplainedNoModel": 32,
+  "unexplained": 36,
+  "unexplainedNoModel": 35,
   "unexplainedNotAnalysed": 1,
   "speedTraining": 54,
   "reasons": {
-   "no_model": 32,
+   "no_model": 35,
    "unsupported_structure": 1
   }
  },
@@ -84,33 +84,33 @@
    }
   },
   "arithmetic:decimal_addition": {
-   "incorrect": 14,
-   "misconception": 7,
+   "incorrect": 18,
+   "misconception": 9,
    "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
-   "unexplained": 7,
-   "unexplainedNoModel": 7,
+   "unexplained": 9,
+   "unexplainedNoModel": 9,
    "unexplainedNotAnalysed": 0,
    "speedTraining": 0,
    "reasons": {
-    "no_model": 7
+    "no_model": 9
    }
   },
   "arithmetic:decimal_subtraction": {
-   "incorrect": 4,
-   "misconception": 2,
+   "incorrect": 6,
+   "misconception": 3,
    "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
-   "unexplained": 2,
-   "unexplainedNoModel": 2,
+   "unexplained": 3,
+   "unexplainedNoModel": 3,
    "unexplainedNotAnalysed": 0,
    "speedTraining": 0,
    "reasons": {
-    "no_model": 2
+    "no_model": 3
    }
   },
   "arithmetic:division": {
@@ -373,6 +373,10 @@
    "onlyModel": 3
   },
   "decimal_parts_multiplied_separately": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "decimal_point_missing_with_error": {
    "answers": 3,
    "onlyModel": 3
   },

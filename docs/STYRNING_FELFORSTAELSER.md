@@ -272,6 +272,16 @@ förrän det föregående är klart.
    oanalyserade svar påverkas. Obesvarade med uträkning kan mätas först på
    screeningar som delats ut efter varningen i e72973c. Granskning:
    `Hermes Vault/Skola och lektioner/Matematik/Felsvarsnycklar-for-granskning-2026-11-13.md`.
+   **Godkänt av Simon 2026-11-13** ("Ok på alla"): alla 46 handskrivna felsvar har
+   status *approved*. Hans tolkning av 1,76 + 2,58 = 334 och 432 ("glömt växling
+   och decimaltecken") blev modellen *Tappar växlingen och decimaltecknet*, utanför
+   den frysta kedjan: ett växlingsfel skrivet utan decimaltecken, bara där
+   decimaltecknet faktiskt ändrar svaret. 334 fångas; 432 går inte att räkna
+   fram och förblir oförklarat med hans tolkning noterad. Regelversion v11.
+   438 av 439 befintliga kort har samma kontrastfrågor; det sista var en
+   skalningsobservation som nu förklaras av modellen. Inga blindtestelever får
+   kortet. Riktiga screeningsvar (54 fel): felförståelse 9 → 14, oförklarade
+   42 → 33.
 4. **Screeningresultatet.** En vy per screening: felförståelser överst, under
    varje vilka elever och vilka svar, sedan oförklarade fel och obesvarade.
    Samma data för en elev, en grupp och klassen. Inför spärr R-E.

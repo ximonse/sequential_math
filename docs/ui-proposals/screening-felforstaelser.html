@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Förslag: felförståelser i screeningresultatet</title>
+<style>
+#tf{--bg:light-dark(#f1f5f9,#111827);--panel:light-dark(#fff,#1f2937);--ink:light-dark(#172033,#eef2f7);--muted:light-dark(#475569,#cbd5e1);--line:light-dark(#cbd5e1,#526071);--action:light-dark(#4338ca,#a5b4fc);--on-action:light-dark(#fff,#172033);--soft:light-dark(#eef2ff,#303a5c);--warn:light-dark(#fef3c7,#4a3b12);--ok:light-dark(#dcfce7,#14532d);--bad:light-dark(#fee2e2,#5b1f1f);color:var(--ink);font:14px/1.5 system-ui,sans-serif;color-scheme:light dark}
+body{margin:16px;background:light-dark(#e2e8f0,#0b1220)}
+#tf *{box-sizing:border-box}#tf h2{font-size:23px;line-height:1.25;margin:0 0 6px;font-weight:650}#tf h3{font-size:17px;margin:0 0 6px;font-weight:650}#tf h4{font-size:15px;margin:0;font-weight:650}#tf p{margin:0 0 6px}
+#tf button,#tf select{font:inherit;color:inherit}#tf button:focus-visible,#tf select:focus-visible{outline:3px solid var(--action);outline-offset:3px}
+#tf .shell{background:var(--bg);border:1px solid var(--line);border-radius:8px;overflow:clip;max-width:1180px}
+#tf header{padding:7px 12px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
+#tf .brand{font-size:16px;font-weight:650}#tf .demo{font-size:12px;color:var(--muted)}
+#tf .layout{display:grid;grid-template-columns:165px minmax(0,1fr)}
+#tf nav{background:#1e293b;color:#f8fafc;padding:8px 7px}#tf nav span{display:block;padding:4px 8px;margin:2px 0;border-radius:5px}#tf nav .active{background:#fcd34d;color:#172033;font-weight:650}
+#tf main{min-width:0;padding:16px}
+#tf .tabs{display:flex;gap:18px;border-bottom:1px solid var(--line);margin-bottom:10px}#tf .tabs span{padding:9px 0;border-bottom:3px solid transparent}#tf .tabs .on{border-color:var(--action);font-weight:650}
+#tf .context{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin:6px 0 12px}#tf .context label{display:block;min-width:220px}
+#tf select{display:block;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:6px 8px}
+#tf .note{color:var(--muted);font-size:13px}
+#tf .panel{background:var(--panel);border:1px solid var(--line);border-radius:7px;padding:14px;box-shadow:0 2px 5px #0000000c;margin-bottom:14px}
+#tf .coverage{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}#tf .chip{border:1px solid var(--line);border-radius:999px;padding:1px 9px;font-size:13px;background:var(--panel)}#tf .chip b{font-weight:650}
+#tf .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:10px}
+#tf .card{border:1px solid var(--line);border-radius:7px;padding:10px 12px 10px 16px;background:var(--panel);box-shadow:inset 6px 0 0 var(--area,#64748b);cursor:pointer}
+#tf .card[aria-pressed=true]{outline:3px solid var(--action);outline-offset:1px}
+#tf .card .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+#tf .area{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--area)}
+#tf .count{font-size:13px;font-weight:650;white-space:nowrap}
+#tf dl{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;margin:6px 0;font-size:13px}#tf dt{color:var(--muted)}#tf dd{margin:0}
+#tf .pupils{list-style:none;padding:0;margin:6px 0 0;font-size:13px;border-top:1px solid var(--line)}#tf .pupils li{display:flex;justify-content:space-between;gap:8px;padding:2px 0;border-bottom:1px solid var(--line)}#tf .pupils li:last-child{border-bottom:0}
+#tf .ans{font-variant-numeric:tabular-nums}#tf .ans s{color:var(--muted)}#tf .wrong{color:light-dark(#b91c1c,#fca5a5);font-weight:650}
+#tf .other{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}#tf .other .card{cursor:default;box-shadow:none}
+#tf table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}#tf th,#tf td{padding:4px 6px;text-align:center;border-top:1px solid var(--line)}#tf th{font-weight:600;background:light-dark(#f8fafc,#273244)}#tf th.name,#tf td.name{text-align:left}
+#tf td.c{background:var(--ok)}#tf td.x{background:var(--bad)}#tf td.e{color:var(--muted)}#tf td.hl{outline:3px solid var(--action);outline-offset:-3px;font-weight:700}#tf td.dim{opacity:.35}
+#tf .legend{font-size:12px;color:var(--muted);margin-top:6px}
+#tf .proposal{border-left:4px solid var(--action);background:var(--soft);padding:8px 14px;margin-bottom:14px;font-size:13px}#tf .proposal ul{margin:4px 0 0;padding-left:18px}
+@media(max-width:760px){#tf .layout{grid-template-columns:1fr}#tf nav{display:flex;flex-wrap:wrap}#tf main{padding:10px}#tf .grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="tf"><div class="shell">
+<header><span class="brand">Matematik · Lärarvy</span><span class="demo">Designförslag steg 4 · påhittade elever</span></header>
+<div class="layout">
+<nav aria-label="Huvudnavigation"><span>Framsteg</span><span>Fokusövningar</span><span>Uppdrag &amp; tickets</span><span>Statistik &amp; stöd</span><span class="active">Screening</span><span>Administration</span></nav>
+<main>
+<div class="proposal"><b>Förslag, inget är byggt.</b> Screening → Resultat får en ny del överst: felförståelser i den valda screeningen. Tabellen finns kvar under.
+<ul><li>Klicka ett kort: dess svar markeras i tabellen.</li><li>Byt "Visa för" till en grupp eller en elev: samma beräkning, färre elever.</li><li>Inga knappar för uppföljning ännu; uppföljningen är fryst.</li></ul></div>
+<div class="tabs"><span>Skapa ny</span><span>Utkast</span><span>Utdelade</span><span class="on">Resultat</span></div>
+<h2>Taluppfattning – november</h2>
+<p class="note">NCM-frågor · delad 10 nov · 8 av 8 elever har lämnat in</p>
+<div class="context"><label>Visa för<select id="who"></select></label><span class="note" id="whonote"></span></div>
+
+<section class="panel" aria-labelledby="fh">
+<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><h3 id="fh">Felförståelser i screeningen</h3><span class="note">Misstankar ur svaren, inte diagnoser. Pröva i samtal.</span></div>
+<div class="coverage" id="coverage"></div>
+<div class="grid" id="cards"></div>
+</section>
+
+<section class="panel" aria-labelledby="oh">
+<h3 id="oh">Övrigt att titta på</h3>
+<div class="other" id="other"></div>
+</section>
+
+<section class="panel" aria-labelledby="th">
+<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><h3 id="th">Svar per fråga</h3><span class="note" id="tablenote">Befintlig tabell, oförändrad.</span></div>
+<div style="overflow-x:auto"><table id="table"></table></div>
+<p class="legend">Grönt rätt · rött fel · grått obesvarat. Ram = svar som hör till det valda kortet.</p>
+</section>
+</main></div></div></div>
+<script>
+(() => {
+const Q = [
+ { id:'q1', text:'703 − 256', key:'447' }, { id:'q2', text:'1 − 0,75', key:'0,25' }, { id:'q3', text:'Störst: 0,19 eller 0,8', key:'0,8' },
+ { id:'q4', text:'1/4 som decimaltal', key:'0,25' }, { id:'q5', text:'Störst: 3/4 eller 3/5', key:'3/4' }, { id:'q6', text:'400 g för 4 → 12 portioner', key:'1200' },
+ { id:'q7', text:'2/3 = ?/15', key:'10' }, { id:'q8', text:'1 / 0,5', key:'2' } ]
+const M = {
+ sml: { title:'Större minus mindre i varje kolumn', area:'Skriftlig räkning', color:'#be185d', logic:'Kolumnerna räknas var för sig och den mindre siffran tas från den större.', aspect:'Att subtraktion har riktning; växling när den övre siffran är mindre.' },
+ align: { title:'Ställer upp siffrorna i stället för decimaltecknet', area:'Decimaltal', color:'#0e7490', logic:'Talen ställs upp efter sista siffran som heltal.', aspect:'Ental under ental, tiondelar under tiondelar.' },
+ longer: { title:'Längre decimaltal tros vara större', area:'Decimaltal', color:'#0e7490', logic:'Siffrorna efter kommat läses som ett eget heltal: 19 > 8.', aspect:'Tiondelar är värda mer än hundradelar; jämför från vänster.' },
+ comma: { title:'Bråkstrecket blir decimalkomma', area:'Decimaltal och bråk', color:'#c2410c', logic:'Kommat används som avgränsare mellan täljare och nämnare.', aspect:'Decimalform som tiondelar och hundradelar, eller kvoten av en division.' },
+ denom: { title:'Större nämnare tros ge större bråk', area:'Bråk', color:'#c2410c', logic:'Bråket behandlas som två heltal; större tal ger större bråk.', aspect:'Nämnaren anger delens storlek, täljaren antalet delar.' },
+ additive: { title:'Additivt tänkande vid proportioner', area:'Proportionalitet', color:'#a16207', logic:'En multiplikativ relation behandlas som en skillnad.', aspect:'Förhållandet som bevaras vid skalning.' },
+ divsmall: { title:'Division tros alltid göra mindre', area:'Multiplikation och division', color:'#6d28d9', logic:'Erfarenhet från heltal: division delar upp i mindre delar.', aspect:'Division med tal under 1 anger hur många som ryms.' } }
+const P = ['Alex','Billie','Cleo','Dani','Eli','Fia','Gus','Hedda']
+const groups = { all:{ name:'Klass 6A', members:P }, g:{ name:'Grupp Eken', members:['Alex','Cleo','Eli','Gus'] } }
+// answers[pupil][q] = [answer, kind] kind: c correct, e empty (with work), x wrong (+ misconception id or other)
+const A = {
+ Alex:{ q1:['553','sml'], q2:['0,74','align'], q3:['0,19','longer'], q4:['0,25','c'], q5:['3/4','c'], q6:['408','additive'], q7:['10','c'], q8:['0,5','divsmall'] },
+ Billie:{ q1:['447','c'], q2:['0,25','c'], q3:['0,8','c'], q4:['1,4','comma'], q5:['3/5','denom'], q6:['1200','c'], q7:['10','c'], q8:['2','c'] },
+ Cleo:{ q1:['553','sml'], q2:['0,74','align'], q3:['0,8','c'], q4:['0,25','c'], q5:['3/4','c'], q6:['1200','c'], q7:['14','other:Förlänger genom att addera (2 + 12)'], q8:['2','c'] },
+ Dani:{ q1:['447','c'], q2:['',''], q3:['0,19','longer'], q4:['0,4','comma'], q5:['3/5','denom'], q6:['1200','c'], q7:['10','c'], q8:['0,5','divsmall'] },
+ Eli:{ q1:['457','unexpl'], q2:['0,25','c'], q3:['0,8','c'], q4:['0,25','c'], q5:['3/4','c'], q6:['408','additive'], q7:['10','c'], q8:['2','c'] },
+ Fia:{ q1:['0','gave'], q2:['0','gave'], q3:['0,8','c'], q4:['0','gave'], q5:['3/4','c'], q6:['',''], q7:['',''], q8:['2','c'] },
+ Gus:{ q1:['447','c'], q2:['0,25','c'], q3:['0,19','longer'], q4:['0,25','c'], q5:['3/5','denom'], q6:['1200','c'], q7:['10','c'], q8:['2','c'] },
+ Hedda:{ q1:['447','c'], q2:['0,25','c'], q3:['0,8','c'], q4:['0,25','c'], q5:['3/4','c'], q6:['1200','c'], q7:['10/15','input'], q8:['2','c'] } }
+const who = document.getElementById('who')
+who.innerHTML = `<option value="all">Klass 6A · 8 elever</option><option value="g">Grupp Eken · 4 elever</option>` + P.map(p => `<option value="p:${p}">${p} (elev)</option>`).join('')
+let selected = null
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' })[c])
+function pupils() { const v = who.value; return v.startsWith('p:') ? [v.slice(2)] : groups[v].members }
+function render() {
+  const ps = pupils()
+  document.getElementById('whonote').textContent = ps.length === 1 ? 'Samma beräkning för en elev.' : 'Klassens kort är elevernas svar lagda bredvid varandra.'
+  const found = {}, other = { gave:[], input:[], unexpl:[], empty:[], otherKey:[] }
+  let wrong = 0, explained = 0
+  for (const p of ps) for (const q of Q) {
+    const [ans, kind] = A[p][q.id]
+    if (!kind) { other.empty.push({ p, q, ans }); continue }
+    if (kind === 'c') continue
+    wrong++
+    if (M[kind]) { explained++; (found[kind] ||= []).push({ p, q, ans }) }
+    else if (kind === 'gave') other.gave.push({ p, q, ans })
+    else if (kind === 'input') { explained++; other.input.push({ p, q, ans }) }
+    else if (kind.startsWith('other:')) { explained++; other.otherKey.push({ p, q, ans, why: kind.slice(6) }) }
+    else other.unexpl.push({ p, q, ans })
+  }
+  const misc = Object.values(found).reduce((s, l) => s + l.length, 0)
+  document.getElementById('coverage').innerHTML = `<span class="chip"><b>${wrong}</b> fel</span><span class="chip"><b>${misc}</b> pekar på en felförståelse</span><span class="chip"><b>${other.gave.length}</b> ger upp</span><span class="chip"><b>${other.input.length}</b> inmatning</span><span class="chip"><b>${other.otherKey.length}</b> annan nyckel</span><span class="chip"><b>${other.unexpl.length}</b> oförklarade</span><span class="chip"><b>${other.empty.length}</b> obesvarade</span>`
+  const cards = Object.entries(found).sort((a, b) => new Set(b[1].map(x => x.p)).size - new Set(a[1].map(x => x.p)).size)
+  if (selected && !found[selected]) selected = null
+  document.getElementById('cards').innerHTML = cards.map(([id, list]) => {
+    const m = M[id], names = [...new Set(list.map(x => x.p))]
+    return `<div class="card" role="button" tabindex="0" data-id="${id}" aria-pressed="${selected === id}" style="--area:${m.color}">
+      <div class="top"><span class="area">${esc(m.area)}</span><span class="count">${names.length} ${names.length === 1 ? 'elev' : 'elever'}</span></div>
+      <h4>${esc(m.title)}</h4>
+      <dl><dt>Tänker</dt><dd>${esc(m.logic)}</dd><dt>Behöver urskilja</dt><dd>${esc(m.aspect)}</dd></dl>
+      <ul class="pupils">${list.map(x => `<li><span>${esc(x.p)}</span><span class="ans">${esc(x.q.text)} → <span class="wrong">${esc(x.ans)}</span> <s>${esc(x.q.key)}</s></span></li>`).join('')}</ul></div>`
+  }).join('') || '<p class="note">Inga felförståelser bland de valda elevernas svar.</p>'
+  const box = (title, note, list, extra = x => '') => `<div class="card"><h4>${title} · ${list.length}</h4><p class="note">${note}</p><ul class="pupils">${list.map(x => `<li><span>${esc(x.p)}</span><span class="ans">${esc(x.q.text)} → <span class="wrong">${esc(x.ans || 'tomt')}</span>${extra(x)}</span></li>`).join('') || '<li><span class="note">Inga</span></li>'}</ul></div>`
+  document.getElementById('other').innerHTML =
+    box('Ger upp eller klickar förbi', 'Svarar 0 på minst tre olika frågor. Prata med eleven.', other.gave) +
+    box('Obesvarade', 'Uträkning finns i räknehäftet men svarsrutan är tom.', other.empty) +
+    box('Inmatning', 'Rätt tänkt men fel skrivet.', other.input) +
+    box('Andra nycklar', 'Felsvar som en godkänd nyckel förklarar.', other.otherKey, x => ` <span class="note">${esc(x.why)}</span>`) +
+    box('Oförklarade', 'Appen kan inte förklara svaret. Ditt öga behövs.', other.unexpl)
+  document.getElementById('tablenote').textContent = selected ? `Markerat: ${M[selected].title}. Klicka kortet igen för att ta bort markeringen.` : 'Befintlig tabell, oförändrad.'
+  document.getElementById('table').innerHTML = `<tr><th class="name">Elev</th>${Q.map((q, i) => `<th title="${esc(q.text)}">${i + 1}<br><span style="font-weight:400">${esc(q.text)}</span></th>`).join('')}</tr>` +
+    ps.map(p => `<tr><td class="name">${esc(p)}</td>${Q.map(q => { const [ans, kind] = A[p][q.id]; const cls = !kind ? 'e' : kind === 'c' ? 'c' : 'x'; const hl = selected ? (kind === selected ? ' hl' : ' dim') : ''; return `<td class="${cls}${hl}">${esc(ans || '–')}</td>` }).join('')}</tr>`).join('')
+  document.querySelectorAll('#cards .card').forEach(card => {
+    const toggle = () => { selected = selected === card.dataset.id ? null : card.dataset.id; render() }
+    card.onclick = toggle; card.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle() } }
+  })
+}
+who.onchange = render
+render()
+})()
+</script>
+</body>
+</html>

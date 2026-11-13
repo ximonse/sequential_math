@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { diagnosticRequest } from './diagnosticRequest'
 import { summarizeDiagnosticObservation } from '../../../domains/arithmetic/diagnosticObservation.js'
-import { acceptsTeacherAnswer, TEACHER_ANSWER_MAX, TEACHER_MISCONCEPTION_MAX } from '../../../domains/arithmetic/diagnosticTeacherAssessment.js'
+import { acceptsTeacherAnswer, TEACHER_ANSWER_MAX, TEACHER_MISCONCEPTION_IDS_MAX, TEACHER_MISCONCEPTION_MAX } from '../../../domains/arithmetic/diagnosticTeacherAssessment.js'
+import { approvedMisconceptionList } from '../../../domains/predictableErrors/misconceptions.js'
+
+const MISCONCEPTION_LIST = approvedMisconceptionList()
+const MISCONCEPTION_AREAS = [...new Set(MISCONCEPTION_LIST.map(item => item.areaSv))]
+const titleOf = id => MISCONCEPTION_LIST.find(item => item.id === id)?.titleSv
 
 const answerStatusLabels = { correct: 'rätt', incorrect: 'fel', incomplete: 'ofullständigt', unanswered: 'inget svar', unassessed: 'bedöms av läraren' }
 
@@ -11,6 +16,8 @@ export default function DiagnosticReviewForm({ detail, onSaved, onDirtyChange })
   const [markedCorrect, setMarkedCorrect] = useState(detail.review?.markedCorrect === true)
   const [teacherAnswer, setTeacherAnswer] = useState(detail.review?.teacherAnswer || '')
   const [misconception, setMisconception] = useState(detail.review?.misconception || '')
+  // A pick that later leaves the approved list is dropped, as the server would refuse it.
+  const [misconceptionIds, setMisconceptionIds] = useState((detail.review?.misconceptionIds || []).filter(titleOf))
   const answerField = acceptsTeacherAnswer(detail.task)
   // The typed answer is marked with the task's own rules, live, without saving.
   const teacherAnswerStatus = useMemo(() => {
@@ -42,7 +49,7 @@ export default function DiagnosticReviewForm({ detail, onSaved, onDirtyChange })
         assignmentId: detail.record.assignmentId, attemptId: detail.record.attemptId,
         expectedReviewRevision: review?.reviewRevision || 0,
         evidenceRevision: detail.record.serverRevision, evidenceSequence: detail.record.lastSequence, reviewed, note,
-        markedCorrect, teacherAnswer: answerField ? teacherAnswer : '', misconception,
+        markedCorrect, teacherAnswer: answerField ? teacherAnswer : '', misconception, misconceptionIds,
         ...(publishFeedback ? { publishFeedback: true, feedbackText } : {})
       }) })
       if (!result.ok) throw new Error(result.data.error || 'Kunde inte spara genomgången.')
@@ -78,7 +85,23 @@ export default function DiagnosticReviewForm({ detail, onSaved, onDirtyChange })
           {teacherAnswerStatus && <span>Bedöms som {answerStatusLabels[teacherAnswerStatus] || teacherAnswerStatus} mot facit.</span>}
         </span>
       </label>}
-      <label className="mt-2 block">Felförståelse som appen inte ser
+      <div className="mt-2">
+        <label className="block">Felförståelse ur listan
+          <select value="" disabled={state.busy || misconceptionIds.length >= TEACHER_MISCONCEPTION_IDS_MAX}
+            onChange={event => { if (!event.target.value) return; setMisconceptionIds(ids => [...ids, event.target.value]); updateState({ busy: false, message: '', dirty: true }) }}
+            className="mt-1 block w-full rounded border border-orange-300 bg-white px-1.5 py-0.5">
+            <option value="">Välj felförståelse …</option>
+            {MISCONCEPTION_AREAS.map(area => <optgroup key={area} label={area}>{MISCONCEPTION_LIST.filter(item => item.areaSv === area && !misconceptionIds.includes(item.id))
+              .map(item => <option key={item.id} value={item.id}>{item.titleSv}</option>)}</optgroup>)}
+          </select>
+        </label>
+        {misconceptionIds.length > 0 && <ul className="mt-1 flex flex-wrap gap-1" aria-label="Valda felförståelser">{misconceptionIds.map(id =>
+          <li key={id} className="flex items-center gap-1 rounded border border-orange-300 bg-white py-0.5 pl-1.5 pr-0.5">{titleOf(id)}
+            <button type="button" disabled={state.busy} aria-label={`Ta bort ${titleOf(id)}`} title="Ta bort"
+              onClick={() => { setMisconceptionIds(ids => ids.filter(value => value !== id)); updateState({ busy: false, message: '', dirty: true }) }}
+              className="rounded px-1 leading-none text-slate-600 hover:bg-orange-100">×</button></li>)}</ul>}
+      </div>
+      <label className="mt-2 block">Annan felförståelse (fritext)
         <textarea value={misconception} maxLength={TEACHER_MISCONCEPTION_MAX} rows={2} disabled={state.busy}
           onChange={event => { setMisconception(event.target.value); updateState({ busy: false, message: '', dirty: true }) }}
           className="mt-1 block w-full rounded border border-orange-300 bg-white p-2" />

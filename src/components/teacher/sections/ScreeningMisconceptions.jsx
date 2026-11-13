@@ -16,12 +16,13 @@ const OTHER_BOXES = [
   ['unexplained', 'Oförklarade', 'Appen kan inte förklara svaret. Ditt öga behövs.']
 ]
 
-function Answer({ row, name }) {
+function Answer({ row, name, cardId }) {
   return <li className="flex justify-between gap-2 border-b border-slate-200 py-0.5 last:border-b-0">
     <span>{name(row.studentId)}</span>
     <span className="text-right tabular-nums"><QuestionText>{row.promptSv.replace(/^Räkna ut /u, '').replace(/\.$/u, '')}</QuestionText>{' → '}
       <span className="font-semibold text-red-700">{row.studentAnswer ?? 'tomt'}</span>
       {row.correctAnswer != null && <s className="ml-1 text-slate-500">{row.correctAnswer}</s>}
+      {cardId && row.teacherMisconceptionIds?.includes(cardId) && <span className="block text-xs text-slate-600">Lärarens val</span>}
       {row.keyNoteSv && <span className="block text-xs text-slate-600">{row.keyNoteSv}</span>}</span>
   </li>
 }
@@ -86,7 +87,7 @@ export default function ScreeningMisconceptions({ members, isAllowed, mismatched
         <span className="block font-semibold">{card.titleSv}</span>
         <dl className="my-1 grid grid-cols-[auto_1fr] gap-x-2"><dt className="text-slate-600">Tänker</dt><dd>{card.logicSv}</dd>
           <dt className="text-slate-600">Behöver urskilja</dt><dd>{card.criticalAspectSv}</dd></dl>
-        <ul className="border-t border-slate-200">{card.answers.map(row => <Answer key={`${card.id}:${row.key}`} row={row} name={name} />)}</ul>
+        <ul className="border-t border-slate-200">{card.answers.map(row => <Answer key={`${card.id}:${row.key}`} row={row} name={name} cardId={card.id} />)}</ul>
       </div>
     })}</div> : <p className="text-sm text-slate-600">Inga felförståelser bland de valda elevernas svar.</p>}
     {OTHER_BOXES.some(([key]) => other[key].length > 0) && <>

@@ -42,6 +42,16 @@ describe('screening misconception view', () => {
     expect(view.other.without_link.map(row => row.key)).toEqual(['x:' + answer.position])
   })
 
+  it('puts a misconception the teacher picked on its card, marked as picked by the teacher', () => {
+    const entry = fixture.find(e => e.answer.status === 'incorrect' && !e.answer.teacherAssessed && !screeningPupilAnswers([e])[0].misconceptionIds.length)
+    const picked = { ...entry, teacherReview: { assessment: { misconceptionIds: ['regrouping_not_understood', 'not_in_catalogue'] } } }
+    const [answer] = screeningPupilAnswers([picked])
+    expect(answer).toMatchObject({ bucket: 'misconception', teacherMisconceptionIds: ['regrouping_not_understood'] })
+    const view = screeningMisconceptionView([{ studentId: 'x', answers: [{ ...answer, position: 0 }] }])
+    expect(view.cards.map(card => card.id)).toEqual(['regrouping_not_understood'])
+    expect(view.counts).toMatchObject({ wrong: 1, misconception: 1 })
+  })
+
   it('leaves out a wrong answer the teacher judged right, as the results table does', () => {
     const answer = pupils.flatMap(pupil => pupil.answers).find(a => a.status === 'incorrect')
     const before = screeningMisconceptionView([{ studentId: 'x', answers: [answer] }])

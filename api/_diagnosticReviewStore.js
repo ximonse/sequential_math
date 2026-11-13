@@ -61,7 +61,7 @@ export async function saveDiagnosticReview(record, input, teacherId, { store = k
   const previous = await store.get(`diagnostic_review:${record.attemptId}`)
   const assessment = teacherAssessmentFields(input, previous)
   if (!assessment) {
-    throw new DiagnosticAppendError(400, 'invalid_assessment', `Lärarens svar får vara högst ${TEACHER_ANSWER_MAX} tecken och felförståelsen högst ${TEACHER_MISCONCEPTION_MAX} tecken.`)
+    throw new DiagnosticAppendError(400, 'invalid_assessment', `Lärarens svar får vara högst ${TEACHER_ANSWER_MAX} tecken och felförståelsen högst ${TEACHER_MISCONCEPTION_MAX} tecken, med felförståelser ur den godkända listan.`)
   }
   const feedback = input.publishFeedback ? { text: input.feedbackText.trim(), publishedAt: now,
     evidenceRevision: input.evidenceRevision, evidenceSequence: input.evidenceSequence } : previous?.feedback

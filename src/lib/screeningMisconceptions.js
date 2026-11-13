@@ -9,7 +9,7 @@ import { ERROR_MODELS } from '../domains/predictableErrors/catalog.js'
 
 // One pupil's answers in one screening, for the teacher view.
 export function screeningPupilAnswers(entries) {
-  return classifyPupilAnswers(entries).rows.map(({ entry, original, status, bucket, reason, misconceptionIds = [], modelIds = [] }) => ({
+  return classifyPupilAnswers(entries).rows.map(({ entry, original, status, bucket, reason, misconceptionIds = [], modelIds = [], teacherMisconceptionIds }) => ({
     assignmentItemId: entry.reference?.assignmentItemId ?? null, taskId: entry.question?.taskId ?? null,
     promptSv: entry.question?.promptSv ?? entry.question?.promptText ?? '',
     studentAnswer: entry.answer?.studentAnswer ?? null, correctAnswer: entry.answer?.correctAnswer ?? null, status,
@@ -18,6 +18,7 @@ export function screeningPupilAnswers(entries) {
     ...(original.answer?.teacherAssessed ? { teacherStatus: original.answer.status } : {}),
     ...(bucket ? { bucket, misconceptionIds, modelTitlesSv: modelIds.map(id => ERROR_MODELS[id]?.titleSv).filter(Boolean) } : {}),
     ...(reason ? { reason } : {}),
+    ...(teacherMisconceptionIds ? { teacherMisconceptionIds } : {}),
     ...(entry.interpretation?.key?.status === 'approved' ? { keyNoteSv: entry.interpretation.key.noteSv } : {}) }))
 }
 

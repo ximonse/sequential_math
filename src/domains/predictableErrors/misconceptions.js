@@ -788,3 +788,10 @@ export function approvedMisconception(id) {
   const m = MISCONCEPTIONS[id]
   return m?.status === 'approved' ? { id, ...m } : null
 }
+
+// The approved misconceptions a teacher can pick for an answer, by area.
+export function approvedMisconceptionList() {
+  return Object.keys(MISCONCEPTIONS).map(approvedMisconception).filter(Boolean)
+    .map(({ id, titleSv, areaSv }) => ({ id, titleSv, areaSv }))
+    .sort((a, b) => a.areaSv.localeCompare(b.areaSv, 'sv') || a.titleSv.localeCompare(b.titleSv, 'sv'))
+}

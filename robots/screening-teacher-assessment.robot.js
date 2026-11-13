@@ -31,7 +31,7 @@ test('Teacher types a forgotten answer and notes a misconception beside the pupi
   const form = review.getByRole('form', { name: 'Lärarens genomgång', exact: true })
   await form.getByRole('textbox', { name: 'Svar som eleven glömt skriva i svarsrutan' }).fill('699')
   await expect(form.getByText('Bedöms som rätt mot facit.')).toBeVisible()
-  await form.getByRole('textbox', { name: 'Felförståelse som appen inte ser' }).fill('Skriver svaret bara i häftet.')
+  await form.getByRole('textbox', { name: 'Annan felförståelse (fritext)' }).fill('Skriver svaret bara i häftet.')
   await form.getByRole('button', { name: 'Spara genomgång', exact: true }).click()
   await expect(form.getByText('Genomgången är sparad på servern.')).toBeVisible()
   await review.getByRole('button', { name: 'Stäng genomgång', exact: true }).click()

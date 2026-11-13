@@ -56,4 +56,18 @@ test('A wrong answer from a known misconception shows a card that marks the answ
   await expect(card).toHaveAttribute('aria-pressed', 'false')
   await expect(wrongCell).not.toHaveClass(/outline-indigo-600/)
   await expect(rightCell).not.toHaveClass(/opacity-35/)
+
+  // The teacher picks one more misconception from the approved list; it gets its own card.
+  await review.getByRole('button', { name: /Misc Order,.*svar 376/ }).click()
+  const form = page.getByRole('form', { name: 'Lärarens genomgång', exact: true })
+  await form.getByRole('combobox', { name: 'Felförståelse ur listan' }).selectOption({ label: 'Tiotalsövergången är inte förstådd' })
+  await expect(form.getByRole('list', { name: 'Valda felförståelser' })).toContainText('Tiotalsövergången är inte förstådd')
+  await form.getByRole('button', { name: 'Spara genomgång', exact: true }).click()
+  await expect(form.getByText('Genomgången är sparad på servern.')).toBeVisible()
+  await page.getByRole('button', { name: 'Stäng genomgång', exact: true }).click()
+  const picked = section.getByRole('button', { name: /Tiotalsövergången är inte förstådd/ })
+  await expect(picked).toContainText('Lärarens val')
+  await expect(card).toBeVisible()
+  await expect(review.getByRole('button', { name: /Misc Order,.*svar 376/ })).toHaveAccessibleName(/Felförståelse/)
+  await page.screenshot({ path: testInfo.outputPath('screening-teacher-pick.png'), fullPage: true })
 })

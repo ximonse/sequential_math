@@ -3,7 +3,7 @@ import { isSpeedTrainingEntry } from './practiceModes.js'
 import { ERROR_MODELS } from '../domains/predictableErrors/catalog.js'
 import { meetsPattern } from './modelPattern.js'
 import { repeatedlyWrongTasks } from './repeatedTasks.js'
-import { misconceptionsForModel } from '../domains/predictableErrors/misconceptions.js'
+import { approvedMisconception, misconceptionsForModel } from '../domains/predictableErrors/misconceptions.js'
 
 // Coverage of pupils' wrong answers (docs/STYRNING_FELFORSTAELSER.md, rules
 // R-C and R-D). Every answer is counted once, by the pupil's own status.
@@ -142,8 +142,13 @@ export function classifyPupilAnswers(entries = []) {
     const status = entry.answer?.status
     if (status !== 'incorrect') return { entry, original: entries[index], status }
     const modelBucket = keyBucket(entry, wrongAnswerBucket(entry, below))
-    const bucket = modelBucket !== 'misconception' && repeated.has(entry) ? 'repeated_task' : modelBucket
-    return { entry, original: entries[index], status, bucket, misconceptionIds: misconceptionIdsFor(entry, bucket, below),
+    const appBucket = modelBucket !== 'misconception' && repeated.has(entry) ? 'repeated_task' : modelBucket
+    // A misconception the teacher picked from the approved list makes the answer one (Simon 2026-11-13).
+    const teacherIds = (entries[index]?.teacherReview?.assessment?.misconceptionIds ?? []).filter(id => approvedMisconception(id))
+    const bucket = teacherIds.length ? 'misconception' : appBucket
+    const appIds = misconceptionIdsFor(entry, appBucket, below)
+    return { entry, original: entries[index], status, bucket, misconceptionIds: [...new Set([...appIds, ...teacherIds])],
+      ...(teacherIds.length ? { teacherMisconceptionIds: teacherIds } : {}),
       modelIds: [...new Set((entry.interpretation?.predictable?.matches ?? []).map(match => match.modelId))],
       ...(bucket === 'unexplained' ? { reason: unexplainedReason(entry) } : {}) }
   })

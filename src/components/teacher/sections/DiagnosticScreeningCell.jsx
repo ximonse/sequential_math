@@ -1,6 +1,7 @@
 import { useId, useRef, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import QuestionText from '../../QuestionText'
+import { approvedMisconception } from '../../../domains/predictableErrors/misconceptions.js'
 import './diagnosticScreening.css'
 
 const labels = { correct: 'Rätt svar', incorrect: 'Fel svar utan identifierat mönster',
@@ -22,7 +23,9 @@ export default function DiagnosticScreeningCell({ item, pupilName, prompt, onOpe
   const marks = [teacher && (teacher.markedCorrect || teacher.teacherAnswer) && { code: 'L', label: 'Lärarbedömt',
     message: [teacher.markedCorrect && 'Läraren räknar svaret som rätt.', teacher.teacherAnswer
       && `Lärarens inskrivna svar: ${teacher.teacherAnswer} (${labels[teacher.teacherAnswerStatus]?.toLowerCase() || 'okänt'}).`].filter(Boolean).join(' ') },
-  teacher?.misconception && { code: 'F', label: 'Felförståelse', message: `Felförståelse: ${teacher.misconception}` }].filter(Boolean)
+  // F covers both the teacher's picks from the approved list and free text.
+  (teacher?.misconception || teacher?.misconceptionIds?.length) && { code: 'F', label: 'Felförståelse', message: `Felförståelse: ${[
+    ...(teacher.misconceptionIds ?? []).map(id => approvedMisconception(id)?.titleSv).filter(Boolean), teacher.misconception].filter(Boolean).join('; ')}` }].filter(Boolean)
   const pupilValue = summary?.explicitAnswer ?? null
   const value = pupilValue ?? teacher?.teacherAnswer ?? '—'
   // Written answers can be long; the cell shows a start and the tooltip and review show all of it.
@@ -44,7 +47,7 @@ export default function DiagnosticScreeningCell({ item, pupilName, prompt, onOpe
       onKeyDown={event => { if (event.key === 'Escape') { event.stopPropagation(); setPosition(null) } }}
       aria-describedby={position ? id : undefined}
       aria-label={`${pupilName}, ${prompt}, svar ${value}, ${label}${[...signals, ...marks].length ? `, ${[...signals, ...marks].map(signal => signal.label).join(', ')}` : ''}`}
-      className={`w-full min-w-16 rounded px-1.5 py-0.5 font-semibold tabular-nums outline-offset-2 focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:cursor-default ${status === 'correct' ? colors.correct : colors[signals[0]?.code] || colors[status]}${teacher?.misconception ? ' screening-answer--flagged' : ''}`}>
+      className={`w-full min-w-16 rounded px-1.5 py-0.5 font-semibold tabular-nums outline-offset-2 focus-visible:outline-2 focus-visible:outline-indigo-600 disabled:cursor-default ${status === 'correct' ? colors.correct : colors[signals[0]?.code] || colors[status]}${teacher?.misconception || teacher?.misconceptionIds?.length ? ' screening-answer--flagged' : ''}`}>
       {shortValue}{[...signals, ...marks].map(signal => <span key={signal.code} className="ml-1 text-[10px] font-medium">{signal.code}</span>)}
     </button>
     {position && createPortal(<div id={id} role="tooltip" onMouseEnter={() => clearTimeout(timer.current)} onMouseLeave={hideSoon}

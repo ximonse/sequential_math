@@ -303,9 +303,13 @@ förrän det föregående är klart.
    54 fel, varav 14 felförståelser (8 olika), 33 oförklarade, 4 inmatning och
    3 enstaka, samt 46 obesvarade med uträkning. Belägget enligt avsnitt 3
    återstår: Simon läser en riktig screening.
-   *Kvar av steg 4, kräver Simons val:* (a) lärarens fritext om felförståelse
-   (F i tabellen) kopplas inte till katalogen än, eftersom det kräver att
-   läraren väljer en felförståelse i stället för att skriva fritt; (b)
+   *Lärarens val ur listan (Simon 2026-11-13, "välja ut lista"):* i
+   elevgenomgången väljer läraren upp till fem godkända felförståelser för ett
+   svar; fritexten finns kvar som *annan felförståelse*. Servern tar bara emot
+   godkända felförståelser. Ett fel svar med lärarens val räknas som
+   felförståelse, i samma klassning som täckningen och elevrapporten, och visas
+   på kortet märkt *Lärarens val*; F i tabellen visar valen.
+   *Kvar av steg 4, kräver Simons val:* (b)
    elevrapportens tak på åtta kort och klassvyns summatest (R-C ovan) är
    oförändrade, eftersom schemat delas med den frysta avstämningen.
 5. **Fyll luckorna efter måttstocken.** Ta de vanligaste oförklarade svaren ur

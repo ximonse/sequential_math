@@ -204,6 +204,31 @@ förrän det föregående är klart.
    avsnitt 6 finns ännu inte i katalogen, och *gäller när* finns bara i
    beräkningskoden. Spärr R-A är därför bara delvis införd; steg 1 är inte
    klart förrän testet också kräver källa och slumprisk.
+1b. **Felförståelser bakom felmönstren (Simon 2026-11-13).** Felmodellerna
+   beskriver vad eleven gjorde, inte vad i tänkandet som ledde dit. Katalogen
+   får ett andra lager: felförståelser med områdets namn, typisk uppgift och
+   svar, elevlogik, vad eleven fokuserar på, kritisk aspekt, variationsmönster
+   och källor (Simons tabeller "Felförståelser och missförstånd i matematik i
+   grundskolan" och "klustrade felförståelser variationsteori", NCM och
+   "Förstå och använda tal"). Varje felmodell kopplas till minst en
+   felförståelse eller får en uttrycklig orsak utan felförståelse (kognitiv:
+   hastighet, fokus, arbetsminne; faktaminne; inmatning). Varje koppling anger
+   om den står i källan eller är agentens förslag. Omfång: aritmetik,
+   decimaltal, bråk, procent och enkel algebra; geometri, mätning, negativa
+   tal, funktioner, potenser och statistik väntar.
+   *Klart när:* varje rad i båda källfilerna har ett utfall (sammanslagen,
+   utanför omfånget eller kräver screeningfråga), varje felmodell är kopplad
+   eller uttryckligen undantagen, testet är grönt, Simon har läst
+   granskningsdokumentet och inget ogranskat visas för lärare.
+   *Läge 2026-11-13, lokalt:* `src/domains/predictableErrors/misconceptions.js`
+   har 46 felförståelser (21 kluster ordagrant ur klusterbladet, 25 skrivna av
+   agenten ur tabellen och NCM), alla med status *awaiting_review*. 56 av 72
+   felmönster är kopplade, 16 har en uttrycklig orsak (faktaminne, kognitivt,
+   inmatning eller oklart). `docs/misconceptions/source-register.json` ger alla
+   373 källrader ett utfall: 244 sammanslagna, 127 utanför omfånget, 2
+   rubrikrader. 23 felförståelser syns i svar, 22 kräver en screeningfråga, 1
+   syns bara genom observation. `misconceptions.test.js` är spärren. Kvar:
+   Simon läser `Hermes Vault/Skola och lektioner/Matematik/Felforstaelser-for-granskning-2026-11-13.md`.
 2. **Täckningsrapport.** Bygg måttstocken och kör den på befintligt underlag.
    Inför spärr R-C och R-D.
    *Klart när:* rapporten återger baslinjen i avsnitt 3 och summorna stämmer.

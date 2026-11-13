@@ -34,6 +34,7 @@ const emitted = new Set(sources.filter(source => ENGINE.includes(source.file)).f
 const MAY_REFER = {
   'src/domains/predictableErrors/catalog.js': 'the catalogue',
   'src/domains/predictableErrors/modelDescriptions.js': 'descriptions, part of the catalogue',
+  'src/domains/predictableErrors/misconceptions.js': 'misconceptions behind the models, part of the catalogue',
   'src/domains/predictableErrors/probeCatalog.js': 'advisory probe per model',
   'src/domains/arithmetic/didacticPackages.js': 'approved package bound to a model',
   'src/domains/arithmetic/decimalAdditionPackage.js': 'approved package bound to a model',

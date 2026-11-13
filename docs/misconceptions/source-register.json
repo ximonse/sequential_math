@@ -1,0 +1,2306 @@
+{
+ "noteSv": "Varje rad i Simons två tabeller (2026-11-13) med sitt utfall: en felförståelse i src/domains/predictableErrors/misconceptions.js, utanför omfånget (out:) eller rubrikrad. Radtexten är förkortad till 90 tecken; källfilerna ligger hos Simon.",
+ "files": {
+  "pdf": "Felförståelser och missförstånd i matematik i grundskolan (pdf, 8 sidor)",
+  "xlsx": "klustrade-felforstaelser-variationsteori (xlsx, blad Klustrade Felförståelser)"
+ },
+ "pdfSourceList": {
+  "1": "RAPPORT - Ämnesspecifika instruktioner för ämnet matematik - Skolverket",
+  "2": "Elevers missuppfattningar med ekvationer och olika uppfattningar av likhetstecknet - DiVA portal",
+  "3": "Undervisningsstrategier för att stödja elever med matematiksvårigheter i problemlösning",
+  "4": "Att konkretisera och förstå multiplikationstabellen - DiVA portal",
+  "5": "Uppfattningar om tal i decimalform - NCM",
+  "6": "Diagnosing Students' Misconceptions in Number Sense via a Web-Based Two- Tier Test",
+  "7": "Diagnosing Students' Misconceptions in Number Sense via a Web-Based Two- Tier Test",
+  "8": "Diagnosing Students' Misconceptions in Number Sense via a Web-Based Two- Tier Test",
+  "9": "Mathematics: Identifying and Addressing Student Errors - IRIS Center",
+  "10": "Mathematics: Identifying and Addressing Student Errors - IRIS Center",
+  "11": "Mathematics: Identifying and Addressing Student Errors - IRIS Center",
+  "12": "Misconceptions in School Algebra - HRMARS",
+  "13": "Misconceptions in School Algebra - HRMARS",
+  "14": "Misconceptions in School Algebra - HRMARS",
+  "15": "Learning to Make MISTAKEs: Modeling Incorrect Student Thinking And Key Errors - arXiv",
+  "16": "Learning to Make MISTAKEs: Modeling Incorrect Student Thinking And Key Errors - arXiv",
+  "17": "Learning to Make MISTAKEs: Modeling Incorrect Student Thinking And Key Errors - arXiv",
+  "18": "Likhetstecknet och dess innebörd",
+  "19": "Resonemang med bråk och proportioner",
+  "20": "Grunder för förståelse av tal i decimalform",
+  "21": "Persistent Misconceptions in Algebra: A Critical Analysis of Errors with Implications for Teaching and Further Research - Science Publications",
+  "22": "Persistent Misconceptions in Algebra: A Critical Analysis of Errors with Implications for Teaching and Further Research - Science Publications",
+  "23": "Persistent Misconceptions in Algebra: A Critical Analysis of Errors with Implications for Teaching and Further Research - Science Publications",
+  "24": "Om diamantdiagnoserna, Aritmetik - NCM - Göteborgs universitet",
+  "25": "Kognitiv belastning och aritmetisk automatisering: En analys av grundläggande talkunskaper i låg- och mellanstadiet",
+  "26": "Generalisering av tabellkunskaper – addition och subtraktion - NCM",
+  "27": "Maths Misconceptions: mistakes, misunderstanding and muddles - Hachette Learning",
+  "28": "Mathematical Misconceptions | Resource Collection - STEM Learning",
+  "29": "Maths Misconceptions: mistakes, misunderstanding and muddles - Hachette Learning",
+  "30": "Mathematical Misconceptions | Resource Collection - STEM Learning",
+  "31": "Maths Misconceptions: mistakes, misunderstanding and muddles - Hachette Learning",
+  "32": "REFUTING A FRACTION MISCONCEPTION: A BRIEF INTERVENTION PROMOTES TEACHERS' CONCEPTUAL CHANGE Jessica Rodrigues Ian Thacker",
+  "33": "REFUTING A FRACTION MISCONCEPTION: A BRIEF INTERVENTION PROMOTES TEACHERS' CONCEPTUAL CHANGE Jessica Rodrigues Ian Thacker",
+  "34": "REFUTING A FRACTION MISCONCEPTION: A BRIEF INTERVENTION PROMOTES TEACHERS' CONCEPTUAL CHANGE Jessica Rodrigues Ian Thacker",
+  "35": "How to Identify Math Misconceptions Before the Test: 5 Strategies for Middle School Math Teachers - Make Sense of Math",
+  "36": "Mathematical Misconceptions | Resource Collection - STEM Learning",
+  "37": "How to Identify Math Misconceptions Before the Test: 5 Strategies for Middle School Math Teachers - Make Sense of Math",
+  "38": "How to Identify Math Misconceptions Before the Test: 5 Strategies for Middle School Math Teachers - Make Sense of Math"
+ },
+ "outOfScope": {
+  "geometry": "geometri",
+  "measurement": "mätning och enheter",
+  "negative": "negativa tal",
+  "functions": "funktioner och grafer",
+  "powers": "potenser, rötter och polynom",
+  "statistics": "statistik",
+  "primes": "primtal och talteori",
+  "counting": "förberedande aritmetik (räkneprinciper)",
+  "rational_algebra": "algebraiska bråk",
+  "teaching": "beskriver undervisningen, inte elevens tänkande",
+  "equations_advanced": "ekvationssystem och ekvationskonstruktion",
+  "proportion_functions": "proportionalitet i funktioner"
+ },
+ "counts": {
+  "header": 2,
+  "merged": 244,
+  "out_of_scope": 127
+ },
+ "rows": [
+  {
+   "id": "P001",
+   "file": "pdf",
+   "name": "Namn på felförståelseMatematikområdeFörklaring Exempel Referens Källa Icke utvecklingsbara",
+   "outcome": "header"
+  },
+  {
+   "id": "P002",
+   "file": "pdf",
+   "name": "Operationell syn på likhetstecknetAlgebra / AritmetikElever uppfattar likhetstecknet som e",
+   "outcome": "equal_sign_operational"
+  },
+  {
+   "id": "P003",
+   "file": "pdf",
+   "name": "Bråk som enbart andelar eller del av en helhetAritmetik (Bråk)Att introducera bråk via iko",
+   "outcome": "fraction_unequal_parts"
+  },
+  {
+   "id": "P004",
+   "file": "pdf",
+   "name": "Negativa tal och minustecknets flydbarhetAritmetik (Negativa tal)Införandet av negativa ta",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P005",
+   "file": "pdf",
+   "name": "Multiplikation som enbart upprepad additionAritmetik (Multiplikation)Att enbart definiera ",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P006",
+   "file": "pdf",
+   "name": "Misstolkning av ordet 'av' i multiplikativa sammanhangAritmetik / Funktioner och sambandAt",
+   "outcome": "percent_word_of"
+  },
+  {
+   "id": "P007",
+   "file": "pdf",
+   "name": "Övergeneralisering av proportionalitetFunktioner och samband (Proportionella samband)Eleve",
+   "outcome": "out:functions"
+  },
+  {
+   "id": "P008",
+   "file": "pdf",
+   "name": "Operationell uppfattning av likhetstecknetAlgebra / EkvationerAtt se likhetstecknet som en",
+   "outcome": "equal_sign_operational"
+  },
+  {
+   "id": "P009",
+   "file": "pdf",
+   "name": "Relationell uppfattning av likhetstecknetAlgebra / EkvationerAtt förstå att likhetstecknet",
+   "outcome": "equal_sign_format"
+  },
+  {
+   "id": "P010",
+   "file": "pdf",
+   "name": "Omvändningsfel (Reversal errors)Algebra / EkvationerUppstår när man av misstag byter plats",
+   "outcome": "out:equations_advanced"
+  },
+  {
+   "id": "P011",
+   "file": "pdf",
+   "name": "Felaktig konstruktion av ekvationerAlgebra / EkvationerInnebär att man använder felaktiga ",
+   "outcome": "out:equations_advanced"
+  },
+  {
+   "id": "P012",
+   "file": "pdf",
+   "name": "Fel vid ersättning (substitution)Algebra / EkvationerElever ersätter felaktigt en variabel",
+   "outcome": "out:equations_advanced"
+  },
+  {
+   "id": "P013",
+   "file": "pdf",
+   "name": "Minustecknets/negativa tals påverkanAlgebra / EkvationerEn missuppfattning som innebär att",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P014",
+   "file": "pdf",
+   "name": "Felaktigt skapande av likhet (direkt tillämpning av operation utan invers)Algebra / Ekvati",
+   "outcome": "equation_inverse"
+  },
+  {
+   "id": "P015",
+   "file": "pdf",
+   "name": "Additivt tänkande vid proportionalitetsproblemProportionalitet och ratioElever använder ad",
+   "outcome": "proportion_additive"
+  },
+  {
+   "id": "P016",
+   "file": "pdf",
+   "name": "Felaktig tolkning av öppen problemstruktur / StrategifelläsningAritmetik och textproblem (",
+   "outcome": "word_problem_keywords"
+  },
+  {
+   "id": "P017",
+   "file": "pdf",
+   "name": "Mekanisk beräkningsfokus framför begreppsförståelseProblemlösning / AritmetikElever påbörj",
+   "outcome": "word_problem_keywords"
+  },
+  {
+   "id": "P018",
+   "file": "pdf",
+   "name": "Språkliga och begreppsliga missuppfattningar i textproblemMatematiskt språk och textproble",
+   "outcome": "word_problem_keywords"
+  },
+  {
+   "id": "P019",
+   "file": "pdf",
+   "name": "Missförstånd vid lika delning (Equal Sharing)Bråk och divisionElever med låg prestation i ",
+   "outcome": "equal_sharing"
+  },
+  {
+   "id": "P020",
+   "file": "pdf",
+   "name": "Multiplikation behandlas enbart som upprepad additionMultiplikationUndervisning och konkre",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P021",
+   "file": "pdf",
+   "name": "Blandar ihop eller bortser från skillnaden mellan storheter och mätetal (multiplikand vs m",
+   "outcome": "out:teaching"
+  },
+  {
+   "id": "P022",
+   "file": "pdf",
+   "name": "±1-fel vid multiplikation av udda talMultiplikation / TaluppfattningBristande insikt i att",
+   "outcome": "product_parity"
+  },
+  {
+   "id": "P023",
+   "file": "pdf",
+   "name": "Det längsta talet har alltid störst värdeAritmetik / DecimaltalÖvergeneralisering av egens",
+   "outcome": "decimal_longer_is_larger"
+  },
+  {
+   "id": "P024",
+   "file": "pdf",
+   "name": "Det kortaste decimaltalet är störst (eller det längsta är minst)Aritmetik / DecimaltalElev",
+   "outcome": "decimal_shorter_is_larger"
+  },
+  {
+   "id": "P025",
+   "file": "pdf",
+   "name": "Du kan inte dela ett litet tal med ett stortAritmetik / DivisionTankemodellen för division",
+   "outcome": "division_order"
+  },
+  {
+   "id": "P026",
+   "file": "pdf",
+   "name": "Multiplikation gör alltid svaret störreAritmetik / RäknesättUppfattningen bygger på erfare",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P027",
+   "file": "pdf",
+   "name": "Man kan bara dela med heltalAritmetik / DivisionElever har endast mött delningsdivision me",
+   "outcome": "divide_only_by_integers"
+  },
+  {
+   "id": "P028",
+   "file": "pdf",
+   "name": "3 : 6 och 6 : 3 ger samma svarAritmetik / DivisionÖverföring av kommutativa egenskapen frå",
+   "outcome": "division_order"
+  },
+  {
+   "id": "P029",
+   "file": "pdf",
+   "name": "Division gör alltid svaret mindreAritmetik / DivisionInskränkt tankemodell från heltal där",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P030",
+   "file": "pdf",
+   "name": "Decimaltal som par av heltalAritmetik / DecimaltalSer decimaltecknet som en avgränsare/ski",
+   "outcome": "decimal_two_integers"
+  },
+  {
+   "id": "P031",
+   "file": "pdf",
+   "name": "Decimaltecknet som avgränsare mellan täljare och nämnareAritmetik / Bråk och decimaltalAnv",
+   "outcome": "fraction_bar_as_comma"
+  },
+  {
+   "id": "P032",
+   "file": "pdf",
+   "name": "Inga tal finns mellan två grann-decimaltalAritmetik / Decimaltal på tallinjenAvsaknad av f",
+   "outcome": "decimal_density"
+  },
+  {
+   "id": "P033",
+   "file": "pdf",
+   "name": "Misstolkning av siffvärdesposition utifrån uppläsningAritmetik / PositionssystemetSättet a",
+   "outcome": "decimal_two_integers"
+  },
+  {
+   "id": "P034",
+   "file": "pdf",
+   "name": "Felaktig överföring vid konvertering från tusendelar/tiondelar till decimalformAritmetik /",
+   "outcome": "tenths_written_as_hundredths"
+  },
+  {
+   "id": "P035",
+   "file": "pdf",
+   "name": "FW1: Tar bara hänsyn till täljaren eller nämnaren vid jämförelse av bråkBråk Elever behand",
+   "outcome": "fraction_compare_parts"
+  },
+  {
+   "id": "P036",
+   "file": "pdf",
+   "name": "FW2: Missförstånd av innebörden av blandad formBråk Elever missuppfattar blandad form och ",
+   "outcome": "mixed_number"
+  },
+  {
+   "id": "P037",
+   "file": "pdf",
+   "name": "FW3: Missförstånd av relationen mellan täljare och nämnareBråk Elever jämför endast skilln",
+   "outcome": "fraction_additive_equivalence"
+  },
+  {
+   "id": "P038",
+   "file": "pdf",
+   "name": "DW1: Ju längre desto större (Längre decimaltal är större)Decimaltal Elever tillämpar regle",
+   "outcome": "decimal_longer_is_larger"
+  },
+  {
+   "id": "P039",
+   "file": "pdf",
+   "name": "DW2: Decimaltecknet som indikator på positionssystemet / Fler siffror ger större talDecima",
+   "outcome": "decimal_longer_is_larger"
+  },
+  {
+   "id": "P040",
+   "file": "pdf",
+   "name": "DW3: Missförstånd av decimaltals täthet (Density of decimals)Decimaltal Elever antar felak",
+   "outcome": "decimal_density"
+  },
+  {
+   "id": "P041",
+   "file": "pdf",
+   "name": "CDF1: Förväxling mellan decimaltal och bråkDecimaltal och bråkElever tolkar decimaler som ",
+   "outcome": "fraction_bar_as_comma"
+  },
+  {
+   "id": "P042",
+   "file": "pdf",
+   "name": "IO1 & IO5: Felaktig användning av kommutativa lagen och räkneordningAritmetik / Aritmetisk",
+   "outcome": "order_of_operations"
+  },
+  {
+   "id": "P043",
+   "file": "pdf",
+   "name": "IO2: Multiplikation ger alltid ett större talAritmetiska operationerElever generaliserar f",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P044",
+   "file": "pdf",
+   "name": "IO3: Övergeneralisering av slutenhet för decimalerDecimaltal och operationerElever tror fe",
+   "outcome": "decimal_closure"
+  },
+  {
+   "id": "P045",
+   "file": "pdf",
+   "name": "IO4: Addera eller subtrahera täljare och nämnare var för sigBråk Elever adderar eller subt",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "P046",
+   "file": "pdf",
+   "name": "IO6: Missförstånd av relationen mellan multiplikator och produktAritmetiska operationerEle",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P047",
+   "file": "pdf",
+   "name": "IN1: Det minsta talet är mest sannolikt ett primtalTaluppfattning / PrimtalElever använder",
+   "outcome": "out:primes"
+  },
+  {
+   "id": "P048",
+   "file": "pdf",
+   "name": "IN2: Använder de två sista siffrorna som referens för primtalTaluppfattning / PrimtalEleve",
+   "outcome": "out:primes"
+  },
+  {
+   "id": "P049",
+   "file": "pdf",
+   "name": "IN3: Talet med flest 9:or har störst chans att vara primtalTaluppfattning / PrimtalElever ",
+   "outcome": "out:primes"
+  },
+  {
+   "id": "P050",
+   "file": "pdf",
+   "name": "IN4: Jämför heltal genom att endast titta på entalssiffranPositionssystemet / HeltalElever",
+   "outcome": "place_value_digits"
+  },
+  {
+   "id": "P051",
+   "file": "pdf",
+   "name": "FW1. Jämför endast täljare eller nämnareBråk Elever behandlar bråk som två separata heltal",
+   "outcome": "fraction_compare_parts"
+  },
+  {
+   "id": "P052",
+   "file": "pdf",
+   "name": "FW2. Missförstånd av blandad formBråk Elever missförstår innebörden av tal i blandad form ",
+   "outcome": "mixed_number"
+  },
+  {
+   "id": "P053",
+   "file": "pdf",
+   "name": "FW3. Missförstånd av relationen mellan täljare och nämnareBråk Elever jämför bråk genom at",
+   "outcome": "fraction_additive_equivalence"
+  },
+  {
+   "id": "P054",
+   "file": "pdf",
+   "name": "DW1. Längre decimaltal är större (\"longer is larger\")Decimaltal Tillämpning av helgundsreg",
+   "outcome": "decimal_longer_is_larger"
+  },
+  {
+   "id": "P055",
+   "file": "pdf",
+   "name": "Kortare decimaltal är större (\"shorter is larger\")Decimaltal Elever misstar decimaler för ",
+   "outcome": "decimal_shorter_is_larger"
+  },
+  {
+   "id": "P056",
+   "file": "pdf",
+   "name": "Nollregeln för decimaltal (\"zero rule\")Decimaltal Elever tror felaktigt att nollor direkt ",
+   "outcome": "zero_rule"
+  },
+  {
+   "id": "P057",
+   "file": "pdf",
+   "name": "DW2. Decimaltecknet som indikator på positionssystemetDecimaltal Missuppfattning om att fö",
+   "outcome": "decimal_longer_is_larger"
+  },
+  {
+   "id": "P058",
+   "file": "pdf",
+   "name": "DW3. Missförstånd av decimaltals täthet (densitet)Decimaltal Elever överför regeln om att ",
+   "outcome": "decimal_density"
+  },
+  {
+   "id": "P059",
+   "file": "pdf",
+   "name": "CDF1. Tolka decimaltal som reciproka värden eller bråkKoppling mellan decimaltal och bråkF",
+   "outcome": "fraction_bar_as_comma"
+  },
+  {
+   "id": "P060",
+   "file": "pdf",
+   "name": "IO1 & IO5. Felaktig användning av operativ ordning / kommutativa lagenAritmetik och operat",
+   "outcome": "order_of_operations"
+  },
+  {
+   "id": "P061",
+   "file": "pdf",
+   "name": "IO2. Multiplikation gör alltid talet störreAritmetik och operationerÖvergeneralisering av ",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P062",
+   "file": "pdf",
+   "name": "IO3. Övergeneralisering av slutna egenskaper på decimaltalAritmetik och operationerAntagan",
+   "outcome": "decimal_closure"
+  },
+  {
+   "id": "P063",
+   "file": "pdf",
+   "name": "IO4. Addera/subtrahera täljare och nämnare rakt avBråkräkningElever adderar eller subtrahe",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "P064",
+   "file": "pdf",
+   "name": "Felförståelse vid division av bråkBråkräkningOförmåga att förstå konceptet bakom bråkdivis",
+   "outcome": "fraction_division"
+  },
+  {
+   "id": "P065",
+   "file": "pdf",
+   "name": "IO6. Missförstånd av relationen mellan multiplikator och produktAritmetik och operationerF",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P066",
+   "file": "pdf",
+   "name": "IN1. Det minsta talet är troligast ett primtalTaluppfattning och primtalFelaktig intuition",
+   "outcome": "out:primes"
+  },
+  {
+   "id": "P067",
+   "file": "pdf",
+   "name": "IN2. Använda de sista två siffrorna som referens för primtalTaluppfattning och primtalElev",
+   "outcome": "out:primes"
+  },
+  {
+   "id": "P068",
+   "file": "pdf",
+   "name": "IN3. Flest nior ger störst chans att vara primtalTaluppfattning och primtalFelaktig intuit",
+   "outcome": "out:primes"
+  },
+  {
+   "id": "P069",
+   "file": "pdf",
+   "name": "IN4. Jämföra heltal genom att endast titta på entalssiffranPositionssystemet och heltalMis",
+   "outcome": "place_value_digits"
+  },
+  {
+   "id": "P070",
+   "file": "pdf",
+   "name": "FW1. Jämför endast täljare eller nämnareBråk Elever överväger endast täljaren eller nämnar",
+   "outcome": "fraction_compare_parts"
+  },
+  {
+   "id": "P071",
+   "file": "pdf",
+   "name": "FW2. Missförstånd av blandad formBråk Felaktig tolkning av innebörden i ett tal i blandad ",
+   "outcome": "mixed_number"
+  },
+  {
+   "id": "P072",
+   "file": "pdf",
+   "name": "FW3. Missförstånd av relationen mellan täljare och nämnareBråk Jämför skillnaden mellan tä",
+   "outcome": "fraction_additive_equivalence"
+  },
+  {
+   "id": "P073",
+   "file": "pdf",
+   "name": "DW1. Längre är större (\"Longer is larger\")Decimaltal Tillämpar regler för hela tal på deci",
+   "outcome": "decimal_longer_is_larger"
+  },
+  {
+   "id": "P074",
+   "file": "pdf",
+   "name": "DW2. Decimaltecknet som positionsindikatorDecimaltal Tror att om decimaltecknet flyttas ti",
+   "outcome": "decimal_longer_is_larger"
+  },
+  {
+   "id": "P075",
+   "file": "pdf",
+   "name": "DW3. Missförstånd om decimaltals täthet (Density of decimals)Decimaltal Tillämpar regeln a",
+   "outcome": "decimal_density"
+  },
+  {
+   "id": "P076",
+   "file": "pdf",
+   "name": "CDF1. Förväxling av decimaler och bråkBråk och decimaltalTolkar decimaltal felaktigt som i",
+   "outcome": "fraction_bar_as_comma"
+  },
+  {
+   "id": "P077",
+   "file": "pdf",
+   "name": "IO1. Felaktig användning av kommutativa och associativa lagar vid divisionAritmetik / Oper",
+   "outcome": "order_of_operations"
+  },
+  {
+   "id": "P078",
+   "file": "pdf",
+   "name": "IO2. Multiplikation gör alltid talet störreAritmetik / OperationerÖvergeneraliserar att mu",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P079",
+   "file": "pdf",
+   "name": "IO3. Övergeneralisering av slutenhet för decimalerAritmetik / OperationerTror att de fyra ",
+   "outcome": "decimal_closure"
+  },
+  {
+   "id": "P080",
+   "file": "pdf",
+   "name": "IO4. Addition/subtraktion av täljare och nämnare var för sigBråk Adderar eller subtraherar",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "P081",
+   "file": "pdf",
+   "name": "IO5. Bristande förståelse för beräkningsordningAritmetik / OperationerMissuppfattar ordnin",
+   "outcome": "order_of_operations"
+  },
+  {
+   "id": "P082",
+   "file": "pdf",
+   "name": "IO6. Missförstånd av relationen mellan multiplikator och produktAritmetik / OperationerFel",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P083",
+   "file": "pdf",
+   "name": "IN1. Det minsta talet är mest sannolikt ett primtalTaluppfattning / PrimtalAnvänder felakt",
+   "outcome": "out:primes"
+  },
+  {
+   "id": "P084",
+   "file": "pdf",
+   "name": "IN2. Bedömning av primtal utifrån de sista två siffrornaTaluppfattning / PrimtalTittar end",
+   "outcome": "out:primes"
+  },
+  {
+   "id": "P085",
+   "file": "pdf",
+   "name": "IN3. Flest nior ger störst chans för primtalTaluppfattning / PrimtalMissuppfattningen att ",
+   "outcome": "out:primes"
+  },
+  {
+   "id": "P086",
+   "file": "pdf",
+   "name": "IN4. Jämförelse/placering av heltal baserat enbart på entalspositionenPositionssystemet / ",
+   "outcome": "place_value_digits"
+  },
+  {
+   "id": "P087",
+   "file": "pdf",
+   "name": "Glömmer att växla/omgruppera (Forgets to regroup)Aritmetik / Heltalsberäkningar (Addition,",
+   "outcome": "regrouping_not_understood"
+  },
+  {
+   "id": "P088",
+   "file": "pdf",
+   "name": "Växla över nolla (Regroups across a zero)Aritmetik / SubtraktionProcessuellt fel där eleve",
+   "outcome": "regroup_across_zero"
+  },
+  {
+   "id": "P089",
+   "file": "pdf",
+   "name": "Utför fel räknesätt (Performs the incorrect operation)Aritmetik Procedurfel där eleven kän",
+   "outcome": "wrong_operation"
+  },
+  {
+   "id": "P090",
+   "file": "pdf",
+   "name": "Misslyckas med att hitta gemensam nämnare vid addition/subtraktion av bråkBråk Processuell",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "P091",
+   "file": "pdf",
+   "name": "Misslyckas med att invertera vid division av bråkBråk Procedurfel där eleven glömmer att i",
+   "outcome": "fraction_division"
+  },
+  {
+   "id": "P092",
+   "file": "pdf",
+   "name": "Glömmer att multiplicera nämnarna i bråkmultiplikationBråk Procedurfel eller övergeneraler",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "P093",
+   "file": "pdf",
+   "name": "Felaktig omvandling av blandad form till oliknämnigt/oäkta bråkBråk Procedurfel där eleven",
+   "outcome": "mixed_number"
+  },
+  {
+   "id": "P094",
+   "file": "pdf",
+   "name": "Ställer inte upp decimaltecknet korrekt vid addition/subtraktionDecimaltal Procedurfel där",
+   "outcome": "decimal_point_alignment"
+  },
+  {
+   "id": "P095",
+   "file": "pdf",
+   "name": "Felaktig placering av decimaltecken vid multiplikation/divisionDecimaltal Kan vara både pr",
+   "outcome": "decimal_point_in_products"
+  },
+  {
+   "id": "P096",
+   "file": "pdf",
+   "name": "Missförstånd av positionssystemet (Place value misunderstanding)Positionssystem / Aritmeti",
+   "outcome": "place_value_digits"
+  },
+  {
+   "id": "P097",
+   "file": "pdf",
+   "name": "Övergeneralisering (Overgeneralization)Algebra / Bråk / AritmetikBegreppsfel där eleven sa",
+   "outcome": "subtraction_order_ignored"
+  },
+  {
+   "id": "P098",
+   "file": "pdf",
+   "name": "Överspecialisering (Overspecialization)Geometri / BegreppsförståelseBegreppsfel där eleven",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P099",
+   "file": "pdf",
+   "name": "Svårigheter med textuppgifter och nyckelbegreppProblemlösning / TextuppgifterFelförståelse",
+   "outcome": "word_problem_keywords"
+  },
+  {
+   "id": "P100",
+   "file": "pdf",
+   "name": "Glömmer att växla (Forgets to regroup)Aritmetik / HeltalsberäkningEleven glömmer att växla",
+   "outcome": "regrouping_not_understood"
+  },
+  {
+   "id": "P101",
+   "file": "pdf",
+   "name": "Växling över noll (Regroups across a zero)Aritmetik / HeltalsberäkningNär minuenden innehå",
+   "outcome": "regroup_across_zero"
+  },
+  {
+   "id": "P102",
+   "file": "pdf",
+   "name": "Utför fel räknesätt (Performs the incorrect operation)Aritmetik Trots att eleven kan ident",
+   "outcome": "wrong_operation"
+  },
+  {
+   "id": "P103",
+   "file": "pdf",
+   "name": "Misslyckas med att hitta gemensam nämnare vid addition och subtraktion av bråkBråk Eleven ",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "P104",
+   "file": "pdf",
+   "name": "Glömmer att invertera vid division av bråkBråk Eleven inverterar inte det andra bråket (el",
+   "outcome": "fraction_division"
+  },
+  {
+   "id": "P105",
+   "file": "pdf",
+   "name": "Ändrar inte nämnaren vid multiplikation av bråkBråk Eleven multiplicerar täljarna men behå",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "P106",
+   "file": "pdf",
+   "name": "Felaktig omvandling från blandad form till bråk i sekundär/improper formBråk Eleven addera",
+   "outcome": "mixed_number"
+  },
+  {
+   "id": "P107",
+   "file": "pdf",
+   "name": "Ställer inte upp decimaltecknet korrekt vid addition eller subtraktionDecimaltal Eleven st",
+   "outcome": "decimal_point_alignment"
+  },
+  {
+   "id": "P108",
+   "file": "pdf",
+   "name": "Felaktig placering av decimaltecknet vid multiplikation eller divisionDecimaltal Eleven rä",
+   "outcome": "decimal_point_in_products"
+  },
+  {
+   "id": "P109",
+   "file": "pdf",
+   "name": "Missuppfattning av positionssystemet (Place value)Taluppfattning / AritmetikEleven förstår",
+   "outcome": "place_value_digits"
+  },
+  {
+   "id": "P110",
+   "file": "pdf",
+   "name": "Övergeneralisering (Overgeneralization)Aritmetik / BråkPå grund av bristande begreppsförst",
+   "outcome": "subtraction_order_ignored"
+  },
+  {
+   "id": "P111",
+   "file": "pdf",
+   "name": "Överspecialisering (Overspecialization)Geometri Eleven utvecklar en alltför snäv definitio",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P112",
+   "file": "pdf",
+   "name": "Svårighet att översätta text till matematisk ekvation vid textproblemProblemlösning / Text",
+   "outcome": "word_problem_keywords"
+  },
+  {
+   "id": "P113",
+   "file": "pdf",
+   "name": "Glömmer att växla (Forgets to regroup)Aritmetik / Heltalsberäkningar (Addition, Subtraktio",
+   "outcome": "regrouping_not_understood"
+  },
+  {
+   "id": "P114",
+   "file": "pdf",
+   "name": "Växling över noll (Regroups across a zero)Aritmetik / SubtraktionEleven vet inte hur man v",
+   "outcome": "regroup_across_zero"
+  },
+  {
+   "id": "P115",
+   "file": "pdf",
+   "name": "Utför fel räknesätt (Performs the incorrect operation)Aritmetik Eleven identifierar teckne",
+   "outcome": "wrong_operation"
+  },
+  {
+   "id": "P116",
+   "file": "pdf",
+   "name": "Gemensam nämnare saknas vid addition/subtraktion av bråkBråk Procedurfel där eleven addera",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "P117",
+   "file": "pdf",
+   "name": "Inverterar inte vid division av bråkBråk Eleven glömmer att inverting (vända på) delaren o",
+   "outcome": "fraction_division"
+  },
+  {
+   "id": "P118",
+   "file": "pdf",
+   "name": "Ändrar inte nämnaren vid multiplikation av bråkBråk Procedurfel där eleven multiplicerar t",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "P119",
+   "file": "pdf",
+   "name": "Felaktig omvandling av blandad form till bråkformBråk Eleven följer inte rätt procedur för",
+   "outcome": "mixed_number"
+  },
+  {
+   "id": "P120",
+   "file": "pdf",
+   "name": "Linjerar inte decimaltecknet vid addition/subtraktionDecimaltal Procedur- och talsystemfel",
+   "outcome": "decimal_point_alignment"
+  },
+  {
+   "id": "P121",
+   "file": "pdf",
+   "name": "Felaktig placering av decimaltecknet vid multiplikation/divisionDecimaltal Procedur- eller",
+   "outcome": "decimal_point_in_products"
+  },
+  {
+   "id": "P122",
+   "file": "pdf",
+   "name": "Bristande förståelse för positionssystemet (Place Value)Talsystem / AritmetikBegreppsfel d",
+   "outcome": "place_value_digits"
+  },
+  {
+   "id": "P123",
+   "file": "pdf",
+   "name": "Övergeneralisering (Overgeneralization)Bråk / Subtraktion / AlgebraBegreppsfel där eleven ",
+   "outcome": "subtraction_order_ignored"
+  },
+  {
+   "id": "P124",
+   "file": "pdf",
+   "name": "Överspecialisering (Overspecialization)Geometri Begreppsfel där eleven skapar en alltför s",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P125",
+   "file": "pdf",
+   "name": "Svårigheter med matematiska textuppgifter (Word Problems)Problemlösning / TextuppgifterMis",
+   "outcome": "word_problem_keywords"
+  },
+  {
+   "id": "P126",
+   "file": "pdf",
+   "name": "Felaktig förenkling / Ogiltig strykningAlgebraiska uttryckElever utför olämplig strykning ",
+   "outcome": "out:rational_algebra"
+  },
+  {
+   "id": "P127",
+   "file": "pdf",
+   "name": "Summering av nämnare som gemensam nämnareAlgebraiska uttryckElever behandlar summan av näm",
+   "outcome": "out:rational_algebra"
+  },
+  {
+   "id": "P128",
+   "file": "pdf",
+   "name": "Sammanfogning / Olämplig sammanslagning (Conjoining)Algebraiska uttryckElever uppfattar pl",
+   "outcome": "letters_as_objects"
+  },
+  {
+   "id": "P129",
+   "file": "pdf",
+   "name": "Överförenkling genom ignorering av variablerAlgebraiska uttryckElever ignorerar variabler ",
+   "outcome": "variable_ignored"
+  },
+  {
+   "id": "P130",
+   "file": "pdf",
+   "name": "Omvändningsfel (Reversal error)Algebraiska uttryckElever vänder på ordningen på termerna v",
+   "outcome": "out:equations_advanced"
+  },
+  {
+   "id": "P131",
+   "file": "pdf",
+   "name": "Blandning av räknesätt / Ignorera prioritetsreglerAlgebraiska uttryckElever ignorerar prio",
+   "outcome": "order_of_operations"
+  },
+  {
+   "id": "P132",
+   "file": "pdf",
+   "name": "Felaktig användning av distributiva lagen vid minusinnehållLinjära ekvationerElever missly",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P133",
+   "file": "pdf",
+   "name": "Olika bokstäver kräver olika värdenLinjära ekvationer / VariablerElever tror att olika var",
+   "outcome": "letters_distinct_values"
+  },
+  {
+   "id": "P134",
+   "file": "pdf",
+   "name": "Inversfel (Inverse error)Linjära ekvationerElever använder felaktig invers operation när d",
+   "outcome": "equation_inverse"
+  },
+  {
+   "id": "P135",
+   "file": "pdf",
+   "name": "Uteslutningsfel (Omission error)Linjära ekvationerElever ignorerar minustecknet eller oper",
+   "outcome": "equation_inverse"
+  },
+  {
+   "id": "P136",
+   "file": "pdf",
+   "name": "Flytta term utan teckenbyte (Transporting error)Linjära ekvationerElever flyttar en term f",
+   "outcome": "equation_inverse"
+  },
+  {
+   "id": "P137",
+   "file": "pdf",
+   "name": "Övergeneralisering av binomkvadrat (Falsk linjritet)Polynom och potenserElever antar felak",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P138",
+   "file": "pdf",
+   "name": "Addition av exponenter vid likadana baserPotenser Elever adderar exponenterna när de adder",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P139",
+   "file": "pdf",
+   "name": "Linjär addition av kvadratrötterRationella och radikaluttryckElever tror att kvadratroten ",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P140",
+   "file": "pdf",
+   "name": "Kontinuitetsmissuppfattning hos funktionerFunktioner och graferElever tror att en graf int",
+   "outcome": "out:functions"
+  },
+  {
+   "id": "P141",
+   "file": "pdf",
+   "name": "Processorienterat tänkande (Ignorera den oberoende variabeln)Funktioner och graferElever f",
+   "outcome": "out:functions"
+  },
+  {
+   "id": "P142",
+   "file": "pdf",
+   "name": "Felaktig förenkling / Ogiltig förkortning (Inappropriate cancellation)Algebraiska uttryckE",
+   "outcome": "out:rational_algebra"
+  },
+  {
+   "id": "P143",
+   "file": "pdf",
+   "name": "Summering av nämnare som gemensam nämnareAlgebraiska uttryckElever behandlar summan av näm",
+   "outcome": "out:rational_algebra"
+  },
+  {
+   "id": "P144",
+   "file": "pdf",
+   "name": "Sammanslagning vid addition (Conjoining / Merging algebraic addition)Algebraiska uttryckEl",
+   "outcome": "letters_as_objects"
+  },
+  {
+   "id": "P145",
+   "file": "pdf",
+   "name": "Överförenkling och omkastningsfel (Over simplification and reversal error)Algebraiska uttr",
+   "outcome": "variable_ignored"
+  },
+  {
+   "id": "P146",
+   "file": "pdf",
+   "name": "Ignorering av variablerAlgebraiska uttryckElever adderar de numreriska koefficienterna och",
+   "outcome": "variable_ignored"
+  },
+  {
+   "id": "P147",
+   "file": "pdf",
+   "name": "Vänster-till-höger-fel vid beräkningsordningAlgebraiska uttryckElever ignorerar prioriteri",
+   "outcome": "order_of_operations"
+  },
+  {
+   "id": "P148",
+   "file": "pdf",
+   "name": "Felaktig användning av distributiva lagen vid ekvationerLinjära ekvationerElever misslycka",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P149",
+   "file": "pdf",
+   "name": "Bokstav som tom ruta / Olika bokstäver betyder alltid olika talLinjära ekvationer / Variab",
+   "outcome": "letters_distinct_values"
+  },
+  {
+   "id": "P150",
+   "file": "pdf",
+   "name": "Omvändningsfel (Inverse error / Transporting error)Linjära ekvationerElever använder felak",
+   "outcome": "equation_inverse"
+  },
+  {
+   "id": "P151",
+   "file": "pdf",
+   "name": "Falsk linjaritet / Övergeneralisering av binomialutvecklingPolynom, exponenter och radikal",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P152",
+   "file": "pdf",
+   "name": "Addition av exponenter vid addition av baserPolynom, exponenter och radikalerElever addera",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P153",
+   "file": "pdf",
+   "name": "Addition under rottecken (Radical addition error)Polynom, exponenter och radikalerElever a",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P154",
+   "file": "pdf",
+   "name": "Missuppfattning om kontinuitet och funktionerFunktioner och graferElever tror att en graf ",
+   "outcome": "out:functions"
+  },
+  {
+   "id": "P155",
+   "file": "pdf",
+   "name": "Envariabelt tänkande vid linjära funktioner (Process-oriented thinking misconception)Funkt",
+   "outcome": "out:functions"
+  },
+  {
+   "id": "P156",
+   "file": "pdf",
+   "name": "Inkorrekt förenkling / Felaktig förkortning (Inappropriate cancellation)Algebraiska uttryc",
+   "outcome": "out:rational_algebra"
+  },
+  {
+   "id": "P157",
+   "file": "pdf",
+   "name": "Felaktig gemensam nämnare vid algebraisk additionAlgebraiska uttryckElever behandlar summa",
+   "outcome": "out:rational_algebra"
+  },
+  {
+   "id": "P158",
+   "file": "pdf",
+   "name": "Ihopslagning av olikformiga termer (Conjoining / Merging algebraic addition)Algebraiska ut",
+   "outcome": "letters_as_objects"
+  },
+  {
+   "id": "P159",
+   "file": "pdf",
+   "name": "Överförenkling / Omkastningsfel (Over simplification / Reversal error)Algebraiska uttryckV",
+   "outcome": "variable_ignored"
+  },
+  {
+   "id": "P160",
+   "file": "pdf",
+   "name": "Ignorering av räkneordning (Left-to-right calculation)Algebraiska uttryckElever ignorerar ",
+   "outcome": "order_of_operations"
+  },
+  {
+   "id": "P161",
+   "file": "pdf",
+   "name": "Inkorrekt användning av distributiva lagen vid ekvationslösningLinjära ekvationerElever mi",
+   "outcome": "partial_distribution"
+  },
+  {
+   "id": "P162",
+   "file": "pdf",
+   "name": "Bokstäver som tomma rutor / Olika bokstäver betyder olika talLinjära ekvationerElever har ",
+   "outcome": "letters_distinct_values"
+  },
+  {
+   "id": "P163",
+   "file": "pdf",
+   "name": "Inversfel vid ekvationslösning (Inverse error)Linjära ekvationerElever förstår att de behö",
+   "outcome": "equation_inverse"
+  },
+  {
+   "id": "P164",
+   "file": "pdf",
+   "name": "Felaktig utveckling av kvadratiska uttryck (False-linearity / Over-generalising)Polynom, e",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P165",
+   "file": "pdf",
+   "name": "Inkorrekt addition av exponenter vid lika baserPolynom, exponenter och radikalerElever tro",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P166",
+   "file": "pdf",
+   "name": "Inkorrekt addition under rotteckenPolynom, exponenter och radikalerElever tror att kvadrat",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P167",
+   "file": "pdf",
+   "name": "Kontinuitetskrav för funktioner / Felidentifiering av funktionerFunktioner och graferEleve",
+   "outcome": "out:functions"
+  },
+  {
+   "id": "P168",
+   "file": "pdf",
+   "name": "Subtraherar både täljare och nämnare vid bråkräkningBråk (Addition och subtraktion)Elevern",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "P169",
+   "file": "pdf",
+   "name": "Adderar istället för att subtraheraBråk (Addition och subtraktion)Elevern utför addition i",
+   "outcome": "wrong_operation"
+  },
+  {
+   "id": "P170",
+   "file": "pdf",
+   "name": "Tror att variationsbredd är det största talet i listanStatistik (Variationsbredd / Range)E",
+   "outcome": "out:statistics"
+  },
+  {
+   "id": "P171",
+   "file": "pdf",
+   "name": "Sorterar inte data innan beräkning av variationsbreddStatistik (Variationsbredd / Range)El",
+   "outcome": "out:statistics"
+  },
+  {
+   "id": "P172",
+   "file": "pdf",
+   "name": "Förväxlar lutning (gradient) med skärningspunkt (intercept)Algebra / Funktioner (Linjens e",
+   "outcome": "out:functions"
+  },
+  {
+   "id": "P173",
+   "file": "pdf",
+   "name": "Avrundar till heltall istället för att ange decimaltalMätenheter och conversioner / Decima",
+   "outcome": "out:measurement"
+  },
+  {
+   "id": "P174",
+   "file": "pdf",
+   "name": "Tror att det går 100 ml på 1 literVolym och enhetsomvandlingElevern använder felaktig omva",
+   "outcome": "out:measurement"
+  },
+  {
+   "id": "P175",
+   "file": "pdf",
+   "name": "Tror att multiplikation av ett positivt och ett negativt tal blir positivtAlgebra (Parente",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P176",
+   "file": "pdf",
+   "name": "Minskar inte föregående siffra vid växling i subtraktionAritmetik (Subtraktion med decimal",
+   "outcome": "regrouping_not_understood"
+  },
+  {
+   "id": "P177",
+   "file": "pdf",
+   "name": "Subtraherar både täljare och nämnareBråk (Addition och subtraktion av bråk)Eleven subtrahe",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "P178",
+   "file": "pdf",
+   "name": "Adderar istället för subtraherarBråk (Aritmetik)Eleven utför addition på täljarna trots at",
+   "outcome": "wrong_operation"
+  },
+  {
+   "id": "P179",
+   "file": "pdf",
+   "name": "Tror att variationsbredden är det största talet i listanStatistik (Variationsbredd)Eleven ",
+   "outcome": "out:statistics"
+  },
+  {
+   "id": "P180",
+   "file": "pdf",
+   "name": "Beräknar variationsbredden utan att sortera datamängdenStatistik (Variationsbredd)Eleven s",
+   "outcome": "out:statistics"
+  },
+  {
+   "id": "P181",
+   "file": "pdf",
+   "name": "Tror att en linjes lutning ges av dess skärningspunkt (intercept)Algebra / Funktioner (Lut",
+   "outcome": "out:functions"
+  },
+  {
+   "id": "P182",
+   "file": "pdf",
+   "name": "Anger ett avrundat heltal istället för ett decimaltalGeometri / EnhetsomvandlingVid omvand",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P183",
+   "file": "pdf",
+   "name": "Tror att det går 100 ml på en literGeometri / Volym och kapacitetEleven använder fel omvan",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P184",
+   "file": "pdf",
+   "name": "Identifierar en multipel för ett tal men inte en gemensam multipel för en grupp talAritmet",
+   "outcome": "out:primes"
+  },
+  {
+   "id": "P185",
+   "file": "pdf",
+   "name": "Tror att multiplikation av ett positivt och ett negativt tal ger ett positivt resultatAlge",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P186",
+   "file": "pdf",
+   "name": "Minskar inte föregående siffra vid växling i subtraktionAritmetik (Decimaltal / Subtraktio",
+   "outcome": "regrouping_not_understood"
+  },
+  {
+   "id": "P187",
+   "file": "pdf",
+   "name": "Subtraherar både täljare och nämnare vid bråkräkningBråk (Addition och subtraktion)Eleven ",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "P188",
+   "file": "pdf",
+   "name": "Adderar istället för att subtrahera vid bråkräkningBråk (Subtraktion)Eleven utför addition",
+   "outcome": "wrong_operation"
+  },
+  {
+   "id": "P189",
+   "file": "pdf",
+   "name": "Tror att variationsbredden är det största talet i en listaStatistik och data (Variationsbr",
+   "outcome": "out:statistics"
+  },
+  {
+   "id": "P190",
+   "file": "pdf",
+   "name": "Beräknar variationsbredd genom differensen mellan det första och sista talet utan att sort",
+   "outcome": "out:statistics"
+  },
+  {
+   "id": "P191",
+   "file": "pdf",
+   "name": "Tror att en linjes lutning (gradient) ges av dess skärningspunkt (intercept)Algebra och fu",
+   "outcome": "out:functions"
+  },
+  {
+   "id": "P192",
+   "file": "pdf",
+   "name": "Anger ett avrundat heltall istället för ett decimaltal vid enhetsomvandlingGeometri och må",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P193",
+   "file": "pdf",
+   "name": "Tror att det går 100 ml på en literGeometri och måttenheter (Volym och kapacitet)Eleven an",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P194",
+   "file": "pdf",
+   "name": "Identifierar en multipel för ett enskilt tal istället för en gemensam multipel för en grup",
+   "outcome": "out:primes"
+  },
+  {
+   "id": "P195",
+   "file": "pdf",
+   "name": "Tror att multiplikation av ett positivt och ett negativt tal ger ett positivt resultatAlge",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P196",
+   "file": "pdf",
+   "name": "Glömmer att subtrahera 1 från föregående siffra vid växling i subtraktionAritmetik (Subtra",
+   "outcome": "regrouping_not_understood"
+  },
+  {
+   "id": "P197",
+   "file": "pdf",
+   "name": "Dynamisk/operativ tolkning av likhetstecknetTaluppfattning och tals användning / AlgebraEl",
+   "outcome": "equal_sign_operational"
+  },
+  {
+   "id": "P198",
+   "file": "pdf",
+   "name": "Addera alla ingående tal (Sum-all-numbers)Taluppfattning och tals användning / AlgebraElev",
+   "outcome": "equal_sign_add_all"
+  },
+  {
+   "id": "P199",
+   "file": "pdf",
+   "name": "Sekventiell likhetskedja / Felaktig användning av likhetstecknetTaluppfattning och tals an",
+   "outcome": "equal_sign_format"
+  },
+  {
+   "id": "P200",
+   "file": "pdf",
+   "name": "Saknat differens-tänkande vid subtraktionTaluppfattning och tals användning (Subtraktion)E",
+   "outcome": "subtraction_order_ignored"
+  },
+  {
+   "id": "P201",
+   "file": "pdf",
+   "name": "Fokus på konkreta föremåls egenskaper istället för antalTaluppfattning och tals användning",
+   "outcome": "out:counting"
+  },
+  {
+   "id": "P202",
+   "file": "pdf",
+   "name": "Division gör tal mindre (likadelningsmodellen)Aritmetik / Bråk / DivisionAtt introducera d",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P203",
+   "file": "pdf",
+   "name": "Begränsning till bråk mindre än eller lika med ett via del av helhet/antalBråk När bråk re",
+   "outcome": "fraction_unequal_parts"
+  },
+  {
+   "id": "P204",
+   "file": "pdf",
+   "name": "Fler siffror innebär ett större talDecimaltal / TaluppfattningElever generaliserar inkorre",
+   "outcome": "decimal_longer_is_larger"
+  },
+  {
+   "id": "P205",
+   "file": "pdf",
+   "name": "En extra nolla till höger ändrar talets storlekDecimaltal / TaluppfattningElever överför k",
+   "outcome": "decimal_zero_placeholder"
+  },
+  {
+   "id": "P206",
+   "file": "pdf",
+   "name": "Talets minsta platsvärde anger talets storlekDecimaltal / TaluppfattningElever resonerar o",
+   "outcome": "decimal_longer_is_larger"
+  },
+  {
+   "id": "P207",
+   "file": "pdf",
+   "name": "Decimaltal som en sammansättning av två heltalDecimaltal / AritmetikDecimaltalet uppfattas",
+   "outcome": "decimal_two_integers"
+  },
+  {
+   "id": "P208",
+   "file": "pdf",
+   "name": "Avsaknad av tal mellan decimaler (diskret taluppfattning)Decimaltal / TäthetElever överför",
+   "outcome": "decimal_density"
+  },
+  {
+   "id": "P209",
+   "file": "pdf",
+   "name": "Felaktig tolkning av variabler som fixa värdenAlgebra Elever behandlar variabler som fasta",
+   "outcome": "letters_distinct_values"
+  },
+  {
+   "id": "P210",
+   "file": "pdf",
+   "name": "Missuppfattning av likhetstecknetAlgebra Elever ser likhetstecknet som en uppmaning att ut",
+   "outcome": "equal_sign_operational"
+  },
+  {
+   "id": "P211",
+   "file": "pdf",
+   "name": "Felaktig distributiv förenkling (Binomialexpansion)Algebra Elever missar att tillämpa den ",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P212",
+   "file": "pdf",
+   "name": "Teckenfel vid manipuleringAlgebra Elever hanterar plus- och minustecken felaktigt när de f",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P213",
+   "file": "pdf",
+   "name": "Kombinering av olika slags termerAlgebra Elever behandlar icke-likformiga (olika) termer s",
+   "outcome": "letters_as_objects"
+  },
+  {
+   "id": "P214",
+   "file": "pdf",
+   "name": "Felaktig tolkning och förenkling av bråk i algebraAlgebra / BråkElever tillämpar felaktiga",
+   "outcome": "out:rational_algebra"
+  },
+  {
+   "id": "P215",
+   "file": "pdf",
+   "name": "Övergeneraliseing av regeln om division (Delning med noll)Algebra / AritmetikElever tilläm",
+   "outcome": "out:rational_algebra"
+  },
+  {
+   "id": "P216",
+   "file": "pdf",
+   "name": "Översättningsfel vid textproblem (Transferfel)Algebra Elever har svårt att översätta skriv",
+   "outcome": "out:equations_advanced"
+  },
+  {
+   "id": "P217",
+   "file": "pdf",
+   "name": "Felaktig faktorisering av andragradsuttryckAlgebra Elever kämpar med att applicera rätt te",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P218",
+   "file": "pdf",
+   "name": "Misstolkning av variablerAlgebra Elever behandlar variabler som fasta värden eller specifi",
+   "outcome": "letters_distinct_values"
+  },
+  {
+   "id": "P219",
+   "file": "pdf",
+   "name": "Missuppfattning av likhetstecknetAlgebra Elever tolkar likhetstecknet som en uppmaning att",
+   "outcome": "equal_sign_operational"
+  },
+  {
+   "id": "P220",
+   "file": "pdf",
+   "name": "Felaktig distributiv förenkling (Parentesmultiplikation)Algebra Elever misslyckas med att ",
+   "outcome": "partial_distribution"
+  },
+  {
+   "id": "P221",
+   "file": "pdf",
+   "name": "Felaktig utveckling av kvadrerade binomAlgebra Elever övergeneraliserar potenslagar och ut",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P222",
+   "file": "pdf",
+   "name": "Sammanslagning av olikformiga termerAlgebra Elever behandlar olikformiga termer som om de ",
+   "outcome": "letters_as_objects"
+  },
+  {
+   "id": "P223",
+   "file": "pdf",
+   "name": "Förväxling och felhantering av teckenAlgebra Elever gör felaktiga manipuleringar av positi",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P224",
+   "file": "pdf",
+   "name": "Misstolkning av algebraiska bråkAlgebra / BråkElever tillämpar felaktiga regler vid förenk",
+   "outcome": "out:rational_algebra"
+  },
+  {
+   "id": "P225",
+   "file": "pdf",
+   "name": "Generaliseringsfel vid division med nollAlgebra / AritmetikElever tillämpar en procedurreg",
+   "outcome": "out:rational_algebra"
+  },
+  {
+   "id": "P226",
+   "file": "pdf",
+   "name": "Översättningsfel vid textproblemAlgebra Elever har svårigheter att översätta verbala formu",
+   "outcome": "out:equations_advanced"
+  },
+  {
+   "id": "P227",
+   "file": "pdf",
+   "name": "Felaktig faktorisering av andragradsuttryckAlgebra Elever misslyckas med att tillämpa fakt",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P228",
+   "file": "pdf",
+   "name": "Felaktig tolkning av variablerAlgebra Elever behandlar variabler som fasta värden eller ob",
+   "outcome": "letters_distinct_values"
+  },
+  {
+   "id": "P229",
+   "file": "pdf",
+   "name": "Missuppfattning av likhetstecknetAlgebra / AritmetikElever tolkar likhetstecknet som en up",
+   "outcome": "equal_sign_operational"
+  },
+  {
+   "id": "P230",
+   "file": "pdf",
+   "name": "Felaktig distributiv förenkling (Parentesmultiplikation)Algebra Elever missar att multipli",
+   "outcome": "partial_distribution"
+  },
+  {
+   "id": "P231",
+   "file": "pdf",
+   "name": "Felaktig utveckling av kvadrerade binomAlgebra Elever övergeneraliserar potenslagar och ut",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P232",
+   "file": "pdf",
+   "name": "Teckenfel vid ekvationslösningAlgebra Procedurfel där elever felaktigt hanterar positiva o",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P233",
+   "file": "pdf",
+   "name": "Ihopslagning av olikformiga termerAlgebra Operationellt fel där elever behandlar olikformi",
+   "outcome": "letters_as_objects"
+  },
+  {
+   "id": "P234",
+   "file": "pdf",
+   "name": "Felaktig förenkling av bråk med variablerAlgebra / BråkMissuppfattning av reglerna för brå",
+   "outcome": "out:rational_algebra"
+  },
+  {
+   "id": "P235",
+   "file": "pdf",
+   "name": "Felöversättning av textproblemAlgebra / ProblemlobssningÖverföringsfel där elever misslyck",
+   "outcome": "out:equations_advanced"
+  },
+  {
+   "id": "P236",
+   "file": "pdf",
+   "name": "Övergeneralisering av division med nollAlgebra / AritmetikElever tillämpar regeln x/x = 1 ",
+   "outcome": "out:rational_algebra"
+  },
+  {
+   "id": "P237",
+   "file": "pdf",
+   "name": "Bristande förståelse för abstraktionsprincipenFörberedande aritmetik (AF)Förmågan att inse",
+   "outcome": "out:counting"
+  },
+  {
+   "id": "P238",
+   "file": "pdf",
+   "name": "Bristande förståelse för ett-till-ett-principenFörberedande aritmetik (AF)Oförmåga att ord",
+   "outcome": "out:counting"
+  },
+  {
+   "id": "P239",
+   "file": "pdf",
+   "name": "Missförstånd av principen om godtycklig ordningFörberedande aritmetik (AF)Tror att man får",
+   "outcome": "out:counting"
+  },
+  {
+   "id": "P240",
+   "file": "pdf",
+   "name": "Bristande kunskap om talens stabila ordningFörberedande aritmetik (AF)Behärskar inte talen",
+   "outcome": "out:counting"
+  },
+  {
+   "id": "P241",
+   "file": "pdf",
+   "name": "Bristande förståelse för antalsprincipenFörberedande aritmetik (AF)Förstår inte att det si",
+   "outcome": "out:counting"
+  },
+  {
+   "id": "P242",
+   "file": "pdf",
+   "name": "Operational uppfattning av likhetstecknetAlgebra / AritmetikLikhetstecknet betraktas enbar",
+   "outcome": "equal_sign_operational"
+  },
+  {
+   "id": "P243",
+   "file": "pdf",
+   "name": "Ytliga nollregler vid tiopotenser och decimaltalAritmetik / Positionssystemet / Decimaltal",
+   "outcome": "zero_rule"
+  },
+  {
+   "id": "P244",
+   "file": "pdf",
+   "name": "Långsam/stegvis fingerräkning istället för automatiserad taluppdelningAritmetik / Grundläg",
+   "outcome": "counting_by_ones"
+  },
+  {
+   "id": "P245",
+   "file": "pdf",
+   "name": "Regeln att \"ta bort och sätta tillbaka nollor\"Aritmetik / PositionssystemetElever använder",
+   "outcome": "zero_rule"
+  },
+  {
+   "id": "P246",
+   "file": "pdf",
+   "name": "Felräkning vid stegräkning i tiotalAritmetik / Addition och subtraktionElever räknar i 10-",
+   "outcome": "counting_by_ones"
+  },
+  {
+   "id": "P247",
+   "file": "pdf",
+   "name": "Felaktig överföring av entalsberäkning till decimaltal (oberoende decimalsiffror)Decimalta",
+   "outcome": "tenths_written_as_hundredths"
+  },
+  {
+   "id": "P248",
+   "file": "pdf",
+   "name": "Potensfelförståelse (Multiplikation istället för bas upphöjt till exponent)Algebra / Poten",
+   "outcome": "square_as_double"
+  },
+  {
+   "id": "P249",
+   "file": "pdf",
+   "name": "Multiplikation med nollAritmetik Missuppfattningen att multiplikation med noll lämnar tale",
+   "outcome": "multiplication_by_zero"
+  },
+  {
+   "id": "P250",
+   "file": "pdf",
+   "name": "Platsvärdesfel vid skrivning av talTaluppfattning / PlatsvärdeSkriver ut nollorna för hund",
+   "outcome": "place_value_digits"
+  },
+  {
+   "id": "P251",
+   "file": "pdf",
+   "name": "Decimaluttal som heltalDecimaltal Att läsa decimaldelen som ett vanligt heltal (t.ex. \"kom",
+   "outcome": "decimal_two_integers"
+  },
+  {
+   "id": "P252",
+   "file": "pdf",
+   "name": "Lägga till nolla vid decimalmultiplikation med 10Decimaltal Övergeneralisering av regeln \"",
+   "outcome": "decimal_point_in_products"
+  },
+  {
+   "id": "P253",
+   "file": "pdf",
+   "name": "Division med en halv översätts till hälftenBråk / AritmetikAtt blanda ihop division med 1/",
+   "outcome": "fraction_division"
+  },
+  {
+   "id": "P254",
+   "file": "pdf",
+   "name": "Felräkning med negativa tal vid additionNegativa talAtt subtrahera det positiva talet från",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P255",
+   "file": "pdf",
+   "name": "Felaktig konvertering mellan procent och decimaltalProcent och decimaltalAtt direkt flytta",
+   "outcome": "percent_decimal_conversion"
+  },
+  {
+   "id": "P256",
+   "file": "pdf",
+   "name": "Addition av bråk genom att addera täljare och nämnareBråk Att addera täljare med täljare o",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "P257",
+   "file": "pdf",
+   "name": "Division av bråkBråk Felaktig beräkning eller missuppfattning av invertering och multiplik",
+   "outcome": "fraction_division"
+  },
+  {
+   "id": "P258",
+   "file": "pdf",
+   "name": "Diskret syn på decimaltalDecimaltal Tron att det inte finns några tal mellan två på varand",
+   "outcome": "decimal_density"
+  },
+  {
+   "id": "P259",
+   "file": "pdf",
+   "name": "Felaktig decimalplacering vid decimalmultiplikationDecimaltal Att multiplicera siffrorna m",
+   "outcome": "decimal_point_in_products"
+  },
+  {
+   "id": "P260",
+   "file": "pdf",
+   "name": "Längre decimaltal är större (\"Longer is larger\")Decimaltal Att tro att ett decimaltal med ",
+   "outcome": "decimal_longer_is_larger"
+  },
+  {
+   "id": "P261",
+   "file": "pdf",
+   "name": "Fler nollor i slutet gör decimaltalet störreDecimaltal Tror att tillagda nollor i slutet p",
+   "outcome": "decimal_zero_placeholder"
+  },
+  {
+   "id": "P262",
+   "file": "pdf",
+   "name": "Omvänd division för att få ett större svarAritmetik / DivisionNär det första talet är mind",
+   "outcome": "division_order"
+  },
+  {
+   "id": "P263",
+   "file": "pdf",
+   "name": "Större nämnare ger större bråkBråk Kopplar ihop nämnarens storlek direkt med bråkets storl",
+   "outcome": "fraction_compare_parts"
+  },
+  {
+   "id": "P264",
+   "file": "pdf",
+   "name": "Tid i decimalform läses som minuterTidsberäkning / DecimaltalTolkar decimaldelen av timmar",
+   "outcome": "out:measurement"
+  },
+  {
+   "id": "P265",
+   "file": "pdf",
+   "name": "Rektangelns symmetrilinjerGeometri Misstag eller felaktiga antaganden gällande symmetrilin",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P266",
+   "file": "pdf",
+   "name": "Större area innebär alltid större omkretsGeometri Missuppfattning att en forms omkrets och",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P267",
+   "file": "pdf",
+   "name": "Största spetsiga vinkelnGeometri / VinklarAntagandet att vinklar endast mäts i hela grader",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P268",
+   "file": "pdf",
+   "name": "Multiplikation ökar alltid värdetMultiplikation / Bråk och decimaltalFelförståelsen att mu",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P269",
+   "file": "pdf",
+   "name": "Division minskar alltid värdet / Felförståelse vid division med bråkDivision / BråkAtt tro",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P270",
+   "file": "pdf",
+   "name": "Missuppfattningar kring negativa tal och räknesättNegativa talFelaktig förskjutning eller ",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P271",
+   "file": "pdf",
+   "name": "Särskiljning mellan bråk och decimaltalDecimaltal och bråkUppfattningen att decimaltal och",
+   "outcome": "fraction_bar_as_comma"
+  },
+  {
+   "id": "P272",
+   "file": "pdf",
+   "name": "Multiplicera decimaltalDecimaltal Felaktig placering av decimaltecknet eller felaktig över",
+   "outcome": "decimal_point_in_products"
+  },
+  {
+   "id": "P273",
+   "file": "pdf",
+   "name": "Stegvis avrundningAvrundning / TalsystemNär elever ska avrunda till t.ex. närmaste 1000 av",
+   "outcome": "out:measurement"
+  },
+  {
+   "id": "P274",
+   "file": "pdf",
+   "name": "Addition av bråk genom att addera täljare och nämnare direktBråk Övergeneralisering av add",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "P275",
+   "file": "pdf",
+   "name": "Längre decimaltal är större / Korta decimaltal jämförelseDecimaltal Att behandla siffrorna",
+   "outcome": "decimal_longer_is_larger"
+  },
+  {
+   "id": "P276",
+   "file": "pdf",
+   "name": "Missuppfattning om täthet hos decimaltalDecimaltal Tror att decimaltal fungerar som diskre",
+   "outcome": "decimal_density"
+  },
+  {
+   "id": "P277",
+   "file": "pdf",
+   "name": "Tidsenheter behandlas som decimalsystemetTid och enheterTror att decimaler i tid motsvarar",
+   "outcome": "out:measurement"
+  },
+  {
+   "id": "P278",
+   "file": "pdf",
+   "name": "Koppling mellan area och omkretsGeometri Antagandet att en figur med större area automatis",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P279",
+   "file": "pdf",
+   "name": "Positionssystem och nollans roll i talförståelseTalsystem och positionssystemSkriver tal d",
+   "outcome": "place_value_digits"
+  },
+  {
+   "id": "P280",
+   "file": "pdf",
+   "name": "Potenser som multiplikationAlgebra / PotenserBlandar ihop bas och exponent med vanlig mult",
+   "outcome": "square_as_double"
+  },
+  {
+   "id": "P281",
+   "file": "pdf",
+   "name": "Multiplikation med nollAritmetik Blandar ihop egenskaperna för addition med noll och multi",
+   "outcome": "multiplication_by_zero"
+  },
+  {
+   "id": "P282",
+   "file": "pdf",
+   "name": "Addition med negativa talNegativa tal / AritmetikElever har svårt med den teoretiska inneb",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P283",
+   "file": "pdf",
+   "name": "Beräkningar med hundratals och tusentalsAritmetik / Potenser av 10Missuppfattningar kring ",
+   "outcome": "place_value_digits"
+  },
+  {
+   "id": "P284",
+   "file": "pdf",
+   "name": "Beräkningar med negativa talNegativa tal / AritmetikProblem med riktade tal och förflyttni",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P285",
+   "file": "pdf",
+   "name": "Decimaltal och deras motsvarande bråkDecimaltal / BråkMissuppfattningen att decimaltal och",
+   "outcome": "fraction_bar_as_comma"
+  },
+  {
+   "id": "P286",
+   "file": "pdf",
+   "name": "Division av heltal med bråkBråk / DivisionElever missförstår vad division med ett bråk inn",
+   "outcome": "fraction_division"
+  },
+  {
+   "id": "P287",
+   "file": "pdf",
+   "name": "Multiplikation förstorar alltidAritmetik / Bråk / DecimaltalEn övergeneralisering om att m",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P288",
+   "file": "pdf",
+   "name": "Multiplikation av decimaltalDecimaltal / MultiplikationVanliga fel vid multiplikation av t",
+   "outcome": "decimal_point_in_products"
+  },
+  {
+   "id": "P289",
+   "file": "pdf",
+   "name": "Avrundning av talAritmetik / AvrundningVid avrundning till närmaste tusental gör vissa ele",
+   "outcome": "out:measurement"
+  },
+  {
+   "id": "P290",
+   "file": "pdf",
+   "name": "Missuppfattning om potenserAlgebra / AritmetikAtt blanda ihop exponentiell upphöjning med ",
+   "outcome": "square_as_double"
+  },
+  {
+   "id": "P291",
+   "file": "pdf",
+   "name": "Multiplikation med nollAritmetik Att behandla noll vid multiplikation som om det vore addi",
+   "outcome": "multiplication_by_zero"
+  },
+  {
+   "id": "P292",
+   "file": "pdf",
+   "name": "Felaktig positionssystemskrivning av talPositionssystemetAtt skriva tal bokstavligt som de",
+   "outcome": "place_value_digits"
+  },
+  {
+   "id": "P293",
+   "file": "pdf",
+   "name": "Felaktig benämning och förståelse av decimaltalDecimaltal Att läsa upp decimaler som helta",
+   "outcome": "decimal_two_integers"
+  },
+  {
+   "id": "P294",
+   "file": "pdf",
+   "name": "Multiplikation med 10 lägger bara till en nollaDecimaltal / MultiplikationÖvergeneraliseri",
+   "outcome": "zero_rule"
+  },
+  {
+   "id": "P295",
+   "file": "pdf",
+   "name": "Procent till decimaltalProcent / DecimaltalAtt direkt koppla siffran i procenttalet till f",
+   "outcome": "percent_decimal_conversion"
+  },
+  {
+   "id": "P296",
+   "file": "pdf",
+   "name": "Addition av bråkBråk Att addera täljare med täljare och nämnare med nämnare utan att göra ",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "P297",
+   "file": "pdf",
+   "name": "Division av bråk med bråkBråk / DivisionFelaktig tillämpning av algoritmen för division av",
+   "outcome": "fraction_division"
+  },
+  {
+   "id": "P298",
+   "file": "pdf",
+   "name": "Diskrethet hos decimaltalDecimaltal / TaluppfattningTro att decimaltal fungerar som heltal",
+   "outcome": "decimal_density"
+  },
+  {
+   "id": "P299",
+   "file": "pdf",
+   "name": "Ju fler siffror desto större decimaltal ('Längre är större')Decimaltal / TaljämförelseÖver",
+   "outcome": "decimal_longer_is_larger"
+  },
+  {
+   "id": "P300",
+   "file": "pdf",
+   "name": "Fler nollor gör decimaltalet störreDecimaltal / TaljämförelseMissuppfattningen att ett dec",
+   "outcome": "decimal_zero_placeholder"
+  },
+  {
+   "id": "P301",
+   "file": "pdf",
+   "name": "Kommutativitet vid division / 'Större talet delat med mindre'Aritmetik / DivisionAntagande",
+   "outcome": "division_order"
+  },
+  {
+   "id": "P302",
+   "file": "pdf",
+   "name": "Större nämnare ger större bråkBråk / JämförelseAtt applicera heltalslogik på bråknämnare o",
+   "outcome": "fraction_compare_parts"
+  },
+  {
+   "id": "P303",
+   "file": "pdf",
+   "name": "Tidskonvertering som decimaltalMätenheter / Tid / DecimaltalAtt behandla tid (bas 60) som ",
+   "outcome": "out:measurement"
+  },
+  {
+   "id": "P304",
+   "file": "pdf",
+   "name": "Symmetrilinjer i rektanglarGeometri Missuppfattning om vilka linjer som utgör symmetrilinj",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P305",
+   "file": "pdf",
+   "name": "Samband mellan area och omkretsGeometri / MätningDet felaktiga antagandet att det finns et",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P306",
+   "file": "pdf",
+   "name": "Största spetsiga vinkelnGeometri / VinklarMissuppfattningen att vinklar endast mäts i hela",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P307",
+   "file": "pdf",
+   "name": "Multiplikation gör alltid talet större (\"Multiplication always makes bigger\")Bråk / Ration",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P308",
+   "file": "pdf",
+   "name": "Multiplikation ger alltid ett större talBråk / Rationella talÖvergeneralisering av regler ",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P309",
+   "file": "pdf",
+   "name": "Multiplikation gör alltid talet störreBråk / Rationella talEn övergeneralisering av regler",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P310",
+   "file": "pdf",
+   "name": "Proportionella relationer uppfattas som additivaProportionalitet / AlgebraElever behandlar",
+   "outcome": "proportion_additive"
+  },
+  {
+   "id": "P311",
+   "file": "pdf",
+   "name": "Alla linjära samband är proportionellaAlgebra / FunktionerAntagandet att varje linjär rela",
+   "outcome": "out:functions"
+  },
+  {
+   "id": "P312",
+   "file": "pdf",
+   "name": "Blandar ihop area och omkretsGeometri Konceptuell förväxling mellan begränsningslinjens lä",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P313",
+   "file": "pdf",
+   "name": "Blandar ihop lutning (slope) och m-värde (y-intercept)Algebra / FunktionerBlandar ihop lin",
+   "outcome": "out:functions"
+  },
+  {
+   "id": "P314",
+   "file": "pdf",
+   "name": "Felaktig hantering av operationer med negativa talAritmetik / HeltalBristande förståelse f",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P315",
+   "file": "pdf",
+   "name": "Addera exponenter vid multiplikation av potenserAlgebra / PotenserGör felaktiga antaganden",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P316",
+   "file": "pdf",
+   "name": "Glömmer att distributera till alla termerAlgebra Underlåtenhet att multiplicera in i hela ",
+   "outcome": "partial_distribution"
+  },
+  {
+   "id": "P317",
+   "file": "pdf",
+   "name": "Regel om att lägga till nolla vid multiplikation med 10Decimaltal / AritmetikRegeln att 'l",
+   "outcome": "zero_rule"
+  },
+  {
+   "id": "P318",
+   "file": "pdf",
+   "name": "Regel om att stryka en nolla vid division med 10Decimaltal / AritmetikAtt överföra heltals",
+   "outcome": "zero_rule"
+  },
+  {
+   "id": "P319",
+   "file": "pdf",
+   "name": "Addition med nolla-efter-regeln (Siffervis beräkning med nolla)Decimaltal / AritmetikEleve",
+   "outcome": "zero_rule"
+  },
+  {
+   "id": "P320",
+   "file": "pdf",
+   "name": "Multiplikation med nolla-efter-regelnDecimaltal / AritmetikElever multiplicerar siffrorna ",
+   "outcome": "multiplication_by_zero"
+  },
+  {
+   "id": "P321",
+   "file": "pdf",
+   "name": "Mekanisk uträkning utan abstraktion (beroende av konkret material)Grundläggande aritmetik ",
+   "outcome": "counting_by_ones"
+  },
+  {
+   "id": "P322",
+   "file": "pdf",
+   "name": "Felaktig generalisering vid subtraktion av negativa talUtvidgad aritmetik (AU) / Negativa ",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P323",
+   "file": "pdf",
+   "name": "Missuppfattning av multiplikation av två negativa talUtvidgad aritmetik (AU) / Negativa ta",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P324",
+   "file": "pdf",
+   "name": "Felaktig hantering av rottecken och negativa teckenUtvidgad aritmetik (AU) / Potenser och ",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P325",
+   "file": "pdf",
+   "name": "Addition med negativa tal /Negativa talAtt missta addition med negativa tal för vanlig add",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P326",
+   "file": "pdf",
+   "name": "Multiplikation av stora tal med nollorAritmetik / TaluppfattningFelförståelse kring hur mu",
+   "outcome": "zero_rule"
+  },
+  {
+   "id": "P327",
+   "file": "pdf",
+   "name": "Decimaltal och bråk är helt olika typer av talDecimaltal och bråkMissuppfattningen att dec",
+   "outcome": "fraction_bar_as_comma"
+  },
+  {
+   "id": "P328",
+   "file": "pdf",
+   "name": "Division av heltal med bråkBråk Att missuppfatta vad division med ett bråk innebär. Iställ",
+   "outcome": "fraction_division"
+  },
+  {
+   "id": "P329",
+   "file": "pdf",
+   "name": "Multiplikation gör alltid talet störreAritmetik / Bråk och decimaltalDen vanliga missuppfa",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "P330",
+   "file": "pdf",
+   "name": "Multiplikation av decimaltalDecimaltal Vanliga felsteg vid multiplikation av två decimalvä",
+   "outcome": "decimal_point_in_products"
+  },
+  {
+   "id": "P331",
+   "file": "pdf",
+   "name": "Stegvis avrundningAvrundning / TaluppfattningNär elever ska avrunda till t.ex. närmaste 10",
+   "outcome": "out:measurement"
+  },
+  {
+   "id": "P332",
+   "file": "pdf",
+   "name": "Att proportionalitet är additivt snarare än multiplikativtProportionalitet / AlgebraElever",
+   "outcome": "proportion_additive"
+  },
+  {
+   "id": "P333",
+   "file": "pdf",
+   "name": "Att alla linjära samband är proportionellaAlgebra / FunktionerElever utgår felaktigt ifrån",
+   "outcome": "out:functions"
+  },
+  {
+   "id": "P334",
+   "file": "pdf",
+   "name": "Blanda ihop area och omkretsGeometri Förväxling av begreppen för yta (area) och sträckan r",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P335",
+   "file": "pdf",
+   "name": "Blanda ihop lutning (slope) och skärningspunkt i y-axeln (y-intercept)Algebra / Funktioner",
+   "outcome": "out:functions"
+  },
+  {
+   "id": "P336",
+   "file": "pdf",
+   "name": "Missuppfattningar kring operationer med negativa talAritmetik / HeltalSvårighet att korrek",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P337",
+   "file": "pdf",
+   "name": "Att addera exponenter vid multiplikation av potenserAlgebra / PotenserGöras som ett genere",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P338",
+   "file": "pdf",
+   "name": "Glömma att distributera till varje termAlgebra Att missa att multiplicera in faktorn framf",
+   "outcome": "partial_distribution"
+  },
+  {
+   "id": "P339",
+   "file": "pdf",
+   "name": "Proportionella samband är additivaProportionalitet / AlgebraAtt behandla proportionella sa",
+   "outcome": "proportion_additive"
+  },
+  {
+   "id": "P340",
+   "file": "pdf",
+   "name": "Alla linjära samband är proportionellaAlgebra / FunktionerAtt missuppfatta alla linjära re",
+   "outcome": "out:functions"
+  },
+  {
+   "id": "P341",
+   "file": "pdf",
+   "name": "Blanda ihop omkrets och areaGeometri / MätningFörväxling av begreppen för en figurs omkret",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "P342",
+   "file": "pdf",
+   "name": "Blanda ihop lutning (slope) och y-skärning (y-intercept)Algebra / FunktionerAtt blanda iho",
+   "outcome": "out:functions"
+  },
+  {
+   "id": "P343",
+   "file": "pdf",
+   "name": "Missförstånd vid räkning med negativa talAritmetik / Hela talFelaktig förståelse för hur d",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "P344",
+   "file": "pdf",
+   "name": "Addera exponenter vid multiplikation av potenserAlgebra / PotenserSystematiskt fel eller m",
+   "outcome": "out:powers"
+  },
+  {
+   "id": "P345",
+   "file": "pdf",
+   "name": "Att inte distributera till alla termerAlgebra Glömma att multiplicera in i parentesen till",
+   "outcome": "partial_distribution"
+  },
+  {
+   "id": "P346",
+   "file": "pdf",
+   "name": "Felaktig tolkning av låddiagram (Box plots)Statistik / DataanalysMissuppfattning och felak",
+   "outcome": "out:statistics"
+  },
+  {
+   "id": "P347",
+   "file": "pdf",
+   "name": "Index Reference",
+   "outcome": "header"
+  },
+  {
+   "id": "X01",
+   "file": "xlsx",
+   "name": "Långsam enstegsräkning / Fingerräknande",
+   "outcome": "counting_by_ones"
+  },
+  {
+   "id": "X02",
+   "file": "xlsx",
+   "name": "Additionskommutativitet överförd till subtraktion",
+   "outcome": "subtraction_order_ignored"
+  },
+  {
+   "id": "X03",
+   "file": "xlsx",
+   "name": "Nollregeln ('Ta bort och lägg till nollor')",
+   "outcome": "zero_rule"
+  },
+  {
+   "id": "X04",
+   "file": "xlsx",
+   "name": "Operationellt kluster ('Gör-något' / Räknesignal)",
+   "outcome": "equal_sign_operational"
+  },
+  {
+   "id": "X05",
+   "file": "xlsx",
+   "name": "Totaladderingskluster",
+   "outcome": "equal_sign_add_all"
+  },
+  {
+   "id": "X06",
+   "file": "xlsx",
+   "name": "Format- och positionell rigiditet",
+   "outcome": "equal_sign_format"
+  },
+  {
+   "id": "X07",
+   "file": "xlsx",
+   "name": "Icke-inverterad dubbeloperation",
+   "outcome": "equation_inverse"
+  },
+  {
+   "id": "X08",
+   "file": "xlsx",
+   "name": "Minustecknet som enbart fysisk subtraktion ('Ta bort')",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "X09",
+   "file": "xlsx",
+   "name": "Förbiseende av inledande minus",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "X10",
+   "file": "xlsx",
+   "name": "Negation som absolut negativitet",
+   "outcome": "out:negative"
+  },
+  {
+   "id": "X11",
+   "file": "xlsx",
+   "name": "Heltalsbias (Oberoende täljare och nämnare)",
+   "outcome": "fraction_whole_number_bias"
+  },
+  {
+   "id": "X12",
+   "file": "xlsx",
+   "name": "Additiv skalning vid likvärdighet",
+   "outcome": "fraction_additive_equivalence"
+  },
+  {
+   "id": "X13",
+   "file": "xlsx",
+   "name": "Sifferlikhet oberoende av placering",
+   "outcome": "fraction_digit_position"
+  },
+  {
+   "id": "X14",
+   "file": "xlsx",
+   "name": "Bråk som andel av yta utan krav på lika delar",
+   "outcome": "fraction_unequal_parts"
+  },
+  {
+   "id": "X15",
+   "file": "xlsx",
+   "name": "Multiplikation förstorar, division förminskar",
+   "outcome": "multiplication_makes_bigger"
+  },
+  {
+   "id": "X16",
+   "file": "xlsx",
+   "name": "Heltalsanalogi / 'Längre tal är större'",
+   "outcome": "decimal_longer_is_larger"
+  },
+  {
+   "id": "X17",
+   "file": "xlsx",
+   "name": "Bråkförväxling / 'Kortare tal är större'",
+   "outcome": "decimal_shorter_is_larger"
+  },
+  {
+   "id": "X18",
+   "file": "xlsx",
+   "name": "Decimaltecknet som två oberoende heltal (Pengamodellen)",
+   "outcome": "decimal_two_integers"
+  },
+  {
+   "id": "X19",
+   "file": "xlsx",
+   "name": "Bråkstreck direkt översatt till decimalkomma",
+   "outcome": "fraction_bar_as_comma"
+  },
+  {
+   "id": "X20",
+   "file": "xlsx",
+   "name": "Diskret taluppfattning (Inga tal mellan decimaler)",
+   "outcome": "decimal_density"
+  },
+  {
+   "id": "X21",
+   "file": "xlsx",
+   "name": "Fruktsalladsklustret / Variabel som objektsnamn",
+   "outcome": "letters_as_objects"
+  },
+  {
+   "id": "X22",
+   "file": "xlsx",
+   "name": "Platsvärdeskonkatenering (Sifferplacering)",
+   "outcome": "implicit_multiplication"
+  },
+  {
+   "id": "X23",
+   "file": "xlsx",
+   "name": "Bokstavsmonogami (Olika bokstäver kräver olika värden)",
+   "outcome": "letters_distinct_values"
+  },
+  {
+   "id": "X24",
+   "file": "xlsx",
+   "name": "Falsk linearitet & Partiell distribution",
+   "outcome": "partial_distribution"
+  },
+  {
+   "id": "X25",
+   "file": "xlsx",
+   "name": "Prototypbias i klassinkludering",
+   "outcome": "out:geometry"
+  },
+  {
+   "id": "X26",
+   "file": "xlsx",
+   "name": "Sammanblandning av omkrets och area",
+   "outcome": "out:measurement"
+  }
+ ]
+}

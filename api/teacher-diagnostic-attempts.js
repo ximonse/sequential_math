@@ -9,6 +9,7 @@ import { summarizeDiagnosticObservation } from '../src/domains/arithmetic/diagno
 import { diagnosticWorkAnalysis } from '../src/domains/arithmetic/diagnosticWorkAnalysis.js'
 import { identifyDiagnosticObservationRevision } from '../src/domains/arithmetic/diagnosticObservationRevision.js'
 import { diagnosticClassOverview, listDiagnosticAssignmentAttempts } from './_diagnosticClassOverview.js'
+import { screeningMisconceptionPupils } from './_screeningMisconceptions.js'
 import { saveDiagnosticReview } from './_diagnosticReviewStore.js'
 import { assessWithTeacher, currentTeacherAssessment } from '../src/domains/arithmetic/diagnosticTeacherAssessment.js'
 import { logUnexpectedDiagnosticError, UNEXPECTED_DIAGNOSTIC_ERROR } from './_diagnosticErrorLog.js'
@@ -46,6 +47,9 @@ export default async function handler(req, res) {
     const assignment = (await listClassDiagnosticAssignments(classId))
       .find(item => item.assignmentId === assignmentId && (studentId === undefined || item.studentIds?.includes(studentId)))
     if (!assignment) return res.status(404).json({ error: 'Diagnostic assignment not found' })
+    if (studentId === undefined && input.view === 'misconceptions') {
+      return res.status(200).json(await screeningMisconceptionPupils(assignment, allowed))
+    }
     if (studentId === undefined) return res.status(200).json(await diagnosticClassOverview(assignment, allowed))
     const attempts = await listDiagnosticAssignmentAttempts(assignment, [studentId])
     if (attemptId === undefined) {

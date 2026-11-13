@@ -287,6 +287,22 @@ förrän det föregående är klart.
    Samma data för en elev, en grupp och klassen. Inför spärr R-E.
    *Klart när:* Simon öppnar en riktig screening och kan säga vilka elever som
    har vilken felförståelse utan att öppna enskilda elever.
+   *Byggt lokalt 2026-11-13 efter Simons godkända skiss*
+   (`docs/ui-proposals/screening-felforstaelser.html`): Screening → Resultat
+   har en ny del ovanför tabellen. Ett kort per godkänd felförståelse, sorterat
+   efter antal elever, med elevernas svar. Därefter rutor för ger upp,
+   obesvarade med uträkning, inmatning, samma uppgift flera gånger, enstaka
+   fel, felmodell utan kopplad felförståelse och oförklarade. Ett klick på ett
+   kort ramar in dess svar i tabellen. Servern klassar varje elevs senaste svar
+   per uppgift med samma funktion som täckningsräkningen och elevrapporten
+   (`classifyPupilAnswers`); vyn lägger ihop eleverna som tabellen visar, så en
+   grupp eller klass är summan av sina elever (R-E, `screeningMisconceptions.test.js`).
+   Ett fel svar som läraren har bedömt som rätt räknas inte här, som i tabellen.
+   Inga knappar för uppföljning; den är fryst. Klassningen är oförändrad, så
+   täckningen är densamma före och efter: på de riktiga screeningsvaren
+   54 fel, varav 14 felförståelser (8 olika), 33 oförklarade, 4 inmatning och
+   3 enstaka, samt 46 obesvarade med uträkning. Belägget enligt avsnitt 3
+   återstår: Simon läser en riktig screening.
 5. **Fyll luckorna efter måttstocken.** Ta de vanligaste oförklarade svaren ur
    täckningsrapporten, i tur och ordning, med rutinen i avsnitt 9.
    *Första omgången 2026-11-12, före steg 3 på Simons uttryckliga besked:*

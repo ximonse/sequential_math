@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { diagnosticRequest } from './diagnosticRequest'
 import DiagnosticEvidenceDetails from './DiagnosticEvidenceDetails'
 import DiagnosticScreeningMatrix from './DiagnosticScreeningMatrix'
+import ScreeningMisconceptions from './ScreeningMisconceptions'
 import { mergeOverviews } from './screeningCollections'
 
 // One table for a collection: one assignment per class, merged by position.
@@ -14,6 +15,7 @@ export default function DiagnosticCollectionReview({ members, isAllowed, name, o
   const [detail, setDetail] = useState(null)
   const [message, setMessage] = useState('Hämtar status...')
   const [refresh, setRefresh] = useState(0)
+  const [card, setCard] = useState(null)
   const selection = useRef(0)
   const dirty = useRef(false)
   const dialog = useRef(null)
@@ -85,8 +87,10 @@ export default function DiagnosticCollectionReview({ members, isAllowed, name, o
   return <section className="mt-4" aria-label="Genomgång av samling">
     <button type="button" onClick={() => setRefresh(value => value + 1)} className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-sm">Uppdatera översikt</button>
     <p role="status" className="mt-2 text-sm">{message}</p>
+    {overview && overview.rows.length > 0 && <ScreeningMisconceptions key={`${memberKey}:${refresh}`} members={members} isAllowed={isAllowed}
+      mismatched={overview.mismatched} name={name} selected={card} onSelect={setCard} />}
     {overview && (overview.rows.length > 0
-      ? <DiagnosticScreeningMatrix overview={overview} name={name} onOpen={open} />
+      ? <DiagnosticScreeningMatrix overview={overview} name={name} onOpen={open} highlight={card?.keys} />
       : <p className="text-sm">Ingen av de valda eleverna fick den här samlingen.</p>)}
     {/* Tailwind's preflight removes the dialog's default auto margin; m-auto centres it again. */}
     <dialog ref={dialog} aria-label="Elevgenomgång" onCancel={event => { event.preventDefault(); resetDetail() }} className="m-auto max-h-[90dvh] w-[min(960px,95vw)] overflow-y-auto rounded-lg border border-slate-300 bg-white p-3 pt-0 text-slate-800 shadow-xl backdrop:bg-slate-900/50">

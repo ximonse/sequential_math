@@ -3,6 +3,7 @@ import { isSpeedTrainingEntry } from './practiceModes.js'
 import { ERROR_MODELS } from '../domains/predictableErrors/catalog.js'
 import { meetsPattern } from './modelPattern.js'
 import { repeatedlyWrongTasks } from './repeatedTasks.js'
+import { misconceptionsForModel } from '../domains/predictableErrors/misconceptions.js'
 
 // Coverage of pupils' wrong answers (docs/STYRNING_FELFORSTAELSER.md, rules
 // R-C and R-D). Every answer is counted once, by the pupil's own status.
@@ -110,10 +111,23 @@ function assertSums(summary) {
   if (problems.length) throw Error(`Error coverage sums failed: ${problems.join('; ')}`)
 }
 
-// `entries` are one pupil's evidence entries as served by the evidence API,
-// with or without computed candidates; a pattern is judged per pupil. `hiddenSlips` are answers the teacher hid as
-// slips; they are outside `entries` and counted on their own line.
-export function errorCoverage({ entries = [], hiddenSlips = [] } = {}) {
+// The approved misconceptions a classified wrong answer points to.
+function misconceptionIdsFor(entry, bucket, below) {
+  if (bucket !== 'misconception') return []
+  const result = entry.interpretation?.predictable, ids = new Set()
+  for (const id of new Set((result?.matches ?? []).map(match => match.modelId))) {
+    if (ERROR_MODELS[id]?.kind !== 'misconception' || below.has(groupKey(result, id))) continue
+    for (const m of misconceptionsForModel(id)) ids.add(m.id)
+  }
+  const key = entry.interpretation?.key
+  if (key?.status === 'approved' && key.misconception) ids.add(key.misconception)
+  return [...ids]
+}
+
+// One pupil's answers, each wrong answer in exactly one bucket. The single
+// classification behind the coverage count, the pupil report and the screening
+// results (rule R-E): a class is its pupils' classifications side by side.
+export function classifyPupilAnswers(entries = []) {
   const own = entries.map(pupilOwnEntry)
   // Reuse the served analysis, except for answers whose analysed status was the
   // teacher's: those are analysed again on the pupil's own answer.
@@ -124,21 +138,36 @@ export function errorCoverage({ entries = [], hiddenSlips = [] } = {}) {
   const analysed = own.map((entry, index) => needsAnalysis[index] ? fresh[next++] : entry)
   const below = groupsBelowPattern(analysed)
   const repeated = new Set(repeatedlyWrongTasks(analysed).flatMap(task => task.wrong))
+  const rows = analysed.map((entry, index) => {
+    const status = entry.answer?.status
+    if (status !== 'incorrect') return { entry, original: entries[index], status }
+    const modelBucket = keyBucket(entry, wrongAnswerBucket(entry, below))
+    const bucket = modelBucket !== 'misconception' && repeated.has(entry) ? 'repeated_task' : modelBucket
+    return { entry, original: entries[index], status, bucket, misconceptionIds: misconceptionIdsFor(entry, bucket, below),
+      modelIds: [...new Set((entry.interpretation?.predictable?.matches ?? []).map(match => match.modelId))],
+      ...(bucket === 'unexplained' ? { reason: unexplainedReason(entry) } : {}) }
+  })
+  return { analysed, rows, repeatedTasks: repeatedlyWrongTasks(analysed).length }
+}
+
+// `entries` are one pupil's evidence entries as served by the evidence API,
+// with or without computed candidates; a pattern is judged per pupil. `hiddenSlips` are answers the teacher hid as
+// slips; they are outside `entries` and counted on their own line.
+export function errorCoverage({ entries = [], hiddenSlips = [] } = {}) {
+  const { analysed, rows, repeatedTasks } = classifyPupilAnswers(entries)
 
   const summary = { total: analysed.length, statuses: { ...Object.fromEntries(STATUSES.map(s => [s, 0])), other: 0 },
     unansweredWithWork: 0, teacherAssessed: 0, teacherChangedStatus: 0, hiddenSlips: hiddenSlips.length, repeatedTasks: 0,
     wrong: emptyWrong(), areas: {}, models: {}, unexplained: {} }
-  analysed.forEach((entry, index) => {
-    const status = entry.answer?.status
+  rows.forEach(({ entry, original, status, bucket }) => {
     summary.statuses[STATUSES.includes(status) ? status : 'other']++
     if (status === 'unanswered' && entry.answer?.workWithoutAnswer) summary.unansweredWithWork++
-    if (entries[index].answer?.teacherAssessed) {
+    if (original.answer?.teacherAssessed) {
       summary.teacherAssessed++
-      if (entries[index].answer.status !== status) summary.teacherChangedStatus++
+      if (original.answer.status !== status) summary.teacherChangedStatus++
     }
     if (status !== 'incorrect') return
-    const modelBucket = keyBucket(entry, wrongAnswerBucket(entry, below)), area = coverageArea(entry)
-    const bucket = modelBucket !== 'misconception' && repeated.has(entry) ? 'repeated_task' : modelBucket
+    const area = coverageArea(entry)
     addWrong(summary.wrong, bucket, entry)
     addWrong(summary.areas[area] ??= emptyWrong(), bucket, entry)
     const ids = [...new Set(entry.interpretation.predictable.matches?.map(match => match.modelId) ?? [])]
@@ -155,7 +184,7 @@ export function errorCoverage({ entries = [], hiddenSlips = [] } = {}) {
       row.count++
     }
   })
-  summary.repeatedTasks = repeatedlyWrongTasks(analysed).length
+  summary.repeatedTasks = repeatedTasks
   summary.unexplained = Object.values(summary.unexplained).sort((a, b) => b.count - a.count || a.area.localeCompare(b.area))
   assertSums(summary)
   return summary

@@ -782,3 +782,9 @@ export function misconceptionsForModel(modelId, { includePending = false } = {})
     .filter(([, m]) => (includePending || m.status === 'approved') && m.errorModels.some(link => link.id === modelId))
     .map(([id, m]) => ({ id, ...m }))
 }
+
+// One approved misconception for a teacher view, or null.
+export function approvedMisconception(id) {
+  const m = MISCONCEPTIONS[id]
+  return m?.status === 'approved' ? { id, ...m } : null
+}

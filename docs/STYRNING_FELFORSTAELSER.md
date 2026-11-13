@@ -229,6 +229,14 @@ förrän det föregående är klart.
    rubrikrader. 23 felförståelser syns i svar, 22 kräver en screeningfråga, 1
    syns bara genom observation. `misconceptions.test.js` är spärren. Kvar:
    Simon läser `Hermes Vault/Skola och lektioner/Matematik/Felforstaelser-for-granskning-2026-11-13.md`.
+   **Godkänt av Simon 2026-11-13:** "Allt ser bra ut, ta med dina kommentarer."
+   Alla 46 felförståelser har status *approved*, med agentens förslag. De öppna
+   frågorna följer agentens förslag: omkastade siffror räknas som inmatning
+   (tabellen kallar det positionsfel); "övergeneralisering" ligger under
+   subtraktion; "storheter och mätetal" ligger utanför. Fortfarande öppet:
+   nämnaren som svar (oklart) och vad som missförstås vid fel räknesätt.
+   Felförståelserna visas för lärare först i steg 4. Antigravitys granskning
+   kunde inte köras (kvoten slut till 2026-11-15).
 2. **Täckningsrapport.** Bygg måttstocken och kör den på befintligt underlag.
    Inför spärr R-C och R-D.
    *Klart när:* rapporten återger baslinjen i avsnitt 3 och summorna stämmer.

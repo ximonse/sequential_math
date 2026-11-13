@@ -9,14 +9,15 @@
 // errorModels[].basis: 'source' when a source row states the link, 'agent' when
 // the agent proposes it. evidence: how the misconception can be seen: in an
 // answer, only with a screening question built for it, or by observation.
-// status: nothing is shown to teachers before Simon has approved it.
+// status: nothing is shown to teachers before Simon has approved it. Simon approved
+// all entries, including the agent's proposals, on 2026-11-13.
 
 export const MISCONCEPTION_STATUSES = ['awaiting_review', 'approved']
 export const MISCONCEPTION_EVIDENCE = ['answer', 'screening_question', 'observation']
 
 export const MISCONCEPTIONS = {
   counting_by_ones: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X01',
     areaSv: 'Tidig taluppfattning',
     titleSv: 'Långsam enstegsräkning / Fingerräknande',
@@ -31,7 +32,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   subtraction_order_ignored: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X02',
     areaSv: 'Aritmetiska operationer',
     titleSv: 'Additionskommutativitet överförd till subtraktion',
@@ -47,7 +48,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   zero_rule: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X03',
     areaSv: 'Tidiga räkneregler',
     titleSv: 'Nollregeln (\'Ta bort och lägg till nollor\')',
@@ -63,7 +64,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   equal_sign_operational: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X04',
     areaSv: 'Likhetstecknet',
     titleSv: 'Operationellt kluster (\'Gör-något\' / Räknesignal)',
@@ -80,7 +81,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   equal_sign_add_all: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X05',
     areaSv: 'Likhetstecknet',
     titleSv: 'Totaladderingskluster',
@@ -96,7 +97,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   equal_sign_format: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X06',
     areaSv: 'Likhetstecknet',
     titleSv: 'Format- och positionell rigiditet',
@@ -110,7 +111,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   equation_inverse: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X07',
     areaSv: 'Ekvationer',
     titleSv: 'Icke-inverterad dubbeloperation',
@@ -124,7 +125,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   fraction_whole_number_bias: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X11',
     areaSv: 'Bråk',
     titleSv: 'Heltalsbias (Oberoende täljare och nämnare)',
@@ -143,7 +144,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   fraction_additive_equivalence: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X12',
     areaSv: 'Bråk',
     titleSv: 'Additiv skalning vid likvärdighet',
@@ -157,7 +158,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   fraction_digit_position: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X13',
     areaSv: 'Bråk',
     titleSv: 'Sifferlikhet oberoende av placering',
@@ -173,7 +174,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   fraction_unequal_parts: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X14',
     areaSv: 'Bråk',
     titleSv: 'Bråk som andel av yta utan krav på lika delar',
@@ -187,7 +188,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   multiplication_makes_bigger: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X15',
     areaSv: 'Multiplikation & Division',
     titleSv: 'Multiplikation förstorar, division förminskar',
@@ -201,7 +202,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   decimal_longer_is_larger: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X16',
     areaSv: 'Decimaltal',
     titleSv: 'Heltalsanalogi / \'Längre tal är större\'',
@@ -215,7 +216,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   decimal_shorter_is_larger: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X17',
     areaSv: 'Decimaltal',
     titleSv: 'Bråkförväxling / \'Kortare tal är större\'',
@@ -229,7 +230,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   decimal_two_integers: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X18',
     areaSv: 'Decimaltal',
     titleSv: 'Decimaltecknet som två oberoende heltal (Pengamodellen)',
@@ -246,7 +247,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   fraction_bar_as_comma: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X19',
     areaSv: 'Decimaltal',
     titleSv: 'Bråkstreck direkt översatt till decimalkomma',
@@ -260,7 +261,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   decimal_density: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X20',
     areaSv: 'Decimaltal',
     titleSv: 'Diskret taluppfattning (Inga tal mellan decimaler)',
@@ -274,7 +275,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   letters_as_objects: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X21',
     areaSv: 'Algebra',
     titleSv: 'Fruktsalladsklustret / Variabel som objektsnamn',
@@ -290,7 +291,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   implicit_multiplication: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X22',
     areaSv: 'Algebra',
     titleSv: 'Platsvärdeskonkatenering (Sifferplacering)',
@@ -307,7 +308,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   letters_distinct_values: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X23',
     areaSv: 'Algebra',
     titleSv: 'Bokstavsmonogami (Olika bokstäver kräver olika värden)',
@@ -321,7 +322,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   partial_distribution: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'X24',
     areaSv: 'Algebra',
     titleSv: 'Falsk linearitet & Partiell distribution',
@@ -336,7 +337,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   regrouping_not_understood: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Skriftlig räkning, heltal',
     titleSv: 'Tiotalsövergången är inte förstådd',
@@ -368,7 +369,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   regroup_across_zero: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Skriftlig subtraktion',
     titleSv: 'Växling över nolla',
@@ -386,7 +387,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   place_value_digits: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Positionssystemet',
     titleSv: 'Siffror utan positionsvärde',
@@ -406,7 +407,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   wrong_operation: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Aritmetik',
     titleSv: 'Fel räknesätt',
@@ -426,7 +427,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   word_problem_keywords: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Textuppgifter',
     titleSv: 'Nyckelord och alla tal i texten',
@@ -440,7 +441,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   division_order: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Division',
     titleSv: 'Division som om ordningen inte spelar roll',
@@ -456,7 +457,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   divide_only_by_integers: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Division',
     titleSv: 'Man kan bara dela med heltal',
@@ -470,7 +471,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   decimal_point_alignment: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Decimaltal',
     titleSv: 'Ställer upp siffrorna i stället för decimaltecknet',
@@ -486,7 +487,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   decimal_point_in_products: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Decimaltal',
     titleSv: 'Decimaltecknet placeras rakt ner vid multiplikation',
@@ -503,7 +504,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   tenths_written_as_hundredths: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Decimaltal',
     titleSv: 'Elva tiondelar skrivs 0,11',
@@ -519,7 +520,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   decimal_zero_placeholder: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Decimaltal',
     titleSv: 'Nollor i decimaltal',
@@ -533,7 +534,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   decimal_closure: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Decimaltal',
     titleSv: 'Räkning med decimaltal ger alltid decimaltal',
@@ -547,7 +548,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   fraction_compare_parts: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Bråk',
     titleSv: 'Jämför bara täljare eller nämnare',
@@ -561,7 +562,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   mixed_number: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Bråk',
     titleSv: 'Blandad form missförstås',
@@ -575,7 +576,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   fraction_division: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Bråk',
     titleSv: 'Division med bråk',
@@ -590,7 +591,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   equal_sharing: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Bråk och division',
     titleSv: 'Ojämn delning',
@@ -604,7 +605,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   percent_without_whole: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Procent',
     titleSv: 'Procent utan hänsyn till helheten',
@@ -624,7 +625,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   percent_decimal_conversion: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Procent',
     titleSv: 'Omvandling mellan procent och decimaltal',
@@ -642,7 +643,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   percent_word_of: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Procent',
     titleSv: 'Ordet "av"',
@@ -656,7 +657,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   proportion_additive: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Proportionalitet och procent',
     titleSv: 'Additivt tänkande vid proportionalitet',
@@ -670,7 +671,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   order_of_operations: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Uttryck',
     titleSv: 'Räknar från vänster utan prioritering',
@@ -688,7 +689,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   variable_ignored: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Algebra',
     titleSv: 'Variabeln ignoreras',
@@ -704,7 +705,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   square_as_double: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Algebra',
     titleSv: 'Kvadrat som dubbelt',
@@ -720,7 +721,7 @@ export const MISCONCEPTIONS = {
     ],
   },
   multiplication_by_zero: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Multiplikation',
     titleSv: 'Multiplikation med noll',
@@ -735,7 +736,7 @@ export const MISCONCEPTIONS = {
     errorModels: [],
   },
   product_parity: {
-    status: 'awaiting_review',
+    status: 'approved',
     fieldsFrom: 'agent',
     areaSv: 'Multiplikation',
     titleSv: 'Udda gånger udda ger udda',

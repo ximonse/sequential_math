@@ -5,7 +5,19 @@ import { selectPredictableProbe, questionFingerprint } from '../domains/predicta
 import { isSpeedTrainingEntry } from './practiceModes.js'
 import { diagnosticWorkAnalysis } from '../domains/arithmetic/diagnosticWorkAnalysis.js'
 import { diagnosticWorkSignals } from '../domains/arithmetic/diagnosticScreeningSummary.js'
-import { PREDICTABLE_RULE_VERSION } from '../domains/predictableErrors/core.js'
+import { PREDICTABLE_RULE_VERSION, unavailable } from '../domains/predictableErrors/core.js'
+import { manualKeyMatch, screeningStructure } from '../domains/arithmetic/screeningKeys.js'
+
+// Screening tasks frozen without structure get it from the screening keys when the
+// question is the bank's task, word for word. Applied after the evidence revision
+// is computed, so source references stay valid (docs/STYRNING_FELFORSTAELSER.md, step 3).
+function withScreeningStructure(entry) {
+  if (entry.source !== 'screening') return { entry, structure: null }
+  const structure = screeningStructure(entry.question)
+  if (structure.status !== 'added') return { entry, structure }
+  const { domain, type, skill, values } = structure.problem
+  return { entry: { ...entry, question: { ...entry.question, domain, operation: type, skill, values, structureSource: 'screening_keys' } }, structure }
+}
 
 // The notebook shows the correct result but another answer was entered: an
 // input or copying slip, not a calculation error (blind test 2026-11-01).
@@ -42,7 +54,12 @@ export function addPredictableEvidence(entries) {
       }
       entry = { ...entry, interpretation: { ...entry.interpretation, work } }
     }
-    let predictable = candidatesForEvidence(entry)
+    const screening = withScreeningStructure(entry)
+    entry = screening.entry
+    let predictable = screening.structure?.status === 'task_changed'
+      ? unavailable(entry.question?.domain, 'task_changed') : candidatesForEvidence(entry)
+    const manualKey = entry.source === 'screening' && entry.answer?.status === 'incorrect' ? manualKeyMatch(entry.question, entry.answer.studentAnswer) : null
+    if (manualKey) entry = { ...entry, interpretation: { ...entry.interpretation, key: manualKey } }
     const mismatch = notebookMismatch(entry, predictable, work)
     if (mismatch) predictable = { ...predictable, ruleVersion: PREDICTABLE_RULE_VERSION, status: 'matched',
       matches: [mismatch, ...(predictable.matches ?? []).filter(m => m.modelId !== mismatch.modelId)] }

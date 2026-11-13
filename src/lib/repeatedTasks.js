@@ -11,7 +11,9 @@ export function repeatedlyWrongTasks(entries, { minimum = REPEATED_TASK_MINIMUM 
   const tasks = new Map()
   for (const entry of entries) {
     if (!['correct', 'incorrect'].includes(entry?.answer?.status)) continue
-    const key = questionFingerprint(evidenceProblem(entry))
+    // A screening question is its bank task; questions without structure would otherwise share one fingerprint.
+    const q = entry.question ?? {}
+    const key = q.taskId ? JSON.stringify(['task', q.taskId, q.taskVersion ?? null]) : questionFingerprint(evidenceProblem(entry))
     if (!tasks.has(key)) tasks.set(key, { key, wrong: [], correct: [] })
     tasks.get(key)[entry.answer.status === 'incorrect' ? 'wrong' : 'correct'].push(entry)
   }

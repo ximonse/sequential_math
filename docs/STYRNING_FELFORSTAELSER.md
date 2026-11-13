@@ -254,6 +254,24 @@ förrän det föregående är klart.
    svar, räkna ett svar som rätt och anteckna en felförståelse i fritext.
    Kvar att mäta: hur många obesvarade med uträkning som återstår i nya
    screeningar. Lärarens fritext kopplas till katalogen i steg 4.
+   *Läge 2026-11-13, lokalt:* `src/domains/arithmetic/screeningKeys.js` ger 23 av
+   48 NCM-frågor tal och räknesätt och anger varför de övriga 25 saknar det.
+   Strukturen ligger utanför frågebankerna och läggs på när svaret analyseras,
+   efter att underlagets revision räknats, och bara om frågan har samma version
+   och ordalydelse som i banken; annars blir svaret oförklarat med orsaken
+   *task_changed*. 46 handskrivna felsvar på 29 frågor pekar på en felförståelse
+   eller en orsak och väntar på Simon; 2 frågor saknar nyckel med angiven orsak.
+   Diagnosbankens 42 frågor har redan struktur. `screeningKeys.test.js` är
+   spärr R-B. Mätt på 282 riktiga screeningsvar (54 fel): felförståelse 3 → 9,
+   och 8 oförklarade väntar bara på godkända nycklar. Samtidigt rättat:
+   *samma uppgift fel flera gånger* räknade alla NCM-frågor utan struktur som
+   en uppgift (15 felaktiga träffar; felet finns i publicerad kod). 433 av 433
+   befintliga misstankekort har samma kontrastfrågor; ingen screeningfråga
+   överlappar nu med övade frågor i kontrollen av redan mötta frågor.
+   Regelversionen höjs inte: modellerna är oförändrade och bara tidigare
+   oanalyserade svar påverkas. Obesvarade med uträkning kan mätas först på
+   screeningar som delats ut efter varningen i e72973c. Granskning:
+   `Hermes Vault/Skola och lektioner/Matematik/Felsvarsnycklar-for-granskning-2026-11-13.md`.
 4. **Screeningresultatet.** En vy per screening: felförståelser överst, under
    varje vilka elever och vilka svar, sedan oförklarade fel och obesvarade.
    Samma data för en elev, en grupp och klassen. Inför spärr R-E.

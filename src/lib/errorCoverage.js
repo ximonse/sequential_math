@@ -53,6 +53,15 @@ export function wrongAnswerBucket(entry, belowPattern = new Set()) {
   return KIND_ORDER.find(kind => kinds.has(kind)) ?? 'unexplained'
 }
 
+// An approved manual screening key explains what the models could not. A key
+// still awaiting review leaves the answer unexplained, with its own reason.
+const KEY_REASON_BUCKET = { input: 'input', fact_retrieval: 'observation', cognitive: 'observation' }
+function keyBucket(entry, modelBucket) {
+  const key = entry?.interpretation?.key
+  if (modelBucket !== 'unexplained' || !key || key.status !== 'approved') return modelBucket
+  return key.misconception ? 'misconception' : KEY_REASON_BUCKET[key.reason] ?? 'unexplained'
+}
+
 // Where the answer belongs: the analysed domain and scope, else the question's own operation.
 export function coverageArea(entry) {
   const result = entry?.interpretation?.predictable, q = entry?.question ?? {}
@@ -65,6 +74,8 @@ export function coverageArea(entry) {
 // Why a wrong answer is unexplained: no model gives that answer, or the answer
 // never reached the models (the reason the analysis gave).
 export const unexplainedReason = entry => {
+  const key = entry?.interpretation?.key
+  if (key) return key.status === 'approved' ? 'key_needs_review' : 'key_awaiting_review'
   const result = entry?.interpretation?.predictable
   return result?.status === 'unmatched' ? 'no_model' : result?.reason ?? result?.status ?? 'not_analysed'
 }
@@ -126,7 +137,7 @@ export function errorCoverage({ entries = [], hiddenSlips = [] } = {}) {
       if (entries[index].answer.status !== status) summary.teacherChangedStatus++
     }
     if (status !== 'incorrect') return
-    const modelBucket = wrongAnswerBucket(entry, below), area = coverageArea(entry)
+    const modelBucket = keyBucket(entry, wrongAnswerBucket(entry, below)), area = coverageArea(entry)
     const bucket = modelBucket !== 'misconception' && repeated.has(entry) ? 'repeated_task' : modelBucket
     addWrong(summary.wrong, bucket, entry)
     addWrong(summary.areas[area] ??= emptyWrong(), bucket, entry)

@@ -111,3 +111,14 @@ describe('the report card and the coverage judge a pattern alike', () => {
     expect(errorCoverage({ entries: raw }).wrong.misconception).toBe(22)
   })
 })
+
+describe('repeated tasks in screening', () => {
+  it('does not treat different screening questions without structure as one task', async () => {
+    const { repeatedlyWrongTasks } = await import('./repeatedTasks.js')
+    const q = (taskId, i) => ({ source: 'screening', ref: `s-${i}`, reference: { kind: 'screening_attempt', attemptId: `a-${i}` },
+      question: { taskId, taskVersion: 1, promptSv: `Fråga ${taskId}` }, answer: { status: 'incorrect', studentAnswer: '1', correctAnswer: '2' },
+      context: {}, interpretation: { category: 'unknown', patterns: [] } })
+    expect(repeatedlyWrongTasks([q('t1', 1), q('t2', 2), q('t3', 3)])).toEqual([])
+    expect(repeatedlyWrongTasks([q('t1', 1), q('t1', 2), q('t1', 3)])).toHaveLength(1)
+  })
+})

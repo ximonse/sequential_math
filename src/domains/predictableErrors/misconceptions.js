@@ -419,7 +419,8 @@ export const MISCONCEPTIONS = {
     areaSv: 'Aritmetik',
     titleSv: 'Fel räknesätt',
     typicalSv: '234 − 45 = 279; 3 + 2 = 6',
-    logicSv: 'Eleven utför ett annat räknesätt än uppgiften anger. Simons fråga (2026-11-13) är öppen: tecknet, uppmärksamheten eller när man adderar respektive subtraherar.',
+    logicSv: 'Eleven använder ett annat räknesätt än uppgiften anger, till exempel adderar i en subtraktion.',
+    // Simon 2026-11-13, open: is it the sign, attention, or when to add and subtract? Text changed on his go 2026-11-14.
     focusSv: 'Talen, inte tecknet eller sammanhanget.',
     criticalAspectSv: 'Vad räknesättet betyder i situationen, inte bara tecknets form.',
     variationSv: 'Förslag (Simon): textuppgifter utan tecken, med ord som "tillsammans" och "tog", där räknesättet måste väljas.',

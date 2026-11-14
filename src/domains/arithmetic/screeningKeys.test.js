@@ -38,6 +38,12 @@ describe('screening keys', () => {
     }
   })
 
+  it('shows teachers the reading of a key, and keeps its source apart', () => {
+    for (const [id, keys] of Object.entries(MANUAL_KEYS)) for (const key of keys) {
+      expect(key.noteSv, id).not.toMatch(/Simon|godkänt|agentens|klustret|tabellen|d{4}-d{2}-d{2}/iu)
+    }
+  })
+
   it('points every manual key to a misconception or a fixed reason, and says who proposed it', () => {
     for (const [id, keys] of Object.entries(MANUAL_KEYS)) {
       expect(ncmIds, id).toContain(id)

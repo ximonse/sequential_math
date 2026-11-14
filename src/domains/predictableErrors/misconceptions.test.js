@@ -55,6 +55,14 @@ describe('misconceptions behind the error models', () => {
     }
   })
 
+  it('keeps who proposed or approved a text out of what teachers read', () => {
+    // Teachers at any school read these fields; the source belongs in basis, noteSv or a comment.
+    const internal = /Simon|godkänt|agentens|d{4}-d{2}-d{2}/u
+    for (const [id, m] of Object.entries(MISCONCEPTIONS)) {
+      for (const field of ['titleSv', 'areaSv', 'logicSv', 'criticalAspectSv']) expect(m[field], `${id}.${field}`).not.toMatch(internal)
+    }
+  })
+
   it('shows teachers nothing that is still awaiting review', () => {
     const pending = ids.filter(id => MISCONCEPTIONS[id].status !== 'approved')
     for (const id of pending) for (const link of MISCONCEPTIONS[id].errorModels) {

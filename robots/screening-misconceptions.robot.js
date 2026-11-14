@@ -4,7 +4,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
 import { teacherLogin } from './lib/teacher.js'
-import { openResults, reviewOf, chooseCollection } from './lib/screening.js'
+import { openResults, reviewOf, chooseCollection, handInAnywayOnce } from './lib/screening.js'
 import { readFileSync } from 'node:fs'
 const manifest = JSON.parse(readFileSync(new URL('../src/domains/arithmetic/diagnosticTasks.v1.json', import.meta.url), 'utf8'))
 
@@ -70,4 +70,56 @@ test('A wrong answer from a known misconception shows a card that marks the answ
   await expect(card).toBeVisible()
   await expect(review.getByRole('button', { name: /Misc Order,.*svar 376/ })).toHaveAccessibleName(/Felförståelse/)
   await page.screenshot({ path: testInfo.outputPath('screening-teacher-pick.png'), fullPage: true })
+})
+
+test('Clicking a card scrolls a wide table sideways to the framed answer', async ({ page, request, browser }, testInfo) => {
+  const tag = Math.random().toString(36).slice(2, 8), classId = `misc-wide-${tag}`
+  const pupil = await createPupil(request, { name: 'Misc Wide', classId })
+  const teacher = await (await request.post('/__robot/teacher', { data: { id: `misc-wide-${tag}`, classIds: [classId], role: 'super_admin' } })).json()
+  await page.setViewportSize({ width: 900, height: 900 })
+  await teacherLogin(page, teacher)
+  // Nine other bank tasks first, then 402 − 178 last, so its column is far to the right.
+  const last = manifest.tasks.find(t => t.analysisCaseId === 'S2')
+  const others = manifest.tasks.filter(t => t.taskId !== last.taskId && t.answerType !== 'text').slice(0, 9)
+  const assignment = await page.evaluate(async data => {
+    const response = await fetch('/api/teacher-diagnostic-assignments', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-teacher-token': sessionStorage.getItem('mathapp_teacher_api_token') }, body: JSON.stringify(data) })
+    if (!response.ok) throw new Error(JSON.stringify(await response.json()))
+    return (await response.json()).assignment
+  }, { classId, audience: 'class', taskIds: [...others.map(t => t.taskId), last.taskId] })
+  const context = await browser.newContext()
+  const student = await context.newPage()
+  await login(student, pupil)
+  await student.getByRole('button', { name: 'Screening', exact: true }).click()
+  // Pupils may get the questions in another order; step until 402 − 178 is shown.
+  const heading = student.locator('main h2').first()
+  for (let index = 1; index < 10 && !/402/u.test(await heading.textContent()); index++) {
+    await student.getByRole('button', { name: 'Nästa fråga', exact: true }).click()
+    await expect(student.getByText(`Fråga ${index + 1} av 10`, { exact: true })).toBeVisible()
+  }
+  await expect(heading).toHaveText(/402/u)
+  await student.getByRole('textbox', { name: 'Mitt svar', exact: true }).pressSequentially('376')
+  handInAnywayOnce(student)
+  await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
+  await expect(student).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
+  await context.close()
+  await page.reload()
+  const results = await openResults(page, { className: classId })
+  await chooseCollection(results, assignment.assignmentId)
+  const card = results.getByRole('region', { name: 'Felförståelser i screeningen', exact: true })
+    .getByRole('button', { name: /Additionskommutativitet överförd till subtraktion/ })
+  await card.click()
+  const framed = reviewOf(results).locator('td[data-highlighted]')
+  await expect(framed).toHaveCount(1)
+  // The framed cell lies inside the visible part of the table's scroll box.
+  await expect.poll(() => framed.evaluate(cell => {
+    const box = cell.closest('.overflow-x-auto').getBoundingClientRect(), r = cell.getBoundingClientRect()
+    const names = cell.closest('tr').querySelector('th[scope=row]').getBoundingClientRect()
+    return r.left >= names.right && r.right <= box.right
+  })).toBe(true)
+  // The pupil's name stays visible beside the framed answer.
+  expect(await framed.evaluate(cell => {
+    const box = cell.closest('.overflow-x-auto').getBoundingClientRect(), name = cell.closest('tr').querySelector('th[scope=row]').getBoundingClientRect()
+    return name.left >= box.left && name.right <= cell.getBoundingClientRect().left
+  })).toBe(true)
+  await page.screenshot({ path: testInfo.outputPath('screening-wide-scroll.png'), fullPage: true })
 })

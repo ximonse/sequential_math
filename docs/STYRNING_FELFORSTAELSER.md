@@ -309,6 +309,15 @@ förrän det föregående är klart.
    godkända felförståelser. Ett fel svar med lärarens val räknas som
    felförståelse, i samma klassning som täckningen och elevrapporten, och visas
    på kortet märkt *Lärarens val*; F i tabellen visar valen.
+   *Prövat i produktion 2026-11-14 (agenten, på Simons uppdrag "kolla du"):*
+   Kumlaby åk 6, screeningen 2026-11-11, inloggad som lärare och utan
+   ändringar. Det går att säga vilka elever som har vilken felförståelse utan
+   att öppna enskilda elever; summorna går ihop (20 + 3 + 1 + 2 = 26 fel). Tre
+   brister rättade samma dag: intern text (vem som tolkat och när) syntes för
+   läraren, nu i ett eget källfält och spärrat med test; kortet *Fel räknesätt*
+   har ny tanketext på Simons besked; ett klick på kort scrollar en bred tabell
+   till det inramade svaret och elevkolumnen står kvar. Laddtiden (ca 12 s)
+   hör till belastningsarbetet, som är parkerat.
    *Kvar av steg 4, kräver Simons val:* (b)
    elevrapportens tak på åtta kort och klassvyns summatest (R-C ovan) är
    oförändrade, eftersom schemat delas med den frysta avstämningen.

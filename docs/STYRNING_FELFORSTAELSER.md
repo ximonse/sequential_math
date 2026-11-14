@@ -365,9 +365,16 @@ förrän det föregående är klart.
    att elevrapporten behåller kravet på tre olika uppgifter och att angränsande
    produkt inte omfattas). Regelversion v12. Kumlaby åk 6, screeningen
    2026-11-11, lokalt omklassad: felförståelser 6 → 17, oförklarade 17 → 8.
+   Simons andra besked samma dag: 7 × 6,7 = 91 kombinerar positionsfel med
+   räkning från vänster och kopplas till båda; 3 × 2,4 = 3,2 är att bara
+   decimaldelen multipliceras (2 + 3 · 0,4); 84 / 6 = 12 är "kanske" att
+   tabellen slutar vid 12 eller 6 · 10 + 6 · 2 utan kontroll, så modellen
+   *kvoten stannar vid 12* visas som känt fel utan felförståelse (behöver
+   granskas). Därefter: svar på felförståelsekort 6 → 18, känt fel utan
+   felförståelse 3, oförklarade 17 → 4.
    Den frysta kedjan: 440 av 440 befintliga kort oförändrade; de 8 nya korten
-   erbjuder ingen uppföljning. Kvar oförklarat där: 84 / 6 = 12 (tre elever),
-   1,76 + 2,58 = 432, 3 × 2,4 = 3,2, 357 + 268 = 614 och tre fjärdedelar av 8.
+   erbjuder ingen uppföljning. Kvar oförklarat där: 1,76 + 2,58 = 432,
+   357 + 268 = 614 och tre fjärdedelar av 8 (24 och 7/8).
    Listan med alla oförklarade svar och förslag:
    `Hermes Vault/Skola och lektioner/Matematik/Oforklarade-felsvar-for-granskning-2026-11-14.md`.
 6. **Samma struktur för träningssvaren.** Först därefter.

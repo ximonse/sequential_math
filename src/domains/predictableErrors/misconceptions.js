@@ -246,7 +246,8 @@ export const MISCONCEPTIONS = {
     errorModels: [
       { id: 'decimal_tenths_as_hundredths', basis: 'agent', noteSv: 'Decimaldelarna adderas som heltal: 5 + 6 = 11 skrivs efter kommat.' },
       { id: 'decimal_only_fraction_added', basis: 'agent', noteSv: 'Bara delen efter kommat läggs till; heltalsdelen följer inte med. Kan också vara bristande fokus.' },
-      { id: 'decimal_factor_split_left_to_right', basis: 'simon_observation', noteSv: 'Simon 2026-11-14: 7 × 6,7 räknat som 7 + 6 · 7 = 91 från vänster; 6 och 7 blir två tal.' }
+      { id: 'decimal_factor_split_left_to_right', basis: 'simon_observation', noteSv: 'Simon 2026-11-14: 7 × 6,7 räknat som 7 + 6 · 7 = 91 från vänster; 6 och 7 blir två tal.' },
+      { id: 'decimal_mul_whole_part_kept', basis: 'simon_observation', noteSv: 'Simon 2026-11-14: 3 × 2,4 = 3,2; bara 0,4 multipliceras, 2 står kvar.' }
     ],
   },
   fraction_bar_as_comma: {
@@ -691,7 +692,8 @@ export const MISCONCEPTIONS = {
     errorModels: [
       { id: 'expression_left_to_right', basis: 'source', noteSv: 'Tabellen ger 2 + 3 · x = 5x och vänster-till-höger-beräkning.' },
       { id: 'expression_parentheses_ignored', basis: 'agent', noteSv: 'Parenteserna bortses från.' },
-      { id: 'expression_left_to_right_no_parentheses', basis: 'agent', noteSv: 'Båda samtidigt.' }
+      { id: 'expression_left_to_right_no_parentheses', basis: 'agent', noteSv: 'Båda samtidigt.' },
+      { id: 'decimal_factor_split_left_to_right', basis: 'simon_observation', noteSv: 'Simon 2026-11-14: positionsfelet kombineras med räkning från vänster: 7 + 6 · 7 = 91.' }
     ],
   },
   variable_ignored: {
@@ -765,6 +767,7 @@ export const NOT_A_MISCONCEPTION_REASONS = ['fact_retrieval', 'cognitive', 'inpu
 export const MODELS_WITHOUT_MISCONCEPTION = {
   table_off_by_one: { reason: 'fact_retrieval', noteSv: 'Angränsande produkt: tabellfaktumet plockas fram fel. Kan också vara arbetsminne eller hastighet.' },
   quotient_off_by_one: { reason: 'fact_retrieval', noteSv: 'Kvoten ett fel: tabellen plockas fram fel.' },
+  quotient_stops_at_twelve: { reason: 'needs_review', noteSv: 'Simon 2026-11-14, "kanske": tabellen slutar vid 12, eller 6 · 10 + 6 · 2 utan kontroll.' },
   answer_off_by_one: { reason: 'fact_retrieval', noteSv: 'Utanför udda gånger udda: oftast framplockning eller fokus.' },
   partial_answer_entry: { reason: 'input', noteSv: 'Bara första siffran inskriven.' },
   last_two_digits_swapped: { reason: 'input', noteSv: 'Siffror omkastade vid inmatning. Tabellen (10 + 9 = 91) räknar detta som positionsfel; Simon avgör.' },

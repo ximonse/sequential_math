@@ -694,6 +694,24 @@
     {"problem":{"domain":"fractions","type":"fractions","skill":"fractions","values":{"text":"2/3 × 3/5"}},"answer":"2/5"},
     {"problem":{"domain":"fractions","type":"fractions","skill":"fractions","values":{"text":"2/3 × 3/5"}},"answer":"5/8"},
     {"problem":{"domain":"fractions","type":"fractions","skill":"fractions","values":{"text":"1/2 + 1/3"}},"answer":"1/5"}
+  ] },
+  "decimal_mul_whole_part_kept": { "hit": [
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":3,"b":2.4}},"answer":3.2},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":4,"b":2.3}},"answer":3.2},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":5,"b":1.6}},"answer":4}
+  ], "miss": [
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":3,"b":2.4}},"answer":7.2},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":3,"b":0.4}},"answer":1.2},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":3,"b":2.4}},"answer":6.2}
+  ] },
+  "quotient_stops_at_twelve": { "hit": [
+    {"problem":{"domain":"arithmetic","type":"division","values":{"a":84,"b":6}},"answer":12},
+    {"problem":{"domain":"arithmetic","type":"division","values":{"a":98,"b":7}},"answer":12},
+    {"problem":{"domain":"arithmetic","type":"division","values":{"a":60,"b":4}},"answer":12}
+  ], "miss": [
+    {"problem":{"domain":"arithmetic","type":"division","values":{"a":84,"b":6}},"answer":14},
+    {"problem":{"domain":"arithmetic","type":"division","values":{"a":48,"b":4}},"answer":12},
+    {"problem":{"domain":"arithmetic","type":"division","values":{"a":126,"b":6}},"answer":12}
   ] }
  }
 }

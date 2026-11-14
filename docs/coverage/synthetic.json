@@ -1,26 +1,27 @@
 {
  "noteSv": "Täckning på syntetiskt underlag ur katalogens exempel. Uppdateras med --write när en ändring i felmodellerna är avsiktlig; diffen visar vad som ändrades.",
- "total": 543,
+ "total": 557,
  "statuses": {
-  "correct": 82,
-  "incorrect": 460,
+  "correct": 86,
+  "incorrect": 470,
   "unanswered": 1,
   "partial": 0,
   "other": 0
  },
  "wrong": {
-  "incorrect": 460,
-  "misconception": 390,
-  "repeated_task": 23,
+  "incorrect": 470,
+  "misconception": 397,
+  "repeated_task": 24,
   "observation": 5,
-  "input": 2,
+  "input": 3,
   "gave_up": 1,
-  "unexplained": 39,
+  "unexplained": 40,
   "unexplainedNoModel": 38,
-  "unexplainedNotAnalysed": 1,
+  "unexplainedNotAnalysed": 2,
   "speedTraining": 54,
   "reasons": {
    "no_model": 38,
+   "source_grading_requires_review": 1,
    "unsupported_structure": 1
   }
  },
@@ -114,11 +115,11 @@
    }
   },
   "arithmetic:division": {
-   "incorrect": 42,
-   "misconception": 42,
+   "incorrect": 46,
+   "misconception": 45,
    "repeated_task": 0,
    "observation": 0,
-   "input": 0,
+   "input": 1,
    "gave_up": 0,
    "unexplained": 0,
    "unexplainedNoModel": 0,
@@ -127,18 +128,19 @@
    "reasons": {}
   },
   "arithmetic:multiplication": {
-   "incorrect": 95,
-   "misconception": 76,
-   "repeated_task": 12,
+   "incorrect": 101,
+   "misconception": 80,
+   "repeated_task": 13,
    "observation": 3,
    "input": 2,
    "gave_up": 0,
-   "unexplained": 2,
+   "unexplained": 3,
    "unexplainedNoModel": 2,
-   "unexplainedNotAnalysed": 0,
+   "unexplainedNotAnalysed": 1,
    "speedTraining": 0,
    "reasons": {
-    "no_model": 2
+    "no_model": 2,
+    "source_grading_requires_review": 1
    }
   },
   "arithmetic:subtraction": {
@@ -377,8 +379,12 @@
    "onlyModel": 4
   },
   "decimal_mul_carry_forgotten": {
-   "answers": 4,
-   "onlyModel": 4
+   "answers": 5,
+   "onlyModel": 5
+  },
+  "decimal_mul_whole_part_kept": {
+   "answers": 3,
+   "onlyModel": 3
   },
   "decimal_only_fraction_added": {
    "answers": 3,
@@ -489,8 +495,8 @@
    "onlyModel": 3
   },
   "last_two_digits_swapped": {
-   "answers": 3,
-   "onlyModel": 3
+   "answers": 4,
+   "onlyModel": 4
   },
   "mul_carry_added_before": {
    "answers": 3,
@@ -569,6 +575,10 @@
    "onlyModel": 5
   },
   "quotient_off_by_one": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "quotient_stops_at_twelve": {
    "answers": 3,
    "onlyModel": 3
   },

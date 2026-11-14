@@ -167,6 +167,11 @@ export function arithmeticCandidates(problem, answer) {
         for (const answer of [value, value / 10]) predictions.push(prediction('decimal_factor_split_left_to_right', answer,
           'Svaret matchar att decimaltalets siffror blir egna tal och att uttrycket räknas från vänster (7 × 6,7 som 7 + 6 · 7 = 91).'))
       }
+      // Simon 2026-11-14: 3 × 2,4 = 3,2, the whole part is not multiplied: 2 + 3 · 0,4.
+      if (Math.trunc(decimal) >= 1) {
+        const kept = Math.round((Math.trunc(decimal) + whole * (decimal - Math.trunc(decimal))) * scale) / scale
+        predictions.push(prediction('decimal_mul_whole_part_kept', kept, 'Svaret matchar att bara decimaldelen multipliceras och heltalsdelen står kvar (3 × 2,4 = 2 + 1,2 = 3,2).'))
+      }
     }
   }
   // Off-by-one only for single-digit table facts, where counting a step wrong is plausible.
@@ -197,6 +202,8 @@ export function arithmeticCandidates(problem, answer) {
       prediction('div_remainder_as_ones', divRemainderAsOnes(a, b), 'Svaret matchar att resten läggs till som ental i stället för som tiotal.'))
     for (const dropped of divZeroDropped(a / b)) predictions.push(prediction('div_zero_dropped', dropped, 'Svaret matchar att nollan i kvoten har fallit bort.'))
     for (const wrong of [a / b - 1, a / b + 1]) predictions.push(prediction('quotient_off_by_one', wrong, 'Kvoten är ett ifrån; kan vara osäker tabellkunskap eller felräkning.'))
+    // Simon 2026-11-14: 84 / 6 = 12, the tables end at 12, or 6 · 10 + 6 · 2 left unchecked.
+    if (a / b > 13 && a / b <= 20) predictions.push(prediction('quotient_stops_at_twelve', 12, 'Kvoten stannar vid 12 fast den är större; tabellen tar slut vid 12, eller delen efter tio kontrolleras inte.'))
   }
   if (op === 'division') {
     if (a !== 0) predictions.push(prediction('reversed_operands', b / a, 'Svaret matchar division i omvänd ordning.'))

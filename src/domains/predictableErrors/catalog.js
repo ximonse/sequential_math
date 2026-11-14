@@ -69,6 +69,8 @@ export const ERROR_MODELS = {
   decimal_mul_carry_forgotten: model('Minnessiffran glöms när decimaltal multipliceras', A, OUTSIDE_FROZEN_CHAIN),
   decimal_mul_carry_added_before: model('Minnessiffran läggs till före multiplikationen i decimaltal', A, OUTSIDE_FROZEN_CHAIN),
   decimal_factor_split_left_to_right: model('Decimaltalet delas upp och räknas från vänster', A, OUTSIDE_FROZEN_CHAIN),
+  decimal_mul_whole_part_kept: model('Bara decimaldelen multipliceras', A, OUTSIDE_FROZEN_CHAIN),
+  quotient_stops_at_twelve: model('Kvoten stannar vid 12', A, OUTSIDE_FROZEN_CHAIN),
   decimal_point_missing_with_error: model('Tappar växlingen och decimaltecknet', A, OUTSIDE_FROZEN_CHAIN),
 
   // Multiplication

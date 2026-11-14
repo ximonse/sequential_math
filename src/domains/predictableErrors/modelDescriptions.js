@@ -191,9 +191,19 @@ export const MODEL_DESCRIPTIONS = {
     openersSv: ['Låt eleven visa i vilken ordning hen multiplicerar och lägger till minnessiffran.'],
   },
   decimal_factor_split_left_to_right: {
-    thinkingSv: 'Decimaltalets siffror blir egna tal och uttrycket räknas från vänster: 7 × 6,7 läses som 7 + 6 · 7 och blir (7 + 6) · 7 = 91.',
+    thinkingSv: 'Två fel samtidigt: decimaltalets siffror blir egna tal (positionsfel), och uttrycket räknas från vänster: 7 × 6,7 läses som 7 + 6 · 7 och blir (7 + 6) · 7 = 91.',
     sourceSv: SIMON_2026_11_14,
     openersSv: ['Fråga vad 6,7 betyder: ungefär hur stort är talet?', 'Be eleven uppskatta 7 × 6,7 med 7 × 7.'],
+  },
+  decimal_mul_whole_part_kept: {
+    thinkingSv: 'Eleven multiplicerar bara decimaldelen och låter heltalsdelen stå kvar: 3 × 2,4 blir 2 + 3 · 0,4 = 3,2. Heltal och decimaldel behandlas som skilda tal.',
+    sourceSv: SIMON_2026_11_14,
+    openersSv: ['Be eleven uppskatta 3 × 2,4: är svaret närmare 3 eller 7?'],
+  },
+  quotient_stops_at_twelve: {
+    thinkingSv: 'Kvoten stannar vid 12 fast den är större: 84 / 6 blir 12. Kanske tar tabellen slut vid 12, eller så delas 84 som 6 · 10 + 6 · 2 utan att eleven kontrollerar att det blir 84. Oklart vilket; behöver granskas.',
+    sourceSv: SIMON_2026_11_14,
+    openersSv: ['Be eleven kontrollera sitt svar: blir 6 · 12 lika med 84?'],
   },
   fraction_mul_components_added: {
     thinkingSv: 'Eleven adderar täljare och nämnare var för sig fast det är multiplikation: 2/3 · 3/5 blir 5/8.',

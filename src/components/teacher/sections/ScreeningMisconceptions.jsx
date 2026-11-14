@@ -67,7 +67,7 @@ export default function ScreeningMisconceptions({ members, isAllowed, mismatched
 
   if (!view) return <p role="status" className="mt-2 text-sm">{message}</p>
   const { counts, cards, other } = view
-  const chips = [[counts.wrong, 'fel'], [counts.misconception, 'pekar på en felförståelse'], [counts.gave_up, 'ger upp'],
+  const chips = [[counts.wrong, 'fel'], [counts.misconception - other.without_link.length, 'pekar på en felförståelse'], [other.without_link.length, 'känt fel utan felförståelse'], [counts.gave_up, 'ger upp'],
     [counts.input, 'inmatning'], [counts.repeated_task, 'samma uppgift flera gånger'], [counts.observation, 'enstaka'],
     [counts.unexplained, 'oförklarade'], [counts.unansweredWithWork, 'obesvarade med uträkning']]
   return <section aria-label="Felförståelser i screeningen" className="mt-3">

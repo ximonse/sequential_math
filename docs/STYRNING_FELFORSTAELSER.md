@@ -238,8 +238,17 @@ förrän det föregående är klart.
    Felförståelserna visas för lärare först i steg 4. Antigravitys granskning
    kunde inte köras (kvoten slut till 2026-11-15).
    *Skulden i lärartext och rubriker löst 2026-11-14:* alla 80 modeller har
-   lärartext och granskad rubrik (Simon: "Listan ser bra ut"). Kvar: fälten
-   källa och slumprisk per modell.
+   lärartext och granskad rubrik (Simon: "Listan ser bra ut").
+   *Källa och slumprisk 2026-11-14:* `modelProfile.js` räknar fram båda ur
+   befintliga data: källan ur felförståelsens koppling eller beskrivningen,
+   slumprisken som antal förutsagda svar per uppgift på bankens uppgifter,
+   NCM-frågorna och katalogens exempel. `modelProfile.test.js` kräver båda för
+   varje modell och spärrar beslut 3 (fler än två svar kräver mönster).
+   Tabell: `docs/coverage/model-profile.md`. Bara två modeller har fler än två
+   svar per uppgift: skalad med tiopotens (observation, 4) och angränsande
+   produkt (3,85, kräver tre uppgifter). 36 av 80 modeller har agentens
+   förslag, godkänt av Simon, som enda källa. **Steg 1 klart.** *Gäller när*
+   finns fortfarande bara i beräkningskoden.
 2. **Täckningsrapport.** Bygg måttstocken och kör den på befintligt underlag.
    Inför spärr R-C och R-D.
    *Klart när:* rapporten återger baslinjen i avsnitt 3 och summorna stämmer.

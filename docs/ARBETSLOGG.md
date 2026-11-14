@@ -19,9 +19,19 @@
 - Vardagliga ord i rubrikerna: "talet som ska delas" i stället för täljare vid
   division, "talet framför bokstaven" i stället för koefficient.
 
-### Kvar i steg 1
+### Källa och slumprisk (steg 1 klart)
 
-- Fälten källa och slumprisk per modell.
+- `modelProfile.js` räknar fram källa och slumprisk per modell ur befintliga
+  data; test kräver båda och spärrar beslut 3. Tabell för läsning:
+  `docs/coverage/model-profile.md`.
+- Två modeller förutsäger fler än två svar per uppgift: skalad med tiopotens
+  (observation) och angränsande produkt (kräver redan tre uppgifter).
+- Tanke: 36 av 80 modeller har bara agentens förslag, godkänt av Simon, som
+  källa. De är kandidater för NCM-boken eller fler riktiga svar.
+
+### Kvar
+
+- *Gäller när* finns bara i beräkningskoden, inte som eget fält.
 
 ## 2026-11-11 – 2026-11-14: Felförståelser tydliga för läraren (screening först)
 

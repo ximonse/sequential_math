@@ -36,6 +36,8 @@ produktkontraktet. Fokus är screeningar.
   täckningsrapporten finns.
 - Gröna tester är inte belägg för att läraren ser felförståelsen. Belägget är
   en riktig screening läst av Simon.
+- Logga varje avslutat delsteg eller beslut överst i `docs/ARBETSLOGG.md`:
+  logg, Simons beslut, agentens egna val, tankar och parkerat.
 
 ## Aktiv projektriktning: NCM-diagnostik
 

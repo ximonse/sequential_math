@@ -466,3 +466,7 @@ Gäller från antagandet och förs då in i `AGENTS.md`:
 - Varje leverans redovisar täckningen före och efter.
 - Ett grönt test är inte belägg för att läraren ser felförståelsen. Belägget är
   avsnitt 8, steg 4: en riktig screening, läst av Simon.
+- Efter varje avslutat delsteg eller beslut: lägg en post överst i
+  `docs/ARBETSLOGG.md` med logg, Simons beslut, agentens egna val, tankar och
+  parkerat (Simon 2026-11-14: så att logg, beslut och tankar lätt syns).
+  Skilj Simons beslut från agentens val.

@@ -33,11 +33,11 @@ export const ERROR_MODELS = {
   // Simon 2026-11-12: a misunderstanding of when to use which operation, not a slip.
   // Kept out of the contrast questions until that follow-up is designed.
   operation_swap: model('Annat räknesätt', A, { yieldsToSpecific: true, minDistinctTasks: 3, notRival: true, noFollowUp: true, screeningShowsSingle: true }),
-  place_value_scaling: model('Svaret är skalat med en tiopotens', A, { kind: 'observation', yieldsToSpecific: true }),
+  place_value_scaling: model('Svaret är tio, hundra eller tusen gånger fel', A, { kind: 'observation', yieldsToSpecific: true }),
   answer_off_by_one: model('Ett ifrån facit', [...A, ...N], { kind: 'observation', speedSlip: true }),
   partial_answer_entry: model('Bara första siffran inskriven', [...A, ...N], { kind: 'input', yieldsToSpecific: true, speedSlip: true }),
-  last_two_digits_swapped: model('Facits två sista siffror omkastade', A, { kind: 'input', yieldsToSpecific: true, speedSlip: true }),
-  notebook_answer_mismatch: model('Olika svar i räknehäftet och svarsfältet', A, { kind: 'input' }),
+  last_two_digits_swapped: model('Två sista siffrorna omkastade', A, { kind: 'input', yieldsToSpecific: true, speedSlip: true }),
+  notebook_answer_mismatch: model('Olika svar i räknehäftet och svarsrutan', A, { kind: 'input' }),
 
   // Giving up or clicking past (Simon 2026-11-12): a signal to the teacher, not a calculation error.
   answer_zero: model('Svarar 0', [...A, ...N], { kind: 'gave_up', minDistinctTasks: 3, noFollowUp: true }),
@@ -89,9 +89,9 @@ export const ERROR_MODELS = {
   div_remainder_as_ones: model('Resten läggs till som ental', A, { family: 'short_division' }),
   div_zero_dropped: model('Nollan i kvoten tappas', A, { family: 'short_division' }),
   quotient_off_by_one: model('Kvoten blir ett fel', A, { family: 'short_division', needsRepetition: true }),
-  dividend_as_answer: model('Täljaren lämnas som svar', A),
-  divisor_as_answer: model('Nämnaren lämnas som svar', A),
-  reversed_operands: model('Divisionens tal har bytt plats', A),
+  dividend_as_answer: model('Talet som ska delas blir svaret', A),
+  divisor_as_answer: model('Talet man delar med blir svaret', A),
+  reversed_operands: model('Divisionens tal byter plats', A),
 
   // Fractions
   fraction_components_separately: model('Täljare och nämnare räknas var för sig', F),
@@ -104,20 +104,20 @@ export const ERROR_MODELS = {
   fraction_mul_numerators_add_denominators: model('Multiplicerar täljarna men adderar nämnarna', F, OUTSIDE_FROZEN_CHAIN),
 
   // Percentage
-  percentage_number_as_amount: model('Använder procenttalet som ett belopp', P),
+  percentage_number_as_amount: model('Procenttalet blir svaret', P),
   percentage_missing_division_100: model('Multiplicerar med procenttalet utan att dela med 100', P),
   percentage_divide_by_percent_number: model('Dividerar med procenttalet', P),
   percentage_change_amount_only: model('Svarar med förändringen, inte det nya värdet', P),
   percentage_change_reversed: model('Räknar förändringen åt fel håll', P),
-  percentage_ratio_not_converted: model('Lämnar andelen utan att göra om till procent', P),
+  percentage_ratio_not_converted: model('Andelen görs inte om till procent', P),
   percentage_part_whole_reversed: model('Vänder på del och helhet', P),
 
   // Algebra
-  algebra_constant_dropped: model('Konstanten faller bort', G),
-  algebra_unlike_terms_combined: model('Slår ihop variabelterm och konstant', G),
-  algebra_variable_dropped: model('Variabeln faller bort', G),
-  algebra_coefficient_dropped: model('Koefficienten faller bort', G),
-  algebra_coefficient_added: model('Adderar koefficienten i stället för att multiplicera', G),
+  algebra_constant_dropped: model('Talet utan bokstav faller bort', G),
+  algebra_unlike_terms_combined: model('Slår ihop bokstavsterm och tal', G),
+  algebra_variable_dropped: model('Bokstaven faller bort', G),
+  algebra_coefficient_dropped: model('Talet framför bokstaven faller bort', G),
+  algebra_coefficient_added: model('Adderar talet framför bokstaven i stället för att multiplicera', G),
   algebra_square_as_double: model('Kvadrat räknas som dubbelt', G),
 
   // Order of operations
@@ -126,7 +126,7 @@ export const ERROR_MODELS = {
   expression_left_to_right_no_parentheses: model('Räknar från vänster och bortser från parenteserna', E),
 
   // Number bonds and doubles
-  bond_sum_instead_of_missing: model('Adderar i stället för att söka saknad term', N),
+  bond_sum_instead_of_missing: model('Adderar i stället för att söka den saknade termen', N),
   bond_known_term_returned: model('Svarar med den kända termen', N),
   bond_target_returned: model('Svarar med måltalet', N),
   bond_ten_friend: model('Använder 10-kompisen fast måltalet är ett annat', N, OUTSIDE_FROZEN_CHAIN),
@@ -137,30 +137,13 @@ export const ERROR_MODELS = {
   double_instead_of_half: model('Dubblar i stället för att halvera', N),
 }
 
-// Titles added 2026-11-12 and not yet read by Simon. They replace a fallback
-// that showed the first sentence of the computed reason.
-export const TITLES_AWAITING_REVIEW = ['percentage_number_as_amount', 'percentage_missing_division_100',
-  'percentage_divide_by_percent_number', 'percentage_change_amount_only', 'percentage_change_reversed',
-  'percentage_ratio_not_converted', 'percentage_part_whole_reversed', 'algebra_constant_dropped',
-  'algebra_unlike_terms_combined', 'algebra_variable_dropped', 'algebra_coefficient_dropped', 'algebra_coefficient_added',
-  'algebra_square_as_double', 'expression_left_to_right', 'expression_parentheses_ignored',
-  'expression_left_to_right_no_parentheses', 'bond_sum_instead_of_missing', 'bond_known_term_returned',
-  'bond_target_returned', 'double_no_carry', 'double_original_returned', 'double_known_product_returned', 'double_instead_of_half']
+// Titles not yet read by Simon. Empty since his review on 2026-11-14.
+export const TITLES_AWAITING_REVIEW = []
 
 // Models that still lack a teacher-facing description of the thinking. The
 // list is open debt: a description is added through the routine in section 9
 // of the governance document, and the id leaves this list in the same change.
-export const DESCRIPTIONS_PENDING = ['answer_zero', 'answer_55', 'operation_swap', 'place_value_scaling', 'answer_off_by_one', 'partial_answer_entry',
-  'last_two_digits_swapped', 'notebook_answer_mismatch', 'ones_digits_only', 'table_off_by_one',
-  'decimal_parts_multiplied_separately', 'quotient_off_by_one', 'dividend_as_answer', 'divisor_as_answer', 'reversed_operands',
-  'fraction_components_separately', 'fraction_keep_first_denominator', 'fraction_integer_in_denominator',
-  'fraction_add_instead_of_multiply', 'percentage_number_as_amount', 'percentage_missing_division_100',
-  'percentage_divide_by_percent_number', 'percentage_change_amount_only', 'percentage_change_reversed',
-  'percentage_ratio_not_converted', 'percentage_part_whole_reversed', 'algebra_constant_dropped',
-  'algebra_unlike_terms_combined', 'algebra_variable_dropped', 'algebra_coefficient_dropped', 'algebra_coefficient_added',
-  'algebra_square_as_double', 'expression_left_to_right', 'expression_parentheses_ignored',
-  'expression_left_to_right_no_parentheses', 'bond_sum_instead_of_missing', 'bond_known_term_returned',
-  'bond_target_returned', 'double_no_carry', 'double_original_returned', 'double_known_product_returned', 'double_instead_of_half']
+export const DESCRIPTIONS_PENDING = []
 export const hasDescription = id => Boolean(MODEL_DESCRIPTIONS[id])
 
 const ids = Object.keys(ERROR_MODELS)

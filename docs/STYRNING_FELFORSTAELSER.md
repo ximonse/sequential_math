@@ -237,6 +237,9 @@ förrän det föregående är klart.
    nämnaren som svar (oklart) och vad som missförstås vid fel räknesätt.
    Felförståelserna visas för lärare först i steg 4. Antigravitys granskning
    kunde inte köras (kvoten slut till 2026-11-15).
+   *Skulden i lärartext och rubriker löst 2026-11-14:* alla 80 modeller har
+   lärartext och granskad rubrik (Simon: "Listan ser bra ut"). Kvar: fälten
+   källa och slumprisk per modell.
 2. **Täckningsrapport.** Bygg måttstocken och kör den på befintligt underlag.
    Inför spärr R-C och R-D.
    *Klart när:* rapporten återger baslinjen i avsnitt 3 och summorna stämmer.

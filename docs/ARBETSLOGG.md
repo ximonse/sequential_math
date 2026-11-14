@@ -1,5 +1,28 @@
 # Arbetslogg
 
+## 2026-11-14: Steg 1-skulden: lärartext och rubriker
+
+### Logg
+
+- Förslag för alla 42 modeller som saknade lärartext (23 med ogranskad
+  rubrik) i `Hermes Vault/Skola och lektioner/Matematik/Felmodeller-lartext-for-granskning-2026-11-14.md`.
+- Inlagt efter granskning: lärartext och samtalsingång i
+  `modelDescriptions.js`, 14 nya rubriker i katalogen. Listorna över
+  väntande texter och rubriker är tomma; katalogtestet håller dem så.
+
+### Simons beslut
+
+- "Listan ser bra ut": alla förslag godkända som de stod.
+
+### Agentens val
+
+- Vardagliga ord i rubrikerna: "talet som ska delas" i stället för täljare vid
+  division, "talet framför bokstaven" i stället för koefficient.
+
+### Kvar i steg 1
+
+- Fälten källa och slumprisk per modell.
+
 ## 2026-11-11 – 2026-11-14: Felförståelser tydliga för läraren (screening först)
 
 Styrs av `docs/STYRNING_FELFORSTAELSER.md` (antagen 2026-11-11). Detaljer per

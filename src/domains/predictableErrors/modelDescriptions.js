@@ -9,6 +9,7 @@ const DIV = 'NCM-område AS5 (kort division), förkunskap AG8.'
 const WRITTEN_ADD = 'NCM-område AS1 (skriftlig addition), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20.'
 
 const SIMON_2026_11_12 = 'Simons iakttagelse i riktiga elevsvar 2026-11-12.'
+const REVIEWED_2026_11_14 = 'Agentens förslag, granskat och godkänt av Simon 2026-11-14.'
 const SIMON_2026_11_14 = 'Simons tolkning av riktiga elevsvar 2026-11-14.'
 const AGENT_2026_11_14 = 'Agentens förslag ur riktiga elevsvar, godkänt av Simon 2026-11-14.'
 
@@ -229,5 +230,216 @@ export const MODEL_DESCRIPTIONS = {
     thinkingSv: 'Eleven får rätt delar men byter plats på täljare och nämnare: 2/4 + 1/4 blir 4/3. Det kan vara osäkerhet om vad som är täljare och nämnare.',
     sourceSv: SIMON_2026_11_12,
     openersSv: ['Fråga vilket tal som visar hur många delar helheten har.'],
+  },
+  // Step 1 debt, reviewed by Simon 2026-11-14 ("Listan ser bra ut").
+  answer_zero: {
+    thinkingSv: 'Eleven svarar 0 på flera olika uppgifter. Det säger inget om räknandet; troligen ger eleven upp eller klickar förbi.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga hur det kändes att göra uppgifterna och vad som gjorde att hen svarade 0.'],
+  },
+  answer_55: {
+    thinkingSv: 'Eleven svarar 55 på flera olika uppgifter, oavsett tal. Ett snabbt tangenttryck snarare än ett räknesvar; troligen ger eleven upp eller klickar förbi.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga hur det kändes att göra uppgifterna och vad som gjorde att hen svarade 55.'],
+  },
+  operation_swap: {
+    thinkingSv: 'Eleven räknar med ett annat räknesätt än uppgiften anger, till exempel adderar i en subtraktion: 574 − 238 blir 812.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Be eleven läsa uppgiften högt och fråga om svaret kan stämma: kan 574 − 238 bli större än 574?'],
+  },
+  place_value_scaling: {
+    thinkingSv: 'Siffrorna stämmer men värdet är tio, hundra eller tusen gånger för stort eller för litet, till exempel 72 i stället för 7,2. Ofta hamnar decimaltecknet eller en nolla fel.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Be eleven uppskatta svaret först: ungefär hur stort borde det bli?'],
+  },
+  answer_off_by_one: {
+    thinkingSv: 'Svaret är ett för mycket eller ett för lite, till exempel 3 · 3 = 8. Oftast plockas tabellen fram fel eller räknas upp ett steg för långt; det kan också vara fokus.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Låt eleven räkna högt från en känd produkt, till exempel 3 · 2, och se var det blir fel.'],
+  },
+  partial_answer_entry: {
+    thinkingSv: 'Bara första siffran i rätt svar står i svarsrutan, till exempel 1 i stället för 12. Troligen avbruten inmatning, inget räknefel.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Titta i räknehäftet eller fråga eleven vad hen tänkte skriva.'],
+  },
+  last_two_digits_swapped: {
+    thinkingSv: 'Svaret har rätt siffror men de två sista i omvänd ordning, till exempel 21 i stället för 12. Troligen fel vid avskrift eller inmatning, inget räknefel.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Be eleven läsa sitt svar högt och jämföra med uträkningen.'],
+  },
+  notebook_answer_mismatch: {
+    thinkingSv: 'Uträkningen i räknehäftet ger rätt svar, men ett annat svar står i svarsrutan. Felet ligger i avskrivningen eller inmatningen, inte i räknandet.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Visa eleven båda svaren och fråga vilket som gäller.'],
+  },
+  ones_digits_only: {
+    thinkingSv: 'Eleven multiplicerar bara entalssiffrorna och tappar tiotalen: 3 · 12 blir 6. Tiotalssiffran behandlas som om den inte fanns.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga vad 12 består av och be eleven räkna 3 · 10 och 3 · 2 för sig.'],
+  },
+  table_off_by_one: {
+    thinkingSv: 'Svaret är en produkt från granntabellen, till exempel 3 · 4 = 9 (som 3 · 3). Tabellfaktumet plockas fram fel; det visas som mönster först över tre olika uppgifter.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Låt eleven räkna fram produkten från en känd granne, till exempel 3 · 4 från 3 · 3.'],
+  },
+  decimal_parts_multiplied_separately: {
+    thinkingSv: 'Eleven multiplicerar heltalet och decimaldelen var för sig och skriver ihop dem: 7 · 6,7 blir 42,49 (7 · 6 = 42 och 7 · 7 = 49). Decimaldelen behandlas som ett eget heltal.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Be eleven uppskatta 7 · 6,7 med 7 · 7 och jämföra med sitt svar.'],
+  },
+  quotient_off_by_one: {
+    thinkingSv: 'Kvoten är ett för stor eller för liten: 84 / 6 blir 13. Ofta plockas tabellen fram fel eller så kontrolleras inte svaret.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Be eleven kontrollera med multiplikation: blir 6 · 13 lika med 84?'],
+  },
+  dividend_as_answer: {
+    thinkingSv: 'Eleven svarar med talet som ska delas: 84 / 6 blir 84. Det kan betyda att eleven inte vet hur man börjar, eller ett tryck förbi. Behöver granskas.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga vad uppgiften ber om: hur många sexor ryms i 84?'],
+  },
+  divisor_as_answer: {
+    thinkingSv: 'Eleven svarar med talet man delar med: 84 / 6 blir 6. Oklart om det är en felförståelse eller ett sätt att ge upp; behöver granskas.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Be eleven berätta vad 84 / 6 betyder med egna ord eller en bild.'],
+  },
+  reversed_operands: {
+    thinkingSv: 'Eleven delar det mindre talet med det större: 84 / 6 räknas som 6 / 84. Ordningen tros inte spela roll i division.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga om 84 / 6 och 6 / 84 är lika mycket, och låt eleven visa med föremål.'],
+  },
+  fraction_components_separately: {
+    thinkingSv: 'Eleven adderar täljare med täljare och nämnare med nämnare: 1/3 + 1/4 blir 2/7. Bråket ses som två separata heltal.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Låt eleven rita 1/3 och 1/4 och jämföra summan med 2/7.'],
+  },
+  fraction_keep_first_denominator: {
+    thinkingSv: 'Eleven adderar täljarna och behåller första nämnaren: 1/3 + 1/4 blir 2/3. Delarna görs inte lika stora först.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga om tredjedelar och fjärdedelar är lika stora delar.'],
+  },
+  fraction_integer_in_denominator: {
+    thinkingSv: 'Eleven multiplicerar heltalet med nämnaren i stället för täljaren: 3/4 · 2 blir 3/8. Svaret blir mindre fast man tar fler delar.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga: blir två gånger tre fjärdedelar mer eller mindre än tre fjärdedelar?'],
+  },
+  fraction_add_instead_of_multiply: {
+    thinkingSv: 'Eleven adderar bråket och talet i stället för att multiplicera: 3/4 · 2 blir 2 3/4.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Låt eleven läsa uppgiften som två gånger tre fjärdedelar och rita den.'],
+  },
+  percentage_number_as_amount: {
+    thinkingSv: 'Eleven svarar med procenttalet som om det vore beloppet: 12 % av 250 blir 12. Procent uppfattas inte som en andel av något.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga: är 12 % av 250 lika mycket som 12 % av 1000?'],
+  },
+  percentage_missing_division_100: {
+    thinkingSv: 'Eleven multiplicerar med procenttalet som med ett vanligt tal: 12 % av 250 blir 3000. Procent betyder hundradelar, men det delas inte med 100.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Be eleven uppskatta: är 12 % av 250 mer eller mindre än 250?'],
+  },
+  percentage_divide_by_percent_number: {
+    thinkingSv: 'Eleven delar med procenttalet i stället för att ta en andel: 12 % av 250 blir 250 / 12, ungefär 20,8.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga vad 10 % av 250 är och bygg vidare därifrån.'],
+  },
+  percentage_change_amount_only: {
+    thinkingSv: 'Eleven räknar ut rabatten men inte vad som blir kvar: 20 % rabatt på 200 kr blir 40 i stället för 160.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga vad varan kostar efter rabatten.'],
+  },
+  percentage_change_reversed: {
+    thinkingSv: 'Eleven lägger på i stället för att dra av: 20 % rabatt på 200 kr blir 240.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga om priset blir högre eller lägre med rabatt.'],
+  },
+  percentage_ratio_not_converted: {
+    thinkingSv: 'Eleven räknar ut andelen men skriver den som decimaltal: 12 av 48 blir 0,25 i stället för 25 %.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga hur 0,25 skrivs i hundradelar.'],
+  },
+  percentage_part_whole_reversed: {
+    thinkingSv: 'Eleven delar helheten med delen: 12 av 48 räknas som 48 / 12 = 4, alltså 400 %.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga om delen kan vara mer än helheten.'],
+  },
+  algebra_constant_dropped: {
+    thinkingSv: 'Eleven tar bort talet utan variabel: 3x + 5 förenklas till 3x. Oklart varför; kanske ses talet som färdigt. Behöver granskas.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Sätt in x = 1 i båda uttrycken och jämför.'],
+  },
+  algebra_unlike_terms_combined: {
+    thinkingSv: 'Eleven lägger ihop termer som inte går att slå ihop: 3x + 5 blir 8x. Bokstaven ses som en etikett, inte som ett tal.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Låt eleven sätta in x = 2 i 3x + 5 och i 8x.'],
+  },
+  algebra_variable_dropped: {
+    thinkingSv: 'Eleven räknar med talen och tappar bokstaven: 3x + 5 blir 8.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga vad x står för och vad 3x betyder.'],
+  },
+  algebra_coefficient_dropped: {
+    thinkingSv: 'När x ska ersättas med ett tal tappar eleven talet framför: 3x + 2 med x = 4 blir 4 + 2 = 6.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga vad 3x betyder: tre gånger x.'],
+  },
+  algebra_coefficient_added: {
+    thinkingSv: 'Eleven lägger ihop talet framför och värdet: 3x + 2 med x = 4 blir 3 + 4 + 2 = 9. 3x läses som 3 + x.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Be eleven skriva 3x med gångertecken.'],
+  },
+  algebra_square_as_double: {
+    thinkingSv: 'Eleven räknar x · x som 2 · x: med x = 5 blir det 10 i stället för 25.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga vad 5 · 5 är och jämför med 5 + 5.'],
+  },
+  expression_left_to_right: {
+    thinkingSv: 'Eleven räknar i skrivordning och låter inte multiplikation gå före addition: 2 + 3 · 4 blir 20 i stället för 14.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga vilken ordning som gäller och låt eleven pröva med ett exempel med pengar.'],
+  },
+  expression_parentheses_ignored: {
+    thinkingSv: 'Eleven räknar som om parenteserna inte fanns: (2 + 3) · 4 blir 14 i stället för 20.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga vad parenteserna säger att man ska räkna först.'],
+  },
+  expression_left_to_right_no_parentheses: {
+    thinkingSv: 'Eleven räknar i skrivordning och bortser från parenteserna: 18 / (3 + 3) · 2 blir 18 i stället för 6.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Be eleven ringa in det som ska räknas först.'],
+  },
+  bond_sum_instead_of_missing: {
+    thinkingSv: 'I 3 + ? = 10 adderar eleven talen och svarar 13. Likhetstecknet läses som räkna ihop allt.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga vilket tal som behövs för att det ska bli 10.'],
+  },
+  bond_known_term_returned: {
+    thinkingSv: 'I 3 + ? = 10 svarar eleven 3. Oklart om eleven missförstår uppgiften eller skriver av fel; behöver granskas.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Be eleven läsa uppgiften högt och peka på det som saknas.'],
+  },
+  bond_target_returned: {
+    thinkingSv: 'I 3 + ? = 10 svarar eleven 10. Svaret blir talet efter likhetstecknet.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga: blir 3 + 10 lika med 10?'],
+  },
+  double_no_carry: {
+    thinkingSv: 'Eleven dubblar utan att föra över tiotalet: dubbelt 7 blir 4 (14 utan ettan), dubbelt 16 blir 22.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Be eleven dubbla tiotalen och entalen var för sig.'],
+  },
+  double_original_returned: {
+    thinkingSv: 'Eleven svarar med det givna talet: dubbelt 7 blir 7. Troligen läses uppgiften inte klart, eller så ger eleven upp.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Be eleven läsa uppgiften högt.'],
+  },
+  double_known_product_returned: {
+    thinkingSv: 'När uppgiften ber om hälften svarar eleven med talet som ska halveras: hälften av 14 blir 14.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga: vad är hälften av 14?'],
+  },
+  double_instead_of_half: {
+    thinkingSv: 'Eleven dubblar när uppgiften ber om hälften: hälften av 14 blir 28.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga om svaret ska bli större eller mindre än 14.'],
   },
 }

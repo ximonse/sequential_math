@@ -9,6 +9,8 @@ const DIV = 'NCM-område AS5 (kort division), förkunskap AG8.'
 const WRITTEN_ADD = 'NCM-område AS1 (skriftlig addition), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20.'
 
 const SIMON_2026_11_12 = 'Simons iakttagelse i riktiga elevsvar 2026-11-12.'
+const SIMON_2026_11_14 = 'Simons tolkning av riktiga elevsvar 2026-11-14.'
+const AGENT_2026_11_14 = 'Agentens förslag ur riktiga elevsvar, godkänt av Simon 2026-11-14.'
 
 const DECIMAL_SUB = {
   smaller_minus_larger: {
@@ -177,6 +179,31 @@ export const MODEL_DESCRIPTIONS = {
     thinkingSv: 'Dubbeln blir tio för mycket, till exempel 24 + 24 = 58 eller 14 + 14 = 38. Eleven kan lägga till ett tiotal för mycket när entalen dubblas.',
     sourceSv: SIMON_2026_11_12,
     openersSv: ['Be eleven dubbla tiotalen och entalen var för sig och berätta hur hen tänker.'],
+  },
+  decimal_mul_carry_forgotten: {
+    thinkingSv: 'Eleven multiplicerar decimaltalet som ett heltal men för inte vidare minnessiffran: 3 × 2,4 blir 6,2 i stället för 7,2.',
+    sourceSv: SIMON_2026_11_14,
+    openersSv: ['Be eleven uppskatta först: är 3 × 2,4 mer eller mindre än 3 × 2?'],
+  },
+  decimal_mul_carry_added_before: {
+    thinkingSv: 'Eleven lägger minnessiffran till siffran före multiplikationen: 3 × 2,4 blir 3 · (2 + 1) = 9 och svaret 9,2.',
+    sourceSv: AGENT_2026_11_14,
+    openersSv: ['Låt eleven visa i vilken ordning hen multiplicerar och lägger till minnessiffran.'],
+  },
+  decimal_factor_split_left_to_right: {
+    thinkingSv: 'Decimaltalets siffror blir egna tal och uttrycket räknas från vänster: 7 × 6,7 läses som 7 + 6 · 7 och blir (7 + 6) · 7 = 91.',
+    sourceSv: SIMON_2026_11_14,
+    openersSv: ['Fråga vad 6,7 betyder: ungefär hur stort är talet?', 'Be eleven uppskatta 7 × 6,7 med 7 × 7.'],
+  },
+  fraction_mul_components_added: {
+    thinkingSv: 'Eleven adderar täljare och nämnare var för sig fast det är multiplikation: 2/3 · 3/5 blir 5/8.',
+    sourceSv: AGENT_2026_11_14,
+    openersSv: ['Fråga vad 2/3 av 3/5 betyder: blir det mer eller mindre än 3/5?'],
+  },
+  fraction_mul_numerators_add_denominators: {
+    thinkingSv: 'Eleven multiplicerar täljarna men adderar nämnarna: 2/3 · 3/5 blir 6/8. Reglerna för addition och multiplikation blandas.',
+    sourceSv: AGENT_2026_11_14,
+    openersSv: ['Be eleven rita 2/3 av 3/5 och jämföra med sitt svar.'],
   },
   fraction_numerators_only: {
     thinkingSv: 'Eleven adderar bara täljarna och lämnar nämnaren: 2/10 + 6/10 blir 8. Bråket uppfattas som två separata tal.',

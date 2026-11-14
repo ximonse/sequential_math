@@ -71,7 +71,9 @@ export const MANUAL_KEYS = {
     K('number', [8], M('word_problem_keywords'), 'agent', 'Bara första steget: 12 minus en tredjedel.')],
   'ncm-RB4-3c': [K('fraction', [3, 5], M('fraction_compare_parts'), 'source', 'Större nämnare tros ge större bråk (tabellen, FW1).')],
   'ncm-RB4-5c': [K('number', [14], M('fraction_additive_equivalence'), 'agent', 'Additiv förlängning: 3 + 12 = 15 och då 2 + 12 = 14.'),
-    K('numbers', [10, 15], R('input'), 'simon_observation', 'Skriver bråket 10/15 i stället för täljaren (Simon 2026-11-12).')],
+    K('numbers', [10, 15], R('input'), 'simon_observation', 'Skriver bråket 10/15 i stället för täljaren (Simon 2026-11-12).'),
+    K('number', [12], M('fraction_additive_equivalence'), 'agent', 'Svarar med tillägget: 3 + 12 = 15 (godkänt av Simon 2026-11-14).'),
+    K('numbers', [14, 15], M('fraction_additive_equivalence'), 'agent', 'Lägger till 12 på både täljare och nämnare: 14/15 (godkänt av Simon 2026-11-14).')],
   'ncm-RB5-2c': [K('fraction', [2, 3], M('fraction_whole_number_bias'), 'agent', '1 − 3/4 räknat som (3 − 1)/(4 − 1).')],
   'ncm-RB5-5b': [K('fraction', [1, 3], M('multiplication_makes_bigger'), 'agent', 'Division ska göra mindre: svarar en tredjedel.')],
   'ncm-RP1-1a': [K('number', [1], M('wrong_operation'), 'agent', 'Halverar i stället för att dubbla.')],
@@ -103,9 +105,24 @@ const ncmTask = taskId => ncmBank.tasks.find(task => task.taskId === taskId)
 
 // The problem the error models can compute for a screening question, if the
 // question is the bank's task in the same version and wording.
+// A teacher's own question that is a bare calculation, such as "Räkna ut 864 / 4."
+// (Simon 2026-11-14). The analysis checks the computed answer against the key.
+const OWN_CALCULATION = /^(?:(?:Räkna ut|Beräkna|Räkna)\s+)?(\d{1,5}(?:[.,]\d{1,3})?)\s*([+−·×*/:-])\s*(\d{1,5}(?:[.,]\d{1,3})?)\s*[.=?]?\s*$/iu
+const OWN_OPERATION = { '+': 'addition', '−': 'subtraction', '-': 'subtraction', '·': 'multiplication', '×': 'multiplication', '*': 'multiplication', '/': 'division', ':': 'division' }
+export function ownCalculation(promptSv) {
+  const match = OWN_CALCULATION.exec(String(promptSv ?? ''))
+  if (!match) return null
+  const number = text => Number(text.replace(',', '.'))
+  return A(OWN_OPERATION[match[2]], number(match[1]), number(match[3]))
+}
+
 export function screeningStructure(question) {
   const q = question ?? {}
   if (q.operation || q.values) return { status: 'in_task' }
+  if (String(q.taskId ?? '').startsWith('custom-')) {
+    const problem = ownCalculation(q.promptSv)
+    return problem ? { status: 'added', problem } : { status: 'none' }
+  }
   const structure = NCM_STRUCTURE[q.taskId]
   if (!structure) return { status: 'none' }
   const task = ncmTask(q.taskId)

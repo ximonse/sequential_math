@@ -140,7 +140,9 @@ export const MISCONCEPTIONS = {
       { id: 'fraction_components_separately', basis: 'source', noteSv: 'Klustret ger 1/2 + 1/3 = 2/5 som exempel.' },
       { id: 'fraction_numerators_only', basis: 'agent', noteSv: '2/10 + 6/10 = 8: bara täljarna räknas, som heltal.' },
       { id: 'fraction_keep_first_denominator', basis: 'agent', noteSv: 'Täljarna räknas som heltal och en nämnare behålls.' },
-      { id: 'fraction_integer_in_denominator', basis: 'agent', noteSv: '2/3 · 6 = 2/18: heltalet läggs till nämnaren som ett eget tal.' }
+      { id: 'fraction_integer_in_denominator', basis: 'agent', noteSv: '2/3 · 6 = 2/18: heltalet läggs till nämnaren som ett eget tal.' },
+      { id: 'fraction_mul_components_added', basis: 'agent', noteSv: '2/3 · 3/5 = 5/8: täljare och nämnare adderas som heltal (godkänt av Simon 2026-11-14).' },
+      { id: 'fraction_mul_numerators_add_denominators', basis: 'agent', noteSv: '2/3 · 3/5 = 6/8: täljare och nämnare behandlas som separata heltal (godkänt av Simon 2026-11-14).' }
     ],
   },
   fraction_additive_equivalence: {
@@ -243,7 +245,8 @@ export const MISCONCEPTIONS = {
     ncm: ['RD1', 'RD2'],
     errorModels: [
       { id: 'decimal_tenths_as_hundredths', basis: 'agent', noteSv: 'Decimaldelarna adderas som heltal: 5 + 6 = 11 skrivs efter kommat.' },
-      { id: 'decimal_only_fraction_added', basis: 'agent', noteSv: 'Bara delen efter kommat läggs till; heltalsdelen följer inte med. Kan också vara bristande fokus.' }
+      { id: 'decimal_only_fraction_added', basis: 'agent', noteSv: 'Bara delen efter kommat läggs till; heltalsdelen följer inte med. Kan också vara bristande fokus.' },
+      { id: 'decimal_factor_split_left_to_right', basis: 'simon_observation', noteSv: 'Simon 2026-11-14: 7 × 6,7 räknat som 7 + 6 · 7 = 91 från vänster; 6 och 7 blir två tal.' }
     ],
   },
   fraction_bar_as_comma: {
@@ -360,6 +363,8 @@ export const MISCONCEPTIONS = {
       { id: 'unnecessary_exchange', basis: 'agent', noteSv: 'Minskar en kolumn utan växling.' },
       { id: 'mul_carry_added_before', basis: 'agent', noteSv: 'Minnessiffran läggs till på fel ställe.' },
       { id: 'mul_carry_always_one', basis: 'agent', noteSv: 'Minnessiffran blir alltid 1.' },
+      { id: 'decimal_mul_carry_forgotten', basis: 'simon_observation', noteSv: 'Simon 2026-11-14: 3 × 2,4 = 6,2, glömd minnessiffra.' },
+      { id: 'decimal_mul_carry_added_before', basis: 'agent', noteSv: '3 × 2,4 = 9,2: minnessiffran läggs till före multiplikationen.' },
       { id: 'div_remainder_ignored', basis: 'agent', noteSv: 'Resten växlas inte vidare till nästa siffra.' },
       { id: 'div_remainder_as_ones', basis: 'agent', noteSv: 'Resten blir ental i stället för tiotal.' },
       { id: 'add_left_to_right', basis: 'agent', noteSv: 'Växlingen förs åt fel håll.' },

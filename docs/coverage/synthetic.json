@@ -1,26 +1,26 @@
 {
  "noteSv": "Täckning på syntetiskt underlag ur katalogens exempel. Uppdateras med --write när en ändring i felmodellerna är avsiktlig; diffen visar vad som ändrades.",
- "total": 508,
+ "total": 543,
  "statuses": {
-  "correct": 72,
-  "incorrect": 435,
+  "correct": 82,
+  "incorrect": 460,
   "unanswered": 1,
   "partial": 0,
   "other": 0
  },
  "wrong": {
-  "incorrect": 435,
-  "misconception": 371,
-  "repeated_task": 20,
+  "incorrect": 460,
+  "misconception": 390,
+  "repeated_task": 23,
   "observation": 5,
   "input": 2,
   "gave_up": 1,
-  "unexplained": 36,
-  "unexplainedNoModel": 35,
+  "unexplained": 39,
+  "unexplainedNoModel": 38,
   "unexplainedNotAnalysed": 1,
   "speedTraining": 54,
   "reasons": {
-   "no_model": 35,
+   "no_model": 38,
    "unsupported_structure": 1
   }
  },
@@ -127,18 +127,18 @@
    "reasons": {}
   },
   "arithmetic:multiplication": {
-   "incorrect": 80,
-   "misconception": 65,
-   "repeated_task": 9,
+   "incorrect": 95,
+   "misconception": 76,
+   "repeated_task": 12,
    "observation": 3,
    "input": 2,
    "gave_up": 0,
-   "unexplained": 1,
-   "unexplainedNoModel": 1,
+   "unexplained": 2,
+   "unexplainedNoModel": 2,
    "unexplainedNotAnalysed": 0,
    "speedTraining": 0,
    "reasons": {
-    "no_model": 1
+    "no_model": 2
    }
   },
   "arithmetic:subtraction": {
@@ -157,23 +157,23 @@
    }
   },
   "fractions:addition": {
-   "incorrect": 20,
+   "incorrect": 22,
    "misconception": 14,
    "repeated_task": 2,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
-   "unexplained": 4,
-   "unexplainedNoModel": 4,
+   "unexplained": 6,
+   "unexplainedNoModel": 6,
    "unexplainedNotAnalysed": 0,
    "speedTraining": 0,
    "reasons": {
-    "no_model": 4
+    "no_model": 6
    }
   },
   "fractions:multiplication": {
-   "incorrect": 12,
-   "misconception": 12,
+   "incorrect": 20,
+   "misconception": 20,
    "repeated_task": 0,
    "observation": 0,
    "input": 0,
@@ -368,6 +368,18 @@
    "answers": 3,
    "onlyModel": 3
   },
+  "decimal_factor_split_left_to_right": {
+   "answers": 3,
+   "onlyModel": 3
+  },
+  "decimal_mul_carry_added_before": {
+   "answers": 4,
+   "onlyModel": 4
+  },
+  "decimal_mul_carry_forgotten": {
+   "answers": 4,
+   "onlyModel": 4
+  },
   "decimal_only_fraction_added": {
    "answers": 3,
    "onlyModel": 3
@@ -463,6 +475,14 @@
   "fraction_keep_first_denominator": {
    "answers": 6,
    "onlyModel": 6
+  },
+  "fraction_mul_components_added": {
+   "answers": 4,
+   "onlyModel": 4
+  },
+  "fraction_mul_numerators_add_denominators": {
+   "answers": 4,
+   "onlyModel": 4
   },
   "fraction_numerators_only": {
    "answers": 5,

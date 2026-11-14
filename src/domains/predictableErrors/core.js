@@ -1,4 +1,4 @@
-export const PREDICTABLE_RULE_VERSION = 'predictable-errors-v11'
+export const PREDICTABLE_RULE_VERSION = 'predictable-errors-v12'
 
 export const ARITHMETIC_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
 // The arithmetic operation the pupil met. Decimal tasks in ordinary practice are

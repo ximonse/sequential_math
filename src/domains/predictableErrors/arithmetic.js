@@ -153,6 +153,21 @@ export function arithmeticCandidates(problem, answer) {
     const wrong = predictDecimalPartsSeparately(a, b)
     if (wrong !== null) predictions.push(prediction('decimal_parts_multiplied_separately', wrong,
       'Svaret matchar heltal och decimaldel multiplicerade var för sig och skrivna ihop.'))
+    // A one-digit whole number times a decimal, read as whole-number multiplication (Simon 2026-11-14).
+    const [whole, decimal] = Number.isInteger(a) ? [a, b] : Number.isInteger(b) ? [b, a] : [null, null]
+    const places = decimal === null ? 0 : decimalPlaces(decimal)
+    if (whole >= 2 && whole <= 9 && decimal > 0 && places >= 1 && places <= 2) {
+      const scale = 10 ** places, digits = Math.round(decimal * scale)
+      if (digits >= 10) predictions.push(
+        prediction('decimal_mul_carry_forgotten', mulCarryForgotten(digits, whole) / scale, 'Svaret matchar att minnessiffran inte förs vidare när decimaltalet multipliceras (3 × 2,4 = 6,2).'),
+        prediction('decimal_mul_carry_added_before', mulCarryAddedBefore(digits, whole) / scale, 'Svaret matchar att minnessiffran läggs till siffran före multiplikationen (3 × 2,4 = 9,2).'))
+      if (places === 1) {
+        // 7 × 6,7 read as 7 + 6 · 7 and calculated from the left: (7 + 6) · 7 = 91.
+        const value = (whole + Math.trunc(decimal)) * (digits % 10)
+        for (const answer of [value, value / 10]) predictions.push(prediction('decimal_factor_split_left_to_right', answer,
+          'Svaret matchar att decimaltalets siffror blir egna tal och att uttrycket räknas från vänster (7 × 6,7 som 7 + 6 · 7 = 91).'))
+      }
+    }
   }
   // Off-by-one only for single-digit table facts, where counting a step wrong is plausible.
   const tableFact = op === 'multiplication' && [a, b].every(n => Number.isInteger(n) && n >= 0 && n <= 10)

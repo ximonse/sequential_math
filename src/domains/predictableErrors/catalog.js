@@ -19,6 +19,9 @@ import { MODEL_DESCRIPTIONS } from './modelDescriptions.js'
 //   repeated). Below that the answers count as observations.
 // notRival: never used as a rival in contrast questions.
 // noFollowUp: the card offers no contrast questions or Fråga igen.
+// screeningShowsSingle: in a screening's results a single answer is shown on its
+//   misconception card, marked as one occurrence (Simon 2026-11-14: a wrong
+//   operation is clear even once). Pupil reports keep minDistinctTasks.
 const model = (titleSv, domains, options = {}) => ({ titleSv, domains, kind: 'misconception', ...options })
 // Models added while the follow-up chain is frozen (docs/STYRNING_FELFORSTAELSER.md,
 // section 4) stay out of contrast questions until it is unfrozen.
@@ -29,7 +32,7 @@ export const ERROR_MODELS = {
   // Answer observations and input slips
   // Simon 2026-11-12: a misunderstanding of when to use which operation, not a slip.
   // Kept out of the contrast questions until that follow-up is designed.
-  operation_swap: model('Annat räknesätt', A, { yieldsToSpecific: true, minDistinctTasks: 3, notRival: true, noFollowUp: true }),
+  operation_swap: model('Annat räknesätt', A, { yieldsToSpecific: true, minDistinctTasks: 3, notRival: true, noFollowUp: true, screeningShowsSingle: true }),
   place_value_scaling: model('Svaret är skalat med en tiopotens', A, { kind: 'observation', yieldsToSpecific: true }),
   answer_off_by_one: model('Ett ifrån facit', [...A, ...N], { kind: 'observation', speedSlip: true }),
   partial_answer_entry: model('Bara första siffran inskriven', [...A, ...N], { kind: 'input', yieldsToSpecific: true, speedSlip: true }),
@@ -56,12 +59,16 @@ export const ERROR_MODELS = {
   one_carry_forgotten: model('En av flera minnessiffror glöms', A),
   phantom_carry: model('Lägger till minnessiffra som inte behövs', A),
   add_left_to_right: model('Räknar från vänster, minnessiffran åt höger', A),
-  add_multiplied: model('Multiplicerar i stället för att addera', [...A, ...N], { minDistinctTasks: 3, notRival: true, noFollowUp: true }),
+  add_multiplied: model('Multiplicerar i stället för att addera', [...A, ...N], { minDistinctTasks: 3, notRival: true, noFollowUp: true, screeningShowsSingle: true }),
 
   // Decimals (Simon 2026-11-12)
   decimal_tenths_as_hundredths: model('Tiondelar blir hundradelar', A, OUTSIDE_FROZEN_CHAIN),
   decimal_only_fraction_added: model('Lägger bara till decimaldelen av ena talet', A, OUTSIDE_FROZEN_CHAIN),
   decimal_whole_under_last_decimal: model('Heltalet ställs under sista decimalen', A, OUTSIDE_FROZEN_CHAIN),
+  // Simon 2026-11-14: 3 × 2,4 = 6,2 (forgotten carry) and 7 × 6,7 = 91 (7 + 6 · 7 from the left).
+  decimal_mul_carry_forgotten: model('Minnessiffran glöms när decimaltal multipliceras', A, OUTSIDE_FROZEN_CHAIN),
+  decimal_mul_carry_added_before: model('Minnessiffran läggs till före multiplikationen i decimaltal', A, OUTSIDE_FROZEN_CHAIN),
+  decimal_factor_split_left_to_right: model('Decimaltalet delas upp och räknas från vänster', A, OUTSIDE_FROZEN_CHAIN),
   decimal_point_missing_with_error: model('Tappar växlingen och decimaltecknet', A, OUTSIDE_FROZEN_CHAIN),
 
   // Multiplication
@@ -91,6 +98,8 @@ export const ERROR_MODELS = {
   fraction_add_instead_of_multiply: model('Adderar i stället för att multiplicera', F),
   fraction_numerators_only: model('Adderar bara täljarna', F, OUTSIDE_FROZEN_CHAIN),
   fraction_inverted: model('Täljare och nämnare byter plats', F, OUTSIDE_FROZEN_CHAIN),
+  fraction_mul_components_added: model('Adderar täljare och nämnare vid multiplikation', F, OUTSIDE_FROZEN_CHAIN),
+  fraction_mul_numerators_add_denominators: model('Multiplicerar täljarna men adderar nämnarna', F, OUTSIDE_FROZEN_CHAIN),
 
   // Percentage
   percentage_number_as_amount: model('Använder procenttalet som ett belopp', P),
@@ -160,6 +169,7 @@ export const MODEL_TITLES_SV = Object.fromEntries(ids.map(id => [id, ERROR_MODEL
 export const NOT_METHOD_MODELS = where(m => m.kind !== 'misconception')
 export const NOT_RIVAL_MODELS = where(m => m.kind !== 'misconception' || m.notRival)
 export const NO_FOLLOW_UP_MODELS = where(m => m.noFollowUp)
+export const SCREENING_SINGLE_MODELS = where(m => m.screeningShowsSingle)
 export const GAVE_UP_MODELS = where(m => m.kind === 'gave_up')
 export const INPUT_MODELS = where(m => m.kind === 'input')
 export const YIELDS_TO_SPECIFIC_MODELS = where(m => m.yieldsToSpecific)

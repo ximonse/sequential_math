@@ -350,6 +350,26 @@ förrän det föregående är klart.
    166 uppgifter; oförklarade fel 1 717 → 1 247. Ett svar som både är *ger upp*
    och tillhör en sådan uppgift räknas i täckningen som samma uppgift, men
    visas i båda rutorna i rapporten.
+   *Andra omgången 2026-11-14, ur screeningresultaten i produktionen:* Simon
+   tolkade 7 × 6,7 = 91 som 7 + 6 · 7 räknat från vänster och 3 × 2,4 = 6,2
+   som glömd minnessiffra, och godkände agentens förslag för bråkmultiplikation
+   (2/3 · 3/5 = 5/8 och 6/8) och additiv skalning (2/3 = ?/15 ger 12 och 14/15).
+   Fem nya felmodeller, alla utanför den frysta kedjan: minnessiffran glöms
+   eller läggs till före multiplikationen i decimaltal, decimaltalet delas upp
+   och räknas från vänster, adderar täljare och nämnare vid multiplikation,
+   multiplicerar täljarna men adderar nämnarna; två nya nycklar på 2/3 = ?/15.
+   Lärarens egna frågor som är en ren uträkning ("Räkna ut 864 / 4.") får
+   talen ur texten; analysen kontrollerar att uträkningen ger lärarens facit.
+   I screeningvyn visas fel räknesätt på kortet redan första gången, märkt
+   *en gång i screeningen* (Simons besked: tydligt fel räknesätt; agentens val
+   att elevrapporten behåller kravet på tre olika uppgifter och att angränsande
+   produkt inte omfattas). Regelversion v12. Kumlaby åk 6, screeningen
+   2026-11-11, lokalt omklassad: felförståelser 6 → 17, oförklarade 17 → 8.
+   Den frysta kedjan: 440 av 440 befintliga kort oförändrade; de 8 nya korten
+   erbjuder ingen uppföljning. Kvar oförklarat där: 84 / 6 = 12 (tre elever),
+   1,76 + 2,58 = 432, 3 × 2,4 = 3,2, 357 + 268 = 614 och tre fjärdedelar av 8.
+   Listan med alla oförklarade svar och förslag:
+   `Hermes Vault/Skola och lektioner/Matematik/Oforklarade-felsvar-for-granskning-2026-11-14.md`.
 6. **Samma struktur för träningssvaren.** Först därefter.
 
 ## 9. Rutin för nytt område eller ny felmodell

@@ -22,6 +22,7 @@ function Answer({ row, name, cardId }) {
     <span className="text-right tabular-nums"><QuestionText>{row.promptSv.replace(/^Räkna ut /u, '').replace(/\.$/u, '')}</QuestionText>{' → '}
       <span className="font-semibold text-red-700">{row.studentAnswer ?? 'tomt'}</span>
       {row.correctAnswer != null && <s className="ml-1 text-slate-500">{row.correctAnswer}</s>}
+      {cardId && row.singleOccurrence && <span className="block text-xs text-slate-600">En gång i screeningen</span>}
       {cardId && row.teacherMisconceptionIds?.includes(cardId) && <span className="block text-xs text-slate-600">Lärarens val</span>}
       {row.keyNoteSv && <span className="block text-xs text-slate-600">{row.keyNoteSv}</span>}</span>
   </li>

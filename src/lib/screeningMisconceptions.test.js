@@ -52,6 +52,13 @@ describe('screening misconception view', () => {
     expect(view.counts).toMatchObject({ wrong: 1, misconception: 1 })
   })
 
+  it('puts a wrong operation on its card the first time, marked as one occurrence', () => {
+    const [entry] = screeningPupilAnswers([{ source: 'screening', question: { operation: 'subtraction', operands: [574, 238], promptSv: 'Räkna ut 574 − 238.' },
+      answer: { status: 'incorrect', studentAnswer: '812', correctAnswer: '336' } }])
+    expect(entry).toMatchObject({ bucket: 'misconception', singleOccurrence: true, misconceptionIds: ['wrong_operation'] })
+    expect(screeningMisconceptionView([{ studentId: 'x', answers: [{ ...entry, position: 0 }] }]).cards.map(card => card.id)).toEqual(['wrong_operation'])
+  })
+
   it('leaves out a wrong answer the teacher judged right, as the results table does', () => {
     const answer = pupils.flatMap(pupil => pupil.answers).find(a => a.status === 'incorrect')
     const before = screeningMisconceptionView([{ studentId: 'x', answers: [answer] }])

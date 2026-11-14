@@ -29,6 +29,10 @@ export function fractionCandidates(problem, answer) {
     if (d2 === 1 && n2 > 0) push('fraction_integer_in_denominator', n1, d1 * n2, 'Heltalsfaktorn kan ha multiplicerats in i nämnaren.')
     const sum = add(n1, d1, n2, d2)
     push('fraction_add_instead_of_multiply', sum.num, sum.den, 'Svaret kan produceras genom addition i stället för multiplikation.')
+    if (d2 !== 1) {
+      push('fraction_mul_components_added', n1 + n2, d1 + d2, 'Svaret kan produceras genom att addera täljarna och nämnarna var för sig (2/3 · 3/5 = 5/8).')
+      push('fraction_mul_numerators_add_denominators', n1 * n2, d1 + d2, 'Svaret kan produceras genom att multiplicera täljarna men addera nämnarna (2/3 · 3/5 = 6/8).')
+    }
   }
   if (correct.num !== 0 && correct.num !== correct.den) push('fraction_inverted', correct.den, correct.num, 'Svaret är rätt svar med täljare och nämnare på omvända platser.')
   return candidateResult({ domain: 'fractions', correct: formatFraction(correct.num, correct.den), answer,

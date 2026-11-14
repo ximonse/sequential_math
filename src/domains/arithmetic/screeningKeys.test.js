@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import ncmBank from './ncmScreeningTasks.v1.json' with { type: 'json' }
 import bank from './diagnosticTasks.v1.json' with { type: 'json' }
-import { MANUAL_KEYS, NCM_STRUCTURE, NCM_WITHOUT_STRUCTURE, NO_KEY_REASON, manualKeyMatch, screeningStructure } from './screeningKeys.js'
+import { MANUAL_KEYS, NCM_STRUCTURE, NCM_WITHOUT_STRUCTURE, NO_KEY_REASON, manualKeyMatch, ownCalculation, screeningStructure } from './screeningKeys.js'
 import { checkNcmAnswer } from './ncmAnswerCheck.js'
 import { predictableCandidates } from '../predictableErrors/index.js'
 import { MISCONCEPTIONS, NOT_A_MISCONCEPTION_REASONS } from '../predictableErrors/misconceptions.js'
@@ -52,6 +52,20 @@ describe('screening keys', () => {
         expect(checkNcmAnswer(task, key.expected.join(key.format === 'fraction' ? '/' : ' ').replace('.', ',')), `${id}: ${key.expected}`).not.toBe('correct')
       }
     }
+  })
+
+  it('reads the numbers of a bare calculation the teacher wrote, and nothing else', () => {
+    expect(ownCalculation('Räkna ut 864 / 4.')).toMatchObject({ type: 'division', values: { a: 864, b: 4 } })
+    expect(ownCalculation('Beräkna 3,26 + 8,37')).toMatchObject({ type: 'addition', values: { a: 3.26, b: 8.37 } })
+    expect(ownCalculation('55/5')).toMatchObject({ type: 'division', values: { a: 55, b: 5 } })
+    expect(ownCalculation('Skriv 3/4 som decimaltal.')).toBeNull()
+    expect(ownCalculation('Hur mycket är 3 + 4 kr?')).toBeNull()
+    expect(screeningStructure({ taskId: 'custom-abc', promptSv: 'Räkna ut 864 / 4.' })).toMatchObject({ status: 'added' })
+    expect(screeningStructure({ taskId: 'custom-abc', promptSv: 'Rita en triangel.' })).toEqual({ status: 'none' })
+    // A wrong key on the teacher's question is caught: the computed answer must match it.
+    const [entry] = addPredictableEvidence([{ source: 'screening', question: { taskId: 'custom-abc', taskVersion: 1, promptSv: 'Räkna ut 864 / 4.' },
+      answer: { status: 'incorrect', studentAnswer: '211', correctAnswer: '216' } }])
+    expect(entry.interpretation.predictable.matches.map(match => match.modelId)).toContain('div_remainder_ignored')
   })
 
   it('adds structure only to the bank task in the same version and wording', () => {

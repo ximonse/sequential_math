@@ -1,6 +1,6 @@
 import { classifyPupilAnswers, WRONG_BUCKETS } from './errorCoverage.js'
-import { approvedMisconception } from '../domains/predictableErrors/misconceptions.js'
-import { ERROR_MODELS } from '../domains/predictableErrors/catalog.js'
+import { approvedMisconception, misconceptionsForModel } from '../domains/predictableErrors/misconceptions.js'
+import { ERROR_MODELS, SCREENING_SINGLE_MODELS } from '../domains/predictableErrors/catalog.js'
 
 // Misconceptions in a screening's results (docs/STYRNING_FELFORSTAELSER.md,
 // step 4). The server classifies each pupil's answers with the same function as
@@ -9,7 +9,7 @@ import { ERROR_MODELS } from '../domains/predictableErrors/catalog.js'
 
 // One pupil's answers in one screening, for the teacher view.
 export function screeningPupilAnswers(entries) {
-  return classifyPupilAnswers(entries).rows.map(({ entry, original, status, bucket, reason, misconceptionIds = [], modelIds = [], teacherMisconceptionIds }) => ({
+  return classifyPupilAnswers(entries).rows.map(withSingleOccurrence).map(({ entry, original, status, bucket, reason, misconceptionIds = [], modelIds = [], teacherMisconceptionIds, singleOccurrence }) => ({
     assignmentItemId: entry.reference?.assignmentItemId ?? null, taskId: entry.question?.taskId ?? null,
     promptSv: entry.question?.promptSv ?? entry.question?.promptText ?? '',
     studentAnswer: entry.answer?.studentAnswer ?? null, correctAnswer: entry.answer?.correctAnswer ?? null, status,
@@ -19,7 +19,17 @@ export function screeningPupilAnswers(entries) {
     ...(bucket ? { bucket, misconceptionIds, modelTitlesSv: modelIds.map(id => ERROR_MODELS[id]?.titleSv).filter(Boolean) } : {}),
     ...(reason ? { reason } : {}),
     ...(teacherMisconceptionIds ? { teacherMisconceptionIds } : {}),
+    ...(singleOccurrence ? { singleOccurrence } : {}),
     ...(entry.interpretation?.key?.status === 'approved' ? { keyNoteSv: entry.interpretation.key.noteSv } : {}) }))
+}
+
+// A wrong operation is clear even once (Simon 2026-11-14): in a screening it goes
+// on its card, marked as one occurrence, instead of waiting for three tasks.
+function withSingleOccurrence(row) {
+  if (row.bucket !== 'observation') return row
+  const ids = row.modelIds.filter(id => SCREENING_SINGLE_MODELS.has(id))
+  const misconceptionIds = [...new Set(ids.flatMap(id => misconceptionsForModel(id).map(m => m.id)))]
+  return misconceptionIds.length ? { ...row, bucket: 'misconception', misconceptionIds, singleOccurrence: true } : row
 }
 
 const OTHER = ['gave_up', 'repeated_task', 'observation', 'input', 'without_link', 'unexplained']

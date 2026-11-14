@@ -159,7 +159,25 @@ Om elever kör på iPad/mobil och du vill se allt i lärarvyn:
 
 Annars syns bara data som finns lokalt i samma browsermiljö.
 
-## 12. Elevkort: QR-kod och PIN
+## 12. Screening: felförståelser i resultatet
+
+Under **Screening → Resultat** väljer du klass, grupp eller elev och sedan en
+screening. Överst visas **Felförståelser i screeningen**: ett kort per
+felförståelse med vilka elever som har den och vilka svar som pekar dit. Klicka
+ett kort för att rama in svaren i tabellen; klicka igen för att ta bort
+markeringen. Under korten finns det som inte är felförståelser: ger upp,
+obesvarade med uträkning, inmatning och oförklarade svar.
+
+Korten är misstankar ur svaren, inte diagnoser. Pröva dem i samtal. Öppna en
+elevs svar för att se uträkningen; där kan du välja en felförståelse ur listan
+eller skriva en egen.
+
+I elevrapporten stäms de åtta misstankarna med mest underlag av. Övriga visas
+mindre under **Fler misstankar med mindre underlag**.
+
+Detaljer: `docs/NCM_DIAGNOSTIK_GENOMGANG.md`.
+
+## 13. Elevkort: QR-kod och PIN
 
 I `Administration → Klasser` öppnar du `Elever och elevkort` på rätt klass och
 väljer elev. `Nytt QR-kort / ny PIN` skapar eller ersätter elevens kort. För en

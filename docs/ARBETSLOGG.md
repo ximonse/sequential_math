@@ -1,5 +1,109 @@
 # Arbetslogg
 
+## 2026-11-11 – 2026-11-14: Felförståelser tydliga för läraren (screening först)
+
+Styrs av `docs/STYRNING_FELFORSTAELSER.md` (antagen 2026-11-11). Detaljer per
+steg står där; kartkortet `misconception-governance` har beslut och belägg.
+Den här posten är översikten: vad som gjordes, vem som beslutade vad, och
+tankar som inte får tappas.
+
+### Varför
+
+En genomgång av 17 884 riktiga svar (2026-11-11) visade att appen räknade
+fel men inte visade *tänkandet*: 74 % av felen var oförklarade, och 0 av 48
+NCM-screeningfrågor hade struktur för analys. Simon: målet är mängdträning och
+att fånga felförståelser, för individ och grupp, och göra dem "så jävla
+tydliga för läraren". Hur läraren går vidare är fryst tills dess.
+
+### Logg
+
+- **11 nov.** Läraren kan bedöma screeningsvar (räkna som rätt, skriva in
+  glömt svar, anteckna felförståelse); eleven varnas för tomma svar (e72973c).
+- **12 nov.** Styrdokument och frysning (9fdfc22). En katalog för alla
+  felmodeller med testspärr (e3af7d8). Täckningsräkning: varje fel räknas en
+  gång (1f218a7). Decimalsvar når modellerna (cba7d3b, 342 svar). Nio modeller
+  ur Simons läsning av oförklarade svar och signalen *ger upp* (397a88a).
+- **13 nov.** *Samma uppgift fel tre gånger* (5b7f060). 46 felförståelser ur
+  Simons två tabeller, NCM och "Förstå och använda tal", godkända av Simon
+  (49caf3e, be6ffa0). Nycklar för NCM-frågorna, godkända (a61b60b, 33b543e).
+  Steg 4: felförståelsekort i Screening → Resultat (a17db23, f8e4036). Läraren
+  väljer felförståelse ur listan (06fc07f).
+- **14 nov.** Två omgångar med Simons tolkningar ur produktionens
+  screeningar: fem nya modeller, nycklar, tal ur lärarens egna frågor, v12
+  (9cb7eea, 92cf2cb, 848b556). Rutin: läs uppställningen och pröva
+  avskrivningsfel först (508730f). Steg 4 prövat i produktion på Kumlaby åk 6;
+  intern text dold för lärare och tabellen scrollar till inramat svar
+  (a08b47b). Elevrapporten visar alla misstankar, de svagare mindre (b150cdc).
+
+### Siffror
+
+| | Före | Efter |
+| --- | ---: | ---: |
+| Oförklarade fel, alla riktiga svar (2 889 fel) | 74 % | 1 247 st |
+| Kumlaby åk 6, screening 11 nov: svar på felförståelsekort | 6 | 18 |
+| Kumlaby åk 6, screening 11 nov: oförklarade | 17 | 2 |
+| Felmodeller i katalogen | 62 | 80 |
+| Godkända felförståelser | 0 | 46 |
+
+Den frysta uppföljningskedjan kontrollerades vid varje regeländring:
+befintliga kort oförändrade (senast 440 av 440).
+
+### Simons beslut
+
+- 11 nov: styrdokumentet antas; fokus screeningar; frysning av kontrastfrågor,
+  materialkedja, avstämning, didaktikpaket, nya lägen och vyer.
+- 12 nov: angränsande produkt och fel räknesätt kräver mönster över tre olika
+  uppgifter (beslut 3); fel räknesätt är en felförståelse (beslut 4).
+- 13 nov: samma uppgift fel tre gånger fångas oavsett svar. Felförståelser,
+  inte bara felberäkningar; även hastighet, fokus och arbetsminne. Alla 46
+  felförståelser och alla handskrivna nycklar godkända. Steg 4 enligt skiss.
+  Läraren väljer felförståelse ur listan.
+- 14 nov: tolkningar av 7 × 6,7 = 91 (7 + 6 · 7 från vänster, positionsfel
+  kombinerat), 3 × 2,4 = 6,2 (glömd minnessiffra) och 3,2 (bara decimaldelen),
+  84 / 6 = 12 ("kanske" tabellen till 12), tre fjärdedelar av 8 = 24 och 7/8.
+  Ja till tal ur egna frågor. Avskrivningsfel ska prövas när svar inte går
+  att förstå. "Ta bort tak tror jag", svagare misstankar längre ner och
+  mindre. Belastning parkeras tills målet är nått.
+
+### Agentens val (på Simons "välj du" eller som förslag han godtog)
+
+- Fel räknesätt visas på screeningkortet redan första gången, märkt *en
+  gång*; elevrapporten behåller kravet på tre uppgifter; angränsande produkt
+  omfattas inte (slumprisk).
+- Nya modeller hålls utanför den frysta kedjan (inga kontrastfrågor).
+- 84 / 6 = 12 visas som känt fel utan felförståelse tills Simon bekräftar.
+- Elevrapportens åtta kort stäms av som förut; resten visas utan avstämning,
+  så att avstämningen och MCP inte rörs.
+
+### Tankar och öppna frågor
+
+- Vad missförstås vid fel räknesätt: tecknet, uppmärksamheten eller när man
+  adderar och subtraherar? Pröva senare med textuppgifter utan tecken.
+- Nämnaren som svar: oklart om felförståelse.
+- 1,76 + 2,58 = 432 är fortfarande oförklarat.
+- Avskrivningsfel: 357 + 268 = 614 var 357 + 257 rätt räknat. En signal som
+  jämför uppställningens tal med uppgiftens är billig (ingen extra läsning);
+  inte byggd.
+- Simons idé: inställning för om eleven ställer upp själv eller appen gör
+  det, som vid kort division. Fryst (nytt läge).
+- Ej mätt: obesvarade med uträkning i nya screeningar efter varningen.
+- Granskningslista med oförklarade svar och förslag:
+  `Hermes Vault/Skola och lektioner/Matematik/Oforklarade-felsvar-for-granskning-2026-11-14.md`.
+
+### Parkerat: belastning (mätt 14 nov, skrivskyddat)
+
+- Lärarvyns elevlista hämtar hela profilen för alla elever: 44 MB och 15 s för
+  211 elever, automatiskt varannan minut.
+- Elevens sparande skickar hela profilen (upp till 3,9 MB) var 30:e sekund.
+- Screeningens felförståelsevy läser alla elevens screeningförsök: ca 12 s.
+- Förslag i ordning: sammanfattad elevlista, sparande av bara nya svar,
+  felförståelsevyn läser bara aktuell screening. Tas upp när målet är nått.
+
+### Nästa
+
+Skulden i steg 1: 42 modeller utan lärarbeskrivning och 23 rubriker som
+väntar på granskning, som en granskningslista till Simon.
+
 ## 2026-03-25
 
 ### Fas 1 implementerad och pushad — masteryFacts

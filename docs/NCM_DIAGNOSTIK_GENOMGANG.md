@@ -48,6 +48,24 @@ Under **Screening → Resultat** väljer admin klass och ett befintligt uppdrag 
 - Inlämnade och kvar: antal uppgifter, oberoende av svarens korrekthet.
 - Genomgångna: antal försöksrevisioner som läraren uttryckligen markerat.
 
+Ovanför tabellen visas **Felförståelser i screeningen** (2026-11-13, steg 4 i
+`docs/STYRNING_FELFORSTAELSER.md`). Servern klassar varje elevs senaste svar
+per uppgift med samma funktion som täckningsräkningen och elevrapporten
+(`GET /api/teacher-diagnostic-attempts?view=misconceptions`):
+
+- Ett kort per godkänd felförståelse, sorterat efter antal elever, med elevens
+  svar och rätt svar. Ett klick på kortet ramar in svaren i tabellen och
+  scrollar en bred tabell i sidled; elevkolumnen står kvar.
+- Fel räknesätt visas på kortet redan första gången, märkt *En gång i
+  screeningen*. Elevrapporten kräver fortfarande tre olika uppgifter.
+- Lärarens val ur listan visas på kortet, märkt *Lärarens val*.
+- Övrigt: ger upp, obesvarade med uträkning, inmatning, samma uppgift flera
+  gånger, enstaka fel, känt fel utan felförståelse och oförklarade.
+- Siffrorna överst summerar till antalet fel. En grupp eller klass visar
+  summan av sina elever. Fel som läraren bedömt som rätt räknas inte.
+- Text för lärare visar bara tolkningen; vem som tolkat och när ligger i ett
+  eget källfält (spärrat med test).
+
 **Dela ut** och **Resultat** är separata vyer. Valt uppdrag ligger kvar när man
 växlar mellan dem. Gruppmatrisen visar en elev per
 rad och en uppgift per kolumn, med det faktiska inskrivna slutsvaret.
@@ -123,7 +141,10 @@ Genomgången har tre valfria fält för lärarens egen bedömning, sparade i sam
 - **Svar som eleven glömt skriva i svarsrutan** (`teacherAnswer`, högst 200
   tecken, samma teckenregler som elevens svar). Rättas med uppgiftens egna
   regler; för flervals- och skrivsvar finns fältet inte.
-- **Felförståelse som appen inte ser** (`misconception`, högst 500 tecken).
+- **Felförståelse ur listan** (`misconceptionIds`, högst fem av de godkända
+  felförståelserna, 2026-11-13). Servern tar bara emot godkända. Ett fel svar
+  med ett val räknas som felförståelse i screeningvyn och elevrapporten.
+- **Annan felförståelse (fritext)** (`misconception`, högst 500 tecken).
 
 Elevens händelser och observerade svarsstatus ändras aldrig. Resultattabellen
 räknar och färgar efter lärarens bedömning, märkt **L** (lärarbedömt) och **F**

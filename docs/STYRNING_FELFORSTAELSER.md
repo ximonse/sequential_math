@@ -318,7 +318,14 @@ förrän det föregående är klart.
    har ny tanketext på Simons besked; ett klick på kort scrollar en bred tabell
    till det inramade svaret och elevkolumnen står kvar. Laddtiden (ca 12 s)
    hör till belastningsarbetet, som är parkerat.
-   *Kvar av steg 4, kräver Simons val:* (b)
+   *Elevrapportens tak (Simon 2026-11-14: "ta bort tak tror jag", och de med
+   lite underlag längre ner och mindre):* alla regelmisstankar visas. De åtta
+   med mest underlag är kort som stäms av, som förut; resten räknar servern
+   fram och visar kompakt under *Fler misstankar med mindre underlag*, utan
+   avstämning. Avstämningen och MCP-schemat är oförändrade (agentens förslag,
+   så att det frysta inte rörs). Mätt: 9 av 73 elever hade fler än åtta, som
+   mest 23.
+   *Tidigare kvar av steg 4, nu löst:* (b)
    elevrapportens tak på åtta kort och klassvyns summatest (R-C ovan) är
    oförändrade, eftersom schemat delas med den frysta avstämningen.
 5. **Fyll luckorna efter måttstocken.** Ta de vanligaste oförklarade svaren ur

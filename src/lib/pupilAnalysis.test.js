@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { analysisCounts, buildPupilAnalysisDraft, validateAnalysisCheckIn, validatePupilAnalysis } from './pupilAnalysis.js'
 import { addPredictableEvidence } from './evidencePredictableAnalysis.js'
+import { buildRuleHypotheses } from './pupilRuleHypotheses.js'
+import { syntheticCoverageEntries } from './errorCoverageFixture.js'
 
 const entry = (ref, status, patterns = []) => ({ ref, source: 'practice', timestamp: 1000,
   reference: { observationId: ref }, question: { operation: 'subtraction', promptText: '402 − 178' },
@@ -79,5 +81,20 @@ describe('tasks answered wrongly again and again', () => {
     const report = validatePupilAnalysis(buildPupilAnalysisDraft(evidence), evidence)
     expect(report.repeatedTasks).toEqual([{ wrongRefs: ['rep-0', 'rep-1', 'rep-2'], wrongCount: 3, correctRefs: ['rep-3'], correctCount: 1 }])
     expect(report.evidence.map(entry => entry.ref)).toEqual(expect.arrayContaining(['rep-0', 'rep-1', 'rep-2', 'rep-3']))
+  })
+})
+
+describe('suspicions beyond the eight reviewed cards', () => {
+  it('lists every remaining rule suspicion, none with more evidence than the reviewed cards', () => {
+    const entries = addPredictableEvidence(syntheticCoverageEntries().map(({ expectedModel: _model, expectedReason: _reason, ...entry }) => entry))
+    const evidence = { entries, snapshotRevision: 'r', period: {}, source: 'practice', coverage: {} }
+    const all = buildRuleHypotheses(entries)
+    expect(all.length).toBeGreaterThan(8)
+    const report = validatePupilAnalysis(buildPupilAnalysisDraft(evidence), evidence)
+    expect(report.hypotheses).toHaveLength(8)
+    expect(report.hypotheses.length + report.moreHypotheses.length).toBe(all.length)
+    const weakest = Math.min(...report.hypotheses.map(item => item.supportCount))
+    expect(Math.max(...report.moreHypotheses.map(item => item.supportCount))).toBeLessThanOrEqual(weakest)
+    expect(report.evidence.map(entry => entry.ref)).toEqual(expect.arrayContaining(report.moreHypotheses.flatMap(item => item.supportRefs)))
   })
 })

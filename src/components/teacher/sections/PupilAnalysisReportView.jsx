@@ -67,7 +67,10 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
   // Slips, input and answers that do not yet form a pattern across different tasks.
   const slip = item => !gaveUp(item) && (NOT_METHOD_MODELS.has(item.signalCode) || !pattern(item))
   const suspicions = report.hypotheses.filter(item => !slip(item) && !gaveUp(item))
-  const gaveUpItems = report.hypotheses.filter(gaveUp)
+  // Suspicions beyond the reviewed cards, with less evidence: listed smaller further down.
+  const more = (report.moreHypotheses ?? []).map((item, index) => ({ ...item, id: `more-${index + 1}` }))
+  const moreSuspicions = more.filter(item => !slip(item) && !gaveUp(item))
+  const gaveUpItems = [...report.hypotheses, ...more].filter(gaveUp)
   // Suspicions that can share one screening: computed, outside the didactic
   // packages, and not revised or rejected by the teacher.
   const [askAgain, setAskAgain] = useState('')
@@ -81,7 +84,7 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
     && !['revised', 'rejected'].includes(reviewFor(item)?.decision)
   const chosenItems = suspicions.filter(item => chosen.has(item.id) && combinable(item))
   const toggle = id => setChosen(value => { const next = new Set(value); if (next.has(id)) next.delete(id); else next.add(id); return next })
-  const slips = report.hypotheses.filter(slip)
+  const slips = [...report.hypotheses, ...more].filter(slip)
 
   const detail = entry => selected?.ref === entry.ref && <section className="mt-1 mb-2 rounded border border-slate-300 p-3" aria-label="Rapportens källsvar">
     <QuestionText>{questionText(entry)}</QuestionText>
@@ -178,12 +181,21 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
       </div>
     })}
 
+    {moreSuspicions.length > 0 && <section className="mt-4" aria-label="Fler misstankar med mindre underlag">
+      <h5 className="text-sm font-semibold">Fler misstankar med mindre underlag ({moreSuspicions.length})</h5>
+      <p className="text-xs text-slate-600">Färre felsvar än korten ovan. De stäms inte av; läs dem som tecken att hålla ögonen på.</p>
+      {moreSuspicions.map(item => <div key={item.id} data-hypothesis={item.signalCode} className="mt-2 text-sm">
+        <p className="font-semibold">{titleFor(item)} · {item.supportCount} felsvar</p>
+        {rows(item.supportRefs)}
+      </div>)}
+    </section>}
+
     {chosenItems.length === 1 && <p className="mt-3 text-sm">Välj minst en misstanke till för att pröva dem i samma screening.</p>}
     {chosenItems.length >= 2 && <MultiContrastFollowUp key={chosenItems.map(item => item.id).join('|')} items={chosenItems} report={report}
       reviewFor={reviewFor} studentId={studentId} classId={classId} baseUrl={baseUrl} />}
 
     {(() => {
-      const explained = new Set([...report.hypotheses.flatMap(item => item.supportRefs), ...(report.repeatedTasks ?? []).flatMap(task => task.wrongRefs)])
+      const explained = new Set([...report.hypotheses, ...more].flatMap(item => item.supportRefs).concat((report.repeatedTasks ?? []).flatMap(task => task.wrongRefs)))
       const unexplained = (report.exampleRefs || []).filter(ref => byRef.get(ref)?.answer.status === 'incorrect' && !explained.has(ref))
       return unexplained.length > 0 && <>
         <h5 className="mt-4 text-base font-semibold">Fel som appen inte kan förklara</h5>

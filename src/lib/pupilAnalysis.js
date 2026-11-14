@@ -90,15 +90,23 @@ export function validatePupilAnalysis(input, evidence) {
   const repeatedTasks = repeatedlyWrongTasks(evidence.entries).map(task => ({
     wrongRefs: task.wrong.slice(0, 20).map(entry => entry.ref), wrongCount: task.wrong.length,
     correctRefs: task.correct.slice(0, 5).map(entry => entry.ref), correctCount: task.correct.length }))
+  // Rule suspicions beyond the reviewed cards, weakest last (Simon 2026-11-14: show
+  // every suspicion, those with less evidence further down and smaller). Read only:
+  // the check-in still covers the submitted hypotheses.
+  const shown = new Set(hypotheses.flatMap(item => item.supportRefs.map(ref => JSON.stringify([item.signalCode, ref]))))
+  const moreHypotheses = input.provenance.kind !== 'rule' ? [] : buildRuleHypotheses(evidence.entries)
+    .filter(item => !item.supportRefs.some(ref => shown.has(JSON.stringify([item.signalCode, ref]))))
+    .map(item => ({ signalCode: item.signalCode, ruleVersion: item.ruleVersion, supportRefs: item.supportRefs.slice(0, 20),
+      supportCount: new Set(item.supportRefs.map(ref => unit(byRef.get(ref)))).size }))
   const refs = new Set([...exampleRefs, ...strengths.flatMap(item => item.refs), ...hypotheses.flatMap(item => [...item.supportRefs, ...item.counterRefs]),
-    ...repeatedTasks.flatMap(task => [...task.wrongRefs, ...task.correctRefs])])
+    ...repeatedTasks.flatMap(task => [...task.wrongRefs, ...task.correctRefs]), ...moreHypotheses.flatMap(item => item.supportRefs)])
   return { schemaVersion: PUPIL_ANALYSIS_VERSION, scopeSv: text(input.scopeSv, 300),
     provenance: { kind: input.provenance.kind,
       ...(input.provenance.model ? { model: text(input.provenance.model, 100) } : {}),
       instructionVersion: text(input.provenance.instructionVersion, 80) },
     snapshotRevision: evidence.snapshotRevision, period: evidence.period, source: evidence.source,
     counts: analysisCounts(evidence.entries), coverage: evidence.coverage,
-    strengths, hypotheses, repeatedTasks, exampleRefs, limitationsSv: list(input.limitationsSv, 8).map(value => text(value)),
+    strengths, hypotheses, repeatedTasks, moreHypotheses, exampleRefs, limitationsSv: list(input.limitationsSv, 8).map(value => text(value)),
     evidence: evidence.entries.filter(entry => refs.has(entry.ref)) }
 }
 
@@ -138,7 +146,7 @@ export function buildPupilAnalysisDraft(evidence) {
       'Metoden kan inte fastställas från ett slutsvar. Inga nya AI-tolkningar har gjorts i detta regelunderlag.',
       ...(slips.total ? [`Snabbhetsfel i färdighetsträning: ${slips.total} svar (ett ifrån facit ${slips.counts.answer_off_by_one}, bara första siffran ${slips.counts.partial_answer_entry}, omkastade siffror ${slips.counts.last_two_digits_swapped}). De visas inte som felhypoteser; målet där är snabbhet.`] : []),
       ...(ruleHypotheses.length ? ['Rätta slutsvar väljs som möjliga motexempel vid samma kända innehåll/nivå, eller för screening vid jämförbar känd heltalsstruktur, och bara när modellen hade gett fel. Stödnivå och metod behöver granskas.',
-        ...(ruleHypotheses.length > 8 ? [`Högst åtta modellgrupper visas; ${ruleHypotheses.length - 8} ytterligare grupper finns i underlaget.`] : [])] : [])] }
+        ...(ruleHypotheses.length > 8 ? [`Åtta modellgrupper stäms av; ${ruleHypotheses.length - 8} till med mindre underlag visas under Fler misstankar.`] : [])] : [])] }
 }
 
 export function validateAnalysisCheckIn(input, report) {

@@ -442,4 +442,35 @@ export const MODEL_DESCRIPTIONS = {
     sourceSv: REVIEWED_2026_11_14,
     openersSv: ['Fråga om svaret ska bli större eller mindre än 14.'],
   },
+  // Simon 2026-11-14, readings of real screening answers checked by the agent.
+  sub_inclusive_count_at_exchange: {
+    thinkingSv: 'Där entalen växlas blir svaret ett för mycket: 13 − 7 och 14 − 8 blir båda 7. Det tyder på att eleven räknar på fingrarna och räknar med starttalet. Visas som mönster först över tre olika uppgifter.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Be eleven räkna 14 − 8 högt på fingrarna och se var räkningen börjar.'],
+  },
+  sub_one_exchange_kept: {
+    thinkingSv: 'Eleven växlar två gånger men minskar bara den ena kolumnen som lånar ut: 621 − 384 blir 247 eller 337 i stället för 237.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Låt eleven stryka och skriva den nya siffran ovanför vid varje växling, och fråga vad som finns kvar i kolumnen.'],
+  },
+  sub_zero_double_decrement: {
+    thinkingSv: 'Vid växling över nollan minskas hundratalet två gånger och nollan blir tio i stället för nio: 402 − 178 blir 134 (2 − 1, 10 − 7, 12 − 8).',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Fråga hur 402 kan skrivas som hundratal, tiotal och ental när man behöver fler ental, till exempel 3 hundratal, 9 tiotal och 12 ental.'],
+  },
+  mul_last_carry_forgotten: {
+    thinkingSv: 'Eleven för vidare de första minnessiffrorna men glömmer den sista: 146 · 4 blir 484 i stället för 584.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Be eleven skriva varje minnessiffra ovanför och bocka av den när den lagts till.'],
+  },
+  mul_ones_fact_wrong: {
+    thinkingSv: 'Uppställningen är rätt gjord, men ett tabellfaktum för entalet blir fel: 46 · 7 blir 316 eller 328 när 7 · 6 blir 36 eller 48. Faktaminne, inte metod; visas som mönster först över tre olika uppgifter.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Låt eleven räkna 7 · 6 för sig och berätta hur hen vet.'],
+  },
+  decimal_mul_whole_only: {
+    thinkingSv: 'Eleven multiplicerar bara heltalet och låter decimalerna följa med oförändrade: 5 · 0,25 blir 0 + 0,25 = 0,25. Heltal och decimaler behandlas som skilda tal.',
+    sourceSv: REVIEWED_2026_11_14,
+    openersSv: ['Be eleven uppskatta 5 · 0,25 med pengar: fem 25-öringar.'],
+  },
 }

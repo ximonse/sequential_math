@@ -6,6 +6,7 @@ export const NOT_A_MISCONCEPTION_REASONS = ['fact_retrieval', 'cognitive', 'inpu
 export const MODELS_WITHOUT_MISCONCEPTION = {
   table_off_by_one: { reason: 'fact_retrieval', noteSv: 'Angränsande produkt: tabellfaktumet plockas fram fel. Kan också vara arbetsminne eller hastighet.' },
   quotient_off_by_one: { reason: 'fact_retrieval', noteSv: 'Kvoten ett fel: tabellen plockas fram fel.' },
+  mul_ones_fact_wrong: { reason: 'fact_retrieval', noteSv: 'Fel tabellfaktum inne i uppställningen (46 · 7 = 316): faktaminne, som angränsande produkt.' },
   quotient_stops_at_twelve: { reason: 'needs_review', noteSv: 'Simon 2026-11-14, "kanske": tabellen slutar vid 12, eller 6 · 10 + 6 · 2 utan kontroll.' },
   answer_off_by_one: { reason: 'fact_retrieval', noteSv: 'Utanför udda gånger udda: oftast framplockning eller fokus.' },
   partial_answer_entry: { reason: 'input', noteSv: 'Bara första siffran inskriven.' },

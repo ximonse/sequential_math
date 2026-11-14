@@ -71,6 +71,13 @@ export const ERROR_MODELS = {
   decimal_factor_split_left_to_right: model('Decimaltalet delas upp och räknas från vänster', A, OUTSIDE_FROZEN_CHAIN),
   decimal_mul_whole_part_kept: model('Bara decimaldelen multipliceras', A, OUTSIDE_FROZEN_CHAIN),
   quotient_stops_at_twelve: model('Kvoten stannar vid 12', A, OUTSIDE_FROZEN_CHAIN),
+  // Simon 2026-11-14, Gemini's and the agent's readings checked against real answers.
+  sub_inclusive_count_at_exchange: model('Räknar med starttalet vid växling', A, { ...OUTSIDE_FROZEN_CHAIN, minDistinctTasks: 3 }),
+  sub_one_exchange_kept: model('En av växlingarna minskar inte talet som lånar ut', A, OUTSIDE_FROZEN_CHAIN),
+  sub_zero_double_decrement: model('Hundratalet minskas två gånger vid växling över nolla', A, OUTSIDE_FROZEN_CHAIN),
+  mul_last_carry_forgotten: model('Sista minnessiffran glöms i multiplikationen', A, OUTSIDE_FROZEN_CHAIN),
+  mul_ones_fact_wrong: model('Fel tabellfaktum inne i uppställningen', A, { ...OUTSIDE_FROZEN_CHAIN, minDistinctTasks: 3 }),
+  decimal_mul_whole_only: model('Bara heltalet multipliceras', A, OUTSIDE_FROZEN_CHAIN),
   decimal_point_missing_with_error: model('Tappar växlingen och decimaltecknet', A, OUTSIDE_FROZEN_CHAIN),
 
   // Multiplication

@@ -4,6 +4,7 @@ import { predictDecimalPartsSeparately } from '../arithmetic/errorHypotheses/mul
 import { subtractionCandidates } from '../arithmetic/subtractionCandidates.js'
 import { divRemainderAsOnes, divRemainderIgnored, divZeroDropped, mulCarryAddedBefore, mulCarryAlwaysOne, mulCarryForgotten, mulColumnwise, mulPartialsConcatenated, mulRows } from './writtenMulDiv.js'
 import { addLeftToRight, subLeftToRight } from './leftToRight.js'
+import { mulLastCarryForgotten, mulOnesFactWrong, subInclusiveCount, subOneExchangeKept, subZeroDoubleDecrement } from './writtenVariants.js'
 import { candidateResult, decimalPlaces, entryAndNearMissPredictions, givingUpPredictions, prediction, unavailable, numeric } from './core.js'
 import { decimalSubtractionStructure } from '../arithmetic/decimalSubtractionPackage.js'
 import { decimalAdditionStructure } from '../arithmetic/decimalAdditionPackage.js'
@@ -133,6 +134,17 @@ export function arithmeticCandidates(problem, answer) {
     predictions.push(prediction('unnecessary_exchange', a - b - 100,
       'Svaret matchar att hundratalet också minskats fast tiotalet inte behövde växlas. Kan också vara slarv med hundra.'))
   }
+  if (op === 'subtraction' && !decimals && a >= 10) {
+    // Simon 2026-11-14, from real screening answers.
+    const counted = subInclusiveCount(a, b)
+    if (counted !== null) predictions.push(prediction('sub_inclusive_count_at_exchange', counted,
+      'Svaret är ett för mycket i entalen där det växlas, som när starttalet räknas med på fingrarna (13 − 7 = 7).'))
+    for (const { column, value } of subOneExchangeKept(a, b)) predictions.push(prediction('sub_one_exchange_kept', value,
+      `Svaret matchar att en av växlingarna inte minskar ${column === 1 ? 'tiotalet' : 'hundratalet'} som lånade ut.`))
+    const doubled = subZeroDoubleDecrement(a, b)
+    if (doubled !== null) predictions.push(prediction('sub_zero_double_decrement', doubled,
+      'Svaret matchar växling över nollan där hundratalet minskas två gånger och nollan blir tio (402 − 178 = 134).'))
+  }
   if (op === 'addition' && [a, b].every(n => Number.isSafeInteger(n) && n >= 0) && (a % 10) + (b % 10) < 10 && a + b >= 10) {
     // A carry is added although the ones need none (41 + 6 = 57).
     predictions.push(prediction('phantom_carry', a + b + 10,
@@ -172,6 +184,10 @@ export function arithmeticCandidates(problem, answer) {
         const kept = Math.round((Math.trunc(decimal) + whole * (decimal - Math.trunc(decimal))) * scale) / scale
         predictions.push(prediction('decimal_mul_whole_part_kept', kept, 'Svaret matchar att bara decimaldelen multipliceras och heltalsdelen står kvar (3 × 2,4 = 2 + 1,2 = 3,2).'))
       }
+      // The mirror image: only the whole part is multiplied, the decimals stay (5 · 0,25 = 0,25).
+      const wholeOnly = Math.round((whole * Math.trunc(decimal) + decimal - Math.trunc(decimal)) * scale) / scale
+      // Not where adding gives the same answer (2,1 · 2 = 4,1): that is the wrong operation as much as this.
+      if (Math.abs(wholeOnly - (whole + decimal)) > 1e-9) predictions.push(prediction('decimal_mul_whole_only', wholeOnly, 'Svaret matchar att bara heltalet multipliceras och decimalerna följer med oförändrade (5 · 0,25 = 0 + 0,25).'))
     }
   }
   // Off-by-one only for single-digit table facts, where counting a step wrong is plausible.
@@ -185,6 +201,10 @@ export function arithmeticCandidates(problem, answer) {
         prediction('mul_carry_always_one', mulCarryAlwaysOne(big, small), 'Svaret matchar att minnessiffran alltid skrivs som 1, oavsett hur stor den är.'),
         prediction('mul_partials_concatenated', mulPartialsConcatenated(big, small), 'Svaret matchar att varje siffras produkt skrivs efter varandra.'),
         prediction('mul_columnwise', mulColumnwise(big, small), 'Svaret matchar att bara siffror i samma kolumn multipliceras, som vid addition.'))
+      const last = mulLastCarryForgotten(big, small)
+      if (last !== null) predictions.push(prediction('mul_last_carry_forgotten', last, 'Svaret matchar att den sista minnessiffran glöms medan de andra förs vidare (146 · 4 = 484).'))
+      for (const value of mulOnesFactWrong(big, small)) predictions.push(prediction('mul_ones_fact_wrong', value,
+        'Svaret matchar ett fel tabellfaktum för entalssiffran inne i uppställningen, med resten rätt räknat (46 · 7 med 7 · 6 som 36).'))
     }
     // Either factor may be written on top (11 × 90 set up as 90 · 11, blind test 3).
     for (const [top, bottom] of a === b ? [[a, b]] : [[a, b], [b, a]]) {

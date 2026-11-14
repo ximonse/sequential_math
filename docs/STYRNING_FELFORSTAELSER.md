@@ -409,6 +409,21 @@ förrän det föregående är klart.
    avskrivningsfelet 357 + 268 = 614.
    Listan med alla oförklarade svar och förslag:
    `Hermes Vault/Skola och lektioner/Matematik/Oforklarade-felsvar-for-granskning-2026-11-14.md`.
+   *Tredje omgången 2026-11-14:* Simon gav Geminis tolkning av de oförklarade
+   svaren; agenten räknade efter varje förklaring, och Simon höll med om
+   urvalet ("Håller med dig"). Sex modeller, utanför den frysta kedjan: räknar
+   med starttalet vid växling (503 − 267 = 237; kräver tre uppgifter), en av
+   växlingarna minskar inte (621 − 384 = 247/337), hundratalet minskas två
+   gånger över nolla (402 − 178 = 134), sista minnessiffran glöms
+   (146 · 4 = 484), fel tabellfaktum inne i uppställningen (46 · 7 = 316/328;
+   faktaminne, kräver tre uppgifter) och bara heltalet multipliceras
+   (5 · 0,25 = 0,25; inte där addition ger samma svar, 2,1 · 2 = 4,1).
+   1,76 + 2,58 = 432 förklaras som 6 + 8 räknat till 12 med rätt växling och
+   tappat decimaltecken; ingen modell, eftersom ett tabellfel i en valfri kolumn
+   skulle träffa för brett. Geminis gissningar för 371 − 145, 753 − 428,
+   168 / 6 = 23, 55/5, 56 / 8 = 0,8 och 3,26 + 8,37 används inte; de går inte
+   ihop. Regelversion v13. Frysta kedjan: 456 av 456 kort oförändrade.
+   Underlaget 11 nov, summerat över rapportens rader: oförklarade 2 458 → 2 412.
 6. **Samma struktur för träningssvaren.** Först därefter.
 
 ## 9. Rutin för nytt område eller ny felmodell

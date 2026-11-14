@@ -712,6 +712,60 @@
     {"problem":{"domain":"arithmetic","type":"division","values":{"a":84,"b":6}},"answer":14},
     {"problem":{"domain":"arithmetic","type":"division","values":{"a":48,"b":4}},"answer":12},
     {"problem":{"domain":"arithmetic","type":"division","values":{"a":126,"b":6}},"answer":12}
+  ] },
+  "sub_inclusive_count_at_exchange": { "hit": [
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":503,"b":267}},"answer":237},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":574,"b":238}},"answer":337},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":82,"b":47}},"answer":36}
+  ], "miss": [
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":764,"b":231}},"answer":534},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":574,"b":238}},"answer":336},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":732,"b":458}},"answer":273}
+  ] },
+  "sub_one_exchange_kept": { "hit": [
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":621,"b":384}},"answer":247},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":621,"b":384}},"answer":337},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":732,"b":458}},"answer":374}
+  ], "miss": [
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":621,"b":384}},"answer":237},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":574,"b":238}},"answer":346},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":503,"b":267}},"answer":336}
+  ] },
+  "sub_zero_double_decrement": { "hit": [
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":402,"b":178}},"answer":134},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":503,"b":267}},"answer":146},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":705,"b":328}},"answer":287}
+  ], "miss": [
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":402,"b":178}},"answer":224},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":412,"b":178}},"answer":134},
+    {"problem":{"domain":"arithmetic","type":"subtraction","values":{"a":402,"b":108}},"answer":194}
+  ] },
+  "mul_last_carry_forgotten": { "hit": [
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":146,"b":4}},"answer":484},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":257,"b":3}},"answer":671},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":368,"b":2}},"answer":636}
+  ], "miss": [
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":146,"b":4}},"answer":584},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":146,"b":4}},"answer":464},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":46,"b":7}},"answer":222}
+  ] },
+  "mul_ones_fact_wrong": { "hit": [
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":46,"b":7}},"answer":316},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":46,"b":7}},"answer":328},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":23,"b":4}},"answer":89}
+  ], "miss": [
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":46,"b":7}},"answer":322},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":46,"b":7}},"answer":315},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":46,"b":7}},"answer":329}
+  ] },
+  "decimal_mul_whole_only": { "hit": [
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":5,"b":0.25}},"answer":0.25},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":3,"b":2.4}},"answer":6.4},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":4,"b":1.5}},"answer":4.5}
+  ], "miss": [
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":5,"b":0.25}},"answer":1.25},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":3,"b":2.4}},"answer":7.2},
+    {"problem":{"domain":"arithmetic","type":"multiplication","values":{"a":3,"b":2.4}},"answer":3.2}
   ] }
  }
 }

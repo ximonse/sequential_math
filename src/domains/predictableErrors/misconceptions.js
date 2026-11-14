@@ -29,7 +29,9 @@ export const MISCONCEPTIONS = {
     evidence: 'observation',
     ncm: ['AG1', 'AG2', 'AG3'],
     cognitiveSv: 'Långsam framplockning kan också bero på arbetsminne eller hastighet; syns i svarstider, inte i felsvar.',
-    errorModels: [],
+    errorModels: [
+      { id: 'sub_inclusive_count_at_exchange', basis: 'agent', noteSv: '13 − 7 = 7 och 14 − 8 = 7: starttalet räknas med (förslag av Gemini och agenten, godkänt av Simon 2026-11-14).' }
+    ],
   },
   subtraction_order_ignored: {
     status: 'approved',
@@ -247,7 +249,8 @@ export const MISCONCEPTIONS = {
       { id: 'decimal_tenths_as_hundredths', basis: 'agent', noteSv: 'Decimaldelarna adderas som heltal: 5 + 6 = 11 skrivs efter kommat.' },
       { id: 'decimal_only_fraction_added', basis: 'agent', noteSv: 'Bara delen efter kommat läggs till; heltalsdelen följer inte med. Kan också vara bristande fokus.' },
       { id: 'decimal_factor_split_left_to_right', basis: 'simon_observation', noteSv: 'Simon 2026-11-14: 7 × 6,7 räknat som 7 + 6 · 7 = 91 från vänster; 6 och 7 blir två tal.' },
-      { id: 'decimal_mul_whole_part_kept', basis: 'simon_observation', noteSv: 'Simon 2026-11-14: 3 × 2,4 = 3,2; bara 0,4 multipliceras, 2 står kvar.' }
+      { id: 'decimal_mul_whole_part_kept', basis: 'simon_observation', noteSv: 'Simon 2026-11-14: 3 × 2,4 = 3,2; bara 0,4 multipliceras, 2 står kvar.' },
+      { id: 'decimal_mul_whole_only', basis: 'agent', noteSv: '5 · 0,25 = 0,25: bara heltalet multipliceras (förslag av Gemini och agenten, godkänt av Simon 2026-11-14).' }
     ],
   },
   fraction_bar_as_comma: {
@@ -366,6 +369,8 @@ export const MISCONCEPTIONS = {
       { id: 'mul_carry_always_one', basis: 'agent', noteSv: 'Minnessiffran blir alltid 1.' },
       { id: 'decimal_mul_carry_forgotten', basis: 'simon_observation', noteSv: 'Simon 2026-11-14: 3 × 2,4 = 6,2, glömd minnessiffra.' },
       { id: 'decimal_mul_carry_added_before', basis: 'agent', noteSv: '3 × 2,4 = 9,2: minnessiffran läggs till före multiplikationen.' },
+      { id: 'sub_one_exchange_kept', basis: 'agent', noteSv: '621 − 384 = 247: en växling minskar inte kolumnen som lånar ut (förslag av Gemini och agenten, godkänt av Simon 2026-11-14).' },
+      { id: 'mul_last_carry_forgotten', basis: 'agent', noteSv: '146 · 4 = 484: sista minnessiffran glöms (förslag av Gemini och agenten, godkänt av Simon 2026-11-14).' },
       { id: 'div_remainder_ignored', basis: 'agent', noteSv: 'Resten växlas inte vidare till nästa siffra.' },
       { id: 'div_remainder_as_ones', basis: 'agent', noteSv: 'Resten blir ental i stället för tiotal.' },
       { id: 'add_left_to_right', basis: 'agent', noteSv: 'Växlingen förs åt fel håll.' },
@@ -390,7 +395,8 @@ export const MISCONCEPTIONS = {
     errorModels: [
       { id: 'zero_donor_not_decremented', basis: 'source', noteSv: 'Tabellen (Växling över noll) ger 304 − 21 = 323; NCM AS2.' },
       { id: 'zero_intermediate_ten', basis: 'agent', noteSv: 'Tio tiotal behålls efter växlingen.' },
-      { id: 'second_exchange_inverted', basis: 'agent', noteSv: 'Andra växlingen vänds (0 − x = x).' }
+      { id: 'second_exchange_inverted', basis: 'agent', noteSv: 'Andra växlingen vänds (0 − x = x).' },
+      { id: 'sub_zero_double_decrement', basis: 'agent', noteSv: '402 − 178 = 134: hundratalet minskas två gånger (förslag av Gemini och agenten, godkänt av Simon 2026-11-14).' }
     ],
   },
   place_value_digits: {

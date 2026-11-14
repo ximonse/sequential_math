@@ -1,5 +1,35 @@
 # Arbetslogg
 
+## 2026-11-14: Steg 5, tredje omgången: Geminis tolkningar, efterräknade
+
+### Logg
+
+- Simon klistrade in Geminis tolkning av de oförklarade svaren. Agenten
+  räknade efter varje förklaring och delade dem i "stämmer" och "gissning".
+- Sex nya modeller (v13), alla utanför den frysta kedjan; se styrdokumentet,
+  steg 5. Frysta kedjan 456 av 456 kort oförändrade. En krock hittad och
+  rättad: 2,1 · 2 = 4,1 passar både bara heltalet och addition, så den nya
+  modellen gör inte anspråk på sådana svar.
+
+### Simons beslut
+
+- "Håller med dig": bygg de efterräknade modellerna, inte gissningarna; 432
+  bara som förklaring.
+
+### Agentens val
+
+- Räkna med starttalet och fel tabellfaktum i uppställningen kräver tre
+  olika uppgifter (svar nära facit, samma slumprisk som angränsande produkt).
+- Fel tabellfaktum gäller bara fel tabellrad (7 · 6 som 6 · 6 eller 6 · 8);
+  fel i andra faktorn räknas redan av angränsande produkt.
+
+### Tankar
+
+- 732 − 458 = 273 är ett för lite i en växling och talar emot att starttalet
+  räknas med varje gång. Håll ögonen på fler ±1-svar vid växling.
+- Gemini är ett bra bollplank men gissar ibland; räkna alltid efter.
+- `misconceptions.js` har 792 rader; nästa tillägg kan behöva dela filen.
+
 ## 2026-11-14: Steg 1-skulden: lärartext och rubriker
 
 ### Logg

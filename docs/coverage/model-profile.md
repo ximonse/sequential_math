@@ -6,22 +6,22 @@ En felförståelse med fler än två svar per uppgift visas bara som mönster (S
 
 | Modell | Slag | Svar per uppgift | Uppgifter | Krav | Källa |
 | --- | --- | ---: | ---: | --- | --- |
-| Annat räknesätt | felförståelse | 1 | 144 | 3 uppgifter | Källa: Tabellen (Utför fel räknesätt) ger 234 − 45 = 279. |
-| Svaret är tio, hundra eller tusen gånger fel | observation | 4 | 144 |  | Källa: Tabellen ger 3.4 · 0.2 = 6.8 (tio gånger för stort); gäller decimaluppgifter. |
+| Annat räknesätt | felförståelse | 1 | 161 | 3 uppgifter | Källa: Tabellen (Utför fel räknesätt) ger 234 − 45 = 279. |
+| Svaret är tio, hundra eller tusen gånger fel | observation | 4 | 161 |  | Källa: Tabellen ger 3.4 · 0.2 = 6.8 (tio gånger för stort); gäller decimaluppgifter. |
 | Ett ifrån facit | observation | 2 | 22 |  | Källa: Tabellen (±1-fel vid multiplikation av udda tal, Karlsson & Kilborn) beskriver ±1-fel; gäller bara udda gånger udda. |
-| Bara första siffran inskriven | inmatning | 1 | 112 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
-| Två sista siffrorna omkastade | inmatning | 1 | 92 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
+| Bara första siffran inskriven | inmatning | 1 | 127 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
+| Två sista siffrorna omkastade | inmatning | 1 | 104 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
 | Olika svar i räknehäftet och svarsrutan | inmatning | – | Läses ur räknehäftet, inte beräknat: ett svar per uppgift. |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
-| Svarar 0 | ger upp | 1 | 160 | 3 uppgifter | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
-| Svarar 55 | ger upp | 1 | 159 | 3 uppgifter | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
-| Större minus mindre i varje kolumn | felförståelse | 1 | 36 |  | Källa: Tabellen (Övergeneralisering) ger 321 − 245 = 124 som exempel; NCM AS2 kallar det "störst minus minst". |
-| Växlar men minskar inte kolumnen till vänster | felförståelse | 1 | 33 |  | Källa: Tabellen: "Minskar inte föregående siffra vid växling i subtraktion". |
-| Skriver 0 där växling behövs | felförståelse | 1 | 36 |  | Beskrivning: NCM-område AS2 (skriftlig subtraktion), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20. |
-| Klarar första växlingen men vänder nästa (0 − x = x) | felförståelse | 1 | 16 |  | Beskrivning: NCM-område AS2 (skriftlig subtraktion), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20. |
-| Räknar från vänster, växlar från höger | felförståelse | 1 | 15 |  | Beskrivning: NCM-område AS2 (skriftlig subtraktion), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20. |
-| Växling genom noll: hundratalet minskas inte | felförståelse | 1 | 10 |  | Källa: Tabellen (Växling över noll) ger 304 − 21 = 323; NCM AS2. |
-| Växling genom noll: tio tiotal behålls | felförståelse | 1 | 10 |  | Beskrivning: NCM-område AS2 (skriftlig subtraktion), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20. |
-| Minskar en kolumn trots att ingen växling behövs | felförståelse | 1 | 19 |  | Beskrivning: NCM-område AS2 (skriftlig subtraktion), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20. |
+| Svarar 0 | ger upp | 1 | 177 | 3 uppgifter | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
+| Svarar 55 | ger upp | 1 | 176 | 3 uppgifter | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
+| Större minus mindre i varje kolumn | felförståelse | 1 | 45 |  | Källa: Tabellen (Övergeneralisering) ger 321 − 245 = 124 som exempel; NCM AS2 kallar det "störst minus minst". |
+| Växlar men minskar inte kolumnen till vänster | felförståelse | 1 | 42 |  | Källa: Tabellen: "Minskar inte föregående siffra vid växling i subtraktion". |
+| Skriver 0 där växling behövs | felförståelse | 1 | 45 |  | Beskrivning: NCM-område AS2 (skriftlig subtraktion), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20. |
+| Klarar första växlingen men vänder nästa (0 − x = x) | felförståelse | 1 | 23 |  | Beskrivning: NCM-område AS2 (skriftlig subtraktion), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20. |
+| Räknar från vänster, växlar från höger | felförståelse | 1 | 21 |  | Beskrivning: NCM-område AS2 (skriftlig subtraktion), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20. |
+| Växling genom noll: hundratalet minskas inte | felförståelse | 1 | 14 |  | Källa: Tabellen (Växling över noll) ger 304 − 21 = 323; NCM AS2. |
+| Växling genom noll: tio tiotal behålls | felförståelse | 1 | 14 |  | Beskrivning: NCM-område AS2 (skriftlig subtraktion), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20. |
+| Minskar en kolumn trots att ingen växling behövs | felförståelse | 1 | 21 |  | Beskrivning: NCM-område AS2 (skriftlig subtraktion), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20. |
 | Minnessiffran glöms | felförståelse | 1 | 26 |  | Källa: Tabellen ger 77 + 54 = 121 som exempel. |
 | Kolumnsummor skrivs efter varandra | felförståelse | 1 | 12 |  | Källa: NCM-täckningen (lucka G1, McIntosh-sammanfattning): kolumnsummor sammanfogas utan växling. |
 | En av flera minnessiffror glöms | felförståelse | 2 | 8 |  | Beskrivning: NCM-område AS1 (skriftlig addition), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20. |
@@ -31,21 +31,27 @@ En felförståelse med fler än två svar per uppgift visas bara som mönster (S
 | Tiondelar blir hundradelar | felförståelse | 1 | 4 |  | Källa: Klustret ger 0,7 + 0,8 = 0,150; tabellen (Förstå och använda tal s. 111) ger 0,6 + 0,8 = 0,14. |
 | Lägger bara till decimaldelen av ena talet | felförståelse | 1.5 | 8 |  | Beskrivning: Simons iakttagelse i riktiga elevsvar 2026-11-12. |
 | Heltalet ställs under sista decimalen | felförståelse | 1 | 4 |  | Källa: Tabellen ger 120.4 + 63.21 = 75.25 (högerjusterat) som exempel. |
-| Minnessiffran glöms när decimaltal multipliceras | felförståelse | 1 | 9 |  | Simons iakttagelse: Simon 2026-11-14: 3 × 2,4 = 6,2, glömd minnessiffra. |
-| Minnessiffran läggs till före multiplikationen i decimaltal | felförståelse | 1 | 9 |  | Beskrivning: Agentens förslag ur riktiga elevsvar, godkänt av Simon 2026-11-14. |
-| Decimaltalet delas upp och räknas från vänster | felförståelse | 1.9 | 10 |  | Simons iakttagelse: Simon 2026-11-14: 7 × 6,7 räknat som 7 + 6 · 7 = 91 från vänster; 6 och 7 blir två tal. |
-| Bara decimaldelen multipliceras | felförståelse | 1 | 9 |  | Simons iakttagelse: Simon 2026-11-14: 3 × 2,4 = 3,2; bara 0,4 multipliceras, 2 står kvar. |
+| Minnessiffran glöms när decimaltal multipliceras | felförståelse | 1 | 11 |  | Simons iakttagelse: Simon 2026-11-14: 3 × 2,4 = 6,2, glömd minnessiffra. |
+| Minnessiffran läggs till före multiplikationen i decimaltal | felförståelse | 1 | 11 |  | Beskrivning: Agentens förslag ur riktiga elevsvar, godkänt av Simon 2026-11-14. |
+| Decimaltalet delas upp och räknas från vänster | felförståelse | 1.91 | 11 |  | Simons iakttagelse: Simon 2026-11-14: 7 × 6,7 räknat som 7 + 6 · 7 = 91 från vänster; 6 och 7 blir två tal. |
+| Bara decimaldelen multipliceras | felförståelse | 1 | 10 |  | Simons iakttagelse: Simon 2026-11-14: 3 × 2,4 = 3,2; bara 0,4 multipliceras, 2 står kvar. |
 | Kvoten stannar vid 12 | felförståelse | 1 | 4 |  | Beskrivning: Simons tolkning av riktiga elevsvar 2026-11-14. |
+| Räknar med starttalet vid växling | felförståelse | 1 | 37 | 3 uppgifter | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
+| En av växlingarna minskar inte talet som lånar ut | felförståelse | 2 | 9 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
+| Hundratalet minskas två gånger vid växling över nolla | felförståelse | 1 | 14 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
+| Sista minnessiffran glöms i multiplikationen | felförståelse | 1 | 4 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
+| Fel tabellfaktum inne i uppställningen | felförståelse | 2 | 17 | 3 uppgifter | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
+| Bara heltalet multipliceras | felförståelse | 1 | 13 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
 | Tappar växlingen och decimaltecknet | felförståelse | 1.5 | 16 |  | Simons iakttagelse: Simon 2026-11-13: 1,76 + 2,58 = 334, "glömt växling och decimaltecken". |
-| Minnessiffran glöms i multiplikationen | felförståelse | 1 | 13 |  | Källa: Tabellen ger 56 · 2 = 102 som exempel. |
-| Minnessiffran läggs till före multiplikationen | felförståelse | 1.23 | 13 |  | Beskrivning: NCM-område AS4 (skriftlig multiplikation), förkunskap AG6–AG7 (tabeller, positioner). |
-| Minnessiffran blir alltid 1 | felförståelse | 1 | 6 |  | Beskrivning: NCM-område AS4 (skriftlig multiplikation), förkunskap AG6–AG7 (tabeller, positioner). |
-| Delprodukterna skrivs efter varandra | felförståelse | 1.15 | 13 |  | Beskrivning: NCM-område AS4 (skriftlig multiplikation), förkunskap AG6–AG7 (tabeller, positioner). |
-| Multiplicerar kolumnvis som vid addition | felförståelse | 1 | 18 |  | Beskrivning: NCM-område AS4 (skriftlig multiplikation), förkunskap AG6–AG7 (tabeller, positioner). |
+| Minnessiffran glöms i multiplikationen | felförståelse | 1 | 18 |  | Källa: Tabellen ger 56 · 2 = 102 som exempel. |
+| Minnessiffran läggs till före multiplikationen | felförståelse | 1.17 | 18 |  | Beskrivning: NCM-område AS4 (skriftlig multiplikation), förkunskap AG6–AG7 (tabeller, positioner). |
+| Minnessiffran blir alltid 1 | felförståelse | 1 | 9 |  | Beskrivning: NCM-område AS4 (skriftlig multiplikation), förkunskap AG6–AG7 (tabeller, positioner). |
+| Delprodukterna skrivs efter varandra | felförståelse | 1.11 | 18 |  | Beskrivning: NCM-område AS4 (skriftlig multiplikation), förkunskap AG6–AG7 (tabeller, positioner). |
+| Multiplicerar kolumnvis som vid addition | felförståelse | 1 | 23 |  | Beskrivning: NCM-område AS4 (skriftlig multiplikation), förkunskap AG6–AG7 (tabeller, positioner). |
 | Andra delprodukten flyttas inte | felförståelse | 1.6 | 5 |  | Beskrivning: NCM-område AS7 (flersiffrig multiplikation, åk 7–9), förkunskap AS4. |
-| Bara entalen multipliceras | felförståelse | 1 | 18 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
-| Angränsande produkt | felförståelse | 3.85 | 27 | 3 uppgifter | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
-| Heltal och decimaldel multipliceras var för sig | felförståelse | 1 | 9 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
+| Bara entalen multipliceras | felförståelse | 1 | 23 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
+| Angränsande produkt | felförståelse | 3.88 | 32 | 3 uppgifter | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
+| Heltal och decimaldel multipliceras var för sig | felförståelse | 1 | 10 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
 | Resten förs inte vidare | felförståelse | 1 | 15 |  | Beskrivning: NCM-område AS5 (kort division), förkunskap AG8. |
 | Resten läggs till som ental | felförståelse | 1 | 15 |  | Beskrivning: NCM-område AS5 (kort division), förkunskap AG8. |
 | Nollan i kvoten tappas | felförståelse | 1 | 6 |  | Beskrivning: NCM-område AS5 (kort division), förkunskap AG8. |

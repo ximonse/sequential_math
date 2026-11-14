@@ -371,10 +371,14 @@ förrän det föregående är klart.
    tabellen slutar vid 12 eller 6 · 10 + 6 · 2 utan kontroll, så modellen
    *kvoten stannar vid 12* visas som känt fel utan felförståelse (behöver
    granskas). Därefter: svar på felförståelsekort 6 → 18, känt fel utan
-   felförståelse 3, oförklarade 17 → 4.
+   felförståelse 3, oförklarade 17 → 4. Simons tredje besked: tre fjärdedelar
+   av 8 = 24 räknar 3 · 8 som eleven kan (heltalsbias) och 7/8 håller avståndet
+   ett steg från helheten (additiv skalning); två nycklar. 357 + 268 = 614 är
+   enligt räknehäftet ett avskrivningsfel: uppställningen är 357 + 257 = 614,
+   rätt räknat. Därefter oförklarade 17 → 2 (614 och 1,76 + 2,58 = 432).
    Den frysta kedjan: 440 av 440 befintliga kort oförändrade; de 8 nya korten
-   erbjuder ingen uppföljning. Kvar oförklarat där: 1,76 + 2,58 = 432,
-   357 + 268 = 614 och tre fjärdedelar av 8 (24 och 7/8).
+   erbjuder ingen uppföljning. Kvar oförklarat där: 1,76 + 2,58 = 432 och
+   avskrivningsfelet 357 + 268 = 614.
    Listan med alla oförklarade svar och förslag:
    `Hermes Vault/Skola och lektioner/Matematik/Oforklarade-felsvar-for-granskning-2026-11-14.md`.
 6. **Samma struktur för träningssvaren.** Först därefter.

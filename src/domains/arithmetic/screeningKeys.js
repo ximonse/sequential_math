@@ -69,6 +69,8 @@ export const MANUAL_KEYS = {
     K('text', ['3,4'], M('fraction_bar_as_comma'), 'agent', 'Bråkstrecket blir decimalkomma.')],
   'ncm-RB3-6': [K('number', [6], M('word_problem_keywords'), 'agent', 'Bara ett av stegen: hälften av 12.'),
     K('number', [8], M('word_problem_keywords'), 'agent', 'Bara första steget: 12 minus en tredjedel.')],
+  'ncm-RB3-4d': [K('number', [24], M('fraction_whole_number_bias'), 'simon_observation', 'Simon 2026-11-14: räknar 3 · 8 på det sätt eleven kan; nämnaren används inte.'),
+    K('numbers', [7, 8], M('fraction_additive_equivalence'), 'simon_observation', 'Simon 2026-11-14: 3 är ett steg från 4, så 7 blir ett steg från 8.')],
   'ncm-RB4-3c': [K('fraction', [3, 5], M('fraction_compare_parts'), 'source', 'Större nämnare tros ge större bråk (tabellen, FW1).')],
   'ncm-RB4-5c': [K('number', [14], M('fraction_additive_equivalence'), 'agent', 'Additiv förlängning: 3 + 12 = 15 och då 2 + 12 = 14.'),
     K('numbers', [10, 15], R('input'), 'simon_observation', 'Skriver bråket 10/15 i stället för täljaren (Simon 2026-11-12).'),

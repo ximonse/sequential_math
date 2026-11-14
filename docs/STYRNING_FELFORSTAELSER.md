@@ -394,6 +394,11 @@ Samma fem steg varje gång, inget annat sätt:
 4. Simon godkänner modellen och dess beskrivning.
 5. Lägg in den i katalogen. Täckningsrapporten visar skillnaden.
 
+Innan ett oförklarat svar blir en ny modell: läs uppställningen i räknehäftet
+och pröva först om eleven skrivit av talen fel (Simon 2026-11-14: 357 + 268 = 614
+var 357 + 257, rätt räknat). Ett avskrivningsfel är inmatning, inte en
+felförståelse.
+
 Ett nytt område räknas som infört först när det har uppgifter med nyckel,
 modeller i katalogen och en rad i täckningsrapporten.
 

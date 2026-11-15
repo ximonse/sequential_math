@@ -7,6 +7,7 @@ import { buildScreeningDispatches } from './screeningRecipients'
 import { groupCollections, resultFilter } from './screeningCollections'
 import { describeRecipients } from './screeningRecipientNames'
 import { isArchivedCollection } from './screeningBulkActions'
+import { useSessionState } from '../../../lib/sessionState.js'
 
 // Results of screenings for the picked recipients: classes, groups or pupils.
 // A group that spans classes is read as one table.
@@ -15,7 +16,8 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
     [recipients, classes, teacherGroups, students])
   const classKey = plan.dispatches.map(item => item.classId).join(',')
   const [loaded, setLoaded] = useState({})
-  const [collectionId, setCollectionId] = useState('')
+  // The screening being read stays chosen after a reload in the same tab (R2).
+  const [collectionId, setCollectionId] = useSessionState('mathapp_screening_collection', '', value => typeof value === 'string')
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
   const dirty = useRef(false)
@@ -55,7 +57,7 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
     const match = collections.find(item => item.id === requestedCollectionId
       || item.members.some(member => requestedIds.has(member.assignmentId)))
     if (match) setCollectionId(match.id)
-  }, [requestedCollectionId, collections])
+  }, [requestedCollectionId, collections, setCollectionId])
   const selected = collections.find(item => item.id === collectionId) || null
   const failed = Object.entries(loaded).filter(([, item]) => item.state !== 'ready')
   const assignmentsFor = classId => loaded[classId]?.assignments || []

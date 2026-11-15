@@ -5,6 +5,7 @@ import ScreeningDispatchFlow from './ScreeningDispatchFlow'
 import ScreeningMaterialLibrary from './ScreeningMaterialLibrary'
 import useScreeningLibrary from './useScreeningLibrary'
 import './screeningFlow.css'
+import { useSessionState } from '../../../lib/sessionState.js'
 
 // Tabs (Simon 2026-11-02): create a screening, open saved drafts and see the issued
 // ones. Creating comes first; handing out is the last step of creating.
@@ -15,7 +16,8 @@ export default function ScreeningDispatchPanel({ classes, students, teacherGroup
   const context = useMemo(() => ({ classes, students, groups: teacherGroups }), [classes, students, teacherGroups])
   const library = useScreeningLibrary(classes, active)
   const [flow, setFlow] = useState(() => ({ id: crypto.randomUUID(), source: null, draftId: '' }))
-  const [tab, setTab] = useState('create')
+  // The chosen tab stays after a reload in the same browser tab (R2).
+  const [tab, setTab] = useSessionState('mathapp_screening_tab', 'create', value => TABS.some(([id]) => id === value))
   // Once opened, the issued list stays mounted so its search and filters survive a
   // visit to the results tab, as they did when results were a page of their own.
   const [issuedSeen, setIssuedSeen] = useState(false)

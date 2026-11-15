@@ -1,4 +1,5 @@
 import { cloneElement, useEffect, useMemo, useRef, useState } from 'react'
+import { readSessionChoice, useSessionState } from '../../../lib/sessionState.js'
 import AttentionModule from '../attention/AttentionModule'
 import AssignmentsPanel from './AssignmentsPanel'
 import RecipientPicker from './RecipientPicker'
@@ -72,6 +73,7 @@ const WORKSPACES = [
 ]
 
 const LS_SUBTABS_KEY = 'mathapp_dashboard_subtabs'
+const LS_WORKSPACE_KEY = 'mathapp_dashboard_workspace'
 const WORKSPACE_SUBTABS = {
   progress: [
     { id: 'class', label: '1. Nivåer & Snabbstatus', panels: ['mastery', 'overview'] },
@@ -208,7 +210,12 @@ export default function DashboardLayout({
   const teacherRole = getTeacherRoleLabel(teacherIdentity.role)
   const [activeWorkspace, setActiveWorkspace] = useState(() => isFocusView ? 'focus'
     : isDirectStudentView ? 'support'
-    : WORKSPACES.some(workspace => workspace.id === initialWorkspace) ? initialWorkspace : 'progress')
+    : WORKSPACES.some(workspace => workspace.id === initialWorkspace) ? initialWorkspace
+    // A reload keeps the workspace the teacher was in (R2).
+    : readSessionChoice(LS_WORKSPACE_KEY, value => value !== 'focus' && WORKSPACES.some(workspace => workspace.id === value)) ?? 'progress')
+  useEffect(() => {
+    if (activeWorkspace !== 'focus') try { sessionStorage.setItem(LS_WORKSPACE_KEY, JSON.stringify(activeWorkspace)) } catch { /* Preferences are optional. */ }
+  }, [activeWorkspace])
   useEffect(() => {
     if (isFocusView) setActiveWorkspace('focus')
     else setActiveWorkspace(current => current === 'focus' ? 'progress' : current)
@@ -313,7 +320,7 @@ export default function DashboardLayout({
 
   // Results have their own picks so a group chosen to read results is never also
   // the target of the next dispatch.
-  const [resultPicks, setResultPicks] = useState([])
+  const [resultPicks, setResultPicks] = useSessionState('mathapp_screening_result_picks', [], Array.isArray)
   const reviewDirtyRef = useRef(false)
   const dispatchDirtyRef = useRef(false)
   const [requestedScreening, setRequestedScreening] = useState('')

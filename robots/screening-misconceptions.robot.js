@@ -70,6 +70,11 @@ test('A wrong answer from a known misconception shows a card that marks the answ
   await expect(card).toBeVisible()
   await expect(review.getByRole('button', { name: /Misc Order,.*svar 376/ })).toHaveAccessibleName(/Felförståelse/)
   await page.screenshot({ path: testInfo.outputPath('screening-teacher-pick.png'), fullPage: true })
+
+  // R2: a reload keeps Screening, the results tab, the recipients and the chosen screening.
+  await page.reload()
+  await expect(section.getByRole('button', { name: /Tiotalsövergången är inte förstådd/ })).toBeVisible()
+  await expect(results.locator(`button[data-collection-id="${assignment.assignmentId}"]`)).toHaveAttribute('aria-pressed', 'true')
 })
 
 test('Clicking a card scrolls a wide table sideways to the framed answer', async ({ page, request, browser }, testInfo) => {

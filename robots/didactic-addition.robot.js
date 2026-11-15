@@ -19,12 +19,12 @@ async function answer(student, pupil, title, answers) {
   await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
   await expect(student).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
 }
+// Approve and hand out in one click (Simon 2026-11-15); the other didactic robots keep the two steps.
 async function approve(page) {
   await page.getByRole('checkbox', { name: /Jag har granskat/ }).check()
-  await page.getByRole('button', { name: 'Godkänn version 1', exact: true }).click()
+  await page.getByRole('button', { name: /^Godkänn och dela ut till 1 elev/ }).click()
+  await expect(page.getByText(/Godkänd och utdelad: 1 av 1 mottagare är bekräftade/)).toBeVisible()
   await expect(page.getByText('Version 1 är godkänd.', { exact: true })).toBeVisible()
-  await page.getByRole('button', { name: /^Dela ut till 1 elev/ }).click()
-  await expect(page.getByText(/1 av 1 mottagare är bekräftade/)).toBeVisible()
 }
 test('Decimal addition preserves both omitted-carry variants through teaching and new controls', async ({ page, request, browser }, testInfo) => {
   test.skip(process.env.ROBOT_DEV !== '1', 'Cookie approval uses the local development origin policy.')

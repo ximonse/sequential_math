@@ -91,7 +91,8 @@ function remainingUnits(units, dispatch, requestId) {
   }))
 }
 
-export async function publishMaterialDraft(req, auth, state, command) {
+// `checked` is a preview already built for this version in the same request.
+export async function publishMaterialDraft(req, auth, state, command, { checked } = {}) {
   const item = state.versions.at(-1)
   if (auth.authSource !== 'cookie') throw evidenceError(403, 'publication_denied', 'Utdelning kräver lärarens inloggade granskningsvy.')
   if (!/^[A-Za-z0-9_-]{8,100}$/u.test(command.requestId || '') || command.version !== item.version || command.contentRevision !== item.contentRevision
@@ -102,7 +103,7 @@ export async function publishMaterialDraft(req, auth, state, command) {
   const units = unitsFor(item)
   let dispatch = await readMaterialDispatch(state, item.version)
   if (dispatch?.status === 'complete') return { dispatch, hasMore: false }
-  const preview = await previewTeacherMaterial(req, auth, item.input)
+  const preview = checked ?? await previewTeacherMaterial(req, auth, item.input)
   if (preview.contentRevision !== item.contentRevision) fail('Underlag eller mottagare har ändrats. Granska en ny version före utdelning.')
   dispatch ||= await recordMaterialDispatch(state, item, [])
   // Bound one API call; the explicit UI action may continue in further pages.

@@ -23,7 +23,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ draft: state, dispatches, assigned: dispatches.some(value => value.status === 'complete') })
     }
     const action = req.body?.action
-    if (!['preview', 'save', 'approve', 'publish'].includes(action) || Object.keys(req.body).some(key => !['action', 'material', 'draftId', 'requestId', 'expectedRevision', 'expectedContentRevision', 'contentRevision', 'version'].includes(key))) {
+    if (!['preview', 'save', 'approve', 'publish', 'approve_publish'].includes(action) || Object.keys(req.body).some(key => !['action', 'material', 'draftId', 'requestId', 'expectedRevision', 'expectedContentRevision', 'contentRevision', 'version'].includes(key))) {
       return res.status(400).json({ error: 'Åtgärden stöds inte.' })
     }
     if (Buffer.byteLength(JSON.stringify(req.body)) > 150000) return res.status(413).json({ error: 'Materialet är för stort.' })
@@ -35,6 +35,19 @@ export default async function handler(req, res) {
       const result = await publishMaterialDraft(req, auth, state, req.body)
       await assertMaterialDraftAccess(req, state)
       return res.status(200).json({ ...result, assigned: result.dispatch.status === 'complete' })
+    }
+    // Simon 2026-11-15: approve and hand out in one click. One preview checks the
+    // content for both steps; the approval is stored before anything is handed out.
+    if (action === 'approve_publish') {
+      if (auth.authSource !== 'cookie') return res.status(403).json({ error: 'Godkännande och utdelning kräver lärarens inloggade granskningsvy.' })
+      const state = await readMaterialDraft(auth.teacherId, req.body.draftId)
+      if (!state) return res.status(404).json({ error: 'Utkastet finns inte.' })
+      await assertMaterialDraftAccess(req, state)
+      const preview = await previewTeacherMaterial(req, auth, state.versions.at(-1).input)
+      const approved = await approveMaterialDraft(state, req.body, preview)
+      await assertMaterialDraftAccess(req, approved.state)
+      const result = await publishMaterialDraft(req, auth, approved.state, { ...req.body, expectedRevision: approved.state.revision }, { checked: preview })
+      return res.status(200).json({ ...result, revision: approved.state.revision, approval: approved.approval, assigned: result.dispatch.status === 'complete' })
     }
     if (action === 'approve') {
       if (auth.authSource !== 'cookie') return res.status(403).json({ error: 'Godkännande kräver lärarens inloggade granskningsvy.' })

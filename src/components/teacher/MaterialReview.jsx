@@ -103,6 +103,20 @@ export default function MaterialReview() {
       contentRevision: item.contentRevision, requestId: requestId('approve') }, true)
     await refresh(); setMessage('Innehåll och mottagare är godkända. Inget är utdelat.')
   }
+  // One click: the server approves and hands out with one content check (Simon 2026-11-15).
+  async function approveAndPublish() {
+    const result = await request({ action: 'approve_publish', draftId, expectedRevision: draft.revision, version,
+      contentRevision: item.contentRevision, requestId: requestId('approve_publish') }, true)
+    let next = result
+    // Large audiences continue in further pages, against the revision the approval returned.
+    while (next.hasMore && activeScope.current === draftId) {
+      next = await request({ action: 'publish', draftId, expectedRevision: result.revision, version,
+        contentRevision: item.contentRevision, requestId: requestId('approve_publish') }, true)
+    }
+    if (activeScope.current !== draftId) return
+    await refresh()
+    setMessage(`Godkänd och utdelad: ${next.dispatch.confirmed} av ${material.audience.total} mottagare är bekräftade.`)
+  }
   async function publish() {
     const id = requestId('publish')
     let result
@@ -188,6 +202,8 @@ export default function MaterialReview() {
         <label className="material-check"><input type="checkbox" checked={checked} disabled={busy || dirty || Boolean(pendingQuestion) || !latest || approved}
           onChange={event => setChecked(event.target.checked)} />Jag har granskat innehåll, bedömning och mottagare för version {version}.</label>
         <button className="material-primary" disabled={busy || !checked || dirty || Boolean(pendingQuestion) || !latest || approved} onClick={() => run(approve)}>Godkänn version {version}</button>
+        {!dispatch && <button className="material-primary" disabled={busy || !checked || dirty || Boolean(pendingQuestion) || !latest || approved}
+          onClick={() => run(approveAndPublish)}>Godkänn och dela ut till {material.audience.total} {material.audience.total === 1 ? 'elev' : 'elever'}</button>}
       </section><section className="material-module"><h2>Utdelning</h2>
         <MaterialDispatchStatus dispatch={dispatch} pupils={material.audience.pupils} />
         <div className="material-actions"><button className="material-primary" disabled={busy || !approved || dirty || Boolean(pendingQuestion) || !latest || dispatch?.status === 'complete'} onClick={() => run(publish)}>

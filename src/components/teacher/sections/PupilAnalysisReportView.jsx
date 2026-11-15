@@ -16,6 +16,7 @@ import { CONTRAST_LABELS_SV } from '../../../domains/predictableErrors/contrast.
 import { GAVE_UP_MODELS, NOT_METHOD_MODELS } from '../../../domains/predictableErrors/catalog.js'
 import { meetsPattern } from '../../../lib/modelPattern.js'
 import { modelDescription } from '../../../domains/predictableErrors/modelDescriptions.js'
+import { approvedMisconception, misconceptionsForModel } from '../../../domains/predictableErrors/misconceptions.js'
 import '../../../dev/diagnosticGridPrototype.css'
 
 const originLabels = { rule: 'Regelbaserad analys', ai: 'AI-formulerad tolkning – behöver lärargranskning', teacher: 'Lärarformulerad tolkning' }
@@ -28,6 +29,8 @@ const questionText = entry => entry?.question.promptText || entry?.question.prom
 })()
 const titleFor = item => (item.signalCode && CONTRAST_LABELS_SV[item.signalCode])
   || (item.basis === 'existing_signal' ? 'Tidigare felmarkering' : String(item.textSv).split('. ')[0])
+// The misconceptions behind a card's model, as on the screening cards (Simon 2026-11-15).
+const misconceptionTitles = item => item.signalCode ? misconceptionsForModel(item.signalCode).map(m => m.titleSv) : []
 const SCOPE_LABELS = { addition: 'addition', subtraction: 'subtraktion', multiplication: 'multiplikation', division: 'division',
   decimal_addition: 'decimaladdition', decimal_subtraction: 'decimalsubtraktion' }
 // One edge colour per area, with the area name beside the title for those who cannot rely on colour.
@@ -152,8 +155,9 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h6 className="text-base font-semibold">
             <span className="mr-2 text-xs font-bold uppercase tracking-wide" style={{ color: area.color }}>{area.label}</span>
-            {titleFor(item)}{suspicions.filter(other => other.signalCode && other.signalCode === item.signalCode).length > 1
-            && SCOPE_LABELS[first?.interpretation.predictable?.scope] ? ` · ${SCOPE_LABELS[first.interpretation.predictable.scope]}` : ''}</h6>
+            {misconceptionTitles(item).join(' · ') || titleFor(item)}{suspicions.filter(other => other.signalCode && other.signalCode === item.signalCode).length > 1
+            && SCOPE_LABELS[first?.interpretation.predictable?.scope] ? ` · ${SCOPE_LABELS[first.interpretation.predictable.scope]}` : ''}
+            {misconceptionTitles(item).length > 0 && <span className="block text-sm font-normal text-slate-600">Felmodell: {titleFor(item)}</span>}</h6>
           <span className="flex items-center gap-2">
             {combinable(item) && <label className="flex items-center gap-1 text-xs">
               <input type="checkbox" checked={chosen.has(item.id)} onChange={() => toggle(item.id)} /> Pröva tillsammans</label>}
@@ -185,8 +189,18 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
       <h5 className="text-sm font-semibold">Fler misstankar med mindre underlag ({moreSuspicions.length})</h5>
       <p className="text-xs text-slate-600">Färre felsvar än korten ovan. De stäms inte av; läs dem som tecken att hålla ögonen på.</p>
       {moreSuspicions.map(item => <div key={item.id} data-hypothesis={item.signalCode} className="mt-2 text-sm">
-        <p className="font-semibold">{titleFor(item)} · {item.supportCount} felsvar</p>
+        <p className="font-semibold">{misconceptionTitles(item).join(' · ') || titleFor(item)} · {item.supportCount} felsvar
+          {misconceptionTitles(item).length > 0 && <span className="ml-1 font-normal text-slate-600">({titleFor(item)})</span>}</p>
         {rows(item.supportRefs)}
+      </div>)}
+    </section>}
+
+    {report.teacherMisconceptions?.length > 0 && <section className="mt-4" aria-label="Felförståelser du har valt">
+      <h5 className="text-base font-semibold">Felförståelser du har valt</h5>
+      <p className="text-sm text-slate-600">Dina val ur listan i screeningens elevgenomgång.</p>
+      {report.teacherMisconceptions.map(item => <div key={item.misconceptionId} className="mt-2">
+        <p className="text-sm font-semibold">{approvedMisconception(item.misconceptionId)?.titleSv ?? 'Felförståelse som inte längre finns i listan'} · {item.count} svar</p>
+        {rows(item.refs)}
       </div>)}
     </section>}
 
@@ -195,7 +209,8 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
       reviewFor={reviewFor} studentId={studentId} classId={classId} baseUrl={baseUrl} />}
 
     {(() => {
-      const explained = new Set([...report.hypotheses, ...more].flatMap(item => item.supportRefs).concat((report.repeatedTasks ?? []).flatMap(task => task.wrongRefs)))
+      const explained = new Set([...report.hypotheses, ...more].flatMap(item => item.supportRefs).concat((report.repeatedTasks ?? []).flatMap(task => task.wrongRefs),
+        (report.teacherMisconceptions ?? []).flatMap(item => item.refs)))
       const unexplained = (report.exampleRefs || []).filter(ref => byRef.get(ref)?.answer.status === 'incorrect' && !explained.has(ref))
       return unexplained.length > 0 && <>
         <h5 className="mt-4 text-base font-semibold">Fel som appen inte kan förklara</h5>

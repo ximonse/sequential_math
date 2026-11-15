@@ -98,3 +98,14 @@ describe('suspicions beyond the eight reviewed cards', () => {
     expect(report.evidence.map(entry => entry.ref)).toEqual(expect.arrayContaining(report.moreHypotheses.flatMap(item => item.supportRefs)))
   })
 })
+
+describe('misconceptions the teacher picked from the list', () => {
+  it('lists them beside the report with their answers, approved ones only', () => {
+    const source = evidence()
+    source.entries[0].teacherReview = { assessment: { misconceptionIds: ['regrouping_not_understood', 'not_in_catalogue'] } }
+    source.entries[2].teacherReview = { assessment: { misconceptionIds: ['regrouping_not_understood'] } }
+    const report = validatePupilAnalysis(buildPupilAnalysisDraft(source), source)
+    expect(report.teacherMisconceptions).toEqual([{ misconceptionId: 'regrouping_not_understood', refs: ['WRONG', 'OTHER'], count: 2 }])
+    expect(report.evidence.map(entry => entry.ref)).toEqual(expect.arrayContaining(['WRONG', 'OTHER']))
+  })
+})

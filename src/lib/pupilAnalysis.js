@@ -4,6 +4,7 @@ import { validateTeachingRecord } from './didacticFollowUp.js'
 import { buildRuleHypotheses, comparableRuleCounter } from './pupilRuleHypotheses.js'
 import { speedSlipSummary } from './practiceModes.js'
 import { repeatedlyWrongTasks } from './repeatedTasks.js'
+import { approvedMisconception } from '../domains/predictableErrors/misconceptions.js'
 export const PUPIL_ANALYSIS_VERSION = 1
 const fail = message => { throw Object.assign(new Error(message), { status: 400, code: 'invalid_analysis' }) }
 const text = (value, max = 1000) => {
@@ -98,15 +99,26 @@ export function validatePupilAnalysis(input, evidence) {
     .filter(item => !item.supportRefs.some(ref => shown.has(JSON.stringify([item.signalCode, ref]))))
     .map(item => ({ signalCode: item.signalCode, ruleVersion: item.ruleVersion, supportRefs: item.supportRefs.slice(0, 20),
       supportCount: new Set(item.supportRefs.map(ref => unit(byRef.get(ref)))).size }))
+  // Misconceptions the teacher picked from the approved list on screening answers.
+  const picked = new Map()
+  for (const entry of evidence.entries) {
+    for (const id of entry.teacherReview?.assessment?.misconceptionIds ?? []) {
+      if (!approvedMisconception(id)) continue
+      if (!picked.has(id)) picked.set(id, [])
+      picked.get(id).push(entry.ref)
+    }
+  }
+  const teacherMisconceptions = [...picked].map(([id, list]) => ({ misconceptionId: id, refs: list.slice(0, 20), count: list.length }))
   const refs = new Set([...exampleRefs, ...strengths.flatMap(item => item.refs), ...hypotheses.flatMap(item => [...item.supportRefs, ...item.counterRefs]),
-    ...repeatedTasks.flatMap(task => [...task.wrongRefs, ...task.correctRefs]), ...moreHypotheses.flatMap(item => item.supportRefs)])
+    ...repeatedTasks.flatMap(task => [...task.wrongRefs, ...task.correctRefs]), ...moreHypotheses.flatMap(item => item.supportRefs),
+    ...teacherMisconceptions.flatMap(item => item.refs)])
   return { schemaVersion: PUPIL_ANALYSIS_VERSION, scopeSv: text(input.scopeSv, 300),
     provenance: { kind: input.provenance.kind,
       ...(input.provenance.model ? { model: text(input.provenance.model, 100) } : {}),
       instructionVersion: text(input.provenance.instructionVersion, 80) },
     snapshotRevision: evidence.snapshotRevision, period: evidence.period, source: evidence.source,
     counts: analysisCounts(evidence.entries), coverage: evidence.coverage,
-    strengths, hypotheses, repeatedTasks, moreHypotheses, exampleRefs, limitationsSv: list(input.limitationsSv, 8).map(value => text(value)),
+    strengths, hypotheses, repeatedTasks, moreHypotheses, teacherMisconceptions, exampleRefs, limitationsSv: list(input.limitationsSv, 8).map(value => text(value)),
     evidence: evidence.entries.filter(entry => refs.has(entry.ref)) }
 }
 

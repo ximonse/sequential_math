@@ -134,9 +134,9 @@ export function createMathServer({ getApi, allowReportWrites = false, allowMater
       return { ...base, items: values.slice(offset, offset + limit), total: values.length, nextOffset: offset + limit < values.length ? offset + limit : null }
     }
     // Server-computed lists beside the report are counted here, not sent whole with every reference.
-    const { evidence: _evidence, hypotheses, strengths, moreHypotheses = [], repeatedTasks = [], ...summary } = item.report
+    const { evidence: _evidence, hypotheses, strengths, moreHypotheses = [], repeatedTasks = [], teacherMisconceptions = [], ...summary } = item.report
     return { ...base, report: summary, hypothesisCount: hypotheses.length, strengthCount: strengths.length, checkInCount: item.checkIns.length,
-      moreHypothesisCount: moreHypotheses.length, repeatedTaskCount: repeatedTasks.length }
+      moreHypothesisCount: moreHypotheses.length, repeatedTaskCount: repeatedTasks.length, teacherMisconceptionCount: teacherMisconceptions.length }
   })
   if (allowReportWrites) register('math_save_analysis_draft', 'Spara AI-rapport för lärargranskning', 'Save exactly the requested AI report version for teacher review, only when the user asked to save it. Does not approve, assign, publish or change mastery. Reuse requestId for an uncertain retry; read history after a timeout/conflict.', {
     ...period, requestId: z.string().regex(/^[A-Za-z0-9_-]{8,100}$/u), expectedRevision: z.number().int().nonnegative(), report

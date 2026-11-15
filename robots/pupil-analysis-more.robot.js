@@ -36,4 +36,8 @@ test('A pupil with many suspicions sees all of them, the weaker ones smaller bel
   await expect(more.locator('[data-hypothesis]').first()).toBeVisible()
   await page.waitForLoadState('networkidle')
   await more.screenshot({ path: testInfo.outputPath('report-more-suspicions.png') })
+  // The first card names the misconception, with the error model below it.
+  const card = report.locator('[data-hypothesis]').first()
+  await expect(card.getByText(/^Felmodell:/)).toBeVisible()
+  await card.screenshot({ path: testInfo.outputPath('card-heading.png') })
 })

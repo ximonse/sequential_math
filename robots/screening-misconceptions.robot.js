@@ -13,7 +13,7 @@ test('A wrong answer from a known misconception shows a card that marks the answ
   const classId = `misc-${tag}`
   const pupils = []
   for (const name of ['Misc Order', 'Misc Right']) pupils.push(await createPupil(request, { name, classId }))
-  const teacher = await (await request.post('/__robot/teacher', { data: { id: `misc-admin-${tag}`, classIds: [classId], role: 'super_admin' } })).json()
+  const teacher = await (await request.post('/__robot/teacher', { data: { id: `misc-teacher-${tag}`, classIds: [classId], role: 'teacher' } })).json()
   await teacherLogin(page, teacher)
   // 402 − 178: answering 376 takes the smaller digit from the larger in every column.
   const task = manifest.tasks.find(t => t.analysisCaseId === 'S2')

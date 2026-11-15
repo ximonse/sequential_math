@@ -1,7 +1,6 @@
 import { kv } from '@vercel/kv'
 import { getLiveTeacherAuthPayload, withCors } from './_helpers.js'
 import { canAccessClass } from './_studentAccess.js'
-import { isSchoolAdminRole } from './_teacherRoles.js'
 import { diagnosticApiEnabled, diagnosticAssignablePupilsInClass } from './_diagnosticApiAccess.js'
 import { listClassDiagnosticAssignments } from './_diagnosticAssignmentList.js'
 import { readDiagnosticAttempt } from './_diagnosticAttemptStore.js'
@@ -25,9 +24,8 @@ export default async function handler(req, res) {
   try {
     const auth = await getLiveTeacherAuthPayload(req)
     if (!auth) return res.status(401).json({ error: 'Teacher authorization required' })
-    if (!isSchoolAdminRole(auth.role, auth.isAdmin)) {
-      return res.status(403).json({ error: 'Diagnostic pilot requires admin access' })
-    }
+    // Simon 2026-11-11 and 2026-11-15: class access, not the admin role, decides
+    // who reads screening results and judges answers (checked below per class and pupil).
     const input = req.method === 'GET' ? req.query || {} : req.body || {}
     const { classId, studentId, assignmentId, attemptId } = input
     if (![classId, assignmentId].every(validId)

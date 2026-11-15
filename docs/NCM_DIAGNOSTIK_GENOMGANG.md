@@ -1,7 +1,9 @@
 # Klassöversikt och lärarens genomgång
 
-Lokalt implementationssnitt 2026-10-06. NCM-flödet är fortsatt tillgängligt
-för admin/huvudadmin med aktuell klassåtkomst och serverns pilotbegränsning.
+Lokalt implementationssnitt 2026-10-06. Sedan 2026-11-11 (utdelning och
+läsning) och 2026-11-15 (resultat och bedömning) styr klassåtkomst, inte
+administratörsrollen, vem som använder screeningen; serverns pilotbegränsning
+gäller fortfarande. Räknehäftets prototyp är kvar för administratörer.
 Det påverkar inte vanlig träning, mastery eller adaptiv progression.
 
 ## Arbetsflöde
@@ -38,7 +40,7 @@ och radering. Skrivning och automatisk markörflytt bevaras tillsammans som
 vanliga skriv-/flytthändelser i originalets återspelning. Samma skrivbeteende
 används i vanliga uppdrags kladdhäfte utan diagnostisk serverlagring.
 
-Under **Screening → Resultat** väljer admin klass och ett befintligt uppdrag i
+Under **Screening → Resultat** väljer läraren klass och ett befintligt uppdrag i
 **Klassöversikt och genomgång**. Inget uppdrag väljs automatiskt.
 Översikten visar nuvarande behöriga mottagare av just det uppdraget:
 

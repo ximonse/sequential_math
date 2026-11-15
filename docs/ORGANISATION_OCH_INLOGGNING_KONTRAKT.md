@@ -35,6 +35,9 @@ Konton har exakt en explicit roll. Serverns aktuella kontopost är auktoritativ;
 | Skapa elev, dela klasslänk och ändra elevkod | Ja | Ja | Ja, i tilldelad klass | Nej |
 | Sätta eller ta bort eget tilltalsnamn för elev | Ja | Ja, inom egna skolor | Ja, i tilldelad klass | Nej |
 | Radera eller anonymisera elev | Ja | Nej | Nej | Nej |
+| Dela ut, läsa och återanvända screening | Ja | Ja, inom egna skolor | Ja, i tilldelad klass | Nej |
+| Läsa screeningresultat och bedöma elevsvar | Ja | Ja, inom egna skolor | Ja, i tilldelad klass | Nej |
+| Stoppa, arkivera eller radera utdelad screening | Ja | Ja, inom egna skolor | Ja, egen screening | Nej |
 
 Servern kontrollerar behörighet på varje skyddat API-anrop. Dolda knappar i gränssnittet räcker aldrig som behörighetskontroll.
 

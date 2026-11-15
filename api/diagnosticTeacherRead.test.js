@@ -61,7 +61,7 @@ describe('teacher diagnostic evidence read boundary', () => {
     expect(result.data.rows[0]).toMatchObject({ studentId: 'PUPIL', status: 'in_progress', submitted: 0, remaining: 1 })
     expect(JSON.stringify(result.data)).not.toContain('OTHER')
   })
-  it('authorizes review writes with the same live admin, class and pupil boundary', async () => {
+  it('authorizes review writes with the same live teacher, class and pupil boundary', async () => {
     const body = { ...query, attemptId: 'ATTEMPT', note: 'Follow up', reviewed: true,
       evidenceRevision: 1, evidenceSequence: 2, expectedReviewRevision: 0 }
     const post = async () => {
@@ -69,8 +69,6 @@ describe('teacher diagnostic evidence read boundary', () => {
       await handler({ method: 'POST', headers: {}, body }, res)
       return res
     }
-    mocked.teacher.mockResolvedValueOnce({ role: 'teacher' })
-    expect((await post()).code).toBe(403)
     mocked.classAccess.mockResolvedValueOnce(false)
     expect((await post()).code).toBe(403)
     mocked.testStudents.mockResolvedValueOnce([])
@@ -78,16 +76,25 @@ describe('teacher diagnostic evidence read boundary', () => {
     expect(mocked.saveReview).not.toHaveBeenCalled()
     expect((await post()).data.review.reviewRevision).toBe(1)
     expect(mocked.saveReview).toHaveBeenCalledWith(record, body, 'ADMIN')
+    // A class teacher judges answers in their own class too (Simon 2026-11-15).
+    mocked.teacher.mockResolvedValueOnce({ role: 'teacher', teacherId: 'TEACHER' })
+    expect((await post()).code).toBe(200)
+    expect(mocked.saveReview).toHaveBeenLastCalledWith(record, body, 'TEACHER')
   })
-  it('stays closed until explicitly enabled and requires an admin session', async () => {
+  it('stays closed until explicitly enabled and requires a live teacher session', async () => {
     delete process.env.NCM_DIAGNOSTIC_API_ENABLED
     expect((await call()).code).toBe(404)
     process.env.NCM_DIAGNOSTIC_API_ENABLED = 'true'
     mocked.teacher.mockResolvedValueOnce(null)
     expect((await call()).code).toBe(401)
-    mocked.teacher.mockResolvedValueOnce({ role: 'teacher', teacherId: 'TEACHER' })
-    expect((await call()).code).toBe(403)
     expect(mocked.members).not.toHaveBeenCalled()
+  })
+
+  it('lets a class teacher read results without the admin role, but not without class access', async () => {
+    mocked.teacher.mockResolvedValue({ role: 'teacher', teacherId: 'TEACHER' })
+    expect((await call()).code).toBe(200)
+    mocked.classAccess.mockResolvedValue(false)
+    expect((await call()).code).toBe(403)
   })
 
   it('requires current class access and a configured pupil in that class', async () => {
@@ -122,16 +129,13 @@ describe('teacher diagnostic evidence read boundary', () => {
     expect(mocked.read).not.toHaveBeenCalled()
   })
 
-  it('reads screening misconceptions only for an admin with class access, for the allowed pupils', async () => {
+  it('reads screening misconceptions only with class access, for the allowed pupils', async () => {
     mocked.misconceptions.mockResolvedValue({ pupils: [] })
     const view = { classId: 'CLASS', assignmentId: 'ASSIGNMENT', view: 'misconceptions' }
     const ok = await call(view)
     expect(ok.code).toBe(200)
     expect(mocked.misconceptions).toHaveBeenCalledWith(expect.objectContaining({ assignmentId: 'ASSIGNMENT' }), ['PUPIL'])
     mocked.misconceptions.mockClear()
-    mocked.teacher.mockResolvedValue({ role: 'teacher', teacherId: 'TEACHER' })
-    expect((await call(view)).code).toBe(403)
-    mocked.teacher.mockResolvedValue({ role: 'school_admin', teacherId: 'ADMIN' })
     mocked.classAccess.mockResolvedValue(false)
     expect((await call(view)).code).toBe(403)
     mocked.classAccess.mockResolvedValue(true)

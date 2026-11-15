@@ -142,8 +142,8 @@ async function dragBetweenCells(page, from, to, hold = false) {
 test('NCM grid is admin-only and reversible with buttons, touch and right click', async ({ browser }) => {
   test.setTimeout(90 * 1000)
   const ordinary = await openAsRole(browser, 'teacher', '/teacher/ncm/diagnostic-grid')
+  // The notebook prototype stays an administrator tool; class teachers reach Screening itself (78448e2, 2026-11-11).
   await expect(ordinary.page).toHaveURL(/\/teacher$/)
-  await expect(ordinary.page.getByRole('button', { name: /Screening/ })).toHaveCount(0)
   await ordinary.context.close()
 
   for (const role of ['school_admin', 'super_admin']) {

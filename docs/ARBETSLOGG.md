@@ -37,6 +37,29 @@
   den syntetiska klassen och blindtestklasserna finns i produktion.
 - `misconceptions.js` har 792 av 800 tillåtna rader.
 
+### Åtgärdat efter genomgången (samma dag, lokalt)
+
+- JSON-importen, MCP-sammanfattningen (räknar listorna), behörighetstest för
+  screeningvyn, felförståelsefilen delad (innehållet oförändrat).
+- Elevrapporten: felförståelsen som kortrubrik, felmodellen under; lärarens
+  val ur listan som egen del (`teacherMisconceptions`).
+- `PUPIL_ANALYSIS.md`, `ARCHITECTURE.md`, kartkorten `rules`,
+  `analysis` och `matrix`.
+- Hela robotsviten: 195 gröna, 12 överhoppade, 13 röda. Fem var tillfälliga
+  (gröna en i taget). Sju felar likadant på koden från före 11 november och
+  är äldre fel: tickets från startsidan, räknehäftets geometri vid tema,
+  gruppval över klassfilter, framsteg med många tabeller, tabellutveckling,
+  felunderlag i klassvyn, lärarvyns huvudrobot. En var föråldrad efter
+  78448e2 (klasslärare ser Screening) och är rättad.
+
+### Fynd som kräver Simons beslut
+
+- Screeningens resultat-API (`teacher-diagnostic-attempts`) kräver
+  fortfarande administratör, fast klasslärare sedan 78448e2 når Screening.
+  En klasslärare kommer alltså in men får troligen fel under Resultat, även i
+  felförståelsedelen.
+- Sju äldre röda robotar: rätta eller uppdatera dem som eget arbete.
+
 ## 2026-11-15: Rättelse: testklasser blandades in som riktiga elever
 
 ### Logg

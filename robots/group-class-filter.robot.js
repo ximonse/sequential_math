@@ -14,7 +14,8 @@ test('Group members can be chosen across class filters without losing selections
   await page.getByRole('button', { name: /^Administration(?:\s|$)/ }).click()
   await page.getByRole('button', { name: '+ Ny grupp', exact: true }).click()
   const panel = page.locator('[data-open-item]')
-  const pupil = index => panel.getByRole('checkbox', { name: names[index], exact: true })
+  // The pupil's class follows the name ("Anna · Klass A") so namesakes can be told apart.
+  const pupil = index => panel.getByRole('checkbox', { name: new RegExp(`^${names[index]}(?: ·|$)`) })
   const klass = index => panel.getByRole('checkbox', { name: classes[index].name, exact: true })
   await panel.getByRole('textbox', { name: 'Gruppnamn' }).fill(`Urval ${tag}`)
   await klass(0).check()

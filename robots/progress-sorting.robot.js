@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, openThemeControls } from './lib/app.js'
-import { createTeacher, teacherLogin, openTab, selectOnlyClass } from './lib/teacher.js'
+import { createTeacher, teacherLogin, openSubTab, openTab, selectOnlyClass } from './lib/teacher.js'
 
 test('Framsteg behåller elever och sortering under långsam bakgrundsuppdatering', async ({ page, request }) => {
   const tag = Math.random().toString(36).slice(2, 7)
@@ -132,6 +132,7 @@ test('Framsteg: Elev togglar namn, testade tabeller och starka resultat över m�
   await teacherLogin(page, teacher)
   await selectOnlyClass(page, klass.name)
   await openTab(page, 'Framsteg')
+  await openSubTab(page, 'Tabellträning')
   const panel = page.getByRole('region', { name: 'Tabellöversikt – hela klassen', exact: true })
   await expect(panel).toBeVisible()
   const table = panel.getByRole('table', { name: 'Tabellträning per elev och tabell', exact: true })

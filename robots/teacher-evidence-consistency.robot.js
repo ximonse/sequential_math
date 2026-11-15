@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, readServerProfile } from './lib/app.js'
-import { createTeacher, teacherLogin } from './lib/teacher.js'
+import { createTeacher, openSubTab, teacherLogin } from './lib/teacher.js'
 
 test('Class detail shows current candidates separately from original error labels and keeps the source untouched', async ({ page, request }, testInfo) => {
   const classId = `shared-evidence-${Math.random().toString(36).slice(2, 8)}`
@@ -12,6 +12,7 @@ test('Class detail shows current candidates separately from original error label
   await teacherLogin(page, teacher)
   await page.getByRole('button', { name: /^Statistik & stöd/ }).click()
   await page.getByRole('button', { name: classId, exact: true }).click()
+  await openSubTab(page, 'Felmönster i klassen')
   await expect(page.getByRole('heading', { name: 'Felunderlag – klassöversikt', exact: true })).toBeVisible()
   const cell = page.getByRole('button', { name: /nivå 4, visa felunderlag/ })
   await expect(cell).toBeEnabled()

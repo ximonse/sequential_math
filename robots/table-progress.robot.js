@@ -3,7 +3,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil } from './lib/app.js'
 import { createFindings } from './lib/findings.js'
-import { createTeacher, openTab, selectOnlyClass, teacherLogin } from './lib/teacher.js'
+import { createTeacher, openSubTab, openTab, selectOnlyClass, teacherLogin } from './lib/teacher.js'
 
 test('Tabellutveckling: behåller historik utanför recent250', async ({ page, request }, testInfo) => {
   const findings = createFindings(testInfo)
@@ -45,8 +45,7 @@ test('Tabellutveckling: behåller historik utanför recent250', async ({ page, r
   await teacherLogin(page, teacher)
   await selectOnlyClass(page, classA.name)
   await openTab(page, 'Framsteg')
-
-
+  await openSubTab(page, 'Tabellträning')
   const panel = page.getByRole('region', { name: 'Tabellträning – utveckling', exact: true })
   await expect(panel).toBeVisible()
   const rows = panel.getByRole('table', { name: 'Tabellresultat per elev' })

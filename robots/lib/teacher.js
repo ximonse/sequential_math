@@ -38,6 +38,12 @@ export async function openTab(page, label) {
   await page.waitForTimeout(400)
 }
 
+// Opens one of the workspace's sub-views (Delvyer, 2026-11-11), e.g. 'Tabellträning'.
+export async function openSubTab(page, label) {
+  await page.getByRole('group', { name: 'Delvyer' }).getByRole('button', { name: new RegExp(label) }).click()
+  await page.waitForTimeout(200)
+}
+
 // Opens a class under Administration and, optionally, one of its tabs.
 export async function openClass(page, className, tab) {
   await page.getByRole('button', { name: /^Administration(?:\s|$)/ }).click()

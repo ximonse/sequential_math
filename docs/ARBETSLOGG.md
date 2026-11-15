@@ -1,5 +1,36 @@
 # Arbetslogg
 
+## 2026-11-15: Behörighet för screeningresultat och de äldre röda robotarna
+
+### Simons beslut
+
+- Ja till att klassåtkomst styr screeningresultat och bedömning av svar.
+- Ja till att rätta de sju äldre röda robotarna före belastningen.
+
+### Logg
+
+- Screeningens resultat-API kräver inte längre administratör; klass- och
+  elevkontrollerna är kvar. Felförståelseroboten körs som klasslärare.
+  Behörighetstabellen i `ORGANISATION_OCH_INLOGGNING_KONTRAKT.md`.
+- Ett verkligt fel (R2): vald delvy i lärarvyn (sedan 04ceec7, 11 nov)
+  tappades vid omladdning, så valt underlag doldes. Delvyn sparas nu per
+  arbetsyta i `localStorage` som övriga vyval. Roboten för
+  tabellutveckling fångade felet.
+- Föråldrade robotar uppdaterade efter avsiktliga ändringar: delvyer
+  (tabellträning, felmönster, tickets), elevens klass efter namnet i
+  gruppvalet, räknehäftets läge mäts mot rutnätet i stället för mot skärmen
+  (sidan scrollar när en lägre knapp klickas).
+- Hela robotsviten: 200 gröna, 12 överhoppade, 8 röda vid parallell körning;
+  alla 8 gröna en i taget. Instabila under last: uppdrag via länk, låst
+  uppdrag, screening till en elev, skrivsvar med teckning, talpar genom alla
+  nivåer, kort division, rensning av bekräftade händelser.
+
+### Tankar
+
+- Robotsviten är instabil vid fyra parallella arbetare på den här datorn
+  (seed-fel efter 0,1 s, tidsgränser). Värt en egen översyn av tidsgränser
+  eller antal arbetare; inte gjort.
+
 ## 2026-11-15: Målet nått; genomgång av helheten inför belastningen
 
 ### Simons beslut

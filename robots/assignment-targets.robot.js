@@ -2,7 +2,7 @@
 // can be active at once, and the teacher sees and ends them per class or group.
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
-import { createTeacher, openTab, selectOnlyClass, teacherLogin } from './lib/teacher.js'
+import { createTeacher, openSubTab, openTab, selectOnlyClass, teacherLogin } from './lib/teacher.js'
 
 async function setup(request) {
   const tag = Math.random().toString(36).slice(2, 6)
@@ -92,6 +92,7 @@ test('A ticket shown on the home page reaches only the pupil picked in the recip
   const picker = page.locator('[data-recipient-picker]')
   await picker.getByRole('searchbox', { name: 'Sök elev' }).fill('Grupp')
   await picker.getByRole('button', { name: /^Lägg till Grupp/ }).first().click()
+  await openSubTab(page, 'Tickets')
   await page.getByRole('button', { name: /^Ticket/ }).click()
   await expect(page.locator('[data-ticket-recipients]')).toContainText('Startsidan når 1 elev(er)')
   const question = `Vad är 6 · 7? ${Math.random().toString(36).slice(2, 6)}`

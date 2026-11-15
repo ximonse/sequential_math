@@ -5,7 +5,7 @@ import { createPupil, login, openOtherTraining } from './lib/app.js'
 import { createFindings } from './lib/findings.js'
 import { answerTasks } from './lib/session.js'
 import { checkScreenText } from './lib/text.js'
-import { createTeacher, openTab, rowFor, sectionText, selectOnlyClass, tableUnder, teacherLogin } from './lib/teacher.js'
+import { createTeacher, openSubTab, openTab, rowFor, sectionText, selectOnlyClass, tableUnder, teacherLogin } from './lib/teacher.js'
 
 const THINK_MS = 900
 
@@ -127,7 +127,8 @@ test('Lärare: lärarvyn visar det eleverna gjorde', async ({ page, request, bro
     if (body.length !== (screenRows?.length || 0)) findings.add('L1', 'Exporten av nivåöversikten har ett annat antal rader än skärmen', { skärm: screenRows?.length, fil: body.length })
   }
 
-  // Table practice is separate from ordinary multiplication.
+  // Table practice is separate from ordinary multiplication; it has its own sub-view.
+  await openSubTab(page, 'Tabellträning')
   const tableRows = page.getByRole('table', { name: 'Tabellresultat per elev' })
   for (const { pupil } of expected) {
     const row = tableRows.getByRole('row').filter({ hasText: pupil.loginCode })

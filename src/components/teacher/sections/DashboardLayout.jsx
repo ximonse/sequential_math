@@ -71,6 +71,7 @@ const WORKSPACES = [
   { id: 'admin', label: 'Administration', description: 'Klasser, elevkort och konton', panels: ['management'] }
 ]
 
+const LS_SUBTABS_KEY = 'mathapp_dashboard_subtabs'
 const WORKSPACE_SUBTABS = {
   progress: [
     { id: 'class', label: '1. Nivåer & Snabbstatus', panels: ['mastery', 'overview'] },
@@ -249,11 +250,17 @@ export default function DashboardLayout({
        ? 'teacher-dashboard-surface--admin'
        : 'teacher-dashboard-surface--teacher'
 
-  const [subTabByWorkspace, setSubTabByWorkspace] = useState(() => ({
-    progress: initialSubTab || 'class',
-    teaching: initialSubTab || 'assignments',
-    support: initialSubTab || 'urgent'
-  }))
+  // The chosen sub-view stays after a reload, like the other view choices (R2).
+  const [subTabByWorkspace, setSubTabByWorkspace] = useState(() => {
+    let saved = {}
+    try { saved = JSON.parse(localStorage.getItem(LS_SUBTABS_KEY)) || {} } catch { /* Preferences are optional. */ }
+    const pick = (workspace, fallback) => initialSubTab
+      || (WORKSPACE_SUBTABS[workspace].some(tab => tab.id === saved[workspace]) ? saved[workspace] : fallback)
+    return { progress: pick('progress', 'class'), teaching: pick('teaching', 'assignments'), support: pick('support', 'urgent') }
+  })
+  useEffect(() => {
+    try { localStorage.setItem(LS_SUBTABS_KEY, JSON.stringify(subTabByWorkspace)) } catch { /* Preferences are optional. */ }
+  }, [subTabByWorkspace])
 
   const [collapsed, setCollapsed] = useState(() => {
     const defaults = {

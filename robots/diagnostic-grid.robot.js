@@ -221,11 +221,14 @@ test('Notebook touch draws from empty cells; symbols and every theme keep the ge
   await expect(page.getByRole('button', { name: 'Streckläge' })).toHaveAttribute('aria-pressed', 'false')
   await cell(1).click()
   await page.getByRole('button', { name: /Fler tecken/ }).click()
-  const before = await page.locator('.notebook-numbers').boundingBox()
+  // The keypad's place relative to the grid; clicking a lower button may scroll the page itself.
+  const keypadOffset = () => page.evaluate(() => document.querySelector('.notebook-numbers').getBoundingClientRect().y
+    - document.querySelector('.diagnostic-grid').getBoundingClientRect().y)
+  const before = await keypadOffset()
   await page.getByRole('button', { name: 'Skriv %', exact: true }).click()
   await expect(cell(1)).toHaveAttribute('aria-label', /%/)
   await page.keyboard.press('Escape')
-  expect((await page.locator('.notebook-numbers').boundingBox()).y).toBe(before.y)
+  expect(await keypadOffset()).toBe(before)
   await cell(2).click()
   await cell(2).press('8')
   await cell(2).click()
@@ -237,7 +240,7 @@ test('Notebook touch draws from empty cells; symbols and every theme keep the ge
     await page.getByRole('combobox', { name: 'Välj tema' }).selectOption(theme)
     await expect(page.locator('body')).toHaveClass(new RegExp(`theme-${theme}`))
     await expect(page.locator('.diagnostic-cell__digit--main').first()).toHaveCSS('font-weight', '400')
-    expect((await page.locator('.notebook-numbers').boundingBox()).y).toBe(before.y)
+    expect(await keypadOffset()).toBe(before)
     await page.screenshot({ path: testInfo.outputPath(`notebook-${theme}.png`), fullPage: true })
   }
   await context.close()

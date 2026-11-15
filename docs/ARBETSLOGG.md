@@ -1,5 +1,34 @@
 # Arbetslogg
 
+## 2026-11-15: Rättelse: testklasser blandades in som riktiga elever
+
+### Logg
+
+- Vid kontroll av räknehäftena syntes att flera "oförklarade svar från
+  riktiga elever" kom från Simons testkonto (Lärare), *Test – felmönster* och
+  blindtestklasserna. Listan hade bara räknat bort klassen *Syntetisk*.
+- Tre av v13-modellerna bygger bara på påhittade elever: en av växlingarna
+  minskar inte, sista minnessiffran glöms, fel tabellfaktum i uppställningen.
+  Räknar med starttalet bygger på ett riktigt svar och ett blindtest.
+- Deras källa säger nu det; modellprofilen visar det. Rutinen i
+  styrdokumentet kräver att klassen kontrolleras innan ett svar blir underlag.
+- Riktiga elever, klass 6, i räknehäftena: 3,26 + 8,37 = 10,63 (3 + 8 skrivs
+  som 10), 1,613 (13 skrivs ut utan växling), 11,83 (oklart);
+  6,27 − 5,84 = 12,13 och 1,112 (adderar fast det är minus; den ena skrev
+  själv +). Inga nya modeller av dem.
+
+### Simons beslut
+
+- "Följer ditt förslag": behåll modellerna med ärlig källa, notera att
+  blindtest 2 och 3 inte längre är blinda för dessa fel, rätta listorna.
+
+### Tankar
+
+- Blindtesterna förlorar värde när modeller byggs på deras svar. Nya
+  blindtester behövs om dessa fel ska mätas oberoende.
+- Klassnamn räcker inte som skydd; en markering av testklasser i datan vore
+  säkrare. Inte byggt.
+
 ## 2026-11-14: Steg 5, tredje omgången: Geminis tolkningar, efterräknade
 
 ### Logg

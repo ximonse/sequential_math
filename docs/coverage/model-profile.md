@@ -36,11 +36,11 @@ En felförståelse med fler än två svar per uppgift visas bara som mönster (S
 | Decimaltalet delas upp och räknas från vänster | felförståelse | 1.91 | 11 |  | Simons iakttagelse: Simon 2026-11-14: 7 × 6,7 räknat som 7 + 6 · 7 = 91 från vänster; 6 och 7 blir två tal. |
 | Bara decimaldelen multipliceras | felförståelse | 1 | 10 |  | Simons iakttagelse: Simon 2026-11-14: 3 × 2,4 = 3,2; bara 0,4 multipliceras, 2 står kvar. |
 | Kvoten stannar vid 12 | felförståelse | 1 | 4 |  | Beskrivning: Simons tolkning av riktiga elevsvar 2026-11-14. |
-| Räknar med starttalet vid växling | felförståelse | 1 | 37 | 3 uppgifter | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
-| En av växlingarna minskar inte talet som lånar ut | felförståelse | 2 | 9 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
+| Räknar med starttalet vid växling | felförståelse | 1 | 37 | 3 uppgifter | Beskrivning: Bygger på ett riktigt elevsvar och en påhittad testelev; väntar på fler riktiga svar. |
+| En av växlingarna minskar inte talet som lånar ut | felförståelse | 2 | 9 |  | Beskrivning: Bygger hittills bara på påhittade testelever; väntar på att synas i riktiga elevsvar. |
 | Hundratalet minskas två gånger vid växling över nolla | felförståelse | 1 | 14 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
-| Sista minnessiffran glöms i multiplikationen | felförståelse | 1 | 4 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
-| Fel tabellfaktum inne i uppställningen | felförståelse | 2 | 17 | 3 uppgifter | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
+| Sista minnessiffran glöms i multiplikationen | felförståelse | 1 | 4 |  | Beskrivning: Bygger hittills bara på påhittade testelever; väntar på att synas i riktiga elevsvar. |
+| Fel tabellfaktum inne i uppställningen | felförståelse | 2 | 17 | 3 uppgifter | Beskrivning: Bygger hittills bara på påhittade testelever; väntar på att synas i riktiga elevsvar. |
 | Bara heltalet multipliceras | felförståelse | 1 | 13 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
 | Tappar växlingen och decimaltecknet | felförståelse | 1.5 | 16 |  | Simons iakttagelse: Simon 2026-11-13: 1,76 + 2,58 = 334, "glömt växling och decimaltecken". |
 | Minnessiffran glöms i multiplikationen | felförståelse | 1 | 18 |  | Källa: Tabellen ger 56 · 2 = 102 som exempel. |

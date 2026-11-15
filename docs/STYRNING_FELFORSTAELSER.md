@@ -424,6 +424,14 @@ förrän det föregående är klart.
    168 / 6 = 23, 55/5, 56 / 8 = 0,8 och 3,26 + 8,37 används inte; de går inte
    ihop. Regelversion v13. Frysta kedjan: 456 av 456 kort oförändrade.
    Underlaget 11 nov, summerat över rapportens rader: oförklarade 2 458 → 2 412.
+   *Rättelse 2026-11-15:* listan kallade svar från Simons testkonto, klassen
+   *Test – felmönster* och blindtestklasserna för riktiga elever. Underlag per
+   modell: hundratalet två gånger (402 − 178) och bara heltalet (5 · 0,25) från
+   riktiga elever; räknar med starttalet från en riktig elev och Blindtest 2; en
+   av växlingarna minskar inte (Blindtest 2), sista minnessiffran (Blindtest 3)
+   och fel tabellfaktum (Blindtest 3, syntetiska klassen) bara från påhittade
+   elever. Simon valde att behålla dem med ärlig källa. Följd: blindtest 2 och
+   3 är inte längre blinda för just dessa fel.
 6. **Samma struktur för träningssvaren.** Först därefter.
 
 ## 9. Rutin för nytt område eller ny felmodell
@@ -440,7 +448,9 @@ Samma fem steg varje gång, inget annat sätt:
 Innan ett oförklarat svar blir en ny modell: läs uppställningen i räknehäftet
 och pröva först om eleven skrivit av talen fel (Simon 2026-11-14: 357 + 268 = 614
 var 357 + 257, rätt räknat). Ett avskrivningsfel är inmatning, inte en
-felförståelse.
+felförståelse. Kontrollera också vilken klass svaret kommer från: Simons
+testkonto, testklasser, blindtester och syntetiska klasser är inte riktiga
+elever och räknas inte som underlag för nya modeller (2026-11-15).
 
 Ett nytt område räknas som infört först när det har uppgifter med nyckel,
 modeller i katalogen och en rad i täckningsrapporten.

@@ -10,6 +10,9 @@ const WRITTEN_ADD = 'NCM-område AS1 (skriftlig addition), förkunskap AG3 (tiot
 
 const SIMON_2026_11_12 = 'Simons iakttagelse i riktiga elevsvar 2026-11-12.'
 const REVIEWED_2026_11_14 = 'Agentens förslag, granskat och godkänt av Simon 2026-11-14.'
+// Models built on made-up test pupils (blind tests, synthetic class), not yet seen in real answers.
+const SYNTHETIC_2026_11_14 = 'Bygger hittills bara på påhittade testelever; väntar på att synas i riktiga elevsvar.'
+const PARTLY_SYNTHETIC_2026_11_14 = 'Bygger på ett riktigt elevsvar och en påhittad testelev; väntar på fler riktiga svar.'
 const SIMON_2026_11_14 = 'Simons tolkning av riktiga elevsvar 2026-11-14.'
 const AGENT_2026_11_14 = 'Agentens förslag ur riktiga elevsvar, godkänt av Simon 2026-11-14.'
 
@@ -445,12 +448,12 @@ export const MODEL_DESCRIPTIONS = {
   // Simon 2026-11-14, readings of real screening answers checked by the agent.
   sub_inclusive_count_at_exchange: {
     thinkingSv: 'Där entalen växlas blir svaret ett för mycket: 13 − 7 och 14 − 8 blir båda 7. Det tyder på att eleven räknar på fingrarna och räknar med starttalet. Visas som mönster först över tre olika uppgifter.',
-    sourceSv: REVIEWED_2026_11_14,
+    sourceSv: PARTLY_SYNTHETIC_2026_11_14,
     openersSv: ['Be eleven räkna 14 − 8 högt på fingrarna och se var räkningen börjar.'],
   },
   sub_one_exchange_kept: {
     thinkingSv: 'Eleven växlar två gånger men minskar bara den ena kolumnen som lånar ut: 621 − 384 blir 247 eller 337 i stället för 237.',
-    sourceSv: REVIEWED_2026_11_14,
+    sourceSv: SYNTHETIC_2026_11_14,
     openersSv: ['Låt eleven stryka och skriva den nya siffran ovanför vid varje växling, och fråga vad som finns kvar i kolumnen.'],
   },
   sub_zero_double_decrement: {
@@ -460,12 +463,12 @@ export const MODEL_DESCRIPTIONS = {
   },
   mul_last_carry_forgotten: {
     thinkingSv: 'Eleven för vidare de första minnessiffrorna men glömmer den sista: 146 · 4 blir 484 i stället för 584.',
-    sourceSv: REVIEWED_2026_11_14,
+    sourceSv: SYNTHETIC_2026_11_14,
     openersSv: ['Be eleven skriva varje minnessiffra ovanför och bocka av den när den lagts till.'],
   },
   mul_ones_fact_wrong: {
     thinkingSv: 'Uppställningen är rätt gjord, men ett tabellfaktum för entalet blir fel: 46 · 7 blir 316 eller 328 när 7 · 6 blir 36 eller 48. Faktaminne, inte metod; visas som mönster först över tre olika uppgifter.',
-    sourceSv: REVIEWED_2026_11_14,
+    sourceSv: SYNTHETIC_2026_11_14,
     openersSv: ['Låt eleven räkna 7 · 6 för sig och berätta hur hen vet.'],
   },
   decimal_mul_whole_only: {

@@ -35,6 +35,7 @@ const MAY_REFER = {
   'src/domains/predictableErrors/catalog.js': 'the catalogue',
   'src/domains/predictableErrors/modelDescriptions.js': 'descriptions, part of the catalogue',
   'src/domains/predictableErrors/misconceptions.js': 'misconceptions behind the models, part of the catalogue',
+  'src/domains/predictableErrors/misconceptionsSecondHalf.js': 'second half of the misconceptions, part of the catalogue',
   'src/domains/predictableErrors/modelsWithoutMisconception.js': 'models without a misconception, part of the catalogue',
   'src/domains/predictableErrors/modelProfile.js': 'source and chance risk per model, part of the catalogue',
   'src/domains/predictableErrors/probeCatalog.js': 'advisory probe per model',

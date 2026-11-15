@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocked = vi.hoisted(() => ({ teacher: vi.fn(), classAccess: vi.fn(), testStudents: vi.fn(),
-  assignments: vi.fn(), members: vi.fn(), get: vi.fn(), read: vi.fn(), observe: vi.fn(), align: vi.fn(), visible: vi.fn(), subtract: vi.fn(), revision: vi.fn(), saveReview: vi.fn() }))
+  assignments: vi.fn(), members: vi.fn(), get: vi.fn(), read: vi.fn(), observe: vi.fn(), align: vi.fn(), visible: vi.fn(), subtract: vi.fn(), revision: vi.fn(), saveReview: vi.fn(), misconceptions: vi.fn() }))
 vi.mock('@vercel/kv', () => ({ kv: { smembers: mocked.members, get: mocked.get } }))
 vi.mock('./_helpers.js', () => ({ getLiveTeacherAuthPayload: mocked.teacher, withCors: vi.fn() }))
 vi.mock('./_studentAccess.js', () => ({ canAccessClass: mocked.classAccess }))
@@ -14,6 +14,7 @@ vi.mock('../src/domains/arithmetic/diagnosticObservation.js', () => ({ summarize
 vi.mock('../src/domains/arithmetic/diagnosticColumnAlignment.js', () => ({ analyzeDiagnosticColumnAlignment: mocked.align }))
 vi.mock('../src/domains/arithmetic/diagnosticVisibleResult.js', () => ({ analyzeDiagnosticVisibleResult: mocked.visible }))
 vi.mock('../src/domains/arithmetic/diagnosticSubtractionPattern.js', () => ({ analyzeDiagnosticSubtractionPattern: mocked.subtract }))
+vi.mock('./_screeningMisconceptions.js', () => ({ screeningMisconceptionPupils: mocked.misconceptions }))
 vi.mock('../src/domains/arithmetic/diagnosticObservationRevision.js', () => ({ identifyDiagnosticObservationRevision: mocked.revision }))
 
 import handler from './teacher-diagnostic-attempts.js'
@@ -119,5 +120,22 @@ describe('teacher diagnostic evidence read boundary', () => {
     mocked.assignments.mockResolvedValueOnce([])
     expect((await call()).code).toBe(404)
     expect(mocked.read).not.toHaveBeenCalled()
+  })
+
+  it('reads screening misconceptions only for an admin with class access, for the allowed pupils', async () => {
+    mocked.misconceptions.mockResolvedValue({ pupils: [] })
+    const view = { classId: 'CLASS', assignmentId: 'ASSIGNMENT', view: 'misconceptions' }
+    const ok = await call(view)
+    expect(ok.code).toBe(200)
+    expect(mocked.misconceptions).toHaveBeenCalledWith(expect.objectContaining({ assignmentId: 'ASSIGNMENT' }), ['PUPIL'])
+    mocked.misconceptions.mockClear()
+    mocked.teacher.mockResolvedValue({ role: 'teacher', teacherId: 'TEACHER' })
+    expect((await call(view)).code).toBe(403)
+    mocked.teacher.mockResolvedValue({ role: 'school_admin', teacherId: 'ADMIN' })
+    mocked.classAccess.mockResolvedValue(false)
+    expect((await call(view)).code).toBe(403)
+    mocked.classAccess.mockResolvedValue(true)
+    expect((await call({ ...view, assignmentId: 'OTHER_ASSIGNMENT' })).code).toBe(404)
+    expect(mocked.misconceptions).not.toHaveBeenCalled()
   })
 })

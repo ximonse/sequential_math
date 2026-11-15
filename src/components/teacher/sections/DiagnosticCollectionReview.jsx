@@ -8,9 +8,15 @@ import { mergeOverviews } from './screeningCollections'
 // One table for a collection: one assignment per class, merged by position.
 // `members` are the assignments to read, `isAllowed(classId, studentId)` keeps
 // only the pupils the picked recipients cover.
-export default function DiagnosticCollectionReview({ members, isAllowed, name, onDirtyChange }) {
+// `onPendingChange` gets how many attempts are still in progress across the whole
+// collection, so a stopped screening offers to hand them in only when there are any.
+export default function DiagnosticCollectionReview({ members, isAllowed, name, onDirtyChange, onPendingChange }) {
   const [parts, setParts] = useState([])
   const overview = useMemo(() => mergeOverviews(parts, isAllowed), [parts, isAllowed])
+  useEffect(() => {
+    if (!parts.length) return
+    onPendingChange?.(parts.flatMap(part => part.overview.rows.flatMap(row => row.items)).filter(item => item.status === 'in_progress').length)
+  }, [parts, onPendingChange])
   const [itemId, setItemId] = useState('')
   const [detail, setDetail] = useState(null)
   const [message, setMessage] = useState('Hämtar status...')

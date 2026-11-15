@@ -1,5 +1,36 @@
 # Arbetslogg
 
+## 2026-11-15: Tre saker Simon bad om före belastningen
+
+### Simons önskemål
+
+- En omladdning ska inte skicka tillbaka till förstasidan.
+- Godkänna och dela ut uppföljningsmaterial tog lång tid i två steg; ett
+  klick för båda.
+- Ett avslutat screening ska inte se ut att kunna avslutas igen.
+
+### Logg
+
+- Arbetsytan, screeningfliken, resultatvyns mottagare och vald screening
+  sparas i `sessionStorage` (`src/lib/sessionState.js`): kvar vid
+  omladdning i samma flik, ny flik och ny inloggning börjar från början.
+  Delvyn sparades redan i `localStorage`. Robot laddar om och kontrollerar.
+- Materialgranskningen har knappen *Godkänn och dela ut*. Servern gör
+  åtgärden `approve_publish` med en förhandsvisning i stället för två och
+  utan omläsning däremellan. Tvåstegsvägen finns kvar. Didaktikroboten för
+  addition använder ett klick, de andra två steg.
+- Avslutad screening visar *Avslutad* i stället för knappen; *Lämna in
+  pågående (N)* visas bara om påbörjade svar finns kvar. Tabellen läses om
+  efter avslut. Gruppåtgärden *Avsluta …* går inte att välja när alla
+  markerade redan är avslutade.
+
+### Agentens val
+
+- Begärd screening (från knappen Resultat och avslut) sparas inte, så att en
+  senare egen markering inte skrivs över efter omladdning (R1).
+- Ingen mätning av tidsvinsten i produktion ännu; den görs i
+  belastningsarbetet.
+
 ## 2026-11-15: Behörighet för screeningresultat och de äldre röda robotarna
 
 ### Simons beslut

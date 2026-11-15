@@ -20,6 +20,10 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
   const [collectionId, setCollectionId] = useSessionState('mathapp_screening_collection', '', value => typeof value === 'string')
   const [status, setStatus] = useState('')
   const [busy, setBusy] = useState(false)
+  // Attempts still in progress in the chosen screening; null until the table has loaded.
+  const [pending, setPending] = useState(null)
+  // Read the table again after ending, so handed-in answers no longer count as pending.
+  const [stops, setStops] = useState(0)
   const dirty = useRef(false)
   const markDirty = value => { dirty.current = value; onDirtyChange?.(value) }
   const classNames = useMemo(() => new Map(classes.map(item => [String(item.id), item.name])), [classes])
@@ -95,6 +99,8 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
       }
     }
     setStatus(problems.length ? `${collection.titleSv}: ${problems.join(' ')}` : `${collection.titleSv} är avslutad. ${frozen} påbörjade svar lämnades in.`)
+    setPending(null)
+    setStops(value => value + 1)
     setBusy(false)
   }
 
@@ -110,19 +116,22 @@ export default function ScreeningResultsPanel({ classes, students, recipients = 
     {!waiting && classKey && collections.length === 0 && failed.length === 0 && <p role="status" className="mt-3 text-sm">Det finns inga utdelade samlingar till de valda mottagarna ännu. Använd fliken Skapa ny eller Utdelade för att skapa eller återanvända en samling.</p>}
     {collections.length > 0 && <ScreeningResultsCollections collections={collections} selectedId={selected ? collectionId : ''}
       recipientsOf={collection => describeRecipients(collection, { students, classNames })}
-      selectedAction={selected && <button type="button" onClick={() => stopCollection(selected)} disabled={busy}
+      selectedAction={selected && (everyoneStopped && !pending
+        ? <span className="shrink-0 px-1.5 py-0.5 text-xs text-slate-600">Avslutad</span>
+        : <button type="button" onClick={() => stopCollection(selected)} disabled={busy}
         title={everyoneStopped ? 'Lämnar in elevsvar som fortfarande är påbörjade.' : 'Eleverna kan inte fortsätta. Påbörjade svar lämnas in som de är.'}
         className="shrink-0 rounded border border-slate-400 bg-white px-1.5 py-0.5 text-xs text-slate-800 disabled:opacity-50">
-        {everyoneStopped ? 'Lämna in pågående' : 'Avsluta'}</button>}
+        {everyoneStopped ? `Lämna in pågående (${pending})` : 'Avsluta'}</button>)}
       onSelect={id => {
         if (id === collectionId) return
         if (dirty.current && !window.confirm('Genomgången har osparade ändringar. Vill du lämna dem?')) return
         markDirty(false)
+        setPending(null)
         setCollectionId(id)
       }} />}
     {selected && <>
       {selected.members.length > 1 && <p className="mt-2 text-sm">{selected.members.map(member => `${classNames.get(member.classId) || member.classId}: ${member.status === 'active' ? 'aktiv' : 'avslutad'}`).join(' · ')}</p>}
-      <DiagnosticCollectionReview key={selected.id} members={selected.members} isAllowed={isAllowed} name={name} onDirtyChange={markDirty} />
+      <DiagnosticCollectionReview key={`${selected.id}:${stops}`} members={selected.members} isAllowed={isAllowed} name={name} onDirtyChange={markDirty} onPendingChange={setPending} />
     </>}
     {status && <p className="mt-2 text-sm" role="status">{status}</p>}
     {pupils.length > 0 && <ScreeningPupilAttempts pupils={pupils} assignmentsFor={assignmentsFor} />}

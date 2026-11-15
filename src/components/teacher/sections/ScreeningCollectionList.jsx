@@ -64,7 +64,10 @@ export default function ScreeningCollectionList({ context, library, onReuse, onR
   }
 
   const bulkActions = (filters.status === 'archived' ? ['unarchive', 'delete'] : ['stop', 'archive', 'delete'])
-    .map(kind => ({ ...ACTIONS[kind], onClick: () => { void act(kind) } }))
+    .map(kind => ({ ...ACTIONS[kind], onClick: () => { void act(kind) },
+      // Ending only applies to screenings pupils can still work in.
+      ...(kind === 'stop' && !chosen.some(item => item.members.some(member => member.status === 'active'))
+        ? { disabled: true, disabledTitle: 'Alla markerade screeningar är redan avslutade.' } : {}) }))
   return <div className="screening-overview text-sm">
     <div className="my-2 flex flex-wrap items-end gap-2">
       <label title="Visningsurvalet väljer inga mottagare för utdelning.">Visa för<select aria-label="Visa screeningar för" className={field}

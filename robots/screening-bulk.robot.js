@@ -70,6 +70,14 @@ test('Several screenings and drafts can be archived, restored and deleted at onc
   await expect(pupil.reload().then(() => pupil.getByRole('button', { name: `Bulk A ${tag}`, exact: true }))).resolves.toBeTruthy()
   await expect(pupil.getByRole('button', { name: `Bulk A ${tag}`, exact: true })).toHaveCount(0)
 
+  // Ending is offered only while a ticked screening is still running (Simon 2026-11-15).
+  await panel.getByRole('combobox', { name: 'Status', exact: true }).selectOption('all')
+  await row(`Bulk B ${tag}`).getByRole('checkbox').check()
+  await expect(bar.getByRole('button', { name: 'Avsluta …', exact: true })).toBeDisabled()
+  await row(`Bulk C ${tag}`).getByRole('checkbox').check()
+  await expect(bar.getByRole('button', { name: 'Avsluta …', exact: true })).toBeEnabled()
+  await bar.getByRole('button', { name: 'Avmarkera', exact: true }).click()
+
   // Two private drafts are deleted together; nothing is handed out.
   const drafts = page.getByRole('region', { name: 'Screeningutkast', exact: true })
   for (const title of [`Utkast X ${tag}`, `Utkast Y ${tag}`]) {

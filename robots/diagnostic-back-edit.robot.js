@@ -42,7 +42,12 @@ test('Ending a screening hands in every started answer, even without the pupil s
   page.once('dialog', dialog => dialog.accept())
   await panel.getByRole('button', { name: 'Avsluta', exact: true }).click()
   await expect(panel.getByText('2 påbörjade svar lämnades in.')).toBeVisible()
-  await expect(panel.getByRole('button', { name: 'Lämna in pågående', exact: true })).toBeVisible()
+  // Nothing is left in progress, so the screening reads as ended and offers no button (Simon 2026-11-15).
+  await expect(panel.getByText('Avslutad', { exact: true })).toBeVisible()
+  await expect(panel.getByRole('button', { name: /^Avsluta$|^Lämna in pågående/ })).toHaveCount(0)
+  await page.reload()
+  await expect(panel.getByText('Avslutad', { exact: true })).toBeVisible()
+  await expect(panel.getByRole('button', { name: /^Avsluta$|^Lämna in pågående/ })).toHaveCount(0)
 
   const overview = await page.evaluate(async search => {
     const response = await fetch(`/api/teacher-diagnostic-attempts?${search}`, {

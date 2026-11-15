@@ -4,7 +4,7 @@ import { ERROR_MODELS, SCREENING_SINGLE_MODELS } from '../domains/predictableErr
 
 // Misconceptions in a screening's results (docs/STYRNING_FELFORSTAELSER.md,
 // step 4). The server classifies each pupil's answers with the same function as
-// the coverage count and the pupil report; the view lays the pupils' results
+// the coverage count (classifyPupilAnswers); the view lays the pupils' results
 // side by side, so a class shows exactly what its pupils show (rule R-E).
 
 // One pupil's answers in one screening, for the teacher view.

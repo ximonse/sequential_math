@@ -21,6 +21,12 @@ Just nu gäller ett enda arbetsmål:
 Fokus är **screeningar**. Hur läraren arbetar vidare efter upptäckten är inte
 prioriterat nu.
 
+**Målet är nått, bekräftat av Simon 2026-11-15.** Steg 1–4 är klara med
+spärrar i test och CI. Agenten läste Kumlaby åk 6 i produktion på Simons
+uppdrag; Simon bekräftade. Steg 5 fortsätter som rutin när nya riktiga
+screeningar kommer in. Steg 6 är en kandidat, inte en automatisk fortsättning.
+Nästa arbetsmål (Simon 2026-11-15): belastningen.
+
 ## 2. Varför vi hamnade här igen
 
 Frågan har tagits upp förut. Tidigare beslut skrevs som text i dokument. Inget
@@ -90,6 +96,10 @@ läggs ihop med nyberäknade, så uteslutningen av redan mötta frågor kan bara
 bli större. Kontrollen av redan mötta frågor räknar båda sidor med samma kod.
 
 ## 4. Det som ligger still
+
+*Upphävd 2026-11-15:* steg 1–4 är klara och Simon har bekräftat målet. Listan
+nedan står kvar som historik; nya arbeten i dessa delar kräver ett eget
+arbetsmål som Simon väljer.
 
 Tills steg 1–4 i avsnitt 8 är klara byggs **inget** nytt i:
 
@@ -306,8 +316,9 @@ förrän det föregående är klart.
    obesvarade med uträkning, inmatning, samma uppgift flera gånger, enstaka
    fel, felmodell utan kopplad felförståelse och oförklarade. Ett klick på ett
    kort ramar in dess svar i tabellen. Servern klassar varje elevs senaste svar
-   per uppgift med samma funktion som täckningsräkningen och elevrapporten
-   (`classifyPupilAnswers`); vyn lägger ihop eleverna som tabellen visar, så en
+   per uppgift med samma funktion som täckningsräkningen
+   (`classifyPupilAnswers`; *rättat 2026-11-15:* elevrapporten bygger sina kort
+   separat och bedömer mönster på samma sätt, men visar inte felförståelserna); vyn lägger ihop eleverna som tabellen visar, så en
    grupp eller klass är summan av sina elever (R-E, `screeningMisconceptions.test.js`).
    Ett fel svar som läraren har bedömt som rätt räknas inte här, som i tabellen.
    Inga knappar för uppföljning; den är fryst. Klassningen är oförändrad, så
@@ -319,7 +330,7 @@ förrän det föregående är klart.
    elevgenomgången väljer läraren upp till fem godkända felförståelser för ett
    svar; fritexten finns kvar som *annan felförståelse*. Servern tar bara emot
    godkända felförståelser. Ett fel svar med lärarens val räknas som
-   felförståelse, i samma klassning som täckningen och elevrapporten, och visas
+   felförståelse i täckningen och screeningvyn (inte i elevrapporten), och visas
    på kortet märkt *Lärarens val*; F i tabellen visar valen.
    *Prövat i produktion 2026-11-14 (agenten, på Simons uppdrag "kolla du"):*
    Kumlaby åk 6, screeningen 2026-11-11, inloggad som lärare och utan
@@ -460,6 +471,7 @@ modeller i katalogen och en rad i täckningsrapporten.
 1. Antas dokumentet som styrande, över övriga filer i `docs/` utom produktkontraktet?
    **Ja, Simon 2026-11-11.**
 2. Gäller frysningen i avsnitt 4 som den står? **Ja, Simon 2026-11-11.**
+   Upphävd när målet bekräftades, Simon 2026-11-15.
 3. Tröskel för slumprisk: hur många olika svar får en modell förutsäga per
    uppgift innan den kräver minst tre träffar för att visas som misstanke?
    Underlag 2026-11-12, 17 884 riktiga svar: *angränsande produkt* förutsäger

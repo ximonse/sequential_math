@@ -5,7 +5,7 @@ import { withTeacherAssessment } from '../src/lib/evidenceTeacherAssessment.js'
 import { screeningPupilAnswers } from '../src/lib/screeningMisconceptions.js'
 
 // Each pupil's answers in one screening, classified as in the coverage count
-// and the pupil report (docs/STYRNING_FELFORSTAELSER.md, step 4). Only the
+// (docs/STYRNING_FELFORSTAELSER.md, step 4). Only the
 // latest attempt per task counts, as in the results matrix.
 export async function screeningMisconceptionPupils(assignment, studentIds, { store = kv } = {}) {
   const roster = studentIds.filter(id => assignment.studentIds.includes(id))

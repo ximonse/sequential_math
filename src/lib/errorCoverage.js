@@ -124,9 +124,11 @@ function misconceptionIdsFor(entry, bucket, below) {
   return [...ids]
 }
 
-// One pupil's answers, each wrong answer in exactly one bucket. The single
-// classification behind the coverage count, the pupil report and the screening
-// results (rule R-E): a class is its pupils' classifications side by side.
+// One pupil's answers, each wrong answer in exactly one bucket. The
+// classification behind the coverage count and the screening results (rule
+// R-E): a class is its pupils' classifications side by side. The pupil report
+// builds its cards separately (pupilRuleHypotheses.js) but judges patterns the
+// same way.
 export function classifyPupilAnswers(entries = []) {
   const own = entries.map(pupilOwnEntry)
   // Reuse the served analysis, except for answers whose analysed status was the

@@ -50,7 +50,7 @@ Under **Screening → Resultat** väljer admin klass och ett befintligt uppdrag 
 
 Ovanför tabellen visas **Felförståelser i screeningen** (2026-11-13, steg 4 i
 `docs/STYRNING_FELFORSTAELSER.md`). Servern klassar varje elevs senaste svar
-per uppgift med samma funktion som täckningsräkningen och elevrapporten
+per uppgift med samma funktion som täckningsräkningen
 (`GET /api/teacher-diagnostic-attempts?view=misconceptions`):
 
 - Ett kort per godkänd felförståelse, sorterat efter antal elever, med elevens
@@ -143,7 +143,7 @@ Genomgången har tre valfria fält för lärarens egen bedömning, sparade i sam
   regler; för flervals- och skrivsvar finns fältet inte.
 - **Felförståelse ur listan** (`misconceptionIds`, högst fem av de godkända
   felförståelserna, 2026-11-13). Servern tar bara emot godkända. Ett fel svar
-  med ett val räknas som felförståelse i screeningvyn och elevrapporten.
+  med ett val räknas som felförståelse i screeningvyn (ännu inte i elevrapporten).
 - **Annan felförståelse (fritext)** (`misconception`, högst 500 tecken).
 
 Elevens händelser och observerade svarsstatus ändras aldrig. Resultattabellen

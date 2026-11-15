@@ -1,5 +1,42 @@
 # Arbetslogg
 
+## 2026-11-15: Målet nått; genomgång av helheten inför belastningen
+
+### Simons beslut
+
+- Målet "felförståelser tydliga för läraren" är nått och bekräftat. Frysningen
+  är upphävd. Nästa arbetsmål: belastningen.
+- Före belastningen: kontrollera dokumentation, beroenden, kontrakt och kod.
+
+### Logg
+
+- Styrdokumentet och `AGENTS.md` säger att målet är nått och att
+  belastningen är aktuellt mål; rutinen för felmodeller gäller fortfarande.
+- Rättat en felaktig uppgift som agenten skrivit: screeningvyn använder samma
+  klassning som täckningsräkningen, men **elevrapporten bygger sina kort
+  separat** och visar inte felförståelserna eller lärarens val ur listan.
+
+### Genomgångens fynd (läsning, inget ändrat utöver texterna ovan)
+
+- Elevrapporten visar felmodeller (t.ex. "Minnessiffran glöms"), inte
+  felförståelserna som screeningkorten visar, och inte lärarens val.
+- Värmekartan i Statistik & stöd räknar modellträffar direkt: inga
+  felförståelser, inget krav på mönster, slarv räknas med.
+- `docs/PUPIL_ANALYSIS.md` (9 nov) beskriver taket på åtta och saknar
+  felförståelser, samma uppgift flera gånger, ger upp och Fler misstankar.
+- `ARCHITECTURE.md` saknar felförståelselagret, den gemensamma klassningen
+  och screeningvyns API.
+- MCP:s rapportsammanfattning tar med `moreHypotheses` och
+  `repeatedTasks` råa, med alla referenser.
+- Vite varnar: `ncmScreeningTasks.v1.json` importeras med och utan
+  `type: 'json'`.
+- Screeningvyns API saknar enhetstest för åtkomst; bara robot.
+- Hela robotsviten har inte körts efter ändringarna; CI kör två robotar.
+- Kartkorten `rules` och `analysis` beskriver läget i oktober.
+- Ospårade filer från en annan session (syntetisk klass) ligger i arbetskopian;
+  den syntetiska klassen och blindtestklasserna finns i produktion.
+- `misconceptions.js` har 792 av 800 tillåtna rader.
+
 ## 2026-11-15: Rättelse: testklasser blandades in som riktiga elever
 
 ### Logg

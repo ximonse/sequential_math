@@ -19,6 +19,17 @@ misstanke förklarar visas för sig. Reservationen om att misstankar inte är
 diagnoser står en gång överst; varje kort behåller etiketten Misstanke eller
 Enstaka svar. Rapportens data och validering är oförändrade.
 
+**Felförståelser i rapporten (2026-11-12 – 2026-11-15, styrdokumentet):**
+korten har felförståelsen som rubrik och felmodellen på raden under; saknar
+modellen felförståelse (till exempel faktaminne) står modellens rubrik kvar.
+Modeller med krav på mönster (angränsande produkt, fel räknesätt, ger upp
+med flera) visas som misstanke först över tre olika uppgifter, annars bland
+slarv. Egna delar: *Ger upp eller klickar förbi*, *Fel på samma uppgift flera
+gånger*, *Fler misstankar med mindre underlag* (allt utöver de åtta korten som
+stäms av, svagast sist) och *Felförståelser du har valt* (lärarens val ur
+listan på screeningsvar). De tre sista räknar servern fram när rapporten
+sparas; avstämningen gäller fortfarande bara korten.
+
 **Flera misstankar i samma screening (2026-11-09, Simons önskemål):** kort som
 kan prövas med granskade kontrastfrågor har kryssrutan *Pröva tillsammans*.
 Med minst två valda skapar *Skapa gemensamt utkast* ett privat utkast med
@@ -99,7 +110,8 @@ Projektets skill är `.agents/skills/pupil-analysis/SKILL.md`.
 - Färre än två stödenheter ger `insufficient`. Fler ger endast
   `requires_teacher_review`, aldrig ”säker missuppfattning” eller sannolikhet.
   Detta är en försiktighetsmarkering, inte en statistisk signifikansregel.
-- Regelunderlaget väljer högst åtta styrkor och åtta tidigare analyssignaler,
+- Regelunderlaget väljer högst åtta styrkor och åtta kort som stäms av; övriga
+  regelmisstankar visas under Fler misstankar (sedan 2026-11-14),
   med högst 20 referenser per stöd-/motexempellista. Rätta svar läggs inte
   automatiskt in som motexempel: jämförbarheten måste granskas.
 - Fri rapportspråktext är **inte maskinellt sanningskontrollerad**. Servern

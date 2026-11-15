@@ -43,6 +43,37 @@ för en tappad minnessiffra. Beroende kedjor analyseras med synligt överlapp,
 men endast två oberoende minnessiffror ger paketets bankväg. Se
 `docs/E4_DECIMAL_ADDITION_REVIEW.md`; ingen ny progression eller behörighet.
 
+## Felmodeller och felförståelser
+
+Styrs av `docs/STYRNING_FELFORSTAELSER.md` (mål nått 2026-11-15). Kedjan från
+svar till lärartext:
+
+- `src/domains/predictableErrors/catalog.js` är enda katalogen över
+  felmodeller (spärr R-A i `catalog.test.js`): rubrik, slag (felförståelse,
+  observation, inmatning, ger upp), rivalfamiljer, krav på mönster och om
+  modellen står utanför uppföljningskedjan. Beräkningen finns i
+  `arithmetic.js`, `fractions.js`, `fluency.js`, `writtenMulDiv.js`,
+  `writtenVariants.js` med flera; regelversionen i `core.js`.
+- `modelDescriptions.js` har lärartext och samtalsingångar per modell;
+  `modelProfile.js` räknar fram källa och slumprisk
+  (`docs/coverage/model-profile.md`).
+- `misconceptions.js` (med `misconceptionsSecondHalf.js`) kopplar modeller
+  till 46 godkända felförståelser; `modelsWithoutMisconception.js` säger
+  varför en modell saknar koppling.
+- `src/domains/arithmetic/screeningKeys.js` ger NCM-frågor och lärarens
+  egna räknefrågor tal och räknesätt, och handskrivna felsvarsnycklar (R-B).
+- `src/lib/errorCoverage.js` `classifyPupilAnswers` lägger varje fel svar i
+  exakt ett fack (R-C). Den används av täckningsräkningen och screeningvyn
+  (`src/lib/screeningMisconceptions.js`,
+  `GET /api/teacher-diagnostic-attempts?view=misconceptions`); en klass är
+  summan av sina elever (R-E).
+- Elevrapporten bygger sina kort i `src/lib/pupilRuleHypotheses.js` och
+  bedömer mönster på samma sätt (`modelPattern.js`). Servern lägger till
+  `repeatedTasks`, `moreHypotheses` och `teacherMisconceptions` i
+  `src/lib/pupilAnalysis.js`. Värmekartan i Statistik & stöd använder ännu
+  inte klassningen.
+- Nya modeller följer rutinen i styrdokumentets avsnitt 9.
+
 ## Lokal elevanalys via MCP
 
 `api/_teacherMaterialPreview.js` validerar generell eller analysspecifik

@@ -54,13 +54,14 @@ export async function isStudentDeleted(studentId, { store = kv } = {}) {
 export async function deletedStudents(studentIds, { store = kv, batchSize = 50 } = {}) {
   const ids = studentIds.map(id => String(id || '').trim().toUpperCase())
   const keys = ids.flatMap(id => [studentDeletedKey(id), `student_deleted:${id}`])
-  const values = []
-  for (let start = 0; start < keys.length; start += batchSize * 2) {
-    const part = keys.slice(start, start + batchSize * 2)
-    const result = part.length ? await store.mget(...part) : []
+  const parts = []
+  for (let start = 0; start < keys.length; start += batchSize * 2) parts.push(keys.slice(start, start + batchSize * 2))
+  // The batches are independent; read them side by side, not one after another.
+  const values = (await Promise.all(parts.map(async part => {
+    const result = await store.mget(...part)
     if (!Array.isArray(result) || result.length !== part.length) throw Error('Ofullständig raderingskontroll från lagringen.')
-    values.push(...result)
-  }
+    return result
+  }))).flat()
   return ids.map((id, i) => Boolean(id) && (values[2 * i] != null || values[2 * i + 1] != null))
 }
 

@@ -54,8 +54,8 @@ export async function teacherCatalog(req, res, store = kv) {
   const classes = await authorisedClasses(req, store)
   const members = membershipMap(classes)
   const ids = [...members.keys()]
-  const cards = await getMany(ids.map(catalogKey), store)
-  const deleted = await deletedStudents(ids, { store })
+  // Cards and deletion checks are independent reads, each in parallel batches.
+  const [cards, deleted] = await Promise.all([getMany(ids.map(catalogKey), store, 50, 8), deletedStudents(ids, { store })])
   const missing = ids.filter((_, i) => !deleted[i] && cards[i]?.version !== CATALOG_VERSION)
   if (missing.length) {
     // Cold-cache recovery reads large profiles in smaller batches; warm reads

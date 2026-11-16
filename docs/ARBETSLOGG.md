@@ -1,5 +1,27 @@
 # Arbetslogg
 
+## 2026-11-16: Belastning, baslinje och styrdokument (förslag)
+
+### Logg
+
+- Codex arbete (tabellöversikten förvald till Denna termin) inplockat i master.
+- Baslinje i produktionen med inloggad lärare, skrivskyddat: se
+  `docs/STYRNING_BELASTNING.md` avsnitt 3.
+- Förslag till styrdokument för belastningen, väntar på Simons godkännande.
+
+### Rättelse
+
+- 2026-11-14 skrev agenten att lärarvyn hämtar 44 MB varannan minut. Fel:
+  lärarvyn hämtar en lätt katalog (62 kB). Men servern läser alla
+  elevprofiler, ca 44 MB, för att bygga den varannan minut, eftersom
+  katalogkorten lever 60 s och lärarvyn uppdaterar var 120:e s.
+- Elevens sparande skickar inte hela profilen för QR/PIN-elever, bara
+  händelser. Men servern läser och skriver hela profilen vid varje sparande.
+
+### Tankar
+
+- Den största och enklaste vinsten är katalogkortens livstid.
+
 ## 2026-11-16: Denna termin som standard i tabellöversikten
 
 - Simons beslut: sätt Denna termin som förinställt enbart i tabellöversikten.

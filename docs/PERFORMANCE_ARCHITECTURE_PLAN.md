@@ -40,8 +40,9 @@ mottagare ger ett läsfel i stället för ett delvis korrekt resultat.
 Katalogens små metadataobjekt innehåller kodnamn, årskurs, skapandetid och
 inloggningsfamilj/senaste lagrade inloggning. Privata tilltalsnamn kommer
 fortsatt från lärarens privata namnlista. Metadata har versionskontroll och
-60 sekunders TTL; profilskrivning ogiltigförklarar posten när dessa fält
-ändras. Skrivningen använder befintligt tombstone-skydd och elevradering
+ett dygns TTL (sedan 2026-11-16; tidigare 60 s, vilket gjorde katalogen kall
+vid varje uppdatering, se `docs/STYRNING_BELASTNING.md`); profilskrivning
+ogiltigförklarar posten när dessa fält ändras. Skrivningen använder befintligt tombstone-skydd och elevradering
 städar posten. Varje läsning använder aktuell klassbehörighet och borttagna
 elever filtreras även om ett äldre medlemsindex finns kvar.
 

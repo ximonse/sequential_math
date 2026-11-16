@@ -2,6 +2,11 @@ import { kv } from '@vercel/kv'
 
 export const catalogKey = studentId => `student_catalog:${String(studentId).trim().toUpperCase()}`
 export const CATALOG_VERSION = 2
+// A card lives a day: every profile write that changes its fields removes it
+// (mutateStudentRecord), so the time limit is only a safety net. At 60 s the
+// cards had always expired when the teacher view refreshed every 120 s, and
+// every profile was read again (docs/STYRNING_BELASTNING.md, step 1).
+export const CATALOG_TTL_SECONDS = 24 * 60 * 60
 // Only metadata. Never put answer history, private names or credentials here.
 export function catalogCard(profile) {
   if (!profile) return null

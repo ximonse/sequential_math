@@ -2,7 +2,7 @@ import { kv } from '@vercel/kv'
 import { isCurrentStudentProfile } from '../src/lib/studentProfileContract.js'
 import { getLiveAuthorizedClassIds } from './_studentAccess.js'
 import { isStudentDeleted } from './_studentStore.js'
-import { catalogKey, catalogCard, CATALOG_VERSION } from './_studentCatalogCard.js'
+import { catalogKey, catalogCard, CATALOG_TTL_SECONDS, CATALOG_VERSION } from './_studentCatalogCard.js'
 import { guardPupilKey } from './_pupilReferenceWrite.js'
 
 // The teacher view no longer loads every pupil's full history at start (44 MB,
@@ -66,7 +66,7 @@ export async function teacherCatalog(req, res, store = kv) {
       await Promise.all(profiles.slice(start, start + 8).map(async (profile, offset) => {
         if (!isCurrentStudentProfile(profile)) return
         const id = missing[start + offset], card = catalogCard(profile)
-        const alive = await guardPupilKey(catalogKey(id), id, card, { ttl: 60, live: true, store })
+        const alive = await guardPupilKey(catalogKey(id), id, card, { ttl: CATALOG_TTL_SECONDS, live: true, store })
         cards[ids.indexOf(id)] = alive ? card : null
       }))
     }

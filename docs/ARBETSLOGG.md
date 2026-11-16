@@ -1,5 +1,21 @@
 # Arbetslogg
 
+## 2026-11-16: Belastning steg 1, katalogkortens livstid
+
+### Simons beslut
+
+- Styrdokumentet `docs/STYRNING_BELASTNING.md` godkänt; korten lever ett dygn.
+
+### Logg
+
+- Katalogkorten lever ett dygn i stället för 60 s. Kontrollerat att varje
+  skrivning som ändrar kortets fält går via `mutateStudentRecord` och tar
+  bort kortet (namnbyte, klassflytt, klassåterställning, ny elev,
+  inloggning); radering städar kortet. Arkiv- och screeningskript läser bara
+  att profilen finns.
+- Nytt test låser livstiden. API-tester och 17 robotar för katalog och
+  klasser gröna. Mätning i produktion efter publicering.
+
 ## 2026-11-16: Belastning, baslinje och styrdokument (förslag)
 
 ### Logg

@@ -1,7 +1,6 @@
 # Styrning: belastning och kostnad
 
-Förslag 2026-11-16, väntar på Simons godkännande. Gäller som arbetsmål när
-Simon har godkänt det (`AGENTS.md`, avsnittet Arbetsmål).
+Antaget av Simon 2026-11-16. Aktuellt arbetsmål (`AGENTS.md`, avsnittet Arbetsmål).
 
 ## 1. Målet
 
@@ -55,6 +54,12 @@ använde. Lärarvyn hämtar den lätta katalogen, men servern läser fortfarande
    *Klart när:* katalogen mäts varm under en sekund och kalla läsningar bara
    sker för ändrade elever; inget kort visar inaktuellt namn, klass eller
    inloggning (test och robot).
+   *Byggt lokalt 2026-11-16:* korten lever ett dygn (`CATALOG_TTL_SECONDS`).
+   Alla vägar som ändrar kortets fält (namn, årskurs, klass, inloggning, ny
+   elev) går via `mutateStudentRecord`, som tar bort kortet; radering städar
+   det. Test låser livstiden; befintliga tester täcker varm läsning,
+   ogiltigförklaring och klassflytt. 17 robotar för klasser och katalog gröna.
+   Mätning i produktion återstår efter publicering.
 2. **Screening öppnas.** Hämta screeninglistor bara för de klasser som behövs
    i den flik som visas. *Klart när:* att öppna Resultat för en klass gör
    anrop för den klassen, inte för alla.
@@ -77,5 +82,5 @@ använde. Lärarvyn hämtar den lätta katalogen, men servern läser fortfarande
 
 ## 6. Beslut som Simon behöver ta
 
-1. Godkänns målet, måtten och ordningen?
-2. Katalogkortens livstid: ett dygn, eller annat?
+1. Godkänns målet, måtten och ordningen? **Ja, Simon 2026-11-16.**
+2. Katalogkortens livstid: ett dygn, eller annat? **Ett dygn, Simon 2026-11-16.**

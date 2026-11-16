@@ -92,6 +92,12 @@ it('returns only authorised metadata, then uses warm cards without reading full 
   expect(await scopedStudentIds({}, { classIds: ['D'], studentIds: ['OTHER'] })).toEqual([])
   expect(await scopedStudentIds({}, { classIds: ['C'], studentIds: ['P', 'P'] })).toEqual(['P'])
 })
+it('keeps a card for a day, so a teacher view refreshing every two minutes stays warm', async () => {
+  // At 60 s every refresh found expired cards and read every profile again (docs/STYRNING_BELASTNING.md, step 1).
+  await teacherCatalog({}, response())
+  const write = kv.eval.mock.calls.find(([, keys]) => keys[0] === catalogKey('P'))
+  expect(Number(write[2][2])).toBe(24 * 60 * 60)
+})
 it('rebuilds old cards and invalidates metadata after successful profile updates', async () => {
   mock.records.set(catalogKey('P'), { scheme: 'qr-pin-v1' })
   await teacherCatalog({}, response())

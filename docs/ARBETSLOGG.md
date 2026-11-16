@@ -417,6 +417,18 @@ Simon arbetar med hastigheten i master och vill inte störa den. Dessa punkter
 - Oavklarat: vilken tidsperiod vyn ska utgå från, och om felförståelserna ska
   grupperas per räknesätt eller per mönster.
 
+- Önskemål: en enklare vy, i stil med "Elevprofil (allt om en elev)", som inte
+  radar upp varje felsvar. Det Simon behöver är hur många fel, under vilken
+  tid, och vilken sorts misstänkt felförståelse.
+- Underlag som redan finns: `errorBreakdown7d` (kunskapsfel kontra
+  slarvfel), periodfälten `currentDay`, `currentWeek` och `rolling30Days`, samt
+  `errorPatterns` och `errorDetail` per felsvar i stödsignalen.
+- Simons beslut: rullande 30 dagar förvalt. Felförståelserna grupperas per
+  räknesätt, med mönstren som underrader: räknesättet och antalet fel som
+  rubrik, därunder varje `errorPatterns`-kod med sitt antal. Skälet är att
+  koderna i praktiken redan hör till ett räknesätt, och att det är per
+  räknesätt undervisningen planeras.
+
 ## 2026-11-15: Tre saker Simon bad om före belastningen
 
 ### Simons önskemål

@@ -378,6 +378,45 @@
 - 2026-11-16: inplockat i master av Claude på Simons uppdrag, efter samma
   kontroller (de två röda är de kända CRLF-felen) och tre berörda robotar.
 
+## 2026-11-16: Samlade önskemål, väntar på att hastighetsarbetet blir klart
+
+Simon arbetar med hastigheten i master och vill inte störa den. Dessa punkter
+är samlade för att byggas senare, i den här ordningen.
+
+### 1. Antal inlämnade direkt i screeninglistan
+
+- Önskemål: i Resultat av screening ska listan visa hur många som lämnat in,
+  utan att man först öppnar screeningen.
+- Idag: `ScreeningResultsCollections.jsx` visar status, datum, antal uppgifter
+  och mottagare. Inlämningsstatus per elev finns bara i den tunga läsningen
+  `diagnosticClassOverview` (fältet `submitted` per elevrad), som hämtas när
+  läraren klickar på en screening.
+- Simons beslut: testa variant 1 — servern räknar antalet elever med allt
+  inlämnat redan i `/api/teacher-diagnostic-assignments`, så listan slipper en
+  extra hämtning per screening. Mät vad räknaren kostar på listhämtningen; det
+  avgör om den får stanna eller måste göras lat i stället.
+
+### 2. "N visade felsvar" säger inget — behövs en nämnare
+
+- Problem: i Statistik och stöd står det `6 visade felsvar från återhämtningen`
+  utan nämnare. Går inte att läsa om det är 6 av 6 eller 6 av 75.
+- Orsak: siffran är inte en räkning utan ett tak. `buildAdaptiveSupportSignal`
+  i `src/lib/masteryCalculation.js` gör `.slice(-6)` på de matchade felsvaren,
+  så etiketten i `dashboardStudentRowHelpers.js` visar längden på den kapade
+  listan. Hela mängden finns i `evidenceObservationIds`.
+- Att bygga: visa den riktiga nämnaren, inte takets längd.
+
+### 3. Förenklad elevprofil i Statistik och stöd
+
+- Önskemål: en enklare vy, i stil med "Elevprofil (allt om en elev)", som inte
+  radar upp varje felsvar. Det Simon behöver är hur många fel, under vilken
+  tid, och vilken sorts misstänkt felförståelse.
+- Underlag som redan finns: `errorBreakdown7d` (kunskapsfel kontra
+  slarvfel), periodfälten `currentDay`, `currentWeek` och `rolling30Days`, samt
+  `errorPatterns` och `errorDetail` per felsvar i stödsignalen.
+- Oavklarat: vilken tidsperiod vyn ska utgå från, och om felförståelserna ska
+  grupperas per räknesätt eller per mönster.
+
 ## 2026-11-15: Tre saker Simon bad om före belastningen
 
 ### Simons önskemål

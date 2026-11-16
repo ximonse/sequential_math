@@ -47,7 +47,7 @@ function TableCell({ item, table, onOpenTableProgress, cohort = false }) {
   </td>
 }
 
-export default function TablePracticeOverviewPanel({ students = [], period: requestedPeriod = '14d', onPeriodChange, onOpenStudentDetail, onOpenTableProgress, collapseControl }) {
+export default function TablePracticeOverviewPanel({ students = [], period: requestedPeriod = 'term', onPeriodChange, onOpenStudentDetail, onOpenTableProgress, collapseControl }) {
   const [sortBy, setSortBy] = useState('name')
   const [sortDir, setSortDir] = useState('asc')
   const period = normalizeTablePeriod(requestedPeriod)

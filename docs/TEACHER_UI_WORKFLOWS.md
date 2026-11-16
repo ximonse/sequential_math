@@ -201,6 +201,11 @@ egna komponenter/funktioner. Slutlig verifiering dokumenteras i projektkartan.
 
 ## Framsteg: sortering i tabellöversikten
 
+Tabellöversikten har Denna termin som förvald period från 2026-11-16.
+Översiktens period sparas separat i webbläsaren och återställs efter omladdning.
+Tabellträning – utveckling behåller sitt eget periodval och sitt tidigare
+standardvärde. Inga tidigare tider blandas in i vald period.
+
 Klick på rubriken Elev växlar mellan namn (alfabetiskt), antal olika testade
 tabeller (flest först) och samlat resultat. Vid antals-/resultatsortering visas under varje elev de antal som
 sorteringen bygger på. Klick på ett faktiskt elevnamn öppnar fortfarande

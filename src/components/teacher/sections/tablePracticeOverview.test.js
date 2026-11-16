@@ -83,7 +83,7 @@ describe('class table practice overview', () => {
     expect(overview.cohorts[4]).toMatchObject({ completedPupils: 1, totalPupils: 2 })
     const clock = vi.spyOn(Date, 'now').mockReturnValue(now)
     try {
-      const html = renderToStaticMarkup(createElement(TablePracticeOverviewPanel, { students: [repeated, full], days: 14 }))
+      const html = renderToStaticMarkup(createElement(TablePracticeOverviewPanel, { students: [repeated, full], period: '14d' }))
       expect(html).toContain('3/10')
       expect(html).toContain('Ingen hel tabell belagd i sparad historik')
       expect(html).toContain('Hel tabell klarad idag')

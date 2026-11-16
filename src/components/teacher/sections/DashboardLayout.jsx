@@ -227,6 +227,14 @@ export default function DashboardLayout({
         period: normalizeTablePeriod(saved.period ?? saved.days), studentId: String(saved.studentId || '') }
     } catch { return { table: 7, period: '7d', studentId: '' } }
   })
+  const [tableOverviewPeriod, setTableOverviewPeriod] = useState(() => {
+    try {
+      return normalizeTablePeriod(localStorage.getItem('mathapp_table_overview_period') || 'term')
+    } catch { return 'term' }
+  })
+  useEffect(() => {
+    try { localStorage.setItem('mathapp_table_overview_period', tableOverviewPeriod) } catch { /* Preferences are optional. */ }
+  }, [tableOverviewPeriod])
   const tableProgressStudents = useMemo(() => activeWorkspace === 'focus'
     ? selectedClassIds.length > 0 ? students.filter(student => recordMatchesClassFilter(student, selectedClassIds)) : students
     : filteredStudents.filter(student => !student.catalogOnly),
@@ -353,8 +361,8 @@ export default function DashboardLayout({
     if (id === 'tableoverview') return (
       <TablePracticeOverviewPanel
         students={tableProgressStudents}
-        period={tableSelection.period}
-        onPeriodChange={period => setTableSelection(previous => ({ ...previous, period }))}
+        period={tableOverviewPeriod}
+        onPeriodChange={setTableOverviewPeriod}
         onOpenStudentDetail={handleOpenStudentDetail}
         onOpenTableProgress={openTableProgress}
       />

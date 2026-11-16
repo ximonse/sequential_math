@@ -1,5 +1,21 @@
 # Arbetslogg
 
+## 2026-11-16: Denna termin som standard i tabellöversikten
+
+- Simons beslut: sätt Denna termin som förinställt enbart i tabellöversikten.
+  Det ersätter förslaget att visa äldre tider när vald period saknar tider.
+- Eget val: separat webbläsarsparat periodval för översikten; utvecklingsvyn
+  behåller sitt periodval. Inga nya serveranrop eller ändrad elevlagring.
+- Lokalt på `fix/table-overview-persistent-times`: build, riktad lint,
+  projektkarta och fem berörda webbläsartester passerar. Render granskad.
+  Repoets testsvit (andra worktrees exkluderade): 1381 passerar, två
+  NCM-audittester faller. Oförändrad referensfil har CRLF; LF-normaliserad
+  kontrollsumma matchar auditens förväntade värde exakt.
+- Ingen commit, push eller publicering. Stoppregeln vid röd testsvit gäller.
+  Parkerat utanför uppdraget: NCM-referensens radbrytningskontroll.
+- 2026-11-16: inplockat i master av Claude på Simons uppdrag, efter samma
+  kontroller (de två röda är de kända CRLF-felen) och tre berörda robotar.
+
 ## 2026-11-15: Tre saker Simon bad om före belastningen
 
 ### Simons önskemål

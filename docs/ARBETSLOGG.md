@@ -1,5 +1,28 @@
 # Arbetslogg
 
+## 2026-11-16: Belastning steg 1 klart, steg 2 byggt lokalt
+
+### Logg
+
+- Katalogen i produktion: 13 s → 1,05–1,47 s varm; 422 → 5 databasanrop.
+  En mellanversion blev långsammare (gruppanrop i följd, 2,0–2,5 s) och
+  rättades med parallella gruppanrop.
+- Klart-villkoret för steg 1 justerat: enkla anrop tar redan 0,75–0,87 s
+  (region iad1), så under en sekund går inte för katalogen.
+- Steg 2 lokalt: Screening läser bara de klasser fliken behöver. Robot räknar
+  anropen.
+
+### Agentens val
+
+- Lästa klasslistor sparas tills Läs om, så flikbyten inte läser om.
+
+### Tankar och parkerat
+
+- En annan session bytte gren i samma mapp; agentens commits hamnade på
+  dess gren och master flyttades fram utan att röra dess filer. Egen
+  arbetskopia per session undviker det.
+- Kandidat: serverns region närmare användare och databas.
+
 ## 2026-11-16: Belastning steg 1, mätt och förfinat
 
 - Publicerat 0351a78. Mätt: katalogen 13 s → 1,6–1,8 s varm, också efter

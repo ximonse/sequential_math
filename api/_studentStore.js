@@ -4,13 +4,21 @@ import { catalogCard, invalidateStudentCatalog } from './_studentCatalogCard.js'
 
 // Every student writer uses this compare-and-set boundary. Transforms rerun
 // on conflicts and must validate authorization against the latest record.
+// Decoding a large profile twice in Lua exceeded the database's script time
+// limit (a 4 MB pupil profile, 2026-11-16). Records are therefore written with
+// serverRevision first, so the script reads it from the start of the stored
+// text; only an older record is decoded, once. Class ids arrive as ARGV[5]
+// instead of decoding the whole new record.
 export const STUDENT_CAS_SCRIPT = `
 if redis.call('EXISTS', KEYS[2]) == 1 then return -2 end
 local raw = redis.call('GET', KEYS[1])
 local version = -1
 if raw then
-  local current = cjson.decode(raw)
-  version = tonumber(current.serverRevision) or 0
+  version = tonumber(string.match(raw, '^{"serverRevision":(%-?%d+)[,}]'))
+  if not version then
+    local current = cjson.decode(raw)
+    version = tonumber(current.serverRevision) or 0
+  end
 end
 if version ~= tonumber(ARGV[1]) then return 0 end
 if ARGV[2] == 'delete' then
@@ -18,14 +26,11 @@ if ARGV[2] == 'delete' then
   redis.call('DEL', KEYS[1])
   redis.call('SREM', KEYS[3], ARGV[4])
 else
-  local nextRecord = cjson.decode(ARGV[3])
   for i = 4, #KEYS do
     if redis.call('EXISTS', KEYS[i]) == 1 then return -4 end
   end
-  if nextRecord.classIds then
-    for _, classId in ipairs(nextRecord.classIds) do
-      if redis.call('EXISTS', 'class_deleted:' .. classId) == 1 then return -3 end
-    end
+  for _, classId in ipairs(cjson.decode(ARGV[5])) do
+    if redis.call('EXISTS', 'class_deleted:' .. classId) == 1 then return -3 end
   end
   redis.call('SET', KEYS[1], ARGV[3])
   redis.call('SADD', KEYS[3], ARGV[4])
@@ -65,6 +70,13 @@ export async function deletedStudents(studentIds, { store = kv, batchSize = 50 }
   return ids.map((id, i) => Boolean(id) && (values[2 * i] != null || values[2 * i + 1] != null))
 }
 
+function withoutRevision(record) {
+  const rest = { ...record }
+  delete rest.serverRevision
+  delete rest.serverUpdatedAt
+  return rest
+}
+
 export async function mutateStoredRecord(kind, id, transform, { store = kv } = {}) {
   if (!id || !['student', 'class', 'school', 'group'].includes(kind)) throw studentStoreError(400, 'Invalid record identity')
   const key = `${kind}:${id}`
@@ -75,14 +87,16 @@ export async function mutateStoredRecord(kind, id, transform, { store = kv } = {
     const version = current ? Number(current.serverRevision) || 0 : -1
     const next = await transform(current)
     if (next === undefined) return current
+    // serverRevision must be the first key in the stored JSON (see the script).
     const record = next === null ? null : {
-      ...next, serverRevision: version + 1, serverUpdatedAt: Date.now()
+      serverRevision: version + 1, serverUpdatedAt: Date.now(), ...withoutRevision(next)
     }
+    const classIds = Array.isArray(record?.classIds) ? record.classIds.map(String) : []
     const result = Number(await store.eval(STUDENT_CAS_SCRIPT,
       [key, deletedKey, { student: 'students:index', class: 'classes:index', school: 'schools:index', group: 'groups:index' }[kind],
         ...(record?.pupilIds || []).flatMap(pupilId => [studentDeletedKey(pupilId), `student_deleted:${pupilId}`])],
       [version, record === null ? 'delete' : 'write',
-        record === null ? String(Date.now()) : JSON.stringify(record), id]))
+        record === null ? String(Date.now()) : JSON.stringify(record), id, JSON.stringify(classIds)]))
     if (result === 1) return record
     if (result === -2) throw studentStoreError(410, 'Record deleted')
     if (result === -3) throw studentStoreError(409, 'Class deleted; refresh membership')

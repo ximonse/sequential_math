@@ -1,5 +1,34 @@
 # Arbetslogg
 
+## 2026-11-16: Driftfel, elevkonto utelåst ("Kunde inte spara svaren")
+
+### Logg
+
+- Simons elevkonto (profil 4,0 MB, över 10 000 sparningar) kom inte in i
+  Chrome eller DuckDuckGo. Andra elever fungerade. En ny webbläsare utan kö
+  kom in.
+- Orsak, hittad med en loggrad (83d19b5): databasskriptet för elevprofilen
+  avkodade hela profilen två gånger och överskred databasens tidsgräns
+  (`ERR Error running script: execution timed out`). Inloggningen skickar
+  först kön från enheten och stoppas om den misslyckas.
+- Rättning: versionsnumret skrivs först i posten och läses ur textens början;
+  klasslistan skickas som eget argument. Äldre poster avkodas en gång.
+  Skriptet provat i Lua-tolk (fengari, 9 fall), enhetstest låser formen,
+  25 robotar för sparande, klasser och radering gröna.
+
+### Agentens val
+
+- Ingen ny datanyckel: versionen läses ur samma post, så ingen migrering
+  och inga andra skrivvägar påverkas.
+
+### Tankar och parkerat
+
+- Ett svar som servern inte tar emot ska inte låsa ute eleven vid
+  inloggning (förslag till Simon).
+- Lokala lagringen kan stängas mitt i ett sparande vid utloggning eller
+  elevbyte (InvalidStateError); bryter R4. Robot först, sedan rättning.
+- Profilen 4,0 MB närmar sig Vercels svarsgräns 4,5 MB; steg 4.
+
 ## 2026-11-16: Belastning steg 1, mätt och förfinat
 
 - Publicerat 0351a78. Mätt: katalogen 13 s → 1,6–1,8 s varm, också efter

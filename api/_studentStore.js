@@ -14,8 +14,10 @@ if redis.call('EXISTS', KEYS[2]) == 1 then return -2 end
 local raw = redis.call('GET', KEYS[1])
 local version = -1
 if raw then
-  version = tonumber(string.match(raw, '^{"serverRevision":(%-?%d+)[,}]'))
-  if not version then
+  local head = string.match(raw, '^{"serverRevision":(%-?%d+)[,}]')
+  if head then
+    version = tonumber(head)
+  else
     local current = cjson.decode(raw)
     version = tonumber(current.serverRevision) or 0
   end

@@ -59,7 +59,11 @@ använde. Lärarvyn hämtar den lätta katalogen, men servern läser fortfarande
    elev) går via `mutateStudentRecord`, som tar bort kortet; radering städar
    det. Test låser livstiden; befintliga tester täcker varm läsning,
    ogiltigförklaring och klassflytt. 17 robotar för klasser och katalog gröna.
-   Mätning i produktion återstår efter publicering.
+   *Mätt i produktion 2026-11-16 (0351a78):* katalogen 13 s → 1,6–1,8 s varm,
+   också efter två minuter; 211 elever, svaret oförändrat (62 kB). Kvar till
+   under en sekund: två raderingskontroller per elev (422 databasanrop).
+   *Lokalt:* raderingskontrollen läses i grupp (`deletedStudents`, 50 elever
+   per anrop); test och 11 robotar gröna. Mäts efter publicering.
 2. **Screening öppnas.** Hämta screeninglistor bara för de klasser som behövs
    i den flik som visas. *Klart när:* att öppna Resultat för en klass gör
    anrop för den klassen, inte för alla.

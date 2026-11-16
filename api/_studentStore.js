@@ -49,6 +49,21 @@ export async function isStudentDeleted(studentId, { store = kv } = {}) {
   return removed.some(Boolean)
 }
 
+// Many pupils at once: both tombstones are plain string keys, so one MGET per
+// batch replaces two EXISTS round trips per pupil (docs/STYRNING_BELASTNING.md).
+export async function deletedStudents(studentIds, { store = kv, batchSize = 50 } = {}) {
+  const ids = studentIds.map(id => String(id || '').trim().toUpperCase())
+  const keys = ids.flatMap(id => [studentDeletedKey(id), `student_deleted:${id}`])
+  const values = []
+  for (let start = 0; start < keys.length; start += batchSize * 2) {
+    const part = keys.slice(start, start + batchSize * 2)
+    const result = part.length ? await store.mget(...part) : []
+    if (!Array.isArray(result) || result.length !== part.length) throw Error('Ofullständig raderingskontroll från lagringen.')
+    values.push(...result)
+  }
+  return ids.map((id, i) => Boolean(id) && (values[2 * i] != null || values[2 * i + 1] != null))
+}
+
 export async function mutateStoredRecord(kind, id, transform, { store = kv } = {}) {
   if (!id || !['student', 'class', 'school', 'group'].includes(kind)) throw studentStoreError(400, 'Invalid record identity')
   const key = `${kind}:${id}`

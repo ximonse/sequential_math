@@ -1,5 +1,16 @@
 # Arbetslogg
 
+## 2026-11-16: Belastning steg 1, mätt och förfinat
+
+- Publicerat 0351a78. Mätt: katalogen 13 s → 1,6–1,8 s varm, också efter
+  två minuter (förut alltid kall). Första anropet efter driftsättning var
+  kallt (14,6 s) eftersom inga kort fanns.
+- Återstående tid: två databasanrop per elev för raderingskontroll (422 för
+  211 elever). Nu ett gruppanrop per 50 elever (`deletedStudents`).
+  Lokalt, test och robotar gröna.
+- Tanke: samma mönster (en kontroll per elev) finns i screeningens
+  utdelning och läsning; tas i steg 2 och 3 där det berör.
+
 ## 2026-11-16: Belastning steg 1, katalogkortens livstid
 
 ### Simons beslut

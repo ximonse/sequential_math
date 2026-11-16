@@ -1,7 +1,7 @@
 import { kv } from '@vercel/kv'
 import { isCurrentStudentProfile } from '../src/lib/studentProfileContract.js'
 import { getLiveAuthorizedClassIds } from './_studentAccess.js'
-import { isStudentDeleted } from './_studentStore.js'
+import { deletedStudents } from './_studentStore.js'
 import { catalogKey, catalogCard, CATALOG_TTL_SECONDS, CATALOG_VERSION } from './_studentCatalogCard.js'
 import { guardPupilKey } from './_pupilReferenceWrite.js'
 
@@ -55,7 +55,7 @@ export async function teacherCatalog(req, res, store = kv) {
   const members = membershipMap(classes)
   const ids = [...members.keys()]
   const cards = await getMany(ids.map(catalogKey), store)
-  const deleted = await Promise.all(ids.map(id => isStudentDeleted(id, { store })))
+  const deleted = await deletedStudents(ids, { store })
   const missing = ids.filter((_, i) => !deleted[i] && cards[i]?.version !== CATALOG_VERSION)
   if (missing.length) {
     // Cold-cache recovery reads large profiles in smaller batches; warm reads
@@ -91,6 +91,6 @@ export async function scopedStudentIds(req, { classIds = [], studentIds = [] }, 
   for (const record of classes) if (classIds.includes(record.id)) record.pupilIds.forEach(id => wanted.add(id))
   for (const id of studentIds) if (members.has(String(id).toUpperCase())) wanted.add(String(id).toUpperCase())
   const ids = [...wanted]
-  const deleted = await Promise.all(ids.map(id => isStudentDeleted(id, { store })))
+  const deleted = await deletedStudents(ids, { store })
   return ids.filter((_, i) => !deleted[i])
 }

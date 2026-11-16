@@ -19,7 +19,7 @@ vi.mock('@vercel/kv', () => ({ kv: {
 import { kv } from '@vercel/kv'
 import { teacherCatalog, scopedStudentIds } from './_teacherCatalog.js'
 import { catalogKey } from './_studentCatalogCard.js'
-import { mutateStudentRecord, studentDeletedKey } from './_studentStore.js'
+import { deletedStudents, mutateStudentRecord, studentDeletedKey } from './_studentStore.js'
 const profile = id => ({ profileSchemaVersion: 1, studentId: id, displayAlias: `Kod ${id}`, name: 'PRIVATE NAME',
   classId: 'C', grade: 6, recentProblems: [], problemLog: ['PRIVATE ANSWER'], stats: {}, masteryFacts: { facts: [], revokedIds: [] },
   auth: { scheme: 'qr-pin-v1', lastLoginAt: 100, pinHash: 'PRIVATE HASH' } })
@@ -124,4 +124,12 @@ it('does not expose a pupil through a stale former-class index after a class mov
   await mutateStudentRecord('P', current => ({ ...current, classId: 'D', classIds: ['D'] }))
   const res = response(); await teacherCatalog({}, res)
   expect(res.data.pupils).toEqual([])
+})
+
+it('checks many pupils for deletion in a few batched reads, with both tombstone forms', async () => {
+  mock.records.set(studentDeletedKey('A'), '1'); mock.records.set('student_deleted:C', '1')
+  kv.mget.mockClear(); kv.exists.mockClear()
+  expect(await deletedStudents(['A', 'b', 'C', 'D', 'E'], { batchSize: 2 })).toEqual([true, false, true, false, false])
+  expect(kv.exists).not.toHaveBeenCalled()
+  expect(kv.mget).toHaveBeenCalledTimes(3)
 })

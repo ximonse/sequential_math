@@ -5,6 +5,8 @@ import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const hash = text => createHash('sha256').update(text).digest('hex')
+// Git checkouts may use CRLF even though the committed source hash is based on LF.
+const normalizedSourceHash = text => hash(text.replace(/\r\n?/g, '\n'))
 const classes = {
   candidate: ['place_value_error', 'operation_swap', 'digit_reversal', 'carry_forget', 'carry_double',
     'ones_digit_only', 'smaller_minus_larger', 'borrow_forget', 'table_off_by_one', 'ones_digits_only',
@@ -34,7 +36,7 @@ const domains = [
 export function auditRuleReadiness(root = process.cwd()) {
   const read = path => readFileSync(resolve(root, path), 'utf8')
   const sourcePath = 'docs/NCM_DIDACTIC_COVERAGE.json', coverageText = read(sourcePath), coverage = JSON.parse(coverageText)
-  if (hash(read(coverage.source.path)) !== coverage.source.sha256) throw Error('NCM reference changed: audit and reconcile before continuing')
+  if (normalizedSourceHash(read(coverage.source.path)) !== coverage.source.sha256) throw Error('NCM reference changed: audit and reconcile before continuing')
   const files = new Map()
   const signals = coverage.codeSignals.map(entry => {
     const text = files.get(entry.file) ?? read(entry.file); files.set(entry.file, text)

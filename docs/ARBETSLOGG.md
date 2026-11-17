@@ -239,6 +239,14 @@
 - Produktionskvittens: GitHub master 16745bb, Vercel sekvens READY med motsvarande SHA och matematik.ximon.se. Tre sekventiella par av autentiserade GET-anrop per version på samma screening. Median för felförståelser: 5,74 → 4,79 s. Median för tabell och felförståelser tillsammans: 8,82 → 7,98 s. Samma 28 rader, 28 elever i analysvaret och fyra svar per prov. Tiderna inkluderar mottagning och JSON-avkodning, men ingen rendering. En screening, ingen generell uppskattning.
 - GitHub Verify passerade för 16745bb, inklusive test, build och navigationsrobotar.
 
+## 2026-11-17: Auditfix 1 – NCM-kontrollens radslut
+
+- Logg: Referenshashen normaliserar nu CRLF/CR till LF. Faktiska innehållsändringar avvisas fortfarande. 3 riktade tester samt hela Vitest (256 filer, 1394 tester) och build godkända lokalt.
+- Simons beslut: Genomför tre små auditfixar; billigare modeller får delegerade uppgifter. Ingen push eller publicering.
+- Agentens val: Isolerat worktree från 303e6f4, NCM-fixen delegerad till gpt-6-luna och diffen granskad av huvudagenten.
+- Tankar: Kontrollen ska upptäcka ändrat underlag, inte Windows-radslut. Felmodeller och screeningtäckning är oförändrade.
+- Parkerat: Övriga belastningsförslag kräver avgränsning och eget genomförandebeslut.
+
 ## 2026-11-16: Driftfel, elevkonto utelåst ("Kunde inte spara svaren")
 
 ### Logg

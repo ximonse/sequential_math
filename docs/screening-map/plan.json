@@ -1716,7 +1716,7 @@
       "next": "Simon provar i lärarvyn efter nästa push; publicering kräver hans push.",
       "acceptance": "Namn visas utan knapptryck, en uppdatering visar aldrig kodnamn ens ett ögonblick, ett långsamt eller felande namnanrop tar inte tillbaka kodnamn, och kodnamnsvalet ligger kvar efter omladdning.",
       "decision": "2026-10-26: Simon beställer att tilltalsnamn alltid ska synas om han inte själv byter. Tilltalsnamn fylls därför i automatiskt från skapandenamn, en gång per elev, om kodnamn inte är valt.",
-      "evidence": "2026-10-26 lokalt: orsaker var att loadStudents satte kodnamn först och tilltalsnamn efter ett separat anrop vid varje uppdatering (start, 2 min kl 8-15, fokus, efter åtgärder), att ett misslyckat namnanrop lämnade kodnamn, och att detaljpanelen tömdes och hämtades om vid varje uppdatering. Namn härleds nu på ett ställe från en egen namnlista; äldre uppdatering kan inte skriva över nyare; detaljpanelen hämtas bara om vid ändrad elev eller elevdata. Tre nya robotar (teacher-names-stable) var röda före och gröna efter; teacher-names uppdaterad. Vitest 4831/4832 (felet i äldre kopia under .claude/worktrees), build ok, robotsviten 143/151 vid första körning med belastning, de åtta fallen passerade vid omkörning. Ej pushat. 2026-11-17 lokalt: roboten teacher-names var röd i hela sviten, även på cd48695 före belastningsarbetet. Orsak i roboten, inte i appen: efter omladdning ligger läraren kvar på Administration, där tabellen Klass/gruppvy inte finns. Roboten kontrollerar nu efter omladdning att knappen visar Byt till kodnamn, att inget kodnamn syns och att tilltalsnamnet står under Framsteg. Grön mot nytt bygge av 303e6f4. Appkoden är inte ändrad. Ej pushat.",
+      "evidence": "2026-10-26 lokalt: orsaker var att loadStudents satte kodnamn först och tilltalsnamn efter ett separat anrop vid varje uppdatering (start, 2 min kl 8-15, fokus, efter åtgärder), att ett misslyckat namnanrop lämnade kodnamn, och att detaljpanelen tömdes och hämtades om vid varje uppdatering. Namn härleds nu på ett ställe från en egen namnlista; äldre uppdatering kan inte skriva över nyare; detaljpanelen hämtas bara om vid ändrad elev eller elevdata. Tre nya robotar (teacher-names-stable) var röda före och gröna efter; teacher-names uppdaterad. Vitest 4831/4832 (felet i äldre kopia under .claude/worktrees), build ok, robotsviten 143/151 vid första körning med belastning, de åtta fallen passerade vid omkörning. Ej pushat.",
       "issue": "",
       "kind": "funktion",
       "requires": [],
@@ -4120,6 +4120,28 @@
         {
           "id": "task-teacher-foreign-assignments-verify",
           "text": "Simon provar i lärarvyn som administratör (preview).",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "audit-ncm-line-endings",
+      "area": "Verifiering",
+      "title": "NCM-hash fungerar med Windows-radslut",
+      "status": "Lokalt klart",
+      "purpose": "Behåll innehållskontrollen utan falsklarm från CRLF.",
+      "next": "Invänta separat beslut om publicering.",
+      "acceptance": "LF och CRLF ger samma kontrollresultat; ändrat innehåll avvisas.",
+      "decision": "2026-11-17: Simon godkände tre avgränsade auditfixar och delegering till billigare modeller. Ingen push ingår.",
+      "evidence": "2026-11-17: NCM-kontrollen normaliserar radslut vid referensjämförelse. 3 riktade tester, hela Vitest 256 filer/1394 tester och produktionsbuild godkända. Lokalt, ej publicerat. Ingen ändring av felmodeller eller täckning.",
+      "issue": "",
+      "kind": "funktion",
+      "requires": [],
+      "affects": [],
+      "tasks": [
+        {
+          "id": "audit-ncm-regression",
+          "text": "Kontrollera LF, CRLF och verklig innehållsändring.",
           "done": true
         }
       ]

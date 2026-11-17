@@ -83,6 +83,24 @@ export function compactCheckpointEvent(event) {
   return compacted
 }
 
+// The server overwrites every field a checkpoint carries (adaptive key by key),
+// so an older checkpoint whose fields the newest of its kind also carries
+// changes nothing. Thousands of queued presence signals locked a pupil out at
+// login on 2026-11-16; only the newest needs to travel.
+export function supersededCheckpoints(events) {
+  const at = event => Number(event?.payload?.capturedAt) || 0
+  const covers = (newer, older) => Object.keys(older).every(key => key in newer)
+    && (!older.adaptive || Boolean(newer.adaptive) && Object.keys(older.adaptive).every(key => key in newer.adaptive))
+  const latest = {}
+  for (const event of events) {
+    if (['profile_checkpoint', 'presence_checkpoint'].includes(event?.type) && (!latest[event.type] || at(event) > at(latest[event.type]))) latest[event.type] = event
+  }
+  return events.filter(event => {
+    const newest = latest[event?.type]
+    return newest && newest !== event && at(event) < at(newest) && covers(newest.payload || {}, event.payload || {})
+  }).map(event => event.id)
+}
+
 function prepareEvent(event) {
   const payload = event?.payload
   // Old non-arithmetic generators omitted problem IDs. The immutable vault
@@ -253,11 +271,14 @@ export function createPilotStudentRuntime({
     }
     updateSyncStatus({ state: 'syncing', pendingCount: pending.length, lastAttemptAt: Date.now(), lastError: '' })
 
-    const prepared = pending.map(item => prepareEvent(item.event))
+    const all = pending.map(item => prepareEvent(item.event))
+    // Superseded checkpoints stay pending until the newest has been accepted.
+    const superseded = new Set(supersededCheckpoints(all))
+    const prepared = all.filter(event => !superseded.has(event.id))
     const oversized = prepared.filter(event => eventBytes(event) > MAX_SERVER_EVENT_BYTES)
     if (oversized.length > 0) await store.rejectEvents(oversized.map(event => event.id))
     const batches = buildBatches(prepared.filter(event => eventBytes(event) <= MAX_SERVER_EVENT_BYTES))
-    let sent = oversized.length
+    let sent = oversized.length + superseded.size
     for (const batch of batches) {
       let result
       try {
@@ -297,6 +318,7 @@ export function createPilotStudentRuntime({
       sent += batch.length
       updateSyncStatus({ pendingCount: Math.max(0, pending.length - sent) })
     }
+    if (superseded.size > 0) await store.acknowledgeEvents([...superseded])
 
     if (recoverRejected) await recoverRejectedEvents()
     return reportCompletedSync()
@@ -354,8 +376,10 @@ export function createPilotStudentRuntime({
       // Remove day-old server-confirmed events before reading the vault; a failure
       // here only leaves them in place.
       await store.pruneAcknowledgedEvents?.().catch(() => {})
+      // A queue the server does not accept must not lock the pupil out: the
+      // answers stay queued on the device and the sync status shows it. An
+      // invalid session still stops at the profile request below.
       const synced = await syncPending({ recoverRejected: shouldRecover })
-      if (!synced.ok && !String(synced.error || '').includes('anslutningen')) return synced
       const loaded = await fetchProfile()
       if (!loaded?.ok || normalizePilotStudentId(loaded.profile?.studentId) !== expected) {
         if (loaded?.status === 401 || loaded?.status === 410) await clearRetiredPupil(expected)

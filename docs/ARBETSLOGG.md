@@ -15,16 +15,30 @@
   klasslistan skickas som eget argument. Äldre poster avkodas en gång.
   Skriptet provat i Lua-tolk (fengari, 9 fall), enhetstest låser formen,
   25 robotar för sparande, klasser och radering gröna.
+- **Avbrott ca 22.20–22.27 för alla elever (2d41a76).** Databasens Lua
+  kraschade på `tonumber` när mönstret inte matchade, alltså för varje
+  befintlig profil. Lokala Lua-tolken var en nyare version och missade
+  det. Rättat i 7d95100; sparande bekräftat i produktion. Svar från
+  avbrottet låg kvar i elevernas köer.
+- Kön på Simons enhet var tusentals närvarosignaler och tog lång tid.
+  Byggt på Simons "bygg": äldre checkpoints som den senaste täcker skickas
+  inte (bekräftas lokalt först när den senaste är mottagen), och en kö som
+  servern inte tar emot låser inte längre ute eleven; svaren ligger kvar i
+  kön. 551 klienttester och 31 elevrobotar gröna.
+
+### Simons beslut
+
+- Bygg: inloggning släpps trots kö, närvarosignaler slås ihop.
 
 ### Agentens val
 
 - Ingen ny datanyckel: versionen läses ur samma post, så ingen migrering
   och inga andra skrivvägar påverkas.
+- Lärdom: Lua-skript provas mot databasens egen Lua-version, inte bara en
+  lokal tolk.
 
 ### Tankar och parkerat
 
-- Ett svar som servern inte tar emot ska inte låsa ute eleven vid
-  inloggning (förslag till Simon).
 - Lokala lagringen kan stängas mitt i ett sparande vid utloggning eller
   elevbyte (InvalidStateError); bryter R4. Robot först, sedan rättning.
 - Profilen 4,0 MB närmar sig Vercels svarsgräns 4,5 MB; steg 4.

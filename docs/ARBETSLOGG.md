@@ -10,6 +10,8 @@
 - Parkerat: Publicering kräver eget besked. Mät sedan tiden från vald screening till synliga kort innan ett beslut om att slå ihop anropen.
 
 - Publicering: Simon har godkänt publicering av detta screeningpaket via GitHub. Ren publiceringsgren från 303e6f4 med enbart screeningpaketet. På den grenen passerade 1 391 tester, produktionsbygget och fem riktade robotar.
+- Produktionskvittens: GitHub master 16745bb, Vercel sekvens READY med motsvarande SHA och matematik.ximon.se. Tre sekventiella par av autentiserade GET-anrop per version på samma screening. Median för felförståelser: 5,74 → 4,79 s. Median för tabell och felförståelser tillsammans: 8,82 → 7,98 s. Samma 28 rader, 28 elever i analysvaret och fyra svar per prov. Tiderna inkluderar mottagning och JSON-avkodning, men ingen rendering. En screening, ingen generell uppskattning.
+- GitHub Verify passerade för 16745bb, inklusive test, build och navigationsrobotar.
 
 ## 2026-11-16: Driftfel, elevkonto utelåst ("Kunde inte spara svaren")
 

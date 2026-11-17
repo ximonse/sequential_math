@@ -135,6 +135,9 @@ export function createPilotStudentRuntime({
   let lastBootstrap = null
   let diagnosticWriteTail = Promise.resolve()
   let attentionWriteTail = Promise.resolve()
+  // Local answer saves: closing the store waits for them, otherwise logout
+  // closed the database mid-save and the answer was lost on the device.
+  let mathWriteTail = Promise.resolve()
   const listeners = new Set()
   let syncStatus = {
     state: 'idle',
@@ -157,6 +160,7 @@ export function createPilotStudentRuntime({
     if (!id || !await checkRetired(id)) return false
     await diagnosticWriteTail
     await attentionWriteTail
+    await mathWriteTail
     lastBootstrap = null
     if (studentId === id && store) {
       await store.close()
@@ -364,6 +368,7 @@ export function createPilotStudentRuntime({
         if (store) {
           await attentionWriteTail
           await diagnosticWriteTail
+          await mathWriteTail
           await store.close()
         }
         studentId = expected
@@ -395,8 +400,11 @@ export function createPilotStudentRuntime({
         updateSyncStatus({ state: 'error', lastErrorAt: Date.now(), lastError: 'Pilotlagringen tillhör inte den aktiva eleven.' })
         return { ok: false, error: 'Pilotlagringen tillhör inte den aktiva eleven.' }
       }
+      const activeStore = store
+      const local = mathWriteTail.then(() => activeStore.saveSnapshotAndAppendEvent({ snapshot: profile, event }))
+      mathWriteTail = local.catch(() => {})
       try {
-        await store.saveSnapshotAndAppendEvent({ snapshot: profile, event })
+        await local
       } catch (error) {
         updateSyncStatus({ state: 'error', lastErrorAt: Date.now(), lastError: String(error?.message || 'Svaret kunde inte sparas på enheten.') })
         throw error
@@ -518,6 +526,7 @@ export function createPilotStudentRuntime({
     async close() {
       await diagnosticWriteTail
       await attentionWriteTail
+      await mathWriteTail
       if (store) store.close()
       store = null
       studentId = ''
@@ -525,6 +534,7 @@ export function createPilotStudentRuntime({
       lastBootstrap = null
       diagnosticWriteTail = Promise.resolve()
       attentionWriteTail = Promise.resolve()
+      mathWriteTail = Promise.resolve()
       updateSyncStatus({ state: 'idle', pendingCount: 0, rejectedCount: 0, lastAttemptAt: 0, lastSuccessAt: 0, lastErrorAt: 0, lastError: '' })
     }
   }

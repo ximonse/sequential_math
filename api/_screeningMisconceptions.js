@@ -10,19 +10,23 @@ import { screeningPupilAnswers } from '../src/lib/screeningMisconceptions.js'
 export async function screeningMisconceptionPupils(assignment, studentIds, { store = kv } = {}) {
   const roster = studentIds.filter(id => assignment.studentIds.includes(id))
   const records = await listDiagnosticAssignmentAttempts(assignment, roster, { store })
-  const latest = new Set()
+  const latestByPupil = new Map()
   for (const studentId of roster) {
+    const latest = new Set()
     for (const item of assignment.items) {
       const record = records.filter(r => r.studentId === studentId && r.assignmentItemId === item.assignmentItemId)
         .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0) || a.attemptId.localeCompare(b.attemptId))[0]
       if (record) latest.add(record.attemptId)
     }
+    latestByPupil.set(studentId, latest)
   }
   // The position lets the client match answers across classes, as the results table does.
   const position = id => assignment.items.findIndex(item => item.assignmentItemId === id)
   async function read(studentId) {
-    const { entries } = await pupilScreeningEvidence(studentId, assignment.classId, { store })
-    const own = entries.filter(entry => entry.reference?.assignmentId === assignment.assignmentId && latest.has(entry.reference.attemptId))
+    const attemptIds = latestByPupil.get(studentId)
+    if (!attemptIds.size) return { studentId, answers: [] }
+    const { entries } = await pupilScreeningEvidence(studentId, assignment.classId, { store, attemptIds })
+    const own = entries.filter(entry => entry.reference?.assignmentId === assignment.assignmentId)
     return { studentId, answers: screeningPupilAnswers(own.map(withTeacherAssessment))
       .map(answer => ({ ...answer, position: position(answer.assignmentItemId) })) }
   }

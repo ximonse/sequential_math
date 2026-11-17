@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { pupilScreeningEvidence } from './_pupilScreeningEvidence.js'
+import { screeningMisconceptionPupils } from './_screeningMisconceptions.js'
 import { evidencePage } from './_pupilEvidence.js'
 import { createDiagnosticGrid, recordDiagnosticGridEvent } from '../src/domains/arithmetic/diagnosticGridModel.js'
 
@@ -25,6 +26,45 @@ function fixture() {
 
 describe('screening evidence preserves original work and version identity', () => {
   afterEach(() => vi.useRealTimers())
+  it('opens only the latest attempt in the selected screening and retains its teacher assessment', async () => {
+    vi.useFakeTimers()
+    const { data, record, snapshot } = fixture()
+    const assignment = data.get('diagnostic_assignment:ASSIGNMENT')
+    record.grid = snapshot
+    const eventLists = new Map()
+    function addAttempt(id, override) {
+      const attempt = { ...record, ...override, attemptId: id, grid: { ...snapshot, attemptId: id } }
+      data.set(`diagnostic_attempt:${id}`, attempt)
+      eventLists.set(id, snapshot.events.map(event => ({ ...event, attemptId: id, eventId: `${id}:${event.sequence}` })))
+    }
+    eventLists.set('ATTEMPT', snapshot.events)
+    addAttempt('OLDER', { createdAt: record.createdAt - 1 })
+    data.set('diagnostic_assignment:HISTORY', { ...assignment, assignmentId: 'HISTORY' })
+    const history = Array.from({ length: 24 }, (_, i) => `HISTORY-${i}`)
+    for (const id of history) addAttempt(id, { assignmentId: 'HISTORY' })
+    data.set('diagnostic_review:ATTEMPT', { studentId: 'PUPIL', reviewRevision: 1, reviewed: true,
+      evidenceRevision: 1, evidenceSequence: 1, markedCorrect: true })
+    const store = {
+      smembers: async key => key === 'diagnostic_attempts_by_assignment:ASSIGNMENT'
+        ? ['OLDER', 'ATTEMPT'] : [...history, 'OLDER', 'ATTEMPT'],
+      get: vi.fn(async key => data.get(key)),
+      exists: async () => 0,
+      lrange: vi.fn(async key => {
+        await new Promise(resolve => setTimeout(resolve, 100))
+        return eventLists.get(key.split(':')[1])
+      })
+    }
+    const started = Date.now()
+    const pending = screeningMisconceptionPupils(assignment, ['PUPIL'], { store })
+    await vi.runAllTimersAsync()
+    const result = await pending
+    console.log(`Screening fixture: ${store.lrange.mock.calls.length} event-list reads, ${Date.now() - started} ms simulated`)
+    expect(result.pupils).toMatchObject([{ studentId: 'PUPIL', answers: [
+      { assignmentItemId: 'ITEM', studentAnswer: '376', teacherStatus: 'correct', position: 0 }
+    ] }])
+    expect(store.lrange.mock.calls.map(([key]) => key)).toEqual(['diagnostic_attempt_events:ATTEMPT'])
+    expect(store.get.mock.calls.some(([key]) => key.includes('HISTORY'))).toBe(false)
+  })
   it('reads a long history in bounded waves without dropping or reordering attempts', async () => {
     vi.useFakeTimers()
     const f = fixture(), ids = Array.from({ length: 20 }, (_, i) => `A${i}`)

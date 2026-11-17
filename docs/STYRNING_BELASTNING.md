@@ -88,3 +88,18 @@ använde. Lärarvyn hämtar den lätta katalogen, men servern läser fortfarande
 
 1. Godkänns målet, måtten och ordningen? **Ja, Simon 2026-11-16.**
 2. Katalogkortens livstid: ett dygn, eller annat? **Ett dygn, Simon 2026-11-16.**
+
+## 7. Avgränsad läsning av felförståelser i vald screening
+
+Felförståelsevyn använder screeningens försöksindex för att välja senaste
+försöket per elev och uppgift före läsningen av sparade händelser. Försöket
+måste också finnas i elevens index och passera befintliga klass-, elev- och
+versionskontroller. Den breda historikläsningen för elevanalys används som
+tidigare när inget urval av försök anges.
+
+Samma syntetiska fall med ett aktuellt, ett äldre och 24 orelaterade försök
+gick från 26 läsningar av händelselistor till 1. Med 100 ms simulerad väntan per
+sådan läsning tog den delen av provet 400 ms före och 100 ms efter. Detta är
+ett jämförbart lokalt prov av läsarbetet, inte uppmätt tid i verklig databas
+eller i produktion. Mät tiden från valt resultat till synliga kort efter
+publicering. Tabell och felförståelser hämtas fortfarande var för sig.

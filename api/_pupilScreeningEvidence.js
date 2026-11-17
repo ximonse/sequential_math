@@ -8,8 +8,11 @@ import { assessWithTeacher, currentTeacherAssessment } from '../src/domains/arit
 
 const validId = id => typeof id === 'string' && /^[A-Za-z0-9_-]{1,128}$/u.test(id)
 
-export async function pupilScreeningEvidence(studentId, classId, { store = kv, read = readDiagnosticAttempt } = {}) {
-  const ids = await store.smembers(`diagnostic_attempts_by_student:${studentId}`) || []
+export async function pupilScreeningEvidence(studentId, classId, { store = kv, read = readDiagnosticAttempt, attemptIds } = {}) {
+  const indexedIds = await store.smembers(`diagnostic_attempts_by_student:${studentId}`) || []
+  // A selected screening supplies its latest attempt IDs. Keep the pupil-index
+  // membership check, but only read and replay evidence that can be displayed.
+  const ids = attemptIds ? indexedIds.filter(id => attemptIds.has(id)) : indexedIds
   if (ids.length > 1000) throw evidenceError(413, 'screening_read_limit', 'För många screeningförsök för denna läsning.')
   const entries = [], warnings = new Set(['assignment_index_completeness_unknown'])
   let invalidRecords = 0

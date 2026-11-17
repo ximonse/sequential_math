@@ -1,5 +1,16 @@
 # Arbetslogg
 
+## 2026-11-17: Felförståelser läser försök från vald screening
+
+- Logg: Välj senaste försök per elev och uppgift före läsning av sparade händelser. Behåll medlemskap i båda indexen, klass- och identitetskontroller samt versionsbunden lärarbedömning.
+- Belägg: Samma syntetiska fall gav 26 → 1 läsningar av händelselistor och 400 → 100 ms med simulerad väntan. Regressionen gav samma elevsvar och lärarbedömning före och efter. Inga ändrade felmodeller eller klassificeringsregler. Täckningen jämfördes i testfallet, ingen ny mätning på riktiga elevsvar.
+- Verifiering: 256 testfiler, 1396 tester och produktionsbuild gröna. Sju relevanta robotar gröna utan regelbrott. Granskad lokal rendering visar felförståelsekort, lärarens val och kopplingen till svarstabellen.
+- Simons besked: Slutför arbetet enligt den godkända planen utan uppehåll mellan arbetsmoment som inte kräver beslut.
+- Agentens val: Smal serverändring. Evidensläsningen för elevhistorik fortsätter använda det breda urvalet. Resultattabell och felförståelser använder fortfarande två anrop.
+- Parkerat: Publicering kräver eget besked. Mät sedan tiden från vald screening till synliga kort innan ett beslut om att slå ihop anropen.
+
+- Publicering: Simon har godkänt publicering av detta screeningpaket via GitHub. Ren publiceringsgren från 303e6f4 med enbart screeningpaketet. På den grenen passerade 1 391 tester, produktionsbygget och fem riktade robotar.
+
 ## 2026-11-16: Driftfel, elevkonto utelåst ("Kunde inte spara svaren")
 
 ### Logg

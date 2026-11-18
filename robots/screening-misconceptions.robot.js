@@ -135,3 +135,42 @@ test('Clicking a card scrolls a wide table sideways to the framed answer', async
   })).toBe(true)
   await page.screenshot({ path: testInfo.outputPath('screening-wide-scroll.png'), fullPage: true })
 })
+
+test('A table cell names the same group as the misconception cards, also without a work signal', async ({ page, request, browser }, testInfo) => {
+  const tag = Math.random().toString(36).slice(2, 8), classId = `misc-same-${tag}`
+  const pupils = []
+  for (const name of ['Same Zero', 'Same Odd']) pupils.push(await createPupil(request, { name, classId }))
+  const teacher = await (await request.post('/__robot/teacher', { data: { id: `misc-same-${tag}`, classIds: [classId], role: 'teacher' } })).json()
+  await teacherLogin(page, teacher)
+  const task = manifest.tasks.find(t => t.analysisCaseId === 'S2')
+  const assignment = await page.evaluate(async data => {
+    const response = await fetch('/api/teacher-diagnostic-assignments', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-teacher-token': sessionStorage.getItem('mathapp_teacher_api_token') }, body: JSON.stringify(data) })
+    if (!response.ok) throw new Error(JSON.stringify(await response.json()))
+    return (await response.json()).assignment
+  }, { classId, audience: 'class', taskIds: [task.taskId] })
+  // 402 − 178: 134 is the zero-exchange card with no work signal; 999 no rule explains.
+  for (const [pupil, answer] of [[pupils[0], '134'], [pupils[1], '999']]) {
+    const context = await browser.newContext()
+    const student = await context.newPage()
+    await login(student, pupil)
+    await student.getByRole('button', { name: 'Screening', exact: true }).click()
+    await student.getByRole('textbox', { name: 'Mitt svar', exact: true }).pressSequentially(answer)
+    await student.getByRole('button', { name: 'Lämna in svaren', exact: true }).click()
+    await expect(student).toHaveURL(new RegExp(`/student/${pupil.studentId}$`))
+    await context.close()
+  }
+  await page.reload()
+  const results = await openResults(page, { className: classId })
+  await chooseCollection(results, assignment.assignmentId)
+  const section = results.getByRole('region', { name: 'Felförståelser i screeningen', exact: true })
+  await expect(section.getByRole('button', { name: /Växling över nolla/ })).toContainText('Same Zero')
+  await expect(section.getByRole('heading', { name: /Oförklarade/ })).toBeVisible()
+  const review = reviewOf(results)
+  const zero = review.getByRole('button', { name: /Same Zero,.*svar 134/ })
+  await expect(zero).toHaveAccessibleName(/Fel svar, pekar på en felförståelse/)
+  await expect(zero).not.toHaveAccessibleName(/utan identifierat mönster/)
+  await expect(review.getByRole('button', { name: /Same Odd,.*svar 999/ })).toHaveAccessibleName(/Fel svar, oförklarat/)
+  await zero.hover()
+  await expect(page.getByRole('tooltip')).toContainText('Felförståelsekort: Växling över nolla')
+  await page.screenshot({ path: testInfo.outputPath('screening-cell-matches-cards.png'), fullPage: true })
+})

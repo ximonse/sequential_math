@@ -1,19 +1,19 @@
 import { useEffect, useMemo } from 'react'
 import QuestionText from '../../QuestionText'
-import { screeningMisconceptionView } from '../../../lib/screeningMisconceptions.js'
+import { SCREENING_GROUP_LABELS_SV, screeningMisconceptionView } from '../../../lib/screeningMisconceptions.js'
 
 // Misconceptions in the chosen screening (docs/STYRNING_FELFORSTAELSER.md, step 4).
 // Read-only: follow-up stays frozen. Clicking a card marks its answers in the
 // results table below.
 const OTHER_BOXES = [
-  ['gave_up', 'Ger upp eller klickar förbi', 'Svarar 0 eller 55 på flera olika frågor. Prata med eleven.'],
-  ['unanswered', 'Obesvarade med uträkning', 'Uträkning finns i räknehäftet men svarsrutan är tom.'],
-  ['input', 'Inmatning', 'Rätt tänkt men fel skrivet.'],
-  ['repeated_task', 'Fel på samma uppgift flera gånger', 'Samma fråga fel minst tre gånger.'],
-  ['observation', 'Enstaka fel som liknar ett mönster', 'Ett räknefel eller ett mönster som inte upprepas än. Ingen felförståelse.'],
-  ['without_link', 'Felmodell utan kopplad felförståelse', 'Appen känner igen felet men det är inte kopplat till en godkänd felförståelse.'],
-  ['unexplained', 'Oförklarade', 'Appen kan inte förklara svaret. Ditt öga behövs.']
-]
+  ['gave_up', 'Svarar 0 eller 55 på flera olika frågor. Prata med eleven.'],
+  ['unanswered', 'Uträkning finns i räknehäftet men svarsrutan är tom.'],
+  ['input', 'Rätt tänkt men fel skrivet.'],
+  ['repeated_task', 'Samma fråga fel minst tre gånger.'],
+  ['observation', 'Ett räknefel eller ett mönster som inte upprepas än. Ingen felförståelse.'],
+  ['without_link', 'Appen känner igen felet men det är inte kopplat till en godkänd felförståelse.'],
+  ['unexplained', 'Appen kan inte förklara svaret. Ditt öga behövs.']
+].map(([key, note]) => [key, key === 'unanswered' ? 'Obesvarade med uträkning' : SCREENING_GROUP_LABELS_SV[key], note])
 
 function Answer({ row, name, cardId }) {
   return <li className="flex justify-between gap-2 border-b border-slate-200 py-0.5 last:border-b-0">

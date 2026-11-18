@@ -34,6 +34,21 @@ function withSingleOccurrence(row) {
 
 const OTHER = ['gave_up', 'repeated_task', 'observation', 'input', 'without_link', 'unexplained']
 
+// The group a pupil's wrong answer lands in among the cards and boxes. The
+// results table names the same group, so a cell never contradicts the cards.
+export const SCREENING_GROUP_LABELS_SV = {
+  misconception: 'Pekar på en felförståelse', without_link: 'Felmodell utan kopplad felförståelse',
+  gave_up: 'Ger upp eller klickar förbi', input: 'Inmatning', repeated_task: 'Fel på samma uppgift flera gånger',
+  observation: 'Enstaka fel som liknar ett mönster', unexplained: 'Oförklarade'
+}
+
+export function screeningAnswerGroup(answer) {
+  if (answer.bucket !== 'misconception') return { group: answer.bucket, misconceptions: [] }
+  // An answer no approved card takes is still listed (rule R-C).
+  const misconceptions = (answer.misconceptionIds ?? []).map(approvedMisconception).filter(Boolean)
+  return { group: misconceptions.length ? 'misconception' : 'without_link', misconceptions }
+}
+
 // `pupils` are [{ studentId, answers }] for the pupils the teacher chose to see.
 export function screeningMisconceptionView(pupils) {
   const counts = { wrong: 0, ...Object.fromEntries(WRONG_BUCKETS.map(bucket => [bucket, 0])), unanswered: 0, unansweredWithWork: 0, teacherMarkedNotWrong: 0 }
@@ -50,11 +65,9 @@ export function screeningMisconceptionView(pupils) {
       if ((answer.teacherStatus ?? 'incorrect') !== 'incorrect') { counts.teacherMarkedNotWrong++; continue }
       counts.wrong++
       counts[answer.bucket]++
-      if (answer.bucket !== 'misconception') { other[answer.bucket].push(row); continue }
-      // An answer no approved card takes is still listed (rule R-C).
-      const approved = (answer.misconceptionIds ?? []).map(approvedMisconception).filter(Boolean)
-      if (!approved.length) other.without_link.push(row)
-      for (const m of approved) {
+      const { group, misconceptions } = screeningAnswerGroup(answer)
+      if (group !== 'misconception') { other[group].push(row); continue }
+      for (const m of misconceptions) {
         if (!cards.has(m.id)) cards.set(m.id, { id: m.id, titleSv: m.titleSv, areaSv: m.areaSv, logicSv: m.logicSv, criticalAspectSv: m.criticalAspectSv, answers: [] })
         cards.get(m.id).answers.push(row)
       }

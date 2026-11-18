@@ -1,5 +1,14 @@
 # Arbetslogg
 
+## 2026-11-18: Tabellen beskriver fel svar som felförståelsekorten
+
+- Simons besked: Fixa att tabellen och korten skriver olika saker, trots att det ligger utanför arbetsmålet belastningen. Kontrollera också om samma sak sker på andra ställen. Publicera när arbetet är klart och ingen återkoppling behövs.
+- Fynd: Tabellcellen skrev "Fel svar utan identifierat mönster" när ett fel saknade uträkningssignalerna P, Ö och M. Korten använder hela klassificeringen med felmodeller och screeningnycklar. I produktion, klass 6, stod därför flera svar på felförståelsekort samtidigt som tabellen skrev att mönster saknades, till exempel 402 − 178 → 134.
+- Logg: Cellen namnger nu felet med samma grupp och samma ord som korten och rutorna, till exempel "Fel svar, pekar på en felförståelse" och "Fel svar, oförklarat". Rutan som visas när man pekar på svaret nämner kortets titel. Regeln finns på ett ställe, `screeningAnswerGroup` och `SCREENING_GROUP_LABELS_SV`. Den används både av korten och av tabellen. Utan klassificering skriver cellen bara "Fel svar". Lärarens bedömning har företräde som förut.
+- Täckning: Inga felmodeller, nycklar eller klassificeringsregler ändrades. Fördelningen mellan grupperna är därför densamma före och efter, och bara tabellens text har ändrats.
+- Verifiering: En ny robotkontroll med 134, kortet Växling över nolla, och 999, oförklarat, var röd mot den gamla cellen: "Fel svar utan identifierat mönster". Med ändringen är den grön. Jag har också kontrollerat skärmbilden av roboten. Därtill gick 13 screeningrobotar igenom med 0 regelbrott. 1395 tester gick igenom, och de två kända NCM-radslutsfelen kvarstår. Build grön.
+- Andra ställen: Elevanalysen bygger egna hypoteser och skriver till exempel "Enstaka svar" när underlaget är tunt. Den formuleringen är svagare men motsäger inte korten. Felförståelsekartan för klassen i Statistik & stöd visar övningssvar. Där kan samma svar stå under "Beräknade förklaringar" med en felmodell och i listan över kunskapsfel med den sparade etiketten "Räknefel" eller "Fel svar utan identifierat mönster". Listan är märkt "historiskt kunskapsfel", men beskrivningarna kan ändå krocka. Den ändringen har inte gjorts och väntar på Simons besked.
+
 ## 2026-11-18: Tabell och felförståelser i ett anrop
 
 - Arbetsmål: belastningen.

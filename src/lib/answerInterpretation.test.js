@@ -94,4 +94,16 @@ describe('speed training and repeated answers (B6, B7)', () => {
     expect(view.counts).toMatchObject({ wrong: 0, hiddenSlips: 1 })
     expect(view.cards).toEqual([])
   })
+
+  it('never calls giving up contradicted by right answers elsewhere (B2 is for misconceptions)', () => {
+    const fact = (i, a, b, answer) => ({ source: 'practice', timestamp: i, ref: `g${i}`, reference: { kind: 'observation', observationId: `g${i}` },
+      question: { domain: 'arithmetic', operation: 'multiplication', skill: 'multiplication', values: { a, b }, promptText: `${a} · ${b}` },
+      answer: { status: answer === a * b ? 'correct' : 'incorrect', studentAnswer: answer, correctAnswer: a * b },
+      context: { contentLevel: 4, contentSkill: 'multiplication' }, interpretation: { category: 'knowledge', patterns: [] } })
+    const entries = addPredictableEvidence([fact(1, 6, 7, 55), fact(2, 4, 6, 55), fact(3, 7, 7, 55),
+      ...[[3, 4], [3, 5], [3, 6], [3, 7], [3, 8], [3, 9]].map(([a, b], i) => fact(10 + i, a, b, a * b))])
+    const supports = entries.filter(entry => entry.answer.status === 'incorrect')
+    expect(modelGroupStatus('answer_55', supports, entries).status).toBe('pattern')
+  })
 })
+

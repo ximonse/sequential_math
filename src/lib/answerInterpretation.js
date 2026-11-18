@@ -66,7 +66,10 @@ export function modelGroupStatus(modelId, supports, entries) {
   const minimum = ERROR_MODELS[modelId]?.minDistinctTasks
   const below = (minimum && distinctTasks(supports) < minimum)
     || (supports.length > 0 && supports.every(isSpeedTrainingEntry) && supportUnits < REPEAT_MINIMUM)
-  const status = below ? 'below' : counterUnits > supportUnits ? 'contradicted' : supportUnits > 1 ? 'pattern' : 'single'
+  // Right answers speak against a way of thinking, not against giving up, a slip or
+  // an observation of the answer: only misconception models can be contradicted (B2).
+  const contradicted = ERROR_MODELS[modelId]?.kind === 'misconception' && counterUnits > supportUnits
+  const status = below ? 'below' : contradicted ? 'contradicted' : supportUnits > 1 ? 'pattern' : 'single'
   return { status, supports, counters, supportUnits, counterUnits }
 }
 

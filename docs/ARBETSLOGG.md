@@ -62,7 +62,11 @@
   - MCP-sidan blir cirka 4 % större.
 - Rättat efter granskning: Dolda svar skickas med status `hidden_slip`, inte `incorrect`. Sidor som laddades före ändringen hoppar då över raden i stället för att krascha. Ett test kontrollerar det.
 - Agentens val: Detaljläsningen av ett enskilt svar räknar fortfarande tolkningen för hela perioden. Testet kräver att den ger samma post som sidläsningen, och svarets grupp beror på elevens övriga svar.
-- Kvar: Simons besked om publicering efter att han sett mätningen. Lärarens val ur listan räknas fortfarande separat i elevrapporten, utan att det har beslutats.
+- Exempel för Simon. Tre motsagda kort, anonymiserade, från riktiga svar:
+  - Angränsande produkt: 7 fel mot 154 jämförbara rätt.
+  - Bara decimaldelen multipliceras: 1 fel mot 3 rätt.
+  - Svarar 55: 5 fel mot 99 rätt. Här fanns ett fel. Att ge upp kan inte motsägas av rätta svar på andra uppgifter. Rättat: bara felförståelsemodeller kan bli motsagda, och ett test kontrollerar det. Siffrorna i elevrapporten är oförändrade, eftersom kortet redan visades under Ger upp.
+- Kvar: Simons besked om publicering efter att han sett mätningen och exemplen. Lärarens val ur listan räknas fortfarande separat i elevrapporten, utan att det har beslutats.
 
 ## 2026-11-18: Nivå vid tabellfel och viktning av upprepade felsvar
 

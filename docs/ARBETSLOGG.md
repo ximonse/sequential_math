@@ -1,5 +1,11 @@
 # Arbetslogg
 
+## 2026-11-18: Nivå vid tabellfel och viktning av upprepade felsvar
+
+- Simons besked: Fel i tabellträning ska inte sänka multiplikationsträningen. Koden gör redan så, vilket agenten kontrollerade: tabellsvaren räknas inte till mastery och inte till aktuellt behov, och de justerar inte nivån. Talkompisar i fritt varv fortsätter att sänka nivån ("1 nej"). Viktning: "all kanske?" och "tre?". Det är infört som B7, preliminärt.
+- Agentens påpekande: Ett feltryck på 5 · 3 inne i en multiplikationsuppställning i vanlig träning räknas som fel i uppställningen och kan sänka nivån. Appen skiljer inte feltryck från räknefel där.
+- Kvar: Simon ska godkänna förslaget, bekräfta B7 och välja ordning.
+
 ## 2026-11-18: B6 rättad och kravet för fel tabellfaktum behålls
 
 - Simons besked: "1, håller med dig" om kravet: det behålls för fel tabellfaktum men tas bort för räknar med starttalet. Om B6: "Tabellträning är också mängdträning, som fri träning." Agentens tolkning "bara tabellträning" var fel och är struken. Simon godkände upplägget i tabellen under B6 i STYRNING avsnitt 10.

@@ -540,6 +540,15 @@ modeller i katalogen och en rad i täckningsrapporten.
      Nivåkolumnen är som koden redan gör. I misstankekolumnen är raden för
      talflyt en ändring: i dag visas en talflytsmodell redan vid ett fel,
      märkt "Enstaka svar".
+     **Simon 2026-11-18:** Fel i tabellträning ska inte sänka
+     multiplikationsnivån. Koden gör redan så. Talkompisar i fritt varv
+     fortsätter att sänka nivån ("1 nej").
+   - **B7, preliminärt** (Simon 2026-11-18: "all kanske?", "tre?"):
+     Talpar, dubblor och talbilder är i synnerhet snabbhetsträning. Enstaka
+     fel och olika felsvar på samma fråga ska väga lätt. Samma felsvar som
+     upprepas ska väga mer. Det gäller troligen all mängdträning, och gränsen
+     är troligen samma felsvar tre gånger på samma uppgift. Ersätter beslutet
+     13/11 (tre fel oavsett svar) och B5. Bekräftas när förslaget godkänns.
 
 ## 11. Arbetsregel för agenter
 

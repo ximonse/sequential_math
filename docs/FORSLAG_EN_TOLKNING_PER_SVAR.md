@@ -75,11 +75,16 @@ dag.
    på samma sätt i screening och elevrapport.
 4. **Lärarens inskrivning (B4).** Analyseras i alla lärarvyer, märkt.
    Täckningsräkningen redovisar elevens eget svar på en egen rad, som R-C säger.
-5. **Samma uppgift flera gånger (B5).** Minst tre fel och fler fel än rätt på
-   uppgiften inom vyns underlag.
-6. **Mängdträning (B6).** All träning utom screening är mängdträning. För
-   tabellträning och talflyt (talkompisar, dubblor, talbilder) blir ett fel en
-   misstanke först när det upprepas. Övrig mängdträning visar ett enstaka fel
+5. **Samma felsvar flera gånger (B7, preliminärt; ersätter B5).** Samma
+   felsvar på samma uppgift tre gånger i mängdträning visas som ett troligt
+   inlärt fel i faktumet. Olika felsvar på samma uppgift och enstaka fel
+   räknas och syns i en sammanfattning men larmar inte. Signalen hålls isär
+   från felförståelsesignalen, där samma sorts fel visas på olika uppgifter
+   (regel 1 och 2). Screening påverkas inte, eftersom varje uppgift besvaras
+   en gång.
+6. **Mängdträning (B6).** All träning utom screening är mängdträning. Talpar,
+   dubblor, talbilder och tabeller är i synnerhet snabbhetsträning. För dem
+   blir ett fel en misstanke först när det upprepas. Övrig mängdträning visar ett enstaka fel
    som "enstaka svar". Screening visar det direkt. Nivåregeln är oförändrad.
    Gruppen tabellträning och talflyt får ett namn i katalogen i stället för
    "snabbhetsträning", och regeln skrivs ut där i stället för i en
@@ -161,5 +166,7 @@ arbetsregeln kräver.
 1. ~~Kravet för starttalet och fel tabellfaktum~~ Besvarad 2026-11-18: kravet
    behålls för fel tabellfaktum men inte för starttalet.
 2. ~~Mängdträning~~ Besvarad 2026-11-18: se B6 i STYRNING avsnitt 10.
-3. **Ordning:** är steg 1–2 (screening först) rätt början, eller vill du ha
+3. **B7:** bekräfta att viktningen gäller all mängdträning, och att
+   gränsen är samma felsvar tre gånger.
+4. **Ordning:** är steg 1–2 (screening först) rätt början, eller vill du ha
    elevrapporten först?

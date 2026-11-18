@@ -4,6 +4,7 @@ import { hasEvidenceTime, screeningEvidenceEntry } from './_pupilScreeningEviden
 import { withTeacherAssessment } from '../src/lib/evidenceTeacherAssessment.js'
 import { screeningPupilAnswers } from '../src/lib/screeningMisconceptions.js'
 import { logUnexpectedDiagnosticError } from './_diagnosticErrorLog.js'
+import { measureRequestStep } from './_requestTiming.js'
 
 // The results table and the misconception cards for one screening in one class,
 // from one read. The cards used to be a second request that started only after
@@ -20,7 +21,9 @@ export async function screeningResults(assignment, studentIds, { store = kv, req
     Promise.all(roster.map(id => store.smembers(`diagnostic_attempts_by_student:${id}`)))
       .catch(error => ({ error }))
   ])
-  return { ...overview, misconceptions: misconceptionPart(assignment, roster, latest, indexes, req) }
+  // Its own timing step: the table now waits for this, so production shows its cost.
+  const misconceptions = await measureRequestStep(req, 'screening-cards', async () => misconceptionPart(assignment, roster, latest, indexes, req))
+  return { ...overview, misconceptions }
 }
 
 function misconceptionPart(assignment, roster, latest, indexes, req) {

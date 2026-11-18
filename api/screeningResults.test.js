@@ -117,6 +117,19 @@ describe('screening results read the table and the misconception cards once', ()
     })
   }
 
+  it('adds little processing time before the table can be sent (dense case, no store latency)', async () => {
+    const { store } = countingStore(classFixture({ pupils: 28, history: 8 }), 0)
+    const median = async read => {
+      const times = []
+      for (let run = 0; run < 5; run++) { const started = performance.now(); await request(store, read); times.push(performance.now() - started) }
+      return times.sort((a, b) => a - b)[2]
+    }
+    const table = await median((assignment, allowed) => diagnosticClassOverview(assignment, allowed, { store }))
+    const results = await median((assignment, allowed) => screeningResults(assignment, allowed, { store }))
+    console.log(`Screening results, processing for 112 answers: table ${table.toFixed(0)} ms, table and cards ${results.toFixed(0)} ms`)
+    expect(results - table).toBeLessThan(500)
+  })
+
   it('keeps the teacher assessment beside the observed answer and sends no saved originals with the cards', async () => {
     vi.useFakeTimers()
     const counting = countingStore(classFixture({ pupils: 3 }))

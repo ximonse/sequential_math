@@ -117,7 +117,7 @@ och `view=misconceptions` finns kvar för sidor som laddats före ändringen.
 Före ändringen startade felförståelseanropet först när tabellen hade kommit.
 Det läste sedan om nästan allt som tabellen redan hade läst. Syntetiskt, med 50 ms
 per databasanrop och 28 elever: produktionslikt fall 268 → 156 anrop och 30 → 13
-sekventiella varv till korten. Tiden till tabellen var oförändrad: 13 varv. Tätt
+sekventiella varv till korten. Antalet läsvarv till tabellen var oförändrat: 13. Korten bearbetas nu innan tabellen skickas. Det tog 0–16 ms för 112 svar. Tätt
 fall: 2068 → 936 anrop och 65 → 13 varv. Detta är ett lokalt prov av läsarbetet.
 Det är ingen uppmätt produktionstid. I produktion visar `Server-Timing` stegen
-`class-access`, `class-pupils`, `assignment-list` och `screening-results`.
+`class-access`, `class-pupils`, `assignment-list`, `screening-results` och `screening-cards`.

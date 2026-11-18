@@ -4040,6 +4040,45 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "interpretation-review",
+      "area": "Felförståelser",
+      "title": "En tolkning per elevsvar i alla lärarvyer",
+      "kind": "beslut",
+      "status": "Beslut behövs",
+      "purpose": "Läraren ska få samma bild av elevens förståelse i alla vyer. Rätta svar ska kunna väga upp enstaka fel.",
+      "next": "Simon svarar på B1–B6 i granskningen. Därefter skrivs ett separat förslag om en gemensam tolkning per svar.",
+      "acceptance": "Screeningkort, tabell, elevrapport, felförståelsekarta, lärartabeller och MCP läser samma tolkning. Avsiktliga skillnader finns i ett dokument med källa. Ett test jämför screeningkort och elevrapport på samma svar.",
+      "decision": "2026-11-18: Simon bad om en noggrann granskning utan kodändringar, där tidigare beslut får ifrågasättas.",
+      "evidence": "docs/GRANSKNING_TOLKNING_AV_ELEVSVAR_2026-11-18.md: åtta tolkningskällor och elva krockar, varav fem allvarliga. K4 är bekräftad i test: ett svar som läraren skrivit in blir obesvarat i korten men en misstanke i elevrapporten. Granskningen ändrade ingen kod.",
+      "issue": "",
+      "requires": [
+        "screening-cell-matches-cards"
+      ],
+      "affects": [],
+      "tasks": [
+        {
+          "id": "interp-review-done",
+          "text": "Granskning med karta, krockar och beslut att pröva.",
+          "done": true
+        },
+        {
+          "id": "interp-decisions",
+          "text": "Simons svar på B1–B6.",
+          "done": false
+        },
+        {
+          "id": "interp-proposal",
+          "text": "Förslag om en gemensam tolkning per svar, inklusive rätta svar som motvikt.",
+          "done": false
+        },
+        {
+          "id": "interp-doc",
+          "text": "Ett flödesdokument som ersätter motsvarande delar i äldre dokument.",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [
@@ -4946,6 +4985,11 @@
     {
       "source": "screening-results-one-read",
       "target": "screening-cell-matches-cards",
+      "kind": "kräver"
+    },
+    {
+      "source": "screening-cell-matches-cards",
+      "target": "interpretation-review",
       "kind": "kräver"
     }
   ],

@@ -1,5 +1,12 @@
 # Arbetslogg
 
+## 2026-11-18: Granskning av tolkningen av elevsvar
+
+- Simons besked: Granska om felförståelseanalysen och presentationen är harmoniska och har dokumenterade beroenden och flöden. Tidigare beslut får ifrågasättas. Var noggrann och linda inte in något. Granskningen ändrar ingen kod.
+- Logg: Rapporten ligger i `docs/GRANSKNING_TOLKNING_AV_ELEVSVAR_2026-11-18.md`. Den beskriver åtta tolkningskällor och elva krockar, av vilka fem är allvarliga. Den tar upp sex beslut att pröva, B1–B6, och granskar agentens egna ändringar 17–18/11.
+- Rättelse: Agenten påstod 18/11 att fel som klassats som ouppmärksamhet inte sänker elevens nivå. Det stämmer inte. Mastery räknar dem som fel, och den adaptiva svårigheten sänks mindre.
+- Parkerat: Inget byggs förrän Simon har svarat på B1–B6 och godkänt ett separat förslag om en gemensam tolkning per svar.
+
 ## 2026-11-18: Fel räknesätt räknas som kunskapsfel i lärarvyerna (val A)
 
 - Simons besked: Publicera felförståelsekartan (1, ja). För fel räknesätt som sparats som ouppmärksamhet gäller val A: bara lärarvyerna ändras, inte elevens nivå eller uppgiftsval.

@@ -1,5 +1,13 @@
 # Arbetslogg
 
+## 2026-11-18: Felförståelsekartan för klassen visar aktuell förklaring och genomgång av motsägelser
+
+- Simons besked: Det nya ska synas när det finns. Leta vidare efter liknande motsägelser. En tydlig bild av elevens förståelse utan motsägelser genom hela appen är bland det viktigaste.
+- Logg: I felförståelsekartan för klassen, Statistik & stöd, namnges ett fel svar i listan nu med den aktuella förklaringen, märkt "beräknad förklaring", när en sådan finns. Det är samma förklaring som i avsnittet "Aktuella modellkandidater" ovanför. Den sparade etiketten, till exempel "Räknefel" eller "Missuppfattning", visas bara när inget förklarar svaret nu. Chippen heter "Historiska felmarkeringar utan aktuell förklaring" och räknar bara sådana svar. Inga sparade elevdata ändras.
+- Verifiering: Roboten `teacher-evidence-consistency` var röd mot den gamla vyn. Listan visade då "historisk kategorimarkering, Missuppfattning" för 376, medan förklaringen ovanför var "Större minus mindre i varje kolumn". Med ändringen är roboten grön, och skärmbilden är granskad. Ett enhetstest kontrollerar det förklarade och det oförklarade fallet. 1396 tester gick igenom, utom de två kända NCM-radslutsfelen. Build är grön. Inga felmodeller ändrades, så täckningen är oförändrad. Ändringen är inte publicerad.
+- Genomgång av andra vyer: Elevanalysens reservhypoteser använder bara sparade mönster för svar utan aktuell förklaring, alltså samma princip. Exporten visar historiska och aktuella fält sida vid sida med tydliga namn. Dialogen i elevgenomgången beskriver uträkningens signaler och motsäger inte korten.
+- Fynd som kräver beslut: Övningssvar med fel räknesätt, till exempel 402 − 178 = 580, sparas som "ouppmärksamhet" av `isOperationSwapInattention`. Den aktuella klassificeringen kallar samma svar "fel räknesätt" (`operation_swap`). Enligt Simons beslut 4 den 12 november är fel räknesätt en felförståelse. Felet räknas som "Ouppmärksamhet" i Elevprofilens nivåtabell och NCM-panelen. Samma kategori gör också att felet inte sänker mastery och inte styr den adaptiva nivån. Ändringen är inte gjord och väntar på besked.
+
 ## 2026-11-18: Tabellen beskriver fel svar som felförståelsekorten
 
 - Simons besked: Fixa att tabellen och korten skriver olika saker, trots att det ligger utanför arbetsmålet belastningen. Kontrollera också om samma sak sker på andra ställen. Publicera när arbetet är klart och ingen återkoppling behövs.

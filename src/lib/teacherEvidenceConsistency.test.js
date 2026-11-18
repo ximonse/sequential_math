@@ -60,4 +60,21 @@ describe('one current observation across teacher readers', () => {
     expect(evidence.entries[0].interpretation.patterns).toEqual(['historic_first_match'])
     expect(JSON.stringify(profile)).toBe(before)
   })
+  it('lets the class heatmap list name a wrong answer by its current explanation, not a contradicting saved label', () => {
+    const base = { domain: 'arithmetic', operation: 'subtraction', targetLevel: 4, difficulty: { conceptual_level: 4 },
+      values: { a: 402, b: 178 }, correctAnswer: 224, correct: false, errorCategory: 'knowledge',
+      patterns: ['calculation_error'], errorDetail: 'Fel svar utan identifierat mönster.' }
+    const profile = { studentId: 'P', name: 'Synthetic', problemLog: [
+      { ...base, observationId: 'EXPLAINED', timestamp: 10, studentAnswer: 376 },
+      { ...base, observationId: 'UNEXPLAINED', timestamp: 20, studentAnswer: 999 }] }
+    const cell = buildHeatmapData([profile]).subtraction[0].cells.find(cell => cell.level === 4)
+    const explained = cell.wrongAnswers.find(answer => answer.studentAnswer === 376)
+    expect(explained.currentModelIds).toContain('smaller_minus_larger')
+    expect(cell.currentCandidates.map(([id]) => id)).toEqual(expect.arrayContaining(explained.currentModelIds))
+    expect(cell.wrongAnswers.find(answer => answer.studentAnswer === 999).currentModelIds).toEqual([])
+    // The saved label still counts for the answer nothing explains now, and only for it.
+    expect(cell.topPatterns).toEqual(['calculation_error'])
+    const onlyExplained = buildHeatmapData([{ ...profile, problemLog: [profile.problemLog[0]] }]).subtraction[0].cells.find(cell => cell.level === 4)
+    expect(onlyExplained.topPatterns).toEqual([])
+  })
 })

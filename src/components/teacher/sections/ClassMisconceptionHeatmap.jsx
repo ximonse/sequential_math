@@ -261,7 +261,7 @@ function CellDetailModal({ cell, studentName, onClose }) {
 
         {cell.topPatterns.length > 0 && (
           <div className="mb-3">
-            <p className="text-[11px] font-semibold text-gray-600 mb-1">Historiska felmarkeringar</p>
+            <p className="text-[11px] font-semibold text-gray-600 mb-1">Historiska felmarkeringar utan aktuell förklaring</p>
             <div className="flex flex-wrap gap-1">
               {cell.topPatterns.map(pattern => (
                 <span key={pattern} className="inline-block bg-orange-50 border border-orange-200 text-orange-700 rounded px-2 py-0.5 text-[10px]">{formatPatternLabel(pattern)}</span>
@@ -276,7 +276,10 @@ function CellDetailModal({ cell, studentName, onClose }) {
           </p>
           <div className="space-y-1 max-h-80 overflow-y-auto pr-1">
             {visibleWrongAnswers.map((example, index) => {
-              const errorTypeLabel = example.patterns.length > 0
+              // The current explanation, when there is one, is what the candidates above show too.
+              const explained = example.currentModelIds?.length > 0
+              const errorTypeLabel = explained ? example.currentModelIds.map(id => CONTRAST_LABELS_SV[id] || id).join(', ')
+                : example.patterns.length > 0
                 ? example.patterns.map(formatPatternLabel).join(', ')
                 : example.errorDetail || (example.errorCategory === 'misconception' ? 'Missuppfattning' : 'Kunskapsfel')
               const isMisconception = example.errorCategory === 'misconception'
@@ -289,8 +292,8 @@ function CellDetailModal({ cell, studentName, onClose }) {
                     <span className="text-red-600 font-semibold">{example.studentAnswer ?? '?'}</span>
                     <span className="text-gray-400 text-[10px]">rätt:</span>
                     <span className="text-green-700 font-semibold">{example.correctAnswer ?? '?'}</span>
-                    <span className={`ml-auto text-[9px] rounded px-1 shrink-0 ${isMisconception ? 'bg-red-100 text-red-600' : 'bg-gray-200 text-gray-600'}`}>
-                      {isMisconception ? 'historisk kategorimarkering' : 'historiskt kunskapsfel'}
+                    <span className={`ml-auto text-[9px] rounded px-1 shrink-0 ${explained ? 'bg-amber-100 text-amber-900' : isMisconception ? 'bg-red-100 text-red-600' : 'bg-gray-200 text-gray-600'}`}>
+                      {explained ? 'beräknad förklaring' : isMisconception ? 'historisk kategorimarkering' : 'historiskt kunskapsfel'}
                     </span>
                   </div>
                   <div className="text-[10px] text-orange-700 font-mono">{errorTypeLabel}</div>

@@ -39,7 +39,8 @@ export function screeningCardAnswers(entries, exclusions = new Map()) {
   return [...screeningPupilAnswers(kept), ...hidden.map(entry => ({ assignmentItemId: entry.reference?.assignmentItemId ?? null,
     taskId: entry.question?.taskId ?? null, promptSv: entry.question?.promptSv ?? entry.question?.promptText ?? '',
     studentAnswer: entry.answer?.studentAnswer ?? null, correctAnswer: entry.answer?.correctAnswer ?? null,
-    status: entry.answer?.status, hiddenSlip: true }))]
+    // Not 'incorrect': pages loaded before this field existed skip the row instead of failing.
+    status: 'hidden_slip', pupilStatus: entry.answer?.status ?? null, hiddenSlip: true }))]
 }
 
 const OTHER = ['contradicted', 'gave_up', 'repeated_task', 'observation', 'input', 'without_link', 'unexplained']

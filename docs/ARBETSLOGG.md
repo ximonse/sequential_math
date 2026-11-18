@@ -35,7 +35,34 @@
   - Ett enda svar på en modell utan krav ligger kvar som kort märkt "Enstaka svar" med uppföljning, som förut. Bara svar under ett krav flyttas till "Enstaka svar, för lite underlag".
   - Motsagda misstankar visas utan uppföljningsknapp.
   - 3 + 3 = 0 räknas som "svarar 0" även i täckningen, som elevrapporten redan gjorde.
-- Kvar: Kontroll i produktion. Lärarens val ur listan räknas fortfarande separat i elevrapporten. Det är inget eget beslut.
+- Riktiga elevsvar, som förslaget kräver före publicering:
+  - Underlag: Kumlaby åk 6, 4, 5 och 6, 15/8–18/11. Det är 110 elever, 18 051 svar och 2 918 fel. Inga testklasser, blindtester eller syntetiska klasser ingår.
+  - Före betyder kod vid 80d20ff, som har samma klassning som i produktion. Efter betyder 68eda0f.
+  - Jämförelsen gjordes på samma svar. Elevdata ligger utanför repot.
+
+  | Mått | Före | Efter |
+  | --- | ---: | ---: |
+  | Täckning: felförståelse | 519 | 511 |
+  | Täckning: samma felsvar flera gånger | 700 | 189 |
+  | Täckning: observation | 277 | 349 |
+  | Täckning: inmatning | 97 | 84 |
+  | Täckning: ger upp | 97 | 148 |
+  | Täckning: oförklarade | 1 228 | 1 637 |
+  | Elevrapport: misstankar med mönster | 134 | 69 |
+  | Elevrapport: enstaka svar | 136 | 104 |
+  | Elevrapport: för lite underlag | – | 86 |
+  | Elevrapport: motsagda | – | 99 |
+  | Elevrapport: inmatning och svar utan metod | 198 | 110 |
+  | Elevrapport: upprepade uppgifter | 162 | 62 |
+  | Elevrapport: oförklarade som räknas | 101 | 1 637 |
+  | Elever med minst en misstanke | 54 | 44 |
+
+  - 52 elever har kort med för lite underlag och 42 elever har motsagda kort.
+  - Rapporten tar 6 ms per elev, både före och efter.
+  - MCP-sidan blir cirka 4 % större.
+- Rättat efter granskning: Dolda svar skickas med status `hidden_slip`, inte `incorrect`. Sidor som laddades före ändringen hoppar då över raden i stället för att krascha. Ett test kontrollerar det.
+- Agentens val: Detaljläsningen av ett enskilt svar räknar fortfarande tolkningen för hela perioden. Testet kräver att den ger samma post som sidläsningen, och svarets grupp beror på elevens övriga svar.
+- Kvar: Simons besked om publicering efter att han sett mätningen. Lärarens val ur listan räknas fortfarande separat i elevrapporten, utan att det har beslutats.
 
 ## 2026-11-18: Nivå vid tabellfel och viktning av upprepade felsvar
 

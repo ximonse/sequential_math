@@ -84,4 +84,14 @@ describe('speed training and repeated answers (B6, B7)', () => {
     expect(view.other.contradicted).toHaveLength(2)
     expect(view.counts.wrong).toBe(2)
   })
+
+  it('lists an answer hidden as a slip on its own line, not as a wrong answer, so older pages skip it (K5)', async () => {
+    const { screeningCardAnswers } = await import('./screeningMisconceptions.js')
+    const wrong = screening('W1', 402, 178, 376)
+    const answers = screeningCardAnswers([wrong], new Map([['screening:W1', { key: 'screening:W1' }]])).map((answer, position) => ({ ...answer, position }))
+    expect(answers).toEqual([expect.objectContaining({ status: 'hidden_slip', pupilStatus: 'incorrect', hiddenSlip: true })])
+    const view = screeningMisconceptionView([{ studentId: 'P', answers }])
+    expect(view.counts).toMatchObject({ wrong: 0, hiddenSlips: 1 })
+    expect(view.cards).toEqual([])
+  })
 })

@@ -69,8 +69,8 @@ använde. Lärarvyn hämtar den lätta katalogen, men servern läser fortfarande
    anrop för den klassen, inte för alla.
 3. **Screeningresultat.** Läs bara den screening som visas och en gång för
    tabell och felförståelser. *Klart när:* en screening läses med ett anrop
-   och tiden halveras. *Lokalt 2026-11-18:* ett anrop (`view=results`), se
-   avsnitt 8. Tiden mäts efter publicering.
+   och tiden halveras. *Produktion 2026-11-18 (97edf4b):* ett anrop
+   (`view=results`), 6,45 → 3,07 s till tabell och kort, se avsnitt 8.
 4. **Elevens sparande.** Spara nya svar utan att läsa och skriva hela
    profilen varje gång. Störst förändring och störst risk; kräver eget
    förslag före bygge. *Klart när:* ett sparande läser och skriver bara det
@@ -121,3 +121,5 @@ sekventiella varv till korten. Antalet läsvarv till tabellen var oförändrat: 
 fall: 2068 → 936 anrop och 65 → 13 varv. Detta är ett lokalt prov av läsarbetet.
 Det är ingen uppmätt produktionstid. I produktion visar `Server-Timing` stegen
 `class-access`, `class-pupils`, `assignment-list`, `screening-results` och `screening-cards`.
+
+Produktion 2026-11-18 (97edf4b): Mätningen gjordes på en screening med 28 rader och tre varv per version. Tabell och kort i följd tog 6,45 s med de gamla anropen. Det nya anropet tog 3,07 s. Tabellen ensam tog 3,04 s med det gamla anropet. Server-Timing: `class-pupils`, kontrollen av elevlistan, tar cirka 1,7 s av 2,9 s. Det är nästa kandidat. Korten tar 1 ms.

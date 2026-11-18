@@ -3961,12 +3961,12 @@
       "area": "Belastning",
       "title": "Tabell och felförståelser i ett anrop",
       "kind": "funktion",
-      "status": "Lokalt klart",
+      "status": "Byggt",
       "purpose": "Felförståelsekorten ska synas samtidigt som resultattabellen, och servern ska inte läsa samma försök två gånger.",
-      "next": "Simons besked om publicering. Därefter mät tid till tabell och kort i produktion med Server-Timing (steget screening-results) på samma screening som 2026-11-17.",
+      "next": "Kontrollera i webbläsaren att korten syns samtidigt som tabellen. Föreslå därefter en lättare kontroll av klassens elever (class-pupils, cirka 1,7 s av 2,9 s).",
       "acceptance": "En screening och klass läses med ett anrop. Tiden till tabellen ökar inte. Samma elever, svar, kort och lärarbedömningar som de två gamla anropen. Läraren kommer från kort till rätt svar och original, och sparad bedömning syns efter omladdning.",
-      "decision": "2026-11-18: Simon gav uppdraget att minska väntan från vald screening till synliga kort, med gemensam läsning om dubbelarbetet dominerar. Agentens val: korten byggs ur tabellens egna läsningar; de gamla vyerna finns kvar för öppna flikar.",
-      "evidence": "Mätning före: korten begärdes först när tabellen kommit, och felförståelseanropet upprepade nästan alla tabellens databasläsningar. Lokalt, syntetiskt (50 ms per databasanrop, 28 elever): produktionslikt fall 268 → 156 anrop, sekventiella varv till korten 30 → 13, till tabellen 13 → 13 (läsvarv; kortens bearbetning 0–16 ms för 112 svar). Tätt fall 2068 → 936 anrop, 65 → 13 varv. Samma tabell och kort som de gamla vägarna i testet. 1395 tester gröna. Två NCM-fel beror på CRLF i ny Windows-checkout och passerar vid 80d20ff med LF. Build grön och 30 robotar gröna. Ej pushat, ej i produktion.",
+      "decision": "2026-11-18: Simon gav uppdraget att minska väntan från vald screening till synliga kort, med gemensam läsning om dubbelarbetet dominerar. Agentens val: korten byggs ur tabellens egna läsningar; de gamla vyerna finns kvar för öppna flikar. 2026-11-18: Simon gav beskedet \"Kör produktion\".",
+      "evidence": "Mätning före: korten begärdes först när tabellen kommit, och felförståelseanropet upprepade nästan alla tabellens databasläsningar. Lokalt, syntetiskt (50 ms per databasanrop, 28 elever): produktionslikt fall 268 → 156 anrop, sekventiella varv till korten 30 → 13, till tabellen 13 → 13 (läsvarv; kortens bearbetning 0–16 ms för 112 svar). Tätt fall 2068 → 936 anrop, 65 → 13 varv. Samma tabell och kort som de gamla vägarna i testet. 1395 tester gröna. Två NCM-fel beror på CRLF i ny Windows-checkout och passerar vid 80d20ff med LF. Build grön och 30 robotar gröna.\n2026-11-18 produktion: GitHub master 97edf4b, Verify grön, Vercel sekvens Production klar. En screening med 28 rader och tre varv per version. Median gamla anrop i följd 6,45 s (tabell 3,04 + kort 3,42). Nytt anrop 3,07 s. Server-Timing: class-pupils cirka 1,7 s, screening-results cirka 0,5 s, screening-cards 1 ms. API-tid utan rendering.",
       "issue": "",
       "requires": [
         "screening-scoped-misconception-read"
@@ -3993,7 +3993,7 @@
         {
           "id": "results-one-read-production",
           "text": "Mät tid till tabell och kort i produktion.",
-          "done": false
+          "done": true
         }
       ]
     }

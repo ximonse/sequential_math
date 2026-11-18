@@ -78,11 +78,11 @@ Allvar: **H** betyder att läraren får motsägande besked om elevens förståel
 **M** betyder att det kan leda läraren fel men är märkt eller ovanligt.
 **L** gäller formulering eller kosmetik.
 
-**K1 (H). Ett enstaka fel räknesätt beskrivs på fyra sätt.**
+**K1 (H). Ett enstaka fel räknesätt beskrivs på fyra sätt.** *Testat.*
 Exempel: en övningsuppgift 402 − 178 = 580, eller samma fel på en
 screeningfråga.
 
-- Screeningkortet: felförståelse "Annat räknesätt", märkt *en gång i
+- Screeningkortet: felförståelsekortet "Fel räknesätt", märkt *en gång i
   screeningen* (`screeningMisconceptions.js:28`, catalog `screeningShowsSingle`).
 - Elevrapporten: "Troligen slarv eller inmatning", eftersom kravet på tre
   uppgifter inte är uppfyllt (`PupilAnalysisReportView.jsx:71`, rubriken på
@@ -98,7 +98,16 @@ screeningfråga.
 
 Katalogen säger samtidigt att fel räknesätt *inte* är slarv (`catalog.js:33`).
 
-**K2 (H). Rätta svar väger inte upp fel.**
+Dessutom har lagren olika räckvidd. Den sparade kategorin ouppmärksamhet
+omfattar alla fyra omvända räknesätt: + och −, × och ÷ (`getSwapAnswer`).
+Modellen "Annat räknesätt" prövar bara addition och subtraktion. En
+multiplikation som eleven räknat som division förblir därför ouppmärksamhet
+i lärartabellerna, också efter val A, och saknar aktuell förklaring.
+
+**K2 (H). Rätta svar väger inte upp fel.** *Testat:* två felsvar som passar
+"Större minus mindre" och åtta rätta svar på jämförbara subtraktioner på samma
+nivå ger "Misstanke". Rapporten visar "5 rätt" eftersom motexemplen kapas vid
+fem (`pupilRuleHypotheses.js:70`). Den verkliga siffran 8 syns aldrig.
 - Elevrapporten blir "Misstanke" vid två felsvar, oavsett antalet rätta svar på
   jämförbara uppgifter (`pupilAnalysis.js:85`). Motexemplen visas men påverkar
   inte bedömningen. Det enda undantaget är modellen "Kvoten blir ett fel"
@@ -149,8 +158,8 @@ kvar tills jag själv ändrar det") mellan vyer.
 `pupilAnalysis.js:89` tar `entries.slice(0, 20)` ur en lista sorterad från
 äldst. Texten säger "Bland periodens första 20 svar", alltså ärligt, men ett
 oförklarat fel bland senare svar syns inte i rapporten. Det går emot R-C
-("Inget fel får försvinna"). Styrdokumentet säger att rapportens tak är lösta i
-steg 4, men det här taket finns kvar.
+("Inget fel får försvinna"). Styrdokumentet nämner taket på åtta kort och
+summatestet som lösta, men inte det här taket. Det har inte behandlats.
 
 **K7 (M). Signalen M gäller en enda uppgift men presenteras som allmän.**
 `diagnosticSubtractionPattern.js:16` gäller bara uppgift S2 (402 − 178).
@@ -191,64 +200,131 @@ Om det är avsikten är det inte dokumenterat som en avsikt.
   så slumprisken är låg.
 - Beslut 4 tog över kravet ("med samma krav på tre olika uppgifter").
 - Sedan sorterar elevrapporten allt under tre uppgifter som "Troligen slarv",
-  medan screeningen visar samma svar som felförståelse efter en gång.
+  medan screeningen visar samma svar som felförståelse efter en gång. Att
+  rapporten behöll kravet var **agentens val** 14/11, inte ditt beslut
+  (STYRNING rad 403–405). Ditt besked var bara "tydligt fel räknesätt".
 - Kravet kommer alltså från ett annat sammanhang.
+
+*Exempel:* Eleven svarar 402 − 178 = 580 en gång. Screeningen säger fel
+räknesätt, och rapporten säger troligen slarv.
 
 *Fråga:* Gäller kravet på tre uppgifter modeller med låg slumprisk? Och ska
 "under kravet" heta *för lite underlag* i stället för *troligen slarv*?
+
+*Agentens förslag:* Kravet behålls bara för modeller med hög slumprisk.
+Under kravet står "enstaka svar, för lite underlag", aldrig "slarv".
+Samma regel i alla vyer.
 
 **B2. Villkoret att rätta svar ska väga upp föll bort.**
 Förslaget till beslut 3 innehöll "fler träffar än jämförbara rätta svar". I
 genomförandet står bara "togs inte med" (STYRNING, rad 487, commit `331ad37`).
 Det framgår inte om du valde bort det. Det du sa i dag pekar på att det behövs.
 
+*Exempel:* Två fel av typen större minus mindre och åtta rätt på jämförbara
+subtraktioner ger i dag "Misstanke".
+
 *Fråga:* Ska rätta svar på jämförbara uppgifter kunna dämpa en misstanke, i
-alla vyer? Hur mycket? Exempelvis fler felträffar än jämförbara rätt, som
-förslaget löd.
+alla vyer? Hur mycket?
+
+*Agentens förslag:* När de jämförbara rätta svaren är fler än felträffarna
+visas misstanken som "motsagd av rätta svar", lägre ner och med båda
+siffrorna. Den döljs inte. Felen syns alltså fortfarande, men larmar inte.
 
 **B3. "Fel räknesätt är en felförståelse" (beslut 4) står bredvid en öppen fråga.**
 Din fråga från 12/11, "tecknet, uppmärksamheten eller när man adderar
 respektive subtraherar?", är inte besvarad. Samtidigt sparar appen fel
-räknesätt som ouppmärksamhet och dämpar den adaptiva sänkningen.
+räknesätt som ouppmärksamhet och dämpar den adaptiva sänkningen. Det sker för
+alla fyra omvända räknesätt, medan modellen bara prövar + och −.
+
+*Exempel:* 47 + 25 = 22 i vanlig träning. Det sparas som ouppmärksamhet, ger en
+mindre sänkning av nivån, och screeningkortet skulle säga felförståelse.
 
 *Fråga:* Vad ska fel räknesätt vara tills frågan är prövad: felförståelse,
 uppmärksamhet, eller "ospecificerat, pröva"? Ska det skilja mellan
 mängdträning och screening?
+
+*Agentens förslag:* Lärarvyerna kallar det "fel räknesätt", en egen
+beskrivning som inte säger om det är förståelse eller uppmärksamhet, med din
+öppna fråga som nästa steg. Hur nivån påverkas beslutas separat i B6.
 
 **B4. Lärarens inskrivna svar.**
 Den 12/11 beslutade du att analysen ska läsa lärarens bedömning ("annars blir
 analysen fel"). Täckningsregeln R-C utgår från elevens eget svar. Screeningkorten
 följer R-C och rapporten följer 12/11-beslutet.
 
+*Exempel:* Rutan är tom, räknehäftet visar 376 och läraren skriver in 376.
+Korten säger "obesvarad", och rapporten säger "större minus mindre".
+
 *Fråga:* När läraren har skrivit in vad eleven skrev i räknehäftet, ska korten
 analysera det svaret?
+
+*Agentens förslag:* Ja, i alla lärarvyer, märkt "lärarens inskrivning".
+Täckningsräkningen behåller elevens eget svar på en egen rad, som R-C säger.
 
 **B5. "Samma uppgift fel tre gånger" (13/11).**
 Ditt exempel var 6 · 7 fel tre gånger. Regeln ser inte de rätta svaren.
 
+*Exempel:* 6 · 7 fel tre gånger och rätt 27 gånger ger "Faktumet sitter inte ännu".
+
 *Fråga:* Ska regeln kräva att felen är fler än, eller en viss andel av, svaren
 på uppgiften?
+
+*Agentens förslag:* Samma regel som i B2. Visa bara när felen är minst tre och
+fler än de rätta svaren under de senaste veckorna. Annars visas uppgiften under
+"enstaka fel".
 
 **B6. Vad räknas som mängdträning (30/10 och i dag)?**
 Du sa i dag att fel i mängdträningen inte ska påverka nivån. Koden gör så för
 tabellträning men inte för talkompisar och dubblor i vanlig träning (K11).
 
+*Exempel:* Talkompisar i vanlig träning styr i dag nivån och mastery.
+Tabellträning gör det inte.
+
 *Fråga:* Vilka aktiviteter avser du?
 
-## 6. Avsiktliga skillnader
+*Agentens förslag:* Inget. Det är ditt beslut om elevernas träning, och
+agenten har inget underlag för hur talkompisarna bör räknas.
 
-De här skillnaderna är avsiktliga och har en angiven källa. Ingen av dem är
-samlad i ett dokument:
+## 6. Avsiktliga skillnader och vem som beslutade dem
+
+Ingen av dem är samlad i ett dokument. *Källa* skiljer mellan Simons beslut,
+agentens val som Simon godtog eller aldrig tog ställning till, och sådant som
+bara finns i koden.
 
 | Skillnad | Källa |
 | --- | --- |
-| Tabellträning påverkar varken mastery eller nivå, men svaren sparas och analyseras | Kod `evidenceContract.js:75` och `usePracticeCoreActions.js:318`. Simon i dag. |
-| Snabbhetsträning ger inga följdfrågor, och enstaka slarv sammanfattas | Simon 2026-10-30, `practiceModes.js` |
-| Fel räknesätt visas efter en gång i screening men kräver tre uppgifter i elevrapporten | Simon 2026-11-14 och agentens val, STYRNING steg 5 |
-| Täckningen räknar elevens eget svar, och lärarbedömda svar redovisas separat | R-C |
-| Lärarens bedömning läses av analysen | Simon 2026-11-12, `evidenceTeacherAssessment.js` |
-| Historiska etiketter bevaras och skrivs aldrig om | `practiceObservation.js`, LEARNING_SYSTEM_SYNTHESIS F01 |
-| Lärarens val ur listan gör svaret till felförståelse i screening men inte i elevrapporten | STYRNING steg 4, 13/11 |
+| Tabellträning påverkar varken mastery eller nivå, men svaren sparas och analyseras | Koden (`evidenceContract.js:75`, `usePracticeCoreActions.js:318`). Simon bekräftade avsikten i chatt 18/11. |
+| Snabbhetsträning ger inga följdfrågor, och enstaka slarv sammanfattas | Simon 2026-10-30, enligt kodkommentar i `practiceModes.js`. Inte kontrollerat i loggen. |
+| Fel räknesätt visas efter en gång i screening | Simon 2026-11-14 ("tydligt fel räknesätt") |
+| Elevrapporten behåller kravet på tre uppgifter för fel räknesätt | **Agentens val** 2026-11-14 (STYRNING rad 403–405) |
+| Täckningen räknar elevens eget svar | R-C, antaget dokument 11/11 |
+| Lärarbedömda svar och svar dolda som slarv redovisas på egna rader | Texten i R-C. Ingen beslutsdag angiven. |
+| Analysen läser lärarens bedömning | Simon 2026-11-12, enligt kodkommentar i `evidenceTeacherAssessment.js` |
+| Lärarens val ur listan gör svaret till felförståelse | Simon 2026-11-13 ("välja ut lista") |
+| ... men bara i screeningvyn, inte i elevrapporten | Genomförandet (STYRNING rad 332–333). **Inget beslut hittat.** |
+| Historiska etiketter bevaras och skrivs aldrig om | Agentens rekommendation (synteserapporten 4/11). Inget beslut hittat. |
+| 84 / 6 = 12 visas som känt fel utan felförståelse | **Agentens val** 2026-11-14, i väntan på din bekräftelse |
+
+## 6b. Samma sak med olika ord
+
+Samma begrepp har olika namn i olika vyer. Det gör det svårt för läraren att
+se att det handlar om samma sak.
+
+| Begrepp | Screeningkort och tabell | Elevrapport | Felförståelsekartan | Individanalys och NCM | Fråga igen |
+| --- | --- | --- | --- | --- | --- |
+| Appen tror att eleven tänker fel på ett bestämt sätt | "pekar på en felförståelse", kortets titel | "Misstanke", "Misstänkta felförståelser", "beräknad kandidat" | "beräknad förklaring", "Aktuella modellkandidater" | "Kunskapsfel" | – |
+| Appen känner igen felet men har ingen felförståelse | "Felmodell utan kopplad felförståelse", "känt fel utan felförståelse" | "Felmodell: …" under kortet | modellens namn | "Kunskapsfel" | – |
+| Mönster men för lite underlag | "Enstaka fel som liknar ett mönster", "En gång i screeningen" | "Enstaka svar" (ett svar) eller "Troligen slarv eller inmatning" (under tre uppgifter) | – | – | – |
+| Slarv eller inmatning | "Inmatning", "Rätt tänkt men fel skrivet", Ö "bevisar inte slarv" | "Troligen slarv eller inmatning", "Dölj som slarv" | – | "Ouppmärksamhet" | "troligen slarv eller stress" |
+| Ingen förklaring | "Oförklarade", "Fel svar, oförklarat" | "Fel som appen inte kan förklara" | "historiskt kunskapsfel", sparad etikett | "Kunskapsfel" | "Annat fel – osäker, kanske gissning" |
+| Den gamla analysens etikett | – | "Tidigare felmarkering" | "historisk kategorimarkering", "Missuppfattning", "⚠ historiska kategorimarkeringar" | – | – |
+
+Två ord bär olika betydelser:
+
+- **"Slarv"** används både om inmatningsfel (Ö, rutan Inmatning) och om
+  mönster med för lite underlag (elevrapporten).
+- **"Kunskapsfel"** betyder i tabellerna "allt som inte är ouppmärksamhet".
+  Det omfattar både felförståelser och oförklarade fel.
 
 ## 7. Mina egna ändringar 17–18/11, granskade på samma sätt
 
@@ -264,7 +340,8 @@ samlad i ett dokument:
      screening") för att hitta fel räknesätt. Det är en annan betydelse. Den
      råkar ge rätt modeller i dag men går sönder om flaggan används för något
      annat.
-  3. Den bygger på beslut 4, som har en öppen fråga (B3). Efter ändringen säger
+  3. Den bygger på beslut 4, som har en öppen fråga (B3). Den täcker bara +
+     och −, medan ouppmärksamhet sparas för alla fyra räknesätt (K1). Efter ändringen säger
      tabellerna kunskapsfel men elevrapporten "troligen slarv" för ett enstaka
      fel räknesätt. K1 fick ett läge till.
 - **Fel påstående från mig 18/11.** Jag skrev att fel som klassats som

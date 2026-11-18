@@ -508,10 +508,11 @@ modeller i katalogen och en rad i täckningsrapporten.
    - **B1.** Kravet på tre olika uppgifter gäller bara modeller med hög
      slumprisk. Under kravet heter det "enstaka svar, för lite underlag",
      aldrig "slarv". Samma regel gäller i alla vyer.
-     *Agentens tillägg, ej beslutat:* "Svarar 0" och "svarar 55" behåller
-     kravet, eftersom det är definitionen av "ger upp". För "räknar med
-     starttalet vid växling" och "fel tabellfaktum i uppställningen" angavs
-     andra skäl 14/11, och de kräver Simons besked.
+     "Svarar 0" och "svarar 55" behåller kravet, eftersom det är
+     definitionen av "ger upp". **Simon 2026-11-18:** "Fel tabellfaktum i
+     uppställningen" behåller kravet, eftersom det handlar om faktaminne.
+     "Räknar med starttalet vid växling" förlorar det (ett svar per
+     uppgift).
    - **B2.** Jämförbara rätta svar dämpar en misstanke. Är de fler än
      felträffarna visas misstanken som "motsagd av rätta svar", längre ner och
      med båda siffrorna. Den döljs inte.
@@ -523,10 +524,22 @@ modeller i katalogen och en rad i täckningsrapporten.
      rad (R-C).
    - **B5.** "Samma uppgift fel flera gånger" kräver minst tre fel och fler fel
      än rätt på uppgiften.
-   - **B6.** Tabellträning är mängdträning. *Agentens tolkning, ej bekräftad:*
-     bara tabellträning. Talkompisar, dubblor och talbilder behandlas då som
-     vanlig träning också i analysen. Mastery och nivå ändras inte, eftersom de
-     redan behandlar bara tabellträning så.
+   - **B6.** Mängdträning är all träning utom screening: fri träning,
+     lärarens uppdrag, NCM-uppdrag, tabellträning och talflyt (Simon
+     2026-11-18, "Tabellträning är också mängdträning, som fri träning").
+     Agentens första tolkning, "bara tabellträning", var fel och är struken.
+     Fel svar hanteras så här (Simon godkände upplägget 2026-11-18):
+
+     | | Sänker elevens nivå | Blir en misstanke för läraren |
+     | --- | --- | --- |
+     | Fri träning, lärarens uppdrag och NCM-uppdrag | Ja | Ja, ett enstaka fel märks som enstaka |
+     | Tabellträning | Nej | Först när felet upprepas |
+     | Talkompisar, dubblor och talbilder | Ja | Först när felet upprepas |
+     | Screening | Nej | Ja, redan vid ett fel |
+
+     Nivåkolumnen är som koden redan gör. I misstankekolumnen är raden för
+     talflyt en ändring: i dag visas en talflytsmodell redan vid ett fel,
+     märkt "Enstaka svar".
 
 ## 11. Arbetsregel för agenter
 

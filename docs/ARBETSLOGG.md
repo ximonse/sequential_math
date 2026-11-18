@@ -1,5 +1,11 @@
 # Arbetslogg
 
+## 2026-11-18: B6 rättad och kravet för fel tabellfaktum behålls
+
+- Simons besked: "1, håller med dig" om kravet: det behålls för fel tabellfaktum men tas bort för räknar med starttalet. Om B6: "Tabellträning är också mängdträning, som fri träning." Agentens tolkning "bara tabellträning" var fel och är struken. Simon godkände upplägget i tabellen under B6 i STYRNING avsnitt 10.
+- Agentens rättelse: Tabellen sa först att talflyt bara blir misstanke när felet upprepas. I dag visas en talflytsmodell redan vid ett fel, märkt "Enstaka svar". Upplägget innebär därför en ändring för talflyt.
+- Kvar: Simons godkännande av förslaget och valet av ordning, med screening först eller elevrapporten först.
+
 ## 2026-11-18: Beslut B1–B6 och förslag om en tolkning per svar
 
 - Simons besked: "Jag håller med i dina rekommendationer, jag tänker att tabellträning är mängdträning." Besluten är införda i STYRNING avsnitt 10, punkt 5.

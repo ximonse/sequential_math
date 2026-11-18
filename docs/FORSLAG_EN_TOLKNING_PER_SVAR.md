@@ -64,8 +64,8 @@ dag.
    underlag". `minDistinctTasks` ersätts av den mätta slumprisken, plus en
    uttrycklig katalogflagga där kravet har ett annat skäl:
    - "Svarar 0" och "svarar 55": kravet är definitionen av "ger upp".
-   - "Räknar med starttalet vid växling" och "fel tabellfaktum i
-     uppställningen": väntar på Simons besked (fråga 1 nedan).
+   - "Fel tabellfaktum i uppställningen": faktaminne (Simon 2026-11-18).
+   - "Räknar med starttalet vid växling" förlorar kravet (Simon 2026-11-18).
 2. **Motexempel (B2).** Jämförbara rätta svar räknas med `comparableRuleCounter`
    som i dag, men utan taket på fem. Är de fler än felträffarna (räknat per
    uppgift) blir styrkan `contradicted`. Visningen listar högst fem, men siffran
@@ -77,9 +77,13 @@ dag.
    Täckningsräkningen redovisar elevens eget svar på en egen rad, som R-C säger.
 5. **Samma uppgift flera gånger (B5).** Minst tre fel och fler fel än rätt på
    uppgiften inom vyns underlag.
-6. **Mängdträning (B6).** Bara tabellträning. Snabbhetsregeln i analysen
-   (`isSpeedTrainingEntry`) följer samma definition som mastery
-   (`isTableDrillEvidence`), så att det finns en definition i stället för två.
+6. **Mängdträning (B6).** All träning utom screening är mängdträning. För
+   tabellträning och talflyt (talkompisar, dubblor, talbilder) blir ett fel en
+   misstanke först när det upprepas. Övrig mängdträning visar ett enstaka fel
+   som "enstaka svar". Screening visar det direkt. Nivåregeln är oförändrad.
+   Gruppen tabellträning och talflyt får ett namn i katalogen i stället för
+   "snabbhetsträning", och regeln skrivs ut där i stället för i en
+   kodkommentar.
 7. **Dold som slarv.** Ett dolt svar ingår inte i grupperna i någon vy och
    redovisas på en egen rad.
 8. **Allmän eller specifik modell.** När en specifik modell förklarar svaret
@@ -146,22 +150,16 @@ arbetsregeln kräver.
     ett svar, som "enstaka svar".
   - Misstankar med fler jämförbara rätta svar flyttas ner som "motsagda".
   - Det mäts och redovisas innan något publiceras.
-- B6 betyder att talkompisar, dubblor och talbilder får misstankar som
-  vanlig träning. Deras enstaka "ett ifrån facit" och "bara första siffran" blir
-  då synliga som inmatning eller enstaka svar, inte sammanfattade. Följdfrågor
-  finns bara i aritmetikens bank, så för talflyt ändras inget där.
+- B6 betyder att en talflytsmodell, till exempel "Adderar i stället för att
+  söka den saknade termen", inte längre visas vid ett enda fel. I dag visas
+  den märkt "Enstaka svar".
 - Gamla sparade rapporter visar sin gamla indelning tills läraren tar fram en ny.
 - Ingen ändring av elevens träning, sparande eller offlinekö.
 
 ## 6. Frågor till Simon innan steg 1
 
-1. **"Räknar med starttalet vid växling" och "fel tabellfaktum i
-   uppställningen"** kräver i dag tre olika uppgifter. Skälet var inte
-   slumprisk. Ska kravet stå kvar?
-   *Agentens förslag:* ja för fel tabellfaktum, eftersom det handlar om
-   faktaminne och då liknar "samma uppgift flera gånger". Nej för räknar med
-   starttalet, som förutsäger ett svar per uppgift.
-2. **B6:** stämmer tolkningen att bara tabellträning är mängdträning, och att
-   talkompisar, dubblor och talbilder därmed analyseras som vanlig träning?
+1. ~~Kravet för starttalet och fel tabellfaktum~~ Besvarad 2026-11-18: kravet
+   behålls för fel tabellfaktum men inte för starttalet.
+2. ~~Mängdträning~~ Besvarad 2026-11-18: se B6 i STYRNING avsnitt 10.
 3. **Ordning:** är steg 1–2 (screening först) rätt början, eller vill du ha
    elevrapporten först?

@@ -6,11 +6,12 @@ import { SCREENING_GROUP_LABELS_SV, screeningMisconceptionView } from '../../../
 // Read-only: follow-up stays frozen. Clicking a card marks its answers in the
 // results table below.
 const OTHER_BOXES = [
+  ['contradicted', 'Felsvaret passar en felförståelse, men eleven svarade rätt på fler jämförbara uppgifter i screeningen.'],
   ['gave_up', 'Svarar 0 eller 55 på flera olika frågor. Prata med eleven.'],
   ['unanswered', 'Uträkning finns i räknehäftet men svarsrutan är tom.'],
   ['input', 'Rätt tänkt men fel skrivet.'],
-  ['repeated_task', 'Samma fråga fel minst tre gånger.'],
-  ['observation', 'Ett räknefel eller ett mönster som inte upprepas än. Ingen felförståelse.'],
+  ['repeated_task', 'Samma felsvar på samma fråga minst tre gånger. Troligen ett inlärt fel faktum.'],
+  ['observation', 'Passar ett fel som behöver fler svar för att bli en misstanke.'],
   ['without_link', 'Appen känner igen felet men det är inte kopplat till en godkänd felförståelse.'],
   ['unexplained', 'Appen kan inte förklara svaret. Ditt öga behövs.']
 ].map(([key, note]) => [key, key === 'unanswered' ? 'Obesvarade med uträkning' : SCREENING_GROUP_LABELS_SV[key], note])
@@ -21,7 +22,8 @@ function Answer({ row, name, cardId }) {
     <span className="text-right tabular-nums"><QuestionText>{row.promptSv.replace(/^Räkna ut /u, '').replace(/\.$/u, '')}</QuestionText>{' → '}
       <span className="font-semibold text-red-700">{row.studentAnswer ?? 'tomt'}</span>
       {row.correctAnswer != null && <s className="ml-1 text-slate-500">{row.correctAnswer}</s>}
-      {cardId && row.singleOccurrence && <span className="block text-xs text-slate-600">En gång i screeningen</span>}
+      {row.teacherAssessed && String(row.pupilAnswer ?? '') !== String(row.studentAnswer ?? '') && <span className="block text-xs text-slate-600">Lärarens inskrivning; eleven: {row.pupilAnswer ?? 'tomt'}</span>}
+      {!cardId && row.strength === 'contradicted' && <span className="block text-xs text-slate-600">{row.counterUnits} rätt på jämförbara uppgifter</span>}
       {cardId && row.teacherMisconceptionIds?.includes(cardId) && <span className="block text-xs text-slate-600">Lärarens val</span>}
       {row.keyNoteSv && <span className="block text-xs text-slate-600">{row.keyNoteSv}</span>}</span>
   </li>
@@ -51,8 +53,9 @@ export default function ScreeningMisconceptions({ parts, isAllowed, mismatched =
 
   if (!view) return <p role="status" className="mt-2 text-sm">{failed?.misconceptions?.error || 'Kunde inte hämta felförståelserna.'}</p>
   const { counts, cards, other } = view
-  const chips = [[counts.wrong, 'fel'], [counts.misconception - other.without_link.length, 'pekar på en felförståelse'], [other.without_link.length, 'känt fel utan felförståelse'], [counts.gave_up, 'ger upp'],
-    [counts.input, 'inmatning'], [counts.repeated_task, 'samma uppgift flera gånger'], [counts.observation, 'enstaka'],
+  const chips = [[counts.wrong, 'fel'], [counts.misconception - other.without_link.length - other.contradicted.length, 'pekar på en felförståelse'], [other.without_link.length, 'känt fel utan felförståelse'],
+    [other.contradicted.length, 'motsagda av rätta svar'], [counts.gave_up, 'ger upp'],
+    [counts.input, 'inmatning'], [counts.repeated_task, 'samma felsvar flera gånger'], [counts.observation, 'enstaka, för lite underlag'],
     [counts.unexplained, 'oförklarade'], [counts.unansweredWithWork, 'obesvarade med uträkning']]
   return <section aria-label="Felförståelser i screeningen" className="mt-3">
     <h3 className="text-base font-semibold">Felförståelser i screeningen</h3>
@@ -60,6 +63,7 @@ export default function ScreeningMisconceptions({ parts, isAllowed, mismatched =
     <div className="my-2 flex flex-wrap gap-1.5 text-sm">{chips.filter(([value], index) => index < 2 || value > 0).map(([value, label]) =>
       <span key={label} className="rounded-full border border-slate-300 bg-white px-2"><b>{value}</b> {label}</span>)}</div>
     {counts.teacherMarkedNotWrong > 0 && <p className="text-xs text-slate-600">{counts.teacherMarkedNotWrong} fel svar räknas inte här eftersom läraren bedömt dem som rätt eller ofullständiga.</p>}
+    {counts.hiddenSlips > 0 && <p className="text-xs text-slate-600">{counts.hiddenSlips} {counts.hiddenSlips === 1 ? 'svar är dolt' : 'svar är dolda'} som slarv i elevanalysen och räknas inte här.</p>}
     {cards.length ? <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-2.5">{cards.map(card => {
       const pressed = selected?.id === card.id
       const toggle = () => onSelect(pressed ? null : { id: card.id, keys: new Set(card.answers.map(answer => answer.key)) })

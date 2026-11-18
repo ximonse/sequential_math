@@ -10,7 +10,9 @@ export function summarizeDiagnosticScreening(task, snapshot, work) {
     answerStatus: observation.answerStatus, signals: diagnosticWorkSignals(work ?? diagnosticWorkAnalysis(task, snapshot)) }
 }
 
-export function diagnosticWorkSignals({ columnAlignment: column, visibleResult: visible, subtractionPattern: subtraction }) {
+// The former signal M (larger minus smaller, one task only) is left to the error
+// model, which covers every task and shows on the misconception cards (2026-11-18, K7).
+export function diagnosticWorkSignals({ columnAlignment: column, visibleResult: visible }) {
   const signals = []
   if (column.status === 'observed' && column.alignment === 'misaligned') signals.push({
     code: 'P', label: 'Entalen står i olika kolumner',
@@ -18,7 +20,5 @@ export function diagnosticWorkSignals({ columnAlignment: column, visibleResult: 
   if (visible.status === 'observed' && visible.consistency === 'different') signals.push({
     code: 'Ö', label: 'Olika svar i häfte och svarsfält',
     message: `${visible.visibleResult} i räknehäftet och ${visible.explicitAnswer} i svarsfältet. Skillnaden bevisar inte slarv.` })
-  if (subtraction.status === 'matched') signals.push({ code: 'M', label: 'Möjligt subtraktionsmönster',
-    message: 'Resultatet är förenligt med större minus mindre i varje kolumn. Mönstret bevisar inte metoden.' })
   return signals
 }

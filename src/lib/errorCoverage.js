@@ -1,66 +1,21 @@
-import { addPredictableEvidence } from './evidencePredictableAnalysis.js'
 import { isSpeedTrainingEntry } from './practiceModes.js'
 import { ERROR_MODELS } from '../domains/predictableErrors/catalog.js'
-import { meetsPattern } from './modelPattern.js'
-import { repeatedlyWrongTasks } from './repeatedTasks.js'
-import { approvedMisconception, misconceptionsForModel } from '../domains/predictableErrors/misconceptions.js'
+import { answerModelIds, interpretAnswers, unexplainedReason, WRONG_BUCKETS } from './answerInterpretation.js'
+
+export { pupilOwnEntry, unexplainedReason, WRONG_BUCKETS } from './answerInterpretation.js'
 
 // Coverage of pupils' wrong answers (docs/STYRNING_FELFORSTAELSER.md, rules
 // R-C and R-D). Every answer is counted once, by the pupil's own status.
 // Every wrong answer lands in exactly one bucket; the sums are checked and a
-// mismatch throws instead of returning a report that hides answers.
-//
-// A wrong answer matched by several models takes the first kind in this
-// order. A misconception explains more than an observation of the answer,
-// an observation more than an input slip, and a slip more than giving up.
-// A wrong answer on a task the pupil got wrong at least three times counts as
-// repeated_task unless a misconception explains it, whatever the answer was.
-export const WRONG_BUCKETS = ['misconception', 'repeated_task', 'observation', 'input', 'gave_up', 'unexplained']
+// mismatch throws instead of returning a report that hides answers. The
+// classification itself is the shared interpretation (answerInterpretation.js).
 const KIND_ORDER = ['misconception', 'observation', 'input', 'gave_up']
 const STATUSES = ['correct', 'incorrect', 'unanswered', 'partial']
 
-// The pupil's own answer. A teacher's judgement sits beside it and is counted separately.
-export function pupilOwnEntry(entry) {
-  const answer = entry?.answer
-  if (!answer?.teacherAssessed) return entry
-  return { ...entry, answer: { ...answer, status: answer.observed?.status, studentAnswer: answer.observed?.studentAnswer } }
-}
-
-// One model within one domain and scope, the unit a report card shows.
-const groupKey = (result, modelId) => JSON.stringify([result?.domain ?? null, result?.scope ?? null, modelId])
-
-// Model groups whose answers do not yet form a pattern across different tasks.
-// The answers are one pupil's, as in the report; they then count as observations.
-export function groupsBelowPattern(entries) {
-  const groups = new Map()
-  for (const entry of entries) {
-    const result = entry?.interpretation?.predictable
-    if (entry?.answer?.status !== 'incorrect') continue
-    for (const id of new Set((result?.matches ?? []).map(match => match.modelId))) {
-      if (!ERROR_MODELS[id]?.minDistinctTasks) continue
-      const key = groupKey(result, id)
-      if (!groups.has(key)) groups.set(key, [])
-      groups.get(key).push(entry)
-    }
-  }
-  return new Set([...groups].filter(([key, list]) => !meetsPattern(JSON.parse(key)[2], list)).map(([key]) => key))
-}
-
-export function wrongAnswerBucket(entry, belowPattern = new Set()) {
-  const result = entry?.interpretation?.predictable
-  const ids = [...new Set((result?.matches ?? []).map(match => match.modelId))]
-  for (const id of ids) if (!ERROR_MODELS[id]) throw Error(`Model outside the catalogue: ${id}`)
-  const kinds = new Set(ids.map(id => belowPattern.has(groupKey(result, id)) ? 'observation' : ERROR_MODELS[id].kind))
+// The bucket one answer takes by its models alone, without the pupil's other answers.
+export function wrongAnswerBucket(entry) {
+  const kinds = new Set(answerModelIds(entry).map(id => ERROR_MODELS[id].kind))
   return KIND_ORDER.find(kind => kinds.has(kind)) ?? 'unexplained'
-}
-
-// An approved manual screening key explains what the models could not. A key
-// still awaiting review leaves the answer unexplained, with its own reason.
-const KEY_REASON_BUCKET = { input: 'input', fact_retrieval: 'observation', cognitive: 'observation' }
-function keyBucket(entry, modelBucket) {
-  const key = entry?.interpretation?.key
-  if (modelBucket !== 'unexplained' || !key || key.status !== 'approved') return modelBucket
-  return key.misconception ? 'misconception' : KEY_REASON_BUCKET[key.reason] ?? 'unexplained'
 }
 
 // Where the answer belongs: the analysed domain and scope, else the question's own operation.
@@ -70,15 +25,6 @@ export function coverageArea(entry) {
   const part = result?.scope ?? q.operation ?? q.skill
   if (domain) return part && part !== domain ? `${domain}:${part}` : domain
   return entry?.source === 'screening' ? 'screening_without_structure' : 'unknown'
-}
-
-// Why a wrong answer is unexplained: no model gives that answer, or the answer
-// never reached the models (the reason the analysis gave).
-export const unexplainedReason = entry => {
-  const key = entry?.interpretation?.key
-  if (key) return key.status === 'approved' ? 'key_needs_review' : 'key_awaiting_review'
-  const result = entry?.interpretation?.predictable
-  return result?.status === 'unmatched' ? 'no_model' : result?.reason ?? result?.status ?? 'not_analysed'
 }
 
 const emptyWrong = () => ({ incorrect: 0, ...Object.fromEntries(WRONG_BUCKETS.map(bucket => [bucket, 0])),
@@ -111,50 +57,12 @@ function assertSums(summary) {
   if (problems.length) throw Error(`Error coverage sums failed: ${problems.join('; ')}`)
 }
 
-// The approved misconceptions a classified wrong answer points to.
-function misconceptionIdsFor(entry, bucket, below) {
-  if (bucket !== 'misconception') return []
-  const result = entry.interpretation?.predictable, ids = new Set()
-  for (const id of new Set((result?.matches ?? []).map(match => match.modelId))) {
-    if (ERROR_MODELS[id]?.kind !== 'misconception' || below.has(groupKey(result, id))) continue
-    for (const m of misconceptionsForModel(id)) ids.add(m.id)
-  }
-  const key = entry.interpretation?.key
-  if (key?.status === 'approved' && key.misconception) ids.add(key.misconception)
-  return [...ids]
-}
-
-// One pupil's answers, each wrong answer in exactly one bucket. The
-// classification behind the coverage count and the screening results (rule
-// R-E): a class is its pupils' classifications side by side. The pupil report
-// builds its cards separately (pupilRuleHypotheses.js) but judges patterns the
-// same way.
+// One pupil's answers, each wrong answer in exactly one bucket, judged on the
+// pupil's own answer (R-C). The screening cards and the pupil report use the
+// same interpretation on the answer the teacher sees.
 export function classifyPupilAnswers(entries = []) {
-  const own = entries.map(pupilOwnEntry)
-  // Reuse the served analysis, except for answers whose analysed status was the
-  // teacher's: those are analysed again on the pupil's own answer.
-  const needsAnalysis = own.map(entry => entry.answer?.teacherAssessed || !entry.interpretation?.predictable)
-  const fresh = addPredictableEvidence(own.filter((_, index) => needsAnalysis[index])
-    .map(entry => ({ ...entry, interpretation: { ...entry.interpretation, predictable: undefined } })))
-  let next = 0
-  const analysed = own.map((entry, index) => needsAnalysis[index] ? fresh[next++] : entry)
-  const below = groupsBelowPattern(analysed)
-  const repeated = new Set(repeatedlyWrongTasks(analysed).flatMap(task => task.wrong))
-  const rows = analysed.map((entry, index) => {
-    const status = entry.answer?.status
-    if (status !== 'incorrect') return { entry, original: entries[index], status }
-    const modelBucket = keyBucket(entry, wrongAnswerBucket(entry, below))
-    const appBucket = modelBucket !== 'misconception' && repeated.has(entry) ? 'repeated_task' : modelBucket
-    // A misconception the teacher picked from the approved list makes the answer one (Simon 2026-11-13).
-    const teacherIds = (entries[index]?.teacherReview?.assessment?.misconceptionIds ?? []).filter(id => approvedMisconception(id))
-    const bucket = teacherIds.length ? 'misconception' : appBucket
-    const appIds = misconceptionIdsFor(entry, appBucket, below)
-    return { entry, original: entries[index], status, bucket, misconceptionIds: [...new Set([...appIds, ...teacherIds])],
-      ...(teacherIds.length ? { teacherMisconceptionIds: teacherIds } : {}),
-      modelIds: [...new Set((entry.interpretation?.predictable?.matches ?? []).map(match => match.modelId))],
-      ...(bucket === 'unexplained' ? { reason: unexplainedReason(entry) } : {}) }
-  })
-  return { analysed, rows, repeatedTasks: repeatedlyWrongTasks(analysed).length }
+  const { analysed, rows, repeatedTasks } = interpretAnswers(entries, { answerSource: 'pupil' })
+  return { analysed, rows, repeatedTasks: repeatedTasks.length }
 }
 
 // `entries` are one pupil's evidence entries as served by the evidence API,

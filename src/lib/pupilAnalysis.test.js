@@ -71,15 +71,18 @@ describe('pupil analysis reports', () => {
 })
 
 describe('tasks answered wrongly again and again', () => {
-  it('lists a task wrong three times with different answers, beside the hypotheses', () => {
+  it('lists the same wrong answer three times on a task, not three different ones (B7)', () => {
     const row = (answer, i, status = 'incorrect') => ({ source: 'practice', timestamp: 1_700_000_000_000 + i, ref: `rep-${i}`,
       reference: { kind: 'observation', observationId: `rep-${i}` },
       question: { domain: 'arithmetic', operation: 'multiplication', skill: 'multiplication', values: { a: 6, b: 7 }, promptText: '6 · 7' },
       answer: { status, studentAnswer: answer, correctAnswer: 42 }, context: {}, interpretation: { category: 'knowledge', patterns: [] } })
-    const entries = addPredictableEvidence([row(36, 0), row(40, 1), row(47, 2), row(42, 3, 'correct')])
+    const different = addPredictableEvidence([row(36, 0), row(40, 1), row(47, 2), row(42, 3, 'correct')])
+    const differentEvidence = { entries: different, snapshotRevision: 'r', period: {}, source: 'practice', coverage: {} }
+    expect(validatePupilAnalysis(buildPupilAnalysisDraft(differentEvidence), differentEvidence).repeatedTasks).toEqual([])
+    const entries = addPredictableEvidence([row(40, 0), row(40, 1), row(40, 2), row(42, 3, 'correct')])
     const evidence = { entries, snapshotRevision: 'r', period: {}, source: 'practice', coverage: {} }
     const report = validatePupilAnalysis(buildPupilAnalysisDraft(evidence), evidence)
-    expect(report.repeatedTasks).toEqual([{ wrongRefs: ['rep-0', 'rep-1', 'rep-2'], wrongCount: 3, correctRefs: ['rep-3'], correctCount: 1 }])
+    expect(report.repeatedTasks).toEqual([{ answer: '40', wrongRefs: ['rep-0', 'rep-1', 'rep-2'], wrongCount: 3, correctRefs: ['rep-3'], correctCount: 1 }])
     expect(report.evidence.map(entry => entry.ref)).toEqual(expect.arrayContaining(['rep-0', 'rep-1', 'rep-2', 'rep-3']))
   })
 })

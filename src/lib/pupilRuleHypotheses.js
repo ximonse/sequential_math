@@ -1,18 +1,18 @@
 import { pupilFollowUpSelection, followUpRecommendation } from './pupilFollowUpSelection.js'
-import { arithmeticContentSignature } from './arithmeticContentSignature.js'
 import { evidenceProblem } from './evidenceProblem.js'
 import { isSpeedTrainingEntry, SPEED_SLIP_MODELS } from './practiceModes.js'
-import { ERROR_MODELS, NEEDS_REPETITION_MODELS, YIELDS_TO_SPECIFIC_MODELS } from '../domains/predictableErrors/catalog.js'
+import { ERROR_MODELS, NEEDS_REPETITION_MODELS } from '../domains/predictableErrors/catalog.js'
 import { questionFingerprint } from '../domains/predictableErrors/questionFingerprint.js'
+import { answerModelIds, comparableRuleCounter, modelGroups } from './answerInterpretation.js'
+
+export { comparableRuleCounter }
 
 const current = entry => entry?.interpretation?.predictable
 // A quotient one off is usually a slip (blind test 3); it becomes a candidate only when
 // it repeats at least three times and more often than comparable correct answers.
 export const SLIP_UNTIL_REPEATED = NEEDS_REPETITION_MODELS
-// Generic observations that also fit many specific rules (320 / 4 = 8 is both a dropped
-// quotient zero and a scaling). When a specific rule explains the answer, they are not shown.
-const GENERIC_MODELS = YIELDS_TO_SPECIFIC_MODELS
-const level = entry => entry.context?.contentLevel ?? entry.context?.level
+// The shared interpretation's strength of a model group, strongest first (B1, B2).
+const STATUS_RANK = { pattern: 0, single: 1, below: 2, contradicted: 3 }
 
 // A model judged as a pattern across different tasks shows one answer per task
 // first, so a fact repeated many times cannot crowd the others out of the card.
@@ -27,32 +27,13 @@ function supportsForCard(modelId, supports) {
   return [...first, ...repeats].slice(0, 20)
 }
 
-export function comparableRuleCounter(entry, supports, modelId) {
-  const value = current(entry)
-  if (entry.answer.status !== 'correct' || value?.status !== 'correct' || !value.testedModelIds?.includes(modelId)) return false
-  const work = entry.interpretation?.work
-  if ([work?.visibleResult, work?.visibleResultWithExchangeMarks].some(result => result?.status === 'observed' && result.consistency === 'different')) return false
-  return supports.some(support => {
-    const other = current(support), left = level(entry), right = level(support)
-    if (value.domain !== other?.domain || value.scope !== other?.scope) return false
-    const knownLeft = typeof left === 'number' && left >= 1, knownRight = typeof right === 'number' && right >= 1
-    if (knownLeft && knownRight) return left === right && Boolean(entry.context?.contentSkill)
-      && entry.context.contentSkill === support.context?.contentSkill
-    if (entry.source !== 'screening' && support.source !== 'screening') return false
-    const signature = arithmeticContentSignature(evidenceProblem(entry))
-    return signature !== null && signature === arithmeticContentSignature(evidenceProblem(support))
-  })
-}
-
 export function buildRuleHypotheses(entries) {
+  // Generic models yield to a specific one on the same answer, as in every view.
   const groups = new Map()
   for (const entry of entries) {
     const result = current(entry)
     if (entry.answer.status !== 'incorrect' || result?.status !== 'matched') continue
-    const ids = new Set(result.matches.map(m => m.modelId))
-    const specific = [...ids].some(id => !GENERIC_MODELS.has(id))
-    for (const modelId of ids) {
-      if (specific && GENERIC_MODELS.has(modelId)) continue
+    for (const modelId of answerModelIds(entry)) {
       // Single slips under time pressure are summarised, not treated as hypotheses.
       if (SPEED_SLIP_MODELS.has(modelId) && isSpeedTrainingEntry(entry)) continue
       const key = JSON.stringify([result.domain, result.scope, modelId])
@@ -60,14 +41,19 @@ export function buildRuleHypotheses(entries) {
       groups.get(key).supports.push(entry)
     }
   }
-  const ordered = [...groups.values()].sort((a, b) => {
-    const units = group => new Set(group.supports.map(e => e.reference.observationId ?? e.reference.attemptId ?? e.ref)).size
-    return units(b) - units(a) || a.modelId.localeCompare(b.modelId)
-  })
-  return ordered.flatMap(({ modelId, supports }) => {
+  const judged = modelGroups(entries)
+  const status = group => judged.get(JSON.stringify([current(group.supports[0]).domain ?? null, current(group.supports[0]).scope ?? null, group.modelId]))
+  const units = group => new Set(group.supports.map(e => e.reference.observationId ?? e.reference.attemptId ?? e.ref)).size
+  // Patterns first; answers more comparable right answers speak against last (B2).
+  const ordered = [...groups.values()].sort((a, b) => (STATUS_RANK[status(a)?.status] ?? 1) - (STATUS_RANK[status(b)?.status] ?? 1)
+    || units(b) - units(a) || a.modelId.localeCompare(b.modelId))
+  return ordered.flatMap(group => {
+    const { modelId, supports } = group
     const support = supportsForCard(modelId, supports), first = current(support[0]), match = first.matches.find(m => m.modelId === modelId)
     const plan = pupilFollowUpSelection({ modelId, supports: support, entries })
-    const allCounters = entries.filter(e => comparableRuleCounter(e, support, modelId)), counters = allCounters.slice(0, 5)
+    // The count speaks for the whole group; the card lists counters comparable to its own answers.
+    const allCounters = status(group)?.counters ?? entries.filter(e => comparableRuleCounter(e, support, modelId))
+    const counters = allCounters.filter(e => comparableRuleCounter(e, support, modelId)).slice(0, 5)
     if (SLIP_UNTIL_REPEATED.has(modelId) && (supports.length < 3 || supports.length <= allCounters.length)) return []
     return [{ basis: 'rule_candidate', signalCode: modelId, ruleVersion: first.ruleVersion,
       textSv: `${match.reasonSv} Det är en beräknad kandidat, inte en fastställd elevmetod.`,

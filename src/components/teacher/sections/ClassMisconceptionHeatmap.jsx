@@ -184,11 +184,13 @@ function CellTooltip({ cell, studentName }) {
           Nytt på nivån: {cell.newLevelSignals.map(item => item.label).join(', ')}
         </p>
       )}
-      {cell.misconceptionCount > 0 && (
-        <p className="text-[10px] text-red-600 font-semibold mt-0.5">⚠ {cell.misconceptionCount} historiska kategorimarkeringar</p>
+      {/* The current explanation first; the analysis saved when the pupil answered only as history (K8). */}
+      {cell.currentCandidates.length > 0 && (
+        <p className="text-[10px] text-amber-900 mt-0.5">Beräknad förklaring: {CONTRAST_LABELS_SV[cell.currentCandidates[0][0]] || cell.currentCandidates[0][0]}</p>
       )}
-      {misconceptionType && (
-        <p className="text-[10px] text-orange-700 mt-0.5">Typ: {formatPatternLabel(misconceptionType)}</p>
+      {(cell.misconceptionCount > 0 || misconceptionType) && (
+        <p className="text-[10px] text-gray-500 mt-0.5">Tidigare analys: {[cell.misconceptionCount > 0 && `${cell.misconceptionCount} markerade som missuppfattning`,
+          misconceptionType && formatPatternLabel(misconceptionType)].filter(Boolean).join(', ')}</p>
       )}
       {exampleWrong && (
         <p className="text-[10px] text-gray-600 mt-0.5">
@@ -245,9 +247,7 @@ function CellDetailModal({ cell, studentName, onClose }) {
         />
 
         {cell.misconceptionCount > 0 && (
-          <div className="mb-3 rounded bg-red-50 border border-red-200 px-3 py-2">
-            <p className="text-xs font-semibold text-red-700">⚠ {cell.misconceptionCount} historiska kategorimarkeringar</p>
-          </div>
+          <p className="mb-3 text-xs text-gray-600">Tidigare analys: {cell.misconceptionCount} svar markerades som missuppfattning när de besvarades. Den aktuella förklaringen står nedan.</p>
         )}
 
         {cell.currentCandidates.length > 0 && <section className="mb-3" aria-label="Aktuella modellkandidater">

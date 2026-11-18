@@ -15,13 +15,14 @@ import { MODEL_DESCRIPTIONS } from './modelDescriptions.js'
 // speedSlip: a single occurrence in speed training is summarised, not shown.
 // needsRepetition: shown only when it repeats and outnumbers comparable right answers.
 // minDistinctTasks: a suspicion only when the same kind of error shows on this
-//   many different tasks (Simon 2026-11-12: a pattern across facts, not one fact
-//   repeated). Below that the answers count as observations.
+//   many different tasks. Only for a high chance risk, or another stated reason
+//   (Simon 2026-11-12, decision 3; narrowed 2026-11-18, B1). Below that the
+//   answers count as observations: too little evidence, never a slip.
 // notRival: never used as a rival in contrast questions.
 // noFollowUp: the card offers no contrast questions or Fråga igen.
-// screeningShowsSingle: in a screening's results a single answer is shown on its
-//   misconception card, marked as one occurrence (Simon 2026-11-14: a wrong
-//   operation is clear even once). Pupil reports keep minDistinctTasks.
+// wrongOperation: the answer of another operation (Simon 2026-11-12, decision
+//   4; B3 2026-11-18). Teacher views name it "fel räknesätt" without saying
+//   whether understanding or attention is behind it.
 const model = (titleSv, domains, options = {}) => ({ titleSv, domains, kind: 'misconception', ...options })
 // Models added while the follow-up chain is frozen (docs/STYRNING_FELFORSTAELSER.md,
 // section 4) stay out of contrast questions until it is unfrozen.
@@ -32,7 +33,7 @@ export const ERROR_MODELS = {
   // Answer observations and input slips
   // Simon 2026-11-12: a misunderstanding of when to use which operation, not a slip.
   // Kept out of the contrast questions until that follow-up is designed.
-  operation_swap: model('Annat räknesätt', A, { yieldsToSpecific: true, minDistinctTasks: 3, notRival: true, noFollowUp: true, screeningShowsSingle: true }),
+  operation_swap: model('Annat räknesätt', A, { yieldsToSpecific: true, notRival: true, noFollowUp: true, wrongOperation: true }),
   place_value_scaling: model('Svaret är tio, hundra eller tusen gånger fel', A, { kind: 'observation', yieldsToSpecific: true }),
   answer_off_by_one: model('Ett ifrån facit', [...A, ...N], { kind: 'observation', speedSlip: true }),
   partial_answer_entry: model('Bara första siffran inskriven', [...A, ...N], { kind: 'input', yieldsToSpecific: true, speedSlip: true }),
@@ -40,6 +41,7 @@ export const ERROR_MODELS = {
   notebook_answer_mismatch: model('Olika svar i räknehäftet och svarsrutan', A, { kind: 'input' }),
 
   // Giving up or clicking past (Simon 2026-11-12): a signal to the teacher, not a calculation error.
+  // Three different tasks is what giving up means here, not a chance guard.
   answer_zero: model('Svarar 0', [...A, ...N], { kind: 'gave_up', minDistinctTasks: 3, noFollowUp: true }),
   answer_55: model('Svarar 55', [...A, ...N], { kind: 'gave_up', minDistinctTasks: 3, noFollowUp: true }),
 
@@ -59,7 +61,7 @@ export const ERROR_MODELS = {
   one_carry_forgotten: model('En av flera minnessiffror glöms', A),
   phantom_carry: model('Lägger till minnessiffra som inte behövs', A),
   add_left_to_right: model('Räknar från vänster, minnessiffran åt höger', A),
-  add_multiplied: model('Multiplicerar i stället för att addera', [...A, ...N], { minDistinctTasks: 3, notRival: true, noFollowUp: true, screeningShowsSingle: true }),
+  add_multiplied: model('Multiplicerar i stället för att addera', [...A, ...N], { notRival: true, noFollowUp: true, wrongOperation: true }),
 
   // Decimals (Simon 2026-11-12)
   decimal_tenths_as_hundredths: model('Tiondelar blir hundradelar', A, OUTSIDE_FROZEN_CHAIN),
@@ -72,10 +74,11 @@ export const ERROR_MODELS = {
   decimal_mul_whole_part_kept: model('Bara decimaldelen multipliceras', A, OUTSIDE_FROZEN_CHAIN),
   quotient_stops_at_twelve: model('Kvoten stannar vid 12', A, OUTSIDE_FROZEN_CHAIN),
   // Simon 2026-11-14, Gemini's and the agent's readings checked against real answers.
-  sub_inclusive_count_at_exchange: model('Räknar med starttalet vid växling', A, { ...OUTSIDE_FROZEN_CHAIN, minDistinctTasks: 3 }),
+  sub_inclusive_count_at_exchange: model('Räknar med starttalet vid växling', A, OUTSIDE_FROZEN_CHAIN),
   sub_one_exchange_kept: model('En av växlingarna minskar inte talet som lånar ut', A, OUTSIDE_FROZEN_CHAIN),
   sub_zero_double_decrement: model('Hundratalet minskas två gånger vid växling över nolla', A, OUTSIDE_FROZEN_CHAIN),
   mul_last_carry_forgotten: model('Sista minnessiffran glöms i multiplikationen', A, OUTSIDE_FROZEN_CHAIN),
+  // Fact recall, not chance: kept at three tasks (Simon 2026-11-18).
   mul_ones_fact_wrong: model('Fel tabellfaktum inne i uppställningen', A, { ...OUTSIDE_FROZEN_CHAIN, minDistinctTasks: 3 }),
   decimal_mul_whole_only: model('Bara heltalet multipliceras', A, OUTSIDE_FROZEN_CHAIN),
   decimal_point_missing_with_error: model('Tappar växlingen och decimaltecknet', A, OUTSIDE_FROZEN_CHAIN),
@@ -161,7 +164,7 @@ export const MODEL_TITLES_SV = Object.fromEntries(ids.map(id => [id, ERROR_MODEL
 export const NOT_METHOD_MODELS = where(m => m.kind !== 'misconception')
 export const NOT_RIVAL_MODELS = where(m => m.kind !== 'misconception' || m.notRival)
 export const NO_FOLLOW_UP_MODELS = where(m => m.noFollowUp)
-export const SCREENING_SINGLE_MODELS = where(m => m.screeningShowsSingle)
+export const WRONG_OPERATION_MODELS = where(m => m.wrongOperation)
 export const GAVE_UP_MODELS = where(m => m.kind === 'gave_up')
 export const INPUT_MODELS = where(m => m.kind === 'input')
 export const YIELDS_TO_SPECIFIC_MODELS = where(m => m.yieldsToSpecific)

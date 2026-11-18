@@ -3,6 +3,7 @@ import { teacherPracticeRows } from '../src/lib/teacherPracticeRows.js'
 import { createHash } from 'node:crypto'
 import { addPredictableEvidence } from '../src/lib/evidencePredictableAnalysis.js'
 import { withTeacherAssessment } from '../src/lib/evidenceTeacherAssessment.js'
+import { INTERPRETATION_VERSION, interpretAnswers } from '../src/lib/answerInterpretation.js'
 
 export const evidenceError = (status, code, message) => Object.assign(new Error(message), { status, code })
 export const evidenceHash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex')
@@ -41,7 +42,15 @@ export function evidencePage({ studentId, classId, period, source, practice, scr
   // A legacy position is only meaningful within this exact snapshot.
   // A new rule version must not invalidate unchanged original-source references;
   // rule candidates carry their own version and are validated separately.
-  const entries = addPredictableEvidence(all.map(entry => withTeacherAssessment({ ...entry, ref: evidenceHash({ revision, reference: entry.reference }) })))
+  const analysed = addPredictableEvidence(all.map(entry => withTeacherAssessment({ ...entry, ref: evidenceHash({ revision, reference: entry.reference }) })))
+  // The same interpretation the teacher views show, beside the historical fields,
+  // so MCP and exports read one verdict per answer (docs/FORSLAG_EN_TOLKNING_PER_SVAR.md).
+  const { rows } = interpretAnswers(analysed, { answerSource: 'shown' })
+  const entries = analysed.map((entry, index) => {
+    const { bucket, strength, misconceptionIds } = rows[index]
+    return bucket ? { ...entry, interpretation: { ...entry.interpretation, answerGroup: { version: INTERPRETATION_VERSION, bucket,
+      ...(strength ? { strength } : {}), misconceptionIds } } } : entry
+  })
   if (query.ref) {
     if (!query.snapshotRevision) throw evidenceError(400, 'snapshot_required', 'Detaljläsning kräver snapshotRevision.')
     const entry = entries.find(item => item.ref === query.ref)

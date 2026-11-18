@@ -1,6 +1,6 @@
 # Förslag: en tolkning per elevsvar i alla lärarvyer
 
-Status: **förslag, inte godkänt.** Inget byggs förrän Simon har godkänt det.
+Status: **godkänt av Simon 2026-11-18** ("Jag håller med, kör på dina förslag och produktion"). Genomfört, se [TOLKNING_AV_ELEVSVAR.md](TOLKNING_AV_ELEVSVAR.md).
 Datum: 2026-11-18. Underlag: `docs/GRANSKNING_TOLKNING_AV_ELEVSVAR_2026-11-18.md`
 och Simons beslut 5 (B1–B6) i `STYRNING_FELFORSTAELSER.md` avsnitt 10.
 

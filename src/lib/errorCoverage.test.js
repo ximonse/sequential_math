@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { errorCoverage, mergeCoverage, wrongAnswerBucket, WRONG_BUCKETS } from './errorCoverage.js'
 import { syntheticCoverageEntries } from './errorCoverageFixture.js'
 import { addPredictableEvidence } from './evidencePredictableAnalysis.js'
-import { ERROR_MODELS } from '../domains/predictableErrors/catalog.js'
+import { ERROR_MODELS, YIELDS_TO_SPECIFIC_MODELS } from '../domains/predictableErrors/catalog.js'
 import { SNAPSHOT, syntheticSnapshot } from '../../scripts/error-coverage.mjs'
 
 // Rules R-C and R-D in docs/STYRNING_FELFORSTAELSER.md: no wrong answer may
@@ -24,6 +24,10 @@ describe('error coverage', () => {
     const analysed = addPredictableEvidence(strip(fixture))
     fixture.forEach((source, index) => {
       if (!source.expectedModel) return
+      // A generic model yields to a specific one on the same answer, in every view
+      // (3 + 3 = 0 is "svarar 0", not another operation, since 2026-11-12).
+      const ids = (analysed[index].interpretation.predictable.matches ?? []).map(match => match.modelId)
+      if (YIELDS_TO_SPECIFIC_MODELS.has(source.expectedModel) && ids.some(id => !YIELDS_TO_SPECIFIC_MODELS.has(id))) return
       const bucket = wrongAnswerBucket(analysed[index])
       expect(WRONG_BUCKETS.indexOf(bucket), `${source.expectedModel}: ${bucket}`)
         .toBeLessThanOrEqual(WRONG_BUCKETS.indexOf(ERROR_MODELS[source.expectedModel].kind))
@@ -81,16 +85,16 @@ describe('a pattern across different tasks (decision 3)', () => {
     expect(same.wrong.misconception).toBe(0)
     expect(same.wrong.repeated_task).toBe(3)
     expect(same.repeatedTasks).toBe(1)
-    // Whatever the wrong answers are (Simon 2026-11-13).
-    expect(errorCoverage({ entries: [table(6, 7, 36), table(6, 7, 40), table(6, 7, 47)] }).wrong.repeated_task).toBe(3)
+    // The same wrong answer three times, not three different ones (Simon 2026-11-18, B7).
+    expect(errorCoverage({ entries: [table(6, 7, 36), table(6, 7, 40), table(6, 7, 47)] }).wrong.repeated_task).toBe(0)
     expect(errorCoverage({ entries: [table(6, 7, 36), table(6, 7, 40)] }).wrong.repeated_task).toBe(0)
   })
 
-  it('treats another operation as a misconception once it shows on three different tasks', () => {
+  it('treats another operation as a misconception from the first answer (B1: low chance risk)', () => {
     const add = (a, b) => ({ ...table(a, b, a * b), question: { domain: 'arithmetic', operation: 'subtraction', skill: 'subtraction', values: { a, b }, promptText: `${a} − ${b}` },
       answer: { status: 'incorrect', studentAnswer: a + b, correctAnswer: a - b } })
     expect(errorCoverage({ entries: [add(9, 4), add(8, 3), add(7, 2)] }).wrong.misconception).toBe(3)
-    expect(errorCoverage({ entries: [add(9, 4)] }).wrong.misconception).toBe(0)
+    expect(errorCoverage({ entries: [add(9, 4)] }).wrong.misconception).toBe(1)
   })
 })
 
@@ -114,7 +118,7 @@ describe('the report card and the coverage judge a pattern alike', () => {
 
 describe('repeated tasks in screening', () => {
   it('does not treat different screening questions without structure as one task', async () => {
-    const { repeatedlyWrongTasks } = await import('./repeatedTasks.js')
+    const { repeatedWrongAnswers: repeatedlyWrongTasks } = await import('./answerInterpretation.js')
     const q = (taskId, i) => ({ source: 'screening', ref: `s-${i}`, reference: { kind: 'screening_attempt', attemptId: `a-${i}` },
       question: { taskId, taskVersion: 1, promptSv: `Fråga ${taskId}` }, answer: { status: 'incorrect', studentAnswer: '1', correctAnswer: '2' },
       context: {}, interpretation: { category: 'unknown', patterns: [] } })

@@ -24,7 +24,7 @@ export default function DiagnosticScreeningMatrix({ overview, name, onOpen, high
   return <>
     <div className="my-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-700" aria-label="Svarsfärger">
       <span>🟩 Rätt svar</span><span>⬜ Ej svar / ofullständigt</span><span>🟥 Fel svar</span>
-      <span>M · Möjligt metodfel</span><span>P · Kolumnförskjutning</span><span>Ö · Olika svar</span>
+      <span>P · Kolumnförskjutning</span><span>Ö · Olika svar</span>
       <span>L · Lärarbedömt</span><span>F · Felförståelse markerad av lärare</span>
     </div>
     <div ref={scroller} className="overflow-x-auto"><table className="w-full text-center text-sm tabular-nums">

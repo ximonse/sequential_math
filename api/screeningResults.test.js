@@ -110,8 +110,9 @@ describe('screening results read the table and the misconception cards once', ()
       const after = { commands: results.commands, roundsToTable: results.rounds, roundsToCards: results.rounds }
       console.log(`Screening results, ${label}: store commands ${before.commands} → ${after.commands}; ` +
         `sequential rounds to table ${before.roundsToTable} → ${after.roundsToTable}, to cards ${before.roundsToCards} → ${after.roundsToCards}`)
-      // The cards add only the pupil indexes to the table's read and no sequential round.
-      expect(after.commands).toBe(table.commands + shape.pupils)
+      // The cards add the pupil indexes and the answers each pupil's teacher hid as
+      // slips (K5) to the table's read, both in parallel: no sequential round.
+      expect(after.commands).toBe(table.commands + 2 * shape.pupils)
       expect(after.roundsToTable).toBe(before.roundsToTable)
       expect(after.roundsToCards).toBeLessThan(before.roundsToCards)
     })
@@ -135,7 +136,7 @@ describe('screening results read the table and the misconception cards once', ()
     const counting = countingStore(classFixture({ pupils: 3 }))
     const { value } = await timed(counting, (assignment, allowed) => screeningResults(assignment, allowed, { store: counting.store }))
     const [p0, , p2] = value.misconceptions.pupils
-    expect(p0.answers[0]).toMatchObject({ studentAnswer: '376', status: 'incorrect', teacherStatus: 'correct', position: 0 })
+    expect(p0.answers[0]).toMatchObject({ studentAnswer: '376', status: 'correct', teacherAssessed: true, pupilStatus: 'incorrect', position: 0 })
     expect(p2.answers[0].teacherMisconceptionIds).toEqual(['regrouping_not_understood'])
     expect(JSON.stringify(value.misconceptions)).not.toMatch(/"(events|snapshot|grid)"/)
   })

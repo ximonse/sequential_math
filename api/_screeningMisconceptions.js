@@ -2,7 +2,8 @@ import { kv } from '@vercel/kv'
 import { pupilScreeningEvidence } from './_pupilScreeningEvidence.js'
 import { listDiagnosticAssignmentAttempts } from './_diagnosticClassOverview.js'
 import { withTeacherAssessment } from '../src/lib/evidenceTeacherAssessment.js'
-import { screeningPupilAnswers } from '../src/lib/screeningMisconceptions.js'
+import { screeningCardAnswers } from '../src/lib/screeningMisconceptions.js'
+import { readSlipExclusions } from './_slipExclusions.js'
 
 // Each pupil's answers in one screening, classified as in the coverage count
 // (docs/STYRNING_FELFORSTAELSER.md, step 4). Only the
@@ -25,9 +26,10 @@ export async function screeningMisconceptionPupils(assignment, studentIds, { sto
   async function read(studentId) {
     const attemptIds = latestByPupil.get(studentId)
     if (!attemptIds.size) return { studentId, answers: [] }
-    const { entries } = await pupilScreeningEvidence(studentId, assignment.classId, { store, attemptIds })
+    const [{ entries }, exclusions] = await Promise.all([pupilScreeningEvidence(studentId, assignment.classId, { store, attemptIds }),
+      readSlipExclusions(studentId, { store })])
     const own = entries.filter(entry => entry.reference?.assignmentId === assignment.assignmentId)
-    return { studentId, answers: screeningPupilAnswers(own.map(withTeacherAssessment))
+    return { studentId, answers: screeningCardAnswers(own.map(withTeacherAssessment), exclusions)
       .map(answer => ({ ...answer, position: position(answer.assignmentItemId) })) }
   }
   // A few pupils at a time keeps a whole class quick without flooding the store.

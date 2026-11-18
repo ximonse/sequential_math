@@ -3,7 +3,7 @@ import { OPERATION_LABELS } from './operations.js'
 import { validateTeachingRecord } from './didacticFollowUp.js'
 import { buildRuleHypotheses, comparableRuleCounter } from './pupilRuleHypotheses.js'
 import { speedSlipSummary } from './practiceModes.js'
-import { repeatedlyWrongTasks } from './repeatedTasks.js'
+import { INTERPRETATION_VERSION, interpretAnswers, modelGroups } from './answerInterpretation.js'
 import { approvedMisconception } from '../domains/predictableErrors/misconceptions.js'
 export const PUPIL_ANALYSIS_VERSION = 1
 const fail = message => { throw Object.assign(new Error(message), { status: 400, code: 'invalid_analysis' }) }
@@ -43,6 +43,13 @@ export function validatePupilAnalysis(input, evidence) {
     if (new Set(refs).size !== refs.length || refs.some(ref => typeof ref !== 'string' || !byRef.has(ref))) fail('Okänd eller upprepad källreferens.')
     return refs
   }
+  // The shared interpretation judges every rule card's strength from all answers (B1, B2).
+  const groups = modelGroups(evidence.entries)
+  const groupOf = (signalCode, supports) => {
+    const result = supports[0]?.interpretation?.predictable
+    return groups.get(JSON.stringify([result?.domain ?? null, result?.scope ?? null, signalCode]))
+  }
+  const STATUS = { single: 'insufficient', below: 'below_pattern', contradicted: 'contradicted', pattern: 'requires_teacher_review' }
   const ids = new Set()
   const identify = value => {
     const id = text(value, 80)
@@ -78,27 +85,38 @@ export function validatePupilAnalysis(input, evidence) {
       supports: supportRefs.map(ref => byRef.get(ref)), entries: evidence.entries }) : null
     const supportCount = new Set(supportRefs.map(ref => unit(byRef.get(ref)))).size
     if (!item.alternativesSv?.length) fail('Beskriv minst en alternativ förklaring eller vad som ännu är okänt.')
+    const group = item.basis === 'rule_candidate' ? groupOf(signalCode, supportRefs.map(ref => byRef.get(ref))) : null
     return { id: identify(item.id), textSv: text(item.textSv), basis: item.basis, signalCode,
       ...(item.basis === 'rule_candidate' ? { ruleVersion: text(item.ruleVersion, 80) } : {}),
       supportRefs, counterRefs, supportCount,
-      counterCount: new Set(counterRefs.map(ref => unit(byRef.get(ref)))).size,
-      evidenceStatus: supportCount < 2 ? 'insufficient' : 'requires_teacher_review',
+      // The real number of comparable right answers; the card lists at most five.
+      counterCount: group ? group.counterUnits : new Set(counterRefs.map(ref => unit(byRef.get(ref)))).size,
+      evidenceStatus: group ? STATUS[group.status] : supportCount < 2 ? 'insufficient' : 'requires_teacher_review',
       alternativesSv: list(item.alternativesSv, 5).map(value => text(value, 500)), nextCheckSv: followUpRecommendation(followUp) ?? text(item.nextCheckSv),
       ...(followUp ? { followUp } : {}) }
   })
   const exampleRefs = evidence.entries.slice(0, 20).map(entry => entry.ref)
+  const interpreted = interpretAnswers(evidence.entries, { answerSource: 'shown' })
   // Filled by the server from all answers in the period; not part of the submitted report.
-  const repeatedTasks = repeatedlyWrongTasks(evidence.entries).map(task => ({
+  // The same wrong answer at least three times on one task (B7).
+  const repeatedTasks = interpreted.repeatedTasks.map(task => ({ answer: task.answer,
     wrongRefs: task.wrong.slice(0, 20).map(entry => entry.ref), wrongCount: task.wrong.length,
     correctRefs: task.correct.slice(0, 5).map(entry => entry.ref), correctCount: task.correct.length }))
+  // Every wrong answer nothing explains, newest first (rule R-C), not only the first twenty answers.
+  const unexplained = interpreted.rows.filter(row => row.bucket === 'unexplained').map(row => row.entry.ref).reverse()
+  const unexplainedRefs = unexplained.slice(0, 20)
   // Rule suspicions beyond the reviewed cards, weakest last (Simon 2026-11-14: show
   // every suspicion, those with less evidence further down and smaller). Read only:
   // the check-in still covers the submitted hypotheses.
   const shown = new Set(hypotheses.flatMap(item => item.supportRefs.map(ref => JSON.stringify([item.signalCode, ref]))))
   const moreHypotheses = input.provenance.kind !== 'rule' ? [] : buildRuleHypotheses(evidence.entries)
     .filter(item => !item.supportRefs.some(ref => shown.has(JSON.stringify([item.signalCode, ref]))))
-    .map(item => ({ signalCode: item.signalCode, ruleVersion: item.ruleVersion, supportRefs: item.supportRefs.slice(0, 20),
-      supportCount: new Set(item.supportRefs.map(ref => unit(byRef.get(ref)))).size }))
+    .map(item => {
+      const group = groupOf(item.signalCode, item.supportRefs.map(ref => byRef.get(ref)))
+      return { signalCode: item.signalCode, ruleVersion: item.ruleVersion, supportRefs: item.supportRefs.slice(0, 20),
+        supportCount: new Set(item.supportRefs.map(ref => unit(byRef.get(ref)))).size,
+        ...(group ? { evidenceStatus: STATUS[group.status], counterCount: group.counterUnits } : {}) }
+    })
   // Misconceptions the teacher picked from the approved list on screening answers.
   const picked = new Map()
   for (const entry of evidence.entries) {
@@ -111,6 +129,7 @@ export function validatePupilAnalysis(input, evidence) {
   const teacherMisconceptions = [...picked].map(([id, list]) => ({ misconceptionId: id, refs: list.slice(0, 20), count: list.length }))
   const refs = new Set([...exampleRefs, ...strengths.flatMap(item => item.refs), ...hypotheses.flatMap(item => [...item.supportRefs, ...item.counterRefs]),
     ...repeatedTasks.flatMap(task => [...task.wrongRefs, ...task.correctRefs]), ...moreHypotheses.flatMap(item => item.supportRefs),
+    ...unexplainedRefs,
     ...teacherMisconceptions.flatMap(item => item.refs)])
   return { schemaVersion: PUPIL_ANALYSIS_VERSION, scopeSv: text(input.scopeSv, 300),
     provenance: { kind: input.provenance.kind,
@@ -118,7 +137,8 @@ export function validatePupilAnalysis(input, evidence) {
       instructionVersion: text(input.provenance.instructionVersion, 80) },
     snapshotRevision: evidence.snapshotRevision, period: evidence.period, source: evidence.source,
     counts: analysisCounts(evidence.entries), coverage: evidence.coverage,
-    strengths, hypotheses, repeatedTasks, moreHypotheses, teacherMisconceptions, exampleRefs, limitationsSv: list(input.limitationsSv, 8).map(value => text(value)),
+    strengths, hypotheses, repeatedTasks, moreHypotheses, teacherMisconceptions, exampleRefs,
+    unexplainedRefs, unexplainedCount: unexplained.length, interpretationVersion: INTERPRETATION_VERSION, limitationsSv: list(input.limitationsSv, 8).map(value => text(value)),
     evidence: evidence.entries.filter(entry => refs.has(entry.ref)) }
 }
 

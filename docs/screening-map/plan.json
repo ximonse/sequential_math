@@ -4046,12 +4046,12 @@
       "area": "Felförståelser",
       "title": "En tolkning per elevsvar i alla lärarvyer",
       "kind": "beslut",
-      "status": "Föreslaget",
+      "status": "Lokalt klart",
       "purpose": "Läraren ska få samma bild av elevens förståelse i alla vyer. Rätta svar ska kunna väga upp enstaka fel.",
-      "next": "Simon godkänner docs/FORSLAG_EN_TOLKNING_PER_SVAR.md och besvarar dess tre frågor. Därefter steg 1: funktionen och testet som jämför screening och elevrapport.",
+      "next": "Publicera och kontrollera i produktion: screeningkort och elevrapport för klass 6 ger samma besked.",
       "acceptance": "Screeningkort, tabell, elevrapport, felförståelsekarta, lärartabeller och MCP läser samma tolkning. Avsiktliga skillnader finns i ett dokument med källa. Ett test jämför screeningkort och elevrapport på samma svar.",
-      "decision": "2026-11-18: Simon bad om en noggrann granskning utan kodändringar, där tidigare beslut får ifrågasättas. 2026-11-18: Simon höll med om B1–B5 och sa att tabellträning är mängdträning (B6). Agentens tolkning, ej bekräftad: bara tabellträning.",
-      "evidence": "docs/GRANSKNING_TOLKNING_AV_ELEVSVAR_2026-11-18.md: åtta tolkningskällor och elva krockar, varav fem allvarliga. K4 är bekräftad i test: ett svar som läraren skrivit in blir obesvarat i korten men en misstanke i elevrapporten. Granskningen ändrade ingen kod.",
+      "decision": "2026-11-18: Simon bad om en noggrann granskning utan kodändringar, där tidigare beslut får ifrågasättas. 2026-11-18: Simon höll med om B1–B5 och sa att tabellträning är mängdträning (B6). Agentens tolkning, ej bekräftad: bara tabellträning. 2026-11-18: Simon godkände förslaget och B7 och valde screening först (\"kör på dina förslag och produktion\").",
+      "evidence": "docs/GRANSKNING_TOLKNING_AV_ELEVSVAR_2026-11-18.md: åtta tolkningskällor och elva krockar, varav fem allvarliga. K4 är bekräftad i test: ett svar som läraren skrivit in blir obesvarat i korten men en misstanke i elevrapporten. Granskningen ändrade ingen kod.\n2026-11-18 lokalt: answerInterpretation.js används av alla lärarvyer. Testet som jämför screening och elevrapport är grönt. Syntetisk täckning: felförståelse 418 → 416, samma uppgift flera gånger 28 → 5, oförklarade 44 → 52. 1403 tester och 62 robotar gröna med 0 regelbrott. Ej publicerat.",
       "issue": "",
       "requires": [
         "screening-cell-matches-cards"
@@ -4075,12 +4075,17 @@
         },
         {
           "id": "interp-doc",
-          "text": "Ett flödesdokument som ersätter motsvarande delar i äldre dokument.",
-          "done": false
+          "text": "Flödesdokument: docs/TOLKNING_AV_ELEVSVAR.md. De äldre dokumenten hänvisar dit.",
+          "done": true
         },
         {
           "id": "interp-approve",
           "text": "Simon godkänner förslaget och besvarar frågorna 1–3.",
+          "done": true
+        },
+        {
+          "id": "interp-production",
+          "text": "Kontrollera i produktion att screeningkort och elevrapport ger samma besked.",
           "done": false
         }
       ]

@@ -1,5 +1,7 @@
 # Dataflöde & Logik — Sequential Math
 
+> Tolkningen av elevsvar för läraren beskrivs i [TOLKNING_AV_ELEVSVAR.md](TOLKNING_AV_ELEVSVAR.md) (2026-11-18). Den gäller före beskrivningen här.
+
 ## 1. Övergripande systemarkitektur
 
 ```mermaid

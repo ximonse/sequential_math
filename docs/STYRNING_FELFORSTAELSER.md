@@ -36,6 +36,8 @@ kunde välja egen riktning. Därför är varje regel nedan kopplad till en
 
 ## 3. Nuläge som detta ska rätta
 
+*Historik.* Nuläget efter 2026-11-18 beskrivs i [TOLKNING_AV_ELEVSVAR.md](TOLKNING_AV_ELEVSVAR.md): en tolkning per svar, och fel räknesätt räknas inte längre som slarv.
+
 | Iakttagelse | Belägg |
 | --- | --- |
 | Felförståelser saknas i rutinen för ny domän | Checklistan i `ARCHITECTURE.md` har sju steg, inget om felmodeller |

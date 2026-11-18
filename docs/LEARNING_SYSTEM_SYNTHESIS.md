@@ -283,6 +283,8 @@ Närliggande delar har också avgränsats: datakvalitets-/telemetrisignaler besk
 
 ### F01 — två analyslager med olika betydelse
 
+> **Genomfört 2026-11-18.** Gällande beskrivning: [TOLKNING_AV_ELEVSVAR.md](TOLKNING_AV_ELEVSVAR.md). Texten nedan är historik.
+
 Vanlig `analyzeError` sparar en kategori och vanligen första träffen. v7-motorn räknar flera kandidater vid evidensläsning. Klassmatris och äldre CSV läser sparade fält medan analysrapporten prioriterar nya kandidater. Procent ger exempelvis `wrong_percentage` i vanlig analys och specifika kandidater i rapporten; algebra använder äldre nivå-/textheuristiker respektive faktiska uttryck i den nya motorn.
 
 **Kompletterande fynd:** detta är inte total isolering: `evidencePage` är redan gemensam för båda källorna och servervaliderar regelkandidater. Historiska etiketter behövs för att förklara vad appen gjorde då. `inattention` påverkar dessutom träningens anpassning/masteryhantering, så ett byte av analysmotor kan ändra elevflödet.

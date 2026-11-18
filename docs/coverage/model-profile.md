@@ -6,7 +6,7 @@ En felförståelse med fler än två svar per uppgift visas bara som mönster (S
 
 | Modell | Slag | Svar per uppgift | Uppgifter | Krav | Källa |
 | --- | --- | ---: | ---: | --- | --- |
-| Annat räknesätt | felförståelse | 1 | 161 | 3 uppgifter | Källa: Tabellen (Utför fel räknesätt) ger 234 − 45 = 279. |
+| Annat räknesätt | felförståelse | 1 | 161 |  | Källa: Tabellen (Utför fel räknesätt) ger 234 − 45 = 279. |
 | Svaret är tio, hundra eller tusen gånger fel | observation | 4 | 161 |  | Källa: Tabellen ger 3.4 · 0.2 = 6.8 (tio gånger för stort); gäller decimaluppgifter. |
 | Ett ifrån facit | observation | 2 | 22 |  | Källa: Tabellen (±1-fel vid multiplikation av udda tal, Karlsson & Kilborn) beskriver ±1-fel; gäller bara udda gånger udda. |
 | Bara första siffran inskriven | inmatning | 1 | 127 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
@@ -27,7 +27,7 @@ En felförståelse med fler än två svar per uppgift visas bara som mönster (S
 | En av flera minnessiffror glöms | felförståelse | 2 | 8 |  | Beskrivning: NCM-område AS1 (skriftlig addition), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20. |
 | Lägger till minnessiffra som inte behövs | felförståelse | 1 | 10 |  | Beskrivning: NCM-område AS1 (skriftlig addition), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20. |
 | Räknar från vänster, minnessiffran åt höger | felförståelse | 1 | 7 |  | Beskrivning: NCM-område AS1 (skriftlig addition), förkunskap AG3 (tiotalsövergång). ”Förstå och använda tal” kap. 20. |
-| Multiplicerar i stället för att addera | felförståelse | 1 | 36 | 3 uppgifter | Källa: Tabellen ger 3 + 2 = 6 som exempel. |
+| Multiplicerar i stället för att addera | felförståelse | 1 | 36 |  | Källa: Tabellen ger 3 + 2 = 6 som exempel. |
 | Tiondelar blir hundradelar | felförståelse | 1 | 4 |  | Källa: Klustret ger 0,7 + 0,8 = 0,150; tabellen (Förstå och använda tal s. 111) ger 0,6 + 0,8 = 0,14. |
 | Lägger bara till decimaldelen av ena talet | felförståelse | 1.5 | 8 |  | Beskrivning: Simons iakttagelse i riktiga elevsvar 2026-11-12. |
 | Heltalet ställs under sista decimalen | felförståelse | 1 | 4 |  | Källa: Tabellen ger 120.4 + 63.21 = 75.25 (högerjusterat) som exempel. |
@@ -36,7 +36,7 @@ En felförståelse med fler än två svar per uppgift visas bara som mönster (S
 | Decimaltalet delas upp och räknas från vänster | felförståelse | 1.91 | 11 |  | Simons iakttagelse: Simon 2026-11-14: 7 × 6,7 räknat som 7 + 6 · 7 = 91 från vänster; 6 och 7 blir två tal. |
 | Bara decimaldelen multipliceras | felförståelse | 1 | 10 |  | Simons iakttagelse: Simon 2026-11-14: 3 × 2,4 = 3,2; bara 0,4 multipliceras, 2 står kvar. |
 | Kvoten stannar vid 12 | felförståelse | 1 | 4 |  | Beskrivning: Simons tolkning av riktiga elevsvar 2026-11-14. |
-| Räknar med starttalet vid växling | felförståelse | 1 | 37 | 3 uppgifter | Beskrivning: Bygger på ett riktigt elevsvar och en påhittad testelev; väntar på fler riktiga svar. |
+| Räknar med starttalet vid växling | felförståelse | 1 | 37 |  | Beskrivning: Bygger på ett riktigt elevsvar och en påhittad testelev; väntar på fler riktiga svar. |
 | En av växlingarna minskar inte talet som lånar ut | felförståelse | 2 | 9 |  | Beskrivning: Bygger hittills bara på påhittade testelever; väntar på att synas i riktiga elevsvar. |
 | Hundratalet minskas två gånger vid växling över nolla | felförståelse | 1 | 14 |  | Beskrivning: Agentens förslag, granskat och godkänt av Simon 2026-11-14. |
 | Sista minnessiffran glöms i multiplikationen | felförståelse | 1 | 4 |  | Beskrivning: Bygger hittills bara på påhittade testelever; väntar på att synas i riktiga elevsvar. |

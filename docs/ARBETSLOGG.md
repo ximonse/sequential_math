@@ -1,5 +1,42 @@
 # Arbetslogg
 
+## 2026-11-18: En tolkning per elevsvar i alla lärarvyer
+
+- Simons besked: "Jag håller med, kör på dina förslag och produktion om du inte har frågor." Förslaget, B7 och ordningen med screening först är godkända.
+- Logg: `src/lib/answerInterpretation.js` är den gemensamma tolkningen. Screeningkort, tabellcell, elevrapport, täckning och evidens-API/MCP läser den.
+  - B1: Kravet på tre uppgifter finns kvar bara för "Angränsande produkt", "Fel tabellfaktum i uppställningen" och "ger upp".
+  - B2: Fler jämförbara rätt än fel ger "Motsagd av rätta svar". Antalet motexempel räknas utan tak.
+  - B4: Ett svar som läraren skrivit in tolkas i alla vyer.
+  - B6/B7: Snabbhetsträning blir en misstanke först vid tre svar. Samma felsvar tre gånger visas som "Samma felsvar flera gånger". Olika felsvar på samma uppgift räknas inte dit.
+  - K5: Svar som läraren dolt som slarv lämnar också screeningvyn.
+  - K6: Elevrapporten visar oförklarade fel bland alla svar.
+  - K7: Signalen M är borttagen.
+  - K8: Felförståelsekartan visar aktuell förklaring först och den sparade analysen som "Tidigare analys".
+  - Katalogflaggan `screeningShowsSingle` är ersatt av `wrongOperation`.
+  - Flödesdokumentet är `docs/TOLKNING_AV_ELEVSVAR.md`.
+- Täckning på det syntetiska underlaget (R-D), före och efter:
+
+  | Grupp | Före | Efter |
+  | --- | ---: | ---: |
+  | Felförståelse | 418 | 416 |
+  | Samma uppgift flera gånger | 28 | 5 |
+  | Observation | 6 | 17 |
+  | Inmatning | 3 | 7 |
+  | Ger upp | 1 | 3 |
+  | Oförklarade | 44 | 52 |
+
+  Ändringen följer av B7 och av att allmänna modeller nu viker för specifika även i täckningen. Inga felmodeller och ingen `PREDICTABLE_RULE_VERSION` är ändrade.
+- Verifiering:
+  - Testet `answerInterpretation.test.js` kör samma svar genom screeningkort och elevrapport för K1, K2, K4 och B6/B7. Testet är grönt.
+  - 1403 tester gröna, utom de två kända NCM-radslutsfelen. Build grön.
+  - 62 robotar för analys, screening, diagnos, material och lärarvy är gröna med 0 regelbrott.
+  - Belastning: en läsning till per elev i screeningvyn, för de dolda svaren. Den görs parallellt, så antalet steg i följd är oförändrat (13).
+- Agentens val:
+  - Ett enda svar på en modell utan krav ligger kvar som kort märkt "Enstaka svar" med uppföljning, som förut. Bara svar under ett krav flyttas till "Enstaka svar, för lite underlag".
+  - Motsagda misstankar visas utan uppföljningsknapp.
+  - 3 + 3 = 0 räknas som "svarar 0" även i täckningen, som elevrapporten redan gjorde.
+- Kvar: Kontroll i produktion. Lärarens val ur listan räknas fortfarande separat i elevrapporten. Det är inget eget beslut.
+
 ## 2026-11-18: Nivå vid tabellfel och viktning av upprepade felsvar
 
 - Simons besked: Fel i tabellträning ska inte sänka multiplikationsträningen. Koden gör redan så, vilket agenten kontrollerade: tabellsvaren räknas inte till mastery och inte till aktuellt behov, och de justerar inte nivån. Talkompisar i fritt varv fortsätter att sänka nivån ("1 nej"). Viktning: "all kanske?" och "tre?". Det är infört som B7, preliminärt.

@@ -60,7 +60,7 @@ describe('screening evidence preserves original work and version identity', () =
     const result = await pending
     console.log(`Screening fixture: ${store.lrange.mock.calls.length} event-list reads, ${Date.now() - started} ms simulated`)
     expect(result.pupils).toMatchObject([{ studentId: 'PUPIL', answers: [
-      { assignmentItemId: 'ITEM', studentAnswer: '376', teacherStatus: 'correct', position: 0 }
+      { assignmentItemId: 'ITEM', studentAnswer: '376', status: 'correct', teacherAssessed: true, pupilStatus: 'incorrect', position: 0 }
     ] }])
     expect(store.lrange.mock.calls.map(([key]) => key)).toEqual(['diagnostic_attempt_events:ATTEMPT'])
     expect(store.get.mock.calls.some(([key]) => key.includes('HISTORY'))).toBe(false)

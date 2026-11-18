@@ -34,9 +34,12 @@ export default function DiagnosticScreeningCell({ item, classified, pupilName, p
   // Written answers can be long; the cell shows a start and the tooltip and review show all of it.
   const shortValue = value.length > 24 ? `${value.slice(0, 22).trimEnd()}…` : value
   const card = status === 'incorrect' && classified?.status === 'incorrect' && classified.bucket ? screeningAnswerGroup(classified) : null
+  // The teacher hid it as a slip in the pupil analysis; the cards leave it out too.
+  const hidden = status === 'incorrect' && classified?.hiddenSlip === true
   const cardLine = card && (card.group === 'misconception'
     ? `Felförståelsekort: ${card.misconceptions.map(m => m.titleSv).join('; ')}.` : `Bland felförståelserna: ${SCREENING_GROUP_LABELS_SV[card.group]}.`)
   const label = teacher && teacher.answerStatus !== summary?.answerStatus ? `${labels[status]} enligt läraren`
+    : hidden ? 'Fel svar, dolt som slarv'
     : card ? `Fel svar, ${card.group === 'unexplained' ? 'oförklarat' : SCREENING_GROUP_LABELS_SV[card.group].toLowerCase()}` : labels[status]
   useEffect(() => () => clearTimeout(timer.current), [])
   function show() {

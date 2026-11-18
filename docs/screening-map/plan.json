@@ -4046,11 +4046,11 @@
       "area": "Felförståelser",
       "title": "En tolkning per elevsvar i alla lärarvyer",
       "kind": "beslut",
-      "status": "Beslut behövs",
+      "status": "Föreslaget",
       "purpose": "Läraren ska få samma bild av elevens förståelse i alla vyer. Rätta svar ska kunna väga upp enstaka fel.",
-      "next": "Simon svarar på B1–B6 i granskningen. Därefter skrivs ett separat förslag om en gemensam tolkning per svar.",
+      "next": "Simon godkänner docs/FORSLAG_EN_TOLKNING_PER_SVAR.md och besvarar dess tre frågor. Därefter steg 1: funktionen och testet som jämför screening och elevrapport.",
       "acceptance": "Screeningkort, tabell, elevrapport, felförståelsekarta, lärartabeller och MCP läser samma tolkning. Avsiktliga skillnader finns i ett dokument med källa. Ett test jämför screeningkort och elevrapport på samma svar.",
-      "decision": "2026-11-18: Simon bad om en noggrann granskning utan kodändringar, där tidigare beslut får ifrågasättas.",
+      "decision": "2026-11-18: Simon bad om en noggrann granskning utan kodändringar, där tidigare beslut får ifrågasättas. 2026-11-18: Simon höll med om B1–B5 och sa att tabellträning är mängdträning (B6). Agentens tolkning, ej bekräftad: bara tabellträning.",
       "evidence": "docs/GRANSKNING_TOLKNING_AV_ELEVSVAR_2026-11-18.md: åtta tolkningskällor och elva krockar, varav fem allvarliga. K4 är bekräftad i test: ett svar som läraren skrivit in blir obesvarat i korten men en misstanke i elevrapporten. Granskningen ändrade ingen kod.",
       "issue": "",
       "requires": [
@@ -4065,17 +4065,22 @@
         },
         {
           "id": "interp-decisions",
-          "text": "Simons svar på B1–B6.",
-          "done": false
+          "text": "Simons svar på B1–B6, införda i STYRNING avsnitt 10, punkt 5.",
+          "done": true
         },
         {
           "id": "interp-proposal",
-          "text": "Förslag om en gemensam tolkning per svar, inklusive rätta svar som motvikt.",
-          "done": false
+          "text": "Förslag: docs/FORSLAG_EN_TOLKNING_PER_SVAR.md, väntar på godkännande.",
+          "done": true
         },
         {
           "id": "interp-doc",
           "text": "Ett flödesdokument som ersätter motsvarande delar i äldre dokument.",
+          "done": false
+        },
+        {
+          "id": "interp-approve",
+          "text": "Simon godkänner förslaget och besvarar frågorna 1–3.",
           "done": false
         }
       ]

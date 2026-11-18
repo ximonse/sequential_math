@@ -1,5 +1,13 @@
 # Arbetslogg
 
+## 2026-11-18: Beslut B1–B6 och förslag om en tolkning per svar
+
+- Simons besked: "Jag håller med i dina rekommendationer, jag tänker att tabellträning är mängdträning." Besluten är införda i STYRNING avsnitt 10, punkt 5.
+- Agentens tolkning, ej bekräftad: bara tabellträning är mängdträning. Talkompisar, dubblor och talbilder analyseras då som vanlig träning.
+- Logg: Förslaget ligger i `docs/FORSLAG_EN_TOLKNING_PER_SVAR.md`. Det består av en funktion `interpretAnswers` som alla lärarvyer läser, med reglerna B1–B6, motexempel utan tak och dolda svar i alla vyer. Det ska genomföras i sex steg, där screeningvyn kommer först. Regelversionen för felmodellerna höjs inte, så befintligt uppföljningsmaterial gäller fortfarande.
+- Underlag för B1: av de sju modeller som i dag kräver tre uppgifter har bara "Angränsande produkt" slumprisk över 2. Den förutsäger 3,88 svar per uppgift.
+- Parkerat: Inget byggs förrän Simon har godkänt förslaget och besvarat de tre frågorna i dess avsnitt 6.
+
 ## 2026-11-18: Granskning av tolkningen av elevsvar
 
 - Simons besked: Granska om felförståelseanalysen och presentationen är harmoniska och har dokumenterade beroenden och flöden. Tidigare beslut får ifrågasättas. Var noggrann och linda inte in något. Granskningen ändrar ingen kod.

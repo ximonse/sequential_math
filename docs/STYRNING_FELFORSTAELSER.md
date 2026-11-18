@@ -501,6 +501,32 @@ modeller i katalogen och en rad i täckningsrapporten.
    ger modellen svaret 0, som är vanligt även av andra skäl. Simons fråga för
    senare, inte nu: är det tecknet, uppmärksamheten eller när man adderar
    respektive subtraherar? Kan prövas med textuppgifter utan tecken.
+5. Beslut efter granskningen 2026-11-18
+   (`docs/GRANSKNING_TOLKNING_AV_ELEVSVAR_2026-11-18.md`, B1–B6). Simon:
+   "Jag håller med i dina rekommendationer, jag tänker att tabellträning är
+   mängdträning."
+   - **B1.** Kravet på tre olika uppgifter gäller bara modeller med hög
+     slumprisk. Under kravet heter det "enstaka svar, för lite underlag",
+     aldrig "slarv". Samma regel gäller i alla vyer.
+     *Agentens tillägg, ej beslutat:* "Svarar 0" och "svarar 55" behåller
+     kravet, eftersom det är definitionen av "ger upp". För "räknar med
+     starttalet vid växling" och "fel tabellfaktum i uppställningen" angavs
+     andra skäl 14/11, och de kräver Simons besked.
+   - **B2.** Jämförbara rätta svar dämpar en misstanke. Är de fler än
+     felträffarna visas misstanken som "motsagd av rätta svar", längre ner och
+     med båda siffrorna. Den döljs inte.
+   - **B3.** Lärarvyerna kallar fel räknesätt "fel räknesätt", utan att säga om
+     det är förståelse eller uppmärksamhet. Simons fråga från 12/11 är nästa
+     steg.
+   - **B4.** Ett svar som läraren skrivit in analyseras i alla lärarvyer, märkt
+     som lärarens inskrivning. Täckningen behåller elevens eget svar på en egen
+     rad (R-C).
+   - **B5.** "Samma uppgift fel flera gånger" kräver minst tre fel och fler fel
+     än rätt på uppgiften.
+   - **B6.** Tabellträning är mängdträning. *Agentens tolkning, ej bekräftad:*
+     bara tabellträning. Talkompisar, dubblor och talbilder behandlas då som
+     vanlig träning också i analysen. Mastery och nivå ändras inte, eftersom de
+     redan behandlar bara tabellträning så.
 
 ## 11. Arbetsregel för agenter
 

@@ -4002,12 +4002,12 @@
       "area": "Felförståelser",
       "title": "Tabellen beskriver fel svar som korten",
       "kind": "funktion",
-      "status": "Lokalt klart",
+      "status": "Byggt",
       "purpose": "Läraren ska inte se att tabellen kallar ett svar mönsterlöst samtidigt som ett felförståelsekort tar upp samma svar.",
-      "next": "Publicera, kontrollera klass 6 i produktion och ta ställning till felförståelsekartan för klassen i Statistik & stöd.",
+      "next": "Ta ställning till felförståelsekartan för klassen i Statistik & stöd. Där kan historiska etiketter krocka med beräknade förklaringar.",
       "acceptance": "Ett fel svar i tabellen får samma grupp och samma ord som korten. \"Utan identifierat mönster\" visas bara när korten själva säger oförklarat. Inga ändrade felmodeller eller nycklar.",
       "decision": "2026-11-18: Simon bad om rättningen, trots att den ligger utanför arbetsmålet belastningen, och om en kontroll av andra ställen.",
-      "evidence": "Fynd i produktion i klass 6: 402 − 178 → 134 låg på kortet Växling över nolla, men cellen skrev \"utan identifierat mönster\". Robotkontrollen var röd mot den gamla cellen och är grön med ändringen. 13 screeningrobotar, 1395 tester och build är gröna. Täckningen är oförändrad eftersom ingen klassificeringsregel ändrades. Ej publicerat.",
+      "evidence": "Fynd i produktion i klass 6: 402 − 178 → 134 låg på kortet Växling över nolla, men cellen skrev \"utan identifierat mönster\". Robotkontrollen var röd mot den gamla cellen och är grön med ändringen. 13 screeningrobotar, 1395 tester och build är gröna. Täckningen är oförändrad eftersom ingen klassificeringsregel ändrades.\n2026-11-18 i produktion (f3186e4) i klass 6: alla sex felsvar i tabellen har samma grupp som korten.",
       "issue": "",
       "requires": [
         "screening-results-one-read"

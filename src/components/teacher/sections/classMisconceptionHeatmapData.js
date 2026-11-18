@@ -1,7 +1,7 @@
 import { resolveProblemOperation } from '../../../lib/mathUtils'
 import { teacherPracticeRows } from '../../../lib/teacherPracticeRows.js'
 import { ALL_OPERATIONS, LEVELS } from './dashboardConstants'
-import { currentPracticeCandidates } from '../../../lib/practiceObservation.js'
+import { currentPracticeCandidates, teacherErrorCategory } from '../../../lib/practiceObservation.js'
 
 export { LEVELS }
 export const OPERATIONS = ALL_OPERATIONS
@@ -131,7 +131,7 @@ function buildFeatureSignalRows(featureTotals, featureWrong) {
 }
 
 function getKnowledgeCell(problem, operation) {
-  const errCat = String(problem.errorCategory || '')
+  const errCat = teacherErrorCategory(problem)
   const isKnowledgeLike = !problem.correct && (errCat === 'knowledge' || errCat === 'misconception')
   const patterns = Array.isArray(problem.patterns) ? problem.patterns.slice(0, 4) : []
   if (!isKnowledgeLike) return { isKnowledgeLike, errCat, patterns }

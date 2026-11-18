@@ -5,6 +5,7 @@ import { buildHeatmapData } from '../components/teacher/sections/classMisconcept
 import { buildPupilAnalysisDraft, validatePupilAnalysis } from './pupilAnalysis.js'
 import { teacherPracticeHistory } from './teacherPracticeHistory.js'
 import { teacherPracticeRows } from './teacherPracticeRows.js'
+import { isKnowledgeError } from '../components/teacher/sections/dashboardTableStatusUtils.js'
 
 describe('one current observation across teacher readers', () => {
   it('ignores invalid clocks when choosing a collection and uses the fuller collection on equal clocks', () => {
@@ -76,5 +77,23 @@ describe('one current observation across teacher readers', () => {
     expect(cell.topPatterns).toEqual(['calculation_error'])
     const onlyExplained = buildHeatmapData([{ ...profile, problemLog: [profile.problemLog[0]] }]).subtraction[0].cells.find(cell => cell.level === 4)
     expect(onlyExplained.topPatterns).toEqual([])
+  })
+  it('counts a wrong operation saved as inattention as a knowledge error in teacher views, and nothing else', () => {
+    const base = { domain: 'arithmetic', operation: 'subtraction', problemType: 'subtraction_A', targetLevel: 4,
+      difficulty: { conceptual_level: 4 }, values: { a: 402, b: 178 }, result: 224, answer: { correct: 224 },
+      correctAnswer: 224, correct: false, errorCategory: 'inattention' }
+    const swap = { ...base, observationId: 'SWAP', timestamp: 10, studentAnswer: 580 }
+    const other = { ...base, observationId: 'OTHER', timestamp: 20, studentAnswer: 999 }
+    const profile = { studentId: 'P', name: 'Synthetic', problemLog: [swap, other] }
+    const before = JSON.stringify(profile)
+    expect(isKnowledgeError(swap)).toBe(true)
+    expect(isKnowledgeError(other)).toBe(false)
+    const rows = buildDetailedProblemExportRows(buildAnalyticsSnapshot([profile]))
+    expect(rows.map(row => [row.ObservationsID, row.Kunskapsfel, row['Ouppmärksamhetsfel'], row.HistoriskFelkategori]))
+      .toEqual(expect.arrayContaining([['SWAP', 1, 0, 'inattention'], ['OTHER', 0, 1, 'inattention']]))
+    const cell = buildHeatmapData([profile]).subtraction[0].cells.find(cell => cell.level === 4)
+    expect(cell.wrongAnswers.map(answer => answer.studentAnswer)).toEqual([580])
+    expect(cell.wrongAnswers[0].currentModelIds).toContain('operation_swap')
+    expect(JSON.stringify(profile)).toBe(before)
   })
 })

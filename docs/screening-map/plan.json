@@ -4004,10 +4004,10 @@
       "kind": "funktion",
       "status": "Byggt",
       "purpose": "Läraren ska inte se att tabellen kallar ett svar mönsterlöst samtidigt som ett felförståelsekort tar upp samma svar.",
-      "next": "Publicera rättningen av felförståelsekartan på Simons besked. Simon behöver också ge besked om fel räknesätt som sparats som ouppmärksamhet.",
+      "next": "Publicera val A på Simons besked och kontrollera därefter Elevprofilens nivåtabell i produktion.",
       "acceptance": "Ett fel svar i tabellen får samma grupp och samma ord som korten. \"Utan identifierat mönster\" visas bara när korten själva säger oförklarat. Inga ändrade felmodeller eller nycklar.",
-      "decision": "2026-11-18: Simon bad om rättningen, trots att den ligger utanför arbetsmålet belastningen, och om en kontroll av andra ställen.",
-      "evidence": "Fynd i produktion i klass 6: 402 − 178 → 134 låg på kortet Växling över nolla, men cellen skrev \"utan identifierat mönster\". Robotkontrollen var röd mot den gamla cellen och är grön med ändringen. 13 screeningrobotar, 1395 tester och build är gröna. Täckningen är oförändrad eftersom ingen klassificeringsregel ändrades.\n2026-11-18 i produktion (f3186e4) i klass 6: alla sex felsvar i tabellen har samma grupp som korten.\n2026-11-18 lokalt: Felförståelsekartans lista visar aktuell förklaring. Roboten var röd före och är grön efter, och skärmbilden är granskad. Ändringen är inte publicerad.",
+      "decision": "2026-11-18: Simon bad om rättningen, trots att den ligger utanför arbetsmålet belastningen, och om en kontroll av andra ställen. 2026-11-18: Simon valde A. Bara lärarvyerna räknar fel räknesätt som kunskapsfel. Mastery och adaptiv nivå är oförändrade.",
+      "evidence": "Fynd i produktion i klass 6: 402 − 178 → 134 låg på kortet Växling över nolla, men cellen skrev \"utan identifierat mönster\". Robotkontrollen var röd mot den gamla cellen och är grön med ändringen. 13 screeningrobotar, 1395 tester och build är gröna. Täckningen är oförändrad eftersom ingen klassificeringsregel ändrades.\n2026-11-18 i produktion (f3186e4) i klass 6: alla sex felsvar i tabellen har samma grupp som korten.\n2026-11-18 lokalt: Felförståelsekartans lista visar aktuell förklaring. Roboten var röd före och är grön efter, och skärmbilden är granskad. Ändringen är inte publicerad.\n2026-11-18 produktion (c9074f5), klass 6: 47 rutor. 74 svar har aktuell förklaring och 57 historisk etikett. Inget svar visade olika förklaring i avsnittet ovanför och i listan. Val A är testat lokalt med 1397 tester och nio robotar, och är inte publicerat.",
       "issue": "",
       "requires": [
         "screening-results-one-read"
@@ -4031,13 +4031,13 @@
         },
         {
           "id": "cell-cards-heatmap",
-          "text": "Felförståelsekartan för klassen: aktuell förklaring före sparad etikett (Simon 2026-11-18). Lokalt klart.",
+          "text": "Felförståelsekartan för klassen: aktuell förklaring före sparad etikett. Publicerad c9074f5, kontrollerad i klass 6.",
           "done": true
         },
         {
           "id": "cell-cards-operation-swap",
-          "text": "Beslut: fel räknesätt sparat som ouppmärksamhet i Elevprofilens nivåtabell, NCM-panelen och mastery.",
-          "done": false
+          "text": "Fel räknesätt som sparats som ouppmärksamhet räknas som kunskapsfel i lärarvyerna. Simon valde A 2026-11-18. Lokalt klart.",
+          "done": true
         }
       ]
     }

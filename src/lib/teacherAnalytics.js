@@ -5,7 +5,7 @@ import {
   resolveProblemOperation
 } from './mathUtils'
 import { getNcmSkillMappingFromProblem } from './ncmSkillMap'
-import { currentPracticeCandidates, practiceObservation } from './practiceObservation.js'
+import { currentPracticeCandidates, practiceObservation, teacherErrorCategory } from './practiceObservation.js'
 import { teacherPracticeRows } from './teacherPracticeRows.js'
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -322,8 +322,9 @@ function flattenProblems(profiles) {
         level: Number.isFinite(level) ? level : 1,
         correct: Boolean(problem.correct),
         errorCategory: String(problem.errorCategory || (problem.correct ? 'none' : 'knowledge')),
-        isInattentionError: Boolean(problem.isInattentionError || problem.errorCategory === 'inattention'),
-        isKnowledgeError: Boolean(problem.isKnowledgeError || (!problem.correct && problem.errorCategory !== 'inattention')),
+        // Counted as teacher views count them; errorCategory above keeps the saved label.
+        isInattentionError: !problem.correct && teacherErrorCategory(problem) === 'inattention',
+        isKnowledgeError: !problem.correct && teacherErrorCategory(problem) !== 'inattention',
         isReasonable: Boolean(problem.isReasonable),
         rawTimeSpentSec: Number(problem.timeSpent || 0),
         speedTimeSec: getSpeedTime(problem),
@@ -479,5 +480,5 @@ function toFixedOrEmpty(value, digits = 2) {
 }
 
 function isKnowledgeAttempt(item) {
-  return String(item?.errorCategory || '') !== 'inattention'
+  return !item?.isInattentionError
 }

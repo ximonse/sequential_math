@@ -46,7 +46,7 @@ export function buildNcmDetailForStudent(student) {
     const inWeek = ts >= weekStart
     const correct = Boolean(problem?.correct)
     const knowledgeWrong = !correct && isKnowledgeError(problem)
-    const inattentionWrong = !correct && String(problem?.errorCategory || '') === 'inattention'
+    const inattentionWrong = !correct && !knowledgeWrong
     const speedTimeSec = getSpeedTime(problem)
 
     attemptsTotal += 1

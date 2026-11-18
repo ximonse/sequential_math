@@ -1,5 +1,6 @@
 import { getSpeedTime, inferTableFromProblem } from '../../../lib/mathUtils'
 import { getPreferredProblemSource } from '../../../lib/masteryCalculation'
+import { teacherErrorCategory } from '../../../lib/practiceObservation.js'
 import { getStartOfWeekTimestamp } from '../../../lib/studentProfile'
 import { TABLES, MASTERY_MIN_ATTEMPTS, MASTERY_MIN_SUCCESS_RATE } from './dashboardConstants'
 
@@ -215,5 +216,5 @@ export function getMedianTime(problems) {
 
 export function isKnowledgeError(problem) {
   if (!problem || problem.correct) return false
-  return String(problem.errorCategory || '') !== 'inattention'
+  return teacherErrorCategory(problem) !== 'inattention'
 }

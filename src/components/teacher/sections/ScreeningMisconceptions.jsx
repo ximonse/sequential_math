@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
-import { diagnosticRequest } from './diagnosticRequest'
+import { useEffect, useMemo } from 'react'
 import QuestionText from '../../QuestionText'
 import { screeningMisconceptionView } from '../../../lib/screeningMisconceptions.js'
 
@@ -28,30 +27,15 @@ function Answer({ row, name, cardId }) {
   </li>
 }
 
-export default function ScreeningMisconceptions({ members, isAllowed, mismatched = [], name, selected, onSelect }) {
-  const [parts, setParts] = useState(null)
-  const [message, setMessage] = useState('Hämtar felförståelser...')
-  const memberKey = members.map(member => `${member.classId}:${member.assignmentId}`).join(',')
-  useEffect(() => {
-    let active = true
-    setParts(null)
-    setMessage('Hämtar felförståelser...')
-    void Promise.all(members.map(async ({ classId, assignmentId }) => {
-      const search = new URLSearchParams({ classId, assignmentId, view: 'misconceptions' })
-      const result = await diagnosticRequest(`/api/teacher-diagnostic-attempts?${search}`)
-      if (!result.ok) throw new Error(result.data.error || 'Kunde inte hämta felförståelserna.')
-      return { classId, pupils: result.data.pupils }
-    })).then(parts => { if (active) { setParts(parts); setMessage('') } })
-      .catch(error => { if (active) setMessage(error.message) })
-    return () => { active = false }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [memberKey])
-
+// `parts` are the results reads for the table, one per class; each carries its
+// misconception part, read together with the table (docs/STYRNING_BELASTNING.md).
+export default function ScreeningMisconceptions({ parts, isAllowed, mismatched = [], name, selected, onSelect }) {
+  const failed = parts.find(part => !mismatched.includes(part.classId) && !part.misconceptions?.pupils)
   // The same pupils as the table: allowed recipients, each once, classes with other questions left out.
   const view = useMemo(() => {
-    if (!parts) return null
+    if (failed) return null
     const seen = new Set(), pupils = []
-    for (const { classId, pupils: list } of parts) {
+    for (const { classId, misconceptions: { pupils: list } } of parts) {
       if (mismatched.includes(classId)) continue
       for (const pupil of list) {
         if (!isAllowed(classId, pupil.studentId) || seen.has(pupil.studentId)) continue
@@ -60,12 +44,12 @@ export default function ScreeningMisconceptions({ members, isAllowed, mismatched
       }
     }
     return screeningMisconceptionView(pupils)
-  }, [parts, isAllowed, mismatched])
+  }, [parts, failed, isAllowed, mismatched])
   useEffect(() => {
     if (view && selected && !view.cards.some(card => card.id === selected.id)) onSelect(null)
   }, [view, selected, onSelect])
 
-  if (!view) return <p role="status" className="mt-2 text-sm">{message}</p>
+  if (!view) return <p role="status" className="mt-2 text-sm">{failed?.misconceptions?.error || 'Kunde inte hämta felförståelserna.'}</p>
   const { counts, cards, other } = view
   const chips = [[counts.wrong, 'fel'], [counts.misconception - other.without_link.length, 'pekar på en felförståelse'], [other.without_link.length, 'känt fel utan felförståelse'], [counts.gave_up, 'ger upp'],
     [counts.input, 'inmatning'], [counts.repeated_task, 'samma uppgift flera gånger'], [counts.observation, 'enstaka'],

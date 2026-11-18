@@ -42,11 +42,13 @@ export default function DiagnosticCollectionReview({ members, isAllowed, name, o
     let active = true
     setParts([])
     setMessage('Hämtar status...')
+    // One read per class gives both the table and the misconception cards.
     void Promise.all(members.map(async ({ classId, assignmentId }) => {
-      const search = new URLSearchParams({ classId, assignmentId })
+      const search = new URLSearchParams({ classId, assignmentId, view: 'results' })
       const result = await diagnosticRequest(`/api/teacher-diagnostic-attempts?${search}`)
       if (!result.ok) throw new Error(result.data.error || 'Kunde inte hämta översikten.')
-      return { classId, assignmentId, overview: result.data }
+      const { misconceptions, ...overview } = result.data
+      return { classId, assignmentId, overview, misconceptions }
     })).then(parts => {
       if (!active) return
       const merged = mergeOverviews(parts)
@@ -93,7 +95,7 @@ export default function DiagnosticCollectionReview({ members, isAllowed, name, o
   return <section className="mt-4" aria-label="Genomgång av samling">
     <button type="button" onClick={() => setRefresh(value => value + 1)} className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-sm">Uppdatera översikt</button>
     <p role="status" className="mt-2 text-sm">{message}</p>
-    {overview && overview.rows.length > 0 && <ScreeningMisconceptions key={`${memberKey}:${refresh}`} members={members} isAllowed={isAllowed}
+    {overview && overview.rows.length > 0 && <ScreeningMisconceptions key={`${memberKey}:${refresh}`} parts={parts} isAllowed={isAllowed}
       mismatched={overview.mismatched} name={name} selected={card} onSelect={setCard} />}
     {overview && (overview.rows.length > 0
       ? <DiagnosticScreeningMatrix overview={overview} name={name} onOpen={open} highlight={card?.keys} />

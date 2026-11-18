@@ -57,8 +57,14 @@ test('A wrong answer from a known misconception shows a card that marks the answ
   await expect(wrongCell).not.toHaveClass(/outline-indigo-600/)
   await expect(rightCell).not.toHaveClass(/opacity-35/)
 
+  // From the card to the framed answer, and from there to the pupil's own answer and original work.
+  await card.click()
+  await reviewOf(results).locator('td[data-highlighted]').getByRole('button').click()
+  const dialog = page.getByRole('dialog', { name: 'Elevgenomgång' })
+  await expect(dialog.getByText('Misc Order', { exact: true })).toBeVisible()
+  await expect(dialog.getByText(/Slutsvar: 376/)).toBeVisible()
+  await expect(dialog.getByRole('region', { name: 'Elevens inmatningsförlopp' })).toBeVisible()
   // The teacher picks one more misconception from the approved list; it gets its own card.
-  await review.getByRole('button', { name: /Misc Order,.*svar 376/ }).click()
   const form = page.getByRole('form', { name: 'Lärarens genomgång', exact: true })
   await form.getByRole('combobox', { name: 'Felförståelse ur listan' }).selectOption({ label: 'Tiotalsövergången är inte förstådd' })
   await expect(form.getByRole('list', { name: 'Valda felförståelser' })).toContainText('Tiotalsövergången är inte förstådd')
@@ -73,7 +79,8 @@ test('A wrong answer from a known misconception shows a card that marks the answ
 
   // R2: a reload keeps Screening, the results tab, the recipients and the chosen screening.
   await page.reload()
-  await expect(section.getByRole('button', { name: /Tiotalsövergången är inte förstådd/ })).toBeVisible()
+  await expect(section.getByRole('button', { name: /Tiotalsövergången är inte förstådd/ })).toContainText('Lärarens val')
+  await expect(section.getByRole('button', { name: /Additionskommutativitet överförd till subtraktion/ })).toContainText('Misc Order')
   await expect(results.locator(`button[data-collection-id="${assignment.assignmentId}"]`)).toHaveAttribute('aria-pressed', 'true')
 })
 

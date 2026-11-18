@@ -1,5 +1,16 @@
 # Arbetslogg
 
+## 2026-11-18: Tabell och felförståelser i ett anrop
+
+- Arbetsmål: belastningen.
+- Mätning före: Felförståelsekorten begärdes först när tabellens anrop var klart, eftersom komponenten monterades först då. Felförståelseanropet upprepade sedan nästan alla tabellens databasläsningar: behörighet, elevlista, klassens alla screeningar, försöksindex, varje senaste försök med händelselista och varje lärarbedömning. I ett syntetiskt fall med 28 elever var det bara elevernas index (28 anrop) som var nytt. Båda orsakerna fanns. Dubbelarbetet var större, och en gemensam läsning tar också bort väntan.
+- Logg: `view=results` ger tabell och felförståelser i ett svar. Korten byggs ur samma försök, original och bedömningar som tabellen, med samma postbyggare som elevanalysen (`screeningEvidenceEntry`). Elevens index läses parallellt och avgör som förut vilka försök som visas och i vilken ordning. Fel i kortdelen ger tabellen och ett felmeddelande för korten. De gamla vyerna finns kvar för flikar som öppnats före ändringen. Server-Timing visar `class-access`, `class-pupils`, `assignment-list` och `screening-results`.
+- Belägg, lokalt och syntetiskt (50 ms per databasanrop, 28 elever, sex andra screeningar i klassen): produktionslikt fall med fyra svar 268 → 156 anrop, sekventiella varv till korten 30 → 13, till tabellen 13 → 13. Tätt fall med 112 svar 2068 → 936 anrop, 65 → 13 varv. Behörighetsanropen utanför lagret är med före men inte efter. Det är alltså ytterligare några färre anrop. Tabell och kort är identiska med de gamla vägarnas svar i testet, också när ett försök saknas i elevens index. Inga felmodeller eller klassificeringsregler ändrade, så täckningen är oförändrad före och efter.
+- Verifiering: 1394 tester gröna. Två fel i `scripts/audit-ncm-rule-readiness.test.js` beror på radslut på Windows och rättas av 7c4f998 på `codex/audit-three-fixes`. Build grön. 14 screeningrobotar gröna mot servern från denna gren. `screening-misconceptions` kontrollerar nu också vägen från kort till markerat svar och dialogen med elevens svar 376 och inmatningsförlopp. Efter omladdning ska lärarens val synas på kortet.
+- Simons besked: Minska väntan från vald screening till synliga kort. Gör en kort mätning och välj den minsta motiverade ändringen. Publicering kräver eget besked.
+- Agentens val: Ingen parallell start av två anrop på klienten, eftersom det inte minskar databasarbetet. Postbyggaren bröts ut ur elevanalysens läsning så att båda klassificerar likadant.
+- Kvar: Tiden i produktion är inte mätt. Väntat utfall: korten kommer ungefär samtidigt som tabellen, cirka 3–3,5 s mot nuvarande cirka 8 s. Det ska bekräftas efter publicering. Den lokala commiten a51445f, som begränsar hämtningen av screeninglistor när Screening öppnas, ligger på en annan gren och ingår inte här.
+
 ## 2026-11-17: Felförståelser läser försök från vald screening
 
 - Logg: Välj senaste försök per elev och uppgift före läsning av sparade händelser. Behåll medlemskap i båda indexen, klass- och identitetskontroller samt versionsbunden lärarbedömning.

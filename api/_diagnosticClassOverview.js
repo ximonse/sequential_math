@@ -15,7 +15,9 @@ export async function listDiagnosticAssignmentAttempts(assignment, studentIds, {
       && item.taskId === record.taskId && item.taskVersion === record.taskVersion))
 }
 
-export async function diagnosticClassOverview(assignment, studentIds, { store = kv } = {}) {
+// `onLatest` receives each checked latest attempt with its original work and
+// review, so the screening results read can reuse them instead of reading again.
+export async function diagnosticClassOverview(assignment, studentIds, { store = kv, onLatest } = {}) {
   const records = await listDiagnosticAssignmentAttempts(assignment, studentIds, { store })
   const roster = studentIds.filter(id => assignment.studentIds.includes(id))
   const rows = await Promise.all(roster.map(async studentId => {
@@ -33,6 +35,7 @@ export async function diagnosticClassOverview(assignment, studentIds, { store = 
         || record.taskId !== item.taskId || record.taskVersion !== item.taskVersion || record.evidenceClass !== 'diagnostic_only') {
         throw new Error('Diagnostic attempt changed during class read')
       }
+      onLatest?.({ studentId, item, saved, review })
       const screening = summarizeDiagnosticScreening(item.taskSnapshot, saved.snapshot)
       const teacherAssessment = assessWithTeacher(item.taskSnapshot, saved.snapshot, screening.answerStatus,
         review?.studentId === studentId ? currentTeacherAssessment(review, record) : null)

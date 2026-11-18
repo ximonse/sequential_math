@@ -3933,14 +3933,15 @@
       "kind": "funktion",
       "status": "Byggt",
       "purpose": "Minska väntan till felförståelser och minska databasarbetet när klassen har äldre försök.",
-      "next": "Bedöm återstående väntan i lärarens vy och ta ställning till gemensam läsning av tabell och felförståelser.",
+      "next": "Se kortet Tabell och felförståelser i ett anrop.",
       "acceptance": "Inga händelselistor läses för äldre eller orelaterade försök. Samma aktuella elevsvar, klassåtkomst och lärarbedömningar.",
       "decision": "2026-11-17: Slutför det avgränsade screeningpaketet inom belastningsarbetet. Simon godkände publicering via GitHub.",
       "evidence": "Lokalt: 26 till 1 händelseläsningar i samma syntetiska fall. 400 till 100 ms simulerad väntan. Ingen förändring av felmodeller eller av klassificeringen i regressionen. 1396 tester, build och 7 relevanta robotar gröna.\n2026-11-17 produktion: GitHub master 16745bb, sekvens dpl_BUgJeKr5idZG7yLBmNiUZ7L3bY2h READY med matematik.ximon.se. Tre par läsanrop per version för samma screening. Median felförståelser 5,74 → 4,79 s. Båda anropen i följd 8,82 → 7,98 s. Samma 28 rader och fyra svar per prov. API-tid inklusive JSON, utan rendering.",
       "issue": "",
       "requires": [],
       "affects": [
-        "performance-loading-architecture"
+        "performance-loading-architecture",
+        "screening-results-one-read"
       ],
       "tasks": [
         {
@@ -3952,6 +3953,47 @@
           "id": "screening-scope-teacher",
           "text": "Provöppna felförståelser, lärarbedömning och elevoriginal.",
           "done": true
+        }
+      ]
+    },
+    {
+      "id": "screening-results-one-read",
+      "area": "Belastning",
+      "title": "Tabell och felförståelser i ett anrop",
+      "kind": "funktion",
+      "status": "Lokalt klart",
+      "purpose": "Felförståelsekorten ska synas samtidigt som resultattabellen, och servern ska inte läsa samma försök två gånger.",
+      "next": "Simons besked om publicering. Därefter mät tid till tabell och kort i produktion med Server-Timing (steget screening-results) på samma screening som 2026-11-17.",
+      "acceptance": "En screening och klass läses med ett anrop. Tiden till tabellen ökar inte. Samma elever, svar, kort och lärarbedömningar som de två gamla anropen. Läraren kommer från kort till rätt svar och original, och sparad bedömning syns efter omladdning.",
+      "decision": "2026-11-18: Simon gav uppdraget att minska väntan från vald screening till synliga kort, med gemensam läsning om dubbelarbetet dominerar. Agentens val: korten byggs ur tabellens egna läsningar; de gamla vyerna finns kvar för öppna flikar.",
+      "evidence": "Mätning före: korten begärdes först när tabellen kommit, och felförståelseanropet upprepade nästan alla tabellens databasläsningar. Lokalt, syntetiskt (50 ms per databasanrop, 28 elever): produktionslikt fall 268 → 156 anrop, sekventiella varv till korten 30 → 13, till tabellen 13 → 13. Tätt fall 2068 → 936 anrop, 65 → 13 varv. Samma tabell och kort som de gamla vägarna i testet. 1394 tester gröna (2 kända NCM-radslutsfel på Windows), build, 14 robotar gröna. Ej pushat, ej i produktion.",
+      "issue": "",
+      "requires": [
+        "screening-scoped-misconception-read"
+      ],
+      "affects": [
+        "performance-loading-architecture"
+      ],
+      "tasks": [
+        {
+          "id": "results-one-read-measure",
+          "text": "Mät väntan mellan anropen och dubbelarbetet.",
+          "done": true
+        },
+        {
+          "id": "results-one-read-build",
+          "text": "Bygg gemensam läsning med likvärdighetstest.",
+          "done": true
+        },
+        {
+          "id": "results-one-read-robot",
+          "text": "Robot: kort till svar och original, bedömning efter omladdning.",
+          "done": true
+        },
+        {
+          "id": "results-one-read-production",
+          "text": "Mät tid till tabell och kort i produktion.",
+          "done": false
         }
       ]
     }
@@ -4839,6 +4881,21 @@
     },
     {
       "source": "screening-scoped-misconception-read",
+      "target": "performance-loading-architecture",
+      "kind": "påverkar"
+    },
+    {
+      "source": "screening-scoped-misconception-read",
+      "target": "screening-results-one-read",
+      "kind": "påverkar"
+    },
+    {
+      "source": "screening-scoped-misconception-read",
+      "target": "screening-results-one-read",
+      "kind": "kräver"
+    },
+    {
+      "source": "screening-results-one-read",
       "target": "performance-loading-architecture",
       "kind": "påverkar"
     }

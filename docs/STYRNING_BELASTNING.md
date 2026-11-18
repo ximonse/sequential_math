@@ -69,7 +69,8 @@ använde. Lärarvyn hämtar den lätta katalogen, men servern läser fortfarande
    anrop för den klassen, inte för alla.
 3. **Screeningresultat.** Läs bara den screening som visas och en gång för
    tabell och felförståelser. *Klart när:* en screening läses med ett anrop
-   och tiden halveras.
+   och tiden halveras. *Lokalt 2026-11-18:* ett anrop (`view=results`), se
+   avsnitt 8. Tiden mäts efter publicering.
 4. **Elevens sparande.** Spara nya svar utan att läsa och skriva hela
    profilen varje gång. Störst förändring och störst risk; kräver eget
    förslag före bygge. *Klart när:* ett sparande läser och skriver bara det
@@ -103,3 +104,20 @@ sådan läsning tog den delen av provet 400 ms före och 100 ms efter. Detta är
 ett jämförbart lokalt prov av läsarbetet, inte uppmätt tid i verklig databas
 eller i produktion. Mät tiden från valt resultat till synliga kort efter
 publicering. Tabell och felförståelser hämtas fortfarande var för sig.
+
+## 8. Tabell och felförståelser i ett anrop
+
+Resultatvyn hämtar `teacher-diagnostic-attempts?view=results` per klass. Svaret
+innehåller tabellen och en `misconceptions`-del. Korten byggs ur samma senaste
+försök, original och lärarbedömningar som tabellen. Elevens försöksindex läses
+parallellt och avgör som tidigare vilka försök korten tar med. Kan kortdelen inte
+byggas visas tabellen ändå, med ett felmeddelande för korten. Vyerna utan `view`
+och `view=misconceptions` finns kvar för sidor som laddats före ändringen.
+
+Före ändringen startade felförståelseanropet först när tabellen hade kommit.
+Det läste sedan om nästan allt som tabellen redan hade läst. Syntetiskt, med 50 ms
+per databasanrop och 28 elever: produktionslikt fall 268 → 156 anrop och 30 → 13
+sekventiella varv till korten. Tiden till tabellen var oförändrad: 13 varv. Tätt
+fall: 2068 → 936 anrop och 65 → 13 varv. Detta är ett lokalt prov av läsarbetet.
+Det är ingen uppmätt produktionstid. I produktion visar `Server-Timing` stegen
+`class-access`, `class-pupils`, `assignment-list` och `screening-results`.

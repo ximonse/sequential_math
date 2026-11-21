@@ -124,14 +124,19 @@ lägg inte elevdata i repot och skicka den inte till externa tjänster.
 
 ## Publicering
 
-Publicera alltid via GitHub — aldrig direkt till Vercel.
+Publicera alltid via GitHub — aldrig direkt till Vercel. Rutinen följer
+`C:\Users\ximon\AGENTS.md` → "Git — samma rutin i alla projekt" (2026-11-21):
 
-Push till `origin/master` triggar Vercel-projektet `sekvens`, som äger
-produktionsdomänen `matematik.ximon.se`. Det är den enda vägen till produktion.
-
-Kör aldrig `vercel deploy` eller annan manuell Vercel-deploy från denna mapp,
-och skapa ingen `.vercel`-länk här. Behöver något deployas utanför GitHub-flödet:
-fråga människan först.
+- Jobba aldrig direkt på `master`. Varje uppgift får en egen gren, och den når
+  `master` bara via PR när Simon säger "production".
+- `master` på GitHub triggar Vercel-projektet `sekvens`, som äger
+  produktionsdomänen `matematik.ximon.se`. Det är den enda vägen till produktion.
+- Push av andra grenar bygger inget (Preview-byggen från GitHub är avstängda i
+  Vercel-projektet för att spara byggminuter).
+- "preview" — bara på Simons uttryckliga begäran: `vercel deploy --project sekvens`
+  (aldrig `--prod`). Kontrollera att projektet heter `sekvens`, skapa ingen
+  bestående `.vercel`-länk här och ta bort en som uppstått. Annan manuell
+  Vercel-deploy: fråga människan först.
 
 Varning: det finns ett gammalt, övergivet Vercel-projekt som heter
 `sequential_math` (domän `sequentialmath.vercel.app`). Det saknar git-koppling

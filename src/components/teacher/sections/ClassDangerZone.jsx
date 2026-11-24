@@ -22,7 +22,7 @@ export default function ClassDangerZone({ classRecord, canArchive, canDelete, ca
   }
 
   const resetAccounts = async () => {
-    const confirmed = window.confirm(`Återställ alla elevkonton i ${classRecord.name}?\n\nAll elevdata rensas: träningshistorik, äldre lösenord, gamla QR-kort, PIN-koder och kodnamn. Förnamn och klasstillhörighet behålls. Nya elevkort måste hämtas direkt efteråt.`)
+    const confirmed = window.confirm(`Återställ alla elevkonton i ${classRecord.name}?\n\nAll elevdata rensas: träningshistorik, äldre lösenord, gamla elevkort, PIN-koder och kodnamn. Förnamn och klasstillhörighet behålls. Nya elevkort måste hämtas direkt efteråt.`)
     if (!confirmed) return
     setStatus('Återställer elevkonton...')
     const response = await fetch('/api/student-class-reset', {
@@ -43,7 +43,7 @@ export default function ClassDangerZone({ classRecord, canArchive, canDelete, ca
     <div data-class-danger-zone className="space-y-3 text-xs">
       {canResetAccounts && !classRecord.archived && <div className={BOX}>
         <p className="font-semibold text-rose-900">Återställ alla elevkonton</p>
-        <p className="mt-1 text-rose-900">Rensar elevdata i klassen och utfärdar nya QR-kort och PIN-koder.</p>
+        <p className="mt-1 text-rose-900">Rensar elevdata i klassen och utfärdar nya elevkort och PIN-koder.</p>
         <button type="button" onClick={() => runAction(resetAccounts)} className="mt-2 rounded bg-rose-700 px-3 py-1 font-semibold text-white">Återställ och skapa nya elevkort</button>
       </div>}
       {canArchive && (classRecord.archived ? <div className={BOX}>

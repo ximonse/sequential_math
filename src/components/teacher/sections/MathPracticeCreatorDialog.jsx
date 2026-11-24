@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { createAssignment } from '../../../lib/assignments'
+import { sharedAssignmentSettings } from '../../../lib/assignmentSettings'
 import AssignmentWorkspaceOptions from './AssignmentWorkspaceOptions'
 
-export default function MathPracticeCreatorDialog({ onCreate, onClose, initialWorkspaces = { notebook: false, drawing: true } }) {
+export default function MathPracticeCreatorDialog({ onCreate, onClose, initialWorkspaces = { notebook: false, drawing: true }, initialBreakGames = false }) {
   const [workspaces, setWorkspaces] = useState(initialWorkspaces)
+  const [breakGames, setBreakGames] = useState(initialBreakGames)
   const [title, setTitle] = useState('')
   const [operations, setOperations] = useState(['addition'])
   const [firstMin, setFirstMin] = useState('0')
@@ -37,7 +39,7 @@ export default function MathPracticeCreatorDialog({ onCreate, onClose, initialWo
 
     const assignment = createAssignment({
       kind: 'math_practice',
-      workspaces,
+      ...sharedAssignmentSettings('math_practice', { workspaces, breakGames }),
       title: title.trim(),
       operations,
       numberRange: {
@@ -207,6 +209,15 @@ export default function MathPracticeCreatorDialog({ onCreate, onClose, initialWo
           {/* Checkboxes */}
           <AssignmentWorkspaceOptions value={workspaces} onChange={setWorkspaces} />
           <div className="space-y-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={breakGames}
+                onChange={(e) => setBreakGames(e.target.checked)}
+                className="rounded"
+              />
+              <span className="text-sm text-slate-700">Pausspel (Pong/Snake) i pauserna</span>
+            </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"

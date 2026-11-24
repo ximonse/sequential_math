@@ -3,7 +3,12 @@ import { useState } from 'react'
 const SEARCH_LIMIT = 8
 const BUTTON_BASE = 'rounded-md border px-1.5 py-0.5 text-sm'
 const BUTTON_OFF = 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
-const BUTTON_ON = 'bg-indigo-600 text-white border-indigo-600'
+// The same persistent green state the class filter above uses, so a marked
+// class looks the same wherever the teacher marks one (Simon 2026-11-24).
+// Set as inline style too: the theme stylesheet otherwise softens any
+// aria-pressed button outside the class filter.
+const BUTTON_ON = 'font-semibold'
+const SELECTED_STYLE = { background: '#dcfce7', color: '#14532d', borderColor: '#15803d' }
 
 const keyOf = (value) => String(value ?? '')
 const normalize = (value) => keyOf(value).trim().toLowerCase()
@@ -45,6 +50,7 @@ export default function RecipientPicker({
   recipients = [],
   onChange,
   followsFilter = false,
+  onFollowFilter,
   heading = 'Mottagare',
 }) {
   const [query, setQuery] = useState('')
@@ -90,9 +96,11 @@ export default function RecipientPicker({
       <h3 id="recipient-picker-title" className="text-sm font-semibold text-slate-800">
         {heading}
       </h3>
-      {followsFilter ? (
+      {followsFilter || onFollowFilter ? (
         <p className="text-xs text-slate-500 mt-0.5">
-          Följer klassfiltret ovan. Välj här för att dela ut till andra.
+          {followsFilter
+            ? 'Följer klassfiltret ovan. Välj här för att dela ut till andra.'
+            : 'Eget urval. Klassfiltret ovan styr bara vad vyn visar och vilken länk du kan kopiera.'}
         </p>
       ) : null}
 
@@ -104,10 +112,12 @@ export default function RecipientPicker({
               key={`class-${cls.id}`}
               type="button"
               aria-pressed={selected}
+              data-recipient-selected={selected ? 'true' : undefined}
               onClick={() => toggle('class', cls.id)}
               className={`${BUTTON_BASE} ${selected ? BUTTON_ON : BUTTON_OFF}`}
+              style={selected ? SELECTED_STYLE : undefined}
             >
-              {cls.name}
+              {selected ? <span aria-hidden="true">✓ </span> : null}{cls.name}
             </button>
           )
         })}
@@ -118,10 +128,12 @@ export default function RecipientPicker({
               key={`group-${group.id}`}
               type="button"
               aria-pressed={selected}
+              data-recipient-selected={selected ? 'true' : undefined}
               onClick={() => toggle('group', group.id)}
               className={`${BUTTON_BASE} ${selected ? BUTTON_ON : BUTTON_OFF}`}
+              style={selected ? SELECTED_STYLE : undefined}
             >
-              {`Grupp: ${group.name}`}
+              {selected ? <span aria-hidden="true">✓ </span> : null}{`Grupp: ${group.name}`}
             </button>
           )
         })}
@@ -181,14 +193,25 @@ export default function RecipientPicker({
         <p data-recipient-summary className="text-xs text-slate-600">
           {summary}
         </p>
-        <button
-          type="button"
-          onClick={() => onChange([])}
-          disabled={recipients.length === 0}
-          className={`${BUTTON_BASE} ${BUTTON_OFF} disabled:opacity-40 disabled:cursor-not-allowed`}
-        >
-          Rensa
-        </button>
+        {onFollowFilter ? (
+          <button
+            type="button"
+            onClick={onFollowFilter}
+            disabled={followsFilter}
+            className={`${BUTTON_BASE} ${BUTTON_OFF} disabled:opacity-40 disabled:cursor-not-allowed`}
+          >
+            Följ klassfiltret igen
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onChange([])}
+            disabled={recipients.length === 0}
+            className={`${BUTTON_BASE} ${BUTTON_OFF} disabled:opacity-40 disabled:cursor-not-allowed`}
+          >
+            Rensa
+          </button>
+        )}
       </div>
     </section>
   )

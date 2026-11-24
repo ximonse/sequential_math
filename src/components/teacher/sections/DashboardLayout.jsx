@@ -769,7 +769,8 @@ export default function DashboardLayout({
             {activeWorkspace === 'teaching' && (
               <RecipientPicker classes={classes} groups={teacherGroups} students={students}
                 recipients={recipients} onChange={setDeliveryPicks}
-                followsFilter={recipientsFollowFilter && activeWorkspace === 'teaching'} />
+                followsFilter={recipientsFollowFilter && activeWorkspace === 'teaching'}
+                onFollowFilter={() => setDeliveryPicks(null)} />
             )}
             {activeWorkspace === 'teaching' && (
               <RecipientActiveOverview recipients={recipients} assignmentTargets={assignmentTargets}

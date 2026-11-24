@@ -19,7 +19,7 @@ export default function PasswordResetPanel({
         </p>
       </div>
       <p className="text-sm text-gray-500 mb-3">
-        Detta gäller bara äldre namn/lösenordskonton. QR+PIN-elever hanteras via elevprofilen: välj <strong>Nytt QR-kort / ny PIN</strong>.
+        Detta gäller bara äldre namn/lösenordskonton. Elever med kodnamn och PIN hanteras via elevprofilen: välj <strong>Nytt elevkort / ny PIN</strong>.
       </p>
       <div className="flex flex-wrap items-center gap-2 mb-2">
         <input

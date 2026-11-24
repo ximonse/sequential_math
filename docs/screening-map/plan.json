@@ -4123,6 +4123,63 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "teacher-card-and-assignment-modules",
+      "area": "Lärarvy",
+      "title": "Elevkortet ser ut som utskriften, och uppdragsmodulerna är åtskilda",
+      "status": "Lokalt klart",
+      "kind": "funktion",
+      "purpose": "Läraren ska se samma elevkort på skärmen som i PDF:en, se vilken modul som används när ett uppdrag skapas, och förstå var en delad inställning faktiskt gäller. Markerad mottagare ska vara lika tydlig som markerad klass i filtret.",
+      "next": "Simon provar i lärarvyn efter nästa push: jämför kortet på skärmen med hämtad PDF, tryck en infoikon på iPad, och kontrollera grön markering plus \"Följ klassfiltret igen\" i Uppdrag & tickets.",
+      "acceptance": "Skärmkortet visar samma header, tre steg, PIN-box och namnremsa som PDF:en, utan QR-kod och utan elev-ID. Varje sätt att skapa uppdrag ligger i egen rundad ruta med infoikon som fungerar både vid hovring och vid tryck. En kryssad arbetsyta eller ett kryssat pausspel gäller de uppdragstyper infotexten anger, och ingen annan. Vald mottagare visas med samma gröna markering och bock som klassfiltret, och läraren kan gå tillbaka till att följa klassfiltret.",
+      "decision": "2026-11-24: Simon beställer fyra ändringar och svarar på fyra frågor: elevkortet ska se ut som PDF:en (QR-kod och elev-ID bort), modulerna i uppdragsskaparen ska boxas med infoikoner, fokusövningen ska boxas som de andra trots att bara superadmin kan läsa resultaten, inställningar som inte gäller alla uppdragstyper ska rättas, och mottagarmarkeringen ska bli grön som klassfiltret. Simon godkände att arbetet ligger utanför belastningsmålet. Agentens egna val inom mandatet: \"Skapa egna\" flyttades in i rutan Eget uppdrag, och \"Rensa\" i Mottagare ersattes av \"Följ klassfiltret igen\" i stället för att behållas vid sidan av.",
+      "evidence": "2026-11-24 lokalt, gren claude/elevkort-uppdragsmoduler från master 5ffec64. Kort: nya src/lib/studentCardLayout.js delas av PDF-generatorn och skärmkortet, så måtten inte kan glida isär; ClassLoginTab och StudentDetailPanel ritade egna kort med QR och elev-ID och använder nu samma kort; texter som kallade kortet QR-kort rättades. Elevinloggningen frågar bara efter kodnamn och PIN (PilotStudentLoginForm), så QR-koden pekade på en väg appen inte har. Inställningar: ny src/lib/assignmentSettings.js håller vilken uppdragstyp som bär vilken delad inställning; tabell och Skapa egna fick de inställningar de saknade, talbild ärver pausspelsvalet. Arbetsytor kräver elevsidans SessionPage, som fokusövning och talbild inte går via; de två rutornas infotexter säger det i stället för att visa ett val utan verkan. Mottagare: grön markering med bock, egen regel i teacherAdmin.css eftersom temats aria-pressed-regel annars mjukar upp den. Tre nya enhetstester i RecipientPicker.test.jsx var röda före och gröna efter; nytt robotfall robots/assignment-settings-coverage.robot.js för inställningstäckningen. Vitest huvudrepo 1416/1418 (de två felen är ett förbefintligt fel i scripts/audit-ncm-rule-readiness.test.js på master: SCREENING_SELECTION_PRINCIPLES.md har ändrats utan att hashen i NCM_DIDACTIC_COVERAGE.json stämts av). Build ok. Inte pushat, inte i produktion; visuell kontroll av kortet och rutorna kvarstår hos Simon.",
+      "issue": "",
+      "requires": [],
+      "affects": [],
+      "tasks": [
+        {
+          "id": "card-layout-teacher-card-and-assignment-modules",
+          "text": "Elevkortet på skärmen byggs från samma layoutmodul som PDF:en",
+          "done": true
+        },
+        {
+          "id": "card-no-qr-teacher-card-and-assignment-modules",
+          "text": "QR-kod och elev-ID bort från alla tre kortvisningar",
+          "done": true
+        },
+        {
+          "id": "modules-boxed-teacher-card-and-assignment-modules",
+          "text": "Arbetsytor, Domäner, Eget uppdrag, Tabell och Fokusövning i egna rutor med infoikon",
+          "done": true
+        },
+        {
+          "id": "modules-hint-teacher-card-and-assignment-modules",
+          "text": "Infoikonen fungerar vid hovring och vid tryck med samma text",
+          "done": true
+        },
+        {
+          "id": "settings-reach-teacher-card-and-assignment-modules",
+          "text": "Tabell och Skapa egna bär de delade inställningarna; fokus och talbild säger att de inte gör det",
+          "done": true
+        },
+        {
+          "id": "recipient-green-teacher-card-and-assignment-modules",
+          "text": "Mottagare: grön markering med bock och väg tillbaka till klassfiltret",
+          "done": true
+        },
+        {
+          "id": "simon-visual-teacher-card-and-assignment-modules",
+          "text": "Simon provar kortet, rutorna och mottagarmarkeringen efter push",
+          "done": false
+        },
+        {
+          "id": "robots-full-teacher-card-and-assignment-modules",
+          "text": "Robotsviten körd i sin helhet",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [

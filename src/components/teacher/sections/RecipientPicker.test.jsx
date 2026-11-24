@@ -38,7 +38,7 @@ describe('RecipientPicker class toggles', () => {
     const html = renderToStaticMarkup(
       <RecipientPicker {...base} recipients={[{ type: 'class', id: 'c1' }]} />,
     )
-    expect(html).toMatch(/aria-pressed="true"[^>]*>6A</)
+    expect(html).toMatch(/aria-pressed="true"[^>]*>(<span[^>]*>✓ <\/span>)?6A</)
     expect(html).toMatch(/aria-pressed="false"[^>]*>6B</)
   })
 
@@ -55,5 +55,35 @@ describe('RecipientPicker followsFilter', () => {
     const off = renderToStaticMarkup(<RecipientPicker {...base} recipients={[]} />)
     expect(on).toContain(sentence)
     expect(off).not.toContain(sentence)
+  })
+})
+
+// Simon 2026-11-24: a marked class must be as clear here as in the class
+// filter above, and the teacher must be able to get back to following the
+// filter. An empty selection hands work to every class, so "Rensa" was the
+// wrong way out.
+describe('RecipientPicker and the class filter', () => {
+  it('marks a selected class with the same green state as the class filter', () => {
+    const html = renderToStaticMarkup(
+      <RecipientPicker {...base} recipients={[{ type: 'class', id: 'c1' }]} />,
+    )
+    expect(html).toContain('data-recipient-selected="true"')
+    expect(html).toContain('✓')
+  })
+
+  it('says the selection follows the class filter, and offers no clearing that means every class', () => {
+    const html = renderToStaticMarkup(
+      <RecipientPicker {...base} recipients={[{ type: 'class', id: 'c1' }]} followsFilter onFollowFilter={() => {}} />,
+    )
+    expect(html).toContain('Följer klassfiltret')
+    expect(html).not.toContain('>Rensa<')
+  })
+
+  it('offers a way back to the class filter once the teacher has picked recipients', () => {
+    const html = renderToStaticMarkup(
+      <RecipientPicker {...base} recipients={[{ type: 'class', id: 'c2' }]} followsFilter={false} onFollowFilter={() => {}} />,
+    )
+    expect(html).toContain('Eget urval')
+    expect(html).toContain('Följ klassfiltret igen')
   })
 })

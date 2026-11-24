@@ -24,6 +24,13 @@ export default function ModuleInfoHint({ label, children }) {
 
   const visible = open || hovered
 
+  // A tap also fires an emulated mouseenter. Reacting to that would leave the
+  // hover state on, so a second tap could not close the explanation. Hovering
+  // is therefore only read from a real mouse pointer.
+  const hoverFromMouse = (event, value) => {
+    if (event.pointerType === 'mouse') setHovered(value)
+  }
+
   return (
     <span ref={wrapper} className="relative inline-flex">
       <button
@@ -31,9 +38,9 @@ export default function ModuleInfoHint({ label, children }) {
         aria-label={`Så funkar ${label}`}
         aria-expanded={open}
         aria-describedby={visible ? hintId : undefined}
-        onClick={() => setOpen(value => !value)}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onClick={() => { setOpen(value => !value); setHovered(false) }}
+        onPointerEnter={event => hoverFromMouse(event, true)}
+        onPointerLeave={event => hoverFromMouse(event, false)}
         onFocus={() => setHovered(true)}
         onBlur={() => setHovered(false)}
         className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-slate-400 bg-white text-[11px] font-bold leading-none text-slate-600 hover:border-slate-600 hover:text-slate-900"

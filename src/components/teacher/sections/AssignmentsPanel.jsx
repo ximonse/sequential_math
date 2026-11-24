@@ -28,7 +28,7 @@ const HINTS = {
   domains: 'Färdiga uppdrag per kunskapsområde. Eleven får frågor på sin egen nivå utifrån sin träning. Talbild öppnar en egen dialog där du ställer in övningen.',
   builder: 'Du bestämmer räknesätt, antal frågor och hur nivån väljs: anpassad efter eleven, stigande genom uppdraget, eller en bestämd nivå. "Skapa egna" ger fler inställningar, som talområde och tid per tal.',
   table: 'Multiplikationstabellerna du markerar blir ett uppdrag. Eleven övar en tabell i taget.',
-  focus: 'Korta uppmärksamhetsövningar. Eleven kan göra dem, men resultaten syns bara för superadmin — du ser dem inte i lärarvyn. Arbetsytor och pausspel gäller inte här.',
+  focus: 'Korta uppmärksamhetsövningar. Eleven kan göra dem, men resultaten visas bara för superadmin, under arbetsytan Fokusövningar. Arbetsytor och pausspel gäller inte här.',
   breakGames: 'Pong eller Snake i uppdragets pauser i stället för en vanlig vilopaus. Gäller domäner, eget uppdrag, tabell, talbild och Skapa egna. Fokusövning har inga pauser.'
 }
 
@@ -95,7 +95,7 @@ export default function AssignmentsPanel({
       </div>
 
       <AssignmentModuleBox title="Arbetsytor" hint={HINTS.workspaces}>
-        <AssignmentWorkspaceOptions value={workspaces} onChange={setWorkspaces} />
+        <AssignmentWorkspaceOptions value={workspaces} onChange={setWorkspaces} showLegend={false} />
       </AssignmentModuleBox>
 
       <AssignmentModuleBox title="Domäner" hint={HINTS.domains}>
@@ -144,11 +144,13 @@ export default function AssignmentsPanel({
         <AssignmentFocusPreset breakGames={breakGames} workspaces={workspaces} onCreated={onCreateMathPractice} />
       </AssignmentModuleBox>
 
-      <label className="mb-3 flex items-center gap-2 text-xs text-gray-600">
-        <input type="checkbox" checked={breakGames} onChange={(event) => setBreakGames(event.target.checked)} />
-        Pausspel (Pong/Snake) i nya uppdrag. Av = vanlig vilopaus.
+      <div className="mb-3 flex items-center gap-2 text-xs text-gray-600">
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={breakGames} onChange={(event) => setBreakGames(event.target.checked)} />
+          Pausspel (Pong/Snake) i nya uppdrag. Av = vanlig vilopaus.
+        </label>
         <ModuleInfoHint label="Pausspel">{HINTS.breakGames}</ModuleInfoHint>
-      </label>
+      </div>
 
       {assignments.length === 0 ? (
         <p className="text-sm text-gray-500">Inga uppdrag skapade ännu.</p>

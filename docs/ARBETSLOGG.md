@@ -42,6 +42,21 @@
 - Läsbart bara. Avaktivering härifrån vore möjlig i API:t men låg utanför
   minsta steget.
 
+### Preview och avstämning
+
+- Pushat till `claude/admin-foreign-assignments`, PR #47 som utkast. Preview
+  byggd och provad av Simon i lärarvyn: ”Ser bra ut”. Previewen är skyddad av
+  Vercel Authentication; `class-config` svarade 404 i stället för lagringsfel,
+  så KV-variablerna finns i Preview-miljön. Att det är samma databasinstans som
+  produktion gick inte att bekräfta: Vercel-kopplingen nekar (403) att lista
+  miljövariabler. Inte i produktion; ingen merge.
+- Simon: ”aktiverat av” räcker. Vem som *skapade* uppdraget behövs inte — och
+  finns inte heller i payloaden, som bara bär id, kind, title, createdAt och
+  inställningar. `activatedBy` sparas sedan `ec6c95d` (2026-10-21), så
+  aktiveringar äldre än det visar inget namn.
+- Erbjudna men inte beställda: avsändare även på egna uppdragsrader, och
+  bredare namnuppslag via `/api/admin/teachers` (ett extra anrop i lärarvyn).
+
 ### Tankar och parkerat
 
 - Uppdrag aktiverade på enskild elev syns först när klassen öppnas:

@@ -57,6 +57,28 @@
 - Erbjudna men inte beställda: avsändare även på egna uppdragsrader, och
   bredare namnuppslag via `/api/admin/teachers` (ett extra anrop i lärarvyn).
 
+### Robotkontroll och sammanslagning med master
+
+- Grenen låg 25 commits bakom master; både previewen och de första
+  robotkörningarna gjordes därför mot ett gammalt underlag. Master är nu
+  sammanslagen in i grenen (konflikter i denna logg och i projektkartan lösta
+  för hand; a51445f:s egen loggpost och kartfält bevarade).
+- Full robotsvit parallellt: 9 röda. Seriellt (`ROBOT_WORKERS=1`) blev sex av dem
+  gröna direkt — uppdrag, uppdragskö, uppdragstak och elevanalys. De var
+  parallellstörning: robotarna delar en minnesdatabas och ser varandras klasser.
+- `screening-load` är ordningsberoende: dess lärare är `super_admin` och ser alla
+  klasser i minnesdatabasen, så varje klass en tidigare robot skapat fäller
+  jämförelsen. Den var grön med min ändring i den rena tre-filskörningen.
+- Parvis jämförelse på nya underlaget, samma filer och ordning: masters egen kod
+  3 röda / 4 gröna; med min ändring 2 röda / 5 gröna. Min ändring orsakar inga
+  robotfel.
+- **Fynd som inte är mitt:** `teacher-names` är röd i varje körning, också på
+  masters kod — lärarens privata tilltalsnamn syns inte i Klass/gruppvy efter
+  omladdning. Eftersom master är produktionens kod finns felet rimligen i drift.
+  Inte undersökt; inget mandat begärt. `admin-tab` faller också på masters kod,
+  men hoppar mellan körningar som `screening-load`.
+- Rapporten visade ”0 regelbrott” i samtliga körningar: R1–R4, L1 och T1 höll.
+
 ### Tankar och parkerat
 
 - Uppdrag aktiverade på enskild elev syns först när klassen öppnas:

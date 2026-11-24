@@ -50,6 +50,7 @@ import {
 } from '../../lib/storage'
 import { getActiveAssignment, hydrateAssignmentsFromServer } from '../../lib/assignments'
 import { activeAssignmentIds } from '../../lib/activeAssignments'
+import { collectForeignActiveAssignments, teacherNameMap } from './sections/foreignActiveAssignments'
 import { getTeacherClassIds } from '../../lib/teacherAuth'
 import { hydrateTicketsFromServer } from '../../lib/tickets'
 import { loadTeacherWorkspace } from '../../lib/teacherWorkspaceSync'
@@ -84,6 +85,9 @@ function Dashboard() {
   const [sortDir, setSortDir] = useState('desc')
   const [classes, setClasses] = useState([])
   const [teacherGroups, setTeacherGroups] = useState([])
+  // `{ teacherId: displayName }` from the same response, so an assignment another
+  // teacher activated can name them instead of showing a raw account id.
+  const [teacherNames, setTeacherNames] = useState({})
   const [classesReady, setClassesReady] = useState(false)
   const [groupsReady, setGroupsReady] = useState(false)
   const [selectedClassIds, setSelectedClassIds] = useState(() => loadSavedTeacherClassFilter())
@@ -157,6 +161,7 @@ function Dashboard() {
       loadTeacherGroups().then(data => {
         if (sequence === loadSequence.current) {
           setTeacherGroups(Array.isArray(data?.groups) ? data.groups : [])
+          setTeacherNames(teacherNameMap(data?.teachers))
           setGroupsReady(true)
         }
       }).catch(() => setDashboardStatus('Grupplistan kunde inte hämtas. Tidigare val är kvar.')),
@@ -329,10 +334,17 @@ function Dashboard() {
   )
   // Where each assignment is active, from the server's class, group and pupil records.
   const assignmentTargets = useMemo(() => [
-    ...classes.map(item => ({ type: 'class', id: String(item.id), name: item.name || String(item.id), assignmentIds: activeAssignmentIds(item) })),
-    ...teacherGroups.map(item => ({ type: 'group', id: String(item.id), name: `Grupp: ${item.name}`, assignmentIds: activeAssignmentIds(item) })),
-    ...students.map(item => ({ type: 'student', id: String(item.studentId), name: item.name || item.studentId, assignmentIds: activeAssignmentIds(item) }))
+    ...classes.map(item => ({ type: 'class', id: String(item.id), name: item.name || String(item.id), assignmentIds: activeAssignmentIds(item), record: item })),
+    ...teacherGroups.map(item => ({ type: 'group', id: String(item.id), name: `Grupp: ${item.name}`, assignmentIds: activeAssignmentIds(item), record: item })),
+    ...students.map(item => ({ type: 'student', id: String(item.studentId), name: item.name || item.studentId, assignmentIds: activeAssignmentIds(item), record: item }))
   ], [classes, teacherGroups, students])
+  // Active assignments with no row in the list above, because the assignment
+  // library is private to each teacher account. Pupil-level ones appear once the
+  // class is opened: the start catalog carries no assignment fields.
+  const foreignActiveAssignments = useMemo(
+    () => collectForeignActiveAssignments(assignmentTargets, assignments, teacherNames),
+    [assignmentTargets, assignments, teacherNames]
+  )
   // Who to hand work to. Until the teacher picks, it follows the class filter above.
   const [deliveryPicks, setDeliveryPicks] = useState(null)
   const recipients = useMemo(() => deliveryPicks ?? selectedClassIds.map(id => ({
@@ -546,7 +558,7 @@ function Dashboard() {
         handleToggleClassFilter, classStats, dataQualitySummary, usageInsights, formatDuration,
         toPercent, assignments, copiedId,
         formatAssignmentSummaryLine, handleCreatePreset, handleCreateMathPractice, handleDeactivateAssignment, handleClearAllAssignments,
-        handleActivateAssignment, assignmentTargets, recipients, setDeliveryPicks, teacherGroups,
+        handleActivateAssignment, assignmentTargets, foreignActiveAssignments, recipients, setDeliveryPicks, teacherGroups,
         recipientsFollowFilter: deliveryPicks === null, handleDeleteAssignment, handleCopyAssignmentLink, classNameById,
         recordMatchesClassFilter, setStudents, setDashboardStatus, handleOpenStudentDetail,
         classOverviewMeta, filteredRows, detailStudentId,

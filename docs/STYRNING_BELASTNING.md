@@ -62,11 +62,21 @@ använde. Lärarvyn hämtar den lätta katalogen, men servern läser fortfarande
    *Mätt i produktion 2026-11-16 (0351a78):* katalogen 13 s → 1,6–1,8 s varm,
    också efter två minuter; 211 elever, svaret oförändrat (62 kB). Kvar till
    under en sekund: två raderingskontroller per elev (422 databasanrop).
-   *Lokalt:* raderingskontrollen läses i grupp (`deletedStudents`, 50 elever
-   per anrop); test och 11 robotar gröna. Mäts efter publicering.
+   *Publicerat och mätt 2026-11-16 (e0a24d8, 305e7f2):* raderingskontrollen i
+   grupp (422 → 5 databasanrop) och parallellt med kortläsningen. Katalogen
+   varm 1,05–1,47 s. **Klart-villkoret justerat:** under en sekund går inte,
+   eftersom även de enklaste anropen tar 0,75–0,87 s (servern körs i Vercels
+   region iad1, USA). Katalogen ligger nu i nivå med dem och läser inga
+   profiler. Steg 1 klart.
+   *Kandidat för senare:* flytta serverns region närmare användarna och
+   databasen; sänker alla anrop. Databasens region är inte kontrollerad.
 2. **Screening öppnas.** Hämta screeninglistor bara för de klasser som behövs
    i den flik som visas. *Klart när:* att öppna Resultat för en klass gör
    anrop för den klassen, inte för alla.
+   *Byggt lokalt 2026-11-16:* biblioteket läser alla klasser bara under
+   Utdelade; Skapa ny läser mottagarnas klasser, Resultat och Utkast inga
+   extra. Lästa listor sparas tills Läs om. Robot `screening-load` räknar
+   anropen; 31 screeningrobotar gröna. Mäts efter publicering.
 3. **Screeningresultat.** Läs bara den screening som visas och en gång för
    tabell och felförståelser. *Klart när:* en screening läses med ett anrop
    och tiden halveras. *Produktion 2026-11-18 (97edf4b):* ett anrop

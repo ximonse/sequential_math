@@ -14,10 +14,11 @@ export default function ScreeningDispatchPanel({ classes, students, teacherGroup
   renderResults, isResultsDirty, onLeaveResults }) {
   const navigate = useNavigate()
   const context = useMemo(() => ({ classes, students, groups: teacherGroups }), [classes, students, teacherGroups])
-  const library = useScreeningLibrary(classes, active)
   const [flow, setFlow] = useState(() => ({ id: crypto.randomUUID(), source: null, draftId: '' }))
   // The chosen tab stays after a reload in the same browser tab (R2).
   const [tab, setTab] = useSessionState('mathapp_screening_tab', 'create', value => TABS.some(([id]) => id === value))
+  // Every class's list only for the issued list; creating asks for its recipients' classes.
+  const library = useScreeningLibrary(classes, active, tab === 'issued')
   // Once opened, the issued list stays mounted so its search and filters survive a
   // visit to the results tab, as they did when results were a page of their own.
   const [issuedSeen, setIssuedSeen] = useState(false)

@@ -38,6 +38,9 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
   const title = draft.titleSv
   const plan = resolveScreeningRecipients(recipients, context)
   const limits = applyScreeningLimits(plan.dispatches, library.loaded)
+  const planClassKey = plan.dispatches.map(item => item.classId).join(',')
+  const requestClasses = library.request
+  useEffect(() => { if (planClassKey) requestClasses(planClassKey.split(',')) }, [planClassKey, requestClasses])
   const customTasks = [...draft.writtenTasks, ...draft.imageTasks, ...(draft.textTasks || []), ...(draft.customPrompt.trim() ? [{ promptSv: draft.customPrompt, gridEnabled: draft.customGrid, drawingEnabled: draft.customDrawing }] : [])]
     .map(({ uid: _uid, ...task }) => task)
   const questions = screeningQuestions(draft, diagnosticCatalog.findTask)

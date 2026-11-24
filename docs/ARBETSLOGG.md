@@ -1,5 +1,96 @@
 # Arbetslogg
 
+## 2026-11-24: Administratör ser aktiva uppdrag utanför eget bibliotek
+
+### Logg
+
+- Simon såg mängder av uppdrag som elev men inga som administratör. Orsak:
+  uppdragsbiblioteket ligger per lärarkonto i
+  `teacher_workspace:{teacherId}:assignments`, medan aktiveringen ligger på
+  klass-, grupp- eller elevposten (`activeAssignments`). AssignmentsPanel
+  loopade bara över det egna biblioteket, så ett uppdrag någon annan
+  aktiverat fick ingen rad alls. Ingen läsning filtrerar på `activatedBy`.
+- Byggt lokalt: `foreignActiveAssignments.js` (ren hjälpfunktion, 7 tester)
+  och `ForeignAssignmentRows.jsx`, inkopplade i Dashboard och DashboardLayout.
+  Raden ligger utanför tomt-läge-grenen, så den syns även när det egna
+  biblioteket är tomt — precis administratörsfallet.
+- `npm run test`: enda felet i riktiga trädet är
+  `scripts/audit-ncm-rule-readiness.test.js`, som faller lika utan ändringen
+  (kontrollerat med stash). Övriga fel kommer från gamla `.claude/worktrees`.
+  `npm run build` grön, eslint rent. Robotar inte körda: ingen logikändring i
+  uppgifter, nivåer, sparande eller lärarvyns siffror.
+
+### Simons beslut
+
+- Minsta steget: visa raden. Inte dela uppdragsbiblioteket mellan lärarkonton.
+- Uppdraget hör inte till arbetsmålet belastningen. Simon valde att bygga ändå.
+
+### Agentens val
+
+- Skiljelinje: detta gäller uppdrag via länk (`activeAssignments`). Screening
+  ligger per klass (`diagnostic_assignments_by_class`) och syns redan för den
+  som har klassåtkomst — den listan berörs inte av felet.
+- Skälet jag framhöll när jag frågade: ändringen är ren klientlogik utan nya
+  serveranrop, så den påverkar inte belastningen. Mitt resonemang, inte Simons.
+- Raden följer inte klassfiltret, utan samlar alla klasser/grupper läraren ser.
+  Samma beteende som panelens befintliga ”Aktiv i …”-rad.
+- Lärarnamn tas ur `teachers`-listan som `/api/teacher-groups` redan
+  returnerar. Okänt konto-id visas inte som rått id (AGENTS.md: dölj
+  tekniska ID:n i vardagsvyer).
+- Neutral rubrik ”Aktiva uppdrag som inte finns i ditt uppdragsbibliotek”:
+  uppdraget kan också vara ett eget som raderats ur biblioteket.
+- Läsbart bara. Avaktivering härifrån vore möjlig i API:t men låg utanför
+  minsta steget.
+
+### Preview och avstämning
+
+- Pushat till `claude/admin-foreign-assignments`, PR #47 som utkast. Preview
+  byggd och provad av Simon i lärarvyn: ”Ser bra ut”. Previewen är skyddad av
+  Vercel Authentication; `class-config` svarade 404 i stället för lagringsfel,
+  så KV-variablerna finns i Preview-miljön. Att det är samma databasinstans som
+  produktion gick inte att bekräfta: Vercel-kopplingen nekar (403) att lista
+  miljövariabler. Inte i produktion; ingen merge.
+- Simon: ”aktiverat av” räcker. Vem som *skapade* uppdraget behövs inte — och
+  finns inte heller i payloaden, som bara bär id, kind, title, createdAt och
+  inställningar. `activatedBy` sparas sedan `ec6c95d` (2026-10-21), så
+  aktiveringar äldre än det visar inget namn.
+- Erbjudna men inte beställda: avsändare även på egna uppdragsrader, och
+  bredare namnuppslag via `/api/admin/teachers` (ett extra anrop i lärarvyn).
+
+### Robotkontroll och sammanslagning med master
+
+- Grenen låg 25 commits bakom master; både previewen och de första
+  robotkörningarna gjordes därför mot ett gammalt underlag. Master är nu
+  sammanslagen in i grenen (konflikter i denna logg och i projektkartan lösta
+  för hand; a51445f:s egen loggpost och kartfält bevarade).
+- Full robotsvit parallellt: 9 röda. Seriellt (`ROBOT_WORKERS=1`) blev sex av dem
+  gröna direkt — uppdrag, uppdragskö, uppdragstak och elevanalys. De var
+  parallellstörning: robotarna delar en minnesdatabas och ser varandras klasser.
+- `screening-load` är ordningsberoende: dess lärare är `super_admin` och ser alla
+  klasser i minnesdatabasen, så varje klass en tidigare robot skapat fäller
+  jämförelsen. Den var grön med min ändring i den rena tre-filskörningen.
+- Parvis jämförelse på nya underlaget, samma filer och ordning: masters egen kod
+  3 röda / 4 gröna; med min ändring 2 röda / 5 gröna. Min ändring orsakar inga
+  robotfel.
+- **Fynd som inte är mitt:** `teacher-names` är röd i varje körning, också på
+  masters kod — lärarens privata tilltalsnamn syns inte i Klass/gruppvy efter
+  omladdning. Eftersom master är produktionens kod finns felet rimligen i drift.
+  Inte undersökt; inget mandat begärt. `admin-tab` faller också på masters kod,
+  men hoppar mellan körningar som `screening-load`.
+- Rapporten visade ”0 regelbrott” i samtliga körningar: R1–R4, L1 och T1 höll.
+
+### Tankar och parkerat
+
+- Uppdrag aktiverade på enskild elev syns först när klassen öppnas:
+  startkatalogen (`catalogCard`) bär inga uppdragsfält. Att lägga dit dem
+  skulle göra att varje aktivering invaliderar katalogkort — tvärtemot
+  arbetsmålet belastningen. Lämnat medvetet.
+- Öppen fråga till Simon: ska uppdragsbiblioteket delas på skolnivå?
+- Inte verifierat i webbläsare, och kan inte verifieras lokalt: `npm run dev`
+  hånar bara några API-vägar med lokal testdata och når inte riktiga konton.
+  Prov med Simons administratörskonto kräver preview (push), vilket är hans
+  beslut. Ingen push gjord.
+
 ## 2026-11-18: En tolkning per elevsvar i alla lärarvyer
 
 - Simons besked: "Jag håller med, kör på dina förslag och produktion om du inte har frågor." Förslaget, B7 och ordningen med screening först är godkända.
@@ -190,6 +281,29 @@
 - Lokala lagringen kan stängas mitt i ett sparande vid utloggning eller
   elevbyte (InvalidStateError); bryter R4. Robot först, sedan rättning.
 - Profilen 4,0 MB närmar sig Vercels svarsgräns 4,5 MB; steg 4.
+
+## 2026-11-16: Belastning steg 1 klart, steg 2 byggt lokalt
+
+### Logg
+
+- Katalogen i produktion: 13 s → 1,05–1,47 s varm; 422 → 5 databasanrop.
+  En mellanversion blev långsammare (gruppanrop i följd, 2,0–2,5 s) och
+  rättades med parallella gruppanrop.
+- Klart-villkoret för steg 1 justerat: enkla anrop tar redan 0,75–0,87 s
+  (region iad1), så under en sekund går inte för katalogen.
+- Steg 2 lokalt: Screening läser bara de klasser fliken behöver. Robot räknar
+  anropen.
+
+### Agentens val
+
+- Lästa klasslistor sparas tills Läs om, så flikbyten inte läser om.
+
+### Tankar och parkerat
+
+- En annan session bytte gren i samma mapp; agentens commits hamnade på
+  dess gren och master flyttades fram utan att röra dess filer. Egen
+  arbetskopia per session undviker det.
+- Kandidat: serverns region närmare användare och databas.
 
 ## 2026-11-16: Belastning steg 1, mätt och förfinat
 

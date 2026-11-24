@@ -7,7 +7,8 @@ export default function ForeignAssignmentRows({ items = [], formatAssignmentSumm
   return (
     <div className="mt-3 space-y-1.5">
       <p className="text-xs font-medium text-gray-600">
-        Aktiva uppdrag som inte finns i ditt uppdragsbibliotek
+        Aktiva uppdrag som inte finns i ditt uppdragsbibliotek — visas bara,
+        kan inte aktiveras eller avaktiveras härifrån
       </p>
       {items.map(item => (
         <div
@@ -22,9 +23,6 @@ export default function ForeignAssignmentRows({ items = [], formatAssignmentSumm
           <p className="text-xs text-amber-900">
             {item.targets.length ? `Aktiv i ${item.targets.join(', ')}` : 'Aktiv'}
             {item.activatedByName ? ` · aktiverat av ${item.activatedByName}` : ''}
-          </p>
-          <p className="text-xs text-gray-600">
-            Du kan inte aktivera eller avaktivera det här uppdraget härifrån.
           </p>
         </div>
       ))}

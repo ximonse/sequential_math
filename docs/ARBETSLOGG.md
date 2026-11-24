@@ -23,11 +23,17 @@
 ### Simons beslut
 
 - Minsta steget: visa raden. Inte dela uppdragsbiblioteket mellan lärarkonton.
-- Uppdraget hör inte till arbetsmålet belastningen; Simon godkände att bygga
-  ändå eftersom ändringen är ren klientlogik utan nya serveranrop.
+- Uppdraget hör inte till arbetsmålet belastningen. Simon valde att bygga ändå.
 
 ### Agentens val
 
+- Skiljelinje: detta gäller uppdrag via länk (`activeAssignments`). Screening
+  ligger per klass (`diagnostic_assignments_by_class`) och syns redan för den
+  som har klassåtkomst — den listan berörs inte av felet.
+- Skälet jag framhöll när jag frågade: ändringen är ren klientlogik utan nya
+  serveranrop, så den påverkar inte belastningen. Mitt resonemang, inte Simons.
+- Raden följer inte klassfiltret, utan samlar alla klasser/grupper läraren ser.
+  Samma beteende som panelens befintliga ”Aktiv i …”-rad.
 - Lärarnamn tas ur `teachers`-listan som `/api/teacher-groups` redan
   returnerar. Okänt konto-id visas inte som rått id (AGENTS.md: dölj
   tekniska ID:n i vardagsvyer).
@@ -43,6 +49,10 @@
   skulle göra att varje aktivering invaliderar katalogkort — tvärtemot
   arbetsmålet belastningen. Lämnat medvetet.
 - Öppen fråga till Simon: ska uppdragsbiblioteket delas på skolnivå?
+- Inte verifierat i webbläsare, och kan inte verifieras lokalt: `npm run dev`
+  hånar bara några API-vägar med lokal testdata och når inte riktiga konton.
+  Prov med Simons administratörskonto kräver preview (push), vilket är hans
+  beslut. Ingen push gjord.
 
 ## 2026-11-16: Belastning steg 1 klart, steg 2 byggt lokalt
 

@@ -139,6 +139,7 @@ export default function DashboardLayout({
   handleClearAllAssignments,
   handleActivateAssignment,
   assignmentTargets,
+  foreignActiveAssignments = [],
   recipients,
   setDeliveryPicks,
   teacherGroups = [],
@@ -509,6 +510,7 @@ export default function DashboardLayout({
       <AssignmentsPanel
         assignments={assignments}
         assignmentTargets={assignmentTargets}
+        foreignActiveAssignments={foreignActiveAssignments}
         recipients={recipients}
         copiedId={copiedId}
         formatAssignmentSummaryLine={formatAssignmentSummaryLine}

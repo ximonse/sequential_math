@@ -5,6 +5,7 @@ import SubitizingCreatorDialog from './SubitizingCreatorDialog'
 import AssignmentWorkspaceOptions from './AssignmentWorkspaceOptions'
 import AssignmentExtraPresets from './AssignmentExtraPresets'
 import AssignmentBuilder from './AssignmentBuilder'
+import ForeignAssignmentRows from './ForeignAssignmentRows'
 
 const BUTTON_BASE = 'rounded-md border px-1.5 py-0.5 text-sm font-medium transition-colors'
 const TONES = {
@@ -44,6 +45,7 @@ const PRESET_GROUPS = [
 export default function AssignmentsPanel({
   assignments,
   assignmentTargets = [],
+  foreignActiveAssignments = [],
   recipients = [],
   copiedId,
   formatAssignmentSummaryLine,
@@ -158,6 +160,7 @@ export default function AssignmentsPanel({
           })}
         </div>
       )}
+      <ForeignAssignmentRows items={foreignActiveAssignments} formatAssignmentSummaryLine={formatAssignmentSummaryLine} />
       {qrAssignment && <AssignmentQrDialog assignment={qrAssignment} classLoginToken={classLoginToken} onClose={() => setQrAssignment(null)} />}
       {showMathPracticeCreator && (
         <MathPracticeCreatorDialog

@@ -1,5 +1,49 @@
 # Arbetslogg
 
+## 2026-11-24: Administratör ser aktiva uppdrag utanför eget bibliotek
+
+### Logg
+
+- Simon såg mängder av uppdrag som elev men inga som administratör. Orsak:
+  uppdragsbiblioteket ligger per lärarkonto i
+  `teacher_workspace:{teacherId}:assignments`, medan aktiveringen ligger på
+  klass-, grupp- eller elevposten (`activeAssignments`). AssignmentsPanel
+  loopade bara över det egna biblioteket, så ett uppdrag någon annan
+  aktiverat fick ingen rad alls. Ingen läsning filtrerar på `activatedBy`.
+- Byggt lokalt: `foreignActiveAssignments.js` (ren hjälpfunktion, 7 tester)
+  och `ForeignAssignmentRows.jsx`, inkopplade i Dashboard och DashboardLayout.
+  Raden ligger utanför tomt-läge-grenen, så den syns även när det egna
+  biblioteket är tomt — precis administratörsfallet.
+- `npm run test`: enda felet i riktiga trädet är
+  `scripts/audit-ncm-rule-readiness.test.js`, som faller lika utan ändringen
+  (kontrollerat med stash). Övriga fel kommer från gamla `.claude/worktrees`.
+  `npm run build` grön, eslint rent. Robotar inte körda: ingen logikändring i
+  uppgifter, nivåer, sparande eller lärarvyns siffror.
+
+### Simons beslut
+
+- Minsta steget: visa raden. Inte dela uppdragsbiblioteket mellan lärarkonton.
+- Uppdraget hör inte till arbetsmålet belastningen; Simon godkände att bygga
+  ändå eftersom ändringen är ren klientlogik utan nya serveranrop.
+
+### Agentens val
+
+- Lärarnamn tas ur `teachers`-listan som `/api/teacher-groups` redan
+  returnerar. Okänt konto-id visas inte som rått id (AGENTS.md: dölj
+  tekniska ID:n i vardagsvyer).
+- Neutral rubrik ”Aktiva uppdrag som inte finns i ditt uppdragsbibliotek”:
+  uppdraget kan också vara ett eget som raderats ur biblioteket.
+- Läsbart bara. Avaktivering härifrån vore möjlig i API:t men låg utanför
+  minsta steget.
+
+### Tankar och parkerat
+
+- Uppdrag aktiverade på enskild elev syns först när klassen öppnas:
+  startkatalogen (`catalogCard`) bär inga uppdragsfält. Att lägga dit dem
+  skulle göra att varje aktivering invaliderar katalogkort — tvärtemot
+  arbetsmålet belastningen. Lämnat medvetet.
+- Öppen fråga till Simon: ska uppdragsbiblioteket delas på skolnivå?
+
 ## 2026-11-16: Belastning steg 1 klart, steg 2 byggt lokalt
 
 ### Logg

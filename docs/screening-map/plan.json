@@ -3925,6 +3925,40 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "teacher-foreign-assignments",
+      "area": "Lärarvy",
+      "title": "Aktiva uppdrag syns även utanför det egna uppdragsbiblioteket",
+      "status": "Lokalt klart",
+      "purpose": "En lärare eller administratör som öppnar någon annans klass ska se vilka uppdrag eleverna faktiskt har.",
+      "next": "Simon provar i lärarvyn: logga in som administratör, välj en klass där en annan lärare aktiverat ett uppdrag, kontrollera att raden visas under uppdragslistan.",
+      "acceptance": "Uppdrag som ligger aktivt på klass-, grupp- eller elevposten men saknas i det egna biblioteket visas som läsbar rad med titel, var det är aktivt och vem som aktiverade det. Raden syns även när det egna biblioteket är tomt. Ingen aktivering eller avaktivering sker härifrån.",
+      "decision": "2026-11-24: Simon valde minsta steget — visa raden, inte dela uppdragsbiblioteket mellan lärarkonton. Uppdraget hör inte till arbetsmålet belastningen; Simon godkände att bygga ändå eftersom ändringen är ren klientlogik utan nya serveranrop.",
+      "evidence": "2026-11-24: Lokalt klart, inte pushat. Orsak: uppdragsbiblioteket ligger per konto i teacher_workspace:{teacherId}:assignments, medan aktiveringen ligger på klass-/grupp-/elevposten (activeAssignments); AssignmentsPanel loopade bara över det egna biblioteket. Byggt: src/components/teacher/sections/foreignActiveAssignments.js + ForeignAssignmentRows.jsx, inkopplat i Dashboard.jsx och DashboardLayout.jsx. 7 nya enhetstester gröna, npm run build grön, eslint rent. Lärarnamn hämtas ur teachers-listan som /api/teacher-groups redan returnerar; okänt konto-id visas inte som rått id. Känd gräns: uppdrag aktiverade på enskild elev syns först när klassen öppnas, eftersom startkatalogen (catalogCard) inte bär uppdragsfält — medvetet för att inte öka belastningen. Ingen visuell granskning i webbläsare gjord.",
+      "issue": "",
+      "kind": "funktion",
+      "requires": [
+        "dispatch"
+      ],
+      "affects": [],
+      "tasks": [
+        {
+          "id": "task-teacher-foreign-assignments-read",
+          "text": "Visa aktiva uppdrag som saknas i det egna biblioteket som läsbar rad.",
+          "done": true
+        },
+        {
+          "id": "task-teacher-foreign-assignments-empty",
+          "text": "Raden syns även när det egna uppdragsbiblioteket är tomt.",
+          "done": true
+        },
+        {
+          "id": "task-teacher-foreign-assignments-verify",
+          "text": "Simon provar i lärarvyn som administratör.",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [
@@ -4807,6 +4841,11 @@
       "source": "misconception-governance",
       "target": "ncm-didactic-backbone",
       "kind": "påverkar"
+    },
+    {
+      "source": "dispatch",
+      "target": "teacher-foreign-assignments",
+      "kind": "kräver"
     }
   ],
   "note": "Planeringssnapshot. Lokalt klart är inte publicerat. Tidigare publicering bygger på denna tråds verifiering; ingen ny livekontroll. Förslag är inte fattade beslut."

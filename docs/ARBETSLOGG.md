@@ -79,6 +79,17 @@
   men hoppar mellan körningar som `screening-load`.
 - Rapporten visade ”0 regelbrott” i samtliga körningar: R1–R4, L1 och T1 höll.
 
+### Publicerat
+
+- Simon sa production. PR #47 mergad efter gröna quality, documentation och
+  Vercel preview. Master `5ffec64`, Vercel `dpl_GGoQznmMy8oLMeybDbL6YRA9TBg3`,
+  target production, READY. Läsande kontroll: `matematik.ximon.se` svarar 200 och
+  `/assets/index-DxAEKR7k.js` innehåller den nya raden med korrekta å/ä/ö.
+- Mergen publicerade även belastningssteget `a51445f` (Screening läser bara de
+  klasser fliken behöver). Det var känt och flaggat före beslutet.
+- Ingen inloggad UI-kontroll i produktion gjord av agenten. Simon godkände
+  funktionen i preview på samma underlag.
+
 ### Tankar och parkerat
 
 - Uppdrag aktiverade på enskild elev syns först när klassen öppnas:

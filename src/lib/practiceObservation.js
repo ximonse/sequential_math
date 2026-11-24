@@ -1,4 +1,5 @@
 import { candidatesForEvidence } from '../domains/predictableErrors/index.js'
+import { WRONG_OPERATION_MODELS } from '../domains/predictableErrors/catalog.js'
 
 const pick = (value, keys) => Object.fromEntries(keys.filter(key => value?.[key] !== undefined).map(key => [key, value[key]]))
 
@@ -23,4 +24,15 @@ export function practiceObservation(value) {
 
 export function currentPracticeCandidates(value) {
   return candidatesForEvidence({ source: 'practice', ...practiceObservation(value) })
+}
+
+// The error category teacher views count. A wrong operation (the catalogue's
+// wrongOperation models) saved as inattention counts as a knowledge error: a wrong operation is a
+// misconception (Simon 2026-11-12, decision 4; teacher views only, 2026-11-18).
+// Mastery, the adaptive level and the saved answer keep the saved category.
+export function teacherErrorCategory(problem) {
+  const saved = String(problem?.errorCategory || (problem?.isInattentionError ? 'inattention' : ''))
+  if (problem?.correct || saved !== 'inattention') return saved
+  const current = currentPracticeCandidates(problem)
+  return current.status === 'matched' && current.matches.some(match => WRONG_OPERATION_MODELS.has(match.modelId)) ? 'knowledge' : saved
 }

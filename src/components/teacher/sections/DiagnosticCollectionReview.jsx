@@ -13,6 +13,20 @@ import { mergeOverviews } from './screeningCollections'
 export default function DiagnosticCollectionReview({ members, isAllowed, name, onDirtyChange, onPendingChange }) {
   const [parts, setParts] = useState([])
   const overview = useMemo(() => mergeOverviews(parts, isAllowed), [parts, isAllowed])
+  // Each answer's group among the misconception cards, keyed as the cards mark
+  // the table, so a cell names the same group as the cards.
+  const groups = useMemo(() => {
+    const byAnswer = new Map(), seen = new Set()
+    for (const { classId, misconceptions } of parts) {
+      if (overview?.mismatched.includes(classId)) continue
+      for (const pupil of misconceptions?.pupils || []) {
+        if (!isAllowed(classId, pupil.studentId) || seen.has(pupil.studentId)) continue
+        seen.add(pupil.studentId)
+        for (const answer of pupil.answers) byAnswer.set(`${pupil.studentId}:${answer.position}`, answer)
+      }
+    }
+    return byAnswer
+  }, [parts, overview, isAllowed])
   useEffect(() => {
     if (!parts.length) return
     onPendingChange?.(parts.flatMap(part => part.overview.rows.flatMap(row => row.items)).filter(item => item.status === 'in_progress').length)
@@ -42,11 +56,13 @@ export default function DiagnosticCollectionReview({ members, isAllowed, name, o
     let active = true
     setParts([])
     setMessage('Hämtar status...')
+    // One read per class gives both the table and the misconception cards.
     void Promise.all(members.map(async ({ classId, assignmentId }) => {
-      const search = new URLSearchParams({ classId, assignmentId })
+      const search = new URLSearchParams({ classId, assignmentId, view: 'results' })
       const result = await diagnosticRequest(`/api/teacher-diagnostic-attempts?${search}`)
       if (!result.ok) throw new Error(result.data.error || 'Kunde inte hämta översikten.')
-      return { classId, assignmentId, overview: result.data }
+      const { misconceptions, ...overview } = result.data
+      return { classId, assignmentId, overview, misconceptions }
     })).then(parts => {
       if (!active) return
       const merged = mergeOverviews(parts)
@@ -93,10 +109,10 @@ export default function DiagnosticCollectionReview({ members, isAllowed, name, o
   return <section className="mt-4" aria-label="Genomgång av samling">
     <button type="button" onClick={() => setRefresh(value => value + 1)} className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-sm">Uppdatera översikt</button>
     <p role="status" className="mt-2 text-sm">{message}</p>
-    {overview && overview.rows.length > 0 && <ScreeningMisconceptions key={`${memberKey}:${refresh}`} members={members} isAllowed={isAllowed}
+    {overview && overview.rows.length > 0 && <ScreeningMisconceptions key={`${memberKey}:${refresh}`} parts={parts} isAllowed={isAllowed}
       mismatched={overview.mismatched} name={name} selected={card} onSelect={setCard} />}
     {overview && (overview.rows.length > 0
-      ? <DiagnosticScreeningMatrix overview={overview} name={name} onOpen={open} highlight={card?.keys} />
+      ? <DiagnosticScreeningMatrix overview={overview} name={name} onOpen={open} highlight={card?.keys} groups={groups} />
       : <p className="text-sm">Ingen av de valda eleverna fick den här samlingen.</p>)}
     {/* Tailwind's preflight removes the dialog's default auto margin; m-auto centres it again. */}
     <dialog ref={dialog} aria-label="Elevgenomgång" onCancel={event => { event.preventDefault(); resetDetail() }} className="m-auto max-h-[90dvh] w-[min(960px,95vw)] overflow-y-auto rounded-lg border border-slate-300 bg-white p-3 pt-0 text-slate-800 shadow-xl backdrop:bg-slate-900/50">

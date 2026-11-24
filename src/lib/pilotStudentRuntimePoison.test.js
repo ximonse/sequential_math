@@ -83,8 +83,42 @@ describe('synk med ogiltiga händelser i kön', () => {
 
     const result = await runSync(store, postEvents)
 
-    expect(result.ok).toBe(false)
+    // The pupil gets in; the answer stays queued (Simon 2026-11-16).
+    expect(result).toMatchObject({ ok: true, pendingSync: true })
     expect(store.acknowledged).toEqual([])
+  })
+
+  it('logs in even when the server fails on the queue, keeping the queue', async () => {
+    const store = makeStore([{ id: 'a', type: 'problem_result', payload: { problemId: 'p1' } }])
+    const postEvents = vi.fn(async () => ({ ok: false, status: 500, error: 'Kunde inte spara svaren.' }))
+    expect(await runSync(store, postEvents)).toMatchObject({ ok: true, pendingSync: true })
+    expect(store.acknowledged).toEqual([])
+    expect(store.rejected).toEqual([])
+  })
+
+  it('sends only the newest of thousands of queued presence signals', async () => {
+    const events = Array.from({ length: 3000 }, (_, i) => ({ id: `presence-${i}`, type: 'presence_checkpoint',
+      payload: { capturedAt: i + 1, activity: { page: 'home' }, telemetry: { n: i } } }))
+    const store = makeStore([...events, { id: 'answer', type: 'problem_result', payload: { problemId: 'p1' } }])
+    const postEvents = vi.fn(async entries => ({ ok: true, ack: entries.map(entry => entry.id) }))
+    expect(await runSync(store, postEvents)).toMatchObject({ ok: true })
+    expect(postEvents).toHaveBeenCalledTimes(1)
+    expect(postEvents.mock.calls[0][0].map(entry => entry.id).sort()).toEqual(['answer', 'presence-2999'])
+    expect(store.acknowledged).toHaveLength(3001)
+  })
+
+  it('keeps an older checkpoint the newest does not cover, and superseded ones until the newest is accepted', async () => {
+    const older = { id: 'cp-1', type: 'profile_checkpoint', payload: { capturedAt: 1, stats: {}, adaptive: { a: 1, b: 2 } } }
+    const newer = { id: 'cp-2', type: 'profile_checkpoint', payload: { capturedAt: 2, stats: {}, adaptive: { a: 3 } } }
+    const store = makeStore([older, newer])
+    const postEvents = vi.fn(async entries => ({ ok: true, ack: entries.map(entry => entry.id) }))
+    await runSync(store, postEvents)
+    expect(postEvents.mock.calls[0][0].map(entry => entry.id)).toEqual(['cp-1', 'cp-2'])
+
+    const covered = { id: 'cp-0', type: 'profile_checkpoint', payload: { capturedAt: 0, stats: {} } }
+    const failing = makeStore([covered, newer])
+    await runSync(failing, vi.fn(async () => ({ ok: false, status: 500 })))
+    expect(failing.acknowledged).toEqual([])
   })
 
   it('isolates one bad event in a full batch without 100 sequential requests', async () => {
@@ -247,7 +281,8 @@ describe('batchstorlek', () => {
       ? { ok: false, status: 400 }
       : { ok: true, ack: [] })
     const result = await runSync(store, postEvents)
-    expect(result.ok).toBe(false)
+    // Logged in, nothing confirmed or rejected: both answers stay queued.
+    expect(result).toMatchObject({ ok: true, pendingSync: true })
     expect(store.acknowledged).toEqual([])
     expect(store.rejected).toEqual([])
   })

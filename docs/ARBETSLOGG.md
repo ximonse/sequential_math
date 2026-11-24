@@ -69,6 +69,197 @@
   Prov med Simons administratörskonto kräver preview (push), vilket är hans
   beslut. Ingen push gjord.
 
+## 2026-11-18: En tolkning per elevsvar i alla lärarvyer
+
+- Simons besked: "Jag håller med, kör på dina förslag och produktion om du inte har frågor." Förslaget, B7 och ordningen med screening först är godkända.
+- Logg: `src/lib/answerInterpretation.js` är den gemensamma tolkningen. Screeningkort, tabellcell, elevrapport, täckning och evidens-API/MCP läser den.
+  - B1: Kravet på tre uppgifter finns kvar bara för "Angränsande produkt", "Fel tabellfaktum i uppställningen" och "ger upp".
+  - B2: Fler jämförbara rätt än fel ger "Motsagd av rätta svar". Antalet motexempel räknas utan tak.
+  - B4: Ett svar som läraren skrivit in tolkas i alla vyer.
+  - B6/B7: Snabbhetsträning blir en misstanke först vid tre svar. Samma felsvar tre gånger visas som "Samma felsvar flera gånger". Olika felsvar på samma uppgift räknas inte dit.
+  - K5: Svar som läraren dolt som slarv lämnar också screeningvyn.
+  - K6: Elevrapporten visar oförklarade fel bland alla svar.
+  - K7: Signalen M är borttagen.
+  - K8: Felförståelsekartan visar aktuell förklaring först och den sparade analysen som "Tidigare analys".
+  - Katalogflaggan `screeningShowsSingle` är ersatt av `wrongOperation`.
+  - Flödesdokumentet är `docs/TOLKNING_AV_ELEVSVAR.md`.
+- Täckning på det syntetiska underlaget (R-D), före och efter:
+
+  | Grupp | Före | Efter |
+  | --- | ---: | ---: |
+  | Felförståelse | 418 | 416 |
+  | Samma uppgift flera gånger | 28 | 5 |
+  | Observation | 6 | 17 |
+  | Inmatning | 3 | 7 |
+  | Ger upp | 1 | 3 |
+  | Oförklarade | 44 | 52 |
+
+  Ändringen följer av B7 och av att allmänna modeller nu viker för specifika även i täckningen. Inga felmodeller och ingen `PREDICTABLE_RULE_VERSION` är ändrade.
+- Verifiering:
+  - Testet `answerInterpretation.test.js` kör samma svar genom screeningkort och elevrapport för K1, K2, K4 och B6/B7. Testet är grönt.
+  - 1403 tester gröna, utom de två kända NCM-radslutsfelen. Build grön.
+  - 62 robotar för analys, screening, diagnos, material och lärarvy är gröna med 0 regelbrott.
+  - Belastning: en läsning till per elev i screeningvyn, för de dolda svaren. Den görs parallellt, så antalet steg i följd är oförändrat (13).
+- Agentens val:
+  - Ett enda svar på en modell utan krav ligger kvar som kort märkt "Enstaka svar" med uppföljning, som förut. Bara svar under ett krav flyttas till "Enstaka svar, för lite underlag".
+  - Motsagda misstankar visas utan uppföljningsknapp.
+  - 3 + 3 = 0 räknas som "svarar 0" även i täckningen, som elevrapporten redan gjorde.
+- Riktiga elevsvar, som förslaget kräver före publicering:
+  - Underlag: Kumlaby åk 6, 4, 5 och 6, 15/8–18/11. Det är 110 elever, 18 051 svar och 2 918 fel. Inga testklasser, blindtester eller syntetiska klasser ingår.
+  - Före betyder kod vid 80d20ff, som har samma klassning som i produktion. Efter betyder 68eda0f.
+  - Jämförelsen gjordes på samma svar. Elevdata ligger utanför repot.
+
+  | Mått | Före | Efter |
+  | --- | ---: | ---: |
+  | Täckning: felförståelse | 519 | 511 |
+  | Täckning: samma felsvar flera gånger | 700 | 189 |
+  | Täckning: observation | 277 | 349 |
+  | Täckning: inmatning | 97 | 84 |
+  | Täckning: ger upp | 97 | 148 |
+  | Täckning: oförklarade | 1 228 | 1 637 |
+  | Elevrapport: misstankar med mönster | 134 | 69 |
+  | Elevrapport: enstaka svar | 136 | 104 |
+  | Elevrapport: för lite underlag | – | 86 |
+  | Elevrapport: motsagda | – | 99 |
+  | Elevrapport: inmatning och svar utan metod | 198 | 110 |
+  | Elevrapport: upprepade uppgifter | 162 | 62 |
+  | Elevrapport: oförklarade som räknas | 101 | 1 637 |
+  | Elever med minst en misstanke | 54 | 44 |
+
+  - 52 elever har kort med för lite underlag och 42 elever har motsagda kort.
+  - Rapporten tar 6 ms per elev, både före och efter.
+  - MCP-sidan blir cirka 4 % större.
+- Rättat efter granskning: Dolda svar skickas med status `hidden_slip`, inte `incorrect`. Sidor som laddades före ändringen hoppar då över raden i stället för att krascha. Ett test kontrollerar det.
+- Agentens val: Detaljläsningen av ett enskilt svar räknar fortfarande tolkningen för hela perioden. Testet kräver att den ger samma post som sidläsningen, och svarets grupp beror på elevens övriga svar.
+- Exempel för Simon. Tre motsagda kort, anonymiserade, från riktiga svar:
+  - Angränsande produkt: 7 fel mot 154 jämförbara rätt.
+  - Bara decimaldelen multipliceras: 1 fel mot 3 rätt.
+  - Svarar 55: 5 fel mot 99 rätt. Här fanns ett fel. Att ge upp kan inte motsägas av rätta svar på andra uppgifter. Rättat: bara felförståelsemodeller kan bli motsagda, och ett test kontrollerar det. Siffrorna i elevrapporten är oförändrade, eftersom kortet redan visades under Ger upp.
+- Kvar: Simons besked om publicering efter att han sett mätningen och exemplen. Lärarens val ur listan räknas fortfarande separat i elevrapporten, utan att det har beslutats.
+
+## 2026-11-18: Nivå vid tabellfel och viktning av upprepade felsvar
+
+- Simons besked: Fel i tabellträning ska inte sänka multiplikationsträningen. Koden gör redan så, vilket agenten kontrollerade: tabellsvaren räknas inte till mastery och inte till aktuellt behov, och de justerar inte nivån. Talkompisar i fritt varv fortsätter att sänka nivån ("1 nej"). Viktning: "all kanske?" och "tre?". Det är infört som B7, preliminärt.
+- Agentens påpekande: Ett feltryck på 5 · 3 inne i en multiplikationsuppställning i vanlig träning räknas som fel i uppställningen och kan sänka nivån. Appen skiljer inte feltryck från räknefel där.
+- Kvar: Simon ska godkänna förslaget, bekräfta B7 och välja ordning.
+
+## 2026-11-18: B6 rättad och kravet för fel tabellfaktum behålls
+
+- Simons besked: "1, håller med dig" om kravet: det behålls för fel tabellfaktum men tas bort för räknar med starttalet. Om B6: "Tabellträning är också mängdträning, som fri träning." Agentens tolkning "bara tabellträning" var fel och är struken. Simon godkände upplägget i tabellen under B6 i STYRNING avsnitt 10.
+- Agentens rättelse: Tabellen sa först att talflyt bara blir misstanke när felet upprepas. I dag visas en talflytsmodell redan vid ett fel, märkt "Enstaka svar". Upplägget innebär därför en ändring för talflyt.
+- Kvar: Simons godkännande av förslaget och valet av ordning, med screening först eller elevrapporten först.
+
+## 2026-11-18: Beslut B1–B6 och förslag om en tolkning per svar
+
+- Simons besked: "Jag håller med i dina rekommendationer, jag tänker att tabellträning är mängdträning." Besluten är införda i STYRNING avsnitt 10, punkt 5.
+- Agentens tolkning, ej bekräftad: bara tabellträning är mängdträning. Talkompisar, dubblor och talbilder analyseras då som vanlig träning.
+- Logg: Förslaget ligger i `docs/FORSLAG_EN_TOLKNING_PER_SVAR.md`. Det består av en funktion `interpretAnswers` som alla lärarvyer läser, med reglerna B1–B6, motexempel utan tak och dolda svar i alla vyer. Det ska genomföras i sex steg, där screeningvyn kommer först. Regelversionen för felmodellerna höjs inte, så befintligt uppföljningsmaterial gäller fortfarande.
+- Underlag för B1: av de sju modeller som i dag kräver tre uppgifter har bara "Angränsande produkt" slumprisk över 2. Den förutsäger 3,88 svar per uppgift.
+- Parkerat: Inget byggs förrän Simon har godkänt förslaget och besvarat de tre frågorna i dess avsnitt 6.
+
+## 2026-11-18: Granskning av tolkningen av elevsvar
+
+- Simons besked: Granska om felförståelseanalysen och presentationen är harmoniska och har dokumenterade beroenden och flöden. Tidigare beslut får ifrågasättas. Var noggrann och linda inte in något. Granskningen ändrar ingen kod.
+- Logg: Rapporten ligger i `docs/GRANSKNING_TOLKNING_AV_ELEVSVAR_2026-11-18.md`. Den beskriver åtta tolkningskällor och elva krockar, av vilka fem är allvarliga. Den tar upp sex beslut att pröva, B1–B6, och granskar agentens egna ändringar 17–18/11.
+- Rättelse: Agenten påstod 18/11 att fel som klassats som ouppmärksamhet inte sänker elevens nivå. Det stämmer inte. Mastery räknar dem som fel, och den adaptiva svårigheten sänks mindre.
+- Parkerat: Inget byggs förrän Simon har svarat på B1–B6 och godkänt ett separat förslag om en gemensam tolkning per svar.
+
+## 2026-11-18: Fel räknesätt räknas som kunskapsfel i lärarvyerna (val A)
+
+- Simons besked: Publicera felförståelsekartan (1, ja). För fel räknesätt som sparats som ouppmärksamhet gäller val A: bara lärarvyerna ändras, inte elevens nivå eller uppgiftsval.
+- Produktion, felförståelsekartan: GitHub master c9074f5, Verify är grön och Vercel sekvens är klar. I klass 6 granskades 47 rutor. 74 fel svar visas med aktuell förklaring och 57 med historisk etikett. Inget svar har en aktuell förklaring ovanför men en historisk etikett i listan.
+- Logg: `teacherErrorCategory` i `src/lib/practiceObservation.js` avgör vilken felkategori lärarvyerna räknar. Ett fel som sparats som ouppmärksamhet räknas som kunskapsfel när den aktuella klassificeringen känner igen fel räknesätt. Det gäller katalogens modeller för fel räknesätt (`SCREENING_SINGLE_MODELS`). Regeln används av Elevprofilens nivåtabell, NCM-panelerna, analysunderlaget, elevexporten och felförståelsekartan, där sådana svar nu också visas i listan. Mastery, den adaptiva nivån, sparandet och de lagrade lärarsammanfattningarna är orörda. Exportens kolumner för dagens och veckans ouppmärksamhetsfel kommer från den lagrade sammanfattningen och kan därför fortfarande räkna sådana svar som ouppmärksamhet.
+- Produktion, val A: Simon svarade "Ja" på frågan om publicering. GitHub master 63d09b6, Verify är grön och Vercel sekvens är klar. I klass 6 granskades 43 rutor i felförståelsekartan. 66 svar visas med aktuell förklaring och 53 med historisk etikett. Tre svar med fel räknesätt syns nu i listorna, och inget svar visar olika förklaring i avsnittet ovanför och i listan.
+- Verifiering: Testet kontrollerar 402 − 178 = 580 sparat som ouppmärksamhet. Det räknas nu som kunskapsfel, visas i felförståelsekartans lista med fel räknesätt, och den historiska kategorin finns kvar i exporten. 999 räknas som ouppmärksamhet som förut, och den sparade posten är oförändrad. 1397 tester gick igenom, utom de två kända NCM-radslutsfelen. Build är grön. Nio robotar för lärarvyerna är gröna med 0 regelbrott. Inga felmodeller ändrades.
+
+## 2026-11-18: Felförståelsekartan för klassen visar aktuell förklaring och genomgång av motsägelser
+
+- Simons besked: Det nya ska synas när det finns. Leta vidare efter liknande motsägelser. En tydlig bild av elevens förståelse utan motsägelser genom hela appen är bland det viktigaste.
+- Logg: I felförståelsekartan för klassen, Statistik & stöd, namnges ett fel svar i listan nu med den aktuella förklaringen, märkt "beräknad förklaring", när en sådan finns. Det är samma förklaring som i avsnittet "Aktuella modellkandidater" ovanför. Den sparade etiketten, till exempel "Räknefel" eller "Missuppfattning", visas bara när inget förklarar svaret nu. Chippen heter "Historiska felmarkeringar utan aktuell förklaring" och räknar bara sådana svar. Inga sparade elevdata ändras.
+- Verifiering: Roboten `teacher-evidence-consistency` var röd mot den gamla vyn. Listan visade då "historisk kategorimarkering, Missuppfattning" för 376, medan förklaringen ovanför var "Större minus mindre i varje kolumn". Med ändringen är roboten grön, och skärmbilden är granskad. Ett enhetstest kontrollerar det förklarade och det oförklarade fallet. 1396 tester gick igenom, utom de två kända NCM-radslutsfelen. Build är grön. Inga felmodeller ändrades, så täckningen är oförändrad. Ändringen är inte publicerad.
+- Genomgång av andra vyer: Elevanalysens reservhypoteser använder bara sparade mönster för svar utan aktuell förklaring, alltså samma princip. Exporten visar historiska och aktuella fält sida vid sida med tydliga namn. Dialogen i elevgenomgången beskriver uträkningens signaler och motsäger inte korten.
+- Fynd som kräver beslut: Övningssvar med fel räknesätt, till exempel 402 − 178 = 580, sparas som "ouppmärksamhet" av `isOperationSwapInattention`. Den aktuella klassificeringen kallar samma svar "fel räknesätt" (`operation_swap`). Enligt Simons beslut 4 den 12 november är fel räknesätt en felförståelse. Felet räknas som "Ouppmärksamhet" i Elevprofilens nivåtabell och NCM-panelen. Samma kategori gör också att felet inte sänker mastery och inte styr den adaptiva nivån. Ändringen är inte gjord och väntar på besked.
+
+## 2026-11-18: Tabellen beskriver fel svar som felförståelsekorten
+
+- Simons besked: Fixa att tabellen och korten skriver olika saker, trots att det ligger utanför arbetsmålet belastningen. Kontrollera också om samma sak sker på andra ställen. Publicera när arbetet är klart och ingen återkoppling behövs.
+- Fynd: Tabellcellen skrev "Fel svar utan identifierat mönster" när ett fel saknade uträkningssignalerna P, Ö och M. Korten använder hela klassificeringen med felmodeller och screeningnycklar. I produktion, klass 6, stod därför flera svar på felförståelsekort samtidigt som tabellen skrev att mönster saknades, till exempel 402 − 178 → 134.
+- Logg: Cellen namnger nu felet med samma grupp och samma ord som korten och rutorna, till exempel "Fel svar, pekar på en felförståelse" och "Fel svar, oförklarat". Rutan som visas när man pekar på svaret nämner kortets titel. Regeln finns på ett ställe, `screeningAnswerGroup` och `SCREENING_GROUP_LABELS_SV`. Den används både av korten och av tabellen. Utan klassificering skriver cellen bara "Fel svar". Lärarens bedömning har företräde som förut.
+- Täckning: Inga felmodeller, nycklar eller klassificeringsregler ändrades. Fördelningen mellan grupperna är därför densamma före och efter, och bara tabellens text har ändrats.
+- Verifiering: En ny robotkontroll med 134, kortet Växling över nolla, och 999, oförklarat, var röd mot den gamla cellen: "Fel svar utan identifierat mönster". Med ändringen är den grön. Jag har också kontrollerat skärmbilden av roboten. Därtill gick 13 screeningrobotar igenom med 0 regelbrott. 1395 tester gick igenom, och de två kända NCM-radslutsfelen kvarstår. Build grön.
+- Produktion: GitHub master f3186e4, Verify grön och Vercel sekvens klar. Kontrollen i webbläsaren gjordes i klass 6 på screeningen med 17 uppgifter. Alla sex fel i tabellen har samma grupp som korten: fyra pekar på en felförståelse, ett är en felmodell utan kopplad felförståelse och ett är oförklarat. 402 − 178 → 134 visas nu som "Fel svar, pekar på en felförståelse".
+- Andra ställen: Elevanalysen bygger egna hypoteser och skriver till exempel "Enstaka svar" när underlaget är tunt. Den formuleringen är svagare men motsäger inte korten. Felförståelsekartan för klassen i Statistik & stöd visar övningssvar. Där kan samma svar stå under "Beräknade förklaringar" med en felmodell och i listan över kunskapsfel med den sparade etiketten "Räknefel" eller "Fel svar utan identifierat mönster". Listan är märkt "historiskt kunskapsfel", men beskrivningarna kan ändå krocka. Den ändringen har inte gjorts och väntar på Simons besked.
+
+## 2026-11-18: Tabell och felförståelser i ett anrop
+
+- Arbetsmål: belastningen.
+- Mätning före: Felförståelsekorten begärdes först när tabellens anrop var klart, eftersom komponenten monterades först då. Felförståelseanropet upprepade sedan nästan alla tabellens databasläsningar: behörighet, elevlista, klassens alla screeningar, försöksindex, varje senaste försök med händelselista och varje lärarbedömning. I ett syntetiskt fall med 28 elever var det bara elevernas index (28 anrop) som var nytt. Båda orsakerna fanns. Dubbelarbetet var större, och en gemensam läsning tar också bort väntan.
+- Logg: `view=results` ger tabell och felförståelser i ett svar. Korten byggs ur samma försök, original och bedömningar som tabellen, med samma postbyggare som elevanalysen (`screeningEvidenceEntry`). Elevens index läses parallellt och avgör som förut vilka försök som visas och i vilken ordning. Fel i kortdelen ger tabellen och ett felmeddelande för korten. De gamla vyerna finns kvar för flikar som öppnats före ändringen. Server-Timing visar `class-access`, `class-pupils`, `assignment-list`, `screening-results` och `screening-cards`.
+- Belägg, lokalt och syntetiskt (50 ms per databasanrop, 28 elever, sex andra screeningar i klassen): produktionslikt fall med fyra svar 268 → 156 anrop, sekventiella varv till korten 30 → 13, till tabellen 13 → 13. Tätt fall med 112 svar 2068 → 936 anrop, 65 → 13 varv. Antalet läsvarv till tabellen är oförändrat. Bearbetningen av korten görs nu innan tabellen skickas. Med 112 svar och utan databasväntan tog den 0–16 ms, inom mätbruset. Behörighetsanropen utanför lagret är med före men inte efter. Det är alltså ytterligare några färre anrop. Tabell och kort är identiska med de gamla vägarnas svar i testet, också när ett försök saknas i elevens index. Inga felmodeller eller klassificeringsregler ändrade, så täckningen är oförändrad före och efter.
+- Verifiering: 1394 tester gröna. Två fel uppstår i `scripts/audit-ncm-rule-readiness.test.js`. `docs/SCREENING_SELECTION_PRINCIPLES.md` är oförändrad i git, men den nya checkouten har CRLF. I den äldre checkouten vid 80d20ff har filen LF, och där passerar testet. Felet beror alltså på radslut, inte på ändringen. 7c4f998 på `codex/audit-three-fixes` rättar det. Build grön. 30 screening- och diagnosrobotar gröna mot servern från denna gren, en överhoppad sedan tidigare. `screening-misconceptions` kontrollerar nu också vägen från kort till markerat svar och dialogen med elevens svar 376 och inmatningsförlopp. Efter omladdning ska lärarens val synas på kortet.
+- Simons besked: Minska väntan från vald screening till synliga kort. Gör en kort mätning och välj den minsta motiverade ändringen. Publicering kräver eget besked.
+- Agentens val: Ingen parallell start av två anrop på klienten, eftersom det inte minskar databasarbetet. Postbyggaren bröts ut ur elevanalysens läsning så att båda klassificerar likadant.
+- Publicering: Simon gav beskedet "Kör produktion". GitHub master 97edf4b, Verify passerade och Vercel sekvens driftsatte produktionsversionen för matematik.ximon.se.
+- Produktionskvittens: Mätningen gjordes 2026-11-18 på en screening med 28 rader. Det var den senaste med 28 elever, inte samma screening som 2026-11-17, och den hade bara ett svar. Tre varv växlade mellan gamla och nya anrop. Median för gamla anropen: tabell 3,04 s, felförståelser 3,42 s och båda i följd 6,45 s. Median för nya anropet: 3,07 s för tabell och kort. Korten kommer alltså ungefär samtidigt som tabellen, och den totala väntan halverades. Tiderna gäller API-tid inklusive JSON, utan rendering. De gamla vyerna svarade fortfarande. Server-Timing för nya anropet: total cirka 2,88 s, varav `class-pupils` cirka 1,7 s, `assignment-list` 0,38 s, lärarinloggning och klasskontroll 0,19 s vardera, `screening-results` 0,49–0,54 s och `screening-cards` 1 ms.
+- Webbläsarkontroll i produktion 2026-11-18: Testet gjordes med adminkontot i klass 6 på en screening med 17 uppgifter och 12 elever. Ett anrop (`view=results`) tog 2,77 s. Tabellen och felförståelsekorten visades samtidigt, 3,05 s efter klicket. Fyra kort och två rutor under Övrigt visades, utan något mellanläge där korten fortfarande hämtades.
+- Kvar: Den största återstående delen är `class-pupils`, alltså kontrollen att varje elev finns kvar i klassen. Den läser varje elevs hela profil, ett nytt förslag. Den lokala commiten a51445f, som begränsar hämtningen av screeninglistor när Screening öppnas, ligger på en annan gren och ingår inte här.
+
+## 2026-11-17: Felförståelser läser försök från vald screening
+
+- Logg: Välj senaste försök per elev och uppgift före läsning av sparade händelser. Behåll medlemskap i båda indexen, klass- och identitetskontroller samt versionsbunden lärarbedömning.
+- Belägg: Samma syntetiska fall gav 26 → 1 läsningar av händelselistor och 400 → 100 ms med simulerad väntan. Regressionen gav samma elevsvar och lärarbedömning före och efter. Inga ändrade felmodeller eller klassificeringsregler. Täckningen jämfördes i testfallet, ingen ny mätning på riktiga elevsvar.
+- Verifiering: 256 testfiler, 1396 tester och produktionsbuild gröna. Sju relevanta robotar gröna utan regelbrott. Granskad lokal rendering visar felförståelsekort, lärarens val och kopplingen till svarstabellen.
+- Simons besked: Slutför arbetet enligt den godkända planen utan uppehåll mellan arbetsmoment som inte kräver beslut.
+- Agentens val: Smal serverändring. Evidensläsningen för elevhistorik fortsätter använda det breda urvalet. Resultattabell och felförståelser använder fortfarande två anrop.
+- Parkerat: Publicering kräver eget besked. Mät sedan tiden från vald screening till synliga kort innan ett beslut om att slå ihop anropen.
+
+- Publicering: Simon har godkänt publicering av detta screeningpaket via GitHub. Ren publiceringsgren från 303e6f4 med enbart screeningpaketet. På den grenen passerade 1 391 tester, produktionsbygget och fem riktade robotar.
+- Produktionskvittens: GitHub master 16745bb, Vercel sekvens READY med motsvarande SHA och matematik.ximon.se. Tre sekventiella par av autentiserade GET-anrop per version på samma screening. Median för felförståelser: 5,74 → 4,79 s. Median för tabell och felförståelser tillsammans: 8,82 → 7,98 s. Samma 28 rader, 28 elever i analysvaret och fyra svar per prov. Tiderna inkluderar mottagning och JSON-avkodning, men ingen rendering. En screening, ingen generell uppskattning.
+- GitHub Verify passerade för 16745bb, inklusive test, build och navigationsrobotar.
+
+## 2026-11-16: Driftfel, elevkonto utelåst ("Kunde inte spara svaren")
+
+### Logg
+
+- Simons elevkonto (profil 4,0 MB, över 10 000 sparningar) kom inte in i
+  Chrome eller DuckDuckGo. Andra elever fungerade. En ny webbläsare utan kö
+  kom in.
+- Orsak, hittad med en loggrad (83d19b5): databasskriptet för elevprofilen
+  avkodade hela profilen två gånger och överskred databasens tidsgräns
+  (`ERR Error running script: execution timed out`). Inloggningen skickar
+  först kön från enheten och stoppas om den misslyckas.
+- Rättning: versionsnumret skrivs först i posten och läses ur textens början;
+  klasslistan skickas som eget argument. Äldre poster avkodas en gång.
+  Skriptet provat i Lua-tolk (fengari, 9 fall), enhetstest låser formen,
+  25 robotar för sparande, klasser och radering gröna.
+- **Avbrott ca 22.20–22.27 för alla elever (2d41a76).** Databasens Lua
+  kraschade på `tonumber` när mönstret inte matchade, alltså för varje
+  befintlig profil. Lokala Lua-tolken var en nyare version och missade
+  det. Rättat i 7d95100; sparande bekräftat i produktion. Svar från
+  avbrottet låg kvar i elevernas köer.
+- Kön på Simons enhet var tusentals närvarosignaler och tog lång tid.
+  Byggt på Simons "bygg": äldre checkpoints som den senaste täcker skickas
+  inte (bekräftas lokalt först när den senaste är mottagen), och en kö som
+  servern inte tar emot låser inte längre ute eleven; svaren ligger kvar i
+  kön. 551 klienttester och 31 elevrobotar gröna.
+
+### Simons beslut
+
+- Bygg: inloggning släpps trots kö, närvarosignaler slås ihop.
+
+### Agentens val
+
+- Ingen ny datanyckel: versionen läses ur samma post, så ingen migrering
+  och inga andra skrivvägar påverkas.
+- Lärdom: Lua-skript provas mot databasens egen Lua-version, inte bara en
+  lokal tolk.
+
+### Tankar och parkerat
+
+- Lokala lagringen kan stängas mitt i ett sparande vid utloggning eller
+  elevbyte (InvalidStateError); bryter R4. Robot först, sedan rättning.
+- Profilen 4,0 MB närmar sig Vercels svarsgräns 4,5 MB; steg 4.
+
 ## 2026-11-16: Belastning steg 1 klart, steg 2 byggt lokalt
 
 ### Logg

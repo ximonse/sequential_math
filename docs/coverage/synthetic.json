@@ -10,17 +10,17 @@
  },
  "wrong": {
   "incorrect": 500,
-  "misconception": 418,
-  "repeated_task": 28,
-  "observation": 6,
-  "input": 3,
-  "gave_up": 1,
-  "unexplained": 44,
-  "unexplainedNoModel": 42,
+  "misconception": 416,
+  "repeated_task": 5,
+  "observation": 17,
+  "input": 7,
+  "gave_up": 3,
+  "unexplained": 52,
+  "unexplainedNoModel": 50,
   "unexplainedNotAnalysed": 2,
   "speedTraining": 54,
   "reasons": {
-   "no_model": 42,
+   "no_model": 50,
    "source_grading_requires_review": 1,
    "unsupported_structure": 1
   }
@@ -57,25 +57,25 @@
   "arithmetic_expressions:numeric_expression": {
    "incorrect": 18,
    "misconception": 10,
-   "repeated_task": 4,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
-   "unexplained": 4,
-   "unexplainedNoModel": 4,
+   "unexplained": 8,
+   "unexplainedNoModel": 8,
    "unexplainedNotAnalysed": 0,
    "speedTraining": 0,
    "reasons": {
-    "no_model": 4
+    "no_model": 8
    }
   },
   "arithmetic:addition": {
    "incorrect": 52,
-   "misconception": 40,
-   "repeated_task": 4,
-   "observation": 1,
+   "misconception": 38,
+   "repeated_task": 0,
+   "observation": 5,
    "input": 0,
-   "gave_up": 1,
+   "gave_up": 3,
    "unexplained": 6,
    "unexplainedNoModel": 6,
    "unexplainedNotAnalysed": 0,
@@ -130,16 +130,16 @@
   "arithmetic:multiplication": {
    "incorrect": 116,
    "misconception": 90,
-   "repeated_task": 17,
-   "observation": 4,
-   "input": 2,
+   "repeated_task": 5,
+   "observation": 11,
+   "input": 6,
    "gave_up": 0,
-   "unexplained": 3,
-   "unexplainedNoModel": 2,
+   "unexplained": 4,
+   "unexplainedNoModel": 3,
    "unexplainedNotAnalysed": 1,
    "speedTraining": 0,
    "reasons": {
-    "no_model": 2,
+    "no_model": 3,
     "source_grading_requires_review": 1
    }
   },
@@ -161,16 +161,16 @@
   "fractions:addition": {
    "incorrect": 22,
    "misconception": 14,
-   "repeated_task": 2,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
-   "unexplained": 6,
-   "unexplainedNoModel": 6,
+   "unexplained": 8,
+   "unexplainedNoModel": 8,
    "unexplainedNotAnalysed": 0,
    "speedTraining": 0,
    "reasons": {
-    "no_model": 6
+    "no_model": 8
    }
   },
   "fractions:multiplication": {
@@ -230,16 +230,16 @@
   "number_fluency:number_bonds": {
    "incorrect": 24,
    "misconception": 22,
-   "repeated_task": 1,
+   "repeated_task": 0,
    "observation": 0,
    "input": 0,
    "gave_up": 0,
-   "unexplained": 1,
-   "unexplainedNoModel": 1,
+   "unexplained": 2,
+   "unexplainedNoModel": 2,
    "unexplainedNotAnalysed": 0,
    "speedTraining": 24,
    "reasons": {
-    "no_model": 1
+    "no_model": 2
    }
   },
   "percentage:discount": {

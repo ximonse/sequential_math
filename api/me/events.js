@@ -21,6 +21,16 @@ export default async function handler(req, res) {
     })
     return res.status(200).json({ ok: true, ...result })
   } catch (error) {
+    // Unexpected failures were invisible: log what failed, never pupil answers.
+    if (!error.status) {
+      const entries = Array.isArray(req.body?.entries) ? req.body.entries : []
+      console.error('me/events failed', {
+        name: error?.name, message: String(error?.message || '').slice(0, 300),
+        stack: String(error?.stack || '').split('\n').slice(1, 4).join(' | '),
+        types: entries.map(entry => String(entry?.type || '').slice(0, 40)),
+        bytes: Buffer.byteLength(JSON.stringify(entries))
+      })
+    }
     return res.status(error.status || 500).json({ error: error.status ? error.message : 'Kunde inte spara svaren.' })
   }
 }

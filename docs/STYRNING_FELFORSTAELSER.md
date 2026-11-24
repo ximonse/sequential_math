@@ -36,6 +36,8 @@ kunde välja egen riktning. Därför är varje regel nedan kopplad till en
 
 ## 3. Nuläge som detta ska rätta
 
+*Historik.* Nuläget efter 2026-11-18 beskrivs i [TOLKNING_AV_ELEVSVAR.md](TOLKNING_AV_ELEVSVAR.md): en tolkning per svar, och fel räknesätt räknas inte längre som slarv.
+
 | Iakttagelse | Belägg |
 | --- | --- |
 | Felförståelser saknas i rutinen för ny domän | Checklistan i `ARCHITECTURE.md` har sju steg, inget om felmodeller |
@@ -501,6 +503,54 @@ modeller i katalogen och en rad i täckningsrapporten.
    ger modellen svaret 0, som är vanligt även av andra skäl. Simons fråga för
    senare, inte nu: är det tecknet, uppmärksamheten eller när man adderar
    respektive subtraherar? Kan prövas med textuppgifter utan tecken.
+5. Beslut efter granskningen 2026-11-18
+   (`docs/GRANSKNING_TOLKNING_AV_ELEVSVAR_2026-11-18.md`, B1–B6). Simon:
+   "Jag håller med i dina rekommendationer, jag tänker att tabellträning är
+   mängdträning."
+   - **B1.** Kravet på tre olika uppgifter gäller bara modeller med hög
+     slumprisk. Under kravet heter det "enstaka svar, för lite underlag",
+     aldrig "slarv". Samma regel gäller i alla vyer.
+     "Svarar 0" och "svarar 55" behåller kravet, eftersom det är
+     definitionen av "ger upp". **Simon 2026-11-18:** "Fel tabellfaktum i
+     uppställningen" behåller kravet, eftersom det handlar om faktaminne.
+     "Räknar med starttalet vid växling" förlorar det (ett svar per
+     uppgift).
+   - **B2.** Jämförbara rätta svar dämpar en misstanke. Är de fler än
+     felträffarna visas misstanken som "motsagd av rätta svar", längre ner och
+     med båda siffrorna. Den döljs inte.
+   - **B3.** Lärarvyerna kallar fel räknesätt "fel räknesätt", utan att säga om
+     det är förståelse eller uppmärksamhet. Simons fråga från 12/11 är nästa
+     steg.
+   - **B4.** Ett svar som läraren skrivit in analyseras i alla lärarvyer, märkt
+     som lärarens inskrivning. Täckningen behåller elevens eget svar på en egen
+     rad (R-C).
+   - **B5.** "Samma uppgift fel flera gånger" kräver minst tre fel och fler fel
+     än rätt på uppgiften.
+   - **B6.** Mängdträning är all träning utom screening: fri träning,
+     lärarens uppdrag, NCM-uppdrag, tabellträning och talflyt (Simon
+     2026-11-18, "Tabellträning är också mängdträning, som fri träning").
+     Agentens första tolkning, "bara tabellträning", var fel och är struken.
+     Fel svar hanteras så här (Simon godkände upplägget 2026-11-18):
+
+     | | Sänker elevens nivå | Blir en misstanke för läraren |
+     | --- | --- | --- |
+     | Fri träning, lärarens uppdrag och NCM-uppdrag | Ja | Ja, ett enstaka fel märks som enstaka |
+     | Tabellträning | Nej | Först när felet upprepas |
+     | Talkompisar, dubblor och talbilder | Ja | Först när felet upprepas |
+     | Screening | Nej | Ja, redan vid ett fel |
+
+     Nivåkolumnen är som koden redan gör. I misstankekolumnen är raden för
+     talflyt en ändring: i dag visas en talflytsmodell redan vid ett fel,
+     märkt "Enstaka svar".
+     **Simon 2026-11-18:** Fel i tabellträning ska inte sänka
+     multiplikationsnivån. Koden gör redan så. Talkompisar i fritt varv
+     fortsätter att sänka nivån ("1 nej").
+   - **B7, preliminärt** (Simon 2026-11-18: "all kanske?", "tre?"):
+     Talpar, dubblor och talbilder är i synnerhet snabbhetsträning. Enstaka
+     fel och olika felsvar på samma fråga ska väga lätt. Samma felsvar som
+     upprepas ska väga mer. Det gäller troligen all mängdträning, och gränsen
+     är troligen samma felsvar tre gånger på samma uppgift. Ersätter beslutet
+     13/11 (tre fel oavsett svar) och B5. Bekräftas när förslaget godkänns.
 
 ## 11. Arbetsregel för agenter
 

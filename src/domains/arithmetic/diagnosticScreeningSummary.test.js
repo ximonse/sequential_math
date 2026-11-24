@@ -26,7 +26,8 @@ describe('screening matrix evidence signals', () => {
     expect(summarizeDiagnosticScreening(task, work('-'))).toMatchObject({ explicitAnswer: '-', answerStatus: 'incomplete' })
   })
   it('uses the actual setup to distinguish method, shifted columns and different answers', () => {
-    expect(summarizeDiagnosticScreening(task, work('376', '376')).signals.map(s => s.code)).toEqual(['M'])
+    // M (larger minus smaller on one task) is left to the error model and its card (2026-11-18, K7).
+    expect(summarizeDiagnosticScreening(task, work('376', '376')).signals.map(s => s.code)).toEqual([])
     expect(summarizeDiagnosticScreening(task, work('224', '376')).signals.map(s => s.code)).toEqual(['Ö'])
     expect(summarizeDiagnosticScreening(task, work('376', '376', true)).signals.map(s => s.code)).toEqual(['P'])
   })

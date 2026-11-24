@@ -79,7 +79,8 @@ använde. Lärarvyn hämtar den lätta katalogen, men servern läser fortfarande
    anropen; 31 screeningrobotar gröna. Mäts efter publicering.
 3. **Screeningresultat.** Läs bara den screening som visas och en gång för
    tabell och felförståelser. *Klart när:* en screening läses med ett anrop
-   och tiden halveras.
+   och tiden halveras. *Produktion 2026-11-18 (97edf4b):* ett anrop
+   (`view=results`), 6,45 → 3,07 s till tabell och kort, se avsnitt 8.
 4. **Elevens sparande.** Spara nya svar utan att läsa och skriva hela
    profilen varje gång. Störst förändring och störst risk; kräver eget
    förslag före bygge. *Klart när:* ett sparande läser och skriver bara det
@@ -98,3 +99,37 @@ använde. Lärarvyn hämtar den lätta katalogen, men servern läser fortfarande
 
 1. Godkänns målet, måtten och ordningen? **Ja, Simon 2026-11-16.**
 2. Katalogkortens livstid: ett dygn, eller annat? **Ett dygn, Simon 2026-11-16.**
+
+## 7. Avgränsad läsning av felförståelser i vald screening
+
+Felförståelsevyn använder screeningens försöksindex för att välja senaste
+försöket per elev och uppgift före läsningen av sparade händelser. Försöket
+måste också finnas i elevens index och passera befintliga klass-, elev- och
+versionskontroller. Den breda historikläsningen för elevanalys används som
+tidigare när inget urval av försök anges.
+
+Samma syntetiska fall med ett aktuellt, ett äldre och 24 orelaterade försök
+gick från 26 läsningar av händelselistor till 1. Med 100 ms simulerad väntan per
+sådan läsning tog den delen av provet 400 ms före och 100 ms efter. Detta är
+ett jämförbart lokalt prov av läsarbetet, inte uppmätt tid i verklig databas
+eller i produktion. Mät tiden från valt resultat till synliga kort efter
+publicering. Tabell och felförståelser hämtas fortfarande var för sig.
+
+## 8. Tabell och felförståelser i ett anrop
+
+Resultatvyn hämtar `teacher-diagnostic-attempts?view=results` per klass. Svaret
+innehåller tabellen och en `misconceptions`-del. Korten byggs ur samma senaste
+försök, original och lärarbedömningar som tabellen. Elevens försöksindex läses
+parallellt och avgör som tidigare vilka försök korten tar med. Kan kortdelen inte
+byggas visas tabellen ändå, med ett felmeddelande för korten. Vyerna utan `view`
+och `view=misconceptions` finns kvar för sidor som laddats före ändringen.
+
+Före ändringen startade felförståelseanropet först när tabellen hade kommit.
+Det läste sedan om nästan allt som tabellen redan hade läst. Syntetiskt, med 50 ms
+per databasanrop och 28 elever: produktionslikt fall 268 → 156 anrop och 30 → 13
+sekventiella varv till korten. Antalet läsvarv till tabellen var oförändrat: 13. Korten bearbetas nu innan tabellen skickas. Det tog 0–16 ms för 112 svar. Tätt
+fall: 2068 → 936 anrop och 65 → 13 varv. Detta är ett lokalt prov av läsarbetet.
+Det är ingen uppmätt produktionstid. I produktion visar `Server-Timing` stegen
+`class-access`, `class-pupils`, `assignment-list`, `screening-results` och `screening-cards`.
+
+Produktion 2026-11-18 (97edf4b): Mätningen gjordes på en screening med 28 rader och tre varv per version. Tabell och kort i följd tog 6,45 s med de gamla anropen. Det nya anropet tog 3,07 s. Tabellen ensam tog 3,04 s med det gamla anropet. Server-Timing: `class-pupils`, kontrollen av elevlistan, tar cirka 1,7 s av 2,9 s. Det är nästa kandidat. Korten tar 1 ms.

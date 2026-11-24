@@ -4,6 +4,7 @@ import { formatSkillList } from './dashboardSkillLabelHelpers'
 import { toPercent } from './dashboardSortUtils'
 import { getPreferredProblemSource } from '../../../lib/masteryCalculation'
 import { getProblemLevel } from './dashboardCoreHelpers'
+import { isKnowledgeError } from './dashboardTableStatusUtils'
 
 
 export function buildStudentDetailExportRows(student, row, detailData) {
@@ -175,7 +176,7 @@ export function buildStudentDetailExportRows(student, row, detailData) {
         TidSek: Number.isFinite(problem.speedTimeSec) ? Number(problem.speedTimeSec.toFixed(2)) : '',
         Varde: problem.correct
           ? 'korrekt'
-          : (String(problem.errorCategory || '') === 'inattention' ? 'ouppmarksamhet' : 'kunskapsfel'),
+          : (isKnowledgeError(problem) ? 'kunskapsfel' : 'ouppmarksamhet'),
         Tidsstampel: problem.timestamp ? new Date(problem.timestamp).toISOString() : ''
       })
     }

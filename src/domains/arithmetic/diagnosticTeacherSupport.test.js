@@ -7,7 +7,8 @@ describe('teacher questions from diagnostic evidence', () => {
   })
   it('uses observed differences and independently matched signals', () => {
     const result = buildDiagnosticTeacherSupport({ columnAlignment: { status: 'observed', alignment: 'misaligned' }, visibleResult: { status: 'observed', consistency: 'different', visibleResult: '376', explicitAnswer: '224' }, subtractionPattern: { status: 'matched' } })
-    expect(result.map(item => item.code)).toEqual(['P', 'Ö', 'M'])
+    // M was a one-task copy of an error model and is no longer shown (2026-11-18, K7).
+    expect(result.map(item => item.code)).toEqual(['P', 'Ö'])
     expect(result[1].reason).toContain('376')
     expect(result[1].reason).toContain('224')
   })

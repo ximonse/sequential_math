@@ -8,8 +8,59 @@ import { assessWithTeacher, currentTeacherAssessment } from '../src/domains/arit
 
 const validId = id => typeof id === 'string' && /^[A-Za-z0-9_-]{1,128}$/u.test(id)
 
-export async function pupilScreeningEvidence(studentId, classId, { store = kv, read = readDiagnosticAttempt } = {}) {
-  const ids = await store.smembers(`diagnostic_attempts_by_student:${studentId}`) || []
+// Saved client times describe activity, not trusted server acceptance times.
+function evidenceTime({ record, snapshot }) {
+  const times = snapshot.events.map(event => event.timestamp).filter(time => Number.isFinite(time) && time > 0)
+  return { times, timestamp: times.length ? Math.max(...times) : record.createdAt }
+}
+
+export function hasEvidenceTime(saved) {
+  const { timestamp } = evidenceTime(saved)
+  return Number.isFinite(timestamp) && timestamp > 0
+}
+
+// One screening answer as evidence, from reads the caller has already checked:
+// `record` is the indexed attempt, `saved` its original work read after it, and
+// `item` the frozen task in that attempt's assignment. Shared by the pupil
+// evidence read and the screening results read, so both classify alike.
+export function screeningEvidenceEntry({ attemptId, studentId, classId, record, item, saved, review }) {
+  const current = saved.record
+  const revision = identifyDiagnosticObservationRevision(current, saved.snapshot)
+  const observation = summarizeDiagnosticObservation(item.taskSnapshot, saved.snapshot)
+  const { times, timestamp } = evidenceTime(saved)
+  // The teacher's verdict for the current revision, marked with the full task
+  // rules here; evidencePage applies it to the answer that analysis reads.
+  const assessment = review?.studentId === studentId
+    ? assessWithTeacher(item.taskSnapshot, saved.snapshot, observation.answerStatus, currentTeacherAssessment(review, current)) : null
+  const teacherReview = review?.studentId === studentId ? {
+    reviewRevision: review.reviewRevision, evidenceRevision: review.evidenceRevision, evidenceSequence: review.evidenceSequence,
+    matchesEvidence: review.evidenceRevision === current.serverRevision && review.evidenceSequence === current.lastSequence,
+    reviewed: review.reviewed === true, noteSv: review.note || '', updatedAt: review.updatedAt,
+    // The teacher's judgement sits beside the observed answer status; it does not replace it.
+    markedCorrect: review.markedCorrect === true, teacherAnswer: review.teacherAnswer || null,
+    misconceptionSv: review.misconception || '', misconceptionIds: assessment?.misconceptionIds ?? [], ...(assessment ? { assessment } : {}) } : null
+  return { source: 'screening', timestamp,
+    timeBasis: times.length ? 'latest_saved_client_event' : 'attempt_created_at',
+    reference: { kind: 'screening_attempt', attemptId, assignmentId: record.assignmentId,
+      assignmentItemId: record.assignmentItemId, ...revision },
+    question: evidencePick(item.taskSnapshot, ['taskId', 'taskVersion', 'promptSv', 'operation', 'operands', 'domain', 'values',
+      'answerType', 'responseMode', 'images', 'options', 'gridEnabled', 'drawingEnabled', 'correctOptionIds']),
+    answer: { status: observation.answerStatus, studentAnswer: observation.explicitAnswer,
+      correctAnswer: observation.expectedAnswer, submitted: observation.submitted,
+      ...diagnosticNotebookStatus(saved.snapshot, item.taskSnapshot),
+      ...evidencePick(observation, ['selectedOptionIds', 'correctSelections', 'missedOptions', 'incorrectSelections']) },
+    context: { evidenceClass: 'diagnostic_only', classIdAtAttempt: classId, status: current.status,
+      createdAt: current.createdAt, timeQuality: times.length ? 'client_reported' : 'server_created' },
+    interpretation: { category: 'unknown', patterns: [], detail: null },
+    ...(teacherReview ? { teacherReview } : {}),
+    detail: { snapshot: saved.snapshot, observation } }
+}
+
+export async function pupilScreeningEvidence(studentId, classId, { store = kv, read = readDiagnosticAttempt, attemptIds } = {}) {
+  const indexedIds = await store.smembers(`diagnostic_attempts_by_student:${studentId}`) || []
+  // A selected screening supplies its latest attempt IDs. Keep the pupil-index
+  // membership check, but only read and replay evidence that can be displayed.
+  const ids = attemptIds ? indexedIds.filter(id => attemptIds.has(id)) : indexedIds
   if (ids.length > 1000) throw evidenceError(413, 'screening_read_limit', 'För många screeningförsök för denna läsning.')
   const entries = [], warnings = new Set(['assignment_index_completeness_unknown'])
   let invalidRecords = 0
@@ -28,39 +79,9 @@ export async function pupilScreeningEvidence(studentId, classId, { store = kv, r
     const current = saved?.record
     if (!current || ['studentId', 'classIdAtAttempt', 'assignmentId', 'assignmentItemId', 'taskId', 'taskVersion', 'evidenceClass']
       .some(key => current[key] !== record[key])) throw evidenceError(409, 'evidence_changed', 'Screeningförsöket ändrades under läsningen.')
-    const revision = identifyDiagnosticObservationRevision(current, saved.snapshot)
-    const observation = summarizeDiagnosticObservation(item.taskSnapshot, saved.snapshot)
-    // Saved client times describe activity, not trusted server acceptance times.
-    const times = saved.snapshot.events.map(event => event.timestamp).filter(time => Number.isFinite(time) && time > 0)
-    const timestamp = times.length ? Math.max(...times) : current.createdAt
-    if (!Number.isFinite(timestamp) || timestamp <= 0) { invalidRecords++; return null }
+    if (!hasEvidenceTime(saved)) { invalidRecords++; return null }
     const review = await store.get(`diagnostic_review:${id}`)
-    // The teacher's verdict for the current revision, marked with the full task
-    // rules here; evidencePage applies it to the answer that analysis reads.
-    const assessment = review?.studentId === studentId
-      ? assessWithTeacher(item.taskSnapshot, saved.snapshot, observation.answerStatus, currentTeacherAssessment(review, current)) : null
-    const teacherReview = review?.studentId === studentId ? {
-      reviewRevision: review.reviewRevision, evidenceRevision: review.evidenceRevision, evidenceSequence: review.evidenceSequence,
-      matchesEvidence: review.evidenceRevision === current.serverRevision && review.evidenceSequence === current.lastSequence,
-      reviewed: review.reviewed === true, noteSv: review.note || '', updatedAt: review.updatedAt,
-      // The teacher's judgement sits beside the observed answer status; it does not replace it.
-      markedCorrect: review.markedCorrect === true, teacherAnswer: review.teacherAnswer || null,
-      misconceptionSv: review.misconception || '', misconceptionIds: assessment?.misconceptionIds ?? [], ...(assessment ? { assessment } : {}) } : null
-    return { source: 'screening', timestamp,
-      timeBasis: times.length ? 'latest_saved_client_event' : 'attempt_created_at',
-      reference: { kind: 'screening_attempt', attemptId: id, assignmentId: record.assignmentId,
-        assignmentItemId: record.assignmentItemId, ...revision },
-      question: evidencePick(item.taskSnapshot, ['taskId', 'taskVersion', 'promptSv', 'operation', 'operands', 'domain', 'values',
-        'answerType', 'responseMode', 'images', 'options', 'gridEnabled', 'drawingEnabled', 'correctOptionIds']),
-      answer: { status: observation.answerStatus, studentAnswer: observation.explicitAnswer,
-        correctAnswer: observation.expectedAnswer, submitted: observation.submitted,
-        ...diagnosticNotebookStatus(saved.snapshot, item.taskSnapshot),
-        ...evidencePick(observation, ['selectedOptionIds', 'correctSelections', 'missedOptions', 'incorrectSelections']) },
-      context: { evidenceClass: 'diagnostic_only', classIdAtAttempt: classId, status: current.status,
-        createdAt: current.createdAt, timeQuality: times.length ? 'client_reported' : 'server_created' },
-      interpretation: { category: 'unknown', patterns: [], detail: null },
-      ...(teacherReview ? { teacherReview } : {}),
-      detail: { snapshot: saved.snapshot, observation } }
+    return screeningEvidenceEntry({ attemptId: id, studentId, classId, record, item, saved, review })
   }
   // Keep every original-work/revision check. Independent attempts do not need
   // to wait for one another's network round trips; bound load and preserve order.

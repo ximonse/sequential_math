@@ -1,7 +1,7 @@
 import { resolveProblemOperation } from '../../../lib/mathUtils'
 import { teacherPracticeRows } from '../../../lib/teacherPracticeRows.js'
 import { ALL_OPERATIONS, LEVELS } from './dashboardConstants'
-import { currentPracticeCandidates } from '../../../lib/practiceObservation.js'
+import { currentPracticeCandidates, teacherErrorCategory } from '../../../lib/practiceObservation.js'
 
 export { LEVELS }
 export const OPERATIONS = ALL_OPERATIONS
@@ -131,7 +131,7 @@ function buildFeatureSignalRows(featureTotals, featureWrong) {
 }
 
 function getKnowledgeCell(problem, operation) {
-  const errCat = String(problem.errorCategory || '')
+  const errCat = teacherErrorCategory(problem)
   const isKnowledgeLike = !problem.correct && (errCat === 'knowledge' || errCat === 'misconception')
   const patterns = Array.isArray(problem.patterns) ? problem.patterns.slice(0, 4) : []
   if (!isKnowledgeLike) return { isKnowledgeLike, errCat, patterns }
@@ -243,8 +243,9 @@ export function buildHeatmapData(students) {
       bucket.attempts += 1
       if (problem.correct) bucket.correct += 1
       const current = currentPracticeCandidates(problem)
-      if (current.status === 'matched') {
-        const modelIds = [...new Set(current.matches.map(match => match.modelId))]
+      const currentModelIds = current.status === 'matched' ? [...new Set(current.matches.map(match => match.modelId))] : []
+      if (currentModelIds.length) {
+        const modelIds = currentModelIds
         for (const modelId of modelIds) increaseCount(bucket.candidateCounts, modelId)
         bucket.candidateExamples = keepLatestWrongAnswers([...bucket.candidateExamples, {
           observationId: problem.observationId || null, timestamp: problem.timestamp,
@@ -264,14 +265,18 @@ export function buildHeatmapData(students) {
       if (knowledgeCell.errCat === 'misconception') {
         bucket.misconceptionCount += 1
       }
+      // A current explanation replaces the label saved when the pupil answered,
+      // so the list and the candidates above describe the same answer alike.
       if (knowledgeCell.wrongAnswer) {
         bucket.wrongAnswers = keepLatestWrongAnswers([
           ...bucket.wrongAnswers,
-          knowledgeCell.wrongAnswer
+          { ...knowledgeCell.wrongAnswer, currentModelIds }
         ])
       }
-      for (const pattern of knowledgeCell.patterns) {
-        increaseCount(bucket.patternCounts, pattern)
+      if (!currentModelIds.length) {
+        for (const pattern of knowledgeCell.patterns) {
+          increaseCount(bucket.patternCounts, pattern)
+        }
       }
       for (const tag of featureTags) {
         increaseCount(bucket.featureWrong, tag)

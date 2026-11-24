@@ -64,15 +64,27 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
       checkInRevision: check?.revision ?? 0, decision: decision?.decision ?? 'undecided',
       interpretationSv: decision?.interpretationSv ?? '', goalSv: check?.goalSv ?? '' }
   }
+  // The server's shared interpretation sets each card's strength (B1, B2). Reports
+  // saved before it carry only supportCount; they are judged as they were then.
   const pattern = item => meetsPattern(item.signalCode, item.supportRefs.map(ref => byRef.get(ref)).filter(Boolean))
+  const strength = item => ({ insufficient: 'single', below_pattern: 'below', contradicted: 'contradicted' })[item.evidenceStatus]
+    ?? (pattern(item) ? 'pattern' : 'below')
   // Giving up or clicking past, on at least three different tasks: its own signal.
-  const gaveUp = item => GAVE_UP_MODELS.has(item.signalCode) && pattern(item)
-  // Slips, input and answers that do not yet form a pattern across different tasks.
-  const slip = item => !gaveUp(item) && (NOT_METHOD_MODELS.has(item.signalCode) || !pattern(item))
-  const suspicions = report.hypotheses.filter(item => !slip(item) && !gaveUp(item))
+  const gaveUp = item => GAVE_UP_MODELS.has(item.signalCode) && strength(item) !== 'below'
+  // Input and answer observations explain no method (catalogue kinds).
+  const noMethod = item => !gaveUp(item) && NOT_METHOD_MODELS.has(item.signalCode)
+  // A requirement not met (three tasks, or speed training not repeated): too little
+  // evidence, never called a slip (B1). One answer otherwise stays a card marked
+  // "Enstaka svar", as before, so it can still be followed up.
+  const single = item => !gaveUp(item) && !noMethod(item) && strength(item) === 'below'
+  const contradicted = item => !gaveUp(item) && !noMethod(item) && strength(item) === 'contradicted'
+  const suspicion = item => !gaveUp(item) && !noMethod(item) && ['pattern', 'single'].includes(strength(item))
+  const suspicions = report.hypotheses.filter(suspicion)
   // Suspicions beyond the reviewed cards, with less evidence: listed smaller further down.
   const more = (report.moreHypotheses ?? []).map((item, index) => ({ ...item, id: `more-${index + 1}` }))
-  const moreSuspicions = more.filter(item => !slip(item) && !gaveUp(item))
+  const moreSuspicions = more.filter(suspicion)
+  const singles = [...report.hypotheses, ...more].filter(single)
+  const contradictedItems = [...report.hypotheses, ...more].filter(contradicted)
   const gaveUpItems = [...report.hypotheses, ...more].filter(gaveUp)
   // Suspicions that can share one screening: computed, outside the didactic
   // packages, and not revised or rejected by the teacher.
@@ -87,7 +99,7 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
     && !['revised', 'rejected'].includes(reviewFor(item)?.decision)
   const chosenItems = suspicions.filter(item => chosen.has(item.id) && combinable(item))
   const toggle = id => setChosen(value => { const next = new Set(value); if (next.has(id)) next.delete(id); else next.add(id); return next })
-  const slips = [...report.hypotheses, ...more].filter(slip)
+  const slips = [...report.hypotheses, ...more].filter(noMethod)
 
   const detail = entry => selected?.ref === entry.ref && <section className="mt-1 mb-2 rounded border border-slate-300 p-3" aria-label="Rapportens källsvar">
     <QuestionText>{questionText(entry)}</QuestionText>
@@ -195,6 +207,26 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
       </div>)}
     </section>}
 
+    {singles.length > 0 && <section className="mt-4" aria-label="Enstaka svar, för lite underlag">
+      <h5 className="text-base font-semibold">Enstaka svar, för lite underlag</h5>
+      <p className="text-sm text-slate-600">Felsvar som passar en felförståelse men behöver fler svar, eller som kommer från snabbhetsträning och inte har upprepats. Håll ögonen på dem.</p>
+      {singles.map(item => <div key={item.id} data-hypothesis={item.signalCode} className="mt-2 text-sm">
+        <p className="font-semibold">{misconceptionTitles(item).join(' · ') || titleFor(item)} · {item.supportCount} felsvar
+          {item.counterCount ? ` · ${item.counterCount} rätt på jämförbara uppgifter` : ''}</p>
+        {rows(item.supportRefs)}
+      </div>)}
+    </section>}
+
+    {contradictedItems.length > 0 && <section className="mt-4" aria-label="Motsagda av rätta svar">
+      <h5 className="text-base font-semibold">Motsagda av rätta svar</h5>
+      <p className="text-sm text-slate-600">Felsvaren passar en felförståelse, men eleven har svarat rätt på fler jämförbara uppgifter. Troligen ingen felförståelse.</p>
+      {contradictedItems.map(item => <div key={item.id} data-hypothesis={item.signalCode} className="mt-2 text-sm">
+        <p className="font-semibold">{misconceptionTitles(item).join(' · ') || titleFor(item)} · {item.supportCount} felsvar, {item.counterCount} rätt på jämförbara uppgifter</p>
+        {rows(item.supportRefs)}
+        {item.counterRefs?.length > 0 && rows(item.counterRefs, { wrong: false })}
+      </div>)}
+    </section>}
+
     {report.teacherMisconceptions?.length > 0 && <section className="mt-4" aria-label="Felförståelser du har valt">
       <h5 className="text-base font-semibold">Felförståelser du har valt</h5>
       <p className="text-sm text-slate-600">Dina val ur listan i screeningens elevgenomgång.</p>
@@ -211,19 +243,24 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
     {(() => {
       const explained = new Set([...report.hypotheses, ...more].flatMap(item => item.supportRefs).concat((report.repeatedTasks ?? []).flatMap(task => task.wrongRefs),
         (report.teacherMisconceptions ?? []).flatMap(item => item.refs)))
-      const unexplained = (report.exampleRefs || []).filter(ref => byRef.get(ref)?.answer.status === 'incorrect' && !explained.has(ref))
+      // All of the period's unexplained answers since the shared interpretation; older reports kept the first twenty answers.
+      const unexplained = report.unexplainedRefs ?? (report.exampleRefs || []).filter(ref => byRef.get(ref)?.answer.status === 'incorrect' && !explained.has(ref))
       return unexplained.length > 0 && <>
         <h5 className="mt-4 text-base font-semibold">Fel som appen inte kan förklara</h5>
-        <p className="text-sm text-slate-600">Bland periodens första 20 svar. Här behövs ditt eget öga eller ett samtal med eleven.</p>
+        <p className="text-sm text-slate-600">{report.unexplainedRefs
+          ? `${report.unexplainedCount} under perioden${report.unexplainedCount > unexplained.length ? `, de ${unexplained.length} senaste visas` : ''}.`
+          : 'Bland periodens första 20 svar.'} Här behövs ditt eget öga eller ett samtal med eleven.</p>
         {rows(unexplained)}
       </>
     })()}
 
-    {report.repeatedTasks?.length > 0 && <section className="mt-4" aria-label="Fel på samma uppgift flera gånger">
-      <h5 className="text-base font-semibold">Fel på samma uppgift flera gånger</h5>
-      <p className="text-sm text-slate-600">Uppgifter eleven svarat fel på minst tre gånger, oavsett vilket svar. Faktumet sitter inte ännu.</p>
+    {report.repeatedTasks?.length > 0 && <section className="mt-4" aria-label="Samma felsvar flera gånger">
+      <h5 className="text-base font-semibold">Samma felsvar flera gånger</h5>
+      <p className="text-sm text-slate-600">{report.repeatedTasks[0].answer !== undefined
+        ? 'Samma felsvar på samma uppgift minst tre gånger. Troligen ett inlärt fel faktum.'
+        : 'Uppgifter eleven svarat fel på minst tre gånger, oavsett vilket svar.'}</p>
       {report.repeatedTasks.map(task => <details key={task.wrongRefs[0]} className="mt-1">
-        <summary className="text-sm"><strong>{questionText(byRef.get(task.wrongRefs[0]))}</strong>: fel {task.wrongCount} gånger{task.correctCount ? `, rätt ${task.correctCount}` : ''}</summary>
+        <summary className="text-sm"><strong>{questionText(byRef.get(task.wrongRefs[0]))}</strong>{task.answer !== undefined ? ` = ${task.answer}` : ''}: fel {task.wrongCount} gånger{task.correctCount ? `, rätt ${task.correctCount}` : ''}</summary>
         {rows(task.wrongRefs)}
       </details>)}
     </section>}
@@ -237,8 +274,8 @@ export default function PupilAnalysisReportView({ report, savedItem, baseUrl, st
       </div>)}
     </section>}
 
-    {slips.length > 0 && <details className="mt-4"><summary className="font-semibold">Troligen slarv eller inmatning ({slips.reduce((sum, item) => sum + item.supportCount, 0)} svar)</summary>
-      <p className="mt-1 text-sm text-slate-600">Hålls isär från felförståelser. Upprepas samma mönster kan det ändå vara värt att fråga eleven.</p>
+    {slips.length > 0 && <details className="mt-4"><summary className="font-semibold">Inmatning och svar utan metodförklaring ({slips.reduce((sum, item) => sum + item.supportCount, 0)} svar)</summary>
+      <p className="mt-1 text-sm text-slate-600">Felskrivningar och svar som appen känner igen men som inte visar en metod. Hålls isär från felförståelser.</p>
       {slips.map(item => <div key={item.id} className="mt-2">
         <p className="text-sm font-semibold">{titleFor(item)}</p>
         {rows(item.supportRefs)}

@@ -118,7 +118,7 @@ export function buildNcmOverview(students, classNameById = new Map()) {
       totalAttemptsWeek += 1
       if (problem?.correct) weekCorrect += 1
       if (!problem?.correct && isKnowledgeError(problem)) weekKnowledgeWrong += 1
-      if (!problem?.correct && String(problem?.errorCategory || '') === 'inattention') weekInattentionWrong += 1
+      if (!problem?.correct && !isKnowledgeError(problem)) weekInattentionWrong += 1
       if (ts >= lastNcmTs) {
         lastNcmTs = ts
         lastNcmCode = ncmCode

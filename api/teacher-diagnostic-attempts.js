@@ -9,6 +9,8 @@ import { diagnosticWorkAnalysis } from '../src/domains/arithmetic/diagnosticWork
 import { identifyDiagnosticObservationRevision } from '../src/domains/arithmetic/diagnosticObservationRevision.js'
 import { diagnosticClassOverview, listDiagnosticAssignmentAttempts } from './_diagnosticClassOverview.js'
 import { screeningMisconceptionPupils } from './_screeningMisconceptions.js'
+import { screeningResults } from './_screeningResults.js'
+import { measureRequestStep } from './_requestTiming.js'
 import { saveDiagnosticReview } from './_diagnosticReviewStore.js'
 import { assessWithTeacher, currentTeacherAssessment } from '../src/domains/arithmetic/diagnosticTeacherAssessment.js'
 import { logUnexpectedDiagnosticError, UNEXPECTED_DIAGNOSTIC_ERROR } from './_diagnosticErrorLog.js'
@@ -35,16 +37,21 @@ export default async function handler(req, res) {
       || (attemptId !== undefined && !validId(attemptId))) {
       return res.status(400).json({ error: 'Invalid diagnostic identity' })
     }
-    if (!await canAccessClass(req, classId)) {
+    if (!await measureRequestStep(req, 'class-access', () => canAccessClass(req, classId))) {
       return res.status(403).json({ error: 'Not authorized for this class' })
     }
-    const allowed = await diagnosticAssignablePupilsInClass(classId)
+    const allowed = await measureRequestStep(req, 'class-pupils', () => diagnosticAssignablePupilsInClass(classId))
     if (studentId !== undefined && !allowed.includes(studentId)) {
       return res.status(403).json({ error: 'Not authorized for this pupil and class' })
     }
-    const assignment = (await listClassDiagnosticAssignments(classId))
+    const assignment = (await measureRequestStep(req, 'assignment-list', () => listClassDiagnosticAssignments(classId)))
       .find(item => item.assignmentId === assignmentId && (studentId === undefined || item.studentIds?.includes(studentId)))
     if (!assignment) return res.status(404).json({ error: 'Diagnostic assignment not found' })
+    // Table and cards from one read (docs/STYRNING_BELASTNING.md). The two
+    // separate views stay for pages loaded before this read existed.
+    if (studentId === undefined && input.view === 'results') {
+      return res.status(200).json(await measureRequestStep(req, 'screening-results', () => screeningResults(assignment, allowed, { req })))
+    }
     if (studentId === undefined && input.view === 'misconceptions') {
       return res.status(200).json(await screeningMisconceptionPupils(assignment, allowed))
     }

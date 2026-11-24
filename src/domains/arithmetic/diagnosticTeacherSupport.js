@@ -8,9 +8,5 @@ export function buildDiagnosticTeacherSupport(detail) {
     code: 'Ö', reason: `${detail.visibleResult.visibleResult} står i häftet och ${detail.visibleResult.explicitAnswer} i svarsfältet.`,
     question: 'Vilket svar vill du lämna in, och hur hänger det ihop med din uträkning?'
   })
-  if (detail.subtractionPattern?.status === 'matched') support.push({
-    code: 'M', reason: 'Det synliga resultatet är förenligt med större siffra minus mindre i varje kolumn.',
-    question: 'Kan du visa steg för steg hur du räknade i varje kolumn och hur du hanterade nollan?'
-  })
   return support
 }

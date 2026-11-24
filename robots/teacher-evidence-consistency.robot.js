@@ -22,6 +22,13 @@ test('Class detail shows current candidates separately from original error label
   await expect(candidates).not.toContainText('historic_first_match')
   await candidates.getByText('Källsvar och regelversion', { exact: true }).click()
   await expect(candidates).toContainText(`evidence-${pupil.studentId}`)
+  // The list below names the same answer by the same current explanation, not by its saved label.
+  const list = page.getByText(/kunskapsfel på nivå 4/).locator('..')
+  await expect(list).toContainText('376')
+  await expect(list).toContainText('beräknad förklaring')
+  await expect(list).toContainText('Större minus mindre i varje kolumn')
+  await expect(list).not.toContainText('historisk kategorimarkering')
+  await page.screenshot({ path: testInfo.outputPath('class-detail-list.png'), fullPage: true })
   await candidates.screenshot({ path: testInfo.outputPath('class-current-candidates.png') })
   await page.setViewportSize({ width: 768, height: 1024 })
   await candidates.screenshot({ path: testInfo.outputPath('class-current-candidates-portrait.png') })

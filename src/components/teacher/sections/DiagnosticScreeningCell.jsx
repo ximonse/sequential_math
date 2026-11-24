@@ -2,15 +2,18 @@ import { useId, useRef, useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import QuestionText from '../../QuestionText'
 import { approvedMisconception } from '../../../domains/predictableErrors/misconceptions.js'
+import { SCREENING_GROUP_LABELS_SV, screeningAnswerGroup } from '../../../lib/screeningMisconceptions.js'
 import './diagnosticScreening.css'
 
-const labels = { correct: 'Rätt svar', incorrect: 'Fel svar utan identifierat mönster',
+// A wrong answer is named by its group among the misconception cards (see `classified`).
+const labels = { correct: 'Rätt svar', incorrect: 'Fel svar',
   incomplete: 'Ofullständigt svar', unanswered: 'Ej svar', unassessed: 'Skrivsvar – inte bedömt' }
 const colors = { correct: 'screening-answer--correct', incorrect: 'screening-answer--incorrect',
   incomplete: 'screening-answer--incomplete', unanswered: 'screening-answer--unanswered',
   unassessed: 'screening-answer--unanswered', M: 'screening-answer--M', P: 'screening-answer--P', Ö: 'screening-answer--transfer' }
 
-export default function DiagnosticScreeningCell({ item, pupilName, prompt, onOpen }) {
+// `classified` is the answer as the misconception cards classify it, when available.
+export default function DiagnosticScreeningCell({ item, classified, pupilName, prompt, onOpen }) {
   const id = useId()
   const [position, setPosition] = useState(null)
   const timer = useRef(null)
@@ -30,8 +33,14 @@ export default function DiagnosticScreeningCell({ item, pupilName, prompt, onOpe
   const value = pupilValue ?? teacher?.teacherAnswer ?? '—'
   // Written answers can be long; the cell shows a start and the tooltip and review show all of it.
   const shortValue = value.length > 24 ? `${value.slice(0, 22).trimEnd()}…` : value
+  const card = status === 'incorrect' && classified?.status === 'incorrect' && classified.bucket ? screeningAnswerGroup(classified) : null
+  // The teacher hid it as a slip in the pupil analysis; the cards leave it out too.
+  const hidden = classified?.hiddenSlip === true
+  const cardLine = card && (card.group === 'misconception'
+    ? `Felförståelsekort: ${card.misconceptions.map(m => m.titleSv).join('; ')}.` : `Bland felförståelserna: ${SCREENING_GROUP_LABELS_SV[card.group]}.`)
   const label = teacher && teacher.answerStatus !== summary?.answerStatus ? `${labels[status]} enligt läraren`
-    : status === 'incorrect' && signals.length ? 'Fel svar' : labels[status]
+    : hidden ? 'Fel svar, dolt som slarv'
+    : card ? `Fel svar, ${card.group === 'unexplained' ? 'oförklarat' : SCREENING_GROUP_LABELS_SV[card.group].toLowerCase()}` : labels[status]
   useEffect(() => () => clearTimeout(timer.current), [])
   function show() {
     clearTimeout(timer.current)
@@ -58,6 +67,7 @@ export default function DiagnosticScreeningCell({ item, pupilName, prompt, onOpe
         ? <><p className="mt-1 font-medium">Elevens svar</p><p className="max-h-60 overflow-y-auto whitespace-pre-wrap break-words">{value}</p></>
         : <dl className="mt-1 grid grid-cols-2 gap-x-3"><dt>Elevens svar</dt><dd className="text-right font-semibold">{pupilValue ?? '—'}</dd>
           <dt>Rätt svar</dt><dd className="text-right font-semibold">{summary?.expectedAnswer ?? '—'}</dd></dl>}
+      {cardLine && <p className="mt-1 border-t border-slate-200 pt-1">{cardLine}</p>}
       {[...signals, ...marks].map(signal => <p key={signal.code} className="mt-1 border-t border-slate-200 pt-1">{signal.message}</p>)}
       <p className="mt-1 text-xs text-slate-600">{label} · {item.status === 'submitted' ? 'Inlämnat' : 'Pågående'}</p>
     </div>, document.body)}

@@ -36,13 +36,7 @@ export default function DiagnosticEvidenceDetails({ detail, onSaved, onDirtyChan
         <p className="text-sm">Synligt resultat och slutsvar: {detail.visibleResult.status === 'observed'
           ? `${detail.visibleResult.visibleResult} i rutorna och ${detail.visibleResult.explicitAnswer} som slutsvar ${detail.visibleResult.consistency === 'same' ? 'stämmer överens' : 'skiljer sig åt'}. Resultatet lästes på rad ${detail.visibleResult.evidence.resultCells[0].row + 1}. Detta visar ingen orsak till skillnaden.`
           : `kan inte jämföras säkert eftersom ${visibleResultReasons[detail.visibleResult.reason] || 'underlaget är otydligt'}.`}</p></>}
-        {detail.subtractionPattern.status !== 'not_applicable' && <p className="mt-1 text-sm">
-          Subtraktionsmönster: {detail.subtractionPattern.status === 'matched'
-            ? 'Resultatet 376 är förenligt med att ta större siffra minus mindre i varje kolumn. Fråga eleven hur tiotalet och lånet genom noll hanterades. Mönstret bevisar inte metoden.'
-            : detail.subtractionPattern.status === 'no_match'
-              ? 'Det synliga resultatet följer inte mönstret större minus mindre i varje kolumn.'
-              : 'För lite entydigt underlag för att bedöma detta mönster.'}
-        </p>}
+        {/* The former larger-minus-smaller note for one task is left to the error model and its card (K7). */}
         {detail.observation.selectedOptionIds && <p className="text-sm">Rätt valda: {detail.observation.correctSelections.length} · Missade: {detail.observation.missedOptions.map(id => detail.task.options.findIndex(option => option.id === id) + 1).join(', ') || 'inga'} · Felvalda: {detail.observation.incorrectSelections.map(id => detail.task.options.findIndex(option => option.id === id) + 1).join(', ') || 'inga'}. Facit: {detail.observation.expectedAnswer}.</p>}
         <DiagnosticAttemptHistory key={`${detail.record.attemptId}:${detail.record.serverRevision}`} snapshot={detail.snapshot} task={detail.task} imageContext={{ teacher: true, assignmentId: detail.record.assignmentId, classId: detail.record.classIdAtAttempt }} />
         {teacherSupport.length > 0 && <section aria-label="Lärarstöd utifrån underlaget" className="mt-3 rounded border border-amber-300 bg-amber-50 p-2 text-sm">

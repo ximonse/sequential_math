@@ -13,7 +13,9 @@ export function screeningQuestions(draft, findTask) {
     ...own('written', draft.writtenTasks || []),
     ...own('image', draft.imageTasks || []),
     ...own('text', draft.textTasks || []),
-    ...(draft.customPrompt?.trim() ? [{ key: 'pending', kind: 'text', task: { promptSv: draft.customPrompt } }] : [])
+    ...(draft.customPrompt?.trim() ? [{ key: 'pending', kind: 'text', task: {
+      promptSv: draft.customPrompt, gridEnabled: draft.customGrid, shortDivisionSetup: draft.customShortDivisionSetup
+    } }] : [])
   ].map((item, sendIndex) => ({ ...item, sendIndex }))
   // Without a chosen order the teacher's own questions come first.
   const rank = { written: 0, text: 1, image: 2, bank: 3 }

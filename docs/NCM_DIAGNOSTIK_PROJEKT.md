@@ -156,6 +156,14 @@ skrivs i svarsrutan som i andra uppgifter. Resten av rutnätet är fritt. Äldre
 försök med arbete där mallen skulle ligga visas utan mall. Analysen läser ännu
 inte resterna.
 
+I nya screeningar kan divisionen följas av en instruktion, till exempel
+”Räkna ut 29 / 3. Skriv svaret och resten.” Kort division förbereds automatiskt
+när räknerutnätet är aktivt och uttrycket börjar frågan, med två till fyra
+siffror i täljaren och en nämnare mellan 2 och 9. Under frågornas ordning kan
+läraren välja **Visa utan uppställning** per fråga för att lämna rutnätet
+tomt. Valet sparas i utkastet och i den utdelade frågan. Äldre utdelningar
+med den tidigare textregeln behåller den i elevvyn och vid uppspelning.
+
 Knappen med bråkstreck och likhetstecken i verktygsraden placerar en egen kort
 division i vald ruta. Ett tomt streck är tre rutor brett; när täljaren skrivits
 följer strecket antalet siffror, precis som i den givna mallen. Nämnaren centreras

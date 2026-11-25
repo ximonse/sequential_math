@@ -1,5 +1,6 @@
 import QuestionText from '../../QuestionText'
 import { moveQuestion } from '../../../domains/arithmetic/screeningQuestionOrder.js'
+import { supportsShortDivisionSetup } from '../../../domains/arithmetic/shortDivisionTemplate.js'
 
 const kinds = { bank: 'Frågebanken', written: 'Egen fråga med facit', text: 'Textfråga', image: 'Bildfråga' }
 const button = 'rounded border border-slate-400 px-1.5 py-0.5 text-xs disabled:opacity-40 hover:bg-slate-100'
@@ -13,7 +14,8 @@ export default function ScreeningQuestionOrder({
   itemOptions = {},
   onItemOptions,
   selectedTasks = [],
-  onSelectedTasks
+  onSelectedTasks,
+  onOwnDivisionSetup
 }) {
   if (questions.length < 1) return null
 
@@ -27,6 +29,7 @@ export default function ScreeningQuestionOrder({
           const isBank = item.kind === 'bank'
           const taskId = isBank ? (item.task?.taskId || item.key.replace(/^bank:/, '')) : null
           const options = (taskId && itemOptions[taskId]) || {}
+          const task = { ...item.task, ...options }
           const changeBankOption = patch => {
             if (!taskId || !onItemOptions) return
             onItemOptions({ ...itemOptions, [taskId]: { ...itemOptions[taskId], ...patch } })
@@ -113,6 +116,20 @@ export default function ScreeningQuestionOrder({
                     </button>
                   )}
                 </div>
+              )}
+
+              {supportsShortDivisionSetup(task) && (
+                <label className="inline-flex items-center gap-1 text-xs text-slate-700">
+                  <input type="checkbox" aria-label={`Visa utan uppställning för fråga ${index + 1}`}
+                    disabled={disabled || task.gridEnabled === false}
+                    checked={task.shortDivisionSetup === false}
+                    onChange={event => {
+                      const shortDivisionSetup = !event.target.checked
+                      if (isBank) changeBankOption({ shortDivisionSetup })
+                      else onOwnDivisionSetup(item, shortDivisionSetup)
+                    }} />
+                  <span>Visa utan uppställning</span>
+                </label>
               )}
 
               <div className="flex items-center gap-1">

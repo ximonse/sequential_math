@@ -16,7 +16,9 @@ export default function ScreeningWrittenEditor({ tasks, onTasks, disabled, maxQu
       if (!draft.prompt.trim()) throw new Error('Skriv frågan först.')
       if (editing < 0 && tasks.length >= maxQuestions) throw new Error('Högst tolv egna frågor sammanlagt per samling.')
       const answerKey = screeningAnswerKeyFromText(draft.format, draft.keyText, draft.unit, draft.requireDenominator)
+      const shortDivisionSetup = tasks[editing]?.shortDivisionSetup
       const task = { promptSv: draft.prompt.trim(), answerKey, gridEnabled: draft.gridEnabled, drawingEnabled: Boolean(draft.drawingEnabled),
+        ...(shortDivisionSetup !== undefined ? { shortDivisionSetup } : {}),
         uid: (editing >= 0 && tasks[editing]?.uid) || newQuestionUid() }
       onTasks(editing < 0 ? [...tasks, task] : tasks.map((previous, index) => index === editing ? task : previous))
       setDraft(empty()); setEditing(-1); setError('')

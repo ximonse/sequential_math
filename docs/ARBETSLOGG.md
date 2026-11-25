@@ -32,10 +32,12 @@
   infoikonen låg inuti Pausspel-etiketten (tryck på förklaringen bockade i
   inställningen, R3/R4); emulerad mouseenter gjorde att andra trycket inte
   stängde; och två rubriker stod dubbelt. Alla rättade i ffd4bf2.
-- Kontroller: vitest 1416/1418 i riktiga trädet — de två felen är
-  `scripts/audit-ncm-rule-readiness.test.js`, rött redan på master
-  (`SCREENING_SELECTION_PRINCIPLES.md` har ändrats utan att hashen i
-  `NCM_DIDACTIC_COVERAGE.json` stämts av). Build grön, eslint rent.
+- Kontroller: vitest 1416/1418 lokalt. **Rättelse:** jag skrev först att de
+  två felen i `scripts/audit-ncm-rule-readiness.test.js` låg på master. Det
+  stämmer inte. Hashen i `NCM_DIDACTIC_COVERAGE.json` är räknad på LF, och
+  arbetskopian på Windows har CRLF, så summan skiljer bara här. CI kör samma
+  test grönt. Testet är alltså inte Windows-säkert; ingen NCM-avstämning
+  behövs och inget är trasigt i produktion. Build grön, eslint rent.
   Två nya robotfiler, båda bevisat röda mot gammal kod och gröna mot ny.
   Visuell kontroll mot robotserverns seedade testdata, inga riktiga elever.
 

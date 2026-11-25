@@ -1,5 +1,57 @@
 # Arbetslogg
 
+## 2026-11-25: Städning av worktrees och tre säkra förbättringar tagna in
+
+### Logg
+
+- Simon bad om rensning av döda worktrees och en genomgång av vilka
+  liggande grenar som kan tas in utan att krocka.
+- **Rensat:** tre worktrees pekade på Temp-mappar som Windows redan tömt
+  (`catalog-release-20261029`, `screening-release-20261026`, `sm-hotfix`),
+  plus sju trasiga registreringar (`deploy`, `pong-release`,
+  `free-practice-release`, `screening-results-tab`, `sm-base`,
+  `sm-base-check`, `-codex-release-group-filter`). 28 → 25 worktrees, och
+  "Permission denied"-bruset vid varje git-kommando är borta. Inga grenar
+  eller commits togs bort; kontrollerat först att ingen hade originalarbete
+  och att den detached-commiten finns i flera grenar.
+- **Taget in på denna gren**, var och en provad för konflikt först:
+  - `7c4f998` NCM-kontrollens radslut. Koden gick rent; bara ARBETSLOGG och
+    plan.json krockade, båda lösta genom att behålla båda sidor. Testet som
+    föll på varje Windows-maskin är nu grönt lokalt.
+  - `753bc08` teacher-names-roboten. Felet låg i roboten, inte i appen:
+    efter omladdning ligger läraren kvar på Administration, där tabellen
+    Klass/gruppvy inte finns. Roboten var röd i varje svitkörning sedan
+    17/11 och är grön nu.
+  - `9263b32` + `5fb863a` de samlade önskemålen från 16/11. Ingen kod.
+- Kontroller: vitest 259 filer / 1415 tester, **allt grönt** — för första
+  gången på länge utan rött. Build grön. Lint oförändrad (de 8 kvarvarande
+  finns lika på master). Robotar: teacher-names och teacher-names-stable
+  gröna.
+
+### Simons beslut
+
+- Rensa döda worktrees och ta in det som går rent. Produktion är inte
+  beställd i denna omgång.
+
+### Agentens val
+
+- Konflikterna i ARBETSLOGG och plan.json löstes genom att behålla båda
+  sidor och placera den inplockade posten på sin kronologiska plats, inte
+  överst. plan.json slogs ihop strukturellt (kort för kort) i stället för
+  textuellt, så JSON-giltigheten inte kunde gå sönder.
+
+### Tankar och parkerat
+
+- **Krockar jag avrådde från:** `release/teacher-read` skulle backa Simons
+  beslut från 11/11 (screening är lärarens eget arbete, klassåtkomst räcker)
+  och återinföra kravet på skoladministratör. `fix/talpar-start-blandning`
+  är överspelad: fri träning finns redan som eget kort i master.
+  `hotfix/log-event-save-errors` har samma commit som a51445f, redan inne.
+- Kvar att ta ställning till: `claude/screening-result-wait` (färskast, 27
+  kodfiler, egen omgång) och `codex/audit-three-fixes` (fyra fixar kvar, men
+  ligger 27 commits efter och tar bort rader master byggt vidare på — måste
+  plockas commit för commit).
+
 ## 2026-11-24: Administratör ser aktiva uppdrag utanför eget bibliotek
 
 ### Logg

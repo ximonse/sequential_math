@@ -1,5 +1,78 @@
 # Arbetslogg
 
+## 2026-11-24: Elevkortet som utskrift, uppdragsmoduler och mottagarmarkering
+
+### Logg
+
+- Fyra beställda ändringar i lärarvyn, utanför arbetsmålet belastningen.
+  Egen gren `claude/elevkort-uppdragsmoduler` från master 5ffec64 (PR #47
+  mergad först, enligt Simons villkor att arbeta utifrån ny master).
+- **Elevkortet.** PDF och skärmkort var två olika layouter. Nu läser båda
+  `src/lib/studentCardLayout.js` med samma millimetermått, så de inte kan
+  glida isär. QR-koden är borttagen: elevinloggningen
+  (`PilotStudentLoginForm`) har bara kodnamn och PIN, det finns ingen
+  QR-skanner i appen, så kortet lovade en väg som inte finns. Elev-ID bort
+  av samma skäl — det används inte vid inloggning. `ClassLoginTab` och
+  `StudentDetailPanel` ritade egna kort och använder nu samma komponent.
+- **Modulerna.** Arbetsytor, Domäner, Eget uppdrag, Tabell och Fokusövning
+  ligger i egna rundade rutor med infoikon (hovring på dator, tryck på
+  iPad, samma text). "Max antal för Talpar/Dubblor" flyttad in i Domäner
+  där den hör hemma.
+- **Inställningarnas räckvidd.** Spårat på elevsidan:
+  `assignmentLaunchPath` skickar allt utom `focus` och `subitizing` till
+  `/student/:id/practice`, där `SessionPage` renderar arbetsytorna.
+  Tabelluppdrag gick alltså dit men fick aldrig propen, och "Skapa egna"
+  fick aldrig pausspelsvalet. Båda rättade via `assignmentSettings.js`.
+  Fokus och talbild har egna vyer utan arbetsyta; deras infotexter säger
+  det i stället för att visa ett val utan verkan.
+- **Mottagarna.** Grön markering med bock, samma som klassfiltret. Krävde
+  egen CSS-regel: temats `aria-pressed`-regel mjukade annars upp den med
+  `!important`.
+- **Fel i mitt eget första utkast**, hittat vid granskning och i bilderna:
+  infoikonen låg inuti Pausspel-etiketten (tryck på förklaringen bockade i
+  inställningen, R3/R4); emulerad mouseenter gjorde att andra trycket inte
+  stängde; och två rubriker stod dubbelt. Alla rättade i ffd4bf2.
+- Kontroller: vitest 1416/1418 i riktiga trädet — de två felen är
+  `scripts/audit-ncm-rule-readiness.test.js`, rött redan på master
+  (`SCREENING_SELECTION_PRINCIPLES.md` har ändrats utan att hashen i
+  `NCM_DIDACTIC_COVERAGE.json` stämts av). Build grön, eslint rent.
+  Två nya robotfiler, båda bevisat röda mot gammal kod och gröna mot ny.
+  Visuell kontroll mot robotserverns seedade testdata, inga riktiga elever.
+
+### Simons beslut
+
+- Elevkortet ska se ut som PDF:en. Fokusövningen ska boxas, inte döljas.
+  Inställningar som inte gäller alla uppdragstyper ska rättas.
+  Mottagarmarkeringen ska bli tydlig som den övre. Arbetet godkänt som
+  egen omgång utanför belastningsmålet.
+- Simon valde att agenten tar skärmdumparna mot testdata i stället för att
+  testa själv, sedan jag flaggat att nytt kort slår ut elevens riktiga PIN.
+
+### Agentens val
+
+- "Skapa egna" flyttad in i rutan Eget uppdrag: två nästan identiska namn
+  på olika ställen var det som förvirrade.
+- "Rensa" i Mottagare ersatt av "Följ klassfiltret igen" i stället för att
+  båda behålls. Tomt urval betyder alla klasser, och det fanns ingen väg
+  tillbaka till filtret. En knapp som gör en begriplig sak är bättre än
+  två som inte gör det. Resultatväljaren under Screening behåller "Rensa".
+- Avrådde från att gråa ut klassfiltret eller mottagarna när det andra
+  används: de är inte alternativ. Filtret styr fortfarande visning, länk
+  och QR; mottagarna är utdelningen. Simon godkände att det blir en
+  statusrad i stället.
+- Texterna som kallade kortet "QR-kort" rättades till "elevkort" på de fem
+  ställen där de annars skulle beskriva ett kort som inte finns.
+
+### Tankar och parkerat
+
+- Arbetsytor i fokusövning och talbild skulle kräva arbete på elevsidan,
+  och en rityta ändrar vad de övningarna mäter. Inte byggt, inte föreslaget
+  som nästa steg; infotexterna är ärliga om gränsen i stället.
+- `audit-ncm-rule-readiness` är rött på master. Inte mitt mandat att stämma
+  av NCM-referensen (STYRNING_FELFORSTAELSER avsnitt 9), men CI blir röd
+  oavsett gren tills någon gör det.
+- `teacher-names` är fortfarande rött, som den var i förra passet.
+
 ## 2026-11-24: Administratör ser aktiva uppdrag utanför eget bibliotek
 
 ### Logg

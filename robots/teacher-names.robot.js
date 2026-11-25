@@ -34,7 +34,11 @@ test('A teacher reveals private pupil names throughout their menus', async ({ pa
   await expect(classPanel.getByText(creationName, { exact: true }).first()).toBeVisible()
   await expect(page.getByText(pupil.loginCode, { exact: true })).toHaveCount(0)
 
+  // The reload keeps the open tab (Administration) and the chosen names.
   await page.reload()
+  await expect(page.getByRole('button', { name: 'Byt till kodnamn' })).toBeVisible()
+  await expect(page.getByText(pupil.loginCode, { exact: true })).toHaveCount(0)
+  await page.getByRole('button', { name: /^Framsteg/ }).click()
   await expect.poll(async () => Boolean(rowFor(await tableUnder(page, 'Klass/gruppvy'), creationName)))
     .toBe(true)
 

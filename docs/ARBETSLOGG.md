@@ -1,5 +1,57 @@
 # Arbetslogg
 
+## 2026-11-25: Städning av worktrees och tre säkra förbättringar tagna in
+
+### Logg
+
+- Simon bad om rensning av döda worktrees och en genomgång av vilka
+  liggande grenar som kan tas in utan att krocka.
+- **Rensat:** tre worktrees pekade på Temp-mappar som Windows redan tömt
+  (`catalog-release-20261029`, `screening-release-20261026`, `sm-hotfix`),
+  plus sju trasiga registreringar (`deploy`, `pong-release`,
+  `free-practice-release`, `screening-results-tab`, `sm-base`,
+  `sm-base-check`, `-codex-release-group-filter`). 28 → 25 worktrees, och
+  "Permission denied"-bruset vid varje git-kommando är borta. Inga grenar
+  eller commits togs bort; kontrollerat först att ingen hade originalarbete
+  och att den detached-commiten finns i flera grenar.
+- **Taget in på denna gren**, var och en provad för konflikt först:
+  - `7c4f998` NCM-kontrollens radslut. Koden gick rent; bara ARBETSLOGG och
+    plan.json krockade, båda lösta genom att behålla båda sidor. Testet som
+    föll på varje Windows-maskin är nu grönt lokalt.
+  - `753bc08` teacher-names-roboten. Felet låg i roboten, inte i appen:
+    efter omladdning ligger läraren kvar på Administration, där tabellen
+    Klass/gruppvy inte finns. Roboten var röd i varje svitkörning sedan
+    17/11 och är grön nu.
+  - `9263b32` + `5fb863a` de samlade önskemålen från 16/11. Ingen kod.
+- Kontroller: vitest 259 filer / 1415 tester, **allt grönt** — för första
+  gången på länge utan rött. Build grön. Lint oförändrad (de 8 kvarvarande
+  finns lika på master). Robotar: teacher-names och teacher-names-stable
+  gröna.
+
+### Simons beslut
+
+- Rensa döda worktrees och ta in det som går rent. Produktion är inte
+  beställd i denna omgång.
+
+### Agentens val
+
+- Konflikterna i ARBETSLOGG och plan.json löstes genom att behålla båda
+  sidor och placera den inplockade posten på sin kronologiska plats, inte
+  överst. plan.json slogs ihop strukturellt (kort för kort) i stället för
+  textuellt, så JSON-giltigheten inte kunde gå sönder.
+
+### Tankar och parkerat
+
+- **Krockar jag avrådde från:** `release/teacher-read` skulle backa Simons
+  beslut från 11/11 (screening är lärarens eget arbete, klassåtkomst räcker)
+  och återinföra kravet på skoladministratör. `fix/talpar-start-blandning`
+  är överspelad: fri träning finns redan som eget kort i master.
+  `hotfix/log-event-save-errors` har samma commit som a51445f, redan inne.
+- Kvar att ta ställning till: `claude/screening-result-wait` (färskast, 27
+  kodfiler, egen omgång) och `codex/audit-three-fixes` (fyra fixar kvar, men
+  ligger 27 commits efter och tar bort rader master byggt vidare på — måste
+  plockas commit för commit).
+
 ## 2026-11-24: Elevkortet som utskrift, uppdragsmoduler och mottagarmarkering
 
 ### Logg
@@ -325,6 +377,14 @@
 - Produktionskvittens: GitHub master 16745bb, Vercel sekvens READY med motsvarande SHA och matematik.ximon.se. Tre sekventiella par av autentiserade GET-anrop per version på samma screening. Median för felförståelser: 5,74 → 4,79 s. Median för tabell och felförståelser tillsammans: 8,82 → 7,98 s. Samma 28 rader, 28 elever i analysvaret och fyra svar per prov. Tiderna inkluderar mottagning och JSON-avkodning, men ingen rendering. En screening, ingen generell uppskattning.
 - GitHub Verify passerade för 16745bb, inklusive test, build och navigationsrobotar.
 
+## 2026-11-17: Auditfix 1 – NCM-kontrollens radslut
+
+- Logg: Referenshashen normaliserar nu CRLF/CR till LF. Faktiska innehållsändringar avvisas fortfarande. 3 riktade tester samt hela Vitest (256 filer, 1394 tester) och build godkända lokalt.
+- Simons beslut: Genomför tre små auditfixar; billigare modeller får delegerade uppgifter. Ingen push eller publicering.
+- Agentens val: Isolerat worktree från 303e6f4, NCM-fixen delegerad till gpt-6-luna och diffen granskad av huvudagenten.
+- Tankar: Kontrollen ska upptäcka ändrat underlag, inte Windows-radslut. Felmodeller och screeningtäckning är oförändrade.
+- Parkerat: Övriga belastningsförslag kräver avgränsning och eget genomförandebeslut.
+
 ## 2026-11-16: Driftfel, elevkonto utelåst ("Kunde inte spara svaren")
 
 ### Logg
@@ -455,6 +515,57 @@
   Parkerat utanför uppdraget: NCM-referensens radbrytningskontroll.
 - 2026-11-16: inplockat i master av Claude på Simons uppdrag, efter samma
   kontroller (de två röda är de kända CRLF-felen) och tre berörda robotar.
+
+## 2026-11-16: Samlade önskemål, väntar på att hastighetsarbetet blir klart
+
+Simon arbetar med hastigheten i master och vill inte störa den. Dessa punkter
+är samlade för att byggas senare, i den här ordningen.
+
+### 1. Antal inlämnade direkt i screeninglistan
+
+- Önskemål: i Resultat av screening ska listan visa hur många som lämnat in,
+  utan att man först öppnar screeningen.
+- Idag: `ScreeningResultsCollections.jsx` visar status, datum, antal uppgifter
+  och mottagare. Inlämningsstatus per elev finns bara i den tunga läsningen
+  `diagnosticClassOverview` (fältet `submitted` per elevrad), som hämtas när
+  läraren klickar på en screening.
+- Simons beslut: testa variant 1 — servern räknar antalet elever med allt
+  inlämnat redan i `/api/teacher-diagnostic-assignments`, så listan slipper en
+  extra hämtning per screening. Mät vad räknaren kostar på listhämtningen; det
+  avgör om den får stanna eller måste göras lat i stället.
+
+### 2. "N visade felsvar" säger inget — behövs en nämnare
+
+- Problem: i Statistik och stöd står det `6 visade felsvar från återhämtningen`
+  utan nämnare. Går inte att läsa om det är 6 av 6 eller 6 av 75.
+- Orsak: siffran är inte en räkning utan ett tak. `buildAdaptiveSupportSignal`
+  i `src/lib/masteryCalculation.js` gör `.slice(-6)` på de matchade felsvaren,
+  så etiketten i `dashboardStudentRowHelpers.js` visar längden på den kapade
+  listan. Hela mängden finns i `evidenceObservationIds`.
+- Att bygga: visa den riktiga nämnaren, inte takets längd.
+
+### 3. Förenklad elevprofil i Statistik och stöd
+
+- Önskemål: en enklare vy, i stil med "Elevprofil (allt om en elev)", som inte
+  radar upp varje felsvar. Det Simon behöver är hur många fel, under vilken
+  tid, och vilken sorts misstänkt felförståelse.
+- Underlag som redan finns: `errorBreakdown7d` (kunskapsfel kontra
+  slarvfel), periodfälten `currentDay`, `currentWeek` och `rolling30Days`, samt
+  `errorPatterns` och `errorDetail` per felsvar i stödsignalen.
+- Oavklarat: vilken tidsperiod vyn ska utgå från, och om felförståelserna ska
+  grupperas per räknesätt eller per mönster.
+
+- Önskemål: en enklare vy, i stil med "Elevprofil (allt om en elev)", som inte
+  radar upp varje felsvar. Det Simon behöver är hur många fel, under vilken
+  tid, och vilken sorts misstänkt felförståelse.
+- Underlag som redan finns: `errorBreakdown7d` (kunskapsfel kontra
+  slarvfel), periodfälten `currentDay`, `currentWeek` och `rolling30Days`, samt
+  `errorPatterns` och `errorDetail` per felsvar i stödsignalen.
+- Simons beslut: rullande 30 dagar förvalt. Felförståelserna grupperas per
+  räknesätt, med mönstren som underrader: räknesättet och antalet fel som
+  rubrik, därunder varje `errorPatterns`-kod med sitt antal. Skälet är att
+  koderna i praktiken redan hör till ett räknesätt, och att det är per
+  räknesätt undervisningen planeras.
 
 ## 2026-11-15: Tre saker Simon bad om före belastningen
 

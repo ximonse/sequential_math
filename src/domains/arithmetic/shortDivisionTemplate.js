@@ -4,7 +4,13 @@
 // the answer line right of "=" is the attempt's ordinary answer. The template is
 // derived from the task text and is never part of the pupil's cells or lines.
 // 55/5, 55//5, 55:5 and 55 ÷ 5 all work alike (Simon 2026-11-03).
-const PROMPT = /^(?:(?:Räkna ut|Beräkna)\s+)?(\d{2,4})\s*(?:\/\/|[/÷:])\s*([2-9])\s*[.=?]?$/u
+const EXPRESSION = /^(?:(?:Räkna ut|Beräkna)\s+)?(\d{2,4})\s*(?:\/\/|[/÷:])\s*([2-9])/u
+const LEGACY_PROMPT = new RegExp(EXPRESSION.source + /\s*[.=?]?$/.source, 'u')
+const SCREENING_PROMPT = new RegExp(EXPRESSION.source + /(?:\s*[.=?]?$|\s*[.!?:]\s+\p{L}|\s*\n\s*\p{L})/.source, 'u')
+
+export function supportsShortDivisionSetup(task) {
+  return !task?.responseMode && SCREENING_PROMPT.test(String(task?.promptSv ?? '').trim())
+}
 // Centred and a little above the middle of the normal 8 x 12 grid; the row above
 // the numerator is free for remainders.
 const ROW = 2
@@ -12,8 +18,11 @@ const COLUMNS = 12
 const ANSWER_COLUMNS = 4
 
 export function shortDivisionTemplate(task) {
-  const match = PROMPT.exec(String(task?.promptSv ?? '').trim())
-  if (!match || task?.gridEnabled === false || task?.responseMode) return null
+  if (task?.gridEnabled === false || task?.responseMode || task?.shortDivisionSetup === false) return null
+  // Already issued questions keep the original rule for the pupil and the replay.
+  const pattern = task?.shortDivisionSetup === true ? SCREENING_PROMPT : LEGACY_PROMPT
+  const match = pattern.exec(String(task?.promptSv ?? '').trim())
+  if (!match) return null
   const digits = match[1].split('')
   const n = digits.length
   const first = Math.floor((COLUMNS - (n + 1 + ANSWER_COLUMNS)) / 2)

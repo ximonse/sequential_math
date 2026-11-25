@@ -9,6 +9,7 @@ import { DiagnosticAppendError } from '../src/domains/arithmetic/diagnosticAttem
 import { studentDeletedKey } from './_studentStore.js'
 import { readDiagnosticAttempt } from './_diagnosticAttemptStore.js'
 import { buildDiagnosticCatalog } from '../src/domains/arithmetic/diagnosticCatalog.js'
+import { supportsShortDivisionSetup } from '../src/domains/arithmetic/shortDivisionTemplate.js'
 
 const require = createRequire(import.meta.url)
 const manifest = require('../src/domains/arithmetic/diagnosticTasks.v1.json')
@@ -142,7 +143,8 @@ export async function prepareDiagnosticAssignment({ classId, studentIds, taskIds
     }
     tasks.push({ taskId, taskVersion: 1, promptSv: custom.promptSv.trim(), operation: 'written_response',
       answerRule: answerKey ? 'custom_facit' : 'teacher_review', answerType: 'text', ...(answerKey ? { answerKey } : {}), gridEnabled: custom.gridEnabled ?? false,
-      drawingEnabled: custom.drawingEnabled ?? false, ...imageQuestion })
+      drawingEnabled: custom.drawingEnabled ?? false,
+      ...(custom.shortDivisionSetup !== undefined ? { shortDivisionSetup: custom.shortDivisionSetup } : {}), ...imageQuestion })
   }
   // The teacher's chosen order: positions in [...taskIds, ...customTasks].
   if (order !== undefined && (!Array.isArray(order) || order.length !== tasks.length
@@ -152,14 +154,16 @@ export async function prepareDiagnosticAssignment({ classId, studentIds, taskIds
   const items = ordered.map(task => {
     const options = itemOptions[task.taskId] || {}
     if (task.responseMode && Object.keys(options).length) fail(400, 'invalid_task_options', 'Bildfrågans svarssätt är fast.')
-    if (Object.keys(options).some(key => !['answerType', 'gridEnabled', 'drawingEnabled'].includes(key))
+    const booleanOptions = ['gridEnabled', 'drawingEnabled', 'shortDivisionSetup']
+    if (Object.keys(options).some(key => !['answerType', ...booleanOptions].includes(key))
       || (options.answerType !== undefined && !['number', 'text'].includes(options.answerType))
-      || ['gridEnabled', 'drawingEnabled'].some(key => options[key] !== undefined && typeof options[key] !== 'boolean')
-      || ['gridEnabled', 'drawingEnabled'].some(key => task[key] !== undefined && typeof task[key] !== 'boolean')) {
+      || booleanOptions.some(key => options[key] !== undefined && typeof options[key] !== 'boolean')
+      || booleanOptions.some(key => task[key] !== undefined && typeof task[key] !== 'boolean')) {
       fail(400, 'invalid_task_options', 'Ogiltiga svarstyper eller arbetsytor.')
     }
-    return { assignmentItemId: makeId(), taskId: task.taskId,
-      taskVersion: task.taskVersion, taskSnapshot: { ...structuredClone(task), ...options } }
+    const taskSnapshot = { ...structuredClone(task), ...options }
+    if (supportsShortDivisionSetup(taskSnapshot)) taskSnapshot.shortDivisionSetup ??= true
+    return { assignmentItemId: makeId(), taskId: task.taskId, taskVersion: task.taskVersion, taskSnapshot }
   })
   if (![assignmentId, ...items.map(item => item.assignmentItemId)].every(validId)
     || new Set(items.map(item => item.assignmentItemId)).size !== items.length) {

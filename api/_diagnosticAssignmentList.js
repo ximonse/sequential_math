@@ -13,6 +13,7 @@ function safeStudentAssignment(assignment) {
         images: item.taskSnapshot.images, options: item.taskSnapshot.options } : {}),
       ...(item.taskSnapshot?.answerType ? { answerType: item.taskSnapshot.answerType } : {}),
       ...(item.taskSnapshot?.gridEnabled !== undefined ? { gridEnabled: item.taskSnapshot.gridEnabled } : {}),
+      ...(item.taskSnapshot?.shortDivisionSetup !== undefined ? { shortDivisionSetup: item.taskSnapshot.shortDivisionSetup } : {}),
       ...(item.taskSnapshot?.drawingEnabled !== undefined ? { drawingEnabled: item.taskSnapshot.drawingEnabled } : {}) })) }
 }
 

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { createPupil, login } from './lib/app.js'
-import { createTeacher, teacherLogin } from './lib/teacher.js'
-import { openResults, handInAnywayOnce } from './lib/screening.js'
+import { createTeacher, sendScreening, teacherLogin } from './lib/teacher.js'
+import { openDispatch, openResults, handInAnywayOnce } from './lib/screening.js'
 
 async function screening(page, request, { name, title, taskIds }) {
   const tag = Math.random().toString(36).slice(2, 8)
@@ -25,6 +25,51 @@ async function teacherDetail(page, classId) {
   await panel.getByRole('button', { name: 'Visa underlag', exact: true }).click()
   return panel
 }
+
+test('Screening prints short division by default and respects the per-question opt-out', async ({ page, request, browser }, testInfo) => {
+  const classId = 'short-division-settings'
+  const pupil = await createPupil(request, { name: 'Division Settings', classId })
+  await teacherLogin(page, await createTeacher(request, { classIds: [classId], role: 'super_admin' }))
+  let panel = await openDispatch(page, { withDefaultTask: false })
+  await panel.getByRole('textbox', { name: 'Samlingens namn', exact: true }).fill('Kort division med rest')
+  await panel.getByText('Frågor med textsvar som du bedömer', { exact: true }).click()
+  const textQuestion = panel.getByRole('textbox', { name: 'Frågetext', exact: true })
+  for (const expression of ['29 / 3', '176 / 4']) {
+    await textQuestion.fill(`Räkna ut ${expression}. Skriv svaret och resten.`)
+    await panel.getByRole('button', { name: 'Lägg till textfråga', exact: true }).click()
+  }
+  let order = panel.getByRole('list', { name: 'Frågornas ordning' })
+  await order.getByRole('checkbox', { name: 'Visa utan uppställning för fråga 2', exact: true }).check({ timeout: 3000 })
+  const drafts = page.getByRole('region', { name: 'Screeningutkast', exact: true })
+  await drafts.getByRole('button', { name: 'Spara utkast', exact: true }).click()
+  await expect(drafts.getByRole('status')).toContainText('version 1')
+  await page.reload()
+  panel = await openDispatch(page, { withDefaultTask: false })
+  await drafts.getByRole('combobox', { name: 'Sparade utkast', exact: true }).selectOption({ label: 'Kort division med rest · version 1' })
+  order = panel.getByRole('list', { name: 'Frågornas ordning' })
+  await expect(order.getByRole('checkbox', { name: 'Visa utan uppställning för fråga 1', exact: true })).not.toBeChecked()
+  await expect(order.getByRole('checkbox', { name: 'Visa utan uppställning för fråga 2', exact: true })).toBeChecked()
+  await order.screenshot({ path: testInfo.outputPath('division-settings.png') })
+  await sendScreening(page, { pupilName: 'Division Settings' })
+
+  const student = await browser.newPage({ baseURL: testInfo.project.use.baseURL, viewport: { width: 820, height: 950 }, hasTouch: true })
+  try {
+    await login(student, pupil)
+    await student.getByRole('button', { name: 'Kort division med rest', exact: true }).click()
+    const skip = student.getByRole('button', { name: 'Hoppa över', exact: true })
+    if (await skip.isVisible()) await skip.tap()
+    await expect(student.locator('[data-short-division="29/3"] .short-division__bar')).toBeVisible()
+    await student.screenshot({ path: testInfo.outputPath('division-default.png') })
+    await student.getByRole('button', { name: 'Nästa fråga', exact: true }).tap()
+    await expect(student.getByRole('group', { name: 'Rutat räknehäfte' })).toBeVisible()
+    await expect(student.locator('[data-short-division]')).toHaveCount(0)
+    await student.reload()
+    await expect(student.locator('.notebook-question')).toContainText('176 / 4')
+    await expect(student.locator('[data-short-division]')).toHaveCount(0)
+  } finally {
+    await student.close()
+  }
+})
 
 // Short division (Simon 2026-11-02/03): printed in the middle a little above the
 // centre; remainders are written by tapping the row above the numerator, each cell

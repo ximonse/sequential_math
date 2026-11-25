@@ -14,6 +14,16 @@ const note = (state, column, after) => recordDiagnosticGridEvent(state,
 
 // Printed in the middle, a little above the centre (row 3 of 8), from 2026-11-03.
 const T = shortDivisionTemplate(task)
+
+it('uses the assigned setup choice and retains the legacy question-text rule for older attempts', () => {
+  const promptSv = 'Räkna ut 29 / 3. Skriv svaret och resten.'
+  expect(shortDivisionTemplate({ promptSv, shortDivisionSetup: true })).toMatchObject({ digits: ['2', '9'], divisor: '3' })
+  expect(shortDivisionTemplate({ promptSv })).toBeNull()
+  expect(shortDivisionTemplate({ promptSv: 'Beräkna 176 / 4', shortDivisionSetup: false })).toBeNull()
+  for (const expression of ['29 / 3,5', '29 / 3.5', '29 / 30', '29 / 3 + 4', '29 / 3 / 2']) {
+    expect(shortDivisionTemplate({ promptSv: `Räkna ut ${expression}.`, shortDivisionSetup: true })).toBeNull()
+  }
+})
 const inTemplate = { row: T.row, column: T.first }
 
 describe('short division template', () => {

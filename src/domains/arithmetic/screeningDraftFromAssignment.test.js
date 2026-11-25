@@ -31,4 +31,18 @@ describe('reusing a handed-out screening as an editable copy', () => {
     const { draft } = screeningDraftFromAssignment({ titleSv: 'Tom', items: [] }, findTask)
     expect(draft.customGrid).toBe(true)
   })
+
+  it('keeps each division opt-out when reusing and saving a screening', () => {
+    const taskId = 'ncm-AS5-3'
+    const { draft } = screeningDraftFromAssignment({ items: [
+      { taskId, taskSnapshot: { promptSv: 'Beräkna 176 / 4', shortDivisionSetup: false } },
+      { taskId: 'custom-written', taskSnapshot: { promptSv: 'Räkna ut 29 / 3.', answerKey: { format: 'number', expected: [9] }, shortDivisionSetup: false } },
+      { taskId: 'custom-text', taskSnapshot: { promptSv: 'Räkna ut 29 / 3. Skriv svaret och resten.', shortDivisionSetup: false } }
+    ] }, id => id === taskId ? { taskId } : undefined)
+    const saved = normalizeScreeningDraft({ ...draft, customPrompt: 'Räkna ut 78 / 3.', customShortDivisionSetup: false })
+    expect(saved.itemOptions[taskId].shortDivisionSetup).toBe(false)
+    expect(saved.writtenTasks[0].shortDivisionSetup).toBe(false)
+    expect(saved.textTasks[0].shortDivisionSetup).toBe(false)
+    expect(saved.customShortDivisionSetup).toBe(false)
+  })
 })

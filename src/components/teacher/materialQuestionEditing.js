@@ -6,5 +6,5 @@ export const pendingMaterialQuestionEditor = states => Object.keys(states).find(
 
 // Editors also return normalized marking metadata. The material API accepts
 // only authoring fields and freezes its own marking snapshot on the server.
-const fields = ['promptSv', 'gridEnabled', 'drawingEnabled', 'responseMode', 'images', 'options', 'correctOptionIds', 'answerKey']
+const fields = ['promptSv', 'gridEnabled', 'drawingEnabled', 'shortDivisionSetup', 'responseMode', 'images', 'options', 'correctOptionIds', 'answerKey']
 export const materialQuestionInput = task => Object.fromEntries(Object.entries(task).filter(([key]) => fields.includes(key)))

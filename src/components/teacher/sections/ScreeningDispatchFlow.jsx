@@ -16,6 +16,7 @@ import { screeningDraftFromAssignment } from '../../../domains/arithmetic/screen
 import { dispatchOrder, screeningQuestions } from '../../../domains/arithmetic/screeningQuestionOrder.js'
 import { ScreeningTeacherSupport } from './ScreeningTaskChoices'
 import ScreeningQuestionOrder from './ScreeningQuestionOrder.jsx'
+import { supportsShortDivisionSetup } from '../../../domains/arithmetic/shortDivisionTemplate.js'
 import ScreeningQuestionPreview from './ScreeningQuestionPreview'
 import QuestionText from '../../QuestionText'
 import '../../../dev/diagnosticGridPrototype.css'
@@ -41,7 +42,9 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
   const planClassKey = plan.dispatches.map(item => item.classId).join(',')
   const requestClasses = library.request
   useEffect(() => { if (planClassKey) requestClasses(planClassKey.split(',')) }, [planClassKey, requestClasses])
-  const customTasks = [...draft.writtenTasks, ...draft.imageTasks, ...(draft.textTasks || []), ...(draft.customPrompt.trim() ? [{ promptSv: draft.customPrompt, gridEnabled: draft.customGrid, drawingEnabled: draft.customDrawing }] : [])]
+  const customTasks = [...draft.writtenTasks, ...draft.imageTasks, ...(draft.textTasks || []), ...(draft.customPrompt.trim() ? [{
+    promptSv: draft.customPrompt, gridEnabled: draft.customGrid, drawingEnabled: draft.customDrawing, shortDivisionSetup: draft.customShortDivisionSetup
+  }] : [])]
     .map(({ uid: _uid, ...task }) => task)
   const questions = screeningQuestions(draft, diagnosticCatalog.findTask)
   const sendTasks = [...draft.selectedTasks.map(id => ({ ...diagnosticCatalog.findTask(id), ...draft.itemOptions[id] })), ...customTasks]
@@ -54,7 +57,8 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
   const draftContent = { titleSv: draft.titleSv, selectedTasks: draft.selectedTasks,
     itemOptions: Object.fromEntries(draft.selectedTasks.filter(id => draft.itemOptions[id]).map(id => [id, draft.itemOptions[id]])),
     writtenTasks: draft.writtenTasks, imageTasks: draft.imageTasks, textTasks: draft.textTasks || [], order: draft.order || [], customPrompt: draft.customPrompt,
-    customGrid: draft.customGrid, customDrawing: draft.customDrawing, writtenEditor: draft.writtenEditor, imageEditor: draft.imageEditor }
+    customGrid: draft.customGrid, customDrawing: draft.customDrawing, customShortDivisionSetup: draft.customShortDivisionSetup,
+    writtenEditor: draft.writtenEditor, imageEditor: draft.imageEditor }
 
   const unresolvedDelivery = Boolean(delivery && delivery.dispatches.some(item => !delivery.results[item.classId]?.ok))
   const unsaved = busy || draftBusy || unresolvedDelivery || (step !== 'receipt'
@@ -66,6 +70,15 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
     window.addEventListener('beforeunload', beforeUnload)
     return () => window.removeEventListener('beforeunload', beforeUnload)
   }, [unsaved])
+
+  function setOwnDivisionSetup(item, shortDivisionSetup) {
+    if (item.key === 'pending') {
+      patch({ customShortDivisionSetup: shortDivisionSetup })
+      return
+    }
+    const field = item.kind === 'written' ? 'writtenTasks' : 'textTasks'
+    setDraft(previous => ({ ...previous, [field]: previous[field].map(task => task === item.task ? { ...task, shortDivisionSetup } : task) }))
+  }
 
   function startDelivery() {
     if (!canReview || busy) return
@@ -95,7 +108,8 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
           editorState={draft.writtenEditor} onEditorState={updateEditor('writtenEditor')} />
         <ScreeningCustomQuestion tasks={draft.textTasks || []} onTasks={textTasks => patch({ textTasks })} disabled={busy}
           customPrompt={draft.customPrompt} onCustomPrompt={customPrompt => patch({ customPrompt })} customGrid={draft.customGrid} onCustomGrid={customGrid => patch({ customGrid })}
-          customDrawing={draft.customDrawing} onCustomDrawing={customDrawing => patch({ customDrawing })} />
+          customDrawing={draft.customDrawing} onCustomDrawing={customDrawing => patch({ customDrawing })}
+          customShortDivisionSetup={draft.customShortDivisionSetup} onCustomShortDivisionSetup={customShortDivisionSetup => patch({ customShortDivisionSetup })} />
         <ScreeningImageEditor tasks={draft.imageTasks} onTasks={imageTasks => patch({ imageTasks })} disabled={busy}
           editorState={draft.imageEditor} onEditorState={updateEditor('imageEditor')} />
         </section>
@@ -118,6 +132,7 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
           onItemOptions={itemOptions => patch({ itemOptions })}
           selectedTasks={draft.selectedTasks}
           onSelectedTasks={selectedTasks => patch({ selectedTasks })}
+          onOwnDivisionSetup={setOwnDivisionSetup}
         />
         <ScreeningDraftPreview content={draftContent} />
         <ScreeningTeacherSupport selectedTasks={draft.selectedTasks} />
@@ -173,7 +188,7 @@ export default function ScreeningDispatchFlow({ context, library, initialSource,
 
 function QuestionList({ tasks, context }) {
   return <ol className="my-1 list-decimal space-y-1 pl-5">{tasks.filter(Boolean).map((task, index) => <li key={index}>
-    <QuestionText>{task.promptSv}</QuestionText><span className="ml-2 text-xs text-slate-600">{task.gridEnabled !== false && !task.responseMode ? 'Räknehäfte' : 'Utan räknehäfte'}{task.drawingEnabled ? ' · Rityta' : ''}</span>
+    <QuestionText>{task.promptSv}</QuestionText><span className="ml-2 text-xs text-slate-600">{task.gridEnabled !== false && !task.responseMode ? 'Räknehäfte' : 'Utan räknehäfte'}{task.drawingEnabled ? ' · Rityta' : ''}{task.gridEnabled !== false && task.shortDivisionSetup === false && supportsShortDivisionSetup(task) ? ' · Utan uppställning' : ''}</span>
     {task.responseMode && <ScreeningQuestionPreview task={task} context={context} />}
   </li>)}</ol>
 }

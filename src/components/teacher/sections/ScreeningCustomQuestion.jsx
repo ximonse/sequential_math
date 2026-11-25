@@ -7,20 +7,22 @@ const field = 'rounded border border-slate-400 px-1 py-0.5'
 // Questions the teacher assesses by reading the pupil's text (no answer key).
 // Several can be added and edited; text still in the box is also part of the
 // screening, so nothing written is lost if the teacher goes on without saving it.
-export default function ScreeningCustomQuestion({ tasks = [], onTasks, disabled, customPrompt, onCustomPrompt, customGrid, onCustomGrid, customDrawing, onCustomDrawing }) {
+export default function ScreeningCustomQuestion({ tasks = [], onTasks, disabled, customPrompt, onCustomPrompt, customGrid, onCustomGrid, customDrawing, onCustomDrawing, customShortDivisionSetup, onCustomShortDivisionSetup }) {
   const [editing, setEditing] = useState(-1)
   const save = () => {
     if (!customPrompt.trim() || (editing < 0 && tasks.length >= 12)) return
     const task = { promptSv: customPrompt.trim(), gridEnabled: customGrid, drawingEnabled: customDrawing,
+      ...(customShortDivisionSetup !== undefined ? { shortDivisionSetup: customShortDivisionSetup } : {}),
       uid: (editing >= 0 && tasks[editing]?.uid) || newQuestionUid() }
     onTasks(editing < 0 ? [...tasks, task] : tasks.map((previous, index) => index === editing ? task : previous))
-    onCustomPrompt(''); onCustomGrid(true); onCustomDrawing(false); setEditing(-1)
+    cancel()
   }
   const edit = index => {
     const task = tasks[index]
-    onCustomPrompt(task.promptSv); onCustomGrid(task.gridEnabled !== false); onCustomDrawing(Boolean(task.drawingEnabled)); setEditing(index)
+    onCustomPrompt(task.promptSv); onCustomGrid(task.gridEnabled !== false); onCustomDrawing(Boolean(task.drawingEnabled))
+    onCustomShortDivisionSetup(task.shortDivisionSetup); setEditing(index)
   }
-  const cancel = () => { onCustomPrompt(''); onCustomGrid(true); onCustomDrawing(false); setEditing(-1) }
+  const cancel = () => { onCustomPrompt(''); onCustomGrid(true); onCustomDrawing(false); onCustomShortDivisionSetup(undefined); setEditing(-1) }
   return <details className="mt-3 text-sm" open={tasks.length > 0 || undefined}>
     <summary className="cursor-pointer font-semibold">Frågor med textsvar som du bedömer{tasks.length ? ` (${tasks.length})` : ''}</summary>
     <fieldset disabled={disabled} className="mt-2 space-y-2">

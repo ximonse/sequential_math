@@ -12,10 +12,11 @@ const bool = value => { if (typeof value !== 'boolean') fail(); return value }
 const keys = (object, allowed) => { if (!object || typeof object !== 'object' || Array.isArray(object) || Object.keys(object).some(key => !allowed.includes(key))) fail() }
 const list = (value, max) => { if (!Array.isArray(value) || value.length > max) fail(); return value }
 const uidOf = task => { if (task.uid === undefined) return {}; if (!id(task.uid)) fail(); return { uid: task.uid } }
+const divisionSetupOf = task => task.shortDivisionSetup === undefined ? {} : { shortDivisionSetup: bool(task.shortDivisionSetup) }
 
 // Incomplete editor fields are intentional: a draft need not be ready to send.
 export function normalizeScreeningDraft(input) {
-  keys(input, ['titleSv', 'selectedTasks', 'itemOptions', 'writtenTasks', 'imageTasks', 'textTasks', 'order', 'customPrompt', 'customGrid', 'customDrawing', 'writtenEditor', 'imageEditor'])
+  keys(input, ['titleSv', 'selectedTasks', 'itemOptions', 'writtenTasks', 'imageTasks', 'textTasks', 'order', 'customPrompt', 'customGrid', 'customDrawing', 'customShortDivisionSetup', 'writtenEditor', 'imageEditor'])
   if (JSON.stringify(input).length > 60000) fail()
   const titleSv = string(input.titleSv, 100)
   if (!titleSv.trim()) throw new Error('Ge utkastet ett namn.')
@@ -23,19 +24,19 @@ export function normalizeScreeningDraft(input) {
   if (!selectedTasks.every(id) || new Set(selectedTasks).size !== selectedTasks.length) fail()
   keys(input.itemOptions, selectedTasks)
   for (const options of Object.values(input.itemOptions)) {
-    keys(options, ['answerType', 'gridEnabled', 'drawingEnabled'])
+    keys(options, ['answerType', 'gridEnabled', 'drawingEnabled', 'shortDivisionSetup'])
     if (options.answerType !== undefined && !['number', 'text'].includes(options.answerType)) fail()
-    for (const field of ['gridEnabled', 'drawingEnabled']) if (options[field] !== undefined) bool(options[field])
+    for (const field of ['gridEnabled', 'drawingEnabled', 'shortDivisionSetup']) if (options[field] !== undefined) bool(options[field])
   }
   const writtenTasks = list(input.writtenTasks, 12).map(task => {
-    keys(task, ['promptSv', 'answerKey', 'gridEnabled', 'drawingEnabled', 'uid'])
-    return { promptSv: string(task.promptSv, 2000), answerKey: normalizeScreeningAnswerKey(task.answerKey), gridEnabled: bool(task.gridEnabled), drawingEnabled: bool(task.drawingEnabled), ...uidOf(task) }
+    keys(task, ['promptSv', 'answerKey', 'gridEnabled', 'drawingEnabled', 'shortDivisionSetup', 'uid'])
+    return { promptSv: string(task.promptSv, 2000), answerKey: normalizeScreeningAnswerKey(task.answerKey), gridEnabled: bool(task.gridEnabled), drawingEnabled: bool(task.drawingEnabled), ...divisionSetupOf(task), ...uidOf(task) }
   })
   const imageTasks = list(input.imageTasks, 12).map(task => ({ promptSv: string(task.promptSv, 2000), ...normalizeImageQuestion(task), ...uidOf(task) }))
   // Text questions the teacher assesses (no answer key); older drafts have none.
   const textTasks = list(input.textTasks ?? [], 12).map(task => {
-    keys(task, ['promptSv', 'gridEnabled', 'drawingEnabled', 'uid'])
-    return { promptSv: string(task.promptSv, 2000), gridEnabled: bool(task.gridEnabled), drawingEnabled: bool(task.drawingEnabled), ...uidOf(task) }
+    keys(task, ['promptSv', 'gridEnabled', 'drawingEnabled', 'shortDivisionSetup', 'uid'])
+    return { promptSv: string(task.promptSv, 2000), gridEnabled: bool(task.gridEnabled), drawingEnabled: bool(task.drawingEnabled), ...divisionSetupOf(task), ...uidOf(task) }
   })
   const order = list(input.order ?? [], 100).map(key => string(key, 200))
   const writtenEditor = input.writtenEditor ?? emptyWrittenEditor(), imageEditor = input.imageEditor ?? emptyImageEditor()
@@ -62,7 +63,8 @@ export function normalizeScreeningDraft(input) {
   })
   if (!list(image.correctOptionIds, 12).every(id)) fail()
   return structuredClone({ titleSv, selectedTasks, itemOptions: input.itemOptions, writtenTasks, imageTasks, textTasks, order,
-    customPrompt: string(input.customPrompt, 2000), customGrid: bool(input.customGrid), customDrawing: bool(input.customDrawing), writtenEditor, imageEditor })
+    customPrompt: string(input.customPrompt, 2000), customGrid: bool(input.customGrid), customDrawing: bool(input.customDrawing),
+    ...(input.customShortDivisionSetup !== undefined ? { customShortDivisionSetup: bool(input.customShortDivisionSetup) } : {}), writtenEditor, imageEditor })
 }
 
 // "Återanvänd" opens a handed-out screening as an editable copy (Simon 2026-11-02).
@@ -74,7 +76,7 @@ export function screeningDraftFromAssignment(assignment, findTask) {
   const order = []
   for (const item of assignment?.items || []) {
     const task = item.taskSnapshot || {}
-    const options = Object.fromEntries(['answerType', 'gridEnabled', 'drawingEnabled']
+    const options = Object.fromEntries(['answerType', 'gridEnabled', 'drawingEnabled', 'shortDivisionSetup']
       .filter(key => key === 'answerType' ? ['number', 'text'].includes(task[key]) : typeof task[key] === 'boolean').map(key => [key, task[key]]))
     if (findTask(item.taskId)) {
       if (draft.selectedTasks.includes(item.taskId)) continue
@@ -88,12 +90,12 @@ export function screeningDraftFromAssignment(assignment, findTask) {
       try {
         const uid = newQuestionUid()
         draft.writtenTasks.push({ promptSv: String(task.promptSv || ''), answerKey: normalizeScreeningAnswerKey(task.answerKey),
-          gridEnabled: task.gridEnabled !== false, drawingEnabled: Boolean(task.drawingEnabled), uid })
+          gridEnabled: task.gridEnabled !== false, drawingEnabled: Boolean(task.drawingEnabled), ...divisionSetupOf(task), uid })
         order.push(`written:${uid}`)
       } catch { skipped++ }
     } else if (typeof task.promptSv === 'string' && task.promptSv.trim() && draft.textTasks.length < 12) {
       const uid = newQuestionUid()
-      draft.textTasks.push({ promptSv: task.promptSv, gridEnabled: task.gridEnabled !== false, drawingEnabled: Boolean(task.drawingEnabled), uid })
+      draft.textTasks.push({ promptSv: task.promptSv, gridEnabled: task.gridEnabled !== false, drawingEnabled: Boolean(task.drawingEnabled), ...divisionSetupOf(task), uid })
       order.push(`text:${uid}`)
     } else skipped++
   }

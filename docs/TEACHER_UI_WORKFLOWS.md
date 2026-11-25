@@ -244,3 +244,43 @@ med tydlig feltext och möjlighet till återförsök. Byte av urval visar aldrig
 föregående urvals resultat. En ny elevkatalog styr aktuella medlemskap;
 katalog-/behörighetsfel tömmer fortfarande data, och sena svar från äldre
 hämtningar ignoreras. Detta är visningsbeteende och ändrar inga elevresultat.
+
+## Elevkort, uppdragsmoduler och mottagarmarkering 2026-11-24
+
+Simon beställde fyra ändringar i lärarvyn. De ligger utanför arbetsmålet
+belastningen och godkändes som egen omgång.
+
+**Elevkortet på skärmen är utskriften.** `src/lib/studentCardLayout.js` håller
+mått, färger och texter i millimeter, och läses av både PDF-generatorn och
+kortet i vyn. Kortet visar header, adress, tre numrerade steg (kodnamn, PIN,
+Logga in), PIN-box och avrivningsremsa med namn. QR-kod och elev-ID är borta:
+elevinloggningen frågar bara efter kodnamn och PIN, så QR-koden pekade på en
+väg appen inte har. `ClassLoginTab` och `StudentDetailPanel` ritade tidigare
+egna kort och använder nu samma komponent, så det finns ett kort, inte tre.
+
+**Uppdragsskaparen är moduler, inte en rad-ström.** Arbetsytor, Domäner, Eget
+uppdrag, Tabell och Fokusövning ligger i egna rundade rutor med svag bakgrund
+och en infoikon som visar samma förklaring vid hovring och vid tryck. "Skapa
+egna" ligger i rutan Eget uppdrag; de två gjorde samma sorts sak under nästan
+samma namn på olika ställen. Fokusövningen boxas som de andra fast bara
+superadmin kan läsa resultaten, och dess infotext säger det.
+
+**En delad inställning gäller där infotexten säger.**
+`src/lib/assignmentSettings.js` håller vilken uppdragstyp som bär vilken
+inställning. Arbetsytor renderas av elevens `SessionPage`, som standard-,
+tabell- och math_practice-uppdrag går via; tabelluppdrag och "Skapa egna" fick
+de inställningar de tidigare tappade. Fokusövning och talbild körs i egna
+elevvyer utan arbetsyta, och en rityta där skulle ändra vad övningen mäter —
+deras rutor säger att inställningen inte gäller, i stället för att visa ett val
+utan verkan (R1).
+
+**Markerad mottagare ser ut som markerad klass.** Den mjuka markeringen från
+2026-10-28 ersätts i mottagarväljaren av klassfiltrets gröna tillstånd med
+bock, med och utan tema. Riktningen att skilja visningsurval från mottagare
+gäller fortfarande; det är markeringens tydlighet som ändras. Väljaren säger
+nu vilket läge som gäller — "Följer klassfiltret ovan" eller "Eget urval.
+Klassfiltret ovan styr bara vad vyn visar och vilken länk du kan kopiera" —
+och knappen "Rensa" är i Uppdrag & tickets ersatt av "Följ klassfiltret igen".
+Tidigare fanns ingen väg tillbaka till att följa filtret, och ett tomt urval
+betyder alla klasser. Resultatväljaren under Screening har ingen filterkoppling
+och behåller "Rensa".

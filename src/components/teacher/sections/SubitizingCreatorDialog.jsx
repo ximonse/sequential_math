@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { createAssignment } from '../../../lib/assignments'
 
-export default function SubitizingCreatorDialog({ onCreate, onClose }) {
+export default function SubitizingCreatorDialog({ onCreate, onClose, initialBreakGames = false }) {
   const [name, setName] = useState('')
   const [targetCount, setTargetCount] = useState('30')
-  const [breakGames, setBreakGames] = useState(false)
+  const [breakGames, setBreakGames] = useState(initialBreakGames)
   const [error, setError] = useState('')
 
   const handleCreate = () => {

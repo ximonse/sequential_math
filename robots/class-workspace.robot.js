@@ -18,7 +18,8 @@ test('A teacher sees pupils and cards per class and builds a group from the clas
   await expect(panel.locator('[data-class-pupil]')).toHaveCount(1)
   await panel.getByRole('tab', { name: 'Inloggning och kort', exact: true }).click()
   await expect(panel.locator('[data-login-pupil]')).toHaveCount(1)
-  await expect(panel.getByRole('button', { name: 'Nytt QR-kort / PIN', exact: true })).toBeVisible()
+  // Renamed 2026-11-24: the card carries no QR code, so it is not a QR card.
+  await expect(panel.getByRole('button', { name: 'Nytt elevkort / PIN', exact: true })).toBeVisible()
 
   await page.getByRole('button', { name: '+ Ny grupp', exact: true }).click()
   const groupPanel = page.locator('[data-open-item]')

@@ -14,8 +14,7 @@ export default function AssignmentBuilder({ onCreated, breakGames, workspaces })
     <select aria-label={label} className={FIELD} value={form[key]} onChange={event => set({ [key]: Number(event.target.value) })}>
       {LEVELS.map(level => <option key={level} value={level}>{level}</option>)}
     </select></label>
-  return <fieldset className="mb-3 rounded border border-gray-200 px-2 py-1.5 text-sm" aria-label="Eget uppdrag">
-    <legend className="px-1 font-medium text-gray-700">Eget uppdrag</legend>
+  return <fieldset className="text-sm" aria-label="Eget uppdrag">
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
       <label className="flex items-center gap-1">Räknesätt
         <select aria-label="Räknesätt" className={FIELD} value={form.operation} onChange={event => set({ operation: event.target.value })}>

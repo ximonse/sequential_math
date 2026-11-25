@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-import QRCode from 'qrcode'
+import { useState } from 'react'
 import { getTeacherApiToken } from '../../../lib/teacherAuth'
 import { downloadStudentCredentialPdf } from '../../../lib/studentCredentialPdf'
 import StudentDetailHistoryPanel from './StudentDetailHistoryPanel'
@@ -7,6 +6,7 @@ import StudentDetailTrendPanel from './StudentDetailTrendPanel'
 import StudentDetailMasteryPanel from './StudentDetailMasteryPanel'
 import StudentAttentionHistoryPanel from './StudentAttentionHistoryPanel'
 import StudentAnalysisPanel from './StudentAnalysisPanel.jsx'
+import StudentCredentialCard from './StudentCredentialCard'
 
 const OPERATION_BADGES = [
   { label: '+', key: 'addition' },
@@ -16,21 +16,12 @@ const OPERATION_BADGES = [
 ]
 
 function ReissuedCredentialCard({ credential }) {
-  const [qrCode, setQrCode] = useState('')
   const [pdfStatus, setPdfStatus] = useState('')
-  useEffect(() => {
-    let active = true
-    QRCode.toDataURL(JSON.stringify({ version: 1, studentId: credential.studentId, qrSecret: credential.qrSecret }), {
-      errorCorrectionLevel: 'M', margin: 1, width: 280
-    }).then(value => { if (active) setQrCode(value) }).catch(() => {})
-    return () => { active = false }
-  }, [credential.studentId, credential.qrSecret])
   return <div className="mt-3 rounded border-2 border-amber-400 bg-amber-50 p-4 text-sm print:border-gray-700 print:bg-white">
     <p className="font-bold text-amber-950">Nytt elevkort — skriv ut nu</p>
-    <p className="mt-1 text-amber-900">Det gamla QR-kortet och den gamla PIN-koden fungerar inte längre.</p>
-    <div className="mt-3 flex items-center gap-4">
-      <div><p className="font-semibold text-lg">{credential.displayAlias || 'Elev'}</p><p className="text-xs">Kodnamn: {credential.displayAlias || '–'}</p><p className="font-mono text-xs break-all">Elev-ID: {credential.studentId}</p><p className="font-mono text-lg font-bold">PIN: {credential.pin}</p></div>
-      {qrCode ? <img className="h-28 w-28" src={qrCode} alt="Nytt elevkorts QR-kod" /> : null}
+    <p className="mt-1 text-amber-900">Den gamla PIN-koden fungerar inte längre.</p>
+    <div className="mt-3">
+      <StudentCredentialCard credential={credential} />
     </div>
     <div className="mt-3 flex gap-2 print:hidden">
       <button type="button" onClick={async () => { setPdfStatus('Skapar PDF…'); try { await downloadStudentCredentialPdf([credential]); setPdfStatus('PDF klar. Spara filen säkert.') } catch (error) { setPdfStatus(error?.message || 'Kunde inte skapa PDF.') } }} className="rounded bg-amber-700 px-3 py-1 text-xs font-semibold text-white">Hämta PDF</button>
@@ -70,7 +61,7 @@ export default function StudentDetailPanel({
 
   const reissueCredential = async () => {
     if (!detailStudentProfile?.studentId) return
-    if (!window.confirm('Utfärda ett nytt elevkort? Det gamla QR-kortet och den gamla PIN-koden slutar fungera direkt.')) return
+    if (!window.confirm('Utfärda ett nytt elevkort? Den gamla PIN-koden slutar fungera direkt.')) return
     setCredentialStatus('Utfärdar nytt elevkort…')
     try {
       const response = await fetch(`/api/student/${encodeURIComponent(detailStudentProfile.studentId)}/credentials`, {
@@ -159,7 +150,7 @@ export default function StudentDetailPanel({
             {detailStudentProfile && (
               <button type="button" onClick={() => { const label = window.prompt('Ditt privata tilltalsnamn för eleven:', detailStudentProfile.teacherPupilLabel || ''); if (label !== null) onSetTeacherPupilLabel(detailStudentProfile.studentId, label) }} className="px-1.5 py-0.5 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded text-xs font-medium">Ändra tilltalsnamn</button>
             )}
-          {detailStudentProfile?.displayAlias ? <button type="button" onClick={reissueCredential} className="px-1.5 py-0.5 bg-amber-200 hover:bg-amber-300 text-amber-950 rounded text-xs font-semibold">Nytt QR-kort / ny PIN</button> : null}
+          {detailStudentProfile?.displayAlias ? <button type="button" onClick={reissueCredential} className="px-1.5 py-0.5 bg-amber-200 hover:bg-amber-300 text-amber-950 rounded text-xs font-semibold">Nytt elevkort / ny PIN</button> : null}
         </div>
       </div>
 

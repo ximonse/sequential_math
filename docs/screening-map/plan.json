@@ -4094,12 +4094,12 @@
       "id": "teacher-foreign-assignments",
       "area": "Lärarvy",
       "title": "Aktiva uppdrag syns även utanför det egna uppdragsbiblioteket",
-      "status": "Lokalt klart",
+      "status": "Byggt",
       "purpose": "En lärare eller administratör som öppnar någon annans klass ska se vilka uppdrag eleverna faktiskt har.",
-      "next": "Simon provar den nya previewen på rätt underlag. Produktion kräver merge och uttrycklig begäran.",
+      "next": "Inget kvar. Följ upp om en lärare rapporterar aktiveringar utan namn (aktiveringar före 2026-10-21 saknar activatedBy).",
       "acceptance": "Uppdrag som ligger aktivt på klass-, grupp- eller elevposten men saknas i det egna biblioteket visas som läsbar rad med titel, var det är aktivt och vem som aktiverade det. Raden syns även när det egna biblioteket är tomt. Ingen aktivering eller avaktivering sker härifrån.",
-      "decision": "2026-11-24: Simon valde minsta steget — visa raden, inte dela uppdragsbiblioteket mellan lärarkonton. Uppdraget hör inte till arbetsmålet belastningen; Simon valde att bygga ändå. Agentens eget skäl när frågan ställdes: ren klientlogik utan nya serveranrop, alltså ingen belastningseffekt. Simon 2026-11-24: att visa vem som aktiverade uppdraget räcker; vem som skapade uppdraget behövs inte och finns inte i payloaden.",
-      "evidence": "2026-11-24: Lokalt klart, inte pushat. Orsak: uppdragsbiblioteket ligger per konto i teacher_workspace:{teacherId}:assignments, medan aktiveringen ligger på klass-/grupp-/elevposten (activeAssignments); AssignmentsPanel loopade bara över det egna biblioteket. Byggt: src/components/teacher/sections/foreignActiveAssignments.js + ForeignAssignmentRows.jsx, inkopplat i Dashboard.jsx och DashboardLayout.jsx. 7 nya enhetstester gröna, npm run build grön, eslint rent. Lärarnamn hämtas ur teachers-listan som /api/teacher-groups redan returnerar; okänt konto-id visas inte som rått id. Känd gräns: uppdrag aktiverade på enskild elev syns först när klassen öppnas, eftersom startkatalogen (catalogCard) inte bär uppdragsfält — medvetet för att inte öka belastningen. 2026-11-24: Pushat till grenen claude/admin-foreign-assignments, PR #47 (utkast). Preview byggd (dpl_HxgKC7X3m93boAQENfYFyedYNHQR) och provad av Simon i lärarvyn: ”Ser bra ut”. Previewen är skyddad av Vercel Authentication och når en konfigurerad databas (class-config svarade 404, inte lagringsfel). Ingen agentgjord visuell granskning i webbläsare. Inte i produktion. Gäller uppdrag via länk (activeAssignments); screening ligger per klass (diagnostic_assignments_by_class) och syns redan för den som har klassåtkomst. Raden följer inte klassfiltret utan samlar alla klasser och grupper läraren ser, som panelens befintliga Aktiv i-rad. 2026-11-24, andra omgången: master sammanslagen in i grenen (grenen låg 25 commits efter). Build, eslint och de 7 enhetstesterna gröna på nya underlaget. Robotar seriellt, samma filer och ordning: masters egen kod 3 röda / 4 gröna, med ändringen 2 röda / 5 gröna — inga robotfel av ändringen. Kvarstående röda hör inte hit: teacher-names är röd även på masters kod i varje körning (privata tilltalsnamn syns inte i Klass/gruppvy efter omladdning), admin-tab och screening-load hoppar mellan körningar på grund av delad minnesdatabas. Rapporten visade 0 regelbrott i samtliga körningar.",
+      "decision": "2026-11-24: Simon valde minsta steget — visa raden, inte dela uppdragsbiblioteket mellan lärarkonton. Uppdraget hör inte till arbetsmålet belastningen; Simon valde att bygga ändå. Agentens eget skäl när frågan ställdes: ren klientlogik utan nya serveranrop, alltså ingen belastningseffekt. Simon 2026-11-24: att visa vem som aktiverade uppdraget räcker; vem som skapade uppdraget behövs inte och finns inte i payloaden. Simon 2026-11-24: production.",
+      "evidence": "2026-11-24: Lokalt klart, inte pushat. Orsak: uppdragsbiblioteket ligger per konto i teacher_workspace:{teacherId}:assignments, medan aktiveringen ligger på klass-/grupp-/elevposten (activeAssignments); AssignmentsPanel loopade bara över det egna biblioteket. Byggt: src/components/teacher/sections/foreignActiveAssignments.js + ForeignAssignmentRows.jsx, inkopplat i Dashboard.jsx och DashboardLayout.jsx. 7 nya enhetstester gröna, npm run build grön, eslint rent. Lärarnamn hämtas ur teachers-listan som /api/teacher-groups redan returnerar; okänt konto-id visas inte som rått id. Känd gräns: uppdrag aktiverade på enskild elev syns först när klassen öppnas, eftersom startkatalogen (catalogCard) inte bär uppdragsfält — medvetet för att inte öka belastningen. 2026-11-24: Pushat till grenen claude/admin-foreign-assignments, PR #47 (utkast). Preview byggd (dpl_HxgKC7X3m93boAQENfYFyedYNHQR) och provad av Simon i lärarvyn: ”Ser bra ut”. Previewen är skyddad av Vercel Authentication och når en konfigurerad databas (class-config svarade 404, inte lagringsfel). Ingen agentgjord visuell granskning i webbläsare. Inte i produktion. Gäller uppdrag via länk (activeAssignments); screening ligger per klass (diagnostic_assignments_by_class) och syns redan för den som har klassåtkomst. Raden följer inte klassfiltret utan samlar alla klasser och grupper läraren ser, som panelens befintliga Aktiv i-rad. 2026-11-24, andra omgången: master sammanslagen in i grenen (grenen låg 25 commits efter). Build, eslint och de 7 enhetstesterna gröna på nya underlaget. Robotar seriellt, samma filer och ordning: masters egen kod 3 röda / 4 gröna, med ändringen 2 röda / 5 gröna — inga robotfel av ändringen. Kvarstående röda hör inte hit: teacher-names är röd även på masters kod i varje körning (privata tilltalsnamn syns inte i Klass/gruppvy efter omladdning), admin-tab och screening-load hoppar mellan körningar på grund av delad minnesdatabas. Rapporten visade 0 regelbrott i samtliga körningar. PUBLICERAT 2026-11-24: Simon sa production. PR #47 mergad efter gröna quality, documentation och Vercel preview; master 5ffec64937b88ea8d2e49170a12896049c159f9c. Vercel sekvens dpl_GGoQznmMy8oLMeybDbL6YRA9TBg3, target production, READY. Läsande produktionskontroll: matematik.ximon.se svarar 200 och /assets/index-DxAEKR7k.js innehåller raden ”Aktiva uppdrag som inte finns i ditt uppdragsbibliotek — visas bara, kan inte aktiveras eller avaktiveras härifrån” med korrekta å/ä/ö. Ingen inloggad UI-kontroll i produktion gjord av agenten; Simon godkände funktionen i preview. Mergen publicerade även belastningssteget a51445f.",
       "issue": "",
       "kind": "funktion",
       "requires": [
@@ -4142,6 +4142,68 @@
         {
           "id": "audit-ncm-regression",
           "text": "Kontrollera LF, CRLF och verklig innehållsändring.",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "teacher-card-and-assignment-modules",
+      "area": "Lärarvy",
+      "title": "Elevkortet ser ut som utskriften, och uppdragsmodulerna är åtskilda",
+      "status": "Lokalt klart",
+      "kind": "funktion",
+      "purpose": "Läraren ska se samma elevkort på skärmen som i PDF:en, se vilken modul som används när ett uppdrag skapas, och förstå var en delad inställning faktiskt gäller. Markerad mottagare ska vara lika tydlig som markerad klass i filtret.",
+      "next": "Simon granskar previewen av PR #48. Utfärda inga elevkort där: previewen kan dela databas med riktiga elever och ett nytt kort slår ut elevens PIN på riktigt.",
+      "acceptance": "Skärmkortet visar samma header, tre steg, PIN-box och namnremsa som PDF:en, utan QR-kod och utan elev-ID. Varje sätt att skapa uppdrag ligger i egen rundad ruta med infoikon som fungerar både vid hovring och vid tryck. En kryssad arbetsyta eller ett kryssat pausspel gäller de uppdragstyper infotexten anger, och ingen annan. Vald mottagare visas med samma gröna markering och bock som klassfiltret, och läraren kan gå tillbaka till att följa klassfiltret.",
+      "decision": "2026-11-24: Simon beställer fyra ändringar och svarar på fyra frågor: elevkortet ska se ut som PDF:en (QR-kod och elev-ID bort), modulerna i uppdragsskaparen ska boxas med infoikoner, fokusövningen ska boxas som de andra trots att bara superadmin kan läsa resultaten, inställningar som inte gäller alla uppdragstyper ska rättas, och mottagarmarkeringen ska bli grön som klassfiltret. Simon godkände att arbetet ligger utanför belastningsmålet. Agentens egna val inom mandatet: \"Skapa egna\" flyttades in i rutan Eget uppdrag, och \"Rensa\" i Mottagare ersattes av \"Följ klassfiltret igen\" i stället för att behållas vid sidan av.",
+      "evidence": "2026-11-24 lokalt, gren claude/elevkort-uppdragsmoduler från master 5ffec64. Kort: nya src/lib/studentCardLayout.js delas av PDF-generatorn och skärmkortet, så måtten inte kan glida isär; ClassLoginTab och StudentDetailPanel ritade egna kort med QR och elev-ID och använder nu samma kort; texter som kallade kortet QR-kort rättades. Elevinloggningen frågar bara efter kodnamn och PIN (PilotStudentLoginForm), så QR-koden pekade på en väg appen inte har. Inställningar: ny src/lib/assignmentSettings.js håller vilken uppdragstyp som bär vilken delad inställning; tabell och Skapa egna fick de inställningar de saknade, talbild ärver pausspelsvalet. Arbetsytor kräver elevsidans SessionPage, som fokusövning och talbild inte går via; de två rutornas infotexter säger det i stället för att visa ett val utan verkan. Mottagare: grön markering med bock, egen regel i teacherAdmin.css eftersom temats aria-pressed-regel annars mjukar upp den. Tre nya enhetstester i RecipientPicker.test.jsx var röda före och gröna efter; nytt robotfall robots/assignment-settings-coverage.robot.js för inställningstäckningen. Vitest huvudrepo 1416/1418 (de två felen är ett förbefintligt fel i scripts/audit-ncm-rule-readiness.test.js på master: SCREENING_SELECTION_PRINCIPLES.md har ändrats utan att hashen i NCM_DIDACTIC_COVERAGE.json stämts av). Build ok. Inte pushat, inte i produktion; visuell kontroll av kortet och rutorna kvarstår hos Simon.\n\n2026-11-24, andra passet: granskning av min egen nya kod hittade två fel i infoikonen. Ikonen låg inuti Pausspel-etiketten, så ett tryck på den öppna förklaringen bockade i pausspel (R3/R4); och på pekskärm satte den emulerade mouseenter ett hovringsläge som gjorde att andra trycket inte stängde. Båda rättade: ikonen flyttad ut ur etiketten, hovring läses bara från en riktig muspekare. Ny robot robots/assignment-module-hints.robot.js med tre fall, körd seriellt mot den gamla koden: \"toBeHidden\" föll (förklaringen stängdes inte) och \"not.toBeChecked\" fick \"checked\" (inställningen ändrades av att läsa). Alla tre gröna med rättningen. Visuell kontroll gjord mot robotserverns seedade testdata, inga riktiga elever: kortet visar header, adress, tre steg, PIN-box och namnremsa som PDF:en; rutorna är åtskilda; mottagarmarkeringen är identisk med klassfiltrets gröna bock. Bilderna visade två upprepade rubriker — rutan \"Eget uppdrag\" innehöll byggarens egen ram med samma rubrik, och rutan \"Arbetsytor\" upprepade \"Arbetsytor för eleven\". Båda borttagna; etiketten i Skapa egna-dialogen är kvar eftersom den rutan saknar rubrik.\n\n2026-11-24, robotsviten: parallellt 15 röda, seriellt (ROBOT_WORKERS=1) 6 röda av 215, 209 gröna på 26 minuter. Skillnaden är känd sedan förra passet: robotarna delar en minnesdatabas. Av de sex var tre dokumenterat röda på masters egen kod (teacher-names i varje körning, admin-tab och screening-load ordningsberoende). attention-history och operations/Talpar var gröna när de kördes var för sig; Talpar tog med sig periodens enda regelbrott (V1, samma uppgift två gånger i rad), som inte kom tillbaka. Ett fel var mitt: class-workspace letade efter knappen \"Nytt QR-kort / PIN\", som bytt namn till \"Nytt elevkort / PIN\" eftersom kortet inte har någon QR-kod. Roboten uppdaterad, grön efteråt. Ingen kvarvarande regression från detta arbete.\n\n2026-11-25, preview: grenen pushad och PR #48 öppnad som utkast. Vercel-previewen byggde grönt i projektet sekvens. CI föll på två kontroller, båda rättade: check:architecture, därför att DashboardLayout.jsx låg exakt på CI:s 800-radersgräns och min extra prop tippade den till 801 — propen ryms nu på samma rad, och villkoret activeWorkspace === \"teaching\" är borttaget ur den eftersom blocket runtom redan garanterar det; och check:pr-documentation, som vill ha båda alternativen under Dokumentation i mallen med exakt ett ikryssat.\n\nRättelse 2026-11-25: påståendet att scripts/audit-ncm-rule-readiness.test.js är rött på master var fel. Hashen i NCM_DIDACTIC_COVERAGE.json är räknad på LF medan arbetskopian på Windows har CRLF, så summan skiljer bara lokalt; CI kör samma test grönt. Ingen NCM-avstämning behövs, och CI för PR #48 är grön på quality, documentation och Vercel.",
+      "issue": "",
+      "requires": [],
+      "affects": [],
+      "tasks": [
+        {
+          "id": "card-layout-teacher-card-and-assignment-modules",
+          "text": "Elevkortet på skärmen byggs från samma layoutmodul som PDF:en",
+          "done": true
+        },
+        {
+          "id": "card-no-qr-teacher-card-and-assignment-modules",
+          "text": "QR-kod och elev-ID bort från alla tre kortvisningar",
+          "done": true
+        },
+        {
+          "id": "modules-boxed-teacher-card-and-assignment-modules",
+          "text": "Arbetsytor, Domäner, Eget uppdrag, Tabell och Fokusövning i egna rutor med infoikon",
+          "done": true
+        },
+        {
+          "id": "modules-hint-teacher-card-and-assignment-modules",
+          "text": "Infoikonen fungerar vid hovring och vid tryck med samma text",
+          "done": true
+        },
+        {
+          "id": "settings-reach-teacher-card-and-assignment-modules",
+          "text": "Tabell och Skapa egna bär de delade inställningarna; fokus och talbild säger att de inte gör det",
+          "done": true
+        },
+        {
+          "id": "recipient-green-teacher-card-and-assignment-modules",
+          "text": "Mottagare: grön markering med bock och väg tillbaka till klassfiltret",
+          "done": true
+        },
+        {
+          "id": "simon-visual-teacher-card-and-assignment-modules",
+          "text": "Simon provar kortet, rutorna och mottagarmarkeringen efter push",
+          "done": false
+        },
+        {
+          "id": "robots-full-teacher-card-and-assignment-modules",
+          "text": "Robotsviten körd i sin helhet",
+          "done": true
+        },
+        {
+          "id": "hint-touch-teacher-card-and-assignment-modules",
+          "text": "Infoikonen: tryck öppnar och stänger, och att läsa den ändrar inget val",
           "done": true
         }
       ]

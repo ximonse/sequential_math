@@ -3,9 +3,12 @@ import AssignmentQrDialog from './AssignmentQrDialog'
 import MathPracticeCreatorDialog from './MathPracticeCreatorDialog'
 import SubitizingCreatorDialog from './SubitizingCreatorDialog'
 import AssignmentWorkspaceOptions from './AssignmentWorkspaceOptions'
-import AssignmentExtraPresets from './AssignmentExtraPresets'
+import { AssignmentFocusPreset, AssignmentTablePreset } from './AssignmentExtraPresets'
 import AssignmentBuilder from './AssignmentBuilder'
+import AssignmentModuleBox from './AssignmentModuleBox'
+import ModuleInfoHint from './ModuleInfoHint'
 import ForeignAssignmentRows from './ForeignAssignmentRows'
+import { workspaceSummary } from '../../../lib/assignmentSettings'
 
 const BUTTON_BASE = 'rounded-md border px-1.5 py-0.5 text-sm font-medium transition-colors'
 const TONES = {
@@ -17,6 +20,17 @@ const TONES = {
 }
 
 const FLUENCY_KEYS = ['number_bonds', 'doubles']
+
+// What each module does, and — just as important — where a shared setting
+// above does not reach. A ticked box that quietly does nothing breaks R1.
+const HINTS = {
+  workspaces: 'Räknehäfte och rityta som eleven kan öppna medan uppdraget pågår. Gäller domäner, eget uppdrag, tabell och Skapa egna. Fokusövning och talbild körs i egna elevvyer utan arbetsyta.',
+  domains: 'Färdiga uppdrag per kunskapsområde. Eleven får frågor på sin egen nivå utifrån sin träning. Talbild öppnar en egen dialog där du ställer in övningen.',
+  builder: 'Du bestämmer räknesätt, antal frågor och hur nivån väljs: anpassad efter eleven, stigande genom uppdraget, eller en bestämd nivå. "Skapa egna" ger fler inställningar, som talområde och tid per tal.',
+  table: 'Multiplikationstabellerna du markerar blir ett uppdrag. Eleven övar en tabell i taget.',
+  focus: 'Korta uppmärksamhetsövningar. Eleven kan göra dem, men resultaten visas bara för superadmin, under arbetsytan Fokusövningar. Arbetsytor och pausspel gäller inte här.',
+  breakGames: 'Pong eller Snake i uppdragets pauser i stället för en vanlig vilopaus. Gäller domäner, eget uppdrag, tabell, talbild och Skapa egna. Fokusövning har inga pauser.'
+}
 
 const PRESET_GROUPS = [
   [
@@ -77,46 +91,66 @@ export default function AssignmentsPanel({
     <section className="bg-white rounded-lg shadow p-3">
       <div className="mb-3 flex items-center justify-between gap-2">
         <h2 className="text-lg font-semibold text-gray-800">Uppdrag via länk</h2>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setShowMathPracticeCreator(true)} className={`${BUTTON_BASE} ${TONES.custom}`}>Skapa egna</button>
-          {collapseControl}
-        </div>
+        {collapseControl}
       </div>
-      <AssignmentWorkspaceOptions value={workspaces} onChange={setWorkspaces} />
-      <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1.5">
-        {PRESET_GROUPS.map((group, index) => (
-          <div key={index} className="flex flex-wrap gap-1.5">
-            {group.map(([key, label, tone]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => (key === 'talbild' ? setShowSubitizingCreator(true) : onCreatePreset(key, FLUENCY_KEYS.includes(key) ? presetTarget : undefined, breakGames, workspaces))}
-                className={`${BUTTON_BASE} ${tone}`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        ))}
-      </div>
-      <AssignmentBuilder breakGames={breakGames} workspaces={workspaces} onCreated={onCreateMathPractice} />
-      <AssignmentExtraPresets breakGames={breakGames} onCreated={onCreateMathPractice} />
-      <label className="mb-3 flex items-center gap-2 text-xs text-gray-600">
-        Max antal uppgifter för Talpar/Dubblor (tomt = 20)
-        <input
-          type="number"
-          min="1"
-          max="200"
-          value={presetTarget}
-          onChange={(event) => setPresetTarget(event.target.value)}
-          className="w-16 rounded border border-gray-300 px-1.5 py-0.5 text-sm"
-        />
-      </label>
 
-      <label className="mb-3 flex items-center gap-2 text-xs text-gray-600">
-        <input type="checkbox" checked={breakGames} onChange={(event) => setBreakGames(event.target.checked)} />
-        Pausspel (Pong/Snake) i nya uppdrag. Av = vanlig vilopaus.
-      </label>
+      <AssignmentModuleBox title="Arbetsytor" hint={HINTS.workspaces}>
+        <AssignmentWorkspaceOptions value={workspaces} onChange={setWorkspaces} showLegend={false} />
+      </AssignmentModuleBox>
+
+      <AssignmentModuleBox title="Domäner" hint={HINTS.domains}>
+        <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+          {PRESET_GROUPS.map((group, index) => (
+            <div key={index} className="flex flex-wrap gap-1.5">
+              {group.map(([key, label, tone]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => (key === 'talbild' ? setShowSubitizingCreator(true) : onCreatePreset(key, FLUENCY_KEYS.includes(key) ? presetTarget : undefined, breakGames, workspaces))}
+                  className={`${BUTTON_BASE} ${tone}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
+        <label className="mt-1.5 flex items-center gap-2 text-xs text-gray-600">
+          Max antal uppgifter för Talpar/Dubblor (tomt = 20)
+          <input
+            type="number"
+            min="1"
+            max="200"
+            value={presetTarget}
+            onChange={(event) => setPresetTarget(event.target.value)}
+            className="w-16 rounded border border-gray-300 px-1.5 py-0.5 text-sm"
+          />
+        </label>
+      </AssignmentModuleBox>
+
+      <AssignmentModuleBox
+        title="Eget uppdrag"
+        hint={HINTS.builder}
+        actions={<button type="button" onClick={() => setShowMathPracticeCreator(true)} className={`${BUTTON_BASE} ${TONES.custom}`}>Skapa egna</button>}
+      >
+        <AssignmentBuilder breakGames={breakGames} workspaces={workspaces} onCreated={onCreateMathPractice} />
+      </AssignmentModuleBox>
+
+      <AssignmentModuleBox title="Tabell" hint={HINTS.table}>
+        <AssignmentTablePreset breakGames={breakGames} workspaces={workspaces} onCreated={onCreateMathPractice} />
+      </AssignmentModuleBox>
+
+      <AssignmentModuleBox title="Fokusövning" hint={HINTS.focus}>
+        <AssignmentFocusPreset breakGames={breakGames} workspaces={workspaces} onCreated={onCreateMathPractice} />
+      </AssignmentModuleBox>
+
+      <div className="mb-3 flex items-center gap-2 text-xs text-gray-600">
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={breakGames} onChange={(event) => setBreakGames(event.target.checked)} />
+          Pausspel (Pong/Snake) i nya uppdrag. Av = vanlig vilopaus.
+        </label>
+        <ModuleInfoHint label="Pausspel">{HINTS.breakGames}</ModuleInfoHint>
+      </div>
 
       {assignments.length === 0 ? (
         <p className="text-sm text-gray-500">Inga uppdrag skapade ännu.</p>
@@ -139,9 +173,7 @@ export default function AssignmentsPanel({
                 <p className="text-gray-500">{formatAssignmentSummaryLine(assignment)}</p>
                 <p className={`text-xs ${activeIn.length ? 'text-green-800' : 'text-gray-500'}`}>
                   {activeIn.length ? `Aktiv i ${activeIn.map(item => item.name).join(', ')}` : 'Inte aktiv'}</p>
-                {assignment.workspaces && <p className="text-xs text-gray-600">Arbetsytor: {
-                  [assignment.workspaces.notebook && 'räknehäfte', assignment.workspaces.drawing && 'rityta'].filter(Boolean).join(', ') || 'inga'
-                }</p>}
+                {assignment.workspaces && <p className="text-xs text-gray-600">Arbetsytor: {workspaceSummary(assignment.workspaces)}</p>}
                 <p className="sr-only" title={`Uppdrags-ID: ${assignment.id}`}>{assignment.id}</p>
               </div>
               <div className="ml-auto flex items-center gap-1">
@@ -165,6 +197,7 @@ export default function AssignmentsPanel({
       {showMathPracticeCreator && (
         <MathPracticeCreatorDialog
           initialWorkspaces={workspaces}
+          initialBreakGames={breakGames}
           onCreate={(assignment) => {
             onCreateMathPractice(assignment)
             setShowMathPracticeCreator(false)
@@ -174,6 +207,7 @@ export default function AssignmentsPanel({
       )}
       {showSubitizingCreator && (
         <SubitizingCreatorDialog
+          initialBreakGames={breakGames}
           onCreate={(assignment) => {
             onCreateMathPractice(assignment)
             setShowSubitizingCreator(false)

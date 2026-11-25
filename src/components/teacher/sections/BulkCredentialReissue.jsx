@@ -21,7 +21,7 @@ export default function BulkCredentialReissue({ students }) {
     if (busy || chosen.length === 0) return
     const confirmed = window.confirm(
       `Skapa nya kort för ${chosen.length} elev${chosen.length === 1 ? '' : 'er'}?\n\n`
-      + 'Ny PIN och nytt QR-kort utfärdas, och de gamla korten slutar fungera direkt. '
+      + 'Ny PIN och nytt elevkort utfärdas, och de gamla korten slutar fungera direkt. '
       + 'Kodnamn, namn och all träningsdata behålls.'
     )
     if (!confirmed) return
@@ -49,7 +49,7 @@ export default function BulkCredentialReissue({ students }) {
   return (
     <details className="mt-2 rounded border border-amber-300 bg-amber-50 px-2 py-1.5">
       <summary className="cursor-pointer text-xs font-medium text-amber-950">Nya kort för valda elever</summary>
-      <p className="mt-1 text-xs text-amber-900">Ny PIN och nytt QR-kort till de elever du kryssar i. Kodnamn, namn och träningsdata behålls.</p>
+      <p className="mt-1 text-xs text-amber-900">Ny PIN och nytt elevkort till de elever du kryssar i. Kodnamn, namn och träningsdata behålls.</p>
       <div className="mt-2 flex gap-2 text-xs">
         <button type="button" onClick={() => setSelectedIds(students.map(student => student.studentId))} disabled={busy} className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-950 hover:bg-amber-200 disabled:opacity-50">Markera alla</button>
         <button type="button" onClick={() => setSelectedIds([])} disabled={busy} className="rounded bg-amber-100 px-1.5 py-0.5 text-amber-950 hover:bg-amber-200 disabled:opacity-50">Ingen</button>

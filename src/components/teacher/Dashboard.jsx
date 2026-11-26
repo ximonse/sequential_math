@@ -518,6 +518,8 @@ function Dashboard() {
 
   const resultsPanelProps = {
     students,
+    geometryStudents: filteredStudents,
+    geometryClassIds: selectedClassIds,
     viewMode,
     onSetViewMode: setViewMode,
     visibleRows,

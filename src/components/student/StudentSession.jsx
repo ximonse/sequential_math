@@ -31,12 +31,14 @@ import {
 } from '../../lib/progressionModes'
 import { getPilotStudentRuntime } from '../../lib/pilotStudentRuntime'
 import { generateMathPracticeProblem } from '../../lib/mathPracticeGenerator'
+import { isGeometrySkill } from '../../domains/geometry/groups.js'
+import { countGeometryAssignmentAnswers, isGeometryAssignment } from '../../domains/geometry/progress.js'
 import { recordMathPracticeResult } from '../../lib/mathPracticeResults'
 import { addMathPracticeSessionResult } from '../../lib/studentProfile'
 import { numberBondCoverageKeys, fluencyLevelTargetSec } from '../../lib/coverageFluency'
 import { getFluencyPractice, getFluencyLevelRange, getFluencyTarget, isFluencyAssignment, startFluencyLap } from '../../lib/fluencySession'
 import { recordTelemetryEvent } from '../../lib/telemetry'
-import { assignmentLaunchPath, getAssignmentTarget, markAssignmentCompleted } from '../../lib/assignmentQueue'
+import { assignmentLaunchPath, getAssignmentTarget, markAssignmentCompleted, readAssignmentCompletedAt } from '../../lib/assignmentQueue'
 import { useNextAssignment } from './useNextAssignment'
 const TABLE_BOSS_URL = 'https://www.youtube.com/watch?v=6jevdk_u8g4'
 const ALL_TABLES_BOSS_URL = 'https://youtu.be/86URGgqONvA'
@@ -172,6 +174,18 @@ function StudentSession() {
   }, [profile, sessionAssignment, persistProfile])
   const assignmentRun = useMemo(() => ({ answeredRef: assignmentAnsweredRef, pendingRef: assignmentDonePendingRef,
     finish: finishAssignment, setDone: setAssignmentDone }), [finishAssignment])
+  const geometryAssignment = isGeometryAssignment(sessionAssignment)
+  const geometryAnswered = useMemo(() => geometryAssignment && profile
+    ? countGeometryAssignmentAnswers(profile, sessionAssignment, readAssignmentCompletedAt(profile, sessionAssignment.id) + 1)
+    : 0, [geometryAssignment, profile, sessionAssignment, sessionCount])
+  useEffect(() => {
+    if (!geometryAssignment || feedback || assignmentDone) return
+    assignmentAnsweredRef.current = geometryAnswered
+    if (geometryAnswered >= getAssignmentTarget(sessionAssignment)) {
+      finishAssignment()
+      setAssignmentDone(true)
+    }
+  }, [geometryAssignment, geometryAnswered, feedback, assignmentDone, sessionAssignment, finishAssignment])
   const nextAssignment = useNextAssignment(profile, sessionAssignment?.id,
     Boolean(sessionAssignment?.id) && (assignmentDone || fluencyCompleted || ncmCompletedSession))
   const recordMathPracticeAnswer = useCallback((problem, studentAnswer, isCorrect, timeSpentMs) => {
@@ -230,7 +244,7 @@ function StudentSession() {
       }
 
       let nextRules = { ...(rules || {}) }
-      if (!sessionAssignment && !isTableDrill) {
+      if (!sessionAssignment && !isTableDrill && !isGeometrySkill(mode)) {
         const frame = constrainClassPracticeRules(nextRules, classAllowedOperations, freeOps, allowedFreeOps)
         if (frame.status === 'loading') return null
         if (frame.status !== 'ready') {
@@ -264,7 +278,7 @@ function StudentSession() {
       setSessionError('Kunde inte ladda nästa uppgift. Försök igen.')
       return null
     }
-  }, [sessionAssignment, isTableDrill, classAllowedOperations, freeOps, allowedFreeOps, fluencyPractice])
+  }, [sessionAssignment, isTableDrill, mode, classAllowedOperations, freeOps, allowedFreeOps, fluencyPractice])
 
   usePracticeSetupEffects({
     studentId,
@@ -506,7 +520,8 @@ function StudentSession() {
       masteredHistorical={masteredHistorical}
       masteredThisWeek={masteredThisWeek}
       syncStatus={syncStatus}
-      remainingCount={isFluencyAssignment(sessionAssignment) ? Math.max(0, getFluencyTarget(sessionAssignment) - fluencyAnswered) : null}
+      remainingCount={geometryAssignment ? Math.max(0, getAssignmentTarget(sessionAssignment) - geometryAnswered)
+        : isFluencyAssignment(sessionAssignment) ? Math.max(0, getFluencyTarget(sessionAssignment) - fluencyAnswered) : null}
       fluencyProgress={fluencyLapRef.current && currentProblem?.skill === 'number_bonds'
         ? `Nivå ${fluencyLapRef.current.level} · ${Object.keys(fluencyLapRef.current.samples || {}).length}/${numberBondCoverageKeys(fluencyLapRef.current.level).length} talpar · mål under ${fluencyLevelTargetSec(fluencyLapRef.current.level)} s i snitt` : ''}
       praise={fluencyPraise}

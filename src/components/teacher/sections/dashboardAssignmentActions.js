@@ -80,6 +80,7 @@ export function buildDashboardAssignmentActions({
 
   const handleCreatePreset = (presetKey, targetCount, breakGames = false, workspaces) => {
     const base = getPresetConfig(presetKey)
+    if (!base) return
     const cap = Math.floor(Number(targetCount))
     const preset = { ...base, breakGames, ...(workspaces ? { workspaces } : {}), ...(Number.isFinite(cap) && cap > 0 ? { targetCount: cap } : {}) }
     const created = createAssignment(preset)

@@ -176,7 +176,7 @@ export function buildStudentDetailExportRows(student, row, detailData) {
         TidSek: Number.isFinite(problem.speedTimeSec) ? Number(problem.speedTimeSec.toFixed(2)) : '',
         Varde: problem.correct
           ? 'korrekt'
-          : (isKnowledgeError(problem) ? 'kunskapsfel' : 'ouppmarksamhet'),
+          : (problem.errorCategory === 'unclassified' ? 'oklassificerat' : isKnowledgeError(problem) ? 'kunskapsfel' : 'ouppmarksamhet'),
         Tidsstampel: problem.timestamp ? new Date(problem.timestamp).toISOString() : ''
       })
     }

@@ -1,3 +1,5 @@
+import { geometryGroups } from '../domains/geometry/groups.js'
+
 const KNOWN_OPERATION_TYPES = new Set([
   'addition',
   'subtraction',
@@ -9,7 +11,7 @@ const KNOWN_OPERATION_TYPES = new Set([
   'fractions',
   'percentage',
   'number_bonds',
-  'doubles'
+  'doubles', ...Object.keys(geometryGroups)
 ])
 
 export function isKnownOperationType(value) {
@@ -46,6 +48,7 @@ export function inferOperationFromProblemType(problemType = '', options = {}) {
   if (normalized === 'arithmetic_expressions') return 'arithmetic_expressions'
   if (normalized === 'fractions') return 'fractions'
   if (normalized === 'percentage') return 'percentage'
+  if (Object.hasOwn(geometryGroups, normalized)) return normalized
   if (normalized.startsWith('alg_')) return normalized
 
   const [prefixRaw] = normalized.split('_')

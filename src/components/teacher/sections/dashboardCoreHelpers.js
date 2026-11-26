@@ -1,3 +1,6 @@
+import { geometryGroups, isGeometrySkill } from '../../../domains/geometry/groups.js'
+import { geometryQuestions } from '../../../domains/geometry/questions.js'
+
 export function formatSyncTimestamp(value) {
   const ts = Number(value)
   if (!Number.isFinite(ts) || ts <= 0) return '-'
@@ -149,6 +152,13 @@ export function recordMatchesClassFilter(record, selectedClassIds) {
 }
 
 export function getPresetConfig(presetKey) {
+  if (Array.isArray(presetKey)) {
+    const problemTypes = Object.keys(geometryGroups).filter(skill => presetKey.includes(skill))
+    if (!problemTypes.length || !presetKey.every(isGeometrySkill)) return null
+    const longestRound = Math.max(...problemTypes.map(skill => geometryQuestions[skill].filter(task => task.minimumLevel === 1).length))
+    return { title: `Geometri – ${problemTypes.map(skill => geometryGroups[skill]).join(', ')}`,
+      problemTypes, minLevel: 1, maxLevel: 2, targetCount: longestRound * problemTypes.length }
+  }
   if (presetKey === 'addition') {
     return {
       title: 'Addition nivå 1-8',

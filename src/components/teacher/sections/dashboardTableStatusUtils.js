@@ -216,5 +216,5 @@ export function getMedianTime(problems) {
 
 export function isKnowledgeError(problem) {
   if (!problem || problem.correct) return false
-  return teacherErrorCategory(problem) !== 'inattention'
+  return !['inattention', 'unclassified'].includes(teacherErrorCategory(problem))
 }

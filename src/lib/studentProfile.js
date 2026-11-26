@@ -327,7 +327,7 @@ export function addProblemResult(profile, problem, studentAnswer, timeSpent, opt
     errorPatterns: patterns,
     errorDetail: String(errorAnalysis?.detail || ''),
     isInattentionError: errorCategory === 'inattention',
-    isKnowledgeError: !correct && errorCategory !== 'inattention',
+    isKnowledgeError: !correct && !['inattention', 'unclassified'].includes(errorCategory),
     timeSpent: timing.rawTimeSec,
     speedTimeSec: timing.speedTimeSec,
     excludedFromSpeed: timing.excludedFromSpeed,

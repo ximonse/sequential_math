@@ -1,6 +1,6 @@
 # Geometri i träning och uppdrag
 
-Simon vill ha samma geometribilder och tryckbara alternativ i fri träning och vanliga läraruppdrag. Det här är underlag inför införandet. Arbetsregeln för ett nytt område finns i [Styrning av felförståelser](STYRNING_FELFORSTAELSER.md#9-rutin-för-nytt-område-eller-ny-felmodell).
+Geometri återanvänder figurbanken och tryckbara alternativ i fri träning och vanliga läraruppdrag. Simon valde enkel statistik i första versionen och tid som grund för avancemang. Arbetsregeln för framtida felmodeller finns i [Styrning av felförståelser](STYRNING_FELFORSTAELSER.md#9-rutin-för-nytt-område-eller-ny-felmodell).
 
 ## Innehåll och facit
 
@@ -14,11 +14,10 @@ Simon vill ha samma geometribilder och tryckbara alternativ i fri träning och v
 
 ## Svar, statistik och återkoppling
 
-- Ett bekräftat svar ger en observation i befintlig svarskedja. Spara uppgifts-ID och version, prövat begrepp och frågeform, alternativens visningsordning, valda ID:n och rättningsutfall. Historiska svar ska kunna visas med samma bilder, alternativ och facit. Upprepning efter återkoppling får vara träning men särredovisas från första svaret. Återförsök av samma sparning ska ge samma observation.
-- Ett flerval räknas som en fråga. Spara missade korrekta alternativ och extra val som detaljer till samma svar. Ett tomt utkast ger inget fel. Om eleven uttryckligen hoppar över en visad fråga redovisas det som ej besvarat. En tilldelad men ännu inte öppnad fråga är ej påbörjad.
-- Visa rätt av besvarade frågor, plus obesvarade när de är kända. Visa antal tillsammans med andelen, och låt elev, grupp och klass bygga på samma observationer. Redovisa frågeformer separat när de jämförs. Visa uppdragsresultat per tilldelning. En uppgift kan pröva en kategori även när samma figur hör till flera kategorier. Fördela därför varje försök på uppgiftens primära begrepp.
-- Första omgången föreslås använda träffsäkerhet utan tidsbonus eller bevis om mastery. Bilder och flerval mäter delvis olika saker beroende på frågeform och visade alternativ. En rätt gissning och igenkänning efter återkoppling ger svagare belägg än rätt på en ny variant. Geometrisvaren ska inte ändra progression i andra områden.
-- Återanvänd uppgiftsbanken och befintlig svarssparning för träning och uppdrag. Versionsbundna referenser håller loggposten liten och gör återvisning möjlig. Läs samma svar för elev- och klassummering; undvik extra databasoperationer per knapptryck.
+- Ett bekräftat svar ger en observation i befintlig svarskedja. Uppgifts-ID och version, primärt begrepp, alternativens visningsordning, valda ID:n, facit och rättningsutfall lagras. Frågeformen och bilderna finns i den versionsstyrda banken. Eleven kan ändra val fram till Svara. Ett flerval räknas som en fråga och ett tomt utkast räknas inte som svar.
+- Geometri i Statistik & stöd visar fel, antal svar och andel fel för varje prövat begrepp, sorterat efter antal fel. Vyn använder samma senaste svar som läraröversikten, högst 250 svar per elev totalt, och respekterar vald klasskontext. Fri träning och uppdrag räknas tillsammans. Statistikdelen gör inga egna nätverksanrop.
+- Två nivåer per delområde. Nivå 1 visar bilder som svarsalternativ. Nivå 2 lägger till frågor med bild och namnalternativ. För nivå 2 krävs snabba och rätta svar på minst fem av de sex senast prövade skilda begreppen, eller tre av fyra i Linjer och sträckor. Startmålen är 12 sekunder för enkelval och 18 för frågor med flera rätta svar. Eleven ser ingen nedräkning. Ett långsammare rätt svar räknas fortfarande som rätt. Tidsmålen är preliminära och geometrisvaren påverkar varken andra områdens progression eller deras snabbhetsmått.
+- I Uppdrag via länk väljer läraren delområden. Ordinarie utdelning och länkar återanvänds. Uppdragets svar räknas från befintlig svarshistorik och antalet besvarade frågor återläses vid omladdning.
 
 ## Möjliga felsvarsmönster att pröva
 
@@ -33,8 +32,8 @@ Fujitas studie ger stöd för att pröva prototypberoende och kategoritillhörig
 
 ## Täckning och beslutspunkt
 
-I nuläget finns fyra inbyggda geometrifrågor i Screening, varav tre har tryckbara svar. Bildsvar kan rättas och visa valda, missade och extra alternativ. I ordinarie träning och uppdrag finns 0 av 21 begrepp med geometrifrågor. Förberedelsen ändrar inga täckningssiffror. Kandidaterna ovan saknar ännu prövning mot riktiga elevsvar och godkännande.
+Före implementationen fanns fyra inbyggda geometrifrågor i Screening, varav tre med tryckbara svar, och 0 av 21 begrepp i ordinarie träning och uppdrag. I lokal kod finns nu 21 av 21 begrepp. Automatiska felmodeller har fortfarande täckning noll. Kandidaterna ovan väntar på jämförbara riktiga elevsvar och godkännande inför ett senare arbete.
 
 Vid läskontroll 2026-11-26 fanns 19 screeningar i fyra ordinarie klasser. En utdelning innehöll två geometrifrågor, om cylinder respektive triangel, båda med noll inlämnade svar. Inga jämförbara elevsvar hittades i det urvalet. Täckning för felmodeller före och efter förberedelsen är noll, och andelen förklarade fel kan inte beräknas på noll svar.
 
-Föreslagen nästa provning är en avgränsad jämförelse i en ordinarie klass. Använd en blockordning där bilderna återkommer med avstånd, variera alternativens placering och ge återkoppling först efter jämförelsen. Pröva båda kandidaterna på tre olika bilduppsättningar per kandidat och följ upp några svar med ”Hur såg du det?”. Mät träffar, motexempel och oförklarade svar före lärarens godkännande. Geometrifrågor i en ordinarie klass kräver ett separat beslut om klass och utdelning. Därefter ska ett lokalt prov visa att elevens första svar, återförsök och inlämning ger samma korrekta antal i träning, uppdrag och lärarvy, inklusive en återladdning mitt i ett uppdrag.
+Simon valde Lärare för första provningen. En osparad förhandsvisning av fyra screeningfrågor validerades för gruppen. Provningen kan kontrollera tydlighet och användbarhet. Om felmodeller tas upp senare behöver de två kandidaterna prövas med jämförbara elevsvar, motexempel och lärargodkännande.

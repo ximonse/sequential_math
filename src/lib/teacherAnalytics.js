@@ -324,7 +324,7 @@ function flattenProblems(profiles) {
         errorCategory: String(problem.errorCategory || (problem.correct ? 'none' : 'knowledge')),
         // Counted as teacher views count them; errorCategory above keeps the saved label.
         isInattentionError: !problem.correct && teacherErrorCategory(problem) === 'inattention',
-        isKnowledgeError: !problem.correct && teacherErrorCategory(problem) !== 'inattention',
+        isKnowledgeError: !problem.correct && !['inattention', 'unclassified'].includes(teacherErrorCategory(problem)),
         isReasonable: Boolean(problem.isReasonable),
         rawTimeSpentSec: Number(problem.timeSpent || 0),
         speedTimeSec: getSpeedTime(problem),

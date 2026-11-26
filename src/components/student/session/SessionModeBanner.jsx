@@ -1,5 +1,6 @@
 import { getOperationLabel } from '../../../lib/operations'
 import { isKnownMode } from './sessionUtils'
+import { isGeometrySkill } from '../../../domains/geometry/groups.js'
 
 function SessionModeBanner({ assignment, mode, tableSet, fixedLevel = null }) {
   let title = 'Blandad träning'
@@ -8,7 +9,8 @@ function SessionModeBanner({ assignment, mode, tableSet, fixedLevel = null }) {
     const codes = Array.isArray(assignment.ncmCodes) ? assignment.ncmCodes.filter(Boolean) : []
     title = `Uppdrag: ${assignment.title}${codes.length > 0 ? ` | ${codes.join(', ')}` : ''}`
   } else if (assignment) {
-    title = `Uppdrag: ${assignment.title} · nivå ${assignment.minLevel}-${assignment.maxLevel}`
+    const geometry = assignment.problemTypes?.length > 0 && assignment.problemTypes.every(isGeometrySkill)
+    title = `Uppdrag: ${assignment.title}${geometry ? '' : ` · nivå ${assignment.minLevel}-${assignment.maxLevel}`}`
   } else if (tableSet.length > 0) {
     title = `Tabellträning: ${tableSet.map(table => `${table}:an`).join(', ')}`
   } else if (mode && isKnownMode(mode)) {

@@ -43,6 +43,10 @@ export function deriveTimingMetrics(profile, problem, timeSpent, options = {}) {
   const blurCount = Math.max(0, Number(options?.interruption?.blurCount) || 0)
   const interruptionSuspected = hiddenDurationSec >= INTERRUPTION_HIDDEN_SECONDS
     || (blurCount > 0 && rawTimeSec >= INTERRUPTION_BLUR_MIN_TIME_SECONDS)
+  if (problem?.answer?.type === 'choice') {
+    return { rawTimeSec, speedTimeSec: null, excludedFromSpeed: true, exclusionReason: 'choice_question',
+      interruptionSuspected, hiddenDurationSec, blurCount, personalMedianSec: null, personalBaselineCount: 0 }
+  }
   const baselineTimes = getPersonalBaselineTimes(profile, problem)
   const personalMedianSec = median(baselineTimes)
   const personalBaselineCount = baselineTimes.length
@@ -85,7 +89,7 @@ export function classifyErrorCategory(problem, studentAnswer, correct, options =
   if (correct) return 'none'
 
   const domainCategory = String(errorAnalysis?.category || '').trim().toLowerCase()
-  if (domainCategory === 'inattention' || domainCategory === 'knowledge' || domainCategory === 'misconception') {
+  if (['inattention', 'knowledge', 'misconception', 'unclassified'].includes(domainCategory)) {
     return domainCategory
   }
 

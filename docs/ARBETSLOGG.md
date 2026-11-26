@@ -1,5 +1,12 @@
 # Arbetslogg
 
+## 2026-11-26: Geometrins första träningsversion
+
+- **Simons beslut:** första versionen ska visa vilka figurer som ofta besvaras fel. Avancemang ska bero på tid.
+- **Agentens val:** två nivåer per delområde, öppna namnfrågor efter flera snabba och korrekta svar på skilda begrepp. Preliminära startmål 12/18 sekunder utan nedräkning. Fellistan bygger på antal fel, antal svar och andel fel i ordinarie svarshistorik.
+- **Lokalt byggt:** 21 av 21 begrepp mot 0 före ändringen. Uppgiftsversion, visningsordning och val sparas via samma synk som andra träningssvar. Inga nya felmodeller, ingen påverkan på andra områdens progression och ingen utdelning till riktiga konton.
+- **Verifierat:** 1 447 Vitest-tester, produktionsbuild och 21 berörda klickrobotar passerade. Elevens bildval, flerval, tid till nästa nivå, omladdning i uppdrag och lärarens felsvarssiffror kontrollerades i emulerad surfplattevy. Renderad elev- och lärarvy granskades. Publicering och provning med klassen Lärare återstår.
+
 ## 2026-11-26: Geometri i träning och uppdrag
 
 - **Simons beslut:** gå vidare med geometri i träning och vanliga uppdrag. Utred hur elevens val ska påverka statistik och felsvarskategorier före införandet.

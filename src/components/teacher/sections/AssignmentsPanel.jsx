@@ -9,6 +9,7 @@ import AssignmentModuleBox from './AssignmentModuleBox'
 import ModuleInfoHint from './ModuleInfoHint'
 import ForeignAssignmentRows from './ForeignAssignmentRows'
 import { workspaceSummary } from '../../../lib/assignmentSettings'
+import { geometryGroups } from '../../../domains/geometry/groups.js'
 
 const BUTTON_BASE = 'rounded-md border px-1.5 py-0.5 text-sm font-medium transition-colors'
 const TONES = {
@@ -80,6 +81,7 @@ export default function AssignmentsPanel({
   const [presetTarget, setPresetTarget] = useState('')
   const [breakGames, setBreakGames] = useState(false)
   const [workspaces, setWorkspaces] = useState({ notebook: false, drawing: true })
+  const [geometrySelection, setGeometrySelection] = useState([])
   const selectedClass = selectedClassIds.length === 1
     ? classes.find(item => String(item.id) === String(selectedClassIds[0]))
     : null
@@ -96,6 +98,25 @@ export default function AssignmentsPanel({
 
       <AssignmentModuleBox title="Arbetsytor" hint={HINTS.workspaces}>
         <AssignmentWorkspaceOptions value={workspaces} onChange={setWorkspaces} showLegend={false} />
+      </AssignmentModuleBox>
+
+      <AssignmentModuleBox title="Geometri">
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          {Object.entries(geometryGroups).map(([skill, label]) => (
+            <label key={skill} className="inline-flex items-center gap-1">
+              <input type="checkbox" checked={geometrySelection.includes(skill)} onChange={event => {
+                const checked = event.target.checked
+                setGeometrySelection(previous => checked ? [...previous, skill] : previous.filter(value => value !== skill))
+              }} />
+              {label}
+            </label>
+          ))}
+          <button type="button" disabled={!geometrySelection.length}
+            onClick={() => onCreatePreset(geometrySelection, undefined, false, { notebook: false, drawing: false })}
+            className={`${BUTTON_BASE} ${TONES.other} disabled:opacity-50`}>
+            Skapa geometriuppdrag
+          </button>
+        </div>
       </AssignmentModuleBox>
 
       <AssignmentModuleBox title="Domäner" hint={HINTS.domains}>

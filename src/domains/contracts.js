@@ -5,7 +5,8 @@ export const ERROR_CATEGORIES = new Set([
   'input',
   'knowledge',
   'inattention',
-  'misconception'
+  'misconception',
+  'unclassified'
 ])
 
 function invariant(condition, message) {
@@ -81,6 +82,8 @@ export function assertDisplayableProblem(problem, expected = {}) {
     invariant(Number.isFinite(Number(problem.answer.den)) && Number(problem.answer.den) !== 0, 'fraction denominator must be finite and non-zero')
   } else if (answerType === 'expression') {
     invariant(String(problem.answer.correct || '').trim(), 'expression answer must not be empty')
+  } else if (answerType === 'choice') {
+    invariant(typeof problem.answer.correct === 'string' && problem.answer.correct.length > 0, 'choice answer must be nonempty')
   } else {
     invariant(false, `unsupported answer type ${answerType}`)
   }

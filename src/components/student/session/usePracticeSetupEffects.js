@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { isGeometrySkill } from '../../../domains/geometry/groups.js'
 import {
   clearActiveStudentSession,
   getOrCreateProfileWithSync,
@@ -204,7 +205,7 @@ export function usePracticeSetupEffects({
       setSessionWarmup(null)
       return
     }
-    if (!mode || !isKnownMode(mode)) {
+    if (!mode || !isKnownMode(mode) || isGeometrySkill(mode)) {
       setSessionWarmup(null)
       return
     }

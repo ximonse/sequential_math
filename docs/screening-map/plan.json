@@ -4212,6 +4212,40 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "geometry-practice-assignments",
+      "area": "Träning och uppdrag",
+      "title": "Geometri med bilder och tryckbara svar",
+      "status": "Lokalt klart",
+      "purpose": "Träna linjer och sträckor, plana figurer och kroppar med tryckbara alternativ i fri träning och läraruppdrag.",
+      "next": "Provning med klassen Lärare när Simon vill öppna en testversion. Kalibrera vid behov de preliminära tidsmålen efter den provningen.",
+      "acceptance": "Alla 21 begrepp finns med tryckbara alternativ i träning och valbara delområden i uppdrag. Elevens val sparas exakt och räknas en gång. Statistik visar fel, svar och andel fel per begrepp. Flera snabba och rätta svar på skilda begrepp öppnar nivå 2.",
+      "requires": [
+        "screening-image-questions"
+      ],
+      "affects": [],
+      "decision": "2026-11-26 Simon vill gå vidare med de tre delområdena och att statistiken och felsvarskategoriseringarna utreds före införandet. Simon valde Lärare för provning, statisk felsvarsstatistik per figur för första versionen och tidsbaserat avancemang. Automatiska felmodeller ligger kvar som ett möjligt senare spår.",
+      "evidence": "2026-11-26 läskontroll i fyra ordinarie klasser: 19 screeningar, två utdelade geometrifrågor och noll inlämnade geometrisvar. Träning och uppdrag täcker fortsatt 0 av 21 begrepp. Förslag för svarssparning, statistik och två felmodellskandidater med motexempel finns i docs/GEOMETRI_TRANING_UPPDRAG.md. Lokal kod: täckning 0 av 21 → 21 av 21. Frågebank och befintlig synk återanvänds. Lärarvyn summerar senaste svar för valt urval utan nya nätverksanrop. Preliminära gränser 12/18 sekunder för enkelval/flerval och ingen nedräkning. Inga nya felmodeller eller data från riktiga deltagare. Lokal verifiering: hela Vitest-sviten 1 447 tester och produktionsbuild gröna. Klickroboten på emulerad pekskärm kontrollerade båda typerna av alternativ, att flerval kan ändras före Svara, avancemang till nivå 2, uppdrag via lärarlänk, omladdning och att lärarens statistik stämmer med serverns svar. Renderade elev- och lärarvyer granskade. Ingen publicering.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "geometry-inventory",
+          "text": "Inventera stöd, statistikflöde och tillgängliga elevsvar",
+          "done": true
+        },
+        {
+          "id": "geometry-observations",
+          "text": "Senare vid behov: pröva felmodellskandidater på elevsvar",
+          "done": false
+        },
+        {
+          "id": "geometry-delivery",
+          "text": "Bygg och verifiera geometri i träning, uppdrag och lärarstatistik",
+          "done": true
+        }
+      ]
     }
   ],
   "edges": [
@@ -5128,6 +5162,11 @@
     {
       "source": "dispatch",
       "target": "teacher-foreign-assignments",
+      "kind": "kräver"
+    },
+    {
+      "source": "screening-image-questions",
+      "target": "geometry-practice-assignments",
       "kind": "kräver"
     }
   ],

@@ -126,11 +126,11 @@ function SessionPage({
           />
         </div>
 
-        <CurrentOperationMastery
+        {currentProblem?.domain !== 'geometry' && <CurrentOperationMastery
           operationLabel={currentOperationLabel}
           historical={masteredHistorical}
           weekly={masteredThisWeek}
-        />
+        />}
       </div>
     </div>
   )

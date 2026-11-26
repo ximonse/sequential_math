@@ -4,6 +4,7 @@
  */
 import { fluencyLevelTargetSec } from './coverageFluency.js'
 import { inferOperationFromProblemType } from './mathUtils.js'
+import { geometryGroups } from '../domains/geometry/groups.js'
 
 export const STANDARD_OPERATIONS = ['addition', 'subtraction', 'multiplication', 'division']
 
@@ -30,7 +31,8 @@ export const OPERATION_LABELS = {
   fractions: 'Bråk',
   percentage: 'Procenträkning',
   number_bonds: 'Talpar',
-  doubles: 'Dubblor'
+  doubles: 'Dubblor',
+  ...geometryGroups
 }
 
 export function getFluencyTargetSec(operation, level) {

@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { addProblemResult } from '../../../lib/studentProfile'
 import { createWalEntry } from '../../../lib/syncWal'
 import { getPilotStudentRuntime } from '../../../lib/pilotStudentRuntime'
@@ -272,6 +272,7 @@ export function usePracticeCoreActions({
     persistProfile
   ])
 
+  const submittedChoiceRef = useRef(null)
   const handleSubmit = useCallback(async () => {
     if (!profile || !currentProblem || answer.trim() === '') return
 
@@ -280,7 +281,12 @@ export function usePracticeCoreActions({
     const isFractionAnswer = currentProblem?.answer?.type === 'fraction'
     const normalizedAnswer = answer.trim().replace(/,/g, '.')
     let studentAnswer
-    if (isExpressionAnswer || isFractionAnswer) {
+    const isChoiceAnswer = currentProblem.answer?.type === 'choice'
+    if (isChoiceAnswer) {
+      if (submittedChoiceRef.current === currentProblem.id) return
+      submittedChoiceRef.current = currentProblem.id
+      studentAnswer = answer
+    } else if (isExpressionAnswer || isFractionAnswer) {
       studentAnswer = answer.trim()
     } else {
       if (!/^-?(?:\d+|\d*\.\d+)$/.test(normalizedAnswer)) return
@@ -315,7 +321,7 @@ export function usePracticeCoreActions({
     )
     const isPartial = Boolean(result?.isPartial)
 
-    if (!isTableDrill && !isLevelFocusMode && !isPartial) {
+    if (!isChoiceAnswer && !isTableDrill && !isLevelFocusMode && !isPartial) {
       adjustDifficulty(profile, correct, {
         progressionMode,
         timeSpent: result.speedTimeSec,

@@ -126,8 +126,10 @@ export function adjustDifficulty(profile, wasCorrect, options = {}) {
 
 export function selectNextProblem(profile, options = {}) {
   ensureDifficultyMeta(profile)
-  const recentSuccess = getRecentSuccessRate(profile, 5)
-  const errors = getConsecutiveErrors(profile)
+  const recentProblems = profile.recentProblems.filter(problem => problem.domain !== 'geometry')
+  const arithmeticHistory = { ...profile, recentProblems }
+  const recentSuccess = getRecentSuccessRate(arithmeticHistory, 5)
+  const errors = getConsecutiveErrors(arithmeticHistory)
   const progressionMode = normalizeProgressionMode(options.progressionMode)
   const globalRoundedDifficulty = clampLevelToRange(Math.round(profile.currentDifficulty), options.levelRange)
   const ncmFilter = normalizeNcmFilter(options.ncmFilter)
@@ -161,7 +163,7 @@ export function selectNextProblem(profile, options = {}) {
   const isTableDrill = tableSet.length > 0
   const preferredType = isTableDrill
     ? 'multiplication'
-    : chooseProblemType(profile, recentSuccess, errors, progressionMode)
+    : chooseProblemType(arithmeticHistory, recentSuccess, errors, progressionMode)
 
   const allowedTypes = isTableDrill
     ? ['multiplication']
@@ -273,7 +275,7 @@ export function selectNextProblem(profile, options = {}) {
   const successPushThreshold = progressionMode === PROGRESSION_MODE_STEADY ? 0.96 : 0.92
   const successPushMinCount = progressionMode === PROGRESSION_MODE_STEADY ? 10 : 6
 
-  if (recentSuccess > successPushThreshold && profile.recentProblems.length >= successPushMinCount) {
+  if (recentSuccess > successPushThreshold && recentProblems.length >= successPushMinCount) {
     const harderLevel = clampLevelToRange(Math.min(12, roundedDifficulty + 1), options.levelRange)
     const problem = isTableDrill
       ? generateMultiplicationTableDrillProblem(tableSet, { level: harderLevel })
@@ -289,7 +291,7 @@ export function selectNextProblem(profile, options = {}) {
   const reliefThreshold = progressionMode === PROGRESSION_MODE_STEADY ? 0.52 : 0.55
   const reliefMinCount = progressionMode === PROGRESSION_MODE_STEADY ? 8 : 6
 
-  if (recentSuccess < reliefThreshold && profile.recentProblems.length >= reliefMinCount) {
+  if (recentSuccess < reliefThreshold && recentProblems.length >= reliefMinCount) {
     const easierLevel = clampLevelToRange(Math.max(1, roundedDifficulty - 1), options.levelRange)
     const problem = isTableDrill
       ? generateMultiplicationTableDrillProblem(tableSet, { level: easierLevel })
@@ -305,7 +307,7 @@ export function selectNextProblem(profile, options = {}) {
     })
   }
 
-  if (roundedDifficulty === 1 && recentSuccess >= 0.6 && profile.recentProblems.length >= 8) {
+  if (roundedDifficulty === 1 && recentSuccess >= 0.6 && recentProblems.length >= 8) {
     const bootstrapChance = progressionMode === PROGRESSION_MODE_STEADY ? 0.15 : 0.3
     if (Math.random() < bootstrapChance) {
       const target = clampLevelToRange(2, options.levelRange)

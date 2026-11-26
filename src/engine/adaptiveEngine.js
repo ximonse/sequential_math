@@ -12,6 +12,7 @@ import { getLowestUnmasteredLevel } from '../lib/studentProfile'
 import { chooseHiddenDecimalEvidence } from './hiddenDecimalPolicy'
 import { buildAbsenceWarmupDecision } from '../lib/sessionStartDecision'
 import { verifyNcmSourceContent } from '../lib/ncmProblemBank'
+import { getGeometryLevel } from '../domains/geometry/progress.js'
 
 function inferSkillFromProblem(problem) {
   const explicitSkill = String(problem?.skill || '').trim()
@@ -120,6 +121,12 @@ function attachTrainingDecision(problem, selection, level, options, startDecisio
 }
 
 function generateScopedProblem(profile, selection, options) {
+  if (selection.domain.id === 'geometry') {
+    const history = profile?.problemLog?.length ? profile.problemLog : profile?.recentProblems
+    const [min, max] = selection.levelRange
+    const level = Math.max(min, Math.min(max, getGeometryLevel(history, selection.skill)))
+    return generateFromDomain(selection.domain, selection.skill, level, { recentGeometry: profile?.recentProblems })
+  }
   const { level, startDecision } = sampleTrainingDecision(profile, selection, options)
   if (selection.domain.id === getDefaultDomainId()) {
     const evidenceSkill = chooseHiddenDecimalEvidence({

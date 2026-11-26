@@ -1,5 +1,9 @@
+import GeometryResults from './GeometryResults.jsx'
+
 export default function ResultsOverviewPanel({
   students,
+  geometryStudents,
+  geometryClassIds,
   viewMode,
   onSetViewMode,
   visibleRows,
@@ -29,6 +33,7 @@ export default function ResultsOverviewPanel({
 }) {
   return (
     <div className="mb-6">
+      <GeometryResults students={geometryStudents} classIds={geometryClassIds} />
       {students.length === 0 ? (
         <div className="bg-white rounded-lg p-8 shadow text-center">
           <div className="flex items-center justify-between mb-2">

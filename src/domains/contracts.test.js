@@ -4,6 +4,7 @@ import { listDomains } from './registry'
 import { generateWithProblemGuardian } from './contracts'
 import { attachEvidenceClaim, EVIDENCE_CLASSES } from '../lib/evidenceContract'
 import { ALL_OPERATIONS } from '../lib/operations'
+import { geometryGroups } from './geometry/groups.js'
 
 function correctAnswerFor(problem) {
   if (problem.answer.correct !== undefined) return problem.answer.correct
@@ -17,7 +18,7 @@ function correctAnswerFor(problem) {
 describe('domain contracts', () => {
   it('covers every operation with exactly one registered skill', () => {
     const skills = listDomains().flatMap(domain => domain.skills.map(skill => skill.id))
-    expect([...skills].sort()).toEqual([...ALL_OPERATIONS].sort())
+    expect([...skills].sort()).toEqual([...ALL_OPERATIONS, ...Object.keys(geometryGroups)].sort())
     expect(new Set(skills).size).toBe(skills.length)
   })
 
@@ -85,7 +86,7 @@ describe('domain contracts', () => {
           const corrupted = structuredClone(problem)
           if (corrupted.answer.type === 'fraction') {
             corrupted.answer.num = Number(corrupted.answer.num) + 1
-          } else if (corrupted.answer.type === 'expression') {
+          } else if (['expression', 'choice'].includes(corrupted.answer.type)) {
             corrupted.answer.correct = '0'
           } else if (corrupted.answer.correct !== undefined) {
             corrupted.answer.correct = Number(corrupted.answer.correct) + 1

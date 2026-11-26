@@ -1,11 +1,12 @@
 import { mergeWorkspaceItems, saveTeacherWorkspacePatch } from './teacherWorkspaceSync.js'
+import { geometryGroups } from '../domains/geometry/groups.js'
 const ASSIGNMENTS_KEY = 'mathapp_assignments'
 const ASSIGNMENT_PAYLOAD_VERSION = 1
 const KNOWN_OPERATION_TYPES = new Set([
   'addition', 'subtraction', 'multiplication', 'division',
   'algebra_evaluate', 'algebra_simplify',
   'arithmetic_expressions', 'fractions', 'percentage',
-  'number_bonds', 'doubles'
+  'number_bonds', 'doubles', ...Object.keys(geometryGroups)
 ])
 
 let assignmentsCache = []

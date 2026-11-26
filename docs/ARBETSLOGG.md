@@ -1,5 +1,12 @@
 # Arbetslogg
 
+## 2026-11-26: Geometri i träning och uppdrag
+
+- **Simons beslut:** gå vidare med geometri i träning och vanliga uppdrag. Utred hur elevens val ska påverka statistik och felsvarskategorier före införandet.
+- **Logg:** återanvändbar bildbank, svarskomponent och rättning inventerade. Läskontroll av fyra ordinarie klasser hittade 19 screeningar, två utdelade geometrifrågor och noll inlämnade geometrisvar. Ingen modell kunde prövas. Ordinarie träning och uppdrag har fortsatt 0 av 21 begrepp.
+- **Agentens förslag:** behåll valen som spårbara observationer, räkna första svaret en gång och särredovisa försök efter återkoppling. Två kandidater med kontraster och motexempel finns i [underlaget](GEOMETRI_TRANING_UPPDRAG.md).
+- **Parkerat:** införande och modellgodkännande väntar på ett jämförbart underlag från en ordinarie klass enligt avsnitt 9. Ingen elevutdelning gjord.
+
 ## 2026-11-25: Städning av worktrees och tre säkra förbättringar tagna in
 
 ### Logg

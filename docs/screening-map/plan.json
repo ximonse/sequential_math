@@ -4212,6 +4212,40 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "geometry-practice-assignments",
+      "area": "Träning och uppdrag",
+      "title": "Geometri med bilder och tryckbara svar",
+      "status": "Beslut behövs",
+      "purpose": "Träna linjer och sträckor, plana figurer och kroppar med tryckbara alternativ i fri träning och läraruppdrag.",
+      "next": "Välj ordinarie klass för ett avgränsat underlag. Pröva de två kandidaterna i docs/GEOMETRI_TRANING_UPPDRAG.md och redovisa träffar, motexempel och slumprisk före modellgodkännande.",
+      "acceptance": "Eleven kan välja ett eller flera bild- eller namnalternativ i träning och uppdrag. Inlämnat val och visade alternativ går att återvisa. Elev-, grupp- och klasstatistik summerar samma svar, och retry ger ingen dubbelräkning. Felmodeller har prövats på riktiga svar och godkänts.",
+      "requires": [
+        "screening-image-questions"
+      ],
+      "affects": [],
+      "decision": "2026-11-26 Simon vill gå vidare med de tre delområdena och att statistiken och felsvarskategoriseringarna utreds före införandet.",
+      "evidence": "2026-11-26 läskontroll i fyra ordinarie klasser: 19 screeningar, två utdelade geometrifrågor och noll inlämnade geometrisvar. Träning och uppdrag täcker fortsatt 0 av 21 begrepp. Förslag för svarssparning, statistik och två felmodellskandidater med motexempel finns i docs/GEOMETRI_TRANING_UPPDRAG.md.",
+      "issue": "",
+      "kind": "funktion",
+      "tasks": [
+        {
+          "id": "geometry-inventory",
+          "text": "Inventera stöd, statistikflöde och tillgängliga elevsvar",
+          "done": true
+        },
+        {
+          "id": "geometry-observations",
+          "text": "Pröva felmodellskandidater på elevsvar och få lärargodkännande",
+          "done": false
+        },
+        {
+          "id": "geometry-delivery",
+          "text": "Bygg och verifiera geometri i träning, uppdrag och lärarstatistik",
+          "done": false
+        }
+      ]
     }
   ],
   "edges": [
@@ -5128,6 +5162,11 @@
     {
       "source": "dispatch",
       "target": "teacher-foreign-assignments",
+      "kind": "kräver"
+    },
+    {
+      "source": "screening-image-questions",
+      "target": "geometry-practice-assignments",
       "kind": "kräver"
     }
   ],

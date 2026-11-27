@@ -122,7 +122,11 @@ export default async function handler(req, res) {
         }
         return memberships.some(id => activeClassIds.has(id))
       })
-      .map(sanitizeProfileForList)
+      .map(profile => sanitizeProfileForList({
+        ...profile,
+        conceptPractice: Array.isArray(profile.conceptPractice)
+          ? profile.conceptPractice.filter(run => activeClassIds.has(run.classIdAtAttempt)) : undefined
+      }))
       .filter(Boolean)
 
     return res.status(200).json({ profiles: sanitized })

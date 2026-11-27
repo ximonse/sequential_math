@@ -508,7 +508,7 @@ export default function DashboardLayout({
     )
     if (id === 'assignments') return (
       <AssignmentsPanel
-        assignments={assignments}
+        assignments={assignments} students={filteredStudents}
         assignmentTargets={assignmentTargets}
         foreignActiveAssignments={foreignActiveAssignments}
         recipients={recipients}

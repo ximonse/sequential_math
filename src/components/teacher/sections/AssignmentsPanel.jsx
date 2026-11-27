@@ -1,3 +1,6 @@
+import { createAssignment } from '../../../lib/assignments.js'
+import { conceptDecks } from '../../../lib/conceptPractice.js'
+import ConceptAssignmentResults from './ConceptAssignmentResults.jsx'
 import { useState } from 'react'
 import AssignmentQrDialog from './AssignmentQrDialog'
 import MathPracticeCreatorDialog from './MathPracticeCreatorDialog'
@@ -59,6 +62,7 @@ const PRESET_GROUPS = [
 
 export default function AssignmentsPanel({
   assignments,
+  students = [],
   assignmentTargets = [],
   foreignActiveAssignments = [],
   recipients = [],
@@ -157,6 +161,14 @@ export default function AssignmentsPanel({
         <AssignmentBuilder breakGames={breakGames} workspaces={workspaces} onCreated={onCreateMathPractice} />
       </AssignmentModuleBox>
 
+      <AssignmentModuleBox title="Begrepp">
+        <div className="flex flex-wrap gap-2">
+          {Object.values(conceptDecks).map(deck => <button key={deck.id} type="button"
+            className={`${BUTTON_BASE} ${TONES.custom}`}
+            onClick={() => onCreateMathPractice(createAssignment({ kind: 'concept', conceptDeckId: deck.id }))}>{deck.title}</button>)}
+        </div>
+      </AssignmentModuleBox>
+
       <AssignmentModuleBox title="Tabell" hint={HINTS.table}>
         <AssignmentTablePreset breakGames={breakGames} workspaces={workspaces} onCreated={onCreateMathPractice} />
       </AssignmentModuleBox>
@@ -208,6 +220,9 @@ export default function AssignmentsPanel({
                 </button>
                 <button onClick={() => onDeleteAssignment(assignment.id)} className="rounded bg-red-100 px-1.5 py-0.5 text-[11px] text-red-700 hover:bg-red-200">Ta bort</button>
               </div>
+              {assignment.kind === 'concept' && <div className="basis-full">
+                <ConceptAssignmentResults assignment={assignment} students={students} classIds={selectedClassIds} />
+              </div>}
             </div>
             )
           })}

@@ -1,3 +1,4 @@
+import { getConceptDeck } from './conceptPractice.js'
 import { mergeWorkspaceItems, saveTeacherWorkspacePatch } from './teacherWorkspaceSync.js'
 import { geometryGroups } from '../domains/geometry/groups.js'
 const ASSIGNMENTS_KEY = 'mathapp_assignments'
@@ -138,6 +139,7 @@ export function encodeAssignmentPayload(assignment) {
 
   if (normalized.kind === 'table') payload.tables = normalized.tables
   if (normalized.kind === 'focus') payload.focusMode = normalized.focusMode
+  if (normalized.kind === 'concept') payload.conceptDeckId = normalized.conceptDeckId
 
   return toBase64Url(JSON.stringify(payload))
 }
@@ -176,7 +178,7 @@ function normalizeAssignmentCore(input, options = {}) {
   if (options.requireId && !id) return null
 
   const kindRaw = String(input.kind || 'standard').trim()
-  const kind = ['ncm', 'math_practice', 'subitizing', 'table', 'focus'].includes(kindRaw) ? kindRaw : 'standard'
+  const kind = ['ncm', 'math_practice', 'subitizing', 'table', 'focus', 'concept'].includes(kindRaw) ? kindRaw : 'standard'
   const tables = kind === 'table' ? normalizeTables(input.tables) : []
   const focusMode = kind === 'focus' ? normalizeFocusMode(input.focusMode) : ''
   if (kind === 'table' && tables.length === 0) return null
@@ -190,6 +192,13 @@ function normalizeAssignmentCore(input, options = {}) {
   )
   const targetCount = normalizePositiveInt(input.targetCount, kind === 'ncm' ? 10 : 30)
   const createdAt = Number(input.createdAt || 0) > 0 ? Number(input.createdAt) : Date.now()
+
+  if (kind === 'concept') {
+    const deck = getConceptDeck(input.conceptDeckId)
+    if (!deck) return null
+    return { id, kind, title: `Begrepp · ${deck.title}`, targetCount: deck.exercises.length, conceptDeckId: deck.id,
+      createdAt, problemTypes: [], minLevel: 1, maxLevel: 1, ncmCodes: [], ncmAbilityTags: [] }
+  }
 
   if (kind === 'ncm') {
     const ncmCodes = normalizeCodeList(input.ncmCodes)

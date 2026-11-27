@@ -199,6 +199,7 @@ export function formatAssignmentSummaryLine(assignment) {
     return scope || 'NCM-uppdrag'
   }
   if (assignment.kind === 'table') return `Multiplikation | ${assignment.tables?.length === 1 ? 'tabell' : 'tabellerna'} ${(assignment.tables || []).join(', ')} | klart när alla tal är rätt`
+  if (assignment.kind === 'concept') return `Begreppskort och ${assignment.targetCount} övningsuppgifter`
   if (assignment.kind === 'focus') return 'Fokusövning | klart när passet är gjort'
   if (assignment.kind === 'subitizing') return `Talbild | ${assignment.targetCount} uppgifter`
 

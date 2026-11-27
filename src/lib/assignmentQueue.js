@@ -56,6 +56,7 @@ export function endsAtTaskCount(assignment) {
 // Where each kind of assignment starts. Focus opens on the pupil's home page.
 export function assignmentLaunchPath(studentId, assignment) {
   const params = new URLSearchParams({ assignment: String(assignment.id), assignment_payload: encodeAssignmentPayload(assignment) })
+  if (assignment.kind === 'concept') return `/student/${studentId}/concepts/${assignment.conceptDeckId}?${params}`
   if (assignment.kind === 'focus') return `/student/${studentId}?${params}`
   if (assignment.kind === 'subitizing') return `/student/${studentId}/subitizing?${params}`
   if (assignment.kind === 'table') {

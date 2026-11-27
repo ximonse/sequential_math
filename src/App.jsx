@@ -13,6 +13,7 @@ import { isTeacherAdmin, isTeacherAuthenticated } from './lib/teacherAuth'
 import { initCloudSyncListeners, destroyCloudSyncListeners } from './lib/storage'
 
 const DiagnosticGridPrototype = lazy(() => import('./dev/DiagnosticGridPrototype'))
+const ConceptPractice = lazy(() => import('./components/student/ConceptPractice'))
 const StudentDiagnosticAttempt = lazy(() => import('./components/student/StudentDiagnosticAttempt'))
 const MaterialReview = lazy(() => import('./components/teacher/MaterialReview'))
 
@@ -61,6 +62,7 @@ function App() {
         <Route path="/student/:studentId" element={<StudentHome />} />
         <Route path="/student/:studentId/practice" element={<ByAssignment><PracticeSession /></ByAssignment>} />
         <Route path="/student/:studentId/subitizing" element={<ByAssignment><SubitizingSession /></ByAssignment>} />
+        <Route path="/student/:studentId/concepts/:deckId" element={<ByAssignment><Suspense fallback={<p>Öppnar begreppsövningen…</p>}><ConceptPractice /></Suspense></ByAssignment>} />
         <Route path="/student/:studentId/ticket" element={<StudentTicket />} />
         <Route path="/student/:studentId/diagnostic" element={<Suspense fallback={<p>Öppnar räknehäftet...</p>}><StudentDiagnosticAttempt /></Suspense>} />
         <Route path="/teacher-login" element={<TeacherLogin />} />

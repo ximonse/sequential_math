@@ -1,5 +1,12 @@
 # Arbetslogg
 
+## 2026-11-28: Pilot för begreppskort och övningar
+
+- Lärare kan skapa och dela **Räknesättens språk** och **Linje, stråle, sträcka och diagonal** via vanliga uppdrag. Eleven kan också öppna samma områden från sin startsida. Räknesätt använder sortering av färdiga uttryck, geometri använder befintliga bildfrågor och namnval utan tidströskel i piloten.
+- Begreppskort och övningssvar sparas i separata fält per omgång via den befintliga händelsekön. Uppdragsraden visar senast påbörjade omgången per elev i valt urval. Rättningen räknar en bekräftad sortering som en uppgift och bevarar placeringarna. Kortleken kräver aktiv vändning för att öka kortantalet.
+- Pilotens omfattning är 16 begreppskort, 5 sorteringar och 8 geometrifrågor i de två delområdena. Inga nya screeningfrågor eller felmodeller. Klassöversiktens gemensamma statistik för träning och screening, ordningsquiz och övriga Gamma-områden hör till senare steg.
+- Lokalt verifierat med begrepps- och geometrirobotarna. Kortet räknades en gång efter omladdning, sorteringssvar och slutfört uppdrag sparades, och lärarvyn visade senaste omgången samt det konkreta felsvaret. Elev- och lärarvyerna granskades visuellt. Produktionsverifiering återstår.
+
 ## 2026-11-26: Geometrins första träningsversion
 
 - **Simons beslut:** första versionen ska visa vilka figurer som ofta besvaras fel. Avancemang ska bero på tid.

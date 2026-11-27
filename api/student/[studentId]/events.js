@@ -1,3 +1,4 @@
+import { validConceptActivity, recordConceptActivity } from '../../../src/lib/conceptPractice.js'
 import { isValidBreakGameResult, recordBreakGameResult } from '../../../src/lib/breakGameResults.js'
 import { mutateStudentRecord, studentStoreError } from '../../_studentStore.js'
 import { assertTeacherStudentAccess } from '../../_studentAccess.js'
@@ -218,6 +219,7 @@ export function validEntry(entry, studentId) {
   if (entry.studentId && String(entry.studentId).toUpperCase() !== studentId) return false
   const payload = entry.payload
   if (entry.type === 'presence_checkpoint') return validPresenceCheckpoint(payload)
+  if (entry.type === 'concept_activity') return validConceptActivity(payload)
   if (entry.type === 'break_game_result') return isValidBreakGameResult(payload)
   if (entry.type === 'attention_result') return payload?.completionReason !== 'unfinished' && isValidAttentionResult(payload)
   if (entry.type === 'attention_checkpoint') return isRecord(payload) && Object.keys(payload).length === 2
@@ -273,6 +275,8 @@ export function applyWalEntry(profile, entry) {
   if (!entry?.type || !entry?.payload) return false
 
   switch (entry.type) {
+    case 'concept_activity':
+      return recordConceptActivity(profile, { ...entry.payload, classIdAtAttempt: resolveClassIdAtAttempt(profile, entry.payload) })
     case 'break_game_result':
       return recordBreakGameResult(profile, { ...entry.payload, classIdAtAttempt: resolveClassIdAtAttempt(profile, entry.payload) })
     case 'attention_result':

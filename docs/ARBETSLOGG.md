@@ -6,6 +6,7 @@
 - Begreppskort och övningssvar sparas i separata fält per omgång via den befintliga händelsekön. Uppdragsraden visar senast påbörjade omgången per elev i valt urval. Rättningen räknar en bekräftad sortering som en uppgift och bevarar placeringarna. Kortleken kräver aktiv vändning för att öka kortantalet.
 - Pilotens omfattning är 16 begreppskort, 5 sorteringar och 8 geometrifrågor i de två delområdena. Inga nya screeningfrågor eller felmodeller. Klassöversiktens gemensamma statistik för träning och screening, ordningsquiz och övriga Gamma-områden hör till senare steg.
 - Lokalt verifierat med begrepps- och geometrirobotarna. Kortet räknades en gång efter omladdning, sorteringssvar och slutfört uppdrag sparades, och lärarvyn visade senaste omgången samt det konkreta felsvaret. Elev- och lärarvyerna granskades visuellt. Produktionsverifiering återstår.
+- Preview beställd och verifierad. PR [#53](https://github.com/ximonse/sequential_math/pull/53) är öppen. [Preview](https://sekvens-ot14jchie-ximonses-projects.vercel.app) i sekvens är READY för commit `088f090`. Produktionsdomänen pekar fortfarande på `9d792ca`. Inloggad provning återstår.
 
 ## 2026-11-26: Geometrins första träningsversion
 

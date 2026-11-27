@@ -9,7 +9,8 @@ test('Results for one class read that class only; the issued list reads every cl
   const tag = Math.random().toString(36).slice(2, 8)
   const classes = ['A', 'B', 'C'].map(letter => ({ id: `load-${tag}-${letter}`, name: `Last ${letter} ${tag}` }))
   for (const record of classes) await createPupil(request, { classId: record.id, className: record.name })
-  const teacher = await createTeacher(request, { classIds: classes.map(record => record.id), role: 'super_admin' })
+  // Scope the teacher to this test's classes even when other robots seed the shared store.
+  const teacher = await createTeacher(request, { classIds: classes.map(record => record.id) })
   const reads = []
   page.on('request', req => {
     const url = new URL(req.url())

@@ -4257,7 +4257,7 @@
       "next": "Granska produktionssläpp vid separat publiceringsbeslut.",
       "acceptance": "Lärarens åtkomst kontrolleras före reservation och igen vid uppdatering.",
       "decision": "Simon godkände behörighetsfixen som separat ändring.",
-      "evidence": "Anpassad från 368029c till master a4d8d15.",
+      "evidence": "Anpassad från 368029c till master a4d8d15. Vitest 1447 tester, byggkontroll och två klasshanteringsrobotar godkända. Screeningroboten använder ett lärarkonto vars klassåtkomst begränsas till testets tre klasser. Syftet är att samma läskontroll ska gälla även när andra robotar skapar klasser parallellt.",
       "issue": "",
       "requires": [],
       "affects": [],

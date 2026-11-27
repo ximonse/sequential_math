@@ -3,14 +3,18 @@ import { generateDisplayAlias, generateStudentPin } from '../../_studentAlias.js
 import { kv } from '@vercel/kv'
 import { mutateStudentRecord, studentStoreError } from '../../_studentStore.js'
 import { assertTeacherStudentAccess } from '../../_studentAccess.js'
+import { getLiveTeacherAuthPayload } from '../../_helpers.js'
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store')
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
   try {
+    if (!await getLiveTeacherAuthPayload(req)) throw studentStoreError(401, 'Teacher authorization required')
     const studentId = String(req.query?.studentId || '').trim().toUpperCase()
     let issued = null
     const existing = await kv.get(`student:${studentId}`)
+    if (!existing) throw studentStoreError(404, 'Student not found')
+    await assertTeacherStudentAccess(req, existing)
     const proposedAlias = existing?.displayAlias || generateDisplayAlias()
     const displayAlias = await reserveStudentLoginCode(studentId, () => proposedAlias)
     const current = await mutateStudentRecord(studentId, async profile => {

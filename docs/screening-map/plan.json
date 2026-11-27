@@ -4246,6 +4246,22 @@
           "done": true
         }
       ]
+    },
+    {
+      "id": "pupil-card-access-before-reservation",
+      "area": "Administration",
+      "title": "Kontrollera åtkomst före utfärdande av elevkort",
+      "status": "Lokalt klart",
+      "kind": "funktion",
+      "purpose": "Bevara behörighetsgränsen vid utfärdande av elevkort.",
+      "next": "Granska produktionssläpp vid separat publiceringsbeslut.",
+      "acceptance": "Lärarens åtkomst kontrolleras före reservation och igen vid uppdatering.",
+      "decision": "Simon godkände behörighetsfixen som separat ändring.",
+      "evidence": "Anpassad från 368029c till master a4d8d15.",
+      "issue": "",
+      "requires": [],
+      "affects": [],
+      "tasks": []
     }
   ],
   "edges": [

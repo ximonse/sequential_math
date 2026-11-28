@@ -2,7 +2,7 @@ import { DEFAULT_PRACTICE_SPEECH_MODE, PRACTICE_SPEECH_MODES } from '../../../li
 import { createAssignment } from '../../../lib/assignments.js'
 import { conceptDecks } from '../../../lib/conceptPractice.js'
 import ConceptAssignmentResults from './ConceptAssignmentResults.jsx'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import AssignmentQrDialog from './AssignmentQrDialog'
 import MathPracticeCreatorDialog from './MathPracticeCreatorDialog'
 import SubitizingCreatorDialog from './SubitizingCreatorDialog'
@@ -61,8 +61,8 @@ const PRESET_GROUPS = [
   ].map(([key, label]) => [key, label, TONES.other])
 ]
 
-function PracticeSpeechModeSelect({ value, onChange }) {
-  return <label className="mb-2 inline-flex flex-wrap items-center gap-2 text-sm">
+function PracticeSpeechModeSelect({ value, onChange, inline = false }) {
+  return <label className={(inline ? '' : 'mb-2 ') + 'inline-flex flex-wrap items-center gap-2 text-sm'}>
     Uppläsning
     <select className="rounded border border-gray-300 bg-white px-2 py-1"
       value={value} onChange={event => onChange(event.target.value)}>
@@ -99,6 +99,17 @@ export default function AssignmentsPanel({
   const [geometrySelection, setGeometrySelection] = useState([])
   const [conceptSpeechMode, setConceptSpeechMode] = useState(DEFAULT_PRACTICE_SPEECH_MODE)
   const [geometrySpeechMode, setGeometrySpeechMode] = useState(DEFAULT_PRACTICE_SPEECH_MODE)
+  const [createdConceptId, setCreatedConceptId] = useState('')
+  const createdConceptRow = useRef(null)
+  useEffect(() => {
+    if (createdConceptId) createdConceptRow.current?.focus()
+  }, [createdConceptId])
+
+  function createConceptAssignment(deckId) {
+    const assignment = createAssignment({ kind: 'concept', conceptDeckId: deckId, speechMode: conceptSpeechMode })
+    if (assignment) setCreatedConceptId(assignment.id)
+    onCreateMathPractice(assignment)
+  }
   const selectedClass = selectedClassIds.length === 1
     ? classes.find(item => String(item.id) === String(selectedClassIds[0]))
     : null
@@ -112,6 +123,15 @@ export default function AssignmentsPanel({
         <h2 className="text-lg font-semibold text-gray-800">Uppdrag via länk</h2>
         {collapseControl}
       </div>
+
+      <AssignmentModuleBox title="Begrepp"
+        actions={<PracticeSpeechModeSelect value={conceptSpeechMode} onChange={setConceptSpeechMode} inline />}>
+        <div className="flex flex-wrap gap-2">
+          {Object.values(conceptDecks).map(deck => <button key={deck.id} type="button"
+            className={BUTTON_BASE + ' ' + TONES.custom}
+            onClick={() => createConceptAssignment(deck.id)}>Skapa uppdrag: {deck.title}</button>)}
+        </div>
+      </AssignmentModuleBox>
 
       <AssignmentModuleBox title="Arbetsytor" hint={HINTS.workspaces}>
         <AssignmentWorkspaceOptions value={workspaces} onChange={setWorkspaces} showLegend={false} />
@@ -175,15 +195,6 @@ export default function AssignmentsPanel({
         <AssignmentBuilder breakGames={breakGames} workspaces={workspaces} onCreated={onCreateMathPractice} />
       </AssignmentModuleBox>
 
-      <AssignmentModuleBox title="Begrepp">
-        <PracticeSpeechModeSelect value={conceptSpeechMode} onChange={setConceptSpeechMode} />
-        <div className="flex flex-wrap gap-2">
-          {Object.values(conceptDecks).map(deck => <button key={deck.id} type="button"
-            className={`${BUTTON_BASE} ${TONES.custom}`}
-            onClick={() => onCreateMathPractice(createAssignment({ kind: 'concept', conceptDeckId: deck.id, speechMode: conceptSpeechMode }))}>{deck.title}</button>)}
-        </div>
-      </AssignmentModuleBox>
-
       <AssignmentModuleBox title="Tabell" hint={HINTS.table}>
         <AssignmentTablePreset breakGames={breakGames} workspaces={workspaces} onCreated={onCreateMathPractice} />
       </AssignmentModuleBox>
@@ -215,7 +226,12 @@ export default function AssignmentsPanel({
             const isActive = selectedTargets.length ? activeInSelected.length > 0 : activeIn.length > 0
             const canActivate = selectedTargets.length ? activeInSelected.length < selectedTargets.length : true
             return (
-            <div key={assignment.id} data-assignment-row className={`flex flex-wrap items-center justify-between gap-2 rounded border px-2 py-1.5 ${isActive ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-gray-100'}`}>
+            <div key={assignment.id} data-assignment-row
+              ref={assignment.id === createdConceptId ? createdConceptRow : undefined}
+              tabIndex={assignment.kind === 'concept' ? -1 : undefined}
+              role={assignment.kind === 'concept' ? 'group' : undefined}
+              aria-label={assignment.kind === 'concept' ? assignment.title : undefined}
+              className={`flex flex-wrap items-center justify-between gap-2 rounded border px-2 py-1.5 ${isActive ? 'border-green-400 bg-green-50' : 'border-gray-200 bg-gray-100'}`}>
               <div className="min-w-0 text-sm">
                 <p className={`font-medium ${isActive ? 'text-gray-800' : 'text-gray-500'}`}>{assignment.title}</p>
                 <p className="text-gray-500">{formatAssignmentSummaryLine(assignment)}</p>
